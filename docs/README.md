@@ -34,6 +34,25 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Preguntas abiertas](product/OPEN_QUESTIONS.md)
 - [Lecciones de SR Taller anterior](product/LEGACY_SR_TALLER_LESSONS.md)
 
+## Dominio operativo
+
+- [Índice y ruta de revisión](domain/README.md)
+- [Estado del descubrimiento](domain/DOMAIN_DISCOVERY_STATUS.md)
+- [Lenguaje ubicuo preliminar](domain/UBIQUITOUS_LANGUAGE.md)
+- [Flujo central](domain/CORE_WORKFLOW.md)
+- [Entrevista para el Product Owner](domain/PRODUCT_OWNER_INTERVIEW.md)
+- [Reglas e invariantes candidatas](domain/BUSINESS_RULES.md)
+- [Máquinas de estado](domain/STATE_MACHINES.md)
+- [Eventos de dominio](domain/DOMAIN_EVENTS.md)
+- [Contextos delimitados candidatos](domain/BOUNDED_CONTEXT_CANDIDATES.md)
+- [Taller de Event Storming](domain/EVENT_STORMING_WORKSHOP.md)
+- [Línea temporal del dominio](domain/DOMAIN_TIMELINE.md)
+- [Modelo de dinero](domain/MONEY_MODEL.md)
+- [Dominio de inventario](domain/INVENTORY_DOMAIN.md)
+- [Matriz candidata de ownership](domain/OWNERSHIP_MATRIX.md)
+- [Decisiones terminológicas](domain/DOMAIN_GLOSSARY_DECISIONS.md)
+- [Trazabilidad del dominio](domain/TRACEABILITY.md)
+
 ## Arquitectura
 
 - [Contexto del sistema](architecture/SYSTEM_CONTEXT.md)
@@ -114,7 +133,7 @@ Los archivos individuales PBI-001 a PBI-020 se encuentran enlazados desde el [í
 
 ## Ruta de lectura recomendada
 
-Comenzar con la [visión](product/PRODUCT_VISION.md), continuar con [principios](product/PRODUCT_PRINCIPLES.md), [alcance](product/PRODUCT_SCOPE.md), [arquitectura objetivo](architecture/TARGET_ARCHITECTURE.md), [preguntas abiertas](product/OPEN_QUESTIONS.md), [ADRs propuestos](decisions/README.md) y finalizar con el [Sprint 00](sprints/sprint-00/SPRINT_BACKLOG.md).
+Comenzar con la [visión](product/PRODUCT_VISION.md), continuar con [principios](product/PRODUCT_PRINCIPLES.md), [alcance](product/PRODUCT_SCOPE.md), [descubrimiento del dominio](domain/README.md), [arquitectura objetivo](architecture/TARGET_ARCHITECTURE.md), [preguntas abiertas](product/OPEN_QUESTIONS.md), [ADRs propuestos](decisions/README.md) y finalizar con el [Sprint 00](sprints/sprint-00/SPRINT_BACKLOG.md).
 
 ## Próxima revisión
 
