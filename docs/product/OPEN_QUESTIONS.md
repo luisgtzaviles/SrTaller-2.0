@@ -1,0 +1,376 @@
+# Preguntas abiertas
+
+## Estado del documento
+
+- **Estado:** Activo; registro inicial de preguntas sin respuesta.
+- **Naturaleza:** Fuente central de incertidumbres de producto. Una opción listada no constituye decisión.
+- **Aprobación de respuestas:** Corresponde al propietario del producto, con consulta técnica, operativa, legal o de seguridad cuando aplique.
+- **Estados permitidos en esta versión:** `Abierta`, `En investigación`, `Respondida pendiente de documentar`, `Cerrada con decisión`.
+- **Estado actual:** Las 34 preguntas permanecen abiertas.
+
+## Uso del registro
+
+Al responder una pregunta se debe registrar la evidencia, actualizar los documentos afectados y, si la respuesta fija una dirección durable o costosa de revertir, crear o actualizar el ADR correspondiente. No se debe cambiar una pregunta a cerrada sólo porque exista una opción preferida en conversación.
+
+## Producto
+
+<a id="question-001"></a>
+### QUESTION-001 — Segmento inicial de talleres
+
+- **Contexto:** SR Taller 2.0 está dirigido principalmente a talleres de reparación de celulares, pero no se han definido tamaño, madurez operativa, número de sucursales ni mercado inicial.
+- **Impacto:** Determina recorridos, complejidad, soporte, propuesta comercial y prioridades.
+- **Opciones conocidas:** talleres de una sucursal; talleres multisucursal; un segmento escalonado que comience con uno de ellos; segmentación distinta sustentada por investigación.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada.
+
+<a id="question-002"></a>
+### QUESTION-002 — Resultados y métricas de éxito
+
+- **Contexto:** Existen resultados deseados, pero no hay métricas, líneas base ni metas numéricas aprobadas.
+- **Impacto:** Sin criterios de éxito no puede evaluarse prioridad, adopción ni resultado de una entrega.
+- **Opciones conocidas:** resultados operativos; seguridad y control; experiencia del cliente; resultado comercial; combinación priorizada con definiciones observables.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; actualizar [Visión de producto](./PRODUCT_VISION.md) al responder.
+
+## Operación del taller
+
+<a id="question-003"></a>
+### QUESTION-003 — Recorrido operativo prioritario
+
+- **Contexto:** Se contemplan clientes, reparaciones, inventario, ventas, pagos, cajas y comunicación, pero no se ha elegido el primer recorrido completo.
+- **Impacto:** Define el núcleo de una primera versión, vocabulario, dependencias y criterios de salida.
+- **Opciones conocidas:** recepción a entrega de una reparación; reparación más cobro; venta de mostrador; una secuencia incremental de estos recorridos.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada.
+
+<a id="question-004"></a>
+### QUESTION-004 — Acciones sensibles y autoridad de aprobación
+
+- **Contexto:** Gerentes, propietarios y administradores podrían supervisar excepciones, pero no existe un catálogo de acciones sensibles ni una autoridad de producto definida para excepciones a los principios.
+- **Impacto:** Afecta permisos, experiencia, auditoría, Definition of Ready y gobierno de decisiones.
+- **Opciones conocidas:** permiso específico; umbral configurable y aprobación de supervisor; doble aprobación; acciones reservadas a nivel tenant o plataforma; combinación por riesgo.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; podría requerir una decisión de seguridad/acceso.
+
+## Tenants
+
+<a id="question-005"></a>
+### QUESTION-005 — Ciclo de vida del tenant
+
+- **Contexto:** El tenant es el límite organizacional, pero alta, activación, suspensión, recuperación, cierre y eliminación no están definidos.
+- **Impacto:** Afecta acceso, suscripción, retención, soporte, automatización y obligaciones sobre datos.
+- **Opciones conocidas:** alta asistida; autoservicio; alta por plataforma; suspensión reversible; cierre con exportación y periodo de retención; combinaciones por plan.
+- **Estado:** Abierta.
+- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), estado `Proposed`, sólo para estrategia de datos.
+
+<a id="question-006"></a>
+### QUESTION-006 — Datos tenant-wide frente a datos de sucursal
+
+- **Contexto:** `tenant_id` sería obligatorio y `branch_id` tendría alcance específico, pero no se sabe qué entidades se comparten entre sucursales.
+- **Impacto:** Condiciona modelo de datos, permisos, transferencias, búsqueda, reportes y experiencia.
+- **Opciones conocidas:** entidades principalmente tenant-wide con contexto de sucursal; entidades principalmente propiedad de sucursal; modelo híbrido explícito por entidad.
+- **Estado:** Abierta.
+- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), estado `Proposed`.
+
+## Sucursales
+
+<a id="question-007"></a>
+### QUESTION-007 — Asignación de personas y operación entre sucursales
+
+- **Contexto:** Se requieren asignaciones de usuarios a sucursales, pero no se han definido multiplicidad, cambio de contexto ni acceso transversal.
+- **Impacto:** Afecta autorización, navegación, turnos, reportes y soporte a personal itinerante.
+- **Opciones conocidas:** una sucursal activa por membresía; varias sucursales asignadas con selección; acceso a todas por permiso; combinación explícita.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; documentar en [Identity, Access and Permissions](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md).
+
+<a id="question-008"></a>
+### QUESTION-008 — Cambio de sucursal y transferencia de contexto
+
+- **Contexto:** Un dispositivo puede cambiar de sucursal y operaciones o existencias podrían transferirse, pero no hay reglas confirmadas.
+- **Impacto:** Afecta continuidad, auditoría, inventario, reparaciones abiertas y revocación de sesiones.
+- **Opciones conocidas:** revocar y volver a vincular; reasignación aprobada con cierre de sesiones; transferencia programada; prohibir cambios mientras existan operaciones pendientes.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; documentar en [Branch and Device Model](../architecture/BRANCH_AND_DEVICE_MODEL.md).
+
+## Identidad
+
+<a id="question-009"></a>
+### QUESTION-009 — Identidad global y pertenencia a varios tenants
+
+- **Contexto:** La dirección conceptual distingue identidad global y membresía de tenant, pero no está validada la unicidad ni la experiencia de una persona que pertenece a varios tenants.
+- **Impacto:** Afecta autenticación, recuperación, privacidad, cambio de contexto y duplicados.
+- **Opciones conocidas:** identidad global con varias membresías; identidad separada por tenant; identidad global con alias o proveedores vinculados; federación futura.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; requiere una decisión posterior de identidad.
+
+<a id="question-010"></a>
+### QUESTION-010 — Modelo de roles, permisos y excepciones
+
+- **Contexto:** Se requieren roles y permisos, pero no existe catálogo, jerarquía ni política de personalización.
+- **Impacto:** Es un gate para cualquier flujo funcional y para aislamiento dentro del tenant.
+- **Opciones conocidas:** roles predefinidos; roles personalizados por tenant; permisos directos; atributos y condiciones; combinación con separación de funciones.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; documentar en [Identity, Access and Permissions](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md).
+
+## PIN y dispositivos
+
+<a id="question-011"></a>
+### QUESTION-011 — Vinculación y confianza de dispositivos
+
+- **Contexto:** El acceso operativo debe usar dispositivos autorizados, pero no se ha definido qué dispositivos, quién los vincula ni qué prueba su pertenencia.
+- **Impacto:** Afecta seguridad, onboarding, soporte, pérdida, revocación y experiencia en sucursal.
+- **Opciones conocidas:** código temporal aprobado por administrador; enrolamiento iniciado en consola; invitación o enlace de activación; gestión externa de dispositivos en una etapa futura.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; los mecanismos de seguridad necesitan evaluación antes de un ADR.
+
+<a id="question-012"></a>
+### QUESTION-012 — Alcance del PIN y autenticación reforzada
+
+- **Contexto:** El PIN permitiría acceso operativo en dispositivos autorizados, pero no se sabe qué autentica, cuánto dura ni cuándo es insuficiente.
+- **Impacto:** Afecta velocidad operativa, suplantación, bloqueo, cambio de turno y acciones sensibles.
+- **Opciones conocidas:** PIN sólo para seleccionar operador; PIN para sesión operativa acotada; PIN más factor reforzado para acciones sensibles; reautenticación por riesgo.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; no se ha decidido algoritmo criptográfico.
+
+## Reparaciones
+
+<a id="question-013"></a>
+### QUESTION-013 — Flujo, estados y cierre de una reparación
+
+- **Contexto:** Reparaciones es una capacidad central propuesta, pero no están definidos inicio, estados, pausas, cancelación, entrega ni reapertura.
+- **Impacto:** Condiciona el núcleo del dominio, permisos, eventos, métricas y experiencia del cliente.
+- **Opciones conocidas:** flujo único configurable de forma acotada; flujo base con excepciones; estados derivados de hitos; variantes por tipo de trabajo, aún no validadas.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada.
+
+<a id="question-014"></a>
+### QUESTION-014 — Diagnóstico, presupuesto, autorización y garantía
+
+- **Contexto:** No se conoce cuándo se cotiza, quién autoriza, cómo se registran cambios ni cómo se relaciona una garantía con el caso original.
+- **Impacto:** Afecta responsabilidad, comunicación, precios, pagos, inventario, evidencia y reaperturas.
+- **Opciones conocidas:** autorización por etapa; autorización por monto o cambio; evidencia digital; garantía como reapertura o caso relacionado; reglas distintas por tenant, sujetas a límites.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada.
+
+## Inventario
+
+<a id="question-015"></a>
+### QUESTION-015 — Catálogo, existencias y ubicaciones
+
+- **Contexto:** Inventario está contemplado como capacidad central, pero no se ha definido si catálogo y existencias son tenant-wide, por sucursal o por ubicación interna.
+- **Impacto:** Afecta modelo de datos, búsqueda, transferencias, reservas y reportes.
+- **Opciones conocidas:** catálogo por tenant con existencias por sucursal; catálogo y existencias por sucursal; catálogo compartido con múltiples ubicaciones; modelo gradual.
+- **Estado:** Abierta.
+- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), estado `Proposed`, respecto al aislamiento; no resuelve el dominio.
+
+<a id="question-016"></a>
+### QUESTION-016 — Movimientos, reservas, costos y excepciones
+
+- **Contexto:** No están definidos tipos de movimiento, reserva para reparación o venta, transferencias, existencias negativas ni método de costo.
+- **Impacto:** Afecta exactitud, concurrencia, correcciones, ventas, reparaciones y auditoría financiera.
+- **Opciones conocidas:** ledger de movimientos con saldo derivado; saldo más movimientos; reservas explícitas; costo promedio u otros métodos sujetos a país y negocio; prohibir o autorizar negativos.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; la opción de persistencia no debe decidir la regla de negocio.
+
+## CRM
+
+<a id="question-017"></a>
+### QUESTION-017 — Problema y límite inicial de CRM
+
+- **Contexto:** CRM forma parte de la dirección del producto, pero no se sabe qué problema adicional a Customers, Repairs y Messaging debe resolver.
+- **Impacto:** Evita construir una categoría amplia sin resultado ni ownership claros.
+- **Opciones conocidas:** seguimiento posreparación; recordatorios; oportunidades; segmentos; campañas; aplazar hasta validar una necesidad concreta.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada.
+
+<a id="question-018"></a>
+### QUESTION-018 — Consentimiento, preferencias y uso de datos de clientes
+
+- **Contexto:** CRM, Messaging y Notifications podrían usar datos de contacto, pero no están definidos propósito, consentimiento ni preferencias.
+- **Impacto:** Afecta privacidad, entregabilidad, reputación, cumplimiento y experiencia del cliente.
+- **Opciones conocidas:** consentimiento por propósito; preferencia por canal; interés legítimo donde aplique; exclusión global o por tenant; conservación de evidencia.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; requiere revisión legal según mercado.
+
+## Mensajería
+
+<a id="question-019"></a>
+### QUESTION-019 — Canales y proveedor inicial de mensajería
+
+- **Contexto:** Se prevé WhatsApp y otros canales en el futuro, con WAHA como integración futura posible, pero ninguno está comprometido.
+- **Impacto:** Condiciona contratos, consentimiento, costos, webhooks, soporte y experiencia.
+- **Opciones conocidas:** mensajería interna primero; WhatsApp mediante proveedor aprobado; WAHA sujeto a evaluación; correo/SMS/notificaciones por etapas; arquitectura de adaptadores sin activar canales aún.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; documentar alternativas en una decisión de integración antes de comprometer proveedor.
+
+<a id="question-020"></a>
+### QUESTION-020 — Semántica, retención y entrega de mensajes
+
+- **Contexto:** Se requieren normalización, deduplicación, persistencia, reintentos y tiempo real, pero faltan reglas de estados, orden, edición y retención.
+- **Impacto:** Afecta idempotencia, experiencia, almacenamiento, auditoría y recuperación ante fallos.
+- **Opciones conocidas:** estados normalizados con extensión por proveedor; orden por conversación con secuencia interna; entrega al menos una vez con deduplicación; retención por propósito/canal.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; relacionar con [Realtime and Messaging](../architecture/REALTIME_AND_MESSAGING.md).
+
+## Pagos
+
+<a id="question-021"></a>
+### QUESTION-021 — Medios, aplicación y devolución de pagos del taller
+
+- **Contexto:** Se contemplan pagos, pero no están definidos medios, parcialidades, anticipos, aplicación a venta/reparación ni devoluciones.
+- **Impacto:** Afecta flujo operativo, cajas, conciliación, permisos, proveedores y cumplimiento.
+- **Opciones conocidas:** efectivo y registro manual; terminal externa referenciada; procesador integrado; pagos parciales; devolución total/parcial con aprobación.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; mantener separado de Subscription and Billing.
+
+<a id="question-022"></a>
+### QUESTION-022 — Modelo operativo de cajas
+
+- **Contexto:** “Caja” puede significar ubicación, terminal, cuenta de control o sesión de operador; apertura, cierre y arqueo no están definidos.
+- **Impacto:** Afecta responsabilidad, turnos, diferencias, reportes y autorización.
+- **Opciones conocidas:** caja por sucursal; caja por terminal; sesión por operador; caja compartida con turnos; modelo híbrido con controles de supervisión.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada.
+
+## Suscripciones
+
+<a id="question-023"></a>
+### QUESTION-023 — Ciclo de suscripción y efecto sobre el acceso
+
+- **Contexto:** La plataforma tendrá suscripciones y planes, pero no se han definido trial, renovación, gracia, mora, suspensión ni cancelación.
+- **Impacto:** Afecta acceso del tenant, datos, soporte, notificaciones y recuperación.
+- **Opciones conocidas:** prepago; renovación automática; periodo de gracia; acceso de sólo lectura; suspensión reversible; cancelación con exportación.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; requiere decisiones comerciales y técnicas coordinadas.
+
+<a id="question-024"></a>
+### QUESTION-024 — Modelo comercial de planes y límites
+
+- **Contexto:** No existen planes, precios, moneda, límites ni entitlements aprobados.
+- **Impacto:** Condiciona empaquetado, medición, administración, facturación y expectativas del cliente.
+- **Opciones conocidas:** por tenant; por sucursal; por usuario; por volumen; niveles por capacidades; combinación simple por validar.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada.
+
+## Datos
+
+<a id="question-025"></a>
+### QUESTION-025 — Retención, exportación, corrección y eliminación
+
+- **Contexto:** Clientes, mensajes, archivos, auditoría y operación pueden requerir ciclos de vida distintos, aún no definidos.
+- **Impacto:** Afecta privacidad, soporte, costo, migración, cierre de tenant y cumplimiento.
+- **Opciones conocidas:** políticas por categoría; retención configurable dentro de límites; anonimización; eliminación lógica seguida de purga; excepciones por obligación legal.
+- **Estado:** Abierta.
+- **Decisión relacionada:** [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004 — esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), ambos `Proposed`, no resuelven retención.
+
+<a id="question-026"></a>
+### QUESTION-026 — Jurisdicción, residencia y clasificación de datos
+
+- **Contexto:** No se han definido país inicial, categorías sensibles, residencia ni transferencias internacionales.
+- **Impacto:** Puede cambiar proveedores, topología, cifrado, retención, contratos y controles de acceso.
+- **Opciones conocidas:** región única aprobada; residencia por mercado; restricciones por categoría; no ofrecer un mercado hasta cumplir sus requisitos.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; necesita revisión legal y de seguridad antes de decisiones de hosting.
+
+## Infraestructura
+
+<a id="question-027"></a>
+### QUESTION-027 — Perfil de carga y criterio de escala
+
+- **Contexto:** La arquitectura debe prepararse para 1,000 o más tenants, pero no existen perfiles de uso, concurrencia, volumen, tamaño de archivos ni distribución temporal.
+- **Impacto:** Afecta capacidad, pruebas, índices, caché, colas, costos y criterios para separar componentes.
+- **Opciones conocidas:** supuestos conservadores validados con pilotos; rangos por tenant; pruebas por recorridos críticos; crecimiento gradual con señales de extracción.
+- **Estado:** Abierta.
+- **Decisión relacionada:** [ADR-002 — monolito modular](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004 — esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), todos `Proposed`.
+
+<a id="question-028"></a>
+### QUESTION-028 — Restricciones de hosting, disponibilidad y ambientes
+
+- **Contexto:** Se proponen contenedores, ambientes separados e imágenes versionadas, pero no hay proveedor, región, presupuesto, SLO ni capacidades operativas confirmadas.
+- **Impacto:** Afecta despliegue, recuperación, observabilidad, secretos, integraciones y costo.
+- **Opciones conocidas:** plataforma administrada de contenedores; servicio de aplicaciones; infraestructura cloud propia; servicios administrados para datos; selección posterior mediante criterios.
+- **Estado:** Abierta.
+- **Decisión relacionada:** [ADR-007 — despliegues con contenedores](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Proposed`.
+
+## Seguridad
+
+<a id="question-029"></a>
+### QUESTION-029 — Modelo de amenazas y acceso administrativo excepcional
+
+- **Contexto:** Se requiere seguridad por defecto, pero no se han priorizado amenazas ni definido cómo soporte o plataforma intervienen en un tenant.
+- **Impacto:** Afecta autenticación, autorización, auditoría, alertas, soporte e investigación de incidentes.
+- **Opciones conocidas:** acceso sin contenido por defecto; acceso temporal just-in-time; consentimiento del tenant; doble aprobación; impersonación prohibida o fuertemente controlada; cuentas de emergencia.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; debe alimentar [Security Baseline](../architecture/SECURITY_BASELINE.md).
+
+<a id="question-030"></a>
+### QUESTION-030 — Obligaciones regulatorias y de seguridad del mercado inicial
+
+- **Contexto:** País, privacidad, fiscalidad, pagos, notificación de incidentes y estándares contractuales no están definidos.
+- **Impacto:** Puede bloquear mercados y cambiar datos, controles, proveedores, contratos y evidencia de calidad.
+- **Opciones conocidas:** identificar un país inicial y sus obligaciones; adoptar una línea base común más extensiones por mercado; limitar capacidades hasta completar revisión especializada.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; requiere asesoría competente, no una inferencia documental.
+
+## Experiencia visual
+
+<a id="question-031"></a>
+### QUESTION-031 — Identidad visual y gobierno del design system
+
+- **Contexto:** Se propone Tailwind CSS con design system propio y se quieren evitar inconsistencias, pero no existen marca, tokens, componentes ni ownership aprobados.
+- **Impacto:** Afecta coherencia, velocidad, accesibilidad y mantenimiento entre clientes.
+- **Opciones conocidas:** sistema propio incremental; base accesible de componentes con capa de marca; tokens compartidos; ownership de producto/diseño/ingeniería por definir.
+- **Estado:** Abierta.
+- **Decisión relacionada:** [ADR-006 — clientes web con Next.js](../decisions/proposed/ADR-006-nextjs-web-clients.md), estado `Proposed`, no decide el design system.
+
+<a id="question-032"></a>
+### QUESTION-032 — Base de accesibilidad y evidencia visual
+
+- **Contexto:** Accesibilidad, responsive y estados de interfaz forman parte de calidad, pero no hay estándar, navegadores/dispositivos ni evidencia mínima definidos.
+- **Impacto:** Afecta Definition of Done, componentes, pruebas y capacidad de uso en el taller.
+- **Opciones conocidas:** WCAG en nivel por definir; matriz de dispositivos/navegadores; pruebas automáticas y manuales; revisión visual documentada por flujo.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; debe alimentar [Accessibility Strategy](../quality/ACCESSIBILITY_STRATEGY.md).
+
+## Migración desde SR Taller
+
+<a id="question-033"></a>
+### QUESTION-033 — Datos y conocimiento que deben preservarse
+
+- **Contexto:** No se copiará código ni se migrará automáticamente toda la complejidad, pero puede existir información con valor u obligación de conservación.
+- **Impacto:** Afecta nuevo modelo, identificadores, calidad, retención, soporte y aceptación del cambio.
+- **Opciones conocidas:** migrar sólo maestros y casos abiertos; incluir historial seleccionado; conservar legado como consulta; exportación/importación controlada; no migrar una categoría con justificación.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; véanse [Lecciones de SR Taller](./LEGACY_SR_TALLER_LESSONS.md) y [Migration Policy](../operations/MIGRATION_POLICY.md).
+
+<a id="question-034"></a>
+### QUESTION-034 — Coexistencia, corte y reconciliación con el sistema anterior
+
+- **Contexto:** No se ha decidido si ambos sistemas coexistirán, cómo se detendrá escritura, cómo se validará una migración ni cómo se volverá atrás.
+- **Impacto:** Afecta continuidad operativa, alcance de integraciones temporales, soporte, pruebas y riesgo de pérdida o duplicación.
+- **Opciones conocidas:** corte por tenant; piloto por sucursal; periodo de sólo lectura del legado; ejecución paralela controlada; migraciones por oleadas con reconciliación y rollback.
+- **Estado:** Abierta.
+- **Decisión relacionada:** Ninguna registrada; una estrategia aprobada requerirá decisiones de migración y operación.
+
+## Gates de decisión derivados
+
+Antes de comprometer una primera versión deben estar respondidas, como mínimo, las preguntas sobre segmento, recorrido, alcance tenant/sucursal, identidad/permisos, flujo de reparación, mercado y obligaciones aplicables.
+
+Antes de implementar acceso operativo deben estar respondidas las preguntas de Identity, Access Control, dispositivos y PIN.
+
+Antes de integrar mensajería, pagos o suscripciones deben estar respondidas las preguntas de proveedor, consentimiento, estados, errores, jurisdicción y modelo comercial correspondientes.
+
+Antes de migrar datos debe existir una respuesta aprobada para QUESTION-033 y QUESTION-034, inventario de fuentes, evidencia de calidad y rollback probado.
+
+## Documentos relacionados
+
+- [Visión de producto](./PRODUCT_VISION.md)
+- [Alcance de producto](./PRODUCT_SCOPE.md)
+- [Actores y personas](./ACTORS_AND_PERSONAS.md)
+- [Mapa de módulos](./MODULE_MAP.md)
+- [Registro de decisiones](../decisions/README.md)
+- [Riesgos y bloqueadores del Sprint 00](../sprints/sprint-00/RISKS_AND_BLOCKERS.md)
+
+## Próxima revisión
+
+Revisar en cada sesión de descubrimiento y en cada cierre de PBI documental. Registrar fecha, evidencia y documentos actualizados cuando una pregunta cambie de estado. **Próxima fecha: TBD.**
