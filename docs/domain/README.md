@@ -73,6 +73,7 @@ La documentación combina hechos conocidos del repositorio, observaciones declar
 
 ### Validación y trazabilidad
 
+- [Modelo integrado del dominio de reparaciones](../domain-model/integrated-repair-domain-model/README.md) — consolidación maestra de decisiones validadas, evidencia, candidatos de modelado y preguntas; no reemplaza las fuentes
 - [Entrevista al Product Owner](PRODUCT_OWNER_INTERVIEW.md)
 - [Taller de Event Storming](EVENT_STORMING_WORKSHOP.md)
 - [Decisiones pendientes](DOMAIN_DECISION_LOG.md)
