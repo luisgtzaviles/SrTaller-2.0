@@ -25,6 +25,8 @@ La intención de producto de permitir que cada tenant configure **parte** de la 
 
 El [Future State Event Storming de recepción](../../domain-validation/future-state-reception/README.md) formula decisiones candidatas sobre identidad, custodia, evidencia, riesgo y completitud. Este paquete aporta la evidencia legacy que debe contrastarse con esas decisiones; no modifica ni valida ese Future State.
 
+La validación posterior de [recepción mínima y autorización comercial](../../domain-validation/reception-minimum-and-commercial-authorization/README.md) formaliza las decisiones del Product Owner sobre mínimos universales, campos configurables, nacimiento de custodia, identificación física, fotografías posteriores y semántica comercial inicial. Conserva esta auditoría como evidencia histórica y documenta expresamente dónde la política futura supera el comportamiento legacy.
+
 La lectura recomendada es:
 
 1. usar el audit para comprender el mecanismo actual;

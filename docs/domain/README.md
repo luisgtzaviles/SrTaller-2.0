@@ -78,6 +78,7 @@ La documentación combina hechos conocidos del repositorio, observaciones declar
 - [Decisiones pendientes](DOMAIN_DECISION_LOG.md)
 - [Preguntas abiertas](DOMAIN_OPEN_QUESTIONS.md)
 - [Trazabilidad](TRACEABILITY.md)
+- [Validación de recepción mínima y autorización comercial](../domain-validation/reception-minimum-and-commercial-authorization/README.md) — decisiones posteriores validadas por Product Owner; requieren promoción canónica separada
 
 ## Autoridad y participación
 

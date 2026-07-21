@@ -128,6 +128,14 @@ Los IDs especializados organizan la validación sin crear nuevas reglas, invaria
 | PBI-008/009 | Identidad, sucursales y dispositivo autorizado | separación de actores/dispositivos y RULE-021 | Propuesta; decisiones abiertas |
 | PBI-020 | Preguntas y gates | Domain Questions y Decision Log refinan Gate 4 | Propuesta; no cierra preguntas |
 
+## Paquetes de validación posteriores
+
+Los paquetes de esta sección pueden tener autoridad posterior y más específica que el discovery inicial. Su existencia no cambia silenciosamente el estado de conceptos, reglas o preguntas canónicas: cada promoción requiere reconciliación explícita.
+
+| Paquete | Autoridad | Áreas aclaradas | Elementos canónicos relacionados | Estado de promoción |
+|---|---|---|---|---|
+| [Recepción mínima y autorización comercial](../domain-validation/reception-minimum-and-commercial-authorization/README.md) | Decisiones explícitas del Product Owner, 2026-07-21 | nacimiento de orden/custodia, mínimos, identificación física, problema reportado, conceptos autorizables y políticas de absorción | DQ-001/007–009/011/019/022, DOMAIN-DECISION-001/004/005/009, TERM-DEC-001/004/005, RULE-006–009, INV-005/006/008/012 | Validado en su alcance; pendiente de promoción canónica |
+
 ## Candidatos futuros sin crear backlog
 
 | Resultado futuro posible | Candidato | Estado |

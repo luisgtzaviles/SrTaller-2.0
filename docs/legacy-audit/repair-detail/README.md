@@ -17,6 +17,8 @@ La vista histórica `views/reparaciones/detalle_modal.php` ya no contiene el mod
 
 La auditoría anterior documenta el ingreso y la creación inicial; este paquete comienza cuando una reparación ya existe y se consulta o modifica desde el detalle. Ambos usan el mismo corte fuente, pero mantienen IDs, conclusiones y archivos separados. Ninguno de los siete documentos previos fue modificado y sus hallazgos no se convierten aquí en reglas aprobadas.
 
+La validación posterior de [recepción mínima y autorización comercial](../../domain-validation/reception-minimum-and-commercial-authorization/README.md) usa los límites aquí observados para establecer decisiones de dominio sobre autorización inicial, cotizaciones con varios conceptos, aceptación parcial, preservación de rechazos y políticas configurables de precio. No reescribe esta evidencia legacy ni convierte sus mecanismos actuales en diseño futuro.
+
 ## Documentos
 
 | Documento | Contenido |

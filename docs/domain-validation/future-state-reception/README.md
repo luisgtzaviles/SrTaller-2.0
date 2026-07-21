@@ -31,6 +31,12 @@ No se diseñan tablas, APIs, clases, pantallas definitivas, base de datos, infra
 | [Current State Event Storming](../current-state-event-storming/README.md) | Prácticas humanas, hechos técnicos y gaps actuales. | Descripción del presente conocido. |
 | Evidencia del Product Owner incluida en la solicitud | Atención, identidad práctica, folio, dispositivo, evidencia, riesgos y nota. | Hechos actuales y deseos explícitos; no aprobación del Future State. |
 
+## Validación posterior relacionada
+
+El paquete de [recepción mínima y autorización comercial](../reception-minimum-and-commercial-authorization/README.md) conserva decisiones posteriores explícitas del Product Owner. Dentro de su alcance, resuelve que la orden y la custodia formal nacen únicamente con la creación correcta, define nombre y problema reportado como mínimos universales, clasifica otros datos como configurables y exige identificación física continua por folio.
+
+Esa validación aclara FSR-DECISION-002, FSR-EVENT-006, FSR-POLICY-008 y FSR-QUESTION-009. También fija que las fotografías son posteriores a la creación, pero no resuelve su obligatoriedad, cantidad, propósito o retención. El resto de este paquete continúa como propuesta y no queda aprobado por esa referencia.
+
 ## Current State frente a Future State
 
 | Current State | Future State propuesto |
