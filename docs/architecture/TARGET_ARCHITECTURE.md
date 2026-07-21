@@ -3,9 +3,9 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Arquitectura propuesta; ninguna selección tecnológica queda aceptada por este documento.
+- **Naturaleza:** Dirección conceptual; ADR-002 acepta la forma modular inicial, mientras las selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
-- **Decisiones relacionadas:** ADRs en estado `Proposed` del [registro de decisiones](../decisions/README.md).
+- **Decisiones relacionadas:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) está `Accepted`; los demás ADRs permanecen `Proposed` en el [registro](../decisions/README.md).
 
 ## Objetivo
 
@@ -16,9 +16,9 @@ Definir una dirección coherente para construir SR Taller 2.0 sin implementar to
 1. Aislamiento de tenant antes que conveniencia.
 2. La API central aplica reglas y es fuente de verdad para clientes propios.
 3. El dominio se organiza en módulos con ownership explícito.
-4. Un monolito modular es el punto de partida propuesto; los microservicios no forman parte de la fundación.
+4. Un monolito modular orientado al dominio es el punto de partida aceptado; los microservicios no forman parte del MVP.
 5. Procesos síncronos, asíncronos y tiempo real tienen responsabilidades distintas.
-6. API, workers y aplicaciones web pueden desplegarse por separado aun cuando compartan un repositorio y contratos.
+6. API, trabajos diferibles y tiempo real son responsabilidades lógicas dentro de una sola aplicación y despliegue iniciales; cualquier separación futura requiere evidencia y ADR.
 7. Seguridad, observabilidad y trazabilidad se diseñan desde el inicio.
 8. Las decisiones reversibles se mantienen simples; las irreversibles requieren evidencia y ADR.
 
@@ -65,7 +65,7 @@ flowchart TB
     Realtime --> Clients
 ```
 
-El diagrama expresa responsabilidades lógicas. El gateway de tiempo real puede comenzar dentro del proceso de API; su despliegue independiente sólo se justificaría con evidencia operativa.
+El diagrama expresa responsabilidades lógicas, no unidades desplegables iniciales. API, trabajos diferibles y tiempo real se alojan inicialmente en una sola aplicación backend y un único artefacto; una separación posterior sólo se justificaría con evidencia operativa y ADR.
 
 ## Bloques de la solución
 
@@ -75,19 +75,20 @@ El diagrama expresa responsabilidades lógicas. El gateway de tiempo real puede 
 | Cliente móvil | Consumir contratos centrales cuando exista necesidad validada | React Native con Expo | Construcción durante la fundación |
 | API central | Autenticación, autorización, casos de uso y contratos | NestJS con TypeScript | Framework aceptado ni endpoints definidos |
 | Módulos de dominio | Encapsular reglas, datos y eventos por capacidad | Monolito modular | Microservicios ni tablas por módulo |
-| Workers | Ejecutar procesos diferibles, reintentos e integraciones | BullMQ sobre Redis | Topología o concurrencia final |
+| Trabajos diferibles | Ejecutar procesos diferibles, reintentos e integraciones dentro de la aplicación inicial | Mecanismo pendiente | Worker o despliegue independiente |
 | Tiempo real | Entregar cambios confirmados a clientes conectados | Socket.IO o WebSockets | Protocolo aceptado |
 | Datos transaccionales | Persistencia canónica y consistencia | PostgreSQL, esquema compartido con `tenant_id` | Diseño físico ni RLS aceptado |
 | Coordinación temporal | Caché, colas y coordinación de conexiones | Redis | Uso como fuente de verdad |
 | Archivos | Guardar objetos y metadatos de acceso | API compatible con S3 | Proveedor, regiones o retención final |
 | Integraciones | Aislar contratos externos y normalizar eventos | Adaptadores y anti-corruption layer | Proveedores comprometidos |
 
-## Unidades lógicas y desplegables
+## Responsabilidades lógicas y unidad desplegable
 
-- **API:** atiende solicitudes síncronas, valida contexto y ejecuta casos de uso breves.
-- **Worker:** consume trabajos con contexto de tenant, maneja reintentos e integraciones diferibles.
-- **Clientes web:** se construyen y despliegan de acuerdo con su audiencia, sin contener reglas autoritativas.
-- **Gateway de tiempo real:** responsabilidad lógica diferenciada; puede compartir unidad al inicio.
+- **Unidad inicial aceptada:** un único artefacto y despliegue de aplicación con una sola aplicación backend.
+- **API:** responsabilidad síncrona dentro de esa aplicación; valida contexto y ejecuta casos de uso breves.
+- **Trabajos diferibles:** responsabilidad interna para reintentos e integraciones; no constituyen un desplegable independiente inicial.
+- **Clientes:** su topología permanece pendiente y no autoriza otro backend ni reglas autoritativas fuera de la aplicación.
+- **Tiempo real:** responsabilidad lógica interna; no es una unidad desplegable inicial.
 - **Persistencias y servicios de soporte:** son dependencias por ambiente, no módulos de negocio.
 
 Compartir monorepo no autoriza dependencias arbitrarias. Compartir base de datos no autoriza a un módulo a modificar datos de otro sin contrato.
@@ -151,7 +152,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 
 ## Alternativas que permanecen abiertas
 
-- Monolito modular propuesto frente a servicios separados prematuramente.
+- La forma inicial de monolito modular ya está aceptada; su agrupación interna concreta permanece abierta.
 - PostgreSQL con esquema compartido frente a otras estrategias de partición futuras.
 - NestJS frente a alternativas TypeScript para la API.
 - Next.js frente a otras estrategias para cada cliente web.
@@ -160,7 +161,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 - Proveedor S3-compatible y estrategia de distribución de archivos.
 - Monorepo con pnpm/Turborepo frente a repositorios separados.
 
-Las alternativas principales se documentan en ADRs `Proposed`; este documento no reemplaza su evaluación.
+Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 ya establece la unidad arquitectónica inicial.
 
 ## Restricciones y no objetivos
 

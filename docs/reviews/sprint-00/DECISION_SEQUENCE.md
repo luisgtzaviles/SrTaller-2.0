@@ -7,6 +7,8 @@
 - **Aprobación:** Pendiente del Product Owner y de las revisiones técnica, operativa, legal o de seguridad que correspondan.
 - **Regla de avance:** un gate puede preparar el siguiente, pero no se considera superado hasta cumplir su criterio de salida con evidencia registrada.
 
+**Actualización posterior:** [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) fue revisado y aceptado el 2026-07-21. Las menciones posteriores a su revisión se conservan como parte de la secuencia histórica; no reabren la decisión ni cierran los demás gates.
+
 ## Propósito
 
 Esta secuencia reduce las incertidumbres de Sprint 00 en el orden en que condicionan el producto. Empieza por cliente, operación y dominio; sólo después evalúa frameworks, persistencia y despliegue. Las preguntas se responden en el [cuestionario para el Product Owner](./PRODUCT_OWNER_QUESTIONNAIRE.md).

@@ -58,18 +58,17 @@ flowchart TB
     RT --> Telemetry
 ```
 
-Las aplicaciones pueden desplegarse por separado. El gateway de tiempo real puede comenzar dentro de API y separarse sólo con evidencia. La topología no implica Kubernetes ni un proveedor específico.
+El diagrama separa responsabilidades para facilitar lectura. [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) establece un único artefacto y despliegue de aplicación, con una sola aplicación backend inicial. La separación física queda para una revisión futura con evidencia. La topología no implica Kubernetes ni un proveedor específico.
 
-## Unidades desplegables propuestas
+## Unidad desplegable inicial
 
-- **Web de operación:** artefacto cliente/servidor según la estrategia Next.js por decidir.
-- **Web de plataforma:** separable si audiencia, permisos o ciclo de release lo justifican.
-- **API:** proceso síncrono sin estado de sesión autoritativo local.
-- **Worker:** misma lógica compartida permitida, entrypoint y escalado propios.
-- **Gateway realtime:** responsabilidad lógica y posible unidad futura.
-- **Migraciones:** artefactos versionados asociados a la release, ejecutados como paso controlado; no un servicio permanente.
+- **Aplicación:** un único artefacto desplegable y una sola aplicación backend inicial.
+- **API, procesamiento diferible y tiempo real:** responsabilidades lógicas alojadas en la misma aplicación; no son desplegables iniciales separados.
+- **Configuración:** unificada por ambiente y suministrada al despliegue sin fijar proveedor.
+- **Persistencia:** una sola base de datos física inicial, cuya tecnología y organización lógica requieren decisiones separadas.
+- **Migraciones futuras:** asociadas y coordinadas con la misma release; no constituyen un servicio permanente.
 
-Desplegable por separado no significa versionable arbitrariamente. Debe existir una matriz de compatibilidad entre clientes, API, workers, eventos y esquema.
+La compatibilidad entre responsabilidades, contratos y datos sigue siendo obligatoria dentro del artefacto único. Separar una unidad en el futuro requiere los disparadores y el nuevo ADR definidos en ADR-002.
 
 ## Artefactos inmutables y promoción
 
@@ -77,11 +76,11 @@ Desplegable por separado no significa versionable arbitrariamente. Debe existir 
 flowchart LR
     Commit[Commit revisado]
     CI[Build y verificación]
-    Artifact[Artefactos versionados\npor digest]
+    Artifact[Artefacto versionado\npor digest]
     Stage[Desplegar en staging]
     Validate[QA, seguridad, migración\ny evidencia]
     Approval{Gate de producción}
-    Prod[Promover mismos digest\na production]
+    Prod[Promover mismo digest\na production]
     Observe[Verificar señales]
     Rollback[Rollback / roll-forward]
 
@@ -98,7 +97,7 @@ flowchart LR
 - Adjuntar metadatos de procedencia, checks y componentes cuando la herramienta se seleccione.
 - Promover exactamente los artefactos validados en staging.
 - Inyectar configuración al desplegar; no reconstruir para cambiar ambiente.
-- Registrar qué versión de cada unidad y esquema existe en cada ambiente.
+- Registrar qué versión del artefacto y del esquema existe en cada ambiente.
 - No modificar un contenedor o servidor en vivo para “arreglar” production.
 
 ## Pipeline conceptual
@@ -111,7 +110,7 @@ Cuando exista código, el pipeline candidato verificará:
 - pruebas unitarias, integración y contratos;
 - aislamiento multitenant y permisos según impacto;
 - seguridad de dependencias, secretos e imagen según política;
-- build reproducible de cada unidad afectada;
+- build reproducible del artefacto inicial;
 - documentación y trazabilidad PBI/ADR/PR;
 - publicación de artefactos sólo desde ramas/eventos autorizados.
 
@@ -146,7 +145,7 @@ GitHub Actions es el candidato preliminar para orquestar CI/CD; su aceptación, 
 ## Configuración y secretos
 
 - Configuración no secreta y secretos se separan.
-- Cada unidad declara configuración requerida y falla de forma clara si falta.
+- La aplicación declara su configuración requerida y falla de forma clara si falta.
 - Secretos provienen de un mecanismo administrado por seleccionar.
 - Credenciales de servicio tienen mínimo privilegio y son distintas por ambiente.
 - Rotación y revocación se ensayan antes de production.
@@ -179,7 +178,7 @@ El hostname produce un tenant candidato; la API lo contrasta con identidad confo
 
 Reglas:
 
-- La API y worker anteriores deben tolerar el esquema expandido durante rollback.
+- Las versiones anterior y nueva de la aplicación, incluido su procesamiento diferible, deben tolerar el esquema expandido durante rollback.
 - Las migraciones se prueban con volumen representativo y dos o más tenants.
 - Bloqueos, duración, capacidad adicional y recuperación se revisan antes de production.
 - Una migración destructiva no se revierte automáticamente si perdería datos.
@@ -196,7 +195,7 @@ Véase [Migration Policy](../operations/MIGRATION_POLICY.md).
 | Canary | Limita exposición inicial | Requiere routing, métricas y cohortes seguras | A evaluar |
 | Recreate | Simple pero interrumpe | Sólo si downtime fue aprobado | No asumida |
 
-La estrategia puede variar por web, API, worker y riesgo. No se promete zero-downtime hasta definir SLO y topología.
+La estrategia puede variar por release y nivel de riesgo, pero se aplica al único artefacto inicial. No se promete zero-downtime hasta definir SLO y topología.
 
 ## Rollback y roll-forward
 
@@ -258,7 +257,7 @@ Los tiempos y garantías quedan `TBD`.
 
 Cada despliegue debería registrar:
 
-- versión/digest por unidad;
+- versión y digest del artefacto desplegado;
 - commit, PBI, PR, ADR y release relacionados;
 - checks y QA evidence aprobados;
 - configuración/versiones de contrato relevantes sin secretos;
@@ -271,7 +270,7 @@ La [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md) define señales y l
 ## Pruebas futuras
 
 - construir una vez y comparar digest entre staging/production;
-- desplegar versiones compatibles de API, worker, web y esquema;
+- desplegar una versión de aplicación cuyas responsabilidades internas y esquema sean compatibles;
 - migración expandida con rollback de aplicación;
 - job en ejecución durante shutdown/restart;
 - reconexión WebSocket sin tormenta ni pérdida canónica;
@@ -284,7 +283,7 @@ La [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md) define señales y l
 ## Riesgos
 
 - Reconstruir para production y publicar bits distintos a los probados.
-- Acoplar despliegue de todas las aplicaciones sin necesidad.
+- Permitir que el artefacto único erosione las fronteras internas o impida aislar fallos lógicamente.
 - Ejecutar migración incompatible antes de poder revertir aplicación.
 - Compartir datos o credenciales entre staging y production.
 - Asumir que contenedor equivale a reproducibilidad o seguridad.
@@ -305,10 +304,10 @@ La [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md) define señales y l
 ## Preguntas abiertas
 
 - ¿Qué proveedor de hosting y servicios administrados satisface costo, región y operación?
-- ¿Qué unidades se desplegarán separadas desde la primera implementación?
+- ¿Qué evidencia futura justificaría separar una responsabilidad de la unidad inicial aceptada?
 - ¿Qué SLO, RPO, RTO y ventanas de mantenimiento requiere el negocio?
 - ¿Qué gates y roles aprobarán staging y production?
-- ¿Qué estrategia de rollout corresponde a cada unidad y nivel de riesgo?
+- ¿Qué estrategia de rollout corresponde a cada nivel de riesgo del artefacto inicial?
 - ¿Cómo se gestionarán certificados wildcard y posibles dominios personalizados?
 - ¿Qué mecanismo administrará secretos, artefactos y procedencia?
 - ¿Qué nivel de automatización y acceso de emergencia se permitirá?

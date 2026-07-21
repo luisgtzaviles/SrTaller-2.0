@@ -4,7 +4,7 @@
 
 - **Estado:** Propuesta de revisión; no constituye una decisión arquitectónica ni una aprobación.
 - **Alcance:** Evaluación de preparación de [ADR-001 a ADR-009](../../decisions/README.md) para la sesión dirigida de SPRINT-00.
-- **Estados de los ADRs:** Todos permanecen `Proposed`, con fecha `TBD`.
+- **Estados al elaborar la matriz:** Todos estaban `Proposed`, con fecha `TBD`. Actualización posterior: [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) fue aceptado el 2026-07-21; su fila se conserva como evidencia previa a la decisión.
 - **Autoridad de aprobación:** `TBD`; el [registro de decisiones](../../decisions/README.md#preguntas-abiertas) aún debe definir quién puede aceptar cada clase de ADR y dónde se conserva la evidencia.
 - **Regla de lectura:** “Puede revisarse ahora” indica que existe material suficiente para una revisión preparatoria de readiness: discutir alternativas, dependencias y el siguiente paso. No significa que el Gate 7 haya comenzado formalmente ni equivale a validación o aceptación. La revisión formal de cada ADR espera los gates de producto que figuran en su fila.
 

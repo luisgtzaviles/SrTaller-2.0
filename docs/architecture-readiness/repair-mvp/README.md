@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Este paquete traduce el modelo integrado del dominio de reparación a una preparación arquitectónica verificable. No autoriza implementación, no aprueba ADRs y no define tablas, contratos HTTP ni clases definitivas.
+Este paquete traduce el modelo integrado del dominio de reparación a una preparación arquitectónica verificable. No autoriza implementación ni define tablas, contratos HTTP o clases definitivas. Fue evidencia para la aceptación posterior de ADR-002; no aprueba por sí mismo otros ADRs.
 
 ## Estado
 
@@ -14,7 +14,7 @@ La siguiente promoción posible es **Preparado para una primera rebanada vertica
 
 ### ¿Qué necesitamos decidir antes de programar?
 
-**[PB]** Autorización del Responsable de Producto; ADRs técnicos mínimos; contexto y aislamiento multitenant; sucursal activa; identidad/PIN, sesión y permisos; término oficial; límites de Orden; alcance/concurrencia del folio; estados iniciales; política efectiva; archivos, zona horaria y criterios de aceptación. Véase [Decisiones bloqueantes](DECISIONES_BLOQUEANTES.md).
+**[PB]** Autorización para implementar; ADRs técnicos restantes; contexto y aislamiento multitenant; sucursal activa; identidad/PIN, sesión y permisos; término oficial; límites de Orden; alcance/concurrencia del folio; estados iniciales; política efectiva; archivos, zona horaria y criterios de aceptación. ADR-002 ya no es bloqueante. Véase [Decisiones bloqueantes](DECISIONES_BLOQUEANTES.md).
 
 ### ¿Cuál es la primera rebanada vertical que no traiciona el dominio?
 
@@ -76,7 +76,7 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 ## Autoridad documental
 
 - El modelo de dominio consolidado es la fuente de invariantes y lenguaje: [modelo integrado](../../domain-model/integrated-repair-domain-model/README.md).
-- Los ADRs siguen en estado propuesto: [registro de decisiones](../../decisions/README.md).
+- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) está `Accepted`; los demás ADRs permanecen propuestos en el [registro](../../decisions/README.md).
 - Las políticas de Sprint 00 y entrega conservan su autoridad sobre el inicio de implementación.
 - Cuando una propuesta de este paquete contradiga una decisión posteriormente aceptada, prevalece la decisión aceptada y este paquete debe revisarse.
 

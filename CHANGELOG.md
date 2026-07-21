@@ -7,8 +7,9 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 ### Documentación
 
 - Creación de la fundación documental de producto, arquitectura, decisiones, entrega, backlog, Sprint 00, calidad y operaciones.
-- Registro de las decisiones técnicas iniciales como propuestas, sin aceptación.
+- Registro inicial de las decisiones técnicas como propuestas; ADR-002 fue aceptado posteriormente.
 - Creación de los PBIs documentales PBI-001 a PBI-020.
+- Aceptación de ADR-002: monolito modular orientado al dominio como arquitectura inicial.
 
 ### Implementación
 

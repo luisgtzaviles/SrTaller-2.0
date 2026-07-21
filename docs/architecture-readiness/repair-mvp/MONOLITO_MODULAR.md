@@ -2,7 +2,7 @@
 
 ## Dirección
 
-**[DAR]** Un monolito modular es la opción recomendada para el MVP: un despliegue inicial, fronteras lógicas explícitas y persistencia con propiedad definida. ADR-002 sigue propuesto; este documento no lo acepta.
+**[RDD]** [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), aceptado el 2026-07-21, establece un monolito modular orientado al dominio: un único artefacto/despliegue y una sola aplicación backend iniciales, fronteras lógicas explícitas y una base física con propiedad lógica por módulo.
 
 ## Por qué encaja
 

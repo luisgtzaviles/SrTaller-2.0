@@ -39,7 +39,7 @@ El resultado de la fundación son documentos revisables, preguntas, propuestas y
 
 ### Microservicios
 
-**Exclusión arquitectónica inicial:** no se distribuirán módulos como microservicios por anticipación. La propuesta es comenzar con un monolito modular y reevaluar extracción sólo ante evidencia de límites de escalamiento, aislamiento operativo, ownership o frecuencia de cambio.
+**Exclusión arquitectónica inicial:** no se distribuirán módulos como microservicios por anticipación. [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) acepta comenzar con un monolito modular y reevaluar una extracción sólo ante evidencia de límites de escalamiento, aislamiento operativo, ownership o frecuencia de cambio.
 
 ### Kubernetes
 

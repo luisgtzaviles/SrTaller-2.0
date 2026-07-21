@@ -41,7 +41,7 @@
 
 | Candidato | Momento | Clasificación |
 | --- | --- | --- |
-| Monolito modular inicial | Antes del primer cambio de código | ADR |
+| Monolito modular inicial | Aceptado en ADR-002 el 2026-07-21; ya no bloquea | ADR |
 | Estrategia multitenant | Antes de persistencia | ADR |
 | Alcance y concurrencia de folio | Antes de R1 | ADR |
 | Identidad, PIN y sesión operativa | Antes de R0 | ADR |
@@ -56,4 +56,4 @@
 | Auditoría y retención | Antes de producción | ADR |
 | Núcleo compartido mínimo | Antes de introducirlo | ADR |
 
-**[ADR]** No se crean ADRs en este paquete. Todos los candidatos se registrarían como `Proposed` conforme al proceso vigente antes de cualquier aceptación.
+**[ADR]** Este paquete no crea ADRs. ADR-002 fue aceptado posteriormente usando su evidencia; los candidatos restantes se registrarán como `Proposed` antes de cualquier aceptación.

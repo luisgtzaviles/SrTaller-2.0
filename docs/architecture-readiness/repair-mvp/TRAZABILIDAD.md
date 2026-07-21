@@ -16,7 +16,7 @@
 | Tenancy e identidad | [Multitenancy](../../architecture/MULTITENANCY_MODEL.md), [identidad](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), [sucursales/dispositivos](../../architecture/BRANCH_AND_DEVICE_MODEL.md) | Gates transversales | RDD |
 | Seguridad/operación | [Seguridad](../../architecture/SECURITY_BASELINE.md), [observabilidad](../../architecture/OBSERVABILITY_STRATEGY.md) | Gates y riesgos | RP |
 | Integraciones | [Arquitectura de integración](../../architecture/INTEGRATION_ARCHITECTURE.md) | Puertos/adaptadores | DAP |
-| Decisiones técnicas | [Registro de ADRs](../../decisions/README.md), [matriz de preparación](../../reviews/sprint-00/ADR_READINESS_MATRIX.md) | Evitar afirmar aprobación | ADR |
+| Decisiones técnicas | [ADR-002 aceptado](../../decisions/proposed/ADR-002-modular-monolith-first.md), [registro](../../decisions/README.md), [matriz previa](../../reviews/sprint-00/ADR_READINESS_MATRIX.md) | Distinguir aceptación actual de evidencia previa | ADR |
 
 ## Equivalencias documentales
 
@@ -28,8 +28,8 @@
 
 | Hallazgo | Efecto en este paquete | Clasificación |
 | --- | --- | --- |
-| ADR-001 a ADR-009 permanecen `Proposed`; ninguno está aceptado | No se trata el conjunto tecnológico como decidido | ADR |
-| ADR-002 coincide con la recomendación de monolito modular | Alineado conceptualmente, aún requiere revisión/aceptación | ADR |
+| ADR-002 está `Accepted` desde 2026-07-21 | La forma inicial es monolito modular; no acepta el conjunto tecnológico | ADR |
+| ADR-001 y ADR-003 a ADR-009 permanecen `Proposed` | Lenguaje, persistencia, frameworks y despliegue técnico siguen abiertos | ADR |
 | ADR-004 de esquema compartido carece de respuestas y pruebas de aislamiento | Bloquea persistencia multitenant definitiva | PB |
 | ADR-008 de subdominios comodín depende de identidad, cookies y dominios | No es requisito de R0/R1 si existe resolución segura alternativa | DD |
 | ADR-006 propone Next.js para superficies aún no confirmadas y la matriz recomienda dividirlo | No se fija interfaz web global | ADR |

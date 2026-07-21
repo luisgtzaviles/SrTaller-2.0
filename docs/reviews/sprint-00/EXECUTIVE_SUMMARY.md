@@ -6,6 +6,8 @@
 - **Naturaleza:** Evaluación y recomendación; no es acta de aprobación.
 - **Estimación cualitativa:** **Partially ready**.
 
+**Actualización posterior:** este documento conserva la evaluación histórica de Sprint 00. [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) fue aceptado el 2026-07-21; las afirmaciones posteriores de que los nueve ADRs seguían `Proposed` describen el momento de esta evaluación, no el estado vigente.
+
 ## Lectura ejecutiva
 
 Sprint 00 produjo una fundación documental extensa: visión y principios, catálogo inicial de actores, glosario, mapa de 21 módulos, modelos conceptuales de arquitectura, controles de entrega/calidad/operación, 15 epics, 20 PBIs y nueve ADRs propuestos. Product Backlog y Sprint Backlog contienen los mismos 20 PBIs. No existe código funcional, infraestructura ni dependencia instalada.

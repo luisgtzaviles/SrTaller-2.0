@@ -22,7 +22,7 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Configuración | Necesidad de políticas versionadas identificada | Precedencia y alcance pendientes | PB |
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
-| ADRs | ADR-001 a ADR-009 siguen propuestos | Sin autoridad para fijar el conjunto tecnológico | PB |
+| ADRs | ADR-002 aceptado; ADR-001 y ADR-003 a ADR-009 siguen propuestos | Forma modular definida; conjunto tecnológico aún bloqueante | PB |
 | Autorización | Sprint 00 no está cerrado y no autoriza prototipos | Bloqueante organizacional | PB |
 
 ## Qué sí puede comenzar

@@ -5,7 +5,7 @@
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Propuesta conceptual de límites y ownership; no es diseño de tablas, paquetes, endpoints ni despliegues.
 - **Aprobación:** Pendiente de descubrimiento y de las decisiones arquitectónicas relacionadas.
-- **Arquitectura de referencia:** Monolito modular como propuesta inicial; cada módulo no equivale a un microservicio.
+- **Arquitectura de referencia:** Monolito modular orientado al dominio, aceptado en ADR-002; cada módulo no equivale a un microservicio ni a un desplegable.
 
 ## Convenciones
 
@@ -263,7 +263,7 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 - ¿Reparación y orden de trabajo son conceptos distintos? Véase [Glosario](./DOMAIN_GLOSSARY.md).
 - ¿Qué colaboraciones deben ser síncronas y cuáles toleran consistencia eventual?
 - ¿Qué módulos necesitan proyecciones por sucursal y cuáles operan siempre a nivel tenant? Véase [QUESTION-006](./OPEN_QUESTIONS.md#question-006).
-- ¿Qué evidencia permitiría extraer un módulo a un servicio independiente en el futuro? Véase el ADR propuesto [monolito modular](../decisions/proposed/ADR-002-modular-monolith-first.md).
+- ¿Qué evidencia permitiría extraer un módulo a un servicio independiente en el futuro? Véase el ADR aceptado [monolito modular](../decisions/proposed/ADR-002-modular-monolith-first.md).
 
 ## Documentos relacionados
 

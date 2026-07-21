@@ -83,9 +83,9 @@ La prioridad entre principios en conflicto es una **decisión pendiente**. Aisla
 
 ### 11. Monolito modular antes de microservicios
 
-**Propuesta:** comenzar con un monolito modular y separación lógica/desplegable entre API, workers y clientes, conservando límites que permitan reevaluar la distribución futura.
+**Propuesta:** comenzar con el monolito modular aceptado en [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md): una sola aplicación backend y un único artefacto/despliegue iniciales, con separación lógica entre módulos y responsabilidades internas, conservando límites que permitan reevaluar la distribución futura.
 
-**Implicación práctica:** un módulo no es un microservicio. Extraer un servicio requerirá evidencia operativa o de escalamiento y un ADR aprobado.
+**Implicación práctica:** un módulo no es un microservicio; API, procesamiento diferible y tiempo real tampoco son desplegables iniciales separados. Extraer un servicio requerirá evidencia operativa o de escalamiento y un ADR aprobado.
 
 ### 12. Cambios pequeños y trazables
 

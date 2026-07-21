@@ -8,6 +8,8 @@
 - **Responsables y aprobadores:** TBD.
 - **Fuente del criterio:** [SPRINT-00 — Discovery and Architecture Foundation](../../sprints/sprint-00/SPRINT_GOAL.md#criterio-de-salida).
 
+**Actualización posterior:** esta evaluación conserva su fotografía histórica. [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) fue aceptado el 2026-07-21; sus filas no deben usarse como fuente del estado vigente de ese ADR.
+
 ## Convenciones de evaluación
 
 Los únicos estados utilizados son `Met`, `Partially met`, `Not met`, `Requires Product Owner decision` y `Requires technical validation`.

@@ -92,3 +92,8 @@ Una fila con más de un código contiene afirmaciones separables; la explicació
 ## Estado del paquete
 
 **Estado:** consolidación conceptual para revisión. Las decisiones fuente conservan su autoridad; las propuestas nuevas permanecen abiertas.
+
+## Decisión arquitectónica relacionada
+
+- [ADR-002 — Monolito modular orientado al dominio](../../decisions/proposed/ADR-002-modular-monolith-first.md), `Accepted` el 2026-07-21. El ADR usa este modelo como evidencia, pero no convierte contextos o agregados candidatos en módulos físicos definitivos.
+- [Preparación arquitectónica del MVP](../../architecture-readiness/repair-mvp/README.md).

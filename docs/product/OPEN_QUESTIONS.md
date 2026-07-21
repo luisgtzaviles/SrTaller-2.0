@@ -281,7 +281,7 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 - **Impacto:** Afecta capacidad, pruebas, índices, caché, colas, costos y criterios para separar componentes.
 - **Opciones conocidas:** supuestos conservadores validados con pilotos; rangos por tenant; pruebas por recorridos críticos; crecimiento gradual con señales de extracción.
 - **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-002 — monolito modular](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004 — esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), todos `Proposed`.
+- **Decisión relacionada:** [ADR-002 — monolito modular](../decisions/proposed/ADR-002-modular-monolith-first.md) está `Accepted`; [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004 — esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) permanecen `Proposed`.
 
 <a id="question-028"></a>
 ### QUESTION-028 — Restricciones de hosting, disponibilidad y ambientes

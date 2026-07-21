@@ -17,12 +17,12 @@ Evitar que presentación, HTTP, reglas de negocio y acceso a datos vuelvan a mez
 | Web de operación del taller | Personal que atiende clientes, reparaciones, inventario, ventas, pagos y caja | Capacidad conocida; alcance de primera versión pendiente |
 | Web de administración del tenant | Propietarios y administradores configuran organización, sucursales, usuarios y dispositivos | Hipótesis de aplicación separada |
 | Web de administración de plataforma | Personal autorizado administra tenants, planes, soporte y operación SaaS | Capacidad conocida; límites pendientes |
-| API central | Contrato autoritativo para clientes propios e integraciones controladas | Propuesta firme, pendiente de ADR |
-| Worker | Trabajos diferibles, reintentos, archivos, notificaciones e integraciones | Propuesta |
-| Gateway de tiempo real | Conexiones y entrega de eventos confirmados | Responsabilidad lógica; despliegue inicial por decidir |
+| API central | Contrato autoritativo para clientes propios e integraciones controladas | Responsabilidad de la aplicación backend inicial |
+| Procesamiento diferible | Trabajos, reintentos, archivos, notificaciones e integraciones | Responsabilidad lógica dentro de la aplicación inicial |
+| Tiempo real | Conexiones y entrega de eventos confirmados | Responsabilidad lógica interna; no desplegable inicial separado |
 | Apps móviles | Clientes iOS y Android que consumirán la API | Futuro, no parte de la fundación |
 
-No se presupone que cada fila sea un repositorio, servicio o despliegue distinto.
+No se presupone que cada fila sea un repositorio, servicio o despliegue distinto. Conforme a [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), existe una sola aplicación backend y un único artefacto/despliegue iniciales.
 
 ## Capas conceptuales
 
@@ -145,6 +145,8 @@ No se definen endpoints en esta etapa.
 
 ## API, workers y tiempo real
 
+La tabla distingue tipos de ejecución, no procesos desplegables iniciales. Todos residen en la aplicación backend única hasta que una revisión de ADR autorice otra topología.
+
 | Aspecto | API | Worker | Tiempo real |
 |---|---|---|---|
 | Disparador | Solicitud autenticada o webhook validado | Trabajo versionado en cola | Conexión y evento confirmado |
@@ -176,12 +178,12 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 
 ## Alternativas y decisiones relacionadas
 
-- [ADR-002: monolito modular primero](../decisions/proposed/ADR-002-modular-monolith-first.md)
+- [ADR-002: monolito modular orientado al dominio](../decisions/proposed/ADR-002-modular-monolith-first.md) — `Accepted`
 - [ADR-005: NestJS para backend](../decisions/proposed/ADR-005-nestjs-backend.md)
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: estrategia de monorepo](../decisions/proposed/ADR-009-monorepo-strategy.md)
 
-Todos permanecen `Proposed` hasta su aprobación explícita.
+ADR-002 está `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed` hasta su aprobación explícita.
 
 ## Riesgos
 

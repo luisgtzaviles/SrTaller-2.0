@@ -5,17 +5,17 @@
 
 ## Estado del documento
 
-Propuesta de empaquetado y promoción; no autoriza Dockerfiles, infraestructura ni despliegues.
+Propuesta de empaquetado y promoción; no autoriza Dockerfiles, infraestructura ni despliegues. Está subordinada a [ADR-002](ADR-002-modular-monolith-first.md): se evaluaría sobre el único artefacto inicial y no crea unidades desplegables separadas.
 
 ## Contexto
 
-El sistema anterior tuvo despliegues lentos o manuales y diferencias difíciles de validar entre local, staging y producción. API, workers y clientes deben poder promover artefactos probados de manera repetible.
+El sistema anterior tuvo despliegues lentos o manuales y diferencias difíciles de validar entre local, staging y producción. El único artefacto inicial debe poder promoverse de manera repetible; cualquier unidad futura extraída tendría que conservar esa propiedad.
 
 ## Fuerzas de decisión
 
 - Reproducibilidad e inmutabilidad del artefacto.
 - Promoción sin reconstrucción.
-- Despliegue independiente de aplicaciones.
+- Promoción consistente de la unidad inicial y de cualquier unidad futura autorizada.
 - Seguridad de supply chain, rollback y observabilidad.
 - Coste de operar runtime de contenedores.
 
@@ -28,7 +28,7 @@ El sistema anterior tuvo despliegues lentos o manuales y diferencias difíciles 
 
 ## Decisión propuesta
 
-Empaquetar cada aplicación desplegable como imagen versionada y promover exactamente el mismo digest entre staging y producción mediante un pipeline controlado. GitHub Actions es el candidato preliminar para CI/CD y Docker Compose una hipótesis para dependencias locales; ambas elecciones requieren evaluación propia y no forman parte de la decisión de empaquetado de este ADR. La plataforma de ejecución y el registry siguen pendientes.
+Empaquetar el único artefacto inicial como imagen versionada y promover exactamente el mismo digest entre staging y producción mediante un pipeline controlado. Si un ADR futuro autoriza extraer otra unidad, esa unidad aplicaría el mismo principio. GitHub Actions es el candidato preliminar para CI/CD y Docker Compose una hipótesis para dependencias locales; ambas elecciones requieren evaluación propia y no forman parte de la decisión de empaquetado de este ADR. La plataforma de ejecución y el registry siguen pendientes.
 
 ## Consecuencias positivas
 
