@@ -48,6 +48,7 @@
 | ¿Cómo se protege el sistema? | [Tenancy](MODELO_MULTITENANT.md), [identidad](MODELO_DE_IDENTIDAD_Y_ATRIBUCION.md), [seguridad](SEGURIDAD_Y_ACCIONES_SENSIBLES.md) |
 | ¿Qué bloquea y qué puede esperar? | [Bloqueantes](DECISIONES_BLOQUEANTES.md), [diferibles](DECISIONES_DIFERIBLES.md) |
 | ¿Cómo iniciar gradualmente? | [Rebanadas](PLAN_DE_REBANADAS_VERTICALES.md), [evolución](ESTRATEGIA_DE_EVOLUCION.md) |
+| ¿Cómo se prioriza y demuestra el cierre? | [Paquete de cierre](../blocker-closure/README.md), [inventario consolidado](../blocker-closure/INVENTARIO_DE_BLOQUEANTES.md) |
 
 ## Regla de mantenimiento
 

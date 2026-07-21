@@ -10,6 +10,8 @@ Este paquete traduce el modelo integrado del dominio de reparación a una prepar
 
 La siguiente promoción posible es **Preparado para una primera rebanada vertical**, una vez satisfechos los criterios indicados en [Criterios de inicio](CRITERIOS_DE_INICIO_DE_IMPLEMENTACION.md). No se declara preparación para la implementación completa del MVP.
 
+El [paquete de cierre de bloqueantes](../blocker-closure/README.md) consolida estas preguntas con IDs, hitos H0–H5, responsables, evidencia y gates verificables. Prioriza el trabajo de decisión sin cambiar la autoridad ni el estado de las fuentes de este paquete.
+
 ## Las dos respuestas rectoras
 
 ### ¿Qué necesitamos decidir antes de programar?
@@ -72,6 +74,7 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 29. [Criterios de inicio](CRITERIOS_DE_INICIO_DE_IMPLEMENTACION.md)
 30. [Plan de rebanadas verticales](PLAN_DE_REBANADAS_VERTICALES.md)
 31. [Trazabilidad](TRAZABILIDAD.md)
+32. [Cierre y priorización de bloqueantes](../blocker-closure/README.md)
 
 ## Autoridad documental
 

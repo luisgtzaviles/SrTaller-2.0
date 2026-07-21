@@ -1,5 +1,9 @@
 # Criterios de inicio de implementación
 
+## Gates consolidados
+
+Los criterios de este documento se concretan, sin reemplazarlos, en los gates de [salida de R0](../blocker-closure/CRITERIOS_DE_SALIDA_DE_R0.md), [entrada de R1](../blocker-closure/CRITERIOS_DE_ENTRADA_DE_R1.md), [piloto](../blocker-closure/CRITERIOS_DE_PILOTO.md) y [producción](../blocker-closure/CRITERIOS_DE_PRODUCCION.md).
+
 ## Listo para diseñar
 
 - [x] **[RDD]** Lenguaje, flujo e invariantes candidatos trazables.

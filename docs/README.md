@@ -56,6 +56,7 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 ## Arquitectura
 
 - [Preparación arquitectónica del MVP de Reparaciones](architecture-readiness/repair-mvp/README.md)
+- [Cierre y priorización de bloqueantes arquitectónicos](architecture-readiness/blocker-closure/README.md)
 - [Contexto del sistema](architecture/SYSTEM_CONTEXT.md)
 - [Arquitectura objetivo](architecture/TARGET_ARCHITECTURE.md)
 - [Arquitectura de aplicaciones](architecture/APPLICATION_ARCHITECTURE.md)

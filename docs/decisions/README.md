@@ -60,4 +60,4 @@ La ruta histórica de ADR-002 bajo `proposed/` se conserva para mantener estable
 
 ## Próxima revisión
 
-Antes de aceptar el primer ADR; fecha: TBD.
+Antes de aceptar el siguiente ADR. La prioridad y las entradas necesarias se mantienen en el [mapa de ADRs requeridos](../architecture-readiness/blocker-closure/MAPA_DE_ADRS_REQUERIDOS.md); fecha: TBD.

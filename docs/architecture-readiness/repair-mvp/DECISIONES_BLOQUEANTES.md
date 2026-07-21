@@ -1,5 +1,9 @@
 # Decisiones bloqueantes
 
+## Consolidación posterior
+
+El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUEANTES.md) normaliza esta matriz y las demás fuentes de arquitectura/dominio en 82 decisiones, con hitos H0–H5, dependencias, responsables y evidencia de cierre. Esta matriz conserva su valor como fuente del paquete de preparación; el inventario posterior no acepta ni resuelve sus preguntas.
+
 ## Matriz de decisiones
 
 | ID | Decisión | Momento que bloquea | Cierre mínimo | Clasificación |

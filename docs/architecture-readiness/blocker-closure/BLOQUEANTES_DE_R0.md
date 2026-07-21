@@ -1,0 +1,54 @@
+# Bloqueantes de R0 — Fundación Ejecutable
+
+## Resultado que debe producir R0
+
+R0 demuestra una fundación mínima que resuelve tenant, sucursal, actor y sesión desde fuentes confiables, deniega accesos cruzados, evalúa permisos, expone salud y errores seguros y conserva trazabilidad sin incluir todavía una orden de negocio.
+
+## Prerrequisito
+
+H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
+
+## Bloqueantes H1
+
+| Grupo | IDs | Cierre requerido |
+| --- | --- | --- |
+| Multitenancy y datos | DEC-006 a DEC-009 | Estrategia, propiedad tenant/global, contexto inmutable y pruebas de aislamiento |
+| Sucursal operativa | DEC-010 a DEC-012 | Sucursal activa, membresías múltiples y cambio de contexto definidos |
+| Identidad y sesión | DEC-013 a DEC-016 | Identidad, PIN, inactividad y atribución con revocación segura |
+| Permisos y acciones sensibles | DEC-017 a DEC-020 | Roles/capacidades mínimos, alcance, step-up y catálogo inicial |
+| Tiempo | DEC-037 y DEC-038 | Autoridad de zona horaria y almacenamiento/presentación coherentes |
+| Señales | DEC-045 a DEC-048 | Logs, auditoría, correlación y observabilidad mínima separadas |
+| Persistencia | DEC-050 | Versionado y ejecución segura de migraciones base |
+| Datos de prueba | DEC-052 | Fixtures/semillas sin datos reales y con dos tenants |
+| Secretos | DEC-055 | Configuración externa, cifrado aplicable, rotación y no exposición |
+
+## Lo que debe decidir el Responsable de Producto
+
+- datos globales frente a tenant/sucursal;
+- usuarios con varias sucursales y selección activa;
+- operación mediante PIN y cierre por inactividad;
+- roles y acciones mínimas incluidas en R0;
+- zona horaria por tenant o sucursal;
+- autoridad de soporte y administración excepcional.
+
+## Lo que debe decidir arquitectura, seguridad e ingeniería
+
+- estrategia de aislamiento y defensa en profundidad;
+- contrato de contexto y propagación;
+- sesión, revocación, rate limiting de PIN y step-up;
+- contratos de repositorio tenant-aware;
+- auditoría mínima que no dependa de logs;
+- migraciones, secretos, health checks y pruebas negativas.
+
+## Spikes condicionados
+
+- SPIKE-002 es obligatorio antes de persistencia tenant-scoped con esquema compartido.
+- SPIKE-003 es obligatorio sólo si RLS continúa como candidato.
+- SPIKE-005 es obligatorio si PIN/dispositivo forma parte de R0.
+- SPIKE-001 se difiere si R0 resuelve tenant sin wildcard ni cliente web tenant-aware.
+
+Ningún spike puede ejecutarse sin autorización. Su resultado informa ADRs; no los acepta.
+
+## Cierre de R0
+
+R0 no se cierra porque la aplicación responda. Debe demostrar con al menos dos tenants que falta o manipulación de contexto falla cerrada, que una sesión revocada deja de operar, que los permisos se evalúan en aplicación y que auditoría/logs distinguen actor, alcance y correlación sin secretos.
