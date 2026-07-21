@@ -80,6 +80,7 @@ La documentación combina hechos conocidos del repositorio, observaciones declar
 - [Trazabilidad](TRACEABILITY.md)
 - [Validación de recepción mínima y autorización comercial](../domain-validation/reception-minimum-and-commercial-authorization/README.md) — decisiones posteriores validadas por Product Owner; requieren promoción canónica separada
 - [Validación del flujo operativo y la trazabilidad](../domain-validation/operational-workflow-and-traceability/README.md) — flujo Avicell y separaciones posteriores validadas; propuestas multi-tenant pendientes
+- [Validación futura del diagnóstico y las recomendaciones técnicas](../domain-validation/future-state-diagnosis-and-technical-recommendations/README.md) — conclusiones y fronteras técnicas validadas; iteraciones y versionado propuestos
 
 ## Autoridad y participación
 

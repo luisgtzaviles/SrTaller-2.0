@@ -69,6 +69,7 @@ Los identificadores son documentales. No prescriben entidades, eventos técnicos
 - La [auditoría legacy de configuración de recepción](../../legacy-audit/reception-policy-config/README.md) prueba que los checkboxes existentes no constituyen una política completa. Este paquete establece la clasificación objetivo validada.
 - La [auditoría legacy del detalle](../../legacy-audit/repair-detail/README.md) demuestra las limitaciones actuales de presupuesto y autorización. Este paquete fija las distinciones de dominio que el futuro deberá preservar.
 - La validación de [flujo operativo y trazabilidad](../operational-workflow-and-traceability/README.md) continúa después de la recepción y aplica estas decisiones a ubicaciones, segunda revisión, participación, actividad y entrega.
+- La validación de [diagnóstico y recomendaciones técnicas](../future-state-diagnosis-and-technical-recommendations/README.md) documenta cómo una conclusión y sus recomendaciones alimentan cotizaciones y decisiones por concepto sin fijar precios ni ampliar autorizaciones.
 - El [dominio general](../../domain/README.md) contiene conceptos y preguntas todavía en discovery. La relación exacta, incluidos los puntos aclarados o parcialmente resueltos, se detalla en [Trazabilidad](TRAZABILIDAD.md).
 
 ## Regla de uso

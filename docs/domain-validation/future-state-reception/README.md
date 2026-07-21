@@ -39,6 +39,8 @@ Esa validación aclara FSR-DECISION-002, FSR-EVENT-006, FSR-POLICY-008 y FSR-QUE
 
 El paquete posterior de [flujo operativo y trazabilidad](../operational-workflow-and-traceability/README.md) toma FSR-EVENT-025, equipo disponible para diagnóstico, como frontera de entrada y documenta el recorrido real posterior de Avicell. No amplía el alcance de este Future State ni aprueba sus comandos, eventos o políticas.
 
+La validación de [diagnóstico y recomendaciones técnicas](../future-state-diagnosis-and-technical-recommendations/README.md) profundiza la fase que consume esa frontera: conclusión técnica, recomendaciones, descubrimientos posteriores y transición a cotización. Conserva FSR-EVENT-025 como disponibilidad, no como diagnóstico iniciado.
+
 ## Current State frente a Future State
 
 | Current State | Future State propuesto |

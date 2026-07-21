@@ -40,6 +40,8 @@ La intención de que los cobros de reparación afecten caja es futura. No consti
 
 El paquete de [flujo operativo y trazabilidad](../operational-workflow-and-traceability/README.md) conserva decisiones posteriores explícitas del Product Owner sobre el recorrido real de Avicell desde recepción hasta entrega, segunda revisión, ubicaciones físicas, participación de varios usuarios, atribución por PIN y anticipos básicos. Aclara varios hotspots de este Current State, pero no reescribe la evidencia legacy ni convierte todos los resultados locales en reglas universales.
 
+El paquete de [diagnóstico y recomendaciones técnicas](../future-state-diagnosis-and-technical-recommendations/README.md) aclara posteriormente la conclusión, la recomendación, el descubrimiento de fallas nuevas y la transición comercial. Supera la mezcla observada entre diagnóstico, seguimiento y presupuesto sin reescribir este mapa histórico.
+
 ## Advertencia de interpretación
 
 Que el legado contenga un campo, etiqueta o botón no prueba que exista una política de negocio válida. Que el Product Owner describa una práctica tampoco prueba que el sistema la registre. Este material conserva ambas perspectivas sin diseñar tablas, APIs, clases, microservicios, CQRS, Event Sourcing, colas ni solución objetivo.

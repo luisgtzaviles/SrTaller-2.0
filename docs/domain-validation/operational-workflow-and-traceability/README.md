@@ -73,6 +73,7 @@ Los identificadores no prescriben clases, tablas, endpoints, mensajes publicados
 
 - [Recepción mínima y autorización comercial](../reception-minimum-and-commercial-authorization/README.md) continúa siendo la autoridad validada sobre nacimiento de orden/custodia, identificación física y decisiones comerciales por concepto.
 - [Future State Reception](../future-state-reception/README.md) termina al habilitar el equipo para diagnóstico; este paquete continúa el recorrido operativo sin aprobar todo aquel Future State.
+- [Diagnóstico y recomendaciones técnicas](../future-state-diagnosis-and-technical-recommendations/README.md) profundiza el trabajo técnico, sus resultados repetibles y la frontera con cotización sin cambiar el flujo real aquí validado.
 - [Auditoría legacy del detalle](../../legacy-audit/repair-detail/README.md) aporta evidencia sobre campos mutables, seguimientos, anticipos, estado, custodia y responsables.
 - [Auditoría legacy de configuración de recepción](../../legacy-audit/reception-policy-config/README.md) aporta el contexto de sesión, creación, actor receptor y valores iniciales.
 - El [dominio general](../../domain/README.md) permanece en discovery. La promoción de estas decisiones a lenguaje, estados y eventos canónicos requiere un trabajo separado.

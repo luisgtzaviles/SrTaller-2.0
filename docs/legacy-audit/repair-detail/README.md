@@ -21,6 +21,8 @@ La validación posterior de [recepción mínima y autorización comercial](../..
 
 La validación posterior de [flujo operativo y trazabilidad](../../domain-validation/operational-workflow-and-traceability/README.md) formaliza el recorrido de Avicell y separa estado, ubicación, custodia, responsabilidad, participación, eventos, notas y actividad. Conserva como contradicciones explícitas el técnico textual sin historial, el revisor ambiguo, los seguimientos libres, los anticipos aislados y las transiciones sin precondiciones documentadas aquí.
 
+La validación posterior de [diagnóstico y recomendaciones técnicas](../../domain-validation/future-state-diagnosis-and-technical-recommendations/README.md) separa conclusión, recomendación, cotización, decisión y ejecución. Usa como evidencia histórica el técnico mutable, el seguimiento libre y el presupuesto sobrescrito, pero no los adopta como solución futura.
+
 ## Documentos
 
 | Documento | Contenido |
