@@ -27,6 +27,8 @@ El [Future State Event Storming de recepción](../../domain-validation/future-st
 
 La validación posterior de [recepción mínima y autorización comercial](../../domain-validation/reception-minimum-and-commercial-authorization/README.md) formaliza las decisiones del Product Owner sobre mínimos universales, campos configurables, nacimiento de custodia, identificación física, fotografías posteriores y semántica comercial inicial. Conserva esta auditoría como evidencia histórica y documenta expresamente dónde la política futura supera el comportamiento legacy.
 
+La validación posterior de [flujo operativo y trazabilidad](../../domain-validation/operational-workflow-and-traceability/README.md) continúa desde la orden creada y usa el actor receptor, el contexto de sesión, Pendiente y En tienda sólo como evidencia de partida. No convierte esos defaults legacy en catálogo universal.
+
 La lectura recomendada es:
 
 1. usar el audit para comprender el mecanismo actual;

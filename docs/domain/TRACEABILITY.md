@@ -135,6 +135,7 @@ Los paquetes de esta sección pueden tener autoridad posterior y más específic
 | Paquete | Autoridad | Áreas aclaradas | Elementos canónicos relacionados | Estado de promoción |
 |---|---|---|---|---|
 | [Recepción mínima y autorización comercial](../domain-validation/reception-minimum-and-commercial-authorization/README.md) | Decisiones explícitas del Product Owner, 2026-07-21 | nacimiento de orden/custodia, mínimos, identificación física, problema reportado, conceptos autorizables y políticas de absorción | DQ-001/007–009/011/019/022, DOMAIN-DECISION-001/004/005/009, TERM-DEC-001/004/005, RULE-006–009, INV-005/006/008/012 | Validado en su alcance; pendiente de promoción canónica |
+| [Flujo operativo y trazabilidad](../domain-validation/operational-workflow-and-traceability/README.md) | Hechos y decisiones explícitas del Product Owner, 2026-07-21 | recorrido Avicell, estado/ubicación/custodia, roles, segunda revisión, eventos/notas/actividad, atribución, asignaciones y anticipos básicos | DQ-002/012–020/024/025/027–031, TERM-DEC-007/008/016, EVENT-008/010–012/021–023/027–033/036/038, STATE_MACHINES | Validado en hechos locales; propuestas universales y promoción canónica pendientes |
 
 ## Candidatos futuros sin crear backlog
 

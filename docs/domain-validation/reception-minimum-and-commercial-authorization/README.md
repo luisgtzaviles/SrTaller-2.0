@@ -68,6 +68,7 @@ Los identificadores son documentales. No prescriben entidades, eventos técnicos
 - El [Future State Event Storming de recepción](../future-state-reception/README.md) sigue siendo una propuesta. Este paquete resuelve el inicio formal de orden/custodia y algunos mínimos, pero no aprueba todo su recorrido.
 - La [auditoría legacy de configuración de recepción](../../legacy-audit/reception-policy-config/README.md) prueba que los checkboxes existentes no constituyen una política completa. Este paquete establece la clasificación objetivo validada.
 - La [auditoría legacy del detalle](../../legacy-audit/repair-detail/README.md) demuestra las limitaciones actuales de presupuesto y autorización. Este paquete fija las distinciones de dominio que el futuro deberá preservar.
+- La validación de [flujo operativo y trazabilidad](../operational-workflow-and-traceability/README.md) continúa después de la recepción y aplica estas decisiones a ubicaciones, segunda revisión, participación, actividad y entrega.
 - El [dominio general](../../domain/README.md) contiene conceptos y preguntas todavía en discovery. La relación exacta, incluidos los puntos aclarados o parcialmente resueltos, se detalla en [Trazabilidad](TRAZABILIDAD.md).
 
 ## Regla de uso

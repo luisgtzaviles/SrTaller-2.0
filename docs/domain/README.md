@@ -79,6 +79,7 @@ La documentación combina hechos conocidos del repositorio, observaciones declar
 - [Preguntas abiertas](DOMAIN_OPEN_QUESTIONS.md)
 - [Trazabilidad](TRACEABILITY.md)
 - [Validación de recepción mínima y autorización comercial](../domain-validation/reception-minimum-and-commercial-authorization/README.md) — decisiones posteriores validadas por Product Owner; requieren promoción canónica separada
+- [Validación del flujo operativo y la trazabilidad](../domain-validation/operational-workflow-and-traceability/README.md) — flujo Avicell y separaciones posteriores validadas; propuestas multi-tenant pendientes
 
 ## Autoridad y participación
 

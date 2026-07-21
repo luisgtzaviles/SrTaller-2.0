@@ -19,6 +19,8 @@ La auditoría anterior documenta el ingreso y la creación inicial; este paquete
 
 La validación posterior de [recepción mínima y autorización comercial](../../domain-validation/reception-minimum-and-commercial-authorization/README.md) usa los límites aquí observados para establecer decisiones de dominio sobre autorización inicial, cotizaciones con varios conceptos, aceptación parcial, preservación de rechazos y políticas configurables de precio. No reescribe esta evidencia legacy ni convierte sus mecanismos actuales en diseño futuro.
 
+La validación posterior de [flujo operativo y trazabilidad](../../domain-validation/operational-workflow-and-traceability/README.md) formaliza el recorrido de Avicell y separa estado, ubicación, custodia, responsabilidad, participación, eventos, notas y actividad. Conserva como contradicciones explícitas el técnico textual sin historial, el revisor ambiguo, los seguimientos libres, los anticipos aislados y las transiciones sin precondiciones documentadas aquí.
+
 ## Documentos
 
 | Documento | Contenido |

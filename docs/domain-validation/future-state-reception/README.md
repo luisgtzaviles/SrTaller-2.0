@@ -37,6 +37,8 @@ El paquete de [recepción mínima y autorización comercial](../reception-minimu
 
 Esa validación aclara FSR-DECISION-002, FSR-EVENT-006, FSR-POLICY-008 y FSR-QUESTION-009. También fija que las fotografías son posteriores a la creación, pero no resuelve su obligatoriedad, cantidad, propósito o retención. El resto de este paquete continúa como propuesta y no queda aprobado por esa referencia.
 
+El paquete posterior de [flujo operativo y trazabilidad](../operational-workflow-and-traceability/README.md) toma FSR-EVENT-025, equipo disponible para diagnóstico, como frontera de entrada y documenta el recorrido real posterior de Avicell. No amplía el alcance de este Future State ni aprueba sus comandos, eventos o políticas.
+
 ## Current State frente a Future State
 
 | Current State | Future State propuesto |
