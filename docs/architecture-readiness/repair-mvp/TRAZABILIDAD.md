@@ -29,8 +29,8 @@
 | Hallazgo | Efecto en este paquete | Clasificación |
 | --- | --- | --- |
 | ADR-002 está `Accepted` desde 2026-07-21 | La forma inicial es monolito modular; no acepta el conjunto tecnológico | ADR |
-| ADR-001 y ADR-003 a ADR-009 permanecen `Proposed` | Lenguaje, persistencia, frameworks y despliegue técnico siguen abiertos | ADR |
-| ADR-004 de esquema compartido carece de respuestas y pruebas de aislamiento | Bloquea persistencia multitenant definitiva | PB |
+| ADR-001, ADR-003 y ADR-005 a ADR-009 permanecen `Proposed` | Lenguaje, motor de persistencia, frameworks, routing y despliegue siguen abiertos | ADR |
+| ADR-004 está `Accepted` desde 2026-07-21 | Base/esquema compartidos, propiedad SaaS/tenant/sucursal e invariantes ya no se reabren sin evidencia | ADR |
 | ADR-008 de subdominios comodín depende de identidad, cookies y dominios | No es requisito de R0/R1 si existe resolución segura alternativa | DD |
 | ADR-006 propone Next.js para superficies aún no confirmadas y la matriz recomienda dividirlo | No se fija interfaz web global | ADR |
 | No se encontró ADR aceptado incompatible con el modelo integrado | No hay contradicción técnica aprobada que reabrir | ST |

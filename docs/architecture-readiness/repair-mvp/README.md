@@ -6,7 +6,7 @@ Este paquete traduce el modelo integrado del dominio de reparación a una prepar
 
 ## Estado
 
-**Preparado con bloqueantes.** Existe suficiente definición del dominio para delimitar el MVP, proponer fronteras y ordenar rebanadas verticales. Todavía no existe autorización explícita del Responsable de Producto para implementar y permanecen decisiones mínimas abiertas sobre plataforma, aislamiento, identidad, permisos, estados, folios, configuración, autorización comercial, calidad y entrega.
+**Preparado con bloqueantes.** Existe suficiente definición del dominio para delimitar el MVP, proponer fronteras y ordenar rebanadas verticales. ADR-004 ya acepta topología y propiedad multitenant, pero todavía no existe autorización explícita del Responsable de Producto para implementar y permanecen decisiones mínimas abiertas sobre plataforma, contexto operativo, evidencia de aislamiento, identidad, permisos, estados, folios, configuración, autorización comercial, calidad y entrega.
 
 La siguiente promoción posible es **Preparado para una primera rebanada vertical**, una vez satisfechos los criterios indicados en [Criterios de inicio](CRITERIOS_DE_INICIO_DE_IMPLEMENTACION.md). No se declara preparación para la implementación completa del MVP.
 
@@ -16,7 +16,7 @@ El [paquete de cierre de bloqueantes](../blocker-closure/README.md) consolida es
 
 ### ¿Qué necesitamos decidir antes de programar?
 
-**[PB]** Autorización para implementar; ADRs técnicos restantes; contexto y aislamiento multitenant; sucursal activa; identidad/PIN, sesión y permisos; término oficial; límites de Orden; alcance/concurrencia del folio; estados iniciales; política efectiva; archivos, zona horaria y criterios de aceptación. ADR-002 ya no es bloqueante. Véase [Decisiones bloqueantes](DECISIONES_BLOQUEANTES.md).
+**[PB]** Autorización para implementar; ADRs técnicos restantes; aplicación y pruebas del aislamiento aceptado; contexto confiable y sucursal activa; identidad/PIN, sesión y permisos; término oficial; alcance/concurrencia del folio; estados iniciales; política efectiva; archivos, zona horaria y criterios de aceptación. ADR-002 y ADR-004 ya no son decisiones bloqueantes. Véase [Decisiones bloqueantes](DECISIONES_BLOQUEANTES.md).
 
 ### ¿Cuál es la primera rebanada vertical que no traiciona el dominio?
 
@@ -79,7 +79,7 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 ## Autoridad documental
 
 - El modelo de dominio consolidado es la fuente de invariantes y lenguaje: [modelo integrado](../../domain-model/integrated-repair-domain-model/README.md).
-- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) está `Accepted`; los demás ADRs permanecen propuestos en el [registro](../../decisions/README.md).
+- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../../decisions/README.md).
 - Las políticas de Sprint 00 y entrega conservan su autoridad sobre el inicio de implementación.
 - Cuando una propuesta de este paquete contradiga una decisión posteriormente aceptada, prevalece la decisión aceptada y este paquete debe revisarse.
 
@@ -89,4 +89,4 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 
 **[RDD]** El flujo preserva identidad de orden, custodia, trazabilidad de actores, autorización por concepto, ejecución autorizada, control de calidad, cobro y entrega.
 
-**[ADR]** La topología concreta, el lenguaje, los marcos tecnológicos, la persistencia y el modelo multitenant definitivo sólo podrán fijarse mediante ADRs aceptados.
+**[ADR]** ADR-004 fija la topología multitenant inicial. El lenguaje, los marcos tecnológicos, el motor de persistencia, RLS y los mecanismos de contexto sólo podrán fijarse mediante sus decisiones aceptadas.

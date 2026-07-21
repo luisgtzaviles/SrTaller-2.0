@@ -11,7 +11,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | ADR-001 | Lenguaje y runtime | Proposed | H0 | Revisar contra alcance R0 y aceptar, reemplazar o rechazar |
 | ADR-002 | Monolito modular inicial | Accepted | H0 cerrado | Aplicar y verificar; no reabrir sin evidencia |
 | ADR-003 | Persistencia principal | Proposed | H0/H1 | Revisar junto con ownership y migraciones |
-| ADR-004 | Estrategia multitenant | Proposed | H1 | Ampliar alcance, incorporar aislamiento y volver a revisión |
+| ADR-004 | Estrategia multitenant y propiedad lógica | Accepted | H1 parcialmente cerrado | Aplicar invariantes; RLS y contexto operativo siguen separados |
 | ADR-005 | NestJS para backend y API | Proposed | H0 | Confirmar frontera de backend y restricciones del framework |
 | ADR-006 | Next.js para clientes web | Proposed | Antes de la primera UI | Revisar por superficie; no asumir una única necesidad |
 | ADR-007 | Despliegues mediante contenedores | Proposed | Antes del primer despliegue | Revisar artefacto, promoción, rollback y operación |
@@ -24,7 +24,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 | Prioridad | Decisión arquitectónica | Decisiones previas | ¿Requiere Producto? | ¿Requiere spike? | Resultado esperado | Hito |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Estrategia multitenant, ownership e aislamiento de datos; ampliar ADR-004 | DEC-007, DEC-008 | Sí | Sí, aislamiento shared-schema; RLS sólo si sigue candidato | Modelo de aislamiento, propagación de tenant, controles y pruebas negativas | H1 |
+| Cerrado | Estrategia multitenant, propiedad lógica y aislamiento de datos | DEC-007, DEC-008 | Respondido | RLS sólo si sigue candidato | ADR-004 aceptado; falta evidencia de aplicación y pruebas | H1 |
 | 2 | Contexto operativo de tenant y sucursal | DEC-010 a DEC-012, DEC-037 | Sí | Condicional, para resolución segura del contexto | Fuente confiable, selección, cambio, alcance y auditoría del contexto | H1 |
 | 3 | Identidad, sesión, PIN e inactividad; crear ADR específico | DEC-013 a DEC-015 | Sí | Sí, si PIN/estación compartida siguen en alcance | Separación entre identidad, credencial, sesión y actor operativo | H1 |
 | 4 | Roles, permisos, acciones sensibles y reautenticación | DEC-017 a DEC-020 | Sí | No por defecto | Autorización server-side por acción y alcance | H1 |
@@ -44,9 +44,9 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 ## Próximo ADR recomendado
 
-La siguiente revisión prioritaria es **ampliar ADR-004 para decidir estrategia multitenant y aislamiento de datos**. Es el riesgo arquitectónico más temprano y transversal: condiciona persistencia, pruebas, identidad, configuración, archivos, auditoría y restauración.
+ADR-004 ya está aceptado. La siguiente revisión prioritaria es un **ADR de contexto operativo de tenant y sucursal**: debe decidir fuente confiable, estación, sucursal activa, cambio de turno/contexto, asignación multisucursal, ausencia segura y auditoría sin reabrir propiedad lógica ni permitir operación cruzada de Órdenes.
 
-No debe absorber el contexto operativo de sucursal. La pertenencia multisucursal, la sucursal activa, su cambio y la visibilidad entre sucursales requieren decisiones de Producto propias y un ADR separado. Así se evita convertir “multitenancy” en una decisión demasiado amplia e imposible de validar.
+Después corresponde el ADR de identidad, sesión y PIN, usando el contexto operativo ya delimitado. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
 ADR-001, ADR-003, ADR-005 y ADR-009 siguen siendo el lote mínimo de plataforma para el primer commit. Pueden prepararse en paralelo, pero no sustituyen el cierre de multitenancy para completar R0.
 

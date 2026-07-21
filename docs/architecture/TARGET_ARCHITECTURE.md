@@ -5,7 +5,7 @@
 - **Estado:** Borrador conceptual.
 - **Naturaleza:** Dirección conceptual; ADR-002 acepta la forma modular inicial, mientras las selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
-- **Decisiones relacionadas:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) está `Accepted`; los demás ADRs permanecen `Proposed` en el [registro](../decisions/README.md).
+- **Decisiones relacionadas:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../decisions/README.md).
 
 ## Objetivo
 
@@ -77,7 +77,7 @@ El diagrama expresa responsabilidades lógicas, no unidades desplegables inicial
 | Módulos de dominio | Encapsular reglas, datos y eventos por capacidad | Monolito modular | Microservicios ni tablas por módulo |
 | Trabajos diferibles | Ejecutar procesos diferibles, reintentos e integraciones dentro de la aplicación inicial | Mecanismo pendiente | Worker o despliegue independiente |
 | Tiempo real | Entregar cambios confirmados a clientes conectados | Socket.IO o WebSockets | Protocolo aceptado |
-| Datos transaccionales | Persistencia canónica y consistencia | PostgreSQL, esquema compartido con `tenant_id` | Diseño físico ni RLS aceptado |
+| Datos transaccionales | Persistencia canónica y consistencia | Esquema compartido con aislamiento tenant aceptado; PostgreSQL propuesto | Motor, diseño físico y RLS pendientes |
 | Coordinación temporal | Caché, colas y coordinación de conexiones | Redis | Uso como fuente de verdad |
 | Archivos | Guardar objetos y metadatos de acceso | API compatible con S3 | Proveedor, regiones o retención final |
 | Integraciones | Aislar contratos externos y normalizar eventos | Adaptadores y anti-corruption layer | Proveedores comprometidos |
@@ -153,7 +153,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 ## Alternativas que permanecen abiertas
 
 - La forma inicial de monolito modular ya está aceptada; su agrupación interna concreta permanece abierta.
-- PostgreSQL con esquema compartido frente a otras estrategias de partición futuras.
+- PostgreSQL como motor y RLS como defensa adicional; la topología compartida ya está aceptada por ADR-004.
 - NestJS frente a alternativas TypeScript para la API.
 - Next.js frente a otras estrategias para cada cliente web.
 - Socket.IO frente a WebSockets nativos u otras soluciones administradas.
@@ -161,7 +161,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 - Proveedor S3-compatible y estrategia de distribución de archivos.
 - Monorepo con pnpm/Turborepo frente a repositorios separados.
 
-Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 ya establece la unidad arquitectónica inicial.
+Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 establece la unidad arquitectónica y ADR-004 la topología multitenant inicial.
 
 ## Restricciones y no objetivos
 

@@ -179,11 +179,12 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 ## Alternativas y decisiones relacionadas
 
 - [ADR-002: monolito modular orientado al dominio](../decisions/proposed/ADR-002-modular-monolith-first.md) — `Accepted`
+- [ADR-004: multitenancy con base y esquema compartidos](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) — `Accepted`
 - [ADR-005: NestJS para backend](../decisions/proposed/ADR-005-nestjs-backend.md)
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: estrategia de monorepo](../decisions/proposed/ADR-009-monorepo-strategy.md)
 
-ADR-002 está `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed` hasta su aprobación explícita.
+ADR-002 y ADR-004 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed` hasta su aprobación explícita. ADR-004 obliga a que casos de uso y repositorios preserven tenant y sucursal conforme a la propiedad lógica, sin definir middleware ni diseño físico.
 
 ## Riesgos
 

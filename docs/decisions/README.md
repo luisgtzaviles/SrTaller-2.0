@@ -5,7 +5,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 ## Estado del documento
 
 **Estado:** Workflow en uso, pendiente de completar autoridades por clase de decisión.
-**Decisiones aceptadas:** ADR-002, aceptado el 2026-07-21 mediante instrucción explícita del Responsable de Producto.
+**Decisiones aceptadas:** ADR-002 y ADR-004, aceptados el 2026-07-21 mediante instrucciones explícitas del Responsable de Producto.
 
 ## Estados permitidos
 
@@ -29,8 +29,9 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 | ADR | Tema | Estado |
 |---|---|---|
 | [ADR-002](proposed/ADR-002-modular-monolith-first.md) | Monolito modular orientado al dominio como arquitectura inicial | Accepted — 2026-07-21 |
+| [ADR-004](proposed/ADR-004-shared-schema-multitenancy.md) | Multitenancy con base y esquema compartidos | Accepted — 2026-07-21 |
 
-La ruta histórica de ADR-002 bajo `proposed/` se conserva para mantener estables los enlaces existentes; el estado del documento es autoritativo.
+Las rutas históricas de ADR-002 y ADR-004 bajo `proposed/` se conservan para mantener estables los enlaces existentes; el estado dentro de cada documento es autoritativo.
 
 ## ADRs propuestos
 
@@ -38,7 +39,6 @@ La ruta histórica de ADR-002 bajo `proposed/` se conserva para mantener estable
 |---|---|---|
 | [ADR-001](proposed/ADR-001-typescript-as-primary-language.md) | TypeScript como lenguaje principal | Proposed |
 | [ADR-003](proposed/ADR-003-postgresql-primary-database.md) | PostgreSQL como base primaria | Proposed |
-| [ADR-004](proposed/ADR-004-shared-schema-multitenancy.md) | Multitenancy con esquema compartido | Proposed |
 | [ADR-005](proposed/ADR-005-nestjs-backend.md) | NestJS para backend/API | Proposed |
 | [ADR-006](proposed/ADR-006-nextjs-web-clients.md) | Next.js para clientes web | Proposed |
 | [ADR-007](proposed/ADR-007-containerized-deployments.md) | Despliegues en contenedores | Proposed |

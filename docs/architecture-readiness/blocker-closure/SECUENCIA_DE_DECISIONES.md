@@ -15,13 +15,13 @@ Este grupo desbloquea el primer commit, pero no basta para R0.
 
 ## Grupo A — Fundación de contexto
 
-1. Clasificar datos globales, tenant-wide y branch-scoped (`DEC-007`, `DEC-008`).
-2. Resolver estrategia multitenant y contexto tenant (`DEC-006`, `DEC-009`).
-3. Decidir sucursal activa, multisucursal y cambio de contexto (`DEC-010` a `DEC-012`).
+1. Aplicar la clasificación SaaS, tenant y sucursal aceptada por ADR-004 (`DEC-006` a `DEC-008`).
+2. Cerrar el mecanismo confiable de contexto tenant sin reabrir la topología (`DEC-009`).
+3. Decidir estación, sucursal activa, asignación multisucursal y cambio de contexto (`DEC-010` a `DEC-012`).
 4. Decidir zona horaria (`DEC-037`, `DEC-038`).
 5. Preparar la precedencia conceptual de configuración que R1 usará (`DEC-032`).
 
-Producto puede responder la matriz organizacional mientras Arquitectura prepara alternativas y Seguridad el threat model. No debe ejecutarse SPIKE-002 antes de autorizarlo y acotar el candidato.
+La matriz de propiedad lógica ya está respondida. Arquitectura y Seguridad deben usarla como precondición del ADR de contexto operativo. No debe ejecutarse un experimento de RLS antes de aceptar PostgreSQL, autorizarlo y acotar su pregunta.
 
 ## Grupo B — Identidad y seguridad operativa
 
@@ -40,7 +40,7 @@ Puede trabajarse en paralelo con Grupo A después de fijar los conceptos tenant/
 2. Persistencia y migraciones (`DEC-050`).
 3. Errores, logs, correlación y observabilidad (`DEC-044` a `DEC-048`).
 4. Pruebas y datos semilla (`DEC-051`, `DEC-052`).
-5. Ejecutar, si se autoriza, aislamiento shared-schema y RLS condicionado.
+5. Verificar el aislamiento con esquema compartido aceptado; evaluar RLS sólo si se autoriza y continúa como candidato.
 
 Los grupos A–C completan el diseño de R0 y convergen en su implementación/demostración.
 

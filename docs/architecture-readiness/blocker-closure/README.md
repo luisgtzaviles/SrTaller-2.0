@@ -22,7 +22,7 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 ## Respuestas rectoras
 
 1. **Primer commit:** lo bloquean únicamente decisiones estructurales difíciles de revertir; se excluyen proveedores y capacidades futuras.
-2. **R0:** lo bloquean contexto tenant/sucursal/actor, identidad, sesión, permisos, aislamiento, configuración técnica, tiempo, auditoría y persistencia segura.
+2. **R0:** ADR-004 ya fija estrategia y propiedad multitenant; siguen bloqueando el mecanismo confiable de contexto tenant/sucursal/actor, identidad, sesión, permisos, pruebas de aislamiento, configuración técnica, tiempo, auditoría y persistencia segura.
 3. **R1:** lo bloquean folio, recepción mínima, custodia, estados/ubicación inicial, política efectiva, archivos e identificación física.
 4. **Durante implementación:** pueden cerrarse detalles locales que no cambien invariantes, ownership, seguridad ni contratos públicos.
 5. **Piloto:** exige operación recuperable, soporte, copias, restauración, monitoreo, rollback y convivencia decidida.
@@ -45,6 +45,8 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 ## Inventario consolidado
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
+
+**Actualización posterior:** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) fue aceptado el 2026-07-21 y cierra la selección de topología compartida, la clasificación SaaS/tenant/sucursal y sus invariantes. No cierra contexto operativo, identidad/PIN, RLS, persistencia física ni evidencia de implementación.
 
 ## Ruta de lectura
 
@@ -71,7 +73,7 @@ Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones difer
 
 ## Autoridad y reglas
 
-- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) está `Accepted`; ningún otro ADR cambia de estado aquí.
+- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) están `Accepted`; los demás ADRs conservan su estado registrado.
 - Las decisiones de dominio validadas conservan autoridad sobre propuestas arquitectónicas.
 - `Requiere Responsable de Producto` nunca se cierra por preferencia técnica.
 - `Requiere spike` produce evidencia, no aceptación automática.
