@@ -5,9 +5,9 @@
 
 ## Estado del documento
 
-Propuesta pendiente de evaluación; no autoriza scaffold de NestJS. [ADR-001](ADR-001-typescript-as-primary-language.md) ya satisface la dependencia de lenguaje/runtime con TypeScript y Node.js `24.x`, pero no constituye evidencia ni aceptación del framework.
+Propuesta pendiente de decisión; no autoriza scaffold de NestJS. [ADR-001](ADR-001-typescript-as-primary-language.md) ya satisface la dependencia de lenguaje/runtime con TypeScript y Node.js `24.x`, pero no constituye aceptación del framework.
 
-Arquitectura + Ingeniería autorizaron el 2026-07-22 la ejecución futura de [SPIKE-009](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009) como `Mandatory before acceptance`. El mandato autoriza el experimento, no lo ejecuta, no acepta NestJS y no habilita implementación de producto. Seguridad, Operaciones y Calidad deberán revisar la evidencia antes de que Arquitectura + Ingeniería decidan este ADR.
+Arquitectura + Ingeniería autorizaron y se ejecutó el 2026-07-22 [SPIKE-009](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009) como `Mandatory before acceptance`. Tras el dictamen `APPROVED FOR ADR REVIEW WITH REQUIRED REMEDIATIONS` (Opción B), la remediación acotada obtuvo `REMEDIATIONS PASS — ready for focused re-review`. Seguridad, Operaciones y Calidad todavía deben re-revisar la [evidencia](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md) antes de que Arquitectura + Ingeniería decidan; por ello el estado continúa `Proposed` y no se habilita implementación de producto.
 
 ## Contexto
 
@@ -33,11 +33,11 @@ Usar NestJS como shell de API y procesos de backend, manteniendo el dominio inde
 
 ## Gate obligatorio de evidencia
 
-ADR-005 no puede pasar de `Proposed` a `Accepted` o `Rejected` hasta completar y revisar SPIKE-009. El experimento parte de Node.js `24.x`, NestJS `11.x` —referencia `11.1.28` revalidada antes de ejecutar—, Express, REST/HTTP JSON mínima, PostgreSQL `18.x` —referencia `18.4` revalidada antes de ejecutar— y TypeScript estricto.
+La ejecución y remediación de SPIKE-009 completaron la producción de evidencia, pero ADR-005 no puede pasar de `Proposed` a `Accepted` o `Rejected` hasta concluir la re-revisión enfocada. El experimento usó Node.js `24.18.0`, NestJS `11.1.28`, Express, REST/HTTP JSON mínima, PostgreSQL `18.4` y TypeScript estricto.
 
 NestJS `11.1.28`, Express y REST/HTTP JSON son hipótesis del spike, no decisiones aceptadas por este ADR. El experimento deberá comparar una alternativa más ligera bajo el mismo recorrido y podrá concluir que NestJS debe rechazarse.
 
-El mandato canónico define alcance, exclusiones, fronteras de dominio/aplicación, autorización, tenant context, persistencia, errores, auditoría, pruebas, éxito, fracaso y evidencia. Cualquier experimento que omita esos controles no satisface el gate de ADR-005.
+El mandato canónico define alcance, exclusiones, fronteras de dominio/aplicación, autorización, tenant context, persistencia, errores, auditoría, pruebas, éxito, fracaso y evidencia. La ejecución original (31/31) y la remediación posterior (48/48 repetidas) se documentan en [EVIDENCE.md](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md); la evaluación vigente y los riesgos se documentan en [RESULTS.md](../../../spikes/spike-009-nestjs-shell/RESULTS.md).
 
 ## Consecuencias positivas
 
@@ -63,7 +63,7 @@ El mandato canónico define alcance, exclusiones, fronteras de dominio/aplicaci�
 
 ## Preguntas abiertas
 
-- ¿La evidencia de SPIKE-009 confirma REST/HTTP JSON mínima como interfaz inicial o favorece una alternativa?
+- La evidencia favorece NestJS sobre Express directo como shell condicionado y confirma REST/HTTP JSON como interfaz suficiente para el experimento; el contrato definitivo permanece fuera de este ADR.
 - ¿Qué reglas de versionado deberá tener la interfaz si se acepta?
 - ¿Qué límites se impondrán entre framework, aplicación y dominio?
 
@@ -73,8 +73,10 @@ El mandato canónico define alcance, exclusiones, fronteras de dominio/aplicaci�
 - [PBI-012](../../backlog/pbis/PBI-012.md)
 - [ADR-001](ADR-001-typescript-as-primary-language.md)
 - [SPIKE-009 — Mandato de validación](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009)
+- [SPIKE-009 — Evidencia](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md)
+- [SPIKE-009 — Resultados y condiciones](../../../spikes/spike-009-nestjs-shell/RESULTS.md)
 - [Baseline técnica de DEC-004](../../architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md)
 
 ## Próxima revisión
 
-Al concluir SPIKE-009 y la revisión obligatoria de su evidencia; fecha: TBD.
+Al concluir la revisión obligatoria de la evidencia por Seguridad + Operaciones + Calidad; fecha: TBD.

@@ -1,0 +1,48 @@
+{
+  "name": "@srtaller/spike-009-nestjs-shell",
+  "version": "0.0.0-experimental",
+  "private": true,
+  "description": "Disposable validation of NestJS as a technical shell; not product code.",
+  "type": "module",
+  "engines": {
+    "node": "24.18.x",
+    "npm": "11.16.x"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "node scripts/static-check.mjs",
+    "test": "node --import tsx --test test/unit/*.test.ts",
+    "test:architecture": "node --import tsx --test test/architecture/*.test.ts",
+    "test:integration": "bash scripts/with-postgres.sh node --import tsx --test --test-concurrency=1 test/integration/*.test.ts",
+    "test:e2e": "bash scripts/with-postgres.sh node --import tsx --test --test-concurrency=1 test/e2e/*.test.ts",
+    "test:job": "bash scripts/with-postgres.sh node --import tsx --test --test-concurrency=1 test/job/*.test.ts",
+    "test:postgres": "bash scripts/with-postgres.sh node --import tsx --test --test-concurrency=1 test/postgres/*.test.ts",
+    "test:operations": "node --import tsx --test --test-concurrency=1 test/operations/*.test.ts",
+    "test:all": "npm run test && npm run test:architecture && npm run test:integration && npm run test:e2e && npm run test:job && npm run test:postgres && npm run test:operations",
+    "verify": "npm run typecheck && npm run lint && npm run test:all && npm run build",
+    "ci": "bash scripts/ci.sh",
+    "db:with": "bash scripts/with-postgres.sh",
+    "db:start": "bash scripts/postgres.sh start",
+    "db:stop": "bash scripts/postgres.sh stop",
+    "db:status": "bash scripts/postgres.sh status",
+    "start": "node dist/bootstrap/main.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.1.28",
+    "@nestjs/core": "11.1.28",
+    "@nestjs/platform-express": "11.1.28",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.2",
+    "pg": "8.22.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "11.1.28",
+    "@types/node": "24.10.1",
+    "@types/pg": "8.15.6",
+    "tsx": "4.20.6",
+    "typescript": "7.0.2"
+  }
+}

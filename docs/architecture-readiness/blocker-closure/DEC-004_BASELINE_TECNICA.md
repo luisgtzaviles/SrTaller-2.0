@@ -28,7 +28,7 @@ La versión minor efectiva de PostgreSQL se mantiene mediante mantenimiento norm
 
 | Componente | Estado |
 | --- | --- |
-| Framework/backend | ADR-005 `Proposed`; [SPIKE-009](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009) autorizado y `Mandatory before acceptance`, todavía no ejecutado |
+| Framework/backend | ADR-005 `Proposed`; [SPIKE-009](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009) remediado con `REMEDIATIONS PASS`, pendiente de re-revisión enfocada y decisión separada |
 | Package manager y versión reproducible | Pendientes |
 | Política de lockfile | Pendiente |
 | Baseline técnica ejecutable final | Pendiente de compatibilidad entre Node.js 24.x, PostgreSQL 18.x y el framework aceptado |
@@ -42,9 +42,9 @@ La versión minor efectiva de PostgreSQL se mantiene mediante mantenimiento norm
 
 ## Estado del gate
 
-ADR-003 cierra la selección del motor y ADR-009 cierra la topología de repositorio único con workspaces bajo demanda. Arquitectura + Ingeniería autorizaron el 2026-07-22 la ejecución futura de SPIKE-009 para producir evidencia antes de decidir ADR-005. Su baseline hipotética usa NestJS `11.1.28`, Express y REST/HTTP JSON mínima, con revalidación de versiones antes de ejecutar; estos elementos no son componentes aceptados de DEC-004.
+ADR-003 cierra la selección del motor y ADR-009 cierra la topología de repositorio único con workspaces bajo demanda. SPIKE-009 se ejecutó el 2026-07-22 con Node.js `24.18.0`, NestJS `11.1.28`, Express, REST/HTTP JSON mínima y PostgreSQL `18.4`; tras el dictamen Opción B se ejecutaron las remediaciones obligatorias con resultado `REMEDIATIONS PASS — ready for focused re-review`. La re-revisión sigue pendiente. Estos elementos todavía no son componentes aceptados de DEC-004.
 
-`DEC-004` continúa abierta por ADR-005, la ejecución y revisión de SPIKE-009, package manager, política de lockfile, baseline ejecutable final y las demás restricciones H0 aplicables.
+`DEC-004` continúa abierta por la revisión de SPIKE-009 y decisión de ADR-005, package manager, política de lockfile, baseline ejecutable final y las demás restricciones H0 aplicables.
 
 El primer cambio ejecutable de R0 permanece bloqueado. Esta baseline no autoriza código, scaffolding, configuración, infraestructura, SQL ni migraciones.
 
@@ -63,3 +63,5 @@ El primer cambio ejecutable de R0 permanece bloqueado. Esta baseline no autoriza
 - [Secuencia de decisiones](SECUENCIA_DE_DECISIONES.md)
 - [Criterios de salida de R0](CRITERIOS_DE_SALIDA_DE_R0.md)
 - [Mandato de SPIKE-009](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009)
+- [Evidencia de SPIKE-009](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md)
+- [Resultados de SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md)

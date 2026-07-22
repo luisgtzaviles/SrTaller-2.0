@@ -2,10 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Registro de candidatos y mandatos. Sólo [SPIKE-009](#spike-009) está autorizado para ejecución futura; esta autorización no permite ejecutarlo en la iteración documental que formaliza el mandato, implementar producto ni cambiar automáticamente un ADR.
+- **Estado:** Registro de candidatos y mandatos. [SPIKE-009](#spike-009) fue ejecutado y remediado el 2026-07-22 en una rama desechable; obtuvo `REMEDIATIONS PASS` y espera re-revisión enfocada. No cambia automáticamente ningún ADR. Los demás candidatos conservan sus gates.
 - **Propósito:** Identificar experimentos mínimos que reduzcan riesgos arquitectónicos reales antes de comprometer diseño ejecutable.
 - **Duración:** `TBD` para todos los candidatos; no se asignan estimaciones sin capacidad y autorización.
-- **Gate vigente:** Todo spike requiere autorización explícita de su autoridad. Arquitectura + Ingeniería autorizaron el 2026-07-22 la ejecución futura de SPIKE-009 bajo el mandato de este documento; los demás candidatos conservan sus gates y no quedan autorizados por esa decisión.
+- **Gate vigente:** Todo spike requiere autorización explícita de su autoridad. Arquitectura + Ingeniería autorizaron y se ejecutó SPIKE-009 el 2026-07-22; Seguridad + Operaciones + Calidad todavía deben revisar la evidencia antes de decidir ADR-005. Los demás candidatos no quedan autorizados por esa ejecución.
 - **Regla de decisión:** Un spike produce evidencia; un resultado favorable no acepta automáticamente el ADR relacionado y un resultado desfavorable debe conservarse como evidencia.
 
 ## Clasificaciones
@@ -28,7 +28,7 @@
 | SPIKE-006 | `Recommended` | Pérdida o mezcla de tenant context en jobs | ADR-002/004 y ADR futuro de colas | PBI-007, PBI-014, PBI-017, PBI-019 | Antes del primer job tenant-scoped autorizado. |
 | SPIKE-007 | `Recommended` | Rebuild, artefacto mutable o secretos en imagen | ADR-007 | PBI-015, PBI-019 | Antes del primer release productivo, con un desplegable representativo. |
 | SPIKE-008 | `Deferred/conditional` | Grafo acoplado, builds costosos o caché insegura | ADR-009 Accepted; informa ADR-007 | PBI-010, PBI-015, PBI-016, PBI-019 | Sólo al autorizar varios proyectos, packages justificados u orquestación. |
-| SPIKE-009 | `Mandatory before acceptance` | Dominio acoplado a NestJS o controles transversales incompletos | ADR-005; informa ADR-001/002/003/004/009–013 | PBI-007, PBI-010, PBI-012, PBI-017 | Autorizado para ejecución futura; debe concluir y revisarse antes de aceptar o rechazar ADR-005. |
+| SPIKE-009 | `Mandatory before acceptance` | Dominio acoplado a NestJS o controles transversales incompletos | ADR-005; informa ADR-001/002/003/004/009–013 | PBI-007, PBI-010, PBI-012, PBI-017 | Remediado el 2026-07-22 con `REMEDIATIONS PASS`; re-revisión pendiente antes de decidir ADR-005. |
 
 <a id="spike-001"></a>
 
@@ -209,15 +209,15 @@
 | Identificador canónico | `SPIKE-009` |
 | Clasificación | `Mandatory before acceptance` de ADR-005. |
 | Estado anterior | `Recommended`; sin mandato formal de ejecución. |
-| Estado vigente | Autorizado el 2026-07-22 para ejecución futura como experimento técnico obligatorio. No ejecutado. |
+| Estado vigente | Ejecutado y remediado el 2026-07-22 en `spike/spike-009-nestjs-shell`; resultado `REMEDIATIONS PASS`, pendiente de re-revisión enfocada. |
 | Autoridad que autoriza | Arquitectura + Ingeniería. |
 | Decisión posterior | Arquitectura + Ingeniería decidirán con evidencia revisada si aceptan ADR-005, lo aceptan con condiciones, exigen otra iteración o rechazan NestJS y evalúan una alternativa más ligera. |
-| Duración | `TBD`; deberá acotarse antes de iniciar sin reducir las pruebas obligatorias. |
+| Evidencia ejecutada | [README](../../../spikes/spike-009-nestjs-shell/README.md), [evidencia completa](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md) y [resultados](../../../spikes/spike-009-nestjs-shell/RESULTS.md). |
 | Riesgo que reduce | [RISK-004](../../sprints/sprint-00/RISKS_AND_BLOCKERS.md#riesgos) y riesgos de [PBI-012](../../backlog/pbis/PBI-012.md): aceptar el framework por familiaridad, acoplar dominio, ocultar dependencias o usar el transporte como única barrera tenant o de autorización. |
 | ADR relacionado | [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md), que permanece `Proposed`; informa la aplicación de ADR-001 a ADR-004 y ADR-009 a ADR-013 sin reabrirlos. |
 | PBI relacionado | [PBI-007](../../backlog/pbis/PBI-007.md), [PBI-010](../../backlog/pbis/PBI-010.md), [PBI-012](../../backlog/pbis/PBI-012.md) y [PBI-017](../../backlog/pbis/PBI-017.md). |
 
-La autorización alcanza sólo la ejecución futura del experimento descrito aquí. No autoriza su ejecución durante esta actualización documental, scaffold de producto, adopción de NestJS, creación de endpoints reales, selección permanente de tooling ni cierre de [DEC-004](../../architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md).
+La ejecución se limitó al experimento descrito aquí. No constituye scaffold de producto, adopción de NestJS, autorización de endpoints reales, selección permanente de tooling ni cierre de [DEC-004](../../architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md).
 
 ### Hipótesis autorizada
 
@@ -228,10 +228,10 @@ La baseline experimental autorizada es:
 | Elemento | Hipótesis del spike |
 |---|---|
 | Runtime | Node.js `24.x` |
-| Framework | NestJS `11.x`; versión efectiva de referencia `11.1.28`, que deberá revalidarse inmediatamente antes de ejecutar |
+| Framework | NestJS `11.x`; versión efectiva `11.1.28`, revalidada al ejecutar |
 | Adaptador HTTP | Express |
 | Interfaz inicial | REST/HTTP JSON mínima |
-| Persistencia | PostgreSQL `18.x`; versión efectiva de referencia `18.4`, que deberá revalidarse inmediatamente antes de ejecutar |
+| Persistencia | PostgreSQL `18.x`; versión efectiva `18.4`, revalidada al ejecutar |
 | Lenguaje | TypeScript estricto |
 | Unidad ejecutable | Una aplicación backend y un artefacto desplegable |
 | Repositorio | Repositorio único sin workspaces |
@@ -369,9 +369,9 @@ SPIKE-009 falla si aparece cualquiera de estas condiciones sin mitigación clara
 - complejidad mayor que una alternativa ligera; o
 - dependencia adicional necesaria para fundamentos básicos sin control suficiente.
 
-### Evidencia requerida
+### Evidencia requerida y producida
 
-La entrega futura deberá incluir:
+La entrega produjo:
 
 - commit o rama desechable y versiones exactas;
 - lockfile utilizado y comandos reproducibles;
@@ -387,6 +387,8 @@ La entrega futura deberá incluir:
 
 No se usarán datos ni secretos reales. El experimento deberá permanecer desechable y no podrá convertirse silenciosamente en scaffold de producto.
 
+La evidencia ejecutada está en [EVIDENCE.md](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md) y su evaluación en [RESULTS.md](../../../spikes/spike-009-nestjs-shell/RESULTS.md). La remediación elevó el total de 31 a 48 pruebas; dos gates completos obtuvieron 48/48, tipos/arquitectura/build aprobados, cero vulnerabilidades y firmas verificadas. El resultado `REMEDIATIONS PASS` sólo habilita una re-revisión enfocada; ADR-005 permanece `Proposed`.
+
 ### Evaluación y resultado permitido
 
 Seguridad, Operaciones y Calidad revisarán obligatoriamente la evidencia. Arquitectura + Ingeniería conservarán la autoridad de decisión y sólo podrán registrar uno de estos resultados:
@@ -396,7 +398,7 @@ Seguridad, Operaciones y Calidad revisarán obligatoriamente la evidencia. Arqui
 3. exigir una segunda iteración acotada; o
 4. rechazar NestJS y evaluar una alternativa más ligera.
 
-Hasta esa decisión, ADR-005 permanece `Proposed`, DEC-004 permanece abierta y el primer cambio ejecutable de producto continúa bloqueado.
+Hasta la revisión y decisión separadas, ADR-005 permanece `Proposed`, DEC-004 permanece abierta y el primer cambio ejecutable de producto continúa bloqueado.
 
 ## Orden de autorización recomendado
 
@@ -404,7 +406,7 @@ Hasta esa decisión, ADR-005 permanece `Proposed`, DEC-004 permanece abierta y e
 2. Autorizar SPIKE-002 y SPIKE-003 para la decisión shared-schema; no diseñar tablas productivas antes de sus resultados.
 3. Autorizar SPIKE-001 después de definir identidad/sesión y dominios; su resultado informa routing, no concede acceso.
 4. Autorizar SPIKE-005 sólo si dispositivos/PIN permanecen en alcance y ya existen decisiones operativas.
-5. Ejecutar SPIKE-009 bajo el mandato autorizado y revisar su evidencia antes de decidir ADR-005.
+5. Revisar la evidencia ejecutada de SPIKE-009 antes de decidir ADR-005.
 6. Ejecutar SPIKE-006, SPIKE-007 y SPIKE-008 cuando exista el primer caso representativo que active su condición.
 7. Mantener SPIKE-004 como `Premature` hasta que producto confirme realtime en el primer release.
 
@@ -419,6 +421,6 @@ Hasta esa decisión, ADR-005 permanece `Proposed`, DEC-004 permanece abierta y e
 
 ## Próxima revisión
 
-- **Momento:** Antes de iniciar cualquier candidato no autorizado y, para SPIKE-009, inmediatamente antes de ejecutar para revalidar versiones, condiciones y responsable.
-- **Evidencia esperada:** Para SPIKE-009, mandato vigente, baseline revalidada, entorno aislado y responsable asignado; para otros candidatos, clasificación, dependencias y autorización explícita.
-- **Responsable:** Arquitectura + Ingeniería para SPIKE-009; `TBD` para los demás candidatos.
+- **Momento:** Para SPIKE-009, revisión de resultados antes de decidir ADR-005; para cualquier candidato no autorizado, antes de iniciar su ejecución.
+- **Evidencia esperada:** Para SPIKE-009, revisión explícita de [EVIDENCE.md](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md) y sus condiciones; para otros candidatos, clasificación, dependencias y autorización explícita.
+- **Responsable:** Seguridad + Operaciones + Calidad revisan SPIKE-009; Arquitectura + Ingeniería deciden ADR-005. `TBD` para los demás candidatos.
