@@ -1,0 +1,68 @@
+/workspace/project/src/startup-config.ts:20
+    throw new Error(`Missing required technical variable: ${name}`);
+          ^
+
+Error: Missing required technical variable: HOST
+    at requireValue (/workspace/project/src/startup-config.ts:20:11)
+    at loadStartupConfig (/workspace/project/src/startup-config.ts:29:16)
+    at bootstrap (/workspace/project/src/main.ts:9:18)
+    at <anonymous> (/workspace/project/src/main.ts:20:7)
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+/workspace/project/src/startup-config.ts:20
+    throw new Error(`Missing required technical variable: ${name}`);
+          ^
+
+Error: Missing required technical variable: NODE_ENV
+    at requireValue (/workspace/project/src/startup-config.ts:20:11)
+    at loadStartupConfig (/workspace/project/src/startup-config.ts:30:19)
+    at bootstrap (/workspace/project/src/main.ts:9:18)
+    at <anonymous> (/workspace/project/src/main.ts:20:7)
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+/workspace/project/src/startup-config.ts:20
+    throw new Error(`Missing required technical variable: ${name}`);
+          ^
+
+Error: Missing required technical variable: PORT
+    at requireValue (/workspace/project/src/startup-config.ts:20:11)
+    at loadStartupConfig (/workspace/project/src/startup-config.ts:31:20)
+    at bootstrap (/workspace/project/src/main.ts:9:18)
+    at <anonymous> (/workspace/project/src/main.ts:20:7)
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+/workspace/project/src/startup-config.ts:35
+    throw new Error('NODE_ENV must be development, production or test');
+          ^
+
+Error: NODE_ENV must be development, production or test
+    at loadStartupConfig (/workspace/project/src/startup-config.ts:35:11)
+    at bootstrap (/workspace/project/src/main.ts:9:18)
+    at <anonymous> (/workspace/project/src/main.ts:20:7)
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+/workspace/project/src/startup-config.ts:39
+    throw new Error('PORT must be an integer from 1 through 65535');
+          ^
+
+Error: PORT must be an integer from 1 through 65535
+    at loadStartupConfig (/workspace/project/src/startup-config.ts:39:11)
+    at bootstrap (/workspace/project/src/main.ts:9:18)
+    at <anonymous> (/workspace/project/src/main.ts:20:7)
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0

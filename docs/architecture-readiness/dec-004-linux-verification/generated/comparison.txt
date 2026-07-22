@@ -1,0 +1,5 @@
+inventory=MATCH
+dist_sha256=MATCH
+technical_inputs=MATCH
+run_1_exit=0
+run_2_exit=0

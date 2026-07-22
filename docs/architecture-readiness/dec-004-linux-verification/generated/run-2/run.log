@@ -1,0 +1,287 @@
+[environment] Linux=Linux arch=x86_64 libc=glibc 2.36 Debian=12
+[toolchain] node=v24.18.0 corepack=0.35.0 pnpm=11.15.1
+
+[command] bundle_verifier_init
+
+[command] bundle_verify
+/workspace/source.bundle is okay
+The bundle contains this ref:
+056e8695b9b7f1620ecade03081eaf2c824de4e6 refs/heads/dec004-bundle-temp
+The bundle records a complete history.
+The bundle uses this hash algorithm: sha1
+
+[command] git_clone
+Cloning into '/workspace/project'...
+
+[command] git_checkout
+HEAD is now at 056e869 build: materialize DEC-004 toolchain contract
+
+[command] install_frozen
+? Verifying lockfile against supply-chain policies (105 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +105
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 105, reused 0, downloaded 0, added 0
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │     Update available! 11.15.1 → 11.16.0.      │
+   │     Changelog: https://pnpm.io/v/11.16.0      │
+   │   To update, run: corepack use pnpm@11.16.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+Progress: resolved 105, reused 0, downloaded 105, added 105, done
+✓ Lockfile passes supply-chain policies (105 entries in 2.6s)
+
+dependencies:
++ @nestjs/common 11.1.28
++ @nestjs/core 11.1.28
++ @nestjs/platform-express 11.1.28
++ reflect-metadata 0.2.2
++ rxjs 7.8.2
+
+devDependencies:
++ @types/node 24.13.3
++ typescript 6.0.3
+
+$ node ./scripts/verify-install-context.mjs
+DEC-004 install context verified
+Done in 3.9s using pnpm v11.15.1
+
+[command] typecheck
+$ pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+
+[command] build
+$ pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+$ node ./scripts/clean.mjs
+Removed generated dist output
+
+[command] test
+$ pnpm run verify:toolchain && node --test test/toolchain-contract.test.mjs
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+✔ accepted runtime facts pass and incompatible facts fail (7.494667ms)
+✔ package manifest pins the accepted baseline and blocks lifecycle scripts (35.246042ms)
+✔ compiled startup config accepts valid values and fails closed (6.389833ms)
+✔ build emits native JavaScript and external source maps without sources (16.819709ms)
+✔ technical shell has a provider and no controller or route surface (8.786542ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 456.029666
+
+[command] verify
+$ pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+$ node ./scripts/clean.mjs
+Removed generated dist output
+$ pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+$ pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+$ node ./scripts/clean.mjs
+Removed generated dist output
+$ pnpm run verify:toolchain && node --test test/toolchain-contract.test.mjs
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+✔ accepted runtime facts pass and incompatible facts fail (7.291625ms)
+✔ package manifest pins the accepted baseline and blocks lifecycle scripts (30.505417ms)
+✔ compiled startup config accepts valid values and fails closed (5.902291ms)
+✔ build emits native JavaScript and external source maps without sources (14.307292ms)
+✔ technical shell has a provider and no controller or route surface (8.547875ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 439.683833
+$ node ./scripts/verify-structure.mjs
+DEC-004 product-root structure verified
+
+[command] smoke_start
+$ pnpm run verify:toolchain && node ./scripts/smoke-start.mjs
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+Compiled dist startup, listener and shutdown verified
+
+[command] controlled_path
+$ pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+$ node ./scripts/clean.mjs
+Removed generated dist output
+$ pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+$ pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+$ node ./scripts/clean.mjs
+Removed generated dist output
+$ pnpm run verify:toolchain && node --test test/toolchain-contract.test.mjs
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+✔ accepted runtime facts pass and incompatible facts fail (7.501542ms)
+✔ package manifest pins the accepted baseline and blocks lifecycle scripts (34.038292ms)
+✔ compiled startup config accepts valid values and fails closed (6.350416ms)
+✔ build emits native JavaScript and external source maps without sources (13.035959ms)
+✔ technical shell has a provider and no controller or route surface (10.4905ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 443.159042
+$ node ./scripts/verify-structure.mjs
+DEC-004 product-root structure verified
+
+[negative] node_incompatible
+[expected-failure] node_incompatible exit=25
+
+[negative] package_manager_incompatible
+[expected-failure] package_manager_incompatible exit=1
+
+[negative] pnpm_incompatible
+[expected-failure] pnpm_incompatible exit=1
+
+[command] diagnostics
+$ pnpm run verify:toolchain && node ./scripts/local-diagnostics.mjs
+$ node ./scripts/verify-toolchain.mjs
+DEC-004 toolchain verified: node 24.18.0, pnpm 11.15.1
+{
+  "lockMismatch": {
+    "exit": 1,
+    "lockfileUnchanged": true,
+    "rejected": true
+  },
+  "lifecycle": {
+    "configGenerated": true,
+    "installExit": 1,
+    "lockExit": 0,
+    "markerAbsent": true
+  },
+  "typeError": {
+    "distAbsent": true,
+    "installExit": 0,
+    "rejected": true,
+    "typecheckExit": 2
+  },
+  "casing": {
+    "installExit": 0,
+    "rejected": true,
+    "typecheckExit": 2
+  },
+  "productionArtifact": {
+    "installExit": 0,
+    "sourceAbsent": true,
+    "startConnected": true,
+    "startMarker": true,
+    "typescriptAbsent": true
+  },
+  "reproducibility": {
+    "builds": [
+      {
+        "installExit": 0,
+        "verifyExit": 0
+      },
+      {
+        "installExit": 0,
+        "verifyExit": 0
+      }
+    ],
+    "hashesEqual": true,
+    "manifests": [
+      [
+        {
+          "path": "dist/app.module.js",
+          "sha256": "8cf52748c6c156241fa0ee298e8511d2c858993793f4d8682a5a8cc471f79fff"
+        },
+        {
+          "path": "dist/app.module.js.map",
+          "sha256": "50c2d3d9d6daea782d99f51c1314fcd7e94c667f72178742693e0ceafc34597d"
+        },
+        {
+          "path": "dist/main.js",
+          "sha256": "51e2f762f69be67b9dd46c0e7834fa1d3dd731e9f2bc142a278ad297a7d2b3fe"
+        },
+        {
+          "path": "dist/main.js.map",
+          "sha256": "59695d1fc1823ac0316c1db14a8451b4d97b25005166546d1b4adc86f67bc69b"
+        },
+        {
+          "path": "dist/startup-config.js",
+          "sha256": "2d514a0579e9be57df708a3188e8a4580c809ae4b6fc7a42570ab8c7fdc96f42"
+        },
+        {
+          "path": "dist/startup-config.js.map",
+          "sha256": "f8c102998c60110bbbf39e7911a7a73a6e23662ed868e5a029a3e990c6ef9c73"
+        },
+        {
+          "path": "dist/technical-shell.service.js",
+          "sha256": "535706aff5615c48bd954825a9e9198a1135b8b430b12da00a10672a3e5a05f2"
+        },
+        {
+          "path": "dist/technical-shell.service.js.map",
+          "sha256": "375538ff1a504b8ec83e914b6a2505d49e8b70eb06df283b9a57bde394eab828"
+        }
+      ],
+      [
+        {
+          "path": "dist/app.module.js",
+          "sha256": "8cf52748c6c156241fa0ee298e8511d2c858993793f4d8682a5a8cc471f79fff"
+        },
+        {
+          "path": "dist/app.module.js.map",
+          "sha256": "50c2d3d9d6daea782d99f51c1314fcd7e94c667f72178742693e0ceafc34597d"
+        },
+        {
+          "path": "dist/main.js",
+          "sha256": "51e2f762f69be67b9dd46c0e7834fa1d3dd731e9f2bc142a278ad297a7d2b3fe"
+        },
+        {
+          "path": "dist/main.js.map",
+          "sha256": "59695d1fc1823ac0316c1db14a8451b4d97b25005166546d1b4adc86f67bc69b"
+        },
+        {
+          "path": "dist/startup-config.js",
+          "sha256": "2d514a0579e9be57df708a3188e8a4580c809ae4b6fc7a42570ab8c7fdc96f42"
+        },
+        {
+          "path": "dist/startup-config.js.map",
+          "sha256": "f8c102998c60110bbbf39e7911a7a73a6e23662ed868e5a029a3e990c6ef9c73"
+        },
+        {
+          "path": "dist/technical-shell.service.js",
+          "sha256": "535706aff5615c48bd954825a9e9198a1135b8b430b12da00a10672a3e5a05f2"
+        },
+        {
+          "path": "dist/technical-shell.service.js.map",
+          "sha256": "375538ff1a504b8ec83e914b6a2505d49e8b70eb06df283b9a57bde394eab828"
+        }
+      ]
+    ]
+  },
+  "nonInteractive": {
+    "stdinIsTTY": false,
+    "stdoutIsTTY": false
+  }
+}
+
+[result] run-2 completed successfully

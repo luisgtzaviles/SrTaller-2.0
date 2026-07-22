@@ -1,0 +1,118 @@
+{
+  "lockMismatch": {
+    "exit": 1,
+    "lockfileUnchanged": true,
+    "rejected": true
+  },
+  "lifecycle": {
+    "configGenerated": true,
+    "installExit": 1,
+    "lockExit": 0,
+    "markerAbsent": true
+  },
+  "typeError": {
+    "distAbsent": true,
+    "installExit": 0,
+    "rejected": true,
+    "typecheckExit": 2
+  },
+  "casing": {
+    "installExit": 0,
+    "rejected": true,
+    "typecheckExit": 2
+  },
+  "productionArtifact": {
+    "installExit": 0,
+    "sourceAbsent": true,
+    "startConnected": true,
+    "startMarker": true,
+    "typescriptAbsent": true
+  },
+  "reproducibility": {
+    "builds": [
+      {
+        "installExit": 0,
+        "verifyExit": 0
+      },
+      {
+        "installExit": 0,
+        "verifyExit": 0
+      }
+    ],
+    "hashesEqual": true,
+    "manifests": [
+      [
+        {
+          "path": "dist/app.module.js",
+          "sha256": "8cf52748c6c156241fa0ee298e8511d2c858993793f4d8682a5a8cc471f79fff"
+        },
+        {
+          "path": "dist/app.module.js.map",
+          "sha256": "50c2d3d9d6daea782d99f51c1314fcd7e94c667f72178742693e0ceafc34597d"
+        },
+        {
+          "path": "dist/main.js",
+          "sha256": "51e2f762f69be67b9dd46c0e7834fa1d3dd731e9f2bc142a278ad297a7d2b3fe"
+        },
+        {
+          "path": "dist/main.js.map",
+          "sha256": "59695d1fc1823ac0316c1db14a8451b4d97b25005166546d1b4adc86f67bc69b"
+        },
+        {
+          "path": "dist/startup-config.js",
+          "sha256": "2d514a0579e9be57df708a3188e8a4580c809ae4b6fc7a42570ab8c7fdc96f42"
+        },
+        {
+          "path": "dist/startup-config.js.map",
+          "sha256": "f8c102998c60110bbbf39e7911a7a73a6e23662ed868e5a029a3e990c6ef9c73"
+        },
+        {
+          "path": "dist/technical-shell.service.js",
+          "sha256": "535706aff5615c48bd954825a9e9198a1135b8b430b12da00a10672a3e5a05f2"
+        },
+        {
+          "path": "dist/technical-shell.service.js.map",
+          "sha256": "375538ff1a504b8ec83e914b6a2505d49e8b70eb06df283b9a57bde394eab828"
+        }
+      ],
+      [
+        {
+          "path": "dist/app.module.js",
+          "sha256": "8cf52748c6c156241fa0ee298e8511d2c858993793f4d8682a5a8cc471f79fff"
+        },
+        {
+          "path": "dist/app.module.js.map",
+          "sha256": "50c2d3d9d6daea782d99f51c1314fcd7e94c667f72178742693e0ceafc34597d"
+        },
+        {
+          "path": "dist/main.js",
+          "sha256": "51e2f762f69be67b9dd46c0e7834fa1d3dd731e9f2bc142a278ad297a7d2b3fe"
+        },
+        {
+          "path": "dist/main.js.map",
+          "sha256": "59695d1fc1823ac0316c1db14a8451b4d97b25005166546d1b4adc86f67bc69b"
+        },
+        {
+          "path": "dist/startup-config.js",
+          "sha256": "2d514a0579e9be57df708a3188e8a4580c809ae4b6fc7a42570ab8c7fdc96f42"
+        },
+        {
+          "path": "dist/startup-config.js.map",
+          "sha256": "f8c102998c60110bbbf39e7911a7a73a6e23662ed868e5a029a3e990c6ef9c73"
+        },
+        {
+          "path": "dist/technical-shell.service.js",
+          "sha256": "535706aff5615c48bd954825a9e9198a1135b8b430b12da00a10672a3e5a05f2"
+        },
+        {
+          "path": "dist/technical-shell.service.js.map",
+          "sha256": "375538ff1a504b8ec83e914b6a2505d49e8b70eb06df283b9a57bde394eab828"
+        }
+      ]
+    ]
+  },
+  "nonInteractive": {
+    "stdinIsTTY": false,
+    "stdoutIsTTY": false
+  }
+}
