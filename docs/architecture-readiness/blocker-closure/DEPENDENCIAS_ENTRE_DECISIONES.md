@@ -4,8 +4,10 @@
 
 ```mermaid
 flowchart TD
-    SCOPE[DEC-002 Alcance R0] --> STACK[DEC-004 Stack]
+    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> STACK[DEC-004 Stack]
     SCOPE --> MODULES[DEC-005 Módulos]
+    ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Pruebas]
+    ACCEPT --> R0
     STACK --> DATA[DEC-050 Persistencia/migraciones]
     MODULES --> OWN[DEC-049 Propiedad/repositorios]
 
@@ -40,6 +42,8 @@ flowchart TD
 
 ## Dependencias de autoridad
 
+`DEC-002` y `DEC-062` ya aportan la autoridad de Producto sobre alcance y contrato de salida de R0. No aportan autorización para implementar, selección tecnológica, Definition of Done ni aceptación de una demostración futura.
+
 | Decisión técnica | Respuesta previa de producto |
 | --- | --- |
 | ADR multitenant | Datos globales, tenant-wide, branch-scoped, ciclo del tenant |
@@ -65,6 +69,7 @@ flowchart TD
 
 ## Decisiones que pueden cerrarse juntas
 
+- `DEC-002` y `DEC-062`: cerradas para R0 el 2026-07-21; la implementación, las pruebas ejecutadas y la aceptación formal siguen pendientes.
 - `DEC-007` a `DEC-012`: cerradas conceptualmente por ADR-004/010; su aplicación y pruebas se verifican juntas.
 - `DEC-013` a `DEC-016`: cerradas conceptualmente por ADR-011; su aplicación y pruebas se coordinan con auditoría.
 - `DEC-017` y `DEC-018`: cerradas conceptualmente por ADR-012; faltan composición por rebanada, aplicación y pruebas.

@@ -4,13 +4,13 @@
 
 **Preparado con bloqueantes.**
 
-No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes, candidatos a contextos, agregados, comandos, eventos y decisiones abiertas. No es **Parcialmente preparado** porque el mínimo vendible y sus dependencias pueden delimitarse sin inventar el negocio. No alcanza **Preparado para una primera rebanada vertical** porque faltan autorización de producto y decisiones mínimas que condicionan cualquier código seguro. Tampoco alcanza **Preparado para implementación completa del MVP** porque los contratos operativos de varias etapas siguen pendientes.
+No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes, candidatos a contextos, agregados, comandos, eventos y decisiones abiertas. No es **Parcialmente preparado** porque el mínimo vendible y sus dependencias pueden delimitarse sin inventar el negocio. El Responsable de Producto aprobó el alcance y contrato de salida de R0 el 2026-07-21, pero eso no autoriza implementación. No alcanza **Preparado para una primera rebanada vertical** porque faltan la autorización organizacional y decisiones técnicas que condicionan cualquier implementación segura. Tampoco alcanza **Preparado para implementación completa del MVP** porque los contratos operativos de varias etapas siguen pendientes.
 
 ## Evaluación por dimensión
 
 | Dimensión | Evidencia disponible | Estado | Clasificación |
 | --- | --- | --- | --- |
-| Alcance | Flujo operativo y capacidades del núcleo documentados | Suficiente para delimitar | RP |
+| Alcance | R0 y sus exclusiones aprobados; flujo R1–R5 documentado | R0 cerrado para Producto; rebanadas posteriores conservan sus gates | RP |
 | Lenguaje | Lenguaje ubicuo y modelo integrado trazables | Suficiente, sujeto a validación | RDD |
 | Invariantes | Custodia, autorización, calidad, pagos y entrega documentados | Suficiente para diseño inicial | RDD |
 | Fronteras | Contextos candidatos y propiedad disponibles | Proponibles, no aprobados | DAP |
@@ -24,13 +24,13 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
 | ADRs | ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 aceptados; ADR-001, ADR-003 y ADR-005 a ADR-009 siguen propuestos | Forma, tenancy, contexto, identidad/sesión y autorización ordinaria/reforzada definidos; conjunto tecnológico aún bloqueante | PB |
-| Autorización | Sprint 00 no está cerrado y no autoriza prototipos | Bloqueante organizacional | PB |
+| Autorización | Producto aprobó alcance/aceptación esperada de R0; Sprint 00 no está cerrado ni existe autorización de implementación | Bloqueante organizacional | PB |
 
 ## Qué sí puede comenzar
 
 - **[DAR]** Validación dirigida de las fronteras, contratos de negocio y decisiones bloqueantes.
 - **[DAR]** Preparación de ADRs y PBIs con criterios de aceptación, pruebas negativas y trazabilidad.
-- **[DAR]** Refinamiento de la primera rebanada sin crear estructura base ni código ejecutable.
+- **[DAR]** Refinamiento técnico de R0 contra su alcance aprobado, sin crear estructura base ni código ejecutable.
 - **[RDD]** Ejemplos de aceptación basados en escenarios del modelo integrado.
 
 ## Qué no puede comenzar
@@ -42,4 +42,4 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 
 ## Condición de promoción
 
-El estado puede cambiar a **Preparado para una primera rebanada vertical** cuando todos los bloqueantes de categoría “antes de cualquier código” estén cerrados, exista un PBI listo y el Responsable de Producto autorice expresamente su implementación. La preparación completa exige además cerrar las decisiones de cada etapa comercial, técnica, de calidad, pago y entrega.
+El estado puede cambiar a **Preparado para una primera rebanada vertical** cuando todos los bloqueantes anteriores al primer cambio de implementación de R0 estén cerrados, exista un PBI listo y el Responsable de Producto autorice expresamente su implementación. Después, R1 sólo puede abrirse tras demostrar y aceptar formalmente R0. La preparación completa exige además cerrar las decisiones de cada etapa comercial, técnica, de calidad, pago y entrega.

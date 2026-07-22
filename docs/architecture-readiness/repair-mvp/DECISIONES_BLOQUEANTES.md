@@ -2,13 +2,13 @@
 
 ## Consolidación posterior
 
-El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUEANTES.md) normaliza esta matriz y las demás fuentes de arquitectura/dominio en 82 decisiones, con hitos H0–H5, dependencias, responsables y evidencia de cierre. Esta matriz conserva su valor como fuente del paquete de preparación; el inventario posterior no acepta ni resuelve sus preguntas.
+El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUEANTES.md) normaliza esta matriz y las demás fuentes de arquitectura/dominio en 82 decisiones, con hitos H0–H5, dependencias, responsables y evidencia de cierre. `B-01`, normalizada como `DEC-002`, quedó cerrada por decisión del Responsable de Producto el 2026-07-21; el resto conserva el estado indicado.
 
 ## Matriz de decisiones
 
 | ID | Decisión | Momento que bloquea | Cierre mínimo | Clasificación |
 | --- | --- | --- | --- | --- |
-| B-01 | Alcance exacto del MVP | Bloquea primer cambio de código | Flujo/capacidades aprobados por Responsable de Producto | PB |
+| B-01 | Alcance exacto de R0 | Cerrada para alcance el 2026-07-21 | Fundación ejecutable, inclusiones, exclusiones y demostración aprobadas por Responsable de Producto | PB cerrada |
 | B-02 | Término Orden de Servicio vs Orden de Reparación | Bloquea primera rebanada | Término oficial y alias documentados | PB |
 | B-03 | Alcance de unicidad del folio | Bloquea primera rebanada | Tenant/sucursal/global decidido | PB |
 | B-04 | Modelo multitenant de datos | Decisión aceptada; bloquea aplicar/probar | ADR-004 aplicado con evidencia de aislamiento | PB |
@@ -28,9 +28,9 @@ El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUE
 | B-18 | Concurrencia de folios | Bloquea R1 | Reserva/unicidad e idempotencia probadas | PB |
 | B-19 | Entrega idempotente | Bloquea R5 | Identidad de intención, reintento y doble entrega definidos | PB |
 | B-20 | Precio histórico y autorización | Bloquea R3 | Versiones, conceptos, total y reemplazo definidos | PB |
-| B-21 | Autorización organizacional | Bloquea primer cambio de código | Responsable de Producto autoriza implementación | RP |
-| B-22 | Base técnica | Bloquea primer cambio de código | ADRs necesarios aceptados, no sólo propuestos | ADR |
-| B-23 | Modelo de amenazas | Bloquea primer cambio funcional | Tenancy, identidad/PIN, archivos e integración cubiertos | RP |
+| B-21 | Autorización organizacional | Bloquea el primer cambio de implementación de R0 | Responsable de Producto autoriza implementación | RP |
+| B-22 | Base técnica | Bloquea el primer cambio de implementación de R0 | ADRs necesarios aceptados, no sólo propuestos | ADR |
+| B-23 | Modelo de amenazas | Bloquea la primera funcionalidad ejecutable de R0 | Tenancy, identidad/PIN, archivos e integración cubiertos | RP |
 | B-24 | PBI listo | Bloquea cada rebanada | DoR, aceptación, pruebas negativas y trazabilidad | RP |
 
 ## Antes de producción

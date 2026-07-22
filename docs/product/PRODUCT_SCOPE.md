@@ -4,7 +4,7 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Clasificación propuesta de capacidades; no es un roadmap ni un compromiso de primera versión.
-- **Aprobación:** Pendiente del propietario del producto.
+- **Aprobación:** R0 aprobado por el Responsable de Producto el 2026-07-21; el resto del alcance conserva su estado propuesto o abierto.
 - **Estimaciones y fechas:** No definidas.
 
 ## Propósito
@@ -21,6 +21,16 @@ Este documento organiza el universo inicial de capacidades de SR Taller 2.0 para
 | **Discovery required** | Capacidad con incertidumbre suficiente para impedir un compromiso responsable. | Que carezca de valor o que deba implementarse después de todas las demás. |
 
 Todas las clasificaciones son **propuestas**. Un cambio de clasificación requiere actualizar el backlog y las dependencias relacionadas.
+
+## Alcance aprobado de R0
+
+El Responsable de Producto cerró `DEC-002` y `DEC-062` el 2026-07-21. R0 será una fundación ejecutable y demostrable del SaaS multi-tenant, sin recepción ni órdenes de reparación.
+
+Incluye la capacidad mínima para demostrar dos tenants aislados, sucursales, usuarios y pertenencias, roles/capacidades y sus alcances, contexto operativo, autenticación base, autorización server-side, denegación por defecto, revocación, trazabilidad, errores seguros, persistencia/migraciones base y pruebas integradas. Puede usar una interfaz mínima que no representa el diseño final.
+
+Excluye los módulos funcionales de Reparaciones, Clientes, Inventario, Caja, Ventas, CRM, mensajería, finanzas, planes/suscripciones y administración completa. La lista normativa y los escenarios están en [Criterios de salida de R0](../architecture-readiness/blocker-closure/CRITERIOS_DE_SALIDA_DE_R0.md).
+
+Esta aprobación define alcance y aceptación esperada; implementación, diseño técnico, pruebas ejecutadas y aceptación formal permanecen pendientes.
 
 ## Mapa inicial de capacidades
 

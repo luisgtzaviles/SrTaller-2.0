@@ -1,4 +1,4 @@
-# Bloqueantes del primer commit de código
+# Bloqueantes del primer cambio de implementación de R0
 
 ## Criterio
 
@@ -13,13 +13,13 @@ H0 contiene sólo decisiones cuya omisión convertiría una hipótesis en estruc
 | ID | Decisión | Estado | Cierre mínimo |
 | --- | --- | --- | --- |
 | DEC-001 | Arquitectura inicial | Aceptada | ADR-002; no bloquea |
-| DEC-002 | Alcance exacto de R0 | Requiere Responsable de Producto | Resultado, exclusiones y demostración de R0 autorizados |
+| DEC-002 | Alcance exacto de R0 | Cerrada por Producto el 2026-07-21 | Fundación ejecutable, resultado, inclusiones y exclusiones aprobados |
 | DEC-004 | Stack de aplicación | Propuesta | Lenguaje, runtime, backend, persistencia y repositorio aceptados o explícitamente excluidos |
 | DEC-005 | Organización inicial del monolito | Parcialmente resuelta | Agrupación inicial, ownership y reglas verificables sin módulos vacíos |
 | DEC-044 | Estrategia de errores | Propuesta | Taxonomía mínima, resultado seguro y frontera dominio/aplicación |
 | DEC-049 | Repositorios y propiedad lógica | Parcialmente resuelta | Contratos propietarios y prohibiciones de acceso transversal |
 | DEC-051 | Estrategia de pruebas | Propuesta | Niveles, gates y aislamiento como prueba obligatoria |
-| DEC-062 | Criterios de aceptación | Requiere Responsable de Producto | Escenarios verificables de R0 y autoridad de aprobación |
+| DEC-062 | Criterios de aceptación | Cerrada para R0 por Producto el 2026-07-21 | Escenarios verificables, pruebas/evidencia requeridas y autoridad de aceptación aprobados |
 | DEC-063 | Definición de terminado | Propuesta | Evidencia mínima y gates documentados para cambios ejecutables |
 
 ## Guardrails ya disponibles
@@ -29,15 +29,16 @@ H0 contiene sólo decisiones cuya omisión convertiría una hipótesis en estruc
 - Configuración técnica y secretos deben provenir del entorno; el mecanismo se cierra en H1.
 - No se crean módulos vacíos, infraestructura distribuida, eventos sin consumidor ni carpetas definitivas por anticipación.
 
-## Evidencia para liberar el primer commit
+## Evidencia para liberar el primer cambio de implementación de R0
 
-- autorización escrita del alcance de R0;
+- alcance y contrato de salida de R0 aprobados (`DEC-002`, `DEC-062`); satisfecho el 2026-07-21;
+- autorización explícita para iniciar implementación; pendiente;
 - ADRs de plataforma necesarios en `Accepted`;
 - mapa de agrupación física inicial trazado a ADR-002;
 - reglas de dependencia comprobables con la herramienta elegida;
 - estrategia de errores, pruebas y Definition of Done revisadas;
-- PBI de R0 con escenarios felices, negativos y cross-tenant;
-- confirmación de que el commit no incluye reglas de R1 ni decisiones H3–H5.
+- PBI de R0 trazado a los escenarios felices, negativos, de denegación y cross-tenant aprobados;
+- confirmación de que el cambio no incluye reglas de R1 ni decisiones H3–H5.
 
 ## Qué no bloquea H0
 

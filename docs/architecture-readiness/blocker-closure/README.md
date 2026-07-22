@@ -6,22 +6,35 @@ Este paquete convierte los bloqueantes de preparación arquitectónica en una se
 
 ## Veredicto actual
 
-**R0 está listo para diseño dirigido, pero no para programación. No debe comenzar todavía ningún código ejecutable del producto, incluido scaffolding de framework.**
+**El alcance y contrato de salida de R0 están aprobados, pero R0 no está listo para programación. No debe comenzar todavía implementación ejecutable, incluido scaffolding de framework.**
 
-La documentación permite preparar ADRs, criterios, escenarios y spikes para autorización. El primer commit de código continúa bloqueado por alcance/autorización de R0, selección de plataforma, organización ejecutable mínima, estrategia de pruebas y contratos transversales. R1 añade decisiones de folio, recepción, custodia, política, tiempo, evidencia e identificación física.
+La documentación permite preparar ADRs, criterios, escenarios y spikes para autorización. `DEC-002` y `DEC-062` quedaron cerradas por el Responsable de Producto el 2026-07-21. El primer cambio de implementación de R0 continúa bloqueado por autorización organizacional, selección de plataforma, organización ejecutable mínima, estrategia de errores/pruebas/Definition of Done y contratos transversales. R1 añade decisiones de folio, recepción, custodia, política, tiempo, evidencia e identificación física.
 
 | Declaración | Estado actual | Evidencia faltante principal |
 | --- | --- | --- |
-| R0 listo para diseñar | Sí, con decisiones abiertas visibles | Mantener trazabilidad y no convertir propuestas en implementación |
+| R0 listo para diseñar | Sí, con alcance y contrato de salida aprobados | Cerrar diseño técnico pendiente sin convertir propuestas en implementación |
 | R0 listo para programar | No | H0 y H1 cerrados, ADRs aceptados y autorización explícita |
 | R1 listo para diseñar | Parcialmente | Cerrar preguntas de producto de recepción y folio |
 | R1 listo para programar | No | R0 demostrado y H2 cerrado |
 | MVP listo para piloto | No | R1–R5 integradas y H3 cerrado |
 | MVP listo para producción | No | H4 cerrado y riesgos residuales aceptados |
 
+## Release gate reevaluado
+
+Tras cerrar `DEC-002` y `DEC-062`, H0 conserva seis decisiones abiertas:
+
+- `DEC-004`: stack de aplicación;
+- `DEC-005`: organización inicial del monolito;
+- `DEC-044`: estrategia de errores;
+- `DEC-049`: repositorios y propiedad lógica;
+- `DEC-051`: estrategia de pruebas;
+- `DEC-063`: Definition of Done.
+
+También siguen pendientes la autorización organizacional (`B-21`) y todos los cierres H1 aplicables antes de declarar R0 programable. El siguiente paquete oficial es `DEC-004`; cerrar alcance no adelanta implementación ni R1.
+
 ## Respuestas rectoras
 
-1. **Primer commit:** lo bloquean únicamente decisiones estructurales difíciles de revertir; se excluyen proveedores y capacidades futuras.
+1. **Primer cambio de implementación de R0:** lo bloquean únicamente decisiones estructurales difíciles de revertir; se excluyen proveedores y capacidades futuras.
 2. **R0:** ADR-004 fija multitenancy, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 autorización ordinaria y ADR-013 refuerzo; siguen bloqueando su aplicación y pruebas, composición/clasificación por rebanada, mecanismos técnicos, configuración, tiempo, auditoría y persistencia segura.
 3. **R1:** lo bloquean folio, recepción mínima, custodia, estados/ubicación inicial, política efectiva, archivos e identificación física.
 4. **Durante implementación:** pueden cerrarse detalles locales que no cambien invariantes, ownership, seguridad ni contratos públicos.
@@ -35,7 +48,7 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 
 | Hito | Significado |
 | --- | --- |
-| H0 | Antes del primer commit de código ejecutable |
+| H0 | Antes del primer cambio de implementación de R0 |
 | H1 | Antes de programar R0 — Fundación Ejecutable |
 | H2 | Antes de programar R1 — Recepción |
 | H3 | Antes del piloto controlado |
@@ -46,13 +59,13 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
 
-**Actualizaciones posteriores:** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) cierra topología/propiedad; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo. No cierran implementación, composición y clasificación por rebanada, mecanismos, RLS, persistencia física ni evidencia de pruebas.
+**Actualizaciones posteriores:** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) cierra topología/propiedad; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0. No cierran implementación, composición y clasificación por rebanada, mecanismos, RLS, persistencia física ni evidencia de pruebas.
 
 ## Ruta de lectura
 
 1. [Inventario de bloqueantes](INVENTARIO_DE_BLOQUEANTES.md)
 2. [Clasificación por hito](CLASIFICACION_POR_HITO.md)
-3. [Bloqueantes del primer commit](BLOQUEANTES_DEL_PRIMER_COMMIT.md)
+3. [Bloqueantes del primer cambio de implementación de R0](BLOQUEANTES_DEL_PRIMER_COMMIT.md)
 4. [Bloqueantes de R0](BLOQUEANTES_DE_R0.md)
 5. [Bloqueantes de R1](BLOQUEANTES_DE_R1.md)
 6. [Bloqueantes del piloto](BLOQUEANTES_DEL_PILOTO.md)
@@ -73,7 +86,7 @@ Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones difer
 
 ## Autoridad y reglas
 
-- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) y [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) están `Accepted`; los demás ADRs conservan su estado registrado.
+- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) y [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) están `Accepted`; los demás ADRs conservan su estado registrado.
 - Las decisiones de dominio validadas conservan autoridad sobre propuestas arquitectónicas.
 - `Requiere Responsable de Producto` nunca se cierra por preferencia técnica.
 - `Requiere spike` produce evidencia, no aceptación automática.

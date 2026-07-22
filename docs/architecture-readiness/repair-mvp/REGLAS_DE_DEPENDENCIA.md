@@ -4,21 +4,21 @@
 
 | Regla | Momento | Clasificación |
 | --- | --- | --- |
-| El dominio no depende de controladores, interfaz ni persistencia | Obligatoria desde el primer cambio de código | DAR |
-| Un módulo no modifica directamente el estado interno de otro | Obligatoria desde el primer cambio de código | DAR |
-| La aplicación coordina casos de uso | Obligatoria desde el primer cambio de código | DAR |
-| Infraestructura implementa contratos definidos hacia adentro | Obligatoria desde el primer cambio de código | DAR |
-| Tablas de otro módulo no son contrato | Obligatoria desde el primer cambio de código | DAR |
-| Eventos no ocultan una transacción que exige consistencia inmediata | Obligatoria desde el primer cambio de código | DAR |
+| El dominio no depende de controladores, interfaz ni persistencia | Obligatoria desde el primer cambio de implementación de R0 | DAR |
+| Un módulo no modifica directamente el estado interno de otro | Obligatoria desde el primer cambio de implementación de R0 | DAR |
+| La aplicación coordina casos de uso | Obligatoria desde el primer cambio de implementación de R0 | DAR |
+| Infraestructura implementa contratos definidos hacia adentro | Obligatoria desde el primer cambio de implementación de R0 | DAR |
+| Tablas de otro módulo no son contrato | Obligatoria desde el primer cambio de implementación de R0 | DAR |
+| Eventos no ocultan una transacción que exige consistencia inmediata | Obligatoria desde el primer cambio de implementación de R0 | DAR |
 | No usar eventos para todo | Recomendada; revisar en cada caso | DAR |
-| No compartir entidades de dominio mutables entre módulos | Obligatoria desde el primer cambio de código | DAR |
-| Compartir identificadores, versiones y contratos mínimos, no agregados | Obligatoria desde el primer cambio de código | DAR |
-| Evitar un módulo “Común” con lógica de negocio indiscriminada | Obligatoria desde el primer cambio de código | DAR |
+| No compartir entidades de dominio mutables entre módulos | Obligatoria desde el primer cambio de implementación de R0 | DAR |
+| Compartir identificadores, versiones y contratos mínimos, no agregados | Obligatoria desde el primer cambio de implementación de R0 | DAR |
+| Evitar un módulo “Común” con lógica de negocio indiscriminada | Obligatoria desde el primer cambio de implementación de R0 | DAR |
 | Dinero, identidad, tiempo e identificadores pueden usar núcleo compartido mínimo | Recomendada si reduce duplicación semántica | DAP |
 | El núcleo compartido debe ser pequeño y estable | Obligatoria si se crea dicho núcleo | DAR |
-| No confiar en filtros de interfaz para reglas o autorización | Obligatoria desde el primer cambio de código | RDD |
-| Tenant, sucursal, estación y usuario forman el contexto efectivo de toda operación ordinaria | Obligatoria desde el primer cambio de código | RDD, ADR-010 |
-| Toda consulta y mutación respeta aislamiento tenant | Obligatoria desde el primer cambio de código | RDD |
+| No confiar en filtros de interfaz para reglas o autorización | Obligatoria desde el primer cambio de implementación de R0 | RDD |
+| Tenant, sucursal, estación y usuario forman el contexto efectivo de toda operación ordinaria | Obligatoria desde el primer cambio de implementación de R0 | RDD, ADR-010 |
+| Toda consulta y mutación respeta aislamiento tenant | Obligatoria desde el primer cambio de implementación de R0 | RDD |
 | Todo caso de uso declara si su acción es ordinaria o sensible y aplica el nivel aceptado sin delegar el control a la interfaz | Obligatoria desde la primera rebanada que incluya la acción | ADR-013 |
 | Automatizar reglas con herramienta de análisis arquitectónico | Diferible hasta aceptar el conjunto tecnológico | DD |
 

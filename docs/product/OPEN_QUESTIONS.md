@@ -12,6 +12,12 @@
 
 Al responder una pregunta se debe registrar la evidencia, actualizar los documentos afectados y, si la respuesta fija una dirección durable o costosa de revertir, crear o actualizar el ADR correspondiente. No se debe cambiar una pregunta a cerrada sólo porque exista una opción preferida en conversación.
 
+## Decisión de fundación registrada
+
+El Responsable de Producto cerró `DEC-002` y `DEC-062` el 2026-07-21: R0 será una fundación ejecutable multi-tenant, sin Reparaciones ni recepción, con escenarios y autoridad de aceptación verificables. La fuente consolidada es [Criterios de salida de R0](../architecture-readiness/blocker-closure/CRITERIOS_DE_SALIDA_DE_R0.md).
+
+La decisión no resuelve por sí sola ninguna de las 34 preguntas numeradas de este registro. En particular, `QUESTION-003` permanece abierta porque definir R0 y declarar R1 como primera rebanada operativa no termina de aprobar el recorrido completo, sus variantes o sus métricas. Por tanto, los conteos permanecen en 26 abiertas, 4 en investigación y 4 cerradas con decisión.
+
 ## Producto
 
 <a id="question-001"></a>
@@ -37,11 +43,11 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 <a id="question-003"></a>
 ### QUESTION-003 — Recorrido operativo prioritario
 
-- **Contexto:** Se contemplan clientes, reparaciones, inventario, ventas, pagos, cajas y comunicación, pero no se ha elegido el primer recorrido completo.
+- **Contexto:** R0 fue aprobado como fundación sin Reparaciones y R1 será la primera rebanada operativa de Reparaciones. Aún no se ha aprobado el primer recorrido completo con todas sus variantes y métricas.
 - **Impacto:** Define el núcleo de una primera versión, vocabulario, dependencias y criterios de salida.
 - **Opciones conocidas:** recepción a entrega de una reparación; reparación más cobro; venta de mostrador; una secuencia incremental de estos recorridos.
 - **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada.
+- **Decisión relacionada:** `DEC-002` delimita R0 y su relación con R1, pero no cierra esta pregunta.
 
 <a id="question-004"></a>
 ### QUESTION-004 — Acciones sensibles y autoridad de aprobación

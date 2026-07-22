@@ -8,7 +8,8 @@ Los criterios de este documento se concretan, sin reemplazarlos, en los gates de
 
 - [x] **[RDD]** Lenguaje, flujo e invariantes candidatos trazables.
 - [x] **[DAP]** Fronteras, agregados, transacciones y rebanadas propuestos.
-- [ ] **[PB]** Responsable de Producto valida alcance, términos y preguntas pendientes.
+- [x] **[RP]** Responsable de Producto aprobó alcance, exclusiones y contrato de salida de R0 (`DEC-002`, `DEC-062`) el 2026-07-21.
+- [ ] **[PB]** Alcances y preguntas de las rebanadas posteriores se validan antes de cruzar su gate.
 
 **[DAR]** El proyecto está listo para continuar decisiones arquitectónicas, no para programar.
 
@@ -16,7 +17,8 @@ Los criterios de este documento se concretan, sin reemplazarlos, en los gates de
 
 Todos los criterios deben cumplirse:
 
-- [ ] **[RP]** El Responsable de Producto autoriza explícitamente el alcance y la rebanada.
+- [x] **[RP]** El alcance y contrato de salida de R0 están aprobados.
+- [ ] **[RP]** El Responsable de Producto autoriza explícitamente el primer cambio de implementación de R0.
 - [ ] **[RP]** Sprint 00 o el criterio de paso sucesor queda cerrado por su autoridad.
 - [ ] **[ADR]** Las decisiones técnicas necesarias están aceptadas, no sólo propuestas.
 - [x] **[RDD]** Tenant, sucursal, sesión, actor y aislamiento mínimo están definidos conceptualmente por ADR-004/010/011.
@@ -26,7 +28,8 @@ Todos los criterios deben cumplirse:
 - [ ] **[RP]** El modelo de amenazas inicial y la estrategia de secretos/ambientes están revisados.
 - [ ] **[RP]** El PBI cumple Definition of Ready, aceptación y trazabilidad.
 - [ ] **[DAR]** Frontera propietaria, agregado, transacción e idempotencia están explícitos.
-- [ ] **[DAR]** Existen escenarios felices, negativos, concurrentes y entre tenants.
+- [x] **[RP]** Escenarios felices, negativos, de denegación y cross-tenant de R0 están aprobados.
+- [ ] **[DAR]** Los escenarios aprobados están especificados como pruebas ejecutables; concurrencia se añade donde la invariante lo exija.
 - [ ] **[DAR]** No se introduce capacidad fuera del MVP sin cambio de alcance aprobado.
 
 ## Listo para la primera rebanada
@@ -59,4 +62,4 @@ Además:
 
 ## Resultado actual
 
-**[PB]** El estado sigue siendo **Preparado con bloqueantes**: existen ADRs aceptados, pero faltan autorización organizacional, plataforma, mecanismos, composición/clasificación por rebanada, modelos de amenazas, pruebas y decisiones propias de la rebanada. Una casilla conceptual cerrada no autoriza programación.
+**[PB]** El estado sigue siendo **Preparado con bloqueantes**: alcance y aceptación esperada de R0 están aprobados, pero faltan autorización de implementación, plataforma, organización ejecutable, mecanismos, composición/clasificación, modelos de amenazas, estrategia y ejecución de pruebas y los demás gates H0/H1. Una decisión de alcance no autoriza programación ni declara R0 aceptado.

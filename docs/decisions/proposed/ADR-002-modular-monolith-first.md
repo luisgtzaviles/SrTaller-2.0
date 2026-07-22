@@ -119,13 +119,13 @@ El ADR reconoce como candidatas:
 - Notificaciones;
 - Reportes operativos.
 
-No todas deben materializarse como módulos físicos independientes desde el primer cambio de código. Pueden agruparse inicialmente cuando exista cohesión, siempre que se preserven lenguaje, responsabilidad, propiedad y contratos. La fragmentación excesiva es también un riesgo.
+No todas deben materializarse como módulos físicos independientes desde el primer cambio de implementación de R0. Pueden agruparse inicialmente cuando exista cohesión, siempre que se preserven lenguaje, responsabilidad, propiedad y contratos. La fragmentación excesiva es también un riesgo.
 
 La evaluación detallada vive en [Fronteras modulares propuestas](../../architecture-readiness/repair-mvp/FRONTERAS_MODULARES_PROPUESTAS.md); esa evaluación puede evolucionar sin reabrir este ADR mientras respete sus reglas.
 
 ## Reglas arquitectónicas obligatorias
 
-Desde R0 y el primer cambio de código:
+Desde el primer cambio de implementación de R0:
 
 1. Las tablas o estructuras internas de otro módulo no son contrato público.
 2. Un módulo no modifica directamente el estado interno de otro.

@@ -8,19 +8,19 @@ Cada decisión tiene un hito primario para evitar doble conteo. Una fila puede i
 
 | Hito primario | Decisiones evaluadas | Cerradas o aceptadas | Abiertas | Resultado |
 | --- | ---: | ---: | ---: | --- |
-| H0 — Primer commit | 9 | 1 | 8 | Código ejecutable bloqueado |
+| H0 — Primer cambio de implementación de R0 | 9 | 3 | 6 | Implementación ejecutable bloqueada |
 | H1 — R0 | 24 | 0 | 24 | R0 no programable |
 | H2 — R1 | 21 | 1 | 20 | R1 no programable |
 | H3 — Piloto | 9 | 0 | 9 | Piloto bloqueado |
 | H4 — Producción | 6 | 0 | 6 | Producción bloqueada |
 | H5 — Diferible | 13 | 13 diferidas | 0 para MVP | No bloquean MVP |
-| **Total** | **82** | **15** | **67** | Preparado con bloqueantes |
+| **Total** | **82** | **17** | **65** | Preparado con bloqueantes |
 
-## H0 — Antes del primer commit
+## H0 — Antes del primer cambio de implementación de R0
 
 `DEC-001`, `DEC-002`, `DEC-004`, `DEC-005`, `DEC-044`, `DEC-049`, `DEC-051`, `DEC-062` y `DEC-063`.
 
-ADR-002 cierra `DEC-001`. Las otras ocho decisiones impiden crear una base ejecutable que convierta propuestas en convenciones permanentes.
+ADR-002 cierra `DEC-001`; la decisión del Responsable de Producto del 2026-07-21 cierra `DEC-002` y `DEC-062`. Las seis decisiones restantes impiden crear una base ejecutable que convierta propuestas en convenciones permanentes.
 
 ## H1 — Antes de programar R0
 

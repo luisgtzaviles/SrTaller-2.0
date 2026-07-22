@@ -6,12 +6,12 @@ La secuencia reduce decisiones irreversibles: primero autoridad y contexto; desp
 
 ## Grupo 0 — Autoridad y base ejecutable
 
-1. Cerrar alcance exacto de R0 (`DEC-002`).
+1. **Cerrado el 2026-07-21:** alcance, inclusiones y exclusiones de R0 (`DEC-002`).
 2. Revisar/aceptar el conjunto mínimo de ADR-001, ADR-003, ADR-005 y ADR-009 (`DEC-004`).
 3. Definir agrupación inicial y enforcement de ADR-002 (`DEC-005`, `DEC-049`).
-4. Cerrar errores, pruebas, aceptación y Definition of Done (`DEC-044`, `DEC-051`, `DEC-062`, `DEC-063`).
+4. Cerrar errores, pruebas y Definition of Done (`DEC-044`, `DEC-051`, `DEC-063`); los criterios de aceptación de R0 (`DEC-062`) quedaron cerrados por Producto el 2026-07-21.
 
-Este grupo desbloquea el primer commit, pero no basta para R0.
+Este grupo desbloquea el primer cambio de implementación de R0, pero no basta para completar R0. El siguiente paquete abierto es `DEC-004`.
 
 ## Grupo A — Fundación de contexto
 
@@ -74,4 +74,4 @@ Folio, política y archivos pueden preparar alternativas en paralelo después de
 
 ## Camino crítico
 
-`DEC-002 → DEC-004/005 → ADR-004/010/011/012/013 aplicados → DEC-049/050/051 → R0 demostrado → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.
+`DEC-002 cerrada → DEC-004/005 → ADR-004/010/011/012/013 aplicados → DEC-049/050/051/063 → R0 implementado y demostrado conforme a DEC-062 → aceptación formal de R0 → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.

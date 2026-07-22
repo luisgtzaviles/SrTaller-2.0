@@ -2,7 +2,7 @@
 
 ## Alcance de la revisión
 
-El paquete consolidó 82 decisiones a partir de 185 documentos en los conjuntos solicitados. Los conteos describen el corpus inspeccionado, no un porcentaje de aprobación:
+El paquete consolidó 82 decisiones a partir de 189 documentos en los conjuntos solicitados. Los conteos describen el corpus inspeccionado, no un porcentaje de aprobación:
 
 | Conjunto | Archivos revisados | Fuente índice |
 | --- | ---: | --- |
@@ -10,11 +10,11 @@ El paquete consolidó 82 decisiones a partir de 185 documentos en los conjuntos 
 | Modelo integrado de Reparaciones | 28 | [integrated-repair-domain-model](../../domain-model/integrated-repair-domain-model/README.md) |
 | Validaciones de dominio | 56 | [domain-validation](../../domain-validation/) |
 | Documentación de dominio | 27 | [domain](../../domain/README.md) |
-| ADRs y registro | 11 | [decisions](../../decisions/README.md) |
+| ADRs, plantilla y registro | 15 | [decisions](../../decisions/README.md) |
 | Arquitectura transversal | 12 | [architecture](../../architecture/) |
 | Producto | 9 | [product](../../product/) |
 | Revisión de sprint y prototipos documentales | 10 | [sprint-00 review](../../reviews/sprint-00/README.md) |
-| **Total** | **185** | — |
+| **Total** | **189** | — |
 
 ## Autoridad de las fuentes
 
@@ -30,7 +30,7 @@ El paquete consolidó 82 decisiones a partir de 185 documentos en los conjuntos 
 | Decisiones | Evidencia principal | Complemento | Uso en este paquete |
 | --- | --- | --- | --- |
 | DEC-001, DEC-005, DEC-049, DEC-071 | [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [monolito modular](../repair-mvp/MONOLITO_MODULAR.md) | [fronteras](../repair-mvp/FRONTERAS_MODULARES_PROPUESTAS.md), [dependencias](../repair-mvp/REGLAS_DE_DEPENDENCIA.md) | Arquitectura aceptada y límites de evolución |
-| DEC-002, DEC-003, DEC-062, DEC-063 | [alcance MVP](../repair-mvp/ALCANCE_DEL_MVP.md), [rebanadas](../repair-mvp/PLAN_DE_REBANADAS_VERTICALES.md) | [criterios existentes](../repair-mvp/CRITERIOS_DE_INICIO_DE_IMPLEMENTACION.md), [flujo mínimo](../repair-mvp/FLUJO_VERTICAL_MINIMO_VENDIBLE.md) | Separación entre R0, R1 y gates de aceptación |
+| DEC-002, DEC-003, DEC-062, DEC-063 | [criterios de salida de R0](CRITERIOS_DE_SALIDA_DE_R0.md), [alcance MVP](../repair-mvp/ALCANCE_DEL_MVP.md), [rebanadas](../repair-mvp/PLAN_DE_REBANADAS_VERTICALES.md) | [criterios de implementación](../repair-mvp/CRITERIOS_DE_INICIO_DE_IMPLEMENTACION.md), [flujo mínimo](../repair-mvp/FLUJO_VERTICAL_MINIMO_VENDIBLE.md) | DEC-002/062 cerradas para R0 el 2026-07-21; DEC-003/063 y ejecución de pruebas siguen pendientes |
 | DEC-004 | [registro de ADRs](../../decisions/README.md), ADR-[001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md), [003](../../decisions/proposed/ADR-003-postgresql-primary-database.md), [005](../../decisions/proposed/ADR-005-nestjs-backend.md), [009](../../decisions/proposed/ADR-009-monorepo-strategy.md) | [arquitectura objetivo](../../architecture/TARGET_ARCHITECTURE.md) | Lote de plataforma pendiente; ninguna propuesta se trata como aceptada |
 | DEC-006 a DEC-012 | [ADR-004 Accepted](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010 Accepted](../../decisions/proposed/ADR-010-station-bound-operational-context.md), [modelo multitenant](../repair-mvp/MODELO_MULTITENANT.md) | [multitenancy transversal](../../architecture/MULTITENANCY_MODEL.md), [sucursal/estación](../../architecture/BRANCH_AND_DEVICE_MODEL.md) | Topología, propiedad y contexto operativo aceptados; faltan aplicación y pruebas |
 | DEC-013 a DEC-020 | [ADR-011 Accepted](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), [ADR-012 Accepted](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md), [ADR-013 Accepted](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md), [identidad y atribución](../repair-mvp/MODELO_DE_IDENTIDAD_Y_ATRIBUCION.md) | [seguridad](../repair-mvp/SEGURIDAD_Y_ACCIONES_SENSIBLES.md), [identidad/permisos](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), [baseline](../../architecture/SECURITY_BASELINE.md) | DEC-013 a 020 cerradas conceptualmente; mecanismos, composición/clasificación por rebanada y pruebas continúan |
@@ -58,7 +58,7 @@ El paquete consolidó 82 decisiones a partir de 185 documentos en los conjuntos 
 ## Límites de esta consolidación
 
 - al crear este paquete no se creó ni aceptó ningún ADR; ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 fueron aceptados posteriormente y se registran como actualizaciones trazables;
-- no se resolvió ninguna pregunta de Product Owner;
+- `DEC-002` y `DEC-062` se cerraron por decisión del Responsable de Producto el 2026-07-21; las demás preguntas conservan su estado;
 - no se ejecutó ningún spike;
 - no se alteró código, runtime, datos, API, interfaz o infraestructura;
 - no se sustituyeron documentos históricos ni se ocultaron contradicciones;

@@ -6,8 +6,9 @@ Decidir tarde no siempre es malo. Es peligroso cuando el trabajo previo cristali
 
 | Decisiones | Riesgo si se cierran tarde | Efecto probable | Severidad | Último momento seguro | Mitigación mientras siguen abiertas |
 | --- | --- | --- | --- | --- | --- |
-| DEC-002, DEC-062, DEC-063 | R0 crece sin resultado demostrable | Scaffolding permanente, módulos vacíos y aceptación subjetiva | Crítica | Antes del primer commit | Mantener sólo documentación y definir demostración/exclusiones |
-| DEC-004, DEC-005, DEC-049, DEC-051 | Herramientas y estructura se vuelven arquitectura accidental | Repositorio difícil de cambiar, dependencias no verificables | Alta | Antes del primer commit | No instalar tooling ni crear aplicaciones |
+| DEC-002, DEC-062 | Cerradas el 2026-07-21; el riesgo pasa a incumplir el alcance aprobado | R0 incorpora R1, se acepta sólo visualmente o se omiten denegaciones | Crítica | Durante diseño, implementación y aceptación de R0 | Trazar PBI, pruebas y demostración a los criterios aprobados |
+| DEC-063 | “Terminado” queda sujeto a interpretación | Evidencia incompleta aunque los escenarios de Producto estén definidos | Crítica | Antes del primer cambio de implementación de R0 | Cerrar Definition of Done contra DEC-062 |
+| DEC-004, DEC-005, DEC-049, DEC-051 | Herramientas y estructura se vuelven arquitectura accidental | Repositorio difícil de cambiar, dependencias no verificables | Alta | Antes del primer cambio de implementación de R0 | No instalar tooling ni crear aplicaciones |
 | DEC-006 a DEC-009 | El tenant se vuelve parámetro opcional | Fugas de datos y reescritura de persistencia | Crítica | Antes de persistir el primer dato de R0 | No diseñar tablas/repositorios finales; preparar threat model y spike |
 | DEC-010 a DEC-012 | ADR-010 no se aplica y la sucursal se infiere o muta silenciosamente | Atribución, visibilidad y políticas aplicadas al lugar equivocado | Crítica | Antes del primer caso de uso con sucursal | Probar estación, ausencia, conflicto, desvinculación y nueva vinculación |
 | DEC-013 a DEC-020 | UI, sesión y autorización se mezclan | Suplantación, privilegios excesivos y auditoría falsa | Crítica | Antes del primer login o comando protegido | No implementar PIN ni roles nominales sin matriz de autoridad |

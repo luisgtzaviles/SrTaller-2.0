@@ -6,6 +6,16 @@
 
 **[RP]** El MVP no pretende completar la suite de gestión del taller. Su unidad de valor es una orden de servicio cerrable y auditable.
 
+## R0 aprobado como fundación
+
+**[RP]** El Responsable de Producto aprobó el 2026-07-21 que R0 sea una fundación ejecutable, integrada, demostrable y verificable del SaaS multi-tenant. R0 antecede al recorrido operativo del MVP y no constituye por sí solo una versión vendible.
+
+R0 incluye únicamente la base necesaria para demostrar tenants aislados, sucursales mínimas, identidad, roles/capacidades, contexto, autorización server-side, denegación, revocación, trazabilidad, errores seguros, persistencia/migraciones base, pruebas y un mecanismo mínimo de demostración.
+
+R0 excluye recepción, órdenes de reparación, diagnóstico, cotización, pagos, inventario, caja, clientes como módulo completo y las demás capacidades operativas o comerciales. El contrato completo está en [Criterios de salida de R0](../blocker-closure/CRITERIOS_DE_SALIDA_DE_R0.md).
+
+La aprobación cierra `DEC-002` y `DEC-062` para R0. No autoriza implementación, no cierra el diseño técnico ni las pruebas y no acepta una demostración todavía inexistente.
+
 ## Esencial para la primera venta
 
 | Capacidad | Resultado mínimo | Clasificación |

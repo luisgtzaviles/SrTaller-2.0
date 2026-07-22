@@ -4,9 +4,12 @@
 
 R1 es la primera rebanada de recepción y custodia. No puede utilizarse para completar silenciosamente la fundación de R0 ni para inventar políticas operativas mientras se programa.
 
+El alcance y contrato de salida de R0 fueron aprobados por el Responsable de Producto el 2026-07-21 (`DEC-002`, `DEC-062`). R0 todavía debe diseñarse técnicamente, implementarse, probarse, demostrarse y aceptarse formalmente antes de abrir este gate.
+
 ## Gate de fundación
 
 - [ ] R0 cumple todos los [criterios de salida](CRITERIOS_DE_SALIDA_DE_R0.md);
+- [ ] el Responsable de Producto aceptó formalmente la demostración de R0;
 - [ ] aislamiento de tenant y alcance de sucursal están probados;
 - [ ] identidad, autorización ordinaria, refuerzo de acciones sensibles y atribución están activas conforme a ADR-011, ADR-012 y ADR-013;
 - [ ] persistencia, migraciones, tiempo, errores y observabilidad tienen contrato aceptado;
@@ -46,3 +49,5 @@ La entrada de R1 no autoriza agregar inventario completo, compras, CRM, pagos en
 ## Declaración de entrada
 
 R1 sólo entra a programación cuando Producto, Arquitectura, Seguridad y Calidad puedan señalar evidencia para cada criterio aplicable. Una propuesta de ADR, un mockup o una decisión “por defecto” no cuentan como cierre.
+
+La aceptación del alcance de R0 no adelanta `DEC-003`, no incorpora Reparaciones en R0 y no permite implementar por primera vez dentro de R1 las garantías fundacionales que R0 debe demostrar.

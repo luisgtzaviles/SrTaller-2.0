@@ -53,7 +53,7 @@ ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 ya están aceptados. La siguiente r
 
 Protección técnica del PIN, intentos, recuperación y formato de sesión siguen como diseño/evidencia dependiente de ADR-011. La propagación de cambios de autorización depende de ADR-012 y la invalidación de controles reforzados de ADR-013. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
-ADR-001, ADR-003, ADR-005 y ADR-009 siguen siendo el lote mínimo de plataforma para el primer commit. Pueden prepararse en paralelo, pero no sustituyen el cierre de multitenancy para completar R0.
+ADR-001, ADR-003, ADR-005 y ADR-009 siguen siendo el lote mínimo de plataforma para el primer cambio de implementación de R0. `DEC-002` y `DEC-062` ya aportan alcance y aceptación esperada, pero no sustituyen el cierre de multitenancy para completar R0.
 
 ## Condiciones para llevar un ADR a revisión
 

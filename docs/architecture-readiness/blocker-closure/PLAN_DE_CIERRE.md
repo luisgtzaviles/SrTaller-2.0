@@ -4,11 +4,15 @@
 
 El plan cierra decisiones, no fechas. Cada fila representa un paquete coherente: las decisiones individuales permanecen identificadas en el [inventario](INVENTARIO_DE_BLOQUEANTES.md). Un paquete sólo termina con evidencia y autoridad; redactar una propuesta no cuenta como cierre.
 
+## Cierre registrado
+
+El Responsable de Producto cerró `DEC-002` y `DEC-062` el 2026-07-21. Quedaron aprobados el alcance de R0, sus exclusiones, escenarios verificables y autoridad de aceptación. Este cierre no autoriza implementación, no declara R0 construido o aceptado y no cierra `DEC-063`.
+
 ## Secuencia ejecutable de decisiones
 
 | Orden | Decisiones | Responsable principal | Entradas mínimas | Salida verificable | ADR | Criterio de aceptación | Hito |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | DEC-002, DEC-062 | Producto | Rebanadas, objetivo MVP, escenarios | Resultado, exclusiones y aceptación de R0 aprobados | No | R0 puede demostrarse sin depender de R1 | H0 |
+| 1 — cerrado 2026-07-21 | DEC-002, DEC-062 | Producto | Rebanadas, objetivo MVP, escenarios | Alcance, exclusiones, escenarios y autoridad de aceptación de R0 aprobados | No | Contrato verificable de R0 sin Reparaciones ni dependencia de R1 | H0 cerrado para estas decisiones |
 | 2 | DEC-004 | Arquitectura | Alcance R0, restricciones del repositorio | ADR-001/003/005/009 revisados | Existentes | Cada ADR tiene estado y consecuencias explícitas | H0 |
 | 3 | DEC-005, DEC-049 | Arquitectura | ADR-002, mapa de contextos y dependencias | Estructura inicial, ownership y reglas de dependencia | No, salvo excepción | Ningún módulo futuro vacío ni acceso global a datos | H0 |
 | 4 | DEC-044, DEC-051, DEC-063 | Calidad + Arquitectura | Riesgos, stack y aceptación R0 | Errores, pruebas y Definition of Done | ADR de pruebas | Gates repetibles cubren arquitectura y aislamiento | H0 |
