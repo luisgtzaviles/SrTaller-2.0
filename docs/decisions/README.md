@@ -5,7 +5,8 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 ## Estado del documento
 
 **Estado:** Workflow en uso, pendiente de completar autoridades por clase de decisión.
-**Decisiones aceptadas:** ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013, aceptados el 2026-07-21 mediante instrucciones explícitas del Responsable de Producto.
+**Decisiones aceptadas:** siete. ADR-001 fue aceptado el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento.
+**Decisiones propuestas:** seis. ADR-003 y ADR-005 a ADR-009 conservan estado `Proposed`.
 
 ## Estados permitidos
 
@@ -28,6 +29,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 
 | ADR | Tema | Estado |
 |---|---|---|
+| [ADR-001](proposed/ADR-001-typescript-as-primary-language.md) | TypeScript como lenguaje principal y Node.js como runtime inicial | Accepted — 2026-07-21 |
 | [ADR-002](proposed/ADR-002-modular-monolith-first.md) | Monolito modular orientado al dominio como arquitectura inicial | Accepted — 2026-07-21 |
 | [ADR-004](proposed/ADR-004-shared-schema-multitenancy.md) | Multitenancy con base y esquema compartidos | Accepted — 2026-07-21 |
 | [ADR-010](proposed/ADR-010-station-bound-operational-context.md) | Contexto operativo derivado de una estación vinculada | Accepted — 2026-07-21 |
@@ -41,7 +43,6 @@ Las rutas históricas bajo `proposed/` se conservan para mantener una convenció
 
 | ADR | Tema | Estado |
 |---|---|---|
-| [ADR-001](proposed/ADR-001-typescript-as-primary-language.md) | TypeScript como lenguaje principal | Proposed |
 | [ADR-003](proposed/ADR-003-postgresql-primary-database.md) | PostgreSQL como base primaria | Proposed |
 | [ADR-005](proposed/ADR-005-nestjs-backend.md) | NestJS para backend/API | Proposed |
 | [ADR-006](proposed/ADR-006-nextjs-web-clients.md) | Next.js para clientes web | Proposed |

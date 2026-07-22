@@ -24,6 +24,12 @@ Evitar que presentación, HTTP, reglas de negocio y acceso a datos vuelvan a mez
 
 No se presupone que cada fila sea un repositorio, servicio o despliegue distinto. Conforme a [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), existe una sola aplicación backend y un único artefacto/despliegue iniciales.
 
+## Lenguaje y runtime aceptados
+
+Conforme a [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md), dominio, aplicación, adaptadores, procesamiento diferible, pruebas de producto y contratos deliberadamente compartidos del backend inicial usan TypeScript sobre Node.js `24.x`. Esto no autoriza NestJS, un package manager, monorepo, librería de validación ni nueva superficie de cliente.
+
+Toda entrada HTTP, evento, job, dato persistido, archivo, variable de entorno o integración se valida en runtime antes de convertirse en un valor confiable. Los tipos de TypeScript, decorators o contratos compilados no sustituyen esa validación ni los controles de ADR-004 y ADR-010 a ADR-013.
+
 ## Capas conceptuales
 
 ```mermaid
@@ -179,6 +185,7 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 ## Alternativas y decisiones relacionadas
 
 - [ADR-002: monolito modular orientado al dominio](../decisions/proposed/ADR-002-modular-monolith-first.md) — `Accepted`
+- [ADR-001: TypeScript como lenguaje principal y Node.js como runtime inicial](../decisions/proposed/ADR-001-typescript-as-primary-language.md) — `Accepted`
 - [ADR-004: multitenancy con base y esquema compartidos](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) — `Accepted`
 - [ADR-010: contexto operativo derivado de una estación vinculada](../decisions/proposed/ADR-010-station-bound-operational-context.md) — `Accepted`
 - [ADR-011: identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) — `Accepted`
@@ -188,7 +195,7 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: estrategia de monorepo](../decisions/proposed/ADR-009-monorepo-strategy.md)
 
-ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
+ADR-001, ADR-002, ADR-004 y ADR-010 a ADR-013 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-001 no acepta frameworks ni tooling; ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
 
 ## Riesgos
 

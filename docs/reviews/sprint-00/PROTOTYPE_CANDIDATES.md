@@ -216,7 +216,7 @@
 | Duración | `TBD` |
 | ADR relacionado | [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md); informa [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md), [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md). |
 | PBI relacionado | [PBI-007](../../backlog/pbis/PBI-007.md), [PBI-010](../../backlog/pbis/PBI-010.md), [PBI-012](../../backlog/pbis/PBI-012.md) y [PBI-017](../../backlog/pbis/PBI-017.md). |
-| Dependencias | Recorrido mínimo autorizado, ADR-001/002 como direcciones en evaluación, patrón de tenant context de SPIKE-002 y criterios técnicos de PBI-012. |
+| Dependencias | Recorrido mínimo autorizado, ADR-001/002 como decisiones aceptadas, patrón de tenant context de SPIKE-002 y criterios técnicos de PBI-012. |
 
 ## Orden de autorización recomendado
 

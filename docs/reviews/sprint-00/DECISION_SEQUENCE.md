@@ -406,7 +406,7 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 2. Revisar ADR-002 para límites y unidad inicial, sin asumir microservicios.
 3. Revisar ADR-003 conceptualmente, separando motor de base de datos de proveedor.
 4. Validar ADR-004 con aislamiento, restore por tenant y [SPIKE-002](./PROTOTYPE_CANDIDATES.md#spike-002); evaluar RLS mediante [SPIKE-003](./PROTOTYPE_CANDIDATES.md#spike-003).
-5. Revisar ADR-001 y ADR-005 con un caso de uso representativo; el framework no valida el dominio.
+5. ADR-001 ya está `Accepted`; revisar ADR-005 con un caso de uso representativo y Node.js `24.x` como baseline, recordando que el framework no valida el dominio.
 6. Revisar ADR-006 por aplicación concreta, no como obligación para toda web.
 7. Revisar ADR-008 después del modelo de identidad mediante [SPIKE-001](./PROTOTYPE_CANDIDATES.md#spike-001).
 8. Revisar ADR-009 distinguiendo monorepo de pnpm o Turborepo y apoyándose, si aporta evidencia, en [SPIKE-008](./PROTOTYPE_CANDIDATES.md#spike-008).
@@ -425,7 +425,7 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 
 Los nueve ADRs permanecen `Proposed`. El gate debe registrar para cada uno si está listo para revisión, requiere producto, requiere validación técnica o debe dividirse. En particular:
 
-- ADR-001 no acepta automáticamente NestJS o Next.js;
+- ADR-001 acepta TypeScript y Node.js `24.x`, pero no acepta automáticamente NestJS, Next.js, monorepo o tooling;
 - ADR-003 no elige proveedor ni ORM;
 - ADR-004 no acepta RLS implícitamente;
 - ADR-006 no obliga a que todas las aplicaciones web compartan estrategia;

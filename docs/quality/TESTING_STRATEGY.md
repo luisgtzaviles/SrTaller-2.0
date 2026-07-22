@@ -5,6 +5,7 @@
 - **Estado:** Propuesta
 - **Alcance:** Pruebas documentales actuales y futura plataforma web/API/workers/móviles.
 - **Decisión pendiente:** Frameworks, herramientas, cobertura objetivo, navegadores/dispositivos y presupuesto de rendimiento.
+- **Baseline aceptada:** ADR-001 exige TypeScript, Node.js `24.x`, strictness conceptual y validación de runtime; no selecciona test runner.
 
 ## Objetivo
 
@@ -30,6 +31,7 @@ Se favorece una base amplia de pruebas rápidas y un conjunto E2E reducido pero 
 
 - En Sprint 00: enlaces, IDs, consistencia entre visión/epics/PBIs/sprint/ADRs y ausencia de código funcional.
 - En implementación futura: formato, lint, type checking, análisis de secretos, dependencias y patrones inseguros.
+- Verificar ausencia de `implicit any`, escape hatches injustificados y código fuente JavaScript de producto no autorizado.
 - Validar contratos y diagramas sin asumir que sustituyen pruebas ejecutables.
 
 ### Unitarias
@@ -42,6 +44,7 @@ Se favorece una base amplia de pruebas rápidas y un conjunto E2E reducido pero 
 
 - Repositorios con PostgreSQL, namespace de Redis, storage, colas y adaptadores.
 - Propagación de tenant/sucursal y transacciones.
+- Validación en runtime de entradas aunque exista un tipo TypeScript equivalente.
 - Idempotencia, reintentos, concurrencia y fallos parciales.
 - Migraciones hacia adelante y convivencia de versiones cuando aplica.
 
@@ -73,7 +76,7 @@ Se favorece una base amplia de pruebas rápidas y un conjunto E2E reducido pero 
 | API | autenticación, autorización, tenant, validación, errores, idempotencia y contratos. |
 | PostgreSQL | propiedad tenant/sucursal, restricciones conceptuales, concurrencia, migración y consultas globales controladas. |
 | Redis/caché | namespace de tenant, invalidación, TTL y ausencia de fuga por claves. |
-| BullMQ/jobs futuros | payload con contexto, reintento, idempotencia, dead-letter/recovery TBD y tenant correcto. |
+| Jobs futuros, mecanismo pendiente | payload con contexto, validación runtime, reintento, idempotencia, dead-letter/recovery TBD y tenant correcto. |
 | WebSockets/realtime | autenticación, rooms por tenant/conversación, revocación, reconexión, orden y duplicados. |
 | Archivos/S3 compatible | claves aisladas, URLs/autorización, tipo/tamaño, malware TBD y eliminación. |
 | Web | permisos, estados, responsive, accesibilidad y errores recuperables. |

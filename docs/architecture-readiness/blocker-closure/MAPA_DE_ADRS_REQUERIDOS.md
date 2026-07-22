@@ -8,7 +8,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 | ADR | Tema | Estado | Hito relacionado | Acción requerida |
 | --- | --- | --- | --- | --- |
-| ADR-001 | Lenguaje y runtime | Proposed | H0 | Revisar contra alcance R0 y aceptar, reemplazar o rechazar |
+| ADR-001 | TypeScript y Node.js `24.x` | Accepted | H0 parcialmente cerrado | Aplicar política LTS/EOL, validación runtime y gobierno de excepciones |
 | ADR-002 | Monolito modular inicial | Accepted | H0 cerrado | Aplicar y verificar; no reabrir sin evidencia |
 | ADR-003 | Persistencia principal | Proposed | H0/H1 | Revisar junto con ownership y migraciones |
 | ADR-004 | Estrategia multitenant y propiedad lógica | Accepted | H1 parcialmente cerrado | Aplicar invariantes; RLS queda separado y contexto se rige por ADR-010 |
@@ -28,6 +28,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 | Prioridad | Decisión arquitectónica | Decisiones previas | ¿Requiere Producto? | ¿Requiere spike? | Resultado esperado | Hito |
 | --- | --- | --- | --- | --- | --- | --- |
+| Cerrado | Lenguaje y runtime inicial | DEC-001, DEC-002 | No; Arquitectura + Ingeniería aceptaron | No para aceptar | ADR-001 Accepted: TypeScript y Node.js `24.x`; faltan scaffold y evidencia cuando se autoricen | H0 parcialmente cerrado |
 | Cerrado | Estrategia multitenant, propiedad lógica y aislamiento de datos | DEC-007, DEC-008 | Respondido | RLS sólo si sigue candidato | ADR-004 aceptado; falta evidencia de aplicación y pruebas | H1 |
 | Cerrado | Contexto operativo de tenant y sucursal | DEC-009 a DEC-012 | Respondido | No para aceptar el modelo | ADR-010 aceptado; falta evidencia de aplicación y pruebas | H1 |
 | Cerrado | Identidad, sesión, PIN e inactividad | DEC-013 a DEC-016 | Respondido | Mecanismos técnicos aún pueden requerir evidencia | ADR-011 aceptado; falta aplicación, modelo de amenazas y pruebas | H1 |
@@ -49,11 +50,11 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 ## Próximo ADR recomendado
 
-ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 ya están aceptados. La siguiente revisión de seguridad debe aplicar y probar esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.
+ADR-001, ADR-004 y ADR-010 a ADR-013 ya están aceptados. La siguiente revisión de seguridad debe aplicar y probar esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.
 
 Protección técnica del PIN, intentos, recuperación y formato de sesión siguen como diseño/evidencia dependiente de ADR-011. La propagación de cambios de autorización depende de ADR-012 y la invalidación de controles reforzados de ADR-013. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
-ADR-001, ADR-003, ADR-005 y ADR-009 siguen siendo el lote mínimo de plataforma para el primer cambio de implementación de R0. `DEC-002` y `DEC-062` ya aportan alcance y aceptación esperada, pero no sustituyen el cierre de multitenancy para completar R0.
+ADR-001 ya está `Accepted` y satisface lenguaje/runtime dentro del lote mínimo de plataforma. ADR-003, ADR-005 y ADR-009 continúan pendientes, por lo que `DEC-004` y el primer cambio de implementación de R0 permanecen bloqueados. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
 
 ## Condiciones para llevar un ADR a revisión
 

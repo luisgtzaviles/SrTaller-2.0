@@ -7,11 +7,11 @@ La secuencia reduce decisiones irreversibles: primero autoridad y contexto; desp
 ## Grupo 0 — Autoridad y base ejecutable
 
 1. **Cerrado el 2026-07-21:** alcance, inclusiones y exclusiones de R0 (`DEC-002`).
-2. Revisar/aceptar el conjunto mínimo de ADR-001, ADR-003, ADR-005 y ADR-009 (`DEC-004`).
+2. Completar `DEC-004`: ADR-001 quedó aceptado el 2026-07-21; revisar/aceptar o resolver explícitamente ADR-003, ADR-005 y ADR-009.
 3. Definir agrupación inicial y enforcement de ADR-002 (`DEC-005`, `DEC-049`).
 4. Cerrar errores, pruebas y Definition of Done (`DEC-044`, `DEC-051`, `DEC-063`); los criterios de aceptación de R0 (`DEC-062`) quedaron cerrados por Producto el 2026-07-21.
 
-Este grupo desbloquea el primer cambio de implementación de R0, pero no basta para completar R0. El siguiente paquete abierto es `DEC-004`.
+Este grupo desbloquea el primer cambio de implementación de R0, pero no basta para completar R0. El siguiente paquete abierto es `DEC-004`; lenguaje y runtime ya están resueltos, no así persistencia, framework backend y repositorio.
 
 ## Grupo A — Fundación de contexto
 

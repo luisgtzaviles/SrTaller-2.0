@@ -5,7 +5,7 @@
 
 ## Estado del documento
 
-Propuesta pendiente de evaluación; no autoriza scaffold de NestJS.
+Propuesta pendiente de evaluación; no autoriza scaffold de NestJS. [ADR-001](ADR-001-typescript-as-primary-language.md) ya satisface la dependencia de lenguaje/runtime con TypeScript y Node.js `24.x`, pero no constituye evidencia ni aceptación del framework.
 
 ## Contexto
 
@@ -32,12 +32,12 @@ Usar NestJS como shell de API y procesos de backend, manteniendo el dominio inde
 ## Consecuencias positivas
 
 - Convenciones comunes para módulos y pruebas.
-- Integración con el stack TypeScript propuesto.
+- Integración con TypeScript y Node.js `24.x` aceptados por ADR-001.
 - Puntos claros para políticas transversales.
 
 ## Consecuencias negativas
 
-- Abstracciones y runtime adicionales.
+- Abstracciones y dependencias adicionales del framework.
 - Posible acoplamiento del dominio al framework.
 - El framework no impide módulos mal delimitados.
 

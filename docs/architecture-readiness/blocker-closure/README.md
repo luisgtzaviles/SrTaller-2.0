@@ -32,6 +32,8 @@ Tras cerrar `DEC-002` y `DEC-062`, H0 conserva seis decisiones abiertas:
 
 También siguen pendientes la autorización organizacional (`B-21`) y todos los cierres H1 aplicables antes de declarar R0 programable. El siguiente paquete oficial es `DEC-004`; cerrar alcance no adelanta implementación ni R1.
 
+ADR-001 fue aceptado el 2026-07-21 por Arquitectura + Ingeniería: TypeScript es el lenguaje obligatorio por defecto del producto autorizado y Node.js `24.x` el runtime inicial. `DEC-004` permanece abierta porque ADR-003, ADR-005 y ADR-009 continúan `Proposed`.
+
 ## Respuestas rectoras
 
 1. **Primer cambio de implementación de R0:** lo bloquean únicamente decisiones estructurales difíciles de revertir; se excluyen proveedores y capacidades futuras.
@@ -59,7 +61,7 @@ También siguen pendientes la autorización organizacional (`B-21`) y todos los 
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
 
-**Actualizaciones posteriores:** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) cierra topología/propiedad; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0. No cierran implementación, composición y clasificación por rebanada, mecanismos, RLS, persistencia física ni evidencia de pruebas.
+**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0. No cierran DEC-004, implementación, composición y clasificación por rebanada, mecanismos, RLS, persistencia física ni evidencia de pruebas.
 
 ## Ruta de lectura
 
@@ -86,12 +88,12 @@ Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones difer
 
 ## Autoridad y reglas
 
-- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) y [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) están `Accepted`; los demás ADRs conservan su estado registrado.
+- [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md), [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010 a ADR-013](../../decisions/README.md) están `Accepted`; los demás ADRs conservan su estado registrado.
 - Las decisiones de dominio validadas conservan autoridad sobre propuestas arquitectónicas.
 - `Requiere Responsable de Producto` nunca se cierra por preferencia técnica.
 - `Requiere spike` produce evidencia, no aceptación automática.
 - El cierre exige actualizar la matriz, la fuente autoritativa y la evidencia enlazada.
-- No se diseñan carpetas definitivas, tablas, migraciones, APIs, interfaces, runtime ni despliegues.
+- No se diseñan carpetas definitivas, tablas, migraciones, APIs, interfaces, configuración ejecutable de runtime ni despliegues.
 
 ## Próxima promoción posible
 

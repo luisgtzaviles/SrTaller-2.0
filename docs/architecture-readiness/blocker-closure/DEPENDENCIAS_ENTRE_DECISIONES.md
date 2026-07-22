@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TD
-    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> STACK[DEC-004 Stack]
+    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> STACK[DEC-004 Stack<br/>ADR-001 satisfecho]
     SCOPE --> MODULES[DEC-005 Módulos]
     ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Pruebas]
     ACCEPT --> R0
@@ -46,6 +46,7 @@ flowchart TD
 
 | Decisión técnica | Respuesta previa de producto |
 | --- | --- |
+| Lenguaje y runtime inicial | ADR-001 aceptado por Arquitectura + Ingeniería: TypeScript y Node.js `24.x`; no acepta framework ni tooling |
 | ADR multitenant | Datos globales, tenant-wide, branch-scoped, ciclo del tenant |
 | ADR de contexto operativo | Cerrado por ADR-010: estación vinculada, sucursal derivada, rotación y cambio explícito |
 | ADR de identidad/PIN | Cerrado por ADR-011: usuario de tenant, acceso por PIN, sesión, inactividad y atribución mínima |
@@ -60,7 +61,8 @@ flowchart TD
 
 ## Dependencias técnicas condicionadas
 
-- SPIKE-002 depende de una estrategia shared-schema aún candidata y de un contrato representativo.
+- ADR-005 ya tiene satisfecha su dependencia de lenguaje/runtime por ADR-001, pero requiere su comparación y evidencia propias antes de aceptarse.
+- SPIKE-002 parte de la estrategia shared-schema aceptada y depende de un contrato representativo y un mecanismo técnico autorizado para demostrar aislamiento.
 - SPIKE-003 depende del resultado de SPIKE-002, PostgreSQL candidato y acceso de datos/pooling.
 - SPIKE-005 parte del propósito y sesión aceptados por ADR-011; debe acotarse a protección técnica, intentos, revocación y relación con acciones sensibles.
 - La prueba concurrente de folio depende de alcance del folio y persistencia candidata.

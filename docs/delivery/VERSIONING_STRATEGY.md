@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Propuesta
-- **Hecho conocido:** Se prevén API, workers y clientes desplegables de forma independiente.
+- **Hecho conocido:** ADR-002 fija un único artefacto backend inicial y ADR-001 fija Node.js `24.x` como su baseline; clientes o separaciones futuras requieren autorización propia.
 - **Hipótesis:** Semantic Versioning puede comunicar cambios de contratos publicados, complementado por un manifiesto de release.
 - **Decisión pendiente:** Esquema definitivo, política pre-1.0, versionado de API y compatibilidad soportada.
 
@@ -20,6 +20,11 @@ Poder responder qué cambió, qué artefactos están desplegados en cada ambient
 | Migración | Identificador único, ordenado e inmutable | Trazar cambios de datos/esquema; no equivale a SemVer. |
 | Contrato/API | Versión de contrato TBD | Comunicar compatibilidad a clientes web, móviles futuros e integraciones. |
 | Documento | Git + estado y próxima revisión | Conservar evolución sin números artificiales por archivo. |
+| Runtime backend | Node.js `24.x` + versión minor/patch fijada | Reproducir ejecución y verificar soporte conforme a ADR-001. |
+
+## Runtime y soporte
+
+ADR-001 acepta una sola línea major ordinaria por release: Node.js `24.x` para R0. La versión minor/patch se fija en la futura configuración ejecutable, se actualiza con evidencia de compatibilidad y no puede permanecer como baseline de un nuevo release después de EOL. Una migración temporal puede validar dos líneas, pero no crea soporte permanente para ambas.
 
 ## Semantic Versioning como propuesta
 
@@ -31,14 +36,13 @@ Estas reglas no se consideran aceptadas hasta definir qué contratos son públic
 
 ## Versiones independientes y manifiesto
 
-Cada aplicación podría avanzar a su propio ritmo si conserva compatibilidad. Un manifiesto de release debe fijar la combinación efectivamente promovida:
+El backend inicial avanza como un único artefacto conforme a ADR-002. Si en el futuro se autorizan clientes u otros desplegables, cada unidad podrá avanzar a su propio ritmo sólo si conserva compatibilidad. Un manifiesto de release debe fijar la combinación efectivamente promovida:
 
 ```yaml
 # Ejemplo conceptual; no es configuración ejecutable.
 release: TBD
 artifacts:
-  api: version-and-digest-TBD
-  worker: version-and-digest-TBD
+  backend: version-and-digest-TBD
   web: version-and-digest-TBD
 migrations: TBD
 evidence: TBD

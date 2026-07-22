@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Modelo conceptual; ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
+- **Naturaleza:** Modelo conceptual; ADR-001, ADR-002, ADR-004 y ADR-010 a ADR-013 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
 - **Alcance:** Límites de SR Taller 2.0, actores, sistemas externos y flujos de información de alto nivel.
 - **Fuente de producto:** [Visión del producto](../product/PRODUCT_VISION.md) y [actores y personas](../product/ACTORS_AND_PERSONAS.md).
 

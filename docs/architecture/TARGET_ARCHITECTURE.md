@@ -3,9 +3,9 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Dirección conceptual; ADR-002 acepta la forma modular inicial, mientras las selecciones tecnológicas permanecen pendientes.
+- **Naturaleza:** Dirección conceptual; ADR-002 acepta la forma modular inicial y ADR-001 el lenguaje/runtime inicial, mientras las demás selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
-- **Decisiones relacionadas:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) y [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../decisions/README.md).
+- **Decisiones relacionadas:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md), [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010 a ADR-013](../decisions/README.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../decisions/README.md).
 
 ## Objetivo
 
@@ -33,7 +33,7 @@ flowchart TB
     end
 
     Edge[DNS / TLS / routing\nresolución inicial de hostname]
-    API[API central\nNestJS propuesto\nmonolito modular]
+    API[API central\nTypeScript / Node.js 24.x aceptados\nNestJS propuesto]
     Worker[Workers asíncronos\nBullMQ propuesto]
     Realtime[Gateway de tiempo real\nSocket.IO o WebSockets por decidir]
 
@@ -71,14 +71,14 @@ El diagrama expresa responsabilidades lógicas, no unidades desplegables inicial
 
 | Bloque | Responsabilidad | Propuesta preliminar | No implica todavía |
 |---|---|---|---|
-| Clientes web | Experiencias específicas por audiencia | Next.js, React, Tailwind y design system propio | Número final de aplicaciones ni estrategia de renderizado |
+| Clientes web | Experiencias específicas por audiencia | TypeScript al autorizar la superficie; Next.js, React y Tailwind propuestos | Número final de aplicaciones, framework ni estrategia de renderizado |
 | Cliente móvil | Consumir contratos centrales cuando exista necesidad validada | React Native con Expo | Construcción durante la fundación |
-| API central | Autenticación, autorización, casos de uso y contratos | NestJS con TypeScript | Framework aceptado ni endpoints definidos |
+| API central | Autenticación, autorización, casos de uso y contratos | TypeScript sobre Node.js `24.x` aceptados; NestJS propuesto | Framework aceptado ni endpoints definidos |
 | Módulos de dominio | Encapsular reglas, datos y eventos por capacidad | Monolito modular | Microservicios ni tablas por módulo |
-| Trabajos diferibles | Ejecutar procesos diferibles, reintentos e integraciones dentro de la aplicación inicial | Mecanismo pendiente | Worker o despliegue independiente |
+| Trabajos diferibles | Ejecutar procesos diferibles, reintentos e integraciones dentro de la aplicación inicial | TypeScript sobre Node.js `24.x`; mecanismo de cola pendiente | Worker o despliegue independiente |
 | Tiempo real | Entregar cambios confirmados a clientes conectados | Socket.IO o WebSockets | Protocolo aceptado |
 | Datos transaccionales | Persistencia canónica y consistencia | Esquema compartido con aislamiento tenant aceptado; PostgreSQL propuesto | Motor, diseño físico y RLS pendientes |
-| Coordinación temporal | Caché, colas y coordinación de conexiones | Redis | Uso como fuente de verdad |
+| Coordinación temporal | Caché, colas y coordinación de conexiones | Redis propuesto | Uso como fuente de verdad ni tecnología aceptada |
 | Archivos | Guardar objetos y metadatos de acceso | API compatible con S3 | Proveedor, regiones o retención final |
 | Integraciones | Aislar contratos externos y normalizar eventos | Adaptadores y anti-corruption layer | Proveedores comprometidos |
 
@@ -154,6 +154,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 ## Alternativas que permanecen abiertas
 
 - La forma inicial de monolito modular ya está aceptada; su agrupación interna concreta permanece abierta.
+- TypeScript y Node.js `24.x` están aceptados para el backend inicial; compilador concreto, package manager y herramientas de build permanecen abiertos.
 - PostgreSQL como motor y RLS como defensa adicional; la topología compartida ya está aceptada por ADR-004.
 - NestJS frente a alternativas TypeScript para la API.
 - Next.js frente a otras estrategias para cada cliente web.
@@ -162,7 +163,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 - Proveedor S3-compatible y estrategia de distribución de archivos.
 - Monorepo con pnpm/Turborepo frente a repositorios separados.
 
-Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 establece la unidad arquitectónica, ADR-004 la topología multitenant, ADR-010 el contexto operativo, ADR-011 la identidad/sesión, ADR-012 la autorización ordinaria y ADR-013 la autorización reforzada conceptual.
+Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-001 establece lenguaje/runtime inicial, ADR-002 la unidad arquitectónica, ADR-004 la topología multitenant, ADR-010 el contexto operativo, ADR-011 la identidad/sesión, ADR-012 la autorización ordinaria y ADR-013 la autorización reforzada conceptual.
 
 ## Restricciones y no objetivos
 

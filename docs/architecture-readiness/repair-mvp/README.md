@@ -79,7 +79,7 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 ## Autoridad documental
 
 - El modelo de dominio consolidado es la fuente de invariantes y lenguaje: [modelo integrado](../../domain-model/integrated-repair-domain-model/README.md).
-- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) y [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../../decisions/README.md).
+- [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md), [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010 a ADR-013](../../decisions/README.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../../decisions/README.md).
 - Las políticas de Sprint 00 y entrega conservan su autoridad sobre el inicio de implementación.
 - Cuando una propuesta de este paquete contradiga una decisión posteriormente aceptada, prevalece la decisión aceptada y este paquete debe revisarse.
 
@@ -89,4 +89,4 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 
 **[RDD]** El flujo preserva identidad de orden, custodia, trazabilidad de actores, autorización por concepto, ejecución autorizada, control de calidad, cobro y entrega.
 
-**[ADR]** ADR-004 fija multitenancy, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 autorización ordinaria y ADR-013 autorización reforzada. Lenguaje, marcos, motor, RLS y mecanismos técnicos sólo podrán fijarse mediante sus decisiones aceptadas.
+**[ADR]** ADR-001 fija TypeScript y Node.js `24.x`; ADR-004 fija multitenancy, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 autorización ordinaria y ADR-013 autorización reforzada. Frameworks, motor, RLS y mecanismos técnicos sólo podrán fijarse mediante sus decisiones aceptadas.

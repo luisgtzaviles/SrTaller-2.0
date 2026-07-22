@@ -129,6 +129,7 @@ Véase [Modelo de multitenancy](MULTITENANCY_MODEL.md).
 - TLS obligatorio fuera del desarrollo local; terminación y re-encryption se decidirán por topología.
 - CORS, cookies, CSRF y headers se configuran según el modelo real de clientes, no con comodines de conveniencia.
 - Validación de esquema, tamaño, tipo y profundidad en todo input.
+- Conforme a ADR-001, los tipos de TypeScript nunca sustituyen validación en runtime de HTTP, eventos, jobs, colas, persistencia, archivos, variables de entorno, integraciones o datos manipulables por clientes.
 - Consultas parametrizadas y encoding contextual de salida.
 - Rate limits por superficie con claves que no permitan evasión o afectación masiva injusta.
 - Paginación y límites máximos para evitar extracción y agotamiento.
@@ -196,6 +197,7 @@ Véase [Arquitectura de integraciones](INTEGRATION_ARCHITECTURE.md).
 ## Supply chain y CI/CD
 
 - Dependencias con lockfile, fuentes autorizadas y revisión de cambios.
+- Node.js `24.x` es la baseline inicial; minor/patch se actualizan con pruebas y no se permite iniciar releases sobre una versión EOL.
 - Scanning de vulnerabilidades, secretos y licencias en política por definir.
 - Acciones de CI y herramientas fijadas a versiones/procedencia verificable.
 - Build en entorno controlado; artefacto versionado, trazable e inmutable.
@@ -269,6 +271,7 @@ Los umbrales y responsables están `TBD`; no se inventan en este documento.
 ## Documentos relacionados
 
 - [Modelo de multitenancy](MULTITENANCY_MODEL.md)
+- [ADR-001 — TypeScript y Node.js como runtime inicial](../decisions/proposed/ADR-001-typescript-as-primary-language.md)
 - [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)

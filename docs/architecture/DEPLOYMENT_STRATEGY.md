@@ -6,6 +6,7 @@
 - **Naturaleza:** Propuesta; no se crean contenedores, pipelines ni infraestructura en esta etapa.
 - **Candidatos:** contenedores Docker, GitHub Actions e imágenes versionadas, pendientes de ADR y evaluación.
 - **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Proposed`.
+- **Baseline de runtime aceptada:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md) fija TypeScript y Node.js `24.x`; no acepta contenedores, CI/CD ni plataforma de ejecución.
 
 ## Objetivo
 
@@ -69,6 +70,12 @@ El diagrama separa responsabilidades para facilitar lectura. [ADR-002](../decisi
 - **Migraciones futuras:** asociadas y coordinadas con la misma release; no constituyen un servicio permanente.
 
 La compatibilidad entre responsabilidades, contratos y datos sigue siendo obligatoria dentro del artefacto único. Separar una unidad en el futuro requiere los disparadores y el nuevo ADR definidos en ADR-002.
+
+## Baseline de runtime
+
+El backend inicial se compila y ejecuta con Node.js `24.x`. La versión minor/patch se fijará reproduciblemente al autorizar el scaffold y podrá actualizarse dentro de la misma línea con pruebas de compatibilidad. No se iniciarán releases sobre una versión EOL y cualquier migración de línea LTS seguirá el gobierno de ADR-001.
+
+Esta baseline no determina si la aplicación corre en contenedor, VM o plataforma administrada, ni selecciona package manager, herramienta de build o pipeline.
 
 ## Artefactos inmutables y promoción
 

@@ -19,7 +19,7 @@ Una fuente navegable y trazable que permita revisar qué problema se resuelve, q
 
 - Visión, principios, actores, alcance, glosario, módulos y lecciones legacy.
 - Modelos conceptuales de arquitectura, multitenancy, identidad, dispositivos, datos, realtime, seguridad, observabilidad y despliegue.
-- ADR-001 a ADR-009 como `Proposed`.
+- ADR-001 a ADR-009 registrados inicialmente como `Proposed`; sus decisiones posteriores se consultan en el [registro oficial](../../decisions/README.md).
 - Epics, PBI-001 a PBI-020, workflow, calidad, operaciones y trazabilidad.
 - Consolidación de preguntas y revisiones humanas pendientes.
 

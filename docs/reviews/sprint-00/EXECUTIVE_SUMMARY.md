@@ -48,7 +48,7 @@ La existencia de esos documentos no significa que el producto esté decidido. La
 
 Las decisiones de producto deben seguir los Gates 1 a 6 de la [secuencia](./DECISION_SEQUENCE.md): producto inicial, organización, identidad/operación, dominio central, CRM/mensajería y comercialización. El Gate 7 técnico sólo puede completarse formalmente después de resolver los gates que condicionan cada ADR.
 
-Como preparación, TypeScript, el monolito modular y PostgreSQL pueden discutirse conceptualmente ahora para aclarar alternativas y evidencia; esa discusión exploratoria no es revisión formal, validación ni aceptación. Shared-schema y wildcard deben seguir propuestos hasta obtener decisiones y pruebas; NestJS necesita validación técnica; Next.js debe dividirse o limitarse a una superficie aprobada; contenedores y monorepo no obligan a Docker Compose, GitHub Actions, pnpm ni Turborepo.
+Actualización posterior: ADR-001 aceptó TypeScript y Node.js `24.x`, ADR-002 el monolito modular y ADR-004 la topología shared-schema el 2026-07-21. PostgreSQL y wildcard siguen propuestos; NestJS necesita validación técnica; Next.js debe dividirse o limitarse a una superficie aprobada; contenedores y monorepo no obligan a Docker Compose, GitHub Actions, pnpm ni Turborepo.
 
 ## Riesgo de comenzar demasiado pronto
 
