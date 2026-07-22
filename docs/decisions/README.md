@@ -45,7 +45,7 @@ Las rutas históricas bajo `proposed/` se conservan para mantener una convenció
 
 | ADR | Tema | Estado |
 |---|---|---|
-| [ADR-005](proposed/ADR-005-nestjs-backend.md) | NestJS para backend/API | Proposed |
+| [ADR-005](proposed/ADR-005-nestjs-backend.md) | NestJS para backend/API; SPIKE-009 obligatorio autorizado, no ejecutado | Proposed |
 | [ADR-006](proposed/ADR-006-nextjs-web-clients.md) | Next.js para clientes web | Proposed |
 | [ADR-007](proposed/ADR-007-containerized-deployments.md) | Despliegues en contenedores | Proposed |
 | [ADR-008](proposed/ADR-008-wildcard-subdomain-routing.md) | Resolución por subdominios wildcard | Proposed |

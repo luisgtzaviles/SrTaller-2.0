@@ -4,7 +4,9 @@
 
 ```mermaid
 flowchart TD
-    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> STACK[DEC-004 Stack<br/>ADR-001/003/009 satisfechos]
+    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> SPIKE9[SPIKE-009<br/>Autorizado; no ejecutado]
+    SPIKE9 --> ADR5[ADR-005<br/>Proposed]
+    ADR5 --> STACK[DEC-004 Stack<br/>ADR-001/003/009 satisfechos]
     SCOPE --> MODULES[DEC-005 Módulos]
     ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Pruebas]
     ACCEPT --> R0
@@ -61,7 +63,8 @@ flowchart TD
 
 ## Dependencias técnicas condicionadas
 
-- ADR-005 ya tiene satisfecha su dependencia de lenguaje/runtime por ADR-001, pero requiere su comparación y evidencia propias antes de aceptarse.
+- ADR-005 ya tiene satisfecha su dependencia de lenguaje/runtime por ADR-001. [SPIKE-009](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009), autorizado el 2026-07-22 como `Mandatory before acceptance`, debe aportar comparación y evidencia propias antes de que Arquitectura + Ingeniería decidan; Seguridad, Operaciones y Calidad son revisores obligatorios.
+- La baseline NestJS `11.1.28` + Express + REST/HTTP JSON mínima sólo pertenece a la hipótesis de SPIKE-009. No satisface ADR-005 ni DEC-004 hasta ejecutar, revisar y decidir.
 - ADR-009 satisface la topología de repositorio dentro de DEC-004; no satisface ADR-005, package manager, lockfile, estructura física de DEC-005 ni persistencia de DEC-049.
 - SPIKE-002 parte de la estrategia shared-schema aceptada y depende de un contrato representativo y un mecanismo técnico autorizado para demostrar aislamiento.
 - SPIKE-003 depende del resultado de SPIKE-002, PostgreSQL aceptado y acceso de datos/pooling. Es obligatorio antes de adoptar RLS, no antes de cualquier persistencia de R0, y puede concluir rechazándola.

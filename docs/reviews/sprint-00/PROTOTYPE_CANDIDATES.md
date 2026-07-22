@@ -2,15 +2,16 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta de revisión; no constituye autorización para implementar, instalar dependencias ni cambiar un ADR.
+- **Estado:** Registro de candidatos y mandatos. Sólo [SPIKE-009](#spike-009) está autorizado para ejecución futura; esta autorización no permite ejecutarlo en la iteración documental que formaliza el mandato, implementar producto ni cambiar automáticamente un ADR.
 - **Propósito:** Identificar experimentos mínimos que reduzcan riesgos arquitectónicos reales antes de comprometer diseño ejecutable.
 - **Duración:** `TBD` para todos los candidatos; no se asignan estimaciones sin capacidad y autorización.
-- **Gate vigente:** Ningún spike puede ejecutarse hasta que el Product Owner autorice prototipos técnicos conforme al [criterio de salida de SPRINT-00](../../sprints/sprint-00/SPRINT_GOAL.md#criterio-de-salida).
+- **Gate vigente:** Todo spike requiere autorización explícita de su autoridad. Arquitectura + Ingeniería autorizaron el 2026-07-22 la ejecución futura de SPIKE-009 bajo el mandato de este documento; los demás candidatos conservan sus gates y no quedan autorizados por esa decisión.
 - **Regla de decisión:** Un spike produce evidencia; un resultado favorable no acepta automáticamente el ADR relacionado y un resultado desfavorable debe conservarse como evidencia.
 
 ## Clasificaciones
 
 - `Mandatory before implementation`: la incertidumbre debe resolverse antes de implementar la capacidad indicada; puede concluir descartando la hipótesis.
+- `Mandatory before acceptance`: la evidencia debe existir antes de aceptar o rechazar el ADR relacionado; autorizar el experimento no acepta la tecnología ni habilita implementación de producto.
 - `Recommended`: reduce un riesgo importante, pero su momento depende de que exista un caso de uso autorizado.
 - `Optional`: aporta evidencia sólo si se confirma una condición de complejidad o escala.
 - `Premature`: no debe ejecutarse todavía porque faltan decisiones de producto que definen qué probar.
@@ -27,7 +28,7 @@
 | SPIKE-006 | `Recommended` | Pérdida o mezcla de tenant context en jobs | ADR-002/004 y ADR futuro de colas | PBI-007, PBI-014, PBI-017, PBI-019 | Antes del primer job tenant-scoped autorizado. |
 | SPIKE-007 | `Recommended` | Rebuild, artefacto mutable o secretos en imagen | ADR-007 | PBI-015, PBI-019 | Antes del primer release productivo, con un desplegable representativo. |
 | SPIKE-008 | `Deferred/conditional` | Grafo acoplado, builds costosos o caché insegura | ADR-009 Accepted; informa ADR-007 | PBI-010, PBI-015, PBI-016, PBI-019 | Sólo al autorizar varios proyectos, packages justificados u orquestación. |
-| SPIKE-009 | `Recommended` | Dominio acoplado a NestJS o controles transversales incompletos | ADR-005; informa ADR-001/002/003/004 | PBI-007, PBI-010, PBI-012, PBI-017 | Antes de aceptar NestJS, con un recorrido vertical mínimo autorizado. |
+| SPIKE-009 | `Mandatory before acceptance` | Dominio acoplado a NestJS o controles transversales incompletos | ADR-005; informa ADR-001/002/003/004/009–013 | PBI-007, PBI-010, PBI-012, PBI-017 | Autorizado para ejecución futura; debe concluir y revisarse antes de aceptar o rechazar ADR-005. |
 
 <a id="spike-001"></a>
 
@@ -201,22 +202,201 @@
 
 ## SPIKE-009 — NestJS como shell desacoplado
 
-| Campo | Propuesta de revisión |
+### Estado y mandato
+
+| Campo | Mandato vigente |
 |---|---|
-| Identificador | `SPIKE-009` |
-| Clasificación | `Recommended`; debe producir evidencia antes de aceptar ADR-005. |
-| Hipótesis | NestJS puede actuar como shell de transporte/composición mientras aplicación y dominio permanecen libres de decorators y tipos del framework, con políticas consistentes de tenant, autorización, errores y observabilidad. |
-| Riesgo que reduce | [RISK-004](../../sprints/sprint-00/RISKS_AND_BLOCKERS.md#riesgos) y riesgos de [PBI-012](../../backlog/pbis/PBI-012.md): aceptar el framework por familiaridad, acoplar dominio, duplicar contratos o usar guards como única barrera tenant. |
-| Pregunta que responde | ¿Un recorrido vertical mínimo puede atravesar HTTP y una entrada no HTTP, conservar tenant context y testear el dominio sin iniciar NestJS, con overhead y convenciones aceptables? |
-| Alcance mínimo | Un caso de uso sintético; módulo/composition root; adaptador HTTP; entrada de job o socket mínima; validación runtime; mapeo de errores; tenant context; autorización; observabilidad; prueba de dominio sin framework; una alternativa ligera como referencia cualitativa. |
-| Fuera de alcance | API del producto, autenticación real, ORM definitivo, endpoints públicos, benchmark sin SLO, scaffolding completo y selección de librerías auxiliares. |
-| Evidencia esperada | Diagrama de dependencias, código experimental desechable autorizado, pruebas del dominio aislado, matriz de políticas transversales, fricciones observadas y comparación contra alternativa. |
-| Criterio de éxito | Dominio/aplicación no importan NestJS; todas las entradas reciben contexto validado; guards/interceptors no son la única defensa; errores y pruebas son consistentes; la composición resulta comprensible y operable. |
-| Criterio de fracaso | Decorators o DI invaden el dominio, una entrada omite tenant/auth, las pruebas requieren iniciar todo el framework, las políticas divergen o la alternativa ofrece menor riesgo total. |
-| Duración | `TBD` |
-| ADR relacionado | [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md); informa [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md), [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md). |
+| Identificador canónico | `SPIKE-009` |
+| Clasificación | `Mandatory before acceptance` de ADR-005. |
+| Estado anterior | `Recommended`; sin mandato formal de ejecución. |
+| Estado vigente | Autorizado el 2026-07-22 para ejecución futura como experimento técnico obligatorio. No ejecutado. |
+| Autoridad que autoriza | Arquitectura + Ingeniería. |
+| Decisión posterior | Arquitectura + Ingeniería decidirán con evidencia revisada si aceptan ADR-005, lo aceptan con condiciones, exigen otra iteración o rechazan NestJS y evalúan una alternativa más ligera. |
+| Duración | `TBD`; deberá acotarse antes de iniciar sin reducir las pruebas obligatorias. |
+| Riesgo que reduce | [RISK-004](../../sprints/sprint-00/RISKS_AND_BLOCKERS.md#riesgos) y riesgos de [PBI-012](../../backlog/pbis/PBI-012.md): aceptar el framework por familiaridad, acoplar dominio, ocultar dependencias o usar el transporte como única barrera tenant o de autorización. |
+| ADR relacionado | [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md), que permanece `Proposed`; informa la aplicación de ADR-001 a ADR-004 y ADR-009 a ADR-013 sin reabrirlos. |
 | PBI relacionado | [PBI-007](../../backlog/pbis/PBI-007.md), [PBI-010](../../backlog/pbis/PBI-010.md), [PBI-012](../../backlog/pbis/PBI-012.md) y [PBI-017](../../backlog/pbis/PBI-017.md). |
-| Dependencias | Recorrido mínimo autorizado, ADR-001/002 como decisiones aceptadas, patrón de tenant context de SPIKE-002 y criterios técnicos de PBI-012. |
+
+La autorización alcanza sólo la ejecución futura del experimento descrito aquí. No autoriza su ejecución durante esta actualización documental, scaffold de producto, adopción de NestJS, creación de endpoints reales, selección permanente de tooling ni cierre de [DEC-004](../../architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md).
+
+### Hipótesis autorizada
+
+NestJS puede actuar como shell técnico de transporte y composición del backend de R0 sin convertirse en arquitectura de dominio, autoridad tenant o de autorización, fuente de acciones sensibles, dueño de persistencia, service locator, frontera modular artificial, mecanismo que oculte dependencias ni causa de contaminación de contexto entre requests o jobs.
+
+La baseline experimental autorizada es:
+
+| Elemento | Hipótesis del spike |
+|---|---|
+| Runtime | Node.js `24.x` |
+| Framework | NestJS `11.x`; versión efectiva de referencia `11.1.28`, que deberá revalidarse inmediatamente antes de ejecutar |
+| Adaptador HTTP | Express |
+| Interfaz inicial | REST/HTTP JSON mínima |
+| Persistencia | PostgreSQL `18.x`; versión efectiva de referencia `18.4`, que deberá revalidarse inmediatamente antes de ejecutar |
+| Lenguaje | TypeScript estricto |
+| Unidad ejecutable | Una aplicación backend y un artefacto desplegable |
+| Repositorio | Repositorio único sin workspaces |
+| Dominio experimental | Un módulo de negocio sintético y desechable |
+
+NestJS `11.1.28`, Express y REST/HTTP JSON son hipótesis de SPIKE-009, no decisiones aceptadas. Node.js `24.x`, PostgreSQL `18.x`, el monolito modular y el repositorio único conservan la autoridad de sus ADR aceptados; su uso aquí no amplía esas decisiones.
+
+### Alcance obligatorio
+
+El experimento deberá demostrar conjuntamente:
+
+1. bootstrap reproducible con Node.js `24.x`, NestJS `11.x`, Express y TypeScript estricto;
+2. PostgreSQL `18.x` real;
+3. dos tenants y dos sucursales sintéticos;
+4. contexto sintético de estación, usuario y sesión;
+5. un módulo de negocio mínimo y desechable;
+6. dominio y aplicación sin imports de NestJS;
+7. controller delgado, caso de uso independiente y política de autorización en aplicación;
+8. puerto de persistencia propietario, adaptador PostgreSQL sustituible y transacción explícita;
+9. auditoría de resultado y mapeo seguro de errores;
+10. una entrada HTTP y una entrada diferida o job dentro del mismo artefacto;
+11. propagación explícita de contexto y revocación;
+12. pruebas cross-tenant y de concurrencia entre tenants;
+13. health mínimo seguro; y
+14. arranque y shutdown limpios.
+
+### Exclusiones
+
+Quedan fuera del experimento:
+
+- funcionalidad real de Reparaciones, recepción, órdenes o clientes;
+- UI, frontend y Next.js;
+- GraphQL, WebSockets, `@nestjs/microservices`, CQRS y EventEmitter;
+- Redis, BullMQ y cualquier cola definitiva;
+- ORM o migrador definitivos;
+- proveedor cloud, infraestructura o despliegue productivo;
+- RLS obligatoria;
+- package manager como decisión permanente;
+- workspaces, contenedores y código reutilizable como producto.
+
+### Reglas arquitectónicas obligatorias
+
+#### Dominio y aplicación
+
+- Cero imports `@nestjs/*`, decorators de Nest, excepciones de Nest, DTOs de transporte y metadata del framework.
+- Sin acceso al contenedor DI, HTTP o PostgreSQL.
+- Dependencias explícitas y testables sin iniciar NestJS.
+
+#### Controllers
+
+Sólo reciben entrada, invocan validación estructural, mapean a comando o consulta, delegan al caso de uso y adaptan la salida. No contienen negocio, no evalúan autorización final, no abren transacciones, no consultan repositorios u ORM y no construyen contexto efectivo a partir de datos del cliente.
+
+#### Autorización
+
+```mermaid
+flowchart LR
+    T[Transporte] --> AT[Autenticación técnica]
+    AT --> RC[Resolución de contexto]
+    RC --> AA[Autorización de aplicación]
+    AA --> E[Ejecución]
+    E --> P[Persistencia]
+    P --> AU[Auditoría]
+    AU --> AR[Adaptación de resultado]
+```
+
+Un caso de uso invocado directamente debe seguir evaluando autorización. Guards, metadata o decorators del transporte no pueden ser la única defensa ni la autoridad final.
+
+#### Contexto tenant
+
+- Headers, tokens, hostname y parámetros son sólo candidatos; el contexto efectivo se resuelve server-side.
+- El contexto efectivo es inmutable durante la operación y se pasa explícitamente a casos de uso y repositorios.
+- Un `tenant_id` arbitrario del cliente nunca se acepta como autoridad.
+- El contexto no puede sobrevivir accidentalmente entre requests o jobs; la concurrencia A/B entre tenants debe probarlo.
+
+#### Persistencia
+
+- El puerto pertenece al módulo propietario y el adaptador PostgreSQL debe ser sustituible.
+- Toda consulta tenant-scoped recibe contexto autorizado.
+- La transacción es explícita desde aplicación y su rollback debe ser verificable.
+- No se permite acceso a tablas de otro módulo ni un repository cross-module.
+
+#### Errores y auditoría
+
+- Dominio y aplicación no lanzan excepciones Nest; el adaptador traduce errores.
+- Ninguna respuesta filtra stack, SQL, IDs internos, existencia cross-tenant, configuración o secretos.
+- La auditoría registra como mínimo actor, tenant, sucursal, sesión, operación, recurso, resultado y control aplicado.
+- Logs técnicos y auditoría permanecen separados.
+
+### Pruebas obligatorias
+
+| Nivel | Evidencia mínima |
+|---|---|
+| Unidad | Dominio y caso de uso sin Nest; política de autorización; reglas de contexto; mapeos. |
+| Arquitectura | Imports `@nestjs/*` prohibidos en dominio/aplicación; ciclos, acceso a internals, repository cross-module y DTOs usados como entidades rechazados. |
+| Integración | Composition root, wiring de puertos, transacción, adaptador PostgreSQL, error mapping, auditoría y revocación. |
+| End-to-end | HTTP permitido y denegado; contexto faltante; tenant incorrecto; sucursal no autorizada; capacidad ausente; revocación; cross-tenant; concurrencia A/B; rollback; health seguro; shutdown limpio. |
+| Job | Reconstrucción y revalidación de contexto; mismo caso de uso, autorización, persistencia y auditoría que HTTP; ausencia de contaminación. |
+
+### Criterios de éxito
+
+SPIKE-009 sólo será exitoso si toda la evidencia demuestra que:
+
+- dominio y aplicación tienen cero imports de NestJS;
+- los controllers son adaptadores delgados;
+- NestJS no es la única defensa tenant;
+- invocar el caso de uso directamente no omite autorización;
+- todo contexto inválido falla cerrado y no hay contaminación entre tenants concurrentes;
+- HTTP y job comparten casos de uso y políticas;
+- los repositorios reciben contexto explícito;
+- aplicación puede expresar transacciones y el rollback funciona;
+- errores y health son seguros;
+- auditoría, revocación y propagación de contexto son coherentes;
+- shutdown cierra listener, conexiones y trabajo pendiente;
+- el wiring es comprensible y el costo del framework es proporcional;
+- no se necesita `ModuleRef` ni otro service locator; y
+- la alternativa ligera no demuestra menor riesgo total.
+
+### Criterios de fracaso
+
+SPIKE-009 falla si aparece cualquiera de estas condiciones sin mitigación clara, verificable y revisada:
+
+- decorators Nest en dominio o aplicación;
+- controllers con lógica de negocio;
+- guard o metadata como única autoridad tenant, de autorización o de una acción sensible;
+- tenant aceptado directamente desde el cliente;
+- request scope obligatorio y transversal sin control;
+- contaminación de contexto entre operaciones;
+- jobs con políticas distintas de HTTP;
+- pruebas unitarias que requieren iniciar Nest;
+- DI que oculta dependencias o `ModuleRef` usado como service locator;
+- transacciones que no pueden expresarse limpiamente desde aplicación;
+- errores de framework que cruzan al dominio;
+- repository cross-module;
+- shutdown incompleto o health inseguro;
+- complejidad mayor que una alternativa ligera; o
+- dependencia adicional necesaria para fundamentos básicos sin control suficiente.
+
+### Evidencia requerida
+
+La entrega futura deberá incluir:
+
+- commit o rama desechable y versiones exactas;
+- lockfile utilizado y comandos reproducibles;
+- diagrama del flujo y árbol de dependencias;
+- lista y comprobación de imports prohibidos;
+- resultados completos de pruebas, incluidos fallos;
+- tiempos observados de arranque y cierre;
+- evidencia de concurrencia tenant A/B, rollback, revocación, error seguro y auditoría;
+- defectos encontrados y deuda introducida;
+- comparación contra una alternativa ligera bajo el mismo recorrido;
+- recomendación final; y
+- propuesta explícita de decisión para ADR-005.
+
+No se usarán datos ni secretos reales. El experimento deberá permanecer desechable y no podrá convertirse silenciosamente en scaffold de producto.
+
+### Evaluación y resultado permitido
+
+Seguridad, Operaciones y Calidad revisarán obligatoriamente la evidencia. Arquitectura + Ingeniería conservarán la autoridad de decisión y sólo podrán registrar uno de estos resultados:
+
+1. aceptar ADR-005;
+2. aceptar ADR-005 con condiciones;
+3. exigir una segunda iteración acotada; o
+4. rechazar NestJS y evaluar una alternativa más ligera.
+
+Hasta esa decisión, ADR-005 permanece `Proposed`, DEC-004 permanece abierta y el primer cambio ejecutable de producto continúa bloqueado.
 
 ## Orden de autorización recomendado
 
@@ -224,7 +404,7 @@
 2. Autorizar SPIKE-002 y SPIKE-003 para la decisión shared-schema; no diseñar tablas productivas antes de sus resultados.
 3. Autorizar SPIKE-001 después de definir identidad/sesión y dominios; su resultado informa routing, no concede acceso.
 4. Autorizar SPIKE-005 sólo si dispositivos/PIN permanecen en alcance y ya existen decisiones operativas.
-5. Autorizar SPIKE-009 antes de aceptar NestJS.
+5. Ejecutar SPIKE-009 bajo el mandato autorizado y revisar su evidencia antes de decidir ADR-005.
 6. Ejecutar SPIKE-006, SPIKE-007 y SPIKE-008 cuando exista el primer caso representativo que active su condición.
 7. Mantener SPIKE-004 como `Premature` hasta que producto confirme realtime en el primer release.
 
@@ -239,6 +419,6 @@
 
 ## Próxima revisión
 
-- **Momento:** Después de la sesión con el Product Owner y antes de autorizar el primer prototipo.
-- **Evidencia esperada:** Clasificación confirmada, dependencias resueltas, PBI autorizado y responsable `TBD` por spike seleccionado.
-- **Responsable:** TBD.
+- **Momento:** Antes de iniciar cualquier candidato no autorizado y, para SPIKE-009, inmediatamente antes de ejecutar para revalidar versiones, condiciones y responsable.
+- **Evidencia esperada:** Para SPIKE-009, mandato vigente, baseline revalidada, entorno aislado y responsable asignado; para otros candidatos, clasificación, dependencias y autorización explícita.
+- **Responsable:** Arquitectura + Ingeniería para SPIKE-009; `TBD` para los demás candidatos.
