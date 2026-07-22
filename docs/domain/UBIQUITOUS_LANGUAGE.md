@@ -22,8 +22,11 @@ Las definiciones con estado I son hipótesis iniciales, P significa comprensión
 | Usuario | Identidad operativa ordinaria que pertenece exactamente a un tenant y no se duplica por sucursal. | cuenta, operador | empleado, cliente, PIN, sesión o actor | Una persona se identifica en una estación de su tenant. | D | ADR-004/011 |
 | Empleado | Persona que trabaja para el negocio, use o no el sistema. | colaborador, personal | usuario o membresía | Un técnico externo no necesariamente es empleado. | I | Q007, Q010 |
 | Membresía | Término histórico ambiguo; no representa un usuario ordinario multi-tenant. | acceso, alta de usuario | usuario, rol o membresía comercial SaaS | El uso debe aclarar si habla de suscripción comercial o acceso. | I | ADR-004/011 |
-| Rol | Agrupación administrable de capacidades. | perfil, puesto | empleo o permiso individual | Rol Técnico agrupa acciones técnicas. | P | Q010 |
-| Permiso | Capacidad para solicitar una acción en un alcance. | autorización de sistema | autorización del cliente | Permiso para reembolsar en una sucursal. | P | Q004, Q010 |
+| Rol | Agrupación administrable de capacidades perteneciente a un tenant. | perfil, puesto | actor, empleo, sesión o responsabilidad | Un rol agrupa capacidades validadas para una función. | D | ADR-012 |
+| Asignación de rol | Concesión vigente de un rol a un usuario del mismo tenant, tenant-wide o restringida por sucursal. | membresía, perfil | identidad o sucursal efectiva | Una asignación local sólo aporta capacidades en la sucursal efectiva correspondiente. | D | ADR-012 |
+| Capacidad | Facultad concreta para solicitar una operación protegida dentro de un alcance. | permiso | módulo, pantalla o autorización comercial | Capacidad para registrar un pago en la sucursal efectiva. | D | ADR-012 |
+| Autorización del sistema | Decisión server-side sobre capacidad, alcance, contexto y recurso. | permiso, control de acceso | autenticación o autorización comercial | El servidor deniega una entrega sin capacidad suficiente. | D | ADR-012 |
+| Acción sensible | Operación que puede requerir control reforzado además de una capacidad ordinaria. | acción crítica | toda operación protegida | Una devolución puede requerir reautenticación futura. | D/PA | ADR-012 |
 | Estación operativa | Equipo con identidad técnica y vinculación vigente a una única sucursal para aportar contexto. | terminal vinculada, equipo registrado | dispositivo del cliente o usuario | Una tablet de recepción está vinculada a Centro. | D | ADR-010 |
 | Terminal | Punto físico o equipo usado para operar o cobrar; cuando aporta contexto se denomina estación operativa. | caja, estación | estación operativa o caja | La terminal del mostrador registra un cobro. | I | Q011, Q022 |
 | Sesión de estación | Evidencia técnica vigente de una vinculación de estación. | sesión de terminal | sesión de usuario o contexto operativo | La tablet conserva vínculo tras cambiar operador. | P | ADR-010/Q011 |
@@ -65,7 +68,7 @@ Las definiciones con estado I son hipótesis iniciales, P significa comprensión
 | Servicio | Trabajo comercializable descrito para el cliente. | labor, reparación | partida concreta o mano de obra | Servicio de cambio de centro de carga. | I | Q014 |
 | Refacción | Componente usado o propuesto para intervenir un equipo. | repuesto, pieza | producto genérico de inventario | Pantalla compatible para el modelo. | I | DQ-010 |
 | Mano de obra | Valor o esfuerzo comercial asociado al trabajo humano. | labor | servicio completo | Importe por instalación. | I | Q014 |
-| Autorización | Decisión atribuible que permite un alcance y versión concretos. | aprobación, visto bueno | permiso del sistema | El propietario aprueba la cotización v2. | I | DQ-011 |
+| Autorización comercial | Decisión atribuible que permite un alcance y versión concretos de una cotización. | aprobación, visto bueno | autorización del sistema o pago | El propietario aprueba la cotización v2. | I | DQ-011 |
 | Rechazo | Decisión de no aceptar una propuesta o reclamación. | declinación | cancelación automática | Cliente rechaza la cotización. | I | Q014 |
 | Anticipo | Pago aplicado antes de completar la obligación o entrega. | depósito, apartado | autorización o saldo | El cliente deja 30% para pedir la parte. | I | DQ-012 |
 | Asignación técnica | Responsabilidad temporal de una persona o proveedor sobre trabajo. | turnado, responsable | autorización de reparación | La orden se asigna a un técnico. | I | DQ-013 |

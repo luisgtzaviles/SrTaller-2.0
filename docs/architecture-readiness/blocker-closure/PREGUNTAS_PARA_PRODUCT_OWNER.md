@@ -12,15 +12,15 @@ Estas preguntas requieren autoridad de Producto u Operaciones. Las filas marcada
 | PO-002 | ¿Qué escenarios felices, negativos y de denegación debe aceptar Producto para declarar R0 terminado? | DEC-062, DEC-063 | Primer commit/H0 |
 | PO-003 | **Respondida por ADR-004:** clasificación SaaS/tenant/sucursal aceptada; falta aplicar y probar | DEC-007, DEC-008 | H1 de evidencia |
 | PO-004 | **Respondida para usuario ordinario por ADR-004/011:** pertenece exactamente a un tenant y su identidad no depende de sucursal, estación, sesión o PIN; correlación global queda diferida | DEC-008, DEC-013 | H1 de evidencia |
-| PO-005 | **Contexto respondido por ADR-010:** rota sin cuenta duplicada; queda decidir roles y permisos por capacidad | DEC-011, DEC-017, DEC-018 | H1 parcial |
+| PO-005 | **Respondida por ADR-010/012:** rota sin cuenta duplicada y puede tener varios roles tenant-scoped; restricciones de asignación por sucursal son explícitas | DEC-011, DEC-017, DEC-018 | H1 de evidencia/composición |
 | PO-006 | **Respondida por ADR-010:** la estación vinculada fija la sucursal y la ausencia falla cerrada | DEC-010 | H1 de evidencia |
 | PO-007 | **Contexto respondido por ADR-010:** reubicar exige desvincular/revincular; operaciones abiertas se deciden por módulo | DEC-012 | H1 parcial |
-| PO-008 | **Alcance base respondido por ADR-004/010:** operación local queda en la sucursal efectiva; permisos de reportes tenant-wide siguen abiertos | DEC-011, DEC-018 | H1 parcial |
+| PO-008 | **Respondida por ADR-004/010/012:** operación local queda en la sucursal efectiva y las capacidades tenant-wide se ejercen sin ampliar tenant ni recurso; cada reporte aún define su capacidad | DEC-011, DEC-018 | H1 de composición/evidencia |
 | PO-009 | ¿Las políticas operativas pueden variar por sucursal? Si sistema, tenant y sucursal difieren, ¿qué autoridad prevalece? | DEC-032 | R0/R1 |
 | PO-010 | ¿La zona horaria pertenece al tenant o a cada sucursal, y qué debe ocurrir cuando un usuario consulta otra zona? | DEC-037 | R0/H1 |
 | PO-011 | **Respondida por ADR-011:** PIN es credencial dentro del tenant, no identidad, contexto ni permiso; quedan protección técnica, límites y acciones sensibles | DEC-014, DEC-019, DEC-020 | H1 de evidencia/parcial por autorización |
 | PO-012 | **Respondida conceptualmente por ADR-011:** inactividad expira sesión, conserva estación y exige autenticación nueva; duración concreta queda diferida | DEC-015 | H1 de evidencia |
-| PO-013 | ¿Cuáles son los actores mínimos de R0/R1 y qué acciones sensibles requieren permiso, motivo o reautenticación? | DEC-017 a DEC-020 | R0/H1 |
+| PO-013 | **Modelo ordinario respondido por ADR-012:** falta decidir qué acciones de R0/R1 son sensibles y qué control reforzado, motivo o segundo actor exige cada una | DEC-019, DEC-020 | R0/H1 |
 
 ## Prioridad 1 — antes de programar R1
 

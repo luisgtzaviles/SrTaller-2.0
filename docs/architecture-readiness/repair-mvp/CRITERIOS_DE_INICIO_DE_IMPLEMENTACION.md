@@ -20,7 +20,8 @@ Todos los criterios deben cumplirse:
 - [ ] **[RP]** Sprint 00 o el criterio de paso sucesor queda cerrado por su autoridad.
 - [ ] **[ADR]** Las decisiones técnicas necesarias están aceptadas, no sólo propuestas.
 - [x] **[RDD]** Tenant, sucursal, sesión, actor y aislamiento mínimo están definidos conceptualmente por ADR-004/010/011.
-- [ ] **[PB]** Existe matriz preliminar de permisos para las acciones incluidas.
+- [x] **[RDD]** Roles, capacidades, combinación, alcance y autorización negativa están definidos conceptualmente por ADR-012.
+- [ ] **[PB]** Existe composición preliminar de roles/capacidades y catálogo de acciones sensibles para la rebanada incluida.
 - [ ] **[RP]** El modelo de amenazas inicial y la estrategia de secretos/ambientes están revisados.
 - [ ] **[RP]** El PBI cumple Definition of Ready, aceptación y trazabilidad.
 - [ ] **[DAR]** Frontera propietaria, agregado, transacción e idempotencia están explícitos.
@@ -57,4 +58,4 @@ Además:
 
 ## Resultado actual
 
-**[PB]** El estado sigue siendo **Preparado con bloqueantes**: existen ADRs aceptados, pero faltan autorización organizacional, plataforma, mecanismos, permisos, modelos de amenazas, pruebas y decisiones propias de la rebanada. Una casilla conceptual cerrada no autoriza programación.
+**[PB]** El estado sigue siendo **Preparado con bloqueantes**: existen ADRs aceptados, pero faltan autorización organizacional, plataforma, mecanismos, composición por rebanada, acciones sensibles, modelos de amenazas, pruebas y decisiones propias de la rebanada. Una casilla conceptual cerrada no autoriza programación.

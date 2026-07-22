@@ -29,8 +29,10 @@
 | Motivo | explicación estructurada cuando es sensible | PM |
 | Correlación | vínculo con decisión/trabajo/evidencia relacionado | PM |
 | Sesión | periodo operativo que enlaza al usuario activo con la acción, sin sustituir su identidad | ADR-011 |
+| Capacidad y alcance | concesión y límite evaluados cuando sean relevantes para explicar la decisión | ADR-012 |
+| Resultado de autorización | permitido, denegado o diferido a control reforzado cuando aplique | ADR-012; persistencia técnica pendiente |
 
-ADR-010 establece tenant, sucursal y estación efectivos; ADR-011 agrega usuario y sesión válidos. Tenant, sucursal, estación, usuario, sesión, fecha y hora se conservan como historia del hecho y no se recalculan después de un cambio de turno, término de sesión o reubicación de estación.
+ADR-010 establece tenant, sucursal y estación efectivos; ADR-011 agrega usuario y sesión válidos; ADR-012 agrega capacidad, alcance y resultado de autorización cuando sean relevantes. Tenant, sucursal, estación, usuario, sesión, fecha y hora se conservan como historia del hecho y no se recalculan después de un cambio de turno, término de sesión, reubicación de estación o cambio de rol.
 
 ## Participaciones consultables
 

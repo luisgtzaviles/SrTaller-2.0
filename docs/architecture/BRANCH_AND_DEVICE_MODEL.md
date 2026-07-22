@@ -8,7 +8,7 @@
 
 ## Objetivo
 
-Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) gobierna usuario, PIN y sesión, mientras la autorización se valida por separado.
+Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) gobierna usuario, PIN y sesión; [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) gobierna la autorización ordinaria por capacidad y alcance.
 
 ## Modelo conceptual
 
@@ -39,7 +39,7 @@ flowchart LR
 - Una estación mantiene como máximo una sesión operativa activa.
 - Cerrar, expirar, sustituir o invalidar la sesión del usuario no modifica la vinculación de la estación.
 
-Los mecanismos técnicos, permisos y excepciones administrativas permanecen pendientes.
+Los mecanismos técnicos, la composición de capacidades por rebanada y las excepciones administrativas reforzadas permanecen pendientes.
 
 ## Estados conceptuales del dispositivo
 
@@ -87,7 +87,7 @@ sequenceDiagram
 6. El material de sesión no se muestra ni se registra en claro.
 7. Identificadores de hardware pueden ser señales, no la única prueba de posesión o autorización.
 
-La capacidad administrativa exacta y el mecanismo concreto —QR, código, enlace, aprobación cercana u otro— quedan pendientes de las decisiones de permisos y vinculación.
+La capacidad administrativa se rige por ADR-012; su composición exacta y el mecanismo concreto —QR, código, enlace, aprobación cercana u otro— quedan pendientes de las decisiones de vinculación y autorización reforzada.
 
 ## Sesión de dispositivo y último acceso
 
@@ -226,6 +226,7 @@ Eventos candidatos:
 - [Línea base de seguridad](SECURITY_BASELINE.md)
 - [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
+- [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
 
 ## Preguntas abiertas
 
@@ -240,6 +241,6 @@ Eventos candidatos:
 
 ## Próxima revisión
 
-- **Momento:** antes de aceptar permisos o el mecanismo de vinculación y antes de implementar PIN/sesión.
+- **Momento:** antes de componer capacidades de vinculación o definir su mecanismo reforzado y antes de implementar PIN/sesión.
 - **Evidencia esperada:** modelo de amenazas del PIN/vinculación y decisiones sobre estados detallados, supervisión y revocación compatibles con ADR-010/011.
 - **Responsable:** TBD.

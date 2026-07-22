@@ -2,7 +2,7 @@
 
 ## Principio
 
-**DDV:** recibir, diagnosticar, reparar, revisar, notificar, cobrar y entregar son participaciones distinguibles y pueden ser ejecutadas por personas diferentes. Rol operativo, identidad de usuario y permiso técnico no son equivalentes.
+**DDV:** recibir, diagnosticar, reparar, revisar, notificar, cobrar y entregar son participaciones distinguibles y pueden ser ejecutadas por personas diferentes. Actor, puesto, responsabilidad, identidad, rol y capacidad no son equivalentes. **ADR-012:** un rol pertenece al tenant y sólo agrupa capacidades.
 
 ## Actores del ciclo
 
@@ -21,7 +21,9 @@
 | Proveedor o técnico externo | ejecuta trabajo especializado fuera del flujo interno | resultado, custodia y evidencia por definir | PA |
 | Sistema | genera contexto, proyecciones y actividad automática | folio, fechas, correlación y cálculos | DDV/PM |
 
-## Capacidades candidatas
+## Capacidades de dominio candidatas
+
+ADR-012 acepta el criterio semántico de capacidad por operación y la autorización negativa server-side, pero esta tabla sigue siendo evidencia para componer roles por rebanada, no una matriz de permisos aceptada ni un contrato técnico.
 
 | Capacidad | Actores típicos | Condición | Sensibilidad |
 |---|---|---|---|
@@ -43,6 +45,15 @@
 
 **Clasificación:** PM para asignación de capacidades; DDV para precondiciones conceptuales; PC para configuración.
 
+## Modelo de acceso aceptado
+
+- **ADR-012:** un usuario puede tener uno o varios roles vigentes del mismo tenant.
+- **ADR-012:** las capacidades se combinan por unión de asignaciones tenant-wide y de las restringidas a la sucursal efectiva.
+- **ADR-012:** R0 no admite permisos ni denegaciones directas por usuario.
+- **ADR-012:** el servidor deniega por defecto y valida capacidad, alcance y pertenencia del recurso.
+- **ADR-012:** una responsabilidad temporal o participación en una Orden no concede capacidades administrativas.
+- **PA:** faltan la composición concreta por rebanada y el catálogo de acciones sensibles con control reforzado.
+
 ## Atribución por usuario
 
 - **HOV/RCA:** SR Taller 1.0 usa PIN de cuatro dígitos y cierre por inactividad para baja fricción y atribución.
@@ -55,10 +66,12 @@
 
 **DDV:** un equipo puede pasar por varios técnicos y debe preservarse quién participó, en qué momento y con qué contribución. **PM:** “técnico principal” puede ser una proyección con regla explícita; no reemplaza asignaciones ni participaciones.
 
-## Decisiones abiertas de rol
+## Decisiones abiertas de composición y refuerzo
 
 - **PA:** quién puede autorizar trabajo y recoger un equipo en cada caso.
 - **PA:** si QC debe ser realizado siempre por persona distinta al técnico.
 - **PA:** quién puede declarar excepciones de bajo costo, crédito, descuento o entrega.
 - **PA:** significado operativo de técnico principal y simultaneidad de técnicos.
-- **PA:** capacidades de proveedores externos y personal multisucursal.
+- **ADR-012:** el personal multisucursal conserva una identidad; las asignaciones tenant-wide y restringidas se recalculan en la sucursal efectiva.
+- **PA:** composición de roles de R0/R1 y capacidades de proveedores externos.
+- **PA:** acciones que requieren reautenticación, segundo actor u otro control reforzado.

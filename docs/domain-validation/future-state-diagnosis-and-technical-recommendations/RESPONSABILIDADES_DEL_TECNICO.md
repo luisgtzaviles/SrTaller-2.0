@@ -53,7 +53,7 @@ Recepción o atención al cliente:
 - devuelve al taller sólo el alcance autorizado;
 - conduce notificación, cobro y entrega conforme a los paquetes ya validados.
 
-Esta distribución describe el flujo validado; las excepciones, competencias y permisos multi-tenant permanecen abiertos.
+Esta distribución describe el flujo validado. ADR-012 fija el modelo ordinario de roles/capacidades y alcance; las excepciones, competencias concretas por rebanada y controles reforzados permanecen abiertos.
 
 ## Colaboración entre técnicos
 

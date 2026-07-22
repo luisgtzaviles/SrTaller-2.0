@@ -8,7 +8,7 @@
 
 1. **[DAR]** Validar forma y presencia de la solicitud sin convertir validación sintáctica en regla de negocio.
 2. **[RDD]** Resolver tenant, sucursal, sesión y actor desde fuentes confiables.
-3. **[DAR]** Evaluar permiso y alcance para la acción.
+3. **[RDD]** Evaluar server-side la capacidad y el alcance conforme a ADR-012, con denegación por defecto.
 4. **[DAR]** Obtener agregados o políticas mediante puertos propietarios.
 5. **[RDD]** Ejecutar reglas e invariantes del dominio.
 6. **[DAR]** Persistir una unidad coherente e idempotente.
@@ -18,7 +18,7 @@
 
 | Área | Intenciones mínimas | Clasificación |
 | --- | --- | --- |
-| Contexto | Autenticar/cerrar/sustituir sesión, validar estación vinculada, obtener capacidades | DAP, ADR-010/011 |
+| Contexto | Autenticar/cerrar/sustituir sesión, validar estación vinculada, obtener capacidades efectivas | DAP, ADR-010/011/012 |
 | Recepción | Crear orden, reservar folio, identificar equipo, consultar detalle, agregar nota | DAP |
 | Taller | Mover equipo, asignar técnico, registrar participación | DAP |
 | Diagnóstico | Abrir revisión, registrar conclusión y recomendaciones | DAP |

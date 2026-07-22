@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Dirección multitenant y contexto operativo aceptados; persistencia física y pruebas pendientes.
-- **Naturaleza:** ADR-004, ADR-010 y ADR-011 son autoritativos; RLS y mecanismos concretos siguen sujetos a evaluación.
+- **Naturaleza:** ADR-004, ADR-010, ADR-011 y ADR-012 son autoritativos para propiedad, contexto, identidad/sesión y autorización ordinaria; RLS y mecanismos concretos siguen sujetos a evaluación.
 - **Dirección aceptada:** Base y esquema compartidos con aislamiento lógico; motor y Row-Level Security (RLS) pendientes.
 - **ADRs relacionados:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), todos `Accepted`.
 
@@ -201,7 +201,7 @@ La estrategia dedicada está en [Pruebas de aislamiento multitenant](../quality/
 ## Preguntas abiertas
 
 - ¿Cómo se correlacionará una misma persona entre tenants sin convertir al usuario ordinario en multi-tenant?
-- ¿Qué roles y permisos puede ejercer un usuario dentro del contexto ya fijado por la estación?
+- ¿Qué composición concreta de roles y capacidades necesita cada rebanada dentro del contexto y modelo de autorización ya aceptados?
 - ¿Existirán usuarios, clientes o catálogos compartidos entre tenants?
 - ¿Se permitirán dominios personalizados además de subdominios?
 - ¿Qué requisitos regulatorios podrían exigir aislamiento físico o residencia regional?
@@ -213,5 +213,5 @@ Las respuestas deben consolidarse en [preguntas abiertas](../product/OPEN_QUESTI
 ## Próxima revisión
 
 - **Momento:** antes de definir cualquier esquema ejecutable o repositorio.
-- **Evidencia esperada:** modelo de amenazas, pruebas negativas de ADR-004/010/011 y prototipo controlado de RLS sólo si se autoriza.
+- **Evidencia esperada:** modelo de amenazas, pruebas negativas de ADR-004/010/011/012 y prototipo controlado de RLS sólo si se autoriza.
 - **Responsable:** TBD.

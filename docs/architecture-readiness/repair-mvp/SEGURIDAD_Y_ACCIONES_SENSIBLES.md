@@ -1,5 +1,7 @@
 # Seguridad y acciones sensibles
 
+La autorización ordinaria se rige por [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md): roles del tenant agregan capacidades, las asignaciones vigentes aplicables se combinan y el servidor niega por defecto. Este documento conserva como propuesta la composición concreta del MVP y los controles reforzados para acciones sensibles.
+
 ## Acciones sensibles del MVP
 
 | Acción | Permiso y posible reautenticación | Trazabilidad/motivo/compensación | Clasificación |
@@ -24,7 +26,7 @@
 ## Controles obligatorios antes de implementación funcional
 
 - **[RP]** Modelo de amenazas inicial de multitenancy, identidad/PIN, archivos y primera integración.
-- **[RP]** Matriz preliminar de permisos y alcance.
+- **[RP]** Composición preliminar de roles/capacidades por rebanada y catálogo de acciones sensibles.
 - **[RP]** Estrategia de secretos y ambientes.
 - **[RP]** Pruebas negativas para aislamiento, autorización y archivos.
 - **[ADR]** Decisiones críticas registradas y aceptadas por el proceso aplicable.

@@ -42,7 +42,8 @@ Además del gate H0:
 - [ ] datos globales, tenant-wide y branch-scoped clasificados;
 - [x] contexto tenant/sucursal/estación/usuario, ausencia y cambio definidos en ADR-010;
 - [x] identidad, sesión, PIN, inactividad y atribución conceptual definidos en ADR-011;
-- [ ] roles, permisos, acciones sensibles y reautenticación acordados;
+- [x] modelo conceptual de roles, capacidades, alcance, combinación y revocación definido en ADR-012;
+- [ ] composición mínima por rebanada, acciones sensibles y autorización reforzada acordadas;
 - [ ] persistencia, migraciones y fixtures tienen estrategia aceptada;
 - [ ] zona horaria y modelo temporal están definidos;
 - [ ] errores, logs, correlation ID, auditoría y observabilidad mínima están especificados;
@@ -57,7 +58,7 @@ Además de terminar el código de R0 cuando éste sea autorizado, debe existir e
 - [ ] contexto de tenant y sucursal se obtiene de fuentes confiables en ejecución;
 - [ ] desvinculación/revinculación de estación y ausencia de contexto se rechazan o resuelven con seguridad;
 - [ ] identidad, sesión, PIN e inactividad cumplen los escenarios acordados;
-- [ ] atribución, roles, permisos, acciones sensibles y reautenticación se aplican server-side;
+- [ ] atribución, roles, capacidades, alcance, revocación y acciones sensibles se aplican server-side;
 - [ ] propiedad de persistencia y política de migraciones aplicadas;
 - [ ] zona horaria y almacenamiento/presentación de fechas definidos;
 - [ ] configuración por ambiente y secretos fuera del repositorio;

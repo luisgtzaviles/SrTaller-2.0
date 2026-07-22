@@ -44,7 +44,7 @@ flowchart LR
 |---|---|---|---|---|---|---|---|
 | Tenant Administration | Branch Operations | tenant activo y alcance | TenantStateChanged TBD | al crear/suspender | inmediata para nuevas acciones | Branch modifica tenant | referencia estable + lenguaje publicado |
 | Tenant/Branch | Identity and Access | organización y sucursales válidas | BranchStateChanged TBD | al autorizar | inmediata | IAM copia reglas operativas | Customer/Supplier propuesto |
-| Identity and Access | todos los comandos | actor y alcance efectivo | MembershipRevoked TBD | en cada intención | inmediata | dominio conoce roles concretos | servicio de autorización conceptual |
+| Identity and Access | todos los comandos | actor, capacidades y alcance efectivo | AsignacionDeRolRevocada TBD | en cada intención protegida | inmediata | dominio conoce roles concretos | autorización contextual conforme a ADR-012 |
 | Customer Management | Repair Operations | referencia de cliente/propietario/contacto | EVENT-001–004 | antes o durante recepción | inmediata para referencia; cambios posteriores eventuales | Repair edita cliente | Customer/Supplier propuesto |
 | Branch Operations | Repair/Inventory/Delivery | sucursal de origen, operación y ubicación | TransferRequested TBD | en apertura/transferencia | inmediata en pertenencia; workflow coordinado | branch_id uniforme sin significado | Published Language propuesto |
 | Repair Operations | Technical Diagnosis | orden, dispositivo, falla, alcance | EVENT-005–010 | antes de evaluar | inmediata en inicio | diagnóstico se vuelve nota interna | límite por intención y resultado |

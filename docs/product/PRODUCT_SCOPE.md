@@ -32,8 +32,8 @@ Todas las clasificaciones son **propuestas**. Un cambio de clasificación requie
 | Suscripciones | Discovery required | Relación vigente entre un tenant y una oferta comercial | Faltan altas, renovaciones, cobro SaaS, tolerancias y cancelaciones. |
 | Sucursales | Foundation | Alcance operativo de estaciones y datos dentro de un tenant | ADR-004/010 fijan propiedad y contexto; faltan ciclo de vida e implementación. |
 | Usuarios | Foundation | Identidad y acceso trazable de personas | Identidad y autenticación contextual aceptadas en ADR-011; faltan mecanismos técnicos, recuperación, administración de bloqueo y correlación de persona. |
-| Roles | Foundation | Agrupación administrable de autorizaciones | Falta decidir roles predefinidos, personalizados y herencia. |
-| Permisos | Foundation | Control explícito de acciones y recursos | Falta el catálogo y el tratamiento de acciones sensibles. |
+| Roles | Foundation | Agrupación administrable de capacidades dentro del tenant | Modelo y múltiples roles aceptados en ADR-012; falta composición concreta por rebanada. |
+| Capacidades | Foundation | Control explícito y negativo por defecto de operaciones y recursos | Unión, alcance y revocación aceptados en ADR-012; faltan catálogo por rebanada, aplicación y pruebas. |
 | Estaciones operativas | Foundation | Contexto de tenant/sucursal desde equipos vinculados | Vinculación y reubicación conceptual aceptadas; faltan mecanismo, pérdida y revocación técnica. |
 | PIN | Foundation | Credencial ágil del usuario dentro del tenant de la estación y sesión operativa | Semántica aceptada en ADR-011; faltan protección técnica, recuperación, política de bloqueo y refuerzo. |
 | Clientes | Core | Registro y consulta del cliente del taller dentro de su contexto permitido | Faltan identidad, duplicados, consentimiento, sucursal y retención. |

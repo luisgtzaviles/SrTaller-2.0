@@ -6,7 +6,7 @@
 - **Naturaleza:** Fuente central de incertidumbres de producto. Una opción listada no constituye decisión.
 - **Aprobación de respuestas:** Corresponde al propietario del producto, con consulta técnica, operativa, legal o de seguridad cuando aplique.
 - **Estados permitidos en esta versión:** `Abierta`, `En investigación`, `Respondida pendiente de documentar`, `Cerrada con decisión`.
-- **Estado actual:** 28 preguntas abiertas, 4 en investigación y 2 cerradas con decisión.
+- **Estado actual:** 27 preguntas abiertas, 4 en investigación y 3 cerradas con decisión.
 
 ## Uso del registro
 
@@ -46,11 +46,11 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 <a id="question-004"></a>
 ### QUESTION-004 — Acciones sensibles y autoridad de aprobación
 
-- **Contexto:** Gerentes, propietarios y administradores podrían supervisar excepciones, pero no existe un catálogo de acciones sensibles ni una autoridad de producto definida para excepciones a los principios.
+- **Contexto:** ADR-012 fija la capacidad ordinaria y separa el control reforzado, pero no existe un catálogo de acciones sensibles ni una autoridad de producto definida para excepciones.
 - **Impacto:** Afecta permisos, experiencia, auditoría, Definition of Ready y gobierno de decisiones.
 - **Opciones conocidas:** permiso específico; umbral configurable y aprobación de supervisor; doble aprobación; acciones reservadas a nivel tenant o plataforma; combinación por riesgo.
 - **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada; podría requerir una decisión de seguridad/acceso.
+- **Decisión relacionada:** [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md), `Accepted` para autorización ordinaria; requiere ADR de acciones sensibles/refuerzo.
 
 ## Tenants
 
@@ -82,8 +82,8 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 - **Impacto:** Afecta autorización, navegación, turnos, reportes y soporte a personal itinerante.
 - **Opciones conocidas:** se acepta rotación con el mismo usuario/PIN entre estaciones autorizadas del tenant; no existe selección manual ni cuenta duplicada por sucursal.
 - **Estado:** Cerrada con decisión.
-- **Alcance del cierre:** Contexto resuelto; roles y permisos continúan en QUESTION-010.
-- **Decisión relacionada:** [ADR-010 — contexto operativo por estación](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`.
+- **Alcance del cierre:** Contexto resuelto por ADR-010 y cálculo de asignaciones tenant-wide/restringidas por ADR-012; transferencias de negocio siguen separadas.
+- **Decisión relacionada:** [ADR-010 — contexto operativo por estación](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-012 — autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md), `Accepted`.
 
 <a id="question-008"></a>
 ### QUESTION-008 — Cambio de sucursal y transferencia de contexto
@@ -108,13 +108,14 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 - **Decisión relacionada:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), `Accepted`.
 
 <a id="question-010"></a>
-### QUESTION-010 — Modelo de roles, permisos y excepciones
+### QUESTION-010 — Modelo de roles, capacidades y excepciones
 
-- **Contexto:** Se requieren roles y permisos, pero no existe catálogo, jerarquía ni política de personalización.
+- **Contexto:** ADR-012 acepta roles del tenant, múltiples roles, unión de capacidades, asignaciones tenant-wide/restringidas, ausencia de permisos directos y autorización negativa server-side.
 - **Impacto:** Es un gate para cualquier flujo funcional y para aislamiento dentro del tenant.
-- **Opciones conocidas:** roles predefinidos; roles personalizados por tenant; permisos directos; atributos y condiciones; combinación con separación de funciones.
-- **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada; documentar en [Identity, Access and Permissions](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md).
+- **Opciones conocidas:** modelo ordinario cerrado; composición concreta de roles/capacidades por rebanada y controles reforzados permanecen separados.
+- **Estado:** Cerrada con decisión.
+- **Alcance del cierre:** Modelo ordinario resuelto; no cierra catálogo completo, roles de plataforma, acciones sensibles ni separación reforzada de funciones.
+- **Decisión relacionada:** [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md), `Accepted`; véase [Identity, Access and Permissions](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md).
 
 ## PIN y dispositivos
 
@@ -131,12 +132,12 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 <a id="question-012"></a>
 ### QUESTION-012 — Alcance del PIN y autenticación reforzada
 
-- **Contexto:** ADR-011 fija que el PIN es credencial dentro del tenant derivado, establece una sesión operativa y no concede autorización; duración concreta, protección y acciones sensibles siguen abiertas.
+- **Contexto:** ADR-011 fija PIN/sesión y ADR-012 la autorización ordinaria separada; duración concreta, protección y acciones sensibles siguen abiertas.
 - **Impacto:** Afecta velocidad operativa, suplantación, bloqueo, cambio de turno y acciones sensibles.
 - **Opciones conocidas:** PIN sólo para seleccionar operador; PIN para sesión operativa acotada; PIN más factor reforzado para acciones sensibles; reautenticación por riesgo.
 - **Estado:** En investigación.
 - **Alcance resuelto:** Propósito, sesión, cambio de turno e inactividad aceptados; protección técnica, límites y reautenticación pendientes.
-- **Decisión relacionada:** [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), `Accepted`; no decide algoritmo criptográfico ni autorización.
+- **Decisión relacionada:** [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) y [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md), `Accepted`; no deciden algoritmo criptográfico ni autorización reforzada.
 
 ## Reparaciones
 
@@ -362,7 +363,7 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 
 Antes de comprometer una primera versión deben estar respondidas, como mínimo, las preguntas sobre segmento, recorrido, alcance tenant/sucursal, identidad/permisos, flujo de reparación, mercado y obligaciones aplicables.
 
-Antes de implementar acceso operativo deben aplicarse ADR-010/011 y cerrarse las preguntas restantes de Access Control, mecanismos de dispositivo, protección del PIN y acciones sensibles.
+Antes de implementar acceso operativo deben aplicarse ADR-010/011/012 y cerrarse composición por rebanada, mecanismos de dispositivo, protección del PIN y acciones sensibles.
 
 Antes de integrar mensajería, pagos o suscripciones deben estar respondidas las preguntas de proveedor, consentimiento, estados, errores, jurisdicción y modelo comercial correspondientes.
 

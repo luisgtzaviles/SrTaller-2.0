@@ -5,7 +5,7 @@
 - **Estado:** Borrador conceptual.
 - **Naturaleza:** Dirección conceptual; ADR-002 acepta la forma modular inicial, mientras las selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
-- **Decisiones relacionadas:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../decisions/README.md).
+- **Decisiones relacionadas:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) y [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../decisions/README.md).
 
 ## Objetivo
 
@@ -112,7 +112,7 @@ La extracción futura de un módulo sólo se evaluará por presión demostrable:
 
 1. El borde recibe la conexión y normaliza señales no autoritativas como el nombre de host.
 2. La API reconoce la estación y valida su vinculación del lado del servidor.
-3. La sucursal y el tenant se derivan de la estación; el PIN se valida dentro de ese tenant conforme a ADR-011.
+3. La sucursal y el tenant se derivan de la estación; el PIN se valida dentro de ese tenant conforme a ADR-011 y cada operación protegida se autoriza conforme a ADR-012.
 4. La API construye el contexto inmutable tenant/sucursal/estación/usuario/sesión y rechaza discrepancias.
 5. El caso de uso autoriza la acción y opera dentro del límite del módulo.
 6. La persistencia confirma el cambio.
@@ -162,7 +162,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 - Proveedor S3-compatible y estrategia de distribución de archivos.
 - Monorepo con pnpm/Turborepo frente a repositorios separados.
 
-Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 establece la unidad arquitectónica, ADR-004 la topología multitenant, ADR-010 el contexto operativo y ADR-011 la identidad/sesión conceptual.
+Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 establece la unidad arquitectónica, ADR-004 la topología multitenant, ADR-010 el contexto operativo, ADR-011 la identidad/sesión y ADR-012 la autorización ordinaria conceptual.
 
 ## Restricciones y no objetivos
 

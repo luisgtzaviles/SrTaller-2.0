@@ -64,7 +64,7 @@ Las flechas representan conocimiento permitido, no el flujo completo de datos. L
 ### Aplicación
 
 - Orquesta un caso de uso y su límite transaccional.
-- Resuelve autorización contextual antes de acceder o mutar datos.
+- Resuelve server-side la capacidad, el alcance y la pertenencia conforme a ADR-012 antes de acceder, mutar o producir efectos.
 - Coordina dominios mediante interfaces o eventos explícitos.
 - Decide qué tareas son síncronas y cuáles se delegan a workers.
 
@@ -170,7 +170,7 @@ Cuando comience la implementación, se proponen verificaciones para:
 - detectar ciclos y accesos entre módulos no permitidos;
 - comprobar que repositorios tenant-scoped exigen contexto;
 - probar contratos de API y adaptadores externos;
-- cubrir autorización en la API aunque la UI oculte una acción;
+- cubrir autorización negativa server-side aunque la UI oculte una acción;
 - validar idempotencia, reintentos y comportamiento ante dependencias fallidas;
 - demostrar que ningún cliente accede directamente a base, Redis o almacenamiento.
 
@@ -182,11 +182,12 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 - [ADR-004: multitenancy con base y esquema compartidos](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) — `Accepted`
 - [ADR-010: contexto operativo derivado de una estación vinculada](../decisions/proposed/ADR-010-station-bound-operational-context.md) — `Accepted`
 - [ADR-011: identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) — `Accepted`
+- [ADR-012: roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) — `Accepted`
 - [ADR-005: NestJS para backend](../decisions/proposed/ADR-005-nestjs-backend.md)
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: estrategia de monorepo](../decisions/proposed/ADR-009-monorepo-strategy.md)
 
-ADR-002, ADR-004, ADR-010 y ADR-011 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-004 obliga a preservar propiedad/aislamiento, ADR-010 a resolver tenant/sucursal/estación y ADR-011 a validar usuario/sesión sin definir middleware ni diseño físico.
+ADR-002, ADR-004, ADR-010, ADR-011 y ADR-012 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-004 obliga a preservar propiedad/aislamiento, ADR-010 a resolver tenant/sucursal/estación, ADR-011 a validar usuario/sesión y ADR-012 a autorizar capacidad/alcance sin definir middleware ni diseño físico.
 
 ## Riesgos
 

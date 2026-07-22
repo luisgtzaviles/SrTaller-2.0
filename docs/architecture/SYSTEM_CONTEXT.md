@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Modelo conceptual; ADR-002, ADR-004, ADR-010 y ADR-011 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
+- **Naturaleza:** Modelo conceptual; ADR-002, ADR-004, ADR-010, ADR-011 y ADR-012 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
 - **Alcance:** Límites de SR Taller 2.0, actores, sistemas externos y flujos de información de alto nivel.
 - **Fuente de producto:** [Visión del producto](../product/PRODUCT_VISION.md) y [actores y personas](../product/ACTORS_AND_PERSONAS.md).
 
@@ -23,7 +23,7 @@ Este documento ubica a SR Taller 2.0 en su entorno. No define módulos internos 
 
 | Elemento | Relación conceptual con la plataforma | Estado |
 |---|---|---|
-| Personal del taller | Se autentica por PIN dentro del tenant de la estación y opera como usuario activo, sujeto a permisos | Identidad/sesión aceptadas; permisos pendientes |
+| Personal del taller | Se autentica por PIN dentro del tenant de la estación y opera como usuario activo, sujeto a capacidades y alcance | Identidad/sesión y autorización ordinaria aceptadas; composición por rebanada pendiente |
 | Propietario o administrador del tenant | Administra configuración, usuarios y alcance operativo autorizado | Hipótesis por validar |
 | Cliente del taller | Recibe servicio y comunicaciones; su acceso directo futuro no está confirmado | Discovery required |
 | Administrador y soporte de plataforma | Gestionan capacidades SaaS bajo controles reforzados y auditados | Hecho conocido; alcance pendiente |
@@ -69,7 +69,7 @@ Dentro del límite de SR Taller 2.0 quedan:
 
 - las reglas de negocio de la plataforma y de los talleres;
 - la resolución y propagación del contexto de tenant y sucursal;
-- la autorización de acciones y el registro de auditoría;
+- la autorización de cada operación protegida conforme a ADR-012 y el registro de auditoría;
 - la persistencia canónica de datos propios;
 - la normalización y deduplicación de información recibida desde integraciones;
 - la API consumida por clientes propios;

@@ -12,7 +12,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | Identidad y acceso | Autenticación y sesión de usuario; credenciales y recuperación | Iniciar/cerrar sesión; SesiónIniciada/Revocada | Usa contexto ADR-010; no reparaciones | Sesión MVP; correlación/federación diferidas | Separar de roles duplica controles; fusionar todo crea módulo dios. **Candidato fuerte** | DAP |
 | Multitenancy, sucursales y estaciones | Tenant, sucursal, vinculación y alcance | Vincular/desvincular estación; EstaciónVinculada/Desvinculada | Consultado por todos; no órdenes | Contexto ADR-004/010; enrutamiento avanzado diferido | Fragmentarlo causa contexto incoherente; fusionarlo oculta propiedad. **Candidato fuerte** | DAP |
-| Usuarios, roles y permisos | Usuario de tenant, rol, capacidad y atribución; concesiones | Conceder/revocar; PermisoCambiado | Usa identidad/contexto; no muta dominio operativo | Matriz mínima MVP; administración avanzada diferida | Separación prematura duplica datos; fusión mezcla autenticación/autorización. **Integrar inicialmente con Identidad** | DAP |
+| Usuarios, roles y capacidades | Usuario de tenant, rol, capacidad, asignación y atribución conforme a ADR-012 | Asignar/revocar rol; AsignacionDeRolRevocada | Usa identidad/contexto; no muta dominio operativo | Composición mínima MVP; administración avanzada diferida | Separación prematura duplica datos; fusión mezcla autenticación/autorización. **Integrar inicialmente con Identidad** | DAP |
 | Configuración de recepción | Requisito, política efectiva y versión; políticas de captura | Publicar política; PoliticaRecepcionPublicada | Usa tenancy; no lee órdenes | Campos/política MVP; motor general fuera | Un módulo por política fragmenta; JSON global acopla. **Candidato fuerte en Configuración** | DAP |
 | Clientes y contactos | Cliente, nombre y contacto; identidad/contacto comercial | Registrar/actualizar; ClienteRegistrado | Referenciado por órdenes; no custodia | Cliente mínimo MVP; CRM diferido | Separarlo complica recepción; incrustarlo duplica clientes. **Candidato fuerte mínimo** | DAP |
 | Órdenes de Servicio | Orden, folio, problema y equipo; identidad/recepción | Crear orden; OrdenCreada | Usa contexto, cliente y política; no pagos/diagnósticos | Núcleo MVP | Absorber el ciclo crea agregado gigante. **Confirmar para MVP** | DAP |
@@ -39,7 +39,7 @@
 
 ## Fronteras que pueden empezar juntas
 
-**[DAR]** Para la primera rebanada, identidad/usuarios/permisos pueden compartir un módulo físico; orden/custodia y notas/línea temporal pueden compartir otro; configuración puede residir junto a tenancy. Se conservan contratos y propiedad para separar después. Juntas no significa fusionadas conceptualmente.
+**[DAR]** Para la primera rebanada, identidad/usuarios/roles/capacidades pueden compartir un módulo físico; orden/custodia y notas/línea temporal pueden compartir otro; configuración puede residir junto a tenancy. Se conservan contratos y propiedad para separar después. Juntas no significa fusionadas conceptualmente.
 
 ## Tensiones pendientes
 

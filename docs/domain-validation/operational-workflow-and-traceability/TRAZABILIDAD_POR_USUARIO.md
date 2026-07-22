@@ -24,7 +24,7 @@ Una acción relevante se atribuye al usuario autenticado cuando se realizó. La 
 - fecha y hora confiables;
 - acción y objeto afectados.
 
-[ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta que tenant/sucursal provienen de la estación vinculada. [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) acepta que el PIN es credencial dentro de ese tenant, que una estación tiene una sesión activa y que cambiar de turno sustituye al usuario sin reescribir la historia. Protección técnica, formato de sesión, permisos y reautenticación siguen abiertos.
+[ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta que tenant/sucursal provienen de la estación vinculada. [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) acepta PIN/sesión/cambio de turno. [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) acepta roles/capacidades/alcance y exige autorización server-side en cada operación protegida. Protección técnica, formato de sesión, composición por rebanada y reautenticación para acciones sensibles siguen abiertos.
 
 ## Acciones que requieren atribución
 
@@ -94,7 +94,7 @@ Una sesión válida permite atribuir una acción; no demuestra automáticamente:
 - que la decisión del cliente fue auténtica;
 - que un cambio de estado correspondió a una acción física.
 
-Autenticación, autorización, custodia y evidencia siguen siendo conceptos distintos.
+Autenticación, autorización ordinaria, autorización reforzada, custodia y evidencia son conceptos distintos conforme a ADR-011/012.
 
 ## Correcciones
 

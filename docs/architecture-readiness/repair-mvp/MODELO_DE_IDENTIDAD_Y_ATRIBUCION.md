@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Identidad | ¿Quién es la persona operadora estable dentro del tenant? | RDD, ADR-011 |
 | Pertenencia | ¿A qué único tenant pertenece el usuario ordinario? | RDD, ADR-004/011 |
-| Rol/capacidad | ¿Qué puede intentar y con qué alcance? | DAP |
+| Rol/capacidad | ¿Qué puede intentar y con qué alcance? | RDD, ADR-012 |
 | Contexto operativo | ¿Bajo qué tenant/sucursal/estación y usuario actúa ahora? | RDD, ADR-010/011 |
 | Verificación adicional | ¿Cómo se confirma una acción sensible? | DAP |
 | Actor atribuido | ¿A quién se responsabiliza por el hecho? | RDD |
@@ -29,7 +29,7 @@
 | Acceso operativo por PIN | Tenant resuelto por estación y una sola sesión activa por estación | RDD, ADR-011 |
 | Estación compartida | Usuario activo visible y cambio de turno explícito sin cambiar sucursal | RDD |
 | Inactividad | Termina la sesión, conserva vinculación y exige autenticación nueva; duración pendiente | RDD, ADR-011 |
-| Múltiples roles/sucursales | Mismo usuario por tenant; estación determina sucursal y permisos se evalúan aparte | RDD |
+| Múltiples roles/sucursales | Mismo usuario por tenant; estación determina sucursal y ADR-012 une capacidades tenant-wide y asignaciones aplicables a esa sucursal | RDD, ADR-012 |
 | Acción sensible | Permiso, posible reautenticación, motivo y auditoría | DAR |
 | Revocación | No inicia sesión; toda sesión invalidada deja de aceptar acciones | RDD, ADR-011 |
 
@@ -50,12 +50,12 @@
 
 ## Preguntas bloqueantes
 
-- **[PB]** Actores mínimos del MVP y matriz de capacidades por tenant/sucursal.
+- **[PB]** Composición mínima de roles/capacidades y acciones sensibles por rebanada; el modelo de asignación y alcance se rige por ADR-012.
 - **[PB]** Reglas técnicas de protección, intentos, duración, recuperación, propagación y revocación de sesión.
 - **[PB]** Acciones que requieren reautenticación o segundo actor.
 - **[PB]** Uso permitido de cuentas compartidas y mecanismo de atribución.
 - **[PB]** Tratamiento de soporte, propietario y administración de plataforma.
-- **[ADR]** [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta el contexto y la confianza conceptual de estación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) acepta identidad, propósito del PIN y ciclo conceptual de sesión. Protección técnica, permisos, acciones sensibles y evidencia de implementación siguen bloqueando el acceso operativo.
+- **[ADR]** [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta contexto/estación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) roles/capacidades/autorización ordinaria. Protección técnica, composición por rebanada, acciones sensibles y evidencia de implementación siguen bloqueando el acceso operativo.
 
 ## Riesgos
 

@@ -12,7 +12,7 @@
 - **Datos propios** significa fuente autoritativa conceptual. No define almacenamiento físico ni impide proyecciones de lectura.
 - **Eventos posibles** son ejemplos para descubrir colaboración entre módulos; no son contratos aceptados ni garantizan mensajería distribuida.
 - **Dependencias permitidas** indica colaboración deseada mediante contratos explícitos; no autoriza acceso directo a persistencia ajena.
-- Todos los módulos que ejecuten operaciones ordinarias deben recibir el contexto tenant/sucursal/estación/usuario de ADR-010 y respetar los permisos aplicables.
+- Todos los módulos que ejecuten operaciones ordinarias deben recibir el contexto de ADR-010/011 y exigir capacidades/alcance conforme a ADR-012.
 - Identity, Access Control, Audit, Files, Notifications e Integrations pueden ser capacidades transversales sin convertirse en dependencias indiscriminadas del dominio.
 
 ## Límites generales propuestos
@@ -119,11 +119,11 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 
 ## Access Control
 
-- **Responsabilidad principal — propuesta:** resolver usuarios, roles, permisos y autorización efectiva dentro del contexto de ADR-010.
-- **Datos propios — propuesta:** estado de acceso del usuario, roles, permisos y grants. No es propietario de la sucursal efectiva ni crea asignaciones permanentes usuario–sucursal.
-- **Eventos posibles:** usuario habilitado/suspendido/revocado, rol asignado/retirado, permiso o alcance cambiado.
+- **Responsabilidad principal — decisión conceptual de ADR-012:** resolver roles de tenant, asignaciones, capacidades y autorización efectiva dentro del contexto de ADR-010/011.
+- **Datos propios — propuesta de titularidad:** roles, composición de capacidades y asignaciones vigentes tenant-wide o restringidas por sucursal. No es propietario del usuario, de la sucursal efectiva ni de permisos/denegaciones directos por usuario en R0.
+- **Eventos posibles:** rol asignado/retirado/desactivado, composición de rol o alcance cambiado.
 - **Dependencias permitidas:** Identity, Tenant Management y Branch Management. Todos los módulos consultan decisiones de autorización mediante un contrato común; Access Control no necesita conocer reglas internas de cada módulo más allá de recursos y acciones publicados.
-- **Preguntas abiertas:** roles base/personalizados, permisos directos, denegaciones, restricciones contextuales y separación de funciones. Véase [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
+- **Preguntas abiertas:** composición concreta por rebanada, permisos de plataforma, acciones sensibles, autorización reforzada y separación de funciones. Véanse [QUESTION-004](./OPEN_QUESTIONS.md#question-004) y [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
 
 ## Device Management
 

@@ -81,6 +81,10 @@ Los términos preferidos separan relato, conocimiento técnico, propuesta comerc
 | Regla contextual de Avicell | práctica validada sólo para Avicell | universal | RCA |
 | PIN operativo | credencial de baja fricción que identifica dentro del tenant ya resuelto | identidad absoluta/código del cliente/contexto | ADR-011 |
 | Sesión operativa | periodo del usuario activo en una estación; una por estación | persona o sesión de dispositivo | ADR-011 |
+| Rol | agrupación administrable de capacidades perteneciente a un tenant | actor, puesto, responsabilidad o sesión | ADR-012 |
+| Capacidad | facultad concreta para solicitar una operación protegida dentro de un alcance | módulo, pantalla o autorización comercial | ADR-012 |
+| Autorización del sistema | decisión server-side sobre capacidad, alcance, contexto y recurso | autenticación o autorización comercial | ADR-012 |
+| Acción sensible | operación que puede exigir control reforzado además de capacidad ordinaria | toda operación protegida | ADR-012; mecanismo PA |
 
 ## Términos a retirar o aclarar
 

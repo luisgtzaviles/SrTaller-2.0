@@ -86,7 +86,7 @@ El dataset base debe ser sintético, versionable y reproducible e incluir:
 
 - al menos dos tenants no relacionados;
 - múltiples sucursales en uno y una sucursal en otro;
-- identidades separadas por tenant, con roles y permisos contrastantes; si se aprueba una identidad global multi-tenant, añadir una identidad con membresías distintas; si se rechaza, probar que crear/usar esa segunda membresía falla sin filtrar datos;
+- identidades ordinarias separadas por tenant, con roles/capacidades contrastantes, asignaciones tenant-wide y restringidas por sucursal; probar que una identidad de otro tenant, una asignación revocada y una capacidad ausente fallan sin filtrar datos;
 - dispositivos activos, revocados y asignados a sucursales distintas, más desafíos de vinculación vigentes/vencidos/reutilizados, transferencia y activaciones concurrentes sintéticas;
 - recursos con IDs opacos distintos y escenarios de referencia ajena;
 - datos vacíos, límites, Unicode, zonas horarias y estados inválidos relevantes;

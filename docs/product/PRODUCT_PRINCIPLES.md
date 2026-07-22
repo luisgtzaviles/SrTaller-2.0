@@ -45,6 +45,8 @@ La prioridad entre principios en conflicto es una **decisión pendiente**. Aisla
 
 **Implicación práctica:** autenticación, autorización, revocación, auditoría y manejo de secretos forman parte del diseño, no tareas posteriores. Los mecanismos específicos no quedan decididos en este documento.
 
+**Decisión relacionada:** ADR-012 acepta denegación por defecto, autoridad final del servidor y autorización ordinaria por roles/capacidades; controles reforzados y mecanismos técnicos siguen abiertos.
+
 ### 5. Diseño consistente
 
 **Propuesta:** patrones visuales y de interacción compartidos deben pertenecer a un design system con ownership, criterios de accesibilidad y proceso de evolución.

@@ -4,7 +4,7 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Lenguaje común preliminar; no define tablas, clases, contratos de API ni reglas finales.
-- **Aprobación:** ADR-004/010/011 son autoritativos para los términos marcados; el resto está pendiente del propietario del producto y especialistas del dominio.
+- **Aprobación:** ADR-004/010/011/012 son autoritativos para los términos marcados; el resto está pendiente del propietario del producto y especialistas del dominio.
 - **Convención:** “Pendiente de validación” indica que la definición o sus límites podrían cambiar.
 
 ## Reglas de uso
@@ -24,8 +24,11 @@
 | **Usuario** | Identidad operativa ordinaria que pertenece exactamente a un tenant y puede rotar entre sus estaciones autorizadas sin duplicarse por sucursal. | **Aceptado en ADR-004/010/011:** pertenencia, independencia de estación/sucursal/PIN/sesión y autenticación contextual; pendientes atributos, recuperación y relación con personal. No equivale a rol, sesión ni estación. |
 | **Identidad global** | Posible correlación futura de una misma persona entre tenants o con identidades de plataforma; no es el usuario ordinario ni concede operación multi-tenant. | **Pendiente de decisión especializada:** necesidad, privacidad, identificadores y recuperación. |
 | **Membresía** | Término histórico ambiguo. No representa al usuario ordinario multi-tenant; la membresía comercial del SaaS y el usuario del tenant son conceptos separados. | **No usar para inferir tenant/sucursal.** Cualquier uso futuro requiere definición explícita. |
-| **Rol** | Agrupación nombrada de permisos para facilitar administración de acceso. | **Pendiente de validación:** roles base, personalización, herencia, alcance tenant/sucursal y versionado. No equivale necesariamente a puesto laboral. |
-| **Permiso** | Autorización granular para ejecutar una acción sobre un tipo de recurso dentro de un alcance. | **Pendiente de validación:** catálogo, granularidad, condiciones, denegaciones y acciones sensibles. |
+| **Rol** | Agrupación nombrada y administrable de capacidades perteneciente a un tenant. | **Aceptado en ADR-012:** un usuario puede tener varios; no equivale a actor, puesto, sesión o sucursal. Composición concreta por rebanada pendiente. |
+| **Asignación de rol** | Relación vigente entre un usuario y un rol del mismo tenant, tenant-wide o restringida por sucursal. | **Aceptado en ADR-012:** las asignaciones aplicables aportan capacidades por unión; R0 no introduce vigencias temporales. |
+| **Capacidad** | Facultad concreta para solicitar una operación protegida dentro de un alcance. | **Aceptado en ADR-012:** se orienta a acciones, no a pantallas o módulos; catálogo por rebanada pendiente. |
+| **Autorización** | Decisión server-side que evalúa contexto, sesión, usuario, capacidad, alcance y recurso. | **Aceptado en ADR-012:** negativa por defecto; no confundir con autenticación ni autorización comercial del cliente. |
+| **Acción sensible** | Operación que puede exigir control reforzado además de la capacidad ordinaria. | **Frontera aceptada en ADR-012:** catálogo, reautenticación, doble control y demás mecanismos permanecen pendientes. |
 | **Estación operativa** | Equipo cliente reconocido y vinculado a una única sucursal activa para aportar origen físico y contexto. | **Aceptado en ADR-010:** vinculación y alcance; pendientes tipos, identidad técnica, credencial y evidencia concreta. |
 | **Sesión de estación** | Evidencia técnica temporal de que una estación conserva una vinculación válida con sucursal/tenant derivados. | **Pendiente de mecanismo:** duración, renovación, revocación, credenciales y comportamiento sin conexión. No sustituye al usuario. |
 | **Sesión de usuario** | Periodo durante el cual un usuario autenticado es el actor activo dentro del contexto ya derivado de la estación. | **Aceptado en ADR-011:** una activa por estación, cambio de turno, cierre e inactividad; pendientes mecanismo, duración concreta, concurrencia entre estaciones, cierre remoto y autenticación reforzada. |

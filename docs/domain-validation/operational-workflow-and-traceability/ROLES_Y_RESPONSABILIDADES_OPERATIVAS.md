@@ -95,7 +95,7 @@ En Avicell la segunda revisión puede hacerla el recepcionista en turno. Se vali
 
 ## Autoridad y permisos
 
-Este documento describe responsabilidades de negocio, no concede permisos. Quedan abiertas las acciones sensibles, revalidación por PIN, excepciones, combinación de roles y límites por tenant/sucursal.
+Este documento describe responsabilidades de negocio, no concede capacidades. [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) establece que un usuario puede tener varios roles del tenant, que sus capacidades se unen conforme a asignaciones aplicables y que actor, puesto y responsabilidad no se convierten automáticamente en rol. Quedan abiertas la composición concreta por rebanada, las acciones sensibles, la revalidación por PIN y las excepciones reforzadas.
 
 ## Ejemplos inválidos
 

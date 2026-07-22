@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual de controles mínimos.
-- **Naturaleza:** Propuesta y conjunto de hitos; ADR-004/010/011 son autoritativos para aislamiento, contexto e identidad/sesión conceptuales y no constituyen certificación ni diseño criptográfico final.
+- **Naturaleza:** Propuesta y conjunto de hitos; ADR-004/010/011/012 son autoritativos para aislamiento, contexto, identidad/sesión y autorización ordinaria conceptuales y no constituyen certificación ni diseño criptográfico final.
 - **Alcance:** Producto, aplicaciones, datos, dependencias, entrega y operación.
 - **Referencia de verificación:** [Estrategia de pruebas de seguridad](../quality/SECURITY_TESTING.md).
 
@@ -96,13 +96,17 @@ Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
 
 ## Autorización
 
-- La API autoriza cada caso de uso y recurso; la interfaz no es una frontera.
-- Se evalúan usuario, tenant, sucursal, estación, permiso y estado del recurso según corresponda.
+- ADR-012 exige autorización negativa por defecto y capacidad explícita para toda operación protegida.
+- El servidor autoriza cada caso de uso y recurso; la interfaz no es una frontera.
+- Se evalúan contexto, sesión, usuario, estado, capacidad, alcance y pertenencia del recurso.
+- Los roles pertenecen al tenant, un usuario puede tener varios y sus capacidades se combinan por unión de asignaciones vigentes aplicables.
+- R0 no usa permisos ni denegaciones directas por usuario.
 - Los objetos se cargan dentro del contexto autorizado para evitar IDOR.
 - Operaciones de plataforma usan permisos y flujos separados de tenant.
-- Los cambios de permisos se hacen efectivos con una latencia definida y comprobable.
+- Una capacidad revocada no autoriza la siguiente operación protegida; la propagación técnica debe demostrarlo.
 - Los exports, reportes, archivos, sockets y jobs reciben el mismo nivel de autorización que una pantalla.
 - Las denegaciones no revelan existencia ni datos de otro tenant.
+- Las acciones sensibles pueden requerir control reforzado además de la capacidad ordinaria; su mecanismo sigue pendiente.
 
 ## Aislamiento multitenant
 
@@ -267,6 +271,7 @@ Los umbrales y responsables están `TBD`; no se inventan en este documento.
 - [Modelo de multitenancy](MULTITENANCY_MODEL.md)
 - [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
+- [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
 - [Arquitectura de datos](DATA_ARCHITECTURE.md)
 - [Estrategia de despliegue](DEPLOYMENT_STRATEGY.md)
 - [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md)

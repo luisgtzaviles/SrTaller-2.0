@@ -4,14 +4,14 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Hipótesis de actores y contextos de uso; no define roles, permisos ni estructura laboral definitiva.
-- **Aprobación:** El contexto de usuario/estación se rige por ADR-010; actores, roles, permisos y responsabilidades permanecen pendientes.
+- **Aprobación:** El contexto se rige por ADR-010, identidad/sesión por ADR-011 y autorización ordinaria por ADR-012; actores, composición por rebanada y responsabilidades de negocio permanecen pendientes.
 - **Datos personales ficticios:** No se utilizan nombres, biografías ni características no confirmadas.
 
 ## Distinciones necesarias
 
 - Un **actor** representa una relación con el sistema; no equivale necesariamente a un puesto laboral.
-- Un **rol de autorización** es una agrupación de permisos. No debe deducirse automáticamente del nombre de un actor.
-- Un usuario ordinario pertenece a un tenant y puede rotar entre sucursales mediante estaciones vinculadas; roles, permisos y variaciones de responsabilidad siguen pendientes.
+- Un **rol de autorización** es una agrupación de capacidades del tenant. No debe deducirse automáticamente del nombre de un actor.
+- Un usuario ordinario pertenece a un tenant, puede rotar entre sucursales mediante estaciones vinculadas y puede tener varios roles; su composición concreta y las responsabilidades de negocio siguen pendientes.
 - “Cliente” en este documento significa cliente del taller; las aplicaciones consumidoras de la API se denominan clientes técnicos.
 
 Las capacidades permitidas se definirán en [Identity, Access and Permissions](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), no en este documento.
@@ -72,13 +72,13 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 - **Posibles restricciones:** anulación, devolución, ajuste, reapertura y consulta de otras cajas o sucursales.
 - **Preguntas pendientes:** ¿qué representa una sesión de caja? ¿qué medios y acciones requieren supervisión? Véanse [QUESTION-021](./OPEN_QUESTIONS.md#question-021) y [QUESTION-022](./OPEN_QUESTIONS.md#question-022).
 
-## Usuario con permisos personalizados
+## Usuario con varios roles
 
-- **Responsabilidades — hipótesis:** cumplir una combinación de funciones que los roles predefinidos no representen.
-- **Objetivos — hipótesis:** acceder sólo a las capacidades necesarias para su trabajo real.
-- **Alcance de acceso — pendiente:** permisos evaluados dentro del contexto tenant/sucursal/estación/usuario/sesión de ADR-010/011, sin asignación permanente de sucursal.
-- **Posibles restricciones:** combinaciones incompatibles, privilegios sensibles, cambios a su propia autorización y complejidad de soporte.
-- **Preguntas pendientes:** ¿se permitirán roles personalizados, permisos directos o ambos? ¿cómo se evita una combinación peligrosa? Véase [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
+- **Responsabilidades — hipótesis:** cumplir varias funciones sin duplicar identidad ni sesión.
+- **Objetivos — decisión aceptada:** acceder a la unión de capacidades de sus roles vigentes dentro del alcance aplicable.
+- **Alcance de acceso — decisión aceptada:** asignaciones tenant-wide y, sólo por necesidad explícita, restringidas a la sucursal efectiva conforme a ADR-012.
+- **Posibles restricciones:** acciones sensibles, cambios a su propia autorización y combinaciones que el futuro ADR de control reforzado prohíba.
+- **Preguntas pendientes:** ¿qué composición mínima necesita cada rebanada y qué acciones exigen control reforzado? Véanse [QUESTION-004](./OPEN_QUESTIONS.md#question-004) y [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
 
 ## Cliente del taller
 
@@ -117,7 +117,7 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 - **Tipo:** actor técnico no humano.
 - **Responsabilidades — decisión aceptada:** mantener una vinculación verificable con una sucursal, derivar de ella el tenant y presentar identidad de estación en las solicitudes permitidas.
 - **Objetivos — decisión aceptada:** habilitar una sesión operativa activa de usuario sin convertirse por sí sola en prueba suficiente para acciones sensibles.
-- **Alcance de acceso:** sin operación ordinaria si no existe vinculación vigente; con ella, limitado además por sesión válida, usuario activo y permisos pendientes.
+- **Alcance de acceso:** sin operación ordinaria si no existe vinculación vigente; con ella, limitado además por sesión válida, usuario activo, capacidad y alcance conforme a ADR-012.
 - **Posibles restricciones:** activación, expiración, revocación, pérdida, cambio de sucursal, cierre remoto y eventual capacidad offline no confirmada.
 - **Preguntas pendientes:** ¿qué equipos pueden vincularse y mediante qué flujo? ¿qué puede hacer un dispositivo sin usuario activo? Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
 
@@ -150,7 +150,8 @@ Véase [Preguntas abiertas](./OPEN_QUESTIONS.md).
 - [Modelo de identidad, acceso y permisos](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md)
 - [Modelo de sucursales y dispositivos](../architecture/BRANCH_AND_DEVICE_MODEL.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
+- [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
 
 ## Próxima revisión
 
-Revisar después de entrevistas con representantes del segmento inicial y antes de diseñar el catálogo de permisos o los recorridos de interfaz. **Fecha: TBD.**
+Revisar después de entrevistas con representantes del segmento inicial y antes de componer roles/capacidades por rebanada o diseñar recorridos de interfaz. **Fecha: TBD.**

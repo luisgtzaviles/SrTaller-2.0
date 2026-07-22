@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Identidad, autenticación por PIN y sesión conceptual aceptadas; autorización y mecanismos pendientes.
-- **Naturaleza:** ADR-004/010/011 son autoritativos para usuario por tenant, contexto por estación, PIN y sesión; roles, permisos y mecanismos técnicos siguen como propuesta.
+- **Estado:** Identidad, autenticación por PIN, sesión y autorización ordinaria conceptuales aceptadas; mecanismos y autorización reforzada pendientes.
+- **Naturaleza:** ADR-004/010/011/012 son autoritativos para usuario por tenant, contexto por estación, PIN, sesión, roles, capacidades, alcance y autorización ordinaria; los mecanismos técnicos y acciones sensibles siguen pendientes.
 - **Alcance:** Usuario de tenant, identidad de plataforma/correlación futura, roles, permisos, estaciones y sesiones.
 - **Fuera de alcance:** Seleccionar proveedor, algoritmos criptográficos, formatos de token o políticas numéricas definitivas.
 
@@ -16,9 +16,9 @@ Separar con claridad quién es el usuario del tenant, desde qué estación/sucur
 ```mermaid
 erDiagram
     TENANT ||--o{ TENANT_USER : "incluye"
-    TENANT_USER }o--o{ ROLE : "puede tener"
-    ROLE }o--o{ PERMISSION : "agrupa"
-    TENANT_USER }o--o{ PERMISSION : "puede ajustar"
+    TENANT_USER }o--o{ ROLE_ASSIGNMENT : "recibe"
+    ROLE ||--o{ ROLE_ASSIGNMENT : "se asigna"
+    ROLE }o--o{ CAPABILITY : "agrupa"
     TENANT ||--o{ BRANCH : "contiene"
     BRANCH ||--o{ OPERATIONAL_STATION : "vincula"
     OPERATIONAL_STATION ||--o{ DEVICE_SESSION : "establece"
@@ -35,8 +35,9 @@ El diagrama es conceptual: no prescribe tablas, cardinalidades definitivas ni qu
 |---|---|---|
 | Usuario ordinario | Identidad operativa perteneciente exactamente a un tenant | Rol, sucursal activa o cuenta de plataforma |
 | Pertenencia de tenant | Invariante estructural del usuario ordinario | Selección temporal o asignación de sucursal |
-| Rol | Conjunto administrable de permisos dentro de un alcance | Puesto laboral inmutable o autorización directa |
-| Permiso | Capacidad atómica o contextual evaluada por la API | Elemento de navegación visible |
+| Rol | Agrupación administrable de capacidades perteneciente a un tenant | Puesto laboral, sucursal o autorización directa |
+| Asignación de rol | Concesión vigente de un rol a un usuario del mismo tenant, tenant-wide o restringida por sucursal | Identidad, sesión o sucursal efectiva |
+| Capacidad | Facultad concreta para solicitar una operación protegida dentro de un alcance | Módulo, pantalla o elemento de navegación |
 | Estación operativa | Equipo vinculado a una sucursal cuyo tenant se deriva de ella | Identidad de la persona |
 | Sesión de dispositivo | Evidencia vigente de vinculación del equipo | Sesión de usuario u operación |
 | Sesión de usuario | Periodo aceptado en que un usuario autenticado es actor activo dentro del contexto resuelto | Identidad, sucursal efectiva o permiso |
@@ -59,25 +60,31 @@ Siguen pendientes recuperación, detalles administrativos de bloqueo/revocación
 
 ## Capacidades y alcance
 
-Roles y permisos pueden limitar qué acciones realiza un usuario, pero no establecen la sucursal efectiva ni reemplazan la vinculación. Su modelo detallado permanece pendiente. Cualquier restricción contextual futura debe:
+ADR-012 acepta que los roles pertenecen al tenant y agrupan capacidades orientadas a operaciones. Un usuario puede tener varios roles y sus capacidades efectivas se obtienen por unión de asignaciones vigentes tenant-wide y de las restringidas a la sucursal efectiva. Roles y capacidades no establecen la sucursal ni reemplazan la vinculación.
 
-- evaluarse en servidor para el caso de uso;
-- recibir el contexto de ADR-010;
-- evitar cuentas duplicadas por sucursal;
+Toda evaluación debe:
+
+- ejecutarse en el servidor para el caso de uso;
+- recibir el contexto de ADR-010 y la sesión de ADR-011;
+- denegar por defecto cuando falte una capacidad;
+- evitar cuentas o roles duplicados por sucursal;
 - distinguir contexto válido de autorización concedida;
+- validar pertenencia y alcance del recurso;
 - no permitir que el usuario seleccione otra sucursal.
 
 ## Roles y permisos
 
-### Modelo propuesto
+### Modelo aceptado para R0
 
-- Los permisos se expresan como capacidades estables orientadas a acciones, no como nombres de pantallas.
-- Los roles agrupan permisos para facilitar administración.
-- Los roles predeterminados pueden existir como plantilla, pero sus nombres y composición necesitan validación del negocio.
-- Los permisos personalizados no deben permitir una combinación insegura sin advertencia o separación de funciones cuando aplique.
-- Todo permiso declara alcance: plataforma, tenant, sucursal, recurso propio u otro contexto explícito.
-- Las denegaciones tienen prioridad cuando exista una regla explícita de bloqueo; el modelo exacto de overrides está pendiente.
-- La API es la autoridad de autorización. Web y móvil sólo reflejan capacidades obtenidas de manera segura.
+- Las capacidades son estables y orientadas a acciones, no a pantallas.
+- Los roles pertenecen al tenant y agrupan capacidades para facilitar administración.
+- Un usuario puede recibir uno o varios roles vigentes.
+- Las capacidades de varios roles se combinan por unión.
+- Una asignación es tenant-wide por defecto y sólo se restringe por sucursal ante una necesidad explícita.
+- R0 no admite permisos ni denegaciones directas por usuario, herencia de roles o reglas condicionales generales.
+- La ausencia de capacidad suficiente produce denegación.
+- Los nombres y composición concretos de roles se validan por rebanada sin convertir actores o puestos en roles automáticamente.
+- El servidor es la autoridad de autorización. Web y móvil sólo reflejan capacidades obtenidas de manera segura.
 
 ### Evaluación conceptual de una acción
 
@@ -88,7 +95,7 @@ flowchart TD
     Tenant{¿Usuario activo en tenant efectivo?}
     Device{¿Estación vinculada y vigente?}
     Branch{¿Sucursal coincide con vinculación?}
-    Permission{¿Permiso efectivo?}
+    Permission{¿Capacidad y alcance efectivos?}
     StepUp{¿Acción sensible?}
     Strong{¿Autenticación reforzada vigente?}
     Allow[Permitir y auditar según política]
@@ -111,7 +118,7 @@ flowchart TD
     Strong -- Sí --> Allow
 ```
 
-No todos los flujos requieren dispositivo o sucursal. Esa excepción debe estar definida por el caso de uso, no inferida por ausencia de datos.
+Los flujos ordinarios se rigen por el contexto completo de ADR-010/011. Cualquier flujo excepcional sin estación o sucursal pertenece a una decisión separada y no se infiere por ausencia de datos.
 
 ## Dispositivo y sesiones
 
@@ -139,7 +146,7 @@ Controles conceptuales:
 - la estación debe estar activa y vinculada; no existe sucursal solicitada libremente por el usuario;
 - el contexto de usuario expira por inactividad; cierre remoto y representación técnica permanecen pendientes;
 - cambios de PIN y recuperaciones requieren un flujo distinto y suficientemente autenticado;
-- acciones sensibles exigen autenticación reforzada, aunque el PIN haya iniciado la sesión;
+- acciones sensibles pueden exigir control reforzado adicional conforme a un ADR futuro, aunque el PIN haya iniciado la sesión y exista capacidad ordinaria;
 - un empleado que rota de sucursal usa una estación vinculada del mismo tenant y no requiere otra cuenta.
 
 **Decisión pendiente:** algoritmo de protección, longitud, tiempo concreto de inactividad, límites, recuperación y factor reforzado se seleccionarán mediante un modelo de amenazas; no se fijan aquí.
@@ -166,11 +173,11 @@ La política deberá definir qué significa reforzar, cuánto dura esa comprobac
 | Desactivación de usuario | Impedir nuevas sesiones dentro de su tenant | Flujo administrativo y efecto sobre sesiones existentes |
 | Revocación de usuario | Impedir nuevas sesiones; una sesión invalidada no acepta acciones | Alcance, propagación y latencia |
 | Desvinculación de estación | Invalidar sus contextos y denegar operación ordinaria | Manejo de trabajos en curso |
-| Cambio de rol o permiso | Recalcular autorización y evitar tokens obsoletos prolongados | Estrategia de invalidación |
+| Cambio de rol, capacidad o asignación | Aplicar la composición vigente en la siguiente operación protegida conforme a ADR-012 | Estrategia técnica de propagación e invalidación |
 | Revocación de dispositivo | Cerrar sesión de dispositivo y operativas asociadas | Comportamiento offline |
 | Compromiso de credencial | Revocar sesiones relevantes y forzar recuperación segura | Señales y automatización |
 
-La revocación debe ser verificable por la autoridad del servidor; una interfaz cerrada no es evidencia suficiente. ADR-011 no fija la tecnología ni la latencia.
+La revocación debe ser verificable por la autoridad del servidor; una interfaz cerrada no es evidencia suficiente. ADR-012 exige que la capacidad retirada no autorice la siguiente operación protegida, sin fijar tecnología de propagación.
 
 ## Administración de plataforma
 
@@ -233,6 +240,7 @@ La auditoría registra usuario, sesión, tenant, sucursal, estación, acción, o
 - [Modelo de sucursal y dispositivo](BRANCH_AND_DEVICE_MODEL.md)
 - [Línea base de seguridad](SECURITY_BASELINE.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
+- [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
 - [Glosario de dominio](../product/DOMAIN_GLOSSARY.md)
 - [Actores y personas](../product/ACTORS_AND_PERSONAS.md)
 
@@ -240,8 +248,7 @@ La auditoría registra usuario, sesión, tenant, sucursal, estación, acción, o
 
 - ¿Qué identificadores de acceso, recuperación y correlación de persona se permiten sin convertir al usuario ordinario en multi-tenant?
 - ¿Quién crea, recupera, suspende y elimina usuarios de tenant?
-- ¿Qué roles iniciales necesita el negocio y cuáles permisos no pueden delegarse?
-- ¿Los overrides personalizados serán aditivos, restrictivos o ambos?
+- ¿Qué composición mínima de roles/capacidades necesita cada rebanada?
 - ¿Qué acciones requieren estación operativa y autenticación reforzada además del contexto ordinario?
 - ¿Cómo se recupera el acceso cuando no hay otro administrador del tenant?
 - ¿Qué latencia máxima de revocación es aceptable para cada tipo de sesión?
@@ -249,6 +256,6 @@ La auditoría registra usuario, sesión, tenant, sucursal, estación, acción, o
 
 ## Próxima revisión
 
-- **Momento:** antes de aceptar roles/permisos o diseñar mecanismos técnicos de PIN y sesión.
-- **Evidencia esperada:** matriz preliminar de capacidades y modelo de amenazas del PIN/sesión compatibles con ADR-010/011.
+- **Momento:** antes de componer la primera matriz de la rebanada, diseñar acciones sensibles o mecanismos técnicos de PIN y sesión.
+- **Evidencia esperada:** composición preliminar conforme a ADR-012 y modelo de amenazas del PIN/sesión compatibles con ADR-010/011.
 - **Responsable:** TBD.

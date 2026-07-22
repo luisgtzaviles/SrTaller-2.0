@@ -15,7 +15,8 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 | Multitenancy y datos | DEC-006 a DEC-009 | ADR-004/010 aplicados con propiedad, contexto inmutable y pruebas de aislamiento |
 | Contexto operativo | DEC-009 a DEC-012 | Modelo aceptado en ADR-010; faltan aplicación y pruebas de estación, ausencia y conflictos |
 | Identidad y sesión | DEC-013 a DEC-016 | Modelo aceptado en ADR-011; faltan mecanismos, aplicación, modelo de amenazas y pruebas |
-| Permisos y acciones sensibles | DEC-017 a DEC-020 | Roles/capacidades mínimos, alcance, step-up y catálogo inicial |
+| Autorización ordinaria | DEC-017 y DEC-018 | Modelo aceptado en ADR-012; faltan composición por rebanada, aplicación y pruebas |
+| Acciones sensibles | DEC-019 y DEC-020 | Catálogo inicial, control reforzado, reautenticación, motivo y autoridad |
 | Tiempo | DEC-037 y DEC-038 | Autoridad de zona horaria y almacenamiento/presentación coherentes |
 | Señales | DEC-045 a DEC-048 | Logs, auditoría, correlación y observabilidad mínima separadas |
 | Persistencia | DEC-050 | Versionado y ejecución segura de migraciones base |
@@ -26,7 +27,7 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 
 - datos globales frente a tenant/sucursal;
 - operación mediante PIN y cierre por inactividad;
-- roles y acciones mínimas incluidas en R0;
+- composición mínima de roles/capacidades de R0 y acciones sensibles incluidas;
 - zona horaria por tenant o sucursal;
 - autoridad de soporte y administración excepcional.
 
@@ -34,7 +35,7 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 
 - estrategia de aislamiento y defensa en profundidad;
 - contrato de contexto y propagación;
-- sesión, revocación, rate limiting de PIN y step-up;
+- sesión, rate limiting de PIN, propagación verificable de revocación y control reforzado;
 - contratos de repositorio tenant-aware;
 - auditoría mínima que no dependa de logs;
 - migraciones, secretos, health checks y pruebas negativas.
@@ -50,4 +51,4 @@ Ningún spike puede ejecutarse sin autorización. Su resultado informa ADRs; no 
 
 ## Cierre de R0
 
-R0 no se cierra porque la aplicación responda. Debe demostrar con al menos dos tenants que falta o manipulación de contexto falla cerrada, que una sesión revocada deja de operar, que los permisos se evalúan en aplicación y que auditoría/logs distinguen actor, alcance y correlación sin secretos.
+R0 no se cierra porque la aplicación responda. Debe demostrar con al menos dos tenants que falta o manipulación de contexto falla cerrada, que una sesión o capacidad revocada deja de operar, que la autorización negativa se evalúa server-side por acción y alcance y que auditoría/logs distinguen actor, alcance y correlación sin secretos.

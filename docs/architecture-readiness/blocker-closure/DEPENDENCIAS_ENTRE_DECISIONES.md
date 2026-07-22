@@ -13,11 +13,12 @@ flowchart TD
     OWN --> MT
     MT --> TC[DEC-009 Contexto tenant]
     TC --> BR[DEC-010 a 012 Sucursal]
-    BR --> ID[DEC-013 a 020 Identidad/permisos]
+    BR --> ID[DEC-013 a 016 Identidad/sesión]
+    ID --> AUTH[DEC-017 a 020 Autorización/refuerzo]
     MT --> DATA
 
     TEST[DEC-051 Pruebas] --> R0[R0 demostrado]
-    ID --> R0
+    AUTH --> R0
     DATA --> R0
     OBS[DEC-044 a 048 Errores/observabilidad] --> R0
 
@@ -44,7 +45,8 @@ flowchart TD
 | ADR multitenant | Datos globales, tenant-wide, branch-scoped, ciclo del tenant |
 | ADR de contexto operativo | Cerrado por ADR-010: estación vinculada, sucursal derivada, rotación y cambio explícito |
 | ADR de identidad/PIN | Cerrado por ADR-011: usuario de tenant, acceso por PIN, sesión, inactividad y atribución mínima |
-| ADR de roles/permisos | Capacidades mínimas y excepciones por rebanada |
+| ADR de roles/permisos | Cerrado por ADR-012: roles tenant-scoped, capacidades, unión, alcance y denegación por defecto |
+| ADR de acciones sensibles | Catálogo, control reforzado, reautenticación y excepciones por rebanada |
 | ADR de folio | Alcance visible y transferencias entre sucursales |
 | ADR de política | Campos, autoridad, precedencia y vigencia |
 | ADR de tiempo | Zona por tenant/sucursal y significado operativo |
@@ -65,7 +67,8 @@ flowchart TD
 
 - `DEC-007` a `DEC-012`: cerradas conceptualmente por ADR-004/010; su aplicación y pruebas se verifican juntas.
 - `DEC-013` a `DEC-016`: cerradas conceptualmente por ADR-011; su aplicación y pruebas se coordinan con auditoría.
-- `DEC-017` a `DEC-020`: autorización y seguridad operativa pendientes, separadas de autenticación.
+- `DEC-017` y `DEC-018`: cerradas conceptualmente por ADR-012; faltan composición por rebanada, aplicación y pruebas.
+- `DEC-019` y `DEC-020`: acciones sensibles y autorización reforzada pendientes, separadas de la autorización ordinaria.
 - `DEC-021` a `DEC-025`: folio, concurrencia e idempotencia.
 - `DEC-032` a `DEC-035`: política efectiva, snapshot, vigencia y campos.
 - `DEC-044` a `DEC-048`: contrato transversal de errores, auditoría y señales.
@@ -73,7 +76,7 @@ flowchart TD
 
 ## Dependencias que no deben fusionarse
 
-- estrategia multitenant de ADR-004, contexto operativo de ADR-010 e identidad/sesión de ADR-011;
+- estrategia multitenant de ADR-004, contexto operativo de ADR-010, identidad/sesión de ADR-011 y autorización ordinaria de ADR-012;
 - autenticación primaria y autorización de acciones;
 - estado de negocio y ubicación física;
 - pago y entrega;

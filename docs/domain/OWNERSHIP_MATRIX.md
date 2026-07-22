@@ -24,7 +24,7 @@ Una fila expresa una hipótesis de autoridad semántica, no una asignación téc
 | OWN-DEF-006 | proyección | vista reorganizada para una necesidad de lectura | no agrega autoridad al dato de origen |
 | OWN-DEF-007 | dato derivado | resultado calculado desde hechos o datos identificables | su owner depende del cálculo y de sus insumos |
 | OWN-DEF-008 | evidencia histórica | registro que preserva qué se conoció, decidió o hizo | no necesariamente representa el estado vigente |
-| OWN-DEF-009 | autoridad humana | persona o rol capaz de aprobar o corregir según política | los roles concretos siguen pendientes |
+| OWN-DEF-009 | autoridad humana | persona o rol capaz de aprobar o corregir según política | ADR-012 fija el modelo de rol/capacidad; la autoridad de negocio concreta sigue pendiente |
 | OWN-DEF-010 | autoridad operacional | capacidad que gobierna una decisión durante la operación | puede diferir de la autoridad legal |
 | OWN-DEF-011 | autoridad legal | persona o entidad legitimada para consentir, contratar o recibir | requiere validación legal y del Product Owner |
 
@@ -36,8 +36,8 @@ La columna de consistencia describe una necesidad candidata. `Inmediata local` n
 |---|---|---|---|---|---|---|---|---|---|---|
 | OWN-001 | identidad del tenant | Tenant Administration | administración de plataforma | administración autorizada | Branch, IAM, Subscription Billing, Audit | global de plataforma / tenant | inmediata local; publicación posterior | PRODUCT_SCOPE | Q005, DQ-028 | Initial hypothesis |
 | OWN-002 | identidad de sucursal | Branch Operations | administración del tenant | administración del tenant | Repair, Inventory, Cash, Delivery, IAM | tenant | inmediata local; vistas posteriores | DOMAIN-FINDING-004 | DQ-002 | Initial hypothesis |
-| OWN-003 | usuario | Identity and Access | persona invitada/administración | usuario y administración según campo TBD | contextos que autorizan acciones, Audit | global o tenant desconocido | inmediata para acceso | Q009–Q012 | DQ-003 | Unknown |
-| OWN-004 | permisos | Identity and Access | administración autorizada | autoridad IAM | todos los comandos, Audit | tenant/sucursal TBD | inmediata para autorización | RULE-015, INV-010 | DQ-003/027 | Initial hypothesis |
+| OWN-003 | usuario | Identity and Access | persona invitada/administración | usuario y administración según campo TBD | contextos que autorizan acciones, Audit | exactamente un tenant en ADR-004/011 | inmediata para acceso | Q009–Q012 | DQ-003 | Unknown |
+| OWN-004 | roles, capacidades y asignaciones | Identity and Access | administración autorizada | autoridad IAM por definir | todos los comandos protegidos, Audit | tenant-wide o sucursal explícita en ADR-012 | inmediata para autorización | RULE-015, INV-010, ADR-012 | DQ-003/027 | Initial hypothesis |
 | OWN-005 | cliente | Customer Management | recepción, importación o cliente TBD | personal autorizado; quizá cliente | Repair, Delivery, Messaging, CRM | tenant o global desconocido | corrección local; publicación eventual | EVENT-001/002 | DQ-004 | Unknown |
 | OWN-006 | propietario | Customer Management o relación por orden TBD | recepción/cliente | autoridad legal u operación autorizada | Repair, Authorization, Delivery, Warranty | cliente/orden TBD | vigente al decidir; historia preservada | DQ-004 | Q002, DQ-016/020 | Unknown |
 | OWN-007 | contacto autorizado | Customer Management o Work Order TBD | propietario/recepción | propietario o autoridad operacional TBD | Quoting, Delivery, Messaging | cliente/orden | vigente al autorizar o entregar | RULE-008, EDGE-009 | DQ-004/016/020 | Unknown |

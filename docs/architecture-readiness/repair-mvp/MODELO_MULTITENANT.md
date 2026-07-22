@@ -28,7 +28,7 @@
 | --- | --- | --- | --- |
 | Datos de negocio | Pertenencia explícita a tenant | Aceptado en ADR-004; falta aplicar/probar | RDD |
 | Datos de sucursal | Regla de pertenencia por tipo de dato | Aceptado en ADR-004; falta aplicar/probar | RDD |
-| Usuarios/roles/permisos | Usuario ordinario con alcance tenant y acceso verificable | Identidad/autenticación conceptual aceptadas; mecanismo/permiso bloqueante | PB |
+| Usuarios/roles/capacidades | Usuario ordinario tenant-scoped, roles vigentes aplicables y acceso verificable | Modelo conceptual aceptado en ADR-004/010/011/012; faltan composición, mecanismo y pruebas | RDD / PB |
 | Políticas/catálogos | SaaS global, extensión tenant y ajuste permitido por sucursal | Niveles aceptados; resolución/versionado bloqueante | PB |
 | Folios | Alcance de unicidad y concurrencia | Bloqueante de Recepción | PB |
 | Archivos | Tenant/sucursal, autorización y rutas opacas | Propiedad aceptada; estrategia bloqueante antes de evidencia | PB |
@@ -65,10 +65,18 @@
 - **[RDD]** La atribución histórica conserva tenant, sucursal, estación, usuario, sesión, fecha y hora.
 - **[RDD]** Autenticación y autorización son responsabilidades distintas.
 
+## Decisiones aceptadas por ADR-012
+
+- **[RDD]** Los roles pertenecen a un tenant y agregan capacidades; un usuario puede tener varios roles.
+- **[RDD]** Las capacidades efectivas son la unión de asignaciones vigentes aplicables al tenant y, cuando exista restricción explícita, a la sucursal efectiva.
+- **[RDD]** R0 no concede permisos ni denegaciones directas por usuario y niega por defecto cuando falta una capacidad suficiente.
+- **[RDD]** El servidor valida contexto, sesión, capacidad, alcance y recurso antes de producir efectos.
+- **[RDD]** Revocar una asignación impide la siguiente operación protegida sin reescribir atribución histórica.
+
 ## Decisiones que siguen bloqueando
 
-1. **[PB]** ¿Cómo se implementan protección del PIN, sesión, intentos, recuperación y propagación de revocación respetando ADR-010/011?
-2. **[PB]** ¿Qué roles y permisos habilitan cada capacidad dentro del contexto efectivo?
+1. **[PB]** ¿Cómo se implementan protección del PIN, sesión, intentos, recuperación y propagación de revocación respetando ADR-010/011/012?
+2. **[PB]** ¿Qué composición concreta de roles y capacidades requiere cada rebanada dentro del modelo aceptado?
 3. **[PB]** ¿El folio es único por tenant, sucursal o global?
 4. **[PB]** ¿Qué políticas admiten ajuste por sucursal y cuál es su precedencia ejecutable?
 5. **[PB]** ¿Una Orden abierta conserva versión o instantánea cuando cambia la política?
@@ -77,8 +85,8 @@
 
 ## Estado de ADR
 
-**[ADR]** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) fija base/esquema compartidos, propiedad e aislamiento; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) fija el contexto operativo por estación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) fija identidad, PIN y sesión. Motor, RLS, mecanismos técnicos de autenticación y enrutamiento de ADR-008 permanecen sin aceptar.
+**[ADR]** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) fija base/esquema compartidos, propiedad e aislamiento; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) fija el contexto operativo por estación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) fija identidad, PIN y sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) fija autorización ordinaria por roles y capacidades. Motor, RLS, mecanismos técnicos, composición por rebanada y acciones sensibles permanecen sin aceptar.
 
 ## Gate
 
-**[R]** El contexto e identidad/sesión mínimos ya están acordados; no debe escribirse persistencia real hasta definir sus mecanismos y la estrategia de pruebas de aislamiento, además de los demás hitos H0/H1.
+**[R]** El contexto, la identidad/sesión y la autorización ordinaria mínimos ya están acordados; no debe escribirse persistencia real hasta definir sus mecanismos, composición aplicable y estrategia de pruebas de aislamiento/autorización, además de los demás hitos H0/H1.

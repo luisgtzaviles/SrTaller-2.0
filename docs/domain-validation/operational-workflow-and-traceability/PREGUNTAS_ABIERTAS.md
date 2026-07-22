@@ -28,7 +28,7 @@ Las preguntas siguientes no deben resolverse mediante el comportamiento accident
 | FOT-PREG-007 | ¿El técnico debe aceptar explícitamente una asignación? | Operaciones | responsabilidad |
 | FOT-PREG-008 | ¿Puede haber varios técnicos asignados simultáneamente? | Product Owner + Técnicos | colaboración |
 | FOT-PREG-009 | ¿Qué significa exactamente el campo resumen “técnico”? | Product Owner | proyección |
-| FOT-PREG-033 | ¿Cómo se manejan empleados con varios roles? | Product Owner + Seguridad | autoridad |
+| FOT-PREG-033 | **Respondida por ADR-012:** un usuario puede tener varios roles; sus capacidades se unen desde asignaciones vigentes aplicables | Product Owner + Seguridad | composición por rebanada pendiente |
 | FOT-PREG-034 | ¿Cómo se implementa el cambio de turno conservando estación/sucursal y sustituyendo sólo al usuario conforme a ADR-010? | Operaciones + Seguridad | continuidad; semántica resuelta, mecanismo pendiente |
 | FOT-PREG-035 | ¿Cómo se transfiere responsabilidad sin mover físicamente el equipo? | Operaciones | colas |
 | FOT-PREG-039 | ¿“Quién reparó” admite varios usuarios? | Product Owner | resumen |
@@ -48,11 +48,11 @@ Las preguntas siguientes no deben resolverse mediante el comportamiento accident
 
 | ID | Pregunta | Propietario sugerido | Impacto |
 |---|---|---|---|
-| FOT-PREG-015 | ¿Qué acciones requieren permisos especiales? | Product Owner + Seguridad | autorización |
+| FOT-PREG-015 | ¿Qué acciones sensibles requieren control reforzado además de la capacidad ordinaria de ADR-012? | Product Owner + Seguridad | autorización reforzada |
 | FOT-PREG-016 | ¿Qué acciones requieren ingresar PIN de nuevo con sesión activa? | Seguridad + Product Owner | revalidación |
 | FOT-PREG-032 | ¿Cómo se manejan sesiones en dispositivos compartidos de recepción? | Seguridad + Operaciones | atribución |
 
-Además permanecen abiertos intentos fallidos, bloqueo, rotación, auditoría de sesiones, combinación PIN/dispositivo y seguridad por rol. Esas decisiones pueden agruparse con FOT-PREG-015/016/032 sin darles una respuesta implícita.
+Además permanecen abiertos intentos fallidos, bloqueo, rotación, auditoría de sesiones, combinación PIN/dispositivo y composición concreta por rebanada. Esas decisiones pueden agruparse con FOT-PREG-015/016/032 sin reabrir el modelo ordinario de ADR-012.
 
 ## Eventos, actividad y proyecciones
 

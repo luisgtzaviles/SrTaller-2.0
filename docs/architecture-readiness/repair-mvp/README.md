@@ -6,7 +6,7 @@ Este paquete traduce el modelo integrado del dominio de reparación a una prepar
 
 ## Estado
 
-**Preparado con bloqueantes.** Existe suficiente definición del dominio para delimitar el MVP, proponer fronteras y ordenar rebanadas verticales. ADR-004 acepta topología/propiedad multitenant, ADR-010 el contexto operativo por estación y ADR-011 identidad/PIN/sesión, pero todavía no existe autorización explícita para implementar y permanecen decisiones mínimas sobre plataforma, evidencia de aislamiento, mecanismos de autenticación, permisos, estados, folios, configuración, autorización comercial, calidad y entrega.
+**Preparado con bloqueantes.** Existe suficiente definición del dominio para delimitar el MVP, proponer fronteras y ordenar rebanadas verticales. ADR-004 acepta topología/propiedad multitenant, ADR-010 el contexto operativo por estación, ADR-011 identidad/PIN/sesión y ADR-012 roles/capacidades/autorización ordinaria, pero todavía no existe autorización explícita para implementar y permanecen decisiones mínimas sobre plataforma, evidencia de aislamiento, mecanismos de autenticación, composición de capacidades por rebanada, acciones sensibles, estados, folios, configuración, autorización comercial, calidad y entrega.
 
 La siguiente promoción posible es **Preparado para una primera rebanada vertical**, una vez satisfechos los criterios indicados en [Criterios de inicio](CRITERIOS_DE_INICIO_DE_IMPLEMENTACION.md). No se declara preparación para la implementación completa del MVP.
 
@@ -16,7 +16,7 @@ El [paquete de cierre de bloqueantes](../blocker-closure/README.md) consolida es
 
 ### ¿Qué necesitamos decidir antes de programar?
 
-**[PB]** Autorización para implementar; ADRs técnicos restantes; aplicación y pruebas del aislamiento/contexto/identidad aceptados; mecanismos de PIN y sesión; permisos; término oficial; alcance/concurrencia del folio; estados iniciales; política efectiva; archivos, zona horaria y criterios de aceptación. ADR-002, ADR-004, ADR-010 y ADR-011 ya no son decisiones conceptuales bloqueantes. Véase [Decisiones bloqueantes](DECISIONES_BLOQUEANTES.md).
+**[PB]** Autorización para implementar; ADRs técnicos restantes; aplicación y pruebas del aislamiento/contexto/identidad/autorización aceptados; mecanismos de PIN y sesión; composición mínima por rebanada y acciones sensibles; término oficial; alcance/concurrencia del folio; estados iniciales; política efectiva; archivos, zona horaria y criterios de aceptación. ADR-002, ADR-004, ADR-010, ADR-011 y ADR-012 ya no son decisiones conceptuales bloqueantes. Véase [Decisiones bloqueantes](DECISIONES_BLOQUEANTES.md).
 
 ### ¿Cuál es la primera rebanada vertical que no traiciona el dominio?
 
@@ -79,7 +79,7 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 ## Autoridad documental
 
 - El modelo de dominio consolidado es la fuente de invariantes y lenguaje: [modelo integrado](../../domain-model/integrated-repair-domain-model/README.md).
-- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../../decisions/README.md).
+- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) y [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../../decisions/README.md).
 - Las políticas de Sprint 00 y entrega conservan su autoridad sobre el inicio de implementación.
 - Cuando una propuesta de este paquete contradiga una decisión posteriormente aceptada, prevalece la decisión aceptada y este paquete debe revisarse.
 
@@ -89,4 +89,4 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 
 **[RDD]** El flujo preserva identidad de orden, custodia, trazabilidad de actores, autorización por concepto, ejecución autorizada, control de calidad, cobro y entrega.
 
-**[ADR]** ADR-004 fija la topología multitenant, ADR-010 el contexto efectivo por estación y ADR-011 la identidad/sesión conceptual. Lenguaje, marcos, motor, RLS y mecanismos técnicos sólo podrán fijarse mediante sus decisiones aceptadas.
+**[ADR]** ADR-004 fija la topología multitenant, ADR-010 el contexto efectivo por estación, ADR-011 la identidad/sesión y ADR-012 la autorización ordinaria conceptual. Lenguaje, marcos, motor, RLS, mecanismos técnicos y autorización reforzada sólo podrán fijarse mediante sus decisiones aceptadas.

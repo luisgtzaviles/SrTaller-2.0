@@ -73,10 +73,11 @@
 | [Arquitectura de aplicaciones](../../architecture/APPLICATION_ARCHITECTURE.md) | propuesta | separación de responsabilidades |
 | [Arquitectura de datos](../../architecture/DATA_ARCHITECTURE.md) | propuesta | identidad, consistencia y datos derivados |
 | [Multitenencia](../../architecture/MULTITENANCY_MODEL.md) | propuesta de alto riesgo | tenant/sucursal como contexto transversal |
-| [Identidad, acceso y permisos](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md) | usuario por tenant/contexto aceptados; mecanismo propuesto | atribución, capacidades y PIN |
+| [Identidad, acceso y permisos](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md) | usuario, contexto y autorización ordinaria aceptados; mecanismos propuestos | atribución, capacidades y PIN |
 | [Sucursal y dispositivo](../../architecture/BRANCH_AND_DEVICE_MODEL.md) | vinculación/contexto aceptados; mecanismo propuesto | sucursal, estación y sesión |
 | [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) | Accepted | contexto efectivo y trazabilidad de origen |
 | [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) | Accepted | identidad, PIN, sesión operativa y atribución con sesión |
+| [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) | Accepted | roles de tenant, capacidades, asignaciones, alcance y autorización ordinaria |
 | [Integraciones](../../architecture/INTEGRATION_ARCHITECTURE.md) | propuesta | no confundir integración con dominio |
 | [Tiempo real y mensajería](../../architecture/REALTIME_AND_MESSAGING.md) | propuesta | proyección/notificación no fuente de verdad |
 | [Línea base de seguridad](../../architecture/SECURITY_BASELINE.md) | propuesta | secretos, aislamiento y auditoría |
