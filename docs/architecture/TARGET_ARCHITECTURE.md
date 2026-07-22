@@ -3,9 +3,9 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Dirección conceptual; ADR-002 acepta la forma modular inicial y ADR-001 el lenguaje/runtime inicial, mientras las demás selecciones tecnológicas permanecen pendientes.
+- **Naturaleza:** Dirección conceptual; ADR-001/002/003 aceptan lenguaje/runtime, forma modular y motor PostgreSQL, mientras las demás selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
-- **Decisiones relacionadas:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md), [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010 a ADR-013](../decisions/README.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../decisions/README.md).
+- **Decisiones relacionadas:** [ADR-001 a ADR-004](../decisions/README.md) y [ADR-010 a ADR-013](../decisions/README.md) están `Accepted`; ADR-005 a ADR-009 conservan el estado del [registro](../decisions/README.md).
 
 ## Objetivo
 
@@ -37,7 +37,7 @@ flowchart TB
     Worker[Workers asíncronos\nBullMQ propuesto]
     Realtime[Gateway de tiempo real\nSocket.IO o WebSockets por decidir]
 
-    DB[(PostgreSQL propuesto\nesquema compartido)]
+    DB[(PostgreSQL 18.x aceptado\nesquema compartido)]
     Redis[(Redis propuesto\ncaché, colas y coordinación)]
     Storage[(Objetos compatibles con S3\npropuesto)]
 
@@ -77,7 +77,7 @@ El diagrama expresa responsabilidades lógicas, no unidades desplegables inicial
 | Módulos de dominio | Encapsular reglas, datos y eventos por capacidad | Monolito modular | Microservicios ni tablas por módulo |
 | Trabajos diferibles | Ejecutar procesos diferibles, reintentos e integraciones dentro de la aplicación inicial | TypeScript sobre Node.js `24.x`; mecanismo de cola pendiente | Worker o despliegue independiente |
 | Tiempo real | Entregar cambios confirmados a clientes conectados | Socket.IO o WebSockets | Protocolo aceptado |
-| Datos transaccionales | Persistencia canónica y consistencia | Esquema compartido con aislamiento tenant aceptado; PostgreSQL propuesto | Motor, diseño físico y RLS pendientes |
+| Datos transaccionales | Persistencia canónica y consistencia | PostgreSQL 18.x y esquema compartido con aislamiento tenant aceptados | Diseño físico, acceso, migraciones y posible RLS pendientes |
 | Coordinación temporal | Caché, colas y coordinación de conexiones | Redis propuesto | Uso como fuente de verdad ni tecnología aceptada |
 | Archivos | Guardar objetos y metadatos de acceso | API compatible con S3 | Proveedor, regiones o retención final |
 | Integraciones | Aislar contratos externos y normalizar eventos | Adaptadores y anti-corruption layer | Proveedores comprometidos |
@@ -155,7 +155,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 
 - La forma inicial de monolito modular ya está aceptada; su agrupación interna concreta permanece abierta.
 - TypeScript y Node.js `24.x` están aceptados para el backend inicial; compilador concreto, package manager y herramientas de build permanecen abiertos.
-- PostgreSQL como motor y RLS como defensa adicional; la topología compartida ya está aceptada por ADR-004.
+- Aplicar PostgreSQL 18.x como motor aceptado; RLS continúa pendiente de spike y sólo como defensa adicional opcional.
 - NestJS frente a alternativas TypeScript para la API.
 - Next.js frente a otras estrategias para cada cliente web.
 - Socket.IO frente a WebSockets nativos u otras soluciones administradas.

@@ -4,7 +4,7 @@
 
 - **Estado:** Propuesta
 - **Alcance:** Preparación operativa de la futura plataforma SR Taller 2.0.
-- **Hecho conocido:** Se prevén API, workers, clientes web, PostgreSQL, Redis, storage compatible con S3, realtime e integraciones.
+- **Hecho conocido:** ADR-003 acepta PostgreSQL 18.x; API, workers y clientes permanecen conceptuales, y Redis, storage S3-compatible, realtime e integraciones requieren decisiones propias.
 - **Decisión pendiente:** Proveedor, topología, objetivos de servicio, guardias, herramientas y responsables.
 
 ## Objetivo
@@ -29,9 +29,9 @@ Definir cómo operar la plataforma de forma segura, observable, repetible y recu
 flowchart LR
     U[Clientes web y móviles futuros] --> WAF[Entrada/hosting TBD]
     WAF --> API[API]
-    API --> DB[(PostgreSQL)]
-    API --> R[(Redis)]
-    API --> S[(Storage S3 compatible)]
+    API --> DB[(PostgreSQL 18.x)]
+    API --> R[(Redis si se acepta)]
+    API --> S[(Storage S3 compatible si se acepta)]
     API --> RT[Realtime]
     API --> Q[Colas]
     Q --> WK[Workers]
@@ -44,7 +44,7 @@ flowchart LR
     RT --> O
 ```
 
-El diagrama describe responsabilidades previstas, no número de instancias, proveedor ni decisiones aceptadas.
+El diagrama describe responsabilidades previstas. Sólo PostgreSQL está aceptado; no define número de instancias, proveedor ni aceptación de los demás componentes.
 
 ## Catálogo de servicios pendiente
 

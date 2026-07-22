@@ -246,9 +246,9 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 
 ### ADRs bloqueados o condicionados
 
-- ADR-002 requiere un recorrido para comprobar límites modulares.
-- ADR-003 puede evaluarse conceptualmente, pero sus patrones de datos y transacción dependen del dominio.
-- ADR-004 necesita cardinalidades, scope por sucursal y necesidades de restauración/migración.
+- ADR-002 está aceptado; un recorrido debe comprobar sus límites modulares.
+- ADR-003 está aceptado; sus patrones físicos de datos y transacción todavía dependen del dominio y de DEC-049/050.
+- ADR-004 está aceptado; aplicación, cardinalidades y restauración/migración todavía requieren evidencia.
 - ADR-005 necesita casos de uso, consistencia y trabajos asíncronos representativos.
 
 ### Riesgos
@@ -355,8 +355,8 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 
 ### ADRs bloqueados o condicionados
 
-- ADR-004 depende de cierre, exportación, retención y posible restauración por tenant.
-- ADR-003 se condiciona por retención y necesidades transaccionales, no por el proveedor comercial.
+- ADR-004 está aceptado, pero cierre, exportación, retención y posible restauración por tenant siguen abiertos.
+- ADR-003 está aceptado; retención y requisitos comerciales condicionan proveedor y operación, no reabren automáticamente el motor.
 - ADR-007 depende de SLO, disponibilidad y operación que se prometa a clientes.
 - Un proveedor de cobro SaaS requerirá una decisión separada; no pertenece al ADR de Payments del taller.
 
@@ -403,10 +403,10 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 ### Orden de evaluación técnica
 
 1. Confirmar restricciones de calidad y operación de QUESTION-026 a QUESTION-032.
-2. Revisar ADR-002 para límites y unidad inicial, sin asumir microservicios.
-3. Revisar ADR-003 conceptualmente, separando motor de base de datos de proveedor.
-4. Validar ADR-004 con aislamiento, restore por tenant y [SPIKE-002](./PROTOTYPE_CANDIDATES.md#spike-002); evaluar RLS mediante [SPIKE-003](./PROTOTYPE_CANDIDATES.md#spike-003).
-5. ADR-001 ya está `Accepted`; revisar ADR-005 con un caso de uso representativo y Node.js `24.x` como baseline, recordando que el framework no valida el dominio.
+2. Aplicar ADR-002 para límites y unidad inicial, sin asumir microservicios.
+3. Aplicar ADR-003 separando PostgreSQL 18.x de proveedor, ORM, migrador, pooler y extensiones.
+4. Validar la aplicación de ADR-004 con aislamiento, restore por tenant y [SPIKE-002](./PROTOTYPE_CANDIDATES.md#spike-002); ejecutar [SPIKE-003](./PROTOTYPE_CANDIDATES.md#spike-003) sólo antes de adoptar RLS.
+5. ADR-001/003 ya están `Accepted`; revisar ADR-005 con un caso de uso representativo y sus baselines, recordando que el framework no valida el dominio.
 6. Revisar ADR-006 por aplicación concreta, no como obligación para toda web.
 7. Revisar ADR-008 después del modelo de identidad mediante [SPIKE-001](./PROTOTYPE_CANDIDATES.md#spike-001).
 8. Revisar ADR-009 distinguiendo monorepo de pnpm o Turborepo y apoyándose, si aporta evidencia, en [SPIKE-008](./PROTOTYPE_CANDIDATES.md#spike-008).
@@ -423,10 +423,10 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 
 ### ADRs bloqueados o condicionados
 
-Los nueve ADRs permanecen `Proposed`. El gate debe registrar para cada uno si está listo para revisión, requiere producto, requiere validación técnica o debe dividirse. En particular:
+ADR-001 a ADR-004 están `Accepted`; ADR-005 a ADR-009 permanecen `Proposed`. El gate debe registrar para cada propuesta pendiente si está lista para revisión, requiere producto, requiere validación técnica o debe dividirse. En particular:
 
 - ADR-001 acepta TypeScript y Node.js `24.x`, pero no acepta automáticamente NestJS, Next.js, monorepo o tooling;
-- ADR-003 no elige proveedor ni ORM;
+- ADR-003 acepta PostgreSQL 18.x, pero no elige proveedor, ORM, migrador, pooler, extensiones ni RLS;
 - ADR-004 no acepta RLS implícitamente;
 - ADR-006 no obliga a que todas las aplicaciones web compartan estrategia;
 - ADR-007 no decide por sí solo Docker Compose, GitHub Actions ni hosting;

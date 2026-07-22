@@ -4,7 +4,7 @@
 
 - **Estado:** Propuesta
 - **Alcance:** Datos y configuración necesarios para recuperar la futura plataforma.
-- **Hecho conocido:** PostgreSQL será evaluado como base primaria y se prevén Redis y storage compatible con S3.
+- **Hecho conocido:** ADR-003 acepta PostgreSQL 18.x como base primaria; Redis y storage compatible con S3 continúan como propuestas separadas.
 - **Decisión pendiente:** Proveedor, RPO/RTO, retención, regiones, cifrado, restauración por tenant y responsabilidades.
 
 ## Objetivo
@@ -26,9 +26,9 @@ Un backup que nunca se ha restaurado con éxito es sólo una suposición de recu
 
 | Activo | Papel propuesto | Estrategia por definir |
 |---|---|---|
-| PostgreSQL | Fuente de verdad transaccional propuesta | backups completos/incrementales y point-in-time según proveedor. |
-| Object storage | Archivos y derivados | versionado/replicación/backup según criticidad y borrado. |
-| Redis | Caché, colas y coordinación propuestas | determinar qué estado es reconstruible y qué datos de cola requieren persistencia/recuperación. |
+| PostgreSQL 18.x | Fuente de verdad transaccional aceptada | backups completos/incrementales y point-in-time según proveedor. |
+| Object storage, si se acepta | Archivos y derivados | versionado/replicación/backup según criticidad y borrado. |
+| Redis, si se acepta | Caché, colas y coordinación | determinar qué estado es reconstruible y qué datos de cola requieren persistencia/recuperación. |
 | Configuración | Definición por ambiente sin secretos | repositorio/automatización futura y export verificable. |
 | Secretos/llaves | Acceso y cifrado | backup seguro, rotación y recuperación separada. |
 | Registro de artefactos | Imágenes/digests desplegables | retención suficiente para rollback. |

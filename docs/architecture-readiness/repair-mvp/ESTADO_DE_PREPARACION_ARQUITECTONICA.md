@@ -23,7 +23,7 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Configuración | Necesidad de políticas versionadas identificada | Precedencia y alcance pendientes | PB |
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
-| ADRs | ADR-001, ADR-002, ADR-004 y ADR-010 a ADR-013 aceptados; ADR-003 y ADR-005 a ADR-009 siguen propuestos | Lenguaje/runtime, forma, tenancy, contexto, identidad/sesión y autorización definidos; DEC-004 aún bloqueada | PB |
+| ADRs | ADR-001 a ADR-004 y ADR-010 a ADR-013 aceptados; ADR-005 a ADR-009 siguen propuestos | Lenguaje/runtime, forma, PostgreSQL 18.x, tenancy, contexto, identidad/sesión y autorización definidos; DEC-004 aún bloqueada por ADR-005/009 | PB |
 | Autorización | Producto aprobó alcance/aceptación esperada de R0; Sprint 00 no está cerrado ni existe autorización de implementación | Bloqueante organizacional | PB |
 
 ## Qué sí puede comenzar

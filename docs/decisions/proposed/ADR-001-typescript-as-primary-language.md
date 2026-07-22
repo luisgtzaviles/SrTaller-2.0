@@ -274,7 +274,7 @@ Reconsiderar no autoriza una excepción ni un runtime nuevo: requiere la autorid
 
 La dependencia de lenguaje/runtime de ADR-005 queda satisfecha, pero ADR-005 permanece `Proposed` y requiere revisión y evidencia propias. ADR-001 tampoco acepta ADR-003, ADR-006, ADR-007, ADR-008 ni ADR-009.
 
-DEC-004 continúa abierta hasta que ADR-003, ADR-005 y ADR-009 alcancen un estado explícito compatible y se verifiquen las demás restricciones del gate. El primer cambio ejecutable de R0 permanece bloqueado por DEC-004 y los demás gates aplicables.
+Actualización 2026-07-21: ADR-003 fue aceptado y cierra el motor PostgreSQL dentro de DEC-004. DEC-004 continúa abierta hasta que ADR-005 y ADR-009 alcancen un estado explícito compatible y se verifiquen las demás restricciones del gate. El primer cambio ejecutable de R0 permanece bloqueado por DEC-004 y los demás gates aplicables.
 
 ## Referencias
 

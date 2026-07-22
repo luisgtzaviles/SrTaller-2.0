@@ -4,6 +4,7 @@
 
 - **Estado:** Propuesta
 - **Alcance confirmado para planificación:** `local development`, `staging` y `production`.
+- **Baseline de datos aceptada:** PostgreSQL 18.x en todos los ambientes autorizados; versión efectiva inicial 18.4.
 - **Decisión pendiente:** Proveedor, topología, dominios concretos, acceso, sizing y estrategia de datos de prueba.
 
 ## Principios obligatorios para la planificación
@@ -12,8 +13,8 @@
 - Cada ambiente tiene base de datos y credenciales separadas.
 - Staging no usa datos reales salvo un proceso controlado, autorizado y sanitizado aún por definir.
 - El artefacto probado en staging se promueve a production sin reconstruirse.
-- API, workers y clientes independientes pueden desplegarse por separado si sus contratos son compatibles.
-- Los despliegues usan imágenes versionadas e identificables por digest.
+- API y trabajos diferibles forman un único artefacto backend inicial conforme a ADR-002; cualquier separación futura requiere evidencia y ADR.
+- Todo despliegue usa un artefacto inmutable e identificable; imágenes y digest OCI sólo serán obligatorios si ADR-007 se acepta.
 - Las migraciones deben ser compatibles hacia adelante y considerar convivencia con versiones adyacentes.
 - Todo cambio con riesgo operativo define rollback antes de producción.
 - Feature flags son una opción futura, no un requisito ni decisión aceptada.
@@ -25,24 +26,24 @@
 flowchart TB
     subgraph Local[Local development]
       LApp[Procesos locales futuros]
-      LDb[(PostgreSQL local)]
-      LDep[Redis/Storage locales o emulados]
+      LDb[(PostgreSQL 18.x local)]
+      LDep[Redis/Storage si se aceptan]
       LApp --> LDb
       LApp --> LDep
     end
 
     subgraph Staging[Staging]
       SApp[Artefactos candidatos]
-      SDb[(PostgreSQL staging)]
-      SDep[Redis/Storage staging]
+      SDb[(PostgreSQL 18.x staging)]
+      SDep[Redis/Storage si se aceptan]
       SApp --> SDb
       SApp --> SDep
     end
 
     subgraph Production[Production]
       PApp[Mismos digests promovidos]
-      PDb[(PostgreSQL production)]
-      PDep[Redis/Storage production]
+      PDb[(PostgreSQL 18.x production)]
+      PDep[Redis/Storage si se aceptan]
       PApp --> PDb
       PApp --> PDep
     end
@@ -51,7 +52,7 @@ flowchart TB
     SApp -- promoción sin rebuild --> PApp
 ```
 
-El diagrama expresa aislamiento lógico; no define proveedor ni número de instancias.
+El diagrama expresa aislamiento lógico y la baseline PostgreSQL 18.x aceptada; no define proveedor, número de instancias ni acepta Redis o storage.
 
 ## Matriz de ambientes
 

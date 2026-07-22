@@ -4,8 +4,8 @@
 
 - **Estado:** Borrador conceptual.
 - **Naturaleza:** Propuesta de ownership, consistencia y ciclo de vida; no contiene esquema ejecutable.
-- **Dirección evaluada:** PostgreSQL como persistencia transaccional primaria, Redis para usos temporales y almacenamiento S3-compatible para objetos.
-- **Decisiones relacionadas:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) permanece `Proposed`; [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) están `Accepted`.
+- **Dirección aceptada:** PostgreSQL como persistencia transaccional primaria, con PostgreSQL 18.x como baseline de R0; Redis y almacenamiento S3-compatible permanecen como propuestas para responsabilidades específicas.
+- **Decisiones relacionadas:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) están `Accepted`.
 
 ## Objetivo
 
@@ -14,8 +14,8 @@ Definir qué datos son autoritativos, cómo se aíslan, quién puede modificarlo
 ## Principios
 
 1. Cada dato tiene un owner conceptual y una fuente de verdad explícita.
-2. Los datos tenant-scoped siempre conservan `tenant_id`; `branch_id` añade alcance cuando corresponde.
-3. PostgreSQL propuesto conserva estado transaccional; Redis no se usa como fuente canónica.
+2. Los datos tenant-scoped siempre conservan `tenant_id`; `sucursal_id` añade alcance cuando corresponde.
+3. PostgreSQL conserva el estado transaccional autoritativo; Redis no está seleccionado ni se usa como fuente canónica.
 4. Los archivos se guardan como objetos, mientras autorización y metadatos autoritativos permanecen en la plataforma.
 5. Las integraciones se normalizan; los payloads crudos no sustituyen al modelo interno.
 6. Retención, minimización, auditoría, backup y eliminación se diseñan como ciclo de vida.
@@ -28,7 +28,7 @@ Definir qué datos son autoritativos, cómo se aíslan, quién puede modificarlo
 |---|---|---|
 | Datos de plataforma | Planes, tenants, estado de suscripción, configuración SaaS | Acceso administrativo separado y auditado |
 | Datos de tenant | Configuración, usuarios, catálogos personalizados, precios base y reportes consolidados | `tenant_id` obligatorio y aislamiento transversal |
-| Datos de sucursal | Clientes operativos, Órdenes y relacionados, estación operativa, ubicaciones, pagos y caja | `tenant_id` más `branch_id` obligatorios; inventario se clasifica por su ADR de dominio |
+| Datos de sucursal | Clientes operativos, Órdenes y relacionados, estación operativa, ubicaciones, pagos y caja | `tenant_id` más `sucursal_id` obligatorios; inventario se clasifica por su ADR de dominio |
 | Datos financieros | Pagos, movimientos, cierres y referencias externas | Integridad, permisos reforzados y retención por definir |
 | Datos personales | Identidad, contactos, contenido de mensajes, adjuntos | Minimización, acceso contextual y políticas legales pendientes |
 | Datos operativos temporales | Caché, rate limits, presencia, locks | Expiración; reconstruibles; no canónicos |
@@ -56,7 +56,7 @@ flowchart LR
     API[API central]
     Worker[Workers]
     Domain[Módulos y casos de uso]
-    PG[(PostgreSQL\ntransaccional propuesto)]
+    PG[(PostgreSQL 18.x\ntransaccional aceptado)]
     Redis[(Redis\ntemporal propuesto)]
     S3[(Objetos S3-compatible\npropuesto)]
     External[Sistemas externos]
@@ -71,15 +71,15 @@ flowchart LR
     API -->|registro normalizado| PG
 ```
 
-### PostgreSQL propuesto
+### PostgreSQL aceptado
 
-Adecuado como candidato por transacciones, constraints, índices y ecosistema. Su adopción y la estrategia shared-schema requieren ADR. Se evaluarán:
+ADR-003 lo acepta por sus transacciones, constraints, índices y ecosistema. ADR-004 gobierna la estrategia shared-schema. El diseño físico deberá evaluar:
 
 - patrones reales de consulta y concurrencia;
 - constraints multitenant compuestos;
 - índices que comiencen por tenant cuando corresponda;
 - aislamiento de transacciones y bloqueos por caso de uso;
-- RLS como defensa adicional;
+- RLS sólo mediante spike previo y como defensa adicional opcional;
 - búsqueda, reporting y archivado;
 - backups, restauración y capacidad.
 
@@ -97,7 +97,7 @@ No se debe conservar exclusivamente en Redis un pago, reparación, mensaje confi
 
 ### Almacenamiento compatible con S3 propuesto
 
-- El objeto utiliza una clave no confiable como autorización; la API valida acceso mediante metadatos.
+- La clave del objeto no se utiliza como autorización; la API valida el acceso mediante metadatos autoritativos.
 - Namespaces separan ambiente y tenant; la estructura final no debe exponer datos sensibles.
 - Uploads consideran tamaño, tipo declarado/real, malware, expiración y estado de procesamiento.
 - Las URLs de acceso son temporales cuando corresponda y no sustituyen la política de permisos.
@@ -109,9 +109,9 @@ La propuesta de esquema compartido se detalla en [Multitenancy](MULTITENANCY_MOD
 
 - `tenant_id` no nulo en todo agregado tenant-scoped;
 - constraints e índices incluyen tenant donde preserve el límite;
-- `branch_id` se valida contra el mismo tenant;
+- `sucursal_id` se valida contra el mismo tenant;
 - las operaciones globales usan interfaces y credenciales separadas;
-- RLS se evalúa en pools, jobs, migraciones y soporte;
+- si se propone RLS, se evalúa previamente en pools, jobs, migraciones y soporte; no bloquea toda persistencia de R0;
 - exports, búsquedas, backups y réplicas se incluyen en las pruebas de aislamiento.
 
 ## Identificadores y referencias

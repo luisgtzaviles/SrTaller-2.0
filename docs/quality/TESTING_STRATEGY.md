@@ -5,7 +5,7 @@
 - **Estado:** Propuesta
 - **Alcance:** Pruebas documentales actuales y futura plataforma web/API/workers/móviles.
 - **Decisión pendiente:** Frameworks, herramientas, cobertura objetivo, navegadores/dispositivos y presupuesto de rendimiento.
-- **Baseline aceptada:** ADR-001 exige TypeScript, Node.js `24.x`, strictness conceptual y validación de runtime; no selecciona test runner.
+- **Baseline aceptada:** ADR-001 exige TypeScript, Node.js `24.x`, strictness conceptual y validación de runtime; ADR-003 exige PostgreSQL 18.x. No seleccionan test runner, driver, ORM ni migrador.
 
 ## Objetivo
 
@@ -17,7 +17,7 @@ Obtener feedback temprano y evidencia proporcional al riesgo mediante capas comp
 flowchart TB
     E[E2E: recorridos críticos]
     C[Contratos y componentes]
-    I[Integración: DB, Redis, storage, jobs, realtime]
+    I[Integración: PostgreSQL; otros adapters si se aceptan]
     U[Unitarias: dominio y aplicación]
     S[Revisiones estáticas y documentales]
     S --> U --> I --> C --> E
@@ -42,7 +42,7 @@ Se favorece una base amplia de pruebas rápidas y un conjunto E2E reducido pero 
 
 ### Integración
 
-- Repositorios con PostgreSQL, namespace de Redis, storage, colas y adaptadores.
+- Repositorios con PostgreSQL 18.x; namespace de Redis, storage, colas y otros adaptadores sólo cuando exista una decisión que los incorpore.
 - Propagación de tenant/sucursal y transacciones.
 - Validación en runtime de entradas aunque exista un tipo TypeScript equivalente.
 - Idempotencia, reintentos, concurrencia y fallos parciales.
@@ -74,11 +74,11 @@ Se favorece una base amplia de pruebas rápidas y un conjunto E2E reducido pero 
 | Superficie | Casos esenciales |
 |---|---|
 | API | autenticación, autorización, tenant, validación, errores, idempotencia y contratos. |
-| PostgreSQL | propiedad tenant/sucursal, restricciones conceptuales, concurrencia, migración y consultas globales controladas. |
-| Redis/caché | namespace de tenant, invalidación, TTL y ausencia de fuga por claves. |
+| PostgreSQL 18.x | propiedad tenant/sucursal, restricciones conceptuales, concurrencia, migración, pooling y consultas globales controladas. |
+| Redis/caché, si se acepta | namespace de tenant, invalidación, TTL y ausencia de fuga por claves. |
 | Jobs futuros, mecanismo pendiente | payload con contexto, validación runtime, reintento, idempotencia, dead-letter/recovery TBD y tenant correcto. |
 | WebSockets/realtime | autenticación, rooms por tenant/conversación, revocación, reconexión, orden y duplicados. |
-| Archivos/S3 compatible | claves aisladas, URLs/autorización, tipo/tamaño, malware TBD y eliminación. |
+| Archivos/S3-compatible, si se acepta | claves aisladas, URLs/autorización, tipo/tamaño, malware TBD y eliminación. |
 | Web | permisos, estados, responsive, accesibilidad y errores recuperables. |
 | Móvil futuro | contratos, versiones antiguas, conectividad intermitente como descubrimiento; no requisito actual. |
 | Integraciones | firmas/autenticidad, deduplicación, rate limits, sandbox, reintentos y reconciliación. |

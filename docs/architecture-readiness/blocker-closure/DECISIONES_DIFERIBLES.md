@@ -9,7 +9,7 @@ Una decisión es diferible cuando el MVP puede completar su flujo e invariantes 
 | Decisión | Puede diferirse si | Punto de activación |
 | --- | --- | --- |
 | Wildcard/subdominios | Tenant se resuelve por un mecanismo seguro alternativo | Antes de routing productivo por hostname |
-| RLS | Aislamiento por aplicación/repositorios está probado | Antes de adoptar esquema compartido productivo si sigue aportando defensa |
+| RLS | Aislamiento por aplicación/repositorios está probado | Antes de adoptar RLS, sólo si sigue aportando defensa |
 | Proveedor de archivos | Existe puerto, metadatos y almacenamiento seguro de desarrollo/piloto | Antes de datos reales o proveedor definitivo |
 | Proveedor/impresora | El folio manual satisface identificación física | Antes de automatizar impresión |
 | Cola externa | No hay efecto diferible con volumen/fallo que la requiera | Antes del primer job real |

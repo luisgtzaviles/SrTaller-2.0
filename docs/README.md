@@ -57,6 +57,7 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 
 - [Preparación arquitectónica del MVP de Reparaciones](architecture-readiness/repair-mvp/README.md)
 - [Cierre y priorización de bloqueantes arquitectónicos](architecture-readiness/blocker-closure/README.md)
+- [Baseline técnica de DEC-004](architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md)
 - [Contexto del sistema](architecture/SYSTEM_CONTEXT.md)
 - [Arquitectura objetivo](architecture/TARGET_ARCHITECTURE.md)
 - [Arquitectura de aplicaciones](architecture/APPLICATION_ARCHITECTURE.md)
@@ -76,7 +77,7 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Plantilla de ADR](decisions/ADR_TEMPLATE.md)
 - [ADR-001 — TypeScript y Node.js 24.x (Accepted)](decisions/proposed/ADR-001-typescript-as-primary-language.md)
 - [ADR-002 — Monolito modular orientado al dominio (Accepted)](decisions/proposed/ADR-002-modular-monolith-first.md)
-- [ADR-003 — PostgreSQL](decisions/proposed/ADR-003-postgresql-primary-database.md)
+- [ADR-003 — PostgreSQL como motor primario (Accepted)](decisions/proposed/ADR-003-postgresql-primary-database.md)
 - [ADR-004 — Multitenancy en esquema compartido (Accepted)](decisions/proposed/ADR-004-shared-schema-multitenancy.md)
 - [ADR-005 — NestJS](decisions/proposed/ADR-005-nestjs-backend.md)
 - [ADR-006 — Next.js](decisions/proposed/ADR-006-nextjs-web-clients.md)

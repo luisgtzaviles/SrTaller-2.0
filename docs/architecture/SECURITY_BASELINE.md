@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual de controles mínimos.
-- **Naturaleza:** Propuesta y conjunto de hitos; ADR-004/010/011/012/013 son autoritativos para aislamiento, contexto, identidad/sesión y autorización ordinaria/reforzada conceptuales y no constituyen certificación ni diseño criptográfico final.
+- **Naturaleza:** Propuesta y conjunto de hitos; ADR-003/004/010/011/012/013 son autoritativos para motor, aislamiento, contexto, identidad/sesión y autorización ordinaria/reforzada conceptuales y no constituyen certificación ni diseño criptográfico final.
 - **Alcance:** Producto, aplicaciones, datos, dependencias, entrega y operación.
 - **Referencia de verificación:** [Estrategia de pruebas de seguridad](../quality/SECURITY_TESTING.md).
 
@@ -67,7 +67,7 @@ Cada flecha exige autenticación o verificación, autorización, validación, l�
 
 | Amenaza | Ejemplo | Controles conceptuales |
 |---|---|---|
-| Exposición entre tenants | Filtro omitido, cache key compartida, room amplia | Contexto obligatorio, namespaces, constraints/RLS a evaluar, pruebas negativas |
+| Exposición entre tenants | Filtro omitido, cache key compartida, room amplia | Contexto obligatorio, namespaces, constraints, pruebas negativas y RLS opcional sólo tras spike |
 | Escalada de privilegio | UI oculta pero API permite; override incorrecto | Autorización server-side contextual, deny by default, matriz de permisos |
 | Secuestro de sesión | Token robado o dispositivo perdido | Sesiones acotadas, revocación, step-up y protección de almacenamiento |
 | Adivinación de PIN | Intentos automatizados en terminal compartida | Rate limit, bloqueo proporcional, auditoría y factor reforzado |
@@ -120,7 +120,7 @@ La línea base exige:
 - contextos de tenant inmutables en API y jobs;
 - acceso global excepcional, separado y auditado;
 - pruebas con tenants A/B en toda superficie;
-- evaluación documentada de PostgreSQL RLS.
+- PostgreSQL 18.x conforme a ADR-003; cualquier RLS requiere spike previo y nunca sustituye controles de aplicación.
 
 Véase [Modelo de multitenancy](MULTITENANCY_MODEL.md).
 
@@ -208,7 +208,7 @@ Véase [Arquitectura de integraciones](INTEGRATION_ARCHITECTURE.md).
 
 ## Infraestructura y red
 
-- Bases, Redis, objetos y colas no se exponen públicamente salvo necesidad justificada.
+- PostgreSQL no se expone públicamente salvo necesidad justificada; Redis, objetos y colas sólo existirán si una decisión posterior los autoriza y tampoco se expondrán por defecto.
 - Separación de red y credenciales por ambiente.
 - Egress y acceso administrativo restringidos y observables.
 - Servicios ejecutan con identidad propia y mínimo privilegio.

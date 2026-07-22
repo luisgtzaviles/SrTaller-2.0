@@ -4,8 +4,8 @@
 
 - **Estado:** Propuesta
 - **Prioridad:** Control crítico de seguridad y calidad.
-- **Modelo bajo evaluación:** Base y esquema compartidos con `tenant_id`, con Row-Level Security de PostgreSQL como posible defensa adicional.
-- **Decisión pendiente:** Implementación exacta de enforcement, RLS, herramientas y gates.
+- **Modelo aceptado:** PostgreSQL 18.x, base y esquema compartidos con `tenant_id`; Row-Level Security queda pendiente de spike como defensa adicional opcional.
+- **Decisión pendiente:** Implementación exacta del enforcement, repositorios, herramientas, gates y posible adopción de RLS.
 
 ## Objetivo
 
@@ -18,7 +18,7 @@ Las pruebas validan el modelo descrito en [Multitenancy Model](../architecture/M
 1. Toda operación tenant-scoped posee contexto de tenant validado en servidor.
 2. El hostname no sustituye validación de membresía/identidad.
 3. `tenant_id` nunca se toma como autoridad sólo porque lo envía el cliente.
-4. `branch_id` pertenece al tenant y respeta el alcance autorizado.
+4. `sucursal_id` pertenece al tenant y respeta el alcance autorizado.
 5. Identificadores válidos de otro tenant no cambian una denegación segura.
 6. Jobs, caché, rooms realtime, archivos, logs y exportaciones conservan aislamiento.
 7. Operaciones globales de plataforma son explícitas, privilegiadas y auditadas; no son un bypass reutilizable.
@@ -30,7 +30,7 @@ Las pruebas validan el modelo descrito en [Multitenancy Model](../architecture/M
 |---|---|---|
 | Sucursales | Alfa Norte, Alfa Sur | Beta Centro |
 | Usuarios | propietario, usuario limitado, usuario sin sucursal | administrador, usuario limitado |
-| Identidad entre tenants (condicional) | Si el modelo multi-tenant se aprueba: una identidad global con membresías y permisos separados | Si se rechaza: identidades distintas y un intento de segunda membresía que debe fallar sin fuga |
+| Usuarios entre tenants | Usuario ordinario exclusivo de Alfa más intento de acceso a Beta | Usuario ordinario exclusivo de Beta más intento de acceso a Alfa |
 | Dispositivos | activo Norte, activo Sur, revocado | activo Centro, revocado |
 | Recursos | clientes, reparaciones, inventario, mensajes, archivos y pagos sintéticos | equivalentes con IDs distintos |
 | Asincronía | jobs/eventos válidos, duplicados y sin contexto | equivalentes |
@@ -48,12 +48,12 @@ Para cada recurso tenant-scoped y operación `list/read/create/update/delete/exp
 | Actor de Alfa sobre ID válido de Beta | Denegado sin fuga de contenido. |
 | Actor de Alfa manipulando `tenant_id` a Beta | Denegado; el cliente no redefine contexto. |
 | Actor de Alfa usando hostname de Beta | Denegado si no tiene membresía; contexto no mezclado. |
-| Actor con membresías Alfa/Beta, sólo si se aprueba ese modelo | Debe seleccionar/resolver contexto explícito; permisos no se heredan entre membresías. Si el modelo se rechaza, el alta/uso cruzado debe denegarse sin revelar el otro tenant. |
+| Actor ordinario de Alfa intentando adquirir o usar pertenencia Beta | Denegado sin revelar datos de Beta; ADR-004 establece un solo tenant por usuario ordinario. |
 | Sucursal Alfa Norte sobre recurso restringido a Alfa Sur | Denegado o permitido sólo por permiso explícito validado. |
 | Sesión/dispositivo revocado | Denegado aunque token, socket o caché previos existan. |
 | Sin contexto tenant | Fail closed; sólo operación global explícita puede continuar. |
 
-El caso de una identidad con varias membresías es una bifurcación de prueba, no un requisito de producto. La suite debe conservar el aislamiento con cualquiera de las dos decisiones documentadas en [Identity, Access and Permissions](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md).
+La suite aplica la decisión de ADR-004: un usuario ordinario pertenece exactamente a un tenant. Cualquier identidad administrativa de plataforma utiliza un camino separado, explícito y auditable.
 
 El código HTTP o detalle exacto de error queda pendiente; debe evitar enumeración y seguir un contrato consistente.
 
@@ -79,7 +79,7 @@ El código HTTP o detalle exacto de error queda pendiente; debe evitar enumeraci
 
 ### Sucursal
 
-- `branch_id` de otro tenant siempre se rechaza.
+- `sucursal_id` de otro tenant siempre se rechaza.
 - Cambio de sucursal no conserva datos, filtros o permisos del contexto anterior.
 - Usuario multibranch sólo accede al conjunto autorizado.
 - Dispositivo vinculado a una sucursal no amplía el permiso personal del usuario.
@@ -157,9 +157,9 @@ Las herramientas y adopción de property-based testing quedan por evaluar.
 
 ## Preguntas abiertas
 
-- ¿Se adoptará RLS y para qué tablas/roles, tras qué prueba de concepto?
+- ¿Se autorizará el spike de RLS y, si demuestra valor, para qué tablas y roles se adoptará?
 - ¿Qué respuesta evita enumeración sin perjudicar operación y soporte?
-- ¿Cómo se seleccionará contexto para usuarios con varias membresías?
+- ¿Cómo se denegará una segunda pertenencia de usuario ordinario sin filtrar información y cómo se separará la identidad administrativa de plataforma?
 - ¿Cuál será el objetivo de propagación de revocación a cachés y sockets?
 - ¿Qué funciones exactas tendrá soporte de plataforma y cómo se controlará su acceso?
 - ¿Qué herramienta ejecutará pruebas de concurrencia y generación de casos?

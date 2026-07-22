@@ -275,7 +275,7 @@ La decisión no resuelve por sí sola ninguna de las 34 preguntas numeradas de e
 - **Impacto:** Afecta privacidad, soporte, costo, migración, cierre de tenant y cumplimiento.
 - **Opciones conocidas:** políticas por categoría; retención configurable dentro de límites; anonimización; eliminación lógica seguida de purga; excepciones por obligación legal.
 - **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) permanece `Proposed`; [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) está `Accepted`. Ninguno resuelve retención.
+- **Decisión relacionada:** [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) están `Accepted`. Ninguno resuelve retención.
 
 <a id="question-026"></a>
 ### QUESTION-026 — Jurisdicción, residencia y clasificación de datos
@@ -295,7 +295,7 @@ La decisión no resuelve por sí sola ninguna de las 34 preguntas numeradas de e
 - **Impacto:** Afecta capacidad, pruebas, índices, caché, colas, costos y criterios para separar componentes.
 - **Opciones conocidas:** supuestos conservadores validados con pilotos; rangos por tenant; pruebas por recorridos críticos; crecimiento gradual con señales de extracción.
 - **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) están `Accepted`; [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) permanece `Proposed`.
+- **Decisión relacionada:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) están `Accepted`; el perfil de carga sigue abierto y no se infiere de elegir motor.
 
 <a id="question-028"></a>
 ### QUESTION-028 — Restricciones de hosting, disponibilidad y ambientes

@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Propuesta
-- **Alcance:** Aplicaciones web, API, workers, PostgreSQL, Redis, storage, realtime, integraciones y clientes móviles futuros.
+- **Alcance:** Aplicaciones web, API, workers, PostgreSQL 18.x y, si se aceptan por decisiones propias, Redis, storage, realtime, integraciones y clientes móviles futuros.
 - **Hecho conocido:** Multitenancy, dispositivos/PIN, pagos, mensajería y soporte privilegiado elevan el impacto de fallos de acceso.
 - **Decisión pendiente:** Estándar de referencia, herramientas, severidades, canal de divulgación y responsables.
 

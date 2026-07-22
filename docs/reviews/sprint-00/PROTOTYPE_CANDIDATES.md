@@ -21,13 +21,13 @@
 |---|---|---|---|---|---|
 | SPIKE-001 | `Mandatory before implementation` | Resolución/cookies/caché cross-tenant | ADR-008; informa ADR-004 | PBI-007, PBI-008, PBI-013, PBI-015, PBI-017 | Antes de implementar routing o sesión tenant-aware, después de definir identidad y dominios. |
 | SPIKE-002 | `Mandatory before implementation` | Acceso cross-tenant por omisión de contexto | ADR-004 | PBI-007, PBI-011, PBI-017, PBI-018 | Antes de la primera persistencia shared-schema tenant-scoped. |
-| SPIKE-003 | `Mandatory before implementation` si shared-schema continúa | Bypass o contaminación de contexto RLS | ADR-004; posible ADR futuro de RLS | PBI-007, PBI-011, PBI-017, PBI-018 | Después de SPIKE-002 y antes de fijar roles/policies de persistencia compartida. |
+| SPIKE-003 | `Mandatory before adopting RLS` | Bypass o contaminación de contexto RLS | ADR-003/004; posible ADR futuro de RLS | PBI-007, PBI-011, PBI-017, PBI-018 | Después de SPIKE-002 y sólo si se considera adoptar RLS. |
 | SPIKE-004 | `Premature` | Rooms o eventos cross-tenant | ADR-004 y ADR futuro de realtime | PBI-014, PBI-017, PBI-019 | Sólo si el Gate 5 confirma realtime; entonces será obligatorio antes de sockets. |
 | SPIKE-005 | `Mandatory before implementation` si dispositivo/PIN entra al release | PIN como identidad completa o sesión huérfana | ADR futuro de identidad/dispositivo; informa ADR-004/008 | PBI-008, PBI-009, PBI-017, PBI-018 | Después de resolver operación, acciones sensibles y revocación. |
 | SPIKE-006 | `Recommended` | Pérdida o mezcla de tenant context en jobs | ADR-002/004 y ADR futuro de colas | PBI-007, PBI-014, PBI-017, PBI-019 | Antes del primer job tenant-scoped autorizado. |
 | SPIKE-007 | `Recommended` | Rebuild, artefacto mutable o secretos en imagen | ADR-007 | PBI-015, PBI-019 | Antes del primer release productivo, con un desplegable representativo. |
 | SPIKE-008 | `Optional` | Grafo acoplado, deploys no independientes o caché insegura | ADR-009; informa ADR-007 | PBI-010, PBI-015, PBI-016, PBI-019 | Recomendable al confirmar al menos dos desplegables o paquetes compartidos. |
-| SPIKE-009 | `Recommended` | Dominio acoplado a NestJS o controles transversales incompletos | ADR-005; informa ADR-001/002/004 | PBI-007, PBI-010, PBI-012, PBI-017 | Antes de aceptar NestJS, con un recorrido vertical mínimo autorizado. |
+| SPIKE-009 | `Recommended` | Dominio acoplado a NestJS o controles transversales incompletos | ADR-005; informa ADR-001/002/003/004 | PBI-007, PBI-010, PBI-012, PBI-017 | Antes de aceptar NestJS, con un recorrido vertical mínimo autorizado. |
 
 <a id="spike-001"></a>
 
@@ -39,11 +39,11 @@
 | Clasificación | `Mandatory before implementation` del routing y de la sesión tenant-aware de clientes web. |
 | Hipótesis | Un hostname wildcard normalizado y permitido puede producir sólo un tenant candidato; al contrastarlo con identidad y membresía, dos tenants permanecen aislados sin cruce de cookies, caché ni ambientes. |
 | Riesgo que reduce | [RISK-001](../../sprints/sprint-00/RISKS_AND_BLOCKERS.md#riesgos): confiar en una sola defensa multitenant; riesgos de [ADR-008](../../decisions/proposed/ADR-008-wildcard-subdomain-routing.md) sobre Host header, subdomain takeover y cookies demasiado amplias. |
-| Pregunta que responde | ¿Wildcard DNS/TLS y el modelo de sesión permiten resolver un tenant candidato de forma segura para hosts válidos, desconocidos, suspendidos o renombrados, incluidos usuarios con varias membresías y ambientes separados? |
+| Pregunta que responde | ¿Wildcard DNS/TLS y el modelo de sesión permiten resolver un tenant candidato de forma segura para hosts válidos, desconocidos, suspendidos o renombrados, incluida la separación entre usuarios ordinarios de un solo tenant, identidades excepcionales de plataforma y ambientes? |
 | Alcance mínimo | Dos tenants con datos sintéticos; un edge/resolver, una API y un cliente web mínimos; host A con credencial B y viceversa; host inválido/suspendido; normalización y allowlist; cookies host-only frente a dominio compartido; `Secure`, `SameSite`, CSRF/CORS; caché/CDN; DNS/TLS; dominios distintos para local, staging y producción. |
 | Fuera de alcance | Dominios personalizados, infraestructura productiva, branding final, cliente móvil, onboarding completo y selección de proveedor definitivo. |
 | Evidencia esperada | Diagrama del flujo probado, configuración mínima sin secretos, matriz allow/deny, resultados de host/cookie/cache, amenazas observadas y límites por ambiente. |
-| Criterio de éxito | Host no permitido falla cerrado; la membresía, no el hostname, determina acceso; credencial A/host B no mezcla contexto; cookies y caché no cruzan tenants; los ambientes son inequívocos; el flujo multi-tenant tiene comportamiento definido. |
+| Criterio de éxito | Host no permitido falla cerrado; pertenencia, estación e identidad válidas —no el hostname aislado— determinan acceso; credencial A/host B no mezcla contexto; cookies y caché no cruzan tenants; los ambientes son inequívocos; cualquier flujo excepcional de plataforma permanece separado. |
 | Criterio de fracaso | El diseño necesita una cookie de alcance inseguro, permite spoof/takeover, mezcla caché, confía en un header controlado por cliente o no ofrece un cambio de tenant seguro y operable. |
 | Duración | `TBD` |
 | ADR relacionado | [ADR-008](../../decisions/proposed/ADR-008-wildcard-subdomain-routing.md); informa [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md). |
@@ -78,7 +78,7 @@
 | Campo | Propuesta de revisión |
 |---|---|
 | Identificador | `SPIKE-003` |
-| Clasificación | `Mandatory before implementation` si shared-schema continúa como candidato. El resultado válido puede ser rechazar RLS. |
+| Clasificación | `Mandatory before adopting RLS`. No es obligatorio antes de cualquier persistencia de R0 y el resultado válido puede ser rechazar RLS. |
 | Hipótesis | Un rol de aplicación sin bypass, contexto establecido por transacción/conexión y políticas RLS —incluido `FORCE ROW LEVEL SECURITY` cuando corresponda— agregan una barrera sin filtrar contexto ni volver inoperables jobs, migraciones o soporte. |
 | Riesgo que reduce | [RISK-001](../../sprints/sprint-00/RISKS_AND_BLOCKERS.md#riesgos), bypass por roles privilegiados y falsa confianza en RLS descritos en el [modelo multitenant](../../architecture/MULTITENANCY_MODEL.md#evaluación-de-row-level-security). |
 | Pregunta que responde | ¿RLS deniega `SELECT/INSERT/UPDATE/DELETE` y joins cuando falta o no coincide el tenant, limpia el contexto al reutilizar conexiones y permite operaciones excepcionales explícitas? |
@@ -90,7 +90,7 @@
 | Duración | `TBD` |
 | ADR relacionado | [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md); puede originar un ADR futuro específico de RLS. |
 | PBI relacionado | [PBI-007](../../backlog/pbis/PBI-007.md), [PBI-011](../../backlog/pbis/PBI-011.md), [PBI-017](../../backlog/pbis/PBI-017.md) y [PBI-018](../../backlog/pbis/PBI-018.md). |
-| Dependencias | Resultado y patrón de [SPIKE-002](#spike-002), ADR-003, candidato de ORM/query builder y pooling, threat model, y operaciones cross-tenant legítimas definidas. |
+| Dependencias | Resultado y patrón de [SPIKE-002](#spike-002), ADR-003 `Accepted`, candidato de ORM/query builder y pooling, threat model, operaciones cross-tenant legítimas definidas y autorización explícita del spike. |
 
 <a id="spike-004"></a>
 

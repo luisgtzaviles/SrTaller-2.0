@@ -10,7 +10,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | --- | --- | --- | --- | --- |
 | ADR-001 | TypeScript y Node.js `24.x` | Accepted | H0 parcialmente cerrado | Aplicar política LTS/EOL, validación runtime y gobierno de excepciones |
 | ADR-002 | Monolito modular inicial | Accepted | H0 cerrado | Aplicar y verificar; no reabrir sin evidencia |
-| ADR-003 | Persistencia principal | Proposed | H0/H1 | Revisar junto con ownership y migraciones |
+| ADR-003 | PostgreSQL como persistencia principal | Accepted | Motor H0 cerrado; mecanismos H1 abiertos | Aplicar junto con ownership y migraciones; baseline PostgreSQL 18.x |
 | ADR-004 | Estrategia multitenant y propiedad lógica | Accepted | H1 parcialmente cerrado | Aplicar invariantes; RLS queda separado y contexto se rige por ADR-010 |
 | ADR-005 | NestJS para backend y API | Proposed | H0 | Confirmar frontera de backend y restricciones del framework |
 | ADR-006 | Next.js para clientes web | Proposed | Antes de la primera UI | Revisar por superficie; no asumir una única necesidad |
@@ -34,7 +34,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | Cerrado | Identidad, sesión, PIN e inactividad | DEC-013 a DEC-016 | Respondido | Mecanismos técnicos aún pueden requerir evidencia | ADR-011 aceptado; falta aplicación, modelo de amenazas y pruebas | H1 |
 | Cerrado | Modelo de roles, capacidades y autorización ordinaria | DEC-017, DEC-018 | Respondido | No para aceptar el modelo | ADR-012 aceptado; faltan composición por rebanada, aplicación y pruebas | H1 |
 | Cerrado | Modelo de acciones sensibles y reautenticación | DEC-019, DEC-020 | Respondido | No para aceptar el modelo | ADR-013 aceptado; faltan política por acción, mecanismo, aplicación y pruebas | H1 |
-| 5 | Persistencia, ownership de repositorios y migraciones; revisar ADR-003 | DEC-006, DEC-049, DEC-050 | No para mecanismo; sí para datos globales | Condicional | Propiedad de escritura, evolución de esquema y recuperación definidas | H1 |
+| 5 | Persistencia PostgreSQL, ownership de repositorios y migraciones; aplicar ADR-003 | DEC-006, DEC-049, DEC-050 | No para mecanismo; sí para datos globales | Condicional | Propiedad de escritura, tooling, evolución de esquema y recuperación definidos | H1 |
 | 6 | Tiempo y zonas horarias | DEC-037, DEC-038 | Sí | Condicional para casos límite | Instante autoritativo, zona operacional y reglas de presentación | H1 |
 | 7 | Auditoría y atribución | DEC-016, DEC-019, DEC-046 | Sí | No por defecto | Hechos auditables, actor, contexto, integridad, acceso y retención inicial | H1/H3 |
 | 8 | Estrategia de pruebas de arquitectura y aislamiento | DEC-051, DEC-052, DEC-062 | No para técnica; sí para aceptación | No | Gates repetibles, datos de dos tenants y pruebas de denegación | H0/H1 |
@@ -54,7 +54,7 @@ ADR-001, ADR-004 y ADR-010 a ADR-013 ya están aceptados. La siguiente revisión
 
 Protección técnica del PIN, intentos, recuperación y formato de sesión siguen como diseño/evidencia dependiente de ADR-011. La propagación de cambios de autorización depende de ADR-012 y la invalidación de controles reforzados de ADR-013. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
-ADR-001 ya está `Accepted` y satisface lenguaje/runtime dentro del lote mínimo de plataforma. ADR-003, ADR-005 y ADR-009 continúan pendientes, por lo que `DEC-004` y el primer cambio de implementación de R0 permanecen bloqueados. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
+ADR-001 y ADR-003 están `Accepted` y satisfacen lenguaje/runtime y motor dentro del lote mínimo de plataforma. PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial. ADR-005 y ADR-009 continúan pendientes, por lo que `DEC-004` y el primer cambio de implementación de R0 permanecen bloqueados. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
 
 ## Condiciones para llevar un ADR a revisión
 

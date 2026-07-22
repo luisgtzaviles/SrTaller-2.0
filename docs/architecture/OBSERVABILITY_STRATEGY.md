@@ -5,6 +5,7 @@
 - **Estado:** Borrador conceptual.
 - **Naturaleza:** Propuesta de señales, contexto y prácticas; no selecciona un stack ni proveedor.
 - **Alcance:** API, web, workers, tiempo real, integraciones, datos e infraestructura por ambiente.
+- **Persistencia:** PostgreSQL está aceptado por ADR-003; las herramientas de observabilidad y demás almacenes siguen pendientes.
 
 ## Objetivo
 
@@ -41,8 +42,8 @@ flowchart LR
     API[API]
     Worker[Workers]
     RT[Tiempo real]
-    DB[(PostgreSQL)]
-    Redis[(Redis / colas)]
+    DB[(PostgreSQL 18.x)]
+    Redis[(Redis / colas\nsi se acepta)]
     Ext[Integraciones]
 
     Collector[Pipeline / collector\npor seleccionar]

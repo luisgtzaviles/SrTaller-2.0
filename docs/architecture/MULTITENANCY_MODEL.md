@@ -2,10 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Dirección multitenant y contexto operativo aceptados; persistencia física y pruebas pendientes.
-- **Naturaleza:** ADR-004, ADR-010, ADR-011 y ADR-012 son autoritativos para propiedad, contexto, identidad/sesión y autorización ordinaria; RLS y mecanismos concretos siguen sujetos a evaluación.
-- **Dirección aceptada:** Base y esquema compartidos con aislamiento lógico; motor y Row-Level Security (RLS) pendientes.
-- **ADRs relacionados:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), todos `Accepted`.
+- **Estado:** Dirección multitenant, motor y contexto operativo aceptados; diseño físico, mecanismos y pruebas pendientes.
+- **Naturaleza:** ADR-003/004/010/011/012 son autoritativos para motor, propiedad, contexto, identidad/sesión y autorización ordinaria; RLS y mecanismos concretos siguen sujetos a evaluación.
+- **Dirección aceptada:** PostgreSQL 18.x, base y esquema compartidos con aislamiento lógico; Row-Level Security (RLS) pendiente de spike y opcional.
+- **ADRs relacionados:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), todos `Accepted`.
 
 ## Objetivo de seguridad
 
@@ -58,7 +58,7 @@ sequenceDiagram
 Un contexto mínimo conceptual contiene:
 
 - `tenant_id` efectivo;
-- `branch_id` efectivo;
+- `sucursal_id` efectivo;
 - identidad de estación;
 - usuario autenticado dentro del tenant;
 - sesión operativa válida;
@@ -72,9 +72,9 @@ Debe construirse una vez en un borde confiable y pasarse explícitamente. No se 
 ### Reglas propuestas
 
 - Toda entidad propiedad de un tenant incluye `tenant_id` obligatorio y no nulo.
-- `branch_id` sólo aparece donde el concepto tenga alcance de sucursal y siempre se valida que pertenezca al mismo tenant.
+- `sucursal_id` sólo aparece donde el concepto tenga alcance de sucursal y siempre se valida que pertenezca al mismo tenant.
 - Referencias entre datos tenant-scoped incluyen o comprueban el tenant común; una coincidencia de ID aislada no basta.
-- Claves naturales y restricciones de unicidad se definen con alcance explícito: típicamente `(tenant_id, valor)` y, si corresponde, `(tenant_id, branch_id, valor)`.
+- Claves naturales y restricciones de unicidad se definen con alcance explícito: típicamente `(tenant_id, valor)` y, si corresponde, `(tenant_id, sucursal_id, valor)`.
 - Índices de consultas tenant-scoped comienzan normalmente por `tenant_id`; el orden final depende de patrones medidos.
 - Relaciones globales legítimas —por ejemplo catálogo de planes— se modelan y autorizan como globales, no omitiendo accidentalmente `tenant_id`.
 - El identificador no debe cambiar de tenant; una transferencia requiere un proceso de negocio explícito o recreación controlada.
@@ -88,7 +88,7 @@ La interfaz de un repositorio tenant-scoped debe hacer difícil o imposible cons
 - recibe un `TenantContext` validado o queda construida con ese alcance;
 - no ofrece métodos globales genéricos al código operativo;
 - aplica `tenant_id` tanto en lectura como en actualización y eliminación;
-- valida `branch_id` dentro del mismo tenant;
+- valida `sucursal_id` dentro del mismo tenant;
 - rechaza resultados cuyo contexto sea incoherente;
 - mantiene separadas las interfaces administrativas globales;
 - registra pruebas de contrato de aislamiento.
@@ -105,7 +105,7 @@ Se propone defensa en profundidad:
 4. Constraints compuestos que prevengan referencias cruzadas.
 5. Pruebas automáticas con al menos dos tenants y datos deliberadamente similares.
 6. Revisión de código con checklist multitenant.
-7. Evaluación de PostgreSQL RLS como barrera adicional.
+7. Evaluación de PostgreSQL RLS como barrera adicional sólo si se autoriza el spike.
 8. Credenciales y paths distintos para tareas administrativas excepcionales.
 
 ## Evaluación de Row-Level Security
@@ -121,7 +121,7 @@ RLS podría limitar filas por una variable de sesión/transacción y reducir el 
 - pruebas que demuestren denegación cruzada;
 - costo de operación y diagnóstico.
 
-**Decisión pendiente:** RLS no sustituye el contexto en la aplicación ni los filtros conscientes del tenant. Su adopción, alcance y configuración requieren ADR.
+**Decisión pendiente:** RLS es opcional y no forma parte obligatoria de R0. No sustituye el contexto en la aplicación ni los filtros conscientes del tenant. Su adopción, alcance y configuración requieren spike previo y decisión explícita; el spike puede concluir rechazándola.
 
 ## Contexto en superficies no SQL
 
@@ -139,7 +139,7 @@ RLS podría limitar filas por una variable de sesión/transacción y reducir el 
 ## Alcance de sucursal
 
 - Una sucursal pertenece exactamente a un tenant conforme a ADR-004.
-- `branch_id` restringe un subconjunto de operaciones; no crea una frontera equivalente a tenant.
+- `sucursal_id` restringe un subconjunto de operaciones; no crea una frontera equivalente a tenant.
 - El usuario pertenece al tenant, no a una sucursal permanente; roles/permisos futuros no pueden sustituir la sucursal derivada.
 - Una estación se vincula a una sucursal y deriva su tenant conforme al [modelo de sucursal y dispositivo](BRANCH_AND_DEVICE_MODEL.md).
 - Transferir datos entre sucursales requiere una regla de negocio por módulo; no se asume permitido.
@@ -192,7 +192,7 @@ La estrategia dedicada está en [Pruebas de aislamiento multitenant](../quality/
 ## Decisiones pendientes
 
 - Aplicar y probar el esquema compartido aceptado con discriminación tenant/sucursal.
-- Definir si RLS será obligatoria, selectiva o descartada.
+- Autorizar el spike de RLS sólo antes de una posible adopción y decidir después si será selectiva o descartada.
 - Aprobar subdominios wildcard y estrategia para dominios personalizados.
 - Definir alcance de unicidad y retención por agregado.
 - Diseñar acceso de soporte y exportaciones globales.

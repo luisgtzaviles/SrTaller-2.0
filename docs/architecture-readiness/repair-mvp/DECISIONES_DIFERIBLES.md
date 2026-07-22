@@ -7,7 +7,7 @@
 | Marco web definitivo de todas las superficies | No fijar la interfaz completa | Antes de implementar esa superficie | DD |
 | Contenedores y plataforma de despliegue | Desarrollo inicial reproducible definido | Antes de ambiente compartido | DD |
 | Enrutamiento por subdominio comodín | Tenant resuelto por mecanismo seguro alterno | Antes de dominios productivos | DD |
-| RLS como defensa adicional | Aislamiento inicial probado por otra estrategia | Antes de producción o escala | DD |
+| RLS como defensa adicional | Aislamiento inicial probado por aplicación/repositorios | Antes de adoptar RLS; puede descartarse | DD |
 | Broker/cola externa | Efectos laterales toleran mecanismo local confiable | Al aparecer volumen/fallo real | DD |
 | Tiempo real | El flujo funciona con refresco/consulta | Al validar necesidad UX | DD |
 | Proveedor de notificación | Operación manual aceptable | Antes de automatizar canal | DD |

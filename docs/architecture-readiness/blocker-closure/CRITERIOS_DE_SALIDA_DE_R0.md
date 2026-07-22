@@ -166,7 +166,7 @@ Arquitectura o Calidad pueden declarar incumplimientos y bloquear la recomendaci
 Además del alcance aprobado, todos estos criterios siguen siendo obligatorios:
 
 - [x] ADR-001 aceptado con TypeScript y Node.js `24.x`, límites y gobierno explícitos;
-- [ ] ADR-003, ADR-005 y ADR-009 revisados y con estado explícito;
+- [ ] ADR-005 y ADR-009 revisados y con estado explícito; ADR-003 ya está `Accepted`;
 - [ ] estructura inicial y reglas de dependencia de ADR-002 acordadas;
 - [ ] ownership de repositorios y datos definido para la fundación;
 - [ ] estrategia de errores y contratos mínimos de aplicación definidos;

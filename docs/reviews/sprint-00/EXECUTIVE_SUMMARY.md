@@ -6,13 +6,13 @@
 - **Naturaleza:** Evaluación y recomendación; no es acta de aprobación.
 - **Estimación cualitativa:** **Partially ready**.
 
-**Actualización posterior:** este documento conserva la evaluación histórica de Sprint 00. [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) fue aceptado el 2026-07-21; las afirmaciones posteriores de que los nueve ADRs seguían `Proposed` describen el momento de esta evaluación, no el estado vigente.
+**Actualización posterior:** este documento conserva la evaluación histórica de Sprint 00. Varios ADR fueron aceptados posteriormente; las afirmaciones históricas sobre nueve ADRs `Proposed` describen únicamente el momento de esta evaluación. El [registro oficial](../../decisions/README.md) es la fuente del estado vigente.
 
 ## Lectura ejecutiva
 
 Sprint 00 produjo una fundación documental extensa: visión y principios, catálogo inicial de actores, glosario, mapa de 21 módulos, modelos conceptuales de arquitectura, controles de entrega/calidad/operación, 15 epics, 20 PBIs y nueve ADRs propuestos. Product Backlog y Sprint Backlog contienen los mismos 20 PBIs. No existe código funcional, infraestructura ni dependencia instalada.
 
-La existencia de esos documentos no significa que el producto esté decidido. Las 34 preguntas canónicas siguen abiertas; no hay evidencia de aprobación del Product Owner; los 100 criterios de aceptación de los PBIs continúan sin marcar; los nueve ADRs siguen en `Proposed`; Review y Retrospective están pendientes. Sprint 00 permanece abierto y los prototipos no están autorizados.
+En la fecha de esta evaluación, la existencia de esos documentos no significaba que el producto estuviera decidido: las 34 preguntas canónicas seguían abiertas; no había evidencia de aprobación del Product Owner; los 100 criterios de aceptación de los PBIs continuaban sin marcar; los nueve ADRs estaban en `Proposed`; Review y Retrospective estaban pendientes. Esta oración es una fotografía histórica y no reemplaza estados o decisiones posteriores.
 
 ## Qué está suficientemente documentado para revisión
 
@@ -48,7 +48,7 @@ La existencia de esos documentos no significa que el producto esté decidido. La
 
 Las decisiones de producto deben seguir los Gates 1 a 6 de la [secuencia](./DECISION_SEQUENCE.md): producto inicial, organización, identidad/operación, dominio central, CRM/mensajería y comercialización. El Gate 7 técnico sólo puede completarse formalmente después de resolver los gates que condicionan cada ADR.
 
-Actualización posterior: ADR-001 aceptó TypeScript y Node.js `24.x`, ADR-002 el monolito modular y ADR-004 la topología shared-schema el 2026-07-21. PostgreSQL y wildcard siguen propuestos; NestJS necesita validación técnica; Next.js debe dividirse o limitarse a una superficie aprobada; contenedores y monorepo no obligan a Docker Compose, GitHub Actions, pnpm ni Turborepo.
+Actualización posterior: ADR-001 aceptó TypeScript y Node.js `24.x`, ADR-002 el monolito modular, ADR-003 PostgreSQL con baseline 18.x y ADR-004 la topología shared-schema el 2026-07-21. Wildcard sigue propuesto; NestJS necesita validación técnica; Next.js debe dividirse o limitarse a una superficie aprobada; contenedores y monorepo no obligan a Docker Compose, GitHub Actions, pnpm ni Turborepo.
 
 ## Riesgo de comenzar demasiado pronto
 

@@ -30,7 +30,7 @@ sequenceDiagram
     participant Hook as Webhook ingress
     participant Queue as Cola
     participant Worker as Worker
-    participant DB as PostgreSQL propuesto
+    participant DB as PostgreSQL 18.x aceptado
     participant RT as Gateway realtime
     participant Client as Cliente conectado
 
@@ -63,7 +63,7 @@ sequenceDiagram
 sequenceDiagram
     actor User as Operador
     participant API as API central
-    participant DB as PostgreSQL propuesto
+    participant DB as PostgreSQL 18.x aceptado
     participant Queue as Cola
     participant Worker as Worker
     participant Adapter as Adaptador de canal

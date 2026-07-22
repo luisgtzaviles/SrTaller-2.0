@@ -81,11 +81,11 @@
 4. **[PB]** ¿Qué políticas admiten ajuste por sucursal y cuál es su precedencia ejecutable?
 5. **[PB]** ¿Una Orden abierta conserva versión o instantánea cuando cambia la política?
 6. **[PB]** ¿Qué estrategia concreta gobierna archivos, soporte y consultas administrativas?
-7. **[PB]** ¿Se evaluará RLS después de aceptar PostgreSQL y con qué alcance?
+7. **[PB]** ¿Se autorizará el spike de RLS y, si demuestra valor, con qué alcance se adoptará?
 
 ## Estado de ADR
 
-**[ADR]** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) fija base/esquema compartidos, propiedad e aislamiento; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) fija el contexto operativo por estación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) fija identidad, PIN y sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) fija autorización ordinaria por roles y capacidades. Motor, RLS, mecanismos técnicos, composición por rebanada y acciones sensibles permanecen sin aceptar.
+**[ADR]** [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) fija PostgreSQL como motor y deja RLS pendiente de spike como defensa opcional; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) fija base/esquema compartidos, propiedad e aislamiento; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) fija el contexto operativo por estación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) fija identidad, PIN y sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) fija autorización ordinaria por roles y capacidades; ADR-013 fija las acciones sensibles. Mecanismos técnicos y composición por rebanada permanecen sin aceptar.
 
 ## Gate
 

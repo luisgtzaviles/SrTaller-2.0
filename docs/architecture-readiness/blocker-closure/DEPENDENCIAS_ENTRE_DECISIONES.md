@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TD
-    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> STACK[DEC-004 Stack<br/>ADR-001 satisfecho]
+    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> STACK[DEC-004 Stack<br/>ADR-001/003 satisfechos]
     SCOPE --> MODULES[DEC-005 Módulos]
     ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Pruebas]
     ACCEPT --> R0
@@ -63,7 +63,7 @@ flowchart TD
 
 - ADR-005 ya tiene satisfecha su dependencia de lenguaje/runtime por ADR-001, pero requiere su comparación y evidencia propias antes de aceptarse.
 - SPIKE-002 parte de la estrategia shared-schema aceptada y depende de un contrato representativo y un mecanismo técnico autorizado para demostrar aislamiento.
-- SPIKE-003 depende del resultado de SPIKE-002, PostgreSQL candidato y acceso de datos/pooling.
+- SPIKE-003 depende del resultado de SPIKE-002, PostgreSQL aceptado y acceso de datos/pooling. Es obligatorio antes de adoptar RLS, no antes de cualquier persistencia de R0, y puede concluir rechazándola.
 - SPIKE-005 parte del propósito y sesión aceptados por ADR-011; debe acotarse a protección técnica, intentos, revocación y relación con acciones sensibles.
 - La prueba concurrente de folio depende de alcance del folio y persistencia candidata.
 - Restore por tenant depende de estrategia multitenant, backups y clasificación de datos.

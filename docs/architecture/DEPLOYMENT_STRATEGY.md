@@ -7,6 +7,7 @@
 - **Candidatos:** contenedores Docker, GitHub Actions e imágenes versionadas, pendientes de ADR y evaluación.
 - **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Proposed`.
 - **Baseline de runtime aceptada:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md) fija TypeScript y Node.js `24.x`; no acepta contenedores, CI/CD ni plataforma de ejecución.
+- **Baseline de persistencia aceptada:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) fija PostgreSQL 18.x; no acepta proveedor, contenedor, HA, pooler ni servicio administrado.
 
 ## Objetivo
 
@@ -20,7 +21,7 @@ Lograr despliegues repetibles, trazables y recuperables entre local development,
 | Staging | Validación integrada, QA, migraciones y release candidate | Sintéticos/anonimizados; reales sólo mediante proceso controlado | Exclusivas de staging/sandboxes | Parecido suficiente para validar, sin ser production |
 | Production | Servicio real y datos reales | Datos operativos sujetos a políticas | Exclusivas, mínimas y gestionadas | Controles, monitoreo, backup y respuesta formales |
 
-**Regla:** local no es staging. Cada ambiente tiene base de datos, Redis/colas, objetos, credenciales, dominios y telemetría separados. Véase [Ambientes](../delivery/ENVIRONMENTS.md).
+**Regla:** local no es staging. Cada ambiente tiene PostgreSQL separado; Redis/colas y objetos sólo se incorporarán si se aceptan. Credenciales, dominios y telemetría permanecen separados por ambiente. Véase [Ambientes](../delivery/ENVIRONMENTS.md).
 
 ## Topología conceptual por ambiente
 
@@ -34,9 +35,9 @@ flowchart TB
         API[API]
         Worker[Workers]
         RT[Gateway realtime\nlógico]
-        PG[(PostgreSQL)]
-        Redis[(Redis / colas)]
-        S3[(Objetos)]
+        PG[(PostgreSQL 18.x)]
+        Redis[(Redis / colas\nsi se acepta)]
+        S3[(Objetos\nsi se acepta)]
         Telemetry[Telemetría]
     end
 

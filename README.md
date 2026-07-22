@@ -8,7 +8,7 @@ SR Taller 2.0 es la evolución planificada de una plataforma SaaS para administr
 
 - **Fase:** descubrimiento y arquitectura.
 - **Código funcional:** no iniciado.
-- **Decisiones técnicas:** ADR-001, ADR-002, ADR-004 y ADR-010 a ADR-013 aceptados; ADR-003 y ADR-005 a ADR-009 permanecen propuestos.
+- **Decisiones técnicas:** ADR-001 a ADR-004 y ADR-010 a ADR-013 aceptados; ADR-005 a ADR-009 permanecen propuestos. PostgreSQL 18.x es la baseline de persistencia de R0, sin autorizar implementación.
 - **Sprint actual:** [SPRINT-00 — Discovery and Architecture Foundation](docs/sprints/sprint-00/SPRINT_GOAL.md).
 - **Estimaciones, responsables y fechas:** TBD; requieren aprobación.
 

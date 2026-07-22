@@ -53,9 +53,9 @@
 
 - [Product Backlog](../../backlog/PRODUCT_BACKLOG.md) y [Sprint Backlog](../../sprints/sprint-00/SPRINT_BACKLOG.md) contienen exactamente PBI-001 a PBI-020 una vez y conservan su asignación preliminar.
 - Persistir mensajes/estado de negocio antes de publicar y permitir indicadores efímeros como typing/presence pueden ser reglas compatibles; AUDIT-033 registra la aclaración de alcance todavía necesaria.
-- PostgreSQL puede evaluarse conceptualmente sin elegir proveedor; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) conserva proveedor, versión y extensiones como decisiones posteriores.
+- PostgreSQL fue aceptado sin elegir proveedor: [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) fija PostgreSQL 18.x como baseline y conserva proveedor, minor efectivo, pooler, tooling, extensiones y RLS como decisiones gobernadas separadamente.
 - Contenedores no implican Docker Compose local ni GitHub Actions, y monorepo no implica pnpm/Turborepo; los ADRs correspondientes lo difieren, aunque otros documentos necesiten mantener esa separación.
-- No se detectó código funcional, dependencias instaladas, Sprint 01 ni ADR `Accepted`.
+- No se detectó código funcional, dependencias instaladas ni Sprint 01. El estado vigente de los ADR se consulta en el [registro oficial](../../decisions/README.md); las observaciones de esta auditoría conservan su fecha de corte histórica.
 
 ## Correcciones realizadas
 

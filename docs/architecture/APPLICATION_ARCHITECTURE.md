@@ -5,6 +5,7 @@
 - **Estado:** Borrador conceptual.
 - **Naturaleza:** Propuesta de responsabilidades y reglas de dependencia; no es diseño implementable.
 - **Alcance:** Clientes propios, API, módulos de aplicación y dominio, persistencia, workers y tiempo real.
+- **Persistencia:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) acepta PostgreSQL; Redis, S3-compatible, ORM, driver y repository implementation siguen abiertos.
 
 ## Objetivo
 
@@ -39,7 +40,7 @@ flowchart TB
     App[Aplicación\ncasos de uso, autorización y orquestación]
     Domain[Dominio\nreglas e invariantes]
     Ports[Puertos\nrepositorios, reloj, archivos, colas, proveedores]
-    Infra[Adaptadores de infraestructura\nPostgreSQL, Redis, S3, APIs externas]
+    Infra[Adaptadores de infraestructura\nPostgreSQL aceptado; Redis/S3/API propuestos]
 
     UI --> Transport
     Transport --> App
@@ -84,7 +85,7 @@ Las flechas representan conocimiento permitido, no el flujo completo de datos. L
 ### Puertos y adaptadores
 
 - Un puerto expresa una necesidad interna, por ejemplo repositorio con alcance de tenant o almacenamiento de archivos.
-- Un adaptador traduce esa necesidad a PostgreSQL, Redis, S3 o una API externa propuesta.
+- Un adaptador traduce esa necesidad a PostgreSQL o, cuando exista una decisión propia, a Redis, almacenamiento S3-compatible o una API externa.
 - Los adaptadores concentran timeouts, reintentos, mapeo de errores y observabilidad técnica.
 
 ## Modularidad
@@ -195,7 +196,7 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: estrategia de monorepo](../decisions/proposed/ADR-009-monorepo-strategy.md)
 
-ADR-001, ADR-002, ADR-004 y ADR-010 a ADR-013 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-001 no acepta frameworks ni tooling; ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
+ADR-001 a ADR-004 y ADR-010 a ADR-013 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-001 no acepta frameworks ni tooling; ADR-003 no acepta ORM, migrador, driver, pooler ni repository implementation; ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
 
 ## Riesgos
 

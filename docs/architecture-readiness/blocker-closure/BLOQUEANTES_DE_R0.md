@@ -45,7 +45,7 @@ Las seis decisiones H0 restantes deben cerrarse y debe existir autorización exp
 ## Spikes condicionados
 
 - SPIKE-002 es obligatorio antes de persistencia tenant-scoped con esquema compartido.
-- SPIKE-003 es obligatorio sólo si RLS continúa como candidato.
+- SPIKE-003 es obligatorio sólo antes de adoptar RLS; no bloquea cualquier persistencia de R0 y puede concluir rechazándola.
 - SPIKE-005 es obligatorio si PIN/estación forma parte de R0.
 - SPIKE-001 se difiere si R0 resuelve tenant sin wildcard ni cliente web tenant-aware.
 
