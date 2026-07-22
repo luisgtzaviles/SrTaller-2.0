@@ -20,7 +20,7 @@ Las pruebas se integran al ciclo de entrega. No se delega la seguridad únicamen
 - Tratar aislamiento de tenant como propiedad de seguridad.
 - Usar mínimo privilegio y separación por ambiente.
 - No registrar PIN, contraseñas, tokens, secretos ni contenido sensible innecesario.
-- Hacer explícitas revocación, expiración y reautenticación de acciones sensibles.
+- Hacer explícitos nivel ADR-013, revocación, expiración, consumo, reautenticación y segundo aprobador.
 - Probar caminos de abuso, fallos parciales y reintentos.
 - No realizar pruebas destructivas en producción sin alcance y autorización específicos.
 
@@ -69,7 +69,7 @@ Ninguna herramienta se selecciona en esta etapa. Hallazgos automáticos requiere
 
 - Manipular host, tenant, branch, IDs y relaciones.
 - Repetir acciones con rol menor, membresía distinta, dispositivo revocado y sesión expirada.
-- Probar recuperación, cambio de credenciales y reautenticación sensible.
+- Probar recuperación, cambio de credenciales, reautenticación, autoaprobación, aprobador sin capacidad y reutilización de control.
 - Reenviar webhooks, jobs, mensajes y requests con idempotency keys alteradas.
 - Intentar unirse a rooms ajenas y recibir eventos después de revocación.
 - Cargar/servir archivos inesperados en un entorno seguro.
@@ -102,7 +102,7 @@ La matriz completa está en [Multitenant Isolation Testing](./MULTITENANT_ISOLAT
 - Cambio de turno y cierre remoto invalidan acceso según objetivo de propagación TBD.
 - Una transferencia de sucursal debe cerrar/revalidar sesiones HTTP y WebSocket, contexto de jobs y cachés sin residuos de la sucursal anterior.
 - El cierre remoto se prueba con el equipo online. El caso offline permanece condicional y sólo se exige si producto aprueba operación sin conexión; entonces debe validarse revocación al reconectar.
-- Acciones sensibles exigen autenticación reforzada según riesgo; método concreto pendiente.
+- Acciones sensibles exigen nivel 2, 3 o 4 conforme a ADR-013; factor, tiempos y mecanismo concreto permanecen pendientes.
 - Evidencia nunca captura PIN real ni valor completo de token.
 
 No se decide aquí longitud, hashing, caducidad ni algoritmo criptográfico.

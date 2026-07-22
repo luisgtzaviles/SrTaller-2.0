@@ -112,7 +112,7 @@ La extracción futura de un módulo sólo se evaluará por presión demostrable:
 
 1. El borde recibe la conexión y normaliza señales no autoritativas como el nombre de host.
 2. La API reconoce la estación y valida su vinculación del lado del servidor.
-3. La sucursal y el tenant se derivan de la estación; el PIN se valida dentro de ese tenant conforme a ADR-011 y cada operación protegida se autoriza conforme a ADR-012.
+3. La sucursal y el tenant se derivan de la estación; el PIN se valida conforme a ADR-011, la operación se autoriza por ADR-012 y, si es sensible, se refuerza conforme a ADR-013.
 4. La API construye el contexto inmutable tenant/sucursal/estación/usuario/sesión y rechaza discrepancias.
 5. El caso de uso autoriza la acción y opera dentro del límite del módulo.
 6. La persistencia confirma el cambio.
@@ -141,7 +141,7 @@ Los webhooks se verifican y normalizan; la plataforma persiste su interpretació
 
 ## Atributos de calidad
 
-- **Seguridad:** denegación por defecto, aislamiento transversal y acciones sensibles reforzadas.
+- **Seguridad:** denegación por defecto, aislamiento transversal y acciones sensibles clasificadas/reforzadas conforme a ADR-013.
 - **Modificabilidad:** módulos y contratos con dependencias visibles.
 - **Confiabilidad:** idempotencia, reintentos acotados, recuperación y rollback planificados.
 - **Escalabilidad:** servicios de aplicación sin estado autoritativo local y trabajos desacoplados.
@@ -162,7 +162,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 - Proveedor S3-compatible y estrategia de distribución de archivos.
 - Monorepo con pnpm/Turborepo frente a repositorios separados.
 
-Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 establece la unidad arquitectónica, ADR-004 la topología multitenant, ADR-010 el contexto operativo, ADR-011 la identidad/sesión y ADR-012 la autorización ordinaria conceptual.
+Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 establece la unidad arquitectónica, ADR-004 la topología multitenant, ADR-010 el contexto operativo, ADR-011 la identidad/sesión, ADR-012 la autorización ordinaria y ADR-013 la autorización reforzada conceptual.
 
 ## Restricciones y no objetivos
 

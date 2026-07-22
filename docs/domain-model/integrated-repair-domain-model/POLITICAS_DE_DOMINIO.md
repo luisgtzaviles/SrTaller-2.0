@@ -15,7 +15,7 @@
 | Servicio inicial | tenant | significado de autorización inicial | PC / RCA | nombre canónico pendiente |
 | Absorción de servicio | tenant | absorbido, acumulado, cobrado al rechazo, nunca cobrado u otra variante | PC / RCA | Avicell usa absorción contextual |
 | Promociones | tenant/sucursal | combinaciones preestablecidas y elegibilidad | PC | autoridad y vigencia abiertas |
-| Ajuste manual | tenant/sucursal | rangos, responsables, motivo y trazabilidad | PC | modelo de capacidad aceptado; capacidad concreta y doble aprobación abiertas |
+| Ajuste manual | tenant/sucursal | rangos, responsables, motivo y trazabilidad | PC | ADR-013 fija niveles; umbral, capacidad y nivel concreto abiertos |
 | Autorización | universal + configurable | decisor, evidencia, vigencia, parcialidad y excepción | DDV / PC | trabajos de bajo costo abiertos |
 | Control de calidad | tenant/sucursal | criterios, independencia y actor revisor | PC / RCA | Avicell usa recepción; independencia obligatoria abierta |
 | Entrega | universal + configurable | legitimación, cobro, verificación y excepciones | DDV / PC | tercero, crédito e identificación abiertos |

@@ -8,7 +8,7 @@ SR Taller 2.0 es la evolución planificada de una plataforma SaaS para administr
 
 - **Fase:** descubrimiento y arquitectura.
 - **Código funcional:** no iniciado.
-- **Decisiones técnicas:** ADR-002, ADR-004, ADR-010, ADR-011 y ADR-012 aceptados; las demás decisiones técnicas permanecen propuestas.
+- **Decisiones técnicas:** ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 aceptados; las demás decisiones técnicas permanecen propuestas.
 - **Sprint actual:** [SPRINT-00 — Discovery and Architecture Foundation](docs/sprints/sprint-00/SPRINT_GOAL.md).
 - **Estimaciones, responsables y fechas:** TBD; requieren aprobación.
 

@@ -108,6 +108,7 @@ Una decisión puede proponerse para promoción sólo cuando:
 - tenga un estado de validación explícito distinto de `Unknown`;
 - Product Owner y Operaciones aporten al menos un caso normal y uno excepcional;
 - la autoridad, los rechazos y el efecto de la excepción estén claros;
+- toda excepción candidata se clasifique conforme a [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) antes de habilitarse;
 - Seguridad o Legal hayan revisado los datos sensibles aplicables;
 - no contradiga una decisión canónica vigente, o la contradicción se documente;
 - sus eventos, comandos y políticas tengan lenguaje consistente;

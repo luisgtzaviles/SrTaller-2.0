@@ -320,6 +320,7 @@ Véanse [Estrategia de despliegue](DEPLOYMENT_STRATEGY.md) y [Ambientes](../deli
 - [Línea base de seguridad](SECURITY_BASELINE.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
+- [ADR-013 — Acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md)
 - [Incident Management](../operations/INCIDENT_MANAGEMENT.md)
 - [Runbook Template](../operations/RUNBOOK_TEMPLATE.md)
 

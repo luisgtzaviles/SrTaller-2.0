@@ -24,7 +24,7 @@ Una acción relevante se atribuye al usuario autenticado cuando se realizó. La 
 - fecha y hora confiables;
 - acción y objeto afectados.
 
-[ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta que tenant/sucursal provienen de la estación vinculada. [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) acepta PIN/sesión/cambio de turno. [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) acepta roles/capacidades/alcance y exige autorización server-side en cada operación protegida. Protección técnica, formato de sesión, composición por rebanada y reautenticación para acciones sensibles siguen abiertos.
+[ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta contexto; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) PIN/sesión/turno; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) niveles, reautenticación, segundo aprobador e invalidación. Protección técnica, composición/clasificación por rebanada y auditoría técnica siguen abiertas.
 
 ## Acciones que requieren atribución
 
@@ -77,7 +77,7 @@ Quedan abiertos:
 - intentos fallidos y bloqueo;
 - rotación del PIN;
 - auditoría de sesiones;
-- revalidación para acciones sensibles;
+- clasificación y control nivel 2 o 3 para acciones sensibles conforme a ADR-013;
 - PIN combinado con credencial de dispositivo;
 - seguridad diferenciada por rol;
 - mecanismo técnico de cambio de turno y terminales compartidas; su semántica contextual ya está fijada por ADR-010/011.
@@ -94,7 +94,7 @@ Una sesión válida permite atribuir una acción; no demuestra automáticamente:
 - que la decisión del cliente fue auténtica;
 - que un cambio de estado correspondió a una acción física.
 
-Autenticación, autorización ordinaria, autorización reforzada, custodia y evidencia son conceptos distintos conforme a ADR-011/012.
+Autenticación, autorización ordinaria, autorización reforzada, custodia y evidencia son conceptos distintos conforme a ADR-011/012/013.
 
 ## Correcciones
 

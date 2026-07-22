@@ -19,6 +19,7 @@
 
 - **[DAR]** Identificador de correlación/operación, módulo, caso de uso, resultado, duración, error, integración y número de reintento.
 - **[RDD]** Identificadores opacos de tenant, sucursal, estación, actor, sesión y entidad cuando sean necesarios, conforme a ADR-010/011; capacidad, alcance y resultado de autorización cuando sean relevantes conforme a ADR-012.
+- **[RDD]** En acciones sensibles, clasificación, control, actor, aprobador cuando exista, motivo aplicable y resultado conforme a ADR-013.
 - **[DAR]** Versión de política o entidad en acciones sensibles.
 - **[R]** Nunca secretos, PIN, tokens, contenido completo de archivos o datos personales innecesarios.
 

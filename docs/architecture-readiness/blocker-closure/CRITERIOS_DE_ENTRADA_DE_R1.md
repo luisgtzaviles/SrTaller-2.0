@@ -8,7 +8,7 @@ R1 es la primera rebanada de recepción y custodia. No puede utilizarse para com
 
 - [ ] R0 cumple todos los [criterios de salida](CRITERIOS_DE_SALIDA_DE_R0.md);
 - [ ] aislamiento de tenant y alcance de sucursal están probados;
-- [ ] identidad, autorización y atribución están activas;
+- [ ] identidad, autorización ordinaria, refuerzo de acciones sensibles y atribución están activas conforme a ADR-011, ADR-012 y ADR-013;
 - [ ] persistencia, migraciones, tiempo, errores y observabilidad tienen contrato aceptado;
 - [ ] fixtures permiten probar dos tenants y, si aplica, múltiples sucursales;
 - [ ] no hay decisiones H0/H1 críticas abiertas.
@@ -37,6 +37,7 @@ R1 es la primera rebanada de recepción y custodia. No puede utilizarse para com
 - [ ] impresión es efecto lateral y su fallo no revierte una recepción válida;
 - [ ] errores parciales, timeout y reintento tienen estados observables;
 - [ ] casos negativos de permiso, tenant, sucursal, política y duplicidad están especificados.
+- [ ] cada acción sensible incluida en R1 tiene nivel, control reforzado, vigencia, invalidación y evidencia verificables; las no clasificadas permanecen denegadas.
 
 ## Exclusiones protegidas
 

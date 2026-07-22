@@ -34,6 +34,7 @@ Todas las clasificaciones son **propuestas**. Un cambio de clasificación requie
 | Usuarios | Foundation | Identidad y acceso trazable de personas | Identidad y autenticación contextual aceptadas en ADR-011; faltan mecanismos técnicos, recuperación, administración de bloqueo y correlación de persona. |
 | Roles | Foundation | Agrupación administrable de capacidades dentro del tenant | Modelo y múltiples roles aceptados en ADR-012; falta composición concreta por rebanada. |
 | Capacidades | Foundation | Control explícito y negativo por defecto de operaciones y recursos | Unión, alcance y revocación aceptados en ADR-012; faltan catálogo por rebanada, aplicación y pruebas. |
+| Autorización reforzada | Foundation | Controles proporcionales para acciones sensibles sin reemplazar identidad, contexto ni capacidades ordinarias | Niveles, reautenticación, segundo aprobador, uso único e invalidación aceptados en ADR-013; faltan clasificación por rebanada, mecanismos y pruebas. |
 | Estaciones operativas | Foundation | Contexto de tenant/sucursal desde equipos vinculados | Vinculación y reubicación conceptual aceptadas; faltan mecanismo, pérdida y revocación técnica. |
 | PIN | Foundation | Credencial ágil del usuario dentro del tenant de la estación y sesión operativa | Semántica aceptada en ADR-011; faltan protección técnica, recuperación, política de bloqueo y refuerzo. |
 | Clientes | Core | Registro y consulta del cliente del taller dentro de su contexto permitido | Faltan identidad, duplicados, consentimiento, sucursal y retención. |
@@ -81,7 +82,7 @@ Esta separación evita asumir que una fila de la tabla ya tiene diseño o fecha.
 ## Dependencias de producto que requieren descubrimiento
 
 1. El recorrido inicial de reparaciones condiciona Customers, Inventory, Payments, Cash Register, Files y Messaging.
-2. Tenant, Branch, Identity, Access Control y Device Management condicionan el alcance seguro de todas las capacidades operativas.
+2. Tenant, Branch, Identity, Access Control, autorización reforzada y Device Management condicionan el alcance seguro de todas las capacidades operativas.
 3. Planes y suscripciones condicionan límites comerciales, pero sus entitlements no deben incrustarse prematuramente en módulos de dominio.
 4. País, fiscalidad, privacidad y canales disponibles condicionan pagos, facturación, mensajería y retención.
 5. La estrategia de migración condiciona identificadores, calidad de datos, coexistencia y soporte, pero no debe dictar sin validación el nuevo modelo.

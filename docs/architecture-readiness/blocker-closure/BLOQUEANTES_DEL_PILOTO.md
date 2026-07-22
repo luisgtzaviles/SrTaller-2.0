@@ -27,7 +27,7 @@ El piloto usa operaciones reales limitadas. Por ello exige el flujo vendible R1�
 
 ## Controles necesarios
 
-- permisos sensibles y reautenticación para las acciones incluidas;
+- clasificación ADR-013, reautenticación/segundo aprobador e invalidación probadas para las acciones incluidas;
 - auditoría suficiente para reconstruir recepción, autorización, trabajo, QC, pagos y entrega;
 - monitoreo de errores, aislamiento, capacidad, archivos y efectos laterales pendientes;
 - datos iniciales controlados, sin copiar producción sin proceso autorizado;

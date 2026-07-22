@@ -20,7 +20,7 @@ Un piloto usa operación y datos reales bajo límites explícitos. No es un ambi
 
 - [ ] threat models de tenant, identidad, archivos y acciones sensibles revisados;
 - [ ] aislamiento cross-tenant y cross-branch probado con intentos negativos;
-- [ ] permisos y reautenticación probados por actor y alcance;
+- [ ] niveles ADR-013, reautenticación, segundo aprobador e invalidación probados por actor, operación y alcance;
 - [ ] secretos, cifrado y accesos operativos están gobernados;
 - [ ] datos iniciales tienen origen, reconciliación y validación documentados;
 - [ ] archivos tienen tipos, tamaños, cuotas y controles activos;

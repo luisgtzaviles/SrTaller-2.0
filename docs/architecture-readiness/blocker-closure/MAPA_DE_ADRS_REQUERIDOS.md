@@ -19,7 +19,8 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | ADR-009 | Monorepo con workspaces | Proposed | H0 | Revisar junto con ownership, pipeline y estructura inicial |
 | ADR-010 | Contexto operativo derivado de estación vinculada | Accepted | H1 parcialmente cerrado | Aplicar invariantes; identidad/sesión se rigen por ADR-011 y autorización por ADR-012 |
 | ADR-011 | Identidad, autenticación por PIN y sesión operativa | Accepted | H1 parcialmente cerrado | Aplicar invariantes; mecanismos técnicos y autorización se rige por ADR-012 |
-| ADR-012 | Roles de tenant, capacidades y autorización contextual | Accepted | H1 parcialmente cerrado | Aplicar invariantes y definir composición por rebanada; acciones sensibles/refuerzo siguen separados |
+| ADR-012 | Roles de tenant, capacidades y autorización contextual | Accepted | H1 parcialmente cerrado | Aplicar invariantes y definir composición por rebanada; refuerzo se rige por ADR-013 |
+| ADR-013 | Acciones sensibles y autorización reforzada | Accepted | H1 parcialmente cerrado | Clasificar por rebanada, aplicar niveles y demostrar reautenticación/segregación; mecanismos siguen separados |
 
 `Proposed` no equivale a decisión cerrada ni autoriza implementación.
 
@@ -31,7 +32,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | Cerrado | Contexto operativo de tenant y sucursal | DEC-009 a DEC-012 | Respondido | No para aceptar el modelo | ADR-010 aceptado; falta evidencia de aplicación y pruebas | H1 |
 | Cerrado | Identidad, sesión, PIN e inactividad | DEC-013 a DEC-016 | Respondido | Mecanismos técnicos aún pueden requerir evidencia | ADR-011 aceptado; falta aplicación, modelo de amenazas y pruebas | H1 |
 | Cerrado | Modelo de roles, capacidades y autorización ordinaria | DEC-017, DEC-018 | Respondido | No para aceptar el modelo | ADR-012 aceptado; faltan composición por rebanada, aplicación y pruebas | H1 |
-| 4 | Acciones sensibles y reautenticación | DEC-019, DEC-020 | Sí | No por defecto | Catálogo, control reforzado, vigencia, motivo y autoridad por acción | H1 |
+| Cerrado | Modelo de acciones sensibles y reautenticación | DEC-019, DEC-020 | Respondido | No para aceptar el modelo | ADR-013 aceptado; faltan política por acción, mecanismo, aplicación y pruebas | H1 |
 | 5 | Persistencia, ownership de repositorios y migraciones; revisar ADR-003 | DEC-006, DEC-049, DEC-050 | No para mecanismo; sí para datos globales | Condicional | Propiedad de escritura, evolución de esquema y recuperación definidas | H1 |
 | 6 | Tiempo y zonas horarias | DEC-037, DEC-038 | Sí | Condicional para casos límite | Instante autoritativo, zona operacional y reglas de presentación | H1 |
 | 7 | Auditoría y atribución | DEC-016, DEC-019, DEC-046 | Sí | No por defecto | Hechos auditables, actor, contexto, integridad, acceso y retención inicial | H1/H3 |
@@ -48,9 +49,9 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 ## Próximo ADR recomendado
 
-ADR-004, ADR-010, ADR-011 y ADR-012 ya están aceptados. La siguiente revisión de seguridad prioritaria es el **ADR de acciones sensibles y autorización reforzada**. Debe partir de la capacidad ordinaria aceptada y cerrar catálogo, reautenticación, vigencia, motivo, segundo actor y segregación aplicables a R0/R1.
+ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 ya están aceptados. La siguiente revisión de seguridad debe aplicar y probar esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.
 
-Protección técnica del PIN, intentos, recuperación y formato de sesión siguen como diseño/evidencia dependiente de ADR-011. El mecanismo de propagación de cambios de autorización depende de ADR-012 y debe impedir que una capacidad revocada autorice la siguiente operación protegida. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
+Protección técnica del PIN, intentos, recuperación y formato de sesión siguen como diseño/evidencia dependiente de ADR-011. La propagación de cambios de autorización depende de ADR-012 y la invalidación de controles reforzados de ADR-013. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
 ADR-001, ADR-003, ADR-005 y ADR-009 siguen siendo el lote mínimo de plataforma para el primer commit. Pueden prepararse en paralelo, pero no sustituyen el cierre de multitenancy para completar R0.
 

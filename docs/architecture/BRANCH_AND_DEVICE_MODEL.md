@@ -79,7 +79,7 @@ sequenceDiagram
 
 ### Restricciones aceptadas y mecanismo pendiente
 
-1. La inicia o autoriza un usuario con capacidad administrativa explícita y, posiblemente, autenticación reforzada.
+1. La inicia o autoriza un usuario con capacidad administrativa explícita y el nivel de ADR-013 que defina la política concreta.
 2. El actor administrativo autoriza una sucursal concreta; el tenant deriva de ella y no se elige independientemente desde el equipo.
 3. El desafío es temporal, de uso único y no equivale a una credencial permanente.
 4. La API registra iniciador, tenant, sucursal, dispositivo, resultado y correlación.
@@ -87,7 +87,7 @@ sequenceDiagram
 6. El material de sesión no se muestra ni se registra en claro.
 7. Identificadores de hardware pueden ser señales, no la única prueba de posesión o autorización.
 
-La capacidad administrativa se rige por ADR-012; su composición exacta y el mecanismo concreto —QR, código, enlace, aprobación cercana u otro— quedan pendientes de las decisiones de vinculación y autorización reforzada.
+La capacidad administrativa se rige por ADR-012 y su clasificación sensible por ADR-013; la composición exacta y el mecanismo concreto —QR, código, enlace, aprobación cercana u otro— siguen pendientes.
 
 ## Sesión de dispositivo y último acceso
 
@@ -227,12 +227,13 @@ Eventos candidatos:
 - [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
+- [ADR-013 — Acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md)
 
 ## Preguntas abiertas
 
 - ¿Qué tipos de equipos pueden vincularse: computadoras, tablets, teléfonos, terminales compartidas?
 - ¿Qué capacidades administrativas separadas pueden operar sin contexto ordinario de estación?
-- ¿Quién puede vincular, desvincular y revocar, y qué acciones requieren doble aprobación?
+- ¿Qué composición y nivel 2 o 3 se aplican a vincular, desvincular y revocar en la rebanada concreta?
 - ¿Cómo se implementa la captura de sólo PIN sin facilitar enumeración?
 - ¿Qué ocurre con operaciones abiertas durante cambio de turno o revocación?
 - ¿Cuánto tiempo puede permanecer una sesión de usuario inactiva y cómo se reanuda sin alterar la vinculación?
@@ -241,6 +242,6 @@ Eventos candidatos:
 
 ## Próxima revisión
 
-- **Momento:** antes de componer capacidades de vinculación o definir su mecanismo reforzado y antes de implementar PIN/sesión.
-- **Evidencia esperada:** modelo de amenazas del PIN/vinculación y decisiones sobre estados detallados, supervisión y revocación compatibles con ADR-010/011.
+- **Momento:** antes de componer capacidades de vinculación, clasificarlas conforme a ADR-013 o definir su mecanismo y antes de implementar PIN/sesión.
+- **Evidencia esperada:** modelo de amenazas y política concreta compatibles con ADR-010/011/012/013.
 - **Responsable:** TBD.

@@ -31,8 +31,9 @@
 | Sesión | periodo operativo que enlaza al usuario activo con la acción, sin sustituir su identidad | ADR-011 |
 | Capacidad y alcance | concesión y límite evaluados cuando sean relevantes para explicar la decisión | ADR-012 |
 | Resultado de autorización | permitido, denegado o diferido a control reforzado cuando aplique | ADR-012; persistencia técnica pendiente |
+| Control reforzado | nivel, actor, aprobador cuando exista, motivo aplicable, alcance y resultado | ADR-013; persistencia/integridad pendientes |
 
-ADR-010 establece tenant, sucursal y estación efectivos; ADR-011 agrega usuario y sesión válidos; ADR-012 agrega capacidad, alcance y resultado de autorización cuando sean relevantes. Tenant, sucursal, estación, usuario, sesión, fecha y hora se conservan como historia del hecho y no se recalculan después de un cambio de turno, término de sesión, reubicación de estación o cambio de rol.
+ADR-010 establece tenant/sucursal/estación; ADR-011 usuario/sesión; ADR-012 capacidad/alcance; ADR-013 clasificación, control, actor y aprobador cuando aplique. La historia no se recalcula después de cambios de turno, sesión, estación, rol o aprobación.
 
 ## Participaciones consultables
 

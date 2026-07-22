@@ -21,7 +21,8 @@ Todos los criterios deben cumplirse:
 - [ ] **[ADR]** Las decisiones técnicas necesarias están aceptadas, no sólo propuestas.
 - [x] **[RDD]** Tenant, sucursal, sesión, actor y aislamiento mínimo están definidos conceptualmente por ADR-004/010/011.
 - [x] **[RDD]** Roles, capacidades, combinación, alcance y autorización negativa están definidos conceptualmente por ADR-012.
-- [ ] **[PB]** Existe composición preliminar de roles/capacidades y catálogo de acciones sensibles para la rebanada incluida.
+- [x] **[RDD]** Sensibilidad, niveles, reautenticación, segundo aprobador, segregación e invalidación están definidos conceptualmente por ADR-013.
+- [ ] **[PB]** Existe composición de roles/capacidades y clasificación nivel 1–4 para cada operación de la rebanada incluida.
 - [ ] **[RP]** El modelo de amenazas inicial y la estrategia de secretos/ambientes están revisados.
 - [ ] **[RP]** El PBI cumple Definition of Ready, aceptación y trazabilidad.
 - [ ] **[DAR]** Frontera propietaria, agregado, transacción e idempotencia están explícitos.
@@ -58,4 +59,4 @@ Además:
 
 ## Resultado actual
 
-**[PB]** El estado sigue siendo **Preparado con bloqueantes**: existen ADRs aceptados, pero faltan autorización organizacional, plataforma, mecanismos, composición por rebanada, acciones sensibles, modelos de amenazas, pruebas y decisiones propias de la rebanada. Una casilla conceptual cerrada no autoriza programación.
+**[PB]** El estado sigue siendo **Preparado con bloqueantes**: existen ADRs aceptados, pero faltan autorización organizacional, plataforma, mecanismos, composición/clasificación por rebanada, modelos de amenazas, pruebas y decisiones propias de la rebanada. Una casilla conceptual cerrada no autoriza programación.

@@ -2,7 +2,7 @@
 
 ## Principio
 
-**DDV:** recibir, diagnosticar, reparar, revisar, notificar, cobrar y entregar son participaciones distinguibles y pueden ser ejecutadas por personas diferentes. Actor, puesto, responsabilidad, identidad, rol y capacidad no son equivalentes. **ADR-012:** un rol pertenece al tenant y sólo agrupa capacidades.
+**DDV:** recibir, diagnosticar, reparar, revisar, notificar, cobrar y entregar son participaciones distinguibles y pueden ser ejecutadas por personas diferentes. Actor, puesto, responsabilidad, identidad, rol y capacidad no son equivalentes. **ADR-012:** un rol pertenece al tenant y sólo agrupa capacidades. **ADR-013:** reautenticar al actor y aprobar como segundo usuario son decisiones distintas y atribuibles.
 
 ## Actores del ciclo
 
@@ -52,14 +52,16 @@ ADR-012 acepta el criterio semántico de capacidad por operación y la autorizac
 - **ADR-012:** R0 no admite permisos ni denegaciones directas por usuario.
 - **ADR-012:** el servidor deniega por defecto y valida capacidad, alcance y pertenencia del recurso.
 - **ADR-012:** una responsabilidad temporal o participación en una Orden no concede capacidades administrativas.
-- **PA:** faltan la composición concreta por rebanada y el catálogo de acciones sensibles con control reforzado.
+- **ADR-013:** una candidata sensible sin política concreta permanece en nivel 4; niveles 2 y 3 no conceden capacidades permanentes.
+- **PA:** faltan composición y clasificación concreta por rebanada.
 
 ## Atribución por usuario
 
 - **HOV/RCA:** SR Taller 1.0 usa PIN de cuatro dígitos y cierre por inactividad para baja fricción y atribución.
 - **DDV/ADR-010/011:** cada acción relevante conserva usuario, sesión, tenant, sucursal, estación, fecha, hora y contexto de origen.
 - **ADR-011:** una sesión operativa aporta contexto temporal sin convertirse en identidad y una estación sólo tiene un usuario activo.
-- **PA:** longitud, recuperación, rate limiting, vigencia y acciones que requieren autenticación reforzada.
+- **ADR-013:** reautenticación confirma al actor; un segundo aprobador debe ser diferente y tener capacidad específica.
+- **PA:** longitud, recuperación, rate limiting, factores, tiempos y aplicación técnica.
 - **RCL:** compartir PIN o usar un nombre textual puede atribuir incorrectamente acciones.
 
 ## Participación histórica
@@ -74,4 +76,4 @@ ADR-012 acepta el criterio semántico de capacidad por operación y la autorizac
 - **PA:** significado operativo de técnico principal y simultaneidad de técnicos.
 - **ADR-012:** el personal multisucursal conserva una identidad; las asignaciones tenant-wide y restringidas se recalculan en la sucursal efectiva.
 - **PA:** composición de roles de R0/R1 y capacidades de proveedores externos.
-- **PA:** acciones que requieren reautenticación, segundo actor u otro control reforzado.
+- **PA:** nivel 1–4, motivo y evidencia adicional de cada operación concreta; el modelo se rige por ADR-013.

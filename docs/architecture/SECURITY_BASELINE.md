@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual de controles mínimos.
-- **Naturaleza:** Propuesta y conjunto de hitos; ADR-004/010/011/012 son autoritativos para aislamiento, contexto, identidad/sesión y autorización ordinaria conceptuales y no constituyen certificación ni diseño criptográfico final.
+- **Naturaleza:** Propuesta y conjunto de hitos; ADR-004/010/011/012/013 son autoritativos para aislamiento, contexto, identidad/sesión y autorización ordinaria/reforzada conceptuales y no constituyen certificación ni diseño criptográfico final.
 - **Alcance:** Producto, aplicaciones, datos, dependencias, entrega y operación.
 - **Referencia de verificación:** [Estrategia de pruebas de seguridad](../quality/SECURITY_TESTING.md).
 
@@ -90,7 +90,7 @@ Un threat model por recorrido crítico debe refinar esta lista antes de implemen
 - Recuperación de cuenta no puede ser más débil que el acceso que protege.
 - Cambios de factores y recuperaciones producen notificación y auditoría según riesgo.
 - Protección ante enumeración, credential stuffing y automatización se diseña sin bloquear indebidamente tenants completos.
-- Acciones sensibles requieren autenticación reforzada o aprobación según una política por validar.
+- ADR-013 exige que una acción sensible use nivel 2, 3 o 4 según una política explícita; una candidata sin política no se habilita.
 
 Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
 
@@ -106,7 +106,7 @@ Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
 - Una capacidad revocada no autoriza la siguiente operación protegida; la propagación técnica debe demostrarlo.
 - Los exports, reportes, archivos, sockets y jobs reciben el mismo nivel de autorización que una pantalla.
 - Las denegaciones no revelan existencia ni datos de otro tenant.
-- Las acciones sensibles pueden requerir control reforzado además de la capacidad ordinaria; su mecanismo sigue pendiente.
+- Las acciones sensibles requieren capacidad ordinaria más reautenticación, segundo aprobador o denegación en R0 conforme a ADR-013; el mecanismo sigue pendiente.
 
 ## Aislamiento multitenant
 
@@ -272,6 +272,7 @@ Los umbrales y responsables están `TBD`; no se inventan en este documento.
 - [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
+- [ADR-013 — Acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md)
 - [Arquitectura de datos](DATA_ARCHITECTURE.md)
 - [Estrategia de despliegue](DEPLOYMENT_STRATEGY.md)
 - [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md)
@@ -281,7 +282,7 @@ Los umbrales y responsables están `TBD`; no se inventan en este documento.
 
 - ¿Qué jurisdicciones, regulaciones y obligaciones contractuales aplican?
 - ¿Qué proveedor y modelo de autenticación satisfacen los recorridos de usuario?
-- ¿Qué acciones exigen step-up, aprobación dual o segregación de funciones?
+- ¿Qué nivel de ADR-013 corresponde a cada acción concreta de la primera rebanada?
 - ¿Qué objetivos de revocación, retención y notificación de incidentes se requieren?
 - ¿Qué clasificación y protección adicional necesitan mensajes, pagos y archivos?
 - ¿Qué threat actors y capacidades son prioritarios para el Product Owner?

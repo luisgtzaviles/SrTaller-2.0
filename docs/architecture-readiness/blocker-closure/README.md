@@ -22,7 +22,7 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 ## Respuestas rectoras
 
 1. **Primer commit:** lo bloquean únicamente decisiones estructurales difíciles de revertir; se excluyen proveedores y capacidades futuras.
-2. **R0:** ADR-004 fija estrategia/propiedad multitenant, ADR-010 el contexto tenant/sucursal/estación, ADR-011 identidad/PIN/sesión y ADR-012 roles/capacidades/autorización ordinaria; siguen bloqueando su aplicación y pruebas, composición por rebanada, acciones sensibles, mecanismos técnicos, configuración, tiempo, auditoría y persistencia segura.
+2. **R0:** ADR-004 fija multitenancy, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 autorización ordinaria y ADR-013 refuerzo; siguen bloqueando su aplicación y pruebas, composición/clasificación por rebanada, mecanismos técnicos, configuración, tiempo, auditoría y persistencia segura.
 3. **R1:** lo bloquean folio, recepción mínima, custodia, estados/ubicación inicial, política efectiva, archivos e identificación física.
 4. **Durante implementación:** pueden cerrarse detalles locales que no cambien invariantes, ownership, seguridad ni contratos públicos.
 5. **Piloto:** exige operación recuperable, soporte, copias, restauración, monitoreo, rollback y convivencia decidida.
@@ -46,7 +46,7 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
 
-**Actualizaciones posteriores:** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) cierra topología compartida y propiedad SaaS/tenant/sucursal; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) cierra la fuente de contexto y vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) cierra identidad/PIN/sesión conceptuales; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) cierra roles, capacidades, alcance y autorización ordinaria conceptuales. No cierran implementación, composición por rebanada, acciones sensibles, mecanismos técnicos, RLS, persistencia física ni evidencia de pruebas.
+**Actualizaciones posteriores:** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) cierra topología/propiedad; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo. No cierran implementación, composición y clasificación por rebanada, mecanismos, RLS, persistencia física ni evidencia de pruebas.
 
 ## Ruta de lectura
 

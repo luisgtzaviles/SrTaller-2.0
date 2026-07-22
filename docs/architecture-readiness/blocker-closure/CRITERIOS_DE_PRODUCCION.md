@@ -17,7 +17,7 @@ Producción exige un piloto cerrado con evidencia o una justificación equivalen
 ## Seguridad
 
 - [ ] hardening de aplicación, infraestructura y configuración completado;
-- [ ] aislamiento, autorización, sesión, reautenticación y archivos pasaron pruebas de seguridad;
+- [ ] aislamiento, autorización ordinaria/reforzada, sesión, reautenticación, segundo aprobador y archivos pasaron pruebas de seguridad;
 - [ ] vulnerabilidades críticas o altas están cerradas o excepcionalmente aceptadas;
 - [ ] secretos tienen fuente externa, privilegio mínimo, rotación y respuesta a exposición;
 - [ ] accesos administrativos excepcionales están limitados y auditados;

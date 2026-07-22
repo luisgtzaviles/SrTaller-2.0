@@ -30,7 +30,7 @@
 | Capacidad | Motivo | Clasificación |
 | --- | --- | --- |
 | Aislamiento multitenant probado | Evitar exposición cruzada | R |
-| Permisos y acciones sensibles | Proteger autorización, cobro y entrega | R |
+| Autorización ordinaria y reforzada | Aplicar y probar ADR-012/013 en autorización comercial, cobro y entrega | R |
 | Gestión segura de evidencia | Evitar exposición o pérdida | R |
 | Idempotencia de operaciones críticas | Evitar duplicados financieros u operativos | R |
 | Backups, restauración y auditoría | Recuperabilidad y responsabilidad | RP |

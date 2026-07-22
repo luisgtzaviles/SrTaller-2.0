@@ -4,7 +4,7 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Lenguaje común preliminar; no define tablas, clases, contratos de API ni reglas finales.
-- **Aprobación:** ADR-004/010/011/012 son autoritativos para los términos marcados; el resto está pendiente del propietario del producto y especialistas del dominio.
+- **Aprobación:** ADR-004/010/011/012/013 son autoritativos para los términos marcados; el resto está pendiente del propietario del producto y especialistas del dominio.
 - **Convención:** “Pendiente de validación” indica que la definición o sus límites podrían cambiar.
 
 ## Reglas de uso
@@ -28,7 +28,10 @@
 | **Asignación de rol** | Relación vigente entre un usuario y un rol del mismo tenant, tenant-wide o restringida por sucursal. | **Aceptado en ADR-012:** las asignaciones aplicables aportan capacidades por unión; R0 no introduce vigencias temporales. |
 | **Capacidad** | Facultad concreta para solicitar una operación protegida dentro de un alcance. | **Aceptado en ADR-012:** se orienta a acciones, no a pantallas o módulos; catálogo por rebanada pendiente. |
 | **Autorización** | Decisión server-side que evalúa contexto, sesión, usuario, capacidad, alcance y recurso. | **Aceptado en ADR-012:** negativa por defecto; no confundir con autenticación ni autorización comercial del cliente. |
-| **Acción sensible** | Operación que puede exigir control reforzado además de la capacidad ordinaria. | **Frontera aceptada en ADR-012:** catálogo, reautenticación, doble control y demás mecanismos permanecen pendientes. |
+| **Acción sensible** | Operación cuyo efecto o riesgo exige control adicional a la capacidad ordinaria. | **Aceptado en ADR-013:** se clasifica nivel 2, 3 o 4; una candidata sin política no se habilita. |
+| **Reautenticación** | Nueva comprobación de la identidad del actor activo antes de una acción sensible. | **Aceptado en ADR-013:** no cambia contexto, identidad, roles o capacidades; un solo uso por defecto. |
+| **Aprobador** | Segundo usuario diferente con capacidad específica para aprobar una clase de acción. | **Aceptado en ADR-013:** no sustituye al actor; autoaprobación prohibida cuando existe segregación. |
+| **Autorización reforzada** | Control adicional, delimitado y previo a una acción sensible. | **Aceptado en ADR-013:** nivel 2 reautentica; nivel 3 exige aprobador; auditoría técnica y mecanismos pendientes. |
 | **Estación operativa** | Equipo cliente reconocido y vinculado a una única sucursal activa para aportar origen físico y contexto. | **Aceptado en ADR-010:** vinculación y alcance; pendientes tipos, identidad técnica, credencial y evidencia concreta. |
 | **Sesión de estación** | Evidencia técnica temporal de que una estación conserva una vinculación válida con sucursal/tenant derivados. | **Pendiente de mecanismo:** duración, renovación, revocación, credenciales y comportamiento sin conexión. No sustituye al usuario. |
 | **Sesión de usuario** | Periodo durante el cual un usuario autenticado es el actor activo dentro del contexto ya derivado de la estación. | **Aceptado en ADR-011:** una activa por estación, cambio de turno, cierre e inactividad; pendientes mecanismo, duración concreta, concurrencia entre estaciones, cierre remoto y autenticación reforzada. |

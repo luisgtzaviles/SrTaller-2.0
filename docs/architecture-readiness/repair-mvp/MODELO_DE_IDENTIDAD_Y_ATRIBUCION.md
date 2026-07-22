@@ -8,7 +8,7 @@
 | Pertenencia | ¿A qué único tenant pertenece el usuario ordinario? | RDD, ADR-004/011 |
 | Rol/capacidad | ¿Qué puede intentar y con qué alcance? | RDD, ADR-012 |
 | Contexto operativo | ¿Bajo qué tenant/sucursal/estación y usuario actúa ahora? | RDD, ADR-010/011 |
-| Verificación adicional | ¿Cómo se confirma una acción sensible? | DAP |
+| Verificación adicional | ¿Cómo se confirma una acción sensible? | RDD, ADR-013 |
 | Actor atribuido | ¿A quién se responsabiliza por el hecho? | RDD |
 
 ## Contrato mínimo
@@ -17,7 +17,7 @@
 
 ## PIN y dispositivo
 
-**[RDD]** ADR-011 acepta que el PIN identifica al usuario únicamente dentro del tenant previamente derivado de la estación; no es identidad, no selecciona tenant/sucursal y no concede permisos. Nunca se almacena en texto plano ni de forma reversible. Protección técnica, límites, recuperación y posible reautenticación siguen pendientes.
+**[RDD]** ADR-011 acepta que el PIN identifica al usuario únicamente dentro del tenant previamente derivado de la estación; no es identidad, no selecciona tenant/sucursal y no concede permisos. Nunca se almacena en texto plano ni de forma reversible. ADR-013 fija la semántica de reautenticación; protección técnica, factores, límites y recuperación siguen pendientes.
 
 **[RDD]** La estación requiere identidad reconocible y vinculación persistente, mantenida del lado del servidor, a una sucursal para operar. El mecanismo técnico, la credencial y la revocación concreta se deciden posteriormente.
 
@@ -30,7 +30,7 @@
 | Estación compartida | Usuario activo visible y cambio de turno explícito sin cambiar sucursal | RDD |
 | Inactividad | Termina la sesión, conserva vinculación y exige autenticación nueva; duración pendiente | RDD, ADR-011 |
 | Múltiples roles/sucursales | Mismo usuario por tenant; estación determina sucursal y ADR-012 une capacidades tenant-wide y asignaciones aplicables a esa sucursal | RDD, ADR-012 |
-| Acción sensible | Permiso, posible reautenticación, motivo y auditoría | DAR |
+| Acción sensible | Capacidad ordinaria más nivel 2, 3 o 4 conforme a ADR-013; motivo cuando la política lo exija | RDD, ADR-013 |
 | Revocación | No inicia sesión; toda sesión invalidada deja de aceptar acciones | RDD, ADR-011 |
 
 ## Requisitos mínimos de PIN y sesión
@@ -50,12 +50,12 @@
 
 ## Preguntas bloqueantes
 
-- **[PB]** Composición mínima de roles/capacidades y acciones sensibles por rebanada; el modelo de asignación y alcance se rige por ADR-012.
+- **[PB]** Composición mínima de roles/capacidades y clasificación nivel 1–4 por rebanada; los modelos se rigen por ADR-012/013.
 - **[PB]** Reglas técnicas de protección, intentos, duración, recuperación, propagación y revocación de sesión.
-- **[PB]** Acciones que requieren reautenticación o segundo actor.
+- **[PB]** Nivel concreto, motivo y evidencia adicional de cada operación incluida.
 - **[PB]** Uso permitido de cuentas compartidas y mecanismo de atribución.
 - **[PB]** Tratamiento de soporte, propietario y administración de plataforma.
-- **[ADR]** [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta contexto/estación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) roles/capacidades/autorización ordinaria. Protección técnica, composición por rebanada, acciones sensibles y evidencia de implementación siguen bloqueando el acceso operativo.
+- **[ADR]** [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta contexto; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo. Protección técnica, clasificación por rebanada y evidencia de implementación siguen bloqueando el acceso operativo.
 
 ## Riesgos
 

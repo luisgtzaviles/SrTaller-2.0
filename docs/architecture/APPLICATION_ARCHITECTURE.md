@@ -183,11 +183,12 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 - [ADR-010: contexto operativo derivado de una estación vinculada](../decisions/proposed/ADR-010-station-bound-operational-context.md) — `Accepted`
 - [ADR-011: identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) — `Accepted`
 - [ADR-012: roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) — `Accepted`
+- [ADR-013: acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) — `Accepted`
 - [ADR-005: NestJS para backend](../decisions/proposed/ADR-005-nestjs-backend.md)
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: estrategia de monorepo](../decisions/proposed/ADR-009-monorepo-strategy.md)
 
-ADR-002, ADR-004, ADR-010, ADR-011 y ADR-012 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-004 obliga a preservar propiedad/aislamiento, ADR-010 a resolver tenant/sucursal/estación, ADR-011 a validar usuario/sesión y ADR-012 a autorizar capacidad/alcance sin definir middleware ni diseño físico.
+ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
 
 ## Riesgos
 

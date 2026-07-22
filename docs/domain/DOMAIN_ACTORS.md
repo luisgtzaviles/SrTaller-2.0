@@ -34,6 +34,7 @@ Actor significa participante con intención o responsabilidad en el negocio; no 
 ## Variaciones que requieren observación
 
 - En un taller pequeño, recepcionista, vendedor, cajero, técnico y gerente pueden ser la misma persona; las responsabilidades siguen siendo distintas.
+- La persona que inicia una acción y el segundo aprobador son responsabilidades distintas cuando ADR-013 exige segregación; coincidir en puesto o acumular roles no habilita autoaprobación.
 - Un propietario puede no ser cliente, contacto ni quien entrega o recoge.
 - Un canal o sistema externo transporta evidencia, pero no reemplaza la autoridad humana.
 - Una estación operativa del sistema no es un actor equivalente al dispositivo del cliente.
@@ -41,4 +42,4 @@ Actor significa participante con intención o responsabilidad en el negocio; no 
 
 ## Decisiones pendientes
 
-El Product Owner debe confirmar actores existentes en el segmento inicial, responsabilidades combinables, segregaciones obligatorias, autoridades para excepciones y participantes externos reales.
+El Product Owner debe confirmar actores existentes en el segmento inicial, responsabilidades combinables, autoridades por rebanada y participantes externos reales. ADR-013 ya fija el marco de segregación, la prohibición de autoaprobación y el segundo aprobador distinto; falta clasificar operaciones concretas sin reabrir ese marco.

@@ -78,6 +78,7 @@
 | [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) | Accepted | contexto efectivo y trazabilidad de origen |
 | [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) | Accepted | identidad, PIN, sesión operativa y atribución con sesión |
 | [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) | Accepted | roles de tenant, capacidades, asignaciones, alcance y autorización ordinaria |
+| [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) | Accepted | acciones sensibles, reautenticación, segundo aprobador, segregación, un solo uso e invalidación |
 | [Integraciones](../../architecture/INTEGRATION_ARCHITECTURE.md) | propuesta | no confundir integración con dominio |
 | [Tiempo real y mensajería](../../architecture/REALTIME_AND_MESSAGING.md) | propuesta | proyección/notificación no fuente de verdad |
 | [Línea base de seguridad](../../architecture/SECURITY_BASELINE.md) | propuesta | secretos, aislamiento y auditoría |

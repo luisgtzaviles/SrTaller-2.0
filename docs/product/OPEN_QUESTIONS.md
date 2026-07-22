@@ -6,7 +6,7 @@
 - **Naturaleza:** Fuente central de incertidumbres de producto. Una opción listada no constituye decisión.
 - **Aprobación de respuestas:** Corresponde al propietario del producto, con consulta técnica, operativa, legal o de seguridad cuando aplique.
 - **Estados permitidos en esta versión:** `Abierta`, `En investigación`, `Respondida pendiente de documentar`, `Cerrada con decisión`.
-- **Estado actual:** 27 preguntas abiertas, 4 en investigación y 3 cerradas con decisión.
+- **Estado actual:** 26 preguntas abiertas, 4 en investigación y 4 cerradas con decisión.
 
 ## Uso del registro
 
@@ -46,11 +46,12 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 <a id="question-004"></a>
 ### QUESTION-004 — Acciones sensibles y autoridad de aprobación
 
-- **Contexto:** ADR-012 fija la capacidad ordinaria y separa el control reforzado, pero no existe un catálogo de acciones sensibles ni una autoridad de producto definida para excepciones.
+- **Contexto:** ADR-013 fija definición, niveles, reautenticación, segundo aprobador, segregación, un solo uso e invalidación; cada rebanada aún debe clasificar sus operaciones.
 - **Impacto:** Afecta permisos, experiencia, auditoría, Definition of Ready y gobierno de decisiones.
-- **Opciones conocidas:** permiso específico; umbral configurable y aprobación de supervisor; doble aprobación; acciones reservadas a nivel tenant o plataforma; combinación por riesgo.
-- **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md), `Accepted` para autorización ordinaria; requiere ADR de acciones sensibles/refuerzo.
+- **Opciones conocidas:** nivel 1 ordinario; nivel 2 con reautenticación; nivel 3 con aprobador diferente; nivel 4 no permitido en R0.
+- **Estado:** Cerrada con decisión.
+- **Alcance del cierre:** Modelo conceptual resuelto; no cierra matriz por rebanada, umbrales, factores, auditoría técnica o acceso privilegiado.
+- **Decisión relacionada:** [ADR-013](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md), `Accepted`.
 
 ## Tenants
 
@@ -132,12 +133,12 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 <a id="question-012"></a>
 ### QUESTION-012 — Alcance del PIN y autenticación reforzada
 
-- **Contexto:** ADR-011 fija PIN/sesión y ADR-012 la autorización ordinaria separada; duración concreta, protección y acciones sensibles siguen abiertas.
+- **Contexto:** ADR-011 fija PIN/sesión, ADR-012 autorización ordinaria y ADR-013 reautenticación/segundo aprobador; duración, factor y protección técnica siguen abiertos.
 - **Impacto:** Afecta velocidad operativa, suplantación, bloqueo, cambio de turno y acciones sensibles.
 - **Opciones conocidas:** PIN sólo para seleccionar operador; PIN para sesión operativa acotada; PIN más factor reforzado para acciones sensibles; reautenticación por riesgo.
 - **Estado:** En investigación.
-- **Alcance resuelto:** Propósito, sesión, cambio de turno e inactividad aceptados; protección técnica, límites y reautenticación pendientes.
-- **Decisión relacionada:** [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) y [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md), `Accepted`; no deciden algoritmo criptográfico ni autorización reforzada.
+- **Alcance resuelto:** Propósito, sesión, turno e inactividad aceptados; ADR-013 fija semántica de reautenticación, un solo uso e invalidación; factores y límites técnicos pendientes.
+- **Decisión relacionada:** [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) y [ADR-013](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md), `Accepted`.
 
 ## Reparaciones
 
@@ -363,7 +364,7 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 
 Antes de comprometer una primera versión deben estar respondidas, como mínimo, las preguntas sobre segmento, recorrido, alcance tenant/sucursal, identidad/permisos, flujo de reparación, mercado y obligaciones aplicables.
 
-Antes de implementar acceso operativo deben aplicarse ADR-010/011/012 y cerrarse composición por rebanada, mecanismos de dispositivo, protección del PIN y acciones sensibles.
+Antes de implementar acceso operativo deben aplicarse ADR-010/011/012/013 y cerrarse composición/clasificación por rebanada, mecanismos de dispositivo, protección del PIN y evidencia requerida.
 
 Antes de integrar mensajería, pagos o suscripciones deben estar respondidas las preguntas de proveedor, consentimiento, estados, errores, jurisdicción y modelo comercial correspondientes.
 

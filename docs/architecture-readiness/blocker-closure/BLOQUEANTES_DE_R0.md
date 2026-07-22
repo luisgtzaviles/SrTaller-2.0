@@ -16,7 +16,7 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 | Contexto operativo | DEC-009 a DEC-012 | Modelo aceptado en ADR-010; faltan aplicación y pruebas de estación, ausencia y conflictos |
 | Identidad y sesión | DEC-013 a DEC-016 | Modelo aceptado en ADR-011; faltan mecanismos, aplicación, modelo de amenazas y pruebas |
 | Autorización ordinaria | DEC-017 y DEC-018 | Modelo aceptado en ADR-012; faltan composición por rebanada, aplicación y pruebas |
-| Acciones sensibles | DEC-019 y DEC-020 | Catálogo inicial, control reforzado, reautenticación, motivo y autoridad |
+| Acciones sensibles | DEC-019 y DEC-020 | Modelo aceptado en ADR-013; faltan clasificación concreta, mecanismo, aplicación y pruebas |
 | Tiempo | DEC-037 y DEC-038 | Autoridad de zona horaria y almacenamiento/presentación coherentes |
 | Señales | DEC-045 a DEC-048 | Logs, auditoría, correlación y observabilidad mínima separadas |
 | Persistencia | DEC-050 | Versionado y ejecución segura de migraciones base |
@@ -27,7 +27,7 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 
 - datos globales frente a tenant/sucursal;
 - operación mediante PIN y cierre por inactividad;
-- composición mínima de roles/capacidades de R0 y acciones sensibles incluidas;
+- composición mínima de roles/capacidades de R0 y clasificación nivel 1–4 de sus acciones;
 - zona horaria por tenant o sucursal;
 - autoridad de soporte y administración excepcional.
 
@@ -35,7 +35,7 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 
 - estrategia de aislamiento y defensa en profundidad;
 - contrato de contexto y propagación;
-- sesión, rate limiting de PIN, propagación verificable de revocación y control reforzado;
+- sesión, rate limiting de PIN, propagación verificable de revocación y mecanismo reforzado compatible con ADR-013;
 - contratos de repositorio tenant-aware;
 - auditoría mínima que no dependa de logs;
 - migraciones, secretos, health checks y pruebas negativas.

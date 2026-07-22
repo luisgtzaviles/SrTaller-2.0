@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Modelo conceptual; ADR-002, ADR-004, ADR-010, ADR-011 y ADR-012 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
+- **Naturaleza:** Modelo conceptual; ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
 - **Alcance:** Límites de SR Taller 2.0, actores, sistemas externos y flujos de información de alto nivel.
 - **Fuente de producto:** [Visión del producto](../product/PRODUCT_VISION.md) y [actores y personas](../product/ACTORS_AND_PERSONAS.md).
 
@@ -89,7 +89,7 @@ Fuera del límite quedan los sistemas de terceros, sus garantías de disponibili
 ## Flujos principales de alto nivel
 
 - El servidor reconoce la estación vinculada, deriva de ella sucursal/tenant y autentica por PIN al usuario únicamente dentro de ese tenant; el nombre de host sólo puede aportar una señal adicional conforme a ADR-008.
-- La estación vinculada aporta tenant/sucursal, pero no sustituye usuario, permisos ni controles de acciones sensibles.
+- La estación vinculada aporta tenant/sucursal, pero no sustituye usuario, capacidades ni controles nivel 2–4 de ADR-013.
 - Los clientes propios usan la API central como fuente de verdad; los eventos en tiempo real notifican cambios, no reemplazan la persistencia.
 - Un webhook externo se valida, normaliza, deduplica y persiste antes de distribuirse a clientes conectados.
 - Los trabajos en segundo plano se procesan con contexto explícito y resultados idempotentes cuando sea necesario.

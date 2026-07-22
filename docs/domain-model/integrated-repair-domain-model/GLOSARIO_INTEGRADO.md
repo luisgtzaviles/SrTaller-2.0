@@ -84,7 +84,10 @@ Los términos preferidos separan relato, conocimiento técnico, propuesta comerc
 | Rol | agrupación administrable de capacidades perteneciente a un tenant | actor, puesto, responsabilidad o sesión | ADR-012 |
 | Capacidad | facultad concreta para solicitar una operación protegida dentro de un alcance | módulo, pantalla o autorización comercial | ADR-012 |
 | Autorización del sistema | decisión server-side sobre capacidad, alcance, contexto y recurso | autenticación o autorización comercial | ADR-012 |
-| Acción sensible | operación que puede exigir control reforzado además de capacidad ordinaria | toda operación protegida | ADR-012; mecanismo PA |
+| Acción sensible | operación cuyo efecto o riesgo exige control adicional a la capacidad ordinaria | toda operación protegida o administrativa | ADR-013 |
+| Reautenticación | nueva comprobación de la identidad del actor activo para una acción sensible | cambio de usuario o elevación permanente | ADR-013 |
+| Aprobador | segundo usuario diferente con capacidad específica para aprobar la acción delimitada | actor principal, rol o supervisor nominal | ADR-013 |
+| Autorización reforzada | control nivel 2 o 3, limitado y de un solo uso por defecto | autorización ordinaria o auditoría | ADR-013 |
 
 ## Términos a retirar o aclarar
 

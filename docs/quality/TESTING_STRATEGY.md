@@ -54,7 +54,7 @@ Se favorece una base amplia de pruebas rápidas y un conjunto E2E reducido pero 
 ### End-to-end
 
 - Recorridos operativos críticos desde interfaz/API hasta persistencia.
-- Roles, sucursales, dispositivos y sesiones diferentes.
+- Roles, sucursales, dispositivos y sesiones diferentes; niveles 1–4 y actor/aprobador distintos cuando aplique.
 - Estados de carga, vacío, error y denegación.
 - Un conjunto explícito de pruebas negativas multitenant.
 
@@ -87,6 +87,7 @@ El dataset base debe ser sintético, versionable y reproducible e incluir:
 - al menos dos tenants no relacionados;
 - múltiples sucursales en uno y una sucursal en otro;
 - identidades ordinarias separadas por tenant, con roles/capacidades contrastantes, asignaciones tenant-wide y restringidas por sucursal; probar que una identidad de otro tenant, una asignación revocada y una capacidad ausente fallan sin filtrar datos;
+- actores y aprobadores distintos, aprobador sin capacidad, autoaprobación, control consumido/revocado y cambio material de operación conforme a ADR-013;
 - dispositivos activos, revocados y asignados a sucursales distintas, más desafíos de vinculación vigentes/vencidos/reutilizados, transferencia y activaciones concurrentes sintéticas;
 - recursos con IDs opacos distintos y escenarios de referencia ajena;
 - datos vacíos, límites, Unicode, zonas horarias y estados inválidos relevantes;

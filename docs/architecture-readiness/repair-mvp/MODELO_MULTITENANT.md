@@ -28,7 +28,7 @@
 | --- | --- | --- | --- |
 | Datos de negocio | Pertenencia explícita a tenant | Aceptado en ADR-004; falta aplicar/probar | RDD |
 | Datos de sucursal | Regla de pertenencia por tipo de dato | Aceptado en ADR-004; falta aplicar/probar | RDD |
-| Usuarios/roles/capacidades | Usuario ordinario tenant-scoped, roles vigentes aplicables y acceso verificable | Modelo conceptual aceptado en ADR-004/010/011/012; faltan composición, mecanismo y pruebas | RDD / PB |
+| Usuarios/roles/capacidades | Usuario ordinario tenant-scoped, roles vigentes y acceso ordinario/reforzado verificable | Modelo conceptual aceptado en ADR-004/010/011/012/013; faltan composición/clasificación, mecanismo y pruebas | RDD / PB |
 | Políticas/catálogos | SaaS global, extensión tenant y ajuste permitido por sucursal | Niveles aceptados; resolución/versionado bloqueante | PB |
 | Folios | Alcance de unicidad y concurrencia | Bloqueante de Recepción | PB |
 | Archivos | Tenant/sucursal, autorización y rutas opacas | Propiedad aceptada; estrategia bloqueante antes de evidencia | PB |
@@ -75,7 +75,7 @@
 
 ## Decisiones que siguen bloqueando
 
-1. **[PB]** ¿Cómo se implementan protección del PIN, sesión, intentos, recuperación y propagación de revocación respetando ADR-010/011/012?
+1. **[PB]** ¿Cómo se implementan protección del PIN, sesión, intentos, recuperación y revocación respetando ADR-010/011/012/013?
 2. **[PB]** ¿Qué composición concreta de roles y capacidades requiere cada rebanada dentro del modelo aceptado?
 3. **[PB]** ¿El folio es único por tenant, sucursal o global?
 4. **[PB]** ¿Qué políticas admiten ajuste por sucursal y cuál es su precedencia ejecutable?

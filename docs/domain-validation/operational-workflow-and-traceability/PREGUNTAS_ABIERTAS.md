@@ -48,11 +48,11 @@ Las preguntas siguientes no deben resolverse mediante el comportamiento accident
 
 | ID | Pregunta | Propietario sugerido | Impacto |
 |---|---|---|---|
-| FOT-PREG-015 | ¿Qué acciones sensibles requieren control reforzado además de la capacidad ordinaria de ADR-012? | Product Owner + Seguridad | autorización reforzada |
-| FOT-PREG-016 | ¿Qué acciones requieren ingresar PIN de nuevo con sesión activa? | Seguridad + Product Owner | revalidación |
+| FOT-PREG-015 | **Respondida conceptualmente por ADR-013:** toda candidata se clasifica nivel 1–4 y permanece en nivel 4 sin política concreta | Product Owner + Seguridad | clasificación por rebanada pendiente |
+| FOT-PREG-016 | **Respondida conceptualmente por ADR-013:** nivel 2 reautentica al actor y nivel 3 exige aprobador diferente con capacidad específica | Seguridad + Product Owner | factor, tiempo y mecanismo pendientes |
 | FOT-PREG-032 | ¿Cómo se manejan sesiones en dispositivos compartidos de recepción? | Seguridad + Operaciones | atribución |
 
-Además permanecen abiertos intentos fallidos, bloqueo, rotación, auditoría de sesiones, combinación PIN/dispositivo y composición concreta por rebanada. Esas decisiones pueden agruparse con FOT-PREG-015/016/032 sin reabrir el modelo ordinario de ADR-012.
+Además permanecen abiertos intentos fallidos, bloqueo, rotación, auditoría técnica, combinación PIN/dispositivo y clasificación concreta por rebanada. No reabren los modelos de ADR-012/013.
 
 ## Eventos, actividad y proyecciones
 

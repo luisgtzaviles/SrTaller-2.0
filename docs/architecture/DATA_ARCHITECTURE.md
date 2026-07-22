@@ -157,7 +157,7 @@ La primera opción es consultar modelos propios con índices adecuados. Proyecci
 | Archivo | Retirar de recorridos activos sin perder obligaciones de auditoría |
 | Retención | Política por clase de dato, país y contrato; periodos `TBD` |
 | Eliminación | Borrado o anonimización verificable, considerando backups e integraciones |
-| Exportación | Autorización reforzada, job aislado, archivo temporal y auditoría |
+| Exportación | Clasificación conforme a ADR-013, autorización reforzada cuando aplique, job aislado, archivo temporal y auditoría |
 
 No se adopta soft delete de forma universal: puede complicar unicidad, privacidad y consultas. Cada módulo debe justificarlo.
 

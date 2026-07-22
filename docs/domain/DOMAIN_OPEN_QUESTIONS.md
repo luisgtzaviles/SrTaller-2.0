@@ -3,7 +3,7 @@
 ## Estado documental
 
 - **Estado:** Draft / Discovery con respuestas arquitectónicas parciales
-- **Autoridad:** ADR-004/010/011/012 en sus alcances; las demás respuestas no están aprobadas
+- **Autoridad:** ADR-004/010/011/012/013 en sus alcances; las demás respuestas no están aprobadas
 - **Propietario de decisión:** Product Owner
 - **Última revisión:** 2026-07-21
 - **Próxima revisión:** Después de la entrevista de dominio

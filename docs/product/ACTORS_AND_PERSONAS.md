@@ -4,7 +4,7 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Hipótesis de actores y contextos de uso; no define roles, permisos ni estructura laboral definitiva.
-- **Aprobación:** El contexto se rige por ADR-010, identidad/sesión por ADR-011 y autorización ordinaria por ADR-012; actores, composición por rebanada y responsabilidades de negocio permanecen pendientes.
+- **Aprobación:** El contexto se rige por ADR-010, identidad/sesión por ADR-011, autorización ordinaria por ADR-012 y refuerzo por ADR-013; actores, composición/clasificación por rebanada y responsabilidades de negocio permanecen pendientes.
 - **Datos personales ficticios:** No se utilizan nombres, biografías ni características no confirmadas.
 
 ## Distinciones necesarias
@@ -77,7 +77,7 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 - **Responsabilidades — hipótesis:** cumplir varias funciones sin duplicar identidad ni sesión.
 - **Objetivos — decisión aceptada:** acceder a la unión de capacidades de sus roles vigentes dentro del alcance aplicable.
 - **Alcance de acceso — decisión aceptada:** asignaciones tenant-wide y, sólo por necesidad explícita, restringidas a la sucursal efectiva conforme a ADR-012.
-- **Posibles restricciones:** acciones sensibles, cambios a su propia autorización y combinaciones que el futuro ADR de control reforzado prohíba.
+- **Posibles restricciones:** niveles de ADR-013, cambios a su propia autorización y combinaciones que la política concreta mantenga en nivel 4.
 - **Preguntas pendientes:** ¿qué composición mínima necesita cada rebanada y qué acciones exigen control reforzado? Véanse [QUESTION-004](./OPEN_QUESTIONS.md#question-004) y [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
 
 ## Cliente del taller
@@ -151,6 +151,7 @@ Véase [Preguntas abiertas](./OPEN_QUESTIONS.md).
 - [Modelo de sucursales y dispositivos](../architecture/BRANCH_AND_DEVICE_MODEL.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
+- [ADR-013 — Acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md)
 
 ## Próxima revisión
 

@@ -19,6 +19,7 @@
 | No confiar en filtros de interfaz para reglas o autorización | Obligatoria desde el primer cambio de código | RDD |
 | Tenant, sucursal, estación y usuario forman el contexto efectivo de toda operación ordinaria | Obligatoria desde el primer cambio de código | RDD, ADR-010 |
 | Toda consulta y mutación respeta aislamiento tenant | Obligatoria desde el primer cambio de código | RDD |
+| Todo caso de uso declara si su acción es ordinaria o sensible y aplica el nivel aceptado sin delegar el control a la interfaz | Obligatoria desde la primera rebanada que incluya la acción | ADR-013 |
 | Automatizar reglas con herramienta de análisis arquitectónico | Diferible hasta aceptar el conjunto tecnológico | DD |
 
 ## Política de excepciones
@@ -30,6 +31,7 @@
 - **[DAR]** Pruebas de arquitectura o análisis estático para dirección de dependencias.
 - **[DAR]** Revisión de propiedad en cada cambio de persistencia.
 - **[DAR]** Pruebas negativas de aislamiento y permisos en contratos públicos.
+- **[ADR-013]** Pruebas negativas del nivel de sensibilidad, reautenticación, segundo aprobador distinto, uso único e invalidación cuando apliquen.
 - **[DD]** Elegir herramienta concreta después de aceptar lenguaje, marco tecnológico y topología.
 
 ## Regla de diseño

@@ -18,9 +18,9 @@ Estas preguntas requieren autoridad de Producto u Operaciones. Las filas marcada
 | PO-008 | **Respondida por ADR-004/010/012:** operación local queda en la sucursal efectiva y las capacidades tenant-wide se ejercen sin ampliar tenant ni recurso; cada reporte aún define su capacidad | DEC-011, DEC-018 | H1 de composición/evidencia |
 | PO-009 | ¿Las políticas operativas pueden variar por sucursal? Si sistema, tenant y sucursal difieren, ¿qué autoridad prevalece? | DEC-032 | R0/R1 |
 | PO-010 | ¿La zona horaria pertenece al tenant o a cada sucursal, y qué debe ocurrir cuando un usuario consulta otra zona? | DEC-037 | R0/H1 |
-| PO-011 | **Respondida por ADR-011:** PIN es credencial dentro del tenant, no identidad, contexto ni permiso; quedan protección técnica, límites y acciones sensibles | DEC-014, DEC-019, DEC-020 | H1 de evidencia/parcial por autorización |
+| PO-011 | **Respondida por ADR-011/013:** PIN identifica dentro del tenant y la reautenticación confirma al actor sin cambiar contexto o capacidades; quedan factor, protección y límites técnicos | DEC-014, DEC-019, DEC-020 | H1 de evidencia/mecanismo |
 | PO-012 | **Respondida conceptualmente por ADR-011:** inactividad expira sesión, conserva estación y exige autenticación nueva; duración concreta queda diferida | DEC-015 | H1 de evidencia |
-| PO-013 | **Modelo ordinario respondido por ADR-012:** falta decidir qué acciones de R0/R1 son sensibles y qué control reforzado, motivo o segundo actor exige cada una | DEC-019, DEC-020 | R0/H1 |
+| PO-013 | **Modelo respondido por ADR-012/013:** cada rebanada debe clasificar sus acciones concretas como nivel 1–4 y fijar motivo o segundo aprobador cuando aplique | DEC-019, DEC-020 | H1 de clasificación/evidencia |
 
 ## Prioridad 1 — antes de programar R1
 

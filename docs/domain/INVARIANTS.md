@@ -3,7 +3,7 @@
 ## Estado documental
 
 - **Estado:** Draft / Discovery con restricciones arquitectónicas aceptadas
-- **Autoridad:** INV-008 se rige por ADR-010/011 e INV-010 por ADR-010/011/012; las demás invariantes no están aprobadas
+- **Autoridad:** INV-008 se rige por ADR-010/011 e INV-010 por ADR-010/011/012/013; las demás invariantes no están aprobadas
 - **Propietario de decisión:** Product Owner
 - **Última revisión:** TBD
 - **Próxima revisión:** Después de la entrevista de dominio
@@ -23,7 +23,7 @@ Una invariante candidata expresa algo que debería mantenerse verdadero dentro d
 | INV-007 | Un consumo de refacción expresa una cantidad mayor que cero; una reversa es otro hecho. | Strong candidate | Inventory consumption | Immediate | Evita usar negativos como corrección opaca. | Unidad y fraccionamiento siguen abiertos. |
 | INV-008 | Toda acción relevante conserva tenant, sucursal, estación, usuario, sesión, fecha/hora y atribución histórica inmutable. | Restricción arquitectónica aceptada | Cada contexto + Audit | Immediate local, Eventual hacia auditoría central | Sostiene responsabilidad. | Definir relevancia, integridad técnica, acceso y retención. |
 | INV-009 | Toda transición de estado pertenece al catálogo permitido de su máquina y cumple condiciones previas. | Strong candidate | Entidad que gobierna la máquina | Immediate | Evita saltos contradictorios. | Los catálogos aún son hipótesis. |
-| INV-010 | Una operación protegida se evalúa con contexto/sesión válidos y capacidad/alcance suficientes; autenticación no sustituye autorización y la ausencia de capacidad deniega. | Restricción arquitectónica aceptada | Sesión/operación | Immediate | Protege aislamiento, atribución y privilegio mínimo. | Casos de plataforma usan contexto y decisión separados. |
+| INV-010 | Una operación protegida exige contexto/sesión y capacidad/alcance suficientes; si es sensible, exige además control ADR-013 y deniega sin efectos cuando falta. | Restricción arquitectónica aceptada | Sesión/operación | Immediate | Protege aislamiento, atribución y privilegio mínimo. | Casos de plataforma usan contexto y decisión separados. |
 | INV-011 | El saldo mostrado como definitivo considera obligaciones y aplicaciones vigentes conocidas. | Weak candidate | Payments | Immediate dentro de Payments; Eventual hacia Repair/Delivery | Evita decisiones con dato obsoleto. | Procesador externo o contracargo puede introducir estado ambiguo. |
 | INV-012 | Una cotización emitida no cambia silenciosamente; una revisión conserva la versión previa. | Strong candidate | Quote | Immediate | Preserva evidencia comercial. | Cambios editoriales materiales vs no materiales. |
 | INV-013 | Una reserva activa no compromete más cantidad que la disponible, salvo política de negativo explícita. | Weak candidate | InventoryReservation | Immediate en Inventory | Evita sobreasignación. | La política de negativos no está aprobada. |
@@ -35,7 +35,7 @@ Una invariante candidata expresa algo que debería mantenerse verdadero dentro d
 
 ### Consistencia inmediata candidata
 
-INV-008 es restricción aceptada por ADR-010/011 e INV-010 por ADR-010/011/012. INV-001 a INV-007, INV-009, INV-012, INV-014 e INV-016 siguen siendo candidatas que deberían protegerse al aceptar la intención que las afecta. El mecanismo técnico no se define aquí.
+INV-008 es restricción aceptada por ADR-010/011 e INV-010 por ADR-010/011/012/013. INV-001 a INV-007, INV-009, INV-012, INV-014 e INV-016 siguen siendo candidatas. El mecanismo técnico no se define aquí.
 
 ### Consistencia eventualmente coordinable
 

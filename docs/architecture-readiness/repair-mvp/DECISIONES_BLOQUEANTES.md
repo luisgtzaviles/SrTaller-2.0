@@ -51,6 +51,7 @@ El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUE
 | Alcance y concurrencia de folio | Antes de R1 | ADR |
 | Identidad, PIN y sesión operativa | Aceptado en ADR-011 el 2026-07-21; falta aplicar y probar | ADR |
 | Roles, capacidades y autorización contextual | Aceptado en ADR-012 el 2026-07-21; faltan composición por rebanada, aplicación y pruebas | ADR |
+| Acciones sensibles y autorización reforzada | Aceptado en ADR-013 el 2026-07-21; faltan clasificación por rebanada, mecanismo, aplicación y pruebas | ADR |
 | Política efectiva e instantáneas | Antes de R1 | ADR |
 | Estrategia de archivos | Antes de evidencia | ADR |
 | Uso/publicación de eventos internos | Antes de efectos asíncronos | ADR |
@@ -62,4 +63,4 @@ El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUE
 | Auditoría y retención | Antes de producción | ADR |
 | Núcleo compartido mínimo | Antes de introducirlo | ADR |
 
-**[ADR]** Este paquete no crea ADRs. ADR-002, ADR-004, ADR-010, ADR-011 y ADR-012 fueron aceptados posteriormente usando su evidencia; los candidatos restantes se registrarán como `Proposed` antes de cualquier aceptación.
+**[ADR]** Este paquete no crea ADRs. ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 fueron aceptados posteriormente usando su evidencia; los candidatos restantes se registrarán como `Proposed` antes de cualquier aceptación.

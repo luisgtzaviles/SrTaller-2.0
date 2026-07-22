@@ -213,5 +213,5 @@ Las respuestas deben consolidarse en [preguntas abiertas](../product/OPEN_QUESTI
 ## Próxima revisión
 
 - **Momento:** antes de definir cualquier esquema ejecutable o repositorio.
-- **Evidencia esperada:** modelo de amenazas, pruebas negativas de ADR-004/010/011/012 y prototipo controlado de RLS sólo si se autoriza.
+- **Evidencia esperada:** modelo de amenazas, pruebas negativas de ADR-004/010/011/012/013 y prototipo controlado de RLS sólo si se autoriza.
 - **Responsable:** TBD.

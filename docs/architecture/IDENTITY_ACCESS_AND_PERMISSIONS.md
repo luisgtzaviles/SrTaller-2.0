@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Identidad, autenticación por PIN, sesión y autorización ordinaria conceptuales aceptadas; mecanismos y autorización reforzada pendientes.
-- **Naturaleza:** ADR-004/010/011/012 son autoritativos para usuario por tenant, contexto por estación, PIN, sesión, roles, capacidades, alcance y autorización ordinaria; los mecanismos técnicos y acciones sensibles siguen pendientes.
+- **Estado:** Identidad, sesión, autorización ordinaria y autorización reforzada conceptuales aceptadas; mecanismos y aplicación pendientes.
+- **Naturaleza:** ADR-004/010/011/012/013 son autoritativos para contexto, identidad, sesión, capacidades, alcance, sensibilidad, reautenticación y segundo aprobador; los mecanismos técnicos siguen pendientes.
 - **Alcance:** Usuario de tenant, identidad de plataforma/correlación futura, roles, permisos, estaciones y sesiones.
 - **Fuera de alcance:** Seleccionar proveedor, algoritmos criptográficos, formatos de token o políticas numéricas definitivas.
 
@@ -97,7 +97,7 @@ flowchart TD
     Branch{¿Sucursal coincide con vinculación?}
     Permission{¿Capacidad y alcance efectivos?}
     StepUp{¿Acción sensible?}
-    Strong{¿Autenticación reforzada vigente?}
+    Strong{¿Control ADR-013 satisfecho?}
     Allow[Permitir y auditar según política]
     Deny[Denegar de forma segura]
 
@@ -146,14 +146,16 @@ Controles conceptuales:
 - la estación debe estar activa y vinculada; no existe sucursal solicitada libremente por el usuario;
 - el contexto de usuario expira por inactividad; cierre remoto y representación técnica permanecen pendientes;
 - cambios de PIN y recuperaciones requieren un flujo distinto y suficientemente autenticado;
-- acciones sensibles pueden exigir control reforzado adicional conforme a un ADR futuro, aunque el PIN haya iniciado la sesión y exista capacidad ordinaria;
+- acciones sensibles exigen el control nivel 2, 3 o 4 resuelto conforme a ADR-013, aunque el PIN haya iniciado la sesión y exista capacidad ordinaria;
 - un empleado que rota de sucursal usa una estación vinculada del mismo tenant y no requiere otra cuenta.
 
 **Decisión pendiente:** algoritmo de protección, longitud, tiempo concreto de inactividad, límites, recuperación y factor reforzado se seleccionarán mediante un modelo de amenazas; no se fijan aquí.
 
-## Acciones sensibles y autenticación reforzada
+## Acciones sensibles y autorización reforzada
 
-Posibles candidatos, todos pendientes de validación:
+ADR-013 acepta cuatro niveles: operación ordinaria, reautenticación del actor, segundo aprobador diferente y acción no permitida en R0. Reautenticación confirma al actor; aprobación independiente exige capacidad específica y no sustituye la sesión principal. Ambas son de un solo uso por defecto y se invalidan por cambio de turno, expiración, revocación o cambio material.
+
+Candidatas que cada rebanada debe clasificar:
 
 - cambiar roles o permisos;
 - vincular, desvincular o revocar estaciones;
@@ -163,7 +165,7 @@ Posibles candidatos, todos pendientes de validación:
 - operar como soporte sobre un tenant;
 - cambiar factores de autenticación o recuperar acceso.
 
-La política deberá definir qué significa reforzar, cuánto dura esa comprobación y qué evidencia queda en auditoría.
+Una candidata sin política concreta permanece en nivel 4. La rebanada define nivel 2 o 3, motivo y evidencia adicional; factor, duración exacta, persistencia y auditoría técnica continúan diferidos.
 
 ## Ciclo de vida, bloqueo y revocación
 
@@ -241,6 +243,7 @@ La auditoría registra usuario, sesión, tenant, sucursal, estación, acción, o
 - [Línea base de seguridad](SECURITY_BASELINE.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
+- [ADR-013 — Acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md)
 - [Glosario de dominio](../product/DOMAIN_GLOSSARY.md)
 - [Actores y personas](../product/ACTORS_AND_PERSONAS.md)
 
@@ -249,13 +252,13 @@ La auditoría registra usuario, sesión, tenant, sucursal, estación, acción, o
 - ¿Qué identificadores de acceso, recuperación y correlación de persona se permiten sin convertir al usuario ordinario en multi-tenant?
 - ¿Quién crea, recupera, suspende y elimina usuarios de tenant?
 - ¿Qué composición mínima de roles/capacidades necesita cada rebanada?
-- ¿Qué acciones requieren estación operativa y autenticación reforzada además del contexto ordinario?
+- ¿Qué nivel 1–4 corresponde a cada operación de la primera rebanada?
 - ¿Cómo se recupera el acceso cuando no hay otro administrador del tenant?
 - ¿Qué latencia máxima de revocación es aceptable para cada tipo de sesión?
-- ¿Debe existir aprobación dual para acciones financieras o de plataforma?
+- ¿Qué acciones financieras o administrativas requieren nivel 3 en su política concreta?
 
 ## Próxima revisión
 
-- **Momento:** antes de componer la primera matriz de la rebanada, diseñar acciones sensibles o mecanismos técnicos de PIN y sesión.
-- **Evidencia esperada:** composición preliminar conforme a ADR-012 y modelo de amenazas del PIN/sesión compatibles con ADR-010/011.
+- **Momento:** antes de componer y clasificar la primera rebanada o diseñar mecanismos técnicos de PIN, sesión y refuerzo.
+- **Evidencia esperada:** composición conforme a ADR-012, clasificación conforme a ADR-013 y modelo de amenazas compatible con ADR-010/011.
 - **Responsable:** TBD.

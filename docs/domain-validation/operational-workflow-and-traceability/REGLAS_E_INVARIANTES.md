@@ -21,7 +21,7 @@
 | FOT-INV-011 | Una autorización conserva quién la registró y cómo se obtuvo | Validada | decisiones comerciales | aceptación/rechazo | actor, decisor, canal/evidencia y momento | sólo “autorizó” en nota |
 | FOT-INV-012 | Un anticipo conserva actor, monto y momento | Validada | movimiento financiero | valor recibido | fila histórica atribuible | total sin movimientos |
 | FOT-INV-013 | Una nota narrativa no sustituye un evento estructurado obligatorio | Validada | hechos sensibles | autorización, entrega, anticipo, control u otro obligatorio | evento y nota complementaria | entrega sólo comentada |
-| FOT-INV-014 | Una acción sensible requiere sesión válida | Validada | autenticación operativa | actor intenta acción sensible | acción atribuible o rechazo | usar sesión abandonada |
+| FOT-INV-014 | Una acción sensible requiere sesión/capacidad válidas y control nivel 2 o 3 satisfecho; sin política queda en nivel 4 | Validada + ADR-013 | autorización reforzada | actor intenta acción sensible | acción atribuible o rechazo sin efectos | usar sesión abandonada o aprobación del cliente |
 | FOT-INV-015 | Los movimientos físicos relevantes conservan trazabilidad | Propuesta | ubicaciones | dispositivo cambia de área | origen, destino, actor y momento | ubicación sobrescrita sin historia |
 | FOT-INV-016 | Toda entrega registra quién entregó | Validada | entrega | transferencia física | actor interno y momento | Entregado sin usuario |
 | FOT-INV-017 | Todo control aprobado registra quién revisó | Validada | segunda revisión | resultado aprobado | revisor, momento y resultado | Listo sin revisor |

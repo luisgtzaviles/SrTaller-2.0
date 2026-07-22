@@ -5,7 +5,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 ## Estado del documento
 
 **Estado:** Workflow en uso, pendiente de completar autoridades por clase de decisión.
-**Decisiones aceptadas:** ADR-002, ADR-004, ADR-010, ADR-011 y ADR-012, aceptados el 2026-07-21 mediante instrucciones explícitas del Responsable de Producto.
+**Decisiones aceptadas:** ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013, aceptados el 2026-07-21 mediante instrucciones explícitas del Responsable de Producto.
 
 ## Estados permitidos
 
@@ -33,6 +33,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 | [ADR-010](proposed/ADR-010-station-bound-operational-context.md) | Contexto operativo derivado de una estación vinculada | Accepted — 2026-07-21 |
 | [ADR-011](proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) | Identidad de usuario, autenticación por PIN y sesión operativa | Accepted — 2026-07-21 |
 | [ADR-012](proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) | Roles de tenant, capacidades y autorización contextual | Accepted — 2026-07-21 |
+| [ADR-013](proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) | Acciones sensibles y autorización reforzada | Accepted — 2026-07-21 |
 
 Las rutas históricas bajo `proposed/` se conservan para mantener una convención estable; el estado dentro de cada documento es autoritativo.
 

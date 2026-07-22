@@ -1,32 +1,30 @@
 # Seguridad y acciones sensibles
 
-La autorización ordinaria se rige por [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md): roles del tenant agregan capacidades, las asignaciones vigentes aplicables se combinan y el servidor niega por defecto. Este documento conserva como propuesta la composición concreta del MVP y los controles reforzados para acciones sensibles.
+La autorización ordinaria se rige por [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) y la reforzada por [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md). Este documento conserva como propuesta la clasificación concreta por acción: una candidata sin política suficiente permanece en nivel 4 y no se habilita.
 
 ## Acciones sensibles del MVP
 
-| Acción | Permiso y posible reautenticación | Trazabilidad/motivo/compensación | Clasificación |
+| Acción | Sensibilidad respaldada | Control concreto | Estado |
 | --- | --- | --- | --- |
-| Modificar precio | Comercial; reautenticar según umbral por definir | Precio anterior/nuevo, motivo; nueva versión | DAP |
-| Aplicar descuento manual | Comercial especial; posible reautenticación | Regla, monto y motivo; nunca sobrescribir historia | DAP |
-| Cancelar pago | Financiero; reautenticación recomendada | Movimiento compensatorio y motivo; sin borrado | DAR |
-| Devolver anticipo | Financiero; reautenticación recomendada | Movimiento de devolución y referencia | DAR |
-| Corregir entrega | Autoridad excepcional; reautenticación | Evento compensatorio, motivo y custodia resultante | PB |
-| Reabrir orden | Autoridad operativa especial | Estado previo/nuevo, razón y efectos | PB |
-| Saltar segunda revisión | Excepción explícita, nunca permiso general | Motivo, actor y riesgo aceptado; sin borrar requisito | PB |
-| Entregar sin nota/evidencia mínima | Excepción de entrega | Motivo y evidencia alternativa | PB |
-| Autorizar excepción | Rol competente y reautenticación | Política exceptuada, alcance y expiración | DAP |
-| Desvincular o volver a vincular estación | Capacidad administrativa y control reforzado por definir | Actor, estación, origen/destino, momento y motivo; nunca selección libre | RDD, ADR-010 |
-| Eliminar evidencia | Permiso restringido | Retiro lógico/retención y motivo; no borrado destructivo por defecto | DAP |
-| Modificar políticas | Administrador de tenant; reautenticación | Nueva versión, alcance y motivo | DAR |
-| Suplantar usuario | Soporte excepcional, temporal | Actor real/suplantado, razón, aprobación y expiración | PB |
-| Cambiar técnico responsable | Operativo autorizado | Anterior/nuevo, motivo y momento | DAP |
-| Modificar cotización autorizada | No editar versión; crear reemplazo autorizado | Relación entre versiones y nuevas decisiones | RDD |
-| Ver/adjuntar evidencia | Capacidad por orden/tipo | Acceso o cambio sensible cuando corresponda | RDD |
+| Modificar precio o descuento extraordinario | Impacto financiero | Nivel 2 o 3 y umbral por política | Candidata MVP; nivel 4 mientras falte política |
+| Cancelar, corregir o devolver pago | Impacto financiero y compensación | Nivel 2 o 3, motivo y evidencia por política | Candidata MVP; nivel 4 mientras falte política |
+| Corregir entrega o entregar por excepción | Custodia, tercero y posible irreversibilidad | Nivel 2 o 3 por política | Candidata MVP; nivel 4 mientras falte política |
+| Reabrir orden o modificar después del cierre | Estado terminal e historia | Reapertura no aprobada; decisión funcional requerida | Nivel 4 |
+| Saltar segunda revisión o mínimos de evidencia | Excepción a control operativo | Nivel 3 si una política futura lo permite | Nivel 4 mientras falte política |
+| Gestionar roles o asignaciones | Modificación de seguridad | Nivel 2 o 3 por política de R0 | Candidata R0; nivel 4 mientras falte política |
+| Revocar usuario | Modificación de seguridad | Nivel 2 o 3 por política de R0 | Candidata R0; nivel 4 mientras falte política |
+| Vincular, desvincular o revocar estación | Contexto operativo y seguridad | Nivel 2 o 3 por política de R0 | Candidata R0; nivel 4 mientras falte política |
+| Retirar, alterar o eliminar evidencia | Alteración de evidencia | Nivel 2 o 3; borrado destructivo no autorizado por defecto | Candidata futura; nivel 4 mientras falte política |
+| Modificar políticas críticas | Afectación transversal | Nivel 2 o 3 por política | Candidata; nivel 4 mientras falte política |
+| Suplantar usuario o acceso break-glass | Acceso excepcional | Decisión separada | Fuera de R0, nivel 4 |
+| Cambiar técnico responsable | Cambio operativo atribuible | Nivel 1 salvo condición sensible explícita | Candidata ordinaria; motivo según política |
+| Reemplazar cotización autorizada | Nueva versión y nueva decisión comercial | No se edita la versión previa | La sustitución sigue el flujo ordinario; excepción sensible pendiente |
+| Ver o adjuntar evidencia | Acceso por propósito y recurso | Nivel 1 salvo categoría/condición sensible explícita | Clasificar por rebanada |
 
 ## Controles obligatorios antes de implementación funcional
 
 - **[RP]** Modelo de amenazas inicial de multitenancy, identidad/PIN, archivos y primera integración.
-- **[RP]** Composición preliminar de roles/capacidades por rebanada y catálogo de acciones sensibles.
+- **[RP]** Composición de roles/capacidades y clasificación nivel 1–4 por rebanada conforme a ADR-012/013.
 - **[RP]** Estrategia de secretos y ambientes.
 - **[RP]** Pruebas negativas para aislamiento, autorización y archivos.
 - **[ADR]** Decisiones críticas registradas y aceptadas por el proceso aplicable.
