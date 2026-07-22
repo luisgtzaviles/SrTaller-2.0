@@ -2,15 +2,15 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery con respuestas parciales registradas
+- **Autoridad:** Las respuestas explícitas del Responsable de Producto y sus ADRs en su alcance; las demás permanecen abiertas
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-07-21
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Uso
 
-Éste es el entregable principal del discovery. Propone seis sesiones cortas en lenguaje del taller. Conviene responder con un caso real, una excepción y quién tomó la decisión. Las opciones son ejemplos comunes, no recomendaciones. Toda respuesta y decisión derivada permanece TBD.
+Éste es el entregable principal del discovery. Propone seis sesiones cortas en lenguaje del taller. Conviene responder con un caso real, una excepción y quién tomó la decisión. Las opciones son ejemplos comunes, no recomendaciones. Toda respuesta permanece TBD salvo las celdas que registran explícitamente autoridad y decisión derivada.
 
 ## Sesión 1 — Cliente y recepción
 
@@ -106,7 +106,7 @@
 | POI-6.1 ¿Puede recibirse en una sucursal y repararse en otra? | origen, custodia y técnico pueden divergir | Centro recibe y Norte tiene especialista | no; transferencia; encargo interno; proveedor | TBD | TBD | Branch, Workflow, DQ-031 |
 | POI-6.2 ¿Qué se transfiere con la orden y quién aprueba/recibe el traspaso? | mover referencia no mueve equipo ni obligaciones | traslado con accesorios y anticipo | equipo+orden; sólo trabajo; recepción doble; cadena de custodia | TBD | TBD | RULE-021, Events, Invariants |
 | POI-6.3 ¿El inventario es compartido o sólo visible entre sucursales? | disponibilidad y ownership no son iguales | Norte presta pantalla a Centro | stock local; reserva remota; transferencia; catálogo común | TBD | TBD | Inventory context, DQ-023 |
-| POI-6.4 ¿Un técnico trabaja en varias sucursales y desde cuál consume/asume trabajo? | evita operar en contexto equivocado | técnico itinerante cubre dos tiendas | una asignación; varias con sucursal activa; tenant-wide | TBD | TBD | Actors, IAM inputs, RULE-021 |
+| POI-6.4 ¿Un técnico trabaja en varias sucursales y desde cuál consume/asume trabajo? | evita operar en contexto equivocado | técnico itinerante cubre dos tiendas | una asignación; varias con sucursal activa; tenant-wide | Sí: mismo usuario/PIN en estaciones autorizadas del tenant; la estación fija sucursal | ADR-010; operación local queda en sucursal efectiva, transferencias siguen abiertas | Actors, IAM inputs, RULE-021, ADR-010 |
 | POI-6.5 ¿Puede pagarse una orden en otra sucursal? | caja y obligación podrían tener alcances distintos | cliente paga saldo en la tienda cercana | no; cualquier sucursal; sólo métodos no efectivo; transferencia interna | TBD | TBD | Payments, Cash, DQ-031 |
 | POI-6.6 ¿Puede entregarse en otra sucursal y cómo se conserva custodia? | la salida física necesita evidencia local | equipo se traslada para recogida | no; traslado previo; entrega programada; tercero | TBD | TBD | Delivery, Branch, INV-005 |
 | POI-6.7 ¿Qué permisos y auditoría exige cada excepción multisucursal? | acceso amplio no debe surgir por traslado | gerente autoriza entrega fuera de origen | permiso por acción; supervisor; doble confirmación; tenant-wide | TBD | TBD | RULE-020/021, Audit, Actors |

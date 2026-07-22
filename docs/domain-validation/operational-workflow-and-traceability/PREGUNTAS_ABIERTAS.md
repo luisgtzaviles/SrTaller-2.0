@@ -29,7 +29,7 @@ Las preguntas siguientes no deben resolverse mediante el comportamiento accident
 | FOT-PREG-008 | ¿Puede haber varios técnicos asignados simultáneamente? | Product Owner + Técnicos | colaboración |
 | FOT-PREG-009 | ¿Qué significa exactamente el campo resumen “técnico”? | Product Owner | proyección |
 | FOT-PREG-033 | ¿Cómo se manejan empleados con varios roles? | Product Owner + Seguridad | autoridad |
-| FOT-PREG-034 | ¿Cómo se maneja el cambio de turno? | Operaciones | continuidad |
+| FOT-PREG-034 | ¿Cómo se implementa el cambio de turno conservando estación/sucursal y sustituyendo sólo al usuario conforme a ADR-010? | Operaciones + Seguridad | continuidad; semántica resuelta, mecanismo pendiente |
 | FOT-PREG-035 | ¿Cómo se transfiere responsabilidad sin mover físicamente el equipo? | Operaciones | colas |
 | FOT-PREG-039 | ¿“Quién reparó” admite varios usuarios? | Product Owner | resumen |
 | FOT-PREG-040 | ¿Cómo se distingue técnico principal de colaboradores? | Product Owner + Técnicos | participación |

@@ -72,7 +72,7 @@ Este ADR decide:
 
 Este ADR no decide:
 
-- autenticación, PIN, sesión, estación o mecanismo de sucursal activa;
+- autenticación, PIN, formato de sesión o mecanismo técnico de estación; la fuente de sucursal activa se decide en [ADR-010](ADR-010-station-bound-operational-context.md);
 - roles y permisos detallados;
 - motor de persistencia, ORM, RLS o middleware;
 - esquema físico, índices definitivos o constraints concretos;
@@ -206,7 +206,7 @@ No se confía sólo en identificadores globalmente únicos ni en relaciones indi
 - Un usuario puede estar habilitado para trabajar en distintas sucursales del mismo tenant por rotación de personal.
 - El usuario no se duplica por cada sucursal.
 - Habilitación multisucursal no concede operación transversal simultánea ni acceso a otro tenant.
-- La estación, sucursal activa, PIN, cambio de turno y resolución exacta de contexto pertenecen a un ADR separado.
+- [ADR-010](ADR-010-station-bound-operational-context.md) establece que la estación vinculada determina tenant y sucursal, que el usuario no elige sucursal y que el PIN identifica dentro del tenant; autenticación, sesión y permisos detallados permanecen separados.
 
 Este ADR decide propiedad y cardinalidad del usuario ordinario, no el proveedor ni mecanismo de autenticación.
 
@@ -259,13 +259,13 @@ Toda operación de negocio ordinaria ejecuta con un tenant resuelto desde fuente
 
 - La UI no es autoridad para `tenant_id` o `sucursal_id`.
 - El cuerpo, los parámetros de consulta, la ruta o una cabecera enviados por el cliente no redefinen el contexto.
-- Tenant y sucursal pueden obtenerse de autenticación, sesión, estación o infraestructura confiable según decisiones posteriores.
+- Tenant y sucursal de una operación ordinaria se obtienen de la vinculación de estación mantenida del lado del servidor conforme a [ADR-010](ADR-010-station-bound-operational-context.md); autenticación y sesión validan al usuario dentro de ese tenant.
 - Un identificador solicitado se carga dentro del contexto ya autorizado; conocer un ID no concede acceso.
 - La ausencia o conflicto de contexto falla de forma cerrada.
 - No existe modo “sin tenant” para casos de uso ordinarios.
 - Las operaciones globales del SaaS usan caminos y permisos separados.
 
-El mecanismo exacto de resolución se decidirá en el ADR de contexto operativo y no forma parte de ADR-004.
+La resolución conceptual del contexto queda aceptada en [ADR-010](ADR-010-station-bound-operational-context.md). Su mecanismo técnico no forma parte de ADR-004 ni de ADR-010.
 
 ## Módulos y repositorios
 
@@ -377,7 +377,7 @@ Avicell y Tecnicell pueden tener cada uno un usuario `luisgtzaviles`. Son usuari
 
 ### Caso 2 — Usuario rota de sucursal
 
-Un usuario de Avicell trabaja hoy en Centro y mañana en Centenario sin duplicar su usuario. La estación o contexto operativo determina la sucursal activa mediante un ADR separado.
+Un usuario de Avicell trabaja hoy en Centro y mañana en Centenario sin duplicar su usuario. La estación vinculada determina la sucursal activa conforme a [ADR-010](ADR-010-station-bound-operational-context.md).
 
 ### Caso 3 — Cliente repetido entre sucursales
 
@@ -455,9 +455,9 @@ Gerencia de Avicell agrega Centro y Centenario. No obtiene datos de Tecnicell y 
 
 ## Decisiones separadas
 
-### Contexto operativo, estación e identidad
+### Contexto operativo y estación
 
-Un ADR posterior debe decidir estación operativa, vinculación dispositivo–sucursal, desvinculación, reubicación, sucursal activa, PIN, cambio de turno, asignación multisucursal, resolución confiable de tenant/sucursal/actor y expiración por inactividad.
+[ADR-010](ADR-010-station-bound-operational-context.md) acepta la estación vinculada como fuente de tenant/sucursal, la rotación de usuarios sin asignación permanente por sucursal, la desvinculación/revinculación para reubicar, el cambio de turno y la atribución contextual. Identidad, autenticación, protección del PIN, formato de sesión, permisos y tiempos de inactividad permanecen en ADRs posteriores.
 
 ### Configuración efectiva
 
@@ -496,6 +496,7 @@ Un disparador abre evaluación; no implica automáticamente base, esquema o desp
 ## Trazabilidad
 
 - [ADR-002 — Monolito modular inicial](ADR-002-modular-monolith-first.md)
+- [ADR-010 — Contexto operativo derivado de una estación vinculada](ADR-010-station-bound-operational-context.md)
 - [Registro de ADRs](../README.md)
 - [Modelo multitenant del MVP](../../architecture-readiness/repair-mvp/MODELO_MULTITENANT.md)
 - [Modelo de configuración](../../architecture-readiness/repair-mvp/MODELO_DE_CONFIGURACION.md)

@@ -81,7 +81,7 @@ El diagrama no implica que auditoría use el mismo almacén, retención o permis
 - trace ID, span ID, correlation ID y causation ID cuando apliquen;
 - request ID, job ID o event ID;
 - tenant ID y branch ID controlados;
-- actor, membresía, dispositivo o sesión mediante identificadores no sensibles;
+- usuario, tenant, sucursal, estación o sesión mediante identificadores no sensibles;
 - módulo, operación, resultado y clase de error;
 - proveedor y tipo de integración, sin credenciales;
 - versión del contrato o mensaje.

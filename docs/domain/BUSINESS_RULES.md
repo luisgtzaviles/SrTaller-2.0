@@ -2,15 +2,15 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery con restricción arquitectónica aceptada
+- **Autoridad:** RULE-021 se rige por ADR-004/010; las demás reglas no están aprobadas
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-07-21
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Convención
 
-Todas las reglas tienen estado Candidate / Unapproved. El origen explica por qué se propuso; no demuestra que sea correcta. Product Owner sólo podrá aparecer como origen después de aportar evidencia, por lo que ninguna regla actual usa ese origen.
+Salvo RULE-021, las reglas tienen estado Candidate / Unapproved. El origen explica por qué se propuso; no demuestra que sea correcto. RULE-021 sólo es autoritativa en el alcance de contexto y aislamiento aceptado por ADR-004/010; no cierra roles ni permisos.
 
 | ID | Título | Estado | Descripción | Motivo | Ejemplo | Excepción | Responsable/contexto | Conceptos | Origen | ¿Validar? | Preguntas |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -34,7 +34,7 @@ Todas las reglas tienen estado Candidate / Unapproved. El origen explica por qu�
 | RULE-018 | Cancelación controlada | Candidate / Unapproved | Cancelar conserva motivo, actor, condición del equipo, trabajo realizado, partes y efecto financiero. | Evitar pérdida de obligaciones e historia. | Cliente cancela tras diagnóstico pagado. | Orden duplicada sin actividad; aun así se conserva vínculo. | Repair Operations | Orden, cancelación, pago | Industry hypothesis | Sí | DQ-018/029 |
 | RULE-019 | Equipo no recogido | Candidate / Unapproved | Un equipo no recogido sigue bajo custodia y no se dispone sin avisos, plazo y autoridad definidos. | Riesgo legal, físico y reputacional. | Tras varios avisos pasa a condición de abandono pendiente. | Riesgo de seguridad o perecedero, por definir. | Gerente | Custodia, entrega, abandono | Industry hypothesis | Sí | DQ-030 |
 | RULE-020 | Auditoría relevante | Candidate / Unapproved | Cambios de autorización, cotización, estado, asignación, pago, entrega y garantía conservan actor, motivo y secuencia. | Resolver disputas y atribución. | Reasignación y cambio de precio quedan visibles. | Minimización de datos sensibles limita contenido. | Cada contexto/Audit | Todos los críticos | Documentation inference | Sí | DQ-025 |
-| RULE-021 | Permisos por sucursal | Candidate / Unapproved | Un actor sólo solicita acciones en tenant y sucursal autorizados; visibilidad transversal requiere alcance explícito. | Evitar cruces y operaciones locales erróneas. | Técnico asignado a Norte no consume stock Centro. | Gerente multisucursal con permiso separado. | Identity/Branch | Usuario, sucursal, orden, stock | Documentation inference | Sí | DQ-002/031 |
+| RULE-021 | Contexto y autorización por sucursal | Restricción arquitectónica aceptada | Un usuario sólo solicita acciones dentro de tenant/sucursal derivados de su estación; contexto válido no sustituye permiso. | Evitar cruces y operaciones locales erróneas. | Estación Norte no consume stock Centro aunque el cliente envíe esa sucursal. | Reporte con alcance de tenant usa contexto/permiso separado, no cambia la estación. | Identidad/Sucursal | Usuario, estación, sucursal, orden, stock | ADR-004/010 | Sí | DQ-002/031 |
 
 ## Orígenes permitidos
 

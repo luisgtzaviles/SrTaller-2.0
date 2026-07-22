@@ -27,7 +27,7 @@ Son hipótesis sobre límites de consistencia, no clases, esquemas o agregados d
 ## CustomerDevice
 
 - **Posible root y responsabilidad:** CustomerDevice; conservar continuidad del equipo y sus identificadores observables.
-- **Consistencia:** nunca confundirse con dispositivo autorizado; relaciones de propiedad no presumidas.
+- **Consistencia:** nunca confundirse con estación operativa; relaciones de propiedad no presumidas.
 - **Entidades internas candidatas:** DeviceIdentifier, OwnershipPeriod TBD; **values:** IMEI, SerialNumber, ConditionSnapshot.
 - **Comandos/eventos:** RegisterCustomerDevice; EVENT-004/005/006.
 - **Invariantes:** INV-003.

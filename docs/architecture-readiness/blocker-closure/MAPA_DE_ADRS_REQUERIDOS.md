@@ -11,12 +11,13 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | ADR-001 | Lenguaje y runtime | Proposed | H0 | Revisar contra alcance R0 y aceptar, reemplazar o rechazar |
 | ADR-002 | Monolito modular inicial | Accepted | H0 cerrado | Aplicar y verificar; no reabrir sin evidencia |
 | ADR-003 | Persistencia principal | Proposed | H0/H1 | Revisar junto con ownership y migraciones |
-| ADR-004 | Estrategia multitenant y propiedad lógica | Accepted | H1 parcialmente cerrado | Aplicar invariantes; RLS y contexto operativo siguen separados |
+| ADR-004 | Estrategia multitenant y propiedad lógica | Accepted | H1 parcialmente cerrado | Aplicar invariantes; RLS queda separado y contexto se rige por ADR-010 |
 | ADR-005 | NestJS para backend y API | Proposed | H0 | Confirmar frontera de backend y restricciones del framework |
 | ADR-006 | Next.js para clientes web | Proposed | Antes de la primera UI | Revisar por superficie; no asumir una única necesidad |
 | ADR-007 | Despliegues mediante contenedores | Proposed | Antes del primer despliegue | Revisar artefacto, promoción, rollback y operación |
 | ADR-008 | Resolución de tenant por subdominios wildcard | Proposed | H1/antes de acceso externo | Revisar DNS, certificados, dominios y fuente confiable del tenant |
 | ADR-009 | Monorepo con workspaces | Proposed | H0 | Revisar junto con ownership, pipeline y estructura inicial |
+| ADR-010 | Contexto operativo derivado de estación vinculada | Accepted | H1 parcialmente cerrado | Aplicar invariantes; identidad, PIN, sesión y permisos siguen separados |
 
 `Proposed` no equivale a decisión cerrada ni autoriza implementación.
 
@@ -25,7 +26,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | Prioridad | Decisión arquitectónica | Decisiones previas | ¿Requiere Producto? | ¿Requiere spike? | Resultado esperado | Hito |
 | --- | --- | --- | --- | --- | --- | --- |
 | Cerrado | Estrategia multitenant, propiedad lógica y aislamiento de datos | DEC-007, DEC-008 | Respondido | RLS sólo si sigue candidato | ADR-004 aceptado; falta evidencia de aplicación y pruebas | H1 |
-| 2 | Contexto operativo de tenant y sucursal | DEC-010 a DEC-012, DEC-037 | Sí | Condicional, para resolución segura del contexto | Fuente confiable, selección, cambio, alcance y auditoría del contexto | H1 |
+| Cerrado | Contexto operativo de tenant y sucursal | DEC-009 a DEC-012 | Respondido | No para aceptar el modelo | ADR-010 aceptado; falta evidencia de aplicación y pruebas | H1 |
 | 3 | Identidad, sesión, PIN e inactividad; crear ADR específico | DEC-013 a DEC-015 | Sí | Sí, si PIN/estación compartida siguen en alcance | Separación entre identidad, credencial, sesión y actor operativo | H1 |
 | 4 | Roles, permisos, acciones sensibles y reautenticación | DEC-017 a DEC-020 | Sí | No por defecto | Autorización server-side por acción y alcance | H1 |
 | 5 | Persistencia, ownership de repositorios y migraciones; revisar ADR-003 | DEC-006, DEC-049, DEC-050 | No para mecanismo; sí para datos globales | Condicional | Propiedad de escritura, evolución de esquema y recuperación definidas | H1 |
@@ -44,9 +45,9 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 ## Próximo ADR recomendado
 
-ADR-004 ya está aceptado. La siguiente revisión prioritaria es un **ADR de contexto operativo de tenant y sucursal**: debe decidir fuente confiable, estación, sucursal activa, cambio de turno/contexto, asignación multisucursal, ausencia segura y auditoría sin reabrir propiedad lógica ni permitir operación cruzada de Órdenes.
+ADR-004 y ADR-010 ya están aceptados. La siguiente revisión prioritaria es el **ADR de identidad, autenticación, sesión y PIN**, usando como entradas obligatorias el usuario por tenant y el contexto de estación ya delimitado. Debe decidir credenciales, protección del PIN, intentos, bloqueo, recuperación, expiración, revocación y reautenticación sin permitir que identidad o PIN elijan tenant/sucursal.
 
-Después corresponde el ADR de identidad, sesión y PIN, usando el contexto operativo ya delimitado. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
+Después corresponde el ADR de roles, permisos y acciones sensibles. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
 ADR-001, ADR-003, ADR-005 y ADR-009 siguen siendo el lote mínimo de plataforma para el primer commit. Pueden prepararse en paralelo, pero no sustituyen el cierre de multitenancy para completar R0.
 

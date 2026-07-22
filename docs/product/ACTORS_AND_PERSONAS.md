@@ -4,14 +4,14 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Hipótesis de actores y contextos de uso; no define roles, permisos ni estructura laboral definitiva.
-- **Aprobación:** Pendiente de entrevistas y revisión del propietario del producto.
+- **Aprobación:** El contexto de usuario/estación se rige por ADR-010; actores, roles, permisos y responsabilidades permanecen pendientes.
 - **Datos personales ficticios:** No se utilizan nombres, biografías ni características no confirmadas.
 
 ## Distinciones necesarias
 
 - Un **actor** representa una relación con el sistema; no equivale necesariamente a un puesto laboral.
 - Un **rol de autorización** es una agrupación de permisos. No debe deducirse automáticamente del nombre de un actor.
-- Una misma persona podría actuar en más de un contexto y una responsabilidad podría variar por tenant o sucursal. Esto es una **hipótesis**, no una regla aprobada.
+- Un usuario ordinario pertenece a un tenant y puede rotar entre sucursales mediante estaciones vinculadas; roles, permisos y variaciones de responsabilidad siguen pendientes.
 - “Cliente” en este documento significa cliente del taller; las aplicaciones consumidoras de la API se denominan clientes técnicos.
 
 Las capacidades permitidas se definirán en [Identity, Access and Permissions](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), no en este documento.
@@ -26,7 +26,7 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 
 ## Administrador del tenant
 
-- **Responsabilidades — hipótesis:** administrar configuración, membresías, acceso, sucursales y dispositivos dentro del tenant.
+- **Responsabilidades — hipótesis:** administrar configuración, usuarios, acceso, sucursales y estaciones dentro del tenant.
 - **Objetivos — hipótesis:** mantener la operación habilitada y los accesos alineados con las responsabilidades reales.
 - **Alcance de acceso — pendiente:** tenant completo para funciones administrativas específicas; no implica permiso sobre toda información operativa o financiera.
 - **Posibles restricciones:** no administrar la plataforma global; no elevar sus propios privilegios sin control; acciones críticas auditadas.
@@ -36,7 +36,7 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 
 - **Responsabilidades — hipótesis:** coordinar la operación y el personal de una sucursal.
 - **Objetivos — hipótesis:** conocer carga de trabajo, incidencias, existencias y resultados dentro de su alcance.
-- **Alcance de acceso — pendiente:** una o varias sucursales asignadas, con posibles autorizaciones de supervisión.
+- **Alcance de acceso — pendiente:** posibles capacidades de supervisión sobre una o varias sucursales, sin cambiar la sucursal efectiva de la estación ni crear pertenencia permanente.
 - **Posibles restricciones:** sin acceso automático a otras sucursales; algunas configuraciones, cierres o excepciones podrían requerir nivel tenant.
 - **Preguntas pendientes:** ¿una persona puede gestionar varias sucursales? ¿qué acciones requieren supervisor? Véanse [QUESTION-007](./OPEN_QUESTIONS.md#question-007) y [QUESTION-004](./OPEN_QUESTIONS.md#question-004).
 
@@ -76,7 +76,7 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 
 - **Responsabilidades — hipótesis:** cumplir una combinación de funciones que los roles predefinidos no representen.
 - **Objetivos — hipótesis:** acceder sólo a las capacidades necesarias para su trabajo real.
-- **Alcance de acceso — pendiente:** intersección de membresía, permisos y asignaciones de sucursal, sujeta al modelo que se apruebe.
+- **Alcance de acceso — pendiente:** permisos evaluados dentro del contexto tenant/sucursal/estación/usuario de ADR-010, sin asignación permanente de sucursal.
 - **Posibles restricciones:** combinaciones incompatibles, privilegios sensibles, cambios a su propia autorización y complejidad de soporte.
 - **Preguntas pendientes:** ¿se permitirán roles personalizados, permisos directos o ambos? ¿cómo se evita una combinación peligrosa? Véase [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
 
@@ -112,12 +112,12 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 - **Posibles restricciones:** rate limits, disponibilidad, reintentos, firma de webhooks, residencia, costos y términos del proveedor.
 - **Preguntas pendientes:** ¿qué integraciones son prioritarias? ¿quién posee credenciales, consentimiento y respuesta a fallos? Véanse [QUESTION-019](./OPEN_QUESTIONS.md#question-019), [QUESTION-021](./OPEN_QUESTIONS.md#question-021) y [QUESTION-028](./OPEN_QUESTIONS.md#question-028).
 
-## Dispositivo autorizado
+## Estación operativa
 
 - **Tipo:** actor técnico no humano.
-- **Responsabilidades — propuesta:** mantener una vinculación verificable con tenant y sucursal y presentar contexto de dispositivo en las solicitudes permitidas.
+- **Responsabilidades — decisión aceptada:** mantener una vinculación verificable con una sucursal, derivar de ella el tenant y presentar identidad de estación en las solicitudes permitidas.
 - **Objetivos — propuesta:** habilitar sesiones operativas de usuarios autorizados sin convertirse por sí solo en prueba suficiente para acciones sensibles.
-- **Alcance de acceso — pendiente:** limitado por estado de vinculación, sucursal, sesión del dispositivo, usuario activo y permisos.
+- **Alcance de acceso:** sin operación ordinaria si no existe vinculación vigente; con ella, limitado además por usuario activo y permisos pendientes.
 - **Posibles restricciones:** activación, expiración, revocación, pérdida, cambio de sucursal, cierre remoto y eventual capacidad offline no confirmada.
 - **Preguntas pendientes:** ¿qué equipos pueden vincularse y mediante qué flujo? ¿qué puede hacer un dispositivo sin usuario activo? Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
 

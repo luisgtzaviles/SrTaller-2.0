@@ -8,9 +8,10 @@
 
 | Elemento | Fuente confiable | Uso | Clasificación |
 | --- | --- | --- | --- |
-| Tenant | Sesión/membresía verificada | Partición y autorización | RDD |
-| Sucursal | Alcance permitido en la sesión | Folios, configuración y operación | RDD |
-| Actor | Identidad autenticada y atribución operativa | Auditoría y permisos | RDD |
+| Tenant | Derivado de la sucursal vinculada a la estación | Partición y autorización | RDD, ADR-010 |
+| Sucursal | Vinculación de la estación mantenida del lado del servidor | Folios, configuración y operación | RDD, ADR-010 |
+| Estación | Identidad técnica y estado vigentes en el servidor | Origen físico y alcance | RDD, ADR-010 |
+| Actor | Usuario autenticado dentro del tenant efectivo | Auditoría y permisos | RDD, ADR-010 |
 | Correlación | Generada por el sistema | Diagnóstico e idempotencia | DAR |
 
 ## Reglas de diseño
@@ -31,7 +32,7 @@
 | Políticas/catálogos | SaaS global, extensión tenant y ajuste permitido por sucursal | Niveles aceptados; resolución/versionado bloqueante | PB |
 | Folios | Alcance de unicidad y concurrencia | Bloqueante de Recepción | PB |
 | Archivos | Tenant/sucursal, autorización y rutas opacas | Propiedad aceptada; estrategia bloqueante antes de evidencia | PB |
-| Sesiones | Tenant y sucursal activa inequívocos | Bloqueante | PB |
+| Sesiones | Contexto tenant/sucursal/estación aceptado; sesión de usuario segura | Contexto aceptado, mecanismo bloqueante | PB |
 | Auditoría/consultas | Filtro obligatorio y prueba negativa | Bloqueante antes de producción | RDD |
 | Índices conceptuales | Tenant como prefijo de búsquedas/únicos cuando aplique | Bloqueante al diseñar persistencia | DAR |
 | Trabajos en segundo plano | Contexto explícito y deduplicación | Bloqueante al introducirlos | DAR |
@@ -42,27 +43,34 @@
 - **[RDD]** Un tenant es la organización y frontera obligatoria de aislamiento; una sucursal pertenece exactamente a un tenant.
 - **[RDD]** La topología inicial usa una base y esquema compartidos con aislamiento lógico; no usa base, esquema o despliegue por tenant.
 - **[RDD]** Todo dato con alcance tenant conserva tenant explícito; todo dato con alcance sucursal conserva además sucursal coherente.
-- **[RDD]** El usuario ordinario pertenece exactamente a un tenant, puede rotar entre sucursales habilitadas y no se duplica por sucursal.
+- **[RDD]** El usuario ordinario pertenece exactamente a un tenant, puede rotar mediante estaciones autorizadas de sus sucursales y no se duplica por sucursal.
 - **[RDD]** El cliente operativo pertenece a una sucursal y no se fusiona automáticamente entre sucursales.
 - **[RDD]** La Orden conserva tenant y sucursal de origen inmutables y no se traslada.
 - **[RDD]** SaaS, tenant y sucursal tienen niveles de propiedad explícitos para catálogos, precios y configuración.
 - **[RDD]** Repositorios, trabajos en segundo plano, cachés, eventos, archivos, reportes y auditoría deben preservar el contexto aplicable.
 
+## Decisiones aceptadas por ADR-010
+
+- **[RDD]** La estación vinculada determina tenant y sucursal de toda operación ordinaria.
+- **[RDD]** El usuario pertenece al tenant, no a una sucursal permanente, y puede rotar sin duplicar cuenta.
+- **[RDD]** El PIN identifica dentro del tenant ya resuelto; no selecciona contexto ni concede permisos.
+- **[RDD]** Reubicar una estación exige desvincular y volver a vincular; el cierre de usuario conserva la vinculación.
+- **[RDD]** Comandos, consultas, eventos y auditoría preservan tenant, sucursal, estación y usuario.
+
 ## Decisiones que siguen bloqueando
 
-1. **[PB]** ¿Cómo se resuelven de forma confiable tenant, estación, sucursal activa y actor?
-2. **[PB]** ¿Cómo se vincula/reubica una estación y cómo cambia el turno o contexto sin conservar alcance anterior?
-3. **[PB]** ¿Qué roles y permisos habilitan a un usuario para cada sucursal asignada?
-4. **[PB]** ¿El folio es único por tenant, sucursal o global?
-5. **[PB]** ¿Qué políticas admiten ajuste por sucursal y cuál es su precedencia ejecutable?
-6. **[PB]** ¿Una Orden abierta conserva versión o instantánea cuando cambia la política?
-7. **[PB]** ¿Qué estrategia concreta gobierna archivos, soporte y consultas administrativas?
-8. **[PB]** ¿Se evaluará RLS después de aceptar PostgreSQL y con qué alcance?
+1. **[PB]** ¿Cómo se implementan autenticación, protección del PIN, sesión, intentos, recuperación y revocación respetando ADR-010?
+2. **[PB]** ¿Qué roles y permisos habilitan cada capacidad dentro del contexto efectivo?
+3. **[PB]** ¿El folio es único por tenant, sucursal o global?
+4. **[PB]** ¿Qué políticas admiten ajuste por sucursal y cuál es su precedencia ejecutable?
+5. **[PB]** ¿Una Orden abierta conserva versión o instantánea cuando cambia la política?
+6. **[PB]** ¿Qué estrategia concreta gobierna archivos, soporte y consultas administrativas?
+7. **[PB]** ¿Se evaluará RLS después de aceptar PostgreSQL y con qué alcance?
 
 ## Estado de ADR
 
-**[ADR]** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) está `Accepted` y fija base/esquema compartidos, propiedad lógica e invariantes. El motor, RLS, el contexto operativo y el enrutamiento por subdominio de ADR-008 permanecen sin aceptar.
+**[ADR]** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) fija base/esquema compartidos, propiedad e aislamiento; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) fija el contexto operativo por estación. Motor, RLS, identidad/PIN y enrutamiento de ADR-008 permanecen sin aceptar.
 
 ## Gate
 
-**[R]** No debe escribirse persistencia real hasta acordar el contexto mínimo y la estrategia de pruebas de aislamiento.
+**[R]** El contexto mínimo ya está acordado; no debe escribirse persistencia real hasta aceptar identidad/sesión y la estrategia de pruebas de aislamiento, además de los demás hitos H0/H1.

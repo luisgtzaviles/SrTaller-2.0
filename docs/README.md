@@ -77,12 +77,13 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [ADR-001 — TypeScript](decisions/proposed/ADR-001-typescript-as-primary-language.md)
 - [ADR-002 — Monolito modular orientado al dominio (Accepted)](decisions/proposed/ADR-002-modular-monolith-first.md)
 - [ADR-003 — PostgreSQL](decisions/proposed/ADR-003-postgresql-primary-database.md)
-- [ADR-004 — Multitenancy en esquema compartido](decisions/proposed/ADR-004-shared-schema-multitenancy.md)
+- [ADR-004 — Multitenancy en esquema compartido (Accepted)](decisions/proposed/ADR-004-shared-schema-multitenancy.md)
 - [ADR-005 — NestJS](decisions/proposed/ADR-005-nestjs-backend.md)
 - [ADR-006 — Next.js](decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-007 — Despliegues en contenedores](decisions/proposed/ADR-007-containerized-deployments.md)
 - [ADR-008 — Subdominios wildcard](decisions/proposed/ADR-008-wildcard-subdomain-routing.md)
 - [ADR-009 — Monorepo](decisions/proposed/ADR-009-monorepo-strategy.md)
+- [ADR-010 — Contexto operativo por estación vinculada (Accepted)](decisions/proposed/ADR-010-station-bound-operational-context.md)
 
 ## Entrega
 

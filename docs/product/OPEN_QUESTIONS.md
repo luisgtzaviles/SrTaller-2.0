@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** Activo; registro inicial de preguntas sin respuesta.
+- **Estado:** Activo; registro de preguntas abiertas, en investigación y cerradas.
 - **Naturaleza:** Fuente central de incertidumbres de producto. Una opción listada no constituye decisión.
 - **Aprobación de respuestas:** Corresponde al propietario del producto, con consulta técnica, operativa, legal o de seguridad cuando aplique.
 - **Estados permitidos en esta versión:** `Abierta`, `En investigación`, `Respondida pendiente de documentar`, `Cerrada con decisión`.
-- **Estado actual:** Las 34 preguntas permanecen abiertas.
+- **Estado actual:** 28 preguntas abiertas, 4 en investigación y 2 cerradas con decisión.
 
 ## Uso del registro
 
@@ -61,47 +61,51 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 - **Impacto:** Afecta acceso, suscripción, retención, soporte, automatización y obligaciones sobre datos.
 - **Opciones conocidas:** alta asistida; autoservicio; alta por plataforma; suspensión reversible; cierre con exportación y periodo de retención; combinaciones por plan.
 - **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), estado `Proposed`, sólo para estrategia de datos.
+- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), `Accepted`; no resuelve el ciclo de vida del tenant.
 
 <a id="question-006"></a>
 ### QUESTION-006 — Datos tenant-wide frente a datos de sucursal
 
-- **Contexto:** `tenant_id` sería obligatorio y `branch_id` tendría alcance específico, pero no se sabe qué entidades se comparten entre sucursales.
+- **Contexto:** ADR-004 clasifica datos SaaS, tenant y sucursal y fija sus discriminadores conceptuales.
 - **Impacto:** Condiciona modelo de datos, permisos, transferencias, búsqueda, reportes y experiencia.
 - **Opciones conocidas:** entidades principalmente tenant-wide con contexto de sucursal; entidades principalmente propiedad de sucursal; modelo híbrido explícito por entidad.
-- **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), estado `Proposed`.
+- **Estado:** Cerrada con decisión.
+- **Alcance del cierre:** Propiedad inicial resuelta; cualquier concepto nuevo debe clasificarse explícitamente.
+- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), `Accepted`.
 
 ## Sucursales
 
 <a id="question-007"></a>
-### QUESTION-007 — Asignación de personas y operación entre sucursales
+### QUESTION-007 — Rotación de personas y operación entre sucursales
 
-- **Contexto:** Se requieren asignaciones de usuarios a sucursales, pero no se han definido multiplicidad, cambio de contexto ni acceso transversal.
+- **Contexto:** ADR-010 establece usuario por tenant sin pertenencia permanente a sucursal; la estación vinculada determina la sucursal efectiva.
 - **Impacto:** Afecta autorización, navegación, turnos, reportes y soporte a personal itinerante.
-- **Opciones conocidas:** una sucursal activa por membresía; varias sucursales asignadas con selección; acceso a todas por permiso; combinación explícita.
-- **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada; documentar en [Identity, Access and Permissions](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md).
+- **Opciones conocidas:** se acepta rotación con el mismo usuario/PIN entre estaciones autorizadas del tenant; no existe selección manual ni cuenta duplicada por sucursal.
+- **Estado:** Cerrada con decisión.
+- **Alcance del cierre:** Contexto resuelto; roles y permisos continúan en QUESTION-010.
+- **Decisión relacionada:** [ADR-010 — contexto operativo por estación](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`.
 
 <a id="question-008"></a>
 ### QUESTION-008 — Cambio de sucursal y transferencia de contexto
 
-- **Contexto:** Un dispositivo puede cambiar de sucursal y operaciones o existencias podrían transferirse, pero no hay reglas confirmadas.
+- **Contexto:** Una estación que cambia físicamente debe desvincularse y volver a vincularse; transferir operaciones o existencias es una decisión distinta por módulo.
 - **Impacto:** Afecta continuidad, auditoría, inventario, reparaciones abiertas y revocación de sesiones.
 - **Opciones conocidas:** revocar y volver a vincular; reasignación aprobada con cierre de sesiones; transferencia programada; prohibir cambios mientras existan operaciones pendientes.
-- **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada; documentar en [Branch and Device Model](../architecture/BRANCH_AND_DEVICE_MODEL.md).
+- **Estado:** En investigación.
+- **Alcance resuelto:** Contexto de estación aceptado; operaciones abiertas y transferencias de negocio pendientes.
+- **Decisión relacionada:** [ADR-010 — contexto operativo por estación](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`.
 
 ## Identidad
 
 <a id="question-009"></a>
 ### QUESTION-009 — Identidad global y pertenencia a varios tenants
 
-- **Contexto:** La dirección conceptual distingue identidad global y membresía de tenant, pero no está validada la unicidad ni la experiencia de una persona que pertenece a varios tenants.
+- **Contexto:** ADR-004/010 fijan que un usuario ordinario pertenece exactamente a un tenant. La correlación de una misma persona entre tenants y los identificadores de acceso permanecen abiertos.
 - **Impacto:** Afecta autenticación, recuperación, privacidad, cambio de contexto y duplicados.
 - **Opciones conocidas:** identidad global con varias membresías; identidad separada por tenant; identidad global con alias o proveedores vinculados; federación futura.
-- **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada; requiere una decisión posterior de identidad.
+- **Estado:** En investigación.
+- **Alcance resuelto:** Pertenencia del usuario aceptada; autenticación, recuperación y correlación pendientes.
+- **Decisión relacionada:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`; requiere ADR de identidad.
 
 <a id="question-010"></a>
 ### QUESTION-010 — Modelo de roles, permisos y excepciones
@@ -117,20 +121,22 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 <a id="question-011"></a>
 ### QUESTION-011 — Vinculación y confianza de dispositivos
 
-- **Contexto:** El acceso operativo debe usar dispositivos autorizados, pero no se ha definido qué dispositivos, quién los vincula ni qué prueba su pertenencia.
+- **Contexto:** ADR-010 exige vinculación previa, única y mantenida del lado del servidor a una sucursal; quedan abiertos tipos de equipo, autoridad detallada y prueba técnica.
 - **Impacto:** Afecta seguridad, onboarding, soporte, pérdida, revocación y experiencia en sucursal.
 - **Opciones conocidas:** código temporal aprobado por administrador; enrolamiento iniciado en consola; invitación o enlace de activación; gestión externa de dispositivos en una etapa futura.
-- **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada; los mecanismos de seguridad necesitan evaluación antes de un ADR.
+- **Estado:** En investigación.
+- **Alcance resuelto:** Invariantes aceptadas; mecanismo y controles pendientes.
+- **Decisión relacionada:** [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`; mecanismo sujeto a ADR posterior.
 
 <a id="question-012"></a>
 ### QUESTION-012 — Alcance del PIN y autenticación reforzada
 
-- **Contexto:** El PIN permitiría acceso operativo en dispositivos autorizados, pero no se sabe qué autentica, cuánto dura ni cuándo es insuficiente.
+- **Contexto:** ADR-010 fija que el PIN identifica al usuario dentro del tenant derivado de la estación; duración, protección y acciones para las que es insuficiente siguen abiertas.
 - **Impacto:** Afecta velocidad operativa, suplantación, bloqueo, cambio de turno y acciones sensibles.
 - **Opciones conocidas:** PIN sólo para seleccionar operador; PIN para sesión operativa acotada; PIN más factor reforzado para acciones sensibles; reautenticación por riesgo.
-- **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada; no se ha decidido algoritmo criptográfico.
+- **Estado:** En investigación.
+- **Alcance resuelto:** Propósito contextual aceptado; seguridad, sesión y reautenticación pendientes.
+- **Decisión relacionada:** [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`; no decide algoritmo criptográfico.
 
 ## Reparaciones
 
@@ -161,7 +167,7 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 - **Impacto:** Afecta modelo de datos, búsqueda, transferencias, reservas y reportes.
 - **Opciones conocidas:** catálogo por tenant con existencias por sucursal; catálogo y existencias por sucursal; catálogo compartido con múltiples ubicaciones; modelo gradual.
 - **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), estado `Proposed`, respecto al aislamiento; no resuelve el dominio.
+- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), `Accepted` respecto al aislamiento; no resuelve el dominio de inventario.
 
 <a id="question-016"></a>
 ### QUESTION-016 — Movimientos, reservas, costos y excepciones
@@ -261,7 +267,7 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 - **Impacto:** Afecta privacidad, soporte, costo, migración, cierre de tenant y cumplimiento.
 - **Opciones conocidas:** políticas por categoría; retención configurable dentro de límites; anonimización; eliminación lógica seguida de purga; excepciones por obligación legal.
 - **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004 — esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), ambos `Proposed`, no resuelven retención.
+- **Decisión relacionada:** [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) permanece `Proposed`; [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) está `Accepted`. Ninguno resuelve retención.
 
 <a id="question-026"></a>
 ### QUESTION-026 — Jurisdicción, residencia y clasificación de datos
@@ -281,7 +287,7 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 - **Impacto:** Afecta capacidad, pruebas, índices, caché, colas, costos y criterios para separar componentes.
 - **Opciones conocidas:** supuestos conservadores validados con pilotos; rangos por tenant; pruebas por recorridos críticos; crecimiento gradual con señales de extracción.
 - **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-002 — monolito modular](../decisions/proposed/ADR-002-modular-monolith-first.md) está `Accepted`; [ADR-003 — PostgreSQL](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004 — esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) permanecen `Proposed`.
+- **Decisión relacionada:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) están `Accepted`; [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) permanece `Proposed`.
 
 <a id="question-028"></a>
 ### QUESTION-028 — Restricciones de hosting, disponibilidad y ambientes

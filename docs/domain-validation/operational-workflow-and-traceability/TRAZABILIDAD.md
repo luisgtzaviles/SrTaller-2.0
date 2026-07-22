@@ -9,6 +9,7 @@ Este documento conecta los hechos operativos validados con las propuestas, pregu
 | Fuente | Autoridad | Uso |
 |---|---|---|
 | Solicitud de validación del Product Owner, 2026-07-21 | Hechos explícitos del flujo Avicell y necesidades de trazabilidad | fuente primaria de FOT-DEC y escenarios |
+| [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) | Decisión aceptada | fuente autoritativa de tenant/sucursal/estación/usuario efectivos y cambio de turno |
 | Recepción mínima y autorización comercial | Decisiones validadas | nacimiento/fin de custodia, identidad de orden, autorización por concepto y narrativa complementaria |
 | Auditoría legacy del detalle | Evidencia de código | estado/custodia, técnico, revisor, seguimientos, anticipos, entrega y defectos |
 | Auditoría legacy de recepción | Evidencia de código | actor receptor, sesión/contexto, Pendiente, En tienda y anticipo separado |
@@ -102,7 +103,7 @@ La propuesta FSR de responsabilidad formal previa a la orden ya fue aclarada por
 |---|---|
 | Creación fija Pendiente y En tienda | son valores iniciales legacy; no catálogo universal |
 | recibido_por desde sesión | coincide con la necesidad validada de saber quién recibió |
-| usuario/tenant/sucursal de sesión | aporta contexto, pero no prueba autoridad por acción |
+| usuario de sesión más tenant/sucursal de estación | forman el contexto efectivo con la estación, pero no prueban permiso para la acción |
 | anticipo en petición separada | una falla de anticipo no deshace orden/custodia; el movimiento necesita historia propia |
 | fotos/seguimiento posteriores | actividad posterior, no precondición de creación |
 

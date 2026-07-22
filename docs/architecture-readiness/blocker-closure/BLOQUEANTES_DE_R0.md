@@ -2,7 +2,7 @@
 
 ## Resultado que debe producir R0
 
-R0 demuestra una fundación mínima que resuelve tenant, sucursal, actor y sesión desde fuentes confiables, deniega accesos cruzados, evalúa permisos, expone salud y errores seguros y conserva trazabilidad sin incluir todavía una orden de negocio.
+R0 demuestra una fundación mínima que resuelve tenant, sucursal, estación y usuario desde fuentes confiables, deniega accesos cruzados, evalúa permisos, expone salud y errores seguros y conserva trazabilidad sin incluir todavía una orden de negocio.
 
 ## Prerrequisito
 
@@ -12,8 +12,8 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 
 | Grupo | IDs | Cierre requerido |
 | --- | --- | --- |
-| Multitenancy y datos | DEC-006 a DEC-009 | Estrategia, propiedad tenant/global, contexto inmutable y pruebas de aislamiento |
-| Sucursal operativa | DEC-010 a DEC-012 | Sucursal activa, membresías múltiples y cambio de contexto definidos |
+| Multitenancy y datos | DEC-006 a DEC-009 | ADR-004/010 aplicados con propiedad, contexto inmutable y pruebas de aislamiento |
+| Contexto operativo | DEC-009 a DEC-012 | Modelo aceptado en ADR-010; faltan aplicación y pruebas de estación, ausencia y conflictos |
 | Identidad y sesión | DEC-013 a DEC-016 | Identidad, PIN, inactividad y atribución con revocación segura |
 | Permisos y acciones sensibles | DEC-017 a DEC-020 | Roles/capacidades mínimos, alcance, step-up y catálogo inicial |
 | Tiempo | DEC-037 y DEC-038 | Autoridad de zona horaria y almacenamiento/presentación coherentes |
@@ -25,7 +25,6 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 ## Lo que debe decidir el Responsable de Producto
 
 - datos globales frente a tenant/sucursal;
-- usuarios con varias sucursales y selección activa;
 - operación mediante PIN y cierre por inactividad;
 - roles y acciones mínimas incluidas en R0;
 - zona horaria por tenant o sucursal;
@@ -44,7 +43,7 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 
 - SPIKE-002 es obligatorio antes de persistencia tenant-scoped con esquema compartido.
 - SPIKE-003 es obligatorio sólo si RLS continúa como candidato.
-- SPIKE-005 es obligatorio si PIN/dispositivo forma parte de R0.
+- SPIKE-005 es obligatorio si PIN/estación forma parte de R0.
 - SPIKE-001 se difiere si R0 resuelve tenant sin wildcard ni cliente web tenant-aware.
 
 Ningún spike puede ejecutarse sin autorización. Su resultado informa ADRs; no los acepta.

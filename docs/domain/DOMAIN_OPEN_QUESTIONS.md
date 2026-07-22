@@ -2,21 +2,21 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery con respuestas arquitectónicas parciales
+- **Autoridad:** ADR-004/010 en sus alcances; las demás respuestas no están aprobadas
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-07-21
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Criterio
 
-Estas preguntas refinan las [34 preguntas canónicas](../product/OPEN_QUESTIONS.md) sin sustituirlas ni cerrarlas. En otros documentos, DQ-001 es abreviatura de DOMAIN-QUESTION-001. Todas tienen respuesta TBD y estado Open.
+Estas preguntas refinan las [34 preguntas canónicas](../product/OPEN_QUESTIONS.md) sin sustituirlas. En otros documentos, DQ-001 es abreviatura de DOMAIN-QUESTION-001. Las respuestas permanecen TBD salvo donde una celda cite explícitamente una decisión aceptada; los aspectos residuales siguen abiertos.
 
 | ID | Pregunta específica | QUESTION original | Concepto | Flujo | Regla | Estado relacionado | Evento | Contexto | Impacto | Prioridad | ¿Bloquea modelado? | Respuesta |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | DOMAIN-QUESTION-001 | ¿Orden y reparación son conceptos distintos y cuál es su cardinalidad? | QUESTION-013 | WorkOrder, Repair | abrir–ejecutar–cerrar | RULE-001/010 | operativo | EVENT-007/020/027 | Repair Operations | identidad/lifecycle | Crítica | Sí | TBD |
 | DOMAIN-QUESTION-002 | ¿Qué significa sucursal para cada concepto y qué puede transferirse? | QUESTION-006–008 | Branch | todo | RULE-021 | todos | EVENT-007/038 | Branch Operations | ownership/permisos | Crítica | Sí | TBD |
-| DOMAIN-QUESTION-003 | ¿Cómo se impide confundir equipo atendido con terminal autorizada? | QUESTION-011/013 | dos dispositivos | recepción/acceso | RULE-003/021 | dispositivo autorizado | EVENT-004 | IAM/Repair | seguridad/lenguaje | Crítica | Sí | TBD |
+| DOMAIN-QUESTION-003 | ¿Cómo se impide confundir equipo atendido con estación operativa? | QUESTION-011/013 | dos objetos físicos | recepción/acceso | RULE-003/021 | estación operativa | EVENT-004 | IAM/Repair | seguridad/lenguaje | Crítica | Sí | ADR-010 fija la estación; separación de conceptos vigente |
 | DOMAIN-QUESTION-004 | ¿Quién es cliente, propietario, contacto, entregante y decisor? | QUESTION-013 | personas/relaciones | recepción/autorización/entrega | RULE-002/003 | N/A | EVENT-001/002/038 | Customers | autoridad/privacidad | Crítica | Sí | TBD |
 | DOMAIN-QUESTION-005 | ¿Cómo se reconoce el mismo dispositivo sin IMEI o con identificadores cambiantes? | QUESTION-013 | CustomerDevice | registro/reingreso | RULE-003 | N/A | EVENT-004 | Customers/Repair | continuidad | Alta | Sí | TBD |
 | DOMAIN-QUESTION-006 | ¿Cuándo se pide código de acceso, quién lo usa y cuánto se conserva? | QUESTION-013/029 | DevicePasscode | recepción/prueba | RULE-005 | diagnóstico/QC | EVENT-005/028 | Repair/IAM | privacidad | Crítica | Sí | TBD |

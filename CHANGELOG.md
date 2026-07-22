@@ -11,6 +11,7 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Creación de los PBIs documentales PBI-001 a PBI-020.
 - Aceptación de ADR-002: monolito modular orientado al dominio como arquitectura inicial.
 - Aceptación de ADR-004: multitenancy con base y esquema compartidos, propiedad SaaS/tenant/sucursal y aislamiento obligatorio desde R0.
+- Aceptación de ADR-010: contexto operativo resuelto por estación vinculada, sucursal derivada y usuario atribuible sin selección manual de sucursal.
 
 ### Implementación
 

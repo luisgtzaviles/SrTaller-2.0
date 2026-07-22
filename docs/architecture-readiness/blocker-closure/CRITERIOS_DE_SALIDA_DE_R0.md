@@ -40,7 +40,7 @@ Además del gate H0:
 
 - [ ] estrategia multitenant, ownership e aislamiento aceptados;
 - [ ] datos globales, tenant-wide y branch-scoped clasificados;
-- [ ] contexto de tenant/sucursal, selección y cambio definidos;
+- [x] contexto tenant/sucursal/estación/usuario, ausencia y cambio definidos en ADR-010;
 - [ ] identidad, sesión, PIN, inactividad y atribución definidos;
 - [ ] roles, permisos, acciones sensibles y reautenticación acordados;
 - [ ] persistencia, migraciones y fixtures tienen estrategia aceptada;
@@ -55,7 +55,7 @@ Además del gate H0:
 Además de terminar el código de R0 cuando éste sea autorizado, debe existir evidencia de:
 
 - [ ] contexto de tenant y sucursal se obtiene de fuentes confiables en ejecución;
-- [ ] selección/cambio de sucursal y ausencia de contexto se rechazan o resuelven con seguridad;
+- [ ] desvinculación/revinculación de estación y ausencia de contexto se rechazan o resuelven con seguridad;
 - [ ] identidad, sesión, PIN e inactividad cumplen los escenarios acordados;
 - [ ] atribución, roles, permisos, acciones sensibles y reautenticación se aplican server-side;
 - [ ] propiedad de persistencia y política de migraciones aplicadas;

@@ -20,8 +20,11 @@ Una acción relevante se atribuye al usuario autenticado cuando se realizó. La 
 - sesión válida;
 - tenant;
 - sucursal;
+- estación operativa;
 - fecha y hora confiables;
 - acción y objeto afectados.
+
+[ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta que tenant/sucursal provienen de la estación vinculada, que el PIN identifica dentro de ese tenant y que cambiar de turno sustituye al usuario sin reescribir la historia. Protección del PIN, formato de sesión, permisos y reautenticación siguen abiertos.
 
 ## Acciones que requieren atribución
 
@@ -77,7 +80,7 @@ Quedan abiertos:
 - revalidación para acciones sensibles;
 - PIN combinado con credencial de dispositivo;
 - seguridad diferenciada por rol;
-- cambio de turno y terminales compartidas.
+- mecanismo técnico de cambio de turno y terminales compartidas; su semántica contextual ya está fijada por ADR-010.
 
 Este paquete no recomienda almacenar PIN en texto plano ni especifica algoritmos, cifrado, hashing, tokens o mecanismos criptográficos.
 

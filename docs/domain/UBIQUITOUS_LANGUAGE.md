@@ -2,15 +2,15 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery con términos delimitados por ADR-004/010
+- **Autoridad:** Responsable de Producto sólo para entradas marcadas `D`; las demás no están aprobadas
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-07-21
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Uso
 
-Todas las definiciones son hipótesis terminológicas. Estado I significa Initial hypothesis y P, Partially understood. Las preguntas DOMAIN-QUESTION se detallan en [preguntas de dominio](DOMAIN_OPEN_QUESTIONS.md); Q refiere al [registro de producto](../product/OPEN_QUESTIONS.md).
+Las definiciones con estado I son hipótesis iniciales, P significa comprensión parcial y D identifica un término delimitado por una decisión aceptada. Las preguntas DOMAIN-QUESTION se detallan en [preguntas de dominio](DOMAIN_OPEN_QUESTIONS.md); Q refiere al [registro de producto](../product/OPEN_QUESTIONS.md).
 
 ## Organización y acceso
 
@@ -19,15 +19,15 @@ Todas las definiciones son hipótesis terminológicas. Estado I significa Initia
 | Plataforma | Producto SaaS que soporta a varios talleres aislados. | sistema, SR Taller | un tenant o taller | La plataforma suspende una suscripción. | P | Q005, Q023 |
 | Tenant | Frontera organizacional y de aislamiento candidata para un negocio cliente. | cuenta, negocio, taller | sucursal o cliente del taller | Un negocio tiene dos sucursales. | P | Q005–Q006 |
 | Sucursal | Unidad operativa física o administrativa dentro de un tenant. | tienda, local | ubicación interna de inventario | Una orden se recibe en Centro. | P | DQ-002 |
-| Usuario | Identidad o membresía que usa la plataforma; significado exacto pendiente. | cuenta, operador | empleado, cliente o actor | Una persona inicia sesión. | I | Q009 |
+| Usuario | Identidad operativa ordinaria que pertenece exactamente a un tenant y no se duplica por sucursal. | cuenta, operador | empleado, cliente o actor | Una persona se identifica en una estación de su tenant. | D | ADR-004/010 |
 | Empleado | Persona que trabaja para el negocio, use o no el sistema. | colaborador, personal | usuario o membresía | Un técnico externo no necesariamente es empleado. | I | Q007, Q010 |
-| Membresía | Relación entre una identidad y un tenant con estado y alcance. | acceso, alta de usuario | identidad global o rol | Ana tiene membresía en un taller. | P | Q009–Q010 |
+| Membresía | Término histórico ambiguo; no representa un usuario ordinario multi-tenant. | acceso, alta de usuario | usuario, rol o membresía comercial SaaS | El uso debe aclarar si habla de suscripción comercial o acceso. | I | ADR-004/010 |
 | Rol | Agrupación administrable de capacidades. | perfil, puesto | empleo o permiso individual | Rol Técnico agrupa acciones técnicas. | P | Q010 |
 | Permiso | Capacidad para solicitar una acción en un alcance. | autorización de sistema | autorización del cliente | Permiso para reembolsar en una sucursal. | P | Q004, Q010 |
-| Dispositivo autorizado | Equipo que obtiene confianza operativa limitada para acceder al sistema. | terminal vinculada, equipo registrado | dispositivo del cliente | Una tablet de recepción está vinculada. | P | DQ-003 |
-| Terminal | Punto físico o equipo usado para operar o cobrar; definición pendiente. | caja, estación | dispositivo autorizado o caja | La terminal del mostrador registra un cobro. | I | Q011, Q022 |
-| Sesión de dispositivo | Evidencia vigente de vinculación del dispositivo autorizado. | sesión de terminal | sesión de usuario u operativa | La tablet conserva vínculo tras cambiar operador. | P | Q011 |
-| Sesión operativa | Contexto temporal de persona, tenant, sucursal y quizá dispositivo. | turno, sesión por PIN | sesión de dispositivo o caja | Un recepcionista abre su contexto de trabajo. | P | Q012 |
+| Estación operativa | Equipo con identidad técnica y vinculación vigente a una única sucursal para aportar contexto. | terminal vinculada, equipo registrado | dispositivo del cliente o usuario | Una tablet de recepción está vinculada a Centro. | D | ADR-010 |
+| Terminal | Punto físico o equipo usado para operar o cobrar; cuando aporta contexto se denomina estación operativa. | caja, estación | estación operativa o caja | La terminal del mostrador registra un cobro. | I | Q011, Q022 |
+| Sesión de estación | Evidencia técnica vigente de una vinculación de estación. | sesión de terminal | sesión de usuario o contexto operativo | La tablet conserva vínculo tras cambiar operador. | P | ADR-010/Q011 |
+| Sesión operativa | Contexto temporal del usuario dentro del tenant, sucursal y estación ya resueltos. | turno, sesión por PIN | vinculación persistente de estación o caja | Un recepcionista inicia turno en una estación vinculada. | D | ADR-010/Q012 |
 | PIN | Mecanismo ágil propuesto para identificar o revalidar a un operador. | clave corta | código de acceso del teléfono | El cajero usa PIN en una terminal vinculada. | P | Q012 |
 
 ## Personas, cliente y dispositivo recibido
@@ -38,7 +38,7 @@ Todas las definiciones son hipótesis terminológicas. Estado I significa Initia
 | Contacto | Persona o medio autorizado para una comunicación con propósito definido. | teléfono de contacto, responsable | cliente o propietario | Se avisa al contacto que el equipo está listo. | I | Q018, DQ-004 |
 | Propietario del dispositivo | Persona u organización que declara titularidad sobre el equipo. | dueño | cliente o quien recoge | La madre es propietaria y el hijo es contacto. | I | DQ-004 |
 | Persona autorizada para recoger | Persona habilitada para recibir físicamente el equipo. | tercero autorizado | propietario o persona que recibe de hecho | El cliente autoriza a su hermana. | I | DQ-014 |
-| Dispositivo del cliente | Equipo físico entregado o referido en una operación de servicio. | equipo, teléfono, aparato | dispositivo autorizado del sistema | Un teléfono entra con pantalla rota. | I | DQ-005 |
+| Dispositivo del cliente | Equipo físico entregado o referido en una operación de servicio. | equipo, teléfono, aparato | estación operativa del sistema | Un teléfono entra con pantalla rota. | I | DQ-005 |
 | Tipo de dispositivo | Categoría operativa del equipo. | clase, familia | marca o modelo | Teléfono, tablet o laptop. | I | Q013 |
 | Marca | Identidad comercial declarada del fabricante. | fabricante | modelo | Samsung. | I | Q013 |
 | Modelo | Denominación de producto declarada o identificada. | referencia | tipo o serie | Galaxy A54. | I | Q013 |
@@ -137,7 +137,7 @@ Todas las definiciones son hipótesis terminológicas. Estado I significa Initia
 | Garantía vs. reingreso | Presuponer cobertura antes de evaluarla | DQ-021–DQ-022 |
 | Anticipo vs. pago | Ocultar que todo anticipo es pago, pero no todo pago es anticipo | DQ-012 |
 | Sucursal vs. ubicación | Usar frontera organizacional como sitio de stock | DQ-002 |
-| Dispositivo del cliente vs. dispositivo autorizado | Cruzar dominio de reparación con identidad/acceso | DQ-003 y DQ-005 |
+| Dispositivo del cliente vs. estación operativa | Cruzar dominio de reparación con identidad/acceso | DQ-003 y DQ-005 |
 
 ## Regla de evolución
 

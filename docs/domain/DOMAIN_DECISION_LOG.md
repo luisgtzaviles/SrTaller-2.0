@@ -2,20 +2,20 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery con decisiones aceptadas registradas
+- **Autoridad:** Cada fila aceptada identifica al Responsable de Producto y su ADR; las demás no están aprobadas
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-07-21
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Regla
 
-Este registro sólo contiene entradas Pending. Decisión describe lo que debe decidirse, no una respuesta. No se cierra ninguna pregunta ni se acepta ningún ADR.
+Este registro conserva decisiones pendientes y aceptadas. `Accepted` sólo se usa con fecha, autoridad y ADR o evidencia explícita; las demás filas siguen describiendo lo que debe decidirse.
 
 | ID | Título | Fecha | Estado | Contexto | Decisión | Alternativas | Consecuencia | Product Owner | Documentos afectados | Preguntas cerradas | ADR relacionado |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | DOMAIN-DECISION-001 | Identidad de orden y reparación | TBD | Pending | Recorrido central | TBD: definir relación y cardinalidad | sinónimos; orden coordina reparaciones; una reparación por orden | afecta lifecycle y límites | TBD | Language, Concepts, Aggregates, States | Ninguna; DQ-001 abierta | ADR-002 futuro impacto |
-| DOMAIN-DECISION-002 | Ownership tenant/sucursal | TBD | Pending | Operación multisucursal | TBD por concepto | tenant-wide; branch-scoped; híbrido | afecta permisos y transferencias | TBD | Status, Contexts, Rules | Ninguna; DQ-002 abierta | ADR-004 |
+| DOMAIN-DECISION-002 | Propiedad y contexto tenant/sucursal | 2026-07-21 | Accepted | Operación multisucursal | ADR-004 clasifica propiedad; ADR-010 deriva tenant/sucursal de la estación y mantiene usuario por tenant | alcance de tenant; alcance de sucursal; híbrido; selección manual descartada | propiedad/contexto explicables; transferencias de negocio siguen separadas | Responsable de Producto | Estado, contextos, reglas y trazabilidad | DQ-002 y contexto de DQ-031; transferencias siguen abiertas | ADR-004/010 |
 | DOMAIN-DECISION-003 | Personas y autoridad sobre el dispositivo | TBD | Pending | Recepción/entrega | TBD: cliente, propietario, contacto y autorizado | roles combinados; relaciones separadas | afecta consentimiento y entrega | TBD | Actors, Language, Rules | Ninguna; DQ-004 abierta | No inicialmente |
 | DOMAIN-DECISION-004 | Ruta de diagnóstico y cotización | TBD | Pending | Evaluación comercial | TBD: pasos obligatorios y atajos | diagnóstico siempre; cotización inmediata; preautorización | afecta estados y comandos | TBD | Workflow, States, Events | Ninguna; DQ-008/009 abiertas | No inicialmente |
 | DOMAIN-DECISION-005 | Evidencia de autorización | TBD | Pending | Consentimiento | TBD: autoridad y medios válidos | firma, verbal, mensaje, combinación | afecta trazabilidad y retención | TBD | Rules, Values, Interview | Ninguna; DQ-011 abierta | Mensajería futuro |

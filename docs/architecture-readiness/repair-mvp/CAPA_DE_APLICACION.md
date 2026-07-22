@@ -18,7 +18,7 @@
 
 | Área | Intenciones mínimas | Clasificación |
 | --- | --- | --- |
-| Contexto | Iniciar/cerrar sesión, seleccionar sucursal, obtener capacidades | DAP |
+| Contexto | Iniciar/cerrar usuario, validar estación vinculada, obtener capacidades | DAP, ADR-010 |
 | Recepción | Crear orden, reservar folio, identificar equipo, consultar detalle, agregar nota | DAP |
 | Taller | Mover equipo, asignar técnico, registrar participación | DAP |
 | Diagnóstico | Abrir revisión, registrar conclusión y recomendaciones | DAP |

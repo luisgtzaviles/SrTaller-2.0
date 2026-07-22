@@ -16,23 +16,23 @@ Este grupo desbloquea el primer commit, pero no basta para R0.
 ## Grupo A — Fundación de contexto
 
 1. Aplicar la clasificación SaaS, tenant y sucursal aceptada por ADR-004 (`DEC-006` a `DEC-008`).
-2. Cerrar el mecanismo confiable de contexto tenant sin reabrir la topología (`DEC-009`).
-3. Decidir estación, sucursal activa, asignación multisucursal y cambio de contexto (`DEC-010` a `DEC-012`).
+2. Aplicar el contexto efectivo aceptado por ADR-010: estación vinculada, sucursal derivada y usuario del mismo tenant (`DEC-009` a `DEC-011`).
+3. Aplicar desvinculación/revinculación, ausencia segura, cambio de turno y atribución histórica de ADR-010 (`DEC-012`, parte de `DEC-015/016`).
 4. Decidir zona horaria (`DEC-037`, `DEC-038`).
 5. Preparar la precedencia conceptual de configuración que R1 usará (`DEC-032`).
 
-La matriz de propiedad lógica ya está respondida. Arquitectura y Seguridad deben usarla como precondición del ADR de contexto operativo. No debe ejecutarse un experimento de RLS antes de aceptar PostgreSQL, autorizarlo y acotar su pregunta.
+La matriz de propiedad lógica y el modelo de contexto operativo ya están respondidos. Arquitectura y Seguridad deben usarlos como precondición del ADR de identidad/PIN y de cualquier implementación. No debe ejecutarse un experimento de RLS antes de aceptar PostgreSQL, autorizarlo y acotar su pregunta.
 
 ## Grupo B — Identidad y seguridad operativa
 
-1. Identidad y membresía (`DEC-013`).
+1. Usuario de tenant, identidad técnica y autenticación (`DEC-013`).
 2. Sesión, PIN e inactividad (`DEC-014`, `DEC-015`).
 3. Atribución (`DEC-016`).
 4. Roles, permisos y acciones sensibles (`DEC-017` a `DEC-019`).
 5. Reautenticación (`DEC-020`).
 6. Secretos y auditoría mínima (`DEC-046`, `DEC-055`).
 
-Puede trabajarse en paralelo con Grupo A después de fijar los conceptos tenant/sucursal, pero el ADR de identidad no se acepta sin la matriz de producto.
+Puede trabajarse en paralelo con la evidencia de aplicación del Grupo A, pero el ADR de identidad debe respetar ADR-004/010 y no se acepta sin la matriz de producto que aún le corresponde.
 
 ## Grupo C — Persistencia y consistencia base
 
@@ -74,4 +74,4 @@ Folio, política y archivos pueden preparar alternativas en paralelo después de
 
 ## Camino crítico
 
-`DEC-002 → DEC-004/005 → DEC-007/008 → DEC-006/009 → DEC-010/012 → DEC-013/018 → DEC-049/050/051 → R0 demostrado → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.
+`DEC-002 → DEC-004/005 → ADR-004/010 aplicados → DEC-013/018 → DEC-049/050/051 → R0 demostrado → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.

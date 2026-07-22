@@ -19,13 +19,13 @@
 | Guardar entrega | Repositorio de agregado | Registrar entrega única | DAP |
 | Guardar evidencias | Adaptador de archivos + metadatos propietarios | Almacenar referencia segura | DAP |
 | Consultar políticas | Puerto de Configuración | Resolver versión efectiva | DAP |
-| Contexto usuario/tenant/sucursal | Puerto de identidad/contexto | Obtener contexto verificado | DAP |
+| Contexto tenant/sucursal/estación/usuario | Puerto conceptual de contexto | Obtener contexto ADR-010 verificado | DAP |
 
 ## Puertos de infraestructura
 
 | Capacidad | Contrato conceptual | Clasificación |
 | --- | --- | --- |
-| Identidad | Resolver sesión, actor y membresía verificables | DAP |
+| Identidad | Resolver sesión y usuario del tenant verificables | DAP |
 | Archivos | Reservar, almacenar, verificar y leer evidencia autorizada | DAP |
 | Folios | Reservar identidad única en alcance acordado | DAP |
 | Reloj | Proveer tiempo consistente para reglas y pruebas | DAR |

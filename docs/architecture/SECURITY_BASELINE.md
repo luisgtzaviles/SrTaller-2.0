@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual de controles mínimos.
-- **Naturaleza:** Propuesta y conjunto de decision gates; no constituye certificación ni diseño criptográfico final.
+- **Naturaleza:** Propuesta y conjunto de hitos; ADR-004/010 son autoritativos para aislamiento/contexto y no constituyen certificación ni diseño criptográfico final.
 - **Alcance:** Producto, aplicaciones, datos, dependencias, entrega y operación.
 - **Referencia de verificación:** [Estrategia de pruebas de seguridad](../quality/SECURITY_TESTING.md).
 
@@ -15,7 +15,7 @@ Establecer controles mínimos antes de implementar para reducir exposición entr
 
 1. Denegar por defecto y conceder el menor privilegio necesario.
 2. Tratar toda entrada y contexto del cliente como no confiables.
-3. Separar identidad, membresía, sucursal, dispositivo y permiso.
+3. Separar usuario, tenant, sucursal, estación, sesión y permiso.
 4. Aislar tenant en todas las superficies, no sólo en SQL.
 5. Proteger secretos y datos sensibles durante todo su ciclo de vida.
 6. Aplicar defensa en profundidad a errores probables.
@@ -27,7 +27,7 @@ Establecer controles mínimos antes de implementar para reducir exposición entr
 ## Activos prioritarios
 
 - datos de clientes, reparaciones, inventario y conversaciones;
-- identidades, membresías, roles, permisos y sesiones;
+- usuarios, identidades de plataforma, roles, permisos y sesiones;
 - PIN, factores de autenticación y mecanismos de recuperación;
 - pagos, cajas, suscripciones y referencias financieras;
 - archivos, adjuntos y exportaciones;
@@ -82,8 +82,8 @@ Un threat model por recorrido crítico debe refinar esta lista antes de implemen
 
 ## Identidad y autenticación
 
-- La identidad global se valida con un mecanismo por seleccionar.
-- Membresía activa y tenant efectivo se comprueban además de la autenticación.
+- El usuario del tenant se valida con un mecanismo por seleccionar; identidad de plataforma y correlación de persona permanecen separadas.
+- Tenant/sucursal/estación efectivos se comprueban conforme a ADR-010 además de autenticar al usuario.
 - Sesiones tienen audiencia, propósito, vigencia y revocación definidos.
 - Tokens o cookies se almacenan y transportan con controles apropiados al cliente; formato pendiente.
 - Recuperación de cuenta no puede ser más débil que el acceso que protege.
@@ -96,7 +96,7 @@ Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
 ## Autorización
 
 - La API autoriza cada caso de uso y recurso; la interfaz no es una frontera.
-- Se evalúan identidad, tenant, membresía, permiso, alcance de sucursal, dispositivo y estado del recurso según corresponda.
+- Se evalúan usuario, tenant, sucursal, estación, permiso y estado del recurso según corresponda.
 - Los objetos se cargan dentro del contexto autorizado para evitar IDOR.
 - Operaciones de plataforma usan permisos y flujos separados de tenant.
 - Los cambios de permisos se hacen efectivos con una latencia definida y comprobable.
@@ -108,7 +108,7 @@ Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
 La línea base exige:
 
 - `tenant_id` obligatorio en datos tenant-scoped;
-- resolución por hostname contrastada con membresía;
+- resolución ordinaria por estación vinculada contrastada con usuario del mismo tenant; nombre de host sólo como señal adicional;
 - repositorios conscientes del tenant y ausencia de consultas globales operativas;
 - constraints e índices compuestos cuando corresponda;
 - namespaces en caché, colas, pub/sub, rooms, objetos y exports;

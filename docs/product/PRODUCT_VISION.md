@@ -92,7 +92,7 @@ Los siguientes son **resultados propuestos**; requieren indicadores y líneas ba
 No se consideran ventajas demostradas todavía. Son **hipótesis de diferenciación**:
 
 - aislamiento multitenant tratado como propiedad verificable del sistema y no como filtro opcional;
-- vínculo explícito entre tenant, sucursal, usuario y dispositivo autorizado;
+- contexto explícito tenant, sucursal, estación operativa y usuario conforme a ADR-010;
 - operación de reparaciones conectada con inventario, pagos, comunicación y auditoría mediante límites de módulo claros;
 - experiencia consistente sustentada por un design system propio;
 - API central preparada para más de un tipo de cliente;

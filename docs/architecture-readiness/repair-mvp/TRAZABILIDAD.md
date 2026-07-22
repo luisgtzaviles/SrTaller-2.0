@@ -16,7 +16,7 @@
 | Tenancy e identidad | [Multitenancy](../../architecture/MULTITENANCY_MODEL.md), [identidad](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), [sucursales/dispositivos](../../architecture/BRANCH_AND_DEVICE_MODEL.md) | Gates transversales | RDD |
 | Seguridad/operación | [Seguridad](../../architecture/SECURITY_BASELINE.md), [observabilidad](../../architecture/OBSERVABILITY_STRATEGY.md) | Gates y riesgos | RP |
 | Integraciones | [Arquitectura de integración](../../architecture/INTEGRATION_ARCHITECTURE.md) | Puertos/adaptadores | DAP |
-| Decisiones técnicas | [ADR-002 aceptado](../../decisions/proposed/ADR-002-modular-monolith-first.md), [registro](../../decisions/README.md), [matriz previa](../../reviews/sprint-00/ADR_READINESS_MATRIX.md) | Distinguir aceptación actual de evidencia previa | ADR |
+| Decisiones técnicas | [ADR-002 aceptado](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004 aceptado](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010 aceptado](../../decisions/proposed/ADR-010-station-bound-operational-context.md), [registro](../../decisions/README.md), [matriz previa](../../reviews/sprint-00/ADR_READINESS_MATRIX.md) | Distinguir aceptación actual de evidencia previa | ADR |
 
 ## Equivalencias documentales
 
@@ -31,6 +31,7 @@
 | ADR-002 está `Accepted` desde 2026-07-21 | La forma inicial es monolito modular; no acepta el conjunto tecnológico | ADR |
 | ADR-001, ADR-003 y ADR-005 a ADR-009 permanecen `Proposed` | Lenguaje, motor de persistencia, frameworks, routing y despliegue siguen abiertos | ADR |
 | ADR-004 está `Accepted` desde 2026-07-21 | Base/esquema compartidos, propiedad SaaS/tenant/sucursal e invariantes ya no se reabren sin evidencia | ADR |
+| ADR-010 está `Accepted` desde 2026-07-21 | Estación vinculada, sucursal derivada, usuario por tenant, turno y contexto atribuible ya no se reabren sin evidencia | ADR |
 | ADR-008 de subdominios comodín depende de identidad, cookies y dominios | No es requisito de R0/R1 si existe resolución segura alternativa | DD |
 | ADR-006 propone Next.js para superficies aún no confirmadas y la matriz recomienda dividirlo | No se fija interfaz web global | ADR |
 | No se encontró ADR aceptado incompatible con el modelo integrado | No hay contradicción técnica aprobada que reabrir | ST |

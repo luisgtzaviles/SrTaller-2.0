@@ -2,10 +2,10 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery con decisiones aceptadas enlazadas
+- **Autoridad:** Las fuentes aceptadas son autoritativas sólo en su alcance; la cadena restante no está aprobada
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-07-21
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Cadena objetivo
@@ -30,7 +30,7 @@ Los tres últimos elementos permanecen TBD. No se crean PBIs, ADRs ni pruebas co
 | Product question | Domain question | Concepto | Regla | Invariante | Transición | Comando | Evento | Escenario | Future PBI | Future ADR | Future test |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | QUESTION-013 | DQ-001 | WorkOrder/Repair | RULE-001 | INV-001/002 | Draft → Received | OpenWorkOrder | EVENT-007 | SCENARIO-001 | TBD | TBD | TBD |
-| QUESTION-006–008 | DQ-002/031 | Branch | RULE-021 | INV-002/010 | Orden confinada; contexto de estación TBD | intención de contexto TBD | evento de contexto TBD | SCENARIO-020 | TBD | ADR-004 Accepted; ADR de contexto pendiente | prueba de aislamiento/branch pendiente |
+| QUESTION-006–008 | DQ-002/031 | Branch | RULE-021 | INV-002/010 | Orden confinada; contexto por estación aceptado | intención técnica TBD | evento de contexto TBD | SCENARIO-020 | TBD | ADR-004 y ADR-010 Accepted | prueba de aislamiento/contexto pendiente |
 | QUESTION-013 | DQ-004 | Customer/Owner | RULE-002/003 | INV-010 | N/A | RegisterCustomer | EVENT-001/002 | SCENARIO-001/002 | TBD | TBD | TBD |
 | QUESTION-013 | DQ-007 | Intake | RULE-004/005 | INV-005 | Draft → Received | RecordIntake | EVENT-005/006 | SCENARIO-001 | TBD | TBD | TBD |
 | QUESTION-014 | DQ-008/026 | Diagnosis | RULE-006 | INV-009 | InProgress → Completed | CompleteDiagnosis | EVENT-011/012 | SCENARIO-003/016 | TBD | TBD | TBD |
@@ -125,7 +125,7 @@ Los IDs especializados organizan la validación sin crear nuevas reglas, invaria
 | PBI-004 | Glosario | UBIQUITOUS_LANGUAGE amplía términos/ambigüedades | Propuesta; no modifica glosario original |
 | PBI-005 | Mapa modular | Bounded Contexts y Relationships prueban ownership | Propuesta; límites no aprobados |
 | PBI-006 | Lecciones legacy | Findings evita elevar observaciones a reglas | Propuesta; evidencia legacy pendiente |
-| PBI-008/009 | Identidad, sucursales y dispositivo autorizado | separación de actores/dispositivos y RULE-021 | Propuesta; decisiones abiertas |
+| PBI-008/009 | Identidad, sucursales y estación autorizada | separación de actores/estación y RULE-021 | Contexto aceptado por ADR-010; mecanismo de identidad/PIN abierto |
 | PBI-020 | Preguntas y gates | Domain Questions y Decision Log refinan Gate 4 | Propuesta; no cierra preguntas |
 
 ## Paquetes de validación posteriores
@@ -135,6 +135,7 @@ Los paquetes de esta sección pueden tener autoridad posterior y más específic
 | Paquete | Autoridad | Áreas aclaradas | Elementos canónicos relacionados | Estado de promoción |
 |---|---|---|---|---|
 | [ADR-004 — Multitenancy con base y esquema compartidos](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) | Decisión aceptada por el Responsable de Producto, 2026-07-21 | propiedad SaaS/tenant/sucursal, usuario con alcance tenant, cliente con alcance sucursal, Orden inmutable por sucursal, catálogos y precios por nivel | QUESTION-006–009, DQ-002/004/006/031, RULE-001/021, INV-002/010, OWN-001–011 | Autoritativo para propiedad y aislamiento; identidad técnica, estación, soporte, BI y ciclo del tenant permanecen separados |
+| [ADR-010 — Contexto operativo derivado de estación vinculada](../decisions/proposed/ADR-010-station-bound-operational-context.md) | Decisión aceptada por el Responsable de Producto, 2026-07-21 | estación vinculada, tenant/sucursal derivados, usuario por tenant, cambio de turno y atribución contextual | QUESTION-007–012, DQ-002/031, RULE-021, INV-002/008/010, FOT-DEC-018–020 | Autoritativo para contexto operativo; autenticación, PIN, permisos, auditoría detallada y mecanismo de vinculación permanecen separados |
 | [Modelo integrado del dominio de reparaciones](../domain-model/integrated-repair-domain-model/README.md) | Consolidación de autoridad; no crea aprobación adicional, 2026-07-21 | visión completa del ciclo, contextos, candidatos, eventos, políticas, invariantes, escenarios, tensiones y preguntas | RMCA, FOT, DTR, CSE, `LEGACY-*`, DQ/RULE/INV/EVENT y propuestas arquitectónicas | Referencia maestra de integración; fuentes originales conservan autoridad y propuestas permanecen abiertas |
 | [Recepción mínima y autorización comercial](../domain-validation/reception-minimum-and-commercial-authorization/README.md) | Decisiones explícitas del Product Owner, 2026-07-21 | nacimiento de orden/custodia, mínimos, identificación física, problema reportado, conceptos autorizables y políticas de absorción | DQ-001/007–009/011/019/022, DOMAIN-DECISION-001/004/005/009, TERM-DEC-001/004/005, RULE-006–009, INV-005/006/008/012 | Validado en su alcance; pendiente de promoción canónica |
 | [Flujo operativo y trazabilidad](../domain-validation/operational-workflow-and-traceability/README.md) | Hechos y decisiones explícitas del Product Owner, 2026-07-21 | recorrido Avicell, estado/ubicación/custodia, roles, segunda revisión, eventos/notas/actividad, atribución, asignaciones y anticipos básicos | DQ-002/012–020/024/025/027–031, TERM-DEC-007/008/016, EVENT-008/010–012/021–023/027–033/036/038, STATE_MACHINES | Validado en hechos locales; propuestas universales y promoción canónica pendientes |

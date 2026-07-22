@@ -22,12 +22,15 @@
 | Momento | fecha y hora consistentes | DDV |
 | Tenant | organización efectiva | DDV/PM transversal |
 | Sucursal | contexto operativo cuando aplica | DDV |
+| Estación | origen operativo validado | ADR-010 |
 | Orden | referencia al ciclo | DDV |
 | Acción/hecho | significado explícito | DDV |
 | Resultado | éxito, rechazo, fallo o pendiente | PM |
 | Motivo | explicación estructurada cuando es sensible | PM |
 | Correlación | vínculo con decisión/trabajo/evidencia relacionado | PM |
-| Sesión/dispositivo | contexto de atribución, no identidad absoluta | HOV/PM |
+| Sesión | evidencia técnica de continuidad, no identidad absoluta | HOV/PM |
+
+ADR-010 establece que tenant, sucursal, estación y usuario forman el contexto efectivo de toda operación ordinaria. Ese contexto se conserva como historia del hecho y no se recalcula después de un cambio de turno o reubicación de estación.
 
 ## Participaciones consultables
 

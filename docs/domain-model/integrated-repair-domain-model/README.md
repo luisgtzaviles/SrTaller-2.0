@@ -96,5 +96,6 @@ Una fila con más de un código contiene afirmaciones separables; la explicació
 ## Decisión arquitectónica relacionada
 
 - [ADR-002 — Monolito modular orientado al dominio](../../decisions/proposed/ADR-002-modular-monolith-first.md), `Accepted` el 2026-07-21. El ADR usa este modelo como evidencia, pero no convierte contextos o agregados candidatos en módulos físicos definitivos.
-- [ADR-004 — Multitenancy con base y esquema compartidos](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), `Accepted` el 2026-07-21. Fija propiedad SaaS/tenant/sucursal, cliente operativo por sucursal y Orden confinada a su sucursal; no decide clases, tablas, autenticación ni estación activa.
+- [ADR-004 — Multitenancy con base y esquema compartidos](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), `Accepted` el 2026-07-21. Fija propiedad SaaS/tenant/sucursal, cliente operativo por sucursal y Orden confinada a su sucursal; no decide clases, tablas ni autenticación, y delega el contexto de estación en ADR-010.
+- [ADR-010 — Contexto operativo derivado de una estación vinculada](../../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted` el 2026-07-21. Fija tenant/sucursal/estación/usuario efectivos y atribución histórica; no decide autenticación, PIN, roles ni persistencia.
 - [Preparación arquitectónica del MVP](../../architecture-readiness/repair-mvp/README.md).

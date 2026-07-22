@@ -11,8 +11,8 @@ El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUE
 | B-01 | Alcance exacto del MVP | Bloquea primer cambio de código | Flujo/capacidades aprobados por Responsable de Producto | PB |
 | B-02 | Término Orden de Servicio vs Orden de Reparación | Bloquea primera rebanada | Término oficial y alias documentados | PB |
 | B-03 | Alcance de unicidad del folio | Bloquea primera rebanada | Tenant/sucursal/global decidido | PB |
-| B-04 | Modelo multitenant de datos | Bloquea primer cambio de código | Contexto y defensa de aislamiento aceptados | PB |
-| B-05 | Sucursal activa | Bloquea primer cambio de código | Resolución, cambio y alcance definidos | PB |
+| B-04 | Modelo multitenant de datos | Decisión aceptada; bloquea aplicar/probar | ADR-004 aplicado con evidencia de aislamiento | PB |
+| B-05 | Contexto operativo y sucursal activa | Decisión aceptada; bloquea aplicar/probar | ADR-010 aplicado con ausencia/conflicto seguros | PB |
 | B-06 | Política efectiva/herencia | Bloquea primera rebanada | Defaults, tenant, sucursal y versión acordados | PB |
 | B-07 | Agregado raíz de Orden | Bloquea primer cambio de dominio | Coordinador y límites aprobados | PB |
 | B-08 | Separación de Cotización | Bloquea R3 | Identidad, versión, obsolescencia y decisión definidos | PB |
@@ -46,7 +46,8 @@ El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUE
 | Candidato | Momento | Clasificación |
 | --- | --- | --- |
 | Monolito modular inicial | Aceptado en ADR-002 el 2026-07-21; ya no bloquea | ADR |
-| Estrategia multitenant | Antes de persistencia | ADR |
+| Estrategia multitenant | Aceptada en ADR-004 el 2026-07-21; falta aplicar y probar | ADR |
+| Contexto operativo por estación | Aceptado en ADR-010 el 2026-07-21; ya no bloquea conceptualmente | ADR |
 | Alcance y concurrencia de folio | Antes de R1 | ADR |
 | Identidad, PIN y sesión operativa | Antes de R0 | ADR |
 | Política efectiva e instantáneas | Antes de R1 | ADR |
@@ -60,4 +61,4 @@ El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUE
 | Auditoría y retención | Antes de producción | ADR |
 | Núcleo compartido mínimo | Antes de introducirlo | ADR |
 
-**[ADR]** Este paquete no crea ADRs. ADR-002 fue aceptado posteriormente usando su evidencia; los candidatos restantes se registrarán como `Proposed` antes de cualquier aceptación.
+**[ADR]** Este paquete no crea ADRs. ADR-002, ADR-004 y ADR-010 fueron aceptados posteriormente usando su evidencia; los candidatos restantes se registrarán como `Proposed` antes de cualquier aceptación.

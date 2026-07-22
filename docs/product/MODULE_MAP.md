@@ -12,7 +12,7 @@
 - **Datos propios** significa fuente autoritativa conceptual. No define almacenamiento físico ni impide proyecciones de lectura.
 - **Eventos posibles** son ejemplos para descubrir colaboración entre módulos; no son contratos aceptados ni garantizan mensajería distribuida.
 - **Dependencias permitidas** indica colaboración deseada mediante contratos explícitos; no autoriza acceso directo a persistencia ajena.
-- Todos los módulos que operen datos de tenant deben recibir un contexto de tenant verificado y respetar el alcance de sucursal y permisos aplicable.
+- Todos los módulos que ejecuten operaciones ordinarias deben recibir el contexto tenant/sucursal/estación/usuario de ADR-010 y respetar los permisos aplicables.
 - Identity, Access Control, Audit, Files, Notifications e Integrations pueden ser capacidades transversales sin convertirse en dependencias indiscriminadas del dominio.
 
 ## Límites generales propuestos
@@ -104,34 +104,34 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 ## Branch Management
 
 - **Responsabilidad principal — propuesta:** administrar sucursales de un tenant y su ciclo de vida operativo.
-- **Datos propios — propuesta:** sucursal, estado, datos de ubicación necesarios y relaciones jerárquicas si se aprueban. Las asignaciones de acceso de usuarios pertenecerían a Access Control.
+- **Datos propios — propuesta:** sucursal, estado, datos de ubicación necesarios y relaciones jerárquicas si se aprueban. El usuario no pertenece permanentemente a una sucursal; Device Management gobierna la vinculación de estación.
 - **Eventos posibles:** sucursal creada, actualizada, activada, desactivada o cerrada.
 - **Dependencias permitidas:** Tenant Management como límite padre; Configuration para valores de sucursal; Audit. Los módulos operativos pueden referenciar sucursales válidas por identificador, no modificar sus datos.
-- **Preguntas abiertas:** datos tenant-wide, transferencias, cierre con operación pendiente y asignación múltiple. Véanse [QUESTION-006](./OPEN_QUESTIONS.md#question-006) y [QUESTION-007](./OPEN_QUESTIONS.md#question-007).
+- **Preguntas abiertas:** transferencias de negocio, cierre con operación pendiente y capacidades administrativas sobre varias sucursales. Véanse [QUESTION-006](./OPEN_QUESTIONS.md#question-006) y [QUESTION-007](./OPEN_QUESTIONS.md#question-007).
 
 ## Identity
 
-- **Responsabilidad principal — propuesta:** representar identidades globales y administrar su autenticación y ciclo de vida.
-- **Datos propios — propuesta:** identidad, identificadores de acceso, estados de bloqueo/revocación y metadatos de autenticación o recuperación. No se decide aquí el algoritmo de credenciales.
+- **Responsabilidad principal — propuesta:** representar usuarios ordinarios de tenant e identidades separadas de plataforma, y administrar su autenticación/ciclo de vida.
+- **Datos propios — propuesta:** usuario con tenant único, identificadores de acceso, estados de bloqueo/revocación y metadatos de autenticación o recuperación. No se decide aquí el algoritmo de credenciales ni la correlación de una persona entre tenants.
 - **Eventos posibles:** identidad registrada, identificador verificado, autenticación completada/fallida, identidad bloqueada, recuperada o revocada.
 - **Dependencias permitidas:** servicios técnicos de autenticación y Audit para eventos sensibles. Publica una intención de recuperación para que Notifications la consuma; Identity no depende de Notifications ni de módulos operativos.
-- **Preguntas abiertas:** unicidad global, identificadores, recuperación, múltiples tenants y separación entre personal y usuario. Véase [QUESTION-009](./OPEN_QUESTIONS.md#question-009).
+- **Preguntas abiertas:** identificadores, recuperación, correlación de persona entre tenants y separación entre personal/usuario de tenant. Véase [QUESTION-009](./OPEN_QUESTIONS.md#question-009).
 
 ## Access Control
 
-- **Responsabilidad principal — propuesta:** resolver membresías, roles, permisos, asignaciones de sucursal y autorización efectiva.
-- **Datos propios — propuesta:** membresía tenant, roles, permisos, grants, asignaciones de sucursal y estados de acceso. El catálogo concreto está pendiente.
-- **Eventos posibles:** membresía invitada/activada/revocada, rol asignado/retirado, permiso o alcance cambiado.
+- **Responsabilidad principal — propuesta:** resolver usuarios, roles, permisos y autorización efectiva dentro del contexto de ADR-010.
+- **Datos propios — propuesta:** estado de acceso del usuario, roles, permisos y grants. No es propietario de la sucursal efectiva ni crea asignaciones permanentes usuario–sucursal.
+- **Eventos posibles:** usuario habilitado/suspendido/revocado, rol asignado/retirado, permiso o alcance cambiado.
 - **Dependencias permitidas:** Identity, Tenant Management y Branch Management. Todos los módulos consultan decisiones de autorización mediante un contrato común; Access Control no necesita conocer reglas internas de cada módulo más allá de recursos y acciones publicados.
-- **Preguntas abiertas:** roles base/personalizados, permisos directos, denegaciones, alcance por sucursal y separación de funciones. Véase [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
+- **Preguntas abiertas:** roles base/personalizados, permisos directos, denegaciones, restricciones contextuales y separación de funciones. Véase [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
 
 ## Device Management
 
-- **Responsabilidad principal — propuesta:** vincular, activar, reconocer, reasignar y revocar dispositivos autorizados y sus sesiones técnicas.
-- **Datos propios — propuesta:** registro de dispositivo, tenant y sucursal vinculados, estado, evidencia de activación, última actividad y sesiones de dispositivo. El PIN se asocia a una membresía dentro de un tenant; su ownership criptográfico y de política permanece pendiente entre Access Control y el componente de autenticación, pero no pertenece a la identidad global ni al dispositivo. Device Management sólo consume el resultado autorizado para abrir una sesión operativa.
-- **Eventos posibles:** vinculación solicitada/completada, dispositivo activado/revocado/perdido/reasignado, sesión cerrada remotamente.
+- **Responsabilidad principal — propuesta:** vincular, activar, reconocer, desvincular y revocar estaciones y sus sesiones técnicas conforme a ADR-010.
+- **Datos propios — propuesta:** identidad de estación, sucursal vinculada, tenant derivado, estado, evidencia de activación, última actividad y sesiones técnicas. El PIN se asocia al usuario del tenant; su ownership criptográfico/político permanece pendiente y no pertenece a la estación. Device Management sólo aporta su contexto validado.
+- **Eventos posibles:** vinculación solicitada/completada, estación activada/desvinculada/revocada/perdida, nueva vinculación y sesión cerrada remotamente.
 - **Dependencias permitidas:** Tenant Management, Branch Management, Identity y Access Control; Audit y Notifications para acciones sensibles.
-- **Preguntas abiertas:** flujo de vinculación, confianza, cambio de sucursal, pérdida, PIN, turno y modo offline no confirmado. Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
+- **Preguntas abiertas:** mecanismo de vinculación, credencial/confianza técnica, pérdida, protección del PIN, sesión, recuperación y modo sin conexión. La semántica de reubicación y turno se rige por ADR-010. Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
 
 ## Customers
 

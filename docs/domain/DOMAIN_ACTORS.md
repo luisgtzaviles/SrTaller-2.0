@@ -25,7 +25,7 @@ Actor significa participante con intención o responsabilidad en el negocio; no 
 | Vendedor | Convertir necesidad en oferta comprensible | preparar opciones y comunicar condiciones | seleccionar propuesta dentro de políticas | servicios, partidas, vigencia | crear/emitir/revisar cotización | diagnosticar o autorizar por el cliente | ¿existe como actor separado? |
 | Cajero | Registrar cobros y controlar valores | identificar obligación, medio y evidencia | aceptar medio permitido y escalar diferencias | pago, referencia, conteo | registrar pago, devolución autorizada, cierre de caja | anular o condonar sin permiso | ¿caja y recepción se combinan? Q022 |
 | Gerente de sucursal | Mantener operación local controlada | supervisar excepciones, cargas y custodia | prioridades, permisos delegados y excepciones locales | motivo y aprobación | transferir, autorizar excepción, revisar auditoría | actuar fuera del tenant o borrar trazabilidad | ¿qué es tenant-wide? Q006–Q010 |
-| Administrador del tenant | Administrar organización y acceso | membresías, sucursales, configuración | altas, roles y alcance permitidos | estructura y responsables | invitar, suspender, configurar | intervenir datos de otra organización | ¿puede operar negocio? Q005/Q010 |
+| Administrador del tenant | Administrar organización y acceso | usuarios, sucursales, estaciones, configuración | altas, roles y alcance permitidos | estructura y responsables | habilitar, suspender, configurar | intervenir datos de otra organización | ¿puede operar negocio? Q005/Q010 |
 | Proveedor | Suministrar bienes o servicios | cumplir oferta, entrega y garantía acordadas | disponibilidad y condiciones propias | producto, compatibilidad, costo, entrega | recibir pedido o devolución | consumir stock o cerrar orden | ¿proveedor y técnico externo son distintos? |
 | Canal de mensajería | Transportar comunicaciones según capacidades | entregar estados externos y límites | ninguna decisión de negocio del taller | referencias y resultados del canal | aceptar envío o reportar recepción | autorizar reparación o interpretar silencio | ¿qué canal y evidencia valen? Q019–Q020 |
 | Sistema externo | Colaborar en un proceso delimitado | cumplir contrato y reportar resultado | decisiones propias del proveedor | referencia, estado, fallo | procesar pago, mensaje o servicio | convertirse en fuente única del dominio | ¿qué integraciones entran al alcance? |
@@ -36,7 +36,7 @@ Actor significa participante con intención o responsabilidad en el negocio; no 
 - En un taller pequeño, recepcionista, vendedor, cajero, técnico y gerente pueden ser la misma persona; las responsabilidades siguen siendo distintas.
 - Un propietario puede no ser cliente, contacto ni quien entrega o recoge.
 - Un canal o sistema externo transporta evidencia, pero no reemplaza la autoridad humana.
-- Un dispositivo autorizado del sistema no es un actor equivalente al dispositivo del cliente.
+- Una estación operativa del sistema no es un actor equivalente al dispositivo del cliente.
 - Los nombres de puestos no deben convertirse directamente en roles o permisos.
 
 ## Decisiones pendientes

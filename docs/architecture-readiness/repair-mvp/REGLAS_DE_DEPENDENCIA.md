@@ -17,7 +17,7 @@
 | Dinero, identidad, tiempo e identificadores pueden usar núcleo compartido mínimo | Recomendada si reduce duplicación semántica | DAP |
 | El núcleo compartido debe ser pequeño y estable | Obligatoria si se crea dicho núcleo | DAR |
 | No confiar en filtros de interfaz para reglas o autorización | Obligatoria desde el primer cambio de código | RDD |
-| Tenant y sucursal forman parte explícita del contexto | Obligatoria desde el primer cambio de código | RDD |
+| Tenant, sucursal, estación y usuario forman el contexto efectivo de toda operación ordinaria | Obligatoria desde el primer cambio de código | RDD, ADR-010 |
 | Toda consulta y mutación respeta aislamiento tenant | Obligatoria desde el primer cambio de código | RDD |
 | Automatizar reglas con herramienta de análisis arquitectónico | Diferible hasta aceptar el conjunto tecnológico | DD |
 

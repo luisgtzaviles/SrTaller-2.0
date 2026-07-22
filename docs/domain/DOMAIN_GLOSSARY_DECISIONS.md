@@ -2,15 +2,15 @@
 
 ## Metadatos
 
-- **Estado:** Unknown / Pending Product Owner validation
+- **Estado:** Validación pendiente salvo decisiones aceptadas explícitamente
 - **Propósito:** Registrar propuestas, discusión y futuras decisiones sobre términos sin sustituir el lenguaje ubicuo.
 - **Alcance:** Ambigüedades transversales detectadas en discovery y su mecanismo de resolución.
 - **Audiencia:** Product Owner, expertos operativos, diseño de producto, soporte y arquitectura.
-- **Última actualización:** 2026-07-13
+- **Última actualización:** 2026-07-21
 
 ## Relación con el lenguaje ubicuo
 
-Este registro complementa [UBIQUITOUS_LANGUAGE](UBIQUITOUS_LANGUAGE.md). Aquel documento reúne vocabulario candidato; éste conserva la deliberación, evidencia, autoridad y consecuencia de cada decisión. Ninguna fila inicial contiene aprobación explícita.
+Este registro complementa [UBIQUITOUS_LANGUAGE](UBIQUITOUS_LANGUAGE.md). Aquel documento reúne vocabulario candidato; éste conserva la deliberación, evidencia, autoridad y consecuencia de cada decisión. Sólo las filas con estado, fecha y autoridad explícitos se consideran aceptadas.
 
 ## Estados del registro
 
@@ -43,7 +43,7 @@ Este registro complementa [UBIQUITOUS_LANGUAGE](UBIQUITOUS_LANGUAGE.md). Aquel d
 | TERM-DEC-009 | garantía | reingreso | Warranty, Repair | un retorno puede ser reclamo cubierto, nueva falla o continuación | TBD | Pending Product Owner validation | RULE-016, DQ-021/022 | Product Owner + garantías | TBD | afecta cobertura, cobro e historia |
 | TERM-DEC-010 | anticipo | pago / abono | Payments, Quoting | momento, aplicación y propósito financiero siguen abiertos | TBD | Pending Product Owner validation | RULE-009, DQ-012 | Product Owner + finanzas | TBD | afecta saldo, reembolso y autorización |
 | TERM-DEC-011 | sucursal | ubicación | Branch, Inventory, Cash, Delivery | unidad organizacional y lugar físico pueden no coincidir | TBD | Pending Product Owner validation | DOMAIN-FINDING-004, DQ-002 | Product Owner + operación multisucursal | TBD | afecta alcance, custodia y permisos |
-| TERM-DEC-012 | dispositivo del cliente | dispositivo autorizado | Customer Management/Repair, IAM | objeto reparado y dispositivo de acceso pertenecen a problemas distintos | TBD | Pending Product Owner validation | DOMAIN-FINDING-003, Q012 | Product Owner + seguridad/operación | TBD | evita mezclar inventario del cliente con control de acceso |
+| TERM-DEC-012 | dispositivo del cliente | estación operativa | Customer Management/Repair, IAM | objeto reparado y estación de acceso pertenecen a problemas distintos | estación operativa para el origen de acceso | Accepted en ADR-010 | DOMAIN-FINDING-003, Q012 | Responsable de Producto | 2026-07-21 | evita mezclar equipo recibido con contexto operativo |
 | TERM-DEC-013 | caja | Cash Register / Cash Management | Payments, Cash Management | lugar, sesión, instrumento y capacidad operativa pueden usar la misma palabra | TBD | Pending Product Owner validation | DOMAIN-FINDING-011, Q022 | Product Owner + caja/finanzas | TBD | afecta movimientos, arqueo y permisos |
 | TERM-DEC-014 | pago operativo | Subscription Billing | Payments, Subscription Billing | cliente del taller y tenant pagan obligaciones diferentes | TBD | Pending Product Owner validation | DOMAIN-FINDING-012, Q023–Q025 | Product Owner + finanzas/plataforma | TBD | evita mezclar saldos y restricciones de acceso |
 | TERM-DEC-015 | conversación | chat / hilo | Messaging, CRM | canal, agrupación y continuidad multicanal no están definidos | TBD | Pending Product Owner validation | DOMAIN-FINDING-006, Q018–Q020 | Product Owner + atención | TBD | afecta trazabilidad, privacidad y autorización |

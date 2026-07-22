@@ -13,7 +13,7 @@
 | Saltar segunda revisión | Excepción explícita, nunca permiso general | Motivo, actor y riesgo aceptado; sin borrar requisito | PB |
 | Entregar sin nota/evidencia mínima | Excepción de entrega | Motivo y evidencia alternativa | PB |
 | Autorizar excepción | Rol competente y reautenticación | Política exceptuada, alcance y expiración | DAP |
-| Cambiar tenant/sucursal | Membresía verificada | Sesión, origen/destino; no mutar tenant de entidad | RDD |
+| Desvincular o volver a vincular estación | Capacidad administrativa y control reforzado por definir | Actor, estación, origen/destino, momento y motivo; nunca selección libre | RDD, ADR-010 |
 | Eliminar evidencia | Permiso restringido | Retiro lógico/retención y motivo; no borrado destructivo por defecto | DAP |
 | Modificar políticas | Administrador de tenant; reautenticación | Nueva versión, alcance y motivo | DAR |
 | Suplantar usuario | Soporte excepcional, temporal | Actor real/suplantado, razón, aprobación y expiración | PB |

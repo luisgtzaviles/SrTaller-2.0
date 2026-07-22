@@ -46,7 +46,7 @@
 ## Atribución por usuario
 
 - **HOV/RCA:** SR Taller 1.0 usa PIN de cuatro dígitos y cierre por inactividad para baja fricción y atribución.
-- **DDV:** cada acción relevante conserva actor, tenant, sucursal, fecha, hora y contexto.
+- **DDV/ADR-010:** cada acción relevante conserva usuario, tenant, sucursal, estación, fecha, hora y contexto de origen.
 - **IDO:** una sesión operativa puede aportar contexto temporal sin convertirse en identidad absoluta.
 - **PA:** longitud, recuperación, rate limiting, vigencia y acciones que requieren autenticación reforzada.
 - **RCL:** compartir PIN o usar un nombre textual puede atribuir incorrectamente acciones.

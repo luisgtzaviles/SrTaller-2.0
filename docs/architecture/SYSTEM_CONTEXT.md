@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Hechos conocidos, hipótesis y propuestas; no constituye una decisión arquitectónica aceptada.
+- **Naturaleza:** Modelo conceptual; ADR-002, ADR-004 y ADR-010 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
 - **Alcance:** Límites de SR Taller 2.0, actores, sistemas externos y flujos de información de alto nivel.
 - **Fuente de producto:** [Visión del producto](../product/PRODUCT_VISION.md) y [actores y personas](../product/ACTORS_AND_PERSONAS.md).
 
@@ -23,11 +23,11 @@ Este documento ubica a SR Taller 2.0 en su entorno. No define módulos internos 
 
 | Elemento | Relación conceptual con la plataforma | Estado |
 |---|---|---|
-| Personal del taller | Opera sucursales según su membresía, asignaciones y permisos | Hecho conocido; reglas detalladas pendientes |
+| Personal del taller | Opera en la sucursal de la estación vinculada como usuario del tenant, sujeto a permisos | Contexto aceptado; permisos pendientes |
 | Propietario o administrador del tenant | Administra configuración, usuarios y alcance operativo autorizado | Hipótesis por validar |
 | Cliente del taller | Recibe servicio y comunicaciones; su acceso directo futuro no está confirmado | Discovery required |
 | Administrador y soporte de plataforma | Gestionan capacidades SaaS bajo controles reforzados y auditados | Hecho conocido; alcance pendiente |
-| Dispositivo autorizado | Establece un contexto de tenant y sucursal antes de una sesión operativa | Propuesta |
+| Estación operativa | Establece tenant y sucursal por vinculación antes de identificar al usuario | Aceptado en ADR-010; mecanismo pendiente |
 | Proveedor de identidad o correo | Puede apoyar autenticación, recuperación o entrega transaccional | Proveedor no seleccionado |
 | Proveedor de mensajería | Intercambia mensajes y estados mediante APIs o webhooks | Integración futura; WAHA es una posibilidad |
 | Proveedor de pagos | Informa intentos, confirmaciones, rechazos o contracargos | Discovery required |
@@ -42,7 +42,7 @@ flowchart LR
     Owner[Propietario o administrador]
     Customer[Cliente del taller]
     PlatformOps[Administración y soporte de plataforma]
-    Device[Dispositivo autorizado]
+    Device[Estación operativa]
 
     System[SR Taller 2.0\nPlataforma SaaS]
 
@@ -88,8 +88,8 @@ Fuera del límite quedan los sistemas de terceros, sus garantías de disponibili
 
 ## Flujos principales de alto nivel
 
-- El usuario accede por un hostname; la plataforma propone resolver un tenant candidato y lo contrasta con la identidad autenticada.
-- Un dispositivo vinculado aporta contexto operativo de sucursal, pero no sustituye identidad, permisos ni controles de acciones sensibles.
+- El servidor reconoce la estación vinculada, deriva de ella sucursal/tenant y contrasta al usuario autenticado dentro de ese tenant; el nombre de host sólo puede aportar una señal adicional conforme a ADR-008.
+- La estación vinculada aporta tenant/sucursal, pero no sustituye usuario, permisos ni controles de acciones sensibles.
 - Los clientes propios usan la API central como fuente de verdad; los eventos en tiempo real notifican cambios, no reemplazan la persistencia.
 - Un webhook externo se valida, normaliza, deduplica y persiste antes de distribuirse a clientes conectados.
 - Los trabajos en segundo plano se procesan con contexto explícito y resultados idempotentes cuando sea necesario.
@@ -97,14 +97,14 @@ Fuera del límite quedan los sistemas de terceros, sus garantías de disponibili
 ## Supuestos que requieren validación
 
 - **Hipótesis:** el tenant se identificará principalmente mediante subdominios wildcard.
-- **Hipótesis:** una misma identidad global podría pertenecer a más de un tenant.
+- **Decisión aceptada:** el usuario ordinario pertenece exactamente a un tenant; correlación de una misma persona entre tenants, si alguna vez se requiere, permanece separada.
 - **Hipótesis:** habrá más de una aplicación web separable, por ejemplo operación del taller y administración de plataforma.
 - **Hipótesis:** ciertos proveedores externos serán sustituibles mediante adaptadores.
 - **Hipótesis:** el cliente del taller no operará directamente en la primera entrega.
 
 ## Riesgos iniciales
 
-- Confundir hostname, sesión de dispositivo o datos enviados por el cliente con autorización suficiente.
+- Confundir contexto válido de estación o datos enviados por el cliente con autorización suficiente.
 - Convertir el modelo de un proveedor externo en el modelo de dominio interno.
 - Exponer datos entre tenants mediante API, eventos, archivos, caché, logs o soporte privilegiado.
 - Depender de disponibilidad externa en recorridos críticos sin degradación o reintentos definidos.
@@ -115,6 +115,7 @@ Fuera del límite quedan los sistemas de terceros, sus garantías de disponibili
 - [Arquitectura objetivo](TARGET_ARCHITECTURE.md)
 - [Modelo de multitenancy](MULTITENANCY_MODEL.md)
 - [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md)
+- [ADR-010 — Contexto operativo por estación vinculada](../decisions/proposed/ADR-010-station-bound-operational-context.md)
 - [Tiempo real y mensajería](REALTIME_AND_MESSAGING.md)
 - [Línea base de seguridad](SECURITY_BASELINE.md)
 - [Mapa preliminar de módulos](../product/MODULE_MAP.md)

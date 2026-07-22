@@ -153,9 +153,9 @@ Reglas propuestas:
 Reglas:
 
 1. El servidor construye el nombre o identificador de room; no acepta uno arbitrario como autorización.
-2. Autentica la conexión y revalida membresía, dispositivo y permisos al unirse.
+2. Autentica la conexión y revalida usuario, contexto de estación y permisos al unirse.
 3. Incluye tenant en todo namespace, incluso si el ID de conversación parece globalmente único.
-4. Revoca membresías y dispositivos desconectando o retirando rooms afectadas.
+4. Revoca usuarios o estaciones desconectando o retirando rooms afectadas.
 5. Cada evento se autoriza para su audiencia; publicar a una room amplia por comodidad no es aceptable.
 6. Redis pub/sub o adapter, si se usa, conserva namespaces y no sustituye la comprobación de acceso.
 

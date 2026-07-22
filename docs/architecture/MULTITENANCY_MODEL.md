@@ -2,10 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador conceptual de alto riesgo.
-- **Naturaleza:** Propuesta sujeta a validación y pruebas; no es una decisión aceptada.
-- **Dirección evaluada:** Base PostgreSQL compartida, esquema compartido y `tenant_id`, con Row-Level Security (RLS) como defensa adicional a evaluar.
-- **ADR relacionado:** [ADR-004: multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), estado `Proposed`.
+- **Estado:** Dirección multitenant y contexto operativo aceptados; persistencia física y pruebas pendientes.
+- **Naturaleza:** ADR-004 y ADR-010 son autoritativos; RLS y mecanismos concretos siguen sujetos a evaluación.
+- **Dirección aceptada:** Base y esquema compartidos con aislamiento lógico; motor y Row-Level Security (RLS) pendientes.
+- **ADRs relacionados:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), ambos `Accepted`.
 
 ## Objetivo de seguridad
 
@@ -14,7 +14,7 @@ Una operación de un tenant no debe leer, modificar, inferir, publicar, cachear 
 ## Separación de conceptos
 
 - **Tenant candidato:** resultado de resolver el hostname; todavía no concede acceso.
-- **Tenant efectivo:** tenant autorizado después de contrastar hostname, identidad, membresía y estado.
+- **Tenant efectivo:** tenant derivado de la sucursal vinculada a la estación y contrastado con el usuario activo.
 - **Contexto de tenant:** valor inmutable que acompaña una operación una vez autorizada.
 - **Contexto de sucursal:** restricción operativa adicional dentro de un tenant; no reemplaza `tenant_id`.
 - **Contexto de plataforma:** operación administrativa global excepcional, separada del flujo de tenant y auditada.
@@ -23,44 +23,44 @@ Una operación de un tenant no debe leer, modificar, inferir, publicar, cachear 
 
 ```mermaid
 sequenceDiagram
-    actor U as Usuario / cliente
-    participant E as Edge
-    participant R as Resolver de tenant
-    participant I as Identidad y membresías
+    actor U as Usuario
+    participant S as Estación vinculada
     participant A as API
+    participant B as Autoridad de sucursal/estación
+    participant I as Identidad
 
-    U->>E: Solicitud a hostname
-    E->>R: Host normalizado
-    R-->>E: Tenant candidato o rechazo
-    U->>A: Credencial / sesión
-    A->>I: Validar identidad, membresía y estado
-    I-->>A: Tenants y alcance autorizados
-    A->>A: Comparar candidato con autorización
-    alt Coinciden y están activos
-        A-->>U: Ejecutar con contexto inmutable
+    S->>A: Solicitud con identidad técnica
+    A->>B: Validar estación y vinculación
+    B-->>A: Sucursal y tenant derivados, o rechazo
+    U->>A: Identificación dentro del tenant
+    A->>I: Validar usuario y estado en ese tenant
+    I-->>A: Usuario válido o rechazo
+    A->>A: Construir contexto tenant/sucursal/estación/usuario
+    alt Contexto completo y coherente
+        A-->>U: Autorizar por separado y ejecutar
     else No coinciden o contexto ambiguo
         A-->>U: Denegar sin revelar otro tenant
     end
 ```
 
-### Reglas propuestas
+### Reglas aceptadas
 
-1. El hostname normalizado resuelve un tenant candidato mediante un identificador estable, no mediante datos suministrados en el cuerpo.
-2. La identidad autenticada debe tener membresía vigente en ese tenant, salvo un flujo público explícitamente diseñado.
-3. Un `tenant_id` recibido en body, query o header no prevalece sobre el contexto resuelto.
-4. Hostnames desconocidos, suspendidos o ambiguos fallan de forma cerrada.
-5. Dominios de API, plataforma y recursos públicos requieren reglas explícitas; no caen en un tenant por defecto.
-6. Cambiar de tenant crea o valida un contexto nuevo; no se muta silenciosamente el actual.
-7. El subdominio wildcard sigue siendo una [propuesta](../decisions/proposed/ADR-008-wildcard-subdomain-routing.md), no una decisión aceptada.
+1. La estación vinculada resuelve una sucursal y de ella deriva un tenant.
+2. El usuario se identifica dentro de ese tenant y debe pertenecer exactamente a él.
+3. `tenant_id`, `sucursal_id`, estación o actor recibidos desde el cliente no prevalecen sobre el contexto resuelto.
+4. Estación desvinculada/revocada, sucursal inactiva, usuario ausente o conflicto fallan de forma cerrada.
+5. El nombre de host puede aportar un candidato adicional si ADR-008 se acepta, pero nunca reemplaza la estación.
+6. Reubicar una estación exige desvinculación y nueva vinculación; no se muta silenciosamente el contexto.
+7. Plataforma, soporte y recursos públicos requieren contextos separados; no caen en un tenant por defecto.
 
 ## Propagación del contexto
 
 Un contexto mínimo conceptual contiene:
 
 - `tenant_id` efectivo;
-- identidad y membresía que lo autorizan;
-- `branch_id` cuando la operación esté limitada a sucursal;
-- sesión de usuario y/o dispositivo, según el flujo;
+- `branch_id` efectivo;
+- identidad de estación;
+- usuario autenticado dentro del tenant;
 - identificador de correlación;
 - tipo de contexto: tenant o plataforma.
 
@@ -137,10 +137,10 @@ RLS podría limitar filas por una variable de sesión/transacción y reducir el 
 
 ## Alcance de sucursal
 
-- Una sucursal pertenece exactamente a un tenant según la hipótesis inicial.
+- Una sucursal pertenece exactamente a un tenant conforme a ADR-004.
 - `branch_id` restringe un subconjunto de operaciones; no crea una frontera equivalente a tenant.
-- Un usuario puede tener asignaciones a una o varias sucursales; el permiso debe indicar si es tenant-wide o branch-scoped.
-- Un dispositivo se vincula a tenant y sucursal conforme al [modelo de sucursal y dispositivo](BRANCH_AND_DEVICE_MODEL.md).
+- El usuario pertenece al tenant, no a una sucursal permanente; roles/permisos futuros no pueden sustituir la sucursal derivada.
+- Una estación se vincula a una sucursal y deriva su tenant conforme al [modelo de sucursal y dispositivo](BRANCH_AND_DEVICE_MODEL.md).
 - Transferir datos entre sucursales requiere una regla de negocio por módulo; no se asume permitido.
 - Agregados tenant-wide —por ejemplo ciertos reportes— requieren permiso explícito y no eliminan el filtro de tenant.
 
@@ -148,7 +148,7 @@ RLS podría limitar filas por una variable de sesión/transacción y reducir el 
 
 No se propone un “supertenant”. Las operaciones globales deben:
 
-- usar identidad y permisos de plataforma separados de las membresías de tenant;
+- usar identidad y permisos de plataforma separados de los usuarios ordinarios de tenant;
 - requerir justificación y autenticación reforzada para acciones sensibles;
 - seleccionar explícitamente el tenant objetivo;
 - limitar alcance y duración de la elevación;
@@ -163,7 +163,7 @@ La estrategia dedicada está en [Pruebas de aislamiento multitenant](../quality/
 - mismo ID lógico o datos similares en tenants A y B;
 - lectura, búsqueda, paginación, actualización y eliminación cruzadas denegadas;
 - referencias de sucursal de otro tenant rechazadas;
-- discrepancia hostname–membresía rechazada;
+- discrepancia estación–tenant–usuario rechazada;
 - job y room manipulados no cruzan contexto;
 - caché no devuelve resultados de otro tenant;
 - archivo o URL de otro tenant no se revela;
@@ -190,7 +190,7 @@ La estrategia dedicada está en [Pruebas de aislamiento multitenant](../quality/
 
 ## Decisiones pendientes
 
-- Aceptar o rechazar esquema compartido con `tenant_id`.
+- Aplicar y probar el esquema compartido aceptado con discriminación tenant/sucursal.
 - Definir si RLS será obligatoria, selectiva o descartada.
 - Aprobar subdominios wildcard y estrategia para dominios personalizados.
 - Definir alcance de unicidad y retención por agregado.
@@ -199,8 +199,8 @@ La estrategia dedicada está en [Pruebas de aislamiento multitenant](../quality/
 
 ## Preguntas abiertas
 
-- ¿Una identidad puede pertenecer a varios tenants y alternar entre ellos?
-- ¿Qué roles pueden operar múltiples sucursales simultáneamente?
+- ¿Cómo se correlacionará una misma persona entre tenants sin convertir al usuario ordinario en multi-tenant?
+- ¿Qué roles y permisos puede ejercer un usuario dentro del contexto ya fijado por la estación?
 - ¿Existirán usuarios, clientes o catálogos compartidos entre tenants?
 - ¿Se permitirán dominios personalizados además de subdominios?
 - ¿Qué requisitos regulatorios podrían exigir aislamiento físico o residencia regional?
@@ -212,5 +212,5 @@ Las respuestas deben consolidarse en [preguntas abiertas](../product/OPEN_QUESTI
 ## Próxima revisión
 
 - **Momento:** antes de definir cualquier esquema ejecutable o repositorio.
-- **Evidencia esperada:** threat model multitenant, prototipo controlado de RLS si se evalúa, pruebas negativas y decisión del ADR-004.
+- **Evidencia esperada:** modelo de amenazas, pruebas negativas de ADR-004/010 y prototipo controlado de RLS sólo si se autoriza.
 - **Responsable:** TBD.

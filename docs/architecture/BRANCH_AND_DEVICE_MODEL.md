@@ -2,13 +2,13 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador conceptual.
-- **Naturaleza:** Hipótesis y propuesta operativa; no define protocolo, tablas ni interfaz final.
+- **Estado:** Base conceptual aceptada por ADR-010; mecanismos pendientes.
+- **Naturaleza:** Las invariantes de contexto y vinculación son autoritativas; estados detallados, protocolo e interfaz siguen como propuesta.
 - **Alcance:** Pertenencia, vinculación, activación, uso, transferencia, revocación y pérdida de dispositivos.
 
 ## Objetivo
 
-Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirlo con la identidad del empleado. La vinculación ayuda a establecer tenant y sucursal; los permisos siguen perteneciendo a la membresía de la persona y se validan en la API.
+Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; identidad y autorización del usuario se validan por separado en el servidor.
 
 ## Modelo conceptual
 
@@ -16,31 +16,29 @@ Definir cómo un equipo físico adquiere un contexto operativo limitado sin conf
 flowchart LR
     Tenant[Tenant]
     Branch[Sucursal]
-    Device[Dispositivo autorizado]
+    Device[Estación operativa]
     DeviceSession[Sesión de dispositivo]
-    Membership[Membresía de empleado]
-    Assignment[Asignación a sucursal]
-    Operational[Sesión operativa]
+    User[Usuario del tenant]
+    Operational[Contexto operativo]
 
     Tenant --> Branch
-    Tenant --> Device
     Branch --> Device
     Device --> DeviceSession
-    Membership --> Assignment
-    Branch --> Assignment
     DeviceSession --> Operational
-    Membership --> Operational
-    Assignment --> Operational
+    Tenant --> User
+    User --> Operational
 ```
 
-### Hipótesis iniciales
+### Invariantes aceptadas
 
 - Una sucursal pertenece a un único tenant.
-- Un dispositivo autorizado pertenece a un tenant y se asigna a una sucursal operativa a la vez.
-- Una membresía puede estar asignada a una o varias sucursales.
-- Una sesión operativa combina dispositivo vigente, membresía vigente y alcance de sucursal.
+- Una estación mantiene una única vinculación vigente con una sucursal activa.
+- El tenant de la estación deriva de esa sucursal.
+- El usuario ordinario pertenece al tenant, no a una sucursal permanente, y puede identificarse desde cualquier estación autorizada de ese tenant.
+- El contexto operativo combina tenant, sucursal, estación y usuario validados.
+- Cerrar o cambiar usuario no modifica la vinculación de la estación.
 
-Las cardinalidades y excepciones necesitan validación de producto.
+Los mecanismos técnicos, permisos y excepciones administrativas permanecen pendientes.
 
 ## Estados conceptuales del dispositivo
 
@@ -53,7 +51,7 @@ Las cardinalidades y excepciones necesitan validación de producto.
 | Revocado | La confianza fue retirada | No operar; requerir nueva vinculación |
 | Retirado | Equipo fuera de servicio y retenido para historial | Consulta administrativa auditada |
 
-**Decisión pendiente:** nombres, transiciones y posibilidad de reactivar un dispositivo revocado.
+**Decisión pendiente:** nombres, transiciones detalladas y posibilidad de reactivar una estación revocada. ADR-010 sólo exige distinguir una vinculación válida de estados sin capacidad operativa normal.
 
 ## Vinculación conceptual
 
@@ -78,24 +76,24 @@ sequenceDiagram
     end
 ```
 
-### Reglas propuestas
+### Restricciones aceptadas y mecanismo pendiente
 
-1. La inicia una membresía con permiso explícito y, posiblemente, autenticación reforzada.
-2. El tenant y la sucursal se eligen desde el contexto autorizado del administrador, no desde datos libres del equipo.
+1. La inicia o autoriza un usuario con capacidad administrativa explícita y, posiblemente, autenticación reforzada.
+2. El actor administrativo autoriza una sucursal concreta; el tenant deriva de ella y no se elige independientemente desde el equipo.
 3. El desafío es temporal, de uso único y no equivale a una credencial permanente.
 4. La API registra iniciador, tenant, sucursal, dispositivo, resultado y correlación.
 5. La activación crea confianza revocable y limitada; no crea un usuario compartido.
 6. El material de sesión no se muestra ni se registra en claro.
 7. Identificadores de hardware pueden ser señales, no la única prueba de posesión o autorización.
 
-El mecanismo concreto —QR, código, enlace, aprobación cercana u otro— queda pendiente de investigación de experiencia y seguridad.
+La capacidad administrativa exacta y el mecanismo concreto —QR, código, enlace, aprobación cercana u otro— quedan pendientes de los ADRs de identidad, permisos y vinculación.
 
 ## Sesión de dispositivo y último acceso
 
 - La sesión de dispositivo prueba que el equipo continúa vinculado; se valida en cada renovación o solicitud relevante.
 - “Último acceso” debe distinguir al menos último intento y última actividad exitosa para no ocultar abuso; el detalle final está pendiente.
 - Deben registrarse versión de cliente y señales operativas mínimas, con límites de privacidad.
-- Una sesión puede expirar, rotarse o revocarse sin cambiar membresías de empleados.
+- Una sesión de estación puede expirar, rotarse o revocarse sin cambiar usuarios del tenant.
 - El backend no confía en un reloj local para vigencia o auditoría autoritativa.
 - La ausencia prolongada de conexión puede disparar revisión, no una eliminación automática sin política.
 
@@ -105,12 +103,12 @@ El mecanismo concreto —QR, código, enlace, aprobación cercana u otro— qued
 
 1. El equipo activo presenta una experiencia de selección o identificación de empleado sin revelar datos innecesarios.
 2. El empleado introduce su PIN mediante un canal protegido.
-3. La API valida dispositivo, tenant, sucursal, membresía, asignación, estado y límites de intentos.
+3. La API valida estación, vinculación, tenant/sucursal derivados, usuario del mismo tenant, estado y límites de intentos.
 4. Si el conjunto es válido, termina o suspende el contexto anterior según una política pendiente y crea una sesión operativa acotada.
 5. La UI obtiene capacidades efectivas; no deriva permisos del cargo mostrado.
 6. El cambio y su resultado quedan auditados.
 
-Un PIN no permite operar desde un dispositivo no autorizado ni desde una sucursal sin asignación. Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
+Un PIN no permite operar desde una estación no vinculada, no selecciona sucursal y no identifica fuera del tenant derivado. Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
 
 ### Cambio de turno
 
@@ -136,14 +134,15 @@ La supervisión debe ser una autorización trazable y acotada a la acción; no d
 
 ## Cambio de sucursal
 
-No se trata como una edición ordinaria. Flujo conceptual:
+No se trata como una edición ordinaria. ADR-010 exige este flujo conceptual:
 
 1. Un actor autorizado solicita la transferencia e indica motivo.
-2. Se valida que ambas sucursales pertenezcan al mismo tenant.
-3. Se terminan sesiones de dispositivo y operativas activas.
-4. Se evalúan trabajos, cajas o procesos locales en curso.
-5. Se registra historial de asignaciones y se activa un contexto nuevo.
-6. El dispositivo debe volver a sincronizar configuración y permisos de la sucursal destino.
+2. Se desvincula explícitamente de la sucursal anterior y se invalidan sus contextos operativos.
+3. Se evalúan trabajos, cajas o procesos locales en curso conforme a sus decisiones propias.
+4. Se registra la desvinculación, su actor, momento y resultado.
+5. Se inicia una vinculación nueva y autorizada con la sucursal destino.
+6. Se deriva nuevamente el tenant, se registra la nueva historia y se establece un contexto nuevo.
+7. El dispositivo debe volver a sincronizar configuración y permisos aplicables sin tratar datos locales como autoridad.
 
 Mover un dispositivo entre tenants no se propone como transferencia; requeriría revocación, limpieza segura y una vinculación nueva.
 
@@ -202,7 +201,7 @@ Eventos candidatos:
 
 - desafío reutilizado, vencido, manipulado o de otro tenant;
 - dispositivo activo intentando operar en otra sucursal;
-- empleado válido sin asignación a la sucursal del equipo;
+- usuario válido de otro tenant o usuario del mismo tenant sin permiso para la acción;
 - revocación con sesión HTTP, WebSocket y job activos;
 - cambio de turno sin residuos de datos o permisos;
 - transferencia con operación local en curso;
@@ -229,16 +228,16 @@ Eventos candidatos:
 ## Preguntas abiertas
 
 - ¿Qué tipos de equipos pueden vincularse: computadoras, tablets, teléfonos, terminales compartidas?
-- ¿Una sucursal puede operar sin dispositivo vinculado en ciertos flujos administrativos?
-- ¿Quién puede vincular, transferir y revocar, y qué acciones requieren doble aprobación?
+- ¿Qué capacidades administrativas separadas pueden operar sin contexto ordinario de estación?
+- ¿Quién puede vincular, desvincular y revocar, y qué acciones requieren doble aprobación?
 - ¿Cómo se identifica un empleado en la pantalla de PIN sin facilitar enumeración?
 - ¿Qué ocurre con operaciones abiertas durante cambio de turno o revocación?
-- ¿Cuánto tiempo puede permanecer una sesión operativa inactiva?
+- ¿Cuánto tiempo puede permanecer una sesión de usuario inactiva y cómo se reanuda sin alterar la vinculación?
 - ¿Existe una necesidad real y prioritaria de operación offline?
 - ¿Qué información del dispositivo puede recopilarse legalmente y con qué retención?
 
 ## Próxima revisión
 
-- **Momento:** después de observar el cambio de turno y la administración de equipos en talleres reales.
-- **Evidencia esperada:** journey operativo validado, threat model del PIN y decisiones sobre estados, supervisión y revocación.
+- **Momento:** antes de aceptar los ADRs de identidad/PIN, permisos o mecanismo de vinculación.
+- **Evidencia esperada:** modelo de amenazas del PIN/vinculación y decisiones sobre estados detallados, supervisión y revocación compatibles con ADR-010.
 - **Responsable:** TBD.

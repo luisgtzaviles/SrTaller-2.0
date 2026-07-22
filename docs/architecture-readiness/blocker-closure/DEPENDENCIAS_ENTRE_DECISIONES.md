@@ -42,7 +42,7 @@ flowchart TD
 | Decisión técnica | Respuesta previa de producto |
 | --- | --- |
 | ADR multitenant | Datos globales, tenant-wide, branch-scoped, ciclo del tenant |
-| ADR de contexto operativo | Membresías multisucursal, sucursal predeterminada, cambio y visibilidad |
+| ADR de contexto operativo | Cerrado por ADR-010: estación vinculada, sucursal derivada, rotación y cambio explícito |
 | ADR de identidad/PIN | Actores, forma de acceso, inactividad y acciones sensibles |
 | ADR de roles/permisos | Capacidades mínimas y excepciones por rebanada |
 | ADR de folio | Alcance visible y transferencias entre sucursales |
@@ -63,7 +63,7 @@ flowchart TD
 
 ## Decisiones que pueden cerrarse juntas
 
-- `DEC-007`, `DEC-008`, `DEC-010` y `DEC-011`: sesión de modelo organizacional.
+- `DEC-007` a `DEC-012`: cerradas conceptualmente por ADR-004/010; su aplicación y pruebas se verifican juntas.
 - `DEC-013` a `DEC-020`: paquete de identidad y seguridad operativa, con separación de autoridad dentro del ADR.
 - `DEC-021` a `DEC-025`: folio, concurrencia e idempotencia.
 - `DEC-032` a `DEC-035`: política efectiva, snapshot, vigencia y campos.
@@ -72,7 +72,7 @@ flowchart TD
 
 ## Dependencias que no deben fusionarse
 
-- estrategia multitenant y sucursal activa;
+- estrategia multitenant de ADR-004 y contexto operativo de ADR-010;
 - autenticación primaria y autorización de acciones;
 - estado de negocio y ubicación física;
 - pago y entrega;

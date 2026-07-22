@@ -2,7 +2,7 @@
 
 ## Uso
 
-Estas preguntas requieren autoridad de Producto u Operaciones. No incluyen elecciones de framework, base de datos, patrones o proveedores. Cada respuesta debe registrar ejemplos, excepciones, alcance y autoridad; un “sí” aislado no cierra la decisión.
+Estas preguntas requieren autoridad de Producto u Operaciones. Las filas marcadas como respondidas se conservan por trazabilidad y ya no son preguntas abiertas dentro de su alcance. Cada respuesta debe registrar ejemplos, excepciones, alcance y autoridad; un “sí” aislado no cierra la decisión.
 
 ## Prioridad 0 — antes de programar R0
 
@@ -10,16 +10,16 @@ Estas preguntas requieren autoridad de Producto u Operaciones. No incluyen elecc
 | --- | --- | --- | --- |
 | PO-001 | ¿Cuál es el resultado observable de R0, qué demuestra y qué queda explícitamente fuera? | DEC-002 | Primer commit/H0 |
 | PO-002 | ¿Qué escenarios felices, negativos y de denegación debe aceptar Producto para declarar R0 terminado? | DEC-062, DEC-063 | Primer commit/H0 |
-| PO-003 | ¿Qué datos son globales del SaaS, cuáles pertenecen al tenant y cuáles a una sucursal? | DEC-007, DEC-008 | R0/H1 |
-| PO-004 | ¿Una persona puede pertenecer a varios tenants o sólo a uno, y quién gobierna esa pertenencia? | DEC-008, DEC-013 | R0/H1 |
-| PO-005 | ¿Un usuario puede operar en varias sucursales del mismo tenant y con permisos diferentes en cada una? | DEC-011, DEC-017, DEC-018 | R0/H1 |
-| PO-006 | ¿Cómo se elige la sucursal activa, existe una sucursal predeterminada y qué ocurre si no hay una válida? | DEC-010 | R0/H1 |
-| PO-007 | ¿Puede cambiarse de sucursal durante una sesión y qué operaciones abiertas deben bloquear, conservar o revalidar ese cambio? | DEC-012 | R0/H1 |
-| PO-008 | ¿Qué reparaciones puede ver un usuario: sólo su sucursal activa, todas sus sucursales autorizadas o todo el tenant? | DEC-011, DEC-018 | R0/H1 |
+| PO-003 | **Respondida por ADR-004:** clasificación SaaS/tenant/sucursal aceptada; falta aplicar y probar | DEC-007, DEC-008 | H1 de evidencia |
+| PO-004 | **Respondida para usuario ordinario por ADR-004/010:** pertenece exactamente a un tenant; correlación de persona queda al ADR de identidad | DEC-008, DEC-013 | H1 parcial |
+| PO-005 | **Contexto respondido por ADR-010:** rota sin cuenta duplicada; queda decidir roles y permisos por capacidad | DEC-011, DEC-017, DEC-018 | H1 parcial |
+| PO-006 | **Respondida por ADR-010:** la estación vinculada fija la sucursal y la ausencia falla cerrada | DEC-010 | H1 de evidencia |
+| PO-007 | **Contexto respondido por ADR-010:** reubicar exige desvincular/revincular; operaciones abiertas se deciden por módulo | DEC-012 | H1 parcial |
+| PO-008 | **Alcance base respondido por ADR-004/010:** operación local queda en la sucursal efectiva; permisos de reportes tenant-wide siguen abiertos | DEC-011, DEC-018 | H1 parcial |
 | PO-009 | ¿Las políticas operativas pueden variar por sucursal? Si sistema, tenant y sucursal difieren, ¿qué autoridad prevalece? | DEC-032 | R0/R1 |
 | PO-010 | ¿La zona horaria pertenece al tenant o a cada sucursal, y qué debe ocurrir cuando un usuario consulta otra zona? | DEC-037 | R0/H1 |
-| PO-011 | ¿Qué significa el acceso por PIN, quién puede usarlo, en qué estación y qué acciones nunca autoriza por sí solo? | DEC-014, DEC-019, DEC-020 | R0/H1 |
-| PO-012 | ¿Cuándo debe terminar o bloquearse una sesión inactiva en una estación compartida? | DEC-015 | R0/H1 |
+| PO-011 | **Propósito respondido por ADR-010:** identifica dentro del tenant y no elige contexto ni concede permisos; quedan protección, límites y acciones sensibles | DEC-014, DEC-019, DEC-020 | H1 parcial |
+| PO-012 | **Efecto respondido por ADR-010:** inactividad termina usuario y conserva estación; quedan duración y reanudación | DEC-015 | H1 parcial |
 | PO-013 | ¿Cuáles son los actores mínimos de R0/R1 y qué acciones sensibles requieren permiso, motivo o reautenticación? | DEC-017 a DEC-020 | R0/H1 |
 
 ## Prioridad 1 — antes de programar R1

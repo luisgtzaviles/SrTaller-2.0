@@ -10,7 +10,7 @@
 
 | Etapa | Información mínima existente | Resultado observable | Invariante principal | Clasificación |
 | --- | --- | --- | --- | --- |
-| Entrada | Tenant, sucursal activa, sesión, actor y permisos | Contexto verificable | Ninguna operación sin alcance | RDD |
+| Entrada | Tenant, sucursal, estación, usuario y permisos | Contexto ADR-010 verificable | Ninguna operación sin contexto completo ni autorización | RDD |
 | Recepción | Cliente con nombre, problema, receptor, fecha/hora y política aplicada | Orden identificada | La creación inicia custodia | RDD |
 | Identificación | Folio, descripción física y estado de impresión/manual | Vínculo inequívoco | Un folio no identifica dos órdenes en su alcance | RDD |
 | Consulta técnica | Orden, custodia, ubicación, notas, asignación y línea temporal | Detalle autorizado | Lectura limitada al contexto autorizado | RDD |

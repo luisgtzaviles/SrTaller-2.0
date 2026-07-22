@@ -58,7 +58,7 @@ Las flechas representan conocimiento permitido, no el flujo completo de datos. L
 
 - Traducen HTTP, WebSocket, webhook o job a una solicitud de aplicación.
 - Validan forma, tamaño y versión del contrato.
-- Establecen correlación y entregan contexto autenticado, sin inventarlo.
+- Establecen correlación y entregan el contexto tenant/sucursal/estación/usuario resuelto en el borde confiable conforme a ADR-010, sin inventarlo.
 - Mapean errores internos a respuestas externas estables.
 
 ### Aplicación
@@ -129,7 +129,7 @@ Las agrupaciones sólo facilitan lectura. No sustituyen el análisis de dependen
 - Listados deben tener paginación y ordenamiento determinista; límites máximos se definirán después.
 - Los errores deben distinguir autenticación, autorización, conflicto, validación, límite y dependencia externa sin filtrar internals.
 - Las mutaciones sensibles o reintentables deberían aceptar mecanismos de idempotencia cuando el caso lo requiera.
-- Toda operación tenant-scoped deriva su contexto de fuentes confiables y rechaza discrepancias.
+- Toda operación ordinaria recibe tenant, sucursal, estación y usuario desde fuentes confiables y rechaza ausencia o discrepancias.
 - La documentación del contrato debe generarse o verificarse desde una fuente única cuando se implemente.
 
 No se definen endpoints en esta etapa.
@@ -153,7 +153,7 @@ La tabla distingue tipos de ejecución, no procesos desplegables iniciales. Todo
 | Duración esperada | Breve y acotada | Puede ser diferida | Conexión prolongada |
 | Fuente de verdad | Persistencia | Persistencia | Nunca la conexión |
 | Reintento | Cliente/idempotencia según contrato | Política acotada y dead-letter operable | Reconexión y resincronización |
-| Contexto | Tenant, actor, sucursal, dispositivo, correlación según aplique | Tenant y correlación obligatorios | Tenant, identidad y autorización de room |
+| Contexto | Tenant, sucursal, estación y usuario obligatorios en operación ordinaria; correlación | Contexto de origen y correlación obligatorios | Tenant, identidad y autorización de room |
 
 ## Configuración y feature flags
 
@@ -180,11 +180,12 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 
 - [ADR-002: monolito modular orientado al dominio](../decisions/proposed/ADR-002-modular-monolith-first.md) — `Accepted`
 - [ADR-004: multitenancy con base y esquema compartidos](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) — `Accepted`
+- [ADR-010: contexto operativo derivado de una estación vinculada](../decisions/proposed/ADR-010-station-bound-operational-context.md) — `Accepted`
 - [ADR-005: NestJS para backend](../decisions/proposed/ADR-005-nestjs-backend.md)
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: estrategia de monorepo](../decisions/proposed/ADR-009-monorepo-strategy.md)
 
-ADR-002 y ADR-004 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed` hasta su aprobación explícita. ADR-004 obliga a que casos de uso y repositorios preserven tenant y sucursal conforme a la propiedad lógica, sin definir middleware ni diseño físico.
+ADR-002, ADR-004 y ADR-010 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-004 obliga a preservar propiedad/aislamiento y ADR-010 a resolver y propagar tenant, sucursal, estación y usuario sin definir middleware ni diseño físico.
 
 ## Riesgos
 

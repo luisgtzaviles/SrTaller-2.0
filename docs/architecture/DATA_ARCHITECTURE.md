@@ -5,7 +5,7 @@
 - **Estado:** Borrador conceptual.
 - **Naturaleza:** Propuesta de ownership, consistencia y ciclo de vida; no contiene esquema ejecutable.
 - **Dirección evaluada:** PostgreSQL como persistencia transaccional primaria, Redis para usos temporales y almacenamiento S3-compatible para objetos.
-- **Decisiones relacionadas:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), ambos `Proposed`.
+- **Decisiones relacionadas:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) permanece `Proposed`; [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) están `Accepted`.
 
 ## Objetivo
 
@@ -27,12 +27,12 @@ Definir qué datos son autoritativos, cómo se aíslan, quién puede modificarlo
 | Clase | Ejemplos preliminares | Tratamiento esperado |
 |---|---|---|
 | Datos de plataforma | Planes, tenants, estado de suscripción, configuración SaaS | Acceso administrativo separado y auditado |
-| Datos de tenant | Configuración, membresías, clientes, reparaciones, inventario, conversaciones | `tenant_id` obligatorio y aislamiento transversal |
-| Datos de sucursal | Asignaciones, dispositivo, inventario local, caja | `tenant_id` más `branch_id` cuando el dominio lo confirme |
+| Datos de tenant | Configuración, usuarios, catálogos personalizados, precios base y reportes consolidados | `tenant_id` obligatorio y aislamiento transversal |
+| Datos de sucursal | Clientes operativos, Órdenes y relacionados, estación operativa, ubicaciones, pagos y caja | `tenant_id` más `branch_id` obligatorios; inventario se clasifica por su ADR de dominio |
 | Datos financieros | Pagos, movimientos, cierres y referencias externas | Integridad, permisos reforzados y retención por definir |
 | Datos personales | Identidad, contactos, contenido de mensajes, adjuntos | Minimización, acceso contextual y políticas legales pendientes |
 | Datos operativos temporales | Caché, rate limits, presencia, locks | Expiración; reconstruibles; no canónicos |
-| Auditoría | Actor, acción, objetivo, contexto y resultado | Protección contra alteración y retención definida |
+| Auditoría | Usuario, estación, tenant, sucursal, acción, objetivo, contexto y resultado | Protección contra alteración y retención definida |
 | Telemetría | Logs, métricas y trazas | Redacción, muestreo, retención y acceso operacional |
 
 La clasificación normativa final depende de países, proveedores y obligaciones aún no confirmadas.

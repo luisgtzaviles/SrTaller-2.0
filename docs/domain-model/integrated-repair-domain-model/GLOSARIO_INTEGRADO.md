@@ -20,7 +20,7 @@ Los términos preferidos separan relato, conocimiento técnico, propuesta comerc
 | Persona entregante | quien entrega físicamente al inicio | cliente/propietario | DDV |
 | Receptor de entrega | quien recibe físicamente al final | cliente/decisor | DDV |
 | Propietario legal | titularidad que el taller no verifica necesariamente | cliente operativo | HOV/PA |
-| Dispositivo recibido | equipo físico bajo el ciclo de custodia | dispositivo autorizado del sistema | DDV |
+| Dispositivo recibido | equipo físico bajo el ciclo de custodia | estación operativa del sistema | DDV |
 
 ## Técnico
 

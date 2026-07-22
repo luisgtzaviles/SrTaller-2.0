@@ -10,12 +10,12 @@
 
 ## Criterio
 
-Un candidato expresa significado y reglas por su valor; no prescribe tipos, almacenamiento ni formato de API. Todos tienen estado Initial hypothesis.
+Un candidato expresa significado y reglas por su valor; no prescribe tipos, almacenamiento ni formato de API. Todos mantienen representación hipotética aunque ADR-004/010 condicionen el alcance de BranchId.
 
 | Candidato | Significado | Propiedades conceptuales | Validaciones posibles | Sensibilidad | Igualdad por valor | Dudas | Estado |
 |---|---|---|---|---|---|---|---|
 | TenantId | identidad opaca de la organización aislada | estable, sin significado comercial | existe y es coherente con contexto | Alta por aislamiento | Sí | formato y ciclo | Initial hypothesis |
-| BranchId | identidad de sucursal dentro de tenant | estable y tenant-qualified | pertenece al mismo tenant | Media/alta | Sí dentro del tenant | sucursal predeterminada | Initial hypothesis |
+| BranchId | identidad de sucursal dentro de tenant | estable y calificada por tenant | pertenece al mismo tenant | Media/alta | Sí dentro del tenant | derivación desde estación vinculada | Initial hypothesis; alcance condicionado por ADR-004/010 |
 | CustomerId | identidad conceptual de cliente | estable dentro de tenant | no se usa como autorización | Personal indirecta | Sí dentro del tenant | fusión y alcance | Initial hypothesis |
 | WorkOrderId | identidad estable del caso | no cambia con folio/estado | tenant y orden existentes | Operativa | Sí | visibilidad al cliente | Initial hypothesis |
 | Folio | referencia legible de operación | alcance, secuencia o patrón TBD | no ambiguo en su alcance | Baja/media | Sí en alcance declarado | global, tenant o sucursal | Initial hypothesis |

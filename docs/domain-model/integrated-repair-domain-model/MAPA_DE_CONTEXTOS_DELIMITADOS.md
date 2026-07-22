@@ -41,7 +41,7 @@
 | Pagos | Obligación comercial, actor y sucursal | Anticipo/pago/devolución registrado | Comercial, identidad, configuración |
 | Inventario | Trabajo autorizado, sucursal y pieza | Pieza reservada/consumida/devuelta | Técnico, comercial, configuración |
 | Clientes | Datos operativos y correcciones atribuibles | Cliente/contacto registrado o actualizado | Identidad y política de datos |
-| Identidad | Membresía, tenant, sucursal y sesión | Contexto de atribución establecido | Configuración organizacional |
+| Identidad y acceso | Usuario de tenant, autenticación, sesión y permisos | Usuario verificado; consume contexto ADR-010 | Estación/sucursal y configuración organizacional |
 | Configuración | Decisiones de tenant/sucursal | Política publicada o reemplazada | Identidad administrativa |
 | Evidencias | Solicitud de evidencia y contexto del hecho | Evidencia agregada/corregida | Órdenes, identidad, política |
 | Garantías | Entrega previa, cobertura, trabajo y evidencia | Reclamo abierto/aceptado/rechazado | Órdenes, técnico, comercial, evidencia |
