@@ -30,7 +30,7 @@
 | --- | --- | --- |
 | ADR-001 está `Accepted` desde 2026-07-21 | TypeScript y Node.js `24.x` rigen R0; no aceptan framework, repositorio ni tooling | ADR |
 | ADR-002 está `Accepted` desde 2026-07-21 | La forma inicial es monolito modular; no acepta el conjunto tecnológico | ADR |
-| ADR-003, ADR-005 y ADR-009 están `Accepted`; ADR-006 a ADR-008 permanecen `Proposed` | PostgreSQL 18.x, NestJS 11.x con Express/REST mínima y repositorio único con workspaces bajo demanda quedan aceptados; routing web, package manager, lockfile y despliegue siguen abiertos | ADR |
+| ADR-003, ADR-005 y ADR-009 están `Accepted`; DEC-004 tiene selección aceptada; ADR-006 a ADR-008 permanecen `Proposed` | PostgreSQL 18.x, NestJS 11.x con Express/REST mínima, repositorio único y toolchain quedan seleccionados; materialización/evidencia de DEC-004, routing web y despliegue siguen abiertos | ADR |
 | ADR-004 está `Accepted` desde 2026-07-21 | Base/esquema compartidos, propiedad SaaS/tenant/sucursal e invariantes ya no se reabren sin evidencia | ADR |
 | ADR-010 está `Accepted` desde 2026-07-21 | Estación vinculada, sucursal derivada, usuario por tenant, turno y contexto atribuible ya no se reabren sin evidencia | ADR |
 | ADR-011 está `Accepted` desde 2026-07-21 | Identidad ordinaria, PIN contextual, una sesión activa por estación y atribución con sesión ya no se reabren sin evidencia | ADR |

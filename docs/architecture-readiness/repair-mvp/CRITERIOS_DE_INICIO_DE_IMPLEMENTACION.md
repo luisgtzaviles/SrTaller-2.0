@@ -62,4 +62,4 @@ Además:
 
 ## Resultado actual
 
-**[PB]** El estado sigue siendo **Preparado con bloqueantes**: alcance y aceptación esperada de R0 están aprobados, pero faltan autorización de implementación, plataforma, organización ejecutable, mecanismos, composición/clasificación, modelos de amenazas, estrategia y ejecución de pruebas y los demás gates H0/H1. Una decisión de alcance no autoriza programación ni declara R0 aceptado.
+**[PB]** El estado sigue siendo **Preparado con bloqueantes**: alcance, aceptación esperada de R0 y selección de plataforma están aprobados, y [PBI-021](../../backlog/pbis/PBI-021.md) está `Ready`; faltan su materialización/evidencia, autorización funcional, organización ejecutable, mecanismos, composición/clasificación, modelos de amenazas, estrategia y ejecución de pruebas y los demás gates H0/H1. La autorización de PBI-021 no autoriza programación funcional ni declara R0 aceptado.

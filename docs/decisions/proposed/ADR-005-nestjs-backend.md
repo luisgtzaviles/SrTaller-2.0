@@ -11,7 +11,7 @@ Decisión aceptada con condiciones normativas para el backend inicial de SR Tall
 
 [SPIKE-009](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009), clasificado históricamente como `Mandatory before acceptance`, demostró la viabilidad de NestJS como shell desacoplado. El resultado inicial fue `CONDITIONAL PASS`; la revisión inicial eligió la Opción B (`APPROVED FOR ADR REVIEW WITH REQUIRED REMEDIATIONS`); las remediaciones alcanzaron 48/48 pruebas en dos gates completos y la revisión enfocada concluyó `REMEDIATIONS APPROVED WITH NON-BLOCKING CONDITIONS — ADR-005 READY FOR DECISION`.
 
-La aceptación selecciona el shell, su major, el adaptador HTTP y la interfaz mínima. No autoriza implementación, scaffolding, endpoints reales, SQL, migraciones, infraestructura, despliegues ni la reutilización del código experimental. [DEC-004](../../architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md) permanece abierta.
+La aceptación selecciona el shell, su major, el adaptador HTTP y la interfaz mínima. No autoriza implementación funcional, scaffolding de dominio, endpoints reales, SQL, migraciones, infraestructura, despliegues ni la reutilización del código experimental. Posteriormente, el 2026-07-22, [DEC-004](../../architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md) aceptó la selección del toolchain con evidencia pendiente y autorizó únicamente su PBI técnico de materialización y verificación.
 
 ## Contexto
 
@@ -250,9 +250,9 @@ Antes de implementar el primer recorrido productivo deben resolverse:
 3. `DEC-049`, puertos, repositories y ownership de persistencia;
 4. `DEC-050`, migraciones;
 5. `DEC-051`, estrategia de pruebas y gates productivos;
-6. package manager y lockfile definitivos dentro de DEC-004;
+6. materialización del package manager y lockfile seleccionados en DEC-004;
 7. primera ejecución real del gate CI sobre Linux;
-8. política de scripts de instalación y supply chain;
+8. materialización y verificación de la política de scripts de instalación y supply chain seleccionada en DEC-004;
 9. política productiva de timeouts y pool;
 10. no reutilizar el código de SPIKE-009 como scaffold productivo.
 
@@ -267,7 +267,7 @@ Antes de implementar el primer recorrido productivo deben resolverse:
 
 ### No bloquean esta aceptación
 
-No bloquean la selección de NestJS: la política definitiva de auditoría, `DEC-044`, `DEC-049`, `DEC-050`, `DEC-051`, npm definitivo, lockfile definitivo, la primera ejecución CI Linux aún pendiente, el checker textual y la cobertura todavía no configurada. Sí conservan sus propios gates de implementación y cierre.
+No bloquearon la selección de NestJS: la política definitiva de auditoría, `DEC-044`, `DEC-049`, `DEC-050`, `DEC-051`, el package manager y lockfile entonces pendientes, la primera ejecución CI Linux, el checker textual y la cobertura todavía no configurada. DEC-004 seleccionó después pnpm/lockfile y la política de scripts, pero su materialización y evidencia conservan el gate de implementación correspondiente; los demás temas mantienen sus propios gates y cierres.
 
 ## Tooling no aceptado implícitamente
 
@@ -349,9 +349,9 @@ Este ADR cierra dentro de DEC-004 únicamente:
 - adaptador HTTP inicial: `@nestjs/platform-express`;
 - interfaz inicial: REST/HTTP JSON mínima.
 
-DEC-004 permanece abierta por package manager, versión del package manager, lockfile, política de scripts de instalación, instalación reproducible, pinning ejecutable, ESM/CommonJS, compilador o ejecución TypeScript, baseline integrada, primera ejecución real de CI Linux y validación final de reproducibilidad.
+Posteriormente, el 2026-07-22, DEC-004 aceptó package manager, versión, lockfile, política de scripts de instalación, pinning, ESM/NodeNext, compilación TypeScript, baseline integrada y plataforma autoritativa como `Accepted — Selection Approved / Evidence Pending`. Su materialización, la primera ejecución real sobre Linux, VC-001 a VC-024 y la validación final de reproducibilidad siguen pendientes.
 
-La aceptación de ADR-005 no desbloquea por sí sola R0 y no autoriza implementación.
+La aceptación de ADR-005 no desbloquea por sí sola R0. La autorización posterior de DEC-004 se limita al PBI técnico de materialización y verificación; no autoriza implementación funcional.
 
 ## Consecuencias positivas
 

@@ -1,0 +1,11 @@
+{
+  "policyVersion": 1,
+  "dependencyLifecycleDefault": "blocked",
+  "packageManager": "pnpm@11.15.1",
+  "allowlist": [],
+  "governance": {
+    "owner": "Engineering",
+    "requiredReview": "Security",
+    "rule": "Every future entry requires an exact package name, necessity, risk, owner and recorded security review."
+  }
+}

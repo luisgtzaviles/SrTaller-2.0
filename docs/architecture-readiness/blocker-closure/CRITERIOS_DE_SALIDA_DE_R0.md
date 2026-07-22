@@ -167,7 +167,7 @@ Además del alcance aprobado, todos estos criterios siguen siendo obligatorios:
 
 - [x] ADR-001 aceptado con TypeScript y Node.js `24.x`, límites y gobierno explícitos;
 - [x] ADR-003 y ADR-009 aceptados; motor y repositorio único con workspaces bajo demanda definidos;
-- [ ] ADR-005 aceptado o resuelto explícitamente, con package manager, lockfile y baseline ejecutable final registrados;
+- [ ] ADR-005 y la selección de DEC-004 aceptados; materialización del package manager/lockfile y evidencia final de la baseline ejecutable pendientes;
 - [ ] estructura inicial y reglas de dependencia de ADR-002 acordadas;
 - [ ] ownership de repositorios y datos definido para la fundación;
 - [ ] estrategia de errores y contratos mínimos de aplicación definidos;

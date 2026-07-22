@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-**Estado:** Borrador para SPRINT-00.
+**Estado:** Borrador. Las filas 1–20 conservan la vista histórica de SPRINT-00; PBI-021 es trabajo técnico posterior autorizado y aún no asignado.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** TBD.
 **Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
@@ -29,11 +29,13 @@
 | 18 | [PBI-018](pbis/PBI-018.md) Define security baseline | Security | EPIC-001 | Ready for review | Crítica | Committed |
 | 19 | [PBI-019](pbis/PBI-019.md) Define observability baseline | Operations / Quality | EPIC-001 | Ready for review | Alta | Committed |
 | 20 | [PBI-020](pbis/PBI-020.md) Consolidate open questions and decision gates | Discovery / Product | EPIC-000 | Draft | Crítica | Requires product input |
+| 21 | [PBI-021](pbis/PBI-021.md) Materialize and verify the DEC-004 toolchain contract | Technical foundation / Quality / Operations / Security | EPIC-001 | Ready | Alta | Unassigned |
 
 ## Interpretación
 
 - `Crítica` indica riesgo/gate, no una promesa de ejecución inmediata.
 - La clasificación de SPRINT-00 distribuye revisión; no afirma que veinte PBIs quepan en un sprint tradicional.
+- PBI-021 no se incorpora retroactivamente a SPRINT-00: DEC-004 autoriza su ejecución técnica separada, pero no existe sprint asignado ni evidencia ejecutada.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 

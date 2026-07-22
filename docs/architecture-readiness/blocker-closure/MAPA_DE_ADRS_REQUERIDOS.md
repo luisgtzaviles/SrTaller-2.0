@@ -8,7 +8,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 | ADR | Tema | Estado | Hito relacionado | Acción requerida |
 | --- | --- | --- | --- | --- |
-| ADR-001 | TypeScript y Node.js `24.x` | Accepted | H0 parcialmente cerrado | Aplicar política LTS/EOL, validación runtime y gobierno de excepciones |
+| ADR-001 | TypeScript y Node.js `24.x` | Accepted | H0: selección completada con DEC-004; evidencia pendiente | Aplicar política LTS/EOL, pin exacto y gobierno de excepciones |
 | ADR-002 | Monolito modular inicial | Accepted | H0 cerrado | Aplicar y verificar; no reabrir sin evidencia |
 | ADR-003 | PostgreSQL como persistencia principal | Accepted | Motor H0 cerrado; mecanismos H1 abiertos | Aplicar junto con ownership y migraciones; baseline PostgreSQL 18.x |
 | ADR-004 | Estrategia multitenant y propiedad lógica | Accepted | H1 parcialmente cerrado | Aplicar invariantes; RLS queda separado y contexto se rige por ADR-010 |
@@ -16,7 +16,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | ADR-006 | Next.js para clientes web | Proposed | Antes de la primera UI | Revisar por superficie; no asumir una única necesidad |
 | ADR-007 | Despliegues mediante contenedores | Proposed | Antes del primer despliegue | Revisar artefacto, promoción, rollback y operación |
 | ADR-008 | Resolución de tenant por subdominios wildcard | Proposed | H1/antes de acceso externo | Revisar DNS, certificados, dominios y fuente confiable del tenant |
-| ADR-009 | Repositorio único evolutivo y workspaces bajo demanda | Accepted | Topología H0 cerrada; tooling abierto | Aplicar límites; no crear workspaces, apps, packages ni desplegables sin condición y autoridad |
+| ADR-009 | Repositorio único evolutivo y workspaces bajo demanda | Accepted | Topología H0 cerrada; toolchain aceptado en DEC-004 | Aplicar límites; no crear workspaces, apps, packages ni desplegables sin condición y autoridad |
 | ADR-010 | Contexto operativo derivado de estación vinculada | Accepted | H1 parcialmente cerrado | Aplicar invariantes; identidad/sesión se rigen por ADR-011 y autorización por ADR-012 |
 | ADR-011 | Identidad, autenticación por PIN y sesión operativa | Accepted | H1 parcialmente cerrado | Aplicar invariantes; mecanismos técnicos y autorización se rige por ADR-012 |
 | ADR-012 | Roles de tenant, capacidades y autorización contextual | Accepted | H1 parcialmente cerrado | Aplicar invariantes y definir composición por rebanada; refuerzo se rige por ADR-013 |
@@ -52,13 +52,13 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 ## Próxima decisión recomendada
 
-ADR-005 fue aceptado con condiciones el 2026-07-22 después de que Seguridad, Operaciones y Calidad aprobaran la remediación enfocada de [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md). Resuelve el shell NestJS, Express y REST/HTTP JSON mínima sin inferir package manager, lockfile, estructura física ni autorización de implementación. El siguiente trabajo de DEC-004 es cerrar tooling y baseline ejecutable. ADR-006, ADR-007 y ADR-008 conservan sus gates posteriores.
+ADR-005 fue aceptado con condiciones el 2026-07-22 después de que Seguridad, Operaciones y Calidad aprobaran la remediación enfocada de [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md). Ese mismo día, DEC-004 aceptó la selección de Node.js/pnpm/lockfile/ESM/TypeScript/build/Linux y autorizó su PBI técnico. El siguiente trabajo es materializarla y obtener evidencia Linux. ADR-006, ADR-007 y ADR-008 conservan sus gates posteriores.
 
 ADR-001, ADR-003, ADR-004, ADR-009 y ADR-010 a ADR-013 ya están aceptados. En paralelo, la siguiente revisión de seguridad debe preparar la aplicación y prueba de esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.
 
 Protección técnica del PIN, intentos, recuperación y formato de sesión siguen como diseño/evidencia dependiente de ADR-011. La propagación de cambios de autorización depende de ADR-012 y la invalidación de controles reforzados de ADR-013. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
-ADR-001, ADR-003, ADR-005 y ADR-009 están `Accepted` y satisfacen lenguaje/runtime, motor, shell backend, adaptador/API mínima y topología de repositorio dentro del lote de plataforma. PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial; NestJS 11.x es la major y `11.1.28` la referencia a revalidar. `DEC-004` continúa pendiente de package manager, lockfile, scripts de instalación, módulos/compilación, baseline integrada, CI Linux y reproducibilidad final; el primer cambio de implementación de R0 permanece bloqueado. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
+ADR-001, ADR-003, ADR-005 y ADR-009 están `Accepted` y satisfacen lenguaje/runtime, motor, shell backend, adaptador/API mínima y topología de repositorio dentro del lote de plataforma. PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial; NestJS 11.x es la major y `11.1.28` la referencia a revalidar. `DEC-004` está `Accepted — Selection Approved / Evidence Pending`: package manager, lockfile, scripts, módulos/compilación y plataforma están seleccionados; faltan materialización, CI posterior, evidencia Linux y reproducibilidad final. El primer cambio funcional de R0 permanece bloqueado. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
 
 ## Condiciones para llevar un ADR a revisión
 

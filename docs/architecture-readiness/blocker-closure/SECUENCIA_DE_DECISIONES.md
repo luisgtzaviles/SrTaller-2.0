@@ -7,11 +7,11 @@ La secuencia reduce decisiones irreversibles: primero autoridad y contexto; desp
 ## Grupo 0 — Autoridad y base ejecutable
 
 1. **Cerrado el 2026-07-21:** alcance, inclusiones y exclusiones de R0 (`DEC-002`).
-2. Completar `DEC-004`: ADR-001, ADR-003 y ADR-009 quedaron aceptados el 2026-07-21 y ADR-005 el 2026-07-22 tras aprobar [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md) con condiciones no bloqueantes; cerrar package manager, versión, lockfile, scripts, módulos/compilación, baseline integrada, CI Linux y reproducibilidad final.
+2. **Selección aceptada el 2026-07-22:** `DEC-004` fija Node.js `24.18.0`, pnpm `11.15.1`, lockfile frozen, ESM/NodeNext, TypeScript `6.0.3`, compilación previa y Linux x86_64/glibc. [PBI-021](../../backlog/pbis/PBI-021.md) está creado y `Ready`; faltan materialización, VC-001 a VC-024, CI posterior y evidencia Linux.
 3. Definir agrupación inicial y enforcement de ADR-002 (`DEC-005`, `DEC-049`).
 4. Cerrar errores, pruebas y Definition of Done (`DEC-044`, `DEC-051`, `DEC-063`); los criterios de aceptación de R0 (`DEC-062`) quedaron cerrados por Producto el 2026-07-21.
 
-Este grupo desbloquea el primer cambio de implementación de R0, pero no basta para completar R0. El siguiente paquete abierto es `DEC-004`; lenguaje, runtime, motor, shell backend, adaptador/API mínima y repositorio único ya están resueltos. SPIKE-009 queda completado y su evidencia aprobada con condiciones no bloqueantes; package manager, lockfile, scripts, módulos/compilación, baseline integrada, CI Linux, reproducibilidad y mecanismos de acceso/migración siguen abiertos.
+Este grupo desbloquea el primer cambio funcional de R0, pero no basta para completar R0. El siguiente trabajo autorizado es ejecutar PBI-021 para materializar y verificar `DEC-004`; la selección de package manager, lockfile, scripts, módulos/compilación y plataforma ya está resuelta, pero la evidencia Linux no existe. Los mecanismos de acceso/migración y los demás gates conservan sus decisiones propias.
 
 ## Grupo A — Fundación de contexto
 
@@ -74,4 +74,4 @@ Folio, política y archivos pueden preparar alternativas en paralelo después de
 
 ## Camino crítico
 
-`DEC-002 cerrada → DEC-004/005 → ADR-003/004/010/011/012/013 aplicados → DEC-049/050/051/063 → R0 implementado y demostrado conforme a DEC-062 → aceptación formal de R0 → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.
+`DEC-002 cerrada → DEC-004 selección aceptada → DEC-004 materializada/verificada + DEC-005 → ADR-003/004/010/011/012/013 aplicados → DEC-049/050/051/063 → R0 implementado y demostrado conforme a DEC-062 → aceptación formal de R0 → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.

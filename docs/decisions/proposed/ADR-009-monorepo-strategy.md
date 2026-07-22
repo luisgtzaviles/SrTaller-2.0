@@ -343,18 +343,18 @@ La aceptación de ADR-009 cierra dentro de `DEC-004` únicamente:
 - principios de ownership y dependencias;
 - relación entre repositorio y artefacto único.
 
-`DEC-004` continúa abierta y pendiente de:
+Posteriormente, el 2026-07-22, `DEC-004` aceptó como selección:
 
 - selección de package manager;
 - versión del package manager;
 - política de lockfile;
 - política de scripts de instalación;
 - módulos y compilación TypeScript;
-- baseline técnica integrada y ejecutable;
-- primera ejecución real de CI Linux;
-- reproducibilidad final entre Node.js 24.x, NestJS 11.x y PostgreSQL 18.x.
+- baseline técnica integrada y plataforma Linux autoritativa.
 
-La aceptación de este ADR no cierra `DEC-004`, `DEC-005` ni `DEC-049`, no autoriza scaffolding y no desbloquea el primer cambio ejecutable de R0.
+La materialización ejecutable, la primera ejecución real sobre Linux, VC-001 a VC-024 y la reproducibilidad final entre Node.js 24.x, NestJS 11.x y PostgreSQL 18.x permanecen como evidencia pendiente.
+
+La aceptación de este ADR no cerró por sí sola `DEC-004`, `DEC-005` ni `DEC-049`. La aceptación posterior de la selección de DEC-004 autoriza únicamente su PBI técnico de materialización y verificación; no cierra DEC-005 ni DEC-049, no autoriza scaffolding funcional y no desbloquea el primer cambio funcional de R0.
 
 ## Consecuencias positivas
 

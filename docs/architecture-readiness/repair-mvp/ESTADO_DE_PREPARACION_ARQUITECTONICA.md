@@ -23,13 +23,14 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Configuración | Necesidad de políticas versionadas identificada | Precedencia y alcance pendientes | PB |
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
-| ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; ADR-006 a ADR-008 siguen propuestos | Lenguaje/runtime, forma, PostgreSQL 18.x, NestJS 11.x + Express + REST mínima, repositorio único, tenancy, contexto, identidad/sesión y autorización definidos; DEC-004 aún bloqueada por tooling y baseline ejecutable | PB |
+| ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004 con selección aceptada/evidencia pendiente; ADR-006 a ADR-008 siguen propuestos | Lenguaje/runtime, forma, PostgreSQL 18.x, NestJS 11.x + Express + REST mínima, repositorio único, tenancy, contexto, identidad/sesión, autorización y toolchain seleccionados; materialización y evidencia Linux de DEC-004 siguen bloqueando código funcional | PB |
 | Autorización | Producto aprobó alcance/aceptación esperada de R0; Sprint 00 no está cerrado ni existe autorización de implementación | Bloqueante organizacional | PB |
 
 ## Qué sí puede comenzar
 
 - **[DAR]** Validación dirigida de las fronteras, contratos de negocio y decisiones bloqueantes.
 - **[DAR]** Preparación de ADRs y PBIs con criterios de aceptación, pruebas negativas y trazabilidad.
+- **[DAR]** [PBI-021](../../backlog/pbis/PBI-021.md), `Ready` y autorizado para materialización/verificación de DEC-004, sin funcionalidad de producto.
 - **[DAR]** Refinamiento técnico de R0 contra su alcance aprobado, sin crear estructura base ni código ejecutable.
 - **[RDD]** Ejemplos de aceptación basados en escenarios del modelo integrado.
 
@@ -38,7 +39,7 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 - **[RP]** Implementación funcional sin autorización explícita y sin cumplir Definition of Ready.
 - **[R]** Persistencia multitenant antes de aplicar y probar el contexto e identidad/sesión aceptados, el alcance técnico y el aislamiento.
 - **[R]** Flujos sensibles antes de clasificar la acción y aplicar/probar el control, atribución y evidencia de ADR-013.
-- **[ADR]** Fijar frameworks, workspaces, package manager, orquestación o despliegue como hechos aprobados. El repositorio único y los workspaces bajo demanda se rigen por ADR-009; lenguaje/runtime por ADR-001 y motor por ADR-003.
+- **[ADR]** Introducir frameworks, workspaces, gestores, orquestación o despliegue fuera de las decisiones aceptadas. DEC-004 fija pnpm y el lockfile sin autorizar workspaces; ADR-009 gobierna repositorio/workspaces, ADR-001 lenguaje/runtime y ADR-003 el motor.
 
 ## Condición de promoción
 

@@ -118,7 +118,7 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Review](sprints/sprint-00/REVIEW.md)
 - [Retrospectiva](sprints/sprint-00/RETROSPECTIVE.md)
 
-Los archivos individuales PBI-001 a PBI-020 se encuentran enlazados desde el [índice de PBIs](backlog/pbis/README.md).
+Los archivos individuales PBI-001 a PBI-021 se encuentran enlazados desde el [índice de PBIs](backlog/pbis/README.md). PBI-021 es el primer PBI técnico posterior autorizado por DEC-004; permanece sin ejecutar y no modifica retrospectivamente SPRINT-00.
 
 ## Calidad
 

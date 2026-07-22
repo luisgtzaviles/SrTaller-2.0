@@ -1,6 +1,6 @@
 # Gestión del backlog
 
-El backlog convierte objetivos de producto en resultados verificables sin confundir intención con compromiso. Durante SPRINT-00 todos los PBIs producen documentación, decisiones o evidencia de descubrimiento; ninguno autoriza implementación.
+El backlog convierte objetivos de producto en resultados verificables sin confundir intención con compromiso. Durante SPRINT-00, PBI-001 a PBI-020 producen documentación, decisiones o evidencia de descubrimiento y ninguno autoriza implementación. [PBI-021](pbis/PBI-021.md) fue creado posteriormente como trabajo técnico expresamente autorizado por DEC-004; permanece sin ejecutar y `Unassigned`.
 
 ## Estado del documento
 

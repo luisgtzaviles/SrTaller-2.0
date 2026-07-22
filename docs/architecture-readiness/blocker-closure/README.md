@@ -6,9 +6,9 @@ Este paquete convierte los bloqueantes de preparación arquitectónica en una se
 
 ## Veredicto actual
 
-**El alcance y contrato de salida de R0 están aprobados, pero R0 no está listo para programación. No debe comenzar todavía implementación ejecutable, incluido scaffolding de framework.**
+**El alcance y contrato de salida de R0 están aprobados, pero R0 no está listo para programación funcional. Sólo está autorizado [PBI-021](../../backlog/pbis/PBI-021.md), acotado a materialización y verificación del toolchain de DEC-004; no el scaffolding funcional del producto.**
 
-La documentación permite preparar ADRs, criterios, escenarios y spikes para autorización. `DEC-002` y `DEC-062` quedaron cerradas por el Responsable de Producto el 2026-07-21. El primer cambio de implementación de R0 continúa bloqueado por autorización organizacional, selección de plataforma, organización ejecutable mínima, estrategia de errores/pruebas/Definition of Done y contratos transversales. R1 añade decisiones de folio, recepción, custodia, política, tiempo, evidencia e identificación física.
+La documentación permite preparar ADRs, criterios, escenarios y spikes para autorización. `DEC-002` y `DEC-062` quedaron cerradas por el Responsable de Producto el 2026-07-21. La selección de plataforma de `DEC-004` fue aceptada el 2026-07-22 con evidencia pendiente y autorización limitada a su materialización/verificación. El primer cambio funcional de R0 continúa bloqueado por evidencia de plataforma, autorización organizacional, organización ejecutable mínima, estrategia de errores/pruebas/Definition of Done y contratos transversales. R1 añade decisiones de folio, recepción, custodia, política, tiempo, evidencia e identificación física.
 
 | Declaración | Estado actual | Evidencia faltante principal |
 | --- | --- | --- |
@@ -21,18 +21,18 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 
 ## Release gate reevaluado
 
-Tras cerrar `DEC-002` y `DEC-062`, H0 conserva seis decisiones abiertas:
+Tras cerrar `DEC-002` y `DEC-062`, H0 conserva cinco decisiones abiertas y una selección aceptada con evidencia pendiente:
 
-- `DEC-004`: stack de aplicación;
+- `DEC-004`: `Accepted — Selection Approved / Evidence Pending`; [PBI-021](../../backlog/pbis/PBI-021.md) creado y `Ready`, verificación Linux pendiente;
 - `DEC-005`: organización inicial del monolito;
 - `DEC-044`: estrategia de errores;
 - `DEC-049`: repositorios y propiedad lógica;
 - `DEC-051`: estrategia de pruebas;
 - `DEC-063`: Definition of Done.
 
-También siguen pendientes la autorización organizacional (`B-21`) y todos los cierres H1 aplicables antes de declarar R0 programable. El siguiente paquete oficial es `DEC-004`; cerrar alcance no adelanta implementación ni R1.
+También siguen pendientes la autorización organizacional funcional (`B-21`) y todos los cierres H1 aplicables antes de declarar R0 programable. El siguiente trabajo autorizado es ejecutar PBI-021 para materializar/verificar `DEC-004`; no adelanta implementación funcional ni R1.
 
-ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-005 fue aceptado con condiciones el 2026-07-22 tras la revisión aprobada de SPIKE-009. TypeScript y Node.js `24.x` forman la baseline de lenguaje/runtime; PostgreSQL 18.x es el motor transaccional; NestJS `11.x`, Express y REST/HTTP JSON mínima forman el shell inicial; y el repositorio único conserva una aplicación/artefacto sin workspaces obligatorios. `DEC-004` permanece abierta por tooling y baseline ejecutable final; véase la [baseline técnica](DEC-004_BASELINE_TECNICA.md).
+ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-005 fue aceptado con condiciones el 2026-07-22 tras la revisión aprobada de SPIKE-009. TypeScript y Node.js `24.x` forman la baseline de lenguaje/runtime; PostgreSQL 18.x es el motor transaccional; NestJS `11.x`, Express y REST/HTTP JSON mínima forman el shell inicial; y el repositorio único conserva una aplicación/artefacto sin workspaces obligatorios. `DEC-004` acepta Node.js `24.18.0`, pnpm `11.15.1`, ESM/NodeNext, TypeScript `6.0.3`, build previo y Linux x86_64/glibc; materialización y evidencia siguen pendientes. Véase la [baseline técnica](DEC-004_BASELINE_TECNICA.md).
 
 ## Respuestas rectoras
 
@@ -61,7 +61,7 @@ ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ing
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
 
-**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) cierra el motor y fija PostgreSQL 18.x como baseline de R0; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) acepta con condiciones NestJS como shell, Express y REST/HTTP JSON mínima; [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) repositorio único y workspaces bajo demanda; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0. No cierran DEC-004, implementación, composición y clasificación por rebanada, mecanismos de acceso/migración, RLS ni evidencia de pruebas.
+**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) cierra el motor y fija PostgreSQL 18.x como baseline de R0; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) acepta con condiciones NestJS como shell, Express y REST/HTTP JSON mínima; [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) repositorio único y workspaces bajo demanda; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0; [DEC-004](DEC-004_BASELINE_TECNICA.md) acepta la selección del toolchain con evidencia pendiente. No cierran implementación funcional, composición y clasificación por rebanada, mecanismos de acceso/migración, RLS ni evidencia de pruebas.
 
 ## Ruta de lectura
 

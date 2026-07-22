@@ -1,0 +1,37 @@
+{
+  "name": "srtaller-2",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal technical shell authorized by DEC-004 and PBI-021.",
+  "engines": {
+    "node": "24.18.0",
+    "pnpm": "11.15.1"
+  },
+  "packageManager": "pnpm@11.15.1",
+  "scripts": {
+    "preinstall": "node ./scripts/verify-install-context.mjs",
+    "verify:toolchain": "node ./scripts/verify-toolchain.mjs",
+    "verify:structure": "node ./scripts/verify-structure.mjs",
+    "clean": "node ./scripts/clean.mjs",
+    "typecheck": "pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit",
+    "build": "pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json",
+    "test": "pnpm run verify:toolchain && node --test test/toolchain-contract.test.mjs",
+    "start": "pnpm run verify:toolchain && node --enable-source-maps dist/main.js",
+    "smoke:start": "pnpm run verify:toolchain && node ./scripts/smoke-start.mjs",
+    "diagnose:local": "pnpm run verify:toolchain && node ./scripts/local-diagnostics.mjs",
+    "dev": "pnpm run verify:toolchain && node ./scripts/dev.mjs",
+    "verify": "pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.1.28",
+    "@nestjs/core": "11.1.28",
+    "@nestjs/platform-express": "11.1.28",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "typescript": "6.0.3"
+  }
+}

@@ -398,7 +398,7 @@ Seguridad, Operaciones y Calidad revisaron obligatoriamente la evidencia. Arquit
 3. exigir una segunda iteración acotada; o
 4. rechazar NestJS y evaluar una alternativa más ligera.
 
-La revisión y la decisión separadas concluyeron el 2026-07-22. ADR-005 está aceptado con condiciones; DEC-004 permanece abierta y el primer cambio ejecutable de producto continúa bloqueado. El spike no es scaffold, no es código productivo y no debe copiarse automáticamente a R0.
+La revisión y la decisión separadas concluyeron el 2026-07-22. ADR-005 está aceptado con condiciones. Posteriormente, DEC-004 aceptó la selección del toolchain como `Accepted — Selection Approved / Evidence Pending` y autorizó únicamente su PBI técnico de materialización/verificación. El primer cambio funcional de producto continúa bloqueado; el spike no es scaffold, no es código productivo y no debe copiarse automáticamente a R0.
 
 ## Orden de autorización recomendado
 

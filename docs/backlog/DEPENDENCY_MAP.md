@@ -48,6 +48,10 @@ flowchart TD
     Q --> GATE
     SEC --> GATE
     OBS --> GATE
+    API --> TOOL[PBI-021 Materializar/verificar DEC-004]
+    DEC004[DEC-004 Accepted<br/>Evidence Pending] --> TOOL
+    DEC051[DEC-051 runner/CI<br/>pendiente] -. VC-024 .-> TOOL
+    TOOL --> VC[VC-001 a VC-024<br/>evidencia pendiente]
 ```
 
 El grafo incluye las dependencias documentales directas declaradas por los PBIs y algunas relaciones transitivas necesarias para leer la secuencia. No representa dependencias de runtime ni sustituye el detalle de cada PBI.
@@ -59,11 +63,14 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - Identidad y permisos preceden la validación del acceso por dispositivo/PIN.
 - Arquitectura objetivo enmarca evaluaciones de backend, web, despliegue y observabilidad.
 - PBI-020 consolida gates; no puede cerrarse hasta que entradas críticas sean revisadas.
+- PBI-021 consume la selección aceptada de DEC-004 y el shell seleccionado mediante ADR-005/PBI-012; puede comenzar su materialización técnica sin habilitar funcionalidad.
+- PBI-021 no puede quedar `Done` ni producir un PASS final sin VC-024; la ejecución CI de ese caso depende de la autoridad de DEC-051.
 
 ## Bloqueos conocidos
 
 - PBI-013 requiere confirmar superficies web, audiencias y necesidades visuales; hasta entonces permanece bloqueado para una recomendación final.
 - PBI-008, PBI-009 y PBI-020 requieren decisiones de producto/operación.
+- PBI-021 está `Ready` y autorizado, pero `Unassigned`; VC-024 conserva la dependencia explícita de DEC-051.
 - Ninguna dependencia técnica propuesta puede convertirse en implementación hasta aceptar ADRs relacionados.
 
 ## Preguntas abiertas

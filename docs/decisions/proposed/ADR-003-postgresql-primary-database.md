@@ -285,10 +285,10 @@ Producto participa cuando una decisión afecta alcance, coste, mercado, región,
 ## Impacto en decisiones abiertas
 
 - Cierra el motor de persistencia dentro de `DEC-004` y registra PostgreSQL 18.x como baseline de R0.
-- No cierra `DEC-004`. ADR-005 cierra con condiciones el shell backend y ADR-009 la topología del repositorio, pero el gate permanece pendiente de package manager, lockfile, scripts de instalación, módulos/compilación, baseline integrada, CI Linux, reproducibilidad final y los demás controles aplicables.
+- Por sí solo no cerró `DEC-004`. Posteriormente, el 2026-07-22, DEC-004 aceptó la selección del toolchain como `Accepted — Selection Approved / Evidence Pending`; materialización, VC-001 a VC-024, evidencia Linux y reproducibilidad final continúan pendientes.
 - No cierra `DEC-049` sobre repositorios y propiedad lógica ejecutable.
 - No cierra `DEC-050` sobre tooling y ejecución de migraciones.
-- No autoriza el primer cambio ejecutable de R0.
+- No autoriza el primer cambio funcional de R0. DEC-004 autoriza únicamente su PBI técnico de materialización y verificación.
 
 ## Criterios para reconsiderar
 
