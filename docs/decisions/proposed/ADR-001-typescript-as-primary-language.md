@@ -173,7 +173,7 @@ No se autoriza compartir indiscriminadamente:
 - internals de dominio;
 - tipos que creen acoplamiento transversal.
 
-La topología del repositorio, workspaces, ownership y enforcement permanecen pendientes de ADR-009, DEC-005 y DEC-049.
+La topología general y los workspaces bajo demanda se rigen por [ADR-009](ADR-009-monorepo-strategy.md). La organización física y el enforcement concreto permanecen pendientes de `DEC-005`; la propiedad de datos y los repositorios de persistencia permanecen pendientes de `DEC-049`.
 
 ## Compatibilidad con decisiones aceptadas
 
@@ -274,7 +274,7 @@ Reconsiderar no autoriza una excepción ni un runtime nuevo: requiere la autorid
 
 La dependencia de lenguaje/runtime de ADR-005 queda satisfecha, pero ADR-005 permanece `Proposed` y requiere revisión y evidencia propias. ADR-001 tampoco acepta ADR-003, ADR-006, ADR-007, ADR-008 ni ADR-009.
 
-Actualización 2026-07-21: ADR-003 fue aceptado y cierra el motor PostgreSQL dentro de DEC-004. DEC-004 continúa abierta hasta que ADR-005 y ADR-009 alcancen un estado explícito compatible y se verifiquen las demás restricciones del gate. El primer cambio ejecutable de R0 permanece bloqueado por DEC-004 y los demás gates aplicables.
+Actualización 2026-07-21: ADR-003 fue aceptado y cierra el motor PostgreSQL dentro de DEC-004; ADR-009 fue aceptado y cierra la topología de repositorio único con workspaces bajo demanda. DEC-004 continúa abierta por ADR-005, la selección de package manager, la política de lockfile, la baseline ejecutable final y las demás restricciones del gate. El primer cambio ejecutable de R0 permanece bloqueado.
 
 ## Referencias
 
@@ -282,7 +282,7 @@ Actualización 2026-07-21: ADR-003 fue aceptado y cierra el motor PostgreSQL den
 - [ADR-002 — Monolito modular inicial](ADR-002-modular-monolith-first.md)
 - [ADR-004 — Multitenancy con base y esquema compartidos](ADR-004-shared-schema-multitenancy.md)
 - [ADR-005 — NestJS para backend y API](ADR-005-nestjs-backend.md)
-- [ADR-009 — Estrategia monorepo](ADR-009-monorepo-strategy.md)
+- [ADR-009 — Repositorio único evolutivo y workspaces bajo demanda](ADR-009-monorepo-strategy.md)
 - [Arquitectura objetivo](../../architecture/TARGET_ARCHITECTURE.md)
 - [Arquitectura de aplicaciones](../../architecture/APPLICATION_ARCHITECTURE.md)
 - [Estrategia de pruebas](../../quality/TESTING_STRATEGY.md)

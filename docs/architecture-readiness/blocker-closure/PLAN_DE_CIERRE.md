@@ -8,14 +8,14 @@ El plan cierra decisiones, no fechas. Cada fila representa un paquete coherente:
 
 El Responsable de Producto cerró `DEC-002` y `DEC-062` el 2026-07-21. Quedaron aprobados el alcance de R0, sus exclusiones, escenarios verificables y autoridad de aceptación. Este cierre no autoriza implementación, no declara R0 construido o aceptado y no cierra `DEC-063`.
 
-Arquitectura + Ingeniería aceptaron ADR-001 y ADR-003 el 2026-07-21. TypeScript, Node.js `24.x` y PostgreSQL quedan resueltos dentro de `DEC-004`; PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial. `DEC-004` continúa abierta por ADR-005 y ADR-009.
+Arquitectura + Ingeniería aceptaron ADR-001, ADR-003 y ADR-009 el 2026-07-21. TypeScript, Node.js `24.x`, PostgreSQL y el repositorio único evolutivo quedan resueltos dentro de `DEC-004`; PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial. `DEC-004` continúa abierta por ADR-005, package manager, lockfile y baseline ejecutable final.
 
 ## Secuencia ejecutable de decisiones
 
 | Orden | Decisiones | Responsable principal | Entradas mínimas | Salida verificable | ADR | Criterio de aceptación | Hito |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 — cerrado 2026-07-21 | DEC-002, DEC-062 | Producto | Rebanadas, objetivo MVP, escenarios | Alcance, exclusiones, escenarios y autoridad de aceptación de R0 aprobados | No | Contrato verificable de R0 sin Reparaciones ni dependencia de R1 | H0 cerrado para estas decisiones |
-| 2 — parcial | DEC-004 | Arquitectura + Ingeniería | ADR-001/003 Accepted, alcance R0 y restricciones del repositorio | ADR-005/009 revisados; compatibilidad con la [baseline](DEC-004_BASELINE_TECNICA.md) verificada | Existentes | Cada ADR tiene estado y consecuencias explícitas; lenguaje, runtime y motor ya satisfechos | H0 |
+| 2 — parcial | DEC-004 | Arquitectura + Ingeniería | ADR-001/003/009 Accepted, alcance R0 y restricciones del repositorio | ADR-005 resuelto; package manager, lockfile y compatibilidad de la [baseline](DEC-004_BASELINE_TECNICA.md) verificados | Existentes | Lenguaje, runtime, motor y repositorio ya satisfechos; framework y baseline ejecutable pendientes | H0 |
 | 3 | DEC-005, DEC-049 | Arquitectura | ADR-002, mapa de contextos y dependencias | Estructura inicial, ownership y reglas de dependencia | No, salvo excepción | Ningún módulo futuro vacío ni acceso global a datos | H0 |
 | 4 | DEC-044, DEC-051, DEC-063 | Calidad + Arquitectura | Riesgos, stack y aceptación R0 | Errores, pruebas y Definition of Done | ADR de pruebas | Gates repetibles cubren arquitectura y aislamiento | H0 |
 | 5 | DEC-007, DEC-008 | Producto + Arquitectura | ADR-004 Accepted | Aplicar matriz SaaS/tenant/sucursal | ADR-004 | Todo dato de R0/R1 tiene dueño, alcance y prueba | H1 |

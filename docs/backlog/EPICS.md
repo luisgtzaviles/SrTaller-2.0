@@ -20,7 +20,7 @@
 
 - **Objetivo:** preparar, en una fase futura aprobada, la base repetible de desarrollo, pruebas, CI/CD y observabilidad.
 - **Valor:** permite cambios pequeños, verificables y desplegables de forma segura.
-- **Capacidades:** monorepo, contratos, pipelines, configuración, ambientes y estándares.
+- **Capacidades:** repositorio único evolutivo conforme a ADR-009, contratos, pipelines, configuración, ambientes y estándares; workspaces sólo bajo demanda.
 - **Dependencias:** EPIC-000 y ADRs técnicos aceptados.
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.

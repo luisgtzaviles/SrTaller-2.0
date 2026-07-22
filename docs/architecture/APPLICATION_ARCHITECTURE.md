@@ -6,6 +6,7 @@
 - **Naturaleza:** Propuesta de responsabilidades y reglas de dependencia; no es diseño implementable.
 - **Alcance:** Clientes propios, API, módulos de aplicación y dominio, persistencia, workers y tiempo real.
 - **Persistencia:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) acepta PostgreSQL; Redis, S3-compatible, ORM, driver y repository implementation siguen abiertos.
+- **Repositorio:** [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md) acepta un repositorio único evolutivo; R0 no requiere workspaces y conserva una sola aplicación backend y un artefacto.
 
 ## Objetivo
 
@@ -23,11 +24,11 @@ Evitar que presentación, HTTP, reglas de negocio y acceso a datos vuelvan a mez
 | Tiempo real | Conexiones y entrega de eventos confirmados | Responsabilidad lógica interna; no desplegable inicial separado |
 | Apps móviles | Clientes iOS y Android que consumirán la API | Futuro, no parte de la fundación |
 
-No se presupone que cada fila sea un repositorio, servicio o despliegue distinto. Conforme a [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), existe una sola aplicación backend y un único artefacto/despliegue iniciales.
+No se presupone que cada fila sea una aplicación autorizada, package, repositorio, servicio o despliegue distinto. Conforme a [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md), existe una sola aplicación backend y un único artefacto/despliegue iniciales dentro del repositorio único.
 
 ## Lenguaje y runtime aceptados
 
-Conforme a [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md), dominio, aplicación, adaptadores, procesamiento diferible, pruebas de producto y contratos deliberadamente compartidos del backend inicial usan TypeScript sobre Node.js `24.x`. Esto no autoriza NestJS, un package manager, monorepo, librería de validación ni nueva superficie de cliente.
+Conforme a [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md), dominio, aplicación, adaptadores, procesamiento diferible, pruebas de producto y contratos deliberadamente compartidos del backend inicial usan TypeScript sobre Node.js `24.x`. ADR-009 acepta el repositorio único, pero no autoriza NestJS, package manager, workspaces, packages, librería de validación ni nueva superficie de cliente.
 
 Toda entrada HTTP, evento, job, dato persistido, archivo, variable de entorno o integración se valida en runtime antes de convertirse en un valor confiable. Los tipos de TypeScript, decorators o contratos compilados no sustituyen esa validación ni los controles de ADR-004 y ADR-010 a ADR-013.
 
@@ -194,9 +195,9 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 - [ADR-013: acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) — `Accepted`
 - [ADR-005: NestJS para backend](../decisions/proposed/ADR-005-nestjs-backend.md)
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
-- [ADR-009: estrategia de monorepo](../decisions/proposed/ADR-009-monorepo-strategy.md)
+- [ADR-009: repositorio único evolutivo y workspaces bajo demanda](../decisions/proposed/ADR-009-monorepo-strategy.md) — `Accepted`
 
-ADR-001 a ADR-004 y ADR-010 a ADR-013 están `Accepted`; ADR-005, ADR-006 y ADR-009 permanecen `Proposed`. ADR-001 no acepta frameworks ni tooling; ADR-003 no acepta ORM, migrador, driver, pooler ni repository implementation; ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
+ADR-001 a ADR-004 y ADR-009 a ADR-013 están `Accepted`; ADR-005 y ADR-006 permanecen `Proposed`. ADR-009 no acepta package manager, workspaces obligatorios, orquestador, packages ni estructura física; ADR-001 no acepta frameworks ni tooling; ADR-003 no acepta ORM, migrador, driver, pooler ni repository implementation. ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
 
 ## Riesgos
 
@@ -212,7 +213,7 @@ ADR-001 a ADR-004 y ADR-010 a ADR-013 están `Accepted`; ADR-005, ADR-006 y ADR-
 - ¿Cuáles módulos necesitan interacción síncrona y cuáles aceptan consistencia eventual?
 - ¿Qué contratos deben compartirse entre web, móvil futuro y API sin acoplarlos al framework?
 - ¿Conviene separar desde el inicio las webs de operación, tenant y plataforma?
-- ¿Qué mecanismo verificará límites modulares dentro del monorepo propuesto?
+- ¿Qué mecanismo concreto de `DEC-005` verificará los límites modulares dentro del repositorio único?
 - ¿Qué patrón garantizará publicación confiable de eventos después de una transacción?
 - ¿Qué política de compatibilidad de API necesitarán los clientes móviles cuando existan?
 

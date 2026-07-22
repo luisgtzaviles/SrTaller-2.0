@@ -8,6 +8,7 @@
 - **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Proposed`.
 - **Baseline de runtime aceptada:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md) fija TypeScript y Node.js `24.x`; no acepta contenedores, CI/CD ni plataforma de ejecución.
 - **Baseline de persistencia aceptada:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) fija PostgreSQL 18.x; no acepta proveedor, contenedor, HA, pooler ni servicio administrado.
+- **Baseline de repositorio aceptada:** [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md) fija un repositorio único y un solo flujo coordinado de versión para R0; no acepta workspaces, orquestador, caché, CI/CD ni múltiples artefactos.
 
 ## Objetivo
 
@@ -30,23 +31,22 @@ flowchart TB
     DNS[DNS / TLS / ingress]
 
     subgraph Env[Ambiente aislado]
-        Workshop[Web operación]
-        Platform[Web plataforma]
-        API[API]
-        Worker[Workers]
-        RT[Gateway realtime\nlógico]
+        Clients[Clientes autorizados\nninguno queda aprobado por este diagrama]
+        subgraph Backend[Única aplicación backend inicial]
+            API[API lógica]
+            Worker[Procesamiento diferible lógico]
+            RT[Tiempo real lógico]
+        end
         PG[(PostgreSQL 18.x)]
         Redis[(Redis / colas\nsi se acepta)]
         S3[(Objetos\nsi se acepta)]
         Telemetry[Telemetría]
     end
 
-    DNS --> Workshop
-    DNS --> Platform
+    DNS --> Clients
     DNS --> API
     DNS --> RT
-    Workshop --> API
-    Platform --> API
+    Clients --> API
     API --> PG
     API --> Redis
     API --> S3
@@ -60,7 +60,7 @@ flowchart TB
     RT --> Telemetry
 ```
 
-El diagrama separa responsabilidades para facilitar lectura. [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) establece un único artefacto y despliegue de aplicación, con una sola aplicación backend inicial. La separación física queda para una revisión futura con evidencia. La topología no implica Kubernetes ni un proveedor específico.
+El diagrama separa responsabilidades para facilitar lectura. [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md) establece un único artefacto y despliegue de aplicación, con una sola aplicación backend inicial; [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md) la aloja en un repositorio único sin exigir workspaces. La separación física o un cliente adicional requieren autorización y evidencia. La topología no implica Kubernetes ni un proveedor específico.
 
 ## Unidad desplegable inicial
 
@@ -69,6 +69,7 @@ El diagrama separa responsabilidades para facilitar lectura. [ADR-002](../decisi
 - **Configuración:** unificada por ambiente y suministrada al despliegue sin fijar proveedor.
 - **Persistencia:** una sola base de datos física inicial, cuya tecnología y organización lógica requieren decisiones separadas.
 - **Migraciones futuras:** asociadas y coordinadas con la misma release; no constituyen un servicio permanente.
+- **Repositorio:** único para R0; no convierte packages futuros en artefactos ni habilita versionado independiente.
 
 La compatibilidad entre responsabilidades, contratos y datos sigue siendo obligatoria dentro del artefacto único. Separar una unidad en el futuro requiere los disparadores y el nuevo ADR definidos en ADR-002.
 

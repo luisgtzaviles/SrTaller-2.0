@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Propuesta
-- **Hecho conocido:** ADR-002 fija un único artefacto backend inicial y ADR-001 fija Node.js `24.x` como su baseline; clientes o separaciones futuras requieren autorización propia.
+- **Hecho conocido:** ADR-002 fija un único artefacto backend inicial, ADR-001 fija Node.js `24.x` como su baseline y ADR-009 fija un repositorio único con un solo flujo coordinado de versión para R0; clientes, packages publicados o separaciones futuras requieren autorización propia.
 - **Hipótesis:** Semantic Versioning puede comunicar cambios de contratos publicados, complementado por un manifiesto de release.
 - **Decisión pendiente:** Esquema definitivo, política pre-1.0, versionado de API y compatibilidad soportada.
 
@@ -15,7 +15,7 @@ Poder responder qué cambió, qué artefactos están desplegados en cada ambient
 
 | Unidad | Identificador propuesto | Propósito |
 |---|---|---|
-| Artefacto desplegable | `nombre@MAJOR.MINOR.PATCH` + digest | Identificar exactamente API, worker o cliente. |
+| Artefacto desplegable | `nombre@MAJOR.MINOR.PATCH` + digest | Identificar exactamente el backend único inicial o una futura unidad autorizada. |
 | Release de plataforma | ID/version TBD + manifiesto | Agrupar las versiones compatibles promovidas juntas o en secuencia. |
 | Migración | Identificador único, ordenado e inmutable | Trazar cambios de datos/esquema; no equivale a SemVer. |
 | Contrato/API | Versión de contrato TBD | Comunicar compatibilidad a clientes web, móviles futuros e integraciones. |
@@ -34,9 +34,9 @@ ADR-001 acepta una sola línea major ordinaria por release: Node.js `24.x` para 
 
 Estas reglas no se consideran aceptadas hasta definir qué contratos son públicos, la política antes de `1.0.0` y el soporte de clientes antiguos. Una versión no reemplaza la descripción del impacto.
 
-## Versiones independientes y manifiesto
+## Flujo coordinado y manifiesto
 
-El backend inicial avanza como un único artefacto conforme a ADR-002. Si en el futuro se autorizan clientes u otros desplegables, cada unidad podrá avanzar a su propio ritmo sólo si conserva compatibilidad. Un manifiesto de release debe fijar la combinación efectivamente promovida:
+El backend inicial avanza como un único artefacto y con un solo flujo coordinado de versión conforme a ADR-002 y ADR-009. Los futuros packages internos forman parte de ese artefacto, no se publican ni tienen versión independiente por defecto. Si en el futuro se autorizan clientes, packages publicados u otros desplegables, su versionado requiere una decisión explícita y deberá conservar compatibilidad. Un manifiesto de release debe fijar la combinación efectivamente promovida cuando exista más de una unidad autorizada:
 
 ```yaml
 # Ejemplo conceptual; no es configuración ejecutable.
@@ -60,7 +60,7 @@ Se propone:
 - promoción del mismo digest entre staging y production;
 - prohibición de reescribir una versión ya publicada.
 
-La sintaxis exacta de tags queda `TBD` hasta decidir si el monorepo usa versionado independiente o coordinado.
+La sintaxis exacta de tags queda `TBD`, pero R0 usa versionado coordinado del único artefacto backend. ADR-009 no acepta Changesets, semantic-release, registry ni versionado independiente.
 
 ## Changelog
 
@@ -79,7 +79,7 @@ Cada entrada debe vincular PBI o bug y, si corresponde, ADR, evidencia y guía d
 ## Versionado de API y eventos
 
 - Compatibilidad de URL, headers o media types es una decisión pendiente.
-- Contratos de eventos y jobs requieren evolución compatible porque productores y consumidores pueden desplegarse por separado.
+- Contratos de eventos y jobs requieren evolución compatible aun dentro del artefacto coordinado; un despliegue separado sólo existirá mediante decisión futura.
 - Agregar campos opcionales suele ser preferible a cambiar semántica existente, sujeto a validación.
 - Deprecaciones necesitan anuncio, telemetría de uso y fecha aprobada antes de retirar.
 - Clientes móviles futuros obligarán a considerar versiones que no pueden actualizarse inmediatamente.
@@ -93,7 +93,7 @@ Cada entrada debe vincular PBI o bug y, si corresponde, ADR, evidencia y guía d
 
 ## Preguntas abiertas
 
-- ¿Versionado independiente o coordinado para los paquetes y desplegables del monorepo?
+- Si se autoriza otra unidad, ¿qué evidencia justificaría apartarse del flujo coordinado y adoptar versionado independiente?
 - ¿Cuándo se considerará que un contrato está publicado y requiere `MAJOR`?
 - ¿Qué garantías habrá antes de `1.0.0`?
 - ¿Cómo se versionarán API, webhooks, eventos realtime y mensajes de cola?
@@ -103,5 +103,5 @@ Cada entrada debe vincular PBI o bug y, si corresponde, ADR, evidencia y guía d
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** aprobación de estrategia de monorepo/API o creación del primer artefacto desplegable.
+- **Disparador:** creación del primer artefacto desplegable, definición de versionado de API o propuesta autorizada de publicar/separar otra unidad.
 - **Documentos relacionados:** [Release Process](./RELEASE_PROCESS.md), [Traceability Model](./TRACEABILITY_MODEL.md), [Migration Policy](../operations/MIGRATION_POLICY.md).

@@ -16,7 +16,7 @@
 | Tenancy e identidad | [Multitenancy](../../architecture/MULTITENANCY_MODEL.md), [identidad](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), [sucursales/dispositivos](../../architecture/BRANCH_AND_DEVICE_MODEL.md) | Gates transversales | RDD |
 | Seguridad/operación | [Seguridad](../../architecture/SECURITY_BASELINE.md), [observabilidad](../../architecture/OBSERVABILITY_STRATEGY.md) | Gates y riesgos | RP |
 | Integraciones | [Arquitectura de integración](../../architecture/INTEGRATION_ARCHITECTURE.md) | Puertos/adaptadores | DAP |
-| Decisiones técnicas | [ADR-001 aceptado](../../decisions/proposed/ADR-001-typescript-as-primary-language.md), [ADR-002 aceptado](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-003 aceptado](../../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004 aceptado](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010 a ADR-013 aceptados](../../decisions/README.md), [registro](../../decisions/README.md) | Distinguir aceptación actual de evidencia previa | ADR |
+| Decisiones técnicas | [ADR-001 aceptado](../../decisions/proposed/ADR-001-typescript-as-primary-language.md), [ADR-002 aceptado](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-003 aceptado](../../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004 aceptado](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-009 aceptado](../../decisions/proposed/ADR-009-monorepo-strategy.md), [ADR-010 a ADR-013 aceptados](../../decisions/README.md), [registro](../../decisions/README.md) | Distinguir aceptación actual de evidencia previa | ADR |
 
 ## Equivalencias documentales
 
@@ -30,7 +30,7 @@
 | --- | --- | --- |
 | ADR-001 está `Accepted` desde 2026-07-21 | TypeScript y Node.js `24.x` rigen R0; no aceptan framework, repositorio ni tooling | ADR |
 | ADR-002 está `Accepted` desde 2026-07-21 | La forma inicial es monolito modular; no acepta el conjunto tecnológico | ADR |
-| ADR-003 está `Accepted`; ADR-005 a ADR-009 permanecen `Proposed` | PostgreSQL 18.x queda como baseline; framework, routing, repositorio y despliegue siguen abiertos | ADR |
+| ADR-003 y ADR-009 están `Accepted`; ADR-005 a ADR-008 permanecen `Proposed` | PostgreSQL 18.x y repositorio único con workspaces bajo demanda quedan aceptados; framework, routing, package manager, lockfile y despliegue siguen abiertos | ADR |
 | ADR-004 está `Accepted` desde 2026-07-21 | Base/esquema compartidos, propiedad SaaS/tenant/sucursal e invariantes ya no se reabren sin evidencia | ADR |
 | ADR-010 está `Accepted` desde 2026-07-21 | Estación vinculada, sucursal derivada, usuario por tenant, turno y contexto atribuible ya no se reabren sin evidencia | ADR |
 | ADR-011 está `Accepted` desde 2026-07-21 | Identidad ordinaria, PIN contextual, una sesión activa por estación y atribución con sesión ya no se reabren sin evidencia | ADR |

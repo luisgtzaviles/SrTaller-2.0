@@ -83,7 +83,7 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [ADR-006 — Next.js](decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-007 — Despliegues en contenedores](decisions/proposed/ADR-007-containerized-deployments.md)
 - [ADR-008 — Subdominios wildcard](decisions/proposed/ADR-008-wildcard-subdomain-routing.md)
-- [ADR-009 — Monorepo](decisions/proposed/ADR-009-monorepo-strategy.md)
+- [ADR-009 — Repositorio único evolutivo y workspaces bajo demanda (Accepted)](decisions/proposed/ADR-009-monorepo-strategy.md)
 - [ADR-010 — Contexto operativo por estación vinculada (Accepted)](decisions/proposed/ADR-010-station-bound-operational-context.md)
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa (Accepted)](decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual (Accepted)](decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)

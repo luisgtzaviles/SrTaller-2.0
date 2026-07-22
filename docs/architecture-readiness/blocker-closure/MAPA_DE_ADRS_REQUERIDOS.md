@@ -16,7 +16,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | ADR-006 | Next.js para clientes web | Proposed | Antes de la primera UI | Revisar por superficie; no asumir una única necesidad |
 | ADR-007 | Despliegues mediante contenedores | Proposed | Antes del primer despliegue | Revisar artefacto, promoción, rollback y operación |
 | ADR-008 | Resolución de tenant por subdominios wildcard | Proposed | H1/antes de acceso externo | Revisar DNS, certificados, dominios y fuente confiable del tenant |
-| ADR-009 | Monorepo con workspaces | Proposed | H0 | Revisar junto con ownership, pipeline y estructura inicial |
+| ADR-009 | Repositorio único evolutivo y workspaces bajo demanda | Accepted | Topología H0 cerrada; tooling abierto | Aplicar límites; no crear workspaces, apps, packages ni desplegables sin condición y autoridad |
 | ADR-010 | Contexto operativo derivado de estación vinculada | Accepted | H1 parcialmente cerrado | Aplicar invariantes; identidad/sesión se rigen por ADR-011 y autorización por ADR-012 |
 | ADR-011 | Identidad, autenticación por PIN y sesión operativa | Accepted | H1 parcialmente cerrado | Aplicar invariantes; mecanismos técnicos y autorización se rige por ADR-012 |
 | ADR-012 | Roles de tenant, capacidades y autorización contextual | Accepted | H1 parcialmente cerrado | Aplicar invariantes y definir composición por rebanada; refuerzo se rige por ADR-013 |
@@ -34,6 +34,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | Cerrado | Identidad, sesión, PIN e inactividad | DEC-013 a DEC-016 | Respondido | Mecanismos técnicos aún pueden requerir evidencia | ADR-011 aceptado; falta aplicación, modelo de amenazas y pruebas | H1 |
 | Cerrado | Modelo de roles, capacidades y autorización ordinaria | DEC-017, DEC-018 | Respondido | No para aceptar el modelo | ADR-012 aceptado; faltan composición por rebanada, aplicación y pruebas | H1 |
 | Cerrado | Modelo de acciones sensibles y reautenticación | DEC-019, DEC-020 | Respondido | No para aceptar el modelo | ADR-013 aceptado; faltan política por acción, mecanismo, aplicación y pruebas | H1 |
+| Cerrado | Repositorio único evolutivo y workspaces bajo demanda | DEC-004, DEC-005, DEC-049 | No para topología; Producto participa ante nuevas superficies | No para aceptar | ADR-009 Accepted: una aplicación/artefacto para R0; tooling y estructura física siguen separados | H0 parcialmente cerrado |
 | 5 | Persistencia PostgreSQL, ownership de repositorios y migraciones; aplicar ADR-003 | DEC-006, DEC-049, DEC-050 | No para mecanismo; sí para datos globales | Condicional | Propiedad de escritura, tooling, evolución de esquema y recuperación definidos | H1 |
 | 6 | Tiempo y zonas horarias | DEC-037, DEC-038 | Sí | Condicional para casos límite | Instante autoritativo, zona operacional y reglas de presentación | H1 |
 | 7 | Auditoría y atribución | DEC-016, DEC-019, DEC-046 | Sí | No por defecto | Hechos auditables, actor, contexto, integridad, acceso y retención inicial | H1/H3 |
@@ -50,11 +51,13 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 ## Próximo ADR recomendado
 
-ADR-001, ADR-004 y ADR-010 a ADR-013 ya están aceptados. La siguiente revisión de seguridad debe aplicar y probar esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.
+ADR-005 es la siguiente revisión de plataforma necesaria para avanzar `DEC-004`. Debe resolver el framework del backend sin inferir package manager, lockfile, estructura física ni autorización de implementación. ADR-006, ADR-007 y ADR-008 conservan sus gates posteriores y no se aceptan por dependencia de ADR-009.
+
+ADR-001, ADR-003, ADR-004, ADR-009 y ADR-010 a ADR-013 ya están aceptados. En paralelo, la siguiente revisión de seguridad debe preparar la aplicación y prueba de esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.
 
 Protección técnica del PIN, intentos, recuperación y formato de sesión siguen como diseño/evidencia dependiente de ADR-011. La propagación de cambios de autorización depende de ADR-012 y la invalidación de controles reforzados de ADR-013. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
-ADR-001 y ADR-003 están `Accepted` y satisfacen lenguaje/runtime y motor dentro del lote mínimo de plataforma. PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial. ADR-005 y ADR-009 continúan pendientes, por lo que `DEC-004` y el primer cambio de implementación de R0 permanecen bloqueados. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
+ADR-001, ADR-003 y ADR-009 están `Accepted` y satisfacen lenguaje/runtime, motor y topología de repositorio dentro del lote mínimo de plataforma. PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial. `DEC-004` continúa pendiente de ADR-005, package manager, lockfile y baseline ejecutable final; el primer cambio de implementación de R0 permanece bloqueado. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
 
 ## Condiciones para llevar un ADR a revisión
 

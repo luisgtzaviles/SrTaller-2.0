@@ -285,7 +285,7 @@ Producto participa cuando una decisión afecta alcance, coste, mercado, región,
 ## Impacto en decisiones abiertas
 
 - Cierra el motor de persistencia dentro de `DEC-004` y registra PostgreSQL 18.x como baseline de R0.
-- No cierra `DEC-004`, que permanece pendiente de ADR-005 y ADR-009 y de los demás gates aplicables.
+- No cierra `DEC-004`. ADR-009 cierra la topología del repositorio, pero el gate permanece pendiente de ADR-005, package manager, lockfile, baseline ejecutable final y los demás controles aplicables.
 - No cierra `DEC-049` sobre repositorios y propiedad lógica ejecutable.
 - No cierra `DEC-050` sobre tooling y ejecución de migraciones.
 - No autoriza el primer cambio ejecutable de R0.

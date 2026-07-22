@@ -23,7 +23,7 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Configuración | Necesidad de políticas versionadas identificada | Precedencia y alcance pendientes | PB |
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
-| ADRs | ADR-001 a ADR-004 y ADR-010 a ADR-013 aceptados; ADR-005 a ADR-009 siguen propuestos | Lenguaje/runtime, forma, PostgreSQL 18.x, tenancy, contexto, identidad/sesión y autorización definidos; DEC-004 aún bloqueada por ADR-005/009 | PB |
+| ADRs | ADR-001 a ADR-004 y ADR-009 a ADR-013 aceptados; ADR-005 a ADR-008 siguen propuestos | Lenguaje/runtime, forma, PostgreSQL 18.x, repositorio único, tenancy, contexto, identidad/sesión y autorización definidos; DEC-004 aún bloqueada por ADR-005 y baseline ejecutable | PB |
 | Autorización | Producto aprobó alcance/aceptación esperada de R0; Sprint 00 no está cerrado ni existe autorización de implementación | Bloqueante organizacional | PB |
 
 ## Qué sí puede comenzar
@@ -38,7 +38,7 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 - **[RP]** Implementación funcional sin autorización explícita y sin cumplir Definition of Ready.
 - **[R]** Persistencia multitenant antes de aplicar y probar el contexto e identidad/sesión aceptados, el alcance técnico y el aislamiento.
 - **[R]** Flujos sensibles antes de clasificar la acción y aplicar/probar el control, atribución y evidencia de ADR-013.
-- **[ADR]** Fijar frameworks, base de datos, monorepo o despliegue como hechos aprobados; lenguaje/runtime se rigen exclusivamente por ADR-001.
+- **[ADR]** Fijar frameworks, workspaces, package manager, orquestación o despliegue como hechos aprobados. El repositorio único y los workspaces bajo demanda se rigen por ADR-009; lenguaje/runtime por ADR-001 y motor por ADR-003.
 
 ## Condición de promoción
 

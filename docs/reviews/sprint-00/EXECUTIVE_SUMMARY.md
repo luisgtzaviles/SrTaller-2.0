@@ -48,7 +48,7 @@ En la fecha de esta evaluación, la existencia de esos documentos no significaba
 
 Las decisiones de producto deben seguir los Gates 1 a 6 de la [secuencia](./DECISION_SEQUENCE.md): producto inicial, organización, identidad/operación, dominio central, CRM/mensajería y comercialización. El Gate 7 técnico sólo puede completarse formalmente después de resolver los gates que condicionan cada ADR.
 
-Actualización posterior: ADR-001 aceptó TypeScript y Node.js `24.x`, ADR-002 el monolito modular, ADR-003 PostgreSQL con baseline 18.x y ADR-004 la topología shared-schema el 2026-07-21. Wildcard sigue propuesto; NestJS necesita validación técnica; Next.js debe dividirse o limitarse a una superficie aprobada; contenedores y monorepo no obligan a Docker Compose, GitHub Actions, pnpm ni Turborepo.
+Actualización posterior: ADR-001 aceptó TypeScript y Node.js `24.x`, ADR-002 el monolito modular, ADR-003 PostgreSQL con baseline 18.x, ADR-004 la topología shared-schema y ADR-009 el repositorio único evolutivo con workspaces bajo demanda el 2026-07-21. Wildcard sigue propuesto; NestJS necesita validación técnica; Next.js debe dividirse o limitarse a una superficie aprobada; contenedores no obligan Docker Compose/GitHub Actions y ADR-009 no acepta pnpm, Turborepo, Nx ni caché.
 
 ## Riesgo de comenzar demasiado pronto
 

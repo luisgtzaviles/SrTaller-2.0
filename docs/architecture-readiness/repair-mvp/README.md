@@ -79,7 +79,7 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 ## Autoridad documental
 
 - El modelo de dominio consolidado es la fuente de invariantes y lenguaje: [modelo integrado](../../domain-model/integrated-repair-domain-model/README.md).
-- [ADR-001 a ADR-004](../../decisions/README.md) y [ADR-010 a ADR-013](../../decisions/README.md) están `Accepted`; ADR-005 a ADR-009 conservan el estado del [registro](../../decisions/README.md).
+- [ADR-001 a ADR-004](../../decisions/README.md) y [ADR-009 a ADR-013](../../decisions/README.md) están `Accepted`; ADR-005 a ADR-008 conservan el estado del [registro](../../decisions/README.md).
 - Las políticas de Sprint 00 y entrega conservan su autoridad sobre el inicio de implementación.
 - Cuando una propuesta de este paquete contradiga una decisión posteriormente aceptada, prevalece la decisión aceptada y este paquete debe revisarse.
 

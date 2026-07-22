@@ -5,8 +5,8 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 ## Estado del documento
 
 **Estado:** Workflow en uso, pendiente de completar autoridades por clase de decisión.
-**Decisiones aceptadas:** ocho. ADR-001 y ADR-003 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento.
-**Decisiones propuestas:** cinco. ADR-005 a ADR-009 conservan estado `Proposed`.
+**Decisiones aceptadas:** nueve. ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento.
+**Decisiones propuestas:** cuatro. ADR-005 a ADR-008 conservan estado `Proposed`.
 
 ## Estados permitidos
 
@@ -33,6 +33,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 | [ADR-002](proposed/ADR-002-modular-monolith-first.md) | Monolito modular orientado al dominio como arquitectura inicial | Accepted — 2026-07-21 |
 | [ADR-003](proposed/ADR-003-postgresql-primary-database.md) | PostgreSQL como motor relacional transaccional primario | Accepted — 2026-07-21 |
 | [ADR-004](proposed/ADR-004-shared-schema-multitenancy.md) | Multitenancy con base y esquema compartidos | Accepted — 2026-07-21 |
+| [ADR-009](proposed/ADR-009-monorepo-strategy.md) | Repositorio único evolutivo y workspaces bajo demanda | Accepted — 2026-07-21 |
 | [ADR-010](proposed/ADR-010-station-bound-operational-context.md) | Contexto operativo derivado de una estación vinculada | Accepted — 2026-07-21 |
 | [ADR-011](proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) | Identidad de usuario, autenticación por PIN y sesión operativa | Accepted — 2026-07-21 |
 | [ADR-012](proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) | Roles de tenant, capacidades y autorización contextual | Accepted — 2026-07-21 |
@@ -48,7 +49,6 @@ Las rutas históricas bajo `proposed/` se conservan para mantener una convenció
 | [ADR-006](proposed/ADR-006-nextjs-web-clients.md) | Next.js para clientes web | Proposed |
 | [ADR-007](proposed/ADR-007-containerized-deployments.md) | Despliegues en contenedores | Proposed |
 | [ADR-008](proposed/ADR-008-wildcard-subdomain-routing.md) | Resolución por subdominios wildcard | Proposed |
-| [ADR-009](proposed/ADR-009-monorepo-strategy.md) | Estrategia monorepo | Proposed |
 
 ## Reglas
 

@@ -7,7 +7,7 @@
 - **Aprobación:** Pendiente del Product Owner y de las revisiones técnica, operativa, legal o de seguridad que correspondan.
 - **Regla de avance:** un gate puede preparar el siguiente, pero no se considera superado hasta cumplir su criterio de salida con evidencia registrada.
 
-**Actualización posterior:** [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) fue revisado y aceptado el 2026-07-21. Las menciones posteriores a su revisión se conservan como parte de la secuencia histórica; no reabren la decisión ni cierran los demás gates.
+**Actualización posterior:** [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) fueron revisados y aceptados el 2026-07-21. ADR-009 fija repositorio único evolutivo y workspaces bajo demanda sin seleccionar tooling. Las menciones posteriores a su revisión se conservan como parte de la secuencia histórica; no reabren las decisiones ni cierran los demás gates.
 
 ## Propósito
 
@@ -385,7 +385,7 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 - lenguaje, backend y frontend por tipo de cliente;
 - persistencia primaria y estrategia multitenant;
 - necesidad de RLS, Redis, cola, tiempo real y objetos según el alcance;
-- estrategia de monorepo sin convertir Turborepo en requisito automático;
+- aplicación del repositorio único aceptado sin convertir workspaces o Turborepo en requisitos automáticos;
 - papel de contenedores en desarrollo y producción;
 - subdominios, dominios, cookies, autenticación, orígenes y ambientes;
 - promoción del mismo artefacto, migraciones, rollback y observabilidad;
@@ -409,7 +409,7 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 5. ADR-001/003 ya están `Accepted`; revisar ADR-005 con un caso de uso representativo y sus baselines, recordando que el framework no valida el dominio.
 6. Revisar ADR-006 por aplicación concreta, no como obligación para toda web.
 7. Revisar ADR-008 después del modelo de identidad mediante [SPIKE-001](./PROTOTYPE_CANDIDATES.md#spike-001).
-8. Revisar ADR-009 distinguiendo monorepo de pnpm o Turborepo y apoyándose, si aporta evidencia, en [SPIKE-008](./PROTOTYPE_CANDIDATES.md#spike-008).
+8. Aplicar ADR-009 como repositorio único sin workspaces obligatorios; [SPIKE-008](./PROTOTYPE_CANDIDATES.md#spike-008) sólo procede ante varias unidades reales y no selecciona pnpm o Turborepo por defecto.
 9. Revisar ADR-007 distinguiendo desarrollo, build y runtime; validar jobs y promoción mediante [SPIKE-006](./PROTOTYPE_CANDIDATES.md#spike-006) y [SPIKE-007](./PROTOTYPE_CANDIDATES.md#spike-007) cuando correspondan.
 
 ### Documentos afectados
@@ -423,15 +423,15 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 
 ### ADRs bloqueados o condicionados
 
-ADR-001 a ADR-004 están `Accepted`; ADR-005 a ADR-009 permanecen `Proposed`. El gate debe registrar para cada propuesta pendiente si está lista para revisión, requiere producto, requiere validación técnica o debe dividirse. En particular:
+ADR-001 a ADR-004 y ADR-009 están `Accepted`; ADR-005 a ADR-008 permanecen `Proposed`. El gate debe registrar para cada propuesta pendiente si está lista para revisión, requiere producto, requiere validación técnica o debe dividirse. En particular:
 
-- ADR-001 acepta TypeScript y Node.js `24.x`, pero no acepta automáticamente NestJS, Next.js, monorepo o tooling;
+- ADR-001 acepta TypeScript y Node.js `24.x`, pero no acepta automáticamente NestJS, Next.js, repositorio o tooling; ADR-009 gobierna ahora la topología;
 - ADR-003 acepta PostgreSQL 18.x, pero no elige proveedor, ORM, migrador, pooler, extensiones ni RLS;
 - ADR-004 no acepta RLS implícitamente;
 - ADR-006 no obliga a que todas las aplicaciones web compartan estrategia;
 - ADR-007 no decide por sí solo Docker Compose, GitHub Actions ni hosting;
 - ADR-008 incluye efectos de seguridad de sesión y ambientes;
-- ADR-009 no obliga a adoptar Turborepo.
+- ADR-009 obliga repositorio único, una aplicación/artefacto para R0 y workspaces bajo demanda; no obliga package manager, Turborepo, Nx ni caché.
 
 ### Riesgos
 

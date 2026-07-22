@@ -26,7 +26,7 @@
 | SPIKE-005 | `Mandatory before implementation` si dispositivo/PIN entra al release | PIN como identidad completa o sesión huérfana | ADR futuro de identidad/dispositivo; informa ADR-004/008 | PBI-008, PBI-009, PBI-017, PBI-018 | Después de resolver operación, acciones sensibles y revocación. |
 | SPIKE-006 | `Recommended` | Pérdida o mezcla de tenant context en jobs | ADR-002/004 y ADR futuro de colas | PBI-007, PBI-014, PBI-017, PBI-019 | Antes del primer job tenant-scoped autorizado. |
 | SPIKE-007 | `Recommended` | Rebuild, artefacto mutable o secretos en imagen | ADR-007 | PBI-015, PBI-019 | Antes del primer release productivo, con un desplegable representativo. |
-| SPIKE-008 | `Optional` | Grafo acoplado, deploys no independientes o caché insegura | ADR-009; informa ADR-007 | PBI-010, PBI-015, PBI-016, PBI-019 | Recomendable al confirmar al menos dos desplegables o paquetes compartidos. |
+| SPIKE-008 | `Deferred/conditional` | Grafo acoplado, builds costosos o caché insegura | ADR-009 Accepted; informa ADR-007 | PBI-010, PBI-015, PBI-016, PBI-019 | Sólo al autorizar varios proyectos, packages justificados u orquestación. |
 | SPIKE-009 | `Recommended` | Dominio acoplado a NestJS o controles transversales incompletos | ADR-005; informa ADR-001/002/003/004 | PBI-007, PBI-010, PBI-012, PBI-017 | Antes de aceptar NestJS, con un recorrido vertical mínimo autorizado. |
 
 <a id="spike-001"></a>
@@ -178,22 +178,22 @@
 
 <a id="spike-008"></a>
 
-## SPIKE-008 — Monorepo con despliegues independientes
+## SPIKE-008 — Workspaces y orquestación ante un grafo real
 
 | Campo | Propuesta de revisión |
 |---|---|
 | Identificador | `SPIKE-008` |
-| Clasificación | `Optional` ahora; `Recommended` cuando se confirmen al menos dos desplegables o paquetes compartidos. |
-| Hipótesis | Workspaces y un grafo selectivo permiten cambios atómicos de contratos, builds reproducibles y despliegue sólo de unidades afectadas sin imports prohibidos ni caché de secretos. |
+| Clasificación | `Deferred/conditional`; ADR-009 no requiere el spike para aceptar la topología. Sólo procede al confirmar varias unidades reales. |
+| Hipótesis | Ante varias unidades autorizadas, workspaces y un grafo selectivo permiten cambios atómicos de contratos y builds reproducibles sin imports prohibidos ni caché de secretos. |
 | Riesgo que reduce | [RISK-005](../../sprints/sprint-00/RISKS_AND_BLOCKERS.md#riesgos) y riesgos de [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md): grafo acoplado, imports indebidos, CI costoso y caché remota sensible. |
-| Pregunta que responde | ¿API, worker y web representativos pueden construir, probar, versionar y desplegar independientemente, propagando correctamente un cambio de contrato compartido? |
-| Alcance mínimo | Dos o tres unidades mínimas y un contrato público; cambio aislado y cambio compartido; affected graph; límites de importación; lockfile; caché local sin secretos; medición relativa de builds. Comparar orquestador sólo si aporta evidencia. |
+| Pregunta que responde | ¿Dos o más proyectos autorizados, o un proyecto y un package justificado, pueden construir y probarse con un grafo correcto sin convertir responsabilidades lógicas en desplegables implícitos? |
+| Alcance mínimo | Dos unidades reales autorizadas y un contrato público; cambio aislado y compartido; grafo afectado; límites de importación; lockfile; caché sólo si se autoriza; medición relativa de builds. Comparar orquestador únicamente si aporta evidencia. |
 | Fuera de alcance | Scaffolding del producto, caché remota productiva, seleccionar Turborepo o pnpm por defecto, CI final y todos los paquetes futuros. |
 | Evidencia esperada | Grafo, matriz de builds/tests/deploys afectados, reglas de frontera, resultados reproducibles, tiempos relativos y threat assessment de caché. |
-| Criterio de éxito | Un cambio aislado no fuerza todo el repositorio; un contrato activa a sus consumidores; los límites detectan imports prohibidos; los builds son reproducibles y el tooling es proporcional. |
-| Criterio de fracaso | Los deploys quedan acoplados, el grafo no identifica afectados, se comparten internals, el cache contiene material sensible o el overhead supera el valor para el equipo. |
+| Criterio de éxito | Un cambio aislado no fuerza unidades no afectadas; un contrato activa a sus consumidores; los límites detectan imports prohibidos; los builds son reproducibles y el tooling es proporcional. |
+| Criterio de fracaso | El grafo no identifica afectados, aparecen desplegables implícitos, se comparten internals, la caché contiene material sensible o el overhead supera el valor para el equipo. |
 | Duración | `TBD` |
-| ADR relacionado | [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md); informa [ADR-007](../../decisions/proposed/ADR-007-containerized-deployments.md). |
+| ADR relacionado | [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) `Accepted`; informa [ADR-007](../../decisions/proposed/ADR-007-containerized-deployments.md). |
 | PBI relacionado | [PBI-010](../../backlog/pbis/PBI-010.md), [PBI-015](../../backlog/pbis/PBI-015.md), [PBI-016](../../backlog/pbis/PBI-016.md) y [PBI-019](../../backlog/pbis/PBI-019.md). |
 | Dependencias | Superficies/unidades confirmadas, ownership del equipo, [estrategia de versionado](../../delivery/VERSIONING_STRATEGY.md) y CI candidata. No depende de elegir Turborepo inmediatamente. |
 

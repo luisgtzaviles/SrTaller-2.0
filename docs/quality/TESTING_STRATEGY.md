@@ -5,7 +5,7 @@
 - **Estado:** Propuesta
 - **Alcance:** Pruebas documentales actuales y futura plataforma web/API/workers/móviles.
 - **Decisión pendiente:** Frameworks, herramientas, cobertura objetivo, navegadores/dispositivos y presupuesto de rendimiento.
-- **Baseline aceptada:** ADR-001 exige TypeScript, Node.js `24.x`, strictness conceptual y validación de runtime; ADR-003 exige PostgreSQL 18.x. No seleccionan test runner, driver, ORM ni migrador.
+- **Baseline aceptada:** ADR-001 exige TypeScript, Node.js `24.x`, strictness conceptual y validación de runtime; ADR-003 exige PostgreSQL 18.x; ADR-009 exige un repositorio único con dependencias explícitas, dirigidas y acíclicas. No seleccionan test runner, driver, ORM, migrador ni herramienta de análisis arquitectónico.
 
 ## Objetivo
 
@@ -32,6 +32,7 @@ Se favorece una base amplia de pruebas rápidas y un conjunto E2E reducido pero 
 - En Sprint 00: enlaces, IDs, consistencia entre visión/epics/PBIs/sprint/ADRs y ausencia de código funcional.
 - En implementación futura: formato, lint, type checking, análisis de secretos, dependencias y patrones inseguros.
 - Verificar ausencia de `implicit any`, escape hatches injustificados y código fuente JavaScript de producto no autorizado.
+- Verificar imports inválidos, ciclos, consumo de internals, violaciones entre capas, ownership y unidades no autorizadas conforme a ADR-009, sin asumir una herramienta concreta.
 - Validar contratos y diagramas sin asumir que sustituyen pruebas ejecutables.
 
 ### Unitarias

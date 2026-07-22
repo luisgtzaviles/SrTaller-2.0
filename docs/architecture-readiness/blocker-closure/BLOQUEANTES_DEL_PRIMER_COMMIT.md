@@ -14,10 +14,10 @@ H0 contiene sólo decisiones cuya omisión convertiría una hipótesis en estruc
 | --- | --- | --- | --- |
 | DEC-001 | Arquitectura inicial | Aceptada | ADR-002; no bloquea |
 | DEC-002 | Alcance exacto de R0 | Cerrada por Producto el 2026-07-21 | Fundación ejecutable, resultado, inclusiones y exclusiones aprobados |
-| DEC-004 | Stack de aplicación | Parcial: ADR-001/003 Accepted | Lenguaje/runtime y motor resueltos; backend y repositorio pendientes |
-| DEC-005 | Organización inicial del monolito | Parcialmente resuelta | Agrupación inicial, ownership y reglas verificables sin módulos vacíos |
+| DEC-004 | Stack de aplicación | Parcial: ADR-001/003/009 Accepted | Lenguaje/runtime, motor y repositorio resueltos; backend, package manager, lockfile y baseline ejecutable pendientes |
+| DEC-005 | Organización inicial del monolito | Abierta; parcialmente resuelta | Agrupación inicial, ownership y reglas verificables sin módulos vacíos |
 | DEC-044 | Estrategia de errores | Propuesta | Taxonomía mínima, resultado seguro y frontera dominio/aplicación |
-| DEC-049 | Repositorios y propiedad lógica | Parcialmente resuelta | Contratos propietarios y prohibiciones de acceso transversal |
+| DEC-049 | Repositorios y propiedad lógica | Abierta; parcialmente resuelta | Contratos propietarios y prohibiciones de acceso transversal |
 | DEC-051 | Estrategia de pruebas | Propuesta | Niveles, gates y aislamiento como prueba obligatoria |
 | DEC-062 | Criterios de aceptación | Cerrada para R0 por Producto el 2026-07-21 | Escenarios verificables, pruebas/evidencia requeridas y autoridad de aceptación aprobados |
 | DEC-063 | Definición de terminado | Propuesta | Evidencia mínima y gates documentados para cambios ejecutables |
@@ -27,6 +27,7 @@ H0 contiene sólo decisiones cuya omisión convertiría una hipótesis en estruc
 - ADR-002 obliga a dominio independiente, dependencias acíclicas y datos con dueño lógico.
 - ADR-001 obliga TypeScript para el producto autorizado y Node.js `24.x` para el backend inicial, sin aceptar framework ni tooling.
 - ADR-003 obliga PostgreSQL 18.x como baseline de R0, sin aceptar proveedor, acceso a datos, migrador, pooler, extensiones ni RLS.
+- ADR-009 obliga repositorio único evolutivo, una aplicación/artefacto para R0 y workspaces bajo demanda, sin aceptar package manager, tooling ni estructura física.
 - Tenant, sucursal y actor deben ser explícitos desde el primer caso de uso, aunque su mecanismo se cierre en H1.
 - Configuración técnica y secretos deben provenir del entorno; el mecanismo se cierra en H1.
 - No se crean módulos vacíos, infraestructura distribuida, eventos sin consumidor ni carpetas definitivas por anticipación.

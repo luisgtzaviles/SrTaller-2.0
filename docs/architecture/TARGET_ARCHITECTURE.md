@@ -3,9 +3,9 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Dirección conceptual; ADR-001/002/003 aceptan lenguaje/runtime, forma modular y motor PostgreSQL, mientras las demás selecciones tecnológicas permanecen pendientes.
+- **Naturaleza:** Dirección conceptual; ADR-001/002/003/009 aceptan lenguaje/runtime, forma modular, motor PostgreSQL y repositorio único evolutivo, mientras las demás selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
-- **Decisiones relacionadas:** [ADR-001 a ADR-004](../decisions/README.md) y [ADR-010 a ADR-013](../decisions/README.md) están `Accepted`; ADR-005 a ADR-009 conservan el estado del [registro](../decisions/README.md).
+- **Decisiones relacionadas:** [ADR-001 a ADR-004](../decisions/README.md) y [ADR-009 a ADR-013](../decisions/README.md) están `Accepted`; ADR-005 a ADR-008 conservan el estado del [registro](../decisions/README.md).
 
 ## Objetivo
 
@@ -33,9 +33,11 @@ flowchart TB
     end
 
     Edge[DNS / TLS / routing\nresolución inicial de hostname]
-    API[API central\nTypeScript / Node.js 24.x aceptados\nNestJS propuesto]
-    Worker[Workers asíncronos\nBullMQ propuesto]
-    Realtime[Gateway de tiempo real\nSocket.IO o WebSockets por decidir]
+    subgraph BackendApp[Única aplicación backend inicial]
+        API[API central lógica\nTypeScript / Node.js 24.x aceptados\nNestJS propuesto]
+        Worker[Procesamiento diferible lógico\nBullMQ propuesto]
+        Realtime[Tiempo real lógico\nSocket.IO o WebSockets por decidir]
+    end
 
     DB[(PostgreSQL 18.x aceptado\nesquema compartido)]
     Redis[(Redis propuesto\ncaché, colas y coordinación)]
@@ -91,7 +93,7 @@ El diagrama expresa responsabilidades lógicas, no unidades desplegables inicial
 - **Tiempo real:** responsabilidad lógica interna; no es una unidad desplegable inicial.
 - **Persistencias y servicios de soporte:** son dependencias por ambiente, no módulos de negocio.
 
-Compartir monorepo no autoriza dependencias arbitrarias. Compartir base de datos no autoriza a un módulo a modificar datos de otro sin contrato.
+Compartir el repositorio único aceptado por [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md) no autoriza dependencias arbitrarias, workspaces, packages ni desplegables adicionales. Compartir base de datos no autoriza a un módulo a modificar datos de otro sin contrato.
 
 ## Límites de módulos
 
@@ -161,9 +163,9 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 - Socket.IO frente a WebSockets nativos u otras soluciones administradas.
 - Redis/BullMQ frente a servicios de cola administrados cuando la operación lo justifique.
 - Proveedor S3-compatible y estrategia de distribución de archivos.
-- Monorepo con pnpm/Turborepo frente a repositorios separados.
+- El repositorio único evolutivo y los workspaces bajo demanda están aceptados por ADR-009; package manager, lockfile, orquestador, caché y estructura física permanecen abiertos.
 
-Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-001 establece lenguaje/runtime inicial, ADR-002 la unidad arquitectónica, ADR-004 la topología multitenant, ADR-010 el contexto operativo, ADR-011 la identidad/sesión, ADR-012 la autorización ordinaria y ADR-013 la autorización reforzada conceptual.
+Las selecciones todavía abiertas se documentan en ADRs `Proposed` o en el gate correspondiente; ADR-001 establece lenguaje/runtime inicial, ADR-002 la unidad arquitectónica, ADR-004 la topología multitenant, ADR-009 el repositorio único evolutivo, ADR-010 el contexto operativo, ADR-011 la identidad/sesión, ADR-012 la autorización ordinaria y ADR-013 la autorización reforzada conceptual.
 
 ## Restricciones y no objetivos
 

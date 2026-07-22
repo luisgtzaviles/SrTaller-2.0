@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TD
-    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> STACK[DEC-004 Stack<br/>ADR-001/003 satisfechos]
+    SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> STACK[DEC-004 Stack<br/>ADR-001/003/009 satisfechos]
     SCOPE --> MODULES[DEC-005 Módulos]
     ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Pruebas]
     ACCEPT --> R0
@@ -62,6 +62,7 @@ flowchart TD
 ## Dependencias técnicas condicionadas
 
 - ADR-005 ya tiene satisfecha su dependencia de lenguaje/runtime por ADR-001, pero requiere su comparación y evidencia propias antes de aceptarse.
+- ADR-009 satisface la topología de repositorio dentro de DEC-004; no satisface ADR-005, package manager, lockfile, estructura física de DEC-005 ni persistencia de DEC-049.
 - SPIKE-002 parte de la estrategia shared-schema aceptada y depende de un contrato representativo y un mecanismo técnico autorizado para demostrar aislamiento.
 - SPIKE-003 depende del resultado de SPIKE-002, PostgreSQL aceptado y acceso de datos/pooling. Es obligatorio antes de adoptar RLS, no antes de cualquier persistencia de R0, y puede concluir rechazándola.
 - SPIKE-005 parte del propósito y sesión aceptados por ADR-011; debe acotarse a protección técnica, intentos, revocación y relación con acciones sensibles.
