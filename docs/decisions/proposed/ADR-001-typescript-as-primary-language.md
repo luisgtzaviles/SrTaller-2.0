@@ -272,9 +272,9 @@ Reconsiderar no autoriza una excepción ni un runtime nuevo: requiere la autorid
 
 ## Impacto en R0 y decisiones relacionadas
 
-La dependencia de lenguaje/runtime de ADR-005 queda satisfecha, pero ADR-005 permanece `Proposed` y requiere revisión y evidencia propias. ADR-001 tampoco acepta ADR-003, ADR-006, ADR-007, ADR-008 ni ADR-009.
+La dependencia de lenguaje/runtime de ADR-005 quedó satisfecha por este ADR; ADR-005 fue aceptado separadamente con condiciones el 2026-07-22 y conserva autoridad propia. ADR-001 tampoco acepta por sí mismo ADR-003, ADR-005, ADR-006, ADR-007, ADR-008 ni ADR-009.
 
-Actualización 2026-07-21: ADR-003 fue aceptado y cierra el motor PostgreSQL dentro de DEC-004; ADR-009 fue aceptado y cierra la topología de repositorio único con workspaces bajo demanda. DEC-004 continúa abierta por ADR-005, la selección de package manager, la política de lockfile, la baseline ejecutable final y las demás restricciones del gate. El primer cambio ejecutable de R0 permanece bloqueado.
+Actualización 2026-07-22: ADR-003 cierra el motor PostgreSQL, ADR-005 cierra con condiciones el shell NestJS/Express y la API REST/HTTP JSON mínima, y ADR-009 cierra la topología de repositorio único con workspaces bajo demanda dentro de DEC-004. DEC-004 continúa abierta por package manager, lockfile, scripts de instalación, módulos/compilación, baseline integrada, CI Linux, reproducibilidad final y las demás restricciones del gate. El primer cambio ejecutable de R0 permanece bloqueado.
 
 ## Referencias
 

@@ -7,11 +7,11 @@ La secuencia reduce decisiones irreversibles: primero autoridad y contexto; desp
 ## Grupo 0 — Autoridad y base ejecutable
 
 1. **Cerrado el 2026-07-21:** alcance, inclusiones y exclusiones de R0 (`DEC-002`).
-2. Completar `DEC-004`: ADR-001, ADR-003 y ADR-009 quedaron aceptados el 2026-07-21; re-revisar [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md), remediado con `REMEDIATIONS PASS`, antes de resolver ADR-005; después cerrar package manager, lockfile y baseline ejecutable final.
+2. Completar `DEC-004`: ADR-001, ADR-003 y ADR-009 quedaron aceptados el 2026-07-21 y ADR-005 el 2026-07-22 tras aprobar [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md) con condiciones no bloqueantes; cerrar package manager, versión, lockfile, scripts, módulos/compilación, baseline integrada, CI Linux y reproducibilidad final.
 3. Definir agrupación inicial y enforcement de ADR-002 (`DEC-005`, `DEC-049`).
 4. Cerrar errores, pruebas y Definition of Done (`DEC-044`, `DEC-051`, `DEC-063`); los criterios de aceptación de R0 (`DEC-062`) quedaron cerrados por Producto el 2026-07-21.
 
-Este grupo desbloquea el primer cambio de implementación de R0, pero no basta para completar R0. El siguiente paquete abierto es `DEC-004`; lenguaje, runtime, motor y repositorio único ya están resueltos. SPIKE-009 produjo evidencia y completó las remediaciones Opción B con `REMEDIATIONS PASS`, pero su re-revisión obligatoria y la decisión del framework backend siguen pendientes; package manager, lockfile, baseline ejecutable y mecanismos de acceso/migración también siguen abiertos.
+Este grupo desbloquea el primer cambio de implementación de R0, pero no basta para completar R0. El siguiente paquete abierto es `DEC-004`; lenguaje, runtime, motor, shell backend, adaptador/API mínima y repositorio único ya están resueltos. SPIKE-009 queda completado y su evidencia aprobada con condiciones no bloqueantes; package manager, lockfile, scripts, módulos/compilación, baseline integrada, CI Linux, reproducibilidad y mecanismos de acceso/migración siguen abiertos.
 
 ## Grupo A — Fundación de contexto
 

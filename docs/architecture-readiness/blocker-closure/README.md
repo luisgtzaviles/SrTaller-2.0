@@ -32,7 +32,7 @@ Tras cerrar `DEC-002` y `DEC-062`, H0 conserva seis decisiones abiertas:
 
 También siguen pendientes la autorización organizacional (`B-21`) y todos los cierres H1 aplicables antes de declarar R0 programable. El siguiente paquete oficial es `DEC-004`; cerrar alcance no adelanta implementación ni R1.
 
-ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería: TypeScript y Node.js `24.x` forman la baseline de lenguaje/runtime, PostgreSQL es el motor transaccional primario con PostgreSQL 18.x como baseline de R0 y el repositorio único evolutivo conserva una aplicación/artefacto sin workspaces obligatorios. `DEC-004` permanece abierta por ADR-005, package manager, lockfile y baseline ejecutable final; véase la [baseline técnica](DEC-004_BASELINE_TECNICA.md).
+ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-005 fue aceptado con condiciones el 2026-07-22 tras la revisión aprobada de SPIKE-009. TypeScript y Node.js `24.x` forman la baseline de lenguaje/runtime; PostgreSQL 18.x es el motor transaccional; NestJS `11.x`, Express y REST/HTTP JSON mínima forman el shell inicial; y el repositorio único conserva una aplicación/artefacto sin workspaces obligatorios. `DEC-004` permanece abierta por tooling y baseline ejecutable final; véase la [baseline técnica](DEC-004_BASELINE_TECNICA.md).
 
 ## Respuestas rectoras
 
@@ -61,7 +61,7 @@ ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ing
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
 
-**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) cierra el motor y fija PostgreSQL 18.x como baseline de R0; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) repositorio único y workspaces bajo demanda; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0. No cierran DEC-004, implementación, composición y clasificación por rebanada, mecanismos de acceso/migración, RLS ni evidencia de pruebas.
+**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) cierra el motor y fija PostgreSQL 18.x como baseline de R0; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) acepta con condiciones NestJS como shell, Express y REST/HTTP JSON mínima; [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) repositorio único y workspaces bajo demanda; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0. No cierran DEC-004, implementación, composición y clasificación por rebanada, mecanismos de acceso/migración, RLS ni evidencia de pruebas.
 
 ## Ruta de lectura
 
@@ -89,7 +89,7 @@ Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones difer
 
 ## Autoridad y reglas
 
-- [ADR-001 a ADR-004](../../decisions/README.md) y [ADR-009 a ADR-013](../../decisions/README.md) están `Accepted`; ADR-005 a ADR-008 conservan su estado registrado.
+- [ADR-001 a ADR-005](../../decisions/README.md) y [ADR-009 a ADR-013](../../decisions/README.md) están `Accepted`; ADR-006 a ADR-008 conservan su estado registrado.
 - Las decisiones de dominio validadas conservan autoridad sobre propuestas arquitectónicas.
 - `Requiere Responsable de Producto` nunca se cierra por preferencia técnica.
 - `Requiere spike` produce evidencia, no aceptación automática.

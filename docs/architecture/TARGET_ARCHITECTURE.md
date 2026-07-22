@@ -3,9 +3,9 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Dirección conceptual; ADR-001/002/003/009 aceptan lenguaje/runtime, forma modular, motor PostgreSQL y repositorio único evolutivo, mientras las demás selecciones tecnológicas permanecen pendientes.
+- **Naturaleza:** Dirección conceptual; ADR-001/002/003/005/009 aceptan lenguaje/runtime, forma modular, motor PostgreSQL, shell NestJS/Express con REST mínima y repositorio único evolutivo, mientras las demás selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
-- **Decisiones relacionadas:** [ADR-001 a ADR-004](../decisions/README.md) y [ADR-009 a ADR-013](../decisions/README.md) están `Accepted`; ADR-005 a ADR-008 conservan el estado del [registro](../decisions/README.md).
+- **Decisiones relacionadas:** [ADR-001 a ADR-005](../decisions/README.md) y [ADR-009 a ADR-013](../decisions/README.md) están `Accepted`; ADR-006 a ADR-008 conservan el estado del [registro](../decisions/README.md).
 
 ## Objetivo
 
@@ -34,7 +34,7 @@ flowchart TB
 
     Edge[DNS / TLS / routing\nresolución inicial de hostname]
     subgraph BackendApp[Única aplicación backend inicial]
-        API[API central lógica\nTypeScript / Node.js 24.x aceptados\nNestJS propuesto]
+        API[API central lógica\nTypeScript / Node.js 24.x aceptados\nNestJS 11.x aceptado con condiciones]
         Worker[Procesamiento diferible lógico\nBullMQ propuesto]
         Realtime[Tiempo real lógico\nSocket.IO o WebSockets por decidir]
     end
@@ -75,7 +75,7 @@ El diagrama expresa responsabilidades lógicas, no unidades desplegables inicial
 |---|---|---|---|
 | Clientes web | Experiencias específicas por audiencia | TypeScript al autorizar la superficie; Next.js, React y Tailwind propuestos | Número final de aplicaciones, framework ni estrategia de renderizado |
 | Cliente móvil | Consumir contratos centrales cuando exista necesidad validada | React Native con Expo | Construcción durante la fundación |
-| API central | Autenticación, autorización, casos de uso y contratos | TypeScript sobre Node.js `24.x` aceptados; NestJS propuesto | Framework aceptado ni endpoints definidos |
+| API central | Autenticación, autorización, casos de uso y contratos | TypeScript sobre Node.js `24.x`; NestJS `11.x` con Express y REST/HTTP JSON mínima aceptados | Rutas, payloads, versionado ni endpoints definitivos |
 | Módulos de dominio | Encapsular reglas, datos y eventos por capacidad | Monolito modular | Microservicios ni tablas por módulo |
 | Trabajos diferibles | Ejecutar procesos diferibles, reintentos e integraciones dentro de la aplicación inicial | TypeScript sobre Node.js `24.x`; mecanismo de cola pendiente | Worker o despliegue independiente |
 | Tiempo real | Entregar cambios confirmados a clientes conectados | Socket.IO o WebSockets | Protocolo aceptado |

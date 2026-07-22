@@ -6,7 +6,7 @@
 - **Fecha de actualización:** 2026-07-22.
 - **Autoridad de esta actualización:** Arquitectura + Ingeniería.
 - **Revisión obligatoria aplicada a persistencia y repositorio:** Seguridad + Operaciones.
-- **Revisión obligatoria de la evidencia de SPIKE-009:** Seguridad + Operaciones + Calidad.
+- **Revisión obligatoria de la evidencia de SPIKE-009:** Seguridad + Operaciones + Calidad; completada con condiciones no bloqueantes.
 - **Efecto:** Registra componentes aceptados de la plataforma; no autoriza implementación.
 
 ## Componentes aceptados
@@ -21,6 +21,10 @@
 | Topología multitenant | [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) | Una base física y un esquema lógico compartidos |
 | Topología de repositorio | [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) | Repositorio único evolutivo; workspaces bajo demanda |
 | Flujo de versión de R0 | [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) | Coordinado para un único artefacto backend |
+| Framework backend | [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) | NestJS 11.x |
+| Versión efectiva inicial de referencia del framework | [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) | NestJS 11.1.28; revalidar al cerrar esta baseline ejecutable |
+| Adaptador HTTP inicial | [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) | Express mediante `@nestjs/platform-express` |
+| Interfaz inicial | [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) | REST/HTTP JSON mínima; no fija contrato público definitivo |
 
 La versión minor efectiva de PostgreSQL se mantiene mediante mantenimiento normal conforme a ADR-003. Cambiar el minor no reabre el ADR cuando conserva la major y supera sus validaciones. PostgreSQL 19 beta y cualquier prerelease están excluidos. PostgreSQL 17 requiere una excepción temporal por incompatibilidad demostrada.
 
@@ -28,10 +32,16 @@ La versión minor efectiva de PostgreSQL se mantiene mediante mantenimiento norm
 
 | Componente | Estado |
 | --- | --- |
-| Framework/backend | ADR-005 `Proposed`; [SPIKE-009](../../reviews/sprint-00/PROTOTYPE_CANDIDATES.md#spike-009) remediado con `REMEDIATIONS PASS`, pendiente de re-revisión enfocada y decisión separada |
-| Package manager y versión reproducible | Pendientes |
+| Package manager | Pendiente |
+| Versión del package manager | Pendiente |
 | Política de lockfile | Pendiente |
-| Baseline técnica ejecutable final | Pendiente de compatibilidad entre Node.js 24.x, PostgreSQL 18.x y el framework aceptado |
+| Política de scripts de instalación y supply chain | Pendiente |
+| Instalación reproducible y pinning ejecutable | Pendientes |
+| Formato de módulos ESM/CommonJS | Pendiente |
+| Compilador o estrategia de ejecución TypeScript | Pendiente |
+| Baseline técnica integrada | Pendiente de compatibilidad entre Node.js 24.x, NestJS 11.x y PostgreSQL 18.x |
+| Primera ejecución real del gate CI sobre Linux | Pendiente |
+| Validación final de reproducibilidad | Pendiente |
 | ORM, query builder, driver e implementación de repositorios | `DEC-049` abierta |
 | Librería y ejecución de migraciones | `DEC-050` abierta |
 | Proveedor, región y modalidad de PostgreSQL | Pendiente |
@@ -42,15 +52,19 @@ La versión minor efectiva de PostgreSQL se mantiene mediante mantenimiento norm
 
 ## Estado del gate
 
-ADR-003 cierra la selección del motor y ADR-009 cierra la topología de repositorio único con workspaces bajo demanda. SPIKE-009 se ejecutó el 2026-07-22 con Node.js `24.18.0`, NestJS `11.1.28`, Express, REST/HTTP JSON mínima y PostgreSQL `18.4`; tras el dictamen Opción B se ejecutaron las remediaciones obligatorias con resultado `REMEDIATIONS PASS — ready for focused re-review`. La re-revisión sigue pendiente. Estos elementos todavía no son componentes aceptados de DEC-004.
+ADR-003 cierra la selección del motor, ADR-009 cierra la topología de repositorio único con workspaces bajo demanda y ADR-005 acepta NestJS `11.x`, la versión efectiva inicial de referencia `11.1.28`, Express mediante `@nestjs/platform-express` y REST/HTTP JSON mínima. La versión efectiva de NestJS deberá revalidarse al cerrar esta baseline ejecutable.
 
-`DEC-004` continúa abierta por la revisión de SPIKE-009 y decisión de ADR-005, package manager, política de lockfile, baseline ejecutable final y las demás restricciones H0 aplicables.
+[SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md) queda `Completed — evidence accepted with non-blocking conditions`: Seguridad, Operaciones y Calidad aprobaron la remediación enfocada y Arquitectura + Ingeniería aceptaron ADR-005 el 2026-07-22. El spike es evidencia desechable, no scaffold ni código productivo, y no acepta implícitamente su tooling experimental.
+
+`DEC-004` continúa abierta por package manager y su versión, lockfile, scripts de instalación, instalación reproducible, pinning ejecutable, ESM/CommonJS, compilador o ejecución TypeScript, baseline integrada, primera ejecución real del gate CI sobre Linux, validación final de reproducibilidad y las demás restricciones H0 aplicables.
 
 El primer cambio ejecutable de R0 permanece bloqueado. Esta baseline no autoriza código, scaffolding, configuración, infraestructura, SQL ni migraciones.
 
 ## Política de actualización
 
 - Arquitectura + Ingeniería mantienen la major y deciden cualquier cambio de major.
+- NestJS conserva la major `11.x`; sus paquetes runtime `@nestjs/*` deben mantenerse alineados y no se permiten prereleases como baseline.
+- Ingeniería sólo actualiza minor/patch de NestJS con lockfile, changelog, suite completa, pruebas arquitectónicas, build, auditoría, lifecycle y revisión de regresiones.
 - Ingeniería + Operaciones actualizan el minor efectivo con las validaciones de ADR-003.
 - Seguridad participa obligatoriamente ante vulnerabilidades y revisa cambios de major.
 - Producto participa si proveedor o baseline altera alcance, coste, mercado, región, residencia o compromisos comerciales.

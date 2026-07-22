@@ -79,7 +79,7 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 ## Autoridad documental
 
 - El modelo de dominio consolidado es la fuente de invariantes y lenguaje: [modelo integrado](../../domain-model/integrated-repair-domain-model/README.md).
-- [ADR-001 a ADR-004](../../decisions/README.md) y [ADR-009 a ADR-013](../../decisions/README.md) están `Accepted`; ADR-005 a ADR-008 conservan el estado del [registro](../../decisions/README.md).
+- [ADR-001 a ADR-005](../../decisions/README.md) y [ADR-009 a ADR-013](../../decisions/README.md) están `Accepted`; ADR-006 a ADR-008 conservan el estado del [registro](../../decisions/README.md).
 - Las políticas de Sprint 00 y entrega conservan su autoridad sobre el inicio de implementación.
 - Cuando una propuesta de este paquete contradiga una decisión posteriormente aceptada, prevalece la decisión aceptada y este paquete debe revisarse.
 
@@ -89,4 +89,4 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 
 **[RDD]** El flujo preserva identidad de orden, custodia, trazabilidad de actores, autorización por concepto, ejecución autorizada, control de calidad, cobro y entrega.
 
-**[ADR]** ADR-001 fija TypeScript y Node.js `24.x`; ADR-003 fija PostgreSQL como motor y PostgreSQL 18.x como baseline de R0; ADR-004 fija multitenancy, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 autorización ordinaria y ADR-013 autorización reforzada. Framework, repositorio, tooling de migración, proveedor, extensiones, pooler y adopción de RLS siguen abiertos.
+**[ADR]** ADR-001 fija TypeScript y Node.js `24.x`; ADR-003 fija PostgreSQL como motor y PostgreSQL 18.x como baseline de R0; ADR-004 fija multitenancy; ADR-005 fija NestJS `11.x` como shell condicionado, Express y REST/HTTP JSON mínima; ADR-009 fija repositorio único; ADR-010 contexto; ADR-011 identidad/sesión; ADR-012 autorización ordinaria; y ADR-013 autorización reforzada. Package manager, lockfile, tooling de migración, proveedor, extensiones, pooler y adopción de RLS siguen abiertos.

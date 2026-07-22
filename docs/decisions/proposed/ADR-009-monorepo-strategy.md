@@ -345,11 +345,14 @@ La aceptación de ADR-009 cierra dentro de `DEC-004` únicamente:
 
 `DEC-004` continúa abierta y pendiente de:
 
-- ADR-005;
 - selección de package manager;
+- versión del package manager;
 - política de lockfile;
-- baseline técnica ejecutable;
-- verificación de compatibilidad entre Node.js 24.x, PostgreSQL 18.x y el framework finalmente aceptado.
+- política de scripts de instalación;
+- módulos y compilación TypeScript;
+- baseline técnica integrada y ejecutable;
+- primera ejecución real de CI Linux;
+- reproducibilidad final entre Node.js 24.x, NestJS 11.x y PostgreSQL 18.x.
 
 La aceptación de este ADR no cierra `DEC-004`, `DEC-005` ni `DEC-049`, no autoriza scaffolding y no desbloquea el primer cambio ejecutable de R0.
 

@@ -4,8 +4,8 @@
 
 - **Estado:** Propuesta
 - **Alcance:** Pruebas documentales actuales y futura plataforma web/API/workers/móviles.
-- **Decisión pendiente:** Frameworks, herramientas, cobertura objetivo, navegadores/dispositivos y presupuesto de rendimiento.
-- **Baseline aceptada:** ADR-001 exige TypeScript, Node.js `24.x`, strictness conceptual y validación de runtime; ADR-003 exige PostgreSQL 18.x; ADR-009 exige un repositorio único con dependencias explícitas, dirigidas y acíclicas. No seleccionan test runner, driver, ORM, migrador ni herramienta de análisis arquitectónico.
+- **Decisión pendiente:** Frameworks y herramientas de prueba, cobertura objetivo, navegadores/dispositivos y presupuesto de rendimiento.
+- **Baseline aceptada:** ADR-001 exige TypeScript, Node.js `24.x`, strictness conceptual y validación de runtime; ADR-003 exige PostgreSQL 18.x; ADR-005 exige pruebas de fronteras para el shell NestJS; ADR-009 exige un repositorio único con dependencias explícitas, dirigidas y acíclicas. No seleccionan test runner, driver, ORM, migrador ni herramienta definitiva de análisis arquitectónico.
 
 ## Objetivo
 

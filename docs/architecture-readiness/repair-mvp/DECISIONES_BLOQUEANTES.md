@@ -63,4 +63,4 @@ El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUE
 | Auditoría y retención | Antes de producción | ADR |
 | Núcleo compartido mínimo | Antes de introducirlo | ADR |
 
-**[ADR]** Este paquete no crea ADRs. ADR-001 a ADR-004 y ADR-009 a ADR-013 fueron aceptados posteriormente usando su evidencia; ADR-005 a ADR-008 permanecen `Proposed` hasta su decisión explícita.
+**[ADR]** Este paquete no crea ADRs. ADR-001 a ADR-005 y ADR-009 a ADR-013 fueron aceptados posteriormente usando su evidencia; ADR-006 a ADR-008 permanecen `Proposed` hasta su decisión explícita.

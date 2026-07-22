@@ -12,7 +12,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | ADR-002 | Monolito modular inicial | Accepted | H0 cerrado | Aplicar y verificar; no reabrir sin evidencia |
 | ADR-003 | PostgreSQL como persistencia principal | Accepted | Motor H0 cerrado; mecanismos H1 abiertos | Aplicar junto con ownership y migraciones; baseline PostgreSQL 18.x |
 | ADR-004 | Estrategia multitenant y propiedad lógica | Accepted | H1 parcialmente cerrado | Aplicar invariantes; RLS queda separado y contexto se rige por ADR-010 |
-| ADR-005 | NestJS para backend y API | Proposed | H0 | Re-revisar SPIKE-009, remediado con `REMEDIATIONS PASS`; después aceptar con condiciones, iterar o rechazar |
+| ADR-005 | NestJS como shell técnico del backend | Accepted — 2026-07-22 | H0 parcialmente cerrado | Aplicar condiciones; no reutilizar SPIKE-009 como scaffold ni inferir tooling |
 | ADR-006 | Next.js para clientes web | Proposed | Antes de la primera UI | Revisar por superficie; no asumir una única necesidad |
 | ADR-007 | Despliegues mediante contenedores | Proposed | Antes del primer despliegue | Revisar artefacto, promoción, rollback y operación |
 | ADR-008 | Resolución de tenant por subdominios wildcard | Proposed | H1/antes de acceso externo | Revisar DNS, certificados, dominios y fuente confiable del tenant |
@@ -35,7 +35,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | Cerrado | Modelo de roles, capacidades y autorización ordinaria | DEC-017, DEC-018 | Respondido | No para aceptar el modelo | ADR-012 aceptado; faltan composición por rebanada, aplicación y pruebas | H1 |
 | Cerrado | Modelo de acciones sensibles y reautenticación | DEC-019, DEC-020 | Respondido | No para aceptar el modelo | ADR-013 aceptado; faltan política por acción, mecanismo, aplicación y pruebas | H1 |
 | Cerrado | Repositorio único evolutivo y workspaces bajo demanda | DEC-004, DEC-005, DEC-049 | No para topología; Producto participa ante nuevas superficies | No para aceptar | ADR-009 Accepted: una aplicación/artefacto para R0; tooling y estructura física siguen separados | H0 parcialmente cerrado |
-| 1 | Framework backend y API inicial | DEC-004, ADR-001/002/003/004/009–013 | No; el experimento sintético y sus remediaciones ya fueron ejecutados | Sí: [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md), remediado con `REMEDIATIONS PASS` | Remediaciones re-revisadas y decisión explícita de ADR-005; NestJS/Express/REST permanecen hipótesis hasta entonces | H0 |
+| Cerrado | Framework backend y API inicial | DEC-004, ADR-001/002/003/004/009–013 | No para la decisión; siguen pendientes decisiones de implementación | [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md) completado y aprobado con condiciones no bloqueantes | ADR-005 Accepted: NestJS 11.x, referencia 11.1.28, Express y REST/HTTP JSON mínima; condiciones previas a implementar conservadas | H0 parcialmente cerrado |
 | 5 | Persistencia PostgreSQL, ownership de repositorios y migraciones; aplicar ADR-003 | DEC-006, DEC-049, DEC-050 | No para mecanismo; sí para datos globales | Condicional | Propiedad de escritura, tooling, evolución de esquema y recuperación definidos | H1 |
 | 6 | Tiempo y zonas horarias | DEC-037, DEC-038 | Sí | Condicional para casos límite | Instante autoritativo, zona operacional y reglas de presentación | H1 |
 | 7 | Auditoría y atribución | DEC-016, DEC-019, DEC-046 | Sí | No por defecto | Hechos auditables, actor, contexto, integridad, acceso y retención inicial | H1/H3 |
@@ -50,15 +50,15 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | 16 | Backups, restauración y rollback operativo | DEC-053, DEC-054, DEC-061 | No para mecanismo; sí para tolerancia de pérdida | Sí, restore aislado | Evidencia de recuperación y runbook ejecutable | H3/H4 |
 | 17 | Ciclo de vida de tenant, suspensión y cierre | DEC-056, DEC-067, DEC-069, DEC-070 | Sí | No por defecto | Estados, efectos, exportación, retención y eliminación gobernados | H4 |
 
-## Próximo ADR recomendado
+## Próxima decisión recomendada
 
-ADR-005 es la siguiente revisión de plataforma necesaria para avanzar `DEC-004`. [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md) y su remediación Opción B ya fueron ejecutados; el siguiente paso es la re-revisión enfocada de Seguridad, Operaciones y Calidad y, sólo después, someter la evidencia a Arquitectura + Ingeniería. Debe resolver el framework del backend sin inferir package manager, lockfile, estructura física ni autorización de implementación. ADR-006, ADR-007 y ADR-008 conservan sus gates posteriores y no se aceptan por dependencia de ADR-009.
+ADR-005 fue aceptado con condiciones el 2026-07-22 después de que Seguridad, Operaciones y Calidad aprobaran la remediación enfocada de [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md). Resuelve el shell NestJS, Express y REST/HTTP JSON mínima sin inferir package manager, lockfile, estructura física ni autorización de implementación. El siguiente trabajo de DEC-004 es cerrar tooling y baseline ejecutable. ADR-006, ADR-007 y ADR-008 conservan sus gates posteriores.
 
 ADR-001, ADR-003, ADR-004, ADR-009 y ADR-010 a ADR-013 ya están aceptados. En paralelo, la siguiente revisión de seguridad debe preparar la aplicación y prueba de esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.
 
 Protección técnica del PIN, intentos, recuperación y formato de sesión siguen como diseño/evidencia dependiente de ADR-011. La propagación de cambios de autorización depende de ADR-012 y la invalidación de controles reforzados de ADR-013. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
-ADR-001, ADR-003 y ADR-009 están `Accepted` y satisfacen lenguaje/runtime, motor y topología de repositorio dentro del lote mínimo de plataforma. PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial. NestJS `11.1.28`, Express y REST/HTTP JSON mínima fueron la baseline ejecutada de SPIKE-009, pero aún no son decisiones aceptadas. `DEC-004` continúa pendiente de la revisión del spike, ADR-005, package manager, lockfile y baseline ejecutable final; el primer cambio de implementación de R0 permanece bloqueado. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
+ADR-001, ADR-003, ADR-005 y ADR-009 están `Accepted` y satisfacen lenguaje/runtime, motor, shell backend, adaptador/API mínima y topología de repositorio dentro del lote de plataforma. PostgreSQL 18.x es la baseline de R0 y PostgreSQL 18.4 la versión efectiva inicial; NestJS 11.x es la major y `11.1.28` la referencia a revalidar. `DEC-004` continúa pendiente de package manager, lockfile, scripts de instalación, módulos/compilación, baseline integrada, CI Linux y reproducibilidad final; el primer cambio de implementación de R0 permanece bloqueado. `DEC-002` y `DEC-062` aportan alcance y aceptación esperada, pero tampoco sustituyen los demás gates técnicos y organizacionales.
 
 ## Condiciones para llevar un ADR a revisión
 

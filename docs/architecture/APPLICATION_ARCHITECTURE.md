@@ -193,11 +193,11 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 - [ADR-011: identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) — `Accepted`
 - [ADR-012: roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) — `Accepted`
 - [ADR-013: acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) — `Accepted`
-- [ADR-005: NestJS para backend](../decisions/proposed/ADR-005-nestjs-backend.md)
+- [ADR-005: NestJS como shell técnico del backend](../decisions/proposed/ADR-005-nestjs-backend.md) — `Accepted with conditions`
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: repositorio único evolutivo y workspaces bajo demanda](../decisions/proposed/ADR-009-monorepo-strategy.md) — `Accepted`
 
-ADR-001 a ADR-004 y ADR-009 a ADR-013 están `Accepted`; ADR-005 y ADR-006 permanecen `Proposed`. ADR-009 no acepta package manager, workspaces obligatorios, orquestador, packages ni estructura física; ADR-001 no acepta frameworks ni tooling; ADR-003 no acepta ORM, migrador, driver, pooler ni repository implementation. ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
+ADR-001 a ADR-005 y ADR-009 a ADR-013 están `Accepted`; ADR-006 permanece `Proposed`. ADR-005 acepta NestJS como shell condicionado, Express y REST/HTTP JSON mínima, pero no acepta tooling auxiliar ni permite framework en dominio/aplicación. ADR-009 no acepta package manager, workspaces obligatorios, orquestador, packages ni estructura física; ADR-001 no acepta frameworks ni tooling; ADR-003 no acepta ORM, migrador, driver, pooler ni repository implementation. ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
 
 ## Riesgos
 

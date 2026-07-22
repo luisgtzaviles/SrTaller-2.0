@@ -72,10 +72,10 @@ Gate 5 puede cerrarse mediante una exclusión explícita de CRM y mensajería de
 
 ### ADRs bloqueados o condicionados
 
-- ADR-002 necesita evidencia de aplicación de sus límites; ADR-005 requiere la re-revisión enfocada de la evidencia de [SPIKE-009](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md), remediado con `REMEDIATIONS PASS` el 2026-07-22.
+- ADR-002 necesita evidencia de aplicación de sus límites; ADR-005 fue aceptado con condiciones el 2026-07-22 después de aprobar la remediación enfocada de [SPIKE-009](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md). Sus condiciones bloquean implementación cuando corresponda, no la selección del shell.
 - ADR-006 necesita conocer audiencias y aplicaciones web necesarias.
 - ADR-007 y ADR-009 dependen de las unidades que realmente habrá que construir y desplegar.
-- Los nueve ADRs pueden analizarse, pero ninguno debe aceptarse usando una visión amplia como sustituto del primer alcance.
+- Los ADR todavía propuestos pueden analizarse, pero ninguno debe aceptarse usando una visión amplia como sustituto del primer alcance; los ADR ya aceptados conservan sus límites y condiciones.
 
 ### Riesgos
 
@@ -249,7 +249,7 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 - ADR-002 está aceptado; un recorrido debe comprobar sus límites modulares.
 - ADR-003 está aceptado; sus patrones físicos de datos y transacción todavía dependen del dominio y de DEC-049/050.
 - ADR-004 está aceptado; aplicación, cardinalidades y restauración/migración todavía requieren evidencia.
-- ADR-005 necesita el módulo sintético, la entrada HTTP y el job exigidos por SPIKE-009; el mandato no autoriza funcionalidad real.
+- ADR-005 está aceptado; el módulo sintético, la entrada HTTP y el job de SPIKE-009 son evidencia desechable y no autorizan funcionalidad real ni scaffold.
 
 ### Riesgos
 
@@ -406,7 +406,7 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 2. Aplicar ADR-002 para límites y unidad inicial, sin asumir microservicios.
 3. Aplicar ADR-003 separando PostgreSQL 18.x de proveedor, ORM, migrador, pooler y extensiones.
 4. Validar la aplicación de ADR-004 con aislamiento, restore por tenant y [SPIKE-002](./PROTOTYPE_CANDIDATES.md#spike-002); ejecutar [SPIKE-003](./PROTOTYPE_CANDIDATES.md#spike-003) sólo antes de adoptar RLS.
-5. ADR-001/003 ya están `Accepted`; re-revisar [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md), remediado con `REMEDIATIONS PASS`, antes de decidir ADR-005. NestJS `11.1.28`, Express y REST/HTTP JSON siguen siendo hipótesis experimentales, no decisiones.
+5. ADR-001/003/005 están `Accepted`. Aplicar las condiciones de ADR-005: NestJS `11.x`, referencia `11.1.28`, Express y REST/HTTP JSON mínima son decisiones; el tooling y el código de [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md) siguen siendo experimentales.
 6. Revisar ADR-006 por aplicación concreta, no como obligación para toda web.
 7. Revisar ADR-008 después del modelo de identidad mediante [SPIKE-001](./PROTOTYPE_CANDIDATES.md#spike-001).
 8. Aplicar ADR-009 como repositorio único sin workspaces obligatorios; [SPIKE-008](./PROTOTYPE_CANDIDATES.md#spike-008) sólo procede ante varias unidades reales y no selecciona pnpm o Turborepo por defecto.
@@ -423,9 +423,9 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 
 ### ADRs bloqueados o condicionados
 
-ADR-001 a ADR-004 y ADR-009 están `Accepted`; ADR-005 a ADR-008 permanecen `Proposed`. SPIKE-009 completó las remediaciones Opción B con `REMEDIATIONS PASS`; su re-revisión enfocada y la decisión de ADR-005 siguen pendientes. El gate debe registrar para cada propuesta pendiente si está lista para revisión, requiere producto, requiere validación técnica o debe dividirse. En particular:
+ADR-001 a ADR-005 y ADR-009 están `Accepted`; ADR-006 a ADR-008 permanecen `Proposed`. SPIKE-009 queda `Completed — evidence accepted with non-blocking conditions`; no es scaffold ni código productivo. El gate debe registrar para cada propuesta pendiente si está lista para revisión, requiere producto, requiere validación técnica o debe dividirse. En particular:
 
-- ADR-001 acepta TypeScript y Node.js `24.x`, pero no acepta automáticamente NestJS, Next.js, repositorio o tooling; ADR-009 gobierna ahora la topología;
+- ADR-001 acepta TypeScript y Node.js `24.x`; ADR-005 acepta NestJS como shell condicionado y ADR-009 gobierna la topología. Ninguno acepta automáticamente Next.js o tooling;
 - ADR-003 acepta PostgreSQL 18.x, pero no elige proveedor, ORM, migrador, pooler, extensiones ni RLS;
 - ADR-004 no acepta RLS implícitamente;
 - ADR-006 no obliga a que todas las aplicaciones web compartan estrategia;
