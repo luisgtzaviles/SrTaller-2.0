@@ -76,7 +76,7 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 
 - **Responsabilidades — hipótesis:** cumplir una combinación de funciones que los roles predefinidos no representen.
 - **Objetivos — hipótesis:** acceder sólo a las capacidades necesarias para su trabajo real.
-- **Alcance de acceso — pendiente:** permisos evaluados dentro del contexto tenant/sucursal/estación/usuario de ADR-010, sin asignación permanente de sucursal.
+- **Alcance de acceso — pendiente:** permisos evaluados dentro del contexto tenant/sucursal/estación/usuario/sesión de ADR-010/011, sin asignación permanente de sucursal.
 - **Posibles restricciones:** combinaciones incompatibles, privilegios sensibles, cambios a su propia autorización y complejidad de soporte.
 - **Preguntas pendientes:** ¿se permitirán roles personalizados, permisos directos o ambos? ¿cómo se evita una combinación peligrosa? Véase [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
 
@@ -116,8 +116,8 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 
 - **Tipo:** actor técnico no humano.
 - **Responsabilidades — decisión aceptada:** mantener una vinculación verificable con una sucursal, derivar de ella el tenant y presentar identidad de estación en las solicitudes permitidas.
-- **Objetivos — propuesta:** habilitar sesiones operativas de usuarios autorizados sin convertirse por sí solo en prueba suficiente para acciones sensibles.
-- **Alcance de acceso:** sin operación ordinaria si no existe vinculación vigente; con ella, limitado además por usuario activo y permisos pendientes.
+- **Objetivos — decisión aceptada:** habilitar una sesión operativa activa de usuario sin convertirse por sí sola en prueba suficiente para acciones sensibles.
+- **Alcance de acceso:** sin operación ordinaria si no existe vinculación vigente; con ella, limitado además por sesión válida, usuario activo y permisos pendientes.
 - **Posibles restricciones:** activación, expiración, revocación, pérdida, cambio de sucursal, cierre remoto y eventual capacidad offline no confirmada.
 - **Preguntas pendientes:** ¿qué equipos pueden vincularse y mediante qué flujo? ¿qué puede hacer un dispositivo sin usuario activo? Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
 
@@ -149,6 +149,7 @@ Véase [Preguntas abiertas](./OPEN_QUESTIONS.md).
 - [Mapa de módulos](./MODULE_MAP.md)
 - [Modelo de identidad, acceso y permisos](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md)
 - [Modelo de sucursales y dispositivos](../architecture/BRANCH_AND_DEVICE_MODEL.md)
+- [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 
 ## Próxima revisión
 

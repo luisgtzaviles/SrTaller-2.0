@@ -84,7 +84,7 @@ Este ADR no decide:
 - **Vinculación:** asociación administrativa vigente, mantenida del lado del servidor, entre una estación y una única sucursal activa.
 - **Sucursal efectiva:** sucursal obtenida exclusivamente de la vinculación vigente de la estación.
 - **Tenant efectivo:** tenant al que pertenece la sucursal efectiva; nunca se elige de manera independiente en la operación ordinaria.
-- **Usuario autenticado:** usuario activo identificado dentro del tenant efectivo mediante el mecanismo que defina el ADR de identidad y autenticación.
+- **Usuario autenticado:** usuario activo identificado dentro del tenant efectivo conforme a [ADR-011](ADR-011-tenant-user-pin-authentication-and-operational-session.md).
 - **Contexto operativo efectivo:** identidad operacional completa e inmutable para una solicitud o acción ordinaria.
 - **Cambio de turno:** sustitución explícita del usuario activo sin cambiar estación, sucursal ni tenant.
 - **Desvinculación:** retiro explícito de la asociación vigente de una estación con una sucursal.
@@ -219,7 +219,7 @@ La identidad responde **quién es la persona dentro de su tenant**. El contexto 
 - La vinculación no concede permisos; la autorización se evalúa para la capacidad solicitada.
 - El cambio de estación o sucursal no modifica la historia del usuario ni de sus acciones anteriores.
 
-El ADR futuro de identidad y autenticación debe respetar estas invariantes, aunque decida sesiones, recuperación, limitación de intentos, reautenticación y protección del PIN.
+[ADR-011](ADR-011-tenant-user-pin-authentication-and-operational-session.md) acepta identidad, PIN, autenticación contextual y sesión respetando estas invariantes. Recuperación, limitación de intentos, reautenticación y protección técnica del PIN permanecen diferidas.
 
 ## Inactividad y cierre de sesión
 
@@ -438,7 +438,7 @@ Este ADR exige esa evidencia antes de declarar completa la fundación correspond
 
 ### Identidad, autenticación, PIN y sesión
 
-Debe definir identificación, almacenamiento y protección del PIN, intentos, bloqueo, recuperación, expiración, revocación, sesiones y reautenticación. Debe respetar usuario por tenant y estación como fuente de tenant/sucursal.
+[ADR-011](ADR-011-tenant-user-pin-authentication-and-operational-session.md) acepta identificación, propósito del PIN, autenticación contextual, sesión, cambio de turno, inactividad y atribución mínima. Almacenamiento y protección técnica del PIN, intentos, recuperación, política exacta de bloqueo, formato de sesión y reautenticación permanecen diferidos.
 
 ### Roles, permisos y acciones sensibles
 
@@ -446,7 +446,7 @@ Debe definir capacidades, alcance, autorizaciones administrativas para vincular/
 
 ### Mecanismo de vinculación
 
-Debe evaluar la prueba concreta de autorización y posesión, vigencia, revocación, recuperación y amenazas. Puede formar parte del ADR de identidad/dispositivos sin cambiar las invariantes de este ADR.
+Debe evaluar la prueba concreta de autorización y posesión, vigencia, revocación, recuperación y amenazas. Requiere una decisión de dispositivos separada sin cambiar las invariantes de este ADR ni de ADR-011.
 
 ### Auditoría y retención
 

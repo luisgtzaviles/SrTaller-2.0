@@ -111,8 +111,8 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 
 ## Identity
 
-- **Responsabilidad principal — propuesta:** representar usuarios ordinarios de tenant e identidades separadas de plataforma, y administrar su autenticación/ciclo de vida.
-- **Datos propios — propuesta:** usuario con tenant único, identificadores de acceso, estados de bloqueo/revocación y metadatos de autenticación o recuperación. No se decide aquí el algoritmo de credenciales ni la correlación de una persona entre tenants.
+- **Responsabilidad principal — propuesta de titularidad:** representar usuarios ordinarios de tenant e identidades separadas de plataforma, y administrar autenticación/sesión conforme a ADR-011.
+- **Datos propios — propuesta:** usuario con tenant único, credencial PIN, estados de bloqueo/desactivación/revocación, sesión operativa y metadatos de autenticación o recuperación. No se decide aquí el algoritmo de protección, diseño físico ni la correlación de una persona entre tenants.
 - **Eventos posibles:** identidad registrada, identificador verificado, autenticación completada/fallida, identidad bloqueada, recuperada o revocada.
 - **Dependencias permitidas:** servicios técnicos de autenticación y Audit para eventos sensibles. Publica una intención de recuperación para que Notifications la consuma; Identity no depende de Notifications ni de módulos operativos.
 - **Preguntas abiertas:** identificadores, recuperación, correlación de persona entre tenants y separación entre personal/usuario de tenant. Véase [QUESTION-009](./OPEN_QUESTIONS.md#question-009).
@@ -131,7 +131,7 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 - **Datos propios — propuesta:** identidad de estación, sucursal vinculada, tenant derivado, estado, evidencia de activación, última actividad y sesiones técnicas. El PIN se asocia al usuario del tenant; su ownership criptográfico/político permanece pendiente y no pertenece a la estación. Device Management sólo aporta su contexto validado.
 - **Eventos posibles:** vinculación solicitada/completada, estación activada/desvinculada/revocada/perdida, nueva vinculación y sesión cerrada remotamente.
 - **Dependencias permitidas:** Tenant Management, Branch Management, Identity y Access Control; Audit y Notifications para acciones sensibles.
-- **Preguntas abiertas:** mecanismo de vinculación, credencial/confianza técnica, pérdida, protección del PIN, sesión, recuperación y modo sin conexión. La semántica de reubicación y turno se rige por ADR-010. Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
+- **Preguntas abiertas:** mecanismo de vinculación, credencial/confianza técnica, pérdida, protección técnica del PIN, recuperación y modo sin conexión. La semántica de reubicación se rige por ADR-010 y la de PIN/sesión/turno por ADR-011. Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
 
 ## Customers
 

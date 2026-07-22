@@ -5,7 +5,7 @@
 - **Estado:** Borrador conceptual.
 - **Naturaleza:** Dirección conceptual; ADR-002 acepta la forma modular inicial, mientras las selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
-- **Decisiones relacionadas:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../decisions/README.md).
+- **Decisiones relacionadas:** [ADR-002](../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) están `Accepted`; los demás ADRs conservan el estado del [registro](../decisions/README.md).
 
 ## Objetivo
 
@@ -102,7 +102,7 @@ Los módulos preliminares están descritos en el [mapa de módulos](../product/M
 - producir eventos con significado de negocio cuando corresponda;
 - evitar acceso directo a internals de otro módulo;
 - declarar dependencias permitidas y mantenerlas acíclicas;
-- transportar tenant, sucursal, estación, usuario y correlación en operaciones ordinarias.
+- transportar tenant, sucursal, estación, usuario, sesión y correlación en operaciones ordinarias.
 
 La extracción futura de un módulo sólo se evaluará por presión demostrable: escalado independiente, aislamiento de fallos, ownership organizacional o ciclo de despliegue distinto.
 
@@ -112,8 +112,8 @@ La extracción futura de un módulo sólo se evaluará por presión demostrable:
 
 1. El borde recibe la conexión y normaliza señales no autoritativas como el nombre de host.
 2. La API reconoce la estación y valida su vinculación del lado del servidor.
-3. La sucursal y el tenant se derivan de la estación; el usuario se autentica dentro de ese tenant.
-4. La API construye el contexto inmutable tenant/sucursal/estación/usuario y rechaza discrepancias.
+3. La sucursal y el tenant se derivan de la estación; el PIN se valida dentro de ese tenant conforme a ADR-011.
+4. La API construye el contexto inmutable tenant/sucursal/estación/usuario/sesión y rechaza discrepancias.
 5. El caso de uso autoriza la acción y opera dentro del límite del módulo.
 6. La persistencia confirma el cambio.
 7. Se registra auditoría y/o se publica un evento preservando el contexto de origen.
@@ -121,7 +121,7 @@ La extracción futura de un módulo sólo se evaluará por presión demostrable:
 ### Trabajo asíncrono
 
 1. Un caso de uso persiste el estado necesario.
-2. Se agenda un trabajo con contexto de origen tenant/sucursal/estación/usuario, tipo, versión, idempotency key y correlación.
+2. Se agenda un trabajo con contexto de origen tenant/sucursal/estación/usuario/sesión, tipo, versión, idempotency key y correlación.
 3. Un worker vuelve a validar el contexto y ejecuta con reintentos acotados.
 4. El resultado se persiste antes de notificarlo.
 5. Fallos agotados se hacen visibles para operación; no se descartan silenciosamente.
@@ -162,7 +162,7 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 - Proveedor S3-compatible y estrategia de distribución de archivos.
 - Monorepo con pnpm/Turborepo frente a repositorios separados.
 
-Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 establece la unidad arquitectónica, ADR-004 la topología multitenant y ADR-010 el contexto operativo inicial.
+Las selecciones todavía abiertas se documentan en ADRs `Proposed`; ADR-002 establece la unidad arquitectónica, ADR-004 la topología multitenant, ADR-010 el contexto operativo y ADR-011 la identidad/sesión conceptual.
 
 ## Restricciones y no objetivos
 

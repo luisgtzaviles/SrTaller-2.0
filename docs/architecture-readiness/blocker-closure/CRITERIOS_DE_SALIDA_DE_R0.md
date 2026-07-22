@@ -41,7 +41,7 @@ Además del gate H0:
 - [ ] estrategia multitenant, ownership e aislamiento aceptados;
 - [ ] datos globales, tenant-wide y branch-scoped clasificados;
 - [x] contexto tenant/sucursal/estación/usuario, ausencia y cambio definidos en ADR-010;
-- [ ] identidad, sesión, PIN, inactividad y atribución definidos;
+- [x] identidad, sesión, PIN, inactividad y atribución conceptual definidos en ADR-011;
 - [ ] roles, permisos, acciones sensibles y reautenticación acordados;
 - [ ] persistencia, migraciones y fixtures tienen estrategia aceptada;
 - [ ] zona horaria y modelo temporal están definidos;

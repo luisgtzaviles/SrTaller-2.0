@@ -3,9 +3,9 @@
 ## Estado del documento
 
 - **Estado:** Dirección multitenant y contexto operativo aceptados; persistencia física y pruebas pendientes.
-- **Naturaleza:** ADR-004 y ADR-010 son autoritativos; RLS y mecanismos concretos siguen sujetos a evaluación.
+- **Naturaleza:** ADR-004, ADR-010 y ADR-011 son autoritativos; RLS y mecanismos concretos siguen sujetos a evaluación.
 - **Dirección aceptada:** Base y esquema compartidos con aislamiento lógico; motor y Row-Level Security (RLS) pendientes.
-- **ADRs relacionados:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), ambos `Accepted`.
+- **ADRs relacionados:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), todos `Accepted`.
 
 ## Objetivo de seguridad
 
@@ -35,7 +35,7 @@ sequenceDiagram
     U->>A: Identificación dentro del tenant
     A->>I: Validar usuario y estado en ese tenant
     I-->>A: Usuario válido o rechazo
-    A->>A: Construir contexto tenant/sucursal/estación/usuario
+    A->>A: Construir contexto tenant/sucursal/estación/usuario/sesión
     alt Contexto completo y coherente
         A-->>U: Autorizar por separado y ejecutar
     else No coinciden o contexto ambiguo
@@ -61,6 +61,7 @@ Un contexto mínimo conceptual contiene:
 - `branch_id` efectivo;
 - identidad de estación;
 - usuario autenticado dentro del tenant;
+- sesión operativa válida;
 - identificador de correlación;
 - tipo de contexto: tenant o plataforma.
 
@@ -212,5 +213,5 @@ Las respuestas deben consolidarse en [preguntas abiertas](../product/OPEN_QUESTI
 ## Próxima revisión
 
 - **Momento:** antes de definir cualquier esquema ejecutable o repositorio.
-- **Evidencia esperada:** modelo de amenazas, pruebas negativas de ADR-004/010 y prototipo controlado de RLS sólo si se autoriza.
+- **Evidencia esperada:** modelo de amenazas, pruebas negativas de ADR-004/010/011 y prototipo controlado de RLS sólo si se autoriza.
 - **Responsable:** TBD.

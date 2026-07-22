@@ -206,7 +206,7 @@ No se confía sólo en identificadores globalmente únicos ni en relaciones indi
 - Un usuario puede estar habilitado para trabajar en distintas sucursales del mismo tenant por rotación de personal.
 - El usuario no se duplica por cada sucursal.
 - Habilitación multisucursal no concede operación transversal simultánea ni acceso a otro tenant.
-- [ADR-010](ADR-010-station-bound-operational-context.md) establece que la estación vinculada determina tenant y sucursal, que el usuario no elige sucursal y que el PIN identifica dentro del tenant; autenticación, sesión y permisos detallados permanecen separados.
+- [ADR-010](ADR-010-station-bound-operational-context.md) establece que la estación vinculada determina tenant y sucursal y que el usuario no elige sucursal. [ADR-011](ADR-011-tenant-user-pin-authentication-and-operational-session.md) establece identidad, autenticación por PIN y sesión dentro de ese contexto; los permisos permanecen separados.
 
 Este ADR decide propiedad y cardinalidad del usuario ordinario, no el proveedor ni mecanismo de autenticación.
 
@@ -457,7 +457,7 @@ Gerencia de Avicell agrega Centro y Centenario. No obtiene datos de Tecnicell y 
 
 ### Contexto operativo y estación
 
-[ADR-010](ADR-010-station-bound-operational-context.md) acepta la estación vinculada como fuente de tenant/sucursal, la rotación de usuarios sin asignación permanente por sucursal, la desvinculación/revinculación para reubicar, el cambio de turno y la atribución contextual. Identidad, autenticación, protección del PIN, formato de sesión, permisos y tiempos de inactividad permanecen en ADRs posteriores.
+[ADR-010](ADR-010-station-bound-operational-context.md) acepta la estación vinculada como fuente de tenant/sucursal, la rotación de usuarios sin asignación permanente por sucursal y la desvinculación/revinculación para reubicar. [ADR-011](ADR-011-tenant-user-pin-authentication-and-operational-session.md) acepta identidad, propósito del PIN, autenticación contextual, cambio de turno, inactividad y sesión. Protección técnica, formato de sesión, permisos y tiempos concretos permanecen en decisiones posteriores.
 
 ### Configuración efectiva
 

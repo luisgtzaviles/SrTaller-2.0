@@ -28,9 +28,9 @@
 | Resultado | éxito, rechazo, fallo o pendiente | PM |
 | Motivo | explicación estructurada cuando es sensible | PM |
 | Correlación | vínculo con decisión/trabajo/evidencia relacionado | PM |
-| Sesión | evidencia técnica de continuidad, no identidad absoluta | HOV/PM |
+| Sesión | periodo operativo que enlaza al usuario activo con la acción, sin sustituir su identidad | ADR-011 |
 
-ADR-010 establece que tenant, sucursal, estación y usuario forman el contexto efectivo de toda operación ordinaria. Ese contexto se conserva como historia del hecho y no se recalcula después de un cambio de turno o reubicación de estación.
+ADR-010 establece tenant, sucursal y estación efectivos; ADR-011 agrega usuario y sesión válidos. Tenant, sucursal, estación, usuario, sesión, fecha y hora se conservan como historia del hecho y no se recalculan después de un cambio de turno, término de sesión o reubicación de estación.
 
 ## Participaciones consultables
 
@@ -49,7 +49,7 @@ ADR-010 establece que tenant, sucursal, estación y usuario forman el contexto e
 
 ## PIN y sesión
 
-**HOV/RCA:** el PIN de cuatro dígitos y el cierre por inactividad reducen fricción en SR Taller 1.0. **DDV:** el PIN no es prueba absoluta de identidad. **PA:** controles de seguridad, recuperación y autenticación reforzada requieren decisión especializada.
+**HOV/RCA:** el PIN de cuatro dígitos y el cierre por inactividad reducen fricción en SR Taller 1.0. **ADR-011:** el PIN es una credencial dentro del tenant, no la identidad; la inactividad expira la sesión sin desvincular la estación. **PA:** protección técnica, recuperación y autenticación reforzada requieren decisión especializada.
 
 ## Resúmenes y timeline
 

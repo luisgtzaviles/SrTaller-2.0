@@ -22,7 +22,7 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 ## Respuestas rectoras
 
 1. **Primer commit:** lo bloquean únicamente decisiones estructurales difíciles de revertir; se excluyen proveedores y capacidades futuras.
-2. **R0:** ADR-004 fija estrategia/propiedad multitenant y ADR-010 fija el contexto tenant/sucursal/estación/usuario; siguen bloqueando su aplicación y pruebas, identidad, sesión, permisos, configuración técnica, tiempo, auditoría y persistencia segura.
+2. **R0:** ADR-004 fija estrategia/propiedad multitenant, ADR-010 el contexto tenant/sucursal/estación y ADR-011 identidad/PIN/sesión; siguen bloqueando su aplicación y pruebas, mecanismos técnicos, permisos, configuración, tiempo, auditoría y persistencia segura.
 3. **R1:** lo bloquean folio, recepción mínima, custodia, estados/ubicación inicial, política efectiva, archivos e identificación física.
 4. **Durante implementación:** pueden cerrarse detalles locales que no cambien invariantes, ownership, seguridad ni contratos públicos.
 5. **Piloto:** exige operación recuperable, soporte, copias, restauración, monitoreo, rollback y convivencia decidida.
@@ -46,7 +46,7 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
 
-**Actualizaciones posteriores:** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) cierra topología compartida y propiedad SaaS/tenant/sucursal; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) cierra la fuente de contexto operativo, vinculación de estación, rotación de usuarios y atribución mínima. No cierran autenticación/PIN, permisos, RLS, persistencia física ni evidencia de implementación.
+**Actualizaciones posteriores:** [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) cierra topología compartida y propiedad SaaS/tenant/sucursal; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) cierra la fuente de contexto y vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) cierra identidad/PIN/sesión conceptuales y atribución con sesión. No cierran permisos, mecanismos técnicos, RLS, persistencia física ni evidencia de implementación.
 
 ## Ruta de lectura
 
@@ -73,7 +73,7 @@ Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones difer
 
 ## Autoridad y reglas
 
-- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) están `Accepted`; los demás ADRs conservan su estado registrado.
+- [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md), [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) están `Accepted`; los demás ADRs conservan su estado registrado.
 - Las decisiones de dominio validadas conservan autoridad sobre propuestas arquitectónicas.
 - `Requiere Responsable de Producto` nunca se cierra por preferencia técnica.
 - `Requiere spike` produce evidencia, no aceptación automática.

@@ -79,8 +79,8 @@ Los términos preferidos separan relato, conocimiento técnico, propuesta comerc
 | Sucursal | unidad operativa dentro de tenant | ubicación interna | PM/IDO |
 | Política | regla variable con alcance y vigencia | invariante universal | PC |
 | Regla contextual de Avicell | práctica validada sólo para Avicell | universal | RCA |
-| PIN operativo | mecanismo de baja fricción para atribución | identidad absoluta/código del cliente | HOV/RCA |
-| Sesión operativa | contexto temporal de atribución | persona o sesión de dispositivo | PM |
+| PIN operativo | credencial de baja fricción que identifica dentro del tenant ya resuelto | identidad absoluta/código del cliente/contexto | ADR-011 |
+| Sesión operativa | periodo del usuario activo en una estación; una por estación | persona o sesión de dispositivo | ADR-011 |
 
 ## Términos a retirar o aclarar
 

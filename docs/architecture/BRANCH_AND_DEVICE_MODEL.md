@@ -2,13 +2,13 @@
 
 ## Estado del documento
 
-- **Estado:** Base conceptual aceptada por ADR-010; mecanismos pendientes.
-- **Naturaleza:** Las invariantes de contexto y vinculación son autoritativas; estados detallados, protocolo e interfaz siguen como propuesta.
+- **Estado:** Base conceptual aceptada por ADR-010/011; mecanismos pendientes.
+- **Naturaleza:** Las invariantes de contexto, vinculación, usuario activo y sesión son autoritativas; estados detallados de estación, protocolo e interfaz siguen como propuesta.
 - **Alcance:** Pertenencia, vinculación, activación, uso, transferencia, revocación y pérdida de dispositivos.
 
 ## Objetivo
 
-Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; identidad y autorización del usuario se validan por separado en el servidor.
+Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) gobierna usuario, PIN y sesión, mientras la autorización se valida por separado.
 
 ## Modelo conceptual
 
@@ -35,8 +35,9 @@ flowchart LR
 - Una estación mantiene una única vinculación vigente con una sucursal activa.
 - El tenant de la estación deriva de esa sucursal.
 - El usuario ordinario pertenece al tenant, no a una sucursal permanente, y puede identificarse desde cualquier estación autorizada de ese tenant.
-- El contexto operativo combina tenant, sucursal, estación y usuario validados.
-- Cerrar o cambiar usuario no modifica la vinculación de la estación.
+- El contexto operativo combina tenant, sucursal, estación, usuario y sesión validados.
+- Una estación mantiene como máximo una sesión operativa activa.
+- Cerrar, expirar, sustituir o invalidar la sesión del usuario no modifica la vinculación de la estación.
 
 Los mecanismos técnicos, permisos y excepciones administrativas permanecen pendientes.
 
@@ -86,7 +87,7 @@ sequenceDiagram
 6. El material de sesión no se muestra ni se registra en claro.
 7. Identificadores de hardware pueden ser señales, no la única prueba de posesión o autorización.
 
-La capacidad administrativa exacta y el mecanismo concreto —QR, código, enlace, aprobación cercana u otro— quedan pendientes de los ADRs de identidad, permisos y vinculación.
+La capacidad administrativa exacta y el mecanismo concreto —QR, código, enlace, aprobación cercana u otro— quedan pendientes de las decisiones de permisos y vinculación.
 
 ## Sesión de dispositivo y último acceso
 
@@ -99,12 +100,12 @@ La capacidad administrativa exacta y el mecanismo concreto —QR, código, enlac
 
 ## PIN y cambio de turno
 
-### Flujo propuesto
+### Flujo conceptual aceptado
 
-1. El equipo activo presenta una experiencia de selección o identificación de empleado sin revelar datos innecesarios.
+1. El equipo activo solicita únicamente el PIN durante la operación cotidiana, sin pedir tenant, sucursal u otro identificador del usuario.
 2. El empleado introduce su PIN mediante un canal protegido.
-3. La API valida estación, vinculación, tenant/sucursal derivados, usuario del mismo tenant, estado y límites de intentos.
-4. Si el conjunto es válido, termina o suspende el contexto anterior según una política pendiente y crea una sesión operativa acotada.
+3. El servidor valida estación, vinculación, tenant/sucursal derivados y el PIN únicamente dentro de ese tenant; los límites técnicos de intentos permanecen pendientes.
+4. Si el conjunto es válido, finaliza como sustituida la sesión anterior y establece una nueva como única sesión activa de la estación.
 5. La UI obtiene capacidades efectivas; no deriva permisos del cargo mostrado.
 6. El cambio y su resultado quedan auditados.
 
@@ -116,7 +117,7 @@ Un PIN no permite operar desde una estación no vinculada, no selecciona sucursa
 - Datos temporales del operador anterior se limpian de la interfaz y almacenamiento local.
 - Operaciones en curso deben asociarse al actor que las inició y definir quién puede continuarlas.
 - La caja, venta o reparación abierta no cambia automáticamente de ownership sin regla de negocio.
-- El bloqueo por inactividad y su duración son decisiones de seguridad/operación pendientes.
+- La inactividad expira la sesión y conserva la vinculación; sólo su duración y experiencia concreta permanecen pendientes.
 
 ## Acciones que podrían requerir supervisor
 
@@ -224,13 +225,14 @@ Eventos candidatos:
 - [Modelo de multitenancy](MULTITENANCY_MODEL.md)
 - [Línea base de seguridad](SECURITY_BASELINE.md)
 - [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md)
+- [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 
 ## Preguntas abiertas
 
 - ¿Qué tipos de equipos pueden vincularse: computadoras, tablets, teléfonos, terminales compartidas?
 - ¿Qué capacidades administrativas separadas pueden operar sin contexto ordinario de estación?
 - ¿Quién puede vincular, desvincular y revocar, y qué acciones requieren doble aprobación?
-- ¿Cómo se identifica un empleado en la pantalla de PIN sin facilitar enumeración?
+- ¿Cómo se implementa la captura de sólo PIN sin facilitar enumeración?
 - ¿Qué ocurre con operaciones abiertas durante cambio de turno o revocación?
 - ¿Cuánto tiempo puede permanecer una sesión de usuario inactiva y cómo se reanuda sin alterar la vinculación?
 - ¿Existe una necesidad real y prioritaria de operación offline?
@@ -238,6 +240,6 @@ Eventos candidatos:
 
 ## Próxima revisión
 
-- **Momento:** antes de aceptar los ADRs de identidad/PIN, permisos o mecanismo de vinculación.
-- **Evidencia esperada:** modelo de amenazas del PIN/vinculación y decisiones sobre estados detallados, supervisión y revocación compatibles con ADR-010.
+- **Momento:** antes de aceptar permisos o el mecanismo de vinculación y antes de implementar PIN/sesión.
+- **Evidencia esperada:** modelo de amenazas del PIN/vinculación y decisiones sobre estados detallados, supervisión y revocación compatibles con ADR-010/011.
 - **Responsable:** TBD.

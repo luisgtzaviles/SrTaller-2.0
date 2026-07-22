@@ -100,12 +100,12 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 <a id="question-009"></a>
 ### QUESTION-009 — Identidad global y pertenencia a varios tenants
 
-- **Contexto:** ADR-004/010 fijan que un usuario ordinario pertenece exactamente a un tenant. La correlación de una misma persona entre tenants y los identificadores de acceso permanecen abiertos.
+- **Contexto:** ADR-004/010/011 fijan que un usuario ordinario pertenece exactamente a un tenant y que su identidad no depende de PIN, sesión, estación o sucursal. La correlación de una misma persona entre tenants y la recuperación permanecen abiertas.
 - **Impacto:** Afecta autenticación, recuperación, privacidad, cambio de contexto y duplicados.
 - **Opciones conocidas:** identidad global con varias membresías; identidad separada por tenant; identidad global con alias o proveedores vinculados; federación futura.
 - **Estado:** En investigación.
-- **Alcance resuelto:** Pertenencia del usuario aceptada; autenticación, recuperación y correlación pendientes.
-- **Decisión relacionada:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`; requiere ADR de identidad.
+- **Alcance resuelto:** Pertenencia, identidad ordinaria y autenticación contextual aceptadas; recuperación y correlación global pendientes.
+- **Decisión relacionada:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), `Accepted`.
 
 <a id="question-010"></a>
 ### QUESTION-010 — Modelo de roles, permisos y excepciones
@@ -131,12 +131,12 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 <a id="question-012"></a>
 ### QUESTION-012 — Alcance del PIN y autenticación reforzada
 
-- **Contexto:** ADR-010 fija que el PIN identifica al usuario dentro del tenant derivado de la estación; duración, protección y acciones para las que es insuficiente siguen abiertas.
+- **Contexto:** ADR-011 fija que el PIN es credencial dentro del tenant derivado, establece una sesión operativa y no concede autorización; duración concreta, protección y acciones sensibles siguen abiertas.
 - **Impacto:** Afecta velocidad operativa, suplantación, bloqueo, cambio de turno y acciones sensibles.
 - **Opciones conocidas:** PIN sólo para seleccionar operador; PIN para sesión operativa acotada; PIN más factor reforzado para acciones sensibles; reautenticación por riesgo.
 - **Estado:** En investigación.
-- **Alcance resuelto:** Propósito contextual aceptado; seguridad, sesión y reautenticación pendientes.
-- **Decisión relacionada:** [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`; no decide algoritmo criptográfico.
+- **Alcance resuelto:** Propósito, sesión, cambio de turno e inactividad aceptados; protección técnica, límites y reautenticación pendientes.
+- **Decisión relacionada:** [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), `Accepted`; no decide algoritmo criptográfico ni autorización.
 
 ## Reparaciones
 
@@ -362,7 +362,7 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 
 Antes de comprometer una primera versión deben estar respondidas, como mínimo, las preguntas sobre segmento, recorrido, alcance tenant/sucursal, identidad/permisos, flujo de reparación, mercado y obligaciones aplicables.
 
-Antes de implementar acceso operativo deben estar respondidas las preguntas de Identity, Access Control, dispositivos y PIN.
+Antes de implementar acceso operativo deben aplicarse ADR-010/011 y cerrarse las preguntas restantes de Access Control, mecanismos de dispositivo, protección del PIN y acciones sensibles.
 
 Antes de integrar mensajería, pagos o suscripciones deben estar respondidas las preguntas de proveedor, consentimiento, estados, errores, jurisdicción y modelo comercial correspondientes.
 

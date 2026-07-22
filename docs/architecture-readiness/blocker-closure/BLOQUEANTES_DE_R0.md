@@ -14,7 +14,7 @@ H0 debe estar cerrado. Elegir tecnología no sustituye las decisiones H1.
 | --- | --- | --- |
 | Multitenancy y datos | DEC-006 a DEC-009 | ADR-004/010 aplicados con propiedad, contexto inmutable y pruebas de aislamiento |
 | Contexto operativo | DEC-009 a DEC-012 | Modelo aceptado en ADR-010; faltan aplicación y pruebas de estación, ausencia y conflictos |
-| Identidad y sesión | DEC-013 a DEC-016 | Identidad, PIN, inactividad y atribución con revocación segura |
+| Identidad y sesión | DEC-013 a DEC-016 | Modelo aceptado en ADR-011; faltan mecanismos, aplicación, modelo de amenazas y pruebas |
 | Permisos y acciones sensibles | DEC-017 a DEC-020 | Roles/capacidades mínimos, alcance, step-up y catálogo inicial |
 | Tiempo | DEC-037 y DEC-038 | Autoridad de zona horaria y almacenamiento/presentación coherentes |
 | Señales | DEC-045 a DEC-048 | Logs, auditoría, correlación y observabilidad mínima separadas |

@@ -3,14 +3,14 @@
 ## Estado documental
 
 - **Estado:** Draft / Discovery
-- **Autoridad:** ADR-004/010 en sus alcances; el resto del discovery no está aprobado
+- **Autoridad:** ADR-004/010/011 en sus alcances; el resto del discovery no está aprobado
 - **Propietario de decisión:** Product Owner
 - **Última revisión:** TBD
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Criterio
 
-Los niveles permitidos son Unknown, Initial hypothesis, Partially understood, Validated by Product Owner y Approved. Esta matriz nació como fotografía de discovery; ADR-004 y ADR-010 validan únicamente las reglas organizacionales y de contexto que declaran. El resto de la evidencia no eleva por sí sola su autoridad.
+Los niveles permitidos son Unknown, Initial hypothesis, Partially understood, Validated by Product Owner y Approved. Esta matriz nació como fotografía de discovery; ADR-004, ADR-010 y ADR-011 validan únicamente las reglas organizacionales, de contexto e identidad/sesión que declaran. El resto de la evidencia no eleva por sí sola su autoridad.
 
 ## Matriz de conocimiento
 
@@ -32,8 +32,8 @@ Los niveles permitidos son Unknown, Initial hypothesis, Partially understood, Va
 | Entrega | Initial hypothesis | Q013 y Q021 | saldo, tercero, evidencia, cierre | Crítico | Sí | Abierto |
 | Garantía | Initial hypothesis | Q014 | inicio, cobertura, caso o reapertura | Crítico | Sí | Abierto |
 | Sucursales | Partially understood | ADR-004/010, Q006–Q008 | ciclo de vida y transferencias de negocio | Crítico | Sí | Parcialmente resuelto |
-| Usuarios | Partially understood | ADR-004/010, Q009–Q010 | autenticación, roles, recuperación y correlación | Alto | Sí | Parcialmente resuelto |
-| Estaciones operativas | Partially understood | ADR-010, Q011–Q012 | mecanismo de vinculación, PIN y revocación técnica | Crítico | Sí | Parcialmente resuelto |
+| Usuarios | Partially understood | ADR-004/010/011, Q009–Q010 | roles, recuperación, mecanismos técnicos y correlación | Alto | Sí | Parcialmente resuelto |
+| Estaciones operativas | Partially understood | ADR-010/011, Q011–Q012 | mecanismo de vinculación, protección de PIN y revocación técnica | Crítico | Sí | Parcialmente resuelto |
 | CRM | Unknown | Q017 y alcance Later | problema concreto y ownership | Medio | Sí | Diferible |
 | Mensajería | Initial hypothesis | Q018–Q020, arquitectura realtime | canal, consentimiento, conversación | Alto | Sí | Diferible |
 | Suscripciones SaaS | Initial hypothesis | Q023–Q025 | estados comerciales, retención, planes | Alto | Sí | Fuera del flujo central |
@@ -58,7 +58,7 @@ Los niveles permitidos son Unknown, Initial hypothesis, Partially understood, Va
 ## Hechos y límites actuales
 
 - **Hecho conocido:** SR Taller 2.0 se documenta como SaaS multitenant para talleres de reparación.
-- **Hecho conocido:** ADR-002, ADR-004 y ADR-010 están aceptados; QUESTION-006 a QUESTION-012 quedaron resueltas o acotadas en sus alcances, mientras los demás ADRs y preguntas conservan su estado registrado.
+- **Hecho conocido:** ADR-002, ADR-004, ADR-010 y ADR-011 están aceptados; QUESTION-006 a QUESTION-012 quedaron resueltas o acotadas en sus alcances, mientras los demás ADRs y preguntas conservan su estado registrado.
 - **Hecho conocido:** no existe implementación funcional ni autorización para prototipos.
 - **Observación del sistema anterior:** sus lecciones señalan acoplamiento, complejidad y necesidad de mejor trazabilidad; no prueban reglas operativas.
 - **Hipótesis:** recepción a entrega es el recorrido central más útil para discovery.
@@ -69,8 +69,8 @@ Los niveles permitidos son Unknown, Initial hypothesis, Partially understood, Va
 | ID | Documentos involucrados | Descripción | Impacto | Recomendación | ¿PO? | ¿Arquitectura? | Estado |
 |---|---|---|---|---|---|---|---|
 | DOMAIN-FINDING-001 | Glosario, Q013, MODULE_MAP | Reparación y orden de trabajo aparecen próximas, pero su identidad y cardinalidad no están decididas. | Puede producir un agregado o lifecycle incorrecto. | Resolver con ejemplos de una reparación simple, una múltiple y un reingreso. | Sí | Sí | Open |
-| DOMAIN-FINDING-002 | Identidad, Q009, auditoría AUDIT-006 | ADR-004/010 fijan usuario ordinario por tenant; identidad global/correlación, privacidad y recuperación siguen abiertas. | Puede fijar privacidad y recuperación prematuramente. | Tratar sólo la pertenencia/contexto como aceptados y reservar el mecanismo al ADR de identidad. | Sí | Sí | Partially resolved |
-| DOMAIN-FINDING-003 | Estaciones/PIN, Q011–Q012, auditoría AUDIT-007 | ADR-010 fija propósito del PIN y contexto de estación; protección, sesión, revocación técnica y acciones permitidas siguen abiertas. | Riesgo de autorización incorrecta si el mecanismo excede el alcance aceptado. | Mantener el contexto aceptado y validar el modelo de amenazas antes de implementar autenticación. | Sí | Sí | Parcialmente resuelto |
+| DOMAIN-FINDING-002 | Identidad, Q009, auditoría AUDIT-006 | ADR-004/011 fijan usuario ordinario por tenant e identidad independiente de PIN/sesión; identidad global, privacidad y recuperación siguen abiertas. | Puede fijar privacidad y recuperación prematuramente. | Conservar la identidad limitada al tenant y reservar correlación/recuperación a decisiones posteriores. | Sí | Sí | Partially resolved |
+| DOMAIN-FINDING-003 | Estaciones/PIN, Q011–Q012, auditoría AUDIT-007 | ADR-010/011 fijan contexto, PIN limitado al tenant y sesión; protección, revocación técnica y acciones permitidas siguen abiertas. | Riesgo de autorización incorrecta si el mecanismo excede el alcance aceptado. | Aplicar ADR-011 y validar el modelo de amenazas antes de implementar autenticación. | Sí | Sí | Parcialmente resuelto |
 | DOMAIN-FINDING-004 | Q006–Q008, Multitenancy, MODULE_MAP | ADR-004 clasifica propiedad SaaS/tenant/sucursal y ADR-010 fija el contexto; cada dominio nuevo aún debe declarar su alcance. | Un concepto sin clasificación puede romper aislamiento o visibilidad. | Aplicar la matriz aceptada y resolver transferencias por módulo. | Sí | Sí | Resuelto arquitectónicamente |
 | DOMAIN-FINDING-005 | PRODUCT_SCOPE, Q015–Q016, Q021–Q022 | Inventory, Payments y Cash son candidatos del recorrido, pero su mínimo no está confirmado. | El flujo puede quedar incompleto o inflado. | Decidir el mínimo necesario con un escenario de punta a punta. | Sí | Sí | Open |
 | DOMAIN-FINDING-006 | Glosario, Messaging, AUDIT-032 | Conversación puede abarcar canales en una fuente y pertenecer a uno en otra. | Cambia identidad, historial y asignación. | Resolver como subpregunta de Q020. | Sí | Sí | Open |

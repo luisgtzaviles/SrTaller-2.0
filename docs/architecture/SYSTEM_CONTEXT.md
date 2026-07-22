@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Modelo conceptual; ADR-002, ADR-004 y ADR-010 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
+- **Naturaleza:** Modelo conceptual; ADR-002, ADR-004, ADR-010 y ADR-011 son autoritativos en sus alcances y el resto permanece como hipótesis/propuesta.
 - **Alcance:** Límites de SR Taller 2.0, actores, sistemas externos y flujos de información de alto nivel.
 - **Fuente de producto:** [Visión del producto](../product/PRODUCT_VISION.md) y [actores y personas](../product/ACTORS_AND_PERSONAS.md).
 
@@ -23,7 +23,7 @@ Este documento ubica a SR Taller 2.0 en su entorno. No define módulos internos 
 
 | Elemento | Relación conceptual con la plataforma | Estado |
 |---|---|---|
-| Personal del taller | Opera en la sucursal de la estación vinculada como usuario del tenant, sujeto a permisos | Contexto aceptado; permisos pendientes |
+| Personal del taller | Se autentica por PIN dentro del tenant de la estación y opera como usuario activo, sujeto a permisos | Identidad/sesión aceptadas; permisos pendientes |
 | Propietario o administrador del tenant | Administra configuración, usuarios y alcance operativo autorizado | Hipótesis por validar |
 | Cliente del taller | Recibe servicio y comunicaciones; su acceso directo futuro no está confirmado | Discovery required |
 | Administrador y soporte de plataforma | Gestionan capacidades SaaS bajo controles reforzados y auditados | Hecho conocido; alcance pendiente |
@@ -88,7 +88,7 @@ Fuera del límite quedan los sistemas de terceros, sus garantías de disponibili
 
 ## Flujos principales de alto nivel
 
-- El servidor reconoce la estación vinculada, deriva de ella sucursal/tenant y contrasta al usuario autenticado dentro de ese tenant; el nombre de host sólo puede aportar una señal adicional conforme a ADR-008.
+- El servidor reconoce la estación vinculada, deriva de ella sucursal/tenant y autentica por PIN al usuario únicamente dentro de ese tenant; el nombre de host sólo puede aportar una señal adicional conforme a ADR-008.
 - La estación vinculada aporta tenant/sucursal, pero no sustituye usuario, permisos ni controles de acciones sensibles.
 - Los clientes propios usan la API central como fuente de verdad; los eventos en tiempo real notifican cambios, no reemplazan la persistencia.
 - Un webhook externo se valida, normaliza, deduplica y persiste antes de distribuirse a clientes conectados.

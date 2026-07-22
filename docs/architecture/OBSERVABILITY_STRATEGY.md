@@ -247,7 +247,7 @@ Umbrales y canales quedan `TBD`.
 | Retención | Según riesgo/legalidad, por definir | Según necesidad operativa/costo |
 | Mutabilidad | Protección reforzada | Almacén de telemetría normal |
 | Acceso | Muy restringido y justificable | Equipos operativos autorizados |
-| Contenido | Actor, acción, objetivo, resultado, motivo | Estado técnico minimizado |
+| Contenido | Tenant, sucursal, estación, usuario, sesión, fecha/hora, acción, objetivo, resultado y motivo aplicable | Estado técnico minimizado |
 
 Una caída del pipeline de logs no debe descartar silenciosamente una auditoría obligatoria. Su consistencia y fallback requieren diseño específico.
 
@@ -318,6 +318,7 @@ Véanse [Estrategia de despliegue](DEPLOYMENT_STRATEGY.md) y [Ambientes](../deli
 - [Tiempo real y mensajería](REALTIME_AND_MESSAGING.md)
 - [Arquitectura de integraciones](INTEGRATION_ARCHITECTURE.md)
 - [Línea base de seguridad](SECURITY_BASELINE.md)
+- [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [Incident Management](../operations/INCIDENT_MANAGEMENT.md)
 - [Runbook Template](../operations/RUNBOOK_TEMPLATE.md)
 

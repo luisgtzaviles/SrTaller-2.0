@@ -12,6 +12,7 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Aceptación de ADR-002: monolito modular orientado al dominio como arquitectura inicial.
 - Aceptación de ADR-004: multitenancy con base y esquema compartidos, propiedad SaaS/tenant/sucursal y aislamiento obligatorio desde R0.
 - Aceptación de ADR-010: contexto operativo resuelto por estación vinculada, sucursal derivada y usuario atribuible sin selección manual de sucursal.
+- Aceptación de ADR-011: identidad ordinaria por tenant, autenticación cotidiana por PIN y una sesión operativa activa por estación con atribución histórica.
 
 ### Implementación
 

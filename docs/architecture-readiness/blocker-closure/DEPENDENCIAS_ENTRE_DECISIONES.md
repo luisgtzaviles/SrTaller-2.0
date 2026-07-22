@@ -43,7 +43,7 @@ flowchart TD
 | --- | --- |
 | ADR multitenant | Datos globales, tenant-wide, branch-scoped, ciclo del tenant |
 | ADR de contexto operativo | Cerrado por ADR-010: estación vinculada, sucursal derivada, rotación y cambio explícito |
-| ADR de identidad/PIN | Actores, forma de acceso, inactividad y acciones sensibles |
+| ADR de identidad/PIN | Cerrado por ADR-011: usuario de tenant, acceso por PIN, sesión, inactividad y atribución mínima |
 | ADR de roles/permisos | Capacidades mínimas y excepciones por rebanada |
 | ADR de folio | Alcance visible y transferencias entre sucursales |
 | ADR de política | Campos, autoridad, precedencia y vigencia |
@@ -56,7 +56,7 @@ flowchart TD
 
 - SPIKE-002 depende de una estrategia shared-schema aún candidata y de un contrato representativo.
 - SPIKE-003 depende del resultado de SPIKE-002, PostgreSQL candidato y acceso de datos/pooling.
-- SPIKE-005 depende de propósito del PIN, sesiones, acciones sensibles y revocación.
+- SPIKE-005 parte del propósito y sesión aceptados por ADR-011; debe acotarse a protección técnica, intentos, revocación y relación con acciones sensibles.
 - La prueba concurrente de folio depende de alcance del folio y persistencia candidata.
 - Restore por tenant depende de estrategia multitenant, backups y clasificación de datos.
 - Observabilidad de producción depende de recorridos y SLOs, no de elegir primero una herramienta.
@@ -64,7 +64,8 @@ flowchart TD
 ## Decisiones que pueden cerrarse juntas
 
 - `DEC-007` a `DEC-012`: cerradas conceptualmente por ADR-004/010; su aplicación y pruebas se verifican juntas.
-- `DEC-013` a `DEC-020`: paquete de identidad y seguridad operativa, con separación de autoridad dentro del ADR.
+- `DEC-013` a `DEC-016`: cerradas conceptualmente por ADR-011; su aplicación y pruebas se coordinan con auditoría.
+- `DEC-017` a `DEC-020`: autorización y seguridad operativa pendientes, separadas de autenticación.
 - `DEC-021` a `DEC-025`: folio, concurrencia e idempotencia.
 - `DEC-032` a `DEC-035`: política efectiva, snapshot, vigencia y campos.
 - `DEC-044` a `DEC-048`: contrato transversal de errores, auditoría y señales.
@@ -72,7 +73,7 @@ flowchart TD
 
 ## Dependencias que no deben fusionarse
 
-- estrategia multitenant de ADR-004 y contexto operativo de ADR-010;
+- estrategia multitenant de ADR-004, contexto operativo de ADR-010 e identidad/sesión de ADR-011;
 - autenticación primaria y autorización de acciones;
 - estado de negocio y ubicación física;
 - pago y entrega;

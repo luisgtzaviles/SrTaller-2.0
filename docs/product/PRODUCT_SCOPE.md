@@ -31,11 +31,11 @@ Todas las clasificaciones son **propuestas**. Un cambio de clasificación requie
 | Planes | Discovery required | Ofertas comerciales y límites de servicio diferenciados | No existen catálogo, precios, entitlements ni países aprobados. |
 | Suscripciones | Discovery required | Relación vigente entre un tenant y una oferta comercial | Faltan altas, renovaciones, cobro SaaS, tolerancias y cancelaciones. |
 | Sucursales | Foundation | Alcance operativo de estaciones y datos dentro de un tenant | ADR-004/010 fijan propiedad y contexto; faltan ciclo de vida e implementación. |
-| Usuarios | Foundation | Identidad y acceso trazable de personas | Usuario por tenant aceptado; faltan autenticación, recuperación, bloqueo y correlación de persona. |
+| Usuarios | Foundation | Identidad y acceso trazable de personas | Identidad y autenticación contextual aceptadas en ADR-011; faltan mecanismos técnicos, recuperación, administración de bloqueo y correlación de persona. |
 | Roles | Foundation | Agrupación administrable de autorizaciones | Falta decidir roles predefinidos, personalizados y herencia. |
 | Permisos | Foundation | Control explícito de acciones y recursos | Falta el catálogo y el tratamiento de acciones sensibles. |
 | Estaciones operativas | Foundation | Contexto de tenant/sucursal desde equipos vinculados | Vinculación y reubicación conceptual aceptadas; faltan mecanismo, pérdida y revocación técnica. |
-| PIN | Foundation | Identificación ágil del usuario dentro del tenant de la estación | Propósito aceptado; faltan protección, recuperación, bloqueo y refuerzo. |
+| PIN | Foundation | Credencial ágil del usuario dentro del tenant de la estación y sesión operativa | Semántica aceptada en ADR-011; faltan protección técnica, recuperación, política de bloqueo y refuerzo. |
 | Clientes | Core | Registro y consulta del cliente del taller dentro de su contexto permitido | Faltan identidad, duplicados, consentimiento, sucursal y retención. |
 | Reparaciones | Core | Seguimiento del trabajo desde recepción hasta cierre | El flujo, estados, autorizaciones, garantías y excepciones están por validar. |
 | Inventario | Core | Disponibilidad y trazabilidad de artículos o partes para la operación | Faltan catálogo, ubicación, reservas, costos, lotes y transferencias. |

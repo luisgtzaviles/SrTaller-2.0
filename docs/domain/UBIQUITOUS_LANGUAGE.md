@@ -19,16 +19,16 @@ Las definiciones con estado I son hipótesis iniciales, P significa comprensión
 | Plataforma | Producto SaaS que soporta a varios talleres aislados. | sistema, SR Taller | un tenant o taller | La plataforma suspende una suscripción. | P | Q005, Q023 |
 | Tenant | Frontera organizacional y de aislamiento candidata para un negocio cliente. | cuenta, negocio, taller | sucursal o cliente del taller | Un negocio tiene dos sucursales. | P | Q005–Q006 |
 | Sucursal | Unidad operativa física o administrativa dentro de un tenant. | tienda, local | ubicación interna de inventario | Una orden se recibe en Centro. | P | DQ-002 |
-| Usuario | Identidad operativa ordinaria que pertenece exactamente a un tenant y no se duplica por sucursal. | cuenta, operador | empleado, cliente o actor | Una persona se identifica en una estación de su tenant. | D | ADR-004/010 |
+| Usuario | Identidad operativa ordinaria que pertenece exactamente a un tenant y no se duplica por sucursal. | cuenta, operador | empleado, cliente, PIN, sesión o actor | Una persona se identifica en una estación de su tenant. | D | ADR-004/011 |
 | Empleado | Persona que trabaja para el negocio, use o no el sistema. | colaborador, personal | usuario o membresía | Un técnico externo no necesariamente es empleado. | I | Q007, Q010 |
-| Membresía | Término histórico ambiguo; no representa un usuario ordinario multi-tenant. | acceso, alta de usuario | usuario, rol o membresía comercial SaaS | El uso debe aclarar si habla de suscripción comercial o acceso. | I | ADR-004/010 |
+| Membresía | Término histórico ambiguo; no representa un usuario ordinario multi-tenant. | acceso, alta de usuario | usuario, rol o membresía comercial SaaS | El uso debe aclarar si habla de suscripción comercial o acceso. | I | ADR-004/011 |
 | Rol | Agrupación administrable de capacidades. | perfil, puesto | empleo o permiso individual | Rol Técnico agrupa acciones técnicas. | P | Q010 |
 | Permiso | Capacidad para solicitar una acción en un alcance. | autorización de sistema | autorización del cliente | Permiso para reembolsar en una sucursal. | P | Q004, Q010 |
 | Estación operativa | Equipo con identidad técnica y vinculación vigente a una única sucursal para aportar contexto. | terminal vinculada, equipo registrado | dispositivo del cliente o usuario | Una tablet de recepción está vinculada a Centro. | D | ADR-010 |
 | Terminal | Punto físico o equipo usado para operar o cobrar; cuando aporta contexto se denomina estación operativa. | caja, estación | estación operativa o caja | La terminal del mostrador registra un cobro. | I | Q011, Q022 |
 | Sesión de estación | Evidencia técnica vigente de una vinculación de estación. | sesión de terminal | sesión de usuario o contexto operativo | La tablet conserva vínculo tras cambiar operador. | P | ADR-010/Q011 |
-| Sesión operativa | Contexto temporal del usuario dentro del tenant, sucursal y estación ya resueltos. | turno, sesión por PIN | vinculación persistente de estación o caja | Un recepcionista inicia turno en una estación vinculada. | D | ADR-010/Q012 |
-| PIN | Mecanismo ágil propuesto para identificar o revalidar a un operador. | clave corta | código de acceso del teléfono | El cajero usa PIN en una terminal vinculada. | P | Q012 |
+| Sesión operativa | Periodo durante el cual un usuario autenticado es el actor activo de una estación dentro del contexto resuelto. | turno, sesión por PIN | identidad, vinculación persistente de estación o caja | Un recepcionista inicia turno en una estación vinculada. | D | ADR-011 |
+| PIN | Credencial operativa que identifica al usuario únicamente dentro del tenant ya resuelto por la estación. | clave corta | identidad, permiso o código de acceso del teléfono | El cajero usa PIN en una terminal vinculada. | D | ADR-011 |
 
 ## Personas, cliente y dispositivo recibido
 

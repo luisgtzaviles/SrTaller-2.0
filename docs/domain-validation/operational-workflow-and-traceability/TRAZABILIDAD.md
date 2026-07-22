@@ -10,6 +10,7 @@ Este documento conecta los hechos operativos validados con las propuestas, pregu
 |---|---|---|
 | Solicitud de validación del Product Owner, 2026-07-21 | Hechos explícitos del flujo Avicell y necesidades de trazabilidad | fuente primaria de FOT-DEC y escenarios |
 | [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) | Decisión aceptada | fuente autoritativa de tenant/sucursal/estación/usuario efectivos y cambio de turno |
+| [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) | Decisión aceptada | fuente autoritativa de identidad, PIN, sesión, usuario activo e inactividad |
 | Recepción mínima y autorización comercial | Decisiones validadas | nacimiento/fin de custodia, identidad de orden, autorización por concepto y narrativa complementaria |
 | Auditoría legacy del detalle | Evidencia de código | estado/custodia, técnico, revisor, seguimientos, anticipos, entrega y defectos |
 | Auditoría legacy de recepción | Evidencia de código | actor receptor, sesión/contexto, Pendiente, En tienda y anticipo separado |
@@ -111,7 +112,7 @@ La propuesta FSR de responsabilidad formal previa a la orden ya fue aclarada por
 
 | Documento/ID | Relación | Acción posterior |
 |---|---|---|
-| UBIQUITOUS_LANGUAGE: sesión operativa/PIN | el mecanismo legacy y su propósito de baja fricción quedan validados; controles siguen abiertos | promover con límites de atribución |
+| UBIQUITOUS_LANGUAGE: sesión operativa/PIN | ADR-011 fija credencial limitada al tenant, una sesión activa por estación y atribución histórica; controles técnicos siguen abiertos | aplicar sin mezclar autenticación y autorización |
 | UBIQUITOUS_LANGUAGE: asignación técnica | se confirma que no equivale a trabajo ni custodia | refinar periodo, participación y resumen |
 | UBIQUITOUS_LANGUAGE: control de calidad/retrabajo | segunda revisión Avicell aporta ejemplo y bucle real | decidir universalidad y vocabulario |
 | DOMAIN_ACTORS: Recepcionista/Técnico/Cajero | responsabilidades coinciden parcialmente | no convertir puestos en permisos |

@@ -19,7 +19,7 @@ Todos los criterios deben cumplirse:
 - [ ] **[RP]** El Responsable de Producto autoriza explícitamente el alcance y la rebanada.
 - [ ] **[RP]** Sprint 00 o el criterio de paso sucesor queda cerrado por su autoridad.
 - [ ] **[ADR]** Las decisiones técnicas necesarias están aceptadas, no sólo propuestas.
-- [ ] **[PB]** Tenant, sucursal, sesión, actor y aislamiento mínimo están definidos.
+- [x] **[RDD]** Tenant, sucursal, sesión, actor y aislamiento mínimo están definidos conceptualmente por ADR-004/010/011.
 - [ ] **[PB]** Existe matriz preliminar de permisos para las acciones incluidas.
 - [ ] **[RP]** El modelo de amenazas inicial y la estrategia de secretos/ambientes están revisados.
 - [ ] **[RP]** El PBI cumple Definition of Ready, aceptación y trazabilidad.
@@ -57,4 +57,4 @@ Además:
 
 ## Resultado actual
 
-**[PB]** Los checkboxes permanecen abiertos porque la documentación fuente no registra autorización ni aceptación de ADRs. Por ello el estado sigue siendo **Preparado con bloqueantes**.
+**[PB]** El estado sigue siendo **Preparado con bloqueantes**: existen ADRs aceptados, pero faltan autorización organizacional, plataforma, mecanismos, permisos, modelos de amenazas, pruebas y decisiones propias de la rebanada. Una casilla conceptual cerrada no autoriza programación.

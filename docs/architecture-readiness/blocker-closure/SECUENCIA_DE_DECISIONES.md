@@ -21,18 +21,18 @@ Este grupo desbloquea el primer commit, pero no basta para R0.
 4. Decidir zona horaria (`DEC-037`, `DEC-038`).
 5. Preparar la precedencia conceptual de configuración que R1 usará (`DEC-032`).
 
-La matriz de propiedad lógica y el modelo de contexto operativo ya están respondidos. Arquitectura y Seguridad deben usarlos como precondición del ADR de identidad/PIN y de cualquier implementación. No debe ejecutarse un experimento de RLS antes de aceptar PostgreSQL, autorizarlo y acotar su pregunta.
+La matriz de propiedad lógica, el modelo de contexto operativo y la identidad/sesión conceptual ya están respondidos por ADR-004/010/011. Arquitectura y Seguridad deben usarlos como precondición de cualquier implementación. No debe ejecutarse un experimento de RLS antes de aceptar PostgreSQL, autorizarlo y acotar su pregunta.
 
 ## Grupo B — Identidad y seguridad operativa
 
-1. Usuario de tenant, identidad técnica y autenticación (`DEC-013`).
-2. Sesión, PIN e inactividad (`DEC-014`, `DEC-015`).
-3. Atribución (`DEC-016`).
+1. Aplicar y probar usuario de tenant, autenticación y estados aceptados por ADR-011 (`DEC-013`).
+2. Definir mecanismos técnicos y probar sesión, PIN e inactividad (`DEC-014`, `DEC-015`).
+3. Aplicar la atribución mínima y enlazarla con auditoría (`DEC-016`).
 4. Roles, permisos y acciones sensibles (`DEC-017` a `DEC-019`).
 5. Reautenticación (`DEC-020`).
 6. Secretos y auditoría mínima (`DEC-046`, `DEC-055`).
 
-Puede trabajarse en paralelo con la evidencia de aplicación del Grupo A, pero el ADR de identidad debe respetar ADR-004/010 y no se acepta sin la matriz de producto que aún le corresponde.
+Puede trabajarse en paralelo con la evidencia de aplicación del Grupo A. ADR-011 ya es la autoridad conceptual; el ADR de autorización y los mecanismos técnicos deben respetar ADR-004/010/011 y conservar sus decisiones diferidas.
 
 ## Grupo C — Persistencia y consistencia base
 
@@ -74,4 +74,4 @@ Folio, política y archivos pueden preparar alternativas en paralelo después de
 
 ## Camino crítico
 
-`DEC-002 → DEC-004/005 → ADR-004/010 aplicados → DEC-013/018 → DEC-049/050/051 → R0 demostrado → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.
+`DEC-002 → DEC-004/005 → ADR-004/010/011 aplicados → DEC-018 → DEC-049/050/051 → R0 demostrado → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.

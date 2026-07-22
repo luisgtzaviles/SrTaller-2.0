@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual de controles mínimos.
-- **Naturaleza:** Propuesta y conjunto de hitos; ADR-004/010 son autoritativos para aislamiento/contexto y no constituyen certificación ni diseño criptográfico final.
+- **Naturaleza:** Propuesta y conjunto de hitos; ADR-004/010/011 son autoritativos para aislamiento, contexto e identidad/sesión conceptuales y no constituyen certificación ni diseño criptográfico final.
 - **Alcance:** Producto, aplicaciones, datos, dependencias, entrega y operación.
 - **Referencia de verificación:** [Estrategia de pruebas de seguridad](../quality/SECURITY_TESTING.md).
 
@@ -82,9 +82,10 @@ Un threat model por recorrido crítico debe refinar esta lista antes de implemen
 
 ## Identidad y autenticación
 
-- El usuario del tenant se valida con un mecanismo por seleccionar; identidad de plataforma y correlación de persona permanecen separadas.
-- Tenant/sucursal/estación efectivos se comprueban conforme a ADR-010 además de autenticar al usuario.
-- Sesiones tienen audiencia, propósito, vigencia y revocación definidos.
+- El usuario ordinario pertenece a un tenant y se autentica cotidianamente por PIN conforme a ADR-011; el mecanismo técnico, la identidad de plataforma y la correlación de persona permanecen separados.
+- Tenant/sucursal/estación efectivos se comprueban conforme a ADR-010 antes de autenticar al usuario dentro del tenant.
+- Una estación mantiene como máximo una sesión operativa activa; una sesión inválida no acepta acciones nuevas.
+- El PIN nunca se almacena en texto plano ni de forma reversible.
 - Tokens o cookies se almacenan y transportan con controles apropiados al cliente; formato pendiente.
 - Recuperación de cuenta no puede ser más débil que el acceso que protege.
 - Cambios de factores y recuperaciones producen notificación y auditoría según riesgo.
@@ -265,6 +266,7 @@ Los umbrales y responsables están `TBD`; no se inventan en este documento.
 
 - [Modelo de multitenancy](MULTITENANCY_MODEL.md)
 - [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md)
+- [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [Arquitectura de datos](DATA_ARCHITECTURE.md)
 - [Estrategia de despliegue](DEPLOYMENT_STRATEGY.md)
 - [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md)

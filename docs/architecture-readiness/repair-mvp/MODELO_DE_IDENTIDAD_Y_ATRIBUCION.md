@@ -4,20 +4,20 @@
 
 | Concepto | Pregunta que responde | Clasificación |
 | --- | --- | --- |
-| Identidad | ¿Quién es la persona o cuenta? | DAP |
-| Pertenencia | ¿A qué único tenant pertenece el usuario ordinario? | RDD, ADR-004/010 |
+| Identidad | ¿Quién es la persona operadora estable dentro del tenant? | RDD, ADR-011 |
+| Pertenencia | ¿A qué único tenant pertenece el usuario ordinario? | RDD, ADR-004/011 |
 | Rol/capacidad | ¿Qué puede intentar y con qué alcance? | DAP |
-| Contexto operativo | ¿Bajo qué tenant/sucursal/estación y usuario actúa ahora? | RDD, ADR-010 |
+| Contexto operativo | ¿Bajo qué tenant/sucursal/estación y usuario actúa ahora? | RDD, ADR-010/011 |
 | Verificación adicional | ¿Cómo se confirma una acción sensible? | DAP |
 | Actor atribuido | ¿A quién se responsabiliza por el hecho? | RDD |
 
 ## Contrato mínimo
 
-**[RDD]** Toda creación, conclusión, autorización, ejecución, QC, movimiento de pago, excepción y entrega conserva tenant, sucursal, estación, usuario y tiempo verificables conforme a [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md). Una cuenta compartida sin atribución operativa no satisface este contrato.
+**[RDD]** Toda creación, conclusión, autorización, ejecución, QC, movimiento de pago, excepción y entrega conserva tenant, sucursal, estación, usuario, sesión y tiempo verificables conforme a [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md). Una cuenta compartida sin atribución operativa no satisface este contrato.
 
 ## PIN y dispositivo
 
-**[RDD]** El PIN identifica al usuario dentro del tenant previamente derivado de la estación; no selecciona tenant/sucursal ni concede permisos. Su protección, límites, recuperación y posible uso para reautenticación siguen pendientes.
+**[RDD]** ADR-011 acepta que el PIN identifica al usuario únicamente dentro del tenant previamente derivado de la estación; no es identidad, no selecciona tenant/sucursal y no concede permisos. Nunca se almacena en texto plano ni de forma reversible. Protección técnica, límites, recuperación y posible reautenticación siguen pendientes.
 
 **[RDD]** La estación requiere identidad reconocible y vinculación persistente, mantenida del lado del servidor, a una sucursal para operar. El mecanismo técnico, la credencial y la revocación concreta se deciden posteriormente.
 
@@ -25,13 +25,13 @@
 
 | Escenario | Requisito mínimo | Clasificación |
 | --- | --- | --- |
-| Inicio tradicional | Estación vinculada y usuario del mismo tenant; mecanismo de autenticación pendiente | DAP |
-| Acceso operativo por PIN | Tenant resuelto por estación, actor activo y límites pendientes | RDD/DAP |
+| Inicio tradicional | Estación vinculada, PIN limitado al tenant y usuario cuyo estado permite iniciar | RDD, ADR-011 |
+| Acceso operativo por PIN | Tenant resuelto por estación y una sola sesión activa por estación | RDD, ADR-011 |
 | Estación compartida | Usuario activo visible y cambio de turno explícito sin cambiar sucursal | RDD |
-| Inactividad | Termina usuario, conserva vinculación; duración y reanudación pendientes | RDD/DAR |
+| Inactividad | Termina la sesión, conserva vinculación y exige autenticación nueva; duración pendiente | RDD, ADR-011 |
 | Múltiples roles/sucursales | Mismo usuario por tenant; estación determina sucursal y permisos se evalúan aparte | RDD |
 | Acción sensible | Permiso, posible reautenticación, motivo y auditoría | DAR |
-| Revocación | Sesión y acceso dejan de ser válidos oportunamente | RDD |
+| Revocación | No inicia sesión; toda sesión invalidada deja de aceptar acciones | RDD, ADR-011 |
 
 ## Requisitos mínimos de PIN y sesión
 
@@ -51,11 +51,11 @@
 ## Preguntas bloqueantes
 
 - **[PB]** Actores mínimos del MVP y matriz de capacidades por tenant/sucursal.
-- **[PB]** Reglas técnicas de inicio, bloqueo, expiración, recuperación y revocación de sesión.
+- **[PB]** Reglas técnicas de protección, intentos, duración, recuperación, propagación y revocación de sesión.
 - **[PB]** Acciones que requieren reautenticación o segundo actor.
 - **[PB]** Uso permitido de cuentas compartidas y mecanismo de atribución.
 - **[PB]** Tratamiento de soporte, propietario y administración de plataforma.
-- **[ADR]** [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta el contexto y la confianza conceptual de estación. Identidad, protección del PIN, sesión, permisos y acciones sensibles requieren ADRs específicos antes de programar acceso operativo.
+- **[ADR]** [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) acepta el contexto y la confianza conceptual de estación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) acepta identidad, propósito del PIN y ciclo conceptual de sesión. Protección técnica, permisos, acciones sensibles y evidencia de implementación siguen bloqueando el acceso operativo.
 
 ## Riesgos
 

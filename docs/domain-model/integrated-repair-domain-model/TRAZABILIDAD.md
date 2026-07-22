@@ -76,6 +76,7 @@
 | [Identidad, acceso y permisos](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md) | usuario por tenant/contexto aceptados; mecanismo propuesto | atribución, capacidades y PIN |
 | [Sucursal y dispositivo](../../architecture/BRANCH_AND_DEVICE_MODEL.md) | vinculación/contexto aceptados; mecanismo propuesto | sucursal, estación y sesión |
 | [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) | Accepted | contexto efectivo y trazabilidad de origen |
+| [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) | Accepted | identidad, PIN, sesión operativa y atribución con sesión |
 | [Integraciones](../../architecture/INTEGRATION_ARCHITECTURE.md) | propuesta | no confundir integración con dominio |
 | [Tiempo real y mensajería](../../architecture/REALTIME_AND_MESSAGING.md) | propuesta | proyección/notificación no fuente de verdad |
 | [Línea base de seguridad](../../architecture/SECURITY_BASELINE.md) | propuesta | secretos, aislamiento y auditoría |

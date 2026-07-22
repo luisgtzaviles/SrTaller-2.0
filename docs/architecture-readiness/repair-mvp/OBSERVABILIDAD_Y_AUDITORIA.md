@@ -18,7 +18,7 @@
 ## Campos mínimos seguros
 
 - **[DAR]** Identificador de correlación/operación, módulo, caso de uso, resultado, duración, error, integración y número de reintento.
-- **[RDD]** Identificadores opacos de tenant, sucursal, estación, actor y entidad cuando sean necesarios.
+- **[RDD]** Identificadores opacos de tenant, sucursal, estación, actor, sesión y entidad cuando sean necesarios, conforme a ADR-011.
 - **[DAR]** Versión de política o entidad en acciones sensibles.
 - **[R]** Nunca secretos, PIN, tokens, contenido completo de archivos o datos personales innecesarios.
 

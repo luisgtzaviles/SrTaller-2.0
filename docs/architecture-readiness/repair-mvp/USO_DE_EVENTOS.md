@@ -30,7 +30,7 @@
 
 ## Reglas
 
-1. **[RDD]** Un evento usa tiempo, actor, tenant, sucursal, correlación e identidad de entidad verificables.
+1. **[RDD]** Un evento usa tiempo, actor, sesión, tenant, sucursal, estación, correlación e identidad de entidad verificables cuando corresponda.
 2. **[DAR]** Se publica después de confirmar el hecho o mediante mecanismo transaccional confiable.
 3. **[DAR]** Los consumidores son idempotentes y toleran repetición.
 4. **[DAR]** El contrato evita datos sensibles innecesarios.

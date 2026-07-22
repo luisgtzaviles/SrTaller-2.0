@@ -19,7 +19,7 @@
 | Guardar entrega | Repositorio de agregado | Registrar entrega única | DAP |
 | Guardar evidencias | Adaptador de archivos + metadatos propietarios | Almacenar referencia segura | DAP |
 | Consultar políticas | Puerto de Configuración | Resolver versión efectiva | DAP |
-| Contexto tenant/sucursal/estación/usuario | Puerto conceptual de contexto | Obtener contexto ADR-010 verificado | DAP |
+| Contexto tenant/sucursal/estación/usuario/sesión | Puerto conceptual de contexto | Obtener contexto ADR-010/011 verificado | DAP |
 
 ## Puertos de infraestructura
 

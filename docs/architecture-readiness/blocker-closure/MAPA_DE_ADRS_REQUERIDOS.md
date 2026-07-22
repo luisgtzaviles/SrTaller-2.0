@@ -17,7 +17,8 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | ADR-007 | Despliegues mediante contenedores | Proposed | Antes del primer despliegue | Revisar artefacto, promoción, rollback y operación |
 | ADR-008 | Resolución de tenant por subdominios wildcard | Proposed | H1/antes de acceso externo | Revisar DNS, certificados, dominios y fuente confiable del tenant |
 | ADR-009 | Monorepo con workspaces | Proposed | H0 | Revisar junto con ownership, pipeline y estructura inicial |
-| ADR-010 | Contexto operativo derivado de estación vinculada | Accepted | H1 parcialmente cerrado | Aplicar invariantes; identidad, PIN, sesión y permisos siguen separados |
+| ADR-010 | Contexto operativo derivado de estación vinculada | Accepted | H1 parcialmente cerrado | Aplicar invariantes; identidad/sesión se rigen por ADR-011 y permisos siguen separados |
+| ADR-011 | Identidad, autenticación por PIN y sesión operativa | Accepted | H1 parcialmente cerrado | Aplicar invariantes; mecanismos técnicos, permisos y acciones sensibles siguen separados |
 
 `Proposed` no equivale a decisión cerrada ni autoriza implementación.
 
@@ -27,7 +28,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | --- | --- | --- | --- | --- | --- | --- |
 | Cerrado | Estrategia multitenant, propiedad lógica y aislamiento de datos | DEC-007, DEC-008 | Respondido | RLS sólo si sigue candidato | ADR-004 aceptado; falta evidencia de aplicación y pruebas | H1 |
 | Cerrado | Contexto operativo de tenant y sucursal | DEC-009 a DEC-012 | Respondido | No para aceptar el modelo | ADR-010 aceptado; falta evidencia de aplicación y pruebas | H1 |
-| 3 | Identidad, sesión, PIN e inactividad; crear ADR específico | DEC-013 a DEC-015 | Sí | Sí, si PIN/estación compartida siguen en alcance | Separación entre identidad, credencial, sesión y actor operativo | H1 |
+| Cerrado | Identidad, sesión, PIN e inactividad | DEC-013 a DEC-016 | Respondido | Mecanismos técnicos aún pueden requerir evidencia | ADR-011 aceptado; falta aplicación, modelo de amenazas y pruebas | H1 |
 | 4 | Roles, permisos, acciones sensibles y reautenticación | DEC-017 a DEC-020 | Sí | No por defecto | Autorización server-side por acción y alcance | H1 |
 | 5 | Persistencia, ownership de repositorios y migraciones; revisar ADR-003 | DEC-006, DEC-049, DEC-050 | No para mecanismo; sí para datos globales | Condicional | Propiedad de escritura, evolución de esquema y recuperación definidas | H1 |
 | 6 | Tiempo y zonas horarias | DEC-037, DEC-038 | Sí | Condicional para casos límite | Instante autoritativo, zona operacional y reglas de presentación | H1 |
@@ -45,9 +46,9 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 ## Próximo ADR recomendado
 
-ADR-004 y ADR-010 ya están aceptados. La siguiente revisión prioritaria es el **ADR de identidad, autenticación, sesión y PIN**, usando como entradas obligatorias el usuario por tenant y el contexto de estación ya delimitado. Debe decidir credenciales, protección del PIN, intentos, bloqueo, recuperación, expiración, revocación y reautenticación sin permitir que identidad o PIN elijan tenant/sucursal.
+ADR-004, ADR-010 y ADR-011 ya están aceptados. La siguiente revisión prioritaria es el **ADR de roles, permisos y acciones sensibles**. Debe separar autorización de la autenticación aceptada y cerrar capacidades, alcance, denegaciones y reautenticación aplicables a R0/R1.
 
-Después corresponde el ADR de roles, permisos y acciones sensibles. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
+Protección técnica del PIN, intentos, recuperación, formato de sesión y propagación de revocación siguen como diseño/evidencia dependiente de ADR-011. RLS permanece como experimento técnico y decisión condicionada a PostgreSQL; no es requisito para reabrir ADR-004.
 
 ADR-001, ADR-003, ADR-005 y ADR-009 siguen siendo el lote mínimo de plataforma para el primer commit. Pueden prepararse en paralelo, pero no sustituyen el cierre de multitenancy para completar R0.
 
