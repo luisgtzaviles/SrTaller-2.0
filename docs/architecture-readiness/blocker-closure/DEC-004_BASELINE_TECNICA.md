@@ -54,7 +54,7 @@ DEC-004 no decide ni cierra:
 - `DEC-044`: taxonomía y adaptación segura de errores;
 - `DEC-049`: driver/ORM/query builder, repositories, transacciones y pool;
 - `DEC-050`: herramienta y lifecycle de migraciones;
-- `DEC-051`: test runner, suites, cobertura, proveedor y gates generales de CI;
+- `DEC-051`: estrategia, suites, cobertura y gates generales aceptados; proveedor y materialización pendientes;
 - `DEC-063`: Definition of Done, excepciones y aprobaciones por cambio;
 - ADR-007: contenedores, empaquetado, promoción o plataforma de despliegue;
 - PIN, sesiones, estación, roles, capacidades, datos, SQL o funcionalidad de R0;
@@ -151,7 +151,7 @@ Estas resoluciones quedaron aceptadas el 2026-07-22 por la autoridad registrada.
 | `clean` | Elimina sólo salidas generadas conocidas, inicialmente `dist/` |
 | `typecheck` | Ejecuta TypeScript local con `--noEmit` |
 | `build` | Limpia y compila únicamente a `dist/` |
-| `test` | Nombre reservado; DEC-051 decidirá runner, suites y cobertura |
+| `test` | Nombre reservado; DEC-051 acepta `node:test`, suites por riesgo y cobertura multidimensional |
 | `start` | Ejecuta el entrypoint JavaScript compilado |
 | `dev` | Compila en watch y reinicia JavaScript emitido |
 | `verify` | Compone toolchain, clean, typecheck, build y test sin instalar ni corregir archivos |
@@ -163,7 +163,7 @@ Los comandos deberán ser no interactivos, propagar exit codes, funcionar fuera 
 - Evidencia autoritativa inicial: Linux x86_64 con glibc, filesystem sensible a mayúsculas, Node.js `24.18.0` y pnpm `11.15.1`.
 - macOS arm64/x64 estará permitido para desarrollo con los mismos pins, pero un PASS sólo en macOS será no concluyente.
 - musl/Alpine, Linux arm64, Windows o un contenedor requerirán revalidación antes de declararse soportados.
-- DEC-004 exige Linux y la evidencia; DEC-051 elegirá proveedor, runner, suites y gate general. Esto no acepta GitHub Actions, Docker ni ADR-007.
+- DEC-004 exige Linux y la evidencia; DEC-051 acepta runner, suites y gate general sin elegir proveedor. Esto no acepta GitHub Actions, Docker ni ADR-007.
 
 ## Consecuencias positivas
 
@@ -203,7 +203,11 @@ La autoridad acepta estos riesgos exclusivamente para avanzar a materialización
 - ADR-003 conserva PostgreSQL `18.x`; DEC-004 no elige acceso a datos ni migrador.
 - ADR-005 conserva NestJS `11.x`, Express, REST mínima y fronteras; el spike no es scaffold.
 - ADR-007 permanece `Proposed`; Linux autoritativo no implica contenedores.
-- DEC-005/044/049/050/051/063 conservan íntegramente sus alcances y estados.
+- DEC-005/044/049/050/051/063 conservan íntegramente sus alcances. DEC-005 fue
+  materializada y formalmente verificada después; [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md)
+  y [DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md)
+  fueron aceptadas el 2026-07-24 con condiciones pendientes; las demás
+  conservan sus estados propios.
 
 ## Obligaciones posteriores
 

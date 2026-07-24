@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "contract": "DEC-004/VC-024",
+  "status": "Pending",
+  "candidateCommit": "TBD",
+  "workflowRunId": "TBD",
+  "executions": [
+    {
+      "label": "run-1",
+      "artifact": "vc024-run-1",
+      "manifestSha256": "TBD"
+    },
+    {
+      "label": "run-2",
+      "artifact": "vc024-run-2",
+      "manifestSha256": "TBD"
+    }
+  ],
+  "comparison": {
+    "artifact": "vc024-comparison",
+    "manifestSha256": "TBD",
+    "equivalent": false
+  },
+  "verdict": "BLOCKED — CI NOT EXECUTED"
+}

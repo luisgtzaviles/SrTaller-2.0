@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
+- **Estado:** Materialización mínima de `DEC063-C01`
 - **Uso:** Descomponer un PBI listo en trabajo técnico verificable.
 - **Regla:** Una tarea no sustituye el problema, valor ni criterios del PBI y no debe introducir decisiones arquitectónicas ocultas.
 
@@ -19,6 +19,8 @@
 | Epic | `EPIC-###` |
 | Estado | `Draft` / `Ready` / `In progress` / `Review` / `Done` / `Blocked` / `Cancelled` |
 | Tipo | Código / Datos / Infraestructura / Pruebas / Documentación / Investigación / Operación |
+| Riesgo | Bajo / Medio / Alto; ambigüedad = Alto |
+| Justificación del riesgo | TBD |
 | Estimación | TBD |
 | Responsable | TBD |
 
@@ -70,6 +72,8 @@ Incluir según aplique: acceso cruzado entre tenants, autorización, migración 
 - [ ] Revisión por pares completada.
 - [ ] No quedan decisiones nuevas únicamente en el cambio técnico.
 - [ ] Cumple la parte aplicable de la [Definition of Done](./DEFINITION_OF_DONE.md).
+- [ ] Cumple base, tipo y riesgo de [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md).
+- [ ] Evidencia ligada al commit mediante el [manifest canónico](./EVIDENCE_MANIFEST_TEMPLATE.json), cuando aplica.
 
 ## Plan de verificación
 

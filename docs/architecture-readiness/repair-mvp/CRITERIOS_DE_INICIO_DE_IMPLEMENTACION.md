@@ -21,6 +21,16 @@ Todos los criterios deben cumplirse:
 - [ ] **[RP]** El Responsable de Producto autoriza explícitamente el primer cambio de implementación de R0.
 - [ ] **[RP]** Sprint 00 o el criterio de paso sucesor queda cerrado por su autoridad.
 - [ ] **[ADR]** Las decisiones técnicas necesarias están aceptadas, no sólo propuestas.
+- [x] **[ADR]** [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
+  está `Accepted` desde el 2026-07-24 con cinco `PASS WITH CONDITIONS`.
+  DEC051-C01 a C10 y VC-024 permanecen pendientes.
+- [x] **[ADR]** [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md)
+  está `Accepted with conditions` desde el 2026-07-24 con cinco
+  `PASS WITH CONDITIONS`; DEC063-C01 a C08 permanecen `Pending`.
+- [x] **[ADR]** DEC-005 seleccionó y materializó estructura, ownership, imports y enforcement; la [sexta verificación formal](../dec-005-materialization/FORMAL_VERIFICATION_6.md) concluyó `PASS`, DEC-005 está `Accepted — Materialized / Formally Verified` y [PBI-022](../../backlog/pbis/PBI-022.md) está `Done`.
+- [x] **[ADR]** DEC-049 está `Accepted`; Kysely + `pg`, repositorios
+  explícitos, ownership, scopes y transacciones quedan aceptados, con
+  DEC049-C01 a C08 pendientes para una materialización futura autorizada.
 - [x] **[RDD]** Tenant, sucursal, sesión, actor y aislamiento mínimo están definidos conceptualmente por ADR-004/010/011.
 - [x] **[RDD]** Roles, capacidades, combinación, alcance y autorización negativa están definidos conceptualmente por ADR-012.
 - [x] **[RDD]** Sensibilidad, niveles, reautenticación, segundo aprobador, segregación e invalidación están definidos conceptualmente por ADR-013.
@@ -62,4 +72,14 @@ Además:
 
 ## Resultado actual
 
-**[PB]** El estado sigue siendo **Preparado con bloqueantes**: alcance, aceptación esperada de R0 y selección de plataforma están aprobados, y [PBI-021](../../backlog/pbis/PBI-021.md) está `Ready`; faltan su materialización/evidencia, autorización funcional, organización ejecutable, mecanismos, composición/clasificación, modelos de amenazas, estrategia y ejecución de pruebas y los demás gates H0/H1. La autorización de PBI-021 no autoriza programación funcional ni declara R0 aceptado.
+**[PB]** El estado sigue siendo **Preparado con bloqueantes**: alcance,
+aceptación esperada de R0, plataforma y organización modular están
+seleccionados, y la materialización de DEC-005 quedó formalmente verificada.
+Faltan la evidencia final de DEC-004, autorización funcional, la
+materialización aplicable de DEC-051/063 y los demás mecanismos,
+composición/clasificación, modelos de amenazas, materialización y ejecución de
+pruebas y gates H0/H1. Las aceptaciones de
+[DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md),
+[DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) y
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) no
+autorizan programación funcional, materialización ni declaran R0 aceptado.

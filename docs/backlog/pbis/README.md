@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-**Estado:** Borrador. PBI-001 a PBI-020 son resultados documentales de la fundación inicial; su presencia no autoriza implementación. PBI-021 fue creado posteriormente por autorización explícita de DEC-004 y permanece sin ejecutar.
+**Estado:** Borrador. PBI-001 a PBI-020 son resultados documentales de la fundación inicial; su presencia no autoriza implementación. PBI-021 y PBI-022 fueron creados posteriormente por autorizaciones explícitas; PBI-022 está `Done` después de su materialización y sexta reverificación formal `PASS`.
 **Estimación:** TBD en todos los casos.
-**Sprint:** PBI-001 a PBI-020 permanecen en su clasificación histórica de SPRINT-00; PBI-021 está `Unassigned`.
+**Sprint:** PBI-001 a PBI-020 permanecen en su clasificación histórica de SPRINT-00; PBI-021 y PBI-022 están `Unassigned`.
 
 | PBI | Resultado documental |
 |---|---|
@@ -29,6 +29,7 @@
 | [PBI-019](PBI-019.md) | Define observability baseline |
 | [PBI-020](PBI-020.md) | Consolidate open questions and decision gates |
 | [PBI-021](PBI-021.md) | Materialize and verify the DEC-004 toolchain contract |
+| [PBI-022](PBI-022.md) | Materialize DEC-005 modular structure and local enforcement — Done |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 

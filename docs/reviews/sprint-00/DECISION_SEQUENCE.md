@@ -9,6 +9,15 @@
 
 **Actualización posterior:** [ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) y [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) fueron revisados y aceptados el 2026-07-21. ADR-009 fija repositorio único evolutivo y workspaces bajo demanda sin seleccionar tooling. Las menciones posteriores a su revisión se conservan como parte de la secuencia histórica; no reabren las decisiones ni cierran los demás gates.
 
+**Actualización H0 del 2026-07-24:** DEC-005 está materializada y formalmente
+verificada; DEC-044, DEC-049 y
+[DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
+están aceptadas.
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) también
+quedó `Accepted with conditions`. El siguiente gate H0 es VC-024. Esta
+actualización no cumple DEC051-C01 a C10 ni DEC063-C01 a C08, no cierra
+VC-024/Sprint 00 ni autoriza R0.
+
 ## Propósito
 
 Esta secuencia reduce las incertidumbres de Sprint 00 en el orden en que condicionan el producto. Empieza por cliente, operación y dominio; sólo después evalúa frameworks, persistencia y despliegue. Las preguntas se responden en el [cuestionario para el Product Owner](./PRODUCT_OWNER_QUESTIONNAIRE.md).
@@ -247,7 +256,7 @@ Las subpreguntas de revisión de QUESTION-013 hacen visible el vacío actual sob
 ### ADRs bloqueados o condicionados
 
 - ADR-002 está aceptado; un recorrido debe comprobar sus límites modulares.
-- ADR-003 está aceptado; sus patrones físicos de datos y transacción todavía dependen del dominio y de DEC-049/050.
+- ADR-003 está aceptado; [DEC-049](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md) acepta el contrato de acceso, ownership y transacción, con DEC049-C01 a C08 pendientes para materialización; migraciones permanecen en DEC-050.
 - ADR-004 está aceptado; aplicación, cardinalidades y restauración/migración todavía requieren evidencia.
 - ADR-005 está aceptado; el módulo sintético, la entrada HTTP y el job de SPIKE-009 son evidencia desechable y no autorizan funcionalidad real ni scaffold.
 

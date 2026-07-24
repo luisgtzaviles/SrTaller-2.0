@@ -2,16 +2,23 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
+- **Estado:** Resumen operativo de
+  [DEC-063 aceptada](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
 - **Propósito:** Establecer condiciones mínimas para comprometer trabajo sin ocultar incertidumbre crítica.
 - **Alcance:** Incluye entregables documentales de Sprint 00 y futuros PBIs de implementación.
-- **Decisión pendiente:** Mecanismo formal de aprobación y tratamiento de excepciones.
+- **Condiciones pendientes:** DEC063-C01, C02 y C08; este resumen no las materializa.
 
 ## Principio
 
 `Ready` significa que el resultado, límites y forma de validación son suficientemente claros para planificarlo. No significa que todas las incógnitas estén resueltas, que el trabajo esté aprobado o que deba entrar al siguiente sprint.
 
 Un elemento no puede declararse `Ready` si conserva una pregunta bloqueante. Las hipótesis no bloqueantes deben ser explícitas, comprobables y acompañadas por una forma de validación.
+
+Como base obligatoria, todo trabajo declara objetivo, alcance, exclusiones,
+owner, dependencias, criterios de aceptación, riesgo, decisiones aplicables,
+evidencia esperada y gates. La ambigüedad de tipo, riesgo o alcance falla
+cerrado conforme a
+[DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md#13-definition-of-ready).
 
 ## DoR para entregables documentales
 
@@ -83,17 +90,21 @@ No se debe marcar un punto como no aplicable sólo para acelerar la entrada al s
 
 ## Excepciones
 
-Una excepción propuesta debe contener alcance, razón, riesgo, aprobador, vencimiento y tarea de seguimiento. Seguridad, autorización y aislamiento de tenant no son controles opcionales. La política y autoridad definitivas para excepciones están pendientes.
+Una excepción propuesta debe contener criterio exacto, alcance, razón,
+evidencia, riesgo, autoridad, owner, compensación, vencimiento y remediación.
+Seguridad, autorización y aislamiento de tenant no son controles opcionales.
+No existe waiver implícito, permanente ni autoaprobado. DEC063-C08 conserva
+pendiente su materialización.
 
-## Preguntas abiertas
+## Aplicación pendiente
 
-- ¿Qué roles pueden certificar Ready para producto, seguridad y datos?
-- ¿Qué evidencia mínima se conservará de la sesión de refinamiento?
-- ¿Se permitirán excepciones y cuál será su caducidad máxima?
-- ¿Qué umbral convierte un cambio en una decisión que requiere ADR aceptado?
+Los templates, la matriz de riesgo y el registro operativo de waivers se
+materializarán sólo mediante trabajos autorizados para DEC063-C01, C02 y C08.
+Las autoridades de Producto, Seguridad, Operaciones y Arquitectura participan
+según la superficie afectada.
 
 ## Próxima revisión
 
-- **Fecha:** TBD.
-- **Disparador:** antes de seleccionar PBIs para el primer sprint de implementación o al cambiar el [flujo de desarrollo](./DEVELOPMENT_WORKFLOW.md).
-- **Documentos relacionados:** [PBI Template](./PBI_TEMPLATE.md), [Definition of Done](./DEFINITION_OF_DONE.md), [Testing Strategy](../quality/TESTING_STRATEGY.md).
+- **Fecha:** antes de materializar DEC063-C01/C02 o al cambiar DEC-063.
+- **Disparador:** autorización de templates/riesgo o cambio del [flujo de desarrollo](./DEVELOPMENT_WORKFLOW.md).
+- **Documentos relacionados:** [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md), [PBI Template](./PBI_TEMPLATE.md), [Definition of Done](./DEFINITION_OF_DONE.md), [Testing Strategy](../quality/TESTING_STRATEGY.md).

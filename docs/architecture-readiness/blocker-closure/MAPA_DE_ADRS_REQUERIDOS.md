@@ -34,12 +34,15 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | Cerrado | Identidad, sesión, PIN e inactividad | DEC-013 a DEC-016 | Respondido | Mecanismos técnicos aún pueden requerir evidencia | ADR-011 aceptado; falta aplicación, modelo de amenazas y pruebas | H1 |
 | Cerrado | Modelo de roles, capacidades y autorización ordinaria | DEC-017, DEC-018 | Respondido | No para aceptar el modelo | ADR-012 aceptado; faltan composición por rebanada, aplicación y pruebas | H1 |
 | Cerrado | Modelo de acciones sensibles y reautenticación | DEC-019, DEC-020 | Respondido | No para aceptar el modelo | ADR-013 aceptado; faltan política por acción, mecanismo, aplicación y pruebas | H1 |
-| Cerrado | Repositorio único evolutivo y workspaces bajo demanda | DEC-004, DEC-005, DEC-049 | No para topología; Producto participa ante nuevas superficies | No para aceptar | ADR-009 Accepted: una aplicación/artefacto para R0; tooling y estructura física siguen separados | H0 parcialmente cerrado |
+| Cerrado | Repositorio único evolutivo y workspaces bajo demanda | DEC-004, DEC-005, DEC-049 | No para topología; Producto participa ante nuevas superficies | No para aceptar | ADR-009 Accepted: una aplicación/artefacto para R0; DEC-005 está materializada y formalmente verificada; DEC-049 conserva datos | H0 parcialmente cerrado por otros gates |
 | Cerrado | Framework backend y API inicial | DEC-004, ADR-001/002/003/004/009–013 | No para la decisión; siguen pendientes decisiones de implementación | [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md) completado y aprobado con condiciones no bloqueantes | ADR-005 Accepted: NestJS 11.x, referencia 11.1.28, Express y REST/HTTP JSON mínima; condiciones previas a implementar conservadas | H0 parcialmente cerrado |
-| 5 | Persistencia PostgreSQL, ownership de repositorios y migraciones; aplicar ADR-003 | DEC-006, DEC-049, DEC-050 | No para mecanismo; sí para datos globales | Condicional | Propiedad de escritura, tooling, evolución de esquema y recuperación definidos | H1 |
+| Cerrado 2026-07-24 | [Repositorios, ownership físico y acceso PostgreSQL](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md) | DEC-049; entradas DEC-004/005 y ADR-002/003/004/005/009 satisfechas | No para el mecanismo; Producto sólo si cambia la clasificación aceptada de datos | No por defecto | `Accepted` por el Responsable del Proyecto; DEC049-C01 a C08 vigentes para materialización | H0 cerrado para DEC-049 |
+| Cerrado 2026-07-24 | [Estrategia de errores](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md) | DEC-044; ADR-004/005, DEC-005/049 y DEC-062 satisfechas | No para la taxonomía; Producto sólo si cambia resultados visibles | No por defecto | `Accepted` por el Responsable del Proyecto; DEC044-C01 a C08 vigentes para materialización | H0 cerrado para DEC-044 |
+| 5 | Migraciones y versionado de esquema; aplicar ADR-003 | DEC-050 después de DEC-049 | No para mecanismo; sí para tolerancia operativa | Condicional | Tooling, evolución de esquema y recuperación definidos | H1 |
 | 6 | Tiempo y zonas horarias | DEC-037, DEC-038 | Sí | Condicional para casos límite | Instante autoritativo, zona operacional y reglas de presentación | H1 |
 | 7 | Auditoría y atribución | DEC-016, DEC-019, DEC-046 | Sí | No por defecto | Hechos auditables, actor, contexto, integridad, acceso y retención inicial | H1/H3 |
-| 8 | Estrategia de pruebas de arquitectura y aislamiento | DEC-051, DEC-052, DEC-062 | No para técnica; sí para aceptación | No | Gates repetibles, datos de dos tenants y pruebas de denegación | H0/H1 |
+| Cerrado — decisión formal | Estrategia de pruebas de arquitectura, errores, persistencia y aislamiento | DEC-051, DEC-052, DEC-062; contratos DEC-044/049 aceptados | No para técnica; sí para aceptación | No | Gates repetibles, datos de dos tenants, traducción/sanitización y pruebas de denegación; C01 a C10 pendientes | H0 cerrado / H1 |
+| Cerrado 2026-07-24 | [Definition of Done por tipo y riesgo](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) | DEC-063; DEC-004/005/044/049/051 y ADR-004/010–013 satisfechas | Responsable del Proyecto en cinco disciplinas | No | Base común, estados, riesgo, evidencia, waivers y Done/Released aceptados; C01 a C08 `Pending` | H0 cerrado para DEC-063 |
 | 9 | Folio, reserva, concurrencia e idempotencia; crear ADR específico | DEC-021 a DEC-025 | Sí | Sí, concurrencia de folio | Identidad técnica separada del folio y creación exactamente efectiva una vez | H2 |
 | 10 | Política efectiva, vigencia y snapshots; crear ADR específico | DEC-032 a DEC-035 | Sí | Condicional | Precedencia segura y reproducción histórica | H2 |
 | 11 | Estados, ubicación y custodia | DEC-027 a DEC-031 | Sí | No por defecto | Invariantes, transiciones y límites transaccionales explícitos | H2/H3 |
@@ -52,7 +55,25 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 ## Próxima decisión recomendada
 
-ADR-005 fue aceptado con condiciones el 2026-07-22 después de que Seguridad, Operaciones y Calidad aprobaran la remediación enfocada de [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md). Ese mismo día, DEC-004 aceptó la selección de Node.js/pnpm/lockfile/ESM/TypeScript/build/Linux y autorizó su PBI técnico. El siguiente trabajo es materializarla y obtener evidencia Linux. ADR-006, ADR-007 y ADR-008 conservan sus gates posteriores.
+ADR-005 fue aceptado con condiciones el 2026-07-22 después de que Seguridad,
+Operaciones y Calidad aprobaran la remediación enfocada de
+[SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md). Ese mismo día,
+DEC-004 aceptó el toolchain y DEC-005 la
+[organización modular](../../decisions/dec-005-modular-monolith-organization/FORMAL_REVIEW.md).
+El 2026-07-23 la
+[sexta reverificación formal](../dec-005-materialization/FORMAL_VERIFICATION_6.md)
+confirmó `PASS`, por lo que [PBI-022](../../backlog/pbis/PBI-022.md) queda
+`Done` y DEC-005 `Accepted — Materialized / Formally Verified`. El 2026-07-24
+el Responsable del Proyecto aceptó
+[DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) con
+DEC049-C01 a C08 vigentes,
+[DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md) con
+DEC044-C01 a C08 vigentes,
+[DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) con
+DEC051-C01 a C10 pendientes y
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) con
+DEC063-C01 a C08 `Pending`. VC-024 es ahora el único gate H0 concreto.
+ADR-006, ADR-007 y ADR-008 conservan sus gates posteriores.
 
 ADR-001, ADR-003, ADR-004, ADR-009 y ADR-010 a ADR-013 ya están aceptados. En paralelo, la siguiente revisión de seguridad debe preparar la aplicación y prueba de esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.
 

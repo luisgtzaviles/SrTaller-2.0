@@ -1,0 +1,305 @@
+import assert from 'node:assert/strict';
+import {
+  access,
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  rmdir,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import test from 'node:test';
+
+import {
+  diagnosticPathProblems,
+  diagnosticsFrom,
+  rulesFrom,
+  runChecker,
+} from './architecture-support.mjs';
+import { remediationMutations } from './architecture-remediation-mutations.mjs';
+
+async function missingParents(path, root) {
+  const parents = [];
+  let current = path;
+  while (current.startsWith(root) && current !== root) {
+    const exists = await access(current).then(() => true, () => false);
+    if (exists) {
+      break;
+    }
+    parents.push(current);
+    current = dirname(current);
+  }
+  return parents;
+}
+
+async function removeEmptyParents(parents) {
+  for (const directory of parents) {
+    await rmdir(directory).catch((error) => {
+      if (!['ENOENT', 'ENOTEMPTY'].includes(error?.code)) {
+        throw error;
+      }
+    });
+  }
+}
+
+const mutations = [
+  {
+    name: 'boundary/deep import',
+    path: 'src/modules/stations/index.ts',
+    expectedPath: 'src/modules/stations/index.ts',
+    rule: 'D5-R005',
+    content: "import type { Value } from '../tenancy/domain/value.js';\nexport interface StationsModuleContract { readonly value: Value; }\n",
+    support: {
+      path: 'src/modules/tenancy/domain/value.ts',
+      content: 'export interface Value {}\n',
+    },
+  },
+  {
+    name: 'inter-module dependency cycle',
+    path: 'src/modules/tenancy/index.ts',
+    expectedPath: 'src/modules/stations/index.ts',
+    rule: 'D5-R007',
+    content: "import type { StationsModuleContract } from '../stations/index.js';\nexport interface TenancyModuleContract { readonly stations: StationsModuleContract; }\n",
+  },
+  {
+    name: 'framework boundary',
+    path: 'src/modules/access/domain/model.ts',
+    expectedPath: 'src/modules/access/domain/model.ts',
+    rule: 'D5-R010',
+    content: "import { Injectable } from '@nestjs/common';\nexport type Marker = typeof Injectable;\n",
+  },
+  {
+    name: 'Nest composition escape hatch',
+    path: 'src/modules/access/access.module.ts',
+    expectedPath: 'src/modules/access/access.module.ts',
+    rule: 'D5-R025',
+    content: "import { forwardRef, Module } from '@nestjs/common';\n@Module({ imports: [forwardRef(() => class {})] })\nexport class AccessModule {}\n",
+  },
+  {
+    name: 'Nest composition escape hatch through alias',
+    path: 'src/modules/access/access.module.ts',
+    expectedPath: 'src/modules/access/access.module.ts',
+    rule: 'D5-R025',
+    content: "import { forwardRef as nestForwardRef, Module } from '@nestjs/common';\n@Module({ imports: [nestForwardRef(() => class {})] })\nexport class AccessModule {}\n",
+  },
+  {
+    name: 'functional global module through alias',
+    path: 'src/modules/access/access.module.ts',
+    expectedPath: 'src/modules/access/access.module.ts',
+    rule: 'D5-R027',
+    content: "import { Global as NestGlobal, Module } from '@nestjs/common';\n@NestGlobal()\n@Module({})\nexport class AccessModule {}\n",
+  },
+  {
+    name: 'generic global root',
+    path: 'src/utils/value.ts',
+    expectedPath: 'src/utils',
+    rule: 'D5-R020',
+    content: 'export const value = 1;\n',
+    cleanupDirectory: 'src/utils',
+  },
+  {
+    name: 'shared admission',
+    path: 'src/shared/value.ts',
+    expectedPath: 'src/shared',
+    rule: 'D5-R019',
+    content: 'export const value = 1;\n',
+  },
+  {
+    name: 'HTTP surface',
+    path: 'src/modules/access/presentation/http/probe.controller.ts',
+    expectedPath: 'src/modules/access/presentation/http/probe.controller.ts',
+    rule: 'D5-R035',
+    content: 'export class ProbeController {}\n',
+  },
+  {
+    name: 'HTTP surface through Controller alias',
+    path: 'src/modules/access/presentation/http/probe.ts',
+    expectedPath: 'src/modules/access/presentation/http/probe.ts',
+    rule: 'D5-R035',
+    content: "import { Controller as HttpController } from '@nestjs/common';\n@HttpController()\nexport class ProbeController {}\n",
+  },
+  {
+    name: 'functional behavior',
+    path: 'src/modules/access/domain/create-repair.ts',
+    expectedPath: 'src/modules/access/domain/create-repair.ts',
+    rule: 'D5-R035',
+    content: 'export class CreateRepair { execute(): void {} }\n',
+  },
+  {
+    name: 'empty required structural file',
+    path: 'src/modules/access/access.module.ts',
+    expectedPath: 'src/modules/access/access.module.ts',
+    rule: 'D5-R003',
+    content: '',
+  },
+  {
+    name: 'empty governed directory',
+    directory: 'src/modules/access/domain/future',
+    expectedPath: 'src/modules/access/domain/future',
+    expectedPaths: [
+      'src/modules/access/domain',
+      'src/modules/access/domain/future',
+    ],
+    rule: 'D5-R003',
+  },
+  {
+    name: 'AppModule metadata composition removed',
+    path: 'src/app.module.ts',
+    expectedPath: 'src/app.module.ts',
+    rule: 'D5-R023',
+    content: [
+      "import { AccessModule } from './modules/access/access.module.js';",
+      "import { StationsModule } from './modules/stations/stations.module.js';",
+      "import { TenancyModule } from './modules/tenancy/tenancy.module.js';",
+      'void AccessModule;',
+      'void StationsModule;',
+      'void TenancyModule;',
+      'export class AppModule {}',
+      '',
+    ].join('\n'),
+  },
+  {
+    name: 'request scope authority',
+    path: 'src/modules/access/infrastructure/request-context.ts',
+    expectedPath: 'src/modules/access/infrastructure/request-context.ts',
+    rule: 'D5-R029',
+    content: "import { Scope } from '@nestjs/common';\nexport const operationalContextScope = Scope.REQUEST;\n",
+  },
+  {
+    name: 'request scope authority through alias',
+    path: 'src/modules/access/infrastructure/request-context-alias.ts',
+    expectedPath: 'src/modules/access/infrastructure/request-context-alias.ts',
+    rule: 'D5-R029',
+    content: "import { Scope as NestScope } from '@nestjs/common';\nexport const operationalContextScope = NestScope.REQUEST;\n",
+  },
+  {
+    name: 'controller final authorization',
+    path: 'src/modules/access/presentation/http/authority.controller.ts',
+    expectedPath: 'src/modules/access/presentation/http/authority.controller.ts',
+    rule: 'D5-R036',
+    content: [
+      "import { Controller, Get } from '@nestjs/common';",
+      '@Controller()',
+      'export class AuthorityController {',
+      '  @Get()',
+      '  decideAuthorization(): boolean { return true; }',
+      '}',
+      '',
+    ].join('\n'),
+    expectedRules: ['D5-R035', 'D5-R036'],
+  },
+  {
+    name: 'controller final authorization through namespace',
+    path: 'src/modules/access/presentation/http/authority.ts',
+    expectedPath: 'src/modules/access/presentation/http/authority.ts',
+    rule: 'D5-R036',
+    expectedRules: ['D5-R035', 'D5-R036'],
+    content: [
+      "import * as Nest from '@nestjs/common';",
+      '@Nest.Controller()',
+      'export class AuthorityController {',
+      '  decideAuthorization(): boolean { return true; }',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  ...remediationMutations,
+];
+
+for (const mutation of mutations) {
+  test(`controlled mutation: ${mutation.name}`, async () => {
+    const root = await mkdtemp(join(tmpdir(), 'srtaller-dec005-mutation-'));
+    const destination = mutation.path ? resolve(root, mutation.path) : undefined;
+    const directory = mutation.directory
+      ? resolve(root, mutation.directory)
+      : undefined;
+    try {
+      await cp(resolve(process.cwd(), 'src'), resolve(root, 'src'), {
+        recursive: true,
+      });
+      let original;
+      let destinationParents = [];
+      if (destination) {
+        original = await readFile(destination, 'utf8').catch(() => undefined);
+        destinationParents = await missingParents(dirname(destination), root);
+        await mkdir(dirname(destination), { recursive: true });
+        await writeFile(destination, mutation.content);
+      }
+
+      let directoryParents = [];
+      if (directory) {
+        directoryParents = await missingParents(directory, root);
+        await mkdir(directory, { recursive: true });
+      }
+
+      let supportOriginal;
+      let supportDestination;
+      let supportParents = [];
+      if (mutation.support) {
+        supportDestination = resolve(root, mutation.support.path);
+        supportOriginal = await readFile(supportDestination, 'utf8').catch(
+          () => undefined,
+        );
+        supportParents = await missingParents(dirname(supportDestination), root);
+        await mkdir(dirname(supportDestination), { recursive: true });
+        await writeFile(supportDestination, mutation.support.content);
+      }
+
+      const rejected = await runChecker(root);
+      const expectedRules = mutation.expectedRules ?? [mutation.rule];
+      const expectedPaths = mutation.expectedPaths ?? [mutation.expectedPath];
+      const diagnostics = diagnosticsFrom(rejected.stderr);
+      assert.equal(rejected.code, 1);
+      assert.deepEqual(rulesFrom(rejected.stderr), [...expectedRules].sort());
+      assert.deepEqual(diagnosticPathProblems(rejected.stderr, root), []);
+      assert.ok(diagnostics.length > 0);
+      assert.ok(
+        diagnostics.every(
+          ({ path, rule }) =>
+            expectedPaths.includes(path) && expectedRules.includes(rule),
+        ),
+        `expected only ${expectedRules.join(', ')} at ${expectedPaths.join(', ')}`,
+      );
+      for (const expectedPath of expectedPaths) {
+        assert.ok(
+          diagnostics.some(({ path }) => path === expectedPath),
+          `expected an exact diagnostic path at ${expectedPath}`,
+        );
+      }
+
+      if (destination) {
+        if (original === undefined) {
+          await rm(destination);
+          await removeEmptyParents(destinationParents);
+        } else {
+          await writeFile(destination, original);
+        }
+      }
+      if (supportDestination) {
+        if (supportOriginal === undefined) {
+          await rm(supportDestination);
+          await removeEmptyParents(supportParents);
+        } else {
+          await writeFile(supportDestination, supportOriginal);
+        }
+      }
+      if (directory) {
+        await removeEmptyParents(directoryParents);
+      }
+      if (mutation.cleanupDirectory) {
+        await rm(resolve(root, mutation.cleanupDirectory), {
+          force: true,
+          recursive: true,
+        });
+      }
+
+      const restored = await runChecker(root);
+      assert.equal(restored.code, 0, restored.stderr);
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+}

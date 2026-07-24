@@ -2,14 +2,24 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
+- **Estado:** Resumen operativo de
+  [DEC-063 aceptada](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
 - **Propósito:** Evitar que un resultado se declare terminado sólo porque existe o funciona en un caso feliz.
-- **Alcance:** Dos perfiles: entregables documentales actuales y funcionalidades futuras.
-- **Decisión pendiente:** Autoridades de aprobación y umbrales por tipo de cambio.
+- **Alcance:** Guía de consulta; el contrato autoritativo es DEC-063.
+- **Condiciones pendientes:** DEC063-C01 a DEC063-C08; esta guía no las materializa.
 
 ## Principio
 
-`Done` exige un resultado verificable, evidencia conservada y riesgos residuales visibles. No se deben cerrar criterios incumplidos trasladándolos implícitamente a “después”. Los puntos no aplicables requieren una justificación breve.
+`Done` exige un resultado verificable, evidencia conservada y riesgos
+residuales visibles. Todo trabajo cumple una base común, un checklist por tipo
+y controles proporcionales a riesgo bajo, medio o alto. La ambigüedad falla
+cerrado. Los puntos no aplicables requieren justificación, owner y revisión.
+
+`Accepted`, `Materialized`, `Formally Verified`, `Done`, `Released` y `Closed`
+son estados diferentes. En particular, un PBI puede estar `Done` sin haberse
+liberado; `Released` exige autorización, promoción del artefacto identificado,
+smoke y validación operativa conforme a
+[DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md#28-done-y-released).
 
 ## DoD de documentación para Sprint 00
 
@@ -82,7 +92,11 @@ La lista se aplica según el tipo de cambio, pero ninguna exclusión es implíci
 - [ ] Verificación en staging completada con credenciales y datos separados de producción.
 - [ ] Evidencia vinculada al PBI, PR, pruebas y release.
 
-Los puntos de staging y release se completan **después** de construir el candidato y validarlo en staging. Antes de ese momento el elemento puede estar listo como candidato, pero no `Done`. Esta secuencia evita usar DoD como gate de entrada a la misma validación que DoD exige.
+Los puntos de staging y release aplican al **release**, o a un PBI cuyo alcance
+incluya expresamente desplegar. No son una condición implícita de todo PBI.
+Un candidato de release sólo puede incluir trabajo que ya satisfaga su DoD
+aplicable; su promoción y validación determinan `Released`, no reescriben
+retroactivamente `Done`.
 
 ## Evidencia de cierre
 
@@ -101,15 +115,16 @@ Los puntos de staging y release se completan **después** de construir el candid
 
 Un pendiente descubierto durante el cierre debe registrarse con ID, impacto y prioridad propuesta. Que exista un nuevo PBI no convierte automáticamente en aceptable un incumplimiento del PBI actual; debe confirmarse que el criterio original sigue satisfecho.
 
-## Preguntas abiertas
+## Aplicación pendiente
 
-- ¿Qué subconjuntos de controles serán obligatorios por tipo de cambio?
-- ¿Quién aprueba excepciones a la DoD y cómo se auditarán?
-- ¿Qué estándares de accesibilidad, rendimiento y cobertura serán objetivos aceptados?
-- ¿Qué evidencia deberá conservarse y por cuánto tiempo?
+DEC-063 resolvió el modelo base, los perfiles por tipo, la clasificación de
+riesgo y la autoridad de excepciones. Su aplicación física queda en
+DEC063-C01 a DEC063-C08, todas `Pending`. Accesibilidad, rendimiento,
+retención y herramientas conservan las autoridades de sus contratos
+específicos.
 
 ## Próxima revisión
 
-- **Fecha:** TBD.
-- **Disparador:** aprobación de la estrategia técnica o antes del primer sprint de implementación.
-- **Documentos relacionados:** [Definition of Ready](./DEFINITION_OF_READY.md), [Quality Strategy](../quality/QUALITY_STRATEGY.md), [Release Process](./RELEASE_PROCESS.md), [Traceability Model](./TRACEABILITY_MODEL.md).
+- **Fecha:** antes de materializar DEC063-C01 o cuando cambie DEC-063.
+- **Disparador:** autorización de templates/checklists o cambio del contrato.
+- **Documentos relacionados:** [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md), [Definition of Ready](./DEFINITION_OF_READY.md), [Quality Strategy](../quality/QUALITY_STRATEGY.md), [Release Process](./RELEASE_PROCESS.md), [Traceability Model](./TRACEABILITY_MODEL.md).

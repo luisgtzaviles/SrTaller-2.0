@@ -1,6 +1,6 @@
 # Gestión del backlog
 
-El backlog convierte objetivos de producto en resultados verificables sin confundir intención con compromiso. Durante SPRINT-00, PBI-001 a PBI-020 producen documentación, decisiones o evidencia de descubrimiento y ninguno autoriza implementación. [PBI-021](pbis/PBI-021.md) fue creado posteriormente como trabajo técnico expresamente autorizado por DEC-004; permanece sin ejecutar y `Unassigned`.
+El backlog convierte objetivos de producto en resultados verificables sin confundir intención con compromiso. Durante SPRINT-00, PBI-001 a PBI-020 producen documentación, decisiones o evidencia de descubrimiento y ninguno autoriza implementación. [PBI-021](pbis/PBI-021.md) y [PBI-022](pbis/PBI-022.md) fueron creados posteriormente como trabajos técnicos acotados autorizados por DEC-004 y DEC-005, respectivamente; ambos permanecen `Unassigned`, y PBI-022 está `Done` después de materialización y verificación formal. Su cierre no autoriza funcionalidad ni R0.
 
 ## Estado del documento
 

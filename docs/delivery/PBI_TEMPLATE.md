@@ -2,7 +2,7 @@
 
 ## Uso de la plantilla
 
-- **Estado de la plantilla:** Propuesta
+- **Estado de la plantilla:** Materialización mínima de `DEC063-C01`
 - **Uso:** Copiar exclusivamente el bloque entre los dos separadores horizontales para crear `docs/backlog/pbis/PBI-###-titulo-breve.md`; las notas de la plantilla quedan en `docs/delivery`.
 - **Nota:** Los valores de ejemplo son marcadores; no representan compromisos ni decisiones.
 
@@ -25,6 +25,8 @@
 | Tipo | `Discovery` / `Architecture` / `Product` / `Technical foundation` / `Security` / `Quality` / `Operations` |
 | Estado | `Draft` / `Ready for review` / `Ready` / `In progress` / `In review` / `Done` / `Blocked` / `Deferred` / `Cancelled` |
 | Prioridad | TBD |
+| Riesgo | `Bajo` / `Medio` / `Alto`; ambigüedad = `Alto` |
+| Justificación del riesgo | TBD |
 | Estimación | TBD |
 | Sprint | `Unassigned` o `SPRINT-##` |
 | Clasificación de sprint | `Unassigned` / `Committed` / `Candidate` / `Blocked` / `Requires product input` |
@@ -126,6 +128,8 @@ Cada `No` relevante debe justificarse; `Por determinar` puede impedir Ready si a
 ## Preparación
 
 - **Revisión contra Definition of Ready** (ruta desde el PBI: `../../delivery/DEFINITION_OF_READY.md`): Pendiente.
+- **Base, tipo y riesgo conforme a DEC-063:** Pendiente.
+- **Gates base y especializados:** TBD.
 - **Elementos no aplicables y justificación:** TBD.
 - **Fecha de revisión:** TBD.
 - **Revisores:** TBD.
@@ -133,6 +137,8 @@ Cada `No` relevante debe justificarse; `Por determinar` puede impedir Ready si a
 ## Cierre
 
 - **Revisión contra Definition of Done** (ruta desde el PBI: `../../delivery/DEFINITION_OF_DONE.md`): Pendiente.
+- **Manifest de evidencia:** TBD / No aplica justificado.
+- **Defectos, deuda, waivers y condiciones:** TBD / Ninguno.
 - **Riesgos residuales:** TBD.
 - **Aprobación:** TBD.
 - **Fecha de cierre:** TBD.

@@ -2,14 +2,15 @@
 
 ## Estado del documento
 
-**Estado:** Propuesta. Este flujo todavía requiere aprobación del equipo y del Product Owner.
-**Alcance actual:** documentación de descubrimiento y arquitectura.
+**Estado:** Resumen operativo de DEC-051 y DEC-063 aceptadas con condiciones.
+**Alcance actual:** documentación, foundation técnica y cambios expresamente autorizados.
 
 ## Antes de comenzar
 
 1. Verificar el [backlog](docs/backlog/PRODUCT_BACKLOG.md) y el [sprint actual](docs/sprints/sprint-00/SPRINT_BACKLOG.md).
 2. No iniciar trabajo de implementación sin un PBI listo, asignado a un sprint de implementación y aprobado.
-3. Para SPRINT-00, limitar cambios a Markdown y material conceptual solicitado.
+3. Durante Sprint 00, no iniciar funcionalidad de R0 sin autorización
+   organizacional explícita; los cambios técnicos requieren alcance autorizado.
 4. Leer la [Definition of Ready](docs/delivery/DEFINITION_OF_READY.md), la [Definition of Done](docs/delivery/DEFINITION_OF_DONE.md) y el [flujo de desarrollo](docs/delivery/DEVELOPMENT_WORKFLOW.md).
 5. Hacer visibles supuestos, preguntas y dependencias; usar `TBD` cuando falte una respuesta.
 
@@ -23,20 +24,31 @@
 - Registrar alternativas, consecuencias y criterios de reconsideración en un ADR cuando corresponda.
 - No introducir fechas, responsables, prioridades finales ni estimaciones sin aprobación.
 
-## Revisión propuesta
+## Revisión
 
-Los cambios futuros deberían ser pequeños y trazables. La revisión debe comprobar contenido, consistencia de términos, enlaces, identificadores, impacto multitenant, decisiones relacionadas y evidencia aplicable. Los criterios completos están en la [estrategia de calidad](docs/quality/QUALITY_STRATEGY.md).
+Los cambios deben ser pequeños y trazables. La revisión comprueba contenido,
+consistencia de términos, enlaces, identificadores, impacto multitenant,
+decisiones relacionadas y evidencia aplicable. Debe usar la
+[plantilla de pull request](.github/pull_request_template.md), clasificar el
+riesgo de forma fail-closed y aplicar la
+[Definition of Done](docs/delivery/DEFINITION_OF_DONE.md).
 
-## Commits y pull requests futuros
+## Commits y pull requests
 
-La convención final de ramas y commits está pendiente. Hasta aprobarla, cualquier contribución debe seguir el [workflow propuesto](docs/delivery/DEVELOPMENT_WORKFLOW.md). No se autoriza desde este documento ningún commit, push, despliegue ni release automático.
+Los cambios ordinarios usan ramas cortas y pull request. `main` sólo debe
+recibir cambios revisados con checks requeridos verdes; squash merge es la
+estrategia ordinaria aceptada por
+[DEC-051](docs/decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md#18-protección-de-main).
+La protección técnica de `main` permanece pendiente como `DEC051-C02`, por lo
+que su existencia no debe inferirse. Este documento no autoriza por sí solo
+commit, push, merge, deploy ni release.
 
-## Preguntas abiertas
+## Condiciones abiertas
 
-- ¿Quién aprobará cambios de producto, arquitectura y seguridad en cada etapa?
-- ¿Qué protección de ramas y revisiones serán obligatorias?
-- ¿Qué convención final de commits adoptará el equipo?
+- `DEC051-C02`: materializar y demostrar protección de `main`.
+- `DEC063-C02`: materializar clasificación de riesgo.
+- `DEC063-C08`: materializar waivers y excepciones.
 
 ## Próxima revisión
 
-Antes de iniciar el primer sprint de implementación; fecha: TBD.
+Antes del primer cambio funcional autorizado o al cambiar DEC-051/063.

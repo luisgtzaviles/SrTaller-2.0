@@ -13,7 +13,7 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Alcance | R0 y sus exclusiones aprobados; flujo R1–R5 documentado | R0 cerrado para Producto; rebanadas posteriores conservan sus gates | RP |
 | Lenguaje | Lenguaje ubicuo y modelo integrado trazables | Suficiente, sujeto a validación | RDD |
 | Invariantes | Custodia, autorización, calidad, pagos y entrega documentados | Suficiente para diseño inicial | RDD |
-| Fronteras | Contextos candidatos y propiedad disponibles | Proponibles, no aprobados | DAP |
+| Fronteras | Contextos candidatos disponibles; DEC-005 selecciona la agrupación física inicial | Materialización formalmente verificada; PBI-022 `Done` | PB |
 | Agregados | Candidatos y tensiones explícitas | Proponibles por rebanada | DAP |
 | Tenancy/contexto | ADR-004/010 fijan aislamiento, propiedad y contexto por estación | Aplicación y pruebas bloqueantes | PB |
 | Identidad | ADR-011 fija usuario por tenant, PIN contextual, sesión y atribución mínima | Mecanismos técnicos y pruebas bloqueantes | PB |
@@ -23,7 +23,7 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Configuración | Necesidad de políticas versionadas identificada | Precedencia y alcance pendientes | PB |
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
-| ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004 con selección aceptada/evidencia pendiente; ADR-006 a ADR-008 siguen propuestos | Lenguaje/runtime, forma, PostgreSQL 18.x, NestJS 11.x + Express + REST mínima, repositorio único, tenancy, contexto, identidad/sesión, autorización y toolchain seleccionados; materialización y evidencia Linux de DEC-004 siguen bloqueando código funcional | PB |
+| ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004 tiene VC-024 pendiente; DEC-005 está materializada y formalmente verificada; DEC-044/049/051/063 están aceptadas, con sus condiciones pendientes; ADR-006 a ADR-008 siguen propuestos | Plataforma, organización, errores, persistencia, pruebas y DoD están aceptadas; DEC-044/049/051/063 no están materializadas; VC-024 y los demás H1 siguen bloqueando código funcional | PB |
 | Autorización | Producto aprobó alcance/aceptación esperada de R0; Sprint 00 no está cerrado ni existe autorización de implementación | Bloqueante organizacional | PB |
 
 ## Qué sí puede comenzar
@@ -31,7 +31,12 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 - **[DAR]** Validación dirigida de las fronteras, contratos de negocio y decisiones bloqueantes.
 - **[DAR]** Preparación de ADRs y PBIs con criterios de aceptación, pruebas negativas y trazabilidad.
 - **[DAR]** [PBI-021](../../backlog/pbis/PBI-021.md), `Ready` y autorizado para materialización/verificación de DEC-004, sin funcionalidad de producto.
-- **[DAR]** Refinamiento técnico de R0 contra su alcance aprobado, sin crear estructura base ni código ejecutable.
+- **[DAR]** Preparar, sólo con autorización separada, los prerrequisitos mínimos
+  de VC-024 usando
+  [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) y
+  [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md), sin
+  materializar por inferencia ni cumplir DEC051-C01 a C10 o DEC063-C01 a C08.
+- **[DAR]** Refinamiento técnico de R0 contra su alcance aprobado, sin inferir ejecución de los PBIs técnicos.
 - **[RDD]** Ejemplos de aceptación basados en escenarios del modelo integrado.
 
 ## Qué no puede comenzar

@@ -26,7 +26,7 @@
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** Planned; no iniciado.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
-- **Actualización:** [PBI-021](pbis/PBI-021.md) quedó `Ready` y autorizado exclusivamente para materializar/verificar DEC-004; no inicia funcionalidad, ambientes, CI general ni el resto del epic.
+- **Actualización:** [PBI-021](pbis/PBI-021.md) permanece `Ready`; [PBI-022](pbis/PBI-022.md) está `Done` después de materialización y verificación formal. Ninguno inicia funcionalidad, ambientes, CI general ni el resto del epic.
 
 ## EPIC-002 — Tenant and Platform Administration
 

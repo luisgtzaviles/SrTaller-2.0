@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "contract": "TBD",
+  "commit": "0000000000000000000000000000000000000000",
+  "execution": {
+    "label": "TBD",
+    "workflowRunId": "TBD"
+  },
+  "environment": {
+    "os": "TBD",
+    "arch": "TBD",
+    "libc": "TBD"
+  },
+  "toolchain": {
+    "node": "TBD",
+    "pnpm": "TBD",
+    "typescript": "TBD",
+    "nestjs": "TBD"
+  },
+  "inputs": {},
+  "commands": [
+    {
+      "name": "TBD",
+      "command": "TBD",
+      "exitCode": 1
+    }
+  ],
+  "dist": {
+    "algorithm": "sha256",
+    "aggregateSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "files": [
+      {
+        "path": "TBD",
+        "bytes": 0,
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ]
+  },
+  "repository": {
+    "initialClean": false,
+    "finalClean": false
+  },
+  "verdict": "FAIL"
+}

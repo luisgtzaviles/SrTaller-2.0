@@ -13,15 +13,18 @@
     "preinstall": "node ./scripts/verify-install-context.mjs",
     "verify:toolchain": "node ./scripts/verify-toolchain.mjs",
     "verify:structure": "node ./scripts/verify-structure.mjs",
+    "verify:architecture": "pnpm run verify:toolchain && node ./scripts/check-architecture.mjs --root .",
+    "architecture": "pnpm run verify:architecture",
+    "test:architecture": "pnpm run verify:toolchain && node --test test/architecture-*.test.mjs",
     "clean": "node ./scripts/clean.mjs",
     "typecheck": "pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit",
     "build": "pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json",
-    "test": "pnpm run verify:toolchain && node --test test/toolchain-contract.test.mjs",
+    "test": "pnpm run verify:toolchain && node --test test/*.test.mjs",
     "start": "pnpm run verify:toolchain && node --enable-source-maps dist/main.js",
     "smoke:start": "pnpm run verify:toolchain && node ./scripts/smoke-start.mjs",
     "diagnose:local": "pnpm run verify:toolchain && node ./scripts/local-diagnostics.mjs",
     "dev": "pnpm run verify:toolchain && node ./scripts/dev.mjs",
-    "verify": "pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure"
+    "verify": "pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure && pnpm run verify:architecture"
   },
   "dependencies": {
     "@nestjs/common": "11.1.28",

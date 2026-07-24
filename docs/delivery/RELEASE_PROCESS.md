@@ -43,7 +43,10 @@ flowchart LR
 
 ## Preparación del candidato
 
-1. Confirmar que PBIs y bugs incluidos cumplen los criterios de **candidato listo para staging**: alcance implementado, revisión terminada y todos los puntos aplicables de la [Definition of Done](./DEFINITION_OF_DONE.md) que no requieren staging o vínculo de release. Permanecen `In review`/QA, no `Done`.
+1. Confirmar que PBIs y bugs incluidos están `Done` conforme a su base, tipo y
+   riesgo en la [Definition of Done](./DEFINITION_OF_DONE.md). Un release puede
+   agrupar trabajo `Done`; staging y promoción determinan el estado separado
+   `Released`.
 2. Registrar alcance, exclusiones, cambios incompatibles, riesgos, migraciones y dependencias.
 3. Ejecutar lint, type checking, pruebas unitarias, integración, end-to-end, seguridad y aislamiento según el riesgo.
 4. Generar artefactos versionados para cada desplegable afectado.
@@ -72,7 +75,9 @@ flowchart LR
 | Recuperación | Rollback practicable y criterios de activación definidos. |
 | Aprobación | Product Owner y aprobadores técnicos/operativos: mecanismo TBD. |
 
-Antes de aprobar producción, completar la DoD final con la evidencia obtenida en staging y el vínculo al candidato de release. El gate no puede evaluarse con un PBI que se haya marcado `Done` anticipadamente.
+Antes de aprobar producción, completar el checklist de release de DEC-063 con
+la evidencia obtenida en staging y el vínculo al candidato. El gate no cambia
+el estado `Done` de los PBIs: decide si el artefacto puede pasar a `Released`.
 
 ## Despliegue a producción
 

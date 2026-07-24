@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
+- **Estado:** Materialización mínima de `DEC063-C01`
 - **Uso:** Registrar un comportamiento reproducible que contradice una expectativa verificable.
 - **Nota:** Un incidente activo se gestiona además mediante [Incident Management](../operations/INCIDENT_MANAGEMENT.md).
 
@@ -18,6 +18,8 @@
 | Estado | `New` / `Triaged` / `Ready` / `In progress` / `Review` / `QA` / `Done` / `Blocked` / `Cancelled` |
 | Severidad | TBD |
 | Prioridad | TBD |
+| Riesgo | Bajo / Medio / Alto; ambigüedad = Alto |
+| Justificación del riesgo | TBD |
 | Ambiente | `local` / `staging` / `production` |
 | Detectado en versión | TBD |
 | Corregido en versión | TBD |
@@ -114,6 +116,7 @@ TBD. Incluir alternativas y ADR si la corrección cambia límites arquitectónic
 ## Cierre
 
 - [ ] Cumple la [Definition of Done](./DEFINITION_OF_DONE.md).
+- [ ] Cumple base, tipo y riesgo de [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md).
 - [ ] Se verificó en staging con datos no reales.
 - [ ] Se definió rollback si alcanza producción.
 - [ ] Aprobaciones registradas: TBD.

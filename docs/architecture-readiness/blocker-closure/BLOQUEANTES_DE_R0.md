@@ -8,7 +8,11 @@ El Responsable de Producto aprobó este alcance, sus exclusiones y contrato de s
 
 ## Prerrequisito
 
-Las seis decisiones H0 restantes deben cerrarse y debe existir autorización explícita antes del primer cambio de implementación de R0. Elegir tecnología no sustituye las decisiones H1.
+El único remanente H0, VC-024, debe cerrarse y debe existir autorización
+explícita antes del primer cambio de implementación de R0. DEC-044, DEC-049,
+DEC-051 y DEC-063 ya están aceptadas, pero sus condiciones de materialización
+siguen obligatorias. Aceptar un contrato no sustituye su evidencia ni las
+decisiones H1.
 
 ## Bloqueantes H1
 

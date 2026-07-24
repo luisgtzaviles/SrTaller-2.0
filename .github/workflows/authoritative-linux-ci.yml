@@ -1,0 +1,167 @@
+name: Authoritative Linux CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - ci/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: authoritative-linux-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  authoritative-gate:
+    name: VC-024 ${{ matrix.execution }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        execution:
+          - run-1
+          - run-2
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js 24.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Activate exact pnpm with Corepack
+        shell: bash
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@11.15.1 --activate
+          test "$(node --version)" = "v24.18.0"
+          test "$(pnpm --version)" = "11.15.1"
+
+      - name: Verify authoritative runner and clean checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = "Linux"
+          test "$(uname -m)" = "x86_64"
+          ldd --version | head -n 1 | grep -Ei 'glibc|GNU libc'
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Install from frozen lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify architecture
+        run: pnpm run architecture
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build clean artifact
+        run: pnpm run build
+
+      - name: Run full test suite
+        run: pnpm test
+
+      - name: Run dedicated architecture suite
+        run: pnpm run test:architecture
+
+      - name: Run canonical verification gate
+        run: pnpm run verify
+
+      - name: Run smoke unit contract
+        shell: bash
+        run: >-
+          node --test
+          --test-name-pattern='smoke readiness'
+          test/architecture-policy.test.mjs
+
+      - name: Run compiled artifact smoke
+        run: pnpm run smoke:start
+
+      - name: Check whitespace and repository immutability
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Collect sanitized VC-024 evidence
+        env:
+          VC024_EXECUTION_LABEL: ${{ matrix.execution }}
+          VC024_INITIAL_CLEAN: "true"
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_dir="${RUNNER_TEMP}/vc024-${VC024_EXECUTION_LABEL}"
+          mkdir -p "${evidence_dir}"
+          node scripts/collect-ci-evidence.mjs \
+            --output "${evidence_dir}/EVIDENCE_MANIFEST.json" \
+            --dist-output "${evidence_dir}/DIST_MANIFEST.json"
+
+      - name: Upload sanitized execution evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: vc024-${{ matrix.execution }}
+          path: ${{ runner.temp }}/vc024-${{ matrix.execution }}/
+          if-no-files-found: error
+          retention-days: 30
+
+  compare-authoritative-gates:
+    name: VC-024 comparison
+    needs:
+      - authoritative-gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout comparison code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up comparison Node.js 24.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Download first execution evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: vc024-run-1
+          path: ${{ runner.temp }}/vc024-inputs/run-1
+
+      - name: Download second execution evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: vc024-run-2
+          path: ${{ runner.temp }}/vc024-inputs/run-2
+
+      - name: Compare semantic results and artifact hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          output_dir="${RUNNER_TEMP}/vc024-comparison"
+          mkdir -p "${output_dir}"
+          node scripts/compare-ci-evidence.mjs \
+            --left "${RUNNER_TEMP}/vc024-inputs/run-1/EVIDENCE_MANIFEST.json" \
+            --right "${RUNNER_TEMP}/vc024-inputs/run-2/EVIDENCE_MANIFEST.json" \
+            --output "${output_dir}/COMPARISON.json"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload comparison evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: vc024-comparison
+          path: ${{ runner.temp }}/vc024-comparison/
+          if-no-files-found: error
+          retention-days: 30

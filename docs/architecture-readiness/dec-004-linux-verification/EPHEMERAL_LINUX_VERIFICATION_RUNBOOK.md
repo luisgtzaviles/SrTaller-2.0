@@ -41,7 +41,7 @@ Esta autorización:
 - no selecciona proveedor, región o plataforma permanente;
 - no selecciona proveedor, runner, suite o gate de CI;
 - no crea pipeline ni workflow;
-- no resuelve DEC-051 ni satisface VC-024;
+- no materializa DEC-051 ni satisface VC-024;
 - no autoriza Docker, contenedores o infraestructura persistente;
 - no autoriza staging, production, deploy ni promoción;
 - no autoriza bases de datos, SQL, migraciones o datos de negocio;
@@ -106,7 +106,7 @@ Antes de crear la VM:
 - [ ] El commit objetivo sigue disponible e inmutable.
 - [ ] La ubicación autorizada para evidencia sanitizada está definida.
 - [ ] No se ha seleccionado ni configurado CI.
-- [ ] VC-024 permanece `Pending` por DEC-051.
+- [ ] VC-024 permanece `Pending` hasta materializar DEC051-C01/C07.
 - [ ] No se requiere acceso a production, staging, DB o datos reales.
 - [ ] Existe un procedimiento aprobado para revocar acceso y destruir el recurso.
 
@@ -225,13 +225,18 @@ Esta autorización no convierte ninguna prueba en ejecutada:
 | Elemento | Estado después de esta autorización |
 | --- | --- |
 | VC-001 a VC-023 | `Blocked` hasta ejecución Linux real |
-| VC-024 | `Pending` por DEC-051 |
+| VC-024 | `Pending` por materialización/evidencia de DEC051-C01/C07 |
 | DEC-004 | `Accepted — Selection Approved / Evidence Pending` |
 | PBI-021 | No `Done` |
 | Sprint 00 | Abierto |
 | Funcionalidad de R0 | No autorizada |
 
-[DEC-051](../blocker-closure/INVENTARIO_DE_BLOQUEANTES.md) permanece `Propuesta` y conserva la selección de runner, proveedor, frecuencia, suites, cobertura y gates generales de CI. La VM manual no es CI, no satisface VC-024 y no crea precedente de plataforma permanente.
+[DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
+está `Accepted`. La decisión define runner base, frecuencia, suites, cobertura
+por riesgo y gates generales de CI sin seleccionar proveedor; C01 a C10 siguen
+pendientes. La VM
+manual no es CI, no satisface VC-024 y no crea precedente de plataforma
+permanente.
 
 ## Revisiones posteriores
 
