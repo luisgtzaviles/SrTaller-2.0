@@ -2,7 +2,7 @@
 
 | Requisito/gate | Autoridad | Diseño | Evidencia futura | Estado |
 |---|---|---|---|---|
-| PostgreSQL 18.4 | ADR-003, DEC051-C03 | TECHNICAL_DESIGN § dependencies/testing | [version/lifecycle/runs](spike-002-evidence/ENVIRONMENT.md) | `Verified by spike; product CI pending` |
+| PostgreSQL 18.4 | ADR-003, DEC051-C03 | TECHNICAL_DESIGN § dependencies/testing | [connection test matrix](connection-facility/POSTGRESQL_TEST_MATRIX.md) | `Facility verified locally twice; product CI pending` |
 | Node/TS/ESM/NodeNext | DEC-004 | SPIKE §1/13 | [product compatibility/frozen installs](dependency-installation/COMPATIBILITY.md) | `PASS for package install; runtime pending` |
 | Kysely/pg exactos | DEC049-C01, DEC050-C01 | DEC-050 + SPIKE | [dependency manifest](dependency-installation/EVIDENCE_MANIFEST.json) | `PASS package selection; C01 runtime/CI pending` |
 | migrador único | DEC-050 | MIGRATION_STRATEGY | runner/status/latest | `Defined` |
@@ -17,8 +17,8 @@
 | tenant obligatorio | ADR-004, DEC-049 | ISOLATION_TEST_PLAN | D5-R044 + ISO-001–007 | `Static contract enforced; runtime pending` |
 | branch coherente | ADR-004/010, DEC-049 | TECHNICAL_DESIGN §5 | D5-R044/D5-R047 + ISO-008–011 | `Static ownership enforced; runtime pending` |
 | contexto concurrente | SPIKE-002 | ISOLATION_TEST_PLAN | [E8–E10](spike-002-evidence/EXPERIMENT_MATRIX.md) | `Verified by spike; product suite pending` |
-| no query global | DEC049-C05/C07 | TECHNICAL_DESIGN §2 | D5-R038/D5-R039/D5-R046 | `Preventive enforcement complete; runtime pending` |
-| error sanitizado | DEC-044, DEC049-C06 | TECHNICAL_DESIGN §9 | [config redaction tests](typed-configuration/SANITIZATION.md) | `PASS for config; driver translation pending` |
+| no query global | DEC049-C05/C07 | TECHNICAL_DESIGN §2 | [D5-R038/D5-R039/D5-R046](connection-facility/ARCHITECTURE_ENFORCEMENT.md) | `PASS; only owner-scoped literal select 1 probe` |
+| error sanitizado | DEC-044, DEC049-C06 | TECHNICAL_DESIGN §9 | [mapping/redaction tests](connection-facility/ERROR_MAPPING.md) | `PASS for config and connection facility; adapter mapping pending` |
 | boundaries/checker | DEC-005, DEC051-C06/C09 | IMPLEMENTATION step 3 | [fixtures/mutations/double run](checker-extension/RESULTS.md) | `PASS — D5-R037–D5-R047` |
 | branch protection | DEC051-C02 | DEC_051_APPLICABILITY | remote config/rejection | `Pending` |
 | riesgo high fail-closed | DEC063-C02 | RISK_ASSESSMENT | review/manifest | `Defined; pending closure` |
@@ -32,9 +32,9 @@
 ## Cadena de gate
 
 `DEC-050 accepted → SPIKE-002 executable PASS → checker/boundaries → exact
-dependencies → config → connection/migrator → schema/owners → PG18 real →
+dependencies → config → connection → transaction runner/migrator → schema/owners → PG18 real →
 isolation/transactions → evidence/review → merge`
 
-SPIKE-002, la instalación exacta y la configuración tipada están ejecutados y
-cerrados. Su evidencia no sustituye conexión, migraciones ni etapas
-posteriores.
+SPIKE-002, la instalación exacta, la configuración tipada y la facility de
+conexión están ejecutados y cerrados. Su evidencia no sustituye transaction
+runner, migraciones, PostgreSQL CI ni etapas posteriores.

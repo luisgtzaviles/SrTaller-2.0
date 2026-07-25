@@ -55,8 +55,8 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R042 | MUST | Migraciones sólo en root central, nombre UTC-owner y runner | Evitar migraciones dispersas/startup | Path/naming + imports locales resueltos | Blocker | Runner central registrado |
 | D5-R043 | MUST NOT | Port filtra tipos Kysely/pg/DB | Mantener contratos internos independientes | Procedencia AST en imports, aliases, namespace, qualified/generic y reexports | Blocker | Ninguna |
 | D5-R044 | MUST | Cada operación persistente exige scope tenant estructural no opcional | Evitar bypass implícito/global | Firma AST, tipo de scope allowlisted, optional/nullable/default rechazados | Blocker | Sólo scopes registrados; sin excepciones silenciosas |
-| D5-R045 | MUST | Facility DB tiene owner, API y consumidor registrados | Evitar placeholders/runners desconectados | Registry fail-closed, exports exactos y consumo local resuelto | Blocker | Paths futuros sólo se validan al materializarse |
-| D5-R046 | MUST NOT | SQL ejecutable fuera de migración autorizada | Evitar bypass del query builder/ownership | Procedencia de `kysely.sql`, `.raw` y `query()` sobre executor tipado | Blocker | Migración central con nombre válido |
+| D5-R045 | MUST | Facility DB tiene owner, API y consumidor registrados | Evitar placeholders/runners desconectados | Registry fail-closed, exports exactos y consumo local resuelto | Blocker | Transición exacta de connection hasta materializar transaction runner |
+| D5-R046 | MUST NOT | SQL ejecutable fuera de migración autorizada | Evitar bypass del query builder/ownership | Procedencia de `kysely.sql`, `.raw` y `query()` sobre executor tipado | Blocker | Migración central; probe connection owner-scoped literal `select 1` |
 | D5-R047 | MUST | Operación Kysely usa objeto DB del owner registrado | Aplicar ownership físico preventivo | Executor tipado + `selectFrom`/`insertInto`/`updateTable`/`deleteFrom` + registry fail-closed | Blocker | Ninguna |
 
 ## Diagnóstico y exit codes

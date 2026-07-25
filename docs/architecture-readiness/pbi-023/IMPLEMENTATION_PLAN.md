@@ -80,25 +80,39 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** DEC044, DEC050-C06 y DEC063-C06.
 - **Salida:** config inmutable fail-fast y sanitizada.
 
-## Paso 6 — Conexión y transaction runner
+## Paso 6 — Facility de conexión
 
-- **Objetivo:** lifecycle de pool y misma conexión por transacción.
-- **Archivos:** connection, transaction runner, types y tests.
+- **Estado:** `Completed — PASS` en
+  [connection-facility/](connection-facility/README.md).
+- **Objetivo:** lifecycle de pool, verificación técnica y cierre controlado.
+- **Archivos:** connection, tests, harness PostgreSQL y enforcement exacto.
 - **Dependencias:** config validada y PG `18.4` test.
-- **Riesgos:** leak, pool por query, retry parcial, cierre incompleto.
-- **Pruebas:** connect/close, release en fallo, commit/rollback, concurrente,
-  timeout y SQLSTATE traducido.
-- **Evidencia:** counts/lifecycle sanitizados.
-- **Rollback:** cerrar pool, eliminar base y revertir facility.
+- **Riesgos:** leak, pool por query, cierre incompleto y errores sensibles.
+- **Pruebas:** lazy create, verify/close, release, concurrencia, timeout,
+  auth/database/SSL y sanitización.
+- **Evidencia:** counts/lifecycle sanitizados y dos runs PG 18.4.
+- **Rollback:** cerrar pool, eliminar container efímero y revertir facility.
+- **Gate:** DEC049-C06/C07; DEC051-C03 permanece pendiente en CI.
+- **Salida:** cero conexiones pendientes y API sin driver.
+
+## Paso 6B — Transaction runner
+
+- **Objetivo:** ejecutar toda unidad sobre una misma conexión.
+- **Archivos:** transaction runner y tests, sin ampliar la API de connection
+  hasta una autorización explícita.
+- **Dependencias:** Paso 6 verificado.
+- **Riesgos:** retry parcial, pool query dentro de transacción, release/rollback.
+- **Pruebas:** commit, rollback, mismo client, concurrencia y fallos.
 - **Gate:** DEC049-C04/C06.
-- **Salida:** cero conexiones pendientes; misma conexión demostrada.
+- **Salida:** misma conexión demostrada; todavía sin migraciones/tablas.
 
 ## Paso 7 — Runner de migraciones
 
 - **Objetivo:** status/latest/down/verify explícitos.
 - **Archivos:** migration runner, `scripts/migrate.mjs`, scripts package y
   tests.
-- **Dependencias:** DEC-050 y connection runtime.
+- **Dependencias:** DEC-050, connection runtime y transaction runner cuando el
+  migrador requiera unidad transaccional.
 - **Riesgos:** mutación por import/start, lock largo, resultado ignorado.
 - **Pruebas:** status no mutante, app startup no migra, error→exit no cero,
   dos runners y cleanup.

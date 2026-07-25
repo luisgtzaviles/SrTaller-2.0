@@ -20,8 +20,7 @@ test('typed persistence configuration retains its exact owner and narrow public 
       'sanitizeDatabaseConfig',
     ],
     consumers: ['src/infrastructure/database/database-connection.ts'],
-    consumerRequirement: 'deferred-until-connection-step',
-    status: 'materialized-pure-config',
+    status: 'materialized-configuration',
   });
 });
 

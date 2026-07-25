@@ -1,16 +1,17 @@
-# Resultados de planificación y dependencias de PBI-023
+# Resultados consolidados de PBI-023
 
 ## Dictamen
 
-**PASS — PBI-023 EXACT DEPENDENCIES INSTALLED**
+**PASS — PBI-023 CONNECTION FACILITY VERIFIED**
 
 El expediente define estimación, DEC-050, versiones candidatas, arquitectura,
 schema mínimo, aislamiento, migraciones, riesgos, gates y plan. SPIKE-002
 ejecutó E1–E12 dos veces contra PostgreSQL real, comparó resultados y limpió
 todo recurso. El Paso 3 agregó D5-R037–D5-R047, registry fail-closed, 36
 fixtures y 11 mutaciones sin tocar `src/`. El Paso 4 instaló las tres
-dependencias exactas, revisó supply chain y pasó dos reinstalaciones frozen.
-PBI-023 queda `Ready`, sin iniciar configuración o persistencia productiva.
+dependencias exactas y los Pasos 5–6 materializaron configuración y conexión
+controladas. La facility pasó unit tests y dos runs PostgreSQL `18.4` reales,
+sin startup, migración, tabla o consumer productivo. PBI-023 queda `Ready`.
 
 ## Checklist
 
@@ -35,8 +36,12 @@ PBI-023 queda `Ready`, sin iniciar configuración o persistencia productiva.
 | dependencias exactas Paso 4 | PASS — 3 directas + 13 transitivas |
 | lifecycle/supply chain | PASS — cero scripts de terceros/advisories |
 | doble frozen install | PASS |
+| configuración tipada Paso 5 | PASS |
+| connection facility Paso 6 | PASS |
+| PostgreSQL 18.4 facility | PASS — dos runs, material MATCH |
+| errores/sanitización/concurrencia/cierre | PASS |
 | laboratorio/runtime/DB efímero | PASS — eliminado |
-| configuración/runtime/DB productivo | NOT RUN |
+| transaction runner/migraciones/schema | NOT RUN |
 
 ## Estado de decisiones
 
@@ -44,14 +49,13 @@ PBI-023 queda `Ready`, sin iniciar configuración o persistencia productiva.
 |---|---|---|
 | DEC-050 | Accepted with conditions; C01–C10 Pending | C01 Partial — package selection materialized; runtime/CI pending |
 | SPIKE-002 | mandatory/pending | Completed; material evidence PASS |
-| PBI-023 | Ready; dependency installation authorized | Ready; exact persistence dependencies installed / typed configuration authorized |
-| DEC-049 | Accepted; C01–C08 por materializar | C01 Partial por paquetes; runtime sin cambio |
-| DEC-051 | C01/C07/C09 Satisfied | sin cambio |
+| PBI-023 | Ready; connection facility authorized | Ready; connection facility verified / transaction runner authorized |
+| DEC-049 | Accepted; C01–C08 por materializar | C01 y parte facility C06/C07 verificadas; transacción/constraints pendientes |
+| DEC-051 | C01/C07/C09 Satisfied | C03 sigue Pending; evidencia local no sustituye CI |
 | DEC-063 | C01/C03/C04 Satisfied | sin cambio |
 
 ## Selecciones
 
-- core Kysely `Migrator`/`FileMigrationProvider`;
 - `kysely@0.29.4`;
 - `pg@8.22.0`;
 - `@types/pg@8.20.0`;
@@ -60,7 +64,7 @@ PBI-023 queda `Ready`, sin iniciar configuración o persistencia productiva.
 - `node:test`; no SQLite para persistencia crítica;
 - no Testcontainers/Compose en la selección inicial;
 - tenant/branch + metadata como schema productivo mínimo;
-- probes desechables para el spike;
+- probe productivo único `select 1` y harness PostgreSQL efímero;
 - roll-forward como recuperación primaria en shared/prod futuro.
 
 ## Gates restantes
@@ -69,7 +73,7 @@ PBI-023 queda `Ready`, sin iniciar configuración o persistencia productiva.
 2. DEC049-C02–C07 y DEC051-C02/C03/C04/C06 conservan porciones runtime.
 3. DEC063-C02/C05/C06 requieren evidencia restante antes del merge persistente.
 
-No existe bloqueo material para solicitar el Paso 5. Los gates restantes se
+No existe bloqueo material para solicitar el transaction runner. Los gates restantes se
 cierran secuencialmente y siguen impidiendo declarar implementación o merge.
 
 ## Validaciones de esta tarea
@@ -78,34 +82,33 @@ Ejecutadas con Node.js `24.18.0` y pnpm `11.15.1`:
 
 | Gate | Resultado |
 |---|---|
-| `pnpm install --frozen-lockfile` | PASS — dos reinstalaciones limpias |
-| `pnpm run architecture` | PASS — tres ciclos |
-| `pnpm run typecheck` | PASS — tres ciclos |
-| `pnpm run build` | PASS — tres ciclos |
-| `pnpm test` | PASS — 219/219 en tres ciclos |
-| `pnpm run test:architecture` | PASS — 207/207 en tres ciclos |
-| `pnpm run verify` | PASS — tres ciclos |
-| `pnpm run smoke:start` | PASS — tres ciclos |
+| `pnpm install --frozen-lockfile` | PASS — lock sin cambios |
+| `pnpm run architecture` | PASS |
+| `pnpm run typecheck` | PASS |
+| `pnpm run build` | PASS |
+| `pnpm test` | PASS — 255 pass, 6 PG gated skip, 0 fail |
+| `pnpm run test:architecture` | PASS — 216/216 |
+| `pnpm run verify` | PASS |
+| `pnpm run smoke:start` | PASS |
 | `git diff --check` | PASS |
-| metadata/integridad/audit | PASS — cero advisories |
-| ESM/NodeNext virtual | PASS — cero diagnósticos/emisión/conexión |
+| PostgreSQL 18.4 dedicado | PASS — dos runs/material MATCH/cleanup |
 | documentación/JSON/enlaces/secretos | verificación final PASS |
-| scope técnico | PASS — sólo package/lock |
+| scope técnico | PASS — facility/tests/enforcement/evidencia |
 
-El expediente completo está en
-[dependency-installation/](dependency-installation/README.md).
+La evidencia de este paso está en
+[connection-facility/](connection-facility/README.md).
 
 ## Restricciones preservadas
 
-- sin `src/`, workflow, scripts, tests, tsconfig o policy/checker;
-- sólo package/lock exactos como superficie técnica;
+- workflow, package/lock, tsconfig, AppModule, bootstrap y módulos preservados;
+- cambios técnicos limitados a facility, tests/harness y enforcement exacto;
 - sin SQL, migraciones, schema o tablas productivos;
-- sin PostgreSQL, Docker o Testcontainers en este paso;
+- Docker sólo durante tests; cero recurso residual;
 - sin credenciales, `.env` o secretos preservados;
 - sin PBI-024–029;
 - sin merge/deploy/SSH.
 
 ## Siguiente acción
 
-Autorizar separadamente el Paso 5: configuración tipada y fail-closed, todavía
-sin conexión, SQL, migraciones, tablas ni adapters productivos.
+Autorizar separadamente el transaction runner, todavía sin migraciones, tablas,
+repositories, adapters ni wiring productivo.

@@ -55,9 +55,9 @@ siguen siendo futuros aprobados, no autorización para crearlos.
 | Path previsto | Owner | Consumidor | API pública | Razón | Momento |
 |---|---|---|---|---|---|
 | `src/infrastructure/database/database-config.ts` | Ingeniería + Operaciones | connection/migrator futuro | `DatabaseConfig`, error, parser y redacted view | validar configuración una vez | paso 5 — materializado |
-| `src/infrastructure/database/database-types.ts` | Ingeniería | adapters y migrator | tipo de schema técnico | tipos Kysely sin filtrarlos al dominio | paso 6 |
-| `src/infrastructure/database/database-connection.ts` | Ingeniería + Operaciones | adapters/tests | create/close database runtime | pool único y lifecycle explícito | paso 6 |
-| `src/infrastructure/database/transaction-runner.ts` | Ingeniería | adapters/tests | ejecutar callback sobre misma conexión | commit/rollback seguro | paso 6 |
+| `src/infrastructure/database/database-types.ts` | Ingeniería | adapters y migrator | tipo de schema técnico | tipos Kysely sin filtrarlos al dominio | futuro; no materializado en Paso 6 |
+| `src/infrastructure/database/database-connection.ts` | Ingeniería + Operaciones | transaction runner/adapters futuros y tests | interface/error/create/sanitize; no drivers | pool único y lifecycle explícito | paso 6 — materializado |
+| `src/infrastructure/database/transaction-runner.ts` | Ingeniería | adapters/tests | ejecutar callback sobre misma conexión | commit/rollback seguro | paso 6B — siguiente gate |
 | `src/infrastructure/database/migration-runner.ts` | Ingeniería + Operaciones | scripts `migrate:*` | status/latest/down/verify | aislar mutación del bootstrap | paso 7 |
 | `src/infrastructure/database/migrations/` | owner por archivo; custodia Operaciones | migration runner | módulos de migración congelados | secuencia central determinista | paso 8; nunca vacío |
 | `src/modules/tenancy/application/ports/tenant-repository.port.ts` | tenancy | aplicación tenancy futura | puerto interno; no export cross-module | contrato owner-first | paso 11, sólo con adapter real |

@@ -99,8 +99,7 @@
           "sanitizeDatabaseConfig"
         ],
         "consumers": ["src/infrastructure/database/database-connection.ts"],
-        "consumerRequirement": "deferred-until-connection-step",
-        "status": "materialized-pure-config"
+        "status": "materialized-configuration"
       },
       "src/infrastructure/database/database-types.ts": {
         "owner": "database",
@@ -115,13 +114,19 @@
       },
       "src/infrastructure/database/database-connection.ts": {
         "owner": "database",
-        "publicExports": ["createDatabaseConnection"],
+        "publicExports": [
+          "DatabaseConnection",
+          "DatabaseConnectionError",
+          "createDatabaseConnection",
+          "sanitizeDatabaseConnectionState"
+        ],
         "consumers": [
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/stations/stations.module.ts",
           "src/modules/tenancy/tenancy.module.ts"
         ],
-        "status": "future-approved"
+        "consumerRequirement": "deferred-until-transaction-step",
+        "status": "materialized-connection-facility"
       },
       "src/infrastructure/database/transaction-runner.ts": {
         "owner": "database",
@@ -182,6 +187,11 @@
     "databaseExecutorTypes": {
       "kysely": ["Kysely", "Transaction"],
       "pg": ["Client", "Pool", "PoolClient"]
+    },
+    "connectionProbe": {
+      "file": "src/infrastructure/database/database-connection.ts",
+      "function": "runConnectionVerification",
+      "sql": "select 1"
     },
     "driverPublicTypes": {
       "kysely": ["Kysely", "RawBuilder", "Transaction"],
@@ -286,8 +296,9 @@
     "fixture:D5-R042:dispersed-migration",
     "fixture:D5-R043:aliased-type-leak",
     "fixture:D5-R044:missing-structural-scope",
-    "fixture:D5-R045:pure-config-deferred-consumer:positive",
+    "fixture:D5-R045:materialized-connection-transition:positive",
     "fixture:D5-R045:unregistered-infrastructure",
+    "fixture:D5-R046:connection-probe-boundary",
     "fixture:D5-R046:aliased-sql-tag",
     "fixture:D5-R047:cross-owner-object",
     "mutation:D5-R037:persistence-boundary",

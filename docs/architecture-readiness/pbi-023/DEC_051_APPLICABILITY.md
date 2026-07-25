@@ -98,3 +98,13 @@ La [configuración tipada](typed-configuration/TEST_MATRIX.md) prueba
 validación, sanitización, inmutabilidad, no red y boundaries. Esto amplía la
 evidencia estática de C06/C09 sin satisfacer C03/C04 ni la traducción de
 errores de driver de C05. No se agregó job ni se cambió branch protection.
+
+## Evidencia del Paso 6
+
+La [facility de conexión](connection-facility/POSTGRESQL_TEST_MATRIX.md)
+ejecutó dos instancias efímeras PostgreSQL `18.4` con auth negativa, base
+inexistente, timeout, SSL, pool, concurrencia, cierre y cleanup `PASS`.
+DEC051-C05 gana evidencia para errores de conexión y C06 para boundaries, pero
+no se satisfacen por completo: faltan API/adapters, transaction runner,
+constraints e isolation. DEC051-C03 permanece `Pending` porque el workflow
+productivo aún no ejecuta PostgreSQL.

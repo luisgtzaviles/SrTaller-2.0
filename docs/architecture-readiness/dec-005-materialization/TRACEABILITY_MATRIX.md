@@ -58,8 +58,8 @@ los casos automatizados.
 | D5-R042 | Ejecutable | Migration root/pattern | Path, nombre e import target | Diagnóstico migration | Migración UTC owner-scoped | Dispersa y nombre inválido | D5-R042 aislada | PASS técnico | No ejecuta SQL |
 | D5-R043 | Ejecutable | Port registry + driver types | Procedencia AST/type aliases/qualified | Diagnóstico leakage | Port puro | Alias, namespace, reexport, type alias | D5-R043 aislada | PASS técnico | Ningún driver instalado |
 | D5-R044 | Ejecutable | Scopes por port | Firma AST estructural | Diagnóstico tenant scope | Tenant y tenant+branch | Ausente/opcional/nullable/default/branch-only | D5-R044 aislada | PASS técnico | Excepciones deben registrarse antes |
-| D5-R045 | Ejecutable | Infrastructure registry | Exports/consumers exactos | Diagnóstico API/consumer | Facility consumida | No registrado y sin consumer | D5-R045 aislada | PASS técnico | Fail-closed |
-| D5-R046 | Ejecutable | Migration root | Procedencia `sql`/`.raw`/executor.query | Diagnóstico raw SQL | Raw SQL sólo en migración central | Alias/namespace/typed pg | D5-R046 aislada | PASS técnico | No busca strings sueltas |
+| D5-R045 | Ejecutable | Infrastructure registry | Exports/consumers exactos | Diagnóstico API/consumer | Facility consumida o transition exacta | No registrado y sin consumer | D5-R045 aislada | PASS técnico | Fail-closed |
+| D5-R046 | Ejecutable | Migration root + connection probe exacto | Procedencia `sql`/`.raw`/executor.query | Diagnóstico raw SQL | Migración central o `select 1` owner-scoped | Probe alterado, alias/namespace/typed pg | D5-R046 aislada | PASS técnico | No busca strings sueltas |
 | D5-R047 | Ejecutable | `databaseObjects` | Executor tipado + table operation | Diagnóstico object owner | `tenants` desde tenancy | `branches`, desconocido/dinámico | D5-R047 aislada | PASS técnico | APIs calculadas nuevas requieren ampliar detector |
 
 ## Lectura de cobertura

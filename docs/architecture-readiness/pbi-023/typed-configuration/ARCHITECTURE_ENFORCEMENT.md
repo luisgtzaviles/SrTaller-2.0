@@ -5,7 +5,7 @@
 `architecture/dec-005-policy.json` registra el archivo exacto, owner
 `database`, cuatro exports y consumidor futuro `database-connection.ts`.
 
-D5-R045 recibió una transición estrecha:
+D5-R045 recibió en el Paso 5 una transición estrecha:
 
 - sólo aplica a `database-config.ts`;
 - exige owner y path exactos;
@@ -18,6 +18,14 @@ D5-R045 recibió una transición estrecha:
 El fixture positivo prueba esa transición y el negativo usa
 `database-types.ts` para demostrar que no se generalizó. No se agregó regla
 nueva ni se neutralizó una existente.
+
+## Transición posterior
+
+El Paso 6 materializó el consumer y sustituyó este estado transitorio:
+config ahora es `materialized-configuration` y connection es
+`materialized-connection-facility`. La única diferición vigente corresponde al
+consumer de connection hasta el transaction step. La evidencia actual está en
+[connection-facility/ARCHITECTURE_ENFORCEMENT.md](../connection-facility/ARCHITECTURE_ENFORCEMENT.md).
 
 ## Controles adicionales
 

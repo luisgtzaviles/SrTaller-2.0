@@ -2,8 +2,8 @@
 
 ## Estado
 
-- **Estado:** configuración pura materializada; demás paths productivos
-  future-approved y no materializados.
+- **Estado:** configuración y facility de conexión materializadas; demás paths
+  productivos future-approved y no materializados.
 - **Autoridad:** DEC-049.
 - **Gate:** DEC049-C02.
 - **Co-ownership:** prohibido.
@@ -17,7 +17,8 @@ registrado.
 
 | Path | Owner | API | Consumer | Estado |
 |---|---|---|---|---|
-| `src/infrastructure/database/database-config.ts` | `database` | `DatabaseConfig`, `DatabaseConfigError`, `parseDatabaseConfig`, `sanitizeDatabaseConfig` | `database-connection.ts` futuro | `materialized-pure-config`; cero imports/conexión |
+| `src/infrastructure/database/database-config.ts` | `database` | `DatabaseConfig`, `DatabaseConfigError`, `parseDatabaseConfig`, `sanitizeDatabaseConfig` | `database-connection.ts` | `materialized-configuration`; pura y sin red |
+| `src/infrastructure/database/database-connection.ts` | `database` | `DatabaseConnection`, `DatabaseConnectionError`, `createDatabaseConnection`, `sanitizeDatabaseConnectionState` | transaction runner/composición futura; consumo diferido hasta su paso autorizado | `materialized-connection-facility`; no exporta pool/Kysely, no startup |
 
 ## Objetos
 

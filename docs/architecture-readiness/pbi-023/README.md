@@ -7,24 +7,25 @@
 - **Rama:** `r0/pbi-023-persistence-planning`.
 - **Alcance:** decisión, investigación, ejecución material desechable,
   evidencia, diseño, riesgos y plan.
-- **Cambio técnico:** checker/tests previos + manifest/lock exactos; cero
-  runtime productivo.
-- **Resultado:** `PASS — PBI-023 EXACT DEPENDENCIES INSTALLED`.
-- **Estado PBI-023:** `Ready — exact persistence dependencies installed /
-  typed configuration authorized`.
+- **Cambio técnico:** checker/tests, dependencias/configuración y facility de
+  conexión controlada; cero wiring productivo.
+- **Resultado:** `PASS — PBI-023 CONNECTION FACILITY VERIFIED`.
+- **Estado PBI-023:** `Ready — connection facility verified / transaction
+  runner authorized`.
 
 ## Propósito
 
-Este expediente lleva PBI-023 hasta el último punto reversible anterior a
-crear configuración o persistencia. Distingue cuatro estados
+Este expediente lleva PBI-023 hasta una facility técnica verificable anterior a
+crear transacciones, migraciones o persistencia funcional. Distingue cinco estados
 que no deben confundirse:
 
 1. DEC-050 está aceptada documentalmente con condiciones.
 2. SPIKE-002 está materialmente cerrado con dos runs PostgreSQL reales.
 3. El Paso 3 está completo con checker fail-closed.
 4. El Paso 4 instaló exclusivamente los paquetes exactos y PBI-023 sigue
-   `Ready`, no `In progress`,
-   `Implemented` ni `Done`.
+   `Ready`, no `In progress`, `Implemented` ni `Done`.
+5. Los Pasos 5 y 6 materializaron configuración y conexión sin consumidores
+   productivos, startup automático, tablas ni migraciones.
 
 El laboratorio fue destruido. El Paso 4 modificó sólo `package.json`,
 `pnpm-lock.yaml` y documentación; preservó `src/`, workflows, scripts, tests,
@@ -52,6 +53,8 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 | [RESULTS.md](RESULTS.md) | dictamen consolidado |
 | [checker-extension/](checker-extension/README.md) | reglas D5-R037–D5-R047, fixtures, mutaciones, ownership y evidencia del Paso 3 |
 | [dependency-installation/](dependency-installation/README.md) | metadata, supply chain, doble frozen install, compatibilidad y evidencia del Paso 4 |
+| [typed-configuration/](typed-configuration/README.md) | parser fail-closed, roles, timeouts y redacción del Paso 5 |
+| [connection-facility/](connection-facility/README.md) | lifecycle, errores, PostgreSQL 18.4, concurrencia, cleanup y dictamen del Paso 6 |
 
 ## Alcance preservado
 
@@ -65,7 +68,6 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 
 ## Gate siguiente
 
-Solicitar el Paso 5: configuración tipada, validación y redaction fail-closed,
-sin crear todavía conexión, pool, migración, tabla o adapter. Cada paso
-requiere autorización propia y sus condiciones DEC-049/050/051/063
-aplicables.
+Solicitar el transaction runner como paso separado, sin crear todavía
+migraciones, tablas, adapter, endpoint ni integración con startup. Cada paso
+requiere autorización propia y sus condiciones DEC-049/050/051/063 aplicables.

@@ -2,14 +2,15 @@
 
 ## Estado
 
-`database-config.ts` quedó **materialized-pure-config** en el Paso 5. Los demás
+`database-config.ts` quedó **materialized-configuration** y
+`database-connection.ts` quedó **materialized-connection-facility**. Los demás
 paths continúan **future-approved / not materialized**.
 
 | Superficie futura | Owner | API/port | Consumer/composition |
 | --- | --- | --- | --- |
-| `src/infrastructure/database/database-config.ts` | database facility | config/error/parser/sanitizer exactos | `database-connection.ts` futuro; consumer diferido sólo mientras no tenga imports |
+| `src/infrastructure/database/database-config.ts` | database facility | config/error/parser/sanitizer exactos | `database-connection.ts` materializado |
 | `src/infrastructure/database/database-types.ts` | database facility | `DatabaseSchema` | connection, runner y adapters registrados |
-| `src/infrastructure/database/database-connection.ts` | database facility | `createDatabaseConnection` | tenancy/stations composition y migration runner |
+| `src/infrastructure/database/database-connection.ts` | database facility | interface/error/factory/sanitizer exactos; no exporta drivers | consumer diferido hasta transaction runner/composición autorizada |
 | `src/infrastructure/database/transaction-runner.ts` | database facility | `TransactionRunner` | tenancy/stations composition |
 | `src/infrastructure/database/migration-runner.ts` | database facility | `runMigrations` | script técnico registrado |
 | `.../tenancy/application/ports/tenant-repository.port.ts` | tenancy | tenant port + tenant scope | tenancy adapter |

@@ -11,7 +11,7 @@
 | D5-R043 | alias de driver en port | sólo D5-R043/path exacto | cero | PASS |
 | D5-R044 | método sin scope estructural | sólo D5-R044/path exacto | cero | PASS |
 | D5-R045 | infra no registrada | sólo D5-R045/path exacto | cero | PASS |
-| D5-R046 | `sql` tagged por alias | sólo D5-R046/path exacto | cero | PASS |
+| D5-R046 | probe connection cambia de `select 1` a `select 2` | sólo D5-R046/path exacto | cero | PASS |
 | D5-R047 | tabla de otro owner | sólo D5-R047/path exacto | cero | PASS |
 
 El runner ejecuta el árbol permitido, dos veces el mutado, el mutado con una

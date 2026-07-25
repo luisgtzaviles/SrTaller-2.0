@@ -6,10 +6,36 @@ const databaseTypes = [
   '',
 ].join('\n');
 
+const databaseConfig = [
+  'export interface DatabaseConfig { readonly host: string; }',
+  'export class DatabaseConfigError extends Error {}',
+  'export function parseDatabaseConfig(): DatabaseConfig {',
+  "  return Object.freeze({ host: 'synthetic' });",
+  '}',
+  'export function sanitizeDatabaseConfig(): unknown {',
+  '  return Object.freeze({ host: "<configured>" });',
+  '}',
+  '',
+].join('\n');
+
 const databaseConnection = [
-  "import type { Kysely } from 'kysely';",
-  "import type { DatabaseSchema } from './database-types.js';",
-  'export declare function createDatabaseConnection(): Kysely<DatabaseSchema>;',
+  "import type { PoolClient } from 'pg';",
+  "import type { DatabaseConfig } from './database-config.js';",
+  'export interface DatabaseConnection {',
+  '  readonly state: string;',
+  '}',
+  'export class DatabaseConnectionError extends Error {}',
+  'async function runConnectionVerification(client: PoolClient): Promise<void> {',
+  "  await client.query('select 1');",
+  '}',
+  'export function createDatabaseConnection(config: DatabaseConfig): DatabaseConnection {',
+  '  void config;',
+  '  void runConnectionVerification;',
+  "  return Object.freeze({ state: 'created' });",
+  '}',
+  'export function sanitizeDatabaseConnectionState(connection: DatabaseConnection): unknown {',
+  '  return Object.freeze({ state: connection.state });',
+  '}',
   '',
 ].join('\n');
 
@@ -50,6 +76,7 @@ const tenancyComposition = [
 ].join('\n');
 
 export const persistenceBaseFiles = {
+  'src/infrastructure/database/database-config.ts': databaseConfig,
   'src/infrastructure/database/database-connection.ts': databaseConnection,
   'src/infrastructure/database/database-types.ts': databaseTypes,
   'src/modules/tenancy/application/ports/tenant-repository.port.ts': tenantPort,
@@ -171,17 +198,12 @@ export const persistenceFixtureCases = [
     expectedRules: ['D5-R038'],
     expectedPath: 'src/infrastructure/database/database-connection.ts',
     files: based({
-      'src/infrastructure/database/database-connection.ts': [
-        "import type { Kysely } from 'kysely';",
-        "import type { DatabaseSchema } from './database-types.js';",
-        'export declare function createDatabaseConnection(): Kysely<DatabaseSchema>;',
-        'export declare const db: Kysely<DatabaseSchema>;',
-        '',
-      ].join('\n'),
+      'src/infrastructure/database/database-connection.ts':
+        `${databaseConnection}\nexport const db = createDatabaseConnection;\n`,
     }),
     coverage: {
       ids: ['fixture:D5-R038:global-export'],
-      evidence: ['export declare const db'],
+      evidence: ['export const db'],
     },
   },
   {
@@ -338,6 +360,19 @@ export const persistenceFixtureCases = [
     },
   },
   {
+    name: 'D5-R046 rejects a changed connection verification probe',
+    expectedRules: ['D5-R046'],
+    expectedPath: 'src/infrastructure/database/database-connection.ts',
+    files: based({
+      'src/infrastructure/database/database-connection.ts':
+        databaseConnection.replace("client.query('select 1')", "client.query('select 2')"),
+    }),
+    coverage: {
+      ids: ['fixture:D5-R046:connection-probe-boundary'],
+      evidence: ["client.query('select 2')"],
+    },
+  },
+  {
     name: 'D5-R046 rejects aliased sql tagged template outside migration',
     expectedRules: ['D5-R046'],
     expectedPath:
@@ -432,10 +467,8 @@ export const persistenceFixtureCases = [
     expectedPath: 'src/infrastructure/database/database-connection.ts',
     files: based({
       'src/infrastructure/database/database-connection.ts': [
-        "import type { Kysely } from 'kysely';",
-        "import type { DatabaseSchema } from './database-types.js';",
-        'export declare function createDatabaseConnection(): Kysely<DatabaseSchema>;',
-        'export declare const connectionHandle: Kysely<DatabaseSchema>;',
+        databaseConnection,
+        'export const connectionHandle = createDatabaseConnection;',
         "export { Kysely as db } from 'kysely';",
         '',
       ].join('\n'),
@@ -511,24 +544,15 @@ export const persistenceFixtureCases = [
     },
   },
   {
-    name: 'D5-R045 permits only the registered pure configuration before its consumer',
+    name: 'D5-R045 permits the exact materialized connection transition',
     expectedRules: [],
     files: {
-      'src/infrastructure/database/database-config.ts': [
-        'export interface DatabaseConfig { readonly host: string; }',
-        'export class DatabaseConfigError extends Error {}',
-        'export function parseDatabaseConfig(): DatabaseConfig {',
-        "  return Object.freeze({ host: 'synthetic' });",
-        '}',
-        'export function sanitizeDatabaseConfig(): unknown {',
-        '  return Object.freeze({ host: "<configured>" });',
-        '}',
-        '',
-      ].join('\n'),
+      'src/infrastructure/database/database-config.ts': databaseConfig,
+      'src/infrastructure/database/database-connection.ts': databaseConnection,
     },
     coverage: {
-      ids: ['fixture:D5-R045:pure-config-deferred-consumer:positive'],
-      evidence: ['sanitizeDatabaseConfig'],
+      ids: ['fixture:D5-R045:materialized-connection-transition:positive'],
+      evidence: ['runConnectionVerification'],
     },
   },
   {

@@ -1322,16 +1322,15 @@ function persistenceBoundaryDiagnostics({
         const materializedConsumers = registration.consumers
           .map((consumer) => resolve(projectRoot, consumer))
           .filter((consumer) => parsedFiles.has(consumer));
-        const pureConfigurationConsumerDeferred =
+        const connectionFacilityConsumerDeferred =
           relativePath ===
-            'src/infrastructure/database/database-config.ts' &&
+            'src/infrastructure/database/database-connection.ts' &&
           registration.owner === 'database' &&
-          registration.status === 'materialized-pure-config' &&
+          registration.status === 'materialized-connection-facility' &&
           registration.consumerRequirement ===
-            'deferred-until-connection-step' &&
-          parsed.records.length === 0;
+            'deferred-until-transaction-step';
         if (
-          !pureConfigurationConsumerDeferred &&
+          !connectionFacilityConsumerDeferred &&
           (materializedConsumers.length === 0 ||
             !materializedConsumers.some((consumer) =>
               importsTarget(
@@ -1359,6 +1358,32 @@ function persistenceBoundaryDiagnostics({
     );
     if (!isInsidePath(relativePath, migrationRoot)) {
       let rawSql = false;
+      function isAuthorizedConnectionProbe(node, receiver) {
+        const probe = persistence.connectionProbe;
+        if (
+          !probe ||
+          relativePath !== probe.file ||
+          !executor.matches(receiver) ||
+          node.arguments.length !== 1 ||
+          !ts.isStringLiteral(node.arguments[0]) ||
+          node.arguments[0].text !== probe.sql
+        ) {
+          return false;
+        }
+        for (
+          let current = node.parent;
+          current && current !== sourceFile;
+          current = current.parent
+        ) {
+          if (isFunctionLikeDeclaration(current)) {
+            return (
+              ts.isFunctionDeclaration(current) &&
+              current.name?.text === probe.function
+            );
+          }
+        }
+        return false;
+      }
       function findRawSql(node) {
         if (
           ts.isTaggedTemplateExpression(node) &&
@@ -1378,9 +1403,7 @@ function persistenceBoundaryDiagnostics({
             (node.expression.name.text === 'query' &&
               executor.matches(receiver) &&
               node.arguments.length > 0 &&
-              (ts.isStringLiteralLike(node.arguments[0]) ||
-                ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
-                ts.isTemplateExpression(node.arguments[0])))
+              !isAuthorizedConnectionProbe(node, receiver))
           ) {
             rawSql = true;
             return;
