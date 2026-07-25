@@ -6,7 +6,9 @@
 - C02 y C05–C08: `Pending`.
 
 No se cambia ese registro. SPIKE-002 y el Paso 4 aportan preparación material,
-no cumplimiento final del PBI.
+no cumplimiento final del PBI. El Paso 5 agrega evidencia fail-closed,
+seguridad y trazabilidad del contrato de configuración, sin cerrar condiciones
+runtime.
 
 ## Matriz
 
@@ -29,6 +31,11 @@ La [revisión de dependencias](dependency-installation/SUPPLY_CHAIN_REVIEW.md)
 registra cierre transitivo, integridades, licencias, advisories, lifecycle,
 reversibilidad y superficies preservadas. Reduce el riesgo de instalación,
 pero no el riesgo inherente alto de persistencia tenant-scoped.
+
+La [evidencia de configuración](typed-configuration/RESULTS.md) agrega cero
+defaults, separación de roles/namespaces, TLS productivo, redaction, freeze y
+rollback Git-only. C02/C06 avanzan de forma parcial; C05 continúa bloqueada
+hasta migraciones, roles efectivos, PostgreSQL y recovery.
 
 ## C05 — checklist de persistencia/migración
 

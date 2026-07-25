@@ -2,8 +2,8 @@
 
 ## Estado
 
-- **Estado:** registrada en policy y enforced por fixtures; paths productivos
-  no materializados.
+- **Estado:** configuración pura materializada; demás paths productivos
+  future-approved y no materializados.
 - **Autoridad:** DEC-049.
 - **Gate:** DEC049-C02.
 - **Co-ownership:** prohibido.
@@ -12,6 +12,12 @@ La representación machine-readable vigente está en
 `architecture/dec-005-policy.json` bajo `persistence`. D5-R041, D5-R044,
 D5-R045 y D5-R047 fallan cerrado ante owner, scope, API, consumer u objeto no
 registrado.
+
+## Facility materializada
+
+| Path | Owner | API | Consumer | Estado |
+|---|---|---|---|---|
+| `src/infrastructure/database/database-config.ts` | `database` | `DatabaseConfig`, `DatabaseConfigError`, `parseDatabaseConfig`, `sanitizeDatabaseConfig` | `database-connection.ts` futuro | `materialized-pure-config`; cero imports/conexión |
 
 ## Objetos
 

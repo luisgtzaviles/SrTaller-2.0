@@ -67,6 +67,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Paso 5 — Configuración tipada
 
+- **Estado:** `Completed — PASS` en
+  [typed-configuration/](typed-configuration/README.md).
 - **Objetivo:** validar variables y redaction sin abrir conexión.
 - **Archivos:** `database-config.ts`, unit tests y policy exacta.
 - **Dependencias:** pasos 3–4.
@@ -201,5 +203,6 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 ## Orden definitivo
 
 El orden recomendado pone el checker antes de `src/` y separa schema/adapters.
-Los pasos 1–4 están completos. El siguiente paso real es **Paso 5**, sujeto a
-autorización explícita; los pasos 5–14 no quedan autorizados por este cierre.
+Los pasos 1–5 están completos. El siguiente paso autorizable es **Paso 6**,
+sujeto a autorización explícita; los pasos 6–14 no quedan autorizados por este
+cierre.

@@ -511,12 +511,33 @@ export const persistenceFixtureCases = [
     },
   },
   {
-    name: 'D5-R045 rejects registered infrastructure without consumer',
-    expectedRules: ['D5-R045'],
-    expectedPath: 'src/infrastructure/database/database-config.ts',
+    name: 'D5-R045 permits only the registered pure configuration before its consumer',
+    expectedRules: [],
     files: {
-      'src/infrastructure/database/database-config.ts':
-        'export interface DatabaseConfig { readonly connectionString: string; }\n',
+      'src/infrastructure/database/database-config.ts': [
+        'export interface DatabaseConfig { readonly host: string; }',
+        'export class DatabaseConfigError extends Error {}',
+        'export function parseDatabaseConfig(): DatabaseConfig {',
+        "  return Object.freeze({ host: 'synthetic' });",
+        '}',
+        'export function sanitizeDatabaseConfig(): unknown {',
+        '  return Object.freeze({ host: "<configured>" });',
+        '}',
+        '',
+      ].join('\n'),
+    },
+    coverage: {
+      ids: ['fixture:D5-R045:pure-config-deferred-consumer:positive'],
+      evidence: ['sanitizeDatabaseConfig'],
+    },
+  },
+  {
+    name: 'D5-R045 rejects other registered infrastructure without consumer',
+    expectedRules: ['D5-R045'],
+    expectedPath: 'src/infrastructure/database/database-types.ts',
+    files: {
+      'src/infrastructure/database/database-types.ts':
+        'export interface DatabaseSchema { readonly tenants: unknown; }\n',
     },
   },
   {

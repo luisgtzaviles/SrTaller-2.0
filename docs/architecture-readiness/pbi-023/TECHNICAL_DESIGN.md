@@ -54,7 +54,7 @@ siguen siendo futuros aprobados, no autorización para crearlos.
 
 | Path previsto | Owner | Consumidor | API pública | Razón | Momento |
 |---|---|---|---|---|---|
-| `src/infrastructure/database/database-config.ts` | Ingeniería + Operaciones | connection/migrator | parser inmutable y redacted view | validar configuración una vez | paso 5 |
+| `src/infrastructure/database/database-config.ts` | Ingeniería + Operaciones | connection/migrator futuro | `DatabaseConfig`, error, parser y redacted view | validar configuración una vez | paso 5 — materializado |
 | `src/infrastructure/database/database-types.ts` | Ingeniería | adapters y migrator | tipo de schema técnico | tipos Kysely sin filtrarlos al dominio | paso 6 |
 | `src/infrastructure/database/database-connection.ts` | Ingeniería + Operaciones | adapters/tests | create/close database runtime | pool único y lifecycle explícito | paso 6 |
 | `src/infrastructure/database/transaction-runner.ts` | Ingeniería | adapters/tests | ejecutar callback sobre misma conexión | commit/rollback seguro | paso 6 |
@@ -140,24 +140,31 @@ PBI-023.
 - Timestamps se almacenan con zona y se generan mediante reloj controlado por
   el adapter/migración según diseño futuro.
 
-## 7. Configuración prevista
+## 7. Configuración materializada
 
-Prefijo propuesto `SR_DB_`; test usa `SR_TEST_DB_` y nunca hereda
-silenciosamente una configuración compartida.
+El contrato usa `SR_DB_`; test usa `SR_TEST_DB_` y nunca hereda
+silenciosamente una configuración compartida. `SR_DB_ENVIRONMENT` selecciona
+el namespace. No hay defaults.
 
 | Variable | Regla |
 |---|---|
-| `SR_DB_HOST` | obligatoria fuera de test |
-| `SR_DB_PORT` | entero; default estándar `5432` |
+| `SR_DB_ENVIRONMENT` | obligatoria; development/test/production |
+| `SR_DB_HOST` | obligatoria fuera de test; test exige `SR_TEST_DB_HOST` |
+| `SR_DB_PORT` | entero 1–65535; obligatorio |
 | `SR_DB_NAME` | obligatoria; no se imprime |
 | `SR_DB_USER` | obligatoria; no se imprime en logs públicos |
 | `SR_DB_PASSWORD` | obligatoria, secreta, sin default |
-| `SR_DB_SSL_MODE` | obligatoria en shared/prod; test local debe elegir explícitamente |
-| `SR_DB_POOL_MAX` | entero positivo obligatorio hasta medir un default seguro |
+| `SR_DB_SSL_MODE` | obligatoria; production exige `verify-full` |
+| `SR_DB_POOL_MIN` / `SR_DB_POOL_MAX` | 0–100 / 1–100; min ≤ max |
 | `SR_DB_CONNECTION_TIMEOUT_MS` | entero positivo obligatorio |
 | `SR_DB_IDLE_TIMEOUT_MS` | entero positivo obligatorio |
 | `SR_DB_STATEMENT_TIMEOUT_MS` | entero positivo obligatorio |
-| `SR_DB_APPLICATION_NAME` | default estable por rol de proceso |
+| `SR_DB_QUERY_TIMEOUT_MS` | entero positivo obligatorio |
+| `SR_DB_APPLICATION_NAME` | obligatorio y gobernado |
+| `SR_DB_ROLE` | application/migration; test usa role test en su namespace |
+| `SR_DB_ACCESS_MODE` | read-only/read-write; migration/test exigen write |
+| `SR_DB_MIGRATIONS_ENABLED` | boolean exacto; true sólo para migration |
+| `SR_TEST_DB_RUN_ID` | obligatorio; liga la base test al run |
 
 La configuración:
 
@@ -172,6 +179,10 @@ La configuración:
 - separa credenciales `app`, `migration` y `test-lifecycle`.
 
 No se crean `.env`, secretos ni valores reales.
+
+El contrato y sus matrices completas están en
+[typed-configuration/](typed-configuration/README.md). No se aceptó CA inline:
+su fuente de confianza queda para la facility TLS gobernada del Paso 6.
 
 ## 8. Pool y transacciones
 

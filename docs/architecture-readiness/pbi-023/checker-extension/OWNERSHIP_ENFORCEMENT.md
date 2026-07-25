@@ -2,12 +2,12 @@
 
 ## Estado
 
-Todos los paths de esta matriz son **future-approved / not materialized**.
-Ninguno existe bajo `src/` en este cambio.
+`database-config.ts` quedó **materialized-pure-config** en el Paso 5. Los demás
+paths continúan **future-approved / not materialized**.
 
 | Superficie futura | Owner | API/port | Consumer/composition |
 | --- | --- | --- | --- |
-| `src/infrastructure/database/database-config.ts` | database facility | `DatabaseConfig` | `database-connection.ts` |
+| `src/infrastructure/database/database-config.ts` | database facility | config/error/parser/sanitizer exactos | `database-connection.ts` futuro; consumer diferido sólo mientras no tenga imports |
 | `src/infrastructure/database/database-types.ts` | database facility | `DatabaseSchema` | connection, runner y adapters registrados |
 | `src/infrastructure/database/database-connection.ts` | database facility | `createDatabaseConnection` | tenancy/stations composition y migration runner |
 | `src/infrastructure/database/transaction-runner.ts` | database facility | `TransactionRunner` | tenancy/stations composition |

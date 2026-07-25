@@ -1322,16 +1322,25 @@ function persistenceBoundaryDiagnostics({
         const materializedConsumers = registration.consumers
           .map((consumer) => resolve(projectRoot, consumer))
           .filter((consumer) => parsedFiles.has(consumer));
+        const pureConfigurationConsumerDeferred =
+          relativePath ===
+            'src/infrastructure/database/database-config.ts' &&
+          registration.owner === 'database' &&
+          registration.status === 'materialized-pure-config' &&
+          registration.consumerRequirement ===
+            'deferred-until-connection-step' &&
+          parsed.records.length === 0;
         if (
-          materializedConsumers.length === 0 ||
-          !materializedConsumers.some((consumer) =>
-            importsTarget(
-              parsedFiles.get(consumer),
-              consumer,
-              file,
-              sourceFileSet,
-            ),
-          )
+          !pureConfigurationConsumerDeferred &&
+          (materializedConsumers.length === 0 ||
+            !materializedConsumers.some((consumer) =>
+              importsTarget(
+                parsedFiles.get(consumer),
+                consumer,
+                file,
+                sourceFileSet,
+              ),
+            ))
         ) {
           add(
             'D5-R045',

@@ -7,7 +7,8 @@
 
 Este expediente no modifica esos estados. SPIKE-002 aporta evidencia
 preparatoria y el Paso 4 demuestra frozen install/checker/tests para el primer
-cambio técnico; ninguno constituye cumplimiento PostgreSQL runtime.
+cambio técnico. El Paso 5 agrega unit/contract/architecture tests de config;
+ninguno constituye cumplimiento PostgreSQL runtime.
 
 ## Matriz
 
@@ -90,3 +91,10 @@ productivos. El Paso 4 agrega evidencia de reproducibilidad del paquete, sin
 cambiar esos estados. C03/C04 y la parte runtime de C06 bloquean el primer
 merge persistente; C02 bloquea
 cualquier primer merge funcional. C05, C08 y C10 no se activaron.
+
+## Evidencia del Paso 5
+
+La [configuración tipada](typed-configuration/TEST_MATRIX.md) prueba
+validación, sanitización, inmutabilidad, no red y boundaries. Esto amplía la
+evidencia estática de C06/C09 sin satisfacer C03/C04 ni la traducción de
+errores de driver de C05. No se agregó job ni se cambió branch protection.

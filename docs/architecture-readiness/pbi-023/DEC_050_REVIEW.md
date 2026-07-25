@@ -5,7 +5,7 @@
 - **Estado anterior:** abierta; ADR-003 sólo fijaba principios.
 - **Estado final:** `Accepted with conditions`.
 - **Materialización productiva:** selección exacta/lock instalada; runtime no
-  iniciado.
+  iniciado. Configuración tipada del Paso 5 materializada sin conexión.
 - **Verificación material:** SPIKE-002 `PASS`; [evidencia](spike-002-evidence/README.md).
 - **Condiciones:** DEC050-C01 queda parcial por selección/lock/compatibilidad;
   C02–C10 y los componentes runtime/CI de C01 continúan pendientes.
@@ -44,6 +44,11 @@ conservan sus triggers de checker, runtime, operación y cambios persistentes.
 Su desglose autoritativo está en la sección 10 de DEC-050, en la
 [trazabilidad del spike](spike-002-evidence/TRACEABILITY_MATRIX.md) y en la
 [trazabilidad de dependencias](dependency-installation/TRACEABILITY_MATRIX.md).
+
+El [Paso 5](typed-configuration/README.md) agrega contrato de roles,
+namespaces, TLS, pool/timeouts futuros y sanitización. Aporta cumplimiento
+parcial a C01/C06, pero no crea migrator, lock, conexión, PostgreSQL CI ni
+migración; C02–C10 conservan sus triggers runtime/operativos.
 
 ## Temas no absorbidos
 

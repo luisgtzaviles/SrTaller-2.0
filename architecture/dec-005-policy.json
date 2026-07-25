@@ -92,9 +92,15 @@
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
         "owner": "database",
-        "publicExports": ["DatabaseConfig"],
+        "publicExports": [
+          "DatabaseConfig",
+          "DatabaseConfigError",
+          "parseDatabaseConfig",
+          "sanitizeDatabaseConfig"
+        ],
         "consumers": ["src/infrastructure/database/database-connection.ts"],
-        "status": "future-approved"
+        "consumerRequirement": "deferred-until-connection-step",
+        "status": "materialized-pure-config"
       },
       "src/infrastructure/database/database-types.ts": {
         "owner": "database",
@@ -280,6 +286,7 @@
     "fixture:D5-R042:dispersed-migration",
     "fixture:D5-R043:aliased-type-leak",
     "fixture:D5-R044:missing-structural-scope",
+    "fixture:D5-R045:pure-config-deferred-consumer:positive",
     "fixture:D5-R045:unregistered-infrastructure",
     "fixture:D5-R046:aliased-sql-tag",
     "fixture:D5-R047:cross-owner-object",

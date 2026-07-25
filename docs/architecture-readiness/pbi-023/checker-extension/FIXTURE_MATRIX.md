@@ -3,8 +3,8 @@
 ## Conteos
 
 - Baseline PBI-022: 98 (12 positivos, 86 negativos).
-- Extensión PBI-023: 36 (5 positivos, 31 negativos).
-- Vigente: **134 (17 positivos, 117 negativos)**.
+- Extensión PBI-023: 37 (6 positivos, 31 negativos).
+- Vigente tras Paso 5: **135 (18 positivos, 117 negativos)**.
 
 ## Cobertura
 
@@ -20,7 +20,7 @@
 | D5-R042 | migración central UTC-owner; SQL permitido allí | migración dispersa y nombre central no canónico |
 | D5-R043 | port con tipos propios | alias, namespace qualified, reexport y type alias de driver |
 | D5-R044 | tenant scope y tenant+branch scope estructurales | missing, nombre de scope sin estructura, optional, nullable, defaulted y branch-only |
-| D5-R045 | facility registrada/consumida | archivo desconocido y facility registrada sin consumer |
+| D5-R045 | config pura exacta sin imports puede diferir consumer; demás facilities registradas/consumidas | archivo desconocido y otra facility registrada sin consumer |
 | D5-R046 | SQL sólo en migration; shadowing/local query ignorados | tagged alias, namespace `.raw` y `PoolClient.query` tipado |
 | D5-R047 | adapter tenancy usa `tenants` | `branches`, tabla desconocida y argumento dinámico |
 

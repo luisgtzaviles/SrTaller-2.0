@@ -18,13 +18,13 @@ schema inicial sea pequeño.
 
 | Dimensión | Resultado |
 |---|---|
-| Runtime | sin cambios |
-| Persistencia | sin cambios |
+| Runtime | contrato puro agregado; bootstrap y composición sin cambios |
+| Persistencia | configuración tipada; cero conexión/DB/SQL |
 | Dependencias | tres directas exactas + trece transitivas revisadas |
-| DB/SQL/migraciones | sin ejecución ni cambios en este paso |
-| Reversibilidad | revertir manifest/lock/documentación + regenerar install |
-| Seguridad | cero credenciales, conexión, lifecycle de terceros o advisory |
-| Evidencia | metadata, integridades, supply chain y doble frozen install |
+| DB/SQL/migraciones | sin ejecución ni cambios |
+| Reversibilidad | revertir el commit; no existe estado externo |
+| Seguridad | fail-closed, roles, namespaces, TLS y redaction; cero credenciales |
+| Evidencia | tests unitarios/arquitectura, manifest, hashes y doble run |
 
 ## Cambio futuro autorizado sólo tras gates
 
@@ -82,13 +82,13 @@ aporta evidencia parcial de C01.
 
 | Condición | Aplicabilidad | Estado | Evidencia actual | Evidencia de cierre | Gate |
 |---|---|---|---|---|---|
-| DEC049-C01 — versiones exactas | directa | `Partial — package selection materialized` | paquetes exactos, lock SHA-256, supply-chain review, dos frozen installs y gates | configuración/runtime + PostgreSQL CI cuando se activen | antes de integrar persistencia |
+| DEC049-C01 — versiones exactas | directa | `Partial — package and typed config materialized` | paquetes/lock exactos, configuración, frozen installs y gates | conexión runtime + PostgreSQL CI cuando se activen | antes de integrar persistencia |
 | DEC049-C02 — owner/scope/invariantes | directa | `Partial — registry enforced` | registry machine-readable + D5-R041/R044/R047 | constraints/adapters materializados + review | antes de tabla/migración/repo |
 | DEC049-C03 — constraints/aislamiento PG18 | directa | `Pending — implementation` | SPIKE-002 E6–E10 PASS en PG18 | suite productiva PG18 | antes de aceptar persistencia |
 | DEC049-C04 — pool/transacción/retry | directa | `Pending` | patrón de pool/rollback/concurrencia verificado | misma conexión, commit/rollback/lifecycle productivo | antes del merge persistente |
 | DEC049-C05 — acceso excepcional separado | preventiva | `Partial — preventive enforcement` | D5-R038/D5-R039 rechazan API global/genérica; no registry admin | runtime conserva ausencia de bypass | antes de cualquier bypass |
-| DEC049-C06 — errores/logs | directa | `Pending` | mapping documental | tests de traducción/redaction | antes del merge persistente |
-| DEC049-C07 — enforcement | directa | `Partial — checker PASS` | D5-R037–D5-R047, 36 fixtures y 11 mutaciones | suite PostgreSQL/product runtime | antes del merge persistente |
+| DEC049-C06 — errores/logs | directa | `Partial — config errors/redaction PASS` | errores de config y vista segura probados | traducción pg/operaciones runtime | antes del merge persistente |
+| DEC049-C07 — enforcement | directa | `Partial — checker PASS` | D5-R037–D5-R047, config pura registrada, fixtures y 11 mutaciones | suite PostgreSQL/product runtime | antes del merge persistente |
 | DEC049-C08 — no RLS prematuro | trigger no activado | `Compliant by exclusion` | RLS excluido | nueva decisión + SPIKE-003 si se propone | antes de adoptar RLS |
 
 ## Tenant isolation
@@ -141,10 +141,9 @@ tokens, PII ni paths personales.
 
 ## Acciones permitidas antes del siguiente gate
 
-- revisar y versionar la instalación exacta;
+- revisar y versionar configuración/evidencia;
 - mantener el PR como Draft;
-- preparar autorización estricta del Paso 5;
-- crear sólo configuración tipada/validación mediante una tarea posterior.
+- preparar autorización estricta del Paso 6.
 
-Esta tarea material no autoriza `src/`, conexión, migraciones productivas,
-tablas productivas ni cambios de workflow.
+Este cierre no autoriza conexión, migraciones productivas, tablas productivas
+ni cambios de workflow.

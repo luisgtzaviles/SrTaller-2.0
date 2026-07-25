@@ -32,6 +32,7 @@ No incluye:
 | Artefacto | Contenido |
 |---|---|
 | [dependency evidence](dependency-installation/README.md) | versiones exactas, fuentes, cierre, scripts, lock hash, supply chain y frozen installs |
+| [typed configuration](typed-configuration/README.md) | variables, validaciones, errores, sanitización, inmutabilidad y ausencia de conexión |
 | ownership registry | objetos, owner, scope, invariantes |
 | migration manifest | orden, status, SHA-256, resultado |
 | PostgreSQL lifecycle | versión, create/cleanup, timeouts |
@@ -70,6 +71,14 @@ El Paso 4 tiene un manifest separado en
 Acredita selección, lock, scripts, supply chain, ESM/NodeNext, checker y dos
 instalaciones limpias. No acredita conexión, migrador, PostgreSQL CI o
 aislamiento runtime.
+
+## Evidencia de configuración tipada
+
+El Paso 5 tiene un manifest separado en
+[typed-configuration/EVIDENCE_MANIFEST.json](typed-configuration/EVIDENCE_MANIFEST.json).
+Acredita contrato puro, fail-closed, cero defaults, namespaces, roles, TLS,
+redaction, freeze, no red y enforcement. No acredita Pool, PostgreSQL,
+migraciones ni aislamiento runtime.
 
 ## Reglas de retención
 
