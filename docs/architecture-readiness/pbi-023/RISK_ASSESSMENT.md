@@ -18,13 +18,13 @@ schema inicial sea pequeño.
 
 | Dimensión | Resultado |
 |---|---|
-| Runtime | contrato puro agregado; bootstrap y composición sin cambios |
-| Persistencia | configuración tipada; cero conexión/DB/SQL |
+| Runtime | migration runner/provider/capability internos; bootstrap y composición sin cambios |
+| Persistencia | fixtures experimentales ejecutadas sólo en PostgreSQL efímero |
 | Dependencias | tres directas exactas + trece transitivas revisadas |
-| DB/SQL/migraciones | sin ejecución ni cambios |
-| Reversibilidad | revertir el commit; no existe estado externo |
+| DB/SQL/migraciones | probes/journal técnicos destruidos; cero migración productiva |
+| Reversibilidad | revertir el commit; cero estado externo residual |
 | Seguridad | fail-closed, roles, namespaces, TLS y redaction; cero credenciales |
-| Evidencia | tests unitarios/arquitectura, manifest, hashes y doble run |
+| Evidencia | unit/arquitectura, manifest, hashes y doble run PG 18.4 |
 
 ## Cambio futuro autorizado sólo tras gates
 
@@ -87,8 +87,8 @@ aporta evidencia parcial de C01.
 | DEC049-C03 — constraints/aislamiento PG18 | directa | `Pending — implementation` | SPIKE-002 E6–E10 PASS en PG18 | suite productiva PG18 | antes de aceptar persistencia |
 | DEC049-C04 — pool/transacción/retry | directa | `Partial — transaction runner PASS` | misma conexión interna, commit/rollback, isolation, nesting y sin retry | adapters/casos de uso y política idempotente materializados | antes del merge persistente |
 | DEC049-C05 — acceso excepcional separado | preventiva | `Partial — preventive enforcement` | D5-R038/D5-R039 rechazan API global/genérica; no registry admin | runtime conserva ausencia de bypass | antes de cualquier bypass |
-| DEC049-C06 — errores/logs | directa | `Partial — config/connection/transaction PASS` | errores tipados, mappings PG y redaction probados | adapters/operaciones productivas | antes del merge persistente |
-| DEC049-C07 — enforcement | directa | `Partial — checker/runtime runner PASS` | D5-R037–D5-R048, 144 fixtures, 35 mutaciones y dos runs PG | schema/adapters/isolation tenant | antes del merge persistente |
+| DEC049-C06 — errores/logs | directa | `Partial — config/connection/transaction/migration PASS` | errores tipados, mappings PG y redaction probados | adapters/operaciones productivas | antes del merge persistente |
+| DEC049-C07 — enforcement | directa | `Partial — checker/runtime runners PASS` | D5-R037–D5-R049, 152 fixtures, 36 mutaciones y dos runs PG | schema/adapters/isolation tenant | antes del merge persistente |
 | DEC049-C08 — no RLS prematuro | trigger no activado | `Compliant by exclusion` | RLS excluido | nueva decisión + SPIKE-003 si se propone | antes de adoptar RLS |
 
 ## Tenant isolation

@@ -23,11 +23,10 @@ test('transaction runner and internal capability retain exact registered ownersh
       'runInTransaction',
     ],
     consumers: [
-      'src/infrastructure/database/migration-runner.ts',
       'src/modules/stations/stations.module.ts',
       'src/modules/tenancy/tenancy.module.ts',
     ],
-    consumerRequirement: 'deferred-until-migration-step',
+    consumerRequirement: 'deferred-until-adapter-composition',
     status: 'materialized-transaction-runner',
   });
   assert.deepEqual(policy.persistence.transactionBoundary, {

@@ -15,7 +15,7 @@
 | `src/infrastructure/database/database-types.ts` | database facility | `DatabaseSchema` | connection, runner y adapters registrados |
 | `src/infrastructure/database/database-connection.ts` | database facility | interface/error/factory/sanitizer exactos; no exporta drivers | `transaction-runner.ts` materializado; migrator/composición futuros |
 | `src/infrastructure/database/database-transaction-capability.ts` | database facility | capability interna, binding/release/use exactos; no superficie funcional | sólo connection y transaction runner |
-| `src/infrastructure/database/transaction-runner.ts` | database facility | options/context/error/`runInTransaction` exactos | consumer diferido hasta migration runner; tenancy/stations futuros |
+| `src/infrastructure/database/transaction-runner.ts` | database facility | options/context/error/`runInTransaction` exactos | consumer diferido hasta composición de adapters tenancy/stations |
 | `src/infrastructure/database/migration-runner.ts` | database facility | `runMigrations` | script técnico registrado |
 | `.../tenancy/application/ports/tenant-repository.port.ts` | tenancy | tenant port + tenant scope | tenancy adapter |
 | `.../tenancy/infrastructure/persistence/kysely-tenant.repository.ts` | tenancy | adapter exacto | `tenancy.module.ts` |

@@ -62,6 +62,7 @@ los casos automatizados.
 | D5-R046 | Ejecutable | Migration root + connection probe exacto | Procedencia `sql`/`.raw`/executor.query | Diagnóstico raw SQL | Migración central o `select 1` owner-scoped | Probe alterado, alias/namespace/typed pg | D5-R046 aislada | PASS técnico | No busca strings sueltas |
 | D5-R047 | Ejecutable | `databaseObjects` | Executor tipado + table operation | Diagnóstico object owner | `tenants` desde tenancy | `branches`, desconocido/dinámico | D5-R047 aislada | PASS técnico | APIs calculadas nuevas requieren ampliar detector |
 | D5-R048 | Ejecutable | `transactionBoundary` | Specifier/target/call AST | Diagnóstico de frontera transaccional | Capability sólo connection/runner; shadowing local | async context alias/namespace/reexport/dynamic, controller, deep import y control manual | D5-R048 aislada | PASS técnico | Concurrencia en una misma facility permanece fail-closed |
+| D5-R049 | Ejecutable | `migrationBoundary` | Target local resuelto y capa/consumer de origen | Diagnóstico de consumo no autorizado de migraciones | Connection/runner/provider exactos registrados | Consumer lateral del provider y runner desde startup/capa funcional | D5-R049 aislada | PASS técnico | La composición operativa sigue diferida y no se materializa en startup |
 
 ## Lectura de cobertura
 

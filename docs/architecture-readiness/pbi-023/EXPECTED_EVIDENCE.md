@@ -73,6 +73,16 @@ read-only, nesting, errores, sanitización, concurrencia, dos runs PostgreSQL
 `18.4`, comparación y cleanup. No acredita migration runner, migrations,
 schema tenant-scoped ni PostgreSQL en CI autoritativa.
 
+## Evidencia del migration runner
+
+El Paso 8 tiene manifest separado en
+[migration-runner/EVIDENCE_MANIFEST.json](migration-runner/EVIDENCE_MANIFEST.json).
+Acredita `Migrator`/`FileMigrationProvider`, naming/discovery, manifest y drift,
+journal, status/up/down, lock/timeout, ESM/NodeNext desde `dist`, errores,
+sanitización, dos runs PostgreSQL `18.4`, comparación y cleanup. No acredita
+primera migración productiva, schema tenant-scoped, CLI operacional ni
+PostgreSQL autoritativo en CI.
+
 ## Evidencia de instalación exacta
 
 El Paso 4 tiene un manifest separado en

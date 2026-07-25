@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "repository": "SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit_base": "2b87d5c119e2cd74c2a4dd011ba9321d3d788a10",
+  "generated_at": "2026-07-25T17:39:25Z",
+  "files": {
+    "runtime": [
+      "src/infrastructure/database/database-migration-capability.ts",
+      "src/infrastructure/database/database-migration-provider.ts",
+      "src/infrastructure/database/migration-runner.ts",
+      "src/infrastructure/database/database-connection.ts"
+    ],
+    "tests": [
+      "test/database-migration.test.mjs",
+      "test/database-migration-postgresql.test.mjs",
+      "test/architecture-database-migration.test.mjs",
+      "scripts/test-database-migration-postgresql.mjs",
+      "test/fixtures/database-migrations/"
+    ],
+    "evidence_root": "docs/architecture-readiness/pbi-023/migration-runner/"
+  },
+  "API": [
+    "DatabaseMigrationRunnerOptions",
+    "DatabaseMigrationDownAuthorization",
+    "DatabaseMigrationStatusItem",
+    "DatabaseMigrationStatus",
+    "DatabaseMigrationExecution",
+    "DatabaseMigrationRunner",
+    "DatabaseMigrationError",
+    "createMigrationRunner"
+  ],
+  "migration_root": {
+    "source": "src/infrastructure/database/migrations/",
+    "compiled": "dist/infrastructure/database/migrations/",
+    "state": "not-materialized-until-step-9",
+    "missing_behavior": "DATABASE_MIGRATION_DIRECTORY_MISSING"
+  },
+  "naming": "YYYYMMDDHHMMSS_(database|stations|tenancy)_<verb>_<object>[...].ts",
+  "hashes": {
+    "probe_a_sha256": "0ea8136e1bddd280b6b2be3b1c659afe2ac858f8a68dceaa4cf8f2b4040d4582",
+    "probe_b_sha256": "68f484c17d5f77a5171f8c06e13274b18da162bd9d800f36f3da339e12a71045",
+    "fixture_manifest_sha256": "4e870adf2bb7cfc8f277282fb565116725dff8d42103edfa9d8dc319903b31b3",
+    "material_result_sha256": "397c4ec877a1cbc568a032ae9c7ba11a15c3274b90ca110a81614cd8527771a3",
+    "package_json_before_after": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
+    "pnpm_lock_before_after": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
+    "workflow_before_after": "f3d4942e9ef6dc785a5d34d280e6d1f204e889ec5d8065b1d06c9ed06dd5c790",
+    "app_module_before_after": "78aa0b2472244370e98e5ee7d6c09692d102ceaa08171db8977f8be97ea1124e",
+    "bootstrap_before_after": "e3582af43aabf400c78f50dda40d00c82a202a8d686a950a5e441b9d753ec289",
+    "dockerfile_before_after": "0c0fbd739d1911a9f60b5175a14d3758d7e5ed1848dd041a35b40b3cb05d2a1f"
+  },
+  "provider": {
+    "implementation": "Kysely FileMigrationProvider behind a governed wrapper",
+    "source_validation": "TypeScript",
+    "runtime_execution": "compiled JavaScript ESM from dist",
+    "discovery": "explicit-root-fail-closed"
+  },
+  "journal": {
+    "migration_table": "kysely_migration",
+    "lock_table": "kysely_migration_lock",
+    "schema": "default",
+    "unordered": false,
+    "transactions_disabled": false
+  },
+  "lock": {
+    "strategy": "finite pg_try_advisory_lock pre-lock plus Kysely PostgreSQL adapter lock",
+    "id": "3853314791062309107",
+    "default_timeout_ms": 1000,
+    "minimum_timeout_ms": 10,
+    "maximum_timeout_ms": 60000,
+    "release": "finally"
+  },
+  "down_policy": {
+    "steps": 1,
+    "production_default": "forbidden",
+    "authorization_fields": [
+      "migrationName",
+      "expectedHash",
+      "reason",
+      "environment",
+      "confirmation"
+    ],
+    "confirmation": "REVERT_ONE_MIGRATION"
+  },
+  "error_codes": [
+    "DATABASE_MIGRATION_INVALID_STATE",
+    "DATABASE_MIGRATION_INVALID_ROLE",
+    "DATABASE_MIGRATION_DIRECTORY_MISSING",
+    "DATABASE_MIGRATION_PATH_FORBIDDEN",
+    "DATABASE_MIGRATION_FILENAME_INVALID",
+    "DATABASE_MIGRATION_DUPLICATE",
+    "DATABASE_MIGRATION_DRIFT_DETECTED",
+    "DATABASE_MIGRATION_LOCK_TIMEOUT",
+    "DATABASE_MIGRATION_LOCK_FAILED",
+    "DATABASE_MIGRATION_EXECUTION_FAILED",
+    "DATABASE_MIGRATION_DOWN_FORBIDDEN",
+    "DATABASE_MIGRATION_DOWN_FAILED",
+    "DATABASE_MIGRATION_STATUS_FAILED",
+    "DATABASE_MIGRATION_PROVIDER_FAILED",
+    "DATABASE_MIGRATION_CLEANUP_FAILED"
+  ],
+  "tests": {
+    "unit": "PASS",
+    "integration": "PASS",
+    "architecture": "PASS",
+    "material_comparison": "MATCH",
+    "product_suite": {
+      "tests": 309,
+      "pass": 301,
+      "skip": 8,
+      "fail": 0
+    },
+    "architecture_suite": {
+      "tests": 242,
+      "pass": 242,
+      "skip": 0,
+      "fail": 0
+    }
+  },
+  "PostgreSQL_version": "18.4",
+  "image_digest": "sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+  "runs": 2,
+  "commands": [
+    "pnpm install --frozen-lockfile",
+    "pnpm run architecture",
+    "pnpm run typecheck",
+    "pnpm run build",
+    "pnpm test",
+    "pnpm run test:architecture",
+    "pnpm run verify",
+    "pnpm run smoke:start",
+    "node scripts/test-database-migration-postgresql.mjs --runs 2",
+    "git diff --check"
+  ],
+  "cleanup": {
+    "status": "PASS",
+    "containers": 0,
+    "volumes": 0,
+    "networks": 0,
+    "ports": 0,
+    "experimental_tables": 0,
+    "journal_tables": 0,
+    "versioned_tmp": 0,
+    "versioned_env": 0
+  },
+  "sanitization": "PASS",
+  "architecture_rules": {
+    "new": [
+      "D5-R049"
+    ],
+    "preserved": "D5-R001-D5-R048",
+    "direct_checker_rules": 40,
+    "fixtures": 152,
+    "positive_fixtures": 20,
+    "negative_fixtures": 132,
+    "product_mutations": 36,
+    "critical_semantic_contracts": 55
+  },
+  "changed_surfaces": [
+    "database owner migration runtime",
+    "database connection internal drain coordination",
+    "migration tests and experimental fixtures",
+    "architecture checker and policy",
+    "PBI-023 evidence"
+  ],
+  "unchanged_surfaces": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "workflows",
+    "AppModule",
+    "bootstrap",
+    "business modules",
+    "product migration root",
+    "product migrations",
+    "production Dockerfile"
+  ],
+  "final_result": "PASS — PBI-023 MIGRATION RUNNER VERIFIED"
+}

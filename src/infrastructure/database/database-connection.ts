@@ -6,6 +6,16 @@ import type { PoolClient, PoolConfig } from 'pg';
 
 import type { DatabaseConfig } from './database-config.js';
 import {
+  DatabaseMigrationCapabilityError,
+  databaseMigrationCapability,
+  databaseMigrationRuntime,
+} from './database-migration-capability.js';
+import type {
+  InternalDatabaseMigrationConnection,
+  InternalDatabaseMigrationOperation,
+  InternalDatabaseMigrationRuntime,
+} from './database-migration-capability.js';
+import {
   DatabaseTransactionCapabilityError,
   databaseTransactionCapability,
 } from './database-transaction-capability.js';
@@ -308,7 +318,10 @@ async function runConnectionVerification(client: PoolClient): Promise<void> {
 }
 
 class ControlledDatabaseConnection
-  implements DatabaseConnection, InternalDatabaseTransactionConnection
+  implements
+    DatabaseConnection,
+    InternalDatabaseMigrationConnection,
+    InternalDatabaseTransactionConnection
 {
   readonly #config: Readonly<DatabaseConfig>;
   readonly #database: Kysely<EmptyDatabaseSchema>;
@@ -320,10 +333,11 @@ class ControlledDatabaseConnection
   #state: DatabaseConnectionState = 'created';
   #verificationPromise: Promise<void> | null = null;
   #closePromise: Promise<void> | null = null;
+  #activeMigrations = 0;
   #activeTransactions = 0;
-  #transactionFacilityActivated = false;
-  #transactionDrainPromise: Promise<void> | null = null;
-  #resolveTransactionDrain: (() => void) | null = null;
+  #databaseFacilityActivated = false;
+  #databaseDrainPromise: Promise<void> | null = null;
+  #resolveDatabaseDrain: (() => void) | null = null;
 
   constructor(config: Readonly<DatabaseConfig>) {
     this.#config = config;
@@ -356,7 +370,7 @@ class ControlledDatabaseConnection
     if (this.#verificationPromise) {
       return this.#verificationPromise;
     }
-    if (this.#activeTransactions > 0) {
+    if (this.#activeMigrations + this.#activeTransactions > 0) {
       return Promise.reject(
         new DatabaseConnectionError(
           'DATABASE_CONNECTION_INVALID_STATE',
@@ -402,6 +416,42 @@ class ControlledDatabaseConnection
     return closing;
   }
 
+  [databaseMigrationRuntime](): InternalDatabaseMigrationRuntime {
+    return Object.freeze({
+      environment: this.#config.runtime.environment,
+      role: this.#config.runtime.role,
+      accessMode: this.#config.runtime.accessMode,
+      migrationsEnabled: this.#config.runtime.migrationsEnabled,
+    });
+  }
+
+  async [databaseMigrationCapability]<T>(
+    operation: InternalDatabaseMigrationOperation<T>,
+  ): Promise<T> {
+    if (this.#state !== 'ready') {
+      throw new DatabaseConnectionError(
+        this.#state === 'closing' || this.#state === 'closed'
+          ? 'DATABASE_CONNECTION_CLOSED'
+          : 'DATABASE_CONNECTION_INVALID_STATE',
+        this.#state,
+      );
+    }
+    if (this.#activeMigrations + this.#activeTransactions > 0) {
+      throw new DatabaseMigrationCapabilityError('OVERLAP_FORBIDDEN');
+    }
+
+    this.#activeMigrations += 1;
+    this.#databaseFacilityActivated = true;
+    try {
+      return await this.#database.connection().execute((database) =>
+        operation(database),
+      );
+    } finally {
+      this.#activeMigrations -= 1;
+      this.#resolveDrainIfIdle();
+    }
+  }
+
   async [databaseTransactionCapability]<T>(
     settings: InternalDatabaseTransactionSettings,
     operation: InternalDatabaseTransactionOperation<T>,
@@ -414,12 +464,12 @@ class ControlledDatabaseConnection
         this.#state,
       );
     }
-    if (this.#activeTransactions > 0) {
+    if (this.#activeMigrations + this.#activeTransactions > 0) {
       throw new DatabaseTransactionCapabilityError('NESTED_FORBIDDEN');
     }
 
     this.#activeTransactions += 1;
-    this.#transactionFacilityActivated = true;
+    this.#databaseFacilityActivated = true;
     try {
       return await this.#database
         .transaction()
@@ -428,11 +478,15 @@ class ControlledDatabaseConnection
         .execute(operation);
     } finally {
       this.#activeTransactions -= 1;
-      if (this.#activeTransactions === 0) {
-        this.#resolveTransactionDrain?.();
-        this.#resolveTransactionDrain = null;
-        this.#transactionDrainPromise = null;
-      }
+      this.#resolveDrainIfIdle();
+    }
+  }
+
+  #resolveDrainIfIdle(): void {
+    if (this.#activeMigrations + this.#activeTransactions === 0) {
+      this.#resolveDatabaseDrain?.();
+      this.#resolveDatabaseDrain = null;
+      this.#databaseDrainPromise = null;
     }
   }
 
@@ -500,14 +554,14 @@ class ControlledDatabaseConnection
     if (activeVerification) {
       await activeVerification.catch(() => undefined);
     }
-    if (this.#activeTransactions > 0) {
-      this.#transactionDrainPromise ??= new Promise((resolve) => {
-        this.#resolveTransactionDrain = resolve;
+    if (this.#activeMigrations + this.#activeTransactions > 0) {
+      this.#databaseDrainPromise ??= new Promise((resolve) => {
+        this.#resolveDatabaseDrain = resolve;
       });
-      await this.#transactionDrainPromise;
+      await this.#databaseDrainPromise;
     }
     try {
-      if (this.#transactionFacilityActivated) {
+      if (this.#databaseFacilityActivated) {
         await this.#database.destroy();
       } else {
         await this.#pool.end();

@@ -104,5 +104,13 @@ permanece dormida hasta una excepción real.
 El [expediente transaccional](transaction-runner/README.md) aporta a C02 el
 tratamiento fail-closed de nesting/timeout/rollback; a C05, atomicidad y cleanup
 sin migración productiva; y a C06, sanitización y D5-R048. Los tres estados
-siguen `Partial`: no existen todavía migration runner, schema tenant-scoped,
-roles productivos, job PostgreSQL autoritativo ni aprobación de merge.
+siguen `Partial`: no existen todavía schema tenant-scoped, roles productivos,
+job PostgreSQL autoritativo ni aprobación de merge.
+
+## Evidencia del Paso 8
+
+El [expediente del migration runner](migration-runner/README.md) aporta a C02
+un cambio high-risk fail-closed; a C05, manifest, rollback/down, advisory lock,
+dos runs y cleanup; y a C06, sanitización y D5-R049. Los estados permanecen
+`Partial`: no existen primera migración/schema tenant-scoped, roles
+productivos, job PostgreSQL autoritativo ni aprobación de merge.

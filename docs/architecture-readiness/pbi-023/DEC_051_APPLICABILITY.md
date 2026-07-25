@@ -15,10 +15,10 @@ ninguno constituye cumplimiento PostgreSQL runtime.
 | Condición | Trigger para PBI-023 | Aplicabilidad | Estado | Mecanismo verificable | Evidencia futura | Responsable/gate |
 |---|---|---|---|---|---|---|
 | C02 — protección de `main` | antes del primer merge funcional | directa | `Pending` | requerir checks CI sin bypass ordinario | configuración exportable/captura segura y PR rechazado sin checks | Operaciones + Arquitectura / merge |
-| C03 — PostgreSQL real | primera suite persistence | directa | `Partial — local PostgreSQL PASS / product CI Pending` | servicio efímero PG `18.4`, base por run, cleanup | connection y transaction suites locales; falta job productivo | Ingeniería + Operaciones / antes del merge |
+| C03 — PostgreSQL real | primera suite persistence | directa | `Partial — local PostgreSQL PASS / product CI Pending` | servicio efímero PG `18.4`, base por run, cleanup | connection, transaction y migration suites locales; falta job productivo | Ingeniería + Operaciones / antes del merge |
 | C04 — aislamiento negativo | primera persistencia tenant | directa | `Pending — product suite` | matriz dos tenants/branches y mutaciones | E6–E10 del spike PASS; faltan ISO productivos | Seguridad + Calidad / merge |
 | C05 — API pública/errores | antes de API funcional | no activada | `Pending` | PBI-023 no crea API; sí prueba traducción interna DEC-044 | contrato HTTP se difiere; errores persistence se prueban | Ingeniería + Seguridad + Calidad / PBI futuro |
-| C06 — ownership/persistencia | primera persistencia | directa | `Partial — static/transaction enforcement PASS` | registry, checker, constraints, transaction runner | D5-R037–D5-R048 y runner cierran frontera; faltan constraints/adapters | Arquitectura + Ingeniería + Calidad / merge |
+| C06 — ownership/persistencia | primera persistencia | directa | `Partial — static/runners enforcement PASS` | registry, checker, constraints y runners | D5-R037–D5-R049 cierran frontera; faltan constraints/adapters | Arquitectura + Ingeniería + Calidad / merge |
 | C08 — flakiness/quarantine | antes de retry/cuarentena | no activada | `Pending` | no retries de test ni quarantine | registro sólo si aparece un caso real | Calidad + Operaciones |
 | C10 — bypass/emergency | antes de habilitar bypass | no activada | `Pending` | no bypass ni excepción | policy/expiración/restauración sólo si se propone | Operaciones + Seguridad + Arquitectura |
 
@@ -118,3 +118,13 @@ errores sanitizados, concurrencia y cleanup en PostgreSQL `18.4`. D5-R048
 refuerza C06. C03 mejora a evidencia local parcial, pero no queda satisfecha
 mientras la CI autoritativa mantenga el test PostgreSQL como gated skip. C04
 permanece pendiente porque `transaction_probe` no representa tenant/branch.
+
+## Evidencia del Paso 8
+
+El [migration runner](migration-runner/RESULTS.md) verifica
+`Migrator`/`FileMigrationProvider`, naming/discovery, journal, manifest/drift,
+status/up/down, lock/timeout, rollback, concurrencia y cleanup en dos runs
+PostgreSQL `18.4`. D5-R049 amplía C06 y la suite aporta evidencia local a C03.
+C03 sigue `Partial/Pending` porque el workflow autoritativo conserva PostgreSQL
+como gated skip; C04 sigue pendiente porque los probes no modelan aislamiento
+tenant/branch.

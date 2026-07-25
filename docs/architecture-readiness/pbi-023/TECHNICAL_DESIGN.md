@@ -49,7 +49,7 @@ ejecutada.
 
 ## 4. Paths previstos
 
-La infraestructura raíz tiene policy preventiva D5-R037–D5-R048. Los paths no
+La infraestructura raíz tiene policy preventiva D5-R037–D5-R049. Los paths no
 materializados siguen siendo futuros aprobados, no autorización para crearlos.
 
 | Path previsto | Owner | Consumidor | API pública | Razón | Momento |
@@ -58,14 +58,16 @@ materializados siguen siendo futuros aprobados, no autorización para crearlos.
 | `src/infrastructure/database/database-types.ts` | Ingeniería | adapters y migrator | tipo de schema técnico | tipos Kysely sin filtrarlos al dominio | futuro; no materializado en Paso 6 |
 | `src/infrastructure/database/database-connection.ts` | Ingeniería + Operaciones | transaction runner materializado/adapters futuros y tests | interface/error/create/sanitize; no drivers | pool único y lifecycle explícito | paso 6 — materializado; drain interno Paso 7 |
 | `src/infrastructure/database/database-transaction-capability.ts` | Ingeniería + Operaciones | sólo connection/runner | capability interna, nunca barrel público | executor Kysely owner-scoped | paso 6B — materializado |
-| `src/infrastructure/database/transaction-runner.ts` | Ingeniería + Operaciones | migration runner/adapters futuros | options/context/error/run exactos | commit/rollback seguro | paso 6B — materializado |
-| `src/infrastructure/database/migration-runner.ts` | Ingeniería + Operaciones | scripts `migrate:*` | status/latest/down/verify | aislar mutación del bootstrap | paso 7 |
-| `src/infrastructure/database/migrations/` | owner por archivo; custodia Operaciones | migration runner | módulos de migración congelados | secuencia central determinista | paso 8; nunca vacío |
+| `src/infrastructure/database/transaction-runner.ts` | Ingeniería + Operaciones | adapters futuros | options/context/error/run exactos | commit/rollback seguro | paso 7 — materializado |
+| `src/infrastructure/database/database-migration-capability.ts` | Ingeniería + Operaciones | sólo connection/runner | capability owner-internal | sesión dedicada sin exponer Kysely | paso 8 — materializado |
+| `src/infrastructure/database/database-migration-provider.ts` | Ingeniería + Operaciones | sólo migration runner | provider/manifest internos | discovery y hash fail-closed | paso 8 — materializado |
+| `src/infrastructure/database/migration-runner.ts` | Ingeniería + Operaciones | composición operativa futura | status/latest/up/down/destroy | aislar mutación del bootstrap | paso 8 — materializado |
+| `src/infrastructure/database/migrations/` | owner por archivo; custodia Operaciones | migration runner | módulos de migración congelados | secuencia central determinista | paso 9; inexistente hasta la primera migración |
 | `src/modules/tenancy/application/ports/tenant-repository.port.ts` | tenancy | aplicación tenancy futura | puerto interno; no export cross-module | contrato owner-first | paso 11, sólo con adapter real |
 | `src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts` | tenancy | composición/test | ninguna cross-module | acceso a objeto propio | paso 11 |
 | `src/modules/stations/application/ports/branch-repository.port.ts` | stations | aplicación stations futura | puerto interno; no export cross-module | exigir tenant + branch | paso 11 |
 | `src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts` | stations | composición/test | ninguna cross-module | acceso a objeto propio | paso 11 |
-| `scripts/migrate.mjs` | Ingeniería + Operaciones | scripts package futuros | CLI de proceso | entrada explícita no importable por runtime | paso 7 |
+| `scripts/run-migrations.mjs` | Ingeniería + Operaciones | scripts package futuros | CLI de proceso | entrada explícita no importable por runtime | composición operacional diferida |
 | `test/persistence-support.mjs` | Calidad + Ingeniería | pruebas persistence | helpers sólo de test | lifecycle DB/cleanup | paso 9 |
 | `test/persistence-fixtures.mjs` | Calidad + Seguridad | pruebas persistence | fixtures sintéticos | dos tenants/sucursales deterministas | paso 12 |
 | `test/persistence-migrations.test.mjs` | Calidad + Operaciones | `test:persistence` | ninguna | vacío/anterior/re-run/lock/fallo | paso 9 |

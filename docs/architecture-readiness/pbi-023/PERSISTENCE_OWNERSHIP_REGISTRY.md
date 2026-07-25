@@ -2,9 +2,9 @@
 
 ## Estado
 
-- **Estado:** configuración, facility de conexión, capability interna y
-  transaction runner materializados; demás paths productivos future-approved
-  y no materializados.
+- **Estado:** configuración, facility de conexión, capabilities internas,
+  transaction runner y migration runner/provider materializados; demás paths
+  productivos future-approved y no materializados.
 - **Autoridad:** DEC-049.
 - **Gate:** DEC049-C02.
 - **Co-ownership:** prohibido.
@@ -21,7 +21,10 @@ registrado.
 | `src/infrastructure/database/database-config.ts` | `database` | `DatabaseConfig`, `DatabaseConfigError`, `parseDatabaseConfig`, `sanitizeDatabaseConfig` | `database-connection.ts` | `materialized-configuration`; pura y sin red |
 | `src/infrastructure/database/database-connection.ts` | `database` | `DatabaseConnection`, `DatabaseConnectionError`, `createDatabaseConnection`, `sanitizeDatabaseConnectionState` | transaction runner materializado; composición futura | `materialized-connection-facility`; no exporta pool/Kysely, no startup |
 | `src/infrastructure/database/database-transaction-capability.ts` | `database` | API interna exacta; no superficie funcional | exclusivamente connection y runner | `materialized-owner-internal-capability`; Kysely no se reexporta |
-| `src/infrastructure/database/transaction-runner.ts` | `database` | `DatabaseTransactionOptions`, `DatabaseTransactionContext`, `DatabaseTransactionError`, `runInTransaction` | migration runner y adapters/composición futuros | `materialized-transaction-runner`; consumer diferido al gate de migraciones |
+| `src/infrastructure/database/transaction-runner.ts` | `database` | `DatabaseTransactionOptions`, `DatabaseTransactionContext`, `DatabaseTransactionError`, `runInTransaction` | adapters/composición futuros | `materialized-transaction-runner` |
+| `src/infrastructure/database/database-migration-capability.ts` | `database` | capability/runtime internos exactos | exclusivamente connection y migration runner | `materialized-owner-internal-capability`; no superficie funcional |
+| `src/infrastructure/database/database-migration-provider.ts` | `database` | inspection/manifest/provider internos | exclusivamente migration runner | `materialized-owner-internal-provider`; root arbitrario no público |
+| `src/infrastructure/database/migration-runner.ts` | `database` | options/status/execution/error/factory exactos | composición operativa futura | `materialized-migration-runner`; startup prohibido |
 
 ## Objetos
 

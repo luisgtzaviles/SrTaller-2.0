@@ -7,7 +7,7 @@ La fuente legible por máquina es
 JavaScript bajo `src/`, compara los módulos y edges contra esa política y
 emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 
-## Catálogo D5-R001 a D5-R048
+## Catálogo D5-R001 a D5-R049
 
 | ID | Nivel | Norma | Motivo | Detección actual | Severidad | Excepción y autoridad |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -59,6 +59,7 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R046 | MUST NOT | SQL ejecutable fuera de migración autorizada | Evitar bypass del query builder/ownership | Procedencia de `kysely.sql`, `.raw` y `query()` sobre executor tipado | Blocker | Migración central; probe connection owner-scoped literal `select 1` |
 | D5-R047 | MUST | Operación Kysely usa objeto DB del owner registrado | Aplicar ownership físico preventivo | Executor tipado + `selectFrom`/`insertInto`/`updateTable`/`deleteFrom` + registry fail-closed | Blocker | Ninguna |
 | D5-R048 | MUST | Frontera transaccional explícita, owner-internal y sin control manual | Evitar transacciones implícitas, nesting silencioso y fuga de executor | Imports/reexports/dynamic imports de async context, target interno resuelto, consumidores prohibidos y métodos manuales | Blocker | Ninguna; savepoints o propagación implícita requieren decisión separada |
+| D5-R049 | MUST | Capability y proveedor de migraciones permanecen owner-internal y el runner no se consume desde startup o capas funcionales | Evitar ejecución automática, acceso lateral y bypass del flujo operativo gobernado | Targets locales resueltos contra `migrationBoundary.allowedInternalConsumers` y consumidores prohibidos del runner | Blocker | Ninguna; la composición operativa requiere un gate posterior explícito |
 
 ## Diagnóstico y exit codes
 
@@ -172,8 +173,8 @@ demuestre equivalencia.
 La correspondencia completa entre policy, detector, diagnóstico y pruebas está
 en [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md).
 
-Estado vigente de cobertura tras PBI-023 transaction runner: 39 reglas directas
-del checker, una externa, dos compuestas y seis documentales; 144 fixtures
-(19 positivos y 125 negativos), 35 mutaciones de producto y 54 contratos
+Estado vigente de cobertura tras PBI-023 migration runner: 40 reglas directas
+del checker, una externa, dos compuestas y seis documentales; 152 fixtures
+(20 positivos y 132 negativos), 36 mutaciones de producto y 55 contratos
 semánticos críticos únicos. Los conteos fechados de las verificaciones formales
 de PBI-022 permanecen históricos.

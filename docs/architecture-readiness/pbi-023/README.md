@@ -8,15 +8,17 @@
 - **Alcance:** decisión, investigación, ejecución material desechable,
   evidencia, diseño, riesgos y plan.
 - **Cambio técnico:** checker/tests, dependencias/configuración, facility de
-  conexión y transaction runner controlados; cero wiring productivo.
-- **Resultado:** `PASS — PBI-023 TRANSACTION RUNNER VERIFIED`.
-- **Estado PBI-023:** `Ready — transaction runner verified / migration runner
-  authorized`.
+  conexión, transaction runner y migration runner controlados; cero wiring
+  productivo.
+- **Resultado:** `PASS — PBI-023 MIGRATION RUNNER VERIFIED`.
+- **Estado PBI-023:** `Ready — migration runner verified / first productive
+  migration authorized`.
 
 ## Propósito
 
-Este expediente lleva PBI-023 hasta un runner transaccional verificable anterior
-a crear migraciones o persistencia funcional. Distingue seis estados
+Este expediente lleva PBI-023 hasta runners transaccional y de migraciones
+verificables antes de crear migraciones productivas o persistencia funcional.
+Distingue siete estados
 que no deben confundirse:
 
 1. DEC-050 está aceptada documentalmente con condiciones.
@@ -28,6 +30,8 @@ que no deben confundirse:
    productivos, startup automático, tablas ni migraciones.
 6. El Paso 7 materializó el runner, capability owner-internal, D5-R048 y
    pruebas PostgreSQL reales sin migrations ni tablas productivas.
+7. El Paso 8 materializó migrador/provider gobernados, D5-R049 y pruebas
+   PostgreSQL reales; la ruta/migración productiva sigue ausente.
 
 El laboratorio fue destruido. El Paso 4 modificó sólo `package.json`,
 `pnpm-lock.yaml` y documentación; preservó `src/`, workflows, scripts, tests,
@@ -58,6 +62,7 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 | [typed-configuration/](typed-configuration/README.md) | parser fail-closed, roles, timeouts y redacción del Paso 5 |
 | [connection-facility/](connection-facility/README.md) | lifecycle, errores, PostgreSQL 18.4, concurrencia, cleanup y dictamen del Paso 6 |
 | [transaction-runner/](transaction-runner/README.md) | contrato, aislamiento, nesting, errores, PostgreSQL 18.4, D5-R048 y dictamen del Paso 7 |
+| [migration-runner/](migration-runner/README.md) | discovery, manifest/drift, journal, lock, down, PostgreSQL 18.4, D5-R049 y dictamen del Paso 8 |
 
 ## Alcance preservado
 
@@ -71,7 +76,7 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 
 ## Gate siguiente
 
-Solicitar el migration runner y `FileMigrationProvider` como paso separado, sin
-crear todavía la primera migración productiva, tablas, adapter, endpoint ni
-integración con startup. Cada paso
+Solicitar el Paso 9 como cambio separado para la primera migración productiva
+mínima. No incluye repositories, adapters, endpoint ni integración con startup.
+Cada paso
 requiere autorización propia y sus condiciones DEC-049/050/051/063 aplicables.

@@ -112,18 +112,22 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Paso 8 — Runner de migraciones
 
+- **Estado:** `Completed — PASS` en
+  [migration-runner/](migration-runner/README.md).
 - **Objetivo:** status/latest/down/verify explícitos.
-- **Archivos:** migration runner, `scripts/migrate.mjs`, scripts package y
-  tests.
+- **Archivos:** migration runner, capability/provider internos, tests/harness
+  y D5-R049. CLI y scripts package permanecen diferidos.
 - **Dependencias:** DEC-050, connection runtime y transaction runner cuando el
   migrador requiera unidad transaccional.
 - **Riesgos:** mutación por import/start, lock largo, resultado ignorado.
-- **Pruebas:** status no mutante, app startup no migra, error→exit no cero,
-  dos runners y cleanup.
-- **Evidencia:** comandos, lock timing, procesos y salida sanitizada.
+- **Pruebas:** status, up/latest/down, startup sin migración, manifest/drift,
+  dos runners, timeout, journal, rollback, ESM/dist y cleanup.
+- **Evidencia:** dos runs PostgreSQL `18.4`, comparación material, manifest,
+  lock y salida sanitizada.
 - **Rollback:** eliminar runner/scripts; base aún sin schema productivo.
 - **Gate:** DEC050-C03/C08.
-- **Salida:** migración sólo por comando explícito.
+- **Salida:** API administrativa explícita verificada; ruta productiva
+  inexistente y composición CLI diferida hasta un contrato operacional seguro.
 
 ## Paso 9 — Primera migración mínima
 

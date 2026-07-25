@@ -88,7 +88,7 @@
     ],
     "databaseRoot": "src/infrastructure/database/",
     "migrationRoot": "src/infrastructure/database/migrations/",
-    "migrationFilePattern": "^\\d{14}_(database|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)*\\.ts$",
+    "migrationFilePattern": "^\\d{14}_(database|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
         "owner": "database",
@@ -128,6 +128,40 @@
         ],
         "status": "materialized-connection-facility"
       },
+      "src/infrastructure/database/database-migration-capability.ts": {
+        "owner": "database",
+        "publicExports": [
+          "InternalDatabaseMigrationExecutor",
+          "InternalDatabaseMigrationOperation",
+          "InternalDatabaseMigrationRuntime",
+          "databaseMigrationCapability",
+          "databaseMigrationRuntime",
+          "DatabaseMigrationCapabilityError",
+          "InternalDatabaseMigrationConnection"
+        ],
+        "consumers": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/migration-runner.ts"
+        ],
+        "status": "materialized-owner-internal-capability"
+      },
+      "src/infrastructure/database/database-migration-provider.ts": {
+        "owner": "database",
+        "publicExports": [
+          "InternalMigrationSource",
+          "InternalMigrationManifestItem",
+          "InternalMigrationManifest",
+          "InternalMigrationInspection",
+          "databaseMigrationSourceOverride",
+          "InternalMigrationProviderError",
+          "inspectMigrationSource",
+          "createGovernedFileMigrationProvider"
+        ],
+        "consumers": [
+          "src/infrastructure/database/migration-runner.ts"
+        ],
+        "status": "materialized-owner-internal-provider"
+      },
       "src/infrastructure/database/database-transaction-capability.ts": {
         "owner": "database",
         "publicExports": [
@@ -156,18 +190,27 @@
           "runInTransaction"
         ],
         "consumers": [
-          "src/infrastructure/database/migration-runner.ts",
           "src/modules/stations/stations.module.ts",
           "src/modules/tenancy/tenancy.module.ts"
         ],
-        "consumerRequirement": "deferred-until-migration-step",
+        "consumerRequirement": "deferred-until-adapter-composition",
         "status": "materialized-transaction-runner"
       },
       "src/infrastructure/database/migration-runner.ts": {
         "owner": "database",
-        "publicExports": ["runMigrations"],
+        "publicExports": [
+          "DatabaseMigrationRunnerOptions",
+          "DatabaseMigrationDownAuthorization",
+          "DatabaseMigrationStatusItem",
+          "DatabaseMigrationStatus",
+          "DatabaseMigrationExecution",
+          "DatabaseMigrationRunner",
+          "DatabaseMigrationError",
+          "createMigrationRunner"
+        ],
         "consumers": ["scripts/run-migrations.mjs"],
-        "status": "future-approved"
+        "consumerRequirement": "deferred-until-operational-composition",
+        "status": "materialized-migration-runner"
       }
     },
     "ports": {
@@ -261,7 +304,21 @@
         "startTransaction"
       ]
     },
-    "status": "transaction-runner-materialized"
+    "migrationBoundary": {
+      "runner": "src/infrastructure/database/migration-runner.ts",
+      "capability": "src/infrastructure/database/database-migration-capability.ts",
+      "provider": "src/infrastructure/database/database-migration-provider.ts",
+      "allowedInternalConsumers": {
+        "src/infrastructure/database/database-migration-capability.ts": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/migration-runner.ts"
+        ],
+        "src/infrastructure/database/database-migration-provider.ts": [
+          "src/infrastructure/database/migration-runner.ts"
+        ]
+      }
+    },
+    "status": "migration-runner-materialized"
   },
   "checkerRules": [
     "D5-R002",
@@ -302,7 +359,8 @@
     "D5-R045",
     "D5-R046",
     "D5-R047",
-    "D5-R048"
+    "D5-R048",
+    "D5-R049"
   ],
   "requiredSemanticCoverage": [
     "fixture:D5-R025:parenthesized:direct",
@@ -358,7 +416,9 @@
     "mutation:D5-R045:persistence-boundary",
     "mutation:D5-R046:persistence-boundary",
     "mutation:D5-R047:persistence-boundary",
-    "mutation:D5-R048:persistence-boundary"
+    "mutation:D5-R048:persistence-boundary",
+    "fixture:D5-R049:migration-provider-consumer",
+    "mutation:D5-R049:persistence-boundary"
   ],
   "externalExecutableRules": ["D5-R001"],
   "compositeRules": ["D5-R032", "D5-R033"],

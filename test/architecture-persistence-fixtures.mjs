@@ -87,6 +87,59 @@ const transactionRunner = [
   '',
 ].join('\n');
 
+const databaseMigrationCapabilitySource = [
+  "import type { Kysely } from 'kysely';",
+  'export type InternalDatabaseMigrationExecutor = Kysely<Record<string, Record<string, unknown>>>;',
+  'export type InternalDatabaseMigrationOperation<T> = (executor: InternalDatabaseMigrationExecutor) => Promise<T>;',
+  "export type InternalDatabaseMigrationRuntime = Readonly<{ environment: 'development'; role: 'migration'; accessMode: 'read-write'; migrationsEnabled: true }>;",
+  "export const databaseMigrationCapability: unique symbol = Symbol('synthetic-migration');",
+  "export const databaseMigrationRuntime: unique symbol = Symbol('synthetic-runtime');",
+  "export class DatabaseMigrationCapabilityError extends Error { readonly code = 'OVERLAP_FORBIDDEN'; }",
+  'export interface InternalDatabaseMigrationConnection {',
+  '  readonly state: string;',
+  '  [databaseMigrationRuntime](): InternalDatabaseMigrationRuntime;',
+  '  [databaseMigrationCapability]<T>(operation: InternalDatabaseMigrationOperation<T>): Promise<T>;',
+  '}',
+  '',
+].join('\n');
+
+const databaseMigrationProviderSource = [
+  "import { FileMigrationProvider } from 'kysely/migration';",
+  "export type InternalMigrationSource = Readonly<{ root: string; authorizedRoot: string; normalizedRoot: string; mode: 'compiled' }>;",
+  'export type InternalMigrationManifestItem = Readonly<{ fileName: string }>;',
+  'export type InternalMigrationManifest = Readonly<{ migrations: readonly InternalMigrationManifestItem[] }>;',
+  'export type InternalMigrationInspection = Readonly<{ source: InternalMigrationSource; manifest: InternalMigrationManifest }>;',
+  "export const databaseMigrationSourceOverride: unique symbol = Symbol('synthetic-source');",
+  "export class InternalMigrationProviderError extends Error { readonly code = 'PROVIDER_FAILED'; }",
+  'export async function inspectMigrationSource(source: InternalMigrationSource): Promise<InternalMigrationInspection> {',
+  '  return { source, manifest: { migrations: [] } };',
+  '}',
+  'export function createGovernedFileMigrationProvider(): FileMigrationProvider {',
+  "  return new FileMigrationProvider({ fs: { readdir: async () => [] }, migrationFolder: '.', path: { join: (...parts) => parts.join('/') } });",
+  '}',
+  '',
+].join('\n');
+
+const migrationRunner = [
+  "import type { DatabaseConnection } from './database-connection.js';",
+  "import { databaseMigrationCapability } from './database-migration-capability.js';",
+  "import { inspectMigrationSource } from './database-migration-provider.js';",
+  'export type DatabaseMigrationRunnerOptions = Readonly<{ lockTimeoutMs?: number }>;',
+  "export type DatabaseMigrationDownAuthorization = Readonly<{ confirmation: 'REVERT_ONE_MIGRATION' }>;",
+  "export type DatabaseMigrationStatusItem = Readonly<{ state: 'pending' }>;",
+  'export type DatabaseMigrationStatus = Readonly<{ migrations: readonly DatabaseMigrationStatusItem[] }>;',
+  "export type DatabaseMigrationExecution = Readonly<{ operation: 'up' }>;",
+  'export interface DatabaseMigrationRunner { getMigrationStatus(): Promise<DatabaseMigrationStatus>; }',
+  'export class DatabaseMigrationError extends Error {}',
+  'export function createMigrationRunner(connection: DatabaseConnection): DatabaseMigrationRunner {',
+  '  void connection;',
+  '  void databaseMigrationCapability;',
+  '  void inspectMigrationSource;',
+  "  throw new DatabaseMigrationError('synthetic');",
+  '}',
+  '',
+].join('\n');
+
 const tenantPort = [
   'export interface TenantPersistenceScope { readonly tenantId: string; }',
   'export interface TenantRepositoryPort {',
@@ -565,6 +618,116 @@ export const persistenceFixtureCases = [
       'src/infrastructure/database/migrations/20260724010101_tenancy_create_tenants.ts':
         "import { sql } from 'kysely';\nexport const up = () => sql`create table tenants (tenant_id text)`;\n",
     },
+  },
+  {
+    name: 'D5-R049 rejects an unauthorized migration provider consumer',
+    expectedRules: ['D5-R049'],
+    expectedPath: 'src/modules/access/presentation/migration-helper.ts',
+    files: based({
+      'src/infrastructure/database/database-migration-capability.ts':
+        databaseMigrationCapabilitySource,
+      'src/infrastructure/database/database-migration-provider.ts':
+        databaseMigrationProviderSource,
+      'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/modules/access/presentation/migration-helper.ts':
+        "import { inspectMigrationSource } from '../../../infrastructure/database/database-migration-provider.js';\nexport const helper = inspectMigrationSource;\n",
+    }),
+    coverage: {
+      ids: ['fixture:D5-R049:migration-provider-consumer'],
+      evidence: ['inspectMigrationSource'],
+    },
+  },
+  {
+    name: 'D5-R049 rejects migration runner import from startup',
+    expectedRules: ['D5-R049'],
+    expectedPath: 'src/main.ts',
+    files: based({
+      'src/infrastructure/database/database-migration-capability.ts':
+        databaseMigrationCapabilitySource,
+      'src/infrastructure/database/database-migration-provider.ts':
+        databaseMigrationProviderSource,
+      'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/main.ts':
+        "import { createMigrationRunner } from './infrastructure/database/migration-runner.js';\nvoid createMigrationRunner;\n",
+    }),
+  },
+  {
+    name: 'D5-R049 rejects aliased migration runner import from application',
+    expectedRules: ['D5-R040', 'D5-R049'],
+    expectedPath: 'src/modules/access/application/migration-use-case.ts',
+    files: based({
+      'src/infrastructure/database/database-migration-capability.ts':
+        databaseMigrationCapabilitySource,
+      'src/infrastructure/database/database-migration-provider.ts':
+        databaseMigrationProviderSource,
+      'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/modules/access/application/migration-use-case.ts':
+        "import { createMigrationRunner as createAdministrativeRunner } from '../../../infrastructure/database/migration-runner.js';\nexport const useCase = createAdministrativeRunner;\n",
+    }),
+  },
+  {
+    name: 'D5-R049 rejects namespace migration runner import from controller',
+    expectedRules: ['D5-R035', 'D5-R049'],
+    expectedPath: 'src/modules/access/presentation/migration.controller.ts',
+    files: based({
+      'src/infrastructure/database/database-migration-capability.ts':
+        databaseMigrationCapabilitySource,
+      'src/infrastructure/database/database-migration-provider.ts':
+        databaseMigrationProviderSource,
+      'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/modules/access/presentation/migration.controller.ts':
+        "import * as Migration from '../../../infrastructure/database/migration-runner.js';\nexport const handler = Migration.createMigrationRunner;\n",
+    }),
+  },
+  {
+    name: 'D5-R049 rejects migration provider re-export',
+    expectedRules: ['D5-R049'],
+    expectedPath: 'src/modules/access/presentation/migration-export.ts',
+    files: based({
+      'src/infrastructure/database/database-migration-capability.ts':
+        databaseMigrationCapabilitySource,
+      'src/infrastructure/database/database-migration-provider.ts':
+        databaseMigrationProviderSource,
+      'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/modules/access/presentation/migration-export.ts':
+        "export { inspectMigrationSource as inspect } from '../../../infrastructure/database/database-migration-provider.js';\n",
+    }),
+  },
+  {
+    name: 'D5-R049 rejects owner-internal migration type import',
+    expectedRules: ['D5-R049'],
+    expectedPath: 'src/modules/access/presentation/migration-type.ts',
+    files: based({
+      'src/infrastructure/database/database-migration-capability.ts':
+        databaseMigrationCapabilitySource,
+      'src/infrastructure/database/database-migration-provider.ts':
+        databaseMigrationProviderSource,
+      'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/modules/access/presentation/migration-type.ts':
+        "import type { InternalMigrationManifest } from '../../../infrastructure/database/database-migration-provider.js';\nexport type Manifest = InternalMigrationManifest;\n",
+    }),
+  },
+  {
+    name: 'D5-R049 rejects require and dynamic migration facility imports',
+    expectedRules: ['D5-R049'],
+    expectedPath: 'src/modules/access/presentation/migration-dynamic.ts',
+    files: based({
+      'src/infrastructure/database/database-migration-capability.ts':
+        databaseMigrationCapabilitySource,
+      'src/infrastructure/database/database-migration-provider.ts':
+        databaseMigrationProviderSource,
+      'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/modules/access/presentation/migration-dynamic.ts':
+        "void require('../../../infrastructure/database/database-migration-capability.js');\nvoid import('../../../infrastructure/database/database-migration-provider.js');\n",
+    }),
+  },
+  {
+    name: 'D5-R049 permits shadowed local migration names without imports',
+    expectedRules: [],
+    files: based({
+      'src/modules/access/presentation/local-migration-name.ts':
+        "const createMigrationRunner = (): string => 'local';\nconst inspectMigrationSource = createMigrationRunner;\nexport { inspectMigrationSource };\n",
+    }),
   },
   {
     name: 'PBI-023 station port accepts structural tenant and branch scope',

@@ -1045,6 +1045,7 @@ function persistenceBoundaryDiagnostics({
     persistence.genericRepositoryCapabilities,
   );
   const transactionBoundary = persistence.transactionBoundary;
+  const migrationBoundary = persistence.migrationBoundary;
   const allowedCapabilityConsumers = new Set(
     transactionBoundary.allowedCapabilityConsumers,
   );
@@ -1053,6 +1054,11 @@ function persistenceBoundaryDiagnostics({
   );
   const forbiddenManualMethods = new Set(
     transactionBoundary.forbiddenManualMethods,
+  );
+  const migrationInternalConsumers = new Map(
+    Object.entries(migrationBoundary.allowedInternalConsumers).map(
+      ([target, consumers]) => [target, new Set(consumers)],
+    ),
   );
 
   for (const [file, parsed] of parsedFiles) {
@@ -1099,6 +1105,30 @@ function persistenceBoundaryDiagnostics({
       const targetRelative = target
         ? toPosix(relative(projectRoot, target))
         : undefined;
+      if (
+        targetRelative &&
+        migrationInternalConsumers.has(targetRelative) &&
+        !migrationInternalConsumers.get(targetRelative).has(relativePath)
+      ) {
+        add(
+          'D5-R049',
+          file,
+          `owner-internal migration facility ${targetRelative} is not available to ${relativePath}`,
+        );
+      }
+      if (
+        targetRelative === migrationBoundary.runner &&
+        (layer === 'domain' ||
+          layer === 'application' ||
+          persistence.startupFiles.includes(relativePath) ||
+          /\.controller\.(?:c|m)?[jt]s$/u.test(relativePath))
+      ) {
+        add(
+          'D5-R049',
+          file,
+          'migration runner is not consumable from startup, controllers, domain, or application code',
+        );
+      }
       if (
         targetRelative === transactionBoundary.capability &&
         !allowedCapabilityConsumers.has(relativePath)
@@ -1380,15 +1410,18 @@ function persistenceBoundaryDiagnostics({
         const materializedConsumers = registration.consumers
           .map((consumer) => resolve(projectRoot, consumer))
           .filter((consumer) => parsedFiles.has(consumer));
-        const transactionRunnerConsumerDeferred =
-          relativePath ===
-            transactionBoundary.runner &&
+        const consumerDeferred =
           registration.owner === 'database' &&
-          registration.status === 'materialized-transaction-runner' &&
-          registration.consumerRequirement ===
-            'deferred-until-migration-step';
+          ((relativePath === transactionBoundary.runner &&
+            registration.status === 'materialized-transaction-runner' &&
+            registration.consumerRequirement ===
+              'deferred-until-adapter-composition') ||
+            (relativePath === migrationBoundary.runner &&
+              registration.status === 'materialized-migration-runner' &&
+              registration.consumerRequirement ===
+                'deferred-until-operational-composition'));
         if (
-          !transactionRunnerConsumerDeferred &&
+          !consumerDeferred &&
           (materializedConsumers.length === 0 ||
             !materializedConsumers.some((consumer) =>
               importsTarget(

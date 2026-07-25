@@ -4,11 +4,12 @@
 
 - **Estado anterior:** abierta; ADR-003 sólo fijaba principios.
 - **Estado final:** `Accepted with conditions`.
-- **Materialización productiva:** selección exacta/lock instalada; runtime no
-  iniciado. Configuración tipada del Paso 5 materializada sin conexión.
+- **Materialización productiva:** selección exacta, configuración, conexión y
+  runners transaccional/de migraciones materializados sin wiring ni schema.
 - **Verificación material:** SPIKE-002 `PASS`; [evidencia](spike-002-evidence/README.md).
-- **Condiciones:** DEC050-C01 queda parcial por selección/lock/compatibilidad;
-  C02–C10 y los componentes runtime/CI de C01 continúan pendientes.
+- **Condiciones:** C01–C08 ganan evidencia parcial del runner; primera
+  migración, CI, operación compartida, schema/owners y promoción continúan
+  pendientes. C09/C10 no se cierran.
 - **Estrategia:** `Migrator` + `FileMigrationProvider` del core de Kysely.
 - **Runner:** propio, mínimo, explícito y separado de build/start.
 - **Decisión completa:** [DECISION_PROPOSAL.md](../../decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md).
@@ -55,6 +56,13 @@ commit/rollback, isolation y read-only sobre la facility verificada. Aporta
 evidencia a C04 y a la reutilización de conexión, sin materializar `Migrator`,
 `FileMigrationProvider`, journal, advisory lock, migrations, promoción ni
 startup. Por ello no cierra C02–C10 ni autoriza la primera migración.
+
+El [Paso 8](migration-runner/RESULTS.md) materializa `Migrator`,
+`FileMigrationProvider`, status/up/down, journal, manifest/drift y advisory
+lock finito. Dos runs PostgreSQL `18.4` verifican fixtures únicamente. Esto
+autoriza solicitar la primera migración mínima, pero no satisface por completo
+condiciones que exigen schema real, CI autoritativa, roles/operación compartida
+o promoción.
 
 ## Temas no absorbidos
 
