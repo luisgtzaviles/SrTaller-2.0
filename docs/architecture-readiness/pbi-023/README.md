@@ -7,10 +7,10 @@
 - **Rama:** `r0/pbi-023-persistence-planning`.
 - **Alcance:** decisión, investigación, ejecución material desechable,
   evidencia, diseño, riesgos y plan.
-- **Cambio técnico:** ninguno.
-- **Resultado:** `PASS — SPIKE-002 MATERIAL VERIFICATION COMPLETE`.
-- **Estado PBI-023:** `Ready — SPIKE-002 materially verified /
-  implementation gates ready`.
+- **Cambio técnico:** checker/tests/documentación; cero runtime productivo.
+- **Resultado:** `PASS — PBI-023 PERSISTENCE BOUNDARIES ENFORCED`.
+- **Estado PBI-023:** `Ready — persistence boundaries enforced / dependency
+  installation authorized`.
 
 ## Propósito
 
@@ -20,7 +20,8 @@ que no deben confundirse:
 
 1. DEC-050 está aceptada documentalmente con condiciones.
 2. SPIKE-002 está materialmente cerrado con dos runs PostgreSQL reales.
-3. PBI-023 está `Ready`, no `In progress`, `Implemented` ni `Done`.
+3. El Paso 3 está completo y PBI-023 sigue `Ready`, no `In progress`,
+   `Implemented` ni `Done`.
 
 El laboratorio se ejecutó fuera de las superficies productivas y fue
 destruido. No modificó `src/`, manifests, lockfile, workflows, scripts, tests,
@@ -46,6 +47,7 @@ tsconfig ni Dockerfiles del repositorio.
 | [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md) | requisito → decisión → evidencia |
 | [EXPECTED_EVIDENCE.md](EXPECTED_EVIDENCE.md) | manifest y artefactos futuros |
 | [RESULTS.md](RESULTS.md) | dictamen consolidado |
+| [checker-extension/](checker-extension/README.md) | reglas D5-R037–D5-R047, fixtures, mutaciones, ownership y evidencia del Paso 3 |
 
 ## Alcance preservado
 
@@ -59,8 +61,7 @@ tsconfig ni Dockerfiles del repositorio.
 
 ## Gate siguiente
 
-Materializar el Paso 3: extender primero los boundaries y el checker con
-casos válidos, negativos y mutaciones antes de modificar `src/`. Después
-siguen, en orden, instalación controlada, configuración tipada e
-infraestructura de conexión. Cada paso requiere autorización propia y sus
-condiciones DEC-049/050/051/063 aplicables.
+Solicitar el Paso 4: instalación controlada de versiones exactas/frozen, sin
+crear todavía configuración, conexión, migración o adapter. Después siguen
+configuración tipada e infraestructura de conexión. Cada paso requiere
+autorización propia y sus condiciones DEC-049/050/051/063 aplicables.

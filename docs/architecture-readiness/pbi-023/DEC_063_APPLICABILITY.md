@@ -12,9 +12,9 @@ cumplimiento final del PBI.
 
 | Condición | Trigger | Aplicabilidad PBI-023 | Estado | Evidencia futura | Gate |
 |---|---|---|---|---|---|
-| C02 — riesgo fail-closed | antes de integrar riesgo medio/alto | directa | `Pending` | matriz versionada, review y no downgrade unilateral | antes del primer merge persistente |
-| C05 — checklist persistence/migration | antes del primer cambio persistente | directa | `Pending` | DEC-049/050, PG real, recovery, owner, constraints | antes de primera migración/merge |
-| C06 — checklist security | antes de tenant/auth/sensitive funcional | directa para tenant; auth no aplica | `Pending` | negativos, sanitización, mínimo privilegio, secretos | antes del primer merge tenant |
+| C02 — riesgo fail-closed | antes de integrar riesgo medio/alto | directa | `Partial — checker PASS` | matriz/versionado/mutaciones completos; review runtime pendiente | antes del primer merge persistente |
+| C05 — checklist persistence/migration | antes del primer cambio persistente | directa | `Partial — checker item PASS` | owner/naming/SQL static completos; PG/recovery/constraints pendientes | antes de primera migración/merge |
+| C06 — checklist security | antes de tenant/auth/sensitive funcional | directa para tenant; auth no aplica | `Partial — static negatives PASS` | scope/leakage/sanitization scans completos; privilege/runtime pendiente | antes del primer merge tenant |
 | C07 — release/hotfix | antes del primer release candidate | no bloquea planificación/implementación local | `Pending` | runbook, rollback, smoke y evidencia release | pre-release |
 | C08 — waivers | antes de aprobar excepción | no activada | `Pending` | owner, razón, expiración, compensación y cierre | sólo ante excepción |
 
@@ -40,7 +40,7 @@ Antes de cualquier cambio persistente:
 - [ ] roles y secretos gobernados.
 - [ ] logs y manifest sanitizados.
 - [ ] cleanup seguro.
-- [ ] checker/gates actualizados con mutaciones.
+- [x] checker/gates actualizados con mutaciones.
 - [ ] dos runs Linux equivalentes.
 - [ ] aprobaciones por riesgo.
 
@@ -81,7 +81,7 @@ crea una excepción implícita.
 
 ## Dictamen
 
-C02/C05/C06 son gates materiales del primer merge persistente. El spike aporta
-riesgo high explícito, tests negativos, sanitización, lifecycle y doble run,
-pero no completa los checklists. C07 es pre-release. C08 permanece dormida
+C02/C05/C06 son gates materiales del primer merge persistente. El checker
+completa sus componentes estáticos, pero no PostgreSQL, mínimo privilegio ni
+controles runtime. C07 es pre-release. C08 permanece dormida
 hasta una excepción real.

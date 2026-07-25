@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { fixtureCases } from './architecture-fixtures.mjs';
+import { persistenceFixtureCases } from './architecture-persistence-fixtures.mjs';
 import {
   createFixture,
   diagnosticPathProblems,
@@ -11,7 +12,7 @@ import {
   runChecker,
 } from './architecture-support.mjs';
 
-for (const fixtureCase of fixtureCases) {
+for (const fixtureCase of [...fixtureCases, ...persistenceFixtureCases]) {
   test(`architecture fixture: ${fixtureCase.name}`, async () => {
     const root = await createFixture(fixtureCase);
     try {

@@ -33,6 +33,9 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Paso 3 — Extender boundaries y checker
 
+- **Estado:** `Completed — PASS` en
+  [checker-extension/](checker-extension/README.md).
+
 - **Objetivo:** autorizar exactamente la facility database y adapters owners.
 - **Archivos:** `architecture/dec-005-policy.json`, checker sólo si es
   necesario, fixtures/mutaciones/tests arquitectónicos.
@@ -43,7 +46,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Evidencia:** policy version, IDs D5, diagnósticos y mutaciones.
 - **Rollback:** revertir policy/checker/tests; todavía sin runtime.
 - **Gate:** DEC051-C06/C09 y DEC063-C02.
-- **Salida:** checker falla cerrado antes de crear `src/`.
+- **Salida:** checker falla cerrado antes de crear `src/`; D5-R037–D5-R047,
+  36 fixtures y 11 mutaciones.
 
 ## Paso 4 — Instalar dependencias exactas
 
@@ -192,7 +196,6 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Orden definitivo
 
-El orden recomendado del prompt se ajusta poniendo el checker antes de `src/`
-y separando schema/adapters. Los pasos 1–2 están completos. El siguiente paso
-real es **Paso 3**, sujeto a autorización explícita; los pasos 4–14 no quedan
-autorizados por el cierre del spike.
+El orden recomendado pone el checker antes de `src/` y separa schema/adapters.
+Los pasos 1–3 están completos. El siguiente paso real es **Paso 4**, sujeto a
+autorización explícita; los pasos 5–14 no quedan autorizados por este cierre.

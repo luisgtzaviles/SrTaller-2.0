@@ -1,6 +1,6 @@
 # Matriz autoritativa de trazabilidad D5
 
-Esta matriz relaciona las 36 reglas de DEC-005 con su mecanismo real después
+Esta matriz relaciona las 47 reglas vigentes de DEC-005 con su mecanismo real después
 de la remediación de PBI-022. `PASS técnico` describe la clase de evidencia de
 cada fila. La
 [sexta reverificación formal independiente](FORMAL_VERIFICATION_6.md) confirmó
@@ -45,15 +45,26 @@ los casos automatizados.
 | D5-R029 | Ejecutable | Prohibición explícita | Identidad normalizada de `Scope.REQUEST`, directa/alias/namespace | `request scope cannot be operational-context authority` | Árbol base; paquetes ajenos/homónimos/shadowing parentetizados | Casos nominales y tres variantes wrapped | Directo, alias nominal y alias wrapped | PASS técnico | La autoridad semántica adicional sigue bajo revisión |
 | D5-R030 | Documental | Casos de uso planos | Revisión humana futura | No aplica — regla documental | No aplica — no hay casos de uso | No aplica — regla documental | No aplica — regla documental | PASS por no aplicabilidad | Se activa cuando exista funcionalidad autorizada |
 | D5-R031 | Ejecutable | NodeNext | Imports relativos AST y typecheck | `lacks a NodeNext JavaScript extension` | Árbol base | `NodeNext extension violation` | No aplica — typecheck aporta segunda barrera | PASS técnico | Aliases/loaders no están autorizados |
-| D5-R032 | Compuesta | Orden y salidas deterministas | Doble ejecución por fixture y gate repetido | Diferencia de salida falla la suite | Todos los fixtures se ejecutan dos veces | Todos los fixtures negativos se comparan dos veces | Restauración de 23 mutaciones | PASS técnico | Determinismo cubierto para sintaxis conocida |
-| D5-R033 | Compuesta | `checkerRules`, `requiredSemanticCoverage` y catálogo | Policy→caso, 26 contratos únicos y clave canónica de tipo/polaridad/regla/diagnóstico/path/snapshot efectivo/configuración | Falla ante ausencia, ID repetido, duplicado semántico con otro ID, neutralización o contrato incompleto; identifica ambos contratos | Árbol real, 12 fixtures positivos y 8 distinciones semánticas explícitas | 27 reglas del checker tienen fixture negativo; 86 negativos; 10 rechazos de equivalencia | 23 mutaciones de producto en 12 reglas/familias + 6 mutaciones semánticas D5-R033 con restauración | PASS técnico | Sólo paths equivalentes y trivia no semántica se normalizan; la revisión independiente sigue validando suficiencia |
+| D5-R032 | Compuesta | Orden y salidas deterministas | Doble ejecución por fixture y gate repetido | Diferencia de salida falla la suite | Todos los fixtures se ejecutan dos veces | Todos los fixtures negativos se comparan dos veces | Restauración de 34 mutaciones | PASS técnico | Determinismo cubierto para sintaxis conocida |
+| D5-R033 | Compuesta | `checkerRules`, `requiredSemanticCoverage` y catálogo | Policy→caso, 49 contratos únicos y clave canónica de tipo/polaridad/regla/diagnóstico/path/snapshot efectivo/configuración | Falla ante ausencia, ID repetido, duplicado semántico con otro ID, neutralización o contrato incompleto | Árbol real, 17 fixtures positivos y distinciones semánticas explícitas | 38 reglas directas tienen fixture negativo; 117 negativos | 34 mutaciones de producto + 6 mutaciones semánticas D5-R033 | PASS técnico | Los conteos 26/98/23 históricos de PBI-022 se preservan en sus dictámenes fechados |
 | D5-R034 | Documental | Fail-closed sin excepciones | Policy y revisión | No aplica — no existen excepciones | Árbol base | No aplica — no hay excepción autorizada | No aplica — regla documental | PASS por no aplicabilidad | Una excepción futura requiere decisión previa |
 | D5-R035 | Ejecutable | Allowlist de PBI-022 | Identidad normalizada de Controller/decoradores HTTP directa/alias/namespace; comportamiento y allowlist | Diagnóstico propio D5-R035 | Árbol base; paquetes ajenos/homónimos/shadowing parentetizados | Controller y endpoint nominales y wrapped; comportamiento funcional | HTTP/Controller nominales, endpoint wrapped y comportamiento | PASS técnico | Prohíbe funcionalidad; no clasifica su corrección de negocio |
 | D5-R036 | Ejecutable | `controllerAuthoritySymbols` | Identidad normalizada de Controller y miembros/calls de autoridad | Diagnóstico propio D5-R036 | Árbol base; paquetes ajenos/homónimos/shadowing parentetizados | Controller nominal y wrapped decide autorización | Controller nominal, namespace y alias wrapped | PASS técnico | Detector conservador por símbolos; revisión semántica sigue obligatoria |
+| D5-R037 | Ejecutable | `persistence.allowedDependencyRoots` | Specifier AST de paquetes DB | Diagnóstico de dependency root | Facility/adapter sintético registrado | Direct/default/alias/namespace/type/reexport/import-equals/require/dynamic | D5-R037 aislada | PASS técnico | Packages sintéticos no instalados |
+| D5-R038 | Ejecutable | API registry + nombres de capacidad | Export AST en facility | Diagnóstico de acceso global | Factory registrada | `db` directo y reexport alias | D5-R038 aislada | PASS técnico | Sólo aplica a facility materializada |
+| D5-R039 | Ejecutable | Capacidades repository | Genéricos/métodos AST | Diagnóstico generic repository | Repository owner-scoped | `Ledger<T>` read/write | D5-R039 aislada | PASS técnico | Semántica owner específica sigue revisable |
+| D5-R040 | Ejecutable | Database root | Target local resuelto | Diagnóstico layer→DB | Port sin infra | Import y barrel desde application | D5-R040 aislada | PASS técnico | Alias tsconfig no autorizado |
+| D5-R041 | Ejecutable | Adapter registry | Path/owner/port/composition | Diagnóstico adapter huérfano | Adapter tenancy completo | No registrado y sin composición | D5-R041 aislada | PASS técnico | Paths futuros no se crean |
+| D5-R042 | Ejecutable | Migration root/pattern | Path, nombre e import target | Diagnóstico migration | Migración UTC owner-scoped | Dispersa y nombre inválido | D5-R042 aislada | PASS técnico | No ejecuta SQL |
+| D5-R043 | Ejecutable | Port registry + driver types | Procedencia AST/type aliases/qualified | Diagnóstico leakage | Port puro | Alias, namespace, reexport, type alias | D5-R043 aislada | PASS técnico | Ningún driver instalado |
+| D5-R044 | Ejecutable | Scopes por port | Firma AST estructural | Diagnóstico tenant scope | Tenant y tenant+branch | Ausente/opcional/nullable/default/branch-only | D5-R044 aislada | PASS técnico | Excepciones deben registrarse antes |
+| D5-R045 | Ejecutable | Infrastructure registry | Exports/consumers exactos | Diagnóstico API/consumer | Facility consumida | No registrado y sin consumer | D5-R045 aislada | PASS técnico | Fail-closed |
+| D5-R046 | Ejecutable | Migration root | Procedencia `sql`/`.raw`/executor.query | Diagnóstico raw SQL | Raw SQL sólo en migración central | Alias/namespace/typed pg | D5-R046 aislada | PASS técnico | No busca strings sueltas |
+| D5-R047 | Ejecutable | `databaseObjects` | Executor tipado + table operation | Diagnóstico object owner | `tenants` desde tenancy | `branches`, desconocido/dinámico | D5-R047 aislada | PASS técnico | APIs calculadas nuevas requieren ampliar detector |
 
 ## Lectura de cobertura
 
-- Reglas ejecutadas directamente por el checker: 27; todas tienen al menos un
+- Reglas ejecutadas directamente por el checker: 38; todas tienen al menos un
   fixture negativo aislado.
 - Regla ejecutable externa: D5-R001, gobernada por `verify:structure`.
 - Reglas compuestas: D5-R032 y D5-R033.

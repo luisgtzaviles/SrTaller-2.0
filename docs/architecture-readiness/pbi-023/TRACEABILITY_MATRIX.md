@@ -13,13 +13,13 @@
 | roles/secretos | DEC050-C06, DEC063-C06 | TECHNICAL_DESIGN §7 | [sanitization](spike-002-evidence/CLEANUP.md) | `Partial; shared roles pending` |
 | vacío/anterior/re-run | DEC050-C07, DEC051-C03 | IMPLEMENTATION step 9 | [probe migration suite](spike-002-evidence/EXPERIMENT_MATRIX.md) | `Pattern verified; product suite/CI pending` |
 | no migration startup | DEC-004, DEC050-C08 | IMPLEMENTATION step 7/13 | smoke/status | `Pending` |
-| owner/scope | DEC049-C02, DEC050-C09 | OWNERSHIP_REGISTRY | checker/review | `Proposed` |
-| tenant obligatorio | ADR-004, DEC-049 | ISOLATION_TEST_PLAN | ISO-001–007 | `Pending` |
-| branch coherente | ADR-004/010, DEC-049 | TECHNICAL_DESIGN §5 | ISO-008–011 | `Pending` |
+| owner/scope | DEC049-C02, DEC050-C09 | OWNERSHIP_REGISTRY | [checker registry/rules](checker-extension/OWNERSHIP_ENFORCEMENT.md) | `Preventive enforcement complete; runtime pending` |
+| tenant obligatorio | ADR-004, DEC-049 | ISOLATION_TEST_PLAN | D5-R044 + ISO-001–007 | `Static contract enforced; runtime pending` |
+| branch coherente | ADR-004/010, DEC-049 | TECHNICAL_DESIGN §5 | D5-R044/D5-R047 + ISO-008–011 | `Static ownership enforced; runtime pending` |
 | contexto concurrente | SPIKE-002 | ISOLATION_TEST_PLAN | [E8–E10](spike-002-evidence/EXPERIMENT_MATRIX.md) | `Verified by spike; product suite pending` |
-| no query global | DEC049-C05/C07 | TECHNICAL_DESIGN §2 | static negatives | `Pending` |
+| no query global | DEC049-C05/C07 | TECHNICAL_DESIGN §2 | D5-R038/D5-R039/D5-R046 | `Preventive enforcement complete; runtime pending` |
 | error sanitizado | DEC-044, DEC049-C06 | TECHNICAL_DESIGN §9 | translation/log tests | `Pending` |
-| boundaries/checker | DEC-005, DEC051-C06/C09 | IMPLEMENTATION step 3 | fixtures/mutations/double run | `Pending` |
+| boundaries/checker | DEC-005, DEC051-C06/C09 | IMPLEMENTATION step 3 | [fixtures/mutations/double run](checker-extension/RESULTS.md) | `PASS — D5-R037–D5-R047` |
 | branch protection | DEC051-C02 | DEC_051_APPLICABILITY | remote config/rejection | `Pending` |
 | riesgo high fail-closed | DEC063-C02 | RISK_ASSESSMENT | review/manifest | `Defined; pending closure` |
 | checklist migration | DEC063-C05 | DEC_063_APPLICABILITY | completed checklist | `Pending` |

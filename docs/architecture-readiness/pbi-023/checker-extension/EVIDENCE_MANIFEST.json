@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "repository": "luisgtzaviles/SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit_base": "f517e83b8adf8d710dbe572849e2b86fa3a5bc80",
+  "generated_at": "2026-07-25T04:40:04Z",
+  "checker": {
+    "policy_version": 2,
+    "path": "scripts/lib/architecture-checker.mjs",
+    "sha256": "98f13e9d15548002befe82fb946fc48db31a2a3648055c2660babd7d923f280e"
+  },
+  "rule_ids": [
+    "D5-R037",
+    "D5-R038",
+    "D5-R039",
+    "D5-R040",
+    "D5-R041",
+    "D5-R042",
+    "D5-R043",
+    "D5-R044",
+    "D5-R045",
+    "D5-R046",
+    "D5-R047"
+  ],
+  "fixtures": {
+    "baseline": 98,
+    "added": 36,
+    "total": 134,
+    "positive": 17,
+    "negative": 117,
+    "diagnostics": 134
+  },
+  "mutations": {
+    "baseline_product": 23,
+    "added_persistence": 11,
+    "total_product": 34,
+    "semantic_meta_contract": 6,
+    "neutralization_fixture_only": true
+  },
+  "tests": {
+    "architecture": 207,
+    "total": 219,
+    "semantic_coverage_contracts": 49
+  },
+  "counts": {
+    "rules_direct": 38,
+    "rules_external": 1,
+    "rules_composite": 2,
+    "rules_documentary": 6,
+    "rules_total": 47
+  },
+  "commands": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run architecture",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run build",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm test",
+      "result": "PASS",
+      "tests": 219
+    },
+    {
+      "command": "pnpm run test:architecture",
+      "result": "PASS",
+      "tests": 207
+    },
+    {
+      "command": "pnpm run verify",
+      "result": "PASS",
+      "tests": 219
+    },
+    {
+      "command": "pnpm run smoke:start",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "command": "markdown links, JSON, YAML, sanitization and scope audits",
+      "result": "PASS"
+    }
+  ],
+  "hashes": {
+    "architecture/dec-005-policy.json": "fca5d48c253a0fbfc7ebeed90903ab5fc4366722be12344c019fd0819aab504f",
+    "test/architecture-persistence-fixtures.mjs": "de4a52972dfa2b3f550ea831e388f6c6cc75f019c6a87fc3e223226e1fae19fd",
+    "test/architecture-persistence-mutations.mjs": "0b433969dc0ce584d021621f5a2308bdff8255b61836954ce5ecbd4e0aa6754d",
+    "test/architecture-persistence-mutations.test.mjs": "460a83128342f158b445072f23670c23e0a2d670e3b057b6502c5830097d03eb",
+    "test/architecture-semantic-coverage.mjs": "290905166fe4ced65166439f8cf2809117154746e416a28793a911e132aee0dc",
+    "docs/architecture-readiness/pbi-023/checker-extension/RULE_MATRIX.md": "c9f2019b58664e84588d448eb24290fde4f3758a4cab3a7f620b62527175eaaf",
+    "docs/architecture-readiness/pbi-023/checker-extension/TRACEABILITY_MATRIX.md": "d96a7415408f9d393601bb34224a2c3668ad749ba819b5888869e1965ea3c486"
+  },
+  "determinism": {
+    "fixture_double_run": true,
+    "mutation_double_run": true,
+    "product_checker_repeatable": true
+  },
+  "sanitization": {
+    "personal_paths": 0,
+    "private_keys": 0,
+    "credential_urls": 0,
+    "versioned_tmp_paths": 0
+  },
+  "scope": {
+    "src_changed": false,
+    "package_manifest_changed": false,
+    "lockfile_changed": false,
+    "workflow_changed": false,
+    "docker_changed": false,
+    "database_runtime_created": false,
+    "product_sql_created": false,
+    "product_migrations_created": false
+  },
+  "final_result": "PASS — PBI-023 PERSISTENCE BOUNDARIES ENFORCED"
+}

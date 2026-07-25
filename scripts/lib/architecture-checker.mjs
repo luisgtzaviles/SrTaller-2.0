@@ -171,6 +171,13 @@ function collectModuleSpecifiers(sourceFile) {
     ) {
       add(node.moduleSpecifier, ts.isExportDeclaration(node) ? 'export' : 'import');
     } else if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference) &&
+      node.moduleReference.expression &&
+      ts.isStringLiteralLike(node.moduleReference.expression)
+    ) {
+      add(node.moduleReference.expression, 'import-equals');
+    } else if (
       ts.isCallExpression(node) &&
       node.arguments.length === 1 &&
       ts.isStringLiteralLike(node.arguments[0]) &&
@@ -402,65 +409,121 @@ export function unwrapTransparentExpression(node) {
   return current;
 }
 
-function createImportIdentityResolver(sourceFile) {
+export function createImportIdentityResolver(sourceFile) {
   const named = new Map();
   const namespaces = new Map();
+  const defaults = new Map();
 
   for (const statement of sourceFile.statements) {
     if (
-      !ts.isImportDeclaration(statement) ||
-      !ts.isStringLiteralLike(statement.moduleSpecifier) ||
-      !statement.importClause?.namedBindings
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteralLike(statement.moduleSpecifier)
     ) {
-      continue;
-    }
-
-    const specifier = statement.moduleSpecifier.text;
-    if (ts.isNamedImports(statement.importClause.namedBindings)) {
-      for (const element of statement.importClause.namedBindings.elements) {
-        named.set(element.name.text, {
-          imported: element.propertyName?.text ?? element.name.text,
+      const specifier = statement.moduleSpecifier.text;
+      if (statement.importClause?.name) {
+        defaults.set(statement.importClause.name.text, {
+          imported: 'default',
           specifier,
         });
       }
-    } else if (ts.isNamespaceImport(statement.importClause.namedBindings)) {
-      namespaces.set(statement.importClause.namedBindings.name.text, specifier);
+      if (
+        statement.importClause?.namedBindings &&
+        ts.isNamedImports(statement.importClause.namedBindings)
+      ) {
+        for (const element of statement.importClause.namedBindings.elements) {
+          named.set(element.name.text, {
+            imported: element.propertyName?.text ?? element.name.text,
+            specifier,
+          });
+        }
+      } else if (
+        statement.importClause?.namedBindings &&
+        ts.isNamespaceImport(statement.importClause.namedBindings)
+      ) {
+        namespaces.set(statement.importClause.namedBindings.name.text, specifier);
+      }
+    } else if (
+      ts.isImportEqualsDeclaration(statement) &&
+      ts.isExternalModuleReference(statement.moduleReference) &&
+      statement.moduleReference.expression &&
+      ts.isStringLiteralLike(statement.moduleReference.expression)
+    ) {
+      namespaces.set(
+        statement.name.text,
+        statement.moduleReference.expression.text,
+      );
+    } else if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        if (
+          ts.isIdentifier(declaration.name) &&
+          declaration.initializer
+        ) {
+          const initializer = unwrapTransparentExpression(
+            declaration.initializer,
+          );
+          if (
+            ts.isCallExpression(initializer) &&
+            ts.isIdentifier(initializer.expression) &&
+            initializer.expression.text === 'require' &&
+            initializer.arguments.length === 1 &&
+            ts.isStringLiteralLike(initializer.arguments[0])
+          ) {
+            namespaces.set(
+              declaration.name.text,
+              initializer.arguments[0].text,
+            );
+          }
+        }
+      }
     }
   }
 
-  function matches(expression, specifier, imported) {
+  function originOf(expression) {
     const candidate = unwrapTransparentExpression(expression);
 
     if (ts.isIdentifier(candidate)) {
-      const binding = named.get(candidate.text);
-      return (
-        binding?.specifier === specifier &&
-        binding.imported === imported &&
-        !identifierIsShadowed(candidate, sourceFile)
-      );
+      if (identifierIsShadowed(candidate, sourceFile)) {
+        return undefined;
+      }
+      return named.get(candidate.text) ?? defaults.get(candidate.text);
     }
     if (ts.isPropertyAccessExpression(candidate)) {
       const namespace = unwrapTransparentExpression(candidate.expression);
-      if (!ts.isIdentifier(namespace)) {
-        return false;
-      }
-      return (
-        namespaces.get(namespace.text) === specifier &&
-        candidate.name.text === imported &&
+      if (
+        ts.isIdentifier(namespace) &&
         !identifierIsShadowed(namespace, sourceFile)
-      );
+      ) {
+        const specifier =
+          namespaces.get(namespace.text) ??
+          defaults.get(namespace.text)?.specifier;
+        if (specifier) {
+          return { imported: candidate.name.text, specifier };
+        }
+      }
     }
-    if (ts.isQualifiedName(candidate) && ts.isIdentifier(candidate.left)) {
-      return (
-        namespaces.get(candidate.left.text) === specifier &&
-        candidate.right.text === imported &&
-        !identifierIsShadowed(candidate.left, sourceFile)
-      );
+    if (ts.isQualifiedName(candidate)) {
+      const namespace = unwrapTransparentExpression(candidate.left);
+      if (
+        ts.isIdentifier(namespace) &&
+        !identifierIsShadowed(namespace, sourceFile)
+      ) {
+        const specifier =
+          namespaces.get(namespace.text) ??
+          defaults.get(namespace.text)?.specifier;
+        if (specifier) {
+          return { imported: candidate.right.text, specifier };
+        }
+      }
     }
-    return false;
+    return undefined;
   }
 
-  return { matches };
+  function matches(expression, specifier, imported) {
+    const origin = originOf(expression);
+    return origin?.specifier === specifier && origin.imported === imported;
+  }
+
+  return { matches, originOf };
 }
 
 function importedDecorators(node, resolver, specifier, imported) {
@@ -646,7 +709,756 @@ function controllerAuthorityUses(sourceFile, authoritySymbols, resolver) {
   return [...uses].sort();
 }
 
-export async function checkArchitecture({ fixture = false, root }) {
+function exportedDeclarationNames(sourceFile) {
+  const names = new Set(exportedNames(sourceFile));
+  for (const statement of sourceFile.statements) {
+    if (!ts.isExportDeclaration(statement) || !statement.exportClause) {
+      continue;
+    }
+    if (ts.isNamedExports(statement.exportClause)) {
+      for (const element of statement.exportClause.elements) {
+        names.add(element.name.text);
+      }
+    }
+  }
+  return [...names].sort();
+}
+
+function declarationName(node) {
+  if (
+    node &&
+    (ts.isIdentifier(node) ||
+      ts.isStringLiteralLike(node) ||
+      ts.isNumericLiteral(node))
+  ) {
+    return node.text;
+  }
+  return undefined;
+}
+
+function nodeContainsImportedDriver(node, resolver, persistence, aliases = new Set()) {
+  let found = false;
+  function visit(current) {
+    if (
+      (ts.isIdentifier(current) ||
+        ts.isPropertyAccessExpression(current) ||
+        ts.isQualifiedName(current))
+    ) {
+      const origin = resolver.originOf(current);
+      if (
+        origin &&
+        (persistence.driverPublicTypes[origin.specifier] ?? []).includes(
+          origin.imported,
+        )
+      ) {
+        found = true;
+        return;
+      }
+      if (ts.isIdentifier(current) && aliases.has(current.text)) {
+        found = true;
+        return;
+      }
+    }
+    ts.forEachChild(current, visit);
+  }
+  if (node) {
+    visit(node);
+  }
+  return found;
+}
+
+function importedDriverAliases(sourceFile, resolver, persistence) {
+  const aliases = new Set();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const statement of sourceFile.statements) {
+      if (
+        ts.isTypeAliasDeclaration(statement) &&
+        !aliases.has(statement.name.text) &&
+        nodeContainsImportedDriver(statement.type, resolver, persistence, aliases)
+      ) {
+        aliases.add(statement.name.text);
+        changed = true;
+      }
+    }
+  }
+  return aliases;
+}
+
+function isPersistencePackage(specifier, persistence) {
+  return (
+    persistence.dependencyPackages.includes(specifier) ||
+    persistence.dependencyPackagePrefixes.some((prefix) =>
+      specifier.startsWith(prefix),
+    )
+  );
+}
+
+function isInsidePath(path, root) {
+  return path === root.slice(0, -1) || path.startsWith(root);
+}
+
+function scopeTypeIsStructural(sourceFile, scopeName, persistence) {
+  const requiredFields = persistence.scopeTypes[scopeName];
+  if (!requiredFields) {
+    return false;
+  }
+  const declaration = sourceFile.statements.find(
+    (statement) =>
+      (ts.isInterfaceDeclaration(statement) ||
+        ts.isTypeAliasDeclaration(statement)) &&
+      statement.name.text === scopeName,
+  );
+  if (!declaration) {
+    return false;
+  }
+  let members;
+  if (ts.isInterfaceDeclaration(declaration)) {
+    members = declaration.members;
+  } else if (
+    ts.isTypeAliasDeclaration(declaration) &&
+    ts.isTypeLiteralNode(declaration.type)
+  ) {
+    members = declaration.type.members;
+  } else {
+    return false;
+  }
+  return requiredFields.every((field) =>
+    members.some((member) => {
+      if (
+        !ts.isPropertySignature(member) ||
+        declarationName(member.name) !== field ||
+        member.questionToken ||
+        member.type?.kind !== ts.SyntaxKind.StringKeyword
+      ) {
+        return false;
+      }
+      const modifiers = ts.canHaveModifiers(member)
+        ? ts.getModifiers(member) ?? []
+        : [];
+      return modifiers.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.ReadonlyKeyword,
+      );
+    }),
+  );
+}
+
+function parameterHasRequiredScope(
+  parameter,
+  allowedScopes,
+  sourceFile,
+  persistence,
+) {
+  if (
+    parameter.questionToken ||
+    parameter.initializer ||
+    !parameter.type ||
+    ts.isOptionalTypeNode(parameter.type)
+  ) {
+    return false;
+  }
+  if (
+    ts.isUnionTypeNode(parameter.type) &&
+    parameter.type.types.some(
+      (type) =>
+        type.kind === ts.SyntaxKind.NullKeyword ||
+        type.kind === ts.SyntaxKind.UndefinedKeyword,
+    )
+  ) {
+    return false;
+  }
+  return (
+    ts.isTypeReferenceNode(parameter.type) &&
+    ts.isIdentifier(parameter.type.typeName) &&
+    allowedScopes.includes(parameter.type.typeName.text) &&
+    scopeTypeIsStructural(
+      sourceFile,
+      parameter.type.typeName.text,
+      persistence,
+    )
+  );
+}
+
+function importsTarget(parsed, sourcePath, targetPath, sourceFileSet) {
+  return parsed.records.some((record) => {
+    const target = resolveLocalSource(sourcePath, record.specifier, sourceFileSet);
+    return target === targetPath;
+  });
+}
+
+function collectExecutorBindings(sourceFile, resolver, persistence, aliases) {
+  const identifiers = new Map();
+  const properties = new Set();
+
+  function isExecutorType(type) {
+    return nodeContainsImportedDriver(type, resolver, persistence, aliases);
+  }
+
+  function addBinding(
+    declaration,
+    name,
+    type,
+    initializer,
+    isProperty = false,
+  ) {
+    let executor = isExecutorType(type);
+    if (initializer && ts.isNewExpression(unwrapTransparentExpression(initializer))) {
+      const expression = unwrapTransparentExpression(initializer).expression;
+      const origin = resolver.originOf(expression);
+      executor ||= Boolean(
+        origin &&
+          (persistence.databaseExecutorTypes[origin.specifier] ?? []).includes(
+            origin.imported,
+          ),
+      );
+    }
+    if (!executor || !ts.isIdentifier(name)) {
+      return;
+    }
+    if (isProperty) {
+      properties.add(name.text);
+    } else {
+      const declarations = identifiers.get(name.text) ?? new Set();
+      declarations.add(declaration);
+      identifiers.set(name.text, declarations);
+    }
+  }
+
+  function visit(node) {
+    if (ts.isVariableDeclaration(node)) {
+      addBinding(node, node.name, node.type, node.initializer);
+    } else if (ts.isParameter(node)) {
+      const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) ?? [] : [];
+      addBinding(
+        node,
+        node.name,
+        node.type,
+        node.initializer,
+        modifiers.some((modifier) =>
+          [
+            ts.SyntaxKind.PrivateKeyword,
+            ts.SyntaxKind.ProtectedKeyword,
+            ts.SyntaxKind.PublicKeyword,
+            ts.SyntaxKind.ReadonlyKeyword,
+          ].includes(modifier.kind),
+        ),
+      );
+    } else if (ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) {
+      addBinding(node, node.name, node.type, node.initializer, true);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  function nearestValueBinding(identifier) {
+    const expected = identifier.text;
+    for (
+      let current = identifier.parent;
+      current && current !== sourceFile.parent;
+      current = current.parent
+    ) {
+      if (isFunctionLikeDeclaration(current)) {
+        const parameter = current.parameters.find((candidate) =>
+          bindingNameContains(candidate.name, expected),
+        );
+        if (parameter) {
+          return parameter;
+        }
+      }
+      if (ts.isBlock(current) || ts.isSourceFile(current)) {
+        for (const statement of current.statements) {
+          if (ts.isVariableStatement(statement)) {
+            const declaration = statement.declarationList.declarations.find(
+              (candidate) => bindingNameContains(candidate.name, expected),
+            );
+            if (declaration) {
+              return declaration;
+            }
+          }
+          if (
+            (ts.isFunctionDeclaration(statement) ||
+              ts.isClassDeclaration(statement) ||
+              ts.isEnumDeclaration(statement)) &&
+            statement.name?.text === expected
+          ) {
+            return statement;
+          }
+        }
+      }
+      if (
+        ts.isCatchClause(current) &&
+        current.variableDeclaration &&
+        bindingNameContains(current.variableDeclaration.name, expected)
+      ) {
+        return current.variableDeclaration;
+      }
+    }
+    return undefined;
+  }
+
+  function matches(expression) {
+    const candidate = unwrapTransparentExpression(expression);
+    if (
+      ts.isIdentifier(candidate) &&
+      identifiers.get(candidate.text)?.has(nearestValueBinding(candidate))
+    ) {
+      return true;
+    }
+    if (
+      ts.isPropertyAccessExpression(candidate) &&
+      candidate.expression.kind === ts.SyntaxKind.ThisKeyword &&
+      properties.has(candidate.name.text)
+    ) {
+      return true;
+    }
+    if (
+      ts.isCallExpression(candidate) &&
+      ts.isPropertyAccessExpression(candidate.expression)
+    ) {
+      return matches(candidate.expression.expression);
+    }
+    return false;
+  }
+
+  return { matches };
+}
+
+function persistenceBoundaryDiagnostics({
+  add,
+  parsedFiles,
+  persistence,
+  projectRoot,
+  sourceFileSet,
+}) {
+  const databaseRoot = persistence.databaseRoot;
+  const migrationRoot = persistence.migrationRoot;
+  const registeredPorts = new Set(Object.keys(persistence.ports));
+  const registeredAdapters = new Set(Object.keys(persistence.adapters));
+  const registeredInfrastructure = new Set(
+    Object.keys(persistence.infrastructureFiles),
+  );
+  const forbiddenGlobalNames = new Set(
+    persistence.forbiddenGlobalSurfaceNames,
+  );
+  const genericCapabilities = new Set(
+    persistence.genericRepositoryCapabilities,
+  );
+
+  for (const [file, parsed] of parsedFiles) {
+    const relativePath = toPosix(relative(projectRoot, file));
+    const sourceFile = parsed.sourceFile;
+    const resolver = createImportIdentityResolver(sourceFile);
+    const aliases = importedDriverAliases(
+      sourceFile,
+      resolver,
+      persistence,
+    );
+    const moduleName = moduleFromPath(projectRoot, file);
+    const layer = layerFromPath(projectRoot, file);
+    const isPort =
+      registeredPorts.has(relativePath) ||
+      /\/application\/ports\/[^/]*repository[^/]*\.(?:c|m)?[jt]s$/u.test(
+        relativePath,
+      );
+    const allowedDependencyPath = persistence.allowedDependencyRoots.some(
+      (root) => isInsidePath(relativePath, root),
+    );
+
+    for (const record of parsed.records) {
+      if (
+        isPersistencePackage(record.specifier, persistence) &&
+        !allowedDependencyPath &&
+        !isPort
+      ) {
+        add(
+          'D5-R037',
+          file,
+          `persistence dependency ${record.specifier} is outside an authorized infrastructure root`,
+        );
+      }
+
+      const target = resolveLocalSource(file, record.specifier, sourceFileSet);
+      const targetRelative = target
+        ? toPosix(relative(projectRoot, target))
+        : undefined;
+      if (
+        targetRelative &&
+        isInsidePath(targetRelative, databaseRoot) &&
+        (layer === 'domain' || layer === 'application') &&
+        !isPort
+      ) {
+        add(
+          'D5-R040',
+          file,
+          `layer ${layer} imports database infrastructure through ${record.specifier}`,
+        );
+      }
+      if (
+        targetRelative &&
+        isInsidePath(targetRelative, migrationRoot) &&
+        (layer === 'domain' ||
+          persistence.startupFiles.includes(relativePath) ||
+          /\.controller\.(?:c|m)?[jt]s$/u.test(relativePath))
+      ) {
+        add(
+          'D5-R042',
+          file,
+          `migration ${targetRelative} is consumed outside the authorized runner`,
+        );
+      }
+    }
+
+    for (const statement of sourceFile.statements) {
+      if (
+        (ts.isClassDeclaration(statement) ||
+          ts.isInterfaceDeclaration(statement)) &&
+        statement.typeParameters?.length > 0
+      ) {
+        const capabilityCount = new Set(
+          statement.members
+            .map((member) => declarationName(member.name))
+            .filter((name) => name && genericCapabilities.has(name)),
+        ).size;
+        if (capabilityCount >= 2) {
+          add(
+            'D5-R039',
+            file,
+            'generic cross-entity repository capability is forbidden',
+          );
+        }
+      }
+      if (
+        ts.isFunctionDeclaration(statement) &&
+        statement.typeParameters?.length > 0 &&
+        statement.parameters.some(
+          (parameter) =>
+            declarationName(parameter.name) === 'table' &&
+            parameter.type?.kind === ts.SyntaxKind.StringKeyword,
+        )
+      ) {
+        add(
+          'D5-R039',
+          file,
+          'generic arbitrary-table persistence helper is forbidden',
+        );
+      }
+    }
+
+    if (isPort) {
+      let leaked = false;
+      for (const record of parsed.records) {
+        const target = resolveLocalSource(file, record.specifier, sourceFileSet);
+        const targetRelative = target
+          ? toPosix(relative(projectRoot, target))
+          : undefined;
+        if (
+          isPersistencePackage(record.specifier, persistence) ||
+          (targetRelative && isInsidePath(targetRelative, databaseRoot))
+        ) {
+          leaked = true;
+        }
+      }
+      if (
+        !leaked &&
+        nodeContainsImportedDriver(sourceFile, resolver, persistence, aliases)
+      ) {
+        leaked = true;
+      }
+      if (leaked) {
+        add(
+          'D5-R043',
+          file,
+          'persistence port leaks a driver, query-builder, SQL, or database infrastructure type',
+        );
+      }
+
+      const port = persistence.ports[relativePath];
+      if (port) {
+        const methods = [];
+        for (const statement of sourceFile.statements) {
+          if (ts.isInterfaceDeclaration(statement) || ts.isClassDeclaration(statement)) {
+            methods.push(
+              ...statement.members.filter(
+                (member) =>
+                  ts.isMethodSignature(member) ||
+                  ts.isMethodDeclaration(member),
+              ),
+            );
+          }
+        }
+        if (
+          methods.length === 0 ||
+          methods.some(
+            (method) =>
+              !method.parameters.some((parameter) =>
+                parameterHasRequiredScope(
+                  parameter,
+                  port.allowedScopes,
+                  sourceFile,
+                  persistence,
+                ),
+              ),
+          )
+        ) {
+          add(
+            'D5-R044',
+            file,
+            'every owner-scoped persistence operation must require a non-optional structural tenant scope',
+          );
+        }
+      }
+    }
+
+    if (isInsidePath(relativePath, migrationRoot)) {
+      const migrationName = basename(relativePath);
+      if (
+        !new RegExp(persistence.migrationFilePattern, 'u').test(migrationName)
+      ) {
+        add(
+          'D5-R042',
+          file,
+          `migration filename ${migrationName} is not UTC-lexicographic and owner-scoped`,
+        );
+      }
+    } else if (/(?:^|\/)migrations?\//u.test(relativePath)) {
+      add(
+        'D5-R042',
+        file,
+        'migration is outside the central authorized migration root',
+      );
+    }
+
+    if (
+      isInsidePath(relativePath, databaseRoot) &&
+      !isInsidePath(relativePath, migrationRoot)
+    ) {
+      const registration = persistence.infrastructureFiles[relativePath];
+      if (!registration) {
+        add(
+          'D5-R045',
+          file,
+          'database infrastructure file has no explicit owner/API/consumer registration',
+        );
+      } else {
+        const actualExports = exportedDeclarationNames(sourceFile);
+        const dangerousExports = new Set(
+          actualExports.filter((name) => forbiddenGlobalNames.has(name)),
+        );
+        const importsPersistence = parsed.records.some((record) =>
+          isPersistencePackage(record.specifier, persistence),
+        );
+        for (const statement of sourceFile.statements) {
+          if (ts.isVariableStatement(statement) && isExported(statement)) {
+            for (const declaration of statement.declarationList.declarations) {
+              const name = declarationName(declaration.name);
+              if (
+                name &&
+                !registration.publicExports.includes(name) &&
+                (importsPersistence ||
+                  nodeContainsImportedDriver(
+                    declaration,
+                    resolver,
+                    persistence,
+                    aliases,
+                  ))
+              ) {
+                dangerousExports.add(name);
+              }
+            }
+          } else if (
+            ts.isFunctionDeclaration(statement) &&
+            isExported(statement) &&
+            statement.name &&
+            !registration.publicExports.includes(statement.name.text) &&
+            nodeContainsImportedDriver(
+              statement.type,
+              resolver,
+              persistence,
+              aliases,
+            )
+          ) {
+            dangerousExports.add(statement.name.text);
+          } else if (
+            ts.isExportDeclaration(statement) &&
+            statement.moduleSpecifier &&
+            ts.isStringLiteralLike(statement.moduleSpecifier) &&
+            isPersistencePackage(statement.moduleSpecifier.text, persistence)
+          ) {
+            if (
+              statement.exportClause &&
+              ts.isNamedExports(statement.exportClause)
+            ) {
+              for (const element of statement.exportClause.elements) {
+                dangerousExports.add(element.name.text);
+              }
+            } else {
+              dangerousExports.add('*');
+            }
+          }
+        }
+        if (dangerousExports.size > 0) {
+          add(
+            'D5-R038',
+            file,
+            `global database capability is forbidden: ${[...dangerousExports].sort().join(', ')}`,
+          );
+        }
+        const unexpectedExports = actualExports.filter(
+          (name) =>
+            !registration.publicExports.includes(name) &&
+            !dangerousExports.has(name),
+        );
+        const missingExports = registration.publicExports.filter(
+          (name) => !actualExports.includes(name),
+        );
+        if (unexpectedExports.length > 0 || missingExports.length > 0) {
+          add(
+            'D5-R045',
+            file,
+            `database infrastructure API differs from its registry; unexpected=${unexpectedExports.join(',') || 'none'} missing=${missingExports.join(',') || 'none'}`,
+          );
+        }
+        const materializedConsumers = registration.consumers
+          .map((consumer) => resolve(projectRoot, consumer))
+          .filter((consumer) => parsedFiles.has(consumer));
+        if (
+          materializedConsumers.length === 0 ||
+          !materializedConsumers.some((consumer) =>
+            importsTarget(
+              parsedFiles.get(consumer),
+              consumer,
+              file,
+              sourceFileSet,
+            ),
+          )
+        ) {
+          add(
+            'D5-R045',
+            file,
+            'database infrastructure has no materialized registered consumer and composition',
+          );
+        }
+      }
+    }
+
+    const executor = collectExecutorBindings(
+      sourceFile,
+      resolver,
+      persistence,
+      aliases,
+    );
+    if (!isInsidePath(relativePath, migrationRoot)) {
+      let rawSql = false;
+      function findRawSql(node) {
+        if (
+          ts.isTaggedTemplateExpression(node) &&
+          resolver.matches(node.tag, 'kysely', 'sql')
+        ) {
+          rawSql = true;
+          return;
+        }
+        if (
+          ts.isCallExpression(node) &&
+          ts.isPropertyAccessExpression(node.expression)
+        ) {
+          const receiver = node.expression.expression;
+          if (
+            (node.expression.name.text === 'raw' &&
+              resolver.matches(receiver, 'kysely', 'sql')) ||
+            (node.expression.name.text === 'query' &&
+              executor.matches(receiver) &&
+              node.arguments.length > 0 &&
+              (ts.isStringLiteralLike(node.arguments[0]) ||
+                ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
+                ts.isTemplateExpression(node.arguments[0])))
+          ) {
+            rawSql = true;
+            return;
+          }
+        }
+        ts.forEachChild(node, findRawSql);
+      }
+      findRawSql(sourceFile);
+      if (rawSql) {
+        add(
+          'D5-R046',
+          file,
+          'executable raw SQL is allowed only in an authorized migration',
+        );
+      }
+    }
+
+    const adapter = persistence.adapters[relativePath];
+    if (adapter) {
+      const owner = moduleName;
+      const portPath = resolve(projectRoot, adapter.port);
+      const compositionPath = resolve(projectRoot, adapter.composition);
+      const portImported = parsedFiles.has(portPath) &&
+        importsTarget(parsed, file, portPath, sourceFileSet);
+      const composed = parsedFiles.has(compositionPath) &&
+        importsTarget(
+          parsedFiles.get(compositionPath),
+          compositionPath,
+          file,
+          sourceFileSet,
+        );
+      if (owner !== adapter.owner || !portImported || !composed) {
+        add(
+          'D5-R041',
+          file,
+          'persistence adapter must match its owner, concrete port, registry, and composition consumer',
+        );
+      }
+
+      function inspectTableOperation(node) {
+        if (
+          ts.isCallExpression(node) &&
+          ts.isPropertyAccessExpression(node.expression) &&
+          ['deleteFrom', 'insertInto', 'selectFrom', 'updateTable'].includes(
+            node.expression.name.text,
+          ) &&
+          executor.matches(node.expression.expression)
+        ) {
+          const table =
+            node.arguments.length === 1 &&
+            ts.isStringLiteralLike(node.arguments[0])
+              ? node.arguments[0].text
+              : undefined;
+          const object = table
+            ? persistence.databaseObjects[table]
+            : undefined;
+          if (!object || object.owner !== adapter.owner) {
+            add(
+              'D5-R047',
+              file,
+              `database object ${table ?? '<dynamic>'} is unknown or owned by another module`,
+            );
+          }
+        }
+        ts.forEachChild(node, inspectTableOperation);
+      }
+      inspectTableOperation(sourceFile);
+    } else if (
+      /\/infrastructure\/persistence\//u.test(relativePath) &&
+      parsed.records.some((record) =>
+        isPersistencePackage(record.specifier, persistence),
+      )
+    ) {
+      add(
+        'D5-R041',
+        file,
+        'persistence adapter is not registered to an owning module and port',
+      );
+    }
+  }
+}
+
+export async function checkArchitecture({
+  disabledRules = [],
+  fixture = false,
+  root,
+}) {
   const projectRoot = resolve(root);
   const policy = await readPolicy();
   const sourceRoot = resolve(projectRoot, 'src');
@@ -659,8 +1471,15 @@ export async function checkArchitecture({ fixture = false, root }) {
   const observedEdges = new Set();
   const parsedFiles = new Map();
   const controllerAuthoritySymbols = new Set(policy.controllerAuthoritySymbols);
+  if (!fixture && disabledRules.length > 0) {
+    throw new Error('architecture rules may be disabled only in isolated fixtures');
+  }
+  const disabledRuleSet = new Set(disabledRules);
 
   function add(rule, file, message, details = {}) {
+    if (disabledRuleSet.has(rule)) {
+      return;
+    }
     diagnostics.push({
       ...details,
       file: toRepositoryRelativePath(projectRoot, file),
@@ -922,7 +1741,8 @@ export async function checkArchitecture({ fixture = false, root }) {
       if (!layerViolation && layer === 'application') {
         if (
           ['infrastructure', 'presentation'].includes(targetLayer) ||
-          /^(?:@prisma\/|typeorm$|sequelize$|knex$|pg$)/u.test(specifier)
+          (/^(?:@prisma\/|typeorm$|sequelize$|knex$)/u.test(specifier) &&
+            !isPersistencePackage(specifier, policy.persistence))
         ) {
           add('D5-R009', file, `application import crosses into an outer layer: ${specifier}`);
           layerViolation = true;
@@ -933,7 +1753,8 @@ export async function checkArchitecture({ fixture = false, root }) {
         layer === 'presentation' &&
         (targetLayer === 'infrastructure' ||
           /(?:repository|adapter|sql)/iu.test(specifier) ||
-          /^(?:@prisma\/|typeorm$|sequelize$|knex$|pg$)/u.test(specifier))
+          (/^(?:@prisma\/|typeorm$|sequelize$|knex$)/u.test(specifier) &&
+            !isPersistencePackage(specifier, policy.persistence)))
       ) {
         add('D5-R011', file, `presentation cannot access persistence or adapters: ${specifier}`);
         layerViolation = true;
@@ -981,6 +1802,14 @@ export async function checkArchitecture({ fixture = false, root }) {
       }
     }
   }
+
+  persistenceBoundaryDiagnostics({
+    add,
+    parsedFiles,
+    persistence: policy.persistence,
+    projectRoot,
+    sourceFileSet,
+  });
 
   for (const [relativePath, requirement] of Object.entries(
     policy.requiredStructuralFiles,

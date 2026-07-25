@@ -20,6 +20,7 @@ const fixtureKnownKeys = new Set([
 
 const mutationKnownKeys = new Set([
   ...descriptiveKeys,
+  'allowedFiles',
   'cleanupDirectory',
   'content',
   'directory',
@@ -27,6 +28,7 @@ const mutationKnownKeys = new Set([
   'expectedPaths',
   'expectedRules',
   'expectedText',
+  'files',
   'path',
   'rule',
   'support',
@@ -248,6 +250,16 @@ function canonicalMutationExecution(testCase) {
       testCase.cleanupDirectory,
     );
   }
+  for (const property of ['allowedFiles', 'files']) {
+    if (own(testCase, property)) {
+      execution[property] = Object.entries(testCase[property])
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([path, source]) => ({
+          path: normalizeCoveragePath(path),
+          source: canonicalSourceValue(source),
+        }));
+    }
+  }
   return execution;
 }
 
@@ -309,7 +321,7 @@ function semanticContract(caseType, testCase, baseFiles) {
 function sourceEvidenceFor(caseType, testCase) {
   return caseType === 'fixture'
     ? Object.values(testCase.files ?? {}).join('\n')
-    : testCase.content ?? '';
+    : testCase.content ?? Object.values(testCase.files ?? {}).join('\n');
 }
 
 export function createSemanticCoverageEntry({
@@ -341,12 +353,13 @@ export function createSemanticCoverageEntry({
 export function collectSemanticCoverage({
   baseFiles,
   fixtureCases,
+  persistenceMutations = [],
   remediationMutations,
 }) {
   const declared = [];
   for (const [caseType, cases] of [
     ['fixture', fixtureCases],
-    ['mutation', remediationMutations],
+    ['mutation', [...remediationMutations, ...persistenceMutations]],
   ]) {
     for (const testCase of cases) {
       for (const id of testCase.coverage?.ids ?? []) {

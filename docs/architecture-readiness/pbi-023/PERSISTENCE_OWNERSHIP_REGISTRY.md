@@ -2,10 +2,16 @@
 
 ## Estado
 
-- **Estado:** propuesta de PBI-023; no materializada.
+- **Estado:** registrada en policy y enforced por fixtures; paths productivos
+  no materializados.
 - **Autoridad:** DEC-049.
 - **Gate:** DEC049-C02.
 - **Co-ownership:** prohibido.
+
+La representación machine-readable vigente está en
+`architecture/dec-005-policy.json` bajo `persistence`. D5-R041, D5-R044,
+D5-R045 y D5-R047 fallan cerrado ante owner, scope, API, consumer u objeto no
+registrado.
 
 ## Objetos
 

@@ -82,12 +82,12 @@ SPIKE-002 aporta evidencia del patrón y retira el bloqueo material de C03.
 | Condición | Aplicabilidad | Estado | Evidencia actual | Evidencia de cierre | Gate |
 |---|---|---|---|---|---|
 | DEC049-C01 — versiones exactas | directa | `Pending` | baseline candidata ejecutada; product install ausente | install frozen + typecheck/build/test productivo | antes de instalar/integrar |
-| DEC049-C02 — owner/scope/invariantes | directa | `Pending` | registry propuesto | registry materializado + review | antes de tabla/migración/repo |
+| DEC049-C02 — owner/scope/invariantes | directa | `Partial — registry enforced` | registry machine-readable + D5-R041/R044/R047 | constraints/adapters materializados + review | antes de tabla/migración/repo |
 | DEC049-C03 — constraints/aislamiento PG18 | directa | `Pending — implementation` | SPIKE-002 E6–E10 PASS en PG18 | suite productiva PG18 | antes de aceptar persistencia |
 | DEC049-C04 — pool/transacción/retry | directa | `Pending` | patrón de pool/rollback/concurrencia verificado | misma conexión, commit/rollback/lifecycle productivo | antes del merge persistente |
-| DEC049-C05 — acceso excepcional separado | preventiva | `Pending` | fuera de alcance ordinario | checker rechaza; no registry admin | antes de cualquier bypass |
+| DEC049-C05 — acceso excepcional separado | preventiva | `Partial — preventive enforcement` | D5-R038/D5-R039 rechazan API global/genérica; no registry admin | runtime conserva ausencia de bypass | antes de cualquier bypass |
 | DEC049-C06 — errores/logs | directa | `Pending` | mapping documental | tests de traducción/redaction | antes del merge persistente |
-| DEC049-C07 — enforcement | directa | `Pending` | paths/reglas identificados | casos válidos/negativos/mutaciones | antes del merge persistente |
+| DEC049-C07 — enforcement | directa | `Partial — checker PASS` | D5-R037–D5-R047, 36 fixtures y 11 mutaciones | suite PostgreSQL/product runtime | antes del merge persistente |
 | DEC049-C08 — no RLS prematuro | trigger no activado | `Compliant by exclusion` | RLS excluido | nueva decisión + SPIKE-003 si se propone | antes de adoptar RLS |
 
 ## Tenant isolation
@@ -141,8 +141,8 @@ tokens, PII ni paths personales.
 
 - revisar y versionar el cierre del spike;
 - mantener el PR como Draft;
-- preparar autorización estricta del Paso 3;
-- extender boundaries/checker sólo mediante una tarea posterior autorizada.
+- preparar autorización estricta del Paso 4;
+- instalar sólo versiones exactas/frozen mediante una tarea posterior.
 
 Esta tarea material no autoriza instalación productiva, `src/`, migraciones
 productivas, tablas productivas ni cambios de workflow.

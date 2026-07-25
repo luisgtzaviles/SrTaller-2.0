@@ -1,5 +1,5 @@
 {
-  "policyVersion": 1,
+  "policyVersion": 2,
   "allowedModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy"],
@@ -78,6 +78,132 @@
     "resolveTenantContext",
     "trustRequestContext"
   ],
+  "persistence": {
+    "dependencyPackages": ["kysely", "pg"],
+    "dependencyPackagePrefixes": ["pg-"],
+    "allowedDependencyRoots": [
+      "src/infrastructure/database/",
+      "src/modules/stations/infrastructure/persistence/",
+      "src/modules/tenancy/infrastructure/persistence/"
+    ],
+    "databaseRoot": "src/infrastructure/database/",
+    "migrationRoot": "src/infrastructure/database/migrations/",
+    "migrationFilePattern": "^\\d{14}_(database|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)*\\.ts$",
+    "infrastructureFiles": {
+      "src/infrastructure/database/database-config.ts": {
+        "owner": "database",
+        "publicExports": ["DatabaseConfig"],
+        "consumers": ["src/infrastructure/database/database-connection.ts"],
+        "status": "future-approved"
+      },
+      "src/infrastructure/database/database-types.ts": {
+        "owner": "database",
+        "publicExports": ["DatabaseSchema"],
+        "consumers": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/migration-runner.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+        ],
+        "status": "future-approved"
+      },
+      "src/infrastructure/database/database-connection.ts": {
+        "owner": "database",
+        "publicExports": ["createDatabaseConnection"],
+        "consumers": [
+          "src/infrastructure/database/migration-runner.ts",
+          "src/modules/stations/stations.module.ts",
+          "src/modules/tenancy/tenancy.module.ts"
+        ],
+        "status": "future-approved"
+      },
+      "src/infrastructure/database/transaction-runner.ts": {
+        "owner": "database",
+        "publicExports": ["TransactionRunner"],
+        "consumers": [
+          "src/modules/stations/stations.module.ts",
+          "src/modules/tenancy/tenancy.module.ts"
+        ],
+        "status": "future-approved"
+      },
+      "src/infrastructure/database/migration-runner.ts": {
+        "owner": "database",
+        "publicExports": ["runMigrations"],
+        "consumers": ["scripts/run-migrations.mjs"],
+        "status": "future-approved"
+      }
+    },
+    "ports": {
+      "src/modules/stations/application/ports/branch-repository.port.ts": {
+        "owner": "stations",
+        "allowedScopes": ["TenantPersistenceScope", "TenantBranchPersistenceScope"],
+        "status": "future-approved"
+      },
+      "src/modules/tenancy/application/ports/tenant-repository.port.ts": {
+        "owner": "tenancy",
+        "allowedScopes": ["TenantPersistenceScope"],
+        "status": "future-approved"
+      }
+    },
+    "scopeTypes": {
+      "TenantBranchPersistenceScope": ["tenantId", "branchId"],
+      "TenantPersistenceScope": ["tenantId"]
+    },
+    "adapters": {
+      "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts": {
+        "owner": "stations",
+        "port": "src/modules/stations/application/ports/branch-repository.port.ts",
+        "composition": "src/modules/stations/stations.module.ts",
+        "status": "future-approved"
+      },
+      "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts": {
+        "owner": "tenancy",
+        "port": "src/modules/tenancy/application/ports/tenant-repository.port.ts",
+        "composition": "src/modules/tenancy/tenancy.module.ts",
+        "status": "future-approved"
+      }
+    },
+    "databaseObjects": {
+      "branches": {
+        "owner": "stations",
+        "kind": "table"
+      },
+      "tenants": {
+        "owner": "tenancy",
+        "kind": "table"
+      }
+    },
+    "databaseExecutorTypes": {
+      "kysely": ["Kysely", "Transaction"],
+      "pg": ["Client", "Pool", "PoolClient"]
+    },
+    "driverPublicTypes": {
+      "kysely": ["Kysely", "RawBuilder", "Transaction"],
+      "pg": ["Client", "Pool", "PoolClient", "QueryArrayResult", "QueryResult", "QueryResultRow"]
+    },
+    "forbiddenGlobalSurfaceNames": [
+      "client",
+      "database",
+      "db",
+      "executeQuery",
+      "kysely",
+      "pool",
+      "query"
+    ],
+    "genericRepositoryCapabilities": [
+      "create",
+      "delete",
+      "find",
+      "findAll",
+      "findById",
+      "insert",
+      "remove",
+      "save",
+      "update"
+    ],
+    "startupFiles": ["src/main.ts", "src/app.module.ts"],
+    "status": "future-approved-not-materialized"
+  },
   "checkerRules": [
     "D5-R002",
     "D5-R003",
@@ -105,7 +231,18 @@
     "D5-R029",
     "D5-R031",
     "D5-R035",
-    "D5-R036"
+    "D5-R036",
+    "D5-R037",
+    "D5-R038",
+    "D5-R039",
+    "D5-R040",
+    "D5-R041",
+    "D5-R042",
+    "D5-R043",
+    "D5-R044",
+    "D5-R045",
+    "D5-R046",
+    "D5-R047"
   ],
   "requiredSemanticCoverage": [
     "fixture:D5-R025:parenthesized:direct",
@@ -133,7 +270,30 @@
     "mutation:D5-R027:transparent-wrapper",
     "mutation:D5-R029:transparent-wrapper",
     "mutation:D5-R035:transparent-wrapper",
-    "mutation:D5-R036:transparent-wrapper"
+    "mutation:D5-R036:transparent-wrapper",
+    "fixture:persistence-boundaries:registered-topology:positive",
+    "fixture:D5-R037:direct-import",
+    "fixture:D5-R038:global-export",
+    "fixture:D5-R039:renamed-generic",
+    "fixture:D5-R040:relative-db-import",
+    "fixture:D5-R041:unregistered-adapter",
+    "fixture:D5-R042:dispersed-migration",
+    "fixture:D5-R043:aliased-type-leak",
+    "fixture:D5-R044:missing-structural-scope",
+    "fixture:D5-R045:unregistered-infrastructure",
+    "fixture:D5-R046:aliased-sql-tag",
+    "fixture:D5-R047:cross-owner-object",
+    "mutation:D5-R037:persistence-boundary",
+    "mutation:D5-R038:persistence-boundary",
+    "mutation:D5-R039:persistence-boundary",
+    "mutation:D5-R040:persistence-boundary",
+    "mutation:D5-R041:persistence-boundary",
+    "mutation:D5-R042:persistence-boundary",
+    "mutation:D5-R043:persistence-boundary",
+    "mutation:D5-R044:persistence-boundary",
+    "mutation:D5-R045:persistence-boundary",
+    "mutation:D5-R046:persistence-boundary",
+    "mutation:D5-R047:persistence-boundary"
   ],
   "externalExecutableRules": ["D5-R001"],
   "compositeRules": ["D5-R032", "D5-R033"],

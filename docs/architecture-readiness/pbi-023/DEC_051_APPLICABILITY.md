@@ -16,7 +16,7 @@ preparatoria, no cumplimiento productivo.
 | C03 — PostgreSQL real | primera suite persistence | directa | `Pending — product CI` | servicio efímero PG `18.4`, base por run, cleanup | SPIKE-002 verificó estrategia; falta suite/job productivo | Ingeniería + Operaciones / antes del merge |
 | C04 — aislamiento negativo | primera persistencia tenant | directa | `Pending — product suite` | matriz dos tenants/branches y mutaciones | E6–E10 del spike PASS; faltan ISO productivos | Seguridad + Calidad / merge |
 | C05 — API pública/errores | antes de API funcional | no activada | `Pending` | PBI-023 no crea API; sí prueba traducción interna DEC-044 | contrato HTTP se difiere; errores persistence se prueban | Ingeniería + Seguridad + Calidad / PBI futuro |
-| C06 — ownership/persistencia | primera persistencia | directa | `Pending` | registry, checker, constraints, transaction runner | spike validó constraints/rollback; faltan static gates y runtime | Arquitectura + Ingeniería + Calidad / merge |
+| C06 — ownership/persistencia | primera persistencia | directa | `Partial — static enforcement PASS` | registry, checker, constraints, transaction runner | D5-R037–D5-R047 cierran static gates; faltan constraints/runtime | Arquitectura + Ingeniería + Calidad / merge |
 | C08 — flakiness/quarantine | antes de retry/cuarentena | no activada | `Pending` | no retries de test ni quarantine | registro sólo si aparece un caso real | Calidad + Operaciones |
 | C10 — bypass/emergency | antes de habilitar bypass | no activada | `Pending` | no bypass ni excepción | policy/expiración/restauración sólo si se propone | Operaciones + Seguridad + Arquitectura |
 
@@ -63,20 +63,21 @@ la futura condición HTTP completa.
 
 ## C06 — boundaries
 
-El gate futuro verifica:
+El checker vigente ya verifica:
 
 - paquetes Kysely/pg sólo en infraestructura;
 - puertos hacia adentro;
 - adapters dentro del módulo owner;
 - facility raíz exacta y revisada;
 - no repositorio genérico ni raw SQL fuera del owner;
-- misma conexión por transacción;
-- constraints reales;
 - caso válido, negativos, mutaciones y doble run.
+
+Siguen pendientes misma conexión por transacción y constraints reales.
 
 ## Dictamen
 
 DEC-051 está completamente trazada. SPIKE-002 confirmó estrategia,
 testabilidad y PostgreSQL real para C03/C04/C06, sin satisfacer sus triggers
-productivos. Las tres bloquean el primer merge persistente; C02 bloquea
+productivos. C03/C04 y la parte runtime de C06 bloquean el primer merge
+persistente; C02 bloquea
 cualquier primer merge funcional. C05, C08 y C10 no se activaron.

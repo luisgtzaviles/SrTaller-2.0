@@ -6,6 +6,8 @@ import ts from 'typescript';
 
 import { unwrapTransparentExpression } from '../scripts/lib/architecture-checker.mjs';
 import { fixtureCases, validFiles } from './architecture-fixtures.mjs';
+import { persistenceFixtureCases } from './architecture-persistence-fixtures.mjs';
+import { persistenceMutations } from './architecture-persistence-mutations.mjs';
 import { remediationMutations } from './architecture-remediation-mutations.mjs';
 import {
   assertRequiredSemanticCoverage,
@@ -34,7 +36,8 @@ test('D5-R033 requires unique semantic execution contracts with exact policy cov
   );
   const declared = collectSemanticCoverage({
     baseFiles: validFiles,
-    fixtureCases,
+    fixtureCases: [...fixtureCases, ...persistenceFixtureCases],
+    persistenceMutations,
     remediationMutations,
   });
   assertRequiredSemanticCoverage(policy, declared);

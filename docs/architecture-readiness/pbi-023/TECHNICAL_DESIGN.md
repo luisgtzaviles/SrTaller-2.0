@@ -49,30 +49,30 @@ ejecutada.
 
 ## 4. Paths previstos
 
-La infraestructura raíz requiere revisión y policy explícita conforme
-D5-R019/D5-R022. Los paths son candidatos, no autorización para crearlos.
+La infraestructura raíz ya tiene policy preventiva D5-R037–D5-R047. Los paths
+siguen siendo futuros aprobados, no autorización para crearlos.
 
 | Path previsto | Owner | Consumidor | API pública | Razón | Momento |
 |---|---|---|---|---|---|
-| `src/infrastructure/database/database-config.ts` | Ingeniería + Operaciones | connection/migrator | parser inmutable y redacted view | validar configuración una vez | paso 3, después del checker |
-| `src/infrastructure/database/database-types.ts` | Ingeniería | adapters y migrator | tipo de schema técnico | tipos Kysely sin filtrarlos al dominio | paso 4 |
-| `src/infrastructure/database/database-connection.ts` | Ingeniería + Operaciones | adapters/tests | create/close database runtime | pool único y lifecycle explícito | paso 4 |
-| `src/infrastructure/database/transaction-runner.ts` | Ingeniería | adapters/tests | ejecutar callback sobre misma conexión | commit/rollback seguro | paso 4 |
-| `src/infrastructure/database/migration-runner.ts` | Ingeniería + Operaciones | scripts `migrate:*` | status/latest/down/verify | aislar mutación del bootstrap | paso 5 |
-| `src/infrastructure/database/migrations/` | owner por archivo; custodia Operaciones | migration runner | módulos de migración congelados | secuencia central determinista | paso 6; nunca vacío |
-| `src/modules/tenancy/application/ports/tenant-repository.port.ts` | tenancy | aplicación tenancy futura | puerto interno; no export cross-module | contrato owner-first | paso 7, sólo con adapter real |
-| `src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts` | tenancy | composición/test | ninguna cross-module | acceso a objeto propio | paso 7 |
-| `src/modules/stations/application/ports/branch-repository.port.ts` | stations | aplicación stations futura | puerto interno; no export cross-module | exigir tenant + branch | paso 7 |
-| `src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts` | stations | composición/test | ninguna cross-module | acceso a objeto propio | paso 7 |
-| `scripts/migrate.mjs` | Ingeniería + Operaciones | scripts package futuros | CLI de proceso | entrada explícita no importable por runtime | paso 5 |
-| `test/persistence-support.mjs` | Calidad + Ingeniería | pruebas persistence | helpers sólo de test | lifecycle DB/cleanup | paso 8 |
-| `test/persistence-fixtures.mjs` | Calidad + Seguridad | pruebas persistence | fixtures sintéticos | dos tenants/sucursales deterministas | paso 8 |
-| `test/persistence-migrations.test.mjs` | Calidad + Operaciones | `test:persistence` | ninguna | vacío/anterior/re-run/lock/fallo | paso 8 |
-| `test/persistence-isolation.test.mjs` | Seguridad + Calidad | `test:persistence` | ninguna | matriz negativa | paso 9 |
-| `test/persistence-transactions.test.mjs` | Ingeniería + Calidad | `test:persistence` | ninguna | misma conexión, commit/rollback | paso 9 |
-| `architecture/dec-005-policy.json` | Arquitectura | checker | policy versionada | autorizar facility/paths/edges exactos | antes de cualquier `src/` |
-| `scripts/check-architecture.mjs` | Arquitectura + Ingeniería | gates | diagnostics D5 | detectar nuevos límites | sólo si policy no basta |
-| fixtures/mutaciones del checker | Arquitectura + Calidad | `test:architecture` | casos de prueba | demostrar fail-closed | junto con regla |
+| `src/infrastructure/database/database-config.ts` | Ingeniería + Operaciones | connection/migrator | parser inmutable y redacted view | validar configuración una vez | paso 5 |
+| `src/infrastructure/database/database-types.ts` | Ingeniería | adapters y migrator | tipo de schema técnico | tipos Kysely sin filtrarlos al dominio | paso 6 |
+| `src/infrastructure/database/database-connection.ts` | Ingeniería + Operaciones | adapters/tests | create/close database runtime | pool único y lifecycle explícito | paso 6 |
+| `src/infrastructure/database/transaction-runner.ts` | Ingeniería | adapters/tests | ejecutar callback sobre misma conexión | commit/rollback seguro | paso 6 |
+| `src/infrastructure/database/migration-runner.ts` | Ingeniería + Operaciones | scripts `migrate:*` | status/latest/down/verify | aislar mutación del bootstrap | paso 7 |
+| `src/infrastructure/database/migrations/` | owner por archivo; custodia Operaciones | migration runner | módulos de migración congelados | secuencia central determinista | paso 8; nunca vacío |
+| `src/modules/tenancy/application/ports/tenant-repository.port.ts` | tenancy | aplicación tenancy futura | puerto interno; no export cross-module | contrato owner-first | paso 11, sólo con adapter real |
+| `src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts` | tenancy | composición/test | ninguna cross-module | acceso a objeto propio | paso 11 |
+| `src/modules/stations/application/ports/branch-repository.port.ts` | stations | aplicación stations futura | puerto interno; no export cross-module | exigir tenant + branch | paso 11 |
+| `src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts` | stations | composición/test | ninguna cross-module | acceso a objeto propio | paso 11 |
+| `scripts/migrate.mjs` | Ingeniería + Operaciones | scripts package futuros | CLI de proceso | entrada explícita no importable por runtime | paso 7 |
+| `test/persistence-support.mjs` | Calidad + Ingeniería | pruebas persistence | helpers sólo de test | lifecycle DB/cleanup | paso 9 |
+| `test/persistence-fixtures.mjs` | Calidad + Seguridad | pruebas persistence | fixtures sintéticos | dos tenants/sucursales deterministas | paso 12 |
+| `test/persistence-migrations.test.mjs` | Calidad + Operaciones | `test:persistence` | ninguna | vacío/anterior/re-run/lock/fallo | paso 9 |
+| `test/persistence-isolation.test.mjs` | Seguridad + Calidad | `test:persistence` | ninguna | matriz negativa | paso 12 |
+| `test/persistence-transactions.test.mjs` | Ingeniería + Calidad | `test:persistence` | ninguna | misma conexión, commit/rollback | paso 12 |
+| `architecture/dec-005-policy.json` | Arquitectura | checker | policy versionada | autorizar facility/paths/edges exactos | paso 3 — completado |
+| `scripts/check-architecture.mjs` | Arquitectura + Ingeniería | gates | diagnostics D5 | detectar nuevos límites | paso 3 — CLI preservado |
+| fixtures/mutaciones del checker | Arquitectura + Calidad | `test:architecture` | casos de prueba | demostrar fail-closed | paso 3 — completado |
 
 La ubicación central de migraciones no comparte ownership: cada archivo y
 objeto conserva owner único en
