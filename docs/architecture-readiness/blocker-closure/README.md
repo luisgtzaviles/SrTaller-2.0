@@ -33,7 +33,7 @@ física.
 | Declaración | Estado actual | Evidencia faltante principal |
 | --- | --- | --- |
 | R0 listo para diseñar | Sí, con alcance y contrato de salida aprobados | Cerrar diseño técnico pendiente sin convertir propuestas en implementación |
-| PBI-023 listo para programar | Sí, tras estimación/compromiso y en orden fail-closed | Gates internos DEC-050/SPIKE-002/DEC-051/063 |
+| PBI-023 listo para programar | No todavía; estimado y planificado, pero SPIKE-002 ejecutable sigue abierto | Gates internos DEC-050/SPIKE-002/DEC-051/063 |
 | R0 completo listo para programar | No | H1 restante y autorización de cada PBI |
 | R1 listo para diseñar | Parcialmente | Cerrar preguntas de producto de recepción y folio |
 | R1 listo para programar | No | R0 demostrado y H2 cerrado |

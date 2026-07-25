@@ -1,0 +1,84 @@
+# Aplicabilidad de DEC-063
+
+## Estado de entrada
+
+- C01, C03 y C04: `Satisfied`.
+- C02 y C05–C08: `Pending`.
+
+No se cambia ese registro.
+
+## Matriz
+
+| Condición | Trigger | Aplicabilidad PBI-023 | Estado | Evidencia futura | Gate |
+|---|---|---|---|---|---|
+| C02 — riesgo fail-closed | antes de integrar riesgo medio/alto | directa | `Pending` | matriz versionada, review y no downgrade unilateral | antes del primer merge persistente |
+| C05 — checklist persistence/migration | antes del primer cambio persistente | directa | `Pending` | DEC-049/050, PG real, recovery, owner, constraints | antes de primera migración/merge |
+| C06 — checklist security | antes de tenant/auth/sensitive funcional | directa para tenant; auth no aplica | `Pending` | negativos, sanitización, mínimo privilegio, secretos | antes del primer merge tenant |
+| C07 — release/hotfix | antes del primer release candidate | no bloquea planificación/implementación local | `Pending` | runbook, rollback, smoke y evidencia release | pre-release |
+| C08 — waivers | antes de aprobar excepción | no activada | `Pending` | owner, razón, expiración, compensación y cierre | sólo ante excepción |
+
+## C02 — clasificación
+
+PBI-023 es `High`. La clasificación no puede reducirse porque el schema sea
+pequeño. Un cambio en scoping, constraints, credenciales, migrador, pool,
+checker o cleanup exige nueva revisión del
+[RISK_ASSESSMENT.md](RISK_ASSESSMENT.md).
+
+## C05 — checklist de persistencia/migración
+
+Antes de cualquier cambio persistente:
+
+- [ ] DEC-050 aceptada y condición aplicable identificada.
+- [ ] SPIKE-002 cerrado con PostgreSQL `18.4`.
+- [ ] versión/owner/scope/invariantes de objeto registrados.
+- [ ] migración ordenada, inmutable y transaccional.
+- [ ] lock y fallo parcial probados.
+- [ ] vacío/anterior/re-run probados.
+- [ ] constraints y queries tenant/branch negativas.
+- [ ] recovery/roll-forward probado.
+- [ ] roles y secretos gobernados.
+- [ ] logs y manifest sanitizados.
+- [ ] cleanup seguro.
+- [ ] checker/gates actualizados con mutaciones.
+- [ ] dos runs Linux equivalentes.
+- [ ] aprobaciones por riesgo.
+
+Todos permanecen pendientes de evidencia, salvo la aceptación documental de
+DEC-050.
+
+## C06 — checklist de seguridad
+
+Aplican a PBI-023:
+
+- tenant y branch obligatorios/coherentes;
+- denegación por omisión/conflicto;
+- no enumeración de IDs ajenos;
+- mínimo privilegio y separación app/migration;
+- credenciales efímeras en test;
+- sanitización de SQL/driver/secretos;
+- no query global ordinaria;
+- no RLS afirmado;
+- cleanup allowlisted.
+
+No aplican aún:
+
+- PIN, password de usuario, sesión, roles/capabilities, step-up;
+- endpoint/HTTP, cookie, CORS/CSRF;
+- acción sensible de negocio.
+
+## C07
+
+Es pre-release. No bloquea esta planificación ni la futura implementación
+local/CI de PBI-023. Sí bloquea declarar un release candidato. PBI-023 no
+modifica release ni despliega.
+
+## C08
+
+No existe waiver, bypass o excepción. La condición no está activada y no se
+marca satisfecha. Si un gate no puede cumplirse, el trabajo se detiene; no se
+crea una excepción implícita.
+
+## Dictamen
+
+C02/C05/C06 son gates materiales del primer merge persistente. C07 es
+pre-release. C08 permanece dormida hasta una excepción real.

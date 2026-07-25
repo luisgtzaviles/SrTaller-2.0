@@ -27,6 +27,12 @@ bloqueantes. Este avance no autoriza código funcional: R0 continúa no
 autorizado y Sprint 00 continúa abierto. El [resultado](RESULTS.md) resume sus
 efectos y límites.
 
+**Actualización 2026-07-24:** los estados “sigue abierta” de la tabla de gates
+en la sección 18 conservan el momento del dictamen de DEC-005. El
+[registro vigente](../README.md) confirma que DEC-044/049/050/051/063 fueron
+decididas después y que sus condiciones de materialización no quedan
+satisfechas por DEC-005.
+
 ### Alcance
 
 DEC-005 decide, para la aplicación backend inicial:

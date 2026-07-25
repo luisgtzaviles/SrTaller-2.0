@@ -4,8 +4,9 @@
 
 **Estado:** Índice vigente reconciliado para revisión final. PBI-001–PBI-020
 conservan su historia de Sprint 00; PBI-021/PBI-022 están `Done`; PBI-023–029
-descomponen H1 sin autorizar implementación.
-**Estimación:** TBD en todos los casos.
+descomponen H1 sin autorizar implementación fuera de PBI-023; este último está
+bloqueado por su spike ejecutable.
+**Estimación:** PBI-023 tiene `13 SP`; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
 00. PBI-021–PBI-029 están `Unassigned`.
 
@@ -33,7 +34,7 @@ descomponen H1 sin autorizar implementación.
 | [PBI-020](PBI-020.md) | Consolidate open questions and decision gates | Deferred como registro vivo |
 | [PBI-021](PBI-021.md) | Materialize and verify the DEC-004 toolchain contract | Done |
 | [PBI-022](PBI-022.md) | Materialize DEC-005 modular structure and local enforcement | Done |
-| [PBI-023](PBI-023.md) | Establish tenant-scoped persistence and migration foundation | Ready / Authorized to start; no iniciado |
+| [PBI-023](PBI-023.md) | Establish tenant-scoped persistence and migration foundation | Blocked; planning complete, SPIKE-002 ejecutable pendiente |
 | [PBI-024](PBI-024.md) | Apply trusted tenant, branch and station context | Draft |
 | [PBI-025](PBI-025.md) | Implement tenant-user PIN authentication and operational session | Blocked |
 | [PBI-026](PBI-026.md) | Implement contextual capabilities and reinforced authorization | Draft |
@@ -45,4 +46,4 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-En la revisión final independiente de Sprint 00 y de PBI-023.
+Después del dictamen ejecutable de SPIKE-002.

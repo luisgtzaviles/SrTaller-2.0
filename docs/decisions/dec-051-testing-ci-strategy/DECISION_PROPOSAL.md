@@ -926,7 +926,7 @@ flowchart TD
     A4[ADR-004 multitenancy] --> D51
     A10[ADR-010 a ADR-013 acceso/contexto] --> D51
     D62[DEC-062 aceptación R0] --> D51
-    D50[DEC-050 migraciones abierta] -. coordina suite .-> D51
+    D50[DEC-050 Accepted with conditions<br/>materialización pendiente] -. coordina suite .-> D51
     D51 --> VC24[VC-024 ejecución futura]
     D51 --> D63[DEC-063 DoD]
     D51 --> D52[DEC-052 fixtures]

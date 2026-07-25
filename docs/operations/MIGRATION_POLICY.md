@@ -2,11 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
+- **Estado:** Política vigente, pendiente de materialización.
 - **Alcance:** Cambios futuros de esquema, datos, índices, configuración persistida y backfills.
 - **Hecho conocido:** En esta etapa no se crearán esquemas ejecutables ni migraciones.
-- **Baseline aceptada:** ADR-003 fija PostgreSQL 18.x y principios de migración; `DEC-050` permanece abierta.
-- **Decisión pendiente:** Herramienta, naming, locking, ejecución, aprobación y retención de compatibilidad.
+- **Baseline aceptada:** ADR-003 fija PostgreSQL 18.x y
+  [DEC-050](../decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md)
+  selecciona el migrador core de Kysely.
+- **Materialización pendiente:** DEC050-C01 a DEC050-C10; esta política no
+  acredita instalación, migraciones ni ejecución.
 
 ## Objetivo
 
@@ -91,7 +94,9 @@ No todos los cambios requieren cada paso, pero omitirlo debe justificarse. La fa
 
 ## Índices, constraints y locks
 
-El mecanismo se diseñará para PostgreSQL 18.x; proveedor y tooling siguen abiertos. Antes de ejecutar se debe evaluar:
+El mecanismo se diseñará para PostgreSQL 18.x y usará el migrador core de
+Kysely conforme DEC-050; proveedor productivo sigue abierto. Antes de ejecutar
+se debe evaluar:
 
 - lock adquirido y duración esperada;
 - impacto sobre lecturas/escrituras y pool de conexiones;
@@ -150,7 +155,6 @@ No se copian datos de production a staging sin el proceso controlado de [Environ
 
 ## Preguntas abiertas
 
-- ¿Qué herramienta de migración se integrará con PostgreSQL 18.x y con el acceso a datos que finalmente se acepte?
 - ¿Quién puede aprobar y ejecutar cambios destructivos?
 - ¿Qué ventana/objetivo de lock e indisponibilidad es aceptable?
 - ¿Cuánto tiempo convivirán contratos/esquemas anteriores?

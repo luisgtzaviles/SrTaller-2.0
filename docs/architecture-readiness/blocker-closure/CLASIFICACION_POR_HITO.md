@@ -36,6 +36,8 @@ y DEC063-C01/C03/C04 quedan `Satisfied`; las demás condiciones permanecen
 `DEC-006` a `DEC-020`, `DEC-037`, `DEC-038`, `DEC-045` a `DEC-048`, `DEC-050`, `DEC-052` y `DEC-055`.
 
 Estas decisiones protegen aislamiento, identidad, sesión, permisos, tiempo, persistencia, auditoría, observabilidad, datos de prueba y secretos.
+DEC-050 ya tiene contrato aceptado; permanece en H1 por sus condiciones de
+materialización y SPIKE-002.
 
 ## H2 — Antes de programar R1
 
@@ -67,7 +69,7 @@ Se activan sólo por un caso de negocio, riesgo o métrica real. No forman un ba
 | --- | --- | --- |
 | Documentar y diseñar ADRs | Permitido | Trabajo reversible y no ejecutable |
 | Preparar spikes | Permitido sólo como diseño | Su ejecución necesita autorización |
-| Fundación PBI-023 | Autorizada; no iniciada | Estimación/compromiso y gates internos por trigger |
+| Fundación PBI-023 | Autorizada; planificación completa; `Blocked` | SPIKE-002 ejecutable y gates internos por trigger |
 | Fundación R0 restante | Bloqueada | H1 restante y PBIs sin Ready/autorización |
 | Código de negocio R1 | Bloqueado | R0 no demostrado y H2 abierto |
 | Piloto | Bloqueado | R1–R5 y H3 abiertos |

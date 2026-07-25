@@ -54,7 +54,8 @@ Puede trabajarse en paralelo con la evidencia de aplicación del Grupo A. ADR-01
 ## Grupo C — Persistencia y consistencia base
 
 1. Propiedad/repositorios (`DEC-049`).
-2. Persistencia y migraciones (`DEC-050`).
+2. Materializar persistencia y migraciones (`DEC-050` aceptada con
+   condiciones), sólo después de SPIKE-002 ejecutable.
 3. Errores, logs, correlación y observabilidad (`DEC-044` a `DEC-048`).
 4. Pruebas y datos semilla (`DEC-051`, `DEC-052`).
 5. Verificar el aislamiento con esquema compartido aceptado; evaluar RLS sólo si se autoriza y continúa como candidato.
@@ -91,4 +92,4 @@ Folio, política y archivos pueden preparar alternativas en paralelo después de
 
 ## Camino crítico
 
-`DEC-002 cerrada → DEC-004/VC-024 cerrada + DEC-005 materializada/formalmente verificada + DEC-044/049/051/063 aceptadas → autorización organizacional y contratos H1 → DEC-050 coordinada con DEC-051/063 → ADR-003/004/010/011/012/013 aplicados → R0 implementado y demostrado conforme a DEC-062 → aceptación formal de R0 → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.
+`DEC-002 cerrada → DEC-004/VC-024 cerrada + DEC-005 materializada/formalmente verificada + DEC-044/049/050/051/063 aceptadas → autorización organizacional → SPIKE-002 ejecutable → condiciones H1/materialización DEC-050/051/063 → ADR-003/004/010/011/012/013 aplicados → R0 implementado y demostrado conforme a DEC-062 → aceptación formal de R0 → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.

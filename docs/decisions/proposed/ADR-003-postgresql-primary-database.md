@@ -204,11 +204,17 @@ ADR-003 no selecciona una herramienta de migraciones. Exige:
 - estrategia expand/migrate/contract cuando exista convivencia entre versiones;
 - estrategia explícita para migraciones no reversibles.
 
-`DEC-050` continúa abierta.
+Al aceptar ADR-003, `DEC-050` continuaba abierta. El 2026-07-24 quedó
+[Accepted with conditions](../dec-050-migration-strategy/DECISION_PROPOSAL.md);
+su materialización y evidencia permanecen pendientes.
 
 ## ORM, query builder, driver y repositorios
 
-ADR-003 no selecciona ORM, query builder, driver, librería de migraciones ni implementación del repository pattern. `DEC-049` continúa abierta.
+ADR-003 no selecciona ORM, query builder, driver, librería de migraciones ni
+implementación del repository pattern. Al aceptar este ADR, `DEC-049`
+continuaba abierta; el 2026-07-24 quedó
+[Accepted](../dec-049-persistence-ownership/DECISION_PROPOSAL.md) con sus
+condiciones de materialización vigentes.
 
 Cualquier herramienta futura deberá demostrar:
 
@@ -286,8 +292,8 @@ Producto participa cuando una decisión afecta alcance, coste, mercado, región,
 
 - Cierra el motor de persistencia dentro de `DEC-004` y registra PostgreSQL 18.x como baseline de R0.
 - Por sí solo no cerró `DEC-004`. Posteriormente, el 2026-07-22, DEC-004 aceptó la selección del toolchain como `Accepted — Selection Approved / Evidence Pending`; materialización, VC-001 a VC-024, evidencia Linux y reproducibilidad final continúan pendientes.
-- No cierra `DEC-049` sobre repositorios y propiedad lógica ejecutable.
-- No cierra `DEC-050` sobre tooling y ejecución de migraciones.
+- No cerró `DEC-049` ni `DEC-050` por sí mismo; ambas recibieron después
+  decisión propia y conservan condiciones de materialización.
 - No autoriza el primer cambio funcional de R0. DEC-004 autoriza únicamente su PBI técnico de materialización y verificación.
 
 ## Criterios para reconsiderar
