@@ -7,16 +7,16 @@
 - **Rama:** `r0/pbi-023-persistence-planning`.
 - **Alcance:** decisión, investigación, ejecución material desechable,
   evidencia, diseño, riesgos y plan.
-- **Cambio técnico:** checker/tests, dependencias/configuración y facility de
-  conexión controlada; cero wiring productivo.
-- **Resultado:** `PASS — PBI-023 CONNECTION FACILITY VERIFIED`.
-- **Estado PBI-023:** `Ready — connection facility verified / transaction
-  runner authorized`.
+- **Cambio técnico:** checker/tests, dependencias/configuración, facility de
+  conexión y transaction runner controlados; cero wiring productivo.
+- **Resultado:** `PASS — PBI-023 TRANSACTION RUNNER VERIFIED`.
+- **Estado PBI-023:** `Ready — transaction runner verified / migration runner
+  authorized`.
 
 ## Propósito
 
-Este expediente lleva PBI-023 hasta una facility técnica verificable anterior a
-crear transacciones, migraciones o persistencia funcional. Distingue cinco estados
+Este expediente lleva PBI-023 hasta un runner transaccional verificable anterior
+a crear migraciones o persistencia funcional. Distingue seis estados
 que no deben confundirse:
 
 1. DEC-050 está aceptada documentalmente con condiciones.
@@ -26,6 +26,8 @@ que no deben confundirse:
    `Ready`, no `In progress`, `Implemented` ni `Done`.
 5. Los Pasos 5 y 6 materializaron configuración y conexión sin consumidores
    productivos, startup automático, tablas ni migraciones.
+6. El Paso 7 materializó el runner, capability owner-internal, D5-R048 y
+   pruebas PostgreSQL reales sin migrations ni tablas productivas.
 
 El laboratorio fue destruido. El Paso 4 modificó sólo `package.json`,
 `pnpm-lock.yaml` y documentación; preservó `src/`, workflows, scripts, tests,
@@ -51,10 +53,11 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 | [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md) | requisito → decisión → evidencia |
 | [EXPECTED_EVIDENCE.md](EXPECTED_EVIDENCE.md) | manifest y artefactos futuros |
 | [RESULTS.md](RESULTS.md) | dictamen consolidado |
-| [checker-extension/](checker-extension/README.md) | reglas D5-R037–D5-R047, fixtures, mutaciones, ownership y evidencia del Paso 3 |
+| [checker-extension/](checker-extension/README.md) | baseline D5-R037–D5-R047, fixtures, mutaciones, ownership y evidencia del Paso 3 |
 | [dependency-installation/](dependency-installation/README.md) | metadata, supply chain, doble frozen install, compatibilidad y evidencia del Paso 4 |
 | [typed-configuration/](typed-configuration/README.md) | parser fail-closed, roles, timeouts y redacción del Paso 5 |
 | [connection-facility/](connection-facility/README.md) | lifecycle, errores, PostgreSQL 18.4, concurrencia, cleanup y dictamen del Paso 6 |
+| [transaction-runner/](transaction-runner/README.md) | contrato, aislamiento, nesting, errores, PostgreSQL 18.4, D5-R048 y dictamen del Paso 7 |
 
 ## Alcance preservado
 
@@ -68,6 +71,7 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 
 ## Gate siguiente
 
-Solicitar el transaction runner como paso separado, sin crear todavía
-migraciones, tablas, adapter, endpoint ni integración con startup. Cada paso
+Solicitar el migration runner y `FileMigrationProvider` como paso separado, sin
+crear todavía la primera migración productiva, tablas, adapter, endpoint ni
+integración con startup. Cada paso
 requiere autorización propia y sus condiciones DEC-049/050/051/063 aplicables.

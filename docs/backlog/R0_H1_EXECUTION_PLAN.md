@@ -42,7 +42,7 @@
 
 | PBI | Capacidad | DEC | Estado | Dependencia |
 |---|---|---|---|---|
-| [PBI-023](pbis/PBI-023.md) | Persistencia tenant-scoped, migraciones y fixtures mínimos | 006–008, 050, 052 | `Ready`; SPIKE-002 material PASS, ejecución no iniciada | H0, ADR-003/004, DEC-049/050/051/063 |
+| [PBI-023](pbis/PBI-023.md) | Persistencia tenant-scoped, migraciones y fixtures mínimos | 006–008, 050, 052 | `Ready`; transaction runner verificado, migration runner autorizado | H0, ADR-003/004, DEC-049/050/051/063 |
 | [PBI-024](pbis/PBI-024.md) | Contexto tenant/sucursal/estación confiable | 009–012 | `Draft` | PBI-023 |
 | [PBI-025](pbis/PBI-025.md) | Identidad, PIN, sesión e inactividad | 013–016 | `Blocked` | PBI-024, threat model y mecanismos |
 | [PBI-026](pbis/PBI-026.md) | Capacidades y autorización reforzada | 017–020 | `Draft` | PBI-025 y composición por operación |

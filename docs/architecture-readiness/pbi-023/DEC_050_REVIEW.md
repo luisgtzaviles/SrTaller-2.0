@@ -50,6 +50,12 @@ namespaces, TLS, pool/timeouts futuros y sanitización. Aporta cumplimiento
 parcial a C01/C06, pero no crea migrator, lock, conexión, PostgreSQL CI ni
 migración; C02–C10 conservan sus triggers runtime/operativos.
 
+El [Paso 7](transaction-runner/RESULTS.md) materializa atomicidad,
+commit/rollback, isolation y read-only sobre la facility verificada. Aporta
+evidencia a C04 y a la reutilización de conexión, sin materializar `Migrator`,
+`FileMigrationProvider`, journal, advisory lock, migrations, promoción ni
+startup. Por ello no cierra C02–C10 ni autoriza la primera migración.
+
 ## Temas no absorbidos
 
 DEC-050 no decide:

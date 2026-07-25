@@ -121,21 +121,47 @@
           "sanitizeDatabaseConnectionState"
         ],
         "consumers": [
+          "src/infrastructure/database/transaction-runner.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/stations/stations.module.ts",
           "src/modules/tenancy/tenancy.module.ts"
         ],
-        "consumerRequirement": "deferred-until-transaction-step",
         "status": "materialized-connection-facility"
+      },
+      "src/infrastructure/database/database-transaction-capability.ts": {
+        "owner": "database",
+        "publicExports": [
+          "InternalDatabaseTransactionSettings",
+          "InternalDatabaseTransactionExecutor",
+          "InternalDatabaseTransactionOperation",
+          "databaseTransactionCapability",
+          "DatabaseTransactionCapabilityError",
+          "InternalDatabaseTransactionConnection",
+          "bindDatabaseTransactionContext",
+          "releaseDatabaseTransactionContext",
+          "useDatabaseTransactionExecutor"
+        ],
+        "consumers": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/transaction-runner.ts"
+        ],
+        "status": "materialized-owner-internal-capability"
       },
       "src/infrastructure/database/transaction-runner.ts": {
         "owner": "database",
-        "publicExports": ["TransactionRunner"],
+        "publicExports": [
+          "DatabaseTransactionOptions",
+          "DatabaseTransactionContext",
+          "DatabaseTransactionError",
+          "runInTransaction"
+        ],
         "consumers": [
+          "src/infrastructure/database/migration-runner.ts",
           "src/modules/stations/stations.module.ts",
           "src/modules/tenancy/tenancy.module.ts"
         ],
-        "status": "future-approved"
+        "consumerRequirement": "deferred-until-migration-step",
+        "status": "materialized-transaction-runner"
       },
       "src/infrastructure/database/migration-runner.ts": {
         "owner": "database",
@@ -218,7 +244,24 @@
       "update"
     ],
     "startupFiles": ["src/main.ts", "src/app.module.ts"],
-    "status": "future-approved-not-materialized"
+    "transactionBoundary": {
+      "runner": "src/infrastructure/database/transaction-runner.ts",
+      "capability": "src/infrastructure/database/database-transaction-capability.ts",
+      "allowedCapabilityConsumers": [
+        "src/infrastructure/database/database-connection.ts",
+        "src/infrastructure/database/transaction-runner.ts"
+      ],
+      "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
+      "forbiddenManualMethods": [
+        "commit",
+        "releaseSavepoint",
+        "rollback",
+        "rollbackToSavepoint",
+        "savepoint",
+        "startTransaction"
+      ]
+    },
+    "status": "transaction-runner-materialized"
   },
   "checkerRules": [
     "D5-R002",
@@ -258,7 +301,8 @@
     "D5-R044",
     "D5-R045",
     "D5-R046",
-    "D5-R047"
+    "D5-R047",
+    "D5-R048"
   ],
   "requiredSemanticCoverage": [
     "fixture:D5-R025:parenthesized:direct",
@@ -301,6 +345,8 @@
     "fixture:D5-R046:connection-probe-boundary",
     "fixture:D5-R046:aliased-sql-tag",
     "fixture:D5-R047:cross-owner-object",
+    "fixture:D5-R048:async-context-import",
+    "fixture:D5-R048:shadowing-control:positive",
     "mutation:D5-R037:persistence-boundary",
     "mutation:D5-R038:persistence-boundary",
     "mutation:D5-R039:persistence-boundary",
@@ -311,7 +357,8 @@
     "mutation:D5-R044:persistence-boundary",
     "mutation:D5-R045:persistence-boundary",
     "mutation:D5-R046:persistence-boundary",
-    "mutation:D5-R047:persistence-boundary"
+    "mutation:D5-R047:persistence-boundary",
+    "mutation:D5-R048:persistence-boundary"
   ],
   "externalExecutableRules": ["D5-R001"],
   "compositeRules": ["D5-R032", "D5-R033"],

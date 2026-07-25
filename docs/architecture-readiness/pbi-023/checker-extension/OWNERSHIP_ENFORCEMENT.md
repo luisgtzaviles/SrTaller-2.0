@@ -3,15 +3,19 @@
 ## Estado
 
 `database-config.ts` quedó **materialized-configuration** y
-`database-connection.ts` quedó **materialized-connection-facility**. Los demás
-paths continúan **future-approved / not materialized**.
+`database-connection.ts` quedó **materialized-connection-facility**,
+`database-transaction-capability.ts` quedó
+**materialized-owner-internal-capability** y `transaction-runner.ts` quedó
+**materialized-transaction-runner**. Los demás paths continúan
+**future-approved / not materialized**.
 
 | Superficie futura | Owner | API/port | Consumer/composition |
 | --- | --- | --- | --- |
 | `src/infrastructure/database/database-config.ts` | database facility | config/error/parser/sanitizer exactos | `database-connection.ts` materializado |
 | `src/infrastructure/database/database-types.ts` | database facility | `DatabaseSchema` | connection, runner y adapters registrados |
-| `src/infrastructure/database/database-connection.ts` | database facility | interface/error/factory/sanitizer exactos; no exporta drivers | consumer diferido hasta transaction runner/composición autorizada |
-| `src/infrastructure/database/transaction-runner.ts` | database facility | `TransactionRunner` | tenancy/stations composition |
+| `src/infrastructure/database/database-connection.ts` | database facility | interface/error/factory/sanitizer exactos; no exporta drivers | `transaction-runner.ts` materializado; migrator/composición futuros |
+| `src/infrastructure/database/database-transaction-capability.ts` | database facility | capability interna, binding/release/use exactos; no superficie funcional | sólo connection y transaction runner |
+| `src/infrastructure/database/transaction-runner.ts` | database facility | options/context/error/`runInTransaction` exactos | consumer diferido hasta migration runner; tenancy/stations futuros |
 | `src/infrastructure/database/migration-runner.ts` | database facility | `runMigrations` | script técnico registrado |
 | `.../tenancy/application/ports/tenant-repository.port.ts` | tenancy | tenant port + tenant scope | tenancy adapter |
 | `.../tenancy/infrastructure/persistence/kysely-tenant.repository.ts` | tenancy | adapter exacto | `tenancy.module.ts` |

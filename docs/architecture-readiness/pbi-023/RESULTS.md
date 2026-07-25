@@ -2,7 +2,7 @@
 
 ## Dictamen
 
-**PASS — PBI-023 CONNECTION FACILITY VERIFIED**
+**PASS — PBI-023 TRANSACTION RUNNER VERIFIED**
 
 El expediente define estimación, DEC-050, versiones candidatas, arquitectura,
 schema mínimo, aislamiento, migraciones, riesgos, gates y plan. SPIKE-002
@@ -10,8 +10,10 @@ ejecutó E1–E12 dos veces contra PostgreSQL real, comparó resultados y limpi�
 todo recurso. El Paso 3 agregó D5-R037–D5-R047, registry fail-closed, 36
 fixtures y 11 mutaciones sin tocar `src/`. El Paso 4 instaló las tres
 dependencias exactas y los Pasos 5–6 materializaron configuración y conexión
-controladas. La facility pasó unit tests y dos runs PostgreSQL `18.4` reales,
-sin startup, migración, tabla o consumer productivo. PBI-023 queda `Ready`.
+controladas. El Paso 7 materializó un transaction runner explícito,
+owner-internal y fail-closed, con commit/rollback, isolation, read-only,
+concurrencia, errores y dos runs PostgreSQL `18.4` reales, sin startup,
+migración, tabla o consumer productivo. PBI-023 queda `Ready`.
 
 ## Checklist
 
@@ -40,8 +42,12 @@ sin startup, migración, tabla o consumer productivo. PBI-023 queda `Ready`.
 | connection facility Paso 6 | PASS |
 | PostgreSQL 18.4 facility | PASS — dos runs, material MATCH |
 | errores/sanitización/concurrencia/cierre | PASS |
+| transaction runner Paso 7 | PASS |
+| isolation/read-only/nesting/rollback | PASS |
+| D5-R048 + capability interna | PASS |
+| PostgreSQL 18.4 transaction runner | PASS — dos runs, material MATCH |
 | laboratorio/runtime/DB efímero | PASS — eliminado |
-| transaction runner/migraciones/schema | NOT RUN |
+| migration runner/migrations/schema productivo | NOT RUN |
 
 ## Estado de decisiones
 
@@ -49,9 +55,9 @@ sin startup, migración, tabla o consumer productivo. PBI-023 queda `Ready`.
 |---|---|---|
 | DEC-050 | Accepted with conditions; C01–C10 Pending | C01 Partial — package selection materialized; runtime/CI pending |
 | SPIKE-002 | mandatory/pending | Completed; material evidence PASS |
-| PBI-023 | Ready; connection facility authorized | Ready; connection facility verified / transaction runner authorized |
-| DEC-049 | Accepted; C01–C08 por materializar | C01 y parte facility C06/C07 verificadas; transacción/constraints pendientes |
-| DEC-051 | C01/C07/C09 Satisfied | C03 sigue Pending; evidencia local no sustituye CI |
+| PBI-023 | Ready; transaction runner authorized | Ready; transaction runner verified / migration runner authorized |
+| DEC-049 | Accepted; C01–C08 por materializar | C01 y evidencia parcial C02–C07; adapters/tenant constraints pendientes |
+| DEC-051 | C01/C07/C09 Satisfied | C03 sigue Partial/Pending en CI; C06 gana D5-R048 |
 | DEC-063 | C01/C03/C04 Satisfied | sin cambio |
 
 ## Selecciones
@@ -73,8 +79,9 @@ sin startup, migración, tabla o consumer productivo. PBI-023 queda `Ready`.
 2. DEC049-C02–C07 y DEC051-C02/C03/C04/C06 conservan porciones runtime.
 3. DEC063-C02/C05/C06 requieren evidencia restante antes del merge persistente.
 
-No existe bloqueo material para solicitar el transaction runner. Los gates restantes se
-cierran secuencialmente y siguen impidiendo declarar implementación o merge.
+No existe bloqueo material para solicitar el migration runner. Los gates
+restantes se cierran secuencialmente y siguen impidiendo declarar
+implementación funcional o merge.
 
 ## Validaciones de esta tarea
 
@@ -86,8 +93,8 @@ Ejecutadas con Node.js `24.18.0` y pnpm `11.15.1`:
 | `pnpm run architecture` | PASS |
 | `pnpm run typecheck` | PASS |
 | `pnpm run build` | PASS |
-| `pnpm test` | PASS — 255 pass, 6 PG gated skip, 0 fail |
-| `pnpm run test:architecture` | PASS — 216/216 |
+| `pnpm test` | PASS — 281 pass, 7 PG gated skip, 0 fail |
+| `pnpm run test:architecture` | PASS — 229/229 |
 | `pnpm run verify` | PASS |
 | `pnpm run smoke:start` | PASS |
 | `git diff --check` | PASS |
@@ -96,7 +103,7 @@ Ejecutadas con Node.js `24.18.0` y pnpm `11.15.1`:
 | scope técnico | PASS — facility/tests/enforcement/evidencia |
 
 La evidencia de este paso está en
-[connection-facility/](connection-facility/README.md).
+[transaction-runner/](transaction-runner/README.md).
 
 ## Restricciones preservadas
 
@@ -110,5 +117,5 @@ La evidencia de este paso está en
 
 ## Siguiente acción
 
-Autorizar separadamente el transaction runner, todavía sin migraciones, tablas,
-repositories, adapters ni wiring productivo.
+Autorizar separadamente el migration runner y `FileMigrationProvider`, todavía
+sin primera migración productiva, tablas, repositories, adapters ni wiring.

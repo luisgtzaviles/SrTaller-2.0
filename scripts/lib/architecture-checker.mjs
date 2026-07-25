@@ -1044,6 +1044,16 @@ function persistenceBoundaryDiagnostics({
   const genericCapabilities = new Set(
     persistence.genericRepositoryCapabilities,
   );
+  const transactionBoundary = persistence.transactionBoundary;
+  const allowedCapabilityConsumers = new Set(
+    transactionBoundary.allowedCapabilityConsumers,
+  );
+  const forbiddenContextPackages = new Set(
+    transactionBoundary.forbiddenContextPackages,
+  );
+  const forbiddenManualMethods = new Set(
+    transactionBoundary.forbiddenManualMethods,
+  );
 
   for (const [file, parsed] of parsedFiles) {
     const relativePath = toPosix(relative(projectRoot, file));
@@ -1066,6 +1076,13 @@ function persistenceBoundaryDiagnostics({
     );
 
     for (const record of parsed.records) {
+      if (forbiddenContextPackages.has(record.specifier)) {
+        add(
+          'D5-R048',
+          file,
+          `implicit transaction context package ${record.specifier} is forbidden`,
+        );
+      }
       if (
         isPersistencePackage(record.specifier, persistence) &&
         !allowedDependencyPath &&
@@ -1082,6 +1099,29 @@ function persistenceBoundaryDiagnostics({
       const targetRelative = target
         ? toPosix(relative(projectRoot, target))
         : undefined;
+      if (
+        targetRelative === transactionBoundary.capability &&
+        !allowedCapabilityConsumers.has(relativePath)
+      ) {
+        add(
+          'D5-R048',
+          file,
+          `owner-internal transaction capability is not available to ${relativePath}`,
+        );
+      }
+      if (
+        targetRelative === transactionBoundary.runner &&
+        (layer === 'domain' ||
+          layer === 'application' ||
+          persistence.startupFiles.includes(relativePath) ||
+          /\.controller\.(?:c|m)?[jt]s$/u.test(relativePath))
+      ) {
+        add(
+          'D5-R048',
+          file,
+          'transaction runner is not consumable from startup, controllers, domain, or application code',
+        );
+      }
       if (
         targetRelative &&
         isInsidePath(targetRelative, databaseRoot) &&
@@ -1107,6 +1147,24 @@ function persistenceBoundaryDiagnostics({
           `migration ${targetRelative} is consumed outside the authorized runner`,
         );
       }
+    }
+
+    if (isInsidePath(relativePath, databaseRoot)) {
+      function inspectManualTransactionControl(node) {
+        if (
+          ts.isCallExpression(node) &&
+          ts.isPropertyAccessExpression(node.expression) &&
+          forbiddenManualMethods.has(node.expression.name.text)
+        ) {
+          add(
+            'D5-R048',
+            file,
+            `manual transaction control ${node.expression.name.text} is forbidden`,
+          );
+        }
+        ts.forEachChild(node, inspectManualTransactionControl);
+      }
+      inspectManualTransactionControl(sourceFile);
     }
 
     for (const statement of sourceFile.statements) {
@@ -1322,15 +1380,15 @@ function persistenceBoundaryDiagnostics({
         const materializedConsumers = registration.consumers
           .map((consumer) => resolve(projectRoot, consumer))
           .filter((consumer) => parsedFiles.has(consumer));
-        const connectionFacilityConsumerDeferred =
+        const transactionRunnerConsumerDeferred =
           relativePath ===
-            'src/infrastructure/database/database-connection.ts' &&
+            transactionBoundary.runner &&
           registration.owner === 'database' &&
-          registration.status === 'materialized-connection-facility' &&
+          registration.status === 'materialized-transaction-runner' &&
           registration.consumerRequirement ===
-            'deferred-until-transaction-step';
+            'deferred-until-migration-step';
         if (
-          !connectionFacilityConsumerDeferred &&
+          !transactionRunnerConsumerDeferred &&
           (materializedConsumers.length === 0 ||
             !materializedConsumers.some((consumer) =>
               importsTarget(

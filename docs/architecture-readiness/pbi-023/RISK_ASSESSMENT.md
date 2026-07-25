@@ -85,10 +85,10 @@ aporta evidencia parcial de C01.
 | DEC049-C01 — versiones exactas | directa | `Partial — package and typed config materialized` | paquetes/lock exactos, configuración, frozen installs y gates | conexión runtime + PostgreSQL CI cuando se activen | antes de integrar persistencia |
 | DEC049-C02 — owner/scope/invariantes | directa | `Partial — registry enforced` | registry machine-readable + D5-R041/R044/R047 | constraints/adapters materializados + review | antes de tabla/migración/repo |
 | DEC049-C03 — constraints/aislamiento PG18 | directa | `Pending — implementation` | SPIKE-002 E6–E10 PASS en PG18 | suite productiva PG18 | antes de aceptar persistencia |
-| DEC049-C04 — pool/transacción/retry | directa | `Pending` | patrón de pool/rollback/concurrencia verificado | misma conexión, commit/rollback/lifecycle productivo | antes del merge persistente |
+| DEC049-C04 — pool/transacción/retry | directa | `Partial — transaction runner PASS` | misma conexión interna, commit/rollback, isolation, nesting y sin retry | adapters/casos de uso y política idempotente materializados | antes del merge persistente |
 | DEC049-C05 — acceso excepcional separado | preventiva | `Partial — preventive enforcement` | D5-R038/D5-R039 rechazan API global/genérica; no registry admin | runtime conserva ausencia de bypass | antes de cualquier bypass |
-| DEC049-C06 — errores/logs | directa | `Partial — config errors/redaction PASS` | errores de config y vista segura probados | traducción pg/operaciones runtime | antes del merge persistente |
-| DEC049-C07 — enforcement | directa | `Partial — checker PASS` | D5-R037–D5-R047, config pura registrada, fixtures y 11 mutaciones | suite PostgreSQL/product runtime | antes del merge persistente |
+| DEC049-C06 — errores/logs | directa | `Partial — config/connection/transaction PASS` | errores tipados, mappings PG y redaction probados | adapters/operaciones productivas | antes del merge persistente |
+| DEC049-C07 — enforcement | directa | `Partial — checker/runtime runner PASS` | D5-R037–D5-R048, 144 fixtures, 35 mutaciones y dos runs PG | schema/adapters/isolation tenant | antes del merge persistente |
 | DEC049-C08 — no RLS prematuro | trigger no activado | `Compliant by exclusion` | RLS excluido | nueva decisión + SPIKE-003 si se propone | antes de adoptar RLS |
 
 ## Tenant isolation
@@ -143,7 +143,7 @@ tokens, PII ni paths personales.
 
 - revisar y versionar configuración/evidencia;
 - mantener el PR como Draft;
-- preparar autorización estricta del Paso 6.
+- preparar autorización estricta del migration runner.
 
-Este cierre no autoriza conexión, migraciones productivas, tablas productivas
-ni cambios de workflow.
+Este cierre no autoriza migraciones productivas, tablas productivas ni cambios
+de workflow.

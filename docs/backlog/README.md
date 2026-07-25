@@ -5,14 +5,14 @@ confundir intención con compromiso. PBI-001–PBI-020 conservan su historia de
 Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 [PBI-022](pbis/PBI-022.md) están `Done` después de sus verificaciones formales.
 [PBI-023](pbis/PBI-023.md) es el primer PBI de R0 y está
-autorizado con planificación completa y `Ready` tras SPIKE-002 material
-`PASS`; PBI-024–PBI-029 descomponen el resto de H1 y no están autorizados.
+autorizado con planificación completa y `Ready` tras verificar su transaction
+runner; PBI-024–PBI-029 descomponen el resto de H1 y no están autorizados.
 
 ## Estado del documento
 
 **Estado:** Reconciliado tras el cierre de Sprint 00.
-**Orden R0 y ejecución:** PBI-023 autorizado con alcance limitado; ejecución
-no iniciada y siguiente gate en checker/boundaries; owners definidos por rol.
+**Orden R0 y ejecución:** PBI-023 autorizado con alcance limitado; transaction
+runner verificado y siguiente gate en migration runner; owners por rol.
 
 ## Estructura
 
@@ -56,4 +56,4 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Después del gate checker/boundaries de PBI-023 y al refinar PBI-024–PBI-029.
+Después del gate migration runner de PBI-023 y al refinar PBI-024–PBI-029.

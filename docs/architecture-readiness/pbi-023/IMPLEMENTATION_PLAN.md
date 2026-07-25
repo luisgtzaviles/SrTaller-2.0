@@ -95,18 +95,22 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** DEC049-C06/C07; DEC051-C03 permanece pendiente en CI.
 - **Salida:** cero conexiones pendientes y API sin driver.
 
-## Paso 6B — Transaction runner
+## Paso 7 — Transaction runner
 
+- **Estado:** `Completed — PASS` en
+  [transaction-runner/](transaction-runner/README.md).
 - **Objetivo:** ejecutar toda unidad sobre una misma conexión.
-- **Archivos:** transaction runner y tests, sin ampliar la API de connection
-  hasta una autorización explícita.
+- **Archivos:** transaction runner, capability owner-internal, coordinación
+  mínima de connection, tests/harness y D5-R048.
 - **Dependencias:** Paso 6 verificado.
 - **Riesgos:** retry parcial, pool query dentro de transacción, release/rollback.
-- **Pruebas:** commit, rollback, mismo client, concurrencia y fallos.
+- **Pruebas:** commit, rollback, isolation, read-only, nesting, errores,
+  concurrencia, cierre y fallos.
 - **Gate:** DEC049-C04/C06.
-- **Salida:** misma conexión demostrada; todavía sin migraciones/tablas.
+- **Evidencia:** dos runs PostgreSQL 18.4, comparación material y cleanup.
+- **Salida:** runner verificado; todavía sin migraciones/tablas productivas.
 
-## Paso 7 — Runner de migraciones
+## Paso 8 — Runner de migraciones
 
 - **Objetivo:** status/latest/down/verify explícitos.
 - **Archivos:** migration runner, `scripts/migrate.mjs`, scripts package y
@@ -121,7 +125,7 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** DEC050-C03/C08.
 - **Salida:** migración sólo por comando explícito.
 
-## Paso 8 — Primera migración mínima
+## Paso 9 — Primera migración mínima
 
 - **Objetivo:** crear tenants/branches y metadata core en base efímera.
 - **Archivos:** un archivo de migración real, registry materializado, schema
@@ -134,7 +138,7 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** DEC049-C02/C03, DEC050-C02/C09, DEC063-C05/C06.
 - **Salida:** schema mínimo reproducible, sin datos reales.
 
-## Paso 9 — Tests de migración
+## Paso 10 — Tests de migración
 
 - **Objetivo:** probar lifecycle completo y fallos.
 - **Archivos:** migration tests/support/fixtures.
@@ -147,7 +151,7 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** DEC050-C04/C05/C07.
 - **Salida:** suite determinista en PG `18.4`.
 
-## Paso 10 — PostgreSQL real en Linux CI
+## Paso 11 — PostgreSQL real en Linux CI
 
 - **Objetivo:** lifecycle aislado/reproducible autoritativo.
 - **Archivos:** workflow autorizado, scripts de test y manifest.
@@ -160,7 +164,7 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** Operaciones + Calidad; branch protection.
 - **Salida:** C03 verificable y job requerido.
 
-## Paso 11 — Adapters owner-scoped
+## Paso 12 — Adapters owner-scoped
 
 - **Objetivo:** materializar sólo métodos con consumidor/prueba real.
 - **Archivos:** ports/adapters tenancy y stations, exports mínimos si aplican.
@@ -173,7 +177,7 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** DEC049-C02/C05/C06/C07 y DEC051-C06.
 - **Salida:** no query global ni dependencia de dominio a Kysely.
 
-## Paso 12 — Aislamiento tenant negativo
+## Paso 13 — Aislamiento tenant negativo
 
 - **Objetivo:** ejecutar ISO-001 a ISO-020.
 - **Archivos:** isolation tests y fixtures.
@@ -185,7 +189,7 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** SPIKE-002, DEC049-C03, DEC051-C04, DEC063-C06.
 - **Salida:** cero acceso/referencia cross-tenant; cualquier fallo bloquea.
 
-## Paso 13 — Smoke compilado y gate canónico
+## Paso 14 — Smoke compilado y gate canónico
 
 - **Objetivo:** comprobar que el artefacto inicia sin migrar y todos los gates
   siguen verdes.
@@ -199,7 +203,7 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Gate:** DEC051/063.
 - **Salida:** salida cero repetible, app sin DDL/startup.
 
-## Paso 14 — Evidencia, review y merge
+## Paso 15 — Evidencia, review y merge
 
 - **Objetivo:** obtener dictamen formal sin ampliar alcance.
 - **Archivos:** expediente de implementación, manifest, resultados y
@@ -217,6 +221,6 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 ## Orden definitivo
 
 El orden recomendado pone el checker antes de `src/` y separa schema/adapters.
-Los pasos 1–5 están completos. El siguiente paso autorizable es **Paso 6**,
-sujeto a autorización explícita; los pasos 6–14 no quedan autorizados por este
+Los pasos 1–7 están completos. El siguiente paso autorizable es **Paso 8**,
+sujeto a autorización explícita; los pasos 8–15 no quedan autorizados por este
 cierre.

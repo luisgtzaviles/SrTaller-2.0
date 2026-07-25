@@ -21,20 +21,68 @@ const databaseConfig = [
 const databaseConnection = [
   "import type { PoolClient } from 'pg';",
   "import type { DatabaseConfig } from './database-config.js';",
+  "import { databaseTransactionCapability } from './database-transaction-capability.js';",
+  "import type { InternalDatabaseTransactionConnection, InternalDatabaseTransactionOperation, InternalDatabaseTransactionSettings } from './database-transaction-capability.js';",
   'export interface DatabaseConnection {',
   '  readonly state: string;',
   '}',
   'export class DatabaseConnectionError extends Error {}',
+  'class Connection implements DatabaseConnection, InternalDatabaseTransactionConnection {',
+  "  readonly state = 'ready';",
+  '  async [databaseTransactionCapability]<T>(settings: InternalDatabaseTransactionSettings, operation: InternalDatabaseTransactionOperation<T>): Promise<T> {',
+  '    void settings;',
+  '    void operation;',
+  "    throw new Error('synthetic');",
+  '  }',
+  '}',
   'async function runConnectionVerification(client: PoolClient): Promise<void> {',
   "  await client.query('select 1');",
   '}',
   'export function createDatabaseConnection(config: DatabaseConfig): DatabaseConnection {',
   '  void config;',
   '  void runConnectionVerification;',
-  "  return Object.freeze({ state: 'created' });",
+  '  return new Connection();',
   '}',
   'export function sanitizeDatabaseConnectionState(connection: DatabaseConnection): unknown {',
   '  return Object.freeze({ state: connection.state });',
+  '}',
+  '',
+].join('\n');
+
+const databaseTransactionCapabilitySource = [
+  "import type { Transaction } from 'kysely';",
+  'type EmptyDatabaseSchema = Record<never, never>;',
+  "export type InternalDatabaseTransactionSettings = Readonly<{ isolationLevel: 'read committed'; accessMode: 'read only' | 'read write' }>;",
+  'export type InternalDatabaseTransactionExecutor = Transaction<EmptyDatabaseSchema>;',
+  'export type InternalDatabaseTransactionOperation<T> = (executor: InternalDatabaseTransactionExecutor) => Promise<T>;',
+  "export const databaseTransactionCapability: unique symbol = Symbol('synthetic');",
+  "export class DatabaseTransactionCapabilityError extends Error { readonly code = 'NESTED_FORBIDDEN'; }",
+  'export interface InternalDatabaseTransactionConnection {',
+  '  readonly state: string;',
+  '  [databaseTransactionCapability]<T>(settings: InternalDatabaseTransactionSettings, operation: InternalDatabaseTransactionOperation<T>): Promise<T>;',
+  '}',
+  'export function bindDatabaseTransactionContext(): void {}',
+  'export function releaseDatabaseTransactionContext(): void {}',
+  'export async function useDatabaseTransactionExecutor<T>(context: object, operation: InternalDatabaseTransactionOperation<T>): Promise<T> {',
+  '  void context;',
+  '  void operation;',
+  "  throw new Error('synthetic');",
+  '}',
+  '',
+].join('\n');
+
+const transactionRunner = [
+  "import type { DatabaseConnection } from './database-connection.js';",
+  "import { databaseTransactionCapability } from './database-transaction-capability.js';",
+  "export type DatabaseTransactionOptions = Readonly<{ isolationLevel?: 'read committed'; readOnly?: boolean }>;",
+  "export type DatabaseTransactionContext = Readonly<{ attempt: 1; isolationLevel: 'read committed'; readOnly: boolean }>;",
+  'export class DatabaseTransactionError extends Error {}',
+  'export async function runInTransaction<T>(connection: DatabaseConnection, options: DatabaseTransactionOptions, callback: (context: DatabaseTransactionContext) => T | Promise<T>): Promise<T> {',
+  '  void connection;',
+  '  void options;',
+  '  void callback;',
+  '  void databaseTransactionCapability;',
+  "  throw new DatabaseTransactionError('synthetic');",
   '}',
   '',
 ].join('\n');
@@ -78,7 +126,10 @@ const tenancyComposition = [
 export const persistenceBaseFiles = {
   'src/infrastructure/database/database-config.ts': databaseConfig,
   'src/infrastructure/database/database-connection.ts': databaseConnection,
+  'src/infrastructure/database/database-transaction-capability.ts':
+    databaseTransactionCapabilitySource,
   'src/infrastructure/database/database-types.ts': databaseTypes,
+  'src/infrastructure/database/transaction-runner.ts': transactionRunner,
   'src/modules/tenancy/application/ports/tenant-repository.port.ts': tenantPort,
   'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts':
     tenantAdapter,
@@ -429,6 +480,85 @@ export const persistenceFixtureCases = [
     }),
   },
   {
+    name: 'D5-R048 rejects implicit async transaction context',
+    expectedRules: ['D5-R048'],
+    expectedPath: 'src/infrastructure/database/transaction-runner.ts',
+    files: based({
+      'src/infrastructure/database/transaction-runner.ts':
+        `${transactionRunner}\nimport { AsyncLocalStorage } from 'node:async_hooks';\nvoid AsyncLocalStorage;\n`,
+    }),
+    coverage: {
+      ids: ['fixture:D5-R048:async-context-import'],
+      evidence: ["from 'node:async_hooks'"],
+    },
+  },
+  {
+    name: 'D5-R048 rejects aliased implicit async transaction context',
+    expectedRules: ['D5-R048'],
+    expectedPath: 'src/infrastructure/database/transaction-runner.ts',
+    files: based({
+      'src/infrastructure/database/transaction-runner.ts':
+        `${transactionRunner}\nimport { AsyncLocalStorage as Scope } from 'node:async_hooks';\nvoid Scope;\n`,
+    }),
+  },
+  {
+    name: 'D5-R048 rejects namespace implicit async transaction context',
+    expectedRules: ['D5-R048'],
+    expectedPath: 'src/infrastructure/database/transaction-runner.ts',
+    files: based({
+      'src/infrastructure/database/transaction-runner.ts':
+        `${transactionRunner}\nimport * as AsyncHooks from 'node:async_hooks';\nvoid AsyncHooks;\n`,
+    }),
+  },
+  {
+    name: 'D5-R048 rejects type re-export and dynamic async context imports',
+    expectedRules: ['D5-R045', 'D5-R048'],
+    expectedPath: 'src/infrastructure/database/transaction-runner.ts',
+    files: based({
+      'src/infrastructure/database/transaction-runner.ts':
+        `${transactionRunner}\nexport type { AsyncLocalStorage as Scope } from 'node:async_hooks';\nvoid import('async_hooks');\n`,
+    }),
+  },
+  {
+    name: 'D5-R048 permits a shadowed local AsyncLocalStorage name',
+    expectedRules: [],
+    files: based({
+      'src/infrastructure/database/transaction-runner.ts':
+        `${transactionRunner}\nclass AsyncLocalStorage {}\nvoid AsyncLocalStorage;\n`,
+    }),
+    coverage: {
+      ids: ['fixture:D5-R048:shadowing-control:positive'],
+      evidence: ['class AsyncLocalStorage'],
+    },
+  },
+  {
+    name: 'D5-R048 rejects controller access to transaction runner',
+    expectedRules: ['D5-R035', 'D5-R048'],
+    expectedPath: 'src/modules/access/presentation/transaction.controller.ts',
+    files: based({
+      'src/modules/access/presentation/transaction.controller.ts':
+        "import { runInTransaction } from '../../../infrastructure/database/transaction-runner.js';\nexport const handler = runInTransaction;\n",
+    }),
+  },
+  {
+    name: 'D5-R048 rejects owner-internal capability deep import',
+    expectedRules: ['D5-R048'],
+    expectedPath: 'src/modules/access/presentation/transaction-helper.ts',
+    files: based({
+      'src/modules/access/presentation/transaction-helper.ts':
+        "import { useDatabaseTransactionExecutor } from '../../../infrastructure/database/database-transaction-capability.js';\nexport const helper = useDatabaseTransactionExecutor;\n",
+    }),
+  },
+  {
+    name: 'D5-R048 rejects manual transaction control in database infrastructure',
+    expectedRules: ['D5-R048'],
+    expectedPath: 'src/infrastructure/database/transaction-runner.ts',
+    files: based({
+      'src/infrastructure/database/transaction-runner.ts':
+        `${transactionRunner}\nfunction manual(value: { startTransaction(): void }): void { value.startTransaction(); }\nvoid manual;\n`,
+    }),
+  },
+  {
     name: 'PBI-023 central owner-named migration may use semantic raw SQL',
     expectedRules: [],
     files: {
@@ -544,12 +674,12 @@ export const persistenceFixtureCases = [
     },
   },
   {
-    name: 'D5-R045 permits the exact materialized connection transition',
+    name: 'D5-R045 permits the exact materialized transaction transition',
     expectedRules: [],
-    files: {
-      'src/infrastructure/database/database-config.ts': databaseConfig,
-      'src/infrastructure/database/database-connection.ts': databaseConnection,
-    },
+    files: based({
+      'src/infrastructure/database/transaction-runner.ts':
+        `${transactionRunner}\nconst materializedTransactionTransition = true;\nvoid materializedTransactionTransition;\n`,
+    }),
     coverage: {
       ids: ['fixture:D5-R045:materialized-connection-transition:positive'],
       evidence: ['runConnectionVerification'],

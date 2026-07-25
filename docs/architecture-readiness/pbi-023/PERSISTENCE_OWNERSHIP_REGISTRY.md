@@ -2,8 +2,9 @@
 
 ## Estado
 
-- **Estado:** configuración y facility de conexión materializadas; demás paths
-  productivos future-approved y no materializados.
+- **Estado:** configuración, facility de conexión, capability interna y
+  transaction runner materializados; demás paths productivos future-approved
+  y no materializados.
 - **Autoridad:** DEC-049.
 - **Gate:** DEC049-C02.
 - **Co-ownership:** prohibido.
@@ -18,7 +19,9 @@ registrado.
 | Path | Owner | API | Consumer | Estado |
 |---|---|---|---|---|
 | `src/infrastructure/database/database-config.ts` | `database` | `DatabaseConfig`, `DatabaseConfigError`, `parseDatabaseConfig`, `sanitizeDatabaseConfig` | `database-connection.ts` | `materialized-configuration`; pura y sin red |
-| `src/infrastructure/database/database-connection.ts` | `database` | `DatabaseConnection`, `DatabaseConnectionError`, `createDatabaseConnection`, `sanitizeDatabaseConnectionState` | transaction runner/composición futura; consumo diferido hasta su paso autorizado | `materialized-connection-facility`; no exporta pool/Kysely, no startup |
+| `src/infrastructure/database/database-connection.ts` | `database` | `DatabaseConnection`, `DatabaseConnectionError`, `createDatabaseConnection`, `sanitizeDatabaseConnectionState` | transaction runner materializado; composición futura | `materialized-connection-facility`; no exporta pool/Kysely, no startup |
+| `src/infrastructure/database/database-transaction-capability.ts` | `database` | API interna exacta; no superficie funcional | exclusivamente connection y runner | `materialized-owner-internal-capability`; Kysely no se reexporta |
+| `src/infrastructure/database/transaction-runner.ts` | `database` | `DatabaseTransactionOptions`, `DatabaseTransactionContext`, `DatabaseTransactionError`, `runInTransaction` | migration runner y adapters/composición futuros | `materialized-transaction-runner`; consumer diferido al gate de migraciones |
 
 ## Objetos
 

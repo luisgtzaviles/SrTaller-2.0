@@ -37,7 +37,7 @@ No incluye:
 | migration manifest | orden, status, SHA-256, resultado |
 | PostgreSQL lifecycle | versión, create/cleanup, timeouts |
 | migration run | vacío/anterior/re-run/failure/concurrency |
-| transaction run | misma conexión, commit/rollback |
+| [transaction run](transaction-runner/README.md) | misma conexión interna, commit/rollback, isolation, read-only, nesting, errores y cleanup |
 | isolation run | ISO-001 a ISO-020 |
 | architecture run | valid/negative/mutation/double run |
 | security review | redaction, privileges, secrets scan |
@@ -63,6 +63,15 @@ El manifest real es
 [EVIDENCE_MANIFEST.json](spike-002-evidence/EVIDENCE_MANIFEST.json). Los
 artefactos que requieren implementación productiva continúan siendo evidencia
 futura de PBI-023.
+
+## Evidencia del transaction runner
+
+El Paso 7 tiene manifest separado en
+[transaction-runner/EVIDENCE_MANIFEST.json](transaction-runner/EVIDENCE_MANIFEST.json).
+Acredita API exacta, capability owner-internal, commit/rollback, isolation,
+read-only, nesting, errores, sanitización, concurrencia, dos runs PostgreSQL
+`18.4`, comparación y cleanup. No acredita migration runner, migrations,
+schema tenant-scoped ni PostgreSQL en CI autoritativa.
 
 ## Evidencia de instalación exacta
 

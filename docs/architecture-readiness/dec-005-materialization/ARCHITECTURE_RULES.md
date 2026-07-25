@@ -7,7 +7,7 @@ La fuente legible por máquina es
 JavaScript bajo `src/`, compara los módulos y edges contra esa política y
 emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 
-## Catálogo D5-R001 a D5-R047
+## Catálogo D5-R001 a D5-R048
 
 | ID | Nivel | Norma | Motivo | Detección actual | Severidad | Excepción y autoridad |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -43,7 +43,7 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R030 | SHOULD | Casos de uso TypeScript plano y sin Nest | Testabilidad | No aplicable aún; prueba futura | Major | Justificación de Arquitectura + Ingeniería |
 | D5-R031 | MUST | Imports ESM respetan NodeNext | Reproducibilidad | Typecheck y extensión JS explícita | Blocker | No |
 | D5-R032 | MUST | Enforcement local determinista/no interactivo | Repetibilidad | Doble corrida por fixture y del gate | Blocker | No |
-| D5-R033 | MUST | Toda regla automatizable tiene caso inválido | Evitar checks decorativos | Policy→fixture, ejecución efectiva e identidad canónica comprobadas; el baseline histórico PBI-022 conserva 98/23/6/26 y la extensión PBI-023 eleva el estado vigente a 134 fixtures, 34 mutaciones de producto y 49 contratos críticos únicos | Major | Límite temporal fechado por Arquitectura + Ingeniería |
+| D5-R033 | MUST | Toda regla automatizable tiene caso inválido | Evitar checks decorativos | Policy→fixture, ejecución efectiva e identidad canónica comprobadas; el baseline histórico PBI-022 conserva 98/23/6/26 y la extensión PBI-023 eleva el estado vigente a 144 fixtures, 35 mutaciones de producto y 54 contratos críticos únicos | Major | Límite temporal fechado por Arquitectura + Ingeniería |
 | D5-R034 | MUST | Excepción registrada antes de merge | Evitar deuda silenciosa | Policy fail-closed; no hay excepciones | Blocker | No |
 | D5-R035 | MUST NOT | Iniciar código funcional, controller o endpoint por aceptación de DEC-005 | Respetar gates H0/H1 | Allowlist exacta e identidad AST normalizada de superficies HTTP | Blocker | No |
 | D5-R036 | MUST NOT | Controller decide contexto confiable o autorización final | Cumplir ADR-005/010/012 | Identidad AST normalizada de `@nestjs/common.Controller` y símbolos de autoridad definidos en policy | Blocker | No |
@@ -55,9 +55,10 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R042 | MUST | Migraciones sólo en root central, nombre UTC-owner y runner | Evitar migraciones dispersas/startup | Path/naming + imports locales resueltos | Blocker | Runner central registrado |
 | D5-R043 | MUST NOT | Port filtra tipos Kysely/pg/DB | Mantener contratos internos independientes | Procedencia AST en imports, aliases, namespace, qualified/generic y reexports | Blocker | Ninguna |
 | D5-R044 | MUST | Cada operación persistente exige scope tenant estructural no opcional | Evitar bypass implícito/global | Firma AST, tipo de scope allowlisted, optional/nullable/default rechazados | Blocker | Sólo scopes registrados; sin excepciones silenciosas |
-| D5-R045 | MUST | Facility DB tiene owner, API y consumidor registrados | Evitar placeholders/runners desconectados | Registry fail-closed, exports exactos y consumo local resuelto | Blocker | Transición exacta de connection hasta materializar transaction runner |
+| D5-R045 | MUST | Facility DB tiene owner, API y consumidor registrados | Evitar placeholders/runners desconectados | Registry fail-closed, exports exactos y consumo local resuelto | Blocker | Runner materializado puede diferir consumidor hasta el gate de migraciones declarado |
 | D5-R046 | MUST NOT | SQL ejecutable fuera de migración autorizada | Evitar bypass del query builder/ownership | Procedencia de `kysely.sql`, `.raw` y `query()` sobre executor tipado | Blocker | Migración central; probe connection owner-scoped literal `select 1` |
 | D5-R047 | MUST | Operación Kysely usa objeto DB del owner registrado | Aplicar ownership físico preventivo | Executor tipado + `selectFrom`/`insertInto`/`updateTable`/`deleteFrom` + registry fail-closed | Blocker | Ninguna |
+| D5-R048 | MUST | Frontera transaccional explícita, owner-internal y sin control manual | Evitar transacciones implícitas, nesting silencioso y fuga de executor | Imports/reexports/dynamic imports de async context, target interno resuelto, consumidores prohibidos y métodos manuales | Blocker | Ninguna; savepoints o propagación implícita requieren decisión separada |
 
 ## Diagnóstico y exit codes
 
@@ -171,8 +172,8 @@ demuestre equivalencia.
 La correspondencia completa entre policy, detector, diagnóstico y pruebas está
 en [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md).
 
-Estado vigente de cobertura tras PBI-023 Paso 3: 38 reglas directas del
-checker, una externa, dos compuestas y seis documentales; 134 fixtures
-(17 positivos y 117 negativos), 34 mutaciones de producto y 49 contratos
+Estado vigente de cobertura tras PBI-023 transaction runner: 39 reglas directas
+del checker, una externa, dos compuestas y seis documentales; 144 fixtures
+(19 positivos y 125 negativos), 35 mutaciones de producto y 54 contratos
 semánticos críticos únicos. Los conteos fechados de las verificaciones formales
 de PBI-022 permanecen históricos.

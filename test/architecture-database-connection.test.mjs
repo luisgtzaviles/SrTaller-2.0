@@ -5,7 +5,7 @@ import test from 'node:test';
 const connectionPath =
   'src/infrastructure/database/database-connection.ts';
 
-test('connection facility retains its exact owner, API and deferred consumer boundary', async () => {
+test('connection facility retains its exact owner, API and transaction consumer', async () => {
   const policy = JSON.parse(
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
@@ -19,11 +19,11 @@ test('connection facility retains its exact owner, API and deferred consumer bou
       'sanitizeDatabaseConnectionState',
     ],
     consumers: [
+      'src/infrastructure/database/transaction-runner.ts',
       'src/infrastructure/database/migration-runner.ts',
       'src/modules/stations/stations.module.ts',
       'src/modules/tenancy/tenancy.module.ts',
     ],
-    consumerRequirement: 'deferred-until-transaction-step',
     status: 'materialized-connection-facility',
   });
   assert.deepEqual(policy.persistence.connectionProbe, {

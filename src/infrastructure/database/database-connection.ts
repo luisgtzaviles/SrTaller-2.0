@@ -5,6 +5,15 @@ import { Pool } from 'pg';
 import type { PoolClient, PoolConfig } from 'pg';
 
 import type { DatabaseConfig } from './database-config.js';
+import {
+  DatabaseTransactionCapabilityError,
+  databaseTransactionCapability,
+} from './database-transaction-capability.js';
+import type {
+  InternalDatabaseTransactionConnection,
+  InternalDatabaseTransactionOperation,
+  InternalDatabaseTransactionSettings,
+} from './database-transaction-capability.js';
 
 type DatabaseConnectionState =
   | 'created'
@@ -298,7 +307,9 @@ async function runConnectionVerification(client: PoolClient): Promise<void> {
   await client.query('select 1');
 }
 
-class ControlledDatabaseConnection implements DatabaseConnection {
+class ControlledDatabaseConnection
+  implements DatabaseConnection, InternalDatabaseTransactionConnection
+{
   readonly #config: Readonly<DatabaseConfig>;
   readonly #database: Kysely<EmptyDatabaseSchema>;
   readonly #pool: Pool;
@@ -309,6 +320,10 @@ class ControlledDatabaseConnection implements DatabaseConnection {
   #state: DatabaseConnectionState = 'created';
   #verificationPromise: Promise<void> | null = null;
   #closePromise: Promise<void> | null = null;
+  #activeTransactions = 0;
+  #transactionFacilityActivated = false;
+  #transactionDrainPromise: Promise<void> | null = null;
+  #resolveTransactionDrain: (() => void) | null = null;
 
   constructor(config: Readonly<DatabaseConfig>) {
     this.#config = config;
@@ -340,6 +355,14 @@ class ControlledDatabaseConnection implements DatabaseConnection {
     }
     if (this.#verificationPromise) {
       return this.#verificationPromise;
+    }
+    if (this.#activeTransactions > 0) {
+      return Promise.reject(
+        new DatabaseConnectionError(
+          'DATABASE_CONNECTION_INVALID_STATE',
+          this.#state,
+        ),
+      );
     }
     if (
       this.#state !== 'created' &&
@@ -377,6 +400,40 @@ class ControlledDatabaseConnection implements DatabaseConnection {
     const closing = this.#performClose();
     this.#closePromise = closing;
     return closing;
+  }
+
+  async [databaseTransactionCapability]<T>(
+    settings: InternalDatabaseTransactionSettings,
+    operation: InternalDatabaseTransactionOperation<T>,
+  ): Promise<T> {
+    if (this.#state !== 'ready') {
+      throw new DatabaseConnectionError(
+        this.#state === 'closing' || this.#state === 'closed'
+          ? 'DATABASE_CONNECTION_CLOSED'
+          : 'DATABASE_CONNECTION_INVALID_STATE',
+        this.#state,
+      );
+    }
+    if (this.#activeTransactions > 0) {
+      throw new DatabaseTransactionCapabilityError('NESTED_FORBIDDEN');
+    }
+
+    this.#activeTransactions += 1;
+    this.#transactionFacilityActivated = true;
+    try {
+      return await this.#database
+        .transaction()
+        .setIsolationLevel(settings.isolationLevel)
+        .setAccessMode(settings.accessMode)
+        .execute(operation);
+    } finally {
+      this.#activeTransactions -= 1;
+      if (this.#activeTransactions === 0) {
+        this.#resolveTransactionDrain?.();
+        this.#resolveTransactionDrain = null;
+        this.#transactionDrainPromise = null;
+      }
+    }
   }
 
   sanitizedState(): SanitizedDatabaseConnectionState {
@@ -443,9 +500,18 @@ class ControlledDatabaseConnection implements DatabaseConnection {
     if (activeVerification) {
       await activeVerification.catch(() => undefined);
     }
+    if (this.#activeTransactions > 0) {
+      this.#transactionDrainPromise ??= new Promise((resolve) => {
+        this.#resolveTransactionDrain = resolve;
+      });
+      await this.#transactionDrainPromise;
+    }
     try {
-      await this.#pool.end();
-      await this.#database.destroy();
+      if (this.#transactionFacilityActivated) {
+        await this.#database.destroy();
+      } else {
+        await this.#pool.end();
+      }
       this.#state = 'closed';
       this.#closedAt = new Date();
     } catch {

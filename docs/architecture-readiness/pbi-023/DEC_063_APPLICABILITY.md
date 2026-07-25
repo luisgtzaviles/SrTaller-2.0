@@ -56,8 +56,9 @@ Antes de cualquier cambio persistente:
 - [ ] dos runs Linux equivalentes.
 - [ ] aprobaciones por riesgo.
 
-La fila de SPIKE-002 está satisfecha. Las demás conservan su estado hasta que
-exista implementación, checker, roles, CI y revisión productivos.
+La fila de SPIKE-002 está satisfecha. El transaction runner completa rollback,
+errores, cleanup y dos runs locales, pero no marca migración transaccional,
+Linux CI, constraints, roles ni recovery como satisfechos.
 
 ## C06 — checklist de seguridad
 
@@ -97,3 +98,11 @@ C02/C05/C06 son gates materiales del primer merge persistente. El checker y la
 instalación gobernada completan componentes estáticos/reversibles, pero no
 PostgreSQL, mínimo privilegio ni controles runtime. C07 es pre-release. C08
 permanece dormida hasta una excepción real.
+
+## Evidencia del Paso 7
+
+El [expediente transaccional](transaction-runner/README.md) aporta a C02 el
+tratamiento fail-closed de nesting/timeout/rollback; a C05, atomicidad y cleanup
+sin migración productiva; y a C06, sanitización y D5-R048. Los tres estados
+siguen `Partial`: no existen todavía migration runner, schema tenant-scoped,
+roles productivos, job PostgreSQL autoritativo ni aprobación de merge.
