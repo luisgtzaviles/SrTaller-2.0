@@ -48,14 +48,23 @@ flowchart TD
     Q --> GATE
     SEC --> GATE
     OBS --> GATE
-    API --> TOOL[PBI-021 Materializar/verificar DEC-004]
-    DEC004[DEC-004 Accepted<br/>Evidence Pending] --> TOOL
-    DEC051[DEC-051 Accepted<br/>C01-C10 Pending] -. VC-024 .-> TOOL
-    TOOL --> VC[VC-001 a VC-024<br/>evidencia pendiente]
+    API --> TOOL[PBI-021<br/>Done]
+    DEC004[DEC-004 Accepted<br/>Evidence Verified] --> TOOL
+    DEC051[DEC-051 Accepted<br/>C01/C07/C09 Satisfied] -. VC-024 .-> TOOL
+    TOOL --> VC[VC-001 a VC-024<br/>Closed / PASS]
     DEC005[DEC-005 Accepted<br/>Materialized / Formally Verified] --> MOD[PBI-022<br/>Done]
     MOD --> D5E[DEC005-C01 a C05<br/>PASS formal]
     D5E --> DEC049[DEC-049 Accepted<br/>C01-C08 vigentes]
     MOD -. no resuelve preguntas propias .-> DEC049
+    VC --> P23[PBI-023 persistencia tenant<br/>Ready para revisión]
+    DEC049 --> P23
+    P23 --> P24[PBI-024 contexto<br/>Draft]
+    P24 --> P25[PBI-025 identidad/sesión<br/>Blocked]
+    P25 --> P26[PBI-026 autorización<br/>Draft]
+    P24 --> P28[PBI-028 señales/auditoría<br/>Draft]
+    P27[PBI-027 tiempo<br/>Blocked] --> P28
+    P29[PBI-029 secretos<br/>Draft] --> P25
+    P29 --> P28
 ```
 
 El grafo incluye las dependencias documentales directas declaradas por los PBIs y algunas relaciones transitivas necesarias para leer la secuencia. No representa dependencias de runtime ni sustituye el detalle de cada PBI.
@@ -67,8 +76,9 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - Identidad y permisos preceden la validación del acceso por dispositivo/PIN.
 - Arquitectura objetivo enmarca evaluaciones de backend, web, despliegue y observabilidad.
 - PBI-020 consolida gates; no puede cerrarse hasta que entradas críticas sean revisadas.
-- PBI-021 consume la selección aceptada de DEC-004 y el shell seleccionado mediante ADR-005/PBI-012; puede comenzar su materialización técnica sin habilitar funcionalidad.
-- PBI-021 no puede quedar `Done` ni producir un PASS final sin VC-024; la ejecución CI de ese caso depende de materializar la [DEC-051 aceptada](../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md).
+- PBI-021 consumió la selección aceptada de DEC-004 y el shell seleccionado
+  mediante ADR-005/PBI-012. Está `Done` después de VC-024 `Closed / PASS`; no
+  habilita funcionalidad.
 - PBI-022 consumió la selección aceptada de DEC-005 y materializó sólo estructura, ownership, checker local, fixtures y evidencia; está `Done` y no habilita funcionalidad.
 - PBI-022 no resolvió por sí mismo DEC-044, DEC-049 ni DEC-051. Su `PASS`
   formal satisfizo la dependencia de frontera de
@@ -79,25 +89,35 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   aceptada el 2026-07-24 con DEC044-C01 a C08 vigentes.
   [DEC-051](../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) fue
   aceptada el mismo día y convierte documentalmente esos contratos en gates;
-  C01 a C10 permanecen pendientes.
+  VC-024 satisfizo C01/C07/C09; C02–C06/C08/C10 permanecen pendientes.
 - [DEC-063](../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) fue
-  aceptada el 2026-07-24 con base común más checklists por tipo/riesgo;
-  DEC063-C01 a C08 permanecen `Pending`. Su aceptación no materializa los
-  gates ni cierra VC-024.
+  aceptada el 2026-07-24 con base común más checklists por tipo/riesgo.
+  VC-024 satisfizo C01/C03/C04; C02/C05–C08 permanecen `Pending`.
+- [PBI-023](pbis/PBI-023.md) incluye sus decisiones y condiciones materiales
+  pendientes dentro del propio alcance, por lo que satisface documentalmente
+  DoR. Continúa no iniciado y sujeto a revisión final/autorización.
+- PBI-024–PBI-029 descomponen los 24 contratos H1; sus estados `Draft` o
+  `Blocked` impiden tratarlos como compromiso o autorización.
 
 ## Bloqueos conocidos
 
 - PBI-013 requiere confirmar superficies web, audiencias y necesidades visuales; hasta entonces permanece bloqueado para una recomendación final.
-- PBI-008, PBI-009 y PBI-020 requieren decisiones de producto/operación.
-- PBI-021 está `Ready` y autorizado, pero `Unassigned`; VC-024 conserva la dependencia explícita de la materialización y evidencia de DEC-051.
+- PBI-006, PBI-013, PBI-014 y PBI-018–PBI-020 fueron diferidos con remanente,
+  owner por rol e hito explícitos; no bloquean el objetivo documental del
+  Sprint 00.
+- PBI-021 está `Done` y `Unassigned`; VC-024 está `Closed / PASS`.
 - PBI-022 está `Done` y `Unassigned`; DEC005-C01 a C05 tienen `PASS` formal en la sexta reverificación independiente.
-- Ninguna dependencia técnica propuesta puede convertirse en implementación hasta aceptar ADRs relacionados.
+- PBI-025 y PBI-027 están bloqueados por decisiones de mecanismo/producto.
+- Ningún PBI H1 puede iniciar antes del cierre de Sprint 00, revisión final y
+  autorización efectiva.
 
 ## Preguntas abiertas
 
-- ¿Qué dependencias son obligatorias para revisión y cuáles pueden explorarse en paralelo?
-- ¿Qué producto de PBI-020 constituye autorización formal para prototipos?
+- La revisión final debe confirmar que PBI-023 satisface DoR sin ocultar
+  decisiones fuera de su alcance.
+- Los mecanismos de PIN/sesión y la autoridad temporal siguen requiriendo
+  decisiones dentro de PBI-025/PBI-027.
 
 ## Próxima revisión
 
-Cuando cambie el estado de un PBI o una pregunta crítica; fecha: TBD.
+Revisión final independiente de Sprint 00 y autorización de PBI-023.

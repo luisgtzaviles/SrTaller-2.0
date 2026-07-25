@@ -39,7 +39,8 @@ H0 contiene sólo decisiones cuya omisión convertiría una hipótesis en estruc
 ## Evidencia para liberar el primer cambio de implementación de R0
 
 - alcance y contrato de salida de R0 aprobados (`DEC-002`, `DEC-062`); satisfecho el 2026-07-21;
-- autorización explícita para iniciar implementación; pendiente;
+- autorización explícita condicional registrada en B-21; su efectividad sigue
+  pendiente de cierre de Sprint 00, PBI R0 `Ready` y revisión final;
 - ADRs de plataforma necesarios en `Accepted`;
 - mapa de agrupación física inicial aceptado y trazado a ADR-002; satisfecho por DEC-005;
 - reglas de dependencia materializadas y comprobadas por el checker local de DEC-005; sexta reverificación formal PASS, satisfecho el 2026-07-23;

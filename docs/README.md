@@ -4,13 +4,16 @@ Este índice es la puerta de entrada a la fundación documental. Todo contenido 
 
 ## Estado del documento
 
-**Estado:** Borrador para revisión.
-**Fase:** Discovery and Architecture Foundation.
+**Estado:** Sprint 00 Formal Closure Remediation Complete / Final Review
+Pending.
+**Fase:** R0 Authorization Review Ready; R0 no autorizado.
 **Implementación funcional:** no iniciada.
 
 ## Revisión dirigida de Sprint 00
 
-El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la sesión de decisión sin cambiar estados ni autorizar implementación:
+El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) conserva la
+auditoría inicial y la remediación vigente sin cerrar Sprint 00 ni autorizar
+R0:
 
 - [Resumen ejecutivo](reviews/sprint-00/EXECUTIVE_SUMMARY.md)
 - [Auditoría documental](reviews/sprint-00/DOCUMENT_AUDIT.md)
@@ -20,6 +23,7 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Candidatos de prototipo](reviews/sprint-00/PROTOTYPE_CANDIDATES.md)
 - [Recomendaciones de alcance](reviews/sprint-00/SCOPE_RECOMMENDATIONS.md)
 - [Evaluación de cierre](reviews/sprint-00/SPRINT_00_CLOSURE_ASSESSMENT.md)
+- [Remediación de cierre](reviews/sprint-00/SPRINT_00_CLOSURE_REMEDIATION.md)
 - [Checklist de la sesión](reviews/sprint-00/REVIEW_CHECKLIST.md)
 
 ## Producto
@@ -113,6 +117,7 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Product backlog](backlog/PRODUCT_BACKLOG.md)
 - [Priorización](backlog/PRIORITIZATION_MODEL.md)
 - [Dependencias](backlog/DEPENDENCY_MAP.md)
+- [Plan de ejecución H1 para R0](backlog/R0_H1_EXECUTION_PLAN.md)
 - [Índice de PBIs](backlog/pbis/README.md)
 - [Guía de sprints](sprints/README.md)
 - [Objetivo de SPRINT-00](sprints/sprint-00/SPRINT_GOAL.md)
@@ -121,7 +126,10 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Review](sprints/sprint-00/REVIEW.md)
 - [Retrospectiva](sprints/sprint-00/RETROSPECTIVE.md)
 
-Los archivos individuales PBI-001 a PBI-021 se encuentran enlazados desde el [índice de PBIs](backlog/pbis/README.md). PBI-021 es el primer PBI técnico posterior autorizado por DEC-004; permanece sin ejecutar y no modifica retrospectivamente SPRINT-00.
+Los archivos individuales PBI-001 a PBI-029 se encuentran enlazados desde el
+[índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
+PBI-023 es el primer PBI propuesto de R0 y está `Ready`, con autorización
+pendiente. Ninguno modifica retrospectivamente Sprint 00 ni inicia R0.
 
 ## Calidad
 

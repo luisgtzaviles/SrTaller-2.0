@@ -13,7 +13,7 @@
 - **Dependencias:** participación del Product Owner y aprendizaje del sistema anterior.
 - **Riesgos:** convertir hipótesis en requisitos o extender indefinidamente el descubrimiento.
 - **Exclusiones:** código funcional, scaffolding e infraestructura.
-- **Estado:** In progress mediante SPRINT-00, sujeto a revisión.
+- **Estado:** Formal closure remediation complete / final review pending.
 - **Puede descomponerse cuando:** el resultado documental y su autoridad de aprobación estén definidos; PBI-001 a PBI-020 constituyen la descomposición inicial.
 
 ## EPIC-001 — Engineering Foundation
@@ -26,7 +26,11 @@
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** Planned; no iniciado.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
-- **Actualización:** [PBI-021](pbis/PBI-021.md) permanece `Ready`; [PBI-022](pbis/PBI-022.md) está `Done` después de materialización y verificación formal. Ninguno inicia funcionalidad, ambientes, CI general ni el resto del epic.
+- **Actualización:** [PBI-021](pbis/PBI-021.md) y
+  [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
+  `Ready`, con autorización pendiente; PBI-024–PBI-029 descomponen H1 con
+  estados `Draft` o `Blocked`. Ninguno está iniciado ni autoriza funcionalidad,
+  ambientes o R0 antes de la revisión final.
 
 ## EPIC-002 — Tenant and Platform Administration
 

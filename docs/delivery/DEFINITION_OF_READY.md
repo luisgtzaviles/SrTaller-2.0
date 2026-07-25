@@ -6,7 +6,8 @@
   [DEC-063 aceptada](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
 - **Propósito:** Establecer condiciones mínimas para comprometer trabajo sin ocultar incertidumbre crítica.
 - **Alcance:** Incluye entregables documentales de Sprint 00 y futuros PBIs de implementación.
-- **Condiciones pendientes:** DEC063-C01, C02 y C08; este resumen no las materializa.
+- **Condiciones satisfechas:** DEC063-C01, C03 y C04.
+- **Condiciones pendientes:** DEC063-C02, C05, C06, C07 y C08; este resumen no las materializa.
 
 ## Principio
 
@@ -98,13 +99,15 @@ pendiente su materialización.
 
 ## Aplicación pendiente
 
-Los templates, la matriz de riesgo y el registro operativo de waivers se
-materializarán sólo mediante trabajos autorizados para DEC063-C01, C02 y C08.
+Los templates mínimos de DEC063-C01 ya están materializados. La matriz de
+riesgo y el registro operativo de waivers se materializarán sólo mediante
+trabajos autorizados para DEC063-C02 y C08. Los checklists especializados de
+persistencia, seguridad y release permanecen en C05, C06 y C07.
 Las autoridades de Producto, Seguridad, Operaciones y Arquitectura participan
 según la superficie afectada.
 
 ## Próxima revisión
 
-- **Fecha:** antes de materializar DEC063-C01/C02 o al cambiar DEC-063.
-- **Disparador:** autorización de templates/riesgo o cambio del [flujo de desarrollo](./DEVELOPMENT_WORKFLOW.md).
+- **Fecha:** antes de materializar DEC063-C02 o al cambiar DEC-063.
+- **Disparador:** clasificación de riesgo, waiver o cambio del [flujo de desarrollo](./DEVELOPMENT_WORKFLOW.md).
 - **Documentos relacionados:** [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md), [PBI Template](./PBI_TEMPLATE.md), [Definition of Done](./DEFINITION_OF_DONE.md), [Testing Strategy](../quality/TESTING_STRATEGY.md).

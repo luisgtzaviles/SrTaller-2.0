@@ -173,12 +173,15 @@ Además del alcance aprobado, todos estos criterios siguen siendo obligatorios:
 - [x] ownership de repositorios y datos aceptado para la fundación mediante [DEC-049](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md); DEC049-C01 a C08 permanecen pendientes para materialización;
 - [x] estrategia de errores y contratos mínimos de aplicación definidos por DEC-044;
 - [x] estrategia de pruebas y Definition of Done aprobadas por DEC-051/063; sus condiciones permanecen pendientes;
-- [ ] PBI de R0 trazado a los escenarios aprobados;
-- [ ] no existen decisiones H0 abiertas;
-- [ ] el cambio no introduce módulos futuros vacíos ni decisiones H1 implícitas;
-- [ ] el Responsable de Producto autoriza expresamente iniciar implementación.
+- [x] PBI de R0 trazado a los escenarios aprobados mediante [PBI-023](../../backlog/pbis/PBI-023.md);
+- [x] no existen decisiones H0 abiertas; H0 está completo en 9/0;
+- [x] el cambio no introduce módulos futuros vacíos ni decisiones H1 implícitas; los 24 contratos están trazados en el [plan H1](../../backlog/R0_H1_EXECUTION_PLAN.md);
+- [x] el Responsable de Producto registró autorización explícita condicional en la [Review](../../sprints/sprint-00/REVIEW.md#decisión-de-producto-y-b-21);
+- [ ] Sprint 00 queda cerrado por dictamen independiente;
+- [ ] la revisión final confirma DoR y activa la autorización condicional.
 
-Este gate continúa cerrado. La aprobación de `DEC-002` y `DEC-062` no autoriza código.
+Este gate continúa cerrado exclusivamente por los dos últimos puntos. La
+autorización de Producto no entra en vigor antes del cierre y la revisión final.
 
 ### R0 listo para programación
 

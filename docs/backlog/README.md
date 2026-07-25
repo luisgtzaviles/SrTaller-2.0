@@ -1,11 +1,17 @@
 # Gestión del backlog
 
-El backlog convierte objetivos de producto en resultados verificables sin confundir intención con compromiso. Durante SPRINT-00, PBI-001 a PBI-020 producen documentación, decisiones o evidencia de descubrimiento y ninguno autoriza implementación. [PBI-021](pbis/PBI-021.md) y [PBI-022](pbis/PBI-022.md) fueron creados posteriormente como trabajos técnicos acotados autorizados por DEC-004 y DEC-005, respectivamente; ambos permanecen `Unassigned`, y PBI-022 está `Done` después de materialización y verificación formal. Su cierre no autoriza funcionalidad ni R0.
+El backlog convierte objetivos de producto en resultados verificables sin
+confundir intención con compromiso. PBI-001–PBI-020 conservan su historia de
+Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
+[PBI-022](pbis/PBI-022.md) están `Done` después de sus verificaciones formales.
+[PBI-023](pbis/PBI-023.md) es el primer PBI propuesto de R0 y está `Ready`,
+con autorización pendiente; PBI-024–PBI-029 descomponen el resto de H1. Ninguno
+está iniciado ni autoriza funcionalidad, R0 o cierre de Sprint 00.
 
 ## Estado del documento
 
-**Estado:** Propuesta.
-**Orden final y responsables:** pendientes de aprobación del Product Owner.
+**Estado:** Reconciliado para revisión final de Sprint 00.
+**Orden R0 y ejecución:** no autorizados; owners definidos por rol.
 
 ## Estructura
 
@@ -33,7 +39,11 @@ Un identificador no se reutiliza. Las referencias pueden repetirse; la definici�
 
 ## Estados propuestos de PBI
 
-`Draft` → `Ready for review` → `Ready` → `In progress` → `In review` → `Done`. También se permiten `Blocked`, `Deferred` y `Cancelled` con una razón explícita. Sólo un PBI que satisfaga la [Definition of Ready](../delivery/DEFINITION_OF_READY.md) puede quedar `Ready` para implementación.
+`Draft` → `Ready for review` → `Ready` → `In progress` → `In review` →
+`Done`. También se permiten `Blocked`, `Deferred`, `Superseded` y `Cancelled`
+con una razón explícita. Sólo un PBI que satisfaga la
+[Definition of Ready](../delivery/DEFINITION_OF_READY.md) puede quedar `Ready`
+para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Reglas de mantenimiento
 
@@ -45,4 +55,4 @@ Un identificador no se reutiliza. Las referencias pueden repetirse; la definici�
 
 ## Próxima revisión
 
-En el refinamiento documental de SPRINT-00; fecha: TBD.
+En la revisión final independiente de Sprint 00 y PBI-023.

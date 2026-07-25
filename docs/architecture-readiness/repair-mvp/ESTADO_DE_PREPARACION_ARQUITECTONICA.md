@@ -2,9 +2,19 @@
 
 ## Veredicto
 
-**Preparado con bloqueantes.**
+**Authorization Review Ready / R0 no autorizado.**
 
-No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes, candidatos a contextos, agregados, comandos, eventos y decisiones abiertas. No es **Parcialmente preparado** porque el mínimo vendible y sus dependencias pueden delimitarse sin inventar el negocio. El Responsable de Producto aprobó el alcance y contrato de salida de R0 el 2026-07-21, pero eso no autoriza implementación. No alcanza **Preparado para una primera rebanada vertical** porque faltan la autorización organizacional y decisiones técnicas que condicionan cualquier implementación segura. Tampoco alcanza **Preparado para implementación completa del MVP** porque los contratos operativos de varias etapas siguen pendientes.
+No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
+candidatos a contextos, agregados, comandos, eventos y decisiones abiertas. No
+es **Parcialmente preparado** porque el mínimo vendible y sus dependencias
+pueden delimitarse sin inventar el negocio. El Responsable de Producto aprobó
+el alcance y contrato de salida de R0 el 2026-07-21 y registró el 2026-07-24 una
+autorización condicional: sólo entra en vigor después del cierre documental de
+Sprint 00, un PBI R0 `Ready` y la revisión final. PBI-023 satisface
+documentalmente DoR, pero Sprint 00 y la revisión siguen abiertos. Tampoco
+alcanza **Preparado para implementación completa del MVP** porque los contratos
+H1 deben resolverse por trigger y los contratos operativos posteriores siguen
+pendientes.
 
 ## Evaluación por dimensión
 
@@ -24,7 +34,7 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
 | ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004/VC-024 `Closed / PASS`; DEC-005 materializada y formalmente verificada; DEC-044/049/051/063 aceptadas; ADR-006 a ADR-008 siguen propuestos | Plataforma, organización, errores, persistencia, pruebas y DoD están aceptadas; H0 está completo; condiciones restantes y H1 siguen bloqueando código funcional | PB |
-| Autorización | Producto aprobó alcance/aceptación esperada de R0; Sprint 00 no está cerrado ni existe autorización de implementación | Bloqueante organizacional | PB |
+| Autorización | B-21 tiene autorización condicional atribuible; Sprint 00 y la revisión final siguen abiertos | Condición satisfecha, efectividad pendiente | PB |
 
 ## Qué sí puede comenzar
 
@@ -37,11 +47,16 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 
 ## Qué no puede comenzar
 
-- **[RP]** Implementación funcional sin autorización explícita y sin cumplir Definition of Ready.
+- **[RP]** Implementación funcional antes de que la autorización condicional
+  entre en vigor mediante cierre de Sprint 00, PBI `Ready` y revisión final.
 - **[R]** Persistencia multitenant antes de aplicar y probar el contexto e identidad/sesión aceptados, el alcance técnico y el aislamiento.
 - **[R]** Flujos sensibles antes de clasificar la acción y aplicar/probar el control, atribución y evidencia de ADR-013.
 - **[ADR]** Introducir frameworks, workspaces, gestores, orquestación o despliegue fuera de las decisiones aceptadas. DEC-004 fija pnpm y el lockfile sin autorizar workspaces; ADR-009 gobierna repositorio/workspaces, ADR-001 lenguaje/runtime y ADR-003 el motor.
 
 ## Condición de promoción
 
-El estado puede cambiar a **Preparado para una primera rebanada vertical** cuando todos los bloqueantes anteriores al primer cambio de implementación de R0 estén cerrados, exista un PBI listo y el Responsable de Producto autorice expresamente su implementación. Después, R1 sólo puede abrirse tras demostrar y aceptar formalmente R0. La preparación completa exige además cerrar las decisiones de cada etapa comercial, técnica, de calidad, pago y entrega.
+El estado puede cambiar a **Preparado para una primera rebanada vertical**
+cuando la revisión final confirme el cierre documental de Sprint 00 y el DoR
+de PBI-023, haciendo efectiva la autorización condicional sin omitir los gates
+H1 incluidos por trigger en ese PBI. Después, R1 sólo puede abrirse tras
+demostrar y aceptar formalmente R0.

@@ -8,11 +8,12 @@ El Responsable de Producto aprobó este alcance, sus exclusiones y contrato de s
 
 ## Prerrequisito
 
-El único remanente H0, VC-024, debe cerrarse y debe existir autorización
-explícita antes del primer cambio de implementación de R0. DEC-044, DEC-049,
-DEC-051 y DEC-063 ya están aceptadas, pero sus condiciones de materialización
-siguen obligatorias. Aceptar un contrato no sustituye su evidencia ni las
-decisiones H1.
+H0 está completo en 9/0 y VC-024 está `Closed / PASS`. B-21 registra
+autorización explícita con efectividad condicionada al cierre documental de
+Sprint 00, PBI R0 `Ready` y revisión final. DEC-044, DEC-049, DEC-051 y
+DEC-063 están aceptadas, pero sus condiciones de materialización siguen
+obligatorias. Aceptar un contrato no sustituye su evidencia ni las decisiones
+H1.
 
 ## Bloqueantes H1
 

@@ -6,7 +6,12 @@ Este paquete convierte los bloqueantes de preparación arquitectónica en una se
 
 ## Veredicto actual
 
-**El alcance y contrato de salida de R0 están aprobados, pero R0 no está listo para programación funcional. [PBI-022](../../backlog/pbis/PBI-022.md) quedó `Done` y no amplía la autorización; [PBI-021](../../backlog/pbis/PBI-021.md) conserva únicamente su alcance técnico de DEC-004. Ninguno permite scaffolding funcional del producto.**
+**El alcance y contrato de salida de R0 están aprobados; H0 está completo,
+[PBI-021](../../backlog/pbis/PBI-021.md) y
+[PBI-022](../../backlog/pbis/PBI-022.md) están `Done`, y
+[PBI-023](../../backlog/pbis/PBI-023.md) cumple documentalmente DoR. R0 sigue
+no autorizado: Sprint 00 y la revisión final permanecen abiertos y la
+autorización condicional B-21 todavía no entra en vigor.**
 
 La documentación permite preparar ADRs, criterios, escenarios y spikes para
 autorización. `DEC-002` y `DEC-062` quedaron cerradas por el Responsable de
@@ -18,8 +23,9 @@ verificada el 2026-07-23. DEC-044, DEC-049, DEC-051 y
 [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) fueron
 aceptadas el 2026-07-24. VC-024 satisface DEC051-C01/C07/C09 y
 DEC063-C01/C03/C04; las demás condiciones permanecen pendientes. H0 queda
-completo en 9/0. El primer cambio funcional de R0 continúa bloqueado por
-autorización organizacional y contratos transversales H1. R1 añade decisiones
+completo en 9/0. El primer cambio funcional de R0 continúa bloqueado por la
+revisión final que hace efectiva B-21 y por contratos H1 aplicables al PBI
+autorizado. R1 añade decisiones
 de folio, recepción, custodia, política, tiempo, evidencia e identificación
 física.
 
@@ -48,8 +54,9 @@ Tras cerrar `DEC-002`, `DEC-004`, `DEC-005`, `DEC-044`, `DEC-049`, `DEC-051`,
 - [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md):
   `Accepted with conditions`; C01/C03/C04 `Satisfied`; C02/C05–C08 `Pending`.
 
-También siguen pendientes la autorización organizacional funcional (`B-21`) y
-todos los cierres H1 aplicables antes de declarar R0 programable. La sexta
+`B-21` está `Satisfied — conditional effectiveness`; siguen pendientes el
+cierre de Sprint 00, la revisión final y los cierres H1 aplicables antes de
+declarar R0 programable. La sexta
 reverificación formal de PBI-022 obtuvo `PASS` y cerró sus hallazgos
 históricos. VC-024 obtuvo `PASS` mediante dos jobs Linux independientes,
 artefactos validados y comparación semántica reproducible. Las condiciones de
@@ -124,9 +131,9 @@ Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones difer
 ## Próxima promoción posible
 
 La siguiente promoción válida es **R0 listo para programar**. H0 está
-completo; todavía requiere cerrar H1 y obtener autorización organizacional
-explícita. No requiere resolver H2–H5 ni diseñar R2–R5 por anticipación.
+completo; todavía requiere la revisión final que haga efectiva B-21 y resolver
+H1 por trigger. No requiere resolver H2–H5 ni diseñar R2–R5 por anticipación.
 
-El siguiente gate concreto es resolver el gate organizacional y los contratos
-transversales H1 aplicables. VC-024 no autoriza R0, no cierra Sprint 00 y no
+El siguiente gate concreto es repetir la revisión final de Sprint 00 y del DoR
+de PBI-023. VC-024 no autoriza R0, no cierra Sprint 00 y no
 declara satisfechas las condiciones de DEC-051/063 que permanecen `Pending`.

@@ -2,95 +2,87 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador para revisión con el Product Owner.
-- **Naturaleza:** Evaluación documental; no cierra SPRINT-00, no cambia estados de PBIs o ADRs y no autoriza prototipos ni implementación.
-- **Fecha de evaluación:** TBD.
-- **Responsables y aprobadores:** TBD.
-- **Fuente del criterio:** [SPRINT-00 — Discovery and Architecture Foundation](../../sprints/sprint-00/SPRINT_GOAL.md#criterio-de-salida).
+- **Estado:** Formal Closure Remediation Complete / Final Review Pending.
+- **Naturaleza:** evaluación vigente; no cierra Sprint 00 ni autoriza R0.
+- **Fecha:** 2026-07-24.
+- **Autoridad registrada:** Responsable del Proyecto actuando también como
+  Responsable de Producto.
+- **Fuente:** [Sprint Goal](../../sprints/sprint-00/SPRINT_GOAL.md).
 
-**Actualización posterior:** esta evaluación conserva su fotografía histórica.
-[ADR-002](../../decisions/proposed/ADR-002-modular-monolith-first.md) y
-[ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md)
-fueron aceptados el 2026-07-21; [DEC-049](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md)
-fue aceptada el 2026-07-24 con ocho condiciones de materialización pendientes.
-[DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
-quedó `Accepted` el 2026-07-24 por el Responsable del Proyecto, con cinco
-`PASS WITH CONDITIONS`; VC-024 satisface C01/C07/C09.
-[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) quedó
-`Accepted with conditions` el 2026-07-24, con cinco
-`PASS WITH CONDITIONS`; VC-024 satisface C01/C03/C04. La
-[verificación formal de VC-024](../../architecture-readiness/dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
-obtuvo `PASS` y H0 queda completo en 9/0. Las demás condiciones permanecen
-`Pending`. Estas actualizaciones no cierran Sprint 00, no autorizan R0 y las
-filas históricas no deben usarse como fuente de su estado vigente.
+## Resultado previo y estado vigente
 
-## Convenciones de evaluación
+El resultado previo fue `BLOCKED — SPRINT 00 CLOSURE CRITERIA NOT MET`.
+Desde entonces, VC-024 obtuvo `PASS`, H0 quedó completo en 9/0, PBI-001 a
+PBI-021 fueron reconciliados, B-21 recibió una decisión explícita de Producto,
+H1 fue inventariado/descompuesto y se preparó el primer PBI técnico de R0.
 
-Los únicos estados utilizados son `Met`, `Partially met`, `Not met`, `Requires Product Owner decision` y `Requires technical validation`.
+El resultado vigente es:
 
-`Met` confirma únicamente el criterio escrito. Cuando el criterio pide que un documento exista o que un modelo preliminar esté documentado, no significa que su contenido haya sido validado, aprobado o demostrado técnicamente. La evaluación de los PBIs es una recomendación de revisión y no modifica sus checkboxes ni su metadata canónica.
+**FORMAL CLOSURE REMEDIATION COMPLETE / FINAL REVIEW PENDING**
 
-## Evaluación de los criterios de salida
+## Convenciones
 
-| # | Criterio de salida | Estado | Evidencia | Documento relacionado | Brecha | Acción necesaria | Responsable |
-|---:|---|---|---|---|---|---|---|
-| 1 | La visión del producto haya sido revisada. | `Requires Product Owner decision` | La visión y los principios existen, pero la aprobación continúa sin registrar. | [Visión](../../product/PRODUCT_VISION.md), [principios](../../product/PRODUCT_PRINCIPLES.md), [PBI-001](../../backlog/pbis/PBI-001.md) | No existe evidencia trazable de revisión, feedback o aceptación del Product Owner. | Revisar hipótesis, segmento, resultados y principios; registrar decisión y cambios solicitados. | TBD |
-| 2 | Los actores principales estén identificados. | `Partially met` | Existe un catálogo preliminar de actores humanos, técnicos y externos. | [Actores y personas](../../product/ACTORS_AND_PERSONAS.md), [PBI-002](../../backlog/pbis/PBI-002.md) | Sin segmento inicial ni validación operativa no puede confirmarse cuáles actores son principales ni qué variaciones existen. | Validar el catálogo con Product Owner y operación; registrar altas, bajas y variaciones relevantes. | TBD |
-| 3 | El mapa inicial de módulos exista. | `Met` | El mapa describe 21 módulos, ownership conceptual, eventos, dependencias y preguntas. | [Mapa de módulos](../../product/MODULE_MAP.md), [PBI-005](../../backlog/pbis/PBI-005.md) | Los límites siguen propuestos y no cuentan con revisión conjunta registrada. | Llevar los límites y disputas a revisión de producto y arquitectura antes de convertirlos en paquetes. | TBD |
-| 4 | Las preguntas críticas estén visibles. | `Partially met` | Las 34 preguntas canónicas conservan ID, contexto, impacto, opciones y estado abierto. | [Preguntas abiertas](../../product/OPEN_QUESTIONS.md), [PBI-020](../../backlog/pbis/PBI-020.md), [auditoría](./DOCUMENT_AUDIT.md) | Existen cuestiones relevantes en documentos especializados sin mapeo canónico individual; además, visibilidad no equivale a priorización, respuesta ni decisión. | Confirmar que cada incertidumbre crítica mapea a un `QUESTION-###` o registrar una nueva, y usar la secuencia de gates para su resolución. | TBD |
-| 5 | El modelo multitenant preliminar esté documentado. | `Met` | Se documentan resolución, propagación, persistencia, superficies no SQL, operaciones globales y pruebas; ADR-004 fue aceptado posteriormente. | [Modelo multitenant](../../architecture/MULTITENANCY_MODEL.md), [PBI-007](../../backlog/pbis/PBI-007.md) | Aplicación, RLS condicionado, residencia, restauración selectiva y aislamiento efectivo requieren validación técnica. | Revisar con seguridad y decidir qué prototipos de aislamiento son obligatorios antes de implementar. | Arquitectura + Seguridad |
-| 6 | El modelo de identidad y permisos esté documentado. | `Met` | Se separan identidad, pertenencia de tenant, rol, permiso, sucursal, dispositivo y sesiones. | [Identidad, acceso y permisos](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), [PBI-008](../../backlog/pbis/PBI-008.md) | Los mecanismos de identidad de plataforma o soporte excepcional, roles personalizados y detalles administrativos de revocación continúan diferidos; identidad, sesión, autorización ordinaria y acciones sensibles ya cuentan con decisiones aceptadas. | Resolver sólo los mecanismos todavía diferidos y aplicar ADR-011/012/013 por rebanada. | Según autoridad aplicable |
-| 7 | La vinculación de dispositivos esté descrita. | `Met` | Se describen estados, vinculación, activación, sesión, PIN, cambio de turno, pérdida y revocación. | [Sucursal y dispositivo](../../architecture/BRANCH_AND_DEVICE_MODEL.md), [PBI-009](../../backlog/pbis/PBI-009.md) | No están aprobados el actor vinculador, supervisión, expiración, reasignación ni alcance offline. | Validar el flujo operativo y los escenarios de abuso antes de escoger mecanismos técnicos. | TBD |
-| 8 | La arquitectura objetivo preliminar exista. | `Met` | Existen vistas de contexto, aplicaciones, capas, módulos, unidades desplegables y flujos. Actualización posterior: ADR-001/002/003/004/005/009 fijaron lenguaje/runtime, forma inicial, motor, topología multitenant, shell backend y repositorio único evolutivo. | [Arquitectura objetivo](../../architecture/TARGET_ARCHITECTURE.md), [arquitectura de aplicaciones](../../architecture/APPLICATION_ARCHITECTURE.md), [PBI-010](../../backlog/pbis/PBI-010.md) | Varias tecnologías secundarias siguen sin decisión aceptada. | Revisar límites y registrar cada decisión durable o incertidumbre técnica en el mecanismo correspondiente. | Según autoridad aplicable |
-| 9 | Las alternativas principales estén registradas inicialmente en ADRs `Proposed`. | `Met` | ADR-001 a ADR-009 registraron contexto, alternativas, consecuencias, riesgos y reconsideración. Actualización posterior: ADR-001 a ADR-005 y ADR-009 están `Accepted`; los demás conservan el estado del registro. | [Registro de ADRs](../../decisions/README.md) | Los ADR todavía propuestos requieren autoridad y evidencia propias. | Mantener cada ADR pendiente como `Proposed` hasta su decisión explícita. | Según autoridad de cada ADR |
-| 10 | Los ambientes estén definidos. | `Partially met` | Local development, staging y production tienen propósito, datos, credenciales y promoción conceptual diferenciados. | [Ambientes](../../delivery/ENVIRONMENTS.md), [despliegue](../../architecture/DEPLOYMENT_STRATEGY.md), [PBI-015](../../backlog/pbis/PBI-015.md) | Proveedor, topología, regiones, acceso, dominios, RTO/RPO, datos de prueba y responsabilidades siguen TBD. | Acordar el nivel mínimo de definición necesario para cerrar la fundación y separar decisiones de proveedor futuras. | TBD |
-| 11 | El flujo de trabajo esté definido. | `Partially met` | Existen workflow de desarrollo, estados de ADR, DoR, DoD y trazabilidad conceptual. | [Workflow](../../delivery/DEVELOPMENT_WORKFLOW.md), [registro de ADRs](../../decisions/README.md), [PBI-016](../../backlog/pbis/PBI-016.md) | Autoridades, cadencia, excepciones y evidencia de aprobación continúan TBD; los PBIs actuales no aplican toda la sección mínima de trazabilidad. | Aprobar autoridades y evidencia mínima; alinear los PBIs sin cambiar decisiones de fondo. | TBD |
-| 12 | La estrategia de pruebas esté definida. | `Partially met` | Se describen niveles, superficies, datos, frecuencia, gates y una suite de aislamiento multitenant. | [Estrategia de pruebas](../../quality/TESTING_STRATEGY.md), [aislamiento multitenant](../../quality/MULTITENANT_ISOLATION_TESTING.md), [PBI-017](../../backlog/pbis/PBI-017.md) | El archivo exigido por PBI-017 no define responsabilidades; herramientas, umbrales y revisión QA/seguridad siguen pendientes. | Consolidar o enlazar responsabilidades de forma inequívoca y revisar los gates por riesgo. | TBD |
-| 13 | El backlog inicial esté creado. | `Met` | Existen epics, PBI-001 a PBI-020, Product Backlog, Sprint Backlog y mapa de dependencias. | [Epics](../../backlog/EPICS.md), [Product Backlog](../../backlog/PRODUCT_BACKLOG.md), [Sprint Backlog](../../sprints/sprint-00/SPRINT_BACKLOG.md) | La asignación Epic/PBI y una dependencia de PBI-017 son inconsistentes; todos los PBIs siguen `Unassigned`. | Resolver las inconsistencias objetivas después de acordar la semántica de epics y dependencias. | TBD |
-| 14 | No existan decisiones críticas ocultas en conversaciones o únicamente en código. | `Not met` | No existe código funcional, pero el repositorio no puede demostrar por sí solo la inexistencia universal de decisiones en conversaciones; la auditoría detectó propuestas técnicas sin trazabilidad canónica individual. | [PBI-020](../../backlog/pbis/PBI-020.md), [Review](../../sprints/sprint-00/REVIEW.md), [modelo de trazabilidad](../../delivery/TRACEABILITY_MODEL.md) | El criterio es absoluto y no verificable con la evidencia disponible. | Sustituirlo, mediante decisión explícita, por una atestación de que se revisaron las fuentes conocidas y se registraron todas las decisiones encontradas. | TBD |
-| 15 | El Product Owner haya aprobado explícitamente comenzar prototipos técnicos. | `Requires Product Owner decision` | La plantilla de Review declara la autorización como TBD y, mientras no exista evidencia, como no autorizada. | [Review](../../sprints/sprint-00/REVIEW.md), [Sprint Goal](../../sprints/sprint-00/SPRINT_GOAL.md) | No hay aprobación; además, exigir una respuesta afirmativa para cerrar impediría cerrar la fundación si el PO decide aplazar prototipos. | Registrar una decisión `autorizar`, `aplazar` o `rechazar`; mantener autorización y cierre documental como gates separados. | TBD |
+Se usan únicamente `Met`, `Partially met`, `Not met` y `Not applicable`.
+`Met` no equivale a implementación. Un pendiente H1 no invalida un criterio
+que sólo exige un modelo preliminar, siempre que el pendiente sea visible.
 
-## Evaluación de PBI-001 a PBI-020
+## Recalculo de los 15 criterios
 
-En la columna de criterios, “satisfecho” significa que la auditoría encontró el contenido correspondiente. No marca el checkbox canónico ni reemplaza revisión, validación o aprobación.
+| # | Criterio | Estado | Evidencia | Remanente | Impacto |
+|---:|---|---|---|---|---|
+| 1 | Visión revisada | `Met` | [PBI-001](../../backlog/pbis/PBI-001.md), [Review](../../sprints/sprint-00/REVIEW.md) | Métricas futuras | No bloquea cierre documental |
+| 2 | Actores identificados | `Met` | [Actores](../../product/ACTORS_AND_PERSONAS.md), [PBI-002](../../backlog/pbis/PBI-002.md) | Variaciones por rebanada | No bloquea |
+| 3 | Mapa de módulos | `Met` | [Mapa](../../product/MODULE_MAP.md), [PBI-005](../../backlog/pbis/PBI-005.md) | Aplicación R0 | H1 |
+| 4 | Preguntas críticas visibles | `Met` | [Preguntas](../../product/OPEN_QUESTIONS.md), [plan H1](../../backlog/R0_H1_EXECUTION_PLAN.md) | Mantenimiento | No bloquea |
+| 5 | Modelo multitenant preliminar | `Met` | ADR-004, [PBI-007](../../backlog/pbis/PBI-007.md) | Aplicación/pruebas | H1 |
+| 6 | Identidad y permisos documentados | `Met` | ADR-011/012/013, [PBI-008](../../backlog/pbis/PBI-008.md) | Mecanismos/composición | H1 |
+| 7 | Vinculación de dispositivos descrita | `Met` | ADR-010/011, [PBI-009](../../backlog/pbis/PBI-009.md) | Aplicación/threat model | H1 |
+| 8 | Arquitectura objetivo preliminar | `Met` | ADRs/DECs aceptados, [PBI-010](../../backlog/pbis/PBI-010.md) | Materialización | H1 |
+| 9 | Alternativas registradas inicialmente | `Met` | [Registro](../../decisions/README.md), [matriz ADR](./ADR_READINESS_MATRIX.md) | ADR-006/007/008 siguen Proposed | Gates propios |
+| 10 | Ambientes definidos | `Met` | [Ambientes](../../delivery/ENVIRONMENTS.md), [PBI-015](../../backlog/pbis/PBI-015.md) | Proveedor/RTO/RPO | Gate posterior |
+| 11 | Workflow definido | `Met` | [Workflow](../../delivery/DEVELOPMENT_WORKFLOW.md), DoR/DoD | Protección `main` | DEC051-C02 |
+| 12 | Estrategia de pruebas definida | `Met` | DEC-051, [PBI-017](../../backlog/pbis/PBI-017.md) | Condiciones por trigger | H1/merge |
+| 13 | Backlog inicial creado | `Met` | [Product Backlog](../../backlog/PRODUCT_BACKLOG.md), PBI-001–020 | Refinamiento R0 | No bloquea |
+| 14 | No hay decisiones críticas ocultas | `Partially met` | [Auditoría](./DOCUMENT_AUDIT.md), [remediación](./SPRINT_00_CLOSURE_REMEDIATION.md) | Sólo puede atestiguarse sobre fuentes conocidas | Requiere aceptación en revisión final |
+| 15 | Aprobación de Producto para prototipos | `Met` | [B-21](../../sprints/sprint-00/REVIEW.md#decisión-de-producto-y-b-21) | Efectividad condicionada a cierre/final review | No autoriza hoy |
 
-| PBI | Entregable creado | Criterios satisfechos | Criterios pendientes | Dependencias abiertas | Evidencia | Recomendación |
-|---|---|---|---|---|---|---|
-| [PBI-001](../../backlog/pbis/PBI-001.md) | [Visión](../../product/PRODUCT_VISION.md) y [principios](../../product/PRODUCT_PRINCIPLES.md) | Secciones previstas; implicaciones prácticas; niveles de certeza; preguntas enlazadas. | Revisión y cambios solicitados por Product Owner. | Segmento, resultados y métricas de éxito. | Entregables existentes; aprobación declarada como no registrada. | `Candidate to close after Product Owner approval` |
-| [PBI-002](../../backlog/pbis/PBI-002.md) | [Actores y personas](../../product/ACTORS_AND_PERSONAS.md) | Actores preliminares; responsabilidades, objetivos, alcance, restricciones y preguntas; puesto separado de rol; enlaces a identidad/dispositivos. | Validación de actores principales y variaciones reales. | Conocimiento operativo, segmento inicial y Product Owner. | Catálogo de actores existente; entrevistas y aprobación pendientes. | `Candidate to close after Product Owner approval` |
-| [PBI-003](../../backlog/pbis/PBI-003.md) | [Alcance](../../product/PRODUCT_SCOPE.md) y [fuera de alcance](../../product/OUT_OF_SCOPE.md) | Capacidades clasificadas; exclusiones; no compromiso explícito; ambigüedades enlazadas. | Revisión de clasificación y exclusiones por Product Owner. | PBI-001, PBI-002, segmento y recorrido prioritario. | Matrices existentes; ambos documentos permanecen como borradores no aprobados. | `Candidate to close after Product Owner approval` |
-| [PBI-004](../../backlog/pbis/PBI-004.md) | [Glosario](../../product/DOMAIN_GLOSSARY.md) | Términos iniciales; definiciones con alcance; ambigüedades marcadas. | Compatibilidad cruzada final y validación de términos críticos. | PBI-001, PBI-002 y especialistas de dominio. | Glosario enlazado; no existe evidencia de revisión terminológica. | `Candidate to close after Product Owner approval` |
-| [PBI-005](../../backlog/pbis/PBI-005.md) | [Mapa de módulos](../../product/MODULE_MAP.md) | 21 módulos; cinco aspectos por módulo; ownership; incertidumbres y ciclos visibles. | Revisión de límites por producto y arquitectura. | PBI-003 continúa Draft; PBI-004 y PBI-006 esperan revisión. | Mapa y reglas de dependencia existentes; review no registrada. | `Ready for review` |
-| [PBI-006](../../backlog/pbis/PBI-006.md) | [Lecciones legacy](../../product/LEGACY_SR_TALLER_LESSONS.md) | Secciones y lecciones; hechos separados de inferencias; implicación práctica; migración abierta. | Revisión por personas con conocimiento histórico y contraste con fuentes. | Acceso autorizado a evidencia legacy y stakeholders. | El documento declara que no inspeccionó código, datos, métricas ni incidentes del legado. | `Ready for review` |
-| [PBI-007](../../backlog/pbis/PBI-007.md) | [Modelo multitenant](../../architecture/MULTITENANCY_MODEL.md) | Vectores de aislamiento; defensas por capas; operaciones globales explícitas; riesgos enlazados a ADR-004. | Aplicación, revisión de seguridad y evidencia. | PBI-004 y PBI-005; RLS, residencia, exportación y restauración. | ADR-004 `Accepted`; sin threat model o prueba ejecutada. | `Ready for review` |
-| [PBI-008](../../backlog/pbis/PBI-008.md) | [Identidad, acceso y permisos](../../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md) | Conceptos separados; autorización contextual; acciones auditables; bloqueo y revocación conceptuales. | Validación de decisiones operativas por Product Owner y seguridad. | PBI-002, PBI-007, membresías, roles, acciones sensibles y autoridades. | Modelo existente; preguntas de identidad y permisos siguen abiertas. | `Keep Open` |
-| [PBI-009](../../backlog/pbis/PBI-009.md) | [Sucursal y dispositivo](../../architecture/BRANCH_AND_DEVICE_MODEL.md) | Lifecycle; sesiones separadas; pérdida/revocación/cierre remoto; supervisor y offline visibles. | Revisión del flujo por operación y seguridad. | PBI-002, PBI-007 y PBI-008; vinculación, turnos, expiración y supervisión. | Diagramas y escenarios conceptuales; reglas de operación no confirmadas. | `Keep Open` |
-| [PBI-010](../../backlog/pbis/PBI-010.md) | [Arquitectura objetivo](../../architecture/TARGET_ARCHITECTURE.md) y [de aplicaciones](../../architecture/APPLICATION_ARCHITECTURE.md) | Límites y flujos; unidades separables; backend como autoridad; relación con módulos y multitenancy. | Trazabilidad individual de todas las tecnologías preliminares y revisión de arquitectura. | PBI-004 a PBI-007; ADR-001/002/003/005/009 `Accepted`. | PostgreSQL, NestJS como shell condicionado y el repositorio único están aceptados; DEC-004 seleccionó package manager/lockfile con materialización y evidencia pendientes; varias hipótesis secundarias siguen abiertas. | `Ready for review` |
-| [PBI-011](../../backlog/pbis/PBI-011.md) | [Arquitectura de datos](../../architecture/DATA_ARCHITECTURE.md), [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) y [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) | Ownership/flujos; alternativas y consecuencias; aislamiento/operación/recuperación; reconsideración. | Diseño físico, acceso, migraciones y evidencia de aislamiento. | PBI-005 y PBI-007; retención, residencia, escala, restore por tenant y posible RLS. | ADR-003/004 `Accepted`; no hay benchmark, prueba ejecutable de aislamiento ni tooling registrado. | `Ready for review` |
-| [PBI-012](../../backlog/pbis/PBI-012.md) | [Arquitectura de aplicaciones](../../architecture/APPLICATION_ARCHITECTURE.md), [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) y mandato de [SPIKE-009](PROTOTYPE_CANDIDATES.md#spike-009) | Fuerzas/alternativas; capas separadas; autoridad central; políticas transversales; ADR `Accepted with conditions`; spike completado con evidencia aprobada. | Aplicar condiciones; no reutilizar el spike ni inferir tooling fuera del contrato de DEC-004. | PBI-005, PBI-007 y PBI-010; materialización/evidencia de DEC-004; condiciones pendientes de DEC-044/049; DEC-050/051 y gates previos al primer recorrido. | [Evidencia aceptada](../../../spikes/spike-009-nestjs-shell/EVIDENCE.md); 48/48 y revisión enfocada aprobada. | `Architecture decision completed` |
-| [PBI-013](../../backlog/pbis/PBI-013.md) | [ADR-006](../../decisions/proposed/ADR-006-nextjs-web-clients.md) y [estrategia de accesibilidad](../../quality/ACCESSIBILITY_STRATEGY.md) | Alternativas web y límite con API; accesibilidad contemplada. | Resolver bloqueo; completar matriz de superficies/requisitos; ownership de design system; revisión de producto/diseño/arquitectura. | PBI-002, PBI-003, PBI-010; audiencias, rendering, marca e idiomas. | El propio PBI y el Sprint Backlog lo mantienen `Blocked`. | `Blocked` |
-| [PBI-014](../../backlog/pbis/PBI-014.md) | [Tiempo real y mensajería](../../architecture/REALTIME_AND_MESSAGING.md) | Flujo y fallos; contexto tenant/conversation; durable frente a efímero; idempotencia/orden/retry; criterios de extracción. | Revisión de producto, integración y seguridad. | PBI-005, PBI-007 y PBI-010; canal, proveedor, retención, estados y SLA. | Diagramas y escenarios conceptuales existentes; decisiones de producto abiertas. | `Ready for review` |
-| [PBI-015](../../backlog/pbis/PBI-015.md) | [Ambientes](../../delivery/ENVIRONMENTS.md), [despliegue](../../architecture/DEPLOYMENT_STRATEGY.md) y [ADR-007](../../decisions/proposed/ADR-007-containerized-deployments.md) | Tres ambientes; promoción/rollback; separación de datos; mismo digest; ADR `Proposed`. | Revisión de operaciones/seguridad y definición del umbral de ambiente “definido”. | PBI-010; plataforma, regiones, RTO/RPO, acceso, gates y responsables. | Matrices y flujo conceptual existentes; proveedor e infraestructura fuera de alcance. | `Ready for review` |
-| [PBI-016](../../backlog/pbis/PBI-016.md) | [Índice](../../README.md), [workflow ADR](../../decisions/README.md), [plantilla ADR](../../decisions/ADR_TEMPLATE.md) y [trazabilidad](../../delivery/TRACEABILITY_MODEL.md) | Navegación; estados/aprobación; plantilla; estados actuales en registro; cadena futura de trazabilidad. | Autoridades/cadencia restantes y aplicación de la sección mínima de trazabilidad a los PBIs actuales. | Acuerdo de revisores, aprobadores y fuente de verdad. | Workflow existente; ADR-001 ya registra Arquitectura + Ingeniería como autoridad. | `Ready for review` |
-| [PBI-017](../../backlog/pbis/PBI-017.md) | [Pruebas](../../quality/TESTING_STRATEGY.md), [aislamiento](../../quality/MULTITENANT_ISOLATION_TESTING.md) y [DoD](../../delivery/DEFINITION_OF_DONE.md) | Suite de aislamiento; DoD/evidencia; permisos, migraciones, rollback y accesibilidad considerados. | Responsabilidades inequívocas en el documento exigido y revisión de seguridad/QA. | PBI-007, PBI-008 y PBI-010; PBI-016 según el mapa de dependencias, referencia todavía disputada; tooling, presupuestos y gates exactos. | Estrategias existentes; responsabilidades aparecen en Quality Strategy, no en Testing Strategy. | `Ready for review` |
-| [PBI-018](../../backlog/pbis/PBI-018.md) | [Línea base](../../architecture/SECURITY_BASELINE.md) y [pruebas de seguridad](../../quality/SECURITY_TESTING.md) | Controles; amenazas/evidencia; abuso de tenant/PIN/integraciones; incidentes/secretos/supply chain; preguntas regulatorias. | Threat models por recorrido y revisión formal de seguridad. | PBI-007/008/009, clasificación de datos, regiones y autoridad de riesgo. | Baseline y escenarios existentes; no hay validación ejecutada ni afirmación de cumplimiento. | `Ready for review` |
-| [PBI-019](../../backlog/pbis/PBI-019.md) | [Observabilidad](../../architecture/OBSERVABILITY_STRATEGY.md) | Señales/contexto/privacidad; logs separados de auditoría; correlación; criterios de alertas y cardinalidad. | Revisión por operaciones y seguridad. | PBI-007, PBI-010, PBI-014 y PBI-015; clasificación de datos, SLOs, retención, proveedor y on-call. | Catálogo conceptual existente; sin objetivos cuantitativos ni operación validada. | `Ready for review` |
-| [PBI-020](../../backlog/pbis/PBI-020.md) | [Preguntas abiertas](../../product/OPEN_QUESTIONS.md), [Sprint Goal](../../sprints/sprint-00/SPRINT_GOAL.md) y [mapa de dependencias](../../backlog/DEPENDENCY_MAP.md) | IDs/categorías; impacto/opciones; checklist de salida existente. | Gates completos; criterio verificable de decisiones conocidas; aprobación del Product Owner. | Revisión de PBI-001 a PBI-019, autoridades y las 34 preguntas abiertas. | Registro consolidado existente; no hay minuta, decisión de gates ni checklist firmado. | `Keep Open` |
+## Resultado PBI-001–020
 
-## Resultado y recomendación condicionada
+| Resultado | PBIs |
+|---|---|
+| `Done` | 001–005, 007–012, 015–016 |
+| `Deferred` | 006, 013–014, 018–020 |
+| `Superseded` | 017 por DEC-051 |
 
-**Estado actual:** SPRINT-00 no está cerrado. La Review, las aprobaciones y los criterios pendientes conservan su estado actual. SPIKE-009 es la única excepción registrada: queda `Completed — evidence accepted with non-blocking conditions` y ADR-005 fue aceptado con condiciones, sin autorizar implementación. Los demás prototipos técnicos permanecen **no autorizados** salvo decisión explícita posterior.
+La evidencia y el remanente individual están en la
+[Review](../../sprints/sprint-00/REVIEW.md#resultado-por-pbi-001020) y en cada
+PBI. PBI-021 queda `Done` por la evidencia autoritativa VC-024; PBI-022 ya
+estaba `Done`.
 
-**Recomendación condicionada:** `Close documentation foundation and open a separate decision sprint`.
+## Gates vigentes
 
-Esta recomendación no es una decisión ni un cierre automático. Sólo debería adoptarse si:
+- VC-024: `Closed / PASS`.
+- H0: `9/0`, readiness `Complete`.
+- DEC051-C01/C07/C09: `Satisfied`; C02–C06/C08/C10: `Pending`.
+- DEC063-C01/C03/C04: `Satisfied`; C02/C05–C08: `Pending`.
+- B-21: `Satisfied — conditional effectiveness`.
+- H1: 24 contratos abiertos para aplicación/prueba.
+- PBI-023: `Ready` para revisión de autorización; no iniciado.
+- R0: `Authorization Review Ready`, no autorizado.
+- Sprint 00: abierto.
+- PR #1: debe permanecer Draft.
 
-1. el Product Owner revisa la fundación documental y registra aceptación o correcciones requeridas;
-2. se separa explícitamente el cierre de la producción documental de la autorización para prototipos;
-3. los hallazgos de trazabilidad, criterio no verificable y gates incompletos quedan registrados y asignados;
-4. el nuevo trabajo de decisión conserva las 34 preguntas y ADRs con sus IDs/estados actuales hasta contar con evidencia;
-5. cualquier prototipo obtiene autorización independiente, alcance mínimo, riesgo relacionado y criterio de éxito antes de comenzar.
+## Decisión y recomendación
+
+No se emite cierre. La remediación permite repetir una revisión final
+independiente. Esa revisión debe:
+
+1. aceptar o rechazar la limitación verificable del criterio 14;
+2. confirmar que PBI-023 cumple DoR;
+3. comprobar que H1 y condiciones por trigger no fueron tratados como cerrados;
+4. emitir por separado el cierre de Sprint 00 y el dictamen de autorización de
+   R0.
 
 ## Próxima revisión
 
-Durante la sesión dirigida con el Product Owner y después de registrar sus decisiones en los documentos afectados. **Fecha:** TBD.
+Revisión final independiente; sin implementación, merge o deploy previo.

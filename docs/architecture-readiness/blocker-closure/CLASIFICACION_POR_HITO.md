@@ -14,7 +14,7 @@ Cada decisión tiene un hito primario para evitar doble conteo. Una fila puede i
 | H3 — Piloto | 9 | 0 | 9 | Piloto bloqueado |
 | H4 — Producción | 6 | 0 | 6 | Producción bloqueada |
 | H5 — Diferible | 13 | 13 diferidas | 0 para MVP | No bloquean MVP |
-| **Total** | **82** | **22** | **60** | H0 completo; H1 y autorización organizacional pendientes |
+| **Total** | **82** | **22** | **60** | H0 completo; H1 pendiente; B-21 con efectividad condicionada a revisión final |
 
 ## H0 — Antes del primer cambio de implementación de R0
 
@@ -67,7 +67,7 @@ Se activan sólo por un caso de negocio, riesgo o métrica real. No forman un ba
 | --- | --- | --- |
 | Documentar y diseñar ADRs | Permitido | Trabajo reversible y no ejecutable |
 | Preparar spikes | Permitido sólo como diseño | Su ejecución necesita autorización |
-| Scaffolding reversible | No autorizado | Gate organizacional y H1 abiertos |
+| Scaffolding reversible | No autorizado | Sprint 00/revisión final abiertos y H1 por trigger |
 | Fundación ejecutable | Bloqueada | H1 y autorización organizacional abiertos |
 | Código de negocio R1 | Bloqueado | R0 no demostrado y H2 abierto |
 | Piloto | Bloqueado | R1–R5 y H3 abiertos |

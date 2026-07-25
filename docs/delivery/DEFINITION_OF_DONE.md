@@ -6,7 +6,8 @@
   [DEC-063 aceptada](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
 - **Propósito:** Evitar que un resultado se declare terminado sólo porque existe o funciona en un caso feliz.
 - **Alcance:** Guía de consulta; el contrato autoritativo es DEC-063.
-- **Condiciones pendientes:** DEC063-C01 a DEC063-C08; esta guía no las materializa.
+- **Condiciones satisfechas:** DEC063-C01, C03 y C04.
+- **Condiciones pendientes:** DEC063-C02, C05, C06, C07 y C08.
 
 ## Principio
 
@@ -118,13 +119,13 @@ Un pendiente descubierto durante el cierre debe registrarse con ID, impacto y pr
 ## Aplicación pendiente
 
 DEC-063 resolvió el modelo base, los perfiles por tipo, la clasificación de
-riesgo y la autoridad de excepciones. Su aplicación física queda en
-DEC063-C01 a DEC063-C08, todas `Pending`. Accesibilidad, rendimiento,
+riesgo y la autoridad de excepciones. VC-024 satisfizo DEC063-C01/C03/C04.
+DEC063-C02/C05/C06/C07/C08 permanecen `Pending`. Accesibilidad, rendimiento,
 retención y herramientas conservan las autoridades de sus contratos
 específicos.
 
 ## Próxima revisión
 
-- **Fecha:** antes de materializar DEC063-C01 o cuando cambie DEC-063.
-- **Disparador:** autorización de templates/checklists o cambio del contrato.
+- **Fecha:** antes de materializar una condición pendiente o cuando cambie DEC-063.
+- **Disparador:** riesgo/checklist/waiver o cambio del contrato.
 - **Documentos relacionados:** [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md), [Definition of Ready](./DEFINITION_OF_READY.md), [Quality Strategy](../quality/QUALITY_STRATEGY.md), [Release Process](./RELEASE_PROCESS.md), [Traceability Model](./TRACEABILITY_MODEL.md).
