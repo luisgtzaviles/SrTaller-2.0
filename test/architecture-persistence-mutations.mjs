@@ -28,7 +28,7 @@ const rulesRequiringTopology = new Set([
 ]);
 
 export const persistenceMutations = Array.from(
-  { length: 13 },
+  { length: 17 },
   (_, index) => `D5-R${String(index + 37).padStart(3, '0')}`,
 ).map((rule) => {
   const fixture = fixtureFor(rule);

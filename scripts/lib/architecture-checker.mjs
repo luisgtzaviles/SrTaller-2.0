@@ -1026,6 +1026,7 @@ function collectExecutorBindings(sourceFile, resolver, persistence, aliases) {
 
 function persistenceBoundaryDiagnostics({
   add,
+  fixture,
   parsedFiles,
   persistence,
   projectRoot,
@@ -1060,6 +1061,309 @@ function persistenceBoundaryDiagnostics({
       ([target, consumers]) => [target, new Set(consumers)],
     ),
   );
+  const initialSchema = persistence.initialSchema;
+  const initialSchemaPath = initialSchema?.migration;
+
+  function stringArgument(call, index) {
+    const argument = call.arguments[index];
+    return argument && ts.isStringLiteralLike(argument)
+      ? argument.text
+      : undefined;
+  }
+
+  function stringArrayArgument(call, index) {
+    const argument = call.arguments[index];
+    if (!argument || !ts.isArrayLiteralExpression(argument)) {
+      return undefined;
+    }
+    const values = argument.elements.map((element) =>
+      ts.isStringLiteralLike(element) ? element.text : undefined,
+    );
+    return values.every((value) => value !== undefined)
+      ? values
+      : undefined;
+  }
+
+  function fluentCalls(expression) {
+    const calls = [];
+    let current = unwrapTransparentExpression(expression);
+    while (
+      ts.isCallExpression(current) &&
+      ts.isPropertyAccessExpression(current.expression)
+    ) {
+      calls.push({
+        call: current,
+        name: current.expression.name.text,
+      });
+      current = unwrapTransparentExpression(current.expression.expression);
+    }
+    return calls.reverse();
+  }
+
+  function functionFluentChains(sourceFile, functionName) {
+    const declaration = sourceFile.statements.find(
+      (statement) =>
+        ts.isFunctionDeclaration(statement) &&
+        statement.name?.text === functionName,
+    );
+    if (!declaration?.body) {
+      return [];
+    }
+    const chains = [];
+    function visit(node) {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        node.expression.name.text === 'execute'
+      ) {
+        chains.push(fluentCalls(node));
+        return;
+      }
+      ts.forEachChild(node, visit);
+    }
+    visit(declaration.body);
+    return chains;
+  }
+
+  function callbackMethodValues(call, methodName) {
+    const values = [];
+    function visit(node) {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        node.expression.name.text === methodName
+      ) {
+        values.push(stringArgument(node, 0));
+      }
+      ts.forEachChild(node, visit);
+    }
+    for (const argument of call.arguments) {
+      visit(argument);
+    }
+    return values;
+  }
+
+  function callbackMethodNames(call) {
+    const names = [];
+    function visit(node) {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression)
+      ) {
+        names.push(node.expression.name.text);
+      }
+      ts.forEachChild(node, visit);
+    }
+    for (const argument of call.arguments) {
+      visit(argument);
+    }
+    return names;
+  }
+
+  function sameValues(actual, expected) {
+    return (
+      actual !== undefined &&
+      actual.length === expected.length &&
+      actual.every((value, index) => value === expected[index])
+    );
+  }
+
+  function initialSchemaDiagnostics(file, sourceFile, resolver) {
+    const upChains = functionFluentChains(sourceFile, 'up');
+    const downChains = functionFluentChains(sourceFile, 'down');
+    const createChains = upChains.filter(
+      (chain) => chain[0]?.name === 'createTable',
+    );
+    const createdTables = createChains.map((chain) =>
+      stringArgument(chain[0].call, 0),
+    );
+    if (!sameValues(createdTables, initialSchema.tables)) {
+      add(
+        'D5-R050',
+        file,
+        'initial migration must create exactly tenants then branches',
+      );
+    }
+
+    const expectedColumns = new Map([
+      ['tenants', initialSchema.tenantColumns],
+      ['branches', initialSchema.branchColumns],
+    ]);
+    for (const chain of createChains) {
+      const table = stringArgument(chain[0].call, 0);
+      const columns = chain
+        .filter(({ name }) => name === 'addColumn')
+        .map(({ call }) => stringArgument(call, 0));
+      const columnTypes = chain
+        .filter(({ name }) => name === 'addColumn')
+        .map(({ call }) => ({
+          name: stringArgument(call, 0),
+          type: stringArgument(call, 1),
+        }));
+      const expected = expectedColumns.get(table);
+      const columnsAreRequired = chain
+        .filter(({ name }) => name === 'addColumn')
+        .every(({ call }) =>
+          sameValues(callbackMethodNames(call), ['notNull']),
+        );
+      const columnTypesMatch = columnTypes.every(
+        ({ name, type }) =>
+          name !== undefined &&
+          type === initialSchema.columnTypes[name],
+      );
+      const allowedMethods =
+        table === 'tenants'
+          ? [
+              'createTable',
+              'addColumn',
+              'addColumn',
+              'addPrimaryKeyConstraint',
+              'execute',
+            ]
+          : table === 'branches'
+            ? [
+                'createTable',
+                'addColumn',
+                'addColumn',
+                'addColumn',
+                'addPrimaryKeyConstraint',
+                'addForeignKeyConstraint',
+                'execute',
+              ]
+            : [];
+      if (
+        !expected ||
+        !sameValues(columns, expected) ||
+        !columnsAreRequired ||
+        !columnTypesMatch ||
+        !sameValues(
+          chain.map(({ name }) => name),
+          allowedMethods,
+        )
+      ) {
+        add(
+          'D5-R050',
+          file,
+          `initial table ${table ?? '<dynamic>'} differs from its exact column/nullability contract`,
+        );
+      }
+    }
+
+    const tenant = createChains.find(
+      (chain) => stringArgument(chain[0].call, 0) === 'tenants',
+    );
+    const branch = createChains.find(
+      (chain) => stringArgument(chain[0].call, 0) === 'branches',
+    );
+    const tenantPrimaryKey = tenant?.find(
+      ({ name }) => name === 'addPrimaryKeyConstraint',
+    )?.call;
+    const branchPrimaryKey = branch?.find(
+      ({ name }) => name === 'addPrimaryKeyConstraint',
+    )?.call;
+    const branchForeignKey = branch?.find(
+      ({ name }) => name === 'addForeignKeyConstraint',
+    )?.call;
+    const foreignKey = initialSchema.branchTenantForeignKey;
+    if (
+      !tenantPrimaryKey ||
+      stringArgument(tenantPrimaryKey, 0) !==
+        initialSchema.tenantPrimaryKeyName ||
+      !sameValues(
+        stringArrayArgument(tenantPrimaryKey, 1),
+        initialSchema.tenantPrimaryKey,
+      ) ||
+      !branchPrimaryKey ||
+      stringArgument(branchPrimaryKey, 0) !==
+        initialSchema.branchPrimaryKeyName ||
+      !sameValues(
+        stringArrayArgument(branchPrimaryKey, 1),
+        initialSchema.branchPrimaryKey,
+      ) ||
+      !branchForeignKey ||
+      stringArgument(branchForeignKey, 0) !== foreignKey.name ||
+      !sameValues(
+        stringArrayArgument(branchForeignKey, 1),
+        foreignKey.columns,
+      ) ||
+      stringArgument(branchForeignKey, 2) !== foreignKey.targetTable ||
+      !sameValues(
+        stringArrayArgument(branchForeignKey, 3),
+        foreignKey.targetColumns,
+      ) ||
+      !sameValues(
+        callbackMethodValues(branchForeignKey, 'onUpdate'),
+        [foreignKey.onUpdate],
+      ) ||
+      !sameValues(
+        callbackMethodValues(branchForeignKey, 'onDelete'),
+        [foreignKey.onDelete],
+      )
+    ) {
+      add(
+        'D5-R051',
+        file,
+        'initial schema must preserve tenant and tenant-branch keys with a restrictive branch tenant foreign key',
+      );
+    }
+
+    let forbiddenDataMutation = false;
+    let forbiddenRawSql = false;
+    function inspectInitialMigration(node) {
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        [
+          'deleteFrom',
+          'insertInto',
+          'mergeInto',
+          'replaceInto',
+          'updateTable',
+        ].includes(node.name.text)
+      ) {
+        forbiddenDataMutation = true;
+      }
+      if (
+        ts.isTaggedTemplateExpression(node) &&
+        resolver.matches(node.tag, 'kysely', 'sql')
+      ) {
+        forbiddenRawSql = true;
+      }
+      if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        node.expression.name.text === 'raw' &&
+        resolver.matches(node.expression.expression, 'kysely', 'sql')
+      ) {
+        forbiddenRawSql = true;
+      }
+      ts.forEachChild(node, inspectInitialMigration);
+    }
+    inspectInitialMigration(sourceFile);
+    if (forbiddenDataMutation || forbiddenRawSql) {
+      add(
+        'D5-R052',
+        file,
+        'initial schema migration must contain schema-builder DDL only and no DML, seed, or raw SQL',
+      );
+    }
+
+    const droppedTables = downChains
+      .filter((chain) => chain[0]?.name === 'dropTable')
+      .map((chain) => stringArgument(chain[0].call, 0));
+    const usesCascade = downChains.some((chain) =>
+      chain.some(({ name }) => name === 'cascade'),
+    );
+    if (
+      usesCascade ||
+      !sameValues(droppedTables, [...initialSchema.tables].reverse())
+    ) {
+      add(
+        'D5-R053',
+        file,
+        'initial migration down must drop branches then tenants without cascade',
+      );
+    }
+  }
 
   for (const [file, parsed] of parsedFiles) {
     const relativePath = toPosix(relative(projectRoot, file));
@@ -1080,6 +1384,20 @@ function persistenceBoundaryDiagnostics({
     const allowedDependencyPath = persistence.allowedDependencyRoots.some(
       (root) => isInsidePath(relativePath, root),
     );
+
+    if (relativePath === initialSchemaPath) {
+      initialSchemaDiagnostics(file, sourceFile, resolver);
+    } else if (
+      !fixture &&
+      initialSchemaPath &&
+      isInsidePath(relativePath, migrationRoot)
+    ) {
+      add(
+        'D5-R050',
+        file,
+        `unexpected product migration exists before the initial schema contract: ${relativePath}`,
+      );
+    }
 
     for (const record of parsed.records) {
       if (forbiddenContextPackages.has(record.specifier)) {
@@ -1575,6 +1893,18 @@ function persistenceBoundaryDiagnostics({
       );
     }
   }
+
+  if (
+    !fixture &&
+    initialSchemaPath &&
+    !parsedFiles.has(resolve(projectRoot, initialSchemaPath))
+  ) {
+    add(
+      'D5-R050',
+      resolve(projectRoot, initialSchemaPath),
+      'registered initial schema migration is missing',
+    );
+  }
 }
 
 export async function checkArchitecture({
@@ -1928,6 +2258,7 @@ export async function checkArchitecture({
 
   persistenceBoundaryDiagnostics({
     add,
+    fixture,
     parsedFiles,
     persistence: policy.persistence,
     projectRoot,

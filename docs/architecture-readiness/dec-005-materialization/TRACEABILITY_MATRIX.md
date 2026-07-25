@@ -63,10 +63,14 @@ los casos automatizados.
 | D5-R047 | Ejecutable | `databaseObjects` | Executor tipado + table operation | Diagnóstico object owner | `tenants` desde tenancy | `branches`, desconocido/dinámico | D5-R047 aislada | PASS técnico | APIs calculadas nuevas requieren ampliar detector |
 | D5-R048 | Ejecutable | `transactionBoundary` | Specifier/target/call AST | Diagnóstico de frontera transaccional | Capability sólo connection/runner; shadowing local | async context alias/namespace/reexport/dynamic, controller, deep import y control manual | D5-R048 aislada | PASS técnico | Concurrencia en una misma facility permanece fail-closed |
 | D5-R049 | Ejecutable | `migrationBoundary` | Target local resuelto y capa/consumer de origen | Diagnóstico de consumo no autorizado de migraciones | Connection/runner/provider exactos registrados | Consumer lateral del provider y runner desde startup/capa funcional | D5-R049 aislada | PASS técnico | La composición operativa sigue diferida y no se materializa en startup |
+| D5-R050 | Ejecutable | `initialSchema` | Cadenas Kysely AST, tablas, columnas, tipos y nullability | Diagnóstico de schema inicial no autorizado | Migración productiva exacta | Tabla extra | D5-R050 aislada | PASS técnico | Aplica sólo al primer schema registrado |
+| D5-R051 | Ejecutable | `initialSchema` | Cadenas Kysely AST de PK/FK y callbacks de policy | Diagnóstico de clave tenant ausente o débil | PK tenant y tenant+branch con FK restrictiva | FK con `ON DELETE CASCADE` | D5-R051 aislada | PASS técnico | No sustituye pruebas PostgreSQL de constraints |
+| D5-R052 | Ejecutable | `initialSchema` | AST de DML y procedencia `kysely.sql` | Diagnóstico de DML, seed o raw SQL | Shadowing, comentarios y strings ignorados | Alias DML y namespace raw SQL | D5-R052 aislada | PASS técnico | Operaciones calculadas nuevas permanecen fail-closed en revisión |
+| D5-R053 | Ejecutable | `initialSchema` | Cadenas AST de `dropTable` y `cascade` | Diagnóstico de down inseguro | Down branches→tenants | Cascade | D5-R053 aislada | PASS técnico | Dependencias externas bloquean down en runtime |
 
 ## Lectura de cobertura
 
-- Reglas ejecutadas directamente por el checker: 38; todas tienen al menos un
+- Reglas ejecutadas directamente por el checker: 44; todas tienen al menos un
   fixture negativo aislado.
 - Regla ejecutable externa: D5-R001, gobernada por `verify:structure`.
 - Reglas compuestas: D5-R032 y D5-R033.

@@ -128,3 +128,12 @@ PostgreSQL `18.4`. D5-R049 amplía C06 y la suite aporta evidencia local a C03.
 C03 sigue `Partial/Pending` porque el workflow autoritativo conserva PostgreSQL
 como gated skip; C04 sigue pendiente porque los probes no modelan aislamiento
 tenant/branch.
+
+## Evidencia del Paso 9
+
+La [suite del schema tenant](first-productive-migration/POSTGRESQL_TEST_MATRIX.md)
+aporta a C03 dos runs PostgreSQL 18.4 locales y ejecución desde `dist`; C03
+sigue `Partial` porque el workflow autoritativo conserva esta suite como gated
+skip. C04 gana pruebas negativas de FK/null/PK y una FK futura compuesta, pero
+no queda satisfecha por completo hasta probar queries de adapters owner-scoped.
+C06 gana D5-R050–D5-R053, introspección y ownership físico.

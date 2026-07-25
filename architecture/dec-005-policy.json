@@ -103,14 +103,25 @@
       },
       "src/infrastructure/database/database-types.ts": {
         "owner": "database",
-        "publicExports": ["DatabaseSchema"],
+        "publicExports": [
+          "TenantTable",
+          "BranchTable",
+          "DatabaseSchema",
+          "TenantRow",
+          "NewTenant",
+          "TenantUpdate",
+          "BranchRow",
+          "NewBranch",
+          "BranchUpdate"
+        ],
         "consumers": [
+          "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
-        "status": "future-approved"
+        "status": "materialized-schema-contract"
       },
       "src/infrastructure/database/database-connection.ts": {
         "owner": "database",
@@ -318,7 +329,31 @@
         ]
       }
     },
-    "status": "migration-runner-materialized"
+    "initialSchema": {
+      "migration": "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
+      "tables": ["tenants", "branches"],
+      "tenantColumns": ["tenant_id", "created_at"],
+      "branchColumns": ["tenant_id", "branch_id", "created_at"],
+      "columnTypes": {
+        "tenant_id": "uuid",
+        "branch_id": "uuid",
+        "created_at": "timestamptz"
+      },
+      "tenantPrimaryKeyName": "tenants_pk",
+      "tenantPrimaryKey": ["tenant_id"],
+      "branchPrimaryKeyName": "branches_pk",
+      "branchPrimaryKey": ["tenant_id", "branch_id"],
+      "branchTenantForeignKey": {
+        "name": "branches_tenant_fk",
+        "columns": ["tenant_id"],
+        "targetTable": "tenants",
+        "targetColumns": ["tenant_id"],
+        "onUpdate": "restrict",
+        "onDelete": "restrict"
+      },
+      "status": "tenant-schema-materialized"
+    },
+    "status": "tenant-schema-materialized"
   },
   "checkerRules": [
     "D5-R002",
@@ -360,7 +395,11 @@
     "D5-R046",
     "D5-R047",
     "D5-R048",
-    "D5-R049"
+    "D5-R049",
+    "D5-R050",
+    "D5-R051",
+    "D5-R052",
+    "D5-R053"
   ],
   "requiredSemanticCoverage": [
     "fixture:D5-R025:parenthesized:direct",
@@ -418,7 +457,19 @@
     "mutation:D5-R047:persistence-boundary",
     "mutation:D5-R048:persistence-boundary",
     "fixture:D5-R049:migration-provider-consumer",
-    "mutation:D5-R049:persistence-boundary"
+    "mutation:D5-R049:persistence-boundary",
+    "fixture:D5-R050:initial-schema-tables",
+    "fixture:D5-R050:initial-schema-control:positive",
+    "fixture:D5-R051:tenant-foreign-key",
+    "fixture:D5-R052:dml-alias",
+    "fixture:D5-R052:sql-namespace",
+    "fixture:D5-R052:shadowing-control:positive",
+    "fixture:D5-R052:text-control:positive",
+    "fixture:D5-R053:down-cascade",
+    "mutation:D5-R050:persistence-boundary",
+    "mutation:D5-R051:persistence-boundary",
+    "mutation:D5-R052:persistence-boundary",
+    "mutation:D5-R053:persistence-boundary"
   ],
   "externalExecutableRules": ["D5-R001"],
   "compositeRules": ["D5-R032", "D5-R033"],

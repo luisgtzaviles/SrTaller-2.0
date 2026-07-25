@@ -2,9 +2,8 @@
 
 ## Estado
 
-- **Estado:** configuración, facility de conexión, capabilities internas,
-  transaction runner y migration runner/provider materializados; demás paths
-  productivos future-approved y no materializados.
+- **Estado:** configuración, facility, runners, tipos y schema mínimo
+  materializados; adapters/ports productivos permanecen future-approved.
 - **Autoridad:** DEC-049.
 - **Gate:** DEC049-C02.
 - **Co-ownership:** prohibido.
@@ -25,13 +24,15 @@ registrado.
 | `src/infrastructure/database/database-migration-capability.ts` | `database` | capability/runtime internos exactos | exclusivamente connection y migration runner | `materialized-owner-internal-capability`; no superficie funcional |
 | `src/infrastructure/database/database-migration-provider.ts` | `database` | inspection/manifest/provider internos | exclusivamente migration runner | `materialized-owner-internal-provider`; root arbitrario no público |
 | `src/infrastructure/database/migration-runner.ts` | `database` | options/status/execution/error/factory exactos | composición operativa futura | `materialized-migration-runner`; startup prohibido |
+| `src/infrastructure/database/database-types.ts` | `database` | `DatabaseSchema` y tipos select/insert/update inmutables | migración; adapters futuros | `materialized-schema-contract` |
+| `src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts` | `database` operacional | `up`/`down` | migration runner | `materialized`; schema DDL únicamente |
 
 ## Objetos
 
 | Objeto | Owner único | Scope | Escrituras | Lecturas | Invariantes | Evolución |
 |---|---|---|---|---|---|---|
-| `tenants` | `tenancy` | global SaaS; raíz de tenant | sólo adapter tenancy; alta técnica PBI-023 | tenancy; referencias por FK | ID no nulo; no se usa como autorización; sin delete en PBI-023 | migraciones owner `tenancy` |
-| `branches` | `stations` | tenant + sucursal | sólo adapter stations; tenant inmutable | stations con tenant + branch | pertenece a un tenant; identidad compuesta; sin acceso por branch aislada | migraciones owner `stations` |
+| `tenants` | `tenancy` | global SaaS; raíz de tenant | sólo adapter tenancy futuro | tenancy; referencias por FK | UUID/timestamp no nulos; PK tenant; delete referenciado restringido | creada por migración central Paso 9 |
+| `branches` | `stations` | tenant + sucursal | sólo adapter stations futuro | stations con tenant + branch | PK `(tenant_id, branch_id)`; FK tenant restrictiva | creada por migración central Paso 9 |
 | `kysely_migration` | facility database | técnico global | sólo migrador core | runner/status | journal no manipulable por app | DEC-050 |
 | `kysely_migration_lock` | facility database | técnico global | sólo migrador core | migrador | exclusión del migrador | DEC-050 |
 
@@ -55,13 +56,14 @@ registrado.
 No se anticipan firmas completas hasta que el adapter y su prueba se creen en
 el mismo paso.
 
-## Constraints físicas previstas
+## Constraints físicas materializadas
 
 - `tenants`: PK por tenant.
-- `branches`: PK compuesta tenant + branch; FK al tenant.
+- `branches`: PK compuesta tenant + branch; FK al tenant con `RESTRICT`.
 - futuras referencias branch-scoped: FK compuesta tenant + branch.
 - futuras claves naturales tenant-scoped: UK con tenant.
-- índices: comienzan por tenant cuando la query medida lo requiere.
+- índices actuales: sólo PK; `branches_pk` comienza por tenant y fue verificado
+  con `EXPLAIN`.
 
 ## Cambios al registry
 

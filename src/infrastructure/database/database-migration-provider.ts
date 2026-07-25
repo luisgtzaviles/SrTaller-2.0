@@ -7,6 +7,7 @@ import {
 } from 'node:fs/promises';
 import { basename, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { inspect } from 'node:util';
 
 import { FileMigrationProvider } from 'kysely/migration';
 import type { MigrationProvider } from 'kysely/migration';
@@ -62,6 +63,22 @@ export class InternalMigrationProviderError extends Error {
   constructor(readonly code: InternalMigrationProviderErrorCode) {
     super('Governed migration provider rejected the source.');
     this.name = 'InternalMigrationProviderError';
+  }
+
+  toJSON(): Readonly<{
+    name: 'InternalMigrationProviderError';
+    code: InternalMigrationProviderErrorCode;
+    message: string;
+  }> {
+    return Object.freeze({
+      name: 'InternalMigrationProviderError',
+      code: this.code,
+      message: this.message,
+    });
+  }
+
+  [inspect.custom](): ReturnType<InternalMigrationProviderError['toJSON']> {
+    return this.toJSON();
   }
 }
 
@@ -193,11 +210,30 @@ export async function inspectMigrationSource(
   const sortedEntries = [...entries].sort((left, right) =>
     left.name.localeCompare(right.name, 'en'),
   );
+  const compiledMigrationNames = new Set(
+    sortedEntries
+      .filter(
+        (entry) =>
+          entry.isFile() &&
+          !entry.isSymbolicLink() &&
+          entry.name.endsWith('.js'),
+      )
+      .map((entry) => entry.name),
+  );
   const timestamps = new Set<string>();
   const migrationNames = new Set<string>();
   const migrations: InternalMigrationManifestItem[] = [];
 
-  for (const [order, entry] of sortedEntries.entries()) {
+  for (const entry of sortedEntries) {
+    if (
+      source.mode === 'compiled' &&
+      entry.name.endsWith('.js.map') &&
+      entry.isFile() &&
+      !entry.isSymbolicLink() &&
+      compiledMigrationNames.has(entry.name.slice(0, -4))
+    ) {
+      continue;
+    }
     const match = migrationPattern.exec(entry.name);
     const groups = match?.groups;
     if (
@@ -244,7 +280,7 @@ export async function inspectMigrationSource(
         action,
         sha256: createHash('sha256').update(content).digest('hex'),
         size: content.byteLength,
-        order,
+        order: migrations.length,
       }),
     );
   }

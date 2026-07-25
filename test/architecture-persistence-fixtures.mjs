@@ -1,7 +1,41 @@
 const databaseTypes = [
+  'export interface TenantTable { readonly tenant_id: string; readonly created_at: Date; }',
+  'export interface BranchTable { readonly tenant_id: string; readonly branch_id: string; readonly created_at: Date; }',
   'export interface DatabaseSchema {',
-  '  readonly tenants: { readonly tenantId: string };',
-  '  readonly branches: { readonly branchId: string; readonly tenantId: string };',
+  '  readonly tenants: TenantTable;',
+  '  readonly branches: BranchTable;',
+  '}',
+  'export type TenantRow = TenantTable;',
+  'export type NewTenant = TenantTable;',
+  'export type TenantUpdate = Partial<TenantTable>;',
+  'export type BranchRow = BranchTable;',
+  'export type NewBranch = BranchTable;',
+  'export type BranchUpdate = Partial<BranchTable>;',
+  '',
+].join('\n');
+
+const initialSchemaMigrationPath =
+  'src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts';
+
+const initialSchemaMigration = [
+  "import type { Kysely } from 'kysely';",
+  "import type { DatabaseSchema } from '../database-types.js';",
+  'export async function up(database: Kysely<DatabaseSchema>): Promise<void> {',
+  "  await database.schema.createTable('tenants')",
+  "    .addColumn('tenant_id', 'uuid', (column) => column.notNull())",
+  "    .addColumn('created_at', 'timestamptz', (column) => column.notNull())",
+  "    .addPrimaryKeyConstraint('tenants_pk', ['tenant_id']).execute();",
+  "  await database.schema.createTable('branches')",
+  "    .addColumn('tenant_id', 'uuid', (column) => column.notNull())",
+  "    .addColumn('branch_id', 'uuid', (column) => column.notNull())",
+  "    .addColumn('created_at', 'timestamptz', (column) => column.notNull())",
+  "    .addPrimaryKeyConstraint('branches_pk', ['tenant_id', 'branch_id'])",
+  "    .addForeignKeyConstraint('branches_tenant_fk', ['tenant_id'], 'tenants', ['tenant_id'],",
+  "      (constraint) => constraint.onUpdate('restrict').onDelete('restrict')).execute();",
+  '}',
+  'export async function down(database: Kysely<DatabaseSchema>): Promise<void> {',
+  "  await database.schema.dropTable('branches').execute();",
+  "  await database.schema.dropTable('tenants').execute();",
   '}',
   '',
 ].join('\n');
@@ -205,6 +239,125 @@ function portWithDriver(importLine, driverType) {
 }
 
 export const persistenceFixtureCases = [
+  {
+    name: 'D5-R050 permits the exact initial tenant schema',
+    expectedRules: [],
+    files: based({
+      [initialSchemaMigrationPath]: initialSchemaMigration,
+    }),
+    coverage: {
+      ids: ['fixture:D5-R050:initial-schema-control:positive'],
+      evidence: ["createTable('tenants')", "createTable('branches')"],
+    },
+  },
+  {
+    name: 'D5-R050 rejects an extra table in the initial schema',
+    expectedRules: ['D5-R050'],
+    expectedPath: initialSchemaMigrationPath,
+    files: based({
+      [initialSchemaMigrationPath]: initialSchemaMigration.replace(
+        'export async function down',
+        "  await database.schema.createTable('users').addColumn('user_id', 'uuid', (column) => column.notNull()).execute();\n}\nexport async function down",
+      ).replace('\n}\n  await database.schema.createTable', '\n  await database.schema.createTable'),
+    }),
+    coverage: {
+      ids: ['fixture:D5-R050:initial-schema-tables'],
+      evidence: ["createTable('users')"],
+    },
+  },
+  {
+    name: 'D5-R051 rejects a non-restrictive branch tenant foreign key',
+    expectedRules: ['D5-R051'],
+    expectedPath: initialSchemaMigrationPath,
+    files: based({
+      [initialSchemaMigrationPath]: initialSchemaMigration.replace(
+        "constraint.onUpdate('restrict').onDelete('restrict')",
+        "constraint.onUpdate('restrict').onDelete('cascade')",
+      ),
+    }),
+    coverage: {
+      ids: ['fixture:D5-R051:tenant-foreign-key'],
+      evidence: ["constraint.onUpdate('restrict').onDelete('cascade')"],
+    },
+  },
+  {
+    name: 'D5-R052 rejects an aliased DML capability in the initial migration',
+    expectedRules: ['D5-R052'],
+    expectedPath: initialSchemaMigrationPath,
+    files: based({
+      [initialSchemaMigrationPath]: initialSchemaMigration.replace(
+        'export async function up(database: Kysely<DatabaseSchema>): Promise<void> {',
+        'export async function up(database: Kysely<DatabaseSchema>): Promise<void> {\n  const writeRows = database.insertInto;\n  void writeRows;',
+      ),
+    }),
+    coverage: {
+      ids: ['fixture:D5-R052:dml-alias'],
+      evidence: ['database.insertInto'],
+    },
+  },
+  {
+    name: 'D5-R052 rejects namespace raw SQL in the initial migration',
+    expectedRules: ['D5-R052'],
+    expectedPath: initialSchemaMigrationPath,
+    files: based({
+      [initialSchemaMigrationPath]: initialSchemaMigration
+        .replace(
+          "import type { Kysely } from 'kysely';",
+          "import type { Kysely } from 'kysely';\nimport * as Query from 'kysely';",
+        )
+        .replace(
+          'export async function up(database: Kysely<DatabaseSchema>): Promise<void> {',
+          "export async function up(database: Kysely<DatabaseSchema>): Promise<void> {\n  void Query.sql.raw('select 1');",
+        ),
+    }),
+    coverage: {
+      ids: ['fixture:D5-R052:sql-namespace'],
+      evidence: ["Query.sql.raw('select 1')"],
+    },
+  },
+  {
+    name: 'D5-R052 permits a shadowed local sql name',
+    expectedRules: [],
+    files: based({
+      [initialSchemaMigrationPath]: initialSchemaMigration.replace(
+        'export async function up(database: Kysely<DatabaseSchema>): Promise<void> {',
+        "export async function up(database: Kysely<DatabaseSchema>): Promise<void> {\n  const sql = { raw: (value: string): string => value };\n  void sql.raw('not executable SQL');",
+      ),
+    }),
+    coverage: {
+      ids: ['fixture:D5-R052:shadowing-control:positive'],
+      evidence: ['const sql'],
+    },
+  },
+  {
+    name: 'D5-R052 ignores comments and strings',
+    expectedRules: [],
+    files: based({
+      [initialSchemaMigrationPath]: initialSchemaMigration.replace(
+        'export async function up(database: Kysely<DatabaseSchema>): Promise<void> {',
+        "export async function up(database: Kysely<DatabaseSchema>): Promise<void> {\n  const note = 'insertInto sql`seed`';\n  // database.deleteFrom('tenants')\n  void note;",
+      ),
+    }),
+    coverage: {
+      ids: ['fixture:D5-R052:text-control:positive'],
+      evidence: ['insertInto sql`seed`'],
+    },
+  },
+  {
+    name: 'D5-R053 rejects cascade in initial schema down',
+    expectedRules: ['D5-R053'],
+    expectedPath: initialSchemaMigrationPath,
+    files: based({
+      [initialSchemaMigrationPath]: initialSchemaMigration.replace(
+        "dropTable('branches').execute()",
+        "dropTable('branches').cascade().execute()",
+      ),
+    }),
+    coverage: {
+      ids: ['fixture:D5-R053:down-cascade'],
+      evidence: ["dropTable('branches').cascade()"],
+    },
+  },
   {
     name: 'PBI-023 registered tenant persistence topology is allowed',
     expectedRules: [],

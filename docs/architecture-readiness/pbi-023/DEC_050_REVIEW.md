@@ -73,3 +73,12 @@ DEC-050 no decide:
 - pipeline y branch protection, gobernados por DEC-051;
 - Definition of Done, gobernada por DEC-063;
 - RLS, proveedor productivo, backup/restore o release.
+
+## Evidencia del Paso 9
+
+La [primera migración productiva](first-productive-migration/RESULTS.md)
+materializa el schema mínimo autorizado y aporta evidencia directa a ordering,
+journal, manifest/drift, transacción, up/down, reapply, atomicidad y cleanup.
+Dos runs PostgreSQL 18.4 coinciden materialmente. Las condiciones operativas de
+CI, promoción y ejecución en ambientes compartidos permanecen pendientes; no
+se declara DEC-050 cerrada sin condiciones.

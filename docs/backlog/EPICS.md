@@ -24,13 +24,13 @@
 - **Dependencias:** EPIC-000 y ADRs técnicos aceptados.
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
-- **Estado:** PBI-023 `Ready`; transaction runner verificado y migration runner
-  autorizado como siguiente gate.
+- **Estado:** PBI-023 `Ready`; schema tenant mínimo verificado y adapters
+  owner-scoped autorizables como siguiente gate.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
-  `Ready`; su ejecución incremental llegó al transaction runner sin iniciar
-  funcionalidad; PBI-024–PBI-029 descomponen H1
+  `Ready`; su ejecución incremental llegó al schema mínimo sin iniciar
+  funcionalidad ni adapters; PBI-024–PBI-029 descomponen H1
   con estados `Draft` o `Blocked` y no están autorizados.
 
 ## EPIC-002 — Tenant and Platform Administration

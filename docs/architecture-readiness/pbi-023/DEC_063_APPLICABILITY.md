@@ -114,3 +114,12 @@ un cambio high-risk fail-closed; a C05, manifest, rollback/down, advisory lock,
 dos runs y cleanup; y a C06, sanitización y D5-R049. Los estados permanecen
 `Partial`: no existen primera migración/schema tenant-scoped, roles
 productivos, job PostgreSQL autoritativo ni aprobación de merge.
+
+## Evidencia del Paso 9
+
+La [primera migración productiva](first-productive-migration/RESULTS.md)
+aporta a C02 un cambio high-risk con checker y rollback fail-closed; a C05,
+schema exacto, manifest/drift, up/down/reapply, atomicidad e introspección; y a
+C06, aislamiento estructural negativo, sanitización y cleanup. Las condiciones
+permanecen parciales para adapters, CI, privilegio operacional y release; no se
+cierran C07/C08.

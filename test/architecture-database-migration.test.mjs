@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import test from 'node:test';
 
 const runnerPath = 'src/infrastructure/database/migration-runner.ts';
@@ -15,7 +15,7 @@ test('migration runner, capability and provider retain exact governed ownership'
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
 
-  assert.equal(policy.persistence.status, 'migration-runner-materialized');
+  assert.equal(policy.persistence.status, 'tenant-schema-materialized');
   assert.deepEqual(policy.persistence.migrationBoundary, {
     runner: runnerPath,
     capability: capabilityPath,
@@ -38,7 +38,7 @@ test('migration runner, capability and provider retain exact governed ownership'
   );
 });
 
-test('public migration API is narrow and product migration root is not materialized early', async () => {
+test('public migration API remains narrow with one productive migration', async () => {
   const [runner, provider, capability] = await Promise.all([
     readFile(runnerPath, 'utf8'),
     readFile(providerPath, 'utf8'),
@@ -73,7 +73,9 @@ test('public migration API is narrow and product migration root is not materiali
     /export (?:type |interface |class |const |function )(?:Migrator|FileMigrationProvider|Kysely|Pool|sql|migrationRoot)\b/u,
   );
   assert.match(capability, /unique symbol/u);
-  await assert.rejects(access(productMigrationRoot));
+  assert.deepEqual(await readdir(productMigrationRoot), [
+    '20260725183832_database_create_tenants_and_branches.ts',
+  ]);
 });
 
 test('startup, AppModule and product modules do not consume migration facilities', async () => {

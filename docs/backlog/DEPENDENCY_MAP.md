@@ -56,7 +56,7 @@ flowchart TD
     MOD --> D5E[DEC005-C01 a C05<br/>PASS formal]
     D5E --> DEC049[DEC-049 Accepted<br/>C01-C08 vigentes]
     MOD -. no resuelve preguntas propias .-> DEC049
-    VC --> P23[PBI-023 persistencia tenant<br/>Ready / transaction runner PASS]
+    VC --> P23[PBI-023 persistencia tenant<br/>Ready / tenant schema PASS]
     DEC049 --> P23
     DEC050[DEC-050 Accepted with conditions<br/>C01-C10 pending] --> P23
     P23 --> P24[PBI-024 contexto<br/>Draft]
@@ -96,8 +96,8 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   VC-024 satisfizo C01/C03/C04; C02/C05–C08 permanecen `Pending`.
 - [PBI-023](pbis/PBI-023.md) incluye sus decisiones y condiciones materiales
   pendientes dentro del propio alcance. Conserva autorización limitada y está
-  `Ready` después del transaction runner `PASS`; aún no implementa
-  funcionalidad ni schema productivo.
+  `Ready` después del tenant schema `PASS`; aún no implementa funcionalidad,
+  repositories ni adapters.
 - PBI-024–PBI-029 descomponen los 24 contratos H1; sus estados `Draft` o
   `Blocked` impiden tratarlos como compromiso o autorización.
 
@@ -110,7 +110,8 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - PBI-021 está `Done` y `Unassigned`; VC-024 está `Closed / PASS`.
 - PBI-022 está `Done` y `Unassigned`; DEC005-C01 a C05 tienen `PASS` formal en la sexta reverificación independiente.
 - PBI-025 y PBI-027 están bloqueados por decisiones de mecanismo/producto.
-- PBI-023 cerró el transaction runner; su siguiente gate es migration runner.
+- PBI-023 cerró la primera migración productiva; su siguiente gate son ports y
+  adapters owner-scoped.
   Los demás
   PBIs H1 requieren revisión y autorización propias.
 
@@ -123,4 +124,4 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 
 ## Próxima revisión
 
-Autorización y evidencia del migration runner de PBI-023.
+Autorización y evidencia del Paso 10 owner-scoped adapters de PBI-023.

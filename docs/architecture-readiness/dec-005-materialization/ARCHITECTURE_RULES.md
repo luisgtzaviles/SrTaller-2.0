@@ -7,7 +7,7 @@ La fuente legible por máquina es
 JavaScript bajo `src/`, compara los módulos y edges contra esa política y
 emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 
-## Catálogo D5-R001 a D5-R049
+## Catálogo D5-R001 a D5-R053
 
 | ID | Nivel | Norma | Motivo | Detección actual | Severidad | Excepción y autoridad |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -60,6 +60,10 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R047 | MUST | Operación Kysely usa objeto DB del owner registrado | Aplicar ownership físico preventivo | Executor tipado + `selectFrom`/`insertInto`/`updateTable`/`deleteFrom` + registry fail-closed | Blocker | Ninguna |
 | D5-R048 | MUST | Frontera transaccional explícita, owner-internal y sin control manual | Evitar transacciones implícitas, nesting silencioso y fuga de executor | Imports/reexports/dynamic imports de async context, target interno resuelto, consumidores prohibidos y métodos manuales | Blocker | Ninguna; savepoints o propagación implícita requieren decisión separada |
 | D5-R049 | MUST | Capability y proveedor de migraciones permanecen owner-internal y el runner no se consume desde startup o capas funcionales | Evitar ejecución automática, acceso lateral y bypass del flujo operativo gobernado | Targets locales resueltos contra `migrationBoundary.allowedInternalConsumers` y consumidores prohibidos del runner | Blocker | Ninguna; la composición operativa requiere un gate posterior explícito |
+| D5-R050 | MUST | La primera migración crea sólo `tenants` y `branches` con columnas, tipos y nullability exactos | Impedir schema no autorizado en el primer cambio irreversible | AST de cadenas Kysely contra `persistence.initialSchema` | Blocker | Ninguna; ampliar el schema requiere gate posterior |
+| D5-R051 | MUST | `branches` conserva PK tenant-scoped y FK restrictiva a `tenants` | Impedir identidad global o sucursal huérfana/cross-tenant | AST de PK/FK, columnas, target y políticas `RESTRICT` | Blocker | Ninguna |
+| D5-R052 | MUST NOT | La primera migración contiene DML, seed o SQL raw | Separar estructura de datos y evitar bypass no revisado | AST de operaciones DML y procedencia de `kysely.sql`, incluidos alias/namespace | Blocker | Ninguna |
+| D5-R053 | MUST | `down` elimina `branches` antes de `tenants` y no usa `CASCADE` | Reversión explícita, predecible y fail-closed ante dependencias | AST de cadenas `dropTable` y ausencia de `cascade` | Blocker | Ninguna |
 
 ## Diagnóstico y exit codes
 
@@ -173,8 +177,9 @@ demuestre equivalencia.
 La correspondencia completa entre policy, detector, diagnóstico y pruebas está
 en [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md).
 
-Estado vigente de cobertura tras PBI-023 migration runner: 40 reglas directas
-del checker, una externa, dos compuestas y seis documentales; 152 fixtures
-(20 positivos y 132 negativos), 36 mutaciones de producto y 55 contratos
+Estado vigente de cobertura tras la primera migración productiva de PBI-023:
+44 reglas directas del checker, una externa, dos compuestas y seis
+documentales; 160 fixtures (23 positivos y 137 negativos), 40 mutaciones de
+producto y 68 contratos
 semánticos críticos únicos. Los conteos fechados de las verificaciones formales
 de PBI-022 permanecen históricos.

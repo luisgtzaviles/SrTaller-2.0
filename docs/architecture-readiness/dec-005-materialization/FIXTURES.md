@@ -163,14 +163,15 @@ source ejecutable.
 
 ## Extensión PBI-023
 
-`test/architecture-persistence-fixtures.mjs` agrega 54 árboles sintéticos:
-ocho positivos y 46 negativos. Cubren D5-R037–D5-R049, imports directos,
+`test/architecture-persistence-fixtures.mjs` agrega 62 árboles sintéticos:
+once positivos y 51 negativos. Cubren D5-R037–D5-R053, imports directos,
 default, aliases, namespace, type-only, `import =`, `require`, `import()`,
 reexports, barrels, qualified names, type aliases, shadowing, homónimos,
 paquetes ajenos, comentarios/strings, scope tenant/branch, migración central,
-SQL tipado y ownership físico fail-closed.
+SQL tipado, ownership físico fail-closed y el contrato exacto de la primera
+migración productiva.
 
-`test/architecture-persistence-mutations.test.mjs` agrega trece mutaciones
+`test/architecture-persistence-mutations.test.mjs` agrega diecisiete mutaciones
 aisladas, una por regla nueva. Para cada una el runner demuestra: árbol
 permitido PASS, mutación con exactamente el ID/path esperado, neutralización
 de esa regla sólo en fixture sin diagnóstico y restauración a PASS. La API
@@ -179,8 +180,8 @@ rechaza neutralización fuera de `fixture: true`.
 ## Criterio de suficiencia
 
 El baseline histórico PBI-022 conserva 98 fixtures (12 positivos y 86
-negativos). El estado vigente es **152 fixtures: 20 positivos y 132
-negativos**. Cubren las 40 reglas ejecutadas directamente por el checker;
+negativos). El estado vigente es **160 fixtures: 23 positivos y 137
+negativos**. Cubren las 44 reglas ejecutadas directamente por el checker;
 D5-R001 pertenece al verificador
 externo de DEC-004, D5-R032/D5-R033 son compuestas y seis reglas son
 documentales/no aplicables al árbol sin funcionalidad.
@@ -189,8 +190,8 @@ Las 23 mutaciones históricas cubren 12 familias normativas distintas: D5-R003, 
 D5-R007, D5-R010, D5-R019, D5-R020, D5-R023, D5-R025, D5-R027, D5-R029,
 D5-R035 y D5-R036. Cada una exige el conjunto exacto de reglas y paths
 permitidos, restaura la copia temporal y vuelve a exigir PASS; no son búsquedas
-de texto que omitan la ejecución del checker. PBI-023 suma 13 familias
-D5-R037–D5-R049; el total vigente es **36 mutaciones de producto**.
+de texto que omitan la ejecución del checker. PBI-023 suma 17 familias
+D5-R037–D5-R053; el total vigente es **40 mutaciones de producto**.
 
 D5-R048 incluye casos directos, alias, namespace, reexport, `import()`,
 shadowing positivo, consumo desde controller, deep import de capability y
@@ -201,11 +202,11 @@ D5-R049 cubre import directo, alias, namespace, reexport, type-only,
 `require`, `import()`, startup, controller y shadowing positivo para impedir
 consumo lateral de las facilities internas o del runner administrativo.
 
-Además, 55 IDs de `requiredSemanticCoverage` fijan las variantes críticas
+Además, 68 IDs de `requiredSemanticCoverage` fijan las variantes críticas
 directas, alias, namespace, wrappers, controles positivos y cinco mutaciones.
 La suite falla si un ID desaparece, se duplica, pierde su fragmento de source,
 su regla o su path, y también si dos IDs corresponden a la misma ejecución
-canónica. Los 26 históricos y los 29 agregados por PBI-023 resultaron únicos.
+canónica. Los 26 históricos y los 42 agregados por PBI-023 resultaron únicos.
 Los fixtures con varios diagnósticos declaran y validan el
 conjunto completo de paths, no sólo uno de ellos.
 

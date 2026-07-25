@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "repository": "SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit_base": "0af2b3bf9ae1b357b2187b43fba8bb89311b2213",
+  "generated_at": "2026-07-25T18:51:25Z",
+  "migration": {
+    "filename": "20260725183832_database_create_tenants_and_branches.ts",
+    "source_sha256": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
+    "compiled_sha256": "af66fbf5a7504975050955d2fa555d83694cd47eaba36a21210b5ae6abaffde5",
+    "aggregate_manifest_sha256": "2cc74d0068cf17a3989f6631f99f9a4afb0bcca09cd4cd0be69170f40a449e92",
+    "owner": "database",
+    "root": "src/infrastructure/database/migrations"
+  },
+  "tables": ["tenants", "branches"],
+  "columns": {
+    "tenants": ["tenant_id:uuid:not-null:no-default", "created_at:timestamptz:not-null:no-default"],
+    "branches": ["tenant_id:uuid:not-null:no-default", "branch_id:uuid:not-null:no-default", "created_at:timestamptz:not-null:no-default"]
+  },
+  "constraints": ["tenants_pk", "branches_pk", "branches_tenant_fk", "five-not-null"],
+  "indexes": ["tenants_pk", "branches_pk"],
+  "ownership": {
+    "tenants": "tenancy",
+    "branches": "stations",
+    "migration": "database"
+  },
+  "tenant_scope": "required",
+  "branch_scope": ["tenant_id", "branch_id"],
+  "tests": {
+    "status_up_rerun_down_reapply": "PASS",
+    "atomicity": "PASS",
+    "manifest_drift": "PASS",
+    "negative_tenant_isolation": "PASS",
+    "future_composite_fk": "PASS",
+    "introspection": "PASS",
+    "indexes_explain": "PASS"
+  },
+  "postgresql": {
+    "version": "18.4",
+    "image_digest": "sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+    "runs": 2,
+    "material_comparison": "MATCH",
+    "material_sha256": "7cb2ff620723f9ba201fb9ae71ae25e54aaa1624d74b66fdecdb804043673dfe"
+  },
+  "introspection": ["information_schema.columns", "pg_constraint", "pg_indexes", "pg_class", "pg_attribute", "pg_namespace"],
+  "commands": ["pnpm install --frozen-lockfile", "pnpm run architecture", "pnpm run typecheck", "pnpm run build", "pnpm test", "pnpm run test:architecture", "pnpm run verify", "pnpm run smoke:start", "node scripts/test-database-schema-postgresql.mjs --runs 2", "git diff --check"],
+  "cleanup": "PASS",
+  "sanitization": "PASS",
+  "architecture_rules": ["D5-R050", "D5-R051", "D5-R052", "D5-R053"],
+  "changed_surfaces": ["migration root", "database schema types", "migration provider source-map companion handling", "architecture policy/checker/tests", "PBI-023 evidence"],
+  "unchanged_surfaces": ["package.json", "pnpm-lock.yaml", "workflows", "AppModule", "bootstrap", "Dockerfile", "repositories", "adapters", "business ports", "product modules"],
+  "final_result": "PASS — PBI-023 TENANT SCHEMA VERIFIED"
+}

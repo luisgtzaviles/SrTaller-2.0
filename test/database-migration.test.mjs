@@ -328,7 +328,7 @@ test('discovery rejects traversal, symlinks and non-file entries', async () => {
   }
 });
 
-test('role and missing productive directory fail before connection acquisition', async () => {
+test('invalid roles fail before acquisition and product status reaches the capability', async () => {
   for (const runtime of [
     {
       environment: 'development',
@@ -373,10 +373,10 @@ test('role and missing productive directory fail before connection acquisition',
   const runner = createMigrationRunner(migration.connection, {});
   await assert.rejects(
     runner.getMigrationStatus(),
-    expectsMigrationCode('DATABASE_MIGRATION_DIRECTORY_MISSING'),
+    expectsMigrationCode('DATABASE_MIGRATION_STATUS_FAILED'),
   );
-  assert.equal(migration.verifyCount(), 0);
-  assert.equal(migration.capabilityCount(), 0);
+  assert.equal(migration.verifyCount(), 1);
+  assert.equal(migration.capabilityCount(), 1);
   await runner.destroy();
 });
 
