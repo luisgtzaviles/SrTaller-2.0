@@ -20,11 +20,11 @@ schema inicial sea pequeño.
 |---|---|
 | Runtime | sin cambios |
 | Persistencia | sin cambios |
-| Dependencias | sin cambios |
-| DB/SQL/migraciones | sólo probes en PostgreSQL efímero; destruidos |
-| Reversibilidad | cleanup completo + revertir documentación Git |
-| Seguridad | credencial sintética efímera; cero valores preservados |
-| Evidencia | investigación, dos runs materiales y comparación |
+| Dependencias | tres directas exactas + trece transitivas revisadas |
+| DB/SQL/migraciones | sin ejecución ni cambios en este paso |
+| Reversibilidad | revertir manifest/lock/documentación + regenerar install |
+| Seguridad | cero credenciales, conexión, lifecycle de terceros o advisory |
+| Evidencia | metadata, integridades, supply chain y doble frozen install |
 
 ## Cambio futuro autorizado sólo tras gates
 
@@ -76,12 +76,13 @@ schema inicial sea pequeño.
 
 ## Checklist DEC-049
 
-Ninguna condición que requiera implementación productiva se marca satisfecha.
-SPIKE-002 aporta evidencia del patrón y retira el bloqueo material de C03.
+Ninguna condición que requiera runtime productivo se marca satisfecha.
+SPIKE-002 aporta evidencia del patrón; el Paso 4 materializa selección/lock y
+aporta evidencia parcial de C01.
 
 | Condición | Aplicabilidad | Estado | Evidencia actual | Evidencia de cierre | Gate |
 |---|---|---|---|---|---|
-| DEC049-C01 — versiones exactas | directa | `Pending` | baseline candidata ejecutada; product install ausente | install frozen + typecheck/build/test productivo | antes de instalar/integrar |
+| DEC049-C01 — versiones exactas | directa | `Partial — package selection materialized` | paquetes exactos, lock SHA-256, supply-chain review, dos frozen installs y gates | configuración/runtime + PostgreSQL CI cuando se activen | antes de integrar persistencia |
 | DEC049-C02 — owner/scope/invariantes | directa | `Partial — registry enforced` | registry machine-readable + D5-R041/R044/R047 | constraints/adapters materializados + review | antes de tabla/migración/repo |
 | DEC049-C03 — constraints/aislamiento PG18 | directa | `Pending — implementation` | SPIKE-002 E6–E10 PASS en PG18 | suite productiva PG18 | antes de aceptar persistencia |
 | DEC049-C04 — pool/transacción/retry | directa | `Pending` | patrón de pool/rollback/concurrencia verificado | misma conexión, commit/rollback/lifecycle productivo | antes del merge persistente |
@@ -107,7 +108,8 @@ No se presenta ninguna barrera aislada como suficiente.
 ## Rollback y recuperación
 
 - planificación: revertir el commit documental;
-- dependencias/config: revertir el commit antes de consumidores;
+- dependencias: restaurar manifest/lock mediante Git y regenerar install;
+- config futura: revertir el commit antes de consumidores;
 - base efímera: cerrar pool y eliminar la base identificada;
 - migración inicial test: reconstruir desde vacío;
 - shared futuro: roll-forward y rollback de aplicación compatible;
@@ -130,7 +132,7 @@ tokens, PII ni paths personales.
 | Momento | Aprobación |
 |---|---|
 | cerrar SPIKE-002 | Arquitectura + Seguridad + Calidad — evidencia PASS |
-| instalar dependencias | Ingeniería + Arquitectura |
+| instalar dependencias | Ingeniería + Arquitectura — Paso 4 PASS |
 | crear facility/checker | Arquitectura + Ingeniería + Calidad |
 | crear migración/objetos | owners de módulos + Arquitectura + Seguridad |
 | PostgreSQL real/CI | Operaciones + Calidad |
@@ -139,10 +141,10 @@ tokens, PII ni paths personales.
 
 ## Acciones permitidas antes del siguiente gate
 
-- revisar y versionar el cierre del spike;
+- revisar y versionar la instalación exacta;
 - mantener el PR como Draft;
-- preparar autorización estricta del Paso 4;
-- instalar sólo versiones exactas/frozen mediante una tarea posterior.
+- preparar autorización estricta del Paso 5;
+- crear sólo configuración tipada/validación mediante una tarea posterior.
 
-Esta tarea material no autoriza instalación productiva, `src/`, migraciones
-productivas, tablas productivas ni cambios de workflow.
+Esta tarea material no autoriza `src/`, conexión, migraciones productivas,
+tablas productivas ni cambios de workflow.

@@ -5,8 +5,8 @@
 - C01, C03 y C04: `Satisfied`.
 - C02 y C05–C08: `Pending`.
 
-No se cambia ese registro. SPIKE-002 aporta preparación material, no
-cumplimiento final del PBI.
+No se cambia ese registro. SPIKE-002 y el Paso 4 aportan preparación material,
+no cumplimiento final del PBI.
 
 ## Matriz
 
@@ -24,6 +24,11 @@ PBI-023 es `High`. La clasificación no puede reducirse porque el schema sea
 pequeño. Un cambio en scoping, constraints, credenciales, migrador, pool,
 checker o cleanup exige nueva revisión del
 [RISK_ASSESSMENT.md](RISK_ASSESSMENT.md).
+
+La [revisión de dependencias](dependency-installation/SUPPLY_CHAIN_REVIEW.md)
+registra cierre transitivo, integridades, licencias, advisories, lifecycle,
+reversibilidad y superficies preservadas. Reduce el riesgo de instalación,
+pero no el riesgo inherente alto de persistencia tenant-scoped.
 
 ## C05 — checklist de persistencia/migración
 
@@ -81,7 +86,7 @@ crea una excepción implícita.
 
 ## Dictamen
 
-C02/C05/C06 son gates materiales del primer merge persistente. El checker
-completa sus componentes estáticos, pero no PostgreSQL, mínimo privilegio ni
-controles runtime. C07 es pre-release. C08 permanece dormida
-hasta una excepción real.
+C02/C05/C06 son gates materiales del primer merge persistente. El checker y la
+instalación gobernada completan componentes estáticos/reversibles, pero no
+PostgreSQL, mínimo privilegio ni controles runtime. C07 es pre-release. C08
+permanece dormida hasta una excepción real.

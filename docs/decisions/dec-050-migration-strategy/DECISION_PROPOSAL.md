@@ -6,13 +6,15 @@
 - **Fecha:** 2026-07-24.
 - **Autoridad:** Responsable del Proyecto, mediante el mandato documental de
   preparación de PBI-023.
-- **Materialización productiva:** no iniciada.
+- **Materialización productiva:** selección exacta y lock instalados; sin
+  configuración, runtime ni migraciones.
 - **Verificación material del patrón:** SPIKE-002 `PASS` el 2026-07-25;
   [evidencia](../../architecture-readiness/pbi-023/spike-002-evidence/README.md).
-- **Implementación autorizada por esta decisión:** ninguna.
-- **Condiciones:** DEC050-C01 a DEC050-C10 permanecen `Pending` por sus
-  triggers productivos/operativos; SPIKE-002 aporta evidencia material
-  diferenciada en la tabla de la sección 10.
+- **Implementación autorizada por esta decisión:** ninguna adicional; el Paso
+  4 instaló sólo paquetes mediante autorización separada.
+- **Condiciones:** DEC050-C01 está `Partial — package selection materialized`;
+  C02–C10 y los componentes runtime/CI de C01 permanecen pendientes por sus
+  triggers productivos/operativos.
 - **PBI:** [PBI-023](../../backlog/pbis/PBI-023.md).
 - **Expediente:** [PBI-023 / DEC-050](../../architecture-readiness/pbi-023/DEC_050_REVIEW.md).
 
@@ -116,10 +118,11 @@ Las versiones candidatas exactas para la primera materialización son:
 | `pg` | `8.22.0` | driver oficial consultado; ESM y Node `>=16` |
 | `@types/pg` | `8.20.0` | publicación con tag para TypeScript 6 |
 
-No quedan instaladas por esta decisión. SPIKE-002 confirmó las versiones en
-un lockfile experimental congelado y en la baseline exacta. DEC050-C01 sigue
-pendiente hasta reconfirmar metadata, integridad del lockfile productivo y
-ejecución de los gates del repositorio al instalarlas.
+No fueron instaladas por la aceptación de esta decisión. La autorización
+separada del Paso 4 las materializó después con metadata reconfirmada,
+integridad del lockfile, supply-chain review, dos frozen installs y gates del
+repositorio. DEC050-C01 queda parcial porque aún exige evidencia
+configuración/runtime y PostgreSQL CI.
 
 No se selecciona `kysely-ctl`, ORM, generador de schema, SQLite, Testcontainers
 ni Docker Compose. Una futura herramienta sólo podrá entrar mediante decisión
@@ -292,7 +295,7 @@ dependencia.
 
 | Condición | Owner | Trigger | Evidencia requerida | Aporte material SPIKE-002 | Estado |
 |---|---|---|---|---|---|
-| DEC050-C01 | Ingeniería + Calidad | antes de instalar | versiones revalidadas, lockfile y compatibilidad ejecutada | baseline candidata, install congelado, ESM/NodeNext, build y query verificados | `Pending — product install` |
+| DEC050-C01 | Ingeniería + Calidad | antes de instalar/integrar | versiones revalidadas, lockfile y compatibilidad ejecutada | baseline candidata, install congelado, ESM/NodeNext, build y query verificados | `Partial — package selection materialized; runtime/CI pending` |
 | DEC050-C02 | Arquitectura + Ingeniería | antes de la primera migración | naming, orden, inmutabilidad y mutación negativa | orden, journal y re-run del probe verificados | `Pending — policy/product migration` |
 | DEC050-C03 | Ingeniería + Operaciones | antes de ejecutar | lock core, exclusión del job, timeout y concurrencia probada | dos migradores, un apply, timeout y liberación verificados | `Pending — product runner/CI job` |
 | DEC050-C04 | Ingeniería + Calidad | antes de integrar | transacción, fallo parcial, `down` seguro y roll-forward probados | rollback, fallo y `down` seguro del probe verificados | `Pending — product migration/recovery` |
@@ -355,7 +358,8 @@ Revisar esta decisión si:
 ## 15. Impacto en R0
 
 DEC-050 deja una estrategia única definida y materialmente viable. SPIKE-002
-cerró el bloqueo de compatibilidad del patrón, pero no autoriza instalar
-dependencias ni iniciar persistencia. PBI-023 queda `Ready — SPIKE-002
-materially verified / implementation gates ready`; cada paso productivo sigue
-bloqueado por las condiciones aplicables de esta tabla.
+cerró el bloqueo del patrón y el Paso 4 materializó las dependencias exactas,
+pero no autoriza configuración, conexión ni persistencia. PBI-023 queda
+`Ready — exact persistence dependencies installed / typed configuration
+authorized`; cada paso posterior sigue bloqueado por las condiciones
+aplicables de esta tabla y requiere autorización separada.

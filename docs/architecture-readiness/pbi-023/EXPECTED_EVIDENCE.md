@@ -31,7 +31,7 @@ No incluye:
 
 | Artefacto | Contenido |
 |---|---|
-| dependency evidence | versiones exactas, fuentes, lock hash |
+| [dependency evidence](dependency-installation/README.md) | versiones exactas, fuentes, cierre, scripts, lock hash, supply chain y frozen installs |
 | ownership registry | objetos, owner, scope, invariantes |
 | migration manifest | orden, status, SHA-256, resultado |
 | PostgreSQL lifecycle | versión, create/cleanup, timeouts |
@@ -62,6 +62,14 @@ El manifest real es
 [EVIDENCE_MANIFEST.json](spike-002-evidence/EVIDENCE_MANIFEST.json). Los
 artefactos que requieren implementación productiva continúan siendo evidencia
 futura de PBI-023.
+
+## Evidencia de instalación exacta
+
+El Paso 4 tiene un manifest separado en
+[dependency-installation/EVIDENCE_MANIFEST.json](dependency-installation/EVIDENCE_MANIFEST.json).
+Acredita selección, lock, scripts, supply chain, ESM/NodeNext, checker y dos
+instalaciones limpias. No acredita conexión, migrador, PostgreSQL CI o
+aislamiento runtime.
 
 ## Reglas de retención
 

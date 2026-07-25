@@ -7,25 +7,28 @@
 - **Rama:** `r0/pbi-023-persistence-planning`.
 - **Alcance:** decisión, investigación, ejecución material desechable,
   evidencia, diseño, riesgos y plan.
-- **Cambio técnico:** checker/tests/documentación; cero runtime productivo.
-- **Resultado:** `PASS — PBI-023 PERSISTENCE BOUNDARIES ENFORCED`.
-- **Estado PBI-023:** `Ready — persistence boundaries enforced / dependency
-  installation authorized`.
+- **Cambio técnico:** checker/tests previos + manifest/lock exactos; cero
+  runtime productivo.
+- **Resultado:** `PASS — PBI-023 EXACT DEPENDENCIES INSTALLED`.
+- **Estado PBI-023:** `Ready — exact persistence dependencies installed /
+  typed configuration authorized`.
 
 ## Propósito
 
 Este expediente lleva PBI-023 hasta el último punto reversible anterior a
-instalar dependencias productivas o crear persistencia. Distingue tres estados
+crear configuración o persistencia. Distingue cuatro estados
 que no deben confundirse:
 
 1. DEC-050 está aceptada documentalmente con condiciones.
 2. SPIKE-002 está materialmente cerrado con dos runs PostgreSQL reales.
-3. El Paso 3 está completo y PBI-023 sigue `Ready`, no `In progress`,
+3. El Paso 3 está completo con checker fail-closed.
+4. El Paso 4 instaló exclusivamente los paquetes exactos y PBI-023 sigue
+   `Ready`, no `In progress`,
    `Implemented` ni `Done`.
 
-El laboratorio se ejecutó fuera de las superficies productivas y fue
-destruido. No modificó `src/`, manifests, lockfile, workflows, scripts, tests,
-tsconfig ni Dockerfiles del repositorio.
+El laboratorio fue destruido. El Paso 4 modificó sólo `package.json`,
+`pnpm-lock.yaml` y documentación; preservó `src/`, workflows, scripts, tests,
+tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 
 ## Índice
 
@@ -48,6 +51,7 @@ tsconfig ni Dockerfiles del repositorio.
 | [EXPECTED_EVIDENCE.md](EXPECTED_EVIDENCE.md) | manifest y artefactos futuros |
 | [RESULTS.md](RESULTS.md) | dictamen consolidado |
 | [checker-extension/](checker-extension/README.md) | reglas D5-R037–D5-R047, fixtures, mutaciones, ownership y evidencia del Paso 3 |
+| [dependency-installation/](dependency-installation/README.md) | metadata, supply chain, doble frozen install, compatibilidad y evidencia del Paso 4 |
 
 ## Alcance preservado
 
@@ -61,7 +65,7 @@ tsconfig ni Dockerfiles del repositorio.
 
 ## Gate siguiente
 
-Solicitar el Paso 4: instalación controlada de versiones exactas/frozen, sin
-crear todavía configuración, conexión, migración o adapter. Después siguen
-configuración tipada e infraestructura de conexión. Cada paso requiere
-autorización propia y sus condiciones DEC-049/050/051/063 aplicables.
+Solicitar el Paso 5: configuración tipada, validación y redaction fail-closed,
+sin crear todavía conexión, pool, migración, tabla o adapter. Cada paso
+requiere autorización propia y sus condiciones DEC-049/050/051/063
+aplicables.

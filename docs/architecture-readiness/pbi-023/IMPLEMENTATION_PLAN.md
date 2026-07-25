@@ -51,15 +51,19 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Paso 4 — Instalar dependencias exactas
 
+- **Estado:** `Completed — PASS` en
+  [dependency-installation/](dependency-installation/README.md).
 - **Objetivo:** materializar Kysely/pg sin otra librería.
 - **Archivos:** `package.json`, `pnpm-lock.yaml`.
 - **Dependencias:** DEC050-C01, Node `24.18.0`, pnpm `11.15.1`.
 - **Riesgos:** transitivas, licencia, incompatibilidad TS/ESM.
 - **Pruebas:** frozen install limpio, audit/metadata, typecheck/build/test.
-- **Evidencia:** diff, versiones, lock hash y fuente.
+- **Evidencia:** metadata oficial, cierre transitivo, supply-chain review, dos
+  frozen installs, hashes y tres ciclos de gates.
 - **Rollback:** revertir manifest/lock y eliminar install local.
 - **Gate:** Ingeniería + Arquitectura.
-- **Salida:** baseline exacta compila sin código persistence.
+- **Salida:** `kysely@0.29.4`, `pg@8.22.0` y `@types/pg@8.20.0` exactos;
+  baseline compila sin código persistence.
 
 ## Paso 5 — Configuración tipada
 
@@ -197,5 +201,5 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 ## Orden definitivo
 
 El orden recomendado pone el checker antes de `src/` y separa schema/adapters.
-Los pasos 1–3 están completos. El siguiente paso real es **Paso 4**, sujeto a
+Los pasos 1–4 están completos. El siguiente paso real es **Paso 5**, sujeto a
 autorización explícita; los pasos 5–14 no quedan autorizados por este cierre.

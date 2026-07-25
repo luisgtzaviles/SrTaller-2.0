@@ -1,0 +1,295 @@
+{
+  "schema_version": "1.0.0",
+  "repository": "luisgtzaviles/SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit_base": "c794bff292670ae643bce0ae7b099ab5a4ce7db1",
+  "generated_at": "2026-07-25T05:13:15Z",
+  "scope": "PBI-023 Step 4 exact persistence dependency installation",
+  "toolchain": {
+    "node": "24.18.0",
+    "pnpm": "11.15.1",
+    "typescript": "6.0.3",
+    "module": "ESM",
+    "module_resolution": "NodeNext",
+    "architecture_policy": 2
+  },
+  "package_versions": {
+    "kysely": "0.29.4",
+    "pg": "8.22.0",
+    "@types/pg": "8.20.0"
+  },
+  "package_integrities": {
+    "kysely@0.29.4": "sha512-y5mVgQNkMbs1eK9Xyc0pmNdabN2wHhRYY/5r4W5HrUT1rYCEPeVNSj1RUJeSDKT3U0p+mXCvLgkrFuIafYI6BA==",
+    "pg@8.22.0": "sha512-8wih1vVIBMxoUM2oB4soJsD9tDnDpLv4OXBJ+EJzFsvycD+lfyIreC2gGHq78f8jbLLt+bvlPTFdFZfJkOuzAA==",
+    "@types/pg@8.20.0": "sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow==",
+    "pg-cloudflare@1.4.0": "sha512-Vo7z/6rrQYxpNRylp4Tlob2elzbh+N/MOQbxFVWCxS7oEx6jF53GTJFxK2WWpKuBRkmiin4Mt+xofFDjx09R0A==",
+    "pg-connection-string@2.14.0": "sha512-XwWDGcLRGCXAR8F/AM5bG7Q+A3Wm2s6QeEjlOKZLlH3UYcguiqCWKyWXVag5TLTIjR7oOJUY8kcADaZgWPyLeg==",
+    "pg-int8@1.0.1": "sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==",
+    "pg-pool@3.14.0": "sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw==",
+    "pg-protocol@1.15.0": "sha512-cq9sECI5s0+uPUXjbz8ioyPJni6RzsRib0US67i5IoTZKw8fNeYlVE7u8F4dG7vEJJtc5wdD1K189lCCUwqWTQ==",
+    "pg-types@2.2.0": "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==",
+    "pgpass@1.0.5": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==",
+    "postgres-array@2.0.0": "sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==",
+    "postgres-bytea@1.0.1": "sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ==",
+    "postgres-date@1.0.7": "sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==",
+    "postgres-interval@1.2.0": "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==",
+    "split2@4.2.0": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==",
+    "xtend@4.0.2": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ=="
+  },
+  "direct_dependencies": [
+    {
+      "package": "kysely",
+      "version": "0.29.4",
+      "section": "dependencies"
+    },
+    {
+      "package": "pg",
+      "version": "8.22.0",
+      "section": "dependencies"
+    },
+    {
+      "package": "@types/pg",
+      "version": "8.20.0",
+      "section": "devDependencies"
+    }
+  ],
+  "transitive_dependencies": [
+    {
+      "package": "pg-cloudflare",
+      "version": "1.4.0",
+      "parent": "pg",
+      "scope": "runtime-optional"
+    },
+    {
+      "package": "pg-connection-string",
+      "version": "2.14.0",
+      "parent": "pg",
+      "scope": "runtime"
+    },
+    {
+      "package": "pg-int8",
+      "version": "1.0.1",
+      "parent": "pg-types",
+      "scope": "runtime-dev-shared"
+    },
+    {
+      "package": "pg-pool",
+      "version": "3.14.0",
+      "parent": "pg",
+      "scope": "runtime"
+    },
+    {
+      "package": "pg-protocol",
+      "version": "1.15.0",
+      "parent": "pg,@types/pg",
+      "scope": "runtime-dev-shared"
+    },
+    {
+      "package": "pg-types",
+      "version": "2.2.0",
+      "parent": "pg,@types/pg",
+      "scope": "runtime-dev-shared"
+    },
+    {
+      "package": "pgpass",
+      "version": "1.0.5",
+      "parent": "pg",
+      "scope": "runtime"
+    },
+    {
+      "package": "postgres-array",
+      "version": "2.0.0",
+      "parent": "pg-types",
+      "scope": "runtime-dev-shared"
+    },
+    {
+      "package": "postgres-bytea",
+      "version": "1.0.1",
+      "parent": "pg-types",
+      "scope": "runtime-dev-shared"
+    },
+    {
+      "package": "postgres-date",
+      "version": "1.0.7",
+      "parent": "pg-types",
+      "scope": "runtime-dev-shared"
+    },
+    {
+      "package": "postgres-interval",
+      "version": "1.2.0",
+      "parent": "pg-types",
+      "scope": "runtime-dev-shared"
+    },
+    {
+      "package": "split2",
+      "version": "4.2.0",
+      "parent": "pgpass",
+      "scope": "runtime"
+    },
+    {
+      "package": "xtend",
+      "version": "4.0.2",
+      "parent": "postgres-interval",
+      "scope": "runtime-dev-shared"
+    }
+  ],
+  "lifecycle_scripts": {
+    "repository_preinstall": {
+      "command": "node ./scripts/verify-install-context.mjs",
+      "result": "PASS"
+    },
+    "third_party_install_scripts": [],
+    "third_party_bins": [],
+    "native_addons": [],
+    "approved_builds": [],
+    "pg_native_installed": false
+  },
+  "commands": [
+    {
+      "command": "pnpm view <each exact direct package> <governed metadata fields>",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm add --save-exact kysely@0.29.4 pg@8.22.0",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm add --save-dev --save-exact @types/pg@8.20.0",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm audit --json",
+      "result": "PASS; zero advisories"
+    },
+    {
+      "command": "pnpm list --depth Infinity and pnpm why for direct packages",
+      "result": "PASS"
+    },
+    {
+      "command": "ESM import and virtual NodeNext type-resolution probes",
+      "result": "PASS; no connection or emitted file"
+    },
+    {
+      "command": "architecture, typecheck, build, test, test:architecture, verify, smoke:start, diff --check",
+      "result": "PASS in initial run and both clean-install runs"
+    }
+  ],
+  "clean_install_runs": [
+    {
+      "run": 1,
+      "command": "pnpm install --frozen-lockfile",
+      "packages": 121,
+      "reused": 121,
+      "downloaded": 0,
+      "lockfile_changed": false,
+      "gates": "PASS",
+      "tests": "219/219",
+      "architecture_tests": "207/207"
+    },
+    {
+      "run": 2,
+      "command": "pnpm install --frozen-lockfile",
+      "packages": 121,
+      "reused": 121,
+      "downloaded": 0,
+      "lockfile_changed": false,
+      "gates": "PASS",
+      "tests": "219/219",
+      "architecture_tests": "207/207"
+    }
+  ],
+  "hashes": {
+    "package_json_sha256": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
+    "pnpm_lock_sha256": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
+    "dependency_graph_raw_sha256": "b1d7235ae9909ceee9fff81e850e5ab899996963cf8ec2915bbdf8d769fcf8dc",
+    "dependency_graph_normalized_sha256": "6e988641709da6c0175bf8b3bff324c1bc5593ffd1b66c9ca0c787b37eee8927"
+  },
+  "architecture_result": {
+    "result": "PASS",
+    "policy_version": 2,
+    "rules": "D5-R037-D5-R047 active",
+    "production_imports_added": 0,
+    "allowlists_added": 0
+  },
+  "test_results": {
+    "cycles": 3,
+    "unit_and_architecture_full_suite": "219/219 each cycle",
+    "architecture_suite": "207/207 each cycle",
+    "typecheck": "PASS each cycle",
+    "build": "PASS each cycle",
+    "verify": "PASS each cycle",
+    "smoke_start": "PASS each cycle"
+  },
+  "sanitization": {
+    "personal_paths": false,
+    "credentials": false,
+    "tokens": false,
+    "database_urls": false,
+    "sql": false,
+    "raw_logs_versioned": false
+  },
+  "changed_surfaces": {
+    "technical": [
+      "package.json",
+      "pnpm-lock.yaml"
+    ],
+    "documentation": [
+      "docs/backlog/pbis/PBI-023.md",
+      "docs/architecture-readiness/pbi-023/",
+      "docs/decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md"
+    ]
+  },
+  "unchanged_surfaces": {
+    "src": {
+      "files": 10,
+      "before_sha256": "a03377c37fdab1f995ebf726fe174f2f47b9dfcd5fbc4c3f25a2971c268e6a6c",
+      "after_sha256": "a03377c37fdab1f995ebf726fe174f2f47b9dfcd5fbc4c3f25a2971c268e6a6c"
+    },
+    "workflows": {
+      "files": 1,
+      "before_sha256": "155774e2d2fed2f1e74e1a58727cea749c06d1b22c678e258e56296a60759575",
+      "after_sha256": "155774e2d2fed2f1e74e1a58727cea749c06d1b22c678e258e56296a60759575"
+    },
+    "scripts": {
+      "files": 13,
+      "before_sha256": "b26a63eab7abb1b9374f66b18a60029df68fb5efe70cfef994e24842e7eec288",
+      "after_sha256": "b26a63eab7abb1b9374f66b18a60029df68fb5efe70cfef994e24842e7eec288"
+    },
+    "tests": {
+      "files": 15,
+      "before_sha256": "e638fa8630a04522170aca0223a916ea9f3901084b501cce28649fa912ff48ad",
+      "after_sha256": "e638fa8630a04522170aca0223a916ea9f3901084b501cce28649fa912ff48ad"
+    },
+    "tsconfig": {
+      "files": 2,
+      "before_sha256": "4ac0e5709490bfa53440be5c75eafa7a411aab3b49f2c143220ad3871db68276",
+      "after_sha256": "4ac0e5709490bfa53440be5c75eafa7a411aab3b49f2c143220ad3871db68276"
+    },
+    "architecture_checker": {
+      "files": 1,
+      "before_sha256": "a2de6b545324809acd770a0e5fa2e2af67c746eced03e1613e17c0206536e167",
+      "after_sha256": "a2de6b545324809acd770a0e5fa2e2af67c746eced03e1613e17c0206536e167"
+    },
+    "architecture_policy": {
+      "files": 1,
+      "before_sha256": "3f8f8914bc948153f7758f70a2737f30359d292056d59b8afccc5ea331338a34",
+      "after_sha256": "3f8f8914bc948153f7758f70a2737f30359d292056d59b8afccc5ea331338a34"
+    },
+    "dockerfiles": {
+      "files": 1,
+      "before_sha256": "5e73adacd2d1d5bfba1d5a625d8617e05ce74036428c3c90ec2b4affab43624c",
+      "after_sha256": "5e73adacd2d1d5bfba1d5a625d8617e05ce74036428c3c90ec2b4affab43624c"
+    },
+    "product_migrations": {
+      "files": 0,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "remote_ci": {
+    "status_at_manifest_generation": "post-commit verification required",
+    "note": "Final-commit CI is verified out-of-band because embedding its own commit would be self-referential; PR remains Draft."
+  },
+  "final_result": "PASS — PBI-023 EXACT DEPENDENCIES INSTALLED",
+  "next_authorizable_step": "Step 5 — typed fail-closed persistence configuration"
+}

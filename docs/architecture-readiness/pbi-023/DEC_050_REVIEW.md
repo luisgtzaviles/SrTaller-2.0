@@ -4,10 +4,11 @@
 
 - **Estado anterior:** abierta; ADR-003 sólo fijaba principios.
 - **Estado final:** `Accepted with conditions`.
-- **Materialización productiva:** no iniciada.
+- **Materialización productiva:** selección exacta/lock instalada; runtime no
+  iniciado.
 - **Verificación material:** SPIKE-002 `PASS`; [evidencia](spike-002-evidence/README.md).
-- **Condiciones:** DEC050-C01 a C10 continúan pendientes por trigger; el spike
-  verificó el patrón candidato, no la implementación.
+- **Condiciones:** DEC050-C01 queda parcial por selección/lock/compatibilidad;
+  C02–C10 y los componentes runtime/CI de C01 continúan pendientes.
 - **Estrategia:** `Migrator` + `FileMigrationProvider` del core de Kysely.
 - **Runner:** propio, mínimo, explícito y separado de build/start.
 - **Decisión completa:** [DECISION_PROPOSAL.md](../../decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md).
@@ -35,11 +36,14 @@ La decisión fue aceptada primero con evidencia primaria. SPIKE-002 agregó
 evidencia material: baseline exacta, orden/journal, transacción, lock,
 rollback, PostgreSQL real, aislamiento, hashes, doble run y cleanup pasaron.
 
-Esto retira SPIKE-002 como bloqueo, pero no habilita directamente la primera
-migración. C01–C10 conservan sus triggers de instalación, checker, runtime,
-CI, operación y cambios persistentes. Su desglose autoritativo está en la
-sección 10 de DEC-050 y en la
-[trazabilidad del spike](spike-002-evidence/TRACEABILITY_MATRIX.md).
+Esto retira SPIKE-002 como bloqueo. El
+[Paso 4](dependency-installation/README.md) materializó las tres versiones
+exactas y un lock reproducible, sin código. No habilita directamente la
+primera migración: C01 conserva configuración/runtime y PostgreSQL CI; C02–C10
+conservan sus triggers de checker, runtime, operación y cambios persistentes.
+Su desglose autoritativo está en la sección 10 de DEC-050, en la
+[trazabilidad del spike](spike-002-evidence/TRACEABILITY_MATRIX.md) y en la
+[trazabilidad de dependencias](dependency-installation/TRACEABILITY_MATRIX.md).
 
 ## Temas no absorbidos
 

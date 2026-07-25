@@ -6,7 +6,8 @@
 - C02–C06, C08 y C10: `Pending` según trigger.
 
 Este expediente no modifica esos estados. SPIKE-002 aporta evidencia
-preparatoria, no cumplimiento productivo.
+preparatoria y el Paso 4 demuestra frozen install/checker/tests para el primer
+cambio técnico; ninguno constituye cumplimiento PostgreSQL runtime.
 
 ## Matriz
 
@@ -74,10 +75,18 @@ El checker vigente ya verifica:
 
 Siguen pendientes misma conexión por transacción y constraints reales.
 
+## Protección del Paso 4
+
+Las versiones exactas pasaron dos instalaciones limpias frozen y tres ciclos
+de architecture, typecheck, build, tests, verify y smoke. El workflow no se
+modificó y el PR permanece Draft. C03/C04 no se marcan satisfechas: todavía no
+existe suite PostgreSQL productiva ni aislamiento runtime.
+
 ## Dictamen
 
 DEC-051 está completamente trazada. SPIKE-002 confirmó estrategia,
 testabilidad y PostgreSQL real para C03/C04/C06, sin satisfacer sus triggers
-productivos. C03/C04 y la parte runtime de C06 bloquean el primer merge
-persistente; C02 bloquea
+productivos. El Paso 4 agrega evidencia de reproducibilidad del paquete, sin
+cambiar esos estados. C03/C04 y la parte runtime de C06 bloquean el primer
+merge persistente; C02 bloquea
 cualquier primer merge funcional. C05, C08 y C10 no se activaron.

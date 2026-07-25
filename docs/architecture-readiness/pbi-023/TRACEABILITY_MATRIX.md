@@ -3,8 +3,8 @@
 | Requisito/gate | Autoridad | Diseño | Evidencia futura | Estado |
 |---|---|---|---|---|
 | PostgreSQL 18.4 | ADR-003, DEC051-C03 | TECHNICAL_DESIGN § dependencies/testing | [version/lifecycle/runs](spike-002-evidence/ENVIRONMENT.md) | `Verified by spike; product CI pending` |
-| Node/TS/ESM/NodeNext | DEC-004 | SPIKE §1/13 | [frozen install/build](spike-002-evidence/EXPERIMENT_MATRIX.md) | `Verified by spike; product install pending` |
-| Kysely/pg exactos | DEC049-C01, DEC050-C01 | DEC-050 + SPIKE | [manifest](spike-002-evidence/EVIDENCE_MANIFEST.json) | `Verified by spike; product install pending` |
+| Node/TS/ESM/NodeNext | DEC-004 | SPIKE §1/13 | [product compatibility/frozen installs](dependency-installation/COMPATIBILITY.md) | `PASS for package install; runtime pending` |
+| Kysely/pg exactos | DEC049-C01, DEC050-C01 | DEC-050 + SPIKE | [dependency manifest](dependency-installation/EVIDENCE_MANIFEST.json) | `PASS package selection; C01 runtime/CI pending` |
 | migrador único | DEC-050 | MIGRATION_STRATEGY | runner/status/latest | `Defined` |
 | orden/immutability | DEC050-C02 | DEC-050 §6.1 | mutation/status/hash | `Defined; pending` |
 | lock concurrente | DEC050-C03 | MIGRATION_STRATEGY | [two-runner test](spike-002-evidence/EXPERIMENT_MATRIX.md) | `Pattern verified; product runner/CI pending` |
@@ -35,5 +35,5 @@
 dependencies → config/connection/migrator → schema/owners → PG18 real →
 isolation/transactions → evidence/review → merge`
 
-SPIKE-002 está ejecutado y cerrado. Su evidencia no sustituye las etapas
-productivas posteriores de la cadena.
+SPIKE-002 y la instalación exacta están ejecutados y cerrados. Su evidencia no
+sustituye configuración, conexión, migraciones ni etapas posteriores.
