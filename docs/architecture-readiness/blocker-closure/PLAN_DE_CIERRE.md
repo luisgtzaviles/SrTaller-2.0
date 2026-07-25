@@ -6,20 +6,47 @@ El plan cierra decisiones, no fechas. Cada fila representa un paquete coherente:
 
 ## Cierre registrado
 
-El Responsable de Producto cerró `DEC-002` y `DEC-062` el 2026-07-21. Quedaron aprobados el alcance de R0, sus exclusiones, escenarios verificables y autoridad de aceptación. Este cierre no autoriza implementación, no declara R0 construido o aceptado y no cierra `DEC-063`.
+El Responsable de Producto cerró `DEC-002` y `DEC-062` el 2026-07-21.
+Quedaron aprobados el alcance de R0, sus exclusiones, escenarios verificables
+y autoridad de aceptación. Ese cierre no autorizó implementación ni declaró
+R0 construido o aceptado; DEC-063 fue cerrada después mediante su propia
+autoridad el 2026-07-24.
 
 Arquitectura + Ingeniería aceptaron ADR-001, ADR-003 y ADR-009 el 2026-07-21, y ADR-005 con condiciones el 2026-07-22. TypeScript, Node.js `24.x`, PostgreSQL, NestJS `11.x`, Express, REST/HTTP JSON mínima y el repositorio único evolutivo quedan resueltos dentro de `DEC-004`; PostgreSQL 18.x es la baseline de R0, PostgreSQL 18.4 su versión efectiva inicial y NestJS `11.1.28` la referencia que deberá revalidarse al cerrar la baseline ejecutable.
 
-El 2026-07-22 se ejecutó [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md), autorizado como `Mandatory before acceptance` de ADR-005. Tras el dictamen Opción B, su remediación obtuvo 48/48 pruebas y la revisión enfocada de Seguridad, Operaciones y Calidad fue aprobada con condiciones no bloqueantes. Ese mismo día, Luis Antonio Gutiérrez Avilés aprobó la selección de `DEC-004` desde Arquitectura + Ingeniería, con vistos buenos de Seguridad, Operaciones y Calidad. Materialización y evidencia Linux continúan pendientes.
+El 2026-07-22 se ejecutó [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md), autorizado como `Mandatory before acceptance` de ADR-005. Tras el dictamen Opción B, su remediación obtuvo 48/48 pruebas y la revisión enfocada de Seguridad, Operaciones y Calidad fue aprobada con condiciones no bloqueantes. Ese mismo día, Luis Antonio Gutiérrez Avilés aprobó la selección de `DEC-004` desde Arquitectura + Ingeniería, con vistos buenos de Seguridad, Operaciones y Calidad. La [verificación formal de VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md) cerró su evidencia Linux con `PASS` el 2026-07-24.
+
+El 2026-07-23 la [sexta reverificación formal de DEC-005](../dec-005-materialization/FORMAL_VERIFICATION_6.md) obtuvo `PASS`, confirmó DEC005-C01 a C05 y cerró FV4-001/FV4-002/FV4-003/FV5-001. DEC-005 queda `Accepted — Materialized / Formally Verified` y PBI-022 `Done`; R0 y Sprint 00 permanecen abiertos.
+
+El 2026-07-24 el Responsable del Proyecto emitió las conformidades de
+Seguridad, Operaciones y Calidad y las aprobaciones de Arquitectura e
+Ingeniería para [DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md).
+DEC-049 queda `Accepted`; DEC049-C01 a C08 permanecen vigentes y no cumplidas.
+
+El 2026-07-24 el Responsable del Proyecto emitió también las cinco
+resoluciones de [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md).
+DEC-044 queda `Accepted`; DEC044-C01 a C08 permanecen vigentes y pendientes de
+materialización.
+
+El 2026-07-24 el Responsable del Proyecto emitió cinco
+`PASS WITH CONDITIONS` para
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md).
+DEC-063 queda `Accepted with conditions`. VC-024 satisface
+DEC051-C01/C07/C09 y DEC063-C01/C03/C04; las demás condiciones permanecen
+`Pending`. H0 queda completo en 9/0, sin autorizar R0 ni cerrar Sprint 00.
 
 ## Secuencia ejecutable de decisiones
 
 | Orden | Decisiones | Responsable principal | Entradas mínimas | Salida verificable | ADR | Criterio de aceptación | Hito |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 — cerrado 2026-07-21 | DEC-002, DEC-062 | Producto | Rebanadas, objetivo MVP, escenarios | Alcance, exclusiones, escenarios y autoridad de aceptación de R0 aprobados | No | Contrato verificable de R0 sin Reparaciones ni dependencia de R1 | H0 cerrado para estas decisiones |
-| 2 — selección aceptada; evidencia pendiente | DEC-004 | Luis Antonio Gutiérrez Avilés desde Arquitectura + Ingeniería; vistos buenos de Seguridad/Operaciones/Calidad | [Contrato aceptado](DEC-004_BASELINE_TECNICA.md), ADR-001/003/005/009 y autorización del PBI | Pins, pnpm/lockfile, ESM/TS/build materializados; VC-001 a VC-024 y evidencia Linux revisados | Existentes | Selección normativa completa; reproducibilidad aún no demostrada | H0 hasta evidencia |
-| 3 | DEC-005, DEC-049 | Arquitectura | ADR-002, mapa de contextos y dependencias | Estructura inicial, ownership y reglas de dependencia | No, salvo excepción | Ningún módulo futuro vacío ni acceso global a datos | H0 |
-| 4 | DEC-044, DEC-051, DEC-063 | Calidad + Arquitectura | Riesgos, stack y aceptación R0 | Errores, pruebas y Definition of Done | ADR de pruebas | Gates repetibles cubren arquitectura y aislamiento | H0 |
+| 2 — cerrado 2026-07-24 | DEC-004 / VC-024 | Luis Antonio Gutiérrez Avilés desde Arquitectura + Ingeniería; vistos buenos de Seguridad/Operaciones/Calidad | [Contrato aceptado](DEC-004_BASELINE_TECNICA.md), ADR-001/003/005/009 y autorización del PBI | Pins, pnpm/lockfile, ESM/TS/build materializados; dos jobs Linux y comparación reproducible | Existentes | [Verificación formal VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md) `PASS` | H0 cerrado para DEC-004 |
+| 3a — cerrado 2026-07-23 | DEC-005 / PBI-022 | Luis Antonio Gutiérrez Avilés desde Arquitectura e Ingeniería | ADR-002/005/009, mapa de contextos, dependencias y PBI-022 | Materialización y sexta reverificación formal PASS; DEC005-C01 a C05 confirmadas | No | Ningún módulo futuro vacío, ciclo, deep import o acoplamiento Nest en dominio/aplicación | H0 cerrado para DEC-005 |
+| 3b — cerrado 2026-07-24 | [DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) | Responsable del Proyecto en Seguridad, Operaciones, Calidad, Arquitectura e Ingeniería | Satisfechas: DEC-005, selección DEC-004 y ADR-002/003/004/005/009 | `Accepted`; cinco resoluciones explícitas; DEC049-C01 a C08 vigentes para materialización | No, salvo decisión explícita | Ningún acceso global o transversal a datos; autoridad y condiciones registradas | H0 cerrado para DEC-049 |
+| 4a — cerrado 2026-07-24 | [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md) | Responsable del Proyecto en Seguridad, Operaciones, Calidad, Arquitectura e Ingeniería | ADR-004/005, DEC-005/049/062 satisfechas | `Accepted`; cinco resoluciones explícitas; DEC044-C01 a C08 vigentes para materialización | No | Contrato tipado por capa, sin enumeración ni exposición de detalles internos | H0 cerrado para DEC-044 |
+| 4b — cerrado 2026-07-24 | [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) | Responsable del Proyecto en Arquitectura, Ingeniería, Seguridad, Operaciones y Calidad | Riesgos, stack y contratos aceptados DEC-044/049 | `Accepted`; cinco resoluciones; C01/C07/C09 `Satisfied`, restantes `Pending` | No, salvo autorización de materialización | Estrategia por riesgo y gates aceptados; evidencia VC-024 revisada | H0 cerrado para DEC-051 |
+| 4c — cerrado 2026-07-24 | [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) | Responsable del Proyecto en Arquitectura, Ingeniería, Seguridad, Operaciones y Calidad | DEC-004/005/044/049/051 y ADR-004/010–013 | `Accepted with conditions`; C01/C03/C04 `Satisfied`, restantes `Pending` | No, salvo autorización de materialización | Base común, tipo, riesgo, estados, evidencia, excepciones y separación Done/Released | H0 cerrado para DEC-063 |
+| 4d — cerrado 2026-07-24 | VC-024 de DEC-004 | Arquitectura + Ingeniería + Operaciones + Calidad | Materialización autorizada de prerrequisitos DEC-051/063 | Dos corridas CI equivalentes y dictamen de evidencia | No | Run `push` autoritativo, artefactos sanitizados y comparación semántica `PASS` | H0 cerrado |
 | 5 | DEC-007, DEC-008 | Producto + Arquitectura | ADR-004 Accepted | Aplicar matriz SaaS/tenant/sucursal | ADR-004 | Todo dato de R0/R1 tiene dueño, alcance y prueba | H1 |
 | 6 | DEC-006, DEC-009 | Arquitectura + Seguridad | ADR-004/010, threat model, spike autorizado | Aislamiento y contexto aplicados/probados | ADR-004/010 | Pruebas negativas demuestran aislamiento y contexto cerrado | H1 |
 | 7 | DEC-010 a DEC-012 | Producto + Operaciones | ADR-010 Accepted | Aplicar estación, sucursal derivada, turno y reubicación | ADR-010 | Ninguna operación usa contexto ambiguo o seleccionado | H1 |

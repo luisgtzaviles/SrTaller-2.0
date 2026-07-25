@@ -173,7 +173,7 @@ No se autoriza compartir indiscriminadamente:
 - internals de dominio;
 - tipos que creen acoplamiento transversal.
 
-La topología general y los workspaces bajo demanda se rigen por [ADR-009](ADR-009-monorepo-strategy.md). La organización física y el enforcement concreto permanecen pendientes de `DEC-005`; la propiedad de datos y los repositorios de persistencia permanecen pendientes de `DEC-049`.
+La topología general y los workspaces bajo demanda se rigen por [ADR-009](ADR-009-monorepo-strategy.md). La organización física y el enforcement concreto quedaron definidos, materializados y formalmente verificados por `DEC-005`; la propiedad de datos y los repositorios de persistencia permanecen pendientes de `DEC-049`.
 
 ## Compatibilidad con decisiones aceptadas
 

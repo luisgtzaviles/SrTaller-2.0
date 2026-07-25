@@ -1,0 +1,169 @@
+{
+  "policyVersion": 1,
+  "allowedModules": ["access", "stations", "tenancy"],
+  "dependencies": {
+    "access": ["stations", "tenancy"],
+    "stations": ["tenancy"],
+    "tenancy": []
+  },
+  "publicSurfaces": {
+    "access": ["AccessModuleContract"],
+    "stations": ["StationsModuleContract"],
+    "tenancy": ["TenancyModuleContract"]
+  },
+  "consumers": {
+    "access": ["AppModule"],
+    "stations": ["access"],
+    "tenancy": ["access", "stations"]
+  },
+  "governedRoots": ["src/modules"],
+  "nonStructuralFileNames": [".DS_Store", ".gitkeep"],
+  "nonStructuralFileSuffixes": [".swp", ".tmp", "~"],
+  "forbiddenGlobalRoots": ["base", "common", "core", "helpers", "utils"],
+  "requiredStructuralFiles": {
+    "src/app.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "AppModule",
+      "decorator": "Module",
+      "rule": "D5-R023"
+    },
+    "src/modules/access/access.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "AccessModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
+    },
+    "src/modules/access/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "AccessModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/stations/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "StationsModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/stations/stations.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "StationsModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
+    },
+    "src/modules/tenancy/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "TenancyModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/tenancy/tenancy.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "TenancyModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
+    }
+  },
+  "appModuleComposition": {
+    "file": "src/app.module.ts",
+    "className": "AppModule",
+    "decorator": "Module",
+    "imports": {
+      "AccessModule": "./modules/access/access.module.js",
+      "StationsModule": "./modules/stations/stations.module.js",
+      "TenancyModule": "./modules/tenancy/tenancy.module.js"
+    }
+  },
+  "controllerAuthoritySymbols": [
+    "authorize",
+    "decideAuthorization",
+    "resolveOperationalContext",
+    "resolveTenantContext",
+    "trustRequestContext"
+  ],
+  "checkerRules": [
+    "D5-R002",
+    "D5-R003",
+    "D5-R004",
+    "D5-R005",
+    "D5-R006",
+    "D5-R007",
+    "D5-R008",
+    "D5-R009",
+    "D5-R010",
+    "D5-R011",
+    "D5-R012",
+    "D5-R013",
+    "D5-R014",
+    "D5-R015",
+    "D5-R016",
+    "D5-R018",
+    "D5-R019",
+    "D5-R020",
+    "D5-R023",
+    "D5-R024",
+    "D5-R025",
+    "D5-R026",
+    "D5-R027",
+    "D5-R029",
+    "D5-R031",
+    "D5-R035",
+    "D5-R036"
+  ],
+  "requiredSemanticCoverage": [
+    "fixture:D5-R025:parenthesized:direct",
+    "fixture:D5-R025:transparent:alias",
+    "fixture:D5-R025:transparent:namespace",
+    "fixture:D5-R026:transparent-types:control",
+    "fixture:D5-R027:ordinary-global:positive",
+    "fixture:D5-R027:parenthesized:direct",
+    "fixture:D5-R027:transparent:alias",
+    "fixture:D5-R027:transparent:namespace",
+    "fixture:D5-R029:parenthesized:direct",
+    "fixture:D5-R029:transparent:alias",
+    "fixture:D5-R029:transparent:namespace",
+    "fixture:D5-R035:controller-parenthesized:direct",
+    "fixture:D5-R035:controller-transparent:alias",
+    "fixture:D5-R035:controller-transparent:namespace",
+    "fixture:D5-R035:endpoint-parenthesized:direct",
+    "fixture:D5-R035:endpoint-transparent:alias",
+    "fixture:D5-R035:endpoint-transparent:namespace",
+    "fixture:D5-R036:controller-transparent:authority",
+    "fixture:nest-identity:shadowing-parenthesized:positive",
+    "fixture:nest-identity:text-local-parenthesized:positive",
+    "fixture:nest-identity:wrong-package-parenthesized:positive",
+    "mutation:D5-R025:transparent-wrapper",
+    "mutation:D5-R027:transparent-wrapper",
+    "mutation:D5-R029:transparent-wrapper",
+    "mutation:D5-R035:transparent-wrapper",
+    "mutation:D5-R036:transparent-wrapper"
+  ],
+  "externalExecutableRules": ["D5-R001"],
+  "compositeRules": ["D5-R032", "D5-R033"],
+  "documentaryRules": [
+    "D5-R017",
+    "D5-R021",
+    "D5-R022",
+    "D5-R028",
+    "D5-R030",
+    "D5-R034"
+  ],
+  "productModuleFiles": [
+    "src/modules/access/access.module.ts",
+    "src/modules/access/index.ts",
+    "src/modules/stations/index.ts",
+    "src/modules/stations/stations.module.ts",
+    "src/modules/tenancy/index.ts",
+    "src/modules/tenancy/tenancy.module.ts"
+  ],
+  "requiredEvidence": [
+    "docs/architecture-readiness/dec-005-materialization/ARCHITECTURE_RULES.md",
+    "docs/architecture-readiness/dec-005-materialization/DEPENDENCY_GRAPH.md",
+    "docs/architecture-readiness/dec-005-materialization/EVIDENCE.md",
+    "docs/architecture-readiness/dec-005-materialization/FIXTURES.md",
+    "docs/architecture-readiness/dec-005-materialization/IMPLEMENTATION.md",
+    "docs/architecture-readiness/dec-005-materialization/OWNERSHIP.md",
+    "docs/architecture-readiness/dec-005-materialization/REMEDIATION.md",
+    "docs/architecture-readiness/dec-005-materialization/FV4_REMEDIATION.md",
+    "docs/architecture-readiness/dec-005-materialization/FV5_REMEDIATION.md",
+    "docs/architecture-readiness/dec-005-materialization/TRACEABILITY_MATRIX.md",
+    "docs/architecture-readiness/dec-005-materialization/RESULTS.md"
+  ]
+}

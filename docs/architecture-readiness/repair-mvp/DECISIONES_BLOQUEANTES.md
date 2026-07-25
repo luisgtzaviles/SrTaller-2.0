@@ -28,7 +28,7 @@ El [inventario de cierre de bloqueantes](../blocker-closure/INVENTARIO_DE_BLOQUE
 | B-18 | Concurrencia de folios | Bloquea R1 | Reserva/unicidad e idempotencia probadas | PB |
 | B-19 | Entrega idempotente | Bloquea R5 | Identidad de intención, reintento y doble entrega definidos | PB |
 | B-20 | Precio histórico y autorización | Bloquea R3 | Versiones, conceptos, total y reemplazo definidos | PB |
-| B-21 | Autorización organizacional | Bloquea el primer cambio de implementación de R0 | Responsable de Producto autoriza implementación | RP |
+| B-21 | Autorización organizacional | `Satisfied — effective within PBI-023` (2026-07-24); Sprint 00 cerrado y revisión final emitida | [Autorización R0](../R0_AUTHORIZATION.md) | RP |
 | B-22 | Base técnica | Bloquea el primer cambio de implementación de R0 | ADRs necesarios aceptados, no sólo propuestos | ADR |
 | B-23 | Modelo de amenazas | Bloquea la primera funcionalidad ejecutable de R0 | Tenancy, identidad/PIN, archivos e integración cubiertos | RP |
 | B-24 | PBI listo | Bloquea cada rebanada | DoR, aceptación, pruebas negativas y trazabilidad | RP |

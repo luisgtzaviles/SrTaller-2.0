@@ -18,16 +18,32 @@ Los criterios de este documento se concretan, sin reemplazarlos, en los gates de
 Todos los criterios deben cumplirse:
 
 - [x] **[RP]** El alcance y contrato de salida de R0 están aprobados.
-- [ ] **[RP]** El Responsable de Producto autoriza explícitamente el primer cambio de implementación de R0.
-- [ ] **[RP]** Sprint 00 o el criterio de paso sucesor queda cerrado por su autoridad.
+- [x] **[RP]** El Responsable de Producto registró autorización explícita condicional; sólo entra en vigor después del cierre de Sprint 00 y la revisión final.
+- [x] **[RP]** Sprint 00 quedó
+  [cerrado por su autoridad](../../reviews/sprint-00/SPRINT_00_CLOSURE.md).
 - [ ] **[ADR]** Las decisiones técnicas necesarias están aceptadas, no sólo propuestas.
+- [x] **[ADR]** [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
+  está `Accepted` desde el 2026-07-24 con cinco `PASS WITH CONDITIONS`.
+  VC-024 cerró C01/C07/C09; C02–C06/C08/C10 permanecen `Pending`.
+- [x] **[ADR]** [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md)
+  está `Accepted with conditions` desde el 2026-07-24 con cinco
+  `PASS WITH CONDITIONS`; C01/C03/C04 están `Satisfied` y C02/C05–C08
+  permanecen `Pending`.
+- [x] **[ADR]** [VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+  está `Closed / PASS`; H0 queda completo en 9/0.
+- [x] **[ADR]** DEC-005 seleccionó y materializó estructura, ownership, imports y enforcement; la [sexta verificación formal](../dec-005-materialization/FORMAL_VERIFICATION_6.md) concluyó `PASS`, DEC-005 está `Accepted — Materialized / Formally Verified` y [PBI-022](../../backlog/pbis/PBI-022.md) está `Done`.
+- [x] **[ADR]** DEC-049 está `Accepted`; Kysely + `pg`, repositorios
+  explícitos, ownership, scopes y transacciones quedan aceptados, con
+  DEC049-C01 a C08 pendientes para una materialización futura autorizada.
 - [x] **[RDD]** Tenant, sucursal, sesión, actor y aislamiento mínimo están definidos conceptualmente por ADR-004/010/011.
 - [x] **[RDD]** Roles, capacidades, combinación, alcance y autorización negativa están definidos conceptualmente por ADR-012.
 - [x] **[RDD]** Sensibilidad, niveles, reautenticación, segundo aprobador, segregación e invalidación están definidos conceptualmente por ADR-013.
 - [ ] **[PB]** Existe composición de roles/capacidades y clasificación nivel 1–4 para cada operación de la rebanada incluida.
 - [ ] **[RP]** El modelo de amenazas inicial y la estrategia de secretos/ambientes están revisados.
-- [ ] **[RP]** El PBI cumple Definition of Ready, aceptación y trazabilidad.
-- [ ] **[DAR]** Frontera propietaria, agregado, transacción e idempotencia están explícitos.
+- [x] **[RP]** [PBI-023](../../backlog/pbis/PBI-023.md) cumple Definition of
+  Ready con notas no bloqueantes; la
+  [revisión final](../R0_AUTHORIZATION.md) lo confirmó y autorizó.
+- [x] **[DAR]** Para PBI-023, ownership, scope, transacción, migración y límites están explícitos; no existe agregado de negocio.
 - [x] **[RP]** Escenarios felices, negativos, de denegación y cross-tenant de R0 están aprobados.
 - [ ] **[DAR]** Los escenarios aprobados están especificados como pruebas ejecutables; concurrencia se añade donde la invariante lo exija.
 - [ ] **[DAR]** No se introduce capacidad fuera del MVP sin cambio de alcance aprobado.
@@ -62,4 +78,13 @@ Además:
 
 ## Resultado actual
 
-**[PB]** El estado sigue siendo **Preparado con bloqueantes**: alcance, aceptación esperada de R0 y selección de plataforma están aprobados, y [PBI-021](../../backlog/pbis/PBI-021.md) está `Ready`; faltan su materialización/evidencia, autorización funcional, organización ejecutable, mecanismos, composición/clasificación, modelos de amenazas, estrategia y ejecución de pruebas y los demás gates H0/H1. La autorización de PBI-021 no autoriza programación funcional ni declara R0 aceptado.
+**[PB]** El estado vigente es **R0 Authorized, limitado a PBI-023**. Sprint 00
+está `Closed`, VC-024 está `Closed / PASS`, DEC-004 tiene evidencia verificada
+y H0 está completo en 9/0. PBI-023 está
+`Ready / Authorized to start`, no iniciado. Persisten los contratos H1, las condiciones
+DEC-051/063 no satisfechas por VC-024, composición/clasificación, modelos de
+amenazas y pruebas por trigger. Las aceptaciones de
+[DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md),
+[DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) y
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) no
+no autorizan por sí solas trabajo fuera de PBI-023 ni declaran R0 aceptado.

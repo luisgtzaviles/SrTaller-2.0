@@ -36,15 +36,17 @@ flowchart LR
     E -- No --> B
     E -- Sí --> F[Planificación del sprint]
     F --> G[Ejecución]
-    G --> H[Revisión y QA previa]
-    H --> I{Candidato listo?}
+    G --> H[Revisión y gates]
+    H --> I{DoD aplicable?}
     I -- No --> G
-    I -- Sí --> J[Candidato de release]
-    J --> K[Staging]
-    K --> L{DoD final + gate de producción}
-    L -- No --> G
-    L -- Sí --> M[Producción]
-    M --> N[Verificación y aprendizaje]
+    I -- Sí --> J[Done]
+    J --> K{Incluido en release?}
+    K -- No --> O[Esperar priorización]
+    K -- Sí --> L[Candidato y staging]
+    L --> M{Gate de release}
+    M -- No --> G
+    M -- Sí --> N[Producción y validación]
+    N --> P[Released]
 ```
 
 ### 1. Entrada y descubrimiento
@@ -83,7 +85,14 @@ Para trabajo futuro de código, se propone usar ramas de vida corta y pull reque
 
 ### 5. Validación y cierre
 
-Un entregable puramente documental se contrasta con la [Definition of Done](./DEFINITION_OF_DONE.md) antes de cerrarse. Para una funcionalidad liberable, la revisión previa sólo confirma que el **candidato está listo para staging**: criterios implementados, revisión y suites previas aplicables completas. La DoD final se evalúa después de verificar ese candidato en staging y antes del gate de producción. La evidencia se conserva mediante la [plantilla de evidencia QA](../quality/QA_EVIDENCE_TEMPLATE.md) y el [modelo de trazabilidad](./TRACEABILITY_MODEL.md).
+Todo entregable se contrasta con la
+[Definition of Done](./DEFINITION_OF_DONE.md) y el contrato autoritativo de
+[DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md).
+Cuando satisface base, tipo y riesgo puede pasar a `Done`. Si después se
+incluye en un release, staging, promoción y validación operativa determinan
+`Released`; no son requisitos implícitos de todo PBI. La evidencia se conserva
+mediante la [plantilla de evidencia QA](../quality/QA_EVIDENCE_TEMPLATE.md) y
+el [modelo de trazabilidad](./TRACEABILITY_MODEL.md).
 
 Cerrar un elemento exige:
 
@@ -100,7 +109,7 @@ Los cambios liberables siguen el [proceso de release](./RELEASE_PROCESS.md). El 
 
 ## Estados sugeridos de un PBI
 
-`Draft → Ready for review → Ready → In progress → In review → Done`
+`Proposed → Ready → In progress → In review → Done`
 
 Estados auxiliares del lifecycle:
 
@@ -110,7 +119,8 @@ Estados auxiliares del lifecycle:
 
 La **clasificación dentro de un sprint** es un eje separado: `Committed`, `Candidate`, `Blocked` o `Requires product input`. `Committed` no es un estado del PBI; `Requires product input` es una clasificación/flag y el PBI conserva un estado como `Draft` o `Blocked`. Cuando `Blocked` aparezca en ambos ejes deben registrarse por separado.
 
-Esta taxonomía es una propuesta hasta seleccionar la herramienta de gestión.
+La semántica normativa de estados pertenece a DEC-063; la representación en
+una herramienta concreta continúa pendiente.
 
 ## Gates de decisión
 

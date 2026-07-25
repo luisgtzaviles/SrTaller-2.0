@@ -42,6 +42,19 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 
 Las rutas históricas bajo `proposed/` se conservan para mantener una convención estable; el estado dentro de cada documento es autoritativo.
 
+## Decisiones técnicas complementarias
+
+Estas decisiones no alteran el conteo de ADRs:
+
+| Decisión | Tema | Estado |
+|---|---|---|
+| [DEC-004](dec-004-toolchain-contract/DECISION_PROPOSAL.md) | Contrato de toolchain reproducible | Accepted — Evidence Verified / VC-024 PASS — 2026-07-24 |
+| [DEC-005](dec-005-modular-monolith-organization/DECISION_PROPOSAL.md) | Organización inicial del monolito modular | Accepted — Materialized / Formally Verified — 2026-07-23 |
+| [DEC-044](dec-044-error-strategy/DECISION_PROPOSAL.md) | Estrategia de errores | Accepted — 2026-07-24 — Responsable del Proyecto; DEC044-C01 a C08 vigentes |
+| [DEC-049](dec-049-persistence-ownership/DECISION_PROPOSAL.md) | Repositorios y propiedad lógica de persistencia | Accepted — 2026-07-24 — Responsable del Proyecto; DEC049-C01 a C08 vigentes |
+| [DEC-051](dec-051-testing-ci-strategy/DECISION_PROPOSAL.md) | Estrategia de pruebas, CI y gates ejecutables | Accepted — 2026-07-24 — DEC051-C01/C07/C09 `Satisfied`; restantes `Pending` |
+| [DEC-063](dec-063-definition-of-done/DECISION_PROPOSAL.md) | Definition of Done por tipo de trabajo y riesgo | Accepted with conditions — 2026-07-24 — DEC063-C01/C03/C04 `Satisfied`; restantes `Pending` |
+
 ## ADRs propuestos
 
 | ADR | Tema | Estado |

@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://srtaller.example/schemas/evidence-manifest.schema.json",
+  "title": "SR Taller technical evidence manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "commit",
+    "execution",
+    "environment",
+    "toolchain",
+    "inputs",
+    "commands",
+    "dist",
+    "repository",
+    "verdict"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "contract": {
+      "type": "string",
+      "minLength": 1
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "label",
+        "workflowRunId"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workflowRunId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "os",
+        "arch",
+        "libc"
+      ],
+      "properties": {
+        "os": {
+          "type": "string"
+        },
+        "arch": {
+          "type": "string"
+        },
+        "libc": {
+          "type": "string"
+        }
+      }
+    },
+    "toolchain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "pnpm",
+        "typescript",
+        "nestjs"
+      ],
+      "properties": {
+        "node": {
+          "type": "string"
+        },
+        "pnpm": {
+          "type": "string"
+        },
+        "typescript": {
+          "type": "string"
+        },
+        "nestjs": {
+          "type": "string"
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "command",
+          "exitCode"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          },
+          "exitCode": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "dist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "aggregateSha256",
+        "files"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "sha256"
+        },
+        "aggregateSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "bytes",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "initialClean",
+        "finalClean"
+      ],
+      "properties": {
+        "initialClean": {
+          "type": "boolean"
+        },
+        "finalClean": {
+          "type": "boolean"
+        }
+      }
+    },
+    "verdict": {
+      "enum": [
+        "PASS",
+        "PASS WITH CONDITIONS",
+        "FAIL"
+      ]
+    }
+  }
+}

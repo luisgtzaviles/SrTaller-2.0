@@ -2,58 +2,66 @@
 
 ## Estado del documento
 
-**Estado:** Clasificación preliminar; requiere aprobación.
-**Capacidad y duración:** TBD.
-**Nota:** los PBIs conservan `Sprint: Unassigned` hasta que la planificación sea aprobada.
+- **Estado:** ejecutado, reconciliado y `Closed`.
+- **Fecha de revisión:** 2026-07-24.
+- **Autoridad:** Responsable del Proyecto actuando también como Responsable de
+  Producto.
+- **Cierre del Sprint:** [dictamen final emitido](../../reviews/sprint-00/SPRINT_00_CLOSURE.md).
+- **Capacidad/estimaciones históricas:** no acordadas; no se inventan.
 
-## Committed
+Los veinte PBIs formaron la fundación documental inicial. El resultado final
+expresa el cumplimiento real de cada PBI: un elemento `Deferred` o
+`Superseded` no se presenta como `Done`.
 
-`Committed` es el nombre del bucket solicitado e indica inclusión en el núcleo documental propuesto. Mientras este backlog permanezca preliminar y los PBIs estén `Unassigned`, no constituye compromiso aprobado, promesa de fecha ni autorización de implementación.
+## Resultado final de PBI-001 a PBI-020
 
-| PBI | Resultado | Estado actual |
-|---|---|---|
-| [PBI-001](../../backlog/pbis/PBI-001.md) | Visión y principios | Ready for review |
-| [PBI-004](../../backlog/pbis/PBI-004.md) | Glosario | Ready for review |
-| [PBI-005](../../backlog/pbis/PBI-005.md) | Mapa de módulos | Ready for review |
-| [PBI-006](../../backlog/pbis/PBI-006.md) | Lecciones legacy | Ready for review |
-| [PBI-007](../../backlog/pbis/PBI-007.md) | Modelo multitenant | Ready for review |
-| [PBI-010](../../backlog/pbis/PBI-010.md) | Arquitectura objetivo | Ready for review |
-| [PBI-016](../../backlog/pbis/PBI-016.md) | Workflow documental/ADR | Ready for review |
-| [PBI-017](../../backlog/pbis/PBI-017.md) | Testing y aislamiento | Ready for review |
-| [PBI-018](../../backlog/pbis/PBI-018.md) | Security baseline | Ready for review |
-| [PBI-019](../../backlog/pbis/PBI-019.md) | Observability baseline | Ready for review |
+| PBI | Resultado esperado | Clasificación anterior | Resultado final | Remanente / hito |
+|---|---|---|---|---|
+| [PBI-001](../../backlog/pbis/PBI-001.md) | Visión y principios | Committed / Ready for review | `Done` | Métricas cuantitativas, cuando exista evidencia de producto. |
+| [PBI-002](../../backlog/pbis/PBI-002.md) | Actores/contextos | Requires product input / Draft | `Done` | Variaciones operativas por rebanada. |
+| [PBI-003](../../backlog/pbis/PBI-003.md) | Alcance/exclusiones | Requires product input / Draft | `Done` | Alcances posteriores se deciden en su gate. |
+| [PBI-004](../../backlog/pbis/PBI-004.md) | Glosario | Committed / Ready for review | `Done` | Evolución continua del vocabulario. |
+| [PBI-005](../../backlog/pbis/PBI-005.md) | Mapa de módulos | Committed / Ready for review | `Done` | Aplicación de límites en R0. |
+| [PBI-006](../../backlog/pbis/PBI-006.md) | Lecciones legacy | Committed / Ready for review | `Deferred` | Contraste adicional al planificar convivencia/migración. |
+| [PBI-007](../../backlog/pbis/PBI-007.md) | Modelo multitenant | Committed / Ready for review | `Done` | Aplicación/pruebas en H1. |
+| [PBI-008](../../backlog/pbis/PBI-008.md) | Identidad/permisos | Requires product input / Draft | `Done` | Mecanismos y composición en H1. |
+| [PBI-009](../../backlog/pbis/PBI-009.md) | Sucursal/dispositivo/PIN | Requires product input / Draft | `Done` | Aplicación y threat model en H1. |
+| [PBI-010](../../backlog/pbis/PBI-010.md) | Arquitectura objetivo | Committed / Ready for review | `Done` | Materialización por PBIs autorizados. |
+| [PBI-011](../../backlog/pbis/PBI-011.md) | Estrategia de base de datos | Candidate / Draft | `Done` | DEC-050 y persistencia ejecutable en R0. |
+| [PBI-012](../../backlog/pbis/PBI-012.md) | Backend/API | Candidate / decisión completada | `Done` | Aplicar ADR-005 y contratos derivados. |
+| [PBI-013](../../backlog/pbis/PBI-013.md) | Web/design system | Blocked | `Deferred` | Antes del primer cliente web; no bloquea R0 técnico. |
+| [PBI-014](../../backlog/pbis/PBI-014.md) | Realtime/mensajería | Candidate / Draft | `Deferred` | Cuando producto confirme canal y SLA. |
+| [PBI-015](../../backlog/pbis/PBI-015.md) | Ambientes/despliegue | Candidate / Draft | `Done` | Proveedor y release en gates posteriores. |
+| [PBI-016](../../backlog/pbis/PBI-016.md) | Workflow documental/ADR | Committed / Ready for review | `Done` | Mantenimiento continuo. |
+| [PBI-017](../../backlog/pbis/PBI-017.md) | Testing/aislamiento | Committed / Ready for review | `Superseded` | DEC-051 y sus condiciones son el contrato canónico. |
+| [PBI-018](../../backlog/pbis/PBI-018.md) | Security baseline | Committed / Ready for review | `Deferred` | Threat models y checklist DEC063-C06 en H1. |
+| [PBI-019](../../backlog/pbis/PBI-019.md) | Observability baseline | Committed / Ready for review | `Deferred` | DEC-045 a DEC-048 en H1. |
+| [PBI-020](../../backlog/pbis/PBI-020.md) | Preguntas/gates | Requires product input / Draft | `Deferred` | Registro vivo; la atestación de fuentes conocidas se revisa al cierre. |
 
-## Candidate
+## Elementos posteriores no incorporados retroactivamente
 
-| PBI | Resultado | Condición para incorporar |
-|---|---|---|
-| [PBI-011](../../backlog/pbis/PBI-011.md) | Evaluación de base de datos | Revisión conjunta de datos, seguridad y operaciones |
-| [PBI-012](../../backlog/pbis/PBI-012.md) | Evaluación backend/API | Confirmar requisitos de consumidores/API |
-| [PBI-014](../../backlog/pbis/PBI-014.md) | Realtime y mensajería | Confirmar canal inicial y requisitos de producto |
-| [PBI-015](../../backlog/pbis/PBI-015.md) | Ambientes y despliegue | Confirmar restricciones operativas |
+- [PBI-021](../../backlog/pbis/PBI-021.md): `Done`; toolchain y VC-024.
+- [PBI-022](../../backlog/pbis/PBI-022.md): `Done`; DEC-005 materializada y
+  verificada.
+- [PBI-023](../../backlog/pbis/PBI-023.md): primer PBI técnico de R0,
+  `Ready / Authorized to start`; no iniciado.
+- PBI-024 a PBI-029: descomposición H1 `Draft`/`Blocked`, descrita en el
+  [plan H1](../../backlog/R0_H1_EXECUTION_PLAN.md).
 
-## Blocked
+## Elementos diferidos
 
-| PBI | Resultado | Bloqueo |
-|---|---|---|
-| [PBI-013](../../backlog/pbis/PBI-013.md) | Estrategia web/design system | Superficies, audiencias, rendering y necesidades visuales no confirmadas |
+Los remanentes de PBI-006, PBI-013/014 y PBI-018/019/020 tienen owner por rol,
+hito y condición de salida en sus documentos. No se eliminan ni se tratan como
+cumplidos. Los contratos H1 conservan su autoridad y estado en el inventario.
 
-## Requires product input
+## Aprobación y efecto
 
-| PBI | Resultado | Entrada necesaria |
-|---|---|---|
-| [PBI-002](../../backlog/pbis/PBI-002.md) | Actores/contextos | Validación de operación real |
-| [PBI-003](../../backlog/pbis/PBI-003.md) | Alcance/exclusiones | Clasificación y primer resultado de valor |
-| [PBI-008](../../backlog/pbis/PBI-008.md) | Identidad/permisos | Acciones sensibles, membresías y autoridades |
-| [PBI-009](../../backlog/pbis/PBI-009.md) | Sucursal/dispositivo/PIN | Vinculación, turnos, supervisión y offline |
-| [PBI-020](../../backlog/pbis/PBI-020.md) | Preguntas y gates | Decisiones y aprobación explícita |
-
-## Control de integridad
-
-- Los 20 PBIs aparecen exactamente una vez en las cuatro clasificaciones.
-- Ningún ítem produce código funcional.
-- Si la capacidad no permite revisar todo con calidad, se divide la etapa y se conserva el mismo criterio de salida.
+El Responsable del Proyecto/Producto revisó esta reconciliación el 2026-07-24.
+El [dictamen final](../../reviews/sprint-00/SPRINT_00_CLOSURE.md) cerró Sprint
+00 y la [autorización de R0](../../architecture-readiness/R0_AUTHORIZATION.md)
+limitó el inicio a PBI-023. Este backlog no autoriza otros PBIs, release ni
+producción.
 
 ## Próxima revisión
 
-Planificación y review de SPRINT-00; fecha: TBD.
+Retrospectiva y seguimiento de los diferidos en sus gates.

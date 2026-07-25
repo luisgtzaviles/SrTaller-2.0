@@ -2,7 +2,8 @@
 
 ## Estado del documento
 
-**Estado:** Pendiente; plantilla para mejora del proceso.
+**Estado:** Pendiente de la sesión de cierre; no sustituye la Review ni el
+dictamen final.
 **Fecha y participantes:** TBD.
 
 ## Propósito
@@ -50,4 +51,4 @@ No crear responsables ni fechas sin acuerdo. Las acciones que cambien alcance o 
 
 ## Próxima revisión
 
-Al cierre o división de SPRINT-00; fecha: TBD.
+En la sesión de cierre posterior al dictamen independiente; fecha: TBD.

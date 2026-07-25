@@ -4,13 +4,14 @@ Este índice es la puerta de entrada a la fundación documental. Todo contenido 
 
 ## Estado del documento
 
-**Estado:** Borrador para revisión.
-**Fase:** Discovery and Architecture Foundation.
+**Estado:** Sprint 00 `Closed`.
+**Fase:** R0 `Authorized`, limitado a PBI-023.
 **Implementación funcional:** no iniciada.
 
 ## Revisión dirigida de Sprint 00
 
-El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la sesión de decisión sin cambiar estados ni autorizar implementación:
+El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) conserva la
+auditoría inicial, la remediación y el dictamen final:
 
 - [Resumen ejecutivo](reviews/sprint-00/EXECUTIVE_SUMMARY.md)
 - [Auditoría documental](reviews/sprint-00/DOCUMENT_AUDIT.md)
@@ -20,6 +21,9 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Candidatos de prototipo](reviews/sprint-00/PROTOTYPE_CANDIDATES.md)
 - [Recomendaciones de alcance](reviews/sprint-00/SCOPE_RECOMMENDATIONS.md)
 - [Evaluación de cierre](reviews/sprint-00/SPRINT_00_CLOSURE_ASSESSMENT.md)
+- [Remediación de cierre](reviews/sprint-00/SPRINT_00_CLOSURE_REMEDIATION.md)
+- [Cierre formal](reviews/sprint-00/SPRINT_00_CLOSURE.md)
+- [Autorización limitada de R0](architecture-readiness/R0_AUTHORIZATION.md)
 - [Checklist de la sesión](reviews/sprint-00/REVIEW_CHECKLIST.md)
 
 ## Producto
@@ -94,6 +98,9 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Workflow de desarrollo](delivery/DEVELOPMENT_WORKFLOW.md)
 - [Definition of Ready](delivery/DEFINITION_OF_READY.md)
 - [Definition of Done](delivery/DEFINITION_OF_DONE.md)
+- [Plantilla mínima de cambio técnico](delivery/TECHNICAL_CHANGE_TEMPLATE.md)
+- [Plantilla de manifest de evidencia](delivery/EVIDENCE_MANIFEST_TEMPLATE.json)
+- [Schema de manifest de evidencia](delivery/evidence-manifest.schema.json)
 - [Plantilla de PBI](delivery/PBI_TEMPLATE.md)
 - [Plantilla de bug](delivery/BUG_TEMPLATE.md)
 - [Plantilla de tarea técnica](delivery/TECHNICAL_TASK_TEMPLATE.md)
@@ -110,6 +117,7 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Product backlog](backlog/PRODUCT_BACKLOG.md)
 - [Priorización](backlog/PRIORITIZATION_MODEL.md)
 - [Dependencias](backlog/DEPENDENCY_MAP.md)
+- [Plan de ejecución H1 para R0](backlog/R0_H1_EXECUTION_PLAN.md)
 - [Índice de PBIs](backlog/pbis/README.md)
 - [Guía de sprints](sprints/README.md)
 - [Objetivo de SPRINT-00](sprints/sprint-00/SPRINT_GOAL.md)
@@ -118,7 +126,11 @@ El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) prepara la s
 - [Review](sprints/sprint-00/REVIEW.md)
 - [Retrospectiva](sprints/sprint-00/RETROSPECTIVE.md)
 
-Los archivos individuales PBI-001 a PBI-021 se encuentran enlazados desde el [índice de PBIs](backlog/pbis/README.md). PBI-021 es el primer PBI técnico posterior autorizado por DEC-004; permanece sin ejecutar y no modifica retrospectivamente SPRINT-00.
+Los archivos individuales PBI-001 a PBI-029 se encuentran enlazados desde el
+[índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
+PBI-023 es el primer PBI de R0 y está `Ready / Authorized to start`, no
+iniciado. La autorización no alcanza PBI-024–PBI-029 ni modifica
+retrospectivamente Sprint 00.
 
 ## Calidad
 

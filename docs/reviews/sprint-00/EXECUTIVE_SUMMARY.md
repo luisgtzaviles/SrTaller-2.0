@@ -2,7 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** Preparado para revisión humana.
+- **Estado:** Fotografía histórica; para el estado vigente consultar la
+  [evaluación de cierre](SPRINT_00_CLOSURE_ASSESSMENT.md) y la
+  [remediación](SPRINT_00_CLOSURE_REMEDIATION.md).
 - **Naturaleza:** Evaluación y recomendación; no es acta de aprobación.
 - **Estimación cualitativa:** **Partially ready**.
 

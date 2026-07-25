@@ -167,17 +167,23 @@ Además del alcance aprobado, todos estos criterios siguen siendo obligatorios:
 
 - [x] ADR-001 aceptado con TypeScript y Node.js `24.x`, límites y gobierno explícitos;
 - [x] ADR-003 y ADR-009 aceptados; motor y repositorio único con workspaces bajo demanda definidos;
-- [ ] ADR-005 y la selección de DEC-004 aceptados; materialización del package manager/lockfile y evidencia final de la baseline ejecutable pendientes;
-- [ ] estructura inicial y reglas de dependencia de ADR-002 acordadas;
-- [ ] ownership de repositorios y datos definido para la fundación;
-- [ ] estrategia de errores y contratos mínimos de aplicación definidos;
-- [ ] estrategia de pruebas y Definition of Done aprobadas;
-- [ ] PBI de R0 trazado a los escenarios aprobados;
-- [ ] no existen decisiones H0 abiertas;
-- [ ] el cambio no introduce módulos futuros vacíos ni decisiones H1 implícitas;
-- [ ] el Responsable de Producto autoriza expresamente iniciar implementación.
+- [x] ADR-005 y DEC-004 aceptados; package manager/lockfile materializados y baseline ejecutable verificada por VC-024;
+- [x] estructura inicial y reglas de dependencia acordadas en DEC-005;
+- [x] estructura y enforcement local de DEC-005 materializados y formalmente verificados; PBI-022 `Done`;
+- [x] ownership de repositorios y datos aceptado para la fundación mediante [DEC-049](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md); DEC049-C01 a C08 permanecen pendientes para materialización;
+- [x] estrategia de errores y contratos mínimos de aplicación definidos por DEC-044;
+- [x] estrategia de pruebas y Definition of Done aprobadas por DEC-051/063; sus condiciones permanecen pendientes;
+- [x] PBI de R0 trazado a los escenarios aprobados mediante [PBI-023](../../backlog/pbis/PBI-023.md);
+- [x] no existen decisiones H0 abiertas; H0 está completo en 9/0;
+- [x] el cambio no introduce módulos futuros vacíos ni decisiones H1 implícitas; los 24 contratos están trazados en el [plan H1](../../backlog/R0_H1_EXECUTION_PLAN.md);
+- [x] el Responsable de Producto registró autorización explícita condicional en la [Review](../../sprints/sprint-00/REVIEW.md#decisión-de-producto-y-b-21);
+- [x] Sprint 00 quedó
+  [cerrado por dictamen independiente](../../reviews/sprint-00/SPRINT_00_CLOSURE.md);
+- [x] la [revisión final](../R0_AUTHORIZATION.md) confirmó DoR y activó la
+  autorización condicional exclusivamente para PBI-023.
 
-Este gate continúa cerrado. La aprobación de `DEC-002` y `DEC-062` no autoriza código.
+Este gate está abierto exclusivamente para PBI-023. No abre PBI-024–PBI-029,
+no satisface H1 por anticipado y no equivale a aceptación de R0.
 
 ### R0 listo para programación
 

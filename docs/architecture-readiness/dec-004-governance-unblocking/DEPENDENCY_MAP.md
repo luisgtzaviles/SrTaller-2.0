@@ -8,13 +8,13 @@ Este documento analiza dependencias; no acepta, cierra ni cambia el estado de ni
 
 | Decisión | Estado oficial | Alcance pendiente | Dependencias entrantes | Qué bloquea | ¿Resolución independiente? |
 | --- | --- | --- | --- | --- | --- |
-| `DEC-004` | Abierta/parcial | Package manager y versión, lockfile, scripts/supply chain, pinning, ESM/CommonJS, compilación TypeScript, compatibilidad integrada, CI Linux y reproducibilidad | `DEC-001`, `DEC-002`; ADR-001/003/005/009 aceptados | Toolchain reproducible; primer cambio ejecutable junto con los demás H0 | Parcialmente: la selección puede resolverse primero; la evidencia final necesita un gate mínimo de `DEC-051` |
-| `DEC-005` | Abierta; parcialmente resuelta | Agrupación física inicial, ownership, APIs internas, imports permitidos, excepciones y enforcement | `DEC-001`, `DEC-002`; ADR-002/005/009 | Estructura de producto, `DEC-049`, pruebas arquitectónicas | No por completo; debe coordinarse con `DEC-049` y verificarse mediante `DEC-051` |
-| `DEC-044` | Propuesta | Taxonomía, resultados seguros, mapeo entre capas, exposición externa, retryability y pruebas | Stack y casos de uso; ADR-004/005; `DEC-062` | Logs/correlación/observabilidad y contrato seguro de R0 | Sí en semántica; su gate se integra con `DEC-051/063` |
-| `DEC-049` | Abierta; parcialmente resuelta | Puertos propietarios, repositorios tenant-aware, ownership de tablas, transacciones, accesos administrativos y herramienta de acceso a PostgreSQL | ADR-002/003/004/005/009; `DEC-005`; `DEC-007` materialmente respondida por ADR-004 | Persistencia real, `DEC-050`, aislamiento integrado y pruebas de repositorio | No; necesita la agrupación de `DEC-005` y la baseline tecnológica de `DEC-004` |
+| `DEC-004` | `Accepted — Selection Approved / Evidence Pending` | Ratificación Linux nativa, VC-024 y revisión de evidencia final | `DEC-001`, `DEC-002`; ADR-001/003/005/009 aceptados | Cierre de evidencia de toolchain y primer cambio ejecutable junto con los demás H0 | La selección está satisfecha; la evidencia final necesita `DEC-051` para VC-024 |
+| `DEC-005` | `Accepted — Materialized / Formally Verified` | Ninguno dentro de DEC005-C01 a C05; PBI-022 está `Done` | `DEC-001`, `DEC-002`; ADR-002/005/009; selección DEC-004: satisfechas | Ya no bloquea `DEC-049`; sus reglas alimentan persistencia y pruebas | Sí; cerrada por la sexta verificación formal `PASS` |
+| [`DEC-044`](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md) | `Accepted` — 2026-07-24; Responsable del Proyecto | DEC044-C01 a C08 vigentes y pendientes para futura materialización | Stack, ADR-004/005, DEC-005/049/062: satisfechas | Ya no bloquea H0; sus contratos alimentan DEC-051/063, logs/correlación y la futura materialización | Sí; decisión cerrada, materialización no autorizada |
+| [`DEC-049`](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) | `Accepted` — 2026-07-24; Responsable del Proyecto | DEC049-C01 a C08 vigentes y no cumplidas para futura materialización | ADR-002/003/004/005/009; selección `DEC-004`; `DEC-005` verificada; `DEC-007` materialmente respondida por ADR-004: satisfechas | Ya no bloquea H0; alimenta `DEC-050`, aislamiento integrado y pruebas de repositorio | Sí; decisión cerrada, materialización no autorizada |
 | `DEC-050` | Abierta; principios parciales aceptados | Migrador, naming, locking, ejecución, compatibilidad, rollback/roll-forward y evidencia | ADR-003/004; `DEC-004`, `DEC-049`; estrategia de pruebas aplicable | Migraciones reproducibles, fixtures e integración PostgreSQL | No; debe seguir a `DEC-049` y coordinarse con `DEC-051` |
-| `DEC-051` | Propuesta | Runner, capas, gates, cobertura, checker arquitectónico, integración PostgreSQL, aislamiento, CI y cuarentena | `DEC-002`, `DEC-062`, riesgos; ADR-004/005; toolchain de `DEC-004`; límites de `DEC-005/049` | Evidencia de CI para DEC-004, pruebas de R0, `DEC-052` y `DEC-063` | No completamente; el contrato mínimo puede prepararse con `DEC-004`, pero el gate final necesita estructura y persistencia decididas |
-| `DEC-063` | Propuesta | Subconjuntos obligatorios por cambio, autoridades, umbrales, excepciones y evidencia | `DEC-051`, `DEC-062`; contratos de `DEC-044` | Declaración verificable de terminado y liberación del primer cambio | No; debe cerrar después de `DEC-051` y usar `DEC-062` como contrato de producto |
+| [`DEC-051`](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) | `Accepted` — 2026-07-24; C01 a C10 vigentes y pendientes | Pipeline por riesgo, gates, portafolio, PostgreSQL, aislamiento, errores, CI, evidencia, flakiness y protección de `main` aceptados; falta materialización | `DEC-002`, `DEC-062`, riesgos; ADR-004/005; toolchain de `DEC-004`; contratos aceptados `DEC-005/044/049`: satisfechas | Evidencia de CI para DEC-004, pruebas de R0, `DEC-052` y `DEC-063` | Decisión cerrada; materialización y VC-024 requieren autorización/evidencia |
+| [`DEC-063`](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) | `Accepted with conditions` — 2026-07-24; C01 a C08 `Pending` | Contrato definido; faltan templates, riesgo, manifest, CI y checklists especializados | `DEC-004/005/044/049/051`; ADR-004/010–013: satisfechas para la decisión | DoD verificable y prerrequisitos de VC-024 | Decisión cerrada; materialización requiere autorización |
 
 ## Dependencias aceptadas que ya no deben reabrirse
 
@@ -58,18 +58,18 @@ Las relaciones distinguen una dependencia normativa de una dependencia de eviden
 ```mermaid
 flowchart TD
     A1[ADR-001/003/005/009 Accepted] --> D4S[DEC-004: selección de toolchain]
-    D4S --> D5[DEC-005: organización]
-    D4S --> D44[DEC-044: errores]
-    D4S --> D49[DEC-049: repositorios]
+    D4S --> D5[DEC-005: formalmente verificada]
+    D4S --> D44[DEC-044: Accepted; C01-C08 pendientes]
+    D4S --> D49[DEC-049: repositorios Accepted]
     D5 --> D49
-    D5 --> D51[DEC-051: pruebas y gates]
+    D5 --> D51[DEC-051: Accepted; C01-C10 pendientes]
     D49 --> D50[DEC-050: migraciones]
     D49 --> D51
     D44 --> D51
     D50 --> D51
     R0[DEC-062 cerrada: contrato R0] --> D44
     R0 --> D51
-    D44 --> D63[DEC-063: Definition of Done]
+    D44 --> D63[DEC-063: Accepted; C01-C08 Pending]
     D51 --> D63
     D51 --> D4E[DEC-004: CI Linux y reproducibilidad]
     D4S --> D4E
@@ -93,12 +93,14 @@ Son directos:
 
 ### Para construir la fundación ejecutable R0 que motivó el intento anterior
 
-Además son bloqueantes:
+Además son o fueron dependencias de la fundación:
 
-- `DEC-005` y `DEC-049`, para estructura y persistencia tenant-aware;
-- `DEC-044`, para resultados seguros;
+- `DEC-005` y `DEC-049`, ya satisfechas para estructura y contrato de persistencia tenant-aware; las ocho condiciones de DEC-049 siguen pendientes;
+- `DEC-044`, ya aceptada, para resultados seguros; DEC044-C01 a C08 siguen
+  pendientes;
 - `DEC-050`, para migraciones reproducibles;
-- `DEC-051` y `DEC-063`, para evidencia y criterio de terminado;
+- `DEC-051` y `DEC-063`, aceptadas pero no materializadas, para evidencia y
+  criterio de terminado;
 - mecanismos H1 de estación, PIN, sesión y revocación;
 - composición concreta de roles/capacidades y clasificación de acciones;
 - threat model, secretos, auditoría mínima y autorización organizacional.
@@ -107,4 +109,15 @@ Por tanto, **cerrar DEC-004 no equivale a declarar R0 programable o completo**.
 
 ## Lectura de la ruta crítica
 
-La dependencia real empieza por el remanente de `DEC-004`, no porque tenga el número más bajo, sino porque fija las herramientas que `DEC-005`, `DEC-049` y `DEC-051` deben organizar y verificar. Después, `DEC-005` y `DEC-049` forman el núcleo estructural; `DEC-044` puede trabajarse en paralelo; `DEC-050` sigue a la decisión de acceso a datos; `DEC-051` consolida los gates; `DEC-063` consume esos gates. La evidencia Linux y de reproducibilidad vuelve finalmente a DEC-004 para recomendar su cierre.
+La selección de `DEC-004`, la organización de `DEC-005`,
+[DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md) y
+[DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) y
+[DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) y
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) ya
+están satisfechas como decisiones. La sexta verificación formal cerró también
+PBI-022; DEC-044, DEC-049, DEC-051 y DEC-063 fueron aceptadas el 2026-07-24
+con sus condiciones pendientes. La ruta crítica H0 activa es VC-024, que
+consume prerrequisitos materializados de DEC-051/063. `DEC-050` puede
+prepararse como H1 y
+coordinar su evidencia con DEC-051. La evidencia Linux y de reproducibilidad
+vuelve finalmente a DEC-004 para recomendar el cierre de su evidencia.

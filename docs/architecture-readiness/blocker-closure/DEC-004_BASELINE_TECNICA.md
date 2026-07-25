@@ -5,14 +5,20 @@
 - **Identificador:** DEC-004.
 - **Título:** Contrato de toolchain reproducible para la aplicación backend inicial.
 - **Estado anterior:** `Abierta — Formal Review Complete / Approval Pending`.
-- **Estado actual:** `Accepted — Selection Approved / Evidence Pending`.
+- **Estado actual:** `Accepted — Evidence Verified / VC-024 PASS`.
 - **Fecha de decisión:** 2026-07-22.
 - **Autoridad decisora:** Luis Antonio Gutiérrez Avilés, responsable del proyecto, mediante aprobación conjunta desde las funciones de Arquitectura e Ingeniería.
 - **Vistos buenos:** Seguridad, Operaciones y Calidad, otorgados por la misma autoridad efectiva desde esas perspectivas.
 - **Evidencia de aprobación:** dictamen explícito del responsable del proyecto, registrado en la [revisión formal](../../decisions/dec-004-toolchain-contract/FORMAL_REVIEW.md).
-- **Efecto:** acepta exclusivamente la selección arquitectónica y autoriza el PBI de materialización/verificación; no declara implementación ni reproducibilidad demostrada.
+- **Efecto:** acepta la selección arquitectónica y registra la evidencia
+  reproducible de [VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md);
+  no autoriza funcionalidad de R0.
 
-`Accepted` se limita a la selección. El sufijo `Selection Approved / Evidence Pending` registra que la implementación, ejecución y evidencia autoritativa siguen abiertas. La aprobación cumple la regla del [registro de ADR](../../decisions/README.md) porque identifica autoridad, fecha y alcance; no permite usar `Implemented`, `Verified`, `Complete`, `Closed` ni `Reproducibility Proven` antes de ejecutar satisfactoriamente el contrato.
+La selección fue aceptada primero con evidencia pendiente. El 2026-07-24,
+VC-024 verificó dos ejecuciones Linux independientes y equivalentes sobre el
+commit candidato exacto, cerrando la evidencia autoritativa. Esta verificación
+no permite usar `R0 authorized`, `Sprint 00 closed` ni afirmar cumplimiento de
+condiciones H1.
 
 ## Contexto
 
@@ -54,7 +60,7 @@ DEC-004 no decide ni cierra:
 - `DEC-044`: taxonomía y adaptación segura de errores;
 - `DEC-049`: driver/ORM/query builder, repositories, transacciones y pool;
 - `DEC-050`: herramienta y lifecycle de migraciones;
-- `DEC-051`: test runner, suites, cobertura, proveedor y gates generales de CI;
+- `DEC-051`: estrategia, suites, cobertura y gates generales aceptados; proveedor y materialización pendientes;
 - `DEC-063`: Definition of Done, excepciones y aprobaciones por cambio;
 - ADR-007: contenedores, empaquetado, promoción o plataforma de despliegue;
 - PIN, sesiones, estación, roles, capacidades, datos, SQL o funcionalidad de R0;
@@ -84,7 +90,7 @@ La autoridad efectiva es **Luis Antonio Gutiérrez Avilés**, responsable del pr
 | Producción | JavaScript compilado / TypeScript directo | Sólo JavaScript compilado desde `dist/` | Artefacto inspeccionable y sin loader/transpilación en startup |
 | Scripts de dependencias | Bloqueo total / allowlist / ejecución por defecto | Bloqueo por defecto con allowlist explícita | Reduce supply-chain risk sin impedir dependencias justificadas |
 | Plataforma autoritativa | Linux glibc / macOS / otra | Linux x86_64 con glibc | Filesystem y runtime comparables; macOS no prueba el destino autoritativo |
-| Estado | Accepted / Accepted con evidencia pendiente / abierto | `Accepted — Selection Approved / Evidence Pending` | La autoridad aprobó la selección y separó expresamente la evidencia técnica pendiente |
+| Estado | Accepted / evidencia verificada / abierto | `Accepted — Evidence Verified / VC-024 PASS` | La autoridad aprobó la selección y la evidencia Linux fue revisada formalmente |
 
 Estas resoluciones quedaron aceptadas el 2026-07-22 por la autoridad registrada. La aceptación es normativa para el PBI autorizado, pero no constituye evidencia de que los mecanismos funcionen.
 
@@ -151,7 +157,7 @@ Estas resoluciones quedaron aceptadas el 2026-07-22 por la autoridad registrada.
 | `clean` | Elimina sólo salidas generadas conocidas, inicialmente `dist/` |
 | `typecheck` | Ejecuta TypeScript local con `--noEmit` |
 | `build` | Limpia y compila únicamente a `dist/` |
-| `test` | Nombre reservado; DEC-051 decidirá runner, suites y cobertura |
+| `test` | Nombre reservado; DEC-051 acepta `node:test`, suites por riesgo y cobertura multidimensional |
 | `start` | Ejecuta el entrypoint JavaScript compilado |
 | `dev` | Compila en watch y reinicia JavaScript emitido |
 | `verify` | Compone toolchain, clean, typecheck, build y test sin instalar ni corregir archivos |
@@ -163,7 +169,7 @@ Los comandos deberán ser no interactivos, propagar exit codes, funcionar fuera 
 - Evidencia autoritativa inicial: Linux x86_64 con glibc, filesystem sensible a mayúsculas, Node.js `24.18.0` y pnpm `11.15.1`.
 - macOS arm64/x64 estará permitido para desarrollo con los mismos pins, pero un PASS sólo en macOS será no concluyente.
 - musl/Alpine, Linux arm64, Windows o un contenedor requerirán revalidación antes de declararse soportados.
-- DEC-004 exige Linux y la evidencia; DEC-051 elegirá proveedor, runner, suites y gate general. Esto no acepta GitHub Actions, Docker ni ADR-007.
+- DEC-004 exige Linux y la evidencia; DEC-051 acepta runner, suites y gate general sin elegir proveedor. Esto no acepta GitHub Actions, Docker ni ADR-007.
 
 ## Consecuencias positivas
 
@@ -203,7 +209,11 @@ La autoridad acepta estos riesgos exclusivamente para avanzar a materialización
 - ADR-003 conserva PostgreSQL `18.x`; DEC-004 no elige acceso a datos ni migrador.
 - ADR-005 conserva NestJS `11.x`, Express, REST mínima y fronteras; el spike no es scaffold.
 - ADR-007 permanece `Proposed`; Linux autoritativo no implica contenedores.
-- DEC-005/044/049/050/051/063 conservan íntegramente sus alcances y estados.
+- DEC-005/044/049/050/051/063 conservan íntegramente sus alcances. DEC-005 fue
+  materializada y formalmente verificada después; [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md)
+  y [DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md)
+  fueron aceptadas el 2026-07-24 con condiciones pendientes; las demás
+  conservan sus estados propios.
 
 ## Obligaciones posteriores
 
@@ -285,4 +295,6 @@ Un cambio incompatible requerirá revisión por la autoridad aplicable; no se re
 
 ## Próxima revisión
 
-Ejecutar PBI-021 en una tarea separada, limitado al contrato aprobado, y conservar DEC-004 en `Evidence Pending` hasta ejecutar y revisar satisfactoriamente VC-001 a VC-024 y la evidencia Linux.
+Conservar la evidencia de VC-024 y resolver el gate organizacional y H1 antes
+de solicitar autorización funcional de R0. El cierre de la evidencia DEC-004
+no cierra Sprint 00.

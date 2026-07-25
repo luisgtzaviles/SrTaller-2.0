@@ -9,7 +9,7 @@ Estas preguntas requieren autoridad de Producto u Operaciones. Las filas marcada
 | ID | Pregunta | Decisiones | Bloquea |
 | --- | --- | --- | --- |
 | PO-001 | **Respondida por decisión de Producto del 2026-07-21:** R0 es una fundación ejecutable multi-tenant, sin Reparaciones ni recepción; resultado, inclusiones y exclusiones están en sus criterios de salida | DEC-002 | Cerrada para H0; implementación pendiente |
-| PO-002 | **Respondida para el contrato de aceptación de R0 el 2026-07-21:** escenarios felices, negativos y de denegación y autoridad final quedaron aprobados; `DEC-063` sigue abierta | DEC-062, DEC-063 | DEC-062 cerrada; Definition of Done pendiente |
+| PO-002 | **Respondida para el contrato de aceptación de R0 el 2026-07-21:** escenarios felices, negativos y de denegación y autoridad final quedaron aprobados; DEC-063 fue aceptada el 2026-07-24 | DEC-062, DEC-063 | Cerrada para decisión; ejecución/evidencia pendientes |
 | PO-003 | **Respondida por ADR-004:** clasificación SaaS/tenant/sucursal aceptada; falta aplicar y probar | DEC-007, DEC-008 | H1 de evidencia |
 | PO-004 | **Respondida para usuario ordinario por ADR-004/011:** pertenece exactamente a un tenant y su identidad no depende de sucursal, estación, sesión o PIN; correlación global queda diferida | DEC-008, DEC-013 | H1 de evidencia |
 | PO-005 | **Respondida por ADR-010/012:** rota sin cuenta duplicada y puede tener varios roles tenant-scoped; restricciones de asignación por sucursal son explícitas | DEC-011, DEC-017, DEC-018 | H1 de evidencia/composición |

@@ -2,10 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** Preparado para revisión humana.
-- **Naturaleza:** Instrumento de análisis y facilitación; no aprueba producto, arquitectura, PBIs, ADRs ni cierre de sprint.
-- **Fuente:** Fundación documental de Sprint 00 auditada el 2026-07-13.
-- **Autoridad pendiente:** Product Owner y responsables técnicos, de seguridad, calidad y operación según cada gate.
+- **Estado:** Sprint 00 `Closed`.
+- **Naturaleza:** el material inicial conserva su historia; el
+  [dictamen final](./SPRINT_00_CLOSURE.md) es la fuente vigente de cierre.
+- **Fuente:** fundación auditada el 2026-07-13 y remediación del 2026-07-24.
+- **Autoridad vigente:** Responsable del Proyecto actuando también como
+  Responsable de Producto; dictamen final independiente emitido.
 
 ## Propósito
 
@@ -21,20 +23,28 @@ Este paquete convierte la fundación documental existente en una secuencia de de
 6. [Matriz de preparación de ADRs](./ADR_READINESS_MATRIX.md)
 7. [Candidatos de prototipo](./PROTOTYPE_CANDIDATES.md)
 8. [Evaluación de cierre de Sprint 00](./SPRINT_00_CLOSURE_ASSESSMENT.md)
-9. [Checklist para la sesión](./REVIEW_CHECKLIST.md)
+9. [Remediación del cierre](./SPRINT_00_CLOSURE_REMEDIATION.md)
+10. [Cierre formal](./SPRINT_00_CLOSURE.md)
+11. [Checklist histórico para la sesión](./REVIEW_CHECKLIST.md)
 
 ## Reglas de uso
 
-- Una recomendación de este paquete sigue siendo una **propuesta** hasta que su autoridad la apruebe y se registre la evidencia.
+- Las evaluaciones iniciales son fotografías históricas; la
+  [evaluación vigente](./SPRINT_00_CLOSURE_ASSESSMENT.md) prevalece para el
+  próximo gate.
 - Las respuestas se registran primero contra su `QUESTION-###` original. Los sufijos `.a`, `.b`, etc. sólo separan decisiones durante la revisión.
 - `Ready for review` o `Ready for technical validation` no equivale a `Accepted`, `Done` ni autorización de implementación.
 - Ningún spike está autorizado por aparecer en la lista; cada uno requiere dependencias resueltas y decisión explícita.
 - Las decisiones resultantes deben actualizar sus documentos fuente, ADRs y trazabilidad. Este paquete no los sustituye.
-- Sprint 00 permanece abierto y no existe Sprint 01 en este repositorio.
+- Sprint 00 está `Closed`; R0 tiene una
+  [autorización limitada](../../architecture-readiness/R0_AUTHORIZATION.md)
+  exclusivamente para PBI-023.
 
 ## Resultado esperado de la sesión
 
-La sesión debe producir respuestas o follow-ups explícitos para los gates de producto y operación, una selección de alcance provisional, un orden de revisión técnica y una decisión registrada sobre la fundación documental y los prototipos. No es necesario aceptar los nueve ADRs en una sola sesión.
+La revisión final confirmó la remediación, aceptó como diferido gobernado el
+remanente del criterio 14, verificó el DoR de PBI-023 y emitió por separado el
+cierre de Sprint 00 y la autorización limitada de R0.
 
 ## Fuentes principales
 
@@ -48,4 +58,4 @@ La sesión debe producir respuestas o follow-ups explícitos para los gates de p
 
 ## Próxima revisión
 
-Al concluir cada sesión de decisión o cuando cambie una pregunta, ADR, PBI o criterio de salida relacionado. **Fecha: TBD.**
+Seguimiento de PBI-020, retrospectiva y gates de PBI-023.

@@ -326,7 +326,7 @@ Requiere evidencia conforme a ADR-002 sobre escalado, resiliencia, seguridad, op
 
 ## Relación con DEC-005
 
-ADR-009 no define estructura física, carpetas, capas, nombres, ubicación de módulos, bootstrap, convenciones de archivos, alias ni enforcement concreto. Todo ello permanece pendiente de `DEC-005`.
+ADR-009 no define estructura física, carpetas, capas, nombres, ubicación de módulos, bootstrap, convenciones de archivos, alias ni enforcement concreto. Todo ello fue definido, materializado y formalmente verificado después por `DEC-005`; ADR-009 conserva únicamente su autoridad de topología de repositorio.
 
 ## Relación con DEC-049
 
@@ -354,7 +354,7 @@ Posteriormente, el 2026-07-22, `DEC-004` aceptó como selección:
 
 La materialización ejecutable, la primera ejecución real sobre Linux, VC-001 a VC-024 y la reproducibilidad final entre Node.js 24.x, NestJS 11.x y PostgreSQL 18.x permanecen como evidencia pendiente.
 
-La aceptación de este ADR no cerró por sí sola `DEC-004`, `DEC-005` ni `DEC-049`. La aceptación posterior de la selección de DEC-004 autoriza únicamente su PBI técnico de materialización y verificación; no cierra DEC-005 ni DEC-049, no autoriza scaffolding funcional y no desbloquea el primer cambio funcional de R0.
+La aceptación de este ADR no cerró por sí sola `DEC-004`, `DEC-005` ni `DEC-049`. Posteriormente DEC-004 aceptó su selección y DEC-005 quedó materializada y formalmente verificada por PBI-022; DEC-049 continúa `Ready for decision`. Ninguno de esos cierres autoriza scaffolding funcional ni desbloquea por sí solo el primer cambio funcional de R0.
 
 ## Consecuencias positivas
 

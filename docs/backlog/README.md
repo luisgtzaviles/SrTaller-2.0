@@ -1,11 +1,18 @@
 # Gestión del backlog
 
-El backlog convierte objetivos de producto en resultados verificables sin confundir intención con compromiso. Durante SPRINT-00, PBI-001 a PBI-020 producen documentación, decisiones o evidencia de descubrimiento y ninguno autoriza implementación. [PBI-021](pbis/PBI-021.md) fue creado posteriormente como trabajo técnico expresamente autorizado por DEC-004; permanece sin ejecutar y `Unassigned`.
+El backlog convierte objetivos de producto en resultados verificables sin
+confundir intención con compromiso. PBI-001–PBI-020 conservan su historia de
+Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
+[PBI-022](pbis/PBI-022.md) están `Done` después de sus verificaciones formales.
+[PBI-023](pbis/PBI-023.md) es el primer PBI de R0 y está
+`Ready / Authorized to start`, no iniciado; PBI-024–PBI-029 descomponen el
+resto de H1 y no están autorizados.
 
 ## Estado del documento
 
-**Estado:** Propuesta.
-**Orden final y responsables:** pendientes de aprobación del Product Owner.
+**Estado:** Reconciliado tras el cierre de Sprint 00.
+**Orden R0 y ejecución:** PBI-023 autorizado con alcance limitado; owners
+definidos por rol.
 
 ## Estructura
 
@@ -33,7 +40,11 @@ Un identificador no se reutiliza. Las referencias pueden repetirse; la definici�
 
 ## Estados propuestos de PBI
 
-`Draft` → `Ready for review` → `Ready` → `In progress` → `In review` → `Done`. También se permiten `Blocked`, `Deferred` y `Cancelled` con una razón explícita. Sólo un PBI que satisfaga la [Definition of Ready](../delivery/DEFINITION_OF_READY.md) puede quedar `Ready` para implementación.
+`Draft` → `Ready for review` → `Ready` → `In progress` → `In review` →
+`Done`. También se permiten `Blocked`, `Deferred`, `Superseded` y `Cancelled`
+con una razón explícita. Sólo un PBI que satisfaga la
+[Definition of Ready](../delivery/DEFINITION_OF_READY.md) puede quedar `Ready`
+para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Reglas de mantenimiento
 
@@ -45,4 +56,4 @@ Un identificador no se reutiliza. Las referencias pueden repetirse; la definici�
 
 ## Próxima revisión
 
-En el refinamiento documental de SPRINT-00; fecha: TBD.
+Antes del compromiso de PBI-023 y al refinar PBI-024–PBI-029.

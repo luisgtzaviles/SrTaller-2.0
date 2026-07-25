@@ -2,25 +2,34 @@
 
 ## Regla de conteo
 
-Cada decisión tiene un hito primario para evitar doble conteo. Una fila puede imponer una condición secundaria posterior, indicada en la matriz maestra. `Cerrada` o `Aceptada` significa que ya no bloquea; los estados parciales continúan abiertos hasta aportar toda la evidencia del hito.
+Cada decisión tiene un hito primario para evitar doble conteo. Una fila puede imponer una condición secundaria posterior, indicada en la matriz maestra. `Cerrada`, una aceptación sin remanente o `Materialized / Formally Verified` significa que ya no bloquea; `Selection Approved / Evidence Pending` y `Selection Approved / Materialization Pending` continúan abiertas para el hito hasta aportar su evidencia.
 
 ## Distribución
 
 | Hito primario | Decisiones evaluadas | Cerradas o aceptadas | Abiertas | Resultado |
 | --- | ---: | ---: | ---: | --- |
-| H0 — Primer cambio de implementación de R0 | 9 | 3 | 6 | Implementación ejecutable bloqueada |
+| H0 — Primer cambio de implementación de R0 | 9 | 9 | 0 | Complete |
 | H1 — R0 | 24 | 0 | 24 | R0 no programable |
 | H2 — R1 | 21 | 1 | 20 | R1 no programable |
 | H3 — Piloto | 9 | 0 | 9 | Piloto bloqueado |
 | H4 — Producción | 6 | 0 | 6 | Producción bloqueada |
 | H5 — Diferible | 13 | 13 diferidas | 0 para MVP | No bloquean MVP |
-| **Total** | **82** | **17** | **65** | Preparado con bloqueantes |
+| **Total** | **82** | **22** | **60** | H0 completo; H1 pendiente; B-21 con efectividad condicionada a revisión final |
 
 ## H0 — Antes del primer cambio de implementación de R0
 
 `DEC-001`, `DEC-002`, `DEC-004`, `DEC-005`, `DEC-044`, `DEC-049`, `DEC-051`, `DEC-062` y `DEC-063`.
 
-ADR-002 cierra `DEC-001`; la decisión del Responsable de Producto del 2026-07-21 cierra `DEC-002` y `DEC-062`. Las seis decisiones restantes impiden crear una base ejecutable que convierta propuestas en convenciones permanentes.
+ADR-002 cierra `DEC-001`; la decisión del Responsable de Producto del
+2026-07-21 cierra `DEC-002` y `DEC-062`; la sexta reverificación formal cierra
+el remanente H0 de DEC-005 el 2026-07-23; y el Responsable del Proyecto acepta
+DEC-044, DEC-049, DEC-051 y
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) el
+2026-07-24. La
+[verificación formal de VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+obtuvo `PASS` ese mismo día y cerró el remanente de DEC-004. DEC051-C01/C07/C09
+y DEC063-C01/C03/C04 quedan `Satisfied`; las demás condiciones permanecen
+`Pending`. H0 queda completo en 9 cerrados y 0 abiertos, sin autorizar R0.
 
 ## H1 — Antes de programar R0
 
@@ -58,8 +67,8 @@ Se activan sólo por un caso de negocio, riesgo o métrica real. No forman un ba
 | --- | --- | --- |
 | Documentar y diseñar ADRs | Permitido | Trabajo reversible y no ejecutable |
 | Preparar spikes | Permitido sólo como diseño | Su ejecución necesita autorización |
-| Scaffolding reversible | No autorizado | H0 y gate organizacional abiertos |
-| Fundación ejecutable | Bloqueada | H0 y H1 abiertos |
+| Fundación PBI-023 | Autorizada; no iniciada | Estimación/compromiso y gates internos por trigger |
+| Fundación R0 restante | Bloqueada | H1 restante y PBIs sin Ready/autorización |
 | Código de negocio R1 | Bloqueado | R0 no demostrado y H2 abierto |
 | Piloto | Bloqueado | R1–R5 y H3 abiertos |
 | Producción | Bloqueada | H4 abierto |

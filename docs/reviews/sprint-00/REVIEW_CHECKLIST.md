@@ -2,10 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador para sesión con el Product Owner.
+- **Estado:** Fotografía histórica de la sesión propuesta; sustituida como
+  checklist vigente por la [Review](../../sprints/sprint-00/REVIEW.md), la
+  [evaluación de cierre](SPRINT_00_CLOSURE_ASSESSMENT.md) y la
+  [remediación](SPRINT_00_CLOSURE_REMEDIATION.md).
 - **Propósito:** Recorrer en orden las decisiones de producto, operación y arquitectura necesarias para evaluar la fundación documental.
 - **Efecto:** Completar este checklist registra la sesión; no cierra automáticamente SPRINT-00, no cambia ADRs a `Accepted` y no autoriza prototipos ni implementación.
-- **Fecha, participantes y facilitador:** TBD.
+- **Fecha, participantes y facilitador:** permanecen `TBD` en esta fotografía;
+  no se inventan datos retroactivos.
 
 ## Reglas de la sesión
 

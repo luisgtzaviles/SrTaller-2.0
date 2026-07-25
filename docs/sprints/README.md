@@ -4,7 +4,7 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 
 ## Estado del documento
 
-**Estado:** Propuesta.
+**Estado:** Sprint 00 `Closed`.
 **Sprint documentado:** únicamente [SPRINT-00](sprint-00/SPRINT_GOAL.md).
 **Sprints de implementación:** ninguno creado.
 
@@ -19,7 +19,9 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 
 ## SPRINT-00
 
-SPRINT-00 funciona como etapa de fundación documental y puede dividirse si el alcance supera una iteración razonable. Sus documentos son:
+SPRINT-00 funciona como etapa de fundación documental. Fue ejecutado,
+reconciliado y [cerrado formalmente](../reviews/sprint-00/SPRINT_00_CLOSURE.md).
+Sus documentos son:
 
 - [Objetivo y criterio de salida](sprint-00/SPRINT_GOAL.md)
 - [Sprint Backlog](sprint-00/SPRINT_BACKLOG.md)
@@ -29,4 +31,4 @@ SPRINT-00 funciona como etapa de fundación documental y puede dividirse si el a
 
 ## Próxima revisión
 
-Al aprobar o dividir SPRINT-00; fecha: TBD.
+En la retrospectiva y al revisar los diferidos.

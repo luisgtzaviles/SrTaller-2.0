@@ -6,14 +6,35 @@ Este paquete convierte los bloqueantes de preparación arquitectónica en una se
 
 ## Veredicto actual
 
-**El alcance y contrato de salida de R0 están aprobados, pero R0 no está listo para programación funcional. Sólo está autorizado [PBI-021](../../backlog/pbis/PBI-021.md), acotado a materialización y verificación del toolchain de DEC-004; no el scaffolding funcional del producto.**
+**El alcance y contrato de salida de R0 están aprobados; H0 está completo,
+[PBI-021](../../backlog/pbis/PBI-021.md) y
+[PBI-022](../../backlog/pbis/PBI-022.md) están `Done`, y
+[PBI-023](../../backlog/pbis/PBI-023.md) cumple DoR. Sprint 00 está `Closed` y
+R0 está `Authorized`, limitado a PBI-023; B-21 está efectiva sólo dentro de
+ese alcance.**
 
-La documentación permite preparar ADRs, criterios, escenarios y spikes para autorización. `DEC-002` y `DEC-062` quedaron cerradas por el Responsable de Producto el 2026-07-21. La selección de plataforma de `DEC-004` fue aceptada el 2026-07-22 con evidencia pendiente y autorización limitada a su materialización/verificación. El primer cambio funcional de R0 continúa bloqueado por evidencia de plataforma, autorización organizacional, organización ejecutable mínima, estrategia de errores/pruebas/Definition of Done y contratos transversales. R1 añade decisiones de folio, recepción, custodia, política, tiempo, evidencia e identificación física.
+La documentación permite preparar ADRs, criterios, escenarios y spikes para
+autorización. `DEC-002` y `DEC-062` quedaron cerradas por el Responsable de
+Producto el 2026-07-21. La selección de plataforma de `DEC-004` fue aceptada
+el 2026-07-22 y su
+[verificación formal VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+obtuvo `PASS` el 2026-07-24. DEC-005 quedó materializada y formalmente
+verificada el 2026-07-23. DEC-044, DEC-049, DEC-051 y
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) fueron
+aceptadas el 2026-07-24. VC-024 satisface DEC051-C01/C07/C09 y
+DEC063-C01/C03/C04; las demás condiciones permanecen pendientes. H0 queda
+completo en 9/0. La
+[revisión final](../R0_AUTHORIZATION.md) hizo efectiva B-21 para PBI-023. Su
+ejecución continúa bloqueada por su estimación/compromiso y por los contratos
+H1/gates internos aplicables. R1 añade decisiones
+de folio, recepción, custodia, política, tiempo, evidencia e identificación
+física.
 
 | Declaración | Estado actual | Evidencia faltante principal |
 | --- | --- | --- |
 | R0 listo para diseñar | Sí, con alcance y contrato de salida aprobados | Cerrar diseño técnico pendiente sin convertir propuestas en implementación |
-| R0 listo para programar | No | H0 y H1 cerrados, ADRs aceptados y autorización explícita |
+| PBI-023 listo para programar | Sí, tras estimación/compromiso y en orden fail-closed | Gates internos DEC-050/SPIKE-002/DEC-051/063 |
+| R0 completo listo para programar | No | H1 restante y autorización de cada PBI |
 | R1 listo para diseñar | Parcialmente | Cerrar preguntas de producto de recepción y folio |
 | R1 listo para programar | No | R0 demostrado y H2 cerrado |
 | MVP listo para piloto | No | R1–R5 integradas y H3 cerrado |
@@ -21,18 +42,31 @@ La documentación permite preparar ADRs, criterios, escenarios y spikes para aut
 
 ## Release gate reevaluado
 
-Tras cerrar `DEC-002` y `DEC-062`, H0 conserva cinco decisiones abiertas y una selección aceptada con evidencia pendiente:
+Tras cerrar `DEC-002`, `DEC-004`, `DEC-005`, `DEC-044`, `DEC-049`, `DEC-051`,
+`DEC-062` y `DEC-063` para H0, el hito queda completo:
 
-- `DEC-004`: `Accepted — Selection Approved / Evidence Pending`; [PBI-021](../../backlog/pbis/PBI-021.md) creado y `Ready`, verificación Linux pendiente;
-- `DEC-005`: organización inicial del monolito;
-- `DEC-044`: estrategia de errores;
-- `DEC-049`: repositorios y propiedad lógica;
-- `DEC-051`: estrategia de pruebas;
-- `DEC-063`: Definition of Done.
+- `DEC-004`: selección aceptada y [VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md) `Closed / PASS`;
+- `DEC-005`: `Accepted — Materialized / Formally Verified`; [PBI-022](../../backlog/pbis/PBI-022.md) `Done`; ya no bloquea H0;
+- [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md):
+  `Accepted`; DEC044-C01 a C08 vigentes para materialización; ya no bloquea H0
+  por estado;
+- `DEC-049`: `Accepted`; DEC049-C01 a C08 vigentes para materialización; ya no bloquea H0 por estado;
+- [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md):
+  `Accepted`; DEC051-C01/C07/C09 `Satisfied`; C02–C06/C08/C10 `Pending`;
+- [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md):
+  `Accepted with conditions`; C01/C03/C04 `Satisfied`; C02/C05–C08 `Pending`.
 
-También siguen pendientes la autorización organizacional funcional (`B-21`) y todos los cierres H1 aplicables antes de declarar R0 programable. El siguiente trabajo autorizado es ejecutar PBI-021 para materializar/verificar `DEC-004`; no adelanta implementación funcional ni R1.
+`B-21` está `Satisfied — effective within PBI-023`; Sprint 00 está cerrado y
+la revisión final emitida. Siguen pendientes los cierres H1 aplicables antes de
+cada materialización y la autorización de PBIs posteriores. La sexta
+reverificación formal de PBI-022 obtuvo `PASS` y cerró sus hallazgos
+históricos. VC-024 obtuvo `PASS` mediante dos jobs Linux independientes,
+artefactos validados y comparación semántica reproducible. Las condiciones de
+[DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md),
+[DEC-049](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md) y
+DEC-051/063 no satisfechas por VC-024 permanecen pendientes de materialización.
 
-ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-005 fue aceptado con condiciones el 2026-07-22 tras la revisión aprobada de SPIKE-009. TypeScript y Node.js `24.x` forman la baseline de lenguaje/runtime; PostgreSQL 18.x es el motor transaccional; NestJS `11.x`, Express y REST/HTTP JSON mínima forman el shell inicial; y el repositorio único conserva una aplicación/artefacto sin workspaces obligatorios. `DEC-004` acepta Node.js `24.18.0`, pnpm `11.15.1`, ESM/NodeNext, TypeScript `6.0.3`, build previo y Linux x86_64/glibc; materialización y evidencia siguen pendientes. Véase la [baseline técnica](DEC-004_BASELINE_TECNICA.md).
+ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-005 fue aceptado con condiciones el 2026-07-22 tras la revisión aprobada de SPIKE-009. TypeScript y Node.js `24.x` forman la baseline de lenguaje/runtime; PostgreSQL 18.x es el motor transaccional; NestJS `11.x`, Express y REST/HTTP JSON mínima forman el shell inicial; y el repositorio único conserva una aplicación/artefacto sin workspaces obligatorios. `DEC-004` selecciona el toolchain y VC-024 verifica su evidencia Linux; `DEC-005` tiene organización modular materializada y formalmente verificada.
 
 ## Respuestas rectoras
 
@@ -61,7 +95,7 @@ ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ing
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
 
-**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) cierra el motor y fija PostgreSQL 18.x como baseline de R0; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) acepta con condiciones NestJS como shell, Express y REST/HTTP JSON mínima; [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) repositorio único y workspaces bajo demanda; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0; [DEC-004](DEC-004_BASELINE_TECNICA.md) acepta la selección del toolchain con evidencia pendiente. No cierran implementación funcional, composición y clasificación por rebanada, mecanismos de acceso/migración, RLS ni evidencia de pruebas.
+**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) cierra el motor y fija PostgreSQL 18.x como baseline de R0; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) acepta con condiciones NestJS como shell, Express y REST/HTTP JSON mínima; [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) repositorio único y workspaces bajo demanda; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0; [DEC-004](DEC-004_BASELINE_TECNICA.md) acepta la selección del toolchain y su VC-024 aporta evidencia Linux reproducible; [DEC-005](../../decisions/dec-005-modular-monolith-organization/DECISION_PROPOSAL.md) está materializada y formalmente verificada. No cierran implementación funcional, composición y clasificación por rebanada, mecanismos de acceso/migración, RLS ni evidencia funcional H1.
 
 ## Ruta de lectura
 
@@ -98,4 +132,10 @@ Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones difer
 
 ## Próxima promoción posible
 
-La siguiente promoción válida es **R0 listo para programar**. Requiere cerrar H0 y H1; no requiere resolver H2–H5 ni diseñar R2–R5 por anticipación.
+La siguiente promoción válida es **R0 listo para programar**. H0 está
+completo; todavía requiere la revisión final que haga efectiva B-21 y resolver
+H1 por trigger. No requiere resolver H2–H5 ni diseñar R2–R5 por anticipación.
+
+El siguiente gate concreto es repetir la revisión final de Sprint 00 y del DoR
+de PBI-023. VC-024 no autoriza R0, no cierra Sprint 00 y no
+declara satisfechas las condiciones de DEC-051/063 que permanecen `Pending`.

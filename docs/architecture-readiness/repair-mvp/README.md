@@ -6,7 +6,22 @@ Este paquete traduce el modelo integrado del dominio de reparación a una prepar
 
 ## Estado
 
-**Preparado con bloqueantes.** Existe suficiente definición del dominio para delimitar el MVP, proponer fronteras y ordenar rebanadas verticales. ADR-004 acepta multitenancy, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 autorización ordinaria y ADR-013 acciones sensibles/refuerzo, pero todavía no existe autorización explícita para implementar y permanecen decisiones sobre plataforma, evidencia, mecanismos, composición y clasificación por rebanada, estados, folios, configuración, autorización comercial, calidad y entrega.
+**Preparado con bloqueantes.** Existe suficiente definición del dominio para
+delimitar el MVP, proponer fronteras y ordenar rebanadas verticales. DEC-005
+tiene organización modular materializada y formalmente verificada, con PBI-022
+`Done`; [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md),
+[DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md),
+[DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) y
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) están
+aceptadas; DEC-044/049 conservan ocho condiciones pendientes cada una,
+DEC-051 conserva C01/C07/C09 `Satisfied` y las demás `Pending`; DEC-063
+conserva C01/C03/C04 `Satisfied` y las demás `Pending`. ADR-004 acepta
+multitenancy, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 autorización
+ordinaria y ADR-013 acciones sensibles/refuerzo. Todavía no existe autorización
+explícita para implementar funcionalidad. VC-024 está `Closed / PASS` y H0
+completo; permanecen H1, materialización de pruebas/DoD, mecanismos,
+composición y clasificación por rebanada, estados, folios, configuración,
+autorización comercial, calidad y entrega.
 
 La siguiente promoción posible es **Preparado para una primera rebanada vertical**, una vez satisfechos los criterios indicados en [Criterios de inicio](CRITERIOS_DE_INICIO_DE_IMPLEMENTACION.md). No se declara preparación para la implementación completa del MVP.
 
@@ -16,7 +31,14 @@ El [paquete de cierre de bloqueantes](../blocker-closure/README.md) consolida es
 
 ### ¿Qué necesitamos decidir antes de programar?
 
-**[PB]** Autorización para implementar; ADRs técnicos restantes; aplicación y pruebas de los modelos aceptados; mecanismos de PIN, sesión y refuerzo; composición y clasificación por rebanada; término oficial; folio; estados; política efectiva; archivos, zona horaria y aceptación. ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 ya no son decisiones conceptuales bloqueantes. Véase [Decisiones bloqueantes](DECISIONES_BLOQUEANTES.md).
+**[PB]** Autorización para implementar; condiciones restantes de DEC-051/063;
+aplicación y pruebas de los modelos
+aceptados; mecanismos de PIN,
+sesión y refuerzo; composición y clasificación por rebanada; término oficial;
+folio; estados; política efectiva; archivos, zona horaria y aceptación.
+ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 ya no son decisiones
+conceptuales bloqueantes. Véase [Decisiones
+bloqueantes](DECISIONES_BLOQUEANTES.md).
 
 ### ¿Cuál es la primera rebanada vertical que no traiciona el dominio?
 
@@ -89,4 +111,4 @@ Cada conclusión relevante se etiqueta con una de estas clases:
 
 **[RDD]** El flujo preserva identidad de orden, custodia, trazabilidad de actores, autorización por concepto, ejecución autorizada, control de calidad, cobro y entrega.
 
-**[ADR]** ADR-001 fija TypeScript y Node.js `24.x`; ADR-003 fija PostgreSQL como motor y PostgreSQL 18.x como baseline de R0; ADR-004 fija multitenancy; ADR-005 fija NestJS `11.x` como shell condicionado, Express y REST/HTTP JSON mínima; ADR-009 fija repositorio único; ADR-010 contexto; ADR-011 identidad/sesión; ADR-012 autorización ordinaria; y ADR-013 autorización reforzada. DEC-004 acepta pnpm, lockfile, ESM/TypeScript/build y Linux con evidencia pendiente. Tooling de migración, proveedor, extensiones, pooler y adopción de RLS siguen abiertos.
+**[ADR]** ADR-001 fija TypeScript y Node.js `24.x`; ADR-003 fija PostgreSQL como motor y PostgreSQL 18.x como baseline de R0; ADR-004 fija multitenancy; ADR-005 fija NestJS `11.x` como shell condicionado, Express y REST/HTTP JSON mínima; ADR-009 fija repositorio único; ADR-010 contexto; ADR-011 identidad/sesión; ADR-012 autorización ordinaria; y ADR-013 autorización reforzada. DEC-004 acepta pnpm, lockfile, ESM/TypeScript/build y Linux; VC-024 verifica su evidencia reproducible. Tooling de migración, proveedor, extensiones, pooler y adopción de RLS siguen abiertos.

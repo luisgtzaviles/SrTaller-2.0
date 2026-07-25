@@ -6,12 +6,18 @@
 flowchart TD
     SCOPE[DEC-002 Alcance R0<br/>Cerrada 2026-07-21] --> SPIKE9[SPIKE-009<br/>Completed; evidencia aceptada]
     SPIKE9 --> ADR5[ADR-005<br/>Accepted 2026-07-22]
-    ADR5 --> STACK[DEC-004 Toolchain<br/>Selection Approved<br/>Evidence Pending]
-    SCOPE --> MODULES[DEC-005 Módulos]
-    ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Pruebas]
+    ADR5 --> STACK[DEC-004 Toolchain<br/>VC-024 Closed / PASS]
+    SCOPE --> MODULES[DEC-005 Módulos<br/>Materialized<br/>Formally Verified]
+    MODULES --> PBI22[PBI-022<br/>Done]
+    PBI22 --> D5E[DEC005-C01 a C05<br/>PASS formal]
+    ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Accepted<br/>C01/C07/C09 Satisfied]
     ACCEPT --> R0
-    STACK --> DATA[DEC-050 Persistencia/migraciones]
-    MODULES --> OWN[DEC-049 Propiedad/repositorios]
+    STACK --> PBI23[PBI-023 Ready<br/>autorizado; no iniciado]
+    PBI23 --> DATA[DEC-050 Persistencia/migraciones]
+    D5E --> OWN[DEC-049 Propiedad/repositorios<br/>Accepted; C01-C08 vigentes]
+    D5E --> TEST
+    OWN --> TEST
+    ERR[DEC-044 Errores<br/>Accepted; C01-C08 vigentes] --> TEST
 
     GLOBAL[DEC-008 Datos globales] --> MT[DEC-006 Estrategia multitenant]
     OWN --> MT
@@ -65,8 +71,14 @@ flowchart TD
 
 - ADR-005 tiene satisfecha su dependencia de lenguaje/runtime por ADR-001. [SPIKE-009](../../../spikes/spike-009-nestjs-shell/RESULTS.md), ejecutado como `Mandatory before acceptance`, queda `Completed — evidence accepted with non-blocking conditions`; Seguridad, Operaciones y Calidad aprobaron la remediación y Arquitectura + Ingeniería aceptaron ADR-005 el 2026-07-22.
 - NestJS `11.x`, la referencia `11.1.28`, Express mediante `@nestjs/platform-express` y REST/HTTP JSON mínima son componentes aceptados de DEC-004. La evidencia experimental no acepta librerías auxiliares ni código de producto y no sustituye el contrato de verificación de DEC-004.
-- ADR-009 satisface la topología de repositorio y ADR-005 el framework, adaptador e interfaz inicial. DEC-004 acepta además pnpm/lockfile, ESM/TypeScript y la plataforma de evidencia; estructura física de DEC-005 y persistencia de DEC-049 siguen separadas.
-- La selección de DEC-004 fue aceptada el 2026-07-22 y su PBI técnico quedó autorizado. La materialización, VC-001 a VC-024 y evidencia Linux siguen siendo una dependencia H0 antes del primer cambio funcional de R0.
+- ADR-009 satisface la topología de repositorio y ADR-005 el framework, adaptador e interfaz inicial. DEC-004 acepta además pnpm/lockfile, ESM/TypeScript y la plataforma de evidencia. [DEC-005](../../decisions/dec-005-modular-monolith-organization/DECISION_PROPOSAL.md) tiene estructura física materializada y formalmente verificada; [PBI-022](../../backlog/pbis/PBI-022.md) está `Done`; [DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) está `Accepted` desde el 2026-07-24, con cinco `PASS WITH CONDITIONS` y DEC049-C01 a C08 pendientes de materialización.
+- La selección de DEC-004 fue aceptada el 2026-07-22; PBI-021 está `Done` y
+  VC-024 `Closed / PASS`. H0 está completo en 9/0. Estos cierres no autorizan
+  R0 ni sustituyen los contratos H1.
+- [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
+  está `Accepted` desde el 2026-07-24.
+  Define cómo comprobar DEC-005/044/049. VC-024 satisfizo C01/C07/C09;
+  C02–C06/C08/C10 permanecen pendientes y se aplican por trigger.
 - SPIKE-002 parte de la estrategia shared-schema aceptada y depende de un contrato representativo y un mecanismo técnico autorizado para demostrar aislamiento.
 - SPIKE-003 depende del resultado de SPIKE-002, PostgreSQL aceptado y acceso de datos/pooling. Es obligatorio antes de adoptar RLS, no antes de cualquier persistencia de R0, y puede concluir rechazándola.
 - SPIKE-005 parte del propósito y sesión aceptados por ADR-011; debe acotarse a protección técnica, intentos, revocación y relación con acciones sensibles.

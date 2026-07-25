@@ -2,7 +2,11 @@
 
 ## Hallazgo principal
 
-No existe una contradicción material entre los ADR aceptados que impida ordenar el trabajo. El vacío principal es de resolución y trazabilidad: salvo DEC-004, las DEC analizadas no tienen un registro individual autoritativo; su estado, alcance y preguntas están repartidos entre el inventario, documentos conceptuales y políticas todavía `Propuesta`.
+No existe una contradicción material entre los ADR/DEC aceptados que impida
+ordenar el trabajo. DEC-004, DEC-005, DEC-044, DEC-049, DEC-051 y DEC-063 ya
+tienen registros autoritativos. El vacío H0 activo es VC-024; DEC-050 y la
+materialización condicionada de DEC-051/063 permanecen como trabajo posterior
+según su hito y autorización.
 
 ## Vacíos por decisión
 
@@ -15,7 +19,7 @@ No existe una contradicción material entre los ADR aceptados que impida ordenar
 - ADR-005: NestJS `11.x`, referencia `11.1.28`, Express y REST/HTTP JSON mínima;
 - ADR-009: repositorio único, una aplicación/artefacto y workspaces bajo demanda.
 
-**Preguntas abiertas reales:**
+**Preguntas respondidas por la decisión aceptada:**
 
 - ¿Qué package manager y versión se fijan?
 - ¿Cuál es la política de lockfile, instalación congelada y actualizaciones?
@@ -33,23 +37,20 @@ No existe una contradicción material entre los ADR aceptados que impida ordenar
 
 **Ya resuelto:** ADR-002 fija monolito modular, una aplicación/artefacto, dominio independiente, ownership y dependencias acíclicas; ADR-005 fija NestJS como shell; ADR-009 prohíbe workspaces/packages/apps anticipatorios.
 
-**Preguntas abiertas reales:**
+**Estado actual:** estas preguntas quedaron resueltas por la decisión aceptada,
+su materialización y la
+[sexta verificación formal](../dec-005-materialization/FORMAL_VERIFICATION_6.md),
+que concluyó `PASS` para DEC005-C01 a C05. PBI-022 está `Done`.
 
-- ¿Qué agrupaciones físicas mínimas materializan únicamente R0?
-- ¿Qué módulo posee tenant, sucursal, estación, identidad, roles y asignaciones?
-- ¿Qué APIs internas son públicas y qué internals quedan prohibidos?
-- ¿Cuál es la dirección exacta de imports entre dominio, aplicación, shell e infraestructura?
-- ¿Existe núcleo compartido? Si existe, ¿qué contiene y quién lo gobierna?
-- ¿Cómo se expresan excepciones y cómo caducan?
-- ¿Qué enforcement inicial se usará sin convertir cada módulo en package?
-
-**Acción propuesta:** mantener DEC-005 separada, pero resolverla en el mismo paquete de gobierno que DEC-049. No crear las fronteras futuras de Reparaciones como módulos vacíos.
+**Acción actual:** aplicar DEC-005 como entrada satisfecha de DEC-049. No
+reabrirla, fusionarla con persistencia ni crear fronteras futuras de
+Reparaciones como módulos vacíos.
 
 ### DEC-044 — Estrategia de errores
 
 **Ya resuelto:** ADR-005 exige adaptación segura y separación transporte/aplicación; ADR-004 y DEC-062 prohíben revelar existencia o contenido cross-tenant; la arquitectura de aplicación ya distingue validación, autenticación, autorización, conflicto, límite y dependencia.
 
-**Preguntas abiertas reales:**
+**Preguntas resueltas por la propuesta de DEC-044:**
 
 - ¿Cuál es la taxonomía mínima de errores de dominio, aplicación e infraestructura?
 - ¿Qué información estable cruza a REST/JSON y cuál queda sólo en observabilidad?
@@ -59,13 +60,22 @@ No existe una contradicción material entre los ADR aceptados que impida ordenar
 - ¿Cómo se preserva causa técnica sin acoplar dominio a NestJS ni filtrar SQL/stacks?
 - ¿Qué relación existe entre error, log técnico, auditoría de negocio y evento de seguridad?
 
-**Acción propuesta:** conservar DEC-044. Puede consolidarse documentalmente con el contrato transversal DEC-044–048, pero no debe absorber auditoría ni observabilidad como si fueran la misma señal.
+**Resolución registrada:** la
+[revisión formal de DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md)
+confirmó errores tipados por capa, catálogo, contrato REST/JSON, HTTP, logging,
+retry, persistencia, servicios externos, dominio y pruebas. El Responsable del
+Proyecto emitió las cinco resoluciones el 2026-07-24 y DEC-044 queda
+`Accepted`; DEC044-C01 a C08 permanecen vigentes y pendientes.
+
+**Acción actual:** trasladar DEC044-C08 y la matriz normativa a DEC-051, sin
+materializar clases, adapters, logging o retry por inferencia. DEC-044 no
+absorbe auditoría ni observabilidad como si fueran la misma señal.
 
 ### DEC-049 — Repositorios y propiedad lógica
 
 **Ya resuelto:** ADR-002 fija ownership y prohíbe acceso transversal; ADR-003 fija PostgreSQL y principios de transacción; ADR-004 fija discriminadores y contexto; ADR-005 fija puertos hacia adentro; ADR-009 prohíbe un package ORM compartido entre módulos.
 
-**Preguntas abiertas reales:**
+**Preguntas respondidas por la propuesta, pendientes de aprobación:**
 
 - ¿Driver directo, query builder u ORM, y por qué?
 - ¿Qué contrato explícito reciben todos los repositorios tenant/sucursal-scoped?
@@ -76,7 +86,7 @@ No existe una contradicción material entre los ADR aceptados que impida ordenar
 - ¿Qué interfaz separada permite administración SaaS sin convertirse en bypass?
 - ¿Qué constraints compuestos refuerzan coherencia tenant–sucursal?
 
-**Acción propuesta:** no declararla resuelta por ADR-004; éste fija invariantes, no mecanismo. Resolver DEC-005/049 conjuntamente y mantener dos criterios de salida distintos: organización modular y acceso/persistencia.
+**Resolución registrada:** ADR-004 fijó invariantes y DEC-005 aportó la organización modular. [DEC-049](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md) resolvió el mecanismo y fue aceptada el 2026-07-24 por el Responsable del Proyecto después de cinco `PASS WITH CONDITIONS`. DEC049-C01 a C08 permanecen vigentes y no cumplidas para la futura materialización.
 
 ### DEC-050 — Migraciones y versionado de esquema
 
@@ -100,7 +110,7 @@ No existe una contradicción material entre los ADR aceptados que impida ordenar
 
 **Ya resuelto:** ADR-004 exige pruebas negativas con dos tenants; ADR-005 exige pruebas arquitectónicas; DEC-062 fija escenarios obligatorios; ADR-010/011/012/013 fijan matrices conceptuales de contexto, sesión, autorización y refuerzo.
 
-**Preguntas abiertas reales:**
+**Preguntas respondidas por la propuesta, pendientes de aprobación:**
 
 - ¿Qué runner y herramientas se adoptan por capa?
 - ¿Cuál es el gate canónico local/PR/merge y cómo se ejecuta en Linux?
@@ -111,29 +121,38 @@ No existe una contradicción material entre los ADR aceptados que impida ordenar
 - ¿Cómo se manejan flakiness, cuarentena y fallos del gate?
 - ¿Qué pruebas de migración y rollback/roll-forward forman parte del gate?
 
-**Acción propuesta:** conservar DEC-051 y preparar el ADR de pruebas señalado por el inventario. Coordinar el runner/script mínimo con DEC-004, sin copiar el tooling de SPIKE-009 automáticamente.
+**Resolución registrada:** la
+[revisión formal](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
+confirmó cinco `PASS WITH CONDITIONS` y el Responsable del Proyecto aceptó
+DEC-051 el 2026-07-24. La Opción B define pipeline por capas/riesgo,
+`pnpm run verify`, Linux,
+PostgreSQL `18.4`, aislamiento negativo, DEC-044/049, checker, flakiness,
+evidencia, VC-024 y protección de `main`. DEC051-C01 a C10 siguen pendientes;
+no se debe inferir materialización, cumplimiento de VC-024 ni tooling de
+SPIKE-009.
 
 ### DEC-063 — Definition of Done
 
-**Ya resuelto:** DEC-062 fija el resultado y la evidencia de R0; ADR-004/005/010/011/012/013 fijan controles obligatorios; la [Definition of Done propuesta](../../delivery/DEFINITION_OF_DONE.md) ya contiene perfiles documental y funcional.
+**Resolución registrada:** la
+[revisión formal](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md)
+confirmó cinco `PASS WITH CONDITIONS` y el Responsable del Proyecto aceptó
+DEC-063 el 2026-07-24. Se adoptó base común más checklist por tipo y riesgo,
+con estados separados, evidencia, defectos, flakiness, excepciones y
+`Done`/`Released` diferenciados.
 
-**Preguntas abiertas reales:**
+DEC063-C01 a C08 continúan `Pending`. No se debe inferir que existen templates,
+matriz ejecutable de riesgo, manifest, CI, protección, checklists
+materializados o waivers operativos.
 
-- ¿Qué subconjunto es obligatorio por tipo de cambio?
-- ¿Quién aprueba cada evidencia y una excepción?
-- ¿Qué umbrales de seguridad, cobertura y defectos bloquean?
-- ¿Qué evidencia se conserva y por cuánto tiempo?
-- ¿Qué criterios son de candidato local/CI y cuáles sólo pueden cerrarse después de staging/release?
-- ¿Cómo se impide declarar `Done` con pruebas críticas omitidas o en cuarentena?
-
-**Acción propuesta:** conservar DEC-063 y aprobar una DoD escalonada después de DEC-051. No fusionarla con DEC-062: una define el producto aceptable y la otra el proceso/evidencia para afirmar terminado.
+**Frontera preservada:** DEC-062 define el producto observable; DEC-063 define
+cuándo un trabajo puede declararse terminado. No se fusionan.
 
 ## Solapamientos y fronteras recomendadas
 
 | Solapamiento | Frontera recomendada |
 | --- | --- |
 | DEC-004 ↔ DEC-051 | DEC-004 decide toolchain y reproducibilidad; DEC-051 decide suites/gates. Un gate mínimo de DEC-051 produce evidencia para DEC-004 |
-| DEC-005 ↔ DEC-049 | Resolver juntas; DEC-005 gobierna estructura/imports y DEC-049 puertos/tablas/transacciones |
+| DEC-005 ↔ DEC-049 | DEC-005 ya gobierna y verifica estructura/imports; DEC-049 consume esa entrada y decide puertos/tablas/transacciones |
 | DEC-044 ↔ ADR-005 | ADR-005 fija responsabilidad y no divulgación; DEC-044 fija taxonomía y contrato concreto |
 | DEC-049 ↔ ADR-002/003/004/009 | Los ADR fijan invariantes y prohibiciones; DEC-049 elige mecanismo ejecutable compatible |
 | DEC-050 ↔ ADR-003 | ADR-003 fija principios; DEC-050 selecciona herramienta, lifecycle y evidencia |
@@ -149,8 +168,8 @@ No se encontró una contradicción material entre ADR aceptados. ADR-001/002/003
 ### Ambigüedades que deben corregirse al resolver, no ahora
 
 1. DEC-004 enumera driver/repositorios y migraciones entre sus componentes pendientes, mientras la secuencia oficial coloca DEC-049 y DEC-050 después de DEC-004. Debe aclararse que son bloqueantes de la fundación ejecutable R0, pero no necesariamente del cierre estricto de la selección de plataforma.
-2. DEC-004 exige una primera ejecución del gate CI Linux, pero DEC-051 —que define ese gate— aparece después. Debe adoptarse una secuencia en dos fases: toolchain DEC-004 → contrato mínimo DEC-051 → evidencia final DEC-004.
-3. El grafo existente no dibuja `DEC-049 → DEC-050`, aunque la política de migraciones exige compatibilidad con el acceso a datos elegido.
+2. DEC-004 exige una primera ejecución del gate CI Linux y DEC-051 ya define ese gate. Se conserva la secuencia en dos fases: toolchain DEC-004 → contrato DEC-051 aceptado → materialización/evidencia final DEC-004.
+3. El grafo vigente dibuja `DEC-049 → DEC-050`; DEC-049 ya está aceptada y DEC-050 conserva la selección y operación de migraciones.
 4. `DEC-050` está clasificada H1, pero el resultado observable de R0 exige migraciones base. No es una contradicción: sí significa que cerrar H0 permite iniciar código, no completar el baseline R0.
 
 ### Drift histórico no autoritativo
@@ -183,7 +202,7 @@ Estos vacíos no deben introducirse silenciosamente dentro de DEC-004.
 | Organización modular | Arquitectura, con Ingeniería para enforcement |
 | Acceso a datos | Arquitectura + Ingeniería; Seguridad para aislamiento |
 | Migraciones | Arquitectura + Ingeniería + Operaciones |
-| Pruebas | Arquitectura + Calidad + Seguridad |
+| Pruebas, CI y gates | Arquitectura + Ingeniería + Seguridad + Operaciones + Calidad |
 | Definition of Done | Calidad + Arquitectura + Producto |
 | Roles/capacidades concretos | Producto + Seguridad |
 | PIN/sesión/estación técnicos | Seguridad + Arquitectura + Operaciones; Producto para experiencia/política |
