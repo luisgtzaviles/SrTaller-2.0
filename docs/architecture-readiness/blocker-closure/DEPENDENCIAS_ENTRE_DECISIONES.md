@@ -12,7 +12,7 @@ flowchart TD
     PBI22 --> D5E[DEC005-C01 a C05<br/>PASS formal]
     ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Accepted<br/>C01/C07/C09 Satisfied]
     ACCEPT --> R0
-    STACK --> PBI23[PBI-023 Ready<br/>revisión final pendiente]
+    STACK --> PBI23[PBI-023 Ready<br/>autorizado; no iniciado]
     PBI23 --> DATA[DEC-050 Persistencia/migraciones]
     D5E --> OWN[DEC-049 Propiedad/repositorios<br/>Accepted; C01-C08 vigentes]
     D5E --> TEST

@@ -2,7 +2,10 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado para revisión final de Sprint 00. Las filas 1–20 conservan su clasificación histórica y muestran el resultado vigente; PBI-021/PBI-022 son trabajos técnicos posteriores terminados; PBI-023–PBI-029 forman la descomposición propuesta de H1 para R0.
+**Estado:** Reconciliado tras el cierre de Sprint 00. Las filas 1–20 conservan
+su clasificación histórica y muestran el resultado vigente; PBI-021/PBI-022
+son trabajos técnicos posteriores terminados; PBI-023 está autorizado y
+PBI-024–PBI-029 forman la descomposición no autorizada del resto de H1.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** TBD.
 **Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
@@ -31,7 +34,7 @@
 | 20 | [PBI-020](pbis/PBI-020.md) Consolidate open questions and decision gates | Discovery / Product | EPIC-000 | Deferred como registro vivo | Crítica | Requires product input |
 | 21 | [PBI-021](pbis/PBI-021.md) Materialize and verify the DEC-004 toolchain contract | Technical foundation / Quality / Operations / Security | EPIC-001 | Done | Alta | Unassigned |
 | 22 | [PBI-022](pbis/PBI-022.md) Materialize DEC-005 modular structure and local enforcement | Technical foundation / Architecture / Quality | EPIC-001 | Done | Alta | Unassigned |
-| 23 | [PBI-023](pbis/PBI-023.md) Establish tenant-scoped persistence and migration foundation | Persistence / Security / Quality | EPIC-001 | Ready; autorización pendiente | Crítica | Unassigned |
+| 23 | [PBI-023](pbis/PBI-023.md) Establish tenant-scoped persistence and migration foundation | Persistence / Security / Quality | EPIC-001 | Ready / Authorized to start; no iniciado | Crítica | Unassigned |
 | 24 | [PBI-024](pbis/PBI-024.md) Apply trusted tenant, branch and station context | Architecture / Security | EPIC-001 | Draft | Crítica | Unassigned |
 | 25 | [PBI-025](pbis/PBI-025.md) Implement tenant-user PIN authentication and operational session | Identity / Security | EPIC-003 | Blocked | Crítica | Unassigned |
 | 26 | [PBI-026](pbis/PBI-026.md) Implement contextual capabilities and reinforced authorization | Authorization / Security | EPIC-003 | Draft | Crítica | Unassigned |

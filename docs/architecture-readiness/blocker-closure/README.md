@@ -9,9 +9,9 @@ Este paquete convierte los bloqueantes de preparación arquitectónica en una se
 **El alcance y contrato de salida de R0 están aprobados; H0 está completo,
 [PBI-021](../../backlog/pbis/PBI-021.md) y
 [PBI-022](../../backlog/pbis/PBI-022.md) están `Done`, y
-[PBI-023](../../backlog/pbis/PBI-023.md) cumple documentalmente DoR. R0 sigue
-no autorizado: Sprint 00 y la revisión final permanecen abiertos y la
-autorización condicional B-21 todavía no entra en vigor.**
+[PBI-023](../../backlog/pbis/PBI-023.md) cumple DoR. Sprint 00 está `Closed` y
+R0 está `Authorized`, limitado a PBI-023; B-21 está efectiva sólo dentro de
+ese alcance.**
 
 La documentación permite preparar ADRs, criterios, escenarios y spikes para
 autorización. `DEC-002` y `DEC-062` quedaron cerradas por el Responsable de
@@ -23,16 +23,18 @@ verificada el 2026-07-23. DEC-044, DEC-049, DEC-051 y
 [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) fueron
 aceptadas el 2026-07-24. VC-024 satisface DEC051-C01/C07/C09 y
 DEC063-C01/C03/C04; las demás condiciones permanecen pendientes. H0 queda
-completo en 9/0. El primer cambio funcional de R0 continúa bloqueado por la
-revisión final que hace efectiva B-21 y por contratos H1 aplicables al PBI
-autorizado. R1 añade decisiones
+completo en 9/0. La
+[revisión final](../R0_AUTHORIZATION.md) hizo efectiva B-21 para PBI-023. Su
+ejecución continúa bloqueada por su estimación/compromiso y por los contratos
+H1/gates internos aplicables. R1 añade decisiones
 de folio, recepción, custodia, política, tiempo, evidencia e identificación
 física.
 
 | Declaración | Estado actual | Evidencia faltante principal |
 | --- | --- | --- |
 | R0 listo para diseñar | Sí, con alcance y contrato de salida aprobados | Cerrar diseño técnico pendiente sin convertir propuestas en implementación |
-| R0 listo para programar | No | H0 y H1 cerrados, ADRs aceptados y autorización explícita |
+| PBI-023 listo para programar | Sí, tras estimación/compromiso y en orden fail-closed | Gates internos DEC-050/SPIKE-002/DEC-051/063 |
+| R0 completo listo para programar | No | H1 restante y autorización de cada PBI |
 | R1 listo para diseñar | Parcialmente | Cerrar preguntas de producto de recepción y folio |
 | R1 listo para programar | No | R0 demostrado y H2 cerrado |
 | MVP listo para piloto | No | R1–R5 integradas y H3 cerrado |
@@ -54,9 +56,9 @@ Tras cerrar `DEC-002`, `DEC-004`, `DEC-005`, `DEC-044`, `DEC-049`, `DEC-051`,
 - [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md):
   `Accepted with conditions`; C01/C03/C04 `Satisfied`; C02/C05–C08 `Pending`.
 
-`B-21` está `Satisfied — conditional effectiveness`; siguen pendientes el
-cierre de Sprint 00, la revisión final y los cierres H1 aplicables antes de
-declarar R0 programable. La sexta
+`B-21` está `Satisfied — effective within PBI-023`; Sprint 00 está cerrado y
+la revisión final emitida. Siguen pendientes los cierres H1 aplicables antes de
+cada materialización y la autorización de PBIs posteriores. La sexta
 reverificación formal de PBI-022 obtuvo `PASS` y cerró sus hallazgos
 históricos. VC-024 obtuvo `PASS` mediante dos jobs Linux independientes,
 artefactos validados y comparación semántica reproducible. Las condiciones de

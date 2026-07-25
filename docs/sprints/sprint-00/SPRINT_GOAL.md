@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** Formal Closure Remediation Complete / Final Review Pending.
+- **Estado:** `Closed`.
 - **Fecha de evaluación:** 2026-07-24.
 - **Autoridad de Producto:** Responsable del Proyecto actuando también como Responsable de Producto.
 - **Implementación funcional permitida:** no.
-- **Cierre del Sprint:** pendiente de revisión final independiente.
+- **Cierre del Sprint:** [dictamen final emitido](../../reviews/sprint-00/SPRINT_00_CLOSURE.md).
 
 ## Objetivo
 
@@ -58,21 +58,21 @@ conceptual en implementación ni cierra condiciones H1.
 | 11 | El flujo de trabajo esté definido. | [x] | `Met` | [Workflow](../../delivery/DEVELOPMENT_WORKFLOW.md), DoR/DoD y [PBI-016](../../backlog/pbis/PBI-016.md) | La protección de `main` sigue en DEC051-C02. |
 | 12 | La estrategia de pruebas esté definida. | [x] | `Met` | DEC-051, [Testing Strategy](../../quality/TESTING_STRATEGY.md) y [PBI-017](../../backlog/pbis/PBI-017.md) | PostgreSQL real, aislamiento y demás condiciones se materializan por trigger. |
 | 13 | El backlog inicial esté creado. | [x] | `Met` | [Product Backlog](../../backlog/PRODUCT_BACKLOG.md), [Sprint Backlog](./SPRINT_BACKLOG.md) y PBI-001 a PBI-020 | El backlog de R0 se refina por H1. |
-| 14 | No existan decisiones críticas ocultas en conversaciones o únicamente en código. | [ ] | `Partially met` | [Auditoría](../../reviews/sprint-00/DOCUMENT_AUDIT.md), [PBI-020](../../backlog/pbis/PBI-020.md) e inventario H1 | El repositorio sólo puede atestiguar fuentes conocidas; la revisión final debe aceptar esta limitación. |
-| 15 | El Product Owner haya aprobado explícitamente comenzar prototipos técnicos. | [x] | `Met` | [Decisión de Producto](./REVIEW.md#decisión-de-producto-y-b-21) | La autorización es condicional y no entra en vigor hasta cerrar Sprint 00 y superar la revisión final. |
+| 14 | No existan decisiones críticas ocultas en conversaciones o únicamente en código. | [ ] | `Partially met — Accepted deferred remainder` | [Auditoría](../../reviews/sprint-00/DOCUMENT_AUDIT.md), [PBI-020](../../backlog/pbis/PBI-020.md), inventario H1 y [dictamen final](../../reviews/sprint-00/SPRINT_00_CLOSURE.md) | El repositorio sólo puede atestiguar fuentes conocidas; el remanente queda gobernado por PBI-020 y cada gate. |
+| 15 | El Product Owner haya aprobado explícitamente comenzar prototipos técnicos. | [x] | `Met` | [Decisión de Producto](./REVIEW.md#decisión-de-producto-y-b-21) y [autorización R0](../../architecture-readiness/R0_AUTHORIZATION.md) | La autorización entró en vigor exclusivamente para PBI-023; no abre otros PBIs. |
 
 ## Resultado del Sprint Goal
 
 - **Met:** 14.
-- **Partially met:** 1.
+- **Partially met — Accepted deferred remainder:** 1.
 - **Not met:** 0.
 - **Not applicable:** 0.
 
-La fundación documental está remediada, pero SPRINT-00 permanece abierto. La
-revisión final independiente debe aceptar o rechazar la limitación del criterio
-14 y emitir el dictamen de cierre. No se autoriza R0 en esta tarea.
+La fundación documental está remediada y SPRINT-00 queda `Closed`. La revisión
+final aceptó expresamente el remanente verificable del criterio 14 sin elevarlo
+a `Met`.
 
 ## Próxima revisión
 
-Revisión final independiente de autorización de R0 y cierre de Sprint 00,
-después de verificar esta remediación y el estado `Ready` del primer PBI de R0.
+Ejecución gobernada de PBI-023 conforme a la
+[autorización limitada de R0](../../architecture-readiness/R0_AUTHORIZATION.md).

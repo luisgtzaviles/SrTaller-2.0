@@ -4,16 +4,14 @@ Este índice es la puerta de entrada a la fundación documental. Todo contenido 
 
 ## Estado del documento
 
-**Estado:** Sprint 00 Formal Closure Remediation Complete / Final Review
-Pending.
-**Fase:** R0 Authorization Review Ready; R0 no autorizado.
+**Estado:** Sprint 00 `Closed`.
+**Fase:** R0 `Authorized`, limitado a PBI-023.
 **Implementación funcional:** no iniciada.
 
 ## Revisión dirigida de Sprint 00
 
 El [paquete de revisión de Sprint 00](reviews/sprint-00/README.md) conserva la
-auditoría inicial y la remediación vigente sin cerrar Sprint 00 ni autorizar
-R0:
+auditoría inicial, la remediación y el dictamen final:
 
 - [Resumen ejecutivo](reviews/sprint-00/EXECUTIVE_SUMMARY.md)
 - [Auditoría documental](reviews/sprint-00/DOCUMENT_AUDIT.md)
@@ -24,6 +22,8 @@ R0:
 - [Recomendaciones de alcance](reviews/sprint-00/SCOPE_RECOMMENDATIONS.md)
 - [Evaluación de cierre](reviews/sprint-00/SPRINT_00_CLOSURE_ASSESSMENT.md)
 - [Remediación de cierre](reviews/sprint-00/SPRINT_00_CLOSURE_REMEDIATION.md)
+- [Cierre formal](reviews/sprint-00/SPRINT_00_CLOSURE.md)
+- [Autorización limitada de R0](architecture-readiness/R0_AUTHORIZATION.md)
 - [Checklist de la sesión](reviews/sprint-00/REVIEW_CHECKLIST.md)
 
 ## Producto
@@ -128,8 +128,9 @@ R0:
 
 Los archivos individuales PBI-001 a PBI-029 se encuentran enlazados desde el
 [índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
-PBI-023 es el primer PBI propuesto de R0 y está `Ready`, con autorización
-pendiente. Ninguno modifica retrospectivamente Sprint 00 ni inicia R0.
+PBI-023 es el primer PBI de R0 y está `Ready / Authorized to start`, no
+iniciado. La autorización no alcanza PBI-024–PBI-029 ni modifica
+retrospectivamente Sprint 00.
 
 ## Calidad
 

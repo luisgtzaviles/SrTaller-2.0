@@ -33,7 +33,7 @@ descomponen H1 sin autorizar implementación.
 | [PBI-020](PBI-020.md) | Consolidate open questions and decision gates | Deferred como registro vivo |
 | [PBI-021](PBI-021.md) | Materialize and verify the DEC-004 toolchain contract | Done |
 | [PBI-022](PBI-022.md) | Materialize DEC-005 modular structure and local enforcement | Done |
-| [PBI-023](PBI-023.md) | Establish tenant-scoped persistence and migration foundation | Ready; autorización pendiente |
+| [PBI-023](PBI-023.md) | Establish tenant-scoped persistence and migration foundation | Ready / Authorized to start; no iniciado |
 | [PBI-024](PBI-024.md) | Apply trusted tenant, branch and station context | Draft |
 | [PBI-025](PBI-025.md) | Implement tenant-user PIN authentication and operational session | Blocked |
 | [PBI-026](PBI-026.md) | Implement contextual capabilities and reinforced authorization | Draft |

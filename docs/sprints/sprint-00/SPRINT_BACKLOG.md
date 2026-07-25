@@ -2,12 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** ejecutado y reconciliado; Formal Closure Remediation Complete /
-  Final Review Pending.
+- **Estado:** ejecutado, reconciliado y `Closed`.
 - **Fecha de revisión:** 2026-07-24.
 - **Autoridad:** Responsable del Proyecto actuando también como Responsable de
   Producto.
-- **Cierre del Sprint:** pendiente; este documento no cierra SPRINT-00.
+- **Cierre del Sprint:** [dictamen final emitido](../../reviews/sprint-00/SPRINT_00_CLOSURE.md).
 - **Capacidad/estimaciones históricas:** no acordadas; no se inventan.
 
 Los veinte PBIs formaron la fundación documental inicial. El resultado final
@@ -44,8 +43,8 @@ expresa el cumplimiento real de cada PBI: un elemento `Deferred` o
 - [PBI-021](../../backlog/pbis/PBI-021.md): `Done`; toolchain y VC-024.
 - [PBI-022](../../backlog/pbis/PBI-022.md): `Done`; DEC-005 materializada y
   verificada.
-- [PBI-023](../../backlog/pbis/PBI-023.md): primer PBI técnico de R0, `Ready`
-  para revisión de autorización; no iniciado.
+- [PBI-023](../../backlog/pbis/PBI-023.md): primer PBI técnico de R0,
+  `Ready / Authorized to start`; no iniciado.
 - PBI-024 a PBI-029: descomposición H1 `Draft`/`Blocked`, descrita en el
   [plan H1](../../backlog/R0_H1_EXECUTION_PLAN.md).
 
@@ -58,9 +57,11 @@ cumplidos. Los contratos H1 conservan su autoridad y estado en el inventario.
 ## Aprobación y efecto
 
 El Responsable del Proyecto/Producto revisó esta reconciliación el 2026-07-24.
-La revisión documental no autoriza funcionalidad, no inicia R0, no convierte el
-PR #1 a Ready y no cierra Sprint 00. El dictamen final es independiente.
+El [dictamen final](../../reviews/sprint-00/SPRINT_00_CLOSURE.md) cerró Sprint
+00 y la [autorización de R0](../../architecture-readiness/R0_AUTHORIZATION.md)
+limitó el inicio a PBI-023. Este backlog no autoriza otros PBIs, release ni
+producción.
 
 ## Próxima revisión
 
-Revisión final independiente de Sprint 00.
+Retrospectiva y seguimiento de los diferidos en sus gates.

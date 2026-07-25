@@ -2,12 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** Formal Closure Remediation Complete / Final Review Pending.
-- **Naturaleza:** el material inicial conserva su historia; la evaluación y
-  remediación vigentes no cierran Sprint 00 ni autorizan R0.
+- **Estado:** Sprint 00 `Closed`.
+- **Naturaleza:** el material inicial conserva su historia; el
+  [dictamen final](./SPRINT_00_CLOSURE.md) es la fuente vigente de cierre.
 - **Fuente:** fundación auditada el 2026-07-13 y remediación del 2026-07-24.
 - **Autoridad vigente:** Responsable del Proyecto actuando también como
-  Responsable de Producto; dictamen final independiente pendiente.
+  Responsable de Producto; dictamen final independiente emitido.
 
 ## Propósito
 
@@ -24,7 +24,8 @@ Este paquete convierte la fundación documental existente en una secuencia de de
 7. [Candidatos de prototipo](./PROTOTYPE_CANDIDATES.md)
 8. [Evaluación de cierre de Sprint 00](./SPRINT_00_CLOSURE_ASSESSMENT.md)
 9. [Remediación del cierre](./SPRINT_00_CLOSURE_REMEDIATION.md)
-10. [Checklist histórico para la sesión](./REVIEW_CHECKLIST.md)
+10. [Cierre formal](./SPRINT_00_CLOSURE.md)
+11. [Checklist histórico para la sesión](./REVIEW_CHECKLIST.md)
 
 ## Reglas de uso
 
@@ -35,13 +36,15 @@ Este paquete convierte la fundación documental existente en una secuencia de de
 - `Ready for review` o `Ready for technical validation` no equivale a `Accepted`, `Done` ni autorización de implementación.
 - Ningún spike está autorizado por aparecer en la lista; cada uno requiere dependencias resueltas y decisión explícita.
 - Las decisiones resultantes deben actualizar sus documentos fuente, ADRs y trazabilidad. Este paquete no los sustituye.
-- Sprint 00 permanece abierto y no existe sprint de implementación autorizado.
+- Sprint 00 está `Closed`; R0 tiene una
+  [autorización limitada](../../architecture-readiness/R0_AUTHORIZATION.md)
+  exclusivamente para PBI-023.
 
 ## Resultado esperado de la sesión
 
-La revisión final debe confirmar la remediación, aceptar o rechazar la
-limitación del criterio 14, verificar el DoR de PBI-023 y emitir por separado
-el cierre de Sprint 00 y la autorización de R0.
+La revisión final confirmó la remediación, aceptó como diferido gobernado el
+remanente del criterio 14, verificó el DoR de PBI-023 y emitió por separado el
+cierre de Sprint 00 y la autorización limitada de R0.
 
 ## Fuentes principales
 
@@ -55,4 +58,4 @@ el cierre de Sprint 00 y la autorización de R0.
 
 ## Próxima revisión
 
-Revisión final independiente sobre el commit de remediación publicado.
+Seguimiento de PBI-020, retrospectiva y gates de PBI-023.

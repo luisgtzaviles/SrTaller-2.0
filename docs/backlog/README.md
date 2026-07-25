@@ -4,14 +4,15 @@ El backlog convierte objetivos de producto en resultados verificables sin
 confundir intención con compromiso. PBI-001–PBI-020 conservan su historia de
 Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 [PBI-022](pbis/PBI-022.md) están `Done` después de sus verificaciones formales.
-[PBI-023](pbis/PBI-023.md) es el primer PBI propuesto de R0 y está `Ready`,
-con autorización pendiente; PBI-024–PBI-029 descomponen el resto de H1. Ninguno
-está iniciado ni autoriza funcionalidad, R0 o cierre de Sprint 00.
+[PBI-023](pbis/PBI-023.md) es el primer PBI de R0 y está
+`Ready / Authorized to start`, no iniciado; PBI-024–PBI-029 descomponen el
+resto de H1 y no están autorizados.
 
 ## Estado del documento
 
-**Estado:** Reconciliado para revisión final de Sprint 00.
-**Orden R0 y ejecución:** no autorizados; owners definidos por rol.
+**Estado:** Reconciliado tras el cierre de Sprint 00.
+**Orden R0 y ejecución:** PBI-023 autorizado con alcance limitado; owners
+definidos por rol.
 
 ## Estructura
 
@@ -55,4 +56,4 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-En la revisión final independiente de Sprint 00 y PBI-023.
+Antes del compromiso de PBI-023 y al refinar PBI-024–PBI-029.

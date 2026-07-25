@@ -19,7 +19,8 @@ Todos los criterios deben cumplirse:
 
 - [x] **[RP]** El alcance y contrato de salida de R0 están aprobados.
 - [x] **[RP]** El Responsable de Producto registró autorización explícita condicional; sólo entra en vigor después del cierre de Sprint 00 y la revisión final.
-- [ ] **[RP]** Sprint 00 o el criterio de paso sucesor queda cerrado por su autoridad.
+- [x] **[RP]** Sprint 00 quedó
+  [cerrado por su autoridad](../../reviews/sprint-00/SPRINT_00_CLOSURE.md).
 - [ ] **[ADR]** Las decisiones técnicas necesarias están aceptadas, no sólo propuestas.
 - [x] **[ADR]** [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
   está `Accepted` desde el 2026-07-24 con cinco `PASS WITH CONDITIONS`.
@@ -39,7 +40,9 @@ Todos los criterios deben cumplirse:
 - [x] **[RDD]** Sensibilidad, niveles, reautenticación, segundo aprobador, segregación e invalidación están definidos conceptualmente por ADR-013.
 - [ ] **[PB]** Existe composición de roles/capacidades y clasificación nivel 1–4 para cada operación de la rebanada incluida.
 - [ ] **[RP]** El modelo de amenazas inicial y la estrategia de secretos/ambientes están revisados.
-- [x] **[RP]** [PBI-023](../../backlog/pbis/PBI-023.md) cumple documentalmente Definition of Ready, aceptación y trazabilidad; la revisión final debe confirmarlo.
+- [x] **[RP]** [PBI-023](../../backlog/pbis/PBI-023.md) cumple Definition of
+  Ready con notas no bloqueantes; la
+  [revisión final](../R0_AUTHORIZATION.md) lo confirmó y autorizó.
 - [x] **[DAR]** Para PBI-023, ownership, scope, transacción, migración y límites están explícitos; no existe agregado de negocio.
 - [x] **[RP]** Escenarios felices, negativos, de denegación y cross-tenant de R0 están aprobados.
 - [ ] **[DAR]** Los escenarios aprobados están especificados como pruebas ejecutables; concurrencia se añade donde la invariante lo exija.
@@ -75,14 +78,13 @@ Además:
 
 ## Resultado actual
 
-**[PB]** El estado vigente es **Authorization Review Ready / R0 no
-autorizado**. VC-024 está `Closed / PASS`, DEC-004 tiene evidencia verificada y
-H0 está completo en 9/0. B-21 registra autorización de Producto con efectividad
-condicionada al cierre de Sprint 00 y a una nueva revisión final; PBI-023 está
-`Ready` para esa revisión. Persisten los contratos H1, las condiciones
+**[PB]** El estado vigente es **R0 Authorized, limitado a PBI-023**. Sprint 00
+está `Closed`, VC-024 está `Closed / PASS`, DEC-004 tiene evidencia verificada
+y H0 está completo en 9/0. PBI-023 está
+`Ready / Authorized to start`, no iniciado. Persisten los contratos H1, las condiciones
 DEC-051/063 no satisfechas por VC-024, composición/clasificación, modelos de
 amenazas y pruebas por trigger. Las aceptaciones de
 [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md),
 [DEC-049](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) y
 [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) no
-autorizan programación funcional, materialización ni declaran R0 aceptado.
+no autorizan por sí solas trabajo fuera de PBI-023 ni declaran R0 aceptado.

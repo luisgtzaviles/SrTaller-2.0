@@ -6,7 +6,7 @@
 - **Fecha:** 2026-07-24.
 - **H0:** 9/0, `Complete`.
 - **H1:** 24 contratos abiertos para aplicación, mecanismo o prueba.
-- **R0:** no autorizado.
+- **R0:** `Authorized`, limitado a PBI-023.
 - **Regla:** agrupar por capacidad no acepta ni cierra una DEC.
 
 ## Inventario H1
@@ -42,7 +42,7 @@
 
 | PBI | Capacidad | DEC | Estado | Dependencia |
 |---|---|---|---|---|
-| [PBI-023](pbis/PBI-023.md) | Persistencia tenant-scoped, migraciones y fixtures mínimos | 006–008, 050, 052 | `Ready` para revisión de autorización | H0, ADR-003/004, DEC-049/051/063 |
+| [PBI-023](pbis/PBI-023.md) | Persistencia tenant-scoped, migraciones y fixtures mínimos | 006–008, 050, 052 | `Ready / Authorized to start`; no iniciado | H0, ADR-003/004, DEC-049/051/063 |
 | [PBI-024](pbis/PBI-024.md) | Contexto tenant/sucursal/estación confiable | 009–012 | `Draft` | PBI-023 |
 | [PBI-025](pbis/PBI-025.md) | Identidad, PIN, sesión e inactividad | 013–016 | `Blocked` | PBI-024, threat model y mecanismos |
 | [PBI-026](pbis/PBI-026.md) | Capacidades y autorización reforzada | 017–020 | `Draft` | PBI-025 y composición por operación |
@@ -65,9 +65,10 @@ gates que debe cerrar antes de materializar persistencia:
 - fixtures deterministas de DEC-052.
 
 Su `Ready` significa que resultado, límites, secuencia, evidencia y owners por
-rol son verificables. No significa autorizado, iniciado ni comprometido a
-sprint. La revisión final independiente conserva autoridad para rechazar el
-DoR.
+rol son verificables. La
+[revisión final](../architecture-readiness/R0_AUTHORIZATION.md) autorizó
+únicamente este PBI; no lo marcó iniciado ni comprometido a sprint. Su
+estimación sigue siendo obligatoria antes del compromiso.
 
 ## Dependencias entre PBIs
 
@@ -97,5 +98,5 @@ flowchart LR
 
 ## Próxima revisión
 
-Revisión final independiente de Sprint 00 y DoR de PBI-023. No iniciar ningún
-PBI antes del dictamen correspondiente.
+Preparar el compromiso de PBI-023 y ejecutar primero sus gates internos. No
+iniciar PBI-024–PBI-029 antes de su propio dictamen.

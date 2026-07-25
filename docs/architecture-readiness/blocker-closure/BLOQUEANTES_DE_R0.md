@@ -4,13 +4,16 @@
 
 R0 demuestra una fundación mínima que resuelve tenant, sucursal, estación y usuario desde fuentes confiables, deniega accesos cruzados, evalúa permisos, expone salud y errores seguros y conserva trazabilidad sin incluir todavía una orden de negocio.
 
-El Responsable de Producto aprobó este alcance, sus exclusiones y contrato de salida el 2026-07-21 (`DEC-002`, `DEC-062`). El cierre documental no implementa R0, no autoriza su implementación y no constituye aceptación formal de una demostración.
+El Responsable de Producto aprobó este alcance, sus exclusiones y contrato de
+salida el 2026-07-21 (`DEC-002`, `DEC-062`). El
+[dictamen final](../R0_AUTHORIZATION.md) autoriza exclusivamente PBI-023; no
+implementa R0 ni constituye aceptación formal de una demostración.
 
 ## Prerrequisito
 
 H0 está completo en 9/0 y VC-024 está `Closed / PASS`. B-21 registra
-autorización explícita con efectividad condicionada al cierre documental de
-Sprint 00, PBI R0 `Ready` y revisión final. DEC-044, DEC-049, DEC-051 y
+autorización explícita ya efectiva dentro del alcance de PBI-023 tras el cierre
+de Sprint 00 y la revisión final. DEC-044, DEC-049, DEC-051 y
 DEC-063 están aceptadas, pero sus condiciones de materialización siguen
 obligatorias. Aceptar un contrato no sustituye su evidencia ni las decisiones
 H1.

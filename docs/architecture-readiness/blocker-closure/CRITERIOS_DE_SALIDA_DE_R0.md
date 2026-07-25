@@ -177,11 +177,13 @@ Además del alcance aprobado, todos estos criterios siguen siendo obligatorios:
 - [x] no existen decisiones H0 abiertas; H0 está completo en 9/0;
 - [x] el cambio no introduce módulos futuros vacíos ni decisiones H1 implícitas; los 24 contratos están trazados en el [plan H1](../../backlog/R0_H1_EXECUTION_PLAN.md);
 - [x] el Responsable de Producto registró autorización explícita condicional en la [Review](../../sprints/sprint-00/REVIEW.md#decisión-de-producto-y-b-21);
-- [ ] Sprint 00 queda cerrado por dictamen independiente;
-- [ ] la revisión final confirma DoR y activa la autorización condicional.
+- [x] Sprint 00 quedó
+  [cerrado por dictamen independiente](../../reviews/sprint-00/SPRINT_00_CLOSURE.md);
+- [x] la [revisión final](../R0_AUTHORIZATION.md) confirmó DoR y activó la
+  autorización condicional exclusivamente para PBI-023.
 
-Este gate continúa cerrado exclusivamente por los dos últimos puntos. La
-autorización de Producto no entra en vigor antes del cierre y la revisión final.
+Este gate está abierto exclusivamente para PBI-023. No abre PBI-024–PBI-029,
+no satisface H1 por anticipado y no equivale a aceptación de R0.
 
 ### R0 listo para programación
 

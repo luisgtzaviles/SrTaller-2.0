@@ -2,13 +2,13 @@
 
 ## Estado del documento
 
-- **Estado:** completa para remediación; cierre final pendiente.
+- **Estado:** completa; Sprint 00 `Closed`.
 - **Fecha:** 2026-07-24.
 - **Participante y autoridad real:** Responsable del Proyecto actuando también
   como Responsable de Producto.
 - **Terceros/asistentes:** ninguno registrado; no se infieren firmas ni
   aprobaciones adicionales.
-- **Decisión de cierre:** `Continue to independent final review`.
+- **Decisión de cierre:** [SPRINT 00 CLOSED](../../reviews/sprint-00/SPRINT_00_CLOSURE.md).
 
 ## Objetivo revisado
 
@@ -67,7 +67,8 @@ reabre ni amplía ninguna.
 - Dos jobs Linux independientes, frozen install, architecture, typecheck,
   build, 171/171 tests, 159/159 tests de arquitectura, verify, smoke y
   comparación equivalente.
-- PR #1 permanece Draft; merge y autorización de R0 están fuera de alcance.
+- El PR #1 fue revisado como Draft; su promoción sólo procede después del
+  dictamen final, commit de cierre y CI verde.
 
 ## VC-024 y H0
 
@@ -89,9 +90,10 @@ reabre ni amplía ninguna.
 
 ## Resultado del Sprint Goal
 
-La evaluación canónica registra **14 `Met`, 1 `Partially met`, 0 `Not met` y
-0 `Not applicable`**. La remediación está completa; Sprint 00 permanece abierto
-hasta dictamen independiente.
+La evaluación canónica registra **14 `Met`, 1
+`Partially met — Accepted deferred remainder`, 0 `Not met` y 0
+`Not applicable`**. La remediación y el dictamen independiente están
+completos; Sprint 00 está `Closed`.
 
 ## Decisión de Producto y B-21
 
@@ -116,11 +118,11 @@ PBI R0 `Ready`.
 
 ## Recomendación de cierre
 
-Repetir la revisión final independiente. Si confirma los enlaces, la
-reconciliación PBI, B-21, el plan H1, PBI-023 `Ready` y acepta la limitación del
-criterio 14, podrá recomendar el cierre de Sprint 00 y revisar la autorización
-de R0 en una tarea separada.
+El [dictamen final](../../reviews/sprint-00/SPRINT_00_CLOSURE.md) confirmó los
+enlaces, la reconciliación PBI, B-21, el plan H1 y PBI-023, y aceptó el
+remanente verificable del criterio 14. La autorización resultante está
+delimitada en [R0_AUTHORIZATION](../../architecture-readiness/R0_AUTHORIZATION.md).
 
 ## Siguiente hito
 
-`Authorization Review Ready`: revisión final independiente de Sprint 00 y R0.
+Preparar el compromiso de PBI-023 sin iniciar otros PBIs ni omitir sus gates.

@@ -67,8 +67,8 @@ Se activan sólo por un caso de negocio, riesgo o métrica real. No forman un ba
 | --- | --- | --- |
 | Documentar y diseñar ADRs | Permitido | Trabajo reversible y no ejecutable |
 | Preparar spikes | Permitido sólo como diseño | Su ejecución necesita autorización |
-| Scaffolding reversible | No autorizado | Sprint 00/revisión final abiertos y H1 por trigger |
-| Fundación ejecutable | Bloqueada | H1 y autorización organizacional abiertos |
+| Fundación PBI-023 | Autorizada; no iniciada | Estimación/compromiso y gates internos por trigger |
+| Fundación R0 restante | Bloqueada | H1 restante y PBIs sin Ready/autorización |
 | Código de negocio R1 | Bloqueado | R0 no demostrado y H2 abierto |
 | Piloto | Bloqueado | R1–R5 y H3 abiertos |
 | Producción | Bloqueada | H4 abierto |

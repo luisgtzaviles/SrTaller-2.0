@@ -1,6 +1,15 @@
 # Evaluación del siguiente gate de R0
 
-## Resultado vigente
+## Resultado final
+
+**SUPERSEDED — R0 AUTHORIZED**
+
+La [revisión final](./R0_AUTHORIZATION.md) cerró Sprint 00 e hizo efectiva
+B-21 exclusivamente para PBI-023. El resto de este documento conserva la
+fotografía inmediatamente anterior al dictamen y no debe usarse para afirmar
+que R0 sigue no autorizado.
+
+## Resultado evaluado antes del dictamen
 
 **PASS — R0 AUTHORIZATION REVIEW READY**
 
