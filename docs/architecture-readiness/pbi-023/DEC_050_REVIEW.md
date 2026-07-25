@@ -4,8 +4,10 @@
 
 - **Estado anterior:** abierta; ADR-003 sólo fijaba principios.
 - **Estado final:** `Accepted with conditions`.
-- **Materialización:** no iniciada.
-- **Condiciones:** DEC050-C01 a C10 `Pending`.
+- **Materialización productiva:** no iniciada.
+- **Verificación material:** SPIKE-002 `PASS`; [evidencia](spike-002-evidence/README.md).
+- **Condiciones:** DEC050-C01 a C10 continúan pendientes por trigger; el spike
+  verificó el patrón candidato, no la implementación.
 - **Estrategia:** `Migrator` + `FileMigrationProvider` del core de Kysely.
 - **Runner:** propio, mínimo, explícito y separado de build/start.
 - **Decisión completa:** [DECISION_PROPOSAL.md](../../decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md).
@@ -27,14 +29,17 @@
 | Seguridad | usuarios separados, mínimo privilegio, evidencia sanitizada |
 | Multi-tenant | owner/scope, `tenant_id`, constraints compuestas y negativos |
 
-## Por qué puede aceptarse sin instalar
+## Estado posterior a SPIKE-002
 
-La decisión elige un contrato con evidencia primaria de API, orden,
-transacción, lock y compatibilidad declarada. La instalación y ejecución son
-condiciones de materialización, no requisitos para comparar las opciones.
+La decisión fue aceptada primero con evidencia primaria. SPIKE-002 agregó
+evidencia material: baseline exacta, orden/journal, transacción, lock,
+rollback, PostgreSQL real, aislamiento, hashes, doble run y cleanup pasaron.
 
-La aceptación no habilita la primera migración: DEC050-C01 y SPIKE-002 siguen
-siendo gates fail-closed.
+Esto retira SPIKE-002 como bloqueo, pero no habilita directamente la primera
+migración. C01–C10 conservan sus triggers de instalación, checker, runtime,
+CI, operación y cambios persistentes. Su desglose autoritativo está en la
+sección 10 de DEC-050 y en la
+[trazabilidad del spike](spike-002-evidence/TRACEABILITY_MATRIX.md).
 
 ## Temas no absorbidos
 

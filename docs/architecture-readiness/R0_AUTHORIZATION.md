@@ -72,7 +72,13 @@ aún no iniciada.
 `13 SP` y DEC-050 fue aceptada con condiciones. La investigación documental de
 SPIKE-002 no produjo —ni podía producir bajo sus restricciones— la evidencia
 PostgreSQL ejecutable exigida. PBI-023 conserva autorización limitada, pero su
-estado operativo actual es `Blocked — executable SPIKE-002 evidence pending`.
+estado operativo al 2026-07-24 era `Blocked — executable SPIKE-002 evidence
+pending`.
+
+**Actualización material 2026-07-25:** SPIKE-002 ejecutó E1–E12 dos veces
+contra PostgreSQL `18.4`, pasó comparación y cleanup y recibió dictamen
+`PASS`. PBI-023 queda `Ready — SPIKE-002 materially verified /
+implementation gates ready`; no está iniciado.
 
 ## 9. Definition of Ready
 
@@ -95,7 +101,7 @@ estado operativo actual es `Blocked — executable SPIKE-002 evidence pending`.
 | Visual | No existe UI en el alcance | No aplica, justificado |
 | Operación | PostgreSQL reproducible/aislado, lifecycle, cleanup y evidencia | PASS |
 | Integraciones | No hay servicios externos ni ambiente compartido | No aplica, justificado |
-| Preguntas bloqueantes | DEC-050 y SPIKE-002 eran los primeros gates internos | DEC-050 aceptada después; SPIKE-002 ejecutable bloquea persistencia |
+| Preguntas bloqueantes | DEC-050 y SPIKE-002 eran los primeros gates internos | ambos cerrados para viabilidad; gates productivos siguen por paso |
 | Documentación relacionada | ADR/DEC, H1, DoR/DoD, manifest y evidencia identificados | PASS |
 | Decisión aprobada cuando sea necesaria | Stack/H0 aceptados; DEC-050 debía decidirse antes de migrar | PASS; DEC-050 quedó aceptada con condiciones |
 | Estrategia de pruebas | PostgreSQL real, dos tenants, positivos/negativos, transacción y mutaciones | PASS |
@@ -140,8 +146,8 @@ está asociado al head exacto y ejecutó el merge sintético correcto con
 - PBI-023 sigue siendo de riesgo alto y falla cerrado.
 - DEC051-C02–C06/C08/C10 y DEC063-C02/C05–C08 siguen por trigger.
 - PostgreSQL real, dos tenants y denegación cross-tenant son obligatorios.
-- Las condiciones de DEC-050 y el cierre ejecutable de SPIKE-002 deben
-  preceder cualquier migración.
+- Las condiciones aplicables de DEC-050 deben preceder cada trigger; SPIKE-002
+  ya cerró el gate material de viabilidad.
 - La protección de `main` no se presume demostrada.
 - `Authorized` no equivale a `In progress`, `Done`, `Released` o R0 aceptado.
 
@@ -150,8 +156,8 @@ está asociado al head exacto y ejecutó el merge sintético correcto con
 La autorización permite únicamente:
 
 1. preparar y comenzar PBI-023 después de acordar su estimación/compromiso;
-2. materializar las condiciones de DEC-050 sólo después de ejecutar y cerrar
-   SPIKE-002 dentro de su orden fail-closed;
+2. materializar las condiciones de DEC-050 en orden fail-closed después del
+   cierre `PASS` de SPIKE-002;
 3. materializar exclusivamente la fundación técnica descrita;
 4. satisfacer y demostrar las condiciones DEC-049/051/063 aplicables;
 5. detenerse ante una decisión material no incluida o un gate rojo.
@@ -180,12 +186,12 @@ equivale a aceptación de la implementación futura.
 
 `Authorized`.
 
-PBI-023 conserva `Authorized`, no está `In progress` y queda `Blocked` por el
-gate ejecutable de SPIKE-002. H1 continúa abierto y R0 aún debe implementarse,
-demostrarse y recibir aceptación formal.
+PBI-023 conserva `Authorized`, queda `Ready` y no está `In progress`.
+H1 continúa abierto y R0 aún debe implementarse, demostrarse y recibir
+aceptación formal.
 
 ## 16. Siguiente acción
 
-Autorizar, ejecutar y revisar SPIKE-002. Sólo después puede comenzar la
-materialización secuencial de riesgo/checklists antes de instalar
-Kysely/`pg`, crear una migración o introducir persistencia.
+Autorizar el Paso 3 de PBI-023: extender boundaries/checker con evidencia
+negativa antes de instalar Kysely/`pg`, crear una migración o introducir
+persistencia.

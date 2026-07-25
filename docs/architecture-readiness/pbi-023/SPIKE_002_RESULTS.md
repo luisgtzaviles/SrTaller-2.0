@@ -4,12 +4,13 @@
 
 - **Clasificación:** `Mandatory before implementation`.
 - **Fecha de investigación:** 2026-07-24.
-- **Timebox ejecutado:** una iteración documental y de metadata autoritativa.
+- **Timebox ejecutado:** investigación documental y una ejecución material
+  desechable con dos runs desde cero.
 - **Resultado de investigación:** `PASS`.
-- **Resultado ejecutable:** `NOT RUN`.
-- **Estado final del spike:** `Open — executable evidence pending`.
-- **Dictamen para PBI-023:** `CONDITIONAL PASS FOR PLANNING / BLOCKED FOR
-  IMPLEMENTATION`.
+- **Resultado ejecutable:** `PASS`.
+- **Estado final del spike:** `Completed — material evidence verified`.
+- **Dictamen:** `PASS — SPIKE-002 MATERIAL VERIFICATION COMPLETE`.
+- **Evidencia:** [spike-002-evidence/](spike-002-evidence/README.md).
 
 ## Hipótesis
 
@@ -17,10 +18,9 @@ Un contexto inmutable, repositorios tenant-aware y constraints compuestas
 pueden bloquear CRUD y referencias cross-tenant sin depender de filtros
 opcionales.
 
-La investigación demuestra que el tooling candidato puede soportar el
-experimento. No demuestra la hipótesis de aislamiento: eso exige código
-desechable, PostgreSQL real y casos negativos, acciones prohibidas en esta
-tarea.
+La investigación identificó el tooling candidato. La ejecución material
+confirmó la hipótesis mediante código desechable, PostgreSQL real, E1–E12,
+casos negativos, dos runs comparables y cleanup completo.
 
 ## Método reproducible
 
@@ -55,12 +55,12 @@ instalación.
 
 ### 1. Node.js 24.18.0, TypeScript 6.0.3, ESM y NodeNext
 
-**Compatibilidad declarada: sí. Compatibilidad ejecutada: pendiente.**
+**Compatibilidad declarada y ejecutada: sí.**
 
 Kysely `0.29.4` declara Node `>=22`, publica ESM y su metadata oficial usa
-TypeScript 6 en desarrollo. El repositorio ya materializa ESM/NodeNext y
-TypeScript `6.0.3`. Sólo una instalación congelada más typecheck/build/test en
-Node `24.18.0` puede cerrar DEC050-C01.
+TypeScript 6 en desarrollo. El laboratorio compiló e importó ESM/NodeNext con
+Node `24.18.0`, TypeScript `6.0.3`, lockfile congelado y scripts deshabilitados.
+DEC050-C01 productiva permanece pendiente hasta instalar en el repositorio.
 
 ### 2. Paquete y versión de `pg`
 
@@ -196,18 +196,20 @@ ejecutable debe usar probes desechables fuera del schema productivo para
 ejercitar CRUD, joins y referencias. Esos probes se eliminan al cerrar el
 spike y no justifican tablas productivas.
 
-## Cleanup de esta iteración
+## Ejecución material y cleanup
 
-No hubo paquetes, código, base, contenedor, credenciales ni procesos que
-limpiar. Sólo se creó documentación versionada.
+El 2026-07-25 UTC se ejecutaron dos runs Linux `amd64` con PostgreSQL `18.4`
+real y baseline exacta. E1–E12 pasaron, los resultados normalizados y
+artefactos fueron idénticos y los recursos quedaron en cero después de cada
+run.
 
-## Criterio de cierre pendiente
+El laboratorio, bases, tablas, credenciales, `node_modules`, build, redes,
+volúmenes, contenedores e imágenes descargadas sólo para el spike fueron
+eliminados. Se conserva únicamente evidencia sanitizada y hashes en
+[spike-002-evidence/](spike-002-evidence/README.md).
 
-SPIKE-002 sólo puede cerrarse cuando:
+## Cierre
 
-1. se autorice un experimento ejecutable desechable;
-2. se use la baseline exacta y PostgreSQL `18.4`;
-3. se ejecuten todos los casos de éxito/fracaso originales;
-4. se preserve evidencia sanitizada y reproducible;
-5. se eliminen probes, bases y credenciales efímeras;
-6. Arquitectura, Seguridad y Calidad emitan dictamen.
+Los seis criterios originales quedaron satisfechos. Arquitectura, Seguridad y
+Calidad cuentan con evidencia material para el dictamen `PASS`. El cierre
+acredita el patrón, no la implementación productiva.

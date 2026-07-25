@@ -28,8 +28,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Evidencia:** manifest, comandos, resultados, hashes y cleanup.
 - **Rollback:** eliminar base, credenciales, paquetes/probes desechables.
 - **Gate:** Arquitectura + Seguridad + Calidad.
-- **Salida:** hipótesis confirmada o rechazada; dictamen formal. Hoy
-  `Blocked`.
+- **Salida:** `Completed — PASS`; hipótesis confirmada en
+  [evidencia material](spike-002-evidence/RESULTS.md).
 
 ## Paso 3 — Extender boundaries y checker
 
@@ -193,5 +193,6 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 ## Orden definitivo
 
 El orden recomendado del prompt se ajusta poniendo el checker antes de `src/`
-y separando schema/adapters. El siguiente paso real es **Paso 2**. Ningún paso
-3–14 está autorizado por este expediente.
+y separando schema/adapters. Los pasos 1–2 están completos. El siguiente paso
+real es **Paso 3**, sujeto a autorización explícita; los pasos 4–14 no quedan
+autorizados por el cierre del spike.

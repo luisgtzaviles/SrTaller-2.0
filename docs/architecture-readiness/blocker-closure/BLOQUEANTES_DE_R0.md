@@ -29,7 +29,7 @@ evidencia ni las decisiones H1.
 | Acciones sensibles | DEC-019 y DEC-020 | Modelo aceptado en ADR-013; faltan clasificación concreta, mecanismo, aplicación y pruebas |
 | Tiempo | DEC-037 y DEC-038 | Autoridad de zona horaria y almacenamiento/presentación coherentes |
 | Señales | DEC-045 a DEC-048 | Logs, auditoría, correlación y observabilidad mínima separadas |
-| Persistencia | DEC-050 | Contrato aceptado; C01–C10, SPIKE-002 y ejecución segura pendientes |
+| Persistencia | DEC-050 | Contrato aceptado; SPIKE-002 material PASS; C01–C10 y ejecución segura pendientes por trigger |
 | Datos de prueba | DEC-052 | Fixtures/semillas sin datos reales y con dos tenants |
 | Secretos | DEC-055 | Configuración externa, cifrado aplicable, rotación y no exposición |
 
@@ -52,7 +52,9 @@ evidencia ni las decisiones H1.
 
 ## Spikes condicionados
 
-- SPIKE-002 es obligatorio antes de persistencia tenant-scoped con esquema compartido.
+- SPIKE-002 era obligatorio antes de persistencia tenant-scoped con esquema
+  compartido y quedó cerrado con `PASS`; sus controles deben repetirse en la
+  implementación.
 - SPIKE-003 es obligatorio sólo antes de adoptar RLS; no bloquea cualquier persistencia de R0 y puede concluir rechazándola.
 - SPIKE-005 es obligatorio si PIN/estación forma parte de R0.
 - SPIKE-001 se difiere si R0 resuelve tenant sin wildcard ni cliente web tenant-aware.

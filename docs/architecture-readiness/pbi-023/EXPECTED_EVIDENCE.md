@@ -46,7 +46,8 @@ No incluye:
 
 ## Evidencia de SPIKE-002
 
-Debe estar separada de la implementación productiva:
+Está separada de la implementación productiva en
+[spike-002-evidence/](spike-002-evidence/README.md):
 
 - hipótesis y timebox;
 - árbol/probes desechables;
@@ -56,6 +57,11 @@ Debe estar separada de la implementación productiva:
 - bypasses observados;
 - cleanup probado;
 - decisión de conservar/rechazar patrón.
+
+El manifest real es
+[EVIDENCE_MANIFEST.json](spike-002-evidence/EVIDENCE_MANIFEST.json). Los
+artefactos que requieren implementación productiva continúan siendo evidencia
+futura de PBI-023.
 
 ## Reglas de retención
 

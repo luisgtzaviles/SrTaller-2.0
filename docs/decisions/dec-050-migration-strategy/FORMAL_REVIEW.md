@@ -7,7 +7,8 @@
 - **Decisión revisada:** [DEC-050](DECISION_PROPOSAL.md).
 - **Resultado:** `PASS WITH CONDITIONS`.
 - **Estado autorizado:** `Accepted with conditions`.
-- **Materialización verificada:** no.
+- **Verificación material posterior:** SPIKE-002 `PASS` el 2026-07-25 para el
+  patrón candidato; materialización productiva no iniciada.
 - **Cambio técnico:** ninguno.
 
 ## 1. Método
@@ -60,14 +61,16 @@ ni un repositorio genérico.
 ### Ingeniería
 
 `PASS WITH CONDITIONS`. Las versiones candidatas son coherentes por metadata y
-fuente oficial. DEC050-C01/C03/C04/C07 exigen confirmación ejecutable antes del
-primer merge persistente.
+fuente oficial. SPIKE-002 confirmó ejecutablemente compatibilidad, lock,
+transacción y lifecycle del probe. DEC050-C01/C03/C04/C07 siguen pendientes
+de instalación, runner, migraciones, suite y CI productivos.
 
 ### Seguridad
 
 `PASS WITH CONDITIONS`. El contrato separa identidades, evita logs sensibles y
-exige constraints tenant-scoped. La evidencia negativa de SPIKE-002 y
-DEC063-C06 sigue pendiente.
+exige constraints tenant-scoped. SPIKE-002 verificó negativos y sanitización
+con datos/credenciales sintéticos. Mínimo privilegio compartido, checker y
+DEC063-C06 productivo siguen pendientes.
 
 ### Operaciones
 
@@ -78,8 +81,9 @@ no transaccionales permanecen fuera del primer slice.
 ### Calidad
 
 `PASS WITH CONDITIONS`. Se definieron pruebas desde vacío/anterior,
-concurrencia, fallo, cleanup y doble run Linux. Ninguna ha sido ejecutada en
-este expediente.
+concurrencia, fallo, cleanup y doble run Linux. SPIKE-002 ejecutó y comparó
+materialmente esas pruebas para el probe; la suite productiva y CI aún no
+existen.
 
 ## 5. Compatibilidad
 
@@ -114,3 +118,17 @@ suficiente para declarar sus condiciones materializadas.
 
 **Dictamen final:** `PASS WITH CONDITIONS — DEC-050 ACCEPTED; MATERIALIZATION
 PENDING`.
+
+## 8. Addendum de evidencia material — 2026-07-25
+
+El expediente
+[SPIKE-002](../../architecture-readiness/pbi-023/spike-002-evidence/README.md)
+ejecutó PostgreSQL `18.4`, Kysely `0.29.4`, `pg` `8.22.0`,
+`@types/pg` `8.20.0`, Node `24.18.0`, TypeScript `6.0.3` y pnpm `11.15.1`
+en Linux `amd64`, ESM/NodeNext. Dos corridas limpias pasaron E1–E12 y su
+comparación material.
+
+La evidencia elimina el bloqueo ejecutable de SPIKE-002 y confirma la
+viabilidad de la selección. No cambia el estado de DEC-050 ni satisface
+automáticamente C01–C10: cada condición conserva su trigger productivo,
+operativo o de CI según la tabla vigente de la decisión.

@@ -6,9 +6,13 @@
 - **Fecha:** 2026-07-24.
 - **Autoridad:** Responsable del Proyecto, mediante el mandato documental de
   preparación de PBI-023.
-- **Materialización:** no iniciada.
+- **Materialización productiva:** no iniciada.
+- **Verificación material del patrón:** SPIKE-002 `PASS` el 2026-07-25;
+  [evidencia](../../architecture-readiness/pbi-023/spike-002-evidence/README.md).
 - **Implementación autorizada por esta decisión:** ninguna.
-- **Condiciones:** DEC050-C01 a DEC050-C10 permanecen `Pending`.
+- **Condiciones:** DEC050-C01 a DEC050-C10 permanecen `Pending` por sus
+  triggers productivos/operativos; SPIKE-002 aporta evidencia material
+  diferenciada en la tabla de la sección 10.
 - **PBI:** [PBI-023](../../backlog/pbis/PBI-023.md).
 - **Expediente:** [PBI-023 / DEC-050](../../architecture-readiness/pbi-023/DEC_050_REVIEW.md).
 
@@ -112,9 +116,10 @@ Las versiones candidatas exactas para la primera materialización son:
 | `pg` | `8.22.0` | driver oficial consultado; ESM y Node `>=16` |
 | `@types/pg` | `8.20.0` | publicación con tag para TypeScript 6 |
 
-No quedan instaladas por esta decisión. DEC050-C01 obliga a reconfirmar
-metadata, integridad del lockfile y ejecución real antes de aceptarlas como
-materializadas.
+No quedan instaladas por esta decisión. SPIKE-002 confirmó las versiones en
+un lockfile experimental congelado y en la baseline exacta. DEC050-C01 sigue
+pendiente hasta reconfirmar metadata, integridad del lockfile productivo y
+ejecución de los gates del repositorio al instalarlas.
 
 No se selecciona `kysely-ctl`, ORM, generador de schema, SQLite, Testcontainers
 ni Docker Compose. Una futura herramienta sólo podrá entrar mediante decisión
@@ -261,8 +266,10 @@ proceso de pruebas:
 - salida: pool cerrado, base eliminada y evidencia sin secretos.
 
 Testcontainers queda como alternativa futura si la divergencia de lifecycle
-local/CI es material. No se adopta ahora porque agrega dependencias y un
-runtime de contenedores sin evidencia ejecutada dentro de este gate.
+local/CI es material. No se adopta ahora porque agrega dependencias. SPIKE-002
+usó directamente imágenes Docker oficiales sólo como laboratorio desechable;
+eso no adopta Docker como infraestructura productiva ni Testcontainers como
+dependencia.
 
 ## 9. Consecuencias
 
@@ -283,18 +290,18 @@ runtime de contenedores sin evidencia ejecutada dentro de este gate.
 
 ## 10. Condiciones de materialización
 
-| Condición | Owner | Trigger | Evidencia | Estado |
-|---|---|---|---|---|
-| DEC050-C01 | Ingeniería + Calidad | antes de instalar | versiones revalidadas, lockfile y compatibilidad ejecutada | `Pending` |
-| DEC050-C02 | Arquitectura + Ingeniería | antes de la primera migración | naming, orden, inmutabilidad y mutación negativa | `Pending` |
-| DEC050-C03 | Ingeniería + Operaciones | antes de ejecutar | lock core, exclusión del job, timeout y concurrencia probada | `Pending` |
-| DEC050-C04 | Ingeniería + Calidad | antes de integrar | transacción, fallo parcial, `down` seguro y roll-forward probados | `Pending` |
-| DEC050-C05 | Operaciones + Calidad | antes de promover | status, manifest SHA-256, drift y artefacto exacto | `Pending` |
-| DEC050-C06 | Seguridad + Operaciones | antes de ambiente compartido | roles separados, privilegios mínimos y logs sanitizados | `Pending` |
-| DEC050-C07 | Calidad + Ingeniería | antes del primer merge persistente | vacío/anterior/re-run/cleanup en PostgreSQL `18.4` | `Pending` |
-| DEC050-C08 | Operaciones + Ingeniería | antes de despliegue | migración separada de build/start y promoción por commit | `Pending` |
-| DEC050-C09 | Arquitectura + Seguridad | antes de crear objetos tenant-scoped | registry, constraints/índices/FK y negativos | `Pending` |
-| DEC050-C10 | Responsable del Proyecto + Operaciones | antes de cambio destructivo/no transaccional | aprobación, backup, ensayo de recuperación y ventana | `Pending` |
+| Condición | Owner | Trigger | Evidencia requerida | Aporte material SPIKE-002 | Estado |
+|---|---|---|---|---|---|
+| DEC050-C01 | Ingeniería + Calidad | antes de instalar | versiones revalidadas, lockfile y compatibilidad ejecutada | baseline candidata, install congelado, ESM/NodeNext, build y query verificados | `Pending — product install` |
+| DEC050-C02 | Arquitectura + Ingeniería | antes de la primera migración | naming, orden, inmutabilidad y mutación negativa | orden, journal y re-run del probe verificados | `Pending — policy/product migration` |
+| DEC050-C03 | Ingeniería + Operaciones | antes de ejecutar | lock core, exclusión del job, timeout y concurrencia probada | dos migradores, un apply, timeout y liberación verificados | `Pending — product runner/CI job` |
+| DEC050-C04 | Ingeniería + Calidad | antes de integrar | transacción, fallo parcial, `down` seguro y roll-forward probados | rollback, fallo y `down` seguro del probe verificados | `Pending — product migration/recovery` |
+| DEC050-C05 | Operaciones + Calidad | antes de promover | status, manifest SHA-256, drift y artefacto exacto | status, hashes y doble run verificados | `Pending — promotion/drift gate` |
+| DEC050-C06 | Seguridad + Operaciones | antes de ambiente compartido | roles separados, privilegios mínimos y logs sanitizados | credencial efímera y sanitización verificadas | `Pending — shared roles/operations` |
+| DEC050-C07 | Calidad + Ingeniería | antes del primer merge persistente | vacío/anterior/re-run/cleanup en PostgreSQL `18.4` | lifecycle completo del probe en PG `18.4` verificado | `Pending — product suite/CI` |
+| DEC050-C08 | Operaciones + Ingeniería | antes de despliegue | migración separada de build/start y promoción por commit | laboratorio separado del producto | `Pending — product startup/deploy` |
+| DEC050-C09 | Arquitectura + Seguridad | antes de crear objetos tenant-scoped | registry, constraints/índices/FK y negativos | FK compuesta y negativos del probe verificados | `Pending — registry/product schema` |
+| DEC050-C10 | Responsable del Proyecto + Operaciones | antes de cambio destructivo/no transaccional | aprobación, backup, ensayo de recuperación y ventana | trigger no activado | `Pending — future trigger` |
 
 Aceptar la decisión no satisface estas condiciones.
 
@@ -347,7 +354,8 @@ Revisar esta decisión si:
 
 ## 15. Impacto en R0
 
-DEC-050 deja una estrategia única definida y permite preparar la
-materialización de migraciones. No autoriza instalar dependencias ni iniciar
-persistencia. PBI-023 permanece bloqueado hasta cerrar SPIKE-002 con evidencia
-ejecutable y satisfacer las condiciones por trigger.
+DEC-050 deja una estrategia única definida y materialmente viable. SPIKE-002
+cerró el bloqueo de compatibilidad del patrón, pero no autoriza instalar
+dependencias ni iniciar persistencia. PBI-023 queda `Ready — SPIKE-002
+materially verified / implementation gates ready`; cada paso productivo sigue
+bloqueado por las condiciones aplicables de esta tabla.

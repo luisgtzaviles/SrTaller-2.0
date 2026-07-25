@@ -69,7 +69,7 @@ Se activan sólo por un caso de negocio, riesgo o métrica real. No forman un ba
 | --- | --- | --- |
 | Documentar y diseñar ADRs | Permitido | Trabajo reversible y no ejecutable |
 | Preparar spikes | Permitido sólo como diseño | Su ejecución necesita autorización |
-| Fundación PBI-023 | Autorizada; planificación completa; `Blocked` | SPIKE-002 ejecutable y gates internos por trigger |
+| Fundación PBI-023 | Autorizada; planificación completa; `Ready` | SPIKE-002 material PASS; gates internos por trigger |
 | Fundación R0 restante | Bloqueada | H1 restante y PBIs sin Ready/autorización |
 | Código de negocio R1 | Bloqueado | R0 no demostrado y H2 abierto |
 | Piloto | Bloqueado | R1–R5 y H3 abiertos |

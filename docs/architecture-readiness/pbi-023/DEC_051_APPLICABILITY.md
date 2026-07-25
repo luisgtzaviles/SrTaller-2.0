@@ -5,17 +5,18 @@
 - C01, C07 y C09: `Satisfied`.
 - C02–C06, C08 y C10: `Pending` según trigger.
 
-Este expediente no modifica esos estados.
+Este expediente no modifica esos estados. SPIKE-002 aporta evidencia
+preparatoria, no cumplimiento productivo.
 
 ## Matriz
 
 | Condición | Trigger para PBI-023 | Aplicabilidad | Estado | Mecanismo verificable | Evidencia futura | Responsable/gate |
 |---|---|---|---|---|---|---|
 | C02 — protección de `main` | antes del primer merge funcional | directa | `Pending` | requerir checks CI sin bypass ordinario | configuración exportable/captura segura y PR rechazado sin checks | Operaciones + Arquitectura / merge |
-| C03 — PostgreSQL real | primera suite persistence | directa | `Pending` | servicio efímero PG `18.4`, base por run, cleanup | versión/lifecycle/logs sanitizados y suite | Ingeniería + Operaciones / antes del merge |
-| C04 — aislamiento negativo | primera persistencia tenant | directa | `Blocked` | matriz dos tenants/branches y mutaciones | resultados ISO-001 a ISO-020 | Seguridad + Calidad / SPIKE y merge |
+| C03 — PostgreSQL real | primera suite persistence | directa | `Pending — product CI` | servicio efímero PG `18.4`, base por run, cleanup | SPIKE-002 verificó estrategia; falta suite/job productivo | Ingeniería + Operaciones / antes del merge |
+| C04 — aislamiento negativo | primera persistencia tenant | directa | `Pending — product suite` | matriz dos tenants/branches y mutaciones | E6–E10 del spike PASS; faltan ISO productivos | Seguridad + Calidad / merge |
 | C05 — API pública/errores | antes de API funcional | no activada | `Pending` | PBI-023 no crea API; sí prueba traducción interna DEC-044 | contrato HTTP se difiere; errores persistence se prueban | Ingeniería + Seguridad + Calidad / PBI futuro |
-| C06 — ownership/persistencia | primera persistencia | directa | `Pending` | registry, checker, constraints, transaction runner | static gates + PG real + rollback | Arquitectura + Ingeniería + Calidad / merge |
+| C06 — ownership/persistencia | primera persistencia | directa | `Pending` | registry, checker, constraints, transaction runner | spike validó constraints/rollback; faltan static gates y runtime | Arquitectura + Ingeniería + Calidad / merge |
 | C08 — flakiness/quarantine | antes de retry/cuarentena | no activada | `Pending` | no retries de test ni quarantine | registro sólo si aparece un caso real | Calidad + Operaciones |
 | C10 — bypass/emergency | antes de habilitar bypass | no activada | `Pending` | no bypass ni excepción | policy/expiración/restauración sólo si se propone | Operaciones + Seguridad + Arquitectura |
 
@@ -50,7 +51,8 @@ Esta tarea no modifica configuración remota.
 
 Se usa
 [TENANT_ISOLATION_TEST_PLAN.md](TENANT_ISOLATION_TEST_PLAN.md). C04 no cierra
-con tests estáticos solamente.
+con tests estáticos ni con el probe solamente. SPIKE-002 retiró el bloqueo de
+viabilidad; la suite productiva sigue pendiente.
 
 ## C05 — alcance preciso
 
@@ -74,6 +76,7 @@ El gate futuro verifica:
 
 ## Dictamen
 
-DEC-051 está completamente trazada para planificación. C03/C04/C06 bloquean el
-primer merge persistente; C02 bloquea cualquier primer merge funcional. C05,
-C08 y C10 no se activaron.
+DEC-051 está completamente trazada. SPIKE-002 confirmó estrategia,
+testabilidad y PostgreSQL real para C03/C04/C06, sin satisfacer sus triggers
+productivos. Las tres bloquean el primer merge persistente; C02 bloquea
+cualquier primer merge funcional. C05, C08 y C10 no se activaron.

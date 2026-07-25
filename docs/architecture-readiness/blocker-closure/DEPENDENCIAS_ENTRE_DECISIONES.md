@@ -12,7 +12,7 @@ flowchart TD
     PBI22 --> D5E[DEC005-C01 a C05<br/>PASS formal]
     ACCEPT[DEC-062 Aceptación R0<br/>Cerrada 2026-07-21] --> TEST[DEC-051 Accepted<br/>C01/C07/C09 Satisfied]
     ACCEPT --> R0
-    STACK --> PBI23[PBI-023 Blocked<br/>SPIKE-002 ejecutable]
+    STACK --> PBI23[PBI-023 Ready<br/>SPIKE-002 PASS]
     PBI23 --> DATA[DEC-050 Accepted with conditions<br/>materialización pendiente]
     D5E --> OWN[DEC-049 Propiedad/repositorios<br/>Accepted; C01-C08 vigentes]
     D5E --> TEST
@@ -80,9 +80,9 @@ flowchart TD
   Define cómo comprobar DEC-005/044/049. VC-024 satisfizo C01/C07/C09;
   C02–C06/C08/C10 permanecen pendientes y se aplican por trigger.
 - [DEC-050](../../decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md)
-  está `Accepted with conditions`; C01–C10 y SPIKE-002 conservan los gates de
-  materialización de PBI-023.
-- SPIKE-002 parte de la estrategia shared-schema aceptada y depende de un contrato representativo y un mecanismo técnico autorizado para demostrar aislamiento.
+  está `Accepted with conditions`; C01–C10 conservan sus gates productivos.
+- SPIKE-002 confirmó materialmente la estrategia shared-schema candidata y
+  queda como evidencia previa a la materialización de PBI-023.
 - SPIKE-003 depende del resultado de SPIKE-002, PostgreSQL aceptado y acceso de datos/pooling. Es obligatorio antes de adoptar RLS, no antes de cualquier persistencia de R0, y puede concluir rechazándola.
 - SPIKE-005 parte del propósito y sesión aceptados por ADR-011; debe acotarse a protección técnica, intentos, revocación y relación con acciones sensibles.
 - La prueba concurrente de folio depende de alcance del folio y persistencia candidata.

@@ -5,7 +5,7 @@
 - **Riesgo inherente:** alto.
 - **Regla:** fail-closed; ambigüedad no reduce la clasificación.
 - **Radio de impacto futuro:** toda persistencia tenant-scoped de R0.
-- **Datos de esta planificación:** documentación solamente.
+- **Datos del spike:** exclusivamente sintéticos y destruidos.
 - **Datos de la implementación futura:** dos tenants/sucursales sintéticos;
   ninguna PII ni dato real.
 - **Irreversibilidad ejecutada:** ninguna.
@@ -21,10 +21,10 @@ schema inicial sea pequeño.
 | Runtime | sin cambios |
 | Persistencia | sin cambios |
 | Dependencias | sin cambios |
-| DB/SQL/migraciones | no ejecutados/creados |
-| Reversibilidad | revertir documentación Git |
-| Seguridad | no se procesaron secretos |
-| Evidencia | investigación y diseño |
+| DB/SQL/migraciones | sólo probes en PostgreSQL efímero; destruidos |
+| Reversibilidad | cleanup completo + revertir documentación Git |
+| Seguridad | credencial sintética efímera; cero valores preservados |
+| Evidencia | investigación, dos runs materiales y comparación |
 
 ## Cambio futuro autorizado sólo tras gates
 
@@ -76,14 +76,15 @@ schema inicial sea pequeño.
 
 ## Checklist DEC-049
 
-Ninguna condición que requiera código o PostgreSQL se marca satisfecha.
+Ninguna condición que requiera implementación productiva se marca satisfecha.
+SPIKE-002 aporta evidencia del patrón y retira el bloqueo material de C03.
 
 | Condición | Aplicabilidad | Estado | Evidencia actual | Evidencia de cierre | Gate |
 |---|---|---|---|---|---|
-| DEC049-C01 — versiones exactas | directa | `Pending` | candidatos investigados | install frozen + typecheck/build/test | antes de instalar/integrar |
+| DEC049-C01 — versiones exactas | directa | `Pending` | baseline candidata ejecutada; product install ausente | install frozen + typecheck/build/test productivo | antes de instalar/integrar |
 | DEC049-C02 — owner/scope/invariantes | directa | `Pending` | registry propuesto | registry materializado + review | antes de tabla/migración/repo |
-| DEC049-C03 — constraints/aislamiento PG18 | directa | `Blocked` | plan negativo | SPIKE-002 + suite PG18 real | antes de aceptar persistencia |
-| DEC049-C04 — pool/transacción/retry | directa | `Pending` | diseño | misma conexión, commit/rollback/lifecycle | antes del merge persistente |
+| DEC049-C03 — constraints/aislamiento PG18 | directa | `Pending — implementation` | SPIKE-002 E6–E10 PASS en PG18 | suite productiva PG18 | antes de aceptar persistencia |
+| DEC049-C04 — pool/transacción/retry | directa | `Pending` | patrón de pool/rollback/concurrencia verificado | misma conexión, commit/rollback/lifecycle productivo | antes del merge persistente |
 | DEC049-C05 — acceso excepcional separado | preventiva | `Pending` | fuera de alcance ordinario | checker rechaza; no registry admin | antes de cualquier bypass |
 | DEC049-C06 — errores/logs | directa | `Pending` | mapping documental | tests de traducción/redaction | antes del merge persistente |
 | DEC049-C07 — enforcement | directa | `Pending` | paths/reglas identificados | casos válidos/negativos/mutaciones | antes del merge persistente |
@@ -128,7 +129,7 @@ tokens, PII ni paths personales.
 
 | Momento | Aprobación |
 |---|---|
-| cerrar SPIKE-002 | Arquitectura + Seguridad + Calidad |
+| cerrar SPIKE-002 | Arquitectura + Seguridad + Calidad — evidencia PASS |
 | instalar dependencias | Ingeniería + Arquitectura |
 | crear facility/checker | Arquitectura + Ingeniería + Calidad |
 | crear migración/objetos | owners de módulos + Arquitectura + Seguridad |
@@ -138,11 +139,10 @@ tokens, PII ni paths personales.
 
 ## Acciones permitidas antes del siguiente gate
 
-- revisar y versionar este expediente;
-- abrir Draft PR documental;
-- diseñar la ejecución desechable de SPIKE-002;
-- consultar metadata/fuentes sin instalar;
-- obtener aprobación del spike.
+- revisar y versionar el cierre del spike;
+- mantener el PR como Draft;
+- preparar autorización estricta del Paso 3;
+- extender boundaries/checker sólo mediante una tarea posterior autorizada.
 
-No están permitidos instalación, `src/`, SQL, migraciones, PostgreSQL,
-Docker/Testcontainers ni cambios de workflow bajo esta tarea.
+Esta tarea material no autoriza instalación productiva, `src/`, migraciones
+productivas, tablas productivas ni cambios de workflow.

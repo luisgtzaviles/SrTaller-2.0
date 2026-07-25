@@ -55,7 +55,8 @@ Puede trabajarse en paralelo con la evidencia de aplicación del Grupo A. ADR-01
 
 1. Propiedad/repositorios (`DEC-049`).
 2. Materializar persistencia y migraciones (`DEC-050` aceptada con
-   condiciones), sólo después de SPIKE-002 ejecutable.
+   condiciones), sólo después de SPIKE-002 ejecutable; ese gate obtuvo `PASS`
+   el 2026-07-25.
 3. Errores, logs, correlación y observabilidad (`DEC-044` a `DEC-048`).
 4. Pruebas y datos semilla (`DEC-051`, `DEC-052`).
 5. Verificar el aislamiento con esquema compartido aceptado; evaluar RLS sólo si se autoriza y continúa como candidato.

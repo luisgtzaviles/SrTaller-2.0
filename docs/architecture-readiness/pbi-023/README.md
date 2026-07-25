@@ -3,28 +3,28 @@
 ## Estado
 
 - **Fecha:** 2026-07-24.
-- **Commit base:** `83d21e343e7194e92a26c9e6cf40bb612a7415e1`.
+- **Commit base del spike:** `2275416c92b5cb06d8182df50c3d121384ccc4db`.
 - **Rama:** `r0/pbi-023-persistence-planning`.
-- **Alcance:** decisión, investigación, diseño, riesgos y plan.
+- **Alcance:** decisión, investigación, ejecución material desechable,
+  evidencia, diseño, riesgos y plan.
 - **Cambio técnico:** ninguno.
-- **Resultado:** `CONDITIONAL PASS — PBI-023 PLANNING COMPLETE /
-  IMPLEMENTATION BLOCKED`.
-- **Bloqueante único inmediato:** SPIKE-002 no tiene evidencia ejecutable en
-  PostgreSQL real.
+- **Resultado:** `PASS — SPIKE-002 MATERIAL VERIFICATION COMPLETE`.
+- **Estado PBI-023:** `Ready — SPIKE-002 materially verified /
+  implementation gates ready`.
 
 ## Propósito
 
 Este expediente lleva PBI-023 hasta el último punto reversible anterior a
-instalar dependencias o crear persistencia. Distingue tres estados que no deben
-confundirse:
+instalar dependencias productivas o crear persistencia. Distingue tres estados
+que no deben confundirse:
 
 1. DEC-050 está aceptada documentalmente con condiciones.
-2. La investigación de SPIKE-002 está completa.
-3. SPIKE-002 sigue abierto porque sus pruebas negativas no fueron ejecutadas.
+2. SPIKE-002 está materialmente cerrado con dos runs PostgreSQL reales.
+3. PBI-023 está `Ready`, no `In progress`, `Implemented` ni `Done`.
 
-La restricción de esta tarea prohibió instalar paquetes, iniciar PostgreSQL,
-usar Docker/Testcontainers, escribir SQL y modificar `src/`. Por ello un cierre
-ejecutable del spike habría sido una afirmación falsa.
+El laboratorio se ejecutó fuera de las superficies productivas y fue
+destruido. No modificó `src/`, manifests, lockfile, workflows, scripts, tests,
+tsconfig ni Dockerfiles del repositorio.
 
 ## Índice
 
@@ -33,6 +33,7 @@ ejecutable del spike habría sido una afirmación falsa.
 | [ESTIMATION.md](ESTIMATION.md) | estimación, supuestos y compromiso controlado |
 | [DEC_050_REVIEW.md](DEC_050_REVIEW.md) | resumen y trazabilidad de la decisión |
 | [SPIKE_002_RESULTS.md](SPIKE_002_RESULTS.md) | investigación primaria y brecha de evidencia |
+| [spike-002-evidence/](spike-002-evidence/README.md) | evidencia material E1–E12, doble run, hashes y cleanup |
 | [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) | dependencias, arquitectura, paths, configuración y modelo mínimo |
 | [TENANT_ISOLATION_TEST_PLAN.md](TENANT_ISOLATION_TEST_PLAN.md) | garantías y matriz negativa |
 | [MIGRATION_STRATEGY.md](MIGRATION_STRATEGY.md) | guía ejecutable derivada de DEC-050 |
@@ -58,7 +59,8 @@ ejecutable del spike habría sido una afirmación falsa.
 
 ## Gate siguiente
 
-Autorizar y ejecutar SPIKE-002 como prototipo desechable, con las versiones
-candidatas exactas y PostgreSQL `18.4`, fuera de `src/` productivo. Sólo un
-dictamen ejecutable favorable permite volver a evaluar el inicio de la
-materialización reversible de PBI-023.
+Materializar el Paso 3: extender primero los boundaries y el checker con
+casos válidos, negativos y mutaciones antes de modificar `src/`. Después
+siguen, en orden, instalación controlada, configuración tipada e
+infraestructura de conexión. Cada paso requiere autorización propia y sus
+condiciones DEC-049/050/051/063 aplicables.

@@ -6,6 +6,11 @@ Este documento operacionaliza
 [DEC-050](../../decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md) sin
 reemplazarla.
 
+SPIKE-002 verificó materialmente el patrón de lifecycle, orden, journal,
+transacción, lock, fallo, re-run, hashes y cleanup; véase la
+[evidencia](spike-002-evidence/README.md). Los pasos siguen siendo normativos
+para la futura migración productiva.
+
 ## Lifecycle
 
 1. Registrar owner, scope e invariantes.
@@ -112,6 +117,6 @@ configuración, no un archivo regenerado.
 
 ## Gate de la primera migración
 
-No se crea hasta que SPIKE-002 cierre y DEC050-C01/C02/C09,
-DEC063-C02/C05/C06 y los triggers DEC-051 aplicables tengan mecanismo y
-evidencia.
+SPIKE-002 está cerrado. La primera migración todavía no se crea hasta que
+DEC050-C01/C02/C09, DEC063-C02/C05/C06 y los triggers DEC-051 aplicables
+tengan mecanismo y evidencia productivos.

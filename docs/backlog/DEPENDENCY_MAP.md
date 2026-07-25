@@ -56,7 +56,7 @@ flowchart TD
     MOD --> D5E[DEC005-C01 a C05<br/>PASS formal]
     D5E --> DEC049[DEC-049 Accepted<br/>C01-C08 vigentes]
     MOD -. no resuelve preguntas propias .-> DEC049
-    VC --> P23[PBI-023 persistencia tenant<br/>Blocked por SPIKE-002]
+    VC --> P23[PBI-023 persistencia tenant<br/>Ready / SPIKE-002 PASS]
     DEC049 --> P23
     DEC050[DEC-050 Accepted with conditions<br/>C01-C10 pending] --> P23
     P23 --> P24[PBI-024 contexto<br/>Draft]
@@ -95,8 +95,8 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   aceptada el 2026-07-24 con base común más checklists por tipo/riesgo.
   VC-024 satisfizo C01/C03/C04; C02/C05–C08 permanecen `Pending`.
 - [PBI-023](pbis/PBI-023.md) incluye sus decisiones y condiciones materiales
-  pendientes dentro del propio alcance. Conserva autorización limitada y
-  planificación completa, pero SPIKE-002 ejecutable bloquea materialización.
+  pendientes dentro del propio alcance. Conserva autorización limitada y está
+  `Ready` después de SPIKE-002 material `PASS`; aún no está en ejecución.
 - PBI-024–PBI-029 descomponen los 24 contratos H1; sus estados `Draft` o
   `Blocked` impiden tratarlos como compromiso o autorización.
 
@@ -109,16 +109,16 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - PBI-021 está `Done` y `Unassigned`; VC-024 está `Closed / PASS`.
 - PBI-022 está `Done` y `Unassigned`; DEC005-C01 a C05 tienen `PASS` formal en la sexta reverificación independiente.
 - PBI-025 y PBI-027 están bloqueados por decisiones de mecanismo/producto.
-- PBI-023 no puede materializarse antes del cierre ejecutable de SPIKE-002;
-  los demás PBIs H1 requieren además revisión y autorización propias.
+- PBI-023 cerró SPIKE-002; su siguiente gate es checker/boundaries. Los demás
+  PBIs H1 requieren revisión y autorización propias.
 
 ## Preguntas abiertas
 
-- SPIKE-002 debe confirmar o rechazar el patrón sin ocultar bypasses,
-  contaminación de contexto ni cleanup incompleto.
+- SPIKE-002 confirmó el patrón sin bypass cross-tenant observado y con cleanup
+  completo; la implementación productiva debe repetir sus controles.
 - Los mecanismos de PIN/sesión y la autoridad temporal siguen requiriendo
   decisiones dentro de PBI-025/PBI-027.
 
 ## Próxima revisión
 
-Cierre ejecutable y revisión formal de SPIKE-002.
+Autorización y evidencia del checker/boundaries de PBI-023.

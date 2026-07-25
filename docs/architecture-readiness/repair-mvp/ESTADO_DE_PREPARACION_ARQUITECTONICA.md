@@ -34,7 +34,7 @@ pendientes.
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
 | ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004/VC-024 `Closed / PASS`; DEC-005 materializada; DEC-044/049/051/063 aceptadas; DEC-050 aceptada con condiciones | Plataforma, organización, errores, persistencia, migraciones, pruebas y DoD tienen contrato; materialización H1 pendiente | PB |
-| Autorización | Sprint 00 `Closed`; B-21 efectiva dentro de la autorización limitada | PBI-023 autorizado pero `Blocked` por SPIKE-002 ejecutable; otros PBIs no autorizados | PB |
+| Autorización | Sprint 00 `Closed`; B-21 efectiva dentro de la autorización limitada | PBI-023 `Ready` tras SPIKE-002 material PASS; otros PBIs no autorizados | PB |
 
 ## Qué sí puede comenzar
 
@@ -47,8 +47,8 @@ pendientes.
 
 ## Qué no puede comenzar
 
-- **[RP]** Implementación fuera de PBI-023 o antes de cerrar SPIKE-002 y sus
-  gates internos.
+- **[RP]** Implementación fuera de PBI-023 o antes de cerrar sus gates internos;
+  SPIKE-002 ya está cerrado.
 - **[R]** Persistencia multitenant antes de aplicar y probar el contexto e identidad/sesión aceptados, el alcance técnico y el aislamiento.
 - **[R]** Flujos sensibles antes de clasificar la acción y aplicar/probar el control, atribución y evidencia de ADR-013.
 - **[ADR]** Introducir frameworks, workspaces, gestores, orquestación o despliegue fuera de las decisiones aceptadas. DEC-004 fija pnpm y el lockfile sin autorizar workspaces; ADR-009 gobierna repositorio/workspaces, ADR-001 lenguaje/runtime y ADR-003 el motor.
@@ -58,5 +58,5 @@ pendientes.
 El estado sólo puede cambiar a **Preparado para una primera rebanada vertical**
 después de implementar, demostrar y aceptar formalmente R0. La
 [autorización vigente](../R0_AUTHORIZATION.md) conserva el alcance de PBI-023,
-pero su gate SPIKE-002 impide materialización actual; tampoco equivale a
+y el `PASS` de SPIKE-002 habilita evaluar el checker/boundaries; no equivale a
 aceptación de R0 ni abre R1.

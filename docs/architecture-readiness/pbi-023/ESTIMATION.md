@@ -104,7 +104,7 @@ También obligan a reestimar:
 
 ## Compromiso
 
-Se compromete el **siguiente gate de R0** a ejecutar y revisar SPIKE-002. No se
-asigna PBI-023 a un sprint de implementación mientras ese gate permanezca
-abierto. Esta distinción conserva la autorización de R0 sin convertir un plan
-en `In progress`.
+SPIKE-002 quedó ejecutado y revisado con `PASS`. El **siguiente gate de R0** es
+el checkpoint del checker/boundaries. PBI-023 sigue sin asignarse a un sprint
+de implementación; esta distinción conserva la autorización de R0 sin
+convertir un plan en `In progress`.

@@ -81,7 +81,8 @@ runner sólo custodia orden y ejecución.
 
 ## 5. Modelo mínimo propuesto
 
-No se escribirá SQL hasta cerrar SPIKE-002 y los gates.
+SPIKE-002 está cerrado. No se escribirá SQL productivo hasta cerrar los gates
+de checker, ownership, dependencias, configuración y migración aplicables.
 
 ### `tenants`
 

@@ -2,12 +2,12 @@
 
 ## Dictamen
 
-**CONDITIONAL PASS — PBI-023 PLANNING COMPLETE / IMPLEMENTATION BLOCKED**
+**PASS — SPIKE-002 MATERIAL VERIFICATION COMPLETE**
 
 El expediente define estimación, DEC-050, versiones candidatas, arquitectura,
-schema mínimo, aislamiento, migraciones, riesgos, gates, plan y evidencia. La
-implementación reversible no puede comenzar porque SPIKE-002 exige evidencia
-ejecutable que esta tarea prohibió producir.
+schema mínimo, aislamiento, migraciones, riesgos, gates y plan. SPIKE-002
+ejecutó E1–E12 dos veces contra PostgreSQL real, comparó resultados y limpió
+todo recurso. PBI-023 queda `Ready`, sin iniciar implementación.
 
 ## Checklist
 
@@ -18,7 +18,7 @@ ejecutable que esta tarea prohibió producir.
 | decisión de split | PASS — no split previo; checkpoints |
 | DEC-050 | PASS WITH CONDITIONS — Accepted |
 | investigación SPIKE-002 | PASS |
-| ejecución SPIKE-002 | NOT RUN / BLOCKER |
+| ejecución SPIKE-002 | PASS — E1–E12, dos runs |
 | versiones candidatas | PASS — exactas |
 | diseño técnico | PASS documental |
 | modelo mínimo | PASS documental |
@@ -28,15 +28,16 @@ ejecutable que esta tarea prohibió producir.
 | DEC-063 applicability | PASS documental; triggers preservados |
 | implementation plan | PASS documental |
 | traceability/evidence | PASS documental |
-| instalación/runtime/DB | NOT RUN por restricción |
+| laboratorio/runtime/DB efímero | PASS — eliminado |
+| instalación/runtime/DB productivo | NOT RUN |
 
 ## Estado de decisiones
 
 | Elemento | Entrada | Salida |
 |---|---|---|
 | DEC-050 | abierta | Accepted with conditions; C01–C10 Pending |
-| SPIKE-002 | mandatory/pending | investigación completa; ejecución abierta |
-| PBI-023 | Ready / Authorized to start | Blocked; planning complete |
+| SPIKE-002 | mandatory/pending | Completed; material evidence PASS |
+| PBI-023 | Blocked; planning complete | Ready; implementation gates ready |
 | DEC-049 | Accepted; C01–C08 por materializar | sin cambio |
 | DEC-051 | C01/C07/C09 Satisfied | sin cambio |
 | DEC-063 | C01/C03/C04 Satisfied | sin cambio |
@@ -55,16 +56,15 @@ ejecutable que esta tarea prohibió producir.
 - probes desechables para el spike;
 - roll-forward como recuperación primaria en shared/prod futuro.
 
-## Bloqueantes
+## Gates restantes
 
-1. SPIKE-002 no tiene CRUD/join/FK/concurrencia ejecutados.
-2. DEC050-C01 no tiene install/typecheck/build con paquetes.
+1. El checker aún no autoriza infrastructure/database ni adapters.
+2. DEC050-C01 no tiene install/typecheck/build productivo con paquetes.
 3. DEC049-C02–C07 y DEC051-C02/C03/C04/C06 requieren materialización.
 4. DEC063-C02/C05/C06 requieren evidencia antes del merge persistente.
-5. El checker aún no autoriza infrastructure/database ni adapters.
 
-Sólo el primero bloquea el siguiente paso inmediato; los demás se cierran en
-secuencia después del spike.
+No existe bloqueo material para planificar el Paso 3. Los gates restantes se
+cierran secuencialmente y siguen impidiendo declarar implementación o merge.
 
 ## Validaciones de esta tarea
 
@@ -81,11 +81,11 @@ Ejecutadas con Node.js `24.18.0` y pnpm `11.15.1`:
 | `pnpm run verify` | PASS |
 | `pnpm run smoke:start` | PASS |
 | `git diff --check` | PASS |
-| Markdown links/anchors/fences | PASS — 389 archivos |
-| JSON | PASS — 14 archivos |
-| YAML | PASS — 29 archivos |
+| Markdown links/anchors/fences | PASS — 398 archivos, 3172 enlaces relativos |
+| JSON | PASS — 15 archivos; manifest SPIKE validado |
+| YAML | PASS — 2 archivos |
 | secretos/rutas personales | PASS — sin coincidencias sensibles |
-| scope | PASS — sólo `docs/` |
+| scope | PASS — 42 archivos, sólo `docs/` |
 
 El frozen install no agregó paquetes ni cambió manifests; verificó únicamente
 las dependencias ya registradas.
@@ -94,16 +94,16 @@ las dependencias ya registradas.
 
 - sin `src/`;
 - sin package/lock/workflow/scripts/tests/tsconfig;
-- sin instalación de Kysely/pg;
-- sin PostgreSQL, SQL, migraciones, schema o tablas;
-- sin Docker/Testcontainers;
-- sin credenciales, `.env` o secretos;
+- sin instalación productiva de Kysely/pg;
+- sin SQL, migraciones, schema o tablas productivos;
+- PostgreSQL/Docker sólo en laboratorio temporal y eliminados; sin
+  Testcontainers;
+- credencial sintética efímera eliminada; sin `.env` o secretos preservados;
 - sin PBI-024–029;
 - sin merge/deploy/SSH.
 
 ## Siguiente acción
 
-Autorizar y ejecutar SPIKE-002 como experimento desechable con PostgreSQL
-`18.4`, Node `24.18.0`, TypeScript `6.0.3`, ESM/NodeNext y las versiones
-candidatas. Tras su revisión formal, revalidar el gate para iniciar el Paso 3
-del plan.
+Autorizar el Paso 3: extensión estricta de boundaries y checker, con caso
+válido, negativos, mutaciones y doble run. Sólo después puede evaluarse la
+instalación controlada de dependencias.

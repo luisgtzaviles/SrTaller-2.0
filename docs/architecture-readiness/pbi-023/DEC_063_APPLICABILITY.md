@@ -5,7 +5,8 @@
 - C01, C03 y C04: `Satisfied`.
 - C02 y C05–C08: `Pending`.
 
-No se cambia ese registro.
+No se cambia ese registro. SPIKE-002 aporta preparación material, no
+cumplimiento final del PBI.
 
 ## Matriz
 
@@ -29,7 +30,7 @@ checker o cleanup exige nueva revisión del
 Antes de cualquier cambio persistente:
 
 - [ ] DEC-050 aceptada y condición aplicable identificada.
-- [ ] SPIKE-002 cerrado con PostgreSQL `18.4`.
+- [x] SPIKE-002 cerrado con PostgreSQL `18.4`.
 - [ ] versión/owner/scope/invariantes de objeto registrados.
 - [ ] migración ordenada, inmutable y transaccional.
 - [ ] lock y fallo parcial probados.
@@ -43,8 +44,8 @@ Antes de cualquier cambio persistente:
 - [ ] dos runs Linux equivalentes.
 - [ ] aprobaciones por riesgo.
 
-Todos permanecen pendientes de evidencia, salvo la aceptación documental de
-DEC-050.
+La fila de SPIKE-002 está satisfecha. Las demás conservan su estado hasta que
+exista implementación, checker, roles, CI y revisión productivos.
 
 ## C06 — checklist de seguridad
 
@@ -80,5 +81,7 @@ crea una excepción implícita.
 
 ## Dictamen
 
-C02/C05/C06 son gates materiales del primer merge persistente. C07 es
-pre-release. C08 permanece dormida hasta una excepción real.
+C02/C05/C06 son gates materiales del primer merge persistente. El spike aporta
+riesgo high explícito, tests negativos, sanitización, lifecycle y doble run,
+pero no completa los checklists. C07 es pre-release. C08 permanece dormida
+hasta una excepción real.
