@@ -1,25 +1,95 @@
 {
   "schemaVersion": 1,
   "contract": "DEC-004/VC-024",
-  "status": "Pending",
-  "candidateCommit": "TBD",
-  "workflowRunId": "TBD",
+  "status": "Closed / PASS",
+  "candidateCommit": "becb61c98c3bdf51ba9574c985fb071556c9bc8a",
+  "workflow": {
+    "name": "Authoritative Linux CI",
+    "runId": "30133959709",
+    "attempt": 1,
+    "event": "push",
+    "branch": "ci/vc-024-authoritative-linux-ci",
+    "ref": "refs/heads/ci/vc-024-authoritative-linux-ci",
+    "createdAt": "2026-07-24T23:30:22Z",
+    "completedAt": "2026-07-24T23:35:14Z",
+    "conclusion": "success",
+    "url": "https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30133959709"
+  },
+  "toolchain": {
+    "os": "linux",
+    "arch": "x64",
+    "libc": "glibc 2.39",
+    "node": "24.18.0",
+    "pnpm": "11.15.1",
+    "typescript": "6.0.3",
+    "nestjs": "11.1.28"
+  },
   "executions": [
     {
       "label": "run-1",
-      "artifact": "vc024-run-1",
-      "manifestSha256": "TBD"
+      "jobId": "89614006907",
+      "runner": "GitHub Actions 1000000027",
+      "artifact": {
+        "name": "vc024-run-1",
+        "id": "8612172679",
+        "sizeBytes": 3435,
+        "expiresAt": "2026-08-23T23:34:37Z",
+        "zipSha256": "f7e6dabb9a4c17b6b9c9cce79a93d2e981fe895ea213fdc03b47536fa490e83f"
+      },
+      "manifestSha256": "74e86a2307a427ce56c37b22e187cae29d5663ce59fe94e922d5f96b23f0251d",
+      "distManifestSha256": "ce243b219ec31e52746f10259cac3d3ff5cbf13555b8852f66ca6b0edf4aa9a1",
+      "jobLogSha256": "18cb063d73717c009e185af2b5d903eb2b2f9b09589540e9dadbc3de7aee9a7f",
+      "verdict": "PASS"
     },
     {
       "label": "run-2",
-      "artifact": "vc024-run-2",
-      "manifestSha256": "TBD"
+      "jobId": "89614006837",
+      "runner": "GitHub Actions 1000000026",
+      "artifact": {
+        "name": "vc024-run-2",
+        "id": "8612176907",
+        "sizeBytes": 3436,
+        "expiresAt": "2026-08-23T23:34:55Z",
+        "zipSha256": "af5aaa78229b5c2bbcd4d642488818e25e1ed3a5ca5cdfd2e534ada134076b29"
+      },
+      "manifestSha256": "fec9122880924f438b5ac359836c5e488c6744561ff89ac531f476ea34596c27",
+      "distManifestSha256": "ce243b219ec31e52746f10259cac3d3ff5cbf13555b8852f66ca6b0edf4aa9a1",
+      "jobLogSha256": "9e2351fb1a9cf2d0d801c6eda13ba9d90f6711cf6cf3b3fde3b5fb26dfcae25c",
+      "verdict": "PASS"
     }
   ],
-  "comparison": {
-    "artifact": "vc024-comparison",
-    "manifestSha256": "TBD",
-    "equivalent": false
+  "dist": {
+    "fileCount": 20,
+    "aggregateSha256": "56636fb176fb98143ac670c4227b583395629ba915d869928a8fa2b810914af5"
   },
-  "verdict": "BLOCKED — CI NOT EXECUTED"
+  "comparison": {
+    "artifact": {
+      "name": "vc024-comparison",
+      "id": "8612180267",
+      "sizeBytes": 414,
+      "expiresAt": "2026-08-23T23:35:10Z",
+      "zipSha256": "1e5a18d5d8c411b9ccbe0fb6364c2011aa0fa9341e29741fab9283ceda510127"
+    },
+    "manifestSha256": "55258c43e36689b405a2201cc7eb4983837ff3a3629cf6f18ea75cafd9b5ce08",
+    "jobLogSha256": "3340c5e97f90e02d717932dcfb8796d57aa003652eae5080767a20d41936b7a1",
+    "run1ComparableSha256": "2a348f3c4f4f49f066893310c7d84d1583e2f5c57cda30189d7609da962c4701",
+    "run2ComparableSha256": "2a348f3c4f4f49f066893310c7d84d1583e2f5c57cda30189d7609da962c4701",
+    "equivalent": true,
+    "differences": []
+  },
+  "validation": {
+    "executionManifestsSchema": "PASS",
+    "artifactIntegrity": "PASS",
+    "hashes": "PASS",
+    "sanitization": "PASS",
+    "repositoryInitialAndFinalClean": "PASS"
+  },
+  "rejectedEvidence": {
+    "runId": "30134666792",
+    "event": "pull_request",
+    "ref": "refs/pull/1/merge",
+    "syntheticMergeSha": "3f691c5374cf9bd0f730c3d3e96547c8df0e1bcf",
+    "reason": "VC-024 requires the exact candidate commit in a push run"
+  },
+  "verdict": "PASS"
 }

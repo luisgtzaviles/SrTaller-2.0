@@ -61,9 +61,10 @@ El gobierno aceptado ya define:
   [ADR-013](../proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md).
 
 DEC-005 está `Accepted — Materialized / Formally Verified`. DEC-044, DEC-049 y
-DEC-051 están `Accepted`; sus condiciones de materialización continúan
-pendientes. DEC-004 conserva VC-024 pendiente. R0 no está autorizado y Sprint
-00 permanece abierto.
+DEC-051 están `Accepted`. Actualización del 2026-07-24: la
+[verificación formal de VC-024](../../architecture-readiness/dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+obtuvo `PASS`; DEC063-C01/C03/C04 quedan `Satisfied` y las demás condiciones
+permanecen pendientes. R0 no está autorizado y Sprint 00 permanece abierto.
 
 Los documentos de entrega existentes contienen checklists útiles, pero
 mezclan por momentos `Done` con despliegue. DEC-063 establece el contrato
@@ -668,16 +669,19 @@ no crea templates ejecutables, workflows, branch protection ni automatización.
 
 | ID | Condición | Owner | Momento | Evidencia | Dependencia | Estado | Criterio de cumplimiento |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| DEC063-C01 | Materializar templates mínimos por tipo | Arquitectura + Calidad | Antes del primer PBI funcional autorizado | Templates versionados y revisión | DEC-063 | `Pending` | Todos los tipos obligatorios consumen base, riesgo y checklist sin duplicar autoridad |
+| DEC063-C01 | Materializar templates mínimos por tipo | Arquitectura + Calidad | Antes del primer PBI funcional autorizado | Templates versionados y revisión | DEC-063 | `Satisfied` | Todos los tipos obligatorios consumen base, riesgo y checklist sin duplicar autoridad |
 | DEC063-C02 | Materializar clasificación fail-closed de riesgo | Arquitectura + Seguridad | Antes de integrar cambios de riesgo medio/alto | Matriz, ejemplos y pruebas/revisión | DEC063-C01 | `Pending` | Ambigüedad eleva riesgo y no existe downgrade unilateral |
-| DEC063-C03 | Definir manifest canónico de evidencia | Calidad + Operaciones | Antes de VC-024 | Schema/formato, ejemplo sanitizado y revisión | DEC-051, DEC063-C01 | `Pending` | Identifica commit, entorno, comandos, resultados, hashes y dictamen |
-| DEC063-C04 | Integrar DoD con CI y protección gobernada | Ingeniería + Operaciones | Antes de declarar materialización CI | Workflow/checks autorizados, fixtures y evidencia Linux | DEC-051, DEC063-C02/C03 | `Pending` | Gates obligatorios son fail-closed y no omitibles |
+| DEC063-C03 | Definir manifest canónico de evidencia | Calidad + Operaciones | Antes de VC-024 | Schema/formato, ejemplo sanitizado y revisión | DEC-051, DEC063-C01 | `Satisfied` | Identifica commit, entorno, comandos, resultados, hashes y dictamen |
+| DEC063-C04 | Integrar DoD con CI y protección gobernada | Ingeniería + Operaciones | Antes de declarar materialización CI | Workflow/checks autorizados, fixtures y evidencia Linux | DEC-051, DEC063-C02/C03 | `Satisfied` | Gates obligatorios son fail-closed y no omitibles |
 | DEC063-C05 | Materializar checklist de persistencia/migración | Ingeniería + Operaciones | Antes del primer cambio persistente | Checklist, PostgreSQL real y recuperación probada | DEC-049, DEC-050, DEC-051 | `Pending` | Ownership, aislamiento, constraints, forward y recuperación quedan demostrados |
 | DEC063-C06 | Materializar checklist de seguridad | Seguridad + Calidad | Antes de auth, tenant o acción sensible funcional | Casos negativos, sanitización y dictamen | ADR-004, ADR-010–013, DEC-044, DEC-051 | `Pending` | Fail-closed, anti-enumeración, mínimo privilegio y secretos quedan cubiertos |
 | DEC063-C07 | Materializar checklist de release/hotfix | Operaciones + Calidad | Antes del primer release candidato | Runbook, rollback, smoke y evidencia | DEC-051, proceso de release | `Pending` | `Done`/`Released` y ruta normal/hotfix son inequívocos y reproducibles |
 | DEC063-C08 | Gobernar excepciones y waivers | Responsable del Proyecto + disciplinas afectadas | Antes de aprobar la primera excepción | Registro con expiración, compensación y cierre | DEC063-C01/C02 | `Pending` | No existe waiver implícito, permanente ni autoaprobado |
 
-Ninguna condición está materializada ni verificada por esta aceptación.
+La aceptación por sí sola no materializó ninguna condición. La
+[verificación formal de VC-024](../../architecture-readiness/dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+del 2026-07-24 aporta evidencia ejecutada para DEC063-C01, DEC063-C03 y
+DEC063-C04; las demás condiciones permanecen `Pending`.
 
 ## 39. Riesgos
 
@@ -762,21 +766,16 @@ de entrada, salida y evidencia.
 
 ## 44. Impacto en H0
 
-La aceptación documental de DEC-063 cierra su gate H0. El inventario pasa de
-**7 cerrados / 2 abiertos** a **8 cerrados / 1 abierto**.
-
-El único H0 pendiente es la evidencia final **VC-024** de DEC-004. Este cambio
-no la ejecuta ni la cierra.
+La aceptación documental de DEC-063 cerró su gate H0. Posteriormente, la
+verificación formal de VC-024 cerró el último remanente. El inventario vigente
+queda en **9 cerrados / 0 abiertos** y readiness H0 `Complete`.
 
 ## 45. Impacto en R0
 
-R0 continúa **no autorizado**. DEC-063 elimina un bloqueo documental, pero:
-
-- VC-024 continúa `Pending`;
-- DEC051-C01 a DEC051-C10 continúan `Pending`;
-- DEC063-C01 a DEC063-C08 continúan `Pending`;
-- aceptar contratos no sustituye su materialización ni el dictamen final de
-  readiness.
+R0 continúa **no autorizado**. VC-024 satisface DEC051-C01/C07/C09 y
+DEC063-C01/C03/C04; las demás condiciones permanecen `Pending`. Aceptar
+contratos o completar H0 no sustituye H1, la autorización organizacional ni
+el dictamen final de readiness.
 
 ## 46. Impacto en Sprint 00
 
@@ -805,8 +804,6 @@ migraciones ni release.
 
 ## 48. Siguiente acción
 
-Preparar un trabajo separado y expresamente autorizado para materializar la
-evidencia mínima requerida por VC-024, incluyendo las condiciones de DEC-051
-y DEC-063 que resulten prerrequisito. Hasta que existan dos ejecuciones limpias
-equivalentes en CI y dictamen de cumplimiento, VC-024 permanece `Pending`, H0
-permanece abierto, R0 no está autorizado y Sprint 00 continúa abierto.
+Con VC-024 `Closed / PASS`, resolver el gate organizacional y los contratos
+transversales H1 antes de solicitar autorización explícita para programación
+funcional. R0 no está autorizado y Sprint 00 continúa abierto.

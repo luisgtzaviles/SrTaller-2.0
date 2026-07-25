@@ -23,10 +23,13 @@ Todos los criterios deben cumplirse:
 - [ ] **[ADR]** Las decisiones técnicas necesarias están aceptadas, no sólo propuestas.
 - [x] **[ADR]** [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
   está `Accepted` desde el 2026-07-24 con cinco `PASS WITH CONDITIONS`.
-  DEC051-C01 a C10 y VC-024 permanecen pendientes.
+  VC-024 cerró C01/C07/C09; C02–C06/C08/C10 permanecen `Pending`.
 - [x] **[ADR]** [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md)
   está `Accepted with conditions` desde el 2026-07-24 con cinco
-  `PASS WITH CONDITIONS`; DEC063-C01 a C08 permanecen `Pending`.
+  `PASS WITH CONDITIONS`; C01/C03/C04 están `Satisfied` y C02/C05–C08
+  permanecen `Pending`.
+- [x] **[ADR]** [VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+  está `Closed / PASS`; H0 queda completo en 9/0.
 - [x] **[ADR]** DEC-005 seleccionó y materializó estructura, ownership, imports y enforcement; la [sexta verificación formal](../dec-005-materialization/FORMAL_VERIFICATION_6.md) concluyó `PASS`, DEC-005 está `Accepted — Materialized / Formally Verified` y [PBI-022](../../backlog/pbis/PBI-022.md) está `Done`.
 - [x] **[ADR]** DEC-049 está `Accepted`; Kysely + `pg`, repositorios
   explícitos, ownership, scopes y transacciones quedan aceptados, con

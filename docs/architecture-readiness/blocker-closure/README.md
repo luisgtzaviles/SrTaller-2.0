@@ -11,16 +11,17 @@ Este paquete convierte los bloqueantes de preparación arquitectónica en una se
 La documentación permite preparar ADRs, criterios, escenarios y spikes para
 autorización. `DEC-002` y `DEC-062` quedaron cerradas por el Responsable de
 Producto el 2026-07-21. La selección de plataforma de `DEC-004` fue aceptada
-el 2026-07-22 con evidencia pendiente y autorización limitada a su
-materialización/verificación. DEC-005 quedó materializada y formalmente
-verificada el 2026-07-23. DEC-044 y DEC-049 fueron aceptadas el 2026-07-24,
-cada una con ocho condiciones pendientes para materialización; DEC-051 fue
-aceptada ese mismo día con diez condiciones pendientes y
-[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) con
-ocho condiciones `Pending`. H0 queda en 8/1: su único remanente es VC-024. El
-primer cambio funcional de R0 también continúa bloqueado por autorización
-organizacional y contratos transversales H1. R1 añade decisiones de folio,
-recepción, custodia, política, tiempo, evidencia e identificación física.
+el 2026-07-22 y su
+[verificación formal VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+obtuvo `PASS` el 2026-07-24. DEC-005 quedó materializada y formalmente
+verificada el 2026-07-23. DEC-044, DEC-049, DEC-051 y
+[DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) fueron
+aceptadas el 2026-07-24. VC-024 satisface DEC051-C01/C07/C09 y
+DEC063-C01/C03/C04; las demás condiciones permanecen pendientes. H0 queda
+completo en 9/0. El primer cambio funcional de R0 continúa bloqueado por
+autorización organizacional y contratos transversales H1. R1 añade decisiones
+de folio, recepción, custodia, política, tiempo, evidencia e identificación
+física.
 
 | Declaración | Estado actual | Evidencia faltante principal |
 | --- | --- | --- |
@@ -33,34 +34,30 @@ recepción, custodia, política, tiempo, evidencia e identificación física.
 
 ## Release gate reevaluado
 
-Tras cerrar `DEC-002`, `DEC-005`, `DEC-044`, `DEC-049`, `DEC-051`,
-`DEC-062` y `DEC-063` para H0, queda una selección aceptada con evidencia
-pendiente:
+Tras cerrar `DEC-002`, `DEC-004`, `DEC-005`, `DEC-044`, `DEC-049`, `DEC-051`,
+`DEC-062` y `DEC-063` para H0, el hito queda completo:
 
-- `DEC-004`: `Accepted — Selection Approved / Evidence Pending`; [PBI-021](../../backlog/pbis/PBI-021.md) creado y `Ready`, verificación Linux pendiente;
+- `DEC-004`: selección aceptada y [VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md) `Closed / PASS`;
 - `DEC-005`: `Accepted — Materialized / Formally Verified`; [PBI-022](../../backlog/pbis/PBI-022.md) `Done`; ya no bloquea H0;
 - [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md):
   `Accepted`; DEC044-C01 a C08 vigentes para materialización; ya no bloquea H0
   por estado;
 - `DEC-049`: `Accepted`; DEC049-C01 a C08 vigentes para materialización; ya no bloquea H0 por estado;
 - [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md):
-  `Accepted`; DEC051-C01 a C10 vigentes y pendientes; ya no bloquea H0 por
-  estado;
+  `Accepted`; DEC051-C01/C07/C09 `Satisfied`; C02–C06/C08/C10 `Pending`;
 - [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md):
-  `Accepted with conditions`; C01 a C08 `Pending`; ya no bloquea H0 por
-  estado.
+  `Accepted with conditions`; C01/C03/C04 `Satisfied`; C02/C05–C08 `Pending`.
 
 También siguen pendientes la autorización organizacional funcional (`B-21`) y
 todos los cierres H1 aplicables antes de declarar R0 programable. La sexta
 reverificación formal de PBI-022 obtuvo `PASS` y cerró sus hallazgos
-históricos. El siguiente gate H0 es materializar y verificar VC-024 usando
-los gates aceptados de [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md).
-Las condiciones de
+históricos. VC-024 obtuvo `PASS` mediante dos jobs Linux independientes,
+artefactos validados y comparación semántica reproducible. Las condiciones de
 [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md),
 [DEC-049](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md) y
-DEC-051, además de DEC063-C01 a C08, permanecen pendientes de materialización.
+DEC-051/063 no satisfechas por VC-024 permanecen pendientes de materialización.
 
-ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-005 fue aceptado con condiciones el 2026-07-22 tras la revisión aprobada de SPIKE-009. TypeScript y Node.js `24.x` forman la baseline de lenguaje/runtime; PostgreSQL 18.x es el motor transaccional; NestJS `11.x`, Express y REST/HTTP JSON mínima forman el shell inicial; y el repositorio único conserva una aplicación/artefacto sin workspaces obligatorios. `DEC-004` selecciona el toolchain con evidencia pendiente y `DEC-005` tiene organización modular materializada y formalmente verificada.
+ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-005 fue aceptado con condiciones el 2026-07-22 tras la revisión aprobada de SPIKE-009. TypeScript y Node.js `24.x` forman la baseline de lenguaje/runtime; PostgreSQL 18.x es el motor transaccional; NestJS `11.x`, Express y REST/HTTP JSON mínima forman el shell inicial; y el repositorio único conserva una aplicación/artefacto sin workspaces obligatorios. `DEC-004` selecciona el toolchain y VC-024 verifica su evidencia Linux; `DEC-005` tiene organización modular materializada y formalmente verificada.
 
 ## Respuestas rectoras
 
@@ -89,7 +86,7 @@ ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ing
 
 Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones diferibles explícitas. La [matriz maestra](INVENTARIO_DE_BLOQUEANTES.md) es la fuente de IDs `DEC-001` a `DEC-082`; los demás documentos agrupan esas filas sin crear estados paralelos.
 
-**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) cierra el motor y fija PostgreSQL 18.x como baseline de R0; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) acepta con condiciones NestJS como shell, Express y REST/HTTP JSON mínima; [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) repositorio único y workspaces bajo demanda; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0; [DEC-004](DEC-004_BASELINE_TECNICA.md) acepta la selección del toolchain con evidencia pendiente; [DEC-005](../../decisions/dec-005-modular-monolith-organization/DECISION_PROPOSAL.md) está materializada y formalmente verificada. No cierran implementación funcional, composición y clasificación por rebanada, mecanismos de acceso/migración, RLS ni evidencia de pruebas.
+**Actualizaciones posteriores:** [ADR-001](../../decisions/proposed/ADR-001-typescript-as-primary-language.md) cierra lenguaje/runtime inicial; [ADR-003](../../decisions/proposed/ADR-003-postgresql-primary-database.md) cierra el motor y fija PostgreSQL 18.x como baseline de R0; [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md) topología/propiedad; [ADR-005](../../decisions/proposed/ADR-005-nestjs-backend.md) acepta con condiciones NestJS como shell, Express y REST/HTTP JSON mínima; [ADR-009](../../decisions/proposed/ADR-009-monorepo-strategy.md) repositorio único y workspaces bajo demanda; [ADR-010](../../decisions/proposed/ADR-010-station-bound-operational-context.md) contexto/vinculación; [ADR-011](../../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) identidad/PIN/sesión; [ADR-012](../../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) autorización ordinaria; [ADR-013](../../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) sensibilidad/refuerzo; [DEC-002 y DEC-062](CRITERIOS_DE_SALIDA_DE_R0.md) cierran alcance y contrato de salida de R0; [DEC-004](DEC-004_BASELINE_TECNICA.md) acepta la selección del toolchain y su VC-024 aporta evidencia Linux reproducible; [DEC-005](../../decisions/dec-005-modular-monolith-organization/DECISION_PROPOSAL.md) está materializada y formalmente verificada. No cierran implementación funcional, composición y clasificación por rebanada, mecanismos de acceso/migración, RLS ni evidencia funcional H1.
 
 ## Ruta de lectura
 
@@ -126,10 +123,10 @@ Se evaluaron **82 decisiones**: las 70 del inventario base y 12 decisiones difer
 
 ## Próxima promoción posible
 
-La siguiente promoción válida es **R0 listo para programar**. Requiere cerrar H0 y H1; no requiere resolver H2–H5 ni diseñar R2–R5 por anticipación.
+La siguiente promoción válida es **R0 listo para programar**. H0 está
+completo; todavía requiere cerrar H1 y obtener autorización organizacional
+explícita. No requiere resolver H2–H5 ni diseñar R2–R5 por anticipación.
 
-El siguiente gate concreto dentro de esa ruta es **VC-024 de DEC-004**. Debe
-consumir los gates ya aceptados en
-[DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) sin
-declarar cumplidas DEC051-C01 a C10 ni VC-024. DEC-044, DEC-049 y DEC-051
-conservan condiciones pendientes y no autorizan materialización técnica.
+El siguiente gate concreto es resolver el gate organizacional y los contratos
+transversales H1 aplicables. VC-024 no autoriza R0, no cierra Sprint 00 y no
+declara satisfechas las condiciones de DEC-051/063 que permanecen `Pending`.

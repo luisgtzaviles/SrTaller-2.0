@@ -23,19 +23,15 @@ No es **No preparado** porque el dominio ya aporta flujo, lenguaje, invariantes,
 | Configuración | Necesidad de políticas versionadas identificada | Precedencia y alcance pendientes | PB |
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
-| ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004 tiene VC-024 pendiente; DEC-005 está materializada y formalmente verificada; DEC-044/049/051/063 están aceptadas, con sus condiciones pendientes; ADR-006 a ADR-008 siguen propuestos | Plataforma, organización, errores, persistencia, pruebas y DoD están aceptadas; DEC-044/049/051/063 no están materializadas; VC-024 y los demás H1 siguen bloqueando código funcional | PB |
+| ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004/VC-024 `Closed / PASS`; DEC-005 materializada y formalmente verificada; DEC-044/049/051/063 aceptadas; ADR-006 a ADR-008 siguen propuestos | Plataforma, organización, errores, persistencia, pruebas y DoD están aceptadas; H0 está completo; condiciones restantes y H1 siguen bloqueando código funcional | PB |
 | Autorización | Producto aprobó alcance/aceptación esperada de R0; Sprint 00 no está cerrado ni existe autorización de implementación | Bloqueante organizacional | PB |
 
 ## Qué sí puede comenzar
 
 - **[DAR]** Validación dirigida de las fronteras, contratos de negocio y decisiones bloqueantes.
 - **[DAR]** Preparación de ADRs y PBIs con criterios de aceptación, pruebas negativas y trazabilidad.
-- **[DAR]** [PBI-021](../../backlog/pbis/PBI-021.md), `Ready` y autorizado para materialización/verificación de DEC-004, sin funcionalidad de producto.
-- **[DAR]** Preparar, sólo con autorización separada, los prerrequisitos mínimos
-  de VC-024 usando
-  [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) y
-  [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md), sin
-  materializar por inferencia ni cumplir DEC051-C01 a C10 o DEC063-C01 a C08.
+- **[DAR]** Resolver los contratos transversales H1 bajo sus autoridades
+  propias, sin inferir autorización funcional a partir del cierre de VC-024.
 - **[DAR]** Refinamiento técnico de R0 contra su alcance aprobado, sin inferir ejecución de los PBIs técnicos.
 - **[RDD]** Ejemplos de aceptación basados en escenarios del modelo integrado.
 

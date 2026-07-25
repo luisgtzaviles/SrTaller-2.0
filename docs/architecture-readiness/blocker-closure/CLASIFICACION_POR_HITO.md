@@ -8,13 +8,13 @@ Cada decisión tiene un hito primario para evitar doble conteo. Una fila puede i
 
 | Hito primario | Decisiones evaluadas | Cerradas o aceptadas | Abiertas | Resultado |
 | --- | ---: | ---: | ---: | --- |
-| H0 — Primer cambio de implementación de R0 | 9 | 8 | 1 | Implementación ejecutable bloqueada por VC-024 |
+| H0 — Primer cambio de implementación de R0 | 9 | 9 | 0 | Complete |
 | H1 — R0 | 24 | 0 | 24 | R0 no programable |
 | H2 — R1 | 21 | 1 | 20 | R1 no programable |
 | H3 — Piloto | 9 | 0 | 9 | Piloto bloqueado |
 | H4 — Producción | 6 | 0 | 6 | Producción bloqueada |
 | H5 — Diferible | 13 | 13 diferidas | 0 para MVP | No bloquean MVP |
-| **Total** | **82** | **21** | **61** | Preparado con bloqueantes |
+| **Total** | **82** | **22** | **60** | H0 completo; H1 y autorización organizacional pendientes |
 
 ## H0 — Antes del primer cambio de implementación de R0
 
@@ -25,9 +25,11 @@ ADR-002 cierra `DEC-001`; la decisión del Responsable de Producto del
 el remanente H0 de DEC-005 el 2026-07-23; y el Responsable del Proyecto acepta
 DEC-044, DEC-049, DEC-051 y
 [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) el
-2026-07-24. DEC-044/049 conservan ocho condiciones pendientes cada una,
-DEC-051 conserva diez y DEC-063 conserva ocho. El único remanente H0 es la
-evidencia VC-024 pendiente de DEC-004.
+2026-07-24. La
+[verificación formal de VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+obtuvo `PASS` ese mismo día y cerró el remanente de DEC-004. DEC051-C01/C07/C09
+y DEC063-C01/C03/C04 quedan `Satisfied`; las demás condiciones permanecen
+`Pending`. H0 queda completo en 9 cerrados y 0 abiertos, sin autorizar R0.
 
 ## H1 — Antes de programar R0
 
@@ -65,8 +67,8 @@ Se activan sólo por un caso de negocio, riesgo o métrica real. No forman un ba
 | --- | --- | --- |
 | Documentar y diseñar ADRs | Permitido | Trabajo reversible y no ejecutable |
 | Preparar spikes | Permitido sólo como diseño | Su ejecución necesita autorización |
-| Scaffolding reversible | No autorizado | H0 y gate organizacional abiertos |
-| Fundación ejecutable | Bloqueada | H0 y H1 abiertos |
+| Scaffolding reversible | No autorizado | Gate organizacional y H1 abiertos |
+| Fundación ejecutable | Bloqueada | H1 y autorización organizacional abiertos |
 | Código de negocio R1 | Bloqueado | R0 no demostrado y H2 abierto |
 | Piloto | Bloqueado | R1–R5 y H3 abiertos |
 | Producción | Bloqueada | H4 abierto |

@@ -7,27 +7,28 @@ La secuencia reduce decisiones irreversibles: primero autoridad y contexto; desp
 ## Grupo 0 — Autoridad y base ejecutable
 
 1. **Cerrado el 2026-07-21:** alcance, inclusiones y exclusiones de R0 (`DEC-002`).
-2. **Selección aceptada el 2026-07-22:** `DEC-004` fija Node.js `24.18.0`, pnpm `11.15.1`, lockfile frozen, ESM/NodeNext, TypeScript `6.0.3`, compilación previa y Linux x86_64/glibc. [PBI-021](../../backlog/pbis/PBI-021.md) está creado y `Ready`; faltan materialización, VC-001 a VC-024, CI posterior y evidencia Linux.
+2. **Cerrado para H0 el 2026-07-24:** `DEC-004` fija Node.js `24.18.0`, pnpm `11.15.1`, lockfile frozen, ESM/NodeNext, TypeScript `6.0.3`, compilación previa y Linux x86_64/glibc. La [verificación formal de VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md) obtuvo `PASS` sobre dos jobs Linux independientes del commit candidato exacto.
 3. **Cerrado para H0 el 2026-07-23:** `DEC-005` fija `tenancy`, `stations`, `access`, ownership, imports, shared, infraestructura y límites NestJS; [PBI-022](../../backlog/pbis/PBI-022.md) está `Done` y la sexta reverificación formal confirmó DEC005-C01 a C05 en `PASS`.
 4. **Cerrado el 2026-07-24:** el Responsable del Proyecto aceptó [propiedad, repositorios, transacciones y acceso PostgreSQL](../../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md) (`DEC-049`), con DEC049-C01 a C08 vigentes para materialización.
 5. **Cerrado el 2026-07-24:** el Responsable del Proyecto aceptó la [estrategia de errores (`DEC-044`)](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md), con DEC044-C01 a C08 vigentes y pendientes.
 6. **Cerrado el 2026-07-24:** el Responsable del Proyecto aceptó la
    [estrategia de pruebas, CI y gates ejecutables
    (`DEC-051`)](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md),
-   con DEC051-C01 a C10 vigentes y pendientes.
+   con DEC051-C01/C07/C09 `Satisfied` por VC-024 y las demás condiciones
+   `Pending`.
 7. **Cerrado el 2026-07-24:** el Responsable del Proyecto aceptó la
    [Definition of Done
    (`DEC-063`)](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md),
-   con DEC063-C01 a C08 vigentes y `Pending`. Los criterios de aceptación de
+   con DEC063-C01 a C08 vigentes. Los criterios de aceptación de
    R0 (`DEC-062`) quedaron cerrados por Producto el 2026-07-21.
 
 Este grupo desbloquea el primer cambio funcional de R0 sólo cuando las
-materializaciones estén verificadas y los demás H0 cierren. PBI-022 y DEC-005
-ya satisfacen su gate. DEC-044, DEC-049, DEC-051 y DEC-063 también están
-cerradas para H0. El único remanente H0 es VC-024 de DEC-004; su siguiente
-acción exige autorización separada, materialización mínima de prerrequisitos y
-dos corridas CI equivalentes, sin inferir cumplimiento de DEC051-C01 a C10 ni
-DEC063-C01 a C08.
+materializaciones aplicables estén verificadas y exista autorización
+organizacional. PBI-022/DEC-005 y VC-024/DEC-004 ya satisfacen sus gates;
+DEC-044, DEC-049, DEC-051 y DEC-063 también están cerradas para H0.
+DEC051-C01/C07/C09 y DEC063-C01/C03/C04 quedaron `Satisfied` por VC-024; las
+demás condiciones permanecen `Pending`. H0 está completo, pero no autoriza R0
+ni cierra Sprint 00.
 
 ## Grupo A — Fundación de contexto
 
@@ -90,4 +91,4 @@ Folio, política y archivos pueden preparar alternativas en paralelo después de
 
 ## Camino crítico
 
-`DEC-002 cerrada → DEC-004 selección aceptada con VC-024 pendiente + DEC-005 materializada/formalmente verificada + DEC-044/049/051/063 aceptadas → materialización mínima y cierre de VC-024 → DEC-050 coordinada con DEC-051/063 → ADR-003/004/010/011/012/013 aplicados → R0 implementado y demostrado conforme a DEC-062 → aceptación formal de R0 → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.
+`DEC-002 cerrada → DEC-004/VC-024 cerrada + DEC-005 materializada/formalmente verificada + DEC-044/049/051/063 aceptadas → autorización organizacional y contratos H1 → DEC-050 coordinada con DEC-051/063 → ADR-003/004/010/011/012/013 aplicados → R0 implementado y demostrado conforme a DEC-062 → aceptación formal de R0 → DEC-003 → DEC-021/025 → DEC-029/030 → DEC-032/035 → R1`.

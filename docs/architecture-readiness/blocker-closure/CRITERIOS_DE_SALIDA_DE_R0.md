@@ -167,7 +167,7 @@ Además del alcance aprobado, todos estos criterios siguen siendo obligatorios:
 
 - [x] ADR-001 aceptado con TypeScript y Node.js `24.x`, límites y gobierno explícitos;
 - [x] ADR-003 y ADR-009 aceptados; motor y repositorio único con workspaces bajo demanda definidos;
-- [ ] ADR-005 y la selección de DEC-004 aceptados; materialización del package manager/lockfile y evidencia final de la baseline ejecutable pendientes;
+- [x] ADR-005 y DEC-004 aceptados; package manager/lockfile materializados y baseline ejecutable verificada por VC-024;
 - [x] estructura inicial y reglas de dependencia acordadas en DEC-005;
 - [x] estructura y enforcement local de DEC-005 materializados y formalmente verificados; PBI-022 `Done`;
 - [x] ownership de repositorios y datos aceptado para la fundación mediante [DEC-049](../../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md); DEC049-C01 a C08 permanecen pendientes para materialización;

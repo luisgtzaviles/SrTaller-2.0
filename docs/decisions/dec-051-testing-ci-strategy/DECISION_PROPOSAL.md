@@ -71,8 +71,10 @@ Las decisiones vigentes ya establecen:
 
 DEC-005 está `Accepted — Materialized / Formally Verified`. DEC-044 y DEC-049
 están `Accepted`, con sus condiciones de materialización todavía pendientes.
-DEC-004 conserva VC-024 pendiente: dos ejecuciones limpias equivalentes en CI.
-R0 no está autorizado y Sprint 00 permanece abierto.
+Actualización del 2026-07-24: la
+[verificación formal de VC-024](../../architecture-readiness/dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+obtuvo `PASS`; DEC051-C01/C07/C09 quedan `Satisfied` y las demás condiciones
+permanecen pendientes. R0 no está autorizado y Sprint 00 permanece abierto.
 
 La base ejecutable actual usa `node:test`, un checker arquitectónico AST y los
 comandos documentados en `package.json`. No existe todavía un pipeline de CI,
@@ -814,21 +816,23 @@ pronto exista un entorno seguro. No hay bypass permanente ni excepción verbal.
 
 ## 37. Condiciones de materialización
 
-Todas las condiciones fueron aceptadas junto con DEC-051 y permanecen
-**pendientes**. Ninguna se satisface por la existencia de este documento o de
-su revisión formal.
+Todas las condiciones fueron aceptadas junto con DEC-051. La verificación
+formal de [VC-024](../../architecture-readiness/dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+del 2026-07-24 satisface DEC051-C01, DEC051-C07 y DEC051-C09. Las demás
+condiciones permanecen pendientes; ninguna se satisface por la sola existencia
+de este documento o de su revisión formal.
 
 | ID | Condición | Owner | Momento | Evidencia | Dependencia | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
-| DEC051-C01 | Materializar stages mínimos Linux y triggers por riesgo | Ingeniería + Operaciones + Calidad | Antes del primer merge funcional | Workflow, runs, comandos y artefactos | DEC-004/005/044/049 | Pendiente |
+| DEC051-C01 | Materializar stages mínimos Linux y triggers por riesgo | Ingeniería + Operaciones + Calidad | Antes del primer merge funcional | Workflow, runs, comandos y artefactos | DEC-004/005/044/049 | Satisfied |
 | DEC051-C02 | Aplicar protección de `main` y checks requeridos | Operaciones + Arquitectura | Antes del primer merge funcional | Configuración exportable/capturas seguras y prueba de rechazo | Plataforma de repositorio | Pendiente |
 | DEC051-C03 | Proveer PostgreSQL `18.4` real, aislado y reproducible | Ingeniería + Operaciones | Antes de materializar persistencia | Versión, lifecycle, cleanup y suite real | DEC-049; DEC-050 para migraciones | Pendiente |
 | DEC051-C04 | Automatizar aislamiento tenant/sucursal positivo y negativo | Seguridad + Calidad + owner | Antes de cualquier merge de contexto/persistencia/acceso | Matriz de dos tenants, resultados y mutaciones críticas | ADR-004/010/011/012/013 | Pendiente |
 | DEC051-C05 | Automatizar errores, sanitización y retry de DEC-044 | Ingeniería + Seguridad + Calidad | Antes de exponer la primera API funcional | Contratos, negativos, logs y PostgreSQL real | DEC044-C01 a C08 | Pendiente |
 | DEC051-C06 | Automatizar ownership, transacciones y constraints de DEC-049 | Arquitectura + Ingeniería + Calidad | Antes de la primera persistencia funcional | Static gates, integración y rollback/same connection | DEC049-C01 a C08 | Pendiente |
-| DEC051-C07 | Ejecutar y revisar VC-024 | Arquitectura + Ingeniería + Seguridad + Operaciones + Calidad | Antes de cerrar evidencia DEC-004/PBI-021 | Dos runs Linux limpios equivalentes | DEC051-C01 y pipeline materializado | Pendiente |
+| DEC051-C07 | Ejecutar y revisar VC-024 | Arquitectura + Ingeniería + Seguridad + Operaciones + Calidad | Antes de cerrar evidencia DEC-004/PBI-021 | Dos runs Linux limpios equivalentes | DEC051-C01 y pipeline materializado | Satisfied |
 | DEC051-C08 | Aplicar política de flakiness y cuarentena | Calidad + Operaciones | Antes de permitir cuarentena o retries diagnósticos | Registro, owner, expiración y restauración | DEC051-C01 | Pendiente |
-| DEC051-C09 | Preservar fixtures, mutaciones, contratos y determinismo del checker | Arquitectura + Ingeniería + Calidad | En todo cambio de regla/checker | Caso válido, negativo, mutación, doble run y trazabilidad | DEC-005/D5-R032/R033 | Pendiente |
+| DEC051-C09 | Preservar fixtures, mutaciones, contratos y determinismo del checker | Arquitectura + Ingeniería + Calidad | En todo cambio de regla/checker | Caso válido, negativo, mutación, doble run y trazabilidad | DEC-005/D5-R032/R033 | Satisfied |
 | DEC051-C10 | Materializar el escape hatch de emergencia y auditar su restauración | Operaciones + Seguridad + Arquitectura | Antes de habilitar bypass administrativo | Política, prueba controlada y registro de restauración | DEC051-C02 | Pendiente |
 
 Cumplir una condición requiere evidencia ejecutada y revisión; un archivo de
@@ -937,17 +941,12 @@ flowchart TD
 
 ## 43. Impacto en R0
 
-La aceptación de DEC-051 produce este estado:
-
-- H0 pasa documentalmente a **7 decisiones cerradas y 2 abiertas**;
-- el primer cambio funcional sigue bloqueado;
-- VC-024 sigue pendiente de materialización, dos runs y revisión;
-- `main` no tiene protección demostrada;
-- DEC-063 es el siguiente gate de gobierno;
-- DEC051-C01 a C10 siguen pendientes;
-- R0 continúa no autorizado;
-- no se autoriza implementación funcional, merge, deploy ni release por esta
-  sola aceptación.
+La aceptación de DEC-051 cerró su gate documental. Posteriormente, la
+verificación formal de VC-024 cerró H0 en **9 decisiones cerradas y 0
+abiertas** y satisfizo DEC051-C01/C07/C09. El primer cambio funcional sigue
+bloqueado por H1 y autorización organizacional; `main` no tiene protección
+demostrada, las demás condiciones permanecen `Pending` y R0 continúa no
+autorizado.
 
 ## 44. Impacto en Sprint 00
 
@@ -977,23 +976,16 @@ La revisión formal confirmó:
 10. smoke del artefacto compilado;
 11. flakiness, determinismo, mutación y evidencia gobernados;
 12. contrato de protección de `main`;
-13. VC-024 definido sin declararlo cumplido;
-14. condiciones DEC051-C01 a C10 verificables y todas pendientes;
+13. VC-024 definido sin declararlo cumplido por la sola aceptación;
+14. condiciones DEC051-C01 a C10 verificables; su estado vigente se conserva
+    en la tabla de materialización;
 15. compatibilidad sin contradicción con decisiones aceptadas;
 16. ausencia de implementación, dependencias, workflow, SQL, migraciones o PBI
     creados por la decisión.
 
 ## 46. Próxima acción
 
-Preparar y someter **DEC-063 — Definition of Done** a decisión formal usando
-los gates aceptados en DEC-051.
-
-El estado que debe preservarse hasta nueva evidencia es:
-
-- DEC-051 permanece `Accepted`;
-- DEC051-C01 a DEC051-C10 permanecen pendientes;
-- H0 permanece 7/2;
-- DEC-063 es el siguiente gate;
-- VC-024 continúa pendiente;
-- R0 continúa no autorizado;
-- Sprint 00 continúa abierto.
+Con DEC-063 aceptada y VC-024 `Closed / PASS`, la siguiente acción es resolver
+el gate organizacional y los contratos transversales H1. DEC-051 permanece
+`Accepted`; C01/C07/C09 están `Satisfied`, las demás condiciones están
+`Pending`, R0 continúa no autorizado y Sprint 00 continúa abierto.

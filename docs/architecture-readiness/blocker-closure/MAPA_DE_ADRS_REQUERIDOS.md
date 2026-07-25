@@ -8,7 +8,7 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 
 | ADR | Tema | Estado | Hito relacionado | Acción requerida |
 | --- | --- | --- | --- | --- |
-| ADR-001 | TypeScript y Node.js `24.x` | Accepted | H0: selección completada con DEC-004; evidencia pendiente | Aplicar política LTS/EOL, pin exacto y gobierno de excepciones |
+| ADR-001 | TypeScript y Node.js `24.x` | Accepted | H0: selección y evidencia DEC-004/VC-024 completas | Aplicar política LTS/EOL, pin exacto y gobierno de excepciones |
 | ADR-002 | Monolito modular inicial | Accepted | H0 cerrado | Aplicar y verificar; no reabrir sin evidencia |
 | ADR-003 | PostgreSQL como persistencia principal | Accepted | Motor H0 cerrado; mecanismos H1 abiertos | Aplicar junto con ownership y migraciones; baseline PostgreSQL 18.x |
 | ADR-004 | Estrategia multitenant y propiedad lógica | Accepted | H1 parcialmente cerrado | Aplicar invariantes; RLS queda separado y contexto se rige por ADR-010 |
@@ -41,8 +41,8 @@ Este mapa prioriza trabajo de decisión; no crea ni acepta ADRs. Cada ADR sólo 
 | 5 | Migraciones y versionado de esquema; aplicar ADR-003 | DEC-050 después de DEC-049 | No para mecanismo; sí para tolerancia operativa | Condicional | Tooling, evolución de esquema y recuperación definidos | H1 |
 | 6 | Tiempo y zonas horarias | DEC-037, DEC-038 | Sí | Condicional para casos límite | Instante autoritativo, zona operacional y reglas de presentación | H1 |
 | 7 | Auditoría y atribución | DEC-016, DEC-019, DEC-046 | Sí | No por defecto | Hechos auditables, actor, contexto, integridad, acceso y retención inicial | H1/H3 |
-| Cerrado — decisión formal | Estrategia de pruebas de arquitectura, errores, persistencia y aislamiento | DEC-051, DEC-052, DEC-062; contratos DEC-044/049 aceptados | No para técnica; sí para aceptación | No | Gates repetibles, datos de dos tenants, traducción/sanitización y pruebas de denegación; C01 a C10 pendientes | H0 cerrado / H1 |
-| Cerrado 2026-07-24 | [Definition of Done por tipo y riesgo](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) | DEC-063; DEC-004/005/044/049/051 y ADR-004/010–013 satisfechas | Responsable del Proyecto en cinco disciplinas | No | Base común, estados, riesgo, evidencia, waivers y Done/Released aceptados; C01 a C08 `Pending` | H0 cerrado para DEC-063 |
+| Cerrado — decisión formal | Estrategia de pruebas de arquitectura, errores, persistencia y aislamiento | DEC-051, DEC-052, DEC-062; contratos DEC-044/049 aceptados | No para técnica; sí para aceptación | No | Gates repetibles, datos de dos tenants, traducción/sanitización y pruebas de denegación; C01/C07/C09 `Satisfied`, restantes `Pending` | H0 cerrado / H1 |
+| Cerrado 2026-07-24 | [Definition of Done por tipo y riesgo](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) | DEC-063; DEC-004/005/044/049/051 y ADR-004/010–013 satisfechas | Responsable del Proyecto en cinco disciplinas | No | Base común, estados, riesgo, evidencia, waivers y Done/Released aceptados; C01/C03/C04 `Satisfied`, restantes `Pending` | H0 cerrado para DEC-063 |
 | 9 | Folio, reserva, concurrencia e idempotencia; crear ADR específico | DEC-021 a DEC-025 | Sí | Sí, concurrencia de folio | Identidad técnica separada del folio y creación exactamente efectiva una vez | H2 |
 | 10 | Política efectiva, vigencia y snapshots; crear ADR específico | DEC-032 a DEC-035 | Sí | Condicional | Precedencia segura y reproducción histórica | H2 |
 | 11 | Estados, ubicación y custodia | DEC-027 a DEC-031 | Sí | No por defecto | Invariantes, transiciones y límites transaccionales explícitos | H2/H3 |
@@ -70,9 +70,12 @@ DEC049-C01 a C08 vigentes,
 [DEC-044](../../decisions/dec-044-error-strategy/FORMAL_REVIEW.md) con
 DEC044-C01 a C08 vigentes,
 [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) con
-DEC051-C01 a C10 pendientes y
+DEC051-C01/C07/C09 `Satisfied` y las demás condiciones `Pending`, y
 [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) con
-DEC063-C01 a C08 `Pending`. VC-024 es ahora el único gate H0 concreto.
+DEC063-C01/C03/C04 `Satisfied` y las demás condiciones `Pending`. La
+[verificación formal de VC-024](../dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+obtuvo `PASS`; H0 está completo y el siguiente gate es H1 más autorización
+organizacional.
 ADR-006, ADR-007 y ADR-008 conservan sus gates posteriores.
 
 ADR-001, ADR-003, ADR-004, ADR-009 y ADR-010 a ADR-013 ya están aceptados. En paralelo, la siguiente revisión de seguridad debe preparar la aplicación y prueba de esos contratos y clasificar las acciones concretas de cada rebanada. El ADR de auditoría permanece separado para integridad, retención, consulta y evidencia técnica.

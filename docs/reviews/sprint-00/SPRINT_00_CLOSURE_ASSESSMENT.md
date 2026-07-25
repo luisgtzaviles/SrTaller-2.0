@@ -15,12 +15,14 @@ fueron aceptados el 2026-07-21; [DEC-049](../../decisions/dec-049-persistence-ow
 fue aceptada el 2026-07-24 con ocho condiciones de materialización pendientes.
 [DEC-051](../../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md)
 quedó `Accepted` el 2026-07-24 por el Responsable del Proyecto, con cinco
-`PASS WITH CONDITIONS` y C01 a C10 pendientes.
+`PASS WITH CONDITIONS`; VC-024 satisface C01/C07/C09.
 [DEC-063](../../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) quedó
 `Accepted with conditions` el 2026-07-24, con cinco
-`PASS WITH CONDITIONS` y C01 a C08 `Pending`; VC-024 es el único H0 restante.
-Estas actualizaciones no cierran Sprint 00 y las filas históricas no deben
-usarse como fuente de su estado vigente.
+`PASS WITH CONDITIONS`; VC-024 satisface C01/C03/C04. La
+[verificación formal de VC-024](../../architecture-readiness/dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
+obtuvo `PASS` y H0 queda completo en 9/0. Las demás condiciones permanecen
+`Pending`. Estas actualizaciones no cierran Sprint 00, no autorizan R0 y las
+filas históricas no deben usarse como fuente de su estado vigente.
 
 ## Convenciones de evaluación
 
