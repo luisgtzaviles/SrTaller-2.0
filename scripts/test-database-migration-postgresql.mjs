@@ -2,10 +2,14 @@ import { execFile } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { promisify } from 'node:util';
 
+import { assertPostgresqlTestSummary } from './lib/postgresql-test-output.mjs';
+
 const execute = promisify(execFile);
 const imageDigest =
   'sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf';
 const image = `postgres@${imageDigest}`;
+const executionLabel =
+  process.env.SR_PG_CI_EXECUTION_LABEL ?? 'standalone';
 const requestedRuns =
   process.argv[2] === '--runs'
     ? Number.parseInt(process.argv[3] ?? '', 10)
@@ -92,6 +96,8 @@ async function runOnce() {
       '--detach',
       '--name',
       container,
+      '--label',
+      `com.srtaller.pbi023.execution=${executionLabel}`,
       '--publish',
       '127.0.0.1::5432',
       '--tmpfs',
@@ -150,7 +156,7 @@ async function runOnce() {
       SR_MIGRATION_PG_TEST: '1',
       SR_MIGRATION_PG_USER: user,
     };
-    await execute(
+    const { stdout: testOutput } = await execute(
       process.execPath,
       ['--test', 'test/database-migration-postgresql.test.mjs'],
       {
@@ -160,6 +166,7 @@ async function runOnce() {
         timeout: 120_000,
       },
     );
+    const tests = assertPostgresqlTestSummary(testOutput);
 
     const { stdout: schemaOutput } = await docker([
       'exec',
@@ -209,6 +216,7 @@ async function runOnce() {
         'up',
       ]),
       status: 'PASS',
+      tests,
     });
   } finally {
     if (started) {
@@ -241,6 +249,7 @@ process.stdout.write(
       postgres: '18.4',
       runs: requestedRuns,
       status: 'PASS',
+      suite: results[0],
     },
     null,
     2,

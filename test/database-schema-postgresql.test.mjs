@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { inspect } from 'node:util';
@@ -365,6 +366,38 @@ function assertSchemaContract(schema) {
   assert.deepEqual(schema.namespaces, [{ nspname: 'public' }]);
 }
 
+async function writeSchemaEvidence(schema, isolation) {
+  const output = process.env.SR_SCHEMA_PG_EVIDENCE_OUTPUT;
+  if (!output) {
+    return;
+  }
+  const material = JSON.stringify({
+    columns: schema.columns,
+    constraints: schema.constraints,
+    indexes: schema.indexes,
+    relations: schema.relations,
+  });
+  await writeFile(
+    output,
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        schemaSha256: createHash('sha256')
+          .update(material)
+          .digest('hex'),
+        tables: ['branches', 'tenants'],
+        columns: schema.columns.length,
+        constraints: schema.constraints.length,
+        indexes: schema.indexes.length,
+        negativeIsolation: isolation.negativeIsolation,
+        futureCompositeReference: isolation.futureCompositeReference,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+}
+
 async function assertTenantIsolation(admin) {
   const tenantA = randomUUID();
   const tenantB = randomUUID();
@@ -555,7 +588,8 @@ test(
 
       const firstSchema = await introspectSchema(admin);
       assertSchemaContract(firstSchema);
-      await assertTenantIsolation(admin);
+      const isolation = await assertTenantIsolation(admin);
+      await writeSchemaEvidence(firstSchema, isolation);
 
       await assert.rejects(
         runner.migrateDown(

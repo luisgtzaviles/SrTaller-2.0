@@ -4,6 +4,11 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { extname, relative, resolve, sep } from 'node:path';
 
+import {
+  comparablePostgresqlCiManifest,
+  validatePostgresqlCiManifest,
+} from './postgresql-ci-evidence.mjs';
+
 const execFileAsync = promisify(execFile);
 const forbiddenPathPatterns = [
   /(?:^|\/)Users\//u,
@@ -107,7 +112,7 @@ function requiredString(value, label) {
 }
 
 export function validateEvidenceManifest(manifest) {
-  if (manifest.schemaVersion !== 1) {
+  if (manifest.schemaVersion !== 1 && manifest.schemaVersion !== 2) {
     throw new Error('Unsupported evidence manifest schemaVersion');
   }
   if (manifest.contract !== 'DEC-004/VC-024') {
@@ -171,11 +176,18 @@ export function validateEvidenceManifest(manifest) {
   if (manifest.verdict !== 'PASS') {
     throw new Error('Evidence manifest verdict must be PASS');
   }
+  if (manifest.schemaVersion === 2) {
+    validatePostgresqlCiManifest(manifest.postgresql);
+  } else if (manifest.postgresql !== undefined) {
+    throw new Error(
+      'PostgreSQL evidence requires evidence manifest schemaVersion 2',
+    );
+  }
   return manifest;
 }
 
 function comparableManifest(manifest) {
-  return {
+  const comparable = {
     commands: manifest.commands,
     commit: manifest.commit,
     contract: manifest.contract,
@@ -187,6 +199,13 @@ function comparableManifest(manifest) {
     toolchain: manifest.toolchain,
     verdict: manifest.verdict,
   };
+  if (manifest.postgresql) {
+    comparable.postgresql = {
+      ...comparablePostgresqlCiManifest(manifest.postgresql),
+      comparableSha256: manifest.postgresql.comparableSha256,
+    };
+  }
+  return comparable;
 }
 
 export function compareEvidenceManifests(left, right) {
@@ -248,6 +267,7 @@ async function detectGlibc() {
 export async function collectEvidenceManifest({
   executionLabel,
   initialClean,
+  postgresqlInput,
   projectRoot = process.cwd(),
   workflowRunId,
 } = {}) {
@@ -277,7 +297,18 @@ export async function collectEvidenceManifest({
     'architecture/dec-005-policy.json',
     'package.json',
     'pnpm-lock.yaml',
+    'scripts/cleanup-postgresql-ci.mjs',
+    'scripts/lib/postgresql-ci-evidence.mjs',
+    'scripts/lib/postgresql-test-output.mjs',
+    'scripts/run-postgresql-ci.mjs',
+    'scripts/test-database-connection-postgresql.mjs',
+    'scripts/test-database-migration-postgresql.mjs',
+    'scripts/test-database-schema-postgresql.mjs',
+    'scripts/test-database-transaction-postgresql.mjs',
+    'scripts/test-owner-scoped-persistence-postgresql.mjs',
+    'src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts',
     'supply-chain-policy.json',
+    'test/database-schema-postgresql.test.mjs',
     'tsconfig.build.json',
     'tsconfig.json',
   ];
@@ -286,8 +317,14 @@ export async function collectEvidenceManifest({
     inputs[inputPath] = await sha256File(resolve(projectRoot, inputPath));
   }
 
+  const postgresql = postgresqlInput
+    ? validatePostgresqlCiManifest(
+        JSON.parse(await readFile(resolve(postgresqlInput), 'utf8')),
+      )
+    : undefined;
+
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: postgresql ? 2 : 1,
     contract: 'DEC-004/VC-024',
     commit: await commandOutput('git', ['rev-parse', 'HEAD']),
     execution: {
@@ -345,7 +382,16 @@ export async function collectEvidenceManifest({
       initialClean: true,
     },
     verdict: 'PASS',
+    ...(postgresql ? { postgresql } : {}),
   };
+
+  if (postgresql) {
+    manifest.commands.splice(7, 0, {
+      name: 'test:postgresql',
+      command: 'node scripts/run-postgresql-ci.mjs',
+      exitCode: 0,
+    });
+  }
 
   return validateEvidenceManifest(manifest);
 }

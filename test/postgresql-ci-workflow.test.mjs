@@ -1,0 +1,71 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+
+import {
+  criticalPostgresqlSuites,
+  postgresqlImage,
+} from '../scripts/lib/postgresql-ci-evidence.mjs';
+import {
+  assertPostgresqlTestSummary,
+} from '../scripts/lib/postgresql-test-output.mjs';
+
+const workflow = await readFile(
+  '.github/workflows/authoritative-linux-ci.yml',
+  'utf8',
+);
+const runner = await readFile('scripts/run-postgresql-ci.mjs', 'utf8');
+
+test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', () => {
+  assert.match(workflow, /execution:\s*\n\s+- run-1\s*\n\s+- run-2/u);
+  assert.match(
+    workflow,
+    /node scripts\/run-postgresql-ci\.mjs[\s\S]*POSTGRESQL_MANIFEST\.json/u,
+  );
+  assert.match(
+    workflow,
+    /name: Cleanup PostgreSQL persistence suites\s*\n\s*if: always\(\)/u,
+  );
+  assert.match(workflow, /--postgresql-input/u);
+  assert.match(workflow, /- r0\/\*\*/u);
+  assert.doesNotMatch(workflow, /secrets\./u);
+});
+
+test('PostgreSQL runner pins the governed digest and exact suite inventory', () => {
+  assert.match(runner, /postgresqlImage/u);
+  assert.doesNotMatch(runner, /postgres(?::latest|:18\b)/u);
+  for (const suite of criticalPostgresqlSuites) {
+    assert.match(runner, new RegExp(`name: '${suite}'`, 'u'));
+  }
+  assert.equal(
+    postgresqlImage,
+    'postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf',
+  );
+});
+
+test('critical test summary accepts zero skips and fails closed on any skip', () => {
+  const passing = [
+    'ℹ tests 6',
+    'ℹ pass 6',
+    'ℹ fail 0',
+    'ℹ cancelled 0',
+    'ℹ skipped 0',
+    'ℹ todo 0',
+  ].join('\n');
+  assert.deepEqual(assertPostgresqlTestSummary(passing), {
+    tests: 6,
+    pass: 6,
+    fail: 0,
+    cancelled: 0,
+    skipped: 0,
+    todo: 0,
+  });
+
+  assert.throws(
+    () =>
+      assertPostgresqlTestSummary(
+        passing.replace('skipped 0', 'skipped 1'),
+      ),
+    /did not execute every expected test/u,
+  );
+});

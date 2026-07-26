@@ -1,11 +1,18 @@
 import { execFile } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { promisify } from 'node:util';
+
+import { assertPostgresqlTestSummary } from './lib/postgresql-test-output.mjs';
 
 const execute = promisify(execFile);
 const imageDigest =
   'sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf';
 const image = `postgres@${imageDigest}`;
+const executionLabel =
+  process.env.SR_PG_CI_EXECUTION_LABEL ?? 'standalone';
 const requestedRuns =
   process.argv[2] === '--runs'
     ? Number.parseInt(process.argv[3] ?? '', 10)
@@ -83,6 +90,10 @@ async function runOnce() {
   const database = `srtaller_schema_${suffix}`;
   const user = 'srtaller_schema_test';
   const password = `synthetic_${randomBytes(18).toString('hex')}`;
+  const evidenceRoot = await mkdtemp(
+    join(tmpdir(), 'srtaller-pbi023-schema-evidence-'),
+  );
+  const evidencePath = join(evidenceRoot, 'schema.json');
   let started = false;
 
   try {
@@ -92,6 +103,8 @@ async function runOnce() {
       '--detach',
       '--name',
       container,
+      '--label',
+      `com.srtaller.pbi023.execution=${executionLabel}`,
       '--publish',
       '127.0.0.1::5432',
       '--tmpfs',
@@ -141,7 +154,7 @@ async function runOnce() {
       throw new Error('Docker did not assign a loopback test port');
     }
 
-    await execute(
+    const { stdout: testOutput } = await execute(
       process.execPath,
       ['--test', 'test/database-schema-postgresql.test.mjs'],
       {
@@ -154,10 +167,15 @@ async function runOnce() {
           SR_SCHEMA_PG_PORT: port,
           SR_SCHEMA_PG_TEST: '1',
           SR_SCHEMA_PG_USER: user,
+          SR_SCHEMA_PG_EVIDENCE_OUTPUT: evidencePath,
         },
         maxBuffer: 10 * 1024 * 1024,
         timeout: 150_000,
       },
+    );
+    const tests = assertPostgresqlTestSummary(testOutput);
+    const schemaEvidence = JSON.parse(
+      await readFile(evidencePath, 'utf8'),
     );
 
     const { stdout: schemaOutput } = await docker([
@@ -215,12 +233,15 @@ async function runOnce() {
         'up',
       ]),
       status: 'PASS',
+      schemaEvidence,
+      tests,
     });
   } finally {
     if (started) {
       await docker(['rm', '--force', container]).catch(() => undefined);
     }
     await assertContainerAbsent(container);
+    await rm(evidenceRoot, { force: true, recursive: true });
   }
 }
 
@@ -247,6 +268,7 @@ process.stdout.write(
       postgres: '18.4',
       runs: requestedRuns,
       status: 'PASS',
+      suite: results[0],
     },
     null,
     2,

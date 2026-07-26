@@ -2,10 +2,14 @@ import { execFile } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { promisify } from 'node:util';
 
+import { assertPostgresqlTestSummary } from './lib/postgresql-test-output.mjs';
+
 const execute = promisify(execFile);
 const imageDigest =
   'sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf';
 const image = `postgres@${imageDigest}`;
+const executionLabel =
+  process.env.SR_PG_CI_EXECUTION_LABEL ?? 'standalone';
 const requestedRuns =
   process.argv[2] === '--runs'
     ? Number.parseInt(process.argv[3] ?? '', 10)
@@ -88,6 +92,8 @@ async function runOnce() {
       '--detach',
       '--name',
       container,
+      '--label',
+      `com.srtaller.pbi023.execution=${executionLabel}`,
       '--publish',
       '127.0.0.1::5432',
       '--tmpfs',
@@ -142,6 +148,41 @@ async function runOnce() {
     if (encodingOutput.trim() !== 'UTF8') {
       throw new Error('ephemeral PostgreSQL encoding differs from UTF8');
     }
+    const { stdout: timezoneOutput } = await docker([
+      'exec',
+      container,
+      'psql',
+      '--tuples-only',
+      '--no-align',
+      '--username',
+      user,
+      '--dbname',
+      database,
+      '--command',
+      'show TimeZone',
+    ]);
+    if (timezoneOutput.trim() !== 'UTC') {
+      throw new Error('ephemeral PostgreSQL timezone differs from UTC');
+    }
+    const { stdout: localeOutput } = await docker([
+      'exec',
+      container,
+      'psql',
+      '--tuples-only',
+      '--no-align',
+      '--username',
+      user,
+      '--dbname',
+      database,
+      '--command',
+      'select datcollate from pg_database where datname = current_database()',
+    ]);
+    const { stdout: clientVersionOutput } = await docker([
+      'exec',
+      container,
+      'psql',
+      '--version',
+    ]);
 
     const { stdout: portOutput } = await docker([
       'inspect',
@@ -154,7 +195,7 @@ async function runOnce() {
       throw new Error('Docker did not assign a loopback test port');
     }
 
-    await execute(
+    const { stdout: testOutput } = await execute(
       process.execPath,
       ['--test', 'test/owner-scoped-persistence-postgresql.test.mjs'],
       {
@@ -172,6 +213,7 @@ async function runOnce() {
         timeout: 150_000,
       },
     );
+    const tests = assertPostgresqlTestSummary(testOutput);
 
     const { stdout: schemaOutput } = await docker([
       'exec',
@@ -194,6 +236,13 @@ async function runOnce() {
 
     return Object.freeze({
       cleanup: 'PASS',
+      environment: Object.freeze({
+        clientVersion: clientVersionOutput.trim(),
+        encoding: encodingOutput.trim(),
+        locale: localeOutput.trim(),
+        serverVersion: versionOutput.trim(),
+        timezone: timezoneOutput.trim(),
+      }),
       imageDigest,
       migration:
         '20260725183832_database_create_tenants_and_branches',
@@ -214,6 +263,7 @@ async function runOnce() {
         'transaction-commit',
       ]),
       status: 'PASS',
+      tests,
     });
   } finally {
     if (started) {
@@ -246,6 +296,7 @@ process.stdout.write(
       postgres: '18.4',
       runs: requestedRuns,
       status: 'PASS',
+      suite: results[0],
     },
     null,
     2,
