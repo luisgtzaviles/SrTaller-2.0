@@ -9,6 +9,7 @@ import {
   postgresqlImage,
   postgresqlImageDigest,
   productiveMigration,
+  stationMigration,
 } from './lib/postgresql-ci-evidence.mjs';
 import { sha256File } from './lib/ci-evidence.mjs';
 
@@ -79,6 +80,10 @@ const suiteDefinitions = Object.freeze([
   {
     name: 'owner-scoped-adapters',
     script: 'scripts/test-owner-scoped-persistence-postgresql.mjs',
+  },
+  {
+    name: 'trusted-station-context',
+    script: 'scripts/test-trusted-station-context-postgresql.mjs',
   },
 ]);
 
@@ -159,7 +164,17 @@ const { stdout: residualContainers } = await command('docker', [
   '--filter',
   `label=com.srtaller.pbi023.execution=${executionLabel}`,
 ]);
-if (residualContainers.trim() !== '') {
+const { stdout: residualStationContainers } = await command('docker', [
+  'ps',
+  '--all',
+  '--quiet',
+  '--filter',
+  `label=com.srtaller.pbi024.execution=${executionLabel}`,
+]);
+if (
+  residualContainers.trim() !== '' ||
+  residualStationContainers.trim() !== ''
+) {
   throw new Error('PostgreSQL CI suites left a governed container');
 }
 
@@ -189,9 +204,13 @@ const migrationPath = resolve(
   'src/infrastructure/database/migrations',
   productiveMigration,
 );
+const stationMigrationPath = resolve(
+  'src/infrastructure/database/migrations',
+  stationMigration,
+);
 const manifest = finalizePostgresqlCiManifest({
   schemaVersion: 1,
-  contract: 'PBI-023/POSTGRESQL-CI',
+  contract: 'PBI-024/POSTGRESQL-CI',
   execution: {
     attempt,
     event: process.env.GITHUB_EVENT_NAME ?? 'local',
@@ -228,7 +247,9 @@ const manifest = finalizePostgresqlCiManifest({
   },
   migration: {
     filename: productiveMigration,
+    stationFilename: stationMigration,
     sha256: await sha256File(migrationPath),
+    stationSha256: await sha256File(stationMigrationPath),
     status: 'PASS',
     emptyDatabase: 'PASS',
     downReapply: 'PASS',
@@ -239,6 +260,9 @@ const manifest = finalizePostgresqlCiManifest({
   schema: {
     sha256: schemaEvidence.schemaSha256,
     tables: schemaEvidence.tables,
+    stationTables: ['station_bindings', 'stations'],
+    stationSha256:
+      suiteResults.get('trusted-station-context').materialSha256,
     columns: schemaEvidence.columns,
     constraints: schemaEvidence.constraints,
     indexes: schemaEvidence.indexes,

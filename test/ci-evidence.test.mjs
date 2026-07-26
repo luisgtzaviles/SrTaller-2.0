@@ -15,6 +15,7 @@ import {
   postgresqlImage,
   postgresqlImageDigest,
   productiveMigration,
+  stationMigration,
 } from '../scripts/lib/postgresql-ci-evidence.mjs';
 
 async function createDistFixture({
@@ -96,7 +97,7 @@ function manifest(label) {
 function postgresqlManifest(label) {
   return finalizePostgresqlCiManifest({
     schemaVersion: 1,
-    contract: 'PBI-023/POSTGRESQL-CI',
+    contract: 'PBI-024/POSTGRESQL-CI',
     execution: {
       attempt: '1',
       event: 'pull_request',
@@ -122,7 +123,7 @@ function postgresqlManifest(label) {
       isolation: 'fresh database and container per critical suite',
       identitiesExposed: false,
       persistentStorage: false,
-      suiteDatabases: 5,
+      suiteDatabases: criticalPostgresqlSuites.length,
     },
     roles: {
       mode: 'synthetic ephemeral lifecycle identity per suite',
@@ -132,7 +133,9 @@ function postgresqlManifest(label) {
     },
     migration: {
       filename: productiveMigration,
+      stationFilename: stationMigration,
       sha256: 'a'.repeat(64),
+      stationSha256: 'd'.repeat(64),
       status: 'PASS',
       emptyDatabase: 'PASS',
       downReapply: 'PASS',
@@ -143,6 +146,8 @@ function postgresqlManifest(label) {
     schema: {
       sha256: 'b'.repeat(64),
       tables: ['branches', 'tenants'],
+      stationTables: ['station_bindings', 'stations'],
+      stationSha256: 'e'.repeat(64),
       columns: 5,
       constraints: 8,
       indexes: 2,
@@ -163,8 +168,8 @@ function postgresqlManifest(label) {
       },
     })),
     totals: {
-      suites: 5,
-      testsExecuted: 10,
+      suites: criticalPostgresqlSuites.length,
+      testsExecuted: criticalPostgresqlSuites.length + 5,
       criticalSkips: 0,
       failures: 0,
       previouslyGatedSkips: 10,

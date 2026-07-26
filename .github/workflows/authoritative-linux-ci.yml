@@ -77,7 +77,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          postgresql_dir="${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}"
+          postgresql_dir="${RUNNER_TEMP}/pbi024-postgresql-${VC024_EXECUTION_LABEL}"
           mkdir -p "${postgresql_dir}"
           node scripts/run-postgresql-ci.mjs \
             --output "${postgresql_dir}/POSTGRESQL_MANIFEST.json"
@@ -127,9 +127,9 @@ jobs:
             --output "${evidence_dir}/EVIDENCE_MANIFEST.json" \
             --dist-output "${evidence_dir}/DIST_MANIFEST.json" \
             --postgresql-input \
-              "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json"
+              "${RUNNER_TEMP}/pbi024-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json"
           cp \
-            "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
+            "${RUNNER_TEMP}/pbi024-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
             "${evidence_dir}/POSTGRESQL_MANIFEST.json"
 
       - name: Upload sanitized execution evidence

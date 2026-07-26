@@ -5,12 +5,15 @@ export const postgresqlImageDigest =
 export const postgresqlImage = `postgres@${postgresqlImageDigest}`;
 export const productiveMigration =
   '20260725183832_database_create_tenants_and_branches.ts';
+export const stationMigration =
+  '20260726160000_stations_create_stations_and_bindings.ts';
 export const criticalPostgresqlSuites = Object.freeze([
   'connection',
   'transaction',
   'migration',
   'schema',
   'owner-scoped-adapters',
+  'trusted-station-context',
 ]);
 
 function sha256(value) {
@@ -46,7 +49,7 @@ export function comparablePostgresqlCiManifest(manifest) {
 export function validatePostgresqlCiManifest(manifest) {
   if (
     manifest.schemaVersion !== 1 ||
-    manifest.contract !== 'PBI-023/POSTGRESQL-CI'
+    manifest.contract !== 'PBI-024/POSTGRESQL-CI'
   ) {
     throw new Error('Unsupported PostgreSQL CI evidence contract');
   }
@@ -57,6 +60,7 @@ export function validatePostgresqlCiManifest(manifest) {
     ['image.digest', manifest.image?.digest],
     ['postgres.version', manifest.postgres?.version],
     ['migration.sha256', manifest.migration?.sha256],
+    ['migration.stationSha256', manifest.migration?.stationSha256],
     ['schema.sha256', manifest.schema?.sha256],
     ['comparableSha256', manifest.comparableSha256],
     ['result', manifest.result],
@@ -106,8 +110,11 @@ export function validatePostgresqlCiManifest(manifest) {
   }
   if (
     manifest.migration.filename !== productiveMigration ||
+    manifest.migration.stationFilename !== stationMigration ||
     manifest.migration.status !== 'PASS' ||
     manifest.schema.tables.join(',') !== 'branches,tenants' ||
+    manifest.schema.stationTables.join(',') !==
+      'station_bindings,stations' ||
     manifest.isolation.schema !== 'PASS' ||
     manifest.isolation.adapters !== 'PASS' ||
     manifest.cleanup.status !== 'PASS'
