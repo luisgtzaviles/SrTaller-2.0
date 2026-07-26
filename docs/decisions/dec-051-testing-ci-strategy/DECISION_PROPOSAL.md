@@ -31,6 +31,15 @@ autoritativa post-merge. Esta evidencia deja DEC051-C02 materialmente
 evidencia de protección efectiva de `main`, checks/aprobación obligatorios ni
 una prueba controlada de rechazo.
 
+**Tratamiento temporal 2026-07-26:** el
+[expediente de gobierno para PBI-024](../../architecture-readiness/pbi-024/DEC_051_C02_TEMPORARY_TREATMENT.md)
+mantiene DEC051-C02 canónicamente `Pending — external platform enforcement
+unavailable` y materialmente `Partially satisfied`. Permite únicamente
+refinamiento y revisión formal de PBI-024. No autoriza implementación, rama,
+commits o PR funcionales, y conserva bloqueado el primer merge funcional hasta
+que C02 quede `Satisfied` o DEC-051 sea modificada mediante una decisión formal
+separada.
+
 ## 4. Fecha
 
 2026-07-24.
@@ -1011,3 +1020,11 @@ de rechazo verificable para completar DEC051-C02. DEC-051 permanece
 `Accepted`; DEC051-C02 permanece canónicamente `Pending`. R0 está
 `Authorized`, limitado al alcance cerrado de PBI-023; Sprint 00 está `Closed`
 y PBI-024 continúa `Draft`, no iniciado y no autorizado.
+
+**Actualización de secuencia 2026-07-26:** la acción anterior continúa siendo
+obligatoria antes del primer merge funcional. Mientras el enforcement externo
+permanece indisponible, el
+[tratamiento temporal](../../architecture-readiness/pbi-024/DEC_051_C02_TEMPORARY_TREATMENT.md)
+autoriza sólo refinar PBI-024, completar sus gates y someterlo a revisión
+formal. Una decisión posterior deberá autorizar o rechazar su implementación;
+el tratamiento no cambia C02 ni autoriza integración funcional.

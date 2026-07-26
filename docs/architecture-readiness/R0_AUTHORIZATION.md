@@ -107,6 +107,13 @@ protección efectiva de `main`, checks/aprobación obligatorios y una prueba de
 rechazo. Esta actualización no amplía R0 ni autoriza PBI-024, release o
 deploy.
 
+**Actualización de gobierno 2026-07-26:** el
+[tratamiento temporal de DEC051-C02](pbi-024/DEC_051_C02_TEMPORARY_TREATMENT.md)
+autoriza exclusivamente refinar y revisar formalmente PBI-024. C02 permanece
+`Pending — external platform enforcement unavailable`, el primer merge
+funcional sigue bloqueado y PBI-024 no queda autorizado para implementación,
+rama, commits o PR funcionales.
+
 ## 9. Definition of Ready
 
 **Veredicto:** `READY WITH NON-BLOCKING NOTES — READY CONFIRMED`.
@@ -218,8 +225,20 @@ PBI-023 ejerció la autorización limitada y está `Closed`. H1 continúa abiert
 PBI-024–PBI-029 no están autorizados. R0 aún debe completar los demás alcances,
 demostrarse y recibir aceptación formal.
 
+PBI-024 permanece
+`Draft — refinement authorized; implementation not authorized`. Este estado
+habilita preparación documental y revisión formal, no amplía la autorización
+de ejecución de R0.
+
 ## 16. Siguiente acción
 
 Resolver el mecanismo de protección obligatoria de `main` y diseñar una prueba
 de rechazo verificable para completar DEC051-C02. Esta acción no autoriza
 PBI-024, release, deploy ni aceptación de R0.
+
+El
+[tratamiento temporal](pbi-024/DEC_051_C02_TEMPORARY_TREATMENT.md)
+conserva esa obligación antes del primer merge funcional y fija como siguiente
+acción operativa: refinar PBI-024, completar sus gates y someterlo a revisión
+formal para decidir su autorización de implementación. No se autoriza ejecutar
+ese PBI dentro de esta decisión.
