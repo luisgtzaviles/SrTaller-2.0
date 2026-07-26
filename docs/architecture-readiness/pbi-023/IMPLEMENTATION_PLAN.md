@@ -157,6 +157,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Paso 11 — PostgreSQL real en Linux CI
 
+- **Estado:** `Completed — PASS` en
+  [postgresql-ci/](postgresql-ci/README.md).
 - **Objetivo:** lifecycle aislado/reproducible autoritativo.
 - **Archivos:** workflow autorizado, scripts de test y manifest.
 - **Dependencias:** DEC051-C02/C03 y review de Operaciones.
@@ -166,7 +168,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 - **Evidencia:** run/job IDs, platform, versión, manifest/hashes.
 - **Rollback:** revertir workflow; service desaparece con job.
 - **Gate:** Operaciones + Calidad; branch protection.
-- **Salida:** C03 verificable y job requerido.
+- **Salida:** DEC051-C03/C04/C06 verificadas en ambos runs; el carácter
+  requerido de checks/branch protection continúa bajo C02 y revisión de merge.
 
 ## Paso 12 — Adapters owner-scoped
 
@@ -185,8 +188,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Paso 13 — Aislamiento tenant negativo
 
-- **Estado:** `Completed — PASS` dentro del mismo Paso 10 operativo; PostgreSQL
-  autoritativo de CI permanece pendiente.
+- **Estado:** `Completed — PASS` dentro del mismo Paso 10 operativo y
+  revalidado por PostgreSQL autoritativo en el Paso 11.
 - **Objetivo:** ejecutar ISO-001 a ISO-020.
 - **Archivos:** isolation tests y fixtures.
 - **Dependencias:** adapters, PG real y probes cerrados.
@@ -228,7 +231,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Orden definitivo
 
-El orden recomendado pone el checker antes de `src/` y separa schema/adapters.
-Los pasos 1–7 están completos. El siguiente paso autorizable es **Paso 8**,
-sujeto a autorización explícita; los pasos 8–15 no quedan autorizados por este
-cierre.
+El orden recomendado puso el checker antes de `src/` y separó schema/adapters.
+Los slices técnicos hasta PostgreSQL autoritativo están completos. La siguiente
+tarea autorizable es la revisión formal de cierre denominada **Paso 12** por el
+gate vigente. Esa revisión, y no este plan histórico, decide PR Ready, merge,
+estado `Done` y eventual autorización de PBI-024.

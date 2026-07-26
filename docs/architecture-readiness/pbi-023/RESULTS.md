@@ -2,7 +2,7 @@
 
 ## Dictamen
 
-**PASS — PBI-023 OWNER-SCOPED PERSISTENCE VERIFIED**
+**PASS — PBI-023 POSTGRESQL CI AUTHORITATIVE**
 
 El expediente define estimación, DEC-050, versiones candidatas, arquitectura,
 schema mínimo, aislamiento, migraciones, riesgos, gates y plan. SPIKE-002
@@ -20,7 +20,10 @@ coincidieron y limpiaron todos los probes. El Paso 9 añadió sólo
 El Paso 10 añadió sólo ports/adapters owner-scoped, capability interna,
 errores, transacciones y aislamiento negativo; dos runs PostgreSQL `18.4`
 coincidieron. No existe startup, endpoint, provider Nest ni consumer
-funcional. PBI-023 queda `Ready` para el gate PostgreSQL de CI.
+funcional. El Paso 11 ejecutó las cinco suites críticas en PostgreSQL `18.4`
+real dentro de `run-1` y `run-2`, para push y PR. Comparaciones, artifacts,
+cleanup y sanitización pasaron. PBI-023 queda listo para revisión formal de
+cierre, no `Done`.
 
 ## Checklist
 
@@ -70,17 +73,22 @@ funcional. PBI-023 queda `Ready` para el gate PostgreSQL de CI.
 | errores adapter sanitizados | PASS |
 | aislamiento negativo adapter/query | PASS |
 | PostgreSQL 18.4 adapters | PASS — dos runs, material MATCH |
+| PostgreSQL 18.4 CI autoritativo Paso 11 | PASS — push y PR |
+| suites/tests/skips críticos por job | PASS — 5/10/0 |
+| VC-024 run-1/run-2/comparison | PASS |
+| artifacts/manifests/sanitización | PASS |
 
 ## Estado de decisiones
 
 | Elemento | Entrada | Salida |
 |---|---|---|
-| DEC-050 | Accepted with conditions | primera migración, ordering, journal, manifest/drift, up/down y atomicidad materializados; CI/operation pending |
+| DEC-050 | Accepted with conditions | C01–C05 y C07–C09 materialmente ejercidas; C06 operacional parcial; C10 no activada |
 | SPIKE-002 | mandatory/pending | Completed; material evidence PASS |
-| PBI-023 | Ready; owner-scoped adapters authorized | Ready; owner-scoped persistence verified / PostgreSQL CI gate authorized |
-| DEC-049 | Accepted; C01–C08 vigentes | C01–C07 materializados localmente; CI/promoción pendientes |
-| DEC-051 | C01/C07/C09 Satisfied | C03 sigue Partial/Pending en CI; C04 adapter/query PASS local; C06 coincide en checker/runtime |
-| DEC-063 | C01/C03/C04 Satisfied | evidencia adicional C02/C05/C06; release gates sin cerrar |
+| PBI-023 | Ready; PostgreSQL CI autorizado | Ready; PostgreSQL CI authoritative / closure review authorized |
+| DEC-049 | Accepted; C01–C08 vigentes | C01–C07 con evidencia local + CI para el scope; operación productiva no afirmada |
+| DEC-051 | C01/C07/C09 Satisfied | C03/C04/C06 Satisfied; C02 pendiente del primer merge |
+| DEC-055 | Accepted | sin cambio material; CI sintética PASS, provider/rotación productivos pendientes |
+| DEC-063 | C01/C03/C04 Satisfied | C02/C05/C06 completas para revisión del scope; C07/C08 no activadas |
 
 ## Selecciones
 
@@ -97,13 +105,13 @@ funcional. PBI-023 queda `Ready` para el gate PostgreSQL de CI.
 
 ## Gates restantes
 
-1. PostgreSQL `18.4` autoritativo en CI.
-2. DEC051-C02/C03 conserva branch protection y ejecución PostgreSQL requerida.
-3. DEC063-C02/C05/C06 conserva revisión/merge/release según sus triggers.
+1. Revisión formal de cierre de PBI-023.
+2. DEC051-C02: protección/revisión del primer merge funcional.
+3. Ratificación del alcance C02/C05/C06 de DEC-063.
+4. Decisión explícita sobre cambiar PR #2 a Ready y efectuar merge.
 
-No existe bloqueo material para solicitar el Paso 11. Los gates restantes se
-cierran secuencialmente y siguen impidiendo declarar implementación funcional
-o merge.
+No existe bloqueo material para solicitar el Paso 12. PBI-024, merge y release
+continúan sin autorización.
 
 ## Validaciones de esta tarea
 
@@ -115,17 +123,17 @@ Ejecutadas con Node.js `24.18.0` y pnpm `11.15.1`:
 | `pnpm run architecture` | PASS |
 | `pnpm run typecheck` | PASS |
 | `pnpm run build` | PASS |
-| `pnpm test` | PASS — 330 pass, 10 PG gated skip, 0 fail |
+| `pnpm test` | PASS — 335 pass, 10 PG gated skip, 0 fail |
 | `pnpm run test:architecture` | PASS — 261/261 |
 | `pnpm run verify` | PASS |
 | `pnpm run smoke:start` | PASS |
 | `git diff --check` | PASS |
-| PostgreSQL 18.4 dedicado | PASS — dos runs/material `9a765cc6…`/cleanup |
+| PostgreSQL 18.4 dedicado | PASS — dos runs/material `6daf3478…`/cleanup |
 | documentación/JSON/enlaces/secretos | verificación final PASS |
 | scope técnico | PASS — facility/tests/enforcement/evidencia |
 
-La evidencia del Paso 10 está en
-[owner-scoped-adapters/](owner-scoped-adapters/README.md).
+La evidencia material del Paso 11 está en
+[postgresql-ci/](postgresql-ci/README.md).
 
 ## Restricciones preservadas
 
@@ -140,5 +148,5 @@ La evidencia del Paso 10 está en
 
 ## Siguiente acción
 
-Revisar y autorizar separadamente el Paso 11: PostgreSQL `18.4` autoritativo
-en CI; todavía sin endpoints ni wiring automático.
+Ejecutar el Paso 12: revisión formal de cierre de PBI-023. Mantener PR #2
+Draft hasta ese dictamen.

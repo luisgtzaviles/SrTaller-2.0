@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.0.0",
+  "repository": "luisgtzaviles/SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit": "9e38f20900e2be4df7680a936fdfee077e6c6950",
+  "workflow": {
+    "name": "Authoritative Linux CI",
+    "push": {
+      "run_id": "30185110105",
+      "attempt": 1,
+      "event": "push",
+      "head_sha": "9e38f20900e2be4df7680a936fdfee077e6c6950",
+      "jobs": {
+        "run_1": "89748256832",
+        "run_2": "89748256826",
+        "comparison": "89748812805"
+      },
+      "result": "success"
+    },
+    "pull_request": {
+      "run_id": "30185111056",
+      "attempt": 1,
+      "event": "pull_request",
+      "head_sha": "9e38f20900e2be4df7680a936fdfee077e6c6950",
+      "artifact_merge_sha": "33e886c5bdda06a4f189fd0e0c549930222be873",
+      "jobs": {
+        "run_1": "89748259605",
+        "run_2": "89748259601",
+        "comparison": "89748807240"
+      },
+      "result": "success"
+    }
+  },
+  "toolchain": {
+    "node": "24.18.0",
+    "pnpm": "11.15.1",
+    "typescript": "6.0.3",
+    "runner_os": "linux",
+    "node_architecture": "x64",
+    "glibc": "2.39"
+  },
+  "postgresql": {
+    "enabled": true,
+    "image": "postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+    "digest": "sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+    "version": "18.4",
+    "architecture": "amd64",
+    "os": "linux",
+    "encoding": "UTF8",
+    "timezone": "UTC",
+    "locale": "en_US.utf8",
+    "database_identity": "sanitized and unique per suite/run",
+    "role_modes": {
+      "migration": "enabled only where required",
+      "application_test": "synthetic ephemeral; no production privilege claim"
+    }
+  },
+  "migration": {
+    "filename": "20260725183832_database_create_tenants_and_branches.ts",
+    "sha256": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
+    "empty_database": "PASS",
+    "down_reapply": "PASS",
+    "journal": "PASS",
+    "lock": "PASS",
+    "drift": "PASS"
+  },
+  "schema": {
+    "sha256": "21b9c98bf5168adb316df2a8eaf059f1c24bba5d8e1a6aed07035325bd3eda4d",
+    "tables": [
+      "branches",
+      "tenants"
+    ],
+    "columns": 5,
+    "constraints": 8,
+    "indexes": 2
+  },
+  "suites": [
+    {
+      "name": "connection",
+      "tests": 6,
+      "pass": 6,
+      "skips": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "transaction",
+      "tests": 1,
+      "pass": 1,
+      "skips": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "migration",
+      "tests": 1,
+      "pass": 1,
+      "skips": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "schema",
+      "tests": 1,
+      "pass": 1,
+      "skips": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "owner-scoped-adapters",
+      "tests": 1,
+      "pass": 1,
+      "skips": 0,
+      "result": "PASS"
+    }
+  ],
+  "test_counts_per_job": {
+    "suites": 5,
+    "tests_executed": 10,
+    "critical_skips": 0,
+    "failures": 0,
+    "previously_gated_skips": 10
+  },
+  "isolation": {
+    "schema": "PASS",
+    "adapters": "PASS",
+    "cross_tenant_read": "PASS",
+    "tenant_scoped_list": "PASS"
+  },
+  "artifacts": {
+    "push": {
+      "run_1_evidence_sha256": "d5ec6a1ab646813985450ee0f461b49c18c70b88321f3921b7b8cc37329df729",
+      "run_1_postgresql_sha256": "e092466b5a3506820e0d99d861f2de035a3192c8e3e41fd6ab908561de9ee34e",
+      "run_2_evidence_sha256": "00817cbfeb0ec7998b7b892cb1f7727347e74079d9dc4848c882d19a496ad4ab",
+      "run_2_postgresql_sha256": "3c1f159abdf6b51f4d93ce8ef2668d953291a44facb8cb427d05621581071bfc",
+      "comparison_sha256": "7c50cd7bba35c58d72f8523d1a92d04c5a3687c21a624afeea09e830fd52c96a"
+    },
+    "pull_request": {
+      "run_1_evidence_sha256": "ab2899935ad818e644c8a6676053992c168df3a47a0735e4b990fb2ef82e5efb",
+      "run_1_postgresql_sha256": "3171544e051a35b733a9c89be6f5761738be034d5d0aa5083fa89eb06e5de3a3",
+      "run_2_evidence_sha256": "f01c4a355a6f25c4422db5fb97d82793e75fa7bf9efb8bd1f5f3f84ad9f3f42e",
+      "run_2_postgresql_sha256": "a4badb92ba83d70a5f10f7864a2234fc0877167ae4743e9452ac463a6c4492f4",
+      "comparison_sha256": "4ea9c090212beb7caa7053c6db3f586b4eb5b05d7096cf046d5f28c77401c736"
+    }
+  },
+  "cleanup": {
+    "status": "PASS",
+    "containers": 0,
+    "volumes": 0,
+    "dedicated_networks": 0,
+    "persistent_files": 0,
+    "dumps": 0,
+    "environment_files": 0
+  },
+  "sanitization": {
+    "status": "PASS",
+    "remote_json_files_scanned": 14,
+    "credentials_retained": false,
+    "connection_strings_retained": false,
+    "raw_sql_logs_retained": false,
+    "personal_paths_retained": false
+  },
+  "comparison": {
+    "postgresql_comparable_sha256": "6daf3478d4b9bb3ead212f46455516d8a1c6ed68b289f59996bcf5986695760e",
+    "push_material_equivalence": true,
+    "pull_request_material_equivalence": true,
+    "locally_reproduced": true,
+    "result": "PASS"
+  },
+  "result": "PASS — PBI-023 POSTGRESQL CI AUTHORITATIVE"
+}

@@ -3,20 +3,21 @@
 ## Estado de entrada
 
 - C01, C03 y C04: `Satisfied`.
-- C02 y C05–C08: `Pending`.
+- C02/C05/C06: materialmente completas para el scope PBI-023; ratificación
+  formal pendiente.
+- C07/C08: `Pending` según trigger.
 
-No se cambia ese registro. SPIKE-002 y el Paso 4 aportan preparación material,
-no cumplimiento final del PBI. El Paso 5 agrega evidencia fail-closed,
-seguridad y trazabilidad del contrato de configuración, sin cerrar condiciones
-runtime.
+SPIKE-002 y los Pasos 4–10 aportaron preparación material. El Paso 11 completa
+la evidencia runtime/CI aplicable, pero no sustituye la ratificación de cierre,
+el gate de release ni decisiones operativas productivas.
 
 ## Matriz
 
 | Condición | Trigger | Aplicabilidad PBI-023 | Estado | Evidencia futura | Gate |
 |---|---|---|---|---|---|
-| C02 — riesgo fail-closed | antes de integrar riesgo medio/alto | directa | `Partial — checker PASS` | matriz/versionado/mutaciones completos; review runtime pendiente | antes del primer merge persistente |
-| C05 — checklist persistence/migration | antes del primer cambio persistente | directa | `Partial — checker item PASS` | owner/naming/SQL static completos; PG/recovery/constraints pendientes | antes de primera migración/merge |
-| C06 — checklist security | antes de tenant/auth/sensitive funcional | directa para tenant; auth no aplica | `Partial — static negatives PASS` | scope/leakage/sanitization scans completos; privilege/runtime pendiente | antes del primer merge tenant |
+| C02 — riesgo fail-closed | antes de integrar riesgo medio/alto | directa | `Complete for PBI-023 scope — closure ratification pending` | checker/runtime/CI/evidencia completos | revisión formal de cierre |
+| C05 — checklist persistence/migration | antes del primer cambio persistente | directa | `Complete for PBI-023 scope — closure ratification pending` | owner/migration/PG/recovery/constraints/CI | revisión formal de cierre |
+| C06 — checklist security | antes de tenant/auth/sensitive funcional | directa para tenant; auth no aplica | `Complete for PBI-023 scope — production privilege pending` | scope/leakage/sanitización/CI completos | revisión formal de cierre |
 | C07 — release/hotfix | antes del primer release candidate | no bloquea planificación/implementación local | `Pending` | runbook, rollback, smoke y evidencia release | pre-release |
 | C08 — waivers | antes de aprobar excepción | no activada | `Pending` | owner, razón, expiración, compensación y cierre | sólo ante excepción |
 
@@ -41,20 +42,20 @@ hasta migraciones, roles efectivos, PostgreSQL y recovery.
 
 Antes de cualquier cambio persistente:
 
-- [ ] DEC-050 aceptada y condición aplicable identificada.
+- [x] DEC-050 aceptada y condición aplicable identificada.
 - [x] SPIKE-002 cerrado con PostgreSQL `18.4`.
-- [ ] versión/owner/scope/invariantes de objeto registrados.
-- [ ] migración ordenada, inmutable y transaccional.
-- [ ] lock y fallo parcial probados.
-- [ ] vacío/anterior/re-run probados.
-- [ ] constraints y queries tenant/branch negativas.
-- [ ] recovery/roll-forward probado.
-- [ ] roles y secretos gobernados.
-- [ ] logs y manifest sanitizados.
-- [ ] cleanup seguro.
+- [x] versión/owner/scope/invariantes de objeto registrados.
+- [x] migración ordenada, inmutable y transaccional.
+- [x] lock y fallo parcial probados.
+- [x] vacío/anterior/re-run probados.
+- [x] constraints y queries tenant/branch negativas.
+- [x] recovery/roll-forward probado para el alcance efímero.
+- [x] roles y secretos sintéticos gobernados; operación productiva diferida.
+- [x] logs y manifest sanitizados.
+- [x] cleanup seguro.
 - [x] checker/gates actualizados con mutaciones.
-- [ ] dos runs Linux equivalentes.
-- [ ] aprobaciones por riesgo.
+- [x] dos runs Linux equivalentes.
+- [ ] aprobación formal de cierre por riesgo.
 
 La fila de SPIKE-002 está satisfecha. El transaction runner completa rollback,
 errores, cleanup y dos runs locales, pero no marca migración transaccional,
@@ -123,3 +124,13 @@ schema exacto, manifest/drift, up/down/reapply, atomicidad e introspección; y a
 C06, aislamiento estructural negativo, sanitización y cleanup. Las condiciones
 permanecen parciales para adapters, CI, privilegio operacional y release; no se
 cierran C07/C08.
+
+## Evidencia del Paso 11
+
+El [expediente CI](postgresql-ci/README.md) completa checker, runtime,
+PostgreSQL `18.4`, migración, schema, adapters, negativos, comparación,
+artifacts, sanitización y cleanup en Linux. C02/C05/C06 quedan materialmente
+completas para el alcance PBI-023 y pasan a ratificación en la revisión formal
+de cierre. Esto no resuelve privilegios/provider productivos.
+
+C07 continúa reservado al release y C08 no se activó porque no existe waiver.

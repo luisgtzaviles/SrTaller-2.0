@@ -2,7 +2,7 @@
 
 ## Manifest canónico
 
-El manifest futuro debe incluir, sin secretos:
+El manifest consolidado debe incluir, sin secretos:
 
 - schema/version del manifest;
 - PBI, commit, branch y PR;
@@ -61,8 +61,8 @@ Está separada de la implementación productiva en
 
 El manifest real es
 [EVIDENCE_MANIFEST.json](spike-002-evidence/EVIDENCE_MANIFEST.json). Los
-artefactos que requieren implementación productiva continúan siendo evidencia
-futura de PBI-023.
+artefactos que requieren implementación productiva se completaron
+secuencialmente en los expedientes posteriores.
 
 ## Evidencia del transaction runner
 
@@ -98,6 +98,15 @@ El Paso 5 tiene un manifest separado en
 Acredita contrato puro, fail-closed, cero defaults, namespaces, roles, TLS,
 redaction, freeze, no red y enforcement. No acredita Pool, PostgreSQL,
 migraciones ni aislamiento runtime.
+
+## Evidencia PostgreSQL autoritativa
+
+El Paso 11 tiene manifest y artifacts separados en
+[postgresql-ci/](postgresql-ci/README.md). Acredita el commit de rama exacto,
+PostgreSQL `18.4` por digest, cinco suites/diez tests/cero skips críticos,
+migración desde vacío, schema, adapters, aislamiento, cleanup, doble run
+push/PR y comparación reproducida. El merge sintético del PR está identificado
+y no sustituye la evidencia del push.
 
 ## Reglas de retención
 

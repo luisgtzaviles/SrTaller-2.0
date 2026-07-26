@@ -82,3 +82,15 @@ journal, manifest/drift, transacción, up/down, reapply, atomicidad y cleanup.
 Dos runs PostgreSQL 18.4 coinciden materialmente. Las condiciones operativas de
 CI, promoción y ejecución en ambientes compartidos permanecen pendientes; no
 se declara DEC-050 cerrada sin condiciones.
+
+## Evidencia del Paso 11
+
+El [gate PostgreSQL autoritativo](postgresql-ci/RESULTS.md) ejecutó tooling,
+runner, primera migración, journal, advisory lock, manifest/drift, rollback,
+schema y ownership en dos jobs independientes para push y PR. Esto aporta
+evidencia material a C01–C05 y C07–C09 dentro del alcance PBI-023.
+
+C06 queda parcial en su dimensión operacional: la CI usa identidades
+sintéticas efímeras y sólo habilita migración donde corresponde, pero no fija
+usuarios, provider, rotación o privilegios productivos. C10 no se activó. La
+promoción a ambientes compartidos sigue fuera de alcance.

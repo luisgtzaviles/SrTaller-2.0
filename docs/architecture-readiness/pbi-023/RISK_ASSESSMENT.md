@@ -76,19 +76,20 @@ schema inicial sea pequeño.
 
 ## Checklist DEC-049
 
-Ninguna condición que requiera runtime productivo se marca satisfecha.
-SPIKE-002 aporta evidencia del patrón; el Paso 4 materializa selección/lock y
-aporta evidencia parcial de C01.
+Los Pasos 4–10 materializaron el runtime acotado y el Paso 11 lo ejecutó en
+PostgreSQL autoritativo. C01–C07 tienen evidencia material para el alcance
+PBI-023 y pasan a ratificación de cierre; esto no afirma operación productiva,
+deploy, provider de secretos ni privilegios compartidos.
 
 | Condición | Aplicabilidad | Estado | Evidencia actual | Evidencia de cierre | Gate |
 |---|---|---|---|---|---|
-| DEC049-C01 — versiones exactas | directa | `Partial — package and typed config materialized` | paquetes/lock exactos, configuración, frozen installs y gates | conexión runtime + PostgreSQL CI cuando se activen | antes de integrar persistencia |
-| DEC049-C02 — owner/scope/invariantes | directa | `Partial — registry enforced` | registry machine-readable + D5-R041/R044/R047 | constraints/adapters materializados + review | antes de tabla/migración/repo |
-| DEC049-C03 — constraints/aislamiento PG18 | directa | `Pending — implementation` | SPIKE-002 E6–E10 PASS en PG18 | suite productiva PG18 | antes de aceptar persistencia |
-| DEC049-C04 — pool/transacción/retry | directa | `Partial — transaction runner PASS` | misma conexión interna, commit/rollback, isolation, nesting y sin retry | adapters/casos de uso y política idempotente materializados | antes del merge persistente |
-| DEC049-C05 — acceso excepcional separado | preventiva | `Partial — preventive enforcement` | D5-R038/D5-R039 rechazan API global/genérica; no registry admin | runtime conserva ausencia de bypass | antes de cualquier bypass |
-| DEC049-C06 — errores/logs | directa | `Partial — config/connection/transaction/migration PASS` | errores tipados, mappings PG y redaction probados | adapters/operaciones productivas | antes del merge persistente |
-| DEC049-C07 — enforcement | directa | `Partial — checker/runtime runners PASS` | D5-R037–D5-R049, 152 fixtures, 36 mutaciones y dos runs PG | schema/adapters/isolation tenant | antes del merge persistente |
+| DEC049-C01 — versiones exactas | directa | `Materially satisfied for PBI-023 scope` | paquetes/lock/config/runtime y CI PostgreSQL 18.4 exactos | ratificación formal | cierre PBI-023 |
+| DEC049-C02 — owner/scope/invariantes | directa | `Materially satisfied for PBI-023 scope` | registry, constraints y adapters owner-scoped | ratificación formal | cierre PBI-023 |
+| DEC049-C03 — constraints/aislamiento PG18 | directa | `Materially satisfied for PBI-023 scope` | schema + adapters + negativos en PG18 CI | ratificación formal | cierre PBI-023 |
+| DEC049-C04 — pool/transacción/retry | directa | `Materially satisfied for PBI-023 scope` | misma conexión, commit/rollback/isolation/nesting y no retry implícito | ratificación formal | cierre PBI-023 |
+| DEC049-C05 — acceso excepcional separado | preventiva | `Materially satisfied for PBI-023 scope` | checker impide API global/genérica y runtime no incorpora bypass | ratificación formal | cierre PBI-023 |
+| DEC049-C06 — errores/logs | directa | `Materially satisfied for PBI-023 scope` | mappings, redacción, adapters y artifacts sanitizados | operación productiva futura | cierre PBI-023 |
+| DEC049-C07 — enforcement | directa | `Materially satisfied for PBI-023 scope` | D5-R037–D5-R053, schema, adapters, CI doble y comparación | ratificación formal | cierre PBI-023 |
 | DEC049-C08 — no RLS prematuro | trigger no activado | `Compliant by exclusion` | RLS excluido | nueva decisión + SPIKE-003 si se propone | antes de adoptar RLS |
 
 ## Tenant isolation
@@ -141,9 +142,9 @@ tokens, PII ni paths personales.
 
 ## Acciones permitidas antes del siguiente gate
 
-- revisar y versionar configuración/evidencia;
+- revisar y versionar la evidencia del Paso 11;
 - mantener el PR como Draft;
-- preparar autorización estricta del migration runner.
+- preparar la revisión formal de cierre.
 
-Este cierre no autoriza migraciones productivas, tablas productivas ni cambios
-de workflow.
+Este dictamen no autoriza PR Ready, merge, PBI-024, deploy ni operación
+productiva.
