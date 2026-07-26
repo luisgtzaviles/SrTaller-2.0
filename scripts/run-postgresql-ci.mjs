@@ -53,9 +53,19 @@ async function command(commandName, argumentsList, options = {}) {
       maxBuffer: 20 * 1024 * 1024,
       ...options,
     });
-  } catch {
+  } catch (error) {
+    const diagnostic = [error?.stdout, error?.stderr]
+      .filter((value) => typeof value === 'string' && value.trim() !== '')
+      .join('\n')
+      .replace(/synthetic_[0-9a-f]+/giu, 'synthetic_<redacted>')
+      .replace(/postgres(?:ql)?:\/\/\S+/giu, '<redacted-database-url>')
+      .split('\n')
+      .slice(-80)
+      .join('\n')
+      .trim();
     throw new Error(
-      `PostgreSQL CI operation failed: ${argumentsList[0] ?? commandName}`,
+      `PostgreSQL CI operation failed: ${argumentsList[0] ?? commandName}` +
+        (diagnostic === '' ? '' : `\n${diagnostic}`),
     );
   }
 }
