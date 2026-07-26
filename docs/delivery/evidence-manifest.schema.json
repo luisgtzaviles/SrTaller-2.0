@@ -19,7 +19,10 @@
   ],
   "properties": {
     "schemaVersion": {
-      "const": 1
+      "enum": [
+        1,
+        2
+      ]
     },
     "contract": {
       "type": "string",
@@ -182,6 +185,10 @@
         }
       }
     },
+    "postgresql": {
+      "type": "object",
+      "additionalProperties": true
+    },
     "verdict": {
       "enum": [
         "PASS",
@@ -189,5 +196,21 @@
         "FAIL"
       ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schemaVersion": {
+            "const": 2
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "postgresql"
+        ]
+      }
+    }
+  ]
 }

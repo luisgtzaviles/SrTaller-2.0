@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "repository": "SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit_base": "d477b262c484ed63cbeb471c20b96a7c907d6d0e",
+  "generated_at": "2026-07-25T16:40:50Z",
+  "files": {
+    "runtime": [
+      "src/infrastructure/database/database-transaction-capability.ts",
+      "src/infrastructure/database/transaction-runner.ts",
+      "src/infrastructure/database/database-connection.ts"
+    ],
+    "tests": [
+      "test/database-transaction.test.mjs",
+      "test/database-transaction-postgresql.test.mjs",
+      "scripts/test-database-transaction-postgresql.mjs",
+      "test/architecture-database-transaction.test.mjs"
+    ],
+    "evidence_root": "docs/architecture-readiness/pbi-023/transaction-runner/"
+  },
+  "API": [
+    "DatabaseTransactionOptions",
+    "DatabaseTransactionContext",
+    "DatabaseTransactionError",
+    "runInTransaction"
+  ],
+  "isolation_levels": [
+    "read uncommitted",
+    "read committed",
+    "repeatable read",
+    "serializable"
+  ],
+  "default_isolation": "read committed",
+  "read_only": "verified",
+  "nesting_policy": "reject same-facility nesting and overlap",
+  "error_codes": [
+    "DATABASE_TRANSACTION_INVALID_STATE",
+    "DATABASE_TRANSACTION_INVALID_OPTIONS",
+    "DATABASE_TRANSACTION_NESTED_FORBIDDEN",
+    "DATABASE_TRANSACTION_TIMEOUT",
+    "DATABASE_TRANSACTION_SERIALIZATION_FAILURE",
+    "DATABASE_TRANSACTION_DEADLOCK",
+    "DATABASE_TRANSACTION_READ_ONLY_VIOLATION",
+    "DATABASE_TRANSACTION_ABORTED",
+    "DATABASE_TRANSACTION_CALLBACK_FAILED",
+    "DATABASE_TRANSACTION_ROLLBACK_FAILED"
+  ],
+  "tests": {
+    "unit": "PASS",
+    "integration": "PASS",
+    "architecture": "PASS",
+    "material_comparison": "MATCH",
+    "product_suite": {
+      "tests": 288,
+      "pass": 281,
+      "skip": 7,
+      "fail": 0
+    },
+    "architecture_suite": {
+      "tests": 229,
+      "pass": 229,
+      "skip": 0,
+      "fail": 0
+    }
+  },
+  "postgresql": {
+    "version": "18.4",
+    "image_digest": "sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+    "runs": 2,
+    "experimental_table": "transaction_probe",
+    "retained_objects": 0
+  },
+  "commands": [
+    "pnpm install --frozen-lockfile",
+    "pnpm run architecture",
+    "pnpm run typecheck",
+    "pnpm run build",
+    "pnpm test",
+    "pnpm run test:architecture",
+    "node scripts/test-database-transaction-postgresql.mjs --runs 2",
+    "pnpm run verify",
+    "pnpm run smoke:start",
+    "git diff --check"
+  ],
+  "hashes": {
+    "material_result_sha256": "e417ac2054a8b74fcb1df9331ed49b994a11fe523420c7a77fa14cf385c0609d",
+    "package_json_before": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
+    "pnpm_lock_before": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
+    "workflow_before": "f3d4942e9ef6dc785a5d34d280e6d1f204e889ec5d8065b1d06c9ed06dd5c790",
+    "app_module_before": "78aa0b2472244370e98e5ee7d6c09692d102ceaa08171db8977f8be97ea1124e",
+    "bootstrap_before": "e3582af43aabf400c78f50dda40d00c82a202a8d686a950a5e441b9d753ec289"
+  },
+  "cleanup": {
+    "containers": 0,
+    "volumes": 0,
+    "networks": 0,
+    "ports": 0,
+    "experimental_tables": 0,
+    "versioned_tmp": 0
+  },
+  "sanitization": "PASS",
+  "architecture_rules": {
+    "new": ["D5-R048"],
+    "preserved": "D5-R037-D5-R047",
+    "fixtures": 144,
+    "product_mutations": 35,
+    "critical_semantic_contracts": 54
+  },
+  "changed_surfaces": [
+    "database owner runtime",
+    "database transaction tests",
+    "architecture checker and policy",
+    "PBI-023 evidence"
+  ],
+  "unchanged_surfaces": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "workflows",
+    "AppModule",
+    "bootstrap",
+    "business modules",
+    "product migrations",
+    "production Dockerfile"
+  ],
+  "final_result": "PASS — PBI-023 TRANSACTION RUNNER VERIFIED"
+}

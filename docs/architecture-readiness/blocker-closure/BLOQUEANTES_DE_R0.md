@@ -13,10 +13,10 @@ implementa R0 ni constituye aceptación formal de una demostración.
 
 H0 está completo en 9/0 y VC-024 está `Closed / PASS`. B-21 registra
 autorización explícita ya efectiva dentro del alcance de PBI-023 tras el cierre
-de Sprint 00 y la revisión final. DEC-044, DEC-049, DEC-051 y
-DEC-063 están aceptadas, pero sus condiciones de materialización siguen
-obligatorias. Aceptar un contrato no sustituye su evidencia ni las decisiones
-H1.
+de Sprint 00 y la revisión final. DEC-044, DEC-049, DEC-051 y DEC-063 están
+aceptadas; DEC-050 quedó aceptada con condiciones. Sus condiciones de
+materialización siguen obligatorias. Aceptar un contrato no sustituye su
+evidencia ni las decisiones H1.
 
 ## Bloqueantes H1
 
@@ -29,7 +29,7 @@ H1.
 | Acciones sensibles | DEC-019 y DEC-020 | Modelo aceptado en ADR-013; faltan clasificación concreta, mecanismo, aplicación y pruebas |
 | Tiempo | DEC-037 y DEC-038 | Autoridad de zona horaria y almacenamiento/presentación coherentes |
 | Señales | DEC-045 a DEC-048 | Logs, auditoría, correlación y observabilidad mínima separadas |
-| Persistencia | DEC-050 | Versionado y ejecución segura de migraciones base |
+| Persistencia | DEC-050 | Contrato aceptado; SPIKE-002 material PASS; C01–C10 y ejecución segura pendientes por trigger |
 | Datos de prueba | DEC-052 | Fixtures/semillas sin datos reales y con dos tenants |
 | Secretos | DEC-055 | Configuración externa, cifrado aplicable, rotación y no exposición |
 
@@ -52,7 +52,9 @@ H1.
 
 ## Spikes condicionados
 
-- SPIKE-002 es obligatorio antes de persistencia tenant-scoped con esquema compartido.
+- SPIKE-002 era obligatorio antes de persistencia tenant-scoped con esquema
+  compartido y quedó cerrado con `PASS`; sus controles deben repetirse en la
+  implementación.
 - SPIKE-003 es obligatorio sólo antes de adoptar RLS; no bloquea cualquier persistencia de R0 y puede concluir rechazándola.
 - SPIKE-005 es obligatorio si PIN/estación forma parte de R0.
 - SPIKE-001 se difiere si R0 resuelve tenant sin wildcard ni cliente web tenant-aware.

@@ -1,0 +1,192 @@
+import type { Kysely, Transaction } from 'kysely';
+
+import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
+import {
+  useDatabasePersistenceExecutor,
+  useTransactionalDatabasePersistenceExecutor,
+} from '../../../../infrastructure/database/database-persistence-capability.js';
+import type {
+  InternalDatabasePersistenceOperation,
+} from '../../../../infrastructure/database/database-persistence-capability.js';
+import type { DatabaseSchema, TenantRow } from '../../../../infrastructure/database/database-types.js';
+import type { DatabaseTransactionContext } from '../../../../infrastructure/database/transaction-runner.js';
+import { parseTenantId } from '../../index.js';
+import {
+  TenantPersistenceError,
+} from '../../application/ports/tenant-repository.port.js';
+import type {
+  CreateTenantRecord,
+  TenantPersistenceScope,
+  TenantRecord,
+  TenantRepositoryPort,
+} from '../../application/ports/tenant-repository.port.js';
+
+type TenantExecutor =
+  | Kysely<Pick<DatabaseSchema, 'tenants'>>
+  | Transaction<Pick<DatabaseSchema, 'tenants'>>;
+
+type ExecuteTenantOperation = <Result>(
+  operation: InternalDatabasePersistenceOperation<'tenancy', Result>,
+) => Promise<Result>;
+
+type DriverErrorShape = Readonly<{ code: string }>;
+
+function driverErrorShape(error: unknown): DriverErrorShape {
+  if (typeof error !== 'object' || error === null) {
+    return Object.freeze({ code: '' });
+  }
+  const candidate = error as Readonly<Record<string, unknown>>;
+  return Object.freeze({
+    code: typeof candidate.code === 'string' ? candidate.code : '',
+  });
+}
+
+function mapTenantError(error: unknown): TenantPersistenceError {
+  if (error instanceof TenantPersistenceError) {
+    return error;
+  }
+  const { code } = driverErrorShape(error);
+  if (code === '23505') {
+    return new TenantPersistenceError('TENANT_PERSISTENCE_CONFLICT');
+  }
+  if (code === '23502' || code === '22P02') {
+    return new TenantPersistenceError('PERSISTENCE_TENANT_SCOPE_REQUIRED');
+  }
+  return new TenantPersistenceError(
+    'TENANT_PERSISTENCE_FAILED',
+    code === '40001' || code === '40P01' || code === '57014'
+      ? 'conditional'
+      : 'never',
+  );
+}
+
+function validInstant(value: unknown): value is string {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  const instant = new Date(value);
+  return (
+    Number.isFinite(instant.getTime()) &&
+    instant.toISOString() === value
+  );
+}
+
+function validateScope(
+  scope: TenantPersistenceScope,
+): TenantPersistenceScope {
+  try {
+    const tenantId = parseTenantId(scope?.tenantId);
+    return Object.freeze({ tenantId });
+  } catch {
+    throw new TenantPersistenceError('PERSISTENCE_TENANT_SCOPE_REQUIRED');
+  }
+}
+
+function validateCreateRecord(
+  scope: TenantPersistenceScope,
+  record: CreateTenantRecord,
+): Readonly<{ tenantId: TenantPersistenceScope['tenantId']; createdAt: Date }> {
+  if (
+    typeof record !== 'object' ||
+    record === null ||
+    record.tenantId !== scope.tenantId ||
+    !validInstant(record.createdAt)
+  ) {
+    throw new TenantPersistenceError('PERSISTENCE_TENANT_SCOPE_REQUIRED');
+  }
+  return Object.freeze({
+    tenantId: scope.tenantId,
+    createdAt: new Date(record.createdAt),
+  });
+}
+
+function mapTenantRecord(row: TenantRow): TenantRecord {
+  return Object.freeze({
+    tenantId: parseTenantId(row.tenant_id),
+    createdAt: row.created_at.toISOString(),
+  });
+}
+
+class KyselyTenantRepository implements TenantRepositoryPort {
+  constructor(readonly execute: ExecuteTenantOperation) {}
+
+  async createTenant(
+    scope: TenantPersistenceScope,
+    record: CreateTenantRecord,
+  ): Promise<TenantRecord> {
+    const validatedScope = validateScope(scope);
+    const validatedRecord = validateCreateRecord(validatedScope, record);
+    try {
+      return await this.execute(async (executor: TenantExecutor) => {
+        const row = await executor
+          .insertInto('tenants')
+          .values({
+            tenant_id: validatedRecord.tenantId,
+            created_at: validatedRecord.createdAt,
+          })
+          .returning(['tenant_id', 'created_at'])
+          .executeTakeFirstOrThrow();
+        return mapTenantRecord(row);
+      });
+    } catch (error: unknown) {
+      throw mapTenantError(error);
+    }
+  }
+
+  async findTenantById(
+    scope: TenantPersistenceScope,
+  ): Promise<TenantRecord | null> {
+    const validatedScope = validateScope(scope);
+    try {
+      return await this.execute(async (executor: TenantExecutor) => {
+        const row = await executor
+          .selectFrom('tenants')
+          .select(['tenant_id', 'created_at'])
+          .where('tenant_id', '=', validatedScope.tenantId)
+          .executeTakeFirst();
+        return row ? mapTenantRecord(row) : null;
+      });
+    } catch (error: unknown) {
+      throw mapTenantError(error);
+    }
+  }
+
+  async existsTenant(scope: TenantPersistenceScope): Promise<boolean> {
+    const validatedScope = validateScope(scope);
+    try {
+      return await this.execute(async (executor: TenantExecutor) => {
+        const row = await executor
+          .selectFrom('tenants')
+          .select('tenant_id')
+          .where('tenant_id', '=', validatedScope.tenantId)
+          .executeTakeFirst();
+        return row !== undefined;
+      });
+    } catch (error: unknown) {
+      throw mapTenantError(error);
+    }
+  }
+}
+
+export function createKyselyTenantRepository(
+  connection: DatabaseConnection,
+): TenantRepositoryPort {
+  return new KyselyTenantRepository((operation) =>
+    useDatabasePersistenceExecutor(connection, 'tenancy', operation),
+  );
+}
+
+export function createTransactionalKyselyTenantRepository(
+  context: DatabaseTransactionContext,
+): TenantRepositoryPort {
+  return new KyselyTenantRepository((operation) =>
+    useTransactionalDatabasePersistenceExecutor(
+      context,
+      'tenancy',
+      operation,
+    ),
+  );
+}
+
+export type KyselyTenantRepositoryFactory =
+  typeof createKyselyTenantRepository;

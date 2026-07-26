@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Registro de candidatos y mandatos. [SPIKE-009](#spike-009) queda `Completed — evidence accepted with non-blocking conditions`; su evidencia soportó la aceptación condicionada de ADR-005 el 2026-07-22 y conserva carácter desechable. Los demás candidatos conservan sus gates.
+- **Estado:** Registro de candidatos y mandatos. [SPIKE-009](#spike-009) queda `Completed — evidence accepted with non-blocking conditions`; su evidencia soportó la aceptación condicionada de ADR-005 el 2026-07-22 y conserva carácter desechable. SPIKE-002 completó investigación el 2026-07-24 y ejecución material el 2026-07-25 con dictamen `PASS`. Los demás candidatos conservan sus gates.
 - **Propósito:** Identificar experimentos mínimos que reduzcan riesgos arquitectónicos reales antes de comprometer diseño ejecutable.
 - **Duración:** `TBD` para todos los candidatos; no se asignan estimaciones sin capacidad y autorización.
 - **Gate vigente:** Todo spike requiere autorización explícita de su autoridad. SPIKE-009 completó autorización, ejecución, remediación y revisión; Seguridad + Operaciones + Calidad aprobaron su evidencia y Arquitectura + Ingeniería decidieron ADR-005. Los demás candidatos no quedan autorizados por ese cierre.
@@ -21,7 +21,7 @@
 | Spike | Clasificación actual | Riesgo principal | ADR relacionado | PBI relacionado | Condición de ejecución |
 |---|---|---|---|---|---|
 | SPIKE-001 | `Mandatory before implementation` | Resolución/cookies/caché cross-tenant | ADR-008; informa ADR-004 | PBI-007, PBI-008, PBI-013, PBI-015, PBI-017 | Antes de implementar routing o sesión tenant-aware, después de definir identidad y dominios. |
-| SPIKE-002 | `Mandatory before implementation` | Acceso cross-tenant por omisión de contexto | ADR-004 | PBI-007, PBI-011, PBI-017, PBI-018 | Antes de la primera persistencia shared-schema tenant-scoped. |
+| SPIKE-002 | `Completed — material evidence PASS`; mandato satisfecho para planificación | Acceso cross-tenant por omisión de contexto | ADR-004 | PBI-023 | Ejecutado antes de la primera persistencia shared-schema tenant-scoped. |
 | SPIKE-003 | `Mandatory before adopting RLS` | Bypass o contaminación de contexto RLS | ADR-003/004; posible ADR futuro de RLS | PBI-007, PBI-011, PBI-017, PBI-018 | Después de SPIKE-002 y sólo si se considera adoptar RLS. |
 | SPIKE-004 | `Premature` | Rooms o eventos cross-tenant | ADR-004 y ADR futuro de realtime | PBI-014, PBI-017, PBI-019 | Sólo si el Gate 5 confirma realtime; entonces será obligatorio antes de sockets. |
 | SPIKE-005 | `Mandatory before implementation` si dispositivo/PIN entra al release | PIN como identidad completa o sesión huérfana | ADR futuro de identidad/dispositivo; informa ADR-004/008 | PBI-008, PBI-009, PBI-017, PBI-018 | Después de resolver operación, acciones sensibles y revocación. |
@@ -69,8 +69,14 @@
 | Criterio de fracaso | El filtro es opcional, existe una consulta global reutilizable desde operación ordinaria, se aceptan IDs/branches de otro tenant o el contexto se contamina entre requests/jobs. |
 | Duración | `TBD` |
 | ADR relacionado | [ADR-004](../../decisions/proposed/ADR-004-shared-schema-multitenancy.md). |
-| PBI relacionado | [PBI-007](../../backlog/pbis/PBI-007.md), [PBI-011](../../backlog/pbis/PBI-011.md), [PBI-017](../../backlog/pbis/PBI-017.md) y [PBI-018](../../backlog/pbis/PBI-018.md). |
+| PBI relacionado | [PBI-023](../../backlog/pbis/PBI-023.md). Los PBIs históricos que originaron el candidato quedan absorbidos por esta ejecución H1. |
 | Dependencias | Gate 2 y [QUESTION-006](../../product/OPEN_QUESTIONS.md#question-006); ADR-003 como dirección evaluada; agregado representativo y candidato de acceso a datos, sin aceptar todavía un ORM. |
+
+La investigación de versiones, tooling y diseño está registrada en
+[SPIKE-002 Results](../../architecture-readiness/pbi-023/SPIKE_002_RESULTS.md).
+La [evidencia material](../../architecture-readiness/pbi-023/spike-002-evidence/README.md)
+registra PostgreSQL real, E1–E12, dos runs, comparación, hashes y cleanup. El
+resultado confirma el patrón experimental, no la implementación productiva.
 
 <a id="spike-003"></a>
 

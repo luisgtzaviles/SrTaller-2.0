@@ -10,6 +10,7 @@ import {
   createReadinessCoordinator,
 } from '../scripts/smoke-start.mjs';
 import { fixtureCases } from './architecture-fixtures.mjs';
+import { persistenceFixtureCases } from './architecture-persistence-fixtures.mjs';
 
 const marker = 'technical_shell_listening';
 
@@ -65,13 +66,15 @@ test('policy, rules, ownership and graph evidence remain consistent', async () =
     ),
   );
 
-  for (let number = 1; number <= 36; number += 1) {
+  for (let number = 1; number <= 53; number += 1) {
     const rule = `D5-R${String(number).padStart(3, '0')}`;
     assert.match(rules, new RegExp(rule, 'u'));
     assert.match(matrix, new RegExp(`\\| ${rule} \\|`, 'u'));
   }
   const fixtureRules = new Set(
-    fixtureCases.flatMap(({ expectedRules = [] }) => expectedRules),
+    [...fixtureCases, ...persistenceFixtureCases].flatMap(
+      ({ expectedRules = [] }) => expectedRules,
+    ),
   );
   assert.deepEqual(
     policy.checkerRules.filter((rule) => !fixtureRules.has(rule)),

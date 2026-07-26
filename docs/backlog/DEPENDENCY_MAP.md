@@ -56,8 +56,9 @@ flowchart TD
     MOD --> D5E[DEC005-C01 a C05<br/>PASS formal]
     D5E --> DEC049[DEC-049 Accepted<br/>C01-C08 vigentes]
     MOD -. no resuelve preguntas propias .-> DEC049
-    VC --> P23[PBI-023 persistencia tenant<br/>Ready para revisión]
+    VC --> P23[PBI-023 persistencia tenant<br/>Ready / tenant schema PASS]
     DEC049 --> P23
+    DEC050[DEC-050 Accepted with conditions<br/>C01-C10 pending] --> P23
     P23 --> P24[PBI-024 contexto<br/>Draft]
     P24 --> P25[PBI-025 identidad/sesión<br/>Blocked]
     P25 --> P26[PBI-026 autorización<br/>Draft]
@@ -94,8 +95,9 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   aceptada el 2026-07-24 con base común más checklists por tipo/riesgo.
   VC-024 satisfizo C01/C03/C04; C02/C05–C08 permanecen `Pending`.
 - [PBI-023](pbis/PBI-023.md) incluye sus decisiones y condiciones materiales
-  pendientes dentro del propio alcance, por lo que satisface documentalmente
-  DoR. Continúa no iniciado y sujeto a revisión final/autorización.
+  pendientes dentro del propio alcance. Conserva autorización limitada y está
+  `Ready` después del tenant schema `PASS`; aún no implementa funcionalidad,
+  repositories ni adapters.
 - PBI-024–PBI-029 descomponen los 24 contratos H1; sus estados `Draft` o
   `Blocked` impiden tratarlos como compromiso o autorización.
 
@@ -108,16 +110,18 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - PBI-021 está `Done` y `Unassigned`; VC-024 está `Closed / PASS`.
 - PBI-022 está `Done` y `Unassigned`; DEC005-C01 a C05 tienen `PASS` formal en la sexta reverificación independiente.
 - PBI-025 y PBI-027 están bloqueados por decisiones de mecanismo/producto.
-- Ningún PBI H1 puede iniciar antes del cierre de Sprint 00, revisión final y
-  autorización efectiva.
+- PBI-023 cerró la primera migración productiva; su siguiente gate son ports y
+  adapters owner-scoped.
+  Los demás
+  PBIs H1 requieren revisión y autorización propias.
 
 ## Preguntas abiertas
 
-- La revisión final debe confirmar que PBI-023 satisface DoR sin ocultar
-  decisiones fuera de su alcance.
+- SPIKE-002 confirmó el patrón sin bypass cross-tenant observado y con cleanup
+  completo; la implementación productiva debe repetir sus controles.
 - Los mecanismos de PIN/sesión y la autoridad temporal siguen requiriendo
   decisiones dentro de PBI-025/PBI-027.
 
 ## Próxima revisión
 
-Revisión final independiente de Sprint 00 y autorización de PBI-023.
+Autorización y evidencia del Paso 10 owner-scoped adapters de PBI-023.

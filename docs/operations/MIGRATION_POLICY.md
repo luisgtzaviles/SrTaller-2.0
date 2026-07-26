@@ -2,11 +2,18 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
+- **Estado:** Política vigente; runner materializado, primera migración
+  pendiente.
 - **Alcance:** Cambios futuros de esquema, datos, índices, configuración persistida y backfills.
-- **Hecho conocido:** En esta etapa no se crearán esquemas ejecutables ni migraciones.
-- **Baseline aceptada:** ADR-003 fija PostgreSQL 18.x y principios de migración; `DEC-050` permanece abierta.
-- **Decisión pendiente:** Herramienta, naming, locking, ejecución, aprobación y retención de compatibilidad.
+- **Hecho conocido:** El Paso 8 de PBI-023 materializó exclusivamente el
+  runner, provider, manifest, lock y pruebas con fixtures; no existe schema ni
+  migración productiva.
+- **Baseline aceptada:** ADR-003 fija PostgreSQL 18.x y
+  [DEC-050](../decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md)
+  selecciona el migrador core de Kysely.
+- **Materialización pendiente:** primera migración, operación/CLI segura,
+  PostgreSQL autoritativo en CI, roles compartidos y condiciones de promoción.
+  La evidencia local del runner no acredita esos gates.
 
 ## Objetivo
 
@@ -91,7 +98,10 @@ No todos los cambios requieren cada paso, pero omitirlo debe justificarse. La fa
 
 ## Índices, constraints y locks
 
-El mecanismo se diseñará para PostgreSQL 18.x; proveedor y tooling siguen abiertos. Antes de ejecutar se debe evaluar:
+El mecanismo usa PostgreSQL 18.x y el migrador core de Kysely conforme DEC-050.
+El provider de archivos gobernado está verificado; la composición operacional y
+el proveedor de secretos productivo siguen abiertos. Antes de ejecutar
+se debe evaluar:
 
 - lock adquirido y duración esperada;
 - impacto sobre lecturas/escrituras y pool de conexiones;
@@ -148,9 +158,11 @@ No se copian datos de production a staging sin el proceso controlado de [Environ
 - rollback/roll-forward probado;
 - release y resultado en production.
 
+El contrato técnico vigente del runner y sus límites están en
+[PBI-023 migration runner](../architecture-readiness/pbi-023/migration-runner/README.md).
+
 ## Preguntas abiertas
 
-- ¿Qué herramienta de migración se integrará con PostgreSQL 18.x y con el acceso a datos que finalmente se acepte?
 - ¿Quién puede aprobar y ejecutar cambios destructivos?
 - ¿Qué ventana/objetivo de lock e indisponibilidad es aceptable?
 - ¿Cuánto tiempo convivirán contratos/esquemas anteriores?

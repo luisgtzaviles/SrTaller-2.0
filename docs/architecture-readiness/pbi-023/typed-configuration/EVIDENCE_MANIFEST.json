@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "repository": "luisgtzaviles/SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit_base": "5cf96fcfdfc16c3db2e89014042a43f0229e165b",
+  "generated_at": "2026-07-25T05:50:20Z",
+  "files": [
+    "architecture/dec-005-policy.json",
+    "docs/architecture-readiness/pbi-023/DEC_050_REVIEW.md",
+    "docs/architecture-readiness/pbi-023/DEC_051_APPLICABILITY.md",
+    "docs/architecture-readiness/pbi-023/DEC_063_APPLICABILITY.md",
+    "docs/architecture-readiness/pbi-023/EXPECTED_EVIDENCE.md",
+    "docs/architecture-readiness/pbi-023/IMPLEMENTATION_PLAN.md",
+    "docs/architecture-readiness/pbi-023/PERSISTENCE_OWNERSHIP_REGISTRY.md",
+    "docs/architecture-readiness/pbi-023/RISK_ASSESSMENT.md",
+    "docs/architecture-readiness/pbi-023/TECHNICAL_DESIGN.md",
+    "docs/architecture-readiness/pbi-023/TRACEABILITY_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/checker-extension/FIXTURE_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/checker-extension/OWNERSHIP_ENFORCEMENT.md",
+    "docs/architecture-readiness/pbi-023/checker-extension/RULE_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/ARCHITECTURE_ENFORCEMENT.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/CONFIGURATION_CONTRACT.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/README.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/RESULTS.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/SANITIZATION.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/TEST_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/TRACEABILITY_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/VALIDATION_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/VARIABLE_MATRIX.md",
+    "docs/backlog/pbis/PBI-023.md",
+    "scripts/lib/architecture-checker.mjs",
+    "src/infrastructure/database/database-config.ts",
+    "test/architecture-persistence-config.test.mjs",
+    "test/architecture-persistence-fixtures.mjs",
+    "test/persistence-config.test.mjs",
+    "test/persistence-config.types.ts"
+  ],
+  "ownership": {
+    "owner": "database",
+    "path": "src/infrastructure/database/database-config.ts",
+    "future_consumer": "src/infrastructure/database/database-connection.ts",
+    "public_api": [
+      "DatabaseConfig",
+      "DatabaseConfigError",
+      "parseDatabaseConfig",
+      "sanitizeDatabaseConfig"
+    ]
+  },
+  "variables": {
+    "default_count": 0,
+    "shared_namespace": "SR_DB_",
+    "test_namespace": "SR_TEST_DB_",
+    "environment_selector": "SR_DB_ENVIRONMENT"
+  },
+  "validations": {
+    "mode": "fail-closed",
+    "environment_count": 3,
+    "role_count": 3
+  },
+  "error_codes": [
+    "PERSISTENCE_CONFIG_REQUIRED",
+    "PERSISTENCE_CONFIG_EMPTY",
+    "PERSISTENCE_CONFIG_INVALID_STRING",
+    "PERSISTENCE_CONFIG_INVALID_INTEGER",
+    "PERSISTENCE_CONFIG_OUT_OF_RANGE",
+    "PERSISTENCE_CONFIG_INVALID_BOOLEAN",
+    "PERSISTENCE_CONFIG_UNKNOWN_VALUE",
+    "PERSISTENCE_CONFIG_INCOMPATIBLE",
+    "PERSISTENCE_CONFIG_UNSAFE_PRODUCTION",
+    "PERSISTENCE_CONFIG_CONNECTION_STRING_FORBIDDEN",
+    "PERSISTENCE_CONFIG_UNKNOWN_VARIABLE"
+  ],
+  "tests": {
+    "unit": "PASS",
+    "typescript_immutability": "PASS",
+    "sanitization": "PASS",
+    "network_absence": "PASS",
+    "architecture": "PASS",
+    "deterministic_runs": 2
+  },
+  "architecture_rules": {
+    "active": "D5-R037-D5-R047",
+    "new_rules": [],
+    "adjusted_rules": ["D5-R045"]
+  },
+  "commands": [
+    "pnpm install --frozen-lockfile",
+    "pnpm run architecture",
+    "pnpm run typecheck",
+    "pnpm run build",
+    "pnpm test",
+    "pnpm run test:architecture",
+    "pnpm run verify",
+    "pnpm run smoke:start",
+    "node --test test/persistence-config.test.mjs",
+    "git diff --check"
+  ],
+  "counts": {
+    "tests_before": 219,
+    "tests_after": 238,
+    "architecture_tests_before": 207,
+    "architecture_tests_after": 212,
+    "architecture_fixtures_before": 134,
+    "architecture_fixtures_after": 135,
+    "persistence_mutations": 11,
+    "changed_files_excluding_manifest": 29
+  },
+  "hashes": {
+    "changed_files_sha256": {
+      "architecture/dec-005-policy.json": "b2c6c9c30b5ec096e4f3f723f93c8d48d9f2359d11f5ee2353ab2740379a22e7",
+      "docs/architecture-readiness/pbi-023/DEC_050_REVIEW.md": "bf16e6c5fe18b3df6de2fcde56a555e2bd0907c395356953ce97061ed297e5e8",
+      "docs/architecture-readiness/pbi-023/DEC_051_APPLICABILITY.md": "dea3f53320ded03d041afe3381441dd8fe383b4cd152dd21fcee95e563bf91cd",
+      "docs/architecture-readiness/pbi-023/DEC_063_APPLICABILITY.md": "a323390a8e0047f8049c8eff24e8f386ad40bae960fb5b6748919e0d4f3b9b61",
+      "docs/architecture-readiness/pbi-023/EXPECTED_EVIDENCE.md": "8ffa5bfc26d90423222bc6e71ad4053e4fbe14e039a68544e9c69ef766862e35",
+      "docs/architecture-readiness/pbi-023/IMPLEMENTATION_PLAN.md": "e77354899a31ab139b1f17f37e1bc960f3ef1c17ac0463b9351061b5c9fcad86",
+      "docs/architecture-readiness/pbi-023/PERSISTENCE_OWNERSHIP_REGISTRY.md": "fd3922789d4effc2b65a6bda429482d625ca2d4e57f0f8c922abacfbf4d12e67",
+      "docs/architecture-readiness/pbi-023/RISK_ASSESSMENT.md": "61af58ec5527653e11eaa9b8a447b918ca3cf10168a701ba18f7b92a265ca68d",
+      "docs/architecture-readiness/pbi-023/TECHNICAL_DESIGN.md": "9a7643ebe3b65869e8cc08a4c6d1cb36ace72b16a8f6d0e865a1e6655e1de49a",
+      "docs/architecture-readiness/pbi-023/TRACEABILITY_MATRIX.md": "c3512d89c3f8983717aae0ddad608ebbfbae82145ac8d02be3e5ff48cbd11f55",
+      "docs/architecture-readiness/pbi-023/checker-extension/FIXTURE_MATRIX.md": "62241a058777d694edfd9e12fc1a405d5535aa39ae56723ca1fd7d30c86bb6e2",
+      "docs/architecture-readiness/pbi-023/checker-extension/OWNERSHIP_ENFORCEMENT.md": "d643d166ce1307ba9b39a10366e18c8dde74b89b2d01846e1b6f68abc650d994",
+      "docs/architecture-readiness/pbi-023/checker-extension/RULE_MATRIX.md": "5fb92db25c44c5d17f4652e1c36546f2c24ce23e1a52e164c55d6b0a0586bd92",
+      "docs/architecture-readiness/pbi-023/typed-configuration/ARCHITECTURE_ENFORCEMENT.md": "a696ef5b7702e7438e006e072a2930df2d49d775944800e00963dd420b2c0288",
+      "docs/architecture-readiness/pbi-023/typed-configuration/CONFIGURATION_CONTRACT.md": "88da3eb04c3a71dd0541431e508fa6158482eb8ec420a61a606073ad24d5abef",
+      "docs/architecture-readiness/pbi-023/typed-configuration/README.md": "4184fd8fc3ef0fd2c352300fc19cbfcac6a9a13de31edb2f87c75bfd20c3357f",
+      "docs/architecture-readiness/pbi-023/typed-configuration/RESULTS.md": "b94c8ae88115b889b51f7fd1779cb0927ad9cfa7fe5d9aa97852ee768a656c2a",
+      "docs/architecture-readiness/pbi-023/typed-configuration/SANITIZATION.md": "8d58c70d1061d963f2df308a845cfda79f460b3d83b7b4d64eb21d3b5e631619",
+      "docs/architecture-readiness/pbi-023/typed-configuration/TEST_MATRIX.md": "35cee44c9bd30ba31ec44a4b97d9314904c663ff87aa93b9006ee95dfc6d5b9d",
+      "docs/architecture-readiness/pbi-023/typed-configuration/TRACEABILITY_MATRIX.md": "1ccbcddb208575305689026c1f3ed6fdba4d069b61061b399d0aa2486dfc740f",
+      "docs/architecture-readiness/pbi-023/typed-configuration/VALIDATION_MATRIX.md": "25e6f166852d88c19a82eabda761e98ab8045f63f17493f45459c043060ea062",
+      "docs/architecture-readiness/pbi-023/typed-configuration/VARIABLE_MATRIX.md": "e73e69fc8644d8af052ac96348baea8ecc09b44d56eb84b2ba43c03d7c2948f8",
+      "docs/backlog/pbis/PBI-023.md": "a3449d62605e4ac061f9f0cf508f996e172a79e178e011602cc0d213be1bc4d3",
+      "scripts/lib/architecture-checker.mjs": "ba0aba4a0146d9dc89346256e0171e9576219db1332f9ab79c815dffb49e278a",
+      "src/infrastructure/database/database-config.ts": "cea9898eba5435afd7115ef124a1ecb0ae01fa08f63c1fe015a25ebb92da1ac9",
+      "test/architecture-persistence-config.test.mjs": "b8f6d692a55933f9837600da5e089d8c138fe645cd7cd8faf17f72ea488578db",
+      "test/architecture-persistence-fixtures.mjs": "26e46b6731770eb45c43e261f7f1bc9bb72b6044248be157b4f38552c25f586c",
+      "test/persistence-config.test.mjs": "ad5a607a4f10c6bf3ee6baee57e5bf0d6b14f9d98cc60308323e43a172622bcd",
+      "test/persistence-config.types.ts": "d4f22107dbec14088e04774f8c4fdee492683ba1e2dfb80e08fdde82f4953c3b"
+    },
+    "preserved_sha256": {
+      "package.json": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
+      "pnpm-lock.yaml": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
+      ".github/workflows/authoritative-linux-ci.yml": "f3d4942e9ef6dc785a5d34d280e6d1f204e889ec5d8065b1d06c9ed06dd5c790",
+      "tools/dec-004-verification/Dockerfile": "0c0fbd739d1911a9f60b5175a14d3758d7e5ed1848dd041a35b40b3cb05d2a1f",
+      "src/app.module.ts": "78aa0b2472244370e98e5ee7d6c09692d102ceaa08171db8977f8be97ea1124e",
+      "src/main.ts": "e3582af43aabf400c78f50dda40d00c82a202a8d686a950a5e441b9d753ec289"
+    }
+  },
+  "sanitization": {
+    "password": "redacted",
+    "host_database_user": "presence-only",
+    "connection_strings": "forbidden"
+  },
+  "changed_surfaces": [
+    "typed database configuration",
+    "D5-R045 pure-config transition",
+    "unit and architecture tests",
+    "PBI-023 evidence"
+  ],
+  "unchanged_surfaces": [
+    "package and lockfile",
+    "workflows and Dockerfile",
+    "bootstrap and AppModule",
+    "business modules",
+    "database runtime, SQL, migrations and schema"
+  ],
+  "final_result": "PASS — PBI-023 TYPED PERSISTENCE CONFIGURATION COMPLETE"
+}

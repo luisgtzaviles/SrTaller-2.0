@@ -49,17 +49,20 @@ técnico existente no cambiaron.
 
 | Componente | Responsabilidad técnica |
 | --- | --- |
-| `architecture/dec-005-policy.json` | Catálogo ejecutable de módulos, grafo, superficies, roots gobernados/prohibidos, archivos estructurales, composición, clasificación de reglas, allowlist y evidencia requerida |
-| `scripts/lib/architecture-checker.mjs` | Análisis AST, normalización iterativa de wrappers transparentes, identidad de imports directos/alias/namespace, shadowing, contenido estructural, resolución NodeNext, grafo, capas, composición `AppModule`, request scope y autoridad en controllers |
+| `architecture/dec-005-policy.json` | Catálogo ejecutable de módulos, grafo, superficies, roots gobernados/prohibidos, archivos estructurales, composición, clasificación de reglas, allowlist, registry futuro de persistencia y evidencia requerida |
+| `scripts/lib/architecture-checker.mjs` | Análisis AST, normalización iterativa, identidad de imports directos/default/alias/namespace/import-equals/require, shadowing, contenido estructural, NodeNext, grafo, capas, composición, persistencia tenant-scoped y ownership |
 | `scripts/check-architecture.mjs` | CLI no interactiva con exit code y diagnóstico estable |
 | `scripts/smoke-start.mjs` | Coordinador comprobable e independiente del orden para marker, listener, timeout, salida y cleanup del smoke compilado |
 | `test/architecture-fixtures.mjs` | 98 casos aislados: 12 positivos y 86 negativos |
+| `test/architecture-persistence-fixtures.mjs` | 36 fixtures PBI-023: cinco positivos y 31 negativos para D5-R037–D5-R047 |
 | `test/architecture-fixtures.test.mjs` | Ejecución duplicada, comparación determinista y conjunto completo de reglas/paths por fixture |
 | `test/architecture-remediation-mutations.mjs` | Cinco mutaciones FV4 con wrappers, source contractual y una familia por regla afectada |
 | `test/architecture-mutations.test.mjs` | 23 mutaciones controladas en 12 familias normativas con reglas/paths exactos, rechazo y restauración |
+| `test/architecture-persistence-mutations.mjs` | Once mutaciones owner/tenant/DB, una por regla nueva |
+| `test/architecture-persistence-mutations.test.mjs` | Mutación, neutralización fixture-only, restauración y determinismo por regla |
 | `test/architecture-semantic-coverage.mjs` | Identidad canónica D5-R033 central: snapshot efectivo, tokens de source, paths, serialización tipada, detección y diagnóstico |
 | `test/architecture-semantic-coverage.test.mjs` | Seis mutaciones semánticas con restauración, diez rechazos de equivalencia y ocho controles de distinción legítima |
-| `test/architecture-coverage.test.mjs` | Contrato D5-R033 de 26 coberturas críticas únicas, correspondencia exacta con policy y unitarias del normalizador AST |
+| `test/architecture-coverage.test.mjs` | Contrato D5-R033 de 49 coberturas críticas únicas, correspondencia exacta con policy y unitarias del normalizador AST |
 | `test/architecture-policy.test.mjs` | Consistencia policy/documentos y diez órdenes/fallos/cleanup del coordinador de smoke |
 | `test/architecture-support.mjs` | Creación y eliminación segura de árboles temporales |
 | `architecture` / `verify:architecture` | Alias solicitado y verificación del árbol real con toolchain exacta |
@@ -113,6 +116,12 @@ técnico existente no cambiaron.
     posición ni orden de propiedades. Normaliza paths y trivia del source;
     conserva tokens, tipos y cualquier propiedad futura no reconocida como
     material, por lo que falla de forma conservadora.
+17. PBI-023 registra paths futuros aprobados sin materializarlos. Un archivo
+    DB futuro sólo pasa si su path, owner, API, consumidor, port, adapter,
+    composición y objeto físico coinciden exactamente con policy.
+18. La neutralización de reglas existe sólo como prueba adversarial
+    in-process sobre fixtures; el checker rechaza ese parámetro en producto y
+    el CLI no ofrece flag para desactivar reglas.
 
 ## Paths no materializados
 

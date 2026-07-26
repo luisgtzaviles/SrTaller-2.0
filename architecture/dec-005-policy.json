@@ -1,5 +1,5 @@
 {
-  "policyVersion": 1,
+  "policyVersion": 2,
   "allowedModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy"],
@@ -9,7 +9,7 @@
   "publicSurfaces": {
     "access": ["AccessModuleContract"],
     "stations": ["StationsModuleContract"],
-    "tenancy": ["TenancyModuleContract"]
+    "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"]
   },
   "consumers": {
     "access": ["AppModule"],
@@ -78,6 +78,306 @@
     "resolveTenantContext",
     "trustRequestContext"
   ],
+  "persistence": {
+    "dependencyPackages": ["kysely", "pg"],
+    "dependencyPackagePrefixes": ["pg-"],
+    "allowedDependencyRoots": [
+      "src/infrastructure/database/",
+      "src/modules/stations/infrastructure/persistence/",
+      "src/modules/tenancy/infrastructure/persistence/"
+    ],
+    "databaseRoot": "src/infrastructure/database/",
+    "migrationRoot": "src/infrastructure/database/migrations/",
+    "migrationFilePattern": "^\\d{14}_(database|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "infrastructureFiles": {
+      "src/infrastructure/database/database-config.ts": {
+        "owner": "database",
+        "publicExports": [
+          "DatabaseConfig",
+          "DatabaseConfigError",
+          "parseDatabaseConfig",
+          "sanitizeDatabaseConfig"
+        ],
+        "consumers": ["src/infrastructure/database/database-connection.ts"],
+        "status": "materialized-configuration"
+      },
+      "src/infrastructure/database/database-types.ts": {
+        "owner": "database",
+        "publicExports": [
+          "TenantTable",
+          "BranchTable",
+          "DatabaseSchema",
+          "TenantRow",
+          "NewTenant",
+          "TenantUpdate",
+          "BranchRow",
+          "NewBranch",
+          "BranchUpdate"
+        ],
+        "consumers": [
+          "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/migration-runner.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+        ],
+        "status": "materialized-schema-contract"
+      },
+      "src/infrastructure/database/database-connection.ts": {
+        "owner": "database",
+        "publicExports": [
+          "DatabaseConnection",
+          "DatabaseConnectionError",
+          "createDatabaseConnection",
+          "sanitizeDatabaseConnectionState"
+        ],
+        "consumers": [
+          "src/infrastructure/database/transaction-runner.ts",
+          "src/infrastructure/database/migration-runner.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+        ],
+        "status": "materialized-connection-facility"
+      },
+      "src/infrastructure/database/database-migration-capability.ts": {
+        "owner": "database",
+        "publicExports": [
+          "InternalDatabaseMigrationExecutor",
+          "InternalDatabaseMigrationOperation",
+          "InternalDatabaseMigrationRuntime",
+          "databaseMigrationCapability",
+          "databaseMigrationRuntime",
+          "DatabaseMigrationCapabilityError",
+          "InternalDatabaseMigrationConnection"
+        ],
+        "consumers": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/migration-runner.ts"
+        ],
+        "status": "materialized-owner-internal-capability"
+      },
+      "src/infrastructure/database/database-migration-provider.ts": {
+        "owner": "database",
+        "publicExports": [
+          "InternalMigrationSource",
+          "InternalMigrationManifestItem",
+          "InternalMigrationManifest",
+          "InternalMigrationInspection",
+          "databaseMigrationSourceOverride",
+          "InternalMigrationProviderError",
+          "inspectMigrationSource",
+          "createGovernedFileMigrationProvider"
+        ],
+        "consumers": [
+          "src/infrastructure/database/migration-runner.ts"
+        ],
+        "status": "materialized-owner-internal-provider"
+      },
+      "src/infrastructure/database/database-persistence-capability.ts": {
+        "owner": "database",
+        "publicExports": [
+          "InternalDatabasePersistenceOwner",
+          "InternalDatabasePersistenceExecutor",
+          "InternalDatabasePersistenceOperation",
+          "databasePersistenceCapability",
+          "DatabasePersistenceCapabilityError",
+          "InternalDatabasePersistenceConnection",
+          "useDatabasePersistenceExecutor",
+          "useTransactionalDatabasePersistenceExecutor"
+        ],
+        "consumers": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+        ],
+        "status": "materialized-owner-internal-capability"
+      },
+      "src/infrastructure/database/database-transaction-capability.ts": {
+        "owner": "database",
+        "publicExports": [
+          "InternalDatabaseTransactionSettings",
+          "InternalDatabaseTransactionExecutor",
+          "InternalDatabaseTransactionOperation",
+          "databaseTransactionCapability",
+          "DatabaseTransactionCapabilityError",
+          "InternalDatabaseTransactionConnection",
+          "bindDatabaseTransactionContext",
+          "releaseDatabaseTransactionContext",
+          "useDatabaseTransactionExecutor"
+        ],
+        "consumers": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/database-persistence-capability.ts",
+          "src/infrastructure/database/transaction-runner.ts"
+        ],
+        "status": "materialized-owner-internal-capability"
+      },
+      "src/infrastructure/database/transaction-runner.ts": {
+        "owner": "database",
+        "publicExports": [
+          "DatabaseTransactionOptions",
+          "DatabaseTransactionContext",
+          "DatabaseTransactionError",
+          "runInTransaction"
+        ],
+        "consumers": [
+          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+        ],
+        "consumerRequirement": "deferred-until-adapter-composition",
+        "status": "materialized-transaction-runner"
+      },
+      "src/infrastructure/database/migration-runner.ts": {
+        "owner": "database",
+        "publicExports": [
+          "DatabaseMigrationRunnerOptions",
+          "DatabaseMigrationDownAuthorization",
+          "DatabaseMigrationStatusItem",
+          "DatabaseMigrationStatus",
+          "DatabaseMigrationExecution",
+          "DatabaseMigrationRunner",
+          "DatabaseMigrationError",
+          "createMigrationRunner"
+        ],
+        "consumers": ["scripts/run-migrations.mjs"],
+        "consumerRequirement": "deferred-until-operational-composition",
+        "status": "materialized-migration-runner"
+      }
+    },
+    "ports": {
+      "src/modules/stations/application/ports/branch-repository.port.ts": {
+        "owner": "stations",
+        "contract": "BranchRepositoryPort",
+        "allowedScopes": ["TenantPersistenceScope", "TenantBranchPersistenceScope"],
+        "status": "materialized-owner-port"
+      },
+      "src/modules/tenancy/application/ports/tenant-repository.port.ts": {
+        "owner": "tenancy",
+        "contract": "TenantRepositoryPort",
+        "allowedScopes": ["TenantPersistenceScope"],
+        "status": "materialized-owner-port"
+      }
+    },
+    "scopeTypes": {
+      "TenantBranchPersistenceScope": ["tenantId", "branchId"],
+      "TenantPersistenceScope": ["tenantId"]
+    },
+    "adapters": {
+      "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts": {
+        "owner": "stations",
+        "port": "src/modules/stations/application/ports/branch-repository.port.ts",
+        "composition": "src/modules/stations/stations.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts": {
+        "owner": "tenancy",
+        "port": "src/modules/tenancy/application/ports/tenant-repository.port.ts",
+        "composition": "src/modules/tenancy/tenancy.module.ts",
+        "status": "materialized-owner-adapter"
+      }
+    },
+    "databaseObjects": {
+      "branches": {
+        "owner": "stations",
+        "kind": "table"
+      },
+      "tenants": {
+        "owner": "tenancy",
+        "kind": "table"
+      }
+    },
+    "databaseExecutorTypes": {
+      "kysely": ["Kysely", "Transaction"],
+      "pg": ["Client", "Pool", "PoolClient"]
+    },
+    "connectionProbe": {
+      "file": "src/infrastructure/database/database-connection.ts",
+      "function": "runConnectionVerification",
+      "sql": "select 1"
+    },
+    "driverPublicTypes": {
+      "kysely": ["Kysely", "RawBuilder", "Transaction"],
+      "pg": ["Client", "Pool", "PoolClient", "QueryArrayResult", "QueryResult", "QueryResultRow"]
+    },
+    "forbiddenGlobalSurfaceNames": [
+      "client",
+      "database",
+      "db",
+      "executeQuery",
+      "kysely",
+      "pool",
+      "query"
+    ],
+    "genericRepositoryCapabilities": [
+      "create",
+      "delete",
+      "find",
+      "findAll",
+      "findById",
+      "insert",
+      "remove",
+      "save",
+      "update"
+    ],
+    "startupFiles": ["src/main.ts", "src/app.module.ts"],
+    "transactionBoundary": {
+      "runner": "src/infrastructure/database/transaction-runner.ts",
+      "capability": "src/infrastructure/database/database-transaction-capability.ts",
+      "allowedCapabilityConsumers": [
+        "src/infrastructure/database/database-connection.ts",
+        "src/infrastructure/database/database-persistence-capability.ts",
+        "src/infrastructure/database/transaction-runner.ts"
+      ],
+      "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
+      "forbiddenManualMethods": [
+        "commit",
+        "releaseSavepoint",
+        "rollback",
+        "rollbackToSavepoint",
+        "savepoint",
+        "startTransaction"
+      ]
+    },
+    "migrationBoundary": {
+      "runner": "src/infrastructure/database/migration-runner.ts",
+      "capability": "src/infrastructure/database/database-migration-capability.ts",
+      "provider": "src/infrastructure/database/database-migration-provider.ts",
+      "allowedInternalConsumers": {
+        "src/infrastructure/database/database-migration-capability.ts": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/migration-runner.ts"
+        ],
+        "src/infrastructure/database/database-migration-provider.ts": [
+          "src/infrastructure/database/migration-runner.ts"
+        ]
+      }
+    },
+    "initialSchema": {
+      "migration": "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
+      "tables": ["tenants", "branches"],
+      "tenantColumns": ["tenant_id", "created_at"],
+      "branchColumns": ["tenant_id", "branch_id", "created_at"],
+      "columnTypes": {
+        "tenant_id": "uuid",
+        "branch_id": "uuid",
+        "created_at": "timestamptz"
+      },
+      "tenantPrimaryKeyName": "tenants_pk",
+      "tenantPrimaryKey": ["tenant_id"],
+      "branchPrimaryKeyName": "branches_pk",
+      "branchPrimaryKey": ["tenant_id", "branch_id"],
+      "branchTenantForeignKey": {
+        "name": "branches_tenant_fk",
+        "columns": ["tenant_id"],
+        "targetTable": "tenants",
+        "targetColumns": ["tenant_id"],
+        "onUpdate": "restrict",
+        "onDelete": "restrict"
+      },
+      "status": "tenant-schema-materialized"
+    },
+    "status": "tenant-schema-materialized"
+  },
   "checkerRules": [
     "D5-R002",
     "D5-R003",
@@ -105,7 +405,24 @@
     "D5-R029",
     "D5-R031",
     "D5-R035",
-    "D5-R036"
+    "D5-R036",
+    "D5-R037",
+    "D5-R038",
+    "D5-R039",
+    "D5-R040",
+    "D5-R041",
+    "D5-R042",
+    "D5-R043",
+    "D5-R044",
+    "D5-R045",
+    "D5-R046",
+    "D5-R047",
+    "D5-R048",
+    "D5-R049",
+    "D5-R050",
+    "D5-R051",
+    "D5-R052",
+    "D5-R053"
   ],
   "requiredSemanticCoverage": [
     "fixture:D5-R025:parenthesized:direct",
@@ -133,7 +450,49 @@
     "mutation:D5-R027:transparent-wrapper",
     "mutation:D5-R029:transparent-wrapper",
     "mutation:D5-R035:transparent-wrapper",
-    "mutation:D5-R036:transparent-wrapper"
+    "mutation:D5-R036:transparent-wrapper",
+    "fixture:persistence-boundaries:registered-topology:positive",
+    "fixture:D5-R037:direct-import",
+    "fixture:D5-R038:global-export",
+    "fixture:D5-R039:renamed-generic",
+    "fixture:D5-R040:relative-db-import",
+    "fixture:D5-R041:unregistered-adapter",
+    "fixture:D5-R042:dispersed-migration",
+    "fixture:D5-R043:aliased-type-leak",
+    "fixture:D5-R044:missing-structural-scope",
+    "fixture:D5-R045:materialized-connection-transition:positive",
+    "fixture:D5-R045:unregistered-infrastructure",
+    "fixture:D5-R046:connection-probe-boundary",
+    "fixture:D5-R046:aliased-sql-tag",
+    "fixture:D5-R047:cross-owner-object",
+    "fixture:D5-R048:async-context-import",
+    "fixture:D5-R048:shadowing-control:positive",
+    "mutation:D5-R037:persistence-boundary",
+    "mutation:D5-R038:persistence-boundary",
+    "mutation:D5-R039:persistence-boundary",
+    "mutation:D5-R040:persistence-boundary",
+    "mutation:D5-R041:persistence-boundary",
+    "mutation:D5-R042:persistence-boundary",
+    "mutation:D5-R043:persistence-boundary",
+    "mutation:D5-R044:persistence-boundary",
+    "mutation:D5-R045:persistence-boundary",
+    "mutation:D5-R046:persistence-boundary",
+    "mutation:D5-R047:persistence-boundary",
+    "mutation:D5-R048:persistence-boundary",
+    "fixture:D5-R049:migration-provider-consumer",
+    "mutation:D5-R049:persistence-boundary",
+    "fixture:D5-R050:initial-schema-tables",
+    "fixture:D5-R050:initial-schema-control:positive",
+    "fixture:D5-R051:tenant-foreign-key",
+    "fixture:D5-R052:dml-alias",
+    "fixture:D5-R052:sql-namespace",
+    "fixture:D5-R052:shadowing-control:positive",
+    "fixture:D5-R052:text-control:positive",
+    "fixture:D5-R053:down-cascade",
+    "mutation:D5-R050:persistence-boundary",
+    "mutation:D5-R051:persistence-boundary",
+    "mutation:D5-R052:persistence-boundary",
+    "mutation:D5-R053:persistence-boundary"
   ],
   "externalExecutableRules": ["D5-R001"],
   "compositeRules": ["D5-R032", "D5-R033"],
@@ -149,8 +508,12 @@
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
     "src/modules/stations/index.ts",
+    "src/modules/stations/application/ports/branch-repository.port.ts",
+    "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
     "src/modules/stations/stations.module.ts",
     "src/modules/tenancy/index.ts",
+    "src/modules/tenancy/application/ports/tenant-repository.port.ts",
+    "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
     "src/modules/tenancy/tenancy.module.ts"
   ],
   "requiredEvidence": [

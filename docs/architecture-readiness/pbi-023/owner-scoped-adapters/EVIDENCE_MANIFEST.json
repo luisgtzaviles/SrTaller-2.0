@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "repository": "luisgtzaviles/SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit_base": "b70937d9823692f428e264d14078ee4cd4b3db5e",
+  "generated_at": "2026-07-26T01:58:06Z",
+  "files": {
+    "database_persistence_capability": {
+      "path": "src/infrastructure/database/database-persistence-capability.ts",
+      "sha256": "b48172246946d25ff3b260ceb06f178e8f405c6fb09d1fd0da955d5e710de7fb"
+    },
+    "tenant_port": {
+      "path": "src/modules/tenancy/application/ports/tenant-repository.port.ts",
+      "sha256": "13dc2a48a5f724960b3df0e2fe8f0488a43908d0905c80f897e579dff0e409ce"
+    },
+    "tenant_adapter": {
+      "path": "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
+      "sha256": "8faf51011fda0cf6da8a5a3407a32c2f029a6e77ce98b77b0a4b6213fb118c90"
+    },
+    "branch_port": {
+      "path": "src/modules/stations/application/ports/branch-repository.port.ts",
+      "sha256": "431edc1ed82ce341fb5f342b4f914bf3537828cffa87b4866cc2babd961ee16c"
+    },
+    "branch_adapter": {
+      "path": "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+      "sha256": "9e2271fe7f343a45839b265394d357648a8113ed0561c3a0cb634489feaf0950"
+    },
+    "postgres_harness": {
+      "path": "scripts/test-owner-scoped-persistence-postgresql.mjs",
+      "sha256": "6faf49800d35c5df10abe7634553f3c5dfff13fa1ae2c939b66f2ac99373c35b"
+    },
+    "unit_test": {
+      "path": "test/owner-scoped-persistence.test.mjs",
+      "sha256": "5a1dc3257f76a9e2232c05fd63ede455a4b82f082723d827325805cb76b34171"
+    },
+    "postgres_test": {
+      "path": "test/owner-scoped-persistence-postgresql.test.mjs",
+      "sha256": "b5a0575462b113281130c5bca388443c1ed0d9042ba0780b46f12cf48828862b"
+    }
+  },
+  "ports": [
+    "TenantRepositoryPort",
+    "BranchRepositoryPort"
+  ],
+  "adapters": [
+    "kysely-tenant.repository.ts",
+    "kysely-branch.repository.ts"
+  ],
+  "owners": {
+    "tenancy": "tenants",
+    "stations": "branches"
+  },
+  "tables": [
+    "tenants",
+    "branches"
+  ],
+  "operations": {
+    "tenant": [
+      "createTenant",
+      "findTenantById",
+      "existsTenant"
+    ],
+    "branch": [
+      "createBranch",
+      "findBranchById",
+      "listBranchesByTenant",
+      "existsBranch"
+    ]
+  },
+  "tenant_scope": {
+    "tenant_operations": [
+      "tenantId"
+    ],
+    "branch_individual_operations": [
+      "tenantId",
+      "branchId"
+    ],
+    "optional": false
+  },
+  "error_codes": [
+    "PERSISTENCE_TENANT_SCOPE_REQUIRED",
+    "PERSISTENCE_BRANCH_SCOPE_REQUIRED",
+    "TENANT_PERSISTENCE_CONFLICT",
+    "TENANT_PERSISTENCE_NOT_FOUND",
+    "TENANT_PERSISTENCE_FAILED",
+    "BRANCH_PERSISTENCE_CONFLICT",
+    "BRANCH_PERSISTENCE_TENANT_NOT_FOUND",
+    "BRANCH_PERSISTENCE_NOT_FOUND",
+    "BRANCH_PERSISTENCE_FAILED"
+  ],
+  "tests": {
+    "unit": "7/7 PASS",
+    "architecture_owner": "4/4 PASS",
+    "product": "330 PASS, 10 gated skips, 0 fail",
+    "architecture": "261/261 PASS",
+    "postgresql": "PASS"
+  },
+  "postgresql": {
+    "version": "18.4",
+    "image": "postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+    "encoding": "UTF8",
+    "timezone": "UTC"
+  },
+  "migration_hash": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
+  "runs": {
+    "count": 2,
+    "material_comparison": "MATCH",
+    "material_sha256": "9a765cc60dc185479a8d07825afeaa67d9c8415c95eb3d710480b49ed61a49be"
+  },
+  "commands": [
+    "pnpm install --frozen-lockfile",
+    "pnpm run architecture",
+    "pnpm run typecheck",
+    "pnpm run build",
+    "pnpm test",
+    "pnpm run test:architecture",
+    "pnpm run verify",
+    "pnpm run smoke:start",
+    "node scripts/test-owner-scoped-persistence-postgresql.mjs --runs 2",
+    "git diff --check"
+  ],
+  "cleanup": {
+    "status": "PASS",
+    "containers": 0,
+    "volumes": 0,
+    "networks": 0,
+    "database_objects": 0,
+    "environment_files": 0
+  },
+  "sanitization": "PASS",
+  "architecture_rules": [
+    "D5-R037",
+    "D5-R039",
+    "D5-R040",
+    "D5-R041",
+    "D5-R043",
+    "D5-R044",
+    "D5-R045",
+    "D5-R046",
+    "D5-R047",
+    "D5-R048"
+  ],
+  "changed_surfaces": [
+    "owner module ports/adapters",
+    "internal database persistence capability",
+    "architecture registry/checker/tests",
+    "PBI-023 evidence and status"
+  ],
+  "unchanged_surfaces": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "workflows",
+    "AppModule",
+    "bootstrap",
+    "productive migration",
+    "Dockerfile",
+    "access module",
+    "database schema"
+  ],
+  "final_result": "PASS — PBI-023 OWNER-SCOPED PERSISTENCE VERIFIED"
+}

@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "repository": "luisgtzaviles/SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit_base": "5803d2ecfc9470bb4a2161db5372bbec7244532f",
+  "generated_at": "2026-07-25T15:53:57Z",
+  "files": [
+    "architecture/dec-005-policy.json",
+    "docs/architecture-readiness/dec-005-materialization/ARCHITECTURE_RULES.md",
+    "docs/architecture-readiness/dec-005-materialization/TRACEABILITY_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/DEC_051_APPLICABILITY.md",
+    "docs/architecture-readiness/pbi-023/IMPLEMENTATION_PLAN.md",
+    "docs/architecture-readiness/pbi-023/PERSISTENCE_OWNERSHIP_REGISTRY.md",
+    "docs/architecture-readiness/pbi-023/README.md",
+    "docs/architecture-readiness/pbi-023/RESULTS.md",
+    "docs/architecture-readiness/pbi-023/TECHNICAL_DESIGN.md",
+    "docs/architecture-readiness/pbi-023/TRACEABILITY_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/checker-extension/FIXTURE_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/checker-extension/MUTATION_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/checker-extension/OWNERSHIP_ENFORCEMENT.md",
+    "docs/architecture-readiness/pbi-023/checker-extension/RULE_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/ARCHITECTURE_ENFORCEMENT.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/CLEANUP.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/CONCURRENCY.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/CONNECTION_CONTRACT.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/ERROR_MAPPING.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/EVIDENCE_MANIFEST.json",
+    "docs/architecture-readiness/pbi-023/connection-facility/LIFECYCLE.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/POSTGRESQL_TEST_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/README.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/RESULTS.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/SANITIZATION.md",
+    "docs/architecture-readiness/pbi-023/connection-facility/TRACEABILITY_MATRIX.md",
+    "docs/architecture-readiness/pbi-023/typed-configuration/ARCHITECTURE_ENFORCEMENT.md",
+    "docs/backlog/pbis/PBI-023.md",
+    "scripts/lib/architecture-checker.mjs",
+    "scripts/test-database-connection-postgresql.mjs",
+    "src/infrastructure/database/database-connection.ts",
+    "test/architecture-database-connection.test.mjs",
+    "test/architecture-persistence-config.test.mjs",
+    "test/architecture-persistence-fixtures.mjs",
+    "test/database-connection-postgresql.test.mjs",
+    "test/database-connection.test.mjs"
+  ],
+  "public_api": [
+    "DatabaseConnection",
+    "DatabaseConnectionError",
+    "createDatabaseConnection",
+    "sanitizeDatabaseConnectionState"
+  ],
+  "states": [
+    "created",
+    "verifying",
+    "ready",
+    "closing",
+    "closed",
+    "failed"
+  ],
+  "error_codes": [
+    "DATABASE_CONNECTION_INVALID_STATE",
+    "DATABASE_CONNECTION_AUTHENTICATION_FAILED",
+    "DATABASE_CONNECTION_DATABASE_NOT_FOUND",
+    "DATABASE_CONNECTION_TIMEOUT",
+    "DATABASE_CONNECTION_NETWORK_FAILED",
+    "DATABASE_CONNECTION_SSL_FAILED",
+    "DATABASE_CONNECTION_VERIFICATION_FAILED",
+    "DATABASE_CONNECTION_CLOSED",
+    "DATABASE_CONNECTION_CLOSE_FAILED"
+  ],
+  "tests": {
+    "unit_and_product": {
+      "result": "PASS",
+      "pass": 255,
+      "skipped_postgresql_gate": 6,
+      "fail": 0
+    },
+    "architecture": {
+      "result": "PASS",
+      "tests": 216
+    },
+    "postgresql_dedicated": {
+      "result": "PASS",
+      "scenarios": 6,
+      "runs": 2
+    },
+    "coverage": [
+      "lazy creation",
+      "select 1 verification",
+      "pool limits and client release",
+      "authentication failure",
+      "database not found",
+      "timeout",
+      "SSL incompatibility",
+      "concurrent verify",
+      "verify-close race",
+      "concurrent and repeated close",
+      "post-close verification",
+      "nested error sanitization",
+      "close failure mapping"
+    ]
+  },
+  "postgresql": {
+    "version": "18.4",
+    "image": "postgres:18.4",
+    "image_digest": "sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+    "storage": "ephemeral tmpfs",
+    "port": "dynamic loopback",
+    "data": "synthetic only",
+    "database_objects_after_run": 0
+  },
+  "runs": {
+    "count": 2,
+    "material_comparison": "MATCH",
+    "material_sha256": "5828769bbac06526cdad20ba211b5c4a90d87faeaa2852da3b1bc8c1d494bd59",
+    "cleanup": "PASS"
+  },
+  "commands": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run architecture",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run build",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm test",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run test:architecture",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run verify",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm run smoke:start",
+      "result": "PASS"
+    },
+    {
+      "command": "node scripts/test-database-connection-postgresql.mjs --runs 2",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "hashes": {
+    "changed_files_sha256": {
+      "architecture/dec-005-policy.json": "703b89abf63517a70a555c0373345a9dbde5d504462c9b3e35147bb7a788051a",
+      "docs/architecture-readiness/dec-005-materialization/ARCHITECTURE_RULES.md": "4a142aab7607459edd25ed08afdaffa7eb389fe48066219e5c67801588e17dac",
+      "docs/architecture-readiness/dec-005-materialization/TRACEABILITY_MATRIX.md": "397088f748ee9a322e82774742cbbccd25b222b4b9ff40acedc264865a637370",
+      "docs/architecture-readiness/pbi-023/DEC_051_APPLICABILITY.md": "36f6d45a680827c5f3ee55e345b1fff34149c3bcf1fa63218120d8a33e6321cc",
+      "docs/architecture-readiness/pbi-023/IMPLEMENTATION_PLAN.md": "55c3e9274b7d4b1d554510baf946d7be6827f2df360b283d2baf90f193946d68",
+      "docs/architecture-readiness/pbi-023/PERSISTENCE_OWNERSHIP_REGISTRY.md": "8ce7e3e389aa8accb5581e867d857938de9cabe9397da17a917b94f6dcd49487",
+      "docs/architecture-readiness/pbi-023/README.md": "38c969f7a47aef56d128d54a3f15fe12925e176741c456f0315cf1e9f80f92ad",
+      "docs/architecture-readiness/pbi-023/RESULTS.md": "750a19f9c4467df5ad60495347500e18b81537e8000102539ac71c686dc6e522",
+      "docs/architecture-readiness/pbi-023/TECHNICAL_DESIGN.md": "90d0630f540f9a4847c1577bce83639b4f21589fe4569bb88287fa092238005f",
+      "docs/architecture-readiness/pbi-023/TRACEABILITY_MATRIX.md": "9da994036175efc8775aeab4638862a46c38617392ea4ce1dcd9659e8fdd0f0c",
+      "docs/architecture-readiness/pbi-023/checker-extension/FIXTURE_MATRIX.md": "de5f980fcb5f9746cf3ed188da3a867f677e571eaea3a79dcfa753d34a3e4822",
+      "docs/architecture-readiness/pbi-023/checker-extension/MUTATION_MATRIX.md": "40851e8dd5ac5c3f15bdc97bb57043259fb4a7e8948121a106a316310db46e58",
+      "docs/architecture-readiness/pbi-023/checker-extension/OWNERSHIP_ENFORCEMENT.md": "30307d05563cf622c553bc6efe43ee7c5d3db41ddbcecbb4e9f0861a982311b2",
+      "docs/architecture-readiness/pbi-023/checker-extension/RULE_MATRIX.md": "e3e49eea78cd289166ec41dfa99d620a4977d7e7ab0667efa4eb5e03c8774a9e",
+      "docs/architecture-readiness/pbi-023/connection-facility/ARCHITECTURE_ENFORCEMENT.md": "cb9d8e2bd922b3c494fa16c25f7ded4ddbf76f05bbafcda3cb7b01a2e6aeb1c8",
+      "docs/architecture-readiness/pbi-023/connection-facility/CLEANUP.md": "2fc83ebd7cb2fe1e502f4c7a1e1d2f2f4cc4b5c1325fa413f0b4cc9b2d9cb795",
+      "docs/architecture-readiness/pbi-023/connection-facility/CONCURRENCY.md": "e5121b0c5921e83206eb78a2678720f40ff09861b3f2bccd5ad27ec9de554bc6",
+      "docs/architecture-readiness/pbi-023/connection-facility/CONNECTION_CONTRACT.md": "6d5d348320ce53b4aed54fc0e9bdab23b3af6201cb80503c55e39a9d38cd09a2",
+      "docs/architecture-readiness/pbi-023/connection-facility/ERROR_MAPPING.md": "5b46278d9e8cf96df02250a14533f7e9600673250ba435a5a6b218ca78ad8b14",
+      "docs/architecture-readiness/pbi-023/connection-facility/LIFECYCLE.md": "88b73fa1f3df4fdb76074ca0862d68fb4150adfe93a191f07fc97ed8e67e6736",
+      "docs/architecture-readiness/pbi-023/connection-facility/POSTGRESQL_TEST_MATRIX.md": "87e0e530fb1a65824616c8112c5f0a3ca641e6879f309a0f6ba5972c0be4a8d2",
+      "docs/architecture-readiness/pbi-023/connection-facility/README.md": "b2428aaa080a03d0e3ec40832f5760f8777064d99c0e54a536ca36315d1139df",
+      "docs/architecture-readiness/pbi-023/connection-facility/RESULTS.md": "59ba1a8bb29370b86039ee93e4df87738046728c4ac7facd884d34b504964fef",
+      "docs/architecture-readiness/pbi-023/connection-facility/SANITIZATION.md": "74996e7f7ad6503da7a9eb5519eb96a94dfcde2c47a1eda341560abf588ea3f1",
+      "docs/architecture-readiness/pbi-023/connection-facility/TRACEABILITY_MATRIX.md": "82307993b90e9b51c353634aebf39b4c1b70d0da9a47f44c7129effee87b1bd7",
+      "docs/architecture-readiness/pbi-023/typed-configuration/ARCHITECTURE_ENFORCEMENT.md": "6f047013d76716b85cb41e0ae0ee6d4c1f2fb8db1b10757ad2074b694ef0e61e",
+      "docs/backlog/pbis/PBI-023.md": "b4fc6571502d9b9d1a0d7646a4c3801aa431dbd19914c5d8820b73eda9bd5f71",
+      "scripts/lib/architecture-checker.mjs": "c48ac84dfaf5884a42408abe3c8f87d60f2819f0add5cba455f8b7f3f6ac8025",
+      "scripts/test-database-connection-postgresql.mjs": "2611042d6ca11ec8c80488aefa4d5e1470ecbb21c33ce95553fa9b9fd5cc45d8",
+      "src/infrastructure/database/database-connection.ts": "0626af8157f65ce9159d71a5043fbfc0e39c570a64c13f17ad2f15fdcc85cf10",
+      "test/architecture-database-connection.test.mjs": "0acdbdab15a96dae3b5407bf87388c9bef1a17f5d52d483325aa2518ef2fd1e5",
+      "test/architecture-persistence-config.test.mjs": "0579fc056b934bc6d2eeab2b5770bebdd1f90572a52ca4c5c30632fa7ca8caf0",
+      "test/architecture-persistence-fixtures.mjs": "f4879a2ce2b2397b99af879d4568b437e1af886e5cb710b347627e73c349732e",
+      "test/database-connection-postgresql.test.mjs": "88428c042b11557d3747adb2165f1b0ad92198d5c3b75e726615458fe954190c",
+      "test/database-connection.test.mjs": "4e0e65561a65c82a7d60dceff3a628be1d7a953d9a0e895afe258a9e26649737"
+    },
+    "preserved_sha256": {
+      "package.json": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
+      "pnpm-lock.yaml": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
+      ".github/workflows/authoritative-linux-ci.yml": "f3d4942e9ef6dc785a5d34d280e6d1f204e889ec5d8065b1d06c9ed06dd5c790",
+      "tools/dec-004-verification/Dockerfile": "0c0fbd739d1911a9f60b5175a14d3758d7e5ed1848dd041a35b40b3cb05d2a1f",
+      "src/app.module.ts": "78aa0b2472244370e98e5ee7d6c09692d102ceaa08171db8977f8be97ea1124e",
+      "src/main.ts": "e3582af43aabf400c78f50dda40d00c82a202a8d686a950a5e441b9d753ec289",
+      "src/modules/access/access.module.ts": "0297941ad97b0d8d78429e58f6a05fe9c4cb932e1f76a8ecff3e83629924735e",
+      "src/modules/stations/stations.module.ts": "182d02b073baa31f45ef351f55b478ab794ed4f0a696ddb25ac11819d96adaa1",
+      "src/modules/tenancy/tenancy.module.ts": "dd01263007b5212bdfde60fc5d5dccb7bb67d364c046ef6438697af18c0c4dc8"
+    }
+  },
+  "cleanup": {
+    "clients_released": true,
+    "pool_closed": true,
+    "kysely_destroyed": true,
+    "containers_remaining": 0,
+    "named_volumes_remaining": 0,
+    "database_objects_created": 0
+  },
+  "sanitization": {
+    "json_stringify": "PASS",
+    "util_inspect": "PASS",
+    "nested_errors": "PASS",
+    "password": "presence-only",
+    "host_database_user": "presence-only",
+    "connection_strings": "absent from evidence",
+    "personal_paths": 0
+  },
+  "architecture_rules": {
+    "active": "D5-R037-D5-R047",
+    "adjusted": [
+      "D5-R045 exact connection consumer transition",
+      "D5-R046 owner-scoped literal select 1 probe"
+    ],
+    "fixture_total": 136,
+    "fixture_positive": 18,
+    "fixture_negative": 118,
+    "product_mutations": 34,
+    "new_weakening": false
+  },
+  "changed_surfaces": [
+    "controlled database connection facility",
+    "unit and PostgreSQL tests",
+    "D5-R045/D5-R046 exact enforcement",
+    "PBI-023 evidence and traceability"
+  ],
+  "unchanged_surfaces": [
+    "package graph and lockfile",
+    "workflow and product Dockerfile",
+    "bootstrap and AppModule",
+    "tenancy, stations and access modules",
+    "transaction runner",
+    "migrations and database schema",
+    "endpoints and business behavior"
+  ],
+  "conditions": {
+    "DEC051_C03": "Pending — PostgreSQL product CI gate not materialized",
+    "DEC055": "Pending — synthetic ephemeral credentials do not satisfy shared-environment secrets governance",
+    "next_gate": "transaction runner"
+  },
+  "final_result": "PASS — PBI-023 CONNECTION FACILITY VERIFIED"
+}

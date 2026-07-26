@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0.0",
+  "repository": "luisgtzaviles/SrTaller-2.0",
+  "branch": "r0/pbi-023-persistence-planning",
+  "commit": "2275416c92b5cb06d8182df50c3d121384ccc4db",
+  "generated_at": "2026-07-25T03:32:34Z",
+  "environment": {
+    "mechanism": "Docker",
+    "docker_version": "29.6.2",
+    "platform": "linux/amd64",
+    "node_os": "linux",
+    "node_architecture": "x64",
+    "node_glibc": "2.36",
+    "postgres_os": "linux",
+    "postgres_architecture": "x86_64",
+    "postgres_glibc": "2.41",
+    "timezone": "UTC",
+    "encoding": "UTF8",
+    "published_host_ports": 0
+  },
+  "tools": {
+    "node": "24.18.0",
+    "pnpm": "11.15.1",
+    "typescript": "6.0.3",
+    "modules": "ESM",
+    "module_resolution": "NodeNext"
+  },
+  "packages": {
+    "kysely": "0.29.4",
+    "pg": "8.22.0",
+    "@types/pg": "8.20.0"
+  },
+  "postgresql": {
+    "version": "PostgreSQL 18.4 (Debian 18.4-1.pgdg13+1)",
+    "image": "postgres:18.4",
+    "image_digest": "sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf"
+  },
+  "node_image": {
+    "image": "node:24.18.0-bookworm-slim",
+    "image_digest": "sha256:d45d78e7929b46875bbd4e29bea672d5bc48186c6c3588306521c815e78352d6"
+  },
+  "experiments": [
+    {"id": "E1", "status": "PASS"},
+    {"id": "E2", "status": "PASS"},
+    {"id": "E3", "status": "PASS"},
+    {"id": "E4", "status": "PASS"},
+    {"id": "E5", "status": "PASS"},
+    {"id": "E6", "status": "PASS"},
+    {"id": "E7", "status": "PASS"},
+    {"id": "E8", "status": "PASS"},
+    {"id": "E9", "status": "PASS"},
+    {"id": "E10", "status": "PASS"},
+    {"id": "E11", "status": "PASS"},
+    {"id": "E12", "status": "PASS"}
+  ],
+  "runs": [
+    {
+      "id": "run-1",
+      "generated_at": "2026-07-25T03:30:16.658Z",
+      "duration_ms": 3009,
+      "container_id": "6b293c52e75c",
+      "exit_code": 0,
+      "result": "PASS",
+      "cleanup": "PASS"
+    },
+    {
+      "id": "run-2",
+      "generated_at": "2026-07-25T03:30:50.136Z",
+      "duration_ms": 2969,
+      "container_id": "c1017a01f719",
+      "exit_code": 0,
+      "result": "PASS",
+      "cleanup": "PASS"
+    }
+  ],
+  "artifacts": {
+    "retained": [
+      "README.md",
+      "RUN_1.md",
+      "RUN_2.md",
+      "COMPARISON.md",
+      "RESULTS.md",
+      "ENVIRONMENT.md",
+      "EXPERIMENT_MATRIX.md",
+      "CLEANUP.md",
+      "EVIDENCE_MANIFEST.json",
+      "TRACEABILITY_MATRIX.md"
+    ],
+    "experimental_runtime_retained": false,
+    "raw_logs_retained": false
+  },
+  "hashes_sha256": {
+    "experimental_package_json": "d321ed54534a7438a9f941481f1c7808948fdbfc1a531337e3dd9d082ed69319",
+    "experimental_pnpm_lock": "6ce2cb3b69d4b9a8b9c7ed057f9deafe255ae8fc5e0029d22a90a12f82748ebe",
+    "experimental_tsconfig": "ca1bbb17528d1545000eeb0dacfbc4b5a9530778a3620cbdb62c0fea118d16e0",
+    "experimental_runner": "d39d285cd1d4311494e4ac32b5af90b3ba397ae148cb86d4f7d46ed9d7a308f5",
+    "experimental_source_aggregate": "4d058dedfb6f2ce059b6f709e551e0524b6c66285047af5cca1f4949a01738c5",
+    "source_and_build_manifest": "3db9881017d66fd9139b2d69a5cdd4c24fd13abe8980d9dd9595b684375abab9",
+    "run_1_result": "75c4dd48232a0b5ff1c1a548d0bfcf871289e85319fdc931bb4f68a19874cbc6",
+    "run_2_result": "bae2bff4b442a5d38ce13ecd32727c0d4ebe5536c8f89543adb122f4b3cfd1f1",
+    "normalized_result_both_runs": "4363eaabb0dc994d33061f2abf2f6a861e94b2176c35eb50880e2ad01f246685",
+    "normalized_cleanup_both_runs": "a29dc59f5a095b6892d4e23485db3ca80fbe2cb33742f1bebb0eed4be8cb0660",
+    "comparison_json": "89e707faf28bc9b548d19a09f5fbfc8167012df2bd9f415c0156f9143ccb482c"
+  },
+  "repository_baseline_hashes_sha256": {
+    "src_aggregate": "ca7389a34fb4fb5453144b527ac30b9b102b98999b4ad750336b714aab0912aa",
+    "package_json": "b14a00abe9b2473613fd973d4499d853ea3a6fe4a5f5e624093f462e6199e469",
+    "pnpm_lock_yaml": "23e1b39512d68743799bb4a8cc061d61d8b23ae714c238897b1046edc6543552",
+    "workflows_aggregate": "d95706916c4a9a044cbf59cc0873d056754e13ae98d8e27f623b52ecd1715dbf",
+    "scripts_aggregate": "ed267f7b628d22a9454c732cc81be60c592183ea2b2de5463525ee1ba6d85b2f",
+    "tests_aggregate": "c95b5c75b121bbf5c1dc3d2b2c56af7c3e9c0c926b020dc4be95b7b3a5f11046",
+    "tsconfig_json": "b22200b66309587ea098579124484675058e1630fea470e002d904f1330b2571",
+    "tsconfig_build_json": "d4d3174e3360e72577f975e263349d9afb76b39d929454fd7b2dd3dafd934bc3",
+    "dockerfiles_aggregate": "d74e27ee9023513b8cfd79c5eab184b55e69f59b1c028acb964f965b8cd80d0d"
+  },
+  "cleanup": {
+    "run_1": {
+      "containers": 0,
+      "volumes": 0,
+      "networks": 0,
+      "published_ports": 0,
+      "runtime_env_removed": true,
+      "run_directory_removed": true
+    },
+    "run_2": {
+      "containers": 0,
+      "volumes": 0,
+      "networks": 0,
+      "published_ports": 0,
+      "runtime_env_removed": true,
+      "run_directory_removed": true
+    }
+  },
+  "sanitization": {
+    "actual_credential_occurrences": 0,
+    "personal_path_occurrences": 0,
+    "connection_strings_retained": false,
+    "raw_environment_retained": false,
+    "status": "PASS"
+  },
+  "comparison": {
+    "material_equivalence": true,
+    "artifact_hashes_equal": true,
+    "cleanup_equal": true,
+    "result": "PASS"
+  },
+  "repository_technical_baseline_unchanged": true,
+  "result": "PASS — SPIKE-002 MATERIAL VERIFICATION COMPLETE"
+}

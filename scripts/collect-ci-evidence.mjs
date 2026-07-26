@@ -21,10 +21,12 @@ const executionLabel =
   process.env.VC024_EXECUTION_LABEL ?? argument('--execution-label');
 const workflowRunId =
   process.env.GITHUB_RUN_ID ?? argument('--workflow-run-id');
+const postgresqlInput = argument('--postgresql-input');
 
 const manifest = await collectEvidenceManifest({
   executionLabel,
   initialClean: process.env.VC024_INITIAL_CLEAN === 'true',
+  postgresqlInput,
   workflowRunId,
 });
 const distManifest = await inspectDist();

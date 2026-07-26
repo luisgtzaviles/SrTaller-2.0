@@ -25,15 +25,16 @@ aceptadas el 2026-07-24. VC-024 satisface DEC051-C01/C07/C09 y
 DEC063-C01/C03/C04; las demás condiciones permanecen pendientes. H0 queda
 completo en 9/0. La
 [revisión final](../R0_AUTHORIZATION.md) hizo efectiva B-21 para PBI-023. Su
-ejecución continúa bloqueada por su estimación/compromiso y por los contratos
-H1/gates internos aplicables. R1 añade decisiones
+ejecución no ha iniciado; SPIKE-002 obtuvo `PASS` material y el siguiente gate
+es checker/boundaries. Los contratos H1/gates internos siguen aplicando. R1
+añade decisiones
 de folio, recepción, custodia, política, tiempo, evidencia e identificación
 física.
 
 | Declaración | Estado actual | Evidencia faltante principal |
 | --- | --- | --- |
 | R0 listo para diseñar | Sí, con alcance y contrato de salida aprobados | Cerrar diseño técnico pendiente sin convertir propuestas en implementación |
-| PBI-023 listo para programar | Sí, tras estimación/compromiso y en orden fail-closed | Gates internos DEC-050/SPIKE-002/DEC-051/063 |
+| PBI-023 listo para programar | `Ready`; SPIKE-002 material PASS, sin implementación iniciada | Siguiente gate checker/boundaries y condiciones DEC-049/050/051/063 |
 | R0 completo listo para programar | No | H1 restante y autorización de cada PBI |
 | R1 listo para diseñar | Parcialmente | Cerrar preguntas de producto de recepción y folio |
 | R1 listo para programar | No | R0 demostrado y H2 cerrado |

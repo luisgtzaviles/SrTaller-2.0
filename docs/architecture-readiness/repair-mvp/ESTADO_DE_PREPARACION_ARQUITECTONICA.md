@@ -33,8 +33,8 @@ pendientes.
 | Configuración | Necesidad de políticas versionadas identificada | Precedencia y alcance pendientes | PB |
 | Integraciones | Puertos y anticorrupción conceptuales | Proveedores diferibles | DD |
 | Riesgos | Riesgos de aislamiento, concurrencia y custodia identificados | Gestionables con criterios de paso | R |
-| ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004/VC-024 `Closed / PASS`; DEC-005 materializada y formalmente verificada; DEC-044/049/051/063 aceptadas; ADR-006 a ADR-008 siguen propuestos | Plataforma, organización, errores, persistencia, pruebas y DoD están aceptadas; H0 está completo; condiciones restantes y H1 siguen bloqueando código funcional | PB |
-| Autorización | Sprint 00 `Closed`; B-21 efectiva dentro de la autorización limitada | PBI-023 `Ready / Authorized to start`; otros PBIs no autorizados | PB |
+| ADRs | ADR-001 a ADR-005 y ADR-009 a ADR-013 aceptados; DEC-004/VC-024 `Closed / PASS`; DEC-005 materializada; DEC-044/049/051/063 aceptadas; DEC-050 aceptada con condiciones | Plataforma, organización, errores, persistencia, migraciones, pruebas y DoD tienen contrato; materialización H1 pendiente | PB |
+| Autorización | Sprint 00 `Closed`; B-21 efectiva dentro de la autorización limitada | PBI-023 `Ready` tras SPIKE-002 material PASS; otros PBIs no autorizados | PB |
 
 ## Qué sí puede comenzar
 
@@ -47,8 +47,8 @@ pendientes.
 
 ## Qué no puede comenzar
 
-- **[RP]** Implementación fuera de PBI-023 o antes de sus gates internos,
-  estimación y compromiso.
+- **[RP]** Implementación fuera de PBI-023 o antes de cerrar sus gates internos;
+  SPIKE-002 ya está cerrado.
 - **[R]** Persistencia multitenant antes de aplicar y probar el contexto e identidad/sesión aceptados, el alcance técnico y el aislamiento.
 - **[R]** Flujos sensibles antes de clasificar la acción y aplicar/probar el control, atribución y evidencia de ADR-013.
 - **[ADR]** Introducir frameworks, workspaces, gestores, orquestación o despliegue fuera de las decisiones aceptadas. DEC-004 fija pnpm y el lockfile sin autorizar workspaces; ADR-009 gobierna repositorio/workspaces, ADR-001 lenguaje/runtime y ADR-003 el motor.
@@ -57,5 +57,6 @@ pendientes.
 
 El estado sólo puede cambiar a **Preparado para una primera rebanada vertical**
 después de implementar, demostrar y aceptar formalmente R0. La
-[autorización vigente](../R0_AUTHORIZATION.md) permite comenzar PBI-023, pero
-no equivale a esa aceptación ni abre R1.
+[autorización vigente](../R0_AUTHORIZATION.md) conserva el alcance de PBI-023,
+y el `PASS` de SPIKE-002 habilita evaluar el checker/boundaries; no equivale a
+aceptación de R0 ni abre R1.
