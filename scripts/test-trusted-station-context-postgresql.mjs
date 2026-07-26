@@ -195,7 +195,7 @@ const runs = [];
 for (let index = 0; index < requestedRuns; index += 1) {
   runs.push(await runOnce());
 }
-const baseline = JSON.stringify({
+const material = JSON.stringify({
   ...runs[0],
   materialSha256: '<environment-specific-schema-hash>',
 });
@@ -204,9 +204,25 @@ for (const run of runs.slice(1)) {
     JSON.stringify({
       ...run,
       materialSha256: '<environment-specific-schema-hash>',
-    }) !== baseline
+    }) !== material
   ) {
     throw new Error('station PostgreSQL runs are not semantically equivalent');
   }
 }
-process.stdout.write(`${JSON.stringify(runs.at(-1))}\n`);
+process.stdout.write(
+  `${JSON.stringify(
+    {
+      cleanup: 'PASS',
+      imageDigest,
+      materialComparison: 'MATCH',
+      materialSha256: createHash('sha256').update(material).digest('hex'),
+      node: '24.18.0',
+      postgres: '18.4',
+      runs: requestedRuns,
+      status: 'PASS',
+      suite: runs[0],
+    },
+    null,
+    2,
+  )}\n`,
+);
