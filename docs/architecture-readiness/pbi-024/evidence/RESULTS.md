@@ -16,10 +16,19 @@
 - expansión de alcance: ausente;
 - secretos: ausentes.
 
-## Dictamen provisional
+## Evidencia remota
 
-`LOCAL PASS — REMOTE CI AND INDEPENDENT REVIEW PENDING`.
+- SHA: `3b7a852873147377b9552464dc9df3da2737f4fa`;
+- CI push: `30224399646`;
+- run-1/run-2/comparison: `SUCCESS`;
+- artifacts: descargados, JSON válidos y hashes registrados;
+- PR: #3, `OPEN` y `Draft`;
+- merge: no realizado;
+- DEC-051 C02: `Pending`.
 
-El PASS formal de PBI-024 sólo puede emitirse después de publicar el SHA,
-obtener run-1/run-2/comparison Linux verdes, validar artifacts, abrir el PR
-Draft y confirmar que DEC-051 C02 continúa `Pending`.
+## Dictamen
+
+`PASS — PBI-024 IMPLEMENTATION COMPLETE / FORMAL REVIEW READY`.
+
+La revisión formal independiente permanece pendiente y no se ejecuta dentro
+de esta implementación.

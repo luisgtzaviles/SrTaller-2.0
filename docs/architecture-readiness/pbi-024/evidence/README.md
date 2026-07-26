@@ -15,7 +15,9 @@ PostgreSQL 18.4.
 
 - implementación y validación local: `PASS`;
 - runner PostgreSQL local 1/2: `PASS`;
-- evidencia Linux remota: pendiente hasta el push;
+- evidencia Linux remota: `PASS`, run
+  [30224399646](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30224399646);
+- PR: [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3);
 - revisión formal independiente: pendiente;
 - DEC-051 C02: `Pending`;
 - merge funcional: prohibido.

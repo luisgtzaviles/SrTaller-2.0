@@ -5,7 +5,7 @@
 - **Resultado del refinamiento:** `PASS — PBI-024 REFINED AND READY FOR FORMAL REVIEW`.
 - **Resultado de remediación:** `PASS — PBI-024 FORMAL REVIEW REMEDIATIONS COMPLETE`.
 - **Revisión independiente:** `PASS — PBI-024 IMPLEMENTATION AUTHORIZED`.
-- **Estado de PBI-024:** `Authorized — implementation may begin; functional
+- **Estado de PBI-024:** `In review — implementation complete; functional
   merge blocked by DEC-051 C02`.
 - **Fecha:** 2026-07-26.
 - **Riesgo:** alto, fail-closed.
@@ -14,7 +14,12 @@
 - **SHA de diseño autorizado:**
   `5b3ba7fdd27fb135cfe9d559694384a396515922`.
 - **Autorización de implementación:** [emitida](IMPLEMENTATION_AUTHORIZATION.md).
-- **Implementación:** no iniciada.
+- **Implementación:** completa y validada en
+  `3b7a852873147377b9552464dc9df3da2737f4fa`.
+- **PR:** [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3).
+- **CI:** [push 30224399646](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30224399646),
+  run-1/run-2/comparison `SUCCESS`.
+- **Evidencia material:** [expediente](evidence/README.md).
 - **DEC051-C02:** canónicamente `Pending`, materialmente
   `Partially satisfied`; el primer merge funcional sigue bloqueado.
 
@@ -128,6 +133,6 @@ La distinción normativa es:
 
 ## Siguiente acción
 
-**Crear la rama funcional `r0/pbi-024-trusted-station-context` desde el commit
-documental de autorización e iniciar exclusivamente la implementación
-aprobada.**
+**Ejecutar una revisión formal independiente de la implementación de PBI-024
+y de su evidencia, manteniendo el PR en Draft y prohibido cualquier merge
+funcional mientras DEC-051 C02 permanezca Pending.**

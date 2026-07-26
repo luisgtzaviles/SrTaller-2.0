@@ -23,5 +23,7 @@ tests, 0 fallos y 0 skips críticos cada una. Cubrieron:
 - rollback y atomicidad del efecto;
 - cleanup completo.
 
-La evidencia autoritativa Linux se añadirá desde GitHub Actions sobre el SHA
-publicado.
+La ejecución Linux autoritativa `30224399646` pasó sobre
+`3b7a852873147377b9552464dc9df3da2737f4fa`: run-1 y run-2 ejecutaron el
+mismo inventario, y sus manifests PostgreSQL comparten
+`16cfb89dd2b603a95f53683e9314c0fa4de835ff20330d6eef23f85c93ecfaa6`.

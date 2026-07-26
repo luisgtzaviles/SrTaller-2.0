@@ -4,20 +4,20 @@
 
 - tipo: PBI técnico, persistencia, seguridad y contexto;
 - riesgo: **alto**, por el mayor riesgo aplicable;
-- estado de esta entrega: refinamiento documental;
-- estado futuro máximo sin revisión: ninguno; no existe autorización
-  implícita.
+- estado de esta entrega: implementación completa, en revisión;
+- estado máximo sin revisión independiente: `In review`; no existe
+  autorización implícita de merge.
 
 ## Condiciones
 
 | Condición | Aplicabilidad | Estado | Tratamiento |
 | --- | --- | --- | --- |
 | C01 — templates | satisfecha históricamente | `Satisfied` | se usa base + tipo/riesgo |
-| C02 — clasificación fail-closed | directa | `Pending`; expediente listo para ratificación | [RISK_ASSESSMENT.md](RISK_ASSESSMENT.md) |
+| C02 — clasificación fail-closed | directa | PASS material para PBI-024; riesgo alto preservado | [RISK_ASSESSMENT.md](RISK_ASSESSMENT.md) |
 | C03 — manifest | satisfecha históricamente | `Satisfied` | formato esperado definido |
 | C04 — DoD/CI | satisfecha históricamente | `Satisfied` | no se reduce pipeline |
-| C05 — persistencia/migración | directa | `Pending` | checklist futuro completo |
-| C06 — seguridad | directa | `Pending` | checklist futuro completo |
+| C05 — persistencia/migración | directa | PASS material; revisión independiente pendiente | [evidencia](evidence/README.md) |
+| C06 — seguridad | directa | PASS material; revisión independiente pendiente | [checklist](evidence/SECURITY_CHECKLIST.md) |
 | C07 — release/hotfix | no activada | `Pending` | no release/deploy |
 | C08 — waiver | no activada | `Pending` | no existe excepción |
 
@@ -60,31 +60,31 @@ Operaciones y Calidad. Un revisor independiente debe emitir el dictamen final.
 
 Antes de considerar el trabajo `Done`:
 
-- [ ] owner/scope/registry actualizados;
-- [ ] migration ID/orden/manifest;
-- [ ] `up`, `down` o recovery;
-- [ ] PostgreSQL 18.4;
-- [ ] FK/unique/check/nullability;
-- [ ] binding único e historia;
-- [ ] rollback/same connection;
-- [ ] CAS y concurrencia;
-- [ ] error translation;
-- [ ] cleanup;
+- [x] owner/scope/registry actualizados;
+- [x] migration ID/orden/manifest;
+- [x] `up`, `down` o recovery;
+- [x] PostgreSQL 18.4;
+- [x] FK/unique/check/nullability;
+- [x] binding único e historia;
+- [x] rollback/same connection;
+- [x] CAS y concurrencia;
+- [x] error translation;
+- [x] cleanup;
 - [ ] revisión Ingeniería/Operaciones.
 
 ## C06 — seguridad
 
-- [ ] threat boundary y evidence source;
-- [ ] server-side only;
-- [ ] fail-closed;
-- [ ] AD-01–AD-20 y subcasos inequívocos;
-- [ ] no cross-tenant/cross-branch;
-- [ ] anti-enumeración;
-- [ ] no credential/secret/PII/SQL;
-- [ ] mínimo privilegio y cero administración pública;
-- [ ] 25 mutaciones críticas;
+- [x] threat boundary y evidence source;
+- [x] server-side only;
+- [x] fail-closed;
+- [x] AD-01–AD-20 y subcasos inequívocos;
+- [x] no cross-tenant/cross-branch;
+- [x] anti-enumeración;
+- [x] no credential/secret/PII/SQL;
+- [x] mínimo privilegio y cero administración pública;
+- [x] 25 mutaciones críticas;
 - [ ] revisión Seguridad/Calidad;
-- [ ] riesgo residual.
+- [x] riesgo residual documentado.
 
 ## N/A justificados
 

@@ -4,11 +4,14 @@
   "contract": "PBI-024/TRUSTED-STATION-CONTEXT",
   "branch": "r0/pbi-024-trusted-station-context",
   "baseCommit": "6c71a3ce5c20049727854ea6aa7629aa0db76f91",
-  "implementationCommit": "cef3d5fbd617b76028b3854f3f9d08432e470fcf",
-  "pullRequest": null,
+  "implementationCommit": "3b7a852873147377b9552464dc9df3da2737f4fa",
+  "pullRequest": 3,
   "recordedAtUtc": "2026-07-26T22:50:18Z",
   "responsibleRole": "Arquitectura e Ingenieria",
   "environment": {
+    "authoritativeOs": "linux",
+    "authoritativeArch": "x64",
+    "authoritativeLibc": "glibc 2.39",
     "localOs": "darwin",
     "localArch": "arm64",
     "postgresContainerOs": "linux",
@@ -84,12 +87,39 @@
     "skipped": 0
   },
   "cleanup": "PASS",
-  "remoteArtifacts": [],
+  "remote": {
+    "workflowRunId": 30224399646,
+    "jobs": {
+      "run1": 89852148911,
+      "run2": 89852148941,
+      "comparison": 89852924840
+    },
+    "headSha": "3b7a852873147377b9552464dc9df3da2737f4fa",
+    "result": "PASS",
+    "equivalent": true
+  },
+  "remoteArtifacts": [
+    {
+      "id": 8638222362,
+      "name": "vc024-run-1",
+      "evidenceSha256": "33bf0e0d2c07bac5ec4d163086984a6c7c6c1b12439cc0e7a88a20f96bdd02b4"
+    },
+    {
+      "id": 8638206533,
+      "name": "vc024-run-2",
+      "evidenceSha256": "d50fe12e1f66563f9e0c9512898869d344d7b1db01efe116185b120e5658ff67"
+    },
+    {
+      "id": 8638224226,
+      "name": "vc024-comparison",
+      "sha256": "91674a7bf384e7c6cffdf9387a785a793c35166a9fb668b8aa7b3f3fb7353aa5"
+    }
+  ],
   "review": {
-    "implementation": "LOCAL_PASS",
+    "implementation": "PASS_FORMAL_REVIEW_READY",
     "independent": "PENDING",
     "dec051C02": "Pending",
     "merge": "BLOCKED"
   },
-  "verdict": "LOCAL_PASS_REMOTE_CI_PENDING"
+  "verdict": "PASS — PBI-024 IMPLEMENTATION COMPLETE / FORMAL REVIEW READY"
 }

@@ -6,7 +6,7 @@
 - C01/C07/C09: `Satisfied` por la evidencia autoritativa previa.
 - C02: canónicamente `Pending — external platform enforcement unavailable`;
   materialmente `Partially satisfied`.
-- Tratamiento temporal: permite refinamiento/revisión, no implementación o
+- La autorización independiente permitió implementación en rama; no permite
   merge.
 - PBI-024: riesgo alto por contexto, station y persistencia.
 
@@ -17,9 +17,9 @@
 | C01 | primer merge funcional | directa | baseline disponible; re-run requerido | workflow y jobs del SHA |
 | C02 | antes del primer merge funcional | directa/bloqueante | `Pending` | protección efectiva + prueba de rechazo, o decisión formal separada |
 | C03 | persistencia | directa | baseline PBI-023 disponible; reejecución requerida | PostgreSQL 18.4, lifecycle, cleanup |
-| C04 | contexto/persistencia/acceso | directa | `Pending` | AD-01–AD-20 con subcasos, dos tenants, mutaciones |
+| C04 | contexto/persistencia/acceso | directa | PASS material para PBI-024 | AD-01–AD-20 con subcasos, dos tenants, mutaciones |
 | C05 | primera API funcional | parcial | no se cierra; PBI-024 no crea API | mapping interno y sanitización solamente |
-| C06 | persistencia funcional | directa | `Pending` | ownership, transaction, constraints, rollback |
+| C06 | persistencia funcional | directa | PASS material para PBI-024 | ownership, transaction, constraints, rollback |
 | C07 | VC-024 | no reabre | `Satisfied` histórico | preservar pipeline |
 | C08 | primera cuarentena/retry diagnóstico | no activada | `Pending` | sólo si existe cuarentena |
 | C09 | cambio checker/regla | directa si se modifica | `Satisfied` histórico + evidencia nueva | valid/negative/mutation/double run |
@@ -78,7 +78,7 @@ Aplica a:
 
 ## CI requerido
 
-`run-1` y `run-2` deben ejecutar desde checkout limpio:
+`run-1` y `run-2` ejecutaron desde checkout limpio:
 
 - frozen install;
 - architecture;
@@ -90,12 +90,12 @@ Aplica a:
 - cleanup;
 - manifest/artifacts.
 
-`comparison` debe demostrar igualdad semántica. No hay retry para fabricar
-verde ni skips críticos.
+`comparison` demostró igualdad semántica en run `30224399646`. No hubo retry
+interno para fabricar verde ni skips críticos.
 
 ## Dictamen de aplicabilidad
 
-El diseño hace C04/C06 ejecutables y preserva C02. No marca ninguna condición
-como satisfecha por documentación. La revisión independiente debe verificar
-estos gates antes de autorizar implementación; el cierre material ocurre sólo
-con evidencia del SHA implementado.
+La implementación aportó evidencia material para C04/C06 y preserva C02
+canónicamente `Pending`. La siguiente revisión independiente debe validar el
+SHA, artifacts y expediente; no puede autorizar merge mientras C02 siga
+pendiente.
