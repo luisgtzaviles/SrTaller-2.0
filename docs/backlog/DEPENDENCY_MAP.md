@@ -56,10 +56,10 @@ flowchart TD
     MOD --> D5E[DEC005-C01 a C05<br/>PASS formal]
     D5E --> DEC049[DEC-049 Accepted<br/>C01-C08 vigentes]
     MOD -. no resuelve preguntas propias .-> DEC049
-    VC --> P23[PBI-023 persistencia tenant<br/>Ready / tenant schema PASS]
+    VC --> P23[PBI-023 persistencia tenant<br/>Closed]
     DEC049 --> P23
     DEC050[DEC-050 Accepted with conditions<br/>C01-C10 pending] --> P23
-    P23 --> P24[PBI-024 contexto<br/>Draft]
+    P23 --> P24[PBI-024 contexto<br/>Authorized / merge blocked]
     P24 --> P25[PBI-025 identidad/sesión<br/>Blocked]
     P25 --> P26[PBI-026 autorización<br/>Draft]
     P24 --> P28[PBI-028 señales/auditoría<br/>Draft]
@@ -94,12 +94,12 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - [DEC-063](../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) fue
   aceptada el 2026-07-24 con base común más checklists por tipo/riesgo.
   VC-024 satisfizo C01/C03/C04; C02/C05–C08 permanecen `Pending`.
-- [PBI-023](pbis/PBI-023.md) incluye sus decisiones y condiciones materiales
-  pendientes dentro del propio alcance. Conserva autorización limitada y está
-  `Ready` después del tenant schema `PASS`; aún no implementa funcionalidad,
-  repositories ni adapters.
-- PBI-024–PBI-029 descomponen los 24 contratos H1; sus estados `Draft` o
-  `Blocked` impiden tratarlos como compromiso o autorización.
+- [PBI-023](pbis/PBI-023.md) cerró su alcance y fue integrado con evidencia
+  post-merge.
+- [PBI-024](pbis/PBI-024.md) está autorizado para implementación en rama, con
+  el primer merge funcional bloqueado por DEC051-C02.
+- PBI-025–PBI-029 descomponen el resto de los 24 contratos H1; sus estados
+  `Draft` o `Blocked` impiden tratarlos como compromiso o autorización.
 
 ## Bloqueos conocidos
 
@@ -110,10 +110,10 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - PBI-021 está `Done` y `Unassigned`; VC-024 está `Closed / PASS`.
 - PBI-022 está `Done` y `Unassigned`; DEC005-C01 a C05 tienen `PASS` formal en la sexta reverificación independiente.
 - PBI-025 y PBI-027 están bloqueados por decisiones de mecanismo/producto.
-- PBI-023 cerró la primera migración productiva; su siguiente gate son ports y
-  adapters owner-scoped.
-  Los demás
-  PBIs H1 requieren revisión y autorización propias.
+- PBI-023 está cerrado.
+- PBI-024 puede implementarse sólo en la rama autorizada y no puede integrarse
+  mientras DEC051-C02 siga `Pending`.
+- Los demás PBIs H1 requieren revisión y autorización propias.
 
 ## Preguntas abiertas
 
@@ -124,4 +124,4 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 
 ## Próxima revisión
 
-Autorización y evidencia del Paso 10 owner-scoped adapters de PBI-023.
+Implementación y evidencia de PBI-024 en su rama funcional autorizada.

@@ -128,10 +128,10 @@ auditoría inicial, la remediación y el dictamen final:
 
 Los archivos individuales PBI-001 a PBI-029 se encuentran enlazados desde el
 [índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
-PBI-023 es el primer PBI de R0, conserva autorización limitada y tiene
-planificación completa. SPIKE-002 obtuvo `PASS` material y PBI-023 está
-`Ready`, sin iniciar implementación. La autorización no alcanza PBI-024–PBI-029
-ni modifica retrospectivamente Sprint 00.
+PBI-023 está `Closed`. PBI-024 está autorizado para implementación en rama,
+sin estar `In progress`, y su merge funcional permanece bloqueado por
+DEC051-C02. La autorización no alcanza PBI-025–PBI-029 ni modifica
+retrospectivamente Sprint 00.
 
 ## Calidad
 

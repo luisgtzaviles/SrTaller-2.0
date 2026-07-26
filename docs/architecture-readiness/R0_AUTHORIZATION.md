@@ -65,7 +65,9 @@ Los 24 contratos exactos permanecen abiertos y asignados:
 
 Se permite resolver contratos aplicables de forma incremental dentro del PBI
 autorizado y antes de su trigger irreversible. Agruparlos no los acepta ni los
-marca satisfechos. PBI-024–PBI-029 no quedan autorizados.
+marca satisfechos. Al emitir la autorización original, PBI-024–PBI-029 no
+quedaron autorizados; la ampliación posterior y limitada para PBI-024 se
+registra en la sección 17.
 
 ## 8. PBI-023
 
@@ -107,12 +109,14 @@ protección efectiva de `main`, checks/aprobación obligatorios y una prueba de
 rechazo. Esta actualización no amplía R0 ni autoriza PBI-024, release o
 deploy.
 
-**Actualización de gobierno 2026-07-26:** el
+**Actualización de gobierno previa al dictamen de PBI-024 — 2026-07-26:** el
 [tratamiento temporal de DEC051-C02](pbi-024/DEC_051_C02_TEMPORARY_TREATMENT.md)
 autoriza exclusivamente refinar y revisar formalmente PBI-024. C02 permanece
 `Pending — external platform enforcement unavailable`, el primer merge
 funcional sigue bloqueado y PBI-024 no queda autorizado para implementación,
-rama, commits o PR funcionales.
+rama, commits o PR funcionales. Este snapshot fue supersedido para trabajo en
+rama por la autorización separada de la sección 17, sin modificar C02 ni el
+bloqueo de merge.
 
 ## 9. Definition of Ready
 
@@ -222,23 +226,44 @@ equivale a aceptación de la implementación futura.
 `Authorized`.
 
 PBI-023 ejerció la autorización limitada y está `Closed`. H1 continúa abierto;
-PBI-024–PBI-029 no están autorizados. R0 aún debe completar los demás alcances,
-demostrarse y recibir aceptación formal.
+PBI-024 está autorizado exclusivamente para implementación en rama conforme a
+su expediente. PBI-025–PBI-029 no están autorizados. R0 aún debe completar los
+demás alcances, demostrarse y recibir aceptación formal.
 
-PBI-024 permanece
-`Draft — refinement authorized; implementation not authorized`. Este estado
-habilita preparación documental y revisión formal, no amplía la autorización
-de ejecución de R0.
+PBI-024 queda
+`Authorized — implementation may begin; functional merge blocked by DEC-051
+C02`. No está `In progress`: al registrar este estado no existe código de
+PBI-024. La ampliación no permite merge funcional, push funcional directo a
+`main`, PBI-025–PBI-029, R1, release, deploy o producción.
 
 ## 16. Siguiente acción
 
-Resolver el mecanismo de protección obligatoria de `main` y diseñar una prueba
-de rechazo verificable para completar DEC051-C02. Esta acción no autoriza
-PBI-024, release, deploy ni aceptación de R0.
+Crear `r0/pbi-024-trusted-station-context` desde el commit documental de
+autorización e iniciar exclusivamente PBI-024. En paralelo, la deuda externa
+de DEC051-C02 sigue exigiendo protección obligatoria de `main` y una prueba de
+rechazo antes de cualquier merge funcional.
 
-El
-[tratamiento temporal](pbi-024/DEC_051_C02_TEMPORARY_TREATMENT.md)
-conserva esa obligación antes del primer merge funcional y fija como siguiente
-acción operativa: refinar PBI-024, completar sus gates y someterlo a revisión
-formal para decidir su autorización de implementación. No se autoriza ejecutar
-ese PBI dentro de esta decisión.
+## 17. Ampliación limitada para PBI-024
+
+**Fecha:** 2026-07-26.
+
+La revisión independiente del diseño en
+`5b3ba7fdd27fb135cfe9d559694384a396515922` emitió:
+
+**PASS — PBI-024 IMPLEMENTATION AUTHORIZED**
+
+La
+[autorización específica](pbi-024/IMPLEMENTATION_AUTHORIZATION.md)
+amplía R0 únicamente para:
+
+- crear la rama funcional desde el commit documental de autorización;
+- implementar el alcance cerrado de PBI-024;
+- crear commits y hacer push normal en esa rama;
+- ejecutar CI, producir evidencia y abrir posteriormente un PR Draft.
+
+DEC051-C02 permanece `Pending — external platform enforcement unavailable` y
+materialmente `Partially satisfied`. `main` no tiene protección efectiva
+demostrada ni prueba de rechazo. Por tanto, el primer merge funcional posterior
+a PBI-023 sigue bloqueado hasta satisfacer C02 o modificar formalmente
+DEC-051. Esta ampliación no autoriza PBI-025–PBI-029, R1, Reparaciones, release,
+deploy o producción.

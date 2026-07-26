@@ -1,15 +1,20 @@
-# PBI-024 — Expediente de refinamiento
+# PBI-024 — Expediente de refinamiento y autorización
 
 ## Estado
 
 - **Resultado del refinamiento:** `PASS — PBI-024 REFINED AND READY FOR FORMAL REVIEW`.
 - **Resultado de remediación:** `PASS — PBI-024 FORMAL REVIEW REMEDIATIONS COMPLETE`.
-- **Estado de PBI-024:** `Ready for formal review — implementation not authorized`.
+- **Revisión independiente:** `PASS — PBI-024 IMPLEMENTATION AUTHORIZED`.
+- **Estado de PBI-024:** `Authorized — implementation may begin; functional
+  merge blocked by DEC-051 C02`.
 - **Fecha:** 2026-07-26.
 - **Riesgo:** alto, fail-closed.
 - **Estimación:** `L`.
 - **Cambio técnico:** ninguno.
-- **Autorización de implementación:** no emitida.
+- **SHA de diseño autorizado:**
+  `5b3ba7fdd27fb135cfe9d559694384a396515922`.
+- **Autorización de implementación:** [emitida](IMPLEMENTATION_AUTHORIZATION.md).
+- **Implementación:** no iniciada.
 - **DEC051-C02:** canónicamente `Pending`, materialmente
   `Partially satisfied`; el primer merge funcional sigue bloqueado.
 
@@ -17,8 +22,9 @@
 
 Cerrar el diseño y la planificación de la menor fundación que permita resolver
 tenant, sucursal y estación desde evidencia verificada por el servidor. El
-expediente no crea código, schema, migraciones, dependencias, rama funcional ni
-autorización.
+refinamiento no creó código, schema, migraciones, dependencias ni rama
+funcional. La autorización posterior permite crear la rama e implementar el
+alcance aprobado, pero no permite merge funcional.
 
 ## Decisiones de diseño cerradas
 
@@ -43,11 +49,12 @@ autorización.
 10. El mecanismo criptográfico de reconocimiento se consume por puerto y queda
     para PBI-029; no es un fallback a un ID cliente.
 
-Las decisiones técnicas internas señaladas por la revisión independiente
-quedan cerradas documentalmente por esta remediación. Esto no equivale a
-aprobación: los vistos buenos y condiciones de materialización listados en
-[FORMAL_REVIEW_READINESS.md](FORMAL_REVIEW_READINESS.md) siguen siendo gates y
-la revisión formal independiente debe repetirse sobre el nuevo SHA.
+Las decisiones técnicas internas señaladas por la primera revisión
+independiente quedaron cerradas documentalmente por la remediación. Esa
+remediación no se autoaprobó: una segunda revisión independiente inspeccionó
+el SHA remediado y emitió el PASS registrado en
+[IMPLEMENTATION_AUTHORIZATION.md](IMPLEMENTATION_AUTHORIZATION.md). Los gates
+de materialización continúan vigentes.
 
 ## Reconciliación con PBI-023
 
@@ -100,6 +107,7 @@ La distinción normativa es:
 | [DEC_063_APPLICABILITY.md](DEC_063_APPLICABILITY.md) | DoR/DoD por riesgo |
 | [FORMAL_REVIEW_READINESS.md](FORMAL_REVIEW_READINESS.md) | gates y dictamen del refinamiento |
 | [DEC_051_C02_TEMPORARY_TREATMENT.md](DEC_051_C02_TEMPORARY_TREATMENT.md) | permiso temporal sólo documental |
+| [IMPLEMENTATION_AUTHORIZATION.md](IMPLEMENTATION_AUTHORIZATION.md) | dictamen, alcance autorizado y bloqueo de merge |
 
 ## Autoridad y límites
 
@@ -120,5 +128,6 @@ La distinción normativa es:
 
 ## Siguiente acción
 
-**Ejecutar una revisión formal independiente de PBI-024 para decidir si puede
-autorizarse su implementación.**
+**Crear la rama funcional `r0/pbi-024-trusted-station-context` desde el commit
+documental de autorización e iniciar exclusivamente la implementación
+aprobada.**

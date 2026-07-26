@@ -6,7 +6,7 @@
 - **Fecha:** 2026-07-24.
 - **H0:** 9/0, `Complete`.
 - **H1:** 24 contratos abiertos para aplicación, mecanismo o prueba.
-- **R0:** `Authorized`, limitado a PBI-023.
+- **R0:** `Authorized`, ampliado únicamente a PBI-024; PBI-023 está cerrado.
 - **Regla:** agrupar por capacidad no acepta ni cierra una DEC.
 
 ## Inventario H1
@@ -42,8 +42,8 @@
 
 | PBI | Capacidad | DEC | Estado | Dependencia |
 |---|---|---|---|---|
-| [PBI-023](pbis/PBI-023.md) | Persistencia tenant-scoped, migraciones y fixtures mínimos | 006–008, 050, 052 | `Ready`; transaction runner verificado, migration runner autorizado | H0, ADR-003/004, DEC-049/050/051/063 |
-| [PBI-024](pbis/PBI-024.md) | Contexto tenant/sucursal/estación confiable | 009–012 | `Draft` | PBI-023 |
+| [PBI-023](pbis/PBI-023.md) | Persistencia tenant-scoped, migraciones y fixtures mínimos | 006–008, 050, 052 | `Closed` | H0, ADR-003/004, DEC-049/050/051/063 |
+| [PBI-024](pbis/PBI-024.md) | Contexto tenant/sucursal/estación confiable | 009–012 | `Authorized`; implementation not started / merge blocked | PBI-023 |
 | [PBI-025](pbis/PBI-025.md) | Identidad, PIN, sesión e inactividad | 013–016 | `Blocked` | PBI-024, threat model y mecanismos |
 | [PBI-026](pbis/PBI-026.md) | Capacidades y autorización reforzada | 017–020 | `Draft` | PBI-025 y composición por operación |
 | [PBI-027](pbis/PBI-027.md) | Modelo temporal de R0 | 037–038 | `Blocked` | decisión de Producto sobre autoridad de zona |
@@ -64,11 +64,10 @@ gates que debe cerrar antes de materializar persistencia:
 - condiciones aplicables DEC049-C01–C08;
 - fixtures deterministas de DEC-052.
 
-Su `Ready` significa que resultado, límites, secuencia, evidencia y owners por
-rol son verificables. La
-[revisión final](../architecture-readiness/R0_AUTHORIZATION.md) autorizó
-únicamente este PBI; no lo marcó iniciado ni comprometido a sprint. Su
-estimación sigue siendo obligatoria antes del compromiso.
+PBI-023 ejerció y cerró su autorización. La
+[autorización vigente](../architecture-readiness/R0_AUTHORIZATION.md) amplía R0
+únicamente a PBI-024, no lo marca `In progress` y mantiene el merge funcional
+bloqueado por DEC051-C02.
 
 ## Dependencias entre PBIs
 
@@ -98,5 +97,6 @@ flowchart LR
 
 ## Próxima revisión
 
-Preparar el compromiso de PBI-023 y autorizar primero el gate de
-checker/boundaries. No iniciar PBI-024–PBI-029 antes de su propio dictamen.
+Implementar PBI-024 exclusivamente en su rama funcional autorizada. No iniciar
+PBI-025–PBI-029 y no integrar código funcional mientras DEC051-C02 permanezca
+`Pending`.
