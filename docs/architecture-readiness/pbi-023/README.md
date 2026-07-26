@@ -80,6 +80,20 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 | [first-productive-migration/](first-productive-migration/README.md) | schema exacto, constraints, aislamiento, introspección, PostgreSQL 18.4 y dictamen del Paso 9 |
 | [owner-scoped-adapters/](owner-scoped-adapters/README.md) | ports/adapters owner-scoped, errores, transacciones, aislamiento negativo y dictamen del Paso 10 |
 | [postgresql-ci/](postgresql-ci/README.md) | PostgreSQL 18.4 autoritativo, doble run, comparación, artifacts y dictamen del Paso 11 |
+| [post-merge/](post-merge/README.md) | PR #2, aprobación, merge real, CI post-merge, artifacts y evaluación de DEC051-C02 |
+
+## Integración post-merge
+
+El PR #2 fue integrado en `main` con head
+`cb238b935d594093124b7b3394ed8dbf62cc3e59` y merge commit
+`02af76af6077582e479786cf57d93255fe89f024`. El run post-merge
+`30215885836` pasó `run-1`, `run-2` y `comparison`; las validaciones locales
+también pasaron.
+
+La integración aporta evidencia parcial a DEC051-C02, pero no demuestra
+protección efectiva de `main`, checks/aprobación forzados ni rechazo de una
+integración incumplida. Por ello su evaluación material es
+`Partially satisfied` y su estado canónico permanece `Pending`.
 
 ## Alcance preservado
 
@@ -93,11 +107,11 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 
 ## Siguiente acción
 
-Repetir la decisión independiente sobre promover el PR #2 de `Draft` a
-`Ready for review`.
+Resolver el mecanismo de protección obligatoria de `main` y diseñar una prueba
+de rechazo verificable para completar DEC051-C02.
 
-El estado autoritativo reconciliado es: PBI-023 cerrado; DEC051-C02 pendiente
-hasta el primer merge real a `main`; DEC-055 `Propuesta`; DEC-063 `Accepted
-with conditions`, sin modificación del registro canónico de condiciones por
-este PBI; R0 `Authorized`, limitado a PBI-023; Sprint 00 `Closed`; PBI-024 no
-iniciado; y PR #2 todavía `OPEN` y `Draft`.
+El estado autoritativo reconciliado es: PBI-023 cerrado y PR #2 `MERGED`;
+DEC051-C02 materialmente `Partially satisfied` y canónicamente `Pending`;
+DEC-055 `Propuesta`; DEC-063 `Accepted with conditions`, sin modificación del
+registro canónico de condiciones por este PBI; R0 `Authorized`, limitado a
+PBI-023; Sprint 00 `Closed`; y PBI-024 `Draft`, no iniciado y no autorizado.

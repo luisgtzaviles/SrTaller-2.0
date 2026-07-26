@@ -27,6 +27,11 @@ tres remediaciones documentales, repitió los gates y cerró PBI-023 sin
 ampliar la autorización limitada vigente de R0 ni autorizar PBI-024, merge o
 el cambio del PR #2 a Ready.
 
+Posteriormente, el PR #2 recibió aprobación independiente sobre el head exacto
+`cb238b935d594093124b7b3394ed8dbf62cc3e59`, fue integrado mediante
+`02af76af6077582e479786cf57d93255fe89f024` y pasó la CI post-merge
+`30215885836`. Este hecho no amplía el alcance cerrado de PBI-023.
+
 ## Checklist
 
 | Entregable | Resultado |
@@ -79,6 +84,10 @@ el cambio del PR #2 a Ready.
 | suites/tests/skips críticos por job | PASS — 5/10/0 |
 | VC-024 run-1/run-2/comparison | PASS |
 | artifacts/manifests/sanitización | PASS |
+| PR #2 / aprobación independiente | PASS — head exacto aprobado |
+| merge real a `main` | PASS — `02af76af6077582e479786cf57d93255fe89f024` |
+| CI post-merge | PASS — run `30215885836` |
+| artifacts post-merge | PASS — `8635853817`, `8635862405`, `8635865041` |
 
 ## Estado de decisiones
 
@@ -88,7 +97,7 @@ el cambio del PR #2 a Ready.
 | SPIKE-002 | mandatory/pending | Completed; material evidence PASS |
 | PBI-023 | Ready; PostgreSQL CI autorizado | Closed — PostgreSQL CI authoritative materialized and formally reviewed |
 | DEC-049 | Accepted; C01–C08 vigentes | C01–C07 con evidencia local + CI para el scope; operación productiva no afirmada |
-| DEC-051 | C01/C07/C09 Satisfied | C03/C04/C06 Satisfied; C02 pendiente del primer merge |
+| DEC-051 | C01/C03/C04/C06/C07/C09 Satisfied | C02 materialmente `Partially satisfied` y canónicamente `Pending`: merge/review/CI demostrados; protección/rechazo pendientes |
 | DEC-055 | Propuesta | sin cambio material; CI sintética PASS sólo para el scope efímero; provider, privilegios, rotación y operación productiva pendientes |
 | DEC-063 | Accepted with conditions; C01/C03/C04 Satisfied | evidencia material de PBI-023 para C02/C05/C06; el registro canónico de condiciones no cambia; C07/C08 continúan por trigger |
 
@@ -107,14 +116,14 @@ el cambio del PR #2 a Ready.
 
 ## Gates restantes
 
-1. DEC051-C02: protección/revisión del primer merge funcional.
+1. DEC051-C02: protección efectiva de `main`, checks/aprobación obligatorios y
+   prueba controlada de rechazo.
 2. DEC-063 conserva `Accepted with conditions`; cualquier cambio de estado de
    sus condiciones exige una actualización formal separada de su registro.
-3. Decisión explícita sobre cambiar PR #2 a Ready y efectuar merge.
 
 El Paso 12 quedó completo. R0 conserva su autorización organizacional limitada
 al alcance de PBI-023, que ya está cerrado; esto no equivale a aceptación de
-R0 ni autoriza PBI-024, merge o release. DEC-055 permanece `Propuesta` y
+R0 ni autoriza PBI-024 o release. DEC-055 permanece `Propuesta` y
 Sprint 00 permanece `Closed`.
 
 ## Validaciones de esta tarea
@@ -138,6 +147,8 @@ Ejecutadas con Node.js `24.18.0` y pnpm `11.15.1`:
 
 La evidencia material del Paso 11 está en
 [postgresql-ci/](postgresql-ci/README.md).
+La integración y validación posterior están en
+[post-merge/](post-merge/README.md).
 
 ## Restricciones preservadas
 
@@ -148,10 +159,10 @@ La evidencia material del Paso 11 está en
 - Docker sólo durante tests; cero recurso residual;
 - sin credenciales, `.env` o secretos preservados;
 - sin PBI-024–029;
-- sin merge/deploy/SSH.
+- merge controlado registrado; sin deploy/SSH.
 
 ## Siguiente acción
 
-Repetir la decisión independiente sobre promover el PR #2 de `Draft` a
-`Ready for review`; no ejecutar esa promoción, merge, PBI-024, release o
-deploy como parte de esta reconciliación.
+Resolver el mecanismo de protección obligatoria de `main` y diseñar una prueba
+de rechazo verificable para completar DEC051-C02. No iniciar PBI-024, release
+o deploy como parte de esta acción.

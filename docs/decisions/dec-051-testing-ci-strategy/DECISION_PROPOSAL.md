@@ -23,6 +23,14 @@ La aceptación define el contrato normativo. No registra materialización, CI
 activo, protección aplicada sobre `main`, cumplimiento de VC-024 ni
 autorización de R0.
 
+**Actualización post-merge 2026-07-26:** el
+[expediente de PBI-023](../../architecture-readiness/pbi-023/post-merge/README.md)
+registra el primer merge real a `main`, aprobación independiente y CI
+autoritativa post-merge. Esta evidencia deja DEC051-C02 materialmente
+`Partially satisfied`; su estado canónico permanece `Pending` porque no existe
+evidencia de protección efectiva de `main`, checks/aprobación obligatorios ni
+una prueba controlada de rechazo.
+
 ## 4. Fecha
 
 2026-07-24.
@@ -71,6 +79,9 @@ Las decisiones vigentes ya establecen:
 
 DEC-005 está `Accepted — Materialized / Formally Verified`. DEC-044 y DEC-049
 están `Accepted`, con sus condiciones de materialización todavía pendientes.
+Los párrafos siguientes conservan el snapshot de materialización vigente al
+aceptarse DEC-051; el estado operativo posterior está reconciliado en la
+actualización de la sección 3 y en la sección 46.
 Actualización del 2026-07-24: la
 [verificación formal de VC-024](../../architecture-readiness/dec-004-linux-verification/vc-024/FORMAL_VERIFICATION.md)
 obtuvo `PASS`; DEC051-C01/C07/C09 quedan `Satisfied` y las demás condiciones
@@ -838,6 +849,10 @@ de este documento o de su revisión formal.
 Cumplir una condición requiere evidencia ejecutada y revisión; un archivo de
 configuración o test sin run no basta.
 
+La tabla conserva `Pendiente` como estado canónico de DEC051-C02. El primer
+merge real y su CI satisfacen sólo una parte del expediente exigido; la
+protección efectiva de `main` y la prueba de rechazo siguen pendientes.
+
 ## 38. Riesgos
 
 | Riesgo | Probabilidad | Impacto |
@@ -941,6 +956,9 @@ flowchart TD
 
 ## 43. Impacto en R0
 
+Esta sección conserva el impacto evaluado al aceptar DEC-051; no reemplaza la
+actualización operativa de la sección 46.
+
 La aceptación de DEC-051 cerró su gate documental. Posteriormente, la
 verificación formal de VC-024 cerró H0 en **9 decisiones cerradas y 0
 abiertas** y satisfizo DEC051-C01/C07/C09. El primer cambio funcional sigue
@@ -949,6 +967,9 @@ demostrada, las demás condiciones permanecen `Pending` y R0 continúa no
 autorizado.
 
 ## 44. Impacto en Sprint 00
+
+Esta sección conserva el snapshot de Sprint 00 al aceptar DEC-051; su estado
+vigente se registra en la sección 46.
 
 Sprint 00 permanece abierto. La decisión:
 
@@ -985,7 +1006,8 @@ La revisión formal confirmó:
 
 ## 46. Próxima acción
 
-Con DEC-063 aceptada y VC-024 `Closed / PASS`, la siguiente acción es resolver
-el gate organizacional y los contratos transversales H1. DEC-051 permanece
-`Accepted`; C01/C07/C09 están `Satisfied`, las demás condiciones están
-`Pending`, R0 continúa no autorizado y Sprint 00 continúa abierto.
+Resolver el mecanismo de protección obligatoria de `main` y diseñar una prueba
+de rechazo verificable para completar DEC051-C02. DEC-051 permanece
+`Accepted`; DEC051-C02 permanece canónicamente `Pending`. R0 está
+`Authorized`, limitado al alcance cerrado de PBI-023; Sprint 00 está `Closed`
+y PBI-024 continúa `Draft`, no iniciado y no autorizado.

@@ -4,7 +4,8 @@
 
 - C01, C07 y C09: `Satisfied`.
 - C03, C04 y C06: `Satisfied` con evidencia del Paso 11.
-- C02, C05, C08 y C10: `Pending` según trigger.
+- C02: materialmente `Partially satisfied`; canónicamente `Pending`.
+- C05, C08 y C10: `Pending` según trigger.
 
 SPIKE-002 y los Pasos 4–10 aportaron evidencia preparatoria/local. El Paso 11
 activa los triggers runtime de C03/C04/C06 y los satisface con PostgreSQL real,
@@ -14,7 +15,7 @@ doble ejecución, comparación y artifacts remotos.
 
 | Condición | Trigger para PBI-023 | Aplicabilidad | Estado | Mecanismo verificable | Evidencia futura | Responsable/gate |
 |---|---|---|---|---|---|---|
-| C02 — protección de `main` | antes del primer merge funcional | directa | `Pending` | requerir checks CI sin bypass ordinario | configuración exportable/captura segura y PR rechazado sin checks | Operaciones + Arquitectura / merge |
+| C02 — protección de `main` | antes del primer merge funcional | directa | `Partially satisfied` / canónico `Pending` | requerir checks CI sin bypass ordinario | merge/review/CI demostrados; faltan configuración exportable/captura segura y rechazo sin checks | Operaciones + Arquitectura / merge |
 | C03 — PostgreSQL real | primera suite persistence | directa | `Satisfied` | PG `18.4` digest exacto, DB por suite/run, cleanup | push + PR, run-1/run-2/comparison PASS | Ingeniería + Operaciones / cierre |
 | C04 — aislamiento negativo | primera persistencia tenant | directa | `Satisfied` | schema + adapters con dos tenants/branches | aislamiento negativo CI PASS | Seguridad + Calidad / cierre |
 | C05 — API pública/errores | antes de API funcional | no activada | `Pending` | PBI-023 no crea API; sí prueba traducción interna DEC-044 | contrato HTTP se difiere; errores persistence se prueban | Ingeniería + Seguridad + Calidad / PBI futuro |
@@ -144,6 +145,27 @@ Los runs remotos `30185110105` y `30185111056` ejecutaron PostgreSQL `18.4`,
 schema, adapters, aislamiento negativo y checker en `run-1`/`run-2`; ambas
 comparaciones pasaron. Por ello C03, C04 y C06 se clasifican `Satisfied`.
 
-C02 permanece pendiente hasta la revisión del primer merge y su protección.
-C05 no se activó porque no existe API. C08/C10 no se activaron. El PR #2
-permanece Draft.
+C02 permanecía pendiente hasta la revisión del primer merge y su protección.
+C05 no se activó porque no existe API. C08/C10 no se activaron.
+
+## Evidencia post-merge
+
+El [expediente post-merge](post-merge/README.md) registra:
+
+- PR #2 `MERGED`;
+- aprobación independiente de `empresasgalatech` sobre
+  `cb238b935d594093124b7b3394ed8dbf62cc3e59`;
+- merge commit `02af76af6077582e479786cf57d93255fe89f024`;
+- run push post-merge `30215885836` sobre `main`;
+- `run-1`, `run-2` y `comparison` en `SUCCESS`;
+- artefactos `8635853817`, `8635862405` y `8635865041`;
+- validaciones locales sin regresión.
+
+Esto satisface materialmente la parte de primer merge, revisión independiente
+y CI autoritativa de C02. No existe evidencia de protección efectiva de
+`main`, checks/aprobación obligatorios ni prueba de rechazo. C02 se evalúa
+`Partially satisfied`, pero su estado canónico permanece `Pending`.
+
+La siguiente acción es resolver el mecanismo de protección obligatoria de
+`main` y diseñar una prueba de rechazo verificable. Esta evaluación no inicia
+PBI-024 ni modifica la configuración de GitHub.

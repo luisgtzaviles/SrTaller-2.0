@@ -97,6 +97,16 @@ formally reviewed`. Este cierre no amplía R0, no autoriza PBI-024, merge,
 release o deploy y no satisface DEC051-C02, que continúa pendiente hasta el
 primer merge real a `main`.
 
+**Actualización post-merge 2026-07-26:** el PR #2 fue aprobado por el revisor
+independiente `empresasgalatech` sobre
+`cb238b935d594093124b7b3394ed8dbf62cc3e59` e integrado mediante
+`02af76af6077582e479786cf57d93255fe89f024`. El run post-merge
+`30215885836` pasó `run-1`, `run-2` y `comparison`. DEC051-C02 queda
+materialmente `Partially satisfied` y canónicamente `Pending`: falta
+protección efectiva de `main`, checks/aprobación obligatorios y una prueba de
+rechazo. Esta actualización no amplía R0 ni autoriza PBI-024, release o
+deploy.
+
 ## 9. Definition of Ready
 
 **Veredicto:** `READY WITH NON-BLOCKING NOTES — READY CONFIRMED`.
@@ -161,7 +171,8 @@ está asociado al head exacto y ejecutó el merge sintético correcto con
 ## 11. Riesgos
 
 - PBI-023 sigue siendo de riesgo alto y falla cerrado.
-- DEC051-C02–C06/C08/C10 y DEC063-C02/C05–C08 siguen por trigger.
+- DEC051-C02 está materialmente `Partially satisfied` y canónicamente
+  `Pending`; C05/C08/C10 y DEC063-C02/C05–C08 siguen por trigger.
 - PostgreSQL real, dos tenants y denegación cross-tenant son obligatorios.
 - Las condiciones aplicables de DEC-050 deben preceder cada trigger; SPIKE-002
   ya cerró el gate material de viabilidad.
@@ -209,6 +220,6 @@ demostrarse y recibir aceptación formal.
 
 ## 16. Siguiente acción
 
-Tomar una decisión separada sobre promover el PR #2 de `Draft` a
-`Ready for review`. La promoción no autoriza merge, PBI-024, release, deploy
-ni aceptación de R0.
+Resolver el mecanismo de protección obligatoria de `main` y diseñar una prueba
+de rechazo verificable para completar DEC051-C02. Esta acción no autoriza
+PBI-024, release, deploy ni aceptación de R0.
