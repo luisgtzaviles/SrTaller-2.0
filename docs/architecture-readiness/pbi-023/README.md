@@ -10,14 +10,14 @@
 - **Cambio técnico:** checker/tests, dependencias/configuración, facility de
   conexión, runners y primera migración productiva controlados; cero wiring
   productivo.
-- **Resultado:** `PASS — PBI-023 TENANT SCHEMA VERIFIED`.
-- **Estado PBI-023:** `Ready — tenant schema verified / owner-scoped adapters
-  authorized`.
+- **Resultado:** `PASS — PBI-023 OWNER-SCOPED PERSISTENCE VERIFIED`.
+- **Estado PBI-023:** `Ready — owner-scoped persistence verified / PostgreSQL
+  CI gate authorized`.
 
 ## Propósito
 
-Este expediente lleva PBI-023 hasta un schema tenant mínimo verificado antes
-de crear adapters o persistencia funcional. Distingue ocho estados
+Este expediente lleva PBI-023 hasta persistencia owner-scoped verificada sin
+API ni negocio. Distingue nueve estados
 que no deben confundirse:
 
 1. DEC-050 está aceptada documentalmente con condiciones.
@@ -32,7 +32,9 @@ que no deben confundirse:
 7. El Paso 8 materializó migrador/provider gobernados, D5-R049 y pruebas
    PostgreSQL reales.
 8. El Paso 9 materializó `tenants`/`branches`, D5-R050–D5-R053 y pruebas
-   PostgreSQL reales; adapters y repositories siguen ausentes.
+   PostgreSQL reales.
+9. El Paso 10 materializó ports/adapters owner-scoped, errores, transacciones
+   y aislamiento negativo; PostgreSQL autoritativo en CI sigue pendiente.
 
 El laboratorio fue destruido. El Paso 4 modificó sólo `package.json`,
 `pnpm-lock.yaml` y documentación; preservó `src/`, workflows, scripts, tests,
@@ -65,6 +67,7 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 | [transaction-runner/](transaction-runner/README.md) | contrato, aislamiento, nesting, errores, PostgreSQL 18.4, D5-R048 y dictamen del Paso 7 |
 | [migration-runner/](migration-runner/README.md) | discovery, manifest/drift, journal, lock, down, PostgreSQL 18.4, D5-R049 y dictamen del Paso 8 |
 | [first-productive-migration/](first-productive-migration/README.md) | schema exacto, constraints, aislamiento, introspección, PostgreSQL 18.4 y dictamen del Paso 9 |
+| [owner-scoped-adapters/](owner-scoped-adapters/README.md) | ports/adapters owner-scoped, errores, transacciones, aislamiento negativo y dictamen del Paso 10 |
 
 ## Alcance preservado
 
@@ -78,7 +81,6 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 
 ## Gate siguiente
 
-Solicitar el Paso 10 como cambio separado para ports y adapters específicos
-owner-scoped. No incluye endpoint, autenticación ni integración con startup.
-Cada paso
+Solicitar el Paso 11 para ejecutar PostgreSQL `18.4` como gate autoritativo en
+CI. No incluye endpoint, autenticación ni integración con startup. Cada paso
 requiere autorización propia y sus condiciones DEC-049/050/051/063 aplicables.

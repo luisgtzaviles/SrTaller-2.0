@@ -16,6 +16,16 @@ import type {
   InternalDatabaseMigrationRuntime,
 } from './database-migration-capability.js';
 import {
+  DatabasePersistenceCapabilityError,
+  databasePersistenceCapability,
+} from './database-persistence-capability.js';
+import type {
+  InternalDatabasePersistenceConnection,
+  InternalDatabasePersistenceExecutor,
+  InternalDatabasePersistenceOperation,
+  InternalDatabasePersistenceOwner,
+} from './database-persistence-capability.js';
+import {
   DatabaseTransactionCapabilityError,
   databaseTransactionCapability,
 } from './database-transaction-capability.js';
@@ -321,6 +331,7 @@ class ControlledDatabaseConnection
   implements
     DatabaseConnection,
     InternalDatabaseMigrationConnection,
+    InternalDatabasePersistenceConnection,
     InternalDatabaseTransactionConnection
 {
   readonly #config: Readonly<DatabaseConfig>;
@@ -334,6 +345,7 @@ class ControlledDatabaseConnection
   #verificationPromise: Promise<void> | null = null;
   #closePromise: Promise<void> | null = null;
   #activeMigrations = 0;
+  #activePersistenceOperations = 0;
   #activeTransactions = 0;
   #databaseFacilityActivated = false;
   #databaseDrainPromise: Promise<void> | null = null;
@@ -370,7 +382,12 @@ class ControlledDatabaseConnection
     if (this.#verificationPromise) {
       return this.#verificationPromise;
     }
-    if (this.#activeMigrations + this.#activeTransactions > 0) {
+    if (
+      this.#activeMigrations +
+        this.#activePersistenceOperations +
+        this.#activeTransactions >
+      0
+    ) {
       return Promise.reject(
         new DatabaseConnectionError(
           'DATABASE_CONNECTION_INVALID_STATE',
@@ -436,7 +453,12 @@ class ControlledDatabaseConnection
         this.#state,
       );
     }
-    if (this.#activeMigrations + this.#activeTransactions > 0) {
+    if (
+      this.#activeMigrations +
+        this.#activePersistenceOperations +
+        this.#activeTransactions >
+      0
+    ) {
       throw new DatabaseMigrationCapabilityError('OVERLAP_FORBIDDEN');
     }
 
@@ -448,6 +470,37 @@ class ControlledDatabaseConnection
       );
     } finally {
       this.#activeMigrations -= 1;
+      this.#resolveDrainIfIdle();
+    }
+  }
+
+  async [databasePersistenceCapability]<
+    Owner extends InternalDatabasePersistenceOwner,
+    Result,
+  >(
+    _owner: Owner,
+    operation: InternalDatabasePersistenceOperation<Owner, Result>,
+  ): Promise<Result> {
+    if (this.#state !== 'ready') {
+      throw new DatabaseConnectionError(
+        this.#state === 'closing' || this.#state === 'closed'
+          ? 'DATABASE_CONNECTION_CLOSED'
+          : 'DATABASE_CONNECTION_INVALID_STATE',
+        this.#state,
+      );
+    }
+    if (this.#activeMigrations + this.#activeTransactions > 0) {
+      throw new DatabasePersistenceCapabilityError('INVALID_STATE');
+    }
+
+    this.#activePersistenceOperations += 1;
+    this.#databaseFacilityActivated = true;
+    try {
+      return await operation(
+        this.#database as unknown as InternalDatabasePersistenceExecutor<Owner>,
+      );
+    } finally {
+      this.#activePersistenceOperations -= 1;
       this.#resolveDrainIfIdle();
     }
   }
@@ -464,7 +517,12 @@ class ControlledDatabaseConnection
         this.#state,
       );
     }
-    if (this.#activeMigrations + this.#activeTransactions > 0) {
+    if (
+      this.#activeMigrations +
+        this.#activePersistenceOperations +
+        this.#activeTransactions >
+      0
+    ) {
       throw new DatabaseTransactionCapabilityError('NESTED_FORBIDDEN');
     }
 
@@ -483,7 +541,12 @@ class ControlledDatabaseConnection
   }
 
   #resolveDrainIfIdle(): void {
-    if (this.#activeMigrations + this.#activeTransactions === 0) {
+    if (
+      this.#activeMigrations +
+        this.#activePersistenceOperations +
+        this.#activeTransactions ===
+      0
+    ) {
       this.#resolveDatabaseDrain?.();
       this.#resolveDatabaseDrain = null;
       this.#databaseDrainPromise = null;
@@ -554,7 +617,12 @@ class ControlledDatabaseConnection
     if (activeVerification) {
       await activeVerification.catch(() => undefined);
     }
-    if (this.#activeMigrations + this.#activeTransactions > 0) {
+    if (
+      this.#activeMigrations +
+        this.#activePersistenceOperations +
+        this.#activeTransactions >
+      0
+    ) {
       this.#databaseDrainPromise ??= new Promise((resolve) => {
         this.#resolveDatabaseDrain = resolve;
       });

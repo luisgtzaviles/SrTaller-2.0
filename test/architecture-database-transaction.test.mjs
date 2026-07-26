@@ -8,6 +8,8 @@ const capabilityPath =
   'src/infrastructure/database/database-transaction-capability.ts';
 const connectionPath =
   'src/infrastructure/database/database-connection.ts';
+const persistenceCapabilityPath =
+  'src/infrastructure/database/database-persistence-capability.ts';
 
 test('transaction runner and internal capability retain exact registered ownership', async () => {
   const policy = JSON.parse(
@@ -23,8 +25,8 @@ test('transaction runner and internal capability retain exact registered ownersh
       'runInTransaction',
     ],
     consumers: [
-      'src/modules/stations/stations.module.ts',
-      'src/modules/tenancy/tenancy.module.ts',
+      'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
+      'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
     ],
     consumerRequirement: 'deferred-until-adapter-composition',
     status: 'materialized-transaction-runner',
@@ -32,7 +34,11 @@ test('transaction runner and internal capability retain exact registered ownersh
   assert.deepEqual(policy.persistence.transactionBoundary, {
     runner: runnerPath,
     capability: capabilityPath,
-    allowedCapabilityConsumers: [connectionPath, runnerPath],
+    allowedCapabilityConsumers: [
+      connectionPath,
+      persistenceCapabilityPath,
+      runnerPath,
+    ],
     forbiddenContextPackages: ['async_hooks', 'node:async_hooks'],
     forbiddenManualMethods: [
       'commit',
@@ -69,10 +75,11 @@ test('public transaction API is explicit, narrow and driver-free', async () => {
   assert.doesNotMatch(source, /\bretry\s*\(/u);
 });
 
-test('driver capability stays owner-internal and is consumed only by connection and runner', async () => {
-  const [capability, connection, runner, startup] = await Promise.all([
+test('driver capability stays owner-internal behind connection, runner and persistence bridge', async () => {
+  const [capability, connection, persistence, runner, startup] = await Promise.all([
     readFile(capabilityPath, 'utf8'),
     readFile(connectionPath, 'utf8'),
+    readFile(persistenceCapabilityPath, 'utf8'),
     readFile(runnerPath, 'utf8'),
     Promise.all(
       ['src/main.ts', 'src/app.module.ts'].map((path) =>
@@ -83,11 +90,12 @@ test('driver capability stays owner-internal and is consumed only by connection 
 
   assert.match(capability, /import type \{ Transaction \} from 'kysely'/u);
   assert.match(connection, /databaseTransactionCapability/u);
+  assert.match(persistence, /useDatabaseTransactionExecutor/u);
   assert.match(runner, /databaseTransactionCapability/u);
   assert.doesNotMatch(startup, /transaction-runner|transaction-capability/u);
   assert.doesNotMatch(capability, /AsyncLocalStorage|async_hooks/u);
   assert.doesNotMatch(
-    `${connection}\n${runner}`,
+    `${connection}\n${persistence}\n${runner}`,
     /\.startTransaction\s*\(|\.commit\s*\(|\.rollback\s*\(|savepoint/iu,
   );
 });

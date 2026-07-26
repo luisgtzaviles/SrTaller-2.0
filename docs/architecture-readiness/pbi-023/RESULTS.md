@@ -2,7 +2,7 @@
 
 ## Dictamen
 
-**PASS — PBI-023 TENANT SCHEMA VERIFIED**
+**PASS — PBI-023 OWNER-SCOPED PERSISTENCE VERIFIED**
 
 El expediente define estimación, DEC-050, versiones candidatas, arquitectura,
 schema mínimo, aislamiento, migraciones, riesgos, gates y plan. SPIKE-002
@@ -17,8 +17,10 @@ materializó `Migrator`/`FileMigrationProvider`, discovery, manifest/drift,
 journal, status/up/down, lock finito y D5-R049; dos runs PostgreSQL `18.4`
 coincidieron y limpiaron todos los probes. El Paso 9 añadió sólo
 `tenants`/`branches`, introspección, aislamiento estructural y D5-R050–D5-R053.
-No existe startup, adapter, repository o consumer funcional. PBI-023 queda
-`Ready`.
+El Paso 10 añadió sólo ports/adapters owner-scoped, capability interna,
+errores, transacciones y aislamiento negativo; dos runs PostgreSQL `18.4`
+coincidieron. No existe startup, endpoint, provider Nest ni consumer
+funcional. PBI-023 queda `Ready` para el gate PostgreSQL de CI.
 
 ## Checklist
 
@@ -62,6 +64,12 @@ No existe startup, adapter, repository o consumer funcional. PBI-023 queda
 | introspección/constraints/índices | PASS |
 | aislamiento estructural/FK futura | PASS |
 | D5-R050–D5-R053 | PASS |
+| ports/adapters owner-scoped Paso 10 | PASS |
+| CRUD mínimo tenant/branch | PASS |
+| scope tenant + branch obligatorio | PASS |
+| errores adapter sanitizados | PASS |
+| aislamiento negativo adapter/query | PASS |
+| PostgreSQL 18.4 adapters | PASS — dos runs, material MATCH |
 
 ## Estado de decisiones
 
@@ -69,9 +77,9 @@ No existe startup, adapter, repository o consumer funcional. PBI-023 queda
 |---|---|---|
 | DEC-050 | Accepted with conditions | primera migración, ordering, journal, manifest/drift, up/down y atomicidad materializados; CI/operation pending |
 | SPIKE-002 | mandatory/pending | Completed; material evidence PASS |
-| PBI-023 | Ready; first migration authorized | Ready; tenant schema verified / owner-scoped adapters authorized |
-| DEC-049 | Accepted; C01–C08 vigentes | evidencia material C01–C07; adapters/queries pendientes |
-| DEC-051 | C01/C07/C09 Satisfied | C03 sigue Partial/Pending en CI; C04 schema PASS/adapters pending; C06 gana D5-R050–D5-R053 |
+| PBI-023 | Ready; owner-scoped adapters authorized | Ready; owner-scoped persistence verified / PostgreSQL CI gate authorized |
+| DEC-049 | Accepted; C01–C08 vigentes | C01–C07 materializados localmente; CI/promoción pendientes |
+| DEC-051 | C01/C07/C09 Satisfied | C03 sigue Partial/Pending en CI; C04 adapter/query PASS local; C06 coincide en checker/runtime |
 | DEC-063 | C01/C03/C04 Satisfied | evidencia adicional C02/C05/C06; release gates sin cerrar |
 
 ## Selecciones
@@ -89,11 +97,11 @@ No existe startup, adapter, repository o consumer funcional. PBI-023 queda
 
 ## Gates restantes
 
-1. Ports y adapters owner-scoped de tenancy/stations.
-2. DEC049 y DEC051-C02/C03/C04/C06 conservan porciones adapters/runtime/CI.
-3. DEC063-C02/C05/C06 requieren evidencia restante antes del merge persistente.
+1. PostgreSQL `18.4` autoritativo en CI.
+2. DEC051-C02/C03 conserva branch protection y ejecución PostgreSQL requerida.
+3. DEC063-C02/C05/C06 conserva revisión/merge/release según sus triggers.
 
-No existe bloqueo material para solicitar el Paso 10. Los gates restantes se
+No existe bloqueo material para solicitar el Paso 11. Los gates restantes se
 cierran secuencialmente y siguen impidiendo declarar implementación funcional
 o merge.
 
@@ -107,21 +115,22 @@ Ejecutadas con Node.js `24.18.0` y pnpm `11.15.1`:
 | `pnpm run architecture` | PASS |
 | `pnpm run typecheck` | PASS |
 | `pnpm run build` | PASS |
-| `pnpm test` | PASS — 319 pass, 9 PG gated skip, 0 fail |
-| `pnpm run test:architecture` | PASS — 257/257 |
+| `pnpm test` | PASS — 330 pass, 10 PG gated skip, 0 fail |
+| `pnpm run test:architecture` | PASS — 261/261 |
 | `pnpm run verify` | PASS |
 | `pnpm run smoke:start` | PASS |
 | `git diff --check` | PASS |
-| PostgreSQL 18.4 dedicado | PASS — dos runs/material `7cb2ff62…`/cleanup |
+| PostgreSQL 18.4 dedicado | PASS — dos runs/material `9a765cc6…`/cleanup |
 | documentación/JSON/enlaces/secretos | verificación final PASS |
 | scope técnico | PASS — facility/tests/enforcement/evidencia |
 
-La evidencia de este paso está en
-[first-productive-migration/](first-productive-migration/README.md).
+La evidencia del Paso 10 está en
+[owner-scoped-adapters/](owner-scoped-adapters/README.md).
 
 ## Restricciones preservadas
 
-- workflow, package/lock, tsconfig, AppModule, bootstrap y módulos preservados;
+- workflow, package/lock, tsconfig, AppModule, bootstrap y módulos ajenos
+  preservados; modules tenancy/stations sólo ganan type registration;
 - cambios técnicos limitados a facility, tests/harness y enforcement exacto;
 - una migración productiva, sin SQL raw ni DML, limitada a dos tablas;
 - Docker sólo durante tests; cero recurso residual;
@@ -131,6 +140,5 @@ La evidencia de este paso está en
 
 ## Siguiente acción
 
-Revisar y autorizar separadamente el Paso 10: ports y adapters específicos
-owner-scoped para `tenancy` y `stations`; todavía sin endpoints ni wiring
-automático.
+Revisar y autorizar separadamente el Paso 11: PostgreSQL `18.4` autoritativo
+en CI; todavía sin endpoints ni wiring automático.

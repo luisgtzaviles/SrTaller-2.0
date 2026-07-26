@@ -9,7 +9,7 @@
   "publicSurfaces": {
     "access": ["AccessModuleContract"],
     "stations": ["StationsModuleContract"],
-    "tenancy": ["TenancyModuleContract"]
+    "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"]
   },
   "consumers": {
     "access": ["AppModule"],
@@ -134,8 +134,8 @@
         "consumers": [
           "src/infrastructure/database/transaction-runner.ts",
           "src/infrastructure/database/migration-runner.ts",
-          "src/modules/stations/stations.module.ts",
-          "src/modules/tenancy/tenancy.module.ts"
+          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
         "status": "materialized-connection-facility"
       },
@@ -173,6 +173,25 @@
         ],
         "status": "materialized-owner-internal-provider"
       },
+      "src/infrastructure/database/database-persistence-capability.ts": {
+        "owner": "database",
+        "publicExports": [
+          "InternalDatabasePersistenceOwner",
+          "InternalDatabasePersistenceExecutor",
+          "InternalDatabasePersistenceOperation",
+          "databasePersistenceCapability",
+          "DatabasePersistenceCapabilityError",
+          "InternalDatabasePersistenceConnection",
+          "useDatabasePersistenceExecutor",
+          "useTransactionalDatabasePersistenceExecutor"
+        ],
+        "consumers": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+        ],
+        "status": "materialized-owner-internal-capability"
+      },
       "src/infrastructure/database/database-transaction-capability.ts": {
         "owner": "database",
         "publicExports": [
@@ -188,6 +207,7 @@
         ],
         "consumers": [
           "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/database-persistence-capability.ts",
           "src/infrastructure/database/transaction-runner.ts"
         ],
         "status": "materialized-owner-internal-capability"
@@ -201,8 +221,8 @@
           "runInTransaction"
         ],
         "consumers": [
-          "src/modules/stations/stations.module.ts",
-          "src/modules/tenancy/tenancy.module.ts"
+          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
         "consumerRequirement": "deferred-until-adapter-composition",
         "status": "materialized-transaction-runner"
@@ -227,13 +247,15 @@
     "ports": {
       "src/modules/stations/application/ports/branch-repository.port.ts": {
         "owner": "stations",
+        "contract": "BranchRepositoryPort",
         "allowedScopes": ["TenantPersistenceScope", "TenantBranchPersistenceScope"],
-        "status": "future-approved"
+        "status": "materialized-owner-port"
       },
       "src/modules/tenancy/application/ports/tenant-repository.port.ts": {
         "owner": "tenancy",
+        "contract": "TenantRepositoryPort",
         "allowedScopes": ["TenantPersistenceScope"],
-        "status": "future-approved"
+        "status": "materialized-owner-port"
       }
     },
     "scopeTypes": {
@@ -245,13 +267,13 @@
         "owner": "stations",
         "port": "src/modules/stations/application/ports/branch-repository.port.ts",
         "composition": "src/modules/stations/stations.module.ts",
-        "status": "future-approved"
+        "status": "materialized-owner-adapter"
       },
       "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts": {
         "owner": "tenancy",
         "port": "src/modules/tenancy/application/ports/tenant-repository.port.ts",
         "composition": "src/modules/tenancy/tenancy.module.ts",
-        "status": "future-approved"
+        "status": "materialized-owner-adapter"
       }
     },
     "databaseObjects": {
@@ -303,6 +325,7 @@
       "capability": "src/infrastructure/database/database-transaction-capability.ts",
       "allowedCapabilityConsumers": [
         "src/infrastructure/database/database-connection.ts",
+        "src/infrastructure/database/database-persistence-capability.ts",
         "src/infrastructure/database/transaction-runner.ts"
       ],
       "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
@@ -485,8 +508,12 @@
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
     "src/modules/stations/index.ts",
+    "src/modules/stations/application/ports/branch-repository.port.ts",
+    "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
     "src/modules/stations/stations.module.ts",
     "src/modules/tenancy/index.ts",
+    "src/modules/tenancy/application/ports/tenant-repository.port.ts",
+    "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
     "src/modules/tenancy/tenancy.module.ts"
   ],
   "requiredEvidence": [

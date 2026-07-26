@@ -170,6 +170,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Paso 12 — Adapters owner-scoped
 
+- **Estado:** `Completed — PASS` como Paso 10 operativo en
+  [owner-scoped-adapters/](owner-scoped-adapters/README.md).
 - **Objetivo:** materializar sólo métodos con consumidor/prueba real.
 - **Archivos:** ports/adapters tenancy y stations, exports mínimos si aplican.
 - **Dependencias:** schema, checker y transaction runner.
@@ -183,6 +185,8 @@ paths son previstos; el diff real debe limitarse al consumidor de ese paso.
 
 ## Paso 13 — Aislamiento tenant negativo
 
+- **Estado:** `Completed — PASS` dentro del mismo Paso 10 operativo; PostgreSQL
+  autoritativo de CI permanece pendiente.
 - **Objetivo:** ejecutar ISO-001 a ISO-020.
 - **Archivos:** isolation tests y fixtures.
 - **Dependencias:** adapters, PG real y probes cerrados.

@@ -63,10 +63,10 @@ materializados siguen siendo futuros aprobados, no autorización para crearlos.
 | `src/infrastructure/database/database-migration-provider.ts` | Ingeniería + Operaciones | sólo migration runner | provider/manifest internos | discovery y hash fail-closed | paso 8 — materializado |
 | `src/infrastructure/database/migration-runner.ts` | Ingeniería + Operaciones | composición operativa futura | status/latest/up/down/destroy | aislar mutación del bootstrap | paso 8 — materializado |
 | `src/infrastructure/database/migrations/` | owner por archivo; custodia Operaciones | migration runner | módulos de migración congelados | secuencia central determinista | paso 9; inexistente hasta la primera migración |
-| `src/modules/tenancy/application/ports/tenant-repository.port.ts` | tenancy | aplicación tenancy futura | puerto interno; no export cross-module | contrato owner-first | paso 11, sólo con adapter real |
-| `src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts` | tenancy | composición/test | ninguna cross-module | acceso a objeto propio | paso 11 |
-| `src/modules/stations/application/ports/branch-repository.port.ts` | stations | aplicación stations futura | puerto interno; no export cross-module | exigir tenant + branch | paso 11 |
-| `src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts` | stations | composición/test | ninguna cross-module | acceso a objeto propio | paso 11 |
+| `src/modules/tenancy/application/ports/tenant-repository.port.ts` | tenancy | adapter/test | puerto interno; no export cross-module | contrato owner-first | Paso 10 — materializado |
+| `src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts` | tenancy | composición type-only/test | ninguna cross-module | acceso a objeto propio | Paso 10 — materializado |
+| `src/modules/stations/application/ports/branch-repository.port.ts` | stations | adapter/test | puerto interno; no export cross-module | exigir tenant + branch | Paso 10 — materializado |
+| `src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts` | stations | composición type-only/test | ninguna cross-module | acceso a objeto propio | Paso 10 — materializado |
 | `scripts/run-migrations.mjs` | Ingeniería + Operaciones | scripts package futuros | CLI de proceso | entrada explícita no importable por runtime | composición operacional diferida |
 | `test/persistence-support.mjs` | Calidad + Ingeniería | pruebas persistence | helpers sólo de test | lifecycle DB/cleanup | paso 9 |
 | `test/persistence-fixtures.mjs` | Calidad + Seguridad | pruebas persistence | fixtures sintéticos | dos tenants/sucursales deterministas | paso 12 |

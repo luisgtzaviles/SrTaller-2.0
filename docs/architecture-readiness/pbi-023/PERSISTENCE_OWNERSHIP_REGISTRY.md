@@ -2,8 +2,9 @@
 
 ## Estado
 
-- **Estado:** configuración, facility, runners, tipos y schema mínimo
-  materializados; adapters/ports productivos permanecen future-approved.
+- **Estado:** configuración, facility, runners, tipos, schema mínimo y
+  adapters/ports owner-scoped materializados; PostgreSQL CI permanece
+  pendiente.
 - **Autoridad:** DEC-049.
 - **Gate:** DEC049-C02.
 - **Co-ownership:** prohibido.
@@ -18,7 +19,8 @@ registrado.
 | Path | Owner | API | Consumer | Estado |
 |---|---|---|---|---|
 | `src/infrastructure/database/database-config.ts` | `database` | `DatabaseConfig`, `DatabaseConfigError`, `parseDatabaseConfig`, `sanitizeDatabaseConfig` | `database-connection.ts` | `materialized-configuration`; pura y sin red |
-| `src/infrastructure/database/database-connection.ts` | `database` | `DatabaseConnection`, `DatabaseConnectionError`, `createDatabaseConnection`, `sanitizeDatabaseConnectionState` | transaction runner materializado; composición futura | `materialized-connection-facility`; no exporta pool/Kysely, no startup |
+| `src/infrastructure/database/database-connection.ts` | `database` | `DatabaseConnection`, `DatabaseConnectionError`, `createDatabaseConnection`, `sanitizeDatabaseConnectionState` | runners y adapters materializados | `materialized-connection-facility`; no exporta pool/Kysely, no startup |
+| `src/infrastructure/database/database-persistence-capability.ts` | `database` | API owner-internal exacta | connection y adapters registrados | `materialized-owner-internal-capability`; executor tipado por owner |
 | `src/infrastructure/database/database-transaction-capability.ts` | `database` | API interna exacta; no superficie funcional | exclusivamente connection y runner | `materialized-owner-internal-capability`; Kysely no se reexporta |
 | `src/infrastructure/database/transaction-runner.ts` | `database` | `DatabaseTransactionOptions`, `DatabaseTransactionContext`, `DatabaseTransactionError`, `runInTransaction` | adapters/composición futuros | `materialized-transaction-runner` |
 | `src/infrastructure/database/database-migration-capability.ts` | `database` | capability/runtime internos exactos | exclusivamente connection y migration runner | `materialized-owner-internal-capability`; no superficie funcional |
@@ -31,8 +33,8 @@ registrado.
 
 | Objeto | Owner único | Scope | Escrituras | Lecturas | Invariantes | Evolución |
 |---|---|---|---|---|---|---|
-| `tenants` | `tenancy` | global SaaS; raíz de tenant | sólo adapter tenancy futuro | tenancy; referencias por FK | UUID/timestamp no nulos; PK tenant; delete referenciado restringido | creada por migración central Paso 9 |
-| `branches` | `stations` | tenant + sucursal | sólo adapter stations futuro | stations con tenant + branch | PK `(tenant_id, branch_id)`; FK tenant restrictiva | creada por migración central Paso 9 |
+| `tenants` | `tenancy` | global SaaS; raíz de tenant | sólo adapter tenancy | tenancy; referencias por FK | UUID/timestamp no nulos; PK tenant; delete referenciado restringido | creada por migración central Paso 9; adapter Paso 10 |
+| `branches` | `stations` | tenant + sucursal | sólo adapter stations | stations con tenant + branch | PK `(tenant_id, branch_id)`; FK tenant restrictiva | creada por migración central Paso 9; adapter Paso 10 |
 | `kysely_migration` | facility database | técnico global | sólo migrador core | runner/status | journal no manipulable por app | DEC-050 |
 | `kysely_migration_lock` | facility database | técnico global | sólo migrador core | migrador | exclusión del migrador | DEC-050 |
 
@@ -53,8 +55,9 @@ registrado.
 | tenant repository | `tenantId` explícito para operación tenant | sólo los necesarios por la prueba/consumidor real |
 | branch repository | `tenantId` + `branchId` cuando es individual; `tenantId` para lista tenant-wide explícita | sólo los necesarios por la prueba/consumidor real |
 
-No se anticipan firmas completas hasta que el adapter y su prueba se creen en
-el mismo paso.
+Las firmas materializadas están documentadas en
+[owner-scoped-adapters/PORT_CONTRACTS.md](owner-scoped-adapters/PORT_CONTRACTS.md).
+No se autorizaron update/delete ni CRUD genérico.
 
 ## Constraints físicas materializadas
 

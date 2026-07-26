@@ -824,13 +824,39 @@ function scopeTypeIsStructural(sourceFile, scopeName, persistence) {
   } else {
     return false;
   }
+
+  function isRequiredStringType(type) {
+    if (type?.kind === ts.SyntaxKind.StringKeyword) {
+      return true;
+    }
+    if (
+      !type ||
+      !ts.isTypeReferenceNode(type) ||
+      !ts.isIdentifier(type.typeName)
+    ) {
+      return false;
+    }
+    const alias = sourceFile.statements.find(
+      (statement) =>
+        ts.isTypeAliasDeclaration(statement) &&
+        statement.name.text === type.typeName.text,
+    );
+    return Boolean(
+      alias &&
+        ts.isIntersectionTypeNode(alias.type) &&
+        alias.type.types.some(
+          (member) => member.kind === ts.SyntaxKind.StringKeyword,
+        ),
+    );
+  }
+
   return requiredFields.every((field) =>
     members.some((member) => {
       if (
         !ts.isPropertySignature(member) ||
         declarationName(member.name) !== field ||
         member.questionToken ||
-        member.type?.kind !== ts.SyntaxKind.StringKeyword
+        !isRequiredStringType(member.type)
       ) {
         return false;
       }
@@ -1583,7 +1609,11 @@ function persistenceBoundaryDiagnostics({
       if (port) {
         const methods = [];
         for (const statement of sourceFile.statements) {
-          if (ts.isInterfaceDeclaration(statement) || ts.isClassDeclaration(statement)) {
+          if (
+            (ts.isInterfaceDeclaration(statement) ||
+              ts.isClassDeclaration(statement)) &&
+            (!port.contract || statement.name?.text === port.contract)
+          ) {
             methods.push(
               ...statement.members.filter(
                 (member) =>

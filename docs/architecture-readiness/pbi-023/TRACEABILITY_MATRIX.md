@@ -13,12 +13,12 @@
 | config/roles/secretos | DEC050-C06, DEC055 parcial, DEC063-C06 | TECHNICAL_DESIGN §7 | [typed configuration](typed-configuration/README.md) | `PASS contractual; operational roles/provider pending` |
 | vacío/anterior/re-run | DEC050-C07, DEC051-C03 | IMPLEMENTATION step 8/10 | [schema PostgreSQL matrix](first-productive-migration/POSTGRESQL_TEST_MATRIX.md) | `PASS product local; CI pending` |
 | no migration startup | DEC-004, DEC050-C08 | IMPLEMENTATION step 8/14 | [D5-R049](migration-runner/ARCHITECTURE_ENFORCEMENT.md) | `PASS` |
-| owner/scope | DEC049-C02, DEC050-C09 | OWNERSHIP_REGISTRY | [schema ownership](first-productive-migration/OWNERSHIP.md) | `Schema/constraints PASS; adapters pending` |
-| tenant obligatorio | ADR-004, DEC-049 | ISOLATION_TEST_PLAN | D5-R044 + ISO-001–007 | `Static contract enforced; runtime pending` |
-| branch coherente | ADR-004/010, DEC-049 | TECHNICAL_DESIGN §5 | D5-R044/D5-R047 + ISO-008–011 | `Static ownership enforced; runtime pending` |
+| owner/scope | DEC049-C02, DEC050-C09 | OWNERSHIP_REGISTRY | [adapter ownership](owner-scoped-adapters/OWNERSHIP.md) | `PASS local; CI gate pending` |
+| tenant obligatorio | ADR-004, DEC-049 | ISOLATION_TEST_PLAN | [scope + negatives](owner-scoped-adapters/TENANT_SCOPE.md) | `PASS pre-query/runtime local` |
+| branch coherente | ADR-004/010, DEC-049 | TECHNICAL_DESIGN §5 | [negative isolation](owner-scoped-adapters/NEGATIVE_ISOLATION.md) | `PASS local` |
 | contexto concurrente | SPIKE-002 | ISOLATION_TEST_PLAN | [E8–E10](spike-002-evidence/EXPERIMENT_MATRIX.md) | `Verified by spike; product suite pending` |
 | no query global | DEC049-C05/C07 | TECHNICAL_DESIGN §2 | [D5-R038/D5-R039/D5-R046](connection-facility/ARCHITECTURE_ENFORCEMENT.md) | `PASS; only owner-scoped literal select 1 probe` |
-| error sanitizado | DEC-044, DEC049-C06 | TECHNICAL_DESIGN §9 | [transaction mapping/redaction](transaction-runner/ERROR_MAPPING.md) | `PASS config/connection/runner; adapter mapping pending` |
+| error sanitizado | DEC-044, DEC049-C06 | TECHNICAL_DESIGN §9 | [adapter mapping](owner-scoped-adapters/ERROR_MAPPING.md) | `PASS local; HTTP no aplica` |
 | boundaries/checker | DEC-005, DEC051-C06/C09 | IMPLEMENTATION step 3/7/8/9 | [schema enforcement](first-productive-migration/ARCHITECTURE_ENFORCEMENT.md) | `PASS — D5-R037–D5-R053` |
 | branch protection | DEC051-C02 | DEC_051_APPLICABILITY | remote config/rejection | `Pending` |
 | riesgo high fail-closed | DEC063-C02 | RISK_ASSESSMENT | review/manifest | `Defined; pending closure` |
