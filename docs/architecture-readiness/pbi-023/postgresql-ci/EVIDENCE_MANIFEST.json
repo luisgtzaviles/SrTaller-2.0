@@ -1,168 +1,720 @@
 {
-  "schema_version": "1.0.0",
-  "repository": "luisgtzaviles/SrTaller-2.0",
-  "branch": "r0/pbi-023-persistence-planning",
+  "schemaVersion": 2,
+  "contract": "DEC-004/VC-024",
   "commit": "9e38f20900e2be4df7680a936fdfee077e6c6950",
-  "workflow": {
-    "name": "Authoritative Linux CI",
-    "push": {
-      "run_id": "30185110105",
-      "attempt": 1,
-      "event": "push",
-      "head_sha": "9e38f20900e2be4df7680a936fdfee077e6c6950",
-      "jobs": {
-        "run_1": "89748256832",
-        "run_2": "89748256826",
-        "comparison": "89748812805"
-      },
-      "result": "success"
-    },
-    "pull_request": {
-      "run_id": "30185111056",
-      "attempt": 1,
-      "event": "pull_request",
-      "head_sha": "9e38f20900e2be4df7680a936fdfee077e6c6950",
-      "artifact_merge_sha": "33e886c5bdda06a4f189fd0e0c549930222be873",
-      "jobs": {
-        "run_1": "89748259605",
-        "run_2": "89748259601",
-        "comparison": "89748807240"
-      },
-      "result": "success"
-    }
+  "execution": {
+    "attempt": "1",
+    "label": "run-1",
+    "ref": "refs/heads/r0/pbi-023-persistence-planning",
+    "trigger": "push",
+    "workflowRunId": "30185110105"
+  },
+  "environment": {
+    "arch": "x64",
+    "libc": "glibc 2.39",
+    "os": "linux"
   },
   "toolchain": {
+    "nestjs": "11.1.28",
     "node": "24.18.0",
     "pnpm": "11.15.1",
-    "typescript": "6.0.3",
-    "runner_os": "linux",
-    "node_architecture": "x64",
-    "glibc": "2.39"
+    "typescript": "6.0.3"
   },
-  "postgresql": {
-    "enabled": true,
-    "image": "postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
-    "digest": "sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
-    "version": "18.4",
-    "architecture": "amd64",
-    "os": "linux",
-    "encoding": "UTF8",
-    "timezone": "UTC",
-    "locale": "en_US.utf8",
-    "database_identity": "sanitized and unique per suite/run",
-    "role_modes": {
-      "migration": "enabled only where required",
-      "application_test": "synthetic ephemeral; no production privilege claim"
-    }
+  "inputs": {
+    ".node-version": "55075b5ec4e8b31936cbbc282b8829116d1fd48f2f2f1856dee592a6650700ce",
+    ".nvmrc": "55075b5ec4e8b31936cbbc282b8829116d1fd48f2f2f1856dee592a6650700ce",
+    ".npmrc": "99208f21837ca93afd5b763256596e286b8acd641d91b82d14cccef777c3dd0d",
+    ".github/workflows/authoritative-linux-ci.yml": "9e9341a381bdad4c5e550871ca608d0d300fef35f1eeba6fdf18fbada9a147d7",
+    "architecture/dec-005-policy.json": "12d737752aa240f581b647db074756649d32dd8a906ed2b402940f1492ed0bd1",
+    "package.json": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
+    "pnpm-lock.yaml": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
+    "scripts/cleanup-postgresql-ci.mjs": "72d64ebc0f1e8bffa0dd368c480b2260c416ce271a53e78730558fa5fc15843b",
+    "scripts/lib/postgresql-ci-evidence.mjs": "62b04cbf2cccf869ee9dbf2bd9d08d466ccf9ddbaadb0e9a13a24e22caaa471f",
+    "scripts/lib/postgresql-test-output.mjs": "60f58810ecac93fcb457e3dcb6a7377532a984de585d92c730da0548f10a6d3e",
+    "scripts/run-postgresql-ci.mjs": "d7116bb7d422dcde7e27a0f36dd7519b63e2e434ed2547f5ca4489e57d5779c4",
+    "scripts/test-database-connection-postgresql.mjs": "3530cd894a44f8848bbc88fc5cd21a9a31fbb7b2f97eb8b9693a2475f03acaac",
+    "scripts/test-database-migration-postgresql.mjs": "efc3e15ac8b29d242fd0b3c159dbd08e633185c1041c9ba8c63053d23658bd1a",
+    "scripts/test-database-schema-postgresql.mjs": "24226163cbe93363781ef337072a865273ea291f335ab7dce8e5b6f15389640f",
+    "scripts/test-database-transaction-postgresql.mjs": "857653d8a0fb7ede3b3968b6fc3c3aa950317e8dd3886138a91f020048893625",
+    "scripts/test-owner-scoped-persistence-postgresql.mjs": "f512568643a5236f868a81d3420c58d39fa1e12c32de33f30a498d3ec2839e19",
+    "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
+    "supply-chain-policy.json": "5c1fedd03a9cb9f92ae4f6253563059bee5e024974641a43acaac50b0988ef72",
+    "test/database-schema-postgresql.test.mjs": "2b6c476aa8f98ebcd1cbdc323ef649a7a6b9f9560d65c5dbe00dcae8851a24e1",
+    "tsconfig.build.json": "d4d3174e3360e72577f975e263349d9afb76b39d929454fd7b2dd3dafd934bc3",
+    "tsconfig.json": "b22200b66309587ea098579124484675058e1630fea470e002d904f1330b2571"
   },
-  "migration": {
-    "filename": "20260725183832_database_create_tenants_and_branches.ts",
-    "sha256": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
-    "empty_database": "PASS",
-    "down_reapply": "PASS",
-    "journal": "PASS",
-    "lock": "PASS",
-    "drift": "PASS"
-  },
-  "schema": {
-    "sha256": "21b9c98bf5168adb316df2a8eaf059f1c24bba5d8e1a6aed07035325bd3eda4d",
-    "tables": [
-      "branches",
-      "tenants"
-    ],
-    "columns": 5,
-    "constraints": 8,
-    "indexes": 2
-  },
-  "suites": [
+  "commands": [
     {
-      "name": "connection",
-      "tests": 6,
-      "pass": 6,
-      "skips": 0,
-      "result": "PASS"
+      "name": "install",
+      "command": "pnpm install --frozen-lockfile",
+      "exitCode": 0
     },
     {
-      "name": "transaction",
-      "tests": 1,
-      "pass": 1,
-      "skips": 0,
-      "result": "PASS"
+      "name": "architecture",
+      "command": "pnpm run architecture",
+      "exitCode": 0
     },
     {
-      "name": "migration",
-      "tests": 1,
-      "pass": 1,
-      "skips": 0,
-      "result": "PASS"
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "exitCode": 0
     },
     {
-      "name": "schema",
-      "tests": 1,
-      "pass": 1,
-      "skips": 0,
-      "result": "PASS"
+      "name": "build",
+      "command": "pnpm run build",
+      "exitCode": 0
     },
     {
-      "name": "owner-scoped-adapters",
-      "tests": 1,
-      "pass": 1,
-      "skips": 0,
-      "result": "PASS"
+      "name": "test",
+      "command": "pnpm test",
+      "exitCode": 0
+    },
+    {
+      "name": "test:architecture",
+      "command": "pnpm run test:architecture",
+      "exitCode": 0
+    },
+    {
+      "name": "verify",
+      "command": "pnpm run verify",
+      "exitCode": 0
+    },
+    {
+      "name": "test:postgresql",
+      "command": "node scripts/run-postgresql-ci.mjs",
+      "exitCode": 0
+    },
+    {
+      "name": "smoke:unit",
+      "command": "node --test --test-name-pattern='smoke readiness' test/architecture-policy.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "name": "smoke:compiled",
+      "command": "pnpm run smoke:start",
+      "exitCode": 0
+    },
+    {
+      "name": "dist:inspect",
+      "command": "node scripts/collect-ci-evidence.mjs",
+      "exitCode": 0
+    },
+    {
+      "name": "diff:check",
+      "command": "git diff --check",
+      "exitCode": 0
     }
   ],
-  "test_counts_per_job": {
-    "suites": 5,
-    "tests_executed": 10,
-    "critical_skips": 0,
-    "failures": 0,
-    "previously_gated_skips": 10
+  "dist": {
+    "aggregateSha256": "02e6cc74f56acd3ccf04d65260b688c66d94baa1a982ef5f251b624108292fc0",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "bytes": 1155,
+        "path": "dist/app.module.js",
+        "sha256": "5278d3c66f66618526781deaa9c9e7f5bfc60ebd97af0a5edb29a063264be398"
+      },
+      {
+        "bytes": 511,
+        "path": "dist/app.module.js.map",
+        "sha256": "56e6b3b3dd49aae262a4d59fdb28084a2c594a82c2838b8b12f35aa54a2e5f3d"
+      },
+      {
+        "bytes": 12234,
+        "path": "dist/infrastructure/database/database-config.js",
+        "sha256": "11aa32dd8940ce20f58605bd3fb5ad35563b72a417548e667ddc9dfd77ad0055"
+      },
+      {
+        "bytes": 10720,
+        "path": "dist/infrastructure/database/database-config.js.map",
+        "sha256": "077df759990aac7a1433bd1009875358734e56944a7cf13811c6d0a0d9f4ea5c"
+      },
+      {
+        "bytes": 15490,
+        "path": "dist/infrastructure/database/database-connection.js",
+        "sha256": "2730b0f6794c53203df68477c3b7299df626e4d8ad6ba4f790ecdfe7b14d605b"
+      },
+      {
+        "bytes": 13338,
+        "path": "dist/infrastructure/database/database-connection.js.map",
+        "sha256": "9d0539e93e269f1c90f815278230d8aed45d98af538a1a72214cfde1a4139ff3"
+      },
+      {
+        "bytes": 495,
+        "path": "dist/infrastructure/database/database-migration-capability.js",
+        "sha256": "4cb652bb671a7ab91dc432c53127edf154fd0ebb9af6f5acfa1b142f74e618d8"
+      },
+      {
+        "bytes": 474,
+        "path": "dist/infrastructure/database/database-migration-capability.js.map",
+        "sha256": "cd05539777c77d3aeb0425c21736fe34a80a116a66c854851c9f14e1c866777d"
+      },
+      {
+        "bytes": 9626,
+        "path": "dist/infrastructure/database/database-migration-provider.js",
+        "sha256": "d9b62e1666961314c90c12264c16dae992f1bf3a887e6e0da755403bd8f868e7"
+      },
+      {
+        "bytes": 9340,
+        "path": "dist/infrastructure/database/database-migration-provider.js.map",
+        "sha256": "6c357bce834578c8c7e061e07ac2bc9ede8e7791939e4f2192b2def62305dfff"
+      },
+      {
+        "bytes": 1404,
+        "path": "dist/infrastructure/database/database-persistence-capability.js",
+        "sha256": "0dee335011c7231ba6c3b4ccec8e6c854013c7bd563dfba7c2a7e17a23131a97"
+      },
+      {
+        "bytes": 1240,
+        "path": "dist/infrastructure/database/database-persistence-capability.js.map",
+        "sha256": "3ae88b2105758bab38c16055094a8fd5e463b0de737088e428c56376a9ef7c90"
+      },
+      {
+        "bytes": 1192,
+        "path": "dist/infrastructure/database/database-transaction-capability.js",
+        "sha256": "f3c9986a0d475f043895de7956afad1db587a98b04e4a0ea136a7218e7bea533"
+      },
+      {
+        "bytes": 1161,
+        "path": "dist/infrastructure/database/database-transaction-capability.js.map",
+        "sha256": "7793d71cd32d694de3ba34947d68624bb400a3041b480a1bee65edfedc468bce"
+      },
+      {
+        "bytes": 53,
+        "path": "dist/infrastructure/database/database-types.js",
+        "sha256": "2dfef574ab0ca61ccdf172212d62c9f29ad26b27ef519da1d6c3e1992b72f96b"
+      },
+      {
+        "bytes": 150,
+        "path": "dist/infrastructure/database/database-types.js.map",
+        "sha256": "df827c41985da0ada9efe1934d4eabfc352c9efb80a2509983d993f2c49fa114"
+      },
+      {
+        "bytes": 21404,
+        "path": "dist/infrastructure/database/migration-runner.js",
+        "sha256": "87e2482283940baf46bae2c3fc82b2481d77bd5dc9ed91e9a554eee88612d2c4"
+      },
+      {
+        "bytes": 18292,
+        "path": "dist/infrastructure/database/migration-runner.js.map",
+        "sha256": "6a9291fe48c2eef6210d69d1abbd11ee9caf7004a07f058d03759a2dc3b6ed75"
+      },
+      {
+        "bytes": 1103,
+        "path": "dist/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.js",
+        "sha256": "af66fbf5a7504975050955d2fa555d83694cd47eaba36a21210b5ae6abaffde5"
+      },
+      {
+        "bytes": 1331,
+        "path": "dist/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.js.map",
+        "sha256": "5d1295fd6f9dd66ecc79f43a090c970d99e7b4bd5a8dfc49a46c3e183f302ab5"
+      },
+      {
+        "bytes": 9681,
+        "path": "dist/infrastructure/database/transaction-runner.js",
+        "sha256": "18e170de81ff10be316f0302ddc4d58aec6c1ea46cba3576879b80c11d481080"
+      },
+      {
+        "bytes": 8102,
+        "path": "dist/infrastructure/database/transaction-runner.js.map",
+        "sha256": "316bfb3eb46da4266bf284115b961363ea7029f73442d46c9bec61132f5bda9e"
+      },
+      {
+        "bytes": 596,
+        "path": "dist/main.js",
+        "sha256": "51e2f762f69be67b9dd46c0e7834fa1d3dd731e9f2bc142a278ad297a7d2b3fe"
+      },
+      {
+        "bytes": 669,
+        "path": "dist/main.js.map",
+        "sha256": "59695d1fc1823ac0316c1db14a8451b4d97b25005166546d1b4adc86f67bc69b"
+      },
+      {
+        "bytes": 783,
+        "path": "dist/modules/access/access.module.js",
+        "sha256": "31b2bf84a2dff73d283064c6457488b41a0b0cf80e43ca5dc1d33f8c983c8d9a"
+      },
+      {
+        "bytes": 279,
+        "path": "dist/modules/access/access.module.js.map",
+        "sha256": "a3f7c1e227a681185dfa862eec1b19b98c9d83557699e7061c8ad7c7c95c1426"
+      },
+      {
+        "bytes": 44,
+        "path": "dist/modules/access/index.js",
+        "sha256": "827c148a2159c5d098f9fe33185b555382ad63931193dda5f41f6af38a6a4445"
+      },
+      {
+        "bytes": 123,
+        "path": "dist/modules/access/index.js.map",
+        "sha256": "c0e6b91a0cb47d8ac4e5f695130bd8769d7d0554e06a1eca3877dac112e7c446"
+      },
+      {
+        "bytes": 2083,
+        "path": "dist/modules/stations/application/ports/branch-repository.port.js",
+        "sha256": "b4e47cdeed7d075a26f90fc2b2d549254a6bbcfcd198cde00f05fa7067ad673b"
+      },
+      {
+        "bytes": 1686,
+        "path": "dist/modules/stations/application/ports/branch-repository.port.js.map",
+        "sha256": "38eecf1d59a439948c7d89381abc98b58b3c03916dfe68a189f99b71ad3f3755"
+      },
+      {
+        "bytes": 44,
+        "path": "dist/modules/stations/index.js",
+        "sha256": "827c148a2159c5d098f9fe33185b555382ad63931193dda5f41f6af38a6a4445"
+      },
+      {
+        "bytes": 125,
+        "path": "dist/modules/stations/index.js.map",
+        "sha256": "3d4194a69586ecc80137858e3c848f99c0d76339e004f0fae3f5f25d71bf27ad"
+      },
+      {
+        "bytes": 6356,
+        "path": "dist/modules/stations/infrastructure/persistence/kysely-branch.repository.js",
+        "sha256": "f96f093985a6f6ee19a9639f2eff4b635f216740f47996c5cf6d824b083cd479"
+      },
+      {
+        "bytes": 5670,
+        "path": "dist/modules/stations/infrastructure/persistence/kysely-branch.repository.js.map",
+        "sha256": "2eede6e3309a72ab9d80e20374f3e7913e37c3197ff718a24c2c309c174769b7"
+      },
+      {
+        "bytes": 795,
+        "path": "dist/modules/stations/stations.module.js",
+        "sha256": "7fba094119df197e6cbd680e0a4d96341502f55a16af6692bf06340cf69966ae"
+      },
+      {
+        "bytes": 287,
+        "path": "dist/modules/stations/stations.module.js.map",
+        "sha256": "c29b0fdf835141c24fe1864994397fba1bb64a0930240416eb455554bd73def8"
+      },
+      {
+        "bytes": 1448,
+        "path": "dist/modules/tenancy/application/ports/tenant-repository.port.js",
+        "sha256": "a33ad4054ce6ddb8c14b04fe93ad2885103ae1e15eb82dbee7e25b2a4c0a094b"
+      },
+      {
+        "bytes": 1269,
+        "path": "dist/modules/tenancy/application/ports/tenant-repository.port.js.map",
+        "sha256": "2cbbd110c227df4b5b6c2ed5dc93caca984168045f3013a82a94c7c23362ccf4"
+      },
+      {
+        "bytes": 340,
+        "path": "dist/modules/tenancy/index.js",
+        "sha256": "ae7976d932186a24531e5e80700aa182019f0da037ce171c4172aa906563ee77"
+      },
+      {
+        "bytes": 355,
+        "path": "dist/modules/tenancy/index.js.map",
+        "sha256": "6b3df8f27bcd8688c38d2714a1a30b9195f1f74edaca562f5f7db0d62d4daf6d"
+      },
+      {
+        "bytes": 4628,
+        "path": "dist/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.js",
+        "sha256": "7e7bb2afae9fc3924ba36f9226271e523ec2d16ae4d9dbe6f15de85d72f281dc"
+      },
+      {
+        "bytes": 4244,
+        "path": "dist/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.js.map",
+        "sha256": "36fa71d3cd1616ed709be5bf733a9dc04cde29b2a66c0c676408a343804f319a"
+      },
+      {
+        "bytes": 789,
+        "path": "dist/modules/tenancy/tenancy.module.js",
+        "sha256": "57f1786cbbf759f386e14b1e5a7285bf20b7f4ae350d7afb5bee8d6bacd236f0"
+      },
+      {
+        "bytes": 284,
+        "path": "dist/modules/tenancy/tenancy.module.js.map",
+        "sha256": "3ed5487cf9afcb35103a7e80806cf7d7292202178fe5a88dbaedc6e57487fe29"
+      },
+      {
+        "bytes": 944,
+        "path": "dist/startup-config.js",
+        "sha256": "2d514a0579e9be57df708a3188e8a4580c809ae4b6fc7a42570ab8c7fdc96f42"
+      },
+      {
+        "bytes": 1009,
+        "path": "dist/startup-config.js.map",
+        "sha256": "f8c102998c60110bbbf39e7911a7a73a6e23662ed868e5a029a3e990c6ef9c73"
+      },
+      {
+        "bytes": 865,
+        "path": "dist/technical-shell.service.js",
+        "sha256": "535706aff5615c48bd954825a9e9198a1135b8b430b12da00a10672a3e5a05f2"
+      },
+      {
+        "bytes": 304,
+        "path": "dist/technical-shell.service.js.map",
+        "sha256": "375538ff1a504b8ec83e914b6a2505d49e8b70eb06df283b9a57bde394eab828"
+      }
+    ]
   },
-  "isolation": {
-    "schema": "PASS",
-    "adapters": "PASS",
-    "cross_tenant_read": "PASS",
-    "tenant_scoped_list": "PASS"
+  "repository": {
+    "finalClean": true,
+    "initialClean": true
   },
-  "artifacts": {
-    "push": {
-      "run_1_evidence_sha256": "d5ec6a1ab646813985450ee0f461b49c18c70b88321f3921b7b8cc37329df729",
-      "run_1_postgresql_sha256": "e092466b5a3506820e0d99d861f2de035a3192c8e3e41fd6ab908561de9ee34e",
-      "run_2_evidence_sha256": "00817cbfeb0ec7998b7b892cb1f7727347e74079d9dc4848c882d19a496ad4ab",
-      "run_2_postgresql_sha256": "3c1f159abdf6b51f4d93ce8ef2668d953291a44facb8cb427d05621581071bfc",
-      "comparison_sha256": "7c50cd7bba35c58d72f8523d1a92d04c5a3687c21a624afeea09e830fd52c96a"
+  "verdict": "PASS",
+  "postgresql": {
+    "schemaVersion": 1,
+    "contract": "PBI-023/POSTGRESQL-CI",
+    "execution": {
+      "attempt": "1",
+      "event": "push",
+      "headSha": "9e38f20900e2be4df7680a936fdfee077e6c6950",
+      "label": "run-1",
+      "workflowRunId": "30185110105"
     },
-    "pull_request": {
-      "run_1_evidence_sha256": "ab2899935ad818e644c8a6676053992c168df3a47a0735e4b990fb2ef82e5efb",
-      "run_1_postgresql_sha256": "3171544e051a35b733a9c89be6f5761738be034d5d0aa5083fa89eb06e5de3a3",
-      "run_2_evidence_sha256": "f01c4a355a6f25c4422db5fb97d82793e75fa7bf9efb8bd1f5f3f84ad9f3f42e",
-      "run_2_postgresql_sha256": "a4badb92ba83d70a5f10f7864a2234fc0877167ae4743e9452ac463a6c4492f4",
-      "comparison_sha256": "4ea9c090212beb7caa7053c6db3f586b4eb5b05d7096cf046d5f28c77401c736"
+    "image": {
+      "reference": "postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+      "digest": "sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf",
+      "os": "linux",
+      "architecture": "amd64"
+    },
+    "postgres": {
+      "version": "18.4",
+      "serverVersion": "postgres (PostgreSQL) 18.4 (Debian 18.4-1.pgdg13+1)",
+      "clientVersion": "psql (PostgreSQL) 18.4 (Debian 18.4-1.pgdg13+1)",
+      "encoding": "UTF8",
+      "timezone": "UTC",
+      "locale": "en_US.utf8"
+    },
+    "database": {
+      "isolation": "fresh database and container per critical suite",
+      "identitiesExposed": false,
+      "persistentStorage": false,
+      "suiteDatabases": 5
+    },
+    "roles": {
+      "mode": "synthetic ephemeral lifecycle identity per suite",
+      "migration": "migration-enabled only in migration/schema/adapter suites",
+      "application": "test/application behavior without production privilege claim"
+    },
+    "migration": {
+      "filename": "20260725183832_database_create_tenants_and_branches.ts",
+      "sha256": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
+      "status": "PASS",
+      "emptyDatabase": "PASS",
+      "downReapply": "PASS",
+      "drift": "PASS",
+      "journal": "PASS",
+      "lock": "PASS"
+    },
+    "schema": {
+      "sha256": "21b9c98bf5168adb316df2a8eaf059f1c24bba5d8e1a6aed07035325bd3eda4d",
+      "tables": [
+        "branches",
+        "tenants"
+      ],
+      "columns": 5,
+      "constraints": 8,
+      "indexes": 2
+    },
+    "suites": [
+      {
+        "name": "connection",
+        "status": "PASS",
+        "cleanup": "PASS",
+        "materialSha256": "15f75d7df0ae0bee1bb8c590ce51bd885148bc4e87f7670413c0dba726b2857e",
+        "scenarios": [
+          "authentication",
+          "close",
+          "concurrency",
+          "database-not-found",
+          "pool-release",
+          "select-1",
+          "ssl",
+          "timeout"
+        ],
+        "tests": {
+          "tests": 6,
+          "pass": 6,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      },
+      {
+        "name": "transaction",
+        "status": "PASS",
+        "cleanup": "PASS",
+        "materialSha256": "5b59367a3ddd70014e276ae6fe4952031b0eee33cbec38e559c26337e2581be8",
+        "scenarios": [
+          "callback",
+          "close-drain",
+          "commit",
+          "concurrency",
+          "deadlock",
+          "error-reuse",
+          "isolation",
+          "pool-release",
+          "read-only",
+          "rollback",
+          "serialization",
+          "timeout"
+        ],
+        "tests": {
+          "tests": 1,
+          "pass": 1,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      },
+      {
+        "name": "migration",
+        "status": "PASS",
+        "cleanup": "PASS",
+        "materialSha256": "fb5e3ae30ec453bb54ba17ba8421cc426ef95283a91335224699a5f2ada6e531",
+        "scenarios": [
+          "cleanup",
+          "close-drain",
+          "concurrency",
+          "dist-esm",
+          "down-authorization",
+          "down-failure",
+          "drift",
+          "empty-status",
+          "failure-rollback",
+          "journal",
+          "lock-release",
+          "lock-timeout",
+          "manifest",
+          "no-down",
+          "production-down-denied",
+          "provider",
+          "status",
+          "up"
+        ],
+        "tests": {
+          "tests": 1,
+          "pass": 1,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      },
+      {
+        "name": "schema",
+        "status": "PASS",
+        "cleanup": "PASS",
+        "materialSha256": "48275545b50b53885f41e631ea8f86c02da50c245b8435190f2ac3eb4dcf3d0f",
+        "scenarios": [
+          "atomicity",
+          "cleanup",
+          "composite-future-reference",
+          "constraint-errors",
+          "dist-execution",
+          "down",
+          "down-dependency-block",
+          "indexes",
+          "introspection",
+          "journal",
+          "negative-tenant-isolation",
+          "reapply",
+          "rerun",
+          "status",
+          "up"
+        ],
+        "tests": {
+          "tests": 1,
+          "pass": 1,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      },
+      {
+        "name": "owner-scoped-adapters",
+        "status": "PASS",
+        "cleanup": "PASS",
+        "materialSha256": "76768910a4912263472635034a4c19c237211939fb2212b4e6106038dc40931c",
+        "scenarios": [
+          "branch-create-find-exists-list",
+          "concurrent-duplicate",
+          "context-expiry",
+          "cross-tenant-read",
+          "duplicate-conflict",
+          "migration-up-down",
+          "nested-transaction-rejected",
+          "rollback",
+          "same-branch-id-across-tenants",
+          "tenant-create-find-exists",
+          "tenant-foreign-key",
+          "transaction-commit"
+        ],
+        "tests": {
+          "tests": 1,
+          "pass": 1,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      }
+    ],
+    "totals": {
+      "suites": 5,
+      "testsExecuted": 10,
+      "criticalSkips": 0,
+      "failures": 0,
+      "previouslyGatedSkips": 10
+    },
+    "isolation": {
+      "schema": "PASS",
+      "adapters": "PASS",
+      "crossTenantRead": "PASS",
+      "tenantScopedList": "PASS"
+    },
+    "cleanup": {
+      "status": "PASS",
+      "containers": 0,
+      "volumes": 0,
+      "dedicatedNetworks": 0,
+      "persistentFiles": 0,
+      "dumps": 0,
+      "environmentFiles": 0
+    },
+    "sanitization": {
+      "status": "PASS",
+      "credentials": "not recorded",
+      "connectionStrings": "not recorded",
+      "rawSqlLogs": "not recorded",
+      "personalPaths": "not recorded"
+    },
+    "artifacts": [
+      "POSTGRESQL_MANIFEST.json",
+      "EVIDENCE_MANIFEST.json",
+      "DIST_MANIFEST.json"
+    ],
+    "result": "PASS",
+    "comparableSha256": "6daf3478d4b9bb3ead212f46455516d8a1c6ed68b289f59996bcf5986695760e",
+    "consolidatedEvidence": {
+      "purpose": "PBI-023 authoritative PostgreSQL CI evidence index",
+      "repository": "luisgtzaviles/SrTaller-2.0",
+      "branch": "r0/pbi-023-persistence-planning",
+      "commits": {
+        "technical": "9e38f20900e2be4df7680a936fdfee077e6c6950",
+        "documentary": "e78da7f26bc572ea04bc2ff44c35d2c099a0a2e7"
+      },
+      "workflow": {
+        "name": "Authoritative Linux CI",
+        "technical": {
+          "push": {
+            "run_id": "30185110105",
+            "attempt": 1,
+            "event": "push",
+            "head_sha": "9e38f20900e2be4df7680a936fdfee077e6c6950",
+            "jobs": {
+              "run_1": "89748256832",
+              "run_2": "89748256826",
+              "comparison": "89748812805"
+            },
+            "result": "success"
+          },
+          "pullRequest": {
+            "run_id": "30185111056",
+            "attempt": 1,
+            "event": "pull_request",
+            "head_sha": "9e38f20900e2be4df7680a936fdfee077e6c6950",
+            "artifact_merge_sha": "33e886c5bdda06a4f189fd0e0c549930222be873",
+            "jobs": {
+              "run_1": "89748259605",
+              "run_2": "89748259601",
+              "comparison": "89748807240"
+            },
+            "result": "success"
+          }
+        },
+        "documentaryValidation": {
+          "push": {
+            "run_id": "30185688424",
+            "attempt": 1,
+            "event": "push",
+            "head_sha": "e78da7f26bc572ea04bc2ff44c35d2c099a0a2e7",
+            "jobs": {
+              "run_1": "89749840736",
+              "run_2": "89749840691",
+              "comparison": "89750481491"
+            },
+            "result": "success"
+          },
+          "pullRequest": {
+            "run_id": "30185689481",
+            "attempt": 1,
+            "event": "pull_request",
+            "head_sha": "e78da7f26bc572ea04bc2ff44c35d2c099a0a2e7",
+            "artifact_merge_sha": "70180aad1945480ef60610029c09ae5b7a25a83a",
+            "jobs": {
+              "run_1": "89749844038",
+              "run_2": "89749844086",
+              "comparison": "89750480669"
+            },
+            "result": "success"
+          }
+        }
+      },
+      "artifacts": {
+        "push": {
+          "run_1_evidence_sha256": "d5ec6a1ab646813985450ee0f461b49c18c70b88321f3921b7b8cc37329df729",
+          "run_1_postgresql_sha256": "e092466b5a3506820e0d99d861f2de035a3192c8e3e41fd6ab908561de9ee34e",
+          "run_2_evidence_sha256": "00817cbfeb0ec7998b7b892cb1f7727347e74079d9dc4848c882d19a496ad4ab",
+          "run_2_postgresql_sha256": "3c1f159abdf6b51f4d93ce8ef2668d953291a44facb8cb427d05621581071bfc",
+          "comparison_sha256": "7c50cd7bba35c58d72f8523d1a92d04c5a3687c21a624afeea09e830fd52c96a"
+        },
+        "pull_request": {
+          "run_1_evidence_sha256": "ab2899935ad818e644c8a6676053992c168df3a47a0735e4b990fb2ef82e5efb",
+          "run_1_postgresql_sha256": "3171544e051a35b733a9c89be6f5761738be034d5d0aa5083fa89eb06e5de3a3",
+          "run_2_evidence_sha256": "f01c4a355a6f25c4422db5fb97d82793e75fa7bf9efb8bd1f5f3f84ad9f3f42e",
+          "run_2_postgresql_sha256": "a4badb92ba83d70a5f10f7864a2234fc0877167ae4743e9452ac463a6c4492f4",
+          "comparison_sha256": "4ea9c090212beb7caa7053c6db3f586b4eb5b05d7096cf046d5f28c77401c736"
+        }
+      },
+      "reviewSummary": {
+        "cleanup": {
+          "status": "PASS",
+          "containers": 0,
+          "volumes": 0,
+          "dedicated_networks": 0,
+          "persistent_files": 0,
+          "dumps": 0,
+          "environment_files": 0
+        },
+        "sanitization": {
+          "status": "PASS",
+          "remote_json_files_scanned": 14,
+          "credentials_retained": false,
+          "connection_strings_retained": false,
+          "raw_sql_logs_retained": false,
+          "personal_paths_retained": false
+        },
+        "isolation": {
+          "schema": "PASS",
+          "adapters": "PASS",
+          "cross_tenant_read": "PASS",
+          "tenant_scoped_list": "PASS"
+        },
+        "testCountsPerJob": {
+          "suites": 5,
+          "tests_executed": 10,
+          "critical_skips": 0,
+          "failures": 0,
+          "previously_gated_skips": 10
+        }
+      },
+      "comparison": {
+        "postgresql_comparable_sha256": "6daf3478d4b9bb3ead212f46455516d8a1c6ed68b289f59996bcf5986695760e",
+        "push_material_equivalence": true,
+        "pull_request_material_equivalence": true,
+        "locally_reproduced": true,
+        "result": "PASS"
+      },
+      "priorResult": "PASS — PBI-023 POSTGRESQL CI AUTHORITATIVE"
     }
-  },
-  "cleanup": {
-    "status": "PASS",
-    "containers": 0,
-    "volumes": 0,
-    "dedicated_networks": 0,
-    "persistent_files": 0,
-    "dumps": 0,
-    "environment_files": 0
-  },
-  "sanitization": {
-    "status": "PASS",
-    "remote_json_files_scanned": 14,
-    "credentials_retained": false,
-    "connection_strings_retained": false,
-    "raw_sql_logs_retained": false,
-    "personal_paths_retained": false
-  },
-  "comparison": {
-    "postgresql_comparable_sha256": "6daf3478d4b9bb3ead212f46455516d8a1c6ed68b289f59996bcf5986695760e",
-    "push_material_equivalence": true,
-    "pull_request_material_equivalence": true,
-    "locally_reproduced": true,
-    "result": "PASS"
-  },
-  "result": "PASS — PBI-023 POSTGRESQL CI AUTHORITATIVE"
+  }
 }

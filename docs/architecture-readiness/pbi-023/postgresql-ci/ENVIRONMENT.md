@@ -17,10 +17,17 @@
 
 ## Identidad de datos
 
-Las identidades de base, usuario, puerto y contenedor son efímeras y no se
-retienen. Se derivan del run/job/attempt/label con caracteres válidos. Los
-manifests sólo indican que existen cinco bases aisladas por ejecución; no
-publican connection strings ni credenciales.
+Las identidades de base, usuario, puerto y contenedor son sintéticas, efímeras
+y se generan durante la ejecución. Contenedor y base reciben un sufijo
+aleatorio; el password también es sintético y aleatorio; el nombre de usuario
+es sintético y específico del harness, y Docker asigna un puerto efímero. No
+son identidades productivas, no se reutilizan como credenciales estables y no
+se derivan determinísticamente de run/job/attempt.
+
+Run, job, attempt y label se registran por separado para trazabilidad; el
+label gobierna además la verificación de cleanup. Cada suite conserva su
+contenedor y base independientes. Los manifests no publican connection
+strings, passwords ni secretos productivos.
 
 ## Reproducibilidad
 

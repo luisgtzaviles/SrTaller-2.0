@@ -2,7 +2,7 @@
 
 ## Dictamen
 
-**PASS — PBI-023 POSTGRESQL CI AUTHORITATIVE**
+**PASS — PBI-023 FORMALLY CLOSED**
 
 El expediente define estimación, DEC-050, versiones candidatas, arquitectura,
 schema mínimo, aislamiento, migraciones, riesgos, gates y plan. SPIKE-002
@@ -22,8 +22,9 @@ errores, transacciones y aislamiento negativo; dos runs PostgreSQL `18.4`
 coincidieron. No existe startup, endpoint, provider Nest ni consumer
 funcional. El Paso 11 ejecutó las cinco suites críticas en PostgreSQL `18.4`
 real dentro de `run-1` y `run-2`, para push y PR. Comparaciones, artifacts,
-cleanup y sanitización pasaron. PBI-023 queda listo para revisión formal de
-cierre, no `Done`.
+cleanup y sanitización pasaron. La revisión formal independiente confirmó las
+tres remediaciones documentales, repitió los gates y cerró PBI-023 sin
+autorizar R0, PBI-024, merge ni cambio del PR #2 a Ready.
 
 ## Checklist
 
@@ -84,10 +85,10 @@ cierre, no `Done`.
 |---|---|---|
 | DEC-050 | Accepted with conditions | C01–C05 y C07–C09 materialmente ejercidas; C06 operacional parcial; C10 no activada |
 | SPIKE-002 | mandatory/pending | Completed; material evidence PASS |
-| PBI-023 | Ready; PostgreSQL CI autorizado | Ready; PostgreSQL CI authoritative / closure review authorized |
+| PBI-023 | Ready; PostgreSQL CI autorizado | Closed — PostgreSQL CI authoritative materialized and formally reviewed |
 | DEC-049 | Accepted; C01–C08 vigentes | C01–C07 con evidencia local + CI para el scope; operación productiva no afirmada |
 | DEC-051 | C01/C07/C09 Satisfied | C03/C04/C06 Satisfied; C02 pendiente del primer merge |
-| DEC-055 | Accepted | sin cambio material; CI sintética PASS, provider/rotación productivos pendientes |
+| DEC-055 | Propuesta | sin cambio material; CI sintética PASS sólo para el scope efímero; provider, privilegios, rotación y operación productiva pendientes |
 | DEC-063 | C01/C03/C04 Satisfied | C02/C05/C06 completas para revisión del scope; C07/C08 no activadas |
 
 ## Selecciones
@@ -105,13 +106,12 @@ cierre, no `Done`.
 
 ## Gates restantes
 
-1. Revisión formal de cierre de PBI-023.
-2. DEC051-C02: protección/revisión del primer merge funcional.
-3. Ratificación del alcance C02/C05/C06 de DEC-063.
-4. Decisión explícita sobre cambiar PR #2 a Ready y efectuar merge.
+1. DEC051-C02: protección/revisión del primer merge funcional.
+2. Ratificación separada del alcance C02/C05/C06 de DEC-063.
+3. Decisión explícita sobre cambiar PR #2 a Ready y efectuar merge.
 
-No existe bloqueo material para solicitar el Paso 12. PBI-024, merge y release
-continúan sin autorización.
+El Paso 12 quedó completo. PBI-024, R0, merge y release continúan sin
+autorización; DEC-055 permanece `Propuesta`.
 
 ## Validaciones de esta tarea
 
@@ -148,5 +148,6 @@ La evidencia material del Paso 11 está en
 
 ## Siguiente acción
 
-Ejecutar el Paso 12: revisión formal de cierre de PBI-023. Mantener PR #2
-Draft hasta ese dictamen.
+Paso 13 — revisar los cambios documentales finales, crear el commit formal de
+cierre de PBI-023 y después tomar una decisión separada sobre promover el PR
+#2 de Draft a Ready.

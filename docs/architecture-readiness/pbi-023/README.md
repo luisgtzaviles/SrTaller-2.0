@@ -10,14 +10,13 @@
 - **Cambio técnico:** checker/tests, dependencias/configuración, facility de
   conexión, runners y primera migración productiva controlados; cero wiring
   productivo.
-- **Resultado:** `PASS — PBI-023 POSTGRESQL CI AUTHORITATIVE`.
-- **Estado PBI-023:** `Ready — PostgreSQL CI authoritative / PBI-023 closure
-  review authorized`.
+- **Resultado:** `PASS — PBI-023 FORMALLY CLOSED`.
+- **Estado PBI-023:** `Closed — PostgreSQL CI authoritative materialized and formally reviewed`.
 
 ## Propósito
 
 Este expediente lleva PBI-023 hasta persistencia owner-scoped verificada en
-PostgreSQL autoritativo sin API ni negocio. Distingue diez estados
+PostgreSQL autoritativo sin API ni negocio. Distingue once estados
 que no deben confundirse:
 
 1. DEC-050 está aceptada documentalmente con condiciones.
@@ -37,6 +36,8 @@ que no deben confundirse:
    y aislamiento negativo.
 10. El Paso 11 ejecutó las cinco suites en PostgreSQL `18.4` real dentro de
     ambos runs VC-024, con comparación y artifacts válidos.
+11. El Paso 12 verificó las remediaciones documentales, repitió los gates y
+    cerró formalmente PBI-023 sin autorizar merge, PBI-024 ni R0.
 
 El laboratorio fue destruido. El Paso 4 modificó sólo `package.json`,
 `pnpm-lock.yaml` y documentación; preservó `src/`, workflows, scripts, tests,
@@ -82,8 +83,11 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 - La sucursal mínima sólo demuestra pertenencia tenant; no implementa el
   contexto operativo de ADR-010.
 
-## Gate siguiente
+## Siguiente acción
 
-Ejecutar separadamente el Paso 12: revisión formal de cierre de PBI-023. Debe
-revisar condiciones DEC-049/050/051/063, PR #2 y autorización futura; este
-dictamen no marca el PBI `Done`, no cambia el PR a Ready y no autoriza PBI-024.
+Paso 13 — revisar los cambios documentales finales, crear el commit formal de
+cierre de PBI-023 y después tomar una decisión separada sobre promover el PR
+#2 de Draft a Ready.
+
+DEC051-C02 continúa pendiente del merge real, DEC-055 permanece `Propuesta`,
+DEC-063 no fue ratificada, R0 sigue no autorizado y PR #2 permanece `Draft`.
