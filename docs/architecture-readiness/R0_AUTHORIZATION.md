@@ -21,6 +21,15 @@ La revisión recibió:
 - PBI-023 `Ready`, no iniciado;
 - 24 contratos H1 abiertos y trazados.
 
+Esta sección conserva el snapshot de entrada a la revisión; no describe el
+estado vigente posterior al dictamen. Desde esta autorización, toda afirmación
+preexistente en expedientes, verificaciones o resúmenes que presente la
+autorización de R0 o el cierre de Sprint 00 como pendientes queda supersedida
+únicamente como estado operativo actual por las secciones 5 y 14 de este
+documento y por el cierre canónico de Sprint 00. Esos textos permanecen como
+evidencia histórica y no constituyen revocación ni reapertura. Al 2026-07-26
+no existe una revocación o reapertura formal posterior.
+
 ## 4. H0
 
 H0 permanece `Complete — 9/0`. DEC-004/VC-024, DEC-005, DEC-044, DEC-049,
@@ -79,6 +88,14 @@ pending`.
 contra PostgreSQL `18.4`, pasó comparación y cleanup y recibió dictamen
 `PASS`. PBI-023 queda `Ready — SPIKE-002 materially verified /
 implementation gates ready`; no está iniciado.
+
+**Actualización de cierre 2026-07-25:** PBI-023 materializó el alcance
+autorizado, ejecutó cinco suites críticas en PostgreSQL `18.4` dentro de los
+dos runs autoritativos y recibió el dictamen `PASS — PBI-023 FORMALLY CLOSED`.
+Su estado vigente es `Closed — PostgreSQL CI authoritative materialized and
+formally reviewed`. Este cierre no amplía R0, no autoriza PBI-024, merge,
+release o deploy y no satisface DEC051-C02, que continúa pendiente hasta el
+primer merge real a `main`.
 
 ## 9. Definition of Ready
 
@@ -186,12 +203,12 @@ equivale a aceptación de la implementación futura.
 
 `Authorized`.
 
-PBI-023 conserva `Authorized`, queda `Ready` y no está `In progress`.
-H1 continúa abierto y R0 aún debe implementarse, demostrarse y recibir
-aceptación formal.
+PBI-023 ejerció la autorización limitada y está `Closed`. H1 continúa abierto;
+PBI-024–PBI-029 no están autorizados. R0 aún debe completar los demás alcances,
+demostrarse y recibir aceptación formal.
 
 ## 16. Siguiente acción
 
-Autorizar el Paso 3 de PBI-023: extender boundaries/checker con evidencia
-negativa antes de instalar Kysely/`pg`, crear una migración o introducir
-persistencia.
+Tomar una decisión separada sobre promover el PR #2 de `Draft` a
+`Ready for review`. La promoción no autoriza merge, PBI-024, release, deploy
+ni aceptación de R0.

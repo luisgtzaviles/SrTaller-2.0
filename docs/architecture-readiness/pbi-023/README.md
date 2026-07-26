@@ -1,8 +1,9 @@
-# PBI-023 — Expediente de planificación de persistencia
+# PBI-023 — Expediente de materialización y cierre de persistencia
 
 ## Estado
 
 - **Fecha:** 2026-07-24.
+- **Reconciliación de gobierno:** 2026-07-26.
 - **Commit base del spike:** `2275416c92b5cb06d8182df50c3d121384ccc4db`.
 - **Rama:** `r0/pbi-023-persistence-planning`.
 - **Alcance:** decisión, investigación, ejecución material desechable,
@@ -12,6 +13,12 @@
   productivo.
 - **Resultado:** `PASS — PBI-023 FORMALLY CLOSED`.
 - **Estado PBI-023:** `Closed — PostgreSQL CI authoritative materialized and formally reviewed`.
+
+Los estados intermedios `Ready`, `no iniciado` o `cierre pendiente` que
+aparecen en expedientes de pasos, evidencia o resúmenes anteriores se
+conservan como snapshots de su etapa. Para el estado operativo actual quedan
+supersedidos por este resumen, el PBI canónico y la revisión formal de cierre;
+no implican reapertura.
 
 ## Propósito
 
@@ -37,7 +44,8 @@ que no deben confundirse:
 10. El Paso 11 ejecutó las cinco suites en PostgreSQL `18.4` real dentro de
     ambos runs VC-024, con comparación y artifacts válidos.
 11. El Paso 12 verificó las remediaciones documentales, repitió los gates y
-    cerró formalmente PBI-023 sin autorizar merge, PBI-024 ni R0.
+    cerró formalmente PBI-023 sin autorizar merge o PBI-024 y sin ampliar la
+    autorización limitada vigente de R0.
 
 El laboratorio fue destruido. El Paso 4 modificó sólo `package.json`,
 `pnpm-lock.yaml` y documentación; preservó `src/`, workflows, scripts, tests,
@@ -75,7 +83,7 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 
 ## Alcance preservado
 
-- Sólo PBI-023 está en preparación.
+- PBI-023 está cerrado; su cierre no inicia el PBI siguiente.
 - No se inicia PBI-024 a PBI-029.
 - No se modelan usuarios, PIN, sesiones, roles, estaciones, reparaciones ni UI.
 - No se adopta RLS.
@@ -85,9 +93,11 @@ tsconfig, policy/checker, Dockerfiles y migraciones productivas.
 
 ## Siguiente acción
 
-Paso 13 — revisar los cambios documentales finales, crear el commit formal de
-cierre de PBI-023 y después tomar una decisión separada sobre promover el PR
-#2 de Draft a Ready.
+Repetir la decisión independiente sobre promover el PR #2 de `Draft` a
+`Ready for review`.
 
-DEC051-C02 continúa pendiente del merge real, DEC-055 permanece `Propuesta`,
-DEC-063 no fue ratificada, R0 sigue no autorizado y PR #2 permanece `Draft`.
+El estado autoritativo reconciliado es: PBI-023 cerrado; DEC051-C02 pendiente
+hasta el primer merge real a `main`; DEC-055 `Propuesta`; DEC-063 `Accepted
+with conditions`, sin modificación del registro canónico de condiciones por
+este PBI; R0 `Authorized`, limitado a PBI-023; Sprint 00 `Closed`; PBI-024 no
+iniciado; y PR #2 todavía `OPEN` y `Draft`.

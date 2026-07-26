@@ -1,5 +1,20 @@
 # Revisión formal independiente de cierre de PBI-023
 
+> **Reconciliación de gobierno — 2026-07-26.** Este expediente conserva
+> dictámenes intermedios como trazabilidad histórica. Las afirmaciones
+> intermedias que presentaron R0 como no autorizado, Sprint 00 como abierto o
+> DEC-063 como no ratificada no constituyeron una revocación, reapertura o
+> cambio de decisión: fueron clasificaciones documentales obsoletas. Las
+> fuentes autoritativas anteriores a esta revisión son la
+> [autorización formal de R0](../R0_AUTHORIZATION.md), que registra R0
+> `Authorized` con alcance limitado, el
+> [cierre formal de Sprint 00](../../reviews/sprint-00/SPRINT_00_CLOSURE.md),
+> que registra `Closed`, y el
+> [registro de DEC-063](../../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md),
+> que registra `Accepted with conditions`. No existe revocación o reapertura
+> posterior. El estado vigente de esta revisión se consolida en la sección
+> final.
+
 ## 1. Resultado global
 
 **CONDITIONAL PASS — PBI-023 CLOSURE BLOCKED BY DOCUMENTARY REMEDIATIONS**
@@ -442,9 +457,9 @@ No se cambió a `Closed`. Tampoco se:
 
 - cambió el PR de Draft a Ready;
 - aprobó, cerró o hizo merge del PR;
-- autorizó R0;
+- emitió una nueva autorización o amplió la autorización vigente de R0;
 - cerró o inició Sprint 00;
-- ratificó DEC-063;
+- cambió el estado canónico o las condiciones de DEC-063;
 - satisfizo DEC051-C02;
 - modificó código, workflow, scripts, tests, migración o schema;
 - modificó package/lock;
@@ -468,8 +483,11 @@ acotada que:
 3. alinee la descripción de identidades efímeras con la implementación;
 4. repita esta revisión de cierre.
 
-R0 permanece no autorizado bajo el contexto de esta revisión. Sprint 00
-permanece abierto. PR #2 permanece `OPEN`, `Draft` y sin merge.
+Esta etapa intermedia registró R0 como no autorizado y Sprint 00 como abierto.
+Esa clasificación era una fotografía documental obsoleta y queda
+explícitamente supersedida por las decisiones formales previas: R0
+`Authorized` con alcance limitado y Sprint 00 `Closed`. No existió revocación
+o reapertura. PR #2 permanecía `OPEN`, `Draft` y sin merge.
 
 ## Documentary remediation record
 
@@ -552,9 +570,12 @@ No se modificó código, workflow, script, test, migración, schema productivo,
 port, adapter, package, lockfile, `AppModule` o bootstrap. No se creó commit,
 push, merge, deploy o conexión SSH.
 
-PBI-023 continúa sin cerrarse. DEC051-C02 permanece pendiente. DEC-055
-permanece `Propuesta`. DEC-063 no fue ratificada. R0 permanece no autorizado,
-Sprint 00 permanece abierto y PR #2 permanece `Draft`.
+En esta etapa intermedia PBI-023 continuaba sin cerrarse y DEC051-C02
+permanecía pendiente. DEC-055 permanecía `Propuesta`. Las menciones a
+DEC-063 no ratificada, R0 no autorizado y Sprint 00 abierto repetían el
+snapshot obsoleto ya identificado; no cambiaron las fuentes canónicas:
+DEC-063 `Accepted with conditions`, R0 `Authorized` con alcance limitado y
+Sprint 00 `Closed`. PR #2 permanecía `Draft`.
 
 Se requiere una nueva revisión formal independiente antes de cambiar el estado
 de PBI-023 o del PR.
@@ -621,9 +642,11 @@ La revisión conserva explícitamente estos límites:
 
 - DEC051-C02 continúa pendiente hasta el primer merge real a `main`;
 - DEC-055 permanece `Propuesta`;
-- DEC-063 no fue ratificada;
-- R0 permanece no autorizado;
-- Sprint 00 permanece abierto;
+- DEC-063 permanece `Accepted with conditions`; este cierre aporta evidencia
+  para PBI-023, pero no modifica el registro canónico de sus condiciones;
+- R0 permanece `Authorized`, limitado al alcance de PBI-023; este cierre no
+  equivale a aceptación de R0 ni amplía la autorización a otro PBI;
+- Sprint 00 permanece `Closed`;
 - PR #2 permanece `OPEN` y `Draft`;
 - no se autorizó PBI-024, merge, release ni deploy;
 - no se modificó código, workflow, scripts, tests, migración, schema,
@@ -632,6 +655,6 @@ La revisión conserva explícitamente estos límites:
 
 ### Siguiente acción autorizada
 
-Paso 13 — revisar los cambios documentales finales, crear el commit formal de
-cierre de PBI-023 y después tomar una decisión separada sobre promover el PR
-#2 de Draft a Ready.
+Repetir la decisión independiente sobre promover el PR #2 de `Draft` a
+`Ready for review`. No promoverlo, hacer merge, iniciar PBI-024, release o
+deploy dentro de esta reconciliación.

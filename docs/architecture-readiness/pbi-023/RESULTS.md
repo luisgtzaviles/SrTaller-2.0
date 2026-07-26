@@ -24,7 +24,8 @@ funcional. El Paso 11 ejecutó las cinco suites críticas en PostgreSQL `18.4`
 real dentro de `run-1` y `run-2`, para push y PR. Comparaciones, artifacts,
 cleanup y sanitización pasaron. La revisión formal independiente confirmó las
 tres remediaciones documentales, repitió los gates y cerró PBI-023 sin
-autorizar R0, PBI-024, merge ni cambio del PR #2 a Ready.
+ampliar la autorización limitada vigente de R0 ni autorizar PBI-024, merge o
+el cambio del PR #2 a Ready.
 
 ## Checklist
 
@@ -89,7 +90,7 @@ autorizar R0, PBI-024, merge ni cambio del PR #2 a Ready.
 | DEC-049 | Accepted; C01–C08 vigentes | C01–C07 con evidencia local + CI para el scope; operación productiva no afirmada |
 | DEC-051 | C01/C07/C09 Satisfied | C03/C04/C06 Satisfied; C02 pendiente del primer merge |
 | DEC-055 | Propuesta | sin cambio material; CI sintética PASS sólo para el scope efímero; provider, privilegios, rotación y operación productiva pendientes |
-| DEC-063 | C01/C03/C04 Satisfied | C02/C05/C06 completas para revisión del scope; C07/C08 no activadas |
+| DEC-063 | Accepted with conditions; C01/C03/C04 Satisfied | evidencia material de PBI-023 para C02/C05/C06; el registro canónico de condiciones no cambia; C07/C08 continúan por trigger |
 
 ## Selecciones
 
@@ -107,11 +108,14 @@ autorizar R0, PBI-024, merge ni cambio del PR #2 a Ready.
 ## Gates restantes
 
 1. DEC051-C02: protección/revisión del primer merge funcional.
-2. Ratificación separada del alcance C02/C05/C06 de DEC-063.
+2. DEC-063 conserva `Accepted with conditions`; cualquier cambio de estado de
+   sus condiciones exige una actualización formal separada de su registro.
 3. Decisión explícita sobre cambiar PR #2 a Ready y efectuar merge.
 
-El Paso 12 quedó completo. PBI-024, R0, merge y release continúan sin
-autorización; DEC-055 permanece `Propuesta`.
+El Paso 12 quedó completo. R0 conserva su autorización organizacional limitada
+al alcance de PBI-023, que ya está cerrado; esto no equivale a aceptación de
+R0 ni autoriza PBI-024, merge o release. DEC-055 permanece `Propuesta` y
+Sprint 00 permanece `Closed`.
 
 ## Validaciones de esta tarea
 
@@ -148,6 +152,6 @@ La evidencia material del Paso 11 está en
 
 ## Siguiente acción
 
-Paso 13 — revisar los cambios documentales finales, crear el commit formal de
-cierre de PBI-023 y después tomar una decisión separada sobre promover el PR
-#2 de Draft a Ready.
+Repetir la decisión independiente sobre promover el PR #2 de `Draft` a
+`Ready for review`; no ejecutar esa promoción, merge, PBI-024, release o
+deploy como parte de esta reconciliación.
