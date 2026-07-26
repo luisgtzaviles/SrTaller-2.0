@@ -2,20 +2,25 @@
 
 | Requisito | Autoridad | Diseño | Evidencia futura | Estado |
 | --- | --- | --- | --- | --- |
-| tenant/branch server-side | ADR-004/010 | [Architecture](ARCHITECTURE.md) | resolver + AD-08/09 | definido |
+| tenant/branch server-side | ADR-004/010 | [Architecture](ARCHITECTURE.md) | resolver + AD-08/09 | Satisfied documentalmente |
+| ownership funcional de branch | DEC-005 | `tenancy` owner; `stations` consume API pública | checker + public-surface tests | Satisfied documentalmente; Pending implementation |
+| contrato de elegibilidad | DEC-005/049, ADR-010 | Architecture § Ownership | AD-05A + tenancy contract | Satisfied documentalmente; Pending implementation |
 | station source confiable | ADR-010 | Architecture § Fuente | recognition contracts | definido; adapter secreto diferido |
 | contexto inmutable | ADR-010, DEC-049 | Architecture § Construcción | unit/freeze/guard | definido |
 | usuario excluido | ADR-011, PBI-025 | Architecture § Nomenclatura | public-surface test | definido |
 | lifecycle mínimo | ADR-010 | [Lifecycle](STATION_LIFECYCLE.md) | unit + PG | definido |
 | relink explícito | ADR-010/DEC-012 | Lifecycle § Relink | history + stale tests | definido |
 | revoke fail-closed | ADR-010 | Lifecycle § Revocación | AD-03/15 | definido |
-| owner `stations` | DEC-005/049, PBI-023 | Architecture § Persistencia | policy + registry | definido |
+| owner `stations` | DEC-005/049 | sólo Station, `stations`, `station_bindings` y contexto | policy + registry | Satisfied documentalmente; Pending implementation |
+| reconciliación física de branch | DEC-005/049, PBI-023 | port/adapter/registry hacia `tenancy` | diff + policy + checker | Pending implementation |
 | historia de binding | ADR-010 | `station_bindings` | schema/lifecycle | definido |
 | scope tenant/branch | ADR-004, DEC-049 | Architecture/modelo | two-tenant PG | definido |
 | no global/wildcard | ADR-004, DEC-049 | Architecture/public API | architecture mutation | definido |
-| errores tipados | DEC-044 | [Error mapping](ERROR_MAPPING.md) | mapping/contracts | definido |
+| errores tipados | DEC-044 | [Error mapping](ERROR_MAPPING.md) | mapping/contracts | Satisfied documentalmente; Pending implementation |
+| AD-05/07/11 inequívocos | DEC-044 | categorías únicas por subcaso | contract + PG + logs sanitizados | Satisfied documentalmente; Pending implementation |
 | anti-enumeración | ADR-004, DEC-044 | [Allow/Deny](ALLOW_DENY_MATRIX.md) | equality negatives | definido |
-| concurrency/revision | DEC-049 | Architecture § Concurrencia | CAS/race PG | definido |
+| boundary transaccional | DEC-049 | `READ COMMITTED` + station row lock + mismo commit | ambos órdenes efecto/revoke | Satisfied documentalmente; Pending implementation |
+| concurrency/revision | DEC-049 | row lock + revision stale | CAS/race PG | Satisfied documentalmente; Pending implementation |
 | no cache/context global | DEC-005/049 | Architecture | fixture/mutation | definido |
 | PostgreSQL 18.4 | ADR-003, DEC-051 | [Test plan](TEST_PLAN.md) | CI PG artifacts | gate futuro |
 | mutation crítica | DEC-051/D5-R033 | [Mutation plan](MUTATION_PLAN.md) | mutation results | gate futuro |
@@ -36,8 +41,9 @@
 formal review
   → separate implementation authorization
   → checker/contracts
+  → tenancy/branch reconciliation
   → lifecycle/schema
-  → adapters/resolver/guard
+  → adapters/resolver/row-lock guard
   → PostgreSQL + isolation + concurrency
   → mutations + run-1/run-2/comparison
   → independent closure review

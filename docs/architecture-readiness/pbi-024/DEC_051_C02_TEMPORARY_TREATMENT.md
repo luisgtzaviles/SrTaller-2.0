@@ -9,7 +9,7 @@
 - **DEC051-C02 canónico:** `Pending — external platform enforcement
   unavailable`.
 - **Evaluación material:** `Partially satisfied`.
-- **PBI-024:** `Draft — refinement authorized; implementation not authorized`.
+- **PBI-024:** `Ready for formal review — implementation not authorized`.
 
 Este tratamiento no satisface, elimina, rebaja ni modifica DEC051-C02. Tampoco
 es un waiver del gate de merge: conserva íntegro su trigger antes del primer
@@ -45,8 +45,8 @@ dictamen posterior y separado.
 - [DEC-063](../../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
   exige que estados, autoridad, riesgo, excepciones y gates permanezcan
   explícitos.
-- [PBI-024](../../backlog/pbis/PBI-024.md) permanece `Draft`, no iniciado y
-  sin autorización de implementación.
+- [PBI-024](../../backlog/pbis/PBI-024.md) permanece listo sólo para repetir
+  revisión formal, no iniciado y sin autorización de implementación.
 
 La inspección remota disponible confirmó que `main` no está protegida. Las
 consultas de branch protection y rulesets devolvieron HTTP `403` con la
@@ -112,7 +112,8 @@ merge, a la vez que habilita exclusivamente trabajo intelectual y documental.
 3. La deuda externa queda visible como
    `external platform enforcement unavailable`.
 4. Se permite refinar y revisar formalmente PBI-024.
-5. PBI-024 no queda `Ready`, `In progress` ni autorizado para implementación.
+5. PBI-024 queda `Ready for formal review`, no `Ready` de implementación,
+   `In progress` ni autorizado para implementación.
 6. Antes del primer merge funcional posterior a PBI-023 debe ocurrir una de
    estas condiciones:
    - DEC051-C02 queda `Satisfied` mediante protección efectiva y prueba de
@@ -167,7 +168,7 @@ requiere su propio expediente.
 
 | Riesgo | Compensación |
 | --- | --- |
-| Confundir refinamiento con autorización | Estado `Draft` y prohibiciones repetidas en PBI-024 y R0 |
+| Confundir refinamiento con autorización | Estado `Ready for formal review — implementation not authorized` y prohibiciones repetidas |
 | Integrar sin enforcement remoto | Merge funcional explícitamente bloqueado |
 | Deuda indefinida | Expiración por evento y revisión obligatoria antes de autorización |
 | Herencia silenciosa | Alcance limitado a PBI-024 |
@@ -181,5 +182,5 @@ merge: sólo gobierna actividades anteriores a su trigger.
 
 La siguiente acción autorizada es:
 
-**Refinar PBI-024, completar sus gates y someterlo a revisión formal para
-decidir su autorización de implementación.**
+**Repetir la revisión formal independiente de PBI-024 para decidir si puede
+autorizarse su implementación.**

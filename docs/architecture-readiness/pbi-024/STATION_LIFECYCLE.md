@@ -28,11 +28,23 @@ operan.
 | Transición | Precondiciones | Resultado persistente | Error esperado | Concurrencia |
 | --- | --- | --- | --- | --- |
 | create | ID server-issued, tenant existente, station inexistente | `Unlinked`, revision 1 | Conflict/NotFound | unique + expected absence |
-| link | `Unlinked`, revision esperada, branch del mismo tenant existe | binding abierto, `Active`, revision +1 | NotFound/Conflict/Concurrency | compare-and-swap + unique binding |
-| unlink | `Active`, revision esperada, binding abierto | binding cerrado, `Unlinked`, revision +1 | NotFound/Concurrency | misma transacción |
+| link | `Unlinked`, revision esperada, branch elegible según `tenancy` | binding abierto, `Active`, revision +1 | NotFound/Conflict/Concurrency | station row lock + CAS + unique binding |
+| unlink | `Active`, revision esperada, binding abierto | binding cerrado, `Unlinked`, revision +1 | NotFound/Concurrency | station y binding lock, misma transacción |
 | relink | unlink confirmado y luego link explícito | dos revisiones y nueva fila histórica | Conflict/Concurrency | nunca update directo de branch |
-| revoke | `Unlinked` o `Active`, revision esperada | binding abierto se cierra, `Revoked`, revision +1, `revokedAt` | NotFound/Concurrency | misma transacción |
-| resolve | `Active`, un binding, branch/tenant coherentes | contexto inmutable, sin mutación | Authentication/Unexpected | snapshot + guard de revision |
+| revoke | `Unlinked` o `Active`, revision esperada | binding abierto se cierra, `Revoked`, revision +1, `revokedAt` | NotFound/Concurrency | station y binding lock, misma transacción |
+| resolve | `Active`, un binding, branch elegible/tenant coherentes | contexto inmutable, sin mutación | Authentication/Unexpected | snapshot candidato; efecto exige row-lock guard |
+
+## Disciplina transaccional
+
+Link, unlink, relink, revoke y toda operación protegida adquieren
+`SELECT ... FOR UPDATE` sobre la misma fila de station. Unlink/relink/revoke
+bloquean además el binding que modificarán. Status, revision y binding se
+validan después de obtener el lock y se cambian en la misma transacción.
+
+La adquisición del lock determina el orden de serialización y el commit es el
+punto de linearización de una transición exitosa. `stationRevision` detecta una
+intención stale; no reemplaza el lock. `READ COMMITTED` permanece como nivel de
+aislamiento porque todas las rutas concurrentes comparten la misma disciplina.
 
 ## Autoridad
 
@@ -70,7 +82,8 @@ Revocación:
 1. es terminal dentro de PBI-024;
 2. cierra cualquier binding abierto;
 3. aumenta revision;
-4. invalida toda resolución posterior;
+4. invalida toda resolución posterior y todo efecto que aún no haya ganado el
+   row lock;
 5. vuelve stale todo contexto anterior;
 6. no borra historia;
 7. no revela motivo ni existencia al cliente;

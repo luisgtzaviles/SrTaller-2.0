@@ -28,6 +28,26 @@ superviviente es `FAIL`; no se usa score agregado para ocultarla.
 | MUT-024-18 | reintentar una operación no idempotente | retry contract |
 | MUT-024-19 | omitir guard antes del efecto transaccional | application integration |
 | MUT-024-20 | confiar en fingerprint/local storage | recognition contract |
+| MUT-024-21 | omitir la consulta pública de elegibilidad a `tenancy` | architecture/application |
+| MUT-024-22 | ignorar resultado negativo de elegibilidad y aceptar branch inexistente | application/PG |
+| MUT-024-23 | revocar station sin cerrar binding abierto | lifecycle/PG |
+| MUT-024-24 | cerrar binding de otra station/tenant durante revoke | tenant isolation/lifecycle |
+| MUT-024-25 | separar revoke y cierre de binding en transacciones distintas | rollback/atomicity |
+
+## Cobertura de elegibilidad y revoke
+
+- MUT-024-21 mata la omisión total de consulta a `tenancy`.
+- MUT-024-22 mata branch inexistente o resultado de elegibilidad ignorado.
+- MUT-024-02 mata una consulta de branch no tenant-scoped y aceptación
+  cross-tenant.
+- MUT-024-05 mata confianza en `branchId` de cliente.
+- MUT-024-23 mata el binding abierto sobreviviente a revoke.
+- MUT-024-24 mata cierre de binding incorrecto o de otro tenant.
+- MUT-024-07 mata la omisión de incremento de revision.
+- MUT-024-25 mata la pérdida de atomicidad entre station y binding.
+
+Los IDs existentes no se renumeran. Las 25 mutaciones son obligatorias y una
+sola superviviente produce `FAIL`.
 
 ## Evidencia
 

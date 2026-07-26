@@ -42,11 +42,42 @@ PBI-025. La revisión vigente, no un timestamp, demuestra frescura.
 | Estado mínimo | existencia y pertenencia autoritativas; **Required** |
 | Lifecycle comercial completo | **Deferred**; no es necesario para esta slice |
 | Relación con station | una única vinculación abierta por station |
-| Invariantes | se carga por `(tenantId, branchId)`; nunca por branch aislada |
+| Owner funcional | `tenancy`, conforme DEC-005; **Required** |
+| Invariantes | `stations` consulta por `(tenantId, branchId)` mediante la superficie pública de `tenancy`; nunca por branch aislada |
 
 ADR-010 usa “branch activa”. PBI-024 interpreta de forma mínima que una branch
 existente y no retirada por un contrato posterior es elegible. Añadir estados
 comerciales o de suspensión sin DEC propia queda rechazado para esta slice.
+
+### Ownership y contrato público de branch
+
+`tenancy` es owner funcional de Tenant y Branch: identidad, existencia,
+pertenencia tenant-scoped y elegibilidad mínima. `stations` es owner de
+Station, su lifecycle, historial de bindings, revocación,
+`TrustedStationContext` y validación de que una branch declarada elegible por
+`tenancy` puede vincularse.
+
+El contrato público conceptual de elegibilidad recibe:
+
+- `tenantId`;
+- `branchId`;
+- el contexto transaccional estrecho aceptado por DEC-049 cuando la operación
+  de link/revalidación exige una lectura consistente.
+
+Devuelve sólo una respuesta inmutable tenant-scoped que confirma la identidad
+de branch y `eligible: true`, o ausencia tipada y sanitizable. No devuelve
+detalles comerciales, records Kysely, adapters, query builders ni branches de
+otro tenant. Ausencia, scope ajeno o error fallan cerrado.
+
+Mientras no exista lifecycle comercial, elegibilidad significa exactamente
+“branch existente y perteneciente al tenant”. La noción más amplia de branch
+activa queda diferida al owner futuro de ese lifecycle; no cambia este contrato
+mínimo ni deja una elección abierta para PBI-024.
+
+El nombre de implementación puede seguir la convención pública de `tenancy`,
+pero su semántica es fija. `stations` lo consume únicamente desde
+`tenancy/index.ts`, no importa infraestructura de `tenancy`, no duplica
+invariantes y no consulta `branches` directamente.
 
 ### Station
 
@@ -97,7 +128,11 @@ Dos tablas son imprescindibles: sobrescribir `branch_id` en `stations` perdería
 la historia que ADR-010 exige al reubicar.
 
 La migración futura será owner `stations`, tendrá `up`/`down`, manifest y
-cleanup gobernados por DEC-050. No se escribió SQL en este refinamiento.
+cleanup gobernados por DEC-050 únicamente para `stations` y
+`station_bindings`. La ubicación temporal de `BranchRepositoryPort`, adapter y
+registro físico de `branches` heredada de PBI-023 debe reconciliarse hacia
+`tenancy` durante una implementación autorizada. No se mueve ni recrea la tabla
+por este motivo y no se escribió SQL en este refinamiento.
 
 ## Capas y contratos
 
@@ -109,7 +144,7 @@ stations/application/resolve-trusted-station-context
         │ ports
         ├── StationRecognitionPort
         ├── StationRepositoryPort
-        ├── BranchRepositoryPort (interno existente)
+        ├── tenancy public branch-eligibility capability
         └── TransactionRunner
         ▼
 stations/infrastructure/persistence
@@ -125,6 +160,7 @@ Paths previstos:
 - `src/modules/stations/application/ports/station-repository.port.ts`;
 - `src/modules/stations/application/use-cases/resolve-trusted-station-context.ts`;
 - `src/modules/stations/infrastructure/persistence/kysely-station.repository.ts`;
+- contrato/snapshot público mínimo de branch bajo `src/modules/tenancy/`;
 - migración owner `stations` bajo el root gobernado existente.
 
 No se crean `BaseRepository`, `RequestContext`, `AsyncLocalStorage`, módulo
@@ -137,11 +173,15 @@ global, deep import, Nest en dominio/aplicación ni controller.
 - `StationId` y parser;
 - `TrustedStationContext`;
 - capacidad `ResolveTrustedStationContext`;
-- capacidad `AssertTrustedStationContextCurrent`.
+- capacidad transaccional `RunWithTrustedStationContext`, que conserva el row
+  lock mientras ejecuta el efecto protegido.
 
 No exportará entidades, repositorios, records Kysely, adapters, estados
 mutables o transaction handles. `access` consume sólo ese barrel; el grafo
 `access → stations → tenancy` no cambia.
+
+Una operación separada que sólo “asserta” y devuelve antes del efecto queda
+prohibida: reabriría la ventana resolve/revoke que este contrato debe cerrar.
 
 Link, unlink y revoke permanecen internos y sin wiring productivo hasta que
 PBI-026 aporte autorización administrativa. PBI-024 materializa sus invariantes
@@ -169,34 +209,67 @@ header, hostname, body, query o local storage.
 3. El repository carga station por `(tenantId, stationId)`.
 4. Exige status `Active`.
 5. Carga exactamente un binding abierto.
-6. Carga branch por `(tenantId, branchId)`.
+6. Consulta elegibilidad por `(tenantId, branchId)` a la superficie pública de
+   `tenancy`.
 7. Construye y congela `TrustedStationContext`.
-8. El consumidor revalida `stationRevision` dentro de la misma transacción
-   antes del efecto.
+8. El consumidor ejecuta el efecto sólo por la capacidad transaccional que
+   bloquea station, revalida status/binding/revision y retiene el lock hasta
+   commit.
 9. El contexto expira al finalizar la unidad de trabajo; no se cachea.
 
 Las capas de dominio/aplicación pueden leerlo. Presentación no lo construye;
 infraestructura sólo aporta evidencia traducida. Repositorios de otros módulos
 reciben scope derivado, nunca payload.
 
-## Concurrencia y revocación
+## Concurrencia, row lock y revocación
 
-Se selecciona optimistic concurrency:
+Se selecciona una sola estrategia: `READ COMMITTED` más row lock de PostgreSQL
+sobre la station. `stationRevision` conserva el control optimista de intención
+y detección stale; no sustituye el lock.
 
-- link/unlink/revoke usan `expectedRevision`;
-- el update condiciona tenant, station, estado y revision;
-- éxito incrementa revision una vez;
-- cero filas produce `Concurrency`;
-- el resolver devuelve la revision leída;
-- `AssertTrustedStationContextCurrent` revalida status, vínculo y revision en
-  la transacción del caso de uso;
-- no hay cache en PBI-024;
-- serialización/deadlock sólo admite retry de unidad completa idempotente.
+Toda operación protegida:
 
-Si revoke confirma antes de revalidar, la operación falla. Si una operación
-revalida y confirma antes de revoke, conserva el contexto histórico anterior y
-revoke gobierna operaciones posteriores. No se promete cancelar efectos ya
-confirmados.
+1. inicia una transacción;
+2. vuelve a leer la station por `(tenantId, stationId)` con
+   `SELECT ... FOR UPDATE`;
+3. valida `Active`, `stationRevision`, binding abierto y `branchId` esperados;
+4. consulta la elegibilidad mínima de branch por el contrato público de
+   `tenancy` dentro de la misma transacción;
+5. ejecuta el efecto transaccional sin liberar el lock;
+6. confirma.
+
+Revoke, unlink y relink adquieren primero el mismo lock de station antes de
+modificar status, revision o binding. El binding abierto se consulta y valida
+dentro de la misma transacción; también se bloquea cuando se cerrará o
+modificará. No se selecciona `SERIALIZABLE`: el row lock común proporciona la
+exclusión requerida y evita ampliar el alcance del runtime.
+
+Sólo se incluyen efectos persistentes/transaccionales. DEC-049 prohíbe esperar
+I/O remoto dentro de la transacción; un efecto externo futuro requerirá su
+propio contrato de entrega y no queda autorizado por PBI-024.
+
+### Punto de linearización
+
+La adquisición del lock determina el orden de serialización. Una operación
+exitosa lineariza en el commit que incluye guard y efecto; una operación que
+hace rollback no lineariza un efecto. Revoke lineariza en el commit que cambia
+status, incrementa revision y cierra el binding.
+
+- Si el efecto adquiere primero el lock, valida `Active` y revision, ejecuta y
+  confirma. Revoke espera, luego adquiere el lock y revoca. El efecto fue válido
+  antes de la revocación.
+- Si revoke adquiere primero el lock, cambia a `Revoked`, incrementa revision,
+  cierra el binding y confirma. El efecto posterior adquiere el lock, detecta
+  status/revision stale, devuelve `STATION_CONTEXT_STALE`/`Concurrency` y no
+  ejecuta.
+- Dos transiciones con la misma revision no producen lost update: el segundo
+  adquirente observa la nueva revision y falla.
+- Operaciones sobre stations distintas bloquean filas distintas.
+- Rollback libera locks y revierte conjuntamente guard dependiente, cambios de
+  station, binding y efecto.
+
+No se promete invalidar una operación ya confirmada antes del revoke. No existe
+cache en PBI-024 y retry sólo aplica a una unidad completa idempotente.
 
 ## Jobs y ejecución sin HTTP
 

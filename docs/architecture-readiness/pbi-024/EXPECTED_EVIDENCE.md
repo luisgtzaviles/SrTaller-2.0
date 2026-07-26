@@ -52,10 +52,10 @@ o payloads.
 | migration | manifest, up/down/reapply, drift, constraints, cleanup |
 | schema | introspección de `stations`/`station_bindings` |
 | lifecycle | todas las transiciones y negativas |
-| resolver | AD-01–AD-20 |
+| resolver | AD-01–AD-20 y subcasos AD-05A/B, AD-07A/B, AD-11A/B/C, AD-15A/B/C |
 | isolation | dos tenants/dos branches, read/write/reference negatives |
-| concurrency | CAS, lost update, resolve/revoke, relink stale |
-| errors | DEC-044, sanitización, unknown signal |
+| concurrency | station row lock, ambos órdenes efecto/revoke, CAS, lost update, distinct-station non-blocking, rollback y relink stale |
+| errors | DEC-044, categorías internas únicas, sanitización y unknown signal |
 | security | recognition boundary, no enumeration, secrets scan |
 | Linux run 1/2 | comandos, versiones, resultados y hashes |
 | comparison | igualdad semántica |

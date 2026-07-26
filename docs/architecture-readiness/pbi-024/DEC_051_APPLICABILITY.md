@@ -17,7 +17,7 @@
 | C01 | primer merge funcional | directa | baseline disponible; re-run requerido | workflow y jobs del SHA |
 | C02 | antes del primer merge funcional | directa/bloqueante | `Pending` | protección efectiva + prueba de rechazo, o decisión formal separada |
 | C03 | persistencia | directa | baseline PBI-023 disponible; reejecución requerida | PostgreSQL 18.4, lifecycle, cleanup |
-| C04 | contexto/persistencia/acceso | directa | `Pending` | AD-01–AD-20, dos tenants, mutaciones |
+| C04 | contexto/persistencia/acceso | directa | `Pending` | AD-01–AD-20 con subcasos, dos tenants, mutaciones |
 | C05 | primera API funcional | parcial | no se cierra; PBI-024 no crea API | mapping interno y sanitización solamente |
 | C06 | persistencia funcional | directa | `Pending` | ownership, transaction, constraints, rollback |
 | C07 | VC-024 | no reabre | `Satisfied` histórico | preservar pipeline |
@@ -49,8 +49,10 @@ La implementación debe demostrar:
 - payload no autoritativo;
 - relink/revision stale;
 - resolve/revoke concurrentes;
+- ambos órdenes de adquisición del station row lock;
 - anti-enumeración;
-- mutation del filtro tenant, branch validation y deny.
+- mutations del filtro tenant, contrato de elegibilidad, cierre de binding,
+  atomicidad de revoke y deny.
 
 Una suite positiva no satisface C04.
 

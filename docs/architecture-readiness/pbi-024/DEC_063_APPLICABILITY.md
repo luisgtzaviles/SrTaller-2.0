@@ -77,12 +77,12 @@ Antes de considerar el trabajo `Done`:
 - [ ] threat boundary y evidence source;
 - [ ] server-side only;
 - [ ] fail-closed;
-- [ ] AD-01–AD-20;
+- [ ] AD-01–AD-20 y subcasos inequívocos;
 - [ ] no cross-tenant/cross-branch;
 - [ ] anti-enumeración;
 - [ ] no credential/secret/PII/SQL;
 - [ ] mínimo privilegio y cero administración pública;
-- [ ] mutaciones críticas;
+- [ ] 25 mutaciones críticas;
 - [ ] revisión Seguridad/Calidad;
 - [ ] riesgo residual.
 

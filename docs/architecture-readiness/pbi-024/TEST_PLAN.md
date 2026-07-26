@@ -28,6 +28,7 @@ UUIDs, instantes y barreras de concurrencia deben ser deterministas.
 
 - resolve positivo;
 - evidence ausente/inválida/manipulada;
+- AD-05A/B, AD-07A/B y AD-11A/B/C con categoría interna única;
 - unknown/unlinked/revoked indistinguibles;
 - payload tenant/branch contradictorio;
 - binding/branch/tenant incoherentes;
@@ -45,10 +46,12 @@ UUIDs, instantes y barreras de concurrencia deben ser deterministas.
 - historial no sobrescrito;
 - CRUD owner-scoped mínimo;
 - branch cross-tenant rechazada;
+- elegibilidad de branch consultada sólo por contrato público tenant-scoped de
+  `tenancy`;
 - dos tenants con branch lógica coincidente;
 - compare-and-swap y lost update;
-- link/revoke concurrentes;
-- resolve/revoke con barreras controladas;
+- link/revoke concurrentes con lock común de station;
+- efecto/revoke con ambos órdenes de adquisición controlados;
 - commit/rollback en la misma conexión;
 - `23505`, `23503`, `23514`, `40001`, `40P01`, `57014`;
 - cleanup allowlisted sin objetos residuales.
@@ -56,6 +59,10 @@ UUIDs, instantes y barreras de concurrencia deben ser deterministas.
 ## Arquitectura
 
 - sólo `stations` accede `stations`/`station_bindings`;
+- sólo `tenancy` posee identidad/elegibilidad de branch y su persistencia;
+- `stations` consume branch sólo por `tenancy/index.ts`;
+- el port/adapter temporal de branch queda reconciliado físicamente hacia
+  `tenancy`;
 - dominio/aplicación sin NestJS, Kysely o `pg`;
 - otros módulos consumen sólo `stations/index.ts`;
 - no entidad/repository/adapter exportado;
@@ -67,7 +74,7 @@ UUIDs, instantes y barreras de concurrencia deben ser deterministas.
 
 ## Seguridad y contratos
 
-- ejecutar AD-01–AD-20;
+- ejecutar AD-01–AD-20 y cada subcaso con sufijo;
 - comparar envelope de unknown/unlinked/revoked/other-tenant;
 - no exponer SQL, stack, path, constraint, IDs ajenos o evidence;
 - no registrar credential/fingerprint/payload;
@@ -79,15 +86,22 @@ UUIDs, instantes y barreras de concurrencia deben ser deterministas.
 
 | Caso | Resultado |
 | --- | --- |
-| dos links con misma revision | uno confirma; otro Concurrency |
-| unlink y revoke simultáneos | una transición confirma; otra stale |
-| resolve antes de revoke | contexto válido sólo para unidad ya revalidada |
-| resolve después de revoke | Authentication genérica |
-| relink y guard de revision anterior | guard stale |
-| deadlock/serialization | retry acotado sólo en harness idempotente |
+| efecto adquiere station lock antes de revoke | efecto y commit confirman; revoke espera y confirma después |
+| revoke adquiere station lock antes del efecto | revoke confirma; efecto observa Revoked/stale y no se ejecuta |
+| contexto con revision stale | `STATION_CONTEXT_STALE` / Concurrency |
+| revoke con binding abierto | binding cerrado, status Revoked y revision incrementada atómicamente |
+| relink concurrente | sólo la secuencia con lock/revision vigente confirma |
+| dos operaciones en la misma station | se serializan por el mismo row lock |
+| operaciones en stations distintas | no se bloquean innecesariamente |
+| rollback después de adquirir lock | libera lock y no conserva efecto ni cambios de lifecycle |
+| fallo del efecto | rollback revierte la unidad completa |
+| lock/revalidation con dos tenants | lookup permanece tenant-scoped y nunca bloquea/lee station ajena |
+| deadlock detectado | retry acotado sólo para unidad completa idempotente |
 
-No se usan sleeps como única sincronización; se emplean barreras y dos
-conexiones reales.
+Los tests usan barreras y dos conexiones reales sólo para ordenar adquisición,
+nunca como sustituto de atomicidad. Deben registrar orden de adquisición,
+callback ejecutado/no ejecutado, estado final, revision, binding y rollback.
+No se usan sleeps como única sincronización.
 
 ## CI
 

@@ -15,7 +15,7 @@ afectaría todos los consumidores futuros.
 - reconocimiento de station;
 - persistencia y migración;
 - transaction boundary;
-- optimistic concurrency;
+- row lock transaccional + optimistic revision;
 - revocación;
 - anti-enumeración;
 - traducción de errores;
@@ -28,12 +28,12 @@ afectaría todos los consumidores futuros.
 | --- | --- | --- |
 | input cliente se vuelve autoridad | cruce tenant/branch | recognition port + AD-08/09/12/18 |
 | lookup global enumera station | fuga cross-tenant | scope compuesto + 401 uniforme |
-| station revocada conserva acceso | acceso no autorizado | no cache + revision + guard |
+| station revocada conserva acceso | acceso no autorizado | no cache + station row lock + revision + efecto en misma transacción |
 | relink sobrescribe historia | atribución falsa | tabla bindings append-only |
-| race resolve/revoke | efecto con contexto stale | revalidación transaccional |
+| race resolve/revoke | efecto con contexto stale | mismo station row lock; commit lineariza guard/efecto o revoke |
 | dos bindings activos | branch ambigua | unique parcial + invariant test |
 | adapter filtra driver | exposición técnica | DEC-044 + mapping estructurado |
-| módulo accede tabla ajena | ownership roto | checker DEC-005/049 |
+| módulo accede tabla ajena | ownership roto | tenancy owner de branch + contrato público + checker DEC-005/049 |
 | contexto mutable compartido | contaminación entre operaciones | readonly/freeze + no ALS |
 | credential/fingerprint expuesto | suplantación/privacidad | mecanismo diferido PBI-029 |
 | lifecycle sin autorización | escalada administrativa | cero wiring mutante hasta PBI-026 |

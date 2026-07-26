@@ -20,8 +20,14 @@ el primer merge funcional.
 ## Paso 1 — Checker y contratos de frontera
 
 - ampliar policy sólo para paths, exports, objetos y consumers exactos;
-- proteger owner `stations`, no deep imports, no Kysely fuera de
-  infraestructura;
+- reafirmar `tenancy` como owner funcional de branch y `stations` como owner de
+  station/binding/contexto;
+- publicar desde `tenancy/index.ts` la capacidad mínima tenant-scoped de
+  elegibilidad de branch;
+- reconciliar hacia `tenancy` el port/adapter y registro físico temporal de
+  branch heredado de PBI-023, sin recrear ni mover la tabla;
+- prohibir deep imports, acceso de `stations` a tabla `branches` y Kysely fuera
+  de infraestructura;
 - prohibir raw station IDs como autoridad, global context, ALS, wildcard y
   repositories globales;
 - agregar fixture válido, negativos y mutaciones.
@@ -42,7 +48,7 @@ el primer merge funcional.
 ## Paso 3 — Migración y schema
 
 - crear una migración owner `stations`;
-- añadir `stations` y `station_bindings`;
+- añadir únicamente `stations` y `station_bindings`;
 - registrar schema types y policy;
 - probar `up`, `down`, reapply, atomicidad, constraints, unique binding,
   drift y cleanup en PostgreSQL `18.4`.
@@ -56,7 +62,10 @@ roll-forward conforme DEC-050.
 
 - crear `StationRepositoryPort` y adapter Kysely;
 - cargar siempre por tenant + station;
+- consumir elegibilidad de branch por la superficie pública de `tenancy`;
 - mantener binding en la misma transacción;
+- soportar bloqueo `SELECT ... FOR UPDATE` de station y, cuando se modifique,
+  del binding abierto;
 - mapear errores estructurados conforme DEC-044;
 - evitar métodos globales y records públicos.
 
@@ -75,11 +84,15 @@ roll-forward conforme DEC-050.
 
 - resolver station, binding y branch server-side;
 - producir `TrustedStationContext` congelado;
-- materializar `AssertTrustedStationContextCurrent`;
-- revalidar status/binding/revision antes de efectos;
+- materializar una capacidad transaccional que adquiere el row lock de station,
+  revalida status/binding/branch/revision, ejecuta el efecto y retiene el lock
+  hasta commit;
+- prohibir un assert separado que libere/abandone la transacción antes del
+  efecto;
 - no cache ni contexto global.
 
-**Gate:** matriz AD-01–AD-20, concurrencia y stale revision.
+**Gate:** matriz AD-01–AD-20 con subcasos, ambos órdenes efecto/revoke y stale
+revision.
 
 ## Paso 7 — Composición mínima
 
@@ -124,6 +137,7 @@ Sin ella, el resultado puede permanecer revisado en rama pero no integrarse.
 | Bloque | Tamaño | Dependencia |
 | --- | --- | --- |
 | dominio/lifecycle | M | contrato cerrado |
+| reconciliación tenancy/branch | M | checker + contrato público |
 | persistencia/migración | L | checker + dominio |
 | aplicación/resolver/guard | L | ports + schema |
 | wiring | S | resolver |
@@ -133,8 +147,8 @@ Sin ella, el resultado puede permanecer revisado en rama pero no integrarse.
 | revisión | M | expediente completo |
 
 Estimación global: **L**. El camino crítico es
-`schema/lifecycle → resolver/guard → PostgreSQL/concurrency → mutations →
-evidence/review`.
+`tenancy/branch boundary → schema/lifecycle → resolver/guard →
+PostgreSQL/concurrency → mutations → evidence/review`.
 
 Reestimar si se requiere credential adapter real, estado tenant/branch nuevo,
 endpoint, RLS, cache, offline, audit store, cancelación de operaciones in-flight

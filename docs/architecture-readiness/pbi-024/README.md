@@ -3,6 +3,7 @@
 ## Estado
 
 - **Resultado del refinamiento:** `PASS — PBI-024 REFINED AND READY FOR FORMAL REVIEW`.
+- **Resultado de remediación:** `PASS — PBI-024 FORMAL REVIEW REMEDIATIONS COMPLETE`.
 - **Estado de PBI-024:** `Ready for formal review — implementation not authorized`.
 - **Fecha:** 2026-07-26.
 - **Riesgo:** alto, fail-closed.
@@ -21,9 +22,10 @@ autorización.
 
 ## Decisiones de diseño cerradas
 
-1. El módulo `stations` conserva ownership de `branches` y será owner de
-   `stations` y `station_bindings`, conforme al estado materializado y
-   formalmente cerrado de PBI-023.
+1. `tenancy` conserva el ownership funcional de tenant y branch conforme a
+   DEC-005. `stations` será owner de Station, `stations`,
+   `station_bindings`, lifecycle, bindings y contexto derivado, y consultará
+   elegibilidad de branch sólo por la superficie pública de `tenancy`.
 2. La salida de este PBI se denomina `TrustedStationContext`, no contexto
    operativo completo: usuario y sesión pertenecen a PBI-025.
 3. Una evidencia de estación sólo es confiable después de un verifier
@@ -33,23 +35,45 @@ autorización.
 6. Revocación es terminal dentro de PBI-024.
 7. El historial de vinculaciones es requerido; no se sobrescribe la branch
    anterior.
-8. La vigencia usa revisión optimista, revalidación transaccional y cero cache.
+8. La vigencia usa `stationRevision` para detectar stale context y un row lock
+   sobre la station para serializar guard, efecto y revoke dentro de la misma
+   transacción `READ COMMITTED`; no existe cache.
 9. Link/unlink/revoke no obtienen endpoints ni wiring administrativo hasta que
    PBI-026 aporte autorización.
 10. El mecanismo criptográfico de reconocimiento se consume por puerto y queda
     para PBI-029; no es un fallback a un ID cliente.
 
-No quedan decisiones técnicas o de Producto sin resolver dentro del alcance.
-Los vistos buenos y condiciones de materialización listados en
-[FORMAL_REVIEW_READINESS.md](FORMAL_REVIEW_READINESS.md) son gates de revisión,
-no ambigüedades de diseño.
+Las decisiones técnicas internas señaladas por la revisión independiente
+quedan cerradas documentalmente por esta remediación. Esto no equivale a
+aprobación: los vistos buenos y condiciones de materialización listados en
+[FORMAL_REVIEW_READINESS.md](FORMAL_REVIEW_READINESS.md) siguen siendo gates y
+la revisión formal independiente debe repetirse sobre el nuevo SHA.
+
+## Reconciliación con PBI-023
+
+PBI-023 materializó temporalmente `BranchRepositoryPort`, su adapter Kysely y
+el registro físico de `branches` bajo `stations`. Ese cierre no modificó
+DEC-005 ni transfirió ownership funcional. Una implementación futura de
+PBI-024 debe reconciliar la ubicación física del contrato/adapter y el registro
+de ownership hacia `tenancy` antes de que el resolver consuma branch.
+
+La distinción normativa es:
+
+- ownership funcional: `tenancy` gobierna identidad, existencia y elegibilidad
+  mínima de branch;
+- ownership físico temporal: la ubicación heredada de PBI-023 es deuda de
+  materialización, no autoridad;
+- dependencia pública: `stations → tenancy` mediante `tenancy/index.ts`;
+- FK: `station_bindings` puede referenciar `branches` sin crear co-ownership;
+- transacción: aplicación coordina ambos puertos sobre el mismo contexto
+  transaccional sin exponer Kysely ni consultar tablas ajenas.
 
 ## Estado actual reconstruido
 
 | Superficie | Estado observado |
 | --- | --- |
-| `tenancy` | `TenantId`, port y adapter Kysely tenant-scoped |
-| `stations` | port/adapter Kysely para `branches`; sin entidad Station |
+| `tenancy` | `TenantId`, port y adapter Kysely tenant-scoped; aún sin contrato público de branch |
+| `stations` | port/adapter Kysely temporal para `branches`; sin entidad Station |
 | `access` | módulo/composición de marcador; sin identidad o autorización |
 | Schema | sólo `tenants` y `branches` |
 | Contexto | no existe resolver, guard, factory ni contexto runtime |

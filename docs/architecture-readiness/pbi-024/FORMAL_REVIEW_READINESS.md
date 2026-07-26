@@ -1,5 +1,28 @@
 # Preparación para revisión formal
 
+## Remediación de la revisión independiente
+
+La revisión formal independiente anterior emitió:
+
+`CONDITIONAL PASS — PBI-024 AUTHORIZATION BLOCKED BY REMEDIATIONS`.
+
+Esta revisión detectó MAJOR-01 (ownership funcional de branch), MAJOR-02
+(ventana guard/efecto/revoke), MAJOR-03 (AD-05/07/11 ambiguos) y MINOR-01
+(mutaciones de elegibilidad y revoke incompletas). El expediente ahora registra:
+
+| Hallazgo | Remediación documental |
+| --- | --- |
+| MAJOR-01 | `tenancy` owner funcional de branch; contrato público hacia `stations`; reconciliación física heredada queda como paso de implementación |
+| MAJOR-02 | `READ COMMITTED` + station `FOR UPDATE`; guard y efecto en la misma transacción; commit como punto de linearización |
+| MAJOR-03 | AD-05A/B, AD-07A/B y AD-11A/B/C tienen categoría interna y salida externa únicas |
+| MINOR-01 | MUT-024-21–25 y crosswalk con MUT-024-02/05/07 |
+
+Las decisiones técnicas dentro del alcance vuelven a quedar unívocas, pero esta
+remediación no se autoaprueba ni autoriza implementación. Debe repetirse la
+revisión formal independiente sobre el SHA remediado.
+
+**PASS — PBI-024 FORMAL REVIEW REMEDIATIONS COMPLETE**
+
 ## Dictamen del refinamiento
 
 **PASS — PBI-024 REFINED AND READY FOR FORMAL REVIEW**
@@ -17,12 +40,12 @@ autoriza implementación, no cambia R0 y no permite merge.
 | modelo station claro | PASS | ARCHITECTURE |
 | trusted context claro | PASS | ARCHITECTURE |
 | lifecycle claro | PASS | STATION_LIFECYCLE |
-| matriz completa | PASS | 20 casos allow/deny |
+| matriz completa | PASS | 20 casos base + subcasos por causa |
 | errores claros | PASS | ERROR_MAPPING |
 | persistencia definida | PASS | dos tablas, constraints y owner |
-| concurrencia definida | PASS | revision + guard + no cache |
+| concurrencia definida | PASS | row lock + revision + mismo commit + no cache |
 | pruebas definidas | PASS | TEST_PLAN |
-| mutaciones definidas | PASS | 20 mutaciones |
+| mutaciones definidas | PASS | 25 mutaciones |
 | evidencia definida | PASS | EXPECTED_EVIDENCE |
 | riesgo clasificado | PASS | alto, fail-closed |
 | estimación incluida | PASS | L por bloques |
@@ -64,8 +87,8 @@ Además debe:
 - public API;
 - source boundary;
 - no cache;
-- optimistic concurrency/guard;
-- errors;
+- row lock + optimistic revision + punto de linearización;
+- errores inequívocos por escenario;
 - pruebas/mutations/evidence;
 - integración con PBIs 025–029.
 
@@ -108,6 +131,22 @@ El shell por defecto usaba Node.js `25.9.0` y el gate lo rechazó correctamente
 antes de ejecutar. La validación autoritativa se repitió con la instalación
 local canónica de Node.js `24.18.0`; no se instaló ni modificó ninguna
 dependencia.
+
+## Validación local de la remediación
+
+Ejecutada el 2026-07-26 con Node.js `24.18.0` y pnpm `11.15.1`:
+
+| Gate | Resultado |
+| --- | --- |
+| Markdown, links y fences | PASS — 16 archivos, 45 enlaces relativos, 0 fallos |
+| `git diff --check` | PASS |
+| `pnpm install --frozen-lockfile` | PASS — lockfile sin cambios |
+| `pnpm run typecheck` | PASS |
+| `pnpm run test:architecture` | PASS — 261/261 |
+| `pnpm test -- test/ci-evidence.test.mjs` | PASS — 335 pass, 10 skips ordinarios, 0 fail |
+| scope del diff | PASS — 16 documentos PBI-024 |
+| código/tests/workflows/dependencias | PASS — 0 cambios |
+| secrets scan focalizado | PASS |
 
 ## Restricción de merge
 
