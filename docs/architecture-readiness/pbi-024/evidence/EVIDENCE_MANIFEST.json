@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "pbi": "PBI-024",
+  "contract": "PBI-024/TRUSTED-STATION-CONTEXT",
+  "branch": "r0/pbi-024-trusted-station-context",
+  "baseCommit": "6c71a3ce5c20049727854ea6aa7629aa0db76f91",
+  "implementationCommit": "cef3d5fbd617b76028b3854f3f9d08432e470fcf",
+  "pullRequest": null,
+  "recordedAtUtc": "2026-07-26T22:50:18Z",
+  "responsibleRole": "Arquitectura e Ingenieria",
+  "environment": {
+    "localOs": "darwin",
+    "localArch": "arm64",
+    "postgresContainerOs": "linux",
+    "postgresContainerArch": "amd64"
+  },
+  "toolchain": {
+    "node": "24.18.0",
+    "pnpm": "11.15.1",
+    "typescript": "6.0.3",
+    "postgresql": "18.4",
+    "kysely": "0.29.4",
+    "pg": "8.22.0",
+    "typesPg": "8.20.0",
+    "nestjs": "11.1.28"
+  },
+  "hashes": {
+    "packageJson": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
+    "pnpmLock": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
+    "architecturePolicy": "ed253a9e561c37396012f84eacb4c3ee8a2812b35d303e4c047cb6764f67d729",
+    "tenantBranchMigration": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
+    "stationMigration": "3ea3fc0d3712e2b5911275c2a6752040d4216da58278e0daefdbfd8b03a17018",
+    "workflow": "2a02a14c14222f67f5ff00b4202c24bc3268202dce4e69dc4ddf5357d7bf1acb"
+  },
+  "migrations": {
+    "before": [
+      "20260725183832_database_create_tenants_and_branches"
+    ],
+    "after": [
+      "20260725183832_database_create_tenants_and_branches",
+      "20260726160000_stations_create_stations_and_bindings"
+    ],
+    "upDownReapply": "PASS"
+  },
+  "syntheticAliases": {
+    "tenants": ["tenant-a", "tenant-b"],
+    "branches": ["branch-a", "branch-b"],
+    "stations": ["station-a", "station-b"]
+  },
+  "commands": [
+    {"name": "install", "exitCode": 0},
+    {"name": "typecheck", "exitCode": 0},
+    {"name": "build", "exitCode": 0},
+    {"name": "test", "exitCode": 0},
+    {"name": "test:architecture", "exitCode": 0},
+    {"name": "verify", "exitCode": 0},
+    {"name": "smoke:start", "exitCode": 0},
+    {"name": "postgresql-local-run-1", "exitCode": 0},
+    {"name": "postgresql-local-run-2", "exitCode": 0},
+    {"name": "mutation", "exitCode": 0},
+    {"name": "diff:check", "exitCode": 0}
+  ],
+  "tests": {
+    "total": 388,
+    "passed": 377,
+    "failed": 0,
+    "ordinarySkips": 11,
+    "criticalSkips": 0,
+    "architecture": {"total": 265, "passed": 265},
+    "postgresqlPerRun": {"suites": 6, "tests": 11, "failed": 0, "skipped": 0}
+  },
+  "mutations": {
+    "ids": [
+      "MUT-024-01", "MUT-024-02", "MUT-024-03", "MUT-024-04",
+      "MUT-024-05", "MUT-024-06", "MUT-024-07", "MUT-024-08",
+      "MUT-024-09", "MUT-024-10", "MUT-024-11", "MUT-024-12",
+      "MUT-024-13", "MUT-024-14", "MUT-024-15", "MUT-024-16",
+      "MUT-024-17", "MUT-024-18", "MUT-024-19", "MUT-024-20",
+      "MUT-024-21", "MUT-024-22", "MUT-024-23", "MUT-024-24",
+      "MUT-024-25"
+    ],
+    "killed": 25,
+    "survived": 0,
+    "skipped": 0
+  },
+  "cleanup": "PASS",
+  "remoteArtifacts": [],
+  "review": {
+    "implementation": "LOCAL_PASS",
+    "independent": "PENDING",
+    "dec051C02": "Pending",
+    "merge": "BLOCKED"
+  },
+  "verdict": "LOCAL_PASS_REMOTE_CI_PENDING"
+}
