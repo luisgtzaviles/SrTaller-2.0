@@ -7,8 +7,8 @@ export type InternalDatabasePersistenceOwner = 'stations' | 'tenancy';
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
   Owner extends 'tenancy'
-    ? Pick<DatabaseSchema, 'tenants'>
-    : Pick<DatabaseSchema, 'branches'>;
+    ? Pick<DatabaseSchema, 'branches' | 'tenants'>
+    : Pick<DatabaseSchema, 'station_bindings' | 'stations'>;
 
 export type InternalDatabasePersistenceExecutor<
   Owner extends InternalDatabasePersistenceOwner,

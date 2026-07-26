@@ -1,27 +1,10 @@
 import { inspect } from 'node:util';
 
-import type { TenantId } from '../../../tenancy/index.js';
-
-declare const branchIdBrand: unique symbol;
+import type { BranchId, TenantId } from '../../index.js';
+import { parseBranchId } from '../../index.js';
 
 type ScopedTenantId = string & TenantId;
-
-export type BranchId = string & {
-  readonly [branchIdBrand]: 'BranchId';
-};
-
-const canonicalUuid =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
-
-export function parseBranchId(value: unknown): BranchId {
-  if (
-    typeof value !== 'string' ||
-    !canonicalUuid.test(value)
-  ) {
-    throw new TypeError('BranchId must be a canonical UUID.');
-  }
-  return value as BranchId;
-}
+type ScopedBranchId = string & BranchId;
 
 export interface TenantPersistenceScope {
   readonly tenantId: ScopedTenantId;
@@ -29,7 +12,7 @@ export interface TenantPersistenceScope {
 
 export interface TenantBranchPersistenceScope {
   readonly tenantId: ScopedTenantId;
-  readonly branchId: BranchId;
+  readonly branchId: ScopedBranchId;
 }
 
 export interface BranchRecord {

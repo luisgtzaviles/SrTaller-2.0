@@ -9,9 +9,13 @@ const tenantPortPath =
 const tenantAdapterPath =
   'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts';
 const branchPortPath =
-  'src/modules/stations/application/ports/branch-repository.port.ts';
+  'src/modules/tenancy/application/ports/branch-repository.port.ts';
 const branchAdapterPath =
-  'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts';
+  'src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts';
+const stationAdapterPath =
+  'src/modules/stations/infrastructure/persistence/kysely-station.repository.ts';
+const bindingAdapterPath =
+  'src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts';
 
 test('owner-scoped ports and adapters retain exact ownership registration', async () => {
   const policy = JSON.parse(
@@ -24,7 +28,7 @@ test('owner-scoped ports and adapters retain exact ownership registration', asyn
     status: 'materialized-owner-port',
   });
   assert.deepEqual(policy.persistence.ports[branchPortPath], {
-    owner: 'stations',
+    owner: 'tenancy',
     contract: 'BranchRepositoryPort',
     allowedScopes: [
       'TenantPersistenceScope',
@@ -39,9 +43,9 @@ test('owner-scoped ports and adapters retain exact ownership registration', asyn
     status: 'materialized-owner-adapter',
   });
   assert.deepEqual(policy.persistence.adapters[branchAdapterPath], {
-    owner: 'stations',
+    owner: 'tenancy',
     port: branchPortPath,
-    composition: 'src/modules/stations/stations.module.ts',
+    composition: 'src/modules/tenancy/tenancy.module.ts',
     status: 'materialized-owner-adapter',
   });
 });
@@ -65,14 +69,16 @@ test('persistence capability is internal and has only exact adapter consumers', 
     ],
     consumers: [
       'src/infrastructure/database/database-connection.ts',
+      bindingAdapterPath,
+      stationAdapterPath,
       branchAdapterPath,
       tenantAdapterPath,
     ],
     status: 'materialized-owner-internal-capability',
   });
   assert.match(source, /Owner extends 'tenancy'/u);
-  assert.match(source, /Pick<DatabaseSchema, 'tenants'>/u);
-  assert.match(source, /Pick<DatabaseSchema, 'branches'>/u);
+  assert.match(source, /'branches' \| 'tenants'/u);
+  assert.match(source, /'station_bindings' \| 'stations'/u);
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),
     /database-persistence-capability|KyselyTenant|KyselyBranch/u,
@@ -85,7 +91,7 @@ test('ports require nominal scopes without leaking database drivers', async () =
     readFile(branchPortPath, 'utf8'),
   ]);
   assert.match(tenantPort, /readonly tenantId: ScopedTenantId/u);
-  assert.match(branchPort, /readonly branchId: BranchId/u);
+  assert.match(branchPort, /readonly branchId: ScopedBranchId/u);
   assert.match(
     branchPort,
     /findBranchById\(\s*scope: TenantBranchPersistenceScope/u,

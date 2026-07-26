@@ -9,15 +9,15 @@ import {
 } from '../dist/infrastructure/database/database-persistence-capability.js';
 import {
   BranchPersistenceError,
-  parseBranchId,
-} from '../dist/modules/stations/application/ports/branch-repository.port.js';
+} from '../dist/modules/tenancy/application/ports/branch-repository.port.js';
 import {
   createKyselyBranchRepository,
-} from '../dist/modules/stations/infrastructure/persistence/kysely-branch.repository.js';
+} from '../dist/modules/tenancy/infrastructure/persistence/kysely-branch.repository.js';
 import {
   TenantPersistenceError,
 } from '../dist/modules/tenancy/application/ports/tenant-repository.port.js';
 import {
+  parseBranchId,
   parseTenantId,
 } from '../dist/modules/tenancy/index.js';
 import {
@@ -183,7 +183,7 @@ test('adapters map immutable records and invoke only their registered owner', as
     createdAt,
   });
   assert.ok(Object.isFrozen(branch));
-  assert.deepEqual(branchOwners, ['stations']);
+  assert.deepEqual(branchOwners, ['tenancy']);
 });
 
 test('driver failures map to stable sanitized owner errors', async () => {
@@ -243,7 +243,7 @@ test('source contracts expose no global branch lookup or dynamic table API', asy
   const [branchSource, tenantSource] = await Promise.all([
     readFile(
       new URL(
-        '../src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
+        '../src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts',
         import.meta.url,
       ),
       'utf8',

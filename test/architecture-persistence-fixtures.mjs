@@ -1,9 +1,13 @@
 const databaseTypes = [
   'export interface TenantTable { readonly tenant_id: string; readonly created_at: Date; }',
   'export interface BranchTable { readonly tenant_id: string; readonly branch_id: string; readonly created_at: Date; }',
+  "export interface StationTable { readonly tenant_id: string; readonly station_id: string; readonly status: 'Unlinked' | 'Active' | 'Revoked'; readonly revision: number; readonly created_at: Date; readonly updated_at: Date; readonly revoked_at: Date | null; }",
+  'export interface StationBindingTable { readonly tenant_id: string; readonly station_id: string; readonly binding_revision: number; readonly branch_id: string; readonly linked_at: Date; readonly unlinked_at: Date | null; }',
   'export interface DatabaseSchema {',
   '  readonly tenants: TenantTable;',
   '  readonly branches: BranchTable;',
+  '  readonly stations: StationTable;',
+  '  readonly station_bindings: StationBindingTable;',
   '}',
   'export type TenantRow = TenantTable;',
   'export type NewTenant = TenantTable;',
@@ -11,6 +15,12 @@ const databaseTypes = [
   'export type BranchRow = BranchTable;',
   'export type NewBranch = BranchTable;',
   'export type BranchUpdate = Partial<BranchTable>;',
+  'export type StationRow = StationTable;',
+  'export type NewStation = StationTable;',
+  'export type StationUpdate = Partial<StationTable>;',
+  'export type StationBindingRow = StationBindingTable;',
+  'export type NewStationBinding = StationBindingTable;',
+  'export type StationBindingUpdate = Partial<StationBindingTable>;',
   '',
 ].join('\n');
 
@@ -110,6 +120,8 @@ const transactionRunner = [
   "import { databaseTransactionCapability } from './database-transaction-capability.js';",
   "export type DatabaseTransactionOptions = Readonly<{ isolationLevel?: 'read committed'; readOnly?: boolean }>;",
   "export type DatabaseTransactionContext = Readonly<{ attempt: 1; isolationLevel: 'read committed'; readOnly: boolean }>;",
+  "export const databaseTransactionPassthroughError: unique symbol = Symbol.for('srtaller.database.transaction-passthrough-error');",
+  'export interface DatabaseTransactionPassthroughError { readonly [databaseTransactionPassthroughError]: true; }',
   'export class DatabaseTransactionError extends Error {}',
   'export async function runInTransaction<T>(connection: DatabaseConnection, options: DatabaseTransactionOptions, callback: (context: DatabaseTransactionContext) => T | Promise<T>): Promise<T> {',
   '  void connection;',
@@ -668,11 +680,11 @@ export const persistenceFixtureCases = [
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
     files: based({
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts':
-        tenantAdapter.replace("selectFrom('tenants')", "selectFrom('branches')"),
+        tenantAdapter.replace("selectFrom('tenants')", "selectFrom('stations')"),
     }),
     coverage: {
       ids: ['fixture:D5-R047:cross-owner-object'],
-      evidence: ["selectFrom('branches')"],
+      evidence: ["selectFrom('stations')"],
     },
   },
   {
@@ -883,10 +895,10 @@ export const persistenceFixtureCases = [
     }),
   },
   {
-    name: 'PBI-023 station port accepts structural tenant and branch scope',
+    name: 'PBI-024 tenancy port accepts structural tenant and branch scope',
     expectedRules: [],
     files: {
-      'src/modules/stations/application/ports/branch-repository.port.ts': [
+      'src/modules/tenancy/application/ports/branch-repository.port.ts': [
         'export interface TenantBranchPersistenceScope {',
         '  readonly tenantId: string;',
         '  readonly branchId: string;',
@@ -975,9 +987,9 @@ export const persistenceFixtureCases = [
     name: 'D5-R044 rejects branch lookup scoped only by branch ID',
     expectedRules: ['D5-R044'],
     expectedPath:
-      'src/modules/stations/application/ports/branch-repository.port.ts',
+      'src/modules/tenancy/application/ports/branch-repository.port.ts',
     files: {
-      'src/modules/stations/application/ports/branch-repository.port.ts': [
+      'src/modules/tenancy/application/ports/branch-repository.port.ts': [
         'export interface TenantBranchPersistenceScope {',
         '  readonly tenantId: string;',
         '  readonly branchId: string;',

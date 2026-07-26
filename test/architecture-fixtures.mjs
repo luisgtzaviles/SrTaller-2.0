@@ -427,7 +427,7 @@ export const fixtureCases = [
   {
     name: 'invalid public re-export',
     expectedRules: ['D5-R004'],
-    expectedText: 'cannot re-export',
+    expectedText: 'only explicitly allowlisted',
     files: {
       'src/modules/access/index.ts': `${validFiles['src/modules/access/index.ts']}export { Secret } from './internal/secret.js';\n`,
       'src/modules/access/internal/secret.ts': 'export interface Secret {}\n',

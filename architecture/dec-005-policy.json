@@ -8,8 +8,41 @@
   },
   "publicSurfaces": {
     "access": ["AccessModuleContract"],
-    "stations": ["StationsModuleContract"],
-    "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"]
+    "stations": [
+      "ResolveTrustedStationContext",
+      "RunWithTrustedStationContext",
+      "StationId",
+      "StationsModuleContract",
+      "TrustedStationContext",
+      "parseStationId"
+    ],
+    "tenancy": [
+      "BranchEligibilityCapability",
+      "BranchEligibilityQuery",
+      "BranchId",
+      "EligibleBranchSnapshot",
+      "TenantId",
+      "TenancyModuleContract",
+      "parseBranchId",
+      "parseTenantId"
+    ]
+  },
+  "publicSurfaceReexports": {
+    "stations": {
+      "./application/contracts/trusted-station-context.js": [
+        "TrustedStationContext"
+      ],
+      "./application/use-cases/resolve-trusted-station-context.js": [
+        "ResolveTrustedStationContext"
+      ],
+      "./application/use-cases/run-with-trusted-station-context.js": [
+        "RunWithTrustedStationContext"
+      ],
+      "./domain/station.js": [
+        "StationId",
+        "parseStationId"
+      ]
+    }
   },
   "consumers": {
     "access": ["AppModule"],
@@ -106,19 +139,30 @@
         "publicExports": [
           "TenantTable",
           "BranchTable",
+          "StationTable",
+          "StationBindingTable",
           "DatabaseSchema",
           "TenantRow",
           "NewTenant",
           "TenantUpdate",
           "BranchRow",
           "NewBranch",
-          "BranchUpdate"
+          "BranchUpdate",
+          "StationRow",
+          "NewStation",
+          "StationUpdate",
+          "StationBindingRow",
+          "NewStationBinding",
+          "StationBindingUpdate"
         ],
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
+          "src/infrastructure/database/migrations/20260726160000_stations_create_stations_and_bindings.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
-          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
         "status": "materialized-schema-contract"
@@ -134,7 +178,12 @@
         "consumers": [
           "src/infrastructure/database/transaction-runner.ts",
           "src/infrastructure/database/migration-runner.ts",
-          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts",
+          "src/modules/stations/stations.module.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-branch-eligibility.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
         "status": "materialized-connection-facility"
@@ -187,7 +236,9 @@
         ],
         "consumers": [
           "src/infrastructure/database/database-connection.ts",
-          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
         "status": "materialized-owner-internal-capability"
@@ -217,11 +268,15 @@
         "publicExports": [
           "DatabaseTransactionOptions",
           "DatabaseTransactionContext",
+          "DatabaseTransactionPassthroughError",
           "DatabaseTransactionError",
+          "databaseTransactionPassthroughError",
           "runInTransaction"
         ],
         "consumers": [
-          "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+          "src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-branch-eligibility.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
         "consumerRequirement": "deferred-until-adapter-composition",
@@ -245,10 +300,22 @@
       }
     },
     "ports": {
-      "src/modules/stations/application/ports/branch-repository.port.ts": {
-        "owner": "stations",
+      "src/modules/tenancy/application/ports/branch-repository.port.ts": {
+        "owner": "tenancy",
         "contract": "BranchRepositoryPort",
         "allowedScopes": ["TenantPersistenceScope", "TenantBranchPersistenceScope"],
+        "status": "materialized-owner-port"
+      },
+      "src/modules/stations/application/ports/station-repository.port.ts": {
+        "owner": "stations",
+        "contract": "StationRepositoryPort",
+        "allowedScopes": ["StationPersistenceScope"],
+        "status": "materialized-owner-port"
+      },
+      "src/modules/stations/application/ports/station-binding-repository.port.ts": {
+        "owner": "stations",
+        "contract": "StationBindingRepositoryPort",
+        "allowedScopes": ["StationBindingScope"],
         "status": "materialized-owner-port"
       },
       "src/modules/tenancy/application/ports/tenant-repository.port.ts": {
@@ -260,12 +327,26 @@
     },
     "scopeTypes": {
       "TenantBranchPersistenceScope": ["tenantId", "branchId"],
-      "TenantPersistenceScope": ["tenantId"]
+      "TenantPersistenceScope": ["tenantId"],
+      "StationPersistenceScope": ["tenantId", "stationId"],
+      "StationBindingScope": ["tenantId", "stationId"]
     },
     "adapters": {
-      "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts": {
+      "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts": {
+        "owner": "tenancy",
+        "port": "src/modules/tenancy/application/ports/branch-repository.port.ts",
+        "composition": "src/modules/tenancy/tenancy.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts": {
         "owner": "stations",
-        "port": "src/modules/stations/application/ports/branch-repository.port.ts",
+        "port": "src/modules/stations/application/ports/station-repository.port.ts",
+        "composition": "src/modules/stations/stations.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts": {
+        "owner": "stations",
+        "port": "src/modules/stations/application/ports/station-binding-repository.port.ts",
         "composition": "src/modules/stations/stations.module.ts",
         "status": "materialized-owner-adapter"
       },
@@ -278,6 +359,14 @@
     },
     "databaseObjects": {
       "branches": {
+        "owner": "tenancy",
+        "kind": "table"
+      },
+      "station_bindings": {
+        "owner": "stations",
+        "kind": "table"
+      },
+      "stations": {
         "owner": "stations",
         "kind": "table"
       },
@@ -376,7 +465,15 @@
       },
       "status": "tenant-schema-materialized"
     },
-    "status": "tenant-schema-materialized"
+    "stationSchema": {
+      "migration": "src/infrastructure/database/migrations/20260726160000_stations_create_stations_and_bindings.ts",
+      "tables": ["stations", "station_bindings"],
+      "stationPrimaryKey": ["tenant_id", "station_id"],
+      "bindingPrimaryKey": ["tenant_id", "station_id", "binding_revision"],
+      "openBindingUniqueIndex": "station_bindings_one_open_uq",
+      "status": "station-context-schema-materialized"
+    },
+    "status": "station-context-schema-materialized"
   },
   "checkerRules": [
     "D5-R002",
@@ -508,11 +605,31 @@
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
     "src/modules/stations/index.ts",
-    "src/modules/stations/application/ports/branch-repository.port.ts",
-    "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
+    "src/modules/stations/application/contracts/trusted-station-context.ts",
+    "src/modules/stations/application/ports/station-binding-repository.port.ts",
+    "src/modules/stations/application/ports/station-persistence.error.ts",
+    "src/modules/stations/application/ports/station-recognition.port.ts",
+    "src/modules/stations/application/ports/station-repository.port.ts",
+    "src/modules/stations/application/ports/station-unit-of-work.port.ts",
+    "src/modules/stations/application/station-application.error.ts",
+    "src/modules/stations/application/station-error-mapper.ts",
+    "src/modules/stations/application/use-cases/link-station.ts",
+    "src/modules/stations/application/use-cases/resolve-trusted-station-context.ts",
+    "src/modules/stations/application/use-cases/revoke-station.ts",
+    "src/modules/stations/application/use-cases/run-with-trusted-station-context.ts",
+    "src/modules/stations/application/use-cases/unlink-station.ts",
+    "src/modules/stations/domain/station.ts",
+    "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts",
+    "src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts",
+    "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts",
+    "src/modules/stations/infrastructure/recognition/fake-station-recognition.ts",
     "src/modules/stations/stations.module.ts",
     "src/modules/tenancy/index.ts",
+    "src/modules/tenancy/application/branch-eligibility.service.ts",
+    "src/modules/tenancy/application/ports/branch-repository.port.ts",
     "src/modules/tenancy/application/ports/tenant-repository.port.ts",
+    "src/modules/tenancy/infrastructure/persistence/kysely-branch-eligibility.ts",
+    "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts",
     "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
     "src/modules/tenancy/tenancy.module.ts"
   ],

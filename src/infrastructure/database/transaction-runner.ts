@@ -61,6 +61,14 @@ type TransactionErrorContract = Readonly<{
   retryable: DatabaseTransactionRetryability;
 }>;
 
+export const databaseTransactionPassthroughError: unique symbol = Symbol.for(
+  'srtaller.database.transaction-passthrough-error',
+);
+
+export interface DatabaseTransactionPassthroughError {
+  readonly [databaseTransactionPassthroughError]: true;
+}
+
 type DriverErrorShape = Readonly<{
   code: string;
   message: string;
@@ -429,6 +437,18 @@ export async function runInTransaction<T>(
         primary,
         error,
       );
+    }
+    if (
+      callbackFailed &&
+      error === callbackError &&
+      typeof error === 'object' &&
+      error !== null &&
+      databaseTransactionPassthroughError in error &&
+      (error as DatabaseTransactionPassthroughError)[
+        databaseTransactionPassthroughError
+      ] === true
+    ) {
+      throw error;
     }
     const phase = callbackFailed
       ? 'callback'

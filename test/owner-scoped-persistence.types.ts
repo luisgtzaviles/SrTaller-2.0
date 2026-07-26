@@ -1,5 +1,4 @@
-import type { TenantId } from '../src/modules/tenancy/index.js';
-import type { BranchId } from '../src/modules/stations/application/ports/branch-repository.port.js';
+import type { BranchId, TenantId } from '../src/modules/tenancy/index.js';
 
 declare const tenantId: TenantId;
 declare const branchId: BranchId;

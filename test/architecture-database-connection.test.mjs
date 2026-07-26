@@ -21,7 +21,12 @@ test('connection facility retains its exact owner, API and transaction consumer'
     consumers: [
       'src/infrastructure/database/transaction-runner.ts',
       'src/infrastructure/database/migration-runner.ts',
-      'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
+      'src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts',
+      'src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts',
+      'src/modules/stations/infrastructure/persistence/kysely-station.repository.ts',
+      'src/modules/stations/stations.module.ts',
+      'src/modules/tenancy/infrastructure/persistence/kysely-branch-eligibility.ts',
+      'src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
     ],
     status: 'materialized-connection-facility',
@@ -53,12 +58,11 @@ test('connection facility owns only the technical probe and exposes no driver', 
   assert.doesNotMatch(source, /connectionString/u);
 });
 
-test('startup and product modules do not consume the connection facility', async () => {
+test('startup and non-owning modules do not consume the connection facility', async () => {
   const files = [
     'src/main.ts',
     'src/app.module.ts',
     'src/modules/access/access.module.ts',
-    'src/modules/stations/stations.module.ts',
     'src/modules/tenancy/tenancy.module.ts',
   ];
   const combined = (
@@ -67,4 +71,10 @@ test('startup and product modules do not consume the connection facility', async
 
   assert.doesNotMatch(combined, /database-connection/u);
   assert.doesNotMatch(combined, /createDatabaseConnection/u);
+  const stations = await readFile(
+    'src/modules/stations/stations.module.ts',
+    'utf8',
+  );
+  assert.match(stations, /import type \{ DatabaseConnection \}/u);
+  assert.doesNotMatch(stations, /createDatabaseConnection/u);
 });

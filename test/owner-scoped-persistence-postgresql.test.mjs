@@ -23,10 +23,9 @@ const { DatabaseTransactionError, runInTransaction } = enabled
   : {};
 const {
   BranchPersistenceError,
-  parseBranchId,
 } = enabled
   ? await import(
-      '../dist/modules/stations/application/ports/branch-repository.port.js'
+      '../dist/modules/tenancy/application/ports/branch-repository.port.js'
     )
   : {};
 const {
@@ -34,7 +33,7 @@ const {
   createTransactionalKyselyBranchRepository,
 } = enabled
   ? await import(
-      '../dist/modules/stations/infrastructure/persistence/kysely-branch.repository.js'
+      '../dist/modules/tenancy/infrastructure/persistence/kysely-branch.repository.js'
     )
   : {};
 const { TenantPersistenceError } = enabled
@@ -42,7 +41,7 @@ const { TenantPersistenceError } = enabled
       '../dist/modules/tenancy/application/ports/tenant-repository.port.js'
     )
   : {};
-const { parseTenantId } = enabled
+const { parseBranchId, parseTenantId } = enabled
   ? await import('../dist/modules/tenancy/index.js')
   : {};
 const {
@@ -59,6 +58,8 @@ const migrationRoot = fileURLToPath(
 );
 const migrationName =
   '20260725183832_database_create_tenants_and_branches';
+const stationMigrationName =
+  '20260726160000_stations_create_stations_and_bindings';
 const createdAt = '2026-07-25T20:00:00.000Z';
 
 function databaseConfig() {
@@ -155,6 +156,8 @@ function expectsBranchCode(code) {
 async function resetDatabase(admin) {
   await admin.query(
     `drop table if exists
+      station_bindings,
+      stations,
       branches,
       tenants,
       kysely_migration,
@@ -169,6 +172,8 @@ async function assertNoObjects(admin) {
      from pg_catalog.pg_tables
      where schemaname = 'public'
        and tablename in (
+         'station_bindings',
+         'stations',
          'branches',
          'tenants',
          'kysely_migration',
@@ -190,10 +195,9 @@ test(
     try {
       await resetDatabase(admin);
       const inspection = await inspectMigrationSource(source());
-      assert.equal(inspection.manifest.migrations.length, 1);
-      assert.equal(
-        inspection.manifest.migrations[0].migrationName,
-        migrationName,
+      assert.deepEqual(
+        inspection.manifest.migrations.map(({ migrationName }) => migrationName),
+        [migrationName, stationMigrationName],
       );
       runner = createMigrationRunner(connection, {
         expectedManifestHash: inspection.manifest.aggregateSha256,
@@ -440,6 +444,7 @@ test(
       );
 
       const status = await runner.getMigrationStatus();
+      await runner.migrateDown(authorization(status.migrations[1]));
       await runner.migrateDown(authorization(status.migrations[0]));
       await resetDatabase(admin);
       await assertNoObjects(admin);

@@ -6,14 +6,14 @@ import {
   useTransactionalDatabasePersistenceExecutor,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
+  InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { BranchRow, DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
 import type { DatabaseTransactionContext } from '../../../../infrastructure/database/transaction-runner.js';
-import { parseTenantId } from '../../../tenancy/index.js';
+import { parseBranchId, parseTenantId } from '../../index.js';
 import {
   BranchPersistenceError,
-  parseBranchId,
 } from '../../application/ports/branch-repository.port.js';
 import type {
   BranchRecord,
@@ -23,12 +23,10 @@ import type {
   TenantPersistenceScope,
 } from '../../application/ports/branch-repository.port.js';
 
-type BranchExecutor =
-  | Kysely<Pick<DatabaseSchema, 'branches'>>
-  | Transaction<Pick<DatabaseSchema, 'branches'>>;
+type BranchExecutor = InternalDatabasePersistenceExecutor<'tenancy'>;
 
 type ExecuteBranchOperation = <Result>(
-  operation: InternalDatabasePersistenceOperation<'stations', Result>,
+  operation: InternalDatabasePersistenceOperation<'tenancy', Result>,
 ) => Promise<Result>;
 
 type DriverErrorShape = Readonly<{ code: string }>;
@@ -233,7 +231,7 @@ export function createKyselyBranchRepository(
   connection: DatabaseConnection,
 ): BranchRepositoryPort {
   return new KyselyBranchRepository((operation) =>
-    useDatabasePersistenceExecutor(connection, 'stations', operation),
+    useDatabasePersistenceExecutor(connection, 'tenancy', operation),
   );
 }
 
@@ -243,7 +241,7 @@ export function createTransactionalKyselyBranchRepository(
   return new KyselyBranchRepository((operation) =>
     useTransactionalDatabasePersistenceExecutor(
       context,
-      'stations',
+      'tenancy',
       operation,
     ),
   );

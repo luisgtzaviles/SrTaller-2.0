@@ -60,7 +60,9 @@ const mutations = [
   {
     name: 'inter-module dependency cycle',
     path: 'src/modules/tenancy/index.ts',
-    expectedPath: 'src/modules/stations/index.ts',
+    expectedPath:
+      'src/modules/stations/application/contracts/trusted-station-context.ts',
+    expectedRules: ['D5-R007'],
     rule: 'D5-R007',
     content: "import type { StationsModuleContract } from '../stations/index.js';\nexport interface TenancyModuleContract { readonly stations: StationsModuleContract; }\n",
   },
@@ -261,7 +263,7 @@ for (const mutation of mutations) {
           ({ path, rule }) =>
             expectedPaths.includes(path) && expectedRules.includes(rule),
         ),
-        `expected only ${expectedRules.join(', ')} at ${expectedPaths.join(', ')}`,
+        `expected only ${expectedRules.join(', ')} at ${expectedPaths.join(', ')}; actual=${JSON.stringify(diagnostics)}`,
       );
       for (const expectedPath of expectedPaths) {
         assert.ok(

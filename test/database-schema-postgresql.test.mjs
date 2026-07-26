@@ -29,6 +29,8 @@ const {
 
 const migrationName =
   '20260725183832_database_create_tenants_and_branches';
+const stationMigrationName =
+  '20260726160000_stations_create_stations_and_bindings';
 const compiledMigrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
@@ -183,6 +185,8 @@ async function resetDatabase(admin) {
   await admin.query(
     `drop table if exists
        schema_branch_reference_probe,
+       station_bindings,
+       stations,
        branches,
        tenants,
        kysely_migration,
@@ -198,6 +202,8 @@ async function assertNoRetainedObjects(admin) {
      where schemaname = 'public'
        and tablename in (
          'schema_branch_reference_probe',
+         'station_bindings',
+         'stations',
          'branches',
          'tenants',
          'kysely_migration',
@@ -558,10 +564,9 @@ test(
         'src/infrastructure/database/migrations',
       );
       const inspection = await inspectMigrationSource(productSource);
-      assert.equal(inspection.manifest.migrations.length, 1);
-      assert.equal(
-        inspection.manifest.migrations[0].migrationName,
-        migrationName,
+      assert.deepEqual(
+        inspection.manifest.migrations.map(({ migrationName }) => migrationName),
+        [migrationName, stationMigrationName],
       );
 
       const connection = createDatabaseConnection(databaseConfig());
@@ -581,9 +586,17 @@ test(
           direction,
           status,
         })),
-        [{ name: migrationName, direction: 'Up', status: 'Success' }],
+        [
+          { name: migrationName, direction: 'Up', status: 'Success' },
+          {
+            name: stationMigrationName,
+            direction: 'Up',
+            status: 'Success',
+          },
+        ],
       );
       assert.equal(applied.status.migrations[0].state, 'applied');
+      assert.equal(applied.status.migrations[1].state, 'applied');
       assert.deepEqual((await runner.migrateToLatest()).results, []);
 
       const firstSchema = await introspectSchema(admin);
@@ -591,6 +604,23 @@ test(
       const isolation = await assertTenantIsolation(admin);
       await writeSchemaEvidence(firstSchema, isolation);
 
+      const stationDown = await runner.migrateDown(
+        authorization(applied.status.migrations[1]),
+      );
+      assert.deepEqual(
+        stationDown.results.map(({ name, direction, status }) => ({
+          name,
+          direction,
+          status,
+        })),
+        [
+          {
+            name: stationMigrationName,
+            direction: 'Down',
+            status: 'Success',
+          },
+        ],
+      );
       await assert.rejects(
         runner.migrateDown(
           authorization(applied.status.migrations[0]),
@@ -622,9 +652,19 @@ test(
           direction,
           status,
         })),
-        [{ name: migrationName, direction: 'Up', status: 'Success' }],
+        [
+          { name: migrationName, direction: 'Up', status: 'Success' },
+          {
+            name: stationMigrationName,
+            direction: 'Up',
+            status: 'Success',
+          },
+        ],
       );
       assertSchemaContract(await introspectSchema(admin));
+      await runner.migrateDown(
+        authorization(reapplied.status.migrations[1]),
+      );
       await runner.migrateDown(
         authorization(reapplied.status.migrations[0]),
       );

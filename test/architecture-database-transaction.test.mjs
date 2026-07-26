@@ -21,11 +21,15 @@ test('transaction runner and internal capability retain exact registered ownersh
     publicExports: [
       'DatabaseTransactionOptions',
       'DatabaseTransactionContext',
+      'DatabaseTransactionPassthroughError',
       'DatabaseTransactionError',
+      'databaseTransactionPassthroughError',
       'runInTransaction',
     ],
     consumers: [
-      'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
+      'src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts',
+      'src/modules/tenancy/infrastructure/persistence/kysely-branch-eligibility.ts',
+      'src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
     ],
     consumerRequirement: 'deferred-until-adapter-composition',
@@ -57,10 +61,18 @@ test('public transaction API is explicit, narrow and driver-free', async () => {
   for (const publicName of [
     'DatabaseTransactionOptions',
     'DatabaseTransactionContext',
+    'DatabaseTransactionPassthroughError',
     'DatabaseTransactionError',
+    'databaseTransactionPassthroughError',
     'runInTransaction',
   ]) {
-    assert.match(source, new RegExp(`export (?:type |class |async function )${publicName}\\b`, 'u'));
+    assert.match(
+      source,
+      new RegExp(
+        `export (?:type |interface |const |class |async function )${publicName}\\b`,
+        'u',
+      ),
+    );
   }
   assert.doesNotMatch(
     source,

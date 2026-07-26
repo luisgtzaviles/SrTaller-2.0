@@ -6,6 +6,7 @@ import {
   useTransactionalDatabasePersistenceExecutor,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
+  InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { DatabaseSchema, TenantRow } from '../../../../infrastructure/database/database-types.js';
@@ -21,9 +22,7 @@ import type {
   TenantRepositoryPort,
 } from '../../application/ports/tenant-repository.port.js';
 
-type TenantExecutor =
-  | Kysely<Pick<DatabaseSchema, 'tenants'>>
-  | Transaction<Pick<DatabaseSchema, 'tenants'>>;
+type TenantExecutor = InternalDatabasePersistenceExecutor<'tenancy'>;
 
 type ExecuteTenantOperation = <Result>(
   operation: InternalDatabasePersistenceOperation<'tenancy', Result>,

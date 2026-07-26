@@ -123,6 +123,16 @@ function exportedNames(sourceFile) {
   const names = [];
 
   for (const statement of sourceFile.statements) {
+    if (
+      ts.isExportDeclaration(statement) &&
+      statement.exportClause &&
+      ts.isNamedExports(statement.exportClause)
+    ) {
+      for (const element of statement.exportClause.elements) {
+        names.push(element.name.text);
+      }
+      continue;
+    }
     const modifiers = ts.canHaveModifiers(statement)
       ? ts.getModifiers(statement) ?? []
       : [];
@@ -1089,6 +1099,12 @@ function persistenceBoundaryDiagnostics({
   );
   const initialSchema = persistence.initialSchema;
   const initialSchemaPath = initialSchema?.migration;
+  const registeredProductMigrations = new Set(
+    [
+      initialSchemaPath,
+      persistence.stationSchema?.migration,
+    ].filter((path) => typeof path === 'string'),
+  );
 
   function stringArgument(call, index) {
     const argument = call.arguments[index];
@@ -1415,13 +1431,13 @@ function persistenceBoundaryDiagnostics({
       initialSchemaDiagnostics(file, sourceFile, resolver);
     } else if (
       !fixture &&
-      initialSchemaPath &&
-      isInsidePath(relativePath, migrationRoot)
+      isInsidePath(relativePath, migrationRoot) &&
+      !registeredProductMigrations.has(relativePath)
     ) {
       add(
         'D5-R050',
         file,
-        `unexpected product migration exists before the initial schema contract: ${relativePath}`,
+        `product migration is not registered by the persistence policy: ${relativePath}`,
       );
     }
 
@@ -1935,6 +1951,18 @@ function persistenceBoundaryDiagnostics({
       'registered initial schema migration is missing',
     );
   }
+  for (const migration of registeredProductMigrations) {
+    if (
+      !fixture &&
+      !parsedFiles.has(resolve(projectRoot, migration))
+    ) {
+      add(
+        'D5-R050',
+        resolve(projectRoot, migration),
+        'registered product migration is missing',
+      );
+    }
+  }
 }
 
 export async function checkArchitecture({
@@ -2165,7 +2193,28 @@ export async function checkArchitecture({
     if (isPublicSurface) {
       for (const statement of sourceFile.statements) {
         if (ts.isExportDeclaration(statement) && statement.moduleSpecifier) {
-          add('D5-R004', file, 'public index.ts cannot re-export module internals');
+          const allowedBySpecifier =
+            policy.publicSurfaceReexports?.[moduleName] ?? {};
+          const specifier = ts.isStringLiteralLike(statement.moduleSpecifier)
+            ? statement.moduleSpecifier.text
+            : undefined;
+          const exported = statement.exportClause &&
+              ts.isNamedExports(statement.exportClause)
+            ? statement.exportClause.elements.map((element) => element.name.text)
+            : [];
+          const allowed = specifier
+            ? new Set(allowedBySpecifier[specifier] ?? [])
+            : new Set();
+          if (
+            exported.length === 0 ||
+            exported.some((name) => !allowed.has(name))
+          ) {
+            add(
+              'D5-R004',
+              file,
+              'public index.ts may re-export only explicitly allowlisted contract symbols',
+            );
+          }
         }
         if (
           (ts.isClassDeclaration(statement) || ts.isInterfaceDeclaration(statement)) &&

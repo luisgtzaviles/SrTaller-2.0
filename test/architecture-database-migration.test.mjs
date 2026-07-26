@@ -15,7 +15,10 @@ test('migration runner, capability and provider retain exact governed ownership'
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
 
-  assert.equal(policy.persistence.status, 'tenant-schema-materialized');
+  assert.equal(
+    policy.persistence.status,
+    'station-context-schema-materialized',
+  );
   assert.deepEqual(policy.persistence.migrationBoundary, {
     runner: runnerPath,
     capability: capabilityPath,
@@ -38,7 +41,7 @@ test('migration runner, capability and provider retain exact governed ownership'
   );
 });
 
-test('public migration API remains narrow with one productive migration', async () => {
+test('public migration API remains narrow with the two governed migrations', async () => {
   const [runner, provider, capability] = await Promise.all([
     readFile(runnerPath, 'utf8'),
     readFile(providerPath, 'utf8'),
@@ -75,6 +78,7 @@ test('public migration API remains narrow with one productive migration', async 
   assert.match(capability, /unique symbol/u);
   assert.deepEqual(await readdir(productMigrationRoot), [
     '20260725183832_database_create_tenants_and_branches.ts',
+    '20260726160000_stations_create_stations_and_bindings.ts',
   ]);
 });
 

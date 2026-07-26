@@ -4,14 +4,21 @@ import test from 'node:test';
 
 const migrationPath =
   'src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts';
+const stationMigrationPath =
+  'src/infrastructure/database/migrations/20260726160000_stations_create_stations_and_bindings.ts';
 
 test('initial schema registry has exact owners, keys and physical scope', async () => {
   const policy = JSON.parse(
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
-  assert.equal(policy.persistence.status, 'tenant-schema-materialized');
+  assert.equal(
+    policy.persistence.status,
+    'station-context-schema-materialized',
+  );
   assert.deepEqual(policy.persistence.databaseObjects, {
-    branches: { owner: 'stations', kind: 'table' },
+    branches: { owner: 'tenancy', kind: 'table' },
+    station_bindings: { owner: 'stations', kind: 'table' },
+    stations: { owner: 'stations', kind: 'table' },
     tenants: { owner: 'tenancy', kind: 'table' },
   });
   assert.deepEqual(policy.persistence.initialSchema, {
@@ -38,6 +45,14 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     },
     status: 'tenant-schema-materialized',
   });
+  assert.deepEqual(policy.persistence.stationSchema, {
+    migration: stationMigrationPath,
+    tables: ['stations', 'station_bindings'],
+    stationPrimaryKey: ['tenant_id', 'station_id'],
+    bindingPrimaryKey: ['tenant_id', 'station_id', 'binding_revision'],
+    openBindingUniqueIndex: 'station_bindings_one_open_uq',
+    status: 'station-context-schema-materialized',
+  });
   assert.equal(
     policy.persistence.infrastructureFiles[
       'src/infrastructure/database/database-types.ts'
@@ -46,10 +61,13 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   );
 });
 
-test('initial productive migration root contains exactly one governed file', async () => {
+test('productive migration root contains exactly the two governed files', async () => {
   assert.deepEqual(
     await readdir('src/infrastructure/database/migrations'),
-    [migrationPath.split('/').at(-1)],
+    [
+      migrationPath.split('/').at(-1),
+      stationMigrationPath.split('/').at(-1),
+    ],
   );
   const migration = await readFile(migrationPath, 'utf8');
   for (const forbidden of [
@@ -62,6 +80,15 @@ test('initial productive migration root contains exactly one governed file', asy
   ]) {
     assert.equal(migration.includes(forbidden), false);
   }
+  const stationMigration = await readFile(stationMigrationPath, 'utf8');
+  assert.match(stationMigration, /createTable\('stations'\)/u);
+  assert.match(stationMigration, /createTable\('station_bindings'\)/u);
+  assert.match(stationMigration, /station_bindings_one_open_uq/u);
+  assert.match(stationMigration, /where\(sql<SqlBool>`unlinked_at is null`\)/u);
+  assert.doesNotMatch(
+    stationMigration,
+    /\b(?:actor_id|reason|session_id|user_id|role|secret)\b/iu,
+  );
 });
 
 test('database schema types are immutable and require externally supplied identity and time', async () => {
@@ -73,5 +100,7 @@ test('database schema types are immutable and require externally supplied identi
   assert.match(schema, /readonly tenant_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly branch_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly created_at: ImmutableColumn<Date>/u);
+  assert.match(schema, /readonly station_id: ImmutableColumn<string>/u);
+  assert.match(schema, /readonly binding_revision: ImmutableColumn<number>/u);
   assert.doesNotMatch(schema, /Generated/u);
 });
