@@ -62,8 +62,10 @@ strings, llaves privadas, tokens, rutas personales ni datos reales.
 | pull_request / run-2 | `0188602d4f6a75e69ebb6b069a54ff116f2b1247f8bc5b14c686f15d54923d97` | `50661a87caa954799142f7e44b5aacbb21ad9733e0118eb737fae63e6aadcee3` | `e41107b6e7baf16c0edea2cde795a950c6e75d1c14e781a51555074109a03a17` | `a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77` |
 
 El hash material comparable de mutaciones es
-`30f5728e70fd74ac1b1fed10d457c6c2d385356055578262671fb1735647d8c6`
-en los cuatro artifacts.
+`6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589`
+en los cuatro artifacts. El valor documental anterior se conserva, con su
+causa, en
+[el registro histórico](history/INCORRECT_MATERIAL_HASH.md).
 
 ## Comparación
 

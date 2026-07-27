@@ -55,6 +55,8 @@ sanitizados y verificación con PostgreSQL 18.4.
 - [Run 2](RUN_2.md)
 - [Comparación](COMPARISON.md)
 - [Resultados](RESULTS.md)
+- [Reconciliación de evidencia](EVIDENCE_RECONCILIATION.md)
 - [Manifest](EVIDENCE_MANIFEST.json)
 - [Historia pre-remediación](history/PRE_REMEDIATION.md)
 - [Intento CI anterior al SHA final](history/PRE_FINAL_CI.md)
+- [Hash material incorrecto](history/INCORRECT_MATERIAL_HASH.md)

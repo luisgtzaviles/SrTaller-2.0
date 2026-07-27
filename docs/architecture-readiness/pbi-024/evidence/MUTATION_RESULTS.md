@@ -34,7 +34,9 @@ El `MUTATION_MANIFEST.json` autoritativo schema 2 registra resultados
 estructurados, objetivos, fallos esperados/inesperados, clasificación,
 `causalMatch`, reporter, duración y cleanup de cada caso. Su hash material
 comparable es
-`30f5728e70fd74ac1b1fed10d457c6c2d385356055578262671fb1735647d8c6`.
+`6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589`.
+El valor anterior era el hash del objeto-resumen comparable y queda separado
+como [evidencia histórica](history/INCORRECT_MATERIAL_HASH.md).
 
 La regresión integrada ejecuta `MUT-024-01` con la prueba incorrecta de
 revocación. El target incorrecto pasa, tenant scope falla y el resultado es
