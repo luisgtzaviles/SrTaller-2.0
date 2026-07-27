@@ -7,11 +7,13 @@ rama `r0/pbi-024-trusted-station-context`, basada en
 `6c71a3ce5c20049727854ea6aa7629aa0db76f91`.
 
 La implementación funcional permanece fijada en
-`2b89279eeda6fd3cfa4b76bae34460c520abd784`; el harness causal remediado queda
-fijado en `2988bcdf362505776f7bc111e3d590aee358d2ce`. Incluye ownership de branch en
-`tenancy`, lifecycle y persistencia de Station en `stations`, resolución
-server-side, contexto inmutable, transacciones linealizadas, errores
-sanitizados y verificación con PostgreSQL 18.4.
+`2b89279eeda6fd3cfa4b76bae34460c520abd784`; el harness causal queda fijado en
+`2988bcdf362505776f7bc111e3d590aee358d2ce`, la autoprotección de evidencia en
+`4e64e9729819bae930160f2c18443ddb70646bf0` y el material documental
+reconciliado en `e66419434a90be4555a689d408adf5606b350ce9`. Incluye ownership
+de branch en `tenancy`, lifecycle y persistencia de Station en `stations`,
+resolución server-side, contexto inmutable, transacciones linealizadas,
+errores sanitizados y verificación con PostgreSQL 18.4.
 
 ## Estado
 
@@ -25,9 +27,17 @@ sanitizados y verificación con PostgreSQL 18.4.
   [30239752229](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30239752229);
 - evidencia Linux pull_request: `PASS`, run
   [30239754842](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30239754842);
+- evidencia de remediación técnica push/pull_request: `PASS`, runs
+  [30293577625](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30293577625)
+  y
+  [30293579426](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30293579426);
+- evidencia documental final push/pull_request: `PASS`, runs
+  [30295422948](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30295422948)
+  y
+  [30295424553](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30295424553);
 - PR: [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3);
 - revisión independiente previa: `CONDITIONAL PASS`;
-- remediación causal: `PASS — PBI-024 CAUSAL MUTATION HARNESS REMEDIATION
+- reconciliación de evidencia: `PASS — PBI-024 EVIDENCE RECONCILIATION
   COMPLETE`;
 - repetición de revisión formal independiente: pendiente;
 - DEC-051 C02: `Pending`;

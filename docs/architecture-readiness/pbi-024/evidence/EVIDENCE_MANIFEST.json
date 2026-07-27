@@ -1,227 +1,303 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 3,
+  "contract": "PBI-024/EVIDENCE-RECONCILIATION",
   "pbi": "PBI-024",
-  "contract": "PBI-024/TRUSTED-STATION-CONTEXT",
   "branch": "r0/pbi-024-trusted-station-context",
-  "baseCommit": "6c71a3ce5c20049727854ea6aa7629aa0db76f91",
-  "implementationCommit": "2988bcdf362505776f7bc111e3d590aee358d2ce",
-  "remediationCommits": [
-    "d1da180a27a52ab4ad40ec36c214e171f1149837",
-    "aabac6293b1671289d5a244c25283f95f841a7a6",
-    "3d484f7fd4d6d5668ddee2144c57ba1aec222920",
-    "e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66",
-    "2b89279eeda6fd3cfa4b76bae34460c520abd784",
-    "88b22b66f00ad70cebc6a91bcb8d434685dce7f7",
-    "2988bcdf362505776f7bc111e3d590aee358d2ce"
-  ],
-  "pullRequest": 3,
-  "recordedAtUtc": "2026-07-27T16:12:00Z",
-  "finalEvidenceGeneratedAtUtc": "2026-07-27T05:48:39Z",
-  "responsibleRole": "Arquitectura e Ingenieria",
-  "environment": {
-    "authoritativeOs": "linux",
-    "authoritativeArch": "x64",
-    "authoritativeLibc": "glibc 2.39",
-    "localOs": "darwin",
-    "localArch": "arm64",
-    "postgresContainerOs": "linux",
-    "postgresContainerArch": "amd64"
+  "pullRequest": {
+    "number": 3,
+    "state": "OPEN",
+    "draft": true,
+    "mergeBlockedBy": "DEC-051 C02"
   },
+  "identity": {
+    "technicalImplementationSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+    "priorDocumentationHeadSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+    "finalDocumentationHeadSha": "e66419434a90be4555a689d408adf5606b350ce9"
+  },
+  "generatedAtUtc": "2026-07-27T19:59:39.000Z",
   "toolchain": {
     "node": "24.18.0",
     "pnpm": "11.15.1",
-    "typescript": "6.0.3",
-    "postgresql": "18.4",
-    "kysely": "0.29.4",
-    "pg": "8.22.0",
-    "typesPg": "8.20.0",
-    "nestjs": "11.1.28"
+    "postgresql": "18.4"
   },
-  "hashes": {
-    "packageJson": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
-    "pnpmLock": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
-    "architecturePolicy": "ec578d6e3c4260a5fa31cd4010bce421b7315531268503148e6117595ec5b1fa",
-    "tenantBranchMigration": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
-    "stationMigration": "3ea3fc0d3712e2b5911275c2a6752040d4216da58278e0daefdbfd8b03a17018",
-    "workflow": "18ab485106efbad62c0f48bd1198978114f882e98aa163862d2abc9700ca0276"
+  "material": {
+    "algorithm": "sha256",
+    "generator": "comparableStationMutationManifest(JSON.stringify(material))",
+    "source": "MUTATION_MANIFEST.json",
+    "previousIncorrectSha256": "30f5728e70fd74ac1b1fed10d457c6c2d385356055578262671fb1735647d8c6",
+    "sha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
   },
-  "migrations": {
-    "before": [
-      "20260725183832_database_create_tenants_and_branches"
-    ],
-    "after": [
-      "20260725183832_database_create_tenants_and_branches",
-      "20260726160000_stations_create_stations_and_bindings"
-    ],
-    "upDownReapply": "PASS"
+  "causalHarness": {
+    "mutationMode": "semantic",
+    "causalCorrelation": "structured",
+    "reporterFormat": "srtaller-node-test-results/v1",
+    "expectedTestIdentity": "file-and-full-name",
+    "mutationCount": 25,
+    "killedCount": 25,
+    "causalMatchCount": 25,
+    "unrelatedFailureCount": 0,
+    "survivedCount": 0,
+    "timeoutCount": 0,
+    "parserFailureCount": 0,
+    "infrastructureFailureCount": 0,
+    "cleanupFailureCount": 0,
+    "baselineStatus": "PASS",
+    "negativeHarnessTests": "PASS",
+    "falsePositiveRegression": "PASS",
+    "manualMutationDemonstrations": 5
   },
-  "syntheticAliases": {
-    "tenants": ["tenant-a", "tenant-b"],
-    "branches": ["branch-a", "branch-b"],
-    "stations": ["station-a", "station-b"]
-  },
-  "commands": [
-    {"name": "install", "exitCode": 0},
-    {"name": "typecheck", "exitCode": 0},
-    {"name": "build", "exitCode": 0},
-    {"name": "test", "exitCode": 0},
-    {"name": "test:architecture", "exitCode": 0},
-    {"name": "verify", "exitCode": 0},
-    {"name": "smoke:start", "exitCode": 0},
-    {"name": "postgresql-local-run-1", "exitCode": 0},
-    {"name": "postgresql-local-run-2", "exitCode": 0},
-    {"name": "mutation-semantic-25", "exitCode": 0},
-    {"name": "mutation-manual-5", "exitCode": 0},
-    {"name": "diff:check", "exitCode": 0}
-  ],
-  "tests": {
-    "total": 409,
-    "passed": 398,
-    "failed": 0,
-    "ordinarySkips": 11,
-    "criticalSkips": 0,
-    "architecture": {"total": 265, "passed": 265},
-    "postgresqlPerRun": {"suites": 6, "tests": 11, "failed": 0, "skipped": 0}
-  },
-  "mutations": {
-    "mode": "semantic",
-    "workspaceStrategy": "controlled-temporary-copy",
-    "compileCommand": "pnpm run build",
-    "testCommand": "node --test test/station-application.test.mjs test/station-domain.test.mjs test/station-persistence-errors.test.mjs test/station-persistence-semantics.test.mjs",
-    "ids": [
-      "MUT-024-01", "MUT-024-02", "MUT-024-03", "MUT-024-04",
-      "MUT-024-05", "MUT-024-06", "MUT-024-07", "MUT-024-08",
-      "MUT-024-09", "MUT-024-10", "MUT-024-11", "MUT-024-12",
-      "MUT-024-13", "MUT-024-14", "MUT-024-15", "MUT-024-16",
-      "MUT-024-17", "MUT-024-18", "MUT-024-19", "MUT-024-20",
-      "MUT-024-21", "MUT-024-22", "MUT-024-23", "MUT-024-24",
-      "MUT-024-25"
-    ],
-    "killed": 25,
-    "survived": 0,
-    "skipped": 0,
-    "manualDemonstrations": [
-      "MUT-024-01",
-      "MUT-024-04",
-      "MUT-024-07",
-      "MUT-024-11",
-      "MUT-024-15"
-    ],
-    "materialSha256": "30f5728e70fd74ac1b1fed10d457c6c2d385356055578262671fb1735647d8c6"
-  },
-  "concurrentRelink": {
-    "physicalConnections": 2,
-    "independentTransactions": 2,
-    "isolationLevel": "read committed",
-    "ordersVerified": 2,
-    "winner": "PASS",
-    "loserCode": "STATION_CONTEXT_STALE",
-    "loserCategory": "Concurrency",
-    "loserRetryability": "never",
-    "nestedForbiddenObserved": false,
-    "finalStationStatus": "Active",
-    "finalRevision": "N+2",
-    "openBindings": 1
-  },
-  "cleanup": "PASS",
-  "ciStabilityRemediation": {
-    "observedOnCommit": "7daa39be893264281f4c77c9f6ed8bc26dadafda",
-    "failedPushRun": 30233547617,
-    "failedJob": 89876798716,
-    "cause": "expected concurrent rejection observed after the transaction barrier was released",
-    "fixCommit": "2b89279eeda6fd3cfa4b76bae34460c520abd784",
-    "strategy": "attach rejection assertions before releasing each barrier",
-    "runtimeChanged": false,
-    "workflowChanged": false,
-    "localPostgresqlRunsAfterFix": 3
-  },
-  "remote": {
-    "push": {
-      "workflowRunId": 30239752229,
-      "jobs": {
-        "run1": 89894333581,
-        "run2": 89894333622,
-        "comparison": 89897390062
+  "ciEvidence": {
+    "technical": {
+      "push": {
+        "runId": 30239752229,
+        "event": "push",
+        "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+        "testedSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+        "status": "SUCCESS",
+        "artifacts": [
+          {
+            "id": 8643151064,
+            "name": "vc024-run-1",
+            "workflowRunId": 30239752229,
+            "event": "push",
+            "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "testedSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "archiveSha256": "1c7ffec77699732dd20afc6df993ef8c8f4efa9b10ac14accd0a3fcdc9b52a2f",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8643166960,
+            "name": "vc024-run-2",
+            "workflowRunId": 30239752229,
+            "event": "push",
+            "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "testedSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "archiveSha256": "f6a46b0351cebf9d4437a7ebb0cbd295eda086f2debb982dbc4ed1044f57d5c7",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8643171055,
+            "name": "vc024-comparison",
+            "workflowRunId": 30239752229,
+            "event": "push",
+            "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "testedSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "archiveSha256": "a2ed5865c919c46c37518fc5df35a7c69f20bb3b546d3e244b03901e9a3cc393",
+            "comparisonSha256": "59bb126e059e1b05b72f7b16e17f98ab2861d6fc07f49ce5ed113ddb559bcb11",
+            "equivalent": true
+          }
+        ]
       },
-      "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
-      "result": "PASS",
-      "equivalent": true
+      "pullRequest": {
+        "runId": 30239754842,
+        "event": "pull_request",
+        "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+        "testedSha": "dc93f154642f04ce6caebc3d6d12f1c8907147fa",
+        "status": "SUCCESS",
+        "artifacts": [
+          {
+            "id": 8643162500,
+            "name": "vc024-run-1",
+            "workflowRunId": 30239754842,
+            "event": "pull_request",
+            "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "testedSha": "dc93f154642f04ce6caebc3d6d12f1c8907147fa",
+            "archiveSha256": "b1843350e98ec002a92ec1f4cf503ac9099030eed4ec2d1e877e05b07b38bace",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8643158764,
+            "name": "vc024-run-2",
+            "workflowRunId": 30239754842,
+            "event": "pull_request",
+            "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "testedSha": "dc93f154642f04ce6caebc3d6d12f1c8907147fa",
+            "archiveSha256": "7bd54b4820f81fb7ec31ce96a92f526c236c03f8dc2eb7dc5188ddf0936178bb",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8643166424,
+            "name": "vc024-comparison",
+            "workflowRunId": 30239754842,
+            "event": "pull_request",
+            "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+            "testedSha": "dc93f154642f04ce6caebc3d6d12f1c8907147fa",
+            "archiveSha256": "1b5b85c3eabe778a3a4d600e943181028deb96254958966a240118b47ae07a53",
+            "comparisonSha256": "2e3adee076e8d1dee1c6eb76aa0a3b4b4312ea4a74d611422a082f10931a2566",
+            "equivalent": true
+          }
+        ]
+      }
     },
-    "pullRequest": {
-      "workflowRunId": 30239754842,
-      "jobs": {
-        "run1": 89894340808,
-        "run2": 89894340883,
-        "comparison": 89897351391
+    "priorDocumentation": {
+      "push": {
+        "runId": 30283783382,
+        "event": "push",
+        "headSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+        "testedSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+        "status": "SUCCESS",
+        "artifacts": [
+          {
+            "id": 8660539972,
+            "name": "vc024-run-1",
+            "workflowRunId": 30283783382,
+            "event": "push",
+            "headSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "testedSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "archiveSha256": "423d22c29cfcb354b807012ce70b7c5fd3c5100d85eab3aa9c7caef8ba393ec1",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8660568536,
+            "name": "vc024-run-2",
+            "workflowRunId": 30283783382,
+            "event": "push",
+            "headSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "testedSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "archiveSha256": "9a2928faae9335797041654756cfb2cddbf918c67af9ac513129d29f8b4697ce",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8660578754,
+            "name": "vc024-comparison",
+            "workflowRunId": 30283783382,
+            "event": "push",
+            "headSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "testedSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "archiveSha256": "f8dd31b03d2a9d3029e1e08740edc257a75fdbd158c2f0c17865b83c6196a26e",
+            "comparisonSha256": "4370a05866937cc098a0bff358c0e90077d84fa7456ed28f8a1b44fee64fb01a",
+            "equivalent": true
+          }
+        ]
       },
-      "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
-      "testedMergeRefSha": "dc93f154642f04ce6caebc3d6d12f1c8907147fa",
-      "result": "PASS",
-      "equivalent": true
+      "pullRequest": {
+        "runId": 30283783866,
+        "event": "pull_request",
+        "headSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+        "testedSha": "a524f57af165d29b74b0f36c439870bdc5960987",
+        "status": "SUCCESS",
+        "artifacts": [
+          {
+            "id": 8660559451,
+            "name": "vc024-run-1",
+            "workflowRunId": 30283783866,
+            "event": "pull_request",
+            "headSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "testedSha": "a524f57af165d29b74b0f36c439870bdc5960987",
+            "archiveSha256": "a2c52e966e817e4fe46f77a2d2491f0cc408241d334f6c3455e2700a45a3cfd3",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8660566747,
+            "name": "vc024-run-2",
+            "workflowRunId": 30283783866,
+            "event": "pull_request",
+            "headSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "testedSha": "a524f57af165d29b74b0f36c439870bdc5960987",
+            "archiveSha256": "1989550d87f94a9403b3e673ce0f7475fffbcf4ea8dfb4095dd8dac062b3c1c4",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8660574400,
+            "name": "vc024-comparison",
+            "workflowRunId": 30283783866,
+            "event": "pull_request",
+            "headSha": "1587c328e18b9c177da45307409fc36f8551c26c",
+            "testedSha": "a524f57af165d29b74b0f36c439870bdc5960987",
+            "archiveSha256": "045e8e7f39c36959fe18eed5910ef1d18bd2cbdfe09f9db6c77d127c54f3f0ab",
+            "comparisonSha256": "4d8eee6d3e196ffb1074f1bc038404bae3170cf47a6fc0b7054feaf4db158de9",
+            "equivalent": true
+          }
+        ]
+      }
+    },
+    "finalDocumentation": {
+      "push": {
+        "runId": 30295422948,
+        "event": "push",
+        "headSha": "e66419434a90be4555a689d408adf5606b350ce9",
+        "testedSha": "e66419434a90be4555a689d408adf5606b350ce9",
+        "status": "SUCCESS",
+        "artifacts": [
+          {
+            "id": 8664956180,
+            "name": "vc024-run-1",
+            "workflowRunId": 30295422948,
+            "event": "push",
+            "headSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "testedSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "archiveSha256": "d68df3bd0f4f6b7232792ffe3978b767ee6cff82fc456e4db5326ef01d1c8b6e",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8664913431,
+            "name": "vc024-run-2",
+            "workflowRunId": 30295422948,
+            "event": "push",
+            "headSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "testedSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "archiveSha256": "efa464883deb87dcbd3866b4aaf2cb66ea4cd7d87aeba08021508f4449d8ccb5",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8664965840,
+            "name": "vc024-comparison",
+            "workflowRunId": 30295422948,
+            "event": "push",
+            "headSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "testedSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "archiveSha256": "62bb37578c285e2229aa0884792f2c6d760d76d622e056d87fd30d0117166631",
+            "comparisonSha256": "f4fd6d158ac739d5a2c4cd4f64c576d2137c20e948f23f9b32c6b8d6db876f97",
+            "equivalent": true
+          }
+        ]
+      },
+      "pullRequest": {
+        "runId": 30295424553,
+        "event": "pull_request",
+        "headSha": "e66419434a90be4555a689d408adf5606b350ce9",
+        "testedSha": "1a139582664634464ec5052a07c52f71e430d6c6",
+        "status": "SUCCESS",
+        "artifacts": [
+          {
+            "id": 8665063953,
+            "name": "vc024-run-1",
+            "workflowRunId": 30295424553,
+            "event": "pull_request",
+            "headSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "testedSha": "1a139582664634464ec5052a07c52f71e430d6c6",
+            "archiveSha256": "54a09168bcd2e8918ad8aedc6e0622bc274dcd83d338e602e800d729b1e5b0ce",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8665075059,
+            "name": "vc024-run-2",
+            "workflowRunId": 30295424553,
+            "event": "pull_request",
+            "headSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "testedSha": "1a139582664634464ec5052a07c52f71e430d6c6",
+            "archiveSha256": "3475cb948a63701fc1af7de7f3d00815547599ba00f1054d1925c2d3b2df5049",
+            "mutationMaterialSha256": "6e62a2b318e1b0c3067e6dea2715e1767e86f81ba422bc080ce65279de12c589"
+          },
+          {
+            "id": 8665085942,
+            "name": "vc024-comparison",
+            "workflowRunId": 30295424553,
+            "event": "pull_request",
+            "headSha": "e66419434a90be4555a689d408adf5606b350ce9",
+            "testedSha": "1a139582664634464ec5052a07c52f71e430d6c6",
+            "archiveSha256": "afc4d63510259d2b60abec4f1810b799f7c2e4c816617b2c04431c706f408999",
+            "comparisonSha256": "b978f81158ffe01dc435c4f23d0d2cce664b630eca83e35c98d2b217fc6defa3",
+            "equivalent": true
+          }
+        ]
+      }
     }
   },
-  "remoteArtifacts": [
-    {
-      "event": "push",
-      "id": 8643151064,
-      "name": "vc024-run-1",
-      "archiveDigest": "sha256:1c7ffec77699732dd20afc6df993ef8c8f4efa9b10ac14accd0a3fcdc9b52a2f",
-      "evidenceSha256": "428b1003db7205cfb4a5e5d10e2ab42563e88f5342b0861cca84b1ebc217511a",
-      "mutationSha256": "5135a4b38188ed9327b14da640f8dfc98b264f3908fe5a75b00456cc44c9a8fa",
-      "postgresqlSha256": "e4961d53920281ecdab03589c5ff39a616e4b77c906d58a9e4d41254e18eb4a0",
-      "distSha256": "a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77"
-    },
-    {
-      "event": "push",
-      "id": 8643166960,
-      "name": "vc024-run-2",
-      "archiveDigest": "sha256:f6a46b0351cebf9d4437a7ebb0cbd295eda086f2debb982dbc4ed1044f57d5c7",
-      "evidenceSha256": "e464b9d455541dd19579a650e5a12ab5ee6bedd688d7198b80c538dd2b1dc453",
-      "mutationSha256": "7edc82933c4116c67d664e6a4a2b58f610fa44484174e37166c41105a2375e4d",
-      "postgresqlSha256": "aadad6586210e636cafd2077f968cccec410f207d44c18ad01223f503df3503b",
-      "distSha256": "a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77"
-    },
-    {
-      "event": "push",
-      "id": 8643171055,
-      "name": "vc024-comparison",
-      "archiveDigest": "sha256:a2ed5865c919c46c37518fc5df35a7c69f20bb3b546d3e244b03901e9a3cc393",
-      "sha256": "59bb126e059e1b05b72f7b16e17f98ab2861d6fc07f49ce5ed113ddb559bcb11"
-    },
-    {
-      "event": "pull_request",
-      "id": 8643162500,
-      "name": "vc024-run-1",
-      "archiveDigest": "sha256:b1843350e98ec002a92ec1f4cf503ac9099030eed4ec2d1e877e05b07b38bace",
-      "evidenceSha256": "f5fdaa4c7ebc058d18ca6da64d61ce1a7bde0c12f3feec792d93aeef0a5109b2",
-      "mutationSha256": "38fc9ab5e44d7ec68b6fe5675de1133c2683cbc98153e247df1a4b72fd90d1df",
-      "postgresqlSha256": "5d5b2baefbce4b4e314faa6e4bb2319395cb6cab03d3a0e69ed459a96f835261",
-      "distSha256": "a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77"
-    },
-    {
-      "event": "pull_request",
-      "id": 8643158764,
-      "name": "vc024-run-2",
-      "archiveDigest": "sha256:7bd54b4820f81fb7ec31ce96a92f526c236c03f8dc2eb7dc5188ddf0936178bb",
-      "evidenceSha256": "0188602d4f6a75e69ebb6b069a54ff116f2b1247f8bc5b14c686f15d54923d97",
-      "mutationSha256": "50661a87caa954799142f7e44b5aacbb21ad9733e0118eb737fae63e6aadcee3",
-      "postgresqlSha256": "e41107b6e7baf16c0edea2cde795a950c6e75d1c14e781a51555074109a03a17",
-      "distSha256": "a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77"
-    },
-    {
-      "event": "pull_request",
-      "id": 8643166424,
-      "name": "vc024-comparison",
-      "archiveDigest": "sha256:1b5b85c3eabe778a3a4d600e943181028deb96254958966a240118b47ae07a53",
-      "sha256": "2e3adee076e8d1dee1c6eb76aa0a3b4b4312ea4a74d611422a082f10931a2566"
-    }
-  ],
-  "review": {
-    "previousIndependent": "CONDITIONAL_PASS_REMEDIATIONS_REQUIRED",
-    "remediation": "PASS_CAUSAL_HARNESS_COMPLETE",
-    "independentReverification": "PENDING",
-    "dec051C02": "Pending",
-    "merge": "BLOCKED"
+  "governance": {
+    "dec051C02": "Pending — external platform enforcement unavailable",
+    "merge": "BLOCKED",
+    "pbiStatus": "In review — evidence reconciled; formal verification pending; functional merge blocked by DEC-051 C02"
   },
-  "verdict": "PASS — PBI-024 CAUSAL MUTATION HARNESS REMEDIATION COMPLETE"
+  "verdict": "PASS — PBI-024 EVIDENCE RECONCILIATION COMPLETE"
 }

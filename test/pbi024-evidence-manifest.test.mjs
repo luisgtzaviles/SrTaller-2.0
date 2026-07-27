@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
@@ -186,6 +187,20 @@ test('schema 3 accepts complete PBI-024 evidence and artifact cross-check', () =
       status: 'PASS',
     },
   );
+});
+
+test('schema 3 accepts the committed PBI-024 evidence manifest', async () => {
+  const evidence = JSON.parse(
+    await readFile(
+      new URL(
+        '../docs/architecture-readiness/pbi-024/evidence/' +
+          'EVIDENCE_MANIFEST.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  assert.equal(validatePbi024EvidenceManifest(evidence), evidence);
 });
 
 const negativeCases = [

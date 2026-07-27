@@ -15,7 +15,7 @@ La evidencia distingue cuatro identidades:
 | implementación técnica causal | `2988bcdf362505776f7bc111e3d590aee358d2ce` |
 | HEAD documental previo | `1587c328e18b9c177da45307409fc36f8551c26c` |
 | remediación técnica de evidencia | `4e64e9729819bae930160f2c18443ddb70646bf0` |
-| HEAD documental reconciliado | registrado por el envelope post-CI |
+| HEAD documental reconciliado | `e66419434a90be4555a689d408adf5606b350ce9` |
 
 El HEAD documental reconciliado no puede declarar artifacts derivados de su
 propio commit. Por eso el expediente usa un commit de material documental,
@@ -148,17 +148,32 @@ artifacts fueron descargados y sus validators confirmaron:
 - comparison: equivalente y sin diferencias;
 - secretos y rutas personales: ausentes.
 
+## CI del material documental reconciliado
+
+| Evento | Run | SHA probado | Artifacts |
+| --- | ---: | --- | --- |
+| push | `30295422948` | `e66419434a90be4555a689d408adf5606b350ce9` | `8664956180`, `8664913431`, `8664965840` |
+| pull_request | `30295424553` | `1a139582664634464ec5052a07c52f71e430d6c6` | `8665063953`, `8665075059`, `8665085942` |
+
+El evento pull_request conserva como head
+`e66419434a90be4555a689d408adf5606b350ce9`; el SHA probado es su merge ref
+sintético, no un merge real. Ambos eventos terminaron run-1, run-2 y
+comparison en `SUCCESS`. El cross-check real confirmó material
+`6e62a2b3…`, 25/25 mutaciones, PostgreSQL PASS, cleanup PASS y comparison
+equivalente sin diferencias. Los seis artifacts no están expirados y el
+escaneo no encontró secretos ni rutas personales.
+
 ## Validación local
 
 Con Node.js 24.18.0, pnpm 11.15.1 y PostgreSQL 18.4:
 
 - instalación frozen: PASS;
 - typecheck y build: PASS;
-- suite completa: 431 total, 420 PASS, 11 skips ordinarios, 0 fallos;
+- suite completa: 432 total, 421 PASS, 11 skips ordinarios, 0 fallos;
 - arquitectura: 265/265 PASS;
 - `verify`: PASS;
 - `smoke:start`: PASS;
-- schema 3: 17/17 PASS;
+- schema 3: 18/18 PASS, incluida la prueba sobre el manifest real;
 - reporter/parser enfocados: 12/12 PASS;
 - negativos A–J + contaminación + child residual: 14/14 PASS;
 - campaña causal: 25/25, material
@@ -174,10 +189,11 @@ Con Node.js 24.18.0, pnpm 11.15.1 y PostgreSQL 18.4:
    anidada.
 2. Su push produce CI y artifacts de remediación técnica.
 3. Un commit de material documental corrige hashes, preserva historia y
-   registra esa CI.
-4. Su push produce CI y artifacts documentales finales.
-5. Un envelope posterior regenera el manifest schema 3 y PBI-024 con el SHA,
-   runs y artifacts del material documental ya inmutable.
+   registra la CI técnica.
+4. Su push produce CI y artifacts documentales finales sobre
+   `e66419434a90be4555a689d408adf5606b350ce9`.
+5. Este envelope posterior regenera el manifest schema 3 y PBI-024 con ese
+   SHA, runs y artifacts ya inmutables.
 6. La CI del envelope se verifica en vivo y se registra en el PR sin intentar
    autorreferenciarla dentro de su propio contenido.
 
