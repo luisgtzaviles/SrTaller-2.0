@@ -70,6 +70,17 @@ jobs:
       - name: Build clean artifact
         run: pnpm run build
 
+      - name: Run semantic Station mutations
+        env:
+          VC024_EXECUTION_LABEL: ${{ matrix.execution }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mutation_dir="${RUNNER_TEMP}/pbi024-mutations-${VC024_EXECUTION_LABEL}"
+          mkdir -p "${mutation_dir}"
+          node scripts/run-station-mutations.mjs \
+            --output "${mutation_dir}/MUTATION_MANIFEST.json"
+
       - name: Run PostgreSQL 18.4 persistence suites
         env:
           VC024_EXECUTION_LABEL: ${{ matrix.execution }}
@@ -126,11 +137,16 @@ jobs:
           node scripts/collect-ci-evidence.mjs \
             --output "${evidence_dir}/EVIDENCE_MANIFEST.json" \
             --dist-output "${evidence_dir}/DIST_MANIFEST.json" \
+            --mutation-input \
+              "${RUNNER_TEMP}/pbi024-mutations-${VC024_EXECUTION_LABEL}/MUTATION_MANIFEST.json" \
             --postgresql-input \
               "${RUNNER_TEMP}/pbi024-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json"
           cp \
             "${RUNNER_TEMP}/pbi024-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
             "${evidence_dir}/POSTGRESQL_MANIFEST.json"
+          cp \
+            "${RUNNER_TEMP}/pbi024-mutations-${VC024_EXECUTION_LABEL}/MUTATION_MANIFEST.json" \
+            "${evidence_dir}/MUTATION_MANIFEST.json"
 
       - name: Upload sanitized execution evidence
         uses: actions/upload-artifact@v4

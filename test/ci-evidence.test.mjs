@@ -5,8 +5,10 @@ import { join, resolve } from 'node:path';
 import test from 'node:test';
 
 import {
+  comparableStationMutationManifest,
   compareEvidenceManifests,
   inspectDist,
+  validateStationMutationManifest,
   validateEvidenceManifest,
 } from '../scripts/lib/ci-evidence.mjs';
 import {
@@ -205,6 +207,35 @@ function postgresqlManifest(label) {
   });
 }
 
+function mutationManifest(durationOffset = 0) {
+  return {
+    schemaVersion: 1,
+    mode: 'semantic',
+    workspaceStrategy: 'controlled-temporary-copy',
+    total: 25,
+    killed: 25,
+    survived: 0,
+    results: Array.from({ length: 25 }, (_, index) => ({
+      id: `MUT-024-${String(index + 1).padStart(2, '0')}`,
+      description: `semantic mutation ${index + 1}`,
+      file: 'src/modules/stations/example.ts',
+      transformation: 'semantic defect',
+      command: 'pnpm run build && node --test target',
+      expectedTest: `target ${index + 1}`,
+      applied: true,
+      compile: { code: 0, timedOut: false },
+      test: { code: 1, timedOut: false },
+      expectedFailureObserved: true,
+      failedTest: `target ${index + 1}`,
+      manual: index < 5,
+      cleanupComplete: true,
+      residualFile: false,
+      workingTreePreserved: true,
+      durationMs: durationOffset + index,
+    })),
+  };
+}
+
 test('dist inspection produces a stable relative SHA-256 inventory', async () => {
   const root = await createDistFixture();
   try {
@@ -308,4 +339,37 @@ test('PostgreSQL evidence fails closed when a critical suite is skipped', () => 
     () => finalizePostgresqlCiManifest(unsafe),
     /skipped or failed/u,
   );
+});
+
+test('semantic mutation evidence requires 25 compiled and killed defects', () => {
+  const evidence = mutationManifest();
+  assert.equal(validateStationMutationManifest(evidence), evidence);
+  const comparable = comparableStationMutationManifest(evidence);
+  assert.equal(comparable.killed, 25);
+  assert.equal(comparable.manualDemonstrations.length, 5);
+
+  const survivor = structuredClone(evidence);
+  survivor.results[0].test.code = 0;
+  assert.throws(
+    () => validateStationMutationManifest(survivor),
+    /MUT-024-01/u,
+  );
+});
+
+test('mutation comparison ignores duration but detects semantic drift', () => {
+  const left = manifest('run-1');
+  left.mutations = comparableStationMutationManifest(
+    mutationManifest(0),
+  );
+  const right = manifest('run-2');
+  right.mutations = comparableStationMutationManifest(
+    mutationManifest(10_000),
+  );
+  assert.equal(compareEvidenceManifests(left, right).equivalent, true);
+
+  right.mutations = {
+    ...right.mutations,
+    materialSha256: 'f'.repeat(64),
+  };
+  assert.equal(compareEvidenceManifests(left, right).equivalent, false);
 });

@@ -45,6 +45,68 @@ export async function sha256File(path) {
   return sha256(await readFile(path));
 }
 
+export function validateStationMutationManifest(manifest) {
+  if (
+    manifest?.schemaVersion !== 1 ||
+    manifest?.mode !== 'semantic' ||
+    manifest?.workspaceStrategy !== 'controlled-temporary-copy' ||
+    manifest?.total !== 25 ||
+    manifest?.killed !== 25 ||
+    manifest?.survived !== 0 ||
+    !Array.isArray(manifest?.results) ||
+    manifest.results.length !== 25
+  ) {
+    throw new Error('PBI-024 mutation manifest is not materially complete');
+  }
+  for (const result of manifest.results) {
+    if (
+      !/^MUT-024-(?:0[1-9]|1[0-9]|2[0-5])$/u.test(result.id) ||
+      result.applied !== true ||
+      result.compile?.code !== 0 ||
+      result.compile?.timedOut !== false ||
+      result.test?.code === 0 ||
+      result.test?.timedOut !== false ||
+      result.expectedFailureObserved !== true ||
+      result.cleanupComplete !== true ||
+      result.residualFile !== false ||
+      result.workingTreePreserved !== true
+    ) {
+      throw new Error(`Mutation result ${result?.id ?? 'unknown'} is invalid`);
+    }
+  }
+  if (new Set(manifest.results.map(({ id }) => id)).size !== 25) {
+    throw new Error('PBI-024 mutation IDs must be unique');
+  }
+  return manifest;
+}
+
+export function comparableStationMutationManifest(manifest) {
+  validateStationMutationManifest(manifest);
+  const results = manifest.results.map(
+    ({ durationMs: _durationMs, ...result }) => result,
+  );
+  const material = {
+    killed: manifest.killed,
+    mode: manifest.mode,
+    results,
+    schemaVersion: manifest.schemaVersion,
+    survived: manifest.survived,
+    total: manifest.total,
+    workspaceStrategy: manifest.workspaceStrategy,
+  };
+  return Object.freeze({
+    killed: manifest.killed,
+    manualDemonstrations: results
+      .filter(({ manual }) => manual === true)
+      .map(({ id }) => id),
+    materialSha256: sha256(JSON.stringify(material)),
+    mode: manifest.mode,
+    survived: manifest.survived,
+    total: manifest.total,
+    workspaceStrategy: manifest.workspaceStrategy,
+  });
+}
+
 export async function inspectDist({
   projectRoot = process.cwd(),
 } = {}) {
@@ -183,6 +245,21 @@ export function validateEvidenceManifest(manifest) {
       'PostgreSQL evidence requires evidence manifest schemaVersion 2',
     );
   }
+  if (manifest.mutations !== undefined) {
+    if (
+      manifest.mutations.mode !== 'semantic' ||
+      manifest.mutations.workspaceStrategy !==
+        'controlled-temporary-copy' ||
+      manifest.mutations.total !== 25 ||
+      manifest.mutations.killed !== 25 ||
+      manifest.mutations.survived !== 0 ||
+      !/^[a-f0-9]{64}$/u.test(manifest.mutations.materialSha256) ||
+      !Array.isArray(manifest.mutations.manualDemonstrations) ||
+      manifest.mutations.manualDemonstrations.length < 5
+    ) {
+      throw new Error('Evidence manifest mutation summary is invalid');
+    }
+  }
   return manifest;
 }
 
@@ -204,6 +281,9 @@ function comparableManifest(manifest) {
       ...comparablePostgresqlCiManifest(manifest.postgresql),
       comparableSha256: manifest.postgresql.comparableSha256,
     };
+  }
+  if (manifest.mutations) {
+    comparable.mutations = manifest.mutations;
   }
   return comparable;
 }
@@ -267,6 +347,7 @@ async function detectGlibc() {
 export async function collectEvidenceManifest({
   executionLabel,
   initialClean,
+  mutationInput,
   postgresqlInput,
   projectRoot = process.cwd(),
   workflowRunId,
@@ -300,15 +381,22 @@ export async function collectEvidenceManifest({
     'scripts/cleanup-postgresql-ci.mjs',
     'scripts/lib/postgresql-ci-evidence.mjs',
     'scripts/lib/postgresql-test-output.mjs',
+    'scripts/lib/station-semantic-mutation-runner.mjs',
+    'scripts/lib/station-semantic-mutations.mjs',
     'scripts/run-postgresql-ci.mjs',
+    'scripts/run-station-mutations.mjs',
     'scripts/test-database-connection-postgresql.mjs',
     'scripts/test-database-migration-postgresql.mjs',
     'scripts/test-database-schema-postgresql.mjs',
     'scripts/test-database-transaction-postgresql.mjs',
     'scripts/test-owner-scoped-persistence-postgresql.mjs',
     'src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts',
+    'src/modules/stations/application/use-cases/resolve-trusted-station-context.ts',
+    'src/modules/stations/infrastructure/persistence/station-postgresql-error.ts',
     'supply-chain-policy.json',
     'test/database-schema-postgresql.test.mjs',
+    'test/station-critical-mutations.test.mjs',
+    'test/trusted-station-context-postgresql.test.mjs',
     'tsconfig.build.json',
     'tsconfig.json',
   ];
@@ -320,6 +408,11 @@ export async function collectEvidenceManifest({
   const postgresql = postgresqlInput
     ? validatePostgresqlCiManifest(
         JSON.parse(await readFile(resolve(postgresqlInput), 'utf8')),
+      )
+    : undefined;
+  const mutations = mutationInput
+    ? comparableStationMutationManifest(
+        JSON.parse(await readFile(resolve(mutationInput), 'utf8')),
       )
     : undefined;
 
@@ -382,6 +475,7 @@ export async function collectEvidenceManifest({
       initialClean: true,
     },
     verdict: 'PASS',
+    ...(mutations ? { mutations } : {}),
     ...(postgresql ? { postgresql } : {}),
   };
 
@@ -389,6 +483,13 @@ export async function collectEvidenceManifest({
     manifest.commands.splice(7, 0, {
       name: 'test:postgresql',
       command: 'node scripts/run-postgresql-ci.mjs',
+      exitCode: 0,
+    });
+  }
+  if (mutations) {
+    manifest.commands.splice(7, 0, {
+      name: 'test:mutations',
+      command: 'node scripts/run-station-mutations.mjs',
       exitCode: 0,
     });
   }

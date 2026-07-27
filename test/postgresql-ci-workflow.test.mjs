@@ -27,6 +27,10 @@ test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', (
     /name: Cleanup PostgreSQL persistence suites\s*\n\s*if: always\(\)/u,
   );
   assert.match(workflow, /--postgresql-input/u);
+  assert.match(workflow, /Run semantic Station mutations/u);
+  assert.match(workflow, /run-station-mutations\.mjs/u);
+  assert.match(workflow, /--mutation-input/u);
+  assert.match(workflow, /MUTATION_MANIFEST\.json/u);
   assert.match(workflow, /- r0\/\*\*/u);
   assert.doesNotMatch(workflow, /secrets\./u);
 });
