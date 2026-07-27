@@ -208,28 +208,99 @@ function postgresqlManifest(label) {
 }
 
 function mutationManifest(durationOffset = 0) {
+  const causalSignature = {
+    errorCode: 'ERR_TEST_FAILURE',
+    failureType: 'testCodeFailure',
+  };
+  const failedTest = (index) => ({
+    error: {
+      name: 'Error',
+      code: 'ERR_TEST_FAILURE',
+      message: `target ${index + 1} failed`,
+      stack: `Error: target ${index + 1} failed`,
+      failureType: 'testCodeFailure',
+    },
+    file: 'test/station.test.mjs',
+    fullName: `target ${index + 1}`,
+    status: 'FAIL',
+  });
+  const inventory = Array.from({ length: 25 }, (_, index) => ({
+    error: null,
+    file: 'test/station.test.mjs',
+    fullName: `target ${index + 1}`,
+    status: 'PASS',
+  }));
+  const targets = inventory.map(({ file, fullName, status }) => ({
+    file,
+    fullName,
+    status,
+  }));
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     mode: 'semantic',
+    mutationMode: 'semantic',
+    causalCorrelation: 'structured',
+    reporterFormat: 'srtaller-node-test-results/v1',
+    expectedTestIdentity: 'file-and-full-name',
     workspaceStrategy: 'controlled-temporary-copy',
+    baselineStatus: 'PASS',
+    baseline: {
+      buildStatus: 'PASS',
+      executedTestFiles: ['test/station.test.mjs'],
+      inventory,
+      nodeModulesSymlink: true,
+      reporterFormat: 'srtaller-node-test-results/v1',
+      status: 'PASS',
+      targets,
+      testProcessStatus: 'PASS',
+    },
     total: 25,
     killed: 25,
     survived: 0,
+    unrelatedFailureCount: 0,
+    unexpectedTestFailureCount: 0,
+    parserFailureCount: 0,
+    infrastructureFailureCount: 0,
+    timeoutCount: 0,
+    negativeHarnessTests: 'PASS',
+    falsePositiveRegressionStatus: 'PASS',
+    falsePositiveRegression: {
+      classification: 'UNRELATED_TEST_FAILURE',
+      expectedTestsFailed: [],
+      killed: false,
+      status: 'PASS',
+      unexpectedTestsFailed: [failedTest(0)],
+    },
+    workspaceCleanup: 'PASS',
+    workingTreePreserved: true,
     results: Array.from({ length: 25 }, (_, index) => ({
-      id: `MUT-024-${String(index + 1).padStart(2, '0')}`,
+      mutationId: `MUT-024-${String(index + 1).padStart(2, '0')}`,
       description: `semantic mutation ${index + 1}`,
-      file: 'src/modules/stations/example.ts',
-      transformation: 'semantic defect',
-      command: 'pnpm run build && node --test target',
-      expectedTest: `target ${index + 1}`,
+      targetFile: 'src/modules/stations/example.ts',
+      expectedTests: [{
+        causalSignature,
+        file: 'test/station.test.mjs',
+        fullName: `target ${index + 1}`,
+      }],
+      executedTestFiles: ['test/station.test.mjs'],
       applied: true,
-      compile: { code: 0, timedOut: false },
-      test: { code: 1, timedOut: false },
-      expectedFailureObserved: true,
-      failedTest: `target ${index + 1}`,
+      buildStatus: 'PASS',
+      testProcessStatus: 'TEST_FAILURE',
+      parsedTestResults: [failedTest(index)],
+      failedTests: [failedTest(index)],
+      expectedTestsFailed: [failedTest(index)],
+      unexpectedTestsFailed: [],
+      timeout: false,
+      infrastructureFailure: false,
+      classification: 'EXPECTED_TEST_FAILURE',
+      causalMatch: true,
+      killed: true,
       manual: index < 5,
-      cleanupComplete: true,
-      residualFile: false,
+      reporterFormat: 'srtaller-node-test-results/v1',
+      nodeModulesSymlink: true,
+      childProcessesStatus: 'PASS',
+      cleanupStatus: 'PASS',
+      residualWorkspace: false,
       workingTreePreserved: true,
       durationMs: durationOffset + index,
     })),
@@ -349,7 +420,8 @@ test('semantic mutation evidence requires 25 compiled and killed defects', () =>
   assert.equal(comparable.manualDemonstrations.length, 5);
 
   const survivor = structuredClone(evidence);
-  survivor.results[0].test.code = 0;
+  survivor.results[0].classification = 'PASS';
+  survivor.results[0].killed = false;
   assert.throws(
     () => validateStationMutationManifest(survivor),
     /MUT-024-01/u,

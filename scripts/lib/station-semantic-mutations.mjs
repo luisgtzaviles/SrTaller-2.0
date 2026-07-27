@@ -43,12 +43,38 @@ export const stationMutationTestFiles = Object.freeze([
   'test/station-persistence-semantics.test.mjs',
 ]);
 
+const tests = Object.freeze({
+  application: stationMutationTestFiles[0],
+  domain: stationMutationTestFiles[1],
+  persistenceErrors: stationMutationTestFiles[2],
+  persistenceSemantics: stationMutationTestFiles[3],
+});
+
+function expectedTests(...identities) {
+  return Object.freeze(identities.map(([file, fullName]) =>
+    Object.freeze({
+      file,
+      fullName,
+      causalSignature: Object.freeze({
+        errorCode: 'ERR_TEST_FAILURE',
+        failureType: 'testCodeFailure',
+      }),
+    })));
+}
+
+function expectedTest(file, fullName) {
+  return expectedTests([file, fullName]);
+}
+
 export const stationSemanticMutations = Object.freeze([
   {
     id: 'MUT-024-01',
     description: 'omit tenantId from Station lookup',
     file: files.station,
-    expectedTest: 'station lookup never crosses tenant scope',
+    expectedTests: expectedTest(
+      tests.persistenceSemantics,
+      'station lookup never crosses tenant scope',
+    ),
     manual: true,
     mutate: (source) =>
       replaceInSection(
@@ -62,7 +88,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-02',
     description: 'omit tenantId from open binding lookup',
     file: files.binding,
-    expectedTest: 'binding lookup never crosses tenant scope',
+    expectedTests: expectedTest(
+      tests.persistenceSemantics,
+      'binding lookup never crosses tenant scope',
+    ),
     mutate: (source) =>
       replaceInSection(
         source,
@@ -75,7 +104,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-03',
     description: 'accept a non-active Station in the resolver',
     file: files.resolver,
-    expectedTest: 'evidence categories are deterministic',
+    expectedTests: expectedTest(
+      tests.application,
+      'evidence categories are deterministic and unknown states anti-enumerate',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -87,7 +119,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-04',
     description: 'omit bindingRevision validation before issuing trust',
     file: files.resolver,
-    expectedTest: 'resolver rejects lower and higher binding revisions',
+    expectedTests: expectedTest(
+      tests.application,
+      'resolver rejects lower and higher binding revisions before issuing trust',
+    ),
     manual: true,
     mutate: (source) =>
       requiredReplace(
@@ -100,7 +135,16 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-05',
     description: 'trust branchId supplied by station evidence',
     file: files.resolver,
-    expectedTest: 'resolver builds only a server-issued context',
+    expectedTests: expectedTests(
+      [
+        tests.application,
+        'resolver builds only a server-issued context from recognized active state',
+      ],
+      [
+        tests.application,
+        'trusted guard revalidates revision and rolls back a failed effect',
+      ],
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -112,7 +156,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-06',
     description: 'omit resolver Branch eligibility denial',
     file: files.resolver,
-    expectedTest: 'resolver fails closed on an impossible persisted branch reference',
+    expectedTests: expectedTest(
+      tests.application,
+      'resolver fails closed on an impossible persisted branch reference',
+    ),
     mutate: (source) =>
       requiredReplace(source, 'if (!eligible) {', 'if (false) {'),
   },
@@ -120,7 +167,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-07',
     description: 'omit FOR UPDATE from Station lock',
     file: files.station,
-    expectedTest: 'station and binding locks execute FOR UPDATE',
+    expectedTests: expectedTest(
+      tests.persistenceSemantics,
+      'station and binding locks execute FOR UPDATE',
+    ),
     manual: true,
     mutate: (source) =>
       requiredReplace(
@@ -133,7 +183,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-08',
     description: 'execute protected effect after the unit of work closes',
     file: files.guard,
-    expectedTest: 'trusted guard revalidates revision and rolls back a failed effect',
+    expectedTests: expectedTest(
+      tests.application,
+      'trusted guard revalidates revision and rolls back a failed effect',
+    ),
     mutate: (source) =>
       requiredReplace(
         requiredReplace(
@@ -149,7 +202,16 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-09',
     description: 'return a mutable TrustedStationContext',
     file: files.context,
-    expectedTest: 'TrustedStationContext is immutable',
+    expectedTests: expectedTests(
+      [
+        tests.domain,
+        'TrustedStationContext is immutable, internally issued and has no wildcard',
+      ],
+      [
+        tests.application,
+        'resolver builds only a server-issued context from recognized active state',
+      ],
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -161,7 +223,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-10',
     description: 'fall back to the first recognized Station',
     file: files.recognition,
-    expectedTest: 'evidence categories are deterministic',
+    expectedTests: expectedTest(
+      tests.application,
+      'evidence categories are deterministic and unknown states anti-enumerate',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -173,7 +238,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-11',
     description: 'revoke without closing the open binding',
     file: files.revoke,
-    expectedTest: 'link, unlink, relink and revoke preserve history',
+    expectedTests: expectedTest(
+      tests.application,
+      'link, unlink, relink and revoke preserve history and close the active binding',
+    ),
     manual: true,
     mutate: (source) =>
       requiredReplace(
@@ -190,7 +258,32 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-12',
     description: 'increment lifecycle revision by two',
     file: files.domain,
-    expectedTest: 'Station lifecycle is immutable, monotonic',
+    expectedTests: expectedTests(
+      [
+        tests.domain,
+        'Station lifecycle is immutable, monotonic and requires unlink before relink',
+      ],
+      [
+        tests.application,
+        'resolver builds only a server-issued context from recognized active state',
+      ],
+      [
+        tests.application,
+        'resolver rejects lower and higher binding revisions before issuing trust',
+      ],
+      [
+        tests.application,
+        'link, unlink, relink and revoke preserve history and close the active binding',
+      ],
+      [
+        tests.application,
+        'trusted guard revalidates branch eligibility before the effect',
+      ],
+      [
+        tests.domain,
+        'Revoked is terminal and records the terminal instant',
+      ],
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -202,7 +295,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-13',
     description: 'allow cross-tenant binding record ownership',
     file: files.binding,
-    expectedTest: 'binding creation rejects cross-tenant record ownership',
+    expectedTests: expectedTest(
+      tests.persistenceSemantics,
+      'binding creation rejects cross-tenant record ownership',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -214,7 +310,16 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-14',
     description: 'accept a structurally forged trusted context',
     file: files.context,
-    expectedTest: 'a forged context cannot bypass the resolver',
+    expectedTests: expectedTests(
+      [
+        tests.application,
+        'a forged context cannot bypass the resolver',
+      ],
+      [
+        tests.domain,
+        'TrustedStationContext is immutable, internally issued and has no wildcard',
+      ],
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -226,7 +331,20 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-15',
     description: 'expose an internal error message publicly',
     file: files.errors,
-    expectedTest: 'public error contract is stable, sanitized',
+    expectedTests: expectedTests(
+      [
+        tests.domain,
+        'public error contract is stable, sanitized and anti-enumerating',
+      ],
+      [
+        tests.application,
+        'resolver rejects lower and higher binding revisions before issuing trust',
+      ],
+      [
+        tests.persistenceErrors,
+        'query cancellation remains non-retryable infrastructure failure',
+      ],
+    ),
     manual: true,
     mutate: (source) =>
       replaceInSection(
@@ -240,7 +358,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-16',
     description: 'omit Station revision revalidation in the guard',
     file: files.guard,
-    expectedTest: 'trusted guard rejects station revision drift independently',
+    expectedTests: expectedTest(
+      tests.application,
+      'trusted guard rejects station revision drift independently of binding revision',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -252,7 +373,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-17',
     description: 'omit binding revision revalidation in the guard',
     file: files.guard,
-    expectedTest: 'trusted guard rejects binding revision drift independently',
+    expectedTests: expectedTest(
+      tests.application,
+      'trusted guard rejects binding revision drift independently of station revision',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -264,7 +388,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-18',
     description: 'omit binding branch revalidation in the guard',
     file: files.guard,
-    expectedTest: 'trusted guard rejects binding branch drift',
+    expectedTests: expectedTest(
+      tests.application,
+      'trusted guard rejects binding branch drift even when candidate branch is eligible',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -276,7 +403,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-19',
     description: 'omit active Station status revalidation in the guard',
     file: files.guard,
-    expectedTest: 'trusted guard rejects a revoked station',
+    expectedTests: expectedTest(
+      tests.application,
+      'trusted guard rejects a revoked station even if damaged state retains a binding',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -288,7 +418,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-20',
     description: 'convert rejecting recognition denial into allow',
     file: files.recognition,
-    expectedTest: 'rejecting recognition never converts denial into allow',
+    expectedTests: expectedTest(
+      tests.application,
+      'rejecting recognition never converts denial into allow',
+    ),
     mutate: (source) =>
       replaceInSection(
         source,
@@ -305,7 +438,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-21',
     description: 'accept multiple open bindings',
     file: files.binding,
-    expectedTest: 'multiple open bindings fail closed',
+    expectedTests: expectedTest(
+      tests.persistenceSemantics,
+      'multiple open bindings fail closed as persisted integrity damage',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -321,7 +457,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-22',
     description: 'close a binding without tenant scope',
     file: files.binding,
-    expectedTest: 'closing a binding cannot update another tenant',
+    expectedTests: expectedTest(
+      tests.persistenceSemantics,
+      'closing a binding cannot update another tenant',
+    ),
     mutate: (source) =>
       replaceInSection(
         source,
@@ -334,7 +473,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-23',
     description: 'transition a Station without expected revision CAS',
     file: files.station,
-    expectedTest: 'station transition requires the expected revision',
+    expectedTests: expectedTest(
+      tests.persistenceSemantics,
+      'station transition requires the expected revision',
+    ),
     mutate: (source) =>
       replaceInSection(
         source,
@@ -347,7 +489,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-24',
     description: 'allow transition out of terminal Revoked state',
     file: files.domain,
-    expectedTest: 'Revoked is terminal',
+    expectedTests: expectedTest(
+      tests.domain,
+      'Revoked is terminal and records the terminal instant',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,
@@ -359,7 +504,10 @@ export const stationSemanticMutations = Object.freeze([
     id: 'MUT-024-25',
     description: 'allow link while an open binding already exists',
     file: files.link,
-    expectedTest: 'link fails closed on an existing open binding',
+    expectedTests: expectedTest(
+      tests.application,
+      'link fails closed on an existing open binding before lifecycle evaluation',
+    ),
     mutate: (source) =>
       requiredReplace(
         source,

@@ -47,34 +47,166 @@ export async function sha256File(path) {
 
 export function validateStationMutationManifest(manifest) {
   if (
-    manifest?.schemaVersion !== 1 ||
+    manifest?.schemaVersion !== 2 ||
     manifest?.mode !== 'semantic' ||
+    manifest?.mutationMode !== 'semantic' ||
+    manifest?.causalCorrelation !== 'structured' ||
+    manifest?.reporterFormat !== 'srtaller-node-test-results/v1' ||
+    manifest?.expectedTestIdentity !== 'file-and-full-name' ||
     manifest?.workspaceStrategy !== 'controlled-temporary-copy' ||
+    manifest?.baselineStatus !== 'PASS' ||
+    manifest?.baseline?.status !== 'PASS' ||
+    !Array.isArray(manifest?.baseline?.inventory) ||
+    manifest.baseline.inventory.length === 0 ||
+    !Array.isArray(manifest?.baseline?.targets) ||
+    manifest.baseline.targets.length < 25 ||
     manifest?.total !== 25 ||
     manifest?.killed !== 25 ||
     manifest?.survived !== 0 ||
+    manifest?.unrelatedFailureCount !== 0 ||
+    manifest?.unexpectedTestFailureCount !== 0 ||
+    manifest?.parserFailureCount !== 0 ||
+    manifest?.infrastructureFailureCount !== 0 ||
+    manifest?.timeoutCount !== 0 ||
+    manifest?.negativeHarnessTests !== 'PASS' ||
+    manifest?.falsePositiveRegressionStatus !== 'PASS' ||
+    manifest?.falsePositiveRegression?.status !== 'PASS' ||
+    manifest?.falsePositiveRegression?.classification !==
+      'UNRELATED_TEST_FAILURE' ||
+    manifest?.falsePositiveRegression?.killed !== false ||
+    !Array.isArray(
+      manifest?.falsePositiveRegression?.expectedTestsFailed,
+    ) ||
+    manifest.falsePositiveRegression.expectedTestsFailed.length !== 0 ||
+    !Array.isArray(
+      manifest?.falsePositiveRegression?.unexpectedTestsFailed,
+    ) ||
+    manifest.falsePositiveRegression.unexpectedTestsFailed.length === 0 ||
+    manifest?.workspaceCleanup !== 'PASS' ||
+    manifest?.workingTreePreserved !== true ||
     !Array.isArray(manifest?.results) ||
     manifest.results.length !== 25
   ) {
     throw new Error('PBI-024 mutation manifest is not materially complete');
   }
+  const baselineTargetKeys = new Set(
+    manifest.baseline.targets.map(({ file, fullName, status }) => {
+      if (
+        typeof file !== 'string' ||
+        file === '' ||
+        typeof fullName !== 'string' ||
+        fullName === '' ||
+        status !== 'PASS'
+      ) {
+        throw new Error('PBI-024 baseline target is invalid');
+      }
+      return JSON.stringify([file, fullName]);
+    }),
+  );
   for (const result of manifest.results) {
     if (
-      !/^MUT-024-(?:0[1-9]|1[0-9]|2[0-5])$/u.test(result.id) ||
+      !/^MUT-024-(?:0[1-9]|1[0-9]|2[0-5])$/u.test(
+        result.mutationId,
+      ) ||
+      typeof result.targetFile !== 'string' ||
+      result.targetFile === '' ||
+      typeof result.description !== 'string' ||
+      result.description === '' ||
+      typeof result.manual !== 'boolean' ||
+      !Number.isInteger(result.durationMs) ||
+      result.durationMs < 0 ||
+      result.reporterFormat !== 'srtaller-node-test-results/v1' ||
+      !Array.isArray(result.expectedTests) ||
+      result.expectedTests.length === 0 ||
+      !Array.isArray(result.executedTestFiles) ||
+      result.executedTestFiles.length === 0 ||
       result.applied !== true ||
-      result.compile?.code !== 0 ||
-      result.compile?.timedOut !== false ||
-      result.test?.code === 0 ||
-      result.test?.timedOut !== false ||
-      result.expectedFailureObserved !== true ||
-      result.cleanupComplete !== true ||
-      result.residualFile !== false ||
+      result.buildStatus !== 'PASS' ||
+      result.testProcessStatus !== 'TEST_FAILURE' ||
+      !Array.isArray(result.parsedTestResults) ||
+      result.parsedTestResults.length === 0 ||
+      !Array.isArray(result.failedTests) ||
+      result.failedTests.length === 0 ||
+      !Array.isArray(result.expectedTestsFailed) ||
+      result.expectedTestsFailed.length === 0 ||
+      !Array.isArray(result.unexpectedTestsFailed) ||
+      result.unexpectedTestsFailed.length !== 0 ||
+      result.timeout !== false ||
+      result.infrastructureFailure !== false ||
+      result.classification !== 'EXPECTED_TEST_FAILURE' ||
+      result.causalMatch !== true ||
+      result.killed !== true ||
+      result.cleanupStatus !== 'PASS' ||
+      result.nodeModulesSymlink !== true ||
+      result.childProcessesStatus !== 'PASS' ||
+      result.residualWorkspace !== false ||
       result.workingTreePreserved !== true
     ) {
-      throw new Error(`Mutation result ${result?.id ?? 'unknown'} is invalid`);
+      throw new Error(
+        `Mutation result ${result?.mutationId ?? 'unknown'} is invalid`,
+      );
+    }
+    const expectedKeys = new Set(result.expectedTests.map((expected) => {
+      if (
+        typeof expected?.file !== 'string' ||
+        expected.file === '' ||
+        typeof expected?.fullName !== 'string' ||
+        expected.fullName === '' ||
+        expected.causalSignature?.errorCode !== 'ERR_TEST_FAILURE' ||
+        expected.causalSignature?.failureType !== 'testCodeFailure'
+      ) {
+        throw new Error(
+          `Mutation result ${result.mutationId} has an invalid target`,
+        );
+      }
+      const key = JSON.stringify([expected.file, expected.fullName]);
+      if (!baselineTargetKeys.has(key)) {
+        throw new Error(
+          `Mutation result ${result.mutationId} target is absent from baseline`,
+        );
+      }
+      if (!result.executedTestFiles.includes(expected.file)) {
+        throw new Error(
+          `Mutation result ${result.mutationId} target file was not executed`,
+        );
+      }
+      return key;
+    }));
+    const failedKeys = result.failedTests.map(({ file, fullName, status }) => {
+      if (
+        typeof file !== 'string' ||
+        typeof fullName !== 'string' ||
+        status !== 'FAIL'
+      ) {
+        throw new Error(
+          `Mutation result ${result.mutationId} has invalid failed tests`,
+        );
+      }
+      return JSON.stringify([file, fullName]);
+    });
+    const expectedFailedKeys = result.expectedTestsFailed.map(
+      ({ file, fullName, status }) => {
+        const key = JSON.stringify([file, fullName]);
+        if (status !== 'FAIL' || !expectedKeys.has(key)) {
+          throw new Error(
+            `Mutation result ${result.mutationId} causal failure is invalid`,
+          );
+        }
+        return key;
+      },
+    );
+    if (
+      expectedFailedKeys.some((key) => !failedKeys.includes(key)) ||
+      failedKeys.some((key) => !expectedKeys.has(key))
+    ) {
+      throw new Error(
+        `Mutation result ${result.mutationId} failure correlation is invalid`,
+      );
     }
   }
-  if (new Set(manifest.results.map(({ id }) => id)).size !== 25) {
+  if (
+    new Set(manifest.results.map(({ mutationId }) => mutationId)).size !== 25
+  ) {
     throw new Error('PBI-024 mutation IDs must be unique');
   }
   return manifest;
@@ -86,23 +218,52 @@ export function comparableStationMutationManifest(manifest) {
     ({ durationMs: _durationMs, ...result }) => result,
   );
   const material = {
+    baseline: manifest.baseline,
+    baselineStatus: manifest.baselineStatus,
+    causalCorrelation: manifest.causalCorrelation,
+    expectedTestIdentity: manifest.expectedTestIdentity,
+    falsePositiveRegression: manifest.falsePositiveRegression,
+    falsePositiveRegressionStatus: manifest.falsePositiveRegressionStatus,
+    infrastructureFailureCount: manifest.infrastructureFailureCount,
     killed: manifest.killed,
     mode: manifest.mode,
+    mutationMode: manifest.mutationMode,
+    negativeHarnessTests: manifest.negativeHarnessTests,
+    parserFailureCount: manifest.parserFailureCount,
+    reporterFormat: manifest.reporterFormat,
     results,
     schemaVersion: manifest.schemaVersion,
     survived: manifest.survived,
+    timeoutCount: manifest.timeoutCount,
     total: manifest.total,
+    unrelatedFailureCount: manifest.unrelatedFailureCount,
+    unexpectedTestFailureCount: manifest.unexpectedTestFailureCount,
+    workspaceCleanup: manifest.workspaceCleanup,
     workspaceStrategy: manifest.workspaceStrategy,
+    workingTreePreserved: manifest.workingTreePreserved,
   };
   return Object.freeze({
+    baselineStatus: manifest.baselineStatus,
+    causalCorrelation: manifest.causalCorrelation,
+    expectedTestIdentity: manifest.expectedTestIdentity,
+    falsePositiveRegression: manifest.falsePositiveRegressionStatus,
+    infrastructureFailureCount: manifest.infrastructureFailureCount,
     killed: manifest.killed,
     manualDemonstrations: results
       .filter(({ manual }) => manual === true)
-      .map(({ id }) => id),
+      .map(({ mutationId }) => mutationId),
     materialSha256: sha256(JSON.stringify(material)),
     mode: manifest.mode,
+    mutationMode: manifest.mutationMode,
+    negativeHarnessTests: manifest.negativeHarnessTests,
+    parserFailureCount: manifest.parserFailureCount,
+    reporterFormat: manifest.reporterFormat,
     survived: manifest.survived,
+    timeoutCount: manifest.timeoutCount,
     total: manifest.total,
+    unrelatedFailureCount: manifest.unrelatedFailureCount,
+    unexpectedTestFailureCount: manifest.unexpectedTestFailureCount,
+    workspaceCleanup: manifest.workspaceCleanup,
     workspaceStrategy: manifest.workspaceStrategy,
   });
 }
@@ -248,11 +409,25 @@ export function validateEvidenceManifest(manifest) {
   if (manifest.mutations !== undefined) {
     if (
       manifest.mutations.mode !== 'semantic' ||
+      manifest.mutations.mutationMode !== 'semantic' ||
+      manifest.mutations.causalCorrelation !== 'structured' ||
+      manifest.mutations.reporterFormat !==
+        'srtaller-node-test-results/v1' ||
+      manifest.mutations.expectedTestIdentity !== 'file-and-full-name' ||
       manifest.mutations.workspaceStrategy !==
         'controlled-temporary-copy' ||
+      manifest.mutations.baselineStatus !== 'PASS' ||
+      manifest.mutations.negativeHarnessTests !== 'PASS' ||
+      manifest.mutations.falsePositiveRegression !== 'PASS' ||
       manifest.mutations.total !== 25 ||
       manifest.mutations.killed !== 25 ||
       manifest.mutations.survived !== 0 ||
+      manifest.mutations.unrelatedFailureCount !== 0 ||
+      manifest.mutations.unexpectedTestFailureCount !== 0 ||
+      manifest.mutations.parserFailureCount !== 0 ||
+      manifest.mutations.infrastructureFailureCount !== 0 ||
+      manifest.mutations.timeoutCount !== 0 ||
+      manifest.mutations.workspaceCleanup !== 'PASS' ||
       !/^[a-f0-9]{64}$/u.test(manifest.mutations.materialSha256) ||
       !Array.isArray(manifest.mutations.manualDemonstrations) ||
       manifest.mutations.manualDemonstrations.length < 5
@@ -381,8 +556,10 @@ export async function collectEvidenceManifest({
     'scripts/cleanup-postgresql-ci.mjs',
     'scripts/lib/postgresql-ci-evidence.mjs',
     'scripts/lib/postgresql-test-output.mjs',
+    'scripts/lib/node-test-json-reporter.mjs',
     'scripts/lib/station-semantic-mutation-runner.mjs',
     'scripts/lib/station-semantic-mutations.mjs',
+    'scripts/lib/station-test-results.mjs',
     'scripts/run-postgresql-ci.mjs',
     'scripts/run-station-mutations.mjs',
     'scripts/test-database-connection-postgresql.mjs',
@@ -396,6 +573,7 @@ export async function collectEvidenceManifest({
     'supply-chain-policy.json',
     'test/database-schema-postgresql.test.mjs',
     'test/station-critical-mutations.test.mjs',
+    'test/station-test-result-parser.test.mjs',
     'test/trusted-station-context-postgresql.test.mjs',
     'tsconfig.build.json',
     'tsconfig.json',

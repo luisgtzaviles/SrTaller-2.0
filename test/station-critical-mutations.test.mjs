@@ -9,38 +9,38 @@ import {
   stationSemanticMutations,
 } from '../scripts/lib/station-semantic-mutations.mjs';
 
-function validResult(overrides = {}) {
-  return {
+test('mutation assertion accepts only a causal expected test failure', () => {
+  assert.doesNotThrow(() => assertMutationExecution({
     applied: true,
-    cleanupComplete: true,
-    compile: { code: 0, timedOut: false },
-    expectedFailureObserved: true,
-    residualFile: false,
-    test: { code: 1, timedOut: false },
-    workingTreePreserved: true,
-    ...overrides,
-  };
-}
-
-test('semantic mutation harness rejects invalid execution outcomes', () => {
-  for (const [overrides, code] of [
-    [{ applied: false }, 'MUTATION_NOT_APPLIED'],
-    [{ compile: { code: 2, timedOut: false } }, 'MUTATION_DID_NOT_COMPILE'],
-    [{ test: { code: 0, timedOut: false } }, 'MUTATION_SURVIVED'],
-    [{ expectedFailureObserved: false }, 'MUTATION_UNRELATED_FAILURE'],
-    [{ test: { code: -1, timedOut: true } }, 'MUTATION_TIMEOUT'],
-    [{ cleanupComplete: false }, 'MUTATION_CLEANUP_INCOMPLETE'],
-    [{ residualFile: true }, 'MUTATION_RESIDUAL_FILE'],
-    [{ workingTreePreserved: false }, 'MUTATION_WORKTREE_CONTAMINATED'],
+    buildStatus: 'PASS',
+    causalMatch: true,
+    classification: 'EXPECTED_TEST_FAILURE',
+    cleanupStatus: 'PASS',
+    expectedTestsFailed: [{ file: 'test/a.test.mjs', fullName: 'target' }],
+    infrastructureFailure: false,
+    killed: true,
+    testProcessStatus: 'TEST_FAILURE',
+    timeout: false,
+  }));
+  for (const classification of [
+    'PASS',
+    'UNRELATED_TEST_FAILURE',
+    'BUILD_FAILURE',
+    'TEST_DISCOVERY_FAILURE',
+    'INFRASTRUCTURE_FAILURE',
+    'TIMEOUT',
+    'MUTATION_NOT_APPLIED',
+    'RESULT_PARSE_FAILURE',
+    'CLEANUP_FAILURE',
   ]) {
     assert.throws(
-      () => assertMutationExecution(validResult(overrides)),
-      new RegExp(code, 'u'),
+      () => assertMutationExecution({ classification }),
+      new RegExp(classification, 'u'),
     );
   }
 });
 
-test('all governed Station mutations compile and are killed semantically', {
+test('all governed Station mutations compile and die causally', {
   timeout: 900_000,
 }, async () => {
   assert.equal(stationSemanticMutations.length, 25);
@@ -50,17 +50,36 @@ test('all governed Station mutations compile and are killed semantically', {
   );
   const report = await runStationMutationCampaign();
   assert.equal(report.mode, 'semantic');
+  assert.equal(report.causalCorrelation, 'structured');
+  assert.equal(report.expectedTestIdentity, 'file-and-full-name');
+  assert.equal(report.baselineStatus, 'PASS');
+  assert.equal(report.baseline.inventory.length, 34);
   assert.equal(report.total, 25);
   assert.equal(report.killed, 25);
   assert.equal(report.survived, 0);
-  assert.equal(report.results.every(({ compile }) => compile.code === 0), true);
+  assert.equal(report.unrelatedFailureCount, 0);
+  assert.equal(report.unexpectedTestFailureCount, 0);
+  assert.equal(report.parserFailureCount, 0);
+  assert.equal(report.timeoutCount, 0);
+  assert.equal(report.infrastructureFailureCount, 0);
+  assert.equal(report.falsePositiveRegressionStatus, 'PASS');
+  assert.equal(report.negativeHarnessTests, 'PASS');
+  assert.equal(report.workspaceCleanup, 'PASS');
   assert.equal(
-    report.results.every(({ expectedFailureObserved }) =>
-      expectedFailureObserved),
+    report.results.every(({ classification }) =>
+      classification === 'EXPECTED_TEST_FAILURE'),
     true,
   );
   assert.equal(
-    report.results.every(({ cleanupComplete }) => cleanupComplete),
+    report.results.every(({ buildStatus }) => buildStatus === 'PASS'),
+    true,
+  );
+  assert.equal(
+    report.results.every(({ causalMatch }) => causalMatch),
+    true,
+  );
+  assert.equal(
+    report.results.every(({ cleanupStatus }) => cleanupStatus === 'PASS'),
     true,
   );
 });
