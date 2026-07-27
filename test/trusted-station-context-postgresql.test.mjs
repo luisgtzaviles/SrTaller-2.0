@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
+import { sql } from 'kysely';
 import { Pool } from 'pg';
 
 const enabled = process.env.SR_STATION_PG_TEST === '1';
@@ -18,11 +19,17 @@ const migrationRunner = enabled
 const transaction = enabled
   ? await import('../dist/infrastructure/database/transaction-runner.js')
   : {};
+const persistence = enabled
+  ? await import('../dist/infrastructure/database/database-persistence-capability.js')
+  : {};
 const stationContext = enabled
   ? await import('../dist/modules/stations/application/contracts/trusted-station-context.js')
   : {};
 const stationErrors = enabled
   ? await import('../dist/modules/stations/application/station-application.error.js')
+  : {};
+const stationErrorMapper = enabled
+  ? await import('../dist/modules/stations/application/station-error-mapper.js')
   : {};
 const linkUseCase = enabled
   ? await import('../dist/modules/stations/application/use-cases/link-station.js')
@@ -47,6 +54,9 @@ const stationBindingRepository = enabled
   : {};
 const stationRepository = enabled
   ? await import('../dist/modules/stations/infrastructure/persistence/kysely-station.repository.js')
+  : {};
+const stationPostgresqlError = enabled
+  ? await import('../dist/modules/stations/infrastructure/persistence/station-postgresql-error.js')
   : {};
 const stationUnitOfWork = enabled
   ? await import('../dist/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.js')
@@ -229,6 +239,9 @@ test(
       const branchOnlyB = tenancy.parseBranchId(
         '40000000-0000-4000-8000-000000000004',
       );
+      const relinkBranch = tenancy.parseBranchId(
+        '35000000-0000-4000-8000-000000000005',
+      );
       const stationIds = Array.from({ length: 8 }, (_, index) =>
         stationDomain.parseStationId(
           `50000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
@@ -250,6 +263,7 @@ test(
       );
       for (const [tenantId, branchId] of [
         [tenantA, sharedBranch],
+        [tenantA, relinkBranch],
         [tenantB, sharedBranch],
         [tenantB, branchOnlyB],
       ]) {
@@ -366,6 +380,68 @@ test(
 
       const bindings =
         stationBindingRepository.createKyselyStationBindingRepository(connection);
+
+      // Real 23503 errors use operation/constraint allowlists and retain only
+      // internal diagnostics.
+      const missingTenant = tenancy.parseTenantId(
+        '90000000-0000-4000-8000-000000000009',
+      );
+      await assert.rejects(
+        stationRepo.createStation(
+          { tenantId: missingTenant, stationId: stationIds[7] },
+          stationDomain.createStation({
+            tenantId: missingTenant,
+            stationId: stationIds[7],
+            createdAt,
+          }),
+        ),
+        (error) => {
+          assert.equal(
+            error.code,
+            'STATION_PERSISTENCE_REFERENCE_NOT_FOUND',
+          );
+          assert.equal(error.category, 'NotFound');
+          assert.equal(error.retryable, 'never');
+          assert.deepEqual(
+            stationPostgresqlError.readStationPostgresqlDiagnostic(error),
+            {
+              code: '23503',
+              constraint: 'stations_tenant_fk',
+            },
+          );
+          assert.doesNotMatch(JSON.stringify(error), /23503|constraint/iu);
+          return true;
+        },
+      );
+      await assert.rejects(
+        bindings.createOpenBinding(
+          { tenantId: tenantA, stationId: stationIds[7] },
+          {
+            tenantId: tenantA,
+            stationId: stationIds[7],
+            bindingRevision: stationDomain.parseStationRevision(99),
+            branchId: branchOnlyB,
+            linkedAt: later(2),
+            unlinkedAt: null,
+          },
+        ),
+        (error) => {
+          assert.equal(
+            error.code,
+            'STATION_PERSISTENCE_INVARIANT_BROKEN',
+          );
+          assert.equal(error.category, 'Unexpected');
+          assert.deepEqual(
+            stationPostgresqlError.readStationPostgresqlDiagnostic(error),
+            {
+              code: '23503',
+              constraint: 'station_bindings_branch_fk',
+            },
+          );
+          assert.doesNotMatch(JSON.stringify(error), /23503|constraint/iu);
+          return true;
+        },
+      );
       await assert.rejects(
         bindings.createOpenBinding(
           { tenantId: tenantA, stationId: stationIds[0] },
@@ -527,15 +603,309 @@ test(
       assert.equal(effectExecutions, 0);
       assert.equal(active3.status, 'Active');
 
-      // 3/5: stale revision and concurrent relink allow only one winner.
-      const relinkResults = await Promise.allSettled([
-        activate(1, 10),
-        activate(1, 10),
-      ]);
-      assert.deepEqual(
-        relinkResults.map(({ status }) => status).sort(),
-        ['fulfilled', 'rejected'],
+      // 3/5: two physical connections serialize relink and stale the loser.
+      async function relinkInTransaction(
+        databaseConnection,
+        index,
+        expectedRevision,
+        minute,
+        beforeLock,
+        afterLock,
+      ) {
+        return transaction.runInTransaction(
+          databaseConnection,
+          { isolationLevel: 'read committed', readOnly: false },
+          async (transactionContext) => {
+            beforeLock?.();
+            const identity =
+              await persistence.useTransactionalDatabasePersistenceExecutor(
+                transactionContext,
+                'stations',
+                async (executor) => {
+                  const result = await sql`
+                    select pg_backend_pid() as backend_pid,
+                           txid_current()::text as transaction_id
+                  `.execute(executor);
+                  return Object.freeze(result.rows[0]);
+                },
+              );
+            const transactionalStations =
+              stationRepository.createTransactionalKyselyStationRepository(
+                transactionContext,
+              );
+            const transactionalBindings =
+              stationBindingRepository
+                .createTransactionalKyselyStationBindingRepository(
+                  transactionContext,
+                );
+            const scope = {
+              tenantId: tenantA,
+              stationId: stationIds[index],
+            };
+            const current =
+              await transactionalStations.lockStation(scope);
+            await afterLock?.(identity);
+            if (!current || current.revision !== expectedRevision) {
+              throw new stationErrors.StationApplicationError(
+                'STATION_CONTEXT_STALE',
+              );
+            }
+            const previous =
+              await transactionalBindings.lockOpenBinding(scope);
+            if (
+              current.status !== 'Active' ||
+              !previous ||
+              previous.bindingRevision !== current.revision
+            ) {
+              throw new stationErrors.StationApplicationError(
+                'STATION_REFERENCE_INTEGRITY_BROKEN',
+              );
+            }
+            const unlinked = stationDomain.unlinkStation(
+              current,
+              expectedRevision,
+              later(minute),
+            );
+            const closed =
+              await transactionalBindings.closeOpenBinding(
+                scope,
+                previous.bindingRevision,
+                later(minute),
+              );
+            if (!closed) {
+              throw new stationErrors.StationApplicationError(
+                'STATION_CONTEXT_STALE',
+              );
+            }
+            const persistedUnlinked =
+              await transactionalStations.transitionStation(scope, {
+                expectedRevision: current.revision,
+                expectedStatus: current.status,
+                nextStatus: unlinked.status,
+                nextRevision: unlinked.revision,
+                updatedAt: unlinked.updatedAt,
+                revokedAt: unlinked.revokedAt,
+              });
+            if (!persistedUnlinked) {
+              throw new stationErrors.StationApplicationError(
+                'STATION_CONTEXT_STALE',
+              );
+            }
+            const relinked = stationDomain.linkStation(
+              persistedUnlinked,
+              persistedUnlinked.revision,
+              later(minute + 1),
+            );
+            await transactionalBindings.createOpenBinding(scope, {
+              tenantId: tenantA,
+              stationId: stationIds[index],
+              bindingRevision: relinked.revision,
+              branchId: relinkBranch,
+              linkedAt: later(minute + 1),
+              unlinkedAt: null,
+            });
+            const persistedRelinked =
+              await transactionalStations.transitionStation(scope, {
+                expectedRevision: persistedUnlinked.revision,
+                expectedStatus: persistedUnlinked.status,
+                nextStatus: relinked.status,
+                nextRevision: relinked.revision,
+                updatedAt: relinked.updatedAt,
+                revokedAt: relinked.revokedAt,
+              });
+            if (!persistedRelinked) {
+              throw new stationErrors.StationApplicationError(
+                'STATION_CONTEXT_STALE',
+              );
+            }
+            return Object.freeze({
+              identity,
+              station: persistedRelinked,
+            });
+          },
+        );
+      }
+
+      async function assertConcurrentRelink(
+        index,
+        winnerConnection,
+        loserConnection,
+        minute,
+      ) {
+        const initial = await activate(index, minute - 1);
+        const firstLocked = deferred();
+        const releaseFirst = deferred();
+        const secondAttempted = deferred();
+        let secondSettled = false;
+
+        const first = relinkInTransaction(
+          winnerConnection,
+          index,
+          initial.revision,
+          minute,
+          undefined,
+          async (identity) => {
+            firstLocked.resolve(identity);
+            await releaseFirst.promise;
+          },
+        );
+        const firstIdentity = await firstLocked.promise;
+        const second = relinkInTransaction(
+          loserConnection,
+          index,
+          initial.revision,
+          minute,
+          () => secondAttempted.resolve(),
+        ).finally(() => {
+          secondSettled = true;
+        });
+        await secondAttempted.promise;
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 40));
+          assert.equal(secondSettled, false);
+        } finally {
+          releaseFirst.resolve();
+        }
+
+        const winner = await first;
+        await assert.rejects(second, (error) => {
+          assert.ok(error instanceof stationErrors.StationApplicationError);
+          assert.equal(error.code, 'STATION_CONTEXT_STALE');
+          assert.equal(error.category, 'Concurrency');
+          assert.equal(error.retryable, 'never');
+          assert.notEqual(error.code, 'NESTED_FORBIDDEN');
+          assert.doesNotMatch(error.message, /nested/iu);
+          return true;
+        });
+
+        const finalStation = await stationRepo.findStation({
+          tenantId: tenantA,
+          stationId: stationIds[index],
+        });
+        const history = await bindings.listBindings({
+          tenantId: tenantA,
+          stationId: stationIds[index],
+        });
+        assert.equal(finalStation.status, 'Active');
+        assert.equal(finalStation.revision, initial.revision + 2);
+        assert.equal(winner.station.revision, finalStation.revision);
+        assert.equal(
+          history.filter(({ unlinkedAt }) => unlinkedAt === null).length,
+          1,
+        );
+        assert.equal(history.length, 2);
+        assert.equal(history[0].branchId, sharedBranch);
+        assert.equal(history[0].unlinkedAt, later(minute));
+        assert.equal(history[1].branchId, relinkBranch);
+        assert.equal(history[1].bindingRevision, finalStation.revision);
+        assert.equal(history[1].unlinkedAt, null);
+        assert.equal(winner.identity.backend_pid, firstIdentity.backend_pid);
+        assert.equal(
+          winner.identity.transaction_id,
+          firstIdentity.transaction_id,
+        );
+        return winner.identity;
+      }
+
+      const firstOrderIdentity = await assertConcurrentRelink(
+        1,
+        connection,
+        concurrentConnection,
+        10,
       );
+      const inverseOrderIdentity = await assertConcurrentRelink(
+        6,
+        concurrentConnection,
+        connection,
+        13,
+      );
+      assert.notEqual(
+        firstOrderIdentity.backend_pid,
+        inverseOrderIdentity.backend_pid,
+      );
+
+      // A real PostgreSQL serialization failure reaches the application
+      // contract with retryability preserved end to end.
+      const serializableReads = [];
+      const bothSerializableReads = deferred();
+      const releaseSerializableWinner = deferred();
+      const releaseSerializableLoser = deferred();
+      async function serializableRevoke(
+        databaseConnection,
+        release,
+        revokedAt,
+      ) {
+        return transaction.runInTransaction(
+          databaseConnection,
+          { isolationLevel: 'serializable', readOnly: false },
+          async (transactionContext) => {
+            const repository =
+              stationRepository.createTransactionalKyselyStationRepository(
+                transactionContext,
+              );
+            const scope = {
+              tenantId: tenantA,
+              stationId: stationIds[7],
+            };
+            const current = await repository.findStation(scope);
+            serializableReads.push(current.revision);
+            if (serializableReads.length === 2) {
+              bothSerializableReads.resolve();
+            }
+            await release.promise;
+            const next = stationDomain.revokeStation(
+              current,
+              current.revision,
+              revokedAt,
+            );
+            try {
+              const persisted = await repository.transitionStation(scope, {
+                expectedRevision: current.revision,
+                expectedStatus: current.status,
+                nextStatus: next.status,
+                nextRevision: next.revision,
+                updatedAt: next.updatedAt,
+                revokedAt: next.revokedAt,
+              });
+              if (!persisted) {
+                throw new stationErrors.StationApplicationError(
+                  'STATION_CONTEXT_STALE',
+                );
+              }
+              return persisted;
+            } catch (error) {
+              throw stationErrorMapper.mapStationError(error);
+            }
+          },
+        );
+      }
+      const serializableWinner = serializableRevoke(
+        connection,
+        releaseSerializableWinner,
+        later(16),
+      );
+      const serializableLoser = serializableRevoke(
+        concurrentConnection,
+        releaseSerializableLoser,
+        later(17),
+      );
+      await bothSerializableReads.promise;
+      assert.deepEqual(serializableReads, [1, 1]);
+      releaseSerializableWinner.resolve();
+      assert.equal((await serializableWinner).revision, 2);
+      releaseSerializableLoser.resolve();
+      await assert.rejects(serializableLoser, (error) => {
+        assert.ok(error instanceof stationErrors.StationApplicationError);
+        assert.equal(error.code, 'STATION_TRANSIENT_CONCURRENCY');
+        assert.equal(error.category, 'Concurrency');
+        assert.equal(error.retryable, 'conditional');
+        assert.deepEqual(stationErrors.toPublicStationError(error), {
+          code: 'TRANSIENT_CONCURRENCY_FAILURE',
+          status: 503,
+          message: 'La operación no está disponible temporalmente.',
+        });
+        return true;
+      });
 
       // 4: revoke closes the binding atomically (asserted for station 0/2/3).
       for (const index of [0, 2, 3]) {
