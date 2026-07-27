@@ -1,7 +1,7 @@
 # Resultados de mutaciones
 
 `node scripts/run-station-mutations.mjs` sobre el SHA
-`e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`:
+`2b89279eeda6fd3cfa4b76bae34460c520abd784`:
 
 - modo: semantic;
 - workspace: `controlled-temporary-copy`;

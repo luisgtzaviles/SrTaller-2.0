@@ -7,7 +7,7 @@ rama `r0/pbi-024-trusted-station-context`, basada en
 `6c71a3ce5c20049727854ea6aa7629aa0db76f91`.
 
 La implementación remediada queda fijada en
-`e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`. Incluye ownership de branch en
+`2b89279eeda6fd3cfa4b76bae34460c520abd784`. Incluye ownership de branch en
 `tenancy`, lifecycle y persistencia de Station en `stations`, resolución
 server-side, contexto inmutable, transacciones linealizadas, errores
 sanitizados y verificación con PostgreSQL 18.4.
@@ -19,9 +19,9 @@ sanitizados y verificación con PostgreSQL 18.4.
 - mutaciones semánticas: `PASS`, 25/25;
 - cinco demostraciones manuales: `PASS`;
 - evidencia Linux push: `PASS`, run
-  [30232400104](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30232400104);
+  [30234014251](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30234014251);
 - evidencia Linux pull_request: `PASS`, run
-  [30232401232](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30232401232);
+  [30234016330](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30234016330);
 - PR: [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3);
 - revisión independiente previa: `CONDITIONAL PASS`;
 - remediación: `PASS — PBI-024 IMPLEMENTATION REMEDIATIONS COMPLETE`;
@@ -52,3 +52,4 @@ sanitizados y verificación con PostgreSQL 18.4.
 - [Resultados](RESULTS.md)
 - [Manifest](EVIDENCE_MANIFEST.json)
 - [Historia pre-remediación](history/PRE_REMEDIATION.md)
+- [Intento CI anterior al SHA final](history/PRE_FINAL_CI.md)

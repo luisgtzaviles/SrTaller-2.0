@@ -25,11 +25,11 @@ tests, 0 fallos y 0 skips críticos cada una. Cubrieron:
 - rollback y atomicidad del efecto;
 - cleanup completo.
 
-Las ejecuciones Linux autoritativas push `30232400104` y pull_request
-`30232401232` pasaron para el head
-`e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`: run-1 y run-2 ejecutaron el
+Las ejecuciones Linux autoritativas push `30234014251` y pull_request
+`30234016330` pasaron para el head
+`2b89279eeda6fd3cfa4b76bae34460c520abd784`: run-1 y run-2 ejecutaron el
 mismo inventario, y los cuatro manifests PostgreSQL comparten
 `16cfb89dd2b603a95f53683e9314c0fa4de835ff20330d6eef23f85c93ecfaa6`.
 
 El evento pull_request validó el merge ref sintético
-`c63120cdd07aa88565cd05b42c389379ee29015c`; no hubo merge real.
+`298a21ec2821359fe837f9768419699a856a9b71`; no hubo merge real.

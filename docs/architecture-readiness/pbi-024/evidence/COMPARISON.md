@@ -7,28 +7,28 @@ Los manifests PostgreSQL locales y remotos comparten
 
 ## Push
 
-- workflow/job: `30232400104` / `89875512269`;
-- head: `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`;
-- artifact: `vc024-comparison`, ID `8640714457`;
+- workflow/job: `30234014251` / `89880786495`;
+- head: `2b89279eeda6fd3cfa4b76bae34460c520abd784`;
+- artifact: `vc024-comparison`, ID `8641313610`;
 - artifact JSON SHA-256:
-  `247dec2e92b9a8ab7ac95848cffaaaf068d8e4ad2cb5a3555b70a04ab3caf77b`;
+  `6c7033ea1f4c1f87bc3e1348e5067470c45c88ffaff5170d9d4acabcd831c8a9`;
 - comparable global izquierdo/derecho:
-  `a5c79f2c345c6e2b642b948e1b19693a17bc9a840441480ac3a0fd1f263485d6`;
+  `3d04db78c5c17fdf745fa5d32810353454576e1bb54c3fac7a48bcd39e332fb6`;
 - diferencias: ninguna;
 - `equivalent: true`;
 - resultado: `SUCCESS`.
 
 ## Pull request
 
-- workflow/job: `30232401232` / `89875502418`;
-- head del PR: `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`;
+- workflow/job: `30234016330` / `89880870322`;
+- head del PR: `2b89279eeda6fd3cfa4b76bae34460c520abd784`;
 - merge ref sintético probado:
-  `c63120cdd07aa88565cd05b42c389379ee29015c`;
-- artifact: `vc024-comparison`, ID `8640713753`;
+  `298a21ec2821359fe837f9768419699a856a9b71`;
+- artifact: `vc024-comparison`, ID `8641322901`;
 - artifact JSON SHA-256:
-  `29a73a569724fe76a9d01e5a44082b0b486bb8e3fecb0bfa013176f9cca13310`;
+  `508b522b3a718b3bc4bb032f5bd86c948052c1eb2798c6b5c38c6af3914a9199`;
 - comparable global izquierdo/derecho:
-  `ff3bd8478dba92c5ba0689468ca04b58cae12f1027111c48a35ee90cd1b7e8bc`;
+  `b0a53e3b8b92d6cd667f84f610717feba4b7c2168a2c44b508a07cf50b3a3de7`;
 - diferencias: ninguna;
 - `equivalent: true`;
 - resultado: `SUCCESS`.

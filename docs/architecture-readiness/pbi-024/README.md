@@ -18,10 +18,10 @@
   `5b3ba7fdd27fb135cfe9d559694384a396515922`.
 - **Autorización de implementación:** [emitida](IMPLEMENTATION_AUTHORIZATION.md).
 - **Implementación remediada:** validada en
-  `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`.
+  `2b89279eeda6fd3cfa4b76bae34460c520abd784`.
 - **PR:** [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3).
-- **CI remota:** [push 30232400104](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30232400104)
-  y [PR 30232401232](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30232401232),
+- **CI remota:** [push 30234014251](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30234014251)
+  y [PR 30234016330](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30234016330),
   ambos con run-1/run-2/comparison `SUCCESS`.
 - **Evidencia material:** [expediente](evidence/README.md).
 - **Remediación formal:** [hallazgos, contratos y trazabilidad](FORMAL_IMPLEMENTATION_REMEDIATION.md).

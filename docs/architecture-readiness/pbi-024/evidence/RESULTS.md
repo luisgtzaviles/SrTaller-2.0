@@ -20,11 +20,15 @@
 ## Evidencia remota
 
 - SHA técnico remediado:
-  `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`;
-- CI push: `30232400104`, run-1/run-2/comparison `SUCCESS`;
-- CI pull_request: `30232401232`, run-1/run-2/comparison `SUCCESS`;
+  `2b89279eeda6fd3cfa4b76bae34460c520abd784`;
+- CI push: `30234014251`, run-1/run-2/comparison `SUCCESS`;
+- CI pull_request: `30234016330`, run-1/run-2/comparison `SUCCESS`;
 - artifacts: seis descargados, JSON válidos, equivalencia recalculada y
   hashes registrados;
+- intento intermedio: push `30233547617` sobre `7daa39b` preservado como
+  `FAIL`; reveló una ventana de rechazo esperado sin observador en el test;
+- estabilización: `2b89279` adjunta los observadores antes de liberar las
+  barreras; tres runs PostgreSQL locales completos y cuatro remotos pasaron;
 - PR: #3, `OPEN` y `Draft`;
 - merge: no realizado;
 - DEC-051 C02: `Pending`.

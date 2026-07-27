@@ -90,19 +90,29 @@ status, revisión, binding, branch y elegibilidad antes del efecto.
 ## Evidencia
 
 La implementación remediada queda fijada en
-`e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`. El expediente vigente está en
+`2b89279eeda6fd3cfa4b76bae34460c520abd784`. El expediente vigente está en
 [evidence](evidence/README.md), y la referencia histórica anterior en
 [evidence/history/PRE_REMEDIATION.md](evidence/history/PRE_REMEDIATION.md).
+El intento intermedio que reveló y preserva la carrera de observación del test
+está en
+[evidence/history/PRE_FINAL_CI.md](evidence/history/PRE_FINAL_CI.md).
 
 Los workflows autoritativos nuevos son:
 
-- push `30232400104`;
-- pull request `30232401232`.
+- push `30234014251`;
+- pull request `30234016330`.
 
 Ambos ejecutaron `VC-024 run-1`, `VC-024 run-2` y `VC-024 comparison` con
 resultado `SUCCESS`. El run de pull request usa el merge ref sintético
-`c63120cdd07aa88565cd05b42c389379ee29015c`; no representa ni autoriza un
+`298a21ec2821359fe837f9768419699a856a9b71`; no representa ni autoriza un
 merge real.
+
+Antes de estos runs, el push `30233547617` sobre `7daa39b` detectó que una
+promesa concurrente esperada podía rechazar después de liberar la barrera y
+antes de adjuntar `assert.rejects`. El commit `2b89279` adjuntó los
+observadores antes de liberar cada barrera, sin cambiar runtime ni workflow.
+La corrección pasó tres ejecuciones PostgreSQL locales completas y los cuatro
+jobs PostgreSQL remotos finales.
 
 ## Dictamen de remediación
 

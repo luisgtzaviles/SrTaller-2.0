@@ -24,7 +24,7 @@
 | no cache/context global | DEC-005/049 | Architecture | fixture/mutation | definido |
 | PostgreSQL 18.4 | ADR-003, DEC-051 | [Test plan](TEST_PLAN.md) | CI PG artifacts | PASS material |
 | mutation crítica | DEC-051/D5-R033 | [Mutation plan](MUTATION_PLAN.md) | mutation results | PASS, 25/25 |
-| CI doble | DEC-051 | [Expected evidence](EXPECTED_EVIDENCE.md) | run-1/run-2/comparison push y PR | PASS, runs 30232400104 / 30232401232 |
+| CI doble | DEC-051 | [Expected evidence](EXPECTED_EVIDENCE.md) | run-1/run-2/comparison push y PR | PASS, runs 30234014251 / 30234016330 |
 | riesgo alto | DEC-051/063 | [Risk](RISK_ASSESSMENT.md) | revisión formal | listo para revisión |
 | C02 preservado | DEC-051 | [C02 treatment](DEC_051_C02_TEMPORARY_TREATMENT.md) | protección/rejection | `Pending`, merge bloqueado |
 | seguridad | DEC063-C06 | [DEC-063](DEC_063_APPLICABILITY.md) | checklist + dictamen | gate futuro |

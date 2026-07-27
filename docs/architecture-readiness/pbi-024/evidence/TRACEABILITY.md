@@ -19,6 +19,6 @@
 | DEC-051/063 | expedientes de aplicabilidad |
 
 La evidencia Linux remota corresponde al head
-`e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`; sus artifacts push y
+`2b89279eeda6fd3cfa4b76bae34460c520abd784`; sus artifacts push y
 pull_request fueron descargados, parseados, validados y comparados. PR #3
 permanece `OPEN` y `Draft`.

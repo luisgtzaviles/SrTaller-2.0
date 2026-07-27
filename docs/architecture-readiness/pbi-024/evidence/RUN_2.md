@@ -2,19 +2,19 @@
 
 | Campo | Push | Pull request |
 | --- | --- | --- |
-| workflow/job | `30232400104` / `89873600768` | `30232401232` / `89873603781` |
-| head del PR | `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66` | `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66` |
-| commit probado | `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66` | merge ref `c63120cdd07aa88565cd05b42c389379ee29015c` |
+| workflow/job | `30234014251` / `89878896873` | `30234016330` / `89879022361` |
+| head del PR | `2b89279eeda6fd3cfa4b76bae34460c520abd784` | `2b89279eeda6fd3cfa4b76bae34460c520abd784` |
+| commit probado | `2b89279eeda6fd3cfa4b76bae34460c520abd784` | merge ref `298a21ec2821359fe837f9768419699a856a9b71` |
 | label/attempt | `run-2` / `1` | `run-2` / `1` |
 | PostgreSQL | `18.4` | `18.4` |
 | suites/tests/skips críticos | 6 / 11 / 0 | 6 / 11 / 0 |
 | mutaciones | semantic 25/25 | semantic 25/25 |
 | cleanup | PASS | PASS |
 | PostgreSQL comparable | `16cfb89dd2b603a95f53683e9314c0fa4de835ff20330d6eef23f85c93ecfaa6` | mismo |
-| artifact ID | `8640711716` | `8640710924` |
-| evidence SHA-256 | `c6b94c7151d7316b332f6a0c6d53078b279d20faeb7bb7bdd3cc0015f919536b` | `fb8eb3101346e7f4c9f4152e6e0bf454ddcebf0352165acc0f1e5be06c755c42` |
-| mutation SHA-256 | `9409c7b321ab0020522fd21495aeddaec4793074618e102d2f2040f96aee6a25` | `5b5359eada6234921f2b067eae2ce87ccf8b6cf5645e3fca67e42c4dc66e496a` |
-| PostgreSQL SHA-256 | `50af88f8b924612063d7670af0c95d1b831ec2907910cce671a43901fb0a04a8` | `0d26b798e7ee23ba0791617fd0650ce9525fbf76b57eebbaaabe8507e0dec95c` |
+| artifact ID | `8641311320` | `8641320601` |
+| evidence SHA-256 | `addc3e53aeab38fd0a43833da9e31e2a861ef7c8ae43dd66741b56863a1e2c33` | `23859049ec34b8fa6a96539c92465d15e4fb86470126a805e2a1f27269bc2545` |
+| mutation SHA-256 | `b4e08c35c6609d2742a2d6fa5620542db7514ecff9d4a1dbb5bdc62395eabc7b` | `f2891177d335e6e315a845ae9cf857f9c1d4709c06117ae978c49d2199166c0a` |
+| PostgreSQL SHA-256 | `c809e47321d288430a9a1dab8a36456c773d19f80310c2aefef63ee0ce855974` | `a42535aff925c1236c0d8e15fb5fe5ff12e6e15fa3cff7503c05cff36c52d670` |
 | dist SHA-256 | `a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77` | mismo |
 | resultado | SUCCESS | SUCCESS |
 
