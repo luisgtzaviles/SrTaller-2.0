@@ -2,19 +2,20 @@
 
 | Campo | Push | Pull request |
 | --- | --- | --- |
-| workflow/job | `30234014251` / `89878896873` | `30234016330` / `89879022361` |
-| head del PR | `2b89279eeda6fd3cfa4b76bae34460c520abd784` | `2b89279eeda6fd3cfa4b76bae34460c520abd784` |
-| commit probado | `2b89279eeda6fd3cfa4b76bae34460c520abd784` | merge ref `298a21ec2821359fe837f9768419699a856a9b71` |
+| workflow/job | `30239752229` / `89894333622` | `30239754842` / `89894340883` |
+| head del PR | `2988bcdf362505776f7bc111e3d590aee358d2ce` | `2988bcdf362505776f7bc111e3d590aee358d2ce` |
+| commit probado | `2988bcdf362505776f7bc111e3d590aee358d2ce` | merge ref `dc93f154642f04ce6caebc3d6d12f1c8907147fa` |
 | label/attempt | `run-2` / `1` | `run-2` / `1` |
 | PostgreSQL | `18.4` | `18.4` |
 | suites/tests/skips críticos | 6 / 11 / 0 | 6 / 11 / 0 |
-| mutaciones | semantic 25/25 | semantic 25/25 |
+| mutaciones | structured causal 25/25 | structured causal 25/25 |
+| negativos / falso positivo | PASS / PASS | PASS / PASS |
 | cleanup | PASS | PASS |
 | PostgreSQL comparable | `16cfb89dd2b603a95f53683e9314c0fa4de835ff20330d6eef23f85c93ecfaa6` | mismo |
-| artifact ID | `8641311320` | `8641320601` |
-| evidence SHA-256 | `addc3e53aeab38fd0a43833da9e31e2a861ef7c8ae43dd66741b56863a1e2c33` | `23859049ec34b8fa6a96539c92465d15e4fb86470126a805e2a1f27269bc2545` |
-| mutation SHA-256 | `b4e08c35c6609d2742a2d6fa5620542db7514ecff9d4a1dbb5bdc62395eabc7b` | `f2891177d335e6e315a845ae9cf857f9c1d4709c06117ae978c49d2199166c0a` |
-| PostgreSQL SHA-256 | `c809e47321d288430a9a1dab8a36456c773d19f80310c2aefef63ee0ce855974` | `a42535aff925c1236c0d8e15fb5fe5ff12e6e15fa3cff7503c05cff36c52d670` |
+| artifact ID | `8643166960` | `8643158764` |
+| evidence SHA-256 | `e464b9d455541dd19579a650e5a12ab5ee6bedd688d7198b80c538dd2b1dc453` | `0188602d4f6a75e69ebb6b069a54ff116f2b1247f8bc5b14c686f15d54923d97` |
+| mutation SHA-256 | `7edc82933c4116c67d664e6a4a2b58f610fa44484174e37166c41105a2375e4d` | `50661a87caa954799142f7e44b5aacbb21ad9733e0118eb737fae63e6aadcee3` |
+| PostgreSQL SHA-256 | `aadad6586210e636cafd2077f968cccec410f207d44c18ad01223f503df3503b` | `e41107b6e7baf16c0edea2cde795a950c6e75d1c14e781a51555074109a03a17` |
 | dist SHA-256 | `a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77` | mismo |
 | resultado | SUCCESS | SUCCESS |
 

@@ -90,10 +90,11 @@ Los runs remediados `run-1` y `run-2` ejecutaron desde checkout limpio:
 - cleanup;
 - manifest/artifacts.
 
-`comparison` demostró igualdad semántica en push `30234014251` y
-pull_request `30234016330`. No hubo retry interno para fabricar verde ni skips
-críticos. Ambos eventos ejecutaron PostgreSQL real y el harness de 25
-mutaciones semánticas.
+`comparison` demostró igualdad semántica en push `30239752229` y
+pull_request `30239754842`. No hubo retry interno para fabricar verde ni skips
+críticos. Ambos eventos ejecutaron PostgreSQL real, parser/harness negativo y
+25 mutaciones con correlación estructurada. El expected test incorrecto fue
+rechazado como `UNRELATED_TEST_FAILURE`.
 
 ## Dictamen de aplicabilidad
 

@@ -7,8 +7,12 @@
 - **Autorización independiente previa a implementar:** `PASS — PBI-024 IMPLEMENTATION AUTHORIZED`.
 - **Revisión independiente de la implementación:** `CONDITIONAL PASS — PBI-024 IMPLEMENTATION REQUIRES REMEDIATIONS`.
 - **Remediación técnica:** `PASS — PBI-024 IMPLEMENTATION REMEDIATIONS COMPLETE`.
-- **Estado de PBI-024:** `In review — implementation remediated; formal
-  verification pending; functional merge blocked by DEC-051 C02`.
+- **Segunda revisión independiente:** `CONDITIONAL PASS — PBI-024
+  IMPLEMENTATION REQUIRES FURTHER REMEDIATIONS`.
+- **Remediación causal:** `PASS — PBI-024 CAUSAL MUTATION HARNESS
+  REMEDIATION COMPLETE`.
+- **Estado de PBI-024:** `In review — causal mutation harness remediated;
+  formal verification pending; functional merge blocked by DEC-051 C02`.
 - **Fecha:** 2026-07-26.
 - **Riesgo:** alto, fail-closed.
 - **Estimación:** `L`.
@@ -19,12 +23,15 @@
 - **Autorización de implementación:** [emitida](IMPLEMENTATION_AUTHORIZATION.md).
 - **Implementación remediada:** validada en
   `2b89279eeda6fd3cfa4b76bae34460c520abd784`.
+- **Harness causal remediado:** validado en
+  `2988bcdf362505776f7bc111e3d590aee358d2ce`.
 - **PR:** [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3).
-- **CI remota:** [push 30234014251](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30234014251)
-  y [PR 30234016330](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30234016330),
+- **CI causal remota:** [push 30239752229](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30239752229)
+  y [PR 30239754842](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30239754842),
   ambos con run-1/run-2/comparison `SUCCESS`.
 - **Evidencia material:** [expediente](evidence/README.md).
 - **Remediación formal:** [hallazgos, contratos y trazabilidad](FORMAL_IMPLEMENTATION_REMEDIATION.md).
+- **Remediación causal:** [reproducción, algoritmo y evidencia](CAUSAL_MUTATION_REMEDIATION.md).
 - **DEC051-C02:** canónicamente `Pending`, materialmente
   `Partially satisfied`; el primer merge funcional sigue bloqueado.
 
@@ -122,6 +129,7 @@ el runtime posterior materializado en la rama funcional.
 | [DEC_051_C02_TEMPORARY_TREATMENT.md](DEC_051_C02_TEMPORARY_TREATMENT.md) | permiso temporal sólo documental |
 | [IMPLEMENTATION_AUTHORIZATION.md](IMPLEMENTATION_AUTHORIZATION.md) | dictamen, alcance autorizado y bloqueo de merge |
 | [FORMAL_IMPLEMENTATION_REMEDIATION.md](FORMAL_IMPLEMENTATION_REMEDIATION.md) | revisión condicional y remediación técnica ejecutada |
+| [CAUSAL_MUTATION_REMEDIATION.md](CAUSAL_MUTATION_REMEDIATION.md) | remediación del falso positivo y contrato causal estructurado |
 
 ## Autoridad y límites
 
@@ -142,6 +150,7 @@ el runtime posterior materializado en la rama funcional.
 
 ## Siguiente acción
 
-**Repetir la revisión formal independiente de la implementación y evidencia
-remediadas de PBI-024, manteniendo el PR #3 en Draft y prohibido cualquier
-merge funcional mientras DEC-051 C02 permanezca Pending.**
+**Repetir la verificación formal independiente de PBI-024, enfocada en la
+correlación causal del harness y la evidencia final, manteniendo el PR #3 en
+Draft y prohibido cualquier merge funcional mientras DEC-051 C02 permanezca
+Pending.**

@@ -4,17 +4,19 @@
   "contract": "PBI-024/TRUSTED-STATION-CONTEXT",
   "branch": "r0/pbi-024-trusted-station-context",
   "baseCommit": "6c71a3ce5c20049727854ea6aa7629aa0db76f91",
-  "implementationCommit": "2b89279eeda6fd3cfa4b76bae34460c520abd784",
+  "implementationCommit": "2988bcdf362505776f7bc111e3d590aee358d2ce",
   "remediationCommits": [
     "d1da180a27a52ab4ad40ec36c214e171f1149837",
     "aabac6293b1671289d5a244c25283f95f841a7a6",
     "3d484f7fd4d6d5668ddee2144c57ba1aec222920",
     "e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66",
-    "2b89279eeda6fd3cfa4b76bae34460c520abd784"
+    "2b89279eeda6fd3cfa4b76bae34460c520abd784",
+    "88b22b66f00ad70cebc6a91bcb8d434685dce7f7",
+    "2988bcdf362505776f7bc111e3d590aee358d2ce"
   ],
   "pullRequest": 3,
-  "recordedAtUtc": "2026-07-27T03:37:27Z",
-  "finalEvidenceGeneratedAtUtc": "2026-07-27T03:37:27Z",
+  "recordedAtUtc": "2026-07-27T16:12:00Z",
+  "finalEvidenceGeneratedAtUtc": "2026-07-27T05:48:39Z",
   "responsibleRole": "Arquitectura e Ingenieria",
   "environment": {
     "authoritativeOs": "linux",
@@ -73,8 +75,8 @@
     {"name": "diff:check", "exitCode": 0}
   ],
   "tests": {
-    "total": 388,
-    "passed": 377,
+    "total": 409,
+    "passed": 398,
     "failed": 0,
     "ordinarySkips": 11,
     "criticalSkips": 0,
@@ -105,7 +107,7 @@
       "MUT-024-11",
       "MUT-024-15"
     ],
-    "materialSha256": "196df0efc0345a69e77130c589e0c3a34ddda26f24a8053699f76617deba0d7f"
+    "materialSha256": "30f5728e70fd74ac1b1fed10d457c6c2d385356055578262671fb1735647d8c6"
   },
   "concurrentRelink": {
     "physicalConnections": 2,
@@ -135,25 +137,25 @@
   },
   "remote": {
     "push": {
-      "workflowRunId": 30234014251,
+      "workflowRunId": 30239752229,
       "jobs": {
-        "run1": 89878896818,
-        "run2": 89878896873,
-        "comparison": 89880786495
+        "run1": 89894333581,
+        "run2": 89894333622,
+        "comparison": 89897390062
       },
-      "headSha": "2b89279eeda6fd3cfa4b76bae34460c520abd784",
+      "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
       "result": "PASS",
       "equivalent": true
     },
     "pullRequest": {
-      "workflowRunId": 30234016330,
+      "workflowRunId": 30239754842,
       "jobs": {
-        "run1": 89879022350,
-        "run2": 89879022361,
-        "comparison": 89880870322
+        "run1": 89894340808,
+        "run2": 89894340883,
+        "comparison": 89897351391
       },
-      "headSha": "2b89279eeda6fd3cfa4b76bae34460c520abd784",
-      "testedMergeRefSha": "298a21ec2821359fe837f9768419699a856a9b71",
+      "headSha": "2988bcdf362505776f7bc111e3d590aee358d2ce",
+      "testedMergeRefSha": "dc93f154642f04ce6caebc3d6d12f1c8907147fa",
       "result": "PASS",
       "equivalent": true
     }
@@ -161,65 +163,65 @@
   "remoteArtifacts": [
     {
       "event": "push",
-      "id": 8641270944,
+      "id": 8643151064,
       "name": "vc024-run-1",
-      "archiveDigest": "sha256:fb8777f9c5f6eba905ee5e2cfeeb3fef3f26d81bdb6190b974fd4ebe2448fc6a",
-      "evidenceSha256": "ee8505e02c09a27eb7ffbdeeee6a6caa83e7e6def803b013231b14dc4e9748f4",
-      "mutationSha256": "f3c7436c8beac2d2d7f62bb2a7af4f888877da90eded95273ab6487d3024211b",
-      "postgresqlSha256": "b11f79889fb9ea6e02401ff2b7d454e2d6e6a4388993d1651705305be3aceeef",
+      "archiveDigest": "sha256:1c7ffec77699732dd20afc6df993ef8c8f4efa9b10ac14accd0a3fcdc9b52a2f",
+      "evidenceSha256": "428b1003db7205cfb4a5e5d10e2ab42563e88f5342b0861cca84b1ebc217511a",
+      "mutationSha256": "5135a4b38188ed9327b14da640f8dfc98b264f3908fe5a75b00456cc44c9a8fa",
+      "postgresqlSha256": "e4961d53920281ecdab03589c5ff39a616e4b77c906d58a9e4d41254e18eb4a0",
       "distSha256": "a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77"
     },
     {
       "event": "push",
-      "id": 8641311320,
+      "id": 8643166960,
       "name": "vc024-run-2",
-      "archiveDigest": "sha256:da898de33008201689218092f9eb311582c3f67e07729fe0bb0c26399cfecb95",
-      "evidenceSha256": "addc3e53aeab38fd0a43833da9e31e2a861ef7c8ae43dd66741b56863a1e2c33",
-      "mutationSha256": "b4e08c35c6609d2742a2d6fa5620542db7514ecff9d4a1dbb5bdc62395eabc7b",
-      "postgresqlSha256": "c809e47321d288430a9a1dab8a36456c773d19f80310c2aefef63ee0ce855974",
+      "archiveDigest": "sha256:f6a46b0351cebf9d4437a7ebb0cbd295eda086f2debb982dbc4ed1044f57d5c7",
+      "evidenceSha256": "e464b9d455541dd19579a650e5a12ab5ee6bedd688d7198b80c538dd2b1dc453",
+      "mutationSha256": "7edc82933c4116c67d664e6a4a2b58f610fa44484174e37166c41105a2375e4d",
+      "postgresqlSha256": "aadad6586210e636cafd2077f968cccec410f207d44c18ad01223f503df3503b",
       "distSha256": "a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77"
     },
     {
       "event": "push",
-      "id": 8641313610,
+      "id": 8643171055,
       "name": "vc024-comparison",
-      "archiveDigest": "sha256:48ae95057764b99414546554a183284883584099866480710be2be4b0663c7e3",
-      "sha256": "6c7033ea1f4c1f87bc3e1348e5067470c45c88ffaff5170d9d4acabcd831c8a9"
+      "archiveDigest": "sha256:a2ed5865c919c46c37518fc5df35a7c69f20bb3b546d3e244b03901e9a3cc393",
+      "sha256": "59bb126e059e1b05b72f7b16e17f98ab2861d6fc07f49ce5ed113ddb559bcb11"
     },
     {
       "event": "pull_request",
-      "id": 8641281635,
+      "id": 8643162500,
       "name": "vc024-run-1",
-      "archiveDigest": "sha256:0e950256267f208447e6c3b634d6f277b635e9c0dfc1857de1fc2651dc219b42",
-      "evidenceSha256": "481fe1b8341c886dafbf6c5d031f4a06614a55e313e8efe9a25544cffc376c03",
-      "mutationSha256": "ea5550bd793eb823331e0333ef902fd21ad3baf284b9d894cd6c74cee1fc9909",
-      "postgresqlSha256": "3e774f0953303e8e6abd159522db4e9730659276894a23febf38a1c0278732b5",
+      "archiveDigest": "sha256:b1843350e98ec002a92ec1f4cf503ac9099030eed4ec2d1e877e05b07b38bace",
+      "evidenceSha256": "f5fdaa4c7ebc058d18ca6da64d61ce1a7bde0c12f3feec792d93aeef0a5109b2",
+      "mutationSha256": "38fc9ab5e44d7ec68b6fe5675de1133c2683cbc98153e247df1a4b72fd90d1df",
+      "postgresqlSha256": "5d5b2baefbce4b4e314faa6e4bb2319395cb6cab03d3a0e69ed459a96f835261",
       "distSha256": "a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77"
     },
     {
       "event": "pull_request",
-      "id": 8641320601,
+      "id": 8643158764,
       "name": "vc024-run-2",
-      "archiveDigest": "sha256:43a7454e984490a55abd7afc2d48e4b5eed2810e801440e60a10c0953a387fc4",
-      "evidenceSha256": "23859049ec34b8fa6a96539c92465d15e4fb86470126a805e2a1f27269bc2545",
-      "mutationSha256": "f2891177d335e6e315a845ae9cf857f9c1d4709c06117ae978c49d2199166c0a",
-      "postgresqlSha256": "a42535aff925c1236c0d8e15fb5fe5ff12e6e15fa3cff7503c05cff36c52d670",
+      "archiveDigest": "sha256:7bd54b4820f81fb7ec31ce96a92f526c236c03f8dc2eb7dc5188ddf0936178bb",
+      "evidenceSha256": "0188602d4f6a75e69ebb6b069a54ff116f2b1247f8bc5b14c686f15d54923d97",
+      "mutationSha256": "50661a87caa954799142f7e44b5aacbb21ad9733e0118eb737fae63e6aadcee3",
+      "postgresqlSha256": "e41107b6e7baf16c0edea2cde795a950c6e75d1c14e781a51555074109a03a17",
       "distSha256": "a14ff7b7a52d93e02bfbc323b2ce239309256d80204e98f8158a46641ac54b77"
     },
     {
       "event": "pull_request",
-      "id": 8641322901,
+      "id": 8643166424,
       "name": "vc024-comparison",
-      "archiveDigest": "sha256:e1a24a9daa8868eac994c5d1193964a540644a0d215b56e14ba1f7b8d2a71461",
-      "sha256": "508b522b3a718b3bc4bb032f5bd86c948052c1eb2798c6b5c38c6af3914a9199"
+      "archiveDigest": "sha256:1b5b85c3eabe778a3a4d600e943181028deb96254958966a240118b47ae07a53",
+      "sha256": "2e3adee076e8d1dee1c6eb76aa0a3b4b4312ea4a74d611422a082f10931a2566"
     }
   ],
   "review": {
     "previousIndependent": "CONDITIONAL_PASS_REMEDIATIONS_REQUIRED",
-    "remediation": "PASS_COMPLETE",
+    "remediation": "PASS_CAUSAL_HARNESS_COMPLETE",
     "independentReverification": "PENDING",
     "dec051C02": "Pending",
     "merge": "BLOCKED"
   },
-  "verdict": "PASS — PBI-024 IMPLEMENTATION REMEDIATIONS COMPLETE"
+  "verdict": "PASS — PBI-024 CAUSAL MUTATION HARNESS REMEDIATION COMPLETE"
 }

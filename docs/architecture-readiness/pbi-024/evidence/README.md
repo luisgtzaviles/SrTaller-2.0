@@ -6,8 +6,9 @@ Este expediente demuestra la materialización de `TrustedStationContext` en la
 rama `r0/pbi-024-trusted-station-context`, basada en
 `6c71a3ce5c20049727854ea6aa7629aa0db76f91`.
 
-La implementación remediada queda fijada en
-`2b89279eeda6fd3cfa4b76bae34460c520abd784`. Incluye ownership de branch en
+La implementación funcional permanece fijada en
+`2b89279eeda6fd3cfa4b76bae34460c520abd784`; el harness causal remediado queda
+fijado en `2988bcdf362505776f7bc111e3d590aee358d2ce`. Incluye ownership de branch en
 `tenancy`, lifecycle y persistencia de Station en `stations`, resolución
 server-side, contexto inmutable, transacciones linealizadas, errores
 sanitizados y verificación con PostgreSQL 18.4.
@@ -16,15 +17,18 @@ sanitizados y verificación con PostgreSQL 18.4.
 
 - implementación y validación local: `PASS`;
 - runner PostgreSQL local 1/2: `PASS`;
-- mutaciones semánticas: `PASS`, 25/25;
+- mutaciones semánticas causales: `PASS`, 25/25;
+- parser estructurado y negativos A–J: `PASS`;
+- regresión del falso positivo: `PASS`, unrelated rechazado;
 - cinco demostraciones manuales: `PASS`;
 - evidencia Linux push: `PASS`, run
-  [30234014251](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30234014251);
+  [30239752229](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30239752229);
 - evidencia Linux pull_request: `PASS`, run
-  [30234016330](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30234016330);
+  [30239754842](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30239754842);
 - PR: [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3);
 - revisión independiente previa: `CONDITIONAL PASS`;
-- remediación: `PASS — PBI-024 IMPLEMENTATION REMEDIATIONS COMPLETE`;
+- remediación causal: `PASS — PBI-024 CAUSAL MUTATION HARNESS REMEDIATION
+  COMPLETE`;
 - repetición de revisión formal independiente: pendiente;
 - DEC-051 C02: `Pending`;
 - merge funcional: prohibido.
@@ -40,6 +44,7 @@ sanitizados y verificación con PostgreSQL 18.4.
 - [Arquitectura](ARCHITECTURE_RESULTS.md)
 - [Concurrencia](CONCURRENCY_RESULTS.md)
 - [Mutaciones](MUTATION_RESULTS.md)
+- [Correlación causal](CAUSAL_CORRELATION_RESULTS.md)
 - [Demostraciones manuales](MANUAL_MUTATION_RESULTS.md)
 - [Seguridad](SECURITY_CHECKLIST.md)
 - [DEC-051](DEC_051_APPLICABILITY.md)

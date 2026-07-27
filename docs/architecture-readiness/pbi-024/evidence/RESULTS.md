@@ -5,13 +5,18 @@
 - frozen install: PASS;
 - typecheck: PASS;
 - build: PASS;
-- test: PASS, 388 tests, 0 fallos;
+- test: PASS, 409 tests, 398 pass, 11 skips ordinarios, 0 fallos;
 - architecture: PASS, 265/265;
 - verify: PASS;
 - smoke:start: PASS;
 - PostgreSQL runner run 1/run 2: PASS;
 - PostgreSQL comparison material: MATCH;
-- mutaciones semánticas: PASS, 25/25 killed mediante build y tests runtime;
+- parser estructurado: PASS, 9 pruebas;
+- negativos reales A–J: PASS;
+- baseline Station: PASS, 34 pruebas y 35 targets exactos;
+- mutaciones semánticas: PASS, 25/25 killed con `causalMatch: true`;
+- unrelated, survived, timeout, parser/infra/cleanup failures: 0;
+- regresión del expected incorrecto: PASS, `UNRELATED_TEST_FAILURE`;
 - demostraciones manuales: PASS, 5/5;
 - diff check: PASS;
 - expansión de alcance: ausente;
@@ -19,10 +24,10 @@
 
 ## Evidencia remota
 
-- SHA técnico remediado:
-  `2b89279eeda6fd3cfa4b76bae34460c520abd784`;
-- CI push: `30234014251`, run-1/run-2/comparison `SUCCESS`;
-- CI pull_request: `30234016330`, run-1/run-2/comparison `SUCCESS`;
+- SHA técnico causal:
+  `2988bcdf362505776f7bc111e3d590aee358d2ce`;
+- CI push: `30239752229`, run-1/run-2/comparison `SUCCESS`;
+- CI pull_request: `30239754842`, run-1/run-2/comparison `SUCCESS`;
 - artifacts: seis descargados, JSON válidos, equivalencia recalculada y
   hashes registrados;
 - intento intermedio: push `30233547617` sobre `7daa39b` preservado como
@@ -35,8 +40,8 @@
 
 ## Dictamen
 
-`PASS — PBI-024 IMPLEMENTATION REMEDIATIONS COMPLETE`.
+`PASS — PBI-024 CAUSAL MUTATION HARNESS REMEDIATION COMPLETE`.
 
-El dictamen anterior `CONDITIONAL PASS — PBI-024 IMPLEMENTATION REQUIRES
-REMEDIATIONS` permanece en la cronología. La repetición de revisión formal
-independiente está pendiente y no se ejecuta dentro de esta remediación.
+Los dictámenes `CONDITIONAL PASS` anteriores permanecen en la cronología. La
+repetición de verificación formal independiente está pendiente y no se ejecuta
+dentro de esta remediación.

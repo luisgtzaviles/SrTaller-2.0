@@ -137,6 +137,23 @@ La CI ejecuta explícitamente el harness semántico y adjunta
 pruebas. No se permiten `continue-on-error`, `|| true`, skips silenciosos ni
 reducción del inventario crítico.
 
+## Correlación causal del harness
+
+- reporter estructurado `srtaller-node-test-results/v1`;
+- parser determinista para PASS/FAIL/SKIP y errores multilínea;
+- objetivo inequívoco por ruta normalizada + nombre completo exacto;
+- huella causal `ERR_TEST_FAILURE`/`testCodeFailure`;
+- baseline de 34 pruebas y 35 declaraciones objetivo;
+- tests del parser para fallo, pass, skip, duplicados, archivos distintos,
+  múltiples fallos, vacío/corrupto, caracteres especiales, rutas y stack;
+- casos negativos reales A–J sobre el mismo runner;
+- regresión explícita: `MUT-024-01` con expected de revocación debe terminar
+  `UNRELATED_TEST_FAILURE`, nunca killed;
+- campaña falla por unrelated, survived, timeout, parse, infraestructura,
+  build, discovery, not-applied o cleanup;
+- verificación de symlink, procesos hijos, workspace residual y working tree
+  en rutas positivas y negativas.
+
 ## Criterio de PASS
 
 - cero fallos;

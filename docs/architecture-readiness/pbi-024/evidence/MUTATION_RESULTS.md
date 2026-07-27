@@ -1,22 +1,27 @@
 # Resultados de mutaciones
 
 `node scripts/run-station-mutations.mjs` sobre el SHA
-`2b89279eeda6fd3cfa4b76bae34460c520abd784`:
+`2988bcdf362505776f7bc111e3d590aee358d2ce`:
 
 - modo: semantic;
 - workspace: `controlled-temporary-copy`;
 - mutaciones: 25;
 - killed: 25;
+- `causalMatch: true`: 25;
 - survived: 0;
 - skipped: 0;
+- unrelated/unexpected failures: 0/0;
+- timeout/parser/infrastructure/cleanup failures: 0/0/0/0;
 - applied: 25/25;
 - build de código mutado: 25/25 exit 0;
-- fallo nominal esperado: 25/25;
+- fallo objetivo exacto y causal: 25/25;
 - cleanup/restauración: 25/25 `PASS`.
 
-Cada caso modifica código alcanzable, ejecuta `pnpm run build` y corre las
-pruebas objetivo de Station. No se contabilizan sintaxis rota, comentarios,
-código muerto, imports irrelevantes o búsquedas del texto mutado.
+El baseline compiló, inventarió 34 pruebas estructuradas y validó 35
+declaraciones exactas por archivo + nombre completo. Cada caso modifica código
+alcanzable, ejecuta `pnpm run build` y corre las pruebas objetivo de Station.
+No se contabilizan sintaxis rota, comentarios, código muerto, imports
+irrelevantes, substring del nombre o un exit code ajeno.
 
 `MUT-024-01`–`MUT-024-25` cubren tenant scope de Station/binding, Station
 revocada, `bindingRevision`, branch cliente, elegibilidad, `FOR UPDATE`,
@@ -25,10 +30,16 @@ revision, binding cross-tenant, contexto forjado, error público, revalidación
 del guard, deny-to-allow, bindings múltiples, close tenant-scoped, CAS,
 revocación terminal y link con binding abierto.
 
-El `MUTATION_MANIFEST.json` autoritativo registra archivo, transformación,
-comando, test nominal, exit codes, duración y cleanup de cada caso. Su hash
-material comparable es
-`196df0efc0345a69e77130c589e0c3a34ddda26f24a8053699f76617deba0d7f`.
+El `MUTATION_MANIFEST.json` autoritativo schema 2 registra resultados
+estructurados, objetivos, fallos esperados/inesperados, clasificación,
+`causalMatch`, reporter, duración y cleanup de cada caso. Su hash material
+comparable es
+`30f5728e70fd74ac1b1fed10d457c6c2d385356055578262671fb1735647d8c6`.
+
+La regresión integrada ejecuta `MUT-024-01` con la prueba incorrecta de
+revocación. El target incorrecto pasa, tenant scope falla y el resultado es
+`UNRELATED_TEST_FAILURE`, `expectedTestsFailed: []`, `causalMatch: false` y
+`killed: false`.
 
 Las cinco ejecuciones manuales adicionales están en
 [MANUAL_MUTATION_RESULTS.md](MANUAL_MUTATION_RESULTS.md).

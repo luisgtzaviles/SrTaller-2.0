@@ -9,12 +9,18 @@ symlink de `node_modules`, aplica una transformación semántica y ejecuta:
 1. `pnpm run build`;
 2. el subconjunto de pruebas de Station que debe matar el defecto.
 
-Las mutaciones corren serialmente con timeout. El runner captura
-`stdout`/`stderr`, exige que el código mutado compile, exige exit no cero por
-el test nominal esperado y limpia en `finally`. También compara exactamente
-el estado Git original y rechaza mutación no aplicada, sintaxis rota,
-superviviente, fallo ajeno, timeout, cleanup incompleto, residual o
-contaminación.
+Las mutaciones corren serialmente con timeout. Un reporter personalizado
+compatible con la API oficial `node:test` de Node.js 24 emite
+`srtaller-node-test-results/v1`. El parser exige identidad exacta por archivo
+normalizado + nombre completo, diferencia PASS/FAIL/SKIP y valida una huella
+causal estable. No se usa substring, color, salida visual ni exit code como
+prueba de causalidad.
+
+El runner captura `stdout`/`stderr`, exige que el código mutado compile, exige
+que al menos una prueba objetivo exacta falle con firma compatible y limpia
+en `finally`. También compara exactamente el estado Git original y rechaza
+mutación no aplicada, sintaxis rota, superviviente, fallo ajeno, timeout,
+salida inválida, cleanup incompleto, residual o contaminación.
 
 Se eligió `controlled-temporary-copy` porque el harness también debe funcionar
 mientras el checkout de desarrollo contiene cambios aún no confirmados. Un
@@ -54,6 +60,16 @@ que cada uno represente un defecto runtime válido. Ninguna mutación usa
 comentarios, código muerto, sintaxis inválida, imports irrelevantes o
 aserciones que busquen el texto sembrado.
 
+Cada ID declara una lista de objetivos exactos. El baseline estructurado
+inventaría 34 pruebas y valida 35 declaraciones: cada objetivo debe existir
+una sola vez, ejecutarse, pasar y no estar skipped antes de comenzar la
+campaña. Sólo `EXPECTED_TEST_FAILURE` puede producir `killed: true`.
+
+Las clasificaciones exclusivas son `PASS`, `EXPECTED_TEST_FAILURE`,
+`UNRELATED_TEST_FAILURE`, `BUILD_FAILURE`, `TEST_DISCOVERY_FAILURE`,
+`INFRASTRUCTURE_FAILURE`, `TIMEOUT`, `MUTATION_NOT_APPLIED`,
+`RESULT_PARSE_FAILURE` y `CLEANUP_FAILURE`.
+
 ## Demostraciones manuales
 
 Además de la campaña automática, `MUT-024-01`, `04`, `07`, `11` y `15` se
@@ -70,7 +86,12 @@ Por mutación:
 - cambio semántico;
 - comando y exit code;
 - test/diagnóstico que la detectó;
+- resultados estructurados, fallos esperados/inesperados y `causalMatch`;
 - duración y prueba de cleanup/restauración;
 - baseline posterior.
 
 No se versiona código mutado ni logs con paths personales o secretos.
+
+Los casos negativos A–J y la regresión explícita de expected test incorrecto
+ejecutan el mismo camino del runner oficial. Véase
+[CAUSAL_MUTATION_REMEDIATION.md](CAUSAL_MUTATION_REMEDIATION.md).

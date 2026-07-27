@@ -11,14 +11,16 @@
 | aislamiento | PostgreSQL + mutaciones |
 | row lock/revisión | dos conexiones/transacciones + ambos órdenes PostgreSQL |
 | `bindingRevision` | resolver fail-closed + guard transaccional |
-| mutation semantics | 25 workspaces mutados + cinco demostraciones manuales |
+| mutation semantics | 25 workspaces mutados + identidad exacta + causalMatch |
+| rechazo de falso positivo | expected incorrecto → unrelated/killed false |
+| parser/harness | 9 parser tests + casos negativos reales A–J |
 | atomicidad | rollback PostgreSQL |
 | migración/schema | up/down/reapply + introspección |
 | doble corrida | [Run 1](RUN_1.md), [Run 2](RUN_2.md), [comparación](COMPARISON.md) |
 | exclusiones | arquitectura + revisión de diff |
 | DEC-051/063 | expedientes de aplicabilidad |
 
-La evidencia Linux remota corresponde al head
-`2b89279eeda6fd3cfa4b76bae34460c520abd784`; sus artifacts push y
+La evidencia Linux remota causal corresponde al head
+`2988bcdf362505776f7bc111e3d590aee358d2ce`; sus artifacts push y
 pull_request fueron descargados, parseados, validados y comparados. PR #3
 permanece `OPEN` y `Draft`.

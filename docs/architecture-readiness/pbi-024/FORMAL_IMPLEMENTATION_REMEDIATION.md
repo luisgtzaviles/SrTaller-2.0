@@ -121,3 +121,38 @@ jobs PostgreSQL remotos finales.
 Este dictamen sólo confirma que la remediación está lista para una nueva
 revisión independiente. PR #3 continúa `OPEN` y `Draft`; DEC-051 C02
 continúa `Pending`; el merge funcional continúa prohibido.
+
+## Segunda revisión y remediación causal
+
+La segunda revisión formal independiente conservó los contratos de
+concurrencia, errores PostgreSQL, `bindingRevision`, cronología y alcance como
+satisfechos, pero detectó un `MAJOR` adicional: el harness comprobaba
+`output.includes(expectedTest)` y podía aceptar como muerte el fallo de una
+prueba ajena.
+
+La reproducción previa demostró el falso positivo con `MUT-024-01`: la prueba
+de tenant scope falló, la prueba configurada de revocación pasó, pero el
+runner antiguo devolvió `killed: true`.
+
+Los commits `88b22b6` y `2988bcd` sustituyen esa heurística por un reporter
+JSON de `node:test`, parser estricto, identidad archivo + nombre completo,
+huella causal estable, clasificación exclusiva, baseline de targets y casos
+negativos A–J. El caso incorrecto ahora produce
+`UNRELATED_TEST_FAILURE`, `causalMatch: false` y `killed: false`.
+
+La campaña final sobre
+`2988bcdf362505776f7bc111e3d590aee358d2ce` obtuvo 25/25 muertes causales,
+cero fallos unrelated/survived/timeout/parser/infra/cleanup y cinco
+demostraciones manuales `PASS`. Push `30239752229` y pull request
+`30239754842` pasaron run-1/run-2/comparison; sus seis artifacts fueron
+descargados y validados.
+
+El detalle se conserva en
+[CAUSAL_MUTATION_REMEDIATION.md](CAUSAL_MUTATION_REMEDIATION.md) y
+[evidence/CAUSAL_CORRELATION_RESULTS.md](evidence/CAUSAL_CORRELATION_RESULTS.md).
+
+`PASS — PBI-024 CAUSAL MUTATION HARNESS REMEDIATION COMPLETE`.
+
+La verificación formal independiente continúa pendiente. PR #3 continúa
+`OPEN` y `Draft`; DEC-051 C02 continúa `Pending`; el merge funcional
+continúa prohibido.

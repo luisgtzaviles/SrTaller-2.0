@@ -32,6 +32,18 @@
 - validación fail-closed de `bindingRevision` antes de emitir confianza;
 - defensa transaccional posterior conservada.
 
+## Remediación causal posterior a segunda revisión
+
+- reporter JSON determinista sobre `node:test`;
+- parser estricto sin heurística de substring;
+- identidad objetivo archivo + nombre completo;
+- huella causal por código/tipo de fallo;
+- clasificación exclusiva y muerte sólo por `EXPECTED_TEST_FAILURE`;
+- baseline de inventario y targets;
+- tests del parser y casos negativos reales A–J;
+- regresión material del falso positivo;
+- campaña 25/25 y artifacts autoritativos regenerados.
+
 ## Límites preservados
 
 No se implementaron usuarios, PIN, sesiones, roles, capacidades, frontend,
