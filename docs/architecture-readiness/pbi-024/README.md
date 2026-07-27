@@ -4,22 +4,27 @@
 
 - **Resultado del refinamiento:** `PASS — PBI-024 REFINED AND READY FOR FORMAL REVIEW`.
 - **Resultado de remediación:** `PASS — PBI-024 FORMAL REVIEW REMEDIATIONS COMPLETE`.
-- **Revisión independiente:** `PASS — PBI-024 IMPLEMENTATION AUTHORIZED`.
-- **Estado de PBI-024:** `In review — implementation complete; functional
-  merge blocked by DEC-051 C02`.
+- **Autorización independiente previa a implementar:** `PASS — PBI-024 IMPLEMENTATION AUTHORIZED`.
+- **Revisión independiente de la implementación:** `CONDITIONAL PASS — PBI-024 IMPLEMENTATION REQUIRES REMEDIATIONS`.
+- **Remediación técnica:** `PASS — PBI-024 IMPLEMENTATION REMEDIATIONS COMPLETE`.
+- **Estado de PBI-024:** `In review — implementation remediated; formal
+  verification pending; functional merge blocked by DEC-051 C02`.
 - **Fecha:** 2026-07-26.
 - **Riesgo:** alto, fail-closed.
 - **Estimación:** `L`.
-- **Cambio técnico:** ninguno.
+- **Cambio técnico remediado:** limitado a los cuatro `MAJOR`, el `MINOR` y
+  su evidencia; sin expansión funcional.
 - **SHA de diseño autorizado:**
   `5b3ba7fdd27fb135cfe9d559694384a396515922`.
 - **Autorización de implementación:** [emitida](IMPLEMENTATION_AUTHORIZATION.md).
-- **Implementación:** completa y validada en
-  `3b7a852873147377b9552464dc9df3da2737f4fa`.
+- **Implementación remediada:** validada en
+  `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`.
 - **PR:** [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3).
-- **CI:** [push 30224399646](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30224399646),
-  run-1/run-2/comparison `SUCCESS`.
+- **CI remota:** [push 30232400104](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30232400104)
+  y [PR 30232401232](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30232401232),
+  ambos con run-1/run-2/comparison `SUCCESS`.
 - **Evidencia material:** [expediente](evidence/README.md).
+- **Remediación formal:** [hallazgos, contratos y trazabilidad](FORMAL_IMPLEMENTATION_REMEDIATION.md).
 - **DEC051-C02:** canónicamente `Pending`, materialmente
   `Partially satisfied`; el primer merge funcional sigue bloqueado.
 
@@ -80,7 +85,10 @@ La distinción normativa es:
 - transacción: aplicación coordina ambos puertos sobre el mismo contexto
   transaccional sin exponer Kysely ni consultar tablas ajenas.
 
-## Estado actual reconstruido
+## Estado pre-implementación reconstruido
+
+Esta tabla conserva el punto de partida que justificó el diseño; no describe
+el runtime posterior materializado en la rama funcional.
 
 | Superficie | Estado observado |
 | --- | --- |
@@ -113,6 +121,7 @@ La distinción normativa es:
 | [FORMAL_REVIEW_READINESS.md](FORMAL_REVIEW_READINESS.md) | gates y dictamen del refinamiento |
 | [DEC_051_C02_TEMPORARY_TREATMENT.md](DEC_051_C02_TEMPORARY_TREATMENT.md) | permiso temporal sólo documental |
 | [IMPLEMENTATION_AUTHORIZATION.md](IMPLEMENTATION_AUTHORIZATION.md) | dictamen, alcance autorizado y bloqueo de merge |
+| [FORMAL_IMPLEMENTATION_REMEDIATION.md](FORMAL_IMPLEMENTATION_REMEDIATION.md) | revisión condicional y remediación técnica ejecutada |
 
 ## Autoridad y límites
 
@@ -133,6 +142,6 @@ La distinción normativa es:
 
 ## Siguiente acción
 
-**Ejecutar una revisión formal independiente de la implementación de PBI-024
-y de su evidencia, manteniendo el PR en Draft y prohibido cualquier merge
-funcional mientras DEC-051 C02 permanezca Pending.**
+**Repetir la revisión formal independiente de la implementación y evidencia
+remediadas de PBI-024, manteniendo el PR #3 en Draft y prohibido cualquier
+merge funcional mientras DEC-051 C02 permanezca Pending.**

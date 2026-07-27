@@ -25,6 +25,7 @@
 | `STATION_LIFECYCLE_CONFLICT` | Conflict | domain/application | `RESOURCE_CONFLICT` / 409 | never |
 | `STATION_CONTEXT_STALE` | Concurrency | application | `CONCURRENCY_CONFLICT` / 409 | never transparente |
 | `STATION_TRANSIENT_CONCURRENCY` | Concurrency | adapter/application | `TRANSIENT_CONCURRENCY_FAILURE` / 503 agotado | conditional |
+| `STATION_QUERY_CANCELED` | Infrastructure | adapter/application | `INTERNAL_ERROR` / 500 | never |
 | `STATION_REFERENCE_NOT_FOUND` | NotFound | repository/application | 404 sólo si visible; se colapsa según scope | never |
 | `STATION_PERSISTENCE_FAILED` | Persistence | adapter | `INTERNAL_ERROR` / 500 o 503 clasificado | según causa |
 | `STATION_CONFIGURATION_INVALID` | Configuration | startup/adapter | readiness fail; 500/503 genérico si atiende | never |
@@ -36,17 +37,44 @@
 | Señal | Traducción | Resultado |
 | --- | --- | --- |
 | `23505` binding abierto duplicado / PK conocida | Conflict | 409 seguro |
-| `23503` al validar una referencia solicitada y visible | NotFound | 404 sanitizado |
-| `23503` en binding/station ya persistidos | Unexpected por integridad rota | 500 sanitizado |
+| `23503` `stations_tenant_fk` durante `create-station` | NotFound | `STATION_PERSISTENCE_REFERENCE_NOT_FOUND`; 404 sólo donde la visibilidad esté autorizada |
+| `23503` `station_bindings_station_fk` o `station_bindings_branch_fk` durante `create-open-binding` | Unexpected por integridad persistida rota | 500 sanitizado |
+| `23503` con constraint desconocido o fuera de su operación allowlisted | Unexpected por integridad rota | 500 sanitizado; nunca se adivina NotFound |
 | `23514`/`23502` estado/lifecycle conocido | BusinessRule si intención válida; de otro modo Unexpected | 422 o 500 |
-| `40001` | Concurrency transitoria | retry de unidad completa sólo idempotente |
-| `40P01` | Concurrency transitoria | mismo contrato |
-| `57014`/timeout | Persistence/Infrastructure | 503 sólo si outcome conocido |
+| `40001` | `STATION_PERSISTENCE_SERIALIZATION_FAILURE`, Concurrency, `conditional` | señal de retry preservada; no ejecuta retry |
+| `40P01` | `STATION_PERSISTENCE_DEADLOCK`, Concurrency, `conditional` | señal de retry preservada; no ejecuta retry |
+| `57014` | `STATION_PERSISTENCE_QUERY_CANCELED`, Infrastructure, `never` | `INTERNAL_ERROR` / 500; no se agrupa con concurrencia |
 | revisión condicional sin fila | Concurrency stale | 409 |
 | código desconocido | Persistence → Unexpected | 500 |
 
 El mapping usa código estructurado y constraint lógico conocido, nunca parsing
 de mensajes.
+
+La allowlist está indexada por operación y constraint. El adapter recibe la
+intención (`create-station`, `create-open-binding`, lookup, lock, transition o
+close) y sólo reconoce el significado autorizado para esa combinación.
+SQLSTATE y constraint quedan asociados al error mediante diagnóstico interno;
+`toJSON`, `inspect` y la respuesta pública no incluyen esos datos, SQL,
+detalle del driver, tabla o IDs.
+
+`retryable: conditional` significa que una capa futura puede decidir reintentar
+la unidad completa sólo si conoce su idempotencia y outcome. PBI-024 no añade
+retry automático. `57014` permanece `never` porque el adapter no puede inferir
+de forma segura si fue timeout, cancelación externa o cierre de conexión.
+
+## Revisión incoherente
+
+Dos casos tienen contratos diferentes:
+
+1. un contexto previamente emitido queda obsoleto por una transición válida:
+   `STATION_CONTEXT_STALE`, `Concurrency`, `never`, 409;
+2. Station y binding leídos en la misma resolución autoritativa tienen
+   revisiones distintas:
+   `STATION_REFERENCE_INTEGRITY_BROKEN`, `Unexpected`, `never`, 500
+   sanitizado.
+
+El segundo caso se rechaza antes de invocar la factory de contexto. No se
+publican las revisiones ni se intenta fallback o corrección silenciosa.
 
 ## Anti-enumeración
 

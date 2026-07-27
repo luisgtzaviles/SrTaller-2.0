@@ -12,9 +12,21 @@ PostgreSQL real verificó:
 
 - efecto obtiene lock antes que revoke;
 - revoke obtiene lock antes que efecto;
-- relink concurrente rechaza revisión obsoleta;
+- relink concurrente con dos conexiones físicas y transacciones
+  independientes rechaza revisión obsoleta;
+- escenario inverso con la segunda conexión como ganadora;
+- PID de backend y transaction ID distintos/equivalentes según corresponda;
+- exactamente una operación exitosa y una
+  `STATION_CONTEXT_STALE`/`Concurrency`/`never`;
+- Station final `Active`, revisión `N + 2`, binding A cerrado y exactamente un
+  binding B abierto;
+- ausencia expresa de `NESTED_FORBIDDEN`;
+- conflicto `SERIALIZABLE` real traducido desde `40001` hasta
+  `STATION_TRANSIENT_CONCURRENCY`/`conditional`;
 - estaciones distintas no usan lock global;
 - fallo del efecto revierte y libera;
 - tenant scope se conserva bajo lock.
 
-No se cambió a `SERIALIZABLE` y no se introdujo retry oculto.
+El lifecycle ordinario permanece `READ COMMITTED`; el escenario
+`SERIALIZABLE` existe sólo para demostrar la traducción end-to-end de
+`40001`. No se introdujo retry oculto.

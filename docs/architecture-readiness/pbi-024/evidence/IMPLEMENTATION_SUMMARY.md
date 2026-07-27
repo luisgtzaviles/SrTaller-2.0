@@ -22,6 +22,16 @@
 - scopes compuestos por tenant en todos los adapters;
 - composición Nest mínima sin endpoint funcional.
 
+## Remediación posterior a revisión
+
+- harness real de mutación semántica sobre workspace temporal aislado;
+- relink concurrente con dos conexiones/transacciones y ambos órdenes;
+- errores PostgreSQL por código/operación/constraint con retryability
+  preservada;
+- diagnóstico técnico interno y salida pública sanitizada;
+- validación fail-closed de `bindingRevision` antes de emitir confianza;
+- defensa transaccional posterior conservada.
+
 ## Límites preservados
 
 No se implementaron usuarios, PIN, sesiones, roles, capacidades, frontend,

@@ -11,24 +11,28 @@
 - smoke:start: PASS;
 - PostgreSQL runner run 1/run 2: PASS;
 - PostgreSQL comparison material: MATCH;
-- mutaciones: PASS, 25/25 killed;
+- mutaciones semánticas: PASS, 25/25 killed mediante build y tests runtime;
+- demostraciones manuales: PASS, 5/5;
 - diff check: PASS;
 - expansión de alcance: ausente;
 - secretos: ausentes.
 
 ## Evidencia remota
 
-- SHA: `3b7a852873147377b9552464dc9df3da2737f4fa`;
-- CI push: `30224399646`;
-- run-1/run-2/comparison: `SUCCESS`;
-- artifacts: descargados, JSON válidos y hashes registrados;
+- SHA técnico remediado:
+  `e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`;
+- CI push: `30232400104`, run-1/run-2/comparison `SUCCESS`;
+- CI pull_request: `30232401232`, run-1/run-2/comparison `SUCCESS`;
+- artifacts: seis descargados, JSON válidos, equivalencia recalculada y
+  hashes registrados;
 - PR: #3, `OPEN` y `Draft`;
 - merge: no realizado;
 - DEC-051 C02: `Pending`.
 
 ## Dictamen
 
-`PASS — PBI-024 IMPLEMENTATION COMPLETE / FORMAL REVIEW READY`.
+`PASS — PBI-024 IMPLEMENTATION REMEDIATIONS COMPLETE`.
 
-La revisión formal independiente permanece pendiente y no se ejecuta dentro
-de esta implementación.
+El dictamen anterior `CONDITIONAL PASS — PBI-024 IMPLEMENTATION REQUIRES
+REMEDIATIONS` permanece en la cronología. La repetición de revisión formal
+independiente está pendiente y no se ejecuta dentro de esta remediación.

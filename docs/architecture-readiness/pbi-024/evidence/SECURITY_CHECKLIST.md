@@ -11,7 +11,12 @@
 - [x] no existe endpoint administrativo;
 - [x] no existe fallback global;
 - [x] no se añadió RLS ni se afirmó que exista;
-- [x] 25 mutaciones críticas fueron eliminadas.
+- [x] 25 mutaciones semánticas compilaron y fueron eliminadas por pruebas
+  runtime reales;
+- [x] `bindingRevision` inconsistente falla antes de emitir contexto;
+- [x] 23503 desconocido falla como integridad inesperada, no como NotFound
+  adivinado;
+- [x] retryability no se pierde ni habilita retry automático;
 
 Riesgo residual: el mecanismo criptográfico real de reconocimiento permanece
 diferido a PBI-029; PBI-024 consume únicamente su contrato.

@@ -13,3 +13,7 @@ explícitos y fueron ejecutadas por separado con PostgreSQL real.
 
 El dominio verifica IDs/revisiones/instantes, invariantes, transiciones,
 revocación terminal, inmutabilidad, no wildcard y contrato público sanitizado.
+
+Las pruebas añadidas cubren translator PostgreSQL, retryability, allowlist
+23503, diagnóstico interno, sanitización pública, lower/higher
+`bindingRevision`, defensa en profundidad y contratos del harness semántico.

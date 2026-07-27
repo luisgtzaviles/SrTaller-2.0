@@ -32,6 +32,8 @@ UUIDs, instantes y barreras de concurrencia deben ser deterministas.
 - unknown/unlinked/revoked indistinguibles;
 - payload tenant/branch contradictorio;
 - binding/branch/tenant incoherentes;
+- `bindingRevision` igual emite contexto; menor o mayor rechaza antes de la
+  factory como integridad rota;
 - guard current y stale;
 - relink invalida contexto anterior;
 - revoke invalida resoluciones siguientes;
@@ -53,7 +55,8 @@ UUIDs, instantes y barreras de concurrencia deben ser deterministas.
 - link/revoke concurrentes con lock común de station;
 - efecto/revoke con ambos órdenes de adquisición controlados;
 - commit/rollback en la misma conexión;
-- `23505`, `23503`, `23514`, `40001`, `40P01`, `57014`;
+- `23503` known/unknown y fuera de operación, `40001`, `40P01`, `57014`,
+  diagnóstico interno, retryability y sanitización;
 - cleanup allowlisted sin objetos residuales.
 
 ## Arquitectura
@@ -90,7 +93,7 @@ UUIDs, instantes y barreras de concurrencia deben ser deterministas.
 | revoke adquiere station lock antes del efecto | revoke confirma; efecto observa Revoked/stale y no se ejecuta |
 | contexto con revision stale | `STATION_CONTEXT_STALE` / Concurrency |
 | revoke con binding abierto | binding cerrado, status Revoked y revision incrementada atómicamente |
-| relink concurrente | sólo la secuencia con lock/revision vigente confirma |
+| relink concurrente real | dos conexiones/transacciones; sólo la secuencia con lock/revision vigente confirma; la otra termina `STATION_CONTEXT_STALE` |
 | dos operaciones en la misma station | se serializan por el mismo row lock |
 | operaciones en stations distintas | no se bloquean innecesariamente |
 | rollback después de adquirir lock | libera lock y no conserva efecto ni cambios de lifecycle |
@@ -102,6 +105,13 @@ Los tests usan barreras y dos conexiones reales sólo para ordenar adquisición,
 nunca como sustituto de atomicidad. Deben registrar orden de adquisición,
 callback ejecutado/no ejecutado, estado final, revision, binding y rollback.
 No se usan sleeps como única sincronización.
+
+El relink se repite invirtiendo la conexión ganadora. La prueba exige PID de
+backend y transaction ID, revisión final `N + 2`, Station `Active`, binding
+anterior cerrado, exactamente un binding nuevo abierto, error
+`STATION_CONTEXT_STALE`/`Concurrency`/`never` y ausencia expresa de
+`NESTED_FORBIDDEN`. Una ruta `SERIALIZABLE` real demuestra además que `40001`
+llega como concurrencia `conditional`.
 
 ## CI
 
@@ -121,6 +131,11 @@ El cambio de contexto/persistencia es riesgo alto y activa:
 12. `run-2`;
 13. `comparison`;
 14. artifacts y manifest sanitizados.
+
+La CI ejecuta explícitamente el harness semántico y adjunta
+`MUTATION_MANIFEST.json`; `pnpm test` y los gates canónicos no excluyen sus
+pruebas. No se permiten `continue-on-error`, `|| true`, skips silenciosos ni
+reducción del inventario crítico.
 
 ## Criterio de PASS
 

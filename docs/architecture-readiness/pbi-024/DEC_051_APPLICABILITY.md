@@ -78,7 +78,7 @@ Aplica a:
 
 ## CI requerido
 
-`run-1` y `run-2` ejecutaron desde checkout limpio:
+Los runs remediados `run-1` y `run-2` ejecutaron desde checkout limpio:
 
 - frozen install;
 - architecture;
@@ -90,8 +90,10 @@ Aplica a:
 - cleanup;
 - manifest/artifacts.
 
-`comparison` demostró igualdad semántica en run `30224399646`. No hubo retry
-interno para fabricar verde ni skips críticos.
+`comparison` demostró igualdad semántica en push `30232400104` y
+pull_request `30232401232`. No hubo retry interno para fabricar verde ni skips
+críticos. Ambos eventos ejecutaron PostgreSQL real y el harness de 25
+mutaciones semánticas.
 
 ## Dictamen de aplicabilidad
 

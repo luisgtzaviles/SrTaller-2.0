@@ -4,9 +4,16 @@
   "contract": "PBI-024/TRUSTED-STATION-CONTEXT",
   "branch": "r0/pbi-024-trusted-station-context",
   "baseCommit": "6c71a3ce5c20049727854ea6aa7629aa0db76f91",
-  "implementationCommit": "3b7a852873147377b9552464dc9df3da2737f4fa",
+  "implementationCommit": "e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66",
+  "remediationCommits": [
+    "d1da180a27a52ab4ad40ec36c214e171f1149837",
+    "aabac6293b1671289d5a244c25283f95f841a7a6",
+    "3d484f7fd4d6d5668ddee2144c57ba1aec222920",
+    "e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66"
+  ],
   "pullRequest": 3,
-  "recordedAtUtc": "2026-07-26T22:50:18Z",
+  "recordedAtUtc": "2026-07-27T02:52:19Z",
+  "finalEvidenceGeneratedAtUtc": "2026-07-27T02:52:19Z",
   "responsibleRole": "Arquitectura e Ingenieria",
   "environment": {
     "authoritativeOs": "linux",
@@ -30,10 +37,10 @@
   "hashes": {
     "packageJson": "18b4a198effb890d7806b0426cc73df7a19ef306e40fa67f04fdcb118e663d84",
     "pnpmLock": "2fde645e039107249348ff4f66510220383341635fa18c8fe3ec7ff0219611f7",
-    "architecturePolicy": "ed253a9e561c37396012f84eacb4c3ee8a2812b35d303e4c047cb6764f67d729",
+    "architecturePolicy": "ec578d6e3c4260a5fa31cd4010bce421b7315531268503148e6117595ec5b1fa",
     "tenantBranchMigration": "fe90675625ea189387e5bcdb888ee6a38107a6395931b20e2873b0a83bd105e8",
     "stationMigration": "3ea3fc0d3712e2b5911275c2a6752040d4216da58278e0daefdbfd8b03a17018",
-    "workflow": "2a02a14c14222f67f5ff00b4202c24bc3268202dce4e69dc4ddf5357d7bf1acb"
+    "workflow": "18ab485106efbad62c0f48bd1198978114f882e98aa163862d2abc9700ca0276"
   },
   "migrations": {
     "before": [
@@ -60,7 +67,8 @@
     {"name": "smoke:start", "exitCode": 0},
     {"name": "postgresql-local-run-1", "exitCode": 0},
     {"name": "postgresql-local-run-2", "exitCode": 0},
-    {"name": "mutation", "exitCode": 0},
+    {"name": "mutation-semantic-25", "exitCode": 0},
+    {"name": "mutation-manual-5", "exitCode": 0},
     {"name": "diff:check", "exitCode": 0}
   ],
   "tests": {
@@ -73,6 +81,10 @@
     "postgresqlPerRun": {"suites": 6, "tests": 11, "failed": 0, "skipped": 0}
   },
   "mutations": {
+    "mode": "semantic",
+    "workspaceStrategy": "controlled-temporary-copy",
+    "compileCommand": "pnpm run build",
+    "testCommand": "node --test test/station-application.test.mjs test/station-domain.test.mjs test/station-persistence-errors.test.mjs test/station-persistence-semantics.test.mjs",
     "ids": [
       "MUT-024-01", "MUT-024-02", "MUT-024-03", "MUT-024-04",
       "MUT-024-05", "MUT-024-06", "MUT-024-07", "MUT-024-08",
@@ -84,42 +96,104 @@
     ],
     "killed": 25,
     "survived": 0,
-    "skipped": 0
+    "skipped": 0,
+    "manualDemonstrations": [
+      "MUT-024-01",
+      "MUT-024-04",
+      "MUT-024-07",
+      "MUT-024-11",
+      "MUT-024-15"
+    ],
+    "materialSha256": "196df0efc0345a69e77130c589e0c3a34ddda26f24a8053699f76617deba0d7f"
+  },
+  "concurrentRelink": {
+    "physicalConnections": 2,
+    "independentTransactions": 2,
+    "isolationLevel": "read committed",
+    "ordersVerified": 2,
+    "winner": "PASS",
+    "loserCode": "STATION_CONTEXT_STALE",
+    "loserCategory": "Concurrency",
+    "loserRetryability": "never",
+    "nestedForbiddenObserved": false,
+    "finalStationStatus": "Active",
+    "finalRevision": "N+2",
+    "openBindings": 1
   },
   "cleanup": "PASS",
   "remote": {
-    "workflowRunId": 30224399646,
-    "jobs": {
-      "run1": 89852148911,
-      "run2": 89852148941,
-      "comparison": 89852924840
+    "push": {
+      "workflowRunId": 30232400104,
+      "jobs": {
+        "run1": 89873600805,
+        "run2": 89873600768,
+        "comparison": 89875512269
+      },
+      "headSha": "e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66",
+      "result": "PASS",
+      "equivalent": true
     },
-    "headSha": "3b7a852873147377b9552464dc9df3da2737f4fa",
-    "result": "PASS",
-    "equivalent": true
+    "pullRequest": {
+      "workflowRunId": 30232401232,
+      "jobs": {
+        "run1": 89873603729,
+        "run2": 89873603781,
+        "comparison": 89875502418
+      },
+      "headSha": "e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66",
+      "testedMergeRefSha": "c63120cdd07aa88565cd05b42c389379ee29015c",
+      "result": "PASS",
+      "equivalent": true
+    }
   },
   "remoteArtifacts": [
     {
-      "id": 8638222362,
+      "event": "push",
+      "id": 8640708235,
       "name": "vc024-run-1",
-      "evidenceSha256": "33bf0e0d2c07bac5ec4d163086984a6c7c6c1b12439cc0e7a88a20f96bdd02b4"
+      "evidenceSha256": "3080ed5134a34de56a24cb0da14d006065ecd07077faa24c05616542f8dea50d",
+      "mutationSha256": "972084cc27478d2d165db71b13975a895890fa608fb04841aa1fd95d9dcb886a"
     },
     {
-      "id": 8638206533,
+      "event": "push",
+      "id": 8640711716,
       "name": "vc024-run-2",
-      "evidenceSha256": "d50fe12e1f66563f9e0c9512898869d344d7b1db01efe116185b120e5658ff67"
+      "evidenceSha256": "c6b94c7151d7316b332f6a0c6d53078b279d20faeb7bb7bdd3cc0015f919536b",
+      "mutationSha256": "9409c7b321ab0020522fd21495aeddaec4793074618e102d2f2040f96aee6a25"
     },
     {
-      "id": 8638224226,
+      "event": "push",
+      "id": 8640714457,
       "name": "vc024-comparison",
-      "sha256": "91674a7bf384e7c6cffdf9387a785a793c35166a9fb668b8aa7b3f3fb7353aa5"
+      "sha256": "247dec2e92b9a8ab7ac95848cffaaaf068d8e4ad2cb5a3555b70a04ab3caf77b"
+    },
+    {
+      "event": "pull_request",
+      "id": 8640689125,
+      "name": "vc024-run-1",
+      "evidenceSha256": "3aa2f93b3527fc5b5921e3ddc064f05a8aeb6037917357e13bf76f850cff9e1c",
+      "mutationSha256": "7e2934abe4519a7ef72274e81a9a532e38c829638a049fcf9deab1a6fe2aca3d"
+    },
+    {
+      "event": "pull_request",
+      "id": 8640710924,
+      "name": "vc024-run-2",
+      "evidenceSha256": "fb8eb3101346e7f4c9f4152e6e0bf454ddcebf0352165acc0f1e5be06c755c42",
+      "mutationSha256": "5b5359eada6234921f2b067eae2ce87ccf8b6cf5645e3fca67e42c4dc66e496a"
+    },
+    {
+      "event": "pull_request",
+      "id": 8640713753,
+      "name": "vc024-comparison",
+      "sha256": "29a73a569724fe76a9d01e5a44082b0b486bb8e3fecb0bfa013176f9cca13310"
     }
   ],
   "review": {
-    "implementation": "PASS_FORMAL_REVIEW_READY",
-    "independent": "PENDING",
+    "previousIndependent": "CONDITIONAL_PASS_REMEDIATIONS_REQUIRED",
+    "remediation": "PASS_COMPLETE",
+    "independentReverification": "PENDING",
     "dec051C02": "Pending",
     "merge": "BLOCKED"
   },
-  "verdict": "PASS — PBI-024 IMPLEMENTATION COMPLETE / FORMAL REVIEW READY"
+  "verdict": "PASS — PBI-024 IMPLEMENTATION REMEDIATIONS COMPLETE"
 }

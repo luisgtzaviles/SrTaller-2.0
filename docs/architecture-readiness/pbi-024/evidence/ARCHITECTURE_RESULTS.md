@@ -14,4 +14,4 @@ El checker confirma:
 - exactamente dos migraciones productivas gobernadas.
 
 Policy SHA-256:
-`ed253a9e561c37396012f84eacb4c3ee8a2812b35d303e4c047cb6764f67d729`.
+`ec578d6e3c4260a5fa31cd4010bce421b7315531268503148e6117595ec5b1fa`.

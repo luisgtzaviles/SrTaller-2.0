@@ -14,3 +14,14 @@ Resultado local:
 - credenciales registradas: 0.
 
 El smoke verificó listener, cierre limpio y ausencia de handles abiertos.
+
+Los dos runs locales PostgreSQL y los cuatro jobs remotos registraron:
+
+- contenedores residuales: 0;
+- volúmenes: 0;
+- redes dedicadas: 0;
+- archivos persistentes/dumps/`.env`: 0.
+
+Las 25 mutaciones y las cinco demostraciones manuales registraron
+`cleanupComplete: true`, `residualFile: false` y
+`workingTreePreserved: true`.

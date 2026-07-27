@@ -18,12 +18,18 @@ tests, 0 fallos y 0 skips críticos cada una. Cubrieron:
 - aislamiento tenant/branch;
 - `up/down/reapply`;
 - ambos órdenes efecto/revoke;
-- relink concurrente y revisión stale;
+- relink concurrente real con dos conexiones/transacciones, ambos órdenes y
+  revisión stale;
+- traducción end-to-end de un `40001` real;
 - estaciones distintas sin bloqueo global;
 - rollback y atomicidad del efecto;
 - cleanup completo.
 
-La ejecución Linux autoritativa `30224399646` pasó sobre
-`3b7a852873147377b9552464dc9df3da2737f4fa`: run-1 y run-2 ejecutaron el
-mismo inventario, y sus manifests PostgreSQL comparten
+Las ejecuciones Linux autoritativas push `30232400104` y pull_request
+`30232401232` pasaron para el head
+`e02f4acb84bf67cfa8683c0dfb0fffc202bdcd66`: run-1 y run-2 ejecutaron el
+mismo inventario, y los cuatro manifests PostgreSQL comparten
 `16cfb89dd2b603a95f53683e9314c0fa4de835ff20330d6eef23f85c93ecfaa6`.
+
+El evento pull_request validó el merge ref sintético
+`c63120cdd07aa88565cd05b42c389379ee29015c`; no hubo merge real.
