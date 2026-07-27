@@ -5,6 +5,7 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  readdir,
   realpath,
   rm,
   symlink,
@@ -172,10 +173,16 @@ async function exists(path) {
   }
 }
 
+async function workspaceTopLevelEntries(workspace) {
+  return (await readdir(workspace))
+    .sort()
+    .join('\n');
+}
+
 async function workspaceProcesses(workspace) {
   const processes = await processResult(
     'ps',
-    ['-ax', '-o', 'pid=,command='],
+    ['-ax', '-o', 'pid=,stat=,command='],
     { timeout: 5_000 },
   );
   if (processes.code !== 0 || processes.spawnFailure || processes.timedOut) {
@@ -183,11 +190,12 @@ async function workspaceProcesses(workspace) {
   }
   return processes.stdout
     .split('\n')
-    .map((line) => /^\s*(\d+)\s+(.*)$/u.exec(line))
+    .map((line) => /^\s*(\d+)\s+(\S+)\s+(.*)$/u.exec(line))
     .filter((match) =>
       match !== null &&
       Number(match[1]) !== process.pid &&
-      match[2].includes(resolve(workspace)))
+      !match[2].startsWith('Z') &&
+      match[3].includes(resolve(workspace)))
     .map((match) => Number(match[1]));
 }
 
@@ -488,6 +496,7 @@ export async function runStationMutation({
   const workspace = join(temporaryRoot, 'workspace');
   const result = baseMutationResult(mutation);
   let cleanupProbeFailed = false;
+  let workspaceContaminated = false;
 
   try {
     result.nodeModulesSymlink = await copyWorkspace(root, workspace);
@@ -574,10 +583,13 @@ export async function runStationMutation({
   } finally {
     try {
       if (typeof mutation.cleanupProbe === 'function') {
+        const entriesBeforeProbe = await workspaceTopLevelEntries(workspace);
         await mutation.cleanupProbe({
           repositoryRoot: root,
           workspace,
         });
+        workspaceContaminated =
+          await workspaceTopLevelEntries(workspace) !== entriesBeforeProbe;
       }
     } catch {
       cleanupProbeFailed = true;
@@ -601,6 +613,7 @@ export async function runStationMutation({
       result.workingTreePreserved &&
       result.nodeModulesSymlink &&
       !cleanupProbeFailed &&
+      !workspaceContaminated &&
       result.childProcessesStatus === 'PASS'
         ? 'PASS'
         : 'FAIL';

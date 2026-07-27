@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { rm, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import test from 'node:test';
@@ -204,34 +204,29 @@ test('real harness fails closed in cases F through J', {
   });
 });
 
-test('real harness rejects working-tree contamination and removes the probe', {
+test('real harness rejects workspace contamination and removes the probe', {
   timeout: 180_000,
 }, async () => {
-  let sentinel;
-  try {
-    const report = await rejectedCampaign({
-      mutations: [mutation('MUT-024-01', {
-        cleanupProbe: async ({ repositoryRoot }) => {
-          sentinel = join(
-            repositoryRoot,
+  const report = await rejectedCampaign({
+    mutations: [mutation('MUT-024-01', {
+      cleanupProbe: async ({ workspace }) => {
+        await writeFile(
+          join(
+            workspace,
             `.pbi024-cleanup-contamination-${randomUUID()}`,
-          );
-          await writeFile(sentinel, 'controlled contamination\n');
-        },
-      })],
-    });
-    const [result] = report.results;
-    assert.equal(result.classification, 'CLEANUP_FAILURE');
-    assert.equal(result.killed, false);
-    assert.equal(result.causalMatch, false);
-    assert.equal(result.cleanupStatus, 'FAIL');
-    assert.equal(result.workingTreePreserved, false);
-    assert.equal(result.residualWorkspace, false);
-  } finally {
-    if (sentinel) {
-      await rm(sentinel, { force: true });
-    }
-  }
+          ),
+          'controlled contamination\n',
+        );
+      },
+    })],
+  });
+  const [result] = report.results;
+  assert.equal(result.classification, 'CLEANUP_FAILURE');
+  assert.equal(result.killed, false);
+  assert.equal(result.causalMatch, false);
+  assert.equal(result.cleanupStatus, 'FAIL');
+  assert.equal(result.workingTreePreserved, true);
+  assert.equal(result.residualWorkspace, false);
 });
 
 test('real harness detects and terminates a residual child process', {
