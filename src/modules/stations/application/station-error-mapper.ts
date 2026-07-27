@@ -31,7 +31,25 @@ export function mapStationError(error: unknown): StationApplicationError {
     if (error.code === 'STATION_PERSISTENCE_CONFLICT') {
       return new StationApplicationError('STATION_LIFECYCLE_CONFLICT');
     }
-    return new StationApplicationError('STATION_PERSISTENCE_FAILED');
+    if (
+      error.code === 'STATION_PERSISTENCE_SERIALIZATION_FAILURE' ||
+      error.code === 'STATION_PERSISTENCE_DEADLOCK'
+    ) {
+      return new StationApplicationError(
+        'STATION_TRANSIENT_CONCURRENCY',
+        error.retryable,
+      );
+    }
+    if (error.code === 'STATION_PERSISTENCE_QUERY_CANCELED') {
+      return new StationApplicationError(
+        'STATION_QUERY_CANCELED',
+        error.retryable,
+      );
+    }
+    return new StationApplicationError(
+      'STATION_PERSISTENCE_FAILED',
+      error.retryable,
+    );
   }
   return new StationApplicationError('STATION_INVARIANT_BROKEN');
 }

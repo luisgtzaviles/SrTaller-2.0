@@ -23,46 +23,15 @@ import type {
   StationBindingRepositoryPort,
   StationBindingScope,
 } from '../../application/ports/station-binding-repository.port.js';
+import {
+  translateStationPostgresqlError,
+} from './station-postgresql-error.js';
 
 type BindingExecutor = InternalDatabasePersistenceExecutor<'stations'>;
 
 type ExecuteBindingOperation = <Result>(
   operation: InternalDatabasePersistenceOperation<'stations', Result>,
 ) => Promise<Result>;
-
-function driverCode(error: unknown): string {
-  if (typeof error !== 'object' || error === null) {
-    return '';
-  }
-  const value = (error as Readonly<Record<string, unknown>>).code;
-  return typeof value === 'string' ? value : '';
-}
-
-function mapError(error: unknown): StationPersistenceError {
-  if (error instanceof StationPersistenceError) {
-    return error;
-  }
-  const code = driverCode(error);
-  if (code === '23505') {
-    return new StationPersistenceError('STATION_PERSISTENCE_CONFLICT');
-  }
-  if (code === '23503') {
-    return new StationPersistenceError(
-      'STATION_PERSISTENCE_REFERENCE_NOT_FOUND',
-    );
-  }
-  if (code === '23502' || code === '23514' || code === '22P02') {
-    return new StationPersistenceError(
-      'STATION_PERSISTENCE_INVARIANT_BROKEN',
-    );
-  }
-  return new StationPersistenceError(
-    'STATION_PERSISTENCE_FAILED',
-    code === '40001' || code === '40P01' || code === '57014'
-      ? 'conditional'
-      : 'never',
-  );
-}
 
 function scope(input: StationBindingScope): StationBindingScope {
   try {
@@ -135,7 +104,7 @@ implements StationBindingRepositoryPort {
         return mapBinding(row);
       });
     } catch (error: unknown) {
-      throw mapError(error);
+      throw translateStationPostgresqlError(error, 'create-open-binding');
     }
   }
 
@@ -176,7 +145,10 @@ implements StationBindingRepositoryPort {
         return rows[0] ? mapBinding(rows[0]) : null;
       });
     } catch (error: unknown) {
-      throw mapError(error);
+      throw translateStationPostgresqlError(
+        error,
+        forUpdate ? 'lock-open-binding' : 'find-open-binding',
+      );
     }
   }
 
@@ -204,7 +176,7 @@ implements StationBindingRepositoryPort {
         return row ? mapBinding(row) : null;
       });
     } catch (error: unknown) {
-      throw mapError(error);
+      throw translateStationPostgresqlError(error, 'close-open-binding');
     }
   }
 
@@ -224,7 +196,7 @@ implements StationBindingRepositoryPort {
         return Object.freeze(rows.map(mapBinding));
       });
     } catch (error: unknown) {
-      throw mapError(error);
+      throw translateStationPostgresqlError(error, 'list-bindings');
     }
   }
 }

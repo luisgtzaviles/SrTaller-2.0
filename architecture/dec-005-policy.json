@@ -622,6 +622,7 @@
     "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts",
     "src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts",
     "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts",
+    "src/modules/stations/infrastructure/persistence/station-postgresql-error.ts",
     "src/modules/stations/infrastructure/recognition/fake-station-recognition.ts",
     "src/modules/stations/stations.module.ts",
     "src/modules/tenancy/index.ts",

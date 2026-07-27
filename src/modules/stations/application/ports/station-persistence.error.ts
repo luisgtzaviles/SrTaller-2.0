@@ -6,7 +6,21 @@ export type StationPersistenceErrorCode =
   | 'STATION_PERSISTENCE_CONFLICT'
   | 'STATION_PERSISTENCE_REFERENCE_NOT_FOUND'
   | 'STATION_PERSISTENCE_INVARIANT_BROKEN'
+  | 'STATION_PERSISTENCE_SERIALIZATION_FAILURE'
+  | 'STATION_PERSISTENCE_DEADLOCK'
+  | 'STATION_PERSISTENCE_QUERY_CANCELED'
   | 'STATION_PERSISTENCE_FAILED';
+
+export type StationPersistenceRetryability = 'conditional' | 'never';
+
+type StationPersistenceErrorCategory =
+  | 'Concurrency'
+  | 'Conflict'
+  | 'Infrastructure'
+  | 'NotFound'
+  | 'Persistence'
+  | 'Unexpected'
+  | 'Validation';
 
 const contracts = Object.freeze({
   PERSISTENCE_STATION_SCOPE_REQUIRED: Object.freeze({
@@ -29,34 +43,49 @@ const contracts = Object.freeze({
     category: 'Unexpected',
     message: 'Station persistence invariant is invalid.',
   }),
+  STATION_PERSISTENCE_SERIALIZATION_FAILURE: Object.freeze({
+    category: 'Concurrency',
+    message: 'Station persistence serialization failed.',
+  }),
+  STATION_PERSISTENCE_DEADLOCK: Object.freeze({
+    category: 'Concurrency',
+    message: 'Station persistence deadlock was detected.',
+  }),
+  STATION_PERSISTENCE_QUERY_CANCELED: Object.freeze({
+    category: 'Infrastructure',
+    message: 'Station persistence operation was canceled.',
+  }),
   STATION_PERSISTENCE_FAILED: Object.freeze({
     category: 'Persistence',
     message: 'Station persistence operation failed.',
   }),
 } satisfies Record<
   StationPersistenceErrorCode,
-  Readonly<{ category: string; message: string }>
+  Readonly<{ category: StationPersistenceErrorCategory; message: string }>
 >);
 
 export class StationPersistenceError extends Error {
-  readonly category: string;
+  readonly category: StationPersistenceErrorCategory;
+  #technicalCause: unknown;
 
   constructor(
     readonly code: StationPersistenceErrorCode,
-    readonly retryable: 'conditional' | 'never' = 'never',
+    readonly retryable: StationPersistenceRetryability = 'never',
+    technicalCause?: unknown,
   ) {
     const contract = contracts[code];
     super(contract.message);
     this.name = 'StationPersistenceError';
     this.category = contract.category;
+    this.#technicalCause = technicalCause;
   }
 
   toJSON(): Readonly<{
     name: 'StationPersistenceError';
-    category: string;
+    category: StationPersistenceErrorCategory;
     code: StationPersistenceErrorCode;
     message: string;
-    retryable: 'conditional' | 'never';
+    retryable: StationPersistenceRetryability;
   }> {
     return Object.freeze({
       name: 'StationPersistenceError',
