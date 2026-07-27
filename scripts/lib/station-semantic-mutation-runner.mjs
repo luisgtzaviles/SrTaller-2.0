@@ -12,6 +12,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { promisify } from 'node:util';
 
 import {
@@ -171,18 +172,56 @@ async function exists(path) {
   }
 }
 
-async function workspaceHasRunningProcess(workspace) {
+async function workspaceProcesses(workspace) {
   const processes = await processResult(
     'ps',
-    ['-ax', '-o', 'command='],
+    ['-ax', '-o', 'pid=,command='],
     { timeout: 5_000 },
   );
   if (processes.code !== 0 || processes.spawnFailure || processes.timedOut) {
-    return true;
+    throw new Error('WORKSPACE_PROCESS_INSPECTION_FAILED');
   }
   return processes.stdout
     .split('\n')
-    .some((command) => command.includes(resolve(workspace)));
+    .map((line) => /^\s*(\d+)\s+(.*)$/u.exec(line))
+    .filter((match) =>
+      match !== null &&
+      Number(match[1]) !== process.pid &&
+      match[2].includes(resolve(workspace)))
+    .map((match) => Number(match[1]));
+}
+
+function signalProcess(pid, signal) {
+  try {
+    process.kill(pid, signal);
+    return true;
+  } catch (error) {
+    return error?.code === 'ESRCH';
+  }
+}
+
+async function terminateWorkspaceProcesses(workspace) {
+  const detected = await workspaceProcesses(workspace);
+  for (const pid of detected) {
+    signalProcess(pid, 'SIGTERM');
+  }
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if ((await workspaceProcesses(workspace)).length === 0) {
+      return Object.freeze({
+        detected: detected.length !== 0,
+        terminated: true,
+      });
+    }
+    await delay(25);
+  }
+  for (const pid of await workspaceProcesses(workspace)) {
+    signalProcess(pid, 'SIGKILL');
+  }
+  await delay(25);
+  return Object.freeze({
+    detected: detected.length !== 0,
+    terminated: (await workspaceProcesses(workspace)).length === 0,
+  });
 }
 
 function testCommandArguments(reporterPath, testFiles) {
@@ -302,9 +341,11 @@ export async function runStationMutationBaseline({
       testProcessStatus: 'PASS',
     });
   } finally {
-    childProcessesStatus = await workspaceHasRunningProcess(workspace)
-      ? 'FAIL'
-      : 'PASS';
+    const processCleanup = await terminateWorkspaceProcesses(workspace);
+    childProcessesStatus =
+      !processCleanup.detected && processCleanup.terminated
+        ? 'PASS'
+        : 'FAIL';
     await rm(temporaryRoot, { recursive: true, force: true });
     cleanupStatus = !(await exists(temporaryRoot)) ? 'PASS' : 'FAIL';
     const finalStatus = await gitStatus(root);
@@ -445,6 +486,7 @@ export async function runStationMutation({
   );
   const workspace = join(temporaryRoot, 'workspace');
   const result = baseMutationResult(mutation);
+  let cleanupProbeFailed = false;
 
   try {
     result.nodeModulesSymlink = await copyWorkspace(root, workspace);
@@ -529,9 +571,26 @@ export async function runStationMutation({
     result.classification = 'INFRASTRUCTURE_FAILURE';
     return result;
   } finally {
-    result.childProcessesStatus = await workspaceHasRunningProcess(workspace)
-      ? 'FAIL'
-      : 'PASS';
+    try {
+      if (typeof mutation.cleanupProbe === 'function') {
+        await mutation.cleanupProbe({
+          repositoryRoot: root,
+          workspace,
+        });
+      }
+    } catch {
+      cleanupProbeFailed = true;
+    }
+    let processCleanup;
+    try {
+      processCleanup = await terminateWorkspaceProcesses(workspace);
+    } catch {
+      processCleanup = { detected: true, terminated: false };
+    }
+    result.childProcessesStatus =
+      !processCleanup.detected && processCleanup.terminated
+        ? 'PASS'
+        : 'FAIL';
     await rm(temporaryRoot, { recursive: true, force: true });
     result.residualWorkspace = await exists(temporaryRoot);
     const finalStatus = await gitStatus(root);
@@ -540,6 +599,7 @@ export async function runStationMutation({
       !result.residualWorkspace &&
       result.workingTreePreserved &&
       result.nodeModulesSymlink &&
+      !cleanupProbeFailed &&
       result.childProcessesStatus === 'PASS'
         ? 'PASS'
         : 'FAIL';

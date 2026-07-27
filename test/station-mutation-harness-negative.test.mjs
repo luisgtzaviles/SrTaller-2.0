@@ -1,4 +1,9 @@
 import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import test from 'node:test';
 
 import {
@@ -197,4 +202,73 @@ test('real harness fails closed in cases F through J', {
     assert.equal(result.unexpectedTestsFailed.length, 0);
     assert.equal(result.cleanupStatus, 'PASS');
   });
+});
+
+test('real harness rejects working-tree contamination and removes the probe', {
+  timeout: 180_000,
+}, async () => {
+  let sentinel;
+  try {
+    const report = await rejectedCampaign({
+      mutations: [mutation('MUT-024-01', {
+        cleanupProbe: async ({ repositoryRoot }) => {
+          sentinel = join(
+            repositoryRoot,
+            `.pbi024-cleanup-contamination-${randomUUID()}`,
+          );
+          await writeFile(sentinel, 'controlled contamination\n');
+        },
+      })],
+    });
+    const [result] = report.results;
+    assert.equal(result.classification, 'CLEANUP_FAILURE');
+    assert.equal(result.killed, false);
+    assert.equal(result.causalMatch, false);
+    assert.equal(result.cleanupStatus, 'FAIL');
+    assert.equal(result.workingTreePreserved, false);
+    assert.equal(result.residualWorkspace, false);
+  } finally {
+    if (sentinel) {
+      await rm(sentinel, { force: true });
+    }
+  }
+});
+
+test('real harness detects and terminates a residual child process', {
+  timeout: 180_000,
+}, async () => {
+  let childPid;
+  const report = await rejectedCampaign({
+    mutations: [mutation('MUT-024-01', {
+      cleanupProbe: async ({ workspace }) => {
+        const child = spawn(
+          process.execPath,
+          [
+            '-e',
+            'setInterval(() => {}, 1000)',
+            workspace,
+          ],
+          {
+            cwd: workspace,
+            stdio: 'ignore',
+          },
+        );
+        childPid = child.pid;
+        await delay(100);
+      },
+    })],
+  });
+  const [result] = report.results;
+  assert.equal(result.classification, 'CLEANUP_FAILURE');
+  assert.equal(result.killed, false);
+  assert.equal(result.causalMatch, false);
+  assert.equal(result.cleanupStatus, 'FAIL');
+  assert.equal(result.childProcessesStatus, 'FAIL');
+  assert.equal(result.residualWorkspace, false);
+  assert.equal(result.workingTreePreserved, true);
+  assert.ok(Number.isInteger(childPid));
+  assert.throws(
+    () => process.kill(childPid, 0),
+    (error) => error?.code === 'ESRCH',
+  );
 });
