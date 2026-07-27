@@ -594,12 +594,13 @@ test(
       const blockedEffect = guard.execute(context3, async () => {
         effectExecutions += 1;
       });
-      finishRevoke.resolve();
-      await manualRevoke;
-      await assert.rejects(
+      const blockedEffectRejected = assert.rejects(
         blockedEffect,
         expectsApplicationCode('STATION_CONTEXT_STALE'),
       );
+      finishRevoke.resolve();
+      await manualRevoke;
+      await blockedEffectRejected;
       assert.equal(effectExecutions, 0);
       assert.equal(active3.status, 'Active');
 
@@ -759,6 +760,15 @@ test(
         ).finally(() => {
           secondSettled = true;
         });
+        const secondRejected = assert.rejects(second, (error) => {
+          assert.ok(error instanceof stationErrors.StationApplicationError);
+          assert.equal(error.code, 'STATION_CONTEXT_STALE');
+          assert.equal(error.category, 'Concurrency');
+          assert.equal(error.retryable, 'never');
+          assert.notEqual(error.code, 'NESTED_FORBIDDEN');
+          assert.doesNotMatch(error.message, /nested/iu);
+          return true;
+        });
         await secondAttempted.promise;
         try {
           await new Promise((resolve) => setTimeout(resolve, 40));
@@ -768,15 +778,7 @@ test(
         }
 
         const winner = await first;
-        await assert.rejects(second, (error) => {
-          assert.ok(error instanceof stationErrors.StationApplicationError);
-          assert.equal(error.code, 'STATION_CONTEXT_STALE');
-          assert.equal(error.category, 'Concurrency');
-          assert.equal(error.retryable, 'never');
-          assert.notEqual(error.code, 'NESTED_FORBIDDEN');
-          assert.doesNotMatch(error.message, /nested/iu);
-          return true;
-        });
+        await secondRejected;
 
         const finalStation = await stationRepo.findStation({
           tenantId: tenantA,
@@ -889,23 +891,27 @@ test(
         releaseSerializableLoser,
         later(17),
       );
+      const serializableLoserRejected = assert.rejects(
+        serializableLoser,
+        (error) => {
+          assert.ok(error instanceof stationErrors.StationApplicationError);
+          assert.equal(error.code, 'STATION_TRANSIENT_CONCURRENCY');
+          assert.equal(error.category, 'Concurrency');
+          assert.equal(error.retryable, 'conditional');
+          assert.deepEqual(stationErrors.toPublicStationError(error), {
+            code: 'TRANSIENT_CONCURRENCY_FAILURE',
+            status: 503,
+            message: 'La operación no está disponible temporalmente.',
+          });
+          return true;
+        },
+      );
       await bothSerializableReads.promise;
       assert.deepEqual(serializableReads, [1, 1]);
       releaseSerializableWinner.resolve();
       assert.equal((await serializableWinner).revision, 2);
       releaseSerializableLoser.resolve();
-      await assert.rejects(serializableLoser, (error) => {
-        assert.ok(error instanceof stationErrors.StationApplicationError);
-        assert.equal(error.code, 'STATION_TRANSIENT_CONCURRENCY');
-        assert.equal(error.category, 'Concurrency');
-        assert.equal(error.retryable, 'conditional');
-        assert.deepEqual(stationErrors.toPublicStationError(error), {
-          code: 'TRANSIENT_CONCURRENCY_FAILURE',
-          status: 503,
-          message: 'La operación no está disponible temporalmente.',
-        });
-        return true;
-      });
+      await serializableLoserRejected;
 
       // 4: revoke closes the binding atomically (asserted for station 0/2/3).
       for (const index of [0, 2, 3]) {
