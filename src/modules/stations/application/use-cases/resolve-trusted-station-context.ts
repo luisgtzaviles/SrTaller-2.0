@@ -53,6 +53,11 @@ implements ResolveTrustedStationContext {
             'STATION_REFERENCE_INTEGRITY_BROKEN',
           );
         }
+        if (binding.bindingRevision !== station.revision) {
+          throw new StationApplicationError(
+            'STATION_REFERENCE_INTEGRITY_BROKEN',
+          );
+        }
         const eligible = await work.branches.findEligibleBranch({
           tenantId: recognition.tenantId,
           branchId: binding.branchId,

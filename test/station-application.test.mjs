@@ -19,7 +19,10 @@ import {
   parseStationId,
   parseStationRevision,
 } from '../dist/modules/stations/domain/station.js';
-import { FakeStationRecognition } from '../dist/modules/stations/infrastructure/recognition/fake-station-recognition.js';
+import {
+  FakeStationRecognition,
+  RejectingStationRecognition,
+} from '../dist/modules/stations/infrastructure/recognition/fake-station-recognition.js';
 import {
   parseBranchId,
   parseTenantId,
@@ -240,6 +243,16 @@ test('stations composition wires the complete trusted-context application surfac
   );
 });
 
+test('rejecting recognition never converts denial into allow', async () => {
+  assert.deepEqual(
+    await new RejectingStationRecognition().recognize({
+      kind: 'candidate',
+      opaque: 'anything',
+    }),
+    { kind: 'not-recognized' },
+  );
+});
+
 test('resolver builds only a server-issued context from recognized active state', async () => {
   const unitOfWork = createMemoryUnitOfWork(baseState());
   const context = await resolver(unitOfWork).execute({
@@ -302,6 +315,58 @@ test('resolver fails closed on an impossible persisted branch reference', async 
     }),
     expectsApplicationCode('STATION_REFERENCE_INTEGRITY_BROKEN'),
   );
+});
+
+test('resolver rejects lower and higher binding revisions before issuing trust', async () => {
+  for (const bindingRevision of [
+    parseStationRevision(1),
+    parseStationRevision(3),
+  ]) {
+    const state = baseState();
+    state.bindings[0] = Object.freeze({
+      ...state.bindings[0],
+      bindingRevision,
+    });
+    await assert.rejects(
+      resolver(createMemoryUnitOfWork(state)).execute({
+        kind: 'candidate',
+        opaque: 'trusted-a',
+      }),
+      (error) => {
+        assert.ok(
+          expectsApplicationCode('STATION_REFERENCE_INTEGRITY_BROKEN')(
+            error,
+          ),
+        );
+        assert.deepEqual(toPublicStationError(error), {
+          code: 'INTERNAL_ERROR',
+          status: 500,
+          message: 'Ocurrió un error interno.',
+        });
+        return true;
+      },
+    );
+  }
+});
+
+test('resolver rejects a cross-tenant binding without returning partial context', async () => {
+  const state = baseState();
+  state.bindings[0] = Object.freeze({
+    ...state.bindings[0],
+    tenantId: tenantB,
+  });
+  let issued;
+  try {
+    issued = await resolver(createMemoryUnitOfWork(state)).execute({
+      kind: 'candidate',
+      opaque: 'trusted-a',
+    });
+  } catch (error) {
+    assert.ok(
+      expectsApplicationCode('STATION_REFERENCE_INTEGRITY_BROKEN')(error),
+    );
+  }
+  assert.equal(issued, undefined);
 });
 
 test('link, unlink, relink and revoke preserve history and close the active binding', async () => {
@@ -414,6 +479,129 @@ test('trusted guard revalidates revision and rolls back a failed effect', async 
     expectsApplicationCode('STATION_LIFECYCLE_CONFLICT'),
   );
   assert.deepEqual(unitOfWork.snapshot(), before);
+});
+
+test('trusted guard rejects binding revision drift independently of station revision', async () => {
+  const state = baseState();
+  state.bindings[0] = Object.freeze({
+    ...state.bindings[0],
+    bindingRevision: parseStationRevision(1),
+  });
+  const context = createTrustedStationContext({
+    tenantId: tenantA,
+    branchId: branchA,
+    stationId,
+    stationRevision: parseStationRevision(2),
+  });
+  let executions = 0;
+  await assert.rejects(
+    new RunWithTrustedStationContextUseCase(
+      createMemoryUnitOfWork(state),
+    ).execute(context, async () => {
+      executions += 1;
+    }),
+    expectsApplicationCode('STATION_CONTEXT_STALE'),
+  );
+  assert.equal(executions, 0);
+});
+
+test('trusted guard rejects station revision drift independently of binding revision', async () => {
+  const state = baseState();
+  state.bindings[0] = Object.freeze({
+    ...state.bindings[0],
+    bindingRevision: parseStationRevision(1),
+  });
+  const context = createTrustedStationContext({
+    tenantId: tenantA,
+    branchId: branchA,
+    stationId,
+    stationRevision: parseStationRevision(1),
+  });
+  let executions = 0;
+  await assert.rejects(
+    new RunWithTrustedStationContextUseCase(
+      createMemoryUnitOfWork(state),
+    ).execute(context, async () => {
+      executions += 1;
+    }),
+    expectsApplicationCode('STATION_CONTEXT_STALE'),
+  );
+  assert.equal(executions, 0);
+});
+
+test('trusted guard rejects binding branch drift even when candidate branch is eligible', async () => {
+  const state = baseState();
+  state.branches.add(`${tenantA}:${branchB}`);
+  const context = createTrustedStationContext({
+    tenantId: tenantA,
+    branchId: branchB,
+    stationId,
+    stationRevision: parseStationRevision(2),
+  });
+  let executions = 0;
+  await assert.rejects(
+    new RunWithTrustedStationContextUseCase(
+      createMemoryUnitOfWork(state),
+    ).execute(context, async () => {
+      executions += 1;
+    }),
+    expectsApplicationCode('STATION_CONTEXT_STALE'),
+  );
+  assert.equal(executions, 0);
+});
+
+test('trusted guard rejects a revoked station even if damaged state retains a binding', async () => {
+  const state = baseState();
+  state.stations.set(
+    key(tenantA, stationId),
+    Object.freeze({
+      ...state.stations.get(key(tenantA, stationId)),
+      status: 'Revoked',
+      revokedAt: t3,
+    }),
+  );
+  const context = createTrustedStationContext({
+    tenantId: tenantA,
+    branchId: branchA,
+    stationId,
+    stationRevision: parseStationRevision(2),
+  });
+  await assert.rejects(
+    new RunWithTrustedStationContextUseCase(
+      createMemoryUnitOfWork(state),
+    ).execute(context, async () => 'must-not-run'),
+    expectsApplicationCode('STATION_CONTEXT_STALE'),
+  );
+});
+
+test('trusted guard revalidates branch eligibility before the effect', async () => {
+  const state = baseState();
+  state.branches.delete(`${tenantA}:${branchA}`);
+  const context = createTrustedStationContext({
+    tenantId: tenantA,
+    branchId: branchA,
+    stationId,
+    stationRevision: parseStationRevision(2),
+  });
+  await assert.rejects(
+    new RunWithTrustedStationContextUseCase(
+      createMemoryUnitOfWork(state),
+    ).execute(context, async () => 'must-not-run'),
+    expectsApplicationCode('STATION_REFERENCE_INTEGRITY_BROKEN'),
+  );
+});
+
+test('link fails closed on an existing open binding before lifecycle evaluation', async () => {
+  await assert.rejects(
+    new LinkStation(createMemoryUnitOfWork(baseState())).execute({
+      tenantId: tenantA,
+      stationId,
+      branchId: branchA,
+      expectedRevision: parseStationRevision(2),
+      linkedAt: t3,
+    }),
+    expectsApplicationCode('STATION_REFERENCE_INTEGRITY_BROKEN'),
+  );
 });
 
 test('a forged context cannot bypass the resolver', async () => {
