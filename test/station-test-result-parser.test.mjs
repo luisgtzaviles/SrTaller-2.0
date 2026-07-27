@@ -14,6 +14,9 @@ function record(overrides = {}) {
     file: `${root}/test/example.test.mjs`,
     name: 'exact test name',
     fullName: 'exact test name',
+    suitePath: [],
+    kind: 'test',
+    testId: 1,
     nesting: 0,
     status: 'PASS',
     error: null,
@@ -126,6 +129,34 @@ test('structured parser preserves special characters exactly', () => {
     record({ name: fullName, fullName }),
   ]), { repositoryRoot: root });
   assert.equal(parsed.tests[0].fullName, fullName);
+});
+
+test('structured parser validates explicit nested suite identities', () => {
+  const parsed = parseStationTestResults(document([
+    record({
+      name: 'duplicate name',
+      fullName: 'outer > inner > duplicate name',
+      suitePath: ['outer', 'inner'],
+      nesting: 2,
+    }),
+  ]), { repositoryRoot: root });
+  assert.deepEqual(parsed.tests[0].suitePath, ['outer', 'inner']);
+  assert.equal(
+    parsed.tests[0].fullName,
+    'outer > inner > duplicate name',
+  );
+
+  assert.throws(
+    () => parseStationTestResults(document([
+      record({
+        name: 'duplicate name',
+        fullName: 'inner > duplicate name',
+        suitePath: ['outer', 'inner'],
+        nesting: 2,
+      }),
+    ]), { repositoryRoot: root }),
+    /RESULT_PARSE_INVALID_TEST_IDENTITY/u,
+  );
 });
 
 test('structured parser normalizes relative, absolute and file URL paths', () => {

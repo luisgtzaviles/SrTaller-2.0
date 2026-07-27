@@ -2,6 +2,20 @@ import { isAbsolute, normalize, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const stationTestReporterFormat = 'srtaller-node-test-results/v1';
+export const stationTestFullNameSeparator = ' > ';
+
+export function buildStationTestFullName(suitePath, name) {
+  if (
+    !Array.isArray(suitePath) ||
+    suitePath.some((segment) =>
+      typeof segment !== 'string' || segment === '') ||
+    typeof name !== 'string' ||
+    name === ''
+  ) {
+    throw new Error('INVALID_TEST_NAME_COMPONENTS');
+  }
+  return [...suitePath, name].join(stationTestFullNameSeparator);
+}
 
 function portablePath(path) {
   return path.split(sep).join('/');
@@ -63,6 +77,12 @@ function validateTestRecord(record, repositoryRoot) {
     record.name === '' ||
     typeof record.fullName !== 'string' ||
     record.fullName === '' ||
+    !Array.isArray(record.suitePath) ||
+    record.suitePath.some((segment) =>
+      typeof segment !== 'string' || segment === '') ||
+    !['suite', 'test'].includes(record.kind) ||
+    !Number.isInteger(record.testId) ||
+    record.testId < 1 ||
     !Number.isInteger(record.nesting) ||
     record.nesting < 0 ||
     !['PASS', 'FAIL', 'SKIP'].includes(record.status)
@@ -77,11 +97,23 @@ function validateTestRecord(record, repositoryRoot) {
   if (record.status !== 'FAIL' && error !== null) {
     throw new Error('RESULT_PARSE_NON_FAILED_TEST_WITH_ERROR');
   }
+  if (
+    record.suitePath.length !== record.nesting ||
+    record.fullName !== buildStationTestFullName(
+      record.suitePath,
+      record.name,
+    )
+  ) {
+    throw new Error('RESULT_PARSE_INVALID_TEST_IDENTITY');
+  }
 
   return Object.freeze({
     file: normalizeStationTestFile(record.file, repositoryRoot),
     name: record.name,
     fullName: record.fullName,
+    suitePath: Object.freeze([...record.suitePath]),
+    kind: record.kind,
+    testId: record.testId,
     nesting: record.nesting,
     status: record.status,
     error,
