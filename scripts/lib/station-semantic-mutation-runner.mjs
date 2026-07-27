@@ -201,6 +201,7 @@ function signalProcess(pid, signal) {
 }
 
 async function terminateWorkspaceProcesses(workspace) {
+  await delay(100);
   const detected = await workspaceProcesses(workspace);
   for (const pid of detected) {
     signalProcess(pid, 'SIGTERM');
