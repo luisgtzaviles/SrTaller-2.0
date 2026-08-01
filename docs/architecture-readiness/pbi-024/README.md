@@ -11,9 +11,13 @@
   IMPLEMENTATION REQUIRES FURTHER REMEDIATIONS`.
 - **Remediación causal:** `PASS — PBI-024 CAUSAL MUTATION HARNESS
   REMEDIATION COMPLETE`.
-- **Estado de PBI-024:** `In review — causal mutation harness remediated;
-  formal verification pending; functional merge blocked by DEC-051 C02`.
-- **Fecha:** 2026-07-26.
+- **Reconciliación de evidencia:** `PASS — PBI-024 EVIDENCE RECONCILIATION
+  COMPLETE`.
+- **Verificación final independiente:** `PASS — PBI-024 IMPLEMENTATION
+  FORMALLY VERIFIED`.
+- **Estado de PBI-024:** `Formally verified — implementation complete;
+  functional merge blocked by DEC-051 C02`.
+- **Fecha de verificación final:** 2026-08-01.
 - **Riesgo:** alto, fail-closed.
 - **Estimación:** `L`.
 - **Cambio técnico remediado:** limitado a los cuatro `MAJOR`, el `MINOR` y
@@ -25,6 +29,8 @@
   `2b89279eeda6fd3cfa4b76bae34460c520abd784`.
 - **Harness causal remediado:** validado en
   `2988bcdf362505776f7bc111e3d590aee358d2ce`.
+- **Envelope final verificado:**
+  `10220ab88a6be2c47bca89c1f6501f76f9759a74`.
 - **PR:** [#3, Draft](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3).
 - **CI causal remota:** [push 30239752229](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30239752229)
   y [PR 30239754842](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/30239754842),
@@ -32,6 +38,7 @@
 - **Evidencia material:** [expediente](evidence/README.md).
 - **Remediación formal:** [hallazgos, contratos y trazabilidad](FORMAL_IMPLEMENTATION_REMEDIATION.md).
 - **Remediación causal:** [reproducción, algoritmo y evidencia](CAUSAL_MUTATION_REMEDIATION.md).
+- **Verificación formal final:** [dictamen independiente](FORMAL_IMPLEMENTATION_VERIFICATION.md).
 - **DEC051-C02:** canónicamente `Pending`, materialmente
   `Partially satisfied`; el primer merge funcional sigue bloqueado.
 
@@ -130,6 +137,7 @@ el runtime posterior materializado en la rama funcional.
 | [IMPLEMENTATION_AUTHORIZATION.md](IMPLEMENTATION_AUTHORIZATION.md) | dictamen, alcance autorizado y bloqueo de merge |
 | [FORMAL_IMPLEMENTATION_REMEDIATION.md](FORMAL_IMPLEMENTATION_REMEDIATION.md) | revisión condicional y remediación técnica ejecutada |
 | [CAUSAL_MUTATION_REMEDIATION.md](CAUSAL_MUTATION_REMEDIATION.md) | remediación del falso positivo y contrato causal estructurado |
+| [FORMAL_IMPLEMENTATION_VERIFICATION.md](FORMAL_IMPLEMENTATION_VERIFICATION.md) | dictamen final independiente de la implementación |
 
 ## Autoridad y límites
 
@@ -150,7 +158,6 @@ el runtime posterior materializado en la rama funcional.
 
 ## Siguiente acción
 
-**Repetir la verificación formal independiente de PBI-024, enfocada en la
-correlación causal del harness y la evidencia final, manteniendo el PR #3 en
-Draft y prohibido cualquier merge funcional mientras DEC-051 C02 permanezca
-Pending.**
+**Definir y autorizar por separado una Vertical Slice Visual 0 no productiva,
+manteniendo el PR #3 en Draft y prohibido cualquier merge funcional mientras
+DEC-051 C02 permanezca Pending.**

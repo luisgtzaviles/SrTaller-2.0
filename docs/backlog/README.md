@@ -5,15 +5,15 @@ confundir intención con compromiso. PBI-001–PBI-020 conservan su historia de
 Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 [PBI-022](pbis/PBI-022.md) están `Done` después de sus verificaciones formales.
 [PBI-023](pbis/PBI-023.md) está `Closed`.
-[PBI-024](pbis/PBI-024.md) está autorizado para implementación en rama, con
-merge funcional bloqueado por DEC051-C02; PBI-025–PBI-029 descomponen el resto
-de H1 y no están autorizados.
+[PBI-024](pbis/PBI-024.md) está formalmente verificado en rama, con merge
+funcional bloqueado por DEC051-C02; PBI-025–PBI-029 descomponen el resto de H1
+y no están autorizados.
 
 ## Estado del documento
 
 **Estado:** Reconciliado tras el cierre de Sprint 00.
-**Orden R0 y ejecución:** PBI-023 cerrado; PBI-024 autorizado con alcance
-limitado y sin implementación iniciada; owners por rol.
+**Orden R0 y ejecución:** PBI-023 cerrado; PBI-024 formalmente verificado y
+sin integración; owners por rol.
 
 ## Estructura
 
@@ -57,4 +57,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Implementación y evidencia de PBI-024 en su rama funcional autorizada.
+Definición y autorización separada de una Vertical Slice Visual 0 no
+productiva; PBI-025–PBI-029 permanecen sin autorización.

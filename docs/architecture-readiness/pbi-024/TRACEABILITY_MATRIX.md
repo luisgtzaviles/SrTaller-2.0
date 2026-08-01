@@ -26,9 +26,9 @@
 | mutation crítica | DEC-051/D5-R033 | [Mutation plan](MUTATION_PLAN.md) | reporter/parsing exactos + mutation results | PASS causal, 25/25 |
 | rechazo de falso positivo | segunda revisión formal | [Causal remediation](CAUSAL_MUTATION_REMEDIATION.md) | expected incorrecto → unrelated/killed false | PASS material |
 | CI doble | DEC-051 | [Expected evidence](EXPECTED_EVIDENCE.md) | run-1/run-2/comparison push y PR | PASS, runs 30239752229 / 30239754842 |
-| riesgo alto | DEC-051/063 | [Risk](RISK_ASSESSMENT.md) | revisión formal | listo para revisión |
+| riesgo alto | DEC-051/063 | [Risk](RISK_ASSESSMENT.md) | [revisión formal](FORMAL_IMPLEMENTATION_VERIFICATION.md) | PASS formal |
 | C02 preservado | DEC-051 | [C02 treatment](DEC_051_C02_TEMPORARY_TREATMENT.md) | protección/rejection | `Pending`, merge bloqueado |
-| seguridad | DEC063-C06 | [DEC-063](DEC_063_APPLICABILITY.md) | checklist + dictamen | gate futuro |
+| seguridad | DEC063-C06 | [DEC-063](DEC_063_APPLICABILITY.md) | checklist + dictamen | PASS formal |
 | PBI-025 | ADR-011 | Architecture/integración | full operational context | no iniciado |
 | PBI-026 | ADR-012/013 | Lifecycle/autoridad | admin composition | no iniciado |
 | PBI-027 | DEC-037/038 | fields diferidos | clock/time contract | bloqueado |
@@ -47,7 +47,7 @@ formal review
   → adapters/resolver/row-lock guard
   → PostgreSQL + isolation + concurrency
   → mutations + run-1/run-2/comparison
-  → independent closure review
+  → independent closure review: PASS
   → merge only after DEC051-C02
 ```
 

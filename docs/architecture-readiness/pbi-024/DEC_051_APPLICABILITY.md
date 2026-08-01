@@ -6,8 +6,8 @@
 - C01/C07/C09: `Satisfied` por la evidencia autoritativa previa.
 - C02: canónicamente `Pending — external platform enforcement unavailable`;
   materialmente `Partially satisfied`.
-- La autorización independiente permitió implementación en rama; no permite
-  merge.
+- La implementación recibió verificación formal independiente; el PASS no
+  permite merge.
 - PBI-024: riesgo alto por contexto, station y persistencia.
 
 ## Matriz
@@ -98,7 +98,7 @@ rechazado como `UNRELATED_TEST_FAILURE`.
 
 ## Dictamen de aplicabilidad
 
-La implementación aportó evidencia material para C04/C06 y preserva C02
-canónicamente `Pending`. La siguiente revisión independiente debe validar el
-SHA, artifacts y expediente; no puede autorizar merge mientras C02 siga
-pendiente.
+La [verificación formal independiente](FORMAL_IMPLEMENTATION_VERIFICATION.md)
+confirmó la evidencia material de C04/C06 y emitió
+`PASS — PBI-024 IMPLEMENTATION FORMALLY VERIFIED`. C02 permanece
+canónicamente `Pending`; el PASS no autoriza merge, release ni deploy.

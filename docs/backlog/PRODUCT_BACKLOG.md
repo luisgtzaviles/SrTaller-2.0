@@ -5,8 +5,8 @@
 **Estado:** Reconciliado tras el cierre de Sprint 00. Las filas 1–20 conservan
 su clasificación histórica y muestran el resultado vigente; PBI-021/PBI-022
 son trabajos técnicos posteriores terminados; PBI-023 está `Closed`; PBI-024
-está autorizado para implementación en rama con merge bloqueado por
-DEC051-C02; PBI-025–PBI-029 no están autorizados.
+está formalmente verificado en rama con merge bloqueado por DEC051-C02;
+PBI-025–PBI-029 no están autorizados.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; las demás permanecen TBD.
 **Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
@@ -36,7 +36,7 @@ DEC051-C02; PBI-025–PBI-029 no están autorizados.
 | 21 | [PBI-021](pbis/PBI-021.md) Materialize and verify the DEC-004 toolchain contract | Technical foundation / Quality / Operations / Security | EPIC-001 | Done | Alta | Unassigned |
 | 22 | [PBI-022](pbis/PBI-022.md) Materialize DEC-005 modular structure and local enforcement | Technical foundation / Architecture / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 23 | [PBI-023](pbis/PBI-023.md) Establish tenant-scoped persistence and migration foundation | Persistence / Security / Quality | EPIC-001 | Closed | Crítica | Gate R0 |
-| 24 | [PBI-024](pbis/PBI-024.md) Apply trusted tenant, branch and station context | Architecture / Security | EPIC-001 | Authorized; implementation not started / merge blocked | Crítica | Unassigned |
+| 24 | [PBI-024](pbis/PBI-024.md) Apply trusted tenant, branch and station context | Architecture / Security | EPIC-001 | Formally verified; implementation complete / merge blocked | Crítica | Unassigned |
 | 25 | [PBI-025](pbis/PBI-025.md) Implement tenant-user PIN authentication and operational session | Identity / Security | EPIC-003 | Blocked | Crítica | Unassigned |
 | 26 | [PBI-026](pbis/PBI-026.md) Implement contextual capabilities and reinforced authorization | Authorization / Security | EPIC-003 | Draft | Crítica | Unassigned |
 | 27 | [PBI-027](pbis/PBI-027.md) Define and apply the R0 temporal model | Architecture / Product | EPIC-001 | Blocked | Alta | Unassigned |
@@ -52,12 +52,13 @@ DEC051-C02; PBI-025–PBI-029 no están autorizados.
   compromiso original.
 - PBI-021/PBI-022 no se incorporan retroactivamente a Sprint 00: ambos están
   `Done`, pero su cierre no cierra el sprint.
-- PBI-023 está cerrado. PBI-024 tiene autorización limitada para trabajo en
-  rama; no está `In progress` y su merge funcional permanece bloqueado por
-  DEC051-C02. PBI-025–PBI-029 no están autorizados.
+- PBI-023 está cerrado. PBI-024 está formalmente verificado en rama y su merge
+  funcional permanece bloqueado por DEC051-C02. PBI-025–PBI-029 no están
+  autorizados.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-Implementación y evidencia de PBI-024 en su rama funcional autorizada.
+Definición y autorización separada de una Vertical Slice Visual 0 no
+productiva; PBI-025–PBI-029 permanecen sin autorización.

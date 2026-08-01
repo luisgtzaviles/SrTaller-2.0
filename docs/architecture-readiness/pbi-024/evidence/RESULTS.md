@@ -5,7 +5,7 @@
 - frozen install: PASS;
 - typecheck: PASS;
 - build: PASS;
-- test: PASS, 409 tests, 398 pass, 11 skips ordinarios, 0 fallos;
+- test final: PASS, 432 tests, 421 pass, 11 skips ordinarios, 0 fallos;
 - architecture: PASS, 265/265;
 - verify: PASS;
 - smoke:start: PASS;
@@ -18,6 +18,10 @@
 - unrelated, survived, timeout, parser/infra/cleanup failures: 0;
 - regresión del expected incorrecto: PASS, `UNRELATED_TEST_FAILURE`;
 - demostraciones manuales: PASS, 5/5;
+- manifest schema 3: PASS, 18/18 pruebas enfocadas;
+- artifact cross-check: PASS, 18/18 artifacts declarados;
+- hash material: PASS, reproducido dos veces;
+- autoprotecciones de contaminación y child residual: PASS;
 - diff check: PASS;
 - expansión de alcance: ausente;
 - secretos: ausentes.
@@ -40,8 +44,13 @@
 
 ## Dictamen
 
-`PASS — PBI-024 CAUSAL MUTATION HARNESS REMEDIATION COMPLETE`.
+`PASS — PBI-024 IMPLEMENTATION FORMALLY VERIFIED`.
 
 Los dictámenes `CONDITIONAL PASS` anteriores permanecen en la cronología. La
-repetición de verificación formal independiente está pendiente y no se ejecuta
-dentro de esta remediación.
+reconciliación de evidencia cerró la integridad del manifest, hashes, artifacts
+y autoprotecciones, y la revisión independiente final confirmó cero `BLOCKER`,
+cero `MAJOR` y cero `MINOR`. El detalle está en
+[FORMAL_IMPLEMENTATION_VERIFICATION.md](../FORMAL_IMPLEMENTATION_VERIFICATION.md).
+
+PR #3 permanece OPEN y Draft. DEC-051 C02 permanece `Pending` y el merge
+funcional continúa prohibido.

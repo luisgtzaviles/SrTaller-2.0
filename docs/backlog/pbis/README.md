@@ -4,8 +4,8 @@
 
 **Estado:** Índice vigente reconciliado para revisión final. PBI-001–PBI-020
 conservan su historia de Sprint 00; PBI-021/PBI-022 están `Done`; PBI-023 está
-`Closed`; PBI-024 está autorizado para implementación en rama con merge
-bloqueado por DEC051-C02; PBI-025–PBI-029 no están autorizados.
+`Closed`; PBI-024 está formalmente verificado en rama con merge bloqueado por
+DEC051-C02; PBI-025–PBI-029 no están autorizados.
 **Estimación:** PBI-023 tiene `13 SP`; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
 00. PBI-021–PBI-029 están `Unassigned`.
@@ -35,7 +35,7 @@ bloqueado por DEC051-C02; PBI-025–PBI-029 no están autorizados.
 | [PBI-021](PBI-021.md) | Materialize and verify the DEC-004 toolchain contract | Done |
 | [PBI-022](PBI-022.md) | Materialize DEC-005 modular structure and local enforcement | Done |
 | [PBI-023](PBI-023.md) | Establish tenant-scoped persistence and migration foundation | Closed |
-| [PBI-024](PBI-024.md) | Apply trusted tenant, branch and station context | Authorized; implementation not started / merge blocked |
+| [PBI-024](PBI-024.md) | Apply trusted tenant, branch and station context | Formally verified; implementation complete / merge blocked |
 | [PBI-025](PBI-025.md) | Implement tenant-user PIN authentication and operational session | Blocked |
 | [PBI-026](PBI-026.md) | Implement contextual capabilities and reinforced authorization | Draft |
 | [PBI-027](PBI-027.md) | Define and apply the R0 temporal model | Blocked |
@@ -46,4 +46,5 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-Implementación y evidencia de PBI-024 en su rama funcional autorizada.
+Definición y autorización separada de una Vertical Slice Visual 0 no
+productiva; PBI-025–PBI-029 permanecen sin autorización.

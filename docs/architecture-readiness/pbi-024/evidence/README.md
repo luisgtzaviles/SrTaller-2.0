@@ -39,7 +39,8 @@ errores sanitizados y verificación con PostgreSQL 18.4.
 - revisión independiente previa: `CONDITIONAL PASS`;
 - reconciliación de evidencia: `PASS — PBI-024 EVIDENCE RECONCILIATION
   COMPLETE`;
-- repetición de revisión formal independiente: pendiente;
+- verificación final independiente: `PASS — PBI-024 IMPLEMENTATION
+  FORMALLY VERIFIED`;
 - DEC-051 C02: `Pending`;
 - merge funcional: prohibido.
 
@@ -66,6 +67,7 @@ errores sanitizados y verificación con PostgreSQL 18.4.
 - [Comparación](COMPARISON.md)
 - [Resultados](RESULTS.md)
 - [Reconciliación de evidencia](EVIDENCE_RECONCILIATION.md)
+- [Verificación formal final](../FORMAL_IMPLEMENTATION_VERIFICATION.md)
 - [Manifest](EVIDENCE_MANIFEST.json)
 - [Historia pre-remediación](history/PRE_REMEDIATION.md)
 - [Intento CI anterior al SHA final](history/PRE_FINAL_CI.md)

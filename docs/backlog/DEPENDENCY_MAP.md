@@ -59,7 +59,7 @@ flowchart TD
     VC --> P23[PBI-023 persistencia tenant<br/>Closed]
     DEC049 --> P23
     DEC050[DEC-050 Accepted with conditions<br/>C01-C10 pending] --> P23
-    P23 --> P24[PBI-024 contexto<br/>Authorized / merge blocked]
+    P23 --> P24[PBI-024 contexto<br/>Formally verified / merge blocked]
     P24 --> P25[PBI-025 identidad/sesión<br/>Blocked]
     P25 --> P26[PBI-026 autorización<br/>Draft]
     P24 --> P28[PBI-028 señales/auditoría<br/>Draft]
@@ -96,8 +96,8 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   VC-024 satisfizo C01/C03/C04; C02/C05–C08 permanecen `Pending`.
 - [PBI-023](pbis/PBI-023.md) cerró su alcance y fue integrado con evidencia
   post-merge.
-- [PBI-024](pbis/PBI-024.md) está autorizado para implementación en rama, con
-  el primer merge funcional bloqueado por DEC051-C02.
+- [PBI-024](pbis/PBI-024.md) está formalmente verificado en rama, con el primer
+  merge funcional bloqueado por DEC051-C02.
 - PBI-025–PBI-029 descomponen el resto de los 24 contratos H1; sus estados
   `Draft` o `Blocked` impiden tratarlos como compromiso o autorización.
 
@@ -111,8 +111,8 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - PBI-022 está `Done` y `Unassigned`; DEC005-C01 a C05 tienen `PASS` formal en la sexta reverificación independiente.
 - PBI-025 y PBI-027 están bloqueados por decisiones de mecanismo/producto.
 - PBI-023 está cerrado.
-- PBI-024 puede implementarse sólo en la rama autorizada y no puede integrarse
-  mientras DEC051-C02 siga `Pending`.
+- PBI-024 completó implementación y verificación formal en la rama autorizada,
+  pero no puede integrarse mientras DEC051-C02 siga `Pending`.
 - Los demás PBIs H1 requieren revisión y autorización propias.
 
 ## Preguntas abiertas
@@ -124,4 +124,5 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 
 ## Próxima revisión
 
-Implementación y evidencia de PBI-024 en su rama funcional autorizada.
+Definición y autorización separada de una Vertical Slice Visual 0 no
+productiva; PBI-025–PBI-029 permanecen sin autorización.

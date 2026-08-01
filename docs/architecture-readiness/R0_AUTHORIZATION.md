@@ -226,22 +226,19 @@ equivale a aceptación de la implementación futura.
 `Authorized`.
 
 PBI-023 ejerció la autorización limitada y está `Closed`. H1 continúa abierto;
-PBI-024 está autorizado exclusivamente para implementación en rama conforme a
-su expediente. PBI-025–PBI-029 no están autorizados. R0 aún debe completar los
-demás alcances, demostrarse y recibir aceptación formal.
+PBI-024 completó implementación y verificación formal dentro de su rama, sin
+autorización de integración. PBI-025–PBI-029 no están autorizados. R0 aún debe
+completar los demás alcances, demostrarse y recibir aceptación formal.
 
-PBI-024 queda
-`Authorized — implementation may begin; functional merge blocked by DEC-051
-C02`. No está `In progress`: al registrar este estado no existe código de
-PBI-024. La ampliación no permite merge funcional, push funcional directo a
-`main`, PBI-025–PBI-029, R1, release, deploy o producción.
+PBI-024 queda `Formally verified — implementation complete; functional merge
+blocked by DEC-051 C02`. La ampliación no permite merge funcional, push
+funcional directo a `main`, PBI-025–PBI-029, R1, release, deploy o producción.
 
 ## 16. Siguiente acción
 
-Crear `r0/pbi-024-trusted-station-context` desde el commit documental de
-autorización e iniciar exclusivamente PBI-024. En paralelo, la deuda externa
-de DEC051-C02 sigue exigiendo protección obligatoria de `main` y una prueba de
-rechazo antes de cualquier merge funcional.
+Definir y autorizar por separado una Vertical Slice Visual 0 no productiva. La
+deuda externa de DEC051-C02 sigue exigiendo protección obligatoria de `main` y
+una prueba de rechazo antes de cualquier merge funcional.
 
 ## 17. Ampliación limitada para PBI-024
 
@@ -267,3 +264,23 @@ demostrada ni prueba de rechazo. Por tanto, el primer merge funcional posterior
 a PBI-023 sigue bloqueado hasta satisfacer C02 o modificar formalmente
 DEC-051. Esta ampliación no autoriza PBI-025–PBI-029, R1, Reparaciones, release,
 deploy o producción.
+
+## 18. Verificación formal de PBI-024
+
+**Fecha:** 2026-08-01.
+
+La [verificación formal independiente](pbi-024/FORMAL_IMPLEMENTATION_VERIFICATION.md)
+del SHA técnico
+`2988bcdf362505776f7bc111e3d590aee358d2ce` y del envelope final
+`10220ab88a6be2c47bca89c1f6501f76f9759a74` emitió:
+
+**PASS — PBI-024 IMPLEMENTATION FORMALLY VERIFIED**
+
+El resultado cierra la verificación material con cero `BLOCKER`, cero `MAJOR`
+y cero `MINOR`, pero no amplía R0. PR #3 permanece OPEN y Draft; DEC051-C02
+permanece `Pending`; el merge funcional, PBI-025–PBI-029, R1, release, deploy y
+producción continúan sin autorización.
+
+La siguiente iniciativa recomendada es definir y autorizar separadamente una
+**Vertical Slice Visual 0 — entorno de desarrollo navegable para iteración de
+producto**. Este registro no la inicia ni la convierte en PBI.

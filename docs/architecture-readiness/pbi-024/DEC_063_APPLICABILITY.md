@@ -4,9 +4,9 @@
 
 - tipo: PBI técnico, persistencia, seguridad y contexto;
 - riesgo: **alto**, por el mayor riesgo aplicable;
-- estado de esta entrega: implementación completa, en revisión;
-- estado máximo sin revisión independiente: `In review`; no existe
-  autorización implícita de merge.
+- estado de esta entrega: implementación completa y formalmente verificada;
+- estado vigente: `Formally verified`; no existe autorización implícita de
+  merge.
 
 ## Condiciones
 
@@ -16,8 +16,8 @@
 | C02 — clasificación fail-closed | directa | PASS material para PBI-024; riesgo alto preservado | [RISK_ASSESSMENT.md](RISK_ASSESSMENT.md) |
 | C03 — manifest | satisfecha históricamente | `Satisfied` | formato esperado definido |
 | C04 — DoD/CI | satisfecha históricamente | `Satisfied` | no se reduce pipeline |
-| C05 — persistencia/migración | directa | PASS material; revisión independiente pendiente | [evidencia](evidence/README.md) |
-| C06 — seguridad | directa | PASS material; revisión independiente pendiente | [checklist](evidence/SECURITY_CHECKLIST.md) |
+| C05 — persistencia/migración | directa | PASS formal | [evidencia](evidence/README.md) |
+| C06 — seguridad | directa | PASS formal | [checklist](evidence/SECURITY_CHECKLIST.md) |
 | C07 — release/hotfix | no activada | `Pending` | no release/deploy |
 | C08 — waiver | no activada | `Pending` | no existe excepción |
 
@@ -70,7 +70,7 @@ Antes de considerar el trabajo `Done`:
 - [x] CAS y concurrencia;
 - [x] error translation;
 - [x] cleanup;
-- [ ] revisión Ingeniería/Operaciones.
+- [x] revisión Ingeniería/Operaciones.
 
 ## C06 — seguridad
 
@@ -83,7 +83,7 @@ Antes de considerar el trabajo `Done`:
 - [x] no credential/secret/PII/SQL;
 - [x] mínimo privilegio y cero administración pública;
 - [x] 25 mutaciones críticas;
-- [ ] revisión Seguridad/Calidad;
+- [x] revisión Seguridad/Calidad;
 - [x] riesgo residual documentado.
 
 ## N/A justificados
@@ -106,3 +106,7 @@ PBI-024 sólo podrá quedar `Done` si:
 - C04/C05/C06 tienen evidencia y autoridad;
 - no quedan findings blocker/major;
 - `Done` no se presenta como `Released`.
+
+La [verificación final](FORMAL_IMPLEMENTATION_VERIFICATION.md) satisface el
+gate de revisión material. PBI-024 no se marca `Done` porque integración,
+release y C02 permanecen separados y el PR continúa Draft.

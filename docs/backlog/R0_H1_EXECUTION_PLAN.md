@@ -43,7 +43,7 @@
 | PBI | Capacidad | DEC | Estado | Dependencia |
 |---|---|---|---|---|
 | [PBI-023](pbis/PBI-023.md) | Persistencia tenant-scoped, migraciones y fixtures mínimos | 006–008, 050, 052 | `Closed` | H0, ADR-003/004, DEC-049/050/051/063 |
-| [PBI-024](pbis/PBI-024.md) | Contexto tenant/sucursal/estación confiable | 009–012 | `Authorized`; implementation not started / merge blocked | PBI-023 |
+| [PBI-024](pbis/PBI-024.md) | Contexto tenant/sucursal/estación confiable | 009–012 | `Formally verified`; implementation complete / merge blocked | PBI-023 |
 | [PBI-025](pbis/PBI-025.md) | Identidad, PIN, sesión e inactividad | 013–016 | `Blocked` | PBI-024, threat model y mecanismos |
 | [PBI-026](pbis/PBI-026.md) | Capacidades y autorización reforzada | 017–020 | `Draft` | PBI-025 y composición por operación |
 | [PBI-027](pbis/PBI-027.md) | Modelo temporal de R0 | 037–038 | `Blocked` | decisión de Producto sobre autoridad de zona |
@@ -64,10 +64,10 @@ gates que debe cerrar antes de materializar persistencia:
 - condiciones aplicables DEC049-C01–C08;
 - fixtures deterministas de DEC-052.
 
-PBI-023 ejerció y cerró su autorización. La
-[autorización vigente](../architecture-readiness/R0_AUTHORIZATION.md) amplía R0
-únicamente a PBI-024, no lo marca `In progress` y mantiene el merge funcional
-bloqueado por DEC051-C02.
+PBI-023 ejerció y cerró su autorización. PBI-024 completó implementación y
+verificación formal dentro de la
+[autorización vigente](../architecture-readiness/R0_AUTHORIZATION.md), sin
+habilitar integración; el merge funcional sigue bloqueado por DEC051-C02.
 
 ## Dependencias entre PBIs
 
@@ -97,6 +97,6 @@ flowchart LR
 
 ## Próxima revisión
 
-Implementar PBI-024 exclusivamente en su rama funcional autorizada. No iniciar
-PBI-025–PBI-029 y no integrar código funcional mientras DEC051-C02 permanezca
-`Pending`.
+Definir y autorizar por separado una Vertical Slice Visual 0 no productiva. No
+iniciar PBI-025–PBI-029 y no integrar código funcional mientras DEC051-C02
+permanezca `Pending`.
