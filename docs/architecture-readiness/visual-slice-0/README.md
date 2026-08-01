@@ -17,6 +17,14 @@
 VS0 es una iniciativa temporal de aprendizaje, no un PBI de R0 o R1. No cambia
 el estado de PBI-024, no inicia PBI-025–PBI-029 y no acepta ADR-006 o ADR-007.
 
+## Estado de implementación
+
+La vertical local está implementada y validada en los commits `35bdc47` y
+`328dc58`. El deploy permanece bloqueado exclusivamente por la falta de un VPS
+preview dedicado y un canal de acceso autorizado; no se reutilizarán entornos
+de SR Taller 1.0. El detalle técnico y el handoff están en
+[RESULTS.md](RESULTS.md).
+
 ## Objetivo
 
 Entregar una URL HTTPS privada y navegable para iterar diariamente con el
@@ -77,7 +85,7 @@ desplegable.
 Browser
   -> HTTPS + Basic Auth en reverse proxy
   -> React/Vite estático servido por NestJS
-  -> /api/dev-preview/v1/*
+  -> /api/preview/*
   -> casos de uso framework-free
   -> puertos owner-scoped
   -> Kysely/pg
@@ -85,12 +93,12 @@ Browser
 ```
 
 - El navegador nunca envía `tenantId`, `branchId` o `stationId` como autoridad.
-- El backend obtiene `DEV_PREVIEW_STATION_ID` desde configuración del servidor
+- El backend obtiene `SR_PREVIEW_STATION_ID` desde configuración del servidor
   y usa la capacidad real de PBI-024 para producir `TrustedStationContext`.
-- Un actor fijo `DEV_PREVIEW_ACTOR` sólo aporta atribución visual temporal; no
-  simula autenticación, PIN, sesión, rol o capacidad productivos.
-- La aplicación falla al arrancar si `APP_MODE` no es `DEV_PREVIEW`, falta el
-  contexto sintético o se intenta habilitar el mecanismo en producción.
+- Un actor fijo `SR_PREVIEW_ACTOR_LABEL` sólo aporta atribución visual
+  temporal; no simula autenticación, PIN, sesión, rol o capacidad productivos.
+- La preview está deshabilitada por defecto y falla al arrancar si se habilita
+  sin el contexto sintético completo y la configuración server-side requerida.
 - Todas las lecturas y escrituras reciben el contexto confiable y aplican
   alcance compuesto de tenant y sucursal. No se introduce RLS.
 - Errores públicos siguen el contrato sanitizado de DEC-044; no exponen SQL,
@@ -100,11 +108,11 @@ Browser
 
 | Método y ruta | Propósito | Reglas |
 | --- | --- | --- |
-| `GET /api/dev-preview/v1/context` | Mostrar tenant, sucursal, estación y badge | Sólo contexto resuelto server-side |
-| `POST /api/dev-preview/v1/repairs` | Crear registro de preview | Ignora/rechaza scope enviado por cliente; transacción única |
-| `GET /api/dev-preview/v1/repairs?q=&limit=` | Listar y buscar | Scope obligatorio; orden determinista; máximo 50 |
-| `GET /api/dev-preview/v1/repairs/:id` | Abrir detalle e historial | `404` genérico para id fuera del scope |
-| `PATCH /api/dev-preview/v1/repairs/:id/status` | Cambiar estado básico | CAS mediante `version`; transición preview permitida |
+| `GET /api/preview/context` | Mostrar tenant, sucursal, estación y badge | Sólo etiquetas públicas resueltas server-side |
+| `POST /api/preview/repairs` | Crear registro de preview | Ignora scope del cliente; transacción única |
+| `GET /api/preview/repairs` | Listar para búsqueda local | Scope obligatorio; orden determinista; máximo 200 |
+| `GET /api/preview/repairs/:id` | Abrir detalle e historial | `404` genérico para id fuera del scope |
+| `PATCH /api/preview/repairs/:id/status` | Cambiar estado básico | CAS mediante `revision`; transición preview permitida |
 
 No se autorizan endpoints de login, PIN, sesiones, usuarios, roles, pagos,
 inventario, archivos, WhatsApp o administración. El frontend consume sólo este
@@ -118,15 +126,15 @@ cliente, equipo, pagos o lifecycle definitivo.
 
 | Clasificación | Elementos |
 | --- | --- |
-| **Preview required** | `previewRepairId`, folio `DEV-*` server-side, `tenantId`, `branchId`, `stationId`, nombre y teléfono del cliente, marca y modelo del equipo, IMEI/serie opcional, color opcional, problema reportado, condición física básica, observaciones opcionales, precio estimado opcional en minor units/MXN, estado preview, `version`, `createdAt`, `updatedAt` |
+| **Preview required** | `id`, folio `PRE-*` server-side, `tenantId`, `branchId`, `stationId`, nombre y teléfono del cliente, marca y modelo del equipo, IMEI/serie opcional, color opcional, problema reportado, condición física, observaciones, precio estimado y anticipo opcionales en MXN, estado preview, `revision`, `createdAt`, `updatedAt` |
 | **Deferred** | identidad/deduplicación de cliente, entidad durable de equipo, propietario/contacto/decisor, moneda configurable, cotización, anticipo/pago, autorización comercial, evidencia/fotos, diagnóstico, técnico, piezas, entrega, garantía, auditoría completa y folio definitivo |
 | **Prohibited** | datos reales, credenciales/PIN de equipo, pagos reales, caja, inventario, mensajes reales, secretos, efectos productivos y cualquier inferencia de autorización definitiva |
 
 Se autorizan sólo dos tablas nuevas y owner-scoped:
 
-1. `repair_preview_records`, con scope compuesto, snapshots del formulario,
+1. `preview_repairs`, con scope compuesto, snapshots del formulario,
    estado, versión y timestamps;
-2. `repair_preview_status_history`, con scope compuesto, estado anterior/nuevo,
+2. `preview_repair_status_history`, con scope compuesto, estado anterior/nuevo,
    actor DEV_ONLY y timestamp.
 
 Las constraints incluyen pertenencia a tenant/sucursal/estación, unicidad del
@@ -134,9 +142,10 @@ folio dentro del tenant y foreign keys compuestas. Toda consulta filtra por el
 scope del `TrustedStationContext`. Estas tablas y contratos requieren una
 migración deliberada antes de cualquier dominio o release definitivo.
 
-El estado inicial es `PENDING`. Sólo se permiten en preview las transiciones
-`PENDING -> IN_PROGRESS` y `IN_PROGRESS -> READY`; los nombres y transiciones
-son provisionales, no producen pagos, notificaciones, entrega ni otros efectos.
+El estado inicial es `received`. Sólo se permiten en preview las transiciones
+`received -> diagnosing/cancelled`, `diagnosing -> ready/cancelled` y
+`ready -> delivered/cancelled`; son provisionales y no producen pagos,
+notificaciones ni otros efectos.
 
 ## Seguridad DEV_ONLY
 
@@ -228,9 +237,9 @@ otro desplegable, identidad definitiva o producción exige nueva autorización.
 
 ## Siguiente acción
 
-**Implementar Visual Slice 0 y desplegar la primera versión navegable en el VPS
-de desarrollo tan pronto como estén disponibles el shell visual y la pantalla
-de Nueva reparación, sin esperar a completar todo el flujo.**
+**Provisionar o autorizar el VPS preview dedicado, ejecutar el deploy exacto
+por SHA con `ops/preview/` y completar smoke HTTPS y revisión visual sin datos
+reales.**
 
 ## Referencias
 
@@ -244,3 +253,4 @@ de Nueva reparación, sin esperar a completar todo el flujo.**
 - [DEC-044](../../decisions/dec-044-error-strategy/DECISION_PROPOSAL.md)
 - [DEC-051](../../decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md)
 - [Plan de implementación](IMPLEMENTATION_PLAN.md)
+- [Resultados y handoff](RESULTS.md)

@@ -11,18 +11,19 @@ badge `DEV PREVIEW`, datos sintéticos, scope server-side y ausencia de merge a
 - introducir el workspace pnpm mínimo y `apps/dev-preview-web`;
 - fijar React, Vite, React Router y dependencias exactas;
 - crear layout, sidebar, header, responsive básico y estados loading/empty/error;
-- añadir `/`, `/repairs`, `/repairs/new` y placeholder de detalle;
-- componer `GET /api/dev-preview/v1/context` con PBI-024 y adapter DEV_ONLY;
+- añadir `/`, `/reparaciones`, `/reparaciones/nueva` y detalle;
+- componer `GET /api/preview/context` con PBI-024 y adapter DEV_ONLY;
 - incorporar estáticos al único build backend;
 - desplegar inmediatamente shell + pantalla de Nueva reparación al VPS.
 
-**Salida:** URL privada navegable y formulario visible, aunque guardar aún no
-esté habilitado.
+**Salida esperada:** URL privada navegable y formulario visible. La
+implementación local completó además la persistencia antes del primer acceso
+remoto porque aún no existe canal autorizado al VPS dedicado.
 
 ## Bloque 2 — Creación y persistencia
 
 - materializar el módulo owner-scoped de preview;
-- agregar las dos migraciones/tablas autorizadas y constraints compuestas;
+- agregar una migración con las dos tablas autorizadas y constraints compuestas;
 - implementar `POST /repairs` con validación, transacción y scope confiable;
 - conectar el formulario y mostrar éxito/error sanitizado;
 - probar persistencia, recarga y denegación cross-tenant/cross-branch;
