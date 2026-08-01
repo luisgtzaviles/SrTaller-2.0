@@ -1,0 +1,25 @@
+[Unit]
+Description=SR Taller 2.0 isolated development preview
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=srtaller-preview
+Group=srtaller-preview
+WorkingDirectory=/opt/srtaller-preview/current
+EnvironmentFile=/opt/srtaller-preview/shared/.env
+ExecStart=/usr/local/bin/pnpm start
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+KillSignal=SIGTERM
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/srtaller-preview/shared/logs
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target
