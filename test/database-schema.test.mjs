@@ -17,6 +17,8 @@ const migrationFile =
   '20260725183832_database_create_tenants_and_branches.js';
 const stationMigrationFile =
   '20260726160000_stations_create_stations_and_bindings.js';
+const previewMigrationFile =
+  '20260801140000_preview_create_repairs_and_status_history.js';
 
 function source(root, authorizedRoot = root) {
   return Object.freeze({
@@ -31,7 +33,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 2);
+  assert.equal(first.manifest.migrations.length, 3);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -53,6 +55,12 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: stationMigrationFile.replace(/\.js$/u, ''),
         order: 1,
         owner: 'stations',
+      },
+      {
+        fileName: previewMigrationFile,
+        migrationName: previewMigrationFile.replace(/\.js$/u, ''),
+        order: 2,
+        owner: 'preview',
       },
     ],
   );

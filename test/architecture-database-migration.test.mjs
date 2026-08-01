@@ -17,7 +17,7 @@ test('migration runner, capability and provider retain exact governed ownership'
 
   assert.equal(
     policy.persistence.status,
-    'station-context-schema-materialized',
+    'visual-slice-0-preview-schema-materialized',
   );
   assert.deepEqual(policy.persistence.migrationBoundary, {
     runner: runnerPath,
@@ -28,7 +28,7 @@ test('migration runner, capability and provider retain exact governed ownership'
         'src/infrastructure/database/database-connection.ts',
         runnerPath,
       ],
-      [providerPath]: [runnerPath],
+      [providerPath]: [runnerPath, 'src/run-migrations.ts'],
     },
   });
   assert.equal(
@@ -41,7 +41,7 @@ test('migration runner, capability and provider retain exact governed ownership'
   );
 });
 
-test('public migration API remains narrow with the two governed migrations', async () => {
+test('public migration API remains narrow with the governed migrations', async () => {
   const [runner, provider, capability] = await Promise.all([
     readFile(runnerPath, 'utf8'),
     readFile(providerPath, 'utf8'),
@@ -79,6 +79,7 @@ test('public migration API remains narrow with the two governed migrations', asy
   assert.deepEqual(await readdir(productMigrationRoot), [
     '20260725183832_database_create_tenants_and_branches.ts',
     '20260726160000_stations_create_stations_and_bindings.ts',
+    '20260801140000_preview_create_repairs_and_status_history.ts',
   ]);
 });
 

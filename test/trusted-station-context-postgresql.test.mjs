@@ -181,13 +181,14 @@ test(
         [
           '20260725183832_database_create_tenants_and_branches',
           '20260726160000_stations_create_stations_and_bindings',
+          '20260801140000_preview_create_repairs_and_status_history',
         ],
       );
       runner = migrationRunner.createMigrationRunner(connection, {
         expectedManifestHash: source.manifest.aggregateSha256,
       });
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.results.length, 2);
+      assert.equal(applied.results.length, 3);
 
       const schema = await admin.query(
         `select table_name, column_name, is_nullable, udt_name
@@ -211,6 +212,7 @@ test(
       assert.match(openIndex.rows[0].indexdef, /UNIQUE/iu);
       assert.match(openIndex.rows[0].indexdef, /unlinked_at IS NULL/iu);
 
+      await runner.migrateDown(authorization(applied.status.migrations[2]));
       const down = await runner.migrateDown(
         authorization(applied.status.migrations[1]),
       );
@@ -224,7 +226,10 @@ test(
       const reapplied = await runner.migrateToLatest();
       assert.deepEqual(
         reapplied.results.map(({ name }) => name),
-        ['20260726160000_stations_create_stations_and_bindings'],
+        [
+          '20260726160000_stations_create_stations_and_bindings',
+          '20260801140000_preview_create_repairs_and_status_history',
+        ],
       );
 
       const tenantA = tenancy.parseTenantId(

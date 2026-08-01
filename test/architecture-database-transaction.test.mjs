@@ -28,6 +28,8 @@ test('transaction runner and internal capability retain exact registered ownersh
     ],
     consumers: [
       'src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts',
+      'src/preview-seed.ts',
+      'src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-branch-eligibility.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
@@ -112,10 +114,8 @@ test('driver capability stays owner-internal behind connection, runner and persi
   );
 });
 
-test('transaction step creates no migration, product schema, repository or Nest composition', async () => {
+test('transaction infrastructure remains free of product schema, repository or Nest composition', async () => {
   const files = [
-    'src/app.module.ts',
-    'src/main.ts',
     runnerPath,
     capabilityPath,
     connectionPath,
@@ -131,9 +131,5 @@ test('transaction step creates no migration, product schema, repository or Nest 
   assert.doesNotMatch(
     `${await readFile(runnerPath, 'utf8')}\n${await readFile(capabilityPath, 'utf8')}`,
     /@Module/u,
-  );
-  assert.doesNotMatch(
-    await readFile('src/app.module.ts', 'utf8'),
-    /database|transaction/iu,
   );
 });

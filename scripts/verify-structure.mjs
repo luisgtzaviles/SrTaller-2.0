@@ -111,7 +111,6 @@ for (const forbiddenPath of [
   'yarn.lock',
   'bun.lock',
   'bun.lockb',
-  'pnpm-workspace.yaml',
 ]) {
   if (await exists(forbiddenPath)) {
     failures.push(`Forbidden root artifact detected: ${forbiddenPath}`);
@@ -119,17 +118,21 @@ for (const forbiddenPath of [
 }
 
 const sourceFiles = await listFiles('src');
-const sourceText = (
-  await Promise.all(sourceFiles.map((file) => readFile(file, 'utf8')))
-).join('\n');
-
-for (const forbiddenPattern of [
-  /@Controller\s*\(/u,
-  /@(Get|Post|Put|Patch|Delete)\s*\(/u,
-  /\/health/u,
-]) {
-  if (forbiddenPattern.test(sourceText)) {
-    failures.push(`Unauthorized HTTP surface detected: ${forbiddenPattern}`);
+for (const sourceFile of sourceFiles) {
+  const sourceText = await readFile(sourceFile, 'utf8');
+  const previewHttp = sourceFile.startsWith(
+    'src/modules/preview/presentation/http/',
+  );
+  for (const forbiddenPattern of [
+    /@Controller\s*\(/u,
+    /@(Get|Post|Put|Patch|Delete)\s*\(/u,
+  ]) {
+    if (!previewHttp && forbiddenPattern.test(sourceText)) {
+      failures.push(`Unauthorized HTTP surface detected in ${sourceFile}: ${forbiddenPattern}`);
+    }
+  }
+  if (/\/health/u.test(sourceText)) {
+    failures.push(`Unauthorized health surface detected in ${sourceFile}`);
   }
 }
 
@@ -138,7 +141,10 @@ if (!(await exists('dist/main.js'))) {
 } else {
   const outputFiles = await listFiles('dist');
   for (const outputFile of outputFiles) {
-    if (!['.js', '.map'].includes(extname(outputFile))) {
+    const extension = extname(outputFile);
+    const previewAsset = outputFile.startsWith('dist/public/') &&
+      ['.css', '.html', '.js', '.map'].includes(extension);
+    if (!previewAsset && !['.js', '.map'].includes(extension)) {
       failures.push(`Unexpected build artifact: ${outputFile}`);
     }
   }

@@ -1103,6 +1103,7 @@ function persistenceBoundaryDiagnostics({
     [
       initialSchemaPath,
       persistence.stationSchema?.migration,
+      persistence.previewSchema?.migration,
     ].filter((path) => typeof path === 'string'),
   );
 
@@ -2132,7 +2133,13 @@ export async function checkArchitecture({
     ) {
       add('D5-R029', file, 'request scope cannot be operational-context authority');
     }
-    if (
+    const authorizedHttp = (policy.authorizedHttpRoots ?? []).some((root) =>
+      isInsidePath(relativePath, root)
+    );
+    const authorizedFunctional = (policy.authorizedFunctionalRoots ?? []).some(
+      (root) => isInsidePath(relativePath, root),
+    );
+    if ((
       /\.controller\.(?:c|m)?[jt]s$/u.test(basename) ||
       containsImportedDecorator(
         sourceFile,
@@ -2140,17 +2147,17 @@ export async function checkArchitecture({
         '@nestjs/common',
         ['Controller'],
       )
-    ) {
+    ) && !authorizedHttp) {
       add('D5-R035', file, 'controllers are outside the authorized PBI-022 scope');
     }
-    if (
+    if ((
       containsImportedDecorator(
         sourceFile,
         imports,
         '@nestjs/common',
         httpDecoratorSymbols,
       )
-    ) {
+    ) && !authorizedHttp) {
       add('D5-R035', file, 'HTTP endpoints are outside the authorized PBI-022 scope');
     }
     const authorityUses = controllerAuthorityUses(
@@ -2168,6 +2175,7 @@ export async function checkArchitecture({
     if (
       fixture &&
       moduleName !== undefined &&
+      !authorizedFunctional &&
       /(?:create|update|delete|authorize)(?:Repair|Order|Quote|Payment)|class\s+\w*(?:Repair|Order|Quote|Payment)\w*/u.test(text)
     ) {
       add('D5-R035', file, 'functional business behavior is outside PBI-022');
@@ -2298,8 +2306,12 @@ export async function checkArchitecture({
 
       const targetModuleFile = `src/modules/${targetModule}/${targetModule}.module.ts`;
       if (targetRelative === targetModuleFile) {
-        if (relativePath !== 'src/app.module.ts') {
-          add('D5-R024', file, `only AppModule may import ${targetModule}.module.ts`);
+        const compositionRoots = new Set([
+          'src/app.module.ts',
+          ...(policy.compositionRootFiles ?? []),
+        ]);
+        if (!compositionRoots.has(relativePath)) {
+          add('D5-R024', file, `only an authorized composition root may import ${targetModule}.module.ts`);
         }
         continue;
       }

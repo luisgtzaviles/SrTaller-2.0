@@ -31,6 +31,8 @@ const migrationName =
   '20260725183832_database_create_tenants_and_branches';
 const stationMigrationName =
   '20260726160000_stations_create_stations_and_bindings';
+const previewMigrationName =
+  '20260801140000_preview_create_repairs_and_status_history';
 const compiledMigrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
@@ -185,6 +187,8 @@ async function resetDatabase(admin) {
   await admin.query(
     `drop table if exists
        schema_branch_reference_probe,
+       preview_repair_status_history,
+       preview_repairs,
        station_bindings,
        stations,
        branches,
@@ -202,6 +206,8 @@ async function assertNoRetainedObjects(admin) {
      where schemaname = 'public'
        and tablename in (
          'schema_branch_reference_probe',
+         'preview_repair_status_history',
+         'preview_repairs',
          'station_bindings',
          'stations',
          'branches',
@@ -566,7 +572,7 @@ test(
       const inspection = await inspectMigrationSource(productSource);
       assert.deepEqual(
         inspection.manifest.migrations.map(({ migrationName }) => migrationName),
-        [migrationName, stationMigrationName],
+        [migrationName, stationMigrationName, previewMigrationName],
       );
 
       const connection = createDatabaseConnection(databaseConfig());
@@ -593,10 +599,16 @@ test(
             direction: 'Up',
             status: 'Success',
           },
+          {
+            name: previewMigrationName,
+            direction: 'Up',
+            status: 'Success',
+          },
         ],
       );
       assert.equal(applied.status.migrations[0].state, 'applied');
       assert.equal(applied.status.migrations[1].state, 'applied');
+      assert.equal(applied.status.migrations[2].state, 'applied');
       assert.deepEqual((await runner.migrateToLatest()).results, []);
 
       const firstSchema = await introspectSchema(admin);
@@ -604,6 +616,9 @@ test(
       const isolation = await assertTenantIsolation(admin);
       await writeSchemaEvidence(firstSchema, isolation);
 
+      await runner.migrateDown(
+        authorization(applied.status.migrations[2]),
+      );
       const stationDown = await runner.migrateDown(
         authorization(applied.status.migrations[1]),
       );
@@ -659,9 +674,17 @@ test(
             direction: 'Up',
             status: 'Success',
           },
+          {
+            name: previewMigrationName,
+            direction: 'Up',
+            status: 'Success',
+          },
         ],
       );
       assertSchemaContract(await introspectSchema(admin));
+      await runner.migrateDown(
+        authorization(reapplied.status.migrations[2]),
+      );
       await runner.migrateDown(
         authorization(reapplied.status.migrations[1]),
       );

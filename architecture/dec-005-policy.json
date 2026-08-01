@@ -1,13 +1,15 @@
 {
   "policyVersion": 2,
-  "allowedModules": ["access", "stations", "tenancy"],
+  "allowedModules": ["access", "preview", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy"],
+    "preview": ["stations", "tenancy"],
     "stations": ["tenancy"],
     "tenancy": []
   },
   "publicSurfaces": {
     "access": ["AccessModuleContract"],
+    "preview": ["PreviewContextView", "PreviewModuleContract"],
     "stations": [
       "ResolveTrustedStationContext",
       "RunWithTrustedStationContext",
@@ -46,8 +48,9 @@
   },
   "consumers": {
     "access": ["AppModule"],
-    "stations": ["access"],
-    "tenancy": ["access", "stations"]
+    "preview": ["AppModule"],
+    "stations": ["access", "preview"],
+    "tenancy": ["access", "preview", "stations"]
   },
   "governedRoots": ["src/modules"],
   "nonStructuralFileNames": [".DS_Store", ".gitkeep"],
@@ -70,6 +73,17 @@
       "declarationKind": "interface",
       "declarationName": "AccessModuleContract",
       "rule": "D5-R004"
+    },
+    "src/modules/preview/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "PreviewModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/preview/preview.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "PreviewModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
     },
     "src/modules/stations/index.ts": {
       "declarationKind": "interface",
@@ -100,6 +114,7 @@
     "decorator": "Module",
     "imports": {
       "AccessModule": "./modules/access/access.module.js",
+      "PreviewModule": "./modules/preview/preview.module.js",
       "StationsModule": "./modules/stations/stations.module.js",
       "TenancyModule": "./modules/tenancy/tenancy.module.js"
     }
@@ -111,17 +126,27 @@
     "resolveTenantContext",
     "trustRequestContext"
   ],
+  "authorizedHttpRoots": [
+    "src/modules/preview/presentation/http/"
+  ],
+  "authorizedFunctionalRoots": [
+    "src/modules/preview/"
+  ],
+  "compositionRootFiles": [
+    "src/preview-runtime.service.ts"
+  ],
   "persistence": {
     "dependencyPackages": ["kysely", "pg"],
     "dependencyPackagePrefixes": ["pg-"],
     "allowedDependencyRoots": [
       "src/infrastructure/database/",
+      "src/modules/preview/infrastructure/persistence/",
       "src/modules/stations/infrastructure/persistence/",
       "src/modules/tenancy/infrastructure/persistence/"
     ],
     "databaseRoot": "src/infrastructure/database/",
     "migrationRoot": "src/infrastructure/database/migrations/",
-    "migrationFilePattern": "^\\d{14}_(database|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "migrationFilePattern": "^\\d{14}_(database|preview|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
         "owner": "database",
@@ -158,10 +183,12 @@
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
           "src/infrastructure/database/migrations/20260726160000_stations_create_stations_and_bindings.ts",
+          "src/infrastructure/database/migrations/20260801140000_preview_create_repairs_and_status_history.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts",
+          "src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
@@ -178,6 +205,10 @@
         "consumers": [
           "src/infrastructure/database/transaction-runner.ts",
           "src/infrastructure/database/migration-runner.ts",
+          "src/preview-runtime.service.ts",
+          "src/preview-seed.ts",
+          "src/run-migrations.ts",
+          "src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts",
@@ -236,6 +267,8 @@
         ],
         "consumers": [
           "src/infrastructure/database/database-connection.ts",
+          "src/preview-seed.ts",
+          "src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts",
@@ -275,6 +308,8 @@
         ],
         "consumers": [
           "src/modules/stations/infrastructure/persistence/kysely-station-unit-of-work.ts",
+          "src/preview-seed.ts",
+          "src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-branch-eligibility.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
@@ -294,7 +329,7 @@
           "DatabaseMigrationError",
           "createMigrationRunner"
         ],
-        "consumers": ["scripts/run-migrations.mjs"],
+        "consumers": ["src/run-migrations.ts"],
         "consumerRequirement": "deferred-until-operational-composition",
         "status": "materialized-migration-runner"
       }
@@ -318,6 +353,15 @@
         "allowedScopes": ["StationBindingScope"],
         "status": "materialized-owner-port"
       },
+      "src/modules/preview/application/ports/preview-repair-repository.port.ts": {
+        "owner": "preview",
+        "contract": "PreviewRepairRepositoryPort",
+        "allowedScopes": [
+          "PreviewRepairPersistenceScope",
+          "PreviewActorPersistenceScope"
+        ],
+        "status": "materialized-owner-port"
+      },
       "src/modules/tenancy/application/ports/tenant-repository.port.ts": {
         "owner": "tenancy",
         "contract": "TenantRepositoryPort",
@@ -329,13 +373,26 @@
       "TenantBranchPersistenceScope": ["tenantId", "branchId"],
       "TenantPersistenceScope": ["tenantId"],
       "StationPersistenceScope": ["tenantId", "stationId"],
-      "StationBindingScope": ["tenantId", "stationId"]
+      "StationBindingScope": ["tenantId", "stationId"],
+      "PreviewRepairPersistenceScope": ["tenantId", "branchId"],
+      "PreviewActorPersistenceScope": [
+        "tenantId",
+        "branchId",
+        "stationId",
+        "actorLabel"
+      ]
     },
     "adapters": {
       "src/modules/tenancy/infrastructure/persistence/kysely-branch.repository.ts": {
         "owner": "tenancy",
         "port": "src/modules/tenancy/application/ports/branch-repository.port.ts",
         "composition": "src/modules/tenancy/tenancy.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts": {
+        "owner": "preview",
+        "port": "src/modules/preview/application/ports/preview-repair-repository.port.ts",
+        "composition": "src/modules/preview/preview.module.ts",
         "status": "materialized-owner-adapter"
       },
       "src/modules/stations/infrastructure/persistence/kysely-station.repository.ts": {
@@ -360,6 +417,14 @@
     "databaseObjects": {
       "branches": {
         "owner": "tenancy",
+        "kind": "table"
+      },
+      "preview_repair_status_history": {
+        "owner": "preview",
+        "kind": "table"
+      },
+      "preview_repairs": {
+        "owner": "preview",
         "kind": "table"
       },
       "station_bindings": {
@@ -437,7 +502,8 @@
           "src/infrastructure/database/migration-runner.ts"
         ],
         "src/infrastructure/database/database-migration-provider.ts": [
-          "src/infrastructure/database/migration-runner.ts"
+          "src/infrastructure/database/migration-runner.ts",
+          "src/run-migrations.ts"
         ]
       }
     },
@@ -473,7 +539,15 @@
       "openBindingUniqueIndex": "station_bindings_one_open_uq",
       "status": "station-context-schema-materialized"
     },
-    "status": "station-context-schema-materialized"
+    "previewSchema": {
+      "migration": "src/infrastructure/database/migrations/20260801140000_preview_create_repairs_and_status_history.ts",
+      "tables": ["preview_repairs", "preview_repair_status_history"],
+      "repairPrimaryKey": ["tenant_id", "branch_id", "repair_id"],
+      "historyPrimaryKey": ["tenant_id", "branch_id", "history_id"],
+      "scopeIndex": "preview_repairs_scope_created_idx",
+      "status": "visual-slice-0-preview-schema-materialized"
+    },
+    "status": "visual-slice-0-preview-schema-materialized"
   },
   "checkerRules": [
     "D5-R002",
@@ -604,6 +678,13 @@
   "productModuleFiles": [
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
+    "src/modules/preview/index.ts",
+    "src/modules/preview/application/ports/preview-repair-repository.port.ts",
+    "src/modules/preview/application/preview-repair.service.ts",
+    "src/modules/preview/domain/preview-repair.ts",
+    "src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts",
+    "src/modules/preview/presentation/http/preview.controller.ts",
+    "src/modules/preview/preview.module.ts",
     "src/modules/stations/index.ts",
     "src/modules/stations/application/contracts/trusted-station-context.ts",
     "src/modules/stations/application/ports/station-binding-repository.port.ts",

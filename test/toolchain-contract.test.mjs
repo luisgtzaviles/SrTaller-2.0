@@ -87,7 +87,7 @@ test('build emits native JavaScript and external source maps without sources', a
   assert.ok(mainMap.sources.every((source) => source.endsWith('.ts')));
 });
 
-test('technical shell has a provider and no controller or route surface', async () => {
+test('technical shell retains its provider and no shell route surface', async () => {
   const sourceFiles = [
     'src/app.module.ts',
     'src/main.ts',
@@ -98,7 +98,7 @@ test('technical shell has a provider and no controller or route surface', async 
     await Promise.all(sourceFiles.map((file) => readFile(file, 'utf8')))
   ).join('\n');
 
-  assert.match(source, /providers: \[TechnicalShellService\]/u);
+  assert.match(source, /providers: \[[^\]]*TechnicalShellService/u);
   assert.doesNotMatch(source, /@Controller\s*\(/u);
   assert.doesNotMatch(source, /@(Get|Post|Put|Patch|Delete)\s*\(/u);
   assert.doesNotMatch(source, /\/health/u);

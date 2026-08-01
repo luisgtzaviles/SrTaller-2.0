@@ -9,6 +9,7 @@ import {
   postgresqlImage,
   postgresqlImageDigest,
   productiveMigration,
+  previewMigration,
   stationMigration,
 } from './lib/postgresql-ci-evidence.mjs';
 import { sha256File } from './lib/ci-evidence.mjs';
@@ -94,6 +95,10 @@ const suiteDefinitions = Object.freeze([
   {
     name: 'trusted-station-context',
     script: 'scripts/test-trusted-station-context-postgresql.mjs',
+  },
+  {
+    name: 'preview-repairs',
+    script: 'scripts/test-preview-repair-postgresql.mjs',
   },
 ]);
 
@@ -218,6 +223,10 @@ const stationMigrationPath = resolve(
   'src/infrastructure/database/migrations',
   stationMigration,
 );
+const previewMigrationPath = resolve(
+  'src/infrastructure/database/migrations',
+  previewMigration,
+);
 const manifest = finalizePostgresqlCiManifest({
   schemaVersion: 1,
   contract: 'PBI-024/POSTGRESQL-CI',
@@ -258,8 +267,10 @@ const manifest = finalizePostgresqlCiManifest({
   migration: {
     filename: productiveMigration,
     stationFilename: stationMigration,
+    previewFilename: previewMigration,
     sha256: await sha256File(migrationPath),
     stationSha256: await sha256File(stationMigrationPath),
+    previewSha256: await sha256File(previewMigrationPath),
     status: 'PASS',
     emptyDatabase: 'PASS',
     downReapply: 'PASS',
@@ -271,8 +282,11 @@ const manifest = finalizePostgresqlCiManifest({
     sha256: schemaEvidence.schemaSha256,
     tables: schemaEvidence.tables,
     stationTables: ['station_bindings', 'stations'],
+    previewTables: ['preview_repair_status_history', 'preview_repairs'],
     stationSha256:
       suiteResults.get('trusted-station-context').materialSha256,
+    previewSha256:
+      suiteResults.get('preview-repairs').materialSha256,
     columns: schemaEvidence.columns,
     constraints: schemaEvidence.constraints,
     indexes: schemaEvidence.indexes,

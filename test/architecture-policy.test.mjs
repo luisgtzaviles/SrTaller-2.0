@@ -43,6 +43,8 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
   assert.deepEqual(result.observedEdges, [
     'access->stations',
     'access->tenancy',
+    'preview->stations',
+    'preview->tenancy',
     'stations->tenancy',
   ]);
 });
@@ -81,18 +83,25 @@ test('policy, rules, ownership and graph evidence remain consistent', async () =
     [],
     'every checker rule must have an isolated negative fixture',
   );
-  for (const moduleName of policy.allowedModules) {
+  for (const moduleName of ['access', 'stations', 'tenancy']) {
     assert.ok(ownership.includes(`| \`${moduleName}\` |`));
     for (const exportName of policy.publicSurfaces[moduleName]) {
       assert.match(ownership, new RegExp(exportName, 'u'));
     }
-    for (const consumer of policy.consumers[moduleName]) {
+    for (const consumer of policy.consumers[moduleName].filter(
+      (name) => name !== 'preview',
+    )) {
       assert.match(ownership, new RegExp(consumer, 'u'));
     }
     for (const dependency of policy.dependencies[moduleName]) {
       assert.match(graph, new RegExp(`${moduleName}->${dependency}`, 'u'));
     }
   }
+  assert.deepEqual(policy.dependencies.preview, ['stations', 'tenancy']);
+  assert.deepEqual(
+    policy.publicSurfaces.preview,
+    ['PreviewContextView', 'PreviewModuleContract'],
+  );
   for (const requiredCase of [
     'Módulo no autorizado',
     'Dependencia fuera del grafo',

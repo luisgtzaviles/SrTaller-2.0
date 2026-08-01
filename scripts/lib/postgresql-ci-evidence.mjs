@@ -7,6 +7,8 @@ export const productiveMigration =
   '20260725183832_database_create_tenants_and_branches.ts';
 export const stationMigration =
   '20260726160000_stations_create_stations_and_bindings.ts';
+export const previewMigration =
+  '20260801140000_preview_create_repairs_and_status_history.ts';
 export const criticalPostgresqlSuites = Object.freeze([
   'connection',
   'transaction',
@@ -14,6 +16,7 @@ export const criticalPostgresqlSuites = Object.freeze([
   'schema',
   'owner-scoped-adapters',
   'trusted-station-context',
+  'preview-repairs',
 ]);
 
 function sha256(value) {
@@ -61,6 +64,7 @@ export function validatePostgresqlCiManifest(manifest) {
     ['postgres.version', manifest.postgres?.version],
     ['migration.sha256', manifest.migration?.sha256],
     ['migration.stationSha256', manifest.migration?.stationSha256],
+    ['migration.previewSha256', manifest.migration?.previewSha256],
     ['schema.sha256', manifest.schema?.sha256],
     ['comparableSha256', manifest.comparableSha256],
     ['result', manifest.result],
@@ -111,10 +115,13 @@ export function validatePostgresqlCiManifest(manifest) {
   if (
     manifest.migration.filename !== productiveMigration ||
     manifest.migration.stationFilename !== stationMigration ||
+    manifest.migration.previewFilename !== previewMigration ||
     manifest.migration.status !== 'PASS' ||
     manifest.schema.tables.join(',') !== 'branches,tenants' ||
     manifest.schema.stationTables.join(',') !==
       'station_bindings,stations' ||
+    manifest.schema.previewTables.join(',') !==
+      'preview_repair_status_history,preview_repairs' ||
     manifest.isolation.schema !== 'PASS' ||
     manifest.isolation.adapters !== 'PASS' ||
     manifest.cleanup.status !== 'PASS'

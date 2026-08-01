@@ -60,6 +60,8 @@ const migrationName =
   '20260725183832_database_create_tenants_and_branches';
 const stationMigrationName =
   '20260726160000_stations_create_stations_and_bindings';
+const previewMigrationName =
+  '20260801140000_preview_create_repairs_and_status_history';
 const createdAt = '2026-07-25T20:00:00.000Z';
 
 function databaseConfig() {
@@ -158,6 +160,8 @@ async function resetDatabase(admin) {
     `drop table if exists
       station_bindings,
       stations,
+      preview_repair_status_history,
+      preview_repairs,
       branches,
       tenants,
       kysely_migration,
@@ -174,6 +178,8 @@ async function assertNoObjects(admin) {
        and tablename in (
          'station_bindings',
          'stations',
+         'preview_repair_status_history',
+         'preview_repairs',
          'branches',
          'tenants',
          'kysely_migration',
@@ -197,7 +203,7 @@ test(
       const inspection = await inspectMigrationSource(source());
       assert.deepEqual(
         inspection.manifest.migrations.map(({ migrationName }) => migrationName),
-        [migrationName, stationMigrationName],
+        [migrationName, stationMigrationName, previewMigrationName],
       );
       runner = createMigrationRunner(connection, {
         expectedManifestHash: inspection.manifest.aggregateSha256,
@@ -444,6 +450,7 @@ test(
       );
 
       const status = await runner.getMigrationStatus();
+      await runner.migrateDown(authorization(status.migrations[2]));
       await runner.migrateDown(authorization(status.migrations[1]));
       await runner.migrateDown(authorization(status.migrations[0]));
       await resetDatabase(admin);

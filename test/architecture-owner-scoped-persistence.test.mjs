@@ -16,6 +16,8 @@ const stationAdapterPath =
   'src/modules/stations/infrastructure/persistence/kysely-station.repository.ts';
 const bindingAdapterPath =
   'src/modules/stations/infrastructure/persistence/kysely-station-binding.repository.ts';
+const previewAdapterPath =
+  'src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts';
 
 test('owner-scoped ports and adapters retain exact ownership registration', async () => {
   const policy = JSON.parse(
@@ -69,6 +71,8 @@ test('persistence capability is internal and has only exact adapter consumers', 
     ],
     consumers: [
       'src/infrastructure/database/database-connection.ts',
+      'src/preview-seed.ts',
+      previewAdapterPath,
       bindingAdapterPath,
       stationAdapterPath,
       branchAdapterPath,
@@ -77,6 +81,8 @@ test('persistence capability is internal and has only exact adapter consumers', 
     status: 'materialized-owner-internal-capability',
   });
   assert.match(source, /Owner extends 'tenancy'/u);
+  assert.match(source, /Owner extends 'stations'/u);
+  assert.match(source, /'preview_repair_status_history' \| 'preview_repairs'/u);
   assert.match(source, /'branches' \| 'tenants'/u);
   assert.match(source, /'station_bindings' \| 'stations'/u);
   assert.doesNotMatch(

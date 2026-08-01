@@ -104,6 +104,18 @@ async function processResult(command, argumentsList, options) {
   }
 }
 
+function compileBackendWorkspace(workspace, timeout) {
+  return processResult(
+    process.execPath,
+    [
+      join(workspace, 'node_modules', 'typescript', 'bin', 'tsc'),
+      '-p',
+      'tsconfig.build.json',
+    ],
+    { cwd: workspace, timeout },
+  );
+}
+
 function requiredExpectedTests(mutation) {
   if (
     !Array.isArray(mutation.expectedTests) ||
@@ -304,11 +316,7 @@ export async function runStationMutationBaseline({
   let childProcessesStatus = 'NOT_CHECKED';
   try {
     nodeModulesSymlink = await copyWorkspace(root, workspace);
-    const build = await processResult(
-      'pnpm',
-      ['run', 'build'],
-      { cwd: workspace, timeout: compileTimeoutMs },
-    );
+    const build = await compileBackendWorkspace(workspace, compileTimeoutMs);
     if (build.timedOut) {
       throw new Error('BASELINE_BUILD_TIMEOUT');
     }
@@ -516,13 +524,9 @@ export async function runStationMutation({
     }
     await writeFile(target, mutated);
 
-    const build = await processResult(
-      'pnpm',
-      ['run', 'build'],
-      {
-        cwd: workspace,
-        timeout: mutation.compileTimeoutMs ?? compileTimeoutMs,
-      },
+    const build = await compileBackendWorkspace(
+      workspace,
+      mutation.compileTimeoutMs ?? compileTimeoutMs,
     );
     if (build.timedOut) {
       result.buildStatus = 'TIMEOUT';

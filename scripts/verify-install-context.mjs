@@ -51,11 +51,20 @@ for (const forbiddenPath of [
   'yarn.lock',
   'bun.lock',
   'bun.lockb',
-  'pnpm-workspace.yaml',
 ]) {
   if (await exists(forbiddenPath)) {
     failures.push(`Forbidden root artifact detected: ${forbiddenPath}`);
   }
+}
+
+const workspaceManifest = await readFile(
+  resolve(process.cwd(), 'pnpm-workspace.yaml'),
+  'utf8',
+);
+if (workspaceManifest !== 'packages:\n  - .\n  - apps/*\n') {
+  failures.push(
+    'pnpm-workspace.yaml must contain only the root and authorized app packages',
+  );
 }
 
 if (failures.length > 0) {

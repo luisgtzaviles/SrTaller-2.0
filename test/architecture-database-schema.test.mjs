@@ -6,6 +6,8 @@ const migrationPath =
   'src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts';
 const stationMigrationPath =
   'src/infrastructure/database/migrations/20260726160000_stations_create_stations_and_bindings.ts';
+const previewMigrationPath =
+  'src/infrastructure/database/migrations/20260801140000_preview_create_repairs_and_status_history.ts';
 
 test('initial schema registry has exact owners, keys and physical scope', async () => {
   const policy = JSON.parse(
@@ -13,10 +15,12 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   );
   assert.equal(
     policy.persistence.status,
-    'station-context-schema-materialized',
+    'visual-slice-0-preview-schema-materialized',
   );
   assert.deepEqual(policy.persistence.databaseObjects, {
     branches: { owner: 'tenancy', kind: 'table' },
+    preview_repair_status_history: { owner: 'preview', kind: 'table' },
+    preview_repairs: { owner: 'preview', kind: 'table' },
     station_bindings: { owner: 'stations', kind: 'table' },
     stations: { owner: 'stations', kind: 'table' },
     tenants: { owner: 'tenancy', kind: 'table' },
@@ -53,6 +57,14 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     openBindingUniqueIndex: 'station_bindings_one_open_uq',
     status: 'station-context-schema-materialized',
   });
+  assert.deepEqual(policy.persistence.previewSchema, {
+    migration: previewMigrationPath,
+    tables: ['preview_repairs', 'preview_repair_status_history'],
+    repairPrimaryKey: ['tenant_id', 'branch_id', 'repair_id'],
+    historyPrimaryKey: ['tenant_id', 'branch_id', 'history_id'],
+    scopeIndex: 'preview_repairs_scope_created_idx',
+    status: 'visual-slice-0-preview-schema-materialized',
+  });
   assert.equal(
     policy.persistence.infrastructureFiles[
       'src/infrastructure/database/database-types.ts'
@@ -61,12 +73,13 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   );
 });
 
-test('productive migration root contains exactly the two governed files', async () => {
+test('productive migration root contains exactly the governed files', async () => {
   assert.deepEqual(
     await readdir('src/infrastructure/database/migrations'),
     [
       migrationPath.split('/').at(-1),
       stationMigrationPath.split('/').at(-1),
+      previewMigrationPath.split('/').at(-1),
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');
@@ -89,6 +102,13 @@ test('productive migration root contains exactly the two governed files', async 
     stationMigration,
     /\b(?:actor_id|reason|session_id|user_id|role|secret)\b/iu,
   );
+  const previewMigration = await readFile(previewMigrationPath, 'utf8');
+  assert.match(previewMigration, /createTable\('preview_repairs'\)/u);
+  assert.match(
+    previewMigration,
+    /createTable\('preview_repair_status_history'\)/u,
+  );
+  assert.match(previewMigration, /preview_repairs_scope_created_idx/u);
 });
 
 test('database schema types are immutable and require externally supplied identity and time', async () => {

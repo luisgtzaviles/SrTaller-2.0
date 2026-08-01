@@ -17,13 +17,16 @@
     "architecture": "pnpm run verify:architecture",
     "test:architecture": "pnpm run verify:toolchain && node --test test/architecture-*.test.mjs",
     "clean": "node ./scripts/clean.mjs",
-    "typecheck": "pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit",
-    "build": "pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json",
+    "typecheck": "pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit && pnpm --filter @srtaller/dev-preview-web typecheck",
+    "build": "pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json && pnpm --filter @srtaller/dev-preview-web build",
     "test": "pnpm run verify:toolchain && node --test test/*.test.mjs",
     "start": "pnpm run verify:toolchain && node --enable-source-maps dist/main.js",
     "smoke:start": "pnpm run verify:toolchain && node ./scripts/smoke-start.mjs",
+    "smoke:preview": "pnpm run verify:toolchain && node ./scripts/smoke-preview.mjs",
     "diagnose:local": "pnpm run verify:toolchain && node ./scripts/local-diagnostics.mjs",
     "dev": "pnpm run verify:toolchain && node ./scripts/dev.mjs",
+    "db:migrate": "pnpm run verify:toolchain && node --enable-source-maps dist/run-migrations.js",
+    "preview:seed": "pnpm run verify:toolchain && node --enable-source-maps dist/preview-seed.js",
     "verify": "pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure && pnpm run verify:architecture"
   },
   "dependencies": {
@@ -36,6 +39,7 @@
     "rxjs": "7.8.2"
   },
   "devDependencies": {
+    "@types/express": "5.0.6",
     "@types/node": "24.13.3",
     "@types/pg": "8.20.0",
     "typescript": "6.0.3"

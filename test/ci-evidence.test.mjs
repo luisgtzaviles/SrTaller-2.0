@@ -16,6 +16,7 @@ import {
   finalizePostgresqlCiManifest,
   postgresqlImage,
   postgresqlImageDigest,
+  previewMigration,
   productiveMigration,
   stationMigration,
 } from '../scripts/lib/postgresql-ci-evidence.mjs';
@@ -23,6 +24,7 @@ import {
 async function createDistFixture({
   absoluteSource = false,
   inlineSources = false,
+  previewAssets = false,
 } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'srtaller-vc024-dist-'));
   await mkdir(resolve(root, 'dist'), { recursive: true });
@@ -30,6 +32,21 @@ async function createDistFixture({
     resolve(root, 'dist/main.js'),
     "export const state = 'ready';\n//# sourceMappingURL=main.js.map\n",
   );
+  if (previewAssets) {
+    await mkdir(resolve(root, 'dist/public/assets'), { recursive: true });
+    await writeFile(
+      resolve(root, 'dist/public/index.html'),
+      '<!doctype html><title>Preview</title>\n',
+    );
+    await writeFile(
+      resolve(root, 'dist/public/assets/index.css'),
+      ':root { color: black; }\n',
+    );
+    await writeFile(
+      resolve(root, 'dist/public/assets/index.js'),
+      'document.documentElement.dataset.preview = "ready";\n',
+    );
+  }
   const sourceMap = {
     file: 'main.js',
     mappings: '',
@@ -136,8 +153,10 @@ function postgresqlManifest(label) {
     migration: {
       filename: productiveMigration,
       stationFilename: stationMigration,
+      previewFilename: previewMigration,
       sha256: 'a'.repeat(64),
       stationSha256: 'd'.repeat(64),
+      previewSha256: 'f'.repeat(64),
       status: 'PASS',
       emptyDatabase: 'PASS',
       downReapply: 'PASS',
@@ -149,7 +168,9 @@ function postgresqlManifest(label) {
       sha256: 'b'.repeat(64),
       tables: ['branches', 'tenants'],
       stationTables: ['station_bindings', 'stations'],
+      previewTables: ['preview_repair_status_history', 'preview_repairs'],
       stationSha256: 'e'.repeat(64),
+      previewSha256: '9'.repeat(64),
       columns: 5,
       constraints: 8,
       indexes: 2,
@@ -330,6 +351,38 @@ test('dist inspection rejects inline source content', async () => {
     await assert.rejects(
       inspectDist({ projectRoot: root }),
       /Inline source content/u,
+    );
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test('dist inspection accepts controlled preview static assets', async () => {
+  const root = await createDistFixture({ previewAssets: true });
+  try {
+    const inspected = await inspectDist({ projectRoot: root });
+    assert.deepEqual(
+      inspected.files.map(({ path }) => path),
+      [
+        'dist/main.js',
+        'dist/main.js.map',
+        'dist/public/assets/index.css',
+        'dist/public/assets/index.js',
+        'dist/public/index.html',
+      ],
+    );
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test('dist inspection rejects non-code artifacts outside preview public root', async () => {
+  const root = await createDistFixture();
+  try {
+    await writeFile(resolve(root, 'dist/rogue.html'), '<p>rogue</p>\n');
+    await assert.rejects(
+      inspectDist({ projectRoot: root }),
+      /Unexpected dist artifact/u,
     );
   } finally {
     await rm(root, { force: true, recursive: true });

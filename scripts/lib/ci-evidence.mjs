@@ -282,7 +282,9 @@ export async function inspectDist({
   for (const absolutePath of files) {
     const path = portablePath(relative(projectRoot, absolutePath));
     const extension = extname(path);
-    if (!['.js', '.map'].includes(extension)) {
+    const previewAsset = path.startsWith('dist/public/') &&
+      ['.css', '.html', '.js', '.map'].includes(extension);
+    if (!previewAsset && !['.js', '.map'].includes(extension)) {
       throw new Error(`Unexpected dist artifact: ${path}`);
     }
 

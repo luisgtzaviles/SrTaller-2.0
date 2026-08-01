@@ -37,12 +37,15 @@ test('configuration is pure and does not materialize persistence or SQL', async 
   assert.doesNotMatch(source, /getGlobalDatabaseConfig|setConfig|mutableConfig/u);
 });
 
-test('src has one governed process.env access and configuration is not read at import time', async () => {
+test('process.env reads stay in explicit startup and composition roots', async () => {
   const files = [
     'src/app.module.ts',
     'src/main.ts',
     'src/startup-config.ts',
     'src/technical-shell.service.ts',
+    'src/preview-runtime.service.ts',
+    'src/preview-seed.ts',
+    'src/run-migrations.ts',
     configPath,
     'src/modules/access/access.module.ts',
     'src/modules/access/index.ts',
@@ -61,7 +64,16 @@ test('src has one governed process.env access and configuration is not read at i
 
   assert.deepEqual(
     occurrences.map(({ file }) => file),
-    ['src/main.ts'],
+    [
+      'src/main.ts',
+      'src/main.ts',
+      'src/main.ts',
+      'src/preview-runtime.service.ts',
+      'src/preview-runtime.service.ts',
+      'src/preview-seed.ts',
+      'src/preview-seed.ts',
+      'src/run-migrations.ts',
+    ],
   );
   assert.match(
     await readFile('src/main.ts', 'utf8'),

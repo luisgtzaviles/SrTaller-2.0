@@ -3,12 +3,14 @@ import type { Kysely, Transaction } from 'kysely';
 import { useDatabaseTransactionExecutor } from './database-transaction-capability.js';
 import type { DatabaseSchema } from './database-types.js';
 
-export type InternalDatabasePersistenceOwner = 'stations' | 'tenancy';
+export type InternalDatabasePersistenceOwner = 'preview' | 'stations' | 'tenancy';
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
   Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'branches' | 'tenants'>
-    : Pick<DatabaseSchema, 'station_bindings' | 'stations'>;
+    : Owner extends 'stations'
+      ? Pick<DatabaseSchema, 'station_bindings' | 'stations'>
+      : Pick<DatabaseSchema, 'preview_repair_status_history' | 'preview_repairs'>;
 
 export type InternalDatabasePersistenceExecutor<
   Owner extends InternalDatabasePersistenceOwner,

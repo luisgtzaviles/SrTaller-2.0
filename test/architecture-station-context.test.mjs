@@ -102,9 +102,14 @@ test('trusted context stays immutable, unforgeable and free of global fallback',
 });
 
 test('PBI-024 adds no HTTP, user, PIN, session, role or repair behavior', async () => {
-  const files = JSON.parse(
-    await source('architecture/dec-005-policy.json'),
-  ).productModuleFiles;
+  const files = [
+    'src/modules/stations/index.ts',
+    'src/modules/stations/application/contracts/trusted-station-context.ts',
+    'src/modules/stations/application/use-cases/resolve-trusted-station-context.ts',
+    'src/modules/stations/application/use-cases/run-with-trusted-station-context.ts',
+    'src/modules/stations/infrastructure/recognition/fake-station-recognition.ts',
+    'src/modules/stations/stations.module.ts',
+  ];
   const combined = (
     await Promise.all(files.map((path) => source(path)))
   ).join('\n');
