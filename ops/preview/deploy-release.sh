@@ -12,7 +12,13 @@ readonly root=/opt/srtaller-preview
 readonly release="$root/releases/$sha"
 readonly shared="$root/shared"
 readonly environment_file="$shared/.env"
-readonly previous="$(readlink -f "$root/current" 2>/dev/null || true)"
+previous_candidate="$(readlink -f "$root/current" 2>/dev/null || true)"
+previous=""
+if [[ "$previous_candidate" =~ ^$root/releases/[0-9a-f]{40}$ ]] &&
+  [[ -d "$previous_candidate" ]]; then
+  previous="$previous_candidate"
+fi
+readonly previous
 
 if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]] || [[ ! -f "$archive" ]]; then
   echo "release archive or SHA is invalid" >&2
@@ -67,6 +73,8 @@ chmod 0640 "$backup"
 SR_DB_ROLE=migration SR_DB_MIGRATIONS_ENABLED=true pnpm run db:migrate
 pnpm run preview:seed
 
+sudo chown -R srtaller-preview:srtaller-preview "$release"
+sudo chmod -R u=rwX,g=rX,o= "$release"
 ln -sfn "$release" "$root/current.next"
 mv -Tf "$root/current.next" "$root/current"
 
