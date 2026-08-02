@@ -30,11 +30,11 @@
 
 ## Acceso y VPS
 
-- [ ] VPS está separado de staging y producción.
+- [x] VPS está separado de staging y producción.
 - [ ] Hostname de desarrollo y HTTPS válidos.
 - [ ] Basic Auth está aplicado en Caddy y su hash no está en Git.
-- [ ] PostgreSQL no está expuesto a Internet.
-- [ ] Firewall, usuario de servicio y permisos mínimos verificados.
+- [x] PostgreSQL no está expuesto a Internet.
+- [x] Firewall, usuario de servicio y permisos mínimos verificados.
 - [x] Variables DEV_ONLY fallan cerradas si faltan o si el modo no es preview.
 - [x] Contratos de logs y errores no contienen secretos ni payloads sensibles.
 
@@ -42,10 +42,10 @@
 
 - [x] SHA y rama de origen registrados.
 - [x] `pnpm install --frozen-lockfile`, typecheck, build y gates pasan.
-- [ ] Backup de la base de preview creado antes de migrar.
-- [ ] Migraciones ejecutadas separadamente y con resultado registrado.
-- [ ] Release limpio activado mediante symlink.
-- [ ] systemd reinicia correctamente.
+- [x] Backup de la base de preview creado antes de migrar.
+- [x] Migraciones ejecutadas separadamente y con resultado registrado.
+- [x] Release limpio activado mediante symlink.
+- [x] systemd reinicia correctamente.
 - [ ] Smoke HTTPS, navegación y API pasan.
 - [ ] Rollback al release anterior está probado o verificable.
 

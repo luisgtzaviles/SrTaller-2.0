@@ -2,11 +2,12 @@
 
 ## Dictamen
 
-**CONDITIONAL PASS — VS0 IMPLEMENTED / DEPLOY BLOCKED**
+**CONDITIONAL PASS — VS0 VPS READY / EXTERNAL ACCESS BLOCKED**
 
-La vertical completa está implementada y validada localmente. El deploy no se
-ejecutó porque no existe acceso verificable a un VPS dedicado de preview. Esta
-ausencia no autoriza usar staging o producción de SR Taller 1.0.
+La vertical completa está implementada, desplegada y validada en el loopback de
+un VPS dedicado de preview. El acceso externo permanece bloqueado porque el
+hostname de desarrollo es `TBD`; Caddy está deshabilitado para no publicar sin
+HTTPS y Basic Auth.
 
 ## Material implementado
 
@@ -42,7 +43,8 @@ ausencia no autoriza usar staging o producción de SR Taller 1.0.
 | `bash -n ops/preview/*.sh` | PASS |
 | `git diff --check` | PASS |
 | Revisión visual en navegador | Bloqueada por Chrome connector |
-| Deploy y smoke HTTPS remoto | Bloqueados por falta de VPS/canal autorizado |
+| Deploy por SHA y smoke remoto sobre loopback | PASS |
+| Smoke HTTPS y revisión visual externa | Bloqueados por hostname/DNS `TBD` |
 
 El runner PostgreSQL usó la imagen fijada por digest
 `sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf`
@@ -58,22 +60,35 @@ El smoke HTTP confirmó:
 
 ## Estado remoto
 
-No se ejecutaron SSH, transferencia, DNS, Caddy, systemd, migraciones remotas,
-backup remoto ni smoke HTTPS. Faltan datos operativos no presentes en el
-repositorio:
+- **Proveedor/host:** Hetzner, `srtaller-preview-01`, Ubuntu 24.04 LTS x86_64,
+  zona `hel1-dc2` / región `eu-central`.
+- **IPv4:** `204.168.203.127`; VPS exclusivo de desarrollo, separado de SR
+  Taller 1.0, staging y producción.
+- **Snapshot base:** `ubuntu24-hardened-clean`.
+- **Runtime:** Node.js `24.18.0`, pnpm `11.15.1`, PostgreSQL `18.4` y Caddy
+  `2.11.4` instalado.
+- **Release activo:** `6ddc5a1aab2e36765385cadc3ffb80ae7a870108`.
+- **SHA-256:**
+  `c40531fa179a4f5a00fb9d3a151b2cb4471dfb02353dcb0de3655a105efa73ad`.
+- **Proceso:** `srtaller-preview.service` habilitado y activo como usuario no
+  privilegiado; Node escucha sólo en `127.0.0.1:3100`.
+- **Datos:** tres migraciones aplicadas; seed sintético con un tenant, sucursal,
+  estación y binding; smoke creó una reparación sintética con dos eventos de
+  historial.
+- **Seguridad:** SSH root y password bloqueados; UFW permite únicamente
+  22/80/443; PostgreSQL escucha sólo en loopback; `.env` externo con modo
+  `0640`; Caddy está deshabilitado y no hay aplicación publicada sin control de
+  acceso.
+- **Bloqueo restante:** hostname/DNS de preview `TBD`. Sin ese dato no se
+  configura Caddy, certificado HTTPS, Basic Auth ni URL navegable externa.
 
-- hostname exclusivo de preview;
-- canal SSH/transferencia explícitamente autorizado;
-- VPS Ubuntu 24.04 separado de staging y producción;
-- secretos y variables DEV_ONLY provisionados fuera de Git;
-- Basic Auth y certificado HTTPS activos.
-
-Por lo anterior, no existe todavía URL que el Responsable de Producto pueda
-navegar y no corresponde emitir el PASS de deploy.
+El rollback de aplicación permanece pendiente porque todavía no existe un
+release funcional anterior. El intento incompleto anterior se conservó en
+cuarentena y no se presentó como candidato válido de rollback.
 
 ## Seguridad y alcance preservados
 
-- sólo se usaron fixtures sintéticos y un PostgreSQL efímero local;
+- sólo se usaron fixtures y datos sintéticos de preview;
 - no se implementaron usuarios, PIN, sesiones, roles, pagos, caja, inventario,
   WhatsApp, RLS ni integraciones productivas;
 - no se tocaron PBI-025–PBI-029, R1, producción ni `main`;
@@ -83,9 +98,8 @@ navegar y no corresponde emitir el PASS de deploy.
 
 ## Handoff operativo
 
-La siguiente acción requiere autoridad operativa nueva: provisionar o indicar
-el VPS preview dedicado y su canal de acceso. Después se debe empaquetar el SHA
-exacto con `ops/preview/package-release.sh`, ejecutar el deploy controlado,
-validar HTTPS y Basic Auth, completar el smoke remoto y realizar QA visual con
-datos sintéticos. Hasta entonces el estado permanece
-`CONDITIONAL PASS — VS0 IMPLEMENTED / DEPLOY BLOCKED`.
+La siguiente acción requiere definir el hostname/subdominio dedicado de
+preview y crear su registro DNS hacia el VPS. Después se debe configurar Caddy
+con credenciales externas a Git, validar HTTPS y Basic Auth, ejecutar el smoke
+externo y realizar QA visual con datos sintéticos. Hasta entonces el estado
+permanece `CONDITIONAL PASS — VS0 VPS READY / EXTERNAL ACCESS BLOCKED`.

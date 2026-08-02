@@ -67,7 +67,9 @@ deploy; it is never automatic or destructive.
 
 ## Current operational limitation
 
-No dedicated preview VPS host/SSH alias or authorized transfer channel is
-available in the local project configuration as of 2026-08-01. Therefore these
-artifacts are prepared but have not been executed remotely. Staging and
-production aliases belonging to SR Taller 1.0 are explicitly out of scope.
+A dedicated Hetzner preview VPS and authorized SSH transfer channel are
+available as of 2026-08-02. The application is deployed and reachable only on
+the VPS loopback interface. The dedicated preview hostname remains `TBD`, so
+Caddy is intentionally disabled and external HTTPS/Basic Auth verification is
+still blocked. Staging and production aliases belonging to SR Taller 1.0
+remain explicitly out of scope.
