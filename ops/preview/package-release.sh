@@ -21,7 +21,14 @@ fi
 
 temporary="$(mktemp -d)"
 trap 'rm -rf "$temporary"' EXIT
+# Prevent macOS tar from materializing AppleDouble `._*` entries in a Linux
+# release. Extended provenance attributes are also removed from the temporary
+# export before the final archive is created.
+export COPYFILE_DISABLE=1
 git archive "$expected_sha" | tar -x -C "$temporary"
+if [[ "$(uname -s)" == "Darwin" ]] && command -v xattr >/dev/null 2>&1; then
+  xattr -cr "$temporary"
+fi
 printf '%s\n' "$expected_sha" > "$temporary/REVISION"
 tar -czf "$output" -C "$temporary" .
 printf 'packaged VS0 release %s\n' "$expected_sha"

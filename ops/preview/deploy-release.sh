@@ -34,6 +34,12 @@ if [[ "$(tr -d '\n' < "$release/REVISION")" != "$sha" ]]; then
   exit 68
 fi
 
+# The governed mutation harness uses `git status` to prove that every
+# controlled mutation restores its workspace. Release archives intentionally
+# exclude repository history, so provide only the local metadata required by
+# that gate; REVISION remains the authoritative deployed commit marker.
+git -C "$release" init --quiet
+
 set -a
 # shellcheck disable=SC1090
 source "$environment_file"
