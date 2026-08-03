@@ -45,6 +45,11 @@ fi
 # exclude repository history, so provide only the local metadata required by
 # that gate; REVISION remains the authoritative deployed commit marker.
 git -C "$release" init --quiet
+git -C "$release" add --all
+git -C "$release" \
+  -c user.name='SR Taller Preview Deploy' \
+  -c user.email='preview-deploy@srtaller.invalid' \
+  commit --quiet --message='chore: materialize release baseline'
 
 set -a
 # shellcheck disable=SC1090
