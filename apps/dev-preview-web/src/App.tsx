@@ -5,7 +5,6 @@ import {
   Navigate,
   Route,
   Routes,
-  useLocation,
   useNavigate,
   useParams,
 } from 'react-router-dom';
@@ -40,15 +39,39 @@ function dateTime(value: string): string {
   }).format(new Date(value));
 }
 
+function compactDateTime(value: string): React.JSX.Element {
+  const date = new Date(value);
+  const day = new Intl.DateTimeFormat('es-MX', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+  const time = new Intl.DateTimeFormat('es-MX', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+  return <><span className="date-primary">{day}</span><small>{time}</small></>;
+}
+
 function StatusPill({ status }: Readonly<{ status: PreviewRepairStatus }>): React.JSX.Element {
   return <span className={`status-pill status-${status}`}>{statusLabels[status]}</span>;
 }
 
 const navigation = [
-  { to: '/', label: 'Inicio', icon: '⌂' },
-  { to: '/reparaciones', label: 'Reparaciones', icon: '▤' },
-  { to: '/reparaciones/nueva', label: 'Nueva reparación', icon: '+' },
+  { to: '/', label: 'Inicio', icon: 'home' },
+  { to: '/reparaciones', label: 'Reparaciones', icon: 'repairs' },
+  { to: '/reparaciones/nueva', label: 'Nueva reparación', icon: 'plus' },
 ] as const;
+
+function NavigationIcon({ name }: Readonly<{ name: typeof navigation[number]['icon'] }>): React.JSX.Element {
+  if (name === 'home') {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" /></svg>;
+  }
+  if (name === 'plus') {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>;
+  }
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5zM8 9h8M8 13h8M8 17h5" /></svg>;
+}
 
 function PreviewBadge(): React.JSX.Element {
   return <span className="preview-badge">Development preview · Datos sintéticos</span>;
@@ -89,15 +112,6 @@ function ContextBar(): React.JSX.Element {
 }
 
 function Shell({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
-  const location = useLocation();
-  const title = location.pathname === '/'
-    ? 'Centro operativo'
-    : location.pathname === '/reparaciones/nueva'
-      ? 'Nueva reparación'
-      : location.pathname.startsWith('/reparaciones/')
-        ? 'Detalle de reparación'
-        : 'Reparaciones';
-
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -108,7 +122,7 @@ function Shell({ children }: Readonly<{ children: React.ReactNode }>): React.JSX
         <nav aria-label="Navegación principal">
           {navigation.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === '/'}>
-              <span aria-hidden="true">{item.icon}</span>{item.label}
+              <span className="nav-icon"><NavigationIcon name={item.icon} /></span><span className="nav-label">{item.label}</span>
             </NavLink>
           ))}
         </nav>
@@ -120,7 +134,7 @@ function Shell({ children }: Readonly<{ children: React.ReactNode }>): React.JSX
       </aside>
       <div className="workspace">
         <header className="topbar">
-          <div><small>SR Taller 2.0</small><h1>{title}</h1></div>
+          <div className="workspace-title"><small>Espacio de trabajo</small><strong>Centro operativo</strong></div>
           <PreviewBadge />
         </header>
         <ContextBar />
@@ -200,12 +214,13 @@ function Repairs(): React.JSX.Element {
         <Link className="button button-primary" to="/reparaciones/nueva">+ Nueva reparación</Link>
       </section>
       <section className="table-card" aria-busy={loading}>
-        <div className="toolbar"><label>Buscar<input type="search" placeholder="Folio, cliente o equipo" value={query} onChange={(event) => setQuery(event.target.value)} /></label><span>{filtered.length} registros</span></div>
+        <div className="toolbar"><label className="search-field"><span className="search-icon" aria-hidden="true">⌕</span><span className="sr-only">Buscar reparaciones</span><input type="search" placeholder="Buscar por folio, cliente o equipo" value={query} onChange={(event) => setQuery(event.target.value)} /></label><span className="record-count" aria-live="polite"><strong>{filtered.length}</strong> {filtered.length === 1 ? 'registro' : 'registros'}</span></div>
+        {!failed && loading ? <div className="table-loading" role="status"><span className="sr-only">Cargando reparaciones</span>{Array.from({ length: 5 }, (_, index) => <span className="skeleton-row" key={index} />)}</div> : null}
         {failed ? <div className="empty-panel compact"><div className="empty-icon">!</div><h3>No se pudo cargar la lista</h3><p>Actualiza la página para volver a intentarlo.</p></div> : null}
         {!failed && !loading && filtered.length === 0 ? <div className="empty-panel compact"><div className="empty-icon">▤</div><h3>{repairs.length === 0 ? 'Aún no hay reparaciones' : 'Sin coincidencias'}</h3><p>{repairs.length === 0 ? 'Crea el primer registro sintético de este preview.' : 'Prueba con otra búsqueda.'}</p></div> : null}
         {!failed && filtered.length > 0 ? (
           <div className="table-scroll"><table><thead><tr><th>Folio</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Estado</th><th>Fecha</th><th>Sucursal</th></tr></thead><tbody>{filtered.map((repair) => (
-            <tr key={repair.id}><td><Link className="folio-link" to={`/reparaciones/${repair.id}`}>{repair.folio}</Link></td><td><strong>{repair.customerName}</strong><small>{repair.customerPhone}</small></td><td><strong>{repair.deviceBrand} {repair.deviceModel}</strong><small>{repair.deviceColor ?? 'Color no registrado'}</small></td><td className="problem-cell">{repair.reportedProblem}</td><td><StatusPill status={repair.status} /></td><td>{dateTime(repair.createdAt)}</td><td>{context?.branchName ?? 'Verificando…'}</td></tr>
+            <tr key={repair.id}><td className="folio-cell"><Link className="folio-link" to={`/reparaciones/${repair.id}`}>{repair.folio}</Link></td><td className="identity-cell"><strong>{repair.customerName}</strong><small>{repair.customerPhone}</small></td><td className="identity-cell"><strong>{repair.deviceBrand} {repair.deviceModel}</strong><small>{repair.deviceColor ?? 'Color no registrado'}</small></td><td className="problem-cell">{repair.reportedProblem}</td><td className="status-cell"><StatusPill status={repair.status} /></td><td className="date-cell">{compactDateTime(repair.createdAt)}</td><td className="branch-cell">{context?.branchName ?? 'Verificando…'}</td></tr>
           ))}</tbody></table></div>
         ) : null}
       </section>
