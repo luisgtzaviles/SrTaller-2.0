@@ -29,7 +29,8 @@ ProtectProc=invisible
 ProcSubset=pid
 RestrictSUIDSGID=true
 LockPersonality=true
-MemoryDenyWriteExecute=true
+# FileBrowser Quantum v1.3.3-stable (Go) segfaults with MemoryDenyWriteExecute.
+# The remaining filesystem, capability, syscall and privilege controls apply.
 CapabilityBoundingSet=
 AmbientCapabilities=
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
@@ -44,4 +45,3 @@ TasksMax=64
 
 [Install]
 WantedBy=multi-user.target
-

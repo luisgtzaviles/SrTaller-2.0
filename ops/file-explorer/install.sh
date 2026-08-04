@@ -50,15 +50,14 @@ systemctl daemon-reload
 systemctl enable --now srtaller-file-explorer.service
 
 for _ in $(seq 1 30); do
-  curl --fail --silent --max-time 2 http://127.0.0.1:3200/ >/dev/null && break
+  curl --silent --max-time 2 http://127.0.0.1:3200/ >/dev/null && break
   sleep 1
 done
 
-(
-  cd /etc/srtaller-file-explorer
-  runuser -u srtaller-file-explorer -- /usr/local/bin/srtaller-file-explorer \
-    set user "$INTERNAL_USER,$INTERNAL_PASSWORD"
-)
+systemctl stop srtaller-file-explorer.service
+runuser -u srtaller-file-explorer -- /usr/local/bin/srtaller-file-explorer \
+  set -u "$INTERNAL_USER,$INTERNAL_PASSWORD" -c /etc/srtaller-file-explorer/config.yaml
+systemctl start srtaller-file-explorer.service
 
 grep -v '^SR_FILES_BASIC_AUTH_' /etc/caddy/srtaller-preview.env >/etc/caddy/srtaller-preview.env.new
 printf 'SR_FILES_BASIC_AUTH_USER=%s\nSR_FILES_BASIC_AUTH_HASH=%s\n' "$BASIC_USER" "$BASIC_HASH" \
