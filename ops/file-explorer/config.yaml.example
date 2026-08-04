@@ -1,0 +1,48 @@
+server:
+  listen: "127.0.0.1"
+  port: 3200
+  database: "/var/lib/srtaller-file-explorer/database.db"
+  cacheDir: "/var/lib/srtaller-file-explorer/cache"
+  disableUpdateCheck: true
+  disablePreviews: true
+  disableWebDAV: true
+  sources:
+    - path: "/srv/srtaller-file-explorer"
+      name: "SR Taller DEV_PREVIEW"
+      config:
+        private: true
+        defaultUserScope: "/"
+        defaultEnabled: true
+        rules:
+          - ignoreHidden: true
+          - ignoreSymlinks: true
+auth:
+  tokenExpirationHours: 1
+  methods:
+    noauth: false
+    password:
+      enabled: true
+      signup: false
+  key: "__GENERATED_AUTH_KEY__"
+  adminUsername: "__BOOTSTRAP_USER__"
+  adminPassword: "__BOOTSTRAP_PASSWORD__"
+frontend:
+  name: "SR Taller DEV_PREVIEW — read-only releases"
+  disableDefaultLinks: true
+  disableUsedPercentage: true
+  disableNavButtons: false
+userDefaults:
+  locale: "es"
+  lockPassword: true
+  disableSettings: true
+  showHidden: false
+  permissions:
+    api: false
+    admin: false
+    modify: false
+    share: false
+    realtime: false
+    delete: false
+    create: false
+    download: true
+

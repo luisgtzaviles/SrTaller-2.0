@@ -14,7 +14,7 @@ loopback and sees only a root-curated filesystem view.
 2. Independent internal account when supported by the selected tool.
 3. Dedicated system user with `nologin`, no password and no sudo.
 4. Curated `/srv/srtaller-file-explorer` root only.
-5. Read-only bind mounts and UNIX permissions enforced by root.
+5. Root-built curated copies and UNIX permissions with no write bit.
 6. Application configured for read-only operation.
 7. systemd sandboxing, empty capabilities and explicit resource limits.
 8. Loopback listener with no firewall exception.

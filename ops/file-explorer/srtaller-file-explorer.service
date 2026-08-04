@@ -1,0 +1,47 @@
+[Unit]
+Description=SR Taller read-only development release explorer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=srtaller-file-explorer
+Group=srtaller-file-explorer
+WorkingDirectory=/var/lib/srtaller-file-explorer
+ExecStart=/usr/local/bin/srtaller-file-explorer -c /etc/srtaller-file-explorer/config.yaml
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=30
+TimeoutStopSec=15
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+ProcSubset=pid
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+ReadOnlyPaths=/srv/srtaller-file-explorer /etc/srtaller-file-explorer
+ReadWritePaths=/var/lib/srtaller-file-explorer
+MemoryMax=160M
+CPUQuota=25%
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target
+
