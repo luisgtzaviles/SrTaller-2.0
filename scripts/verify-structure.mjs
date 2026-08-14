@@ -2,6 +2,7 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 
 import { readJson } from './lib/toolchain-contract.mjs';
+import { healthRoutePolicyFailures } from './lib/health-route-policy.mjs';
 
 async function exists(relativePath) {
   try {
@@ -131,9 +132,7 @@ for (const sourceFile of sourceFiles) {
       failures.push(`Unauthorized HTTP surface detected in ${sourceFile}: ${forbiddenPattern}`);
     }
   }
-  if (/\/health/u.test(sourceText)) {
-    failures.push(`Unauthorized health surface detected in ${sourceFile}`);
-  }
+  failures.push(...healthRoutePolicyFailures(sourceFile, sourceText));
 }
 
 if (!(await exists('dist/main.js'))) {

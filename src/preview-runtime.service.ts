@@ -45,6 +45,14 @@ export class PreviewRuntimeService implements OnModuleInit, OnApplicationShutdow
     return this.#context;
   }
 
+  get ready(): boolean {
+    return this.#config.enabled &&
+      this.#connection?.state === 'ready' &&
+      this.#context !== null &&
+      this.#trustedStation !== null &&
+      this.#repairs !== null;
+  }
+
   private operational(): Readonly<{
     service: PreviewRepairService;
     station: TrustedStationContext;

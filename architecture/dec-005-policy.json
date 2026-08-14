@@ -683,6 +683,7 @@
     "src/modules/preview/application/preview-repair.service.ts",
     "src/modules/preview/domain/preview-repair.ts",
     "src/modules/preview/infrastructure/persistence/kysely-preview-repair.repository.ts",
+    "src/modules/preview/presentation/http/health.controller.ts",
     "src/modules/preview/presentation/http/preview.controller.ts",
     "src/modules/preview/preview.module.ts",
     "src/modules/stations/index.ts",
