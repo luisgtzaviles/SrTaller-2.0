@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { access } from 'node:fs/promises';
-import { dirname, extname, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { NestFactory } from '@nestjs/core';
@@ -9,13 +9,9 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 
 import { AppModule } from './app.module.js';
 import { loadPreviewConfig } from './preview-config.js';
+import type { PreviewStaticRequest } from './preview-static-routing.js';
+import { shouldServePreviewIndex } from './preview-static-routing.js';
 import { loadStartupConfig } from './startup-config.js';
-
-interface PreviewRequest {
-  readonly method: string;
-  readonly path: string;
-  accepts(type: string): false | string;
-}
 
 interface PreviewResponse {
   sendFile(path: string): void;
@@ -38,16 +34,11 @@ async function configurePreviewStaticFiles(
   application.useStaticAssets(publicDirectory, { index: false });
   application.use(
     (
-      request: PreviewRequest,
+      request: PreviewStaticRequest,
       response: PreviewResponse,
       next: PreviewNext,
     ): void => {
-      if (
-        request.method !== 'GET' ||
-        request.path.startsWith('/api/') ||
-        extname(request.path) !== '' ||
-        request.accepts('html') === false
-      ) {
+      if (!shouldServePreviewIndex(request)) {
         next();
         return;
       }
