@@ -107,6 +107,9 @@ const forbiddenConnectionVariables = Object.freeze([
 ]);
 
 const maximumTimeoutMs = 3_600_000;
+const approvedPostgresqlSocketDirectories = Object.freeze([
+  '/var/run/postgresql',
+] as const);
 
 export class DatabaseConfigError extends Error {
   readonly category = 'Configuration';
@@ -184,6 +187,42 @@ function requireGovernedString(
     );
   }
   if (value.length > maximumLength || !pattern.test(value)) {
+    return fail(
+      'PERSISTENCE_CONFIG_INVALID_STRING',
+      variable,
+      'value does not satisfy the governed format',
+    );
+  }
+  return value;
+}
+
+function requireDatabaseHost(
+  input: Readonly<Record<string, string | undefined>>,
+  variable: string,
+): string {
+  const value = requireRawValue(input, variable);
+  if (value !== value.trim()) {
+    return fail(
+      'PERSISTENCE_CONFIG_INVALID_STRING',
+      variable,
+      'surrounding whitespace is not allowed',
+    );
+  }
+  if (value.startsWith('/')) {
+    if (
+      !approvedPostgresqlSocketDirectories.includes(
+        value as (typeof approvedPostgresqlSocketDirectories)[number],
+      )
+    ) {
+      return fail(
+        'PERSISTENCE_CONFIG_INVALID_STRING',
+        variable,
+        'Unix socket directory is not part of the governed PostgreSQL host allowlist',
+      );
+    }
+    return value;
+  }
+  if (value.length > 255 || !/^[A-Za-z0-9._:-]+$/u.test(value)) {
     return fail(
       'PERSISTENCE_CONFIG_INVALID_STRING',
       variable,
@@ -461,12 +500,7 @@ export function parseDatabaseConfig(
     prefix,
   );
 
-  const host = requireGovernedString(
-    input,
-    variable('HOST'),
-    255,
-    /^[A-Za-z0-9._:-]+$/u,
-  );
+  const host = requireDatabaseHost(input, variable('HOST'));
   const port = requireInteger(input, variable('PORT'), 1, 65_535);
   const database = requireGovernedString(
     input,

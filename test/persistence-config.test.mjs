@@ -117,6 +117,57 @@ test('valid development, production, migration and isolated test configurations 
   assert.equal(isolatedTest.identity.database, 'srtaller_test_run_001');
 });
 
+test('governed PostgreSQL Unix socket host configuration passes', () => {
+  const development = parseDatabaseConfig(
+    developmentInput({ SR_DB_HOST: '/var/run/postgresql' }),
+  );
+  const migration = parseDatabaseConfig(
+    developmentInput({
+      SR_DB_HOST: '/var/run/postgresql',
+      SR_DB_ROLE: 'migration',
+      SR_DB_ACCESS_MODE: 'read-write',
+      SR_DB_MIGRATIONS_ENABLED: 'true',
+      SR_DB_APPLICATION_NAME: 'srtaller-migrator-development',
+    }),
+  );
+  const isolatedTest = parseDatabaseConfig(
+    testInput({ SR_TEST_DB_HOST: '/var/run/postgresql' }),
+  );
+
+  assert.equal(development.identity.host, '/var/run/postgresql');
+  assert.equal(development.identity.port, 5432);
+  assert.equal(migration.identity.host, '/var/run/postgresql');
+  assert.equal(migration.identity.port, 5432);
+  assert.equal(isolatedTest.identity.host, '/var/run/postgresql');
+  assert.equal(isolatedTest.identity.port, 5432);
+});
+
+test('ungoverned Unix socket paths and host injection payloads fail closed', () => {
+  for (const host of [
+    '/tmp',
+    '/etc',
+    '/',
+    '/tmp/../../etc',
+    '../postgresql',
+    'var/run/postgresql',
+    '/var/run/postgresql/',
+    '/var/run/postgresql/../../etc',
+    '/var/run/postgresql\n',
+    '/var/run/postgresql\t',
+    '/var/run/postgresql;touch',
+    '/var/run/postgresql --host=127.0.0.1',
+    'postgresql://srtaller_preview_migrator:secret@localhost/srtaller_preview',
+    '127.0.0.1/.s.PGSQL.5432',
+  ]) {
+    expectConfigError(
+      developmentInput({ SR_DB_HOST: host }),
+      'PERSISTENCE_CONFIG_INVALID_STRING',
+      'SR_DB_HOST',
+      ['secret', 'synthetic-development-password'],
+    );
+  }
+});
+
 test('boundary values for port, pool and timeouts pass', () => {
   const minimum = parseDatabaseConfig(
     developmentInput({
