@@ -3,13 +3,16 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual.
-- **Naturaleza:** Dirección conceptual; ADR-001/002/003/005/009 aceptan lenguaje/runtime, forma modular, motor PostgreSQL, shell NestJS/Express con REST mínima y repositorio único evolutivo, mientras las demás selecciones tecnológicas permanecen pendientes.
+- **Naturaleza:** Dirección conceptual aplicada sobre una baseline ejecutable; ADR-001/002/003/005/009 aceptan lenguaje/runtime, forma modular, motor PostgreSQL, shell NestJS/Express y repositorio único evolutivo, mientras las demás selecciones tecnológicas permanecen pendientes.
 - **Horizonte:** Dirección escalable para 1,000 o más tenants, sujeta a validación con carga, costos y necesidades reales.
 - **Decisiones relacionadas:** [ADR-001 a ADR-005](../decisions/README.md) y [ADR-009 a ADR-013](../decisions/README.md) están `Accepted`; ADR-006 a ADR-008 conservan el estado del [registro](../decisions/README.md).
 
 ## Objetivo
 
-Definir una dirección coherente para construir SR Taller 2.0 sin implementar todavía aplicaciones, infraestructura ni esquemas. La arquitectura busca aislamiento multitenant, límites claros, una API reutilizable, despliegues repetibles y evolución gradual.
+Definir una dirección coherente para evolucionar la baseline ejecutable de SR
+Taller 2.0. La arquitectura busca aislamiento multitenant, límites claros, una
+API reutilizable, despliegues repetibles y evolución gradual sin presentar los
+componentes futuros como infraestructura existente.
 
 ## Principios rectores
 
@@ -73,13 +76,13 @@ El diagrama expresa responsabilidades lógicas, no unidades desplegables inicial
 
 | Bloque | Responsabilidad | Propuesta preliminar | No implica todavía |
 |---|---|---|---|
-| Clientes web | Experiencias específicas por audiencia | TypeScript al autorizar la superficie; Next.js, React y Tailwind propuestos | Número final de aplicaciones, framework ni estrategia de renderizado |
+| Clientes web | Experiencias específicas por audiencia | Visual Slice 0 actual en React/Vite; estrategia final aún abierta | Número final de aplicaciones ni framework definitivo |
 | Cliente móvil | Consumir contratos centrales cuando exista necesidad validada | React Native con Expo | Construcción durante la fundación |
 | API central | Autenticación, autorización, casos de uso y contratos | TypeScript sobre Node.js `24.x`; NestJS `11.x` con Express y REST/HTTP JSON mínima aceptados | Rutas, payloads, versionado ni endpoints definitivos |
 | Módulos de dominio | Encapsular reglas, datos y eventos por capacidad | Monolito modular | Microservicios ni tablas por módulo |
 | Trabajos diferibles | Ejecutar procesos diferibles, reintentos e integraciones dentro de la aplicación inicial | TypeScript sobre Node.js `24.x`; mecanismo de cola pendiente | Worker o despliegue independiente |
 | Tiempo real | Entregar cambios confirmados a clientes conectados | Socket.IO o WebSockets | Protocolo aceptado |
-| Datos transaccionales | Persistencia canónica y consistencia | PostgreSQL 18.x y esquema compartido con aislamiento tenant aceptados | Diseño físico, acceso, migraciones y posible RLS pendientes |
+| Datos transaccionales | Persistencia canónica y consistencia | PostgreSQL 18.x y esquema compartido; foundation física de tenants/sucursales y migrador actuales | Modelo de dominio completo y posible RLS pendientes |
 | Coordinación temporal | Caché, colas y coordinación de conexiones | Redis propuesto | Uso como fuente de verdad ni tecnología aceptada |
 | Archivos | Guardar objetos y metadatos de acceso | API compatible con S3 | Proveedor, regiones o retención final |
 | Integraciones | Aislar contratos externos y normalizar eventos | Adaptadores y anti-corruption layer | Proveedores comprometidos |
@@ -136,7 +139,7 @@ Los webhooks se verifican y normalizan; la plataforma persiste su interpretació
 
 | Etapa | Objetivo arquitectónico | Condición de avance |
 |---|---|---|
-| Fundación documental | Validar límites, riesgos, ADRs y backlog | Aprobación explícita para prototipos técnicos |
+| Foundation técnica actual | Shell, UI de Preview, OCI, health, PostgreSQL y migraciones base | Rebanadas funcionales con alcance y aceptación explícitos |
 | Monolito modular inicial | Demostrar recorridos de negocio y aislamiento | Métricas, pruebas y contratos suficientes |
 | Escalado horizontal | Aumentar réplicas sin estado local autoritativo | Demanda y pruebas de capacidad |
 | Separación selectiva | Extraer sólo responsabilidades con presión real | ADR nuevo con evidencia y costo operativo |
@@ -156,21 +159,26 @@ Los objetivos cuantitativos de capacidad, disponibilidad, latencia y recuperaci�
 ## Alternativas que permanecen abiertas
 
 - La forma inicial de monolito modular ya está aceptada; su agrupación interna concreta permanece abierta.
-- TypeScript y Node.js `24.x` están aceptados para el backend inicial; compilador concreto, package manager y herramientas de build permanecen abiertos.
+- La baseline usa TypeScript, Node.js `24.x`, pnpm `11.15.1` y el build definido
+  en el repositorio; reemplazarlos requiere una decisión explícita.
 - Aplicar PostgreSQL 18.x como motor aceptado; RLS continúa pendiente de spike y sólo como defensa adicional opcional.
-- NestJS frente a alternativas TypeScript para la API.
+- NestJS/Express es la baseline actual de la API; una sustitución futura
+  requeriría evidencia y decisión.
 - Next.js frente a otras estrategias para cada cliente web.
 - Socket.IO frente a WebSockets nativos u otras soluciones administradas.
 - Redis/BullMQ frente a servicios de cola administrados cuando la operación lo justifique.
 - Proveedor S3-compatible y estrategia de distribución de archivos.
-- El repositorio único evolutivo y los workspaces bajo demanda están aceptados por ADR-009; package manager, lockfile, orquestador, caché y estructura física permanecen abiertos.
+- El repositorio único evolutivo está aceptado por ADR-009 y la baseline usa
+  pnpm workspaces/lockfile; orquestación y caché adicionales permanecen
+  abiertas sólo si surge una necesidad demostrable.
 
 Las selecciones todavía abiertas se documentan en ADRs `Proposed` o en el gate correspondiente; ADR-001 establece lenguaje/runtime inicial, ADR-002 la unidad arquitectónica, ADR-004 la topología multitenant, ADR-009 el repositorio único evolutivo, ADR-010 el contexto operativo, ADR-011 la identidad/sesión, ADR-012 la autorización ordinaria y ADR-013 la autorización reforzada conceptual.
 
 ## Restricciones y no objetivos
 
 - No se diseña una arquitectura de microservicios durante esta fase.
-- No se implementan aplicaciones, esquemas, migraciones, contenedores ni infraestructura.
+- La existencia de la baseline técnica no autoriza por sí sola nuevos
+  servicios, ambientes, esquemas destructivos ni infraestructura.
 - No se promete personalización ilimitada, base de datos por tenant, Kubernetes ni operación offline.
 - No se migrará automáticamente toda la complejidad del sistema anterior.
 - No se asumirá que 1,000 tenants equivalen a una carga uniforme o conocida.

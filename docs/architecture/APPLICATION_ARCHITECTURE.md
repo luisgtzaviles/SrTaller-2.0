@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador conceptual.
-- **Naturaleza:** Propuesta de responsabilidades y reglas de dependencia; no es diseño implementable.
+- **Estado:** Contrato arquitectónico parcial sobre una baseline ejecutable.
+- **Naturaleza:** Dirección de responsabilidades y reglas de dependencia; el código actual materializa sólo una parte.
 - **Alcance:** Clientes propios, API, módulos de aplicación y dominio, persistencia, workers y tiempo real.
-- **Persistencia:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) acepta PostgreSQL; Redis, S3-compatible, ORM, driver y repository implementation siguen abiertos.
-- **Repositorio:** [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md) acepta un repositorio único evolutivo; R0 no requiere workspaces y conserva una sola aplicación backend y un artefacto.
+- **Persistencia:** PostgreSQL 18.x, Kysely y `pg` están materializados en la foundation; Redis y S3-compatible siguen abiertos.
+- **Repositorio:** [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md) acepta un repositorio único evolutivo; la baseline usa pnpm workspaces y conserva una sola aplicación backend/un artefacto.
 
 ## Objetivo
 
@@ -16,6 +16,7 @@ Evitar que presentación, HTTP, reglas de negocio y acceso a datos vuelvan a mez
 
 | Aplicación o proceso | Audiencia o función | Estado |
 |---|---|---|
+| Visual Slice 0 | Preview técnico visible de la experiencia inicial | Materializada en React/Vite y servida por la aplicación actual |
 | Web de operación del taller | Personal que atiende clientes, reparaciones, inventario, ventas, pagos y caja | Capacidad conocida; alcance de primera versión pendiente |
 | Web de administración del tenant | Propietarios y administradores configuran organización, sucursales, usuarios y dispositivos | Hipótesis de aplicación separada |
 | Web de administración de plataforma | Personal autorizado administra tenants, planes, soporte y operación SaaS | Capacidad conocida; límites pendientes |
@@ -28,7 +29,7 @@ No se presupone que cada fila sea una aplicación autorizada, package, repositor
 
 ## Lenguaje y runtime aceptados
 
-Conforme a [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md), dominio, aplicación, adaptadores, procesamiento diferible, pruebas de producto y contratos deliberadamente compartidos del backend inicial usan TypeScript sobre Node.js `24.x`. ADR-009 acepta el repositorio único, pero no autoriza NestJS, package manager, workspaces, packages, librería de validación ni nueva superficie de cliente.
+Conforme a [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md), dominio, aplicación, adaptadores, procesamiento diferible, pruebas de producto y contratos deliberadamente compartidos del backend inicial usan TypeScript sobre Node.js `24.x`. La baseline materializada usa NestJS/Express, pnpm workspaces y React/Vite para Visual Slice 0; eso no autoriza nuevas superficies ni separaciones desplegables.
 
 Toda entrada HTTP, evento, job, dato persistido, archivo, variable de entorno o integración se valida en runtime antes de convertirse en un valor confiable. Los tipos de TypeScript, decorators o contratos compilados no sustituyen esa validación ni los controles de ADR-004 y ADR-010 a ADR-013.
 
@@ -140,7 +141,8 @@ Las agrupaciones sólo facilitan lectura. No sustituyen el análisis de dependen
 - Toda operación ordinaria recibe tenant, sucursal, estación, usuario y sesión desde fuentes confiables y rechaza ausencia o discrepancias.
 - La documentación del contrato debe generarse o verificarse desde una fuente única cuando se implemente.
 
-No se definen endpoints en esta etapa.
+Los endpoints técnicos y de Preview actuales no comprometen todavía los
+contratos funcionales completos de la API, que se definirán por rebanada.
 
 ## Consistencia y transacciones
 

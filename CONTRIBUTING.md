@@ -2,16 +2,37 @@
 
 ## Estado del documento
 
-**Estado:** Resumen operativo de DEC-051 y DEC-063 aceptadas con condiciones.
-**Alcance actual:** documentación, foundation técnica y cambios expresamente autorizados.
+**Estado:** Entry point operativo; resume DEC-051/063 y remite al workflow
+canónico vigente.
+**Alcance actual:** producto, documentación, foundation técnica y cambios
+expresamente autorizados.
+
+## MANDATORY FIRST READ
+
+Antes de modificar código, documentación, infraestructura o deployment:
+
+1. Leer el
+   [workflow canónico de desarrollo y delivery](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
+2. Leer la [política de ramas](docs/delivery/BRANCH_POLICY.md).
+3. Leer la [estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md).
+4. Leer [ambientes](docs/delivery/ENVIRONMENTS.md).
+5. Inspeccionar Git real y confirmar ambiente, sensibilidad de datos, alcance y
+   autoridad antes de ejecutar.
+
+El repositorio, Git y la evidencia actual del runtime tienen precedencia sobre
+el contexto de chat, memoria humana o supuestos de un agente.
 
 ## Antes de comenzar
 
-1. Verificar el [backlog](docs/backlog/PRODUCT_BACKLOG.md) y el [sprint actual](docs/sprints/sprint-00/SPRINT_BACKLOG.md).
+1. Completar el `MANDATORY FIRST READ` y verificar el
+   [backlog](docs/backlog/PRODUCT_BACKLOG.md) aplicable.
 2. No iniciar trabajo de implementación sin un PBI listo, asignado a un sprint de implementación y aprobado.
-3. Durante Sprint 00, no iniciar funcionalidad de R0 sin autorización
-   organizacional explícita; los cambios técnicos requieren alcance autorizado.
-4. Leer la [Definition of Ready](docs/delivery/DEFINITION_OF_READY.md), la [Definition of Done](docs/delivery/DEFINITION_OF_DONE.md) y el [flujo de desarrollo](docs/delivery/DEVELOPMENT_WORKFLOW.md).
+3. No iniciar una nueva funcionalidad de R0 sin tarea/PBI y autoridad
+   explícitos; la existencia de Preview no amplía el alcance autorizado.
+4. Leer la [Definition of Ready](docs/delivery/DEFINITION_OF_READY.md), la
+   [Definition of Done](docs/delivery/DEFINITION_OF_DONE.md) y el
+   [lifecycle especializado](docs/delivery/DEVELOPMENT_WORKFLOW.md) cuando
+   correspondan al tipo de trabajo.
 5. Hacer visibles supuestos, preguntas y dependencias; usar `TBD` cuando falte una respuesta.
 
 ## Cambios documentales

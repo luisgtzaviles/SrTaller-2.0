@@ -30,7 +30,10 @@ Incluye la capacidad mínima para demostrar dos tenants aislados, sucursales, us
 
 Excluye los módulos funcionales de Reparaciones, Clientes, Inventario, Caja, Ventas, CRM, mensajería, finanzas, planes/suscripciones y administración completa. La lista normativa y los escenarios están en [Criterios de salida de R0](../architecture-readiness/blocker-closure/CRITERIOS_DE_SALIDA_DE_R0.md).
 
-Esta aprobación define alcance y aceptación esperada; implementación, diseño técnico, pruebas ejecutadas y aceptación formal permanecen pendientes.
+Esta aprobación define alcance y aceptación esperada. La foundation técnica y
+parte de su persistencia ya están materializadas; la implementación completa
+de R0, sus pruebas de aceptación y su aceptación formal permanecen separadas y
+no se infieren de la existencia de Preview.
 
 ## Mapa inicial de capacidades
 
@@ -62,22 +65,27 @@ Esta aprobación define alcance y aceptación esperada; implementación, diseño
 | Administración central | Foundation | Gestión controlada de la plataforma y soporte a tenants | Faltan separación de funciones, acceso excepcional y auditoría reforzada. |
 | Integraciones | Later | Intercambio controlado con servicios externos | Deben priorizarse casos, contratos, credenciales, errores y ownership. |
 
-## Alcance de la etapa de fundación
+## Alcance de la fundación
 
-**Hecho conocido:** la etapa actual es exclusivamente documental y de planificación.
+**Hecho conocido:** la etapa exclusivamente documental fue el punto de partida
+histórico. La baseline actual ya incluye una foundation técnica ejecutable,
+pero aún no constituye la implementación completa de R0 ni del producto.
 
-Incluye:
+La fundación documental incluyó:
 
 - visión, principios, actores, lenguaje y límites de producto;
 - mapa conceptual de módulos y ownership;
 - preguntas abiertas y gates de decisión;
 - modelos preliminares de arquitectura, multitenancy, identidad, sucursales y dispositivos;
 - alternativas técnicas registradas como ADRs con estado `Proposed`;
-- estrategia documental de entrega, calidad, seguridad, observabilidad y operación;
+- estrategia de entrega, calidad, seguridad, observabilidad y operación;
 - epics, PBIs documentales y Sprint 00;
 - lecciones del sistema anterior sin copiar su código ni asumir migración completa.
 
-No incluye implementación funcional. Los límites explícitos están en [Fuera de alcance](./OUT_OF_SCOPE.md).
+La baseline técnica actual añade shell NestJS, Visual Slice 0, OCI, health,
+PostgreSQL y migraciones base. Cada nueva rebanada funcional requiere alcance,
+implementación, pruebas y aceptación propios. Los límites explícitos están en
+[Fuera de alcance](./OUT_OF_SCOPE.md).
 
 ## Capacidad no equivale a módulo ni a entrega
 

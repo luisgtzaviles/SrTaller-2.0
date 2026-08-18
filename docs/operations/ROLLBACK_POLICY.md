@@ -3,7 +3,8 @@
 ## Estado del documento
 
 - **Estado:** Propuesta
-- **Alcance:** Artefactos, configuración, migraciones y datos de la futura plataforma.
+- **Alcance:** Artefactos, configuración, migraciones y datos de Preview actual
+  y ambientes futuros.
 - **Decisión pendiente:** Autoridad, tiempos, estrategias de rollout, retención de artefactos y automatización.
 
 ## Objetivo
@@ -157,5 +158,6 @@ Si el rollback no recupera o agrava impacto:
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** selección de pipeline/topología o antes del primer despliegue funcional.
+- **Disparador:** cambio de pipeline/topología, incidente relevante de Preview
+  o antes de crear Staging/Production.
 - **Documentos relacionados:** [Release Process](../delivery/RELEASE_PROCESS.md), [Migration Policy](./MIGRATION_POLICY.md), [Incident Management](./INCIDENT_MANAGEMENT.md), [Runbook Template](./RUNBOOK_TEMPLATE.md).

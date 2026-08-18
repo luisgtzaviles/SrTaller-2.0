@@ -103,12 +103,18 @@ La relevancia comercial de estos diferenciadores debe contrastarse con alternati
 
 ## Restricciones conocidas
 
-**Hechos conocidos para la etapa de fundación:**
+**Hechos conocidos de la evolución del proyecto:**
 
-- No se implementarán frontend, backend, base de datos, infraestructura ni código funcional durante esta etapa.
-- No se iniciará el Sprint 1 ni se crearán artefactos ejecutables de frameworks.
-- La arquitectura inicial considerada es un monolito modular; no se crearán microservicios en esta etapa.
-- Las opciones tecnológicas descritas en el contexto son preliminares y deben permanecer como propuestas hasta su aprobación mediante ADRs.
+- La restricción exclusivamente documental correspondió a Sprint 00 y ya no
+  describe la baseline actual.
+- Existe una foundation ejecutable con backend NestJS, Visual Slice 0 en
+  React/Vite, contenedor OCI, Preview en Dokploy y PostgreSQL 18.4.
+- Esa foundation no implica que los recorridos funcionales completos del
+  taller estén implementados ni aceptados.
+- La arquitectura inicial es un monolito modular; no se crearán microservicios
+  sin presión demostrable y una decisión explícita.
+- Las decisiones aceptadas y las selecciones que aún permanecen abiertas se
+  distinguen en ADRs y documentos arquitectónicos vigentes.
 - No se copiará código del sistema anterior ni se asumirá compatibilidad sin justificación.
 - No se asumirán reglas de negocio, fechas, responsables, estimaciones ni métricas no confirmadas.
 - La arquitectura debe considerar desde el inicio múltiples tenants, sucursales, usuarios, roles, permisos, dispositivos, API central y crecimiento a 1,000 o más tenants.

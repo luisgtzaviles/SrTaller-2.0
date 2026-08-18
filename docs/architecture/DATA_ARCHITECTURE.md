@@ -2,14 +2,17 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador conceptual.
-- **Naturaleza:** Propuesta de ownership, consistencia y ciclo de vida; no contiene esquema ejecutable.
-- **Dirección aceptada:** PostgreSQL como persistencia transaccional primaria, con PostgreSQL 18.x como baseline de R0; Redis y almacenamiento S3-compatible permanecen como propuestas para responsabilidades específicas.
+- **Estado:** Contrato conceptual con foundation física materializada.
+- **Naturaleza:** Define ownership, consistencia y ciclo de vida; la foundation ejecutable de tenants/sucursales y su migración viven en código, no en este documento.
+- **Dirección aceptada:** PostgreSQL como persistencia transaccional primaria, con PostgreSQL 18.x como baseline de R0 y 18.4 en Preview; Redis y almacenamiento S3-compatible permanecen como propuestas.
 - **Decisiones relacionadas:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md) y [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) están `Accepted`.
 
 ## Objetivo
 
-Definir qué datos son autoritativos, cómo se aíslan, quién puede modificarlos y cómo evolucionan sin mezclar la lógica del dominio con detalles de almacenamiento. Este documento no define tablas, columnas, migraciones ni un ORM.
+Definir qué datos son autoritativos, cómo se aíslan, quién puede modificarlos y
+cómo evolucionan sin mezclar la lógica del dominio con detalles de
+almacenamiento. Este documento no sustituye el esquema, migraciones ni adapters
+ejecutables actuales basados en Kysely sobre `pg`.
 
 ## Principios
 
@@ -71,9 +74,12 @@ flowchart LR
     API -->|registro normalizado| PG
 ```
 
-### PostgreSQL aceptado
+### PostgreSQL actual
 
-ADR-003 lo acepta por sus transacciones, constraints, índices y ecosistema. ADR-004 gobierna la estrategia shared-schema. El diseño físico deberá evaluar:
+ADR-003 lo acepta por sus transacciones, constraints, índices y ecosistema.
+ADR-004 gobierna la estrategia shared-schema. La foundation física actual
+materializa tenants/sucursales y el journal de migraciones; cada ampliación del
+diseño deberá evaluar:
 
 - patrones reales de consulta y concurrencia;
 - constraints multitenant compuestos;
