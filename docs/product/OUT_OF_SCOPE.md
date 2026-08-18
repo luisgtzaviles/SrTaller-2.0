@@ -18,7 +18,7 @@ Los siguientes son **límites conocidos de la tarea actual**:
 - frontend, backend, base de datos, infraestructura o código funcional;
 - aplicaciones Next.js, NestJS, React Native u otros clientes ejecutables;
 - instalación de dependencias o scaffolding de frameworks;
-- Dockerfiles, Docker Compose ejecutable, pipelines u otra automatización operativa;
+- Docker Compose ejecutable, pipelines u otra automatización operativa; la única excepción posterior a esta baseline de fundación es el Dockerfile OCI app-only aceptado por ADR-007;
 - esquemas de base de datos ejecutables, migraciones o datos semilla;
 - implementación de módulos, endpoints, workers, WebSockets o integraciones;
 - prototipos funcionales;

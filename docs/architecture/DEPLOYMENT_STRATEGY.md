@@ -345,6 +345,6 @@ La [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md) define señales y l
 
 ## Próxima revisión
 
-- **Momento:** después de resolver ADR-007 y los ambientes, antes de crear Dockerfiles o pipelines.
-- **Evidencia esperada:** proveedor candidato, topology draft, matriz de compatibilidad, flujo de promoción y escenarios de rollback.
+- **Momento:** después de la baseline OCI app-only local y antes de crear registry, pipeline o despliegue remoto.
+- **Evidencia esperada:** proveedor candidato, topología draft, digest publicado, matriz de compatibilidad, flujo de promoción y escenarios de rollback.
 - **Responsable:** TBD.
