@@ -96,6 +96,7 @@ auditoría inicial, la remediación y el dictamen final:
 ## Entrega
 
 - [Workflow de desarrollo](delivery/DEVELOPMENT_WORKFLOW.md)
+- [Política de ramas](delivery/BRANCH_POLICY.md)
 - [Definition of Ready](delivery/DEFINITION_OF_READY.md)
 - [Definition of Done](delivery/DEFINITION_OF_DONE.md)
 - [Plantilla mínima de cambio técnico](delivery/TECHNICAL_CHANGE_TEMPLATE.md)

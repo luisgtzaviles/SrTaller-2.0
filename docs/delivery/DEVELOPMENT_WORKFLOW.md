@@ -5,7 +5,7 @@
 - **Estado:** Propuesta
 - **Alcance:** Descubrimiento, documentación y futuro desarrollo de SR Taller 2.0.
 - **Hecho conocido:** El proyecto está en fundación documental; no se ha autorizado implementación funcional ni el inicio del Sprint 01.
-- **Decisión pendiente:** Herramientas concretas de gestión, estrategia definitiva de ramas y responsables de aprobación.
+- **Decisión pendiente:** Herramientas concretas de gestión y responsables de aprobación. La estrategia operativa vigente está en la [política de ramas](./BRANCH_POLICY.md).
 
 ## Objetivo
 
@@ -81,7 +81,9 @@ Sprint 00 sigue el mismo principio, pero sus resultados son documentales. No aut
 - Someter los cambios a revisión por pares; revisores y reglas concretas quedan `TBD`.
 - Tratar cualquier posible exposición entre tenants como un bloqueo de liberación.
 
-Para trabajo futuro de código, se propone usar ramas de vida corta y pull requests vinculados al PBI. La convención definitiva de ramas es una decisión pendiente.
+El trabajo de código usa ramas de vida corta vinculadas al PBI o propósito del
+cambio y vuelve a la baseline integrada según la
+[política de ramas](./BRANCH_POLICY.md).
 
 ### 5. Validación y cierre
 
@@ -139,7 +141,7 @@ Una urgencia no elimina controles de tenant, seguridad ni trazabilidad. Si un pa
 
 - ¿Qué herramienta será la fuente de verdad del backlog y los estados?
 - ¿Quién puede aprobar que un PBI en estado `Ready` se seleccione en el bucket `Committed`, y quién aprueba staging a producción?
-- ¿Qué estrategia de ramas y protecciones se adoptará?
+- ¿Cuándo podrá materializarse la protección técnica de `main` requerida por `DEC051-C02`?
 - ¿Qué cambios exigirán revisión especializada de seguridad, datos o experiencia visual?
 - ¿Cómo se gestionarán excepciones sin normalizar deuda no trazada?
 

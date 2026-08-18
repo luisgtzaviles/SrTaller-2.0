@@ -35,13 +35,12 @@ riesgo de forma fail-closed y aplicar la
 
 ## Commits y pull requests
 
-Los cambios ordinarios usan ramas cortas y pull request. `main` sólo debe
-recibir cambios revisados con checks requeridos verdes; squash merge es la
-estrategia ordinaria aceptada por
-[DEC-051](docs/decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md#18-protección-de-main).
-La protección técnica de `main` permanece pendiente como `DEC051-C02`, por lo
-que su existencia no debe inferirse. Este documento no autoriza por sí solo
-commit, push, merge, deploy ni release.
+`main` es la única baseline integrada y los cambios ordinarios usan ramas de
+vida corta. La política operativa, su relación con Preview y el tratamiento
+fail-closed de `DEC051-C02` se describen en la
+[política de ramas](docs/delivery/BRANCH_POLICY.md). La protección técnica de
+`main` permanece pendiente, por lo que su existencia no debe inferirse. Este
+documento no autoriza por sí solo commit, push, merge, deploy ni release.
 
 ## Condiciones abiertas
 
