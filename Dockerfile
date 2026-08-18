@@ -55,4 +55,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD ["node", "--input-type=module", "--eval", "const response = await fetch(`http://127.0.0.1:${process.env.PORT}/readyz`, { signal: AbortSignal.timeout(2000) }); if (response.status !== 200) process.exit(1);"]
 
-ENTRYPOINT ["node", "--enable-source-maps", "dist/main.js"]
+CMD ["node", "--enable-source-maps", "dist/main.js"]
