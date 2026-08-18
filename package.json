@@ -14,6 +14,7 @@
     "verify:toolchain": "node ./scripts/verify-toolchain.mjs",
     "verify:structure": "node ./scripts/verify-structure.mjs",
     "verify:architecture": "pnpm run verify:toolchain && node ./scripts/check-architecture.mjs --root .",
+    "verify:container": "pnpm run verify:toolchain && node ./scripts/verify-oci-image.mjs",
     "architecture": "pnpm run verify:architecture",
     "test:architecture": "pnpm run verify:toolchain && node --test test/architecture-*.test.mjs",
     "clean": "node ./scripts/clean.mjs",
