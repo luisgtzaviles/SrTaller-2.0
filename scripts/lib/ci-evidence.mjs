@@ -14,7 +14,7 @@ const forbiddenPathPatterns = [
   /(?:^|\/)Users\//u,
   /(?:^|\/)home\/runner\/work\//u,
   /file:\/\//iu,
-  /[A-Za-z]:[\\/]/u,
+  /(?<![A-Za-z0-9_])[A-Za-z]:[\\/]/u,
 ];
 
 function portablePath(path) {

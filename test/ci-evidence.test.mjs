@@ -376,6 +376,35 @@ test('dist inspection accepts controlled preview static assets', async () => {
   }
 });
 
+test('dist inspection accepts ordinary URLs in preview static assets', async () => {
+  const root = await createDistFixture({ previewAssets: true });
+  try {
+    await writeFile(
+      resolve(root, 'dist/public/assets/index.js'),
+      'const reactError = "https://react.dev/errors/123";\n',
+    );
+    await assert.doesNotReject(() => inspectDist({ projectRoot: root }));
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test('dist inspection rejects a Windows drive path in compiled assets', async () => {
+  const root = await createDistFixture({ previewAssets: true });
+  try {
+    await writeFile(
+      resolve(root, 'dist/public/assets/index.js'),
+      'const localPath = "C:/workspace/private.js";\n',
+    );
+    await assert.rejects(
+      inspectDist({ projectRoot: root }),
+      /Non-portable path detected/u,
+    );
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
 test('dist inspection rejects non-code artifacts outside preview public root', async () => {
   const root = await createDistFixture();
   try {
