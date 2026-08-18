@@ -174,6 +174,9 @@ const migrationRunner = [
   '',
 ].join('\n');
 
+const migrationEntrypoint =
+  "import { createMigrationRunner } from './infrastructure/database/migration-runner.js';\nvoid createMigrationRunner;\n";
+
 const tenantPort = [
   'export interface TenantPersistenceScope { readonly tenantId: string; }',
   'export interface TenantRepositoryPort {',
@@ -782,6 +785,7 @@ export const persistenceFixtureCases = [
       'src/infrastructure/database/database-migration-provider.ts':
         databaseMigrationProviderSource,
       'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/db-migrate.ts': migrationEntrypoint,
       'src/modules/access/presentation/migration-helper.ts':
         "import { inspectMigrationSource } from '../../../infrastructure/database/database-migration-provider.js';\nexport const helper = inspectMigrationSource;\n",
     }),
@@ -800,6 +804,7 @@ export const persistenceFixtureCases = [
       'src/infrastructure/database/database-migration-provider.ts':
         databaseMigrationProviderSource,
       'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/db-migrate.ts': migrationEntrypoint,
       'src/main.ts':
         "import { createMigrationRunner } from './infrastructure/database/migration-runner.js';\nvoid createMigrationRunner;\n",
     }),
@@ -814,6 +819,7 @@ export const persistenceFixtureCases = [
       'src/infrastructure/database/database-migration-provider.ts':
         databaseMigrationProviderSource,
       'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/db-migrate.ts': migrationEntrypoint,
       'src/modules/access/application/migration-use-case.ts':
         "import { createMigrationRunner as createAdministrativeRunner } from '../../../infrastructure/database/migration-runner.js';\nexport const useCase = createAdministrativeRunner;\n",
     }),
@@ -828,6 +834,7 @@ export const persistenceFixtureCases = [
       'src/infrastructure/database/database-migration-provider.ts':
         databaseMigrationProviderSource,
       'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/db-migrate.ts': migrationEntrypoint,
       'src/modules/access/presentation/migration.controller.ts':
         "import * as Migration from '../../../infrastructure/database/migration-runner.js';\nexport const handler = Migration.createMigrationRunner;\n",
     }),
@@ -842,6 +849,7 @@ export const persistenceFixtureCases = [
       'src/infrastructure/database/database-migration-provider.ts':
         databaseMigrationProviderSource,
       'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/db-migrate.ts': migrationEntrypoint,
       'src/modules/access/presentation/migration-export.ts':
         "export { inspectMigrationSource as inspect } from '../../../infrastructure/database/database-migration-provider.js';\n",
     }),
@@ -856,6 +864,7 @@ export const persistenceFixtureCases = [
       'src/infrastructure/database/database-migration-provider.ts':
         databaseMigrationProviderSource,
       'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/db-migrate.ts': migrationEntrypoint,
       'src/modules/access/presentation/migration-type.ts':
         "import type { InternalMigrationManifest } from '../../../infrastructure/database/database-migration-provider.js';\nexport type Manifest = InternalMigrationManifest;\n",
     }),
@@ -870,6 +879,7 @@ export const persistenceFixtureCases = [
       'src/infrastructure/database/database-migration-provider.ts':
         databaseMigrationProviderSource,
       'src/infrastructure/database/migration-runner.ts': migrationRunner,
+      'src/db-migrate.ts': migrationEntrypoint,
       'src/modules/access/presentation/migration-dynamic.ts':
         "void require('../../../infrastructure/database/database-migration-capability.js');\nvoid import('../../../infrastructure/database/database-migration-provider.js');\n",
     }),

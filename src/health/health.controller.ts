@@ -20,8 +20,8 @@ export class HealthController {
   }
 
   @Get('readyz')
-  readyz(): HealthResponse {
-    if (!this.readiness.isReady()) {
+  async readyz(): Promise<HealthResponse> {
+    if (!(await this.readiness.isReady())) {
       throw new ServiceUnavailableException(
         Object.freeze({ status: 'starting' }),
       );
