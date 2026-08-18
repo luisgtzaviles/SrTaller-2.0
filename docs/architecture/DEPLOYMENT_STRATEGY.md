@@ -32,9 +32,12 @@ La baseline portable materializa exclusivamente:
   defaults sobreescribibles del contenedor;
 - verificación local de imagen y runtime.
 
-La primera POC real quedó desplegada desde `ops/first-oci-health` mediante el
-`Dockerfile` en el proyecto `SR Taller`, environment `Preview`, aplicación
-`srtaller-app` y servidor `srtaller-app-01`. El endpoint operativo es
+La primera POC real se desplegó históricamente desde `ops/first-oci-health`.
+Después de recuperar la UI y consolidar la baseline, `main` quedó establecida
+como única fuente integrada de Preview conforme a la
+[política de ramas](../delivery/BRANCH_POLICY.md). Dokploy usa el `Dockerfile`
+en el proyecto `SR Taller`, environment `Preview`, aplicación `srtaller-app` y
+servidor `srtaller-app-01`. El endpoint operativo es
 `https://preview.srtaller.dev`: Cloudflare publica un registro `A` en modo
 `DNS only` hacia `204.168.203.127` y Traefik termina TLS con Let's Encrypt antes
 de enrutar al puerto interno `3000`. El hostname temporal inicial fue retirado;
@@ -50,18 +53,20 @@ mutaciones adicionales de infraestructura.
 
 1. Codex modifica el repositorio y ejecuta las verificaciones proporcionales al
    cambio.
-2. Se crea un commit en una rama autorizada y se publica en `origin`.
-3. Dokploy clona la rama mediante la deploy key dedicada de sólo lectura.
+2. Se crea un commit en una rama autorizada, se integra en `main` y se publica
+   en `origin`.
+3. Dokploy clona `main` mediante la deploy key dedicada de sólo lectura.
 4. El deployment manual construye el `Dockerfile` y actualiza `srtaller-app`.
 5. Se exige servicio `running (healthy)`, logs sin crash loop y respuestas
    `200` en `/livez`, `200` en `/readyz` y `404` en una ruta desconocida.
 6. Se registra el commit fuente y el resultado.
 
-El autodeploy permanece deshabilitado porque `ops/first-oci-health` es una rama
-de trabajo específica, no una política de ramas de Preview ya adoptada.
-Habilitarlo posteriormente requiere escoger una rama estable de Preview y
-gobernar su webhook o integración; no se habilita para `main` o production sin
-decisión explícita.
+El autodeploy permanece deshabilitado. La fuente `Git` genérica actual requiere
+configurar además un webhook del repositorio; activar sólo el switch de Dokploy
+no materializa una automatización completa. Su habilitación será una mutación
+separada que debe verificar branch matching para `main`, observabilidad del
+evento y recuperación ante un deployment fallido. Esta evaluación no autoriza
+autodeploy ni ningún cambio de Production.
 
 ## Ambientes obligatorios
 
