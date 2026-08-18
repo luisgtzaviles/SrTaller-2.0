@@ -9,7 +9,10 @@
 .vscode
 *.log
 *.tsbuildinfo
-apps
+apps/*
+!apps/dev-preview-web
+!apps/dev-preview-web/**
+apps/dev-preview-web/node_modules
 architecture
 coverage
 dist

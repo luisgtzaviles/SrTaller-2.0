@@ -15,14 +15,17 @@ RUN mkdir -p "${COREPACK_HOME}" \
   && test "$(node --version)" = "v24.18.0" \
   && test "$(pnpm --version)" = "11.15.1"
 
-COPY package.json pnpm-lock.yaml .npmrc .node-version .nvmrc supply-chain-policy.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc .node-version .nvmrc supply-chain-policy.json ./
+COPY apps/dev-preview-web/package.json ./apps/dev-preview-web/package.json
 COPY scripts ./scripts
 RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.json tsconfig.build.json ./
 COPY src ./src
+COPY apps/dev-preview-web ./apps/dev-preview-web
 RUN pnpm run build \
-  && pnpm prune --prod \
+  && rm -rf node_modules apps/dev-preview-web/node_modules \
+  && pnpm install --prod --frozen-lockfile --filter srtaller-2 \
   && rm -f node_modules/.modules.yaml node_modules/.pnpm-workspace-state-v1.json \
   && find package.json node_modules dist -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} +
 

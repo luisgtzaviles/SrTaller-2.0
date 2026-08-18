@@ -24,7 +24,12 @@ const forbiddenPaths = [
   '/app/test',
   '/app/tools',
   '/app/node_modules/@types',
+  '/app/node_modules/@vitejs',
+  '/app/node_modules/react',
+  '/app/node_modules/react-dom',
+  '/app/node_modules/react-router-dom',
   '/app/node_modules/typescript',
+  '/app/node_modules/vite',
 ];
 
 async function docker(arguments_, options = {}) {
@@ -135,15 +140,24 @@ try {
   const port = Number(running.NetworkSettings.Ports['3000/tcp'][0].HostPort);
   await waitForReady(port);
 
-  const [live, ready, unknown] = await Promise.all([
+  const [root, spa, live, ready, apiUnknown, unknown] = await Promise.all([
+    request(port, '/'),
+    request(port, '/reparaciones'),
     request(port, '/livez'),
     request(port, '/readyz'),
+    request(port, '/api/unknown'),
     request(port, '/not-authorized'),
   ]);
+  assert(root.status === 200, '/ must return HTTP 200');
+  assert(typeof root.body === 'string', '/ must return HTML');
+  assert(root.body.includes('<title>SR Taller 2.0 · Preview</title>'), '/ must return the recovered UI');
+  assert(spa.status === 200, '/reparaciones must return HTTP 200');
+  assert(spa.body === root.body, '/reparaciones must return the SPA entrypoint');
   assert(live.status === 200, '/livez must return HTTP 200');
   assert(live.body?.status === 'live', '/livez must return the stable live contract');
   assert(ready.status === 200, '/readyz must return HTTP 200 after bootstrap');
   assert(ready.body?.status === 'ready', '/readyz must return the stable ready contract');
+  assert(apiUnknown.status === 404, 'Unknown API routes must return HTTP 404');
   assert(unknown.status === 404, 'Unknown routes must return HTTP 404');
 
   const { stdout: identity } = await execInContainer(
@@ -218,10 +232,13 @@ try {
         imageSizeBytes: image.Size,
         mounts: [],
         readOnlyRootFilesystem: true,
+        root,
+        spa,
         ready,
         runtimeIdentity: identity.trim(),
         runtimeRootEntries: expectedRootEntries,
         unknownRouteStatus: unknown.status,
+        unknownApiStatus: apiUnknown.status,
         live,
       },
       null,

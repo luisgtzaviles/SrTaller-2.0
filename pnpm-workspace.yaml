@@ -1,0 +1,3 @@
+packages:
+  - .
+  - apps/dev-preview-web

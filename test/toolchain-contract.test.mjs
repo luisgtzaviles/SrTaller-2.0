@@ -44,7 +44,9 @@ test('accepted runtime facts pass and incompatible facts fail', () => {
 
 test('package manifest pins the accepted baseline and blocks lifecycle scripts', async () => {
   const packageManifest = await readJson('package.json');
+  const previewManifest = await readJson('apps/dev-preview-web/package.json');
   const supplyChainPolicy = await readJson('supply-chain-policy.json');
+  const workspaceManifest = await readFile('pnpm-workspace.yaml', 'utf8');
 
   assert.equal(packageManifest.engines.node, EXPECTED_NODE_VERSION);
   assert.equal(packageManifest.engines.pnpm, EXPECTED_PNPM_VERSION);
@@ -52,6 +54,12 @@ test('package manifest pins the accepted baseline and blocks lifecycle scripts',
   assert.equal(packageManifest.pnpm, undefined);
   assert.equal(supplyChainPolicy.dependencyLifecycleDefault, 'blocked');
   assert.deepEqual(supplyChainPolicy.allowlist, []);
+  assert.equal(
+    workspaceManifest,
+    'packages:\n  - .\n  - apps/dev-preview-web\n',
+  );
+  assert.equal(previewManifest.dependencies.react, '19.2.8');
+  assert.equal(previewManifest.devDependencies.vite, '8.2.0');
 });
 
 test('compiled startup config accepts valid values and fails closed', async () => {

@@ -6,6 +6,10 @@ import {
   authorizedHealthSurfacePath,
   validateAuthorizedHealthSurface,
 } from './lib/health-surface-contract.mjs';
+import {
+  authorizedPreviewStaticSurfacePath,
+  validateAuthorizedPreviewStaticSurface,
+} from './lib/preview-static-surface-contract.mjs';
 
 async function exists(relativePath) {
   try {
@@ -115,15 +119,25 @@ for (const forbiddenPath of [
   'yarn.lock',
   'bun.lock',
   'bun.lockb',
-  'pnpm-workspace.yaml',
 ]) {
   if (await exists(forbiddenPath)) {
     failures.push(`Forbidden root artifact detected: ${forbiddenPath}`);
   }
 }
 
+const workspaceManifest = await readFile(
+  resolve(process.cwd(), 'pnpm-workspace.yaml'),
+  'utf8',
+);
+if (workspaceManifest !== 'packages:\n  - .\n  - apps/dev-preview-web\n') {
+  failures.push(
+    'pnpm-workspace.yaml must contain only the root and authorized app packages',
+  );
+}
+
 const sourceFiles = await listFiles('src');
 let healthSurfaceFound = false;
+let previewStaticSurfaceFound = false;
 for (const sourceFile of sourceFiles) {
   const sourceText = await readFile(sourceFile, 'utf8');
   if (sourceFile === authorizedHealthSurfacePath) {
@@ -132,6 +146,12 @@ for (const sourceFile of sourceFiles) {
       failures.push(`Unauthorized HTTP surface detected: ${problem}`);
     }
     continue;
+  }
+  if (sourceFile === authorizedPreviewStaticSurfacePath) {
+    previewStaticSurfaceFound = true;
+    for (const problem of validateAuthorizedPreviewStaticSurface(sourceText)) {
+      failures.push(`Unauthorized preview static surface detected: ${problem}`);
+    }
   }
   for (const forbiddenPattern of [
     /@Controller\s*\(/u,
@@ -147,15 +167,33 @@ for (const sourceFile of sourceFiles) {
 if (!healthSurfaceFound) {
   failures.push(`Authorized health surface is missing: ${authorizedHealthSurfacePath}`);
 }
+if (!previewStaticSurfaceFound) {
+  failures.push(
+    `Authorized preview static surface is missing: ${authorizedPreviewStaticSurfacePath}`,
+  );
+}
 
 if (!(await exists('dist/main.js'))) {
   failures.push('Compiled entrypoint dist/main.js is missing');
 } else {
   const outputFiles = await listFiles('dist');
   for (const outputFile of outputFiles) {
-    if (!['.js', '.map'].includes(extname(outputFile))) {
+    const previewAsset =
+      outputFile === 'dist/public/index.html' ||
+      /^dist\/public\/assets\/[A-Za-z0-9_-]+\.(?:css|js)$/u.test(outputFile);
+    if (!previewAsset && !['.js', '.map'].includes(extname(outputFile))) {
       failures.push(`Unexpected build artifact: ${outputFile}`);
     }
+  }
+
+  if (!outputFiles.includes('dist/public/index.html')) {
+    failures.push('Compiled preview entrypoint dist/public/index.html is missing');
+  }
+  if (!outputFiles.some((file) => /^dist\/public\/assets\/.+\.css$/u.test(file))) {
+    failures.push('Compiled preview CSS asset is missing');
+  }
+  if (!outputFiles.some((file) => /^dist\/public\/assets\/.+\.js$/u.test(file))) {
+    failures.push('Compiled preview JavaScript asset is missing');
   }
 
   for (const mapFile of outputFiles.filter((file) => file.endsWith('.js.map'))) {

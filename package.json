@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Minimal technical shell authorized by DEC-004 and PBI-021.",
+  "description": "Governed technical shell with the recovered Visual Slice 0 preview UI.",
   "engines": {
     "node": "24.18.0",
     "pnpm": "11.15.1"
@@ -18,11 +18,12 @@
     "architecture": "pnpm run verify:architecture",
     "test:architecture": "pnpm run verify:toolchain && node --test test/architecture-*.test.mjs",
     "clean": "node ./scripts/clean.mjs",
-    "typecheck": "pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit",
-    "build": "pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json",
+    "typecheck": "pnpm run verify:toolchain && tsc -p tsconfig.json --noEmit && pnpm --filter @srtaller/dev-preview-web typecheck",
+    "build": "pnpm run verify:toolchain && pnpm run clean && tsc -p tsconfig.build.json && pnpm --filter @srtaller/dev-preview-web build",
     "test": "pnpm run verify:toolchain && node --test test/*.test.mjs",
     "start": "pnpm run verify:toolchain && node --enable-source-maps dist/main.js",
     "smoke:start": "pnpm run verify:toolchain && node ./scripts/smoke-start.mjs",
+    "smoke:ui": "pnpm run verify:toolchain && node ./scripts/smoke-ui.mjs",
     "diagnose:local": "pnpm run verify:toolchain && node ./scripts/local-diagnostics.mjs",
     "dev": "pnpm run verify:toolchain && node ./scripts/dev.mjs",
     "verify": "pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure && pnpm run verify:architecture"
@@ -37,6 +38,7 @@
     "rxjs": "7.8.2"
   },
   "devDependencies": {
+    "@types/express": "5.0.6",
     "@types/node": "24.13.3",
     "@types/pg": "8.20.0",
     "typescript": "6.0.3"
