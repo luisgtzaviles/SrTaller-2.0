@@ -12,9 +12,10 @@
 
 - Base Linux/glibc: `node:24.18.0-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`.
 - Toolchain de build: Node.js `24.18.0`, pnpm `11.15.1`, `pnpm install --frozen-lockfile` y `pnpm run build`.
-- Plataforma local observada: `linux/arm64`.
+- Plataformas verificadas localmente: `linux/arm64` nativa y `linux/amd64` bajo emulación de Docker Desktop.
 - Image ID local reproducible: `sha256:7b909cc8863f9c4fd0baeb52ecc8d9fae144073128e1dd69f4746d0c14fdb4a7`.
 - Tamaño local: `82,735,047` bytes.
+- Variante cruzada `linux/amd64`: `sha256:e89cbe44b4069722116ce3c1ee4be2abd7599defd0fb6c15c64f8a24af428a58`, `82,855,870` bytes.
 - Runtime declarado: usuario `node`, UID/GID efectivo `1000:1000`, entrada `node --enable-source-maps dist/main.js`.
 - Contenido raíz de `/app`: sólo `dist`, `node_modules` y `package.json`.
 - La migración compilada `20260725183832_database_create_tenants_and_branches.js` está presente.
@@ -52,6 +53,7 @@ La normalización incluye los metadatos temporales de pnpm, mtimes, orden del ta
 | `HEALTHCHECK` Docker real | `healthy`, exit `0` |
 | Override `PORT=3101` | PASS; salud y aplicación usaron el puerto sobrescrito |
 | `SIGTERM` con timeout de 10 segundos | Exit `0`, container detenido |
+| Build y ejecución `linux/amd64` | PASS bajo emulación local; mismos contratos y aislamientos |
 
 La readiness representa únicamente bootstrap terminado. No abre ni verifica una conexión de base de datos.
 
@@ -60,7 +62,7 @@ La readiness representa únicamente bootstrap terminado. No abre ni verifica una
 El verificador `pnpm run verify:container -- srtaller-2:oci-ready-1` confirmó:
 
 - ningún mount o volumen;
-- ningún cambio reportado por `docker diff` después de las solicitudes;
+- root filesystem ejecutado como read-only y ningún cambio reportado por `docker diff` después de las solicitudes;
 - ningún proceso PostgreSQL, Redis o WAHA;
 - ninguna variable de imagen con nombre de credencial, password, secret, token o `DATABASE_URL`;
 - defaults `HOST=0.0.0.0`, `NODE_ENV=production`, `PORT=3000`;
@@ -85,6 +87,7 @@ El checker permite sólo `src/health/health.controller.ts` con `GET /livez` y `G
 
 - El primer build se detuvo antes de instalar dependencias porque faltaba el directorio de shims de Corepack; se añadió su creación explícita.
 - El primer auditor se detuvo por el separador de argumentos de pnpm y luego por diferencias portables de `docker top`; se corrigió el harness y se repitió desde cero.
+- La ejecución cruzada `linux/amd64` mostró el wrapper local de Rosetta en `docker top` y su intento de crear un cache propio. El auditor se acotó al entrypoint efectivo y pasó a ejecutar siempre con root filesystem read-only; la repetición validó el contrato sin escrituras.
 - Dos builds iniciales revelaron timestamps variables de pnpm y de `/app`; se eliminaron sólo metadatos no requeridos en runtime y se normalizó la capa. Los dos builds finales convergieron en el mismo image ID.
 - No se reutilizó un resultado parcial como evidencia final.
 

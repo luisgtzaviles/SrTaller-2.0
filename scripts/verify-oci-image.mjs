@@ -124,6 +124,7 @@ try {
     'create',
     '--name',
     containerName,
+    '--read-only',
     '--publish',
     '127.0.0.1::3000',
     imageReference,
@@ -182,6 +183,7 @@ try {
 
   const beforeStop = await inspect(containerName);
   assert(beforeStop.Mounts.length === 0, 'Container must run without volumes or mounts');
+  assert(beforeStop.HostConfig.ReadonlyRootfs, 'Container root filesystem must be read-only');
   assert(beforeStop.State.Running, 'Container must be running before SIGTERM test');
 
   const { stdout: processList } = await docker([
@@ -190,7 +192,10 @@ try {
     '-eo',
     'pid,comm,args',
   ]);
-  assert(/node --enable-source-maps dist\/main\.js/.test(processList), 'Expected Node app process is missing');
+  assert(
+    /--enable-source-maps dist\/main\.js(?:\s|$)/u.test(processList),
+    'Expected Node app process is missing',
+  );
   assert(!/postgres|redis|waha/i.test(processList), 'Forbidden auxiliary service process detected');
 
   const { stdout: filesystemDiff } = await docker(['diff', containerName]);
@@ -212,6 +217,7 @@ try {
         imageReference,
         imageSizeBytes: image.Size,
         mounts: [],
+        readOnlyRootFilesystem: true,
         ready,
         runtimeIdentity: identity.trim(),
         runtimeRootEntries: expectedRootEntries,
