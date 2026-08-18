@@ -161,6 +161,27 @@ jobs:
           SR_DB_ACCESS_MODE: read-write
           SR_DB_MIGRATIONS_ENABLED: "false"
 
+      - name: Run compiled UI route smoke
+        run: pnpm run smoke:ui
+        env:
+          SR_DB_ENVIRONMENT: development
+          SR_DB_HOST: 127.0.0.1
+          SR_DB_PORT: "5432"
+          SR_DB_NAME: srtaller_compiled_smoke
+          SR_DB_USER: srtaller_compiled_smoke
+          SR_DB_PASSWORD: synthetic-ci-compiled-smoke-password
+          SR_DB_SSL_MODE: disable
+          SR_DB_POOL_MIN: "0"
+          SR_DB_POOL_MAX: "3"
+          SR_DB_IDLE_TIMEOUT_MS: "1000"
+          SR_DB_CONNECTION_TIMEOUT_MS: "2000"
+          SR_DB_STATEMENT_TIMEOUT_MS: "2000"
+          SR_DB_QUERY_TIMEOUT_MS: "2000"
+          SR_DB_APPLICATION_NAME: srtaller-ci-compiled-ui-smoke-runtime
+          SR_DB_ROLE: application
+          SR_DB_ACCESS_MODE: read-write
+          SR_DB_MIGRATIONS_ENABLED: "false"
+
       - name: Check whitespace and repository immutability
         shell: bash
         run: |

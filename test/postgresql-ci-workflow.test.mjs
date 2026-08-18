@@ -44,9 +44,17 @@ test('compiled smoke uses an isolated migrated PostgreSQL service without relaxi
     workflow,
     /name: Run compiled artifact smoke[\s\S]*run: pnpm run smoke:start[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
   );
+  assert.match(
+    workflow,
+    /name: Run compiled UI route smoke[\s\S]*run: pnpm run smoke:ui[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+  );
   assert.ok(
     workflow.indexOf('name: Prepare compiled smoke PostgreSQL schema') <
       workflow.indexOf('name: Run compiled artifact smoke'),
+  );
+  assert.ok(
+    workflow.indexOf('name: Run compiled artifact smoke') <
+      workflow.indexOf('name: Run compiled UI route smoke'),
   );
   assert.doesNotMatch(workflow, /DATABASE_URL|PGPASSWORD|PGHOST/u);
 });
