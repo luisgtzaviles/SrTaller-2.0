@@ -2,6 +2,10 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 
 import { readJson } from './lib/toolchain-contract.mjs';
+import {
+  authorizedHealthSurfacePath,
+  validateAuthorizedHealthSurface,
+} from './lib/health-surface-contract.mjs';
 
 async function exists(relativePath) {
   try {
@@ -119,18 +123,29 @@ for (const forbiddenPath of [
 }
 
 const sourceFiles = await listFiles('src');
-const sourceText = (
-  await Promise.all(sourceFiles.map((file) => readFile(file, 'utf8')))
-).join('\n');
-
-for (const forbiddenPattern of [
-  /@Controller\s*\(/u,
-  /@(Get|Post|Put|Patch|Delete)\s*\(/u,
-  /\/health/u,
-]) {
-  if (forbiddenPattern.test(sourceText)) {
-    failures.push(`Unauthorized HTTP surface detected: ${forbiddenPattern}`);
+let healthSurfaceFound = false;
+for (const sourceFile of sourceFiles) {
+  const sourceText = await readFile(sourceFile, 'utf8');
+  if (sourceFile === authorizedHealthSurfacePath) {
+    healthSurfaceFound = true;
+    for (const problem of validateAuthorizedHealthSurface(sourceText)) {
+      failures.push(`Unauthorized HTTP surface detected: ${problem}`);
+    }
+    continue;
   }
+  for (const forbiddenPattern of [
+    /@Controller\s*\(/u,
+    /@(Get|Post|Put|Patch|Delete|Options|Head|All)\s*\(/u,
+  ]) {
+    if (forbiddenPattern.test(sourceText)) {
+      failures.push(
+        `Unauthorized HTTP surface detected in ${sourceFile}: ${forbiddenPattern}`,
+      );
+    }
+  }
+}
+if (!healthSurfaceFound) {
+  failures.push(`Authorized health surface is missing: ${authorizedHealthSurfacePath}`);
 }
 
 if (!(await exists('dist/main.js'))) {

@@ -81,6 +81,8 @@ const expectedPathByFixtureName = {
   'unauthorized controller':
     'src/modules/access/presentation/http/probe.ts',
   'unauthorized endpoint': 'src/modules/access/presentation/http/endpoint.ts',
+  'authorized health surface with additional route':
+    'src/health/health.controller.ts',
   'shared content': 'src/shared',
   'domain imports application': 'src/modules/access/domain/rule.ts',
   'application imports infrastructure':
@@ -99,6 +101,38 @@ const expectedPathByFixtureName = {
 };
 
 export const fixtureCases = [
+  {
+    name: 'authorized health surface',
+    expectedRules: [],
+    files: {
+      'src/health/health.controller.ts': [
+        "import { Controller, Get } from '@nestjs/common';",
+        '@Controller()',
+        'export class HealthController {',
+        "  @Get('livez') livez(): object { return {}; }",
+        "  @Get('readyz') readyz(): object { return {}; }",
+        '}',
+        '',
+      ].join('\n'),
+    },
+  },
+  {
+    name: 'authorized health surface with additional route',
+    expectedRules: ['D5-R035'],
+    expectedText: 'exactly GET /livez and GET /readyz',
+    files: {
+      'src/health/health.controller.ts': [
+        "import { Controller, Get } from '@nestjs/common';",
+        '@Controller()',
+        'export class HealthController {',
+        "  @Get('livez') livez(): object { return {}; }",
+        "  @Get('readyz') readyz(): object { return {}; }",
+        "  @Get('status') status(): object { return {}; }",
+        '}',
+        '',
+      ].join('\n'),
+    },
+  },
   {
     name: 'allowed graph through public indexes',
     expectedRules: [],

@@ -111,9 +111,13 @@ test('transaction step creates no migration, product schema, repository or Nest 
   const combined = (
     await Promise.all(files.map((path) => readFile(path, 'utf8')))
   ).join('\n');
+  const withoutAuthorizedHealthController = combined.replaceAll(
+    'HealthController',
+    '',
+  );
 
   assert.doesNotMatch(
-    combined,
+    withoutAuthorizedHealthController,
     /transaction_probe|CREATE TABLE|FileMigrationProvider|Migrator|Repository|Controller/u,
   );
   assert.doesNotMatch(
