@@ -2,10 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador conceptual.
-- **Naturaleza:** Propuesta; no se crean contenedores, pipelines ni infraestructura en esta etapa.
-- **Candidatos:** contenedores Docker, GitHub Actions e imágenes versionadas, pendientes de ADR y evaluación.
-- **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Proposed`.
+- **Estado:** Baseline OCI app-only aceptada; estrategia de release posterior
+  continúa propuesta.
+- **Naturaleza:** Autoriza imagen local portable y health mínimo; no autoriza
+  publicación, deploy ni infraestructura remota.
+- **Empaquetado aceptado:** Dockerfile multi-stage e imagen OCI versionada.
+- **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Accepted — OCI app-only baseline authorized`.
 - **Baseline de runtime aceptada:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md) fija TypeScript y Node.js `24.x`; no acepta contenedores, CI/CD ni plataforma de ejecución.
 - **Baseline de persistencia aceptada:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) fija PostgreSQL 18.x; no acepta proveedor, contenedor, HA, pooler ni servicio administrado.
 - **Baseline de repositorio aceptada:** [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md) fija un repositorio único y un solo flujo coordinado de versión para R0; no acepta workspaces, orquestador, caché, CI/CD ni múltiples artefactos.
@@ -13,6 +15,26 @@
 ## Objetivo
 
 Lograr despliegues repetibles, trazables y recuperables entre local development, staging y production. El artefacto probado debe promoverse sin reconstrucción, con configuración y secretos propios de cada ambiente.
+
+## Decisión operativa actual
+
+Dokploy es la plataforma operativa elegida para la primera POC app-only. La
+imagen de SR Taller permanece neutral: usa OCI, HTTP, configuración de entorno
+y un puerto interno estándar; no consume APIs ni configuración propietaria de
+Dokploy.
+
+El incremento autorizado materializa exclusivamente:
+
+- imagen OCI Linux/glibc del backend único;
+- Dockerfile multi-stage, runtime non-root y build reproducible;
+- `GET /livez` y `GET /readyz` sin dependencias externas;
+- configuración `HOST=0.0.0.0`, `NODE_ENV=production` y `PORT=3000` como
+  defaults sobreescribibles del contenedor;
+- verificación local de imagen y runtime.
+
+Permanecen fuera PostgreSQL runtime, migraciones de deploy, Redis, workers,
+WAHA, R2, Docker Compose, Kubernetes, manifests Swarm, dominio, DNS, TLS dentro
+del contenedor y cualquier mutación en Dokploy o Hetzner.
 
 ## Ambientes obligatorios
 

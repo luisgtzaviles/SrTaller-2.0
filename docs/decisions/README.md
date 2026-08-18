@@ -34,6 +34,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 | [ADR-003](proposed/ADR-003-postgresql-primary-database.md) | PostgreSQL como motor relacional transaccional primario | Accepted — 2026-07-21 |
 | [ADR-004](proposed/ADR-004-shared-schema-multitenancy.md) | Multitenancy con base y esquema compartidos | Accepted — 2026-07-21 |
 | [ADR-005](proposed/ADR-005-nestjs-backend.md) | NestJS como shell técnico del backend, con Express y REST/HTTP JSON mínima | Accepted with conditions — 2026-07-22 |
+| [ADR-007](proposed/ADR-007-containerized-deployments.md) | Imagen OCI versionada para el backend inicial | Accepted — OCI app-only baseline authorized — 2026-08-18 |
 | [ADR-009](proposed/ADR-009-monorepo-strategy.md) | Repositorio único evolutivo y workspaces bajo demanda | Accepted — 2026-07-21 |
 | [ADR-010](proposed/ADR-010-station-bound-operational-context.md) | Contexto operativo derivado de una estación vinculada | Accepted — 2026-07-21 |
 | [ADR-011](proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) | Identidad de usuario, autenticación por PIN y sesión operativa | Accepted — 2026-07-21 |
@@ -61,7 +62,6 @@ Estas decisiones no alteran el conteo de ADRs:
 | ADR | Tema | Estado |
 |---|---|---|
 | [ADR-006](proposed/ADR-006-nextjs-web-clients.md) | Next.js para clientes web | Proposed |
-| [ADR-007](proposed/ADR-007-containerized-deployments.md) | Despliegues en contenedores | Proposed |
 | [ADR-008](proposed/ADR-008-wildcard-subdomain-routing.md) | Resolución por subdominios wildcard | Proposed |
 
 ## Reglas

@@ -1,11 +1,19 @@
 # ADR-007 — Despliegues mediante contenedores versionados
 
-**Status: Proposed**
-**Fecha:** TBD
+**Status: Accepted — OCI app-only baseline authorized**
+**Fecha:** 2026-08-18
+**Autoridad de aceptación:** Responsable del Proyecto
 
 ## Estado del documento
 
-Propuesta de empaquetado y promoción; no autoriza Dockerfiles, infraestructura ni despliegues. Está subordinada a [ADR-002](ADR-002-modular-monolith-first.md): se evaluaría sobre el único artefacto inicial y no crea unidades desplegables separadas.
+Decisión aceptada para empaquetar el único backend inicial como imagen OCI
+portable. Autoriza el Dockerfile de producto, su verificación local y la
+superficie técnica mínima de salud necesaria para una POC app-only. No autoriza
+deploy, infraestructura remota, bases de datos, dominios ni servicios futuros.
+
+Está subordinada a
+[ADR-002](ADR-002-modular-monolith-first.md): conserva un único artefacto
+inicial y no crea unidades desplegables separadas.
 
 ## Contexto
 
@@ -26,9 +34,43 @@ El sistema anterior tuvo despliegues lentos o manuales y diferencias difíciles 
 3. **Despliegue directo en VM:** flexibilidad, mayor riesgo de deriva.
 4. **FTP/manual:** descartable por baja trazabilidad y repetibilidad.
 
-## Decisión propuesta
+## Decisión
 
-Empaquetar el único artefacto inicial como imagen versionada y promover exactamente el mismo digest entre staging y producción mediante un pipeline controlado. Si un ADR futuro autoriza extraer otra unidad, esa unidad aplicaría el mismo principio. GitHub Actions es el candidato preliminar para CI/CD y Docker Compose una hipótesis para dependencias locales; ambas elecciones requieren evaluación propia y no forman parte de la decisión de empaquetado de este ADR. La plataforma de ejecución y el registry siguen pendientes.
+Empaquetar el único artefacto inicial como imagen OCI versionada y promover
+exactamente el mismo digest entre ambientes mediante un pipeline controlado.
+La imagen se construye mediante un Dockerfile multi-stage sobre Linux/glibc,
+fija la toolchain aceptada, ejecuta JavaScript compilado desde `dist/`, corre
+como usuario no-root y recibe configuración en runtime.
+
+La imagen expone únicamente la superficie técnica `GET /livez` y
+`GET /readyz`. Durante la POC app-only, readiness representa que el bootstrap
+actual terminó; no declara salud de PostgreSQL ni de servicios futuros.
+
+Dokploy es la plataforma operativa elegida actualmente para ejecutar la POC y
+administrar routing/TLS, pero la imagen no utiliza APIs, manifests ni
+constructs propietarios de Dokploy. Debe poder ejecutarse con un runtime OCI
+estándar.
+
+Si un ADR futuro autoriza extraer otra unidad, esa unidad aplicará el mismo
+principio. GitHub Actions permanece como candidato para CI/CD. Docker Compose
+no es obligatorio ni queda autorizado por esta decisión; Kubernetes,
+configuración Swarm específica, Redis, workers, WAHA, R2 y PostgreSQL runtime
+quedan fuera de este incremento. La política de registry y promoción remota
+permanece pendiente.
+
+## Contrato autorizado para la primera imagen
+
+- Linux/glibc; no Alpine/musl.
+- Node.js `24.18.0` y pnpm `11.15.1` durante el build reproducible.
+- Instalación desde `pnpm-lock.yaml` con `--frozen-lockfile`.
+- Build mediante el script canónico del repositorio.
+- Runtime non-root desde `dist/`, sin ejecutar TypeScript.
+- Puerto interno convencional `3000`, configurable mediante `PORT`.
+- `HOST`, `NODE_ENV` y `PORT` siguen siendo configuración de runtime.
+- TLS y routing externos al contenedor.
+- Sin secretos, `.git`, fuentes o herramientas de verificación en la imagen
+  final.
+- Sin volumen persistente para la aplicación app-only.
 
 ## Consecuencias positivas
 
@@ -56,7 +98,8 @@ Empaquetar el único artefacto inicial como imagen versionada y promover exactam
 
 - ¿Qué registry, plataforma y política de retención se usarán?
 - ¿Qué controles de firma, SBOM y escaneo serán obligatorios?
-- ¿GitHub Actions y Docker Compose satisfacen los requisitos operativos y de seguridad frente a sus alternativas?
+- ¿Qué mecanismo construirá y publicará el digest que después consumirá
+  Dokploy?
 
 ## Referencias
 
@@ -66,4 +109,5 @@ Empaquetar el único artefacto inicial como imagen versionada y promover exactam
 
 ## Próxima revisión
 
-Antes de diseñar el pipeline de Engineering Foundation; fecha: TBD.
+Antes de autorizar publicación de imagen o el primer deploy en Dokploy; fecha:
+TBD.
