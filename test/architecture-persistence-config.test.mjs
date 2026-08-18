@@ -19,7 +19,11 @@ test('typed persistence configuration retains its exact owner and narrow public 
       'parseDatabaseConfig',
       'sanitizeDatabaseConfig',
     ],
-    consumers: ['src/infrastructure/database/database-connection.ts'],
+    consumers: [
+      'src/infrastructure/database/database-connection.ts',
+      'src/infrastructure/database/database-runtime.ts',
+      'src/db-migrate.ts',
+    ],
     status: 'materialized-configuration',
   });
 });
@@ -37,8 +41,9 @@ test('configuration is pure and does not materialize persistence or SQL', async 
   assert.doesNotMatch(source, /getGlobalDatabaseConfig|setConfig|mutableConfig/u);
 });
 
-test('src has one governed process.env access and configuration is not read at import time', async () => {
+test('only executable entrypoints read process.env and configuration is not read at import time', async () => {
   const files = [
+    'src/db-migrate.ts',
     'src/app.module.ts',
     'src/main.ts',
     'src/startup-config.ts',
@@ -61,11 +66,15 @@ test('src has one governed process.env access and configuration is not read at i
 
   assert.deepEqual(
     occurrences.map(({ file }) => file),
-    ['src/main.ts'],
+    ['src/db-migrate.ts', 'src/main.ts', 'src/main.ts'],
   );
   assert.match(
     await readFile('src/main.ts', 'utf8'),
     /loadStartupConfig\(process\.env\)/u,
+  );
+  assert.match(
+    await readFile('src/db-migrate.ts', 'utf8'),
+    /parseDatabaseConfig\(process\.env\)/u,
   );
 });
 

@@ -98,7 +98,11 @@
           "parseDatabaseConfig",
           "sanitizeDatabaseConfig"
         ],
-        "consumers": ["src/infrastructure/database/database-connection.ts"],
+        "consumers": [
+          "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/database-runtime.ts",
+          "src/db-migrate.ts"
+        ],
         "status": "materialized-configuration"
       },
       "src/infrastructure/database/database-types.ts": {
@@ -134,6 +138,8 @@
         "consumers": [
           "src/infrastructure/database/transaction-runner.ts",
           "src/infrastructure/database/migration-runner.ts",
+          "src/infrastructure/database/database-runtime.ts",
+          "src/db-migrate.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
@@ -169,7 +175,8 @@
           "createGovernedFileMigrationProvider"
         ],
         "consumers": [
-          "src/infrastructure/database/migration-runner.ts"
+          "src/infrastructure/database/migration-runner.ts",
+          "src/infrastructure/database/database-runtime.ts"
         ],
         "status": "materialized-owner-internal-provider"
       },
@@ -187,6 +194,7 @@
         ],
         "consumers": [
           "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/database-runtime.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
@@ -239,9 +247,19 @@
           "DatabaseMigrationError",
           "createMigrationRunner"
         ],
-        "consumers": ["scripts/run-migrations.mjs"],
-        "consumerRequirement": "deferred-until-operational-composition",
+        "consumers": ["src/db-migrate.ts"],
         "status": "materialized-migration-runner"
+      },
+      "src/infrastructure/database/database-runtime.ts": {
+        "owner": "database",
+        "publicExports": [
+          "DatabaseRuntime",
+          "DatabaseRuntimeError",
+          "createDatabaseRuntime",
+          "sanitizeDatabaseRuntimeState"
+        ],
+        "consumers": ["src/main.ts"],
+        "status": "materialized-database-runtime"
       }
     },
     "ports": {
@@ -348,7 +366,8 @@
           "src/infrastructure/database/migration-runner.ts"
         ],
         "src/infrastructure/database/database-migration-provider.ts": [
-          "src/infrastructure/database/migration-runner.ts"
+          "src/infrastructure/database/migration-runner.ts",
+          "src/infrastructure/database/database-runtime.ts"
         ]
       }
     },

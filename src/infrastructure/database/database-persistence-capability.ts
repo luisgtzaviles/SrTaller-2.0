@@ -3,10 +3,25 @@ import type { Kysely, Transaction } from 'kysely';
 import { useDatabaseTransactionExecutor } from './database-transaction-capability.js';
 import type { DatabaseSchema } from './database-types.js';
 
-export type InternalDatabasePersistenceOwner = 'stations' | 'tenancy';
+export type InternalDatabasePersistenceOwner =
+  | 'database'
+  | 'stations'
+  | 'tenancy';
+
+type DatabaseMigrationJournalTable = Readonly<{
+  name: string;
+  timestamp: string;
+}>;
+
+type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants'> &
+  Readonly<{
+    kysely_migration: DatabaseMigrationJournalTable;
+  }>;
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
-  Owner extends 'tenancy'
+  Owner extends 'database'
+    ? DatabaseTechnicalSchema
+    : Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'tenants'>
     : Pick<DatabaseSchema, 'branches'>;
 

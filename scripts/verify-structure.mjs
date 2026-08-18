@@ -46,6 +46,7 @@ const requiredScripts = [
   'clean',
   'typecheck',
   'build',
+  'db:migrate',
   'test',
   'start',
   'dev',

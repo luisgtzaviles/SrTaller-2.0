@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
@@ -13,6 +13,13 @@ if (!imageReference) {
 }
 
 const containerName = `srtaller-oci-verify-${randomUUID()}`;
+const postgresContainerName = `srtaller-pg-verify-${randomUUID()}`;
+const networkName = `srtaller-oci-verify-${randomUUID()}`;
+const postgresImage =
+  'postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf';
+const databaseName = 'srtaller_preview_oci';
+const databaseUser = 'srtaller_preview_oci';
+const databasePassword = `synthetic_${randomBytes(24).toString('hex')}`;
 const expectedRootEntries = ['dist', 'node_modules', 'package.json'];
 const forbiddenPaths = [
   '/app/.env',
@@ -101,6 +108,60 @@ async function removeContainer() {
   }
 }
 
+async function removePostgres() {
+  try {
+    await docker(['rm', '--force', postgresContainerName]);
+  } catch {
+    // Best-effort cleanup.
+  }
+  try {
+    await docker(['network', 'rm', networkName]);
+  } catch {
+    // Best-effort cleanup.
+  }
+}
+
+async function waitForPostgres() {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    const state = await inspect(postgresContainerName);
+    if (state.State.Health?.Status === 'healthy') return;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error('PostgreSQL container health timed out');
+}
+
+function databaseEnvironment(role) {
+  return {
+    SR_DB_ENVIRONMENT: 'development',
+    SR_DB_HOST: 'postgres',
+    SR_DB_PORT: '5432',
+    SR_DB_NAME: databaseName,
+    SR_DB_USER: databaseUser,
+    SR_DB_PASSWORD: databasePassword,
+    SR_DB_SSL_MODE: 'disable',
+    SR_DB_POOL_MIN: '0',
+    SR_DB_POOL_MAX: '3',
+    SR_DB_IDLE_TIMEOUT_MS: '1000',
+    SR_DB_CONNECTION_TIMEOUT_MS: '2000',
+    SR_DB_STATEMENT_TIMEOUT_MS: '2000',
+    SR_DB_QUERY_TIMEOUT_MS: '2000',
+    SR_DB_APPLICATION_NAME:
+      role === 'migration'
+        ? 'srtaller-preview-oci-migrator'
+        : 'srtaller-preview-oci-runtime',
+    SR_DB_ROLE: role,
+    SR_DB_ACCESS_MODE: 'read-write',
+    SR_DB_MIGRATIONS_ENABLED: role === 'migration' ? 'true' : 'false',
+  };
+}
+
+function environmentArguments(environment) {
+  return Object.entries(environment).flatMap(([name, value]) => [
+    '--env',
+    `${name}=${value}`,
+  ]);
+}
+
 let stoppedNormally = false;
 
 try {
@@ -125,13 +186,89 @@ try {
   assert(image.Config.ExposedPorts?.['3000/tcp'], 'Runtime image must expose 3000/tcp');
   assert(image.Config.Healthcheck?.Test?.[0] === 'CMD', 'Image must have exec-form HEALTHCHECK');
 
+  await docker(['network', 'create', networkName]);
+  await docker([
+    'run',
+    '--detach',
+    '--name',
+    postgresContainerName,
+    '--network',
+    networkName,
+    '--network-alias',
+    'postgres',
+    '--tmpfs',
+    '/var/lib/postgresql:rw,noexec,nosuid,size=256m',
+    '--env',
+    `POSTGRES_DB=${databaseName}`,
+    '--env',
+    `POSTGRES_USER=${databaseUser}`,
+    '--env',
+    `POSTGRES_PASSWORD=${databasePassword}`,
+    '--health-cmd',
+    `pg_isready --username=${databaseUser} --dbname=${databaseName}`,
+    '--health-interval',
+    '1s',
+    '--health-timeout',
+    '2s',
+    '--health-retries',
+    '30',
+    postgresImage,
+  ]);
+  await waitForPostgres();
+  const postgresState = await inspect(postgresContainerName);
+  assert(
+    !postgresState.HostConfig.PortBindings?.['5432/tcp'],
+    'Ephemeral PostgreSQL must not publish a host port',
+  );
+
+  const migrationEnvironment = databaseEnvironment('migration');
+  const firstMigration = await docker([
+    'run',
+    '--rm',
+    '--read-only',
+    '--network',
+    networkName,
+    ...environmentArguments(migrationEnvironment),
+    '--entrypoint',
+    'node',
+    imageReference,
+    '--enable-source-maps',
+    'dist/db-migrate.js',
+  ]);
+  const firstMigrationResult = JSON.parse(firstMigration.stdout.trim());
+  assert(firstMigrationResult.applied === 1, 'Initial OCI migration must apply once');
+  assert(firstMigrationResult.pending === 0, 'Initial OCI migration must leave no pending item');
+  assert(
+    !firstMigration.stdout.includes(databasePassword),
+    'OCI migration output must not expose the database password',
+  );
+  const secondMigration = await docker([
+    'run',
+    '--rm',
+    '--read-only',
+    '--network',
+    networkName,
+    ...environmentArguments(migrationEnvironment),
+    '--entrypoint',
+    'node',
+    imageReference,
+    '--enable-source-maps',
+    'dist/db-migrate.js',
+  ]);
+  const secondMigrationResult = JSON.parse(secondMigration.stdout.trim());
+  assert(secondMigrationResult.applied === 0, 'Repeated OCI migration must be a no-op');
+  assert(secondMigrationResult.pending === 0, 'Repeated OCI migration must remain clean');
+
   await docker([
     'create',
     '--name',
     containerName,
     '--read-only',
+    '--network',
+    networkName,
     '--publish',
     '127.0.0.1::3000',
+    ...environmentArguments(databaseEnvironment('application')),
     imageReference,
   ]);
   await docker(['start', containerName]);
@@ -231,6 +368,15 @@ try {
         imageReference,
         imageSizeBytes: image.Size,
         mounts: [],
+        migration: {
+          firstApplied: firstMigrationResult.applied,
+          secondApplied: secondMigrationResult.applied,
+          pending: secondMigrationResult.pending,
+        },
+        postgres: {
+          image: postgresImage,
+          publicPort: false,
+        },
         readOnlyRootFilesystem: true,
         root,
         spa,
@@ -247,6 +393,7 @@ try {
   );
 } finally {
   await removeContainer();
+  await removePostgres();
 
   if (!stoppedNormally) {
     process.stderr.write('OCI verification did not reach a clean SIGTERM stop.\n');

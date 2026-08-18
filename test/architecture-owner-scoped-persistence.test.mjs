@@ -65,12 +65,15 @@ test('persistence capability is internal and has only exact adapter consumers', 
     ],
     consumers: [
       'src/infrastructure/database/database-connection.ts',
+      'src/infrastructure/database/database-runtime.ts',
       branchAdapterPath,
       tenantAdapterPath,
     ],
     status: 'materialized-owner-internal-capability',
   });
   assert.match(source, /Owner extends 'tenancy'/u);
+  assert.match(source, /Owner extends 'database'/u);
+  assert.match(source, /kysely_migration: DatabaseMigrationJournalTable/u);
   assert.match(source, /Pick<DatabaseSchema, 'tenants'>/u);
   assert.match(source, /Pick<DatabaseSchema, 'branches'>/u);
   assert.doesNotMatch(

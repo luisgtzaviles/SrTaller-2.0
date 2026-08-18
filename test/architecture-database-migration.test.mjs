@@ -25,16 +25,19 @@ test('migration runner, capability and provider retain exact governed ownership'
         'src/infrastructure/database/database-connection.ts',
         runnerPath,
       ],
-      [providerPath]: [runnerPath],
+      [providerPath]: [
+        runnerPath,
+        'src/infrastructure/database/database-runtime.ts',
+      ],
     },
   });
   assert.equal(
     policy.persistence.infrastructureFiles[runnerPath].status,
     'materialized-migration-runner',
   );
-  assert.equal(
-    policy.persistence.infrastructureFiles[runnerPath].consumerRequirement,
-    'deferred-until-operational-composition',
+  assert.deepEqual(
+    policy.persistence.infrastructureFiles[runnerPath].consumers,
+    ['src/db-migrate.ts'],
   );
 });
 
@@ -95,6 +98,15 @@ test('startup, AppModule and product modules do not consume migration facilities
     /migration-runner|database-migration-provider|databaseMigrationCapability/u,
   );
   assert.doesNotMatch(combined, /migrateToLatest|migrateUp|migrateDown/u);
+});
+
+test('one-shot migration entrypoint is the only operational runner consumer', async () => {
+  const source = await readFile('src/db-migrate.ts', 'utf8');
+
+  assert.match(source, /createMigrationRunner/u);
+  assert.match(source, /migrateToLatest/u);
+  assert.doesNotMatch(source, /migrateDown|migrateUp/u);
+  assert.doesNotMatch(source, /NestFactory|application\.listen/u);
 });
 
 test('experimental fixtures are isolated from the productive migration root', async () => {
