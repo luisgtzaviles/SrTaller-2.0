@@ -2,10 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Baseline OCI app-only aceptada; estrategia de release posterior
-  continúa propuesta.
-- **Naturaleza:** Autoriza imagen local portable y health mínimo; no autoriza
-  publicación, deploy ni infraestructura remota.
+- **Estado:** Baseline OCI app-only aceptada y primera POC real en Dokploy
+  verificada; la estrategia de release posterior continúa propuesta.
+- **Naturaleza:** Registra un deployment app-only acotado en `Preview`; no
+  autoriza production, dominio definitivo ni servicios de datos.
 - **Empaquetado aceptado:** Dockerfile multi-stage e imagen OCI versionada.
 - **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Accepted — OCI app-only baseline authorized`.
 - **Baseline de runtime aceptada:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md) fija TypeScript y Node.js `24.x`; no acepta contenedores, CI/CD ni plataforma de ejecución.
@@ -23,7 +23,7 @@ imagen de SR Taller permanece neutral: usa OCI, HTTP, configuración de entorno
 y un puerto interno estándar; no consume APIs ni configuración propietaria de
 Dokploy.
 
-El incremento autorizado materializa exclusivamente:
+La baseline portable materializa exclusivamente:
 
 - imagen OCI Linux/glibc del backend único;
 - Dockerfile multi-stage, runtime non-root y build reproducible;
@@ -32,9 +32,31 @@ El incremento autorizado materializa exclusivamente:
   defaults sobreescribibles del contenedor;
 - verificación local de imagen y runtime.
 
+La primera POC real quedó desplegada desde `ops/first-oci-health` mediante el
+`Dockerfile` en el proyecto `SR Taller`, environment `Preview`, aplicación
+`srtaller-app` y servidor `srtaller-app-01`. El routing usa un hostname temporal
+HTTP de Dokploy hacia el puerto interno `3000`; no usa `srtaller.com` ni cambia
+Cloudflare. La evidencia reproducible y los límites están en
+[Resultados de la POC app-only en Dokploy](../architecture-readiness/dokploy-app-only-poc/RESULTS.md).
+
 Permanecen fuera PostgreSQL runtime, migraciones de deploy, Redis, workers,
-WAHA, R2, Docker Compose, Kubernetes, manifests Swarm, dominio, DNS, TLS dentro
-del contenedor y cualquier mutación en Dokploy o Hetzner.
+WAHA, R2, Docker Compose, Kubernetes, dominio definitivo, cambios DNS,
+production y mutaciones adicionales de infraestructura.
+
+## Flujo operativo de Preview
+
+1. Codex modifica el repositorio y ejecuta las verificaciones proporcionales al
+   cambio.
+2. Se crea un commit en una rama autorizada y se publica en `origin`.
+3. Dokploy clona la rama mediante la deploy key dedicada de sólo lectura.
+4. El deployment manual construye el `Dockerfile` y actualiza `srtaller-app`.
+5. Se exige servicio `running (healthy)`, logs sin crash loop y respuestas
+   `200` en `/livez`, `200` en `/readyz` y `404` en una ruta desconocida.
+6. Se registra el commit fuente y el resultado.
+
+El autodeploy permanece deshabilitado. Habilitarlo posteriormente para una rama
+de Preview puede evaluarse por separado; no se habilita para `main` o
+production sin decisión explícita.
 
 ## Ambientes obligatorios
 
