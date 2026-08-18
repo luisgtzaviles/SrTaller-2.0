@@ -7,7 +7,7 @@ su clasificación histórica y muestran el resultado vigente; PBI-021/PBI-022
 son trabajos técnicos posteriores terminados; PBI-023 está `Closed`; PBI-024
 está implementado únicamente en una rama/PR draft divergente, no integrado en
 `main`, y con merge bloqueado por DEC051-C02; PBI-025–PBI-029 no están
-autorizados. PBI-030 es un Draft documental con readiness parcial: cinco gates
+autorizados. PBI-030 es un Draft documental con readiness parcial: seis gates
 resueltos y dos bloqueantes; tampoco autoriza implementación.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene propuesta técnica `XL`
@@ -59,8 +59,9 @@ pendiente de acuerdo Frontend/Ingeniería; las demás permanecen TBD.
 - PBI-023 está cerrado. PBI-024 conserva autorización limitada y una
   implementación/evidencia en la PR draft #3, pero no está integrado en
   `main`, la rama está divergente/conflictiva y su merge funcional permanece
-  bloqueado por DEC051-C02. PBI-025–PBI-029 no están autorizados. PBI-030 tiene
-  iconografía aprobada, pero estimación y CI autoritativo aún pendientes; no
+bloqueado por DEC051-C02. PBI-025–PBI-029 no están autorizados. PBI-030 tiene
+iconografía y CI del candidato resueltos, pero estimación e integración verde
+en `main` aún pendientes; no
   está autorizado para implementación.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
@@ -68,5 +69,5 @@ pendiente de acuerdo Frontend/Ingeniería; las demás permanecen TBD.
 ## Próxima revisión
 
 Decisión explícita sobre recuperar o descartar la implementación divergente de
-PBI-024; estimación de PBI-030 y publicación autorizada de su arreglo CI antes
+PBI-024; estimación de PBI-030 e integración autorizada de su PR #5 antes
 de repetir DoR. No iniciar implementación sin autorización expresa.

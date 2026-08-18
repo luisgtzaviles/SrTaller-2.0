@@ -15,8 +15,9 @@ requiriendo tarea/PBI y autoridad explícita.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Gate actual de integración:** el CI canónico del `HEAD` auditado está rojo en
-el smoke compilado. Existe un arreglo local verificado con PostgreSQL real,
-pero falta publicación y CI autoritativo sobre el SHA; véase
+el smoke compilado. La PR #5 publica un arreglo con PostgreSQL real y CI
+autoritativo verde en su SHA candidato, pero falta integración autorizada y CI
+verde sobre `main`; véase
 [Current Repository State](CURRENT_STATE.md#11-cicd).
 
 ## Revisión dirigida de Sprint 00

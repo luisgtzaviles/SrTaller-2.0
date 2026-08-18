@@ -27,8 +27,9 @@ fuera de `main`.
 
 La base permite comenzar refinamiento de producto, pero no debe tratarse como
 verde para integración: el CI canónico del `HEAD` auditado falla en el smoke
-compilado. Existe en una rama candidata un arreglo mínimo localmente verificado,
-pero no restaura la baseline hasta pasar CI autoritativo e integrarse a `main`.
+compilado. La PR #5 publica un arreglo mínimo cuyo SHA candidato pasa el CI
+autoritativo completo, pero no restaura la baseline hasta integrarse con
+autoridad explícita y volver a pasar CI sobre `main`.
 Además, PBI-024 tiene una implementación extensa sólo en una rama y PR
 draft divergentes; debe decidirse si se recupera o se descarta antes de
 duplicar esa foundation.
@@ -65,8 +66,12 @@ Ramas/PR abiertas que no forman parte de la baseline:
   `ops/pbi-ops-001-readonly-file-explorer` →
   `preview/visual-slice-0`: draft y basada en una rama histórica, no en la
   baseline canónica actual.
+- [PR #5](https://github.com/luisgtzaviles/SrTaller-2.0/pull/5),
+  `fix/pbi-030-readiness-ci` → `main`: draft, mergeable y con CI autoritativo
+  verde en el SHA candidato; no integrada porque el merge exige autorización
+  explícita separada.
 
-Evidencia: Git actual, `docs/delivery/BRANCH_POLICY.md` y las PR #3/#4 en
+Evidencia: Git actual, `docs/delivery/BRANCH_POLICY.md` y las PR #3/#4/#5 en
 GitHub.
 
 ## 3. Repository Map
@@ -266,12 +271,14 @@ PostgreSQL real y 359 pruebas del `verify`, pasaron; la comparación fue omitida
 
 CI no publica imagen, no usa registry y no despliega.
 
-La revisión de PBI-030 reprodujo la causa bajo Node `24.18.0` y preparó en rama
-temporal un candidato mínimo: servicio PostgreSQL 18.4 aislado por job, migración explícita
-y smoke con rol de aplicación. El test focal, `smoke:start` y `smoke:ui`
-pasaron localmente con PostgreSQL real. El run de `main` anterior sigue siendo
-la verdad autoritativa hasta que el candidato pase CI y una integración
-separadamente autorizada actualice la baseline. Véase
+La revisión de PBI-030 reprodujo la causa bajo Node `24.18.0` y publicó en la
+PR #5 un candidato mínimo: PostgreSQL 18.4 aislado por job, migración explícita,
+smokes con rol de aplicación y colector compatible con los assets controlados
+del bundle sin relajar detección de rutas personales. `smoke:start`, `smoke:ui`,
+los dos jobs y la comparación de evidencia pasan autoritativamente en el SHA
+candidato. El run rojo de `main` sigue siendo la verdad de la baseline hasta
+que una integración separadamente autorizada la actualice y pase su propio CI.
+Véase
 [PBI-030 Readiness Review](design-system/PBI_030_READINESS_REVIEW.md#7-recuperación-de-ci-base).
 
 ## 12. Docker / OCI / Dokploy / Preview
@@ -415,7 +422,7 @@ operaciones de negocio persistentes.
 
 | Severidad | Riesgo evidenciado | ¿Antes del primer PBI funcional? |
 |---|---|---|
-| BLOCKER | CI canónico rojo; existe arreglo local de `smoke:start`, aún sin run autoritativo sobre SHA publicado | Sí, antes de integrar cualquier cambio |
+| BLOCKER | CI de `main` rojo; PR #5 verde pero no integrada por falta de autoridad explícita de merge | Sí, antes de integrar cualquier cambio |
 | HIGH | PBI-024 existe en PR conflictiva y no integrada; duplicarlo perdería trabajo y evidencia | Sí, antes de un slice dependiente de contexto |
 | HIGH | No existe identidad/contexto/autorización runtime en `main` | Sí para operaciones tenant reales; debe formar parte de la secuencia autorizada |
 | HIGH | Visual Slice 0 sugiere acciones que la API no implementa | Debe quedar explícito al definir el primer slice; no bloquea refinamiento |
@@ -433,8 +440,8 @@ corresponda.
 
 Secuencia mínima previa a producto, sin diseñar todavía un roadmap:
 
-1. publicar mediante una unidad autorizada el arreglo local del smoke
-   compilado y exigir CI autoritativo verde para el SHA;
+1. autorizar e integrar la PR #5 y exigir CI autoritativo verde sobre el nuevo
+   SHA de `main`;
 2. tomar una decisión Owner/Ingeniería sobre PR #3: recuperar selectivamente y
    revalidar PBI-024 contra `main`, o descartarla/supersederla con razón
    explícita;

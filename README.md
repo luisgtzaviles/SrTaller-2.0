@@ -19,10 +19,10 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
   Las llamadas `/api/preview/*` del frontend no tienen controllers en `main`.
 - **Gate conocido:** el CI de `main` en el commit auditado
   `18dab5a017e5db308b5d34f3a3fbd8f86351c818` está rojo porque
-  `smoke:start` no recibe la configuración PostgreSQL obligatoria. Existe un
-  arreglo mínimo verificado localmente con PostgreSQL real en rama candidata;
-  todavía necesita run autoritativo e integración a `main`. Debe restaurarse la
-  baseline verde antes de integrar producto.
+  `smoke:start` no recibe la configuración PostgreSQL obligatoria. La PR #5
+  publica el arreglo mínimo y pasa CI autoritativo con PostgreSQL real; todavía
+  necesita merge explícitamente autorizado y CI verde sobre `main`. Debe
+  restaurarse la baseline verde antes de integrar producto.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).

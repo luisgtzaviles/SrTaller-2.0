@@ -126,9 +126,9 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   integrarse mientras DEC051-C02 siga `Pending`.
 - Los demás PBIs H1 requieren revisión y autorización propias.
 - PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad y
-  partición. Requiere estimación acordada y CI autoritativo verde del arreglo
-  local antes de `Ready`; después todavía requiere autorización explícita para
-  iniciar.
+  partición, además de CI verde sobre el candidato de PR #5. Requiere
+  estimación acordada e integración autorizada con CI verde sobre `main` antes
+  de `Ready`; después todavía requiere autorización explícita para iniciar.
 
 ## Preguntas abiertas
 

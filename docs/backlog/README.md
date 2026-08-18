@@ -62,5 +62,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Reconciliación de PBI-024, y cierre de estimación/CI de PBI-030 sin iniciar
-implementación hasta autorización explícita.
+Reconciliación de PBI-024, acuerdo de estimación e integración autorizada de la
+PR #5 de PBI-030 sin iniciar implementación hasta autorización explícita.

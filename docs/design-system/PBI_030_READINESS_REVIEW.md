@@ -17,8 +17,9 @@ quedan definidos por esta revisión. No equivalen a implementación ni a
 evidencia de Done. El Owner aprobó `lucide-react` el 2026-08-18 exclusivamente
 para su incorporación durante la implementación de PBI-030. Existe una
 [propuesta técnica `XL`](PBI_030_ESTIMATION_PROPOSAL.md), pero sigue sin
-acuerdo del equipo; el arreglo local del CI no puede considerarse CI
-autoritativo verde hasta integrarse y ejecutarse sobre un SHA publicado.
+acuerdo del equipo. El arreglo está publicado en la PR #5 y su SHA candidato
+tiene CI autoritativo verde; `main` no recupera ese estado hasta una integración
+separadamente autorizada y su propio run verde.
 
 ## 1. Precheck
 
@@ -267,14 +268,17 @@ aplica el schema con rol `migration` y ejecuta el artefacto con rol
 `application`, `SR_DB_MIGRATIONS_ENABLED=false` y configuración sintética. No
 relaja bootstrap, readiness ni el contrato `SR_DB_*`; tampoco usa mock de DB.
 Un test de workflow impide perder digest, orden migrate→smoke o separación de
-roles y rechaza aliases genéricos.
+roles y rechaza aliases genéricos. El workflow ejecuta además `smoke:ui` contra
+la misma base migrada. La remediación derivada del primer run autoritativo
+permite sólo assets `.css/.html/.js/.map` bajo `dist/public/`, conserva el
+rechazo fuera de ese root y evita interpretar `https://` como una ruta Windows.
 
 ### Evidencia local
 
-- test focal del workflow: `4/4 PASS`;
+- tests focales de workflow/evidencia: `17/17 PASS`;
 - `pnpm run verify`: `PASS` bajo Node `24.18.0`/pnpm `11.15.1`;
-  typecheck, build, estructura y arquitectura verdes; suite con 360 tests,
-  350 pass, 0 fail y 10 skips PostgreSQL esperados en el gate unitario;
+  typecheck, build, estructura y arquitectura verdes; suite final con 364
+  tests, 354 pass, 0 fail y 10 skips PostgreSQL esperados en el gate unitario;
 - runner PostgreSQL autoritativo separado: 5 suites, 10 tests reales,
   0 fallos y 0 critical skips;
 - PostgreSQL gobernado:
@@ -283,6 +287,8 @@ roles y rechaza aliases genéricos.
 - `smoke:start`: `PASS` con artefacto compilado y DB real;
 - `smoke:ui`: `PASS`; root, rutas SPA, assets, `/livez` y `/readyz` en `200`,
   rutas desconocidas en `404`.
+- colector sobre el bundle real: `61` artefactos inventariados sin rutas
+  personales; URL ordinaria aceptada y ruta Windows real rechazada.
 
 El runner PostgreSQL se ejecutó en el host con un Node `24.18.0` temporal vía
 pnpm, sin cambiar el toolchain instalado. Un primer intento desde un contenedor
@@ -290,13 +296,19 @@ Node fue descartado porque los scripts publican PostgreSQL en loopback del host
 y el proceso anidado tenía otro namespace de red; la repetición válida en host
 pasó las cinco suites y dejó cero containers/networks/volumes gobernados.
 
-Esta evidencia demuestra el arreglo candidato, no un run GitHub sobre el SHA.
-El workflow autoritativo de `main` sigue rojo en el HEAD publicado. Esta tarea
-autoriza publicar y verificar el candidato, pero no concede por sí sola el
-merge explícito requerido para producir `CI BASELINE: GREEN` en `main`.
+La [PR #5](https://github.com/luisgtzaviles/SrTaller-2.0/pull/5) publica el
+candidato y obtuvo CI autoritativo verde en su SHA más reciente: los dos jobs,
+PostgreSQL real, arquitectura, typecheck, build, tests, `smoke:start`,
+`smoke:ui`, inmutabilidad, evidencia y comparación pasaron. El primer run
+publicado falló honestamente en el colector y fue corregido; un run intermedio
+supersedido se canceló antes de considerarlo evidencia.
 
-**CI BASELINE: BLOCKED** para el gate autoritativo; **candidato local
-corregido** pendiente de publicación y ejecución CI.
+El workflow de `main` sigue rojo en `18dab5a`. Esta tarea no concede el merge
+explícito requerido para actualizar la baseline.
+
+**AUTHORITATIVE CI CANDIDATE: GREEN.**
+
+**CI BASELINE: BLOCKED — PR #5 no integrada a `main`.**
 
 ## 8. Relación con PBI-024
 
@@ -332,8 +344,8 @@ ni se intentó resolver en esta revisión.
 | Autoridad de implementación | PASS para Ready | debe permanecer separada; Ready no equivale a autorización |
 | Iconografía | PASS | `lucide-react` aprobado por Owner con contrato y límite temporal explícitos |
 | Estimación | **BLOCKED** | propuesta `XL`; DoR exige acuerdo Frontend/Ingeniería y no fija formato |
-| CI base | **BLOCKED** | candidato local pasa, pero CI autoritativo del HEAD publicado sigue rojo |
-| Preguntas bloqueantes | **BLOCKED** | OPEN-PBI030-06 y -07 permanecen abiertas |
+| CI base | **BLOCKED** | PR #5 pasa CI autoritativo, pero no está integrada y `main` sigue rojo |
+| Preguntas bloqueantes | **BLOCKED** | OPEN-PBI030-06 y -08 permanecen abiertas |
 
 **Resultado DoR: NOT READY.** Los puntos N/A responden a exclusiones reales, no
 a una dispensa.
@@ -343,7 +355,7 @@ a una dispensa.
 - Instalar Lucide antes de iniciar una implementación autorizada excedería la
   decisión Owner; la aprobación sólo cerró selección y contrato.
 - Tratar la propuesta `XL` como acuerdo ocultaría la autoridad del equipo.
-- Tratar una prueba local como CI verde rompería la trazabilidad por SHA.
+- Tratar la PR verde como baseline integrada rompería la separación de autoridad.
 - Los valores de accent son vectores de especificación y todavía necesitan
   tests/UI durante implementación.
 - La matriz define compromiso; no afirma pruebas ejecutadas.
@@ -353,8 +365,8 @@ a una dispensa.
 ## 11. Próxima acción acotada
 
 1. Frontend/Ingeniería acepta `XL` o registra otra estimación razonada sin cambiar alcance.
-2. Con autorización Git separada, crear una rama temporal sólo con esta unidad,
-   commit/push/PR, ejecutar CI autoritativo y obtener verde para el SHA.
+2. Obtener autorización explícita de merge para integrar la PR #5, confirmar
+   `origin/main` y observar CI verde sobre el nuevo `main`.
 3. Repetir la revisión DoR. Sólo con ambos resultados se cambia PBI-030 a
    `Ready`; la implementación seguirá requiriendo autorización Owner binaria.
 

@@ -8,7 +8,8 @@ conservan su historia de Sprint 00; PBI-021/PBI-022 están `Done`; PBI-023 está
 bloqueado por DEC051-C02 y tiene implementación sólo en una PR draft divergente;
 PBI-025–PBI-029 no están autorizados. PBI-030 está
 `Draft — readiness blocked`: iconografía quedó aprobada; conserva abiertos
-estimación y CI autoritativo. Su implementación no está autorizada.
+estimación e integración/CI verde de `main`; el CI del candidato está verde.
+Su implementación no está autorizada.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene propuesta `XL` pendiente
 de acuerdo Frontend/Ingeniería; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
@@ -51,5 +52,5 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-Reconciliación de PBI-024; estimación y CI publicado de PBI-030 sin iniciar
-implementación.
+Reconciliación de PBI-024; estimación e integración autorizada de PR #5 para
+PBI-030 sin iniciar implementación.

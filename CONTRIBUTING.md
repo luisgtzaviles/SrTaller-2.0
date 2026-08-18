@@ -72,9 +72,9 @@ documento no autoriza por sí solo commit, push, merge, deploy ni release.
 
 - Restaurar el CI verde de `main`: el `HEAD` auditado falla en
   `smoke:start` porque el proceso compilado no recibe la configuración
-  PostgreSQL obligatoria. Hay un candidato verificado en rama temporal, pero
-  falta CI autoritativo verde e integración a `main` mediante autoridad
-  separada.
+  PostgreSQL obligatoria. La PR #5 tiene un candidato con CI autoritativo verde,
+  pero falta integración a `main` mediante autoridad separada y CI verde sobre
+  esa baseline.
 - Reconciliar la implementación no integrada de PBI-024 en la PR draft #3
   antes de iniciar un slice dependiente de contexto de estación.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
