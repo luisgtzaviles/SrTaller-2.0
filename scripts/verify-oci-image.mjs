@@ -229,9 +229,8 @@ try {
     '--network',
     networkName,
     ...environmentArguments(migrationEnvironment),
-    '--entrypoint',
-    'node',
     imageReference,
+    'node',
     '--enable-source-maps',
     'dist/db-migrate.js',
   ]);
@@ -249,9 +248,8 @@ try {
     '--network',
     networkName,
     ...environmentArguments(migrationEnvironment),
-    '--entrypoint',
-    'node',
     imageReference,
+    'node',
     '--enable-source-maps',
     'dist/db-migrate.js',
   ]);

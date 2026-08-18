@@ -17,6 +17,12 @@ El comando requiere `SR_DB_ROLE=migration`,
 HTTP requiere `SR_DB_ROLE=application` y
 `SR_DB_MIGRATIONS_ENABLED=false`.
 
+La imagen declara el proceso HTTP como `CMD`, no como un `ENTRYPOINT` fijo. Así
+Dokploy puede sustituir temporalmente el comando por
+`node --enable-source-maps dist/db-migrate.js`, ejecutar el one-shot desde el
+mismo artefacto y restaurar después el comando HTTP por defecto. La ausencia de
+esa sustitución explícita nunca ejecuta migraciones.
+
 ## Contrato de configuración
 
 La aplicación acepta exclusivamente variables individuales `SR_DB_*`; las
