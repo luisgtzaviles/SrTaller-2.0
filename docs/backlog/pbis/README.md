@@ -5,10 +5,14 @@
 **Estado:** Índice vigente reconciliado para revisión final. PBI-001–PBI-020
 conservan su historia de Sprint 00; PBI-021/PBI-022 están `Done`; PBI-023 está
 `Closed`; PBI-024 está autorizado para implementación en rama con merge
-bloqueado por DEC051-C02; PBI-025–PBI-029 no están autorizados.
-**Estimación:** PBI-023 tiene `13 SP`; los demás casos conservan TBD.
+bloqueado por DEC051-C02 y tiene implementación sólo en una PR draft divergente;
+PBI-025–PBI-029 no están autorizados. PBI-030 está
+`Draft — readiness blocked`: iconografía quedó aprobada; conserva abiertos
+estimación y CI autoritativo. Su implementación no está autorizada.
+**Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene propuesta `XL` pendiente
+de acuerdo Frontend/Ingeniería; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
-00. PBI-021–PBI-029 están `Unassigned`.
+00. PBI-021–PBI-030 están `Unassigned`.
 
 | PBI | Resultado documental | Estado vigente |
 |---|---|---|
@@ -24,7 +28,7 @@ bloqueado por DEC051-C02; PBI-025–PBI-029 no están autorizados.
 | [PBI-010](PBI-010.md) | Define target application architecture | Done |
 | [PBI-011](PBI-011.md) | Evaluate database strategy | Done |
 | [PBI-012](PBI-012.md) | Evaluate backend framework and API strategy | Done |
-| [PBI-013](PBI-013.md) | Evaluate web frontend and design system strategy | Deferred |
+| [PBI-013](PBI-013.md) | Evaluate web frontend and design system strategy | Deferred / visual V1 partially resolved |
 | [PBI-014](PBI-014.md) | Define realtime and messaging architecture | Deferred |
 | [PBI-015](PBI-015.md) | Define environment and deployment strategy | Done |
 | [PBI-016](PBI-016.md) | Define documentation and ADR workflow | Done |
@@ -35,15 +39,17 @@ bloqueado por DEC051-C02; PBI-025–PBI-029 no están autorizados.
 | [PBI-021](PBI-021.md) | Materialize and verify the DEC-004 toolchain contract | Done |
 | [PBI-022](PBI-022.md) | Materialize DEC-005 modular structure and local enforcement | Done |
 | [PBI-023](PBI-023.md) | Establish tenant-scoped persistence and migration foundation | Closed |
-| [PBI-024](PBI-024.md) | Apply trusted tenant, branch and station context | Authorized; implementation not started / merge blocked |
+| [PBI-024](PBI-024.md) | Apply trusted tenant, branch and station context | Implemented on divergent draft branch; not integrated / merge blocked |
 | [PBI-025](PBI-025.md) | Implement tenant-user PIN authentication and operational session | Blocked |
 | [PBI-026](PBI-026.md) | Implement contextual capabilities and reinforced authorization | Draft |
 | [PBI-027](PBI-027.md) | Define and apply the R0 temporal model | Blocked |
 | [PBI-028](PBI-028.md) | Implement safe logging, business audit and observability baseline | Draft |
 | [PBI-029](PBI-029.md) | Govern R0 secrets and external configuration | Draft |
+| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | Draft — readiness blocked / implementation not authorized |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-Implementación y evidencia de PBI-024 en su rama funcional autorizada.
+Reconciliación de PBI-024; estimación y CI publicado de PBI-030 sin iniciar
+implementación.

@@ -22,11 +22,48 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Implementación
 
-- Ninguna. El proyecto permanece en descubrimiento y arquitectura.
+- Baseline ejecutable Node.js/NestJS con health `/livez` y `/readyz`.
+- Monolito modular con checker de arquitectura, ownership de persistencia y
+  límites `tenancy`, `stations` y `access`.
+- Visual Slice 0 React/Vite servida desde el mismo artefacto OCI.
+- PostgreSQL 18.4 de Preview, migrador Kysely one-shot, tablas `tenants` y
+  `branches`, repositories tenant-scoped y transaction runner.
+- Dockerfile OCI multi-stage y Preview materializado en Dokploy sobre `main`.
+- Workflow canónico y CI autoritativo con PostgreSQL real y evidencia dual.
+- Candidato mínimo de CI para que `smoke:start` use PostgreSQL aislado ya
+  migrado sin relajar el arranque fail-closed; verificado localmente, todavía
+  sin run autoritativo sobre un SHA publicado.
+
+### Estado conocido no resuelto
+
+- El CI de `main` en `18dab5a` falla en `smoke:start` porque el proceso
+  compilado no recibe la configuración PostgreSQL obligatoria. El arreglo está
+  en una rama candidata y el gate de la baseline continúa abierto hasta CI e
+  integración verificados.
+- La UI llama `/api/preview/*`, pero `main` no contiene endpoints de producto.
+- PBI-024 tiene implementación sólo en una PR draft divergente y conflictiva;
+  no está integrado ni cerrado.
+
+### Documentación reconciliada
+
+- Se agregó `docs/CURRENT_STATE.md` como fotografía auditada de la baseline y
+  frontera foundation/producto.
+- Se corrigió el README raíz y el tracking de PBI-024 para dejar de afirmar que
+  la implementación no había iniciado.
+- Se convirtió la dirección Owner aprobada de Design System & Application
+  Shell V1 en contrato canónico, se reconcilió con ADR-006/PBI-013 sin aceptar
+  Next.js o Tailwind y se preparó PBI-030 como `Draft` no autorizado para
+  implementación.
+- Se completó el readiness técnico de accent, catálogo, compatibilidad y
+  partición de PBI-030. El Owner aprobó `lucide-react` como única familia
+  funcional V1, incorporable sólo durante la implementación. El PBI permanece
+  `Draft — readiness blocked` por estimación del equipo y CI autoritativo
+  pendientes.
 
 ## Estado del documento
 
-**Estado:** Borrador.
+**Estado:** Registro vigente; las entradas antiguas conservan historia y el
+estado actual se resume en `docs/CURRENT_STATE.md`.
 **Próxima versión y fecha:** TBD.
 
 ## Próxima revisión

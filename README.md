@@ -1,47 +1,67 @@
 # SR Taller 2.0
 
-> **ALTO — etapa documental:** todavía no debe iniciarse implementación funcional, scaffolding, instalación de dependencias ni infraestructura. El inicio de prototipos técnicos requiere cerrar los gates de [SPRINT-00](docs/sprints/sprint-00/SPRINT_GOAL.md) y aprobación explícita del Product Owner.
-
-SR Taller 2.0 es la evolución planificada de una plataforma SaaS para administrar talleres de reparación de celulares. La intención es ofrecer una API central y clientes consistentes para operar tenants, sucursales, personas, dispositivos, reparaciones, inventario, CRM, mensajería, pagos y otras capacidades, con aislamiento multitenant como requisito transversal.
+SR Taller 2.0 es una plataforma SaaS multitenant para talleres de reparación
+de celulares. El repositorio ya no está en una etapa exclusivamente documental:
+contiene una baseline ejecutable con frontend de Preview, backend NestJS,
+PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 
 ## Estado actual
 
-- **Fase:** descubrimiento y arquitectura.
-- **Código funcional:** no iniciado.
-- **Decisiones técnicas:** ADR-001 a ADR-004 y ADR-009 a ADR-013 aceptados; ADR-005 a ADR-008 permanecen propuestos. R0 adopta un repositorio único evolutivo sin workspaces obligatorios; PostgreSQL 18.x es la baseline de persistencia, sin autorizar implementación.
-- **Sprint actual:** [SPRINT-00 — Discovery and Architecture Foundation](docs/sprints/sprint-00/SPRINT_GOAL.md).
-- **Estimaciones, responsables y fechas:** TBD; requieren aprobación.
+- **Baseline integrada:** `main`.
+- **Runtime:** Node.js `24.18.0`, pnpm `11.15.1` y TypeScript `6.0.3`.
+- **Frontend:** React `19.2.8` + Vite `8.2.0`; Visual Slice 0 navegable.
+- **Backend:** NestJS `11.1.28` sobre Express; actualmente sólo expone health.
+- **Persistencia:** PostgreSQL `18.4` en Preview; Kysely + `pg`; foundation de
+  tenants y sucursales materializada.
+- **Preview:** <https://preview.srtaller.dev>, desplegado manualmente desde
+  `main` mediante el `Dockerfile` en Dokploy.
+- **Producto funcional:** todavía no existe un flujo de negocio end-to-end.
+  Las llamadas `/api/preview/*` del frontend no tienen controllers en `main`.
+- **Gate conocido:** el CI de `main` en el commit auditado
+  `18dab5a017e5db308b5d34f3a3fbd8f86351c818` está rojo porque
+  `smoke:start` no recibe la configuración PostgreSQL obligatoria. Existe un
+  arreglo mínimo verificado localmente con PostgreSQL real en rama candidata;
+  todavía necesita run autoritativo e integración a `main`. Debe restaurarse la
+  baseline verde antes de integrar producto.
 
-## Navegación
+La fotografía verificable completa, sus límites y el punto de partida están en
+[Current Repository State](docs/CURRENT_STATE.md).
 
-- [Índice completo de documentación](docs/README.md)
+## Cómo empezar
+
+1. Leer [CONTRIBUTING.md](CONTRIBUTING.md).
+2. Leer el [estado actual auditado](docs/CURRENT_STATE.md).
+3. Seguir el
+   [workflow canónico de desarrollo y delivery](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
+4. Confirmar Git real, el estado de CI y el PBI/tarea autorizado antes de
+   modificar código.
+5. Crear una rama temporal desde `main`; los ambientes no son ramas.
+
+## Navegación canónica
+
+- [Índice de documentación](docs/README.md)
 - [Visión del producto](docs/product/PRODUCT_VISION.md)
+- [Alcance del producto](docs/product/PRODUCT_SCOPE.md)
+- [Design System & Application Shell V1](docs/design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
+- [PBI-030 Readiness Review](docs/design-system/PBI_030_READINESS_REVIEW.md)
+- [Arquitectura de aplicaciones](docs/architecture/APPLICATION_ARCHITECTURE.md)
+- [Modelo multitenant](docs/architecture/MULTITENANCY_MODEL.md)
 - [Product backlog](docs/backlog/PRODUCT_BACKLOG.md)
-- [Sprint backlog actual](docs/sprints/sprint-00/SPRINT_BACKLOG.md)
 - [Registro de decisiones](docs/decisions/README.md)
-- [Preguntas abiertas](docs/product/OPEN_QUESTIONS.md)
-- [Cómo contribuir](CONTRIBUTING.md)
-- [Historial documental](CHANGELOG.md)
+- [Estrategia de calidad](docs/quality/QUALITY_STRATEGY.md)
+- [Estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md)
 
-## Organización documental
+## Regla de autoridad
 
-`docs/product` define el propósito y vocabulario; `docs/architecture` describe límites y modelos conceptuales; `docs/decisions` conserva alternativas y consecuencias; `docs/backlog` organiza epics y PBIs; `docs/sprints` hace visible el trabajo acordado; `docs/delivery`, `docs/quality` y `docs/operations` establecen los controles para construir, verificar y operar.
-
-## Reglas para comenzar trabajo
-
-1. Partir de un PBI que cumpla la [Definition of Ready](docs/delivery/DEFINITION_OF_READY.md).
-2. Confirmar alcance, dependencias, impactos multitenant, permisos y datos.
-3. Registrar como ADR toda decisión arquitectónica significativa antes de tratarla como aceptada.
-4. Mantener trazabilidad entre epic, PBI, tareas futuras, decisiones, cambios, pruebas, evidencia y release.
-5. No asumir reglas de negocio, métricas, fechas, responsables ni estimaciones no aprobadas.
-6. Durante SPRINT-00 sólo producir entregables documentales y revisiones.
+Para el estado actual mandan, en este orden: runtime e infraestructura
+observables, Git/código actual, documentación canónica vigente, decisiones y
+evidencia específica. Los documentos históricos, ramas no integradas y
+conversaciones no sustituyen a `main`.
 
 ## Estado del documento
 
-**Estado:** Borrador para revisión.
-**Hecho conocido:** el repositorio se encuentra en fundación documental.
-**Decisión pendiente:** autorización para iniciar prototipos técnicos.
+**Estado:** Entrada operativa vigente, reconciliada el 2026-08-18 contra
+`main` en `18dab5a017e5db308b5d34f3a3fbd8f86351c818`.
 
-## Próxima revisión
-
-Al revisar el criterio de salida de SPRINT-00; fecha: TBD.
+**Próxima revisión:** cuando cambie la baseline integrada, el gate de CI, la
+superficie funcional o el punto de entrada del backlog.

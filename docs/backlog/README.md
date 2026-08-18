@@ -5,15 +5,18 @@ confundir intención con compromiso. PBI-001–PBI-020 conservan su historia de
 Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 [PBI-022](pbis/PBI-022.md) están `Done` después de sus verificaciones formales.
 [PBI-023](pbis/PBI-023.md) está `Closed`.
-[PBI-024](pbis/PBI-024.md) está autorizado para implementación en rama, con
-merge funcional bloqueado por DEC051-C02; PBI-025–PBI-029 descomponen el resto
-de H1 y no están autorizados.
+[PBI-024](pbis/PBI-024.md) tiene implementación sólo en una rama/PR draft
+divergente, no está integrado en `main` y conserva el merge funcional bloqueado
+por DEC051-C02; PBI-025–PBI-029 descomponen el resto de H1 y no están
+autorizados. [PBI-030](pbis/PBI-030.md) prepara UI Foundation y Application
+Shell V1 como `Draft — readiness blocked`; la dirección está aprobada, la
+implementación no.
 
 ## Estado del documento
 
 **Estado:** Reconciliado tras el cierre de Sprint 00.
-**Orden R0 y ejecución:** PBI-023 cerrado; PBI-024 autorizado con alcance
-limitado y sin implementación iniciada; owners por rol.
+**Orden R0 y ejecución:** PBI-023 cerrado; PBI-024 no integrado y pendiente de
+decisión de recuperación/revalidación; owners por rol.
 
 ## Estructura
 
@@ -22,6 +25,8 @@ limitado y sin implementación iniciada; owners por rol.
 - [PRIORITIZATION_MODEL.md](PRIORITIZATION_MODEL.md): factores para discutir orden.
 - [DEPENDENCY_MAP.md](DEPENDENCY_MAP.md): secuencia y bloqueos conceptuales.
 - [pbis/README.md](pbis/README.md): índice de archivos individuales.
+- [PBI-030 Readiness Review](../design-system/PBI_030_READINESS_REVIEW.md):
+  gates, DoR y decisiones aún necesarias para la foundation visual.
 
 ## Convenciones de identificadores
 
@@ -57,4 +62,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Implementación y evidencia de PBI-024 en su rama funcional autorizada.
+Reconciliación de PBI-024, y cierre de estimación/CI de PBI-030 sin iniciar
+implementación hasta autorización explícita.

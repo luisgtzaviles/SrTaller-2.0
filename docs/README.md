@@ -4,6 +4,8 @@ Este índice organiza la documentación actual e histórica. La entrada operativ
 obligatoria es [CONTRIBUTING.md](../CONTRIBUTING.md) y el manual end-to-end es el
 [workflow canónico de desarrollo y delivery](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
 Los documentos `Proposed` o históricos no sustituyen la baseline materializada.
+La [fotografía auditada del estado actual](CURRENT_STATE.md) separa foundation,
+producto y condiciones pendientes antes de la siguiente iteración.
 
 ## Estado del documento
 
@@ -12,6 +14,10 @@ Los documentos `Proposed` o históricos no sustituyen la baseline materializada.
 requiriendo tarea/PBI y autoridad explícita.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
+**Gate actual de integración:** el CI canónico del `HEAD` auditado está rojo en
+el smoke compilado. Existe un arreglo local verificado con PostgreSQL real,
+pero falta publicación y CI autoritativo sobre el SHA; véase
+[Current Repository State](CURRENT_STATE.md#11-cicd).
 
 ## Revisión dirigida de Sprint 00
 
@@ -42,6 +48,17 @@ auditoría inicial, la remediación y el dictamen final:
 - [Mapa de módulos](product/MODULE_MAP.md)
 - [Preguntas abiertas](product/OPEN_QUESTIONS.md)
 - [Lecciones de SR Taller anterior](product/LEGACY_SR_TALLER_LESSONS.md)
+
+## Diseño de producto
+
+- [Design System & Application Shell V1](design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
+- [PBI-030 — UI Foundation y Application Shell V1](backlog/pbis/PBI-030.md)
+- [PBI-030 — Readiness Review](design-system/PBI_030_READINESS_REVIEW.md)
+- [PBI-030 — Propuesta técnica de estimación](design-system/PBI_030_ESTIMATION_PROPOSAL.md)
+
+La dirección visual V1 está aprobada para documentación y preparación de PBI.
+PBI-030 permanece `Draft — readiness blocked`; no existe autorización de
+implementación.
 
 ## Dominio operativo
 
@@ -133,12 +150,13 @@ auditoría inicial, la remediación y el dictamen final:
 - [Review](sprints/sprint-00/REVIEW.md)
 - [Retrospectiva](sprints/sprint-00/RETROSPECTIVE.md)
 
-Los archivos individuales PBI-001 a PBI-029 se encuentran enlazados desde el
+Los archivos individuales PBI-001 a PBI-030 se encuentran enlazados desde el
 [índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
-PBI-023 está `Closed`. PBI-024 está autorizado para implementación en rama,
-sin estar `In progress`, y su merge funcional permanece bloqueado por
-DEC051-C02. La autorización no alcanza PBI-025–PBI-029 ni modifica
-retrospectivamente Sprint 00.
+PBI-023 está `Closed`. PBI-024 tiene implementación y evidencia sólo en una
+rama/PR draft divergente; no está integrado en `main`, no está `Done` y su
+merge funcional permanece bloqueado por DEC051-C02. La autorización no alcanza
+PBI-025–PBI-029 ni modifica retrospectivamente Sprint 00. PBI-030 prepara la
+foundation visual y el shell como `Draft`, sin autorización de implementación.
 
 ## Calidad
 
@@ -161,11 +179,13 @@ retrospectivamente Sprint 00.
 ## Ruta de lectura recomendada
 
 Para trabajar: comenzar con [CONTRIBUTING.md](../CONTRIBUTING.md), seguir el
+[estado actual auditado](CURRENT_STATE.md), el
 [workflow canónico](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md), la
 [política de ramas](delivery/BRANCH_POLICY.md), la
 [estrategia de despliegue](architecture/DEPLOYMENT_STRATEGY.md) y
 [ambientes](delivery/ENVIRONMENTS.md). Para producto, continuar con
 [visión](product/PRODUCT_VISION.md), [alcance](product/PRODUCT_SCOPE.md),
+[Design System V1](design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md),
 [dominio](domain/README.md) y [arquitectura objetivo](architecture/TARGET_ARCHITECTURE.md).
 Sprint 00 y sus evidencias se leen como historia y trazabilidad, no como estado
 operativo actual.

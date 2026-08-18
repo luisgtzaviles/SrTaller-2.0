@@ -5,10 +5,13 @@
 **Estado:** Reconciliado tras el cierre de Sprint 00. Las filas 1–20 conservan
 su clasificación histórica y muestran el resultado vigente; PBI-021/PBI-022
 son trabajos técnicos posteriores terminados; PBI-023 está `Closed`; PBI-024
-está autorizado para implementación en rama con merge bloqueado por
-DEC051-C02; PBI-025–PBI-029 no están autorizados.
+está implementado únicamente en una rama/PR draft divergente, no integrado en
+`main`, y con merge bloqueado por DEC051-C02; PBI-025–PBI-029 no están
+autorizados. PBI-030 es un Draft documental con readiness parcial: cinco gates
+resueltos y dos bloqueantes; tampoco autoriza implementación.
 **Prioridad:** propuesta, no aprobación final.
-**Estimaciones:** PBI-023 tiene `13 SP`; las demás permanecen TBD.
+**Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene propuesta técnica `XL`
+pendiente de acuerdo Frontend/Ingeniería; las demás permanecen TBD.
 **Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación SPRINT-00 |
@@ -25,7 +28,7 @@ DEC051-C02; PBI-025–PBI-029 no están autorizados.
 | 10 | [PBI-010](pbis/PBI-010.md) Define target application architecture | Architecture | EPIC-001 | Done | Alta | Committed |
 | 11 | [PBI-011](pbis/PBI-011.md) Evaluate database strategy | Architecture | EPIC-001 | Done | Alta | Candidate |
 | 12 | [PBI-012](pbis/PBI-012.md) Evaluate backend framework and API strategy | Architecture / Technical foundation | EPIC-001 | Done | Alta | Candidate |
-| 13 | [PBI-013](pbis/PBI-013.md) Evaluate web frontend and design system strategy | Product / Architecture | EPIC-001 | Deferred | Media | Blocked |
+| 13 | [PBI-013](pbis/PBI-013.md) Evaluate web frontend and design system strategy | Product / Architecture | EPIC-001 | Deferred / visual V1 partially resolved | Media | Unassigned |
 | 14 | [PBI-014](pbis/PBI-014.md) Define realtime and messaging architecture | Architecture | EPIC-008 | Deferred | Alta | Candidate |
 | 15 | [PBI-015](pbis/PBI-015.md) Define environment and deployment strategy | Operations / Technical foundation | EPIC-001 | Done | Alta | Candidate |
 | 16 | [PBI-016](pbis/PBI-016.md) Define documentation and ADR workflow | Technical foundation | EPIC-000 | Done | Alta | Committed |
@@ -36,12 +39,13 @@ DEC051-C02; PBI-025–PBI-029 no están autorizados.
 | 21 | [PBI-021](pbis/PBI-021.md) Materialize and verify the DEC-004 toolchain contract | Technical foundation / Quality / Operations / Security | EPIC-001 | Done | Alta | Unassigned |
 | 22 | [PBI-022](pbis/PBI-022.md) Materialize DEC-005 modular structure and local enforcement | Technical foundation / Architecture / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 23 | [PBI-023](pbis/PBI-023.md) Establish tenant-scoped persistence and migration foundation | Persistence / Security / Quality | EPIC-001 | Closed | Crítica | Gate R0 |
-| 24 | [PBI-024](pbis/PBI-024.md) Apply trusted tenant, branch and station context | Architecture / Security | EPIC-001 | Authorized; implementation not started / merge blocked | Crítica | Unassigned |
+| 24 | [PBI-024](pbis/PBI-024.md) Apply trusted tenant, branch and station context | Architecture / Security | EPIC-001 | Implemented on divergent draft branch; not integrated / merge blocked | Crítica | Unassigned |
 | 25 | [PBI-025](pbis/PBI-025.md) Implement tenant-user PIN authentication and operational session | Identity / Security | EPIC-003 | Blocked | Crítica | Unassigned |
 | 26 | [PBI-026](pbis/PBI-026.md) Implement contextual capabilities and reinforced authorization | Authorization / Security | EPIC-003 | Draft | Crítica | Unassigned |
 | 27 | [PBI-027](pbis/PBI-027.md) Define and apply the R0 temporal model | Architecture / Product | EPIC-001 | Blocked | Alta | Unassigned |
 | 28 | [PBI-028](pbis/PBI-028.md) Implement safe logging, business audit and observability baseline | Operations / Security / Quality | EPIC-001 | Draft | Alta | Unassigned |
 | 29 | [PBI-029](pbis/PBI-029.md) Govern R0 secrets and external configuration | Security / Operations | EPIC-001 | Draft | Crítica | Unassigned |
+| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Draft — readiness blocked / implementation not authorized | Alta | Unassigned |
 
 ## Interpretación
 
@@ -52,12 +56,17 @@ DEC051-C02; PBI-025–PBI-029 no están autorizados.
   compromiso original.
 - PBI-021/PBI-022 no se incorporan retroactivamente a Sprint 00: ambos están
   `Done`, pero su cierre no cierra el sprint.
-- PBI-023 está cerrado. PBI-024 tiene autorización limitada para trabajo en
-  rama; no está `In progress` y su merge funcional permanece bloqueado por
-  DEC051-C02. PBI-025–PBI-029 no están autorizados.
+- PBI-023 está cerrado. PBI-024 conserva autorización limitada y una
+  implementación/evidencia en la PR draft #3, pero no está integrado en
+  `main`, la rama está divergente/conflictiva y su merge funcional permanece
+  bloqueado por DEC051-C02. PBI-025–PBI-029 no están autorizados. PBI-030 tiene
+  iconografía aprobada, pero estimación y CI autoritativo aún pendientes; no
+  está autorizado para implementación.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-Implementación y evidencia de PBI-024 en su rama funcional autorizada.
+Decisión explícita sobre recuperar o descartar la implementación divergente de
+PBI-024; estimación de PBI-030 y publicación autorizada de su arreglo CI antes
+de repetir DoR. No iniciar implementación sin autorización expresa.

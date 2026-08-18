@@ -88,6 +88,8 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | Fact | Current state |
 |---|---|
 | Repository baseline | `main` |
+| Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
+| Authoritative CI at audited HEAD | Failing: compiled smoke lacks required PostgreSQL configuration |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -108,6 +110,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
+| Product API | Not materialized; `/api/preview/*` returns 404 |
 
 ## Current, planned and required before Production
 

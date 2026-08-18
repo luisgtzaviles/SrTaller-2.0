@@ -11,13 +11,18 @@ expresamente autorizados.
 
 Antes de modificar código, documentación, infraestructura o deployment:
 
-1. Leer el
+1. Leer la [fotografía auditada del estado actual](docs/CURRENT_STATE.md).
+2. Leer el
    [workflow canónico de desarrollo y delivery](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
-2. Leer la [política de ramas](docs/delivery/BRANCH_POLICY.md).
-3. Leer la [estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md).
-4. Leer [ambientes](docs/delivery/ENVIRONMENTS.md).
-5. Inspeccionar Git real y confirmar ambiente, sensibilidad de datos, alcance y
+3. Leer la [política de ramas](docs/delivery/BRANCH_POLICY.md).
+4. Leer la [estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md).
+5. Leer [ambientes](docs/delivery/ENVIRONMENTS.md).
+6. Inspeccionar Git real y confirmar ambiente, sensibilidad de datos, alcance y
    autoridad antes de ejecutar.
+
+Para cualquier cambio de interfaz, también es lectura obligatoria
+[Design System & Application Shell V1](docs/design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md).
+Su dirección está aprobada, pero el documento no autoriza implementación.
 
 El repositorio, Git y la evidencia actual del runtime tienen precedencia sobre
 el contexto de chat, memoria humana o supuestos de un agente.
@@ -65,6 +70,13 @@ documento no autoriza por sí solo commit, push, merge, deploy ni release.
 
 ## Condiciones abiertas
 
+- Restaurar el CI verde de `main`: el `HEAD` auditado falla en
+  `smoke:start` porque el proceso compilado no recibe la configuración
+  PostgreSQL obligatoria. Hay un candidato verificado en rama temporal, pero
+  falta CI autoritativo verde e integración a `main` mediante autoridad
+  separada.
+- Reconciliar la implementación no integrada de PBI-024 en la PR draft #3
+  antes de iniciar un slice dependiente de contexto de estación.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
 - `DEC063-C02`: materializar clasificación de riesgo.
 - `DEC063-C08`: materializar waivers y excepciones.

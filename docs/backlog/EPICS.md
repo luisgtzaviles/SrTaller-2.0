@@ -24,14 +24,17 @@
 - **Dependencias:** EPIC-000 y ADRs técnicos aceptados.
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
-- **Estado:** PBI-023 `Closed`; PBI-024 autorizado para implementación en rama
-  con merge funcional bloqueado por DEC051-C02.
+- **Estado:** PBI-023 `Closed`; PBI-024 implementado sólo en una rama/PR draft
+  divergente, no integrado y con merge funcional bloqueado por DEC051-C02.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
-  `Closed`. [PBI-024](pbis/PBI-024.md) está autorizado para implementación
-  limitada en rama y aún no está `In progress`; PBI-025–PBI-029 descomponen el
-  H1 restante con estados `Draft` o `Blocked` y no están autorizados.
+  `Closed`. [PBI-024](pbis/PBI-024.md) conserva autorización limitada y código
+  en una PR draft conflictiva, pero no pertenece a `main`; PBI-025–PBI-029
+  descomponen el H1 restante con estados `Draft` o `Blocked` y no están
+  autorizados. [PBI-030](pbis/PBI-030.md) prepara la foundation visual y el
+  Application Shell V1 como `Draft — readiness blocked`; no tiene autorización
+  de implementación.
 
 ## EPIC-002 — Tenant and Platform Administration
 
