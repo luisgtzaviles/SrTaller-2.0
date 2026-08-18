@@ -4,8 +4,8 @@
 
 - **Estado:** Baseline OCI app-only aceptada y primera POC real en Dokploy
   verificada; la estrategia de release posterior continúa propuesta.
-- **Naturaleza:** Registra un deployment app-only acotado en `Preview`; no
-  autoriza production, dominio definitivo ni servicios de datos.
+- **Naturaleza:** Registra un deployment app-only acotado en `Preview`, incluido
+  su dominio de desarrollo; no autoriza production ni servicios de datos.
 - **Empaquetado aceptado:** Dockerfile multi-stage e imagen OCI versionada.
 - **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Accepted — OCI app-only baseline authorized`.
 - **Baseline de runtime aceptada:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md) fija TypeScript y Node.js `24.x`; no acepta contenedores, CI/CD ni plataforma de ejecución.
@@ -34,14 +34,17 @@ La baseline portable materializa exclusivamente:
 
 La primera POC real quedó desplegada desde `ops/first-oci-health` mediante el
 `Dockerfile` en el proyecto `SR Taller`, environment `Preview`, aplicación
-`srtaller-app` y servidor `srtaller-app-01`. El routing usa un hostname temporal
-HTTP de Dokploy hacia el puerto interno `3000`; no usa `srtaller.com` ni cambia
-Cloudflare. La evidencia reproducible y los límites están en
+`srtaller-app` y servidor `srtaller-app-01`. El endpoint operativo es
+`https://preview.srtaller.dev`: Cloudflare publica un registro `A` en modo
+`DNS only` hacia `204.168.203.127` y Traefik termina TLS con Let's Encrypt antes
+de enrutar al puerto interno `3000`. El hostname temporal inicial fue retirado;
+no se usa ni modifica `srtaller.com`. La evidencia reproducible y los límites
+están en
 [Resultados de la POC app-only en Dokploy](../architecture-readiness/dokploy-app-only-poc/RESULTS.md).
 
 Permanecen fuera PostgreSQL runtime, migraciones de deploy, Redis, workers,
-WAHA, R2, Docker Compose, Kubernetes, dominio definitivo, cambios DNS,
-production y mutaciones adicionales de infraestructura.
+WAHA, R2, Docker Compose, Kubernetes, production, otros registros DNS y
+mutaciones adicionales de infraestructura.
 
 ## Flujo operativo de Preview
 
@@ -54,9 +57,11 @@ production y mutaciones adicionales de infraestructura.
    `200` en `/livez`, `200` en `/readyz` y `404` en una ruta desconocida.
 6. Se registra el commit fuente y el resultado.
 
-El autodeploy permanece deshabilitado. Habilitarlo posteriormente para una rama
-de Preview puede evaluarse por separado; no se habilita para `main` o
-production sin decisión explícita.
+El autodeploy permanece deshabilitado porque `ops/first-oci-health` es una rama
+de trabajo específica, no una política de ramas de Preview ya adoptada.
+Habilitarlo posteriormente requiere escoger una rama estable de Preview y
+gobernar su webhook o integración; no se habilita para `main` o production sin
+decisión explícita.
 
 ## Ambientes obligatorios
 

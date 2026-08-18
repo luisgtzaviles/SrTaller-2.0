@@ -25,6 +25,9 @@
 | Runtime observado | `linux x64`, equivalente Node.js de `linux/amd64` |
 | Variables | `HOST=0.0.0.0`, `NODE_ENV=production`, `PORT=3000` |
 | Puerto interno | `3000` |
+| Endpoint Preview | `https://preview.srtaller.dev` |
+| DNS | `A preview.srtaller.dev → 204.168.203.127`, Cloudflare `DNS only`, TTL automático |
+| TLS | Let's Encrypt en Traefik; SAN exacto `preview.srtaller.dev` |
 | Autodeploy | deshabilitado; deployment manual |
 
 No se añadieron build arguments, build secrets, volúmenes, puertos directos ni
@@ -48,7 +51,7 @@ mostró únicamente:
 
 No hubo crash loop ni hotfix de fuente.
 
-## Routing y contratos HTTP
+## Routing inicial y contratos HTTP
 
 Se creó sólo el routing temporal HTTP generado por Dokploy:
 
@@ -56,7 +59,8 @@ Se creó sólo el routing temporal HTTP generado por Dokploy:
 http://srtaller-app-nvpkjj-f566bb-204-168-203-127.sslip.io/
 ```
 
-No se configuraron dominio definitivo, TLS, `srtaller.com` ni Cloudflare.
+Ese routing permitió verificar primero la aplicación sin dominio propio. No se
+configuraron entonces TLS, `srtaller.com` ni Cloudflare.
 
 | Comprobación pública | Resultado |
 | --- | --- |
@@ -70,6 +74,35 @@ en Dokploy confirma su ejecución en el runtime real.
 Después de solicitar `Reload` en Dokploy, el servicio permaneció `running
 (healthy)` y la matriz `200/200/404` volvió a pasar. Esto verifica una recarga
 razonable sin dependencia externa.
+
+## Endpoint Preview y TLS
+
+La zona activa `srtaller.dev` usa los nameservers de Cloudflare. El registro ya
+existente se confirmó sin modificar otros registros:
+
+```text
+A  preview.srtaller.dev  204.168.203.127  DNS only  TTL automático
+```
+
+Dokploy quedó configurado con host `preview.srtaller.dev`, path `/`, internal
+path `/`, puerto `3000`, HTTPS activo y proveedor de certificado Let's Encrypt.
+Traefik emitió un certificado público con CN y SAN exactos
+`preview.srtaller.dev`, vigente de `2026-08-18T08:12:13Z` a
+`2026-11-16T08:12:12Z`.
+
+| Comprobación final | Resultado |
+| --- | --- |
+| Resolución A mediante Cloudflare `1.1.1.1` | `204.168.203.127` |
+| Resolución A mediante Google `8.8.8.8` | `204.168.203.127` |
+| `GET http://preview.srtaller.dev/livez` | `301` a `https://preview.srtaller.dev/livez` |
+| `GET https://preview.srtaller.dev/livez` | `200 {"status":"live"}` |
+| `GET https://preview.srtaller.dev/readyz` | `200 {"status":"ready"}` |
+| `GET https://preview.srtaller.dev/unknown` | `404` |
+| Puerto público `204.168.203.127:3000` | conexión rechazada |
+
+El hostname temporal `sslip.io` se retiró de Dokploy después de validar HTTPS y
+ahora responde `404` de Traefik. El servicio permaneció `running (healthy)` y no
+se ejecutó rebuild porque no cambió la aplicación ni su configuración runtime.
 
 ## Aislamiento y secretos
 
@@ -94,10 +127,13 @@ Codex
 → reportar commit y evidencia
 ```
 
-El autodeploy puede evaluarse después para una rama de Preview, pero permanece
-deshabilitado. No existe autorización implícita para desplegar `main` o
+El autodeploy permanece deshabilitado: `ops/first-oci-health` es una rama de
+trabajo específica y todavía no existe una estrategia adoptada para una rama
+estable de Preview. No existe autorización implícita para desplegar `main` o
 production.
 
 ## Conclusión
 
 **SR TALLER DOKPLOY APP-ONLY POC PASS**
+
+**PREVIEW.SRTALLER.DEV LIVE ON DOKPLOY**
