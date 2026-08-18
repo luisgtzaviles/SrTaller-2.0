@@ -14,7 +14,7 @@
 - Staging no usa datos reales salvo un proceso controlado, autorizado y sanitizado aún por definir.
 - El artefacto probado en staging se promueve a production sin reconstruirse.
 - API y trabajos diferibles forman un único artefacto backend inicial conforme a ADR-002; cualquier separación futura requiere evidencia y ADR.
-- Todo despliegue usa un artefacto inmutable e identificable; imágenes y digest OCI sólo serán obligatorios si ADR-007 se acepta.
+- El backend inicial usa la imagen OCI aceptada por ADR-007; cualquier promoción futura debe identificar el digest publicado exacto y no reconstruirlo entre staging y production.
 - Las migraciones deben ser compatibles hacia adelante y considerar convivencia con versiones adyacentes.
 - Todo cambio con riesgo operativo define rollback antes de producción.
 - Feature flags son una opción futura, no un requisito ni decisión aceptada.

@@ -2,10 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador conceptual.
-- **Naturaleza:** Propuesta; no se crean contenedores, pipelines ni infraestructura en esta etapa.
-- **Candidatos:** contenedores Docker, GitHub Actions e imágenes versionadas, pendientes de ADR y evaluación.
-- **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Proposed`.
+- **Estado:** Baseline OCI app-only aceptada y primera POC real en Dokploy
+  verificada; la estrategia de release posterior continúa propuesta.
+- **Naturaleza:** Registra un deployment app-only acotado en `Preview`, incluido
+  su dominio de desarrollo; no autoriza production ni servicios de datos.
+- **Empaquetado aceptado:** Dockerfile multi-stage e imagen OCI versionada.
+- **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Accepted — OCI app-only baseline authorized`.
 - **Baseline de runtime aceptada:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md) fija TypeScript y Node.js `24.x`; no acepta contenedores, CI/CD ni plataforma de ejecución.
 - **Baseline de persistencia aceptada:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md) fija PostgreSQL 18.x; no acepta proveedor, contenedor, HA, pooler ni servicio administrado.
 - **Baseline de repositorio aceptada:** [ADR-009](../decisions/proposed/ADR-009-monorepo-strategy.md) fija un repositorio único y un solo flujo coordinado de versión para R0; no acepta workspaces, orquestador, caché, CI/CD ni múltiples artefactos.
@@ -13,6 +15,53 @@
 ## Objetivo
 
 Lograr despliegues repetibles, trazables y recuperables entre local development, staging y production. El artefacto probado debe promoverse sin reconstrucción, con configuración y secretos propios de cada ambiente.
+
+## Decisión operativa actual
+
+Dokploy es la plataforma operativa elegida para la primera POC app-only. La
+imagen de SR Taller permanece neutral: usa OCI, HTTP, configuración de entorno
+y un puerto interno estándar; no consume APIs ni configuración propietaria de
+Dokploy.
+
+La baseline portable materializa exclusivamente:
+
+- imagen OCI Linux/glibc del backend único;
+- Dockerfile multi-stage, runtime non-root y build reproducible;
+- `GET /livez` y `GET /readyz` sin dependencias externas;
+- configuración `HOST=0.0.0.0`, `NODE_ENV=production` y `PORT=3000` como
+  defaults sobreescribibles del contenedor;
+- verificación local de imagen y runtime.
+
+La primera POC real quedó desplegada desde `ops/first-oci-health` mediante el
+`Dockerfile` en el proyecto `SR Taller`, environment `Preview`, aplicación
+`srtaller-app` y servidor `srtaller-app-01`. El endpoint operativo es
+`https://preview.srtaller.dev`: Cloudflare publica un registro `A` en modo
+`DNS only` hacia `204.168.203.127` y Traefik termina TLS con Let's Encrypt antes
+de enrutar al puerto interno `3000`. El hostname temporal inicial fue retirado;
+no se usa ni modifica `srtaller.com`. La evidencia reproducible y los límites
+están en
+[Resultados de la POC app-only en Dokploy](../architecture-readiness/dokploy-app-only-poc/RESULTS.md).
+
+Permanecen fuera PostgreSQL runtime, migraciones de deploy, Redis, workers,
+WAHA, R2, Docker Compose, Kubernetes, production, otros registros DNS y
+mutaciones adicionales de infraestructura.
+
+## Flujo operativo de Preview
+
+1. Codex modifica el repositorio y ejecuta las verificaciones proporcionales al
+   cambio.
+2. Se crea un commit en una rama autorizada y se publica en `origin`.
+3. Dokploy clona la rama mediante la deploy key dedicada de sólo lectura.
+4. El deployment manual construye el `Dockerfile` y actualiza `srtaller-app`.
+5. Se exige servicio `running (healthy)`, logs sin crash loop y respuestas
+   `200` en `/livez`, `200` en `/readyz` y `404` en una ruta desconocida.
+6. Se registra el commit fuente y el resultado.
+
+El autodeploy permanece deshabilitado porque `ops/first-oci-health` es una rama
+de trabajo específica, no una política de ramas de Preview ya adoptada.
+Habilitarlo posteriormente requiere escoger una rama estable de Preview y
+gobernar su webhook o integración; no se habilita para `main` o production sin
+decisión explícita.
 
 ## Ambientes obligatorios
 
@@ -323,6 +372,6 @@ La [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md) define señales y l
 
 ## Próxima revisión
 
-- **Momento:** después de resolver ADR-007 y los ambientes, antes de crear Dockerfiles o pipelines.
-- **Evidencia esperada:** proveedor candidato, topology draft, matriz de compatibilidad, flujo de promoción y escenarios de rollback.
+- **Momento:** después de la baseline OCI app-only local y antes de crear registry, pipeline o despliegue remoto.
+- **Evidencia esperada:** proveedor candidato, topología draft, digest publicado, matriz de compatibilidad, flujo de promoción y escenarios de rollback.
 - **Responsable:** TBD.

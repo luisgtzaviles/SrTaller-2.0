@@ -13,6 +13,11 @@ import { fileURLToPath } from 'node:url';
 
 import ts from 'typescript';
 
+import {
+  authorizedHealthSurfacePath,
+  validateAuthorizedHealthSurface,
+} from './health-surface-contract.mjs';
+
 const sourceExtensions = new Set(['.cjs', '.cts', '.js', '.mjs', '.mts', '.ts']);
 const httpDecoratorSymbols = [
   'All',
@@ -2062,6 +2067,11 @@ export async function checkArchitecture({
     const layer = layerFromPath(projectRoot, file);
     const basename = relativePath.split('/').at(-1) ?? relativePath;
     const isPublicSurface = moduleName !== undefined && basename === 'index.ts';
+    const isAuthorizedHealthPath =
+      relativePath === authorizedHealthSurfacePath;
+    const healthSurfaceProblems = isAuthorizedHealthPath
+      ? validateAuthorizedHealthSurface(text)
+      : [];
 
     if (
       containsImportedCall(
@@ -2104,26 +2114,32 @@ export async function checkArchitecture({
     ) {
       add('D5-R029', file, 'request scope cannot be operational-context authority');
     }
-    if (
-      /\.controller\.(?:c|m)?[jt]s$/u.test(basename) ||
-      containsImportedDecorator(
-        sourceFile,
-        imports,
-        '@nestjs/common',
-        ['Controller'],
-      )
-    ) {
-      add('D5-R035', file, 'controllers are outside the authorized PBI-022 scope');
-    }
-    if (
-      containsImportedDecorator(
-        sourceFile,
-        imports,
-        '@nestjs/common',
-        httpDecoratorSymbols,
-      )
-    ) {
-      add('D5-R035', file, 'HTTP endpoints are outside the authorized PBI-022 scope');
+    if (isAuthorizedHealthPath) {
+      for (const problem of healthSurfaceProblems) {
+        add('D5-R035', file, problem);
+      }
+    } else {
+      if (
+        /\.controller\.(?:c|m)?[jt]s$/u.test(basename) ||
+        containsImportedDecorator(
+          sourceFile,
+          imports,
+          '@nestjs/common',
+          ['Controller'],
+        )
+      ) {
+        add('D5-R035', file, 'controllers are outside the authorized health-only scope');
+      }
+      if (
+        containsImportedDecorator(
+          sourceFile,
+          imports,
+          '@nestjs/common',
+          httpDecoratorSymbols,
+        )
+      ) {
+        add('D5-R035', file, 'HTTP endpoints are outside the authorized health-only scope');
+      }
     }
     const authorityUses = controllerAuthorityUses(
       sourceFile,
@@ -2284,6 +2300,17 @@ export async function checkArchitecture({
         );
       }
     }
+  }
+
+  if (
+    !fixture &&
+    !sourceFileSet.has(resolve(projectRoot, authorizedHealthSurfacePath))
+  ) {
+    add(
+      'D5-R035',
+      resolve(projectRoot, authorizedHealthSurfacePath),
+      'authorized health surface is missing',
+    );
   }
 
   persistenceBoundaryDiagnostics({

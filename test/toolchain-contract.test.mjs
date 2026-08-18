@@ -44,7 +44,9 @@ test('accepted runtime facts pass and incompatible facts fail', () => {
 
 test('package manifest pins the accepted baseline and blocks lifecycle scripts', async () => {
   const packageManifest = await readJson('package.json');
+  const previewManifest = await readJson('apps/dev-preview-web/package.json');
   const supplyChainPolicy = await readJson('supply-chain-policy.json');
+  const workspaceManifest = await readFile('pnpm-workspace.yaml', 'utf8');
 
   assert.equal(packageManifest.engines.node, EXPECTED_NODE_VERSION);
   assert.equal(packageManifest.engines.pnpm, EXPECTED_PNPM_VERSION);
@@ -52,6 +54,12 @@ test('package manifest pins the accepted baseline and blocks lifecycle scripts',
   assert.equal(packageManifest.pnpm, undefined);
   assert.equal(supplyChainPolicy.dependencyLifecycleDefault, 'blocked');
   assert.deepEqual(supplyChainPolicy.allowlist, []);
+  assert.equal(
+    workspaceManifest,
+    'packages:\n  - .\n  - apps/dev-preview-web\n',
+  );
+  assert.equal(previewManifest.dependencies.react, '19.2.8');
+  assert.equal(previewManifest.devDependencies.vite, '8.2.0');
 });
 
 test('compiled startup config accepts valid values and fails closed', async () => {
@@ -87,9 +95,11 @@ test('build emits native JavaScript and external source maps without sources', a
   assert.ok(mainMap.sources.every((source) => source.endsWith('.ts')));
 });
 
-test('technical shell has a provider and no controller or route surface', async () => {
+test('technical shell has only the authorized health route surface', async () => {
   const sourceFiles = [
     'src/app.module.ts',
+    'src/health/health.controller.ts',
+    'src/health/health-readiness.service.ts',
     'src/main.ts',
     'src/startup-config.ts',
     'src/technical-shell.service.ts',
@@ -98,8 +108,10 @@ test('technical shell has a provider and no controller or route surface', async 
     await Promise.all(sourceFiles.map((file) => readFile(file, 'utf8')))
   ).join('\n');
 
-  assert.match(source, /providers: \[TechnicalShellService\]/u);
-  assert.doesNotMatch(source, /@Controller\s*\(/u);
-  assert.doesNotMatch(source, /@(Get|Post|Put|Patch|Delete)\s*\(/u);
-  assert.doesNotMatch(source, /\/health/u);
+  assert.match(source, /providers: \[HealthReadiness, TechnicalShellService\]/u);
+  assert.match(source, /@Controller\(\)/u);
+  assert.match(source, /@Get\('livez'\)/u);
+  assert.match(source, /@Get\('readyz'\)/u);
+  assert.doesNotMatch(source, /@(Post|Put|Patch|Delete)\s*\(/u);
+  assert.doesNotMatch(source, /@Get\('health/u);
 });
