@@ -2,10 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
-- **Alcance:** Descubrimiento, documentación y futuro desarrollo de SR Taller 2.0.
-- **Hecho conocido:** El proyecto está en fundación documental; no se ha autorizado implementación funcional ni el inicio del Sprint 01.
-- **Decisión pendiente:** Herramientas concretas de gestión y responsables de aprobación. La estrategia operativa vigente está en la [política de ramas](./BRANCH_POLICY.md).
+- **Estado:** Lifecycle especializado de producto y PBI; parcialmente propuesto.
+- **Alcance:** Descubrimiento, refinamiento, estados de trabajo y cierre.
+- **Hecho conocido:** Ya existe una baseline técnica ejecutable en `main` y un
+  Preview materializado; las nuevas capacidades funcionales siguen requiriendo
+  tarea/PBI y autorización aplicable.
+- **Autoridad operativa superior:**
+  [workflow canónico de desarrollo y delivery](./DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
+- **Decisión pendiente:** Herramientas concretas de gestión y responsables de aprobación.
 
 ## Objetivo
 
@@ -71,7 +75,9 @@ La prioridad final y el compromiso requieren aprobación del Product Owner. Esti
 - Descomponer en tareas sólo al nivel necesario para ejecutar y verificar.
 - Hacer visibles dependencias, riesgos y gates externos.
 
-Sprint 00 sigue el mismo principio, pero sus resultados son documentales. No autoriza scaffolding, dependencias, infraestructura ni código funcional.
+Sprint 00 siguió el mismo principio y sus resultados fueron documentales. Sus
+límites históricos no prohíben la baseline técnica materializada después bajo
+autorizaciones posteriores.
 
 ### 4. Ejecución y revisión
 
@@ -107,7 +113,11 @@ Cerrar un elemento exige:
 
 ### 6. Release y aprendizaje
 
-Los cambios liberables siguen el [proceso de release](./RELEASE_PROCESS.md). El mismo artefacto probado en staging se promueve a producción sin reconstrucción. La observación posterior puede generar PBIs, bugs, riesgos o preguntas nuevas.
+Los cambios liberables siguen el [proceso de release](./RELEASE_PROCESS.md).
+Preview existe actualmente; Staging y Production siguen planificados. Cuando se
+materialicen, el mismo artefacto probado en Staging se promoverá a Production
+sin reconstrucción. La observación posterior puede generar PBIs, bugs, riesgos
+o preguntas nuevas.
 
 ## Estados sugeridos de un PBI
 

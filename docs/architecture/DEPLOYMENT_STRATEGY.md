@@ -2,10 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Baseline OCI app-only aceptada y primera POC real en Dokploy
-  verificada; la estrategia de release posterior continúa propuesta.
-- **Naturaleza:** Registra un deployment app-only acotado en `Preview`, incluido
-  su dominio de desarrollo; no autoriza production ni servicios de datos.
+- **Estado:** Baseline OCI + PostgreSQL de Preview materializada y verificada;
+  Staging, Production y promoción por digest continúan planificados.
+- **Naturaleza:** Contrato vigente del runtime `Preview`; no autoriza Staging,
+  Production ni servicios adicionales.
 - **Empaquetado aceptado:** Dockerfile multi-stage e imagen OCI versionada.
 - **ADR relacionado:** [ADR-007: despliegues contenerizados](../decisions/proposed/ADR-007-containerized-deployments.md), estado `Accepted — OCI app-only baseline authorized`.
 - **Baseline de runtime aceptada:** [ADR-001](../decisions/proposed/ADR-001-typescript-as-primary-language.md) fija TypeScript y Node.js `24.x`; no acepta contenedores, CI/CD ni plataforma de ejecución.
@@ -27,13 +27,15 @@ La baseline portable materializa exclusivamente:
 
 - imagen OCI Linux/glibc del backend único;
 - Dockerfile multi-stage, runtime non-root y build reproducible;
-- `GET /livez` y `GET /readyz` sin dependencias externas;
+- `GET /livez` independiente de dependencias y `GET /readyz` dependiente de
+  PostgreSQL, journal y schema mínimo compatibles;
 - configuración `HOST=0.0.0.0`, `NODE_ENV=production` y `PORT=3000` como
   defaults sobreescribibles del contenedor;
 - verificación local de imagen y runtime.
 
-La primera POC real se desplegó históricamente desde `ops/first-oci-health`.
-Después de recuperar la UI y consolidar la baseline, `main` quedó establecida
+La primera POC real se desplegó históricamente desde `ops/first-oci-health`;
+esa rama no es una baseline vigente. Después de recuperar la UI y consolidar
+la baseline, `main` quedó establecida
 como única fuente integrada de Preview conforme a la
 [política de ramas](../delivery/BRANCH_POLICY.md). Dokploy usa el `Dockerfile`
 en el proyecto `SR Taller`, environment `Preview`, aplicación `srtaller-app` y
@@ -45,9 +47,21 @@ no se usa ni modifica `srtaller.com`. La evidencia reproducible y los límites
 están en
 [Resultados de la POC app-only en Dokploy](../architecture-readiness/dokploy-app-only-poc/RESULTS.md).
 
-Permanecen fuera PostgreSQL runtime, migraciones de deploy, Redis, workers,
-WAHA, R2, Docker Compose, Kubernetes, production, otros registros DNS y
-mutaciones adicionales de infraestructura.
+PostgreSQL runtime 18.4 y la migración one-shot ya están materializados en
+Preview conforme a
+[PostgreSQL foundation de Preview](../architecture-readiness/preview-postgresql-foundation.md).
+Permanecen fuera Redis, workers, WAHA, R2, Kubernetes, Staging, Production,
+otros registros DNS y mutaciones adicionales de infraestructura.
+
+Responsabilidades actuales:
+
+- GitHub conserva source, historial y `main`.
+- Dokploy administra environments, deployments, containers, PostgreSQL,
+  routing, TLS y observación operativa.
+- Hetzner aporta la infraestructura de cómputo.
+- Cloudflare administra DNS; R2 no forma parte del runtime actual.
+- Traefik realiza reverse proxy/routing bajo Dokploy.
+- EGTP es histórico/congelado y no es dependencia operativa actual.
 
 ## Flujo operativo de Preview
 
@@ -58,7 +72,8 @@ mutaciones adicionales de infraestructura.
 3. Dokploy clona `main` mediante la deploy key dedicada de sólo lectura.
 4. El deployment manual construye el `Dockerfile` y actualiza `srtaller-app`.
 5. Se exige servicio `running (healthy)`, logs sin crash loop y respuestas
-   `200` en `/livez`, `200` en `/readyz` y `404` en una ruta desconocida.
+   `200` en `/`, `200` en `/livez`, `200` en `/readyz` y `404` en
+   `/api/unknown`.
 6. Se registra el commit fuente y el resultado.
 
 El autodeploy permanece deshabilitado. La fuente `Git` genérica actual requiere
@@ -72,9 +87,10 @@ autodeploy ni ningún cambio de Production.
 
 | Ambiente | Propósito | Datos | Credenciales | Expectativa |
 |---|---|---|---|---|
-| Local development | Desarrollo y pruebas rápidas en una máquina | Sintéticos o fixtures; base local | Sólo locales, sin acceso a production | Conveniencia reproducible, no equivalencia operativa |
-| Staging | Validación integrada, QA, migraciones y release candidate | Sintéticos/anonimizados; reales sólo mediante proceso controlado | Exclusivas de staging/sandboxes | Parecido suficiente para validar, sin ser production |
-| Production | Servicio real y datos reales | Datos operativos sujetos a políticas | Exclusivas, mínimas y gestionadas | Controles, monitoreo, backup y respuesta formales |
+| Local development | Desarrollo y pruebas rápidas en una máquina | Sintéticos o fixtures; base local | Sólo locales, sin acceso a Production | Current; conveniencia reproducible |
+| Preview | Integración rápida y validación Owner | Sintéticos/desarrollo/desechables | Exclusivas de Preview en Dokploy | Current; reconstruible y no productivo |
+| Staging | Validación integrada, QA, migraciones y release candidate | Sintéticos/anonimizados; reales sólo mediante proceso controlado | Exclusivas de Staging/sandboxes | Planned; no materializado |
+| Production | Servicio real y datos reales | Datos operativos sujetos a políticas | Exclusivas, mínimas y gestionadas | Planned; requiere controles formales |
 
 **Regla:** local no es staging. Cada ambiente tiene PostgreSQL separado; Redis/colas y objetos sólo se incorporarán si se aceptan. Credenciales, dominios y telemetría permanecen separados por ambiente. Véase [Ambientes](../delivery/ENVIRONMENTS.md).
 
@@ -129,9 +145,11 @@ La compatibilidad entre responsabilidades, contratos y datos sigue siendo obliga
 
 ## Baseline de runtime
 
-El backend inicial se compila y ejecuta con Node.js `24.x`. La versión minor/patch se fijará reproduciblemente al autorizar el scaffold y podrá actualizarse dentro de la misma línea con pruebas de compatibilidad. No se iniciarán releases sobre una versión EOL y cualquier migración de línea LTS seguirá el gobierno de ADR-001.
-
-Esta baseline no determina si la aplicación corre en contenedor, VM o plataforma administrada, ni selecciona package manager, herramienta de build o pipeline.
+El backend se compila y ejecuta con Node.js `24.18.0` y pnpm `11.15.1`. El
+runtime productivo es la imagen Linux/glibc construida por el Dockerfile
+multi-stage, ejecutada non-root y con puerto interno `3000`. Dokploy es la
+plataforma actual de Preview; la imagen permanece portable y no depende de sus
+APIs propietarias.
 
 ## Artefactos inmutables y promoción
 
@@ -167,7 +185,7 @@ flowchart LR
 
 ### Integración continua
 
-Cuando exista código, el pipeline candidato verificará:
+La validación local actual y cualquier pipeline futuro verifican según riesgo:
 
 - formato/lint y type checking;
 - pruebas unitarias, integración y contratos;
@@ -198,8 +216,10 @@ GitHub Actions es el candidato preliminar para orquestar CI/CD; su aceptación, 
 
 ## Estrategia local
 
-- Dependencias locales mediante Docker Compose es una propuesta de conveniencia, no un artefacto creado ahora.
-- La aplicación puede ejecutarse fuera o dentro de contenedores según decisión futura.
+- La aplicación puede ejecutarse directamente con los comandos `pnpm` del
+  repositorio o construirse con el `Dockerfile` productivo actual.
+- Docker Compose para dependencias locales permanece como opción futura; no
+  existe un Compose canónico en la baseline actual.
 - Fixtures y servicios falsos no usan credenciales ni datos reales.
 - Configuración local se documenta y valida; defaults inseguros no se trasladan a otros ambientes.
 - Desarrollo local debe poder reiniciarse sin depender de staging.
@@ -366,7 +386,7 @@ La [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md) define señales y l
 
 ## Preguntas abiertas
 
-- ¿Qué proveedor de hosting y servicios administrados satisface costo, región y operación?
+- ¿Qué topología, región y proveedor se usarán para Staging y Production?
 - ¿Qué evidencia futura justificaría separar una responsabilidad de la unidad inicial aceptada?
 - ¿Qué SLO, RPO, RTO y ventanas de mantenimiento requiere el negocio?
 - ¿Qué gates y roles aprobarán staging y production?
@@ -377,6 +397,7 @@ La [Estrategia de observabilidad](OBSERVABILITY_STRATEGY.md) define señales y l
 
 ## Próxima revisión
 
-- **Momento:** después de la baseline OCI app-only local y antes de crear registry, pipeline o despliegue remoto.
-- **Evidencia esperada:** proveedor candidato, topología draft, digest publicado, matriz de compatibilidad, flujo de promoción y escenarios de rollback.
+- **Momento:** al cambiar la topología de Preview o antes de crear Staging.
+- **Evidencia esperada:** inventario actual, digest candidato, matriz de
+  compatibilidad, flujo de promoción y escenarios de rollback.
 - **Responsable:** TBD.

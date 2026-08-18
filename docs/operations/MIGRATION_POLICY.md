@@ -2,18 +2,20 @@
 
 ## Estado del documento
 
-- **Estado:** Política vigente; runner materializado, primera migración
-  pendiente.
-- **Alcance:** Cambios futuros de esquema, datos, índices, configuración persistida y backfills.
-- **Hecho conocido:** El Paso 8 de PBI-023 materializó exclusivamente el
-  runner, provider, manifest, lock y pruebas con fixtures; no existe schema ni
-  migración productiva.
+- **Estado:** Política vigente; runner, primera migración productiva y comando
+  one-shot materializados.
+- **Alcance:** Cambios actuales y futuros de esquema, datos, índices,
+  configuración persistida y backfills.
+- **Hecho conocido:** Preview usa PostgreSQL 18.4. La migración productiva
+  inicial crea `tenants` y `branches`, está registrada en el journal Kysely y
+  fue verificada desde vacío y en repetición idempotente.
 - **Baseline aceptada:** ADR-003 fija PostgreSQL 18.x y
   [DEC-050](../decisions/dec-050-migration-strategy/DECISION_PROPOSAL.md)
   selecciona el migrador core de Kysely.
-- **Materialización pendiente:** primera migración, operación/CLI segura,
-  PostgreSQL autoritativo en CI, roles compartidos y condiciones de promoción.
-  La evidencia local del runner no acredita esos gates.
+- **Comando actual:** `pnpm run db:migrate`; explícito, one-shot y separado del
+  arranque HTTP.
+- **Materialización pendiente:** separación física de credenciales cuando sea
+  viable, Staging, gates de Production y estrategia de promoción/recuperación.
 
 ## Objetivo
 
@@ -99,9 +101,9 @@ No todos los cambios requieren cada paso, pero omitirlo debe justificarse. La fa
 ## Índices, constraints y locks
 
 El mecanismo usa PostgreSQL 18.x y el migrador core de Kysely conforme DEC-050.
-El provider de archivos gobernado está verificado; la composición operacional y
-el proveedor de secretos productivo siguen abiertos. Antes de ejecutar
-se debe evaluar:
+El provider, manifest, composición de Preview y comando one-shot están
+materializados. Dokploy administra el secreto de Preview; el mecanismo de
+secretos para Production sigue abierto. Antes de ejecutar se debe evaluar:
 
 - lock adquirido y duración esperada;
 - impacto sobre lecturas/escrituras y pool de conexiones;
@@ -129,11 +131,19 @@ Eliminar, truncar, sobrescribir o transformar con pérdida requiere:
 
 1. Diseño y revisión documental.
 2. Prueba automatizada desde estado vacío y desde estado anterior representativo.
-3. Ensayo local/CI con volumen sintético.
-4. Ensayo en staging con el candidato exacto y medición.
-5. Revisión de backup, rollback/roll-forward y gate.
-6. Ejecución automatizada/versionada en production.
-7. Verificación, observación y registro del resultado.
+3. Ensayo local/CI con PostgreSQL 18.x y volumen sintético.
+4. Preview: ejecución one-shot autorizada, verificación de journal/schema y
+   posterior arranque HTTP con migraciones desactivadas.
+5. Staging futuro: ensayo con el candidato exacto, volumen representativo y
+   medición.
+6. Revisión de backup, rollback/roll-forward y gate Owner.
+7. Production futuro: ejecución versionada y explícitamente autorizada.
+8. Verificación, observación y registro del resultado.
+
+Las migraciones nunca se ejecutan automáticamente en cada réplica de la
+aplicación. En Preview el override temporal del comando se retira después del
+one-shot y el runtime vuelve a `SR_DB_ROLE=application` con
+`SR_DB_MIGRATIONS_ENABLED=false`.
 
 No se copian datos de production a staging sin el proceso controlado de [Environments](../delivery/ENVIRONMENTS.md).
 
@@ -173,5 +183,6 @@ El contrato técnico vigente del runner y sus límites están en
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** aprobación de estrategia de datos o antes de crear la primera migración.
+- **Disparador:** antes de una nueva migración de riesgo, al crear Staging o
+  antes de cualquier migración de Production.
 - **Documentos relacionados:** [Data Architecture](../architecture/DATA_ARCHITECTURE.md), [Release Process](../delivery/RELEASE_PROCESS.md), [Rollback Policy](./ROLLBACK_POLICY.md), [Multitenant Isolation Testing](../quality/MULTITENANT_ISOLATION_TESTING.md).

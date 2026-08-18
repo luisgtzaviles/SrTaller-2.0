@@ -2,14 +2,25 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
-- **Alcance:** Futuras aplicaciones, API, workers y cambios de datos de SR Taller 2.0.
-- **Hecho conocido:** No existen todavía artefactos desplegables ni releases funcionales.
-- **Decisión pendiente:** Plataforma de CI/CD, aprobadores, ventanas, estrategia concreta de rollout y objetivos operativos.
+- **Estado:** Contrato parcial; Preview es ejecutable y la promoción Staging/Production permanece planificada.
+- **Alcance:** Artefacto OCI actual de Preview y releases futuros de aplicaciones, workers y cambios de datos de SR Taller 2.0.
+- **Hecho conocido:** `main` produce un artefacto OCI desplegable en Dokploy Preview; no existen Staging ni Production.
+- **Decisión pendiente:** Registry/digest promovible, CI/CD, aprobadores, ventanas, rollout y objetivos operativos para Staging/Production.
 
 ## Objetivo
 
-Lograr releases repetibles, trazables y recuperables entre [local, staging y production](./ENVIRONMENTS.md), sin copiar archivos manualmente ni reconstruir el artefacto que ya fue probado.
+Lograr releases repetibles, trazables y recuperables entre los
+[ambientes](./ENVIRONMENTS.md), sin copiar archivos manualmente ni reconstruir
+el artefacto que ya fue probado. Para el flujo actual de Preview manda el
+[workflow canónico](./DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
+
+## Flujo actual de Preview
+
+Preview se despliega manualmente desde `main` con el `Dockerfile` del
+repositorio. Autodeploy está desactivado. Un cambio sólo llega a Preview tras
+validación local, commit, integración explícita, push de `main`, deployment
+manual en Dokploy y verificación remota. Este flujo no equivale todavía a una
+promoción por digest ni autoriza Staging o Production.
 
 ## Principios propuestos
 
@@ -22,7 +33,7 @@ Lograr releases repetibles, trazables y recuperables entre [local, staging y pro
 - Bloquear release ante sospecha de exposición entre tenants, pérdida de datos o bypass de autorización.
 - Prohibir despliegues manuales por FTP.
 
-## Flujo propuesto
+## Flujo de release futuro
 
 ```mermaid
 flowchart LR
@@ -99,7 +110,7 @@ La posibilidad de canary, blue/green o feature flags se mantiene como opción fu
 - Un rollback de aplicación no debe depender de revertir inmediatamente datos ya escritos por la nueva versión.
 - El proceso completo se rige por [Migration Policy](../operations/MIGRATION_POLICY.md).
 
-## Hotfix propuesto
+## Hotfix futuro
 
 Un hotfix reduce alcance y tiempo, no controles esenciales:
 
@@ -125,7 +136,7 @@ Durante un incidente activo, las acciones break-glass se limitan a contención, 
 
 ## Preguntas abiertas
 
-- ¿Qué plataforma de CI/CD y registro de imágenes se aprobarán?
+- ¿Qué plataforma de CI/CD y registro de imágenes/digests se aprobarán para promoción?
 - ¿Quién puede aprobar producción y quién puede ordenar rollback?
 - ¿Qué estrategia de rollout se usará por desplegable y riesgo?
 - ¿Qué tiempo de observación y señales definen un release saludable?
@@ -135,5 +146,5 @@ Durante un incidente activo, las acciones break-glass se limitan a contención, 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** selección de infraestructura de despliegue o antes del primer release funcional.
+- **Disparador:** materialización de Staging o antes del primer release a Production.
 - **Documentos relacionados:** [Versioning Strategy](./VERSIONING_STRATEGY.md), [Environments](./ENVIRONMENTS.md), [Rollback Policy](../operations/ROLLBACK_POLICY.md), [Incident Management](../operations/INCIDENT_MANAGEMENT.md).

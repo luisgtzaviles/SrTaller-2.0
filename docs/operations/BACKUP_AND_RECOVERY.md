@@ -2,16 +2,34 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
-- **Alcance:** Datos y configuración necesarios para recuperar la futura plataforma.
-- **Hecho conocido:** ADR-003 acepta PostgreSQL 18.x como base primaria; Redis y storage compatible con S3 continúan como propuestas separadas.
-- **Decisión pendiente:** Proveedor, RPO/RTO, retención, regiones, cifrado, restauración por tenant y responsabilidades.
+- **Estado:** Contrato mínimo vigente para Preview; política de Production
+  pendiente.
+- **Alcance:** Datos y configuración necesarios para recuperar la baseline
+  actual y los ambientes futuros.
+- **Hecho conocido:** Preview usa PostgreSQL 18.4 con volumen persistente;
+  Redis y storage compatible con S3 no están materializados.
+- **Decisión pendiente:** RPO/RTO, retención, almacenamiento off-server,
+  cifrado, frecuencia de restore tests, restauración por tenant y
+  responsabilidades de Production.
 
 ## Objetivo
 
 Restaurar capacidades y datos de forma verificable después de error humano, despliegue defectuoso, corrupción, pérdida de infraestructura o incidente de seguridad, sin crear nuevas exposiciones entre tenants.
 
 Un backup que nunca se ha restaurado con éxito es sólo una suposición de recuperación.
+
+## Estado por ambiente
+
+- **Preview — CURRENT:** datos no productivos; backups best-effort según la
+  necesidad de una tarea. Persistencia no equivale a backup y no autoriza
+  operaciones destructivas.
+- **Staging — PLANNED:** backups y restores se usarán para ensayar migraciones y
+  recuperación cuando corresponda.
+- **Production — REQUIRED BEFORE PRODUCTION:** backups obligatorios, fuera del
+  mismo failure domain cuando aplique, y restauración probada con evidencia.
+
+Frecuencia, retención, off-server storage, encryption, restore tests, RPO y RTO
+permanecen `TO BE DECIDED BEFORE PRODUCTION`.
 
 ## Conceptos
 
@@ -146,5 +164,6 @@ Se propone ensayar con frecuencia `TBD`:
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** selección de infraestructura de datos o antes de almacenar datos reales.
+- **Disparador:** cambio material de persistencia o antes de crear Production y
+  almacenar datos reales.
 - **Documentos relacionados:** [Data Architecture](../architecture/DATA_ARCHITECTURE.md), [Migration Policy](./MIGRATION_POLICY.md), [Incident Management](./INCIDENT_MANAGEMENT.md), [Environments](../delivery/ENVIRONMENTS.md).

@@ -1,12 +1,17 @@
 # Documentación de SR Taller 2.0
 
-Este índice es la puerta de entrada a la fundación documental. Todo contenido técnico es conceptual o propuesto hasta que el mecanismo de aprobación correspondiente indique lo contrario.
+Este índice organiza la documentación actual e histórica. La entrada operativa
+obligatoria es [CONTRIBUTING.md](../CONTRIBUTING.md) y el manual end-to-end es el
+[workflow canónico de desarrollo y delivery](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
+Los documentos `Proposed` o históricos no sustituyen la baseline materializada.
 
 ## Estado del documento
 
-**Estado:** Sprint 00 `Closed`.
-**Fase:** R0 `Authorized`, limitado a PBI-023.
-**Implementación funcional:** no iniciada.
+**Estado:** Sprint 00 `Closed`; baseline técnica ejecutable materializada.
+**Fase:** desarrollo incremental sobre `main`; el alcance funcional sigue
+requiriendo tarea/PBI y autoridad explícita.
+**Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
+18.4; Staging y Production no están materializados.
 
 ## Revisión dirigida de Sprint 00
 
@@ -95,6 +100,7 @@ auditoría inicial, la remediación y el dictamen final:
 
 ## Entrega
 
+- [Workflow canónico de desarrollo, delivery y operación](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
 - [Workflow de desarrollo](delivery/DEVELOPMENT_WORKFLOW.md)
 - [Política de ramas](delivery/BRANCH_POLICY.md)
 - [Definition of Ready](delivery/DEFINITION_OF_READY.md)
@@ -154,7 +160,15 @@ retrospectivamente Sprint 00.
 
 ## Ruta de lectura recomendada
 
-Comenzar con la [visión](product/PRODUCT_VISION.md), continuar con [principios](product/PRODUCT_PRINCIPLES.md), [alcance](product/PRODUCT_SCOPE.md), [descubrimiento del dominio](domain/README.md), [arquitectura objetivo](architecture/TARGET_ARCHITECTURE.md), [preguntas abiertas](product/OPEN_QUESTIONS.md), [ADRs propuestos](decisions/README.md) y finalizar con el [Sprint 00](sprints/sprint-00/SPRINT_BACKLOG.md).
+Para trabajar: comenzar con [CONTRIBUTING.md](../CONTRIBUTING.md), seguir el
+[workflow canónico](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md), la
+[política de ramas](delivery/BRANCH_POLICY.md), la
+[estrategia de despliegue](architecture/DEPLOYMENT_STRATEGY.md) y
+[ambientes](delivery/ENVIRONMENTS.md). Para producto, continuar con
+[visión](product/PRODUCT_VISION.md), [alcance](product/PRODUCT_SCOPE.md),
+[dominio](domain/README.md) y [arquitectura objetivo](architecture/TARGET_ARCHITECTURE.md).
+Sprint 00 y sus evidencias se leen como historia y trazabilidad, no como estado
+operativo actual.
 
 ## Próxima revisión
 

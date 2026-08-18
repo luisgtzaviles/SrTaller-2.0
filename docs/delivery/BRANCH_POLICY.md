@@ -6,12 +6,15 @@
 - **Baseline integrada:** `main`.
 - **Alcance:** repositorio SR Taller 2.0 y despliegue de desarrollo en Preview.
 - **Fuera de alcance:** Staging, Production y autorización de releases.
+- **Workflow superior:**
+  [DEVELOPMENT_AND_DELIVERY_WORKFLOW.md](./DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
 
 ## Política operativa
 
 1. `main` es la única baseline integrada y la fuente del ambiente Preview.
 2. El trabajo ordinario usa ramas de vida corta creadas desde `main` y vuelve a
    `main` mediante un cambio revisado y verificable.
+   Los prefijos normales son `feature/*`, `fix/*` y `ops/*`.
 3. No se mantienen ramas permanentes por ambiente o por etapa. Una rama de
    recuperación, operación, PBI o experimento no constituye una segunda
    baseline.
@@ -21,6 +24,10 @@
    mecanismo sea claro, observable y no amplíe el alcance a otros ambientes.
 6. Staging y Production requieren su propia autorización y no se infieren de un
    despliegue exitoso en Preview.
+
+Git branches y deployment environments son ejes distintos. Dokploy representa
+ambientes; no se crean ramas permanentes `preview`, `staging` o `production`.
+El autodeploy actual de Preview está deshabilitado y el deployment es manual.
 
 ## Protección de `main`
 

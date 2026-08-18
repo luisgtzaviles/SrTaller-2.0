@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
-- **Hecho conocido:** ADR-002 fija un único artefacto backend inicial, ADR-001 fija Node.js `24.x` como su baseline y ADR-009 fija un repositorio único con un solo flujo coordinado de versión para R0; clientes, packages publicados o separaciones futuras requieren autorización propia.
+- **Estado:** Contrato parcial; identificación por commit existe y el versionado formal de releases permanece propuesto.
+- **Hecho conocido:** La baseline construye un único artefacto OCI desde `main` con Node.js `24.18.0` y pnpm `11.15.1`; clientes publicados o separaciones futuras requieren autorización propia.
 - **Hipótesis:** Semantic Versioning puede comunicar cambios de contratos publicados, complementado por un manifiesto de release.
 - **Decisión pendiente:** Esquema definitivo, política pre-1.0, versionado de API y compatibilidad soportada.
 
@@ -24,7 +24,11 @@ Poder responder qué cambió, qué artefactos están desplegados en cada ambient
 
 ## Runtime y soporte
 
-ADR-001 acepta una sola línea major ordinaria por release: Node.js `24.x` para R0. La versión minor/patch se fija en la futura configuración ejecutable, se actualiza con evidencia de compatibilidad y no puede permanecer como baseline de un nuevo release después de EOL. Una migración temporal puede validar dos líneas, pero no crea soporte permanente para ambas.
+ADR-001 acepta una sola línea major ordinaria por release: Node.js `24.x` para
+R0. La baseline ejecutable fija actualmente `24.18.0`; cualquier actualización
+requiere evidencia de compatibilidad y no puede mantenerse en un release nuevo
+después de EOL. Una migración temporal puede validar dos líneas, pero no crea
+soporte permanente para ambas.
 
 ## Semantic Versioning como propuesta
 
@@ -103,5 +107,5 @@ Cada entrada debe vincular PBI o bug y, si corresponde, ADR, evidencia y guía d
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** creación del primer artefacto desplegable, definición de versionado de API o propuesta autorizada de publicar/separar otra unidad.
+- **Disparador:** adopción de registry/digest promovible, definición de versionado de API o propuesta autorizada de publicar/separar otra unidad.
 - **Documentos relacionados:** [Release Process](./RELEASE_PROCESS.md), [Traceability Model](./TRACEABILITY_MODEL.md), [Migration Policy](../operations/MIGRATION_POLICY.md).

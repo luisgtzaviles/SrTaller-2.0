@@ -2,14 +2,17 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
-- **Alcance:** Preparación operativa de la futura plataforma SR Taller 2.0.
-- **Hecho conocido:** ADR-003 acepta PostgreSQL 18.x; API, workers y clientes permanecen conceptuales, y Redis, storage S3-compatible, realtime e integraciones requieren decisiones propias.
-- **Decisión pendiente:** Proveedor, topología, objetivos de servicio, guardias, herramientas y responsables.
+- **Estado:** Contrato operativo parcial; Preview existe y Staging/Production permanecen planificados.
+- **Alcance:** Operación actual de Preview y preparación operativa de los ambientes futuros de SR Taller 2.0.
+- **Hecho conocido:** Preview ejecuta una aplicación NestJS/React-Vite y PostgreSQL 18.4 en Dokploy; workers, Redis, storage S3-compatible, realtime e integraciones no están materializados.
+- **Decisión pendiente:** Topología y gates de Staging/Production, objetivos de servicio, guardias, herramientas y responsables.
 
 ## Objetivo
 
-Definir cómo operar la plataforma de forma segura, observable, repetible y recuperable para múltiples tenants, sin asumir infraestructura que todavía no ha sido aprobada.
+Definir cómo operar la baseline existente y cómo evolucionarla de forma segura,
+observable, repetible y recuperable, sin presentar infraestructura planificada
+como si ya existiera. El workflow end-to-end canónico está en
+[Development and Delivery Workflow](../delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
 
 ## Principios operativos
 
@@ -23,13 +26,13 @@ Definir cómo operar la plataforma de forma segura, observable, repetible y recu
 - Convertir incidentes en mejoras trazables sin buscar culpables.
 - No realizar despliegues manuales por FTP.
 
-## Mapa operativo preliminar
+## Mapa operativo
 
 ```mermaid
 flowchart LR
-    U[Clientes web y móviles futuros] --> WAF[Entrada/hosting TBD]
-    WAF --> API[API]
-    API --> DB[(PostgreSQL 18.x)]
+    U[Cliente web actual y clientes futuros] --> WAF[Cloudflare DNS + Dokploy/Traefik en Preview]
+    WAF --> API[Aplicación NestJS actual]
+    API --> DB[(PostgreSQL 18.4 en Preview)]
     API --> R[(Redis si se acepta)]
     API --> S[(Storage S3 compatible si se acepta)]
     API --> RT[Realtime]
@@ -44,9 +47,16 @@ flowchart LR
     RT --> O
 ```
 
-El diagrama describe responsabilidades previstas. Sólo PostgreSQL está aceptado; no define número de instancias, proveedor ni aceptación de los demás componentes.
+El diagrama mezcla la ruta actual de Preview con responsabilidades previstas.
+La aplicación, su UI, el routing y PostgreSQL existen en Preview. Redis,
+storage, realtime, colas, workers e integraciones son planificados y requieren
+decisiones propias antes de materializarse.
 
-## Catálogo de servicios pendiente
+## Catálogo de servicios
+
+La aplicación `srtaller-app` y PostgreSQL `srtaller-postgres` constituyen el
+catálogo mínimo actual de Preview. Antes de Production, cada componente deberá
+tener además una ficha completa:
 
 Antes de producción, cada componente debe tener una ficha:
 
@@ -66,15 +76,17 @@ Antes de producción, cada componente debe tener una ficha:
 
 ## Ambientes
 
-Se operarán al menos [local development, staging y production](../delivery/ENVIRONMENTS.md):
+Se opera [Local y Preview; Staging y Production están planificados](../delivery/ENVIRONMENTS.md):
 
 - local no es staging;
-- cada ambiente usa base, credenciales e integraciones separadas;
+- Preview usa su propia base y credenciales; cada ambiente futuro deberá usar
+  las suyas;
 - staging no usa datos reales salvo proceso controlado y sanitizado;
 - el artefacto probado se promueve sin rebuild;
 - production requiere acceso mínimo y auditado.
 
-La existencia de ambientes de preview, disaster recovery o soporte es una pregunta futura.
+Preview existe actualmente en `https://preview.srtaller.dev`. Disaster
+recovery y soporte especializado permanecen como decisiones futuras.
 
 ## Observabilidad operativa
 
@@ -95,11 +107,12 @@ Logs/traces deberían correlacionar request/event/job, servicio, versión, ambie
 
 Una alerta debe ser accionable, tener severidad/impacto, owner, runbook y criterio de cierre. No se fijan umbrales sin datos. Se evitarán alertas basadas sólo en infraestructura si no reflejan impacto o riesgo real.
 
-## Operaciones recurrentes previstas
+## Operaciones recurrentes
 
 | Operación | Control esperado |
 |---|---|
-| Deploy/promoción | Pipeline, gate, digest y [Release Process](../delivery/RELEASE_PROCESS.md). |
+| Deploy de Preview | Merge/push a `main`, deployment manual en Dokploy y verificación remota conforme al [workflow canónico](../delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md). |
+| Promoción futura | Build único, gate, digest y [Release Process](../delivery/RELEASE_PROCESS.md). |
 | Migración/backfill | Plan, tenant context, idempotencia y [Migration Policy](./MIGRATION_POLICY.md). |
 | Rollback | Trigger, autoridad, compatibilidad y [Rollback Policy](./ROLLBACK_POLICY.md). |
 | Backup/restore | Objetivos, cifrado, prueba y [Backup and Recovery](./BACKUP_AND_RECOVERY.md). |
@@ -166,5 +179,5 @@ Se establecerán baselines, pruebas y alertas después de confirmar escenarios. 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** aprobación de arquitectura de despliegue/observabilidad o antes de crear production.
+- **Disparador:** cambio operativo de Preview, materialización de Staging o antes de crear Production.
 - **Documentos relacionados:** [Observability Strategy](../architecture/OBSERVABILITY_STRATEGY.md), [Security Baseline](../architecture/SECURITY_BASELINE.md), [Runbook Template](./RUNBOOK_TEMPLATE.md).
