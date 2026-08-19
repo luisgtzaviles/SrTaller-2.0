@@ -195,6 +195,16 @@ migración, schema, transacciones y repositories. Preview responde `/readyz`
 con 200, evidencia indirecta de compatibilidad runtime; esta auditoría no
 consultó el catálogo con credenciales.
 
+El desarrollo local también está materializado como `CURRENT`: Docker CLI usa
+la imagen PostgreSQL `18.4` en `srtaller-postgres-local`, volumen
+`srtaller-postgres-local-data`, base `srtaller_local` y binding
+`127.0.0.1:55432`. `pnpm run local:db:migrate` deriva `SR_DB_*` con el rol
+`migration`; `local:backend`/`local:dev` y `local:db:seed` usan el rol
+`application`. El seed V1 sólo crea UUIDs sintéticos deterministas en
+`tenants`/`branches`. El contrato, guardas fail-closed y reset destructivo local
+están en [LOCAL_DEVELOPMENT.md](delivery/LOCAL_DEVELOPMENT.md). Esto no cambia
+Preview, Dokploy, DNS, secrets ni infraestructura remota.
+
 ## 8. Frontend State
 
 Rutas materializadas en `apps/dev-preview-web/src/App.tsx`:

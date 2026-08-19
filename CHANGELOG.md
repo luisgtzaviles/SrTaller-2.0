@@ -4,6 +4,12 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ## [Unreleased]
 
+### Desarrollo local
+
+- Materializado el contrato de desarrollo local con PostgreSQL 18.4 aislado,
+  roles `migration`/`application`, migración real, seed sintético determinista,
+  reset fail-closed y proxy Vite local. No cambia Preview ni Dokploy.
+
 ### Documentación
 
 - Creación de la fundación documental de producto, arquitectura, decisiones, entrega, backlog, Sprint 00, calidad y operaciones.

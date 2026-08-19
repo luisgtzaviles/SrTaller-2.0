@@ -39,6 +39,9 @@ La fotografía verificable completa, sus límites y el punto de partida están e
    modificar código.
 5. Crear una rama temporal desde `main`; los ambientes no son ramas.
 
+Para el ciclo local completo, seguir el [contrato de desarrollo local](docs/delivery/LOCAL_DEVELOPMENT.md):
+`local:db:up` → `local:db:migrate` → `local:db:seed` → `local:dev`.
+
 ## Navegación canónica
 
 - [Índice de documentación](docs/README.md)
@@ -52,6 +55,7 @@ La fotografía verificable completa, sus límites y el punto de partida están e
 - [Registro de decisiones](docs/decisions/README.md)
 - [Estrategia de calidad](docs/quality/QUALITY_STRATEGY.md)
 - [Estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md)
+- [Desarrollo local](docs/delivery/LOCAL_DEVELOPMENT.md)
 
 ## Regla de autoridad
 

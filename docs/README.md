@@ -120,6 +120,7 @@ su DoD conserva evidencia AT parcial y Owner Acceptance pendientes.
 ## Entrega
 
 - [Workflow canónico de desarrollo, delivery y operación](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
+- [Desarrollo local](delivery/LOCAL_DEVELOPMENT.md)
 - [Workflow de desarrollo](delivery/DEVELOPMENT_WORKFLOW.md)
 - [Política de ramas](delivery/BRANCH_POLICY.md)
 - [Definition of Ready](delivery/DEFINITION_OF_READY.md)
