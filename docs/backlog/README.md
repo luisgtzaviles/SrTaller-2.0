@@ -9,9 +9,9 @@ Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 divergente, no está integrado en `main` y conserva el merge funcional bloqueado
 por DEC051-C02; PBI-025–PBI-029 descomponen el resto de H1 y no están
 autorizados. [PBI-030](pbis/PBI-030.md) materializa UI Foundation y Application
-Shell V1 en un candidato autorizado `In review`; no está integrado ni desplegado
-y conserva Owner Acceptance/merge pendientes y evidencia AT parcial; CI e
-independent review pasan.
+Shell V1, está integrado en `main` y permanece `In review`; no está desplegado
+ni `Done` y conserva Owner Acceptance y evidencia AT parcial. CI de PR, CI de
+`main` e independent review pasan.
 
 ## Estado del documento
 
@@ -63,4 +63,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-CI/revisión de PBI-030 sin merge automático y reconciliación de PBI-024.
+Decisión Owner sobre Preview deployment de PBI-030, evidencia/aceptación
+pendientes y reconciliación de PBI-024.

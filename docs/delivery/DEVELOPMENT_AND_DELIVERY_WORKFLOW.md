@@ -89,7 +89,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `32201164615` on `a8f230214b592389894e25545583988c2c2edc3e` |
+| Authoritative CI at audited HEAD | Green: run `32217905296` on `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823` |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |

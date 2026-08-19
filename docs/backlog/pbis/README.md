@@ -6,10 +6,9 @@
 conservan su historia de Sprint 00; PBI-021/PBI-022 están `Done`; PBI-023 está
 `Closed`; PBI-024 está autorizado para implementación en rama con merge
 bloqueado por DEC051-C02 y tiene implementación sólo en una PR draft divergente;
-PBI-025–PBI-029 no están autorizados. PBI-030 recibió autorización Owner y está
-`In review` en una rama temporal; el candidato no está integrado ni desplegado
-y conserva Owner Acceptance/merge pendientes y evidencia AT parcial; CI e
-independent review pasan.
+PBI-025–PBI-029 no están autorizados. PBI-030 está integrado en `main` y
+permanece `In review`; no está desplegado ni `Done` y conserva Owner Acceptance
+y evidencia AT parcial. CI de PR, CI de `main` e independent review pasan.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
@@ -46,10 +45,11 @@ T-shirt sizing; los demás casos conservan TBD.
 | [PBI-027](PBI-027.md) | Define and apply the R0 temporal model | Blocked |
 | [PBI-028](PBI-028.md) | Implement safe logging, business audit and observability baseline | Draft |
 | [PBI-029](PBI-029.md) | Govern R0 secrets and external configuration | Draft |
-| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | In review — independent review approved; candidate not integrated; AT partial |
+| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | In review — integrated in main; independent review approved; AT partial; Owner Acceptance pending |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-CI/revisión de PBI-030 sin merge automático y reconciliación de PBI-024.
+Decisión Owner sobre Preview deployment de PBI-030, evidencia/aceptación
+pendientes y reconciliación de PBI-024.

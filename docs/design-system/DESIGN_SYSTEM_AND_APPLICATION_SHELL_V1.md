@@ -348,8 +348,10 @@ V1 y limitando esta decisión al cliente React/Vite actual.
 - El Owner concedió autorización explícita y binaria para implementar PBI-030
   el 2026-08-18 desde `main`
   `f802feecbf1fb7b1c167b8d24f41f4e28db637d9`.
-- El candidato vive en `feature/pbi-030-design-system-shell`, está `In review`
-  y conserva separados CI, aceptación, merge y deploy. La
+- El candidate final `5ca8866` fue integrado desde
+  `feature/pbi-030-design-system-shell` mediante PR #8 y merge commit
+  `c8628fb`; PBI-030 permanece `In review` y conserva separados Owner
+  Acceptance, `Done` y deploy. La
   [revisión independiente formal](../quality/evidence/pbi-030/INDEPENDENT_REVIEW.md)
   aprobó la implementación después de remediar los defectos encontrados.
 
@@ -373,5 +375,6 @@ no afirma `Done`.
 
 ## Próxima revisión
 
-Ante revisión del candidato, un hallazgo que requiera cambiar el contrato o una
-decisión Owner posterior. Esta dirección no autoriza merge ni deploy.
+Ante un hallazgo que requiera cambiar el contrato o una decisión Owner
+posterior. La integración ya ocurrió; esta dirección no autoriza Owner
+Acceptance, `Done` ni deploy.

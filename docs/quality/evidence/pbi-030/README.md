@@ -6,10 +6,13 @@
 |---|---|
 | Elemento validado | `PBI-030` |
 | Estado | `In review` |
-| Rama | `feature/pbi-030-design-system-shell` |
-| Pull request | [PR draft #8](https://github.com/luisgtzaviles/SrTaller-2.0/pull/8) |
-| Baseline | `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |
+| Rama de implementación | `feature/pbi-030-design-system-shell` |
+| Pull request | [PR #8](https://github.com/luisgtzaviles/SrTaller-2.0/pull/8), `MERGED` |
+| Baseline de evidencia histórica | `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |
 | SHA de implementación observado | `7f15126e90295464994d15d662bdb6b1cf6a5062` |
+| Candidate final revisado | `5ca88662bd95e97241d2502ac0a0d9586067e60b` |
+| Merge en `main` | `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823` |
+| CI autoritativo de `main` | run `32217905296`, `SUCCESS` |
 | Ejecución local | 2026-08-18 (`2026-08-19T01:34:45Z`) |
 | Toolchain | Node.js `24.18.0`; pnpm `11.15.1` |
 | Navegador manual | Google Chrome `151.0.7922.138` en macOS `26.5.1` |
@@ -26,12 +29,17 @@ evidencia histórica y registra la remediación
 `70a7b4d15827e2a18052211eaf6db565e51ef241`, las pruebas adicionales y el
 estado vigente del candidato.
 
+El follow-up de integración no sustituye la evidencia histórica: PR #8 fue
+integrada el 2026-08-18 mediante `c8628fb`; el workflow autoritativo de `main`
+`32217905296` pasó run-1, run-2 y comparison sobre ese merge SHA.
+
 ## Resultado ejecutivo
 
 **IMPLEMENTATION EVIDENCE: PASS WITH EXPLICIT EXTERNAL GATES.** La
 implementación remediada, los gates locales, CI e independent review pasan.
 PBI-030 no se declara `Done`: faltan la matriz manual Primary completa de
-navegadores/AT, Owner Acceptance, merge y cualquier deploy posterior autorizado.
+navegadores/AT, Owner Acceptance y cualquier deploy posterior autorizado. La
+implementación ya está integrada en `main`.
 
 | Área | Resultado |
 |---|---|
@@ -44,6 +52,7 @@ navegadores/AT, Owner Acceptance, merge y cualquier deploy posterior autorizado.
 | Gate local canónico | PASS |
 | PostgreSQL material y smokes compilados | PASS |
 | CI autoritativo del SHA de PR | PASS; runs exactos en independent review/handoff |
+| CI autoritativo del merge en `main` | PASS; run `32217905296` |
 | Aprobación de Producto/Diseño/QA | PENDING |
 
 ## Alcance materializado
@@ -93,22 +102,22 @@ No se creó un package compartido, Storybook ni inventario especulativo.
 | `pnpm run build` | PASS |
 | `pnpm run verify:ui` | PASS |
 | `pnpm run verify:ui:production` | PASS; exclusión verificada en 3 archivos |
-| `pnpm run verify` | PASS; 372 tests, 362 pass, 0 fail, 10 PostgreSQL skips esperados en gate unitario |
+| `pnpm run verify` | PASS independiente; 379 tests, 369 pass, 0 fail, 10 PostgreSQL skips esperados en gate unitario |
 | PostgreSQL CI local gobernado | PASS; 5 suites, 10 tests, 0 fallos, 0 skips críticos |
 | `pnpm run smoke:start` | PASS sobre PostgreSQL 18.4 efímero migrado |
 | `pnpm run smoke:ui` | PASS; `/`, SPA, catálogo, assets y health `200`; rutas no autorizadas `404` |
 | `git diff --check` | PASS |
 
 La ejecución PostgreSQL local usó la imagen gobernada por digest y eliminó sus
-contenedores. Los dos runs Linux reproducibles y la comparación pertenecen al
-CI autoritativo del PR y quedan pendientes hasta publicar el candidato.
+contenedores. Los dos runs Linux reproducibles y la comparación pasaron tanto
+en el candidate final como en el CI autoritativo de `main`.
 
 ## Revisión manual ejecutada
 
 | Comprobación | Resultado | Límite |
 |---|---|---|
 | Viewports `320`, `390`, `640`, `768`, `1024`, `1280` CSS px | PASS; sin overflow horizontal | Chrome/macOS |
-| Breakpoint del shell | PASS; drawer bajo `768`, sidebar desde `768` | Chrome/macOS |
+| Breakpoint del shell | PASS remediado; drawer bajo `1024`, rail/sidebar desde `1024` | Chrome/macOS |
 | Light/dark/system | PASS visual; persistencia y cambio observados | Chrome/macOS |
 | Drawer | PASS; trap de foco, `Escape`, restore de foco y body scroll lock | Chrome/macOS |
 | Dialog | PASS; trap de foco, `Escape` y restore al disparador | Chrome/macOS |
@@ -167,13 +176,13 @@ ausente de Production.
 | Accesibilidad según matriz completa | PARTIAL; falta AT/cross-browser no disponible |
 | Revisión independiente | PASS; ver `INDEPENDENT_REVIEW.md` |
 | Aprobación Product Owner | PENDING |
-| Merge | NOT AUTHORIZED |
+| Merge | PASS; PR #8 integrada como `c8628fb` |
 | Deploy/Release | No aplica al alcance; no ejecutado |
 
 Riesgos residuales:
 
-- incompatibilidad o defecto específico no observado en Safari/iOS/Android,
-  Edge/Windows, VoiceOver o NVDA;
+- incompatibilidad o defecto específico no observado en Windows, iOS, Android,
+  VoiceOver o NVDA; Safari macOS tuvo revisión estructural/visual;
 - incremento core gzip de `13.0 %`, medido y visible para revisión;
 - el catálogo Preview es una superficie interna no autenticada en esta
   foundation; sólo contiene fixtures sintéticos, está marcado `noindex` y queda
@@ -182,8 +191,8 @@ Riesgos residuales:
   Reparaciones funcional.
 
 No se registra waiver. La recomendación vigente es conservar la matriz
-pendiente sin inventar PASS y solicitar la decisión Owner de merge sin declarar
-todavía `Done`.
+pendiente sin inventar PASS y solicitar la decisión Owner de Preview deployment
+sin declarar todavía `Done` ni Owner Acceptance.
 
 ### Remediación de CI de supply chain
 
@@ -196,6 +205,7 @@ referenciado en el handoff del PR.
 
 ## Próxima revisión
 
-- **Disparador:** decisión Owner sobre merge y evidencia Primary/AT disponible.
+- **Disparador:** decisión Owner sobre Preview deployment y evidencia Primary/AT
+  disponible.
 - **Autoridades:** Calidad/Accesibilidad, Producto/Diseño y Owner para cualquier
-  decisión posterior de merge.
+  aceptación o deploy posterior.

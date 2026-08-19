@@ -23,7 +23,7 @@ flowchart TD
     APP --> API[PBI-012 Backend/API]
     S --> WEB[PBI-013 Web/design system]
     APP --> WEB
-    DSV1[Design System & Application Shell V1<br/>Owner direction approved] --> UI[PBI-030 UI Foundation/Shell<br/>In review / not integrated]
+    DSV1[Design System & Application Shell V1<br/>Owner direction approved] --> UI[PBI-030 UI Foundation/Shell<br/>In review / integrated]
     WEB --> UI
     APP --> UI
     M --> RT[PBI-014 Realtime/messaging]
@@ -107,8 +107,9 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - [PBI-030](pbis/PBI-030.md) consume la dirección visual Owner aprobada y la
   baseline React/Vite. No depende de PBI-024/PBI-025 para usar fixtures
   honestos, pero cualquier contexto confiable, identidad o permisos reales sí
-  requiere esos trabajos. PBI-024 es una dependencia blanda. PBI-030 tiene un
-  candidato autorizado `In review`; no concede merge, deploy ni contexto real.
+  requiere esos trabajos. PBI-024 es una dependencia blanda. PBI-030 está
+  integrado en `main` y permanece `In review`; no concede deploy, Owner
+  Acceptance, `Done` ni contexto real.
 
 ## Bloqueos conocidos
 
@@ -126,9 +127,9 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   integrarse mientras DEC051-C02 siga `Pending`.
 - Los demás PBIs H1 requieren revisión y autorización propias.
 - PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad,
-  partición, estimación `XL — agreed` e implementación autorizada en una rama
-  temporal. Está `In review`; CI e independent review pasan, la matriz AT
-  permanece parcial y no existe autorización de merge.
+  partición, estimación `XL — agreed` e implementación integrada en `main`.
+  Está `In review`; CI e independent review pasan, mientras la matriz AT, Owner
+  Acceptance y Preview deployment permanecen pendientes.
 
 ## Preguntas abiertas
 
@@ -139,4 +140,5 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 
 ## Próxima revisión
 
-CI/revisión de PBI-030 sin merge automático y reconciliación de PBI-024.
+Decisión Owner sobre Preview deployment de PBI-030, evidencia/aceptación
+pendientes y reconciliación de PBI-024.

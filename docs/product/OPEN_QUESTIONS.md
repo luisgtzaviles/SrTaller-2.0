@@ -38,7 +38,8 @@ el 2026-08-18 mediante la revisión formal Frontend/Ingeniería:
 `ESTIMATION: XL — AGREED`, Confidence Medium, Risk High y un solo PBI con
 checkpoints A–D. No quedan preguntas internas bloqueantes de readiness. El Owner
 autorizó posteriormente la implementación el 2026-08-18; el candidato está
-`In review` y no tiene autorización implícita de merge o deploy.
+integrado en `main` y permanece `In review`. El merge autorizado no concede
+Owner Acceptance, `Done` ni autorización implícita de deploy.
 
 ## Producto
 

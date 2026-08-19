@@ -33,8 +33,8 @@
   en una PR draft conflictiva, pero no pertenece a `main`; PBI-025–PBI-029
   descomponen el H1 restante con estados `Draft` o `Blocked` y no están
   autorizados. [PBI-030](pbis/PBI-030.md) tiene una foundation visual y
-  Application Shell V1 autorizados en candidato `In review`, todavía no
-  integrados ni desplegados.
+  Application Shell V1 integrados en `main`; permanece `In review`, todavía no
+  desplegado ni aceptado visualmente por Owner.
 
 ## EPIC-002 — Tenant and Platform Administration
 
