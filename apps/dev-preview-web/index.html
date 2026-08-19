@@ -9,17 +9,14 @@
     <script>
       (() => {
         const key = 'srtaller.theme';
-        let preference = 'system';
+        let preference = 'light';
         try {
           const stored = window.localStorage.getItem(key);
-          if (stored === 'light' || stored === 'dark' || stored === 'system') preference = stored;
+          if (stored === 'light' || stored === 'dark') preference = stored;
         } catch {
-          preference = 'system';
+          preference = 'light';
         }
-        const resolved = preference === 'system'
-          ? window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-          : preference;
-        document.documentElement.dataset.theme = resolved;
+        document.documentElement.dataset.theme = preference;
         document.documentElement.dataset.themePreference = preference;
       })();
     </script>

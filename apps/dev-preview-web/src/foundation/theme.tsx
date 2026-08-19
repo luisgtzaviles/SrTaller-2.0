@@ -10,7 +10,7 @@ import {
 import { ACCENT_FALLBACK, resolveTenantAccent } from './accent.mjs';
 import type { ResolvedTheme, TenantAccentResult } from './accent.mjs';
 
-export type ThemePreference = 'light' | 'dark' | 'system';
+export type ThemePreference = 'light' | 'dark';
 
 const THEME_STORAGE_KEY = 'srtaller.theme';
 interface ThemeContextValue {
@@ -24,38 +24,26 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function isThemePreference(value: string | null): value is ThemePreference {
-  return value === 'light' || value === 'dark' || value === 'system';
+  return value === 'light' || value === 'dark';
 }
 
 function readPreference(): ThemePreference {
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return isThemePreference(stored) ? stored : 'system';
+    return isThemePreference(stored) ? stored : 'light';
   } catch {
-    return 'system';
+    return 'light';
   }
-}
-
-function systemTheme(): ResolvedTheme {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
   const [preference, setPreferenceState] = useState<ThemePreference>(readPreference);
-  const [systemPreference, setSystemPreference] = useState<ResolvedTheme>(systemTheme);
   const [syntheticAccent, setSyntheticAccent] = useState<string | null>(null);
-  const resolvedTheme = preference === 'system' ? systemPreference : preference;
+  const resolvedTheme: ResolvedTheme = preference;
   const accent = useMemo(
     () => resolveTenantAccent(syntheticAccent ?? ACCENT_FALLBACK[resolvedTheme], resolvedTheme),
     [resolvedTheme, syntheticAccent],
   );
-
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-color-scheme: dark)');
-    const update = (): void => setSystemPreference(query.matches ? 'dark' : 'light');
-    query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
-  }, []);
 
   useEffect(() => {
     const root = document.documentElement;

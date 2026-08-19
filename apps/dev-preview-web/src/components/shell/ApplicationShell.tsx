@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Building2,
   ChevronDown,
   Home,
   LogOut,
   Menu,
-  MonitorCog,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
@@ -22,7 +20,6 @@ import { IconButton } from '../ui/controls.js';
 import { useFocusTrap } from '../ui/overlays.js';
 import { classNames } from '../ui/class-names.js';
 import { useTheme } from '../../foundation/theme.js';
-import type { ThemePreference } from '../../foundation/theme.js';
 import styles from './application-shell.module.css';
 
 const SIDEBAR_STORAGE_KEY = 'srtaller.sidebar.collapsed';
@@ -69,31 +66,45 @@ function Navigation({ collapsed, onNavigate }: Readonly<{ collapsed: boolean; on
   );
 }
 
-function Brand({ collapsed = false }: Readonly<{ collapsed?: boolean }>): React.JSX.Element {
+function Brand({
+  collapsed = false,
+  className,
+  meta = '2.0',
+}: Readonly<{ collapsed?: boolean; className?: string | undefined; meta?: string }>): React.JSX.Element {
   return (
-    <Link className={styles.brand} to="/" aria-label="SR Taller 2.0, inicio">
+    <Link className={classNames(styles.brand, className)} to="/" aria-label="SR Taller 2.0, inicio">
       <span className={styles.brandMark} aria-hidden="true">SR</span>
-      <span className={classNames(styles.brandName, collapsed && styles.collapsedOnly)}><strong>SR Taller</strong><small>2.0</small></span>
+      <span className={classNames(styles.brandName, collapsed && styles.collapsedOnly)}><strong>SR Taller</strong><small>{meta}</small></span>
     </Link>
   );
 }
 
 function ThemeControl(): React.JSX.Element {
   const { preference, setPreference } = useTheme();
-  const order: readonly ThemePreference[] = ['system', 'light', 'dark'];
-  const next = order[(order.indexOf(preference) + 1) % order.length] ?? 'system';
-  const config = preference === 'light'
-    ? { icon: Sun, label: 'Tema claro' }
-    : preference === 'dark'
-      ? { icon: Moon, label: 'Tema oscuro' }
-      : { icon: MonitorCog, label: 'Tema del sistema' };
   return (
-    <IconButton
-      icon={config.icon}
-      label={`${config.label}. Cambiar a ${next === 'light' ? 'claro' : next === 'dark' ? 'oscuro' : 'sistema'}`}
-      tooltip={config.label}
-      onClick={() => setPreference(next)}
-    />
+    <div className={styles.themeControl} role="group" aria-label="Selector de tema">
+      <button
+        type="button"
+        className={classNames(styles.themeOption, preference === 'light' && styles.themeOptionActive)}
+        aria-label="Tema claro"
+        aria-pressed={preference === 'light'}
+        title="Tema claro"
+        onClick={() => setPreference('light')}
+      >
+        <Sun aria-hidden="true" size={20} />
+      </button>
+      <span className={styles.themeSeparator} aria-hidden="true">|</span>
+      <button
+        type="button"
+        className={classNames(styles.themeOption, preference === 'dark' && styles.themeOptionActive)}
+        aria-label="Tema oscuro"
+        aria-pressed={preference === 'dark'}
+        title="Tema oscuro"
+        onClick={() => setPreference('dark')}
+      >
+        <Moon aria-hidden="true" size={20} />
+      </button>
+    </div>
   );
 }
 
@@ -145,45 +156,47 @@ export function ApplicationShell({ children }: Readonly<{ children: React.ReactN
   return (
     <div className={classNames(styles.shell, collapsed && styles.shellCollapsed)}>
       <a className={styles.skipLink} href="#main-content">Saltar al contenido</a>
-      <aside className={styles.sidebar} aria-label="Shell principal">
-        <Brand collapsed={collapsed} />
-        <Navigation collapsed={collapsed} />
-        <div className={styles.sidebarFooter}>
-          <span className={styles.environmentDot} aria-hidden="true" />
-          <span className={classNames(styles.environmentCopy, collapsed && styles.collapsedOnly)}><strong>Preview aislado</strong><small>Sin datos reales</small></span>
+      <header className={styles.globalHeader}>
+        <div className={styles.headerStart}>
+          <IconButton className={styles.mobileMenuButton} icon={Menu} label="Abrir navegación" onClick={() => setDrawerOpen(true)} />
+          <IconButton
+            className={styles.collapseButton}
+            icon={collapsed ? PanelLeftOpen : PanelLeftClose}
+            label={collapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
+            tooltip={collapsed ? 'Expandir navegación' : 'Colapsar navegación'}
+            onClick={toggleCollapsed}
+          />
+          <Brand className={styles.headerBrand} meta="Sucursal sintética · Preview" />
         </div>
-      </aside>
-
-      <div className={styles.workspace}>
-        <header className={styles.globalHeader}>
-          <div className={styles.headerStart}>
-            <IconButton className={styles.mobileMenuButton} icon={Menu} label="Abrir navegación" onClick={() => setDrawerOpen(true)} />
-            <IconButton
-              className={styles.collapseButton}
-              icon={collapsed ? PanelLeftOpen : PanelLeftClose}
-              label={collapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
-              tooltip={collapsed ? 'Expandir navegación' : 'Colapsar navegación'}
-              onClick={toggleCollapsed}
-            />
-            <div className={styles.contextPlaceholder}>
-              <Building2 aria-hidden="true" size={20} />
-              <span><small>Contexto operativo</small><strong>Sin verificar</strong></span>
-            </div>
-          </div>
-          <div className={styles.headerEnd}>
-            <span className={styles.previewBadge}>Preview · Datos sintéticos</span>
-            <ThemeControl />
-            <OperatorMenu />
-          </div>
-        </header>
-
-        <div className={styles.blockingBanner}>
-          <Alert tone="warning" title="Contexto operativo no integrado">
-            Empresa, sucursal, estación e identidad siguen sin una fuente backend confiable. Las superficies son demostraciones sintéticas.
-          </Alert>
+        <div className={styles.headerEnd}>
+          <span className={styles.previewBadge}>Preview · Datos sintéticos</span>
+          <ThemeControl />
+          <OperatorMenu />
+          <button className={styles.logoutButton} type="button" disabled aria-label="Cerrar sesión no disponible" title="La autenticación no está integrada">
+            <LogOut aria-hidden="true" size={20} />
+            <span>Cerrar sesión</span>
+          </button>
         </div>
+      </header>
 
-        <main id="main-content" className={styles.mainContent} tabIndex={-1}>{children}</main>
+      <div className={styles.desktopBody}>
+        <aside className={styles.sidebar} aria-label="Shell principal">
+          <Navigation collapsed={collapsed} />
+          <div className={styles.sidebarFooter}>
+            <span className={styles.environmentDot} aria-hidden="true" />
+            <span className={classNames(styles.environmentCopy, collapsed && styles.collapsedOnly)}><strong>Preview aislado</strong><small>Sin datos reales</small></span>
+          </div>
+        </aside>
+
+        <div className={styles.workspace}>
+          <div className={styles.blockingBanner}>
+            <Alert tone="warning" title="Contexto operativo no integrado">
+              Empresa, sucursal, estación e identidad siguen sin una fuente backend confiable. Las superficies son demostraciones sintéticas.
+            </Alert>
+          </div>
+
+          <main id="main-content" className={styles.mainContent} tabIndex={-1}>{children}</main>
+        </div>
       </div>
 
       {drawerOpen ? (
