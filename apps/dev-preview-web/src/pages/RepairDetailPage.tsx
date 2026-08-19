@@ -36,8 +36,28 @@ export function RepairDetailPage(): React.JSX.Element {
     finally { setSaving(false); }
   }
 
-  if (error && !repair) return <ErrorState title="Detalle no disponible" description="La API de Reparaciones no está materializada; no existe un registro operativo que mostrar." action={{ label: 'Volver a reparaciones', to: '/reparaciones' }} />;
-  if (!repair) return <div className={styles.loadingDetail}><Skeleton rows={5} /></div>;
+  if (error && !repair) return (
+    <div className={`${styles.pageStack} ${styles.narrow}`}>
+      <PageHeader
+        eyebrow="Operación"
+        title="Detalle de reparación"
+        description="La superficie conserva una jerarquía accesible aunque el registro operativo no esté disponible."
+        breadcrumb={[{ label: 'Reparaciones', to: '/reparaciones' }, { label: 'Detalle no disponible' }]}
+      />
+      <ErrorState title="Detalle no disponible" description="La API de Reparaciones no está materializada; no existe un registro operativo que mostrar." action={{ label: 'Volver a reparaciones', to: '/reparaciones' }} />
+    </div>
+  );
+  if (!repair) return (
+    <div className={`${styles.pageStack} ${styles.narrow}`}>
+      <PageHeader
+        eyebrow="Operación"
+        title="Detalle de reparación"
+        description="Cargando la superficie solicitada sin asumir que el registro existe."
+        breadcrumb={[{ label: 'Reparaciones', to: '/reparaciones' }, { label: 'Cargando detalle' }]}
+      />
+      <div className={styles.loadingDetail}><Skeleton rows={5} /></div>
+    </div>
+  );
 
   const next: Readonly<Record<PreviewRepairStatus, readonly PreviewRepairStatus[]>> = {
     received: ['diagnosing', 'cancelled'], diagnosing: ['ready', 'cancelled'], ready: ['delivered', 'cancelled'], delivered: [], cancelled: [],

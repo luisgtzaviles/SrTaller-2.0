@@ -60,11 +60,11 @@ export function RepairsPage(): React.JSX.Element {
         primaryAction={<ButtonLink to="/reparaciones/nueva" tone="primary">Nueva reparación</ButtonLink>}
       />
       <section className={styles.dataSurface} aria-busy={loading}>
-        <FilterBar summary={<><strong>{filtered.length}</strong> {filtered.length === 1 ? 'registro' : 'registros'}</>}>
+        <FilterBar summary={failed ? 'Conteo no disponible' : loading ? 'Cargando…' : <><strong>{filtered.length}</strong> {filtered.length === 1 ? 'registro' : 'registros'}</>}>
           <label className={styles.searchField}>
             <span className="srt-visually-hidden">Buscar reparaciones</span>
             <Search aria-hidden="true" size={20} />
-            <Input type="search" placeholder="Buscar por folio, cliente o equipo" value={query} onChange={(event) => setQuery(event.target.value)} />
+            <Input type="search" placeholder="Buscar por folio, cliente o equipo" value={query} disabled={loading || failed} onChange={(event) => setQuery(event.target.value)} />
           </label>
         </FilterBar>
         {!failed && loading ? <Skeleton rows={5} /> : null}

@@ -40,3 +40,31 @@ test('checker rejects dynamic Lucide and inline SVG', async () => withFixture(as
   assert.ok(failures.some((problem) => problem.includes('DynamicIcon')));
   assert.ok(failures.some((problem) => problem.includes('inline SVG')));
 }));
+
+test('checker rejects arbitrary radius tokens and named colors', async () => withFixture(async (root) => {
+  const path = resolve(root, 'apps/dev-preview-web/src/pages/pages.module.css');
+  await writeFile(path, `${await readFile(path, 'utf8')}\n.probe { border-radius: var(--space-2); color: rebeccapurple; }\n`);
+  const failures = await validateUiFoundation(root);
+  assert.ok(failures.some((problem) => problem.includes('canonical radius token')));
+  assert.ok(failures.some((problem) => problem.includes('hardcoded named color')));
+}));
+
+test('checker limits important declarations to the exact reduced-motion exception', async () => withFixture(async (root) => {
+  const path = resolve(root, 'apps/dev-preview-web/src/styles/base.css');
+  await writeFile(path, `${await readFile(path, 'utf8')}\n.probe { color: inherit !important; }\n`);
+  assert.ok((await validateUiFoundation(root)).some((problem) => problem.includes('exact reduced-motion')));
+}));
+
+test('checker rejects an eager catalog import even when the lazy import remains', async () => withFixture(async (root) => {
+  const path = resolve(root, 'apps/dev-preview-web/src/App.tsx');
+  await writeFile(path, `import EagerCatalog from './catalog/UiCatalogPage.js';\n${await readFile(path, 'utf8')}\nvoid EagerCatalog;\n`);
+  assert.ok((await validateUiFoundation(root)).some((problem) => problem.includes('imported eagerly')));
+}));
+
+test('checker rejects a second functional icon family', async () => withFixture(async (root) => {
+  const path = resolve(root, 'apps/dev-preview-web/package.json');
+  const manifest = JSON.parse(await readFile(path, 'utf8'));
+  manifest.dependencies['react-feather'] = '2.0.10';
+  await writeFile(path, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.ok((await validateUiFoundation(root)).some((problem) => problem.includes('exactly one functional icon dependency')));
+}));

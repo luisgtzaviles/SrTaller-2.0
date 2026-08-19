@@ -68,7 +68,7 @@ export function Dialog({
   if (!open) return null;
   return (
     <div className={styles.overlay}>
-      <button className={styles.backdrop} type="button" aria-label="Cerrar diálogo" onClick={onClose} />
+      <div className={styles.backdrop} aria-hidden="true" onClick={onClose} />
       <div ref={dialogRef} className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1}>
         <header><div><h2 id={titleId}>{title}</h2><p id={descriptionId}>{description}</p></div><IconButton label="Cerrar diálogo" icon={X} onClick={onClose} /></header>
         {children}

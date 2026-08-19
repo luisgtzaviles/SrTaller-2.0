@@ -92,6 +92,7 @@
 .input::placeholder { color: var(--color-text-subtle); }
 .input:hover { border-color: var(--color-text-subtle); }
 .input:focus { border-color: var(--color-focus); box-shadow: 0 0 0 3px var(--color-accent-subtle); outline: none; }
+.input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 .input:disabled { cursor: not-allowed; color: var(--color-text-subtle); background: var(--color-surface-subtle); }
 .input[aria-invalid="true"] { border-color: var(--color-danger); }
 .textarea { min-height: 96px; resize: vertical; }
@@ -175,7 +176,7 @@
   background: var(--color-surface);
 }
 
-.statePanelCompact { padding: var(--space-10) var(--space-6); border: 0; border-radius: var(--space-0); }
+.statePanelCompact { padding: var(--space-10) var(--space-6); border: 0; border-radius: 0; }
 .statePanel h2 { margin: var(--space-1) 0 var(--space-0); font-size: 1.125rem; }
 .statePanel p { max-width: 560px; margin: var(--space-0) 0 var(--space-3); color: var(--color-text-muted); }
 .stateIcon {
@@ -258,16 +259,15 @@
 .dialog p { margin: var(--space-2) 0 var(--space-0); color: var(--color-text-muted); line-height: 1.5; }
 .dialog > footer { display: flex; justify-content: flex-end; padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-border); }
 
-@media (min-width: 640px) {
-  .formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-@media (min-width: 768px) {
-  .formSection { grid-template-columns: 200px minmax(0, 1fr); gap: var(--space-10); padding: var(--space-8); }
-  .tableViewport { display: block; max-width: 100%; overflow-x: auto; }
-  .mobileCards { display: none; }
+@media (pointer: coarse) {
+  .button.default,
+  .button.compact,
+  .input { min-height: var(--touch-target); }
 }
 
 @media (min-width: 1024px) {
-  .pageHeader { align-items: flex-end; }
+  .formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .formSection { grid-template-columns: 200px minmax(0, 1fr); gap: var(--space-10); padding: var(--space-8); }
+  .tableViewport { display: block; max-width: 100%; overflow-x: auto; }
+  .mobileCards { display: none; }
 }

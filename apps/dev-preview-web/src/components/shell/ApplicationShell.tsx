@@ -188,7 +188,7 @@ export function ApplicationShell({ children }: Readonly<{ children: React.ReactN
 
       {drawerOpen ? (
         <div className={styles.drawerLayer}>
-          <button className={styles.drawerBackdrop} type="button" aria-label="Cerrar navegación" onClick={closeDrawer} />
+          <div className={styles.drawerBackdrop} aria-hidden="true" onClick={closeDrawer} />
           <aside ref={drawerRef} className={styles.drawer} role="dialog" aria-modal="true" aria-label="Navegación móvil" tabIndex={-1}>
             <header><Brand /><IconButton icon={X} label="Cerrar navegación" tone="inverse" onClick={closeDrawer} /></header>
             <Navigation collapsed={false} onNavigate={closeDrawer} />

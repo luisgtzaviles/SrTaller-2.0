@@ -60,7 +60,7 @@ export default function UiCatalogPage(): React.JSX.Element {
       <section className={styles.section}>
         <header><h2>Temas y tenant accent</h2><p>Preferencia persistida: <strong>{preference}</strong>; tema resuelto: <strong>{resolvedTheme}</strong>.</p></header>
         <Inline gap="2">
-          {(['light', 'dark', 'system'] as const).map((theme: ThemePreference) => <Button key={theme} tone={preference === theme ? 'primary' : 'secondary'} onClick={() => setPreference(theme)}>{theme}</Button>)}
+          {(['light', 'dark', 'system'] as const).map((theme: ThemePreference) => <Button key={theme} aria-pressed={preference === theme} tone={preference === theme ? 'primary' : 'secondary'} onClick={() => setPreference(theme)}>{theme}</Button>)}
         </Inline>
         <div className={styles.accentLab}>
           <Field id="catalog-accent" label="Acento sintético #RRGGBB" hint="Valores inválidos activan fallback seguro.">
@@ -102,7 +102,7 @@ export default function UiCatalogPage(): React.JSX.Element {
       </section>
 
       <section className={styles.section}>
-        <header><h2>Data display responsive</h2><p>Table en desktop y MobileEntityCard bajo el breakpoint md; mismo view model.</p></header>
+        <header><h2>Data display responsive</h2><p>Table en desktop y MobileEntityCard bajo el breakpoint lg; mismo view model.</p></header>
         <ResponsiveDataList
           rows={catalogRows}
           columns={columns}

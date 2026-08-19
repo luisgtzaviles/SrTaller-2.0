@@ -12,11 +12,11 @@
   --color-surface-subtle: #F8FAFC;
   --color-surface-inverse: #111827;
   --color-text: #111827;
-  --color-text-muted: #667085;
-  --color-text-subtle: #8490A0;
+  --color-text-muted: #536273;
+  --color-text-subtle: #657285;
   --color-text-inverse: #F9FAFB;
   --color-border: #DDE2E8;
-  --color-border-strong: #C7CFD9;
+  --color-border-strong: #8490A0;
   --color-focus: #B45309;
   --color-backdrop: rgb(15 23 42 / 58%);
   --color-success: #067647;
@@ -56,7 +56,7 @@
   --color-text-subtle: #8490A0;
   --color-text-inverse: #F9FAFB;
   --color-border: #2B3543;
-  --color-border-strong: #3D4959;
+  --color-border-strong: #5B6878;
   --color-focus: #F59E0B;
   --color-backdrop: rgb(2 6 23 / 76%);
   --color-success: #6CE9A6;

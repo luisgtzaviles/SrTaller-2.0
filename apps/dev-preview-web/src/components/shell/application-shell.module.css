@@ -158,7 +158,7 @@
   .operatorMenu summary > span { display: block; }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .shell { display: grid; grid-template-columns: var(--sidebar-expanded) minmax(0, 1fr); transition: grid-template-columns var(--duration-normal) var(--ease-standard); }
   .shellCollapsed { grid-template-columns: var(--sidebar-collapsed) minmax(0, 1fr); }
   .sidebar {
