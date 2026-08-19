@@ -106,7 +106,7 @@ export async function validateUiFoundation(root = process.cwd()) {
   if (baseImportCount !== 1) problems.push(`global base stylesheet must have exactly one import, found ${baseImportCount}`);
 
   const manifest = JSON.parse(await readFile(resolve(root, `${FRONTEND_ROOT}/package.json`), 'utf8'));
-  if (manifest.dependencies?.['lucide-react'] !== '1.32.0') problems.push('lucide-react must remain pinned to approved version 1.32.0');
+  if (manifest.dependencies?.['lucide-react'] !== '1.31.0') problems.push('lucide-react must remain pinned to governed version 1.31.0');
   const iconDependencies = Object.keys({ ...manifest.dependencies, ...manifest.devDependencies })
     .filter((name) => /(?:lucide|icon|heroicons|fontawesome)/iu.test(name));
   if (iconDependencies.length !== 1 || iconDependencies[0] !== 'lucide-react') problems.push('exactly one functional icon dependency is allowed');
