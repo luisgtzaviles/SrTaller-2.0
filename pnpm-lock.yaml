@@ -45,6 +45,9 @@ importers:
 
   apps/dev-preview-web:
     dependencies:
+      lucide-react:
+        specifier: 1.32.0
+        version: 1.32.0(react@19.2.8)
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -552,6 +555,11 @@ packages:
   load-esm@1.0.3:
     resolution: {integrity: sha512-v5xlu8eHD1+6r8EHTg6hfmO97LN8ugKtiXcy5e6oN72iD2r6u0RPfLl6fxM+7Wnh2ZRq15o0russMst44WauPA==}
     engines: {node: '>=13.2.0'}
+
+  lucide-react@1.32.0:
+    resolution: {integrity: sha512-txX56hMFnRxPi1f9/nH69YN8uvAO6a7Y1KSWKjCDAtdD9+soEgmWuCt6iRm1pkxUZo2+YntSdsE1L6bIuKoY8Q==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
@@ -1331,6 +1339,10 @@ snapshots:
       lightningcss-win32-x64-msvc: 1.33.0
 
   load-esm@1.0.3: {}
+
+  lucide-react@1.32.0(react@19.2.8):
+    dependencies:
+      react: 19.2.8
 
   math-intrinsics@1.1.0: {}
 

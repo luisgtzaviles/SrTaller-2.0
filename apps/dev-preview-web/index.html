@@ -6,6 +6,23 @@
     <meta name="theme-color" content="#101827" />
     <meta name="description" content="Vista previa de desarrollo de SR Taller 2.0" />
     <title>SR Taller 2.0 · Preview</title>
+    <script>
+      (() => {
+        const key = 'srtaller.theme';
+        let preference = 'system';
+        try {
+          const stored = window.localStorage.getItem(key);
+          if (stored === 'light' || stored === 'dark' || stored === 'system') preference = stored;
+        } catch {
+          preference = 'system';
+        }
+        const resolved = preference === 'system'
+          ? window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          : preference;
+        document.documentElement.dataset.theme = resolved;
+        document.documentElement.dataset.themePreference = preference;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
