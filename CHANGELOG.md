@@ -30,19 +30,15 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   `branches`, repositories tenant-scoped y transaction runner.
 - Dockerfile OCI multi-stage y Preview materializado en Dokploy sobre `main`.
 - Workflow canónico y CI autoritativo con PostgreSQL real y evidencia dual.
-- Candidato mínimo de CI para que `smoke:start` y `smoke:ui` usen PostgreSQL
-  aislado ya migrado sin relajar el arranque fail-closed; PR #5 verde en CI
-  autoritativo, todavía sin integración autorizada a `main`.
+- Integración de PR #5 para que `smoke:start` y `smoke:ui` usen PostgreSQL
+  aislado ya migrado sin relajar el arranque fail-closed; `main` recuperó CI
+  autoritativo verde en el run `32199570584` sobre `efd9ec05`.
 - Colector de evidencia actualizado para inventariar assets controlados de la
   Preview sin confundir URLs `https://` con rutas Windows y conservando rechazo
   de artefactos no permitidos.
 
 ### Estado conocido no resuelto
 
-- El CI de `main` en `18dab5a` falla en `smoke:start` porque el proceso
-  compilado no recibe la configuración PostgreSQL obligatoria. El arreglo pasa
-  CI en la PR #5, pero el gate de la baseline continúa abierto hasta merge
-  explícitamente autorizado y CI verde sobre `main`.
 - La UI llama `/api/preview/*`, pero `main` no contiene endpoints de producto.
 - PBI-024 tiene implementación sólo en una PR draft divergente y conflictiva;
   no está integrado ni cerrado.
@@ -60,8 +56,9 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Se completó el readiness técnico de accent, catálogo, compatibilidad y
   partición de PBI-030. El Owner aprobó `lucide-react` como única familia
   funcional V1, incorporable sólo durante la implementación. El PBI permanece
-  `Draft — readiness blocked` por estimación del equipo e integración/CI verde
-  de `main` pendientes; el candidato de PR ya está verde.
+  `Draft — readiness blocked` únicamente por el acuerdo de estimación de
+  Frontend/Ingeniería. PR #5 quedó integrada y `main` volvió a verde; esto no
+  autoriza la implementación.
 
 ## Estado del documento
 

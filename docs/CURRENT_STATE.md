@@ -3,8 +3,9 @@
 ## Estado y alcance del documento
 
 - **Estado:** Fotografía canónica del repositorio, reconciliada el 2026-08-18.
-- **Baseline auditada:** `main` en
-  `18dab5a017e5db308b5d34f3a3fbd8f86351c818`.
+- **Baseline técnica auditada:** `main` en
+  `efd9ec05d02af604c2d9ea18d4636c1539f8dc54`; esta reconciliación documental
+  posterior no cambia runtime ni producto.
 - **Alcance:** código, configuración, documentación vigente, Git/GitHub y
   contraste HTTP de sólo lectura con Preview.
 - **Regla:** este documento describe estado; no autoriza implementación,
@@ -25,11 +26,9 @@ porque `main` no contiene esos controllers, casos de uso ni tablas. Identidad,
 PIN, sesión, roles, capacidades y estación confiable permanecen conceptuales o
 fuera de `main`.
 
-La base permite comenzar refinamiento de producto, pero no debe tratarse como
-verde para integración: el CI canónico del `HEAD` auditado falla en el smoke
-compilado. La PR #5 publica un arreglo mínimo cuyo SHA candidato pasa el CI
-autoritativo completo, pero no restaura la baseline hasta integrarse con
-autoridad explícita y volver a pasar CI sobre `main`.
+La base permite comenzar refinamiento de producto y recuperó su CI canónico
+verde: PR #5 fue integrada con autoridad explícita mediante `efd9ec05` y el run
+de `main` `32199570584` pasó ambos jobs y la comparación reproducible.
 Además, PBI-024 tiene una implementación extensa sólo en una rama y PR
 draft divergentes; debe decidirse si se recupera o se descarta antes de
 duplicar esa foundation.
@@ -40,7 +39,7 @@ duplicar esa foundation.
 |---|---|
 | Repositorio | `/Users/luisantoniogutierrez/Documents/GitHub/SrTaller-2.0` |
 | Rama | `main` |
-| HEAD | `18dab5a017e5db308b5d34f3a3fbd8f86351c818` |
+| Baseline técnica verificada | `efd9ec05d02af604c2d9ea18d4636c1539f8dc54` |
 | Remote | `origin`: `https://github.com/luisgtzaviles/SrTaller-2.0.git` |
 | Upstream | `origin/main` |
 | Divergencia local/upstream | `0/0`; `ls-remote` confirmó el mismo SHA |
@@ -50,13 +49,14 @@ duplicar esa foundation.
 
 Commits recientes significativos:
 
+- `efd9ec0`: merge autorizado de PR #5 y restauración de CI compilado.
 - `18dab5a`: workflow canónico de desarrollo y delivery.
 - `fc3271e`: comando one-shot de migración para Dokploy.
 - `9026789`: foundation PostgreSQL de Preview.
 - `be3845d`: `main` como baseline integrada única.
 - `de220d4`: consolidación de Visual Slice 0.
 
-Ramas/PR abiertas que no forman parte de la baseline:
+Ramas/PR relevantes para interpretar la baseline:
 
 - [PR #3](https://github.com/luisgtzaviles/SrTaller-2.0/pull/3),
   `r0/pbi-024-trusted-station-context` → `main`: draft, `CONFLICTING`,
@@ -67,9 +67,8 @@ Ramas/PR abiertas que no forman parte de la baseline:
   `preview/visual-slice-0`: draft y basada en una rama histórica, no en la
   baseline canónica actual.
 - [PR #5](https://github.com/luisgtzaviles/SrTaller-2.0/pull/5),
-  `fix/pbi-030-readiness-ci` → `main`: draft, mergeable y con CI autoritativo
-  verde en el SHA candidato; no integrada porque el merge exige autorización
-  explícita separada.
+  `fix/pbi-030-readiness-ci` → `main`: integrada con autorización Owner como
+  `efd9ec05`; CI de `main` verde en el run `32199570584`.
 
 Evidencia: Git actual, `docs/delivery/BRANCH_POLICY.md` y las PR #3/#4/#5 en
 GitHub.
@@ -262,8 +261,9 @@ runs independientes sobre Ubuntu 24.04:
 5. comprueban inmutabilidad del checkout;
 6. producen evidencia sanitizada y comparan hashes/resultados.
 
-El [run `32127917819`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32127917819)
-del `HEAD` auditado falló en ambos jobs en
+El run histórico
+[`32127917819`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32127917819)
+de `18dab5a` falló en ambos jobs en
 `Run compiled artifact smoke`. `scripts/smoke-start.mjs` arranca el backend sin
 las variables `SR_DB_*` ahora obligatorias y el proceso termina con
 `PERSISTENCE_CONFIG_REQUIRED`. Los gates anteriores, incluida la suite
@@ -272,12 +272,12 @@ PostgreSQL real y 359 pruebas del `verify`, pasaron; la comparación fue omitida
 CI no publica imagen, no usa registry y no despliega.
 
 La revisión de PBI-030 reprodujo la causa bajo Node `24.18.0` y publicó en la
-PR #5 un candidato mínimo: PostgreSQL 18.4 aislado por job, migración explícita,
+PR #5 un arreglo mínimo: PostgreSQL 18.4 aislado por job, migración explícita,
 smokes con rol de aplicación y colector compatible con los assets controlados
-del bundle sin relajar detección de rutas personales. `smoke:start`, `smoke:ui`,
-los dos jobs y la comparación de evidencia pasan autoritativamente en el SHA
-candidato. El run rojo de `main` sigue siendo la verdad de la baseline hasta
-que una integración separadamente autorizada la actualice y pase su propio CI.
+del bundle sin relajar detección de rutas personales. Tras la integración
+autorizada, el [run `32199570584`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32199570584)
+sobre `efd9ec05` pasó `smoke:start`, `smoke:ui`, ambos jobs y la comparación de
+evidencia. **CI BASELINE: GREEN.**
 Véase
 [PBI-030 Readiness Review](design-system/PBI_030_READINESS_REVIEW.md#7-recuperación-de-ci-base).
 
@@ -422,7 +422,6 @@ operaciones de negocio persistentes.
 
 | Severidad | Riesgo evidenciado | ¿Antes del primer PBI funcional? |
 |---|---|---|
-| BLOCKER | CI de `main` rojo; PR #5 verde pero no integrada por falta de autoridad explícita de merge | Sí, antes de integrar cualquier cambio |
 | HIGH | PBI-024 existe en PR conflictiva y no integrada; duplicarlo perdería trabajo y evidencia | Sí, antes de un slice dependiente de contexto |
 | HIGH | No existe identidad/contexto/autorización runtime en `main` | Sí para operaciones tenant reales; debe formar parte de la secuencia autorizada |
 | HIGH | Visual Slice 0 sugiere acciones que la API no implementa | Debe quedar explícito al definir el primer slice; no bloquea refinamiento |
@@ -440,14 +439,12 @@ corresponda.
 
 Secuencia mínima previa a producto, sin diseñar todavía un roadmap:
 
-1. autorizar e integrar la PR #5 y exigir CI autoritativo verde sobre el nuevo
-   SHA de `main`;
-2. tomar una decisión Owner/Ingeniería sobre PR #3: recuperar selectivamente y
+1. tomar una decisión Owner/Ingeniería sobre PR #3: recuperar selectivamente y
    revalidar PBI-024 contra `main`, o descartarla/supersederla con razón
    explícita;
-3. no iniciar PBI-025 ni una API de Reparaciones hasta resolver ese contexto y
+2. no iniciar PBI-025 ni una API de Reparaciones hasta resolver ese contexto y
    emitir la autoridad/PBI correspondiente;
-4. seleccionar después una rebanada vertical pequeña con UI + API + use case +
+3. seleccionar después una rebanada vertical pequeña con UI + API + use case +
    persistencia + tenant/auth scope + pruebas, en lugar de ampliar sólo la UI.
 
 No se crea aquí un PBI, epic, sprint ni roadmap nuevo.
@@ -458,17 +455,17 @@ No se crea aquí un PBI, epic, sprint ni roadmap nuevo.
 
 | Área | Veredicto |
 |---|---|
-| Rama/HEAD | `main` / `18dab5a017e5db308b5d34f3a3fbd8f86351c818` |
+| Baseline técnica | `main` / `efd9ec05d02af604c2d9ea18d4636c1539f8dc54` |
 | Working tree inicial | Limpio y sincronizado |
 | Infraestructura | Preview Dokploy/OCI/PostgreSQL disponible |
 | Aplicación | Foundation ejecutable, sin workflow de negocio |
 | Frontend | Visual Slice 0 navegable, API ausente |
 | Backend | Health + DB runtime; sin endpoints de producto |
 | PostgreSQL | Foundation tenant/branch activa; sin esquema funcional |
-| CI | **FAIL** actual en compiled smoke; condición obligatoria |
+| CI | **PASS** autoritativo en `main`; run `32199570584` |
 | Preview | UI y health disponibles; acciones de negocio no funcionales |
-| Readiness | Puede iniciar refinamiento; integración de producto condicionada a CI verde y reconciliación de PBI-024 |
+| Readiness | Puede iniciar refinamiento; PBI-030 conserva acuerdo de estimación pendiente y PBI-024 requiere reconciliación antes de slices dependientes de contexto |
 
-La foundation no requiere otra etapa amplia de infraestructura. El trabajo debe
-volver a producto una vez restaurado el gate técnico y resuelto el linaje de
-PBI-024.
+La foundation no requiere otra etapa amplia de infraestructura. El gate técnico
+está restaurado; el trabajo debe volver a producto respetando el acuerdo de
+estimación de PBI-030 y el linaje pendiente de PBI-024 según el slice elegido.

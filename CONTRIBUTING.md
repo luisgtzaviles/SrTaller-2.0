@@ -70,13 +70,11 @@ documento no autoriza por sí solo commit, push, merge, deploy ni release.
 
 ## Condiciones abiertas
 
-- Restaurar el CI verde de `main`: el `HEAD` auditado falla en
-  `smoke:start` porque el proceso compilado no recibe la configuración
-  PostgreSQL obligatoria. La PR #5 tiene un candidato con CI autoritativo verde,
-  pero falta integración a `main` mediante autoridad separada y CI verde sobre
-  esa baseline.
 - Reconciliar la implementación no integrada de PBI-024 en la PR draft #3
   antes de iniciar un slice dependiente de contexto de estación.
+- Acordar en Frontend/Ingeniería la estimación de PBI-030 antes de declararlo
+  `Ready`; la propuesta `XL` y la aprobación Owner de razonabilidad no
+  constituyen por sí solas acuerdo del equipo.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
 - `DEC063-C02`: materializar clasificación de riesgo.
 - `DEC063-C08`: materializar waivers y excepciones.
