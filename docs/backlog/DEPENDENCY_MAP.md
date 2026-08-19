@@ -125,10 +125,10 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - PBI-024 requiere decisión de recuperación/revalidación o descarte; no puede
   integrarse mientras DEC051-C02 siga `Pending`.
 - Los demás PBIs H1 requieren revisión y autorización propias.
-- PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad y
-  partición, además de CI verde sobre el candidato de PR #5. Requiere
-  estimación acordada e integración autorizada con CI verde sobre `main` antes
-  de `Ready`; después todavía requiere autorización explícita para iniciar.
+- PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad,
+  partición e integración con CI verde sobre `main`. Requiere estimación
+  acordada por Frontend/Ingeniería antes de `Ready`; después todavía requiere
+  autorización explícita para iniciar.
 
 ## Preguntas abiertas
 
@@ -139,5 +139,5 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 
 ## Próxima revisión
 
-Reconciliación de PBI-024 y cierre de los dos bloqueantes de PBI-030 sin
-iniciar implementación.
+Reconciliación de PBI-024 y acuerdo de estimación de PBI-030 sin iniciar
+implementación.

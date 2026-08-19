@@ -3,8 +3,10 @@
 ## Estado y alcance
 
 - **Fecha de revisión:** 2026-08-18.
-- **Baseline revisada:** `main` en
+- **Baseline inicial revisada:** `main` en
   `18dab5a017e5db308b5d34f3a3fbd8f86351c818`.
+- **Baseline técnica posterior:** `main` en
+  `efd9ec05d02af604c2d9ea18d4636c1539f8dc54`, con CI autoritativo verde.
 - **Resultado:** `Not ready`.
 - **Estado PBI:** `Draft — readiness blocked`.
 - **Implementación:** no iniciada y no autorizada.
@@ -17,9 +19,9 @@ quedan definidos por esta revisión. No equivalen a implementación ni a
 evidencia de Done. El Owner aprobó `lucide-react` el 2026-08-18 exclusivamente
 para su incorporación durante la implementación de PBI-030. Existe una
 [propuesta técnica `XL`](PBI_030_ESTIMATION_PROPOSAL.md), pero sigue sin
-acuerdo del equipo. El arreglo está publicado en la PR #5 y su SHA candidato
-tiene CI autoritativo verde; `main` no recupera ese estado hasta una integración
-separadamente autorizada y su propio run verde.
+acuerdo del equipo. El Owner autorizó la integración de PR #5; el merge
+`efd9ec05` quedó en `main` y su run autoritativo `32199570584` terminó verde.
+La estimación sigue siendo el único bloqueo de readiness.
 
 ## 1. Precheck
 
@@ -303,12 +305,19 @@ PostgreSQL real, arquitectura, typecheck, build, tests, `smoke:start`,
 publicado falló honestamente en el colector y fue corregido; un run intermedio
 supersedido se canceló antes de considerarlo evidencia.
 
-El workflow de `main` sigue rojo en `18dab5a`. Esta tarea no concede el merge
-explícito requerido para actualizar la baseline.
+El Owner autorizó la integración el 2026-08-18. Inmediatamente antes del merge,
+PR #5 seguía OPEN, `MERGEABLE/CLEAN`, con HEAD `334f502`, los cinco commits
+esperados y sus tres checks verdes. Se integró sin cambios adicionales mediante
+el merge commit `efd9ec05d02af604c2d9ea18d4636c1539f8dc54`.
+
+El [run de `main` `32199570584`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32199570584)
+terminó `SUCCESS`: `VC-024 run-1`, `VC-024 run-2` y `VC-024 comparison`
+pasaron, incluidos PostgreSQL, arquitectura, typecheck, build, tests, smokes,
+inmutabilidad y comparación semántica/hash.
 
 **AUTHORITATIVE CI CANDIDATE: GREEN.**
 
-**CI BASELINE: BLOCKED — PR #5 no integrada a `main`.**
+**CI BASELINE: GREEN.**
 
 ## 8. Relación con PBI-024
 
@@ -344,8 +353,8 @@ ni se intentó resolver en esta revisión.
 | Autoridad de implementación | PASS para Ready | debe permanecer separada; Ready no equivale a autorización |
 | Iconografía | PASS | `lucide-react` aprobado por Owner con contrato y límite temporal explícitos |
 | Estimación | **BLOCKED** | propuesta `XL`; DoR exige acuerdo Frontend/Ingeniería y no fija formato |
-| CI base | **BLOCKED** | PR #5 pasa CI autoritativo, pero no está integrada y `main` sigue rojo |
-| Preguntas bloqueantes | **BLOCKED** | OPEN-PBI030-06 y -08 permanecen abiertas |
+| CI base | PASS | PR #5 integrada como `efd9ec05`; run de `main` `32199570584` verde |
+| Preguntas bloqueantes | **BLOCKED** | sólo OPEN-PBI030-06 permanece abierta |
 
 **Resultado DoR: NOT READY.** Los puntos N/A responden a exclusiones reales, no
 a una dispensa.
@@ -355,7 +364,6 @@ a una dispensa.
 - Instalar Lucide antes de iniciar una implementación autorizada excedería la
   decisión Owner; la aprobación sólo cerró selección y contrato.
 - Tratar la propuesta `XL` como acuerdo ocultaría la autoridad del equipo.
-- Tratar la PR verde como baseline integrada rompería la separación de autoridad.
 - Los valores de accent son vectores de especificación y todavía necesitan
   tests/UI durante implementación.
 - La matriz define compromiso; no afirma pruebas ejecutadas.
@@ -364,12 +372,11 @@ a una dispensa.
 
 ## 11. Próxima acción acotada
 
-1. Frontend/Ingeniería acepta `XL` o registra otra estimación razonada sin cambiar alcance.
-2. Obtener autorización explícita de merge para integrar la PR #5, confirmar
-   `origin/main` y observar CI verde sobre el nuevo `main`.
-3. Repetir la revisión DoR. Sólo con ambos resultados se cambia PBI-030 a
-   `Ready`; la implementación seguirá requiriendo autorización Owner binaria.
+1. Frontend/Ingeniería acepta `XL` o registra otra estimación razonada sin
+   cambiar alcance.
+2. Repetir la revisión DoR. Sólo entonces se cambia PBI-030 a `Ready`; la
+   implementación seguirá requiriendo autorización Owner binaria.
 
 ## 12. Veredicto
 
-**CONDITIONAL — PBI-030 STILL BLOCKED.**
+**CONDITIONAL — PBI-030 READY EXCEPT FOR TEAM ESTIMATION AGREEMENT.**

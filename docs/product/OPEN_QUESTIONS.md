@@ -27,6 +27,15 @@ posterior resolvió parcialmente `QUESTION-031`; la revisión de readiness de
 PBI-030 cerró `QUESTION-032`. Por tanto, los conteos vigentes son 24 abiertas,
 4 en investigación, 5 cerradas con decisión y 1 parcialmente resuelta.
 
+## Gate operativo de readiness de PBI-030
+
+Este registro no incorpora los IDs internos `OPEN-PBI030-*` al conteo de las
+34 preguntas de producto. Su fuente canónica permanece en
+[PBI-030](../backlog/pbis/PBI-030.md#preguntas-abiertas). `OPEN-PBI030-08` quedó
+resuelta el 2026-08-18 mediante la integración autorizada de PR #5 y el run
+verde de `main` `32199570584`. `OPEN-PBI030-06` sigue abierta y bloqueante:
+Frontend/Ingeniería debe acordar `XL` o registrar otra estimación razonada.
+
 ## Producto
 
 <a id="question-001"></a>

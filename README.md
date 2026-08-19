@@ -17,12 +17,10 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
   `main` mediante el `Dockerfile` en Dokploy.
 - **Producto funcional:** todavía no existe un flujo de negocio end-to-end.
   Las llamadas `/api/preview/*` del frontend no tienen controllers en `main`.
-- **Gate conocido:** el CI de `main` en el commit auditado
-  `18dab5a017e5db308b5d34f3a3fbd8f86351c818` está rojo porque
-  `smoke:start` no recibe la configuración PostgreSQL obligatoria. La PR #5
-  publica el arreglo mínimo y pasa CI autoritativo con PostgreSQL real; todavía
-  necesita merge explícitamente autorizado y CI verde sobre `main`. Debe
-  restaurarse la baseline verde antes de integrar producto.
+- **CI:** `main` recuperó su baseline verde en
+  `efd9ec05d02af604c2d9ea18d4636c1539f8dc54`; el run autoritativo
+  [`32199570584`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32199570584)
+  pasó ambos jobs y la comparación reproducible con PostgreSQL real.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).
@@ -60,8 +58,8 @@ conversaciones no sustituyen a `main`.
 
 ## Estado del documento
 
-**Estado:** Entrada operativa vigente, reconciliada el 2026-08-18 contra
-`main` en `18dab5a017e5db308b5d34f3a3fbd8f86351c818`.
+**Estado:** Entrada operativa vigente, reconciliada el 2026-08-18 después de
+integrar PR #5 y verificar nuevamente el CI autoritativo de `main`.
 
 **Próxima revisión:** cuando cambie la baseline integrada, el gate de CI, la
 superficie funcional o el punto de entrada del backlog.
