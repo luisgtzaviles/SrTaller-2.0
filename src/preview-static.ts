@@ -1,4 +1,4 @@
-import { access } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -12,6 +12,7 @@ interface PreviewRequest {
 
 interface PreviewResponse {
   sendFile(path: string): void;
+  setHeader(name: string, value: string): void;
 }
 
 type PreviewNext = () => void;
@@ -22,9 +23,12 @@ const previewSpaExactPaths = new Set([
   '/reparaciones/nueva',
 ]);
 const previewRepairDetailPath = /^\/reparaciones\/[^/]+$/u;
+const previewCatalogPath = '/__internal/ui-catalog';
 
-function isPreviewSpaRoute(path: string): boolean {
-  return previewSpaExactPaths.has(path) || previewRepairDetailPath.test(path);
+function isPreviewSpaRoute(path: string, catalogEnabled: boolean): boolean {
+  return previewSpaExactPaths.has(path)
+    || previewRepairDetailPath.test(path)
+    || (catalogEnabled && path === previewCatalogPath);
 }
 
 export async function configurePreviewStaticFiles(
@@ -37,6 +41,8 @@ export async function configurePreviewStaticFiles(
   const indexFile = resolve(publicDirectory, 'index.html');
 
   await access(indexFile);
+  const indexSource = await readFile(indexFile, 'utf8');
+  const catalogEnabled = indexSource.includes('name="srt-ui-catalog" content="enabled"');
   application.useStaticAssets(publicDirectory, { index: false });
   application.use(
     (
@@ -46,11 +52,14 @@ export async function configurePreviewStaticFiles(
     ): void => {
       if (
         request.method !== 'GET' ||
-        !isPreviewSpaRoute(request.path) ||
+        !isPreviewSpaRoute(request.path, catalogEnabled) ||
         request.accepts('html') === false
       ) {
         next();
         return;
+      }
+      if (request.path === previewCatalogPath) {
+        response.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
       }
       response.sendFile(indexFile);
     },

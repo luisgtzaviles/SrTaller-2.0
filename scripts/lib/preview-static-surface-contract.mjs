@@ -3,10 +3,15 @@ export const authorizedPreviewStaticSurfacePath = 'src/preview-static.ts';
 const requiredFragments = Object.freeze([
   "const previewSpaExactPaths = new Set([\n  '/',\n  '/reparaciones',\n  '/reparaciones/nueva',\n]);",
   'const previewRepairDetailPath = /^\\/reparaciones\\/[^/]+$/u;',
+  "const previewCatalogPath = '/__internal/ui-catalog';",
+  '|| (catalogEnabled && path === previewCatalogPath);',
+  "const catalogEnabled = indexSource.includes('name=\"srt-ui-catalog\" content=\"enabled\"');",
+  "response.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');",
   "request.method !== 'GET'",
-  '!isPreviewSpaRoute(request.path)',
+  '!isPreviewSpaRoute(request.path, catalogEnabled)',
   "request.accepts('html') === false",
   'await access(indexFile);',
+  "await readFile(indexFile, 'utf8');",
   'application.useStaticAssets(publicDirectory, { index: false });',
   'response.sendFile(indexFile);',
 ]);

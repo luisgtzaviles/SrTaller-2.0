@@ -60,9 +60,10 @@ child.stderr.on('data', (chunk) => {
 
 try {
   await waitForReady(baseUrl);
-  const [root, spa, live, ready, apiUnknown, routeUnknown] = await Promise.all([
+  const [root, spa, catalog, live, ready, apiUnknown, routeUnknown] = await Promise.all([
     fetch(`${baseUrl}/`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/reparaciones`, { headers: { Accept: 'text/html' } }),
+    fetch(`${baseUrl}/__internal/ui-catalog`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/livez`),
     fetch(`${baseUrl}/readyz`),
     fetch(`${baseUrl}/api/unknown`),
@@ -77,6 +78,8 @@ try {
   assert.match(rootHtml, /<title>SR Taller 2\.0 · Preview<\/title>/u);
   assert.equal(spa.status, 200);
   assert.equal(spaHtml, rootHtml);
+  assert.equal(catalog.status, 200);
+  assert.equal(catalog.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
   assert.deepEqual(await live.json(), { status: 'live' });
   assert.deepEqual(await ready.json(), { status: 'ready' });
   assert.equal(apiUnknown.status, 404);
@@ -90,6 +93,7 @@ try {
   process.stdout.write(`${JSON.stringify({
     apiUnknown: apiUnknown.status,
     asset: asset.status,
+    catalog: catalog.status,
     livez: live.status,
     readyz: ready.status,
     root: root.status,
