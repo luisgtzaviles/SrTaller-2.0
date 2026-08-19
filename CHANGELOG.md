@@ -36,6 +36,12 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Colector de evidencia actualizado para inventariar assets controlados de la
   Preview sin confundir URLs `https://` con rutas Windows y conservando rechazo
   de artefactos no permitidos.
+- Candidato PBI-030 materializado sobre React/Vite: tokens semánticos,
+  light/dark/system, accent gobernado, `lucide-react`, componentes con
+  consumidores, Application Shell responsive y catálogo interno lazy.
+- Contratos automáticos agregados para impedir doble foundation, iconografía no
+  canónica, valores visuales arbitrarios y exposición del catálogo en
+  Production; la surface Preview conserva smoke positivo y `noindex`.
 
 ### Estado conocido no resuelto
 
@@ -58,8 +64,10 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   funcional V1, incorporable sólo durante la implementación. Frontend/
   Ingeniería acordó `XL` con Confidence Medium y Risk High, manteniendo un solo
   PBI con checkpoints A–D. La revisión DoR pasó y PBI-030 quedó `Ready`; PR #5
-  está integrada y `main` verde. La implementación sigue pendiente de
-  autorización Owner.
+  está integrada y `main` verde. El Owner autorizó después la implementación;
+  el candidato está `In review`, con evidencia local y visual conservada, pero
+  todavía no está integrado, desplegado ni `Done` y conserva CI/revisión/AT
+  pendientes.
 
 ## Estado del documento
 

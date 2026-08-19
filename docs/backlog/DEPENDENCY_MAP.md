@@ -23,7 +23,7 @@ flowchart TD
     APP --> API[PBI-012 Backend/API]
     S --> WEB[PBI-013 Web/design system]
     APP --> WEB
-    DSV1[Design System & Application Shell V1<br/>Owner direction approved] --> UI[PBI-030 UI Foundation/Shell<br/>Ready / start not authorized]
+    DSV1[Design System & Application Shell V1<br/>Owner direction approved] --> UI[PBI-030 UI Foundation/Shell<br/>In review / not integrated]
     WEB --> UI
     APP --> UI
     M --> RT[PBI-014 Realtime/messaging]
@@ -107,8 +107,8 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - [PBI-030](pbis/PBI-030.md) consume la dirección visual Owner aprobada y la
   baseline React/Vite. No depende de PBI-024/PBI-025 para usar fixtures
   honestos, pero cualquier contexto confiable, identidad o permisos reales sí
-  requiere esos trabajos. PBI-024 es una dependencia blanda. Su estado
-  `Ready` no autoriza implementación.
+  requiere esos trabajos. PBI-024 es una dependencia blanda. PBI-030 tiene un
+  candidato autorizado `In review`; no concede merge, deploy ni contexto real.
 
 ## Bloqueos conocidos
 
@@ -126,8 +126,9 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   integrarse mientras DEC051-C02 siga `Pending`.
 - Los demás PBIs H1 requieren revisión y autorización propias.
 - PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad,
-  partición, estimación `XL — agreed` e integración con CI verde sobre `main`.
-  Está `Ready` y todavía requiere autorización Owner explícita para iniciar.
+  partición, estimación `XL — agreed` e implementación autorizada en una rama
+  temporal. Está `In review`; CI del PR, revisión independiente y matriz AT
+  permanecen pendientes y no existe autorización de merge.
 
 ## Preguntas abiertas
 
@@ -138,4 +139,4 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 
 ## Próxima revisión
 
-Reconciliación de PBI-024 y decisión Owner separada sobre iniciar PBI-030.
+CI/revisión de PBI-030 sin merge automático y reconciliación de PBI-024.

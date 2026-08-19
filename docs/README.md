@@ -15,7 +15,7 @@ requiriendo tarea/PBI y autoridad explícita.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Gate actual de integración:** el CI canónico de `main` está verde en
-`a8f230214b592389894e25545583988c2c2edc3e`, run `32201164615`; véase
+`f802feecbf1fb7b1c167b8d24f41f4e28db637d9`, run `32203154573`; véase
 [Current Repository State](CURRENT_STATE.md#11-cicd).
 
 ## Revisión dirigida de Sprint 00
@@ -54,9 +54,11 @@ auditoría inicial, la remediación y el dictamen final:
 - [PBI-030 — UI Foundation y Application Shell V1](backlog/pbis/PBI-030.md)
 - [PBI-030 — Readiness Review](design-system/PBI_030_READINESS_REVIEW.md)
 - [PBI-030 — Acuerdo técnico de estimación](design-system/PBI_030_ESTIMATION_PROPOSAL.md)
+- [PBI-030 — Evidencia de implementación](quality/evidence/pbi-030/README.md)
 
-La dirección visual V1 está aprobada y PBI-030 está `Ready` con estimación
-`XL — agreed`. No existe autorización de implementación.
+La dirección visual V1 y la implementación fueron autorizadas. PBI-030 tiene
+estimación `XL — agreed` y está `In review` en una rama temporal; no está
+integrado ni desplegado y su DoD conserva pendientes de CI/revisión/AT.
 
 ## Dominio operativo
 
