@@ -218,7 +218,8 @@ fue autorizada para implementación. El candidato de
 [PBI-030](backlog/pbis/PBI-030.md) materializa tokens semánticos,
 light/dark/system, CSS Modules, Lucide, responsive, shell y catálogo dentro del
 cliente React/Vite. Está `In review`, no integrado ni desplegado; CI de PR y la
-matriz Primary/AT permanecen pendientes. El CSS y shell de `main` descritos
+revisión independiente pasan sobre el candidato remediado; la matriz Primary/AT
+no disponible permanece parcial. El CSS y shell de `main` descritos
 arriba siguen siendo el runtime real hasta una integración y entrega posteriores
 autorizadas.
 
@@ -475,7 +476,7 @@ No se crea aquí un PBI, epic, sprint ni roadmap nuevo.
 | PostgreSQL | Foundation tenant/branch activa; sin esquema funcional |
 | CI | **PASS** autoritativo en `main`; run `32201164615` |
 | Preview | UI y health disponibles; acciones de negocio no funcionales |
-| Readiness | PBI-030 autorizado y `In review`; DoD condicionado por CI/revisión/matriz AT. PBI-024 requiere reconciliación antes de slices dependientes de contexto |
+| Readiness | PBI-030 autorizado y `In review`; Technical DoD e independent review pasan, con matriz AT parcial y Owner Acceptance/merge pendientes. PBI-024 requiere reconciliación antes de slices dependientes de contexto |
 
 La foundation no requiere otra etapa amplia de infraestructura. El gate técnico
 está restaurado; PBI-030 debe completar revisión sin confundir candidato con

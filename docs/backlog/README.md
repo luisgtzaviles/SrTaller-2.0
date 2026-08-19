@@ -10,7 +10,8 @@ divergente, no está integrado en `main` y conserva el merge funcional bloqueado
 por DEC051-C02; PBI-025–PBI-029 descomponen el resto de H1 y no están
 autorizados. [PBI-030](pbis/PBI-030.md) materializa UI Foundation y Application
 Shell V1 en un candidato autorizado `In review`; no está integrado ni desplegado
-y conserva CI/revisión/AT pendientes.
+y conserva Owner Acceptance/merge pendientes y evidencia AT parcial; CI e
+independent review pasan.
 
 ## Estado del documento
 

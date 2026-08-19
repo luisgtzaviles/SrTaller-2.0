@@ -21,12 +21,17 @@ los que se generaron las capturas y mediciones. El commit documental posterior
 no altera el artefacto observado. La evidencia no contiene datos personales,
 credenciales, secretos ni contexto operativo presentado como real.
 
+La [revisión independiente formal](INDEPENDENT_REVIEW.md) conserva esta
+evidencia histórica y registra la remediación
+`70a7b4d15827e2a18052211eaf6db565e51ef241`, las pruebas adicionales y el
+estado vigente del candidato.
+
 ## Resultado ejecutivo
 
-**IMPLEMENTATION EVIDENCE: CONDITIONAL PASS.** La implementación, los gates
-locales y la revisión manual disponible pasan. PBI-030 no se declara `Done`:
-faltan revisión independiente, CI autoritativo del PR y la matriz manual Primary
-completa de navegadores y tecnologías de asistencia.
+**IMPLEMENTATION EVIDENCE: PASS WITH EXPLICIT EXTERNAL GATES.** La
+implementación remediada, los gates locales, CI e independent review pasan.
+PBI-030 no se declara `Done`: faltan la matriz manual Primary completa de
+navegadores/AT, Owner Acceptance, merge y cualquier deploy posterior autorizado.
 
 | Área | Resultado |
 |---|---|
@@ -35,10 +40,10 @@ completa de navegadores y tecnologías de asistencia.
 | Catálogo Local/Preview | PASS |
 | Exclusión del catálogo en Production | PASS automática |
 | Teclado, foco, Escape y reduced motion | PASS en revisión manual Chrome/macOS |
-| VoiceOver/NVDA y navegadores/dispositivos Primary restantes | NOT RUN |
+| VoiceOver/NVDA y navegadores/dispositivos Primary restantes | NOT EXECUTED — ENVIRONMENT UNAVAILABLE |
 | Gate local canónico | PASS |
 | PostgreSQL material y smokes compilados | PASS |
-| CI autoritativo del SHA de PR | PENDING |
+| CI autoritativo del SHA de PR | PASS; runs exactos en independent review/handoff |
 | Aprobación de Producto/Diseño/QA | PENDING |
 
 ## Alcance materializado
@@ -114,10 +119,11 @@ CI autoritativo del PR y quedan pendientes hasta publicar el candidato.
 | Consola | PASS; 0 errores y 0 warnings | Chrome/macOS |
 | Reparaciones/formulario | PASS visual; error honesto, labels y requeridos; una columna móvil | Sin persistencia/API |
 
-No se ejecutaron Safari macOS, iOS Safari, Android Chrome, Edge Windows,
-VoiceOver ni NVDA. Tampoco se afirma certificación WCAG. Conforme a la estrategia
-canónica, esos `NOT RUN` impiden cerrar Definition of Done, aunque no invalidan
-el candidato técnico para revisión y CI.
+La revisión independiente posterior ejecutó Safari macOS de forma
+estructural/visual. iOS Safari, Android Chrome, Edge Windows, VoiceOver y NVDA
+permanecen `NOT EXECUTED`. Tampoco se afirma certificación WCAG. Conforme a la
+estrategia canónica, la evidencia parcial impide cerrar Definition of Done,
+aunque no invalida el candidato técnico aprobado.
 
 ## Evidencia visual
 
@@ -156,10 +162,10 @@ ausente de Production.
 |---|---|
 | Criterios funcionales/técnicos implementados | PASS local |
 | Scope y arquitectura | PASS local |
-| Tests y smokes | PASS local; CI PR pendiente |
+| Tests y smokes | PASS local y CI autoritativo |
 | Evidencia responsive/visual | PASS parcial y conservada |
-| Accesibilidad según matriz completa | NOT RUN completa; falta AT/cross-browser |
-| Revisión independiente | PENDING |
+| Accesibilidad según matriz completa | PARTIAL; falta AT/cross-browser no disponible |
+| Revisión independiente | PASS; ver `INDEPENDENT_REVIEW.md` |
 | Aprobación Product Owner | PENDING |
 | Merge | NOT AUTHORIZED |
 | Deploy/Release | No aplica al alcance; no ejecutado |
@@ -175,9 +181,9 @@ Riesgos residuales:
 - la UI continúa sin APIs de producto y no debe confundirse con un workflow de
   Reparaciones funcional.
 
-No se registra waiver. La recomendación es publicar el PR, exigir CI verde y
-completar la matriz manual/revisión antes de declarar `Done` o solicitar una
-decisión de merge.
+No se registra waiver. La recomendación vigente es conservar la matriz
+pendiente sin inventar PASS y solicitar la decisión Owner de merge sin declarar
+todavía `Done`.
 
 ### Remediación de CI de supply chain
 
@@ -190,7 +196,6 @@ referenciado en el handoff del PR.
 
 ## Próxima revisión
 
-- **Disparador:** CI autoritativo del PR y revisión independiente del candidato.
-- **Autoridades:** Frontend/Ingeniería, Calidad/Accesibilidad, Producto/Diseño y
-  Owner para cualquier decisión posterior de merge.
-los que se generaron las capturas y mediciones. El commit documental posterior
+- **Disparador:** decisión Owner sobre merge y evidencia Primary/AT disponible.
+- **Autoridades:** Calidad/Accesibilidad, Producto/Diseño y Owner para cualquier
+  decisión posterior de merge.

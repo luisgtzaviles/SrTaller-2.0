@@ -127,8 +127,8 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - Los demás PBIs H1 requieren revisión y autorización propias.
 - PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad,
   partición, estimación `XL — agreed` e implementación autorizada en una rama
-  temporal. Está `In review`; CI del PR, revisión independiente y matriz AT
-  permanecen pendientes y no existe autorización de merge.
+  temporal. Está `In review`; CI e independent review pasan, la matriz AT
+  permanece parcial y no existe autorización de merge.
 
 ## Preguntas abiertas
 

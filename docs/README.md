@@ -55,10 +55,12 @@ auditoría inicial, la remediación y el dictamen final:
 - [PBI-030 — Readiness Review](design-system/PBI_030_READINESS_REVIEW.md)
 - [PBI-030 — Acuerdo técnico de estimación](design-system/PBI_030_ESTIMATION_PROPOSAL.md)
 - [PBI-030 — Evidencia de implementación](quality/evidence/pbi-030/README.md)
+- [PBI-030 — Revisión independiente](quality/evidence/pbi-030/INDEPENDENT_REVIEW.md)
 
 La dirección visual V1 y la implementación fueron autorizadas. PBI-030 tiene
 estimación `XL — agreed` y está `In review` en una rama temporal; no está
-integrado ni desplegado y su DoD conserva pendientes de CI/revisión/AT.
+integrado ni desplegado. CI e independent review pasan; su DoD conserva
+evidencia AT parcial, Owner Acceptance y merge pendientes.
 
 ## Dominio operativo
 

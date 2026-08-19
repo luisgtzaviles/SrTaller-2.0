@@ -421,3 +421,7 @@ en `feature/pbi-030-design-system-shell`; véase la
 reescribe el veredicto histórico: CI del PR, revisión independiente, matriz
 Primary/AT, aceptación, merge y deploy siguen siendo estados posteriores y
 separados.
+
+Seguimiento: CI e independent review pasaron después de la materialización; la
+matriz Primary/AT sigue parcial y aceptación, merge y deploy no fueron
+inferidos. Véase la [revisión independiente](../quality/evidence/pbi-030/INDEPENDENT_REVIEW.md).

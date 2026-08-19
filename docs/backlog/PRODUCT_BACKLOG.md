@@ -8,8 +8,8 @@ son trabajos técnicos posteriores terminados; PBI-023 está `Closed`; PBI-024
 está implementado únicamente en una rama/PR draft divergente, no integrado en
 `main`, y con merge bloqueado por DEC051-C02; PBI-025–PBI-029 no están
 autorizados. PBI-030 recibió autorización Owner y tiene un candidato `In review`
-en rama temporal; todavía no pertenece a `main` ni a Preview y conserva CI,
-revisión independiente y matriz AT pendientes.
+en rama temporal; todavía no pertenece a `main` ni a Preview. CI e independent
+review pasan y la matriz AT permanece parcial.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; las demás permanecen TBD.
@@ -46,7 +46,7 @@ T-shirt sizing; las demás permanecen TBD.
 | 27 | [PBI-027](pbis/PBI-027.md) Define and apply the R0 temporal model | Architecture / Product | EPIC-001 | Blocked | Alta | Unassigned |
 | 28 | [PBI-028](pbis/PBI-028.md) Implement safe logging, business audit and observability baseline | Operations / Security / Quality | EPIC-001 | Draft | Alta | Unassigned |
 | 29 | [PBI-029](pbis/PBI-029.md) Govern R0 secrets and external configuration | Security / Operations | EPIC-001 | Draft | Crítica | Unassigned |
-| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | In review — candidate not integrated; CI/review/AT pending | Alta | Unassigned |
+| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | In review — independent review approved; candidate not integrated; AT partial | Alta | Unassigned |
 
 ## Interpretación
 
