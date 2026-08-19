@@ -76,8 +76,14 @@ async function inspectContainer() {
 function assertContainerSafety(container) {
   if (!container) return;
   const labels = container.Config?.Labels ?? {};
+  if (container.Config?.Image !== LOCAL_IMAGE) {
+    throw new Error('Refusing to operate on a PostgreSQL container with an unexpected image');
+  }
   if (labels['io.srtaller.environment'] !== 'local' || labels['io.srtaller.component'] !== 'postgres') {
     throw new Error('Refusing to operate on a container that is not labeled SR Taller Local PostgreSQL');
+  }
+  if (!(container.Config?.Env ?? []).includes(`POSTGRES_DB=${LOCAL_DB_NAME}`)) {
+    throw new Error('Refusing to operate on a container with an unexpected local database');
   }
   const volumes = container.Mounts ?? [];
   if (!volumes.some((mount) => mount.Type === 'volume' && mount.Name === LOCAL_VOLUME)) {
