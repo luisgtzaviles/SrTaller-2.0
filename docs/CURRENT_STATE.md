@@ -4,10 +4,11 @@
 
 - **Estado:** Fotografía canónica del repositorio, reconciliada el 2026-08-18.
 - **Baseline técnica integrada:** `main` en
-  `f802feecbf1fb7b1c167b8d24f41f4e28db637d9`.
-- **Candidato no integrado:** PBI-030 en
-  `feature/pbi-030-design-system-shell`; implementation SHA `7f15126`, PR draft
-  #8, pendiente de CI/revisión al registrar esta fotografía.
+  `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823`.
+- **PBI-030 integrado:** PR #8 fusionada con merge commit `c8628fb`; Technical
+  DoD e independent review pasan. El PBI permanece `In review`, con Owner
+  Acceptance, evidencia AT/cross-browser restante y Preview deployment
+  pendientes.
 - **Alcance:** código, configuración, documentación vigente, Git/GitHub y
   contraste HTTP de sólo lectura con Preview.
 - **Regla:** este documento describe estado; no autoriza implementación,
@@ -28,12 +29,11 @@ porque `main` no contiene esos controllers, casos de uso ni tablas. Identidad,
 PIN, sesión, roles, capacidades y estación confiable permanecen conceptuales o
 fuera de `main`.
 
-La base permite comenzar refinamiento de producto y conserva CI canónico verde:
-PR #5 restauró los smokes compilados; PR #7 integró el acuerdo de estimación y
-readiness mediante `f802fee`. El run de `main` `32203154573` pasó ambos jobs y
-la comparación reproducible.
-PBI-030 recibió autorización Owner y ahora tiene un candidato local del Design
-System/Application Shell V1; esto todavía no cambia `main` ni Preview. Además,
+La base permite comenzar refinamiento de producto y conserva CI canónico verde.
+PR #8 integró Design System/Application Shell V1 mediante `c8628fb`; el run de
+`main` `32217905296` pasó ambos jobs y la comparación reproducible. PBI-030
+permanece `In review`: la integración no afirma Owner Acceptance, `Done` ni
+Preview deployment. Además,
 PBI-024 tiene una implementación extensa sólo en una rama y PR
 draft divergentes; debe decidirse si se recupera o se descarta antes de
 duplicar esa foundation.
@@ -43,9 +43,9 @@ duplicar esa foundation.
 | Hecho | Estado auditado |
 |---|---|
 | Repositorio | `/Users/luisantoniogutierrez/Documents/GitHub/SrTaller-2.0` |
-| Rama de implementación | `feature/pbi-030-design-system-shell` |
-| Baseline técnica integrada | `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |
-| SHA de implementación PBI-030 | `7f15126`; no integrado |
+| Rama auditada | `main` |
+| Baseline técnica integrada | `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823` |
+| Implementación PBI-030 | PR #8 integrada; candidate `5ca8866`, merge `c8628fb` |
 | Remote | `origin`: `https://github.com/luisgtzaviles/SrTaller-2.0.git` |
 | Upstream | `origin/main` |
 | Divergencia local/upstream | `0/0`; `ls-remote` confirmó el mismo SHA |
@@ -55,6 +55,9 @@ duplicar esa foundation.
 
 Commits recientes significativos:
 
+- `c8628fb`: merge autorizado de PR #8; PBI-030 integrado en `main`.
+- `5ca8866`: revisión independiente y reconciliación documental del candidato.
+- `70a7b4d`: remediaciones de contraste, responsive, accesibilidad y checker.
 - `f802fee`: merge autorizado de PR #7; estimación acordada y PBI-030 `Ready`.
 - `a8f2302`: reconciliación post-merge de readiness y CI de PBI-030.
 - `efd9ec0`: merge autorizado de PR #5 y restauración de CI compilado.
@@ -80,9 +83,12 @@ Ramas/PR relevantes para interpretar la baseline:
 - [PR #7](https://github.com/luisgtzaviles/SrTaller-2.0/pull/7), promoción de
   estimación/readiness de PBI-030: integrada con autorización Owner como
   `f802fee`; CI de `main` verde en el run `32203154573`.
+- [PR #8](https://github.com/luisgtzaviles/SrTaller-2.0/pull/8), Design System
+  & Application Shell V1: integrada con autorización Owner como `c8628fb`; CI
+  de `main` verde en el run `32217905296`.
 
-Evidencia: Git actual, `docs/delivery/BRANCH_POLICY.md` y las PR #3/#4/#5 en
-GitHub.
+Evidencia: Git actual, `docs/delivery/BRANCH_POLICY.md` y las PR #3/#4/#5/#7/#8
+en GitHub.
 
 ## 3. Repository Map
 
@@ -214,14 +220,13 @@ frontend dedicada.
 
 La dirección
 [Design System & Application Shell V1](design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
-fue autorizada para implementación. El candidato de
+fue autorizada para implementación. La implementación de
 [PBI-030](backlog/pbis/PBI-030.md) materializa tokens semánticos,
 light/dark/system, CSS Modules, Lucide, responsive, shell y catálogo dentro del
-cliente React/Vite. Está `In review`, no integrado ni desplegado; CI de PR y la
-revisión independiente pasan sobre el candidato remediado; la matriz Primary/AT
-no disponible permanece parcial. El CSS y shell de `main` descritos
-arriba siguen siendo el runtime real hasta una integración y entrega posteriores
-autorizadas.
+cliente React/Vite. Está integrada en `main` y permanece `In review`; CI de PR,
+CI de `main` e independent review pasan, mientras la matriz Primary/AT no
+disponible permanece parcial. Preview aún ejecuta la baseline desplegada
+anterior hasta una autorización y entrega posteriores.
 
 ## 9. Backend State
 
@@ -376,7 +381,8 @@ conservan trazabilidad; no son baseline operativa.
 
 ## 15. Backlog / Decisions / Current Project State
 
-- Último PBI integrado/cerrado: PBI-023.
+- Último PBI integrado: PBI-030, todavía `In review`; último PBI cerrado:
+  PBI-023.
 - PBI-024: autorizado y con implementación/evidencia sólo en PR draft #3;
   no integrado, conflictivo y divergente.
 - PBI-025 y PBI-027: `Blocked`.
@@ -467,18 +473,18 @@ No se crea aquí un PBI, epic, sprint ni roadmap nuevo.
 
 | Área | Veredicto |
 |---|---|
-| Baseline técnica | `main` / `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |
+| Baseline técnica | `main` / `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823` |
 | Working tree inicial | Limpio y sincronizado |
 | Infraestructura | Preview Dokploy/OCI/PostgreSQL disponible |
 | Aplicación | Foundation ejecutable, sin workflow de negocio |
-| Frontend | Visual Slice 0 en `main`; candidato PBI-030 no integrado; API ausente |
+| Frontend | Design System/Application Shell V1 integrado en `main`; API ausente |
 | Backend | Health + DB runtime; sin endpoints de producto |
 | PostgreSQL | Foundation tenant/branch activa; sin esquema funcional |
-| CI | **PASS** autoritativo en `main`; run `32201164615` |
+| CI | **PASS** autoritativo en `main`; run `32217905296` |
 | Preview | UI y health disponibles; acciones de negocio no funcionales |
-| Readiness | PBI-030 autorizado y `In review`; Technical DoD e independent review pasan, con matriz AT parcial y Owner Acceptance/merge pendientes. PBI-024 requiere reconciliación antes de slices dependientes de contexto |
+| Readiness | PBI-030 integrado y `In review`; Technical DoD e independent review pasan, con matriz AT parcial y Owner Acceptance/Preview deployment pendientes. PBI-024 requiere reconciliación antes de slices dependientes de contexto |
 
 La foundation no requiere otra etapa amplia de infraestructura. El gate técnico
-está restaurado; PBI-030 debe completar revisión sin confundir candidato con
-baseline, `Done`, merge o deploy. El linaje pendiente de PBI-024 sigue aplicando
+está restaurado; PBI-030 debe completar revisión sin confundir integración con
+`Done`, Owner Acceptance o deploy. El linaje pendiente de PBI-024 sigue aplicando
 al siguiente slice que requiera contexto confiable.

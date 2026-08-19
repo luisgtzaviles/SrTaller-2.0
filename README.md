@@ -9,7 +9,8 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 
 - **Baseline integrada:** `main`.
 - **Runtime:** Node.js `24.18.0`, pnpm `11.15.1` y TypeScript `6.0.3`.
-- **Frontend:** React `19.2.8` + Vite `8.2.0`; Visual Slice 0 navegable.
+- **Frontend:** React `19.2.8` + Vite `8.2.0`; Design System y Application
+  Shell V1 integrados en `main`.
 - **Backend:** NestJS `11.1.28` sobre Express; actualmente sólo expone health.
 - **Persistencia:** PostgreSQL `18.4` en Preview; Kysely + `pg`; foundation de
   tenants y sucursales materializada.
@@ -18,11 +19,12 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 - **Producto funcional:** todavía no existe un flujo de negocio end-to-end.
   Las llamadas `/api/preview/*` del frontend no tienen controllers en `main`.
 - **CI:** `main` conserva su baseline verde en
-  `a8f230214b592389894e25545583988c2c2edc3e`; el run autoritativo
-  [`32201164615`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32201164615)
+  `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823`; el run autoritativo
+  [`32217905296`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32217905296)
   pasó ambos jobs y la comparación reproducible con PostgreSQL real.
-- **PBI-030:** `Ready`, estimación `XL — agreed`; implementación pendiente de
-  autorización Owner explícita.
+- **PBI-030:** `In review`, estimación `XL — agreed`; implementación integrada
+  mediante PR #8. Owner Acceptance, evidencia AT/cross-browser restante y
+  Preview deployment están pendientes.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).
@@ -61,7 +63,7 @@ conversaciones no sustituyen a `main`.
 ## Estado del documento
 
 **Estado:** Entrada operativa vigente, reconciliada el 2026-08-18 después de
-integrar PR #5 y verificar nuevamente el CI autoritativo de `main`.
+integrar PR #8 y verificar nuevamente el CI autoritativo de `main`.
 
 **Próxima revisión:** cuando cambie la baseline integrada, el gate de CI, la
 superficie funcional o el punto de entrada del backlog.

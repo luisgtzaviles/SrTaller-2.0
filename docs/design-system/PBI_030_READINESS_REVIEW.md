@@ -425,3 +425,10 @@ separados.
 Seguimiento: CI e independent review pasaron después de la materialización; la
 matriz Primary/AT sigue parcial y aceptación, merge y deploy no fueron
 inferidos. Véase la [revisión independiente](../quality/evidence/pbi-030/INDEPENDENT_REVIEW.md).
+
+El Owner autorizó después el merge de PR #8. El candidate final `5ca8866` fue
+integrado el 2026-08-18 mediante `c8628fb`; el CI autoritativo de `main`
+`32217905296` pasó run-1, run-2 y comparison. PBI-030 permanece `In review`:
+Owner Acceptance, la evidencia AT/cross-browser restante y Preview deployment
+siguen pendientes. Este seguimiento no altera el veredicto histórico de
+readiness ni convierte integración en `Done`.

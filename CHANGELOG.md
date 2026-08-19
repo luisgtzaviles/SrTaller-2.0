@@ -48,7 +48,10 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Revisión independiente de PBI-030 completada: contraste y límites de control,
   breakpoint mobile `<1024px`, foco/touch, overlays, estado de tema, headings,
   honestidad ante fallo de API y evasiones del checker fueron remediados con
-  pruebas de regresión. El candidato sigue `In review`; no hubo merge ni deploy.
+  pruebas de regresión. La revisión cerró con `PASS` sobre el candidate final.
+- PR #8 integrada con autorización Owner mediante merge commit `c8628fb`; CI
+  autoritativo de `main` `32217905296` pasó run-1, run-2 y comparison. PBI-030
+  permanece `In review`; no hubo deploy ni se infiere Owner Acceptance o `Done`.
 
 ### Estado conocido no resuelto
 
@@ -72,9 +75,9 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   Ingeniería acordó `XL` con Confidence Medium y Risk High, manteniendo un solo
   PBI con checkpoints A–D. La revisión DoR pasó y PBI-030 quedó `Ready`; PR #5
   está integrada y `main` verde. El Owner autorizó después la implementación;
-  el candidato está `In review`, con CI e independent review aprobados, pero
-  todavía no está integrado, desplegado ni `Done` y conserva evidencia AT
-  parcial más Owner Acceptance pendiente.
+  la implementación está integrada en `main` y permanece `In review`, con CI e
+  independent review aprobados; todavía no está desplegada ni `Done` y conserva
+  evidencia AT parcial más Owner Acceptance pendiente.
 
 ## Estado del documento
 

@@ -13,8 +13,9 @@ alcance. No quedan blockers, highs, mediums o lows abiertos conocidos.
 **Resultado técnico:** `PASS — PBI-030 INDEPENDENT REVIEW APPROVED`.
 
 PBI-030 permanece `In review`. La evidencia Primary cross-browser/AT no
-disponible, la aceptación Owner, el merge y cualquier deploy permanecen como
-gates separados.
+disponible, la aceptación Owner y cualquier deploy permanecen como gates
+separados. El merge posterior no modifica el veredicto técnico ni satisface
+esos gates.
 
 ## 2. Candidate / Git State
 
@@ -290,3 +291,21 @@ evidencia completa siguen separados.
 Siguiente acción exclusiva:
 
 `OWNER DECISION — AUTHORIZE MERGE OF PR #8`
+
+## 29. Post-merge follow-up
+
+Este apartado conserva el cierre original anterior al merge y registra el
+hecho posterior sin reescribir la revisión:
+
+- candidate final revisado: `5ca88662bd95e97241d2502ac0a0d9586067e60b`;
+- PR #8: `MERGED` con autorización Owner el 2026-08-18;
+- merge commit: `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823`;
+- CI autoritativo de `main`: run `32217905296`, `SUCCESS` en run-1, run-2 y
+  comparison;
+- PBI-030: permanece `In review`;
+- Owner Acceptance, evidencia AT/cross-browser restante y Preview deployment:
+  pendientes.
+
+Siguiente decisión Owner después de la integración verde:
+
+`AUTHORIZE PBI-030 PREVIEW DEPLOYMENT`
