@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "repository": "luisgtzaviles/SrTaller-2.0",
+  "pbi": "PBI-030",
+  "pull_request": 8,
+  "branch": "feature/pbi-030-design-system-shell",
+  "baseline_commit": "f802feecbf1fb7b1c167b8d24f41f4e28db637d9",
+  "implementation_commit": "7f15126e90295464994d15d662bdb6b1cf6a5062",
+  "generated_at": "2026-08-19T01:46:30Z",
+  "status": "CONDITIONAL_PASS",
+  "toolchain": {
+    "node": "24.18.0",
+    "pnpm": "11.15.1",
+    "lucide_react": "1.31.0"
+  },
+  "manual_environment": {
+    "browser": "Google Chrome 151.0.7922.138",
+    "os": "macOS 26.5.1",
+    "data": "synthetic fixtures only"
+  },
+  "commands": [
+    { "command": "pnpm install --frozen-lockfile", "result": "PASS" },
+    { "command": "pnpm run typecheck", "result": "PASS" },
+    { "command": "pnpm run build", "result": "PASS" },
+    { "command": "pnpm run verify:ui", "result": "PASS" },
+    { "command": "pnpm run verify:ui:production", "result": "PASS" },
+    { "command": "pnpm run verify", "result": "PASS", "tests": 372, "passed": 362, "failed": 0, "expected_postgresql_skips": 10 },
+    { "command": "node scripts/run-postgresql-ci.mjs", "result": "PASS", "suites": 5, "tests": 10, "critical_skips": 0, "failures": 0 },
+    { "command": "pnpm run smoke:start", "result": "PASS" },
+    { "command": "pnpm run smoke:ui", "result": "PASS" },
+    { "command": "git diff --check", "result": "PASS" }
+  ],
+  "bundle": {
+    "method": "gzip level 9 over compiled JavaScript and CSS",
+    "baseline_core": { "raw_bytes": 262501, "gzip_bytes": 81215 },
+    "candidate_core": { "raw_bytes": 302768, "gzip_bytes": 91795 },
+    "candidate_preview_with_lazy_catalog": { "raw_bytes": 312321, "gzip_bytes": 95135 },
+    "catalog_lazy_chunk": { "raw_bytes": 9553, "gzip_bytes": 3340 },
+    "core_gzip_delta_bytes": 10580,
+    "core_gzip_delta_percent": 13.0,
+    "preview_gzip_delta_bytes": 13920,
+    "preview_gzip_delta_percent": 17.1
+  },
+  "screenshots": [
+    { "path": "desktop-light.png", "width": 1280, "height": 1112, "sha256": "e54669390e343488e849cae9a3159d4757960367304e67b10a4d44338e476676" },
+    { "path": "desktop-dark.png", "width": 1280, "height": 1112, "sha256": "226d3b7b2f18573c8c832fc092d3400aec22c65bf29230f14de3fbfcd478e13f" },
+    { "path": "mobile-light.png", "width": 390, "height": 1632, "sha256": "f9dc9f803ced321a9d63e3726cdc72a56575f4321b79de94c2dd83be97b15424" },
+    { "path": "mobile-drawer.png", "width": 390, "height": 844, "sha256": "f92f8e00e4da04fc04e5764df6623d2b37119a13b67ad5a9f3a943e799d1d327" },
+    { "path": "mobile-repairs-error.png", "width": 390, "height": 848, "sha256": "a239d229743da5f560ae4bdedabde0f7b3881933a8524e8c41f648ae6b700ba9" },
+    { "path": "mobile-form.png", "width": 390, "height": 2211, "sha256": "0af13c008bb4865697c6770ba9cad065cfe8e12e439d511115a0a32beadd8c20" },
+    { "path": "catalog-light.png", "width": 1280, "height": 2817, "sha256": "634e80ac371e686ae14026d0342f0caa822ff209e071519a6165d8cc16dcae7f" }
+  ],
+  "manual_checks": {
+    "viewports_css_px": [320, 390, 640, 768, 1024, 1280],
+    "horizontal_overflow": "PASS",
+    "keyboard_focus_escape_restore": "PASS_CHROME_MACOS",
+    "reduced_motion": "PASS_EMULATED_CHROME",
+    "console_errors": 0,
+    "console_warnings": 0,
+    "screen_readers": "NOT_RUN",
+    "remaining_primary_browsers_devices": "NOT_RUN"
+  },
+  "catalog": {
+    "local": "enabled",
+    "preview": "enabled_synthetic_noindex",
+    "staging": "disabled_by_default",
+    "production": "absent_verified"
+  },
+  "scope": {
+    "backend_product_api_changed": false,
+    "database_schema_changed": false,
+    "infrastructure_changed": false,
+    "deploy_executed": false,
+    "dns_changed": false,
+    "merge_executed": false
+  },
+  "pending": [
+    "authoritative PR CI run-1, run-2 and comparison",
+    "independent code and visual review",
+    "Safari, iOS Safari, Android Chrome and Edge matrix",
+    "VoiceOver and NVDA matrix",
+    "Product Owner acceptance and any later merge authorization"
+  ],
+  "ci_remediation": {
+    "initial_failure": "lucide-react 1.32.0 violated the 24-hour minimum release age policy",
+    "resolution": "pin lucide-react 1.31.0 without policy exception",
+    "bundle_changed_from_recorded_measurement": false
+  },
+  "final_result": "PBI-030 IMPLEMENTATION CANDIDATE — MORE EVIDENCE REQUIRED FOR DONE"
+}

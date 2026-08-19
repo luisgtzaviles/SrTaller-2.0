@@ -36,8 +36,9 @@ resuelta el 2026-08-18 mediante la integración autorizada de PR #5 y los runs
 verdes de `main` `32199570584`/`32201164615`. `OPEN-PBI030-06` quedó resuelta
 el 2026-08-18 mediante la revisión formal Frontend/Ingeniería:
 `ESTIMATION: XL — AGREED`, Confidence Medium, Risk High y un solo PBI con
-checkpoints A–D. No quedan preguntas internas bloqueantes de readiness; la
-autorización Owner de implementación permanece separada.
+checkpoints A–D. No quedan preguntas internas bloqueantes de readiness. El Owner
+autorizó posteriormente la implementación el 2026-08-18; el candidato está
+`In review` y no tiene autorización implícita de merge o deploy.
 
 ## Producto
 

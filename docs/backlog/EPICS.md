@@ -32,9 +32,9 @@
   `Closed`. [PBI-024](pbis/PBI-024.md) conserva autorización limitada y código
   en una PR draft conflictiva, pero no pertenece a `main`; PBI-025–PBI-029
   descomponen el H1 restante con estados `Draft` o `Blocked` y no están
-  autorizados. [PBI-030](pbis/PBI-030.md) prepara la foundation visual y el
-  Application Shell V1 como `Draft — readiness blocked`; no tiene autorización
-  de implementación.
+  autorizados. [PBI-030](pbis/PBI-030.md) tiene una foundation visual y
+  Application Shell V1 autorizados en candidato `In review`, todavía no
+  integrados ni desplegados.
 
 ## EPIC-002 — Tenant and Platform Administration
 

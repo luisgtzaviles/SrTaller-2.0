@@ -110,6 +110,11 @@ La evaluación se realizó sobre `lucide-react@1.32.0`; la versión efectivament
 incorporada deberá volver a verificarse y quedar fijada durante la
 implementación. Esta aprobación no autoriza instalarla ahora ni iniciar el PBI.
 
+Seguimiento de implementación: `1.31.0` quedó como versión efectiva gobernada.
+El primer CI del candidato rechazó `1.32.0` por incumplir la edad mínima de
+publicación de 24 horas; se eligió la versión más reciente anterior al cutoff,
+sin waiver ni relajación de la política, y se repitió la verificación técnica.
+
 **ICONOGRAPHY GATE: RESOLVED.**
 
 ## 3. Gate del tenant accent
@@ -380,9 +385,9 @@ no a una dispensa.
 | Riesgo | High; migración visual transversal, responsive, accesibilidad y convergencia sin legacy |
 | Estimación | `XL — agreed`; Confidence Medium |
 | Partición | `KEEP AS SINGLE PBI`; checkpoints internos A–D |
-| Autoridad de inicio | No concedida |
+| Autoridad de inicio | No concedida al momento de esta revisión; concedida posteriormente según el seguimiento de la sección 13 |
 
-## 10. Riesgos residuales y decisión requerida
+## 10. Riesgos residuales y decisión requerida al cerrar readiness
 
 - Instalar Lucide antes de iniciar una implementación autorizada excedería la
   decisión Owner; la aprobación sólo cerró selección y contrato.
@@ -406,3 +411,17 @@ no a una dispensa.
 **PASS — PBI-030 READY FOR OWNER AUTHORIZATION.**
 
 **Implementation authorization pending Owner approval.**
+
+## 13. Seguimiento posterior a readiness
+
+El Owner autorizó explícitamente la implementación el 2026-08-18 desde la
+baseline `f802feecbf1fb7b1c167b8d24f41f4e28db637d9`. El candidato está `In review`
+en `feature/pbi-030-design-system-shell`; véase la
+[evidencia QA](../quality/evidence/pbi-030/README.md). Esta actualización no
+reescribe el veredicto histórico: CI del PR, revisión independiente, matriz
+Primary/AT, aceptación, merge y deploy siguen siendo estados posteriores y
+separados.
+
+Seguimiento: CI e independent review pasaron después de la materialización; la
+matriz Primary/AT sigue parcial y aceptación, merge y deploy no fueron
+inferidos. Véase la [revisión independiente](../quality/evidence/pbi-030/INDEPENDENT_REVIEW.md).

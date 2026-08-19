@@ -7,9 +7,9 @@ su clasificación histórica y muestran el resultado vigente; PBI-021/PBI-022
 son trabajos técnicos posteriores terminados; PBI-023 está `Closed`; PBI-024
 está implementado únicamente en una rama/PR draft divergente, no integrado en
 `main`, y con merge bloqueado por DEC051-C02; PBI-025–PBI-029 no están
-autorizados. PBI-030 está `Ready`: PR #5, baseline verde, gates técnicos y
-acuerdo de estimación de Frontend/Ingeniería están resueltos. Su implementación
-sigue pendiente de autorización Owner.
+autorizados. PBI-030 recibió autorización Owner y tiene un candidato `In review`
+en rama temporal; todavía no pertenece a `main` ni a Preview. CI e independent
+review pasan y la matriz AT permanece parcial.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; las demás permanecen TBD.
@@ -46,7 +46,7 @@ T-shirt sizing; las demás permanecen TBD.
 | 27 | [PBI-027](pbis/PBI-027.md) Define and apply the R0 temporal model | Architecture / Product | EPIC-001 | Blocked | Alta | Unassigned |
 | 28 | [PBI-028](pbis/PBI-028.md) Implement safe logging, business audit and observability baseline | Operations / Security / Quality | EPIC-001 | Draft | Alta | Unassigned |
 | 29 | [PBI-029](pbis/PBI-029.md) Govern R0 secrets and external configuration | Security / Operations | EPIC-001 | Draft | Crítica | Unassigned |
-| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Ready — implementation authorization pending Owner approval | Alta | Unassigned |
+| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | In review — independent review approved; candidate not integrated; AT partial | Alta | Unassigned |
 
 ## Interpretación
 
@@ -61,13 +61,12 @@ T-shirt sizing; las demás permanecen TBD.
   implementación/evidencia en la PR draft #3, pero no está integrado en
   `main`, la rama está divergente/conflictiva y su merge funcional permanece
   bloqueado por DEC051-C02. PBI-025–PBI-029 no están autorizados. PBI-030 tiene
-  DoR `PASS`, estimación `XL — agreed` y estado `Ready`; no está autorizado para
-  implementación.
+  DoR `PASS`, estimación `XL — agreed` y un candidato autorizado `In review`;
+  no está `Done`, integrado ni desplegado.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-Decisión explícita sobre recuperar o descartar la implementación divergente de
-PBI-024 y decisión Owner separada sobre autorizar la implementación de PBI-030.
-No iniciar implementación sin autorización expresa.
+CI y revisión de PBI-030 sin merge automático, además de la decisión explícita
+sobre recuperar o descartar la implementación divergente de PBI-024.

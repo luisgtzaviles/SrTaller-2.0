@@ -163,9 +163,9 @@ contrato.
 
 ### Estructura responsive
 
-- Desktop amplio: sidebar expandido de `256px`.
-- Laptop o desktop restringido: sidebar colapsable de `72px`.
-- Mobile: header y drawer off-canvas de hasta aproximadamente `320px`, siempre
+- Desktop amplio (`>=1280px`): sidebar expandido de `256px`.
+- Laptop o desktop restringido (`1024–1279px`): sidebar colapsable de `72px`.
+- Mobile (`<1024px`): header y drawer off-canvas de hasta aproximadamente `320px`, siempre
   limitado por el viewport.
 
 El sidebar debe soportar estados expandido, colapsado y drawer; navegación con
@@ -343,17 +343,22 @@ una tensión documental con la propuesta de Next.js/Tailwind de ADR-006 y
 PBI-013; se resuelve manteniendo ADR-006 `Proposed`, descartando Tailwind para
 V1 y limitando esta decisión al cliente React/Vite actual.
 
-## Gate pendiente antes de implementación
+## Gate de implementación
 
-- Autorización Owner explícita y binaria para iniciar PBI-030. La
-  [estimación `XL`](PBI_030_ESTIMATION_PROPOSAL.md) está acordada por
-  Frontend/Ingeniería, la revisión DoR pasó y CI de `main` está verde; `Ready`
-  no autoriza implementación.
+- El Owner concedió autorización explícita y binaria para implementar PBI-030
+  el 2026-08-18 desde `main`
+  `f802feecbf1fb7b1c167b8d24f41f4e28db637d9`.
+- El candidato vive en `feature/pbi-030-design-system-shell`, está `In review`
+  y conserva separados CI, aceptación, merge y deploy. La
+  [revisión independiente formal](../quality/evidence/pbi-030/INDEPENDENT_REVIEW.md)
+  aprobó la implementación después de remediar los defectos encontrados.
 
 Iconografía, accent, catálogo, matriz de compatibilidad y partición técnica
 quedaron resueltos documentalmente en la
-[revisión de readiness de PBI-030](PBI_030_READINESS_REVIEW.md), sin afirmar
-implementación ni evidencia de Done.
+[revisión de readiness de PBI-030](PBI_030_READINESS_REVIEW.md). La
+[evidencia de implementación](../quality/evidence/pbi-030/README.md) registra lo
+ejecutado y mantiene `NOT EXECUTED` la matriz de AT/cross-browser no observada;
+no afirma `Done`.
 
 ## Trazabilidad
 
@@ -368,5 +373,5 @@ implementación ni evidencia de Done.
 
 ## Próxima revisión
 
-Ante una autorización Owner de implementación o evidencia que requiera cambiar
-el contrato. La revisión no autoriza implementación por sí misma.
+Ante revisión del candidato, un hallazgo que requiera cambiar el contrato o una
+decisión Owner posterior. Esta dirección no autoriza merge ni deploy.

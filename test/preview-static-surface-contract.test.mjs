@@ -29,6 +29,13 @@ for (const [name, mutation] of [
     ),
   ],
   [
+    'catalog enabled without build marker',
+    authorizedSource.replace(
+      '|| (catalogEnabled && path === previewCatalogPath);',
+      '|| path === previewCatalogPath;',
+    ),
+  ],
+  [
     'controller surface',
     `${authorizedSource}\n@Controller()\nclass PreviewController {}`,
   ],
