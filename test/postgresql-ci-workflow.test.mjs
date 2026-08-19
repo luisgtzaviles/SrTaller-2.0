@@ -31,6 +31,34 @@ test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', (
   assert.doesNotMatch(workflow, /secrets\./u);
 });
 
+test('compiled smoke uses an isolated migrated PostgreSQL service without relaxing startup', () => {
+  assert.match(
+    workflow,
+    /compiled-smoke-postgresql:\s*\n\s*image: postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf/u,
+  );
+  assert.match(
+    workflow,
+    /name: Prepare compiled smoke PostgreSQL schema[\s\S]*run: pnpm run db:migrate[\s\S]*SR_DB_ROLE: migration[\s\S]*SR_DB_MIGRATIONS_ENABLED: "true"/u,
+  );
+  assert.match(
+    workflow,
+    /name: Run compiled artifact smoke[\s\S]*run: pnpm run smoke:start[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+  );
+  assert.match(
+    workflow,
+    /name: Run compiled UI route smoke[\s\S]*run: pnpm run smoke:ui[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+  );
+  assert.ok(
+    workflow.indexOf('name: Prepare compiled smoke PostgreSQL schema') <
+      workflow.indexOf('name: Run compiled artifact smoke'),
+  );
+  assert.ok(
+    workflow.indexOf('name: Run compiled artifact smoke') <
+      workflow.indexOf('name: Run compiled UI route smoke'),
+  );
+  assert.doesNotMatch(workflow, /DATABASE_URL|PGPASSWORD|PGHOST/u);
+});
+
 test('PostgreSQL runner pins the governed digest and exact suite inventory', () => {
   assert.match(runner, /postgresqlImage/u);
   assert.doesNotMatch(runner, /postgres(?::latest|:18\b)/u);

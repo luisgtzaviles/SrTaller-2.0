@@ -7,6 +7,20 @@
 
 Propuesta pendiente de evaluar necesidades de cada superficie; no autoriza crear aplicaciones Next.js.
 
+## Reconciliación con la dirección visual V1
+
+La dirección Owner de
+[Design System & Application Shell V1](../../design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
+aplica al cliente React/Vite ya materializado y aprueba CSS custom properties +
+CSS Modules, sin Tailwind ni CSS-in-JS en V1. Esto resuelve la estrategia visual
+del cliente actual, pero no acepta Next.js ni cambia el estado `Proposed` de
+esta ADR.
+
+Rendering, caché tenant-scoped, número de aplicaciones y una eventual
+migración o nueva superficie continúan requiriendo evidencia y decisión
+propias. PBI-030 puede preparar la foundation dentro del workspace actual sin
+crear un package compartido.
+
 ## Contexto
 
 La plataforma requerirá aplicaciones web consistentes y una API central compartida con móviles futuros. Las necesidades de rendering público, portal operativo y administración todavía deben separarse; Next.js no debe convertirse en una segunda fuente de reglas de negocio.
@@ -28,7 +42,13 @@ La plataforma requerirá aplicaciones web consistentes y una API central compart
 
 ## Decisión propuesta
 
-Adoptar Next.js y React para clientes web. Las reglas de negocio y autoridad de datos permanecerán en la API; cualquier lógica server-side del cliente tendrá límites documentados. Cada aplicación podrá desplegarse de manera independiente. Tailwind CSS y un design system propio permanecen como hipótesis separadas que deberán compararse y aprobarse antes de fijar tooling visual.
+Adoptar Next.js y React para clientes web futuros permanece como propuesta. Las
+reglas de negocio y autoridad de datos permanecerán en la API; cualquier lógica
+server-side del cliente tendrá límites documentados. Cada aplicación podrá
+desplegarse de manera independiente. Para el cliente React/Vite actual, el
+Design System propio con CSS custom properties + CSS Modules ya fue aprobado
+como dirección V1 y Tailwind quedó descartado salvo una nueva decisión
+explícita.
 
 ## Consecuencias positivas
 
@@ -56,7 +76,8 @@ Adoptar Next.js y React para clientes web. Las reglas de negocio y autoridad de 
 
 - ¿Cuántas aplicaciones web existirán y qué audiencias atenderá cada una?
 - ¿Qué rendering y caching se permitirán para vistas tenant-scoped?
-- ¿Tailwind CSS y un design system propio son la opción adecuada frente a alternativas, y quién tendrá ownership?
+- ¿Qué evidencia futura justificaría Next.js o una segunda aplicación? Para V1
+  del cliente actual ya se decidió no usar Tailwind ni CSS-in-JS.
 
 ## Referencias
 

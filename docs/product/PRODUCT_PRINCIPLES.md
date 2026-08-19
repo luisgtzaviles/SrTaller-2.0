@@ -53,6 +53,12 @@ La prioridad entre principios en conflicto es una **decisión pendiente**. Aisla
 
 **Implicación práctica:** evitar CSS y componentes paralelos que resuelvan el mismo patrón sin justificación documentada.
 
+**Dirección V1 aprobada:**
+[Design System & Application Shell V1](../design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
+fija tokens semánticos, temas, responsive, gobierno de estilos y separación
+entre Design System, Domain UI y Pages para el cliente actual. La aprobación es
+documental y no autoriza implementación.
+
 ### 6. Móvil preparado, no construido prematuramente
 
 **Propuesta:** diseñar contratos y flujos que puedan ser consumidos por clientes móviles, sin construir aplicaciones iOS o Android completas antes de validar alcance y necesidad.

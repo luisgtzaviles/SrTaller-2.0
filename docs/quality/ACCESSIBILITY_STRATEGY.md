@@ -2,10 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Propuesta
+- **Estado:** Dirección V1 aprobada y matriz mínima de PBI-030 definida;
+  estrategia transversal de producto aún parcial.
 - **Alcance:** Clientes web iniciales y lineamientos reutilizables para móviles futuros.
-- **Hipótesis a validar:** WCAG 2.2 nivel AA puede servir como referencia inicial; el objetivo formal y requisitos legales por mercado son decisiones pendientes.
-- **Decisión pendiente:** Mercados, navegadores/tecnologías de asistencia soportados, proceso de auditoría y ownership.
+- **Objetivo aprobado:** WCAG 2.2 AA como referencia de diseño V1, sin afirmar
+  certificación formal.
+- **Decisión pendiente:** Mercados, requisitos legales, proceso transversal de
+  auditoría y ownership. La matriz de PBI-030 no afirma soporte global del
+  producto ni pruebas ejecutadas.
 
 ## Objetivo
 
@@ -44,7 +48,8 @@ Estos contextos son hipótesis operativas por validar con usuarios; no sustituye
 
 - Acceso por teclado a acciones y contenido en orden predecible.
 - Sin trampas de foco; modales, menús y drawers gestionan foco correctamente.
-- Objetivos táctiles con tamaño/espaciado suficiente; umbral exacto depende del estándar aprobado.
+- Objetivos táctiles de al menos `44 × 44px`; las acciones principales en móvil
+  deben resultar cómodas.
 - Atajos, si existen, no deben interferir con tecnologías de asistencia y serán configurables cuando aplique.
 - Timeout de sesión ofrece aviso y extensión segura según política; excepciones de seguridad explícitas.
 
@@ -58,11 +63,13 @@ Estos contextos son hipótesis operativas por validar con usuarios; no sustituye
 
 ### Visual
 
-- Contraste de texto, controles, foco y estados conforme al objetivo que se apruebe.
+- Contraste de texto, controles, foco y estados conforme a WCAG 2.2 AA como
+  referencia V1.
 - Zoom y reflow probados; evitar scroll bidimensional salvo contenido que lo requiere.
 - Preferencias de reducción de movimiento respetadas.
 - No depender sólo de color para stock, estado de pago, prioridad o alertas.
-- Densidad de información ajustable o legible en operaciones complejas, por validar.
+- Densidad legible mediante los modos controlados default/compact; V1 no ofrece
+  selector global de densidad.
 
 ### Realtime y notificaciones
 
@@ -113,11 +120,31 @@ Componentes nuevos no deben crear un sistema visual paralelo sin ownership. Las 
 ### QA
 
 - Teclado completo, foco y lectura de controles.
-- Lector de pantalla en combinaciones objetivo `TBD`.
+- Lector de pantalla en las combinaciones objetivo de cada PBI.
 - Contraste, reflow/zoom, orientación y tamaño táctil.
 - Mensajes, validación, estados de carga/error/vacío/denegación.
 - Actualizaciones realtime y timeout.
 - Evidencia vinculada a versión y criterio.
+
+### Baseline exigible para PBI-030
+
+La matriz completa y su clasificación están en la
+[revisión de readiness](../design-system/PBI_030_READINESS_REVIEW.md#5-matriz-de-navegadores-y-tecnologías-de-asistencia).
+Antes de Done se exige:
+
+- Primary: Chrome latest en Windows/macOS, Safari latest en macOS, iOS Safari
+  latest y Android Chrome latest;
+- Secondary: Edge latest en Windows y NVDA + Chrome latest;
+- VoiceOver + Safari en macOS/iOS sobre shell, drawer, tema y navegación
+  crítica;
+- keyboard-only, focus/restore/Escape, reduced motion, zoom 200 %, reflow a
+  320 CSS px o equivalente 400 %, touch targets y viewports
+  `390/640/768/1024/1280`;
+- evidencia fechada y ligada al SHA, sin convertir automatización en sustituto
+  de lector de pantalla o revisión manual.
+
+Firefox latest es best effort; IE, browsers obsoletos y WebViews no gobernados
+no son target V1. `latest` se registra con versión exacta al ejecutar la prueba.
 
 ### Investigación con usuarios
 
@@ -127,15 +154,15 @@ Se propone incluir personas con discapacidad y contextos reales del taller en in
 
 | Comprobación | Resultado | Evidencia |
 |---|---|---|
-| Sólo teclado | TBD | TBD |
-| Foco y orden | TBD | TBD |
-| Nombre/rol/estado | TBD | TBD |
-| Error y recuperación | TBD | TBD |
-| Contraste y no sólo color | TBD | TBD |
-| Zoom/reflow/responsive | TBD | TBD |
-| Lector de pantalla | TBD | TBD |
-| Movimiento/realtime | TBD | TBD |
-| Timeout/autenticación | TBD | TBD |
+| Sólo teclado | Obligatorio cuando aplique al flujo | Registro manual ligado al SHA |
+| Foco y orden | Obligatorio | Registro manual + tests de comportamiento posibles |
+| Nombre/rol/estado | Obligatorio | Tests automáticos y revisión AT |
+| Error y recuperación | Obligatorio | Catálogo/flujo y prueba del caso |
+| Contraste y no sólo color | Obligatorio | Cálculo automático + revisión visual |
+| Zoom/reflow/responsive | Obligatorio | 200 %, 320 CSS px/equivalente y viewports del PBI |
+| Lector de pantalla | Obligatorio según matriz PBI | VoiceOver/NVDA con versión registrada |
+| Movimiento/realtime | Reduced motion obligatorio; realtime según alcance | Test/configuración + registro manual |
+| Timeout/autenticación | Según alcance | N/A justificado en PBI-030 |
 
 ## Hallazgos y excepciones
 
@@ -153,9 +180,11 @@ No se establecen objetivos numéricos todavía.
 
 ## Preguntas abiertas
 
-- ¿Qué nivel de conformidad y requisitos legales se aprobarán por mercado?
+- ¿Qué requisitos legales adicionales se aprobarán por mercado? WCAG 2.2 AA ya
+  es la referencia de diseño V1, no una certificación.
 - ¿Cuáles son los flujos esenciales de la primera versión?
-- ¿Qué combinaciones de navegador, sistema operativo y lector de pantalla se soportarán?
+- ¿Qué combinaciones adicionales requerirá cada flujo futuro fuera de la
+  baseline ya definida para PBI-030?
 - ¿Quién será owner de accesibilidad y del design system?
 - ¿Cómo se incluirán personas con discapacidad en investigación?
 - ¿Qué hallazgos bloquearán un release?
@@ -163,5 +192,6 @@ No se establecen objetivos numéricos todavía.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** definición de mercados/usuarios objetivo o antes de aprobar el design system.
-- **Documentos relacionados:** [Product Principles](../product/PRODUCT_PRINCIPLES.md), [Testing Strategy](./TESTING_STRATEGY.md), [Definition of Done](../delivery/DEFINITION_OF_DONE.md), [QA Evidence Template](./QA_EVIDENCE_TEMPLATE.md).
+- **Disparador:** definición de mercados/usuarios objetivo o hallazgos al
+  ejecutar la matriz de PBI-030.
+- **Documentos relacionados:** [Design System & Application Shell V1](../design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md), [PBI-030](../backlog/pbis/PBI-030.md), [Product Principles](../product/PRODUCT_PRINCIPLES.md), [Testing Strategy](./TESTING_STRATEGY.md), [Definition of Done](../delivery/DEFINITION_OF_DONE.md), [QA Evidence Template](./QA_EVIDENCE_TEMPLATE.md).

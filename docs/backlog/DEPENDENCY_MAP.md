@@ -23,6 +23,9 @@ flowchart TD
     APP --> API[PBI-012 Backend/API]
     S --> WEB[PBI-013 Web/design system]
     APP --> WEB
+    DSV1[Design System & Application Shell V1<br/>Owner direction approved] --> UI[PBI-030 UI Foundation/Shell<br/>Draft / readiness blocked]
+    WEB --> UI
+    APP --> UI
     M --> RT[PBI-014 Realtime/messaging]
     MT --> RT
     APP --> RT
@@ -59,7 +62,7 @@ flowchart TD
     VC --> P23[PBI-023 persistencia tenant<br/>Closed]
     DEC049 --> P23
     DEC050[DEC-050 Accepted with conditions<br/>C01-C10 pending] --> P23
-    P23 --> P24[PBI-024 contexto<br/>Authorized / merge blocked]
+    P23 --> P24[PBI-024 contexto<br/>draft branch / not integrated]
     P24 --> P25[PBI-025 identidad/sesión<br/>Blocked]
     P25 --> P26[PBI-026 autorización<br/>Draft]
     P24 --> P28[PBI-028 señales/auditoría<br/>Draft]
@@ -96,14 +99,22 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   VC-024 satisfizo C01/C03/C04; C02/C05–C08 permanecen `Pending`.
 - [PBI-023](pbis/PBI-023.md) cerró su alcance y fue integrado con evidencia
   post-merge.
-- [PBI-024](pbis/PBI-024.md) está autorizado para implementación en rama, con
-  el primer merge funcional bloqueado por DEC051-C02.
+- [PBI-024](pbis/PBI-024.md) tiene implementación sólo en una rama/PR draft
+  divergente. No forma parte de `main` y el primer merge funcional sigue
+  bloqueado por DEC051-C02.
 - PBI-025–PBI-029 descomponen el resto de los 24 contratos H1; sus estados
   `Draft` o `Blocked` impiden tratarlos como compromiso o autorización.
+- [PBI-030](pbis/PBI-030.md) consume la dirección visual Owner aprobada y la
+  baseline React/Vite. No depende de PBI-024/PBI-025 para usar fixtures
+  honestos, pero cualquier contexto confiable, identidad o permisos reales sí
+  requiere esos trabajos. PBI-024 es una dependencia blanda. Su estado
+  `Draft — readiness blocked` no autoriza implementación.
 
 ## Bloqueos conocidos
 
-- PBI-013 requiere confirmar superficies web, audiencias y necesidades visuales; hasta entonces permanece bloqueado para una recomendación final.
+- PBI-013 resolvió parcialmente la dirección visual del cliente React/Vite;
+  rendering, número de aplicaciones y estrategia web futura permanecen
+  diferidos.
 - PBI-006, PBI-013, PBI-014 y PBI-018–PBI-020 fueron diferidos con remanente,
   owner por rol e hito explícitos; no bloquean el objetivo documental del
   Sprint 00.
@@ -111,9 +122,13 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 - PBI-022 está `Done` y `Unassigned`; DEC005-C01 a C05 tienen `PASS` formal en la sexta reverificación independiente.
 - PBI-025 y PBI-027 están bloqueados por decisiones de mecanismo/producto.
 - PBI-023 está cerrado.
-- PBI-024 puede implementarse sólo en la rama autorizada y no puede integrarse
-  mientras DEC051-C02 siga `Pending`.
+- PBI-024 requiere decisión de recuperación/revalidación o descarte; no puede
+  integrarse mientras DEC051-C02 siga `Pending`.
 - Los demás PBIs H1 requieren revisión y autorización propias.
+- PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad y
+  partición, además de CI verde sobre el candidato de PR #5. Requiere
+  estimación acordada e integración autorizada con CI verde sobre `main` antes
+  de `Ready`; después todavía requiere autorización explícita para iniciar.
 
 ## Preguntas abiertas
 
@@ -124,4 +139,5 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 
 ## Próxima revisión
 
-Implementación y evidencia de PBI-024 en su rama funcional autorizada.
+Reconciliación de PBI-024 y cierre de los dos bloqueantes de PBI-030 sin
+iniciar implementación.

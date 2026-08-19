@@ -5,8 +5,11 @@
 - **Estado:** Activo; registro de preguntas abiertas, en investigación y cerradas.
 - **Naturaleza:** Fuente central de incertidumbres de producto. Una opción listada no constituye decisión.
 - **Aprobación de respuestas:** Corresponde al propietario del producto, con consulta técnica, operativa, legal o de seguridad cuando aplique.
-- **Estados permitidos en esta versión:** `Abierta`, `En investigación`, `Respondida pendiente de documentar`, `Cerrada con decisión`.
-- **Estado actual:** 26 preguntas abiertas, 4 en investigación y 4 cerradas con decisión.
+- **Estados permitidos en esta versión:** `Abierta`, `En investigación`,
+  `Parcialmente resuelta`, `Respondida pendiente de documentar`, `Cerrada con
+  decisión`.
+- **Estado actual:** 24 preguntas abiertas, 4 en investigación, 5 cerradas con
+  decisión y 1 parcialmente resuelta.
 
 ## Uso del registro
 
@@ -16,7 +19,13 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 
 El Responsable de Producto cerró `DEC-002` y `DEC-062` el 2026-07-21: R0 será una fundación ejecutable multi-tenant, sin Reparaciones ni recepción, con escenarios y autoridad de aceptación verificables. La fuente consolidada es [Criterios de salida de R0](../architecture-readiness/blocker-closure/CRITERIOS_DE_SALIDA_DE_R0.md).
 
-La decisión no resuelve por sí sola ninguna de las 34 preguntas numeradas de este registro. En particular, `QUESTION-003` permanece abierta porque definir R0 y declarar R1 como primera rebanada operativa no termina de aprobar el recorrido completo, sus variantes o sus métricas. Por tanto, los conteos permanecen en 26 abiertas, 4 en investigación y 4 cerradas con decisión.
+La decisión de fundación no resuelve por sí sola ninguna de las 34 preguntas
+numeradas de este registro. En particular, `QUESTION-003` permanece abierta
+porque definir R0 y declarar R1 como primera rebanada operativa no termina de
+aprobar el recorrido completo, sus variantes o sus métricas. Una decisión Owner
+posterior resolvió parcialmente `QUESTION-031`; la revisión de readiness de
+PBI-030 cerró `QUESTION-032`. Por tanto, los conteos vigentes son 24 abiertas,
+4 en investigación, 5 cerradas con decisión y 1 parcialmente resuelta.
 
 ## Producto
 
@@ -331,20 +340,44 @@ La decisión no resuelve por sí sola ninguna de las 34 preguntas numeradas de e
 <a id="question-031"></a>
 ### QUESTION-031 — Identidad visual y gobierno del design system
 
-- **Contexto:** Se propone Tailwind CSS con design system propio y se quieren evitar inconsistencias, pero no existen marca, tokens, componentes ni ownership aprobados.
+- **Contexto:** La dirección V1 ya fija identidad, tokens, componentes,
+  gobierno y CSS Modules para el cliente React/Vite actual. Branding final,
+  estrategia de una futura segunda aplicación siguen pendientes. El Owner
+  aprobó `lucide-react` como familia funcional V1 el 2026-08-18, incorporable
+  sólo durante la implementación autorizada de PBI-030.
 - **Impacto:** Afecta coherencia, velocidad, accesibilidad y mantenimiento entre clientes.
-- **Opciones conocidas:** sistema propio incremental; base accesible de componentes con capa de marca; tokens compartidos; ownership de producto/diseño/ingeniería por definir.
-- **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-006 — clientes web con Next.js](../decisions/proposed/ADR-006-nextjs-web-clients.md), estado `Proposed`, no decide el design system.
+- **Opciones conocidas:** foundation incremental dentro del cliente actual;
+  package compartido sólo cuando exista un segundo consumidor y una decisión;
+  branding final separado.
+- **Estado:** Parcialmente resuelta.
+- **Alcance resuelto:** identidad y contrato V1, tenant accent, temas,
+  inventario direccional, gobierno y CSS strategy.
+- **Pendiente:** branding final y eventual estrategia multi-aplicación.
+- **Alcance adicional resuelto:** `lucide-react` como única familia funcional
+  stroke; imports estáticos nombrados, `currentColor`, tamaños `16/20/24`,
+  accessible name en controles sólo-icono, sin `DynamicIcon`, emojis ni segunda
+  librería sin nueva decisión. Bundle medido durante PBI-030.
+- **Decisión relacionada:** [Design System & Application Shell V1](../design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md);
+  [ADR-006](../decisions/proposed/ADR-006-nextjs-web-clients.md) conserva estado
+  `Proposed`.
 
 <a id="question-032"></a>
 ### QUESTION-032 — Base de accesibilidad y evidencia visual
 
-- **Contexto:** Accesibilidad, responsive y estados de interfaz forman parte de calidad, pero no hay estándar, navegadores/dispositivos ni evidencia mínima definidos.
+- **Contexto:** WCAG 2.2 AA quedó aprobado como objetivo de diseño V1, sin
+  afirmar certificación. PBI-030 ya fija una matriz pragmática de navegadores,
+  dispositivos, tecnologías de asistencia y evidencia mínima.
 - **Impacto:** Afecta Definition of Done, componentes, pruebas y capacidad de uso en el taller.
-- **Opciones conocidas:** WCAG en nivel por definir; matriz de dispositivos/navegadores; pruebas automáticas y manuales; revisión visual documentada por flujo.
-- **Estado:** Abierta.
-- **Decisión relacionada:** Ninguna registrada; debe alimentar [Accessibility Strategy](../quality/ACCESSIBILITY_STRATEGY.md).
+- **Opciones conocidas:** matriz de dispositivos/navegadores; pruebas
+  automáticas y manuales; revisión visual documentada por flujo.
+- **Estado:** Cerrada con decisión.
+- **Alcance del cierre:** WCAG 2.2 AA como referencia de diseño; matriz
+  Primary/Secondary/Best effort, teclado, VoiceOver/NVDA, reduced motion,
+  zoom/reflow y viewports exigibles para PBI-030. No afirma ejecución ni
+  certificación formal y no decide requisitos legales de mercado.
+- **Decisión relacionada:** [Design System & Application Shell V1](../design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
+  [Accessibility Strategy](../quality/ACCESSIBILITY_STRATEGY.md) y
+  [PBI-030 Readiness Review](../design-system/PBI_030_READINESS_REVIEW.md#5-matriz-de-navegadores-y-tecnologías-de-asistencia).
 
 ## Migración desde SR Taller
 

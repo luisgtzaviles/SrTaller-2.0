@@ -20,6 +20,7 @@ import {
 async function createDistFixture({
   absoluteSource = false,
   inlineSources = false,
+  previewAssets = false,
 } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'srtaller-vc024-dist-'));
   await mkdir(resolve(root, 'dist'), { recursive: true });
@@ -27,6 +28,21 @@ async function createDistFixture({
     resolve(root, 'dist/main.js'),
     "export const state = 'ready';\n//# sourceMappingURL=main.js.map\n",
   );
+  if (previewAssets) {
+    await mkdir(resolve(root, 'dist/public/assets'), { recursive: true });
+    await writeFile(
+      resolve(root, 'dist/public/index.html'),
+      '<!doctype html><title>Preview</title>\n',
+    );
+    await writeFile(
+      resolve(root, 'dist/public/assets/index.css'),
+      ':root { color: black; }\n',
+    );
+    await writeFile(
+      resolve(root, 'dist/public/assets/index.js'),
+      'document.documentElement.dataset.preview = "ready";\n',
+    );
+  }
   const sourceMap = {
     file: 'main.js',
     mappings: '',
@@ -235,6 +251,67 @@ test('dist inspection rejects absolute source map paths', async () => {
     await assert.rejects(
       inspectDist({ projectRoot: root }),
       /Non-portable source map entry/u,
+    );
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test('dist inspection accepts controlled preview static assets', async () => {
+  const root = await createDistFixture({ previewAssets: true });
+  try {
+    const inspected = await inspectDist({ projectRoot: root });
+    assert.deepEqual(
+      inspected.files.map(({ path }) => path),
+      [
+        'dist/main.js',
+        'dist/main.js.map',
+        'dist/public/assets/index.css',
+        'dist/public/assets/index.js',
+        'dist/public/index.html',
+      ],
+    );
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test('dist inspection rejects non-code artifacts outside preview public root', async () => {
+  const root = await createDistFixture();
+  try {
+    await writeFile(resolve(root, 'dist/rogue.html'), '<p>rogue</p>\n');
+    await assert.rejects(
+      inspectDist({ projectRoot: root }),
+      /Unexpected dist artifact/u,
+    );
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test('dist inspection accepts ordinary URLs in compiled assets', async () => {
+  const root = await createDistFixture({ previewAssets: true });
+  try {
+    await writeFile(
+      resolve(root, 'dist/public/assets/index.js'),
+      'const reactError = "https://react.dev/errors/123";\n',
+    );
+    await assert.doesNotReject(() => inspectDist({ projectRoot: root }));
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test('dist inspection rejects a Windows drive path in compiled assets', async () => {
+  const root = await createDistFixture({ previewAssets: true });
+  try {
+    await writeFile(
+      resolve(root, 'dist/public/assets/index.js'),
+      'const localPath = "C:/workspace/private.js";\n',
+    );
+    await assert.rejects(
+      inspectDist({ projectRoot: root }),
+      /Non-portable path detected/u,
     );
   } finally {
     await rm(root, { force: true, recursive: true });
