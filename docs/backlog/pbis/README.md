@@ -6,12 +6,11 @@
 conservan su historia de Sprint 00; PBI-021/PBI-022 están `Done`; PBI-023 está
 `Closed`; PBI-024 está autorizado para implementación en rama con merge
 bloqueado por DEC051-C02 y tiene implementación sólo en una PR draft divergente;
-PBI-025–PBI-029 no están autorizados. PBI-030 está
-`Draft — readiness blocked`: iconografía e integración/CI verde de `main`
-quedaron resueltas; conserva abierto sólo el acuerdo de estimación.
-Su implementación no está autorizada.
-**Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene propuesta `XL` pendiente
-de acuerdo Frontend/Ingeniería; los demás casos conservan TBD.
+PBI-025–PBI-029 no están autorizados. PBI-030 está `Ready`: iconografía,
+integración/CI verde de `main` y estimación quedaron resueltas. Su
+implementación no está autorizada.
+**Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
+T-shirt sizing; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
 00. PBI-021–PBI-030 están `Unassigned`.
 
@@ -46,11 +45,10 @@ de acuerdo Frontend/Ingeniería; los demás casos conservan TBD.
 | [PBI-027](PBI-027.md) | Define and apply the R0 temporal model | Blocked |
 | [PBI-028](PBI-028.md) | Implement safe logging, business audit and observability baseline | Draft |
 | [PBI-029](PBI-029.md) | Govern R0 secrets and external configuration | Draft |
-| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | Draft — readiness blocked / implementation not authorized |
+| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | Ready — implementation authorization pending Owner approval |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-Reconciliación de PBI-024 y acuerdo Frontend/Ingeniería sobre la estimación de
-PBI-030 sin iniciar implementación.
+Reconciliación de PBI-024 y decisión Owner separada sobre iniciar PBI-030.

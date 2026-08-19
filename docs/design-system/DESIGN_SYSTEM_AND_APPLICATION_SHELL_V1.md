@@ -343,12 +343,12 @@ una tensión documental con la propuesta de Next.js/Tailwind de ADR-006 y
 PBI-013; se resuelve manteniendo ADR-006 `Proposed`, descartando Tailwind para
 V1 y limitando esta decisión al cliente React/Vite actual.
 
-## Decisiones aún pendientes antes de implementación
+## Gate pendiente antes de implementación
 
-- Acuerdo Frontend/Ingeniería sobre la
-  [propuesta técnica `XL`](PBI_030_ESTIMATION_PROPOSAL.md) o una alternativa
-  razonada con el mismo alcance.
-- Integración y ejecución verde del arreglo de CI base sobre un SHA publicado.
+- Autorización Owner explícita y binaria para iniciar PBI-030. La
+  [estimación `XL`](PBI_030_ESTIMATION_PROPOSAL.md) está acordada por
+  Frontend/Ingeniería, la revisión DoR pasó y CI de `main` está verde; `Ready`
+  no autoriza implementación.
 
 Iconografía, accent, catálogo, matriz de compatibilidad y partición técnica
 quedaron resueltos documentalmente en la
@@ -360,7 +360,7 @@ implementación ni evidencia de Done.
 - [PBI-013 — estrategia web y design system](../backlog/pbis/PBI-013.md)
 - [PBI-030 — materializar UI Foundation y Application Shell V1](../backlog/pbis/PBI-030.md)
 - [Revisión de readiness de PBI-030](PBI_030_READINESS_REVIEW.md)
-- [Propuesta técnica de estimación de PBI-030](PBI_030_ESTIMATION_PROPOSAL.md)
+- [Acuerdo técnico de estimación de PBI-030](PBI_030_ESTIMATION_PROPOSAL.md)
 - [ADR-006 — clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009 — repositorio único evolutivo](../decisions/proposed/ADR-009-monorepo-strategy.md)
 - [Estrategia de accesibilidad](../quality/ACCESSIBILITY_STRATEGY.md)
@@ -368,5 +368,5 @@ implementación ni evidencia de Done.
 
 ## Próxima revisión
 
-Durante el refinamiento de PBI-030 o ante evidencia que requiera cambiar el
-contrato. La revisión no autoriza implementación por sí misma.
+Ante una autorización Owner de implementación o evidencia que requiera cambiar
+el contrato. La revisión no autoriza implementación por sí misma.

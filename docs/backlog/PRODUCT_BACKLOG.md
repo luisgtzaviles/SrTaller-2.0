@@ -7,12 +7,12 @@ su clasificación histórica y muestran el resultado vigente; PBI-021/PBI-022
 son trabajos técnicos posteriores terminados; PBI-023 está `Closed`; PBI-024
 está implementado únicamente en una rama/PR draft divergente, no integrado en
 `main`, y con merge bloqueado por DEC051-C02; PBI-025–PBI-029 no están
-autorizados. PBI-030 es un Draft documental con readiness parcial: PR #5 y la
-baseline verde ya están resueltas; sólo falta el acuerdo de estimación de
-Frontend/Ingeniería. Tampoco autoriza implementación.
+autorizados. PBI-030 está `Ready`: PR #5, baseline verde, gates técnicos y
+acuerdo de estimación de Frontend/Ingeniería están resueltos. Su implementación
+sigue pendiente de autorización Owner.
 **Prioridad:** propuesta, no aprobación final.
-**Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene propuesta técnica `XL`
-pendiente de acuerdo Frontend/Ingeniería; las demás permanecen TBD.
+**Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
+T-shirt sizing; las demás permanecen TBD.
 **Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación SPRINT-00 |
@@ -46,7 +46,7 @@ pendiente de acuerdo Frontend/Ingeniería; las demás permanecen TBD.
 | 27 | [PBI-027](pbis/PBI-027.md) Define and apply the R0 temporal model | Architecture / Product | EPIC-001 | Blocked | Alta | Unassigned |
 | 28 | [PBI-028](pbis/PBI-028.md) Implement safe logging, business audit and observability baseline | Operations / Security / Quality | EPIC-001 | Draft | Alta | Unassigned |
 | 29 | [PBI-029](pbis/PBI-029.md) Govern R0 secrets and external configuration | Security / Operations | EPIC-001 | Draft | Crítica | Unassigned |
-| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Draft — readiness blocked / implementation not authorized | Alta | Unassigned |
+| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Ready — implementation authorization pending Owner approval | Alta | Unassigned |
 
 ## Interpretación
 
@@ -61,13 +61,13 @@ pendiente de acuerdo Frontend/Ingeniería; las demás permanecen TBD.
   implementación/evidencia en la PR draft #3, pero no está integrado en
   `main`, la rama está divergente/conflictiva y su merge funcional permanece
   bloqueado por DEC051-C02. PBI-025–PBI-029 no están autorizados. PBI-030 tiene
-  iconografía y CI de `main` resueltas, pero la estimación sigue pendiente de
-  acuerdo Frontend/Ingeniería; no está autorizado para implementación.
+  DoR `PASS`, estimación `XL — agreed` y estado `Ready`; no está autorizado para
+  implementación.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
 Decisión explícita sobre recuperar o descartar la implementación divergente de
-PBI-024 y acuerdo Frontend/Ingeniería sobre la estimación de PBI-030 antes de
-repetir DoR. No iniciar implementación sin autorización expresa.
+PBI-024 y decisión Owner separada sobre autorizar la implementación de PBI-030.
+No iniciar implementación sin autorización expresa.

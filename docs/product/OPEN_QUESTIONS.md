@@ -32,9 +32,12 @@ PBI-030 cerró `QUESTION-032`. Por tanto, los conteos vigentes son 24 abiertas,
 Este registro no incorpora los IDs internos `OPEN-PBI030-*` al conteo de las
 34 preguntas de producto. Su fuente canónica permanece en
 [PBI-030](../backlog/pbis/PBI-030.md#preguntas-abiertas). `OPEN-PBI030-08` quedó
-resuelta el 2026-08-18 mediante la integración autorizada de PR #5 y el run
-verde de `main` `32199570584`. `OPEN-PBI030-06` sigue abierta y bloqueante:
-Frontend/Ingeniería debe acordar `XL` o registrar otra estimación razonada.
+resuelta el 2026-08-18 mediante la integración autorizada de PR #5 y los runs
+verdes de `main` `32199570584`/`32201164615`. `OPEN-PBI030-06` quedó resuelta
+el 2026-08-18 mediante la revisión formal Frontend/Ingeniería:
+`ESTIMATION: XL — AGREED`, Confidence Medium, Risk High y un solo PBI con
+checkpoints A–D. No quedan preguntas internas bloqueantes de readiness; la
+autorización Owner de implementación permanece separada.
 
 ## Producto
 

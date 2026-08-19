@@ -7,8 +7,10 @@
   `18dab5a017e5db308b5d34f3a3fbd8f86351c818`.
 - **Baseline técnica posterior:** `main` en
   `efd9ec05d02af604c2d9ea18d4636c1539f8dc54`, con CI autoritativo verde.
-- **Resultado:** `Not ready`.
-- **Estado PBI:** `Draft — readiness blocked`.
+- **Baseline final evaluada:** `main` en
+  `a8f230214b592389894e25545583988c2c2edc3e`, con CI autoritativo verde.
+- **Resultado:** `Ready`.
+- **Estado PBI:** `Ready`.
 - **Implementación:** no iniciada y no autorizada.
 - **Alcance de esta revisión:** cerrar el refinamiento técnico y documental,
   evaluar la Definition of Ready y preparar una decisión Owner sin materializar
@@ -18,10 +20,14 @@ Los contratos de iconografía, acento, catálogo, compatibilidad y partición
 quedan definidos por esta revisión. No equivalen a implementación ni a
 evidencia de Done. El Owner aprobó `lucide-react` el 2026-08-18 exclusivamente
 para su incorporación durante la implementación de PBI-030. Existe una
-[propuesta técnica `XL`](PBI_030_ESTIMATION_PROPOSAL.md), pero sigue sin
-acuerdo del equipo. El Owner autorizó la integración de PR #5; el merge
+[estimación técnica `XL` acordada](PBI_030_ESTIMATION_PROPOSAL.md) por la
+función Frontend/Ingeniería dentro de la autoridad expresamente solicitada para
+esta revisión. El Owner autorizó la integración de PR #5; el merge
 `efd9ec05` quedó en `main` y su run autoritativo `32199570584` terminó verde.
-La estimación sigue siendo el único bloqueo de readiness.
+La reconciliación documental posterior quedó en `a8f2302` y su run
+`32201164615` terminó verde. No quedan bloqueos de readiness.
+
+**Implementation authorization pending Owner approval.**
 
 ## 1. Precheck
 
@@ -315,6 +321,12 @@ terminó `SUCCESS`: `VC-024 run-1`, `VC-024 run-2` y `VC-024 comparison`
 pasaron, incluidos PostgreSQL, arquitectura, typecheck, build, tests, smokes,
 inmutabilidad y comparación semántica/hash.
 
+El commit documental posterior
+`a8f230214b592389894e25545583988c2c2edc3e` conservó la baseline. Su
+[run de `main` `32201164615`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32201164615)
+terminó `SUCCESS`: `VC-024 run-1`, `VC-024 run-2` y `VC-024 comparison`
+pasaron completos bajo Node `24.18.0` y pnpm `11.15.1`.
+
 **AUTHORITATIVE CI CANDIDATE: GREEN.**
 
 **CI BASELINE: GREEN.**
@@ -352,18 +364,29 @@ ni se intentó resolver en esta revisión.
 | Ownership/review | PASS | Producto/Diseño, Frontend/Ingeniería, Calidad/Accesibilidad y catálogo con Operaciones/Seguridad |
 | Autoridad de implementación | PASS para Ready | debe permanecer separada; Ready no equivale a autorización |
 | Iconografía | PASS | `lucide-react` aprobado por Owner con contrato y límite temporal explícitos |
-| Estimación | **BLOCKED** | propuesta `XL`; DoR exige acuerdo Frontend/Ingeniería y no fija formato |
-| CI base | PASS | PR #5 integrada como `efd9ec05`; run de `main` `32199570584` verde |
-| Preguntas bloqueantes | **BLOCKED** | sólo OPEN-PBI030-06 permanece abierta |
+| Estimación | PASS | `ESTIMATION: XL — AGREED` por revisión formal Frontend/Ingeniería; Confidence Medium; Risk High |
+| CI base | PASS | `main` `a8f2302`; run `32201164615` verde en ambos jobs y comparación |
+| Preguntas bloqueantes | PASS | OPEN-PBI030-06 y OPEN-PBI030-08 cerradas con evidencia |
 
-**Resultado DoR: NOT READY.** Los puntos N/A responden a exclusiones reales, no
-a una dispensa.
+**Resultado DoR: PASS — READY.** Los puntos N/A responden a exclusiones reales,
+no a una dispensa.
+
+| Campo de evaluación | Resultado |
+|---|---|
+| PBI | `PBI-030` |
+| Resultado | `Ready` |
+| N/A justificados | Datos/persistencia e integraciones/realtime/jobs; fuera del alcance UI Foundation/Shell |
+| Bloqueos | Ninguno de readiness |
+| Riesgo | High; migración visual transversal, responsive, accesibilidad y convergencia sin legacy |
+| Estimación | `XL — agreed`; Confidence Medium |
+| Partición | `KEEP AS SINGLE PBI`; checkpoints internos A–D |
+| Autoridad de inicio | No concedida |
 
 ## 10. Riesgos residuales y decisión requerida
 
 - Instalar Lucide antes de iniciar una implementación autorizada excedería la
   decisión Owner; la aprobación sólo cerró selección y contrato.
-- Tratar la propuesta `XL` como acuerdo ocultaría la autoridad del equipo.
+- Tratar `Ready` como autorización de inicio ocultaría el gate Owner separado.
 - Los valores de accent son vectores de especificación y todavía necesitan
   tests/UI durante implementación.
 - La matriz define compromiso; no afirma pruebas ejecutadas.
@@ -372,11 +395,14 @@ a una dispensa.
 
 ## 11. Próxima acción acotada
 
-1. Frontend/Ingeniería acepta `XL` o registra otra estimación razonada sin
-   cambiar alcance.
-2. Repetir la revisión DoR. Sólo entonces se cambia PBI-030 a `Ready`; la
-   implementación seguirá requiriendo autorización Owner binaria.
+1. Integrar esta promoción documental sólo mediante autoridad de merge
+   explícita y con CI verde sobre el SHA candidato.
+2. Solicitar una decisión Owner binaria separada para iniciar PBI-030.
+3. Si se autoriza, abrir la implementación desde `main` sin ampliar alcance y
+   respetando checkpoints A–D; no instalar Lucide antes de ese inicio.
 
 ## 12. Veredicto
 
-**CONDITIONAL — PBI-030 READY EXCEPT FOR TEAM ESTIMATION AGREEMENT.**
+**PASS — PBI-030 READY FOR OWNER AUTHORIZATION.**
+
+**Implementation authorization pending Owner approval.**

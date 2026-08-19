@@ -55,10 +55,11 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   implementación.
 - Se completó el readiness técnico de accent, catálogo, compatibilidad y
   partición de PBI-030. El Owner aprobó `lucide-react` como única familia
-  funcional V1, incorporable sólo durante la implementación. El PBI permanece
-  `Draft — readiness blocked` únicamente por el acuerdo de estimación de
-  Frontend/Ingeniería. PR #5 quedó integrada y `main` volvió a verde; esto no
-  autoriza la implementación.
+  funcional V1, incorporable sólo durante la implementación. Frontend/
+  Ingeniería acordó `XL` con Confidence Medium y Risk High, manteniendo un solo
+  PBI con checkpoints A–D. La revisión DoR pasó y PBI-030 quedó `Ready`; PR #5
+  está integrada y `main` verde. La implementación sigue pendiente de
+  autorización Owner.
 
 ## Estado del documento
 

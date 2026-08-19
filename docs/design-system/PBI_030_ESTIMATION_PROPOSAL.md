@@ -1,26 +1,39 @@
-# PBI-030 — Propuesta técnica de estimación
+# PBI-030 — Acuerdo técnico de estimación
 
 ## Estado y autoridad
 
-- **Estado:** Propuesta técnica para acuerdo del equipo.
-- **Fecha:** 2026-08-18.
-- **Estimación propuesta:** `XL` mediante T-shirt sizing.
+- **Estado:** Acordada por Frontend/Ingeniería.
+- **Fecha de propuesta:** 2026-08-18.
+- **Fecha de revisión formal:** 2026-08-18.
+- **Decisión:** `AGREED — XL` mediante T-shirt sizing.
 - **Confianza:** Media.
-- **Riesgo:** Alto por migración visual transversal y evidencia multi-viewport.
-- **Acuerdo del equipo:** Pendiente.
-- **Autoridad:** Frontend/Ingeniería debe acordar la estimación. El Owner
-  conserva autoridad sobre alcance, prioridad y autorización de implementación,
-  pero no sustituye el acuerdo del equipo exigido por Definition of Ready.
-- **No autoriza:** Implementación, instalación de dependencias, asignación a
+- **Riesgo:** Alto.
+- **Partición:** `KEEP AS SINGLE PBI`, con checkpoints internos A–D y un solo
+  candidato integrable.
+- **Autoridad ejercida:** revisión técnica funcional de Frontend/Ingeniería
+  solicitada expresamente por el Owner. El proceso canónico asigna al equipo la
+  validación de esfuerzo, riesgo y dependencias; no exige una persona nombrada,
+  votación, ceremonia o unidad distinta de estimación.
+- **Límite de la decisión:** registra el acuerdo técnico requerido por
+  Definition of Ready. No atribuye consenso a participantes no observados y no
+  sustituye la autoridad del Owner sobre alcance, prioridad, inicio, merge o
+  deploy.
+- **No autoriza:** implementación, instalación de dependencias, asignación a
   sprint, merge o deploy.
 
 ## Interpretación de Definition of Ready
 
 La [Definition of Ready](../delivery/DEFINITION_OF_READY.md) exige una
-“estimación acordada por el equipo” y prohíbe inventar Story Points. No fija
-método, escala ni unidad. Por tanto, T-shirt sizing es un formato válido si el
-equipo lo adopta; esta propuesta no cierra el gate hasta que ese acuerdo quede
-registrado.
+“estimación acordada por el equipo” y prohíbe inventar Story Points. El
+[modelo de priorización](../backlog/PRIORITIZATION_MODEL.md) separa la
+aprobación del orden por el Product Owner de la validación de esfuerzo, riesgo
+y dependencias por el equipo. La revisión Owner autorizada pide precisamente
+esa evaluación desde Frontend/Engineering y permite registrar `AGREED — XL` o
+una alternativa razonada.
+
+En este contexto, la revisión formal constituye la validación técnica de la
+función Frontend/Ingeniería requerida por el proceso. No se afirma un acuerdo
+social más amplio ni autorización de implementación.
 
 ## Alcance estimado
 
@@ -44,24 +57,40 @@ La talla cubre el resultado completo de PBI-030, no sólo la creación de tokens
 No incluye APIs, Reparaciones funcionales, identidad, station context real,
 PostgreSQL de producto, deploy ni cambios de infraestructura.
 
-## Desglose relativo
+## Evidencia de la baseline frontend
 
-El desglose explica complejidad; no son horas, fechas, mini-PBIs ni compromiso
-de sprint.
+La evaluación se realizó contra el código materializado, no sólo contra el
+documento de alcance:
 
-| Bloque | Tamaño relativo | Incertidumbre principal |
-|---|---|---|
-| Tokens, escalas, themes y tenant accent | `M` | derivaciones, flash y contratos light/dark |
-| Foundation CSS, CSS Modules y checker | `M` | enforcement sin falsos positivos ni bridges |
-| Application Shell y navegación responsive | `L` | drawer, foco, scroll, persistencia y breakpoints |
-| Catálogo, fixtures y estados | `M` | exclusión efectiva de Production y cobertura útil |
-| Migración Preview y retiro legacy | `L` | conservar rutas honestas sin dos foundations |
-| Tests, accesibilidad y evidencia | `L` | matriz manual/automática y múltiples viewports |
-| Lucide y control de bundle | `S` | imports, accessible names y tree-shaking |
+- `apps/dev-preview-web/src/App.tsx` es un consumidor monolítico de 383 líneas
+  que concentra shell, navegación y cuatro superficies de Preview;
+- `apps/dev-preview-web/src/styles.css` tiene 200 líneas globales con colores,
+  radios, sombras, tipografías, pesos, breakpoints y dimensiones legacy;
+- `main.tsx` importa esa hoja global y no existen todavía tokens, themes,
+  CSS Modules, catálogo ni tests frontend dedicados;
+- la UI contiene SVG inline y caracteres usados como iconografía funcional;
+- React `19.2.8`, Vite `8.2.0` y React Router `7.18.2` ya son baseline; CSS
+  Modules está disponible sin introducir otro framework;
+- las rutas actuales dependen de APIs ausentes, por lo que la migración debe
+  conservar estados honestos y fixtures sintéticos, no inventar producto.
 
-**Resultado agregado propuesto: `XL`.** No se suman tallas como unidades
-numéricas; la clasificación refleja que varios bloques `L/M` deben converger
-en un solo candidato sin foundation legacy activa.
+## Complexity Assessment
+
+| Bloque | Complejidad | Incertidumbre | Acoplamiento | Riesgo de regresión | Carga de pruebas | Carga de migración |
+|---|---|---|---|---|---|---|
+| Tokens, themes y tenant accent | Alta | Media | Alta | Alta | Alta | Media |
+| Foundation CSS, CSS Modules y checker | Alta | Media | Alta | Alta | Alta | Alta |
+| Shared UI materializada bajo demanda | Alta | Media | Alta | Media/Alta | Alta | Alta |
+| Application Shell responsive | Alta | Media | Alta | Alta | Alta | Alta |
+| Catálogo y política por ambiente | Media | Media | Media | Media | Media/Alta | Baja |
+| Accesibilidad, compatibilidad y evidencia | Alta | Media | Alta | Alta | Alta | Media |
+| Lucide y control de bundle | Baja | Baja | Baja | Baja/Media | Media | Media |
+| Migración Preview y retiro legacy | Alta | Media | Alta | Alta | Alta | Alta |
+
+La complejidad agregada no viene de un archivo aislado. Varios bloques
+transversales deben converger en el mismo SHA, preservar las rutas actuales y
+probar que no quedan dos foundations activas. Ese acoplamiento y la carga de
+evidencia justifican `XL` aunque el frontend actual sea pequeño.
 
 ## Supuestos
 
@@ -72,11 +101,59 @@ en un solo candidato sin foundation legacy activa.
 - PBI-024 continúa como dependencia blanda y se usan fixtures honestos.
 - No se agrega Storybook, framework CSS paralelo o segundo package compartido.
 - Browser/AT evidence puede ejecutarse conforme a la matriz aprobada.
-- El arreglo CI queda integrado y verde antes de iniciar implementación.
+- La baseline CI permanece verde antes de iniciar implementación.
+
+## Riesgo y confianza
+
+**Riesgo High:** la migración atraviesa estilos globales, shell, navegación,
+responsive, accesibilidad, estados, iconografía, catálogo y todos los
+consumidores actuales. Una integración parcial produciría deriva visual o dos
+fuentes de verdad; el checker y el retiro legacy son gates, no trabajo
+opcional.
+
+**Confidence Medium:** alcance, arquitectura, exclusions, gates, toolchain y
+baseline CI están definidos. No es High porque la evidencia manual
+cross-browser/AT, el comportamiento exacto de drawer/focus/reflow, los casos
+del tenant accent y el inventario mínimo descubierto al migrar consumidores
+conservan incertidumbre razonable. No hay incertidumbre suficiente para bajar
+la talla o bloquear la estimación.
+
+## Dependency Assessment
+
+- **PBI-024:** dependencia blanda. Bloquea contexto real de tenant/sucursal/
+  estación u operador, pero no tokens, shell, fixtures sintéticos ni estados
+  honestos.
+- **ADR-006:** `Proposed`; no contradice materializar V1 en React/Vite y no es
+  un hard dependency.
+- **Lucide:** selección y contrato resueltos; la instalación permanece
+  prohibida hasta implementación autorizada.
+- **CI:** baseline verde en `main`; no existe bloqueo técnico base conocido.
+- **APIs de producto:** fuera de alcance; su ausencia debe seguir visible y no
+  impide la foundation.
+
+**Conclusión:** no se descubrió un hard dependency que invalide `XL` o impida
+`Ready`.
+
+## Partición de ejecución
+
+**Decisión: `KEEP AS SINGLE PBI`.** El resultado aceptable es atómico: una sola
+foundation y un shell V1 sin `styles.css` legacy. Dividirlo ahora en PBIs
+integrables independientes dejaría temporalmente dos foundations o convertiría
+la eliminación legacy en una dependencia artificial fácil de diferir.
+
+Se conservan checkpoints internos, todos dentro de la misma rama/candidato:
+
+1. **A — Foundation:** tokens, themes, accent y checker.
+2. **B — Shell:** primitives consumidas, Application Shell y navegación.
+3. **C — Consumers:** rutas actuales, estados y catálogo.
+4. **D — Convergence:** retiro legacy, bundle, accesibilidad y evidencia final.
+
+Los checkpoints permiten revisión y diagnóstico, pero no merges ni deploys
+parciales. Si D no termina, PBI-030 no pasa Definition of Done.
 
 ## Condiciones de reestimación
 
-Requieren nuevo acuerdo del equipo:
+Requieren nuevo acuerdo de Frontend/Ingeniería:
 
 - ampliar el inventario a componentes sin consumidor real;
 - mantener legacy más allá del candidato o permitir integración por fases;
@@ -86,21 +163,15 @@ Requieren nuevo acuerdo del equipo:
 - no disponer de los ambientes AT/browser comprometidos;
 - agregar deploy, migración de datos o infraestructura al PBI.
 
-## Partición de ejecución
+## Decisión final
 
-La talla `XL` aconseja checkpoints A–D ya definidos en la readiness review,
-pero no cuatro resultados integrables. El PBI conserva un solo resultado:
-foundation y shell V1 sin `styles.css` legacy. Si el equipo no acepta trabajar
-una talla `XL` bajo ese modelo, debe proponer una partición que mantenga el gate
-de una sola foundation antes de acordar la estimación.
+**ESTIMATION: XL — AGREED.**
 
-## Gate
+**CONFIDENCE: MEDIUM.**
 
-**ESTIMATION GATE: TEAM AGREEMENT REQUIRED.**
+**RISK: HIGH.**
 
-Para cerrarlo, Frontend/Ingeniería debe registrar una de estas decisiones:
+**PARTITION: KEEP AS SINGLE PBI.**
 
-1. `AGREED — XL`, confirmando esta propuesta; o
-2. otra talla/método con alcance, supuestos y razón de cambio explícitos.
-
-Hasta entonces PBI-030 permanece `Draft — readiness blocked`.
+La estimación cierra `OPEN-PBI030-06`. La autorización de implementación sigue
+siendo un gate Owner separado.

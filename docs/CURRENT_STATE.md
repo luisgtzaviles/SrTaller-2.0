@@ -4,8 +4,8 @@
 
 - **Estado:** Fotografía canónica del repositorio, reconciliada el 2026-08-18.
 - **Baseline técnica auditada:** `main` en
-  `efd9ec05d02af604c2d9ea18d4636c1539f8dc54`; esta reconciliación documental
-  posterior no cambia runtime ni producto.
+  `a8f230214b592389894e25545583988c2c2edc3e`; la promoción documental candidata
+  de PBI-030 no cambia runtime ni producto.
 - **Alcance:** código, configuración, documentación vigente, Git/GitHub y
   contraste HTTP de sólo lectura con Preview.
 - **Regla:** este documento describe estado; no autoriza implementación,
@@ -27,8 +27,9 @@ PIN, sesión, roles, capacidades y estación confiable permanecen conceptuales o
 fuera de `main`.
 
 La base permite comenzar refinamiento de producto y recuperó su CI canónico
-verde: PR #5 fue integrada con autoridad explícita mediante `efd9ec05` y el run
-de `main` `32199570584` pasó ambos jobs y la comparación reproducible.
+verde: PR #5 fue integrada con autoridad explícita mediante `efd9ec05`; la
+reconciliación `a8f2302` conserva el resultado y el run de `main` `32201164615`
+pasó ambos jobs y la comparación reproducible.
 Además, PBI-024 tiene una implementación extensa sólo en una rama y PR
 draft divergentes; debe decidirse si se recupera o se descarta antes de
 duplicar esa foundation.
@@ -38,8 +39,8 @@ duplicar esa foundation.
 | Hecho | Estado auditado |
 |---|---|
 | Repositorio | `/Users/luisantoniogutierrez/Documents/GitHub/SrTaller-2.0` |
-| Rama | `main` |
-| Baseline técnica verificada | `efd9ec05d02af604c2d9ea18d4636c1539f8dc54` |
+| Rama | `main` al iniciar esta revisión |
+| Baseline técnica verificada | `a8f230214b592389894e25545583988c2c2edc3e` |
 | Remote | `origin`: `https://github.com/luisgtzaviles/SrTaller-2.0.git` |
 | Upstream | `origin/main` |
 | Divergencia local/upstream | `0/0`; `ls-remote` confirmó el mismo SHA |
@@ -49,6 +50,7 @@ duplicar esa foundation.
 
 Commits recientes significativos:
 
+- `a8f2302`: reconciliación post-merge de readiness y CI de PBI-030.
 - `efd9ec0`: merge autorizado de PR #5 y restauración de CI compilado.
 - `18dab5a`: workflow canónico de desarrollo y delivery.
 - `fc3271e`: comando one-shot de migración para Dokploy.
@@ -68,7 +70,7 @@ Ramas/PR relevantes para interpretar la baseline:
   baseline canónica actual.
 - [PR #5](https://github.com/luisgtzaviles/SrTaller-2.0/pull/5),
   `fix/pbi-030-readiness-ci` → `main`: integrada con autorización Owner como
-  `efd9ec05`; CI de `main` verde en el run `32199570584`.
+  `efd9ec05`; CI de `main` verde en los runs `32199570584` y `32201164615`.
 
 Evidencia: Git actual, `docs/delivery/BRANCH_POLICY.md` y las PR #3/#4/#5 en
 GitHub.
@@ -205,10 +207,10 @@ La dirección
 [Design System & Application Shell V1](design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
 está aprobada para documentación y preparación de PBI: fija tokens semánticos,
 light/dark/system, CSS Modules, responsive y el shell futuro del cliente
-React/Vite. No está implementada. [PBI-030](backlog/pbis/PBI-030.md) permanece
-`Draft — readiness blocked`: iconografía, accent, catálogo, matriz de
-compatibilidad y partición ya están resueltos documentalmente, pero estimación
-y CI autoritativo siguen abiertos. El CSS y shell descritos arriba siguen
+React/Vite. No está implementada. [PBI-030](backlog/pbis/PBI-030.md) está
+`Ready`: iconografía, accent, catálogo, matriz de compatibilidad, partición,
+estimación `XL — agreed` y CI autoritativo están resueltos. Su implementación
+sigue pendiente de autorización Owner. El CSS y shell descritos arriba siguen
 siendo el runtime real hasta una entrega posterior verificada.
 
 ## 9. Backend State
@@ -387,7 +389,7 @@ marca PBI-024 `Done` ni se autoriza su merge.
 - health, OCI y Preview Dokploy;
 - PostgreSQL 18.4, migrador, readiness y transaction runner;
 - tablas y repositories tenant/branch con pruebas de aislamiento;
-- CI profundo, aunque actualmente rojo por el smoke de configuración;
+- CI profundo y verde sobre `main` `a8f2302` en el run `32201164615`;
 - workflow y separación Local/Preview/Staging/Production.
 
 ### Producto todavía por construir
@@ -455,17 +457,17 @@ No se crea aquí un PBI, epic, sprint ni roadmap nuevo.
 
 | Área | Veredicto |
 |---|---|
-| Baseline técnica | `main` / `efd9ec05d02af604c2d9ea18d4636c1539f8dc54` |
+| Baseline técnica | `main` / `a8f230214b592389894e25545583988c2c2edc3e` |
 | Working tree inicial | Limpio y sincronizado |
 | Infraestructura | Preview Dokploy/OCI/PostgreSQL disponible |
 | Aplicación | Foundation ejecutable, sin workflow de negocio |
 | Frontend | Visual Slice 0 navegable, API ausente |
 | Backend | Health + DB runtime; sin endpoints de producto |
 | PostgreSQL | Foundation tenant/branch activa; sin esquema funcional |
-| CI | **PASS** autoritativo en `main`; run `32199570584` |
+| CI | **PASS** autoritativo en `main`; run `32201164615` |
 | Preview | UI y health disponibles; acciones de negocio no funcionales |
-| Readiness | Puede iniciar refinamiento; PBI-030 conserva acuerdo de estimación pendiente y PBI-024 requiere reconciliación antes de slices dependientes de contexto |
+| Readiness | PBI-030 está `Ready` pero sin autorización de implementación; PBI-024 requiere reconciliación antes de slices dependientes de contexto |
 
 La foundation no requiere otra etapa amplia de infraestructura. El gate técnico
-está restaurado; el trabajo debe volver a producto respetando el acuerdo de
-estimación de PBI-030 y el linaje pendiente de PBI-024 según el slice elegido.
+está restaurado; el trabajo debe volver a producto respetando el gate Owner de
+inicio de PBI-030 y el linaje pendiente de PBI-024 según el slice elegido.

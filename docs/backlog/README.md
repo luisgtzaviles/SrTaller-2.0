@@ -9,8 +9,8 @@ Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 divergente, no está integrado en `main` y conserva el merge funcional bloqueado
 por DEC051-C02; PBI-025–PBI-029 descomponen el resto de H1 y no están
 autorizados. [PBI-030](pbis/PBI-030.md) prepara UI Foundation y Application
-Shell V1 como `Draft — readiness blocked`; la dirección está aprobada, la
-implementación no.
+Shell V1 como `Ready`; la dirección, gates y estimación están resueltos, pero
+la implementación no está autorizada.
 
 ## Estado del documento
 
@@ -26,7 +26,7 @@ decisión de recuperación/revalidación; owners por rol.
 - [DEPENDENCY_MAP.md](DEPENDENCY_MAP.md): secuencia y bloqueos conceptuales.
 - [pbis/README.md](pbis/README.md): índice de archivos individuales.
 - [PBI-030 Readiness Review](../design-system/PBI_030_READINESS_REVIEW.md):
-  gates, DoR y decisiones aún necesarias para la foundation visual.
+  gates, DoR `PASS` y frontera de autorización de la foundation visual.
 
 ## Convenciones de identificadores
 
@@ -62,5 +62,4 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Reconciliación de PBI-024 y acuerdo Frontend/Ingeniería sobre la estimación de
-PBI-030, sin iniciar implementación hasta autorización explícita.
+Reconciliación de PBI-024 y decisión Owner explícita sobre iniciar PBI-030.
