@@ -1,0 +1,175 @@
+# Desarrollo local de SR Taller 2.0
+
+## Estado del documento
+
+- **Estado:** Contrato operativo vigente para `Local development`.
+- **Datos:** únicamente sintéticos y desechables; no se conecta a Preview.
+- **Toolchain:** Node.js `24.18.0`, pnpm `11.15.1`, Docker Desktop y
+  PostgreSQL `18.4`.
+- **Próxima revisión:** al cambiar el contrato `SR_DB_*`, el esquema inicial o
+  los puertos locales.
+
+Este documento materializa el ciclo local sin crear una segunda arquitectura
+de aplicación. La base se reconstruye desde PostgreSQL vacío, las migraciones
+integradas y un seed mínimo. Docker CLI se usa directamente para conservar una
+topología pequeña y portable; no se añade Docker Compose ni una dependencia de
+multiplexación.
+
+## Límites y seguridad
+
+- Local, Preview, Staging y Production tienen bases, volúmenes y credenciales
+  distintas.
+- No se copian bases, dumps ni secretos de Preview.
+- No se ejecuta ninguna migración, seed o reset contra Dokploy.
+- No se crean tablas de Reparaciones, clientes, usuarios, roles o pagos.
+- `DATABASE_URL` y las variables de fallback `PG*` continúan prohibidas.
+- El archivo `.env.local` es ignorado, se crea con permisos `0600` y contiene
+  credenciales generadas para esta máquina. No se imprimen.
+- Los comandos mutantes comprueban el marcador `local`, el host loopback, el
+  puerto `55432`, el nombre `srtaller_local`, el container etiquetado y el
+  volumen exacto antes de operar.
+
+## Primera vez
+
+```sh
+pnpm install --frozen-lockfile
+pnpm run local:config
+pnpm run local:db:up
+pnpm run local:db:migrate
+pnpm run local:db:seed
+pnpm run local:dev
+```
+
+`local:dev` mantiene dos procesos en la misma terminal: NestJS en
+`http://127.0.0.1:3000` y Vite en `http://127.0.0.1:4173`. Para depurar por
+separado se pueden usar `pnpm run local:backend` y el comando Vite indicado
+abajo.
+
+## Uso diario
+
+```sh
+pnpm run local:db:up
+pnpm run local:dev
+```
+
+Si la configuración no existe, `local:config` la genera de forma explícita.
+`local:db:up` no aplica migraciones ni seed automáticamente.
+
+## PostgreSQL local
+
+| Propiedad | Valor |
+|---|---|
+| Imagen | `postgres:18.4` |
+| Container | `srtaller-postgres-local` |
+| Volume | `srtaller-postgres-local-data` |
+| Database | `srtaller_local` |
+| Binding | `127.0.0.1:55432 -> 5432` |
+| Healthcheck | `pg_isready` |
+| Admin local | sólo para crear roles y grants |
+| Migration role | `srtaller_local_migration` |
+| Application role | `srtaller_local_application` |
+
+El comando `local:db:up` verifica además que el servidor reporta versión
+`18.4`. La aplicación nunca usa el rol admin; sólo consume la configuración
+canónica derivada como `SR_DB_*` con `SR_DB_ROLE=application` y
+`SR_DB_MIGRATIONS_ENABLED=false`.
+
+## Configuración
+
+`.env.local.example` documenta las claves. El archivo operativo se genera como
+`.env.local` y sólo contiene claves `SR_LOCAL_*`. Los scripts derivan todas las
+variables del contrato `SR_DB_*` en memoria para la operación concreta; no se
+introduce `DATABASE_URL` ni se pasan valores de conexión por URI.
+
+El guard fail-closed rechaza hosts remotos, ambientes distintos de `local`,
+puertos alternos, nombres de base distintos, variables `SR_DB_*` persistidas en
+`.env.local` y cualquier alias de `libpq`.
+
+## Migraciones
+
+```sh
+pnpm run local:db:migrate
+```
+
+El comando compila el artefacto si falta `dist/db-migrate.js`, ejecuta
+exclusivamente las migraciones integradas con el rol `migration`, verifica el
+manifest/journal mediante el runner existente y concede al rol `application`
+los permisos mínimos sobre las tablas creadas. No se ejecuta en bootstrap HTTP.
+
+La migración actual crea únicamente `tenants` y `branches`; no se inventan
+tablas funcionales.
+
+## Seed sintético V1
+
+```sh
+pnpm run local:db:seed
+```
+
+El seed usa el rol `application`, una transacción y upserts idempotentes. Crea
+un tenant técnico sintético y dos sucursales sintéticas mediante UUIDs fijos y
+el timestamp `2026-01-01T00:00:00.000Z`. No contiene nombres, teléfonos,
+correos, clientes, reparaciones ni otros datos de negocio porque esas columnas
+y contratos todavía no existen en la baseline. Evolucionará con migraciones y
+PBIs posteriores.
+
+## Reset y parada
+
+```sh
+pnpm run local:db:down
+pnpm run local:db:reset
+```
+
+`local:db:down` detiene el container y conserva el volumen. `local:db:reset`
+es **DESTRUCTIVE — LOCAL ONLY**: elimina únicamente el container etiquetado y
+el volumen `srtaller-postgres-local-data`, lo recrea y ejecuta en orden
+`up → migrate → seed`. Se niega antes de tocar cualquier target que no cumpla
+el contrato local.
+
+## Backend y frontend
+
+El backend local arranca con `SR_DB_ROLE=application` y expone:
+
+- `GET http://127.0.0.1:3000/livez` — 200 mientras el proceso está vivo;
+- `GET http://127.0.0.1:3000/readyz` — 200 con DB, journal y schema listos;
+- al apagar PostgreSQL, `/livez` puede seguir 200 y `/readyz` debe fallar
+  conforme al contrato de health.
+
+Vite conserva HMR y sirve el frontend en
+`http://127.0.0.1:4173`. Sólo el servidor Vite en modo `local` añade proxy
+para `/api`, `/livez` y `/readyz` hacia el backend local. El build de Preview y
+el runtime OCI no cambian.
+
+Comando Vite independiente:
+
+```sh
+SRT_DEPLOY_ENV=local pnpm --filter @srtaller/dev-preview-web exec vite \
+  --host 127.0.0.1 --port 4173
+```
+
+## Troubleshooting
+
+- **Docker unavailable:** inicia Docker Desktop y repite `local:db:up`.
+- **Port already in use:** detén el proceso que ocupa `55432`, `3000` o
+  `4173`; no cambies el binding local sin actualizar este contrato.
+- **`/readyz` 503:** confirma `local:db:up`, vuelve a ejecutar migrate y revisa
+  que el journal coincida con el artefacto compilado.
+- **Migrations pending:** no edites el journal; ejecuta `local:db:migrate`.
+- **Seed refusal:** revisa que `.env.local` sea generado por
+  `local:config`; nunca pegues credenciales de Preview.
+
+## Verificación local esperada
+
+```text
+container inexistente/vacío
+  → local:db:up
+  → local:db:migrate
+  → local:db:seed
+  → local:backend / local:dev
+  → /livez 200, /readyz 200, Vite 200
+  → db down: /livez 200, /readyz no-ready
+  → db up: /readyz 200
+```
+
+Las suites PostgreSQL autoritativas de CI siguen siendo la evidencia Linux;
+esta ruta local aporta feedback rápido y reproducible en macOS, no reemplaza
+CI ni autoriza merge/deploy.

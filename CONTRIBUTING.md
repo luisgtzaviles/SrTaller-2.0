@@ -29,6 +29,11 @@ el contexto de chat, memoria humana o supuestos de un agente.
 
 ## Antes de comenzar
 
+Para desarrollo funcional local, la ruta canónica es
+[LOCAL_DEVELOPMENT.md](docs/delivery/LOCAL_DEVELOPMENT.md). Usa PostgreSQL
+18.4 local, migración one-shot con rol `migration`, seed sintético y NestJS con
+rol `application`; nunca reutiliza Preview.
+
 1. Completar el `MANDATORY FIRST READ` y verificar el
    [backlog](docs/backlog/PRODUCT_BACKLOG.md) aplicable.
 2. No iniciar trabajo de implementación sin un PBI listo, asignado a un sprint de implementación y aprobado.

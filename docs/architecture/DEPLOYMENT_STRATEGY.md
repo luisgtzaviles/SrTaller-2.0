@@ -218,8 +218,11 @@ GitHub Actions es el candidato preliminar para orquestar CI/CD; su aceptación, 
 
 - La aplicación puede ejecutarse directamente con los comandos `pnpm` del
   repositorio o construirse con el `Dockerfile` productivo actual.
-- Docker Compose para dependencias locales permanece como opción futura; no
-  existe un Compose canónico en la baseline actual.
+- El ciclo local vigente usa Docker CLI y los scripts de
+  [LOCAL_DEVELOPMENT.md](../delivery/LOCAL_DEVELOPMENT.md); no añade Docker
+  Compose ni cambia la topología OCI de Preview.
+- PostgreSQL local se fija en `18.4`, sólo escucha en loopback y separa los
+  roles de migración y aplicación.
 - Fixtures y servicios falsos no usan credenciales ni datos reales.
 - Configuración local se documenta y valida; defaults inseguros no se trasladan a otros ambientes.
 - Desarrollo local debe poder reiniciarse sin depender de staging.

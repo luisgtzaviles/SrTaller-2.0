@@ -78,6 +78,11 @@ y HTTP.
 12. Para Preview, ejecutar deployment manual en Dokploy y verificar remoto.
 13. Registrar resultado, riesgos residuales y siguiente tarea.
 
+Para la iteración funcional local, el ciclo operativo es
+`local:db:up → local:db:migrate → local:db:seed → local:dev`, conforme al
+[contrato de desarrollo local](./LOCAL_DEVELOPMENT.md). Este camino no usa
+Preview, no modifica Dokploy y no sustituye el CI autoritativo.
+
 Nada de esta lista autoriza por inferencia Production, datos reales, una
 migración destructiva ni una expansión material de alcance.
 

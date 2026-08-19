@@ -51,6 +51,21 @@ Preview admite datos sintéticos, de desarrollo o desechables. Nunca usa datos
 reales de Production. Su tolerancia a reconstrucción no autoriza borrar datos
 persistentes sin confirmar alcance y autoridad.
 
+## Local development — CURRENT
+
+Local está materializado para el ciclo diario en macOS mediante Docker CLI y
+scripts del repositorio. Usa exclusivamente el container
+`srtaller-postgres-local`, el volumen `srtaller-postgres-local-data`, la base
+`srtaller_local` y el binding loopback `127.0.0.1:55432`. La imagen esperada es
+PostgreSQL `18.4`; el comando `local:db:up` lo verifica antes de continuar.
+
+La ruta canónica y sus guardas están en
+[LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). Migraciones usan un rol local
+`migration`, NestJS/seed usan un rol local `application`, y el reset sólo puede
+destruir ese container/volumen etiquetado como `local`. Los IDs sembrados son
+UUIDs sintéticos deterministas sobre las tablas integradas `tenants` y
+`branches`; no hay PII ni tablas funcionales.
+
 ## Staging — PLANNED
 
 Staging no existe y este documento no autoriza crearlo. Cuando se materialice:
@@ -79,7 +94,7 @@ deployment exitoso en Preview.
 |---|---|---|---|---|
 | Estado | Current | Current | Planned | Planned |
 | Datos | Sintéticos/fixtures | Desarrollo, sintéticos, desechables | Sintéticos/representativos; sanitizados sólo con autorización | Reales |
-| Base | Local separada | `srtaller-postgres` | Independiente | Independiente |
+| Base | `srtaller_local` en Docker loopback | `srtaller-postgres` | Independiente | Independiente |
 | Credenciales | Locales | Exclusivas de Preview | Exclusivas | Exclusivas y mínimo privilegio |
 | Artefacto | Cambio local | Build desde `main` actual | Release candidate inmutable | Mismo digest aprobado |
 | Deploy | Comando local | Manual en Dokploy | Pipeline repetible futuro | Promoción con gate futuro |
