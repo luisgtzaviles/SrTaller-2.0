@@ -2,14 +2,16 @@
   "schema_version": 1,
   "repository": "luisgtzaviles/SrTaller-2.0",
   "pbi": "PBI-030",
+  "pull_request": 8,
   "branch": "feature/pbi-030-design-system-shell",
   "baseline_commit": "f802feecbf1fb7b1c167b8d24f41f4e28db637d9",
-  "implementation_commit": "f958e0fb83d0c4c76847545a739c0be88a3236db",
-  "generated_at": "2026-08-19T01:34:45Z",
+  "implementation_commit": "7f15126e90295464994d15d662bdb6b1cf6a5062",
+  "generated_at": "2026-08-19T01:46:30Z",
   "status": "CONDITIONAL_PASS",
   "toolchain": {
     "node": "24.18.0",
-    "pnpm": "11.15.1"
+    "pnpm": "11.15.1",
+    "lucide_react": "1.31.0"
   },
   "manual_environment": {
     "browser": "Google Chrome 151.0.7922.138",
@@ -79,5 +81,10 @@
     "VoiceOver and NVDA matrix",
     "Product Owner acceptance and any later merge authorization"
   ],
+  "ci_remediation": {
+    "initial_failure": "lucide-react 1.32.0 violated the 24-hour minimum release age policy",
+    "resolution": "pin lucide-react 1.31.0 without policy exception",
+    "bundle_changed_from_recorded_measurement": false
+  },
   "final_result": "PBI-030 IMPLEMENTATION CANDIDATE — MORE EVIDENCE REQUIRED FOR DONE"
 }

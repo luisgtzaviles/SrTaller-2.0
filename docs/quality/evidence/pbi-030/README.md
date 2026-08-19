@@ -7,15 +7,16 @@
 | Elemento validado | `PBI-030` |
 | Estado | `In review` |
 | Rama | `feature/pbi-030-design-system-shell` |
+| Pull request | [PR draft #8](https://github.com/luisgtzaviles/SrTaller-2.0/pull/8) |
 | Baseline | `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |
-| SHA de implementación observado | `f958e0fb83d0c4c76847545a739c0be88a3236db` |
+| SHA de implementación observado | `7f15126e90295464994d15d662bdb6b1cf6a5062` |
 | Ejecución local | 2026-08-18 (`2026-08-19T01:34:45Z`) |
 | Toolchain | Node.js `24.18.0`; pnpm `11.15.1` |
 | Navegador manual | Google Chrome `151.0.7922.138` en macOS `26.5.1` |
 | Datos | Fixtures exclusivamente sintéticos |
 | Manifest | [EVIDENCE_MANIFEST.json](EVIDENCE_MANIFEST.json) |
 
-El SHA anterior identifica los tres commits de implementación y gobierno sobre
+El SHA anterior identifica los commits de implementación y gobierno sobre
 los que se generaron las capturas y mediciones. El commit documental posterior
 no altera el artefacto observado. La evidencia no contiene datos personales,
 credenciales, secretos ni contexto operativo presentado como real.
@@ -48,7 +49,7 @@ completa de navegadores y tecnologías de asistencia.
   preferencia del sistema y script inicial para reducir flash.
 - Accent sintético normalizado y derivado en OKLCH, contraste mínimo, límite de
   pérdida de chroma, fallback gobernado y vectores automatizados.
-- `lucide-react` `1.32.0` como única familia funcional, con imports estáticos y
+- `lucide-react` `1.31.0` como única familia funcional, con imports estáticos y
   nombrados, `currentColor` y tamaños canónicos.
 - Primitives, controles, feedback, navegación, data display y overlay que ya
   tienen consumidor en shell, páginas demostrativas o estados exigidos del
@@ -177,6 +178,15 @@ Riesgos residuales:
 No se registra waiver. La recomendación es publicar el PR, exigir CI verde y
 completar la matriz manual/revisión antes de declarar `Done` o solicitar una
 decisión de merge.
+
+### Remediación de CI de supply chain
+
+El primer run del PR rechazó `lucide-react@1.32.0` porque había sido publicado
+menos de 24 horas antes del cutoff canónico. No se relajó la política ni se
+agregó una excepción: se fijó `1.31.0`, versión más reciente anterior al cutoff,
+y se regeneró el lockfile. El build resultante conservó exactamente los mismos
+nombres y tamaños de assets medidos; el resultado autoritativo posterior queda
+referenciado en el handoff del PR.
 
 ## Próxima revisión
 

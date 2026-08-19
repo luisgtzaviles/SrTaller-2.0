@@ -6,8 +6,8 @@
 - **Baseline técnica integrada:** `main` en
   `f802feecbf1fb7b1c167b8d24f41f4e28db637d9`.
 - **Candidato no integrado:** PBI-030 en
-  `feature/pbi-030-design-system-shell`; implementation SHA `f958e0f`, pendiente
-  de PR/CI/revisión al registrar esta fotografía.
+  `feature/pbi-030-design-system-shell`; implementation SHA `7f15126`, PR draft
+  #8, pendiente de CI/revisión al registrar esta fotografía.
 - **Alcance:** código, configuración, documentación vigente, Git/GitHub y
   contraste HTTP de sólo lectura con Preview.
 - **Regla:** este documento describe estado; no autoriza implementación,
@@ -45,7 +45,7 @@ duplicar esa foundation.
 | Repositorio | `/Users/luisantoniogutierrez/Documents/GitHub/SrTaller-2.0` |
 | Rama de implementación | `feature/pbi-030-design-system-shell` |
 | Baseline técnica integrada | `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |
-| SHA de implementación PBI-030 | `f958e0f`; no integrado |
+| SHA de implementación PBI-030 | `7f15126`; no integrado |
 | Remote | `origin`: `https://github.com/luisgtzaviles/SrTaller-2.0.git` |
 | Upstream | `origin/main` |
 | Divergencia local/upstream | `0/0`; `ls-remote` confirmó el mismo SHA |

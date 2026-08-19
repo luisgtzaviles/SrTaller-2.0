@@ -42,6 +42,9 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Contratos automáticos agregados para impedir doble foundation, iconografía no
   canónica, valores visuales arbitrarios y exposición del catálogo en
   Production; la surface Preview conserva smoke positivo y `noindex`.
+- Lucide fijado en `1.31.0` después de que el primer CI del candidato rechazara
+  `1.32.0` por la edad mínima de publicación; no se añadió waiver ni excepción
+  de supply chain.
 
 ### Estado conocido no resuelto
 
