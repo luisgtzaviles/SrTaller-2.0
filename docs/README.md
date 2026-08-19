@@ -14,10 +14,8 @@ producto y condiciones pendientes antes de la siguiente iteración.
 requiriendo tarea/PBI y autoridad explícita.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
-**Gate actual de integración:** el CI canónico del `HEAD` auditado está rojo en
-el smoke compilado. La PR #5 publica un arreglo con PostgreSQL real y CI
-autoritativo verde en su SHA candidato, pero falta integración autorizada y CI
-verde sobre `main`; véase
+**Gate actual de integración:** el CI canónico de `main` está verde en
+`a8f230214b592389894e25545583988c2c2edc3e`, run `32201164615`; véase
 [Current Repository State](CURRENT_STATE.md#11-cicd).
 
 ## Revisión dirigida de Sprint 00
@@ -55,11 +53,10 @@ auditoría inicial, la remediación y el dictamen final:
 - [Design System & Application Shell V1](design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
 - [PBI-030 — UI Foundation y Application Shell V1](backlog/pbis/PBI-030.md)
 - [PBI-030 — Readiness Review](design-system/PBI_030_READINESS_REVIEW.md)
-- [PBI-030 — Propuesta técnica de estimación](design-system/PBI_030_ESTIMATION_PROPOSAL.md)
+- [PBI-030 — Acuerdo técnico de estimación](design-system/PBI_030_ESTIMATION_PROPOSAL.md)
 
-La dirección visual V1 está aprobada para documentación y preparación de PBI.
-PBI-030 permanece `Draft — readiness blocked`; no existe autorización de
-implementación.
+La dirección visual V1 está aprobada y PBI-030 está `Ready` con estimación
+`XL — agreed`. No existe autorización de implementación.
 
 ## Dominio operativo
 

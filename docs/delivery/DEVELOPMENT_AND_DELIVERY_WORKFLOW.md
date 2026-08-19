@@ -89,7 +89,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Failing: compiled smoke lacks required PostgreSQL configuration |
+| Authoritative CI at audited HEAD | Green: run `32201164615` on `a8f230214b592389894e25545583988c2c2edc3e` |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |

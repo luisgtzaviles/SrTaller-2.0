@@ -17,10 +17,12 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
   `main` mediante el `Dockerfile` en Dokploy.
 - **Producto funcional:** todavía no existe un flujo de negocio end-to-end.
   Las llamadas `/api/preview/*` del frontend no tienen controllers en `main`.
-- **CI:** `main` recuperó su baseline verde en
-  `efd9ec05d02af604c2d9ea18d4636c1539f8dc54`; el run autoritativo
-  [`32199570584`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32199570584)
+- **CI:** `main` conserva su baseline verde en
+  `a8f230214b592389894e25545583988c2c2edc3e`; el run autoritativo
+  [`32201164615`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32201164615)
   pasó ambos jobs y la comparación reproducible con PostgreSQL real.
+- **PBI-030:** `Ready`, estimación `XL — agreed`; implementación pendiente de
+  autorización Owner explícita.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).

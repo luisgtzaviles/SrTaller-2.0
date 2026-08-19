@@ -23,7 +23,7 @@ flowchart TD
     APP --> API[PBI-012 Backend/API]
     S --> WEB[PBI-013 Web/design system]
     APP --> WEB
-    DSV1[Design System & Application Shell V1<br/>Owner direction approved] --> UI[PBI-030 UI Foundation/Shell<br/>Draft / readiness blocked]
+    DSV1[Design System & Application Shell V1<br/>Owner direction approved] --> UI[PBI-030 UI Foundation/Shell<br/>Ready / start not authorized]
     WEB --> UI
     APP --> UI
     M --> RT[PBI-014 Realtime/messaging]
@@ -108,7 +108,7 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   baseline React/Vite. No depende de PBI-024/PBI-025 para usar fixtures
   honestos, pero cualquier contexto confiable, identidad o permisos reales sí
   requiere esos trabajos. PBI-024 es una dependencia blanda. Su estado
-  `Draft — readiness blocked` no autoriza implementación.
+  `Ready` no autoriza implementación.
 
 ## Bloqueos conocidos
 
@@ -126,9 +126,8 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
   integrarse mientras DEC051-C02 siga `Pending`.
 - Los demás PBIs H1 requieren revisión y autorización propias.
 - PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad,
-  partición e integración con CI verde sobre `main`. Requiere estimación
-  acordada por Frontend/Ingeniería antes de `Ready`; después todavía requiere
-  autorización explícita para iniciar.
+  partición, estimación `XL — agreed` e integración con CI verde sobre `main`.
+  Está `Ready` y todavía requiere autorización Owner explícita para iniciar.
 
 ## Preguntas abiertas
 
@@ -139,5 +138,4 @@ El grafo incluye las dependencias documentales directas declaradas por los PBIs 
 
 ## Próxima revisión
 
-Reconciliación de PBI-024 y acuerdo de estimación de PBI-030 sin iniciar
-implementación.
+Reconciliación de PBI-024 y decisión Owner separada sobre iniciar PBI-030.

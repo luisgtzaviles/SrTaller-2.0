@@ -72,9 +72,8 @@ documento no autoriza por sí solo commit, push, merge, deploy ni release.
 
 - Reconciliar la implementación no integrada de PBI-024 en la PR draft #3
   antes de iniciar un slice dependiente de contexto de estación.
-- Acordar en Frontend/Ingeniería la estimación de PBI-030 antes de declararlo
-  `Ready`; la propuesta `XL` y la aprobación Owner de razonabilidad no
-  constituyen por sí solas acuerdo del equipo.
+- PBI-030 está `Ready` con `XL — agreed`; no iniciar su implementación sin una
+  autorización Owner explícita y separada.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
 - `DEC063-C02`: materializar clasificación de riesgo.
 - `DEC063-C08`: materializar waivers y excepciones.
