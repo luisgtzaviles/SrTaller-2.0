@@ -130,5 +130,7 @@ test('unsaved note safety uses the governed dialog and session draft without win
 test('dashboard describes the local Repairs capability without claiming production readiness', () => {
   assert.match(dashboardSource, /Reparaciones sólo opera con el backend local sintético/u);
   assert.doesNotMatch(dashboardSource, /APIs de producto permanecen fuera de alcance/u);
+  assert.doesNotMatch(dashboardSource, /API no materializada/u);
+  assert.match(dashboardSource, /Datos sintéticos locales/u);
   assert.doesNotMatch(dashboardSource, /production ready|listo para producción/iu);
 });
