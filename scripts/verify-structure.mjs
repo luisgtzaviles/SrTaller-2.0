@@ -154,16 +154,6 @@ for (const sourceFile of sourceFiles) {
       failures.push(`Unauthorized preview static surface detected: ${problem}`);
     }
   }
-  for (const forbiddenPattern of [
-    /@Controller\s*\(/u,
-    /@(Get|Post|Put|Patch|Delete|Options|Head|All)\s*\(/u,
-  ]) {
-    if (forbiddenPattern.test(sourceText)) {
-      failures.push(
-        `Unauthorized HTTP surface detected in ${sourceFile}: ${forbiddenPattern}`,
-      );
-    }
-  }
 }
 if (!healthSurfaceFound) {
   failures.push(`Authorized health surface is missing: ${authorizedHealthSurfacePath}`);

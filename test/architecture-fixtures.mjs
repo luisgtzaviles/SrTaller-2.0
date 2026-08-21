@@ -80,6 +80,10 @@ const expectedPathByFixtureName = {
   'invalid public re-export': 'src/modules/access/index.ts',
   'unauthorized controller':
     'src/modules/access/presentation/http/probe.ts',
+  'controller inside infrastructure':
+    'src/modules/access/infrastructure/probe.controller.ts',
+  'controller inside shared': 'src/shared/probe.controller.ts',
+  'controller in undeclared module': 'src/modules/inventory',
   'unauthorized endpoint': 'src/modules/access/presentation/http/endpoint.ts',
   'authorized health surface with additional route':
     'src/health/health.controller.ts',
@@ -470,7 +474,7 @@ export const fixtureCases = [
   {
     name: 'unauthorized controller',
     expectedRules: ['D5-R035'],
-    expectedText: 'controllers are outside',
+    expectedText: 'not a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/probe.ts': "import { Controller } from '@nestjs/common';\n@Controller()\nexport class ProbeController {}\n",
     },
@@ -479,7 +483,7 @@ export const fixtureCases = [
     name: 'unauthorized controller through alias',
     expectedPath: 'src/modules/access/presentation/http/alias-controller.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'controllers are outside',
+    expectedText: 'not a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/alias-controller.ts': "import { Controller as HttpController } from '@nestjs/common';\n@HttpController()\nexport class ProbeController {}\n",
     },
@@ -488,7 +492,7 @@ export const fixtureCases = [
     name: 'unauthorized controller through namespace',
     expectedPath: 'src/modules/access/presentation/http/namespace-controller.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'controllers are outside',
+    expectedText: 'not a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/namespace-controller.ts': "import * as Nest from '@nestjs/common';\n@Nest.Controller()\nexport class ProbeController {}\n",
     },
@@ -496,7 +500,7 @@ export const fixtureCases = [
   {
     name: 'unauthorized endpoint',
     expectedRules: ['D5-R035'],
-    expectedText: 'HTTP endpoints are outside',
+    expectedText: 'not inside a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/endpoint.ts': "import { Get } from '@nestjs/common';\nexport class Endpoint { @Get() run(): void {} }\n",
     },
@@ -505,7 +509,7 @@ export const fixtureCases = [
     name: 'unauthorized endpoint through alias',
     expectedPath: 'src/modules/access/presentation/http/alias-endpoint.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'HTTP endpoints are outside',
+    expectedText: 'not inside a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/alias-endpoint.ts': "import { Get as HttpGet } from '@nestjs/common';\nexport class Endpoint { @HttpGet() run(): void {} }\n",
     },
@@ -514,9 +518,39 @@ export const fixtureCases = [
     name: 'unauthorized endpoint through namespace',
     expectedPath: 'src/modules/access/presentation/http/namespace-endpoint.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'HTTP endpoints are outside',
+    expectedText: 'not inside a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/namespace-endpoint.ts': "import * as Nest from '@nestjs/common';\nexport class Endpoint { @Nest.Get() run(): void {} }\n",
+    },
+  },
+  {
+    name: 'controller inside infrastructure',
+    expectedRules: ['D5-R035'],
+    expectedText: 'not a registered module-owned presentation surface',
+    files: {
+      'src/modules/access/infrastructure/probe.controller.ts': "import { Controller } from '@nestjs/common';\n@Controller()\nexport class ProbeController {}\n",
+    },
+  },
+  {
+    name: 'controller inside shared',
+    expectedPaths: ['src/shared', 'src/shared/probe.controller.ts'],
+    expectedRules: ['D5-R019', 'D5-R035'],
+    expectedText: 'shared',
+    files: {
+      'src/shared/probe.controller.ts': "import { Controller } from '@nestjs/common';\n@Controller()\nexport class ProbeController {}\n",
+    },
+  },
+  {
+    name: 'controller in undeclared module',
+    expectedPaths: [
+      'src/modules/inventory',
+      'src/modules/inventory/presentation/probe.controller.ts',
+    ],
+    expectedRules: ['D5-R002', 'D5-R035'],
+    expectedText: 'inventory',
+    files: {
+      'src/modules/inventory/index.ts': 'export interface InventoryModuleContract {}\n',
+      'src/modules/inventory/presentation/probe.controller.ts': "import { Controller } from '@nestjs/common';\n@Controller()\nexport class ProbeController {}\n",
     },
   },
   {
@@ -1091,7 +1125,7 @@ export const fixtureCases = [
     expectedPath:
       'src/modules/access/presentation/http/direct-wrapper-controller.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'controllers are outside',
+    expectedText: 'not a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/direct-wrapper-controller.ts': [
         "import { Controller } from '@nestjs/common';",
@@ -1110,7 +1144,7 @@ export const fixtureCases = [
     expectedPath:
       'src/modules/access/presentation/http/alias-wrapper-controller.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'controllers are outside',
+    expectedText: 'not a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/alias-wrapper-controller.ts': [
         "import { Controller as HttpController } from '@nestjs/common';",
@@ -1129,7 +1163,7 @@ export const fixtureCases = [
     expectedPath:
       'src/modules/access/presentation/http/namespace-wrapper-controller.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'controllers are outside',
+    expectedText: 'not a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/namespace-wrapper-controller.ts': [
         "import * as Nest from '@nestjs/common';",
@@ -1148,7 +1182,7 @@ export const fixtureCases = [
     expectedPath:
       'src/modules/access/presentation/http/direct-wrapper-endpoint.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'HTTP endpoints are outside',
+    expectedText: 'not inside a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/direct-wrapper-endpoint.ts': [
         "import { Get } from '@nestjs/common';",
@@ -1169,7 +1203,7 @@ export const fixtureCases = [
     expectedPath:
       'src/modules/access/presentation/http/alias-wrapper-endpoint.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'HTTP endpoints are outside',
+    expectedText: 'not inside a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/alias-wrapper-endpoint.ts': [
         "import { Get as HttpGet } from '@nestjs/common';",
@@ -1190,7 +1224,7 @@ export const fixtureCases = [
     expectedPath:
       'src/modules/access/presentation/http/namespace-wrapper-endpoint.ts',
     expectedRules: ['D5-R035'],
-    expectedText: 'HTTP endpoints are outside',
+    expectedText: 'not inside a registered module-owned presentation surface',
     files: {
       'src/modules/access/presentation/http/namespace-wrapper-endpoint.ts': [
         "import * as Nest from '@nestjs/common';",

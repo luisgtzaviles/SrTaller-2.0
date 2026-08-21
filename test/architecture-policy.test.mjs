@@ -43,8 +43,32 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
   assert.deepEqual(result.observedEdges, [
     'access->stations',
     'access->tenancy',
+    'repairs->tenancy',
     'stations->tenancy',
   ]);
+});
+
+test('Repairs presentation and Health are the explicitly governed HTTP surfaces', async () => {
+  const policy = JSON.parse(
+    await readFile('architecture/dec-005-policy.json', 'utf8'),
+  );
+  assert.equal(policy.httpSurfacePolicy.allowedModuleLayer, 'presentation');
+  assert.deepEqual(
+    policy.httpSurfacePolicy.controllers,
+    {
+      'src/modules/repairs/presentation/repairs.controller.ts': {
+        owner: 'repairs',
+        className: 'RepairsController',
+        composition: {
+          file: 'src/modules/repairs/repairs.module.ts',
+          className: 'RepairsModule',
+          importSpecifier: './presentation/repairs.controller.js',
+        },
+      },
+    },
+  );
+  const result = await checkArchitecture({ root: process.cwd() });
+  assert.deepEqual(result.diagnostics, []);
 });
 
 test('policy, rules, ownership and graph evidence remain consistent', async () => {

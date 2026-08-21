@@ -14,12 +14,18 @@ individuales.
 | `tenancy` | Frontera raíz type-only y módulo Nest de composición | Arquitectura | Autoridad de dominio sobre configuración organizacional; persona pendiente de asignación | Ingeniería; persona pendiente | `TenancyModuleContract`, `TenantId`, `parseTenantId` — marcador de frontera e identidad nominal consumida por `stations` | `stations`, `access` | Ninguna | `stations`, `access`, internals ajenos y todo módulo no aprobado |
 | `stations` | Frontera type-only del contexto operativo y módulo Nest de composición | Arquitectura | Autoridad de dominio sobre contexto operativo y sucursales; persona pendiente de asignación | Ingeniería; persona pendiente | `StationsModuleContract` — marcador type-only que declara dependencia de tenancy | `access` | `tenancy` | `access`, internals de `tenancy` y todo módulo no aprobado |
 | `access` | Frontera type-only consumidora del contexto aprobado y módulo Nest de composición | Arquitectura | Autoridad de dominio de Identity and Access con participación de Seguridad; persona pendiente de asignación | Ingeniería; persona pendiente | `AccessModuleContract` — marcador type-only que declara contexto organizacional/operativo | `AppModule` para verificación de composición | `stations`, `tenancy` | Internals de productores y todo módulo no aprobado |
+| `repairs` | Worklist, detalle read model, evidencia y nota operativa del slice funcional local; módulo Nest propietario | Arquitectura | Autoridad de dominio de Reparaciones; persona pendiente de asignación | Ingeniería; persona pendiente | `RepairsModuleContract`; controller HTTP exacto registrado en `presentation` y compuesto por `RepairsModule` | `AppModule` para composición; frontend local vía HTTP | `tenancy` por superficie pública permitida | Internals de `tenancy`, DB/adapters desde presentation, pagos, clientes y todo módulo no aprobado |
 
 ## Superficies Nest separadas
 
 `TenancyModule`, `StationsModule` y `AccessModule` son superficies exclusivas
 de composición. Sólo `AppModule` las importa y no forman parte del contrato
 funcional público de los módulos.
+
+`RepairsModule` compone su controller registrado. Ese controller pertenece
+únicamente a `repairs`, delega en casos de uso de su propia aplicación y no
+constituye una superficie pública intermodular. Health conserva su contrato
+técnico exacto separado.
 
 ## Revisión transversal
 

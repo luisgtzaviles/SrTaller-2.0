@@ -1,18 +1,22 @@
 {
-  "policyVersion": 2,
-  "allowedModules": ["access", "stations", "tenancy"],
+  "policyVersion": 3,
+  "allowedModules": ["access", "repairs", "stations", "tenancy"],
+  "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy"],
+    "repairs": ["tenancy"],
     "stations": ["tenancy"],
     "tenancy": []
   },
   "publicSurfaces": {
     "access": ["AccessModuleContract"],
+    "repairs": ["RepairsModuleContract"],
     "stations": ["StationsModuleContract"],
     "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"]
   },
   "consumers": {
     "access": ["AppModule"],
+    "repairs": ["AppModule"],
     "stations": ["access"],
     "tenancy": ["access", "stations"]
   },
@@ -30,6 +34,17 @@
     "src/modules/access/access.module.ts": {
       "declarationKind": "class",
       "declarationName": "AccessModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
+    },
+    "src/modules/repairs/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "RepairsModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/repairs/repairs.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "RepairsModule",
       "decorator": "Module",
       "rule": "D5-R003"
     },
@@ -67,8 +82,23 @@
     "decorator": "Module",
     "imports": {
       "AccessModule": "./modules/access/access.module.js",
+      "RepairsModule": "./modules/repairs/repairs.module.js",
       "StationsModule": "./modules/stations/stations.module.js",
       "TenancyModule": "./modules/tenancy/tenancy.module.js"
+    }
+  },
+  "httpSurfacePolicy": {
+    "allowedModuleLayer": "presentation",
+    "controllers": {
+      "src/modules/repairs/presentation/repairs.controller.ts": {
+        "owner": "repairs",
+        "className": "RepairsController",
+        "composition": {
+          "file": "src/modules/repairs/repairs.module.ts",
+          "className": "RepairsModule",
+          "importSpecifier": "./presentation/repairs.controller.js"
+        }
+      }
     }
   },
   "controllerAuthoritySymbols": [
@@ -83,12 +113,20 @@
     "dependencyPackagePrefixes": ["pg-"],
     "allowedDependencyRoots": [
       "src/infrastructure/database/",
+      "src/modules/repairs/infrastructure/persistence/",
       "src/modules/stations/infrastructure/persistence/",
       "src/modules/tenancy/infrastructure/persistence/"
     ],
     "databaseRoot": "src/infrastructure/database/",
     "migrationRoot": "src/infrastructure/database/migrations/",
-    "migrationFilePattern": "^\\d{14}_(database|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "migrationFilePattern": "^\\d{14}_(database|repairs|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "allowedMigrations": [
+      "src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts",
+      "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
+      "src/infrastructure/database/migrations/20260819140000_repairs_create_timeline_entries.ts",
+      "src/infrastructure/database/migrations/20260819150000_repairs_create_attachments.ts",
+      "src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts"
+    ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
         "owner": "database",
@@ -116,12 +154,34 @@
           "TenantUpdate",
           "BranchRow",
           "NewBranch",
-          "BranchUpdate"
+          "BranchUpdate",
+          "RepairTable",
+          "RepairRow",
+          "NewRepair",
+          "RepairUpdate",
+          "RepairIntakeTable",
+          "RepairIntakeRow",
+          "NewRepairIntake",
+          "RepairIntakeUpdate",
+          "RepairTimelineEntryTable",
+          "RepairTimelineEntryRow",
+          "NewRepairTimelineEntry",
+          "RepairTimelineEntryUpdate",
+          "RepairAttachmentTable",
+          "RepairAttachmentRow",
+          "NewRepairAttachment",
+          "RepairAttachmentUpdate"
         ],
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
+          "src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts",
+          "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
+          "src/infrastructure/database/migrations/20260819140000_repairs_create_timeline_entries.ts",
+          "src/infrastructure/database/migrations/20260819150000_repairs_create_attachments.ts",
+          "src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
+          "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
@@ -140,6 +200,8 @@
           "src/infrastructure/database/migration-runner.ts",
           "src/infrastructure/database/database-runtime.ts",
           "src/db-migrate.ts",
+          "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts",
+          "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
@@ -269,7 +331,13 @@
         "allowedScopes": ["TenantPersistenceScope", "TenantBranchPersistenceScope"],
         "status": "materialized-owner-port"
       },
-      "src/modules/tenancy/application/ports/tenant-repository.port.ts": {
+    "src/modules/repairs/application/ports/repair-repository.port.ts": {
+      "owner": "repairs",
+      "contract": "RepairRepositoryPort",
+      "allowedScopes": ["RepairPersistenceScope"],
+      "status": "materialized-owner-port"
+    },
+    "src/modules/tenancy/application/ports/tenant-repository.port.ts": {
         "owner": "tenancy",
         "contract": "TenantRepositoryPort",
         "allowedScopes": ["TenantPersistenceScope"],
@@ -277,6 +345,7 @@
       }
     },
     "scopeTypes": {
+      "RepairPersistenceScope": ["tenantId", "branchId"],
       "TenantBranchPersistenceScope": ["tenantId", "branchId"],
       "TenantPersistenceScope": ["tenantId"]
     },
@@ -285,6 +354,12 @@
         "owner": "stations",
         "port": "src/modules/stations/application/ports/branch-repository.port.ts",
         "composition": "src/modules/stations/stations.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts": {
+        "owner": "repairs",
+        "port": "src/modules/repairs/application/ports/repair-repository.port.ts",
+        "composition": "src/modules/repairs/repairs.module.ts",
         "status": "materialized-owner-adapter"
       },
       "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts": {
@@ -297,6 +372,22 @@
     "databaseObjects": {
       "branches": {
         "owner": "stations",
+        "kind": "table"
+      },
+      "repairs": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_intakes": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_timeline_entries": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_attachments": {
+        "owner": "repairs",
         "kind": "table"
       },
       "tenants": {
@@ -530,6 +621,20 @@
     "src/modules/stations/application/ports/branch-repository.port.ts",
     "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
     "src/modules/stations/stations.module.ts",
+    "src/modules/repairs/index.ts",
+    "src/modules/repairs/repairs.module.ts",
+    "src/modules/repairs/application/ports/repair-repository.port.ts",
+    "src/modules/repairs/application/ports/repair-evidence-storage.port.ts",
+    "src/modules/repairs/application/use-cases/add-repair-operational-note.use-case.ts",
+    "src/modules/repairs/application/use-cases/get-repair-detail.use-case.ts",
+    "src/modules/repairs/application/use-cases/get-repair-evidence-content.use-case.ts",
+    "src/modules/repairs/application/use-cases/list-repairs.use-case.ts",
+    "src/modules/repairs/infrastructure/context/local-repair-context.ts",
+    "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts",
+    "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
+    "src/modules/repairs/infrastructure/storage/local-repair-evidence.storage.ts",
+    "src/modules/repairs/presentation/repairs.controller.ts",
+    "src/modules/repairs/domain/repair-status.ts",
     "src/modules/tenancy/index.ts",
     "src/modules/tenancy/application/ports/tenant-repository.port.ts",
     "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
@@ -545,6 +650,7 @@
     "docs/architecture-readiness/dec-005-materialization/REMEDIATION.md",
     "docs/architecture-readiness/dec-005-materialization/FV4_REMEDIATION.md",
     "docs/architecture-readiness/dec-005-materialization/FV5_REMEDIATION.md",
+    "docs/architecture-readiness/dec-005-materialization/HTTP_SURFACE_RECONCILIATION.md",
     "docs/architecture-readiness/dec-005-materialization/TRACEABILITY_MATRIX.md",
     "docs/architecture-readiness/dec-005-materialization/RESULTS.md"
   ]

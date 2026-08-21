@@ -6,6 +6,7 @@
 flowchart LR
   access --> stations
   access --> tenancy
+  repairs --> tenancy
   stations --> tenancy
 ```
 
@@ -18,17 +19,19 @@ La flecha va del consumidor al productor.
 | `stations` | `tenancy` | `src/modules/stations/index.ts` | `TenancyModuleContract` desde `tenancy/index.ts` | Ninguno; `import type` |
 | `access` | `stations` | `src/modules/access/index.ts` | `StationsModuleContract` desde `stations/index.ts` | Ninguno; `import type` |
 | `access` | `tenancy` | `src/modules/access/index.ts` | `TenancyModuleContract` desde `tenancy/index.ts` | Ninguno; `import type` |
+| `repairs` | `tenancy` | `src/modules/repairs/application/ports/repair-repository.port.ts` | `TenantId` desde `tenancy/index.ts` | Ninguno; `import type` |
 
 El resultado del checker es exactamente:
 
 ```text
-access->stations, access->tenancy, stations->tenancy
+access->stations, access->tenancy, repairs->tenancy, stations->tenancy
 ```
 
 ## Composición exterior
 
 `src/app.module.ts` importa directamente:
 
+- `repairs/repairs.module.ts`;
 - `access/access.module.ts`;
 - `stations/stations.module.ts`;
 - `tenancy/tenancy.module.ts`.
