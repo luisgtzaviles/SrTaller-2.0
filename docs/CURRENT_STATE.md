@@ -31,6 +31,13 @@ registry fail-closed de controllers de módulo: owner exacto, capa
 controllers funcionales autorizados posteriormente. Evidencia:
 [HTTP Surface Reconciliation](architecture-readiness/dec-005-materialization/HTTP_SURFACE_RECONCILIATION.md).
 
+El candidato conserva el write focalizado de notas como append-only. Su clave
+de idempotencia distingue un retry legítimo del mismo contenido de una
+reutilización conflictiva, que falla con `409`; la Worklist resuelve periodos
+relativos con el reloj actual del backend y trata `%`/`_` como búsqueda literal.
+Estas garantías describen solamente la rama candidata: no afirman integración,
+Preview desplegado ni contexto operativo confiable.
+
 ## 1. Executive Summary
 
 SR Taller 2.0 ya tiene una foundation técnica ejecutable: monorepo pnpm,

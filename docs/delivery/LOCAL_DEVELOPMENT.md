@@ -139,13 +139,16 @@ El backend local arranca con `SR_DB_ROLE=application` y expone:
 - `GET http://127.0.0.1:3000/livez` — 200 mientras el proceso está vivo;
 - `GET http://127.0.0.1:3000/readyz` — 200 con DB, journal y schema listos;
 - `GET http://127.0.0.1:3000/api/repairs` — Worklist V1 read-only con búsqueda,
-  periodos, filtros avanzados y paginación server-side;
+  periodos relativos evaluados contra la fecha actual del backend, filtros
+  avanzados y paginación server-side; `%` y `_` se buscan literalmente;
 - `GET http://127.0.0.1:3000/api/repairs/:id` — detalle read-only con intake,
   timeline y metadatos de evidencia;
 - `GET http://127.0.0.1:3000/api/repairs/:id/evidence/:evidenceId/content` —
   contenido de evidencia limitado al provider local sintético;
 - `POST http://127.0.0.1:3000/api/repairs/:id/notes` — nota operativa local
-  idempotente; no implica transiciones, asignación ni otros writes;
+  idempotente; repetir `clientRequestId` con el mismo contenido devuelve la
+  nota original, mientras reutilizarlo con contenido diferente responde `409`;
+  no implica transiciones, asignación ni otros writes;
 - al apagar PostgreSQL, `/livez` puede seguir 200 y `/readyz` debe fallar
   conforme al contrato de health.
 
