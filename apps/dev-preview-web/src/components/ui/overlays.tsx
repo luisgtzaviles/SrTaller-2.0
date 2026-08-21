@@ -1,15 +1,18 @@
 import { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 import { Button, IconButton } from './controls.js';
 import styles from './ui.module.css';
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const dialogLayers: HTMLElement[] = [];
 
 export function useFocusTrap(
   active: boolean,
   container: React.RefObject<HTMLElement | null>,
   onEscape: () => void,
+  restoreFocusSelector?: string,
 ): void {
   useEffect(() => {
     if (!active || !container.current) return undefined;
@@ -18,6 +21,8 @@ export function useFocusTrap(
     const focusable = (): HTMLElement[] => Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE));
     focusable()[0]?.focus();
     const keydown = (event: KeyboardEvent): void => {
+      const ownerLayer = root.closest<HTMLElement>('[data-dialog-layer="true"]');
+      if (ownerLayer && dialogLayers.at(-1) !== ownerLayer) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         onEscape();
@@ -43,9 +48,15 @@ export function useFocusTrap(
     document.addEventListener('keydown', keydown);
     return () => {
       document.removeEventListener('keydown', keydown);
-      previous?.focus();
+      window.requestAnimationFrame(() => {
+        const explicitTarget = restoreFocusSelector
+          ? Array.from(document.querySelectorAll<HTMLElement>(restoreFocusSelector))
+            .find((element) => element.getClientRects().length > 0)
+          : null;
+        (explicitTarget ?? previous)?.focus();
+      });
     };
-  }, [active, container, onEscape]);
+  }, [active, container, onEscape, restoreFocusSelector]);
 }
 
 export function Dialog({
@@ -53,27 +64,63 @@ export function Dialog({
   title,
   description,
   children,
+  size = 'default',
+  footer,
+  restoreFocusSelector,
   onClose,
 }: Readonly<{
   open: boolean;
   title: string;
   description: string;
   children?: React.ReactNode;
+  size?: 'default' | 'wide' | 'workspace';
+  footer?: React.ReactNode | false;
+  restoreFocusSelector?: string | undefined;
   onClose(): void;
 }>): React.JSX.Element | null {
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-  useFocusTrap(open, dialogRef, onClose);
+  const layerRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(open, dialogRef, onClose, restoreFocusSelector);
+
+  useEffect(() => {
+    if (!open || !layerRef.current) return undefined;
+    const layer = layerRef.current;
+    const previousLayer = dialogLayers.at(-1);
+    const root = document.getElementById('root');
+    const bodyHadDialogLock = document.body.classList.contains('srt-dialog-open');
+
+    if (previousLayer) previousLayer.inert = true;
+    else if (root) root.inert = true;
+    dialogLayers.push(layer);
+    document.body.classList.add('srt-dialog-open');
+
+    return () => {
+      const index = dialogLayers.lastIndexOf(layer);
+      if (index >= 0) dialogLayers.splice(index, 1);
+      const revealedLayer = dialogLayers.at(-1);
+      if (revealedLayer) revealedLayer.inert = false;
+      else if (root) root.inert = false;
+      if (dialogLayers.length === 0 && !bodyHadDialogLock) document.body.classList.remove('srt-dialog-open');
+    };
+  }, [open]);
+
   if (!open) return null;
-  return (
-    <div className={styles.overlay}>
+  const sizeClass = size === 'workspace'
+    ? styles.dialogWorkspace
+    : size === 'wide'
+      ? styles.dialogWide
+      : '';
+  return createPortal(
+    <div ref={layerRef} className={styles.overlay} data-dialog-layer="true">
       <div className={styles.backdrop} aria-hidden="true" onClick={onClose} />
-      <div ref={dialogRef} className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1}>
+      <div ref={dialogRef} className={`${styles.dialog} ${sizeClass}`} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1}>
         <header><div><h2 id={titleId}>{title}</h2><p id={descriptionId}>{description}</p></div><IconButton label="Cerrar diálogo" icon={X} onClick={onClose} /></header>
-        {children}
-        <footer><Button tone="primary" onClick={onClose}>Entendido</Button></footer>
+        <div className={styles.dialogBody}>{children}</div>
+        {footer === false ? null : <footer>{footer ?? <Button tone="primary" onClick={onClose}>Entendido</Button>}</footer>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

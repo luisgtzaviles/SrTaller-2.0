@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import type { Location } from 'react-router-dom';
 
 import { ApplicationShell } from './components/shell/ApplicationShell.js';
 import { Spinner } from './components/ui/feedback.js';
@@ -14,10 +15,16 @@ const UiCatalogPage = __UI_CATALOG_ENABLED__
   : null;
 
 export function App(): React.JSX.Element {
+  const location = useLocation();
+  const routeState = location.state as Readonly<{
+    backgroundLocation?: Location;
+  }> | null;
+  const backgroundLocation = routeState?.backgroundLocation;
+
   return (
     <ApplicationShell>
       <Suspense fallback={<Spinner label="Cargando superficie" />}>
-        <Routes>
+        <Routes location={backgroundLocation ?? location}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/reparaciones" element={<RepairsPage />} />
           <Route path="/reparaciones/nueva" element={<NewRepairPage />} />
@@ -26,6 +33,11 @@ export function App(): React.JSX.Element {
           {UiCatalogPage ? <Route path="/__internal/ui-catalog" element={<UiCatalogPage />} /> : null}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        {backgroundLocation ? (
+          <Routes>
+            <Route path="/reparaciones/:id" element={<RepairDetailPage host="overlay" />} />
+          </Routes>
+        ) : null}
       </Suspense>
     </ApplicationShell>
   );
