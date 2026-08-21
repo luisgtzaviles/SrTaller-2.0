@@ -7,16 +7,18 @@ import {
   useState,
 } from 'react';
 
-import { ACCENT_FALLBACK, resolveTenantAccent } from './accent.mjs';
-import type { ResolvedTheme, TenantAccentResult } from './accent.mjs';
+import { BRAND_DEFAULT, normalizeHex, resolveTenantAccent } from './accent.mjs';
+import type { ResolvedTheme, TenantBrandResult } from './accent.mjs';
 
 export type ThemePreference = 'light' | 'dark';
 
 const THEME_STORAGE_KEY = 'srtaller.theme';
+const BRAND_ACCENT_STORAGE_KEY = 'srtaller.brand-accent';
 interface ThemeContextValue {
   readonly preference: ThemePreference;
   readonly resolvedTheme: ResolvedTheme;
-  readonly accent: TenantAccentResult;
+  readonly brand: TenantBrandResult;
+  readonly syntheticAccent: string | null;
   setPreference(preference: ThemePreference): void;
   setSyntheticAccent(input: string | null): void;
 }
@@ -36,12 +38,20 @@ function readPreference(): ThemePreference {
   }
 }
 
+function readBrandAccent(): string | null {
+  try {
+    return normalizeHex(window.localStorage.getItem(BRAND_ACCENT_STORAGE_KEY));
+  } catch {
+    return null;
+  }
+}
+
 export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
   const [preference, setPreferenceState] = useState<ThemePreference>(readPreference);
-  const [syntheticAccent, setSyntheticAccent] = useState<string | null>(null);
+  const [syntheticAccent, setSyntheticAccentState] = useState<string | null>(readBrandAccent);
   const resolvedTheme: ResolvedTheme = preference;
-  const accent = useMemo(
-    () => resolveTenantAccent(syntheticAccent ?? ACCENT_FALLBACK[resolvedTheme], resolvedTheme),
+  const brand = useMemo(
+    () => resolveTenantAccent(syntheticAccent ?? BRAND_DEFAULT, resolvedTheme),
     [resolvedTheme, syntheticAccent],
   );
 
@@ -49,12 +59,22 @@ export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode
     const root = document.documentElement;
     root.dataset.theme = resolvedTheme;
     root.dataset.themePreference = preference;
-    root.style.setProperty('--color-accent', accent.accent);
-    root.style.setProperty('--color-accent-hover', accent.hover);
-    root.style.setProperty('--color-accent-active', accent.active);
-    root.style.setProperty('--color-accent-subtle', accent.subtle);
-    root.style.setProperty('--color-on-accent', accent.contrast);
-  }, [accent, preference, resolvedTheme]);
+    root.style.setProperty('--color-brand-base', brand.base);
+    root.style.setProperty('--color-brand-on-base', brand.onBase);
+    root.style.setProperty('--color-brand-action', brand.action);
+    root.style.setProperty('--color-brand-action-hover', brand.actionHover);
+    root.style.setProperty('--color-brand-action-active', brand.actionActive);
+    root.style.setProperty('--color-brand-subtle', brand.subtle);
+    root.style.setProperty('--color-brand-muted', brand.muted);
+    root.style.setProperty('--color-brand-surface', brand.surface);
+    root.style.setProperty('--color-brand-surface-raised', brand.surfaceRaised);
+    root.style.setProperty('--color-brand-surface-hover', brand.surfaceHover);
+    root.style.setProperty('--color-brand-surface-active', brand.surfaceActive);
+    root.style.setProperty('--color-brand-border', brand.border);
+    root.style.setProperty('--color-brand-contrast', brand.contrast);
+    root.style.setProperty('--color-brand-focus', brand.focus);
+    root.style.setProperty('--color-brand-surface-focus', brand.surfaceFocus);
+  }, [brand, preference, resolvedTheme]);
 
   const setPreference = useCallback((nextPreference: ThemePreference): void => {
     setPreferenceState(nextPreference);
@@ -65,13 +85,25 @@ export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode
     }
   }, []);
 
+  const setSyntheticAccent = useCallback((input: string | null): void => {
+    const normalized = normalizeHex(input);
+    setSyntheticAccentState(input === null ? null : normalized ?? input);
+    try {
+      if (normalized) window.localStorage.setItem(BRAND_ACCENT_STORAGE_KEY, normalized);
+      else window.localStorage.removeItem(BRAND_ACCENT_STORAGE_KEY);
+    } catch {
+      // The local preview remains usable when browser storage is unavailable.
+    }
+  }, []);
+
   const value = useMemo<ThemeContextValue>(() => ({
     preference,
     resolvedTheme,
-    accent,
+    brand,
+    syntheticAccent,
     setPreference,
     setSyntheticAccent,
-  }), [accent, preference, resolvedTheme, setPreference]);
+  }), [brand, preference, resolvedTheme, setPreference, setSyntheticAccent, syntheticAccent]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

@@ -10,6 +10,7 @@ const shellComponentSource = await readFile('apps/dev-preview-web/src/components
 const uiSource = await readFile('apps/dev-preview-web/src/components/ui/ui.module.css', 'utf8');
 const overlaySource = await readFile('apps/dev-preview-web/src/components/ui/overlays.tsx', 'utf8');
 const catalogSource = await readFile('apps/dev-preview-web/src/catalog/UiCatalogPage.tsx', 'utf8');
+const catalogStyles = await readFile('apps/dev-preview-web/src/catalog/ui-catalog.module.css', 'utf8');
 const repairDetailSource = await readFile('apps/dev-preview-web/src/pages/RepairDetailPage.tsx', 'utf8');
 const repairsSource = await readFile('apps/dev-preview-web/src/pages/RepairsPage.tsx', 'utf8');
 
@@ -39,7 +40,10 @@ test('normal text and semantic status tokens preserve WCAG AA contrast', () => {
         assert.ok(contrastRatio(tokens[foreground], tokens[background]) >= 4.5, `${theme} ${foreground} on ${background}`);
       }
     }
-    assert.ok(contrastRatio(tokens['color-on-accent'], tokens['color-accent']) >= 4.5, `${theme} on-accent`);
+    assert.ok(contrastRatio(tokens['color-brand-on-base'], tokens['color-brand-base']) >= 4.5, `${theme} brand base/on-base`);
+    assert.ok(contrastRatio(tokens['color-brand-contrast'], tokens['color-brand-action']) >= 4.5, `${theme} brand action`);
+    assert.ok(contrastRatio(tokens['color-brand-surface-focus'], tokens['color-brand-surface']) >= 4.5, `${theme} brand surface`);
+    assert.ok(contrastRatio(tokens['color-brand-border'], tokens['color-brand-surface']) >= 3, `${theme} brand boundary`);
     assert.ok(contrastRatio(tokens['color-border-strong'], tokens['color-surface']) >= 3, `${theme} control boundary`);
   }
 });
@@ -52,11 +56,31 @@ test('mobile shell and entity cards remain active below the lg breakpoint', () =
 });
 
 test('focus and touch contracts are explicit for shared controls', () => {
-  assert.match(uiSource, /\.input:focus-visible \{ outline: 3px solid var\(--color-focus\); outline-offset: 2px; \}/u);
+  assert.match(uiSource, /\.input:focus-visible \{ outline: 3px solid var\(--color-brand-focus\); outline-offset: 2px; \}/u);
   assert.match(uiSource, /@media \(pointer: coarse\) \{[\s\S]*?\.input \{ min-height: var\(--touch-target\); \}/u);
   assert.match(catalogSource, /aria-pressed=\{preference === theme\}/u);
   assert.doesNotMatch(shellComponentSource, /<button[^>]+drawerBackdrop/gu);
   assert.doesNotMatch(overlaySource, /<button[^>]+backdrop/gu);
-  assert.match(repairDetailSource, /title="Detalle de reparación"/u);
-  assert.match(repairsSource, /failed \? 'Conteo no disponible' : loading \? 'Cargando…'/u);
+  assert.match(repairDetailSource, /title="Detalle de reparación"|Detalle de reparación/u);
+  assert.match(repairDetailSource, /getRepairDetail\(id, signal\)/u);
+  assert.match(repairDetailSource, /Volver a reparaciones/u);
+  assert.doesNotMatch(repairDetailSource, /Cambiar estado|Guardar cambios|Precio estimado|WhatsApp|Imprimir/iu);
+  assert.match(repairsSource, /failed \? 'No disponible' : loading \? 'Cargando…' : null/u);
+  assert.match(repairsSource, /<strong>\{totalCount\}<\/strong>/u);
+  assert.match(repairsSource, /<ButtonLink to="\/reparaciones\/nueva" tone="primary">/u);
+});
+
+test('materiality hierarchy is explicit without bypassing governed surfaces', () => {
+  assert.match(shellSource, /\.workspace \{[\s\S]*?background: var\(--color-surface-subtle\);/u);
+  assert.match(shellSource, /\.sidebarIdentity \{[\s\S]*?background: var\(--color-surface\);/u);
+  assert.match(shellComponentSource, /className=\{styles\.sidebarIdentity\}/u);
+  assert.match(catalogSource, />Surface Hierarchy</u);
+  for (const role of ['canvas', 'surface-subtle', 'surface', 'surface-raised']) {
+    assert.match(catalogStyles, new RegExp(`var\\(--color-${role}\\)`, 'u'));
+  }
+  assert.match(tokensSource, /--color-brand-chrome:/u);
+  assert.match(tokensSource, /--color-brand-chrome-hover:/u);
+  assert.match(tokensSource, /--color-brand-chrome-active:/u);
+  assert.match(tokensSource, /--color-brand-chrome-border:/u);
+  assert.match(tokensSource, /--color-brand-chrome-muted:/u);
 });

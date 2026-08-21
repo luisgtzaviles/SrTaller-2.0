@@ -1,4 +1,4 @@
-import { CircleCheck, FlaskConical, Search, TriangleAlert } from 'lucide-react';
+import { CircleCheck, FlaskConical, LogOut, Menu, Moon, Search, Sun, TriangleAlert, UserCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button, Field, Input, Textarea } from '../components/ui/controls.js';
@@ -9,6 +9,7 @@ import { PageHeader } from '../components/ui/navigation.js';
 import { Dialog } from '../components/ui/overlays.js';
 import { Inline, Stack, Text } from '../components/ui/primitives.js';
 import { resolveTenantAccent } from '../foundation/accent.mjs';
+import type { TenantBrandResult } from '../foundation/accent.mjs';
 import { useTheme } from '../foundation/theme.js';
 import type { ThemePreference } from '../foundation/theme.js';
 import styles from './ui-catalog.module.css';
@@ -25,8 +26,25 @@ const catalogRows: readonly CatalogRecord[] = [
   { id: 'fixture-b', label: 'Fixture B', device: 'Equipo de demostración', state: 'ready' },
 ];
 
+const brandRoles = (result: TenantBrandResult): readonly [string, string][] => [
+  ['Brand input', result.input],
+  ['Action', result.action],
+  ['Action hover', result.actionHover],
+  ['Action active', result.actionActive],
+  ['Subtle', result.subtle],
+  ['Muted', result.muted],
+  ['Surface', result.surface],
+  ['Surface raised', result.surfaceRaised],
+  ['Surface hover', result.surfaceHover],
+  ['Surface active', result.surfaceActive],
+  ['Border', result.border],
+  ['Action foreground', result.contrast],
+  ['Focus', result.focus],
+  ['Surface foreground', result.surfaceFocus],
+];
+
 export default function UiCatalogPage(): React.JSX.Element {
-  const { preference, resolvedTheme, accent, setPreference, setSyntheticAccent } = useTheme();
+  const { preference, resolvedTheme, brand, setPreference, setSyntheticAccent } = useTheme();
   const [accentInput, setAccentInput] = useState('#B45309');
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -58,21 +76,71 @@ export default function UiCatalogPage(): React.JSX.Element {
       </Alert>
 
       <section className={styles.section}>
-        <header><h2>Temas y tenant accent</h2><p>Preferencia persistida: <strong>{preference}</strong>; tema resuelto: <strong>{resolvedTheme}</strong>.</p></header>
+        <header><h2>Surface Hierarchy</h2><p>La misma composición permite comprobar canvas, workspace, surface, raised e input/inset con los tokens del tema activo: <strong>{resolvedTheme}</strong>.</p></header>
+        <Inline gap="2">
+          {(['light', 'dark'] as const).map((theme: ThemePreference) => <Button key={`surface-${theme}`} aria-pressed={preference === theme} tone={preference === theme ? 'primary' : 'secondary'} onClick={() => setPreference(theme)}>{theme}</Button>)}
+        </Inline>
+        <div className={styles.surfaceCanvas} aria-label={`Jerarquía de superficies ${resolvedTheme}`}>
+          <span>Canvas</span>
+          <div className={styles.surfaceWorkspace}>
+            <span>Workspace</span>
+            <div className={styles.surfacePanel}>
+              <span>Surface / data panel</span>
+              <div className={styles.surfaceRaised}>
+                <span>Raised</span>
+                <label className={styles.surfaceInset}>Input / inset<input aria-label="Input de muestra de jerarquía" value="Área interactiva" readOnly /></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <header><h2>Brand Surface &amp; Chrome</h2><p>Un único color de sucursal deriva una superficie sobria, acciones identificables y chrome translúcido gobernado para Light y Dark. Preferencia persistida: <strong>{preference}</strong>; tema resuelto: <strong>{resolvedTheme}</strong>.</p></header>
         <Inline gap="2">
           {(['light', 'dark'] as const).map((theme: ThemePreference) => <Button key={theme} aria-pressed={preference === theme} tone={preference === theme ? 'primary' : 'secondary'} onClick={() => setPreference(theme)}>{theme}</Button>)}
         </Inline>
         <div className={styles.accentLab}>
-          <Field id="catalog-accent" label="Acento sintético #RRGGBB" hint="Valores inválidos activan fallback seguro.">
+          <Field id="catalog-accent" label="Color de marca sintético #RRGGBB" hint="Valores inválidos activan fallback seguro.">
             <Input id="catalog-accent" value={accentInput} onChange={(event) => setAccentInput(event.target.value)} aria-describedby="catalog-accent-description" />
           </Field>
-          <Button onClick={() => setSyntheticAccent(accentInput)}>Aplicar acento sintético</Button>
+          <Button onClick={() => setSyntheticAccent(accentInput)}>Aplicar color sintético</Button>
           <Button tone="quiet" onClick={() => { setAccentInput('#FFF3B0'); setSyntheticAccent('#FFF3B0'); }}>Probar inseguro</Button>
         </div>
-        <div className={styles.accentResults}>
-          {[lightPreview, darkPreview].map((result) => <article key={result.theme}><strong>{result.theme}</strong><code>{result.accent}</code><span>hover {result.hover}</span><span>active {result.active}</span><span>subtle {result.subtle}</span><span>ratios {result.surfaceRatio.toFixed(2)} / {result.contrastRatio.toFixed(2)}</span><StatusBadge tone={result.fallback ? 'warning' : 'success'}>{result.fallback ? `fallback: ${result.reason}` : 'válido'}</StatusBadge></article>)}
+        <div className={styles.brandSample} aria-label="Muestra técnica con los roles de marca activos">
+          <div className={styles.brandSampleTopbar}>
+            <span className={styles.brandSampleChrome} aria-hidden="true"><Menu size={20} /></span>
+            <span className={styles.brandSampleMark}>SR</span>
+            <span className={styles.brandSampleIdentity}><strong>SR Taller</strong><small>Identidad sobre brand surface</small></span>
+            <span className={styles.brandSampleBadge}>Preview</span>
+            <span className={styles.brandSampleTheme} aria-hidden="true"><span className={styles.brandSampleThemeActive}><Sun size={16} /></span><Moon size={16} /></span>
+            <span className={styles.brandSampleOperator}><UserCircle aria-hidden="true" size={18} /><span><strong>Operador</strong><small>Identidad ligera</small></span></span>
+            <span className={styles.brandSampleLogout} aria-hidden="true"><LogOut size={18} /></span>
+          </div>
+          <div className={styles.brandSampleBody}>
+            <Button tone="primary">Primary action</Button>
+            <span className={styles.brandSampleNav}>Active navigation</span>
+            <span className={styles.brandSampleFocus}>Focus role</span>
+          </div>
         </div>
-        <Text tone="muted" size="sm">Acento aplicado: {accent.accent}. Success, warning, danger e info conservan tokens independientes.</Text>
+        <div className={styles.chromeRoleGrid} aria-label="Roles de chrome sobre la superficie de marca">
+          <span><i className={styles.chromeDefault} />Chrome</span>
+          <span><i className={styles.chromeHover} />Hover</span>
+          <span><i className={styles.chromeActive} />Active</span>
+          <span><i className={styles.chromeMuted} />Muted text</span>
+          <span><i className={styles.chromeBorder} />Boundary</span>
+        </div>
+        <div className={styles.accentResults}>
+          {[lightPreview, darkPreview].map((result) => (
+            <article key={result.theme}>
+              <header><strong>{result.theme}</strong><StatusBadge tone={result.fallback ? 'warning' : 'success'}>{result.fallback ? `fallback: ${result.reason}` : 'válido'}</StatusBadge></header>
+              <p>Input <code>{result.input}</code> · Surface <code>{result.surface}</code> · Action <code>{result.action}</code> · Surface foreground <code>{result.surfaceFocus}</code> · Action foreground <code>{result.contrast}</code></p>
+              <dl>{brandRoles(result).map(([role, value]) => <div key={role}><dt>{role}</dt><dd><code>{value}</code></dd></div>)}</dl>
+              <p>Contraste action/texto {result.actionContrastRatio.toFixed(2)} · surface/texto {result.surfaceContrastRatio.toFixed(2)} · border/surface {result.borderSurfaceRatio.toFixed(2)}</p>
+            </article>
+          ))}
+        </div>
+        <Text tone="muted" size="sm">Marca aplicada: {brand.action}. Success, warning, danger e info conservan tokens semánticos independientes.</Text>
       </section>
 
       <section className={styles.section}>

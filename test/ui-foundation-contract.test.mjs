@@ -33,6 +33,18 @@ test('checker rejects arbitrary component colors and breakpoints', async () => w
   assert.ok(failures.some((problem) => problem.includes('820px')));
 }));
 
+test('checker rejects legacy accent consumers that bypass semantic brand roles', async () => withFixture(async (root) => {
+  const path = resolve(root, 'apps/dev-preview-web/src/pages/pages.module.css');
+  await writeFile(path, `${await readFile(path, 'utf8')}\n.probe { color: var(--color-accent); }\n`);
+  assert.ok((await validateUiFoundation(root)).some((problem) => problem.includes('legacy accent token')));
+}));
+
+test('checker requires the shared brand chrome roles', async () => withFixture(async (root) => {
+  const path = resolve(root, 'apps/dev-preview-web/src/styles/tokens.css');
+  await writeFile(path, (await readFile(path, 'utf8')).replace(/\s*--color-brand-chrome-border:[^;]+;/u, ''));
+  assert.ok((await validateUiFoundation(root)).some((problem) => problem.includes('brand chrome token')));
+}));
+
 test('checker rejects dynamic Lucide and inline SVG', async () => withFixture(async (root) => {
   const path = resolve(root, 'apps/dev-preview-web/src/pages/probe.tsx');
   await writeFile(path, "import { DynamicIcon } from 'lucide-react';\nexport const probe = <svg />;\n");

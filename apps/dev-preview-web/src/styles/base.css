@@ -25,7 +25,8 @@ body {
   background: var(--color-canvas);
 }
 
-body.srt-drawer-open {
+body.srt-drawer-open,
+body.srt-dialog-open {
   overflow: hidden;
 }
 
@@ -56,13 +57,13 @@ p {
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--color-brand-focus);
   outline-offset: 2px;
 }
 
 ::selection {
-  color: var(--color-on-accent);
-  background: var(--color-accent);
+  color: var(--color-brand-contrast);
+  background: var(--color-brand-action);
 }
 
 .srt-visually-hidden {
