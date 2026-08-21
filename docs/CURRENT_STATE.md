@@ -16,6 +16,21 @@
 - **Deriva:** todo hecho operacional debe volver a verificarse si cambia
   `main`, CI, Dokploy o Preview.
 
+## Addendum local no integrado — Repairs
+
+La rama local `feature/branch-brand-color-owner-iteration`, basada en
+`483110c0afe8574d0bde8355e0f16a7155ac50c2`, contiene un candidato de
+integración aún no promovido a `main` que incluye Repairs Worklist, Repair
+Detail, evidencia y nota operativa. Este addendum no cambia la fotografía
+histórica de `main` descrita abajo y no afirma integración ni deploy.
+
+La superficie HTTP local de Repairs quedó reconciliada con DEC-005 mediante un
+registry fail-closed de controllers de módulo: owner exacto, capa
+`presentation`, source autorizada y composición explícita. La guarda textual
+`health-only` de PBI-022 se conserva como historia, pero deja de gobernar
+controllers funcionales autorizados posteriormente. Evidencia:
+[HTTP Surface Reconciliation](architecture-readiness/dec-005-materialization/HTTP_SURFACE_RECONCILIATION.md).
+
 ## 1. Executive Summary
 
 SR Taller 2.0 ya tiene una foundation técnica ejecutable: monorepo pnpm,

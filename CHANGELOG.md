@@ -28,6 +28,11 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Implementación
 
+- Reconciliada la superficie HTTP local de Repairs con DEC-005: policy
+  fail-closed por path/owner/presentation/composición, enforcement AST sin
+  excepción específica de Repairs y mutaciones negativas para placement,
+  acceso DB/adapter y cruces intermodulares. No agrega rutas ni cambia producto.
+
 - Baseline ejecutable Node.js/NestJS con health `/livez` y `/readyz`.
 - Monolito modular con checker de arquitectura, ownership de persistencia y
   límites `tenancy`, `stations` y `access`.
