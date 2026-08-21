@@ -742,7 +742,7 @@ export const persistenceFixtureCases = [
   },
   {
     name: 'D5-R048 rejects controller access to transaction runner',
-    expectedRules: ['D5-R035', 'D5-R048'],
+    expectedRules: ['D5-R011', 'D5-R035', 'D5-R048'],
     expectedPath: 'src/modules/access/presentation/transaction.controller.ts',
     files: based({
       'src/modules/access/presentation/transaction.controller.ts':
@@ -751,7 +751,7 @@ export const persistenceFixtureCases = [
   },
   {
     name: 'D5-R048 rejects owner-internal capability deep import',
-    expectedRules: ['D5-R048'],
+    expectedRules: ['D5-R011', 'D5-R048'],
     expectedPath: 'src/modules/access/presentation/transaction-helper.ts',
     files: based({
       'src/modules/access/presentation/transaction-helper.ts':
@@ -777,7 +777,7 @@ export const persistenceFixtureCases = [
   },
   {
     name: 'D5-R049 rejects an unauthorized migration provider consumer',
-    expectedRules: ['D5-R049'],
+    expectedRules: ['D5-R011', 'D5-R049'],
     expectedPath: 'src/modules/access/presentation/migration-helper.ts',
     files: based({
       'src/infrastructure/database/database-migration-capability.ts':
@@ -789,10 +789,6 @@ export const persistenceFixtureCases = [
       'src/modules/access/presentation/migration-helper.ts':
         "import { inspectMigrationSource } from '../../../infrastructure/database/database-migration-provider.js';\nexport const helper = inspectMigrationSource;\n",
     }),
-    coverage: {
-      ids: ['fixture:D5-R049:migration-provider-consumer'],
-      evidence: ['inspectMigrationSource'],
-    },
   },
   {
     name: 'D5-R049 rejects migration runner import from startup',
@@ -808,6 +804,10 @@ export const persistenceFixtureCases = [
       'src/main.ts':
         "import { createMigrationRunner } from './infrastructure/database/migration-runner.js';\nvoid createMigrationRunner;\n",
     }),
+    coverage: {
+      ids: ['fixture:D5-R049:migration-provider-consumer'],
+      evidence: ['createMigrationRunner'],
+    },
   },
   {
     name: 'D5-R049 rejects aliased migration runner import from application',
@@ -826,7 +826,7 @@ export const persistenceFixtureCases = [
   },
   {
     name: 'D5-R049 rejects namespace migration runner import from controller',
-    expectedRules: ['D5-R035', 'D5-R049'],
+    expectedRules: ['D5-R011', 'D5-R035', 'D5-R049'],
     expectedPath: 'src/modules/access/presentation/migration.controller.ts',
     files: based({
       'src/infrastructure/database/database-migration-capability.ts':
@@ -841,7 +841,7 @@ export const persistenceFixtureCases = [
   },
   {
     name: 'D5-R049 rejects migration provider re-export',
-    expectedRules: ['D5-R049'],
+    expectedRules: ['D5-R011', 'D5-R049'],
     expectedPath: 'src/modules/access/presentation/migration-export.ts',
     files: based({
       'src/infrastructure/database/database-migration-capability.ts':
@@ -856,7 +856,7 @@ export const persistenceFixtureCases = [
   },
   {
     name: 'D5-R049 rejects owner-internal migration type import',
-    expectedRules: ['D5-R049'],
+    expectedRules: ['D5-R011', 'D5-R049'],
     expectedPath: 'src/modules/access/presentation/migration-type.ts',
     files: based({
       'src/infrastructure/database/database-migration-capability.ts':
@@ -871,7 +871,7 @@ export const persistenceFixtureCases = [
   },
   {
     name: 'D5-R049 rejects require and dynamic migration facility imports',
-    expectedRules: ['D5-R049'],
+    expectedRules: ['D5-R011', 'D5-R049'],
     expectedPath: 'src/modules/access/presentation/migration-dynamic.ts',
     files: based({
       'src/infrastructure/database/database-migration-capability.ts':

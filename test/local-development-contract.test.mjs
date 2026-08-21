@@ -9,6 +9,8 @@ import {
   LOCAL_MIGRATION_USER,
   assertLocalTarget,
   databaseEnvironment,
+  localRepairIntakeRows,
+  localRepairTimelineRows,
   localSeedRows,
   parseLocalEnvironment,
 } from '../scripts/lib/local-development.mjs';
@@ -67,6 +69,33 @@ test('seed contract is deterministic and contains only existing schema entities'
   assert.equal(first.branches.length, 2);
   assert.deepEqual(Object.keys(first.tenant).sort(), ['createdAt', 'tenantId']);
   assert.deepEqual(Object.keys(first.branches[0]).sort(), ['branchId', 'createdAt', 'tenantId']);
+});
+
+test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {
+  const first = localRepairIntakeRows();
+  assert.deepEqual(first, localRepairIntakeRows());
+  assert.equal(first.length, 15);
+  assert.ok(first.some((row) => row.receivedById === null && row.documentedRiskSummary === null));
+  assert.ok(first.some((row) => (row.customerNarrative?.length ?? 0) > 200));
+  assert.ok(first.some((row) => row.documentedRiskSummary !== null));
+  const keys = Object.keys(first[0]).join(' ');
+  assert.doesNotMatch(keys, /pin|password|pattern|unlock|imei|secret/iu);
+});
+
+test('repair timeline seed is deterministic, typed, and covers rich, single, and empty scenarios', () => {
+  const rows = localRepairTimelineRows();
+  assert.deepEqual(rows, localRepairTimelineRows());
+  assert.equal(rows.length, 7);
+  assert.deepEqual(new Set(rows.map((row) => row.entryType)), new Set(['note', 'system_event']));
+  assert.ok(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001003').length >= 6);
+  assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001002').length, 1);
+  assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001008').length, 0);
+  assert.ok(new Set(rows.filter((row) => row.actorId).map((row) => row.actorId)).size >= 3);
+  assert.ok(rows.some((row) => (row.body?.length ?? 0) > 250));
+  assert.ok(rows.filter((row) => row.entryType === 'note').every((row) => row.actorId !== null));
+  assert.ok(rows.filter((row) => row.actorDisplayName === 'Sistema').every((row) => row.entryType === 'system_event'));
+  const keys = Object.keys(rows[0]).join(' ');
+  assert.doesNotMatch(keys, /pin|password|pattern|unlock|imei|secret/iu);
 });
 
 test('local env parser accepts comments and rejects malformed entries', () => {

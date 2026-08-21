@@ -5,6 +5,7 @@ import type { DatabaseSchema } from './database-types.js';
 
 export type InternalDatabasePersistenceOwner =
   | 'database'
+  | 'repairs'
   | 'stations'
   | 'tenancy';
 
@@ -16,11 +17,17 @@ type DatabaseMigrationJournalTable = Readonly<{
 type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants'> &
   Readonly<{
     kysely_migration: DatabaseMigrationJournalTable;
+    repairs: DatabaseSchema['repairs'];
+    repair_intakes: DatabaseSchema['repair_intakes'];
+    repair_timeline_entries: DatabaseSchema['repair_timeline_entries'];
+    repair_attachments: DatabaseSchema['repair_attachments'];
   }>;
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
   Owner extends 'database'
     ? DatabaseTechnicalSchema
+    : Owner extends 'repairs'
+    ? Pick<DatabaseSchema, 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs'>
     : Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'tenants'>
     : Pick<DatabaseSchema, 'branches'>;

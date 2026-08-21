@@ -78,6 +78,11 @@ test('public migration API remains narrow with one productive migration', async 
   assert.match(capability, /unique symbol/u);
   assert.deepEqual(await readdir(productMigrationRoot), [
     '20260725183832_database_create_tenants_and_branches.ts',
+    '20260819120000_database_create_repairs_worklist.ts',
+    '20260819130000_repairs_create_intakes.ts',
+    '20260819140000_repairs_create_timeline_entries.ts',
+    '20260819150000_repairs_create_attachments.ts',
+    '20260820090000_repairs_add_operational_note_idempotency.ts',
   ]);
 });
 

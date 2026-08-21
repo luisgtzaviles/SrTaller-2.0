@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
-import { writeFile } from 'node:fs/promises';
+import { copyFile, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { inspect } from 'node:util';
@@ -551,10 +553,23 @@ test(
     const admin = adminPool();
     const connections = new Set();
     const runners = new Set();
+    const tenantMigrationRoot = await mkdtemp(
+      join(tmpdir(), 'srtaller-tenant-schema-migration-'),
+    );
     try {
       await resetDatabase(admin);
+      await Promise.all([
+        copyFile(
+          join(compiledMigrationRoot, `${migrationName}.js`),
+          join(tenantMigrationRoot, `${migrationName}.js`),
+        ),
+        copyFile(
+          join(compiledMigrationRoot, `${migrationName}.js.map`),
+          join(tenantMigrationRoot, `${migrationName}.js.map`),
+        ),
+      ]);
       const productSource = source(
-        compiledMigrationRoot,
+        tenantMigrationRoot,
         'src/infrastructure/database/migrations',
       );
       const inspection = await inspectMigrationSource(productSource);
@@ -568,6 +583,7 @@ test(
       connections.add(connection);
       const runner = createMigrationRunner(connection, {
         expectedManifestHash: inspection.manifest.aggregateSha256,
+        [databaseMigrationSourceOverride]: productSource,
       });
       runners.add(runner);
 
@@ -672,6 +688,7 @@ test(
       await resetDatabase(admin).catch(() => undefined);
       await assertNoRetainedObjects(admin);
       await admin.end();
+      await rm(tenantMigrationRoot, { force: true, recursive: true });
     }
   },
 );

@@ -12,6 +12,10 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   assert.equal(policy.persistence.status, 'tenant-schema-materialized');
   assert.deepEqual(policy.persistence.databaseObjects, {
     branches: { owner: 'stations', kind: 'table' },
+    repairs: { owner: 'repairs', kind: 'table' },
+    repair_intakes: { owner: 'repairs', kind: 'table' },
+    repair_timeline_entries: { owner: 'repairs', kind: 'table' },
+    repair_attachments: { owner: 'repairs', kind: 'table' },
     tenants: { owner: 'tenancy', kind: 'table' },
   });
   assert.deepEqual(policy.persistence.initialSchema, {
@@ -49,7 +53,14 @@ test('initial schema registry has exact owners, keys and physical scope', async 
 test('initial productive migration root contains exactly one governed file', async () => {
   assert.deepEqual(
     await readdir('src/infrastructure/database/migrations'),
-    [migrationPath.split('/').at(-1)],
+    [
+      migrationPath.split('/').at(-1),
+      '20260819120000_database_create_repairs_worklist.ts',
+      '20260819130000_repairs_create_intakes.ts',
+      '20260819140000_repairs_create_timeline_entries.ts',
+      '20260819150000_repairs_create_attachments.ts',
+      '20260820090000_repairs_add_operational_note_idempotency.ts',
+    ],
   );
   const migration = await readFile(migrationPath, 'utf8');
   for (const forbidden of [
