@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Get,
   InternalServerErrorException,
@@ -30,6 +31,7 @@ import {
   RepairEvidenceContentNotFoundError,
 } from '../application/use-cases/get-repair-evidence-content.use-case.js';
 import {
+  AddRepairOperationalNoteConflictError,
   AddRepairOperationalNoteInputError,
   AddRepairOperationalNoteUseCase,
   RepairOperationalNoteRepairNotFoundError,
@@ -239,6 +241,9 @@ export class RepairsController {
       }
       if (error instanceof RepairOperationalNoteRepairNotFoundError) {
         throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
+      }
+      if (error instanceof AddRepairOperationalNoteConflictError) {
+        throw new ConflictException({ code: 'REPAIR_NOTE_IDEMPOTENCY_CONFLICT' });
       }
       if (error instanceof Error && error.name === 'LocalRepairContextError') {
         throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });

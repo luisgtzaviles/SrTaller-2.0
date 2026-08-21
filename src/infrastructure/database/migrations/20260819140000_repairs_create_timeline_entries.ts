@@ -13,7 +13,7 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .addColumn('actor_id', 'uuid')
     .addColumn('actor_display_name', 'varchar(120)', (column) => column.notNull())
     .addColumn('title', 'varchar(160)')
-    .addColumn('body', 'varchar(3000)')
+    .addColumn('body', 'varchar(4000)')
     .addColumn('source', 'varchar(80)', (column) => column.notNull())
     .addColumn('occurred_at', 'timestamptz', (column) => column.notNull())
     .addColumn('created_at', 'timestamptz', (column) => column.notNull())

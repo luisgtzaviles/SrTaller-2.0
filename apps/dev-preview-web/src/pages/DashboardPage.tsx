@@ -17,7 +17,7 @@ export function DashboardPage(): React.JSX.Element {
         <div>
           <span>Design System & Application Shell V1</span>
           <h2>Una base consistente para el trabajo diario del taller.</h2>
-          <p>Este Preview demuestra navegación, temas, responsive y estados honestos mientras las APIs de producto permanecen fuera de alcance.</p>
+          <p>La foundation demuestra navegación, temas, responsive y estados honestos. Reparaciones sólo opera con el backend local sintético y no representa una capacidad productiva.</p>
         </div>
         <ButtonLink to="/reparaciones/nueva" tone="primary"><Wrench aria-hidden="true" size={20} />Nueva reparación</ButtonLink>
       </section>

@@ -101,6 +101,13 @@ export interface AddRepairOperationalNoteRecord {
   readonly occurredAt: Date;
 }
 
+export class RepairOperationalNoteIdempotencyConflictError extends Error {
+  constructor() {
+    super('Operational note idempotency key was reused with different content.');
+    this.name = 'RepairOperationalNoteIdempotencyConflictError';
+  }
+}
+
 export interface RepairWorklistQuery {
   readonly q?: string | undefined;
   readonly period?: 'today' | 'week' | 'month' | 'all' | undefined;

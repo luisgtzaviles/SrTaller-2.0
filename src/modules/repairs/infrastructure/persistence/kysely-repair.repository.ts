@@ -17,6 +17,7 @@ import type {
   RepairWorklistQuery,
   RepairWorklistRecord,
 } from '../../application/ports/repair-repository.port.js';
+import { RepairOperationalNoteIdempotencyConflictError } from '../../application/ports/repair-repository.port.js';
 import {
   custodyStatusCodes,
   repairStatusCodes,
@@ -27,7 +28,6 @@ type ExecuteRepairOperation<Result> = InternalDatabasePersistenceOperation<'repa
 
 const branchUuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
-const referenceDate = new Date('2026-08-19T12:00:00.000Z');
 const repairTimelineLimit = 20;
 const repairEvidenceLimit = 20;
 
@@ -39,7 +39,10 @@ function validateScope(scope: RepairPersistenceScope): RepairPersistenceScope {
   return Object.freeze({ tenantId, branchId: scope.branchId });
 }
 
-function dateRange(query: RepairWorklistQuery): Readonly<{ from?: Date | undefined; to?: Date | undefined }> {
+function dateRange(
+  query: RepairWorklistQuery,
+  referenceDate: Date,
+): Readonly<{ from?: Date | undefined; to?: Date | undefined }> {
   let from = query.from ? new Date(`${query.from}T00:00:00.000Z`) : undefined;
   let to = query.to ? new Date(`${query.to}T00:00:00.000Z`) : undefined;
   if (to) {
@@ -63,6 +66,10 @@ function dateRange(query: RepairWorklistQuery): Readonly<{ from?: Date | undefin
     }
   }
   return Object.freeze({ from, to });
+}
+
+function literalLikePattern(value: string): string {
+  return `%${value.replace(/[\\%_]/gu, '\\$&')}%`;
 }
 
 function mapRepair(row: RepairRow): RepairWorklistRecord {
@@ -223,7 +230,10 @@ function mapRepairDetail(
 }
 
 class KyselyRepairRepository implements RepairRepositoryPort {
-  constructor(readonly execute: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>) {}
+  constructor(
+    readonly execute: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>,
+    readonly now: () => Date,
+  ) {}
 
   async listWorklist(
     scope: RepairPersistenceScope,
@@ -231,7 +241,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
   ): Promise<RepairWorklistPage> {
     const validatedScope = validateScope(scope);
     const validatedQuery = query;
-    const range = dateRange(validatedQuery);
+    const range = dateRange(validatedQuery, this.now());
 
     return this.execute(async (executor: RepairExecutor) => {
       let filtered = executor
@@ -239,7 +249,9 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .selectAll()
         .where('tenant_id', '=', validatedScope.tenantId)
         .where('branch_id', '=', validatedScope.branchId);
-      const whereSearch = validatedQuery.q ? `%${validatedQuery.q}%` : undefined;
+      const whereSearch = validatedQuery.q
+        ? literalLikePattern(validatedQuery.q)
+        : undefined;
       if (whereSearch) {
         filtered = filtered.where((expression) => expression.or([
           expression('folio', 'ilike', whereSearch),
@@ -446,6 +458,15 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .where('repair_id', '=', note.repairId)
         .where('client_request_id', '=', note.clientRequestId)
         .executeTakeFirstOrThrow();
+      if (
+        existing.entry_type !== 'note' ||
+        existing.body !== note.body ||
+        existing.actor_id !== note.actorId ||
+        existing.actor_display_name !== note.actorDisplayName ||
+        existing.source !== note.source
+      ) {
+        throw new RepairOperationalNoteIdempotencyConflictError();
+      }
       return mapTimelineEntry(existing);
     });
   }
@@ -477,8 +498,12 @@ class KyselyRepairRepository implements RepairRepositoryPort {
   }
 }
 
-export function createKyselyRepairRepository(connection: DatabaseConnection): RepairRepositoryPort {
-  return new KyselyRepairRepository((operation) =>
-    useDatabasePersistenceExecutor(connection, 'repairs', operation),
+export function createKyselyRepairRepository(
+  connection: DatabaseConnection,
+  now: () => Date = () => new Date(),
+): RepairRepositoryPort {
+  return new KyselyRepairRepository(
+    (operation) => useDatabasePersistenceExecutor(connection, 'repairs', operation),
+    now,
   );
 }

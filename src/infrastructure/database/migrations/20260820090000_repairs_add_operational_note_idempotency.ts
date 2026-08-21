@@ -9,10 +9,6 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .execute();
   await database.schema
     .alterTable('repair_timeline_entries')
-    .alterColumn('body', (column) => column.setDataType('varchar(4000)'))
-    .execute();
-  await database.schema
-    .alterTable('repair_timeline_entries')
     .addUniqueConstraint(
       'repair_timeline_entries_note_request_uq',
       ['tenant_id', 'branch_id', 'repair_id', 'client_request_id'],
@@ -28,9 +24,5 @@ export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
   await database.schema
     .alterTable('repair_timeline_entries')
     .dropColumn('client_request_id')
-    .execute();
-  await database.schema
-    .alterTable('repair_timeline_entries')
-    .alterColumn('body', (column) => column.setDataType('varchar(3000)'))
     .execute();
 }
