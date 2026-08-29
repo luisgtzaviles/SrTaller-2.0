@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 1);
+  assert.equal(first.manifest.migrations.length, 6);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -45,6 +45,36 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: migrationFile.replace(/\.js$/u, ''),
         order: 0,
         owner: 'database',
+      },
+      {
+        fileName: '20260819120000_database_create_repairs_worklist.js',
+        migrationName: '20260819120000_database_create_repairs_worklist',
+        order: 1,
+        owner: 'database',
+      },
+      {
+        fileName: '20260819130000_repairs_create_intakes.js',
+        migrationName: '20260819130000_repairs_create_intakes',
+        order: 2,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260819140000_repairs_create_timeline_entries.js',
+        migrationName: '20260819140000_repairs_create_timeline_entries',
+        order: 3,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260819150000_repairs_create_attachments.js',
+        migrationName: '20260819150000_repairs_create_attachments',
+        order: 4,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260820090000_repairs_add_operational_note_idempotency.js',
+        migrationName: '20260820090000_repairs_add_operational_note_idempotency',
+        order: 5,
+        owner: 'repairs',
       },
     ],
   );

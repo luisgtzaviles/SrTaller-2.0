@@ -48,7 +48,7 @@ los casos automatizados.
 | D5-R032 | Compuesta | Orden y salidas deterministas | Doble ejecución por fixture y gate repetido | Diferencia de salida falla la suite | Todos los fixtures se ejecutan dos veces | Todos los fixtures negativos se comparan dos veces | Restauración de 35 mutaciones | PASS técnico | Determinismo cubierto para sintaxis conocida |
 | D5-R033 | Compuesta | `checkerRules`, `requiredSemanticCoverage` y catálogo | Policy→caso, 54 contratos únicos y clave canónica de tipo/polaridad/regla/diagnóstico/path/snapshot efectivo/configuración | Falla ante ausencia, ID repetido, duplicado semántico con otro ID, neutralización o contrato incompleto | Árbol real, 19 fixtures positivos y distinciones semánticas explícitas | 39 reglas directas tienen fixture negativo; 125 negativos | 35 mutaciones de producto + 6 mutaciones semánticas D5-R033 | PASS técnico | Los conteos 26/98/23 históricos de PBI-022 se preservan en sus dictámenes fechados |
 | D5-R034 | Documental | Fail-closed sin excepciones | Policy y revisión | No aplica — no existen excepciones | Árbol base | No aplica — no hay excepción autorizada | No aplica — regla documental | PASS por no aplicabilidad | Una excepción futura requiere decisión previa |
-| D5-R035 | Ejecutable | Allowlist de PBI-022 | Identidad normalizada de Controller/decoradores HTTP directa/alias/namespace; comportamiento y allowlist | Diagnóstico propio D5-R035 | Árbol base; paquetes ajenos/homónimos/shadowing parentetizados | Controller y endpoint nominales y wrapped; comportamiento funcional | HTTP/Controller nominales, endpoint wrapped y comportamiento | PASS técnico | Prohíbe funcionalidad; no clasifica su corrección de negocio |
+| D5-R035 | Ejecutable | `httpSurfacePolicy.controllers`, `productModuleFiles` y autoridad funcional posterior | Identidad normalizada de Controller/decoradores HTTP; path, owner, capa, clase, import y metadata de composición exactos | Diagnóstico propio D5-R035 | Health exacta y Repairs presentation registrada | Controller en infrastructure/shared/módulo no declarado; source o composición no registrada; variantes directas/alias/namespace/wrapped | Movimiento a infrastructure y superficies no registradas | PASS técnico | El registro no autoriza negocio ni neutraliza D5-R011/D5-R014/D5-R036 |
 | D5-R036 | Ejecutable | `controllerAuthoritySymbols` | Identidad normalizada de Controller y miembros/calls de autoridad | Diagnóstico propio D5-R036 | Árbol base; paquetes ajenos/homónimos/shadowing parentetizados | Controller nominal y wrapped decide autorización | Controller nominal, namespace y alias wrapped | PASS técnico | Detector conservador por símbolos; revisión semántica sigue obligatoria |
 | D5-R037 | Ejecutable | `persistence.allowedDependencyRoots` | Specifier AST de paquetes DB | Diagnóstico de dependency root | Facility/adapter sintético registrado | Direct/default/alias/namespace/type/reexport/import-equals/require/dynamic | D5-R037 aislada | PASS técnico | Packages sintéticos no instalados |
 | D5-R038 | Ejecutable | API registry + nombres de capacidad | Export AST en facility | Diagnóstico de acceso global | Factory registrada | `db` directo y reexport alias | D5-R038 aislada | PASS técnico | Sólo aplica a facility materializada |
@@ -77,7 +77,8 @@ los casos automatizados.
 - Reglas documentales/no aplicables al árbol sin funcionalidad: seis.
 - No queda `Pendiente` en una regla presentada como gate ejecutable.
 
-La separación D5-R035/D5-R036 es intencional: un controller simple activa
-D5-R035 sin D5-R036; un controller que intenta decidir autoridad activa el
-diagnóstico propio D5-R036 además de D5-R035 porque cualquier controller sigue
-fuera del alcance de PBI-022.
+La separación D5-R035/D5-R036 es intencional: un controller no registrado
+activa D5-R035; uno que intenta decidir autoridad activa además D5-R036. Un
+controller registrado sigue sujeto a D5-R036 y a las fronteras de imports. La
+aceptación histórica de DEC-005 nunca autorizó funcionalidad por sí sola;
+PBI-022 conservó correctamente un shell sin controllers de producto.

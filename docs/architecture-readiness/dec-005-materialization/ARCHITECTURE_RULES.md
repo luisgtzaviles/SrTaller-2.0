@@ -45,7 +45,7 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R032 | MUST | Enforcement local determinista/no interactivo | Repetibilidad | Doble corrida por fixture y del gate | Blocker | No |
 | D5-R033 | MUST | Toda regla automatizable tiene caso inválido | Evitar checks decorativos | Policy→fixture, ejecución efectiva e identidad canónica comprobadas; el baseline histórico PBI-022 conserva 98/23/6/26 y la extensión PBI-023 eleva el estado vigente a 144 fixtures, 35 mutaciones de producto y 54 contratos críticos únicos | Major | Límite temporal fechado por Arquitectura + Ingeniería |
 | D5-R034 | MUST | Excepción registrada antes de merge | Evitar deuda silenciosa | Policy fail-closed; no hay excepciones | Blocker | No |
-| D5-R035 | MUST NOT | Iniciar código funcional, controller o endpoint por aceptación de DEC-005 | Respetar gates H0/H1 | Allowlist exacta e identidad AST normalizada de superficies HTTP | Blocker | No |
+| D5-R035 | MUST | Toda superficie HTTP funcional requiere autorización posterior a DEC-005, registro exacto, owner único, capa `presentation` y composición explícita en su módulo | Preservar gates H0/H1 sin convertir el shell en un bloqueo permanente | Registry fail-closed, allowlist de source e identidad AST normalizada de Controller/decoradores HTTP | Blocker | Sólo mediante autoridad funcional previa y registro canónico |
 | D5-R036 | MUST NOT | Controller decide contexto confiable o autorización final | Cumplir ADR-005/010/012 | Identidad AST normalizada de `@nestjs/common.Controller` y símbolos de autoridad definidos en policy | Blocker | No |
 | D5-R037 | MUST | Dependencias DB sólo en roots de infraestructura registrados | Evitar que Kysely/pg atraviesen capas | Specifiers AST estáticos, type-only, reexports, `import =`, `require()` e `import()` contra allowlist cerrada | Blocker | Sólo roots exactos de `persistence.allowedDependencyRoots` |
 | D5-R038 | MUST NOT | Exponer capacidad DB global ordinaria | Evitar singleton/query builder importable | Export AST dentro de facility registrada y nombres de capacidad prohibidos | Blocker | Factory exacta registrada con consumidor explícito |
@@ -64,6 +64,22 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R051 | MUST | `branches` conserva PK tenant-scoped y FK restrictiva a `tenants` | Impedir identidad global o sucursal huérfana/cross-tenant | AST de PK/FK, columnas, target y políticas `RESTRICT` | Blocker | Ninguna |
 | D5-R052 | MUST NOT | La primera migración contiene DML, seed o SQL raw | Separar estructura de datos y evitar bypass no revisado | AST de operaciones DML y procedencia de `kysely.sql`, incluidos alias/namespace | Blocker | Ninguna |
 | D5-R053 | MUST | `down` elimina `branches` antes de `tenants` y no usa `CASCADE` | Reversión explícita, predecible y fail-closed ante dependencias | AST de cadenas `dropTable` y ausencia de `cascade` | Blocker | Ninguna |
+
+## Interpretación vigente de la superficie HTTP
+
+La regla histórica permanece verdadera: aceptar DEC-005, por sí solo, no
+autorizó código funcional, controllers ni endpoints. PBI-022 materializó por
+eso un shell sin controllers de producto. Esa restricción era un gate de fase,
+no una negación del árbol objetivo de DEC-005, que ubica controllers y DTOs en
+`<module>/presentation/http/`, ni de ADR-005, que define controllers delgados.
+
+Una superficie autorizada posteriormente sólo pasa cuando
+`httpSurfacePolicy.controllers` declara su path exacto, owner, clase y módulo
+de composición; el archivo pertenece a `productModuleFiles`; la capa es
+`presentation`; y el módulo registra el controller exactamente una vez. El
+registro no exime D5-R005, D5-R011, D5-R014, D5-R036 ni las reglas de contexto,
+persistencia y autoridad. La cronología y el cambio de enforcement se detallan
+en [HTTP Surface Reconciliation](HTTP_SURFACE_RECONCILIATION.md).
 
 ## Diagnóstico y exit codes
 

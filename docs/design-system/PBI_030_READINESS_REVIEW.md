@@ -119,6 +119,12 @@ sin waiver ni relajación de la política, y se repitió la verificación técni
 
 ## 3. Gate del tenant accent
 
+> **Evolución de implementación local:** el contrato aplicado por el shell
+> separa el color seleccionado (`brand.base`/`brand.onBase`) de la variante
+> segura para acciones (`brand.action`). Los vectores históricos de este gate
+> siguen siendo evidencia de la derivación V1 y no deben interpretarse como
+> una sustitución del color de identidad del tenant.
+
 ### Contrato de entrada y salida
 
 - La única entrada V1 aceptada es `#RRGGBB` sRGB opaco.

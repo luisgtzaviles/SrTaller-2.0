@@ -21,7 +21,10 @@ multiplexación.
   distintas.
 - No se copian bases, dumps ni secretos de Preview.
 - No se ejecuta ninguna migración, seed o reset contra Dokploy.
-- No se crean tablas de Reparaciones, clientes, usuarios, roles o pagos.
+- No se crean tablas de clientes, usuarios, roles o pagos. Las slices locales
+  materializan únicamente `repairs`, `repair_intakes`,
+  `repair_timeline_entries` y `repair_attachments`; no materializan D5, D6 ni
+  el resto del dominio.
 - `DATABASE_URL` y las variables de fallback `PG*` continúan prohibidas.
 - El archivo `.env.local` es ignorado, se crea con permisos `0600` y contiene
   credenciales generadas para esta máquina. No se imprimen.
@@ -96,8 +99,11 @@ exclusivamente las migraciones integradas con el rol `migration`, verifica el
 manifest/journal mediante el runner existente y concede al rol `application`
 los permisos mínimos sobre las tablas creadas. No se ejecuta en bootstrap HTTP.
 
-La migración actual crea únicamente `tenants` y `branches`; no se inventan
-tablas funcionales.
+La baseline crea `tenants` y `branches`. La cadena local de Reparaciones añade
+`repairs` para Worklist, `repair_intakes` para D1,
+`repair_timeline_entries` para D2/D3 y `repair_attachments` para D4, más la
+restricción de idempotencia de notas operativas. No se inventan tablas de
+clientes, pagos ni otros módulos funcionales.
 
 ## Seed sintético V1
 
@@ -106,11 +112,12 @@ pnpm run local:db:seed
 ```
 
 El seed usa el rol `application`, una transacción y upserts idempotentes. Crea
-un tenant técnico sintético y dos sucursales sintéticas mediante UUIDs fijos y
-el timestamp `2026-01-01T00:00:00.000Z`. No contiene nombres, teléfonos,
-correos, clientes, reparaciones ni otros datos de negocio porque esas columnas
-y contratos todavía no existen en la baseline. Evolucionará con migraciones y
-PBIs posteriores.
+un tenant técnico sintético, dos sucursales sintéticas y 15 reparaciones
+sintéticas mediante UUIDs fijos y fechas deterministas. También materializa
+intakes, timeline y referencias de evidencia sintéticas para los slices D1,
+D2 y D4. Los datos de cliente son snapshots dentro de `repairs`; no existe una
+tabla de clientes ni se agregan importes o pagos. Evolucionará con migraciones
+y PBIs posteriores.
 
 ## Reset y parada
 
@@ -131,6 +138,17 @@ El backend local arranca con `SR_DB_ROLE=application` y expone:
 
 - `GET http://127.0.0.1:3000/livez` — 200 mientras el proceso está vivo;
 - `GET http://127.0.0.1:3000/readyz` — 200 con DB, journal y schema listos;
+- `GET http://127.0.0.1:3000/api/repairs` — Worklist V1 read-only con búsqueda,
+  periodos relativos evaluados contra la fecha actual del backend, filtros
+  avanzados y paginación server-side; `%` y `_` se buscan literalmente;
+- `GET http://127.0.0.1:3000/api/repairs/:id` — detalle read-only con intake,
+  timeline y metadatos de evidencia;
+- `GET http://127.0.0.1:3000/api/repairs/:id/evidence/:evidenceId/content` —
+  contenido de evidencia limitado al provider local sintético;
+- `POST http://127.0.0.1:3000/api/repairs/:id/notes` — nota operativa local
+  idempotente; repetir `clientRequestId` con el mismo contenido devuelve la
+  nota original, mientras reutilizarlo con contenido diferente responde `409`;
+  no implica transiciones, asignación ni otros writes;
 - al apagar PostgreSQL, `/livez` puede seguir 200 y `/readyz` debe fallar
   conforme al contrato de health.
 

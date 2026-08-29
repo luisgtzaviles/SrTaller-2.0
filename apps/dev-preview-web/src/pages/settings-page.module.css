@@ -1,0 +1,380 @@
+.pageStack {
+  width: min(1180px, 100%);
+  display: grid;
+  gap: var(--space-6);
+  margin: var(--space-0) auto;
+}
+
+.appearanceSection {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.sectionHeader {
+  max-width: 720px;
+}
+
+.sectionEyebrow,
+.previewEyebrow {
+  display: block;
+  color: var(--color-brand-action);
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sectionHeader h2,
+.cardTitleRow h3,
+.previewHeader h3 {
+  margin: var(--space-1) 0 var(--space-1);
+  font-size: 1.125rem;
+}
+
+.sectionHeader p,
+.cardTitleRow p,
+.previewNote {
+  margin: var(--space-0);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.brandCard {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.cardCopy,
+.previewPanel {
+  min-width: 0;
+  padding: var(--space-5);
+}
+
+.cardCopy {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.cardIcon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--color-brand-action);
+  background: var(--color-brand-subtle);
+}
+
+.colorControls {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.colorPickerRow {
+  display: flex;
+  min-height: var(--control-default);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.colorPicker {
+  width: var(--touch-target);
+  height: var(--touch-target);
+  padding: var(--space-1);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.colorPicker:focus-visible {
+  outline: 3px solid var(--color-brand-focus);
+  outline-offset: 2px;
+}
+
+.colorSwatch,
+.presetDot,
+.previewMark,
+.previewNavDot {
+  display: inline-block;
+  border-radius: var(--radius-full);
+}
+
+.colorSwatch {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-brand-base);
+}
+
+.colorPickerRow code {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.presetBlock {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.controlLabel {
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.presetList {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.preset {
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-semibold);
+  transition: color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+}
+
+.preset:hover {
+  border-color: var(--color-brand-action);
+  color: var(--color-text);
+  background: var(--color-brand-subtle);
+}
+
+.presetSelected {
+  border-color: var(--color-brand-action);
+  color: var(--color-text);
+  background: var(--color-brand-subtle);
+}
+
+.presetDot {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-brand-subtle);
+}
+
+.preset code {
+  color: var(--color-text-subtle);
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-regular);
+}
+
+.stateNote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.stateNote strong {
+  flex-basis: 100%;
+  color: var(--color-warning);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stateDot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  margin-top: 0.35rem;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-action);
+}
+
+.previewPanel {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.previewHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.themeBadge {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  color: var(--color-brand-action);
+  background: var(--color-brand-subtle);
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.previewSurface {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.previewTopline,
+.previewNavItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.previewTopline {
+  padding: var(--space-3);
+  border: 1px solid var(--color-brand-chrome-border);
+  border-radius: var(--radius-md);
+  color: var(--color-brand-on-base);
+  background: var(--color-brand-base);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.previewTopline > span:nth-child(2),
+.previewTopline strong,
+.previewTopline small { display: block; }
+.previewTopline small { margin-top: var(--space-0-5); color: var(--color-brand-chrome-muted); }
+
+.previewMark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  color: var(--color-brand-on-base);
+  background: var(--color-brand-chrome-active);
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.previewChromeGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.previewChromeControl,
+.previewOperator {
+  min-height: var(--control-compact);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  color: var(--color-brand-on-base);
+  background: var(--color-brand-chrome);
+}
+
+.previewOperator {
+  color: var(--color-brand-chrome-muted);
+  background: transparent;
+  font-size: 0.6875rem;
+}
+
+.previewContent {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.previewNavItem {
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-brand-action);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  background: var(--color-brand-subtle);
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.previewNavDot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-brand-action);
+}
+
+.previewFocusField {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.previewFocusField input {
+  width: 100%;
+  min-height: var(--control-default);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-brand-focus);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px var(--color-brand-subtle);
+  outline: none;
+}
+
+.previewNote {
+  font-size: 0.75rem;
+}
+
+.previewNote strong { color: var(--color-text); }
+
+.previewRoleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-3);
+  margin: var(--space-0);
+  font-size: 0.6875rem;
+}
+
+.previewRoleGrid div { min-width: 0; }
+.previewRoleGrid dt { color: var(--color-text-subtle); }
+.previewRoleGrid dd { margin: var(--space-0-5) 0 var(--space-0); }
+.previewRoleGrid code { color: var(--color-text); font-weight: var(--font-weight-semibold); }
+
+@media (max-width: 640px) {
+  .previewOperator { display: none; }
+}
+
+@media (min-width: 768px) {
+  .cardCopy,
+  .previewPanel { padding: var(--space-6); }
+
+  .colorControls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+@media (min-width: 1280px) {
+  .brandCard { grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr); }
+  .previewPanel { border-top: 0; border-left: 1px solid var(--color-border); }
+}

@@ -1,11 +1,21 @@
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --color-accent: #B45309;
-  --color-accent-hover: #A44900;
-  --color-accent-active: #934100;
-  --color-accent-subtle: #FAF7F6;
-  --color-on-accent: #FFFFFF;
+  --color-brand-base: #B45309;
+  --color-brand-on-base: #FFFFFF;
+  --color-brand-action: #B45309;
+  --color-brand-action-hover: #A44900;
+  --color-brand-action-active: #934100;
+  --color-brand-subtle: #FAF7F6;
+  --color-brand-muted: #F4ECEA;
+  --color-brand-surface: #83431C;
+  --color-brand-surface-raised: #8F4E28;
+  --color-brand-surface-hover: #96542E;
+  --color-brand-surface-active: #A3603A;
+  --color-brand-border: #DA936C;
+  --color-brand-contrast: #FFFFFF;
+  --color-brand-focus: #B45309;
+  --color-brand-surface-focus: #FFFFFF;
   --color-canvas: #F4F6F8;
   --color-surface: #FFFFFF;
   --color-surface-raised: #FFFFFF;
@@ -17,7 +27,6 @@
   --color-text-inverse: #F9FAFB;
   --color-border: #DDE2E8;
   --color-border-strong: #8490A0;
-  --color-focus: #B45309;
   --color-backdrop: rgb(15 23 42 / 58%);
   --color-success: #067647;
   --color-success-subtle: #ECFDF3;
@@ -41,11 +50,21 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --color-accent: #F59E0B;
-  --color-accent-hover: #FFAD3C;
-  --color-accent-active: #FFBF73;
-  --color-accent-subtle: #6C4513;
-  --color-on-accent: #111827;
+  --color-brand-base: #F59E0B;
+  --color-brand-on-base: #111827;
+  --color-brand-action: #B45309;
+  --color-brand-action-hover: #B45309;
+  --color-brand-action-active: #B45309;
+  --color-brand-subtle: #4E2413;
+  --color-brand-muted: #683011;
+  --color-brand-surface: #763D1A;
+  --color-brand-surface-raised: #834826;
+  --color-brand-surface-hover: #894E2C;
+  --color-brand-surface-active: #955937;
+  --color-brand-border: #CC8B69;
+  --color-brand-contrast: #FFFFFF;
+  --color-brand-focus: #B45309;
+  --color-brand-surface-focus: #FFFFFF;
   --color-canvas: #0B0F14;
   --color-surface: #121821;
   --color-surface-raised: #18202B;
@@ -57,7 +76,6 @@
   --color-text-inverse: #F9FAFB;
   --color-border: #2B3543;
   --color-border-strong: #5B6878;
-  --color-focus: #F59E0B;
   --color-backdrop: rgb(2 6 23 / 76%);
   --color-success: #6CE9A6;
   --color-success-subtle: #12372A;
@@ -80,6 +98,11 @@
 }
 
 :root {
+  --color-brand-chrome: color-mix(in srgb, var(--color-brand-on-base) 10%, transparent);
+  --color-brand-chrome-hover: color-mix(in srgb, var(--color-brand-on-base) 18%, transparent);
+  --color-brand-chrome-active: color-mix(in srgb, var(--color-brand-on-base) 26%, transparent);
+  --color-brand-chrome-border: color-mix(in srgb, var(--color-brand-on-base) 22%, transparent);
+  --color-brand-chrome-muted: color-mix(in srgb, var(--color-brand-on-base) 72%, transparent);
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;

@@ -7,6 +7,14 @@ const TOKEN_FILE = `${SOURCE_ROOT}/styles/tokens.css`;
 const BASE_FILE = `${SOURCE_ROOT}/styles/base.css`;
 const LEGACY_FILE = `${SOURCE_ROOT}/styles.css`;
 const ALLOWED_BREAKPOINTS = new Set(['640', '768', '1024', '1280']);
+const BRAND_ROLE_TOKENS = Object.freeze([
+  'base', 'on-base', 'action', 'action-hover', 'action-active', 'subtle', 'muted', 'surface',
+  'surface-raised', 'surface-hover', 'surface-active', 'border', 'contrast',
+  'focus', 'surface-focus',
+]);
+const BRAND_CHROME_TOKENS = Object.freeze([
+  'chrome', 'chrome-hover', 'chrome-active', 'chrome-border', 'chrome-muted',
+]);
 const ALLOWED_RADIUS_VALUES = new Set([
   '0',
   'var(--radius-sm)',
@@ -90,6 +98,9 @@ function inspectCss(path, source, problems) {
   if (path !== TOKEN_FILE && /(^|\n)\s*--[a-z0-9-]+\s*:/gu.test(source)) {
     problems.push(`${path}: token declaration outside the canonical token file`);
   }
+  if (path !== TOKEN_FILE && /var\(--color-(?:accent(?:-[a-z-]+)?|on-accent|focus)\)/gu.test(source)) {
+    problems.push(`${path}: legacy accent token bypasses the semantic brand contract`);
+  }
   for (const match of source.matchAll(/(?:^|[;{])\s*(?:background|border(?:-(?:top|right|bottom|left))?|color|fill|outline-color|stroke)\s*:\s*([^;}]+)/gimu)) {
     const words = match[1]?.toLowerCase().match(/[a-z]+/gu) ?? [];
     const namedColor = words.find((word) => CSS_NAMED_COLORS.has(word));
@@ -122,8 +133,19 @@ export async function validateUiFoundation(root = process.cwd()) {
   if (await exists(root, LEGACY_FILE)) problems.push(`${LEGACY_FILE}: legacy foundation still exists`);
   const files = await listFiles(root, SOURCE_ROOT);
   const mainSource = await readFile(resolve(root, `${SOURCE_ROOT}/main.tsx`), 'utf8');
+  const tokenSource = await readFile(resolve(root, TOKEN_FILE), 'utf8');
+  const themeSource = await readFile(resolve(root, `${SOURCE_ROOT}/foundation/theme.tsx`), 'utf8');
   if (!mainSource.includes("import './styles/base.css';")) problems.push('main.tsx must import the single global base entry');
   if (!mainSource.includes('<ThemeProvider>')) problems.push('main.tsx must install ThemeProvider before rendering the app');
+  for (const role of BRAND_ROLE_TOKENS) {
+    const token = `--color-brand-${role}`;
+    if (!tokenSource.includes(`${token}:`)) problems.push(`${TOKEN_FILE}: missing semantic brand token ${token}`);
+    if (!themeSource.includes(`setProperty('${token}'`)) problems.push(`theme.tsx must inject semantic brand token ${token}`);
+  }
+  for (const role of BRAND_CHROME_TOKENS) {
+    const token = `--color-brand-${role}`;
+    if (!tokenSource.includes(`${token}:`)) problems.push(`${TOKEN_FILE}: missing semantic brand chrome token ${token}`);
+  }
 
   let baseImportCount = 0;
   for (const path of files) {

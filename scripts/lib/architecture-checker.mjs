@@ -1421,7 +1421,8 @@ function persistenceBoundaryDiagnostics({
     } else if (
       !fixture &&
       initialSchemaPath &&
-      isInsidePath(relativePath, migrationRoot)
+      isInsidePath(relativePath, migrationRoot) &&
+      !(persistence.allowedMigrations ?? []).includes(relativePath)
     ) {
       add(
         'D5-R050',
@@ -1949,6 +1950,8 @@ export async function checkArchitecture({
 }) {
   const projectRoot = resolve(root);
   const policy = await readPolicy();
+  let requiredModuleNames = policy.allowedModules;
+  let persistence = policy.persistence;
   const sourceRoot = resolve(projectRoot, 'src');
   const modulesRoot = resolve(sourceRoot, 'modules');
   const tree = await walk(sourceRoot);
@@ -1959,6 +1962,10 @@ export async function checkArchitecture({
   const observedEdges = new Set();
   const parsedFiles = new Map();
   const controllerAuthoritySymbols = new Set(policy.controllerAuthoritySymbols);
+  const httpSurfacePolicy = policy.httpSurfacePolicy ?? {
+    allowedModuleLayer: 'presentation',
+    controllers: {},
+  };
   if (!fixture && disabledRules.length > 0) {
     throw new Error('architecture rules may be disabled only in isolated fixtures');
   }
@@ -1983,6 +1990,36 @@ export async function checkArchitecture({
   const directModuleNames = directModuleDirectories.map((directory) =>
     directory.slice(modulesRoot.length + 1),
   );
+  const baselineFixture = fixture && !directModuleNames.includes('repairs');
+  if (baselineFixture) {
+    requiredModuleNames = policy.fixtureRequiredModules ?? policy.allowedModules;
+    persistence = JSON.parse(JSON.stringify(policy.persistence));
+    persistence.databaseObjects = Object.fromEntries(
+      Object.entries(persistence.databaseObjects).filter(([, registration]) => registration.owner !== 'repairs'),
+    );
+    persistence.infrastructureFiles = Object.fromEntries(
+      Object.entries(persistence.infrastructureFiles)
+        .filter(([path]) => !path.includes('/repairs/'))
+        .map(([path, registration]) => [path, {
+          ...registration,
+          publicExports: registration.publicExports.filter(
+            (name) => !name.includes('Repair'),
+          ),
+          consumers: registration.consumers.filter(
+            (consumer) => !consumer.includes('/repairs/'),
+          ),
+        }]),
+    );
+    persistence.ports = Object.fromEntries(
+      Object.entries(persistence.ports).filter(([path]) => !path.includes('/repairs/')),
+    );
+    persistence.adapters = Object.fromEntries(
+      Object.entries(persistence.adapters).filter(([path]) => !path.includes('/repairs/')),
+    );
+    persistence.allowedMigrations = persistence.allowedMigrations.filter(
+      (path) => !path.includes('/repairs_') && !path.includes('/repairs/'),
+    );
+  }
 
   for (const governedRootName of policy.governedRoots) {
     const governedRoot = resolve(projectRoot, governedRootName);
@@ -2027,7 +2064,7 @@ export async function checkArchitecture({
     }
   }
 
-  for (const moduleName of policy.allowedModules) {
+  for (const moduleName of requiredModuleNames) {
     if (!directModuleNames.includes(moduleName)) {
       add('D5-R003', `src/modules/${moduleName}`, `required module ${moduleName} is missing`);
     }
@@ -2072,6 +2109,15 @@ export async function checkArchitecture({
     const healthSurfaceProblems = isAuthorizedHealthPath
       ? validateAuthorizedHealthSurface(text)
       : [];
+    const controllerRegistration =
+      httpSurfacePolicy.controllers[relativePath];
+    const isAuthorizedModuleController = Boolean(
+      controllerRegistration &&
+      controllerRegistration.owner === moduleName &&
+      layer === httpSurfacePolicy.allowedModuleLayer &&
+      policy.allowedModules.includes(controllerRegistration.owner) &&
+      policy.productModuleFiles.includes(relativePath),
+    );
 
     if (
       containsImportedCall(
@@ -2120,17 +2166,20 @@ export async function checkArchitecture({
       }
     } else {
       if (
-        /\.controller\.(?:c|m)?[jt]s$/u.test(basename) ||
+        (!isAuthorizedModuleController &&
+        /\.controller\.(?:c|m)?[jt]s$/u.test(basename)) ||
+        (!isAuthorizedModuleController &&
         containsImportedDecorator(
           sourceFile,
           imports,
           '@nestjs/common',
           ['Controller'],
-        )
+        ))
       ) {
-        add('D5-R035', file, 'controllers are outside the authorized health-only scope');
+        add('D5-R035', file, 'controller is not a registered module-owned presentation surface');
       }
       if (
+        !isAuthorizedModuleController &&
         containsImportedDecorator(
           sourceFile,
           imports,
@@ -2138,7 +2187,7 @@ export async function checkArchitecture({
           httpDecoratorSymbols,
         )
       ) {
-        add('D5-R035', file, 'HTTP endpoints are outside the authorized health-only scope');
+        add('D5-R035', file, 'HTTP endpoint is not inside a registered module-owned presentation surface');
       }
     }
     const authorityUses = controllerAuthorityUses(
@@ -2156,6 +2205,7 @@ export async function checkArchitecture({
     if (
       fixture &&
       moduleName !== undefined &&
+      baselineFixture &&
       /(?:create|update|delete|authorize)(?:Repair|Order|Quote|Payment)|class\s+\w*(?:Repair|Order|Quote|Payment)\w*/u.test(text)
     ) {
       add('D5-R035', file, 'functional business behavior is outside PBI-022');
@@ -2241,7 +2291,7 @@ export async function checkArchitecture({
         if (
           ['infrastructure', 'presentation'].includes(targetLayer) ||
           (/^(?:@prisma\/|typeorm$|sequelize$|knex$)/u.test(specifier) &&
-            !isPersistencePackage(specifier, policy.persistence))
+            !isPersistencePackage(specifier, persistence))
         ) {
           add('D5-R009', file, `application import crosses into an outer layer: ${specifier}`);
           layerViolation = true;
@@ -2251,9 +2301,10 @@ export async function checkArchitecture({
         !layerViolation &&
         layer === 'presentation' &&
         (targetLayer === 'infrastructure' ||
+          targetRelative?.startsWith('src/infrastructure/database/') ||
           /(?:repository|adapter|sql)/iu.test(specifier) ||
           (/^(?:@prisma\/|typeorm$|sequelize$|knex$)/u.test(specifier) &&
-            !isPersistencePackage(specifier, policy.persistence)))
+            !isPersistencePackage(specifier, persistence)))
       ) {
         add('D5-R011', file, `presentation cannot access persistence or adapters: ${specifier}`);
         layerViolation = true;
@@ -2313,11 +2364,130 @@ export async function checkArchitecture({
     );
   }
 
+  for (const [controllerPath, registration] of Object.entries(
+    httpSurfacePolicy.controllers,
+  )) {
+    if (fixture) {
+      continue;
+    }
+    const controllerFile = resolve(projectRoot, controllerPath);
+    const parsedController = parsedFiles.get(controllerFile);
+    if (!parsedController) {
+      add('D5-R035', controllerFile, 'registered module controller is missing');
+      continue;
+    }
+    const owner = moduleFromPath(projectRoot, controllerFile);
+    const layer = layerFromPath(projectRoot, controllerFile);
+    if (
+      owner !== registration.owner ||
+      layer !== httpSurfacePolicy.allowedModuleLayer ||
+      !policy.allowedModules.includes(registration.owner) ||
+      !policy.productModuleFiles.includes(controllerPath)
+    ) {
+      add(
+        'D5-R035',
+        controllerFile,
+        'registered controller must match its declared owner, presentation layer, and product source registry',
+      );
+    }
+    const controllerClass = parsedController.sourceFile.statements.find(
+      (statement) =>
+        ts.isClassDeclaration(statement) &&
+        statement.name?.text === registration.className,
+    );
+    const controllerImports = createImportIdentityResolver(
+      parsedController.sourceFile,
+    );
+    if (
+      !controllerClass ||
+      importedDecorators(
+        controllerClass,
+        controllerImports,
+        '@nestjs/common',
+        'Controller',
+      ).length !== 1
+    ) {
+      add(
+        'D5-R035',
+        controllerFile,
+        `registered controller must export ${registration.className} with exactly one imported @Controller decorator`,
+      );
+    }
+
+    const compositionFile = resolve(projectRoot, registration.composition.file);
+    const parsedComposition = parsedFiles.get(compositionFile);
+    if (!parsedComposition) {
+      add('D5-R035', compositionFile, 'registered controller composition file is missing');
+      continue;
+    }
+    const compositionClass = parsedComposition.sourceFile.statements.find(
+      (statement) =>
+        ts.isClassDeclaration(statement) &&
+        statement.name?.text === registration.composition.className,
+    );
+    const compositionImports = createImportIdentityResolver(
+      parsedComposition.sourceFile,
+    );
+    const moduleDecorators = compositionClass
+      ? importedDecorators(
+          compositionClass,
+          compositionImports,
+          '@nestjs/common',
+          'Module',
+        )
+      : [];
+    const [metadata] = moduleDecorators[0]?.arguments ?? [];
+    const controllersProperties = metadata && ts.isObjectLiteralExpression(metadata)
+      ? metadata.properties.filter(
+          (property) =>
+            property.name && propertyNameText(property.name) === 'controllers',
+        )
+      : [];
+    const controllersInitializer =
+      controllersProperties.length === 1 &&
+      ts.isPropertyAssignment(controllersProperties[0])
+        ? controllersProperties[0].initializer
+        : undefined;
+    const controllerSymbols =
+      controllersInitializer && ts.isArrayLiteralExpression(controllersInitializer)
+        ? controllersInitializer.elements
+            .filter(ts.isIdentifier)
+            .map((element) => element.text)
+        : [];
+    const binding = namedImportBindings(parsedComposition.sourceFile).get(
+      registration.className,
+    );
+    if (
+      moduleDecorators.length !== 1 ||
+      !metadata ||
+      !ts.isObjectLiteralExpression(metadata) ||
+      !controllersInitializer ||
+      !ts.isArrayLiteralExpression(controllersInitializer) ||
+      controllerSymbols.filter((symbol) => symbol === registration.className)
+        .length !== 1 ||
+      controllerSymbols.length !== controllersInitializer.elements.length ||
+      binding?.imported !== registration.className ||
+      binding?.specifier !== registration.composition.importSpecifier ||
+      !importsTarget(
+        parsedComposition,
+        compositionFile,
+        controllerFile,
+        sourceFileSet,
+      )
+    ) {
+      add(
+        'D5-R035',
+        compositionFile,
+        `module composition must register ${registration.className} exactly once from ${registration.composition.importSpecifier}`,
+      );
+    }
+  }
+
   persistenceBoundaryDiagnostics({
     add,
     fixture,
     parsedFiles,
-    persistence: policy.persistence,
+    persistence,
     projectRoot,
     sourceFileSet,
   });
@@ -2325,6 +2495,16 @@ export async function checkArchitecture({
   for (const [relativePath, requirement] of Object.entries(
     policy.requiredStructuralFiles,
   )) {
+    const structuralModuleName = relativePath.match(
+      /^src\/modules\/([^/]+)/u,
+    )?.[1];
+    if (
+      fixture &&
+      structuralModuleName &&
+      !requiredModuleNames.includes(structuralModuleName)
+    ) {
+      continue;
+    }
     const file = resolve(projectRoot, relativePath);
     const parsed = parsedFiles.get(file);
     if (!parsed) {
@@ -2491,7 +2671,17 @@ export async function checkArchitecture({
             const actualSymbols = elements
               .filter(ts.isIdentifier)
               .map((element) => element.text);
-            const expectedSymbols = Object.keys(composition.imports).sort();
+            const expectedEntries = Object.entries(composition.imports).filter(
+              ([, expectedSpecifier]) => {
+                const moduleName = expectedSpecifier.match(
+                  /^\.\/modules\/([^/]+)/u,
+                )?.[1];
+                return !fixture || requiredModuleNames.includes(moduleName);
+              },
+            );
+            const expectedSymbols = expectedEntries
+              .map(([symbol]) => symbol)
+              .sort();
             const duplicateSymbols = [...new Set(
               actualSymbols.filter(
                 (symbol, index) => actualSymbols.indexOf(symbol) !== index,

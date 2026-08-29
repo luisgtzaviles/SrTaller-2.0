@@ -6,6 +6,12 @@ Materializar la estructura mínima seleccionada por DEC-005 y un enforcement
 local reproducible, sin introducir comportamiento funcional ni resolver gates
 posteriores.
 
+> Nota de vigencia: este documento conserva la materialización histórica de
+> PBI-022. La política HTTP actual, activada sólo para superficies con
+> autorización funcional posterior, se registra en
+> [HTTP Surface Reconciliation](HTTP_SURFACE_RECONCILIATION.md). No se reescribe
+> el hecho histórico de que PBI-022 no registró controllers de producto.
+
 ## Autoridad y baseline
 
 - PBI ejecutado: [PBI-022](../../backlog/pbis/PBI-022.md).

@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { copyFile, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { inspect } from 'node:util';
@@ -10,7 +13,7 @@ const enabled = process.env.SR_OWNER_SCOPED_PG_TEST === '1';
 const { createDatabaseConnection } = enabled
   ? await import('../dist/infrastructure/database/database-connection.js')
   : {};
-const { inspectMigrationSource } = enabled
+const { databaseMigrationSourceOverride, inspectMigrationSource } = enabled
   ? await import(
       '../dist/infrastructure/database/database-migration-provider.js'
     )
@@ -109,10 +112,10 @@ function adminPool() {
   });
 }
 
-function source() {
+function source(root = migrationRoot) {
   return Object.freeze({
-    root: migrationRoot,
-    authorizedRoot: migrationRoot,
+    root,
+    authorizedRoot: root,
     normalizedRoot: 'src/infrastructure/database/migrations',
     mode: 'compiled',
   });
@@ -186,10 +189,24 @@ test(
     assert.equal(process.version, 'v24.18.0');
     const admin = adminPool();
     const connection = createDatabaseConnection(databaseConfig());
+    const tenantMigrationRoot = await mkdtemp(
+      join(tmpdir(), 'srtaller-owner-scoped-migration-'),
+    );
     let runner;
     try {
       await resetDatabase(admin);
-      const inspection = await inspectMigrationSource(source());
+      await Promise.all([
+        copyFile(
+          join(migrationRoot, `${migrationName}.js`),
+          join(tenantMigrationRoot, `${migrationName}.js`),
+        ),
+        copyFile(
+          join(migrationRoot, `${migrationName}.js.map`),
+          join(tenantMigrationRoot, `${migrationName}.js.map`),
+        ),
+      ]);
+      const tenantMigrationSource = source(tenantMigrationRoot);
+      const inspection = await inspectMigrationSource(tenantMigrationSource);
       assert.equal(inspection.manifest.migrations.length, 1);
       assert.equal(
         inspection.manifest.migrations[0].migrationName,
@@ -197,6 +214,7 @@ test(
       );
       runner = createMigrationRunner(connection, {
         expectedManifestHash: inspection.manifest.aggregateSha256,
+        [databaseMigrationSourceOverride]: tenantMigrationSource,
       });
       const applied = await runner.migrateToLatest();
       assert.equal(applied.status.migrations[0].state, 'applied');
@@ -449,6 +467,7 @@ test(
       await resetDatabase(admin).catch(() => undefined);
       await assertNoObjects(admin);
       await admin.end();
+      await rm(tenantMigrationRoot, { force: true, recursive: true });
     }
   },
 );

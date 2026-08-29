@@ -197,7 +197,12 @@ async function runOnce() {
 
     const { stdout: testOutput } = await execute(
       process.execPath,
-      ['--test', 'test/owner-scoped-persistence-postgresql.test.mjs'],
+      [
+        '--test',
+        '--test-concurrency=1',
+        'test/owner-scoped-persistence-postgresql.test.mjs',
+        'test/repair-persistence-postgresql.test.mjs',
+      ],
       {
         encoding: 'utf8',
         env: {
@@ -257,6 +262,10 @@ async function runOnce() {
         'migration-up-down',
         'nested-transaction-rejected',
         'rollback',
+        'repair-constraints-and-migration-chain',
+        'repair-idempotency-and-concurrency',
+        'repair-literal-search-and-periods',
+        'repair-scope-and-projections',
         'same-branch-id-across-tenants',
         'tenant-create-find-exists',
         'tenant-foreign-key',

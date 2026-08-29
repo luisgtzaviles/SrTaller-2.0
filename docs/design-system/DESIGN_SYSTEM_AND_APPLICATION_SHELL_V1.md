@@ -64,15 +64,30 @@ del acento del tenant. Los componentes y módulos no usan colores hardcoded.
 
 ### Acento del tenant
 
-Cada tenant puede configurar un solo acento. Su uso está sujeto a contraste y
-se limita a branding, navegación activa, focus, acción primaria, selección y
-enlaces de acción.
+Cada tenant puede configurar un solo color de marca. El valor normalizado se
+conserva exactamente como `brand.base` para identidad y chrome (topbar, logo,
+avatar y acentos de navegación). `brand.onBase` elige el foreground legible
+para contenido que se renderiza directamente sobre ese valor.
+
+Las acciones que necesitan contraste contra la superficie de página consumen
+`brand.action` y sus estados `hover`/`active`. Cuando el valor seleccionado ya
+es seguro, `brand.action` coincide con `brand.base`; cuando no lo es, sólo la
+acción recibe una variante gobernada en OKLCH. `subtle`, `muted`, `surface`,
+`border` y `focus` se derivan de la misma entrada, mientras que `success`,
+`warning`, `danger` e `info` permanecen semánticamente independientes.
+
+La adaptación de `onBase` conserva la intención de SR Taller 1.0 —el texto
+cambia según la tonalidad— pero en 2.0 se elige el foreground con mayor
+contraste medido, en lugar de aplicar únicamente el umbral histórico de
+luminancia. Así, un azul oscuro puede usar blanco y un cyan claro puede usar
+`#111827` sin forzar texto blanco de bajo contraste.
 
 El acento no puede controlar danger, success, warning, info, estados de
 reparación, saldos, acciones destructivas, fondo global, tipografía, radios,
 sombras ni layout. Si el color recibido no cumple contraste, el sistema debe
-derivar un valor seguro o usar el fallback V1. La única excepción de estilo
-dinámico permitida es su inyección controlada como custom property raíz.
+derivar una variante segura sólo para la superficie que lo necesita o usar el
+fallback V1. La única excepción de estilo dinámico permitida es su inyección
+controlada como custom property raíz.
 
 ### Temas
 

@@ -7,6 +7,7 @@ import {
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings,
   Sun,
   UserCircle,
   Wrench,
@@ -32,6 +33,7 @@ const navigation: readonly Readonly<{
 }>[] = [
   { to: '/', label: 'Inicio', icon: Home, end: true },
   { to: '/reparaciones', label: 'Reparaciones', icon: Wrench },
+  { to: '/configuracion', label: 'Configuración', icon: Settings },
 ];
 
 function readCollapsedPreference(): boolean {
@@ -181,6 +183,7 @@ export function ApplicationShell({ children }: Readonly<{ children: React.ReactN
 
       <div className={styles.desktopBody}>
         <aside className={styles.sidebar} aria-label="Shell principal">
+          <Brand className={styles.sidebarIdentity} collapsed={collapsed} meta="Sucursal sintética" />
           <Navigation collapsed={collapsed} />
           <div className={styles.sidebarFooter}>
             <span className={styles.environmentDot} aria-hidden="true" />

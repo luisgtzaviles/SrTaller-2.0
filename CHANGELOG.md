@@ -28,6 +28,19 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Implementación
 
+- La revisión independiente del candidato Repair Workstream corrigió la
+  ambigüedad de idempotencia de D3 (retry idéntico frente a conflicto `409`),
+  periodos relativos de Worklist, búsqueda literal de `%`/`_` y rollback seguro
+  de la cadena de migraciones; también se corrigió el mensaje obsoleto del
+  Dashboard sobre la disponibilidad local de Repairs. Se añadieron regresiones
+  materiales sobre PostgreSQL 18.4; el candidato sigue sin integración ni
+  deploy.
+
+- Reconciliada la superficie HTTP local de Repairs con DEC-005: policy
+  fail-closed por path/owner/presentation/composición, enforcement AST sin
+  excepción específica de Repairs y mutaciones negativas para placement,
+  acceso DB/adapter y cruces intermodulares. No agrega rutas ni cambia producto.
+
 - Baseline ejecutable Node.js/NestJS con health `/livez` y `/readyz`.
 - Monolito modular con checker de arquitectura, ownership de persistencia y
   límites `tenancy`, `stations` y `access`.

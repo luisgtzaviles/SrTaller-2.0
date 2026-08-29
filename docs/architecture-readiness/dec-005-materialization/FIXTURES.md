@@ -1,5 +1,15 @@
 # Fixtures y mutaciones del checker
 
+## Reconciliación HTTP vigente
+
+La extensión de D5-R035 agrega casos materiales para controller en
+`infrastructure`, controller en `shared`, controller en módulo no declarado y
+mutaciones del controller registrado que importan adapter Kysely, DB runtime o
+internals de otro módulo. El árbol real aporta los positivos de Repairs
+presentation y Health. La expectativa valida diagnósticos AST, reglas y paths;
+no se limita a buscar strings. Ver
+[HTTP Surface Reconciliation](HTTP_SURFACE_RECONCILIATION.md).
+
 ## Aislamiento
 
 Los casos se declaran en `test/architecture-fixtures.mjs` y se escriben en un

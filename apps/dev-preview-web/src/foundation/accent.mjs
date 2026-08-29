@@ -1,7 +1,9 @@
 const HEX_COLOR = /^#[0-9A-F]{6}$/u;
 
-export const ACCENT_FALLBACK = Object.freeze({
-  light: '#B45309',
+export const BRAND_DEFAULT = '#B45309';
+
+export const BRAND_FALLBACK = Object.freeze({
+  light: BRAND_DEFAULT,
   dark: '#F59E0B',
 });
 
@@ -10,15 +12,30 @@ const THEME_SURFACE = Object.freeze({
   dark: '#0B0F14',
 });
 
-const THEME_CONTRAST = Object.freeze({
-  light: '#FFFFFF',
-  dark: '#111827',
-});
-
 const THEME_TEXT = Object.freeze({
   light: '#111827',
   dark: '#F9FAFB',
 });
+
+const LIGHT_FOREGROUND = '#FFFFFF';
+const DARK_FOREGROUND = '#111827';
+const ACTION_FOREGROUNDS = Object.freeze([LIGHT_FOREGROUND, DARK_FOREGROUND]);
+const TEXT_CONTRAST_MINIMUM = 4.5;
+const UI_BOUNDARY_MINIMUM = 3;
+const MAX_ACTION_LIGHTNESS_SHIFT = 0.36;
+const MAX_NEUTRAL_ACTION_LIGHTNESS_SHIFT = 0.45;
+// The critical Dark orange retains 0.824 chroma with white text; 0.8 protects that
+// recognizable character while leaving a small gamut-mapping allowance.
+const MIN_ACTION_CHROMA_RETENTION = 0.8;
+// The matrix remains recognizable at 0.6; theme targets stay above that floor so
+// large surfaces are controlled without repeating V4's brown/gray drift.
+const MIN_SURFACE_CHROMA_RETENTION = 0.6;
+const MAX_HUE_DRIFT_DEGREES = 2;
+const CHROMATIC_THRESHOLD = 0.02;
+const SURFACE_CHROMA_RETENTION = Object.freeze({ light: 0.7, dark: 0.64 });
+const SURFACE_LIGHTNESS_DELTA = Object.freeze({ light: 0.1, dark: 0.13 });
+const SURFACE_LIGHTNESS_CAP = Object.freeze({ light: 0.58, dark: 0.52 });
+const SURFACE_LIGHTNESS_FLOOR = Object.freeze({ light: 0.18, dark: 0.3 });
 
 function clamp(value, minimum = 0, maximum = 1) {
   return Math.min(maximum, Math.max(minimum, value));
@@ -124,19 +141,90 @@ export function contrastRatio(firstHex, secondHex) {
   return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
 }
 
-function isSafeAccent(hex, theme) {
-  return contrastRatio(hex, THEME_SURFACE[theme]) >= 4.5
-    && contrastRatio(hex, THEME_CONTRAST[theme]) >= 4.5;
+function hueDeltaDegrees(firstHue, secondHue) {
+  const firstDegrees = firstHue * 180 / Math.PI;
+  const secondDegrees = secondHue * 180 / Math.PI;
+  return Math.abs(((firstDegrees - secondDegrees + 540) % 360) - 180);
 }
 
-function deriveVariant(accentColor, theme, delta, previousHex) {
+function fidelityMetrics(original, candidate) {
+  const chromatic = original.c >= CHROMATIC_THRESHOLD;
+  return {
+    hueDelta: chromatic ? hueDeltaDegrees(original.h, candidate.h) : 0,
+    chromaDelta: candidate.c - original.c,
+    chromaRetention: chromatic ? candidate.c / original.c : 1,
+    lightnessDelta: candidate.l - original.l,
+  };
+}
+
+export function measureBrandFidelity(inputHex, outputHex) {
+  const normalizedInput = normalizeHex(inputHex);
+  const normalizedOutput = normalizeHex(outputHex);
+  if (!normalizedInput || !normalizedOutput) {
+    throw new TypeError('Brand fidelity requires opaque #RRGGBB colors.');
+  }
+  const input = linearRgbToOklch(hexToLinearRgb(normalizedInput));
+  const output = linearRgbToOklch(hexToLinearRgb(normalizedOutput));
+  return Object.freeze({
+    input: Object.freeze({ lightness: input.l, chroma: input.c, hue: input.h * 180 / Math.PI }),
+    output: Object.freeze({ lightness: output.l, chroma: output.c, hue: output.h * 180 / Math.PI }),
+    ...fidelityMetrics(input, output),
+  });
+}
+
+function actionLightnessLimit(original) {
+  return original.c < CHROMATIC_THRESHOLD
+    ? MAX_NEUTRAL_ACTION_LIGHTNESS_SHIFT
+    : MAX_ACTION_LIGHTNESS_SHIFT;
+}
+
+function isFaithfulAction(original, candidate) {
+  const fidelity = fidelityMetrics(original, candidate);
+  return Math.abs(fidelity.lightnessDelta) <= actionLightnessLimit(original) + Number.EPSILON
+    && fidelity.hueDelta <= MAX_HUE_DRIFT_DEGREES
+    && fidelity.chromaRetention >= MIN_ACTION_CHROMA_RETENTION;
+}
+
+function isSafeAction(hex, foreground, theme) {
+  return contrastRatio(hex, foreground) >= TEXT_CONTRAST_MINIMUM
+    && contrastRatio(hex, THEME_SURFACE[theme]) >= UI_BOUNDARY_MINIMUM;
+}
+
+function findActionForForeground(original, foreground, theme) {
+  const preferredDirection = foreground === LIGHT_FOREGROUND ? -1 : 1;
+  for (let step = 0; step <= actionLightnessLimit(original) * 200; step += 1) {
+    const delta = step * 0.005;
+    const directions = step === 0 ? [0] : [preferredDirection, -preferredDirection];
+    for (const direction of directions) {
+      const mapped = mapToGamut({ ...original, l: clamp(original.l + direction * delta) });
+      const hex = rgbToHex(mapped.rgb);
+      if (isFaithfulAction(original, mapped.color) && isSafeAction(hex, foreground, theme)) {
+        return { ...mapped, foreground, hex, fidelity: fidelityMetrics(original, mapped.color) };
+      }
+    }
+  }
+  return null;
+}
+
+function chooseAction(original, theme) {
+  const light = findActionForForeground(original, LIGHT_FOREGROUND, theme);
+  const dark = findActionForForeground(original, DARK_FOREGROUND, theme);
+  // Brand actions keep a light foreground whenever a faithful, accessible
+  // variant can support it. This preserves a consistent CTA hierarchy in
+  // Light as well as Dark; inherently light accents fall back to dark text.
+  return light ?? dark;
+}
+
+function deriveVariant(accentColor, foreground, theme, delta, previousHex) {
   const direction = theme === 'light' ? -1 : 1;
   const mapped = mapToGamut({
     ...accentColor,
     l: clamp(accentColor.l + direction * delta),
   });
   const candidate = rgbToHex(mapped.rgb);
-  return isSafeAccent(candidate, theme) ? { color: mapped.color, hex: candidate } : { color: accentColor, hex: previousHex };
+  return isSafeAction(candidate, foreground, theme)
+    ? { color: mapped.color, hex: candidate }
+    : { color: accentColor, hex: previousHex };
 }
 
 function mixLinear(foregroundHex, backgroundHex, foregroundWeight) {
@@ -150,61 +238,118 @@ function mixLinear(foregroundHex, backgroundHex, foregroundWeight) {
   });
 }
 
-function fallbackResult(theme, reason) {
-  const fallback = ACCENT_FALLBACK[theme];
-  return resolveValidAccent(fallback, theme, true, reason);
+function deriveTint(accentHex, theme, preferredWeight) {
+  for (let step = Math.round(preferredWeight * 100); step >= 0; step -= 1) {
+    const candidate = mixLinear(accentHex, THEME_SURFACE[theme], step / 100);
+    if (contrastRatio(THEME_TEXT[theme], candidate) >= 4.5) return candidate;
+  }
+  return THEME_SURFACE[theme];
 }
 
-function resolveValidAccent(normalized, theme, fallback, reason) {
-  const original = linearRgbToOklch(hexToLinearRgb(normalized));
-  const direction = theme === 'light' ? -1 : 1;
-  let selected = null;
+function chooseSurfaceForeground(surfaceHex) {
+  return ACTION_FOREGROUNDS.reduce((best, candidate) => (
+    contrastRatio(candidate, surfaceHex) > contrastRatio(best, surfaceHex) ? candidate : best
+  ));
+}
 
-  for (let step = 0; step <= 70; step += 1) {
-    const delta = step * 0.005;
-    if (delta > 0.35 + Number.EPSILON) break;
-    const candidate = mapToGamut({
+function deriveLargeSurface(original, theme) {
+  const preferredLightness = Math.max(
+    Math.min(clamp(original.l - SURFACE_LIGHTNESS_DELTA[theme]), SURFACE_LIGHTNESS_CAP[theme]),
+    SURFACE_LIGHTNESS_FLOOR[theme],
+  );
+  for (let step = 0; step <= preferredLightness * 200; step += 1) {
+    const mapped = mapToGamut({
       ...original,
-      l: clamp(original.l + direction * delta),
+      c: original.c * SURFACE_CHROMA_RETENTION[theme],
+      l: clamp(preferredLightness - step * 0.005),
     });
-    const candidateHex = rgbToHex(candidate.rgb);
-    if (isSafeAccent(candidateHex, theme)) {
-      selected = { ...candidate, hex: candidateHex };
-      break;
+    const hex = rgbToHex(mapped.rgb);
+    const focus = chooseSurfaceForeground(hex);
+    const fidelity = fidelityMetrics(original, mapped.color);
+    if (contrastRatio(focus, hex) >= TEXT_CONTRAST_MINIMUM
+      && fidelity.hueDelta <= MAX_HUE_DRIFT_DEGREES
+      && fidelity.chromaRetention >= MIN_SURFACE_CHROMA_RETENTION) {
+      return { color: mapped.color, focus, hex };
     }
   }
+  throw new Error('Governed brand surface cannot satisfy contrast and fidelity.');
+}
+
+function deriveSurfaceState(surfaceColor, surfaceHex, surfaceFocus, delta) {
+  const direction = surfaceFocus === '#FFFFFF' ? 1 : -1;
+  let safe = { color: surfaceColor, hex: surfaceHex };
+  for (let step = 0.005; step <= delta + Number.EPSILON; step += 0.005) {
+    const mapped = mapToGamut({
+      ...surfaceColor,
+      l: clamp(surfaceColor.l + direction * step),
+    });
+    const hex = rgbToHex(mapped.rgb);
+    if (contrastRatio(surfaceFocus, hex) < TEXT_CONTRAST_MINIMUM) break;
+    safe = { color: mapped.color, hex };
+  }
+  return safe;
+}
+
+function deriveBoundary(surfaceColor, surfaceHex, surfaceFocus) {
+  const direction = surfaceFocus === '#FFFFFF' ? 1 : -1;
+  for (let step = 1; step <= 55; step += 1) {
+    const candidate = mapToGamut({
+      ...surfaceColor,
+      l: clamp(surfaceColor.l + direction * step * 0.01),
+    });
+    const candidateHex = rgbToHex(candidate.rgb);
+    if (contrastRatio(candidateHex, surfaceHex) >= UI_BOUNDARY_MINIMUM) return candidateHex;
+  }
+  return surfaceFocus;
+}
+
+function fallbackResult(theme, reason) {
+  const fallback = BRAND_FALLBACK[theme];
+  return resolveValidBrand(fallback, theme, true, reason);
+}
+
+function resolveValidBrand(normalized, theme, fallback, reason) {
+  const original = linearRgbToOklch(hexToLinearRgb(normalized));
+  const onBase = chooseSurfaceForeground(normalized);
+  const selected = chooseAction(original, theme);
 
   if (!selected) {
     if (fallback) throw new Error('Governed accent fallback cannot satisfy contrast.');
     return fallbackResult(theme, 'contrast');
   }
 
-  if (original.c >= 0.05 && selected.color.c / original.c < 0.4) {
-    if (fallback) throw new Error('Governed accent fallback exceeds chroma-loss limit.');
-    return fallbackResult(theme, 'chroma-loss');
-  }
-
-  const hover = deriveVariant(selected.color, theme, 0.04, selected.hex);
-  const active = deriveVariant(selected.color, theme, 0.08, hover.hex);
-  const subtle = mixLinear(
-    selected.hex,
-    THEME_SURFACE[theme],
-    theme === 'light' ? 0.08 : 0.16,
-  );
-  const safeSubtle = contrastRatio(THEME_TEXT[theme], subtle) >= 4.5
-    ? subtle
-    : THEME_SURFACE[theme];
+  const actionHover = deriveVariant(selected.color, selected.foreground, theme, 0.04, selected.hex);
+  const actionActive = deriveVariant(selected.color, selected.foreground, theme, 0.08, actionHover.hex);
+  const surface = deriveLargeSurface(original, theme);
+  const surfaceRaised = deriveSurfaceState(surface.color, surface.hex, surface.focus, 0.04);
+  const surfaceHover = deriveSurfaceState(surface.color, surface.hex, surface.focus, 0.06);
+  const surfaceActive = deriveSurfaceState(surface.color, surface.hex, surface.focus, 0.1);
+  const border = deriveBoundary(surface.color, surface.hex, surface.focus);
+  const subtle = deriveTint(normalized, theme, theme === 'light' ? 0.08 : 0.16);
+  const muted = deriveTint(normalized, theme, theme === 'light' ? 0.18 : 0.3);
 
   return Object.freeze({
     input: normalized,
     theme,
-    accent: selected.hex,
-    hover: hover.hex,
-    active: active.hex,
-    subtle: safeSubtle,
-    contrast: THEME_CONTRAST[theme],
-    surfaceRatio: contrastRatio(selected.hex, THEME_SURFACE[theme]),
-    contrastRatio: contrastRatio(selected.hex, THEME_CONTRAST[theme]),
+    base: normalized,
+    onBase,
+    action: selected.hex,
+    actionHover: actionHover.hex,
+    actionActive: actionActive.hex,
+    subtle,
+    muted,
+    surface: surface.hex,
+    surfaceRaised: surfaceRaised.hex,
+    surfaceHover: surfaceHover.hex,
+    surfaceActive: surfaceActive.hex,
+    border,
+    contrast: selected.foreground,
+    focus: selected.hex,
+    surfaceFocus: surface.focus,
+    actionSurfaceRatio: contrastRatio(selected.hex, THEME_SURFACE[theme]),
+    actionContrastRatio: contrastRatio(selected.hex, selected.foreground),
+    surfaceContrastRatio: contrastRatio(surface.hex, surface.focus),
+    borderSurfaceRatio: contrastRatio(border, surface.hex),
     fallback,
     reason,
   });
@@ -216,6 +361,6 @@ export function resolveTenantAccent(input, theme) {
   }
   const normalized = normalizeHex(input);
   return normalized
-    ? resolveValidAccent(normalized, theme, false, null)
+    ? resolveValidBrand(normalized, theme, false, null)
     : fallbackResult(theme, 'invalid-input');
 }
