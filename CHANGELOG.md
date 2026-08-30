@@ -28,6 +28,12 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Implementación
 
+- PR #11 integrada con autorización Owner mediante merge commit
+  `10d6b2fa5cdfed870958a31f25d19779334e8524`; CI autoritativo de `main`
+  `33282172150` pasó run-1, run-2 y comparison. Repairs Worklist, Repair
+  Detail, D1, D2, D4 y la nota operativa local quedan integrados; no hubo
+  deploy ni se infiere contexto confiable, Owner Acceptance o `Done`.
+
 - La revisión independiente del candidato Repair Workstream corrigió la
   ambigüedad de idempotencia de D3 (retry idéntico frente a conflicto `409`),
   periodos relativos de Worklist, búsqueda literal de `%`/`_` y rollback seguro

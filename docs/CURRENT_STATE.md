@@ -2,9 +2,9 @@
 
 ## Estado y alcance del documento
 
-- **Estado:** Fotografía canónica del repositorio, reconciliada el 2026-08-18.
+- **Estado:** Fotografía canónica del repositorio, reconciliada el 2026-08-29.
 - **Baseline técnica integrada:** `main` en
-  `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823`.
+  `10d6b2fa5cdfed870958a31f25d19779334e8524`.
 - **PBI-030 integrado:** PR #8 fusionada con merge commit `c8628fb`; Technical
   DoD e independent review pasan. El PBI permanece `In review`, con Owner
   Acceptance, evidencia AT/cross-browser restante y Preview deployment
@@ -16,13 +16,13 @@
 - **Deriva:** todo hecho operacional debe volver a verificarse si cambia
   `main`, CI, Dokploy o Preview.
 
-## Addendum local no integrado — Repairs
+## Addendum post-merge — Repairs Workstream integrado
 
-La rama local `feature/branch-brand-color-owner-iteration`, basada en
-`483110c0afe8574d0bde8355e0f16a7155ac50c2`, contiene un candidato de
-integración aún no promovido a `main` que incluye Repairs Worklist, Repair
-Detail, evidencia y nota operativa. Este addendum no cambia la fotografía
-histórica de `main` descrita abajo y no afirma integración ni deploy.
+PR #11 fue integrada en `main` mediante el merge commit
+`10d6b2fa5cdfed870958a31f25d19779334e8524`, promoviendo el candidato
+`b978228e83a57e1f86029c710e921d2e2951672f`. Incluye Repairs Worklist, Repair
+Detail, evidencia y nota operativa. Esta reconciliación afirma integración en
+`main`, pero no afirma deploy de Preview ni contexto operativo confiable.
 
 La superficie HTTP local de Repairs quedó reconciliada con DEC-005 mediante un
 registry fail-closed de controllers de módulo: owner exacto, capa
@@ -31,11 +31,11 @@ registry fail-closed de controllers de módulo: owner exacto, capa
 controllers funcionales autorizados posteriormente. Evidencia:
 [HTTP Surface Reconciliation](architecture-readiness/dec-005-materialization/HTTP_SURFACE_RECONCILIATION.md).
 
-El candidato conserva el write focalizado de notas como append-only. Su clave
+El workstream integrado conserva el write focalizado de notas como append-only. Su clave
 de idempotencia distingue un retry legítimo del mismo contenido de una
 reutilización conflictiva, que falla con `409`; la Worklist resuelve periodos
 relativos con el reloj actual del backend y trata `%`/`_` como búsqueda literal.
-Estas garantías describen solamente la rama candidata: no afirman integración,
+Estas garantías aplican al código integrado y a la evidencia local; no afirman
 Preview desplegado ni contexto operativo confiable.
 
 ## 1. Executive Summary
@@ -45,17 +45,17 @@ frontend React/Vite, shell NestJS, PostgreSQL, migraciones, aislamiento base de
 tenant/sucursal, quality gates, imagen OCI y Preview en Dokploy. Preview está
 accesible y sus health checks están sanos.
 
-Todavía no existe un flujo funcional de negocio. La interfaz recuperada muestra
-dashboard y Reparaciones, pero sus llamadas `/api/preview/*` reciben `404`
-porque `main` no contiene esos controllers, casos de uso ni tablas. Identidad,
-PIN, sesión, roles, capacidades y estación confiable permanecen conceptuales o
-fuera de `main`.
+Existe un primer flujo funcional local acotado para Repairs: Worklist, detalle,
+intake, timeline, evidencia y notas operativas append-only, respaldado por
+PostgreSQL local y contexto sintético. No incluye identidad confiable, PIN,
+sesión, roles, capacidades ni estación confiable; tampoco convierte el Preview
+remoto en una superficie desplegada.
 
-La base permite comenzar refinamiento de producto y conserva CI canónico verde.
-PR #8 integró Design System/Application Shell V1 mediante `c8628fb`; el run de
-`main` `32217905296` pasó ambos jobs y la comparación reproducible. PBI-030
-permanece `In review`: la integración no afirma Owner Acceptance, `Done` ni
-Preview deployment. Además,
+La base permite continuar la iteración local y conserva CI canónico verde. PR
+#11 integró el Repair Workstream mediante `10d6b2fa`; el run de `main`
+`33282172150` pasó run-1, run-2 y comparison. PBI-030 permanece `In review` y
+la integración de Repairs no afirma Owner Acceptance, `Done` ni Preview
+deployment. Además,
 PBI-024 tiene una implementación extensa sólo en una rama y PR
 draft divergentes; debe decidirse si se recupera o se descarta antes de
 duplicar esa foundation.
@@ -66,7 +66,7 @@ duplicar esa foundation.
 |---|---|
 | Repositorio | `/Users/luisantoniogutierrez/Documents/GitHub/SrTaller-2.0` |
 | Rama auditada | `main` |
-| Baseline técnica integrada | `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823` |
+| Baseline técnica integrada | `10d6b2fa5cdfed870958a31f25d19779334e8524` |
 | Implementación PBI-030 | PR #8 integrada; candidate `5ca8866`, merge `c8628fb` |
 | Remote | `origin`: `https://github.com/luisgtzaviles/SrTaller-2.0.git` |
 | Upstream | `origin/main` |
@@ -78,6 +78,7 @@ duplicar esa foundation.
 Commits recientes significativos:
 
 - `c8628fb`: merge autorizado de PR #8; PBI-030 integrado en `main`.
+- `10d6b2f`: merge autorizado de PR #11; Repair Workstream integrado en `main`.
 - `5ca8866`: revisión independiente y reconciliación documental del candidato.
 - `70a7b4d`: remediaciones de contraste, responsive, accesibilidad y checker.
 - `f802fee`: merge autorizado de PR #7; estimación acordada y PBI-030 `Ready`.
@@ -108,9 +109,12 @@ Ramas/PR relevantes para interpretar la baseline:
 - [PR #8](https://github.com/luisgtzaviles/SrTaller-2.0/pull/8), Design System
   & Application Shell V1: integrada con autorización Owner como `c8628fb`; CI
   de `main` verde en el run `32217905296`.
+- [PR #11](https://github.com/luisgtzaviles/SrTaller-2.0/pull/11), Repair
+  Worklist y detalle operativo: integrada con autorización Owner como
+  `10d6b2fa`; CI de `main` verde en el run `33282172150`.
 
-Evidencia: Git actual, `docs/delivery/BRANCH_POLICY.md` y las PR #3/#4/#5/#7/#8
-en GitHub.
+Evidencia: Git actual, `docs/delivery/BRANCH_POLICY.md` y las PR
+#3/#4/#5/#7/#8/#11 en GitHub.
 
 ## 3. Repository Map
 
@@ -240,15 +244,14 @@ Rutas materializadas en `apps/dev-preview-web/src/App.tsx`:
 Existe layout con sidebar, header, navegación y barra de contexto. El data
 layer en `apps/dev-preview-web/src/api.ts` llama:
 
-- `GET /api/preview/context`;
-- `GET/POST /api/preview/repairs`;
-- `GET /api/preview/repairs/:id`;
-- `PATCH /api/preview/repairs/:id/status`.
+- `GET /api/repairs`;
+- `GET /api/repairs/:id`;
+- `GET /api/repairs/:id/evidence/:evidenceId/content`;
+- `POST /api/repairs/:id/notes`.
 
-Ninguna de esas APIs existe en `main`. La UI muestra estados vacíos/error y
-etiqueta de datos sintéticos; el formulario se puede llenar visualmente, pero
-no puede persistir. No existe autenticación visible ni suite unitaria/E2E
-frontend dedicada.
+Estas APIs existen en `main` para el contexto local sintético. La UI conserva
+estados honestos cuando el contexto o la base no están disponibles; no existe
+autenticación visible ni suite unitaria/E2E frontend dedicada.
 
 La dirección
 [Design System & Application Shell V1](design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
@@ -268,13 +271,12 @@ anterior hasta una autorización y entrega posteriores.
 | Tenancy | Ninguna | tenant/branch repositories | Contexto visual sin datos | Foundation no conectada |
 | Stations | Ninguna | Ninguna en `main` | No | Contrato/esqueleto |
 | Access | Ninguna | Ninguna | No | Esqueleto |
-| Reparaciones | Ninguna | Ninguna | Visual Slice 0 | No funcional |
+| Reparaciones | `/api/repairs` (Worklist, detalle, evidencia, notas) | PostgreSQL local sintético | Worklist + Repair Detail | Local acotado; sin contexto confiable |
 
 `src/main.ts` inicializa DB, crea Nest, registra readiness, monta la SPA
-estática y escucha. `src/app.module.ts` importa los tres módulos y sólo registra
-`HealthController`. No hay services/use cases de producto, guards,
-interceptors, auth, tenancy resolution HTTP, DTO validation ni controllers de
-producto.
+estática y escucha. `src/app.module.ts` importa los módulos de foundation y
+Repairs; el módulo Repairs registra sus use cases, repositorio, storage local y
+controller. No hay auth, tenancy resolution HTTP ni contexto operativo confiable.
 
 ## 10. Testing and Quality Gates
 
@@ -458,15 +460,19 @@ Al abrir `https://preview.srtaller.dev`:
 1. Traefik entrega el contenedor Dokploy construido desde `main`.
 2. Nest/Express sirve el `index.html` y assets de React.
 3. El usuario ve sidebar, dashboard, Reparaciones y contexto de development.
-4. React solicita `/api/preview/context` y `/api/preview/repairs`.
-5. Nest responde `404`; la UI muestra contexto no disponible, cero registros y
-   error de carga.
-6. La ruta de alta muestra un formulario, pero enviarlo no puede persistir.
-7. `/livez` y `/readyz` responden 200; rutas API desconocidas responden 404.
+4. La baseline desplegada anterior sigue solicitando `/api/preview/context` y
+   `/api/preview/repairs`.
+5. Esa baseline remota responde `404`; la UI muestra contexto no disponible,
+   cero registros y error de carga.
+6. El código integrado en `main` expone `/api/repairs`, pero todavía no se ha
+   desplegado a Preview.
+7. La ruta de alta muestra un formulario, pero enviarlo no puede persistir.
+8. `/livez` y `/readyz` responden 200; rutas API desconocidas responden 404.
 
-Funcional hoy: navegación visual, rutas SPA, assets y health. Placeholder o
-incompleto: contexto, métricas y Reparaciones. Inexistente: autenticación y
-operaciones de negocio persistentes.
+Funcional en `main`/local: navegación, rutas SPA, assets, health, Worklist,
+detalle, evidencia y nota operativa local. Preview remoto aún refleja la
+baseline anterior. Inexistente: autenticación y operaciones de negocio con
+contexto confiable.
 
 ## 18. Risks Before Product Development
 
@@ -505,14 +511,14 @@ No se crea aquí un PBI, epic, sprint ni roadmap nuevo.
 
 | Área | Veredicto |
 |---|---|
-| Baseline técnica | `main` / `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823` |
+| Baseline técnica | `main` / `10d6b2fa5cdfed870958a31f25d19779334e8524` |
 | Working tree inicial | Limpio y sincronizado |
 | Infraestructura | Preview Dokploy/OCI/PostgreSQL disponible |
-| Aplicación | Foundation ejecutable, sin workflow de negocio |
-| Frontend | Design System/Application Shell V1 integrado en `main`; API ausente |
-| Backend | Health + DB runtime; sin endpoints de producto |
-| PostgreSQL | Foundation tenant/branch activa; sin esquema funcional |
-| CI | **PASS** autoritativo en `main`; run `32217905296` |
+| Aplicación | Foundation ejecutable + Repairs local acotado |
+| Frontend | Design System/Application Shell V1 + Worklist/Repair Detail integrados |
+| Backend | Health + DB runtime + `/api/repairs` local |
+| PostgreSQL | Foundation tenant/branch + tablas Repairs locales sintéticas |
+| CI | **PASS** autoritativo en `main`; run `33282172150` |
 | Preview | UI y health disponibles; acciones de negocio no funcionales |
 | Readiness | PBI-030 integrado y `In review`; Technical DoD e independent review pasan, con matriz AT parcial y Owner Acceptance/Preview deployment pendientes. PBI-024 requiere reconciliación antes de slices dependientes de contexto |
 
