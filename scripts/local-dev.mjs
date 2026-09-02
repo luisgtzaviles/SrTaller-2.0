@@ -7,10 +7,12 @@ import {
   startupEnvironment,
   viteEnvironment,
 } from './lib/local-development.mjs';
+import { materializeLocalEvidenceFixtures } from './lib/local-evidence-fixtures.mjs';
 import { localDbUp } from './local-db.mjs';
 
 const values = await ensureLocalEnvironment({ create: false });
 await localDbUp();
+await materializeLocalEvidenceFixtures();
 const baseEnvironment = cleanChildEnvironment();
 const backend = spawn('pnpm', ['run', 'dev'], {
   env: {

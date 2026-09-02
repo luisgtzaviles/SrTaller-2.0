@@ -46,7 +46,9 @@ pnpm run local:dev
 `local:dev` mantiene dos procesos en la misma terminal: NestJS en
 `http://127.0.0.1:3000` y Vite en `http://127.0.0.1:4173`. Para depurar por
 separado se pueden usar `pnpm run local:backend` y el comando Vite indicado
-abajo.
+abajo. Ambos comandos de backend rehidratan de forma idempotente los fixtures
+sintéticos de evidencia local antes de arrancar HTTP; no sustituyen el seed ni
+crean metadata en PostgreSQL.
 
 ## Uso diario
 

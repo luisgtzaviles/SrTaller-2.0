@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
@@ -96,6 +97,17 @@ test('repair timeline seed is deterministic, typed, and covers rich, single, and
   assert.ok(rows.filter((row) => row.actorDisplayName === 'Sistema').every((row) => row.entryType === 'system_event'));
   const keys = Object.keys(rows[0]).join(' ');
   assert.doesNotMatch(keys, /pin|password|pattern|unlock|imei|secret/iu);
+});
+
+test('local backend startup rehydrates filesystem evidence fixtures without changing database state', async () => {
+  const [localDev, localBackend] = await Promise.all([
+    readFile('scripts/local-dev.mjs', 'utf8'),
+    readFile('scripts/local-backend.mjs', 'utf8'),
+  ]);
+  for (const source of [localDev, localBackend]) {
+    assert.match(source, /materializeLocalEvidenceFixtures/u);
+    assert.match(source, /await materializeLocalEvidenceFixtures\(\)/u);
+  }
 });
 
 test('local env parser accepts comments and rejects malformed entries', () => {
