@@ -65,6 +65,6 @@ test('detail UI exposes a semantic read-only gallery and accessible dialog viewe
   assert.match(page, /open=\{activeEvidence !== null\}/u);
   assert.match(page, /Anterior/u);
   assert.match(page, /Siguiente/u);
-  assert.match(page, /Imagen no disponible/u);
+  assert.match(page, /Evidencia no disponible/u);
   assert.doesNotMatch(page, /Subir evidencia|Eliminar evidencia|Tomar foto|Arrastrar/iu);
 });

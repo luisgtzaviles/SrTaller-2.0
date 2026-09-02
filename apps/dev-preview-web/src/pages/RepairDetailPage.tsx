@@ -173,8 +173,16 @@ export function RepairDetailWorkspace({
                 onError={() => setFailedEvidence((current) => new Set(current).add(primaryEvidence.id))}
               />
             </button>
+          ) : primaryEvidence ? (
+            <div className={styles.heroEvidenceUnavailable} role="img" aria-label="Evidencia principal no disponible en este entorno local">
+              <ImageIcon aria-hidden="true" size={24} />
+              <span>Evidencia no disponible</span>
+            </div>
           ) : (
-            <span aria-label="Sin evidencia principal"><Camera aria-hidden="true" size={24} /></span>
+            <div className={styles.heroEvidenceEmpty} role="img" aria-label="Sin evidencia de recepción registrada">
+              <Camera aria-hidden="true" size={24} />
+              <span>Sin evidencia de recepción</span>
+            </div>
           )}
         </div>
 
@@ -333,7 +341,8 @@ export function RepairDetailWorkspace({
                 {failedEvidence.has(item.id) ? (
                   <div className={styles.evidenceFailure} role="status">
                     <ImageIcon aria-hidden="true" size={20} />
-                    <strong>Imagen no disponible</strong>
+                    <strong>Evidencia no disponible</strong>
+                    <span>{item.caption ?? 'La evidencia sintética no está disponible en este entorno local.'}</span>
                   </div>
                 ) : (
                   <button type="button" onClick={() => setSelectedEvidence(index)} aria-label={`Abrir evidencia: ${evidenceAlt(item)}`}>
@@ -378,8 +387,9 @@ export function RepairDetailWorkspace({
           <figure className={styles.evidenceViewer}>
             {failedEvidence.has(activeEvidence.id) ? (
               <div className={styles.evidenceFailure} role="status">
-                <strong>Imagen no disponible</strong>
-                <span>Esta evidencia no pudo cargarse.</span>
+                <ImageIcon aria-hidden="true" size={20} />
+                <strong>Evidencia no disponible</strong>
+                <span>Esta evidencia sintética no pudo cargarse en este entorno local.</span>
               </div>
             ) : (
               <img
@@ -509,6 +519,7 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
         title="Detalle de reparación"
         description={repair?.folio ?? 'Cargando detalle'}
         size="workspace"
+        variant="workspace"
         footer={false}
         restoreFocusSelector={routeState?.restoreFocusSelector}
         onClose={closeWorkspace}
