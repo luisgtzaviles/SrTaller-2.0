@@ -199,7 +199,8 @@
 
 .workspaceHeroVisual { min-width: 0; }
 .workspaceHeroVisual > button,
-.workspaceHeroVisual > span {
+.heroEvidenceUnavailable,
+.heroEvidenceEmpty {
   width: 100%;
   min-height: 104px;
   display: grid;
@@ -215,6 +216,12 @@
 .workspaceHeroVisual > button:hover { border-color: var(--color-brand-border); }
 .workspaceHeroVisual > button:focus-visible { outline: 3px solid var(--color-brand-focus); outline-offset: 2px; }
 .workspaceHeroVisual img { width: 100%; height: 104px; display: block; object-fit: cover; }
+.heroEvidenceUnavailable,
+.heroEvidenceEmpty { align-content: center; gap: var(--space-2); padding: var(--space-3); text-align: center; }
+.heroEvidenceUnavailable { color: var(--color-text-muted); }
+.heroEvidenceEmpty { color: var(--color-text-subtle); }
+.heroEvidenceUnavailable span,
+.heroEvidenceEmpty span { font-size: 0.6875rem; line-height: 1.4; }
 
 .workspaceHeroIdentity { min-width: 0; align-content: center; }
 .workspaceHeroIdentity h2 { margin: var(--space-1) 0 var(--space-2); font-size: 1.375rem; letter-spacing: -0.02em; line-height: 1.15; }
@@ -273,27 +280,25 @@
 .repairEvidence > header > span { flex: none; color: var(--color-text-subtle); font-size: 0.6875rem; font-weight: var(--font-weight-semibold); }
 
 .operationalRail { order: 1; }
-.operationalRail dl { display: grid; gap: var(--space-0); margin: var(--space-0); padding: var(--space-2) var(--space-4); }
-.operationalRail dl > div { min-width: 0; display: grid; grid-template-columns: minmax(88px, 0.8fr) minmax(0, 1.2fr); gap: var(--space-3); align-items: baseline; padding: var(--space-3) var(--space-0); border-bottom: 1px solid var(--color-border); }
-.operationalRail dl > div:last-child { border-bottom: 0; }
+.operationalRail dl { display: grid; gap: var(--space-4); margin: var(--space-0); padding: var(--space-4); }
+.operationalRail dl > div { min-width: 0; display: grid; grid-template-columns: minmax(88px, 0.8fr) minmax(0, 1.2fr); gap: var(--space-3); align-items: baseline; }
 .operationalRail dt { display: flex; align-items: center; gap: var(--space-1); }
 .operationalRail dd { min-width: 0; margin: var(--space-0); overflow-wrap: anywhere; font-size: 0.8125rem; font-weight: var(--font-weight-semibold); line-height: 1.4; }
 
 .intakeCard { order: 2; }
-.intakeFacts { display: grid; gap: var(--space-0); margin: var(--space-0); padding: var(--space-2) var(--space-4); }
-.intakeFacts > div { min-width: 0; display: grid; gap: var(--space-1); padding: var(--space-2) var(--space-0); border-bottom: 1px solid var(--color-border); }
-.intakeFacts > div:last-child { border-bottom: 0; }
+.intakeFacts { display: grid; gap: var(--space-4); margin: var(--space-0); padding: var(--space-4); }
+.intakeFacts > div { min-width: 0; display: grid; gap: var(--space-1); }
 .intakeFacts dd { max-width: none; margin: var(--space-0); color: var(--color-text); font-size: 0.8125rem; line-height: 1.4; white-space: pre-wrap; }
 .intakeReportedIssue dd { font-size: 0.9375rem; font-weight: var(--font-weight-semibold); }
-.intakeFacts > .documentedRisk { margin: var(--space-1) var(--space-0); padding: var(--space-2); border: 0; border-left: 3px solid var(--color-warning); border-radius: var(--radius-sm); background: var(--color-warning-subtle); }
+.intakeFacts > .documentedRisk { padding: var(--space-2); border: 0; border-left: 3px solid var(--color-warning); border-radius: var(--radius-sm); background: var(--color-warning-subtle); }
 .documentedRisk[data-empty="true"] { border-left-color: var(--color-border-strong); background: var(--color-surface-subtle); }
 .intakeSecondaryFact dt { display: flex; align-items: center; gap: var(--space-1); }
 
 .repairTimeline { order: 3; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 .timelineContent { min-height: 0; }
-.timelineList { display: grid; margin: var(--space-0); padding: var(--space-0) var(--space-4); list-style: none; }
-.timelineList > li { position: relative; min-width: 0; padding: var(--space-3) var(--space-0) var(--space-3) var(--space-5); border-left: 1px solid var(--color-border-strong); }
-.timelineList > li + li { border-top: 1px solid var(--color-border); }
+.timelineList { position: relative; display: grid; gap: var(--space-1); margin: var(--space-0); padding: var(--space-3) var(--space-4); list-style: none; }
+.timelineList::before { position: absolute; top: var(--space-5); bottom: var(--space-5); left: var(--space-4); width: 1px; background: var(--color-border-strong); content: ""; }
+.timelineList > li { position: relative; min-width: 0; padding: var(--space-2) var(--space-0) var(--space-2) var(--space-5); }
 .timelineList > li::before { position: absolute; top: var(--space-4); left: -5px; width: 9px; height: 9px; border: 2px solid var(--color-surface); border-radius: var(--radius-full); background: var(--color-brand-action); box-shadow: 0 0 0 1px var(--color-brand-border); content: ""; }
 .timelineList article { min-width: 0; }
 .timelineItemMeta { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
@@ -306,7 +311,7 @@
 .timelineEmpty { display: grid; justify-items: center; gap: var(--space-1); padding: var(--space-6) var(--space-4); color: var(--color-text-muted); text-align: center; }
 .timelineEmpty strong { color: var(--color-text); font-size: 0.8125rem; }
 .timelineEmpty span { font-size: 0.75rem; }
-.noteComposer { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.noteComposer { display: grid; gap: var(--space-2); padding: var(--space-4); border-top: 1px solid var(--color-border); background: var(--color-surface-subtle); }
 .noteComposer > label { color: var(--color-text); font-size: 0.75rem; font-weight: var(--font-weight-semibold); }
 .noteComposerControls { display: grid; gap: var(--space-2); }
 .noteComposerControls textarea { min-height: 72px; resize: vertical; }
@@ -328,6 +333,7 @@
 .evidenceGrid button > span { padding: var(--space-2); overflow: hidden; color: var(--color-text-muted); font-size: 0.6875rem; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .evidenceFailure { min-height: 124px; display: grid; place-content: center; justify-items: center; gap: var(--space-2); padding: var(--space-3); border: 1px dashed var(--color-border-strong); border-radius: var(--radius-md); color: var(--color-text-muted); background: var(--color-surface-subtle); text-align: center; }
 .evidenceFailure strong { color: var(--color-text); font-size: 0.75rem; }
+.evidenceFailure span { max-width: 32ch; font-size: 0.6875rem; line-height: 1.4; }
 
 @media (min-width: 640px) {
   .workspaceHero { grid-template-columns: 112px minmax(0, 1fr); align-items: center; }

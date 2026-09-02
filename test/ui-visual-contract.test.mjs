@@ -68,6 +68,10 @@ test('focus and touch contracts are explicit for shared controls', () => {
   assert.match(repairsSource, /failed \? 'No disponible' : loading \? 'Cargando…' : null/u);
   assert.match(repairsSource, /<strong>\{totalCount\}<\/strong>/u);
   assert.match(repairsSource, /<ButtonLink to="\/reparaciones\/nueva" tone="primary">/u);
+  assert.match(overlaySource, /variant\?: 'standard' \| 'workspace'/u);
+  assert.match(uiSource, /\.overlayWorkspace \.backdrop[\s\S]*?blur\(5px\)/u);
+  assert.match(repairDetailSource, /size="workspace"[\s\S]*?variant="workspace"/u);
+  assert.match(catalogSource, /variant="workspace"/u);
 });
 
 test('materiality hierarchy is explicit without bypassing governed surfaces', () => {

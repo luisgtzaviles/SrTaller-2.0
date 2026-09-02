@@ -47,6 +47,7 @@ export default function UiCatalogPage(): React.JSX.Element {
   const { preference, resolvedTheme, brand, setPreference, setSyntheticAccent } = useTheme();
   const [accentInput, setAccentInput] = useState('#B45309');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [workspaceDialogOpen, setWorkspaceDialogOpen] = useState(false);
 
   useEffect(() => {
     const robots = document.createElement('meta');
@@ -181,11 +182,17 @@ export default function UiCatalogPage(): React.JSX.Element {
       </section>
 
       <section className={styles.section}>
-        <header><h2>Overlay accesible</h2><p>Dialog breve con Escape, focus trap y focus restore.</p></header>
-        <Button onClick={() => setDialogOpen(true)}><FlaskConical aria-hidden="true" size={20} />Abrir diálogo</Button>
+        <header><h2>Overlay accesible</h2><p>Dialog breve y variante workspace con Escape, focus trap y focus restore.</p></header>
+        <Inline gap="2">
+          <Button onClick={() => setDialogOpen(true)}><FlaskConical aria-hidden="true" size={20} />Abrir diálogo</Button>
+          <Button tone="secondary" onClick={() => setWorkspaceDialogOpen(true)}>Abrir workspace</Button>
+        </Inline>
       </section>
       <Dialog open={dialogOpen} title="Diálogo de demostración" description="No ejecuta ninguna operación de negocio." onClose={() => setDialogOpen(false)}>
         <div className={styles.dialogBody}>El foco permanece dentro mientras está abierto y vuelve al activador al cerrar.</div>
+      </Dialog>
+      <Dialog open={workspaceDialogOpen} title="Workspace de demostración" description="Variante amplia para una tarea concentrada." size="workspace" variant="workspace" onClose={() => setWorkspaceDialogOpen(false)}>
+        <div className={styles.dialogBody}>El backdrop se atenúa y se desenfoca sólo para esta variante semántica.</div>
       </Dialog>
     </div>
   );

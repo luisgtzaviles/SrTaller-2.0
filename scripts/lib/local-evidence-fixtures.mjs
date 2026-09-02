@@ -80,10 +80,10 @@ export const LOCAL_EVIDENCE_FIXTURES = Object.freeze(definitions.map(([id, seed]
   return Object.freeze({ id, storageKey: `${id}.png`, width: WIDTH, height: HEIGHT, sizeBytes: content.length, content });
 }));
 
-export async function materializeLocalEvidenceFixtures() {
-  await mkdir(LOCAL_EVIDENCE_ROOT, { recursive: true, mode: 0o700 });
+export async function materializeLocalEvidenceFixtures(root = LOCAL_EVIDENCE_ROOT) {
+  await mkdir(root, { recursive: true, mode: 0o700 });
   for (const fixture of LOCAL_EVIDENCE_FIXTURES) {
-    await writeFile(resolve(LOCAL_EVIDENCE_ROOT, fixture.storageKey), fixture.content, { mode: 0o600 });
+    await writeFile(resolve(root, fixture.storageKey), fixture.content, { mode: 0o600 });
   }
   return LOCAL_EVIDENCE_FIXTURES;
 }

@@ -258,6 +258,7 @@
 
 .overlay { position: fixed; z-index: var(--z-overlay); inset: 0; display: grid; place-items: center; padding: var(--space-4); }
 .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--color-backdrop); cursor: default; }
+.overlayWorkspace .backdrop { background: color-mix(in srgb, var(--color-backdrop) 88%, var(--color-surface-inverse)); }
 .dialog { position: relative; width: min(520px, 100%); max-height: calc(100vh - var(--space-8)); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-raised); box-shadow: var(--shadow-lg); }
 .dialogWide { width: min(880px, 100%); }
 .dialogWorkspace { width: min(1480px, 92vw); height: min(90vh, calc(100vh - var(--space-8))); }
@@ -266,6 +267,14 @@
 .dialog > header p { margin: var(--space-1) 0 var(--space-0); color: var(--color-text-muted); font-size: 0.75rem; line-height: 1.5; }
 .dialogBody { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .dialog > footer { display: flex; justify-content: flex-end; padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-border); }
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .overlayWorkspace .backdrop {
+    background: var(--color-backdrop);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+  }
+}
 
 @media (pointer: coarse) {
   .button.default,

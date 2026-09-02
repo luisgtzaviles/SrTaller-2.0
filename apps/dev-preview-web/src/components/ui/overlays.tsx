@@ -65,6 +65,7 @@ export function Dialog({
   description,
   children,
   size = 'default',
+  variant = 'standard',
   footer,
   restoreFocusSelector,
   onClose,
@@ -74,6 +75,7 @@ export function Dialog({
   description: string;
   children?: React.ReactNode;
   size?: 'default' | 'wide' | 'workspace';
+  variant?: 'standard' | 'workspace';
   footer?: React.ReactNode | false;
   restoreFocusSelector?: string | undefined;
   onClose(): void;
@@ -113,7 +115,12 @@ export function Dialog({
       ? styles.dialogWide
       : '';
   return createPortal(
-    <div ref={layerRef} className={styles.overlay} data-dialog-layer="true">
+    <div
+      ref={layerRef}
+      className={`${styles.overlay} ${variant === 'workspace' ? styles.overlayWorkspace : ''}`}
+      data-dialog-layer="true"
+      data-dialog-variant={variant}
+    >
       <div className={styles.backdrop} aria-hidden="true" onClick={onClose} />
       <div ref={dialogRef} className={`${styles.dialog} ${sizeClass}`} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1}>
         <header><div><h2 id={titleId}>{title}</h2><p id={descriptionId}>{description}</p></div><IconButton label="Cerrar diálogo" icon={X} onClick={onClose} /></header>
