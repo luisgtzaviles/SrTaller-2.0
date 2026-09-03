@@ -99,6 +99,23 @@ Un candidato de release sólo puede incluir trabajo que ya satisfaga su DoD
 aplicable; su promoción y validación determinan `Released`, no reescriben
 retroactivamente `Done`.
 
+## Gate de cierre e integración para PBIs del MVP
+
+Un PBI funcional o con impacto de producto no pasa a `Done` hasta cumplir en
+conjunto:
+
+1. criterios y checklist aplicable;
+2. revisión requerida sin hallazgos bloqueantes;
+3. merge autorizado en `main`;
+4. CI autoritativo verde sobre el SHA exacto del nuevo `main`;
+5. evidencia y riesgos residuales reconciliados;
+6. Owner Acceptance explícita.
+
+Un entorno no disponible no se convierte en `PASS`. Sólo puede quedar `N/A` o
+riesgo residual mediante la justificación, owner y revisión que exige DEC-063.
+El cierre produce después un PR documental de avance; ese PR selecciona el
+siguiente PBI, pero no lo inicia ni lo autoriza.
+
 ## Evidencia de cierre
 
 | Campo | Valor |

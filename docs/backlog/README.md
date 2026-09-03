@@ -5,19 +5,19 @@ confundir intención con compromiso. PBI-001–PBI-020 conservan su historia de
 Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 [PBI-022](pbis/PBI-022.md) están `Done` después de sus verificaciones formales.
 [PBI-023](pbis/PBI-023.md) está `Closed`.
-[PBI-024](pbis/PBI-024.md) tiene implementación sólo en una rama/PR draft
-divergente, no está integrado en `main` y conserva el merge funcional bloqueado
-por DEC051-C02; PBI-025–PBI-029 descomponen el resto de H1 y no están
-autorizados. [PBI-030](pbis/PBI-030.md) materializa UI Foundation y Application
+[PBI-024](pbis/PBI-024.md) fue acotado a Trusted Station Runtime Context; la
+rama/PR draft histórica es sólo fuente de recuperación selectiva. PBI-025–029
+y PBI-031–036 materializan la partición aprobada de Identity & Context.
+[PBI-030](pbis/PBI-030.md) materializa UI Foundation y Application
 Shell V1, está integrado en `main` y permanece `In review`; no está desplegado
 ni `Done` y conserva Owner Acceptance y evidencia AT parcial. CI de PR, CI de
 `main` e independent review pasan.
 
 ## Estado del documento
 
-**Estado:** Reconciliado tras el cierre de Sprint 00.
-**Orden R0 y ejecución:** PBI-023 cerrado; PBI-024 no integrado y pendiente de
-decisión de recuperación/revalidación; owners por rol.
+**Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
+**Orden operativo:** PBI-030 `In review`; Sprint 01 `Planned`; PBI-027
+seleccionado condicionalmente y no iniciado.
 
 ## Estructura
 
@@ -25,6 +25,8 @@ decisión de recuperación/revalidación; owners por rol.
 - [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md): vista ordenable de PBIs.
 - [PRIORITIZATION_MODEL.md](PRIORITIZATION_MODEL.md): factores para discutir orden.
 - [DEPENDENCY_MAP.md](DEPENDENCY_MAP.md): secuencia y bloqueos conceptuales.
+- [MVP Operating Roadmap](../product/MVP_OPERATING_ROADMAP.md): fases, WIP y
+  checkpoint vigente.
 - [pbis/README.md](pbis/README.md): índice de archivos individuales.
 - [PBI-030 Readiness Review](../design-system/PBI_030_READINESS_REVIEW.md):
   gates, DoR `PASS` y frontera de autorización de la foundation visual.
@@ -55,13 +57,15 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Reglas de mantenimiento
 
-1. El Product Owner aprueba prioridad y alcance; el equipo aporta riesgo, dependencia y esfuerzo.
+1. El Product Owner aprueba prioridad, alcance, aceptación y autorización de
+   implementación; el equipo aporta riesgo, dependencia y esfuerzo.
 2. Cada PBI conserva problema, valor, criterios verificables, exclusiones, dependencias, riesgos y evidencia.
 3. Las tareas técnicas se crean sólo al preparar trabajo aprobado; no se usa el backlog para esconder decisiones.
 4. Un cambio de alcance actualiza PBI, dependencias y sprint, manteniendo trazabilidad.
 5. Estimaciones permanecen `TBD` hasta que el equipo acuerde método y contexto.
+6. Sólo un PBI puede estar en ejecución o cierre; el siguiente se selecciona
+   mediante avance documental y no comienza automáticamente.
 
 ## Próxima revisión
 
-Decisión Owner sobre Preview deployment de PBI-030, evidencia/aceptación
-pendientes y reconciliación de PBI-024.
+Cierre formal de PBI-030: Owner Acceptance y disposición del riesgo AT.

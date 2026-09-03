@@ -41,6 +41,10 @@ PBI-030 no se declara `Done`: faltan la matriz manual Primary completa de
 navegadores/AT, Owner Acceptance y cualquier deploy posterior autorizado. La
 implementación ya está integrada en `main`.
 
+La [auditoría final de cierre](./FINAL_CLOSURE_AUDIT.md) confirma Technical DoD,
+independent review y CI, pero mantiene el PBI `In review` hasta obtener Owner
+Acceptance y una disposición formal para los entornos AT no ejecutados.
+
 | Área | Resultado |
 |---|---|
 | Tokens, temas y accent | PASS |
@@ -190,9 +194,10 @@ Riesgos residuales:
 - la UI continúa sin APIs de producto y no debe confundirse con un workflow de
   Reparaciones funcional.
 
-No se registra waiver. La recomendación vigente es conservar la matriz
-pendiente sin inventar PASS y solicitar la decisión Owner de Preview deployment
-sin declarar todavía `Done` ni Owner Acceptance.
+No se registra waiver. La matriz pendiente no se transforma en PASS. Para
+cerrar el PBI se debe completar o registrar `N/A`/riesgo residual con la
+autoridad de DEC-063, además de Owner Acceptance. Preview deployment sigue
+separado de `Done`.
 
 ### Remediación de CI de supply chain
 
@@ -205,7 +210,7 @@ referenciado en el handoff del PR.
 
 ## Próxima revisión
 
-- **Disparador:** decisión Owner sobre Preview deployment y evidencia Primary/AT
-  disponible.
+- **Disparador:** Owner Acceptance y evidencia Primary/AT disponible o
+  disposición formal del riesgo residual. Preview deployment es separado.
 - **Autoridades:** Calidad/Accesibilidad, Producto/Diseño y Owner para cualquier
   aceptación o deploy posterior.

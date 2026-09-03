@@ -12,6 +12,16 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Aprobado y materializado el MVP Operating Roadmap con workflow WIP=1,
+  Owner Acceptance obligatoria antes de `Done`, avance mediante PR documental
+  y separación estricta entre selección, implementación, release y deploy.
+- Reconciliada Identity & Context Foundation: PBI-024–PBI-029 fueron acotados y
+  PBI-031–PBI-036 materializan Station Administration, Users, Roles,
+  Operational Session, Reinforced Authorization y Extended Observability.
+- Preparado Sprint 01 como `Planned`, con PBI-027 seleccionado sólo de forma
+  condicional. PBI-030 permanece `In review` a la espera de Owner Acceptance y
+  disposición formal del riesgo AT; no se declara `Done` ni se activa el sprint.
+
 - Creación de la fundación documental de producto, arquitectura, decisiones, entrega, backlog, Sprint 00, calidad y operaciones.
 - Registro inicial de las decisiones técnicas como propuestas; ADR-002 fue aceptado posteriormente.
 - Creación de los PBIs documentales PBI-001 a PBI-020.
@@ -80,9 +90,11 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Estado conocido no resuelto
 
-- La UI llama `/api/preview/*`, pero `main` no contiene endpoints de producto.
-- PBI-024 tiene implementación sólo en una PR draft divergente y conflictiva;
-  no está integrado ni cerrado.
+- El Repair Workstream local está integrado, pero sigue usando contexto y actor
+  sintéticos; no existen aún Users, PIN, Operational Session o Trusted Station
+  Runtime Context productivos.
+- La PR draft histórica de PBI-024 no se integra completa. Sólo puede aportar
+  piezas recuperadas selectivamente y revalidadas bajo el nuevo alcance.
 
 ### Documentación reconciliada
 

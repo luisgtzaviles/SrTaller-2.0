@@ -8,7 +8,7 @@
 - **Estados permitidos en esta versión:** `Abierta`, `En investigación`,
   `Parcialmente resuelta`, `Respondida pendiente de documentar`, `Cerrada con
   decisión`.
-- **Estado actual:** 24 preguntas abiertas, 4 en investigación, 5 cerradas con
+- **Estado actual:** 23 preguntas abiertas, 3 en investigación, 7 cerradas con
   decisión y 1 parcialmente resuelta.
 
 ## Uso del registro
@@ -19,13 +19,13 @@ Al responder una pregunta se debe registrar la evidencia, actualizar los documen
 
 El Responsable de Producto cerró `DEC-002` y `DEC-062` el 2026-07-21: R0 será una fundación ejecutable multi-tenant, sin Reparaciones ni recepción, con escenarios y autoridad de aceptación verificables. La fuente consolidada es [Criterios de salida de R0](../architecture-readiness/blocker-closure/CRITERIOS_DE_SALIDA_DE_R0.md).
 
-La decisión de fundación no resuelve por sí sola ninguna de las 34 preguntas
-numeradas de este registro. En particular, `QUESTION-003` permanece abierta
-porque definir R0 y declarar R1 como primera rebanada operativa no termina de
-aprobar el recorrido completo, sus variantes o sus métricas. Una decisión Owner
-posterior resolvió parcialmente `QUESTION-031`; la revisión de readiness de
-PBI-030 cerró `QUESTION-032`. Por tanto, los conteos vigentes son 24 abiertas,
-4 en investigación, 5 cerradas con decisión y 1 parcialmente resuelta.
+La decisión de fundación no resolvió por sí sola las 34 preguntas numeradas.
+La decisión Owner del MVP Operating Roadmap cerró posteriormente
+`QUESTION-003` en su forma general y `QUESTION-012` para PIN/sesión ordinaria;
+las reglas detalladas de fases futuras conservan preguntas propias. Otra
+decisión Owner resolvió parcialmente `QUESTION-031` y la revisión de readiness
+de PBI-030 cerró `QUESTION-032`. Los conteos vigentes son 23 abiertas, 3 en
+investigación, 7 cerradas con decisión y 1 parcialmente resuelta.
 
 ## Gate operativo de readiness de PBI-030
 
@@ -66,11 +66,16 @@ Owner Acceptance, `Done` ni autorización implícita de deploy.
 <a id="question-003"></a>
 ### QUESTION-003 — Recorrido operativo prioritario
 
-- **Contexto:** R0 fue aprobado como fundación sin Reparaciones y R1 será la primera rebanada operativa de Reparaciones. Aún no se ha aprobado el primer recorrido completo con todas sus variantes y métricas.
+- **Contexto:** El Owner aprobó el MVP Operating Roadmap con Identity/Context,
+  Customers, New Repair, actores reales, Pricing/Quote, Payments y cierre de
+  Reparación/entrega/custodia.
 - **Impacto:** Define el núcleo de una primera versión, vocabulario, dependencias y criterios de salida.
-- **Opciones conocidas:** recepción a entrega de una reparación; reparación más cobro; venta de mostrador; una secuencia incremental de estos recorridos.
-- **Estado:** Abierta.
-- **Decisión relacionada:** `DEC-002` delimita R0 y su relación con R1, pero no cierra esta pregunta.
+- **Decisión:** distinguir Revenue Checkpoint de MVP Operativo Final. El final
+  incluye entrega y terminación de custodia; Inventory/Costs quedan en Stage 2.
+- **Estado:** Cerrada con decisión.
+- **Alcance del cierre:** forma y orden general aprobados; variantes, estados,
+  métricas y reglas detalladas se resuelven por fase.
+- **Decisión relacionada:** [MVP Operating Roadmap](./MVP_OPERATING_ROADMAP.md).
 
 <a id="question-004"></a>
 ### QUESTION-004 — Acciones sensibles y autoridad de aprobación
@@ -162,11 +167,17 @@ Owner Acceptance, `Done` ni autorización implícita de deploy.
 <a id="question-012"></a>
 ### QUESTION-012 — Alcance del PIN y autenticación reforzada
 
-- **Contexto:** ADR-011 fija PIN/sesión, ADR-012 autorización ordinaria y ADR-013 reautenticación/segundo aprobador; duración, factor y protección técnica siguen abiertos.
+- **Contexto:** ADR-011 fija PIN/sesión, ADR-012 autorización ordinaria y
+  ADR-013 reautenticación/segundo aprobador. La decisión Owner posterior cerró
+  la política operativa inicial de PIN y sesión.
 - **Impacto:** Afecta velocidad operativa, suplantación, bloqueo, cambio de turno y acciones sensibles.
-- **Opciones conocidas:** PIN sólo para seleccionar operador; PIN para sesión operativa acotada; PIN más factor reforzado para acciones sensibles; reautenticación por riesgo.
-- **Estado:** En investigación.
-- **Alcance resuelto:** Propósito, sesión, turno e inactividad aceptados; ADR-013 fija semántica de reautenticación, un solo uso e invalidación; factores y límites técnicos pendientes.
+- **Decisión:** seleccionar User y después PIN numérico de seis dígitos; cinco
+  intentos y lock inicial de cinco minutos; sesión con idle timeout de 60
+  minutos y lifetime absoluto de 12 horas; reset sensible invalida sesiones.
+- **Estado:** Cerrada con decisión.
+- **Alcance del cierre:** política MVP ordinaria. Algoritmo, transporte y
+  parámetros técnicos pasan por threat model; cada acción sensible conserva su
+  clasificación por slice.
 - **Decisión relacionada:** [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) y [ADR-013](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md), `Accepted`.
 
 ## Reparaciones

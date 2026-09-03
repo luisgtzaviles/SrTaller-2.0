@@ -14,10 +14,11 @@ Antes de modificar código, documentación, infraestructura o deployment:
 1. Leer la [fotografía auditada del estado actual](docs/CURRENT_STATE.md).
 2. Leer el
    [workflow canónico de desarrollo y delivery](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
-3. Leer la [política de ramas](docs/delivery/BRANCH_POLICY.md).
-4. Leer la [estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md).
-5. Leer [ambientes](docs/delivery/ENVIRONMENTS.md).
-6. Inspeccionar Git real y confirmar ambiente, sensibilidad de datos, alcance y
+3. Leer el [MVP Operating Roadmap](docs/product/MVP_OPERATING_ROADMAP.md).
+4. Leer la [política de ramas](docs/delivery/BRANCH_POLICY.md).
+5. Leer la [estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md).
+6. Leer [ambientes](docs/delivery/ENVIRONMENTS.md).
+7. Inspeccionar Git real y confirmar ambiente, sensibilidad de datos, alcance y
    autoridad antes de ejecutar.
 
 Para cualquier cambio de interfaz, también es lectura obligatoria
@@ -36,7 +37,9 @@ rol `application`; nunca reutiliza Preview.
 
 1. Completar el `MANDATORY FIRST READ` y verificar el
    [backlog](docs/backlog/PRODUCT_BACKLOG.md) aplicable.
-2. No iniciar trabajo de implementación sin un PBI listo, asignado a un sprint de implementación y aprobado.
+2. No iniciar trabajo de implementación sin un PBI `Ready`, seleccionado como
+   PBI actual de un Sprint `Active` y con autorización Owner explícita.
+   Selección, prioridad o cierre del PBI anterior no conceden esa autorización.
 3. No iniciar una nueva funcionalidad de R0 sin tarea/PBI y autoridad
    explícitos; la existencia de Preview no amplía el alcance autorizado.
 4. Leer la [Definition of Ready](docs/delivery/DEFINITION_OF_READY.md), la
@@ -75,14 +78,16 @@ documento no autoriza por sí solo commit, push, merge, deploy ni release.
 
 ## Condiciones abiertas
 
-- Reconciliar la implementación no integrada de PBI-024 en la PR draft #3
-  antes de iniciar un slice dependiente de contexto de estación.
+- PBI-024 fue acotado a Trusted Station Runtime Context. La PR draft histórica
+  #3 sólo puede usarse como fuente de recuperación selectiva; no conserva
+  autorización ni se integra completa.
 - PBI-030 está integrado en `main` y permanece `In review` con `XL — agreed`;
-  no inferir Owner Acceptance, `Done` o autorización de Preview deployment.
+  requiere Owner Acceptance y disposición formal del riesgo AT antes de
+  `Done`. Sprint 01 permanece `Planned`.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
 - `DEC063-C02`: materializar clasificación de riesgo.
 - `DEC063-C08`: materializar waivers y excepciones.
 
 ## Próxima revisión
 
-Antes del primer cambio funcional autorizado o al cambiar DEC-051/063.
+Antes del cierre formal de PBI-030 o cuando cambie DEC-051/063.

@@ -11,20 +11,22 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 - **Runtime:** Node.js `24.18.0`, pnpm `11.15.1` y TypeScript `6.0.3`.
 - **Frontend:** React `19.2.8` + Vite `8.2.0`; Design System y Application
   Shell V1 integrados en `main`.
-- **Backend:** NestJS `11.1.28` sobre Express; actualmente sólo expone health.
-- **Persistencia:** PostgreSQL `18.4` en Preview; Kysely + `pg`; foundation de
-  tenants y sucursales materializada.
+- **Backend:** NestJS `11.1.28` sobre Express; health y Repair Workstream local
+  integrado con límites tenant/branch.
+- **Persistencia:** PostgreSQL `18.4` local; Kysely + `pg`; tenants, sucursales
+  y persistencia append-only de los slices integrados de Repairs.
 - **Preview:** <https://preview.srtaller.dev>, desplegado manualmente desde
   `main` mediante el `Dockerfile` en Dokploy.
-- **Producto funcional:** todavía no existe un flujo de negocio end-to-end.
-  Las llamadas `/api/preview/*` del frontend no tienen controllers en `main`.
-- **CI:** `main` conserva su baseline verde en
-  `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823`; el run autoritativo
-  [`32217905296`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/32217905296)
-  pasó ambos jobs y la comparación reproducible con PostgreSQL real.
+- **Producto funcional:** Worklist, Repair Detail, notas operativas, asignación
+  de técnico, inicio de diagnóstico y movimiento interno están integrados en
+  contexto local sintético; no constituyen todavía un flujo productivo E2E.
+- **CI:** la baseline auditada `ead13ecbdb636afd4d9c2e6ecd34905343d165d4`
+  pasó el run autoritativo `33810423743` con run-1, run-2 y comparison verdes.
 - **PBI-030:** `In review`, estimación `XL — agreed`; implementación integrada
-  mediante PR #8. Owner Acceptance, evidencia AT/cross-browser restante y
-  Preview deployment están pendientes.
+  mediante PR #8. Owner Acceptance y la disposición formal de evidencia
+  AT/cross-browser restante están pendientes; deploy sigue siendo otro gate.
+- **Roadmap:** Sprint 01 permanece `Planned`; PBI-030 es el PBI actual. PBI-027
+  está seleccionado sólo de forma condicional y no ha iniciado.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).
@@ -35,9 +37,10 @@ La fotografía verificable completa, sus límites y el punto de partida están e
 2. Leer el [estado actual auditado](docs/CURRENT_STATE.md).
 3. Seguir el
    [workflow canónico de desarrollo y delivery](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
-4. Confirmar Git real, el estado de CI y el PBI/tarea autorizado antes de
+4. Consultar el [MVP Operating Roadmap](docs/product/MVP_OPERATING_ROADMAP.md).
+5. Confirmar Git real, el estado de CI y el PBI/tarea autorizado antes de
    modificar código.
-5. Crear una rama temporal desde `main`; los ambientes no son ramas.
+6. Crear una rama temporal desde `main`; los ambientes no son ramas.
 
 Para el ciclo local completo, seguir el [contrato de desarrollo local](docs/delivery/LOCAL_DEVELOPMENT.md):
 `local:db:up` → `local:db:migrate` → `local:db:seed` → `local:dev`.
@@ -47,6 +50,7 @@ Para el ciclo local completo, seguir el [contrato de desarrollo local](docs/deli
 - [Índice de documentación](docs/README.md)
 - [Visión del producto](docs/product/PRODUCT_VISION.md)
 - [Alcance del producto](docs/product/PRODUCT_SCOPE.md)
+- [MVP Operating Roadmap](docs/product/MVP_OPERATING_ROADMAP.md)
 - [Design System & Application Shell V1](docs/design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
 - [PBI-030 Readiness Review](docs/design-system/PBI_030_READINESS_REVIEW.md)
 - [Arquitectura de aplicaciones](docs/architecture/APPLICATION_ARCHITECTURE.md)
@@ -66,8 +70,8 @@ conversaciones no sustituyen a `main`.
 
 ## Estado del documento
 
-**Estado:** Entrada operativa vigente, reconciliada el 2026-08-18 después de
-integrar PR #8 y verificar nuevamente el CI autoritativo de `main`.
+**Estado:** Entrada operativa reconciliada con la baseline y el roadmap
+auditados el 2026-09-03.
 
 **Próxima revisión:** cuando cambie la baseline integrada, el gate de CI, la
 superficie funcional o el punto de entrada del backlog.

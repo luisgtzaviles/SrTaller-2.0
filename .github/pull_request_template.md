@@ -3,6 +3,7 @@
 ## Identidad y alcance
 
 - Trabajo/PBI:
+- Sprint y PBI actual:
 - Objetivo observable:
 - Tipo: documentación / decisión / PBI técnico / código / CI / otro
 - Riesgo: bajo / medio / alto
@@ -26,6 +27,8 @@
 - [ ] `git diff --check` pasó.
 - [ ] El diff no contiene secretos, datos reales ni artefactos temporales.
 - [ ] La evidencia está ligada al commit exacto.
+- [ ] Si el PBI se declara `Done`, el merge funcional, el CI exacto de `main`,
+      Owner Acceptance y la evidencia/DoD completas están enlazados.
 - [ ] Defectos, deuda, limitaciones, `N/A` y waivers están explícitos.
 - [ ] `Done` no se presenta como `Released`.
 
@@ -37,6 +40,16 @@
 - CI/checks:
 - Artefactos/hashes:
 - Revisión:
+- CI autoritativo de `main` y SHA:
+- Owner Acceptance (si aplica a cierre):
+
+## Avance del roadmap
+
+- PBI cerrado:
+- Sprint activo:
+- Siguiente PBI seleccionado, no iniciado:
+- Autorización de implementación del siguiente PBI: `NO` salvo evidencia explícita.
+- Este PR es documental de avance: sí / no
 
 ## Excepciones
 

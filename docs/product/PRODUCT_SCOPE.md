@@ -2,9 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** Borrador inicial.
-- **Naturaleza:** Clasificación propuesta de capacidades; no es un roadmap ni un compromiso de primera versión.
-- **Aprobación:** R0 aprobado por el Responsable de Producto el 2026-07-21; el resto del alcance conserva su estado propuesto o abierto.
+- **Estado:** Alcance vivo; R0 y la forma del MVP Operativo tienen decisión
+  Owner, mientras los detalles de fases futuras conservan discovery propia.
+- **Naturaleza:** Clasificación de capacidades; el orden y gates del MVP viven
+  en el [MVP Operating Roadmap](./MVP_OPERATING_ROADMAP.md).
+- **Aprobación:** R0 aprobado el 2026-07-21; forma del MVP Operativo e Identity
+  Foundation aprobadas el 2026-09-03.
 - **Estimaciones y fechas:** No definidas.
 
 ## Propósito
@@ -34,6 +37,23 @@ Esta aprobación define alcance y aceptación esperada. La foundation técnica y
 parte de su persistencia ya están materializadas; la implementación completa
 de R0, sus pruebas de aceptación y su aceptación formal permanecen separadas y
 no se infieren de la existencia de Preview.
+
+## Alcance aprobado del MVP Operativo
+
+El Owner aprobó una secuencia que cierra primero Identity/Context, después
+Customers y recepción real, y finalmente Pricing, Quote, Payments, resolución,
+QC, entrega y terminación de custodia.
+
+Se distinguen dos checkpoints:
+
+- **Revenue Checkpoint:** cobros operacionales reales contra una reparación,
+  con actor, scope, método, monto, moneda e idempotencia.
+- **MVP Operativo Final:** añade diagnóstico/resolución, autorización
+  comercial, ejecución, QC mínimo, estado final, entrega, terminación de
+  custodia, reglas mínimas de saldo y aceptación E2E.
+
+Registrar dinero no declara el MVP final. Inventory, Costs, Purchases,
+Expenses, Margins y Profitability permanecen en Stage 2.
 
 ## Mapa inicial de capacidades
 
@@ -105,7 +125,9 @@ Esta separación evita asumir que una fila de la tabla ya tiene diseño o fecha.
 4. País, fiscalidad, privacidad y canales disponibles condicionan pagos, facturación, mensajería y retención.
 5. La estrategia de migración condiciona identificadores, calidad de datos, coexistencia y soporte, pero no debe dictar sin validación el nuevo modelo.
 
-Estas relaciones son **hipótesis arquitectónicas y de producto**, no secuencia aprobada.
+La secuencia general del MVP ya está aprobada. Las reglas detalladas de
+Customers, Pricing, Payments, Cash, QC y Delivery conservan discovery y
+decisiones propias antes de implementar cada fase.
 
 ## Criterios propuestos para comprometer una capacidad
 
@@ -139,7 +161,9 @@ Antes de comprometer una capacidad a una versión debe existir, como mínimo:
 - [Actores y personas](./ACTORS_AND_PERSONAS.md)
 - [Epics](../backlog/EPICS.md)
 - [Backlog de producto](../backlog/PRODUCT_BACKLOG.md)
+- [MVP Operating Roadmap](./MVP_OPERATING_ROADMAP.md)
 
 ## Próxima revisión
 
-Revisar después de responder las preguntas de segmento, recorrido operativo, alcance por sucursal y modelo comercial, y antes de seleccionar capacidades para una primera versión. **Fecha: TBD.**
+Revisar al cerrar una fase del MVP o cuando una discovery cambie alcance,
+dependencias o exclusiones aprobadas. **Fecha: TBD.**
