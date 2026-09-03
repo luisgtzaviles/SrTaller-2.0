@@ -285,6 +285,8 @@
 .operationalRail dt { display: flex; align-items: center; gap: var(--space-1); }
 .operationalRail dd { min-width: 0; margin: var(--space-0); overflow-wrap: anywhere; font-size: 0.8125rem; font-weight: var(--font-weight-semibold); line-height: 1.4; }
 .assignmentActions { display: flex; gap: var(--space-2); margin-top: var(--space-2); flex-wrap: wrap; }
+.workflowAction { padding: var(--space-0) var(--space-4) var(--space-4); }
+.workflowAction button { width: 100%; }
 .assignmentHistory { margin: 0 var(--space-4) var(--space-4); border-top: 1px solid var(--color-border); }
 .assignmentHistory > header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); padding: var(--space-3) 0 var(--space-2); }
 .assignmentHistory h3 { margin: 0; color: var(--color-text-muted); font-size: 0.6875rem; font-weight: var(--font-weight-bold); letter-spacing: 0.06em; text-transform: uppercase; }

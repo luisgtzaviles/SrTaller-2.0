@@ -77,6 +77,8 @@ export interface RepairDetail {
     }>;
     technician: Readonly<{ id: string; displayName: string }> | null;
     technicianSummary: TechnicianSummary;
+    workflowVersion: number;
+    workflowSource: 'history' | 'synthetic_projection';
   }>;
   readonly timeline: Readonly<{
     items: readonly RepairTimelineItem[];
@@ -120,6 +122,19 @@ export interface TechnicianAssignmentCommandResponse {
     previousTechnicianId?: string;
     previousTechnicianDisplayName?: string;
     version: number;
+  }>;
+}
+
+export interface StartRepairDiagnosisResponse {
+  readonly item: Readonly<{
+    repairId: string;
+    transitionId: string;
+    clientRequestId: string;
+    fromState: 'pending';
+    toState: 'diagnosing';
+    workflowVersion: number;
+    occurredAt: string;
+    actor: Readonly<{ id: string; displayName: string }>;
   }>;
 }
 
@@ -321,6 +336,13 @@ export function reassignRepairTechnician(repairId: string, request: Readonly<{ t
 
 export function unassignRepairTechnician(repairId: string, request: Readonly<{ reason?: string | null; clientRequestId: string; expectedVersion: number }>): Promise<TechnicianAssignmentCommandResponse> {
   return api<TechnicianAssignmentCommandResponse>(`/api/repairs/${encodeURIComponent(repairId)}/technician-unassignment`, { method: 'POST', body: JSON.stringify(request) });
+}
+
+export function startRepairDiagnosis(repairId: string, request: Readonly<{ clientRequestId: string; expectedVersion: number }>): Promise<StartRepairDiagnosisResponse> {
+  return api<StartRepairDiagnosisResponse>(`/api/repairs/${encodeURIComponent(repairId)}/workflow/start-diagnosis`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
 }
 
 export function listPreviewRepairs(

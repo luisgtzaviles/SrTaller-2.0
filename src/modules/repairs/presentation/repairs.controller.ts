@@ -45,6 +45,12 @@ import {
   TechnicianAssignmentRepairNotFoundError,
   UnassignRepairTechnicianUseCase,
 } from '../application/use-cases/technician-assignment.use-case.js';
+import {
+  StartRepairDiagnosisConflictError,
+  StartRepairDiagnosisInputError,
+  StartRepairDiagnosisNotFoundError,
+  StartRepairDiagnosisUseCase,
+} from '../application/use-cases/start-repair-diagnosis.use-case.js';
 
 type RepairQuery = Readonly<Record<string, string | string[] | undefined>>;
 
@@ -145,6 +151,8 @@ function detailResponse(item: Awaited<ReturnType<GetRepairDetailUseCase['execute
         ? { id: item.technicianId, displayName: item.technicianDisplayName }
         : null,
       technicianSummary: item.technicianSummary,
+      workflowVersion: item.workflowSummary.version,
+      workflowSource: item.workflowSummary.source,
     },
     timeline: {
       items: item.timeline.items.map((entry) => ({
@@ -213,6 +221,7 @@ export class RepairsController {
     private readonly assignRepairTechnician: AssignRepairTechnicianUseCase,
     private readonly reassignRepairTechnician: ReassignRepairTechnicianUseCase,
     private readonly unassignRepairTechnician: UnassignRepairTechnicianUseCase,
+    private readonly startRepairDiagnosis: StartRepairDiagnosisUseCase,
   ) {}
 
   @Get()
@@ -284,6 +293,43 @@ export class RepairsController {
     if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
     if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
     throw new InternalServerErrorException({ code: 'REPAIR_TECHNICIAN_ASSIGNMENT_FAILED' });
+  }
+
+  @Post(':repairId/workflow/start-diagnosis')
+  async startDiagnosis(@Param('repairId') repairId: string, @Body() request: unknown) {
+    try {
+      const result = await this.startRepairDiagnosis.execute({ repairId, request });
+      return {
+        item: {
+          repairId: result.repairId,
+          transitionId: result.transitionId,
+          clientRequestId: result.clientRequestId,
+          fromState: result.fromState,
+          toState: result.toState,
+          workflowVersion: result.workflowVersion,
+          occurredAt: result.occurredAt.toISOString(),
+          actor: { id: result.actorId, displayName: result.actorDisplayName },
+        },
+      };
+    } catch (error: unknown) {
+      if (error instanceof StartRepairDiagnosisInputError) {
+        throw new BadRequestException({ code: 'REPAIR_WORKFLOW_START_DIAGNOSIS_INVALID', parameter: error.parameter });
+      }
+      if (error instanceof StartRepairDiagnosisNotFoundError) throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
+      if (error instanceof StartRepairDiagnosisConflictError) {
+        const code = error.kind === 'concurrency'
+          ? 'REPAIR_WORKFLOW_STALE'
+          : error.kind === 'idempotency'
+            ? 'REPAIR_WORKFLOW_IDEMPOTENCY_CONFLICT'
+            : error.kind === 'custody-ended'
+              ? 'REPAIR_WORKFLOW_CUSTODY_ENDED'
+              : 'REPAIR_WORKFLOW_STATE_CONFLICT';
+        throw new ConflictException({ code });
+      }
+      if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
+      if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+      throw new InternalServerErrorException({ code: 'REPAIR_WORKFLOW_WRITE_FAILED' });
+    }
   }
 
   @Post(':repairId/notes')

@@ -86,10 +86,11 @@ test('repair intake seed is deterministic, varied, and excludes sensitive intake
 test('repair timeline seed is deterministic, typed, and covers rich, single, and empty scenarios', () => {
   const rows = localRepairTimelineRows();
   assert.deepEqual(rows, localRepairTimelineRows());
-  assert.equal(rows.length, 7);
+  assert.equal(rows.length, 9);
   assert.deepEqual(new Set(rows.map((row) => row.entryType)), new Set(['note', 'system_event']));
   assert.ok(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001003').length >= 6);
-  assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001002').length, 1);
+  assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001002').length, 2);
+  assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001012').length, 1);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001008').length, 0);
   assert.ok(new Set(rows.filter((row) => row.actorId).map((row) => row.actorId)).size >= 3);
   assert.ok(rows.some((row) => (row.body?.length ?? 0) > 250));

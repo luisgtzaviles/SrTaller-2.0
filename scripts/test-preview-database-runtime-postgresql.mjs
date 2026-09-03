@@ -158,6 +158,7 @@ try {
   ]);
   const port = portOutput.trim();
   assert.match(port, /^\d{1,5}$/u);
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   const technicalEnvironment = {
     ...process.env,
@@ -192,7 +193,7 @@ try {
   assert.doesNotMatch(firstMigration.stdout + firstMigration.stderr, new RegExp(password, 'u'));
   const firstResult = JSON.parse(firstMigration.stdout.trim());
   assert.equal(firstResult.event, 'database_migration_complete');
-  assert.equal(firstResult.applied, 9);
+  assert.equal(firstResult.applied, 10);
   assert.equal(firstResult.pending, 0);
 
   const secondMigration = await runEntrypoint('dist/db-migrate.js', migrationEnvironment);
@@ -265,7 +266,7 @@ try {
     '--command',
     "select (select count(*) from tenants), (select count(*) from branches), (select count(*) from kysely_migration);",
   ]);
-  assert.equal(schemaState.trim(), '0|0|9');
+  assert.equal(schemaState.trim(), '0|0|10');
   const { stdout: activeConnections } = await docker([
     'exec',
     container,
@@ -285,7 +286,7 @@ try {
     `${JSON.stringify({
       status: 'PASS',
       postgres: '18.4',
-      migration: { firstApplied: 9, secondApplied: 0, pending: 0 },
+      migration: { firstApplied: 10, secondApplied: 0, pending: 0 },
       readiness: { available: 200, unavailable: 503, recovered: 200 },
       livenessWhileDatabaseUnavailable: 200,
       shutdownPoolConnections: 0,
