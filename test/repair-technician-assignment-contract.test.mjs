@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const [migration, types, port, useCases, repository, controller, api, page, styles, seed] = await Promise.all([
+const [migration, scopeMigration, types, port, useCases, repository, controller, api, page, styles, seed] = await Promise.all([
   readFile('src/infrastructure/database/migrations/20260902090000_repairs_create_technician_assignment.ts', 'utf8'),
+  readFile('src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts', 'utf8'),
   readFile('src/infrastructure/database/database-types.ts', 'utf8'),
   readFile('src/modules/repairs/application/ports/repair-repository.port.ts', 'utf8'),
   readFile('src/modules/repairs/application/use-cases/technician-assignment.use-case.ts', 'utf8'),
@@ -55,6 +56,11 @@ test('D5 commands validate scope server-side and preserve idempotent optimistic 
   assert.match(controller, /@Post\(':repairId\/technician-reassignment'\)/u);
   assert.match(controller, /@Post\(':repairId\/technician-unassignment'\)/u);
   assert.doesNotMatch(controller, /tenantId|branchId.*@Body/iu);
+  assert.match(scopeMigration, /repair_technician_branches_technician_scope_fk/u);
+  assert.match(scopeMigration, /repair_technician_assignments_technician_scope_fk/u);
+  assert.match(repository, /repair_technicians\.tenant_id.*repair_technician_branches\.tenant_id/u);
+  assert.match(repository, /repair_technicians\.tenant_id.*repair_technician_assignments\.tenant_id/u);
+  assert.match(repository, /existing\.reason !== input\.reason/u);
 });
 
 test('D5 exposes honest local identity and renders current plus assignment history', () => {

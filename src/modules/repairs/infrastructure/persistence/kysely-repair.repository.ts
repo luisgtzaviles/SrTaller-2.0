@@ -385,6 +385,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           .select(['repair_technicians.technician_id as technician_id', 'repair_technicians.display_name as technician_display_name'])
           .where('repair_technician_branches.tenant_id', '=', validatedScope.tenantId)
           .where('repair_technician_branches.branch_id', '=', validatedScope.branchId)
+          .whereRef('repair_technicians.tenant_id', '=', 'repair_technician_branches.tenant_id')
           .where('repair_technicians.active', '=', true)
           .orderBy('repair_technicians.display_name', 'asc')
           .execute(),
@@ -412,6 +413,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         ])
         .where('repair_technician_assignments.tenant_id', '=', validatedScope.tenantId)
         .where('repair_technician_assignments.branch_id', '=', validatedScope.branchId)
+        .whereRef('repair_technicians.tenant_id', '=', 'repair_technician_assignments.tenant_id')
         .where('repair_technician_assignments.ended_at', 'is', null)
         .execute();
       const assignmentByRepair = new Map(activeAssignments.map((assignment) => [assignment.repair_id, assignment as AssignmentProjection]));
@@ -544,6 +546,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           .where('repair_technician_assignments.tenant_id', '=', validatedScope.tenantId)
           .where('repair_technician_assignments.branch_id', '=', validatedScope.branchId)
           .where('repair_technician_assignments.repair_id', '=', repairId)
+          .whereRef('repair_technicians.tenant_id', '=', 'repair_technician_assignments.tenant_id')
           .orderBy('repair_technician_assignments.assignment_sequence', 'desc')
           .execute(),
         assignmentUnassignmentCount.executeTakeFirstOrThrow(),
@@ -644,6 +647,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .select(['repair_technicians.technician_id as id', 'repair_technicians.display_name as displayName'])
         .where('repair_technician_branches.tenant_id', '=', validatedScope.tenantId)
         .where('repair_technician_branches.branch_id', '=', validatedScope.branchId)
+        .whereRef('repair_technicians.tenant_id', '=', 'repair_technician_branches.tenant_id')
         .where('repair_technicians.active', '=', true)
         .orderBy('repair_technicians.display_name', 'asc')
         .execute();
@@ -659,6 +663,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       .where('repair_technician_branches.tenant_id', '=', scope.tenantId)
       .where('repair_technician_branches.branch_id', '=', scope.branchId)
       .where('repair_technician_branches.technician_id', '=', technicianId)
+      .whereRef('repair_technicians.tenant_id', '=', 'repair_technician_branches.tenant_id')
       .where('repair_technicians.active', '=', true)
       .executeTakeFirst();
     return row ? Object.freeze({ id: row.id, displayName: row.displayName }) : null;
@@ -674,6 +679,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       .where('repair_technician_assignments.tenant_id', '=', scope.tenantId)
       .where('repair_technician_assignments.branch_id', '=', scope.branchId)
       .where('repair_technician_assignments.repair_id', '=', repairId)
+      .whereRef('repair_technicians.tenant_id', '=', 'repair_technician_assignments.tenant_id')
       .where((expressionBuilder) => expressionBuilder.or([
         expressionBuilder('repair_technician_assignments.client_request_id', '=', clientRequestId),
         expressionBuilder('repair_technician_assignments.ended_client_request_id', '=', clientRequestId),
@@ -692,6 +698,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       .where('repair_technician_assignments.tenant_id', '=', scope.tenantId)
       .where('repair_technician_assignments.branch_id', '=', scope.branchId)
       .where('repair_technician_assignments.repair_id', '=', repairId)
+      .whereRef('repair_technicians.tenant_id', '=', 'repair_technician_assignments.tenant_id')
       .where('repair_technician_assignments.ended_at', 'is', null)
       .executeTakeFirst();
     return (row as AssignmentProjection | undefined) ?? null;
@@ -786,7 +793,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       if (!repair) return null;
       const existing = await this.#assignmentByRequest(executor, validatedScope, input.repairId, input.clientRequestId);
       if (existing) {
-        if (existing.ended_client_request_id !== input.clientRequestId || existing.ended_at === null) return assignmentCommandError<UnassignRepairTechnicianRecord | null>(new RepairTechnicianIdempotencyConflictError());
+        if (existing.ended_client_request_id !== input.clientRequestId || existing.ended_at === null || existing.reason !== input.reason) return assignmentCommandError<UnassignRepairTechnicianRecord | null>(new RepairTechnicianIdempotencyConflictError());
         return Object.freeze({ ...input, assignmentId: existing.assignment_id, previousTechnicianId: existing.technician_id, previousTechnicianDisplayName: existing.technician_display_name, version: existing.assignment_sequence + 1 });
       }
       const active = await this.#activeAssignment(executor, validatedScope, input.repairId);

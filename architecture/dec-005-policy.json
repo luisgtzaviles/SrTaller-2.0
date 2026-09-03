@@ -127,7 +127,8 @@
       "src/infrastructure/database/migrations/20260819150000_repairs_create_attachments.ts",
       "src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts",
       "src/infrastructure/database/migrations/20260902090000_repairs_create_technician_assignment.ts",
-      "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts"
+      "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts",
+      "src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts"
     ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
@@ -192,6 +193,7 @@
           "src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts",
           "src/infrastructure/database/migrations/20260902090000_repairs_create_technician_assignment.ts",
           "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts",
+          "src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
