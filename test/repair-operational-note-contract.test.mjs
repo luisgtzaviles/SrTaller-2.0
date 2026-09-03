@@ -41,7 +41,7 @@ test('repository performs one append-only scoped note write with retry idempoten
   assert.match(portSource, /addOperationalNote\([\s\S]*?scope: RepairPersistenceScope,[\s\S]*?note: AddRepairOperationalNoteRecord/u);
   const writeMethod = repositorySource.slice(
     repositorySource.indexOf('async addOperationalNote'),
-    repositorySource.indexOf('async getRepairEvidenceById'),
+    repositorySource.indexOf('async listEligibleTechnicians'),
   );
   assert.match(writeMethod, /where\('tenant_id', '=', validatedScope\.tenantId\)[\s\S]*?where\('branch_id', '=', validatedScope\.branchId\)[\s\S]*?where\('repair_id', '=', note\.repairId\)/u);
   assert.match(writeMethod, /insertInto\('repair_timeline_entries'\)/u);

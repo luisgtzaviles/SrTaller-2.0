@@ -1,12 +1,15 @@
 import type { Kysely } from 'kysely';
+import { randomUUID } from 'node:crypto';
 
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
-import { useDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { DatabaseTransactionError, runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type { InternalDatabasePersistenceOperation } from '../../../../infrastructure/database/database-persistence-capability.js';
-import type { DatabaseSchema, RepairRow } from '../../../../infrastructure/database/database-types.js';
+import type { DatabaseSchema, RepairRow, RepairTechnicianAssignmentRow } from '../../../../infrastructure/database/database-types.js';
 import { parseTenantId } from '../../../tenancy/index.js';
 import type {
   AddRepairOperationalNoteRecord,
+  AssignRepairTechnicianRecord,
   RepairPersistenceScope,
   RepairDetailRecord,
   RepairEvidenceContentRecord,
@@ -16,14 +19,19 @@ import type {
   RepairWorklistPage,
   RepairWorklistQuery,
   RepairWorklistRecord,
+  RepairTechnicianRecord,
+  TechnicianAssignmentHistoryRecord,
+  ReassignRepairTechnicianRecord,
+  UnassignRepairTechnicianRecord,
 } from '../../application/ports/repair-repository.port.js';
-import { RepairOperationalNoteIdempotencyConflictError } from '../../application/ports/repair-repository.port.js';
+import { RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError } from '../../application/ports/repair-repository.port.js';
 import {
   custodyStatusCodes,
   repairStatusCodes,
 } from '../../domain/repair-status.js';
 
-type RepairExecutor = Kysely<Pick<DatabaseSchema, 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs'>>;
+type RepairTables = 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments';
+type RepairExecutor = Kysely<Pick<DatabaseSchema, RepairTables>>;
 type ExecuteRepairOperation<Result> = InternalDatabasePersistenceOperation<'repairs', Result>;
 
 const branchUuid =
@@ -95,6 +103,17 @@ function mapRepair(row: RepairRow): RepairWorklistRecord {
   });
 }
 
+function technicianProjection(
+  row: RepairRow,
+  assignment: AssignmentProjection | undefined,
+): RepairWorklistRecord {
+  return mapRepair({
+    ...row,
+    technician_id: assignment?.technician_id ?? null,
+    technician_display_name: assignment?.technician_display_name ?? null,
+  });
+}
+
 interface RepairDetailProjection {
   readonly repair_id: string;
   readonly folio: string;
@@ -114,6 +133,30 @@ interface RepairDetailProjection {
   readonly technician_display_name: string | null;
   readonly repair_status: string;
   readonly custody_status: string;
+}
+
+interface AssignmentProjection extends RepairTechnicianAssignmentRow {
+  readonly technician_display_name: string;
+}
+
+type AssignmentCommandOutcome<T> = T | Readonly<{ error: Error }>;
+
+function assignmentCommandError<T>(error: Error): AssignmentCommandOutcome<T> {
+  return Object.freeze({ error });
+}
+
+function mapAssignmentHistory(row: AssignmentProjection): TechnicianAssignmentHistoryRecord {
+  return Object.freeze({
+    assignmentId: row.assignment_id,
+    technician: Object.freeze({ id: row.technician_id, displayName: row.technician_display_name }),
+    assignedAt: row.assigned_at.toISOString(),
+    endedAt: row.ended_at?.toISOString() ?? null,
+    reason: row.reason,
+    assignedBy: Object.freeze({ id: row.assigned_by_actor_id, displayName: row.assigned_by_actor_display_name }),
+    endedBy: row.ended_by_actor_id && row.ended_by_actor_display_name
+      ? Object.freeze({ id: row.ended_by_actor_id, displayName: row.ended_by_actor_display_name })
+      : null,
+  });
 }
 
 interface RepairTimelineEntryProjection {
@@ -189,6 +232,8 @@ function mapRepairDetail(
   timelineTotalCount: number,
   evidenceItems: readonly RepairEvidenceItemRecord[],
   evidenceTotalCount: number,
+  assignmentHistory: readonly TechnicianAssignmentHistoryRecord[] = [],
+  assignmentVersion = assignmentHistory.length,
 ): RepairDetailRecord {
   if (!repairStatusCodes.includes(row.repair_status as (typeof repairStatusCodes)[number])) {
     throw new Error('Database contains an unknown repair status.');
@@ -213,6 +258,14 @@ function mapRepairDetail(
     documentedRiskSummary: row.documented_risk_summary,
     technicianId: row.technician_id,
     technicianDisplayName: row.technician_display_name,
+    technicianSummary: Object.freeze({
+      current: row.technician_id && row.technician_display_name
+        ? Object.freeze({ id: row.technician_id, displayName: row.technician_display_name })
+        : null,
+      version: assignmentVersion,
+      historyCount: assignmentHistory.length,
+      history: Object.freeze([...assignmentHistory]),
+    }),
     repairStatus: row.repair_status as RepairDetailRecord['repairStatus'],
     currentLocation: null,
     custodyStatus: row.custody_status as RepairDetailRecord['custodyStatus'],
@@ -232,8 +285,27 @@ function mapRepairDetail(
 class KyselyRepairRepository implements RepairRepositoryPort {
   constructor(
     readonly execute: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>,
+    readonly executeTransaction: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>,
     readonly now: () => Date,
   ) {}
+
+  async #runAssignmentTransaction<Result>(
+    operation: ExecuteRepairOperation<Result>,
+  ): Promise<Result> {
+    try {
+      return await this.executeTransaction(operation);
+    } catch (error: unknown) {
+      if (
+        error instanceof DatabaseTransactionError &&
+        (error.code === 'DATABASE_TRANSACTION_SERIALIZATION_FAILURE' ||
+          error.code === 'DATABASE_TRANSACTION_DEADLOCK' ||
+          error.code === 'DATABASE_TRANSACTION_NESTED_FORBIDDEN')
+      ) {
+        throw new RepairTechnicianConcurrencyConflictError();
+      }
+      throw error;
+    }
+  }
 
   async listWorklist(
     scope: RepairPersistenceScope,
@@ -265,8 +337,29 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       if (range.from) filtered = filtered.where('received_at', '>=', range.from);
       if (range.to) filtered = filtered.where('received_at', '<', range.to);
       if (validatedQuery.status) filtered = filtered.where('repair_status', '=', validatedQuery.status);
-      if (validatedQuery.technicianId) filtered = filtered.where('technician_id', '=', validatedQuery.technicianId);
-      if (validatedQuery.unassigned) filtered = filtered.where('technician_id', 'is', null);
+      if (validatedQuery.technicianId) {
+        filtered = filtered.where(({ eb }) => eb.exists(
+          executor
+            .selectFrom('repair_technician_assignments')
+            .select('repair_technician_assignments.assignment_id')
+            .whereRef('repair_technician_assignments.tenant_id', '=', 'repairs.tenant_id' as never)
+            .whereRef('repair_technician_assignments.branch_id', '=', 'repairs.branch_id' as never)
+            .whereRef('repair_technician_assignments.repair_id', '=', 'repairs.repair_id' as never)
+            .where('repair_technician_assignments.technician_id', '=', validatedQuery.technicianId!)
+            .where('repair_technician_assignments.ended_at', 'is', null),
+        ));
+      }
+      if (validatedQuery.unassigned) {
+        filtered = filtered.where(({ eb }) => eb.not(eb.exists(
+          executor
+            .selectFrom('repair_technician_assignments')
+            .select('repair_technician_assignments.assignment_id')
+            .whereRef('repair_technician_assignments.tenant_id', '=', 'repairs.tenant_id' as never)
+            .whereRef('repair_technician_assignments.branch_id', '=', 'repairs.branch_id' as never)
+            .whereRef('repair_technician_assignments.repair_id', '=', 'repairs.repair_id' as never)
+            .where('repair_technician_assignments.ended_at', 'is', null),
+        )));
+      }
       if (validatedQuery.custody) filtered = filtered.where('custody_status', '=', validatedQuery.custody);
 
       const [rows, total, unfiltered, technicians] = await Promise.all([
@@ -287,19 +380,44 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           .where('branch_id', '=', validatedScope.branchId)
           .executeTakeFirstOrThrow(),
         executor
-          .selectFrom('repairs')
-          .select(['technician_id', 'technician_display_name'])
-          .where('tenant_id', '=', validatedScope.tenantId)
-          .where('branch_id', '=', validatedScope.branchId)
-          .where('technician_id', 'is not', null)
-          .where('technician_display_name', 'is not', null)
-          .distinct()
-          .orderBy('technician_display_name', 'asc')
+          .selectFrom('repair_technician_branches')
+          .innerJoin('repair_technicians', 'repair_technicians.technician_id', 'repair_technician_branches.technician_id')
+          .select(['repair_technicians.technician_id as technician_id', 'repair_technicians.display_name as technician_display_name'])
+          .where('repair_technician_branches.tenant_id', '=', validatedScope.tenantId)
+          .where('repair_technician_branches.branch_id', '=', validatedScope.branchId)
+          .where('repair_technicians.active', '=', true)
+          .orderBy('repair_technicians.display_name', 'asc')
           .execute(),
       ]);
+      const activeAssignments = await executor
+        .selectFrom('repair_technician_assignments')
+        .innerJoin('repair_technicians', 'repair_technicians.technician_id', 'repair_technician_assignments.technician_id')
+        .select([
+          'repair_technician_assignments.repair_id',
+          'repair_technician_assignments.assignment_id',
+          'repair_technician_assignments.tenant_id',
+          'repair_technician_assignments.branch_id',
+          'repair_technician_assignments.technician_id',
+          'repair_technician_assignments.assigned_by_actor_id',
+          'repair_technician_assignments.assigned_by_actor_display_name',
+          'repair_technician_assignments.assigned_at',
+          'repair_technician_assignments.ended_at',
+          'repair_technician_assignments.ended_by_actor_id',
+          'repair_technician_assignments.ended_by_actor_display_name',
+          'repair_technician_assignments.reason',
+          'repair_technician_assignments.client_request_id',
+          'repair_technician_assignments.ended_client_request_id',
+          'repair_technician_assignments.assignment_sequence',
+          'repair_technicians.display_name as technician_display_name',
+        ])
+        .where('repair_technician_assignments.tenant_id', '=', validatedScope.tenantId)
+        .where('repair_technician_assignments.branch_id', '=', validatedScope.branchId)
+        .where('repair_technician_assignments.ended_at', 'is', null)
+        .execute();
+      const assignmentByRepair = new Map(activeAssignments.map((assignment) => [assignment.repair_id, assignment as AssignmentProjection]));
       const totalCount = Number(total.count);
       return Object.freeze({
-        items: Object.freeze(rows.map(mapRepair)),
+        items: Object.freeze(rows.map((row) => technicianProjection(row, assignmentByRepair.get(row.repair_id)))),
         page: validatedQuery.page,
         pageSize: validatedQuery.pageSize,
         totalCount,
@@ -362,7 +480,15 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .where('tenant_id', '=', validatedScope.tenantId)
         .where('branch_id', '=', validatedScope.branchId)
         .where('repair_id', '=', repairId);
-      const [timelineRows, timelineCount, evidenceRows, evidenceCount] = await Promise.all([
+      const assignmentUnassignmentCount = executor
+        .selectFrom('repair_timeline_entries')
+        .select(({ fn }) => fn.countAll<number>().as('count'))
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', repairId)
+        .where('source', '=', 'local.technician_assignment')
+        .where('title', '=', 'Asignación retirada');
+      const [timelineRows, timelineCount, evidenceRows, evidenceCount, assignmentRows, unassignmentCount] = await Promise.all([
         timelineScope
           .select([
             'entry_id',
@@ -394,13 +520,49 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         evidenceScope
           .select(({ fn }) => fn.countAll<number>().as('count'))
           .executeTakeFirstOrThrow(),
+        executor
+          .selectFrom('repair_technician_assignments')
+          .innerJoin('repair_technicians', 'repair_technicians.technician_id', 'repair_technician_assignments.technician_id')
+          .select([
+            'repair_technician_assignments.assignment_id',
+            'repair_technician_assignments.tenant_id',
+            'repair_technician_assignments.branch_id',
+            'repair_technician_assignments.repair_id',
+            'repair_technician_assignments.technician_id',
+            'repair_technician_assignments.assigned_by_actor_id',
+            'repair_technician_assignments.assigned_by_actor_display_name',
+            'repair_technician_assignments.assigned_at',
+            'repair_technician_assignments.ended_at',
+            'repair_technician_assignments.ended_by_actor_id',
+            'repair_technician_assignments.ended_by_actor_display_name',
+            'repair_technician_assignments.reason',
+            'repair_technician_assignments.client_request_id',
+            'repair_technician_assignments.ended_client_request_id',
+            'repair_technician_assignments.assignment_sequence',
+            'repair_technicians.display_name as technician_display_name',
+          ])
+          .where('repair_technician_assignments.tenant_id', '=', validatedScope.tenantId)
+          .where('repair_technician_assignments.branch_id', '=', validatedScope.branchId)
+          .where('repair_technician_assignments.repair_id', '=', repairId)
+          .orderBy('repair_technician_assignments.assignment_sequence', 'desc')
+          .execute(),
+        assignmentUnassignmentCount.executeTakeFirstOrThrow(),
       ]);
+      const assignments = assignmentRows as readonly AssignmentProjection[];
+      const activeAssignment = assignments.find((assignment) => assignment.ended_at === null);
+      const projectedRow = {
+        ...row,
+        technician_id: activeAssignment?.technician_id ?? null,
+        technician_display_name: activeAssignment?.technician_display_name ?? null,
+      };
       return mapRepairDetail(
-        row,
+        projectedRow,
         timelineRows.map(mapTimelineEntry),
         Number(timelineCount.count),
         evidenceRows.map(mapEvidence),
         Number(evidenceCount.count),
+        assignments.map(mapAssignmentHistory),
+        assignments.length + Number(unassignmentCount.count),
       );
     });
   }
@@ -471,6 +633,174 @@ class KyselyRepairRepository implements RepairRepositoryPort {
     });
   }
 
+  async listEligibleTechnicians(
+    scope: RepairPersistenceScope,
+  ): Promise<readonly RepairTechnicianRecord[]> {
+    const validatedScope = validateScope(scope);
+    return this.execute(async (executor) => {
+      const rows = await executor
+        .selectFrom('repair_technician_branches')
+        .innerJoin('repair_technicians', 'repair_technicians.technician_id', 'repair_technician_branches.technician_id')
+        .select(['repair_technicians.technician_id as id', 'repair_technicians.display_name as displayName'])
+        .where('repair_technician_branches.tenant_id', '=', validatedScope.tenantId)
+        .where('repair_technician_branches.branch_id', '=', validatedScope.branchId)
+        .where('repair_technicians.active', '=', true)
+        .orderBy('repair_technicians.display_name', 'asc')
+        .execute();
+      return Object.freeze(rows.map((row) => Object.freeze({ id: row.id, displayName: row.displayName })));
+    });
+  }
+
+  async #technicianForScope(executor: RepairExecutor, scope: RepairPersistenceScope, technicianId: string): Promise<RepairTechnicianRecord | null> {
+    const row = await executor
+      .selectFrom('repair_technician_branches')
+      .innerJoin('repair_technicians', 'repair_technicians.technician_id', 'repair_technician_branches.technician_id')
+      .select(['repair_technicians.technician_id as id', 'repair_technicians.display_name as displayName'])
+      .where('repair_technician_branches.tenant_id', '=', scope.tenantId)
+      .where('repair_technician_branches.branch_id', '=', scope.branchId)
+      .where('repair_technician_branches.technician_id', '=', technicianId)
+      .where('repair_technicians.active', '=', true)
+      .executeTakeFirst();
+    return row ? Object.freeze({ id: row.id, displayName: row.displayName }) : null;
+  }
+
+  async #assignmentByRequest(executor: RepairExecutor, scope: RepairPersistenceScope, repairId: string, clientRequestId: string): Promise<AssignmentProjection | null> {
+    const row = await executor
+      .selectFrom('repair_technician_assignments')
+      .innerJoin('repair_technicians', 'repair_technicians.technician_id', 'repair_technician_assignments.technician_id')
+      .select([
+        'repair_technician_assignments.assignment_id', 'repair_technician_assignments.tenant_id', 'repair_technician_assignments.branch_id', 'repair_technician_assignments.repair_id', 'repair_technician_assignments.technician_id', 'repair_technician_assignments.assigned_by_actor_id', 'repair_technician_assignments.assigned_by_actor_display_name', 'repair_technician_assignments.assigned_at', 'repair_technician_assignments.ended_at', 'repair_technician_assignments.ended_by_actor_id', 'repair_technician_assignments.ended_by_actor_display_name', 'repair_technician_assignments.reason', 'repair_technician_assignments.client_request_id', 'repair_technician_assignments.ended_client_request_id', 'repair_technician_assignments.assignment_sequence', 'repair_technicians.display_name as technician_display_name',
+      ])
+      .where('repair_technician_assignments.tenant_id', '=', scope.tenantId)
+      .where('repair_technician_assignments.branch_id', '=', scope.branchId)
+      .where('repair_technician_assignments.repair_id', '=', repairId)
+      .where((expressionBuilder) => expressionBuilder.or([
+        expressionBuilder('repair_technician_assignments.client_request_id', '=', clientRequestId),
+        expressionBuilder('repair_technician_assignments.ended_client_request_id', '=', clientRequestId),
+      ]))
+      .executeTakeFirst();
+    return (row as AssignmentProjection | undefined) ?? null;
+  }
+
+  async #activeAssignment(executor: RepairExecutor, scope: RepairPersistenceScope, repairId: string): Promise<AssignmentProjection | null> {
+    const row = await executor
+      .selectFrom('repair_technician_assignments')
+      .innerJoin('repair_technicians', 'repair_technicians.technician_id', 'repair_technician_assignments.technician_id')
+      .select([
+        'repair_technician_assignments.assignment_id', 'repair_technician_assignments.tenant_id', 'repair_technician_assignments.branch_id', 'repair_technician_assignments.repair_id', 'repair_technician_assignments.technician_id', 'repair_technician_assignments.assigned_by_actor_id', 'repair_technician_assignments.assigned_by_actor_display_name', 'repair_technician_assignments.assigned_at', 'repair_technician_assignments.ended_at', 'repair_technician_assignments.ended_by_actor_id', 'repair_technician_assignments.ended_by_actor_display_name', 'repair_technician_assignments.reason', 'repair_technician_assignments.client_request_id', 'repair_technician_assignments.ended_client_request_id', 'repair_technician_assignments.assignment_sequence', 'repair_technicians.display_name as technician_display_name',
+      ])
+      .where('repair_technician_assignments.tenant_id', '=', scope.tenantId)
+      .where('repair_technician_assignments.branch_id', '=', scope.branchId)
+      .where('repair_technician_assignments.repair_id', '=', repairId)
+      .where('repair_technician_assignments.ended_at', 'is', null)
+      .executeTakeFirst();
+    return (row as AssignmentProjection | undefined) ?? null;
+  }
+
+  async #assignmentVersion(executor: RepairExecutor, scope: RepairPersistenceScope, repairId: string): Promise<number> {
+    const result = await executor
+      .selectFrom('repair_technician_assignments')
+      .select(({ fn }) => fn.countAll<number>().as('count'))
+      .where('tenant_id', '=', scope.tenantId)
+      .where('branch_id', '=', scope.branchId)
+      .where('repair_id', '=', repairId)
+      .executeTakeFirstOrThrow();
+    const unassignments = await executor
+        .selectFrom('repair_timeline_entries')
+        .select(({ fn }) => fn.countAll<number>().as('count'))
+        .where('tenant_id', '=', scope.tenantId)
+        .where('branch_id', '=', scope.branchId)
+        .where('repair_id', '=', repairId)
+        .where('source', '=', 'local.technician_assignment')
+        .where('title', '=', 'Asignación retirada')
+        .executeTakeFirstOrThrow();
+    return Number(result.count) + Number(unassignments.count);
+  }
+
+  async #timelineEvent(executor: RepairExecutor, scope: RepairPersistenceScope, repairId: string, entryId: string, clientRequestId: string, actorId: string, actorDisplayName: string, title: string, body: string, occurredAt: Date): Promise<void> {
+    await executor.insertInto('repair_timeline_entries').values({
+      entry_id: entryId, tenant_id: scope.tenantId, branch_id: scope.branchId, repair_id: repairId,
+      entry_type: 'system_event', actor_id: actorId, actor_display_name: actorDisplayName, title, body,
+      source: 'local.technician_assignment', client_request_id: clientRequestId, occurred_at: occurredAt, created_at: occurredAt,
+    }).execute();
+  }
+
+  async assignRepairTechnician(scope: RepairPersistenceScope, input: AssignRepairTechnicianRecord): Promise<AssignRepairTechnicianRecord | null> {
+    const validatedScope = validateScope(scope);
+    const outcome = await this.#runAssignmentTransaction<AssignmentCommandOutcome<AssignRepairTechnicianRecord | null>>(async (executor) => {
+      const repair = await executor.selectFrom('repairs').select('repair_id').where('tenant_id', '=', validatedScope.tenantId).where('branch_id', '=', validatedScope.branchId).where('repair_id', '=', input.repairId).forUpdate().executeTakeFirst();
+      if (!repair) return null;
+      const existing = await this.#assignmentByRequest(executor, validatedScope, input.repairId, input.clientRequestId);
+      if (existing) {
+        if (existing.technician_id !== input.technicianId || existing.ended_at !== null) return assignmentCommandError<AssignRepairTechnicianRecord | null>(new RepairTechnicianIdempotencyConflictError());
+        return Object.freeze({ ...input, assignmentId: existing.assignment_id, technicianDisplayName: existing.technician_display_name, occurredAt: existing.assigned_at, version: existing.assignment_sequence });
+      }
+      const active = await this.#activeAssignment(executor, validatedScope, input.repairId);
+      const version = await this.#assignmentVersion(executor, validatedScope, input.repairId);
+      if (version !== input.version) return assignmentCommandError<AssignRepairTechnicianRecord | null>(new RepairTechnicianConcurrencyConflictError());
+      if (active) return assignmentCommandError<AssignRepairTechnicianRecord | null>(new RepairTechnicianStateConflictError());
+      const technician = await this.#technicianForScope(executor, validatedScope, input.technicianId);
+      if (!technician) return assignmentCommandError<AssignRepairTechnicianRecord | null>(new RepairTechnicianEligibilityError());
+      await executor.insertInto('repair_technician_assignments').values({
+        assignment_id: input.assignmentId, tenant_id: validatedScope.tenantId, branch_id: validatedScope.branchId, repair_id: input.repairId,
+        technician_id: technician.id, assigned_by_actor_id: input.actorId, assigned_by_actor_display_name: input.actorDisplayName, assigned_at: input.occurredAt,
+        ended_at: null, ended_by_actor_id: null, ended_by_actor_display_name: null, reason: null, client_request_id: input.clientRequestId, assignment_sequence: version + 1,
+      }).execute();
+      await this.#timelineEvent(executor, validatedScope, input.repairId, randomUUID(), input.clientRequestId, input.actorId, input.actorDisplayName, 'Técnico asignado', `${input.actorDisplayName} asignó a ${technician.displayName}.`, input.occurredAt);
+      return Object.freeze({ ...input, technicianDisplayName: technician.displayName, version: version + 1 });
+    });
+    if (outcome && 'error' in outcome) throw outcome.error;
+    return outcome;
+  }
+
+  async reassignRepairTechnician(scope: RepairPersistenceScope, input: ReassignRepairTechnicianRecord): Promise<ReassignRepairTechnicianRecord | null> {
+    const validatedScope = validateScope(scope);
+    const outcome = await this.#runAssignmentTransaction<AssignmentCommandOutcome<ReassignRepairTechnicianRecord | null>>(async (executor) => {
+      const repair = await executor.selectFrom('repairs').select('repair_id').where('tenant_id', '=', validatedScope.tenantId).where('branch_id', '=', validatedScope.branchId).where('repair_id', '=', input.repairId).forUpdate().executeTakeFirst();
+      if (!repair) return null;
+      const existing = await this.#assignmentByRequest(executor, validatedScope, input.repairId, input.clientRequestId);
+      if (existing) {
+        if (existing.technician_id !== input.technicianId || existing.reason !== input.reason) return assignmentCommandError<ReassignRepairTechnicianRecord | null>(new RepairTechnicianIdempotencyConflictError());
+        return Object.freeze({ ...input, assignmentId: existing.assignment_id, technicianDisplayName: existing.technician_display_name, previousTechnicianId: input.previousTechnicianId || existing.technician_id, previousTechnicianDisplayName: input.previousTechnicianDisplayName || existing.technician_display_name, occurredAt: existing.assigned_at, version: existing.assignment_sequence });
+      }
+      const active = await this.#activeAssignment(executor, validatedScope, input.repairId);
+      const version = await this.#assignmentVersion(executor, validatedScope, input.repairId);
+      if (version !== input.version) return assignmentCommandError<ReassignRepairTechnicianRecord | null>(new RepairTechnicianConcurrencyConflictError());
+      if (!active) return assignmentCommandError<ReassignRepairTechnicianRecord | null>(new RepairTechnicianStateConflictError());
+      const technician = await this.#technicianForScope(executor, validatedScope, input.technicianId);
+      if (!technician) return assignmentCommandError<ReassignRepairTechnicianRecord | null>(new RepairTechnicianEligibilityError());
+      if (technician.id === active.technician_id) return assignmentCommandError<ReassignRepairTechnicianRecord | null>(new RepairTechnicianStateConflictError());
+      await executor.updateTable('repair_technician_assignments').set({ ended_at: input.occurredAt, ended_by_actor_id: input.actorId, ended_by_actor_display_name: input.actorDisplayName }).where('assignment_id', '=', active.assignment_id).execute();
+      await executor.insertInto('repair_technician_assignments').values({ assignment_id: input.assignmentId, tenant_id: validatedScope.tenantId, branch_id: validatedScope.branchId, repair_id: input.repairId, technician_id: technician.id, assigned_by_actor_id: input.actorId, assigned_by_actor_display_name: input.actorDisplayName, assigned_at: input.occurredAt, ended_at: null, ended_by_actor_id: null, ended_by_actor_display_name: null, reason: input.reason, client_request_id: input.clientRequestId, assignment_sequence: version + 1 }).execute();
+      await this.#timelineEvent(executor, validatedScope, input.repairId, randomUUID(), input.clientRequestId, input.actorId, input.actorDisplayName, 'Técnico reasignado', `${active.technician_display_name} → ${technician.displayName}${input.reason ? ` · ${input.reason}` : ''}`, input.occurredAt);
+      return Object.freeze({ ...input, technicianDisplayName: technician.displayName, previousTechnicianId: active.technician_id, previousTechnicianDisplayName: active.technician_display_name, version: version + 1 });
+    });
+    if (outcome && 'error' in outcome) throw outcome.error;
+    return outcome;
+  }
+
+  async unassignRepairTechnician(scope: RepairPersistenceScope, input: UnassignRepairTechnicianRecord): Promise<UnassignRepairTechnicianRecord | null> {
+    const validatedScope = validateScope(scope);
+    const outcome = await this.#runAssignmentTransaction<AssignmentCommandOutcome<UnassignRepairTechnicianRecord | null>>(async (executor) => {
+      const repair = await executor.selectFrom('repairs').select('repair_id').where('tenant_id', '=', validatedScope.tenantId).where('branch_id', '=', validatedScope.branchId).where('repair_id', '=', input.repairId).forUpdate().executeTakeFirst();
+      if (!repair) return null;
+      const existing = await this.#assignmentByRequest(executor, validatedScope, input.repairId, input.clientRequestId);
+      if (existing) {
+        if (existing.ended_client_request_id !== input.clientRequestId || existing.ended_at === null) return assignmentCommandError<UnassignRepairTechnicianRecord | null>(new RepairTechnicianIdempotencyConflictError());
+        return Object.freeze({ ...input, assignmentId: existing.assignment_id, previousTechnicianId: existing.technician_id, previousTechnicianDisplayName: existing.technician_display_name, version: existing.assignment_sequence + 1 });
+      }
+      const active = await this.#activeAssignment(executor, validatedScope, input.repairId);
+      const version = await this.#assignmentVersion(executor, validatedScope, input.repairId);
+      if (version !== input.version) return assignmentCommandError<UnassignRepairTechnicianRecord | null>(new RepairTechnicianConcurrencyConflictError());
+      if (!active) return assignmentCommandError<UnassignRepairTechnicianRecord | null>(new RepairTechnicianStateConflictError());
+      await executor.updateTable('repair_technician_assignments').set({ ended_at: input.occurredAt, ended_by_actor_id: input.actorId, ended_by_actor_display_name: input.actorDisplayName, reason: input.reason, ended_client_request_id: input.clientRequestId }).where('assignment_id', '=', active.assignment_id).execute();
+      await this.#timelineEvent(executor, validatedScope, input.repairId, randomUUID(), input.clientRequestId, input.actorId, input.actorDisplayName, 'Asignación retirada', `${active.technician_display_name} quedó sin asignación activa${input.reason ? ` · ${input.reason}` : ''}`, input.occurredAt);
+      return Object.freeze({ ...input, assignmentId: active.assignment_id, previousTechnicianId: active.technician_id, previousTechnicianDisplayName: active.technician_display_name, version: version + 1 });
+    });
+    if (outcome && 'error' in outcome) throw outcome.error;
+    return outcome;
+  }
+
   async getRepairEvidenceById(
     scope: RepairPersistenceScope,
     repairId: string,
@@ -504,6 +834,8 @@ export function createKyselyRepairRepository(
 ): RepairRepositoryPort {
   return new KyselyRepairRepository(
     (operation) => useDatabasePersistenceExecutor(connection, 'repairs', operation),
+    (operation) => runInTransaction(connection, { isolationLevel: 'serializable' }, async (context) =>
+      useTransactionalDatabasePersistenceExecutor(context, 'repairs', operation)),
     now,
   );
 }

@@ -4,6 +4,8 @@ import { ListRepairsUseCase } from './application/use-cases/list-repairs.use-cas
 import { GetRepairDetailUseCase } from './application/use-cases/get-repair-detail.use-case.js';
 import { GetRepairEvidenceContentUseCase } from './application/use-cases/get-repair-evidence-content.use-case.js';
 import { AddRepairOperationalNoteUseCase } from './application/use-cases/add-repair-operational-note.use-case.js';
+import { ListRepairTechniciansUseCase } from './application/use-cases/list-repair-technicians.use-case.js';
+import { AssignRepairTechnicianUseCase, ReassignRepairTechnicianUseCase, UnassignRepairTechnicianUseCase } from './application/use-cases/technician-assignment.use-case.js';
 import type { RepairRepositoryPort } from './application/ports/repair-repository.port.js';
 import { LocalRepairContext } from './infrastructure/context/local-repair-context.js';
 import { createKyselyRepairRepository } from './infrastructure/persistence/kysely-repair.repository.js';
@@ -65,6 +67,26 @@ export const REPAIR_EVIDENCE_STORAGE = Symbol('srtaller.repairs.evidence-storage
       ): GetRepairEvidenceContentUseCase => new GetRepairEvidenceContentUseCase(
         repository, storage, () => context.resolve(),
       ),
+    },
+    {
+      provide: ListRepairTechniciansUseCase,
+      inject: [REPAIR_REPOSITORY, LocalRepairContext],
+      useFactory: (repository: RepairRepositoryPort, context: LocalRepairContext): ListRepairTechniciansUseCase => new ListRepairTechniciansUseCase(repository, () => context.resolve()),
+    },
+    {
+      provide: AssignRepairTechnicianUseCase,
+      inject: [REPAIR_REPOSITORY, LocalRepairContext],
+      useFactory: (repository: RepairRepositoryPort, context: LocalRepairContext): AssignRepairTechnicianUseCase => new AssignRepairTechnicianUseCase(repository, () => context.resolve()),
+    },
+    {
+      provide: ReassignRepairTechnicianUseCase,
+      inject: [REPAIR_REPOSITORY, LocalRepairContext],
+      useFactory: (repository: RepairRepositoryPort, context: LocalRepairContext): ReassignRepairTechnicianUseCase => new ReassignRepairTechnicianUseCase(repository, () => context.resolve()),
+    },
+    {
+      provide: UnassignRepairTechnicianUseCase,
+      inject: [REPAIR_REPOSITORY, LocalRepairContext],
+      useFactory: (repository: RepairRepositoryPort, context: LocalRepairContext): UnassignRepairTechnicianUseCase => new UnassignRepairTechnicianUseCase(repository, () => context.resolve()),
     },
   ],
 })

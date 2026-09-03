@@ -36,6 +36,15 @@ import {
   AddRepairOperationalNoteUseCase,
   RepairOperationalNoteRepairNotFoundError,
 } from '../application/use-cases/add-repair-operational-note.use-case.js';
+import { ListRepairTechniciansUseCase } from '../application/use-cases/list-repair-technicians.use-case.js';
+import {
+  AssignRepairTechnicianUseCase,
+  ReassignRepairTechnicianUseCase,
+  TechnicianAssignmentConflictError,
+  TechnicianAssignmentInputError,
+  TechnicianAssignmentRepairNotFoundError,
+  UnassignRepairTechnicianUseCase,
+} from '../application/use-cases/technician-assignment.use-case.js';
 
 type RepairQuery = Readonly<Record<string, string | string[] | undefined>>;
 
@@ -135,6 +144,7 @@ function detailResponse(item: Awaited<ReturnType<GetRepairDetailUseCase['execute
       technician: item.technicianId && item.technicianDisplayName
         ? { id: item.technicianId, displayName: item.technicianDisplayName }
         : null,
+      technicianSummary: item.technicianSummary,
     },
     timeline: {
       items: item.timeline.items.map((entry) => ({
@@ -199,6 +209,10 @@ export class RepairsController {
     private readonly getRepairDetail: GetRepairDetailUseCase,
     private readonly getRepairEvidenceContent: GetRepairEvidenceContentUseCase,
     private readonly addRepairOperationalNote: AddRepairOperationalNoteUseCase,
+    private readonly listRepairTechnicians: ListRepairTechniciansUseCase,
+    private readonly assignRepairTechnician: AssignRepairTechnicianUseCase,
+    private readonly reassignRepairTechnician: ReassignRepairTechnicianUseCase,
+    private readonly unassignRepairTechnician: UnassignRepairTechnicianUseCase,
   ) {}
 
   @Get()
@@ -220,6 +234,56 @@ export class RepairsController {
       }
       throw new InternalServerErrorException({ code: 'REPAIRS_READ_FAILED' });
     }
+  }
+
+  @Get('technicians')
+  async getTechnicians() {
+    try {
+      return { items: await this.listRepairTechnicians.execute() };
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
+      if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+      throw new InternalServerErrorException({ code: 'REPAIR_TECHNICIANS_READ_FAILED' });
+    }
+  }
+
+  @Post(':repairId/technician-assignment')
+  async assignTechnician(@Param('repairId') repairId: string, @Body() request: unknown) {
+    try {
+      return { item: await this.assignRepairTechnician.execute({ repairId, request }) };
+    } catch (error: unknown) {
+      return this.assignmentError(error);
+    }
+  }
+
+  @Post(':repairId/technician-reassignment')
+  async reassignTechnician(@Param('repairId') repairId: string, @Body() request: unknown) {
+    try {
+      return { item: await this.reassignRepairTechnician.execute({ repairId, request }) };
+    } catch (error: unknown) {
+      return this.assignmentError(error);
+    }
+  }
+
+  @Post(':repairId/technician-unassignment')
+  async unassignTechnician(@Param('repairId') repairId: string, @Body() request: unknown) {
+    try {
+      return { item: await this.unassignRepairTechnician.execute({ repairId, request }) };
+    } catch (error: unknown) {
+      return this.assignmentError(error);
+    }
+  }
+
+  private assignmentError(error: unknown): never {
+    if (error instanceof TechnicianAssignmentInputError) throw new BadRequestException({ code: 'REPAIR_TECHNICIAN_ASSIGNMENT_INVALID', parameter: error.parameter });
+    if (error instanceof TechnicianAssignmentRepairNotFoundError) throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
+    if (error instanceof TechnicianAssignmentConflictError) {
+      const code = error.kind === 'concurrency' ? 'REPAIR_TECHNICIAN_ASSIGNMENT_STALE' : error.kind === 'idempotency' ? 'REPAIR_TECHNICIAN_ASSIGNMENT_IDEMPOTENCY_CONFLICT' : error.kind === 'ineligible' ? 'REPAIR_TECHNICIAN_INELIGIBLE' : 'REPAIR_TECHNICIAN_ASSIGNMENT_CONFLICT';
+      throw new ConflictException({ code });
+    }
+    if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
+    if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+    throw new InternalServerErrorException({ code: 'REPAIR_TECHNICIAN_ASSIGNMENT_FAILED' });
   }
 
   @Post(':repairId/notes')

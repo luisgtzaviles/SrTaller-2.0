@@ -40,6 +40,7 @@ export interface RepairDetailRecord {
   readonly documentedRiskSummary: string | null;
   readonly technicianId: string | null;
   readonly technicianDisplayName: string | null;
+  readonly technicianSummary: TechnicianSummaryRecord;
   readonly repairStatus: RepairStatusCode;
   readonly currentLocation: null;
   readonly custodyStatus: CustodyStatusCode;
@@ -53,6 +54,28 @@ export interface RepairDetailRecord {
     totalCount: number;
     limit: number;
   }>;
+}
+
+export interface TechnicianSummaryRecord {
+  readonly current: Readonly<{ id: string; displayName: string }> | null;
+  readonly version: number;
+  readonly historyCount: number;
+  readonly history: readonly TechnicianAssignmentHistoryRecord[];
+}
+
+export interface TechnicianAssignmentHistoryRecord {
+  readonly assignmentId: string;
+  readonly technician: Readonly<{ id: string; displayName: string }>;
+  readonly assignedAt: string;
+  readonly endedAt: string | null;
+  readonly reason: string | null;
+  readonly assignedBy: Readonly<{ id: string; displayName: string }>;
+  readonly endedBy: Readonly<{ id: string; displayName: string }> | null;
+}
+
+export interface RepairTechnicianRecord {
+  readonly id: string;
+  readonly displayName: string;
 }
 
 export type RepairEvidenceCategory = 'intake' | 'general';
@@ -134,6 +157,59 @@ export interface RepairWorklistPage {
   }>[];
 }
 
+export interface AssignRepairTechnicianRecord {
+  readonly repairId: string;
+  readonly assignmentId: string;
+  readonly technicianId: string;
+  readonly technicianDisplayName: string;
+  readonly clientRequestId: string;
+  readonly actorId: string;
+  readonly actorDisplayName: string;
+  readonly occurredAt: Date;
+  readonly version: number;
+}
+
+export interface ReassignRepairTechnicianRecord extends AssignRepairTechnicianRecord {
+  readonly previousTechnicianId: string;
+  readonly previousTechnicianDisplayName: string;
+  readonly reason: string | null;
+}
+
+export interface UnassignRepairTechnicianRecord {
+  readonly repairId: string;
+  readonly assignmentId: string;
+  readonly previousTechnicianId: string;
+  readonly previousTechnicianDisplayName: string;
+  readonly clientRequestId: string;
+  readonly actorId: string;
+  readonly actorDisplayName: string;
+  readonly occurredAt: Date;
+  readonly version: number;
+  readonly reason: string | null;
+}
+
+export class RepairTechnicianIdempotencyConflictError extends Error {
+  constructor() {
+    super('Technician assignment request was reused with different content.');
+    this.name = 'RepairTechnicianIdempotencyConflictError';
+  }
+}
+
+export class RepairTechnicianConcurrencyConflictError extends Error {
+  constructor() {
+    super('Technician assignment version is stale.');
+    this.name = 'RepairTechnicianConcurrencyConflictError';
+  }
+}
+
+export class RepairTechnicianStateConflictError extends Error {
+  constructor() { super('Technician assignment state does not allow this command.'); this.name = 'RepairTechnicianStateConflictError'; }
+}
+
+export class RepairTechnicianEligibilityError extends Error {
+  constructor() { super('Technician is not eligible for this context.'); this.name = 'RepairTechnicianEligibilityError'; }
+}
+
 export interface RepairRepositoryPort {
   listWorklist(
     scope: RepairPersistenceScope,
@@ -147,6 +223,21 @@ export interface RepairRepositoryPort {
     scope: RepairPersistenceScope,
     note: AddRepairOperationalNoteRecord,
   ): Promise<RepairTimelineItemRecord | null>;
+  listEligibleTechnicians(
+    scope: RepairPersistenceScope,
+  ): Promise<readonly RepairTechnicianRecord[]>;
+  assignRepairTechnician(
+    scope: RepairPersistenceScope,
+    input: AssignRepairTechnicianRecord,
+  ): Promise<AssignRepairTechnicianRecord | null>;
+  reassignRepairTechnician(
+    scope: RepairPersistenceScope,
+    input: ReassignRepairTechnicianRecord,
+  ): Promise<ReassignRepairTechnicianRecord | null>;
+  unassignRepairTechnician(
+    scope: RepairPersistenceScope,
+    input: UnassignRepairTechnicianRecord,
+  ): Promise<UnassignRepairTechnicianRecord | null>;
   getRepairEvidenceById(
     scope: RepairPersistenceScope,
     repairId: string,
