@@ -284,6 +284,31 @@ export function localRepairTechnicianRows() {
   ].map(([technicianId, displayName]) => Object.freeze({ technicianId, tenantId, displayName, active: true, createdAt })));
 }
 
+export function localRepairWorkflowTransitionRows() {
+  const tenantId = LOCAL_TENANT_ID;
+  const branchId = LOCAL_BRANCH_IDS[0];
+  const actorId = '00000000-0000-4000-8000-000000000301';
+  return Object.freeze([
+    ['00000000-0000-4000-8000-000000006002', '00000000-0000-4000-8000-000000001002', '00000000-0000-4000-8000-000000007002', '2026-08-19T09:25:00.000Z'],
+    ['00000000-0000-4000-8000-000000006012', '00000000-0000-4000-8000-000000001012', '00000000-0000-4000-8000-000000007012', '2026-08-08T11:20:00.000Z'],
+  ].map(([transitionId, repairId, clientRequestId, occurredAt]) => Object.freeze({
+    transitionId,
+    tenantId,
+    branchId,
+    repairId,
+    command: 'start_diagnosis',
+    fromState: 'pending',
+    toState: 'diagnosing',
+    actorId,
+    actorDisplayName: 'Operador sintético',
+    occurredAt,
+    reason: null,
+    clientRequestId,
+    expectedWorkflowVersion: 0,
+    workflowVersion: 1,
+  })));
+}
+
 export function localRepairTechnicianBranchRows() {
   const tenantId = LOCAL_TENANT_ID;
   const branchId = LOCAL_BRANCH_IDS[0];
@@ -370,9 +395,11 @@ export function localRepairTimelineRows() {
     ['00000000-0000-4000-8000-000000002004', repairIds.rich, 'note', actors.bruno, 'Bruno Técnico', 'Observación técnica', 'Se realizó una inspección visual sin desmontaje. El puerto presenta residuos compactados y desgaste visible. El equipo reconoce alimentación sólo al mantener el conector en una posición específica; esta observación describe lo revisado y no constituye todavía un diagnóstico ni una autorización de trabajo.', 'local.operator_note', '2026-08-18T18:10:00.000Z'],
     ['00000000-0000-4000-8000-000000002005', repairIds.rich, 'system_event', null, 'Sistema', 'Situación operativa actualizada', 'La reparación quedó representada como espera de autorización en los datos sintéticos.', 'local.status_projection', '2026-08-18T18:25:00.000Z'],
     ['00000000-0000-4000-8000-000000002006', repairIds.rich, 'note', actors.mar, 'Mar Recepción', null, 'Se dejó constancia de que el cliente recibirá una explicación del alcance antes de cualquier intervención adicional.', 'local.operator_note', '2026-08-18T18:40:00.000Z'],
-    ['00000000-0000-4000-8000-000000002007', repairIds.oneEntry, 'system_event', null, 'Sistema', 'Recepción registrada', 'El ingreso del equipo quedó registrado en la sucursal.', 'local.reception', '2026-08-19T09:10:00.000Z'],
+    ['00000000-0000-4000-8000-000000002007', repairIds.oneEntry, 'system_event', null, 'Sistema', 'Recepción registrada', 'El ingreso del equipo quedó registrado en la sucursal.', 'local.reception', '2026-08-19T09:10:00.000Z', null],
+    ['00000000-0000-4000-8000-000000002008', repairIds.oneEntry, 'system_event', actors.mar, 'Operador sintético', 'Diagnóstico iniciado', 'Operador sintético inició el diagnóstico.', 'local.workflow', '2026-08-19T09:25:00.000Z', '00000000-0000-4000-8000-000000007002'],
+    ['00000000-0000-4000-8000-000000002009', '00000000-0000-4000-8000-000000001012', 'system_event', actors.mar, 'Operador sintético', 'Diagnóstico iniciado', 'Operador sintético inició el diagnóstico.', 'local.workflow', '2026-08-08T11:20:00.000Z', '00000000-0000-4000-8000-000000007012'],
   ];
-  return Object.freeze(rows.map(([entryId, repairId, entryType, actorId, actorDisplayName, title, body, source, occurredAt]) => Object.freeze({
+  return Object.freeze(rows.map(([entryId, repairId, entryType, actorId, actorDisplayName, title, body, source, occurredAt, clientRequestId = null]) => Object.freeze({
     entryId,
     tenantId,
     branchId,
@@ -383,6 +410,7 @@ export function localRepairTimelineRows() {
     title,
     body,
     source,
+    clientRequestId,
     occurredAt,
     createdAt: occurredAt,
   })));

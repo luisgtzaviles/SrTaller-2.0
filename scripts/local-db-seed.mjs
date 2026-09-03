@@ -11,6 +11,7 @@ import {
   localRepairTechnicianRows,
   localRepairTechnicianBranchRows,
   localRepairTechnicianAssignmentRows,
+  localRepairWorkflowTransitionRows,
   localSeedRows,
 } from './lib/local-development.mjs';
 import { materializeLocalEvidenceFixtures } from './lib/local-evidence-fixtures.mjs';
@@ -105,6 +106,23 @@ try {
       [technician.technicianId, technician.tenantId, technician.displayName, technician.active, technician.createdAt],
     );
   }
+  for (const transition of localRepairWorkflowTransitionRows()) {
+    await client.query(
+      `INSERT INTO repair_workflow_transitions (
+         transition_id, tenant_id, branch_id, repair_id, command,
+         from_state, to_state, actor_id, actor_display_name, occurred_at,
+         reason, client_request_id, expected_workflow_version, workflow_version
+       ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, $6, $7, $8::uuid, $9, $10::timestamptz, $11, $12::uuid, $13, $14)
+       ON CONFLICT (transition_id) DO UPDATE SET
+         actor_id = EXCLUDED.actor_id,
+         actor_display_name = EXCLUDED.actor_display_name,
+         occurred_at = EXCLUDED.occurred_at`,
+      [transition.transitionId, transition.tenantId, transition.branchId, transition.repairId,
+        transition.command, transition.fromState, transition.toState, transition.actorId,
+        transition.actorDisplayName, transition.occurredAt, transition.reason,
+        transition.clientRequestId, transition.expectedWorkflowVersion, transition.workflowVersion],
+    );
+  }
   for (const eligibility of localRepairTechnicianBranchRows()) {
     await client.query(
       `INSERT INTO repair_technician_branches (tenant_id, branch_id, technician_id, created_at)
@@ -164,10 +182,10 @@ try {
       `INSERT INTO repair_timeline_entries (
          entry_id, tenant_id, branch_id, repair_id, entry_type,
          actor_id, actor_display_name, title, body, source,
-         occurred_at, created_at
+         client_request_id, occurred_at, created_at
        ) VALUES (
          $1::uuid, $2::uuid, $3::uuid, $4::uuid, $5,
-         $6::uuid, $7, $8, $9, $10, $11::timestamptz, $12::timestamptz
+         $6::uuid, $7, $8, $9, $10, $11::uuid, $12::timestamptz, $13::timestamptz
        )
        ON CONFLICT (entry_id) DO UPDATE SET
          tenant_id = EXCLUDED.tenant_id,
@@ -179,6 +197,7 @@ try {
          title = EXCLUDED.title,
          body = EXCLUDED.body,
          source = EXCLUDED.source,
+         client_request_id = EXCLUDED.client_request_id,
          occurred_at = EXCLUDED.occurred_at,
          created_at = EXCLUDED.created_at`,
       [
@@ -192,6 +211,7 @@ try {
         entry.title,
         entry.body,
         entry.source,
+        entry.clientRequestId,
         entry.occurredAt,
         entry.createdAt,
       ],
@@ -246,6 +266,7 @@ process.stdout.write(`${JSON.stringify({
   repairEvidenceCount: localRepairEvidenceRows().length,
   technicianCount: localRepairTechnicianRows().length,
   assignmentCount: localRepairTechnicianAssignmentRows().length,
+  workflowTransitionCount: localRepairWorkflowTransitionRows().length,
   deterministic: true,
   applicationRole: environment.SR_DB_USER,
   forbiddenConnectionString: !Object.keys(cleanChildEnvironment()).includes('DATABASE_URL'),

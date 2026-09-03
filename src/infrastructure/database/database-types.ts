@@ -27,7 +27,7 @@ export interface RepairTable {
   readonly reported_issue: ImmutableColumn<string>;
   readonly technician_id: ImmutableColumn<string | null>;
   readonly technician_display_name: ImmutableColumn<string | null>;
-  readonly repair_status: ImmutableColumn<string>;
+  readonly repair_status: MutableColumn<string>;
   readonly custody_status: ImmutableColumn<string>;
   readonly created_at: ImmutableColumn<Date>;
 }
@@ -113,6 +113,23 @@ export interface RepairTechnicianAssignmentTable {
   readonly assignment_sequence: ImmutableColumn<number>;
 }
 
+export interface RepairWorkflowTransitionTable {
+  readonly transition_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly repair_id: ImmutableColumn<string>;
+  readonly command: ImmutableColumn<string>;
+  readonly from_state: ImmutableColumn<string>;
+  readonly to_state: ImmutableColumn<string>;
+  readonly actor_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+  readonly reason: ImmutableColumn<string | null>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly expected_workflow_version: ImmutableColumn<number>;
+  readonly workflow_version: ImmutableColumn<number>;
+}
+
 export interface DatabaseSchema {
   readonly tenants: TenantTable;
   readonly branches: BranchTable;
@@ -123,6 +140,7 @@ export interface DatabaseSchema {
   readonly repair_technicians: RepairTechnicianTable;
   readonly repair_technician_branches: RepairTechnicianBranchTable;
   readonly repair_technician_assignments: RepairTechnicianAssignmentTable;
+  readonly repair_workflow_transitions: RepairWorkflowTransitionTable;
 }
 
 export type TenantRow = Selectable<TenantTable>;
@@ -154,3 +172,5 @@ export type RepairTechnicianBranchRow = Selectable<RepairTechnicianBranchTable>;
 export type NewRepairTechnicianBranch = Insertable<RepairTechnicianBranchTable>;
 export type RepairTechnicianAssignmentRow = Selectable<RepairTechnicianAssignmentTable>;
 export type NewRepairTechnicianAssignment = Insertable<RepairTechnicianAssignmentTable>;
+export type RepairWorkflowTransitionRow = Selectable<RepairWorkflowTransitionTable>;
+export type NewRepairWorkflowTransition = Insertable<RepairWorkflowTransitionTable>;
