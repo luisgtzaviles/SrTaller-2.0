@@ -28,7 +28,10 @@ test('repair detail read model owns an explicit bounded timeline contract', () =
   assert.match(portSource, /readonly timeline: Readonly<\{[\s\S]*?items:[\s\S]*?totalCount: number;[\s\S]*?limit: number;/u);
   assert.match(repositorySource, /const repairTimelineLimit = 20/u);
   assert.match(repositorySource, /selectFrom\('repair_timeline_entries'\)/u);
-  const timelineRead = repositorySource.slice(repositorySource.indexOf("const timelineScope"));
+  const timelineRead = repositorySource.slice(
+    repositorySource.indexOf("const timelineScope"),
+    repositorySource.indexOf('async addOperationalNote'),
+  );
   assert.match(timelineRead, /where\('tenant_id', '=', validatedScope\.tenantId\)[\s\S]*?where\('branch_id', '=', validatedScope\.branchId\)[\s\S]*?where\('repair_id', '=', repairId\)/u);
   assert.match(timelineRead, /\.select\(\[[\s\S]*?'entry_id'[\s\S]*?'occurred_at'[\s\S]*?\]\)/u);
   assert.match(timelineRead, /orderBy\('occurred_at', 'desc'\)[\s\S]*?orderBy\('entry_id', 'desc'\)[\s\S]*?limit\(repairTimelineLimit\)/u);

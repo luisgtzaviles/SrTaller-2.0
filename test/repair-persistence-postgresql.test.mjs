@@ -15,7 +15,7 @@ const { databaseMigrationSourceOverride, inspectMigrationSource } = enabled
 const { createMigrationRunner } = enabled
   ? await import('../dist/infrastructure/database/migration-runner.js')
   : {};
-const { RepairOperationalNoteIdempotencyConflictError } = enabled
+const { RepairOperationalNoteIdempotencyConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } = enabled
   ? await import('../dist/modules/repairs/application/ports/repair-repository.port.js')
   : {};
 const { createKyselyRepairRepository } = enabled
@@ -30,6 +30,7 @@ const tables = [
   'repair_timeline_entries',
   'repair_intakes',
   'repair_technician_assignments',
+  'repair_workflow_transitions',
   'repair_technician_branches',
   'repair_technicians',
   'repairs',
@@ -153,7 +154,7 @@ async function seed(admin) {
        ($4, $2, $3, 'SR-PERCENT', '2026-08-20T10:00:00Z', 'Cliente porcentaje', '6621000002',
         'Marca', 'Equipo 100% listo', 'Prueba literal', $8, 'Ana Técnica', 'diagnosing', 'active', $7),
        ($5, $6, $9, 'SR-B', '2026-08-21T09:00:00Z', 'Cliente B', '6621000003',
-        'Samsung', 'S22', 'No enciende', null, null, 'pending', 'active', $7)`,
+        'Samsung', 'S22', 'No enciende', null, null, 'pending', 'ended', $7)`,
     [repairA, tenantA, branchA, repairPercent, repairB, tenantB, createdAt, actorId, branchB],
   );
   await admin.query(
@@ -237,6 +238,35 @@ function note(overrides = {}) {
   });
 }
 
+function workflowCommand(repairId, suffix, overrides = {}) {
+  return Object.freeze({
+    repairId,
+    transitionId: `81000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    timelineEntryId: `82000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    clientRequestId: `83000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    actorId,
+    actorDisplayName: 'Operador sintético',
+    occurredAt: new Date('2026-08-21T18:30:00.000Z'),
+    expectedVersion: 0,
+    workflowVersion: 1,
+    fromState: 'pending',
+    toState: 'diagnosing',
+    ...overrides,
+  });
+}
+
+async function insertPendingRepair(admin, repairId, folio) {
+  await admin.query(
+    `insert into repairs (
+       repair_id, tenant_id, branch_id, folio, received_at, customer_name,
+       customer_phone, device_brand, device_model, reported_issue,
+       technician_id, technician_display_name, repair_status, custody_status, created_at
+     ) values ($1, $2, $3, $4, now(), 'Cliente workflow', '6621000099',
+       'Marca', 'Modelo', 'Prueba workflow', null, null, 'pending', 'active', now())`,
+    [repairId, tenantA, branchA, folio],
+  );
+}
+
 test(
   'PostgreSQL 18.4 materially verifies repairs migrations, scope, projections, filters, and idempotency',
   { skip: !enabled, timeout: 120_000 },
@@ -253,7 +283,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 9);
+      assert.equal(applied.status.migrations.length, 10);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
 
@@ -291,6 +321,9 @@ test(
       ]);
       assert.equal(detail?.timeline.totalCount, 2);
       assert.equal(detail?.evidence.totalCount, 1);
+      assert.equal(detail?.repairStatus, 'pending');
+      assert.equal(detail?.workflowSummary.version, 0);
+      assert.equal(detail?.workflowSummary.source, 'synthetic_projection');
       assert.equal(await repository.getRepairById(scopeB, repairA), null);
       assert.equal(await repository.getRepairEvidenceById(scopeB, repairA, '60000000-0000-4000-8000-000000000001'), null);
       assert.equal((await repository.getRepairEvidenceById(scopeA, repairA, '60000000-0000-4000-8000-000000000001'))?.storageKey, '70000000-0000-4000-8000-000000000001.png');
@@ -343,6 +376,109 @@ test(
         ),
         (error) => error?.code === '23514',
       );
+
+      const technicianBeforeWorkflow = detail?.technicianId;
+      const start = workflowCommand(repairA, '1');
+      const started = await repository.startRepairDiagnosis(scopeA, start);
+      assert.equal(started?.fromState, 'pending');
+      assert.equal(started?.toState, 'diagnosing');
+      assert.equal(started?.workflowVersion, 1);
+      const startedRetry = await repository.startRepairDiagnosis(scopeA, workflowCommand(repairA, '2', {
+        clientRequestId: start.clientRequestId,
+      }));
+      assert.equal(startedRetry?.transitionId, started?.transitionId);
+      assert.equal(startedRetry?.timelineEntryId, started?.timelineEntryId);
+      await assert.rejects(
+        repository.startRepairDiagnosis(scopeA, workflowCommand(repairA, '3', {
+          clientRequestId: start.clientRequestId,
+          expectedVersion: 1,
+          workflowVersion: 2,
+        })),
+        RepairWorkflowIdempotencyConflictError,
+      );
+      await assert.rejects(
+        repository.startRepairDiagnosis(scopeA, workflowCommand(repairA, '4')),
+        RepairWorkflowConcurrencyConflictError,
+      );
+      await assert.rejects(
+        repository.startRepairDiagnosis(scopeA, workflowCommand(repairA, '5', { expectedVersion: 1, workflowVersion: 2 })),
+        RepairWorkflowStateConflictError,
+      );
+      assert.equal(await repository.startRepairDiagnosis(scopeB, workflowCommand(repairA, '6')), null);
+      assert.equal(await repository.startRepairDiagnosis(scopeA, workflowCommand('30000000-0000-4000-8000-000000000099', '7')), null);
+      await assert.rejects(
+        repository.startRepairDiagnosis(scopeB, workflowCommand(repairB, '8')),
+        RepairWorkflowCustodyConflictError,
+      );
+
+      const afterWorkflow = await repository.getRepairById(scopeA, repairA);
+      assert.equal(afterWorkflow?.repairStatus, 'diagnosing');
+      assert.equal(afterWorkflow?.workflowSummary.version, 1);
+      assert.equal(afterWorkflow?.workflowSummary.source, 'history');
+      assert.equal(afterWorkflow?.technicianId, technicianBeforeWorkflow);
+      assert.equal(afterWorkflow?.currentLocation, null);
+      assert.equal(afterWorkflow?.custodyStatus, 'active');
+      assert.equal(afterWorkflow?.timeline.items[0]?.title, 'Diagnóstico iniciado');
+      assert.equal(afterWorkflow?.timeline.items[0]?.source, 'local.workflow');
+      assert.equal((await repository.listWorklist(scopeA, listQuery({ status: 'diagnosing' }))).items.some(({ id }) => id === repairA), true);
+      const workflowRows = await admin.query(
+        `select from_state, to_state, workflow_version, actor_display_name
+         from repair_workflow_transitions where repair_id = $1 order by workflow_version`,
+        [repairA],
+      );
+      assert.deepEqual(workflowRows.rows, [{ from_state: 'pending', to_state: 'diagnosing', workflow_version: 1, actor_display_name: 'Operador sintético' }]);
+
+      await assert.rejects(
+        admin.query(
+          `insert into repair_workflow_transitions (
+             transition_id, tenant_id, branch_id, repair_id, command, from_state, to_state,
+             actor_id, actor_display_name, occurred_at, client_request_id,
+             expected_workflow_version, workflow_version
+           ) values ('84000000-0000-4000-8000-000000000001', $1, $2, $3,
+             'start_diagnosis', 'pending', 'diagnosing', $4, 'Operador sintético', now(),
+             '85000000-0000-4000-8000-000000000001', 0, 1)`,
+          [tenantB, branchB, repairA, actorId],
+        ),
+        (error) => error?.code === '23503',
+      );
+      await assert.rejects(
+        admin.query(
+          `insert into repair_workflow_transitions (
+             transition_id, tenant_id, branch_id, repair_id, command, from_state, to_state,
+             actor_id, actor_display_name, occurred_at, client_request_id,
+             expected_workflow_version, workflow_version
+           ) values ('84000000-0000-4000-8000-000000000002', $1, $2, $3,
+             'start_diagnosis', 'pending', 'diagnosing', $4, 'Operador sintético', now(),
+             '85000000-0000-4000-8000-000000000002', 0, 1)`,
+          [tenantA, branchB, repairA, actorId],
+        ),
+        (error) => error?.code === '23503',
+      );
+
+      const concurrentRepair = '30000000-0000-4000-8000-000000000010';
+      await insertPendingRepair(admin, concurrentRepair, 'SR-CONCURRENT');
+      const concurrentResults = await Promise.allSettled([
+        repository.startRepairDiagnosis(scopeA, workflowCommand(concurrentRepair, '10')),
+        repository.startRepairDiagnosis(scopeA, workflowCommand(concurrentRepair, '11')),
+      ]);
+      assert.equal(concurrentResults.filter(({ status: resultStatus }) => resultStatus === 'fulfilled').length, 1);
+      assert.equal(concurrentResults.filter(({ status: resultStatus }) => resultStatus === 'rejected').length, 1);
+      assert.equal((await admin.query('select count(*)::int as count from repair_workflow_transitions where repair_id = $1', [concurrentRepair])).rows[0].count, 1);
+
+      const rollbackRepair = '30000000-0000-4000-8000-000000000011';
+      await insertPendingRepair(admin, rollbackRepair, 'SR-ROLLBACK');
+      const rollbackCommand = workflowCommand(rollbackRepair, '12');
+      await admin.query(
+        `insert into repair_timeline_entries (
+           entry_id, tenant_id, branch_id, repair_id, entry_type, actor_id,
+           actor_display_name, title, source, client_request_id, occurred_at, created_at
+         ) values ('86000000-0000-4000-8000-000000000001', $1, $2, $3, 'system_event',
+           $4, 'Operador sintético', 'Conflicto preparado', 'local.test', $5, now(), now())`,
+        [tenantA, branchA, rollbackRepair, actorId, rollbackCommand.clientRequestId],
+      );
+      await assert.rejects(repository.startRepairDiagnosis(scopeA, rollbackCommand));
+      assert.equal((await admin.query('select count(*)::int as count from repair_workflow_transitions where repair_id = $1', [rollbackRepair])).rows[0].count, 0);
+      assert.equal((await admin.query('select repair_status from repairs where repair_id = $1', [rollbackRepair])).rows[0].repair_status, 'pending');
       await assert.rejects(
         admin.query(
           `insert into repair_timeline_entries (

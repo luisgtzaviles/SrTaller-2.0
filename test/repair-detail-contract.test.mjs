@@ -23,7 +23,10 @@ test('repair detail repository contract is scoped by tenant, branch, and repair 
 test('repair detail owns a distinct read model and uses an explicit minimized projection', () => {
   assert.match(portSource, /export interface RepairDetailRecord \{/u);
   assert.doesNotMatch(portSource, /RepairDetailRecord extends RepairWorklistRecord/u);
-  const detailMethod = repositorySource.slice(repositorySource.indexOf('async getRepairById'));
+  const detailMethod = repositorySource.slice(
+    repositorySource.indexOf('async getRepairById'),
+    repositorySource.indexOf('async addOperationalNote'),
+  );
   assert.match(detailMethod, /leftJoin\('repair_intakes'/u);
   assert.match(detailMethod, /\.select\(\[/u);
   assert.doesNotMatch(detailMethod, /selectAll/u);
