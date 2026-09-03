@@ -22,9 +22,9 @@ multiplexación.
 - No se copian bases, dumps ni secretos de Preview.
 - No se ejecuta ninguna migración, seed o reset contra Dokploy.
 - No se crean tablas de clientes, usuarios, roles o pagos. Las slices locales
-  materializan únicamente `repairs`, `repair_intakes`,
-  `repair_timeline_entries` y `repair_attachments`; no materializan D5, D6 ni
-  el resto del dominio.
+  materializan Reparaciones, intake, timeline, evidencia, asignación técnica y
+  el historial acotado D6.1; no materializan Location, writes de Custody ni el
+  resto de D6.
 - `DATABASE_URL` y las variables de fallback `PG*` continúan prohibidas.
 - El archivo `.env.local` es ignorado, se crea con permisos `0600` y contiene
   credenciales generadas para esta máquina. No se imprimen.
@@ -104,8 +104,10 @@ los permisos mínimos sobre las tablas creadas. No se ejecuta en bootstrap HTTP.
 La baseline crea `tenants` y `branches`. La cadena local de Reparaciones añade
 `repairs` para Worklist, `repair_intakes` para D1,
 `repair_timeline_entries` para D2/D3 y `repair_attachments` para D4, más la
-restricción de idempotencia de notas operativas. No se inventan tablas de
-clientes, pagos ni otros módulos funcionales.
+restricción de idempotencia de notas operativas, las tablas D5 de técnicos y
+asignación, y `repair_workflow_transitions` para D6.1. Esta última conserva un
+historial append-only y sólo admite `pending → diagnosing`. No se inventan
+tablas de clientes, pagos ni otros módulos funcionales.
 
 ## Seed sintético V1
 
@@ -116,10 +118,10 @@ pnpm run local:db:seed
 El seed usa el rol `application`, una transacción y upserts idempotentes. Crea
 un tenant técnico sintético, dos sucursales sintéticas y 15 reparaciones
 sintéticas mediante UUIDs fijos y fechas deterministas. También materializa
-intakes, timeline y referencias de evidencia sintéticas para los slices D1,
-D2 y D4. Los datos de cliente son snapshots dentro de `repairs`; no existe una
-tabla de clientes ni se agregan importes o pagos. Evolucionará con migraciones
-y PBIs posteriores.
+intakes, timeline y referencias de evidencia sintéticas para D1, D2 y D4, el
+catálogo/asignaciones D5 y transiciones D6.1 deterministas para fixtures que ya
+se muestran en diagnóstico. Los datos de cliente son snapshots dentro de
+`repairs`; no existe una tabla de clientes ni se agregan importes o pagos.
 
 ## Reset y parada
 
@@ -151,6 +153,10 @@ El backend local arranca con `SR_DB_ROLE=application` y expone:
   idempotente; repetir `clientRequestId` con el mismo contenido devuelve la
   nota original, mientras reutilizarlo con contenido diferente responde `409`;
   no implica transiciones, asignación ni otros writes;
+- `POST http://127.0.0.1:3000/api/repairs/:id/workflow/start-diagnosis` — command
+  local D6.1 con payload exacto `{ clientRequestId, expectedVersion }`; crea una
+  transición estructurada `Pendiente → En diagnóstico`, incrementa sólo
+  `workflowVersion` y deja Technician, Location y Custody sin cambios;
 - al apagar PostgreSQL, `/livez` puede seguir 200 y `/readyz` debe fallar
   conforme al contrato de health.
 

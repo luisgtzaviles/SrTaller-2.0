@@ -68,6 +68,7 @@ Los identificadores no prescriben clases, tablas, endpoints, mensajes publicados
 12. [Reglas e invariantes](REGLAS_E_INVARIANTES.md)
 13. [Preguntas abiertas](PREGUNTAS_ABIERTAS.md)
 14. [Trazabilidad](TRAZABILIDAD.md)
+15. [D6.1 — transición local a diagnóstico](D6_1_LOCAL_WORKFLOW_TRANSITION.md)
 
 ## Relación con documentación existente
 
