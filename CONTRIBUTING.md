@@ -82,12 +82,12 @@ documento no autoriza por sí solo commit, push, merge, deploy ni release.
   #3 sólo puede usarse como fuente de recuperación selectiva; no conserva
   autorización ni se integra completa.
 - PBI-030 está integrado en `main` y permanece `In review` con `XL — agreed`;
-  requiere Owner Acceptance y disposición formal del riesgo AT antes de
-  `Done`. Sprint 01 permanece `Planned`.
+  el cierre y el riesgo AT residual LOW están aprobados, pero `Done` espera la
+  integración documental. Sprint 01 permanece `Planned` y no hay PBI actual.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
 - `DEC063-C02`: materializar clasificación de riesgo.
 - `DEC063-C08`: materializar waivers y excepciones.
 
 ## Próxima revisión
 
-Antes del cierre formal de PBI-030 o cuando cambie DEC-051/063.
+Después de integrar la reconciliación o cuando cambie DEC-051/063.

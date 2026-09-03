@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Planned.
+- **Estado:** Planned — ready for activation after roadmap reconciliation.
 - **Última revisión:** 2026-09-03.
 
 ## Riesgos
@@ -18,10 +18,10 @@
 
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
-| Activación Sprint 01 | PBI-030 en In review | DoD, disposición AT y Owner Acceptance | Open |
+| Activación Sprint 01 | Reconciliación documental aún no integrada | Merge autorizado y CI de `main` GREEN | Open |
 | PBI-027 Ready | Estimación/DoR pendientes | Acuerdo de equipo y revisión formal | Open |
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** cierre de PBI-030 o refinamiento de PBI-027.
+- **Disparador:** integración de la reconciliación o refinamiento de PBI-027.

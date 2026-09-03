@@ -62,7 +62,8 @@ hasta integrarse a `main` con autorización y CI propios.
 - Design System y Application Shell V1.
 - Temas Light/Dark, Brand System, navegación y responsive.
 - Worklist y Repair Detail operational workspace.
-- PBI-030 continúa `In review`; integración no equivale a cierre.
+- PBI-030 tiene cierre aprobado; `Done` será efectivo cuando esta
+  reconciliación documental se integre en `main` con CI verde.
 
 ### Repairs
 
@@ -103,15 +104,16 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 | Elemento | Estado |
 |---|---|
 | Sprint activo | Ninguno |
-| Sprint 01 | Planned |
-| PBI actual | PBI-030 `In review` |
-| Siguiente seleccionado | PBI-027, condicional y no iniciado |
+| Sprint 01 | Planned — ready for activation after roadmap reconciliation |
+| PBI actual | Ninguno |
+| Siguiente candidato | PBI-027, pendiente DoR/estimación y no iniciado |
 | WIP permitido | Uno |
 
-PBI-030 tiene implementación, independent review, merge y CI aprobados. Su
-[auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md) mantiene dos
-gates: Owner Acceptance y disposición formal de la matriz AT/cross-browser no
-ejecutada. Sprint 01 no se activa antes de resolverlos.
+PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
+aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
+registra la cobertura AT/cross-browser formal pendiente como
+`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. El único gate restante es integrar
+esta reconciliación documental en `main` y verificar su CI.
 
 PBI-027 ya tiene decisión de Branch timezone, pero todavía requiere estimación
 acordada y revisión DoR antes de `Ready`.
@@ -140,5 +142,6 @@ acordada y revisión DoR antes de `Ready`.
 
 ## Próxima acción
 
-Resolver el cierre formal de PBI-030. Si pasa, integrar mediante PR documental
-el cierre, activar Sprint 01 y seleccionar PBI-027 sin iniciar implementación.
+Revisar y autorizar la integración del PR documental. Si se integra y el CI de
+`main` queda verde, PBI-030 será `Done`; Sprint 01 quedará preparado, aún no
+activo, y PBI-027 seguirá como candidato pendiente de DoR/estimación.

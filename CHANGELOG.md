@@ -18,9 +18,12 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Reconciliada Identity & Context Foundation: PBI-024–PBI-029 fueron acotados y
   PBI-031–PBI-036 materializan Station Administration, Users, Roles,
   Operational Session, Reinforced Authorization y Extended Observability.
-- Preparado Sprint 01 como `Planned`, con PBI-027 seleccionado sólo de forma
-  condicional. PBI-030 permanece `In review` a la espera de Owner Acceptance y
-  disposición formal del riesgo AT; no se declara `Done` ni se activa el sprint.
+- Preparado Sprint 01 como `Planned — ready for activation`, sin PBI actual;
+  PBI-027 queda como siguiente candidato pendiente de DoR/estimación.
+- Owner Acceptance de PBI-030 aprobada y cobertura AT/cross-browser pendiente
+  dispuesta como `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. El PBI
+  permanece `In review` hasta integrar esta reconciliación documental; no se
+  activa Sprint 01 ni se autoriza implementación o deploy.
 
 - Creación de la fundación documental de producto, arquitectura, decisiones, entrega, backlog, Sprint 00, calidad y operaciones.
 - Registro inicial de las decisiones técnicas como propuestas; ADR-002 fue aceptado posteriormente.

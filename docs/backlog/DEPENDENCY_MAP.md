@@ -12,8 +12,9 @@
 
 ```mermaid
 flowchart TD
-    P30[PBI-030 UI Foundation<br/>In review] -->|cierre formal| S1[SPRINT-01 Active]
-    S1 --> P27[PBI-027 Branch Timezone]
+    P30[PBI-030 UI Foundation<br/>Closure approved] --> R[Roadmap reconciliation<br/>integration pending]
+    R --> S1[SPRINT-01 Planned<br/>ready for activation]
+    S1 --> P27[PBI-027 Branch Timezone<br/>Ready candidate]
     P27 --> P29[PBI-029 Secrets / Config]
     P29 --> P24[PBI-024 Trusted Station Runtime Context]
     P24 --> P32[PBI-032 User Directory]
@@ -62,9 +63,11 @@ flowchart TD
 
 ## Estados de transición
 
-- PBI-030: `In review`; Owner Acceptance y disposición AT pendientes.
-- Sprint 01: `Planned`; no existe Sprint activo.
-- PBI-027: `Ready for review`; estimación/DoR pendientes.
+- PBI-030: `In review — closure approved`; integración documental pendiente.
+- Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
+- Sprint 01: `Planned — ready for activation`; no existe Sprint activo.
+- PBI actual: ninguno.
+- PBI-027: `Ready candidate`; estimación/DoR pendientes, no iniciado.
 - PBI-029/PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
 
 ## Stage 2
@@ -75,4 +78,4 @@ diferidos.
 
 ## Próxima revisión
 
-Después del cierre formal de PBI-030 o cuando cambie una dependencia aprobada.
+Después de integrar la reconciliación o cuando cambie una dependencia aprobada.

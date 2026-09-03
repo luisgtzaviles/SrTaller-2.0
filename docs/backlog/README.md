@@ -10,14 +10,16 @@ rama/PR draft histórica es sólo fuente de recuperación selectiva. PBI-025–0
 y PBI-031–036 materializan la partición aprobada de Identity & Context.
 [PBI-030](pbis/PBI-030.md) materializa UI Foundation y Application
 Shell V1, está integrado en `main` y permanece `In review`; no está desplegado
-ni `Done` y conserva Owner Acceptance y evidencia AT parcial. CI de PR, CI de
-`main` e independent review pasan.
+ni `Done`. Owner Acceptance y la disposición LOW del riesgo AT están
+aprobadas; falta integrar este registro documental. CI de implementación e
+independent review pasan.
 
 ## Estado del documento
 
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
-**Orden operativo:** PBI-030 `In review`; Sprint 01 `Planned`; PBI-027
-seleccionado condicionalmente y no iniciado.
+**Orden operativo:** PBI-030 `closure approved / integration pending`; Sprint
+01 `Planned — ready for activation`; ningún PBI actual; PBI-027 es el siguiente
+candidato, no iniciado.
 
 ## Estructura
 
@@ -68,4 +70,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Cierre formal de PBI-030: Owner Acceptance y disposición del riesgo AT.
+Integración autorizada de la reconciliación y CI del nuevo `main`; después,
+estimación/DoR de PBI-027.

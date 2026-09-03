@@ -2,16 +2,16 @@
 
 ## Estado del documento
 
-- **Estado:** Planned.
+- **Estado:** Planned — ready for activation after roadmap reconciliation.
 - **PBI actual:** ninguno.
 - **WIP:** uno.
-- **Siguiente seleccionado:** PBI-027, condicionado; no iniciado.
+- **Siguiente candidato:** PBI-027, pendiente de DoR/estimación; no iniciado.
 
 ## Gate externo de activación
 
-| PBI actual de cierre | Estado | Relación con Sprint 01 | Condición de salida |
+| PBI de cierre previo | Estado | Relación con Sprint 01 | Condición de salida |
 |---|---|---|---|
-| [PBI-030](../../backlog/pbis/PBI-030.md) | In review | No pertenece al compromiso; bloquea la activación | Owner Acceptance y disposición AT; cierre mediante PR documental |
+| [PBI-030](../../backlog/pbis/PBI-030.md) | Closure approved; integration pending | No pertenece al compromiso; bloquea la activación | Integrar reconciliación en `main` y obtener CI verde |
 
 ## Committed
 
@@ -22,7 +22,7 @@ revisión DoR y autorización Owner de implementación.
 
 | Orden | PBI | Estado | Condición de entrada |
 |---:|---|---|---|
-| 1 | [PBI-027](../../backlog/pbis/PBI-027.md) | Ready for review | PBI-030 Done; estimación y DoR PASS |
+| 1 | [PBI-027](../../backlog/pbis/PBI-027.md) | Ready candidate | Reconciliación integrada; estimación y DoR PASS |
 | 2 | [PBI-029](../../backlog/pbis/PBI-029.md) | Draft | PBI-027 Done; DoR y autorización |
 | 3 | [PBI-024](../../backlog/pbis/PBI-024.md) | Draft | PBI-029 Done; recuperación selectiva refinada |
 | 4 | [PBI-032](../../backlog/pbis/PBI-032.md) | Draft | PBI-024 Done; bootstrap de primer User resuelto |
@@ -32,7 +32,8 @@ revisión DoR y autorización Owner de implementación.
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| PBI-027 | PBI-030 no está Done; falta estimación/DoR | Cierre formal PBI-030 y DoR PBI-027 |
+| Activación | Reconciliación no integrada | Merge autorizado y CI de `main` GREEN |
+| PBI-027 | Falta estimación/DoR | Acuerdo de equipo y revisión formal DoR |
 
 ## Reglas de cambio
 
@@ -44,4 +45,4 @@ revisión DoR y autorización Owner de implementación.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** cierre de PBI-030 o cambio material de dependencias.
+- **Disparador:** integración de la reconciliación o cambio material de dependencias.

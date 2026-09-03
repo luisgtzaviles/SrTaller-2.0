@@ -9,9 +9,10 @@ producto y condiciones pendientes antes de la siguiente iteración.
 
 ## Estado del documento
 
-**Estado:** Sprint 00 `Closed`; Sprint 01 `Planned`; PBI-030 `In review`.
-**Fase:** cierre formal de la foundation visual antes de activar Identity &
-Context Foundation con WIP operacional uno.
+**Estado:** Sprint 00 `Closed`; Sprint 01 `Planned — ready for activation`;
+PBI-030 con cierre aprobado e integración documental pendiente.
+**Fase:** Identity & Context Foundation preparada con WIP operacional uno; no
+existe Sprint activo ni PBI actual.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Gate actual de integración:** el CI canónico de `main` está verde en
@@ -60,9 +61,10 @@ auditoría inicial, la remediación y el dictamen final:
 - [PBI-030 — Auditoría final de cierre](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
 
 La dirección visual V1 y la implementación fueron autorizadas. PBI-030 tiene
-estimación `XL — agreed`, está integrado en `main` y permanece `In review`; no
-está desplegado ni `Done`. CI de PR, CI de `main` e independent review pasan;
-su DoD conserva evidencia AT parcial y Owner Acceptance pendientes.
+estimación `XL — agreed`, está integrado en `main` y tiene Owner Acceptance.
+El riesgo AT/cross-browser residual fue aceptado como LOW; no afirma
+certificación. Permanece `In review` hasta integrar el registro documental;
+deploy y `Released` siguen separados.
 
 ## Dominio operativo
 
@@ -161,8 +163,8 @@ Los archivos individuales PBI-001 a PBI-036 se encuentran enlazados desde el
 [índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
 PBI-023 está `Closed`. PBI-024 fue acotado; la rama/PR histórica sólo sirve para
 recuperación selectiva. PBI-024–PBI-029 y PBI-031–PBI-036 forman la partición
-aprobada de Identity & Context. PBI-030 está integrado y `In review`; no pasa a
-`Done` sin Owner Acceptance y disposición formal de la evidencia AT parcial.
+aprobada de Identity & Context. PBI-030 tiene cierre aprobado; `Done` será
+efectivo al integrar esta reconciliación en `main` con CI verde.
 
 ## Calidad
 

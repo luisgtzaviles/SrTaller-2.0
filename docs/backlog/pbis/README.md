@@ -4,7 +4,8 @@
 
 **Estado:** Índice reconciliado con el MVP Operating Roadmap. PBI-024–PBI-029
 conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
-splits aprobados. PBI-030 sigue `In review` y Sprint 01 continúa `Planned`.
+splits aprobados. PBI-030 tiene cierre aprobado e integración documental
+pendiente; Sprint 01 continúa `Planned`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
@@ -38,10 +39,10 @@ T-shirt sizing; los demás casos conservan TBD.
 | [PBI-024](PBI-024.md) | Trusted Station Runtime Context | Draft reconciliado |
 | [PBI-025](PBI-025.md) | PIN Credential Authentication | Blocked por dependencias |
 | [PBI-026](PBI-026.md) | Contextual Authorization | Draft reconciliado |
-| [PBI-027](PBI-027.md) | Branch Timezone Minimum | Ready for review; estimation pending |
+| [PBI-027](PBI-027.md) | Branch Timezone Minimum | Ready candidate; DoR/estimation pending |
 | [PBI-028](PBI-028.md) | Minimum Business Audit and Correlation | Draft reconciliado |
 | [PBI-029](PBI-029.md) | Secrets and External Configuration Foundation | Draft reconciliado |
-| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | In review — integrated in main; independent review approved; AT partial; Owner Acceptance pending |
+| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | In review — closure approved; documentary integration pending |
 | [PBI-031](PBI-031.md) | Station Binding Administration | Draft / Deferred |
 | [PBI-032](PBI-032.md) | User Directory and Lifecycle | Draft |
 | [PBI-033](PBI-033.md) | Roles, Assignments and Capability Catalog | Draft |
@@ -53,5 +54,5 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-Cierre formal de PBI-030 y, si pasa, activación de Sprint 01 y revisión DoR de
-PBI-027.
+Integrar la reconciliación documental y después completar estimación/DoR de
+PBI-027 sin iniciar implementación.

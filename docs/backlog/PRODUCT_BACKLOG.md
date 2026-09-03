@@ -5,14 +5,14 @@
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado. PBI-001–PBI-023
 conservan su historia; PBI-024–PBI-029 fueron acotados conforme a Identity &
 Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
-permanece `In review` y bloquea la activación de Sprint 01 hasta resolver Owner
-Acceptance y la disposición formal de la evidencia AT parcial.
+tiene cierre aprobado y riesgo AT residual LOW aceptado; permanece `In review`
+hasta integrar esta reconciliación documental en `main`.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; las demás permanecen TBD.
 **Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
 
-| Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación SPRINT-00 |
+| Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
 |---:|---|---|---|---|---|---|
 | 1 | [PBI-001](pbis/PBI-001.md) Define product vision and principles | Discovery | EPIC-000 | Done | Alta | Committed |
 | 2 | [PBI-002](pbis/PBI-002.md) Identify actors and operational contexts | Discovery | EPIC-000 | Done | Alta | Requires product input |
@@ -40,10 +40,10 @@ T-shirt sizing; las demás permanecen TBD.
 | 24 | [PBI-024](pbis/PBI-024.md) Trusted Station Runtime Context | Architecture / Security | EPIC-004 | Draft reconciliado | Crítica | Candidate Sprint 01 |
 | 25 | [PBI-025](pbis/PBI-025.md) PIN Credential Authentication | Identity / Security | EPIC-003 | Blocked por dependencias | Crítica | Candidate Sprint 01 |
 | 26 | [PBI-026](pbis/PBI-026.md) Contextual Authorization | Authorization / Security | EPIC-003 | Draft reconciliado | Crítica | Candidate Sprint 01 |
-| 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Ready for review; estimation pending | Alta | Selected conditionally for Sprint 01 |
+| 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Ready candidate; DoR/estimation pending | Alta | Next candidate Sprint 01; not started |
 | 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | Draft reconciliado | Alta | Candidate Sprint 01 |
 | 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Draft reconciliado | Crítica | Candidate Sprint 01 |
-| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | In review — integrated in main; independent review approved; AT partial; Owner Acceptance pending | Alta | Unassigned |
+| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | In review — closure approved; documentary integration pending | Alta | Unassigned |
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
 | 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
 | 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
@@ -67,12 +67,12 @@ T-shirt sizing; las demás permanecen TBD.
   Reinforced Authorization y Extended Observability respectivamente.
 - PBI-027 tiene decisión de Branch timezone resuelta, pero no está `Ready`
   hasta acordar estimación y completar DoR.
-- PBI-030 tiene implementación integrada y revisión técnica aprobada; no está
-  `Done` hasta resolver evidencia AT parcial y Owner Acceptance.
+- PBI-030 tiene implementación, revisión, Owner Acceptance y disposición de
+  riesgo aprobadas; `Done` será efectivo al integrar este registro en `main`.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-Cierre formal de PBI-030. Si pasa, activar Sprint 01 y seleccionar PBI-027 sin
-iniciar implementación; después completar su estimación y DoR.
+Integrar la reconciliación documental; después completar estimación y DoR de
+PBI-027 antes de cualquier activación o implementación.

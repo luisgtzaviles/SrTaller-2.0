@@ -97,6 +97,10 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
 | Authoritative CI at audited HEAD | Green: run `33810423743` on `ead13ecbdb636afd4d9c2e6ecd34905343d165d4` |
+| Program / phase | MVP Operating Roadmap / Identity & Context Foundation |
+| Sprint | SPRINT-01 `Planned — ready for activation`; no active Sprint |
+| Current / next PBI | Current: none; next candidate: PBI-027, DoR/estimation pending |
+| Current blocking gate | Integrate roadmap reconciliation into `main` with GREEN CI |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |

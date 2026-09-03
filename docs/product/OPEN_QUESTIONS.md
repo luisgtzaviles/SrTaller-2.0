@@ -37,9 +37,10 @@ verdes de `main` `32199570584`/`32201164615`. `OPEN-PBI030-06` quedó resuelta
 el 2026-08-18 mediante la revisión formal Frontend/Ingeniería:
 `ESTIMATION: XL — AGREED`, Confidence Medium, Risk High y un solo PBI con
 checkpoints A–D. No quedan preguntas internas bloqueantes de readiness. El Owner
-autorizó posteriormente la implementación el 2026-08-18; el candidato está
-integrado en `main` y permanece `In review`. El merge autorizado no concede
-Owner Acceptance, `Done` ni autorización implícita de deploy.
+autorizó la implementación el 2026-08-18 y el 2026-09-03 aprobó Owner
+Acceptance y dispuso el riesgo AT/cross-browser restante como
+`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. PBI-030 conserva `In review` hasta que
+esta decisión quede integrada en `main`; no concede deploy ni release.
 
 ## Producto
 
