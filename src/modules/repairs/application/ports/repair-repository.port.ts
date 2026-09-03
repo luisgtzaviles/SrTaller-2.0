@@ -46,7 +46,15 @@ export interface RepairDetailRecord {
     version: number;
     source: 'history' | 'synthetic_projection';
   }>;
-  readonly currentLocation: null;
+  readonly currentLocation: Readonly<{
+    id: string;
+    code: 'pending_area' | 'workshop';
+    category: 'pending_area' | 'workshop';
+    label: string;
+    movedAt: string;
+  }> | null;
+  readonly locationVersion: number;
+  readonly locationSource: 'history' | 'unrecorded';
   readonly custodyStatus: CustodyStatusCode;
   readonly timeline: Readonly<{
     items: readonly RepairTimelineItemRecord[];
@@ -244,6 +252,37 @@ export class RepairWorkflowCustodyConflictError extends Error {
   constructor() { super('Ended custody does not allow this command.'); this.name = 'RepairWorkflowCustodyConflictError'; }
 }
 
+export interface MoveRepairToWorkshopRecord {
+  readonly repairId: string;
+  readonly movementId: string;
+  readonly timelineEntryId: string;
+  readonly clientRequestId: string;
+  readonly actorId: string;
+  readonly actorDisplayName: string;
+  readonly occurredAt: Date;
+  readonly expectedVersion: number;
+  readonly locationVersion: number;
+  readonly reason: string | null;
+  readonly fromLocation: Readonly<{ id: string; code: 'pending_area'; label: string }>;
+  readonly toLocation: Readonly<{ id: string; code: 'workshop'; label: string }>;
+}
+
+export class RepairLocationIdempotencyConflictError extends Error {
+  constructor() { super('Location request was reused with different content.'); this.name = 'RepairLocationIdempotencyConflictError'; }
+}
+export class RepairLocationConcurrencyConflictError extends Error {
+  constructor() { super('Location version is stale.'); this.name = 'RepairLocationConcurrencyConflictError'; }
+}
+export class RepairLocationStateConflictError extends Error {
+  constructor() { super('Current location does not allow this command.'); this.name = 'RepairLocationStateConflictError'; }
+}
+export class RepairLocationCustodyConflictError extends Error {
+  constructor() { super('Ended custody does not allow this command.'); this.name = 'RepairLocationCustodyConflictError'; }
+}
+export class RepairLocationConfigurationError extends Error {
+  constructor() { super('Workshop location is unavailable in this branch.'); this.name = 'RepairLocationConfigurationError'; }
+}
+
 export interface RepairRepositoryPort {
   listWorklist(
     scope: RepairPersistenceScope,
@@ -276,6 +315,10 @@ export interface RepairRepositoryPort {
     scope: RepairPersistenceScope,
     input: StartRepairDiagnosisRecord,
   ): Promise<StartRepairDiagnosisRecord | null>;
+  moveRepairToWorkshop(
+    scope: RepairPersistenceScope,
+    input: MoveRepairToWorkshopRecord,
+  ): Promise<MoveRepairToWorkshopRecord | null>;
   getRepairEvidenceById(
     scope: RepairPersistenceScope,
     repairId: string,

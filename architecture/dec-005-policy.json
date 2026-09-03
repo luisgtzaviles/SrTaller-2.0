@@ -129,7 +129,8 @@
       "src/infrastructure/database/migrations/20260902090000_repairs_create_technician_assignment.ts",
       "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts",
       "src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts",
-      "src/infrastructure/database/migrations/20260903120000_repairs_create_workflow_transitions.ts"
+      "src/infrastructure/database/migrations/20260903120000_repairs_create_workflow_transitions.ts",
+      "src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts"
     ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
@@ -186,7 +187,13 @@
           "NewRepairTechnicianAssignment",
           "RepairWorkflowTransitionTable",
           "RepairWorkflowTransitionRow",
-          "NewRepairWorkflowTransition"
+          "NewRepairWorkflowTransition",
+          "RepairLocationTable",
+          "RepairLocationRow",
+          "NewRepairLocation",
+          "RepairLocationMovementTable",
+          "RepairLocationMovementRow",
+          "NewRepairLocationMovement"
         ],
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
@@ -199,6 +206,7 @@
           "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts",
           "src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts",
           "src/infrastructure/database/migrations/20260903120000_repairs_create_workflow_transitions.ts",
+          "src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -424,6 +432,14 @@
         "kind": "table"
       },
       "repair_workflow_transitions": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_locations": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_location_movements": {
         "owner": "repairs",
         "kind": "table"
       },
@@ -667,6 +683,7 @@
     "src/modules/repairs/application/use-cases/list-repair-technicians.use-case.ts",
     "src/modules/repairs/application/use-cases/technician-assignment.use-case.ts",
     "src/modules/repairs/application/use-cases/start-repair-diagnosis.use-case.ts",
+    "src/modules/repairs/application/use-cases/move-repair-to-workshop.use-case.ts",
     "src/modules/repairs/application/use-cases/get-repair-detail.use-case.ts",
     "src/modules/repairs/application/use-cases/get-repair-evidence-content.use-case.ts",
     "src/modules/repairs/application/use-cases/list-repairs.use-case.ts",

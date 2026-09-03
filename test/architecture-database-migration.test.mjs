@@ -87,6 +87,7 @@ test('public migration API remains narrow with governed productive migrations', 
     '20260902093000_repairs_add_technician_unassignment_idempotency.ts',
     '20260902100000_repairs_enforce_technician_scope.ts',
     '20260903120000_repairs_create_workflow_transitions.ts',
+    '20260903130000_repairs_create_location_movements.ts',
   ]);
 });
 

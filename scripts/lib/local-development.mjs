@@ -309,6 +309,89 @@ export function localRepairWorkflowTransitionRows() {
   })));
 }
 
+export function localRepairLocationRows() {
+  return Object.freeze(LOCAL_BRANCH_IDS.flatMap((branchId, branchIndex) => [
+    Object.freeze({
+      locationId: `00000000-0000-4000-8000-${String(8001 + branchIndex * 2).padStart(12, '0')}`,
+      tenantId: LOCAL_TENANT_ID,
+      branchId,
+      code: 'pending_area',
+      semanticCategory: 'pending_area',
+      displayLabel: 'Área de pendientes',
+      active: true,
+      createdAt: LOCAL_SEED_TIMESTAMP,
+    }),
+    Object.freeze({
+      locationId: `00000000-0000-4000-8000-${String(8002 + branchIndex * 2).padStart(12, '0')}`,
+      tenantId: LOCAL_TENANT_ID,
+      branchId,
+      code: 'workshop',
+      semanticCategory: 'workshop',
+      displayLabel: 'Taller',
+      active: true,
+      createdAt: LOCAL_SEED_TIMESTAMP,
+    }),
+  ]));
+}
+
+export function localRepairLocationMovementRows() {
+  const locations = localRepairLocationRows().filter(({ branchId }) => branchId === LOCAL_BRANCH_IDS[0]);
+  const pending = locations.find(({ code }) => code === 'pending_area');
+  const workshop = locations.find(({ code }) => code === 'workshop');
+  if (!pending || !workshop) throw new Error('Local repair location catalog is incomplete.');
+  const workshopRepairs = new Set(['002', '003', '005', '006', '007', '012', '013']);
+  const actorId = '00000000-0000-4000-8000-000000000301';
+  const rows = [];
+  for (const repair of localRepairRows()) {
+    const suffix = repair.folio.slice(-3);
+    if (suffix === '008') continue;
+    rows.push(Object.freeze({
+      movementId: `00000000-0000-4000-8000-${String(9000 + Number(suffix)).padStart(12, '0')}`,
+      tenantId: repair.tenantId,
+      branchId: repair.branchId,
+      repairId: repair.repairId,
+      command: 'initial_placement',
+      fromLocationId: null,
+      toLocationId: pending.locationId,
+      fromCode: null,
+      fromLabel: null,
+      toCode: pending.code,
+      toLabel: pending.displayLabel,
+      actorId,
+      actorDisplayName: 'Operador sintético',
+      occurredAt: repair.receivedAt,
+      reason: null,
+      clientRequestId: `00000000-0000-4000-8000-${String(10000 + Number(suffix)).padStart(12, '0')}`,
+      expectedLocationVersion: 0,
+      locationVersion: 1,
+    }));
+    if (workshopRepairs.has(suffix)) {
+      const occurredAt = new Date(new Date(repair.receivedAt).getTime() + 30 * 60_000).toISOString();
+      rows.push(Object.freeze({
+        movementId: `00000000-0000-4000-8000-${String(11000 + Number(suffix)).padStart(12, '0')}`,
+        tenantId: repair.tenantId,
+        branchId: repair.branchId,
+        repairId: repair.repairId,
+        command: 'move_to_workshop',
+        fromLocationId: pending.locationId,
+        toLocationId: workshop.locationId,
+        fromCode: pending.code,
+        fromLabel: pending.displayLabel,
+        toCode: workshop.code,
+        toLabel: workshop.displayLabel,
+        actorId,
+        actorDisplayName: 'Operador sintético',
+        occurredAt,
+        reason: null,
+        clientRequestId: `00000000-0000-4000-8000-${String(12000 + Number(suffix)).padStart(12, '0')}`,
+        expectedLocationVersion: 1,
+        locationVersion: 2,
+      }));
+    }
+  }
+  return Object.freeze(rows);
+}
+
 export function localRepairTechnicianBranchRows() {
   const tenantId = LOCAL_TENANT_ID;
   const branchId = LOCAL_BRANCH_IDS[0];
@@ -399,7 +482,24 @@ export function localRepairTimelineRows() {
     ['00000000-0000-4000-8000-000000002008', repairIds.oneEntry, 'system_event', actors.mar, 'Operador sintético', 'Diagnóstico iniciado', 'Operador sintético inició el diagnóstico.', 'local.workflow', '2026-08-19T09:25:00.000Z', '00000000-0000-4000-8000-000000007002'],
     ['00000000-0000-4000-8000-000000002009', '00000000-0000-4000-8000-000000001012', 'system_event', actors.mar, 'Operador sintético', 'Diagnóstico iniciado', 'Operador sintético inició el diagnóstico.', 'local.workflow', '2026-08-08T11:20:00.000Z', '00000000-0000-4000-8000-000000007012'],
   ];
-  return Object.freeze(rows.map(([entryId, repairId, entryType, actorId, actorDisplayName, title, body, source, occurredAt, clientRequestId = null]) => Object.freeze({
+  const locationRows = localRepairLocationMovementRows()
+    .filter(({ command }) => command === 'move_to_workshop')
+    .map((movement) => {
+      const suffix = movement.repairId.slice(-3);
+      return [
+        `00000000-0000-4000-8000-${String(13000 + Number(suffix)).padStart(12, '0')}`,
+        movement.repairId,
+        'system_event',
+        movement.actorId,
+        movement.actorDisplayName,
+        'Equipo movido',
+        `${movement.fromLabel} → ${movement.toLabel}`,
+        'local.location',
+        movement.occurredAt,
+        movement.clientRequestId,
+      ];
+    });
+  return Object.freeze([...rows, ...locationRows].map(([entryId, repairId, entryType, actorId, actorDisplayName, title, body, source, occurredAt, clientRequestId = null]) => Object.freeze({
     entryId,
     tenantId,
     branchId,

@@ -12,6 +12,8 @@ import {
   localRepairTechnicianBranchRows,
   localRepairTechnicianAssignmentRows,
   localRepairWorkflowTransitionRows,
+  localRepairLocationRows,
+  localRepairLocationMovementRows,
   localSeedRows,
 } from './lib/local-development.mjs';
 import { materializeLocalEvidenceFixtures } from './lib/local-evidence-fixtures.mjs';
@@ -96,6 +98,30 @@ try {
         repair.custodyStatus,
         repair.createdAt,
       ],
+    );
+  }
+  for (const location of localRepairLocationRows()) {
+    await client.query(
+      `INSERT INTO repair_locations (location_id, tenant_id, branch_id, code, semantic_category, display_label, active, created_at)
+       VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, $6, $7, $8::timestamptz)
+       ON CONFLICT (location_id) DO UPDATE SET display_label = EXCLUDED.display_label, active = EXCLUDED.active`,
+      [location.locationId, location.tenantId, location.branchId, location.code, location.semanticCategory, location.displayLabel, location.active, location.createdAt],
+    );
+  }
+  for (const movement of localRepairLocationMovementRows()) {
+    await client.query(
+      `INSERT INTO repair_location_movements (
+         movement_id, tenant_id, branch_id, repair_id, command,
+         from_location_id, to_location_id, from_code, from_label, to_code, to_label,
+         actor_id, actor_display_name, occurred_at, reason, client_request_id,
+         expected_location_version, location_version
+       ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, $6::uuid, $7::uuid, $8, $9, $10, $11, $12::uuid, $13, $14::timestamptz, $15, $16::uuid, $17, $18)
+       ON CONFLICT (movement_id) DO NOTHING`,
+      [movement.movementId, movement.tenantId, movement.branchId, movement.repairId, movement.command,
+        movement.fromLocationId, movement.toLocationId, movement.fromCode, movement.fromLabel,
+        movement.toCode, movement.toLabel, movement.actorId, movement.actorDisplayName,
+        movement.occurredAt, movement.reason, movement.clientRequestId,
+        movement.expectedLocationVersion, movement.locationVersion],
     );
   }
   for (const technician of localRepairTechnicianRows()) {
@@ -267,6 +293,8 @@ process.stdout.write(`${JSON.stringify({
   technicianCount: localRepairTechnicianRows().length,
   assignmentCount: localRepairTechnicianAssignmentRows().length,
   workflowTransitionCount: localRepairWorkflowTransitionRows().length,
+  locationCount: localRepairLocationRows().length,
+  locationMovementCount: localRepairLocationMovementRows().length,
   deterministic: true,
   applicationRole: environment.SR_DB_USER,
   forbiddenConnectionString: !Object.keys(cleanChildEnvironment()).includes('DATABASE_URL'),

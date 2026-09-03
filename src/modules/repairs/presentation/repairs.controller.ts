@@ -51,6 +51,12 @@ import {
   StartRepairDiagnosisNotFoundError,
   StartRepairDiagnosisUseCase,
 } from '../application/use-cases/start-repair-diagnosis.use-case.js';
+import {
+  MoveRepairToWorkshopConflictError,
+  MoveRepairToWorkshopInputError,
+  MoveRepairToWorkshopNotFoundError,
+  MoveRepairToWorkshopUseCase,
+} from '../application/use-cases/move-repair-to-workshop.use-case.js';
 
 type RepairQuery = Readonly<Record<string, string | string[] | undefined>>;
 
@@ -153,6 +159,8 @@ function detailResponse(item: Awaited<ReturnType<GetRepairDetailUseCase['execute
       technicianSummary: item.technicianSummary,
       workflowVersion: item.workflowSummary.version,
       workflowSource: item.workflowSummary.source,
+      locationVersion: item.locationVersion,
+      locationSource: item.locationSource,
     },
     timeline: {
       items: item.timeline.items.map((entry) => ({
@@ -222,6 +230,7 @@ export class RepairsController {
     private readonly reassignRepairTechnician: ReassignRepairTechnicianUseCase,
     private readonly unassignRepairTechnician: UnassignRepairTechnicianUseCase,
     private readonly startRepairDiagnosis: StartRepairDiagnosisUseCase,
+    private readonly moveRepairToWorkshop: MoveRepairToWorkshopUseCase,
   ) {}
 
   @Get()
@@ -329,6 +338,46 @@ export class RepairsController {
       if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
       if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
       throw new InternalServerErrorException({ code: 'REPAIR_WORKFLOW_WRITE_FAILED' });
+    }
+  }
+
+  @Post(':repairId/location/move-to-workshop')
+  async moveToWorkshop(@Param('repairId') repairId: string, @Body() request: unknown) {
+    try {
+      const result = await this.moveRepairToWorkshop.execute({ repairId, request });
+      return {
+        item: {
+          repairId: result.repairId,
+          movementId: result.movementId,
+          clientRequestId: result.clientRequestId,
+          fromLocation: result.fromLocation,
+          toLocation: result.toLocation,
+          locationVersion: result.locationVersion,
+          reason: result.reason,
+          occurredAt: result.occurredAt.toISOString(),
+          actor: { id: result.actorId, displayName: result.actorDisplayName },
+        },
+      };
+    } catch (error: unknown) {
+      if (error instanceof MoveRepairToWorkshopInputError) {
+        throw new BadRequestException({ code: 'REPAIR_LOCATION_MOVE_TO_WORKSHOP_INVALID', parameter: error.parameter });
+      }
+      if (error instanceof MoveRepairToWorkshopNotFoundError) throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
+      if (error instanceof MoveRepairToWorkshopConflictError) {
+        const code = error.kind === 'concurrency'
+          ? 'REPAIR_LOCATION_STALE'
+          : error.kind === 'idempotency'
+            ? 'REPAIR_LOCATION_IDEMPOTENCY_CONFLICT'
+            : error.kind === 'custody-ended'
+              ? 'REPAIR_LOCATION_CUSTODY_ENDED'
+              : error.kind === 'workshop-unavailable'
+                ? 'REPAIR_LOCATION_WORKSHOP_UNAVAILABLE'
+                : 'REPAIR_LOCATION_STATE_CONFLICT';
+        throw new ConflictException({ code });
+      }
+      if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
+      if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+      throw new InternalServerErrorException({ code: 'REPAIR_LOCATION_WRITE_FAILED' });
     }
   }
 

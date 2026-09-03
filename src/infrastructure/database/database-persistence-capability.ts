@@ -25,13 +25,15 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants'> &
     repair_technician_branches: DatabaseSchema['repair_technician_branches'];
     repair_technician_assignments: DatabaseSchema['repair_technician_assignments'];
     repair_workflow_transitions: DatabaseSchema['repair_workflow_transitions'];
+    repair_locations: DatabaseSchema['repair_locations'];
+    repair_location_movements: DatabaseSchema['repair_location_movements'];
   }>;
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
   Owner extends 'database'
     ? DatabaseTechnicalSchema
     : Owner extends 'repairs'
-    ? Pick<DatabaseSchema, 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions'>
+    ? Pick<DatabaseSchema, 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements'>
     : Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'tenants'>
     : Pick<DatabaseSchema, 'branches'>;

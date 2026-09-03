@@ -15,17 +15,22 @@ const { databaseMigrationSourceOverride, inspectMigrationSource } = enabled
 const { createMigrationRunner } = enabled
   ? await import('../dist/infrastructure/database/migration-runner.js')
   : {};
-const { RepairOperationalNoteIdempotencyConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } = enabled
+const { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteIdempotencyConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } = enabled
   ? await import('../dist/modules/repairs/application/ports/repair-repository.port.js')
   : {};
 const { createKyselyRepairRepository } = enabled
   ? await import('../dist/modules/repairs/infrastructure/persistence/kysely-repair.repository.js')
+  : {};
+const { MoveRepairToWorkshopInputError, MoveRepairToWorkshopNotFoundError, MoveRepairToWorkshopUseCase } = enabled
+  ? await import('../dist/modules/repairs/application/use-cases/move-repair-to-workshop.use-case.js')
   : {};
 
 const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'repair_location_movements',
+  'repair_locations',
   'repair_attachments',
   'repair_timeline_entries',
   'repair_intakes',
@@ -43,11 +48,19 @@ const tables = [
 const tenantA = '10000000-0000-4000-8000-000000000001';
 const tenantB = '20000000-0000-4000-8000-000000000002';
 const branchA = 'a0000000-0000-4000-8000-000000000001';
+const branchA2 = 'a0000000-0000-4000-8000-000000000002';
 const branchB = 'b0000000-0000-4000-8000-000000000002';
 const repairA = '30000000-0000-4000-8000-000000000001';
 const repairPercent = '30000000-0000-4000-8000-000000000002';
 const repairB = '30000000-0000-4000-8000-000000000003';
+const repairA2 = '30000000-0000-4000-8000-000000000004';
 const actorId = '40000000-0000-4000-8000-000000000001';
+const pendingLocationA = '91000000-0000-4000-8000-000000000001';
+const workshopLocationA = '91000000-0000-4000-8000-000000000002';
+const pendingLocationB = '92000000-0000-4000-8000-000000000001';
+const workshopLocationB = '92000000-0000-4000-8000-000000000002';
+const pendingLocationA2 = '93000000-0000-4000-8000-000000000001';
+const workshopLocationA2 = '93000000-0000-4000-8000-000000000002';
 
 function databaseConfig() {
   return Object.freeze({
@@ -144,6 +157,10 @@ async function seed(admin) {
     [tenantA, branchA, tenantB, branchB, createdAt],
   );
   await admin.query(
+    `insert into branches (tenant_id, branch_id, created_at) values ($1, $2, $3)`,
+    [tenantA, branchA2, createdAt],
+  );
+  await admin.query(
     `insert into repairs (
        repair_id, tenant_id, branch_id, folio, received_at, customer_name,
        customer_phone, device_brand, device_model, reported_issue,
@@ -158,11 +175,34 @@ async function seed(admin) {
     [repairA, tenantA, branchA, repairPercent, repairB, tenantB, createdAt, actorId, branchB],
   );
   await admin.query(
+    `insert into repairs (
+       repair_id, tenant_id, branch_id, folio, received_at, customer_name,
+       customer_phone, device_brand, device_model, reported_issue,
+       technician_id, technician_display_name, repair_status, custody_status, created_at
+     ) values ($1, $2, $3, 'SR-A2', '2026-08-21T08:00:00Z', 'Cliente A2', '6621000004',
+       'Apple', 'iPhone 13', 'Scope branch', null, null, 'pending', 'active', $4)`,
+    [repairA2, tenantA, branchA2, createdAt],
+  );
+  await admin.query(
     `insert into repair_technicians (technician_id, tenant_id, display_name, active, created_at)
      values ('00000000-0000-4000-8000-000000000201', $1, 'Ana Técnica', true, $3),
             ('00000000-0000-4000-8000-000000000202', $1, 'Bruno Técnico', true, $3),
             ('00000000-0000-4000-8000-000000000211', $2, 'Técnico B', true, $3)`,
     [tenantA, tenantB, createdAt],
+  );
+  await admin.query(
+    `insert into repair_locations (location_id, tenant_id, branch_id, code, semantic_category, display_label, active, created_at)
+     values ($1, $2, $3, 'pending_area', 'pending_area', 'Área de pendientes', true, $9),
+            ($4, $2, $3, 'workshop', 'workshop', 'Taller', true, $9),
+            ($5, $6, $7, 'pending_area', 'pending_area', 'Área de pendientes B', true, $9),
+            ($8, $6, $7, 'workshop', 'workshop', 'Taller B', true, $9)`,
+    [pendingLocationA, tenantA, branchA, workshopLocationA, pendingLocationB, tenantB, branchB, workshopLocationB, createdAt],
+  );
+  await admin.query(
+    `insert into repair_locations (location_id, tenant_id, branch_id, code, semantic_category, display_label, active, created_at)
+     values ($1, $2, $3, 'pending_area', 'pending_area', 'Área de pendientes A2', true, $5),
+            ($4, $2, $3, 'workshop', 'workshop', 'Taller A2', true, $5)`,
+    [pendingLocationA2, tenantA, branchA2, workshopLocationA2, createdAt],
   );
   await admin.query(
     `insert into repair_technician_branches (tenant_id, branch_id, technician_id, created_at)
@@ -255,6 +295,37 @@ function workflowCommand(repairId, suffix, overrides = {}) {
   });
 }
 
+function locationCommand(repairId, suffix, overrides = {}) {
+  return Object.freeze({
+    repairId,
+    movementId: `93000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    timelineEntryId: `94000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    clientRequestId: `95000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    actorId,
+    actorDisplayName: 'Operador sintético',
+    occurredAt: new Date('2026-08-21T19:00:00.000Z'),
+    expectedVersion: 1,
+    locationVersion: 2,
+    reason: null,
+    fromLocation: { id: pendingLocationA, code: 'pending_area', label: 'Área de pendientes' },
+    toLocation: { id: workshopLocationA, code: 'workshop', label: 'Taller' },
+    ...overrides,
+  });
+}
+
+async function placeInPendingArea(admin, repairId, suffix, scope = { tenantId: tenantA, branchId: branchA, locationId: pendingLocationA, label: 'Área de pendientes' }) {
+  await admin.query(
+    `insert into repair_location_movements (
+       movement_id, tenant_id, branch_id, repair_id, command, from_location_id,
+       to_location_id, from_code, from_label, to_code, to_label, actor_id,
+       actor_display_name, occurred_at, reason, client_request_id,
+       expected_location_version, location_version
+     ) values ($1, $2, $3, $4, 'initial_placement', null, $5, null, null,
+       'pending_area', $6, $7, 'Operador sintético', now(), null, $8, 0, 1)`,
+    [`96000000-0000-4000-8000-${suffix.padStart(12, '0')}`, scope.tenantId, scope.branchId, repairId, scope.locationId, scope.label, actorId, `97000000-0000-4000-8000-${suffix.padStart(12, '0')}`],
+  );
+}
+
 async function insertPendingRepair(admin, repairId, folio) {
   await admin.query(
     `insert into repairs (
@@ -283,7 +354,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 10);
+      assert.equal(applied.status.migrations.length, 11);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
 
@@ -292,6 +363,7 @@ test(
         () => new Date('2026-08-21T18:00:00.000Z'),
       );
       const scopeA = Object.freeze({ tenantId: tenantA, branchId: branchA });
+      const scopeA2 = Object.freeze({ tenantId: tenantA, branchId: branchA2 });
       const scopeB = Object.freeze({ tenantId: tenantB, branchId: branchB });
 
       const allA = await repository.listWorklist(scopeA, listQuery());
@@ -421,6 +493,135 @@ test(
       assert.equal(afterWorkflow?.timeline.items[0]?.title, 'Diagnóstico iniciado');
       assert.equal(afterWorkflow?.timeline.items[0]?.source, 'local.workflow');
       assert.equal((await repository.listWorklist(scopeA, listQuery({ status: 'diagnosing' }))).items.some(({ id }) => id === repairA), true);
+
+      await placeInPendingArea(admin, repairA, '1');
+      const beforeLocation = await repository.getRepairById(scopeA, repairA);
+      assert.equal(beforeLocation?.currentLocation?.code, 'pending_area');
+      assert.equal(beforeLocation?.currentLocation?.category, 'pending_area');
+      assert.equal(beforeLocation?.currentLocation?.label, 'Área de pendientes');
+      assert.equal(beforeLocation?.locationVersion, 1);
+      assert.equal(beforeLocation?.locationSource, 'history');
+      const locationInput = locationCommand(repairA, '1', { reason: '  Diagnóstico en mesa  ' });
+      const moved = await repository.moveRepairToWorkshop(scopeA, { ...locationInput, reason: 'Diagnóstico en mesa' });
+      assert.equal(moved?.fromLocation.code, 'pending_area');
+      assert.equal(moved?.toLocation.code, 'workshop');
+      assert.equal(moved?.locationVersion, 2);
+      const movedRetry = await repository.moveRepairToWorkshop(scopeA, locationCommand(repairA, '2', {
+        clientRequestId: locationInput.clientRequestId,
+        reason: 'Diagnóstico en mesa',
+      }));
+      assert.equal(movedRetry?.movementId, moved?.movementId);
+      assert.equal(movedRetry?.timelineEntryId, moved?.timelineEntryId);
+      await assert.rejects(
+        repository.moveRepairToWorkshop(scopeA, locationCommand(repairA, '3', {
+          clientRequestId: locationInput.clientRequestId,
+          reason: 'Motivo distinto',
+        })),
+        RepairLocationIdempotencyConflictError,
+      );
+      await assert.rejects(repository.moveRepairToWorkshop(scopeA, locationCommand(repairA, '4')), RepairLocationConcurrencyConflictError);
+      await assert.rejects(
+        repository.moveRepairToWorkshop(scopeA, locationCommand(repairA, '5', { expectedVersion: 2, locationVersion: 3 })),
+        RepairLocationStateConflictError,
+      );
+      const afterLocation = await repository.getRepairById(scopeA, repairA);
+      assert.equal(afterLocation?.currentLocation?.code, 'workshop');
+      assert.equal(afterLocation?.currentLocation?.label, 'Taller');
+      assert.equal(afterLocation?.locationVersion, 2);
+      assert.equal(afterLocation?.repairStatus, 'diagnosing');
+      assert.equal(afterLocation?.workflowSummary.version, 1);
+      assert.equal(afterLocation?.technicianId, technicianBeforeWorkflow);
+      assert.equal(afterLocation?.custodyStatus, 'active');
+      assert.equal(afterLocation?.timeline.items[0]?.title, 'Equipo movido');
+      assert.equal(afterLocation?.timeline.items[0]?.body, 'Área de pendientes → Taller · Diagnóstico en mesa');
+      assert.equal(afterLocation?.timeline.items[0]?.source, 'local.location');
+      assert.equal((await admin.query('select count(*)::int as count from repair_location_movements where repair_id = $1', [repairA])).rows[0].count, 2);
+      assert.equal((await admin.query("select count(*)::int as count from repair_timeline_entries where repair_id = $1 and source = 'local.location'", [repairA])).rows[0].count, 1);
+
+      await placeInPendingArea(admin, repairB, '2', { tenantId: tenantB, branchId: branchB, locationId: pendingLocationB, label: 'Área de pendientes B' });
+      assert.equal(await repository.moveRepairToWorkshop(scopeA, locationCommand(repairB, '6')), null);
+      await assert.rejects(
+        repository.moveRepairToWorkshop(scopeB, locationCommand(repairB, '7', {
+          fromLocation: { id: pendingLocationB, code: 'pending_area', label: 'Área de pendientes B' },
+          toLocation: { id: workshopLocationB, code: 'workshop', label: 'Taller B' },
+        })),
+        RepairLocationCustodyConflictError,
+      );
+      await placeInPendingArea(admin, repairA2, '3', { tenantId: tenantA, branchId: branchA2, locationId: pendingLocationA2, label: 'Área de pendientes A2' });
+      assert.equal(await repository.moveRepairToWorkshop(scopeA, locationCommand(repairA2, '8')), null);
+      assert.equal((await repository.getRepairById(scopeA2, repairA2))?.currentLocation?.code, 'pending_area');
+
+      const useCaseIds = ['93000000-0000-4000-8000-000000000090', '94000000-0000-4000-8000-000000000090'];
+      const moveUseCase = new MoveRepairToWorkshopUseCase(repository, () => scopeA, () => new Date('2026-08-21T19:00:00.000Z'), () => useCaseIds.shift());
+      const useCaseRequest = { clientRequestId: '95000000-0000-4000-8000-000000000090', expectedVersion: 1, reason: null };
+      await assert.rejects(moveUseCase.execute({ repairId: 'not-a-uuid', request: useCaseRequest }), MoveRepairToWorkshopInputError);
+      await assert.rejects(moveUseCase.execute({ repairId: '30000000-0000-4000-8000-000000000099', request: useCaseRequest }), MoveRepairToWorkshopNotFoundError);
+
+      const locationConcurrentRepair = '30000000-0000-4000-8000-000000000020';
+      await insertPendingRepair(admin, locationConcurrentRepair, 'SR-LOCATION-CONCURRENT');
+      await placeInPendingArea(admin, locationConcurrentRepair, '20');
+      const locationConcurrent = await Promise.allSettled([
+        repository.moveRepairToWorkshop(scopeA, locationCommand(locationConcurrentRepair, '20')),
+        repository.moveRepairToWorkshop(scopeA, locationCommand(locationConcurrentRepair, '21')),
+      ]);
+      assert.equal(locationConcurrent.filter(({ status: resultStatus }) => resultStatus === 'fulfilled').length, 1);
+      assert.equal(locationConcurrent.filter(({ status: resultStatus }) => resultStatus === 'rejected').length, 1);
+      assert.equal((await admin.query('select count(*)::int as count from repair_location_movements where repair_id = $1 and command = $2', [locationConcurrentRepair, 'move_to_workshop'])).rows[0].count, 1);
+
+      const locationRollbackRepair = '30000000-0000-4000-8000-000000000021';
+      await insertPendingRepair(admin, locationRollbackRepair, 'SR-LOCATION-ROLLBACK');
+      await placeInPendingArea(admin, locationRollbackRepair, '21');
+      const locationRollback = locationCommand(locationRollbackRepair, '22');
+      await admin.query(
+        `insert into repair_timeline_entries (
+           entry_id, tenant_id, branch_id, repair_id, entry_type, actor_id,
+           actor_display_name, title, source, client_request_id, occurred_at, created_at
+         ) values ('98000000-0000-4000-8000-000000000001', $1, $2, $3, 'system_event',
+           $4, 'Operador sintético', 'Conflicto preparado', 'local.test', $5, now(), now())`,
+        [tenantA, branchA, locationRollbackRepair, actorId, locationRollback.clientRequestId],
+      );
+      await assert.rejects(repository.moveRepairToWorkshop(scopeA, locationRollback));
+      assert.equal((await admin.query('select count(*)::int as count from repair_location_movements where repair_id = $1 and command = $2', [locationRollbackRepair, 'move_to_workshop'])).rows[0].count, 0);
+
+      const inactiveWorkshopRepair = '30000000-0000-4000-8000-000000000022';
+      await insertPendingRepair(admin, inactiveWorkshopRepair, 'SR-LOCATION-INACTIVE');
+      await placeInPendingArea(admin, inactiveWorkshopRepair, '22');
+      await admin.query('update repair_locations set active = false where location_id = $1', [workshopLocationA]);
+      await assert.rejects(
+        repository.moveRepairToWorkshop(scopeA, locationCommand(inactiveWorkshopRepair, '23')),
+        RepairLocationConfigurationError,
+      );
+      assert.equal((await admin.query('select count(*)::int as count from repair_location_movements where repair_id = $1 and command = $2', [inactiveWorkshopRepair, 'move_to_workshop'])).rows[0].count, 0);
+      await admin.query('update repair_locations set active = true where location_id = $1', [workshopLocationA]);
+
+      await assert.rejects(
+        admin.query(
+          `insert into repair_location_movements (
+             movement_id, tenant_id, branch_id, repair_id, command, from_location_id,
+             to_location_id, from_code, from_label, to_code, to_label, actor_id,
+             actor_display_name, occurred_at, client_request_id,
+             expected_location_version, location_version
+           ) values ('99000000-0000-4000-8000-000000000001', $1, $2, $3,
+             'move_to_workshop', $4, $5, 'pending_area', 'Área de pendientes', 'workshop', 'Taller B', $6,
+             'Operador sintético', now(), '99000000-0000-4000-8000-000000000002', 1, 2)`,
+          [tenantA, branchA, locationRollbackRepair, pendingLocationA, workshopLocationB, actorId],
+        ),
+        (error) => error?.code === '23503',
+      );
+      await assert.rejects(
+        admin.query(
+          `insert into repair_location_movements (
+             movement_id, tenant_id, branch_id, repair_id, command, from_location_id,
+             to_location_id, from_code, from_label, to_code, to_label, actor_id,
+             actor_display_name, occurred_at, client_request_id,
+             expected_location_version, location_version
+           ) values ('99000000-0000-4000-8000-000000000003', $1, $2, $3,
+             'move_to_workshop', $4, $5, 'pending_area', 'Área de pendientes', 'workshop', 'Taller A2', $6,
+             'Operador sintético', now(), '99000000-0000-4000-8000-000000000004', 1, 2)`,
+          [tenantA, branchA, locationRollbackRepair, pendingLocationA, workshopLocationA2, actorId],
+        ),
+        (error) => error?.code === '23503',
+      );
       const workflowRows = await admin.query(
         `select from_state, to_state, workflow_version, actor_display_name
          from repair_workflow_transitions where repair_id = $1 order by workflow_version`,
