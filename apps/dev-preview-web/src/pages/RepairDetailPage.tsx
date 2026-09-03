@@ -13,7 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { addRepairOperationalNote, getRepairDetail, PreviewApiError } from '../api.js';
+import { addRepairOperationalNote, assignRepairTechnician, getRepairDetail, listRepairTechnicians, PreviewApiError, reassignRepairTechnician, unassignRepairTechnician } from '../api.js';
 import type {
   RepairDetail,
   RepairEvidenceItem,
@@ -49,6 +49,7 @@ function timelineSourceLabel(source: string): string {
     'local.operational_note': 'Nota operativa local',
     'local.reception': 'Recepción',
     'local.status_projection': 'Cambio de situación',
+    'local.technician_assignment': 'Asignación de técnico',
   });
   return labels[source] ?? 'Actividad registrada';
 }
@@ -88,17 +89,26 @@ export function RepairDetailWorkspace({
   host = 'page',
   onNoteAdded,
   onDraftDirtyChange,
+  onAssignmentChanged,
 }: Readonly<{
   repair: RepairDetail;
   host?: 'page' | 'overlay';
   onNoteAdded(note: RepairTimelineItem): void;
   onDraftDirtyChange(dirty: boolean): void;
+  onAssignmentChanged(): void;
 }>): React.JSX.Element {
   const [selectedEvidence, setSelectedEvidence] = useState<number | null>(null);
   const [failedEvidence, setFailedEvidence] = useState<ReadonlySet<string>>(() => new Set());
   const [noteDraft, setNoteDraft] = useState(() => storedDraft(repair.id));
   const [noteSubmitState, setNoteSubmitState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [noteMessage, setNoteMessage] = useState('');
+  const [assignmentOpen, setAssignmentOpen] = useState(false);
+  const [assignmentMode, setAssignmentMode] = useState<'assign' | 'reassign' | 'unassign'>('assign');
+  const [technicians, setTechnicians] = useState<readonly Readonly<{ id: string; displayName: string }>[]>([]);
+  const [selectedTechnician, setSelectedTechnician] = useState('');
+  const [assignmentReason, setAssignmentReason] = useState('');
+  const [assignmentState, setAssignmentState] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [assignmentMessage, setAssignmentMessage] = useState('');
   const noteRequestId = useRef<string | null>(null);
   const closeEvidence = useCallback(() => setSelectedEvidence(null), []);
   const activeEvidence = selectedEvidence === null
@@ -113,6 +123,49 @@ export function RepairDetailWorkspace({
     : repair.evidence.items[primaryEvidenceIndex] ?? null;
   const normalizedNote = noteDraft.trim();
   const noteValid = normalizedNote.length >= noteBodyMinLength && normalizedNote.length <= noteBodyMaxLength;
+  const currentTechnician = repair.currentSituation.technician;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void listRepairTechnicians(controller.signal)
+      .then((response) => setTechnicians(response.items))
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
+
+  const openAssignment = (mode: 'assign' | 'reassign' | 'unassign'): void => {
+    setAssignmentMode(mode);
+    setSelectedTechnician(currentTechnician?.id ?? '');
+    setAssignmentReason('');
+    setAssignmentMessage('');
+    setAssignmentState('idle');
+    setAssignmentOpen(true);
+  };
+
+  const submitAssignment = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    event.preventDefault();
+    if (assignmentState === 'loading') return;
+    if (assignmentMode !== 'unassign' && !selectedTechnician) return;
+    setAssignmentState('loading');
+    setAssignmentMessage('Guardando asignación…');
+    const requestId = crypto.randomUUID();
+    try {
+      if (assignmentMode === 'assign') {
+        await assignRepairTechnician(repair.id, { technicianId: selectedTechnician, clientRequestId: requestId, expectedVersion: repair.currentSituation.technicianSummary.version });
+      } else if (assignmentMode === 'reassign') {
+        await reassignRepairTechnician(repair.id, { technicianId: selectedTechnician, reason: assignmentReason.trim() || null, clientRequestId: requestId, expectedVersion: repair.currentSituation.technicianSummary.version });
+      } else {
+        await unassignRepairTechnician(repair.id, { reason: assignmentReason.trim() || null, clientRequestId: requestId, expectedVersion: repair.currentSituation.technicianSummary.version });
+      }
+      setAssignmentOpen(false);
+      onAssignmentChanged();
+    } catch (error: unknown) {
+      setAssignmentState('error');
+      setAssignmentMessage(error instanceof PreviewApiError && error.status === 409
+        ? 'La asignación cambió mientras trabajabas. Actualiza y vuelve a intentarlo.'
+        : 'No fue posible guardar la asignación.');
+    }
+  };
 
   useEffect(() => {
     storeDraft(repair.id, noteDraft);
@@ -218,10 +271,30 @@ export function RepairDetailWorkspace({
           </header>
           <dl>
             <div><dt>Estado</dt><dd><StatusBadge tone={repair.currentSituation.repairStatus.tone}>{repair.currentSituation.repairStatus.label}</StatusBadge></dd></div>
-            <div><dt>Técnico</dt><dd>{repair.currentSituation.technician?.displayName ?? 'Sin técnico asignado'}</dd></div>
+            <div><dt>Técnico</dt><dd><span>{currentTechnician?.displayName ?? 'Sin técnico asignado'}</span><div className={styles.assignmentActions}><Button size="compact" tone="quiet" onClick={() => openAssignment(currentTechnician ? 'reassign' : 'assign')}>{currentTechnician ? 'Cambiar' : 'Asignar'}</Button>{currentTechnician ? <Button size="compact" tone="quiet" onClick={() => openAssignment('unassign')}>Quitar asignación</Button> : null}</div></dd></div>
             <div><dt>Custodia</dt><dd>{repair.currentSituation.custody.label}</dd></div>
             <div><dt><MapPin aria-hidden="true" size={14} />Ubicación</dt><dd>{repair.currentSituation.location?.label ?? 'Ubicación no registrada'}</dd></div>
           </dl>
+          {repair.currentSituation.technicianSummary.history.length > 0 ? (
+            <section className={styles.assignmentHistory} aria-labelledby="technician-history-title">
+              <header>
+                <h3 id="technician-history-title">Historial de asignaciones</h3>
+                <span>{repair.currentSituation.technicianSummary.historyCount}</span>
+              </header>
+              <ol>
+                {repair.currentSituation.technicianSummary.history.map((entry) => (
+                  <li key={entry.assignmentId}>
+                    <div>
+                      <strong>{entry.technician.displayName}</strong>
+                      <span>{entry.endedAt ? 'Finalizada' : 'Activa'}</span>
+                    </div>
+                    <time dateTime={entry.assignedAt}>{receivedAt(entry.assignedAt)}</time>
+                    {entry.reason ? <p>{entry.reason}</p> : null}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
         </aside>
 
         <article className={styles.intakeCard} aria-labelledby="intake-title">
@@ -407,6 +480,24 @@ export function RepairDetailWorkspace({
           </figure>
         )}
       </Dialog>
+      <Dialog
+        open={assignmentOpen}
+        title={assignmentMode === 'assign' ? 'Asignar técnico' : assignmentMode === 'reassign' ? 'Cambiar técnico' : 'Quitar asignación'}
+        description="Prueba local; la operación conserva el historial técnico."
+        onClose={() => setAssignmentOpen(false)}
+        footer={(
+          <div className={styles.assignmentDialogActions}>
+            <Button onClick={() => setAssignmentOpen(false)} disabled={assignmentState === 'loading'}>Cancelar</Button>
+            <Button tone="primary" type="submit" form={`technician-assignment-${repair.id}`} disabled={assignmentState === 'loading' || (assignmentMode !== 'unassign' && !selectedTechnician)}>{assignmentState === 'loading' ? 'Guardando…' : assignmentMode === 'unassign' ? 'Quitar asignación' : assignmentMode === 'assign' ? 'Asignar' : 'Cambiar'}</Button>
+          </div>
+        )}
+      >
+        <form id={`technician-assignment-${repair.id}`} className={styles.assignmentForm} onSubmit={(event) => void submitAssignment(event)}>
+          {assignmentMode !== 'unassign' ? <label>Técnico<select value={selectedTechnician} onChange={(event) => setSelectedTechnician(event.target.value)} disabled={assignmentState === 'loading'}><option value="">Selecciona un técnico</option>{technicians.map((technician) => <option key={technician.id} value={technician.id}>{technician.displayName}</option>)}</select></label> : <p>La asignación actual se cerrará y quedará registrada en el historial.</p>}
+          <label>Motivo <span>(opcional)</span><textarea value={assignmentReason} maxLength={1000} onChange={(event) => setAssignmentReason(event.target.value)} disabled={assignmentState === 'loading'} placeholder="Describe el motivo si aplica." /></label>
+          {assignmentMessage ? <p className={styles.assignmentMessage} data-error={assignmentState === 'error'} role={assignmentState === 'error' ? 'alert' : 'status'}>{assignmentMessage}</p> : null}
+        </form>
+      </Dialog>
     </div>
   );
 }
@@ -507,6 +598,7 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
         host={host}
         onNoteAdded={addNoteToTimeline}
         onDraftDirtyChange={setDraftDirty}
+        onAssignmentChanged={() => load()}
       />
     );
   }

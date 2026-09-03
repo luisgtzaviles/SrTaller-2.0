@@ -76,6 +76,7 @@ export interface RepairDetail {
       tone: 'neutral';
     }>;
     technician: Readonly<{ id: string; displayName: string }> | null;
+    technicianSummary: TechnicianSummary;
   }>;
   readonly timeline: Readonly<{
     items: readonly RepairTimelineItem[];
@@ -86,6 +87,39 @@ export interface RepairDetail {
     items: readonly RepairEvidenceItem[];
     totalCount: number;
     limit: number;
+  }>;
+}
+
+export interface TechnicianSummary {
+  readonly current: Readonly<{ id: string; displayName: string }> | null;
+  readonly version: number;
+  readonly historyCount: number;
+  readonly history: readonly TechnicianAssignmentHistory[];
+}
+
+export interface TechnicianAssignmentHistory {
+  readonly assignmentId: string;
+  readonly technician: Readonly<{ id: string; displayName: string }>;
+  readonly assignedAt: string;
+  readonly endedAt: string | null;
+  readonly reason: string | null;
+  readonly assignedBy: Readonly<{ id: string; displayName: string }>;
+  readonly endedBy: Readonly<{ id: string; displayName: string }> | null;
+}
+
+export interface RepairTechnicianCatalogResponse {
+  readonly items: readonly Readonly<{ id: string; displayName: string }>[];
+}
+
+export interface TechnicianAssignmentCommandResponse {
+  readonly item: Readonly<{
+    repairId: string;
+    assignmentId: string;
+    technicianId?: string;
+    technicianDisplayName?: string;
+    previousTechnicianId?: string;
+    previousTechnicianDisplayName?: string;
+    version: number;
   }>;
 }
 
@@ -271,6 +305,22 @@ export function addRepairOperationalNote(
       body: JSON.stringify(request),
     },
   );
+}
+
+export function listRepairTechnicians(signal?: AbortSignal): Promise<RepairTechnicianCatalogResponse> {
+  return api<RepairTechnicianCatalogResponse>('/api/repairs/technicians', { signal: signal ?? null });
+}
+
+export function assignRepairTechnician(repairId: string, request: Readonly<{ technicianId: string; clientRequestId: string; expectedVersion: number }>): Promise<TechnicianAssignmentCommandResponse> {
+  return api<TechnicianAssignmentCommandResponse>(`/api/repairs/${encodeURIComponent(repairId)}/technician-assignment`, { method: 'POST', body: JSON.stringify(request) });
+}
+
+export function reassignRepairTechnician(repairId: string, request: Readonly<{ technicianId: string; reason?: string | null; clientRequestId: string; expectedVersion: number }>): Promise<TechnicianAssignmentCommandResponse> {
+  return api<TechnicianAssignmentCommandResponse>(`/api/repairs/${encodeURIComponent(repairId)}/technician-reassignment`, { method: 'POST', body: JSON.stringify(request) });
+}
+
+export function unassignRepairTechnician(repairId: string, request: Readonly<{ reason?: string | null; clientRequestId: string; expectedVersion: number }>): Promise<TechnicianAssignmentCommandResponse> {
+  return api<TechnicianAssignmentCommandResponse>(`/api/repairs/${encodeURIComponent(repairId)}/technician-unassignment`, { method: 'POST', body: JSON.stringify(request) });
 }
 
 export function listPreviewRepairs(
