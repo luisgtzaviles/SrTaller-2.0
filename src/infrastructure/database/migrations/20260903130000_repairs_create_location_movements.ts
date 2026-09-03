@@ -15,6 +15,7 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .addColumn('created_at', 'timestamptz', (column) => column.notNull())
     .addPrimaryKeyConstraint('repair_locations_pk', ['location_id'])
     .addUniqueConstraint('repair_locations_scope_id_uq', ['tenant_id', 'branch_id', 'location_id'])
+    .addUniqueConstraint('repair_locations_scope_id_code_uq', ['tenant_id', 'branch_id', 'location_id', 'code'])
     .addForeignKeyConstraint(
       'repair_locations_branch_scope_fk',
       ['tenant_id', 'branch_id'],
@@ -62,16 +63,16 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     )
     .addForeignKeyConstraint(
       'repair_location_movements_from_scope_fk',
-      ['tenant_id', 'branch_id', 'from_location_id'],
+      ['tenant_id', 'branch_id', 'from_location_id', 'from_code'],
       'repair_locations',
-      ['tenant_id', 'branch_id', 'location_id'],
+      ['tenant_id', 'branch_id', 'location_id', 'code'],
       (constraint) => constraint.onUpdate('restrict').onDelete('restrict'),
     )
     .addForeignKeyConstraint(
       'repair_location_movements_to_scope_fk',
-      ['tenant_id', 'branch_id', 'to_location_id'],
+      ['tenant_id', 'branch_id', 'to_location_id', 'to_code'],
       'repair_locations',
-      ['tenant_id', 'branch_id', 'location_id'],
+      ['tenant_id', 'branch_id', 'location_id', 'code'],
       (constraint) => constraint.onUpdate('restrict').onDelete('restrict'),
     )
     .addCheckConstraint('repair_location_movements_command_ck', sql`command in ('initial_placement', 'move_to_workshop')`)

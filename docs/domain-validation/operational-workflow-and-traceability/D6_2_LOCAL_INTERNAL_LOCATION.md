@@ -33,7 +33,9 @@ forma parte de la huella semántica de idempotencia.
 ## Persistencia e invariantes
 
 - `repair_locations` es un catálogo por tenant + sucursal y sólo admite las
-  categorías `pending_area` y `workshop` en este slice.
+  categorías `pending_area` y `workshop` en este slice. Las FK compuestas de
+  movimientos vinculan scope + location ID + code para impedir snapshots con
+  una identidad semántica contradictoria.
 - `repair_location_movements` es el historial append-only y fuente de verdad.
 - La ubicación vigente se deriva del último movimiento; sin historial se
   proyecta `location: null`, `locationVersion: 0` y

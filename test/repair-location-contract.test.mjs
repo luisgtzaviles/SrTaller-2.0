@@ -24,6 +24,9 @@ test('D6.2 persists a scoped append-only location history with an independent ve
   assert.match(migration, /repair_location_movements_repair_scope_fk/u);
   assert.match(migration, /repair_location_movements_from_scope_fk/u);
   assert.match(migration, /repair_location_movements_to_scope_fk/u);
+  assert.match(migration, /repair_locations_scope_id_code_uq/u);
+  assert.match(migration, /\['tenant_id', 'branch_id', 'to_location_id', 'to_code'\]/u);
+  assert.match(migration, /\['tenant_id', 'branch_id', 'from_location_id', 'from_code'\]/u);
   assert.match(migration, /location_version = expected_location_version \+ 1/u);
   assert.match(migration, /repair_location_movements_version_uq/u);
   assert.match(migration, /repair_location_movements_request_uq/u);

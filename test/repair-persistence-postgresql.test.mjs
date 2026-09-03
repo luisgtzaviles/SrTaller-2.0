@@ -622,6 +622,36 @@ test(
         ),
         (error) => error?.code === '23503',
       );
+      const locationSemanticMismatchRepair = '30000000-0000-4000-8000-000000000023';
+      await insertPendingRepair(admin, locationSemanticMismatchRepair, 'SR-LOCATION-SEMANTIC-MISMATCH');
+      await assert.rejects(
+        admin.query(
+          `insert into repair_location_movements (
+             movement_id, tenant_id, branch_id, repair_id, command, from_location_id,
+             to_location_id, from_code, from_label, to_code, to_label, actor_id,
+             actor_display_name, occurred_at, client_request_id,
+             expected_location_version, location_version
+           ) values ('99000000-0000-4000-8000-000000000005', $1, $2, $3,
+             'initial_placement', null, $4, null, null, 'pending_area', 'Área de pendientes', $5,
+             'Operador sintético', now(), '99000000-0000-4000-8000-000000000006', 0, 1)`,
+          [tenantA, branchA, locationSemanticMismatchRepair, workshopLocationA, actorId],
+        ),
+        (error) => error?.code === '23503',
+      );
+      await assert.rejects(
+        admin.query(
+          `insert into repair_location_movements (
+             movement_id, tenant_id, branch_id, repair_id, command, from_location_id,
+             to_location_id, from_code, from_label, to_code, to_label, actor_id,
+             actor_display_name, occurred_at, client_request_id,
+             expected_location_version, location_version
+           ) values ('99000000-0000-4000-8000-000000000007', $1, $2, $3,
+             'move_to_workshop', $4, $5, 'pending_area', 'Área de pendientes', 'workshop', 'Taller', $6,
+             'Operador sintético', now(), '99000000-0000-4000-8000-000000000008', 1, 2)`,
+          [tenantA, branchA, locationRollbackRepair, workshopLocationA, workshopLocationA, actorId],
+        ),
+        (error) => error?.code === '23503',
+      );
       const workflowRows = await admin.query(
         `select from_state, to_state, workflow_version, actor_display_name
          from repair_workflow_transitions where repair_id = $1 order by workflow_version`,
