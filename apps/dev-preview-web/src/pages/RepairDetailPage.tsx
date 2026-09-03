@@ -13,7 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { addRepairOperationalNote, assignRepairTechnician, getRepairDetail, listRepairTechnicians, PreviewApiError, reassignRepairTechnician, unassignRepairTechnician } from '../api.js';
+import { addRepairOperationalNote, assignRepairTechnician, getRepairDetail, listRepairTechnicians, PreviewApiError, reassignRepairTechnician, startRepairDiagnosis, unassignRepairTechnician } from '../api.js';
 import type {
   RepairDetail,
   RepairEvidenceItem,
@@ -50,6 +50,7 @@ function timelineSourceLabel(source: string): string {
     'local.reception': 'Recepción',
     'local.status_projection': 'Cambio de situación',
     'local.technician_assignment': 'Asignación de técnico',
+    'local.workflow': 'Flujo de reparación',
   });
   return labels[source] ?? 'Actividad registrada';
 }
@@ -90,12 +91,14 @@ export function RepairDetailWorkspace({
   onNoteAdded,
   onDraftDirtyChange,
   onAssignmentChanged,
+  onWorkflowChanged,
 }: Readonly<{
   repair: RepairDetail;
   host?: 'page' | 'overlay';
   onNoteAdded(note: RepairTimelineItem): void;
   onDraftDirtyChange(dirty: boolean): void;
   onAssignmentChanged(): void;
+  onWorkflowChanged(): void;
 }>): React.JSX.Element {
   const [selectedEvidence, setSelectedEvidence] = useState<number | null>(null);
   const [failedEvidence, setFailedEvidence] = useState<ReadonlySet<string>>(() => new Set());
@@ -109,6 +112,10 @@ export function RepairDetailWorkspace({
   const [assignmentReason, setAssignmentReason] = useState('');
   const [assignmentState, setAssignmentState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [assignmentMessage, setAssignmentMessage] = useState('');
+  const [workflowState, setWorkflowState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [workflowMessage, setWorkflowMessage] = useState('');
+  const workflowRequestId = useRef<string | null>(null);
+  const workflowMessageRef = useRef<HTMLParagraphElement | null>(null);
   const noteRequestId = useRef<string | null>(null);
   const closeEvidence = useCallback(() => setSelectedEvidence(null), []);
   const activeEvidence = selectedEvidence === null
@@ -166,6 +173,34 @@ export function RepairDetailWorkspace({
         : 'No fue posible guardar la asignación.');
     }
   };
+
+  const beginDiagnosis = async (): Promise<void> => {
+    if (workflowState === 'loading') return;
+    const clientRequestId = workflowRequestId.current ?? crypto.randomUUID();
+    workflowRequestId.current = clientRequestId;
+    setWorkflowState('loading');
+    setWorkflowMessage('Iniciando diagnóstico…');
+    try {
+      await startRepairDiagnosis(repair.id, {
+        clientRequestId,
+        expectedVersion: repair.currentSituation.workflowVersion,
+      });
+      workflowRequestId.current = null;
+      setWorkflowState('success');
+      setWorkflowMessage('Diagnóstico iniciado.');
+      onWorkflowChanged();
+    } catch (error: unknown) {
+      setWorkflowState('error');
+      setWorkflowMessage(error instanceof PreviewApiError && error.status === 409
+        ? 'El estado cambió mientras trabajabas. Actualiza y vuelve a intentarlo.'
+        : 'No fue posible iniciar el diagnóstico.');
+      if (error instanceof PreviewApiError && error.status === 409) onWorkflowChanged();
+    }
+  };
+
+  useEffect(() => {
+    if (workflowState === 'success' || workflowState === 'error') workflowMessageRef.current?.focus();
+  }, [workflowState]);
 
   useEffect(() => {
     storeDraft(repair.id, noteDraft);
@@ -275,6 +310,14 @@ export function RepairDetailWorkspace({
             <div><dt>Custodia</dt><dd>{repair.currentSituation.custody.label}</dd></div>
             <div><dt><MapPin aria-hidden="true" size={14} />Ubicación</dt><dd>{repair.currentSituation.location?.label ?? 'Ubicación no registrada'}</dd></div>
           </dl>
+          {repair.currentSituation.repairStatus.code === 'pending' ? (
+            <div className={styles.workflowAction}>
+              <Button tone="primary" disabled={workflowState === 'loading'} onClick={() => void beginDiagnosis()}>
+                {workflowState === 'loading' ? 'Iniciando…' : 'Iniciar diagnóstico'}
+              </Button>
+            </div>
+          ) : null}
+          {workflowMessage ? <p ref={workflowMessageRef} className={styles.assignmentMessage} data-error={workflowState === 'error'} role={workflowState === 'error' ? 'alert' : 'status'} tabIndex={-1}>{workflowMessage}</p> : null}
           {repair.currentSituation.technicianSummary.history.length > 0 ? (
             <section className={styles.assignmentHistory} aria-labelledby="technician-history-title">
               <header>
@@ -599,6 +642,10 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
         onNoteAdded={addNoteToTimeline}
         onDraftDirtyChange={setDraftDirty}
         onAssignmentChanged={() => load()}
+        onWorkflowChanged={() => {
+          window.dispatchEvent(new CustomEvent('srtaller:repairs-changed'));
+          load();
+        }}
       />
     );
   }

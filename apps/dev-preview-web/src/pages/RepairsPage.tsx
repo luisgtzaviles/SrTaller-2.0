@@ -155,6 +155,12 @@ export function RepairsPage(): React.JSX.Element {
     setRetry((value) => value + 1);
   }, [location.key]);
 
+  useEffect(() => {
+    const refresh = (): void => setRetry((value) => value + 1);
+    window.addEventListener('srtaller:repairs-changed', refresh);
+    return () => window.removeEventListener('srtaller:repairs-changed', refresh);
+  }, []);
+
   const customRangeError = dateRangeError(filters);
   const hasDetailedFilters = Boolean(filters.status || filters.technicianId || filters.unassigned || filters.custody);
 
@@ -259,7 +265,7 @@ export function RepairsPage(): React.JSX.Element {
       <PageHeader
         eyebrow="Operación"
         title="Reparaciones"
-        description="Consulta el trabajo recibido en esta sucursal. Los cambios todavía no están disponibles en este slice."
+        description="Consulta el trabajo recibido en esta sucursal. Inicia el diagnóstico desde el detalle; el resto de cambios operativos permanece fuera de este slice."
         primaryAction={(
           <div className={styles.worklistHeaderActions}>
             {countReady ? (
