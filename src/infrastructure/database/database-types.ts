@@ -1,6 +1,7 @@
 import type { ColumnType, Insertable, Selectable, Updateable } from 'kysely';
 
 type ImmutableColumn<T> = ColumnType<T, T, never>;
+type MutableColumn<T> = ColumnType<T, T, T>;
 
 export interface TenantTable {
   readonly tenant_id: ImmutableColumn<string>;
@@ -79,6 +80,39 @@ export interface RepairAttachmentTable {
   readonly uploaded_by_display_name: ImmutableColumn<string | null>;
 }
 
+export interface RepairTechnicianTable {
+  readonly technician_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly display_name: ImmutableColumn<string>;
+  readonly active: ImmutableColumn<boolean>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface RepairTechnicianBranchTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly technician_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface RepairTechnicianAssignmentTable {
+  readonly assignment_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly repair_id: ImmutableColumn<string>;
+  readonly technician_id: ImmutableColumn<string>;
+  readonly assigned_by_actor_id: ImmutableColumn<string>;
+  readonly assigned_by_actor_display_name: ImmutableColumn<string>;
+  readonly assigned_at: ImmutableColumn<Date>;
+  readonly ended_at: MutableColumn<Date | null>;
+  readonly ended_by_actor_id: MutableColumn<string | null>;
+  readonly ended_by_actor_display_name: MutableColumn<string | null>;
+  readonly reason: MutableColumn<string | null>;
+  readonly client_request_id: MutableColumn<string>;
+  readonly ended_client_request_id: MutableColumn<string | null>;
+  readonly assignment_sequence: ImmutableColumn<number>;
+}
+
 export interface DatabaseSchema {
   readonly tenants: TenantTable;
   readonly branches: BranchTable;
@@ -86,6 +120,9 @@ export interface DatabaseSchema {
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
   readonly repair_attachments: RepairAttachmentTable;
+  readonly repair_technicians: RepairTechnicianTable;
+  readonly repair_technician_branches: RepairTechnicianBranchTable;
+  readonly repair_technician_assignments: RepairTechnicianAssignmentTable;
 }
 
 export type TenantRow = Selectable<TenantTable>;
@@ -111,3 +148,9 @@ export type RepairTimelineEntryUpdate = Updateable<RepairTimelineEntryTable>;
 export type RepairAttachmentRow = Selectable<RepairAttachmentTable>;
 export type NewRepairAttachment = Insertable<RepairAttachmentTable>;
 export type RepairAttachmentUpdate = Updateable<RepairAttachmentTable>;
+export type RepairTechnicianRow = Selectable<RepairTechnicianTable>;
+export type NewRepairTechnician = Insertable<RepairTechnicianTable>;
+export type RepairTechnicianBranchRow = Selectable<RepairTechnicianBranchTable>;
+export type NewRepairTechnicianBranch = Insertable<RepairTechnicianBranchTable>;
+export type RepairTechnicianAssignmentRow = Selectable<RepairTechnicianAssignmentTable>;
+export type NewRepairTechnicianAssignment = Insertable<RepairTechnicianAssignmentTable>;

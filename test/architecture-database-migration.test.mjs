@@ -41,7 +41,7 @@ test('migration runner, capability and provider retain exact governed ownership'
   );
 });
 
-test('public migration API remains narrow with one productive migration', async () => {
+test('public migration API remains narrow with governed productive migrations', async () => {
   const [runner, provider, capability] = await Promise.all([
     readFile(runnerPath, 'utf8'),
     readFile(providerPath, 'utf8'),
@@ -83,6 +83,8 @@ test('public migration API remains narrow with one productive migration', async 
     '20260819140000_repairs_create_timeline_entries.ts',
     '20260819150000_repairs_create_attachments.ts',
     '20260820090000_repairs_add_operational_note_idempotency.ts',
+    '20260902090000_repairs_create_technician_assignment.ts',
+    '20260902093000_repairs_add_technician_unassignment_idempotency.ts',
   ]);
 });
 

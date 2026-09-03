@@ -274,6 +274,45 @@ export function localRepairRows() {
   })));
 }
 
+export function localRepairTechnicianRows() {
+  const tenantId = LOCAL_TENANT_ID;
+  const createdAt = LOCAL_SEED_TIMESTAMP;
+  return Object.freeze([
+    ['00000000-0000-4000-8000-000000000201', 'Ana Técnica'],
+    ['00000000-0000-4000-8000-000000000202', 'Bruno Técnico'],
+    ['00000000-0000-4000-8000-000000000203', 'Carla Técnica'],
+  ].map(([technicianId, displayName]) => Object.freeze({ technicianId, tenantId, displayName, active: true, createdAt })));
+}
+
+export function localRepairTechnicianBranchRows() {
+  const tenantId = LOCAL_TENANT_ID;
+  const branchId = LOCAL_BRANCH_IDS[0];
+  return Object.freeze(localRepairTechnicianRows().map((technician) => Object.freeze({ tenantId, branchId, technicianId: technician.technicianId, createdAt: LOCAL_SEED_TIMESTAMP })));
+}
+
+export function localRepairTechnicianAssignmentRows() {
+  const actorId = '00000000-0000-4000-8000-000000000301';
+  const actorName = 'Operador sintético';
+  const assignments = localRepairRows().filter((repair) => repair.technicianId).map((repair) => Object.freeze({
+    assignmentId: `00000000-0000-4000-8000-${String(4000 + Number(repair.folio.slice(-3))).padStart(12, '0')}`,
+    tenantId: repair.tenantId,
+    branchId: repair.branchId,
+    repairId: repair.repairId,
+    technicianId: repair.technicianId,
+    assignedByActorId: actorId,
+    assignedByActorDisplayName: actorName,
+    assignedAt: repair.receivedAt,
+    endedAt: repair.custodyStatus === 'ended' ? repair.receivedAt : null,
+    endedByActorId: repair.custodyStatus === 'ended' ? actorId : null,
+    endedByActorDisplayName: repair.custodyStatus === 'ended' ? actorName : null,
+    reason: null,
+    clientRequestId: `00000000-0000-4000-8000-${String(5000 + Number(repair.folio.slice(-3))).padStart(12, '0')}`,
+    endedClientRequestId: null,
+    assignmentSequence: 1,
+  }));
+  return Object.freeze(assignments);
+}
+
 export function localRepairIntakeRows() {
   const tenantId = LOCAL_TENANT_ID;
   const branchId = LOCAL_BRANCH_IDS[0];

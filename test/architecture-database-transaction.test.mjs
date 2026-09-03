@@ -25,6 +25,7 @@ test('transaction runner and internal capability retain exact registered ownersh
       'runInTransaction',
     ],
     consumers: [
+      'src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts',
       'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
     ],
@@ -38,6 +39,7 @@ test('transaction runner and internal capability retain exact registered ownersh
       connectionPath,
       persistenceCapabilityPath,
       runnerPath,
+      'src/modules/repairs/infrastructure/persistence/repair-database-connection.ts',
     ],
     forbiddenContextPackages: ['async_hooks', 'node:async_hooks'],
     forbiddenManualMethods: [

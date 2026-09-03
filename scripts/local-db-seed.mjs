@@ -8,6 +8,9 @@ import {
   localRepairRows,
   localRepairTimelineRows,
   localRepairEvidenceRows,
+  localRepairTechnicianRows,
+  localRepairTechnicianBranchRows,
+  localRepairTechnicianAssignmentRows,
   localSeedRows,
 } from './lib/local-development.mjs';
 import { materializeLocalEvidenceFixtures } from './lib/local-evidence-fixtures.mjs';
@@ -92,6 +95,34 @@ try {
         repair.custodyStatus,
         repair.createdAt,
       ],
+    );
+  }
+  for (const technician of localRepairTechnicianRows()) {
+    await client.query(
+      `INSERT INTO repair_technicians (technician_id, tenant_id, display_name, active, created_at)
+       VALUES ($1::uuid, $2::uuid, $3, $4, $5::timestamptz)
+       ON CONFLICT (technician_id) DO UPDATE SET tenant_id = EXCLUDED.tenant_id, display_name = EXCLUDED.display_name, active = EXCLUDED.active, created_at = EXCLUDED.created_at`,
+      [technician.technicianId, technician.tenantId, technician.displayName, technician.active, technician.createdAt],
+    );
+  }
+  for (const eligibility of localRepairTechnicianBranchRows()) {
+    await client.query(
+      `INSERT INTO repair_technician_branches (tenant_id, branch_id, technician_id, created_at)
+       VALUES ($1::uuid, $2::uuid, $3::uuid, $4::timestamptz)
+       ON CONFLICT (tenant_id, branch_id, technician_id) DO NOTHING`,
+      [eligibility.tenantId, eligibility.branchId, eligibility.technicianId, eligibility.createdAt],
+    );
+  }
+  for (const assignment of localRepairTechnicianAssignmentRows()) {
+    await client.query(
+      `INSERT INTO repair_technician_assignments (
+         assignment_id, tenant_id, branch_id, repair_id, technician_id,
+         assigned_by_actor_id, assigned_by_actor_display_name, assigned_at,
+         ended_at, ended_by_actor_id, ended_by_actor_display_name, reason,
+         client_request_id, ended_client_request_id, assignment_sequence
+       ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5::uuid, $6::uuid, $7, $8::timestamptz, $9::timestamptz, $10::uuid, $11, $12, $13::uuid, $14::uuid, $15)
+       ON CONFLICT (assignment_id) DO UPDATE SET technician_id = EXCLUDED.technician_id, ended_at = EXCLUDED.ended_at, ended_by_actor_id = EXCLUDED.ended_by_actor_id, ended_by_actor_display_name = EXCLUDED.ended_by_actor_display_name`,
+      [assignment.assignmentId, assignment.tenantId, assignment.branchId, assignment.repairId, assignment.technicianId, assignment.assignedByActorId, assignment.assignedByActorDisplayName, assignment.assignedAt, assignment.endedAt, assignment.endedByActorId, assignment.endedByActorDisplayName, assignment.reason, assignment.clientRequestId, assignment.endedClientRequestId, assignment.assignmentSequence],
     );
   }
   for (const intake of localRepairIntakeRows()) {
@@ -213,6 +244,8 @@ process.stdout.write(`${JSON.stringify({
   repairIntakeCount: localRepairIntakeRows().length,
   repairTimelineEntryCount: localRepairTimelineRows().length,
   repairEvidenceCount: localRepairEvidenceRows().length,
+  technicianCount: localRepairTechnicianRows().length,
+  assignmentCount: localRepairTechnicianAssignmentRows().length,
   deterministic: true,
   applicationRole: environment.SR_DB_USER,
   forbiddenConnectionString: !Object.keys(cleanChildEnvironment()).includes('DATABASE_URL'),

@@ -125,7 +125,9 @@
       "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
       "src/infrastructure/database/migrations/20260819140000_repairs_create_timeline_entries.ts",
       "src/infrastructure/database/migrations/20260819150000_repairs_create_attachments.ts",
-      "src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts"
+      "src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts",
+      "src/infrastructure/database/migrations/20260902090000_repairs_create_technician_assignment.ts",
+      "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts"
     ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
@@ -170,7 +172,16 @@
           "RepairAttachmentTable",
           "RepairAttachmentRow",
           "NewRepairAttachment",
-          "RepairAttachmentUpdate"
+          "RepairAttachmentUpdate",
+          "RepairTechnicianTable",
+          "RepairTechnicianRow",
+          "NewRepairTechnician",
+          "RepairTechnicianBranchTable",
+          "RepairTechnicianBranchRow",
+          "NewRepairTechnicianBranch",
+          "RepairTechnicianAssignmentTable",
+          "RepairTechnicianAssignmentRow",
+          "NewRepairTechnicianAssignment"
         ],
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
@@ -179,6 +190,8 @@
           "src/infrastructure/database/migrations/20260819140000_repairs_create_timeline_entries.ts",
           "src/infrastructure/database/migrations/20260819150000_repairs_create_attachments.ts",
           "src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts",
+          "src/infrastructure/database/migrations/20260902090000_repairs_create_technician_assignment.ts",
+          "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -291,6 +304,7 @@
           "runInTransaction"
         ],
         "consumers": [
+          "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
         ],
@@ -390,6 +404,18 @@
         "owner": "repairs",
         "kind": "table"
       },
+      "repair_technicians": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_technician_branches": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_technician_assignments": {
+        "owner": "repairs",
+        "kind": "table"
+      },
       "tenants": {
         "owner": "tenancy",
         "kind": "table"
@@ -435,7 +461,8 @@
       "allowedCapabilityConsumers": [
         "src/infrastructure/database/database-connection.ts",
         "src/infrastructure/database/database-persistence-capability.ts",
-        "src/infrastructure/database/transaction-runner.ts"
+        "src/infrastructure/database/transaction-runner.ts",
+        "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts"
       ],
       "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
       "forbiddenManualMethods": [
@@ -626,6 +653,8 @@
     "src/modules/repairs/application/ports/repair-repository.port.ts",
     "src/modules/repairs/application/ports/repair-evidence-storage.port.ts",
     "src/modules/repairs/application/use-cases/add-repair-operational-note.use-case.ts",
+    "src/modules/repairs/application/use-cases/list-repair-technicians.use-case.ts",
+    "src/modules/repairs/application/use-cases/technician-assignment.use-case.ts",
     "src/modules/repairs/application/use-cases/get-repair-detail.use-case.ts",
     "src/modules/repairs/application/use-cases/get-repair-evidence-content.use-case.ts",
     "src/modules/repairs/application/use-cases/list-repairs.use-case.ts",

@@ -237,6 +237,21 @@ class ControlledDatabaseRuntime implements DatabaseRuntime {
           .select(['attachment_id', 'repair_id', 'tenant_id', 'branch_id'])
           .limit(0)
           .execute();
+        await database
+          .selectFrom('repair_technicians')
+          .select(['technician_id', 'tenant_id'])
+          .limit(0)
+          .execute();
+        await database
+          .selectFrom('repair_technician_branches')
+          .select(['tenant_id', 'branch_id', 'technician_id'])
+          .limit(0)
+          .execute();
+        await database
+          .selectFrom('repair_technician_assignments')
+          .select(['assignment_id', 'repair_id', 'tenant_id', 'branch_id'])
+          .limit(0)
+          .execute();
         return (
           journal.map(({ name }) => name).join(',') ===
           expectedNames.join(',')
