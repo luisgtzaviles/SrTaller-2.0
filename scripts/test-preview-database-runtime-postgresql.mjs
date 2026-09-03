@@ -192,7 +192,7 @@ try {
   assert.doesNotMatch(firstMigration.stdout + firstMigration.stderr, new RegExp(password, 'u'));
   const firstResult = JSON.parse(firstMigration.stdout.trim());
   assert.equal(firstResult.event, 'database_migration_complete');
-  assert.equal(firstResult.applied, 1);
+  assert.equal(firstResult.applied, 8);
   assert.equal(firstResult.pending, 0);
 
   const secondMigration = await runEntrypoint('dist/db-migrate.js', migrationEnvironment);
@@ -265,7 +265,7 @@ try {
     '--command',
     "select (select count(*) from tenants), (select count(*) from branches), (select count(*) from kysely_migration);",
   ]);
-  assert.equal(schemaState.trim(), '0|0|1');
+  assert.equal(schemaState.trim(), '0|0|8');
   const { stdout: activeConnections } = await docker([
     'exec',
     container,
@@ -285,11 +285,11 @@ try {
     `${JSON.stringify({
       status: 'PASS',
       postgres: '18.4',
-      migration: { firstApplied: 1, secondApplied: 0, pending: 0 },
+      migration: { firstApplied: 8, secondApplied: 0, pending: 0 },
       readiness: { available: 200, unavailable: 503, recovered: 200 },
       livenessWhileDatabaseUnavailable: 200,
       shutdownPoolConnections: 0,
-      data: { tenants: 0, branches: 0, journal: 1 },
+      data: { tenants: 0, branches: 0, journal: 8 },
       secretsExposed: false,
       cleanup: 'PASS',
     })}\n`,
