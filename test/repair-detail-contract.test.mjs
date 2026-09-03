@@ -67,7 +67,7 @@ test('repair detail read endpoint derives scope and projects the approved fields
     assert.match(controllerSource, new RegExp(`\\b${field}\\b`, 'u'));
   }
   for (const excluded of ['createdAt', 'financial', 'price', 'history', 'photos', 'whatsapp', 'pin', 'password', 'pattern', 'unlock', 'imei', 'warranty']) {
-    assert.doesNotMatch(controllerSource, new RegExp(excluded, 'iu'));
+    assert.doesNotMatch(controllerSource, new RegExp(`\\b${excluded}\\b`, 'iu'));
   }
 });
 

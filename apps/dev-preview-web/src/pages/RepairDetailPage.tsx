@@ -13,7 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { addRepairOperationalNote, assignRepairTechnician, getRepairDetail, listRepairTechnicians, PreviewApiError, reassignRepairTechnician, startRepairDiagnosis, unassignRepairTechnician } from '../api.js';
+import { addRepairOperationalNote, assignRepairTechnician, getRepairDetail, listRepairTechnicians, moveRepairToWorkshop, PreviewApiError, reassignRepairTechnician, startRepairDiagnosis, unassignRepairTechnician } from '../api.js';
 import type {
   RepairDetail,
   RepairEvidenceItem,
@@ -51,6 +51,7 @@ function timelineSourceLabel(source: string): string {
     'local.status_projection': 'Cambio de situación',
     'local.technician_assignment': 'Asignación de técnico',
     'local.workflow': 'Flujo de reparación',
+    'local.location': 'Ubicación interna',
   });
   return labels[source] ?? 'Actividad registrada';
 }
@@ -92,6 +93,7 @@ export function RepairDetailWorkspace({
   onDraftDirtyChange,
   onAssignmentChanged,
   onWorkflowChanged,
+  onLocationChanged,
 }: Readonly<{
   repair: RepairDetail;
   host?: 'page' | 'overlay';
@@ -99,6 +101,7 @@ export function RepairDetailWorkspace({
   onDraftDirtyChange(dirty: boolean): void;
   onAssignmentChanged(): void;
   onWorkflowChanged(): void;
+  onLocationChanged(): void;
 }>): React.JSX.Element {
   const [selectedEvidence, setSelectedEvidence] = useState<number | null>(null);
   const [failedEvidence, setFailedEvidence] = useState<ReadonlySet<string>>(() => new Set());
@@ -116,6 +119,10 @@ export function RepairDetailWorkspace({
   const [workflowMessage, setWorkflowMessage] = useState('');
   const workflowRequestId = useRef<string | null>(null);
   const workflowMessageRef = useRef<HTMLParagraphElement | null>(null);
+  const [locationState, setLocationState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [locationMessage, setLocationMessage] = useState('');
+  const locationRequestId = useRef<string | null>(null);
+  const locationMessageRef = useRef<HTMLParagraphElement | null>(null);
   const noteRequestId = useRef<string | null>(null);
   const closeEvidence = useCallback(() => setSelectedEvidence(null), []);
   const activeEvidence = selectedEvidence === null
@@ -198,9 +205,38 @@ export function RepairDetailWorkspace({
     }
   };
 
+  const moveToWorkshop = async (): Promise<void> => {
+    if (locationState === 'loading') return;
+    const clientRequestId = locationRequestId.current ?? crypto.randomUUID();
+    locationRequestId.current = clientRequestId;
+    setLocationState('loading');
+    setLocationMessage('Moviendo equipo…');
+    try {
+      await moveRepairToWorkshop(repair.id, {
+        clientRequestId,
+        expectedVersion: repair.currentSituation.locationVersion,
+      });
+      locationRequestId.current = null;
+      setLocationState('success');
+      setLocationMessage('Equipo movido a Taller.');
+      onLocationChanged();
+    } catch (error: unknown) {
+      setLocationState('error');
+      const stale = error instanceof PreviewApiError && error.status === 409;
+      setLocationMessage(stale
+        ? 'La ubicación cambió mientras trabajabas. Actualiza y vuelve a intentarlo.'
+        : 'No fue posible mover el equipo a Taller.');
+      if (stale) onLocationChanged();
+    }
+  };
+
   useEffect(() => {
     if (workflowState === 'success' || workflowState === 'error') workflowMessageRef.current?.focus();
   }, [workflowState]);
+
+  useEffect(() => {
+    if (locationState === 'success' || locationState === 'error') locationMessageRef.current?.focus();
+  }, [locationState]);
 
   useEffect(() => {
     storeDraft(repair.id, noteDraft);
@@ -310,6 +346,19 @@ export function RepairDetailWorkspace({
             <div><dt>Custodia</dt><dd>{repair.currentSituation.custody.label}</dd></div>
             <div><dt><MapPin aria-hidden="true" size={14} />Ubicación</dt><dd>{repair.currentSituation.location?.label ?? 'Ubicación no registrada'}</dd></div>
           </dl>
+          {repair.currentSituation.location?.code === 'pending_area' && repair.currentSituation.custody.code === 'active' ? (
+            <div className={styles.workflowAction}>
+              <Button
+                aria-label={locationState === 'loading' ? 'Moviendo equipo a Taller' : 'Mover equipo a Taller'}
+                tone="primary"
+                disabled={locationState === 'loading'}
+                onClick={() => void moveToWorkshop()}
+              >
+                {locationState === 'loading' ? 'Moviendo…' : 'Mover a Taller'}
+              </Button>
+            </div>
+          ) : null}
+          {locationMessage ? <p ref={locationMessageRef} className={styles.assignmentMessage} data-error={locationState === 'error'} role={locationState === 'error' ? 'alert' : 'status'} tabIndex={-1}>{locationMessage}</p> : null}
           {repair.currentSituation.repairStatus.code === 'pending' ? (
             <div className={styles.workflowAction}>
               <Button tone="primary" disabled={workflowState === 'loading'} onClick={() => void beginDiagnosis()}>
@@ -643,6 +692,10 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
         onDraftDirtyChange={setDraftDirty}
         onAssignmentChanged={() => load()}
         onWorkflowChanged={() => {
+          window.dispatchEvent(new CustomEvent('srtaller:repairs-changed'));
+          load();
+        }}
+        onLocationChanged={() => {
           window.dispatchEvent(new CustomEvent('srtaller:repairs-changed'));
           load();
         }}

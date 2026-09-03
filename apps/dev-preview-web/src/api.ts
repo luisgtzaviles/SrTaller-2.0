@@ -69,7 +69,15 @@ export interface RepairDetail {
       label: string;
       tone: 'info' | 'warning' | 'success' | 'danger' | 'neutral';
     }>;
-    location: Readonly<{ label: string }> | null;
+    location: Readonly<{
+      id: string;
+      code: 'pending_area' | 'workshop';
+      category: 'pending_area' | 'workshop';
+      label: string;
+      movedAt: string;
+    }> | null;
+    locationVersion: number;
+    locationSource: 'history' | 'unrecorded';
     custody: Readonly<{
       code: CustodyStatusCode;
       label: string;
@@ -133,6 +141,20 @@ export interface StartRepairDiagnosisResponse {
     fromState: 'pending';
     toState: 'diagnosing';
     workflowVersion: number;
+    occurredAt: string;
+    actor: Readonly<{ id: string; displayName: string }>;
+  }>;
+}
+
+export interface MoveRepairToWorkshopResponse {
+  readonly item: Readonly<{
+    repairId: string;
+    movementId: string;
+    clientRequestId: string;
+    fromLocation: Readonly<{ id: string; code: 'pending_area'; label: string }>;
+    toLocation: Readonly<{ id: string; code: 'workshop'; label: string }>;
+    locationVersion: number;
+    reason: string | null;
     occurredAt: string;
     actor: Readonly<{ id: string; displayName: string }>;
   }>;
@@ -340,6 +362,13 @@ export function unassignRepairTechnician(repairId: string, request: Readonly<{ r
 
 export function startRepairDiagnosis(repairId: string, request: Readonly<{ clientRequestId: string; expectedVersion: number }>): Promise<StartRepairDiagnosisResponse> {
   return api<StartRepairDiagnosisResponse>(`/api/repairs/${encodeURIComponent(repairId)}/workflow/start-diagnosis`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export function moveRepairToWorkshop(repairId: string, request: Readonly<{ clientRequestId: string; expectedVersion: number; reason?: string | null }>): Promise<MoveRepairToWorkshopResponse> {
+  return api<MoveRepairToWorkshopResponse>(`/api/repairs/${encodeURIComponent(repairId)}/location/move-to-workshop`, {
     method: 'POST',
     body: JSON.stringify(request),
   });
