@@ -6,6 +6,7 @@ import { GetRepairEvidenceContentUseCase } from './application/use-cases/get-rep
 import { AddRepairOperationalNoteUseCase } from './application/use-cases/add-repair-operational-note.use-case.js';
 import { ListRepairTechniciansUseCase } from './application/use-cases/list-repair-technicians.use-case.js';
 import { AssignRepairTechnicianUseCase, ReassignRepairTechnicianUseCase, UnassignRepairTechnicianUseCase } from './application/use-cases/technician-assignment.use-case.js';
+import { StartRepairDiagnosisUseCase } from './application/use-cases/start-repair-diagnosis.use-case.js';
 import type { RepairRepositoryPort } from './application/ports/repair-repository.port.js';
 import { LocalRepairContext } from './infrastructure/context/local-repair-context.js';
 import { createKyselyRepairRepository } from './infrastructure/persistence/kysely-repair.repository.js';
@@ -87,6 +88,11 @@ export const REPAIR_EVIDENCE_STORAGE = Symbol('srtaller.repairs.evidence-storage
       provide: UnassignRepairTechnicianUseCase,
       inject: [REPAIR_REPOSITORY, LocalRepairContext],
       useFactory: (repository: RepairRepositoryPort, context: LocalRepairContext): UnassignRepairTechnicianUseCase => new UnassignRepairTechnicianUseCase(repository, () => context.resolve()),
+    },
+    {
+      provide: StartRepairDiagnosisUseCase,
+      inject: [REPAIR_REPOSITORY, LocalRepairContext],
+      useFactory: (repository: RepairRepositoryPort, context: LocalRepairContext): StartRepairDiagnosisUseCase => new StartRepairDiagnosisUseCase(repository, () => context.resolve()),
     },
   ],
 })

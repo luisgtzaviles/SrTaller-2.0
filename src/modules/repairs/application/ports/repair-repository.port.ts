@@ -42,6 +42,10 @@ export interface RepairDetailRecord {
   readonly technicianDisplayName: string | null;
   readonly technicianSummary: TechnicianSummaryRecord;
   readonly repairStatus: RepairStatusCode;
+  readonly workflowSummary: Readonly<{
+    version: number;
+    source: 'history' | 'synthetic_projection';
+  }>;
   readonly currentLocation: null;
   readonly custodyStatus: CustodyStatusCode;
   readonly timeline: Readonly<{
@@ -210,6 +214,36 @@ export class RepairTechnicianEligibilityError extends Error {
   constructor() { super('Technician is not eligible for this context.'); this.name = 'RepairTechnicianEligibilityError'; }
 }
 
+export interface StartRepairDiagnosisRecord {
+  readonly repairId: string;
+  readonly transitionId: string;
+  readonly timelineEntryId: string;
+  readonly clientRequestId: string;
+  readonly actorId: string;
+  readonly actorDisplayName: string;
+  readonly occurredAt: Date;
+  readonly expectedVersion: number;
+  readonly workflowVersion: number;
+  readonly fromState: 'pending';
+  readonly toState: 'diagnosing';
+}
+
+export class RepairWorkflowIdempotencyConflictError extends Error {
+  constructor() { super('Workflow request was reused with different content.'); this.name = 'RepairWorkflowIdempotencyConflictError'; }
+}
+
+export class RepairWorkflowConcurrencyConflictError extends Error {
+  constructor() { super('Workflow version is stale.'); this.name = 'RepairWorkflowConcurrencyConflictError'; }
+}
+
+export class RepairWorkflowStateConflictError extends Error {
+  constructor() { super('Workflow state does not allow this command.'); this.name = 'RepairWorkflowStateConflictError'; }
+}
+
+export class RepairWorkflowCustodyConflictError extends Error {
+  constructor() { super('Ended custody does not allow this command.'); this.name = 'RepairWorkflowCustodyConflictError'; }
+}
+
 export interface RepairRepositoryPort {
   listWorklist(
     scope: RepairPersistenceScope,
@@ -238,6 +272,10 @@ export interface RepairRepositoryPort {
     scope: RepairPersistenceScope,
     input: UnassignRepairTechnicianRecord,
   ): Promise<UnassignRepairTechnicianRecord | null>;
+  startRepairDiagnosis(
+    scope: RepairPersistenceScope,
+    input: StartRepairDiagnosisRecord,
+  ): Promise<StartRepairDiagnosisRecord | null>;
   getRepairEvidenceById(
     scope: RepairPersistenceScope,
     repairId: string,

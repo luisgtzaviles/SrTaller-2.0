@@ -22,15 +22,16 @@ import type {
   RepairTechnicianRecord,
   TechnicianAssignmentHistoryRecord,
   ReassignRepairTechnicianRecord,
+  StartRepairDiagnosisRecord,
   UnassignRepairTechnicianRecord,
 } from '../../application/ports/repair-repository.port.js';
-import { RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError } from '../../application/ports/repair-repository.port.js';
+import { RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
 import {
   custodyStatusCodes,
   repairStatusCodes,
 } from '../../domain/repair-status.js';
 
-type RepairTables = 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments';
+type RepairTables = 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions';
 type RepairExecutor = Kysely<Pick<DatabaseSchema, RepairTables>>;
 type ExecuteRepairOperation<Result> = InternalDatabasePersistenceOperation<'repairs', Result>;
 
@@ -80,8 +81,10 @@ function literalLikePattern(value: string): string {
   return `%${value.replace(/[\\%_]/gu, '\\$&')}%`;
 }
 
-function mapRepair(row: RepairRow): RepairWorklistRecord {
-  if (!repairStatusCodes.includes(row.repair_status as (typeof repairStatusCodes)[number])) {
+type RepairWorklistProjection = RepairRow & Readonly<{ projected_repair_status: string }>;
+
+function mapRepair(row: RepairWorklistProjection): RepairWorklistRecord {
+  if (!repairStatusCodes.includes(row.projected_repair_status as (typeof repairStatusCodes)[number])) {
     throw new Error('Database contains an unknown repair status.');
   }
   if (!custodyStatusCodes.includes(row.custody_status as (typeof custodyStatusCodes)[number])) {
@@ -98,13 +101,13 @@ function mapRepair(row: RepairRow): RepairWorklistRecord {
     reportedIssue: row.reported_issue,
     technicianId: row.technician_id,
     technicianDisplayName: row.technician_display_name,
-    repairStatus: row.repair_status as RepairWorklistRecord['repairStatus'],
+    repairStatus: row.projected_repair_status as RepairWorklistRecord['repairStatus'],
     custodyStatus: row.custody_status as RepairWorklistRecord['custodyStatus'],
   });
 }
 
 function technicianProjection(
-  row: RepairRow,
+  row: RepairWorklistProjection,
   assignment: AssignmentProjection | undefined,
 ): RepairWorklistRecord {
   return mapRepair({
@@ -132,6 +135,8 @@ interface RepairDetailProjection {
   readonly technician_id: string | null;
   readonly technician_display_name: string | null;
   readonly repair_status: string;
+  readonly projected_repair_status: string;
+  readonly workflow_version: number;
   readonly custody_status: string;
 }
 
@@ -235,7 +240,7 @@ function mapRepairDetail(
   assignmentHistory: readonly TechnicianAssignmentHistoryRecord[] = [],
   assignmentVersion = assignmentHistory.length,
 ): RepairDetailRecord {
-  if (!repairStatusCodes.includes(row.repair_status as (typeof repairStatusCodes)[number])) {
+  if (!repairStatusCodes.includes(row.projected_repair_status as (typeof repairStatusCodes)[number])) {
     throw new Error('Database contains an unknown repair status.');
   }
   if (!custodyStatusCodes.includes(row.custody_status as (typeof custodyStatusCodes)[number])) {
@@ -266,7 +271,11 @@ function mapRepairDetail(
       historyCount: assignmentHistory.length,
       history: Object.freeze([...assignmentHistory]),
     }),
-    repairStatus: row.repair_status as RepairDetailRecord['repairStatus'],
+    repairStatus: row.projected_repair_status as RepairDetailRecord['repairStatus'],
+    workflowSummary: Object.freeze({
+      version: Number(row.workflow_version),
+      source: Number(row.workflow_version) > 0 ? 'history' : 'synthetic_projection',
+    }),
     currentLocation: null,
     custodyStatus: row.custody_status as RepairDetailRecord['custodyStatus'],
     timeline: Object.freeze({
@@ -303,6 +312,20 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       ) {
         throw new RepairTechnicianConcurrencyConflictError();
       }
+      throw error;
+    }
+  }
+
+  async #runWorkflowTransaction<Result>(operation: ExecuteRepairOperation<Result>): Promise<Result> {
+    try {
+      return await this.executeTransaction(operation);
+    } catch (error: unknown) {
+      if (
+        error instanceof DatabaseTransactionError &&
+        (error.code === 'DATABASE_TRANSACTION_SERIALIZATION_FAILURE' ||
+          error.code === 'DATABASE_TRANSACTION_DEADLOCK' ||
+          error.code === 'DATABASE_TRANSACTION_NESTED_FORBIDDEN')
+      ) throw new RepairWorkflowConcurrencyConflictError();
       throw error;
     }
   }
@@ -416,10 +439,25 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .whereRef('repair_technicians.tenant_id', '=', 'repair_technician_assignments.tenant_id')
         .where('repair_technician_assignments.ended_at', 'is', null)
         .execute();
+      const workflowTransitions = rows.length === 0 ? [] : await executor
+        .selectFrom('repair_workflow_transitions')
+        .select(['repair_id', 'to_state', 'workflow_version'])
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', 'in', rows.map((row) => row.repair_id))
+        .orderBy('workflow_version', 'desc')
+        .execute();
+      const workflowByRepair = new Map<string, string>();
+      for (const transition of workflowTransitions) {
+        if (!workflowByRepair.has(transition.repair_id)) workflowByRepair.set(transition.repair_id, transition.to_state);
+      }
       const assignmentByRepair = new Map(activeAssignments.map((assignment) => [assignment.repair_id, assignment as AssignmentProjection]));
       const totalCount = Number(total.count);
       return Object.freeze({
-        items: Object.freeze(rows.map((row) => technicianProjection(row, assignmentByRepair.get(row.repair_id)))),
+        items: Object.freeze(rows.map((row) => technicianProjection({
+          ...row,
+          projected_repair_status: workflowByRepair.get(row.repair_id) ?? row.repair_status,
+        }, assignmentByRepair.get(row.repair_id)))),
         page: validatedQuery.page,
         pageSize: validatedQuery.pageSize,
         totalCount,
@@ -490,7 +528,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .where('repair_id', '=', repairId)
         .where('source', '=', 'local.technician_assignment')
         .where('title', '=', 'Asignación retirada');
-      const [timelineRows, timelineCount, evidenceRows, evidenceCount, assignmentRows, unassignmentCount] = await Promise.all([
+      const [timelineRows, timelineCount, evidenceRows, evidenceCount, assignmentRows, unassignmentCount, workflowTransition] = await Promise.all([
         timelineScope
           .select([
             'entry_id',
@@ -550,11 +588,22 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           .orderBy('repair_technician_assignments.assignment_sequence', 'desc')
           .execute(),
         assignmentUnassignmentCount.executeTakeFirstOrThrow(),
+        executor
+          .selectFrom('repair_workflow_transitions')
+          .select(['to_state', 'workflow_version'])
+          .where('tenant_id', '=', validatedScope.tenantId)
+          .where('branch_id', '=', validatedScope.branchId)
+          .where('repair_id', '=', repairId)
+          .orderBy('workflow_version', 'desc')
+          .limit(1)
+          .executeTakeFirst(),
       ]);
       const assignments = assignmentRows as readonly AssignmentProjection[];
       const activeAssignment = assignments.find((assignment) => assignment.ended_at === null);
       const projectedRow = {
         ...row,
+        projected_repair_status: workflowTransition?.to_state ?? row.repair_status,
+        workflow_version: workflowTransition?.workflow_version ?? 0,
         technician_id: activeAssignment?.technician_id ?? null,
         technician_display_name: activeAssignment?.technician_display_name ?? null,
       };
@@ -803,6 +852,116 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       await executor.updateTable('repair_technician_assignments').set({ ended_at: input.occurredAt, ended_by_actor_id: input.actorId, ended_by_actor_display_name: input.actorDisplayName, reason: input.reason, ended_client_request_id: input.clientRequestId }).where('assignment_id', '=', active.assignment_id).execute();
       await this.#timelineEvent(executor, validatedScope, input.repairId, randomUUID(), input.clientRequestId, input.actorId, input.actorDisplayName, 'Asignación retirada', `${active.technician_display_name} quedó sin asignación activa${input.reason ? ` · ${input.reason}` : ''}`, input.occurredAt);
       return Object.freeze({ ...input, assignmentId: active.assignment_id, previousTechnicianId: active.technician_id, previousTechnicianDisplayName: active.technician_display_name, version: version + 1 });
+    });
+    if (outcome && 'error' in outcome) throw outcome.error;
+    return outcome;
+  }
+
+  async startRepairDiagnosis(scope: RepairPersistenceScope, input: StartRepairDiagnosisRecord): Promise<StartRepairDiagnosisRecord | null> {
+    const validatedScope = validateScope(scope);
+    type WorkflowOutcome = StartRepairDiagnosisRecord | null | Readonly<{ error: Error }>;
+    const outcome = await this.#runWorkflowTransaction<WorkflowOutcome>(async (executor) => {
+      const repair = await executor
+        .selectFrom('repairs')
+        .select(['repair_id', 'repair_status', 'custody_status'])
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', input.repairId)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!repair) return null;
+
+      const existing = await executor
+        .selectFrom('repair_workflow_transitions')
+        .selectAll()
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', input.repairId)
+        .where('client_request_id', '=', input.clientRequestId)
+        .executeTakeFirst();
+      if (existing) {
+        if (existing.command !== 'start_diagnosis' || existing.expected_workflow_version !== input.expectedVersion) {
+          return Object.freeze({ error: new RepairWorkflowIdempotencyConflictError() });
+        }
+        const timeline = await executor
+          .selectFrom('repair_timeline_entries')
+          .select('entry_id')
+          .where('tenant_id', '=', validatedScope.tenantId)
+          .where('branch_id', '=', validatedScope.branchId)
+          .where('repair_id', '=', input.repairId)
+          .where('client_request_id', '=', input.clientRequestId)
+          .where('source', '=', 'local.workflow')
+          .executeTakeFirstOrThrow();
+        return Object.freeze({
+          repairId: existing.repair_id,
+          transitionId: existing.transition_id,
+          timelineEntryId: timeline.entry_id,
+          clientRequestId: existing.client_request_id,
+          actorId: existing.actor_id,
+          actorDisplayName: existing.actor_display_name,
+          occurredAt: existing.occurred_at,
+          expectedVersion: existing.expected_workflow_version,
+          workflowVersion: existing.workflow_version,
+          fromState: 'pending' as const,
+          toState: 'diagnosing' as const,
+        });
+      }
+
+      const latest = await executor
+        .selectFrom('repair_workflow_transitions')
+        .selectAll()
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', input.repairId)
+        .orderBy('workflow_version', 'desc')
+        .limit(1)
+        .executeTakeFirst();
+      const currentVersion = latest?.workflow_version ?? 0;
+      const currentState = latest?.to_state ?? repair.repair_status;
+      if (currentVersion !== input.expectedVersion) return Object.freeze({ error: new RepairWorkflowConcurrencyConflictError() });
+      if (currentState !== 'pending') return Object.freeze({ error: new RepairWorkflowStateConflictError() });
+      if (repair.custody_status !== 'active') return Object.freeze({ error: new RepairWorkflowCustodyConflictError() });
+
+      const workflowVersion = currentVersion + 1;
+      await executor.insertInto('repair_workflow_transitions').values({
+        transition_id: input.transitionId,
+        tenant_id: validatedScope.tenantId,
+        branch_id: validatedScope.branchId,
+        repair_id: input.repairId,
+        command: 'start_diagnosis',
+        from_state: 'pending',
+        to_state: 'diagnosing',
+        actor_id: input.actorId,
+        actor_display_name: input.actorDisplayName,
+        occurred_at: input.occurredAt,
+        reason: null,
+        client_request_id: input.clientRequestId,
+        expected_workflow_version: input.expectedVersion,
+        workflow_version: workflowVersion,
+      }).execute();
+      await executor.insertInto('repair_timeline_entries').values({
+        entry_id: input.timelineEntryId,
+        tenant_id: validatedScope.tenantId,
+        branch_id: validatedScope.branchId,
+        repair_id: input.repairId,
+        entry_type: 'system_event',
+        actor_id: input.actorId,
+        actor_display_name: input.actorDisplayName,
+        title: 'Diagnóstico iniciado',
+        body: `${input.actorDisplayName} inició el diagnóstico.`,
+        source: 'local.workflow',
+        client_request_id: input.clientRequestId,
+        occurred_at: input.occurredAt,
+        created_at: input.occurredAt,
+      }).execute();
+      await executor
+        .updateTable('repairs')
+        .set({ repair_status: 'diagnosing' })
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', input.repairId)
+        .executeTakeFirstOrThrow();
+      return Object.freeze({ ...input, workflowVersion });
     });
     if (outcome && 'error' in outcome) throw outcome.error;
     return outcome;
