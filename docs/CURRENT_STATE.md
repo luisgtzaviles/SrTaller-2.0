@@ -18,6 +18,18 @@
 
 ## Addendum local no integrado — Repairs
 
+### D6.2 candidato local no integrado
+
+La rama `feature/repair-location-d6-2-local`, creada desde `main` en
+`ef63b117553b0105514df02e08bc04090026c414`, materializa exclusivamente el
+movimiento interno `Área de pendientes → Taller`: catálogo scoped,
+movimientos append-only, versión propia, idempotencia/concurrencia, Timeline y
+control focal en Repair Detail. No modifica Workflow, Technician o Custody y
+no añade Location a Worklist. La validación Owner local pasó sin hallazgos
+abiertos; el candidato sigue sin integración ni deploy.
+
+Contrato y límites: [D6.2 Local Internal Location](domain-validation/operational-workflow-and-traceability/D6_2_LOCAL_INTERNAL_LOCATION.md).
+
 La rama local `feature/branch-brand-color-owner-iteration`, basada en
 `483110c0afe8574d0bde8355e0f16a7155ac50c2`, contiene un candidato de
 integración aún no promovido a `main` que incluye Repairs Worklist, Repair
