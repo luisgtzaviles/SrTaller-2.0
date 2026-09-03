@@ -29,6 +29,9 @@ const tables = [
   'repair_attachments',
   'repair_timeline_entries',
   'repair_intakes',
+  'repair_technician_assignments',
+  'repair_technician_branches',
+  'repair_technicians',
   'repairs',
   'branches',
   'tenants',
@@ -154,6 +157,30 @@ async function seed(admin) {
     [repairA, tenantA, branchA, repairPercent, repairB, tenantB, createdAt, actorId, branchB],
   );
   await admin.query(
+    `insert into repair_technicians (technician_id, tenant_id, display_name, active, created_at)
+     values ('00000000-0000-4000-8000-000000000201', $1, 'Ana Técnica', true, $3),
+            ('00000000-0000-4000-8000-000000000202', $1, 'Bruno Técnico', true, $3),
+            ('00000000-0000-4000-8000-000000000211', $2, 'Técnico B', true, $3)`,
+    [tenantA, tenantB, createdAt],
+  );
+  await admin.query(
+    `insert into repair_technician_branches (tenant_id, branch_id, technician_id, created_at)
+     values ($1, $2, '00000000-0000-4000-8000-000000000201', $3),
+            ($1, $2, '00000000-0000-4000-8000-000000000202', $3),
+            ($4, $5, '00000000-0000-4000-8000-000000000211', $3)`,
+    [tenantA, branchA, createdAt, tenantB, branchB],
+  );
+  await admin.query(
+    `insert into repair_technician_assignments (
+       assignment_id, tenant_id, branch_id, repair_id, technician_id,
+       assigned_by_actor_id, assigned_by_actor_display_name, assigned_at,
+       client_request_id, assignment_sequence
+     ) values ('a0000000-0000-4000-8000-000000000001', $1, $2, $3,
+       '00000000-0000-4000-8000-000000000201', $4, 'Operador sintético', $5,
+       'b0000000-0000-4000-8000-000000000001', 1)`,
+    [tenantA, branchA, repairPercent, actorId, createdAt],
+  );
+  await admin.query(
     `insert into repair_intakes (
        repair_id, tenant_id, branch_id, device_color, received_by_id,
        received_by_display_name, customer_narrative, physical_condition_summary,
@@ -226,7 +253,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 6);
+      assert.equal(applied.status.migrations.length, 9);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
 
@@ -240,7 +267,15 @@ test(
       const allA = await repository.listWorklist(scopeA, listQuery());
       assert.equal(allA.totalCount, 2);
       assert.deepEqual(allA.items.map(({ id }) => id), [repairA, repairPercent]);
-      assert.equal(allA.technicians.length, 1);
+      assert.equal(allA.technicians.length, 2);
+      await assert.rejects(
+        admin.query(
+          `insert into repair_technician_branches (tenant_id, branch_id, technician_id, created_at)
+           values ($1, $2, '00000000-0000-4000-8000-000000000211', $3)`,
+          [tenantA, branchA, '2026-08-21T12:00:00.000Z'],
+        ),
+        (error) => error?.code === '23503',
+      );
       assert.equal((await repository.listWorklist(scopeB, listQuery())).totalCount, 1);
       assert.equal((await repository.listWorklist(scopeA, listQuery({ period: 'today' }))).totalCount, 1);
       assert.equal((await repository.listWorklist(scopeA, listQuery({ q: '%' }))).items[0]?.id, repairPercent);

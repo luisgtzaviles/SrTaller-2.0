@@ -42,7 +42,7 @@ test('existing repair detail endpoint exposes timeline plus the single approved 
   assert.match(controllerSource, /timeline: \{[\s\S]*?items:[\s\S]*?occurredAt:[\s\S]*?actor:[\s\S]*?source:[\s\S]*?totalCount:[\s\S]*?limit:/u);
   assert.match(controllerSource, /@Post\(':repairId\/notes'\)/u);
   assert.doesNotMatch(controllerSource, /@(?:Patch|Put|Delete)|@Get\(':id\/timeline'\)/u);
-  assert.equal((controllerSource.match(/@Post\(/gu) ?? []).length, 1);
+  assert.match(controllerSource, /@Post\(':repairId\/technician-assignment'\)/u);
   assert.match(apiSource, /export type RepairTimelineItemType = 'note' \| 'system_event'/u);
   assert.match(apiSource, /readonly timeline: Readonly<\{[\s\S]*?items:[\s\S]*?totalCount:[\s\S]*?limit:/u);
 });
@@ -56,7 +56,7 @@ test('repair detail renders an accessible timeline, honest empty state, and boun
   assert.match(detailPageSource, /Las notas y actividades aparecerán aquí\./u);
   assert.match(detailPageSource, /timelineTypeLabel\(entry\.type\)/u);
   assert.match(detailPageSource, /entry\.actor\.displayName/u);
-  assert.doesNotMatch(detailPageSource, /Editar|Eliminar|Cambiar estado|Asignar técnico|Adjuntar|Guardar cambios|>Guardar</iu);
+  assert.doesNotMatch(detailPageSource, /Editar|Eliminar|Cambiar estado|Adjuntar|Guardar cambios|>Guardar</iu);
   assert.match(detailPageSource, /<form className=\{styles\.noteComposer\}/u);
   assert.match(detailPageSource, /<Textarea[\s\S]*?maxLength=\{noteBodyMaxLength\}/u);
   assert.match(pageStylesSource, /\.timelineList p \{[^}]*overflow-wrap: anywhere;[^}]*white-space: pre-wrap;/u);

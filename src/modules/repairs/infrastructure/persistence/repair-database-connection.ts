@@ -7,6 +7,8 @@ import type { DatabaseConnection } from '../../../../infrastructure/database/dat
 import {
   databasePersistenceCapability,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { databaseTransactionCapability } from '../../../../infrastructure/database/database-transaction-capability.js';
+import type { InternalDatabaseTransactionOperation, InternalDatabaseTransactionSettings } from '../../../../infrastructure/database/database-transaction-capability.js';
 import type {
   InternalDatabasePersistenceOperation,
   InternalDatabasePersistenceOwner,
@@ -21,6 +23,10 @@ type RepairDatabaseConnectionCapability = DatabaseConnection & {
     owner: Owner,
     operation: InternalDatabasePersistenceOperation<Owner, Result>,
   ) => Promise<Result>;
+  [databaseTransactionCapability]<Result>(
+    settings: InternalDatabaseTransactionSettings,
+    operation: InternalDatabaseTransactionOperation<Result>,
+  ): Promise<Result>;
 };
 
 @Injectable()
@@ -55,6 +61,15 @@ export class RepairDatabaseConnection implements OnModuleInit, OnModuleDestroy {
           throw new Error('Repair database connection is unavailable outside local development.');
         }
         return owner.#connection[databasePersistenceCapability](scope, operation);
+      },
+      [databaseTransactionCapability]: async <Result>(
+        settings: InternalDatabaseTransactionSettings,
+        operation: InternalDatabaseTransactionOperation<Result>,
+      ): Promise<Result> => {
+        if (!owner.#connection) {
+          throw new Error('Repair database connection is unavailable outside local development.');
+        }
+        return owner.#connection[databaseTransactionCapability](settings, operation);
       },
     };
   }

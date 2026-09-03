@@ -1,5 +1,5 @@
 import { Plus, Printer, Search, Smartphone, UserRound } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
 import { listRepairs } from '../api.js';
@@ -145,8 +145,15 @@ export function RepairsPage(): React.JSX.Element {
   const [failed, setFailed] = useState(false);
   const [retry, setRetry] = useState(0);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const initialLocationKey = useRef(location.key);
 
   useEffect(() => setQueryInput(filters.q), [filters.q]);
+
+  useEffect(() => {
+    if (location.key === initialLocationKey.current) return;
+    initialLocationKey.current = location.key;
+    setRetry((value) => value + 1);
+  }, [location.key]);
 
   const customRangeError = dateRangeError(filters);
   const hasDetailedFilters = Boolean(filters.status || filters.technicianId || filters.unassigned || filters.custody);
