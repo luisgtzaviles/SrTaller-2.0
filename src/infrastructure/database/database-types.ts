@@ -130,6 +130,38 @@ export interface RepairWorkflowTransitionTable {
   readonly workflow_version: ImmutableColumn<number>;
 }
 
+export interface RepairLocationTable {
+  readonly location_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly code: ImmutableColumn<string>;
+  readonly semantic_category: ImmutableColumn<string>;
+  readonly display_label: ImmutableColumn<string>;
+  readonly active: ImmutableColumn<boolean>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface RepairLocationMovementTable {
+  readonly movement_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly repair_id: ImmutableColumn<string>;
+  readonly command: ImmutableColumn<string>;
+  readonly from_location_id: ImmutableColumn<string | null>;
+  readonly to_location_id: ImmutableColumn<string>;
+  readonly from_code: ImmutableColumn<string | null>;
+  readonly from_label: ImmutableColumn<string | null>;
+  readonly to_code: ImmutableColumn<string>;
+  readonly to_label: ImmutableColumn<string>;
+  readonly actor_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+  readonly reason: ImmutableColumn<string | null>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly expected_location_version: ImmutableColumn<number>;
+  readonly location_version: ImmutableColumn<number>;
+}
+
 export interface DatabaseSchema {
   readonly tenants: TenantTable;
   readonly branches: BranchTable;
@@ -141,6 +173,8 @@ export interface DatabaseSchema {
   readonly repair_technician_branches: RepairTechnicianBranchTable;
   readonly repair_technician_assignments: RepairTechnicianAssignmentTable;
   readonly repair_workflow_transitions: RepairWorkflowTransitionTable;
+  readonly repair_locations: RepairLocationTable;
+  readonly repair_location_movements: RepairLocationMovementTable;
 }
 
 export type TenantRow = Selectable<TenantTable>;
@@ -174,3 +208,7 @@ export type RepairTechnicianAssignmentRow = Selectable<RepairTechnicianAssignmen
 export type NewRepairTechnicianAssignment = Insertable<RepairTechnicianAssignmentTable>;
 export type RepairWorkflowTransitionRow = Selectable<RepairWorkflowTransitionTable>;
 export type NewRepairWorkflowTransition = Insertable<RepairWorkflowTransitionTable>;
+export type RepairLocationRow = Selectable<RepairLocationTable>;
+export type NewRepairLocation = Insertable<RepairLocationTable>;
+export type RepairLocationMovementRow = Selectable<RepairLocationMovementTable>;
+export type NewRepairLocationMovement = Insertable<RepairLocationMovementTable>;

@@ -105,8 +105,11 @@ La baseline crea `tenants` y `branches`. La cadena local de Reparaciones añade
 `repairs` para Worklist, `repair_intakes` para D1,
 `repair_timeline_entries` para D2/D3 y `repair_attachments` para D4, más la
 restricción de idempotencia de notas operativas, las tablas D5 de técnicos y
-asignación, y `repair_workflow_transitions` para D6.1. Esta última conserva un
-historial append-only y sólo admite `pending → diagnosing`. No se inventan
+asignación, `repair_workflow_transitions` para D6.1, y
+`repair_locations`/`repair_location_movements` para D6.2. D6.1 conserva un
+historial append-only y sólo admite `pending → diagnosing`; D6.2 conserva un
+historial/versionado independiente y sólo admite `Área de pendientes → Taller`.
+No se inventan
 tablas de clientes, pagos ni otros módulos funcionales.
 
 ## Seed sintético V1
@@ -119,8 +122,9 @@ El seed usa el rol `application`, una transacción y upserts idempotentes. Crea
 un tenant técnico sintético, dos sucursales sintéticas y 15 reparaciones
 sintéticas mediante UUIDs fijos y fechas deterministas. También materializa
 intakes, timeline y referencias de evidencia sintéticas para D1, D2 y D4, el
-catálogo/asignaciones D5 y transiciones D6.1 deterministas para fixtures que ya
-se muestran en diagnóstico. Los datos de cliente son snapshots dentro de
+catálogo/asignaciones D5, transiciones D6.1 y colocaciones/movimientos D6.2
+deterministas. Una reparación conserva ubicación no registrada para probar la
+proyección honesta. Los datos de cliente son snapshots dentro de
 `repairs`; no existe una tabla de clientes ni se agregan importes o pagos.
 
 ## Reset y parada
@@ -157,6 +161,11 @@ El backend local arranca con `SR_DB_ROLE=application` y expone:
   local D6.1 con payload exacto `{ clientRequestId, expectedVersion }`; crea una
   transición estructurada `Pendiente → En diagnóstico`, incrementa sólo
   `workflowVersion` y deja Technician, Location y Custody sin cambios;
+- `POST http://127.0.0.1:3000/api/repairs/:id/location/move-to-workshop` —
+  command local D6.2 con payload exacto
+  `{ clientRequestId, expectedVersion, reason? }`; mueve únicamente
+  `Área de pendientes → Taller`, incrementa sólo `locationVersion` y registra
+  Timeline atómicamente;
 - al apagar PostgreSQL, `/livez` puede seguir 200 y `/readyz` debe fallar
   conforme al contrato de health.
 

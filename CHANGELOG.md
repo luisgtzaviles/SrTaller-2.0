@@ -28,6 +28,12 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Implementación
 
+- Materializado localmente D6.2 como command focal
+  `Área de pendientes → Taller`, con catálogo por sucursal, historial
+  append-only, versión e idempotencia independientes, transacción atómica con
+  Timeline y UI en Repair Detail. La validación Owner local pasó sin hallazgos
+  abiertos; el cambio permanece como candidato sin integración ni deploy.
+
 - La revisión independiente del candidato Repair Workstream corrigió la
   ambigüedad de idempotencia de D3 (retry idéntico frente a conflicto `409`),
   periodos relativos de Worklist, búsqueda literal de `%`/`_` y rollback seguro

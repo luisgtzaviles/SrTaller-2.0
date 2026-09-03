@@ -22,16 +22,17 @@ import type {
   RepairTechnicianRecord,
   TechnicianAssignmentHistoryRecord,
   ReassignRepairTechnicianRecord,
+  MoveRepairToWorkshopRecord,
   StartRepairDiagnosisRecord,
   UnassignRepairTechnicianRecord,
 } from '../../application/ports/repair-repository.port.js';
-import { RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
+import { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
 import {
   custodyStatusCodes,
   repairStatusCodes,
 } from '../../domain/repair-status.js';
 
-type RepairTables = 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions';
+type RepairTables = 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements';
 type RepairExecutor = Kysely<Pick<DatabaseSchema, RepairTables>>;
 type ExecuteRepairOperation<Result> = InternalDatabasePersistenceOperation<'repairs', Result>;
 
@@ -189,6 +190,15 @@ interface RepairEvidenceProjection {
   readonly caption: string | null;
 }
 
+interface LocationProjection {
+  readonly location_id: string;
+  readonly code: string;
+  readonly semantic_category: string;
+  readonly display_label: string;
+  readonly occurred_at: Date;
+  readonly location_version: number;
+}
+
 function mapEvidence(row: RepairEvidenceProjection): RepairEvidenceItemRecord {
   if (row.kind !== 'photo' || (row.category !== 'intake' && row.category !== 'general') || row.mime_type !== 'image/png') {
     throw new Error('Database contains unsupported repair evidence metadata.');
@@ -239,6 +249,7 @@ function mapRepairDetail(
   evidenceTotalCount: number,
   assignmentHistory: readonly TechnicianAssignmentHistoryRecord[] = [],
   assignmentVersion = assignmentHistory.length,
+  location?: LocationProjection,
 ): RepairDetailRecord {
   if (!repairStatusCodes.includes(row.projected_repair_status as (typeof repairStatusCodes)[number])) {
     throw new Error('Database contains an unknown repair status.');
@@ -276,7 +287,15 @@ function mapRepairDetail(
       version: Number(row.workflow_version),
       source: Number(row.workflow_version) > 0 ? 'history' : 'synthetic_projection',
     }),
-    currentLocation: null,
+    currentLocation: location ? Object.freeze({
+      id: location.location_id,
+      code: location.code as 'pending_area' | 'workshop',
+      category: location.semantic_category as 'pending_area' | 'workshop',
+      label: location.display_label,
+      movedAt: location.occurred_at.toISOString(),
+    }) : null,
+    locationVersion: location?.location_version ?? 0,
+    locationSource: location ? 'history' : 'unrecorded',
     custodyStatus: row.custody_status as RepairDetailRecord['custodyStatus'],
     timeline: Object.freeze({
       items: Object.freeze([...timelineItems]),
@@ -326,6 +345,20 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           error.code === 'DATABASE_TRANSACTION_DEADLOCK' ||
           error.code === 'DATABASE_TRANSACTION_NESTED_FORBIDDEN')
       ) throw new RepairWorkflowConcurrencyConflictError();
+      throw error;
+    }
+  }
+
+  async #runLocationTransaction<Result>(operation: ExecuteRepairOperation<Result>): Promise<Result> {
+    try {
+      return await this.executeTransaction(operation);
+    } catch (error: unknown) {
+      if (
+        error instanceof DatabaseTransactionError &&
+        (error.code === 'DATABASE_TRANSACTION_SERIALIZATION_FAILURE' ||
+          error.code === 'DATABASE_TRANSACTION_DEADLOCK' ||
+          error.code === 'DATABASE_TRANSACTION_NESTED_FORBIDDEN')
+      ) throw new RepairLocationConcurrencyConflictError();
       throw error;
     }
   }
@@ -528,7 +561,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .where('repair_id', '=', repairId)
         .where('source', '=', 'local.technician_assignment')
         .where('title', '=', 'Asignación retirada');
-      const [timelineRows, timelineCount, evidenceRows, evidenceCount, assignmentRows, unassignmentCount, workflowTransition] = await Promise.all([
+      const [timelineRows, timelineCount, evidenceRows, evidenceCount, assignmentRows, unassignmentCount, workflowTransition, locationMovement] = await Promise.all([
         timelineScope
           .select([
             'entry_id',
@@ -597,6 +630,26 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           .orderBy('workflow_version', 'desc')
           .limit(1)
           .executeTakeFirst(),
+        executor
+          .selectFrom('repair_location_movements')
+          .innerJoin('repair_locations', (join) => join
+            .onRef('repair_locations.location_id', '=', 'repair_location_movements.to_location_id')
+            .onRef('repair_locations.tenant_id', '=', 'repair_location_movements.tenant_id')
+            .onRef('repair_locations.branch_id', '=', 'repair_location_movements.branch_id'))
+          .select([
+            'repair_locations.location_id',
+            'repair_locations.code',
+            'repair_locations.semantic_category',
+            'repair_locations.display_label',
+            'repair_location_movements.occurred_at',
+            'repair_location_movements.location_version',
+          ])
+          .where('repair_location_movements.tenant_id', '=', validatedScope.tenantId)
+          .where('repair_location_movements.branch_id', '=', validatedScope.branchId)
+          .where('repair_location_movements.repair_id', '=', repairId)
+          .orderBy('repair_location_movements.location_version', 'desc')
+          .limit(1)
+          .executeTakeFirst(),
       ]);
       const assignments = assignmentRows as readonly AssignmentProjection[];
       const activeAssignment = assignments.find((assignment) => assignment.ended_at === null);
@@ -615,6 +668,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         Number(evidenceCount.count),
         assignments.map(mapAssignmentHistory),
         assignments.length + Number(unassignmentCount.count),
+        locationMovement,
       );
     });
   }
@@ -962,6 +1016,131 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .where('repair_id', '=', input.repairId)
         .executeTakeFirstOrThrow();
       return Object.freeze({ ...input, workflowVersion });
+    });
+    if (outcome && 'error' in outcome) throw outcome.error;
+    return outcome;
+  }
+
+  async moveRepairToWorkshop(scope: RepairPersistenceScope, input: MoveRepairToWorkshopRecord): Promise<MoveRepairToWorkshopRecord | null> {
+    const validatedScope = validateScope(scope);
+    type LocationOutcome = MoveRepairToWorkshopRecord | null | Readonly<{ error: Error }>;
+    const outcome = await this.#runLocationTransaction<LocationOutcome>(async (executor) => {
+      const repair = await executor
+        .selectFrom('repairs')
+        .select(['repair_id', 'custody_status'])
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', input.repairId)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!repair) return null;
+
+      const existing = await executor
+        .selectFrom('repair_location_movements')
+        .selectAll()
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', input.repairId)
+        .where('client_request_id', '=', input.clientRequestId)
+        .executeTakeFirst();
+      if (existing) {
+        if (
+          existing.command !== 'move_to_workshop' ||
+          existing.expected_location_version !== input.expectedVersion ||
+          existing.reason !== input.reason
+        ) return Object.freeze({ error: new RepairLocationIdempotencyConflictError() });
+        const timeline = await executor
+          .selectFrom('repair_timeline_entries')
+          .select('entry_id')
+          .where('tenant_id', '=', validatedScope.tenantId)
+          .where('branch_id', '=', validatedScope.branchId)
+          .where('repair_id', '=', input.repairId)
+          .where('client_request_id', '=', input.clientRequestId)
+          .where('source', '=', 'local.location')
+          .executeTakeFirstOrThrow();
+        return Object.freeze({
+          repairId: existing.repair_id,
+          movementId: existing.movement_id,
+          timelineEntryId: timeline.entry_id,
+          clientRequestId: existing.client_request_id,
+          actorId: existing.actor_id,
+          actorDisplayName: existing.actor_display_name,
+          occurredAt: existing.occurred_at,
+          expectedVersion: existing.expected_location_version,
+          locationVersion: existing.location_version,
+          reason: existing.reason,
+          fromLocation: Object.freeze({ id: existing.from_location_id!, code: 'pending_area' as const, label: existing.from_label! }),
+          toLocation: Object.freeze({ id: existing.to_location_id, code: 'workshop' as const, label: existing.to_label }),
+        });
+      }
+
+      const current = await executor
+        .selectFrom('repair_location_movements')
+        .selectAll()
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', input.repairId)
+        .orderBy('location_version', 'desc')
+        .limit(1)
+        .executeTakeFirst();
+      const currentVersion = current?.location_version ?? 0;
+      if (currentVersion !== input.expectedVersion) return Object.freeze({ error: new RepairLocationConcurrencyConflictError() });
+      if (repair.custody_status !== 'active') return Object.freeze({ error: new RepairLocationCustodyConflictError() });
+      if (!current || current.to_code !== 'pending_area') return Object.freeze({ error: new RepairLocationStateConflictError() });
+
+      const workshop = await executor
+        .selectFrom('repair_locations')
+        .select(['location_id', 'code', 'display_label'])
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('code', '=', 'workshop')
+        .where('semantic_category', '=', 'workshop')
+        .where('active', '=', true)
+        .executeTakeFirst();
+      if (!workshop) return Object.freeze({ error: new RepairLocationConfigurationError() });
+
+      const locationVersion = currentVersion + 1;
+      await executor.insertInto('repair_location_movements').values({
+        movement_id: input.movementId,
+        tenant_id: validatedScope.tenantId,
+        branch_id: validatedScope.branchId,
+        repair_id: input.repairId,
+        command: 'move_to_workshop',
+        from_location_id: current.to_location_id,
+        to_location_id: workshop.location_id,
+        from_code: current.to_code,
+        from_label: current.to_label,
+        to_code: workshop.code,
+        to_label: workshop.display_label,
+        actor_id: input.actorId,
+        actor_display_name: input.actorDisplayName,
+        occurred_at: input.occurredAt,
+        reason: input.reason,
+        client_request_id: input.clientRequestId,
+        expected_location_version: input.expectedVersion,
+        location_version: locationVersion,
+      }).execute();
+      await executor.insertInto('repair_timeline_entries').values({
+        entry_id: input.timelineEntryId,
+        tenant_id: validatedScope.tenantId,
+        branch_id: validatedScope.branchId,
+        repair_id: input.repairId,
+        entry_type: 'system_event',
+        actor_id: input.actorId,
+        actor_display_name: input.actorDisplayName,
+        title: 'Equipo movido',
+        body: `${current.to_label} → ${workshop.display_label}${input.reason ? ` · ${input.reason}` : ''}`,
+        source: 'local.location',
+        client_request_id: input.clientRequestId,
+        occurred_at: input.occurredAt,
+        created_at: input.occurredAt,
+      }).execute();
+      return Object.freeze({
+        ...input,
+        locationVersion,
+        fromLocation: Object.freeze({ id: current.to_location_id, code: 'pending_area' as const, label: current.to_label }),
+        toLocation: Object.freeze({ id: workshop.location_id, code: 'workshop' as const, label: workshop.display_label }),
+      });
     });
     if (outcome && 'error' in outcome) throw outcome.error;
     return outcome;
