@@ -105,7 +105,7 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 |---|---|
 | Sprint activo | Sprint 01 |
 | Sprint 01 | Active — PBI-027 es el único trabajo en ejecución |
-| PBI actual | PBI-027 — Branch Timezone Minimum (`In progress`) |
+| PBI actual | PBI-027 — Branch Timezone Minimum (`In review`, Draft PR #19) |
 | Siguiente candidato | PBI-029, seleccionado solamente y no iniciado |
 | WIP permitido | Uno |
 

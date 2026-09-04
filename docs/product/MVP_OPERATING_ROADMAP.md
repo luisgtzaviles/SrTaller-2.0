@@ -11,7 +11,7 @@
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** Sprint 01.
-- **Sprint 01:** `Active — PBI-027 In progress`.
+- **Sprint 01:** `Active — PBI-027 In review (Draft PR #19)`.
 - **PBI actual:** [PBI-027](../backlog/pbis/PBI-027.md).
 - **Siguiente PBI candidato:** [PBI-029](../backlog/pbis/PBI-029.md),
   seleccionado solamente; no iniciado ni autorizado.
@@ -99,7 +99,7 @@ ejecución local.
 | Sprint status | Active — WIP=1 |
 | Current PBI | PBI-027 — Branch Timezone Minimum |
 | Next PBI candidate | PBI-029 — Secrets and External Configuration |
-| PBI-027 status | In progress — local implementation authorized |
+| PBI-027 status | In review — Draft PR #19; CI and Owner Review pending |
 | Blocking gate | Owner Review, merge autorizado y CI de `main` |
 
 ## Fases aprobadas
