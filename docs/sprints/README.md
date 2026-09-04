@@ -5,8 +5,10 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 ## Estado del documento
 
 **Estado:** Sprint 00 `Closed`.
-**Sprint documentado:** únicamente [SPRINT-00](sprint-00/SPRINT_GOAL.md).
-**Sprints de implementación:** ninguno creado.
+**Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed` y
+[SPRINT-01](sprint-01/SPRINT_GOAL.md) `Planned`.
+**Sprint activo:** ninguno; Sprint 01 está listo para considerar activación
+después de integrar la reconciliación y completar DoR/estimación de PBI-027.
 
 ## Reglas propuestas
 
@@ -16,6 +18,9 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 4. Cambiar clasificación exige registrar motivo e impacto en el objetivo.
 5. Review evalúa resultados/evidencia; retrospectiva mejora el proceso sin reemplazar decisiones de producto.
 6. Cerrar un sprint no cambia automáticamente ADRs ni autoriza un release.
+7. El MVP Operativo usa WIP=1: máximo un PBI actual en ejecución o cierre.
+8. El PR documental de cierre selecciona el PBI siguiente, pero no autoriza su
+   implementación.
 
 ## SPRINT-00
 
@@ -29,6 +34,19 @@ Sus documentos son:
 - [Review](sprint-00/REVIEW.md)
 - [Retrospectiva](sprint-00/RETROSPECTIVE.md)
 
+## SPRINT-01
+
+SPRINT-01 está planificado para Identity & Context Foundation. Su backlog
+ordena PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033, uno a la vez. PBI-027 es
+el siguiente candidato, todavía no `Ready` de implementación, no iniciado y
+no autorizado.
+
+- [Objetivo](sprint-01/SPRINT_GOAL.md)
+- [Backlog](sprint-01/SPRINT_BACKLOG.md)
+- [Riesgos y bloqueos](sprint-01/RISKS_AND_BLOCKERS.md)
+- [Review](sprint-01/REVIEW.md)
+- [Retrospectiva](sprint-01/RETROSPECTIVE.md)
+
 ## Próxima revisión
 
-En la retrospectiva y al revisar los diferidos.
+Al integrar la reconciliación o completar la revisión DoR de PBI-027.

@@ -9,13 +9,14 @@ producto y condiciones pendientes antes de la siguiente iteración.
 
 ## Estado del documento
 
-**Estado:** Sprint 00 `Closed`; baseline técnica ejecutable materializada.
-**Fase:** desarrollo incremental sobre `main`; el alcance funcional sigue
-requiriendo tarea/PBI y autoridad explícita.
+**Estado:** Sprint 00 `Closed`; Sprint 01 `Planned — ready for activation`;
+PBI-030 con cierre aprobado e integración documental pendiente.
+**Fase:** Identity & Context Foundation preparada con WIP operacional uno; no
+existe Sprint activo ni PBI actual.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Gate actual de integración:** el CI canónico de `main` está verde en
-`f802feecbf1fb7b1c167b8d24f41f4e28db637d9`, run `32203154573`; véase
+`ead13ecbdb636afd4d9c2e6ecd34905343d165d4`, run `33810423743`; véase
 [Current Repository State](CURRENT_STATE.md#11-cicd).
 
 ## Revisión dirigida de Sprint 00
@@ -41,6 +42,7 @@ auditoría inicial, la remediación y el dictamen final:
 - [Visión](product/PRODUCT_VISION.md)
 - [Principios](product/PRODUCT_PRINCIPLES.md)
 - [Alcance](product/PRODUCT_SCOPE.md)
+- [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 - [Fuera de alcance](product/OUT_OF_SCOPE.md)
 - [Actores y personas](product/ACTORS_AND_PERSONAS.md)
 - [Glosario de dominio](product/DOMAIN_GLOSSARY.md)
@@ -56,11 +58,13 @@ auditoría inicial, la remediación y el dictamen final:
 - [PBI-030 — Acuerdo técnico de estimación](design-system/PBI_030_ESTIMATION_PROPOSAL.md)
 - [PBI-030 — Evidencia de implementación](quality/evidence/pbi-030/README.md)
 - [PBI-030 — Revisión independiente](quality/evidence/pbi-030/INDEPENDENT_REVIEW.md)
+- [PBI-030 — Auditoría final de cierre](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
 
 La dirección visual V1 y la implementación fueron autorizadas. PBI-030 tiene
-estimación `XL — agreed`, está integrado en `main` y permanece `In review`; no
-está desplegado ni `Done`. CI de PR, CI de `main` e independent review pasan;
-su DoD conserva evidencia AT parcial y Owner Acceptance pendientes.
+estimación `XL — agreed`, está integrado en `main` y tiene Owner Acceptance.
+El riesgo AT/cross-browser residual fue aceptado como LOW; no afirma
+certificación. Permanece `In review` hasta integrar el registro documental;
+deploy y `Released` siguen separados.
 
 ## Dominio operativo
 
@@ -144,7 +148,7 @@ su DoD conserva evidencia AT parcial y Owner Acceptance pendientes.
 - [Product backlog](backlog/PRODUCT_BACKLOG.md)
 - [Priorización](backlog/PRIORITIZATION_MODEL.md)
 - [Dependencias](backlog/DEPENDENCY_MAP.md)
-- [Plan de ejecución H1 para R0](backlog/R0_H1_EXECUTION_PLAN.md)
+- [Plan histórico de ejecución H1 para R0](backlog/R0_H1_EXECUTION_PLAN.md)
 - [Índice de PBIs](backlog/pbis/README.md)
 - [Guía de sprints](sprints/README.md)
 - [Objetivo de SPRINT-00](sprints/sprint-00/SPRINT_GOAL.md)
@@ -152,14 +156,15 @@ su DoD conserva evidencia AT parcial y Owner Acceptance pendientes.
 - [Riesgos y bloqueos](sprints/sprint-00/RISKS_AND_BLOCKERS.md)
 - [Review](sprints/sprint-00/REVIEW.md)
 - [Retrospectiva](sprints/sprint-00/RETROSPECTIVE.md)
+- [Objetivo de SPRINT-01](sprints/sprint-01/SPRINT_GOAL.md)
+- [Backlog de SPRINT-01](sprints/sprint-01/SPRINT_BACKLOG.md)
 
-Los archivos individuales PBI-001 a PBI-030 se encuentran enlazados desde el
+Los archivos individuales PBI-001 a PBI-036 se encuentran enlazados desde el
 [índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
-PBI-023 está `Closed`. PBI-024 tiene implementación y evidencia sólo en una
-rama/PR draft divergente; no está integrado en `main`, no está `Done` y su
-merge funcional permanece bloqueado por DEC051-C02. La autorización no alcanza
-PBI-025–PBI-029 ni modifica retrospectivamente Sprint 00. PBI-030 prepara la
-foundation visual y el shell como `Draft`, sin autorización de implementación.
+PBI-023 está `Closed`. PBI-024 fue acotado; la rama/PR histórica sólo sirve para
+recuperación selectiva. PBI-024–PBI-029 y PBI-031–PBI-036 forman la partición
+aprobada de Identity & Context. PBI-030 tiene cierre aprobado; `Done` será
+efectivo al integrar esta reconciliación en `main` con CI verde.
 
 ## Calidad
 

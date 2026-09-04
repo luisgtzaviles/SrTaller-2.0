@@ -33,6 +33,8 @@ Las secciones siguientes son plantillas para esos archivos.
 - Sprint: SPRINT-##
 - Periodo: TBD
 - Estado del sprint: Planned / Active / Closed / Cancelled
+- PBI actual: ninguno / PBI-###
+- WIP operacional: uno
 
 ## Objetivo
 [Un resultado coherente, no una lista de tareas.]
@@ -81,6 +83,16 @@ Las secciones siguientes son plantillas para esos archivos.
 |---|---|---|---|---|---|---|
 | PBI-### | TBD | EPIC-### | Committed | Ready | TBD | TBD |
 
+## PBI actual
+- PBI: ninguno / PBI-###
+- Estado: Ready / In progress / In review
+- Autorización de implementación: TBD
+
+## Siguiente seleccionado
+- PBI: ninguno / PBI-###
+- Estado: Ready / Ready for review / Blocked
+- Implementación iniciada: NO
+
 ## Candidatos
 | PBI | Motivo para ser candidato | Condición de entrada |
 |---|---|---|
@@ -109,7 +121,11 @@ Las secciones siguientes son plantillas para esos archivos.
 - Disparador: planificación, cambio de alcance o revisión del sprint.
 ```
 
-`Candidate` no es compromiso. Un elemento bloqueado no se cuenta como completado. La incorporación o retiro de un PBI debe conservar razón e impacto sobre el objetivo.
+`Candidate` no es compromiso. Un elemento bloqueado no se cuenta como
+completado. Un Sprint `Active` tiene exactamente un PBI actual y existe como
+máximo un PBI `In progress` o `In review`. La incorporación o retiro de un PBI
+debe conservar razón e impacto sobre el objetivo. Seleccionar el siguiente PBI
+no inicia su implementación.
 
 ---
 
@@ -246,5 +262,5 @@ Las secciones siguientes son plantillas para esos archivos.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** cierre de Sprint 00 o antes de crear Sprint 01.
+- **Disparador:** cambio del workflow WIP=1, cierre de un Sprint o creación del siguiente.
 - **Documentos relacionados:** [Development Workflow](./DEVELOPMENT_WORKFLOW.md), [PBI Template](./PBI_TEMPLATE.md), [Definition of Done](./DEFINITION_OF_DONE.md).

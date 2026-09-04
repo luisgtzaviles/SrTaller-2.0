@@ -19,9 +19,10 @@ capacidades operativas sin copiar el acoplamiento del sistema anterior. La
 dirección de producto se conserva en la [visión](../product/PRODUCT_VISION.md)
 y el [alcance](../product/PRODUCT_SCOPE.md).
 
-La baseline actual no es todavía un CRUD completo. Contiene una aplicación
-NestJS ejecutable, la Visual Slice 0 de Preview, PostgreSQL y la foundation de
-persistencia/migraciones sobre la cual se construirán rebanadas funcionales.
+La baseline actual no es todavía un producto E2E. Contiene una aplicación
+NestJS ejecutable, React/Vite, PostgreSQL y el Repair Workstream local con D5,
+D6.1 y D6.2. El actor y contexto local siguen siendo sintéticos; Identity &
+Context Foundation es la siguiente dirección aprobada.
 
 ## Jerarquía de autoridad documental
 
@@ -29,6 +30,7 @@ persistencia/migraciones sobre la cual se construirán rebanadas funcionales.
 |---|---|
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | Entrada obligatoria y lecturas mínimas antes de cambiar el proyecto. |
 | Este documento | Workflow end-to-end y clasificación `CURRENT` / `PLANNED` / `REQUIRED BEFORE PRODUCTION`. |
+| [MVP Operating Roadmap](../product/MVP_OPERATING_ROADMAP.md) | Fases aprobadas, Sprint/PBI actual, secuencia y gates del MVP. |
 | [BRANCH_POLICY.md](./BRANCH_POLICY.md) | Contrato de `main`, ramas temporales e integración. |
 | [DEPLOYMENT_STRATEGY.md](../architecture/DEPLOYMENT_STRATEGY.md) | Arquitectura OCI, runtime, routing y promoción. |
 | [ENVIRONMENTS.md](./ENVIRONMENTS.md) | Semántica y aislamiento de ambientes. |
@@ -94,7 +96,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `32217905296` on `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823` |
+| Authoritative CI at audited HEAD | Green: run `33810423743` on `ead13ecbdb636afd4d9c2e6ecd34905343d165d4` |
+| Program / phase | MVP Operating Roadmap / Identity & Context Foundation |
+| Sprint | SPRINT-01 `Planned — ready for activation`; no active Sprint |
+| Current / next PBI | Current: none; next candidate: PBI-027, DoR/estimation pending |
+| Current blocking gate | Integrate roadmap reconciliation into `main` with GREEN CI |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -115,13 +121,13 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Not materialized; `/api/preview/*` returns 404 |
+| Product API | Repair endpoints materialized for the local synthetic workflow; productive identity/context are not materialized |
 
 ## Current, planned and required before Production
 
 | Classification | Meaning | Items |
 |---|---|---|
-| `CURRENT` | Existe y puede verificarse ahora. | `main`, Dockerfile OCI, Dokploy Preview, Visual Slice 0, health, PostgreSQL 18.4 y migrador one-shot. |
+| `CURRENT` | Existe y puede verificarse ahora. | `main`, Dockerfile OCI, Dokploy Preview, health, React/Vite, PostgreSQL 18.4, migraciones y Repair Workstream local integrado. |
 | `PLANNED` | Dirección futura, no infraestructura existente ni autorización de creación. | Staging, Production, promoción por digest, Redis, workers, WAHA y R2 según necesidad. |
 | `REQUIRED BEFORE PRODUCTION` | Gate que debe resolverse antes de almacenar/operar datos reales. | Staging, artefacto inmutable promovible, backup/restore probado, RPO/RTO/retención, roles y accesos, observabilidad, rollback, autoridad Owner y seguridad operativa. |
 
@@ -130,9 +136,15 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 Este es el flujo normal. Un agente no inventa otro sin una decisión explícita.
 
 ```text
-Owner / Product decision
+Roadmap
         ↓
-task / PBI
+Sprint activo
+        ↓
+PBI actual
+        ↓
+Discovery / decisiones Owner si aplican
+        ↓
+autorización Owner de implementación
         ↓
 temporary branch
         ↓
@@ -148,18 +160,42 @@ explicit merge to main
         ↓
 push origin/main
         ↓
-Dokploy Preview deployment
+CI autoritativo de main GREEN
         ↓
-remote health/smoke verification
+Owner Acceptance
         ↓
-Owner/product validation
+Definition of Done y evidencia completas
         ↓
-next iteration
+PBI Done
+        ↓
+PR documental de avance
+        ↓
+siguiente PBI seleccionado, no iniciado
 ```
 
 La validación técnica, el merge, el deployment, la validación de producto y el
 cierre son estados distintos. Un resultado verde no autoriza automáticamente
 el paso siguiente.
+
+### WIP y avance documental
+
+- Existe como máximo un PBI operativo en ejecución o cierre.
+- El PBI siguiente puede estar ordenado o preparado, pero no se inicia por
+  efecto del cierre anterior.
+- El merge funcional conserva el PBI `In review` hasta que el CI del nuevo
+  `main`, la Owner Acceptance y la DoD aplicable pasen.
+- Después del cierre se prepara una rama `ops/pbi-###-roadmap-advance` desde el
+  nuevo `main`. Su PR actualiza PBI, backlog, Sprint, Roadmap y Current State y
+  selecciona el siguiente PBI sin autorizarlo.
+- Mientras `DEC051-C02` siga abierta, el PR documental requiere preflight,
+  revisión, CI y autorización Owner explícita de merge.
+- Si falta evidencia, aceptación o siguiente prioridad, el flujo falla cerrado
+  y no salta silenciosamente a otro PBI.
+- El PR documental no genera otro PR para cerrarse a sí mismo: su integración
+  materializa el estado documental reconciliado.
+
+`Done` y `Released` permanecen separados. Un deploy sólo aparece dentro del
+golden path de un PBI cuando su alcance o un release posterior lo autoriza.
 
 ## Contrato de `main` y ramas
 

@@ -30,6 +30,7 @@
 | Estimación | TBD |
 | Sprint | `Unassigned` o `SPRINT-##` |
 | Clasificación de sprint | `Unassigned` / `Committed` / `Candidate` / `Blocked` / `Requires product input` |
+| Selección operacional | `No seleccionado` / `PBI actual` / `Siguiente seleccionado` |
 | Responsable | TBD |
 
 ## Problema
@@ -141,6 +142,10 @@ Cada `No` relevante debe justificarse; `Por determinar` puede impedir Ready si a
 - **Defectos, deuda, waivers y condiciones:** TBD / Ninguno.
 - **Riesgos residuales:** TBD.
 - **Aprobación:** TBD.
+- **Merge funcional:** PR/SHA TBD / No aplica justificado.
+- **CI autoritativo de `main`:** run/SHA/resultado TBD / No aplica justificado.
+- **Owner Acceptance:** Pendiente / Aceptada con evidencia / No aplica justificado.
+- **Avance de roadmap:** PR documental TBD; siguiente PBI seleccionado pero no iniciado.
 - **Fecha de cierre:** TBD.
 
 ## Próxima revisión
@@ -158,6 +163,14 @@ Cada `No` relevante debe justificarse; `Por determinar` puede impedir Ready si a
 - No convertir hipótesis en reglas de negocio confirmadas.
 - No marcar `Ready` con preguntas bloqueantes abiertas.
 - Mantener `Estado` y `Clasificación de sprint` como campos independientes; `Committed` y `Requires product input` no son estados del lifecycle.
+- En operación normal, `PBI actual` sólo existe dentro de un Sprint `Active`;
+  una transición previa debe quedar registrada como gate externo explícito en
+  el roadmap y Sprint Backlog. WIP permite como máximo un PBI `In progress` o
+  `In review` en el workflow operativo.
+- `Ready` o `Siguiente seleccionado` no autorizan implementación.
+- No marcar `Done` sin merge, CI exacto de `main`, evidencia, DoD y Owner
+  Acceptance aplicables. El avance al siguiente PBI se materializa en un PR
+  documental separado.
 - Al copiar, convertir las rutas indicadas dentro del bloque en enlaces Markdown relativos y validar sus destinos desde `docs/backlog/pbis/`.
 - Vincular evidencia en vez de declarar “probado” sin soporte.
 - Para Sprint 00, redactar criterios como resultados documentales, no implementación.

@@ -2,20 +2,17 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado tras el cierre de Sprint 00. Las filas 1–20 conservan
-su clasificación histórica y muestran el resultado vigente; PBI-021/PBI-022
-son trabajos técnicos posteriores terminados; PBI-023 está `Closed`; PBI-024
-está implementado únicamente en una rama/PR draft divergente, no integrado en
-`main`, y con merge bloqueado por DEC051-C02; PBI-025–PBI-029 no están
-autorizados. PBI-030 está `In review` e integrado en `main` mediante PR #8; CI
-e independent review pasan. Preview, Owner Acceptance y la evidencia AT
-restante permanecen pendientes.
+**Estado:** Reconciliado con el MVP Operating Roadmap aprobado. PBI-001–PBI-023
+conservan su historia; PBI-024–PBI-029 fueron acotados conforme a Identity &
+Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
+tiene cierre aprobado y riesgo AT residual LOW aceptado; permanece `In review`
+hasta integrar esta reconciliación documental en `main`.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; las demás permanecen TBD.
 **Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
 
-| Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación SPRINT-00 |
+| Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
 |---:|---|---|---|---|---|---|
 | 1 | [PBI-001](pbis/PBI-001.md) Define product vision and principles | Discovery | EPIC-000 | Done | Alta | Committed |
 | 2 | [PBI-002](pbis/PBI-002.md) Identify actors and operational contexts | Discovery | EPIC-000 | Done | Alta | Requires product input |
@@ -40,13 +37,19 @@ T-shirt sizing; las demás permanecen TBD.
 | 21 | [PBI-021](pbis/PBI-021.md) Materialize and verify the DEC-004 toolchain contract | Technical foundation / Quality / Operations / Security | EPIC-001 | Done | Alta | Unassigned |
 | 22 | [PBI-022](pbis/PBI-022.md) Materialize DEC-005 modular structure and local enforcement | Technical foundation / Architecture / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 23 | [PBI-023](pbis/PBI-023.md) Establish tenant-scoped persistence and migration foundation | Persistence / Security / Quality | EPIC-001 | Closed | Crítica | Gate R0 |
-| 24 | [PBI-024](pbis/PBI-024.md) Apply trusted tenant, branch and station context | Architecture / Security | EPIC-001 | Implemented on divergent draft branch; not integrated / merge blocked | Crítica | Unassigned |
-| 25 | [PBI-025](pbis/PBI-025.md) Implement tenant-user PIN authentication and operational session | Identity / Security | EPIC-003 | Blocked | Crítica | Unassigned |
-| 26 | [PBI-026](pbis/PBI-026.md) Implement contextual capabilities and reinforced authorization | Authorization / Security | EPIC-003 | Draft | Crítica | Unassigned |
-| 27 | [PBI-027](pbis/PBI-027.md) Define and apply the R0 temporal model | Architecture / Product | EPIC-001 | Blocked | Alta | Unassigned |
-| 28 | [PBI-028](pbis/PBI-028.md) Implement safe logging, business audit and observability baseline | Operations / Security / Quality | EPIC-001 | Draft | Alta | Unassigned |
-| 29 | [PBI-029](pbis/PBI-029.md) Govern R0 secrets and external configuration | Security / Operations | EPIC-001 | Draft | Crítica | Unassigned |
-| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | In review — integrated in main; independent review approved; AT partial; Owner Acceptance pending | Alta | Unassigned |
+| 24 | [PBI-024](pbis/PBI-024.md) Trusted Station Runtime Context | Architecture / Security | EPIC-004 | Draft reconciliado | Crítica | Candidate Sprint 01 |
+| 25 | [PBI-025](pbis/PBI-025.md) PIN Credential Authentication | Identity / Security | EPIC-003 | Blocked por dependencias | Crítica | Candidate Sprint 01 |
+| 26 | [PBI-026](pbis/PBI-026.md) Contextual Authorization | Authorization / Security | EPIC-003 | Draft reconciliado | Crítica | Candidate Sprint 01 |
+| 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Ready candidate; DoR/estimation pending | Alta | Next candidate Sprint 01; not started |
+| 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | Draft reconciliado | Alta | Candidate Sprint 01 |
+| 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Draft reconciliado | Crítica | Candidate Sprint 01 |
+| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | In review — closure approved; documentary integration pending | Alta | Unassigned |
+| 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
+| 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
+| 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
+| 34 | [PBI-034](pbis/PBI-034.md) Operational Session | Identity / Security | EPIC-003 | Blocked por dependencias | Crítica | Candidate Sprint 01 |
+| 35 | [PBI-035](pbis/PBI-035.md) Reinforced Authorization | Authorization / Security | EPIC-003 | Draft / Deferred | Crítica | Unassigned |
+| 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
 
 ## Interpretación
 
@@ -57,17 +60,19 @@ T-shirt sizing; las demás permanecen TBD.
   compromiso original.
 - PBI-021/PBI-022 no se incorporan retroactivamente a Sprint 00: ambos están
   `Done`, pero su cierre no cierra el sprint.
-- PBI-023 está cerrado. PBI-024 conserva autorización limitada y una
-  implementación/evidencia en la PR draft #3, pero no está integrado en
-  `main`, la rama está divergente/conflictiva y su merge funcional permanece
-  bloqueado por DEC051-C02. PBI-025–PBI-029 no están autorizados. PBI-030 tiene
-  DoR `PASS`, estimación `XL — agreed` e implementación integrada `In review`;
-  no está `Done`, aceptado por Owner ni desplegado.
+- PBI-024 reemplaza su alcance histórico por Trusted Station Runtime Context.
+  La PR draft #3 es sólo fuente para recuperación selectiva; no se integra
+  completa ni hereda PASS actual.
+- PBI-025/PBI-026/PBI-028 fueron separados de Operational Session,
+  Reinforced Authorization y Extended Observability respectivamente.
+- PBI-027 tiene decisión de Branch timezone resuelta, pero no está `Ready`
+  hasta acordar estimación y completar DoR.
+- PBI-030 tiene implementación, revisión, Owner Acceptance y disposición de
+  riesgo aprobadas; `Done` será efectivo al integrar este registro en `main`.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-Decisión Owner sobre desplegar PBI-030 en Preview, evidencia AT/cross-browser y
-aceptación visual/de producto pendientes; además, decisión explícita sobre
-recuperar o descartar la implementación divergente de PBI-024.
+Integrar la reconciliación documental; después completar estimación y DoR de
+PBI-027 antes de cualquier activación o implementación.

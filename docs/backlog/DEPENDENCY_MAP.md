@@ -1,144 +1,81 @@
-# Mapa inicial de dependencias
+# Mapa de dependencias del MVP Operativo
 
 ## Estado del documento
 
-**Estado:** Hipótesis de secuencia documental; no representa calendario ni dependencias de código.
+- **Estado:** Reconciliado con el roadmap Owner aprobado.
+- **Baseline:** `main` en
+  `ead13ecbdb636afd4d9c2e6ecd34905343d165d4`.
+- **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
+  ni paralelismo de implementación.
+
+## Camino vigente
 
 ```mermaid
 flowchart TD
-    V[PBI-001 Visión y principios] --> S[PBI-003 Alcance]
-    A[PBI-002 Actores] --> S
-    V --> G[PBI-004 Glosario]
-    A --> G
-    G --> M[PBI-005 Módulos]
-    L[PBI-006 Lecciones legacy] --> M
-    S --> M
-    M --> MT[PBI-007 Multitenancy]
-    A --> IAM[PBI-008 Identidad y permisos]
-    MT --> IAM
-    IAM --> BD[PBI-009 Sucursales y dispositivos]
-    M --> APP[PBI-010 Arquitectura objetivo]
-    MT --> APP
-    MT --> DB[PBI-011 Base de datos]
-    APP --> API[PBI-012 Backend/API]
-    S --> WEB[PBI-013 Web/design system]
-    APP --> WEB
-    DSV1[Design System & Application Shell V1<br/>Owner direction approved] --> UI[PBI-030 UI Foundation/Shell<br/>In review / integrated]
-    WEB --> UI
-    APP --> UI
-    M --> RT[PBI-014 Realtime/messaging]
-    MT --> RT
-    APP --> RT
-    APP --> DEP[PBI-015 Ambientes/despliegue]
-    WF[PBI-016 Workflow documental] --> Q[PBI-017 Testing/aislamiento]
-    MT --> Q
-    IAM --> Q
-    APP --> Q
-    IAM --> SEC[PBI-018 Seguridad]
-    MT --> SEC
-    BD --> SEC
-    APP --> OBS[PBI-019 Observabilidad]
-    MT --> OBS
-    RT --> OBS
-    DEP --> OBS
-    V --> GATE[PBI-020 Preguntas/gates]
-    BD --> GATE
-    DB --> GATE
-    API --> GATE
-    WEB --> GATE
-    RT --> GATE
-    DEP --> GATE
-    Q --> GATE
-    SEC --> GATE
-    OBS --> GATE
-    API --> TOOL[PBI-021<br/>Done]
-    DEC004[DEC-004 Accepted<br/>Evidence Verified] --> TOOL
-    DEC051[DEC-051 Accepted<br/>C01/C07/C09 Satisfied] -. VC-024 .-> TOOL
-    TOOL --> VC[VC-001 a VC-024<br/>Closed / PASS]
-    DEC005[DEC-005 Accepted<br/>Materialized / Formally Verified] --> MOD[PBI-022<br/>Done]
-    MOD --> D5E[DEC005-C01 a C05<br/>PASS formal]
-    D5E --> DEC049[DEC-049 Accepted<br/>C01-C08 vigentes]
-    MOD -. no resuelve preguntas propias .-> DEC049
-    VC --> P23[PBI-023 persistencia tenant<br/>Closed]
-    DEC049 --> P23
-    DEC050[DEC-050 Accepted with conditions<br/>C01-C10 pending] --> P23
-    P23 --> P24[PBI-024 contexto<br/>draft branch / not integrated]
-    P24 --> P25[PBI-025 identidad/sesión<br/>Blocked]
-    P25 --> P26[PBI-026 autorización<br/>Draft]
-    P24 --> P28[PBI-028 señales/auditoría<br/>Draft]
-    P27[PBI-027 tiempo<br/>Blocked] --> P28
-    P29[PBI-029 secretos<br/>Draft] --> P25
+    P30[PBI-030 UI Foundation<br/>Closure approved] --> R[Roadmap reconciliation<br/>integration pending]
+    R --> S1[SPRINT-01 Planned<br/>ready for activation]
+    S1 --> P27[PBI-027 Branch Timezone<br/>Ready candidate]
+    P27 --> P29[PBI-029 Secrets / Config]
+    P29 --> P24[PBI-024 Trusted Station Runtime Context]
+    P24 --> P32[PBI-032 User Directory]
+    P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog]
+    P33 --> P25[PBI-025 PIN Credential]
+    P24 --> P25
+    P29 --> P25
+    P25 --> P34[PBI-034 Operational Session]
+    P34 --> P26[PBI-026 Contextual Authorization]
+    P33 --> P26
+    P26 --> P28[PBI-028 Minimum Business Audit]
+    P27 --> P28
     P29 --> P28
+    P28 --> NOTE[First Real-Actor Proof<br/>Operational Note]
+    NOTE --> RETRO[Repair writes actor retrofit]
+    RETRO --> CUSTOMERS[Customers]
+    CUSTOMERS --> INTAKE[Real New Repair / Intake]
+    INTAKE --> POLISH[UI Coherence]
+    POLISH --> PRICING[Pricing Catalog]
+    PRICING --> QUOTE[Quote / Authorization]
+    QUOTE --> MONEY[Payments / Cash]
+    MONEY --> DELIVERY[Resolution / QC / Delivery / Custody End]
+    DELIVERY --> MVP[MVP E2E / Owner Acceptance]
+    P24 -. full administration later .-> P31[PBI-031 Station Binding Administration]
+    P26 -. sensitive actions .-> P35[PBI-035 Reinforced Authorization]
+    P28 -. extended signals .-> P36[PBI-036 Extended Observability]
+    MVP --> STAGE2[Stage 2<br/>Inventory / Costs / Profitability]
 ```
-
-El grafo incluye las dependencias documentales directas declaradas por los PBIs y algunas relaciones transitivas necesarias para leer la secuencia. No representa dependencias de runtime ni sustituye el detalle de cada PBI.
 
 ## Dependencias críticas
 
-- Visión, actores y alcance dan significado al glosario y mapa modular.
-- Multitenancy condiciona datos, identidad, realtime, archivos, cachés, observabilidad y pruebas.
-- Identidad y permisos preceden la validación del acceso por dispositivo/PIN.
-- Arquitectura objetivo enmarca evaluaciones de backend, web, despliegue y observabilidad.
-- PBI-020 consolida gates; no puede cerrarse hasta que entradas críticas sean revisadas.
-- PBI-021 consumió la selección aceptada de DEC-004 y el shell seleccionado
-  mediante ADR-005/PBI-012. Está `Done` después de VC-024 `Closed / PASS`; no
-  habilita funcionalidad.
-- PBI-022 consumió la selección aceptada de DEC-005 y materializó sólo estructura, ownership, checker local, fixtures y evidencia; está `Done` y no habilita funcionalidad.
-- PBI-022 no resolvió por sí mismo DEC-044, DEC-049 ni DEC-051. Su `PASS`
-  formal satisfizo la dependencia de frontera de
-  [DEC-049](../decisions/dec-049-persistence-ownership/FORMAL_REVIEW.md),
-  aceptada después el 2026-07-24 por el Responsable del Proyecto con
-  DEC049-C01 a C08 vigentes.
-  [DEC-044](../decisions/dec-044-error-strategy/FORMAL_REVIEW.md) también fue
-  aceptada el 2026-07-24 con DEC044-C01 a C08 vigentes.
-  [DEC-051](../decisions/dec-051-testing-ci-strategy/FORMAL_REVIEW.md) fue
-  aceptada el mismo día y convierte documentalmente esos contratos en gates;
-  VC-024 satisfizo C01/C07/C09; C02–C06/C08/C10 permanecen pendientes.
-- [DEC-063](../decisions/dec-063-definition-of-done/FORMAL_REVIEW.md) fue
-  aceptada el 2026-07-24 con base común más checklists por tipo/riesgo.
-  VC-024 satisfizo C01/C03/C04; C02/C05–C08 permanecen `Pending`.
-- [PBI-023](pbis/PBI-023.md) cerró su alcance y fue integrado con evidencia
-  post-merge.
-- [PBI-024](pbis/PBI-024.md) tiene implementación sólo en una rama/PR draft
-  divergente. No forma parte de `main` y el primer merge funcional sigue
-  bloqueado por DEC051-C02.
-- PBI-025–PBI-029 descomponen el resto de los 24 contratos H1; sus estados
-  `Draft` o `Blocked` impiden tratarlos como compromiso o autorización.
-- [PBI-030](pbis/PBI-030.md) consume la dirección visual Owner aprobada y la
-  baseline React/Vite. No depende de PBI-024/PBI-025 para usar fixtures
-  honestos, pero cualquier contexto confiable, identidad o permisos reales sí
-  requiere esos trabajos. PBI-024 es una dependencia blanda. PBI-030 está
-  integrado en `main` y permanece `In review`; no concede deploy, Owner
-  Acceptance, `Done` ni contexto real.
+- PBI-030 bloquea únicamente la transición documental a Sprint 01; no es una
+  dependencia técnica de timezone.
+- PBI-027 resuelve la autoridad temporal por Branch antes de auditoría y
+  futuros días operativos.
+- PBI-029 precede bootstrap sensible y PIN; ningún secreto se hardcodea.
+- PBI-024 entrega Tenant/Branch/Station server-side y un bootstrap mínimo. La
+  administración completa vive en PBI-031.
+- PBI-032 crea identidad estable; PBI-033 compone roles/capabilities; PBI-025
+  verifica PIN; PBI-034 mantiene sesión; PBI-026 autoriza.
+- PBI-028 registra actor/contexto/correlación. Sólo entonces Operational Note
+  puede probar el stack real y comenzar el retrofit de Repairs.
+- PBI-035 se incorpora cuando una acción concreta necesita reautenticación o
+  segundo aprobador; no bloquea capacidades ordinarias.
+- PBI-036 no bloquea el MVP mientras PBI-028 entregue auditoría mínima.
 
-## Bloqueos conocidos
+## Estados de transición
 
-- PBI-013 resolvió parcialmente la dirección visual del cliente React/Vite;
-  rendering, número de aplicaciones y estrategia web futura permanecen
-  diferidos.
-- PBI-006, PBI-013, PBI-014 y PBI-018–PBI-020 fueron diferidos con remanente,
-  owner por rol e hito explícitos; no bloquean el objetivo documental del
-  Sprint 00.
-- PBI-021 está `Done` y `Unassigned`; VC-024 está `Closed / PASS`.
-- PBI-022 está `Done` y `Unassigned`; DEC005-C01 a C05 tienen `PASS` formal en la sexta reverificación independiente.
-- PBI-025 y PBI-027 están bloqueados por decisiones de mecanismo/producto.
-- PBI-023 está cerrado.
-- PBI-024 requiere decisión de recuperación/revalidación o descarte; no puede
-  integrarse mientras DEC051-C02 siga `Pending`.
-- Los demás PBIs H1 requieren revisión y autorización propias.
-- PBI-030 tiene resueltos iconografía, accent, catálogo, compatibilidad,
-  partición, estimación `XL — agreed` e implementación integrada en `main`.
-  Está `In review`; CI e independent review pasan, mientras la matriz AT, Owner
-  Acceptance y Preview deployment permanecen pendientes.
+- PBI-030: `In review — closure approved`; integración documental pendiente.
+- Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
+- Sprint 01: `Planned — ready for activation`; no existe Sprint activo.
+- PBI actual: ninguno.
+- PBI-027: `Ready candidate`; estimación/DoR pendientes, no iniciado.
+- PBI-029/PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
 
-## Preguntas abiertas
+## Stage 2
 
-- SPIKE-002 confirmó el patrón sin bypass cross-tenant observado y con cleanup
-  completo; la implementación productiva debe repetir sus controles.
-- Los mecanismos de PIN/sesión y la autoridad temporal siguen requiriendo
-  decisiones dentro de PBI-025/PBI-027.
+Inventory, Purchases, Costs, Expenses, Margins y Profitability no condicionan
+el Revenue Checkpoint ni el MVP operativo inicial. Permanecen explícitamente
+diferidos.
 
 ## Próxima revisión
 
-Decisión Owner sobre Preview deployment de PBI-030, evidencia/aceptación
-pendientes y reconciliación de PBI-024.
+Después de integrar la reconciliación o cuando cambie una dependencia aprobada.

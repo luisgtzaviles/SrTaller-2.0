@@ -20,9 +20,13 @@
    baseline.
 4. Los commits y merges deben conservar trazabilidad del alcance, pruebas y
    autorización aplicable.
-5. Preview puede desplegar automáticamente un nuevo `main` sólo cuando el
+5. Después de cerrar un PBI, el avance de roadmap usa una rama documental
+   `ops/pbi-###-roadmap-advance` creada desde el nuevo `main`. Ese PR registra
+   `Done`, actualiza Sprint/roadmap y selecciona el siguiente PBI sin iniciar
+   su implementación.
+6. Preview puede desplegar automáticamente un nuevo `main` sólo cuando el
    mecanismo sea claro, observable y no amplíe el alcance a otros ambientes.
-6. Staging y Production requieren su propia autorización y no se infieren de un
+7. Staging y Production requieren su propia autorización y no se infieren de un
    despliegue exitoso en Preview.
 
 Git branches y deployment environments son ejes distintos. Dokploy representa
@@ -39,6 +43,8 @@ esa condición no se satisfaga o DEC-051 no sea modificada formalmente:
 - checks verdes no equivalen por sí solos a autorización de merge;
 - cualquier integración funcional alcanzada por ese gate necesita autorización
   explícita y evidencia registrada;
+- cualquier PR documental de avance también requiere autorización Owner
+  explícita de merge;
 - no se fuerza, reescribe ni elude el historial para simular cumplimiento.
 
 ## Ramas después de integrar

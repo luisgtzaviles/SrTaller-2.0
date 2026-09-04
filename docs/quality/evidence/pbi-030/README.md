@@ -5,7 +5,7 @@
 | Campo | Valor |
 |---|---|
 | Elemento validado | `PBI-030` |
-| Estado | `In review` |
+| Estado | `In review — closure approved; documentary integration pending` |
 | Rama de implementación | `feature/pbi-030-design-system-shell` |
 | Pull request | [PR #8](https://github.com/luisgtzaviles/SrTaller-2.0/pull/8), `MERGED` |
 | Baseline de evidencia histórica | `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |
@@ -35,11 +35,16 @@ integrada el 2026-08-18 mediante `c8628fb`; el workflow autoritativo de `main`
 
 ## Resultado ejecutivo
 
-**IMPLEMENTATION EVIDENCE: PASS WITH EXPLICIT EXTERNAL GATES.** La
-implementación remediada, los gates locales, CI e independent review pasan.
-PBI-030 no se declara `Done`: faltan la matriz manual Primary completa de
-navegadores/AT, Owner Acceptance y cualquier deploy posterior autorizado. La
-implementación ya está integrada en `main`.
+**IMPLEMENTATION EVIDENCE: PASS; CLOSURE APPROVED.** La implementación
+remediada, los gates locales, CI e independent review pasan. El Owner aprobó
+la aceptación de producto y dispuso la matriz AT/cross-browser incompleta como
+riesgo residual Bajo (LOW) aceptado. PBI-030 no se declara todavía `Done`: falta
+integrar esta reconciliación documental en `main`. Deploy permanece separado.
+
+La [auditoría final de cierre](./FINAL_CLOSURE_AUDIT.md) confirma Technical DoD,
+independent review, CI y [Owner Acceptance/risk disposition](./OWNER_RISK_DISPOSITION.md).
+El lifecycle permanece `In review` únicamente hasta integrar el candidato
+documental y verificar el nuevo `main`.
 
 | Área | Resultado |
 |---|---|
@@ -53,7 +58,8 @@ implementación ya está integrada en `main`.
 | PostgreSQL material y smokes compilados | PASS |
 | CI autoritativo del SHA de PR | PASS; runs exactos en independent review/handoff |
 | CI autoritativo del merge en `main` | PASS; run `32217905296` |
-| Aprobación de Producto/Diseño/QA | PENDING |
+| Aprobación Owner de producto y riesgo residual | APPROVED — 2026-09-03 |
+| Integración de la reconciliación documental | PENDING |
 
 ## Alcance materializado
 
@@ -175,7 +181,7 @@ ausente de Production.
 | Evidencia responsive/visual | PASS parcial y conservada |
 | Accesibilidad según matriz completa | PARTIAL; falta AT/cross-browser no disponible |
 | Revisión independiente | PASS; ver `INDEPENDENT_REVIEW.md` |
-| Aprobación Product Owner | PENDING |
+| Aprobación Product Owner | APPROVED; riesgo AT/cross-browser Bajo (LOW) aceptado |
 | Merge | PASS; PR #8 integrada como `c8628fb` |
 | Deploy/Release | No aplica al alcance; no ejecutado |
 
@@ -190,9 +196,10 @@ Riesgos residuales:
 - la UI continúa sin APIs de producto y no debe confundirse con un workflow de
   Reparaciones funcional.
 
-No se registra waiver. La recomendación vigente es conservar la matriz
-pendiente sin inventar PASS y solicitar la decisión Owner de Preview deployment
-sin declarar todavía `Done` ni Owner Acceptance.
+La matriz pendiente no se transforma en PASS. La autoridad Owner registró el
+riesgo residual conforme a DEC-063 y ordenó reevaluarlo durante quality
+hardening/pre-production validation. Preview deployment sigue separado de
+`Done`.
 
 ### Remediación de CI de supply chain
 
@@ -205,7 +212,7 @@ referenciado en el handoff del PR.
 
 ## Próxima revisión
 
-- **Disparador:** decisión Owner sobre Preview deployment y evidencia Primary/AT
-  disponible.
+- **Disparador:** integración del candidato documental y CI verde de `main`;
+  después, pre-production validation antes del gate final del MVP.
 - **Autoridades:** Calidad/Accesibilidad, Producto/Diseño y Owner para cualquier
   aceptación o deploy posterior.

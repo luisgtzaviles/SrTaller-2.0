@@ -24,17 +24,17 @@
 - **Dependencias:** EPIC-000 y ADRs técnicos aceptados.
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
-- **Estado:** PBI-023 `Closed`; PBI-024 implementado sólo en una rama/PR draft
-  divergente, no integrado y con merge funcional bloqueado por DEC051-C02.
+- **Estado:** PBI-023 `Closed`; Identity & Context Foundation reconciliada y
+  Sprint 01 `Planned`, listo para activación sólo después de integrar la
+  reconciliación y completar DoR/estimación de PBI-027.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
-  `Closed`. [PBI-024](pbis/PBI-024.md) conserva autorización limitada y código
-  en una PR draft conflictiva, pero no pertenece a `main`; PBI-025–PBI-029
-  descomponen el H1 restante con estados `Draft` o `Blocked` y no están
-  autorizados. [PBI-030](pbis/PBI-030.md) tiene una foundation visual y
-  Application Shell V1 integrados en `main`; permanece `In review`, todavía no
-  desplegado ni aceptado visualmente por Owner.
+  `Closed`. [PBI-024](pbis/PBI-024.md) fue acotado a Trusted Station Runtime
+  Context con recuperación histórica selectiva. PBI-025–PBI-029 y
+  PBI-031–PBI-036 separan PIN, sesión, autorización, auditoría y observabilidad.
+  [PBI-030](pbis/PBI-030.md) tiene cierre aprobado; su registro documental
+  pendiente de integración bloquea la activación de Sprint 01.
 
 ## EPIC-002 — Tenant and Platform Administration
 
@@ -55,7 +55,7 @@
 - **Dependencias:** EPIC-000, Tenant Management y políticas de seguridad.
 - **Riesgos:** escalamiento de privilegios, reglas inmanejables y recuperación de cuenta débil.
 - **Exclusiones:** algoritmos criptográficos finales antes de threat modeling.
-- **Estado:** Discovery required.
+- **Estado:** Roadmap y modelo conceptual aprobados; implementación no iniciada.
 - **Puede descomponerse cuando:** actores, matriz de acciones sensibles y lifecycle de acceso estén aprobados.
 
 ## EPIC-004 — Branch and Device Management
@@ -66,7 +66,7 @@
 - **Dependencias:** EPIC-003, Tenant Management y preguntas de operación.
 - **Riesgos:** dispositivo perdido, PIN compartido o acceso fuera de sucursal.
 - **Exclusiones:** operación offline hasta validarla.
-- **Estado:** Discovery required.
+- **Estado:** PBI-024 runtime y PBI-031 administración reconciliados; no iniciados.
 - **Puede descomponerse cuando:** flujo de vinculación, supervisión, revocación y asignación estén decididos.
 
 ## EPIC-005 — Customer Management

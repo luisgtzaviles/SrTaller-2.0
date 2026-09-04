@@ -2,13 +2,20 @@
 
 ## Estado
 
-- **Estado:** Proposed / trazabilidad completa.
+- **Estado:** Histórico / superseded por el
+  [MVP Operating Roadmap](../product/MVP_OPERATING_ROADMAP.md) para orden y
+  partición de PBI-024–PBI-036.
 - **Fecha:** 2026-07-24.
 - **H0:** 9/0, `Complete`.
 - **H1:** 24 contratos abiertos para aplicación, mecanismo o prueba.
-- **R0:** `Authorized`, ampliado únicamente a PBI-024; PBI-023 está cerrado y
-  PBI-024 no está integrado en `main`.
+- **R0 al corte histórico:** `Authorized`, ampliado únicamente a la forma
+  anterior de PBI-024; PBI-023 estaba cerrado.
 - **Regla:** agrupar por capacidad no acepta ni cierra una DEC.
+
+Este documento conserva la asignación original de contratos H1 y no debe
+usarse para inferir el estado, alcance u orden vigente de los PBIs. La
+partición y secuencia actuales están en el
+[Dependency Map](DEPENDENCY_MAP.md) y en los PBIs individuales.
 
 ## Inventario H1
 
@@ -99,6 +106,6 @@ flowchart LR
 
 ## Próxima revisión
 
-Decidir si PBI-024 se recupera y revalida contra `main` o se descarta con razón
-explícita. No iniciar PBI-025–PBI-029 ni integrar código funcional mientras
-DEC051-C02 permanezca `Pending`.
+Consultar el MVP Operating Roadmap. Cualquier recuperación de la rama histórica
+de PBI-024 debe ser selectiva, revalidada contra `main` y autorizada dentro del
+nuevo workflow WIP=1.

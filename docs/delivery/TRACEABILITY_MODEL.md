@@ -25,6 +25,14 @@ flowchart LR
     O -. aprendizaje .-> P
 ```
 
+Para el MVP Operativo, esta cadena vive además dentro de una única selección
+activa:
+
+`Roadmap → Sprint activo → PBI actual → PR/evidencia → Done → PR documental de avance → siguiente PBI seleccionado`
+
+Debe existir como máximo un Sprint `Active` y un PBI actual. El puntero
+`Selected/current` no cambia el estado del PBI ni concede autorización.
+
 Un PBI puede no requerir tarea, ADR, PR o release, especialmente en Sprint 00. La ausencia debe ser explícita y justificada, no un enlace vacío.
 
 ## Relaciones mínimas por elemento
@@ -41,6 +49,8 @@ Un PBI puede no requerir tarea, ADR, PR o release, especialmente en Sprint 00. L
 | Evidencia QA | PBI/bug, build, ambiente, datos, criterios y hallazgos | Hacer reproducible la aceptación. |
 | Release | artefactos/digests, PBIs/bugs, migraciones, evidencia y aprobaciones | Saber qué llegó a cada ambiente. |
 | Incidente | servicio/release, impacto, timeline, mitigación y trabajo de seguimiento | Convertir operación en aprendizaje. |
+| Roadmap | Sprint activo, PBI actual, siguiente PBI y gates | Evitar prioridades implícitas o trabajo paralelo no autorizado. |
+| Sprint | PBI actual, candidatos, cambios y evidencia de cierre | Mantener WIP=1 y el objetivo visible. |
 
 ## Identificadores
 
@@ -97,6 +107,11 @@ Para cambios funcionales se debe registrar:
 - migraciones y compatibilidad;
 - release que promovió el artefacto;
 - verificación posterior e incidentes relacionados.
+
+Al cerrar un PBI, un PR documental separado debe enlazar el merge funcional,
+el run de CI de `main`, la aceptación Owner y la evidencia DoD. El mismo PR
+actualiza roadmap, sprint, backlog y Current State, y selecciona el siguiente
+PBI sin marcarlo `In progress`.
 
 ## Matriz de criterio a evidencia
 

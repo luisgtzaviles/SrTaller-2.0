@@ -2,7 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Lifecycle especializado de producto y PBI; parcialmente propuesto.
+- **Estado:** Lifecycle especializado de producto y PBI; aprobado para el MVP
+  Operativo con WIP=1.
 - **Alcance:** Descubrimiento, refinamiento, estados de trabajo y cierre.
 - **Hecho conocido:** Ya existe una baseline técnica ejecutable en `main` y un
   Preview materializado; las nuevas capacidades funcionales siguen requiriendo
@@ -29,7 +30,7 @@ Definir un flujo visible y trazable desde una necesidad de producto hasta una li
 
 Las plantillas aplicables son [PBI](./PBI_TEMPLATE.md), [tarea técnica](./TECHNICAL_TASK_TEMPLATE.md) y [bug](./BUG_TEMPLATE.md).
 
-## Flujo propuesto
+## Flujo vigente
 
 ```mermaid
 flowchart LR
@@ -40,10 +41,16 @@ flowchart LR
     E -- No --> B
     E -- Sí --> F[Planificación del sprint]
     F --> G[Ejecución]
-    G --> H[Revisión y gates]
-    H --> I{DoD aplicable?}
+    G --> H[Revisión y merge autorizado]
+    H --> CI{CI de main GREEN?}
+    CI -- No --> G
+    CI -- Sí --> OA{Owner Acceptance?}
+    OA -- No --> G
+    OA -- Sí --> I{DoD y evidencia completas?}
     I -- No --> G
     I -- Sí --> J[Done]
+    J --> ADV[PR documental de avance]
+    ADV --> NEXT[Siguiente PBI seleccionado]
     J --> K{Incluido en release?}
     K -- No --> O[Esperar priorización]
     K -- Sí --> L[Candidato y staging]
@@ -74,6 +81,8 @@ La prioridad final y el compromiso requieren aprobación del Product Owner. Esti
 - Separar `Committed`, `Candidate`, `Blocked` y `Requires product input`.
 - Descomponer en tareas sólo al nivel necesario para ejecutar y verificar.
 - Hacer visibles dependencias, riesgos y gates externos.
+- Mantener un único PBI actual y como máximo un PBI `In progress` o `In
+  review`. Los candidatos no cuentan como trabajo iniciado.
 
 Sprint 00 siguió el mismo principio y sus resultados fueron documentales. Sus
 límites históricos no prohíben la baseline técnica materializada después bajo
@@ -109,7 +118,15 @@ Cerrar un elemento exige:
 - documentación y decisiones consistentes;
 - riesgos residuales explícitos;
 - ningún bloqueo crítico abierto;
-- aprobación definida para el tipo de cambio.
+- aprobación definida para el tipo de cambio;
+- merge autorizado y CI autoritativo del nuevo `main` verde cuando existe
+  implementación integrada;
+- Owner Acceptance explícita para un PBI funcional o con impacto de producto.
+
+Después del cierre se prepara un PR documental mínimo desde el nuevo `main`.
+Ese PR registra evidencia, actualiza roadmap/backlogs/sprint/estado actual y
+selecciona el siguiente PBI sin iniciarlo. Prepararlo es una obligación del
+workflow; fusionarlo conserva la autorización Owner y los gates ordinarios.
 
 ### 6. Release y aprendizaje
 
@@ -133,6 +150,10 @@ La **clasificación dentro de un sprint** es un eje separado: `Committed`, `Cand
 
 La semántica normativa de estados pertenece a DEC-063; la representación en
 una herramienta concreta continúa pendiente.
+
+`PBI actual` o `Selected/current` es un puntero de planificación, no un nuevo
+estado. Un PBI seleccionado puede continuar `Draft`, `Blocked` o `Ready`; sólo
+una autorización Owner separada permite moverlo a ejecución.
 
 ## Gates de decisión
 
