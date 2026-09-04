@@ -39,8 +39,10 @@ el 2026-08-18 mediante la revisión formal Frontend/Ingeniería:
 checkpoints A–D. No quedan preguntas internas bloqueantes de readiness. El Owner
 autorizó la implementación el 2026-08-18 y el 2026-09-03 aprobó Owner
 Acceptance y dispuso el riesgo AT/cross-browser restante como
-`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. PBI-030 conserva `In review` hasta que
-esta decisión quede integrada en `main`; no concede deploy ni release.
+`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. La gobernanza quedó integrada
+en `main` mediante `117ada7f70494b2cb35ed7adf78c3529dd271391`, CI
+`33821753091`; el avance documental registra `Done` sin conceder deploy ni
+release.
 
 ## Producto
 

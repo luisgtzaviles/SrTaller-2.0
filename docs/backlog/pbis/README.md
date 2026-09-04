@@ -4,8 +4,8 @@
 
 **Estado:** Índice reconciliado con el MVP Operating Roadmap. PBI-024–PBI-029
 conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
-splits aprobados. PBI-030 tiene cierre aprobado e integración documental
-pendiente; Sprint 01 continúa `Planned`.
+splits aprobados. PBI-030 tiene cierre `Done` candidato; Sprint 01 continúa
+`Planned` a la espera de readiness/autorización de PBI-027.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
@@ -42,7 +42,7 @@ T-shirt sizing; los demás casos conservan TBD.
 | [PBI-027](PBI-027.md) | Branch Timezone Minimum | Ready candidate; DoR/estimation pending |
 | [PBI-028](PBI-028.md) | Minimum Business Audit and Correlation | Draft reconciliado |
 | [PBI-029](PBI-029.md) | Secrets and External Configuration Foundation | Draft reconciliado |
-| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | In review — closure approved; documentary integration pending |
+| [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | Done — cierre documental candidato |
 | [PBI-031](PBI-031.md) | Station Binding Administration | Draft / Deferred |
 | [PBI-032](PBI-032.md) | User Directory and Lifecycle | Draft |
 | [PBI-033](PBI-033.md) | Roles, Assignments and Capability Catalog | Draft |
@@ -54,5 +54,4 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-Integrar la reconciliación documental y después completar estimación/DoR de
-PBI-027 sin iniciar implementación.
+Completar estimación/DoR de PBI-027 sin iniciar implementación.

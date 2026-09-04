@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `ead13ecbdb636afd4d9c2e6ecd34905343d165d4`.
+  `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -12,8 +12,7 @@
 
 ```mermaid
 flowchart TD
-    P30[PBI-030 UI Foundation<br/>Closure approved] --> R[Roadmap reconciliation<br/>integration pending]
-    R --> S1[SPRINT-01 Planned<br/>ready for activation]
+    P30[PBI-030 UI Foundation<br/>Done] --> S1[SPRINT-01 Planned<br/>activation pending PBI-027 readiness]
     S1 --> P27[PBI-027 Branch Timezone<br/>Ready candidate]
     P27 --> P29[PBI-029 Secrets / Config]
     P29 --> P24[PBI-024 Trusted Station Runtime Context]
@@ -46,8 +45,8 @@ flowchart TD
 
 ## Dependencias críticas
 
-- PBI-030 bloquea únicamente la transición documental a Sprint 01; no es una
-  dependencia técnica de timezone.
+- PBI-030 ya no bloquea técnicamente timezone: su cierre sustantivo es PASS;
+  la activación de Sprint 01 depende de readiness y autorización de PBI-027.
 - PBI-027 resuelve la autoridad temporal por Branch antes de auditoría y
   futuros días operativos.
 - PBI-029 precede bootstrap sensible y PIN; ningún secreto se hardcodea.
@@ -63,9 +62,9 @@ flowchart TD
 
 ## Estados de transición
 
-- PBI-030: `In review — closure approved`; integración documental pendiente.
+- PBI-030: `Done — cierre documental candidato`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
-- Sprint 01: `Planned — ready for activation`; no existe Sprint activo.
+- Sprint 01: `Planned`; no existe Sprint activo.
 - PBI actual: ninguno.
 - PBI-027: `Ready candidate`; estimación/DoR pendientes, no iniciado.
 - PBI-029/PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
@@ -78,4 +77,4 @@ diferidos.
 
 ## Próxima revisión
 
-Después de integrar la reconciliación o cuando cambie una dependencia aprobada.
+Cuando cambie una dependencia aprobada o se complete DoR/estimación de PBI-027.

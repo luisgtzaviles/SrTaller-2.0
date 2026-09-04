@@ -7,8 +7,9 @@
 - **Autoridad:** Owner / Responsable de Producto.
 - **Alcance:** aceptación de producto de UI Foundation y Application Shell V1,
   y disposición del riesgo residual AT/cross-browser.
-- **Efecto de integración:** esta decisión queda canónica cuando el PR
-  documental que la contiene se integra en `main` con CI verde.
+- **Efecto de integración:** la gobernanza quedó integrada por PR #17, merge
+  `117ada7f70494b2cb35ed7adf78c3529dd271391`, con CI `33821753091` GREEN;
+  el presente avance sólo reconcilia el lifecycle del PBI.
 
 ## Decisión
 
@@ -26,7 +27,7 @@ del MVP y acepta el siguiente riesgo residual:
 | Implementación | Integrada mediante PR #8 |
 | Revisión independiente | PASS |
 | CI de `main` de implementación | PASS, run `32217905296` |
-| Estado en este candidato | `CLOSURE APPROVED — INTEGRATION PENDING` |
+| Estado en este candidato | `DONE — DOCUMENTARY ADVANCE CANDIDATE` |
 | Deploy/Released | No autorizado / no aplica al cierre |
 
 ## Base de aceptación

@@ -2,21 +2,23 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; candidato de reconciliación pendiente de
-  integración en `main`.
+- **Estado:** Roadmap aprobado; avance documental de cierre de PBI-030 en
+  candidato de integración.
 - **Baseline de la reconciliación:** `main` en
-  `ead13ecbdb636afd4d9c2e6ecd34905343d165d4`.
+  `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI autoritativo
+  `33821753091`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** ninguno.
-- **Sprint 01:** `Planned — ready for activation after roadmap reconciliation`.
+- **Sprint 01:** `Planned — activation pending PBI-027 DoR, estimación y
+  autorización Owner`.
 - **PBI actual:** ninguno.
 - **Siguiente PBI candidato:** [PBI-027](../backlog/pbis/PBI-027.md),
   pendiente de DoR y estimación; no iniciado ni autorizado.
-- **Blocking gate:** integrar esta reconciliación documental en `main` con CI
-  autoritativo verde.
+- **Blocking gate:** readiness y autorización explícita de PBI-027; este
+  candidato no inicia su implementación.
 - **WIP operacional:** uno.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation del
   2026-09-03.
@@ -84,10 +86,9 @@ Owner explícita de merge.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
    salta silenciosamente a otro PBI.
 
-La transición inicial conserva una regla explícita: PBI-030 tiene el cierre
-aprobado, pero no se presenta como `Done` antes de integrar el registro en
-`main`. Mientras este candidato no esté integrado no existe Sprint activo ni
-PBI actual. PBI-027 sólo es el siguiente candidato.
+PBI-030 cumple sus gates sustantivos de `Done` en la baseline indicada. Este PR
+documental materializa ese cierre en las fuentes canónicas cuando se integre;
+no activa Sprint 01, no crea un PBI actual y no inicia PBI-027.
 
 ## Current execution pointer
 
@@ -97,11 +98,11 @@ PBI actual. PBI-027 sólo es el siguiente candidato.
 | Stage | MVP |
 | Phase | Identity & Context Foundation |
 | Sprint | SPRINT-01 |
-| Sprint status | Planned — ready for activation after reconciliation |
+| Sprint status | Planned — activation pending readiness/autorización de PBI-027 |
 | Current PBI | NONE |
 | Next PBI candidate | PBI-027 — Branch Timezone Minimum |
 | PBI-027 status | Ready candidate — DoR/estimation pending |
-| Blocking gate | Roadmap reconciliation must first be integrated into `main` with GREEN CI |
+| Blocking gate | PBI-027 DoR, estimación acordada y autorización Owner |
 
 ## Fases aprobadas
 
@@ -162,6 +163,13 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | G11 DELIVERY | Entrega y terminación de custodia GREEN |
 | G12 MVP | E2E completo y Owner Acceptance GREEN |
 
+## Dashboard de gates
+
+| Gate | Estado | Evidencia o condición vigente |
+|---|---|---|
+| G0 ROADMAP | PASS | PR #17 merge `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091` GREEN |
+| G1–G12 | Pending | La selección de PBI-027 no inicia ni autoriza su trabajo |
+
 ## Cierre y avance documental de un PBI
 
 Después del merge funcional, CI verde y aceptación Owner, se crea desde el
@@ -182,21 +190,19 @@ merge y CI aprobados. El Owner concedió Acceptance y dispuso formalmente la
 cobertura AT/cross-browser incompleta como
 `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. La auditoría de cierre pasa.
 
-Sólo falta integrar este candidato documental y verificar CI de `main`. El
-efecto del merge será:
+Este candidato registra el efecto canónico de los gates ya aprobados:
 
 1. PBI-030 `Done` por quedar su cierre/evidencia dentro de `main`;
-2. Sprint 01 `Planned — ready for activation`, todavía no `Active`;
+2. Sprint 01 `Planned`, todavía no `Active`;
 3. ningún PBI actual;
 4. PBI-027 como siguiente candidato, pendiente de DoR/estimación;
 5. ninguna autorización implícita de implementación, deploy o release.
 
 ## Próxima revisión
 
-- **Disparador:** integración autorizada del candidato documental y CI de
-  `main`, o fallo de cualquiera de esos gates.
-- **Resultado esperado si pasa:** PBI-030 `Done`; Sprint 01 preparado pero no
-  activo; PBI-027 continúa como candidato no iniciado hasta completar DoR y
-  estimación.
-- **Si falla:** PBI-030 permanece `In review — closure approved`; Sprint 01
-  permanece `Planned` y no existe PBI actual.
+- **Disparador:** completar DoR y estimación de PBI-027, seguido de decisión
+  Owner separada.
+- **Resultado esperado si pasa:** Sprint 01 puede activarse y PBI-027 puede
+  quedar `Ready`; la implementación sigue requiriendo autorización Owner.
+- **Si falla:** Sprint 01 permanece `Planned`, no existe PBI actual y no se
+  salta silenciosamente a otro candidato.
