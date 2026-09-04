@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** `PASS — CLOSURE COMPLETE; DOCUMENTARY ADVANCE CANDIDATE`.
+- **Estado:** `PASS — CLOSURE COMPLETE`.
 - **Baseline auditada:** `main` en
   `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091`, `SUCCESS`.
-- **Naturaleza:** auditoría documental de cierre; registra `Done` candidato,
-  no concede deploy ni release.
+- **Naturaleza:** auditoría documental de cierre; registra `Done`, no concede
+  deploy ni release.
 
 ## Resultado
 
@@ -52,7 +52,7 @@ descripción, alcance y condición de revisión futura.
 
 Hasta recibir ambas decisiones, el resultado es:
 
-`PBI-030: CLOSURE COMPLETE / DONE CANDIDATE`
+`PBI-030: CLOSURE COMPLETE / DONE`
 
 `SPRINT-01: PLANNED / ACTIVATION PENDING PBI-027 READINESS`
 

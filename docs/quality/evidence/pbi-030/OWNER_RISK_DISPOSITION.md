@@ -27,7 +27,7 @@ del MVP y acepta el siguiente riesgo residual:
 | Implementación | Integrada mediante PR #8 |
 | Revisión independiente | PASS |
 | CI de `main` de implementación | PASS, run `32217905296` |
-| Estado en este candidato | `DONE — DOCUMENTARY ADVANCE CANDIDATE` |
+| Estado | `DONE` |
 | Deploy/Released | No autorizado / no aplica al cierre |
 
 ## Base de aceptación

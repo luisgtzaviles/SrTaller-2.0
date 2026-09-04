@@ -33,7 +33,7 @@
   `Closed`. [PBI-024](pbis/PBI-024.md) fue acotado a Trusted Station Runtime
   Context con recuperación histórica selectiva. PBI-025–PBI-029 y
   PBI-031–PBI-036 separan PIN, sesión, autorización, auditoría y observabilidad.
-  [PBI-030](pbis/PBI-030.md) tiene cierre `Done` candidato; la activación de
+  [PBI-030](pbis/PBI-030.md) tiene cierre `Done`; la activación de
   Sprint 01 depende de readiness y autorización de PBI-027.
 
 ## EPIC-002 — Tenant and Platform Administration

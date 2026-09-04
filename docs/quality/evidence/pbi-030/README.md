@@ -5,7 +5,7 @@
 | Campo | Valor |
 |---|---|
 | Elemento validado | `PBI-030` |
-| Estado | `Done — cierre documental candidato` |
+| Estado | `Done` |
 | Rama de implementación | `feature/pbi-030-design-system-shell` |
 | Pull request | [PR #8](https://github.com/luisgtzaviles/SrTaller-2.0/pull/8), `MERGED` |
 | Baseline de evidencia histórica | `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |

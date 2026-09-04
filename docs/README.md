@@ -163,8 +163,8 @@ Los archivos individuales PBI-001 a PBI-036 se encuentran enlazados desde el
 [índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
 PBI-023 está `Closed`. PBI-024 fue acotado; la rama/PR histórica sólo sirve para
 recuperación selectiva. PBI-024–PBI-029 y PBI-031–PBI-036 forman la partición
-aprobada de Identity & Context. PBI-030 tiene cierre aprobado; `Done` será
-efectivo al integrar esta reconciliación en `main` con CI verde.
+aprobada de Identity & Context. PBI-030 está `Done`; `Released` permanece
+separado y requiere autorización propia.
 
 ## Calidad
 

@@ -62,8 +62,8 @@ hasta integrarse a `main` con autorización y CI propios.
 - Design System y Application Shell V1.
 - Temas Light/Dark, Brand System, navegación y responsive.
 - Worklist y Repair Detail operational workspace.
-- PBI-030: `Done` como estado candidato de este avance documental; Owner
-  Acceptance `APPROVED`, riesgo AT/cross-browser LOW aceptado y `Released: NO`.
+- PBI-030: `Done`; Owner Acceptance `APPROVED`, riesgo AT/cross-browser LOW
+  aceptado y `Released: NO`.
 
 ### Repairs
 
@@ -112,8 +112,9 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
 registra la cobertura AT/cross-browser formal pendiente como
-`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. El único gate restante es integrar
-esta reconciliación documental en `main` y verificar su CI.
+`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. No está `Released` y no bloquea
+la preparación de PBI-027; la integración de este PR documental sólo hace
+canónica esta fotografía.
 
 PBI-027 ya tiene decisión de Branch timezone, pero todavía requiere estimación
 acordada y revisión DoR antes de `Ready`.

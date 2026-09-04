@@ -22,7 +22,7 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
   contexto local sintético; no constituyen todavía un flujo productivo E2E.
 - **CI:** la baseline auditada `117ada7f70494b2cb35ed7adf78c3529dd271391`
   pasó el run autoritativo `33821753091` con run-1, run-2 y comparison verdes.
-- **PBI-030:** `Done` candidato; implementación integrada, Owner Acceptance
+- **PBI-030:** `Done`; implementación integrada, Owner Acceptance
   aprobada y riesgo AT/cross-browser residual LOW aceptado. `Released: NO`.
 - **Roadmap:** Sprint 01 permanece `Planned`; no existe PBI actual. PBI-027 es
   el siguiente candidato y continúa pendiente de DoR, estimación y autorización

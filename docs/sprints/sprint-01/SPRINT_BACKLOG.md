@@ -12,7 +12,7 @@
 
 | PBI de cierre previo | Estado | Relación con Sprint 01 | Condición de salida |
 |---|---|---|---|
-| [PBI-030](../../backlog/pbis/PBI-030.md) | Done — cierre documental candidato | Predecesor cerrado; no pertenece al compromiso | Sin condición adicional de PBI-030 |
+| [PBI-030](../../backlog/pbis/PBI-030.md) | Done | Predecesor cerrado; no pertenece al compromiso | Sin condición adicional de PBI-030 |
 
 ## Committed
 

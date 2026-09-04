@@ -12,7 +12,7 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
-- Preparado el avance documental canónico de PBI-030: `Done` candidato basado
+- Preparado el avance documental canónico de PBI-030: `Done` basado
   en merge de gobernanza `117ada7f70494b2cb35ed7adf78c3529dd271391` y CI
   `33821753091` GREEN. Sprint 01 permanece `Planned`, no existe PBI actual y
   PBI-027 sólo queda seleccionado, pendiente de DoR, estimación y autorización

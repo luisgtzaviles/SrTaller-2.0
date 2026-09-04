@@ -9,14 +9,14 @@ Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 rama/PR draft histórica es sólo fuente de recuperación selectiva. PBI-025–029
 y PBI-031–036 materializan la partición aprobada de Identity & Context.
 [PBI-030](pbis/PBI-030.md) materializa UI Foundation y Application
-Shell V1, está integrado en `main` y su cierre es `Done` candidato con Owner
+Shell V1, está integrado en `main` y su cierre es `Done` con Owner
 Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 `Released`; CI de implementación e independent review pasan.
 
 ## Estado del documento
 
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
-**Orden operativo:** PBI-030 `Done — cierre documental candidato`; Sprint 01
+**Orden operativo:** PBI-030 `Done`; Sprint 01
 `Planned`; ningún PBI actual; PBI-027 es el siguiente candidato, no iniciado.
 
 ## Estructura

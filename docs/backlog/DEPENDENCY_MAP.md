@@ -62,7 +62,7 @@ flowchart TD
 
 ## Estados de transición
 
-- PBI-030: `Done — cierre documental candidato`; `Released: NO`.
+- PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Planned`; no existe Sprint activo.
 - PBI actual: ninguno.
