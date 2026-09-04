@@ -69,7 +69,7 @@ test('seed contract is deterministic and contains only existing schema entities'
   assert.equal(first.tenant.tenantId, '00000000-0000-4000-8000-000000000001');
   assert.equal(first.branches.length, 2);
   assert.deepEqual(Object.keys(first.tenant).sort(), ['createdAt', 'tenantId']);
-  assert.deepEqual(Object.keys(first.branches[0]).sort(), ['branchId', 'createdAt', 'tenantId']);
+  assert.deepEqual(Object.keys(first.branches[0]).sort(), ['branchId', 'createdAt', 'tenantId', 'timeZone']);
 });
 
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {

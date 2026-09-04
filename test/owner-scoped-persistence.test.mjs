@@ -29,6 +29,7 @@ const tenantA = parseTenantId('10000000-0000-4000-8000-000000000001');
 const tenantB = parseTenantId('20000000-0000-4000-8000-000000000002');
 const branchA = parseBranchId('30000000-0000-4000-8000-000000000003');
 const createdAt = '2026-07-25T20:00:00.000Z';
+const timeZone = 'America/Hermosillo';
 
 function fakeConnection(executor, observed) {
   return {
@@ -168,6 +169,7 @@ test('adapters map immutable records and invoke only their registered owner', as
       insertExecutor({
         tenant_id: tenantA,
         branch_id: branchA,
+        time_zone: timeZone,
         created_at: new Date(createdAt),
       }),
       branchOwners,
@@ -175,11 +177,12 @@ test('adapters map immutable records and invoke only their registered owner', as
   );
   const branch = await branchRepository.createBranch(
     { tenantId: tenantA, branchId: branchA },
-    { tenantId: tenantA, branchId: branchA, createdAt },
+    { tenantId: tenantA, branchId: branchA, timeZone, createdAt },
   );
   assert.deepEqual(branch, {
     tenantId: tenantA,
     branchId: branchA,
+    timeZone,
     createdAt,
   });
   assert.ok(Object.isFrozen(branch));
@@ -222,7 +225,7 @@ test('driver failures map to stable sanitized owner errors', async () => {
   await assert.rejects(
     duplicate.createBranch(
       { tenantId: tenantA, branchId: branchA },
-      { tenantId: tenantA, branchId: branchA, createdAt },
+      { tenantId: tenantA, branchId: branchA, timeZone, createdAt },
     ),
     expectsBranchCode('BRANCH_PERSISTENCE_CONFLICT'),
   );
@@ -233,7 +236,7 @@ test('driver failures map to stable sanitized owner errors', async () => {
   await assert.rejects(
     missingTenant.createBranch(
       { tenantId: tenantA, branchId: branchA },
-      { tenantId: tenantA, branchId: branchA, createdAt },
+      { tenantId: tenantA, branchId: branchA, timeZone, createdAt },
     ),
     expectsBranchCode('BRANCH_PERSISTENCE_TENANT_NOT_FOUND'),
   );

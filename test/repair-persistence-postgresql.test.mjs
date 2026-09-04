@@ -21,6 +21,9 @@ const { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError
 const { createKyselyRepairRepository } = enabled
   ? await import('../dist/modules/repairs/infrastructure/persistence/kysely-repair.repository.js')
   : {};
+const { createKyselyBranchRepository } = enabled
+  ? await import('../dist/modules/stations/infrastructure/persistence/kysely-branch.repository.js')
+  : {};
 const { MoveRepairToWorkshopInputError, MoveRepairToWorkshopNotFoundError, MoveRepairToWorkshopUseCase } = enabled
   ? await import('../dist/modules/repairs/application/use-cases/move-repair-to-workshop.use-case.js')
   : {};
@@ -354,9 +357,38 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 11);
+      assert.equal(applied.status.migrations.length, 12);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
+
+      const seededBranchZones = await admin.query(
+        `select branch_id, time_zone from branches
+         where tenant_id = $1 order by branch_id`,
+        [tenantA],
+      );
+      assert.deepEqual(seededBranchZones.rows, [
+        { branch_id: branchA, time_zone: 'America/Hermosillo' },
+        { branch_id: branchA2, time_zone: 'America/Hermosillo' },
+      ]);
+
+      const branchRepository = createKyselyBranchRepository(connection);
+      const changedBranch = await branchRepository.updateBranchTimeZone(
+        { tenantId: tenantA, branchId: branchA },
+        'America/Tijuana',
+      );
+      assert.equal(changedBranch.timeZone, 'America/Tijuana');
+      await assert.rejects(
+        branchRepository.updateBranchTimeZone(
+          { tenantId: tenantB, branchId: branchA },
+          'America/Hermosillo',
+        ),
+      );
+      await assert.rejects(
+        branchRepository.updateBranchTimeZone(
+          { tenantId: tenantA, branchId: branchA },
+          '-07:00',
+        ),
+      );
 
       const repository = createKyselyRepairRepository(
         connection,

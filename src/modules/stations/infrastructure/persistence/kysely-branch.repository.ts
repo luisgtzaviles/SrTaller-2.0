@@ -11,6 +11,7 @@ import type {
 import type { BranchRow, DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
 import type { DatabaseTransactionContext } from '../../../../infrastructure/database/transaction-runner.js';
 import { parseTenantId } from '../../../tenancy/index.js';
+import { parseBranchTimeZone } from '../../application/branch-time-zone.js';
 import {
   BranchPersistenceError,
   parseBranchId,
@@ -114,6 +115,7 @@ function validateCreateRecord(
 ): Readonly<{
   tenantId: TenantBranchPersistenceScope['tenantId'];
   branchId: TenantBranchPersistenceScope['branchId'];
+  timeZone: string;
   createdAt: Date;
 }> {
   if (
@@ -129,9 +131,16 @@ function validateCreateRecord(
         : 'PERSISTENCE_BRANCH_SCOPE_REQUIRED',
     );
   }
+  let timeZone: string;
+  try {
+    timeZone = parseBranchTimeZone(record.timeZone);
+  } catch {
+    throw new BranchPersistenceError('BRANCH_PERSISTENCE_TIME_ZONE_INVALID');
+  }
   return Object.freeze({
     tenantId: scope.tenantId,
     branchId: scope.branchId,
+    timeZone,
     createdAt: new Date(record.createdAt),
   });
 }
@@ -140,6 +149,7 @@ function mapBranchRecord(row: BranchRow): BranchRecord {
   return Object.freeze({
     tenantId: parseTenantId(row.tenant_id),
     branchId: parseBranchId(row.branch_id),
+    timeZone: parseBranchTimeZone(row.time_zone),
     createdAt: row.created_at.toISOString(),
   });
 }
@@ -160,9 +170,10 @@ class KyselyBranchRepository implements BranchRepositoryPort {
           .values({
             tenant_id: validatedRecord.tenantId,
             branch_id: validatedRecord.branchId,
+            time_zone: validatedRecord.timeZone,
             created_at: validatedRecord.createdAt,
           })
-          .returning(['tenant_id', 'branch_id', 'created_at'])
+          .returning(['tenant_id', 'branch_id', 'time_zone', 'created_at'])
           .executeTakeFirstOrThrow();
         return mapBranchRecord(row);
       });
@@ -179,7 +190,7 @@ class KyselyBranchRepository implements BranchRepositoryPort {
       return await this.execute(async (executor: BranchExecutor) => {
         const row = await executor
           .selectFrom('branches')
-          .select(['tenant_id', 'branch_id', 'created_at'])
+          .select(['tenant_id', 'branch_id', 'time_zone', 'created_at'])
           .where('tenant_id', '=', validatedScope.tenantId)
           .where('branch_id', '=', validatedScope.branchId)
           .executeTakeFirst();
@@ -198,7 +209,7 @@ class KyselyBranchRepository implements BranchRepositoryPort {
       return await this.execute(async (executor: BranchExecutor) => {
         const rows = await executor
           .selectFrom('branches')
-          .select(['tenant_id', 'branch_id', 'created_at'])
+          .select(['tenant_id', 'branch_id', 'time_zone', 'created_at'])
           .where('tenant_id', '=', validatedScope.tenantId)
           .orderBy('branch_id', 'asc')
           .execute();
@@ -222,6 +233,36 @@ class KyselyBranchRepository implements BranchRepositoryPort {
           .where('branch_id', '=', validatedScope.branchId)
           .executeTakeFirst();
         return row !== undefined;
+      });
+    } catch (error: unknown) {
+      throw mapBranchError(error);
+    }
+  }
+
+  async updateBranchTimeZone(
+    scope: TenantBranchPersistenceScope,
+    timeZone: string,
+  ): Promise<BranchRecord> {
+    const validatedScope = validateBranchScope(scope);
+    let validatedTimeZone: string;
+    try {
+      validatedTimeZone = parseBranchTimeZone(timeZone);
+    } catch {
+      throw new BranchPersistenceError('BRANCH_PERSISTENCE_TIME_ZONE_INVALID');
+    }
+    try {
+      return await this.execute(async (executor: BranchExecutor) => {
+        const row = await executor
+          .updateTable('branches')
+          .set({ time_zone: validatedTimeZone })
+          .where('tenant_id', '=', validatedScope.tenantId)
+          .where('branch_id', '=', validatedScope.branchId)
+          .returning(['tenant_id', 'branch_id', 'time_zone', 'created_at'])
+          .executeTakeFirst();
+        if (!row) {
+          throw new BranchPersistenceError('BRANCH_PERSISTENCE_NOT_FOUND');
+        }
+        return mapBranchRecord(row);
       });
     } catch (error: unknown) {
       throw mapBranchError(error);
