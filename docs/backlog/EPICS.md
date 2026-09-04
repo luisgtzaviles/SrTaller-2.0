@@ -25,16 +25,16 @@
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** PBI-023 `Closed`; Identity & Context Foundation reconciliada y
-  Sprint 01 `Planned`, listo para activación sólo después de integrar la
-  reconciliación y completar DoR/estimación de PBI-027.
+  Sprint 01 `Planned`, pendiente de DoR/estimación de PBI-027 y autorización
+  Owner separada.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
   `Closed`. [PBI-024](pbis/PBI-024.md) fue acotado a Trusted Station Runtime
   Context con recuperación histórica selectiva. PBI-025–PBI-029 y
   PBI-031–PBI-036 separan PIN, sesión, autorización, auditoría y observabilidad.
-  [PBI-030](pbis/PBI-030.md) tiene cierre aprobado; su registro documental
-  pendiente de integración bloquea la activación de Sprint 01.
+  [PBI-030](pbis/PBI-030.md) tiene cierre `Done`; la activación de
+  Sprint 01 depende de readiness y autorización de PBI-027.
 
 ## EPIC-002 — Tenant and Platform Administration
 

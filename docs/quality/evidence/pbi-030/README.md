@@ -5,7 +5,7 @@
 | Campo | Valor |
 |---|---|
 | Elemento validado | `PBI-030` |
-| Estado | `In review — closure approved; documentary integration pending` |
+| Estado | `Done` |
 | Rama de implementación | `feature/pbi-030-design-system-shell` |
 | Pull request | [PR #8](https://github.com/luisgtzaviles/SrTaller-2.0/pull/8), `MERGED` |
 | Baseline de evidencia histórica | `f802feecbf1fb7b1c167b8d24f41f4e28db637d9` |
@@ -35,16 +35,16 @@ integrada el 2026-08-18 mediante `c8628fb`; el workflow autoritativo de `main`
 
 ## Resultado ejecutivo
 
-**IMPLEMENTATION EVIDENCE: PASS; CLOSURE APPROVED.** La implementación
+**IMPLEMENTATION EVIDENCE: PASS; CLOSURE COMPLETE.** La implementación
 remediada, los gates locales, CI e independent review pasan. El Owner aprobó
 la aceptación de producto y dispuso la matriz AT/cross-browser incompleta como
-riesgo residual Bajo (LOW) aceptado. PBI-030 no se declara todavía `Done`: falta
-integrar esta reconciliación documental en `main`. Deploy permanece separado.
+riesgo residual Bajo (LOW) aceptado. La gobernanza de cierre está integrada en
+`main` por `117ada7f70494b2cb35ed7adf78c3529dd271391`, CI `33821753091` GREEN;
+este candidato documental materializa `Done`. Deploy permanece separado.
 
 La [auditoría final de cierre](./FINAL_CLOSURE_AUDIT.md) confirma Technical DoD,
 independent review, CI y [Owner Acceptance/risk disposition](./OWNER_RISK_DISPOSITION.md).
-El lifecycle permanece `In review` únicamente hasta integrar el candidato
-documental y verificar el nuevo `main`.
+`Released` permanece `NO`; ninguna evidencia no ejecutada se reclasifica.
 
 | Área | Resultado |
 |---|---|
@@ -59,7 +59,7 @@ documental y verificar el nuevo `main`.
 | CI autoritativo del SHA de PR | PASS; runs exactos en independent review/handoff |
 | CI autoritativo del merge en `main` | PASS; run `32217905296` |
 | Aprobación Owner de producto y riesgo residual | APPROVED — 2026-09-03 |
-| Integración de la reconciliación documental | PENDING |
+| Integración de gobernanza | PASS — `117ada7f70494b2cb35ed7adf78c3529dd271391`, CI `33821753091` |
 
 ## Alcance materializado
 

@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** `PASS — CLOSURE APPROVED; DOCUMENTARY INTEGRATION PENDING`.
+- **Estado:** `PASS — CLOSURE COMPLETE`.
 - **Baseline auditada:** `main` en
-  `ead13ecbdb636afd4d9c2e6ecd34905343d165d4`.
-- **Naturaleza:** auditoría documental de cierre; no concede aceptación,
-  `Done`, deploy ni release.
+  `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091`, `SUCCESS`.
+- **Naturaleza:** auditoría documental de cierre; registra `Done`, no concede
+  deploy ni release.
 
 ## Resultado
 
@@ -19,8 +19,8 @@ El Owner concedió aceptación visual/de producto y aceptó formalmente el riesg
 AT/cross-browser restante como `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. La
 [disposición](./OWNER_RISK_DISPOSITION.md) no convierte evidencia no ejecutada
 en `PASS` ni afirma certificación. Todos los gates sustantivos de cierre están
-resueltos; el lifecycle permanece `In review` hasta integrar este candidato
-documental en `main` y obtener CI verde sobre su SHA.
+resueltos; este PR documental sólo materializa el estado `Done` en las fuentes
+canónicas cuando se integre, sin cambiar la evidencia funcional.
 
 ## Evidencia confirmada
 
@@ -30,12 +30,12 @@ documental en `main` y obtener CI verde sobre su SHA.
 | Independent review | PASS | [Independent Review](./INDEPENDENT_REVIEW.md) |
 | Merge | PASS | `c8628fb42226aa7a4f0d010ec8ef3d9d70a01823` |
 | CI del merge | PASS | run `32217905296` |
-| CI de baseline actual | PASS | run `33810423743` sobre `ead13ecbdb636afd4d9c2e6ecd34905343d165d4` |
+| CI de baseline actual | PASS | run `33821753091` sobre `117ada7f70494b2cb35ed7adf78c3529dd271391` |
 | Defectos abiertos conocidos | 0 | Revisión independiente y evidencia QA |
 | Arquitectura visual única | PASS | Contrato y checker de UI vigentes |
 | Browser/AT completo | ACCEPTED RESIDUAL RISK | Cobertura formal amplia no completada; `Bajo (LOW)` aceptado |
 | Owner Acceptance | APPROVED | [Decisión Owner](./OWNER_RISK_DISPOSITION.md) del 2026-09-03 |
-| Integración de esta decisión | PENDING | Requiere PR documental, merge autorizado y CI de `main` |
+| Integración de gobernanza | PASS | PR #17 merge `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091` |
 | Deploy/Release | No aplica a `Done` | Sigue siendo gate separado |
 
 ## Tratamiento permitido
@@ -52,9 +52,9 @@ descripción, alcance y condición de revisión futura.
 
 Hasta recibir ambas decisiones, el resultado es:
 
-`PBI-030: CLOSURE APPROVED / IN REVIEW UNTIL DOCUMENTARY INTEGRATION`
+`PBI-030: CLOSURE COMPLETE / DONE`
 
-`SPRINT-01: PLANNED`
+`SPRINT-01: PLANNED / ACTIVATION PENDING PBI-027 READINESS`
 
 `CURRENT PBI: NONE`
 

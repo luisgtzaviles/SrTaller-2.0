@@ -7,8 +7,8 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 **Estado:** Sprint 00 `Closed`.
 **Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed` y
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Planned`.
-**Sprint activo:** ninguno; Sprint 01 está listo para considerar activación
-después de integrar la reconciliación y completar DoR/estimación de PBI-027.
+**Sprint activo:** ninguno; Sprint 01 sólo puede considerar activación después
+de completar DoR/estimación de PBI-027 y recibir autorización Owner.
 
 ## Reglas propuestas
 
@@ -49,4 +49,4 @@ no autorizado.
 
 ## Próxima revisión
 
-Al integrar la reconciliación o completar la revisión DoR de PBI-027.
+Al completar la revisión DoR de PBI-027.

@@ -5,8 +5,8 @@
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado. PBI-001–PBI-023
 conservan su historia; PBI-024–PBI-029 fueron acotados conforme a Identity &
 Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
-tiene cierre aprobado y riesgo AT residual LOW aceptado; permanece `In review`
-hasta integrar esta reconciliación documental en `main`.
+tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
+aceptado; su estado es `Done` sin declarar release.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; las demás permanecen TBD.
@@ -43,7 +43,7 @@ T-shirt sizing; las demás permanecen TBD.
 | 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Ready candidate; DoR/estimation pending | Alta | Next candidate Sprint 01; not started |
 | 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | Draft reconciliado | Alta | Candidate Sprint 01 |
 | 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Draft reconciliado | Crítica | Candidate Sprint 01 |
-| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | In review — closure approved; documentary integration pending | Alta | Unassigned |
+| 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
 | 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
 | 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
@@ -68,11 +68,12 @@ T-shirt sizing; las demás permanecen TBD.
 - PBI-027 tiene decisión de Branch timezone resuelta, pero no está `Ready`
   hasta acordar estimación y completar DoR.
 - PBI-030 tiene implementación, revisión, Owner Acceptance y disposición de
-  riesgo aprobadas; `Done` será efectivo al integrar este registro en `main`.
+  riesgo aprobadas; el cierre se evidencia en merge `117ada7f70494b2cb35ed7adf78c3529dd271391`
+  y CI `33821753091`. `Released` permanece `NO`.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-Integrar la reconciliación documental; después completar estimación y DoR de
-PBI-027 antes de cualquier activación o implementación.
+Completar estimación y DoR de PBI-027 antes de cualquier activación o
+implementación.

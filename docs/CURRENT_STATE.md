@@ -4,8 +4,8 @@
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
 - **Baseline auditada:** `main` en
-  `ead13ecbdb636afd4d9c2e6ecd34905343d165d4`.
-- **CI autoritativo:** run `33810423743`, `SUCCESS`; VC-024 run-1, run-2 y
+  `117ada7f70494b2cb35ed7adf78c3529dd271391`.
+- **CI autoritativo:** run `33821753091`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -27,12 +27,12 @@ Repairs y prioriza Identity & Context Foundation.
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `ead13ecbdb636afd4d9c2e6ecd34905343d165d4` |
+| HEAD auditado | `117ada7f70494b2cb35ed7adf78c3529dd271391` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `33810423743` SUCCESS |
-| Última integración | PR #16 — D6.2 Internal Physical Location |
+| CI | `33821753091` SUCCESS |
+| Última integración | PR #17 — Workflow canónico Roadmap → Sprint → PBI |
 
 La rama documental que modifique esta fotografía no se convierte en baseline
 hasta integrarse a `main` con autorización y CI propios.
@@ -62,8 +62,8 @@ hasta integrarse a `main` con autorización y CI propios.
 - Design System y Application Shell V1.
 - Temas Light/Dark, Brand System, navegación y responsive.
 - Worklist y Repair Detail operational workspace.
-- PBI-030 tiene cierre aprobado; `Done` será efectivo cuando esta
-  reconciliación documental se integre en `main` con CI verde.
+- PBI-030: `Done`; Owner Acceptance `APPROVED`, riesgo AT/cross-browser LOW
+  aceptado y `Released: NO`.
 
 ### Repairs
 
@@ -104,7 +104,7 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 | Elemento | Estado |
 |---|---|
 | Sprint activo | Ninguno |
-| Sprint 01 | Planned — ready for activation after roadmap reconciliation |
+| Sprint 01 | Planned — activation pending PBI-027 DoR/estimación/autorización Owner |
 | PBI actual | Ninguno |
 | Siguiente candidato | PBI-027, pendiente DoR/estimación y no iniciado |
 | WIP permitido | Uno |
@@ -112,8 +112,9 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
 registra la cobertura AT/cross-browser formal pendiente como
-`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. El único gate restante es integrar
-esta reconciliación documental en `main` y verificar su CI.
+`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. No está `Released` y no bloquea
+la preparación de PBI-027; la integración de este PR documental sólo hace
+canónica esta fotografía.
 
 PBI-027 ya tiene decisión de Branch timezone, pero todavía requiere estimación
 acordada y revisión DoR antes de `Ready`.

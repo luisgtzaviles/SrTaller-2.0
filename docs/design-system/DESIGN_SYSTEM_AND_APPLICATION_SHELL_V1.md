@@ -365,8 +365,9 @@ V1 y limitando esta decisión al cliente React/Vite actual.
   `f802feecbf1fb7b1c167b8d24f41f4e28db637d9`.
 - El candidate final `5ca8866` fue integrado desde
   `feature/pbi-030-design-system-shell` mediante PR #8 y merge commit
-  `c8628fb`; PBI-030 permanece `In review` y conserva separados Owner
-  Acceptance, `Done` y deploy. La
+  `c8628fb`; el lifecycle vigente de PBI-030 se mantiene en su
+  [registro canónico](../backlog/pbis/PBI-030.md), con Owner Acceptance, `Done`
+  y deploy tratados como gates separados. La
   [revisión independiente formal](../quality/evidence/pbi-030/INDEPENDENT_REVIEW.md)
   aprobó la implementación después de remediar los defectos encontrados.
 

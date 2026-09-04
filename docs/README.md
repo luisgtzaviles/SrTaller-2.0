@@ -9,14 +9,14 @@ producto y condiciones pendientes antes de la siguiente iteración.
 
 ## Estado del documento
 
-**Estado:** Sprint 00 `Closed`; Sprint 01 `Planned — ready for activation`;
-PBI-030 con cierre aprobado e integración documental pendiente.
+**Estado:** Sprint 00 `Closed`; Sprint 01 `Planned — pending PBI-027
+readiness/Owner authorization`; PBI-030 `Done` candidato.
 **Fase:** Identity & Context Foundation preparada con WIP operacional uno; no
 existe Sprint activo ni PBI actual.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Gate actual de integración:** el CI canónico de `main` está verde en
-`ead13ecbdb636afd4d9c2e6ecd34905343d165d4`, run `33810423743`; véase
+`117ada7f70494b2cb35ed7adf78c3529dd271391`, run `33821753091`; véase
 [Current Repository State](CURRENT_STATE.md#11-cicd).
 
 ## Revisión dirigida de Sprint 00
@@ -63,8 +63,8 @@ auditoría inicial, la remediación y el dictamen final:
 La dirección visual V1 y la implementación fueron autorizadas. PBI-030 tiene
 estimación `XL — agreed`, está integrado en `main` y tiene Owner Acceptance.
 El riesgo AT/cross-browser residual fue aceptado como LOW; no afirma
-certificación. Permanece `In review` hasta integrar el registro documental;
-deploy y `Released` siguen separados.
+certificación. Este candidato registra `Done`; deploy y `Released` siguen
+separados.
 
 ## Dominio operativo
 
@@ -163,8 +163,8 @@ Los archivos individuales PBI-001 a PBI-036 se encuentran enlazados desde el
 [índice de PBIs](backlog/pbis/README.md). PBI-021/PBI-022 están `Done`;
 PBI-023 está `Closed`. PBI-024 fue acotado; la rama/PR histórica sólo sirve para
 recuperación selectiva. PBI-024–PBI-029 y PBI-031–PBI-036 forman la partición
-aprobada de Identity & Context. PBI-030 tiene cierre aprobado; `Done` será
-efectivo al integrar esta reconciliación en `main` con CI verde.
+aprobada de Identity & Context. PBI-030 está `Done`; `Released` permanece
+separado y requiere autorización propia.
 
 ## Calidad
 

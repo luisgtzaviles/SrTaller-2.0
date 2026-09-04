@@ -2,12 +2,13 @@
 
 ## Estado del documento
 
-- **Estado:** Planned — ready for activation after roadmap reconciliation.
+- **Estado:** Planned — activation pending PBI-027 DoR, estimación y
+  autorización Owner.
 - **Sprint:** SPRINT-01.
 - **Periodo:** TBD.
 - **Estado del sprint:** Planned; no activo.
-- **Gate de activación:** reconciliación del roadmap integrada en `main`,
-  PBI-027 con DoR/estimación completas y decisión Owner separada.
+- **Gate de activación:** PBI-027 con DoR/estimación completas y decisión
+  Owner separada.
 - **PBI actual:** ninguno mientras el Sprint permanezca Planned.
 - **Siguiente candidato:** PBI-027, pendiente de DoR/estimación y no iniciado.
 
@@ -48,4 +49,4 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** integración de la reconciliación y revisión DoR/estimación de PBI-027.
+- **Disparador:** revisión DoR/estimación de PBI-027.

@@ -2,7 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Planned — ready for activation after roadmap reconciliation.
+- **Estado:** Planned — activation pending PBI-027 DoR, estimación y
+  autorización Owner.
 - **Última revisión:** 2026-09-03.
 
 ## Riesgos
@@ -18,10 +19,10 @@
 
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
-| Activación Sprint 01 | Reconciliación documental aún no integrada | Merge autorizado y CI de `main` GREEN | Open |
+| Activación Sprint 01 | PBI-027 no tiene readiness completo ni autorización Owner | DoR PASS, estimación acordada y decisión Owner separada | Open |
 | PBI-027 Ready | Estimación/DoR pendientes | Acuerdo de equipo y revisión formal | Open |
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** integración de la reconciliación o refinamiento de PBI-027.
+- **Disparador:** refinamiento de PBI-027.
