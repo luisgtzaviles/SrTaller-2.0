@@ -2,15 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Planned — activation pending PBI-027 DoR, estimación y
-  autorización Owner.
+- **Estado:** Active — PBI-027 es el único trabajo en ejecución.
 - **Sprint:** SPRINT-01.
 - **Periodo:** TBD.
-- **Estado del sprint:** Planned; no activo.
-- **Gate de activación:** PBI-027 con DoR/estimación completas y decisión
-  Owner separada.
-- **PBI actual:** ninguno mientras el Sprint permanezca Planned.
-- **Siguiente candidato:** PBI-027, pendiente de DoR/estimación y no iniciado.
+- **Estado del sprint:** Active.
+- **Gate de activación:** PASS — DoR, estimación Small / riesgo Medium y
+  autorización Owner condicional de PBI-027 (2026-09-04).
+- **PBI actual:** PBI-027 — Branch Timezone Minimum (`In progress`).
+- **Siguiente candidato:** PBI-029; sólo seleccionado, no iniciado.
 
 ## Objetivo
 
@@ -49,4 +48,4 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** revisión DoR/estimación de PBI-027.
+- **Disparador:** Owner Review de PBI-027 con Draft PR y CI GREEN.

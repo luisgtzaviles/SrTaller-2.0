@@ -2,11 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Planned — activation pending PBI-027 DoR, estimación y
-  autorización Owner.
-- **PBI actual:** ninguno.
+- **Estado:** Active — PBI-027 DoR PASS y autorización Owner condicional.
+- **PBI actual:** PBI-027 — Branch Timezone Minimum (`In progress`).
 - **WIP:** uno.
-- **Siguiente candidato:** PBI-027, pendiente de DoR/estimación; no iniciado.
+- **Siguiente candidato:** PBI-029, seleccionado solamente; no iniciado.
 
 ## Gate externo de activación
 
@@ -16,15 +15,15 @@
 
 ## Committed
 
-Ningún PBI está `Committed`: PBI-027 todavía requiere estimación acordada,
-revisión DoR y autorización Owner de implementación.
+| PBI | Estado | Entrada autorizada |
+|---|---|---|
+| [PBI-027](../../backlog/pbis/PBI-027.md) | In progress | DoR PASS; Size Small / Risk Medium; autorización Owner condicional del 2026-09-04. |
 
 ## Candidatos ordenados
 
 | Orden | PBI | Estado | Condición de entrada |
 |---:|---|---|---|
-| 1 | [PBI-027](../../backlog/pbis/PBI-027.md) | Ready candidate | Estimación y DoR PASS; autorización Owner |
-| 2 | [PBI-029](../../backlog/pbis/PBI-029.md) | Draft | PBI-027 Done; DoR y autorización |
+| 1 | [PBI-029](../../backlog/pbis/PBI-029.md) | Draft | PBI-027 Done; DoR y autorización |
 | 3 | [PBI-024](../../backlog/pbis/PBI-024.md) | Draft | PBI-029 Done; recuperación selectiva refinada |
 | 4 | [PBI-032](../../backlog/pbis/PBI-032.md) | Draft | PBI-024 Done; bootstrap de primer User resuelto |
 | 5 | [PBI-033](../../backlog/pbis/PBI-033.md) | Draft | PBI-032 Done; catálogo inicial refinado |
@@ -33,8 +32,7 @@ revisión DoR y autorización Owner de implementación.
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| Activación | PBI-027 no tiene readiness completo ni autorización Owner | DoR PASS, estimación acordada y decisión Owner separada |
-| PBI-027 | Falta estimación/DoR | Acuerdo de equipo y revisión formal DoR |
+| PBI-027 cierre | Owner Review, merge autorizado y CI de `main` | No pasar a `Done` ni iniciar PBI-029 antes de esos gates |
 
 ## Reglas de cambio
 

@@ -12,6 +12,10 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- PBI-027 pasó DoR `PASS` y activó Sprint 01 con WIP=1 bajo autorización Owner
+  condicional. La rebanada permanece local hasta Owner Review; no autoriza
+  merge, release ni deploy.
+
 - Preparado el avance documental canónico de PBI-030: `Done` basado
   en merge de gobernanza `117ada7f70494b2cb35ed7adf78c3529dd271391` y CI
   `33821753091` GREEN. Sprint 01 permanece `Planned`, no existe PBI actual y
@@ -46,6 +50,12 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Cierre de DEC-002 y DEC-062 por el Responsable de Producto: R0 queda definido como fundación ejecutable multi-tenant, con inclusiones, exclusiones, escenarios y autoridad de aceptación verificables; implementación y aceptación permanecen pendientes.
 
 ### Implementación
+
+- Materializada localmente la timezone mínima por Branch: migración aditiva,
+  fallback IANA histórico `America/Hermosillo`, validación que rechaza offsets
+  fijos, actualización tenant/branch-scoped y presentación de instantes sin
+  reescritura histórica. Incluye pruebas unitarias y PostgreSQL 18.4; no
+  agrega API, UI ni nuevas features de negocio.
 
 - Materializado localmente D6.2 como command focal
   `Área de pendientes → Taller`, con catálogo por sucursal, historial

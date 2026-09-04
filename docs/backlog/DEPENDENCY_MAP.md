@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091` GREEN.
+  `4a74d46021be2a7b0ae482a88c6cd90a4c968e30`; CI `33825176423` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -12,8 +12,8 @@
 
 ```mermaid
 flowchart TD
-    P30[PBI-030 UI Foundation<br/>Done] --> S1[SPRINT-01 Planned<br/>activation pending PBI-027 readiness]
-    S1 --> P27[PBI-027 Branch Timezone<br/>Ready candidate]
+    P30[PBI-030 UI Foundation<br/>Done] --> S1[SPRINT-01 Active<br/>WIP=1]
+    S1 --> P27[PBI-027 Branch Timezone<br/>In progress]
     P27 --> P29[PBI-029 Secrets / Config]
     P29 --> P24[PBI-024 Trusted Station Runtime Context]
     P24 --> P32[PBI-032 User Directory]
@@ -64,9 +64,9 @@ flowchart TD
 
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
-- Sprint 01: `Planned`; no existe Sprint activo.
-- PBI actual: ninguno.
-- PBI-027: `Ready candidate`; estimación/DoR pendientes, no iniciado.
+- Sprint 01: `Active`; WIP=1.
+- PBI actual: PBI-027.
+- PBI-027: `In progress`; DoR PASS, Small/Medium, autorización local condicional.
 - PBI-029/PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
 
 ## Stage 2
@@ -77,4 +77,4 @@ diferidos.
 
 ## Próxima revisión
 
-Cuando cambie una dependencia aprobada o se complete DoR/estimación de PBI-027.
+En Owner Review de PBI-027 o si cambia una dependencia aprobada.
