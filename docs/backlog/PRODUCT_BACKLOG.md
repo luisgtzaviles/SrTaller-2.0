@@ -42,7 +42,7 @@ T-shirt sizing; las demás permanecen TBD.
 | 26 | [PBI-026](pbis/PBI-026.md) Contextual Authorization | Authorization / Security | EPIC-003 | Draft reconciliado | Crítica | Candidate Sprint 01 |
 | 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Done; Released: NO | Alta | Sprint 01 completed |
 | 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | Draft reconciliado | Alta | Candidate Sprint 01 |
-| 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | In review; riesgo CRITICAL aceptado | Crítica | Current Sprint 01 PBI |
+| 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Done candidate; risk acceptance, merge, CI main and Owner Acceptance PASS | Crítica | Cierre documental Sprint 01 pendiente de merge |
 | 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
 | 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
@@ -67,8 +67,10 @@ T-shirt sizing; las demás permanecen TBD.
   Reinforced Authorization y Extended Observability respectivamente.
 - PBI-027 está `Done` tras su cierre documental canónico; `Released` y deploy
   permanecen fuera de alcance.
-- PBI-029 tiene DoR `PASS` y autorización Owner para una foundation local-first
-  bajo riesgo `CRITICAL`; no está integrado ni `Done`.
+- PBI-029 tiene threat model/DoR `PASS`, riesgo `CRITICAL` aceptado, merge
+  funcional, CI autoritativo GREEN de `main` y Owner Acceptance. Es `Done
+  candidate` hasta integrar su PR documental; `Released` y deploy permanecen
+  fuera de alcance.
 - PBI-030 tiene implementación, revisión, Owner Acceptance y disposición de
   riesgo aprobadas; el cierre se evidencia en merge `117ada7f70494b2cb35ed7adf78c3529dd271391`
   y CI `33821753091`. `Released` permanece `NO`.
@@ -77,4 +79,4 @@ T-shirt sizing; las demás permanecen TBD.
 
 ## Próxima revisión
 
-Revisar el candidato PBI-029 sin iniciar PBI-024.
+Revisar el cierre documental PBI-029 sin iniciar PBI-024.

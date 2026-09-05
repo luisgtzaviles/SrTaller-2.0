@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Active — cierre documental de PBI-027 en revisión; sin PBI de
+- **Estado:** Active — cierre documental de PBI-029 en revisión; sin PBI de
   implementación activo.
 - **Última revisión:** 2026-09-04.
 
@@ -19,10 +19,10 @@
 
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
-| Cierre documental PBI-027 | PR documental, CI y autorización Owner de merge | No materializar Done ni iniciar PBI-029 antes de esos gates | Open |
+| Cierre documental PBI-029 | PR documental, CI y autorización Owner de merge | No materializar Done ni iniciar PBI-024 antes de esos gates | Open |
 | Migración timezone | Backfill histórico equivocado o cambio de instante | Fallback IANA documentado, validación y pruebas PostgreSQL; roll-forward en compartido | Mitigated |
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner merge review del cierre documental PBI-027 o un hallazgo de CI.
+- **Disparador:** Owner merge review del cierre documental PBI-029 o un hallazgo de CI.

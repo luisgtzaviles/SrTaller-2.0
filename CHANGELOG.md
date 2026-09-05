@@ -12,6 +12,13 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Preparado el cierre canónico candidato de PBI-029: threat model y DoR PASS,
+  riesgo `CRITICAL` aceptado, focused security review PASS, merge funcional
+  `36d93736d46b69acadadd95ef66809332fbb5bd4`, CI de `main` `33974100385`
+  GREEN y Owner Acceptance APPROVED. El estado `Done` requiere integrar este
+  PR documental; `Released` y deploy permanecen NO. PBI-024 queda únicamente
+  seleccionado como siguiente candidato.
+
 - Iniciado PBI-029 bajo autorización Owner de riesgo `CRITICAL`: threat model
   local-first, DoR PASS, inventario de secretos sin valores y evidencia de
   candidato. No introduce secretos reales, proveedor externo, deploy ni

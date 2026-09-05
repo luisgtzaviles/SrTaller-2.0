@@ -74,5 +74,6 @@ permanece `CRITICAL` y no queda reducido por esta estimación.
 
 ## Próxima revisión
 
-Revisar en Owner Review del candidato PBI-029 y nuevamente antes de introducir
-PBI-024, PBI-025 o PBI-034 como consumidores de secretos reservados.
+Revisar en Owner merge review del cierre documental PBI-029 y nuevamente antes
+de introducir PBI-024, PBI-025 o PBI-034 como consumidores de secretos
+reservados.

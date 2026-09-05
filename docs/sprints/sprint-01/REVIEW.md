@@ -9,9 +9,9 @@
 ## Objetivo y resultado
 
 - **Objetivo:** Identity & Context Foundation.
-- **Resultado:** PBI-027 `Done candidate`; pendiente de integrar el PR
-  documental de cierre. Los demás PBIs del Sprint no han iniciado.
-- **Evidencia:** [cierre candidato PBI-027](../../quality/evidence/pbi-027/CLOSURE_CANDIDATE.md).
+- **Resultado:** PBI-027 `Done`; PBI-029 `Done candidate`, pendiente de
+  integrar el PR documental de cierre. Los demás PBIs del Sprint no han iniciado.
+- **Evidencia:** [cierre candidato PBI-029](../../quality/evidence/pbi-029/CLOSURE_CANDIDATE.md).
 
 ## Aceptación
 
@@ -21,4 +21,4 @@
 
 ## Próxima revisión
 
-- **Disparador:** Owner merge review del cierre PBI-027 o cierre del Sprint.
+- **Disparador:** Owner merge review del cierre PBI-029 o cierre del Sprint.
