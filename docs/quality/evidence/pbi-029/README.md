@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Candidato local en progreso; no integrado, no `Done`, no `Released`.**
+**Candidato local en revisión; no integrado, no `Done`, no `Released`.**
 
 ## Alcance verificable
 

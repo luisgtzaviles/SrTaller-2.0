@@ -18,7 +18,7 @@
 | PBI | Estado | Entrada autorizada |
 |---|---|---|
 | [PBI-027](../../backlog/pbis/PBI-027.md) | Done | Cierre canónico integrado por PR #20; `Released: NO`. |
-| [PBI-029](../../backlog/pbis/PBI-029.md) | In progress | Owner Start Authorization; riesgo `CRITICAL` aceptado; scope local-first. |
+| [PBI-029](../../backlog/pbis/PBI-029.md) | In review | Owner Start Authorization; riesgo `CRITICAL` aceptado; scope local-first; Owner Review en curso. |
 
 ## Candidatos ordenados
 

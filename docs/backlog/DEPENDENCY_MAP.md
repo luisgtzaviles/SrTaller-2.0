@@ -65,9 +65,9 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Active`; WIP=1.
-- PBI actual: NONE.
+- PBI actual: PBI-029 — Secrets and External Configuration Foundation.
 - PBI-027: `Done`; `Released: NO`.
-- PBI-029: `In progress`; DoR PASS y riesgo `CRITICAL` aceptado; candidato no
+- PBI-029: `In review`; DoR PASS y riesgo `CRITICAL` aceptado; candidato no
   integrado.
 - PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
 
