@@ -9,14 +9,14 @@ producto y condiciones pendientes antes de la siguiente iteración.
 
 ## Estado del documento
 
-**Estado:** Sprint 00 `Closed`; Sprint 01 `Planned — pending PBI-027
-readiness/Owner authorization`; PBI-030 `Done` candidato.
-**Fase:** Identity & Context Foundation preparada con WIP operacional uno; no
-existe Sprint activo ni PBI actual.
+**Estado:** Sprint 00 `Closed`; Sprint 01 `Active`; PBI-030 `Done`; PBI-027
+`Done candidate` pendiente de cierre documental.
+**Fase:** Identity & Context Foundation con WIP operacional uno; no existe PBI
+actual y PBI-029 es sólo el siguiente candidato.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Gate actual de integración:** el CI canónico de `main` está verde en
-`117ada7f70494b2cb35ed7adf78c3529dd271391`, run `33821753091`; véase
+`4d54f84e8ad4b16b2889a555f7fc75975c6ddc68`, run `33944664589`; véase
 [Current Repository State](CURRENT_STATE.md#11-cicd).
 
 ## Revisión dirigida de Sprint 00

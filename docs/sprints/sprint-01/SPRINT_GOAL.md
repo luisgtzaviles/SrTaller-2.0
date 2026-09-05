@@ -2,14 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-027 es el único trabajo en ejecución.
+- **Estado:** Active — PBI-027 es `Done candidate`; no existe PBI actual.
 - **Sprint:** SPRINT-01.
 - **Periodo:** TBD.
 - **Estado del sprint:** Active.
 - **Gate de activación:** PASS — DoR, estimación Small / riesgo Medium y
   autorización Owner condicional de PBI-027 (2026-09-04).
-- **PBI actual:** PBI-027 — Branch Timezone Minimum (`In review`; Draft PR
-  #19, CI GREEN; Owner Review pendiente).
+- **PBI actual:** ninguno. PBI-029 es el siguiente candidato, no iniciado ni
+  autorizado.
 - **Siguiente candidato:** PBI-029; sólo seleccionado, no iniciado.
 
 ## Objetivo
@@ -38,7 +38,7 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 
 ## Criterios de éxito y salida
 
-- [ ] PBI-027 `Done`.
+- [x] PBI-027 `Done` candidate; pendiente únicamente de integrar este PR documental.
 - [ ] PBI-029 `Done`.
 - [ ] PBI-024 `Done` con recuperación selectiva, no merge de la rama histórica.
 - [ ] PBI-032 `Done`.
@@ -49,4 +49,4 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner Review de PBI-027 con Draft PR y CI GREEN.
+- **Disparador:** Owner merge review del PR documental de cierre PBI-027.

@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Draft; Sprint no iniciado.
+- **Estado:** Draft; Sprint activo, sin cierre de Sprint.
 - **Fecha:** TBD.
 
 ## Señales y acciones

@@ -4,8 +4,8 @@
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
 - **Baseline auditada:** `main` en
-  `4a74d46021be2a7b0ae482a88c6cd90a4c968e30`.
-- **CI autoritativo:** run `33825176423`, `SUCCESS`; VC-024 run-1, run-2 y
+  `4d54f84e8ad4b16b2889a555f7fc75975c6ddc68`.
+- **CI autoritativo:** run `33944664589`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -27,12 +27,12 @@ Repairs y prioriza Identity & Context Foundation.
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `117ada7f70494b2cb35ed7adf78c3529dd271391` |
+| HEAD auditado | `4d54f84e8ad4b16b2889a555f7fc75975c6ddc68` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `33821753091` SUCCESS |
-| Última integración | PR #17 — Workflow canónico Roadmap → Sprint → PBI |
+| CI | `33944664589` SUCCESS |
+| Última integración | PR #19 — Branch Timezone Minimum |
 
 La rama documental que modifique esta fotografía no se convierte en baseline
 hasta integrarse a `main` con autorización y CI propios.
@@ -104,8 +104,8 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 | Elemento | Estado |
 |---|---|
 | Sprint activo | Sprint 01 |
-| Sprint 01 | Active — PBI-027 es el único trabajo en ejecución |
-| PBI actual | PBI-027 — Branch Timezone Minimum (`In review`, Draft PR #19; CI GREEN) |
+| Sprint 01 | Active — sin PBI de implementación activo; cierre documental PBI-027 pendiente |
+| PBI actual | NONE |
 | Siguiente candidato | PBI-029, seleccionado solamente y no iniciado |
 | WIP permitido | Uno |
 
@@ -116,10 +116,10 @@ registra la cobertura AT/cross-browser formal pendiente como
 la preparación de PBI-027; la integración de este PR documental sólo hace
 canónica esta fotografía.
 
-PBI-027 tiene DoR `PASS`, estimación Small/riesgo Medium, autorización Owner
-condicional y CI autoritativo GREEN (`33914277031`) sobre el candidato Draft
-PR #19. Sólo puede avanzar hasta Owner Review: merge, deploy y PBI-029 siguen
-sin autorización.
+PBI-027 tiene merge `4d54f84e8ad4b16b2889a555f7fc75975c6ddc68`, CI de `main`
+`33944664589` GREEN y Owner Acceptance APPROVED. Este PR documental lo deja
+como `Done candidate`; sólo su integración vuelve ese estado canónico. PBI-029
+permanece seleccionado, no iniciado ni autorizado.
 
 ## Identity Foundation reconciliada
 
@@ -145,5 +145,5 @@ sin autorización.
 
 ## Próxima acción
 
-Realizar Owner Review de PBI-027. No se autoriza merge, deploy ni inicio de
-PBI-029.
+Revisar y, si corresponde, autorizar el merge del PR documental de cierre
+PBI-027. No se autoriza deploy ni inicio de PBI-029.
