@@ -2,7 +2,8 @@
 
 ## Estado
 
-**Candidato local en revisión; no integrado, no `Done`, no `Released`.**
+**PBI funcional integrado y aceptado; `Done candidate` hasta integrar el PR
+documental de cierre. `Released: NO`.**
 
 ## Alcance verificable
 
@@ -24,15 +25,19 @@
 | Local PostgreSQL / compatibility | PASS local — PostgreSQL 18.4, migración, seed y runtime Preview DB. |
 | `pnpm run verify` | PASS local — 442 PASS, 0 FAIL, 11 skips gobernados. |
 | OCI runtime / artifact boundary | PASS local — root read-only, usuario no-root, sin `.env`, migración y readiness GREEN. |
-| CI autoritativo | Pendiente de Draft PR y SHA final. |
-| Merge / Owner Acceptance / release | No autorizado. |
+| Focused security review | PASS — findings abiertos BLOCKER/HIGH/MEDIUM/LOW: 0. |
+| Merge funcional | PASS — PR #21 integrado mediante `36d93736d46b69acadadd95ef66809332fbb5bd4`. |
+| CI autoritativo de `main` | PASS — run `33974100385`; `run-1`, `run-2` y `comparison` GREEN sobre el merge SHA exacto. |
+| Critical Risk Owner Authorization | ACCEPTED — la clasificación `CRITICAL` se conserva. |
+| Owner Acceptance | APPROVED — PBI-029 aceptado funcionalmente; `Released: NO`. |
 
 ## Límites
 
-No contiene secretos reales, credenciales productivas, Vault/KMS, cambios de
-deploy, infraestructura, PIN, sesión, Station Runtime ni un consumidor futuro
-de los secretos reservados.
+No contiene secretos reales, credenciales productivas, secret manager,
+rotación automatizada, cambios de deploy, infraestructura, PIN, sesión,
+autenticación, Station Runtime ni distribución remota de secretos.
 
 ## Próxima revisión
 
-Owner Review del PR Draft después de CI autoritativo GREEN sobre el SHA exacto.
+Owner merge review del [cierre candidato](./CLOSURE_CANDIDATE.md). El estado
+`Done` será canónico únicamente al integrar el PR documental de avance.
