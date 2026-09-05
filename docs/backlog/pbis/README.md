@@ -5,7 +5,7 @@
 **Estado:** Índice reconciliado con el MVP Operating Roadmap. PBI-024–PBI-029
 conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
 splits aprobados. PBI-030 tiene cierre `Done`; Sprint 01 está `Active` y
-PBI-027 está `Done`; PBI-029 es `Done candidate` pendiente de su PR documental.
+PBI-027 y PBI-029 están `Done`; ambos permanecen `Released: NO`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
 T-shirt sizing; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
@@ -41,7 +41,7 @@ T-shirt sizing; los demás casos conservan TBD.
 | [PBI-026](PBI-026.md) | Contextual Authorization | Draft reconciliado |
 | [PBI-027](PBI-027.md) | Branch Timezone Minimum | Done; Released: NO |
 | [PBI-028](PBI-028.md) | Minimum Business Audit and Correlation | Draft reconciliado |
-| [PBI-029](PBI-029.md) | Secrets and External Configuration Foundation | Done candidate; merge, CI main y Owner Acceptance PASS |
+| [PBI-029](PBI-029.md) | Secrets and External Configuration Foundation | Done; merge, CI main, cierre documental y Owner Acceptance PASS |
 | [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | Done |
 | [PBI-031](PBI-031.md) | Station Binding Administration | Draft / Deferred |
 | [PBI-032](PBI-032.md) | User Directory and Lifecycle | Draft |
@@ -54,4 +54,4 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-Revisar el cierre documental PBI-029 sin iniciar PBI-024.
+PBI-024 requiere DoR y autorización Owner de inicio; no está iniciado.

@@ -111,7 +111,10 @@ Para cambios funcionales se debe registrar:
 Al cerrar un PBI, un PR documental separado debe enlazar el merge funcional,
 el run de CI de `main`, la aceptación Owner y la evidencia DoD. El mismo PR
 actualiza roadmap, sprint, backlog y Current State, y selecciona el siguiente
-PBI sin marcarlo `In progress`.
+PBI sin marcarlo `In progress`. Si el snapshot pre-merge dice `Done candidate`,
+el merge autorizado de ese PR más CI autoritativo GREEN sobre su SHA de merge
+lo convierten en `Done` efectivo; la trazabilidad post-merge evita un PR
+recursivo de sólo wording.
 
 ## Matriz de criterio a evidencia
 

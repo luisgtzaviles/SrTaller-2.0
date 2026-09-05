@@ -192,7 +192,10 @@ el paso siguiente.
 - Si falta evidencia, aceptación o siguiente prioridad, el flujo falla cerrado
   y no salta silenciosamente a otro PBI.
 - El PR documental no genera otro PR para cerrarse a sí mismo: su integración
-  materializa el estado documental reconciliado.
+  y el CI autoritativo GREEN sobre su SHA de merge materializan el estado
+  documental reconciliado. El texto pre-merge `Done candidate` se interpreta
+  como `Done` efectivo al satisfacer esos hechos; no exige otro PR sólo para
+  reescribirlo.
 
 `Done` y `Released` permanecen separados. Un deploy sólo aparece dentro del
 golden path de un PBI cuando su alcance o un release posterior lo autoriza.

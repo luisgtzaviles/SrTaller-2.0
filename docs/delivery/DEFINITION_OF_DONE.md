@@ -114,7 +114,10 @@ conjunto:
 Un entorno no disponible no se convierte en `PASS`. Sólo puede quedar `N/A` o
 riesgo residual mediante la justificación, owner y revisión que exige DEC-063.
 El cierre produce después un PR documental de avance; ese PR selecciona el
-siguiente PBI, pero no lo inicia ni lo autoriza.
+siguiente PBI, pero no lo inicia ni lo autoriza. Como se redacta antes de su
+propio merge, puede expresar `Done candidate`. El PBI queda `Done` efectivo
+cuando ese PR recibe merge autorizado y CI autoritativo GREEN sobre su SHA de
+merge; no se requiere un PR adicional sólo para cambiar ese wording preventivo.
 
 ## Evidencia de cierre
 

@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `36d93736d46b69acadadd95ef66809332fbb5bd4`; CI `33974100385` GREEN.
+  `41914c78724303d66136989937cf8f38e4ea8a88`; CI `33988752597` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -14,7 +14,7 @@
 flowchart TD
     P30[PBI-030 UI Foundation<br/>Done] --> S1[SPRINT-01 Active<br/>WIP=1]
     S1 --> P27[PBI-027 Branch Timezone<br/>Done]
-    P27 --> P29[PBI-029 Secrets / Config<br/>Done candidate]
+    P27 --> P29[PBI-029 Secrets / Config<br/>Done]
     P29 --> P24[PBI-024 Trusted Station Runtime Context]
     P24 --> P32[PBI-032 User Directory]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog]
@@ -67,9 +67,9 @@ flowchart TD
 - Sprint 01: `Active`; WIP=1.
 - PBI actual: NONE.
 - PBI-027: `Done`; `Released: NO`.
-- PBI-029: `Done candidate`; threat model/DoR, riesgo `CRITICAL`, focused
-  security review, merge, CI de `main` y Owner Acceptance PASS; pendiente sólo
-  de integrar su PR documental.
+- PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
+  review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
+  CI post-cierre PASS; `Released: NO`.
 - PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
 
 ## Stage 2
@@ -80,4 +80,4 @@ diferidos.
 
 ## Próxima revisión
 
-En Owner merge review del cierre documental PBI-029 o si cambia una dependencia aprobada.
+Ante autorización Owner para DoR de PBI-024 o si cambia una dependencia aprobada.

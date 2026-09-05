@@ -4,8 +4,8 @@
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
 - **Baseline auditada:** `main` en
-  `36d93736d46b69acadadd95ef66809332fbb5bd4`.
-- **CI autoritativo:** run `33974100385`, `SUCCESS`; VC-024 run-1, run-2 y
+  `41914c78724303d66136989937cf8f38e4ea8a88`.
+- **CI autoritativo:** run `33988752597`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -27,12 +27,12 @@ Repairs y prioriza Identity & Context Foundation.
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `36d93736d46b69acadadd95ef66809332fbb5bd4` |
+| HEAD auditado | `41914c78724303d66136989937cf8f38e4ea8a88` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `33974100385` SUCCESS |
-| Última integración | PR #21 — Secrets and External Configuration Foundation |
+| CI | `33988752597` SUCCESS |
+| Última integración | PR #22 — cierre canónico PBI-029 |
 
 La rama documental que modifique esta fotografía no se convierte en baseline
 hasta integrarse a `main` con autorización y CI propios.
@@ -104,7 +104,7 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 | Elemento | Estado |
 |---|---|
 | Sprint activo | Sprint 01 |
-| Sprint 01 | Active — sin PBI de implementación activo; cierre documental PBI-029 pendiente |
+| Sprint 01 | Active — sin PBI de implementación activo |
 | PBI actual | NONE |
 | Siguiente candidato | PBI-024, seleccionado solamente y no iniciado |
 | WIP permitido | Uno |
@@ -113,15 +113,14 @@ PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
 registra la cobertura AT/cross-browser formal pendiente como
 `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. No está `Released` y no bloquea
-la preparación de PBI-027; la integración de este PR documental sólo hace
-canónica esta fotografía.
+la preparación de PBI-027; su evidencia canónica preserva esta fotografía.
 
-PBI-027 quedó `Done` canónico al integrar PR #20; `Released: NO`. PBI-029 tiene
-merge `36d93736d46b69acadadd95ef66809332fbb5bd4`, CI de `main` `33974100385`
-GREEN, focused security review PASS, riesgo `CRITICAL` aceptado y Owner
-Acceptance APPROVED. Este PR documental lo deja como `Done candidate`; sólo su
-integración vuelve ese estado canónico. PBI-024 permanece seleccionado, no
-iniciado ni autorizado.
+PBI-027 quedó `Done` canónico al integrar PR #20; `Released: NO`. PBI-029 quedó
+`Done` al combinar su merge funcional `36d93736d46b69acadadd95ef66809332fbb5bd4`,
+CI `33974100385` GREEN, focused security review PASS, riesgo `CRITICAL`
+aceptado, Owner Acceptance APPROVED, PR #22 merge
+`41914c78724303d66136989937cf8f38e4ea8a88` y CI post-cierre `33988752597`
+GREEN. `Released: NO`. PBI-024 permanece seleccionado, no iniciado ni autorizado.
 
 ## Identity Foundation reconciliada
 
@@ -147,5 +146,5 @@ iniciado ni autorizado.
 
 ## Próxima acción
 
-Revisar y, si corresponde, autorizar el merge del PR documental de cierre
-PBI-029. No se autoriza deploy ni inicio de PBI-024.
+Preparar DoR de PBI-024 sólo con autorización Owner separada. No se autoriza
+deploy ni inicio de PBI-024.

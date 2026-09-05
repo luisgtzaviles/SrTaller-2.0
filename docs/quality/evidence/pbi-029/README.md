@@ -2,8 +2,8 @@
 
 ## Estado
 
-**PBI funcional integrado y aceptado; `Done candidate` hasta integrar el PR
-documental de cierre. `Released: NO`.**
+**PBI-029 `Done`: PR funcional, Owner Acceptance, cierre documental integrado
+y CI post-cierre de `main` GREEN. `Released: NO`.**
 
 ## Alcance verificable
 
@@ -30,6 +30,7 @@ documental de cierre. `Released: NO`.**
 | CI autoritativo de `main` | PASS — run `33974100385`; `run-1`, `run-2` y `comparison` GREEN sobre el merge SHA exacto. |
 | Critical Risk Owner Authorization | ACCEPTED — la clasificación `CRITICAL` se conserva. |
 | Owner Acceptance | APPROVED — PBI-029 aceptado funcionalmente; `Released: NO`. |
+| Cierre documental | PASS — PR #22 merge `41914c78724303d66136989937cf8f38e4ea8a88`; CI post-cierre `33988752597` GREEN. |
 
 ## Límites
 
@@ -39,5 +40,6 @@ autenticación, Station Runtime ni distribución remota de secretos.
 
 ## Próxima revisión
 
-Owner merge review del [cierre candidato](./CLOSURE_CANDIDATE.md). El estado
-`Done` será canónico únicamente al integrar el PR documental de avance.
+PBI-024 requiere DoR y autorización Owner independientes. El
+[cierre canónico](./CLOSURE_CANDIDATE.md) conserva la evidencia completa de
+PBI-029 `Done`.
