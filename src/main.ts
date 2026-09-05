@@ -7,6 +7,7 @@ import { AppModule } from './app.module.js';
 import { HealthReadiness } from './health/health-readiness.service.js';
 import { createDatabaseRuntime } from './infrastructure/database/database-runtime.js';
 import type { DatabaseRuntime } from './infrastructure/database/database-runtime.js';
+import { loadRequiredServerSecrets } from './infrastructure/config/external-configuration.js';
 import { configurePreviewStaticFiles } from './preview-static.js';
 import { loadStartupConfig } from './startup-config.js';
 
@@ -35,6 +36,10 @@ function sanitizedStartupFailure(error: unknown): Readonly<{
 }
 
 async function bootstrap(): Promise<void> {
+  // The persistence runtime remains the owner of connection parsing. This
+  // foundation establishes that its active credential is external and required
+  // before startup can proceed, without exposing it to diagnostics or clients.
+  void loadRequiredServerSecrets(process.env, ['SR_DB_PASSWORD']);
   const config = loadStartupConfig(process.env);
   const database = createDatabaseRuntime(process.env);
   let application: NestExpressApplication | null = null;

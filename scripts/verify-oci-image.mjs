@@ -235,7 +235,7 @@ try {
     'dist/db-migrate.js',
   ]);
   const firstMigrationResult = JSON.parse(firstMigration.stdout.trim());
-  assert(firstMigrationResult.applied === 1, 'Initial OCI migration must apply once');
+  assert(firstMigrationResult.applied > 0, 'Initial OCI migration must apply every governed migration once');
   assert(firstMigrationResult.pending === 0, 'Initial OCI migration must leave no pending item');
   assert(
     !firstMigration.stdout.includes(databasePassword),

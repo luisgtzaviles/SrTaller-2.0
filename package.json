@@ -16,6 +16,7 @@
     "verify:architecture": "pnpm run verify:toolchain && node ./scripts/check-architecture.mjs --root .",
     "verify:ui": "pnpm run verify:toolchain && node ./scripts/check-ui-foundation.mjs",
     "verify:ui:production": "pnpm run verify:toolchain && node ./scripts/verify-ui-production-build.mjs",
+    "verify:external-configuration": "pnpm run verify:toolchain && node ./scripts/check-external-configuration.mjs",
     "verify:container": "pnpm run verify:toolchain && node ./scripts/verify-oci-image.mjs",
     "architecture": "pnpm run verify:architecture",
     "test:architecture": "pnpm run verify:toolchain && node --test test/architecture-*.test.mjs",
@@ -38,7 +39,7 @@
     "smoke:ui": "pnpm run verify:toolchain && node ./scripts/smoke-ui.mjs",
     "diagnose:local": "pnpm run verify:toolchain && node ./scripts/local-diagnostics.mjs",
     "dev": "pnpm run verify:toolchain && node ./scripts/dev.mjs",
-    "verify": "pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure && pnpm run verify:architecture && pnpm run verify:ui && pnpm run verify:ui:production"
+    "verify": "pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure && pnpm run verify:architecture && pnpm run verify:external-configuration && pnpm run verify:ui && pnpm run verify:ui:production"
   },
   "dependencies": {
     "@nestjs/common": "11.1.28",
