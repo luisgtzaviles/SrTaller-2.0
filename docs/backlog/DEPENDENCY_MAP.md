@@ -13,7 +13,7 @@
 ```mermaid
 flowchart TD
     P30[PBI-030 UI Foundation<br/>Done] --> S1[SPRINT-01 Active<br/>WIP=1]
-    S1 --> P27[PBI-027 Branch Timezone<br/>In progress]
+    S1 --> P27[PBI-027 Branch Timezone<br/>Done candidate]
     P27 --> P29[PBI-029 Secrets / Config]
     P29 --> P24[PBI-024 Trusted Station Runtime Context]
     P24 --> P32[PBI-032 User Directory]
@@ -65,8 +65,9 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Active`; WIP=1.
-- PBI actual: PBI-027.
-- PBI-027: `In progress`; DoR PASS, Small/Medium, autorización local condicional.
+- PBI actual: NONE.
+- PBI-027: `Done candidate`; merge, CI de `main` y Owner Acceptance PASS;
+  pendiente sólo de integrar su PR documental.
 - PBI-029/PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
 
 ## Stage 2
@@ -77,4 +78,5 @@ diferidos.
 
 ## Próxima revisión
 
-En Owner Review de PBI-027 o si cambia una dependencia aprobada.
+En Owner merge review del cierre documental PBI-027 o si cambia una
+dependencia aprobada.

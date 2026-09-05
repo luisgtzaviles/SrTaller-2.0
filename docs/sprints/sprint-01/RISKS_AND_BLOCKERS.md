@@ -2,7 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-027 es el único trabajo en ejecución.
+- **Estado:** Active — cierre documental de PBI-027 en revisión; sin PBI de
+  implementación activo.
 - **Última revisión:** 2026-09-04.
 
 ## Riesgos
@@ -18,10 +19,10 @@
 
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
-| PBI-027 cierre | Owner Review, merge autorizado y CI GREEN de `main` | No pasar a Done ni iniciar PBI-029 antes de esos gates | Open |
+| Cierre documental PBI-027 | PR documental, CI y autorización Owner de merge | No materializar Done ni iniciar PBI-029 antes de esos gates | Open |
 | Migración timezone | Backfill histórico equivocado o cambio de instante | Fallback IANA documentado, validación y pruebas PostgreSQL; roll-forward en compartido | Mitigated |
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner Review de PBI-027 o un hallazgo de CI.
+- **Disparador:** Owner merge review del cierre documental PBI-027 o un hallazgo de CI.

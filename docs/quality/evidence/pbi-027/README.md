@@ -23,7 +23,11 @@
 | PostgreSQL efímero | PASS — migraciones, scope y cadena Repairs (`runs=1`) |
 | Arquitectura de esquema | PASS |
 | CI autoritativo del candidato | PASS — run `33914277031`; `run-1`, `run-2` y `comparison` GREEN sobre `239c2c9996c1159aa52985e189d3add5e00545e6` |
+| Merge funcional | PASS — PR #19 integrado mediante `4d54f84e8ad4b16b2889a555f7fc75975c6ddc68` |
+| CI autoritativo de `main` | PASS — run `33944664589`; `run-1`, `run-2` y `comparison` GREEN sobre el merge SHA exacto |
+| Owner Acceptance | APPROVED — PBI-027 aceptado funcionalmente; `Released: NO` |
 
 No hubo deploy, cambio de Preview, PostgreSQL remoto, DNS, secretos ni
-infraestructura. Este directorio no declara Owner Acceptance ni cierre `Done`;
-el siguiente gate es Owner Review.
+infraestructura. El [cierre candidato](./CLOSURE_CANDIDATE.md) enlaza la
+aceptación Owner, el merge y el CI de `main`. El estado `Done` será canónico
+únicamente al integrar el PR documental de avance.

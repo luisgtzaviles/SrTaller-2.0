@@ -4,18 +4,18 @@
 
 - **Estado:** Roadmap aprobado; Sprint 01 activo con WIP=1.
 - **Baseline de la reconciliación:** `main` en
-  `4a74d46021be2a7b0ae482a88c6cd90a4c968e30`; CI autoritativo
-  `33825176423`, `SUCCESS`.
+  `4d54f84e8ad4b16b2889a555f7fc75975c6ddc68`; CI autoritativo
+  `33944664589`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** Sprint 01.
-- **Sprint 01:** `Active — PBI-027 In review (Draft PR #19)`.
-- **PBI actual:** [PBI-027](../backlog/pbis/PBI-027.md).
+- **Sprint 01:** `Active — cierre documental PBI-027 pendiente`.
+- **PBI actual:** NONE.
 - **Siguiente PBI candidato:** [PBI-029](../backlog/pbis/PBI-029.md),
   seleccionado solamente; no iniciado ni autorizado.
-- **Blocking gate:** Owner Review, merge autorizado y CI de `main` para
+- **Blocking gate:** revisión, CI y merge autorizado del PR documental de
   PBI-027; no inicia PBI-029.
 - **WIP operacional:** uno.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation del
@@ -84,9 +84,9 @@ Owner explícita de merge.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
    salta silenciosamente a otro PBI.
 
-PBI-030 está `Done` y no está `Released`. PBI-027 superó DoR con estimación
-Small/riesgo Medium y autorización Owner condicional; es el único PBI en
-ejecución local.
+PBI-030 está `Done` y no está `Released`. PBI-027 cumple sus predicados de
+DoD como `Done candidate`: merge, CI de `main`, evidencia y Owner Acceptance
+están presentes. PBI-029 sigue seleccionado solamente.
 
 ## Current execution pointer
 
@@ -97,10 +97,10 @@ ejecución local.
 | Phase | Identity & Context Foundation |
 | Sprint | SPRINT-01 |
 | Sprint status | Active — WIP=1 |
-| Current PBI | PBI-027 — Branch Timezone Minimum |
+| Current PBI | NONE |
 | Next PBI candidate | PBI-029 — Secrets and External Configuration |
-| PBI-027 status | In review — Draft PR #19; CI GREEN, Owner Review pending |
-| Blocking gate | Owner Review, merge autorizado y CI de `main` |
+| PBI-027 status | Done candidate — cierre documental pendiente de integración |
+| Blocking gate | PR documental: review, CI y autorización Owner de merge |
 
 ## Fases aprobadas
 
@@ -166,7 +166,7 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | Gate | Estado | Evidencia o condición vigente |
 |---|---|---|
 | G0 ROADMAP | PASS | PR #17 merge `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091` GREEN |
-| G1–G12 | Pending | La selección de PBI-027 no inicia ni autoriza su trabajo |
+| G1–G12 | Pending | El cierre de PBI-027 no materializa ni autoriza PBI-029 |
 
 ## Cierre y avance documental de un PBI
 
@@ -192,14 +192,14 @@ Este candidato registra el efecto canónico de los gates ya aprobados:
 
 1. PBI-030 `Done` por quedar su cierre/evidencia dentro de `main`;
 2. Sprint 01 `Active` con WIP=1;
-3. PBI-027 como PBI actual, con DoR PASS y autorización local condicional;
+3. PBI-027 como `Done candidate` con merge, CI de `main` y Owner Acceptance;
 4. PBI-029 como siguiente candidato, no iniciado;
 5. ningún merge, deploy o release queda implícitamente autorizado.
 
 ## Próxima revisión
 
-- **Disparador:** Owner Review de PBI-027 después de Draft PR y CI GREEN.
-- **Resultado esperado si pasa:** el Owner puede autorizar el merge; PBI-029
-  permanece no iniciado hasta el ciclo documental posterior.
-- **Si falla:** PBI-027 permanece en review/remediación y no se salta a otro
-  candidato.
+- **Disparador:** Owner merge review del PR documental PBI-027.
+- **Resultado esperado si pasa:** PBI-027 queda `Done` canónico; PBI-029
+  permanece no iniciado hasta su DoR y autorización propias.
+- **Si falla:** PBI-027 permanece `Done candidate`/en remediación y no se salta
+  a otro candidato.

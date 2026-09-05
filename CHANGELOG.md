@@ -12,9 +12,11 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
-- PBI-027 pasó DoR `PASS` y activó Sprint 01 con WIP=1 bajo autorización Owner
-  condicional. La rebanada permanece local hasta Owner Review; no autoriza
-  merge, release ni deploy.
+- Preparado el cierre canónico candidato de PBI-027: merge funcional
+  `4d54f84e8ad4b16b2889a555f7fc75975c6ddc68`, CI de `main` `33944664589`
+  GREEN y Owner Acceptance APPROVED. El estado `Done` requiere integrar este
+  PR documental; `Released` y deploy permanecen NO. PBI-029 queda únicamente
+  seleccionado como siguiente candidato.
 
 - Preparado el avance documental canónico de PBI-030: `Done` basado
   en merge de gobernanza `117ada7f70494b2cb35ed7adf78c3529dd271391` y CI

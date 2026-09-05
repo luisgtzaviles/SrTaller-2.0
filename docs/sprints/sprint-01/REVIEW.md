@@ -2,15 +2,16 @@
 
 ## Estado del documento
 
-- **Estado:** Draft; Sprint no iniciado.
+- **Estado:** Draft; Sprint activo, sin cierre de Sprint.
 - **Fecha:** TBD.
 - **Participantes/roles:** TBD.
 
 ## Objetivo y resultado
 
 - **Objetivo:** Identity & Context Foundation.
-- **Resultado:** Not started.
-- **Evidencia:** TBD.
+- **Resultado:** PBI-027 `Done candidate`; pendiente de integrar el PR
+  documental de cierre. Los demás PBIs del Sprint no han iniciado.
+- **Evidencia:** [cierre candidato PBI-027](../../quality/evidence/pbi-027/CLOSURE_CANDIDATE.md).
 
 ## Aceptación
 
@@ -20,4 +21,4 @@
 
 ## Próxima revisión
 
-- **Disparador:** primera review de un PBI del Sprint o cierre del Sprint.
+- **Disparador:** Owner merge review del cierre PBI-027 o cierre del Sprint.

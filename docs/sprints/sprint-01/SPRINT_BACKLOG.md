@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-027 DoR PASS y autorización Owner condicional.
-- **PBI actual:** PBI-027 — Branch Timezone Minimum (`In review`; Draft PR
-  #19, CI GREEN; Owner Review pendiente).
+- **Estado:** Active — cierre documental de PBI-027 candidato a integración.
+- **PBI actual:** ninguno. PBI-029 está seleccionado únicamente como
+  candidato y no está autorizado.
 - **WIP:** uno.
 - **Siguiente candidato:** PBI-029, seleccionado solamente; no iniciado.
 
@@ -18,7 +18,7 @@
 
 | PBI | Estado | Entrada autorizada |
 |---|---|---|
-| [PBI-027](../../backlog/pbis/PBI-027.md) | In review | DoR PASS; Size Small / Risk Medium; Draft PR #19 y CI GREEN; Owner Review pendiente. |
+| [PBI-027](../../backlog/pbis/PBI-027.md) | Done candidate | Merge `4d54f84e`; CI main `33944664589` GREEN; Owner Acceptance APPROVED; cierre documental pendiente de merge. |
 
 ## Candidatos ordenados
 
@@ -33,7 +33,7 @@
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| PBI-027 cierre | Owner Review, merge autorizado y CI de `main` | No pasar a `Done` ni iniciar PBI-029 antes de esos gates |
+| Cierre documental PBI-027 | PR documental, CI y autorización Owner de merge | No materializar `Done` ni iniciar PBI-029 antes de esos gates |
 
 ## Reglas de cambio
 
@@ -45,4 +45,4 @@
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner Review de PBI-027 o cambio material de dependencias.
+- **Disparador:** Owner merge review del cierre documental de PBI-027 o cambio material de dependencias.
