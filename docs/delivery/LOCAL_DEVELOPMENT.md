@@ -90,6 +90,12 @@ El guard fail-closed rechaza hosts remotos, ambientes distintos de `local`,
 puertos alternos, nombres de base distintos, variables `SR_DB_*` persistidas en
 `.env.local` y cualquier alias de `libpq`.
 
+PBI-029 añade la clasificación server-only de secretos y configuración
+técnica. `SR_DB_PASSWORD` se exige al iniciar el backend, pero los scripts
+locales lo derivan sólo en memoria desde `.env.local`; ningún comando lo
+imprime. Los nombres reservados para PIN, sesión o bootstrap no tienen valor ni
+consumidor local. Nunca se usa `VITE_*` para un secreto.
+
 ## Migraciones
 
 ```sh

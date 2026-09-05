@@ -2,11 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Active — cierre documental de PBI-027 candidato a integración.
-- **PBI actual:** ninguno. PBI-029 está seleccionado únicamente como
-  candidato y no está autorizado.
+- **Estado:** Active — PBI-029 autorizado localmente; candidato no integrado.
+- **PBI actual:** PBI-029 — Secrets and External Configuration Foundation.
 - **WIP:** uno.
-- **Siguiente candidato:** PBI-029, seleccionado solamente; no iniciado.
+- **Siguiente candidato:** PBI-024, seleccionado solamente; no iniciado.
 
 ## Gate externo de activación
 
@@ -18,14 +17,14 @@
 
 | PBI | Estado | Entrada autorizada |
 |---|---|---|
-| [PBI-027](../../backlog/pbis/PBI-027.md) | Done candidate | Merge `4d54f84e`; CI main `33944664589` GREEN; Owner Acceptance APPROVED; cierre documental pendiente de merge. |
+| [PBI-027](../../backlog/pbis/PBI-027.md) | Done | Cierre canónico integrado por PR #20; `Released: NO`. |
+| [PBI-029](../../backlog/pbis/PBI-029.md) | In review | Owner Start Authorization; riesgo `CRITICAL` aceptado; scope local-first; Owner Review en curso. |
 
 ## Candidatos ordenados
 
 | Orden | PBI | Estado | Condición de entrada |
 |---:|---|---|---|
-| 1 | [PBI-029](../../backlog/pbis/PBI-029.md) | Draft | PBI-027 Done; DoR y autorización |
-| 3 | [PBI-024](../../backlog/pbis/PBI-024.md) | Draft | PBI-029 Done; recuperación selectiva refinada |
+| 1 | [PBI-024](../../backlog/pbis/PBI-024.md) | Draft | PBI-029 Done; recuperación selectiva refinada |
 | 4 | [PBI-032](../../backlog/pbis/PBI-032.md) | Draft | PBI-024 Done; bootstrap de primer User resuelto |
 | 5 | [PBI-033](../../backlog/pbis/PBI-033.md) | Draft | PBI-032 Done; catálogo inicial refinado |
 
@@ -33,7 +32,7 @@
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| Cierre documental PBI-027 | PR documental, CI y autorización Owner de merge | No materializar `Done` ni iniciar PBI-029 antes de esos gates |
+| PBI-029 | CI autoritativo y Owner Review del candidato | No integrar, declarar `Done` ni iniciar PBI-024 antes de los gates aplicables |
 
 ## Reglas de cambio
 
@@ -45,4 +44,4 @@
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner merge review del cierre documental de PBI-027 o cambio material de dependencias.
+- **Disparador:** Owner Review de PBI-029 o cambio material de amenazas/dependencias.

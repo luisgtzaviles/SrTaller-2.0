@@ -66,11 +66,15 @@ test('only executable entrypoints read process.env and configuration is not read
 
   assert.deepEqual(
     occurrences.map(({ file }) => file),
-    ['src/db-migrate.ts', 'src/main.ts', 'src/main.ts'],
+    ['src/db-migrate.ts', 'src/main.ts', 'src/main.ts', 'src/main.ts'],
   );
   assert.match(
     await readFile('src/main.ts', 'utf8'),
     /loadStartupConfig\(process\.env\)/u,
+  );
+  assert.match(
+    await readFile('src/main.ts', 'utf8'),
+    /loadRequiredServerSecrets\(process\.env, \['SR_DB_PASSWORD'\]\)/u,
   );
   assert.match(
     await readFile('src/db-migrate.ts', 'utf8'),
