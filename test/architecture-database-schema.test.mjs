@@ -71,6 +71,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260902100000_repairs_enforce_technician_scope.ts',
       '20260903120000_repairs_create_workflow_transitions.ts',
       '20260903130000_repairs_create_location_movements.ts',
+      '20260904120000_stations_add_branch_timezone.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');
@@ -94,6 +95,7 @@ test('database schema types are immutable and require externally supplied identi
   assert.match(schema, /type ImmutableColumn<T> = ColumnType<T, T, never>/u);
   assert.match(schema, /readonly tenant_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly branch_id: ImmutableColumn<string>/u);
+  assert.match(schema, /readonly time_zone: MutableColumn<string>/u);
   assert.match(schema, /readonly created_at: ImmutableColumn<Date>/u);
   assert.doesNotMatch(schema, /Generated/u);
 });

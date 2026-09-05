@@ -2,9 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Planned — activation pending PBI-027 DoR, estimación y
-  autorización Owner.
-- **Última revisión:** 2026-09-03.
+- **Estado:** Active — PBI-027 es el único trabajo en ejecución.
+- **Última revisión:** 2026-09-04.
 
 ## Riesgos
 
@@ -19,10 +18,10 @@
 
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
-| Activación Sprint 01 | PBI-027 no tiene readiness completo ni autorización Owner | DoR PASS, estimación acordada y decisión Owner separada | Open |
-| PBI-027 Ready | Estimación/DoR pendientes | Acuerdo de equipo y revisión formal | Open |
+| PBI-027 cierre | Owner Review, merge autorizado y CI GREEN de `main` | No pasar a Done ni iniciar PBI-029 antes de esos gates | Open |
+| Migración timezone | Backfill histórico equivocado o cambio de instante | Fallback IANA documentado, validación y pruebas PostgreSQL; roll-forward en compartido | Mitigated |
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** refinamiento de PBI-027.
+- **Disparador:** Owner Review de PBI-027 o un hallazgo de CI.

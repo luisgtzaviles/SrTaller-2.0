@@ -2,23 +2,21 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; avance documental de cierre de PBI-030 en
-  candidato de integración.
+- **Estado:** Roadmap aprobado; Sprint 01 activo con WIP=1.
 - **Baseline de la reconciliación:** `main` en
-  `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI autoritativo
-  `33821753091`, `SUCCESS`.
+  `4a74d46021be2a7b0ae482a88c6cd90a4c968e30`; CI autoritativo
+  `33825176423`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
-- **Sprint activo:** ninguno.
-- **Sprint 01:** `Planned — activation pending PBI-027 DoR, estimación y
-  autorización Owner`.
-- **PBI actual:** ninguno.
-- **Siguiente PBI candidato:** [PBI-027](../backlog/pbis/PBI-027.md),
-  pendiente de DoR y estimación; no iniciado ni autorizado.
-- **Blocking gate:** readiness y autorización explícita de PBI-027; este
-  candidato no inicia su implementación.
+- **Sprint activo:** Sprint 01.
+- **Sprint 01:** `Active — PBI-027 In review (Draft PR #19)`.
+- **PBI actual:** [PBI-027](../backlog/pbis/PBI-027.md).
+- **Siguiente PBI candidato:** [PBI-029](../backlog/pbis/PBI-029.md),
+  seleccionado solamente; no iniciado ni autorizado.
+- **Blocking gate:** Owner Review, merge autorizado y CI de `main` para
+  PBI-027; no inicia PBI-029.
 - **WIP operacional:** uno.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation del
   2026-09-03.
@@ -86,23 +84,23 @@ Owner explícita de merge.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
    salta silenciosamente a otro PBI.
 
-PBI-030 cumple sus gates sustantivos de `Done` en la baseline indicada. Este PR
-documental materializa ese cierre en las fuentes canónicas cuando se integre;
-no activa Sprint 01, no crea un PBI actual y no inicia PBI-027.
+PBI-030 está `Done` y no está `Released`. PBI-027 superó DoR con estimación
+Small/riesgo Medium y autorización Owner condicional; es el único PBI en
+ejecución local.
 
 ## Current execution pointer
 
-| Campo | Valor vigente en el candidato |
+| Campo | Valor vigente |
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
 | Phase | Identity & Context Foundation |
 | Sprint | SPRINT-01 |
-| Sprint status | Planned — activation pending readiness/autorización de PBI-027 |
-| Current PBI | NONE |
-| Next PBI candidate | PBI-027 — Branch Timezone Minimum |
-| PBI-027 status | Ready candidate — DoR/estimation pending |
-| Blocking gate | PBI-027 DoR, estimación acordada y autorización Owner |
+| Sprint status | Active — WIP=1 |
+| Current PBI | PBI-027 — Branch Timezone Minimum |
+| Next PBI candidate | PBI-029 — Secrets and External Configuration |
+| PBI-027 status | In review — Draft PR #19; CI GREEN, Owner Review pending |
+| Blocking gate | Owner Review, merge autorizado y CI de `main` |
 
 ## Fases aprobadas
 
@@ -193,16 +191,15 @@ cobertura AT/cross-browser incompleta como
 Este candidato registra el efecto canónico de los gates ya aprobados:
 
 1. PBI-030 `Done` por quedar su cierre/evidencia dentro de `main`;
-2. Sprint 01 `Planned`, todavía no `Active`;
-3. ningún PBI actual;
-4. PBI-027 como siguiente candidato, pendiente de DoR/estimación;
-5. ninguna autorización implícita de implementación, deploy o release.
+2. Sprint 01 `Active` con WIP=1;
+3. PBI-027 como PBI actual, con DoR PASS y autorización local condicional;
+4. PBI-029 como siguiente candidato, no iniciado;
+5. ningún merge, deploy o release queda implícitamente autorizado.
 
 ## Próxima revisión
 
-- **Disparador:** completar DoR y estimación de PBI-027, seguido de decisión
-  Owner separada.
-- **Resultado esperado si pasa:** Sprint 01 puede activarse y PBI-027 puede
-  quedar `Ready`; la implementación sigue requiriendo autorización Owner.
-- **Si falla:** Sprint 01 permanece `Planned`, no existe PBI actual y no se
-  salta silenciosamente a otro candidato.
+- **Disparador:** Owner Review de PBI-027 después de Draft PR y CI GREEN.
+- **Resultado esperado si pasa:** el Owner puede autorizar el merge; PBI-029
+  permanece no iniciado hasta el ciclo documental posterior.
+- **Si falla:** PBI-027 permanece en review/remediación y no se salta a otro
+  candidato.

@@ -50,9 +50,9 @@ try {
   );
   for (const branch of rows.branches) {
     await client.query(
-      `INSERT INTO branches (tenant_id, branch_id, created_at) VALUES ($1::uuid, $2::uuid, $3::timestamptz)
-       ON CONFLICT (tenant_id, branch_id) DO UPDATE SET created_at = EXCLUDED.created_at`,
-      [branch.tenantId, branch.branchId, branch.createdAt],
+      `INSERT INTO branches (tenant_id, branch_id, time_zone, created_at) VALUES ($1::uuid, $2::uuid, $3, $4::timestamptz)
+       ON CONFLICT (tenant_id, branch_id) DO UPDATE SET time_zone = EXCLUDED.time_zone, created_at = EXCLUDED.created_at`,
+      [branch.tenantId, branch.branchId, branch.timeZone, branch.createdAt],
     );
   }
   for (const repair of localRepairRows()) {

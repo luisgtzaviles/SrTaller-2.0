@@ -1,6 +1,7 @@
 import { inspect } from 'node:util';
 
 import type { TenantId } from '../../../tenancy/index.js';
+import type { BranchTimeZone } from '../branch-time-zone.js';
 
 declare const branchIdBrand: unique symbol;
 
@@ -35,18 +36,21 @@ export interface TenantBranchPersistenceScope {
 export interface BranchRecord {
   readonly tenantId: TenantId;
   readonly branchId: BranchId;
+  readonly timeZone: BranchTimeZone;
   readonly createdAt: string;
 }
 
 export interface CreateBranchRecord {
   readonly tenantId: TenantId;
   readonly branchId: BranchId;
+  readonly timeZone: BranchTimeZone;
   readonly createdAt: string;
 }
 
 export type BranchPersistenceErrorCode =
   | 'PERSISTENCE_TENANT_SCOPE_REQUIRED'
   | 'PERSISTENCE_BRANCH_SCOPE_REQUIRED'
+  | 'BRANCH_PERSISTENCE_TIME_ZONE_INVALID'
   | 'BRANCH_PERSISTENCE_CONFLICT'
   | 'BRANCH_PERSISTENCE_TENANT_NOT_FOUND'
   | 'BRANCH_PERSISTENCE_NOT_FOUND'
@@ -76,6 +80,10 @@ const errorContracts: Readonly<
   PERSISTENCE_BRANCH_SCOPE_REQUIRED: Object.freeze({
     category: 'Validation',
     message: 'A valid branch persistence scope is required.',
+  }),
+  BRANCH_PERSISTENCE_TIME_ZONE_INVALID: Object.freeze({
+    category: 'Validation',
+    message: 'A valid branch IANA time zone is required.',
   }),
   BRANCH_PERSISTENCE_CONFLICT: Object.freeze({
     category: 'Conflict',
@@ -141,4 +149,8 @@ export interface BranchRepositoryPort {
     scope: TenantPersistenceScope,
   ): Promise<readonly BranchRecord[]>;
   existsBranch(scope: TenantBranchPersistenceScope): Promise<boolean>;
+  updateBranchTimeZone(
+    scope: TenantBranchPersistenceScope,
+    timeZone: BranchTimeZone,
+  ): Promise<BranchRecord>;
 }

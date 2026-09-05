@@ -130,7 +130,8 @@
       "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts",
       "src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts",
       "src/infrastructure/database/migrations/20260903120000_repairs_create_workflow_transitions.ts",
-      "src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts"
+      "src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts",
+      "src/infrastructure/database/migrations/20260904120000_stations_add_branch_timezone.ts"
     ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
@@ -207,6 +208,7 @@
           "src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts",
           "src/infrastructure/database/migrations/20260903120000_repairs_create_workflow_transitions.ts",
           "src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts",
+          "src/infrastructure/database/migrations/20260904120000_stations_add_branch_timezone.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -672,6 +674,7 @@
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
     "src/modules/stations/index.ts",
+    "src/modules/stations/application/branch-time-zone.ts",
     "src/modules/stations/application/ports/branch-repository.port.ts",
     "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
     "src/modules/stations/stations.module.ts",

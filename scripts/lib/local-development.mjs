@@ -25,6 +25,10 @@ export const LOCAL_BRANCH_IDS = Object.freeze([
   '00000000-0000-4000-8000-000000000101',
   '00000000-0000-4000-8000-000000000102',
 ]);
+export const LOCAL_BRANCH_TIME_ZONES = Object.freeze([
+  'America/Hermosillo',
+  'America/Tijuana',
+]);
 export const LOCAL_SEED_TIMESTAMP = '2026-01-01T00:00:00.000Z';
 export const LOCAL_REPAIR_REFERENCE_DATE = '2026-08-19T12:00:00.000Z';
 
@@ -221,9 +225,10 @@ export function localSeedRows() {
       createdAt: LOCAL_SEED_TIMESTAMP,
     }),
     branches: Object.freeze(
-      LOCAL_BRANCH_IDS.map((branchId) => Object.freeze({
+      LOCAL_BRANCH_IDS.map((branchId, index) => Object.freeze({
         tenantId: LOCAL_TENANT_ID,
         branchId,
+        timeZone: LOCAL_BRANCH_TIME_ZONES[index],
         createdAt: LOCAL_SEED_TIMESTAMP,
       })),
     ),

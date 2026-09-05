@@ -11,6 +11,7 @@ export interface TenantTable {
 export interface BranchTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly branch_id: ImmutableColumn<string>;
+  readonly time_zone: MutableColumn<string>;
   readonly created_at: ImmutableColumn<Date>;
 }
 

@@ -62,7 +62,10 @@ const migrationRoot = fileURLToPath(
 );
 const migrationName =
   '20260725183832_database_create_tenants_and_branches';
+const branchTimezoneMigrationName =
+  '20260904120000_stations_add_branch_timezone';
 const createdAt = '2026-07-25T20:00:00.000Z';
+const timeZone = 'America/Hermosillo';
 
 function databaseConfig() {
   return Object.freeze({
@@ -195,19 +198,21 @@ test(
     let runner;
     try {
       await resetDatabase(admin);
-      await Promise.all([
-        copyFile(
-          join(migrationRoot, `${migrationName}.js`),
-          join(tenantMigrationRoot, `${migrationName}.js`),
-        ),
-        copyFile(
-          join(migrationRoot, `${migrationName}.js.map`),
-          join(tenantMigrationRoot, `${migrationName}.js.map`),
-        ),
-      ]);
+      await Promise.all(
+        [migrationName, branchTimezoneMigrationName].flatMap((name) => [
+          copyFile(
+            join(migrationRoot, `${name}.js`),
+            join(tenantMigrationRoot, `${name}.js`),
+          ),
+          copyFile(
+            join(migrationRoot, `${name}.js.map`),
+            join(tenantMigrationRoot, `${name}.js.map`),
+          ),
+        ]),
+      );
       const tenantMigrationSource = source(tenantMigrationRoot);
       const inspection = await inspectMigrationSource(tenantMigrationSource);
-      assert.equal(inspection.manifest.migrations.length, 1);
+      assert.equal(inspection.manifest.migrations.length, 2);
       assert.equal(
         inspection.manifest.migrations[0].migrationName,
         migrationName,
@@ -318,7 +323,7 @@ test(
       ]) {
         await branchRepository.createBranch(
           { tenantId, branchId },
-          { tenantId, branchId, createdAt },
+          { tenantId, branchId, timeZone, createdAt },
         );
       }
 
@@ -363,14 +368,14 @@ test(
       await assert.rejects(
         branchRepository.createBranch(
           { tenantId: tenantA, branchId: branchA },
-          { tenantId: tenantA, branchId: branchA, createdAt },
+          { tenantId: tenantA, branchId: branchA, timeZone, createdAt },
         ),
         expectsBranchCode('BRANCH_PERSISTENCE_CONFLICT'),
       );
       await assert.rejects(
         branchRepository.createBranch(
           { tenantId: missingTenant, branchId: branchA },
-          { tenantId: missingTenant, branchId: branchA, createdAt },
+          { tenantId: missingTenant, branchId: branchA, timeZone, createdAt },
         ),
         expectsBranchCode('BRANCH_PERSISTENCE_TENANT_NOT_FOUND'),
       );
@@ -378,11 +383,11 @@ test(
       const duplicateResults = await Promise.allSettled([
         branchRepository.createBranch(
           { tenantId: tenantA, branchId: concurrentBranch },
-          { tenantId: tenantA, branchId: concurrentBranch, createdAt },
+          { tenantId: tenantA, branchId: concurrentBranch, timeZone, createdAt },
         ),
         branchRepository.createBranch(
           { tenantId: tenantA, branchId: concurrentBranch },
-          { tenantId: tenantA, branchId: concurrentBranch, createdAt },
+          { tenantId: tenantA, branchId: concurrentBranch, timeZone, createdAt },
         ),
       ]);
       assert.equal(
@@ -441,7 +446,7 @@ test(
             createTransactionalKyselyBranchRepository(context);
           await repository.createBranch(
             { tenantId: tenantA, branchId: rolledBackBranch },
-            { tenantId: tenantA, branchId: rolledBackBranch, createdAt },
+            { tenantId: tenantA, branchId: rolledBackBranch, timeZone, createdAt },
           );
           throw new Error('synthetic branch rollback');
         }),
@@ -458,7 +463,7 @@ test(
       );
 
       const status = await runner.getMigrationStatus();
-      await runner.migrateDown(authorization(status.migrations[0]));
+      await runner.migrateDown(authorization(status.migrations.at(-1)));
       await resetDatabase(admin);
       await assertNoObjects(admin);
     } finally {

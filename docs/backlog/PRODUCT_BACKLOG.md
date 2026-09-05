@@ -40,7 +40,7 @@ T-shirt sizing; las demás permanecen TBD.
 | 24 | [PBI-024](pbis/PBI-024.md) Trusted Station Runtime Context | Architecture / Security | EPIC-004 | Draft reconciliado | Crítica | Candidate Sprint 01 |
 | 25 | [PBI-025](pbis/PBI-025.md) PIN Credential Authentication | Identity / Security | EPIC-003 | Blocked por dependencias | Crítica | Candidate Sprint 01 |
 | 26 | [PBI-026](pbis/PBI-026.md) Contextual Authorization | Authorization / Security | EPIC-003 | Draft reconciliado | Crítica | Candidate Sprint 01 |
-| 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Ready candidate; DoR/estimation pending | Alta | Next candidate Sprint 01; not started |
+| 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | In review; DoR PASS; Small / Medium; CI GREEN | Alta | Current PBI Sprint 01; Owner Review pending |
 | 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | Draft reconciliado | Alta | Candidate Sprint 01 |
 | 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Draft reconciliado | Crítica | Candidate Sprint 01 |
 | 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Done | Alta | Unassigned |
@@ -65,8 +65,9 @@ T-shirt sizing; las demás permanecen TBD.
   completa ni hereda PASS actual.
 - PBI-025/PBI-026/PBI-028 fueron separados de Operational Session,
   Reinforced Authorization y Extended Observability respectivamente.
-- PBI-027 tiene decisión de Branch timezone resuelta, pero no está `Ready`
-  hasta acordar estimación y completar DoR.
+- PBI-027 tiene decisión de Branch timezone resuelta, DoR `PASS` y CI
+  autoritativo GREEN sobre Draft PR #19. Su siguiente gate es Owner Review;
+  merge y deploy permanecen fuera de alcance.
 - PBI-030 tiene implementación, revisión, Owner Acceptance y disposición de
   riesgo aprobadas; el cierre se evidencia en merge `117ada7f70494b2cb35ed7adf78c3529dd271391`
   y CI `33821753091`. `Released` permanece `NO`.
@@ -75,5 +76,4 @@ T-shirt sizing; las demás permanecen TBD.
 
 ## Próxima revisión
 
-Completar estimación y DoR de PBI-027 antes de cualquier activación o
-implementación.
+Completar PBI-027 hasta Owner Review sin iniciar PBI-029.
