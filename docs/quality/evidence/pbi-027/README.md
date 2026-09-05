@@ -22,6 +22,8 @@
 | PostgreSQL local | PASS — 18.4; migración y seed sintético aplicados |
 | PostgreSQL efímero | PASS — migraciones, scope y cadena Repairs (`runs=1`) |
 | Arquitectura de esquema | PASS |
+| CI autoritativo del candidato | PASS — run `33914277031`; `run-1`, `run-2` y `comparison` GREEN sobre `239c2c9996c1159aa52985e189d3add5e00545e6` |
 
 No hubo deploy, cambio de Preview, PostgreSQL remoto, DNS, secretos ni
-infraestructura. Este directorio no declara Owner Acceptance ni cierre `Done`.
+infraestructura. Este directorio no declara Owner Acceptance ni cierre `Done`;
+el siguiente gate es Owner Review.

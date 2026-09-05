@@ -99,7 +99,7 @@ ejecución local.
 | Sprint status | Active — WIP=1 |
 | Current PBI | PBI-027 — Branch Timezone Minimum |
 | Next PBI candidate | PBI-029 — Secrets and External Configuration |
-| PBI-027 status | In review — Draft PR #19; CI and Owner Review pending |
+| PBI-027 status | In review — Draft PR #19; CI GREEN, Owner Review pending |
 | Blocking gate | Owner Review, merge autorizado y CI de `main` |
 
 ## Fases aprobadas

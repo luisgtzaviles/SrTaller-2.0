@@ -3,7 +3,8 @@
 ## Estado del documento
 
 - **Estado:** Active — PBI-027 DoR PASS y autorización Owner condicional.
-- **PBI actual:** PBI-027 — Branch Timezone Minimum (`In progress`).
+- **PBI actual:** PBI-027 — Branch Timezone Minimum (`In review`; Draft PR
+  #19, CI GREEN; Owner Review pendiente).
 - **WIP:** uno.
 - **Siguiente candidato:** PBI-029, seleccionado solamente; no iniciado.
 
@@ -17,7 +18,7 @@
 
 | PBI | Estado | Entrada autorizada |
 |---|---|---|
-| [PBI-027](../../backlog/pbis/PBI-027.md) | In progress | DoR PASS; Size Small / Risk Medium; autorización Owner condicional del 2026-09-04. |
+| [PBI-027](../../backlog/pbis/PBI-027.md) | In review | DoR PASS; Size Small / Risk Medium; Draft PR #19 y CI GREEN; Owner Review pendiente. |
 
 ## Candidatos ordenados
 
@@ -44,4 +45,4 @@
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** revisión DoR/estimación de PBI-027 o cambio material de dependencias.
+- **Disparador:** Owner Review de PBI-027 o cambio material de dependencias.

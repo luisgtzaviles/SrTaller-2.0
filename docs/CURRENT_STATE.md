@@ -105,7 +105,7 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 |---|---|
 | Sprint activo | Sprint 01 |
 | Sprint 01 | Active — PBI-027 es el único trabajo en ejecución |
-| PBI actual | PBI-027 — Branch Timezone Minimum (`In review`, Draft PR #19) |
+| PBI actual | PBI-027 — Branch Timezone Minimum (`In review`, Draft PR #19; CI GREEN) |
 | Siguiente candidato | PBI-029, seleccionado solamente y no iniciado |
 | WIP permitido | Uno |
 
@@ -116,9 +116,10 @@ registra la cobertura AT/cross-browser formal pendiente como
 la preparación de PBI-027; la integración de este PR documental sólo hace
 canónica esta fotografía.
 
-PBI-027 tiene DoR `PASS`, estimación Small/riesgo Medium y autorización Owner
-condicional. Sólo puede avanzar hasta Owner Review: merge, deploy y PBI-029
-siguen sin autorización.
+PBI-027 tiene DoR `PASS`, estimación Small/riesgo Medium, autorización Owner
+condicional y CI autoritativo GREEN (`33914277031`) sobre el candidato Draft
+PR #19. Sólo puede avanzar hasta Owner Review: merge, deploy y PBI-029 siguen
+sin autorización.
 
 ## Identity Foundation reconciliada
 
@@ -144,5 +145,5 @@ siguen sin autorización.
 
 ## Próxima acción
 
-Completar PBI-027 hasta Owner Review: validación, Draft PR y CI autoritativo.
-No se autoriza merge, deploy ni inicio de PBI-029.
+Realizar Owner Review de PBI-027. No se autoriza merge, deploy ni inicio de
+PBI-029.

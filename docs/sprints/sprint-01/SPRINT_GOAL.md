@@ -8,7 +8,8 @@
 - **Estado del sprint:** Active.
 - **Gate de activación:** PASS — DoR, estimación Small / riesgo Medium y
   autorización Owner condicional de PBI-027 (2026-09-04).
-- **PBI actual:** PBI-027 — Branch Timezone Minimum (`In progress`).
+- **PBI actual:** PBI-027 — Branch Timezone Minimum (`In review`; Draft PR
+  #19, CI GREEN; Owner Review pendiente).
 - **Siguiente candidato:** PBI-029; sólo seleccionado, no iniciado.
 
 ## Objetivo
