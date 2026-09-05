@@ -12,6 +12,11 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Iniciado PBI-029 bajo autorización Owner de riesgo `CRITICAL`: threat model
+  local-first, DoR PASS, inventario de secretos sin valores y evidencia de
+  candidato. No introduce secretos reales, proveedor externo, deploy ni
+  consumidores de identidad.
+
 - Preparado el cierre canónico candidato de PBI-027: merge funcional
   `4d54f84e8ad4b16b2889a555f7fc75975c6ddc68`, CI de `main` `33944664589`
   GREEN y Owner Acceptance APPROVED. El estado `Done` requiere integrar este
@@ -52,6 +57,15 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Cierre de DEC-002 y DEC-062 por el Responsable de Producto: R0 queda definido como fundación ejecutable multi-tenant, con inclusiones, exclusiones, escenarios y autoridad de aceptación verificables; implementación y aceptación permanecen pendientes.
 
 ### Implementación
+
+- Materializada la foundation mínima de configuración externa server-only:
+  catálogo de secretos activos/reservados, requisitos fail-closed, diagnósticos
+  redactados y guardas contra exposición en archivos versionados o bundle Vite.
+  Los valores futuros de PIN, sesión y Station siguen sin consumidor.
+
+- Corregidas las aserciones de compatibilidad Preview DB y OCI para reconocer
+  la cadena completa de migraciones gobernadas ya presente; no cambia el
+  esquema ni ejecuta una migración adicional.
 
 - Materializada localmente la timezone mínima por Branch: migración aditiva,
   fallback IANA histórico `America/Hermosillo`, validación que rechaza offsets

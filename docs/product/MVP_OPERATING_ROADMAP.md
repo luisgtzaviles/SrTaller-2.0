@@ -4,19 +4,19 @@
 
 - **Estado:** Roadmap aprobado; Sprint 01 activo con WIP=1.
 - **Baseline de la reconciliación:** `main` en
-  `4d54f84e8ad4b16b2889a555f7fc75975c6ddc68`; CI autoritativo
-  `33944664589`, `SUCCESS`.
+  `0043912b7a10e5415c312b72a7a1e061af029039`; CI autoritativo
+  `33947288926`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** Sprint 01.
-- **Sprint 01:** `Active — cierre documental PBI-027 pendiente`.
-- **PBI actual:** NONE.
-- **Siguiente PBI candidato:** [PBI-029](../backlog/pbis/PBI-029.md),
+- **Sprint 01:** `Active — PBI-029 autorizado localmente; candidato no integrado`.
+- **PBI actual:** [PBI-029](../backlog/pbis/PBI-029.md).
+- **Siguiente PBI candidato:** [PBI-024](../backlog/pbis/PBI-024.md),
   seleccionado solamente; no iniciado ni autorizado.
-- **Blocking gate:** revisión, CI y merge autorizado del PR documental de
-  PBI-027; no inicia PBI-029.
+- **Blocking gate:** CI autoritativo y Owner Review del candidato PBI-029; no
+  inicia PBI-024.
 - **WIP operacional:** uno.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation del
   2026-09-03.
@@ -84,9 +84,9 @@ Owner explícita de merge.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
    salta silenciosamente a otro PBI.
 
-PBI-030 está `Done` y no está `Released`. PBI-027 cumple sus predicados de
-DoD como `Done candidate`: merge, CI de `main`, evidencia y Owner Acceptance
-están presentes. PBI-029 sigue seleccionado solamente.
+PBI-030 y PBI-027 están `Done` y no están `Released`. PBI-029 es el único PBI
+en ejecución y conserva riesgo `CRITICAL` aceptado por Owner; su candidato aún
+requiere revisión, merge autorizado, CI de `main`, Owner Acceptance y cierre.
 
 ## Current execution pointer
 
@@ -97,10 +97,10 @@ están presentes. PBI-029 sigue seleccionado solamente.
 | Phase | Identity & Context Foundation |
 | Sprint | SPRINT-01 |
 | Sprint status | Active — WIP=1 |
-| Current PBI | NONE |
-| Next PBI candidate | PBI-029 — Secrets and External Configuration |
-| PBI-027 status | Done candidate — cierre documental pendiente de integración |
-| Blocking gate | PR documental: review, CI y autorización Owner de merge |
+| Current PBI | PBI-029 — Secrets and External Configuration |
+| Next PBI candidate | PBI-024 — Trusted Station Runtime Context |
+| PBI-027 status | Done; Released: NO |
+| Blocking gate | PBI-029: CI autoritativo, review, merge autorizado, CI de main y Owner Acceptance |
 
 ## Fases aprobadas
 
@@ -183,23 +183,18 @@ materializa el nuevo estado; no genera otro PR para cerrarse a sí mismo.
 
 ## Checkpoint de transición actual
 
-[PBI-030](../backlog/pbis/PBI-030.md) tiene implementación, independent review,
-merge y CI aprobados. El Owner concedió Acceptance y dispuso formalmente la
-cobertura AT/cross-browser incompleta como
-`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. La auditoría de cierre pasa.
+[PBI-030](../backlog/pbis/PBI-030.md) y
+[PBI-027](../backlog/pbis/PBI-027.md) están `Done` y no están `Released`.
+Sprint 01 continúa `Active` bajo WIP=1 con PBI-029 como única rebanada en
+ejecución. El Owner aceptó expresamente su riesgo `CRITICAL`, sin reducirlo, y
+autorizó una foundation local-first delimitada por su threat model.
 
-Este candidato registra el efecto canónico de los gates ya aprobados:
-
-1. PBI-030 `Done` por quedar su cierre/evidencia dentro de `main`;
-2. Sprint 01 `Active` con WIP=1;
-3. PBI-027 como `Done candidate` con merge, CI de `main` y Owner Acceptance;
-4. PBI-029 como siguiente candidato, no iniciado;
-5. ningún merge, deploy o release queda implícitamente autorizado.
+El candidato PBI-029 no autoriza merge, release, deploy ni iniciar PBI-024.
 
 ## Próxima revisión
 
-- **Disparador:** Owner merge review del PR documental PBI-027.
-- **Resultado esperado si pasa:** PBI-027 queda `Done` canónico; PBI-029
-  permanece no iniciado hasta su DoR y autorización propias.
-- **Si falla:** PBI-027 permanece `Done candidate`/en remediación y no se salta
-  a otro candidato.
+- **Disparador:** Owner Review del candidato PBI-029 o cambio material del
+  threat model.
+- **Resultado esperado si pasa:** PBI-029 entra al flujo de merge autorizado y
+  cierre canónico; PBI-024 permanece candidato hasta sus propios gates.
+- **Si falla:** PBI-029 permanece en remediación y no se salta a otro PBI.

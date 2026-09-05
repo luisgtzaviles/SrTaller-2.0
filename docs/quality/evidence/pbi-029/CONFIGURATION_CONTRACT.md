@@ -1,0 +1,52 @@
+# PBI-029 — External Configuration Contract
+
+## Fuente y consumo
+
+La configuración llega desde el entorno del proceso. La nueva foundation no
+lee archivos, no conserva un singleton global, no hace I/O ni ejecuta comandos.
+Cada consumidor declara de forma explícita los secretos que necesita; el valor
+no se copia a logs, serialización ni diagnóstico.
+
+| Clase | Nombres | Estado | Consumidor |
+|---|---|---|---|
+| No secreto técnico | `HOST`, `NODE_ENV`, `PORT` | Activo | Technical shell |
+| No secreto de persistencia | `SR_DB_ENVIRONMENT` | Activo | Database configuration |
+| Secreto activo | `SR_DB_PASSWORD`, `SR_TEST_DB_PASSWORD` | Activo | Database configuration |
+| Secreto reservado | `SR_PIN_PEPPER`, `SR_SESSION_SIGNING_KEY`, `SR_STATION_BOOTSTRAP_SECRET` | Sin consumidor | PBIs futuros respectivos |
+
+La clasificación no autoriza exponer nada al cliente: todos estos nombres son
+server-only. La configuración pública de Vite continúa siendo una superficie
+separada y no puede usar un nombre secreto.
+
+## Reglas fail-closed
+
+- Un secreto declarado por un consumidor debe existir, no ser vacío ni sólo
+  espacios, no tener espacios externos y no superar el límite gobernado.
+- La misma dependencia no puede declararse dos veces.
+- Un consumidor no puede recuperar un secreto que no declaró.
+- El parser de PostgreSQL mantiene su own allowlist, sus namespaces y su
+  rechazo de `DATABASE_URL`/`PG*`; PBI-029 no lo reemplaza.
+- El arranque del servidor exige explícitamente `SR_DB_PASSWORD` antes de abrir
+  el runtime. El error contiene nombre, categoría y código estable, nunca valor.
+
+## Ambientes
+
+| Ambiente | Fuente de valores | Restricción |
+|---|---|---|
+| Local | `.env.local` ignorado y generado con valores aleatorios sintéticos | Los scripts derivan `SR_DB_*` sólo en memoria y limpian el entorno hijo. |
+| Test / CI | Entorno efímero del runner con literales sintéticos inequívocos | No se persiste el valor ni se imprime en evidencia. |
+| Preview | Inyección del runtime de Preview, fuera de este cambio | No usa archivos locales ni credenciales de Production. |
+| Production | No materializado | Sin default; requiere configuración externa válida y autoridad/deploy propios. |
+
+## Rotación y revocación
+
+Los valores se leen al construir el runtime y no se almacenan en base de datos,
+fixtures ni artefactos. Una rotación se aplica mediante una nueva inyección y
+reinicio controlado del proceso. Hot reload, proveedor externo, rotación
+automatizada, break-glass y almacenamiento de claves son decisiones futuras y
+no están implícitas en este contrato.
+
+## Próxima revisión
+
+Antes de que PBI-024, PBI-025 o PBI-034 declaren un consumidor activo de un
+secreto reservado, y antes de materializar Production.

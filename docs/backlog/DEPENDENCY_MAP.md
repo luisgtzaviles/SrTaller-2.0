@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `4a74d46021be2a7b0ae482a88c6cd90a4c968e30`; CI `33825176423` GREEN.
+  `0043912b7a10e5415c312b72a7a1e061af029039`; CI `33947288926` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -13,7 +13,7 @@
 ```mermaid
 flowchart TD
     P30[PBI-030 UI Foundation<br/>Done] --> S1[SPRINT-01 Active<br/>WIP=1]
-    S1 --> P27[PBI-027 Branch Timezone<br/>Done candidate]
+    S1 --> P27[PBI-027 Branch Timezone<br/>Done]
     P27 --> P29[PBI-029 Secrets / Config]
     P29 --> P24[PBI-024 Trusted Station Runtime Context]
     P24 --> P32[PBI-032 User Directory]
@@ -66,9 +66,10 @@ flowchart TD
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Active`; WIP=1.
 - PBI actual: NONE.
-- PBI-027: `Done candidate`; merge, CI de `main` y Owner Acceptance PASS;
-  pendiente sólo de integrar su PR documental.
-- PBI-029/PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
+- PBI-027: `Done`; `Released: NO`.
+- PBI-029: `In progress`; DoR PASS y riesgo `CRITICAL` aceptado; candidato no
+  integrado.
+- PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
 
 ## Stage 2
 
@@ -78,5 +79,4 @@ diferidos.
 
 ## Próxima revisión
 
-En Owner merge review del cierre documental PBI-027 o si cambia una
-dependencia aprobada.
+En Owner Review de PBI-029 o si cambia una dependencia aprobada.
