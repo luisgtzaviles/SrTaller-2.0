@@ -464,6 +464,19 @@ artefacto identificado:
 Un PBI puede estar `Done` y esperar release. Un deploy no validado no es
 `Released`. Un release puede agrupar varios PBIs `Done`.
 
+### 28.1 Semántica post-merge del cierre documental
+
+El PR documental de avance se redacta antes de conocer su propio merge; por
+ello puede usar `Done candidate` y condicionar el estado a su integración. Ese
+wording no crea un gate circular. Un PBI queda canónicamente `Done` cuando se
+cierra la conjunción de: DoD material y evidencia, Owner Acceptance, merge
+autorizado del PR documental y CI autoritativo GREEN sobre el SHA exacto de
+ese merge. La evidencia Git/CI post-merge completa el estado efectivo.
+
+No se crea un PR de cierre-del-cierre sólo para reemplazar wording preventivo
+pre-merge. Si una discrepancia excede esa semántica —por ejemplo, falta de
+evidencia, aceptación, merge o CI exacto— permanece bloqueante y falla cerrado.
+
 ## 29. Done para hotfix
 
 Un hotfix está `Done` cuando, además del DoD de código y riesgo alto:

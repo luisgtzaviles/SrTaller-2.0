@@ -2,13 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-029 es `Done candidate`; no existe PBI actual.
+- **Estado:** Active — no existe PBI actual.
 - **Sprint:** SPRINT-01.
 - **Periodo:** TBD.
 - **Estado del sprint:** Active.
-- **Gate de activación:** PASS — PBI-027 está `Done`; PBI-029 ya tiene merge,
-  CI de `main`, riesgo crítico aceptado y Owner Acceptance, con cierre
-  documental pendiente.
+- **Gate de activación:** PASS — PBI-027 y PBI-029 están `Done`; PBI-029
+  cuenta con merge documental integrado y CI post-cierre de `main` GREEN.
 - **PBI actual:** ninguno. PBI-024 es el siguiente candidato, no iniciado ni
   autorizado.
 - **Siguiente candidato:** PBI-024; sólo seleccionado, no iniciado.
@@ -40,7 +39,7 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 ## Criterios de éxito y salida
 
 - [x] PBI-027 `Done`; `Released: NO`.
-- [x] PBI-029 `Done` candidate; pendiente únicamente de integrar este PR documental.
+- [x] PBI-029 `Done`; `Released: NO`.
 - [ ] PBI-024 `Done` con recuperación selectiva, no merge de la rama histórica.
 - [ ] PBI-032 `Done`.
 - [ ] PBI-033 `Done`.
@@ -50,4 +49,4 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner merge review del PR documental de cierre PBI-029.
+- **Disparador:** autorización Owner para DoR de PBI-024.

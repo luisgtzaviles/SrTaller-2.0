@@ -1,10 +1,10 @@
-# PBI-029 — Canonical Closure Candidate
+# PBI-029 — Canonical Closure Evidence
 
 ## Resultado
 
-**PASS — PBI-029 DONE CANDIDATE.** Este artefacto reúne los predicados de DoD
-requeridos para que el PR documental de avance materialice el cierre en `main`.
-No autoriza release, deploy ni el inicio de PBI-024.
+**PASS — PBI-029 DONE.** El candidato documental fue integrado y su CI
+autoritativo de `main` cerró GREEN. Conforme a la semántica post-merge, no se
+requiere un PR de cierre-del-cierre para reemplazar wording pre-merge.
 
 ## Trazabilidad
 
@@ -19,6 +19,9 @@ No autoriza release, deploy ni el inicio de PBI-024.
 | Focused security review | PASS; findings abiertos BLOCKER/HIGH/MEDIUM/LOW: 0 |
 | Critical risk | ACCEPTED por Owner; la clasificación permanece `CRITICAL` |
 | Owner Acceptance | APPROVED |
+| PR documental | [#22 — Close PBI-029 and advance roadmap](https://github.com/luisgtzaviles/SrTaller-2.0/pull/22) |
+| Merge de cierre | `41914c78724303d66136989937cf8f38e4ea8a88` |
+| CI post-cierre de `main` | [Run 33988752597](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/33988752597) — SUCCESS; run-1/run-2/comparison GREEN |
 | Released | NO |
 
 ## DoD
@@ -34,6 +37,5 @@ No autoriza release, deploy ni el inicio de PBI-024.
 
 No se implementaron secret manager, rotación automatizada, secretos de
 producción, PIN, sesión, autenticación, distribución remota de secretos ni
-deploy. El siguiente paso es exclusivamente la revisión y eventual merge
-autorizado de este PR documental. PBI-024 continúa seleccionado, no iniciado;
-su DoR y su autorización Owner siguen siendo gates independientes.
+deploy. PBI-024 continúa seleccionado, no iniciado; su DoR y su autorización
+Owner siguen siendo gates independientes.

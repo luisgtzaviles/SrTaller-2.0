@@ -4,19 +4,19 @@
 
 - **Estado:** Roadmap aprobado; Sprint 01 activo con WIP=1.
 - **Baseline de la reconciliación:** `main` en
-  `36d93736d46b69acadadd95ef66809332fbb5bd4`; CI autoritativo
-  `33974100385`, `SUCCESS`.
+  `41914c78724303d66136989937cf8f38e4ea8a88`; CI autoritativo
+  `33988752597`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** Sprint 01.
-- **Sprint 01:** `Active — cierre documental PBI-029 pendiente`.
+- **Sprint 01:** `Active — sin PBI de implementación activo`.
 - **PBI actual:** NONE.
 - **Siguiente PBI candidato:** [PBI-024](../backlog/pbis/PBI-024.md),
   seleccionado solamente; no iniciado ni autorizado.
-- **Blocking gate:** revisión, CI y merge autorizado del PR documental de
-  PBI-029; no inicia PBI-024.
+- **Blocking gate:** DoR y autorización Owner de inicio propias de PBI-024; no
+  inicia PBI-024.
 - **WIP operacional:** uno.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation del
   2026-09-03.
@@ -84,10 +84,9 @@ Owner explícita de merge.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
    salta silenciosamente a otro PBI.
 
-PBI-030 y PBI-027 están `Done` y no están `Released`. PBI-029 cumple sus
-predicados de DoD como `Done candidate`: threat model, DoR, riesgo crítico
-aceptado, merge, CI de `main`, evidencia y Owner Acceptance están presentes.
-PBI-024 sigue seleccionado solamente.
+PBI-030, PBI-027 y PBI-029 están `Done` y no están `Released`. PBI-029 cerró
+su estado efectivo con la integración autorizada de su PR documental y el CI
+autoritativo GREEN sobre ese merge; PBI-024 sigue seleccionado solamente.
 
 ## Current execution pointer
 
@@ -100,8 +99,8 @@ PBI-024 sigue seleccionado solamente.
 | Sprint status | Active — WIP=1 |
 | Current PBI | NONE |
 | Next PBI candidate | PBI-024 — Trusted Station Runtime Context |
-| PBI-029 status | Done candidate — cierre documental pendiente de integración |
-| Blocking gate | PR documental: review, CI y autorización Owner de merge |
+| PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
+| Blocking gate | DoR y autorización Owner de inicio de PBI-024 |
 
 ## Fases aprobadas
 
@@ -180,22 +179,24 @@ nuevo `main` una rama `ops/pbi-###-roadmap-advance`. El PR sólo debe:
 - seleccionar el siguiente PBI sin iniciarlo.
 
 El PR documental pasa revisión, CI y merge autorizado. Su integración
-materializa el nuevo estado; no genera otro PR para cerrarse a sí mismo.
+materializa el nuevo estado; no genera otro PR para cerrarse a sí mismo. El
+texto preventivo pre-merge `Done candidate` se vuelve `Done` efectivo cuando
+el merge autorizado y el CI de `main` sobre ese SHA quedan GREEN.
 
 ## Checkpoint de transición actual
 
 [PBI-030](../backlog/pbis/PBI-030.md) y
 [PBI-027](../backlog/pbis/PBI-027.md) están `Done` y no están `Released`.
-Sprint 01 continúa `Active` sin PBI de implementación activo mientras este
-PR documental permanece pendiente. El Owner aceptó expresamente el resultado
-de PBI-029 y su riesgo `CRITICAL`, sin reducir la clasificación.
+PBI-029 también está `Done`: el Owner aceptó expresamente su resultado y su
+riesgo `CRITICAL`, sin reducir la clasificación; el merge `41914c78724303d66136989937cf8f38e4ea8a88`
+y CI `33988752597` GREEN completaron su cierre documental.
 
-El `Done candidate` PBI-029 no autoriza release, deploy ni iniciar PBI-024.
+Sprint 01 continúa `Active` sin PBI de implementación activo. PBI-029 `Done`
+no autoriza release, deploy ni iniciar PBI-024.
 
 ## Próxima revisión
 
-- **Disparador:** Owner merge review del PR documental PBI-029.
-- **Resultado esperado si pasa:** PBI-029 queda `Done` canónico; PBI-024
-  permanece candidato hasta sus propios gates.
-- **Si falla:** PBI-029 permanece `Done candidate`/en remediación y no se
-  salta a otro PBI.
+- **Disparador:** autorización Owner separada para ejecutar DoR de PBI-024.
+- **Resultado esperado si pasa:** PBI-024 se evalúa sin iniciarse hasta recibir
+  su propia autorización de implementación.
+- **Si falta:** no se inicia PBI alguno ni se salta a otro candidato.

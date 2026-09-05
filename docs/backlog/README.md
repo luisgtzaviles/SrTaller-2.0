@@ -16,9 +16,8 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 ## Estado del documento
 
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
-**Orden operativo:** PBI-030 y PBI-027 `Done`; Sprint 01 `Active`; PBI-029 es
-`Done candidate` pendiente de integración documental; no existe PBI actual y
-PBI-024 es el siguiente candidato, no iniciado.
+**Orden operativo:** PBI-030, PBI-027 y PBI-029 `Done`; Sprint 01 `Active`;
+no existe PBI actual y PBI-024 es el siguiente candidato, no iniciado.
 
 ## Estructura
 
@@ -69,5 +68,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Owner merge review del cierre documental PBI-029; PBI-024 permanece sin DoR ni
-autorización de implementación.
+Autorización Owner para DoR de PBI-024; permanece sin autorización de
+implementación.

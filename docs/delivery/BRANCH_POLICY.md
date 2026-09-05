@@ -22,8 +22,10 @@
    autorización aplicable.
 5. Después de cerrar un PBI, el avance de roadmap usa una rama documental
    `ops/pbi-###-roadmap-advance` creada desde el nuevo `main`. Ese PR registra
-   `Done`, actualiza Sprint/roadmap y selecciona el siguiente PBI sin iniciar
-   su implementación.
+   el cierre candidato, actualiza Sprint/roadmap y selecciona el siguiente PBI
+   sin iniciar su implementación. Su merge autorizado y CI de `main` GREEN
+   sobre el SHA exacto materializan `Done`; no se crea una rama o PR adicional
+   sólo para convertir wording pre-merge `Done candidate`.
 6. Preview puede desplegar automáticamente un nuevo `main` sólo cuando el
    mecanismo sea claro, observable y no amplíe el alcance a otros ambientes.
 7. Staging y Production requieren su propia autorización y no se infieren de un

@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Active — cierre documental de PBI-029 candidato a integración.
+- **Estado:** Active — sin PBI de implementación activo.
 - **PBI actual:** ninguno. PBI-024 está seleccionado únicamente como
   candidato y no está autorizado.
 - **WIP:** uno.
@@ -19,7 +19,7 @@
 | PBI | Estado | Entrada autorizada |
 |---|---|---|
 | [PBI-027](../../backlog/pbis/PBI-027.md) | Done | Cierre canónico integrado por PR #20; `Released: NO`. |
-| [PBI-029](../../backlog/pbis/PBI-029.md) | Done candidate | Merge `36d93736`; CI main `33974100385` GREEN; threat model/review PASS, riesgo `CRITICAL` aceptado y Owner Acceptance APPROVED; cierre documental pendiente de merge. |
+| [PBI-029](../../backlog/pbis/PBI-029.md) | Done | Merge funcional `36d93736`; CI main funcional `33974100385` GREEN; riesgo `CRITICAL` aceptado y Owner Acceptance APPROVED; cierre documental merge `41914c787` y CI post-cierre `33988752597` GREEN; `Released: NO`. |
 
 ## Candidatos ordenados
 
@@ -33,7 +33,7 @@
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| Cierre documental PBI-029 | PR documental, CI y autorización Owner de merge | No materializar Done ni iniciar PBI-024 antes de esos gates |
+| PBI-024 | DoR y autorización Owner de inicio | No iniciar implementación antes de resolver ambos gates |
 
 ## Reglas de cambio
 
@@ -45,4 +45,4 @@
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner merge review del cierre documental PBI-029 o un hallazgo de CI.
+- **Disparador:** autorización Owner para DoR de PBI-024 o un hallazgo de CI.
