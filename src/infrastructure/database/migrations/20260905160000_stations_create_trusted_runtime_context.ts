@@ -3,6 +3,10 @@ import type { Kysely, SqlBool } from 'kysely';
 import type { DatabaseSchema } from '../database-types.js';
 
 export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
+  await database.schema.alterTable('branches')
+    .addColumn('active', 'boolean', (column) => column.notNull().defaultTo(true))
+    .execute();
+
   await database.schema.createTable('stations')
     .addColumn('tenant_id', 'uuid', (column) => column.notNull())
     .addColumn('station_id', 'uuid', (column) => column.notNull())
@@ -19,6 +23,7 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .addColumn('tenant_id', 'uuid', (column) => column.notNull())
     .addColumn('station_id', 'uuid', (column) => column.notNull())
     .addColumn('branch_id', 'uuid', (column) => column.notNull())
+    .addColumn('revoked_at', 'timestamptz')
     .addColumn('created_at', 'timestamptz', (column) => column.notNull())
     .addPrimaryKeyConstraint('station_bindings_pk', ['tenant_id', 'station_id'])
     .addForeignKeyConstraint('station_bindings_station_fk', ['tenant_id', 'station_id'], 'stations', ['tenant_id', 'station_id'])
@@ -40,4 +45,5 @@ export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
   await database.schema.dropTable('station_credentials').execute();
   await database.schema.dropTable('station_bindings').execute();
   await database.schema.dropTable('stations').execute();
+  await database.schema.alterTable('branches').dropColumn('active').execute();
 }

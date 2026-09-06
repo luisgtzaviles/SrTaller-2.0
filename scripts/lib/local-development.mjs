@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -31,6 +31,8 @@ export const LOCAL_BRANCH_TIME_ZONES = Object.freeze([
 ]);
 export const LOCAL_SEED_TIMESTAMP = '2026-01-01T00:00:00.000Z';
 export const LOCAL_REPAIR_REFERENCE_DATE = '2026-08-19T12:00:00.000Z';
+export const LOCAL_STATION_ID = '00000000-0000-4000-8000-000000000401';
+export const LOCAL_STATION_CREDENTIAL_ID = '00000000-0000-4000-8000-000000000402';
 
 const requiredLocalKeys = Object.freeze([
   'SR_LOCAL_ENVIRONMENT',
@@ -47,6 +49,7 @@ const requiredLocalKeys = Object.freeze([
   'SR_LOCAL_BACKEND_PORT',
   'SR_LOCAL_VITE_HOST',
   'SR_LOCAL_VITE_PORT',
+  'SR_STATION_BOOTSTRAP_SECRET',
 ]);
 
 const forbiddenLocalKeys = Object.freeze([
@@ -80,6 +83,7 @@ function defaultLocalValues() {
     SR_LOCAL_BACKEND_PORT: String(LOCAL_BACKEND_PORT),
     SR_LOCAL_VITE_HOST: LOCAL_VITE_HOST,
     SR_LOCAL_VITE_PORT: String(LOCAL_VITE_PORT),
+    SR_STATION_BOOTSTRAP_SECRET: randomSecret(),
   });
 }
 
@@ -156,7 +160,35 @@ export async function ensureLocalEnvironment({ create = true } = {}) {
     await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
     await chmod(LOCAL_ENV_FILE, 0o600);
   }
+  if (values.SR_STATION_BOOTSTRAP_SECRET === undefined && create) {
+    values = {
+      ...values,
+      SR_STATION_BOOTSTRAP_SECRET: randomSecret(),
+    };
+    const contents = `${Object.entries(values)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n')}\n`;
+    await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
+    await chmod(LOCAL_ENV_FILE, 0o600);
+  }
   return Object.freeze({ ...assertLocalTarget(values) });
+}
+
+export function localStationBootstrapCredential(values) {
+  assertLocalTarget(values);
+  const secret = values.SR_STATION_BOOTSTRAP_SECRET;
+  if (typeof secret !== 'string' || secret.length < 32 || secret !== secret.trim()) {
+    throw new Error('Local station bootstrap secret is unavailable.');
+  }
+  return createHash('sha256')
+    .update(`srtaller-local-station-bootstrap:${secret}`, 'utf8')
+    .digest('base64url');
+}
+
+export function localStationBootstrapCredentialHash(values) {
+  return createHash('sha256')
+    .update(localStationBootstrapCredential(values), 'utf8')
+    .digest('hex');
 }
 
 export function databaseEnvironment(values, role) {
@@ -229,6 +261,7 @@ export function localSeedRows() {
         tenantId: LOCAL_TENANT_ID,
         branchId,
         timeZone: LOCAL_BRANCH_TIME_ZONES[index],
+        active: true,
         createdAt: LOCAL_SEED_TIMESTAMP,
       })),
     ),

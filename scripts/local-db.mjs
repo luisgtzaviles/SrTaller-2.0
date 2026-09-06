@@ -211,7 +211,7 @@ export async function localDbDown() {
 }
 
 export async function destroyLocalDatabase() {
-  await ensureLocalEnvironment({ create: false });
+  await ensureLocalEnvironment();
   const container = await inspectContainer();
   if (container) {
     assertContainerSafety(container);

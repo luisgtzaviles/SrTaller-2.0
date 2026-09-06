@@ -12,6 +12,9 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   assert.equal(policy.persistence.status, 'tenant-schema-materialized');
   assert.deepEqual(policy.persistence.databaseObjects, {
     branches: { owner: 'stations', kind: 'table' },
+    stations: { owner: 'stations', kind: 'table' },
+    station_bindings: { owner: 'stations', kind: 'table' },
+    station_credentials: { owner: 'stations', kind: 'table' },
     repairs: { owner: 'repairs', kind: 'table' },
     repair_intakes: { owner: 'repairs', kind: 'table' },
     repair_timeline_entries: { owner: 'repairs', kind: 'table' },
@@ -97,6 +100,8 @@ test('database schema types are immutable and require externally supplied identi
   assert.match(schema, /readonly tenant_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly branch_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly time_zone: MutableColumn<string>/u);
+  assert.match(schema, /readonly active: DefaultedImmutableColumn<boolean>/u);
+  assert.match(schema, /readonly revoked_at: ImmutableColumn<Date \| null>/u);
   assert.match(schema, /readonly created_at: ImmutableColumn<Date>/u);
   assert.doesNotMatch(schema, /Generated/u);
 });

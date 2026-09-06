@@ -25,7 +25,7 @@ export interface ExternalConfigurationDefinition {
     | 'technical-shell'
     | 'database'
     | 'future-access'
-    | 'future-stations';
+    | 'stations-bootstrap';
   readonly status: ConfigurationStatus;
   readonly source: 'process-environment';
   readonly clientExposure: 'forbidden';
@@ -99,8 +99,8 @@ export const externalConfigurationCatalog = Object.freeze([
   Object.freeze({
     name: 'SR_STATION_BOOTSTRAP_SECRET',
     classification: 'secret' as const,
-    consumer: 'future-stations' as const,
-    status: 'reserved' as const,
+    consumer: 'stations-bootstrap' as const,
+    status: 'active' as const,
     source: 'process-environment' as const,
     clientExposure: 'forbidden' as const,
   }),

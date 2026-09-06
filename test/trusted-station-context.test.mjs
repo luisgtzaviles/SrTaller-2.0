@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  createStationCredential,
   readStationCredentialCookie,
+  serializeStationCredentialCookie,
   stationCredentialCookieName,
-  localStationBootstrapCredential,
-} from '../dist/modules/stations/index.js';
+} from '../dist/modules/stations/infrastructure/http/station-credential-cookie.js';
+import { localStationBootstrapCredential } from '../dist/modules/stations/infrastructure/development/local-station-bootstrap.js';
+import { TrustedStationRequestContextResolver } from '../dist/modules/stations/infrastructure/http/trusted-station-request-context.resolver.js';
 import {
   ResolveTrustedStationContextUseCase,
   TrustedStationContextError,
@@ -22,6 +25,15 @@ test('station cookie accepts only the server-issued opaque credential', () => {
   assert.equal(readStationCredentialCookie(`${stationCredentialCookieName}=${credential}`), credential);
   assert.equal(readStationCredentialCookie(`${stationCredentialCookieName}=short`), null);
   assert.equal(readStationCredentialCookie(undefined), null);
+});
+
+test('station browser transport is opaque, HttpOnly and secure when required', () => {
+  const issued = createStationCredential();
+  assert.match(issued, /^[A-Za-z0-9_-]{43}$/u);
+  const secure = serializeStationCredentialCookie(issued, true);
+  assert.match(secure, /^sr_station=/u);
+  assert.match(secure, /; HttpOnly; SameSite=Strict; Path=\/; Secure$/u);
+  assert.doesNotMatch(serializeStationCredentialCookie(issued, false), /; Secure$/u);
 });
 
 test('local bootstrap cannot silently escape development', () => {
@@ -49,4 +61,14 @@ test('trusted station context only derives its scope from the verifier', async (
     { ...verified, source: 'server-verified-station-cookie' },
   );
   assert.ok(Object.isFrozen(context));
+});
+
+test('request resolver rejects non-cookie context inputs and fails closed', async () => {
+  const resolver = new TrustedStationRequestContextResolver(
+    new ResolveTrustedStationContextUseCase({ verify: async () => verified }),
+  );
+  await assert.rejects(resolver.resolve({}), TrustedStationContextError);
+  await assert.rejects(resolver.resolve({ cookie: ['sr_station=' + credential] }), TrustedStationContextError);
+  const context = await resolver.resolve({ cookie: `other=value; sr_station=${credential}` });
+  assert.equal(context.stationId, verified.stationId);
 });

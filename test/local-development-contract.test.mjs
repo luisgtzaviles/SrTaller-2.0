@@ -32,6 +32,7 @@ function validLocalValues() {
     SR_LOCAL_BACKEND_PORT: '3000',
     SR_LOCAL_VITE_HOST: '127.0.0.1',
     SR_LOCAL_VITE_PORT: '4173',
+    SR_STATION_BOOTSTRAP_SECRET: 'synthetic-local-station-bootstrap-secret',
   };
 }
 
@@ -69,7 +70,7 @@ test('seed contract is deterministic and contains only existing schema entities'
   assert.equal(first.tenant.tenantId, '00000000-0000-4000-8000-000000000001');
   assert.equal(first.branches.length, 2);
   assert.deepEqual(Object.keys(first.tenant).sort(), ['createdAt', 'tenantId']);
-  assert.deepEqual(Object.keys(first.branches[0]).sort(), ['branchId', 'createdAt', 'tenantId', 'timeZone']);
+  assert.deepEqual(Object.keys(first.branches[0]).sort(), ['active', 'branchId', 'createdAt', 'tenantId', 'timeZone']);
 });
 
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {

@@ -142,7 +142,9 @@ function validateCreateRecord(
   });
 }
 
-function mapBranchRecord(row: BranchRow): BranchRecord {
+function mapBranchRecord(
+  row: Pick<BranchRow, 'tenant_id' | 'branch_id' | 'time_zone' | 'created_at'>,
+): BranchRecord {
   return Object.freeze({
     tenantId: parseTenantId(row.tenant_id),
     branchId: parseBranchId(row.branch_id),
