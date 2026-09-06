@@ -32,6 +32,8 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'user_provisioning_bootstraps',
+  'users',
   'repair_location_movements',
   'repair_locations',
   'repair_attachments',
@@ -357,7 +359,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 13);
+      assert.equal(applied.status.migrations.length, 15);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
 
