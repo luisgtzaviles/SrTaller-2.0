@@ -5,7 +5,8 @@ export type SecretConfigurationName =
   | 'SR_TEST_DB_PASSWORD'
   | 'SR_PIN_PEPPER'
   | 'SR_SESSION_SIGNING_KEY'
-  | 'SR_STATION_BOOTSTRAP_SECRET';
+  | 'SR_STATION_BOOTSTRAP_SECRET'
+  | 'SR_USER_BOOTSTRAP_SECRET';
 
 export type ExternalConfigurationName =
   | SecretConfigurationName
@@ -25,7 +26,8 @@ export interface ExternalConfigurationDefinition {
     | 'technical-shell'
     | 'database'
     | 'future-access'
-    | 'stations-bootstrap';
+    | 'stations-bootstrap'
+    | 'users-bootstrap';
   readonly status: ConfigurationStatus;
   readonly source: 'process-environment';
   readonly clientExposure: 'forbidden';
@@ -100,6 +102,14 @@ export const externalConfigurationCatalog = Object.freeze([
     name: 'SR_STATION_BOOTSTRAP_SECRET',
     classification: 'secret' as const,
     consumer: 'stations-bootstrap' as const,
+    status: 'active' as const,
+    source: 'process-environment' as const,
+    clientExposure: 'forbidden' as const,
+  }),
+  Object.freeze({
+    name: 'SR_USER_BOOTSTRAP_SECRET',
+    classification: 'secret' as const,
+    consumer: 'users-bootstrap' as const,
     status: 'active' as const,
     source: 'process-environment' as const,
     clientExposure: 'forbidden' as const,

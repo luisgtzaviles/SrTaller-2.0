@@ -11,6 +11,6 @@ test('PBI-032 keeps identity tenant-scoped and lifecycle fail-closed', async () 
   assert.match(domain, /from === 'inactive' && \(to === 'active' \|\| to === 'revoked'\)/u);
   assert.doesNotMatch(domain, /revoked'.*active/u);
   assert.match(repository, /FIRST_USER_ALREADY_PROVISIONED/u);
-  assert.match(repository, /where\('tenant_id', '=', scope\.tenantId\)/u);
+  assert.match(repository, /where\('tenant_id', '=', trustedScope\.tenantId\)/u);
   assert.match(repository, /USER_STALE_WRITE/u);
 });

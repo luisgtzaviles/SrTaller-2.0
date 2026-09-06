@@ -7,7 +7,8 @@ export type InternalDatabasePersistenceOwner =
   | 'database'
   | 'repairs'
   | 'stations'
-  | 'tenancy';
+  | 'tenancy'
+  | 'users';
 
 type DatabaseMigrationJournalTable = Readonly<{
   name: string;
@@ -27,6 +28,8 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     repair_workflow_transitions: DatabaseSchema['repair_workflow_transitions'];
     repair_locations: DatabaseSchema['repair_locations'];
     repair_location_movements: DatabaseSchema['repair_location_movements'];
+    users: DatabaseSchema['users'];
+    user_provisioning_bootstraps: DatabaseSchema['user_provisioning_bootstraps'];
   }>;
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
@@ -36,6 +39,8 @@ type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
     ? Pick<DatabaseSchema, 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements'>
     : Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'tenants'>
+    : Owner extends 'users'
+    ? Pick<DatabaseSchema, 'users' | 'user_provisioning_bootstraps'>
     : Pick<DatabaseSchema, 'branches' | 'stations' | 'station_bindings' | 'station_credentials'>;
 
 export type InternalDatabasePersistenceExecutor<

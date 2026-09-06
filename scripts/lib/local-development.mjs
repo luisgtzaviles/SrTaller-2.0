@@ -50,6 +50,7 @@ const requiredLocalKeys = Object.freeze([
   'SR_LOCAL_VITE_HOST',
   'SR_LOCAL_VITE_PORT',
   'SR_STATION_BOOTSTRAP_SECRET',
+  'SR_USER_BOOTSTRAP_SECRET',
 ]);
 
 const forbiddenLocalKeys = Object.freeze([
@@ -84,6 +85,7 @@ function defaultLocalValues() {
     SR_LOCAL_VITE_HOST: LOCAL_VITE_HOST,
     SR_LOCAL_VITE_PORT: String(LOCAL_VITE_PORT),
     SR_STATION_BOOTSTRAP_SECRET: randomSecret(),
+    SR_USER_BOOTSTRAP_SECRET: randomSecret(),
   });
 }
 
@@ -164,6 +166,17 @@ export async function ensureLocalEnvironment({ create = true } = {}) {
     values = {
       ...values,
       SR_STATION_BOOTSTRAP_SECRET: randomSecret(),
+    };
+    const contents = `${Object.entries(values)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n')}\n`;
+    await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
+    await chmod(LOCAL_ENV_FILE, 0o600);
+  }
+  if (values.SR_USER_BOOTSTRAP_SECRET === undefined && create) {
+    values = {
+      ...values,
+      SR_USER_BOOTSTRAP_SECRET: randomSecret(),
     };
     const contents = `${Object.entries(values)
       .map(([key, value]) => `${key}=${value}`)

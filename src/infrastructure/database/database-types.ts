@@ -54,6 +54,14 @@ export interface UserTable {
   readonly updated_at: MutableColumn<Date>;
 }
 
+/** Durable, tenant-scoped gate for the governed first-user bootstrap. */
+export interface UserProvisioningBootstrapTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly first_user_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly provisioned_at: ImmutableColumn<Date>;
+}
+
 export interface RepairTable {
   readonly repair_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -209,6 +217,7 @@ export interface DatabaseSchema {
   readonly station_bindings: StationBindingTable;
   readonly station_credentials: StationCredentialTable;
   readonly users: UserTable;
+  readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
@@ -237,6 +246,8 @@ export type StationCredentialRow = Selectable<StationCredentialTable>;
 export type NewStationCredential = Insertable<StationCredentialTable>;
 export type UserRow = Selectable<UserTable>;
 export type NewUser = Insertable<UserTable>;
+export type UserProvisioningBootstrapRow = Selectable<UserProvisioningBootstrapTable>;
+export type NewUserProvisioningBootstrap = Insertable<UserProvisioningBootstrapTable>;
 
 export type RepairRow = Selectable<RepairTable>;
 export type NewRepair = Insertable<RepairTable>;
