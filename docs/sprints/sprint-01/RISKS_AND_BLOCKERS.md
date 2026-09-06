@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Active — sin PBI de implementación activo.
-- **Última revisión:** 2026-09-04.
+- **Estado:** Active — PBI-024 `Done candidate`; sin PBI de implementación activo.
+- **Última revisión:** 2026-09-06.
 
 ## Riesgos
 
@@ -18,10 +18,10 @@
 
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
-| PBI-024 | DoR, estimación y autorización Owner de inicio | No iniciar implementación antes de resolver esos gates | Open |
+| PBI-024 | Merge autorizado y CI de `main` del cierre documental | No declarar Done efectivo antes de resolver el cierre | Open |
 | Migración timezone | Backfill histórico equivocado o cambio de instante | Fallback IANA documentado, validación y pruebas PostgreSQL; roll-forward en compartido | Mitigated |
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** autorización Owner para DoR de PBI-024 o un hallazgo de CI.
+- **Disparador:** Owner merge review del cierre documental PBI-024 o un hallazgo de CI.

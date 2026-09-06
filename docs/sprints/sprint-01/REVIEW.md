@@ -9,9 +9,11 @@
 ## Objetivo y resultado
 
 - **Objetivo:** Identity & Context Foundation.
-- **Resultado:** PBI-027 y PBI-029 `Done`; PBI-029 cerró con su PR documental
-  integrado y CI post-cierre GREEN. Los demás PBIs del Sprint no han iniciado.
-- **Evidencia:** [cierre canónico PBI-029](../../quality/evidence/pbi-029/CLOSURE_CANDIDATE.md).
+- **Resultado:** PBI-027 y PBI-029 `Done`; PBI-024 es `Done candidate` con
+  merge funcional, CI exacto de `main`, focused high-risk review y Owner
+  Acceptance condicional satisfechos. PBI-032 no ha iniciado.
+- **Evidencia:** [cierre canónico PBI-029](../../quality/evidence/pbi-029/CLOSURE_CANDIDATE.md)
+  y [cierre candidato PBI-024](../../quality/evidence/pbi-024/CLOSURE_CANDIDATE.md).
 
 ## Aceptación
 
@@ -21,4 +23,4 @@
 
 ## Próxima revisión
 
-- **Disparador:** autorización Owner para DoR de PBI-024 o cierre del Sprint.
+- **Disparador:** Owner merge review del cierre documental PBI-024 o cierre del Sprint.
