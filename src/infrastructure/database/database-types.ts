@@ -43,6 +43,17 @@ export interface StationCredentialTable {
   readonly created_at: ImmutableColumn<Date>;
 }
 
+export interface UserTable {
+  readonly user_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly display_name: MutableColumn<string>;
+  readonly operational_identifier: MutableColumn<string | null>;
+  readonly status: MutableColumn<'active' | 'inactive' | 'revoked'>;
+  readonly version: MutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
 export interface RepairTable {
   readonly repair_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -197,6 +208,7 @@ export interface DatabaseSchema {
   readonly stations: StationTable;
   readonly station_bindings: StationBindingTable;
   readonly station_credentials: StationCredentialTable;
+  readonly users: UserTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
@@ -223,6 +235,8 @@ export type StationBindingRow = Selectable<StationBindingTable>;
 export type NewStationBinding = Insertable<StationBindingTable>;
 export type StationCredentialRow = Selectable<StationCredentialTable>;
 export type NewStationCredential = Insertable<StationCredentialTable>;
+export type UserRow = Selectable<UserTable>;
+export type NewUser = Insertable<UserTable>;
 
 export type RepairRow = Selectable<RepairTable>;
 export type NewRepair = Insertable<RepairTable>;
