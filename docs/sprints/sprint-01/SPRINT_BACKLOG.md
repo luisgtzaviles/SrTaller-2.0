@@ -2,11 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Active — sin PBI de implementación activo.
-- **PBI actual:** ninguno. PBI-024 está seleccionado únicamente como
-  candidato y no está autorizado.
+- **Estado:** Active — PBI-024 en implementación.
+- **PBI actual:** PBI-024 — Trusted Station Runtime Context.
 - **WIP:** uno.
-- **Siguiente candidato:** PBI-024, seleccionado solamente; no iniciado.
+- **Siguiente candidato:** ninguno mientras PBI-024 esté activo.
 
 ## Gate externo de activación
 

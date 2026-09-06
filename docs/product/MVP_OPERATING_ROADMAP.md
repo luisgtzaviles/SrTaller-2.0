@@ -11,12 +11,11 @@
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** Sprint 01.
-- **Sprint 01:** `Active — sin PBI de implementación activo`.
-- **PBI actual:** NONE.
+- **Sprint 01:** `Active — PBI-024 en implementación`.
+- **PBI actual:** PBI-024 — Trusted Station Runtime Context.
 - **Siguiente PBI candidato:** [PBI-024](../backlog/pbis/PBI-024.md),
-  seleccionado solamente; no iniciado ni autorizado.
-- **Blocking gate:** DoR y autorización Owner de inicio propias de PBI-024; no
-  inicia PBI-024.
+  en ejecución; ningún candidato siguiente se inicia automáticamente.
+- **Blocking gate:** focused review y CI autoritativo de PBI-024.
 - **WIP operacional:** uno.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation del
   2026-09-03.
