@@ -46,3 +46,4 @@ de `AppModule` importa una superficie `<module>.module.ts`.
 - Todo consumo intermodular termina en el `index.ts` productor.
 - No hay acceso a internals, adapters, repositories o persistencia ajena.
 - Un edge nuevo exige actualizar y aprobar la policy antes del import.
+`users->tenancy`

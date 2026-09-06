@@ -33,6 +33,7 @@ function validLocalValues() {
     SR_LOCAL_VITE_HOST: '127.0.0.1',
     SR_LOCAL_VITE_PORT: '4173',
     SR_STATION_BOOTSTRAP_SECRET: 'synthetic-local-station-bootstrap-secret',
+    SR_USER_BOOTSTRAP_SECRET: 'synthetic-local-user-bootstrap-secret',
   };
 }
 
