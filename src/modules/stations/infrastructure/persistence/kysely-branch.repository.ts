@@ -1,11 +1,10 @@
-import type { Kysely, Transaction } from 'kysely';
-
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import {
   useDatabasePersistenceExecutor,
   useTransactionalDatabasePersistenceExecutor,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
+  InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { BranchRow, DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
@@ -24,9 +23,7 @@ import type {
   TenantPersistenceScope,
 } from '../../application/ports/branch-repository.port.js';
 
-type BranchExecutor =
-  | Kysely<Pick<DatabaseSchema, 'branches'>>
-  | Transaction<Pick<DatabaseSchema, 'branches'>>;
+type BranchExecutor = InternalDatabasePersistenceExecutor<'stations'>;
 
 type ExecuteBranchOperation = <Result>(
   operation: InternalDatabasePersistenceOperation<'stations', Result>,

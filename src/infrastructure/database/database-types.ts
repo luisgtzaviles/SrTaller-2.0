@@ -15,6 +15,31 @@ export interface BranchTable {
   readonly created_at: ImmutableColumn<Date>;
 }
 
+export interface StationTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly status: ImmutableColumn<'active' | 'revoked'>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: ImmutableColumn<Date>;
+  readonly revoked_at: ImmutableColumn<Date | null>;
+}
+
+export interface StationBindingTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface StationCredentialTable {
+  readonly credential_id: ImmutableColumn<string>;
+  readonly credential_hash: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly revoked_at: ImmutableColumn<Date | null>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
 export interface RepairTable {
   readonly repair_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -166,6 +191,9 @@ export interface RepairLocationMovementTable {
 export interface DatabaseSchema {
   readonly tenants: TenantTable;
   readonly branches: BranchTable;
+  readonly stations: StationTable;
+  readonly station_bindings: StationBindingTable;
+  readonly station_credentials: StationCredentialTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;

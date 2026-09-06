@@ -14,7 +14,7 @@ type DatabaseMigrationJournalTable = Readonly<{
   timestamp: string;
 }>;
 
-type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants'> &
+type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'stations' | 'station_bindings' | 'station_credentials'> &
   Readonly<{
     kysely_migration: DatabaseMigrationJournalTable;
     repairs: DatabaseSchema['repairs'];
@@ -36,7 +36,7 @@ type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
     ? Pick<DatabaseSchema, 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements'>
     : Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'tenants'>
-    : Pick<DatabaseSchema, 'branches'>;
+    : Pick<DatabaseSchema, 'branches' | 'stations' | 'station_bindings' | 'station_credentials'>;
 
 export type InternalDatabasePersistenceExecutor<
   Owner extends InternalDatabasePersistenceOwner,
