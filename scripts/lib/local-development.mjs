@@ -268,6 +268,14 @@ export function localSeedRows() {
   });
 }
 
+export function localUserRows() {
+  return Object.freeze([
+    ['00000000-0000-4000-8000-000000000501', 'Jorge Sintético', 'JORGE', 'active'],
+    ['00000000-0000-4000-8000-000000000502', 'María Sintética', null, 'inactive'],
+    ['00000000-0000-4000-8000-000000000503', 'Carlos Sintético', null, 'revoked'],
+  ].map(([userId, displayName, operationalIdentifier, status]) => Object.freeze({ userId, tenantId: LOCAL_TENANT_ID, displayName, operationalIdentifier, status, version: 0, createdAt: LOCAL_SEED_TIMESTAMP, updatedAt: LOCAL_SEED_TIMESTAMP })));
+}
+
 export function localRepairRows() {
   const tenantId = LOCAL_TENANT_ID;
   const branchId = LOCAL_BRANCH_IDS[0];
