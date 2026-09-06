@@ -12,7 +12,8 @@ no se copia a logs, serialización ni diagnóstico.
 | No secreto técnico | `HOST`, `NODE_ENV`, `PORT` | Activo | Technical shell |
 | No secreto de persistencia | `SR_DB_ENVIRONMENT` | Activo | Database configuration |
 | Secreto activo | `SR_DB_PASSWORD`, `SR_TEST_DB_PASSWORD` | Activo | Database configuration |
-| Secreto reservado | `SR_PIN_PEPPER`, `SR_SESSION_SIGNING_KEY`, `SR_STATION_BOOTSTRAP_SECRET` | Sin consumidor | PBIs futuros respectivos |
+| Secreto reservado | `SR_PIN_PEPPER`, `SR_SESSION_SIGNING_KEY` | Sin consumidor | PBIs futuros respectivos |
+| Secreto activo local/test | `SR_STATION_BOOTSTRAP_SECRET` | Bootstrap técnico de Station en PBI-024 | Sólo `.env.local` o runner efímero; no enrollment productivo |
 
 La clasificación no autoriza exponer nada al cliente: todos estos nombres son
 server-only. La configuración pública de Vite continúa siendo una superficie
@@ -48,5 +49,6 @@ no están implícitas en este contrato.
 
 ## Próxima revisión
 
-Antes de que PBI-024, PBI-025 o PBI-034 declaren un consumidor activo de un
-secreto reservado, y antes de materializar Production.
+Antes de que PBI-025 o PBI-034 declaren un consumidor activo de un secreto
+reservado, y antes de materializar Production. El consumidor de PBI-024 sigue
+limitado al seed development/test y no autoriza enrollment productivo.

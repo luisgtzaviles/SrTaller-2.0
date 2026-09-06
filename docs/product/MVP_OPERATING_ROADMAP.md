@@ -11,10 +11,10 @@
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** Sprint 01.
-- **Sprint 01:** `Active — PBI-024 en implementación`.
+- **Sprint 01:** `Active — PBI-024 en review`.
 - **PBI actual:** PBI-024 — Trusted Station Runtime Context.
-- **Siguiente PBI candidato:** [PBI-024](../backlog/pbis/PBI-024.md),
-  en ejecución; ningún candidato siguiente se inicia automáticamente.
+- **Siguiente PBI candidato:** ninguno mientras PBI-024 esté en ejecución o
+  review.
 - **Blocking gate:** focused review y CI autoritativo de PBI-024.
 - **WIP operacional:** uno.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation del
@@ -96,10 +96,10 @@ autoritativo GREEN sobre ese merge; PBI-024 sigue seleccionado solamente.
 | Phase | Identity & Context Foundation |
 | Sprint | SPRINT-01 |
 | Sprint status | Active — WIP=1 |
-| Current PBI | NONE |
-| Next PBI candidate | PBI-024 — Trusted Station Runtime Context |
+| Current PBI | PBI-024 — Trusted Station Runtime Context |
+| Next PBI candidate | NONE mientras PBI-024 siga activo |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | DoR y autorización Owner de inicio de PBI-024 |
+| Blocking gate | Focused review, merge autorizado y CI exacto de `main` de PBI-024 |
 
 ## Fases aprobadas
 
@@ -165,7 +165,7 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | Gate | Estado | Evidencia o condición vigente |
 |---|---|---|
 | G0 ROADMAP | PASS | PR #17 merge `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091` GREEN |
-| G1–G12 | Pending | El cierre de PBI-029 no materializa ni autoriza PBI-024 |
+| G1–G12 | Pending | PBI-024 está en implementación/review; ningún gate se declara PASS antes de merge, CI exacto y cierre canónico |
 
 ## Cierre y avance documental de un PBI
 
@@ -190,12 +190,12 @@ PBI-029 también está `Done`: el Owner aceptó expresamente su resultado y su
 riesgo `CRITICAL`, sin reducir la clasificación; el merge `41914c78724303d66136989937cf8f38e4ea8a88`
 y CI `33988752597` GREEN completaron su cierre documental.
 
-Sprint 01 continúa `Active` sin PBI de implementación activo. PBI-029 `Done`
-no autoriza release, deploy ni iniciar PBI-024.
+Sprint 01 continúa `Active` con PBI-024 como único WIP autorizado. PBI-029
+`Done` no autoriza release, deploy ni iniciar otro PBI.
 
 ## Próxima revisión
 
-- **Disparador:** autorización Owner separada para ejecutar DoR de PBI-024.
-- **Resultado esperado si pasa:** PBI-024 se evalúa sin iniciarse hasta recibir
-  su propia autorización de implementación.
-- **Si falta:** no se inicia PBI alguno ni se salta a otro candidato.
+- **Disparador:** focused review y CI del candidato de PBI-024.
+- **Resultado esperado si pasa:** Owner Review y, si corresponde, autorización
+  de merge; no se inicia otro PBI.
+- **Si falla:** PBI-024 permanece como único WIP y se remedia dentro de scope.

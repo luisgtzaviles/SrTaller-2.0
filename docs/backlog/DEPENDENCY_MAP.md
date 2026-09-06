@@ -65,12 +65,13 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Active`; WIP=1.
-- PBI actual: NONE.
+- PBI actual: PBI-024 — único WIP autorizado, en implementación/review.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
   CI post-cierre PASS; `Released: NO`.
-- PBI-024/PBI-032/PBI-033: candidatos ordenados, no iniciados.
+- PBI-024: en implementación/review; PBI-032/PBI-033 permanecen candidatos
+  ordenados y no iniciados.
 
 ## Stage 2
 
@@ -80,4 +81,4 @@ diferidos.
 
 ## Próxima revisión
 
-Ante autorización Owner para DoR de PBI-024 o si cambia una dependencia aprobada.
+Ante focused review de PBI-024 o si cambia una dependencia aprobada.
