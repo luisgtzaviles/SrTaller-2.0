@@ -2,15 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Active — no existe PBI actual.
+- **Estado:** Active — PBI-024 `Done candidate`; no existe PBI de implementación actual.
 - **Sprint:** SPRINT-01.
 - **Periodo:** TBD.
 - **Estado del sprint:** Active.
 - **Gate de activación:** PASS — PBI-027 y PBI-029 están `Done`; PBI-029
   cuenta con merge documental integrado y CI post-cierre de `main` GREEN.
-- **PBI actual:** ninguno. PBI-024 es el siguiente candidato, no iniciado ni
-  autorizado.
-- **Siguiente candidato:** PBI-024; sólo seleccionado, no iniciado.
+- **PBI actual:** ninguno durante el cierre documental de PBI-024.
+- **Siguiente candidato:** PBI-032; sólo seleccionado, no iniciado.
 
 ## Objetivo
 
@@ -40,7 +39,7 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 
 - [x] PBI-027 `Done`; `Released: NO`.
 - [x] PBI-029 `Done`; `Released: NO`.
-- [ ] PBI-024 `Done` con recuperación selectiva, no merge de la rama histórica.
+- [x] PBI-024 `Done candidate`: recuperación selectiva integrada; cierre documental pendiente.
 - [ ] PBI-032 `Done`.
 - [ ] PBI-033 `Done`.
 - [ ] No existe más de un PBI en ejecución/cierre.
@@ -49,4 +48,4 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** autorización Owner para DoR de PBI-024.
+- **Disparador:** Owner merge review del cierre documental de PBI-024.

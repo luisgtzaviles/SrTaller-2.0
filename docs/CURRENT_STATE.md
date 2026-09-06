@@ -4,8 +4,8 @@
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
 - **Baseline auditada:** `main` en
-  `41914c78724303d66136989937cf8f38e4ea8a88`.
-- **CI autoritativo:** run `33988752597`, `SUCCESS`; VC-024 run-1, run-2 y
+  `5966d2f20fcf29aedf91a841a4fe331cb9bae410`.
+- **CI autoritativo:** run `34019773228`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -27,12 +27,12 @@ Repairs y prioriza Identity & Context Foundation.
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `41914c78724303d66136989937cf8f38e4ea8a88` |
+| HEAD auditado | `5966d2f20fcf29aedf91a841a4fe331cb9bae410` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `33988752597` SUCCESS |
-| Última integración | PR #22 — cierre canónico PBI-029 |
+| CI | `34019773228` SUCCESS |
+| Última integración | PR #24 — Trusted Station Runtime Context |
 
 La rama documental que modifique esta fotografía no se convierte en baseline
 hasta integrarse a `main` con autorización y CI propios.
@@ -79,8 +79,9 @@ hasta integrarse a `main` con autorización y CI propios.
 ## Limitaciones vigentes
 
 - `access` no contiene todavía Users, credentials, roles o sessions.
-- No existe Station runtime persistente en `main`; PBI-024 lo materializa sólo
-  en su rama candidata y sigue pendiente de review, merge y CI exacto.
+- Existe Trusted Station Runtime Context persistente en `main`; su cierre
+  canónico documental permanece pendiente. No incorpora enrollment productivo
+  ni administración de binding.
 - `LocalRepairContext` sólo habilita contexto fijo en desarrollo.
 - Writes de Repairs integrados todavía registran actor sintético.
 - New Repair es una superficie visual, no un write productivo persistente.
@@ -105,10 +106,10 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 | Elemento | Estado |
 |---|---|
 | Sprint activo | Sprint 01 |
-| Sprint 01 | Active — PBI-024 es el único WIP |
-| PBI actual | PBI-024 — Trusted Station Runtime Context (In review; Owner high-risk start authorized) |
-| Siguiente candidato | Ninguno mientras PBI-024 no cierre canónicamente |
-| WIP permitido | Uno |
+| Sprint 01 | Active — PBI-024 es `Done candidate`; sin PBI en ejecución |
+| PBI actual | Ninguno durante el cierre documental de PBI-024 |
+| Siguiente candidato | PBI-032 — User Directory and Lifecycle; seleccionado, no iniciado |
+| WIP permitido | Uno; actual `0/1` |
 
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
@@ -121,8 +122,10 @@ PBI-027 quedó `Done` canónico al integrar PR #20; `Released: NO`. PBI-029 qued
 CI `33974100385` GREEN, focused security review PASS, riesgo `CRITICAL`
 aceptado, Owner Acceptance APPROVED, PR #22 merge
 `41914c78724303d66136989937cf8f38e4ea8a88` y CI post-cierre `33988752597`
-GREEN. `Released: NO`. PBI-024 está autorizado, en review y no está integrado
-en `main`.
+GREEN. `Released: NO`. PBI-024 tiene merge funcional
+`5966d2f20fcf29aedf91a841a4fe331cb9bae410`, CI de `main` `34019773228`
+GREEN, focused review PASS y Owner Acceptance condicional satisfecha. El cierre
+documental normal decide su estado `Done` efectivo; `Released: NO`.
 
 ## Identity Foundation reconciliada
 
@@ -148,5 +151,5 @@ en `main`.
 
 ## Próxima acción
 
-Completar review focalizado de PBI-024. No se autoriza merge, deploy ni inicio
-de otro PBI.
+Owner merge review del cierre documental de PBI-024. No se autoriza DoR,
+implementación, deploy ni release de PBI-032.

@@ -12,6 +12,12 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Preparado el cierre canónico candidato de PBI-024: merge funcional
+  `5966d2f20fcf29aedf91a841a4fe331cb9bae410`, CI de `main` `34019773228`
+  GREEN, focused high-risk review PASS y Owner Acceptance condicional
+  satisfecha. El estado `Done` requiere integrar este PR documental; `Released`
+  y deploy permanecen NO. PBI-032 queda únicamente seleccionado, no iniciado.
+
 - Cerrado canónicamente PBI-029: threat model y DoR PASS, riesgo `CRITICAL`
   aceptado, focused security review PASS, merge funcional
   `36d93736d46b69acadadd95ef66809332fbb5bd4`, CI funcional `33974100385`

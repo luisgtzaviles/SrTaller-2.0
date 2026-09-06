@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `41914c78724303d66136989937cf8f38e4ea8a88`; CI `33988752597` GREEN.
+  `5966d2f20fcf29aedf91a841a4fe331cb9bae410`; CI `34019773228` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -65,13 +65,14 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Active`; WIP=1.
-- PBI actual: PBI-024 — único WIP autorizado, en implementación/review.
+- PBI actual: ninguno durante el cierre documental de PBI-024.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
   CI post-cierre PASS; `Released: NO`.
-- PBI-024: en implementación/review; PBI-032/PBI-033 permanecen candidatos
-  ordenados y no iniciados.
+- PBI-024: `Done candidate`; merge funcional `5966d2f` y CI main `34019773228`
+  GREEN; espera sólo su cierre documental. PBI-032 queda seleccionado; PBI-033
+  permanece candidato ordenado; ambos no iniciados.
 
 ## Stage 2
 
@@ -81,4 +82,5 @@ diferidos.
 
 ## Próxima revisión
 
-Ante focused review de PBI-024 o si cambia una dependencia aprobada.
+Ante Owner merge review del cierre documental PBI-024 o si cambia una
+dependencia aprobada.
