@@ -3,8 +3,8 @@
 ## Estado del documento
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
-- **Baseline auditada:** `main` en
-  `5966d2f20fcf29aedf91a841a4fe331cb9bae410`.
+- **Baseline auditada:** `main` más rama activa de PBI-032; la rama no se
+  convierte en baseline hasta merge autorizado y CI de `main`.
 - **CI autoritativo:** run `34019773228`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
@@ -78,7 +78,8 @@ hasta integrarse a `main` con autorización y CI propios.
 
 ## Limitaciones vigentes
 
-- `access` no contiene todavía Users, credentials, roles o sessions.
+- `access` no contiene credentials, roles o sessions. PBI-032 aporta un
+  directorio User tenant-scoped candidato, aún no integrado.
 - Existe Trusted Station Runtime Context persistente en `main`; su cierre
   canónico documental permanece pendiente. No incorpora enrollment productivo
   ni administración de binding.
@@ -106,10 +107,10 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 | Elemento | Estado |
 |---|---|
 | Sprint activo | Sprint 01 |
-| Sprint 01 | Active — PBI-024 es `Done candidate`; sin PBI en ejecución |
-| PBI actual | Ninguno durante el cierre documental de PBI-024 |
-| Siguiente candidato | PBI-032 — User Directory and Lifecycle; seleccionado, no iniciado |
-| WIP permitido | Uno; actual `0/1` |
+| Sprint 01 | Active — PBI-024 cerrado canónicamente; PBI-032 en review candidate |
+| PBI actual | PBI-032 — User Directory and Lifecycle |
+| Siguiente candidato | PBI-033 — sólo candidato, no iniciado |
+| WIP permitido | Uno; actual `1/1` |
 
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)

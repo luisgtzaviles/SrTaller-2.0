@@ -11,10 +11,10 @@
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** Sprint 01.
-- **Sprint 01:** `Active — PBI-024 Done candidate; cierre documental pendiente`.
-- **PBI actual:** ninguno durante el cierre documental de PBI-024.
-- **Siguiente PBI candidato:** PBI-032 — User Directory and Lifecycle;
-  seleccionado, no iniciado.
+- **Sprint 01:** `Active — PBI-032 In review candidate`.
+- **PBI actual:** PBI-032 — User Directory and Lifecycle.
+- **Siguiente PBI candidato:** PBI-033 — Roles, Assignments and Capability
+  Catalog; seleccionado, no iniciado.
 - **Blocking gate:** merge autorizado y CI autoritativo del cierre documental
   de PBI-024.
 - **WIP operacional:** uno.
@@ -97,9 +97,9 @@ documental autorizado.
 | Stage | MVP |
 | Phase | Identity & Context Foundation |
 | Sprint | SPRINT-01 |
-| Sprint status | Active — WIP=0/1 durante cierre documental |
-| Current PBI | NONE |
-| Next PBI candidate | PBI-032 — seleccionado, no iniciado |
+| Sprint status | Active — WIP=1/1 durante review de PBI-032 |
+| Current PBI | PBI-032 — In review candidate |
+| Next PBI candidate | PBI-033 — seleccionado, no iniciado |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
 | Blocking gate | Cierre documental PBI-024: merge autorizado y CI exacto de `main` |
 

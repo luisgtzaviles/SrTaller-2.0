@@ -70,9 +70,8 @@ flowchart TD
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
   CI post-cierre PASS; `Released: NO`.
-- PBI-024: `Done candidate`; merge funcional `5966d2f` y CI main `34019773228`
-  GREEN; espera sólo su cierre documental. PBI-032 queda seleccionado; PBI-033
-  permanece candidato ordenado; ambos no iniciados.
+- PBI-024: `Done` canónico; `Released: NO`. PBI-032 es el PBI actual en review
+  candidate; PBI-033 permanece candidato ordenado y no iniciado.
 
 ## Stage 2
 
