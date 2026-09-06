@@ -1,24 +1,27 @@
 {
   "policyVersion": 3,
-  "allowedModules": ["access", "repairs", "stations", "tenancy"],
+  "allowedModules": ["access", "repairs", "stations", "tenancy", "users"],
   "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy"],
     "repairs": ["tenancy"],
     "stations": ["tenancy"],
-    "tenancy": []
+    "tenancy": [],
+    "users": ["tenancy"]
   },
   "publicSurfaces": {
     "access": ["AccessModuleContract"],
     "repairs": ["RepairsModuleContract"],
     "stations": ["StationsModuleContract"],
-    "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"]
+    "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"],
+    "users": ["UsersModuleContract"]
   },
   "consumers": {
     "access": ["AppModule"],
     "repairs": ["AppModule"],
     "stations": ["access"],
-    "tenancy": ["access", "stations"]
+    "tenancy": ["access", "stations", "users"],
+    "users": ["AppModule"]
   },
   "governedRoots": ["src/modules"],
   "nonStructuralFileNames": [".DS_Store", ".gitkeep"],
@@ -74,6 +77,17 @@
       "declarationName": "TenancyModule",
       "decorator": "Module",
       "rule": "D5-R003"
+    },
+    "src/modules/users/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "UsersModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/users/users.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "UsersModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
     }
   },
   "appModuleComposition": {
@@ -84,7 +98,8 @@
       "AccessModule": "./modules/access/access.module.js",
       "RepairsModule": "./modules/repairs/repairs.module.js",
       "StationsModule": "./modules/stations/stations.module.js",
-      "TenancyModule": "./modules/tenancy/tenancy.module.js"
+      "TenancyModule": "./modules/tenancy/tenancy.module.js",
+      "UsersModule": "./modules/users/users.module.js"
     }
   },
   "httpSurfacePolicy": {
@@ -161,6 +176,8 @@
           "StationTable",
           "StationBindingTable",
           "StationCredentialTable",
+          "UserTable",
+          "UserProvisioningBootstrapTable",
           "DatabaseSchema",
           "TenantRow",
           "NewTenant",
@@ -174,6 +191,10 @@
           "NewStationBinding",
           "StationCredentialRow",
           "NewStationCredential",
+          "UserRow",
+          "NewUser",
+          "UserProvisioningBootstrapRow",
+          "NewUserProvisioningBootstrap",
           "RepairTable",
           "RepairRow",
           "NewRepair",
@@ -223,12 +244,15 @@
           "src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts",
           "src/infrastructure/database/migrations/20260904120000_stations_add_branch_timezone.ts",
           "src/infrastructure/database/migrations/20260905160000_stations_create_trusted_runtime_context.ts",
+          "src/infrastructure/database/migrations/20260906170000_users_create_directory.ts",
+          "src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
-          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
+          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
         ],
         "status": "materialized-schema-contract"
       },
@@ -248,7 +272,8 @@
           "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
-          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
+          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
         ],
         "status": "materialized-connection-facility"
       },
@@ -304,7 +329,8 @@
           "src/infrastructure/database/database-runtime.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
-          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts"
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
+          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
         ],
         "status": "materialized-owner-internal-capability"
       },
@@ -390,11 +416,18 @@
         "allowedScopes": ["TenantPersistenceScope"],
         "status": "materialized-owner-port"
       }
+      ,"src/modules/users/application/ports/user-repository.port.ts": {
+        "owner": "users",
+        "contract": "UserRepositoryPort",
+        "allowedScopes": ["UserScope"],
+        "status": "materialized-owner-port"
+      }
     },
     "scopeTypes": {
       "RepairPersistenceScope": ["tenantId", "branchId"],
       "TenantBranchPersistenceScope": ["tenantId", "branchId"],
-      "TenantPersistenceScope": ["tenantId"]
+      "TenantPersistenceScope": ["tenantId"],
+      "UserScope": ["tenantId"]
     },
     "adapters": {
       "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts": {
@@ -736,6 +769,12 @@
     "src/modules/tenancy/application/ports/tenant-repository.port.ts",
     "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
     "src/modules/tenancy/tenancy.module.ts"
+    ,"src/modules/users/index.ts"
+    ,"src/modules/users/application/ports/user-repository.port.ts"
+    ,"src/modules/users/application/use-cases/list-users.use-case.ts"
+    ,"src/modules/users/domain/user.ts"
+    ,"src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
+    ,"src/modules/users/users.module.ts"
   ],
   "requiredEvidence": [
     "docs/architecture-readiness/dec-005-materialization/ARCHITECTURE_RULES.md",

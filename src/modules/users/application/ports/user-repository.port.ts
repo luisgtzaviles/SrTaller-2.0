@@ -1,6 +1,8 @@
 import type { UserStatus } from '../../domain/user.js';
 
-export type UserScope = Readonly<{ tenantId: string }>;
+export interface UserScope {
+  readonly tenantId: string;
+}
 export type UserRecord = Readonly<{ userId: string; tenantId: string; displayName: string; operationalIdentifier: string | null; status: UserStatus; version: number; createdAt: Date; updatedAt: Date }>;
 export interface UserRepositoryPort {
   list(scope: UserScope): Promise<readonly UserRecord[]>;

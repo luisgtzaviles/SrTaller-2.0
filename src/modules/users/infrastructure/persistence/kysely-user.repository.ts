@@ -1,6 +1,7 @@
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import { useDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { InternalDatabasePersistenceOperation } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { parseTenantId } from '../../../tenancy/index.js';
 import { canTransitionUser, type UserStatus } from '../../domain/user.js';
 import type { UserRecord, UserRepositoryPort, UserScope } from '../../application/ports/user-repository.port.js';
 
@@ -14,10 +15,11 @@ export class UserPersistenceError extends Error {
 }
 
 function validateScope(scope: UserScope): UserScope {
-  if (typeof scope?.tenantId !== 'string' || !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/iu.test(scope.tenantId)) {
+  try {
+    return Object.freeze({ tenantId: parseTenantId(scope?.tenantId) });
+  } catch {
     throw new UserPersistenceError('USER_TENANT_SCOPE_REQUIRED');
   }
-  return Object.freeze({ tenantId: scope.tenantId });
 }
 
 function map(row: { user_id: string; tenant_id: string; display_name: string; operational_identifier: string | null; status: UserStatus; version: number; created_at: Date; updated_at: Date }): UserRecord {
