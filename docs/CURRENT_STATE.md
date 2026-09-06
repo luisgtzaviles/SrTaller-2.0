@@ -105,7 +105,7 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 |---|---|
 | Sprint activo | Sprint 01 |
 | Sprint 01 | Active — sin PBI de implementación activo |
-| PBI actual | NONE |
+| PBI actual | PBI-024 — Trusted Station Runtime Context (In progress; Owner high-risk start authorized) |
 | Siguiente candidato | PBI-024, seleccionado solamente y no iniciado |
 | WIP permitido | Uno |
 
