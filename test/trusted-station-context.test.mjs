@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   readStationCredentialCookie,
   stationCredentialCookieName,
+  localStationBootstrapCredential,
 } from '../dist/modules/stations/index.js';
 import {
   ResolveTrustedStationContextUseCase,
@@ -21,6 +22,13 @@ test('station cookie accepts only the server-issued opaque credential', () => {
   assert.equal(readStationCredentialCookie(`${stationCredentialCookieName}=${credential}`), credential);
   assert.equal(readStationCredentialCookie(`${stationCredentialCookieName}=short`), null);
   assert.equal(readStationCredentialCookie(undefined), null);
+});
+
+test('local bootstrap cannot silently escape development', () => {
+  assert.throws(() => localStationBootstrapCredential({ NODE_ENV: 'production', SR_DB_ENVIRONMENT: 'production', SR_STATION_BOOTSTRAP_SECRET: 'a'.repeat(32) }));
+  assert.throws(() => localStationBootstrapCredential({ NODE_ENV: 'development', SR_DB_ENVIRONMENT: 'development' }));
+  const value = localStationBootstrapCredential({ NODE_ENV: 'development', SR_DB_ENVIRONMENT: 'development', SR_STATION_BOOTSTRAP_SECRET: 'a'.repeat(32) });
+  assert.match(value, /^[A-Za-z0-9_-]{43}$/u);
 });
 
 test('trusted station context fails closed without a recognized credential', async () => {
