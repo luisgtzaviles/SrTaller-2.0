@@ -311,6 +311,7 @@ export async function collectEvidenceManifest({
     'src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts',
     'supply-chain-policy.json',
     'test/database-schema-postgresql.test.mjs',
+    'test/trusted-station-context-postgresql.test.mjs',
     'tsconfig.build.json',
     'tsconfig.json',
   ];

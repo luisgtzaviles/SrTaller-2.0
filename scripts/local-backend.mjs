@@ -9,7 +9,7 @@ import {
 import { materializeLocalEvidenceFixtures } from './lib/local-evidence-fixtures.mjs';
 import { localDbUp } from './local-db.mjs';
 
-const values = await ensureLocalEnvironment({ create: false });
+const values = await ensureLocalEnvironment();
 await localDbUp();
 await materializeLocalEvidenceFixtures();
 const child = spawn('pnpm', ['run', 'dev'], {

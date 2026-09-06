@@ -2750,7 +2750,7 @@ export async function checkArchitecture({
     for (const file of actualModuleFiles.filter(
       (candidate) => !allowedModuleFiles.includes(candidate),
     )) {
-      add('D5-R035', file, 'source is outside the authorized PBI-022 materialization allowlist');
+      add('D5-R035', file, 'source is outside the authorized product module allowlist');
     }
     for (const file of allowedModuleFiles.filter(
       (candidate) => !actualModuleFiles.includes(candidate),

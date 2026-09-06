@@ -2,11 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Active — sin PBI de implementación activo.
-- **PBI actual:** ninguno. PBI-024 está seleccionado únicamente como
-  candidato y no está autorizado.
+- **Estado:** Active — PBI-024 en review.
+- **PBI actual:** PBI-024 — Trusted Station Runtime Context.
 - **WIP:** uno.
-- **Siguiente candidato:** PBI-024, seleccionado solamente; no iniciado.
+- **Siguiente candidato:** ninguno mientras PBI-024 esté activo.
 
 ## Gate externo de activación
 
@@ -25,15 +24,14 @@
 
 | Orden | PBI | Estado | Condición de entrada |
 |---:|---|---|---|
-| 1 | [PBI-024](../../backlog/pbis/PBI-024.md) | Draft | PBI-029 Done; recuperación selectiva refinada |
-| 4 | [PBI-032](../../backlog/pbis/PBI-032.md) | Draft | PBI-024 Done; bootstrap de primer User resuelto |
-| 5 | [PBI-033](../../backlog/pbis/PBI-033.md) | Draft | PBI-032 Done; catálogo inicial refinado |
+| 1 | [PBI-032](../../backlog/pbis/PBI-032.md) | Draft | PBI-024 Done; bootstrap de primer User resuelto |
+| 2 | [PBI-033](../../backlog/pbis/PBI-033.md) | Draft | PBI-032 Done; catálogo inicial refinado |
 
 ## Bloqueos
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| PBI-024 | DoR y autorización Owner de inicio | No iniciar implementación antes de resolver ambos gates |
+| PBI-024 | Focused review, merge autorizado y CI exacto de `main` | No cerrar ni seleccionar otro PBI antes de completar esos gates |
 
 ## Reglas de cambio
 
@@ -45,4 +43,4 @@
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** autorización Owner para DoR de PBI-024 o un hallazgo de CI.
+- **Disparador:** review focalizado de PBI-024 o un hallazgo de CI.

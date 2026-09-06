@@ -12,6 +12,9 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   assert.equal(policy.persistence.status, 'tenant-schema-materialized');
   assert.deepEqual(policy.persistence.databaseObjects, {
     branches: { owner: 'stations', kind: 'table' },
+    stations: { owner: 'stations', kind: 'table' },
+    station_bindings: { owner: 'stations', kind: 'table' },
+    station_credentials: { owner: 'stations', kind: 'table' },
     repairs: { owner: 'repairs', kind: 'table' },
     repair_intakes: { owner: 'repairs', kind: 'table' },
     repair_timeline_entries: { owner: 'repairs', kind: 'table' },
@@ -72,6 +75,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260903120000_repairs_create_workflow_transitions.ts',
       '20260903130000_repairs_create_location_movements.ts',
       '20260904120000_stations_add_branch_timezone.ts',
+      '20260905160000_stations_create_trusted_runtime_context.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');
@@ -96,6 +100,8 @@ test('database schema types are immutable and require externally supplied identi
   assert.match(schema, /readonly tenant_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly branch_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly time_zone: MutableColumn<string>/u);
+  assert.match(schema, /readonly active: DefaultedImmutableColumn<boolean>/u);
+  assert.match(schema, /readonly revoked_at: ImmutableColumn<Date \| null>/u);
   assert.match(schema, /readonly created_at: ImmutableColumn<Date>/u);
   assert.doesNotMatch(schema, /Generated/u);
 });

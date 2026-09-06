@@ -67,6 +67,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
       'src/infrastructure/database/database-connection.ts',
       'src/infrastructure/database/database-runtime.ts',
       branchAdapterPath,
+      'src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts',
       tenantAdapterPath,
     ],
     status: 'materialized-owner-internal-capability',
@@ -75,7 +76,10 @@ test('persistence capability is internal and has only exact adapter consumers', 
   assert.match(source, /Owner extends 'database'/u);
   assert.match(source, /kysely_migration: DatabaseMigrationJournalTable/u);
   assert.match(source, /Pick<DatabaseSchema, 'tenants'>/u);
-  assert.match(source, /Pick<DatabaseSchema, 'branches'>/u);
+  assert.match(
+    source,
+    /Pick<DatabaseSchema, 'branches' \| 'stations' \| 'station_bindings' \| 'station_credentials'>/u,
+  );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),
     /database-persistence-capability|KyselyTenant|KyselyBranch/u,

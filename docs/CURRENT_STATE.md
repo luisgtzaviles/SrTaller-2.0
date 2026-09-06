@@ -79,7 +79,8 @@ hasta integrarse a `main` con autorización y CI propios.
 ## Limitaciones vigentes
 
 - `access` no contiene todavía Users, credentials, roles o sessions.
-- No existe Station runtime persistente en `main`.
+- No existe Station runtime persistente en `main`; PBI-024 lo materializa sólo
+  en su rama candidata y sigue pendiente de review, merge y CI exacto.
 - `LocalRepairContext` sólo habilita contexto fijo en desarrollo.
 - Writes de Repairs integrados todavía registran actor sintético.
 - New Repair es una superficie visual, no un write productivo persistente.
@@ -104,9 +105,9 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 | Elemento | Estado |
 |---|---|
 | Sprint activo | Sprint 01 |
-| Sprint 01 | Active — sin PBI de implementación activo |
-| PBI actual | NONE |
-| Siguiente candidato | PBI-024, seleccionado solamente y no iniciado |
+| Sprint 01 | Active — PBI-024 es el único WIP |
+| PBI actual | PBI-024 — Trusted Station Runtime Context (In review; Owner high-risk start authorized) |
+| Siguiente candidato | Ninguno mientras PBI-024 no cierre canónicamente |
 | WIP permitido | Uno |
 
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
@@ -120,7 +121,8 @@ PBI-027 quedó `Done` canónico al integrar PR #20; `Released: NO`. PBI-029 qued
 CI `33974100385` GREEN, focused security review PASS, riesgo `CRITICAL`
 aceptado, Owner Acceptance APPROVED, PR #22 merge
 `41914c78724303d66136989937cf8f38e4ea8a88` y CI post-cierre `33988752597`
-GREEN. `Released: NO`. PBI-024 permanece seleccionado, no iniciado ni autorizado.
+GREEN. `Released: NO`. PBI-024 está autorizado, en review y no está integrado
+en `main`.
 
 ## Identity Foundation reconciliada
 
@@ -146,5 +148,5 @@ GREEN. `Released: NO`. PBI-024 permanece seleccionado, no iniciado ni autorizado
 
 ## Próxima acción
 
-Preparar DoR de PBI-024 sólo con autorización Owner separada. No se autoriza
-deploy ni inicio de PBI-024.
+Completar review focalizado de PBI-024. No se autoriza merge, deploy ni inicio
+de otro PBI.

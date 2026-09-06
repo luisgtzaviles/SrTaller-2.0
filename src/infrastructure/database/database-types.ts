@@ -1,6 +1,7 @@
 import type { ColumnType, Insertable, Selectable, Updateable } from 'kysely';
 
 type ImmutableColumn<T> = ColumnType<T, T, never>;
+type DefaultedImmutableColumn<T> = ColumnType<T, T | undefined, never>;
 type MutableColumn<T> = ColumnType<T, T, T>;
 
 export interface TenantTable {
@@ -12,6 +13,33 @@ export interface BranchTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly branch_id: ImmutableColumn<string>;
   readonly time_zone: MutableColumn<string>;
+  readonly active: DefaultedImmutableColumn<boolean>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface StationTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly status: ImmutableColumn<'active' | 'revoked'>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: ImmutableColumn<Date>;
+  readonly revoked_at: ImmutableColumn<Date | null>;
+}
+
+export interface StationBindingTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly revoked_at: ImmutableColumn<Date | null>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface StationCredentialTable {
+  readonly credential_id: ImmutableColumn<string>;
+  readonly credential_hash: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly revoked_at: ImmutableColumn<Date | null>;
   readonly created_at: ImmutableColumn<Date>;
 }
 
@@ -166,6 +194,9 @@ export interface RepairLocationMovementTable {
 export interface DatabaseSchema {
   readonly tenants: TenantTable;
   readonly branches: BranchTable;
+  readonly stations: StationTable;
+  readonly station_bindings: StationBindingTable;
+  readonly station_credentials: StationCredentialTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
@@ -185,6 +216,13 @@ export type TenantUpdate = Updateable<TenantTable>;
 export type BranchRow = Selectable<BranchTable>;
 export type NewBranch = Insertable<BranchTable>;
 export type BranchUpdate = Updateable<BranchTable>;
+
+export type StationRow = Selectable<StationTable>;
+export type NewStation = Insertable<StationTable>;
+export type StationBindingRow = Selectable<StationBindingTable>;
+export type NewStationBinding = Insertable<StationBindingTable>;
+export type StationCredentialRow = Selectable<StationCredentialTable>;
+export type NewStationCredential = Insertable<StationCredentialTable>;
 
 export type RepairRow = Selectable<RepairTable>;
 export type NewRepair = Insertable<RepairTable>;

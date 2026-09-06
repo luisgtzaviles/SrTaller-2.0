@@ -15,11 +15,14 @@ import {
   localRepairLocationRows,
   localRepairLocationMovementRows,
   localSeedRows,
+  LOCAL_STATION_CREDENTIAL_ID,
+  LOCAL_STATION_ID,
+  localStationBootstrapCredentialHash,
 } from './lib/local-development.mjs';
 import { materializeLocalEvidenceFixtures } from './lib/local-evidence-fixtures.mjs';
 import { grantApplicationAccess, localDbUp } from './local-db.mjs';
 
-const values = await ensureLocalEnvironment({ create: false });
+const values = await ensureLocalEnvironment();
 await localDbUp();
 await grantApplicationAccess(values);
 const environment = databaseEnvironment(values, 'application');
@@ -50,11 +53,29 @@ try {
   );
   for (const branch of rows.branches) {
     await client.query(
-      `INSERT INTO branches (tenant_id, branch_id, time_zone, created_at) VALUES ($1::uuid, $2::uuid, $3, $4::timestamptz)
-       ON CONFLICT (tenant_id, branch_id) DO UPDATE SET time_zone = EXCLUDED.time_zone, created_at = EXCLUDED.created_at`,
-      [branch.tenantId, branch.branchId, branch.timeZone, branch.createdAt],
+      `INSERT INTO branches (tenant_id, branch_id, time_zone, active, created_at) VALUES ($1::uuid, $2::uuid, $3, $4, $5::timestamptz)
+       ON CONFLICT (tenant_id, branch_id) DO UPDATE SET time_zone = EXCLUDED.time_zone, active = EXCLUDED.active, created_at = EXCLUDED.created_at`,
+      [branch.tenantId, branch.branchId, branch.timeZone, branch.active, branch.createdAt],
     );
   }
+  await client.query(
+    `INSERT INTO stations (tenant_id, station_id, status, created_at, updated_at, revoked_at)
+     VALUES ($1::uuid, $2::uuid, 'active', $3::timestamptz, $3::timestamptz, null)
+     ON CONFLICT (tenant_id, station_id) DO UPDATE SET status = 'active', updated_at = EXCLUDED.updated_at, revoked_at = null`,
+    [rows.tenant.tenantId, LOCAL_STATION_ID, rows.tenant.createdAt],
+  );
+  await client.query(
+    `INSERT INTO station_bindings (tenant_id, station_id, branch_id, revoked_at, created_at)
+     VALUES ($1::uuid, $2::uuid, $3::uuid, null, $4::timestamptz)
+     ON CONFLICT (tenant_id, station_id) DO UPDATE SET branch_id = EXCLUDED.branch_id, revoked_at = null`,
+    [rows.tenant.tenantId, LOCAL_STATION_ID, rows.branches[0].branchId, rows.tenant.createdAt],
+  );
+  await client.query(
+    `INSERT INTO station_credentials (credential_id, credential_hash, tenant_id, station_id, revoked_at, created_at)
+     VALUES ($1::uuid, $2, $3::uuid, $4::uuid, null, $5::timestamptz)
+     ON CONFLICT (credential_id) DO UPDATE SET credential_hash = EXCLUDED.credential_hash, revoked_at = null`,
+    [LOCAL_STATION_CREDENTIAL_ID, localStationBootstrapCredentialHash(values), rows.tenant.tenantId, LOCAL_STATION_ID, rows.tenant.createdAt],
+  );
   for (const repair of localRepairRows()) {
     await client.query(
       `INSERT INTO repairs (

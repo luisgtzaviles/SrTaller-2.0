@@ -1,9 +1,15 @@
 const databaseTypes = [
   'export interface TenantTable { readonly tenant_id: string; readonly created_at: Date; }',
   'export interface BranchTable { readonly tenant_id: string; readonly branch_id: string; readonly created_at: Date; }',
+  'export interface StationTable { readonly tenant_id: string; readonly station_id: string; }',
+  'export interface StationBindingTable { readonly tenant_id: string; readonly station_id: string; readonly branch_id: string; }',
+  'export interface StationCredentialTable { readonly credential_id: string; readonly credential_hash: string; }',
   'export interface DatabaseSchema {',
   '  readonly tenants: TenantTable;',
   '  readonly branches: BranchTable;',
+  '  readonly stations: StationTable;',
+  '  readonly station_bindings: StationBindingTable;',
+  '  readonly station_credentials: StationCredentialTable;',
   '}',
   'export type TenantRow = TenantTable;',
   'export type NewTenant = TenantTable;',
@@ -11,6 +17,12 @@ const databaseTypes = [
   'export type BranchRow = BranchTable;',
   'export type NewBranch = BranchTable;',
   'export type BranchUpdate = Partial<BranchTable>;',
+  'export type StationRow = StationTable;',
+  'export type NewStation = StationTable;',
+  'export type StationBindingRow = StationBindingTable;',
+  'export type NewStationBinding = StationBindingTable;',
+  'export type StationCredentialRow = StationCredentialTable;',
+  'export type NewStationCredential = StationCredentialTable;',
   '',
 ].join('\n');
 
