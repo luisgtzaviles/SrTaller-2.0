@@ -76,6 +76,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260903130000_repairs_create_location_movements.ts',
       '20260904120000_stations_add_branch_timezone.ts',
       '20260905160000_stations_create_trusted_runtime_context.ts',
+      '20260906170000_users_create_directory.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

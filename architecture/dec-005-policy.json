@@ -115,11 +115,12 @@
       "src/infrastructure/database/",
       "src/modules/repairs/infrastructure/persistence/",
       "src/modules/stations/infrastructure/persistence/",
-      "src/modules/tenancy/infrastructure/persistence/"
+      "src/modules/tenancy/infrastructure/persistence/",
+      "src/modules/users/infrastructure/persistence/"
     ],
     "databaseRoot": "src/infrastructure/database/",
     "migrationRoot": "src/infrastructure/database/migrations/",
-    "migrationFilePattern": "^\\d{14}_(database|repairs|stations|tenancy)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "migrationFilePattern": "^\\d{14}_(database|repairs|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
     "allowedMigrations": [
       "src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts",
       "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
@@ -132,7 +133,8 @@
       "src/infrastructure/database/migrations/20260903120000_repairs_create_workflow_transitions.ts",
       "src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts",
       "src/infrastructure/database/migrations/20260904120000_stations_add_branch_timezone.ts",
-      "src/infrastructure/database/migrations/20260905160000_stations_create_trusted_runtime_context.ts"
+      "src/infrastructure/database/migrations/20260905160000_stations_create_trusted_runtime_context.ts",
+      "src/infrastructure/database/migrations/20260906170000_users_create_directory.ts"
     ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
