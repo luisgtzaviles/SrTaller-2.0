@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 12);
+  assert.equal(first.manifest.migrations.length, 13);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -110,6 +110,12 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         fileName: '20260904120000_stations_add_branch_timezone.js',
         migrationName: '20260904120000_stations_add_branch_timezone',
         order: 11,
+        owner: 'stations',
+      },
+      {
+        fileName: '20260905160000_stations_create_trusted_runtime_context.js',
+        migrationName: '20260905160000_stations_create_trusted_runtime_context',
+        order: 12,
         owner: 'stations',
       },
     ],
