@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import test from 'node:test';
 
 import {
@@ -41,6 +42,12 @@ test('local bootstrap cannot silently escape development', () => {
   assert.throws(() => localStationBootstrapCredential({ NODE_ENV: 'development', SR_DB_ENVIRONMENT: 'development' }));
   const value = localStationBootstrapCredential({ NODE_ENV: 'development', SR_DB_ENVIRONMENT: 'development', SR_STATION_BOOTSTRAP_SECRET: 'a'.repeat(32) });
   assert.match(value, /^[A-Za-z0-9_-]{43}$/u);
+  assert.equal(
+    value,
+    createHash('sha256')
+      .update(`srtaller-local-station-bootstrap:${'a'.repeat(32)}`, 'utf8')
+      .digest('base64url'),
+  );
 });
 
 test('trusted station context fails closed without a recognized credential', async () => {

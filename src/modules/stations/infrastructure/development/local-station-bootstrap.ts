@@ -15,5 +15,7 @@ export function localStationBootstrapCredential(
   if (typeof value !== 'string' || value.length < 32 || value !== value.trim()) {
     throw new Error('Local station bootstrap secret is required.');
   }
-  return createHash('sha256').update(`srtaller-local-station:${value}`, 'utf8').digest('base64url');
+  return createHash('sha256')
+    .update(`srtaller-local-station-bootstrap:${value}`, 'utf8')
+    .digest('base64url');
 }
