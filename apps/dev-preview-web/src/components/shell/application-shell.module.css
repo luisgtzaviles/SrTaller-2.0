@@ -144,10 +144,16 @@
   user-select: none;
 }
 
-.operatorMenu { position: relative; }
+.operatorMenu {
+  position: relative;
+  min-width: 0;
+  max-width: min(14rem, 28vw);
+}
 .operatorMenu summary {
   min-height: var(--touch-target);
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-1) var(--space-2);
@@ -161,9 +167,18 @@
 .operatorMenu summary::-webkit-details-marker { display: none; }
 .operatorMenu summary:hover { background: var(--color-brand-chrome); }
 .operatorMenu summary:active { background: var(--color-brand-chrome-hover); }
-.operatorMenu summary > span { display: none; }
+.operatorMenu summary > span {
+  display: none;
+  min-width: 0;
+  max-width: 10rem;
+}
 .operatorMenu summary strong,
-.operatorMenu summary small { display: block; }
+.operatorMenu summary small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .operatorMenu summary strong { font-size: 0.8125rem; }
 .operatorMenu summary small {
   margin-top: var(--space-0-5);
@@ -185,10 +200,14 @@
 
 .operatorPopover p {
   margin: var(--space-0) 0 var(--space-3);
+  overflow-wrap: anywhere;
   color: var(--color-text-muted);
   font-size: 0.75rem;
   line-height: 1.5;
 }
+
+.operatorPopover p strong { color: var(--color-text); }
+.operatorActions { display: grid; gap: var(--space-2); }
 
 .operatorPopover button {
   width: 100%;
@@ -196,11 +215,23 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border: 0;
   border-radius: var(--radius-md);
-  color: var(--color-text-subtle);
+  color: var(--color-text-muted);
   background: var(--color-surface-subtle);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard);
 }
+
+.operatorPopover button:hover:not(:disabled) { color: var(--color-text); background: var(--color-brand-subtle); }
+.operatorPopover button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 .logoutButton {
   min-height: var(--touch-target);
@@ -212,7 +243,7 @@
   border-radius: var(--radius-md);
   color: var(--color-brand-on-base);
   background: var(--color-brand-chrome);
-  cursor: not-allowed;
+  cursor: pointer;
   font-size: 0.75rem;
   font-weight: var(--font-weight-semibold);
 }
@@ -227,7 +258,7 @@
   min-width: 0;
   background: var(--color-surface-subtle);
 }
-.blockingBanner { padding: var(--space-3) var(--space-4) var(--space-0); }
+.blockingBanner { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-0); }
 .mainContent {
   width: 100%;
   min-width: 0;
@@ -276,7 +307,11 @@
 }
 
 .drawer > footer strong,
-.drawer > footer small { display: block; }
+.drawer > footer small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.drawer > footer > span:last-child { min-width: 0; }
 .drawer > footer strong { font-size: 0.8125rem; }
 .drawer > footer small { margin-top: var(--space-1); color: var(--color-text-subtle); font-size: 0.6875rem; }
 
@@ -486,8 +521,14 @@
   .shellCollapsed .navItem:focus-visible::after { opacity: 1; transform: translateX(0); }
   .sidebarFooter { display: flex; align-items: center; gap: var(--space-3); margin-top: auto; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
   .shellCollapsed .sidebarFooter { justify-content: center; padding-inline: var(--space-2); }
+  .environmentCopy { min-width: 0; }
   .environmentCopy strong,
-  .environmentCopy small { display: block; }
+  .environmentCopy small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .environmentCopy strong { font-size: 0.75rem; }
   .environmentCopy small { margin-top: var(--space-1); color: var(--color-text-subtle); font-size: 0.6875rem; }
   .mobileMenuButton { display: none; }
