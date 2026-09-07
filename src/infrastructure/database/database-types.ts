@@ -92,9 +92,11 @@ export interface UserLifecycleCommandTable {
 
 export type AccessCapabilityCode =
   | 'access_matrix.read'
+  | 'access_matrix.manage'
   | 'repairs.add_note'
   | 'repairs.read'
-  | 'users.read';
+  | 'users.read'
+  | 'users.manage';
 
 export interface AccessCapabilityTable {
   readonly capability_code: ImmutableColumn<AccessCapabilityCode>;
@@ -296,6 +298,26 @@ export interface RepairTimelineEntryTable {
   readonly created_at: ImmutableColumn<Date>;
 }
 
+/** Repairs-owned, append-only business evidence; never a timeline or log. */
+export interface RepairBusinessAuditEventTable {
+  readonly audit_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.add_note'>;
+  readonly action: ImmutableColumn<'repair.operational_note.added'>;
+  readonly resource_type: ImmutableColumn<'repair'>;
+  readonly resource_id: ImmutableColumn<string>;
+  readonly result: ImmutableColumn<'succeeded'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
 export interface RepairAttachmentTable {
   readonly attachment_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -420,6 +442,7 @@ export interface DatabaseSchema {
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
+  readonly repair_business_audit_events: RepairBusinessAuditEventTable;
   readonly repair_attachments: RepairAttachmentTable;
   readonly repair_technicians: RepairTechnicianTable;
   readonly repair_technician_branches: RepairTechnicianBranchTable;
@@ -506,6 +529,9 @@ export type RepairIntakeUpdate = Updateable<RepairIntakeTable>;
 export type RepairTimelineEntryRow = Selectable<RepairTimelineEntryTable>;
 export type NewRepairTimelineEntry = Insertable<RepairTimelineEntryTable>;
 export type RepairTimelineEntryUpdate = Updateable<RepairTimelineEntryTable>;
+
+export type RepairBusinessAuditEventRow = Selectable<RepairBusinessAuditEventTable>;
+export type NewRepairBusinessAuditEvent = Insertable<RepairBusinessAuditEventTable>;
 
 export type RepairAttachmentRow = Selectable<RepairAttachmentTable>;
 export type NewRepairAttachment = Insertable<RepairAttachmentTable>;

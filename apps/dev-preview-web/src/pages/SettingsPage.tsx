@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BRAND_DEFAULT, normalizeHex } from '../foundation/accent.mjs';
 import { useTheme } from '../foundation/theme.js';
 import { Button, Field, Input } from '../components/ui/controls.js';
+import { ButtonLink } from '../components/ui/controls.js';
 import { PageHeader } from '../components/ui/navigation.js';
 import { classNames } from '../components/ui/class-names.js';
 import styles from './settings-page.module.css';
@@ -55,6 +56,18 @@ export function SettingsPage(): React.JSX.Element {
         title="Configuración"
         description="Configura la apariencia y preferencias de esta sucursal."
       />
+
+      <section className={styles.appearanceSection} aria-labelledby="administration-title">
+        <header className={styles.sectionHeader}>
+          <span className={styles.sectionEyebrow}>Administración local</span>
+          <h2 id="administration-title">Equipo y permisos</h2>
+          <p>Administra usuarios operativos y consulta roles/capabilities locales.</p>
+        </header>
+        <div className={styles.colorControls}>
+          <ButtonLink to="/configuracion/usuarios" tone="primary">Abrir usuarios</ButtonLink>
+          <ButtonLink to="/configuracion/roles" tone="secondary">Abrir roles</ButtonLink>
+        </div>
+      </section>
 
       <section className={styles.appearanceSection} aria-labelledby="appearance-title">
         <header className={styles.sectionHeader}>

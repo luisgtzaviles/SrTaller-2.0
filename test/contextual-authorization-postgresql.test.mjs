@@ -76,6 +76,7 @@ const migrationRoot = fileURLToPath(
 );
 
 const tables = [
+  'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   'access_pin_attempt_limits',
@@ -132,6 +133,8 @@ const noteRequestA = 'd0000000-0000-4000-8000-000000000026';
 const deniedNoteRequest = 'd1000000-0000-4000-8000-000000000026';
 const foreignBranchRequest = 'd2000000-0000-4000-8000-000000000026';
 const foreignTenantRequest = 'd3000000-0000-4000-8000-000000000026';
+const concurrentNoteRequest = 'd4000000-0000-4000-8000-000000000026';
+const auditFailureRequest = 'd5000000-0000-4000-8000-000000000026';
 const stationSecretA = 'A'.repeat(43);
 const stationSecretB = 'B'.repeat(43);
 const authorizationNow = new Date('2026-09-07T20:00:01.000Z');
@@ -194,6 +197,12 @@ function source() {
 }
 
 async function resetDatabase(admin) {
+  await admin.query(
+    'drop function if exists test_reject_pbi028_audit_insert() cascade',
+  );
+  await admin.query(
+    'drop function if exists repairs_reject_business_audit_event_mutation() cascade',
+  );
   await admin.query(
     'drop function if exists stations_advance_admission_revision() cascade',
   );
@@ -379,6 +388,7 @@ async function effectCounts(admin) {
   const result = await admin.query(
     `select
        (select count(*)::integer from repair_timeline_entries) as timeline,
+       (select count(*)::integer from repair_business_audit_events) as audit,
        (select count(*)::integer from repair_technician_assignments) as assignments,
        (select count(*)::integer from repair_workflow_transitions) as workflow,
        (select count(*)::integer from repair_location_movements) as locations`,
@@ -393,6 +403,7 @@ test(
     assert.equal(process.version, 'v24.18.0');
     const admin = adminPool();
     const connection = createDatabaseConnection(databaseConfig());
+    const concurrentConnection = createDatabaseConnection(databaseConfig());
     const migrationSource = source();
     const inspection = await inspectMigrationSource(migrationSource);
     const runner = createMigrationRunner(connection, {
@@ -473,6 +484,47 @@ test(
         createKyselyRepairRepository(connection, () => new Date(authorizationNow)),
         Object.freeze({ read: async () => null }),
       );
+      await concurrentConnection.verify();
+      const concurrentStationVerifier = new KyselyStationCredentialVerifier(
+        concurrentConnection,
+      );
+      const concurrentTrustedStations = new TrustedStationRequestContextResolver(
+        new ResolveTrustedStationContextUseCase(concurrentStationVerifier),
+      );
+      const concurrentAccessRepository = createKyselyAccessRepository(
+        concurrentConnection,
+      );
+      const concurrentUserReader = new KyselyAuthenticationUserReader(
+        concurrentConnection,
+      );
+      const concurrentSessionRepository = new KyselyOperationalSessionRepository(
+        concurrentConnection,
+        concurrentStationVerifier,
+        concurrentUserReader,
+      );
+      const concurrentAuthorization = new ContextualAuthorizationExecutorService(
+        Object.freeze({
+          trustedStations: concurrentTrustedStations,
+          resolveSession: new ResolveOperationalSessionUseCase(
+            concurrentSessionRepository,
+            concurrentUserReader,
+            new ListApplicableUsersUseCase(concurrentAccessRepository),
+            new NodeSessionToken(),
+            () => new Date(authorizationNow),
+          ),
+          resolveCapabilities: new ResolveEffectiveCapabilitiesUseCase(
+            concurrentAccessRepository,
+          ),
+        }),
+      );
+      const concurrentRepairs = new RepairProtectedOperations(
+        concurrentAuthorization,
+        createKyselyRepairRepository(
+          concurrentConnection,
+          () => new Date(authorizationNow),
+        ),
+        Object.freeze({ read: async () => null }),
+      );
       const cookieHeader = [
         stationCookieA,
         `sr_session=${tokenMaterial.bearer}`,
@@ -516,9 +568,268 @@ test(
           repair_id: repairA,
           client_request_id: noteRequestA,
           body: 'Nota autorizada por contexto material.',
-          source: 'local.operational_note',
+          source: 'repairs.operational_note',
         },
       ]);
+
+      assert.equal(note.actorId, userA);
+      assert.equal(note.actorDisplayName, 'Operadora A');
+      const persistedAudit = (
+        await admin.query(
+          `select audit_id, tenant_id, branch_id, station_id, session_id,
+                  actor_user_id, actor_display_name, capability, action,
+                  resource_type, resource_id, result, correlation_id,
+                  client_request_id
+           from repair_business_audit_events
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+             and client_request_id = $4`,
+          [tenantA, branchA, repairA, noteRequestA],
+        )
+      ).rows;
+      assert.equal(persistedAudit.length, 1);
+      assert.deepEqual(
+        {
+          tenant_id: persistedAudit[0].tenant_id,
+          branch_id: persistedAudit[0].branch_id,
+          station_id: persistedAudit[0].station_id,
+          session_id: persistedAudit[0].session_id,
+          actor_user_id: persistedAudit[0].actor_user_id,
+          actor_display_name: persistedAudit[0].actor_display_name,
+          capability: persistedAudit[0].capability,
+          action: persistedAudit[0].action,
+          resource_type: persistedAudit[0].resource_type,
+          resource_id: persistedAudit[0].resource_id,
+          result: persistedAudit[0].result,
+          client_request_id: persistedAudit[0].client_request_id,
+        },
+        {
+          tenant_id: tenantA,
+          branch_id: branchA,
+          station_id: stationA,
+          session_id: sessionA,
+          actor_user_id: userA,
+          actor_display_name: 'Operadora A',
+          capability: 'repairs.add_note',
+          action: 'repair.operational_note.added',
+          resource_type: 'repair',
+          resource_id: repairA,
+          result: 'succeeded',
+          client_request_id: noteRequestA,
+        },
+      );
+      assert.match(
+        persistedAudit[0].audit_id,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
+      );
+      assert.match(
+        persistedAudit[0].correlation_id,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
+      );
+      assert.ok(![
+        noteRequestA,
+        sessionA,
+        repairA,
+        persistedAudit[0].audit_id,
+      ].includes(persistedAudit[0].correlation_id));
+
+      const auditColumns = (
+        await admin.query(
+          `select column_name
+           from information_schema.columns
+           where table_schema = 'public'
+             and table_name = 'repair_business_audit_events'
+           order by ordinal_position`,
+        )
+      ).rows.map(({ column_name: columnName }) => columnName);
+      for (const prohibitedColumn of [
+        'authorization',
+        'body',
+        'content',
+        'cookie',
+        'headers',
+        'payload',
+        'pin',
+        'secret',
+        'sql',
+        'token',
+      ]) {
+        assert.ok(!auditColumns.includes(prohibitedColumn));
+      }
+      const serializedAudit = JSON.stringify(persistedAudit[0]);
+      for (const sensitiveValue of [
+        'Nota autorizada por contexto material.',
+        stationSecretA,
+        tokenMaterial.bearer,
+        tokenMaterial.csrf,
+      ]) {
+        assert.ok(!serializedAudit.includes(sensitiveValue));
+      }
+
+      const noteRetry = await repairs.addRepairOperationalNote(
+        evidence,
+        noteInput(repairA, noteRequestA, 'Nota autorizada por contexto material.'),
+      );
+      assert.equal(noteRetry.id, note.id);
+      const retryCounts = (
+        await admin.query(
+          `select
+             (select count(*)::integer from repair_timeline_entries
+              where tenant_id = $1 and branch_id = $2 and repair_id = $3
+                and client_request_id = $4) as notes,
+             (select count(*)::integer from repair_business_audit_events
+              where tenant_id = $1 and branch_id = $2 and resource_id = $3
+                and client_request_id = $4) as audits`,
+          [tenantA, branchA, repairA, noteRequestA],
+        )
+      ).rows[0];
+      assert.deepEqual(retryCounts, { notes: 1, audits: 1 });
+
+      const concurrentNotes = await Promise.all([
+        repairs.addRepairOperationalNote(
+          evidence,
+          noteInput(repairA, concurrentNoteRequest, 'Nota concurrente auditada.'),
+        ),
+        concurrentRepairs.addRepairOperationalNote(
+          evidence,
+          noteInput(repairA, concurrentNoteRequest, 'Nota concurrente auditada.'),
+        ),
+      ]);
+      assert.equal(concurrentNotes[0].id, concurrentNotes[1].id);
+      const concurrentCounts = (
+        await admin.query(
+          `select
+             (select count(*)::integer from repair_timeline_entries
+              where tenant_id = $1 and branch_id = $2 and repair_id = $3
+                and client_request_id = $4) as notes,
+             (select count(*)::integer from repair_business_audit_events
+              where tenant_id = $1 and branch_id = $2 and resource_id = $3
+                and client_request_id = $4) as audits`,
+          [tenantA, branchA, repairA, concurrentNoteRequest],
+        )
+      ).rows[0];
+      assert.deepEqual(concurrentCounts, { notes: 1, audits: 1 });
+
+      await admin.query(
+        `create function test_reject_pbi028_audit_insert()
+         returns trigger
+         language plpgsql
+         as $function$
+         begin
+           if new.client_request_id = '${auditFailureRequest}'::uuid then
+             raise check_violation using message = 'forced PBI-028 audit failure';
+           end if;
+           return new;
+         end;
+         $function$`,
+      );
+      await admin.query(
+        `create trigger test_reject_pbi028_audit_insert
+         before insert on repair_business_audit_events
+         for each row execute function test_reject_pbi028_audit_insert()`,
+      );
+      await assert.rejects(
+        repairs.addRepairOperationalNote(
+          evidence,
+          noteInput(repairA, auditFailureRequest, 'Esta nota debe revertirse.'),
+        ),
+        (error) => error?.code === 'DATABASE_TRANSACTION_CALLBACK_FAILED',
+      );
+      await admin.query(
+        'drop trigger test_reject_pbi028_audit_insert on repair_business_audit_events',
+      );
+      await admin.query('drop function test_reject_pbi028_audit_insert()');
+      const rollbackCounts = (
+        await admin.query(
+          `select
+             (select count(*)::integer from repair_timeline_entries
+              where client_request_id = $1) as notes,
+             (select count(*)::integer from repair_business_audit_events
+              where client_request_id = $1) as audits`,
+          [auditFailureRequest],
+        )
+      ).rows[0];
+      assert.deepEqual(rollbackCounts, { notes: 0, audits: 0 });
+
+      await assert.rejects(
+        admin.query(
+          `insert into repair_business_audit_events (
+             audit_id, tenant_id, branch_id, station_id, session_id,
+             actor_user_id, actor_display_name, capability, action,
+             resource_type, resource_id, result, correlation_id,
+             client_request_id, occurred_at, created_at
+           ) values (
+             'e0000000-0000-4000-8000-000000000026', $1, $2, $3, $4,
+             $5, 'Operadora A', 'repairs.add_note',
+             'repair.operational_note.added', 'repair', $6, 'succeeded',
+             'e1000000-0000-4000-8000-000000000026',
+             'e2000000-0000-4000-8000-000000000026', now(), now()
+           )`,
+          [tenantA, branchA2, stationA, sessionA, userA, repairA],
+        ),
+        (error) => error?.code === '23503',
+      );
+      await assert.rejects(
+        admin.query(
+          `insert into repair_business_audit_events (
+             audit_id, tenant_id, branch_id, station_id, session_id,
+             actor_user_id, actor_display_name, capability, action,
+             resource_type, resource_id, result, correlation_id,
+             client_request_id, occurred_at, created_at
+           ) values (
+             'e3000000-0000-4000-8000-000000000026', $1, $2, $3, $4,
+             $5, 'Operador B', 'repairs.add_note',
+             'repair.operational_note.added', 'repair', $6, 'succeeded',
+             'e4000000-0000-4000-8000-000000000026',
+             'e5000000-0000-4000-8000-000000000026', now(), now()
+           )`,
+          [tenantB, branchB, stationB, sessionA, userB, repairA],
+        ),
+        (error) => error?.code === '23503',
+      );
+      await assert.rejects(
+        admin.query(
+          `insert into repair_business_audit_events (
+             audit_id, tenant_id, branch_id, station_id, session_id,
+             actor_user_id, actor_display_name, capability, action,
+             resource_type, resource_id, result, correlation_id,
+             client_request_id, occurred_at, created_at
+           ) values (
+             'e6000000-0000-4000-8000-000000000026', $1, $2, $3, $4,
+             $5, 'Operadora A', 'repairs.add_note',
+             'repair.operational_note.added', 'repair', $6, 'succeeded',
+             $7, 'e7000000-0000-4000-8000-000000000026', now(), now()
+           )`,
+          [
+            tenantA,
+            branchA,
+            stationA,
+            sessionA,
+            userA,
+            repairA,
+            persistedAudit[0].correlation_id,
+          ],
+        ),
+        (error) => error?.code === '23505',
+      );
+      await assert.rejects(
+        admin.query(
+          `update repair_business_audit_events
+           set actor_display_name = 'Sobrescrita'
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+             and client_request_id = $4`,
+          [tenantA, branchA, repairA, noteRequestA],
+        ),
+        (error) => error?.code === '23514',
+      );
+      await assert.rejects(
+        admin.query(
+          `delete from repair_business_audit_events
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+             and client_request_id = $4`,
+          [tenantA, branchA, repairA, noteRequestA],
+        ),
+        (error) => error?.code === '23514',
+      );
 
       const afterAuthorizedNote = await effectCounts(admin);
       await assert.rejects(
@@ -657,9 +968,29 @@ test(
         'AUTHENTICATION_REQUIRED',
       );
       assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+
+      await admin.query(
+        `update users set display_name = 'Operadora A renombrada', updated_at = now()
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, userA],
+      );
+      const historicalActor = (
+        await admin.query(
+          `select actor_user_id, actor_display_name
+           from repair_business_audit_events
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+             and client_request_id = $4`,
+          [tenantA, branchA, repairA, noteRequestA],
+        )
+      ).rows[0];
+      assert.deepEqual(historicalActor, {
+        actor_user_id: userA,
+        actor_display_name: 'Operadora A',
+      });
     } finally {
       await runner.destroy().catch(() => undefined);
       await connection.close().catch(() => undefined);
+      await concurrentConnection.close().catch(() => undefined);
       await resetDatabase(admin).catch(() => undefined);
       await assertNoObjects(admin);
       await admin.end();

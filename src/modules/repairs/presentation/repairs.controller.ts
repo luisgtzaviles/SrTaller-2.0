@@ -17,6 +17,7 @@ import {
   StreamableFile,
   UnauthorizedException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import type { Response } from 'express';
 
 import { ContextualAuthorizationError } from '../../access/index.js';
@@ -235,7 +236,7 @@ function operationalNoteResponse(
       id: item.id,
       type: item.type,
       occurredAt: item.occurredAt,
-      actor: { displayName: item.actorDisplayName },
+      actor: { id: item.actorId, displayName: item.actorDisplayName },
       title: item.title,
       body: item.body,
       source: item.source,
@@ -334,14 +335,20 @@ export class RepairsController {
     @Headers() headers: RepairRequestHeaders,
     @Param('repairId') repairId: string,
     @Body() request: unknown,
+    @Res({ passthrough: true }) response: Response,
   ) {
+    const responseCorrelationId = randomUUID();
+    response.setHeader('X-Correlation-ID', responseCorrelationId);
     try {
-      return operationalNoteResponse(
-        await this.operations.addRepairOperationalNote(
-          repairProtectedRequestEvidence(headers),
-          { repairId, request },
-        ),
+      const result = await this.operations.addRepairOperationalNote(
+        repairProtectedRequestEvidence(headers),
+        { repairId, request },
       );
+      if (!result.attribution) {
+        throw new Error('Confirmed operational note is missing attribution.');
+      }
+      response.setHeader('X-Correlation-ID', result.attribution.correlationId);
+      return operationalNoteResponse(result);
     } catch (error: unknown) {
       translateAuthorizationError(error);
       if (error instanceof AddRepairOperationalNoteInputError) {

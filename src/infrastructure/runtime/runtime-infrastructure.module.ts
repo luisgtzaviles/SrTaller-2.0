@@ -56,6 +56,16 @@ import { RuntimeEnvironmentReader } from './runtime-environment.reader.js';
               createCredential,
             );
           },
+          createLocalPinOnlyBindings: <Bindings>(
+            createBindings: (
+              values: Readonly<Record<string, string | undefined>>,
+            ) => Bindings,
+          ): Bindings => {
+            if (!policy.enabled) {
+              throw new Error('Local PIN-only login is unavailable outside development.');
+            }
+            return environment.createLocalPinOnlyBindings(createBindings);
+          },
         });
       },
     },

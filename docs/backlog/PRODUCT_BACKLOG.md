@@ -7,12 +7,13 @@ conservan su historia; PBI-024–PBI-029 fueron acotados conforme a Identity &
 Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
 tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release. PBI-033 también está
-`Done`; PBI-025 y PBI-034 también están `Done`. SPRINT-02 conserva PBI-026
-como `Done candidate`; no existe PBI actual y WIP es `0/1`.
+`Done`; PBI-025, PBI-034 y PBI-026 también están `Done`. SPRINT-02 tiene
+PBI-028 `In progress` como único PBI actual y WIP es `1/1`.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
-y PBI-026 `Large` mediante T-shirt sizing; las demás permanecen TBD.
+y PBI-026 `Large` mediante T-shirt sizing; PBI-028 también es `Large`; las
+demás permanecen TBD.
 **Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 está
 cerrado para Identity & Context Foundation; SPRINT-02 está activo para
 Operational Authentication & Authorization y los ítems restantes conservan
@@ -45,9 +46,9 @@ su clasificación explícita.
 | 23 | [PBI-023](pbis/PBI-023.md) Establish tenant-scoped persistence and migration foundation | Persistence / Security / Quality | EPIC-001 | Closed | Crítica | Gate R0 |
 | 24 | [PBI-024](pbis/PBI-024.md) Trusted Station Runtime Context | Architecture / Security | EPIC-004 | Done; Released: NO | Crítica | Sprint 01 completed |
 | 25 | [PBI-025](pbis/PBI-025.md) PIN Credential Authentication | Identity / Security | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed |
-| 26 | [PBI-026](pbis/PBI-026.md) Contextual Authorization | Authorization / Security | EPIC-003 | Done candidate; Released: NO | Crítica | SPRINT-02 completed functionally; Critical / Large; closure pending |
+| 26 | [PBI-026](pbis/PBI-026.md) Contextual Authorization | Authorization / Security | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed; Critical / Large; G4 PASS |
 | 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Done; Released: NO | Alta | Sprint 01 completed |
-| 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | Selected candidate; not started | Alta | SPRINT-02 next; own readiness/authorization required |
+| 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | In progress | Alta | SPRINT-02 current; High / Large; DoR PASS + Owner Start |
 | 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Done; risk acceptance, merge, CI main, cierre documental y Owner Acceptance PASS | Crítica | Cerrado; `Released: NO` |
 | 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
@@ -56,6 +57,7 @@ su clasificación explícita.
 | 34 | [PBI-034](pbis/PBI-034.md) Operational Session | Identity / Security | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed; G3 PASS |
 | 35 | [PBI-035](pbis/PBI-035.md) Reinforced Authorization | Authorization / Security | EPIC-003 | Draft / Deferred | Crítica | Unassigned |
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
+| 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Functional first — local Owner iteration | Alta | Product Mode local; no canonical delivery claim |
 
 ## Interpretación
 
@@ -112,11 +114,12 @@ su clasificación explícita.
   focused Critical-risk review PASS `0B/0H/0M/0L`, PR #35 merge funcional
   `4db5d9384d13c200eb2031dceb32dd89efcca64d`, CI exacto de `main`
   `34158203438` GREEN y Owner Acceptance condicional `APPROVED`. Queda
-  `Done candidate`, G4 `PASS candidate` y `Released: NO` hasta integrar su cierre.
+  cierre PR #36 merge `0b39e3794a97c22d5471c0b6dfa278026f237b03`
+  y CI exacto `34161029937` GREEN. Está `Done`, G4 `PASS` y `Released: NO`.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-Integrar el cierre PBI-026 y su CI exacto. PBI-028 permanece seleccionado, no
-iniciado, y conserva threat model, estimación, DoR y autoridad propios.
+Completar PBI-028 dentro del alcance H1 autorizado, focused High-risk review y
+CI exacto del candidato. No iniciar otro PBI, liberar ni desplegar.

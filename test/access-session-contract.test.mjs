@@ -77,6 +77,7 @@ function runtimeDouble(overrides = {}) {
   return {
     trustedStations: { async resolve() { return context; } },
     authenticatePin: { async execute() { return Object.freeze({}); } },
+    authenticateLocalPinOnly: null,
     createSession: {
       async execute() {
         const material = tokens.issue();
@@ -110,6 +111,11 @@ function sameOriginHeaders(cookie, csrf) {
 const secureTransportPolicy = Object.freeze({
   isExplicitLocalRequest: () => false,
   requiresSecureCookies: () => true,
+});
+
+const localTransportPolicy = Object.freeze({
+  isExplicitLocalRequest: ({ host }) => host === '127.0.0.1:4173',
+  requiresSecureCookies: () => false,
 });
 
 test('Session cookies split the authoritative pair from a bounded login-only CSRF challenge', () => {
@@ -279,6 +285,47 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
   assert.equal(setCookies.length, 2);
   assert.match(setCookies[0], /^sr_session=.*; HttpOnly; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
   assert.match(setCookies[1], /^sr_session_csrf=.*; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
+});
+
+test('local PIN-only POST is localhost-gated, never accepts a client user ID, and creates the canonical Session', async () => {
+  const calls = [];
+  const runtime = runtimeDouble({
+    authenticateLocalPinOnly: {
+      async execute(trustedContext, input) {
+        calls.push([trustedContext, input]);
+        return Object.freeze({ userId });
+      },
+    },
+  });
+  const challenge = runtime.tokens.issue();
+  const controller = new AccessSessionController(runtime, localTransportPolicy);
+  const response = responseDouble();
+
+  const created = await controller.createFromLocalPinOnly(
+    { pin: '1234', expectedSessionId: null },
+    sameOriginHeaders(`sr_session_login_csrf=${challenge.csrf}`, challenge.csrf),
+    response,
+  );
+  assert.equal(created.session.userId, userId);
+  assert.deepEqual(calls, [[context, { pin: '1234' }]]);
+  assert.equal(response.headers.get('set-cookie').length, 2);
+
+  await assert.rejects(
+    controller.createFromLocalPinOnly(
+      { userId, pin: '1234', expectedSessionId: null },
+      sameOriginHeaders(`sr_session_login_csrf=${challenge.csrf}`, challenge.csrf),
+      responseDouble(),
+    ),
+    UnauthorizedException,
+  );
+  await assert.rejects(
+    new AccessSessionController(runtime, secureTransportPolicy).createFromLocalPinOnly(
+      { pin: '1234', expectedSessionId: null },
+      sameOriginHeaders(`sr_session_login_csrf=${challenge.csrf}`, challenge.csrf),
+      responseDouble(),
+    ),
+    ForbiddenException,
+  );
 });
 
 test('POST resolves advisory capabilities before committing a Session replacement', async () => {

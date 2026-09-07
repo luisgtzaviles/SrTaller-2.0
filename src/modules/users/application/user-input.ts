@@ -104,6 +104,8 @@ export function parseProvisionFirstUserInput(value: unknown): Readonly<{
   });
 }
 
+export const parseCreateUserInput = parseProvisionFirstUserInput;
+
 export function parseTransitionUserInput(value: unknown): Readonly<{
   userId: UserId;
   status: UserStatus;
@@ -149,4 +151,29 @@ export function parseTransitionUserInput(value: unknown): Readonly<{
     expectedVersion: input.expectedVersion as number,
     clientRequestId: input.clientRequestId,
   });
+}
+
+export function parseUpdateUserInput(value: unknown): Readonly<{
+  displayName: string;
+  operationalIdentifier: string | null;
+  expectedVersion: number;
+}> {
+  const input = exactObject(value, ['displayName', 'expectedVersion', 'operationalIdentifier']);
+  if (
+    Object.keys(input).length !== 3 ||
+    typeof input.displayName !== 'string' ||
+    !Number.isSafeInteger(input.expectedVersion) ||
+    (input.expectedVersion as number) < 0
+  ) throw new UserInputError('payload');
+  const displayName = input.displayName.trim();
+  if (displayName.length < 1 || displayName.length > 160) throw new UserInputError('displayName');
+  let operationalIdentifier: string | null = null;
+  if (input.operationalIdentifier !== null) {
+    if (typeof input.operationalIdentifier !== 'string') throw new UserInputError('operationalIdentifier');
+    operationalIdentifier = input.operationalIdentifier.trim();
+    if (operationalIdentifier.length < 1 || operationalIdentifier.length > 160) {
+      throw new UserInputError('operationalIdentifier');
+    }
+  }
+  return Object.freeze({ displayName, operationalIdentifier, expectedVersion: input.expectedVersion as number });
 }

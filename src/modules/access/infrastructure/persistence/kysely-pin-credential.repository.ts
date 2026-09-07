@@ -153,6 +153,31 @@ function storedVerifier(row: AccessPinCredentialRow): PinStoredVerifier {
 class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
   constructor(private readonly execute: AccessOperation) {}
 
+  async listConfiguredUserIds(
+    scope: Parameters<PinCredentialRepositoryPort['listConfiguredUserIds']>[0],
+  ): Promise<readonly ReturnType<typeof parseAccessUserId>[]> {
+    let tenantId;
+    try {
+      tenantId = parseTenantId(scope?.tenantId);
+    } catch {
+      throw new PinCredentialPersistenceError('PIN_CREDENTIAL_TENANT_SCOPE_REQUIRED');
+    }
+    try {
+      return await this.execute(async (database: AccessExecutor) => {
+        const rows = await database
+          .selectFrom('access_pin_credentials')
+          .select('user_id')
+          .where('tenant_id', '=', tenantId)
+          .where('status', '=', 'active')
+          .orderBy('user_id', 'asc')
+          .execute();
+        return Object.freeze(rows.map((row) => parseAccessUserId(row.user_id)));
+      });
+    } catch (error: unknown) {
+      throw mapPersistenceError(error);
+    }
+  }
+
   async provision(
     scope: Parameters<PinCredentialRepositoryPort['provision']>[0],
     input: Parameters<PinCredentialRepositoryPort['provision']>[1],
@@ -258,6 +283,35 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
     } catch (error: unknown) {
       throw mapPersistenceError(error);
     }
+  }
+
+  async replace(
+    scope: Parameters<PinCredentialRepositoryPort['replace']>[0],
+    input: Parameters<PinCredentialRepositoryPort['replace']>[1],
+  ): Promise<PinCredentialRecord> {
+    let tenantId;
+    try {
+      tenantId = parseTenantId(scope?.tenantId);
+      parseAccessUserId(input?.userId);
+      if (!validInstant(input?.occurredAt) || !validSecretMaterial(input.secret)) throw new Error('invalid');
+    } catch { throw new PinCredentialPersistenceError('PIN_CREDENTIAL_INPUT_INVALID'); }
+    const occurredAt = new Date(input.occurredAt);
+    try {
+      return await this.execute((database: AccessExecutor) => database.transaction().execute(async (transaction) => {
+        const current = await transaction.selectFrom('access_pin_credentials').selectAll()
+          .where('tenant_id', '=', tenantId).where('user_id', '=', input.userId).where('status', '=', 'active').executeTakeFirst();
+        if (!current) throw new PinCredentialPersistenceError('PIN_CREDENTIAL_USER_INVALID');
+        const row = await transaction.updateTable('access_pin_credentials').set({
+          algorithm: input.secret.algorithm, profile_version: input.secret.profileVersion, pepper_version: input.secret.pepperVersion,
+          memory_kib: input.secret.memoryKiB, passes: input.secret.passes, parallelism: input.secret.parallelism,
+          salt: input.secret.salt, verifier: input.secret.verifier, credential_version: current.credential_version + 1,
+          consecutive_failures: 0, locked_until: null, updated_at: occurredAt,
+        }).where('tenant_id', '=', tenantId).where('user_id', '=', input.userId)
+          .where('credential_version', '=', current.credential_version).where('status', '=', 'active').returningAll().executeTakeFirst();
+        if (!row) throw new PinCredentialPersistenceError('PIN_CREDENTIAL_PERSISTENCE_FAILED');
+        return mapCredential(row);
+      }));
+    } catch (error: unknown) { throw mapPersistenceError(error); }
   }
 
   async #reserveAttempt(

@@ -25,6 +25,7 @@ import { PinInputError } from '../application/pin-input.js';
 import { SessionTokenInputError } from '../application/ports/session-token.port.js';
 import { PinAuthenticationError } from '../application/use-cases/authenticate-pin.use-case.js';
 import type { AuthenticatePinUseCase } from '../application/use-cases/authenticate-pin.use-case.js';
+import type { AuthenticateLocalPinOnlyUseCase } from '../application/use-cases/authenticate-local-pin-only.use-case.js';
 import { OperationalSessionError } from '../application/use-cases/operational-session.use-cases.js';
 import type {
   CreateOperationalSessionUseCase,
@@ -33,6 +34,13 @@ import type {
   ResolveOperationalSessionUseCase,
 } from '../application/use-cases/operational-session.use-cases.js';
 import type { ResolveEffectiveCapabilitiesUseCase } from '../application/use-cases/resolve-effective-capabilities.use-case.js';
+import type { ListAccessMatrixUseCase } from '../application/use-cases/list-access-matrix.use-case.js';
+import type { CreateAccessRoleUseCase } from '../application/use-cases/create-access-role.use-case.js';
+import type { ReplaceAccessRoleCapabilitiesUseCase } from '../application/use-cases/replace-access-role-capabilities.use-case.js';
+import type { AssignRoleUseCase } from '../application/use-cases/assign-role.use-case.js';
+import type { RevokeRoleAssignmentUseCase } from '../application/use-cases/revoke-role-assignment.use-case.js';
+import type { ProvisionPinCredentialUseCase } from '../application/use-cases/provision-pin-credential.use-case.js';
+import type { ReplacePinCredentialUseCase } from '../application/use-cases/replace-pin-credential.use-case.js';
 import type { SessionTokenPort } from '../application/ports/session-token.port.js';
 import {
   OPERATIONAL_SESSION_IDLE_MS,
@@ -54,11 +62,20 @@ export const ACCESS_SESSION_RUNTIME = Symbol('srtaller.access.session-runtime');
 export interface AccessSessionRuntime {
   readonly trustedStations: TrustedStationContextResolver;
   readonly authenticatePin: AuthenticatePinUseCase;
+  readonly authenticateLocalPinOnly: AuthenticateLocalPinOnlyUseCase | null;
   readonly createSession: CreateOperationalSessionUseCase;
   readonly resolveSession: ResolveOperationalSessionUseCase;
   readonly resolveCapabilities: ResolveEffectiveCapabilitiesUseCase;
   readonly endSession: EndOperationalSessionUseCase;
   readonly listLoginUsers: ListLoginUsersUseCase;
+  readonly listAccessMatrix: ListAccessMatrixUseCase;
+  readonly createAccessRole: CreateAccessRoleUseCase;
+  readonly replaceAccessRoleCapabilities: ReplaceAccessRoleCapabilitiesUseCase;
+  readonly assignRole: AssignRoleUseCase;
+  readonly revokeRoleAssignment: RevokeRoleAssignmentUseCase;
+  readonly provisionPin: ProvisionPinCredentialUseCase;
+  readonly replacePin: ReplacePinCredentialUseCase;
+  readonly listConfiguredPinUserIds: (scope: unknown) => Promise<readonly string[]>;
   readonly tokens: SessionTokenPort;
 }
 
@@ -121,6 +138,30 @@ function parseCreateRequest(value: unknown): Readonly<{
     pinInput: Object.freeze({ userId: input.userId, pin: input.pin }),
     expectedSessionId,
   });
+}
+
+function parseLocalPinOnlyCreateRequest(value: unknown): Readonly<{
+  pin: unknown;
+  expectedSessionId: string | null;
+}> {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    Array.isArray(value) ||
+    Object.keys(value).length !== 2 ||
+    Object.keys(value).some((key) => !['expectedSessionId', 'pin'].includes(key))
+  ) throw new AccessSessionRequestError();
+  const input = value as Readonly<Record<string, unknown>>;
+  try {
+    return Object.freeze({
+      pin: input.pin,
+      expectedSessionId: input.expectedSessionId === null
+        ? null
+        : assertSessionId(input.expectedSessionId as string),
+    });
+  } catch {
+    throw new AccessSessionRequestError();
+  }
 }
 
 function sessionResponse(session: Awaited<ReturnType<ResolveOperationalSessionUseCase['execute']>>) {
@@ -307,6 +348,85 @@ export class AccessSessionController {
         proof,
         request.expectedSessionId,
       );
+      response.setHeader('Set-Cookie', serializeOperationalSessionCookies(
+        created.tokens.bearer,
+        created.tokens.csrf,
+        this.secureCookie(headers),
+      ));
+      return {
+        station: { stationId: context.stationId, branchId: context.branchId },
+        users,
+        capabilities,
+        csrfToken: created.tokens.csrf,
+        session: sessionResponse(created.session),
+        revalidateAfterMs: revalidateAfterMs(created.session),
+      };
+    } catch (error: unknown) {
+      if (isAuthenticationDenial(error)) {
+        throw new UnauthorizedException({ code: 'ACCESS_SESSION_DENIED' });
+      }
+      throw error;
+    }
+  }
+
+  /** Development-local daily-login experiment; canonical PIN login remains POST /. */
+  @Post('local-pin')
+  async createFromLocalPinOnly(
+    @Body() body: unknown,
+    @Headers() headers: HeadersValue,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    response.setHeader('Cache-Control', 'no-store');
+    if (
+      !this.runtime.authenticateLocalPinOnly ||
+      !this.transportPolicy.isExplicitLocalRequest({ host: scalar(headers, 'host') }) ||
+      !sameOrigin(headers) ||
+      !/^application\/json(?:\s*;|$)/iu.test(scalar(headers, 'content-type') ?? '')
+    ) {
+      throw new ForbiddenException({ code: 'ACCESS_SESSION_DENIED' });
+    }
+    try {
+      const request = parseLocalPinOnlyCreateRequest(body);
+      const csrfHeader = scalar(headers, operationalSessionCsrfHeaderName);
+      let csrfCookie: string | null;
+      let bearerCookie: string | null = null;
+      if (request.expectedSessionId === null) {
+        csrfCookie = readOperationalSessionLoginCsrfCookie(scalar(headers, 'cookie'));
+      } else {
+        const cookies = readOperationalSessionCookies(scalar(headers, 'cookie'));
+        bearerCookie = cookies.bearer;
+        csrfCookie = bearerCookie ? cookies.csrf : null;
+      }
+      if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+        throw new AccessSessionRequestError();
+      }
+      this.runtime.tokens.verifyCsrf(csrfCookie);
+      const context = await this.runtime.trustedStations.resolve(scalar(headers, 'cookie'));
+      if (request.expectedSessionId !== null) {
+        if (!bearerCookie) throw new AccessSessionRequestError();
+        const active = await this.runtime.resolveSession.execute(context, {
+          bearer: bearerCookie,
+          csrfCookie,
+          csrfHeader,
+          requireCsrf: true,
+          touch: false,
+        });
+        if (active.sessionId !== request.expectedSessionId) {
+          throw new AccessSessionRequestError();
+        }
+      }
+      const proof = await this.runtime.authenticateLocalPinOnly.execute(context, { pin: request.pin });
+      const capabilities = await this.runtime.resolveCapabilities.execute({
+        tenantId: context.tenantId,
+        branchId: context.branchId,
+        userId: proof.userId,
+      });
+      const created = await this.runtime.createSession.execute(
+        context,
+        proof,
+        request.expectedSessionId,
+      );
+      const users = await this.runtime.listLoginUsers.execute(context);
       response.setHeader('Set-Cookie', serializeOperationalSessionCookies(
         created.tokens.bearer,
         created.tokens.csrf,

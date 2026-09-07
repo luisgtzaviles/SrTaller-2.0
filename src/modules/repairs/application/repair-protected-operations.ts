@@ -6,6 +6,7 @@ import type {
 
 import type { RepairEvidenceStoragePort } from './ports/repair-evidence-storage.port.js';
 import type {
+  RepairOperationalNoteContext,
   RepairPersistenceScope,
   RepairRepositoryPort,
 } from './ports/repair-repository.port.js';
@@ -46,6 +47,23 @@ function repairScope(context: AuthorizedOperationalContext): RepairPersistenceSc
   return Object.freeze({
     tenantId: context.tenantId,
     branchId: context.branchId,
+  });
+}
+
+function repairOperationalNoteContext(
+  context: AuthorizedOperationalContext,
+): RepairOperationalNoteContext {
+  if (context.capability !== repairsAddNoteRequirement.capability) {
+    throw new RepairOperationAccessDeniedError();
+  }
+  return Object.freeze({
+    tenantId: context.tenantId,
+    branchId: context.branchId,
+    stationId: context.stationId,
+    sessionId: context.sessionId,
+    actorUserId: context.userId,
+    actorDisplayName: context.userDisplayName,
+    capability: context.capability,
   });
 }
 
@@ -130,7 +148,7 @@ export class RepairProtectedOperations {
       repairsAddNoteRequirement,
       (context) => new AddRepairOperationalNoteUseCase(
         this.repository,
-        () => repairScope(context),
+        () => repairOperationalNoteContext(context),
       ).execute(input),
     );
   }

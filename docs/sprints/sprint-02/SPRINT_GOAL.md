@@ -5,11 +5,11 @@
 - **Sprint:** SPRINT-02.
 - **Estado:** Active.
 - **Periodo:** TBD.
-- **PBI actual:** NONE.
-- **WIP:** 0/1.
+- **PBI actual:** PBI-028 — Minimum Business Audit and Correlation.
+- **WIP:** 1/1.
 - **Autoridad:** Identity Master Goal para la secuencia y decisión Owner de
-  reanudación; PBI-026 tiene DoR PASS y Owner Start propio. Cada PBI posterior
-  conserva sus gates; no se autoriza deploy o release.
+  reanudación; PBI-028 tiene DoR PASS, riesgo High preservado y Owner Start
+  propio. No se autoriza deploy o release.
 
 ## Objetivo
 
@@ -31,8 +31,8 @@ PBI antes de cerrar canónicamente el anterior.
 ## Criterios de salida
 
 - [x] G3 Authentication PASS efectivo; cierre PBI-034 PR #34 + CI exacto GREEN.
-- [ ] G4 Authorization PASS efectivo; `PASS candidate` hasta merge + CI del
-  cierre PBI-026.
+- [x] G4 Authorization PASS efectivo; cierre PBI-026 PR #36 + CI exacto
+  `34161029937` GREEN.
 - [ ] G5 Audit PASS.
 - [ ] Login/logout/User switching visible y persistente en localhost.
 - [ ] Operational Note usa actor, Station, Session, Tenant, Branch y correlation
@@ -42,5 +42,5 @@ PBI antes de cerrar canónicamente el anterior.
 
 ## Próxima revisión
 
-- **Fecha:** al integrar el cierre PBI-026.
-- **Disparador:** CI exacto post-cierre o contradicción material.
+- **Fecha:** al completar el candidato PBI-028.
+- **Disparador:** focused High-risk review, CI exacto o contradicción material.

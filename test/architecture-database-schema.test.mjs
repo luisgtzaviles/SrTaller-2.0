@@ -18,6 +18,7 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     repairs: { owner: 'repairs', kind: 'table' },
     repair_intakes: { owner: 'repairs', kind: 'table' },
     repair_timeline_entries: { owner: 'repairs', kind: 'table' },
+    repair_business_audit_events: { owner: 'repairs', kind: 'table' },
     repair_attachments: { owner: 'repairs', kind: 'table' },
     repair_technicians: { owner: 'repairs', kind: 'table' },
     repair_technician_branches: { owner: 'repairs', kind: 'table' },
@@ -103,6 +104,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260907110000_stations_add_admission_revisions.ts',
       '20260907111000_users_add_admission_revision.ts',
       '20260907120000_access_create_operational_sessions.ts',
+      '20260907220000_repairs_create_business_audit_events.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

@@ -4,10 +4,12 @@ import { RuntimeInfrastructureModule } from '../../infrastructure/runtime/runtim
 import {
   ACCESS_PIN_HASHER_FACTORY,
   APPLICATION_DATABASE_CONNECTION,
+  LOCAL_RUNTIME_CONFIGURATION,
 } from '../../infrastructure/runtime/index.js';
 import type {
   AccessPinHasherFactory,
   ApplicationDatabaseConnection,
+  LocalRuntimeConfiguration,
 } from '../../infrastructure/runtime/index.js';
 import { StationsModule } from '../stations/stations.module.js';
 import { UsersModule } from '../users/users.module.js';
@@ -22,22 +24,28 @@ import type {
 import {
   AUTHENTICATION_USER_ADMISSION_VALIDATOR,
   AUTHENTICATION_USER_READER,
+  USER_PRODUCT_RUNTIME,
 } from '../users/index.js';
 import type {
   AuthenticationUserAdmissionValidator,
   AuthenticationUserReader,
+  UserProductRuntime,
 } from '../users/index.js';
 
 import { CONTEXTUAL_AUTHORIZATION_EXECUTOR } from './index.js';
 import type { ContextualAuthorizationExecutor } from './index.js';
 
-import type { AssignRoleUseCase } from './application/use-cases/assign-role.use-case.js';
-import type { ListAccessMatrixUseCase } from './application/use-cases/list-access-matrix.use-case.js';
-import type { RevokeRoleAssignmentUseCase } from './application/use-cases/revoke-role-assignment.use-case.js';
+import { ListAccessMatrixUseCase } from './application/use-cases/list-access-matrix.use-case.js';
+import { CreateAccessRoleUseCase } from './application/use-cases/create-access-role.use-case.js';
+import { ReplaceAccessRoleCapabilitiesUseCase } from './application/use-cases/replace-access-role-capabilities.use-case.js';
+import { AssignRoleUseCase } from './application/use-cases/assign-role.use-case.js';
+import { RevokeRoleAssignmentUseCase } from './application/use-cases/revoke-role-assignment.use-case.js';
 import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';
 import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';
-import type { ProvisionPinCredentialUseCase } from './application/use-cases/provision-pin-credential.use-case.js';
+import { ProvisionPinCredentialUseCase } from './application/use-cases/provision-pin-credential.use-case.js';
+import { ReplacePinCredentialUseCase } from './application/use-cases/replace-pin-credential.use-case.js';
 import { AuthenticatePinUseCase } from './application/use-cases/authenticate-pin.use-case.js';
+import { AuthenticateLocalPinOnlyUseCase } from './application/use-cases/authenticate-local-pin-only.use-case.js';
 import { ListApplicableUsersUseCase } from './application/use-cases/list-applicable-users.use-case.js';
 import { ResolveEffectiveCapabilitiesUseCase } from './application/use-cases/resolve-effective-capabilities.use-case.js';
 import {
@@ -51,12 +59,15 @@ import { createKyselyPinCredentialRepository } from './infrastructure/persistenc
 import { KyselyOperationalSessionRepository } from './infrastructure/persistence/kysely-operational-session.repository.js';
 import { NodeArgon2PinHasher } from './infrastructure/security/node-argon2-pin-hasher.js';
 import { NodeSessionToken } from './infrastructure/security/node-session-token.js';
+import { createLocalPinOnlyBindings } from './infrastructure/development/local-pin-only-bindings.js';
 import {
   ACCESS_SESSION_RUNTIME,
   AccessSessionController,
 } from './presentation/access-session.controller.js';
 import type { AccessSessionRuntime } from './presentation/access-session.controller.js';
+import { AccessAdministrationController } from './presentation/access-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
+import { AccessAdministrationOperations } from './application/access-administration-operations.js';
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
@@ -64,6 +75,7 @@ type RegisteredAccessPersistenceAdapter =
 type RegisteredAccessSecurityAdapter = NodeArgon2PinHasher;
 type RegisteredAccessUseCases =
   | AuthenticatePinUseCase
+  | AuthenticateLocalPinOnlyUseCase
   | AssignRoleUseCase
   | ListAccessMatrixUseCase
   | ListApplicableUsersUseCase
@@ -73,7 +85,7 @@ type RegisteredAccessUseCases =
 
 @Module({
   imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],
-  controllers: [AccessSessionController],
+  controllers: [AccessSessionController, AccessAdministrationController],
   providers: [
     {
       provide: ACCESS_SESSION_RUNTIME,
@@ -84,6 +96,7 @@ type RegisteredAccessUseCases =
         AUTHENTICATION_USER_ADMISSION_VALIDATOR,
         AUTHENTICATION_USER_READER,
         ACCESS_PIN_HASHER_FACTORY,
+        LOCAL_RUNTIME_CONFIGURATION,
       ],
       useFactory: (
         database: ApplicationDatabaseConnection,
@@ -92,6 +105,7 @@ type RegisteredAccessUseCases =
         userAdmission: AuthenticationUserAdmissionValidator,
         users: AuthenticationUserReader,
         pinHashers: AccessPinHasherFactory,
+        localRuntime: LocalRuntimeConfiguration,
       ): AccessSessionRuntime => {
         const accessRepository = createKyselyAccessRepository(database);
         const pinRepository = createKyselyPinCredentialRepository(database);
@@ -115,13 +129,24 @@ type RegisteredAccessUseCases =
           applicableUsers,
           tokens,
         );
+        const authenticatePin = new AuthenticatePinUseCase(
+          pinRepository,
+          users,
+          pinHasher,
+        );
+        const localPinOnly = localRuntime.enabled
+          ? new AuthenticateLocalPinOnlyUseCase(
+              true,
+              localRuntime.createLocalPinOnlyBindings(createLocalPinOnlyBindings),
+              new ListLoginUsersUseCase(users, applicableUsers),
+              authenticatePin,
+              true,
+            )
+          : null;
         return Object.freeze({
           trustedStations,
-          authenticatePin: new AuthenticatePinUseCase(
-            pinRepository,
-            users,
-            pinHasher,
-          ),
+          authenticatePin,
+          authenticateLocalPinOnly: localPinOnly,
           createSession: new CreateOperationalSessionUseCase(
             sessionRepository,
             users,
@@ -135,6 +160,14 @@ type RegisteredAccessUseCases =
             tokens,
           ),
           listLoginUsers: new ListLoginUsersUseCase(users, applicableUsers),
+          listAccessMatrix: new ListAccessMatrixUseCase(accessRepository),
+          createAccessRole: new CreateAccessRoleUseCase(accessRepository),
+          replaceAccessRoleCapabilities: new ReplaceAccessRoleCapabilitiesUseCase(accessRepository),
+          assignRole: new AssignRoleUseCase(accessRepository),
+          revokeRoleAssignment: new RevokeRoleAssignmentUseCase(accessRepository),
+          provisionPin: new ProvisionPinCredentialUseCase(pinRepository, pinHasher),
+          replacePin: new ReplacePinCredentialUseCase(pinRepository, pinHasher),
+          listConfiguredPinUserIds: (scope: unknown) => pinRepository.listConfiguredUserIds(scope as never),
           tokens,
         });
       },
@@ -146,6 +179,26 @@ type RegisteredAccessUseCases =
         runtime: AccessSessionRuntime,
       ): ContextualAuthorizationExecutor =>
         new ContextualAuthorizationExecutorService(runtime),
+    },
+    {
+      provide: AccessAdministrationOperations,
+      inject: [CONTEXTUAL_AUTHORIZATION_EXECUTOR, USER_PRODUCT_RUNTIME, ACCESS_SESSION_RUNTIME],
+      useFactory: (
+        authorization: ContextualAuthorizationExecutor,
+        users: UserProductRuntime,
+        runtime: AccessSessionRuntime,
+      ): AccessAdministrationOperations => new AccessAdministrationOperations(
+        authorization,
+        users,
+        (scope: unknown) => runtime.listAccessMatrix.execute(scope),
+        (scope: unknown, input: unknown) => runtime.createAccessRole.execute(scope, input),
+        (scope: unknown, roleId: unknown, input: unknown) => runtime.replaceAccessRoleCapabilities.execute(scope, roleId, input),
+        (scope: unknown, input: unknown) => runtime.assignRole.execute(scope, input),
+        (scope: unknown, input: unknown) => runtime.revokeRoleAssignment.execute(scope, input),
+        (scope: unknown, input: unknown) => runtime.provisionPin.execute(scope, input),
+        (scope: unknown, input: unknown) => runtime.replacePin.execute(scope, input),
+        (scope: unknown) => runtime.listConfiguredPinUserIds(scope),
+      ),
     },
   ],
   exports: [CONTEXTUAL_AUTHORIZATION_EXECUTOR],

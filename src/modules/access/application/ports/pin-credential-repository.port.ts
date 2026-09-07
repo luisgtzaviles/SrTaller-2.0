@@ -53,6 +53,11 @@ export class PinCredentialPersistenceError extends Error {
 }
 
 export interface PinCredentialRepositoryPort {
+  /** Safe administration read: only active credential ownership, never verifier or PIN material. */
+  listConfiguredUserIds(
+    scope: PinCredentialTenantScope,
+  ): Promise<readonly AccessUserId[]>;
+
   provision(
     scope: PinCredentialTenantScope,
     input: Readonly<{
@@ -62,6 +67,11 @@ export interface PinCredentialRepositoryPort {
       occurredAt: string;
       secret: PinSecretMaterial;
     }>,
+  ): Promise<PinCredentialRecord>;
+
+  replace(
+    scope: PinCredentialTenantScope,
+    input: Readonly<{ userId: AccessUserId; occurredAt: string; secret: PinSecretMaterial }>,
   ): Promise<PinCredentialRecord>;
 
   authenticateAttempt(

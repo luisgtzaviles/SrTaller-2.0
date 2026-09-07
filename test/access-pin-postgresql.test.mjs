@@ -76,6 +76,7 @@ const pinTables = [
   'access_pin_credentials',
 ];
 const tables = [
+  'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   ...pinTables,
@@ -213,6 +214,7 @@ function authorization(item) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
   await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
@@ -393,7 +395,7 @@ test(
         fresh.status.migrations.length,
         inspection.manifest.migrations.length,
       );
-      assert.equal(fresh.status.migrations.length, 23);
+      assert.equal(fresh.status.migrations.length, 24);
       assert.ok(
         fresh.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -401,6 +403,15 @@ test(
 
       let status = await runner.getMigrationStatus();
       let latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      assert.equal(
+        latest?.name,
+        '20260907220000_repairs_create_business_audit_events',
+      );
+      await runner.migrateDown(authorization(latest));
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
       assert.equal(latest?.name, '20260907120000_access_create_operational_sessions');
@@ -424,7 +435,7 @@ test(
 
       await seedAuthorities(admin);
       const upgraded = await runner.migrateToLatest();
-      assert.equal(upgraded.results.length, 4);
+      assert.equal(upgraded.results.length, 5);
       assert.equal(
         upgraded.results[0]?.name,
         '20260907010000_access_create_pin_credentials',
@@ -1354,6 +1365,15 @@ test(
       latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
+      assert.equal(
+        latest?.name,
+        '20260907220000_repairs_create_business_audit_events',
+      );
+      await runner.migrateDown(authorization(latest));
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
       assert.equal(latest?.name, '20260907120000_access_create_operational_sessions');
       await runner.migrateDown(authorization(latest));
       status = await runner.getMigrationStatus();
@@ -1382,7 +1402,7 @@ test(
       );
 
       const reapplied = await runner.migrateToLatest();
-      assert.equal(reapplied.results.length, 4);
+      assert.equal(reapplied.results.length, 5);
       await assertPinTables(admin, pinTables);
 
       status = await runner.getMigrationStatus();

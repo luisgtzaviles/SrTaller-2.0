@@ -19,6 +19,12 @@ const {
 const { ProvisionPinCredentialUseCase } = await import(
   '../dist/modules/access/application/use-cases/provision-pin-credential.use-case.js'
 );
+const { AuthenticateLocalPinOnlyUseCase } = await import(
+  '../dist/modules/access/application/use-cases/authenticate-local-pin-only.use-case.js'
+);
+const { createLocalPinOnlyBindings } = await import(
+  '../dist/modules/access/infrastructure/development/local-pin-only-bindings.js'
+);
 const { createTrustedStationContext } = await import(
   '../dist/modules/stations/application/contracts/trusted-station-context.js'
 );
@@ -186,6 +192,57 @@ test('authentication accepts only a branded server-verified Station context', ()
   assert.throws(
     () => parseTrustedPinContext({ tenantId, branchId, stationId }),
     expectsPinInput('context'),
+  );
+});
+
+test('local PIN-only adapter resolves exactly one eligible fixture server-side and delegates canonical verification', async () => {
+  const calls = [];
+  const canonicalProof = Object.freeze({ userId, displayName: activeUser.displayName });
+  const subject = new AuthenticateLocalPinOnlyUseCase(
+    true,
+    {
+      resolve(localPin, eligibleUserIds) {
+        calls.push(['resolve', localPin, eligibleUserIds]);
+        return localPin === '0625' && eligibleUserIds.includes(userId)
+          ? { userId, credentialPin: pin }
+          : null;
+      },
+    },
+    { async execute() { return [{ userId, displayName: activeUser.displayName }]; } },
+    { async execute(trustedContext, input) {
+      calls.push(['authenticate', trustedContext, input]);
+      return canonicalProof;
+    } },
+  );
+
+  assert.equal(await subject.execute(context, { pin: '0625' }), canonicalProof);
+  assert.deepEqual(calls, [
+    ['resolve', '0625', [userId]],
+    ['authenticate', context, { userId, pin }],
+  ]);
+  await assert.rejects(
+    subject.execute(context, { pin: '9999' }),
+    (error) => error instanceof PinAuthenticationError && error.code === 'PIN_AUTHENTICATION_DENIED',
+  );
+  await assert.rejects(
+    subject.execute(context, { pin: '06250' }),
+    (error) => error instanceof PinAuthenticationError && error.code === 'PIN_AUTHENTICATION_DENIED',
+  );
+});
+
+test('local four-digit fixture aliases fail closed when two eligible fixture users collide', () => {
+  const configuration = {
+    NODE_ENV: 'development',
+    SR_DB_ENVIRONMENT: 'development',
+    SR_LOCAL_PIN_JORGE: '100001',
+    SR_LOCAL_PIN_MARIA: '200002',
+    SR_LOCAL_PIN_CARLOS: '300003',
+  };
+  const resolver = createLocalPinOnlyBindings(configuration);
+  assert.equal(resolver.resolve('0001', [userId]), null);
+  assert.throws(
+    () => createLocalPinOnlyBindings({ ...configuration, SR_LOCAL_PIN_MARIA: '990001' }),
+    /collision/u,
   );
 });
 

@@ -1,6 +1,6 @@
-import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import { useDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
+  InternalDatabasePersistenceConnection,
   InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
@@ -17,7 +17,9 @@ import {
 import { UserPersistenceError } from '../../application/ports/user-repository.port.js';
 import type {
   BootstrapUserInput,
+  CreateUserInput,
   TransitionUserInput,
+  UpdateUserInput,
   UserRecord,
   UserRepositoryPort,
   UserScope,
@@ -157,6 +159,29 @@ function validateTransitionInput(input: TransitionUserInput): Readonly<{
     if (error instanceof UserPersistenceError) {
       throw error;
     }
+    throw new UserPersistenceError('USER_INPUT_INVALID');
+  }
+}
+
+function validateUpdateInput(input: UpdateUserInput): Readonly<{
+  userId: UpdateUserInput['userId'];
+  displayName: string;
+  operationalIdentifier: string | null;
+  expectedVersion: number;
+  occurredAt: Date;
+}> {
+  try {
+    if (!Number.isSafeInteger(input?.expectedVersion) || input.expectedVersion < 0 || !validInstant(input.occurredAt)) {
+      throw new Error('invalid update');
+    }
+    return Object.freeze({
+      userId: parseUserId(input.userId),
+      displayName: validateName(input.displayName),
+      operationalIdentifier: validateOperationalIdentifier(input.operationalIdentifier),
+      expectedVersion: input.expectedVersion,
+      occurredAt: new Date(input.occurredAt),
+    });
+  } catch {
     throw new UserPersistenceError('USER_INPUT_INVALID');
   }
 }
@@ -371,6 +396,28 @@ class KyselyUserRepository implements UserRepositoryPort {
     }
   }
 
+  async create(scope: UserScope, input: CreateUserInput): Promise<UserRecord> {
+    const trustedScope = validateScope(scope);
+    const trustedInput = validateBootstrapInput(input);
+    try {
+      return await this.execute(async (database: UserExecutor) => {
+        const row = await database.insertInto('users').values({
+          user_id: trustedInput.userId,
+          tenant_id: trustedScope.tenantId,
+          display_name: trustedInput.displayName,
+          operational_identifier: trustedInput.operationalIdentifier,
+          status: 'active',
+          version: 0,
+          created_at: trustedInput.occurredAt,
+          updated_at: trustedInput.occurredAt,
+        }).returningAll().executeTakeFirstOrThrow();
+        return mapUserRecord(row);
+      });
+    } catch (error: unknown) {
+      throw mapUserError(error);
+    }
+  }
+
   async transition(
     scope: UserScope,
     input: TransitionUserInput,
@@ -470,10 +517,32 @@ class KyselyUserRepository implements UserRepositoryPort {
       throw mapUserError(error);
     }
   }
+
+  async update(scope: UserScope, input: UpdateUserInput): Promise<UserRecord> {
+    const trustedScope = validateScope(scope);
+    const trustedInput = validateUpdateInput(input);
+    try {
+      return await this.execute(async (database: UserExecutor) => database.transaction().execute(async (transaction) => {
+        const current = await transaction.selectFrom('users').select('version')
+          .where('tenant_id', '=', trustedScope.tenantId).where('user_id', '=', trustedInput.userId).executeTakeFirst();
+        if (!current) throw new UserPersistenceError('USER_NOT_FOUND');
+        if (current.version !== trustedInput.expectedVersion) throw new UserPersistenceError('USER_STALE_WRITE');
+        const row = await transaction.updateTable('users').set({
+          display_name: trustedInput.displayName,
+          operational_identifier: trustedInput.operationalIdentifier,
+          version: current.version + 1,
+          updated_at: trustedInput.occurredAt,
+        }).where('tenant_id', '=', trustedScope.tenantId).where('user_id', '=', trustedInput.userId)
+          .where('version', '=', trustedInput.expectedVersion).returningAll().executeTakeFirst();
+        if (!row) throw new UserPersistenceError('USER_STALE_WRITE');
+        return mapUserRecord(row);
+      }));
+    } catch (error: unknown) { throw mapUserError(error); }
+  }
 }
 
 export function createKyselyUserRepository(
-  connection: DatabaseConnection,
+  connection: InternalDatabasePersistenceConnection,
 ): UserRepositoryPort {
   return new KyselyUserRepository((operation) =>
     useDatabasePersistenceExecutor(connection, 'users', operation),

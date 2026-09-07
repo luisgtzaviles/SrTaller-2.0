@@ -1,3 +1,4 @@
+
 # AGENTS.md — SR Taller 2.0
 
 ## Propósito
@@ -15,9 +16,10 @@ Antes de actuar, leer en este orden:
 
 1. [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md).
 2. [`docs/product/MVP_OPERATING_ROADMAP.md`](docs/product/MVP_OPERATING_ROADMAP.md).
-3. Los documentos del Sprint activo.
-4. El documento del PBI actual.
-5. Los ADR/DEC y los contratos de entrega relevantes al alcance, incluidos
+3. `docs/work/ACTIVE_CHECKLIST.md`, si existe.
+4. Los documentos del Sprint activo.
+5. El documento del PBI actual.
+6. Los ADR/DEC y los contratos de entrega relevantes al alcance, incluidos
    [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md),
    [`DEFINITION_OF_DONE.md`](docs/delivery/DEFINITION_OF_DONE.md),
    [`BRANCH_POLICY.md`](docs/delivery/BRANCH_POLICY.md) y
@@ -40,52 +42,117 @@ de governance o revisión autorizada dentro de su alcance.
 - Nunca iniciar automáticamente el siguiente PBI. Su selección sólo lo deja
   como candidato; requiere sus propios gates y autorización.
 
-## Definition of Done
+## Checklist operacional de progreso
 
-La autoridad pertenece a
-[`DEFINITION_OF_DONE.md`](docs/delivery/DEFINITION_OF_DONE.md) y a
-[`DEC-063`](docs/decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md).
-Este archivo sólo resume el gate y no crea una Definition of Done paralela.
+Para cualquier Goal, milestone o tarea de implementación que abarque más de un
+bloque significativo de trabajo, mantener un checklist operacional visible para
+el Owner.
 
-No declarar un PBI `Done` hasta que, como mínimo:
+Archivo canónico del trabajo activo:
 
-- el cambio esté integrado en `main` mediante merge autorizado;
-- el CI autoritativo de `main` esté verde sobre el SHA integrado exacto;
-- documentación y evidencia estén reconciliadas en `main`; y
-- se hayan satisfecho la Definition of Done, los gates y la Owner Acceptance
-  aplicables.
+`docs/work/ACTIVE_CHECKLIST.md`
 
-Un resultado local, una rama, un PR verde o una review aprobada no equivalen a
-`Done`. `Done` tampoco equivale a `Released` ni autoriza deploy.
+El checklist existe para responder rápidamente:
 
-## Git, merge y deploy
+1. ¿Qué estamos construyendo?
+2. ¿Qué ya terminó?
+3. ¿Qué está haciendo Codex ahora?
+4. ¿Qué sigue?
+5. ¿Existe algún bloqueo?
+6. ¿Cuánto falta para llegar al checkpoint visible actual?
 
-- Inspeccionar branch, baseline, tracking, divergencia y working tree antes de
-  modificar archivos.
-- Preservar cambios ajenos y trabajo local no relacionado.
-- No hacer force push.
-- Seguir [`BRANCH_POLICY.md`](docs/delivery/BRANCH_POLICY.md) para integración e
-  historia; no reescribir historia compartida ni usar rebase o squash para
-  eludir trazabilidad o autorización.
-- No hacer merge sin autorización explícita del Owner.
-- No hacer deploy, release ni cambios de infraestructura sin autorización
-  explícita y específica.
+El checklist es una superficie de visibilidad operacional. No sustituye
+`CURRENT_STATE.md`, Roadmap, Sprint, PBI, ADR/DEC, Definition of Done ni
+evidencia.
 
-## Contratos técnicos y de seguridad
+### Reglas del checklist
 
-- Usar los pins canónicos verificados por [`package.json`](package.json),
-  [`DEC-004`](docs/decisions/dec-004-toolchain-contract/DECISION_PROPOSAL.md) y
-  [`LOCAL_DEVELOPMENT.md`](docs/delivery/LOCAL_DEVELOPMENT.md): Node.js
-  `24.18.0`, pnpm `11.15.1` y PostgreSQL `18.4`.
-- Ante ambigüedad de contexto, identidad, tenant, branch, autorización,
-  configuración, evidencia o alcance, fallar cerrado.
-- Respetar `DEC-005`, el ownership modular y los checks de arquitectura. No
-  introducir bypasses, dependencias prohibidas ni excepciones implícitas.
-- Después de superar el gate de identidad aplicable, los actores sintéticos se
-  permiten únicamente en desarrollo, pruebas y fixtures; no en writes
-  productivos aprobados.
-- Mantener la documentación y evidencia exigidas por el workflow; no dejar
-  código integrado con `CURRENT_STATE.md` desactualizado.
+- Crear o reconciliar `docs/work/ACTIVE_CHECKLIST.md` antes de iniciar trabajo
+  sustancial cuando exista un Goal o milestone activo.
+- Mantener un único checklist activo.
+- Al reanudar trabajo existente, leer primero el checklist y reconciliarlo
+  contra Git, `CURRENT_STATE.md`, Roadmap, Sprint y PBI antes de confiar en él.
+- El estado real del repositorio tiene prioridad sobre el checklist si existe
+  divergencia.
+- Actualizar el checklist después de bloques significativos de trabajo, no
+  después de cada comando o edición.
+- No marcar un ítem como completado sólo porque se escribió código.
+- Marcar un ítem como completado únicamente cuando su condición material de
+  aceptación para la etapa actual esté satisfecha.
+- Reflejar inmediatamente cualquier bloqueo material.
+- No marcar PR, CI, review, merge, Owner Acceptance, `Done` o `Released` antes
+  de que realmente ocurran.
+- No usar el checklist para otorgar autoridad, cerrar gates o cambiar el estado
+  canónico de un PBI.
+- Mantener el checklist comprensible para una persona no técnica.
+- Evitar detalles de implementación que no ayuden a entender el progreso.
+- Cuando cambie el PBI dentro de un milestone autorizado, reconciliar la sección
+  del PBI actual sin perder la vista general del milestone.
+- Cuando el milestone termine, archivar el checklist en
+  `docs/work/history/` con un nombre estable y crear uno nuevo cuando comience
+  el siguiente milestone.
 
-Cuando una instrucción local parezca contradecir el estado canónico, detenerse,
-mostrar la contradicción y solicitar decisión del Owner.
+### Estados visuales
+
+Usar:
+
+- `[ ]` pendiente.
+- `[~]` en progreso.
+- `[x]` completado.
+- `[!]` bloqueado.
+
+No representar como `[x]` algo que sólo esté parcialmente implementado.
+
+### Cabecera obligatoria
+
+El checklist debe incluir como mínimo:
+
+- Milestone actual.
+- Sprint.
+- PBI actual.
+- Estado general.
+- Progreso (`completados / total`).
+- Trabajo actual.
+- Siguiente bloque.
+- Bloqueos.
+- Última actualización.
+
+Ejemplo:
+
+```md
+# Active Development Checklist
+
+Milestone: Visible Identity Checkpoint
+Sprint: Sprint 02
+Current PBI: PBI-028
+Status: In progress
+Progress: 6 / 9
+Current: Minimum Business Audit
+Next: Operational Note con actor real
+Blocked: No
+Last updated: 2026-09-07 14:40
+
+## Milestone
+
+- [x] Trusted Station Context
+- [x] User Directory
+- [x] Roles / Capabilities
+- [x] PIN Credential
+- [x] Operational Session
+- [x] Contextual Authorization
+- [~] Minimum Business Audit
+- [ ] Operational Note con actor real
+- [ ] Owner local iteration
+
+## Current PBI
+
+- [x] Owner decisions
+- [x] Definition of Ready
+- [~] Functional implementation
+- [ ] PostgreSQL material verification
+- [ ] Local proof
+- [ ] Full verification
+- [ ] PR / CI
+- [ ] Review
+- [ ] Merge / canonical closure
+```

@@ -9,6 +9,8 @@ import { DashboardPage } from './pages/DashboardPage.js';
 import { RepairDetailPage } from './pages/RepairDetailPage.js';
 import { RepairsPage } from './pages/RepairsPage.js';
 import { SettingsPage } from './pages/SettingsPage.js';
+import { RolesPage } from './pages/RolesPage.js';
+import { UsersPage } from './pages/UsersPage.js';
 import { SessionProvider } from './session/SessionProvider.js';
 import { hasOperationalCapability } from './session/session-capabilities.mjs';
 import type { OperationalCapability } from './session/session-api.js';
@@ -57,6 +59,8 @@ export function App(): React.JSX.Element {
               <Route path="/reparaciones/nueva" element={<AccessDeniedPage />} />
               <Route path="/reparaciones/:id" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairDetailPage capabilities={capabilities} csrfToken={csrfToken} sessionId={session.sessionId} /></CapabilityBoundary>} />
               <Route path="/configuracion" element={<SettingsPage />} />
+              <Route path="/configuracion/roles" element={<CapabilityBoundary capabilities={capabilities} capability="access_matrix.read"><RolesPage csrfToken={csrfToken} /></CapabilityBoundary>} />
+              <Route path="/configuracion/usuarios" element={<CapabilityBoundary capabilities={capabilities} capability="users.read"><UsersPage csrfToken={csrfToken} /></CapabilityBoundary>} />
               {UiCatalogPage ? <Route path="/__internal/ui-catalog" element={<UiCatalogPage />} /> : null}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

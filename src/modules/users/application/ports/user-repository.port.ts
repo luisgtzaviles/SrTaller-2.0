@@ -26,11 +26,21 @@ export type BootstrapUserInput = Readonly<{
   occurredAt: string;
 }>;
 
+export type CreateUserInput = BootstrapUserInput;
+
 export type TransitionUserInput = Readonly<{
   userId: UserId;
   status: UserStatus;
   expectedVersion: number;
   clientRequestId: string;
+  occurredAt: string;
+}>;
+
+export type UpdateUserInput = Readonly<{
+  userId: UserId;
+  displayName: string;
+  operationalIdentifier: string | null;
+  expectedVersion: number;
   occurredAt: string;
 }>;
 
@@ -61,5 +71,7 @@ export interface UserRepositoryPort {
   list(scope: UserScope): Promise<readonly UserRecord[]>;
   findById(scope: UserScope, userId: UserRecord['userId']): Promise<UserRecord | null>;
   bootstrap(scope: UserScope, input: BootstrapUserInput): Promise<UserRecord>;
+  create(scope: UserScope, input: CreateUserInput): Promise<UserRecord>;
+  update(scope: UserScope, input: UpdateUserInput): Promise<UserRecord>;
   transition(scope: UserScope, input: TransitionUserInput): Promise<UserRecord>;
 }

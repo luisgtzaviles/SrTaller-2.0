@@ -1,0 +1,17 @@
+.pageStack { display: grid; gap: 1.5rem; }
+.layout { display: grid; gap: 1.25rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.card { display: grid; gap: 1rem; padding: 1.25rem; border: 1px solid var(--srt-border); border-radius: 1rem; background: var(--srt-surface); box-shadow: var(--srt-shadow-sm); }
+.card > header { display: flex; gap: .75rem; align-items: flex-start; color: var(--srt-action); }
+.card h2 { margin: 0; color: var(--srt-text); font-size: 1.05rem; }
+.card p { margin: .25rem 0 0; color: var(--srt-text-muted); }
+.roleList { display: grid; gap: .65rem; margin: 0; padding: 0; list-style: none; }
+.roleList li { display: grid; gap: .65rem; padding: .85rem; border: 1px solid var(--srt-border); border-radius: .75rem; }
+.roleList strong, .roleList span { display: block; }
+.roleList span { margin-top: .15rem; color: var(--srt-text-muted); font-size: .875rem; }
+.capabilities { display: flex; flex-wrap: wrap; gap: .45rem; }
+.capabilities > span { padding: .28rem .45rem; border-radius: .4rem; background: var(--srt-surface-subtle); color: var(--srt-text); font-size: .78rem; }
+.form { display: grid; gap: 1rem; }
+.checklist { display: grid; gap: .5rem; padding: .75rem; border: 1px solid var(--srt-border); border-radius: .75rem; color: var(--srt-text); }
+.checklist legend { padding: 0 .25rem; font-weight: 700; }
+.checklist label { display: flex; gap: .5rem; align-items: center; }
+@media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }

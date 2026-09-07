@@ -6,10 +6,10 @@
 conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
 splits aprobados. PBI-030 tiene cierre `Done`; Sprint 01 está `Closed` y
 PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033 están `Done`; permanecen
-`Released: NO`. SPRINT-02 está `Active`; PBI-026 queda `Done candidate`, no
-existe PBI actual y el WIP es `0/1`.
+`Released: NO`. SPRINT-02 está `Active`; PBI-026 está `Done`, PBI-028 está
+`In progress` como único PBI actual y el WIP es `1/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
-PBI-033, PBI-025, PBI-034 y PBI-026 tienen `Large` mediante T-shirt sizing; los demás casos
+PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt sizing; los demás casos
 conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
 00. PBI-021–PBI-030 están `Unassigned`.
@@ -41,9 +41,9 @@ conservan TBD.
 | [PBI-023](PBI-023.md) | Establish tenant-scoped persistence and migration foundation | Closed |
 | [PBI-024](PBI-024.md) | Trusted Station Runtime Context | Done; Released: NO |
 | [PBI-025](PBI-025.md) | PIN Credential Authentication | Done; Released: NO |
-| [PBI-026](PBI-026.md) | Contextual Authorization | Done candidate; G4 PASS candidate; Critical / Large; Released: NO |
+| [PBI-026](PBI-026.md) | Contextual Authorization | Done; G4 PASS; Critical / Large; Released: NO |
 | [PBI-027](PBI-027.md) | Branch Timezone Minimum | Done; Released: NO |
-| [PBI-028](PBI-028.md) | Minimum Business Audit and Correlation | Selected candidate; not started |
+| [PBI-028](PBI-028.md) | Minimum Business Audit and Correlation | In progress; High / Large; DoR PASS |
 | [PBI-029](PBI-029.md) | Secrets and External Configuration Foundation | Done; merge, CI main, cierre documental y Owner Acceptance PASS |
 | [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | Done |
 | [PBI-031](PBI-031.md) | Station Binding Administration | Draft / Deferred |
@@ -52,10 +52,11 @@ conservan TBD.
 | [PBI-034](PBI-034.md) | Operational Session | Done; G3 PASS; Released: NO |
 | [PBI-035](PBI-035.md) | Reinforced Authorization | Draft / Deferred |
 | [PBI-036](PBI-036.md) | Extended Observability | Deferred |
+| [PBI-037](PBI-037.md) | Users & Roles Administration Product Iteration | Functional first — local Owner iteration |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-Merge autorizado y CI exacto del cierre PBI-026. PBI-028 no inicia antes de su
-cierre canónico ni sin readiness y Owner Start propios.
+Completar PBI-028, focused High-risk review y CI exacto del candidato. No
+iniciar otro PBI, liberar ni desplegar.

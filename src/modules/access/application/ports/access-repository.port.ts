@@ -79,6 +79,21 @@ export type AssignRoleInput = Readonly<{
   occurredAt: string;
 }>;
 
+export type CreateAccessRoleInput = Readonly<{
+  roleId: RoleId;
+  roleKey: RoleKey;
+  displayName: RoleDisplayName;
+  capabilityCodes: readonly CapabilityCode[];
+  occurredAt: string;
+}>;
+
+export type ReplaceAccessRoleCapabilitiesInput = Readonly<{
+  roleId: RoleId;
+  expectedVersion: number;
+  capabilityCodes: readonly CapabilityCode[];
+  occurredAt: string;
+}>;
+
 export type RevokeRoleAssignmentInput = Readonly<{
   assignmentId: RoleAssignmentId;
   expectedVersion: number;
@@ -116,6 +131,14 @@ export interface AccessRepositoryPort {
   resolveEffectiveCapabilities(
     scope: AccessPrincipalScope,
   ): Promise<readonly CapabilityCode[]>;
+  createRole(
+    scope: AccessTenantScope,
+    input: CreateAccessRoleInput,
+  ): Promise<AccessRoleRecord>;
+  replaceRoleCapabilities(
+    scope: AccessTenantScope,
+    input: ReplaceAccessRoleCapabilitiesInput,
+  ): Promise<AccessRoleRecord>;
   assignRole(
     scope: AccessTenantScope,
     input: AssignRoleInput,

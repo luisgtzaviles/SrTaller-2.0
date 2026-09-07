@@ -353,9 +353,11 @@ export function localUserRows() {
 export function localAccessCapabilityRows() {
   return Object.freeze([
     'access_matrix.read',
+    'access_matrix.manage',
     'repairs.add_note',
     'repairs.read',
     'users.read',
+    'users.manage',
   ].map((capabilityCode) => Object.freeze({
     capabilityCode,
     createdAt: LOCAL_SEED_TIMESTAMP,
@@ -387,9 +389,11 @@ export function localAccessRoleCapabilityRows() {
   });
   const rows = [
     [roleIds.administrator, 'access_matrix.read'],
+    [roleIds.administrator, 'access_matrix.manage'],
     [roleIds.administrator, 'repairs.add_note'],
     [roleIds.administrator, 'repairs.read'],
     [roleIds.administrator, 'users.read'],
+    [roleIds.administrator, 'users.manage'],
     [roleIds.customerService, 'repairs.add_note'],
     [roleIds.customerService, 'repairs.read'],
     [roleIds.technician, 'repairs.add_note'],

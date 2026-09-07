@@ -1,6 +1,8 @@
 export const ACCESS_CAPABILITY_CATALOG = Object.freeze([
   'users.read',
+  'users.manage',
   'access_matrix.read',
+  'access_matrix.manage',
   'repairs.read',
   'repairs.add_note',
 ] as const);

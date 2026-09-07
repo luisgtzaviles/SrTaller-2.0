@@ -54,6 +54,7 @@ export class OperationalSessionStateChangedError extends OperationalSessionApiEr
 }
 
 const SESSION_PATH = '/api/access/session';
+const LOCAL_PIN_SESSION_PATH = '/api/access/session/local-pin';
 const LOCAL_STATION_BOOTSTRAP_PATH = '/api/stations/local-bootstrap';
 const CSRF_HEADER = 'X-SR-CSRF-Token';
 const CSRF_PATTERN = /^[A-Za-z0-9_-]{43}$/u;
@@ -203,7 +204,7 @@ export async function bootstrapLocalStation(): Promise<void> {
 }
 
 export async function startOrSwitchOperationalSession(
-  request: Readonly<{ userId: string; pin: string }>,
+  request: Readonly<{ pin: string }>,
   expectedSessionId: string | null,
 ): Promise<OperationalSessionSnapshot> {
   return runCoordinatedSessionMutation(async (markMayHaveChanged, signal) => {
@@ -212,7 +213,7 @@ export async function startOrSwitchOperationalSession(
       throw new OperationalSessionStateChangedError(before);
     }
     markMayHaveChanged();
-    const response = await fetch(SESSION_PATH, {
+    const response = await fetch(LOCAL_PIN_SESSION_PATH, {
       method: 'POST',
       credentials: 'include',
       cache: 'no-store',
@@ -222,7 +223,6 @@ export async function startOrSwitchOperationalSession(
         [CSRF_HEADER]: before.csrfToken,
       },
       body: JSON.stringify({
-        userId: request.userId,
         pin: request.pin,
         expectedSessionId,
       }),

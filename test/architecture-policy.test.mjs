@@ -111,6 +111,12 @@ test('policy v5 registers exact directed public module composition', async () =>
             consumerImportSpecifier: '../users/index.js',
             producerImportSpecifier: './index.js',
           },
+          {
+            token: 'USER_PRODUCT_RUNTIME',
+            contract: 'UserProductRuntime',
+            consumerImportSpecifier: '../users/index.js',
+            producerImportSpecifier: './index.js',
+          },
         ],
       },
       {
@@ -230,12 +236,14 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts',
     'src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts',
     'src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts',
+    'src/infrastructure/database/migrations/20260907220000_repairs_create_business_audit_events.ts',
+    'src/infrastructure/database/migrations/20260907230000_access_add_local_administration_capabilities.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access'],
+    ['stations', 'users', 'access', 'repairs', 'access'],
   );
-  for (const registration of Object.values(ownership.registrations)) {
+  for (const [migration, registration] of Object.entries(ownership.registrations)) {
     assert.deepEqual(Object.keys(registration).sort(), [
       'functions',
       'owner',
@@ -243,8 +251,13 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'triggers',
     ]);
     assert.ok(registration.tables.length > 0);
-    assert.ok(registration.functions.length > 0);
-    assert.ok(registration.triggers.length > 0);
+    if (migration === 'src/infrastructure/database/migrations/20260907230000_access_add_local_administration_capabilities.ts') {
+      assert.deepEqual(registration.functions, []);
+      assert.deepEqual(registration.triggers, []);
+    } else {
+      assert.ok(registration.functions.length > 0);
+      assert.ok(registration.triggers.length > 0);
+    }
   }
 });
 
@@ -256,6 +269,15 @@ test('registered module presentation and Health are the explicitly governed HTTP
   assert.deepEqual(
     policy.httpSurfacePolicy.controllers,
     {
+      'src/modules/access/presentation/access-administration.controller.ts': {
+        owner: 'access',
+        className: 'AccessAdministrationController',
+        composition: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: './presentation/access-administration.controller.js',
+        },
+      },
       'src/modules/access/presentation/access-session.controller.ts': {
         owner: 'access',
         className: 'AccessSessionController',

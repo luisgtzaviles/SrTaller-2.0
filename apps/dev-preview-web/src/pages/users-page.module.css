@@ -1,0 +1,17 @@
+.pageStack { display: grid; gap: 1.5rem; }
+.layout { display: grid; gap: 1.25rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.card { display: grid; gap: 1rem; padding: 1.25rem; border: 1px solid var(--srt-border); border-radius: 1rem; background: var(--srt-surface); box-shadow: var(--srt-shadow-sm); }
+.card > header { display: flex; gap: .75rem; align-items: flex-start; color: var(--srt-action); }
+.card h2 { margin: 0; color: var(--srt-text); font-size: 1.05rem; }
+.card p { margin: .25rem 0 0; color: var(--srt-text-muted); }
+.userList { display: grid; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+.userList li { display: flex; justify-content: space-between; gap: 1rem; padding: .8rem; border: 1px solid var(--srt-border); border-radius: .75rem; }
+.userList strong, .userList span { display: block; }
+.userList span { margin-top: .15rem; color: var(--srt-text-muted); font-size: .875rem; }
+.userList .status { align-self: center; color: var(--srt-success); font-weight: 700; }
+.form { display: grid; gap: 1rem; }
+.actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
+.actions select, .actions input { min-width: 10rem; padding: .45rem .55rem; border: 1px solid var(--srt-border); border-radius: .45rem; background: var(--srt-surface); color: var(--srt-text); }
+.userControls { display: grid; align-content: start; gap: .5rem; }
+.pinStatus { align-self: center; color: var(--srt-success); font-size: .875rem; font-weight: 700; }
+@media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }

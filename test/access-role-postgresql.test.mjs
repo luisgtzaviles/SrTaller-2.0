@@ -36,6 +36,7 @@ const accessTables = [
   'access_capabilities',
 ];
 const tables = [
+  'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   ...accessTables,
@@ -192,6 +193,7 @@ function revocation(overrides = {}) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
   await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
@@ -315,7 +317,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 23);
+      assert.equal(applied.status.migrations.length, 24);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -928,6 +930,15 @@ test(
 
       let status = await runner.getMigrationStatus();
       let latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      assert.equal(
+        latest?.name,
+        '20260907220000_repairs_create_business_audit_events',
+      );
+      await runner.migrateDown(authorization(latest));
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
       assert.equal(latest?.name, '20260907120000_access_create_operational_sessions');

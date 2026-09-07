@@ -32,6 +32,7 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   'access_role_assignment_commands',
@@ -68,6 +69,8 @@ const repairPercent = '30000000-0000-4000-8000-000000000002';
 const repairB = '30000000-0000-4000-8000-000000000003';
 const repairA2 = '30000000-0000-4000-8000-000000000004';
 const actorId = '40000000-0000-4000-8000-000000000001';
+const auditStationId = '41000000-0000-4000-8000-000000000001';
+const auditSessionId = '42000000-0000-4000-8000-000000000001';
 const pendingLocationA = '91000000-0000-4000-8000-000000000001';
 const workshopLocationA = '91000000-0000-4000-8000-000000000002';
 const pendingLocationB = '92000000-0000-4000-8000-000000000001';
@@ -143,6 +146,7 @@ function authorization(item) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
   await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
@@ -286,11 +290,18 @@ function note(overrides = {}) {
   return Object.freeze({
     repairId: repairA,
     entryId: '80000000-0000-4000-8000-000000000001',
+    auditEventId: '86000000-0000-4000-8000-000000000001',
+    correlationId: '87000000-0000-4000-8000-000000000001',
     clientRequestId: '90000000-0000-4000-8000-000000000001',
-    actorId,
+    stationId: auditStationId,
+    sessionId: auditSessionId,
+    actorUserId: actorId,
     actorDisplayName: 'Operador sintético',
     body: 'Nota idempotente',
-    source: 'local.operational_note',
+    capability: 'repairs.add_note',
+    action: 'repair.operational_note.added',
+    resourceType: 'repair',
+    result: 'succeeded',
     occurredAt: new Date('2026-08-21T13:00:00.000Z'),
     ...overrides,
   });
@@ -363,6 +374,7 @@ test(
     assert.equal(process.version, 'v24.18.0');
     const admin = adminPool();
     const connection = createDatabaseConnection(databaseConfig());
+    const concurrentConnection = createDatabaseConnection(databaseConfig());
     const migrationSource = source();
     const inspection = await inspectMigrationSource(migrationSource);
     const runner = createMigrationRunner(connection, {
@@ -372,7 +384,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 23);
+      assert.equal(applied.status.migrations.length, 24);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
 
@@ -409,9 +421,30 @@ test(
         connection,
         () => new Date('2026-08-21T18:00:00.000Z'),
       );
+      await concurrentConnection.verify();
+      const concurrentRepository = createKyselyRepairRepository(
+        concurrentConnection,
+        () => new Date('2026-08-21T18:00:00.000Z'),
+      );
       const scopeA = Object.freeze({ tenantId: tenantA, branchId: branchA });
       const scopeA2 = Object.freeze({ tenantId: tenantA, branchId: branchA2 });
       const scopeB = Object.freeze({ tenantId: tenantB, branchId: branchB });
+      const noteContextA = Object.freeze({
+        ...scopeA,
+        stationId: auditStationId,
+        sessionId: auditSessionId,
+        actorUserId: actorId,
+        actorDisplayName: 'Operador sintético',
+        capability: 'repairs.add_note',
+      });
+      const noteContextB = Object.freeze({
+        ...scopeB,
+        stationId: '41000000-0000-4000-8000-000000000002',
+        sessionId: '42000000-0000-4000-8000-000000000002',
+        actorUserId: '40000000-0000-4000-8000-000000000002',
+        actorDisplayName: 'Operador B',
+        capability: 'repairs.add_note',
+      });
 
       const allA = await repository.listWorklist(scopeA, listQuery());
       assert.equal(allA.totalCount, 2);
@@ -447,40 +480,96 @@ test(
       assert.equal(await repository.getRepairEvidenceById(scopeB, repairA, '60000000-0000-4000-8000-000000000001'), null);
       assert.equal((await repository.getRepairEvidenceById(scopeA, repairA, '60000000-0000-4000-8000-000000000001'))?.storageKey, '70000000-0000-4000-8000-000000000001.png');
 
-      const first = await repository.addOperationalNote(scopeA, note());
-      const retry = await repository.addOperationalNote(scopeA, note({
+      const first = await repository.addOperationalNote(noteContextA, note());
+      const retry = await repository.addOperationalNote(noteContextA, note({
         entryId: '80000000-0000-4000-8000-000000000002',
+        auditEventId: '86000000-0000-4000-8000-000000000002',
+        correlationId: '87000000-0000-4000-8000-000000000002',
       }));
       assert.equal(first?.id, retry?.id);
+      assert.deepEqual(first?.attribution, {
+        tenantId: tenantA,
+        branchId: branchA,
+        stationId: auditStationId,
+        sessionId: auditSessionId,
+        actorUserId: actorId,
+        actorDisplayNameSnapshot: 'Operador sintético',
+        capability: 'repairs.add_note',
+        action: 'repair.operational_note.added',
+        resourceType: 'repair',
+        resourceId: repairA,
+        result: 'succeeded',
+        correlationId: '87000000-0000-4000-8000-000000000001',
+        occurredAt: '2026-08-21T13:00:00.000Z',
+      });
+      assert.deepEqual(retry?.attribution, first?.attribution);
       await assert.rejects(
-        repository.addOperationalNote(scopeA, note({
+        repository.addOperationalNote(noteContextA, note({
           entryId: '80000000-0000-4000-8000-000000000003',
+          auditEventId: '86000000-0000-4000-8000-000000000003',
+          correlationId: '87000000-0000-4000-8000-000000000003',
           body: 'Contenido incompatible',
         })),
         RepairOperationalNoteIdempotencyConflictError,
       );
-      const secondKey = await repository.addOperationalNote(scopeA, note({
+      const changedSessionContext = Object.freeze({
+        ...noteContextA,
+        sessionId: '42000000-0000-4000-8000-000000000099',
+      });
+      await assert.rejects(
+        repository.addOperationalNote(changedSessionContext, note({
+          entryId: '80000000-0000-4000-8000-000000000008',
+          auditEventId: '86000000-0000-4000-8000-000000000008',
+          correlationId: '87000000-0000-4000-8000-000000000008',
+          sessionId: changedSessionContext.sessionId,
+        })),
+        RepairOperationalNoteIdempotencyConflictError,
+      );
+      const secondKey = await repository.addOperationalNote(noteContextA, note({
         entryId: '80000000-0000-4000-8000-000000000004',
+        auditEventId: '86000000-0000-4000-8000-000000000004',
+        correlationId: '87000000-0000-4000-8000-000000000004',
         clientRequestId: '90000000-0000-4000-8000-000000000002',
       }));
       assert.notEqual(first?.id, secondKey?.id);
 
       const concurrentRequest = note({
         entryId: '80000000-0000-4000-8000-000000000005',
+        auditEventId: '86000000-0000-4000-8000-000000000005',
+        correlationId: '87000000-0000-4000-8000-000000000005',
         clientRequestId: '90000000-0000-4000-8000-000000000003',
       });
       const concurrent = await Promise.all([
-        repository.addOperationalNote(scopeA, concurrentRequest),
-        repository.addOperationalNote(scopeA, note({
+        repository.addOperationalNote(noteContextA, concurrentRequest),
+        concurrentRepository.addOperationalNote(noteContextA, note({
           ...concurrentRequest,
           entryId: '80000000-0000-4000-8000-000000000006',
+          auditEventId: '86000000-0000-4000-8000-000000000006',
+          correlationId: '87000000-0000-4000-8000-000000000006',
         })),
       ]);
       assert.equal(concurrent[0]?.id, concurrent[1]?.id);
-      assert.equal(await repository.addOperationalNote(scopeB, note()), null);
-      assert.equal(await repository.addOperationalNote(scopeA, note({
+      const noteAuditCounts = (
+        await admin.query(
+          `select client_request_id, count(*)::integer as count
+           from repair_business_audit_events
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+           group by client_request_id
+           order by client_request_id`,
+          [tenantA, branchA, repairA],
+        )
+      ).rows;
+      assert.deepEqual(noteAuditCounts, [
+        { client_request_id: '90000000-0000-4000-8000-000000000001', count: 1 },
+        { client_request_id: '90000000-0000-4000-8000-000000000002', count: 1 },
+        { client_request_id: '90000000-0000-4000-8000-000000000003', count: 1 },
+      ]);
+      assert.equal(await repository.addOperationalNote(noteContextB, note()), null);
+      assert.equal(await repository.addOperationalNote(noteContextA, note({
         repairId: '30000000-0000-4000-8000-000000000099',
         entryId: '80000000-0000-4000-8000-000000000099',
+        auditEventId: '86000000-0000-4000-8000-000000000099',
+        correlationId: '87000000-0000-4000-8000-000000000099',
         clientRequestId: '90000000-0000-4000-8000-000000000099',
       })), null);
 
@@ -780,8 +869,10 @@ test(
         (error) => error?.code === '23514',
       );
 
-      await repository.addOperationalNote(scopeA, note({
+      await repository.addOperationalNote(noteContextA, note({
         entryId: '80000000-0000-4000-8000-000000000007',
+        auditEventId: '86000000-0000-4000-8000-000000000007',
+        correlationId: '87000000-0000-4000-8000-000000000007',
         clientRequestId: '90000000-0000-4000-8000-000000000004',
         body: 'x'.repeat(4000),
       }));
@@ -797,6 +888,7 @@ test(
     } finally {
       await runner.destroy().catch(() => undefined);
       await connection.close().catch(() => undefined);
+      await concurrentConnection.close().catch(() => undefined);
       await resetDatabase(admin).catch(() => undefined);
       await assertNoObjects(admin);
       await admin.end();

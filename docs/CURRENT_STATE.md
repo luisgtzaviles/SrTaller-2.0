@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** Fotografía del cierre candidato de PBI-026 sobre la baseline
-  canónica; alcance funcional integrado y cierre documental pendiente.
+- **Estado:** Fotografía del inicio autorizado de PBI-028; PBI-026 y G4 están
+  cerrados efectivamente.
 - **Baseline auditada:** `main` en
-  `4db5d9384d13c200eb2031dceb32dd89efcca64d`.
-- **CI autoritativo:** run `34158203438`, `SUCCESS`; VC-024 run-1, run-2 y
+  `0b39e3794a97c22d5471c0b6dfa278026f237b03`.
+- **CI autoritativo:** run `34161029937`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -24,24 +24,22 @@ alcance funcional de PIN, su remediación y su cierre pertenecen a `main`;
 PBI-025 está `Done`, con Owner Acceptance `APPROVED` y `Released: NO`.
 Operational Session pertenece a `main`; PBI-034 está `Done` y G3 está `PASS`
 después del cierre PR #34 y su CI exacto. SPRINT-01 quedó cerrado y SPRINT-02
-sigue activo. PBI-026 tiene alcance funcional integrado, DoR PASS, tamaño
-Large, riesgo Critical preservado, focused review PASS, CI candidate y
-exact-main GREEN y Owner Acceptance `APPROVED`; queda `Done candidate` y G4
-`PASS candidate` mientras se integra su cierre documental. No existe PBI
-actual, WIP `0/1`; PBI-028 está seleccionado como siguiente candidato y no ha
-iniciado.
+sigue activo. PBI-026 está `Done` después del cierre PR #36 y G4 está `PASS`.
+PBI-028 tiene tamaño `Large`, riesgo `High` preservado, threat model, contrato
+acotado de auditoría/correlation, DoR `PASS` y Owner Start. Es el único PBI
+actual y WIP es `1/1`.
 
 ## Git y CI
 
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `4db5d9384d13c200eb2031dceb32dd89efcca64d` |
+| HEAD auditado | `0b39e3794a97c22d5471c0b6dfa278026f237b03` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `34158203438` SUCCESS |
-| Última integración | PR #35 — alcance funcional de PBI-026 |
+| CI | `34161029937` SUCCESS |
+| Última integración | PR #36 — cierre canónico de PBI-026 |
 
 PR #30 integró el candidate funcional exacto de PBI-025 tras un primer intento
 rojo y un rerun verde. La integración fue una desviación de DEC-051/DEC-063,
@@ -65,8 +63,9 @@ PR #35 integró el candidate PBI-026
 `4db5d9384d13c200eb2031dceb32dd89efcca64d` el
 `2026-09-07T20:07:36Z`. Candidate CI `34157187442`, focused Critical-risk
 review (`0B/0H/0M/0L`) y exact-main CI `34158203438` quedaron GREEN; la Owner
-Acceptance condicional quedó `APPROVED`. El cierre documental pendiente deja
-PBI-026 `Done candidate` y G4 `PASS candidate`.
+Acceptance condicional quedó `APPROVED`. PR #36 integró el cierre como
+`0b39e3794a97c22d5471c0b6dfa278026f237b03`; CI exacto `34161029937` quedó
+GREEN. PBI-026 está `Done`, G4 está `PASS` y `Released: NO`.
 
 ## Stack actual
 
@@ -166,9 +165,9 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 |---|---|
 | Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
 | Sprint 01 | Closed — cinco PBIs committed `Done`; ninguno `Released` |
-| PBI actual | NONE |
-| Siguiente candidato | PBI-028 — Minimum Business Audit and Correlation; seleccionado, no iniciado |
-| WIP permitido | Uno; actual `0/1` |
+| PBI actual | PBI-028 — Minimum Business Audit and Correlation |
+| Siguiente candidato | NONE mientras PBI-028 está en ejecución |
+| WIP permitido | Uno; actual `1/1` |
 
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
@@ -236,14 +235,13 @@ sin downgrade, focused review PASS y Owner Acceptance `APPROVED`. PR #32 y CI
 exacto `34124746317` completaron su cierre; está `Done`, `Released: NO`.
 
 PBI-034 está `Done`, tamaño `Large`, riesgo `Critical` y `Released: NO`.
-PBI-026 queda `Done candidate`, tamaño `Large`, riesgo `Critical`, threat model
-y DoR `PASS`, alcance funcional integrado, CI exacto GREEN, focused review PASS
-y Owner Acceptance `APPROVED`. El catálogo mínimo autoriza sólo lecturas de
+PBI-026 está `Done`, tamaño `Large`, riesgo `Critical`, threat model y DoR
+`PASS`, alcance funcional/cierre integrados y G4 `PASS`. El catálogo mínimo autoriza sólo lecturas de
 Repairs y Operational Note; las mutaciones sin capability aprobada quedan
-deny-by-default. PBI-028 permanece seleccionado y no iniciado.
+deny-by-default. PBI-028 está `In progress`, tamaño `Large`, riesgo `High`, DoR
+`PASS` y Owner Start; WIP `1/1`.
 
 ## Próxima acción
 
-Integrar el cierre documental de PBI-026 y exigir CI exacto GREEN para volver
-efectivos `Done` y G4 `PASS`. PBI-028 permanece seleccionado y no iniciado; no
-existe autorización de release o deploy.
+Completar el candidato PBI-028, focused High-risk review y CI exacto. No iniciar
+otro PBI; no existe autorización de release o deploy.

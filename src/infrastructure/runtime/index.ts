@@ -72,6 +72,11 @@ export interface LocalRuntimeConfiguration {
       environment: Readonly<Record<string, string | undefined>>,
     ) => string,
   ): string;
+  createLocalPinOnlyBindings<Bindings>(
+    createBindings: (
+      environment: Readonly<Record<string, string | undefined>>,
+    ) => Bindings,
+  ): Bindings;
 }
 
 /** Server-owned browser transport decisions; no environment values escape. */

@@ -123,16 +123,53 @@ export interface RepairTimelineItemRecord {
   readonly title: string | null;
   readonly body: string | null;
   readonly source: string;
+  /**
+   * Safe operational projection of the authoritative business-audit fact.
+   * The audit store remains internal; arbitrary payloads are never projected.
+   */
+  readonly attribution: RepairOperationalNoteAttributionRecord | null;
+}
+
+export interface RepairOperationalNoteAttributionRecord {
+  readonly tenantId: string;
+  readonly branchId: string;
+  readonly stationId: string;
+  readonly sessionId: string;
+  readonly actorUserId: string;
+  readonly actorDisplayNameSnapshot: string;
+  readonly capability: 'repairs.add_note';
+  readonly action: 'repair.operational_note.added';
+  readonly resourceType: 'repair';
+  readonly resourceId: string;
+  readonly result: 'succeeded';
+  readonly correlationId: string;
+  readonly occurredAt: string;
+}
+
+/** Server-derived authority for the approved real-actor Repairs write. */
+export interface RepairOperationalNoteContext extends RepairPersistenceScope {
+  readonly stationId: string;
+  readonly sessionId: string;
+  readonly actorUserId: string;
+  readonly actorDisplayName: string;
+  readonly capability: 'repairs.add_note';
 }
 
 export interface AddRepairOperationalNoteRecord {
   readonly repairId: string;
   readonly entryId: string;
+  readonly auditEventId: string;
+  readonly correlationId: string;
   readonly clientRequestId: string;
-  readonly actorId: string;
+  readonly stationId: string;
+  readonly sessionId: string;
+  readonly actorUserId: string;
   readonly actorDisplayName: string;
   readonly body: string;
-  readonly source: string;
+  readonly capability: 'repairs.add_note';
+  readonly action: 'repair.operational_note.added';
+  readonly resourceType: 'repair';
+  readonly result: 'succeeded';
   readonly occurredAt: Date;
 }
 
@@ -140,6 +177,13 @@ export class RepairOperationalNoteIdempotencyConflictError extends Error {
   constructor() {
     super('Operational note idempotency key was reused with different content.');
     this.name = 'RepairOperationalNoteIdempotencyConflictError';
+  }
+}
+
+export class RepairOperationalNoteAuditIntegrityError extends Error {
+  constructor() {
+    super('Operational note and business audit evidence are inconsistent.');
+    this.name = 'RepairOperationalNoteAuditIntegrityError';
   }
 }
 

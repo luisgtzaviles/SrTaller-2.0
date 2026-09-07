@@ -42,6 +42,8 @@
       "AuthenticationUserReader",
       "AuthenticationUserRecord",
       "AuthenticationUserScope",
+      "USER_PRODUCT_RUNTIME",
+      "UserProductRuntime",
       "UsersModuleContract"
     ]
   },
@@ -183,6 +185,12 @@
           {
             "token": "AUTHENTICATION_USER_READER",
             "contract": "AuthenticationUserReader",
+            "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "USER_PRODUCT_RUNTIME",
+            "contract": "UserProductRuntime",
             "consumerImportSpecifier": "../users/index.js",
             "producerImportSpecifier": "./index.js"
           }
@@ -361,6 +369,15 @@
   "httpSurfacePolicy": {
     "allowedModuleLayer": "presentation",
     "controllers": {
+      "src/modules/access/presentation/access-administration.controller.ts": {
+        "owner": "access",
+        "className": "AccessAdministrationController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/access-administration.controller.js"
+        }
+      },
       "src/modules/access/presentation/access-session.controller.ts": {
         "owner": "access",
         "className": "AccessSessionController",
@@ -433,7 +450,9 @@
       "src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts",
       "src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts",
       "src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts",
-      "src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts"
+      "src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts",
+      "src/infrastructure/database/migrations/20260907220000_repairs_create_business_audit_events.ts",
+      "src/infrastructure/database/migrations/20260907230000_access_add_local_administration_capabilities.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -509,6 +528,29 @@
             "access_sessions_invalidate_role_assignment",
             "access_sessions_validate_admission"
           ]
+        },
+        "src/infrastructure/database/migrations/20260907220000_repairs_create_business_audit_events.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_business_audit_events",
+            "repair_timeline_entries",
+            "repairs"
+          ],
+          "functions": [
+            "repairs_reject_business_audit_event_mutation"
+          ],
+          "triggers": [
+            "repair_business_audit_events_reject_delete",
+            "repair_business_audit_events_reject_update"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260907230000_access_add_local_administration_capabilities.ts": {
+          "owner": "access",
+          "tables": [
+            "access_capabilities"
+          ],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -632,7 +674,10 @@
           "NewRepairLocation",
           "RepairLocationMovementTable",
           "RepairLocationMovementRow",
-          "NewRepairLocationMovement"
+          "NewRepairLocationMovement",
+          "RepairBusinessAuditEventTable",
+          "RepairBusinessAuditEventRow",
+          "NewRepairBusinessAuditEvent"
         ],
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
@@ -658,6 +703,7 @@
           "src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts",
           "src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts",
           "src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts",
+          "src/infrastructure/database/migrations/20260907220000_repairs_create_business_audit_events.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -966,6 +1012,10 @@
         "kind": "table"
       },
       "repair_timeline_entries": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_business_audit_events": {
         "owner": "repairs",
         "kind": "table"
       },
@@ -1286,14 +1336,20 @@
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
     "src/modules/access/application/access-input.ts",
+    "src/modules/access/application/access-administration-operations.ts",
     "src/modules/access/application/pin-input.ts",
     "src/modules/access/application/ports/access-repository.port.ts",
+    "src/modules/access/application/ports/local-pin-only-credential-resolver.port.ts",
     "src/modules/access/application/ports/operational-session-repository.port.ts",
     "src/modules/access/application/ports/pin-credential-repository.port.ts",
     "src/modules/access/application/ports/pin-secret-hasher.port.ts",
     "src/modules/access/application/ports/session-token.port.ts",
     "src/modules/access/application/use-cases/authenticate-pin.use-case.ts",
+    "src/modules/access/application/use-cases/authenticate-local-pin-only.use-case.ts",
     "src/modules/access/application/use-cases/assign-role.use-case.ts",
+    "src/modules/access/application/use-cases/create-access-role.use-case.ts",
+    "src/modules/access/application/use-cases/replace-access-role-capabilities.use-case.ts",
+    "src/modules/access/application/use-cases/replace-pin-credential.use-case.ts",
     "src/modules/access/application/use-cases/list-access-matrix.use-case.ts",
     "src/modules/access/application/use-cases/list-applicable-users.use-case.ts",
     "src/modules/access/application/use-cases/operational-session.use-cases.ts",
@@ -1305,12 +1361,14 @@
     "src/modules/access/domain/pin-credential.ts",
     "src/modules/access/domain/role-assignment.ts",
     "src/modules/access/domain/role.ts",
+    "src/modules/access/infrastructure/development/local-pin-only-bindings.ts",
         "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
     "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
     "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
     "src/modules/access/infrastructure/security/node-argon2-pin-hasher.ts",
     "src/modules/access/infrastructure/security/node-session-token.ts",
     "src/modules/access/presentation/access-session-cookie.ts",
+    "src/modules/access/presentation/access-administration.controller.ts",
     "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/stations/index.ts",
@@ -1357,8 +1415,10 @@
     ,"src/modules/users/application/user-input.ts"
     ,"src/modules/users/application/use-cases/get-user.use-case.ts"
     ,"src/modules/users/application/use-cases/list-users.use-case.ts"
+    ,"src/modules/users/application/use-cases/create-user.use-case.ts"
     ,"src/modules/users/application/use-cases/provision-first-user.use-case.ts"
     ,"src/modules/users/application/use-cases/transition-user-status.use-case.ts"
+    ,"src/modules/users/application/use-cases/update-user.use-case.ts"
     ,"src/modules/users/domain/user.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
