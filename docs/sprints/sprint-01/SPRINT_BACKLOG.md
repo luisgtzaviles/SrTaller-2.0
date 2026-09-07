@@ -5,7 +5,7 @@
 - **Estado:** Closed; PBI-033 `Done`.
 - **PBI actual:** NONE.
 - **WIP:** 0/1 al cierre.
-- **Handoff:** SPRINT-02 activo; PBI-025 Done candidate bajo sus propios gates.
+- **Handoff:** SPRINT-02 activo; PBI-025 Done y PBI-034 In progress.
 
 ## Gate externo de activación
 
@@ -27,7 +27,7 @@
 
 | Orden | PBI | Estado | Condición de entrada |
 |---:|---|---|---|
-| 1 | [PBI-025](../../backlog/pbis/PBI-025.md) | Done candidate en SPRINT-02 | Alcance y remediación integrados; cierre documental pendiente |
+| 1 | [PBI-025](../../backlog/pbis/PBI-025.md) | Done en SPRINT-02 | Cierre PR #32 y CI exacto de main GREEN |
 
 ## Bloqueos
 

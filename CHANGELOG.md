@@ -12,6 +12,13 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Iniciado PBI-034 Operational Session como único PBI actual de SPRINT-02,
+  con tamaño `Large`, riesgo `Critical` preservado, threat model, DoR `PASS`,
+  Owner Start Authorization y DEC-005 Option A dirigida autorizada. PBI-025
+  quedó `Done` mediante PR #32, merge
+  `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e` y CI exacto `34124746317`
+  GREEN. No autoriza PBI-026, release ni deploy.
+
 - Preparado el cierre canónico candidato de PBI-025: PR #30 funcional
   `328bdf541be88b21a2e7dbea28f4a2a6f32f6986`, CI `34094803024`, PR #31
   remediación `a51ddcca13cfc43fccb77378643b6874dfb772da`, CI `34100056690`

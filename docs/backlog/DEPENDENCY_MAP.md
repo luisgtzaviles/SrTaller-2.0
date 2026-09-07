@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `a51ddcca13cfc43fccb77378643b6874dfb772da`; CI `34100056690` GREEN.
+  `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`; CI `34124746317` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -18,11 +18,11 @@ flowchart TD
     P29 --> P24[PBI-024 Trusted Station Runtime Context<br/>Done]
     P24 --> P32[PBI-032 User Directory<br/>Done]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>Done]
-    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=0/1]
-    S2 --> P25[PBI-025 PIN Credential<br/>Done candidate / closure]
+    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=1/1]
+    S2 --> P25[PBI-025 PIN Credential<br/>Done]
     P24 --> P25
     P29 --> P25
-    P25 --> P34[PBI-034 Operational Session]
+    P25 --> P34[PBI-034 Operational Session<br/>In progress]
     P34 --> P26[PBI-026 Contextual Authorization]
     P33 --> P26
     P26 --> P28[PBI-028 Minimum Business Audit]
@@ -67,7 +67,7 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; no existe PBI actual y WIP=`0/1`.
+- Sprint 02: `Active`; PBI-034 es actual y WIP=`1/1`.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -79,10 +79,12 @@ flowchart TD
 - PBI-033: `Done`; cierre PR #29 merge
   `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` y CI post-cierre
   `34084930812` GREEN; `Released: NO`. G2 está `PASS`.
-- PBI-025: `Done candidate`; alcance funcional y remediación integrados,
+- PBI-025: `Done`; alcance funcional y remediación integrados,
   riesgo `Critical` sin downgrade, DoR `PASS`, ratificación Owner acotada
-  para PR #30 y Owner Acceptance condicional APPROVED. Cierre pendiente.
-- PBI-034: seleccionado, no iniciado; exige PBI-025 `Done`.
+  para PR #30 y Owner Acceptance APPROVED; cierre PR #32 merge
+  `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`, CI `34124746317` GREEN.
+- PBI-034: `In progress`; threat model/DoR PASS, Critical/Large y Owner Start
+  vigente. PBI-026 permanece no iniciado.
 
 ## Stage 2
 
@@ -92,5 +94,5 @@ diferidos.
 
 ## Próxima revisión
 
-Ante Owner merge review y CI exacto de main del cierre, o si cambia una
-dependencia aprobada.
+Ante focused Critical-risk review de PBI-034, o si cambia una dependencia
+aprobada.

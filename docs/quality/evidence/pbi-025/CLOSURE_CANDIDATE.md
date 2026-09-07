@@ -10,6 +10,15 @@ AUTHORIZATION.**
 - Current PBI: NONE; WIP `0/1`.
 - Next PBI candidate: PBI-034 — Operational Session; seleccionado, no iniciado.
 
+## Resultado post-merge
+
+- Closure PR: #32.
+- Merge: `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`.
+- Authoritative main CI: `34124746317`, run-1/run-2/comparison GREEN en
+  attempt 1.
+- Estado efectivo: `Done`; `Released: NO`.
+- PBI-034 inició después del cierre con DoR y Owner Start propios.
+
 ## Evidencia material
 
 | Predicado | Evidencia |
