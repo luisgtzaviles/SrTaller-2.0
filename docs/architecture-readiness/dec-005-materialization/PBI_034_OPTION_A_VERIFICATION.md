@@ -25,8 +25,9 @@ La autoridad Owner para PBI-034 permite Option A sólo como composición runtime
 dirigida sobre aristas existentes y contratos públicos. No concede una
 excepción general a DEC-005, no transfiere ownership y no autoriza efectos de
 negocio. La autorización contextual deny-by-default pertenece a PBI-026, que
-ahora está `In progress` con DoR y Owner Start propios; quedó fuera del alcance
-de la autorización y verificación histórica de PBI-034.
+en ese corte estaba `In progress` con DoR y Owner Start propios; quedó fuera
+del alcance de la autorización y verificación histórica de PBI-034. Su estado
+vigente se conserva en el expediente PBI-026 separado.
 
 ## Registro materializado
 

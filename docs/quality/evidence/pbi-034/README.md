@@ -3,7 +3,7 @@
 ## Estado
 
 - **Estado:** Done; cierre documental integrado y CI exacto GREEN.
-- **PBI actual / WIP:** PBI-026 / `1/1`.
+- **PBI actual / WIP:** NONE / `0/1` durante el cierre PBI-026.
 - **Risk / size:** Critical / Large.
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
 - **Threat model:** [complete](./THREAT_MODEL.md).
@@ -180,5 +180,5 @@ retrofit, production secrets, remote infrastructure, release or deploy.
 
 ## Siguiente gate
 
-PBI-034 está `Done` y G3 `PASS` sin closure-of-closure. PBI-026 está `In
-progress`; PBI-028 permanece no iniciado.
+PBI-034 está `Done` y G3 `PASS` sin closure-of-closure. PBI-026 queda
+`Done candidate`, G4 `PASS candidate`; PBI-028 está seleccionado y no iniciado.

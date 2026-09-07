@@ -9,7 +9,8 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
 [SPRINT-02](sprint-02/SPRINT_GOAL.md) `Active`.
 **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization;
-PBI-025/PBI-034 están `Done`; PBI-026 está `In progress` y WIP es `1/1`.
+PBI-025/PBI-034 están `Done`; PBI-026 queda `Done candidate`, Current PBI es
+`NONE` y WIP es `0/1`.
 
 ## Reglas propuestas
 
@@ -51,8 +52,8 @@ Los cinco PBIs están `Done` y ninguno está `Released`.
 
 SPRINT-02 ejecuta Operational Authentication & Authorization con WIP=1.
 PBI-025/PBI-034 están `Done`; cierre PR #34 y CI exacto de main dejan G3
-`PASS`. PBI-026 está `In progress` como PBI actual y PBI-028 continúa
-candidato no iniciado.
+`PASS`. PBI-026 queda `Done candidate` y G4 `PASS candidate`; PBI-028 está
+seleccionado y no iniciado.
 
 - [Objetivo](sprint-02/SPRINT_GOAL.md)
 - [Backlog](sprint-02/SPRINT_BACKLOG.md)
@@ -62,4 +63,4 @@ candidato no iniciado.
 
 ## Próxima revisión
 
-Ante focused Critical-risk review del candidato PBI-026.
+Ante el merge autorizado y CI exacto del cierre PBI-026.

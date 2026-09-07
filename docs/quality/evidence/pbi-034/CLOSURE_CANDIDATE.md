@@ -18,7 +18,8 @@ PR #34 integró este candidato como
 `54ddc251cda8ec7465b7913786c647f8d3ccbeac`; CI exacto de `main`
 `34153470560` quedó GREEN. Conforme a la semántica post-merge, PBI-034 está
 `Done`, G3 `PASS` y no se requiere closure-of-closure. El puntero vigente es
-PBI-026 `In progress`, WIP `1/1`; PBI-028 permanece no iniciado.
+Current PBI `NONE`, WIP `0/1`; PBI-026 queda `Done candidate` y PBI-028 está
+seleccionado, no iniciado.
 
 ## Predicados materiales
 

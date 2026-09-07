@@ -82,9 +82,9 @@ documento no autoriza por sí solo commit, push, merge, deploy ni release.
   #3 sólo puede usarse como fuente de recuperación selectiva; no conserva
   autorización ni se integra completa.
 - PBI-030 está `Done`; Sprint 01 está `Closed`. SPRINT-02 está `Active` con
-  PBI-026 Contextual Authorization como único PBI actual, WIP `1/1`; su
-  candidato local permanece `In progress` y no integrado. PBI-028 es el
-  siguiente candidato y no ha iniciado.
+  PBI-025/PBI-034 `Done`, PBI-026 Contextual Authorization `Done candidate` y
+  G4 `PASS candidate`; Current PBI es `NONE`, WIP `0/1`. PBI-028 está
+  seleccionado como siguiente candidato y no ha iniciado.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
 - `DEC063-C02`: materializar clasificación de riesgo.
 - `DEC063-C08`: materializar waivers y excepciones.

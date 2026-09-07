@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `54ddc251cda8ec7465b7913786c647f8d3ccbeac`; CI `34153470560` GREEN.
+  `4db5d9384d13c200eb2031dceb32dd89efcca64d`; CI `34158203438` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -18,12 +18,12 @@ flowchart TD
     P29 --> P24[PBI-024 Trusted Station Runtime Context<br/>Done]
     P24 --> P32[PBI-032 User Directory<br/>Done]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>Done]
-    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=1/1]
+    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=0/1]
     S2 --> P25[PBI-025 PIN Credential<br/>Done]
     P24 --> P25
     P29 --> P25
     P25 --> P34[PBI-034 Operational Session<br/>Done]
-    P34 --> P26[PBI-026 Contextual Authorization<br/>In progress]
+    P34 --> P26[PBI-026 Contextual Authorization<br/>Done candidate]
     P33 --> P26
     P26 --> P28[PBI-028 Minimum Business Audit]
     P27 --> P28
@@ -67,7 +67,7 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; PBI-026 es PBI actual y WIP=`1/1`.
+- Sprint 02: `Active`; Current PBI `NONE` y WIP=`0/1`.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -85,8 +85,11 @@ flowchart TD
   `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`, CI `34124746317` GREEN.
 - PBI-034: `Done`; cierre PR #34 merge
   `54ddc251cda8ec7465b7913786c647f8d3ccbeac` y CI post-cierre
-  `34153470560` GREEN. G3 es `PASS`; PBI-026 está `In progress` y PBI-028 no
-  ha iniciado.
+  `34153470560` GREEN. G3 es `PASS`.
+- PBI-026: `Done candidate`; candidate/review, PR #35 merge funcional
+  `4db5d9384d13c200eb2031dceb32dd89efcca64d`, exact-main CI `34158203438` y
+  Owner Acceptance completos. G4 es `PASS candidate`; PBI-028 está
+  seleccionado y no ha iniciado.
 
 ## Stage 2
 
@@ -96,4 +99,4 @@ diferidos.
 
 ## Próxima revisión
 
-Al completar el candidato PBI-026, o si cambia una dependencia aprobada.
+Al integrar el cierre PBI-026, o si cambia una dependencia aprobada.

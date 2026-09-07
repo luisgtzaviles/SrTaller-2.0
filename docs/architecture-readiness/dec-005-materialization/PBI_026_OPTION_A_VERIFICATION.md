@@ -5,12 +5,14 @@
 - **Alcance:** enforcement arquitectónico de la composición dirigida
   `repairs->access` para Contextual Authorization.
 - **Policy:** `architecture/dec-005-policy.json`, versión `5`.
-- **Resultado local:** la arista, el binding público y los archivos productivos
+- **Resultado:** la arista, el binding público y los archivos productivos
   están registrados de forma exacta; la suite arquitectónica aplica D5-R004,
   D5-R005, D5-R006, D5-R007, D5-R014, D5-R016 y D5-R024–D5-R027 sin
-  excepciones nuevas.
-- **Límite:** esta verificación no equivale a focused review, Owner Acceptance,
-  merge, CI de `main`, cierre de PBI-026, release o deploy.
+  excepciones nuevas. Candidate y exact-main CI están GREEN.
+- **Estado del PBI / G4:** `Done candidate` / `PASS candidate`; cierre
+  documental pendiente.
+- **Límite:** esta verificación arquitectónica no autoriza por sí sola cierre,
+  PBI-028, release o deploy.
 
 ## Arista autorizada
 
@@ -78,7 +80,7 @@ No se deshabilita regla, no se amplía `shared`, no se registra excepción y no
 se modifica el allowlist de autoridad del controller para ocultar la nueva
 composición.
 
-## Validación local requerida
+## Validación exacta
 
 ```text
 pnpm run test:architecture
@@ -95,6 +97,8 @@ git diff --check
 | `pnpm run typecheck` | PASS |
 | `git diff --check` | PASS |
 
-El candidato completo de PBI-026 todavía debe ejecutar su verificación total,
-focused Critical-risk review y CI autoritativo sobre el HEAD exacto conforme al
-workflow vigente.
+El candidate `54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7`, CI `34157187442`,
+focused Critical-risk review PASS `0B/0H/0M/0L`, merge funcional
+`4db5d9384d13c200eb2031dceb32dd89efcca64d` y exact-main CI `34158203438`
+verifican esta composición. El merge/CI del cierre documental siguen siendo el
+gate para `Done` y G4 `PASS` efectivos.

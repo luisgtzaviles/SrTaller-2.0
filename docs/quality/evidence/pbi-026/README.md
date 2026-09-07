@@ -2,23 +2,31 @@
 
 ## Estado
 
-- **Estado:** In progress; candidato local de integración materializado, todavía
-  no revisado ni integrado.
-- **PBI actual / WIP:** PBI-026 / `1/1`.
+- **Estado:** Done candidate; alcance funcional integrado, CI exacto GREEN,
+  focused review PASS y cierre documental pendiente.
+- **PBI actual / WIP:** NONE / `0/1`.
 - **Risk / size:** Critical / Large.
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
 - **Threat model:** [complete](./THREAT_MODEL.md).
 - **Integration candidate:** [artefactos, matriz y verificación
   local](./INTEGRATION_CANDIDATE.md).
+- **Closure candidate:** [evidencia de cierre](./CLOSURE_CANDIDATE.md).
 - **Owner Start Authorization:** `Identity Master Goal` y decisión Owner de
   reanudación vigentes para este slice exacto.
 - **Released / deployed:** NO / NO.
 
 ## Baseline
 
-- `main`: `54ddc251cda8ec7465b7913786c647f8d3ccbeac`.
-- Cierre PBI-034: PR #34, merge exacto anterior.
-- CI autoritativo exact-main: run `34153470560`, run-1/run-2/comparison GREEN.
+- Candidate: `54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7`.
+- Candidate CI: run `34157187442`, run-1/run-2/comparison GREEN.
+- Focused Critical-risk review: PASS; `0` BLOCKER, `0` HIGH, `0` MEDIUM y `0`
+  LOW.
+- PR funcional: #35; merge ordinario
+  `4db5d9384d13c200eb2031dceb32dd89efcca64d` el
+  `2026-09-07T20:07:36Z`.
+- CI autoritativo exact-main: run `34158203438`, run-1/run-2/comparison GREEN.
+- Owner Acceptance condicional: `APPROVED` al satisfacerse los predicados
+  materiales sobre el merge y CI exactos.
 - PBI-034: `Done`; G3: `PASS`.
 
 ## Candidate scope
@@ -45,7 +53,7 @@
 | DEC-005 Option A | policy/checker/mutations | PASS local — policy v5; `307/307` |
 | Login/reload/logout/switch projection | UI/local runtime | PASS contractual; login/logout/direct route PASS en runtime |
 | Light/Dark/responsive/focus | local visual validation | PASS — 390/768/1280 px |
-| Two-run reproducibility | CI run-1/run-2/comparison | Pending; no CI run claimed |
+| Two-run reproducibility | CI run-1/run-2/comparison | PASS — candidate `34157187442`; exact-main `34158203438` |
 
 Los estados anteriores distinguen artefactos existentes de ejecución exitosa.
 El resultado reproducible de cada comando vive en
@@ -63,8 +71,8 @@ configuración externa, UI foundation y exclusión del catálogo productivo
 quedaron GREEN. Enlaces relativos (`586` archivos) y `git diff --check`
 también pasaron. La validación visual/runtime local pasó en Light/Dark y
 390/768/1280 px: login, Repairs, Detail, logout y acceso directo protegido;
-New Repair y writes D5/D6 permanecieron sin affordances. CI exacto sigue
-pendiente.
+New Repair y writes D5/D6 permanecieron sin affordances. Candidate y exact-main
+CI quedaron GREEN.
 
 ## Boundaries
 
@@ -72,17 +80,20 @@ No actor/audit/correlation PBI-028, capability catalog expansion, ABAC,
 reinforced authorization, administration productiva, remote infrastructure,
 release or deploy.
 
-## Gates pendientes
+## Estado de cierre
 
-- SHA/commit lógico y Draft PR exactos;
-- CI candidate run-1/run-2/comparison GREEN;
-- focused Critical-risk review y Owner Review.
+- DoD material: PASS.
+- Focused Critical-risk review: PASS, sin findings abiertos.
+- Merge funcional y CI exacto de `main`: PASS.
+- Owner Acceptance condicional: APPROVED.
+- Cierre documental: este candidato; merge y CI post-cierre pendientes.
 
-G4 permanece `Pending`; PBI-026 no está `Done` ni `Released`. PBI-028 sigue
-como candidato no iniciado y no obtiene autoridad por este expediente.
+PBI-026 queda `Done candidate`, G4 AUTHORIZATION `PASS candidate`, Current PBI
+`NONE` y WIP `0/1`. PBI-028 queda seleccionado como siguiente candidato, no
+iniciado, y no obtiene autoridad de implementación por este expediente.
 
 ## Próxima revisión
 
-Actualizar la matriz únicamente con resultados ejecutados sobre el mismo
-candidato exacto. El siguiente gate es focused Critical-risk review y Owner
-Review; no merge, cierre, release, deploy ni PBI-028 por inferencia.
+Integrar este cierre sólo mediante merge autorizado y exigir CI GREEN sobre su
+SHA exacto de `main`. Esa conjunción vuelve efectivos PBI-026 `Done` y G4
+`PASS` sin closure-of-closure; no autoriza release, deploy ni PBI-028.

@@ -25,9 +25,10 @@ D6.1 y D6.2. Trusted Station Context, User Directory y
 Roles/Capabilities/Assignments están integrados y cerrados canónicamente. Los
 writes integrados de Repairs aún usan actor sintético; PBI-034 atribuye una
 Session a un User visible, pero no autoriza ni retrofitea por sí solo efectos de
-negocio. PBI-025 y PBI-034 están `Done`; PBI-026 Contextual Authorization está
-`In progress` como único PBI actual de SPRINT-02, con WIP `1/1`. Su candidato
-local no está integrado y PBI-028 permanece no iniciado.
+negocio. PBI-025 y PBI-034 están `Done`; PBI-026 Contextual Authorization tiene
+alcance funcional integrado y queda `Done candidate` / G4 `PASS candidate`
+durante su cierre documental. No existe PBI actual en SPRINT-02, WIP es `0/1`
+y PBI-028 está seleccionado sin iniciar.
 
 ## Jerarquía de autoridad documental
 
@@ -101,11 +102,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34153470560` on `54ddc251cda8ec7465b7913786c647f8d3ccbeac` |
+| Authoritative CI at audited HEAD | Green: run `34158203438` on `4db5d9384d13c200eb2031dceb32dd89efcca64d` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `1/1` |
-| Current / next PBI | Current: PBI-026 In progress; next: PBI-028 not started |
-| Current blocking gate | Candidate PBI-026 + focused Critical-risk review + exact-head CI GREEN |
+| Sprint | SPRINT-02 `Active`; WIP `0/1` |
+| Current / next PBI | Current: NONE; next: PBI-028 selected, not started |
+| Current blocking gate | Authorized PBI-026 closure merge + exact-main CI GREEN; PBI-028 retains its own readiness/Owner Start |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -126,7 +127,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory, Roles/Capabilities/Assignments, PIN y Session están integrados; contextual authorization aún no |
+| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory, Roles/Capabilities/Assignments, PIN, Session y contextual authorization están integrados; business audit/real actor aún no |
 
 ## Current, planned and required before Production
 
