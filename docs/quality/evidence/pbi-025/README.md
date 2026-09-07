@@ -3,7 +3,7 @@
 ## Estado
 
 - **Estado:** `Done`; [canonical closure](./CLOSURE_CANDIDATE.md) integrated.
-- **PBI:** PBI-025; current PBI PBI-034; WIP 1/1.
+- **PBI:** PBI-025; current PBI NONE; WIP 0/1; PBI-034 Done candidate.
 - **Risk / size:** Critical / Large.
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
 - **Threat model:** [complete](./THREAT_MODEL.md).

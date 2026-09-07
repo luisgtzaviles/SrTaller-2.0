@@ -67,5 +67,4 @@ bindings. Cualquier otra composición interna falla cerrada.
 
 La inspección acotada de estas dos aristas para PBI-034 se registra en
 [PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md); checker,
-fixtures y mutaciones están verdes localmente, mientras SHA/CI exactos del
-candidato permanecen pendientes.
+fixtures y mutaciones, candidate CI y exact-main CI están verdes.

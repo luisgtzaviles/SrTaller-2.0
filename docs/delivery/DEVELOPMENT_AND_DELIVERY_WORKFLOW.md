@@ -25,9 +25,8 @@ D6.1 y D6.2. Trusted Station Context, User Directory y
 Roles/Capabilities/Assignments están integrados y cerrados canónicamente. Los
 writes integrados de Repairs aún usan actor sintético; PBI-034 atribuye una
 Session a un User visible, pero todavía no autoriza ni retrofitea efectos de
-negocio. PBI-025 está `Done`; Operational Session se ejecuta mediante PBI-034
-como único PBI actual `In review`, candidato no integrado ni `Done`, con threat
-model/DoR PASS, Owner Start vigente y WIP 1/1.
+negocio. PBI-025 está `Done`; PBI-034 Operational Session está integrado y en
+`Done candidate`, sin PBI actual y con WIP `0/1`.
 
 ## Jerarquía de autoridad documental
 
@@ -101,11 +100,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34124746317` on `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e` |
+| Authoritative CI at audited HEAD | Green: run `34150632738` on `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `1/1` |
-| Current / next PBI | Current: PBI-034 In review, candidate not integrated/Done; next: PBI-026 not started |
-| Current blocking gate | PBI-034 requiere candidate completo, focused Critical-risk review y CI exacto GREEN |
+| Sprint | SPRINT-02 `Active`; WIP `0/1` |
+| Current / next PBI | Current: NONE; next: PBI-026 selected, not started |
+| Current blocking gate | Merge autorizado del cierre PBI-034 + exact-main CI GREEN |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -126,7 +125,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory, Roles/Capabilities/Assignments y PIN están integrados; PBI-025 está `Done`, PBI-034 está `In review` como candidato no integrado ni `Done`, y aún no hay Session/authorization integrados |
+| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory, Roles/Capabilities/Assignments, PIN y Session están integrados; contextual authorization aún no |
 
 ## Current, planned and required before Production
 

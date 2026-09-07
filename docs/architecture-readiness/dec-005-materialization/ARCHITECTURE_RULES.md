@@ -80,8 +80,8 @@ D5-R007, D5-R014, D5-R016 y D5-R025–R027 siguen aplicando de forma acumulativa
 Option A no permite internals, repositories, ciclos, `forwardRef`, `ModuleRef`
 ni módulos globales. `AppModule` conserva en D5-R023 su registro exterior exacto.
 
-La aplicación de estas invariantes al candidato PBI-034 y los resultados aún
-pendientes sobre su SHA final se separan en
+La aplicación de estas invariantes a PBI-034 y sus resultados exactos se
+separan en
 [PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md).
 
 ## Interpretación vigente de la superficie HTTP

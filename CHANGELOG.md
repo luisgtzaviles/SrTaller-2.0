@@ -4,13 +4,23 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ## [Unreleased]
 
+### Governance
+
+- Preparado el cierre canónico de PBI-034 después de candidate
+  `cdf2805344a5302844a8f7f6f042cb39fbe1515c`, CI `34149620560` GREEN,
+  focused review PASS (`0B/0H/0M/1L`), PR #33 merge
+  `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7` y exact-main CI
+  `34150632738` GREEN. Owner Acceptance: `APPROVED`; `Released: NO`.
+  PBI-034 queda `Done candidate`, G3 `PASS candidate`, Current PBI `NONE`,
+  WIP `0/1` y PBI-026 seleccionado sin iniciar.
+
 ### Desarrollo local
 
-- Extendido el candidato local con bootstrap de Station restringido a
+- Integrado PBI-034 con bootstrap de Station restringido a
   loopback/same-origin, Session Access-owned, login/logout/cambio de User y
   gate del Application Shell. Full verify, PostgreSQL 18.4 material, lifecycle
-  HTTP y validación visual responsive Light/Dark pasan localmente; SHA/CI
-  exactos del candidato permanecen pendientes. No cambia Preview ni Dokploy.
+  HTTP y validación visual responsive Light/Dark; candidate CI y exact-main CI
+  quedaron GREEN. No cambia Preview ni Dokploy.
 
 - Materializado el contrato de desarrollo local con PostgreSQL 18.4 aislado,
   roles `migration`/`application`, migración real, seed sintético determinista,

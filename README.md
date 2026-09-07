@@ -12,28 +12,25 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 - **Frontend:** React `19.2.8` + Vite `8.2.0`; Design System y Application
   Shell V1 integrados en `main`.
 - **Backend:** NestJS `11.1.28` sobre Express; health y Repair Workstream local
-  integrado con límites tenant/branch. El candidato PBI-034 agrega Operational
-  Session HTTP server-side, todavía sin integrarse a `main`.
+  integrado con límites tenant/branch y Operational Session HTTP server-side.
 - **Persistencia:** PostgreSQL `18.4` local; Kysely + `pg`; tenants, sucursales,
   Trusted Station Context, User Directory, Roles/Capabilities/Assignments,
   credencial PIN y persistencia append-only de los slices integrados de
-  Repairs. Las tablas de Session existen sólo en el candidato PBI-034.
+  Repairs y Session.
 - **Preview:** <https://preview.srtaller.dev>, desplegado manualmente desde
   `main` mediante el `Dockerfile` en Dokploy.
 - **Producto funcional:** Worklist, Repair Detail, notas operativas, asignación
-  de técnico, inicio de diagnóstico y movimiento interno están integrados en
-  contexto local sintético; el candidato local agrega login, reload, logout y
-  cambio de User visibles, pero no constituye todavía un flujo productivo E2E.
+  de técnico, inicio de diagnóstico, movimiento interno y login/logout/switch
+  están integrados en contexto local; todavía no existe un flujo productivo E2E.
 - **CI:** la baseline auditada
-  `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e` pasó el run autoritativo
-  `34124746317` con run-1, run-2 y comparison verdes. No es CI del candidato
-  PBI-034.
+  `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7` pasó el run autoritativo
+  `34150632738` con run-1, run-2 y comparison verdes.
 - **PBI-030:** `Done`; implementación integrada, Owner Acceptance
   aprobada y riesgo AT/cross-browser residual LOW aceptado. `Released: NO`.
 - **Roadmap:** Sprint 01 está `Closed`; PBI-033 Roles, Assignments and
   Capability Catalog está `Done` y G2 `PASS`. SPRINT-02 está `Active` con
-  PBI-025 `Done` y PBI-034 como PBI actual `In review`, candidato no integrado;
-  WIP `1/1`. G3 permanece `Pending` y PBI-026 no ha iniciado.
+  PBI-025 `Done` y PBI-034 `Done candidate`; no hay PBI actual y WIP es `0/1`.
+  G3 es `PASS candidate`; PBI-026 está seleccionado y no iniciado.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).

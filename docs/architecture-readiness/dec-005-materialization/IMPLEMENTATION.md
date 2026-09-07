@@ -45,11 +45,10 @@ controllers y artefactos de persistencia posteriores se registran en sus
 inventarios existentes; el registro no transfiere ownership ni otorga
 autoridad funcional.
 
-La materialización de PBI-034, sus invariantes y la evidencia que debe fijarse
-sobre el SHA final se detallan en
+La materialización de PBI-034, sus invariantes y la evidencia exacta se
+detallan en
 [PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md). Ese
-expediente permanece `Pending` y no reescribe los resultados históricos de
-PBI-022.
+expediente está verificado y no reescribe los resultados históricos de PBI-022.
 
 ## Autoridad y baseline
 
