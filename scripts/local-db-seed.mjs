@@ -316,6 +316,7 @@ process.stdout.write(`${JSON.stringify({
   dataClassification: 'synthetic-development-only',
   tenantCount: 1,
   branchCount: rows.branches.length,
+  userCount: localUserRows().length,
   repairCount: localRepairRows().length,
   repairIntakeCount: localRepairIntakeRows().length,
   repairTimelineEntryCount: localRepairTimelineRows().length,

@@ -25,7 +25,11 @@ test('PBI-032 keeps identity tenant-scoped and lifecycle fail-closed', async () 
   assert.doesNotMatch(`${repository}\n${module}`, /@Controller|@Get|@Post|@Patch|@Delete/u);
   assert.doesNotMatch(repository, /deleteFrom\('users'\)/u);
   assert.match(provisioning, /ProvisionFirstUserUseCase/u);
-  assert.match(provisioning, /timingSafeEqual/u);
+  assert.match(provisioning, /assertLocalUserBootstrapAuthority/u);
   assert.doesNotMatch(provisioning, /\bPool\b|pool\.query|insert into users/iu);
+  assert.ok(
+    provisioning.indexOf('assertLocalUserBootstrapAuthority(') <
+      provisioning.indexOf("await import("),
+  );
   assert.match(packageManifest.scripts['users:provision-first'], /pnpm run build/u);
 });

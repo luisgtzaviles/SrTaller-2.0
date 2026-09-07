@@ -41,3 +41,8 @@
 - Focused application, architecture, contract, typecheck and build checks:
   PASS. Full `pnpm run verify` and exact-HEAD authoritative CI are final
   candidate gates and remain to be recorded after the current commit.
+- The local bootstrap authority guard is behaviorally verified for valid,
+  missing, incorrect and non-local inputs before persistence can be acquired;
+  the command retains a static ordering assertion for that boundary.
+- Synthetic User fixtures are deterministic, frozen, tenant-scoped and
+  secret-free; local seed evidence reports their bounded count.

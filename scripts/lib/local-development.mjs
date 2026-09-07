@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -185,6 +185,22 @@ export async function ensureLocalEnvironment({ create = true } = {}) {
     await chmod(LOCAL_ENV_FILE, 0o600);
   }
   return Object.freeze({ ...assertLocalTarget(values) });
+}
+
+export function assertLocalUserBootstrapAuthority(values, presentedSecret) {
+  assertLocalTarget(values);
+  const expected = Buffer.from(values.SR_USER_BOOTSTRAP_SECRET, 'utf8');
+  const actual = Buffer.from(
+    typeof presentedSecret === 'string' ? presentedSecret : '',
+    'utf8',
+  );
+  if (
+    expected.length !== actual.length ||
+    !timingSafeEqual(expected, actual)
+  ) {
+    throw new Error('Local user bootstrap authority rejected.');
+  }
+  return values;
 }
 
 export function localStationBootstrapCredential(values) {

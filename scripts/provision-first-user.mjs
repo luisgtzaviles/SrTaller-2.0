@@ -1,6 +1,5 @@
-import { timingSafeEqual } from 'node:crypto';
-
 import {
+  assertLocalUserBootstrapAuthority,
   databaseEnvironment,
   ensureLocalEnvironment,
 } from './lib/local-development.mjs';
@@ -15,14 +14,10 @@ if (!tenantId || !displayName || !clientRequestId) {
 }
 
 const values = await ensureLocalEnvironment({ create: false });
-const expected = Buffer.from(values.SR_USER_BOOTSTRAP_SECRET, 'utf8');
-const actual = Buffer.from(process.env.SR_USER_BOOTSTRAP_SECRET ?? '', 'utf8');
-if (
-  expected.length !== actual.length ||
-  !timingSafeEqual(expected, actual)
-) {
-  throw new Error('First-user provisioning authority rejected.');
-}
+assertLocalUserBootstrapAuthority(
+  values,
+  process.env.SR_USER_BOOTSTRAP_SECRET,
+);
 
 const { parseDatabaseConfig } = await import(
   '../dist/infrastructure/database/database-config.js'
