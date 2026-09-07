@@ -32,6 +32,8 @@ pendientes; no se reutilizan los identificadores de PBI-025.
 - Session Access-owned, una activa por Station;
 - start/resolve/touch/logout/switch con expiración y revocación;
 - bearer opaco en cookie segura y CSRF/origin contract;
+- CAS servidor y coordinación browser por origen para cookies compartidas,
+  tabs concurrentes y orden adversarial de responses;
 - composición DEC-005 dirigida de Access hacia contratos públicos de Stations
   y Users;
 - bootstrap Station sólo local/test;
@@ -58,6 +60,10 @@ no implementa la autorización contextual de PBI-026.
 | Contexto server-side e isolation | application/HTTP/PostgreSQL | PASS local |
 | Bearer/cookies/CSRF/no-store | contract tests + runtime HTTP | PASS local |
 | One active Session + concurrency | PostgreSQL material | PASS local |
+| Cross-tab actor/cookie coherence | Web Locks + invalidation-only BroadcastChannel + CAS | PASS local |
+| Stale response cookie safety | disjoint login CSRF + GET/denied DELETE without authoritative `Set-Cookie` | PASS local |
+| Exact logout | bearer + CSRF close under Station guard | PASS local |
+| Lost-cookie expiry recovery | due-only reap under Station guard | PASS local |
 | Shared-runtime contention/shutdown | bounded scheduler unit tests + same-runtime PostgreSQL | PASS local |
 | Idle/absolute expiry | controlled clock + PostgreSQL | PASS local |
 | Logout/switch/reload | application + UI/local runtime | PASS local |
@@ -69,14 +75,17 @@ no implementa la autorización contextual de PBI-026.
 ## Local verification
 
 - Toolchain: Node.js `24.18.0`, pnpm `11.15.1`, PostgreSQL `18.4`.
-- `pnpm run verify`: PASS; typecheck, build, unit/contracts, structure,
-  architecture, external-configuration, UI foundation and production UI
-  exclusion all green.
+- `pnpm run verify`: PASS después de la remediación; `577` tests, `561` PASS,
+  `16` skips PostgreSQL gobernados y `0` FAIL; typecheck, build,
+  unit/contracts, structure, architecture, external-configuration, UI
+  foundation y production UI exclusion all green.
 - Focused Session/UI/scheduler: PASS; latest-response and mutation-generation
   races, cookie/origin/CSRF/no-store, replacement, expiry, invalidation,
-  backpressure and focus contracts covered.
-- Material PostgreSQL 18.4: 7/7 owner-scoped suites PASS, cleanup PASS and
-  comparison MATCH; material SHA-256
+  backpressure and focus contracts covered; `55/55` en la selección afectada.
+- Arquitectura: `307/307` PASS después de eliminar el raw SQL detectado por
+  D5-R046.
+- Material PostgreSQL 18.4: `7/7` owner-scoped suites PASS en dos runs, cleanup
+  PASS y comparison MATCH; material SHA-256
   `19ff8e60323e62e99e1d64ec1d398cd837778c766521c8b69d7dbc7477e65600`.
 - Fresh guarded local reset/migration/seed: 23 migrations applied, zero
   pending; deterministic synthetic fixtures PASS.
@@ -88,17 +97,20 @@ no implementa la autorización contextual de PBI-026.
   through the local HTTP contract without printing credential values.
 - `git diff --check`: PASS.
 
+Los resultados anteriores corresponden al working tree remediado. Todavía no
+son identidad de candidato ni sustituyen focused review/CI del SHA final.
+
 ## Evidencia pendiente del candidato exacto
 
 | Evidencia | Estado |
 |---|---|
 | SHA final del candidato | Pending |
-| `pnpm run typecheck` | PASS local; repetir sobre SHA final |
-| `pnpm run build` | PASS local; repetir sobre SHA final |
-| `pnpm run test:architecture` | PASS local; repetir sobre SHA final |
+| `pnpm run typecheck` | PASS local |
+| `pnpm run build` | PASS local |
+| `pnpm run test:architecture` | PASS local `307/307` |
 | Suites funcionales y PostgreSQL 18.4 de Session | PASS local; CI exacto pendiente |
 | Validación visual local responsive/focus | PASS local |
-| Focused Critical-risk review | Pending |
+| Focused Critical-risk review | working tree `0 BLOCKER/HIGH/MEDIUM`; SHA final pendiente |
 | PR y candidate CI run-1/run-2/comparison | Pending |
 | Merge autorizado y CI exacto de `main` | Pending |
 | Owner Acceptance y cierre documental | Pending |
@@ -120,6 +132,45 @@ configuración/startup y `smoke:start` contra PostgreSQL 18.4. Requiere nuevo
 commit, focused review y CI autoritativo completo sobre el nuevo HEAD; el run
 fallido permanece como trazabilidad, no como waiver ni señal intermitente.
 
+El siguiente run `34146007196` sobre
+`b622d72da36fe96bdfeab98bc2758db32a36faf5` dejó run-1, run-2 y comparison
+GREEN, pero **queda supersedido como evidencia final**: la focused review del
+SHA exacto detectó riesgos materiales que exigían modificar el candidato. No se
+reutiliza ese GREEN para autorizar el nuevo HEAD.
+
+## Focused review del candidato supersedido
+
+La revisión Critical-risk sobre `b622d72` encontró `0 BLOCKER / 2 HIGH / 3
+MEDIUM / 0 LOW` antes de remediación:
+
+1. actor visible por tab podía divergir de las cookies compartidas durante una
+   mutación concurrente;
+2. logout podía reportarse como exitoso después de agotar una carrera CAS sin
+   demostrar el cierre de la fila activa;
+3. `GET`/DELETE obsoletos podían alterar el par autoritativo de cookies;
+4. `SR_PIN_PEPPER` malformado no se materializaba durante startup;
+5. evidencia/PR declaraban PASS antes de completar la revisión exacta.
+
+La remediación en working tree introduce coordinación origin-wide fail-closed,
+invalidación previa y final sin identidad, CAS explícito, prueba de posesión del
+bearer para switch, logout autenticado y atómico, challenge CSRF disjunto,
+recovery sólo de Sessions materialmente vencidas y validación eager del pepper.
+Una mutación admitida conserva el lock hasta conocer el resultado para evitar
+un commit servidor cuyo `Set-Cookie` se pierda por abandono cliente. Los tests
+adversariales cubren success/error, response ordering, replay, cancelación,
+timeouts pre-admisión y carreras PostgreSQL.
+
+Estos findings quedaron cerrados en el working tree verificado, con BLOCKER
+`0`, HIGH `0` y MEDIUM `0` restante. El dictamen debe fijarse sobre el nuevo
+SHA y su CI autoritativo antes de Owner Review.
+
+Durante esa remediación, el gate ejecutable D5-R046 detectó además un BLOCKER:
+un predicado temporal nuevo había usado raw SQL fuera de una migración y hacía
+fallar la policy y sus mutaciones controladas. Se reemplazó por el expression
+builder tipado de Kysely y un cutoff derivado de
+`OPERATIONAL_SESSION_IDLE_MS`; `pnpm run test:architecture` volvió a pasar
+`307/307` y el full verify local posterior quedó GREEN.
+
 ## Boundaries
 
 No contextual business authorization, business audit, Operational Note
@@ -127,6 +178,6 @@ retrofit, production secrets, remote infrastructure, release or deploy.
 
 ## Siguiente gate
 
-Reconciliar resultados sobre el SHA final, ejecutar focused Critical-risk
-review y, sólo si pasa junto con CI exacto GREEN, entregar a Owner Review. G3
+Fijar el SHA final, confirmar focused Critical-risk review y, sólo si pasa
+junto con CI exacto GREEN, entregar a Owner Review. G3
 permanece `Pending` y PBI-026 no ha iniciado.

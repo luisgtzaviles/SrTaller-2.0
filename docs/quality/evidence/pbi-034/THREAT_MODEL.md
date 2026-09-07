@@ -43,7 +43,14 @@ invalida la Session.
 | Touch infinito | actividad sólo tras todos los predicados; absolute expiry inmutable | material tests |
 | Carrera de login/switch | guard por Station + unique partial active; reemplazo atómico | concurrent tests |
 | Switch fallido cierra actor vigente | autenticar y validar primero; reemplazar sólo dentro del commit exitoso | negative/material tests |
-| Carrera logout/touch | versión/estado atómicos; closed nunca revive | concurrent tests |
+| Switch con bearer obsoleto/forjado | resolver bearer + CSRF contra la Session esperada antes del PIN y repetir CAS bajo guard | HTTP/material negatives |
+| Tabs comparten cookies pero muestran actores distintos | Web Lock exclusivo por origen; invalidación `session-changing` antes de mutar; cada peer oculta actor y reconcilia tras el lock | coordinator/UI adversarial tests |
+| Response obsoleto sobrescribe cookies nuevas | `GET` nunca muta cookies autoritativas; DELETE denegado tampoco; login challenge disjunto | cookie-jar completion-order tests |
+| Pérdida de cookies deja una Session activa huérfana | login reap sólo de filas con deadline idle/absolute ya vencido, bajo guard de Station | PostgreSQL expiry/recovery tests |
+| Carrera logout/touch/create | logout autentica y cierra bearer + CSRF exactos bajo guard; create usa CAS contra la activa; closed nunca revive | concurrent PostgreSQL tests |
+| Configuración PIN inválida deja un listener inútil | `SR_PIN_PEPPER` se materializa durante composición; startup aborta antes de escuchar | startup/configuration tests |
+| Lectura o espera browser bloqueada | límite finito y cancelación antes de admisión; read abortable libera el lock | coordinator deadline tests |
+| Mutación browser abandonada tras commit | una vez adquirido el lock se desarman deadline/cancelación cliente y se espera el outcome/`Set-Cookie` | coordinator mutation tests |
 | Contención del runtime compartido | persistencias concurrentes; transacciones FIFO exclusivas; cola máxima 256 y espera máxima 25s fail-closed; shutdown drena sólo trabajo ya admitido | scheduler unit tests + same-runtime PostgreSQL test |
 | Enumeración | errores genéricos, PIN dummy path heredado y `no-store` | contract/timing-seam tests |
 | Proof reutilizable | `PinAuthenticationProof` se consume una sola vez en proceso y nunca se serializa | unit tests |
@@ -52,14 +59,16 @@ invalida la Session.
 
 ## Cookies, CSRF y cache
 
-- `GET /api/access/session` puede emitir/rotar un nonce CSRF legible sin
-  autenticar al actor.
+- `GET /api/access/session` puede emitir/reutilizar únicamente el challenge
+  `sr_session_login_csrf`, legible, `SameSite=Strict`, `Path` acotado y máximo
+  15 minutos. Nunca crea, rota ni elimina `sr_session` o `sr_session_csrf`.
 - `POST` y `DELETE` exigen coincidencia exacta cookie/header, `Origin`
   same-origin, Fetch Metadata same-origin y content type JSON.
 - No se habilita CORS. Toda respuesta de Session/User usa
   `Cache-Control: no-store`.
-- Logout expira `sr_session` y `sr_session_csrf`; la credencial
-  `sr_station` permanece.
+- Logout exitoso expira `sr_session` y `sr_session_csrf`; una denegación/replay
+  no emite `Set-Cookie` y no puede borrar el par de una Session más nueva. La
+  credencial `sr_station` permanece.
 
 ## Tiempo y lifecycle
 
