@@ -4,9 +4,9 @@
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
 - **Baseline auditada:** `main` en
-  `db6637ee6902b9b0e4a40ba39d7f203cb6889352`; PBI-033 se ejecuta en una rama
-  temporal y no forma parte de la baseline hasta merge autorizado.
-- **CI autoritativo:** run `34074457695`, `SUCCESS`; VC-024 run-1, run-2 y
+  `065b859e3db64f82f033ce75ce5fb33df9b3ade1`; la rama documental de cierre no
+  se convierte en baseline hasta merge autorizado y CI de `main`.
+- **CI autoritativo:** run `34082394514`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -19,23 +19,24 @@ Physical Location pertenecen a `main` y tienen CI verde.
 
 Repairs no está completo ni listo para operación productiva. Trusted Station
 Runtime Context y PBI-032 User Directory and Lifecycle están cerrados
-canónicamente. PBI-033 Roles, Assignments and Capability Catalog es el único
-PBI actual y materializa un candidate local server-only; roles/capabilities no
-pertenecen todavía a `main`, y PIN, Operational Session y contextual
-authorization aún no existen. El roadmap continúa deteniendo nuevas features
-profundas de Repairs para priorizar Identity & Context Foundation.
+canónicamente. PBI-033 Roles, Assignments and Capability Catalog está integrado
+funcionalmente en `main` y permanece `Done candidate` hasta integrar este cierre
+documental y obtener CI autoritativo GREEN sobre ese merge. PIN, Operational
+Session y contextual authorization aún no existen. El roadmap continúa
+deteniendo nuevas features profundas de Repairs y selecciona PBI-025 sin
+iniciarlo.
 
 ## Git y CI
 
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `db6637ee6902b9b0e4a40ba39d7f203cb6889352` |
+| HEAD auditado | `065b859e3db64f82f033ce75ce5fb33df9b3ade1` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `34074457695` SUCCESS |
-| Última integración | PR #27 — cierre canónico de PBI-032 |
+| CI | `34082394514` SUCCESS |
+| Última integración | PR #28 — Roles, Assignments and Capability Catalog |
 
 La rama documental que modifique esta fotografía no se convierte en baseline
 hasta integrarse a `main` con autorización y CI propios.
@@ -56,6 +57,7 @@ hasta integrarse a `main` con autorización y CI propios.
 ### Platform foundation
 
 - Tenants y Branches persistentes.
+- Users, Roles, catálogo de capabilities y assignments tenant/Branch-scoped.
 - Health `/livez` y readiness `/readyz`.
 - Propiedad modular y acceso a persistencia gobernados.
 - Desarrollo local con PostgreSQL, migración y seed sintético.
@@ -81,10 +83,12 @@ hasta integrarse a `main` con autorización y CI propios.
 
 ## Limitaciones vigentes
 
-- El directorio User tenant-scoped está integrado. Roles, capabilities y
-  assignments permanecen como candidate local de PBI-033; `access` todavía no
-  contiene credentials o sessions y no existe superficie HTTP/UI productiva
-  de Users/Roles.
+- El directorio User tenant-scoped y Roles/Capabilities/Assignments están
+  integrados; `access` todavía no contiene credentials o sessions y no existe
+  superficie HTTP/UI productiva de Users/Roles.
+- Los read models de grants son proyecciones, no veredictos finales de
+  autorización. PBI-026 debe intersectarlos con User activo, Station/Branch
+  confiable y sesión antes de permitir un efecto protegido.
 - Trusted Station Runtime Context está `Done` canónico; no incorpora enrollment
   productivo ni administración completa de bindings.
 - `LocalRepairContext` sólo habilita contexto fijo en desarrollo.
@@ -110,11 +114,11 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 
 | Elemento | Estado |
 |---|---|
-| Sprint activo | Sprint 01 |
-| Sprint 01 | Active — PBI-033 `In progress` |
-| PBI actual | PBI-033 — Roles, Assignments and Capability Catalog |
-| Siguiente candidato | NONE durante la ejecución; PBI-025 permanece ordenado, no seleccionado |
-| WIP permitido | Uno; actual `1/1` |
+| Sprint activo | Sprint 01 — closure candidate |
+| Sprint 01 | Active — PBI-033 `Done candidate` en cierre documental |
+| PBI actual | NONE |
+| Siguiente candidato | PBI-025 — seleccionado, no iniciado; Critical / TBD / DoR pendiente |
+| WIP permitido | Uno; actual `0/1` durante el cierre documental |
 
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
@@ -141,10 +145,15 @@ PR #27 integró su cierre como
 quedó GREEN. Conforme a la semántica post-merge, PBI-032 está `Done` canónico
 y `Released: NO`.
 
-PBI-033 pasó DoR con riesgo High, tamaño Large y Owner Start Authorization
-cubierta por el Master Goal. Es el único PBI actual (`1/1`) y permanece
-`In progress`; su código, migraciones y evidencia son candidate local, no
-baseline integrada ni autorización de producto.
+PBI-033 integró el candidate revisado
+`bb5a1efde19171703d0b3ce84567ff14538b32b7` mediante PR #28, merge
+`065b859e3db64f82f033ce75ce5fb33df9b3ade1` a las
+`2026-09-07T04:15:05Z`; CI de candidato `34081637692` y CI exacto de `main`
+`34082394514` quedaron GREEN en run-1, run-2 y comparison. La focused
+high-risk review fue PASS con hallazgos abiertos BLOCKER/HIGH/MEDIUM: 0; la
+Owner Acceptance condicional quedó satisfecha. Permanece `Done candidate`,
+`Released: NO`, hasta integrar el cierre documental y obtener su CI exacto de
+`main`. El límite residual de proyección de grants se conserva como LOW.
 
 ## Identity Foundation reconciliada
 
@@ -170,6 +179,7 @@ baseline integrada ni autorización de producto.
 
 ## Próxima acción
 
-Revalidar el HEAD final exacto del Draft PR #28 después de la reconciliación de
-trazabilidad y concluir focused high-risk review bajo el Master Goal. No
-seleccionar ni iniciar PBI-025, no integrar sin gates y no desplegar.
+Owner merge review del cierre documental candidato de PBI-033. PBI-025 queda
+seleccionado, no iniciado, y requiere threat model, estimación, DoR y
+autorización Owner propios antes de cualquier implementación. No desplegar ni
+declarar `Released` desde este estado.

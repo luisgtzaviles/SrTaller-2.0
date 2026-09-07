@@ -14,20 +14,21 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 - **Backend:** NestJS `11.1.28` sobre Express; health y Repair Workstream local
   integrado con límites tenant/branch.
 - **Persistencia:** PostgreSQL `18.4` local; Kysely + `pg`; tenants, sucursales,
-  Trusted Station Context, User Directory y persistencia append-only de los
-  slices integrados de Repairs.
+  Trusted Station Context, User Directory, Roles/Capabilities/Assignments y
+  persistencia append-only de los slices integrados de Repairs.
 - **Preview:** <https://preview.srtaller.dev>, desplegado manualmente desde
   `main` mediante el `Dockerfile` en Dokploy.
 - **Producto funcional:** Worklist, Repair Detail, notas operativas, asignación
   de técnico, inicio de diagnóstico y movimiento interno están integrados en
   contexto local sintético; no constituyen todavía un flujo productivo E2E.
-- **CI:** la baseline auditada `db6637ee6902b9b0e4a40ba39d7f203cb6889352`
-  pasó el run autoritativo `34074457695` con run-1, run-2 y comparison verdes.
+- **CI:** la baseline auditada `065b859e3db64f82f033ce75ce5fb33df9b3ade1`
+  pasó el run autoritativo `34082394514` con run-1, run-2 y comparison verdes.
 - **PBI-030:** `Done`; implementación integrada, Owner Acceptance
   aprobada y riesgo AT/cross-browser residual LOW aceptado. `Released: NO`.
-- **Roadmap:** Sprint 01 está `Active`; PBI-032 está `Done` y PBI-033 Roles,
-  Assignments and Capability Catalog es el único PBI actual (`In progress`,
-  WIP `1/1`). PBI-025 permanece ordenado, no seleccionado ni iniciado.
+- **Roadmap:** Sprint 01 está `Active — closure candidate`; PBI-033 Roles,
+  Assignments and Capability Catalog está `Done candidate`, sin PBI actual y
+  con WIP `0/1`. PBI-025 queda seleccionado, no iniciado, con riesgo `Critical`,
+  estimación `TBD` y DoR pendiente.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).

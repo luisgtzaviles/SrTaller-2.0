@@ -12,11 +12,20 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Preparado el cierre canónico candidato de PBI-033: candidate funcional
+  `bb5a1efde19171703d0b3ce84567ff14538b32b7`, CI candidato `34081637692`
+  GREEN, focused high-risk review PASS sin hallazgos BLOCKER/HIGH/MEDIUM,
+  merge funcional PR #28 `065b859e3db64f82f033ce75ce5fb33df9b3ade1`,
+  CI exacto de `main` `34082394514` GREEN y Owner Acceptance condicional
+  satisfecha. PBI-033 y G2 quedan `Done candidate` / `PASS candidate`;
+  `Released: NO`. No existe PBI actual; PBI-025 queda seleccionado, no
+  iniciado, con riesgo `Critical`, estimación `TBD` y DoR pendiente.
+
 - Iniciado PBI-033 Roles, Assignments and Capability Catalog bajo DoR PASS,
   riesgo High, tamaño Large y autorización del Identity Master Goal. El
   catálogo se limita a `users.read`, `access_matrix.read`, `repairs.read` y
-  `repairs.add_note`; el candidate conserva WIP `1/1`, sin PIN, Session,
-  enforcement PBI-026, merge, release ni deploy.
+  `repairs.add_note`; durante la ejecución el candidate ocupó WIP `1/1`, sin
+  PIN, Session, enforcement PBI-026, merge, release ni deploy.
 
 - Reconciliado PBI-032 como `Done` efectivo: cierre PR #27 merge
   `db6637ee6902b9b0e4a40ba39d7f203cb6889352` y CI post-cierre
@@ -95,10 +104,11 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Implementación
 
-- En curso el candidate PBI-033: catálogo mínimo de capabilities, roles
-  tenant-scoped, assignments tenant-wide/branch-restricted, read models,
-  commands server-only, migraciones aditivas y fixtures sintéticos. No expone
-  administración HTTP/UI ni concede autorización contextual final.
+- Integrado funcionalmente el candidate PBI-033: catálogo mínimo de
+  capabilities, roles tenant-scoped, assignments
+  tenant-wide/branch-restricted, read models, commands server-only, migraciones
+  aditivas y fixtures sintéticos. No expone administración HTTP/UI ni concede
+  autorización contextual final.
 
 - Materializado el candidato PBI-032 User Directory and Lifecycle: identidad
   tenant-scoped, bootstrap server-only de primer User, lecturas list/get,
@@ -174,8 +184,9 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 ### Estado conocido no resuelto
 
 - El Repair Workstream local está integrado, pero sigue usando contexto y actor
-  sintéticos; no existen aún Users, PIN, Operational Session o Trusted Station
-  Runtime Context productivos.
+  sintéticos. Trusted Station Context, Users y Roles/Capabilities/Assignments
+  están integrados server-side; aún no existen PIN, Operational Session ni
+  contextual authorization productivos.
 - La PR draft histórica de PBI-024 no se integra completa. Sólo puede aportar
   piezas recuperadas selectivamente y revalidadas bajo el nuevo alcance.
 

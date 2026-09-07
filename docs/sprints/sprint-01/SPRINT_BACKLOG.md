@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-033 `In progress`.
-- **PBI actual:** PBI-033 — Roles, Assignments and Capability Catalog.
-- **WIP:** 1/1.
-- **Siguiente candidato:** NONE durante la ejecución; PBI-025 permanece
-  ordenado, no seleccionado.
+- **Estado:** Active — closure candidate; PBI-033 `Done candidate`.
+- **PBI actual:** NONE.
+- **WIP:** 0/1 durante el cierre documental.
+- **Siguiente candidato:** PBI-025 — seleccionado, no iniciado; riesgo
+  `Critical`, estimación `TBD` y DoR pendiente.
 
 ## Gate externo de activación
 
@@ -22,19 +22,20 @@
 | [PBI-029](../../backlog/pbis/PBI-029.md) | Done | Merge funcional `36d93736`; CI main funcional `33974100385` GREEN; riesgo `CRITICAL` aceptado y Owner Acceptance APPROVED; cierre documental merge `41914c787` y CI post-cierre `33988752597` GREEN; `Released: NO`. |
 | [PBI-024](../../backlog/pbis/PBI-024.md) | Done | Cierre canónico integrado; `Released: NO`. |
 | [PBI-032](../../backlog/pbis/PBI-032.md) | Done | Cierre PR #27 merge `db6637ee`; CI post-cierre `34074457695` GREEN; `Released: NO`. |
-| [PBI-033](../../backlog/pbis/PBI-033.md) | In progress | DoR PASS; riesgo High y Size Large autorizados por Master Goal; único PBI actual. |
+| [PBI-033](../../backlog/pbis/PBI-033.md) | Done candidate | Candidate `bb5a1efde19171703d0b3ce84567ff14538b32b7`, CI `34081637692`, focused high-risk review PASS, merge PR #28 `065b859e3db64f82f033ce75ce5fb33df9b3ade1`, CI exacto de `main` `34082394514` y Owner Acceptance condicional PASS; cierre documental pendiente; `Released: NO`. |
 
-## Secuencia posterior, no seleccionada
+## Secuencia posterior, seleccionada y no iniciada
 
 | Orden | PBI | Estado | Condición de entrada |
 |---:|---|---|---|
-| 1 | [PBI-025](../../backlog/pbis/PBI-025.md) | Ordered / not selected | PBI-033 Done; DoR y gates propios antes de iniciar |
+| 1 | [PBI-025](../../backlog/pbis/PBI-025.md) | Blocked / selected; not started | PBI-033 Done efectivo; threat model, estimación, DoR y autorización Owner propios antes de iniciar |
 
 ## Bloqueos
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| PBI-033 | Sin bloqueo Owner vigente; candidate material y CI `34080940466` del implementation checkpoint PASS en Draft PR #28; exact-final-HEAD CI/focused review pendientes tras reconciliar trazabilidad | Mantener `In progress` y WIP `1/1` hasta completar sus gates |
+| PBI-033 | Merge autorizado del cierre documental y CI exacto post-cierre de `main` | Mantener `Done candidate`, G2 `PASS candidate` y WIP `0/1` hasta completar el cierre |
+| PBI-025 | Riesgo `Critical`; threat model, estimación, DoR y autorización de inicio pendientes | Mantener seleccionado, no iniciado, hasta satisfacer sus gates propios |
 
 ## Reglas de cambio
 
@@ -46,4 +47,5 @@
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** focused high-risk review de PBI-033 bajo el Master Goal.
+- **Disparador:** Owner merge review/CI del cierre documental candidato de
+  PBI-033 o cambio material de los gates de PBI-025.

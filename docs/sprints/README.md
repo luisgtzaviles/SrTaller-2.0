@@ -6,10 +6,10 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 
 **Estado:** Sprint 00 `Closed`.
 **Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed` y
-[SPRINT-01](sprint-01/SPRINT_GOAL.md) `Active`.
+[SPRINT-01](sprint-01/SPRINT_GOAL.md) `Active — closure candidate`.
 **Sprint activo:** Sprint 01; PBI-027, PBI-029, PBI-024 y PBI-032 están `Done`
-y `Released: NO`. PBI-033 es el único PBI actual, `In progress`, con WIP
-`1/1`.
+y `Released: NO`. PBI-033 está `Done candidate`, no existe PBI actual y el WIP
+es `0/1`. PBI-025 queda seleccionado, no iniciado.
 
 ## Reglas propuestas
 
@@ -37,10 +37,11 @@ Sus documentos son:
 
 ## SPRINT-01
 
-SPRINT-01 está planificado para Identity & Context Foundation. Su backlog
-ordena PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033, uno a la vez. PBI-027,
-PBI-029, PBI-024 y PBI-032 están `Done`; PBI-033 es el PBI actual. PBI-025
-permanece ordenado después del Sprint, no seleccionado ni iniciado.
+SPRINT-01 ejecuta Identity & Context Foundation y está en cierre candidato. Su
+backlog ordena PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033, uno a la vez.
+PBI-027, PBI-029, PBI-024 y PBI-032 están `Done`; PBI-033 está `Done candidate`.
+PBI-025 queda seleccionado después del Sprint, no iniciado, con riesgo
+`Critical`, estimación `TBD` y DoR pendiente.
 
 - [Objetivo](sprint-01/SPRINT_GOAL.md)
 - [Backlog](sprint-01/SPRINT_BACKLOG.md)
@@ -50,4 +51,5 @@ permanece ordenado después del Sprint, no seleccionado ni iniciado.
 
 ## Próxima revisión
 
-Ante focused high-risk review de PBI-033 bajo el Master Goal.
+Ante Owner merge review/CI del cierre documental candidato de PBI-033 y la
+review/retrospectiva de cierre de Sprint 01.

@@ -2,7 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Draft; Sprint activo, sin cierre de Sprint.
+- **Estado:** Draft; Sprint en cierre candidato. No se infieren aprendizajes ni
+  acciones sin realizar la retrospectiva.
 - **Fecha:** TBD.
 
 ## Señales y acciones
@@ -13,4 +14,4 @@
 
 ## Próxima revisión
 
-- **Disparador:** cierre de Sprint 01.
+- **Disparador:** cierre efectivo de PBI-033 y retrospectiva de Sprint 01.
