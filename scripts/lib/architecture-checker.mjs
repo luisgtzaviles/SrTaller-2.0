@@ -655,6 +655,87 @@ function namedImportBindings(sourceFile) {
   return bindings;
 }
 
+function namedImportDeclarations(sourceFile) {
+  const declarations = [];
+  for (const statement of sourceFile.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteralLike(statement.moduleSpecifier) ||
+      !statement.importClause?.namedBindings ||
+      !ts.isNamedImports(statement.importClause.namedBindings)
+    ) {
+      continue;
+    }
+    for (const element of statement.importClause.namedBindings.elements) {
+      declarations.push({
+        imported: element.propertyName?.text ?? element.name.text,
+        isTypeOnly:
+          statement.importClause.isTypeOnly === true ||
+          element.isTypeOnly === true,
+        local: element.name.text,
+        specifier: statement.moduleSpecifier.text,
+      });
+    }
+  }
+  return declarations;
+}
+
+function exactStaticModuleMetadata(sourceFile, className, decoratorName) {
+  const classes = sourceFile.statements.filter(
+    (statement) =>
+      ts.isClassDeclaration(statement) && statement.name?.text === className,
+  );
+  if (classes.length !== 1) {
+    return { problem: `${className} must be declared exactly once` };
+  }
+  const decorators = decoratorsNamed(classes[0], decoratorName);
+  if (decorators.length !== 1) {
+    return {
+      problem: `${className} must have exactly one direct @${decoratorName} decorator`,
+    };
+  }
+  if (
+    decorators[0].arguments.length !== 1 ||
+    !ts.isObjectLiteralExpression(decorators[0].arguments[0])
+  ) {
+    return {
+      problem: `@${decoratorName} metadata for ${className} must be one static object literal`,
+    };
+  }
+  return { metadata: decorators[0].arguments[0] };
+}
+
+function metadataProperties(metadata, name) {
+  return metadata.properties.filter(
+    (property) => property.name && propertyNameText(property.name) === name,
+  );
+}
+
+function staticArrayMetadata(metadata, name) {
+  const properties = metadataProperties(metadata, name);
+  if (properties.length !== 1) {
+    return {
+      problem: `@Module metadata must contain exactly one ${name} property`,
+    };
+  }
+  const [property] = properties;
+  if (
+    !ts.isPropertyAssignment(property) ||
+    !ts.isArrayLiteralExpression(property.initializer)
+  ) {
+    return {
+      problem: `@Module ${name} must be one explicit static array literal`,
+    };
+  }
+  return { elements: property.initializer.elements };
+}
+
+function relativeJavaScriptSpecifier(fromFile, toFile) {
+  let specifier = posix.relative(posix.dirname(fromFile), toFile);
+  specifier = specifier.replace(/\.(?:c|m)?ts$/u, '.js');
+  return specifier.startsWith('.') ? specifier : `./${specifier}`;
+}
+
 function isNonStructuralFile(path, policy) {
   const name = basename(path);
   return (
@@ -1094,6 +1175,165 @@ function persistenceBoundaryDiagnostics({
   );
   const initialSchema = persistence.initialSchema;
   const initialSchemaPath = initialSchema?.migration;
+  const migrationOwnership = persistence.migrationOwnership;
+  const migrationOwnershipPolicyPath =
+    'architecture/dec-005-policy.json';
+  const migrationIdentifier = /^[a-z][a-z0-9_]*$/u;
+  const migrationFunctionOwners = new Map();
+  const migrationTriggerOwners = new Map();
+  const missingMigrationOwnershipRegistrations = new Set();
+  const legacyMigrations = new Set(
+    Array.isArray(migrationOwnership?.legacyMigrations)
+      ? migrationOwnership.legacyMigrations
+      : [],
+  );
+
+  function isGovernedMigration(path) {
+    return path !== initialSchemaPath && !legacyMigrations.has(path);
+  }
+
+  function exactObjectKeys(value, expected) {
+    return Boolean(
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      JSON.stringify(Object.keys(value).sort()) ===
+        JSON.stringify([...expected].sort()),
+    );
+  }
+
+  function validIdentifierList(value) {
+    return (
+      Array.isArray(value) &&
+      value.every(
+        (name) => typeof name === 'string' && migrationIdentifier.test(name),
+      ) &&
+      new Set(value).size === value.length
+    );
+  }
+
+  function registerMigrationObjectOwner(registry, name, owner, kind, file) {
+    const registeredOwner = registry.get(name);
+    if (registeredOwner && registeredOwner !== owner) {
+      add(
+        'D5-R047',
+        resolve(projectRoot, file),
+        `migration ${kind} ${name} is registered to both ${registeredOwner} and ${owner}`,
+      );
+      return;
+    }
+    registry.set(name, owner);
+  }
+
+  const migrationOwnershipIsValid = Boolean(
+    exactObjectKeys(migrationOwnership, [
+      'legacyMigrations',
+      'registrations',
+    ]) &&
+    Array.isArray(migrationOwnership.legacyMigrations) &&
+    migrationOwnership.legacyMigrations.every(
+      (path) => typeof path === 'string',
+    ) &&
+    legacyMigrations.size === migrationOwnership.legacyMigrations.length &&
+    migrationOwnership.registrations &&
+    typeof migrationOwnership.registrations === 'object' &&
+    !Array.isArray(migrationOwnership.registrations),
+  );
+
+  if (!migrationOwnershipIsValid) {
+    add(
+      'D5-R047',
+      migrationOwnershipPolicyPath,
+      'migrationOwnership must declare an exact legacy migration allowlist and registrations object',
+    );
+  } else {
+    const allowedMigrations = new Set(persistence.allowedMigrations ?? []);
+    for (const migration of legacyMigrations) {
+      if (
+        !allowedMigrations.has(migration) ||
+        !isInsidePath(migration, migrationRoot) ||
+        Object.hasOwn(migrationOwnership.registrations, migration)
+      ) {
+        add(
+          'D5-R047',
+          migrationOwnershipPolicyPath,
+          `legacy migration ${migration} must be an allowed central migration and cannot also be registered`,
+        );
+      }
+    }
+    for (const migration of allowedMigrations) {
+      if (
+        isGovernedMigration(migration) &&
+        !Object.hasOwn(migrationOwnership.registrations, migration)
+      ) {
+        missingMigrationOwnershipRegistrations.add(migration);
+        add(
+          'D5-R047',
+          resolve(projectRoot, migration),
+          'governed migration has no explicit owner/tables/functions/triggers registration',
+        );
+      }
+    }
+
+    for (const [file, registration] of Object.entries(
+      migrationOwnership.registrations,
+    )) {
+      const fileOwner = basename(file).match(
+        /^\d{14}_([a-z][a-z0-9]*)_/u,
+      )?.[1];
+      const validRegistration =
+        allowedMigrations.has(file) &&
+        isGovernedMigration(file) &&
+        exactObjectKeys(registration, [
+          'functions',
+          'owner',
+          'tables',
+          'triggers',
+        ]) &&
+        typeof registration.owner === 'string' &&
+        registration.owner === fileOwner &&
+        validIdentifierList(registration.tables) &&
+        validIdentifierList(registration.functions) &&
+        validIdentifierList(registration.triggers);
+      if (!validRegistration) {
+        add(
+          'D5-R047',
+          resolve(projectRoot, file),
+          'migration ownership registration must be allowed, non-legacy, owner-scoped, and use exact identifier lists',
+        );
+        continue;
+      }
+
+      for (const table of registration.tables) {
+        const object = persistence.databaseObjects[table];
+        if (!object || object.kind !== 'table' || object.owner !== registration.owner) {
+          add(
+            'D5-R047',
+            resolve(projectRoot, file),
+            `migration table ${table} is unknown or owned by another module`,
+          );
+        }
+      }
+      for (const name of registration.functions) {
+        registerMigrationObjectOwner(
+          migrationFunctionOwners,
+          name,
+          registration.owner,
+          'function',
+          file,
+        );
+      }
+      for (const name of registration.triggers) {
+        registerMigrationObjectOwner(
+          migrationTriggerOwners,
+          name,
+          registration.owner,
+          'trigger',
+          file,
+        );
+      }
+    }
+  }
 
   function stringArgument(call, index) {
     const argument = call.arguments[index];
@@ -1197,6 +1437,244 @@ function persistenceBoundaryDiagnostics({
       actual.length === expected.length &&
       actual.every((value, index) => value === expected[index])
     );
+  }
+
+  function migrationSqlText(template) {
+    if (ts.isNoSubstitutionTemplateLiteral(template)) {
+      return { dynamic: false, text: template.text };
+    }
+    if (ts.isTemplateExpression(template)) {
+      return {
+        dynamic: true,
+        text: [
+          template.head.text,
+          ...template.templateSpans.map((span) => span.literal.text),
+        ].join(' __dynamic_sql_expression__ '),
+      };
+    }
+    return { dynamic: true, text: '' };
+  }
+
+  function normalizeSqlIdentifier(value) {
+    return value
+      .split('.')
+      .at(-1)
+      ?.replaceAll('"', '')
+      .toLowerCase();
+  }
+
+  function collectMigrationDatabaseObjects(sourceFile, resolver) {
+    const tables = new Set();
+    const functions = new Set();
+    const triggers = new Set();
+    let dynamic = false;
+    const identifier =
+      '(?:"[A-Za-z_][A-Za-z0-9_$]*"|[A-Za-z_][A-Za-z0-9_$]*)(?:\\.(?:"[A-Za-z_][A-Za-z0-9_$]*"|[A-Za-z_][A-Za-z0-9_$]*))?';
+
+    function addStringArgument(call, index, target) {
+      const value = stringArgument(call, index);
+      if (value === undefined) {
+        dynamic = true;
+      } else {
+        target.add(value.split('.')[0]);
+      }
+    }
+
+    function addSqlMatches(text, expression, target, capture = 1) {
+      for (const match of text.matchAll(expression)) {
+        const name = normalizeSqlIdentifier(match[capture]);
+        if (name) {
+          target.add(name);
+        }
+      }
+    }
+
+    function inspect(node) {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression)
+      ) {
+        const method = node.expression.name.text;
+        if (
+          [
+            'alterTable',
+            'createTable',
+            'deleteFrom',
+            'dropTable',
+            'insertInto',
+            'mergeInto',
+            'selectFrom',
+            'updateTable',
+          ].includes(method)
+        ) {
+          addStringArgument(node, 0, tables);
+        } else if (method === 'renameTable') {
+          addStringArgument(node, 0, tables);
+          addStringArgument(node, 1, tables);
+        } else if (method === 'addForeignKeyConstraint') {
+          addStringArgument(node, 2, tables);
+        } else if (method === 'references') {
+          addStringArgument(node, 0, tables);
+        } else if (
+          method === 'on' &&
+          fluentCalls(node)[0]?.name === 'createIndex'
+        ) {
+          addStringArgument(node, 0, tables);
+        }
+      }
+
+      if (
+        ts.isTaggedTemplateExpression(node) &&
+        resolver.matches(node.tag, 'kysely', 'sql')
+      ) {
+        const sqlText = migrationSqlText(node.template);
+        dynamic ||= sqlText.dynamic;
+        const tableExpressions = [
+          new RegExp(
+            `\\b(?:alter\\s+table|create\\s+table|drop\\s+table(?:\\s+if\\s+exists)?|truncate(?:\\s+table)?|insert\\s+into|delete\\s+from|join)\\s+(?:only\\s+)?(${identifier})`,
+            'giu',
+          ),
+          new RegExp(`(?<!distinct\\s)\\bfrom\\s+(${identifier})`, 'giu'),
+          new RegExp(`\\bupdate\\s+(?!of\\b|on\\b)(${identifier})`, 'giu'),
+          new RegExp(
+            `\\bcreate\\s+trigger\\s+${identifier}[\\s\\S]*?\\bon\\s+(${identifier})`,
+            'giu',
+          ),
+          new RegExp(
+            `\\bdrop\\s+trigger(?:\\s+if\\s+exists)?\\s+${identifier}\\s+on\\s+(${identifier})`,
+            'giu',
+          ),
+        ];
+        for (const expression of tableExpressions) {
+          addSqlMatches(sqlText.text, expression, tables);
+        }
+        addSqlMatches(
+          sqlText.text,
+          new RegExp(
+            `\\bcreate\\s+(?:or\\s+replace\\s+)?function\\s+(${identifier})`,
+            'giu',
+          ),
+          functions,
+        );
+        addSqlMatches(
+          sqlText.text,
+          new RegExp(
+            `\\bdrop\\s+function(?:\\s+if\\s+exists)?\\s+(${identifier})`,
+            'giu',
+          ),
+          functions,
+        );
+        addSqlMatches(
+          sqlText.text,
+          new RegExp(`\\bexecute\\s+function\\s+(${identifier})`, 'giu'),
+          functions,
+        );
+        addSqlMatches(
+          sqlText.text,
+          new RegExp(`\\bcreate\\s+trigger\\s+(${identifier})`, 'giu'),
+          triggers,
+        );
+        addSqlMatches(
+          sqlText.text,
+          new RegExp(
+            `\\bdrop\\s+trigger(?:\\s+if\\s+exists)?\\s+(${identifier})`,
+            'giu',
+          ),
+          triggers,
+        );
+      }
+      ts.forEachChild(node, inspect);
+    }
+    inspect(sourceFile);
+    return { dynamic, functions, tables, triggers };
+  }
+
+  function migrationOwnershipDiagnostics(
+    file,
+    relativePath,
+    sourceFile,
+    resolver,
+  ) {
+    if (!isGovernedMigration(relativePath)) {
+      return;
+    }
+    const registration = migrationOwnershipIsValid
+      ? migrationOwnership.registrations[relativePath]
+      : undefined;
+    if (!registration) {
+      if (!missingMigrationOwnershipRegistrations.has(relativePath)) {
+        add(
+          'D5-R047',
+          file,
+          'governed migration has no explicit owner/tables/functions/triggers registration',
+        );
+      }
+      return;
+    }
+    if (
+      !exactObjectKeys(registration, [
+        'functions',
+        'owner',
+        'tables',
+        'triggers',
+      ]) ||
+      !validIdentifierList(registration.tables) ||
+      !validIdentifierList(registration.functions) ||
+      !validIdentifierList(registration.triggers)
+    ) {
+      return;
+    }
+
+    const observed = collectMigrationDatabaseObjects(sourceFile, resolver);
+    if (observed.dynamic) {
+      add(
+        'D5-R047',
+        file,
+        'governed migration contains a dynamic database object reference that cannot be ownership-verified',
+      );
+    }
+
+    for (const table of observed.tables) {
+      const object = persistence.databaseObjects[table];
+      if (!object || object.kind !== 'table' || object.owner !== registration.owner) {
+        add(
+          'D5-R047',
+          file,
+          `migration database object ${table} is unknown or owned by another module`,
+        );
+      }
+    }
+    for (const [kind, values, ownerRegistry] of [
+      ['function', observed.functions, migrationFunctionOwners],
+      ['trigger', observed.triggers, migrationTriggerOwners],
+    ]) {
+      for (const name of values) {
+        const owner = ownerRegistry.get(name);
+        if (!owner || owner !== registration.owner) {
+          add(
+            'D5-R047',
+            file,
+            `migration ${kind} ${name} is unregistered or owned by another module`,
+          );
+        }
+      }
+    }
+
+    for (const [kind, registered, actual] of [
+      ['tables', registration.tables, observed.tables],
+      ['functions', registration.functions, observed.functions],
+      ['triggers', registration.triggers, observed.triggers],
+    ]) {
+      const expected = [...registered].sort();
+      const found = [...actual].sort();
+      if (JSON.stringify(expected) !== JSON.stringify(found)) {
+        add(
+          'D5-R047',
+          file,
+          `migration ${kind} must exactly match its ownership registration (registered: ${expected.join(', ') || '<none>'}; observed: ${found.join(', ') || '<none>'})`,
+        );
+      }
+    }
   }
 
   function initialSchemaDiagnostics(file, sourceFile, resolver) {
@@ -1653,6 +2131,12 @@ function persistenceBoundaryDiagnostics({
     }
 
     if (isInsidePath(relativePath, migrationRoot)) {
+      migrationOwnershipDiagnostics(
+        file,
+        relativePath,
+        sourceFile,
+        resolver,
+      );
       const migrationName = basename(relativePath);
       if (
         !new RegExp(persistence.migrationFilePattern, 'u').test(migrationName)
@@ -1983,6 +2467,376 @@ export async function checkArchitecture({
     });
   }
 
+  const directedCompositionPolicyPath = 'architecture/dec-005-policy.json';
+  const directedCompositionEdges = [];
+  const directedCompositionByModulePair = new Map();
+  const rawDirectedComposition = policy.directedModuleComposition;
+  const rawRuntimeComposition = policy.runtimeInfrastructureComposition;
+  const exactKeys = (value, expected) =>
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    JSON.stringify(Object.keys(value).sort()) ===
+      JSON.stringify([...expected].sort());
+  const compositionPolicyProblem = (message) =>
+    add('D5-R024', directedCompositionPolicyPath, message);
+
+  if (
+    !exactKeys(rawRuntimeComposition, [
+      'bindingSites',
+      'decorator',
+      'environmentReader',
+      'lifecycleProvider',
+      'module',
+      'moduleConsumers',
+      'providers',
+      'publicSurface',
+    ]) ||
+    rawRuntimeComposition.decorator !== 'Module' ||
+    !exactKeys(rawRuntimeComposition.module, ['className', 'file']) ||
+    !exactKeys(rawRuntimeComposition.publicSurface, ['exports', 'file']) ||
+    !exactKeys(rawRuntimeComposition.environmentReader, [
+      'ambientExpression',
+      'className',
+      'file',
+    ]) ||
+    !exactKeys(rawRuntimeComposition.lifecycleProvider, ['className', 'file']) ||
+    !Array.isArray(rawRuntimeComposition.providers) ||
+    !Array.isArray(rawRuntimeComposition.moduleConsumers) ||
+    !Array.isArray(rawRuntimeComposition.bindingSites)
+  ) {
+    compositionPolicyProblem(
+      'runtimeInfrastructureComposition must contain the exact closed technical-composition metadata',
+    );
+  } else {
+    const providerTokens = new Set();
+    const providerContracts = new Set();
+    for (const [index, provider] of rawRuntimeComposition.providers.entries()) {
+      if (
+        !exactKeys(provider, [
+          'consumers',
+          'contract',
+          'implementation',
+          'strategy',
+          'token',
+        ]) ||
+        typeof provider.token !== 'string' ||
+        typeof provider.contract !== 'string' ||
+        typeof provider.implementation !== 'string' ||
+        !['useExisting', 'useFactory'].includes(provider.strategy) ||
+        !Array.isArray(provider.consumers) ||
+        provider.consumers.length === 0 ||
+        provider.consumers.some((consumer) => typeof consumer !== 'string') ||
+        new Set(provider.consumers).size !== provider.consumers.length ||
+        providerTokens.has(provider.token) ||
+        providerContracts.has(provider.contract)
+      ) {
+        compositionPolicyProblem(
+          `runtimeInfrastructureComposition.providers[${index}] is invalid or duplicated`,
+        );
+      }
+      providerTokens.add(provider.token);
+      providerContracts.add(provider.contract);
+    }
+    const expectedPublicExports = [
+      ...providerTokens,
+      ...providerContracts,
+    ].sort();
+    if (
+      !Array.isArray(rawRuntimeComposition.publicSurface.exports) ||
+      JSON.stringify([...rawRuntimeComposition.publicSurface.exports].sort()) !==
+        JSON.stringify(expectedPublicExports) ||
+      new Set(rawRuntimeComposition.publicSurface.exports).size !==
+        rawRuntimeComposition.publicSurface.exports.length
+    ) {
+      compositionPolicyProblem(
+        'runtime public surface must export every registered token and contract exactly once',
+      );
+    }
+    const bindingKeys = new Set();
+    for (const [index, site] of rawRuntimeComposition.bindingSites.entries()) {
+      if (
+        !exactKeys(site, [
+          'contract',
+          'file',
+          'importSpecifier',
+          'kind',
+          'token',
+        ]) ||
+        typeof site.file !== 'string' ||
+        typeof site.importSpecifier !== 'string' ||
+        !providerTokens.has(site.token) ||
+        !providerContracts.has(site.contract) ||
+        !['application-get', 'constructor-inject', 'contract-only', 'module-provider-inject']
+          .includes(site.kind)
+      ) {
+        compositionPolicyProblem(
+          `runtimeInfrastructureComposition.bindingSites[${index}] is invalid`,
+        );
+        continue;
+      }
+      const provider = rawRuntimeComposition.providers.find(
+        (candidate) => candidate.token === site.token,
+      );
+      if (
+        provider?.contract !== site.contract ||
+        !provider?.consumers.includes(site.file)
+      ) {
+        compositionPolicyProblem(
+          `runtime binding ${site.file}:${site.token} must agree with its provider consumer registry`,
+        );
+      }
+      const key = `${site.file}:${site.token}`;
+      if (bindingKeys.has(key)) {
+        compositionPolicyProblem(`runtime binding site duplicates ${key}`);
+      }
+      bindingKeys.add(key);
+    }
+    for (const provider of rawRuntimeComposition.providers) {
+      for (const consumer of provider.consumers) {
+        if (!bindingKeys.has(`${consumer}:${provider.token}`)) {
+          compositionPolicyProblem(
+            `runtime provider ${provider.token} has graph-only consumer ${consumer} without a binding site`,
+          );
+        }
+      }
+    }
+    const moduleOwners = new Set();
+    for (const [index, consumer] of rawRuntimeComposition.moduleConsumers.entries()) {
+      if (
+        !exactKeys(consumer, [
+          'className',
+          'file',
+          'importSpecifier',
+          'owner',
+        ]) ||
+        !policy.allowedModules.includes(consumer.owner) ||
+        consumer.file !== `src/modules/${consumer.owner}/${consumer.owner}.module.ts` ||
+        consumer.importSpecifier !== relativeJavaScriptSpecifier(
+          consumer.file,
+          rawRuntimeComposition.module.file,
+        ) ||
+        moduleOwners.has(consumer.owner)
+      ) {
+        compositionPolicyProblem(
+          `runtimeInfrastructureComposition.moduleConsumers[${index}] is invalid or duplicated`,
+        );
+      }
+      moduleOwners.add(consumer.owner);
+    }
+  }
+
+  if (
+    !exactKeys(rawDirectedComposition, ['decorator', 'edges']) ||
+    rawDirectedComposition.decorator !== 'Module' ||
+    !Array.isArray(rawDirectedComposition.edges) ||
+    rawDirectedComposition.edges.length === 0
+  ) {
+    compositionPolicyProblem(
+      'directedModuleComposition must declare exactly decorator Module and a non-empty edges array',
+    );
+  } else {
+    const seenPairs = new Set();
+    const seenBindings = new Set();
+    for (const [index, edge] of rawDirectedComposition.edges.entries()) {
+      const label = `directedModuleComposition.edges[${index}]`;
+      if (
+        !exactKeys(edge, [
+          'consumer',
+          'producer',
+          'consumerModule',
+          'producerModule',
+          'publicBindings',
+        ]) ||
+        typeof edge.consumer !== 'string' ||
+        typeof edge.producer !== 'string' ||
+        !exactKeys(edge.consumerModule, ['className', 'file']) ||
+        typeof edge.consumerModule.file !== 'string' ||
+        typeof edge.consumerModule.className !== 'string' ||
+        !exactKeys(edge.producerModule, [
+          'className',
+          'file',
+          'importSpecifier',
+        ]) ||
+        typeof edge.producerModule.file !== 'string' ||
+        typeof edge.producerModule.className !== 'string' ||
+        typeof edge.producerModule.importSpecifier !== 'string' ||
+        !Array.isArray(edge.publicBindings) ||
+        edge.publicBindings.length === 0
+      ) {
+        compositionPolicyProblem(
+          `${label} must contain the exact directed-composition metadata`,
+        );
+        continue;
+      }
+
+      const pair = `${edge.consumer}->${edge.producer}`;
+      let valid = true;
+      if (
+        edge.consumer === edge.producer ||
+        !policy.allowedModules.includes(edge.consumer) ||
+        !policy.allowedModules.includes(edge.producer)
+      ) {
+        compositionPolicyProblem(`${label} has an invalid module pair ${pair}`);
+        valid = false;
+      }
+      if (seenPairs.has(pair)) {
+        compositionPolicyProblem(`${label} duplicates registered edge ${pair}`);
+        valid = false;
+      }
+      seenPairs.add(pair);
+      if (!(policy.dependencies[edge.consumer] ?? []).includes(edge.producer)) {
+        compositionPolicyProblem(
+          `${pair} must exist in the approved dependency graph before runtime composition`,
+        );
+        valid = false;
+      }
+      if (!(policy.consumers[edge.producer] ?? []).includes(edge.consumer)) {
+        compositionPolicyProblem(
+          `${pair} must agree with the registered public consumer list`,
+        );
+        valid = false;
+      }
+
+      const expectedConsumerFile =
+        `src/modules/${edge.consumer}/${edge.consumer}.module.ts`;
+      const expectedProducerFile =
+        `src/modules/${edge.producer}/${edge.producer}.module.ts`;
+      if (edge.consumerModule.file !== expectedConsumerFile) {
+        compositionPolicyProblem(
+          `${label}.consumerModule.file must be ${expectedConsumerFile}`,
+        );
+        valid = false;
+      }
+      if (edge.producerModule.file !== expectedProducerFile) {
+        compositionPolicyProblem(
+          `${label}.producerModule.file must be ${expectedProducerFile}`,
+        );
+        valid = false;
+      }
+      const expectedSpecifier = relativeJavaScriptSpecifier(
+        expectedConsumerFile,
+        expectedProducerFile,
+      );
+      if (edge.producerModule.importSpecifier !== expectedSpecifier) {
+        compositionPolicyProblem(
+          `${label}.producerModule.importSpecifier must be ${expectedSpecifier}`,
+        );
+        valid = false;
+      }
+      for (const moduleRegistration of [
+        edge.consumerModule,
+        edge.producerModule,
+      ]) {
+        const structural = policy.requiredStructuralFiles[moduleRegistration.file];
+        if (
+          structural?.declarationName !== moduleRegistration.className ||
+          structural?.decorator !== rawDirectedComposition.decorator
+        ) {
+          compositionPolicyProblem(
+            `${label} module class metadata must match requiredStructuralFiles`,
+          );
+          valid = false;
+        }
+      }
+
+      for (const [bindingIndex, binding] of edge.publicBindings.entries()) {
+        const bindingLabel = `${label}.publicBindings[${bindingIndex}]`;
+        if (
+          !exactKeys(binding, [
+            'consumerImportSpecifier',
+            'contract',
+            'producerImportSpecifier',
+            'token',
+          ]) ||
+          typeof binding.token !== 'string' ||
+          typeof binding.contract !== 'string' ||
+          typeof binding.consumerImportSpecifier !== 'string' ||
+          typeof binding.producerImportSpecifier !== 'string'
+        ) {
+          compositionPolicyProblem(
+            `${bindingLabel} must contain the exact public token/contract import metadata`,
+          );
+          valid = false;
+          continue;
+        }
+        const bindingKey = `${pair}:${binding.token}:${binding.contract}`;
+        if (seenBindings.has(bindingKey)) {
+          compositionPolicyProblem(
+            `${bindingLabel} duplicates ${binding.token}/${binding.contract}`,
+          );
+          valid = false;
+        }
+        seenBindings.add(bindingKey);
+        if (
+          !policy.publicSurfaces[edge.producer]?.includes(binding.token) ||
+          !policy.publicSurfaces[edge.producer]?.includes(binding.contract)
+        ) {
+          compositionPolicyProblem(
+            `${bindingLabel} must name public exports owned by ${edge.producer}`,
+          );
+          valid = false;
+        }
+        const expectedConsumerPublicSpecifier = relativeJavaScriptSpecifier(
+          expectedConsumerFile,
+          `src/modules/${edge.producer}/index.ts`,
+        );
+        if (
+          binding.consumerImportSpecifier !== expectedConsumerPublicSpecifier ||
+          binding.producerImportSpecifier !== './index.js'
+        ) {
+          compositionPolicyProblem(
+            `${bindingLabel} must use exact public index specifiers`,
+          );
+          valid = false;
+        }
+      }
+
+      if (valid) {
+        directedCompositionEdges.push(edge);
+        directedCompositionByModulePair.set(
+          `${edge.consumerModule.file}\0${edge.producerModule.file}`,
+          edge,
+        );
+      }
+    }
+
+    const graph = new Map(
+      policy.allowedModules.map((moduleName) => [moduleName, new Set()]),
+    );
+    for (const edge of directedCompositionEdges) {
+      graph.get(edge.consumer)?.add(edge.producer);
+    }
+    const visiting = new Set();
+    const visited = new Set();
+    let cycleFound = false;
+    function visitCompositionModule(moduleName) {
+      if (visiting.has(moduleName)) {
+        cycleFound = true;
+        return;
+      }
+      if (visited.has(moduleName)) {
+        return;
+      }
+      visiting.add(moduleName);
+      for (const producer of graph.get(moduleName) ?? []) {
+        visitCompositionModule(producer);
+      }
+      visiting.delete(moduleName);
+      visited.add(moduleName);
+    }
+    for (const moduleName of policy.allowedModules) {
+      visitCompositionModule(moduleName);
+    }
+    if (cycleFound) {
+      compositionPolicyProblem(
+        'directedModuleComposition must remain directed and acyclic',
+      );
+    }
+  }
+
+  const observedDirectedCompositionPairs = new Set();
+
   const moduleTree = await walk(modulesRoot);
   const directModuleDirectories = moduleTree.directories
     .filter((directory) => dirname(directory) === modulesRoot)
@@ -1997,7 +2851,17 @@ export async function checkArchitecture({
   );
   const fixtureOmitsAccessPersistence =
     fixture && !sourceFileSet.has(accessPersistencePath);
-  if (baselineFixture || fixtureOmitsAccessPersistence) {
+  const usersPersistencePath = resolve(
+    projectRoot,
+    'src/modules/users/infrastructure/persistence/kysely-user.repository.ts',
+  );
+  const fixtureOmitsUsersPersistence =
+    fixture && !sourceFileSet.has(usersPersistencePath);
+  if (
+    baselineFixture ||
+    fixtureOmitsAccessPersistence ||
+    fixtureOmitsUsersPersistence
+  ) {
     if (baselineFixture) {
       requiredModuleNames =
         policy.fixtureRequiredModules ?? policy.allowedModules;
@@ -2010,11 +2874,11 @@ export async function checkArchitecture({
     if (fixtureOmitsAccessPersistence) {
       omittedFixtureOwners.add('access');
     }
+    if (fixtureOmitsUsersPersistence) {
+      omittedFixtureOwners.add('users');
+    }
     if (baselineFixture) {
       omittedFixtureOwners.add('repairs');
-    }
-    if (baselineFixture && !directModuleNames.includes('users')) {
-      omittedFixtureOwners.add('users');
     }
     const belongsToOmittedFixtureOwner = (value) =>
       [...omittedFixtureOwners].some(
@@ -2058,6 +2922,17 @@ export async function checkArchitecture({
     persistence.allowedMigrations = persistence.allowedMigrations.filter(
       (path) => !belongsToOmittedFixtureOwner(path),
     );
+    if (persistence.migrationOwnership?.registrations) {
+      persistence.migrationOwnership.legacyMigrations =
+        persistence.migrationOwnership.legacyMigrations.filter(
+          (path) => persistence.allowedMigrations.includes(path),
+        );
+      persistence.migrationOwnership.registrations = Object.fromEntries(
+        Object.entries(persistence.migrationOwnership.registrations).filter(
+          ([path]) => persistence.allowedMigrations.includes(path),
+        ),
+      );
+    }
   }
 
   for (const governedRootName of policy.governedRoots) {
@@ -2355,8 +3230,35 @@ export async function checkArchitecture({
 
       const targetModuleFile = `src/modules/${targetModule}/${targetModule}.module.ts`;
       if (targetRelative === targetModuleFile) {
-        if (relativePath !== 'src/app.module.ts') {
-          add('D5-R024', file, `only AppModule may import ${targetModule}.module.ts`);
+        if (relativePath === 'src/app.module.ts') {
+          continue;
+        }
+        const registration = directedCompositionByModulePair.get(
+          `${relativePath}\0${targetRelative}`,
+        );
+        if (!registration) {
+          add(
+            'D5-R024',
+            file,
+            `module composition ${moduleName ?? '<root>'}->${targetModule} is not explicitly registered`,
+          );
+          continue;
+        }
+        observedDirectedCompositionPairs.add(
+          `${registration.consumer}->${registration.producer}`,
+        );
+        observedEdges.add(
+          `${registration.consumer}->${registration.producer}`,
+        );
+        if (
+          record.kind !== 'import' ||
+          specifier !== registration.producerModule.importSpecifier
+        ) {
+          add(
+            'D5-R024',
+            file,
+            `${registration.producerModule.className} must use one exact static named import from ${registration.producerModule.importSpecifier}`,
+          );
         }
         continue;
       }
@@ -2530,6 +3432,681 @@ export async function checkArchitecture({
     projectRoot,
     sourceFileSet,
   });
+
+  const requiredDirectedCompositionEdges = fixture
+    ? directedCompositionEdges.filter((edge) =>
+        [...observedDirectedCompositionPairs].some((pair) =>
+          pair.startsWith(`${edge.consumer}->`),
+        ),
+      )
+    : directedCompositionEdges;
+  const compositionEdgesByConsumer = new Map();
+  const compositionEdgesByProducer = new Map();
+  for (const edge of requiredDirectedCompositionEdges) {
+    const consumerEdges = compositionEdgesByConsumer.get(edge.consumer) ?? [];
+    consumerEdges.push(edge);
+    compositionEdgesByConsumer.set(edge.consumer, consumerEdges);
+    const producerEdges = compositionEdgesByProducer.get(edge.producer) ?? [];
+    producerEdges.push(edge);
+    compositionEdgesByProducer.set(edge.producer, producerEdges);
+  }
+
+  function compositionDiagnostic(file, message) {
+    add('D5-R024', file, message);
+  }
+
+  function exactNamedImportProblem(
+    parsed,
+    { specifier, symbol, typeOnly, onlySymbolAtSpecifier = false },
+  ) {
+    const declarations = namedImportDeclarations(parsed.sourceFile);
+    const related = declarations.filter(
+      (binding) => binding.imported === symbol || binding.local === symbol,
+    );
+    const exact = related.filter(
+      (binding) =>
+        binding.imported === symbol &&
+        binding.local === symbol &&
+        binding.specifier === specifier &&
+        binding.isTypeOnly === typeOnly,
+    );
+    const importDeclarations = parsed.sourceFile.statements.filter(
+      (statement) =>
+        ts.isImportDeclaration(statement) &&
+        ts.isStringLiteralLike(statement.moduleSpecifier) &&
+        statement.moduleSpecifier.text === specifier,
+    );
+    const invalidImportForm = importDeclarations.some(
+      (statement) =>
+        !statement.importClause?.namedBindings ||
+        !ts.isNamedImports(statement.importClause.namedBindings) ||
+        statement.importClause.name !== undefined,
+    );
+    const invalidRecord = parsed.records.some(
+      (record) => record.specifier === specifier && record.kind !== 'import',
+    );
+    const invalidExactModuleDeclaration =
+      onlySymbolAtSpecifier &&
+      (importDeclarations.length !== 1 ||
+        importDeclarations[0]?.importClause?.isTypeOnly === true ||
+        !importDeclarations[0]?.importClause?.namedBindings ||
+        !ts.isNamedImports(importDeclarations[0].importClause.namedBindings) ||
+        importDeclarations[0].importClause.namedBindings.elements.length !== 1 ||
+        importDeclarations[0].importClause.namedBindings.elements[0]?.isTypeOnly === true);
+    if (
+      exact.length !== 1 ||
+      related.length !== 1 ||
+      invalidImportForm ||
+      invalidRecord ||
+      invalidExactModuleDeclaration
+    ) {
+      return `${symbol} must use exactly one unaliased ${
+        typeOnly ? 'type' : 'value'
+      } import from ${specifier}`;
+    }
+    return undefined;
+  }
+
+  function moduleMetadataFor(parsed, file, className) {
+    const moduleImportProblem = exactNamedImportProblem(parsed, {
+      specifier: '@nestjs/common',
+      symbol: rawDirectedComposition?.decorator ?? 'Module',
+      typeOnly: false,
+    });
+    if (moduleImportProblem) {
+      compositionDiagnostic(file, moduleImportProblem);
+    }
+    const result = exactStaticModuleMetadata(
+      parsed.sourceFile,
+      className,
+      rawDirectedComposition?.decorator ?? 'Module',
+    );
+    if (result.problem) {
+      compositionDiagnostic(file, result.problem);
+      return undefined;
+    }
+    return result.metadata;
+  }
+
+  for (const edges of compositionEdgesByConsumer.values()) {
+    const [firstEdge] = edges;
+    if (!firstEdge) {
+      continue;
+    }
+    const file = resolve(projectRoot, firstEdge.consumerModule.file);
+    const parsed = parsedFiles.get(file);
+    if (!parsed) {
+      compositionDiagnostic(file, 'registered composition consumer module is missing');
+      continue;
+    }
+    const metadata = moduleMetadataFor(
+      parsed,
+      file,
+      firstEdge.consumerModule.className,
+    );
+    if (!metadata) {
+      continue;
+    }
+
+    const importsMetadata = staticArrayMetadata(metadata, 'imports');
+    if (importsMetadata.problem) {
+      compositionDiagnostic(file, importsMetadata.problem);
+    } else {
+      const invalidElements = importsMetadata.elements.filter(
+        (element) => !ts.isIdentifier(element),
+      );
+      const actual = importsMetadata.elements
+        .filter(ts.isIdentifier)
+        .map((element) => element.text);
+      const expected = edges
+        .map((edge) => edge.producerModule.className)
+        .concat(
+          rawRuntimeComposition?.moduleConsumers?.some(
+            (consumer) => consumer.owner === firstEdge.consumer,
+          )
+            ? [rawRuntimeComposition.module.className]
+            : [],
+        )
+        .sort();
+      const duplicates = [...new Set(
+        actual.filter((symbol, index) => actual.indexOf(symbol) !== index),
+      )].sort();
+      const missing = expected.filter((symbol) => !actual.includes(symbol));
+      const unknown = [...new Set(
+        actual.filter((symbol) => !expected.includes(symbol)),
+      )].sort();
+      if (invalidElements.length > 0) {
+        compositionDiagnostic(
+          file,
+          'directed module imports may contain only direct module identifiers',
+        );
+      }
+      if (duplicates.length > 0) {
+        compositionDiagnostic(
+          file,
+          `directed module imports contain duplicates: ${duplicates.join(', ')}`,
+        );
+      }
+      if (missing.length > 0) {
+        compositionDiagnostic(
+          file,
+          `directed module imports are missing registered modules: ${missing.join(', ')}`,
+        );
+      }
+      if (unknown.length > 0) {
+        compositionDiagnostic(
+          file,
+          `directed module imports contain unregistered modules: ${unknown.join(', ')}`,
+        );
+      }
+    }
+
+    const providersMetadata = staticArrayMetadata(metadata, 'providers');
+    if (providersMetadata.problem) {
+      compositionDiagnostic(file, providersMetadata.problem);
+    }
+
+    for (const edge of edges) {
+      const moduleImportProblem = exactNamedImportProblem(parsed, {
+        specifier: edge.producerModule.importSpecifier,
+        symbol: edge.producerModule.className,
+        typeOnly: false,
+        onlySymbolAtSpecifier: true,
+      });
+      if (moduleImportProblem) {
+        compositionDiagnostic(file, moduleImportProblem);
+      }
+      for (const binding of edge.publicBindings) {
+        for (const requirement of [
+          { symbol: binding.token, typeOnly: false },
+          { symbol: binding.contract, typeOnly: true },
+        ]) {
+          const importProblem = exactNamedImportProblem(parsed, {
+            specifier: binding.consumerImportSpecifier,
+            ...requirement,
+          });
+          if (importProblem) {
+            compositionDiagnostic(file, importProblem);
+          }
+        }
+
+        let injected = 0;
+        let invalidInjectMetadata = false;
+        for (const provider of providersMetadata.elements ?? []) {
+          if (!ts.isObjectLiteralExpression(provider)) {
+            continue;
+          }
+          const injectProperties = metadataProperties(provider, 'inject');
+          if (injectProperties.length > 1) {
+            invalidInjectMetadata = true;
+            continue;
+          }
+          if (injectProperties.length === 0) {
+            continue;
+          }
+          const [injectProperty] = injectProperties;
+          if (
+            !ts.isPropertyAssignment(injectProperty) ||
+            !ts.isArrayLiteralExpression(injectProperty.initializer)
+          ) {
+            invalidInjectMetadata = true;
+            continue;
+          }
+          for (const injectedValue of injectProperty.initializer.elements) {
+            if (ts.isIdentifier(injectedValue) && injectedValue.text === binding.token) {
+              injected += 1;
+            }
+          }
+        }
+        if (invalidInjectMetadata || injected !== 1) {
+          compositionDiagnostic(
+            file,
+            `${binding.token} must appear exactly once in one static provider inject array`,
+          );
+        }
+      }
+    }
+  }
+
+  for (const edges of compositionEdgesByProducer.values()) {
+    const [firstEdge] = edges;
+    if (!firstEdge) {
+      continue;
+    }
+    const file = resolve(projectRoot, firstEdge.producerModule.file);
+    const parsed = parsedFiles.get(file);
+    if (!parsed) {
+      compositionDiagnostic(file, 'registered composition producer module is missing');
+      continue;
+    }
+    const metadata = moduleMetadataFor(
+      parsed,
+      file,
+      firstEdge.producerModule.className,
+    );
+    if (!metadata) {
+      continue;
+    }
+    const providersMetadata = staticArrayMetadata(metadata, 'providers');
+    if (providersMetadata.problem) {
+      compositionDiagnostic(file, providersMetadata.problem);
+    }
+    const exportsMetadata = staticArrayMetadata(metadata, 'exports');
+    if (exportsMetadata.problem) {
+      compositionDiagnostic(file, exportsMetadata.problem);
+    }
+    const bindings = edges.flatMap((edge) => edge.publicBindings);
+    const expectedTokens = [...new Set(bindings.map((binding) => binding.token))].sort();
+    const actualExports = (exportsMetadata.elements ?? [])
+      .filter(ts.isIdentifier)
+      .map((element) => element.text);
+    const invalidExports = (exportsMetadata.elements ?? []).filter(
+      (element) => !ts.isIdentifier(element),
+    );
+    if (
+      invalidExports.length > 0 ||
+      JSON.stringify([...actualExports].sort()) !== JSON.stringify(expectedTokens) ||
+      new Set(actualExports).size !== actualExports.length
+    ) {
+      compositionDiagnostic(
+        file,
+        `exports must contain each registered public token exactly once: ${expectedTokens.join(', ')}`,
+      );
+    }
+
+    for (const binding of bindings) {
+      for (const requirement of [
+        { symbol: binding.token, typeOnly: false },
+        { symbol: binding.contract, typeOnly: true },
+      ]) {
+        const importProblem = exactNamedImportProblem(parsed, {
+          specifier: binding.producerImportSpecifier,
+          ...requirement,
+        });
+        if (importProblem) {
+          compositionDiagnostic(file, importProblem);
+        }
+      }
+
+      const providerBindings = (providersMetadata.elements ?? []).filter(
+        (provider) => {
+          if (!ts.isObjectLiteralExpression(provider)) {
+            return false;
+          }
+          const provideProperties = metadataProperties(provider, 'provide');
+          return provideProperties.some(
+            (property) =>
+              ts.isPropertyAssignment(property) &&
+              ts.isIdentifier(property.initializer) &&
+              property.initializer.text === binding.token,
+          );
+        },
+      );
+      const validBinding = providerBindings.length === 1
+        ? providerBindings[0]
+        : undefined;
+      const bindingStrategies = validBinding
+        ? ['useClass', 'useExisting', 'useFactory', 'useValue'].filter(
+            (name) => metadataProperties(validBinding, name).length === 1,
+          )
+        : [];
+      if (providerBindings.length !== 1 || bindingStrategies.length !== 1) {
+        compositionDiagnostic(
+          file,
+          `${binding.token} must have exactly one explicit provider binding`,
+        );
+      }
+    }
+  }
+
+  if (!fixture && rawRuntimeComposition?.module) {
+    const runtimeModuleFile = resolve(
+      projectRoot,
+      rawRuntimeComposition.module.file,
+    );
+    const runtimeModule = parsedFiles.get(runtimeModuleFile);
+    const runtimePublicFile = resolve(
+      projectRoot,
+      rawRuntimeComposition.publicSurface.file,
+    );
+    const runtimePublic = parsedFiles.get(runtimePublicFile);
+    const technicalProblem = (file, message) =>
+      compositionDiagnostic(file, `runtime infrastructure: ${message}`);
+
+    if (!runtimePublic) {
+      technicalProblem(runtimePublicFile, 'registered public surface is missing');
+    } else {
+      const actual = exportedNames(runtimePublic.sourceFile);
+      const expected = [...rawRuntimeComposition.publicSurface.exports].sort();
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+        technicalProblem(
+          runtimePublicFile,
+          `public exports ${JSON.stringify(actual)} do not match ${JSON.stringify(expected)}`,
+        );
+      }
+      if (
+        containsImportedReference(
+          runtimePublic.sourceFile,
+          createImportIdentityResolver(runtimePublic.sourceFile),
+          '@nestjs/common',
+          'Module',
+        )
+      ) {
+        technicalProblem(
+          runtimePublicFile,
+          'public runtime contracts must remain framework-neutral',
+        );
+      }
+    }
+
+    if (!runtimeModule) {
+      technicalProblem(runtimeModuleFile, 'registered technical module is missing');
+    } else {
+      const metadata = moduleMetadataFor(
+        runtimeModule,
+        runtimeModuleFile,
+        rawRuntimeComposition.module.className,
+      );
+      if (metadata) {
+        if (metadataProperties(metadata, 'imports').length !== 0) {
+          technicalProblem(
+            runtimeModuleFile,
+            'technical module imports must remain absent and closed',
+          );
+        }
+        const providers = staticArrayMetadata(metadata, 'providers');
+        if (providers.problem) {
+          technicalProblem(runtimeModuleFile, providers.problem);
+        }
+        const exportsMetadata = staticArrayMetadata(metadata, 'exports');
+        if (exportsMetadata.problem) {
+          technicalProblem(runtimeModuleFile, exportsMetadata.problem);
+        }
+        const expectedClassProviders = [
+          rawRuntimeComposition.environmentReader.className,
+          rawRuntimeComposition.lifecycleProvider.className,
+        ].sort();
+        const actualClassProviders = (providers.elements ?? [])
+          .filter(ts.isIdentifier)
+          .map((element) => element.text)
+          .sort();
+        if (
+          JSON.stringify(actualClassProviders) !==
+          JSON.stringify(expectedClassProviders)
+        ) {
+          technicalProblem(
+            runtimeModuleFile,
+            `class providers must be exactly ${expectedClassProviders.join(', ')}`,
+          );
+        }
+        const actualExports = (exportsMetadata.elements ?? [])
+          .filter(ts.isIdentifier)
+          .map((element) => element.text);
+        const expectedExports = rawRuntimeComposition.providers
+          .map(({ token }) => token)
+          .sort();
+        if (
+          (exportsMetadata.elements ?? []).some(
+            (element) => !ts.isIdentifier(element),
+          ) ||
+          new Set(actualExports).size !== actualExports.length ||
+          JSON.stringify([...actualExports].sort()) !==
+            JSON.stringify(expectedExports)
+        ) {
+          technicalProblem(
+            runtimeModuleFile,
+            `exports must contain exactly ${expectedExports.join(', ')}`,
+          );
+        }
+
+        for (const provider of rawRuntimeComposition.providers) {
+          const tokenImportProblem = exactNamedImportProblem(runtimeModule, {
+            specifier: './index.js',
+            symbol: provider.token,
+            typeOnly: false,
+          });
+          if (tokenImportProblem) {
+            technicalProblem(runtimeModuleFile, tokenImportProblem);
+          }
+          const matches = (providers.elements ?? []).filter((element) => {
+            if (!ts.isObjectLiteralExpression(element)) return false;
+            const properties = metadataProperties(element, 'provide');
+            return properties.length === 1 &&
+              ts.isPropertyAssignment(properties[0]) &&
+              ts.isIdentifier(properties[0].initializer) &&
+              properties[0].initializer.text === provider.token;
+          });
+          const [binding] = matches;
+          const expectedKeys = provider.strategy === 'useExisting'
+            ? ['provide', 'useExisting']
+            : ['inject', 'provide', 'useFactory'];
+          if (
+            matches.length !== 1 ||
+            !binding ||
+            JSON.stringify(
+              binding.properties
+                .map((property) =>
+                  property.name ? propertyNameText(property.name) : '',
+                )
+                .sort(),
+            ) !== JSON.stringify(expectedKeys)
+          ) {
+            technicalProblem(
+              runtimeModuleFile,
+              `${provider.token} must have one exact ${provider.strategy} provider binding`,
+            );
+            continue;
+          }
+          const strategyProperties = metadataProperties(
+            binding,
+            provider.strategy,
+          );
+          if (strategyProperties.length !== 1) {
+            technicalProblem(
+              runtimeModuleFile,
+              `${provider.token} must use ${provider.strategy} exactly once`,
+            );
+          }
+          if (provider.strategy === 'useExisting') {
+            const strategy = strategyProperties[0];
+            if (
+              !ts.isPropertyAssignment(strategy) ||
+              !ts.isIdentifier(strategy.initializer) ||
+              strategy.initializer.text !== provider.implementation
+            ) {
+              technicalProblem(
+                runtimeModuleFile,
+                `${provider.token} must bind to ${provider.implementation}`,
+              );
+            }
+          } else {
+            const inject = metadataProperties(binding, 'inject');
+            if (
+              inject.length !== 1 ||
+              !ts.isPropertyAssignment(inject[0]) ||
+              !ts.isArrayLiteralExpression(inject[0].initializer) ||
+              inject[0].initializer.elements.length !== 1 ||
+              !ts.isIdentifier(inject[0].initializer.elements[0]) ||
+              inject[0].initializer.elements[0].text !== provider.implementation
+            ) {
+              technicalProblem(
+                runtimeModuleFile,
+                `${provider.token} must inject only ${provider.implementation}`,
+              );
+            }
+          }
+        }
+      }
+    }
+
+    for (const registration of rawRuntimeComposition.moduleConsumers) {
+      const file = resolve(projectRoot, registration.file);
+      const parsed = parsedFiles.get(file);
+      if (!parsed) {
+        technicalProblem(file, 'registered module consumer is missing');
+        continue;
+      }
+      const importProblem = exactNamedImportProblem(parsed, {
+        specifier: registration.importSpecifier,
+        symbol: rawRuntimeComposition.module.className,
+        typeOnly: false,
+        onlySymbolAtSpecifier: true,
+      });
+      if (importProblem) technicalProblem(file, importProblem);
+      const metadata = moduleMetadataFor(parsed, file, registration.className);
+      const imports = metadata
+        ? staticArrayMetadata(metadata, 'imports')
+        : { problem: 'registered module metadata is missing' };
+      if (imports.problem) {
+        technicalProblem(file, imports.problem);
+      } else {
+        const occurrences = imports.elements.filter(
+          (element) =>
+            ts.isIdentifier(element) &&
+            element.text === rawRuntimeComposition.module.className,
+        ).length;
+        if (occurrences !== 1) {
+          technicalProblem(
+            file,
+            `${rawRuntimeComposition.module.className} must appear exactly once in static module imports`,
+          );
+        }
+      }
+    }
+
+    function providerInjectCount(parsed, token) {
+      let count = 0;
+      function visit(node) {
+        if (
+          ts.isPropertyAssignment(node) &&
+          node.name &&
+          propertyNameText(node.name) === 'inject' &&
+          ts.isArrayLiteralExpression(node.initializer)
+        ) {
+          count += node.initializer.elements.filter(
+            (element) => ts.isIdentifier(element) && element.text === token,
+          ).length;
+        }
+        ts.forEachChild(node, visit);
+      }
+      visit(parsed.sourceFile);
+      return count;
+    }
+
+    function constructorInjectCount(parsed, token) {
+      let count = 0;
+      function visit(node) {
+        if (
+          ts.isCallExpression(node) &&
+          ts.isIdentifier(node.expression) &&
+          node.expression.text === 'Inject' &&
+          node.arguments.length === 1 &&
+          ts.isIdentifier(node.arguments[0]) &&
+          node.arguments[0].text === token
+        ) {
+          count += 1;
+        }
+        ts.forEachChild(node, visit);
+      }
+      visit(parsed.sourceFile);
+      return count;
+    }
+
+    for (const site of rawRuntimeComposition.bindingSites) {
+      const file = resolve(projectRoot, site.file);
+      const parsed = parsedFiles.get(file);
+      if (!parsed) {
+        technicalProblem(file, `registered binding site for ${site.token} is missing`);
+        continue;
+      }
+      const requirements = site.kind === 'contract-only'
+        ? [{ symbol: site.contract, typeOnly: true }]
+        : [
+            { symbol: site.token, typeOnly: false },
+            { symbol: site.contract, typeOnly: true },
+          ];
+      for (const requirement of requirements) {
+        const problem = exactNamedImportProblem(parsed, {
+          specifier: site.importSpecifier,
+          ...requirement,
+        });
+        if (problem) technicalProblem(file, problem);
+      }
+      const count = site.kind === 'contract-only'
+        ? 1
+        : site.kind === 'module-provider-inject'
+        ? providerInjectCount(parsed, site.token)
+        : site.kind === 'constructor-inject'
+          ? constructorInjectCount(parsed, site.token)
+          : [...parsed.text.matchAll(
+              new RegExp(
+                `\\.get\\s*<\\s*${site.contract}\\s*>\\s*\\(\\s*${site.token}\\s*\\)`,
+                'gu',
+              ),
+            )].length;
+      if (count !== 1) {
+        technicalProblem(
+          file,
+          `${site.token} must be consumed exactly once through ${site.kind}`,
+        );
+      }
+    }
+
+    const allowedRuntimeImports = new Map();
+    for (const consumer of rawRuntimeComposition.moduleConsumers) {
+      allowedRuntimeImports.set(
+        `${consumer.file}\0${rawRuntimeComposition.module.file}`,
+        consumer.importSpecifier,
+      );
+    }
+    for (const site of rawRuntimeComposition.bindingSites) {
+      allowedRuntimeImports.set(
+        `${site.file}\0${rawRuntimeComposition.publicSurface.file}`,
+        site.importSpecifier,
+      );
+    }
+    for (const [file, parsed] of parsedFiles) {
+      const relativePath = toPosix(relative(projectRoot, file));
+      const isProduct = relativePath.startsWith('src/modules/');
+      const isRuntime = relativePath.startsWith('src/infrastructure/runtime/');
+      const governedRuntimeConsumers = new Set([
+        ...rawRuntimeComposition.moduleConsumers.map(({ file }) => file),
+        ...rawRuntimeComposition.bindingSites.map(({ file }) => file),
+      ]);
+      if (
+        (isRuntime || (isProduct && governedRuntimeConsumers.has(relativePath))) &&
+        parsed.text.includes(rawRuntimeComposition.environmentReader.ambientExpression) &&
+        relativePath !== rawRuntimeComposition.environmentReader.file
+      ) {
+        technicalProblem(
+          file,
+          `${rawRuntimeComposition.environmentReader.ambientExpression} may be read only by ${rawRuntimeComposition.environmentReader.file}`,
+        );
+      }
+      for (const record of parsed.records) {
+        const target = resolveLocalSource(file, record.specifier, sourceFileSet);
+        if (!target) continue;
+        const targetRelative = toPosix(relative(projectRoot, target));
+        if (isProduct && targetRelative.startsWith('src/infrastructure/runtime/')) {
+          const expected = allowedRuntimeImports.get(
+            `${relativePath}\0${targetRelative}`,
+          );
+          if (record.kind !== 'import' || record.specifier !== expected) {
+            technicalProblem(
+              file,
+              `product runtime import ${record.specifier} is not an exact registered consumer edge`,
+            );
+          }
+        }
+        if (isRuntime && targetRelative.startsWith('src/modules/')) {
+          technicalProblem(
+            file,
+            `technical module import ${record.specifier} crosses into product ownership`,
+          );
+        }
+      }
+    }
+  }
 
   for (const [relativePath, requirement] of Object.entries(
     policy.requiredStructuralFiles,

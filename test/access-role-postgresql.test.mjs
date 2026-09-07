@@ -36,6 +36,8 @@ const accessTables = [
   'access_capabilities',
 ];
 const tables = [
+  'access_operational_sessions',
+  'access_operational_session_station_guards',
   ...accessTables,
   'user_lifecycle_commands',
   'user_provisioning_bootstraps',
@@ -190,6 +192,11 @@ function revocation(overrides = {}) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists stations_advance_admission_revision() cascade');
+  await admin.query('drop function if exists users_advance_admission_revision() cascade');
+  await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
+  await admin.query('drop function if exists access_invalidate_operational_sessions_for_context_change() cascade');
+  await admin.query('drop function if exists access_advance_pin_credential_version() cascade');
   await admin.query(
     `drop table if exists ${tables.map((name) => `"${name}"`).join(', ')} cascade`,
   );
@@ -308,7 +315,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 20);
+      assert.equal(applied.status.migrations.length, 23);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -923,6 +930,18 @@ test(
       let latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
+      assert.equal(latest?.name, '20260907120000_access_create_operational_sessions');
+      await runner.migrateDown(authorization(latest));
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations].reverse().find(({ state }) => state === 'applied');
+      assert.equal(latest?.name, '20260907111000_users_add_admission_revision');
+      await runner.migrateDown(authorization(latest));
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations].reverse().find(({ state }) => state === 'applied');
+      assert.equal(latest?.name, '20260907110000_stations_add_admission_revisions');
+      await runner.migrateDown(authorization(latest));
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations].reverse().find(({ state }) => state === 'applied');
       assert.equal(
         latest?.name,
         '20260907010000_access_create_pin_credentials',

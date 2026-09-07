@@ -160,6 +160,7 @@ jobs:
           SR_DB_ROLE: application
           SR_DB_ACCESS_MODE: read-write
           SR_DB_MIGRATIONS_ENABLED: "false"
+          SR_PIN_PEPPER: NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ
 
       - name: Run compiled UI route smoke
         run: pnpm run smoke:ui
@@ -181,6 +182,7 @@ jobs:
           SR_DB_ROLE: application
           SR_DB_ACCESS_MODE: read-write
           SR_DB_MIGRATIONS_ENABLED: "false"
+          SR_PIN_PEPPER: NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ
 
       - name: Check whitespace and repository immutability
         shell: bash

@@ -780,8 +780,10 @@ export const persistenceFixtureCases = [
     }),
   },
   {
-    name: 'PBI-023 central owner-named migration may use semantic raw SQL',
-    expectedRules: [],
+    name: 'D5-R047 rejects an unregistered owner-named migration with semantic raw SQL',
+    expectedRules: ['D5-R047'],
+    expectedPath:
+      'src/infrastructure/database/migrations/20260724010101_tenancy_create_tenants.ts',
     files: {
       'src/infrastructure/database/migrations/20260724010101_tenancy_create_tenants.ts':
         "import { sql } from 'kysely';\nexport const up = () => sql`create table tenants (tenant_id text)`;\n",
@@ -969,7 +971,7 @@ export const persistenceFixtureCases = [
   },
   {
     name: 'D5-R042 rejects central migration with noncanonical name',
-    expectedRules: ['D5-R042'],
+    expectedRules: ['D5-R042', 'D5-R047'],
     expectedPath: 'src/infrastructure/database/migrations/create-tenants.ts',
     files: {
       'src/infrastructure/database/migrations/create-tenants.ts':

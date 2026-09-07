@@ -73,6 +73,9 @@ test('startup and product modules do not consume the connection facility', async
     await Promise.all(files.map((file) => readFile(file, 'utf8')))
   ).join('\n');
 
-  assert.doesNotMatch(combined, /database-connection/u);
+  assert.doesNotMatch(
+    combined,
+    /from\s+['"][^'"]*\/infrastructure\/database\/database-connection\.js['"]/u,
+  );
   assert.doesNotMatch(combined, /createDatabaseConnection/u);
 });

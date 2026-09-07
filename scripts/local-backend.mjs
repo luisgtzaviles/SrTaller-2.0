@@ -12,11 +12,20 @@ import { localDbUp } from './local-db.mjs';
 const values = await ensureLocalEnvironment();
 await localDbUp();
 await materializeLocalEvidenceFixtures();
+const baseEnvironment = cleanChildEnvironment();
+for (const key of [
+  'SR_PIN_PEPPER',
+  'SR_SESSION_SIGNING_KEY',
+  'SR_STATION_BOOTSTRAP_SECRET',
+  'SR_USER_BOOTSTRAP_SECRET',
+]) delete baseEnvironment[key];
 const child = spawn('pnpm', ['run', 'dev'], {
   env: {
-    ...cleanChildEnvironment(),
+    ...baseEnvironment,
     ...startupEnvironment(values),
     ...databaseEnvironment(values, 'application'),
+    SR_PIN_PEPPER: values.SR_PIN_PEPPER,
+    SR_STATION_BOOTSTRAP_SECRET: values.SR_STATION_BOOTSTRAP_SECRET,
   },
   stdio: 'inherit',
 });

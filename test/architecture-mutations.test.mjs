@@ -23,9 +23,20 @@ import { remediationMutations } from './architecture-remediation-mutations.mjs';
 
 const withAccessPersistenceComposition = (content) => [
   "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
+  "import type { KyselyOperationalSessionRepository } from './infrastructure/persistence/kysely-operational-session.repository.js';",
   "import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';",
   content,
 ].join('\n');
+
+function replaceExactly(content, search, replacement) {
+  const parts = content.split(search);
+  assert.equal(
+    parts.length,
+    2,
+    `controlled mutation source must contain exactly one ${JSON.stringify(search)}`,
+  );
+  return `${parts[0]}${replacement}${parts[1]}`;
+}
 
 async function missingParents(path, root) {
   const parents = [];
@@ -93,6 +104,74 @@ const mutations = [
     ].join('\n'),
   },
   {
+    name: 'directed composition module alias',
+    path: 'src/modules/access/access.module.ts',
+    expectedPath: 'src/modules/access/access.module.ts',
+    rule: 'D5-R024',
+    transform: (content) => replaceExactly(
+      replaceExactly(
+        content,
+        "import { StationsModule } from '../stations/stations.module.js';",
+        "import { StationsModule as StationComposition } from '../stations/stations.module.js';",
+      ),
+      'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
+      'imports: [RuntimeInfrastructureModule, StationComposition, UsersModule]',
+    ),
+  },
+  {
+    name: 'directed composition graph-only module edge',
+    path: 'src/modules/access/access.module.ts',
+    expectedPath: 'src/modules/access/access.module.ts',
+    rule: 'D5-R024',
+    transform: (content) => replaceExactly(
+      replaceExactly(
+        content,
+        "import { StationsModule } from '../stations/stations.module.js';",
+        "import { StationsModule } from '../stations/stations.module.js';\nimport { TenancyModule } from '../tenancy/tenancy.module.js';",
+      ),
+      'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
+      'imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule]',
+    ),
+  },
+  {
+    name: 'directed composition injection removed',
+    path: 'src/modules/access/access.module.ts',
+    expectedPath: 'src/modules/access/access.module.ts',
+    rule: 'D5-R024',
+    transform: (content) => replaceExactly(
+      content,
+      '        TRUSTED_STATION_CONTEXT_RESOLVER,\n',
+      '',
+    ),
+  },
+  {
+    name: 'directed composition producer export removed',
+    path: 'src/modules/stations/stations.module.ts',
+    expectedPath: 'src/modules/stations/stations.module.ts',
+    rule: 'D5-R024',
+    transform: (content) => replaceExactly(
+      content,
+      '    TRUSTED_STATION_CONTEXT_RESOLVER,\n',
+      '',
+    ),
+  },
+  {
+    name: 'directed composition reverse edge cycle',
+    path: 'src/modules/users/users.module.ts',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedPaths: [
+      'src/modules/access/access.module.ts',
+      'src/modules/users/users.module.ts',
+    ],
+    expectedRules: ['D5-R007', 'D5-R024'],
+    rule: 'D5-R024',
+    transform: (content) => replaceExactly(
+      `import { AccessModule } from '../access/access.module.js';\n${content}`,
+      '@Module({',
+      '@Module({\n  imports: [AccessModule],',
+    ),
+  },
+  {
     name: 'framework boundary',
     path: 'src/modules/access/domain/model.ts',
     expectedPath: 'src/modules/access/domain/model.ts',
@@ -131,6 +210,7 @@ const mutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPaths: [
       'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
     ],
     rule: 'D5-R041',
@@ -224,6 +304,7 @@ const mutations = [
     expectedPaths: [
       'src/modules/access/access.module.ts',
       'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
     ],
     content: '',
@@ -296,6 +377,56 @@ const mutations = [
       '',
     ].join('\n'),
   },
+  {
+    name: 'migration ownership rejects a Stations migration cross-owner table',
+    path: 'src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts',
+    expectedPath: 'src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts',
+    rule: 'D5-R047',
+    transform: (content) => replaceExactly(
+      content,
+      "await database.schema.alterTable('branches')\n    .addColumn('admission_revision'",
+      "await database.schema.alterTable('users')\n    .addColumn('admission_revision'",
+    ),
+  },
+  {
+    name: 'migration ownership rejects an unregistered Users function',
+    path: 'src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts',
+    expectedPath: 'src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts',
+    rule: 'D5-R047',
+    transform: (content) => replaceExactly(
+      content,
+      'create function users_advance_admission_revision()',
+      'create function users_advance_admission_revision_unregistered()',
+    ),
+  },
+  {
+    name: 'migration ownership rejects an unregistered Access trigger',
+    path: 'src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts',
+    expectedPath: 'src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts',
+    rule: 'D5-R047',
+    transform: (content) => replaceExactly(
+      content,
+      'create trigger access_sessions_validate_admission\n    before insert',
+      'create trigger access_sessions_validate_admission_unregistered\n    before insert',
+    ),
+  },
+  {
+    name: 'migration ownership rejects an unregistered backdated migration',
+    path: 'src/infrastructure/database/migrations/20260801000000_access_create_backdated_probe.ts',
+    expectedPath: 'src/infrastructure/database/migrations/20260801000000_access_create_backdated_probe.ts',
+    rule: 'D5-R047',
+    content: [
+      "import type { Kysely } from 'kysely';",
+      "import type { DatabaseSchema } from '../database-types.js';",
+      'export async function up(database: Kysely<DatabaseSchema>): Promise<void> {',
+      "  await database.schema.createTable('access_backdated_probe').execute();",
+      '}',
+      'export async function down(database: Kysely<DatabaseSchema>): Promise<void> {',
+      "  await database.schema.dropTable('access_backdated_probe').execute();",
+      '}',
+      '',
+    ].join('\n'),
+  },
   ...remediationMutations,
 ];
 
@@ -316,7 +447,10 @@ for (const mutation of mutations) {
         original = await readFile(destination, 'utf8').catch(() => undefined);
         destinationParents = await missingParents(dirname(destination), root);
         await mkdir(dirname(destination), { recursive: true });
-        await writeFile(destination, mutation.content);
+        const content = mutation.transform
+          ? mutation.transform(original)
+          : mutation.content;
+        await writeFile(destination, content);
       }
 
       let directoryParents = [];

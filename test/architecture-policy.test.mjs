@@ -50,7 +50,173 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
   ]);
 });
 
-test('Repairs presentation and Health are the explicitly governed HTTP surfaces', async () => {
+test('policy v4 registers exact directed public module composition', async () => {
+  const policy = JSON.parse(
+    await readFile('architecture/dec-005-policy.json', 'utf8'),
+  );
+  assert.equal(policy.policyVersion, 4);
+  assert.deepEqual(policy.directedModuleComposition, {
+    decorator: 'Module',
+    edges: [
+      {
+        consumer: 'access',
+        producer: 'stations',
+        consumerModule: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+        },
+        producerModule: {
+          file: 'src/modules/stations/stations.module.ts',
+          className: 'StationsModule',
+          importSpecifier: '../stations/stations.module.js',
+        },
+        publicBindings: [
+          {
+            token: 'TRUSTED_STATION_ADMISSION_VALIDATOR',
+            contract: 'TrustedStationAdmissionValidator',
+            consumerImportSpecifier: '../stations/index.js',
+            producerImportSpecifier: './index.js',
+          },
+          {
+            token: 'TRUSTED_STATION_CONTEXT_RESOLVER',
+            contract: 'TrustedStationContextResolver',
+            consumerImportSpecifier: '../stations/index.js',
+            producerImportSpecifier: './index.js',
+          },
+        ],
+      },
+      {
+        consumer: 'access',
+        producer: 'users',
+        consumerModule: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+        },
+        producerModule: {
+          file: 'src/modules/users/users.module.ts',
+          className: 'UsersModule',
+          importSpecifier: '../users/users.module.js',
+        },
+        publicBindings: [
+          {
+            token: 'AUTHENTICATION_USER_ADMISSION_VALIDATOR',
+            contract: 'AuthenticationUserAdmissionValidator',
+            consumerImportSpecifier: '../users/index.js',
+            producerImportSpecifier: './index.js',
+          },
+          {
+            token: 'AUTHENTICATION_USER_READER',
+            contract: 'AuthenticationUserReader',
+            consumerImportSpecifier: '../users/index.js',
+            producerImportSpecifier: './index.js',
+          },
+        ],
+      },
+    ],
+  });
+  for (const edge of policy.directedModuleComposition.edges) {
+    assert.ok(policy.dependencies[edge.consumer].includes(edge.producer));
+    assert.ok(policy.consumers[edge.producer].includes(edge.consumer));
+    for (const binding of edge.publicBindings) {
+      assert.ok(policy.publicSurfaces[edge.producer].includes(binding.token));
+      assert.ok(policy.publicSurfaces[edge.producer].includes(binding.contract));
+    }
+  }
+});
+
+test('runtime composition exports configuration while Stations owns local bootstrap assembly', async () => {
+  const [policySource, runtimeModule, stationsModule, controller] =
+    await Promise.all([
+      readFile('architecture/dec-005-policy.json', 'utf8'),
+      readFile(
+        'src/infrastructure/runtime/runtime-infrastructure.module.ts',
+        'utf8',
+      ),
+      readFile('src/modules/stations/stations.module.ts', 'utf8'),
+      readFile(
+        'src/modules/stations/presentation/local-station-bootstrap.controller.ts',
+        'utf8',
+      ),
+    ]);
+  const policy = JSON.parse(policySource);
+  const runtime = policy.runtimeInfrastructureComposition;
+  assert.equal(Object.hasOwn(runtime, 'ownerInternalImports'), false);
+  assert.deepEqual(
+    runtime.providers.find(
+      ({ token }) => token === 'LOCAL_RUNTIME_CONFIGURATION',
+    ),
+    {
+      token: 'LOCAL_RUNTIME_CONFIGURATION',
+      contract: 'LocalRuntimeConfiguration',
+      strategy: 'useFactory',
+      implementation: 'RuntimeEnvironmentReader',
+      consumers: ['src/modules/stations/stations.module.ts'],
+    },
+  );
+  assert.doesNotMatch(runtimeModule, /modules\/stations/u);
+  assert.match(stationsModule, /provide:\s*LOCAL_STATION_BOOTSTRAP_RUNTIME/u);
+  assert.match(stationsModule, /inject:\s*\[LOCAL_RUNTIME_CONFIGURATION\]/u);
+  assert.match(
+    controller,
+    /\.\.\/application\/ports\/local-station-bootstrap-runtime\.port\.js/u,
+  );
+  assert.doesNotMatch(controller, /infrastructure\/runtime/u);
+});
+
+test('migration ownership is fail-closed without a timestamp bypass', async () => {
+  const policy = JSON.parse(
+    await readFile('architecture/dec-005-policy.json', 'utf8'),
+  );
+  const ownership = policy.persistence.migrationOwnership;
+  assert.deepEqual(Object.keys(ownership).sort(), [
+    'legacyMigrations',
+    'registrations',
+  ]);
+  assert.equal(Object.hasOwn(ownership, 'enforcedFrom'), false);
+  assert.deepEqual(ownership.legacyMigrations, [
+    'src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts',
+    'src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts',
+    'src/infrastructure/database/migrations/20260819140000_repairs_create_timeline_entries.ts',
+    'src/infrastructure/database/migrations/20260819150000_repairs_create_attachments.ts',
+    'src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts',
+    'src/infrastructure/database/migrations/20260902090000_repairs_create_technician_assignment.ts',
+    'src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts',
+    'src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts',
+    'src/infrastructure/database/migrations/20260903120000_repairs_create_workflow_transitions.ts',
+    'src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts',
+    'src/infrastructure/database/migrations/20260904120000_stations_add_branch_timezone.ts',
+    'src/infrastructure/database/migrations/20260905160000_stations_create_trusted_runtime_context.ts',
+    'src/infrastructure/database/migrations/20260906170000_users_create_directory.ts',
+    'src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts',
+    'src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts',
+    'src/infrastructure/database/migrations/20260906180000_access_create_capability_catalog.ts',
+    'src/infrastructure/database/migrations/20260906181000_access_create_roles.ts',
+    'src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts',
+    'src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts',
+  ]);
+  assert.deepEqual(Object.keys(ownership.registrations), [
+    'src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts',
+    'src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts',
+    'src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts',
+  ]);
+  assert.deepEqual(
+    Object.values(ownership.registrations).map(({ owner }) => owner),
+    ['stations', 'users', 'access'],
+  );
+  for (const registration of Object.values(ownership.registrations)) {
+    assert.deepEqual(Object.keys(registration).sort(), [
+      'functions',
+      'owner',
+      'tables',
+      'triggers',
+    ]);
+    assert.ok(registration.tables.length > 0);
+    assert.ok(registration.functions.length > 0);
+    assert.ok(registration.triggers.length > 0);
+  }
+});
+
+test('registered module presentation and Health are the explicitly governed HTTP surfaces', async () => {
   const policy = JSON.parse(
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
@@ -58,6 +224,15 @@ test('Repairs presentation and Health are the explicitly governed HTTP surfaces'
   assert.deepEqual(
     policy.httpSurfacePolicy.controllers,
     {
+      'src/modules/access/presentation/access-session.controller.ts': {
+        owner: 'access',
+        className: 'AccessSessionController',
+        composition: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: './presentation/access-session.controller.js',
+        },
+      },
       'src/modules/repairs/presentation/repairs.controller.ts': {
         owner: 'repairs',
         className: 'RepairsController',
@@ -65,6 +240,15 @@ test('Repairs presentation and Health are the explicitly governed HTTP surfaces'
           file: 'src/modules/repairs/repairs.module.ts',
           className: 'RepairsModule',
           importSpecifier: './presentation/repairs.controller.js',
+        },
+      },
+      'src/modules/stations/presentation/local-station-bootstrap.controller.ts': {
+        owner: 'stations',
+        className: 'LocalStationBootstrapController',
+        composition: {
+          file: 'src/modules/stations/stations.module.ts',
+          className: 'StationsModule',
+          importSpecifier: './presentation/local-station-bootstrap.controller.js',
         },
       },
     },

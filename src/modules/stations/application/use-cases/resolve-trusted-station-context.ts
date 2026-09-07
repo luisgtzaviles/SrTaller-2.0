@@ -1,10 +1,7 @@
 import { createTrustedStationContext } from '../contracts/trusted-station-context.js';
 import type { TrustedStationContext } from '../contracts/trusted-station-context.js';
 import type { StationCredentialVerifier } from '../ports/station-credential.port.js';
-
-export class TrustedStationContextError extends Error {
-  constructor() { super('Trusted station context is unavailable.'); this.name = 'TrustedStationContextError'; }
-}
+import { TrustedStationContextError } from '../../index.js';
 
 export class ResolveTrustedStationContextUseCase {
   constructor(private readonly verifier: StationCredentialVerifier) {}

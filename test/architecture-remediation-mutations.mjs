@@ -1,6 +1,7 @@
 const withAccessPersistenceComposition = (content) =>
   [
     "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
+    "import type { KyselyOperationalSessionRepository } from './infrastructure/persistence/kysely-operational-session.repository.js';",
     "import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';",
     content,
   ].join('\n');

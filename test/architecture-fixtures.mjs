@@ -31,6 +31,7 @@ export const validFiles = {
   ].join('\n'),
   'src/modules/stations/index.ts': [
     "import type { TenancyModuleContract } from '../tenancy/index.js';",
+    'export class TrustedStationContextError extends Error {}',
     'export interface StationsModuleContract {',
     "  readonly module: 'stations';",
     '  readonly tenancy: TenancyModuleContract;',
@@ -55,6 +56,111 @@ export const validFiles = {
     'export class TenancyModule {}',
     '',
   ].join('\n'),
+};
+
+const directedAccessModule = [
+  "import { Module } from '@nestjs/common';",
+  "import { RuntimeInfrastructureModule } from '../../infrastructure/runtime/runtime-infrastructure.module.js';",
+  "import { StationsModule } from '../stations/stations.module.js';",
+  "import { UsersModule } from '../users/users.module.js';",
+  "import { TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER } from '../stations/index.js';",
+  "import type { TrustedStationAdmissionValidator, TrustedStationContextResolver } from '../stations/index.js';",
+  "import { AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER } from '../users/index.js';",
+  "import type { AuthenticationUserAdmissionValidator, AuthenticationUserReader } from '../users/index.js';",
+  '@Module({',
+  '  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],',
+  '  providers: [{',
+  "    provide: 'DIRECTED_COMPOSITION_PROBE',",
+  '    inject: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER, AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER],',
+  '    useFactory: (stationAdmission: TrustedStationAdmissionValidator, stations: TrustedStationContextResolver, userAdmission: AuthenticationUserAdmissionValidator, users: AuthenticationUserReader) => ({ stationAdmission, stations, userAdmission, users }),',
+  '  }],',
+  '})',
+  'export class AccessModule {}',
+  '',
+].join('\n');
+
+const directedStationsIndex = [
+  "import type { TenancyModuleContract } from '../tenancy/index.js';",
+  'export class TrustedStationContextError extends Error {}',
+  'export interface TrustedStationContext {',
+  '  readonly tenantId: string;',
+  '  readonly branchId: string;',
+  '  readonly stationId: string;',
+  '}',
+  'export interface TrustedStationContextResolver {',
+  '  resolve(cookie: string | undefined): Promise<TrustedStationContext>;',
+  '}',
+  'export interface TrustedStationAdmissionValidator {',
+  '  validateTrustedStationAdmission(context: TrustedStationContext, expected: object, transactionContext: object): Promise<object | null>;',
+  '}',
+  "export const TRUSTED_STATION_ADMISSION_VALIDATOR: unique symbol = Symbol('fixture.station-admission');",
+  "export const TRUSTED_STATION_CONTEXT_RESOLVER: unique symbol = Symbol('fixture.station-resolver');",
+  'export function isTrustedStationContext(value: unknown): value is TrustedStationContext { return typeof value === "object"; }',
+  'export interface StationsModuleContract {',
+  "  readonly module: 'stations';",
+  '  readonly tenancy: TenancyModuleContract;',
+  '}',
+  '',
+].join('\n');
+
+const directedStationsModule = [
+  "import { Module } from '@nestjs/common';",
+  "import { TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER } from './index.js';",
+  "import type { TrustedStationAdmissionValidator, TrustedStationContextResolver } from './index.js';",
+  '@Module({',
+  '  providers: [{',
+  '    provide: TRUSTED_STATION_ADMISSION_VALIDATOR,',
+  '    useFactory: (): TrustedStationAdmissionValidator => ({ validateTrustedStationAdmission: async () => null }),',
+  '  }, {',
+  '    provide: TRUSTED_STATION_CONTEXT_RESOLVER,',
+  '    useFactory: (): TrustedStationContextResolver => ({ resolve: async () => { throw new Error("fixture"); } }),',
+  '  }],',
+  '  exports: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER],',
+  '})',
+  'export class StationsModule {}',
+  '',
+].join('\n');
+
+const directedUsersIndex = [
+  "import type { TenantId } from '../tenancy/index.js';",
+  "export const AUTHENTICATION_USER_ADMISSION_VALIDATOR: unique symbol = Symbol('fixture.user-admission');",
+  "export const AUTHENTICATION_USER_READER: unique symbol = Symbol('fixture.user-reader');",
+  'export interface AuthenticationUserScope { readonly tenantId: TenantId; }',
+  'export interface AuthenticationUserRecord { readonly userId: string; }',
+  'export interface AuthenticationUserReader {',
+  '  findAuthenticationUser(scope: AuthenticationUserScope, userId: string): Promise<AuthenticationUserRecord | null>;',
+  '}',
+  'export interface AuthenticationUserAdmissionValidator {',
+  '  validateAuthenticationUserAdmission(scope: AuthenticationUserScope, userId: string, expectedVersion: number, expectedAdmissionRevision: number, transactionContext: object): Promise<object | null>;',
+  '}',
+  "export interface UsersModuleContract { readonly module: 'users'; }",
+  '',
+].join('\n');
+
+const directedUsersModule = [
+  "import { Module } from '@nestjs/common';",
+  "import { AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER } from './index.js';",
+  "import type { AuthenticationUserAdmissionValidator, AuthenticationUserReader } from './index.js';",
+  '@Module({',
+  '  providers: [{',
+  '    provide: AUTHENTICATION_USER_ADMISSION_VALIDATOR,',
+  '    useFactory: (): AuthenticationUserAdmissionValidator => ({ validateAuthenticationUserAdmission: async () => null }),',
+  '  }, {',
+  '    provide: AUTHENTICATION_USER_READER,',
+  '    useFactory: (): AuthenticationUserReader => ({ findAuthenticationUser: async () => null }),',
+  '  }],',
+  '  exports: [AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER],',
+  '})',
+  'export class UsersModule {}',
+  '',
+].join('\n');
+
+const validDirectedCompositionFiles = {
+  'src/modules/access/access.module.ts': directedAccessModule,
+  'src/modules/stations/index.ts': directedStationsIndex,
+  'src/modules/stations/stations.module.ts': directedStationsModule,
+  'src/modules/users/index.ts': directedUsersIndex,
+  'src/modules/users/users.module.ts': directedUsersModule,
 };
 
 const expectedPathByFixtureName = {
@@ -140,6 +246,351 @@ export const fixtureCases = [
   {
     name: 'allowed graph through public indexes',
     expectedRules: [],
+  },
+  {
+    name: 'registered directed module composition',
+    expectedRules: [],
+    files: validDirectedCompositionFiles,
+  },
+  {
+    name: 'directed composition graph edge without registry',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'not explicitly registered|unregistered modules',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': [
+        "import { TenancyModule } from '../tenancy/tenancy.module.js';",
+        directedAccessModule.replace(
+          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule]',
+        ),
+      ].join('\n'),
+    },
+  },
+  {
+    name: 'directed composition module alias',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'unaliased value import|missing registered modules',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule
+        .replace(
+          'import { StationsModule }',
+          'import { StationsModule as StationComposition }',
+        )
+        .replace(
+          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationComposition, UsersModule]',
+        ),
+    },
+  },
+  {
+    name: 'directed composition namespace module import',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'static named import|direct module identifiers',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule
+        .replace(
+          "import { StationsModule } from '../stations/stations.module.js';",
+          "import * as StationsComposition from '../stations/stations.module.js';",
+        )
+        .replace(
+          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationsComposition.StationsModule, UsersModule]',
+        ),
+    },
+  },
+  {
+    name: 'directed composition dynamic module import',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'static named import|missing registered modules',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule
+        .replace(
+          "import { StationsModule } from '../stations/stations.module.js';",
+          "void import('../stations/stations.module.js');",
+        )
+        .replace(
+          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, UsersModule]',
+        ),
+    },
+  },
+  {
+    name: 'directed composition forwardRef import',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024', 'D5-R025'],
+    expectedText: 'direct module identifiers|forwardRef is forbidden',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule
+        .replace(
+          "import { Module } from '@nestjs/common';",
+          "import { forwardRef, Module } from '@nestjs/common';",
+        )
+        .replace(
+          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, forwardRef(() => StationsModule), UsersModule]',
+        ),
+    },
+  },
+  {
+    name: 'directed composition missing imports metadata',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'exactly one imports property',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule.replace(
+        '  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],\n',
+        '',
+      ),
+    },
+  },
+  {
+    name: 'directed composition duplicate imports metadata',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'exactly one imports property',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule.replace(
+        '  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],',
+        '  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],\n  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],',
+      ),
+    },
+  },
+  {
+    name: 'directed composition duplicate module import',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'directed module imports contain duplicates',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule.replace(
+        'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
+        'imports: [RuntimeInfrastructureModule, StationsModule, StationsModule, UsersModule]',
+      ),
+    },
+  },
+  {
+    name: 'directed composition missing public token import',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'TRUSTED_STATION_CONTEXT_RESOLVER must use exactly one',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule.replace(
+        "import { TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER } from '../stations/index.js';\n",
+        '',
+      ),
+    },
+  },
+  {
+    name: 'directed composition public token alias',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'TRUSTED_STATION_CONTEXT_RESOLVER must',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule
+        .replace(
+          'TRUSTED_STATION_CONTEXT_RESOLVER } from',
+          'TRUSTED_STATION_CONTEXT_RESOLVER as STATION_RESOLVER } from',
+        )
+        .replace(
+          'inject: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER, AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER]',
+          'inject: [TRUSTED_STATION_ADMISSION_VALIDATOR, STATION_RESOLVER, AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER]',
+        ),
+    },
+  },
+  {
+    name: 'directed composition duplicate public token injection',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'must appear exactly once',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule.replace(
+        'inject: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER, AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER]',
+        'inject: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER, TRUSTED_STATION_CONTEXT_RESOLVER, AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER]',
+      ),
+    },
+  },
+  {
+    name: 'directed composition missing producer binding',
+    expectedPath: 'src/modules/stations/stations.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'must have exactly one explicit provider binding',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/stations/stations.module.ts': directedStationsModule.replace(
+        'provide: TRUSTED_STATION_CONTEXT_RESOLVER',
+        "provide: 'PRIVATE_STATION_RESOLVER'",
+      ),
+    },
+  },
+  {
+    name: 'directed composition duplicate producer binding',
+    expectedPath: 'src/modules/stations/stations.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'must have exactly one explicit provider binding',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/stations/stations.module.ts': directedStationsModule.replace(
+        '  providers: [{',
+        '  providers: [{\n    provide: TRUSTED_STATION_CONTEXT_RESOLVER,\n    useValue: {},\n  }, {',
+      ),
+    },
+  },
+  {
+    name: 'directed composition missing producer export',
+    expectedPath: 'src/modules/stations/stations.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'exactly one exports property|registered public token',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/stations/stations.module.ts': directedStationsModule.replace(
+        '  exports: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER],\n',
+        '',
+      ),
+    },
+  },
+  {
+    name: 'directed composition duplicate producer export',
+    expectedPath: 'src/modules/stations/stations.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'registered public token exactly once',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/stations/stations.module.ts': directedStationsModule.replace(
+        'exports: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER]',
+        'exports: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER, TRUSTED_STATION_CONTEXT_RESOLVER]',
+      ),
+    },
+  },
+  {
+    name: 'directed composition missing producer contract import',
+    expectedPath: 'src/modules/stations/stations.module.ts',
+    expectedRules: ['D5-R024'],
+    expectedText: 'TrustedStationContextResolver must use exactly one',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/stations/stations.module.ts': directedStationsModule.replace(
+        "import type { TrustedStationAdmissionValidator, TrustedStationContextResolver } from './index.js';\n",
+        '',
+      ),
+    },
+  },
+  {
+    name: 'directed composition reverse cycle',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedPaths: [
+      'src/modules/access/access.module.ts',
+      'src/modules/users/users.module.ts',
+    ],
+    expectedRules: ['D5-R007', 'D5-R024'],
+    expectedText: 'dependency cycle detected|not explicitly registered',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/users/users.module.ts': [
+        "import { AccessModule } from '../access/access.module.js';",
+        directedUsersModule.replace(
+          '@Module({',
+          '@Module({\n  imports: [AccessModule],',
+        ),
+      ].join('\n'),
+    },
+  },
+  {
+    name: 'directed composition ModuleRef bypass',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R026'],
+    expectedText: 'ModuleRef or service-locator resolution is forbidden',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule
+        .replace(
+          "import { Module } from '@nestjs/common';",
+          "import { Module } from '@nestjs/common';\nimport { ModuleRef } from '@nestjs/core';",
+        )
+        .replace(
+          'export class AccessModule {}',
+          'export class AccessModule { constructor(readonly ref: ModuleRef) {} }',
+        ),
+    },
+  },
+  {
+    name: 'directed composition Global bypass',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R027'],
+    expectedText: 'global Nest modules are forbidden',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': directedAccessModule
+        .replace(
+          "import { Module } from '@nestjs/common';",
+          "import { Global, Module } from '@nestjs/common';",
+        )
+        .replace('@Module({', '@Global()\n@Module({'),
+    },
+  },
+  {
+    name: 'directed composition private infrastructure bypass',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R014'],
+    expectedText: 'accesses stations internals',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': [
+        "import type { PrivateStationsRuntime } from '../stations/infrastructure/private-runtime.js';",
+        directedAccessModule.replace(
+          'export class AccessModule {}',
+          'export class AccessModule { private declare readonly runtime: PrivateStationsRuntime; }',
+        ),
+      ].join('\n'),
+      'src/modules/stations/infrastructure/private-runtime.ts':
+        'export interface PrivateStationsRuntime {}\n',
+    },
+  },
+  {
+    name: 'directed composition repository bypass',
+    expectedPath: 'src/modules/access/access.module.ts',
+    expectedRules: ['D5-R014'],
+    expectedText: 'accesses users internals',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/access/access.module.ts': [
+        "import type { PrivateUserRepository } from '../users/infrastructure/persistence/private-user.repository.js';",
+        directedAccessModule.replace(
+          'export class AccessModule {}',
+          'export class AccessModule { private declare readonly repository: PrivateUserRepository; }',
+        ),
+      ].join('\n'),
+      'src/modules/users/infrastructure/persistence/private-user.repository.ts':
+        'export interface PrivateUserRepository {}\n',
+    },
+  },
+  {
+    name: 'directed composition framework-specific public coupling',
+    expectedPath: 'src/modules/stations/index.ts',
+    expectedRules: ['D5-R016'],
+    expectedText: 'public contract imports NestJS',
+    files: {
+      ...validDirectedCompositionFiles,
+      'src/modules/stations/index.ts': [
+        "import type { Injectable } from '@nestjs/common';",
+        directedStationsIndex,
+        'export interface FrameworkSpecificStationContract { readonly framework: typeof Injectable; }',
+        '',
+      ].join('\n'),
+    },
   },
   {
     name: 'valid framework-free public export',
@@ -580,7 +1031,7 @@ export const fixtureCases = [
   {
     name: 'module composition import outside AppModule',
     expectedRules: ['D5-R024'],
-    expectedText: 'only AppModule',
+    expectedText: 'not explicitly registered',
     files: {
       'src/modules/stations/index.ts': "import { TenancyModule } from '../tenancy/tenancy.module.js';\nexport interface StationsModuleContract { readonly module: typeof TenancyModule; }\n",
     },

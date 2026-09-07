@@ -41,8 +41,15 @@ export interface PinAuthenticationProof {
   readonly tenantId: string;
   readonly branchId: string;
   readonly stationId: string;
+  readonly stationCredentialId: string;
+  readonly branchAdmissionRevision: number;
+  readonly stationAdmissionRevision: number;
+  readonly stationBindingAdmissionRevision: number;
+  readonly stationCredentialAdmissionRevision: number;
   readonly userId: string;
   readonly displayName: string;
+  readonly userVersion: number;
+  readonly userAdmissionRevision: number;
   readonly credentialVersion: number;
   readonly authenticatedAt: string;
   readonly [pinAuthenticationProofBrand]: true;
@@ -53,10 +60,17 @@ export function createPinAuthenticationProof(input: Readonly<{
     tenantId: string;
     branchId: string;
     stationId: string;
+    stationCredentialId: string;
+    branchAdmissionRevision: number;
+    stationAdmissionRevision: number;
+    stationBindingAdmissionRevision: number;
+    stationCredentialAdmissionRevision: number;
   }>;
   user: Readonly<{
     userId: string;
     displayName: string;
+    version: number;
+    admissionRevision: number;
   }>;
   credentialVersion: number;
   authenticatedAt: string;
@@ -65,8 +79,15 @@ export function createPinAuthenticationProof(input: Readonly<{
     tenantId: input.context.tenantId,
     branchId: input.context.branchId,
     stationId: input.context.stationId,
+    stationCredentialId: input.context.stationCredentialId,
+    branchAdmissionRevision: input.context.branchAdmissionRevision,
+    stationAdmissionRevision: input.context.stationAdmissionRevision,
+    stationBindingAdmissionRevision: input.context.stationBindingAdmissionRevision,
+    stationCredentialAdmissionRevision: input.context.stationCredentialAdmissionRevision,
     userId: input.user.userId,
     displayName: input.user.displayName,
+    userVersion: input.user.version,
+    userAdmissionRevision: input.user.admissionRevision,
     credentialVersion: input.credentialVersion,
     authenticatedAt: input.authenticatedAt,
   }) as unknown as PinAuthenticationProof;
@@ -82,4 +103,15 @@ export function isPinAuthenticationProof(
     value !== null &&
     authenticationProofs.has(value)
   );
+}
+
+/** A successful PIN proof may authorize at most one Session creation attempt. */
+export function consumePinAuthenticationProof(
+  value: unknown,
+): value is PinAuthenticationProof {
+  if (typeof value !== 'object' || value === null || !authenticationProofs.has(value)) {
+    return false;
+  }
+  authenticationProofs.delete(value);
+  return true;
 }

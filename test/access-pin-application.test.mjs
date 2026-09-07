@@ -26,13 +26,26 @@ const { createTrustedStationContext } = await import(
 const tenantId = '10000000-0000-4000-8000-000000000025';
 const branchId = '20000000-0000-4000-8000-000000000025';
 const stationId = '30000000-0000-4000-8000-000000000025';
+const stationCredentialId = '35000000-0000-4000-8000-000000000025';
 const userId = '40000000-0000-4000-8000-000000000025';
 const credentialId = '50000000-0000-4000-8000-000000000025';
 const clientRequestId = '60000000-0000-4000-8000-000000000025';
 const rateLimitPrincipalId = '65000000-0000-4000-8000-000000000025';
 const pin = '270625';
 const now = new Date('2026-09-07T01:00:00.000Z');
-const context = createTrustedStationContext({ tenantId, branchId, stationId });
+const stationAdmission = Object.freeze({
+  branchAdmissionRevision: 0,
+  stationAdmissionRevision: 0,
+  stationBindingAdmissionRevision: 0,
+  stationCredentialAdmissionRevision: 0,
+});
+const context = createTrustedStationContext({
+  tenantId,
+  branchId,
+  stationId,
+  stationCredentialId,
+  ...stationAdmission,
+});
 
 const activeUser = Object.freeze({
   tenantId,
@@ -40,6 +53,7 @@ const activeUser = Object.freeze({
   displayName: 'Jorge Administrador',
   status: 'active',
   version: 2,
+  admissionRevision: 5,
 });
 
 const storedVerifier = Object.freeze({
@@ -226,8 +240,12 @@ test('active User plus matching PIN yields a narrow proof, not a Session or auth
     tenantId,
     branchId,
     stationId,
+    stationCredentialId,
+    ...stationAdmission,
     userId,
     displayName: activeUser.displayName,
+    userVersion: activeUser.version,
+    userAdmissionRevision: activeUser.admissionRevision,
     credentialVersion: 7,
     authenticatedAt: now.toISOString(),
   });

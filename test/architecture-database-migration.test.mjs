@@ -97,6 +97,9 @@ test('public migration API remains narrow with governed productive migrations', 
     '20260906181000_access_create_roles.ts',
     '20260906182000_access_create_role_assignments.ts',
     '20260907010000_access_create_pin_credentials.ts',
+    '20260907110000_stations_add_admission_revisions.ts',
+    '20260907111000_users_add_admission_revision.ts',
+    '20260907120000_access_create_operational_sessions.ts',
   ]);
 });
 

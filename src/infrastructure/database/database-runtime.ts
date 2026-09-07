@@ -17,7 +17,23 @@ import type {
   InternalMigrationInspection,
   InternalMigrationSource,
 } from './database-migration-provider.js';
-import { useDatabasePersistenceExecutor } from './database-persistence-capability.js';
+import {
+  databasePersistenceCapability,
+  useDatabasePersistenceExecutor,
+} from './database-persistence-capability.js';
+import type {
+  InternalDatabasePersistenceConnection,
+  InternalDatabasePersistenceOperation,
+  InternalDatabasePersistenceOwner,
+} from './database-persistence-capability.js';
+import {
+  databaseTransactionCapability,
+} from './database-transaction-capability.js';
+import type {
+  InternalDatabaseTransactionConnection,
+  InternalDatabaseTransactionOperation,
+  InternalDatabaseTransactionSettings,
+} from './database-transaction-capability.js';
 
 type DatabaseRuntimeState =
   | 'created'
@@ -43,7 +59,10 @@ const productMigrationSource: InternalMigrationSource = Object.freeze({
   mode: 'compiled',
 });
 
-export interface DatabaseRuntime {
+export interface DatabaseRuntime
+  extends
+    InternalDatabasePersistenceConnection,
+    InternalDatabaseTransactionConnection {
   readonly state: DatabaseRuntimeState;
   initialize(): Promise<void>;
   checkReady(): Promise<boolean>;
@@ -83,7 +102,9 @@ export class DatabaseRuntimeError extends Error {
 }
 
 class ControlledDatabaseRuntime implements DatabaseRuntime {
-  readonly #connection: DatabaseConnection;
+  readonly #connection: DatabaseConnection &
+    InternalDatabasePersistenceConnection &
+    InternalDatabaseTransactionConnection;
   #state: DatabaseRuntimeState = 'created';
   #inspection: InternalMigrationInspection | null = null;
   #readinessPromise: Promise<boolean> | null = null;
@@ -100,7 +121,9 @@ class ControlledDatabaseRuntime implements DatabaseRuntime {
         this.#state,
       );
     }
-    this.#connection = createDatabaseConnection(config);
+    this.#connection = createDatabaseConnection(config) as DatabaseConnection &
+      InternalDatabasePersistenceConnection &
+      InternalDatabaseTransactionConnection;
     void sanitizeDatabaseConfig(config);
   }
 
@@ -177,6 +200,27 @@ class ControlledDatabaseRuntime implements DatabaseRuntime {
     const closing = this.#performClose();
     this.#closePromise = closing;
     return closing;
+  }
+
+  verify(): Promise<void> {
+    return this.#connection.verify();
+  }
+
+  [databasePersistenceCapability]<
+    Owner extends InternalDatabasePersistenceOwner,
+    Result,
+  >(
+    owner: Owner,
+    operation: InternalDatabasePersistenceOperation<Owner, Result>,
+  ): Promise<Result> {
+    return this.#connection[databasePersistenceCapability](owner, operation);
+  }
+
+  [databaseTransactionCapability]<Result>(
+    settings: InternalDatabaseTransactionSettings,
+    operation: InternalDatabaseTransactionOperation<Result>,
+  ): Promise<Result> {
+    return this.#connection[databaseTransactionCapability](settings, operation);
   }
 
   async #performReadinessCheck(): Promise<boolean> {
@@ -265,6 +309,16 @@ class ControlledDatabaseRuntime implements DatabaseRuntime {
         await database
           .selectFrom('repair_location_movements')
           .select(['movement_id', 'repair_id', 'tenant_id', 'branch_id'])
+          .limit(0)
+          .execute();
+        await database
+          .selectFrom('access_operational_session_station_guards')
+          .select(['tenant_id', 'station_id'])
+          .limit(0)
+          .execute();
+        await database
+          .selectFrom('access_operational_sessions')
+          .select(['tenant_id', 'branch_id', 'station_id', 'session_id'])
           .limit(0)
           .execute();
         return (
