@@ -48,6 +48,7 @@ test('catalog distinguishes active non-secret configuration from server-only sec
       { name: 'SR_PIN_PEPPER', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_SESSION_SIGNING_KEY', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_STATION_BOOTSTRAP_SECRET', classification: 'secret', clientExposure: 'forbidden' },
+      { name: 'SR_USER_BOOTSTRAP_SECRET', classification: 'secret', clientExposure: 'forbidden' },
     ],
   );
   assert.deepEqual(

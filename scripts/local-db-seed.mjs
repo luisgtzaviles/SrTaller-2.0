@@ -15,6 +15,7 @@ import {
   localRepairLocationRows,
   localRepairLocationMovementRows,
   localSeedRows,
+  localUserRows,
   LOCAL_STATION_CREDENTIAL_ID,
   LOCAL_STATION_ID,
   localStationBootstrapCredentialHash,
@@ -56,6 +57,14 @@ try {
       `INSERT INTO branches (tenant_id, branch_id, time_zone, active, created_at) VALUES ($1::uuid, $2::uuid, $3, $4, $5::timestamptz)
        ON CONFLICT (tenant_id, branch_id) DO UPDATE SET time_zone = EXCLUDED.time_zone, active = EXCLUDED.active, created_at = EXCLUDED.created_at`,
       [branch.tenantId, branch.branchId, branch.timeZone, branch.active, branch.createdAt],
+    );
+  }
+  for (const user of localUserRows()) {
+    await client.query(
+      `INSERT INTO users (user_id, tenant_id, display_name, operational_identifier, status, version, created_at, updated_at)
+       VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, $7::timestamptz, $8::timestamptz)
+       ON CONFLICT (tenant_id, user_id) DO UPDATE SET display_name = EXCLUDED.display_name, operational_identifier = EXCLUDED.operational_identifier, status = EXCLUDED.status, version = EXCLUDED.version, updated_at = EXCLUDED.updated_at`,
+      [user.userId, user.tenantId, user.displayName, user.operationalIdentifier, user.status, user.version, user.createdAt, user.updatedAt],
     );
   }
   await client.query(
@@ -307,6 +316,7 @@ process.stdout.write(`${JSON.stringify({
   dataClassification: 'synthetic-development-only',
   tenantCount: 1,
   branchCount: rows.branches.length,
+  userCount: localUserRows().length,
   repairCount: localRepairRows().length,
   repairIntakeCount: localRepairIntakeRows().length,
   repairTimelineEntryCount: localRepairTimelineRows().length,

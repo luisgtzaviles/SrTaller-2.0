@@ -8,11 +8,14 @@ import {
   LOCAL_DB_NAME,
   LOCAL_DB_PORT,
   LOCAL_MIGRATION_USER,
+  LOCAL_TENANT_ID,
+  assertLocalUserBootstrapAuthority,
   assertLocalTarget,
   databaseEnvironment,
   localRepairIntakeRows,
   localRepairTimelineRows,
   localSeedRows,
+  localUserRows,
   parseLocalEnvironment,
 } from '../scripts/lib/local-development.mjs';
 
@@ -33,6 +36,7 @@ function validLocalValues() {
     SR_LOCAL_VITE_HOST: '127.0.0.1',
     SR_LOCAL_VITE_PORT: '4173',
     SR_STATION_BOOTSTRAP_SECRET: 'synthetic-local-station-bootstrap-secret',
+    SR_USER_BOOTSTRAP_SECRET: 'synthetic-local-user-bootstrap-secret',
   };
 }
 
@@ -63,6 +67,36 @@ test('local target guard rejects non-local targets and connection aliases', () =
   assert.throws(() => assertLocalTarget(persistedCanonical), /SR_DB_HOST/u);
 });
 
+test('first-user bootstrap authority fails closed before persistence', () => {
+  const values = validLocalValues();
+  assert.equal(
+    assertLocalUserBootstrapAuthority(
+      values,
+      values.SR_USER_BOOTSTRAP_SECRET,
+    ),
+    values,
+  );
+  assert.throws(
+    () => assertLocalUserBootstrapAuthority(values, undefined),
+    /Local user bootstrap authority rejected/u,
+  );
+  assert.throws(
+    () => assertLocalUserBootstrapAuthority(values, 'wrong-local-secret'),
+    /Local user bootstrap authority rejected/u,
+  );
+
+  const remote = validLocalValues();
+  remote.SR_LOCAL_DB_HOST = 'preview.internal';
+  assert.throws(
+    () =>
+      assertLocalUserBootstrapAuthority(
+        remote,
+        remote.SR_USER_BOOTSTRAP_SECRET,
+      ),
+    /SR_LOCAL_DB_HOST/u,
+  );
+});
+
 test('seed contract is deterministic and contains only existing schema entities', () => {
   const first = localSeedRows();
   const second = localSeedRows();
@@ -71,6 +105,22 @@ test('seed contract is deterministic and contains only existing schema entities'
   assert.equal(first.branches.length, 2);
   assert.deepEqual(Object.keys(first.tenant).sort(), ['createdAt', 'tenantId']);
   assert.deepEqual(Object.keys(first.branches[0]).sort(), ['active', 'branchId', 'createdAt', 'tenantId', 'timeZone']);
+});
+
+test('synthetic User fixtures are deterministic, bounded, and secret-free', () => {
+  const first = localUserRows();
+  assert.deepEqual(first, localUserRows());
+  assert.equal(first.length, 3);
+  assert.deepEqual(
+    new Set(first.map(({ status }) => status)),
+    new Set(['active', 'inactive', 'revoked']),
+  );
+  assert.ok(first.every(({ tenantId }) => tenantId === LOCAL_TENANT_ID));
+  assert.ok(first.every((row) => Object.isFrozen(row)));
+  assert.doesNotMatch(
+    JSON.stringify(first),
+    /pin|password|credential|secret|hash|salt|pepper/iu,
+  );
 });
 
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {

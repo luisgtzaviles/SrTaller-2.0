@@ -29,6 +29,7 @@
     "local:db:down": "pnpm run verify:toolchain && node ./scripts/local-db.mjs down",
     "local:db:migrate": "pnpm run verify:toolchain && node ./scripts/local-db-migrate.mjs",
     "local:db:seed": "pnpm run verify:toolchain && node ./scripts/local-db-seed.mjs",
+    "users:provision-first": "pnpm run build && node ./scripts/provision-first-user.mjs",
     "local:db:reset": "pnpm run verify:toolchain && node ./scripts/local-reset.mjs",
     "local:backend": "pnpm run verify:toolchain && node ./scripts/local-backend.mjs",
     "local:dev": "pnpm run verify:toolchain && node ./scripts/local-dev.mjs",

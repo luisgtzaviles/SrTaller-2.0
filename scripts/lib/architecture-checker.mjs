@@ -1994,30 +1994,50 @@ export async function checkArchitecture({
   if (baselineFixture) {
     requiredModuleNames = policy.fixtureRequiredModules ?? policy.allowedModules;
     persistence = JSON.parse(JSON.stringify(policy.persistence));
+    const omittedFixtureOwners = new Set(['repairs']);
+    if (!directModuleNames.includes('users')) {
+      omittedFixtureOwners.add('users');
+    }
+    const belongsToOmittedFixtureOwner = (value) =>
+      [...omittedFixtureOwners].some(
+        (owner) =>
+          value.includes(`/${owner}/`) ||
+          value.includes(`_${owner}_`) ||
+          value.includes(`/${owner}_`) ||
+          value.startsWith(`${owner}_`) ||
+          (owner === 'repairs' && value.includes('Repair')) ||
+          (owner === 'users' && value.includes('User')),
+      );
     persistence.databaseObjects = Object.fromEntries(
-      Object.entries(persistence.databaseObjects).filter(([, registration]) => registration.owner !== 'repairs'),
+      Object.entries(persistence.databaseObjects).filter(
+        ([, registration]) => !omittedFixtureOwners.has(registration.owner),
+      ),
     );
     persistence.infrastructureFiles = Object.fromEntries(
       Object.entries(persistence.infrastructureFiles)
-        .filter(([path]) => !path.includes('/repairs/'))
+        .filter(([path]) => !belongsToOmittedFixtureOwner(path))
         .map(([path, registration]) => [path, {
           ...registration,
           publicExports: registration.publicExports.filter(
-            (name) => !name.includes('Repair'),
+            (name) => !belongsToOmittedFixtureOwner(name),
           ),
           consumers: registration.consumers.filter(
-            (consumer) => !consumer.includes('/repairs/'),
+            (consumer) => !belongsToOmittedFixtureOwner(consumer),
           ),
         }]),
     );
     persistence.ports = Object.fromEntries(
-      Object.entries(persistence.ports).filter(([path]) => !path.includes('/repairs/')),
+      Object.entries(persistence.ports).filter(
+        ([path]) => !belongsToOmittedFixtureOwner(path),
+      ),
     );
     persistence.adapters = Object.fromEntries(
-      Object.entries(persistence.adapters).filter(([path]) => !path.includes('/repairs/')),
+      Object.entries(persistence.adapters).filter(
+        ([path]) => !belongsToOmittedFixtureOwner(path),
+      ),
     );
     persistence.allowedMigrations = persistence.allowedMigrations.filter(
-      (path) => !path.includes('/repairs_') && !path.includes('/repairs/'),
+      (path) => !belongsToOmittedFixtureOwner(path),
     );
   }
 

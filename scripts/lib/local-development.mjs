@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -50,6 +50,7 @@ const requiredLocalKeys = Object.freeze([
   'SR_LOCAL_VITE_HOST',
   'SR_LOCAL_VITE_PORT',
   'SR_STATION_BOOTSTRAP_SECRET',
+  'SR_USER_BOOTSTRAP_SECRET',
 ]);
 
 const forbiddenLocalKeys = Object.freeze([
@@ -84,6 +85,7 @@ function defaultLocalValues() {
     SR_LOCAL_VITE_HOST: LOCAL_VITE_HOST,
     SR_LOCAL_VITE_PORT: String(LOCAL_VITE_PORT),
     SR_STATION_BOOTSTRAP_SECRET: randomSecret(),
+    SR_USER_BOOTSTRAP_SECRET: randomSecret(),
   });
 }
 
@@ -171,7 +173,34 @@ export async function ensureLocalEnvironment({ create = true } = {}) {
     await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
     await chmod(LOCAL_ENV_FILE, 0o600);
   }
+  if (values.SR_USER_BOOTSTRAP_SECRET === undefined && create) {
+    values = {
+      ...values,
+      SR_USER_BOOTSTRAP_SECRET: randomSecret(),
+    };
+    const contents = `${Object.entries(values)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n')}\n`;
+    await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
+    await chmod(LOCAL_ENV_FILE, 0o600);
+  }
   return Object.freeze({ ...assertLocalTarget(values) });
+}
+
+export function assertLocalUserBootstrapAuthority(values, presentedSecret) {
+  assertLocalTarget(values);
+  const expected = Buffer.from(values.SR_USER_BOOTSTRAP_SECRET, 'utf8');
+  const actual = Buffer.from(
+    typeof presentedSecret === 'string' ? presentedSecret : '',
+    'utf8',
+  );
+  if (
+    expected.length !== actual.length ||
+    !timingSafeEqual(expected, actual)
+  ) {
+    throw new Error('Local user bootstrap authority rejected.');
+  }
+  return values;
 }
 
 export function localStationBootstrapCredential(values) {
@@ -266,6 +295,14 @@ export function localSeedRows() {
       })),
     ),
   });
+}
+
+export function localUserRows() {
+  return Object.freeze([
+    ['00000000-0000-4000-8000-000000000501', 'Jorge Sintético', 'JORGE', 'active'],
+    ['00000000-0000-4000-8000-000000000502', 'María Sintética', null, 'inactive'],
+    ['00000000-0000-4000-8000-000000000503', 'Carlos Sintético', null, 'revoked'],
+  ].map(([userId, displayName, operationalIdentifier, status]) => Object.freeze({ userId, tenantId: LOCAL_TENANT_ID, displayName, operationalIdentifier, status, version: 0, createdAt: LOCAL_SEED_TIMESTAMP, updatedAt: LOCAL_SEED_TIMESTAMP })));
 }
 
 export function localRepairRows() {

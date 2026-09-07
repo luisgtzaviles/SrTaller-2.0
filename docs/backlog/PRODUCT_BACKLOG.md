@@ -8,8 +8,9 @@ Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
 tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release.
 **Prioridad:** propuesta, no aprobación final.
-**Estimaciones:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
-T-shirt sizing; las demás permanecen TBD.
+**Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
+`XL — agreed` y PBI-032 `Large — Owner autorizado` mediante T-shirt sizing;
+las demás permanecen TBD.
 **Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
@@ -37,7 +38,7 @@ T-shirt sizing; las demás permanecen TBD.
 | 21 | [PBI-021](pbis/PBI-021.md) Materialize and verify the DEC-004 toolchain contract | Technical foundation / Quality / Operations / Security | EPIC-001 | Done | Alta | Unassigned |
 | 22 | [PBI-022](pbis/PBI-022.md) Materialize DEC-005 modular structure and local enforcement | Technical foundation / Architecture / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 23 | [PBI-023](pbis/PBI-023.md) Establish tenant-scoped persistence and migration foundation | Persistence / Security / Quality | EPIC-001 | Closed | Crítica | Gate R0 |
-| 24 | [PBI-024](pbis/PBI-024.md) Trusted Station Runtime Context | Architecture / Security | EPIC-004 | Done candidate; cierre documental pendiente | Crítica | Sprint 01 closure |
+| 24 | [PBI-024](pbis/PBI-024.md) Trusted Station Runtime Context | Architecture / Security | EPIC-004 | Done; Released: NO | Crítica | Sprint 01 completed |
 | 25 | [PBI-025](pbis/PBI-025.md) PIN Credential Authentication | Identity / Security | EPIC-003 | Blocked por dependencias | Crítica | Candidate Sprint 01 |
 | 26 | [PBI-026](pbis/PBI-026.md) Contextual Authorization | Authorization / Security | EPIC-003 | Draft reconciliado | Crítica | Candidate Sprint 01 |
 | 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Done; Released: NO | Alta | Sprint 01 completed |
@@ -45,7 +46,7 @@ T-shirt sizing; las demás permanecen TBD.
 | 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Done; risk acceptance, merge, CI main, cierre documental y Owner Acceptance PASS | Crítica | Cerrado; `Released: NO` |
 | 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
-| 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
+| 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | In review candidate | Crítica | Sprint 01 current PBI |
 | 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
 | 34 | [PBI-034](pbis/PBI-034.md) Operational Session | Identity / Security | EPIC-003 | Blocked por dependencias | Crítica | Candidate Sprint 01 |
 | 35 | [PBI-035](pbis/PBI-035.md) Reinforced Authorization | Authorization / Security | EPIC-003 | Draft / Deferred | Crítica | Unassigned |
@@ -79,6 +80,6 @@ T-shirt sizing; las demás permanecen TBD.
 
 ## Próxima revisión
 
-PBI-024 tiene integración funcional y CI exacto de `main` GREEN; requiere
-únicamente el merge autorizado y CI del cierre documental para quedar `Done`
-efectivo. PBI-032 queda seleccionado, no iniciado.
+PBI-024 está `Done` canónico por PR #25 y CI post-cierre GREEN. PBI-032 es el
+PBI actual en `In review candidate`; PBI-033 es el siguiente candidato, no
+iniciado.

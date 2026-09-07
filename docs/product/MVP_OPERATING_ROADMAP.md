@@ -4,19 +4,19 @@
 
 - **Estado:** Roadmap aprobado; Sprint 01 activo con WIP=1.
 - **Baseline de la reconciliación:** `main` en
-  `5966d2f20fcf29aedf91a841a4fe331cb9bae410`; CI autoritativo
-  `34019773228`, `SUCCESS`.
+  `2b0ab85bb19b795c71332b5f2ef36ee26a75cdfe`; CI autoritativo
+  `34044488745`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Identity & Context Foundation.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** Sprint 01.
-- **Sprint 01:** `Active — PBI-024 Done candidate; cierre documental pendiente`.
-- **PBI actual:** ninguno durante el cierre documental de PBI-024.
-- **Siguiente PBI candidato:** PBI-032 — User Directory and Lifecycle;
-  seleccionado, no iniciado.
-- **Blocking gate:** merge autorizado y CI autoritativo del cierre documental
-  de PBI-024.
+- **Sprint 01:** `Active — PBI-032 In review candidate`.
+- **PBI actual:** PBI-032 — User Directory and Lifecycle.
+- **Siguiente PBI candidato:** PBI-033 — Roles, Assignments and Capability
+  Catalog; seleccionado, no iniciado.
+- **Blocking gate:** focused review, merge funcional autorizado, CI exacto de
+  `main`, Owner Acceptance y cierre documental canónico de PBI-032.
 - **WIP operacional:** uno.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation del
   2026-09-03.
@@ -84,10 +84,7 @@ Owner explícita de merge.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
    salta silenciosamente a otro PBI.
 
-PBI-030, PBI-027 y PBI-029 están `Done` y no están `Released`. PBI-029 cerró
-su estado efectivo con la integración autorizada de su PR documental y el CI
-autoritativo GREEN sobre ese merge; PBI-024 espera únicamente su cierre
-documental autorizado.
+PBI-030, PBI-027, PBI-029 y PBI-024 están `Done` y no están `Released`.
 
 ## Current execution pointer
 
@@ -97,11 +94,11 @@ documental autorizado.
 | Stage | MVP |
 | Phase | Identity & Context Foundation |
 | Sprint | SPRINT-01 |
-| Sprint status | Active — WIP=0/1 durante cierre documental |
-| Current PBI | NONE |
-| Next PBI candidate | PBI-032 — seleccionado, no iniciado |
+| Sprint status | Active — WIP=1/1 durante review de PBI-032 |
+| Current PBI | PBI-032 — In review candidate |
+| Next PBI candidate | PBI-033 — seleccionado, no iniciado |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | Cierre documental PBI-024: merge autorizado y CI exacto de `main` |
+| Blocking gate | Cierre canónico de PBI-032: focused review, merge funcional, CI exacto de `main`, Owner Acceptance, merge documental y CI post-cierre |
 
 ## Fases aprobadas
 
@@ -167,7 +164,7 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | Gate | Estado | Evidencia o condición vigente |
 |---|---|---|
 | G0 ROADMAP | PASS | PR #17 merge `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091` GREEN |
-| G1 CONTEXT | PASS candidate | PBI-024 entrega contexto Station server-side y fail-closed; merge funcional y CI exacto GREEN. Se vuelve PASS efectivo con el cierre documental autorizado. |
+| G1 CONTEXT | PASS | PBI-024 `Done`: Trusted Station Context server-side y fail-closed; cierre PR #25 y CI exacto `34044488745` GREEN. |
 | G2–G12 | Pending | Sin evidencia material adicional |
 
 ## Cierre y avance documental de un PBI
@@ -193,15 +190,14 @@ PBI-029 también está `Done`: el Owner aceptó expresamente su resultado y su
 riesgo `CRITICAL`, sin reducir la clasificación; el merge `41914c78724303d66136989937cf8f38e4ea8a88`
 y CI `33988752597` GREEN completaron su cierre documental.
 
-Sprint 01 continúa `Active`. PBI-024 tiene merge funcional, CI de `main`,
-focused review PASS y Owner Acceptance condicional satisfecha; su cierre
-documental está pendiente. PBI-032 sólo queda seleccionado. Ninguno autoriza
-release, deploy ni implementación siguiente.
+Sprint 01 continúa `Active` con PBI-032 como PBI actual en `In review
+candidate`. PBI-033 permanece seleccionado, no iniciado. Ninguno de estos
+estados autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** Owner merge review del cierre documental de PBI-024.
-- **Resultado esperado si pasa:** PBI-024 `Done` efectivo, G1 evaluado y
-  PBI-032 permanece seleccionado, no iniciado.
-- **Si falla:** PBI-024 permanece como `Done candidate` y se remedia dentro
-  del alcance documental; PBI-032 no inicia.
+- **Disparador:** Focused Owner Review del candidato PBI-032.
+- **Resultado esperado si pasa:** PBI-032 queda listo para merge funcional
+  autorizado y validación sobre el SHA exacto de `main`.
+- **Si falla:** PBI-032 permanece `In review candidate` y se remedia dentro de
+  su alcance; PBI-033 no inicia.

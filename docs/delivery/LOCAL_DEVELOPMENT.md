@@ -82,9 +82,12 @@ canónica derivada como `SR_DB_*` con `SR_DB_ROLE=application` y
 ## Configuración
 
 `.env.local.example` documenta las claves. El archivo operativo se genera como
-`.env.local` y sólo contiene claves `SR_LOCAL_*`. Los scripts derivan todas las
-variables del contrato `SR_DB_*` en memoria para la operación concreta; no se
-introduce `DATABASE_URL` ni se pasan valores de conexión por URI.
+`.env.local` y contiene claves `SR_LOCAL_*` más los secretos bootstrap
+server-only `SR_STATION_BOOTSTRAP_SECRET` y `SR_USER_BOOTSTRAP_SECRET`. Sus
+valores locales aleatorios nunca se versionan ni se imprimen. Los scripts
+derivan todas las variables del contrato `SR_DB_*` en memoria para la operación
+concreta; no se introduce `DATABASE_URL` ni se pasan valores de conexión por
+URI.
 
 El guard fail-closed rechaza hosts remotos, ambientes distintos de `local`,
 puertos alternos, nombres de base distintos, variables `SR_DB_*` persistidas en
@@ -93,8 +96,30 @@ puertos alternos, nombres de base distintos, variables `SR_DB_*` persistidas en
 PBI-029 añade la clasificación server-only de secretos y configuración
 técnica. `SR_DB_PASSWORD` se exige al iniciar el backend, pero los scripts
 locales lo derivan sólo en memoria desde `.env.local`; ningún comando lo
-imprime. Los nombres reservados para PIN, sesión o bootstrap no tienen valor ni
-consumidor local. Nunca se usa `VITE_*` para un secreto.
+imprime. PIN y sesión permanecen reservados y sin consumidor. Los secretos
+bootstrap de Station y User tienen consumidores exclusivamente locales y no
+constituyen enrollment o provisioning productivo. Nunca se usa `VITE_*` para
+un secreto.
+
+El primer User se provisiona sólo después de crear y migrar la base local. La
+autoridad se presenta desde el archivo local ignorado sin imprimir su valor:
+
+```sh
+set -a
+. ./.env.local
+set +a
+pnpm users:provision-first -- \
+  00000000-0000-4000-8000-000000000001 \
+  "Nombre sintético" \
+  00000000-0000-4000-8000-000000000901 \
+  OPERADOR-LOCAL
+```
+
+El comando falla cerrado ante archivo ausente, target no local o secreto
+ausente/distinto; valida la autoridad antes de abrir una conexión. Es
+server-only, único por Tenant e idempotente por el `clientRequestId` UUID. No
+registrar ni copiar el valor de `SR_USER_BOOTSTRAP_SECRET` en terminal,
+documentación o evidencia.
 
 ## Migraciones
 

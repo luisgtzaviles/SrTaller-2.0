@@ -45,6 +45,7 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
     'access->tenancy',
     'repairs->tenancy',
     'stations->tenancy',
+    'users->tenancy',
   ]);
 });
 
