@@ -21,12 +21,13 @@ test('connection facility retains its exact owner, API and transaction consumer'
     consumers: [
       'src/infrastructure/database/transaction-runner.ts',
       'src/infrastructure/database/migration-runner.ts',
-        'src/infrastructure/database/database-runtime.ts',
-        'src/db-migrate.ts',
-        'src/modules/repairs/infrastructure/persistence/repair-database-connection.ts',
-        'src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts',
-        'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
+      'src/infrastructure/database/database-runtime.ts',
+      'src/db-migrate.ts',
+      'src/modules/repairs/infrastructure/persistence/repair-database-connection.ts',
+      'src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts',
+      'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
+      'src/modules/users/infrastructure/persistence/kysely-user.repository.ts',
     ],
     status: 'materialized-connection-facility',
   });

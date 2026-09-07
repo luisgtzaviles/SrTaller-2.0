@@ -69,6 +69,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
       branchAdapterPath,
       'src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts',
       tenantAdapterPath,
+      'src/modules/users/infrastructure/persistence/kysely-user.repository.ts',
     ],
     status: 'materialized-owner-internal-capability',
   });
@@ -79,6 +80,10 @@ test('persistence capability is internal and has only exact adapter consumers', 
   assert.match(
     source,
     /Pick<DatabaseSchema, 'branches' \| 'stations' \| 'station_bindings' \| 'station_credentials'>/u,
+  );
+  assert.match(
+    source,
+    /Pick<DatabaseSchema, 'users' \| 'user_provisioning_bootstraps'>/u,
   );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),

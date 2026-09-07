@@ -26,6 +26,8 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     repair_locations: { owner: 'repairs', kind: 'table' },
     repair_location_movements: { owner: 'repairs', kind: 'table' },
     tenants: { owner: 'tenancy', kind: 'table' },
+    users: { owner: 'users', kind: 'table' },
+    user_provisioning_bootstraps: { owner: 'users', kind: 'table' },
   });
   assert.deepEqual(policy.persistence.initialSchema, {
     migration: migrationPath,
