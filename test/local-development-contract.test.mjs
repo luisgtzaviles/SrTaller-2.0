@@ -12,6 +12,10 @@ import {
   assertLocalUserBootstrapAuthority,
   assertLocalTarget,
   databaseEnvironment,
+  localAccessCapabilityRows,
+  localAccessRoleAssignmentRows,
+  localAccessRoleCapabilityRows,
+  localAccessRoleRows,
   localRepairIntakeRows,
   localRepairTimelineRows,
   localSeedRows,
@@ -113,12 +117,44 @@ test('synthetic User fixtures are deterministic, bounded, and secret-free', () =
   assert.equal(first.length, 3);
   assert.deepEqual(
     new Set(first.map(({ status }) => status)),
-    new Set(['active', 'inactive', 'revoked']),
+    new Set(['active']),
   );
   assert.ok(first.every(({ tenantId }) => tenantId === LOCAL_TENANT_ID));
   assert.ok(first.every((row) => Object.isFrozen(row)));
   assert.doesNotMatch(
     JSON.stringify(first),
+    /pin|password|credential|secret|hash|salt|pepper/iu,
+  );
+});
+
+test('synthetic Access fixtures are deterministic, scoped, and secret-free', () => {
+  const capabilities = localAccessCapabilityRows();
+  const roles = localAccessRoleRows();
+  const grants = localAccessRoleCapabilityRows();
+  const assignments = localAccessRoleAssignmentRows();
+  assert.deepEqual(capabilities, localAccessCapabilityRows());
+  assert.deepEqual(roles, localAccessRoleRows());
+  assert.deepEqual(grants, localAccessRoleCapabilityRows());
+  assert.deepEqual(assignments, localAccessRoleAssignmentRows());
+  assert.deepEqual(
+    capabilities.map(({ capabilityCode }) => capabilityCode),
+    ['access_matrix.read', 'repairs.add_note', 'repairs.read', 'users.read'],
+  );
+  assert.deepEqual(roles.map(({ displayName }) => displayName), [
+    'Administrador',
+    'Atención al cliente',
+    'Técnico',
+  ]);
+  assert.equal(grants.length, 8);
+  assert.deepEqual(assignments.map(({ assignmentScope }) => assignmentScope), [
+    'TENANT_WIDE',
+    'TENANT_WIDE',
+    'BRANCH_RESTRICTED',
+  ]);
+  assert.equal(assignments[2].branchId, '00000000-0000-4000-8000-000000000101');
+  assert.ok([...capabilities, ...roles, ...grants, ...assignments].every(Object.isFrozen));
+  assert.doesNotMatch(
+    JSON.stringify({ capabilities, roles, grants, assignments }),
     /pin|password|credential|secret|hash|salt|pepper/iu,
   );
 });

@@ -4,6 +4,10 @@ import {
   cleanChildEnvironment,
   databaseEnvironment,
   ensureLocalEnvironment,
+  localAccessCapabilityRows,
+  localAccessRoleAssignmentRows,
+  localAccessRoleCapabilityRows,
+  localAccessRoleRows,
   localRepairIntakeRows,
   localRepairRows,
   localRepairTimelineRows,
@@ -65,6 +69,83 @@ try {
        VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, $7::timestamptz, $8::timestamptz)
        ON CONFLICT (tenant_id, user_id) DO UPDATE SET display_name = EXCLUDED.display_name, operational_identifier = EXCLUDED.operational_identifier, status = EXCLUDED.status, version = EXCLUDED.version, updated_at = EXCLUDED.updated_at`,
       [user.userId, user.tenantId, user.displayName, user.operationalIdentifier, user.status, user.version, user.createdAt, user.updatedAt],
+    );
+  }
+  for (const capability of localAccessCapabilityRows()) {
+    await client.query(
+      `INSERT INTO access_capabilities (capability_code, created_at)
+       VALUES ($1, $2::timestamptz)
+       ON CONFLICT (capability_code) DO UPDATE SET created_at = EXCLUDED.created_at`,
+      [capability.capabilityCode, capability.createdAt],
+    );
+  }
+  for (const role of localAccessRoleRows()) {
+    await client.query(
+      `INSERT INTO access_roles (
+         tenant_id, role_id, role_key, display_name, status, version,
+         created_at, updated_at
+       ) VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, $7::timestamptz, $8::timestamptz)
+       ON CONFLICT (tenant_id, role_id) DO UPDATE SET
+         role_key = EXCLUDED.role_key,
+         display_name = EXCLUDED.display_name,
+         status = EXCLUDED.status,
+         version = EXCLUDED.version,
+         updated_at = EXCLUDED.updated_at`,
+      [
+        role.tenantId,
+        role.roleId,
+        role.roleKey,
+        role.displayName,
+        role.status,
+        role.version,
+        role.createdAt,
+        role.updatedAt,
+      ],
+    );
+  }
+  for (const capability of localAccessRoleCapabilityRows()) {
+    await client.query(
+      `INSERT INTO access_role_capabilities (
+         tenant_id, role_id, capability_code, created_at
+       ) VALUES ($1::uuid, $2::uuid, $3, $4::timestamptz)
+       ON CONFLICT (tenant_id, role_id, capability_code) DO NOTHING`,
+      [
+        capability.tenantId,
+        capability.roleId,
+        capability.capabilityCode,
+        capability.createdAt,
+      ],
+    );
+  }
+  for (const assignment of localAccessRoleAssignmentRows()) {
+    await client.query(
+      `INSERT INTO access_role_assignments (
+         tenant_id, assignment_id, user_id, role_id, assignment_scope,
+         branch_id, status, version, assigned_at, revoked_at
+       ) VALUES (
+         $1::uuid, $2::uuid, $3::uuid, $4::uuid, $5,
+         $6::uuid, $7, $8, $9::timestamptz, $10::timestamptz
+       )
+       ON CONFLICT (tenant_id, assignment_id) DO UPDATE SET
+         user_id = EXCLUDED.user_id,
+         role_id = EXCLUDED.role_id,
+         assignment_scope = EXCLUDED.assignment_scope,
+         branch_id = EXCLUDED.branch_id,
+         status = EXCLUDED.status,
+         version = EXCLUDED.version,
+         revoked_at = EXCLUDED.revoked_at`,
+      [
+        assignment.tenantId,
+        assignment.assignmentId,
+        assignment.userId,
+        assignment.roleId,
+        assignment.assignmentScope,
+        assignment.branchId,
+        assignment.status,
+        assignment.version,
+        assignment.assignedAt,
+        assignment.revokedAt,
+      ],
     );
   }
   await client.query(
@@ -317,6 +398,10 @@ process.stdout.write(`${JSON.stringify({
   tenantCount: 1,
   branchCount: rows.branches.length,
   userCount: localUserRows().length,
+  accessCapabilityCount: localAccessCapabilityRows().length,
+  accessRoleCount: localAccessRoleRows().length,
+  accessRoleCapabilityCount: localAccessRoleCapabilityRows().length,
+  accessRoleAssignmentCount: localAccessRoleAssignmentRows().length,
   repairCount: localRepairRows().length,
   repairIntakeCount: localRepairIntakeRows().length,
   repairTimelineEntryCount: localRepairTimelineRows().length,

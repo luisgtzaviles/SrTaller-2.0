@@ -1991,11 +1991,29 @@ export async function checkArchitecture({
     directory.slice(modulesRoot.length + 1),
   );
   const baselineFixture = fixture && !directModuleNames.includes('repairs');
-  if (baselineFixture) {
-    requiredModuleNames = policy.fixtureRequiredModules ?? policy.allowedModules;
+  const accessPersistencePath = resolve(
+    projectRoot,
+    'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+  );
+  const fixtureOmitsAccessPersistence =
+    fixture && !sourceFileSet.has(accessPersistencePath);
+  if (baselineFixture || fixtureOmitsAccessPersistence) {
+    if (baselineFixture) {
+      requiredModuleNames =
+        policy.fixtureRequiredModules ?? policy.allowedModules;
+    }
     persistence = JSON.parse(JSON.stringify(policy.persistence));
-    const omittedFixtureOwners = new Set(['repairs']);
-    if (!directModuleNames.includes('users')) {
+    // Legacy architecture fixtures materialize only the original tenancy/
+    // station persistence baseline. Keep newly materialized product owners out
+    // of that synthetic registry without weakening production-mode checks.
+    const omittedFixtureOwners = new Set();
+    if (fixtureOmitsAccessPersistence) {
+      omittedFixtureOwners.add('access');
+    }
+    if (baselineFixture) {
+      omittedFixtureOwners.add('repairs');
+    }
+    if (baselineFixture && !directModuleNames.includes('users')) {
       omittedFixtureOwners.add('users');
     }
     const belongsToOmittedFixtureOwner = (value) =>
@@ -2005,6 +2023,7 @@ export async function checkArchitecture({
           value.includes(`_${owner}_`) ||
           value.includes(`/${owner}_`) ||
           value.startsWith(`${owner}_`) ||
+          (owner === 'access' && value.includes('Access')) ||
           (owner === 'repairs' && value.includes('Repair')) ||
           (owner === 'users' && value.includes('User')),
       );

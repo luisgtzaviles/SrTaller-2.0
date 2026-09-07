@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 16);
+  assert.equal(first.manifest.migrations.length, 19);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -135,6 +135,24 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260906172000_users_create_lifecycle_commands',
         order: 15,
         owner: 'users',
+      },
+      {
+        fileName: '20260906180000_access_create_capability_catalog.js',
+        migrationName: '20260906180000_access_create_capability_catalog',
+        order: 16,
+        owner: 'access',
+      },
+      {
+        fileName: '20260906181000_access_create_roles.js',
+        migrationName: '20260906181000_access_create_roles',
+        order: 17,
+        owner: 'access',
+      },
+      {
+        fileName: '20260906182000_access_create_role_assignments.js',
+        migrationName: '20260906182000_access_create_role_assignments',
+        order: 18,
+        owner: 'access',
       },
     ],
   );

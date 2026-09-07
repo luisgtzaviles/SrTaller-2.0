@@ -204,6 +204,7 @@ async function runOnce() {
         'test/repair-persistence-postgresql.test.mjs',
         'test/trusted-station-context-postgresql.test.mjs',
         'test/user-directory-postgresql.test.mjs',
+        'test/access-role-postgresql.test.mjs',
       ],
       {
         encoding: 'utf8',
@@ -262,6 +263,12 @@ async function runOnce() {
       node: '24.18.0',
       postgres: '18.4',
       scenarios: Object.freeze([
+        'access-assignment-concurrency-and-idempotency',
+        'access-capability-and-role-catalog',
+        'access-migration-up-down-reapply',
+        'access-read-model-and-effective-capabilities',
+        'access-tenant-and-branch-isolation',
+        'access-transaction-rollback',
         'branch-create-find-exists-list',
         'concurrent-duplicate',
         'context-expiry',

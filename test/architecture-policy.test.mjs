@@ -43,6 +43,7 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
   assert.deepEqual(result.observedEdges, [
     'access->stations',
     'access->tenancy',
+    'access->users',
     'repairs->tenancy',
     'stations->tenancy',
     'users->tenancy',
