@@ -2,18 +2,22 @@
 
 ## Estado
 
-- **Estado:** integration candidate in Draft PR #30; exact-head CI and final
-  focused Critical-risk disposition pending.
+- **Estado:** functional scope integrated by PR #30; PBI remains `In review`
+  while the [Critical CI flakiness incident](./CI_FLAKINESS_INCIDENT.md) is
+  remediated before canonical closure.
 - **PBI:** PBI-025; current PBI; WIP 1/1.
 - **Risk / size:** Critical / Large.
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
 - **Threat model:** [complete](./THREAT_MODEL.md).
-- **Baseline:** `main` at
-  `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1`; exact-main CI
-  `34084930812` GREEN.
-- **Superseded review checkpoint:** `4ba81eebbf4159febe37bc3b9a641c9ecfc3c80a`
-  in Draft PR #30 passed candidate CI `34090023213`; subsequent focused
-  security findings require a new final SHA and exact-head CI.
+- **CI determinism:** [flakiness incident and scoped remediation](./CI_FLAKINESS_INCIDENT.md).
+- **Functional candidate:** `9ce69334692e919276dbe1100d232e695b6ae115`;
+  focused Critical-risk review PASS with no open BLOCKER/HIGH/MEDIUM finding.
+- **Functional integration:** PR #30, merge
+  `328bdf541be88b21a2e7dbea28f4a2a6f32f6986`; exact-main CI
+  `34094803024` GREEN on attempt 1.
+- **Candidate CI incident:** run `34092781952` attempt 1 failed in both
+  independent owner-scoped PostgreSQL legs; attempt 2 passed on the same SHA.
+  The first result remains material and is not replaced by the rerun.
 - **Released / deployed:** NO / NO.
 
 ## Candidate scope
@@ -70,7 +74,7 @@
 | Migration up/down/reapply and constraints | PostgreSQL 18.4 | PASS, including negative CHECK/FK writes for credential and abuse-control tables |
 | No Session/login/authorization surface | contract and production exclusion | PASS local |
 | DEC-005/049 ownership and exact inventories | architecture + mutations | PASS local |
-| Reproducibility | owner-scoped PostgreSQL run-1/run-2/comparison | PASS local; candidate VC-024 pending |
+| Reproducibility | owner-scoped PostgreSQL run-1/run-2/comparison | BLOCKED for closure by the recorded CI flakiness incident; scoped remediation and new first-attempt exact-HEAD CI pending |
 
 The material PostgreSQL runner completed `6/6` adapter suites in each of two
 independent runs, cleanup passed, comparison matched and the material evidence
@@ -95,15 +99,16 @@ repository exceptions are sanitized. Contract and material tests cover
 limiter capacity, divergent replay, local-fixture equivalence,
 cross-eligibility rate state and locked-credential dummy verification. A
 MEDIUM stale configuration statement that still classified `SR_PIN_PEPPER` as
-reserved was also corrected. No BLOCKER/HIGH/MEDIUM finding remains in the
-local remediation audit; the final independent disposition remains pending.
+reserved was also corrected. The final focused product/security review passed
+with no open BLOCKER/HIGH/MEDIUM finding. A later independent DoD audit found
+the separate CI determinism blocker recorded above; it does not reopen the
+resolved product findings.
 
 ## Evidence pending
 
-- final candidate SHA after focused-review remediations;
-- candidate CI exact run-1/run-2/comparison;
-- final focused Critical-risk review disposition;
-- merge/main CI/Owner Acceptance and closure evidence.
+- CI-determinism remediation SHA and first-attempt authoritative run;
+- focused review of the remediation boundary;
+- Owner Acceptance and canonical closure evidence after the blocker closes.
 
 The final evidence update must bind every `PASS` above to the exact candidate
 SHA and CI run. Local success does not imply review, merge, `Done`, release or
