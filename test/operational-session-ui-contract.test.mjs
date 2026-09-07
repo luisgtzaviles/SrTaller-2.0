@@ -111,8 +111,8 @@ test('browser coordination serializes complete Session exchanges and publishes o
 test('remote mutation invalidation hides the actor before queued reconciliation', () => {
   const subscription = sourceSection(
     gateSource,
-    'unsubscribe = subscribeToRemoteSessionChanges',
-    '    } catch {',
+    'const invalidate = (): void => {',
+    '    let unsubscribe:',
   );
   assert.match(subscription, /operationGeneration\.current \+= 1/u);
   assert.match(subscription, /pending = true/u);
@@ -123,6 +123,8 @@ test('remote mutation invalidation hides the actor before queued reconciliation'
     subscription.indexOf("setPhase('loading')") < subscription.indexOf('void reconcile()'),
     'the verified actor must be hidden before reconciliation waits for the Session lock',
   );
+  assert.match(gateSource, /subscribeToRemoteSessionChanges\(invalidate\)/u);
+  assert.match(gateSource, /window\.addEventListener\(SESSION_INVALIDATED_EVENT, invalidate\)/u);
 });
 
 test('session snapshots fail closed before reaching the shell', () => {

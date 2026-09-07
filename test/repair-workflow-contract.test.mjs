@@ -31,14 +31,16 @@ test('D6.1 persists one scoped append-only workflow stream with independent mono
   assert.match(port, /startRepairDiagnosis/u);
 });
 
-test('D6.1 exposes an intentional command and rejects a generic or client-authored state mutation', () => {
+test('D6.1 keeps the intentional command implementation but fails its HTTP route closed until a capability is approved', () => {
   assert.match(useCase, /class StartRepairDiagnosisUseCase/u);
   assert.match(useCase, /allowedKeys = Object\.freeze\(\['clientRequestId', 'expectedVersion'\]\)/u);
   assert.match(useCase, /localRepairWorkflowActor/u);
   assert.match(controller, /@Post\(':repairId\/workflow\/start-diagnosis'\)/u);
   assert.doesNotMatch(controller, /@(?:Post|Patch)\([^\n]*status/u);
   assert.doesNotMatch(useCase, /toState.*request|actor.*request|tenantId.*request|branchId.*request/u);
-  assert.match(moduleSource, /provide: StartRepairDiagnosisUseCase/u);
+  assert.match(moduleSource, /provide: RepairProtectedOperations/u);
+  assert.doesNotMatch(moduleSource, /provide: StartRepairDiagnosisUseCase/u);
+  assert.match(controller, /startDiagnosis\(\): never \{[\s\S]*?rejectUncataloguedWrite\(\)/u);
 });
 
 test('D6.1 transaction owns history, structured timeline, cache update and fail-closed preconditions atomically', () => {
@@ -56,20 +58,15 @@ test('D6.1 transaction owns history, structured timeline, cache update and fail-
   assert.match(runtime, /selectFrom\('repair_workflow_transitions'\)/u);
 });
 
-test('D6.1 UI is focal, refreshes Worklist and preserves independent technician, location and custody surfaces', () => {
+test('D6.1 status projection remains visible while the uncataloged write stays hidden', () => {
   assert.match(api, /startRepairDiagnosis/u);
   assert.match(api, /workflow\/start-diagnosis/u);
-  assert.match(detail, /Iniciar diagnóstico/u);
-  assert.match(detail, /repairStatus\.code === 'pending'/u);
-  assert.match(detail, /workflowVersion/u);
-  assert.match(detail, /El estado cambió mientras trabajabas\. Actualiza y vuelve a intentarlo\./u);
-  assert.match(detail, /workflowMessageRef\.current\?\.focus\(\)/u);
-  assert.match(detail, /ref=\{workflowMessageRef\}[\s\S]*?tabIndex=\{-1\}/u);
-  assert.match(detail, /srtaller:repairs-changed/u);
+  assert.match(detail, /repair\.currentSituation\.repairStatus\.label/u);
+  assert.doesNotMatch(detail, /startRepairDiagnosis|Iniciar diagnóstico|workflowMessageRef/u);
   assert.match(worklist, /srtaller:repairs-changed/u);
   assert.doesNotMatch(detail, /Cambiar estado/u);
   assert.match(detail, /Ubicación no registrada/u);
-  assert.match(detail, /technicianSummary\.version/u);
+  assert.match(detail, /technicianSummary\.history/u);
 });
 
 test('D6.1 seed declares deterministic diagnosing history without widening the writable catalog', () => {

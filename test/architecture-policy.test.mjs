@@ -44,17 +44,18 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
     'access->stations',
     'access->tenancy',
     'access->users',
+    'repairs->access',
     'repairs->tenancy',
     'stations->tenancy',
     'users->tenancy',
   ]);
 });
 
-test('policy v4 registers exact directed public module composition', async () => {
+test('policy v5 registers exact directed public module composition', async () => {
   const policy = JSON.parse(
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
-  assert.equal(policy.policyVersion, 4);
+  assert.equal(policy.policyVersion, 5);
   assert.deepEqual(policy.directedModuleComposition, {
     decorator: 'Module',
     edges: [
@@ -112,6 +113,27 @@ test('policy v4 registers exact directed public module composition', async () =>
           },
         ],
       },
+      {
+        consumer: 'repairs',
+        producer: 'access',
+        consumerModule: {
+          file: 'src/modules/repairs/repairs.module.ts',
+          className: 'RepairsModule',
+        },
+        producerModule: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: '../access/access.module.js',
+        },
+        publicBindings: [
+          {
+            token: 'CONTEXTUAL_AUTHORIZATION_EXECUTOR',
+            contract: 'ContextualAuthorizationExecutor',
+            consumerImportSpecifier: '../access/index.js',
+            producerImportSpecifier: './index.js',
+          },
+        ],
+      },
     ],
   });
   for (const edge of policy.directedModuleComposition.edges) {
@@ -122,6 +144,16 @@ test('policy v4 registers exact directed public module composition', async () =>
       assert.ok(policy.publicSurfaces[edge.producer].includes(binding.contract));
     }
   }
+  assert.ok(
+    policy.productModuleFiles.includes(
+      'src/modules/access/presentation/contextual-authorization.executor.ts',
+    ),
+  );
+  assert.ok(
+    policy.productModuleFiles.includes(
+      'src/modules/repairs/application/repair-protected-operations.ts',
+    ),
+  );
 });
 
 test('runtime composition exports configuration while Stations owns local bootstrap assembly', async () => {

@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7`; CI `34150632738` GREEN.
+  `54ddc251cda8ec7465b7913786c647f8d3ccbeac`; CI `34153470560` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -18,12 +18,12 @@ flowchart TD
     P29 --> P24[PBI-024 Trusted Station Runtime Context<br/>Done]
     P24 --> P32[PBI-032 User Directory<br/>Done]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>Done]
-    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=0/1]
+    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=1/1]
     S2 --> P25[PBI-025 PIN Credential<br/>Done]
     P24 --> P25
     P29 --> P25
-    P25 --> P34[PBI-034 Operational Session<br/>Done candidate]
-    P34 --> P26[PBI-026 Contextual Authorization<br/>Selected / not started]
+    P25 --> P34[PBI-034 Operational Session<br/>Done]
+    P34 --> P26[PBI-026 Contextual Authorization<br/>In progress]
     P33 --> P26
     P26 --> P28[PBI-028 Minimum Business Audit]
     P27 --> P28
@@ -67,7 +67,7 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; no hay PBI actual y WIP=`0/1`.
+- Sprint 02: `Active`; PBI-026 es PBI actual y WIP=`1/1`.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -83,9 +83,10 @@ flowchart TD
   riesgo `Critical` sin downgrade, DoR `PASS`, ratificación Owner acotada
   para PR #30 y Owner Acceptance APPROVED; cierre PR #32 merge
   `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`, CI `34124746317` GREEN.
-- PBI-034: `Done candidate`; candidate/CI, focused review, merge funcional,
-  exact-main CI y Owner Acceptance completos. G3 es `PASS candidate` hasta el
-  merge/CI del cierre. PBI-026 queda seleccionado y no iniciado.
+- PBI-034: `Done`; cierre PR #34 merge
+  `54ddc251cda8ec7465b7913786c647f8d3ccbeac` y CI post-cierre
+  `34153470560` GREEN. G3 es `PASS`; PBI-026 está `In progress` y PBI-028 no
+  ha iniciado.
 
 ## Stage 2
 
@@ -95,5 +96,4 @@ diferidos.
 
 ## Próxima revisión
 
-Al integrar el cierre PBI-034 y obtener CI exacto de `main`, o si cambia una
-dependencia aprobada.
+Al completar el candidato PBI-026, o si cambia una dependencia aprobada.

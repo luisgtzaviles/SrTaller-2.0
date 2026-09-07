@@ -34,7 +34,7 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R021 | SHOULD | Utilidad permanece local hasta demostrar transversalidad | Reducir abstracción prematura | Revisión; no hay utilidades | Advisory | Sí, documentada por Arquitectura |
 | D5-R022 | MUST | Infraestructura de módulo permanece con su owner | Evitar adapters globales | Paths/patrones + revisión de ownership | Major | Facility técnica revisada por Arquitectura |
 | D5-R023 | MUST | `AppModule` sólo composition root y compone exactamente los módulos autorizados | Evitar agregado técnico universal y wiring ficticio | AST de clase, `@Module`, metadata, arreglo `imports` e imports nombrados exactos | Blocker | No |
-| D5-R024 | MAY restringido | `AppModule` conserva la composición exterior; un módulo sólo puede importar otro `<module>.module.ts` mediante una arista de composición dirigida registrada, estática y exacta | Separar contrato y wiring sin impedir DI explícita entre capacidades aprobadas | Policy v4 + AST de consumer/producer, clases/specifiers exactos, `@Module imports`, tokens/interfaces públicos, provider/export/inject y ausencia de aliases/dynamic/namespace | Blocker | Sólo edge, módulos y bindings aprobados previamente por Arquitectura; no hay excepción implícita |
+| D5-R024 | MAY restringido | `AppModule` conserva la composición exterior; un módulo sólo puede importar otro `<module>.module.ts` mediante una arista de composición dirigida registrada, estática y exacta | Separar contrato y wiring sin impedir DI explícita entre capacidades aprobadas | Policy v5 + AST de consumer/producer, clases/specifiers exactos, `@Module imports`, tokens/interfaces públicos, provider/export/inject y ausencia de aliases/dynamic/namespace | Blocker | Sólo edge, módulos y bindings aprobados previamente por Arquitectura; no hay excepción implícita |
 | D5-R025 | MUST NOT | Usar `forwardRef` en R0 | Exponer ciclos | Identidad AST normalizada de `@nestjs/common.forwardRef` | Blocker | No |
 | D5-R026 | MUST NOT | `ModuleRef` resuelve flujos funcionales | Dependencias explícitas | Identidad AST normalizada de `@nestjs/core.ModuleRef` | Blocker | No |
 | D5-R027 | MUST NOT | Módulo Nest funcional global | Evitar dependencias invisibles | Identidad AST normalizada del decorador `@nestjs/common.Global` | Blocker | No |
@@ -67,8 +67,9 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 
 ## Interpretación vigente de composición dirigida
 
-La policy v4 registra exactamente `access->stations` y `access->users` como
-composición runtime dirigida. D5-R024 exige conjuntamente el edge del grafo, el
+La policy v5 registra exactamente `access->stations`, `access->users` y
+`repairs->access` como composición runtime dirigida. D5-R024 exige
+conjuntamente el edge del grafo, el
 registro de módulos y specifiers, imports nombrados sin alias, metadata
 `@Module` estática, contratos/tokens desde el `index.ts` público y bindings
 `provide`/`exports`/`inject` únicos. Un edge presente sólo en `dependencies` no
@@ -83,6 +84,8 @@ ni módulos globales. `AppModule` conserva en D5-R023 su registro exterior exact
 La aplicación de estas invariantes a PBI-034 y sus resultados exactos se
 separan en
 [PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md).
+La extensión acotada `repairs->access` de PBI-026 se registra en
+[PBI-026 Option A Verification](PBI_026_OPTION_A_VERIFICATION.md).
 
 ## Interpretación vigente de la superficie HTTP
 

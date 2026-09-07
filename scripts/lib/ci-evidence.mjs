@@ -327,6 +327,7 @@ export async function collectEvidenceManifest({
     'test/access-pin-postgresql.test.mjs',
     'test/access-session-postgresql.test.mjs',
     'test/access-role-postgresql.test.mjs',
+    'test/contextual-authorization-postgresql.test.mjs',
     'test/trusted-station-context-postgresql.test.mjs',
     'test/user-directory-postgresql.test.mjs',
     'tsconfig.build.json',

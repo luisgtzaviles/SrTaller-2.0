@@ -6,6 +6,13 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Governance
 
+- Iniciado PBI-026 Contextual Authorization como único PBI actual de
+  SPRINT-02, con tamaño `Large`, riesgo `Critical` preservado, threat model,
+  DoR `PASS`, Owner Start Authorization y DEC-005 Option A dirigida. PBI-034
+  quedó `Done` y G3 `PASS` mediante cierre PR #34, merge
+  `54ddc251cda8ec7465b7913786c647f8d3ccbeac` y CI exacto `34153470560`
+  GREEN. PBI-028 no ha iniciado; no autoriza release ni deploy.
+
 - Preparado el cierre canónico de PBI-034 después de candidate
   `cdf2805344a5302844a8f7f6f042cb39fbe1515c`, CI `34149620560` GREEN,
   focused review PASS (`0B/0H/0M/1L`), PR #33 merge
@@ -15,6 +22,17 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   WIP `0/1` y PBI-026 seleccionado sin iniciar.
 
 ### Desarrollo local
+
+- Materializado el candidato local PBI-026 Contextual Authorization con
+  resolución server-side fresca de Station, Session, User y capabilities,
+  scope Repairs-owned por Tenant/Branch, matriz cerrada para `repairs.read` y
+  `repairs.add_note`, y denegación explícita de D5/D6/New Repair sin permisos
+  inventados. La UI sólo proyecta affordances y limpia capabilities al
+  invalidar/cambiar Session. No agrega migración, actor/audit de PBI-028,
+  merge, release ni deploy; candidate SHA, PR, CI y focused review siguen
+  pendientes. Full verify local pasó con `582` tests PASS, `17` skips
+  esperados y `0` fail; arquitectura v5 quedó `307/307` GREEN y PostgreSQL
+  18.4 material cerró `8/8 PASS` con doble ejecución `MATCH`.
 
 - Integrado PBI-034 con bootstrap de Station restringido a
   loopback/same-origin, Session Access-owned, login/logout/cambio de User y

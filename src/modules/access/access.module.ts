@@ -28,15 +28,18 @@ import type {
   AuthenticationUserReader,
 } from '../users/index.js';
 
+import { CONTEXTUAL_AUTHORIZATION_EXECUTOR } from './index.js';
+import type { ContextualAuthorizationExecutor } from './index.js';
+
 import type { AssignRoleUseCase } from './application/use-cases/assign-role.use-case.js';
 import type { ListAccessMatrixUseCase } from './application/use-cases/list-access-matrix.use-case.js';
-import type { ResolveEffectiveCapabilitiesUseCase } from './application/use-cases/resolve-effective-capabilities.use-case.js';
 import type { RevokeRoleAssignmentUseCase } from './application/use-cases/revoke-role-assignment.use-case.js';
 import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';
 import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';
 import type { ProvisionPinCredentialUseCase } from './application/use-cases/provision-pin-credential.use-case.js';
 import { AuthenticatePinUseCase } from './application/use-cases/authenticate-pin.use-case.js';
 import { ListApplicableUsersUseCase } from './application/use-cases/list-applicable-users.use-case.js';
+import { ResolveEffectiveCapabilitiesUseCase } from './application/use-cases/resolve-effective-capabilities.use-case.js';
 import {
   CreateOperationalSessionUseCase,
   EndOperationalSessionUseCase,
@@ -53,6 +56,7 @@ import {
   AccessSessionController,
 } from './presentation/access-session.controller.js';
 import type { AccessSessionRuntime } from './presentation/access-session.controller.js';
+import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
@@ -101,6 +105,9 @@ type RegisteredAccessUseCases =
           userAdmission,
         );
         const applicableUsers = new ListApplicableUsersUseCase(accessRepository);
+        const resolveCapabilities = new ResolveEffectiveCapabilitiesUseCase(
+          accessRepository,
+        );
         const tokens = new NodeSessionToken();
         const resolveSession = new ResolveOperationalSessionUseCase(
           sessionRepository,
@@ -122,6 +129,7 @@ type RegisteredAccessUseCases =
             tokens,
           ),
           resolveSession,
+          resolveCapabilities,
           endSession: new EndOperationalSessionUseCase(
             sessionRepository,
             tokens,
@@ -131,7 +139,16 @@ type RegisteredAccessUseCases =
         });
       },
     },
+    {
+      provide: CONTEXTUAL_AUTHORIZATION_EXECUTOR,
+      inject: [ACCESS_SESSION_RUNTIME],
+      useFactory: (
+        runtime: AccessSessionRuntime,
+      ): ContextualAuthorizationExecutor =>
+        new ContextualAuthorizationExecutorService(runtime),
+    },
   ],
+  exports: [CONTEXTUAL_AUTHORIZATION_EXECUTOR],
 })
 export class AccessModule {
   declare private readonly persistenceAdapter: RegisteredAccessPersistenceAdapter;

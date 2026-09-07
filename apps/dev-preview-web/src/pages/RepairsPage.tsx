@@ -1,8 +1,8 @@
-import { Plus, Printer, Search, Smartphone, UserRound } from 'lucide-react';
+import { Printer, Search, Smartphone, UserRound } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
-import { listRepairs } from '../api.js';
+import { listRepairs, PreviewApiError } from '../api.js';
 import type {
   CustodyStatusCode,
   RepairStatusCode,
@@ -10,7 +10,7 @@ import type {
   RepairWorklistQuery,
   RepairWorklistResponse,
 } from '../api.js';
-import { Button, ButtonLink, IconButton, Input } from '../components/ui/controls.js';
+import { Button, IconButton, Input } from '../components/ui/controls.js';
 import { FilterBar, ResponsiveDataList, StatusBadge } from '../components/ui/data-display.js';
 import type { DataColumn } from '../components/ui/data-display.js';
 import { EmptyState, ErrorState, Skeleton } from '../components/ui/feedback.js';
@@ -143,6 +143,7 @@ export function RepairsPage(): React.JSX.Element {
   const [data, setData] = useState<RepairWorklistResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [denied, setDenied] = useState(false);
   const [retry, setRetry] = useState(0);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const initialLocationKey = useRef(location.key);
@@ -186,15 +187,19 @@ export function RepairsPage(): React.JSX.Element {
     if (customRangeError) {
       setData(null);
       setFailed(false);
+      setDenied(false);
       setLoading(false);
       return () => controller.abort();
     }
     setLoading(true);
     setFailed(false);
+    setDenied(false);
     void listRepairs(apiQuery(filters), controller.signal)
       .then(setData)
       .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === 'AbortError')) setFailed(true);
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        if (error instanceof PreviewApiError && error.status === 403) setDenied(true);
+        else setFailed(true);
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
@@ -239,7 +244,7 @@ export function RepairsPage(): React.JSX.Element {
   const items = data?.items ?? [];
   const pagination = data?.pagination;
   const technicians = data?.facets.technicians ?? [];
-  const countReady = Boolean(pagination && !loading && !failed);
+  const countReady = Boolean(pagination && !loading && !failed && !denied);
   const totalCount = pagination?.totalCount ?? 0;
   const detailLinkState = {
     backgroundLocation: location,
@@ -265,7 +270,7 @@ export function RepairsPage(): React.JSX.Element {
       <PageHeader
         eyebrow="Operación"
         title="Reparaciones"
-        description="Consulta el trabajo recibido en esta sucursal. Inicia el diagnóstico desde el detalle; el resto de cambios operativos permanece fuera de este slice."
+        description="Consulta el trabajo recibido en esta sucursal. Las acciones de escritura sin capability registrada permanecen fuera de esta superficie."
         primaryAction={(
           <div className={styles.worklistHeaderActions}>
             {countReady ? (
@@ -274,10 +279,6 @@ export function RepairsPage(): React.JSX.Element {
                 <span>{totalCount === 1 ? 'reparación' : 'reparaciones'}</span>
               </div>
             ) : null}
-            <ButtonLink to="/reparaciones/nueva" tone="primary">
-              <Plus aria-hidden="true" size={20} />
-              Nueva reparación
-            </ButtonLink>
             <IconButton
               label="Imprimir lista"
               tooltip="Imprimir lista"
@@ -289,13 +290,13 @@ export function RepairsPage(): React.JSX.Element {
         )}
       />
       <section className={styles.dataSurface} aria-busy={loading} aria-labelledby="repair-worklist-heading">
-        <FilterBar summary={failed ? 'No disponible' : loading ? 'Cargando…' : null}>
+        <FilterBar summary={failed || denied ? 'No disponible' : loading ? 'Cargando…' : null}>
           <div className={styles.searchFieldGroup}>
             <span className={styles.filterLabel}>Búsqueda general</span>
             <label className={styles.searchField} htmlFor="repair-worklist-search">
               <span className="srt-visually-hidden">Buscar reparaciones</span>
               <Search aria-hidden="true" size={20} />
-              <Input id="repair-worklist-search" type="search" placeholder="Buscar por folio, cliente, teléfono, equipo o falla" value={queryInput} disabled={loading && !data || failed} onChange={(event) => setQueryInput(event.target.value)} />
+              <Input id="repair-worklist-search" type="search" placeholder="Buscar por folio, cliente, teléfono, equipo o falla" value={queryInput} disabled={loading && !data || failed || denied} onChange={(event) => setQueryInput(event.target.value)} />
             </label>
           </div>
         </FilterBar>
@@ -332,9 +333,10 @@ export function RepairsPage(): React.JSX.Element {
           <p>Resultados ordenados por recepción más reciente.</p>
         </div>
         {loading && !data ? <Skeleton rows={6} /> : null}
+        {denied ? <ErrorState compact title="Acceso no autorizado" description="Tu sesión operativa ya no tiene acceso a Reparaciones." /> : null}
         {failed ? <ErrorState compact title="No se pudo cargar Reparaciones" description="La lectura local no respondió. Revisa el backend y vuelve a intentar." /> : null}
-        {!failed && !loading && items.length === 0 ? <EmptyState compact title={data?.unfilteredCount ? 'Sin coincidencias' : 'Aún no hay reparaciones'} description={data?.unfilteredCount ? 'Prueba con otros filtros o limpia la búsqueda.' : 'No existen reparaciones en la sucursal local.'} /> : null}
-        {!failed && items.length > 0 ? <ResponsiveDataList rows={items} columns={columns} rowKey={(repair) => repair.id} label="Reparaciones" renderMobile={(repair) => (
+        {!failed && !denied && !loading && items.length === 0 ? <EmptyState compact title={data?.unfilteredCount ? 'Sin coincidencias' : 'Aún no hay reparaciones'} description={data?.unfilteredCount ? 'Prueba con otros filtros o limpia la búsqueda.' : 'No existen reparaciones en la sucursal local.'} /> : null}
+        {!failed && !denied && items.length > 0 ? <ResponsiveDataList rows={items} columns={columns} rowKey={(repair) => repair.id} label="Reparaciones" renderMobile={(repair) => (
           <div className={styles.mobileEntityCard}>
             <header><span className={styles.identity}><Link className={styles.actionLink} data-repair-detail-trigger={repair.id} state={{ ...detailLinkState, restoreFocusSelector: `[data-repair-detail-trigger="${repair.id}"]` }} to={`/reparaciones/${repair.id}?${searchParams.toString()}`}>{repair.folio}</Link><small>{formatReceivedAt(repair.receivedAt)}</small></span>{statusBadge(repair)}</header>
             <div><UserRound aria-hidden="true" size={16} /><span><strong>{repair.customer.name}</strong><small>{repair.customer.phone ?? 'Teléfono no registrado'}</small></span></div>
@@ -343,7 +345,7 @@ export function RepairsPage(): React.JSX.Element {
             <footer><span>{repair.custody.label}</span><Link className={styles.actionLink} data-repair-detail-trigger={repair.id} state={{ ...detailLinkState, restoreFocusSelector: `[data-repair-detail-trigger="${repair.id}"]` }} to={`/reparaciones/${repair.id}?${searchParams.toString()}`}>Ver detalle</Link></footer>
           </div>
         )} /> : null}
-        {pagination && pagination.totalCount > 0 ? <nav className={styles.pagination} aria-label="Paginación de reparaciones">
+        {!denied && pagination && pagination.totalCount > 0 ? <nav className={styles.pagination} aria-label="Paginación de reparaciones">
           <Button size="compact" tone="secondary" disabled={filters.page <= 1} onClick={() => updateFilter('page', String(Math.max(1, filters.page - 1)))}>Anterior</Button>
           <span aria-live="polite">Página {filters.page}</span>
           <Button size="compact" tone="secondary" disabled={!pagination.hasNextPage} onClick={() => updateFilter('page', String(filters.page + 1))}>Siguiente</Button>

@@ -15,6 +15,7 @@ import {
 import { subscribeToRemoteSessionChanges } from './session-request-coordinator.mjs';
 import type {
   ActiveOperationalSession,
+  OperationalCapability,
   OperationalSessionSnapshot,
 } from './session-api.js';
 import {
@@ -27,6 +28,8 @@ const PIN_PATTERN = /^\d{6}$/u;
 const SESSION_REVALIDATION_MINIMUM_MS = 1_000;
 const SESSION_REVALIDATION_EPSILON_MS = 25;
 const MAX_BROWSER_TIMEOUT_MS = 2_147_483_647;
+const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
+const EMPTY_CAPABILITIES: readonly OperationalCapability[] = Object.freeze([]);
 let localStationBootstrapRequest: Promise<void> | null = null;
 
 type LoginError = Readonly<{
@@ -312,6 +315,8 @@ function LoginPage({
 
 export interface AuthenticatedSessionView {
   readonly session: ActiveOperationalSession;
+  readonly capabilities: readonly OperationalCapability[];
+  readonly csrfToken: string;
   readonly busy: boolean;
   readonly errorMessage: string | null;
   readonly focusTarget: 'main' | 'operator' | null;
@@ -362,17 +367,19 @@ export function OperationalSessionGate({
       }
       reconciling = false;
     };
+    const invalidate = (): void => {
+      operationGeneration.current += 1;
+      pending = true;
+      setBusy(false);
+      setSwitching(false);
+      setSnapshot(null);
+      setPhase('loading');
+      void reconcile();
+    };
     let unsubscribe: (() => void) | undefined;
     try {
-      unsubscribe = subscribeToRemoteSessionChanges(() => {
-        operationGeneration.current += 1;
-        pending = true;
-        setBusy(false);
-        setSwitching(false);
-        setSnapshot(null);
-        setPhase('loading');
-        void reconcile();
-      });
+      unsubscribe = subscribeToRemoteSessionChanges(invalidate);
+      window.addEventListener(SESSION_INVALIDATED_EVENT, invalidate);
     } catch {
       setSnapshot(null);
       setPhase('failed');
@@ -380,6 +387,7 @@ export function OperationalSessionGate({
     return () => {
       disposed = true;
       unsubscribe?.();
+      window.removeEventListener(SESSION_INVALIDATED_EVENT, invalidate);
     };
   }, []);
 
@@ -532,11 +540,14 @@ export function OperationalSessionGate({
     const closeSession = async (): Promise<void> => {
       setBusy(true);
       setErrorMessage(null);
+      setSnapshot((current) => current ? { ...current, capabilities: EMPTY_CAPABILITIES } : current);
+      setPhase('loading');
       try {
         const next = await logoutOperationalSession(expectedSessionId);
         if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;
         setSnapshot(next);
         setSwitching(false);
+        setPhase('ready');
         setErrorMessage(next.session
           ? 'No fue posible confirmar el cierre. La identidad verificada continúa activa.'
           : null);
@@ -545,6 +556,7 @@ export function OperationalSessionGate({
           if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;
           setSnapshot(error.snapshot);
           setSwitching(false);
+          setPhase('ready');
           setErrorMessage(null);
           return;
         }
@@ -553,6 +565,7 @@ export function OperationalSessionGate({
           if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;
           setSnapshot(verified);
           setSwitching(false);
+          setPhase('ready');
           setErrorMessage(verified.session
             ? 'No fue posible cerrar la sesión. La identidad verificada continúa activa.'
             : null);
@@ -573,6 +586,8 @@ export function OperationalSessionGate({
     const generation = operationGeneration.current + 1;
     operationGeneration.current = generation;
     setFocusTarget(null);
+    setSnapshot((current) => current ? { ...current, capabilities: EMPTY_CAPABILITIES } : current);
+    setSwitching(true);
     const prepare = async (): Promise<void> => {
       setBusy(true);
       setErrorMessage(null);
@@ -636,6 +651,8 @@ export function OperationalSessionGate({
     <>
       {children({
         session: snapshot.session,
+        capabilities: snapshot.capabilities,
+        csrfToken: snapshot.csrfToken,
         busy,
         errorMessage,
         focusTarget,

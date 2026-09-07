@@ -35,13 +35,15 @@ test('D6.2 persists a scoped append-only location history with an independent ve
   assert.match(port, /moveRepairToWorkshop/u);
 });
 
-test('D6.2 exposes only the approved focused command and trusted server fields', () => {
+test('D6.2 keeps the focused command implementation but fails its HTTP route closed until a capability is approved', () => {
   assert.match(useCase, /allowedKeys = Object\.freeze\(\['clientRequestId', 'expectedVersion', 'reason'\]\)/u);
   assert.match(useCase, /localRepairLocationActor/u);
   assert.match(controller, /@Post\(':repairId\/location\/move-to-workshop'\)/u);
   assert.doesNotMatch(controller, /@(?:Post|Patch)\(':repairId\/location'\)/u);
   assert.doesNotMatch(useCase, /toLocation.*request|actor.*request|tenantId.*request|branchId.*request/u);
-  assert.match(moduleSource, /provide: MoveRepairToWorkshopUseCase/u);
+  assert.match(moduleSource, /provide: RepairProtectedOperations/u);
+  assert.doesNotMatch(moduleSource, /provide: MoveRepairToWorkshopUseCase/u);
+  assert.match(controller, /moveToWorkshop\(\): never \{[\s\S]*?rejectUncataloguedWrite\(\)/u);
 });
 
 test('D6.2 applies lock, idempotency, version, custody, origin, destination and timeline atomically', () => {
@@ -60,15 +62,12 @@ test('D6.2 applies lock, idempotency, version, custody, origin, destination and 
   assert.match(runtime, /selectFrom\('repair_location_movements'\)/u);
 });
 
-test('D6.2 Detail projection and UI expose location without widening Worklist', () => {
+test('D6.2 Detail exposes location read-only while the uncataloged write stays hidden', () => {
   assert.match(api, /locationVersion: number/u);
   assert.match(api, /locationSource: 'history' \| 'unrecorded'/u);
   assert.match(api, /moveRepairToWorkshop/u);
-  assert.match(detail, /Mover a Taller/u);
-  assert.match(detail, /'Mover equipo a Taller'/u);
-  assert.match(detail, /location\?\.code === 'pending_area'/u);
-  assert.match(detail, /La ubicación cambió mientras trabajabas\. Actualiza y vuelve a intentarlo\./u);
-  assert.match(detail, /locationMessageRef\.current\?\.focus\(\)/u);
+  assert.match(detail, /repair\.currentSituation\.location\?\.label \?\? 'Ubicación no registrada'/u);
+  assert.doesNotMatch(detail, /moveRepairToWorkshop|Mover a Taller|Mover equipo a Taller/u);
   assert.match(detail, /'local\.location': 'Ubicación interna'/u);
   assert.doesNotMatch(worklist, /locationVersion|moveRepairToWorkshop|Ubicación/u);
 });

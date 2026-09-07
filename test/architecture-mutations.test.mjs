@@ -183,6 +183,7 @@ const mutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R025',
+    expectedRules: ['D5-R024', 'D5-R025'],
     content: withAccessPersistenceComposition(
       "import { forwardRef, Module } from '@nestjs/common';\n@Module({ imports: [forwardRef(() => class {})] })\nexport class AccessModule {}\n",
     ),
@@ -192,6 +193,7 @@ const mutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R025',
+    expectedRules: ['D5-R024', 'D5-R025'],
     content: withAccessPersistenceComposition(
       "import { forwardRef as nestForwardRef, Module } from '@nestjs/common';\n@Module({ imports: [nestForwardRef(() => class {})] })\nexport class AccessModule {}\n",
     ),
@@ -201,6 +203,7 @@ const mutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R027',
+    expectedRules: ['D5-R024', 'D5-R027'],
     content: withAccessPersistenceComposition(
       "import { Global as NestGlobal, Module } from '@nestjs/common';\n@NestGlobal()\n@Module({})\nexport class AccessModule {}\n",
     ),
@@ -209,11 +212,13 @@ const mutations = [
     name: 'Access persistence adapter composition removed',
     path: 'src/modules/access/access.module.ts',
     expectedPaths: [
+      'src/modules/access/access.module.ts',
       'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
     ],
     rule: 'D5-R041',
+    expectedRules: ['D5-R024', 'D5-R041'],
     content: "import { Module } from '@nestjs/common';\n@Module({})\nexport class AccessModule {}\n",
   },
   {
@@ -300,7 +305,7 @@ const mutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R003',
-    expectedRules: ['D5-R003', 'D5-R041'],
+    expectedRules: ['D5-R003', 'D5-R024', 'D5-R041'],
     expectedPaths: [
       'src/modules/access/access.module.ts',
       'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',

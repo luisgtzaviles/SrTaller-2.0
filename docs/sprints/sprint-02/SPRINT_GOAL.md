@@ -5,10 +5,10 @@
 - **Sprint:** SPRINT-02.
 - **Estado:** Active.
 - **Periodo:** TBD.
-- **PBI actual:** NONE.
-- **WIP:** 0/1.
+- **PBI actual:** PBI-026 — Contextual Authorization.
+- **WIP:** 1/1.
 - **Autoridad:** Identity Master Goal para la secuencia y decisión Owner de
-  reanudación; PBI-034 tiene DoR PASS y Owner Start propio. Cada PBI posterior
+  reanudación; PBI-026 tiene DoR PASS y Owner Start propio. Cada PBI posterior
   conserva sus gates; no se autoriza deploy o release.
 
 ## Objetivo
@@ -30,7 +30,7 @@ PBI antes de cerrar canónicamente el anterior.
 
 ## Criterios de salida
 
-- [ ] G3 Authentication PASS efectivo; `PASS candidate` hasta merge + CI del cierre.
+- [x] G3 Authentication PASS efectivo; cierre PBI-034 PR #34 + CI exacto GREEN.
 - [ ] G4 Authorization PASS.
 - [ ] G5 Audit PASS.
 - [ ] Login/logout/User switching visible y persistente en localhost.
@@ -41,5 +41,5 @@ PBI antes de cerrar canónicamente el anterior.
 
 ## Próxima revisión
 
-- **Fecha:** al integrar el cierre PBI-034.
-- **Disparador:** CI exacto post-cierre o contradicción material.
+- **Fecha:** al completar el candidato PBI-026.
+- **Disparador:** focused Critical-risk review o contradicción material.

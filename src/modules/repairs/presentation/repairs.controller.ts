@@ -3,7 +3,10 @@ import {
   Body,
   ConflictException,
   Controller,
+  ForbiddenException,
   Get,
+  Header,
+  Headers,
   InternalServerErrorException,
   NotFoundException,
   Param,
@@ -12,8 +15,17 @@ import {
   Res,
   ServiceUnavailableException,
   StreamableFile,
+  UnauthorizedException,
 } from '@nestjs/common';
 import type { Response } from 'express';
+
+import { ContextualAuthorizationError } from '../../access/index.js';
+import type { ProtectedRequestEvidence } from '../../access/index.js';
+
+import {
+  RepairOperationAccessDeniedError,
+  RepairProtectedOperations,
+} from '../application/repair-protected-operations.js';
 
 import {
   ListRepairsQueryError,
@@ -27,7 +39,6 @@ import {
 } from '../application/use-cases/get-repair-detail.use-case.js';
 import {
   GetRepairEvidenceContentInputError,
-  GetRepairEvidenceContentUseCase,
   RepairEvidenceContentNotFoundError,
 } from '../application/use-cases/get-repair-evidence-content.use-case.js';
 import {
@@ -36,29 +47,43 @@ import {
   AddRepairOperationalNoteUseCase,
   RepairOperationalNoteRepairNotFoundError,
 } from '../application/use-cases/add-repair-operational-note.use-case.js';
-import { ListRepairTechniciansUseCase } from '../application/use-cases/list-repair-technicians.use-case.js';
-import {
-  AssignRepairTechnicianUseCase,
-  ReassignRepairTechnicianUseCase,
-  TechnicianAssignmentConflictError,
-  TechnicianAssignmentInputError,
-  TechnicianAssignmentRepairNotFoundError,
-  UnassignRepairTechnicianUseCase,
-} from '../application/use-cases/technician-assignment.use-case.js';
-import {
-  StartRepairDiagnosisConflictError,
-  StartRepairDiagnosisInputError,
-  StartRepairDiagnosisNotFoundError,
-  StartRepairDiagnosisUseCase,
-} from '../application/use-cases/start-repair-diagnosis.use-case.js';
-import {
-  MoveRepairToWorkshopConflictError,
-  MoveRepairToWorkshopInputError,
-  MoveRepairToWorkshopNotFoundError,
-  MoveRepairToWorkshopUseCase,
-} from '../application/use-cases/move-repair-to-workshop.use-case.js';
 
 type RepairQuery = Readonly<Record<string, string | string[] | undefined>>;
+type RepairRequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
+
+function headerValue(headers: RepairRequestHeaders, name: string): string | undefined {
+  const direct = headers[name];
+  if (typeof direct === 'string') return direct;
+  if (direct !== undefined) return undefined;
+  const entry = Object.entries(headers).find(([key]) => key.toLowerCase() === name);
+  return typeof entry?.[1] === 'string' ? entry[1] : undefined;
+}
+
+export function repairProtectedRequestEvidence(
+  headers: RepairRequestHeaders,
+): ProtectedRequestEvidence {
+  return Object.freeze({
+    cookieHeader: headerValue(headers, 'cookie'),
+    origin: headerValue(headers, 'origin'),
+    host: headerValue(headers, 'host'),
+    forwardedProto: headerValue(headers, 'x-forwarded-proto'),
+    fetchSite: headerValue(headers, 'sec-fetch-site'),
+    contentType: headerValue(headers, 'content-type'),
+    csrfToken: headerValue(headers, 'x-sr-csrf-token'),
+  });
+}
+
+function translateAuthorizationError(error: unknown): void {
+  if (error instanceof ContextualAuthorizationError) {
+    if (error.code === 'AUTHENTICATION_REQUIRED') {
+      throw new UnauthorizedException({ code: 'AUTHENTICATION_REQUIRED' });
+    }
+    throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+  }
+  if (error instanceof RepairOperationAccessDeniedError) {
+    throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+  }
+}
 
 const repairStatusPresentation = Object.freeze({
   pending: Object.freeze({ label: 'Pendiente', tone: 'neutral' as const }),
@@ -220,32 +245,26 @@ function operationalNoteResponse(
 
 @Controller('api/repairs')
 export class RepairsController {
-  constructor(
-    private readonly listRepairs: ListRepairsUseCase,
-    private readonly getRepairDetail: GetRepairDetailUseCase,
-    private readonly getRepairEvidenceContent: GetRepairEvidenceContentUseCase,
-    private readonly addRepairOperationalNote: AddRepairOperationalNoteUseCase,
-    private readonly listRepairTechnicians: ListRepairTechniciansUseCase,
-    private readonly assignRepairTechnician: AssignRepairTechnicianUseCase,
-    private readonly reassignRepairTechnician: ReassignRepairTechnicianUseCase,
-    private readonly unassignRepairTechnician: UnassignRepairTechnicianUseCase,
-    private readonly startRepairDiagnosis: StartRepairDiagnosisUseCase,
-    private readonly moveRepairToWorkshop: MoveRepairToWorkshopUseCase,
-  ) {}
+  constructor(private readonly operations: RepairProtectedOperations) {}
 
   @Get()
-  async getWorklist(@Query() query: RepairQuery) {
+  @Header('Cache-Control', 'private, no-store')
+  async getWorklist(
+    @Headers() headers: RepairRequestHeaders,
+    @Query() query: RepairQuery,
+  ) {
     try {
-      return response(await this.listRepairs.execute(query));
+      return response(await this.operations.listRepairs(
+        repairProtectedRequestEvidence(headers),
+        query,
+      ));
     } catch (error: unknown) {
+      translateAuthorizationError(error);
       if (error instanceof ListRepairsQueryError) {
         throw new BadRequestException({
           code: 'REPAIRS_QUERY_INVALID',
           parameter: error.parameter,
         });
-      }
-      if (error instanceof Error && error.name === 'LocalRepairContextError') {
-        throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
       }
       if (error instanceof Error && error.name.includes('Database')) {
         throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
@@ -255,143 +274,76 @@ export class RepairsController {
   }
 
   @Get('technicians')
-  async getTechnicians() {
+  @Header('Cache-Control', 'private, no-store')
+  async getTechnicians(@Headers() headers: RepairRequestHeaders) {
     try {
-      return { items: await this.listRepairTechnicians.execute() };
+      return {
+        items: await this.operations.listRepairTechnicians(
+          repairProtectedRequestEvidence(headers),
+        ),
+      };
     } catch (error: unknown) {
-      if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
+      translateAuthorizationError(error);
       if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
       throw new InternalServerErrorException({ code: 'REPAIR_TECHNICIANS_READ_FAILED' });
     }
   }
 
   @Post(':repairId/technician-assignment')
-  async assignTechnician(@Param('repairId') repairId: string, @Body() request: unknown) {
-    try {
-      return { item: await this.assignRepairTechnician.execute({ repairId, request }) };
-    } catch (error: unknown) {
-      return this.assignmentError(error);
-    }
+  @Header('Cache-Control', 'private, no-store')
+  assignTechnician(): never {
+    return this.rejectUncataloguedWrite();
   }
 
   @Post(':repairId/technician-reassignment')
-  async reassignTechnician(@Param('repairId') repairId: string, @Body() request: unknown) {
-    try {
-      return { item: await this.reassignRepairTechnician.execute({ repairId, request }) };
-    } catch (error: unknown) {
-      return this.assignmentError(error);
-    }
+  @Header('Cache-Control', 'private, no-store')
+  reassignTechnician(): never {
+    return this.rejectUncataloguedWrite();
   }
 
   @Post(':repairId/technician-unassignment')
-  async unassignTechnician(@Param('repairId') repairId: string, @Body() request: unknown) {
-    try {
-      return { item: await this.unassignRepairTechnician.execute({ repairId, request }) };
-    } catch (error: unknown) {
-      return this.assignmentError(error);
-    }
-  }
-
-  private assignmentError(error: unknown): never {
-    if (error instanceof TechnicianAssignmentInputError) throw new BadRequestException({ code: 'REPAIR_TECHNICIAN_ASSIGNMENT_INVALID', parameter: error.parameter });
-    if (error instanceof TechnicianAssignmentRepairNotFoundError) throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
-    if (error instanceof TechnicianAssignmentConflictError) {
-      const code = error.kind === 'concurrency' ? 'REPAIR_TECHNICIAN_ASSIGNMENT_STALE' : error.kind === 'idempotency' ? 'REPAIR_TECHNICIAN_ASSIGNMENT_IDEMPOTENCY_CONFLICT' : error.kind === 'ineligible' ? 'REPAIR_TECHNICIAN_INELIGIBLE' : 'REPAIR_TECHNICIAN_ASSIGNMENT_CONFLICT';
-      throw new ConflictException({ code });
-    }
-    if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
-    if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
-    throw new InternalServerErrorException({ code: 'REPAIR_TECHNICIAN_ASSIGNMENT_FAILED' });
+  @Header('Cache-Control', 'private, no-store')
+  unassignTechnician(): never {
+    return this.rejectUncataloguedWrite();
   }
 
   @Post(':repairId/workflow/start-diagnosis')
-  async startDiagnosis(@Param('repairId') repairId: string, @Body() request: unknown) {
-    try {
-      const result = await this.startRepairDiagnosis.execute({ repairId, request });
-      return {
-        item: {
-          repairId: result.repairId,
-          transitionId: result.transitionId,
-          clientRequestId: result.clientRequestId,
-          fromState: result.fromState,
-          toState: result.toState,
-          workflowVersion: result.workflowVersion,
-          occurredAt: result.occurredAt.toISOString(),
-          actor: { id: result.actorId, displayName: result.actorDisplayName },
-        },
-      };
-    } catch (error: unknown) {
-      if (error instanceof StartRepairDiagnosisInputError) {
-        throw new BadRequestException({ code: 'REPAIR_WORKFLOW_START_DIAGNOSIS_INVALID', parameter: error.parameter });
-      }
-      if (error instanceof StartRepairDiagnosisNotFoundError) throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
-      if (error instanceof StartRepairDiagnosisConflictError) {
-        const code = error.kind === 'concurrency'
-          ? 'REPAIR_WORKFLOW_STALE'
-          : error.kind === 'idempotency'
-            ? 'REPAIR_WORKFLOW_IDEMPOTENCY_CONFLICT'
-            : error.kind === 'custody-ended'
-              ? 'REPAIR_WORKFLOW_CUSTODY_ENDED'
-              : 'REPAIR_WORKFLOW_STATE_CONFLICT';
-        throw new ConflictException({ code });
-      }
-      if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
-      if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
-      throw new InternalServerErrorException({ code: 'REPAIR_WORKFLOW_WRITE_FAILED' });
-    }
+  @Header('Cache-Control', 'private, no-store')
+  startDiagnosis(): never {
+    return this.rejectUncataloguedWrite();
   }
 
   @Post(':repairId/location/move-to-workshop')
-  async moveToWorkshop(@Param('repairId') repairId: string, @Body() request: unknown) {
+  @Header('Cache-Control', 'private, no-store')
+  moveToWorkshop(): never {
+    return this.rejectUncataloguedWrite();
+  }
+
+  private rejectUncataloguedWrite(): never {
     try {
-      const result = await this.moveRepairToWorkshop.execute({ repairId, request });
-      return {
-        item: {
-          repairId: result.repairId,
-          movementId: result.movementId,
-          clientRequestId: result.clientRequestId,
-          fromLocation: result.fromLocation,
-          toLocation: result.toLocation,
-          locationVersion: result.locationVersion,
-          reason: result.reason,
-          occurredAt: result.occurredAt.toISOString(),
-          actor: { id: result.actorId, displayName: result.actorDisplayName },
-        },
-      };
+      return this.operations.rejectUncataloguedWrite();
     } catch (error: unknown) {
-      if (error instanceof MoveRepairToWorkshopInputError) {
-        throw new BadRequestException({ code: 'REPAIR_LOCATION_MOVE_TO_WORKSHOP_INVALID', parameter: error.parameter });
-      }
-      if (error instanceof MoveRepairToWorkshopNotFoundError) throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
-      if (error instanceof MoveRepairToWorkshopConflictError) {
-        const code = error.kind === 'concurrency'
-          ? 'REPAIR_LOCATION_STALE'
-          : error.kind === 'idempotency'
-            ? 'REPAIR_LOCATION_IDEMPOTENCY_CONFLICT'
-            : error.kind === 'custody-ended'
-              ? 'REPAIR_LOCATION_CUSTODY_ENDED'
-              : error.kind === 'workshop-unavailable'
-                ? 'REPAIR_LOCATION_WORKSHOP_UNAVAILABLE'
-                : 'REPAIR_LOCATION_STATE_CONFLICT';
-        throw new ConflictException({ code });
-      }
-      if (error instanceof Error && error.name === 'LocalRepairContextError') throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
-      if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
-      throw new InternalServerErrorException({ code: 'REPAIR_LOCATION_WRITE_FAILED' });
+      translateAuthorizationError(error);
+      throw new ForbiddenException({ code: 'ACCESS_DENIED' });
     }
   }
 
   @Post(':repairId/notes')
+  @Header('Cache-Control', 'private, no-store')
   async addOperationalNote(
+    @Headers() headers: RepairRequestHeaders,
     @Param('repairId') repairId: string,
     @Body() request: unknown,
   ) {
     try {
-      return operationalNoteResponse(await this.addRepairOperationalNote.execute({
-        repairId,
-        request,
-      }));
+      return operationalNoteResponse(
+        await this.operations.addRepairOperationalNote(
+          repairProtectedRequestEvidence(headers),
+          { repairId, request },
+        ),
+      );
     } catch (error: unknown) {
+      translateAuthorizationError(error);
       if (error instanceof AddRepairOperationalNoteInputError) {
         throw new BadRequestException({
           code: error.parameter === 'repairId' ? 'REPAIR_ID_INVALID' : 'REPAIR_NOTE_INVALID',
@@ -404,9 +356,6 @@ export class RepairsController {
       if (error instanceof AddRepairOperationalNoteConflictError) {
         throw new ConflictException({ code: 'REPAIR_NOTE_IDEMPOTENCY_CONFLICT' });
       }
-      if (error instanceof Error && error.name === 'LocalRepairContextError') {
-        throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
-      }
       if (error instanceof Error && error.name.includes('Database')) {
         throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
       }
@@ -415,13 +364,18 @@ export class RepairsController {
   }
 
   @Get(':repairId/evidence/:evidenceId/content')
+  @Header('Cache-Control', 'private, no-store')
   async getEvidenceContent(
+    @Headers() headers: RepairRequestHeaders,
     @Param('repairId') repairId: string,
     @Param('evidenceId') evidenceId: string,
     @Res({ passthrough: true }) response: Response,
   ) {
     try {
-      const result = await this.getRepairEvidenceContent.execute({ repairId, evidenceId });
+      const result = await this.operations.getRepairEvidenceContent(
+        repairProtectedRequestEvidence(headers),
+        { repairId, evidenceId },
+      );
       response.set({
         'Cache-Control': 'private, no-store',
         'Content-Length': String(result.sizeBytes),
@@ -430,14 +384,12 @@ export class RepairsController {
       });
       return new StreamableFile(Buffer.from(result.content));
     } catch (error: unknown) {
+      translateAuthorizationError(error);
       if (error instanceof GetRepairEvidenceContentInputError) {
         throw new BadRequestException({ code: 'REPAIR_EVIDENCE_ID_INVALID' });
       }
       if (error instanceof RepairEvidenceContentNotFoundError) {
         throw new NotFoundException({ code: 'REPAIR_EVIDENCE_NOT_FOUND' });
-      }
-      if (error instanceof Error && error.name === 'LocalRepairContextError') {
-        throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
       }
       if (error instanceof Error && error.name.includes('Database')) {
         throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
@@ -447,18 +399,23 @@ export class RepairsController {
   }
 
   @Get(':id')
-  async getDetail(@Param('id') id: string) {
+  @Header('Cache-Control', 'private, no-store')
+  async getDetail(
+    @Headers() headers: RepairRequestHeaders,
+    @Param('id') id: string,
+  ) {
     try {
-      return detailResponse(await this.getRepairDetail.execute({ repairId: id }));
+      return detailResponse(await this.operations.getRepairDetail(
+        repairProtectedRequestEvidence(headers),
+        { repairId: id },
+      ));
     } catch (error: unknown) {
+      translateAuthorizationError(error);
       if (error instanceof GetRepairDetailInputError) {
         throw new BadRequestException({ code: 'REPAIR_ID_INVALID' });
       }
       if (error instanceof RepairDetailNotFoundError) {
         throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
-      }
-      if (error instanceof Error && error.name === 'LocalRepairContextError') {
-        throw new ServiceUnavailableException({ code: 'REPAIRS_CONTEXT_UNAVAILABLE' });
       }
       if (error instanceof Error && error.name.includes('Database')) {
         throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });

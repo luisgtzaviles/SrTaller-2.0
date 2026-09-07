@@ -12,6 +12,7 @@ export const remediationMutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R025',
+    expectedRules: ['D5-R024', 'D5-R025'],
     content: withAccessPersistenceComposition([
       "import { forwardRef as nestForwardRef, Module } from '@nestjs/common';",
       '@Module({',
@@ -30,6 +31,7 @@ export const remediationMutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R027',
+    expectedRules: ['D5-R024', 'D5-R027'],
     content: withAccessPersistenceComposition([
       "import { Module } from '@nestjs/common';",
       "import * as Nest from '@nestjs/common';",

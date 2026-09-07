@@ -112,7 +112,8 @@ test('worklist contract remains present and separate from detail D1', () => {
 
 test('worklist overlay reuses the canonical detail workspace without breaking direct routes', () => {
   assert.match(appSource, /location=\{backgroundLocation \?\? location\}/u);
-  assert.match(appSource, /<RepairDetailPage host="overlay" \/>/u);
+  assert.match(appSource, /<RepairDetailPage capabilities=\{capabilities\} csrfToken=\{csrfToken\} sessionId=\{session\.sessionId\} host="overlay" \/>/u);
+  assert.match(appSource, /backgroundLocation && hasOperationalCapability\(capabilities, 'repairs\.read'\)/u);
   assert.match(repairsPageSource, /backgroundLocation: location/u);
   assert.match(repairsPageSource, /restoreFocusSelector/u);
   assert.match(detailPageSource, /<RepairDetailWorkspace[\s\S]*?repair=\{repair\}[\s\S]*?host=\{host\}[\s\S]*?\/>/u);
@@ -120,4 +121,14 @@ test('worklist overlay reuses the canonical detail workspace without breaking di
   assert.match(overlaysSource, /createPortal/u);
   assert.match(overlaysSource, /root\.inert = true/u);
   assert.match(overlaysSource, /document\.body\.classList\.add\('srt-dialog-open'\)/u);
+});
+
+test('operational note drafts remain scoped to the exact authenticated Session', () => {
+  assert.match(detailPageSource, /function draftKey\(sessionId: string, repairId: string\)/u);
+  assert.match(detailPageSource, /repair-note-draft\.\$\{sessionId\}\.\$\{repairId\}/u);
+  assert.match(detailPageSource, /storedDraft\(sessionId, repair\.id\)/u);
+  assert.match(detailPageSource, /storeDraft\(sessionId, repair\.id, noteDraft\)/u);
+  assert.match(detailPageSource, /storeDraft\(sessionId, id, ''\)/u);
+  assert.match(appSource, /sessionId=\{session\.sessionId\}/u);
+  assert.doesNotMatch(detailPageSource, /repair-note-draft\.\$\{repairId\}/u);
 });

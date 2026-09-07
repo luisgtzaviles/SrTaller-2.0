@@ -219,6 +219,9 @@ export class PreviewApiError extends Error {
   }
 }
 
+const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
+const CSRF_HEADER = 'X-SR-CSRF-Token';
+
 export type PreviewRepairStatus =
   | 'received'
   | 'diagnosing'
@@ -280,6 +283,7 @@ async function api<Response>(
 ): Promise<Response> {
   const response = await fetch(path, {
     ...init,
+    credentials: 'include',
     headers: {
       Accept: 'application/json',
       ...(init.body ? { 'Content-Type': 'application/json' } : {}),
@@ -287,6 +291,9 @@ async function api<Response>(
     },
   });
   if (!response.ok) {
+    if (response.status === 401) {
+      window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT));
+    }
     let message: string | undefined;
     try {
       const payload = await response.json() as { error?: { message?: unknown } };
@@ -334,11 +341,13 @@ export function getRepairDetail(
 export function addRepairOperationalNote(
   repairId: string,
   request: Readonly<{ body: string; clientRequestId: string }>,
+  csrfToken: string,
 ): Promise<AddRepairOperationalNoteResponse> {
   return api<AddRepairOperationalNoteResponse>(
     `/api/repairs/${encodeURIComponent(repairId)}/notes`,
     {
       method: 'POST',
+      headers: { [CSRF_HEADER]: csrfToken },
       body: JSON.stringify(request),
     },
   );

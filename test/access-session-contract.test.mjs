@@ -84,6 +84,9 @@ function runtimeDouble(overrides = {}) {
       },
     },
     resolveSession: { async execute() { return sessionRecord(); } },
+    resolveCapabilities: {
+      async execute() { return Object.freeze(['repairs.read', 'repairs.add_note']); },
+    },
     endSession: { async execute() {} },
     listLoginUsers: {
       async execute() { return [{ userId, displayName: 'Jorge Operador' }]; },
@@ -184,6 +187,7 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
   assert.equal(freshResponse.headers.get('cache-control'), 'no-store');
   assert.deepEqual(fresh.station, { stationId, branchId });
   assert.deepEqual(fresh.users, [{ userId, displayName: 'Jorge Operador' }]);
+  assert.deepEqual(fresh.capabilities, []);
   assert.equal(fresh.session, null);
   assert.equal(fresh.revalidateAfterMs, null);
   assert.match(fresh.csrfToken, /^[A-Za-z0-9_-]{43}$/u);
@@ -200,6 +204,13 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
   assert.doesNotMatch(malformedResponse.headers.get('set-cookie'), /^sr_session(?:=|_csrf=)/u);
 
   const material = runtime.tokens.issue();
+  const authenticated = await controller.get({
+    cookie: `sr_session=${material.bearer}; sr_session_csrf=${material.csrf}`,
+  }, responseDouble());
+  assert.deepEqual(authenticated.capabilities, [
+    'repairs.read',
+    'repairs.add_note',
+  ]);
   const inactiveMaterial = runtime.tokens.issue();
   const inactiveResponse = responseDouble();
   const inactive = new AccessSessionController(runtimeDouble({
@@ -209,6 +220,7 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
     cookie: `sr_session=${inactiveMaterial.bearer}; sr_session_csrf=${inactiveMaterial.csrf}; sr_session_login_csrf=${material.csrf}`,
   }, inactiveResponse);
   assert.equal(inactiveSnapshot.session, null);
+  assert.deepEqual(inactiveSnapshot.capabilities, []);
   assert.equal(inactiveSnapshot.csrfToken, material.csrf);
   assert.equal(inactiveResponse.headers.has('set-cookie'), false);
 
@@ -259,6 +271,7 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
     successResponse,
   );
   assert.equal(success.session.userId, userId);
+  assert.deepEqual(success.capabilities, ['repairs.read', 'repairs.add_note']);
   assert.equal(success.csrfToken.length, 43);
   assert.ok(success.revalidateAfterMs >= 1_000 && success.revalidateAfterMs <= 60 * 60 * 1_000);
   assert.equal(successResponse.headers.get('cache-control'), 'no-store');
@@ -266,6 +279,40 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
   assert.equal(setCookies.length, 2);
   assert.match(setCookies[0], /^sr_session=.*; HttpOnly; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
   assert.match(setCookies[1], /^sr_session_csrf=.*; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
+});
+
+test('POST resolves advisory capabilities before committing a Session replacement', async () => {
+  const tokens = new NodeSessionToken();
+  const login = tokens.issue();
+  let creationCalls = 0;
+  const projectionFailure = new Error('capability projection unavailable');
+  const controller = new AccessSessionController(runtimeDouble({
+    authenticatePin: {
+      async execute() { return Object.freeze({ userId }); },
+    },
+    resolveCapabilities: {
+      async execute() { throw projectionFailure; },
+    },
+    createSession: {
+      async execute() {
+        creationCalls += 1;
+        throw new Error('must not create');
+      },
+    },
+  }), secureTransportPolicy);
+  const response = responseDouble();
+
+  await assert.rejects(
+    controller.create(
+      { userId, pin: '123456', expectedSessionId: null },
+      sameOriginHeaders(`sr_session_login_csrf=${login.csrf}`, login.csrf),
+      response,
+    ),
+    projectionFailure,
+  );
+  assert.equal(creationCalls, 0);
+  assert.equal(response.headers.has('set-cookie'), false);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
 });
 
 test('POST requires exact optimistic state and never accepts the login challenge as switch CSRF', async () => {
@@ -531,6 +578,10 @@ test('real AppModule/Nest routing fails closed without a trusted Station and nev
     assert.equal(session.status, 401);
     assert.equal(session.headers.get('cache-control'), 'no-store');
     assert.deepEqual(await session.json(), { code: 'ACCESS_SESSION_DENIED' });
+    const repairs = await fetch(`${baseUrl}/api/repairs`, { redirect: 'manual' });
+    assert.equal(repairs.status, 401);
+    assert.equal(repairs.headers.get('cache-control'), 'private, no-store');
+    assert.deepEqual(await repairs.json(), { code: 'AUTHENTICATION_REQUIRED' });
     const bootstrap = await fetch(`${baseUrl}/api/stations/local-bootstrap`, {
       method: 'POST',
       headers: {

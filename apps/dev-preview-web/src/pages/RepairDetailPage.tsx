@@ -13,7 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { addRepairOperationalNote, assignRepairTechnician, getRepairDetail, listRepairTechnicians, moveRepairToWorkshop, PreviewApiError, reassignRepairTechnician, startRepairDiagnosis, unassignRepairTechnician } from '../api.js';
+import { addRepairOperationalNote, getRepairDetail, PreviewApiError } from '../api.js';
 import type {
   RepairDetail,
   RepairEvidenceItem,
@@ -25,6 +25,8 @@ import { StatusBadge } from '../components/ui/data-display.js';
 import { ErrorState, Skeleton } from '../components/ui/feedback.js';
 import { PageHeader } from '../components/ui/navigation.js';
 import { Dialog } from '../components/ui/overlays.js';
+import { hasOperationalCapability } from '../session/session-capabilities.mjs';
+import type { OperationalCapability } from '../session/session-api.js';
 import styles from './pages.module.css';
 
 function receivedAt(value: string): string {
@@ -59,22 +61,22 @@ function timelineSourceLabel(source: string): string {
 const noteBodyMinLength = 3;
 const noteBodyMaxLength = 4000;
 
-function draftKey(repairId: string): string {
-  return `srtaller.local.repair-note-draft.${repairId}`;
+function draftKey(sessionId: string, repairId: string): string {
+  return `srtaller.local.repair-note-draft.${sessionId}.${repairId}`;
 }
 
-function storedDraft(repairId: string): string {
+function storedDraft(sessionId: string, repairId: string): string {
   try {
-    return window.sessionStorage.getItem(draftKey(repairId)) ?? '';
+    return window.sessionStorage.getItem(draftKey(sessionId, repairId)) ?? '';
   } catch {
     return '';
   }
 }
 
-function storeDraft(repairId: string, value: string): void {
+function storeDraft(sessionId: string, repairId: string, value: string): void {
   try {
-    if (value === '') window.sessionStorage.removeItem(draftKey(repairId));
-    else window.sessionStorage.setItem(draftKey(repairId), value);
+    if (value === '') window.sessionStorage.removeItem(draftKey(sessionId, repairId));
+    else window.sessionStorage.setItem(draftKey(sessionId, repairId), value);
   } catch {
     // Draft retention is a safety enhancement; the composer remains functional without storage.
   }
@@ -88,41 +90,26 @@ function evidenceAlt(item: RepairEvidenceItem): string {
 
 export function RepairDetailWorkspace({
   repair,
+  sessionId,
   host = 'page',
+  capabilities,
+  csrfToken,
   onNoteAdded,
   onDraftDirtyChange,
-  onAssignmentChanged,
-  onWorkflowChanged,
-  onLocationChanged,
 }: Readonly<{
   repair: RepairDetail;
+  sessionId: string;
   host?: 'page' | 'overlay';
+  capabilities: readonly OperationalCapability[];
+  csrfToken: string;
   onNoteAdded(note: RepairTimelineItem): void;
   onDraftDirtyChange(dirty: boolean): void;
-  onAssignmentChanged(): void;
-  onWorkflowChanged(): void;
-  onLocationChanged(): void;
 }>): React.JSX.Element {
   const [selectedEvidence, setSelectedEvidence] = useState<number | null>(null);
   const [failedEvidence, setFailedEvidence] = useState<ReadonlySet<string>>(() => new Set());
-  const [noteDraft, setNoteDraft] = useState(() => storedDraft(repair.id));
+  const [noteDraft, setNoteDraft] = useState(() => storedDraft(sessionId, repair.id));
   const [noteSubmitState, setNoteSubmitState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [noteMessage, setNoteMessage] = useState('');
-  const [assignmentOpen, setAssignmentOpen] = useState(false);
-  const [assignmentMode, setAssignmentMode] = useState<'assign' | 'reassign' | 'unassign'>('assign');
-  const [technicians, setTechnicians] = useState<readonly Readonly<{ id: string; displayName: string }>[]>([]);
-  const [selectedTechnician, setSelectedTechnician] = useState('');
-  const [assignmentReason, setAssignmentReason] = useState('');
-  const [assignmentState, setAssignmentState] = useState<'idle' | 'loading' | 'error'>('idle');
-  const [assignmentMessage, setAssignmentMessage] = useState('');
-  const [workflowState, setWorkflowState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [workflowMessage, setWorkflowMessage] = useState('');
-  const workflowRequestId = useRef<string | null>(null);
-  const workflowMessageRef = useRef<HTMLParagraphElement | null>(null);
-  const [locationState, setLocationState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [locationMessage, setLocationMessage] = useState('');
-  const locationRequestId = useRef<string | null>(null);
-  const locationMessageRef = useRef<HTMLParagraphElement | null>(null);
   const noteRequestId = useRef<string | null>(null);
   const closeEvidence = useCallback(() => setSelectedEvidence(null), []);
   const activeEvidence = selectedEvidence === null
@@ -137,121 +124,27 @@ export function RepairDetailWorkspace({
     : repair.evidence.items[primaryEvidenceIndex] ?? null;
   const normalizedNote = noteDraft.trim();
   const noteValid = normalizedNote.length >= noteBodyMinLength && normalizedNote.length <= noteBodyMaxLength;
+  const canAddNote = hasOperationalCapability(capabilities, 'repairs.add_note');
   const currentTechnician = repair.currentSituation.technician;
 
   useEffect(() => {
-    const controller = new AbortController();
-    void listRepairTechnicians(controller.signal)
-      .then((response) => setTechnicians(response.items))
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, []);
-
-  const openAssignment = (mode: 'assign' | 'reassign' | 'unassign'): void => {
-    setAssignmentMode(mode);
-    setSelectedTechnician(currentTechnician?.id ?? '');
-    setAssignmentReason('');
-    setAssignmentMessage('');
-    setAssignmentState('idle');
-    setAssignmentOpen(true);
-  };
-
-  const submitAssignment = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    event.preventDefault();
-    if (assignmentState === 'loading') return;
-    if (assignmentMode !== 'unassign' && !selectedTechnician) return;
-    setAssignmentState('loading');
-    setAssignmentMessage('Guardando asignación…');
-    const requestId = crypto.randomUUID();
-    try {
-      if (assignmentMode === 'assign') {
-        await assignRepairTechnician(repair.id, { technicianId: selectedTechnician, clientRequestId: requestId, expectedVersion: repair.currentSituation.technicianSummary.version });
-      } else if (assignmentMode === 'reassign') {
-        await reassignRepairTechnician(repair.id, { technicianId: selectedTechnician, reason: assignmentReason.trim() || null, clientRequestId: requestId, expectedVersion: repair.currentSituation.technicianSummary.version });
-      } else {
-        await unassignRepairTechnician(repair.id, { reason: assignmentReason.trim() || null, clientRequestId: requestId, expectedVersion: repair.currentSituation.technicianSummary.version });
-      }
-      setAssignmentOpen(false);
-      onAssignmentChanged();
-    } catch (error: unknown) {
-      setAssignmentState('error');
-      setAssignmentMessage(error instanceof PreviewApiError && error.status === 409
-        ? 'La asignación cambió mientras trabajabas. Actualiza y vuelve a intentarlo.'
-        : 'No fue posible guardar la asignación.');
+    if (!canAddNote) {
+      onDraftDirtyChange(false);
+      return;
     }
-  };
-
-  const beginDiagnosis = async (): Promise<void> => {
-    if (workflowState === 'loading') return;
-    const clientRequestId = workflowRequestId.current ?? crypto.randomUUID();
-    workflowRequestId.current = clientRequestId;
-    setWorkflowState('loading');
-    setWorkflowMessage('Iniciando diagnóstico…');
-    try {
-      await startRepairDiagnosis(repair.id, {
-        clientRequestId,
-        expectedVersion: repair.currentSituation.workflowVersion,
-      });
-      workflowRequestId.current = null;
-      setWorkflowState('success');
-      setWorkflowMessage('Diagnóstico iniciado.');
-      onWorkflowChanged();
-    } catch (error: unknown) {
-      setWorkflowState('error');
-      setWorkflowMessage(error instanceof PreviewApiError && error.status === 409
-        ? 'El estado cambió mientras trabajabas. Actualiza y vuelve a intentarlo.'
-        : 'No fue posible iniciar el diagnóstico.');
-      if (error instanceof PreviewApiError && error.status === 409) onWorkflowChanged();
-    }
-  };
-
-  const moveToWorkshop = async (): Promise<void> => {
-    if (locationState === 'loading') return;
-    const clientRequestId = locationRequestId.current ?? crypto.randomUUID();
-    locationRequestId.current = clientRequestId;
-    setLocationState('loading');
-    setLocationMessage('Moviendo equipo…');
-    try {
-      await moveRepairToWorkshop(repair.id, {
-        clientRequestId,
-        expectedVersion: repair.currentSituation.locationVersion,
-      });
-      locationRequestId.current = null;
-      setLocationState('success');
-      setLocationMessage('Equipo movido a Taller.');
-      onLocationChanged();
-    } catch (error: unknown) {
-      setLocationState('error');
-      const stale = error instanceof PreviewApiError && error.status === 409;
-      setLocationMessage(stale
-        ? 'La ubicación cambió mientras trabajabas. Actualiza y vuelve a intentarlo.'
-        : 'No fue posible mover el equipo a Taller.');
-      if (stale) onLocationChanged();
-    }
-  };
-
-  useEffect(() => {
-    if (workflowState === 'success' || workflowState === 'error') workflowMessageRef.current?.focus();
-  }, [workflowState]);
-
-  useEffect(() => {
-    if (locationState === 'success' || locationState === 'error') locationMessageRef.current?.focus();
-  }, [locationState]);
-
-  useEffect(() => {
-    storeDraft(repair.id, noteDraft);
+    storeDraft(sessionId, repair.id, noteDraft);
     onDraftDirtyChange(normalizedNote.length > 0);
-  }, [noteDraft, normalizedNote.length, onDraftDirtyChange, repair.id]);
+  }, [canAddNote, noteDraft, normalizedNote.length, onDraftDirtyChange, repair.id, sessionId]);
 
   useEffect(() => {
-    if (normalizedNote.length === 0) return undefined;
+    if (!canAddNote || normalizedNote.length === 0) return undefined;
     const beforeUnload = (event: BeforeUnloadEvent): void => {
       event.preventDefault();
       event.returnValue = '';
     };
     window.addEventListener('beforeunload', beforeUnload);
     return () => window.removeEventListener('beforeunload', beforeUnload);
-  }, [normalizedNote.length]);
+  }, [canAddNote, normalizedNote.length]);
 
   const submitNote = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -264,7 +157,7 @@ export function RepairDetailWorkspace({
       const response = await addRepairOperationalNote(repair.id, {
         body: normalizedNote,
         clientRequestId,
-      });
+      }, csrfToken);
       onNoteAdded({
         ...response.item,
         actor: { id: null, displayName: response.item.actor.displayName },
@@ -273,9 +166,11 @@ export function RepairDetailWorkspace({
       setNoteDraft('');
       setNoteSubmitState('success');
       setNoteMessage('Nota agregada al historial.');
-    } catch {
+    } catch (error: unknown) {
       setNoteSubmitState('error');
-      setNoteMessage('No fue posible agregar la nota. El texto se conservó; puedes reintentar.');
+      setNoteMessage(error instanceof PreviewApiError && error.status === 403
+        ? 'Tu sesión no tiene autorización para agregar esta nota.'
+        : 'No fue posible agregar la nota. El texto se conservó; puedes reintentar.');
     }
   };
 
@@ -342,31 +237,10 @@ export function RepairDetailWorkspace({
           </header>
           <dl>
             <div><dt>Estado</dt><dd><StatusBadge tone={repair.currentSituation.repairStatus.tone}>{repair.currentSituation.repairStatus.label}</StatusBadge></dd></div>
-            <div><dt>Técnico</dt><dd><span>{currentTechnician?.displayName ?? 'Sin técnico asignado'}</span><div className={styles.assignmentActions}><Button size="compact" tone="quiet" onClick={() => openAssignment(currentTechnician ? 'reassign' : 'assign')}>{currentTechnician ? 'Cambiar' : 'Asignar'}</Button>{currentTechnician ? <Button size="compact" tone="quiet" onClick={() => openAssignment('unassign')}>Quitar asignación</Button> : null}</div></dd></div>
+            <div><dt>Técnico</dt><dd><span>{currentTechnician?.displayName ?? 'Sin técnico asignado'}</span></dd></div>
             <div><dt>Custodia</dt><dd>{repair.currentSituation.custody.label}</dd></div>
             <div><dt><MapPin aria-hidden="true" size={14} />Ubicación</dt><dd>{repair.currentSituation.location?.label ?? 'Ubicación no registrada'}</dd></div>
           </dl>
-          {repair.currentSituation.location?.code === 'pending_area' && repair.currentSituation.custody.code === 'active' ? (
-            <div className={styles.workflowAction}>
-              <Button
-                aria-label={locationState === 'loading' ? 'Moviendo equipo a Taller' : 'Mover equipo a Taller'}
-                tone="primary"
-                disabled={locationState === 'loading'}
-                onClick={() => void moveToWorkshop()}
-              >
-                {locationState === 'loading' ? 'Moviendo…' : 'Mover a Taller'}
-              </Button>
-            </div>
-          ) : null}
-          {locationMessage ? <p ref={locationMessageRef} className={styles.assignmentMessage} data-error={locationState === 'error'} role={locationState === 'error' ? 'alert' : 'status'} tabIndex={-1}>{locationMessage}</p> : null}
-          {repair.currentSituation.repairStatus.code === 'pending' ? (
-            <div className={styles.workflowAction}>
-              <Button tone="primary" disabled={workflowState === 'loading'} onClick={() => void beginDiagnosis()}>
-                {workflowState === 'loading' ? 'Iniciando…' : 'Iniciar diagnóstico'}
-              </Button>
-            </div>
-          ) : null}
-          {workflowMessage ? <p ref={workflowMessageRef} className={styles.assignmentMessage} data-error={workflowState === 'error'} role={workflowState === 'error' ? 'alert' : 'status'} tabIndex={-1}>{workflowMessage}</p> : null}
           {repair.currentSituation.technicianSummary.history.length > 0 ? (
             <section className={styles.assignmentHistory} aria-labelledby="technician-history-title">
               <header>
@@ -457,7 +331,7 @@ export function RepairDetailWorkspace({
             )}
           </div>
 
-          <form className={styles.noteComposer} onSubmit={(event) => void submitNote(event)}>
+          {canAddNote ? <form className={styles.noteComposer} onSubmit={(event) => void submitNote(event)}>
             <label htmlFor={`operational-note-${repair.id}`}>Nota operativa</label>
             <div className={styles.noteComposerControls}>
               <Textarea
@@ -488,7 +362,7 @@ export function RepairDetailWorkspace({
                 aria-live="polite"
               >{noteMessage}</span>
             </div>
-          </form>
+          </form> : null}
         </section>
       </div>
 
@@ -572,29 +446,21 @@ export function RepairDetailWorkspace({
           </figure>
         )}
       </Dialog>
-      <Dialog
-        open={assignmentOpen}
-        title={assignmentMode === 'assign' ? 'Asignar técnico' : assignmentMode === 'reassign' ? 'Cambiar técnico' : 'Quitar asignación'}
-        description="Prueba local; la operación conserva el historial técnico."
-        onClose={() => setAssignmentOpen(false)}
-        footer={(
-          <div className={styles.assignmentDialogActions}>
-            <Button onClick={() => setAssignmentOpen(false)} disabled={assignmentState === 'loading'}>Cancelar</Button>
-            <Button tone="primary" type="submit" form={`technician-assignment-${repair.id}`} disabled={assignmentState === 'loading' || (assignmentMode !== 'unassign' && !selectedTechnician)}>{assignmentState === 'loading' ? 'Guardando…' : assignmentMode === 'unassign' ? 'Quitar asignación' : assignmentMode === 'assign' ? 'Asignar' : 'Cambiar'}</Button>
-          </div>
-        )}
-      >
-        <form id={`technician-assignment-${repair.id}`} className={styles.assignmentForm} onSubmit={(event) => void submitAssignment(event)}>
-          {assignmentMode !== 'unassign' ? <label>Técnico<select value={selectedTechnician} onChange={(event) => setSelectedTechnician(event.target.value)} disabled={assignmentState === 'loading'}><option value="">Selecciona un técnico</option>{technicians.map((technician) => <option key={technician.id} value={technician.id}>{technician.displayName}</option>)}</select></label> : <p>La asignación actual se cerrará y quedará registrada en el historial.</p>}
-          <label>Motivo <span>(opcional)</span><textarea value={assignmentReason} maxLength={1000} onChange={(event) => setAssignmentReason(event.target.value)} disabled={assignmentState === 'loading'} placeholder="Describe el motivo si aplica." /></label>
-          {assignmentMessage ? <p className={styles.assignmentMessage} data-error={assignmentState === 'error'} role={assignmentState === 'error' ? 'alert' : 'status'}>{assignmentMessage}</p> : null}
-        </form>
-      </Dialog>
     </div>
   );
 }
 
-export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | 'overlay' }>): React.JSX.Element {
+export function RepairDetailPage({
+  capabilities,
+  csrfToken,
+  sessionId,
+  host = 'page',
+}: Readonly<{
+  capabilities: readonly OperationalCapability[];
+  csrfToken: string;
+  sessionId: string;
+  host?: 'page' | 'overlay';
+}>): React.JSX.Element {
   const { id = '' } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -605,7 +471,7 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
   const returnTo = routeState?.returnTo ?? (location.search ? `/reparaciones${location.search}` : '/reparaciones');
   const [repair, setRepair] = useState<RepairDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<'not-found' | 'failed' | null>(null);
+  const [error, setError] = useState<'not-found' | 'denied' | 'failed' | null>(null);
   const [draftDirty, setDraftDirty] = useState(false);
   const [discardPromptOpen, setDiscardPromptOpen] = useState(false);
 
@@ -617,7 +483,11 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
       .catch((cause: unknown) => {
         if (cause instanceof DOMException && cause.name === 'AbortError') return;
         setRepair(null);
-        setError(cause instanceof PreviewApiError && cause.status === 404 ? 'not-found' : 'failed');
+        setError(cause instanceof PreviewApiError && cause.status === 404
+          ? 'not-found'
+          : cause instanceof PreviewApiError && cause.status === 403
+            ? 'denied'
+            : 'failed');
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -672,6 +542,16 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
         />
       </div>
     );
+  } else if (error === 'denied') {
+    content = (
+      <div className={styles.workspaceState}>
+        <ErrorState
+          title="Acceso no autorizado"
+          description="Tu sesión operativa ya no tiene acceso a esta reparación."
+          action={{ label: 'Volver al inicio', to: '/' }}
+        />
+      </div>
+    );
   } else if (error === 'failed' || !repair) {
     content = (
       <section className={`${styles.workspaceState} ${styles.detailError}`} aria-live="polite">
@@ -687,18 +567,12 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
     content = (
       <RepairDetailWorkspace
         repair={repair}
+        sessionId={sessionId}
+        capabilities={capabilities}
+        csrfToken={csrfToken}
         host={host}
         onNoteAdded={addNoteToTimeline}
         onDraftDirtyChange={setDraftDirty}
-        onAssignmentChanged={() => load()}
-        onWorkflowChanged={() => {
-          window.dispatchEvent(new CustomEvent('srtaller:repairs-changed'));
-          load();
-        }}
-        onLocationChanged={() => {
-          window.dispatchEvent(new CustomEvent('srtaller:repairs-changed'));
-          load();
-        }}
       />
     );
   }
@@ -729,7 +603,7 @@ export function RepairDetailPage({ host = 'page' }: Readonly<{ host?: 'page' | '
             <Button
               tone="danger"
               onClick={() => {
-                storeDraft(id, '');
+                storeDraft(sessionId, id, '');
                 setDraftDirty(false);
                 setDiscardPromptOpen(false);
                 navigate(-1);

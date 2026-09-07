@@ -443,10 +443,22 @@ conservan ownership; `access` sólo recibe capacidades estrechas para componer
 la sesión operacional. `AppModule` conserva su composición exterior y no se
 convierte en service locator ni en puente de capacidades funcionales.
 
+La extensión autorizada por PBI-026 agrega exactamente `repairs->access`
+mediante `CONTEXTUAL_AUTHORIZATION_EXECUTOR`/
+`ContextualAuthorizationExecutor`. `AccessModule` conserva la decisión de
+autorización contextual y exporta sólo el token público; `RepairsModule`
+selecciona una operación/capability fija del lado servidor e inyecta el
+contrato framework-free. La extensión no autoriza arista inversa, acceso a
+internals de Access, capability suministrada por el cliente ni un service
+locator.
+
 El contrato y la evidencia exacta de PBI-034 se separan en la
 [verificación acotada de Option A para PBI-034](../../architecture-readiness/dec-005-materialization/PBI_034_OPTION_A_VERIFICATION.md).
+La extensión `repairs->access` se registra por separado en la
+[verificación acotada de Option A para PBI-026](../../architecture-readiness/dec-005-materialization/PBI_026_OPTION_A_VERIFICATION.md).
 La materialización no equivale por sí sola a autorización de negocio; el
-estado de cierre y G3 se deriva de la evidencia canónica del PBI.
+estado de cierre y el gate aplicable se derivan de la evidencia canónica de
+cada PBI.
 
 ## 9. Shared kernel mínimo
 
@@ -613,7 +625,7 @@ o excepción vigente; **Advisory** exige justificación visible.
 | D5-R021 | Una utilidad SHOULD permanecer local hasta demostrar transversalidad | Reducir abstracción prematura | revisión | Advisory | Sí, documentada |
 | D5-R022 | Infraestructura de un módulo MUST permanecer con ese owner | Evitar adapters globales | paths | Major | Sí para facility técnica de proceso |
 | D5-R023 | `AppModule` MUST ser sólo composition root | Evitar agregado técnico universal | revisión e imports | Blocker | No |
-| D5-R024 | `AppModule` conserva la composición exterior; otro módulo sólo MAY importar `<module>.module.ts` mediante una arista dirigida registrada, estática y exacta | Separar API funcional de wiring sin impedir DI explícita entre capacidades aprobadas | policy v4 + análisis AST de módulo, metadata, imports, tokens, bindings, exports e inyección | Blocker | Sólo registro previo aprobado por Arquitectura; no hay excepción implícita |
+| D5-R024 | `AppModule` conserva la composición exterior; otro módulo sólo MAY importar `<module>.module.ts` mediante una arista dirigida registrada, estática y exacta | Separar API funcional de wiring sin impedir DI explícita entre capacidades aprobadas | policy v5 + análisis AST de módulo, metadata, imports, tokens, bindings, exports e inyección | Blocker | Sólo registro previo aprobado por Arquitectura; no hay excepción implícita |
 | D5-R025 | `forwardRef` MUST NOT usarse en R0 | Exponer y eliminar ciclos | búsqueda estructural | Blocker | No |
 | D5-R026 | `ModuleRef` o service locator MUST NOT resolver flujos funcionales | Dependencias explícitas | búsqueda y revisión | Blocker | No |
 | D5-R027 | Módulos Nest funcionales MUST NOT ser globales | Evitar dependencias invisibles | búsqueda de `@Global` | Blocker | No |
