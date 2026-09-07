@@ -2,18 +2,26 @@
 
 ## Estado
 
-- **Estado del PBI:** `In progress`.
-- **Estado del artefacto:** candidato local materializado; no integrado.
+- **Estado del PBI:** `Done candidate`; cierre documental pendiente.
+- **Estado del artefacto:** candidato exacto integrado en `main`.
 - **Riesgo / tamaño:** `Critical` / `Large`.
 - **Rama temporal:** `feature/pbi-026-contextual-authorization`.
 - **Baseline de `main`:** `54ddc251cda8ec7465b7913786c647f8d3ccbeac`.
 - **Baseline CI:** run `34153470560`, run-1/run-2/comparison GREEN.
-- **Candidate SHA / PR / CI:** pendientes; no se anticipan.
-- **Focused review / Owner Acceptance:** pendientes.
+- **Candidate SHA / PR / CI:**
+  `54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7` / PR #35 /
+  `34157187442` GREEN.
+- **Focused review / Owner Acceptance:** PASS `0B/0H/0M/0L` / APPROVED
+  condicionalmente sobre merge y exact-main CI satisfechos.
+- **Functional merge / exact-main CI:**
+  `4db5d9384d13c200eb2031dceb32dd89efcca64d` /
+  `34158203438` GREEN.
 - **Released / deployed:** NO / NO.
 
-Este documento conserva evidencia del candidato local. No prueba integración,
-`Done`, G4, release ni deploy.
+Este documento conserva evidencia del candidato funcional exacto y su
+integración. El estado `Done` y G4 `PASS` sólo se vuelven efectivos al integrar
+el [cierre documental](./CLOSURE_CANDIDATE.md) y obtener su CI exacto GREEN.
+No prueba release ni deploy.
 
 ## Diseño materializado
 
@@ -112,14 +120,14 @@ business audit y correlation pertenecen exclusivamente a PBI-028.
 | ownership/composición/registro cerrado | policy DEC-005 y tests de arquitectura | PASS local — policy v5; `307/307` tests |
 | Tenant/Branch/resource isolation material | [`contextual-authorization-postgresql.test.mjs`](../../../../test/contextual-authorization-postgresql.test.mjs) con múltiples scopes | PASS — PostgreSQL 18.4, `8/8`; dos runs `MATCH` |
 | Light/Dark/responsive/focus | validación local en navegador | PASS en 390, 768 y 1280 px |
-| reproducibilidad | CI autoritativo run-1/run-2/comparison | pendiente |
+| reproducibilidad | CI autoritativo run-1/run-2/comparison | PASS — candidate `34157187442`; exact-main `34158203438` |
 
 El smoke sobre `AppModule`/routing Nest real sin Station confiable pasó con
 `401 AUTHENTICATION_REQUIRED` y sin habilitar bootstrap local implícito; su
 contrato está en
 [`access-session-contract.test.mjs`](../../../../test/access-session-contract.test.mjs).
-Este resultado y la matriz exacta de rutas son checks locales focalizados: no
-sustituyen CI del candidate SHA, todavía pendiente.
+Este resultado y la matriz exacta de rutas quedaron además cubiertos por CI
+autoritativo del candidate y del merge funcional exactos.
 
 ## Comandos de verificación
 
@@ -143,8 +151,8 @@ El runner PostgreSQL usa su configuración efímera gobernada e incluye la suite
 PBI-026 en el inventario cerrado. Su ejecución material sobre PostgreSQL 18.4
 cerró `8/8 PASS`; dos runs fueron `MATCH`, con material SHA-256
 `b6cbc03d7c758b613e31a4131c01e547603da691c846f04db205fc0c09a353b7`.
-Esto prueba la suite PostgreSQL local, no la validación visual ni CI. Los runs
-de CI se registran sólo cuando exista un HEAD exacto publicado.
+Esto prueba la suite PostgreSQL local; candidate CI `34157187442` y exact-main
+CI `34158203438` reprodujeron run-1, run-2 y comparison GREEN.
 
 ## Resultados locales observados
 
@@ -167,8 +175,10 @@ de CI se registran sólo cuando exista un HEAD exacto publicado.
 - Enlaces Markdown relativos: PASS sobre `586` archivos inspeccionados.
 - `git diff --check`: PASS.
 
-Estos resultados pertenecen al worktree local. Candidate SHA, PR, focused
-review y CI autoritativo permanecen pendientes y no se anticipan.
+Candidate `54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7`, PR #35, focused review
+PASS y CI autoritativo `34157187442` quedaron fijados. El merge funcional
+`4db5d9384d13c200eb2031dceb32dd89efcca64d` y exact-main CI `34158203438`
+también quedaron GREEN.
 
 ## Límites y riesgos residuales
 
@@ -183,16 +193,19 @@ review y CI autoritativo permanecen pendientes y no se anticipan.
 - Enrollment/administración productiva, autorización reforzada, secretos
   productivos, release, deploy e infraestructura remota permanecen fuera.
 
-## Gates pendientes para Owner Review
+## Cierre funcional
 
-1. candidate SHA, Draft PR y CI exactos;
-2. focused Critical-risk review sin BLOCKER/HIGH/MEDIUM abierto.
+1. candidate y CI exactos: PASS;
+2. focused Critical-risk review: PASS, `0B/0H/0M/0L`;
+3. merge funcional y exact-main CI: PASS;
+4. Owner Acceptance condicional: APPROVED;
+5. cierre documental: pendiente de merge autorizado y CI exacto de `main`.
 
-Hasta entonces PBI-026 permanece `In progress`, G4 `Pending`, WIP `1/1` y
-PBI-028 candidato no iniciado.
+PBI-026 queda `Done candidate`, G4 `PASS candidate`, Current PBI `NONE`, WIP
+`0/1` y PBI-028 seleccionado como candidato no iniciado.
 
 ## Próxima revisión
 
-Actualizar únicamente con resultados realmente ejecutados sobre el candidato
-exacto. Después corresponde focused Critical-risk review y Owner Review; no
-merge, cierre, release, deploy ni inicio de PBI-028 por inferencia.
+El merge autorizado del cierre y su CI exacto GREEN vuelven efectivos PBI-026
+`Done` y G4 `PASS` sin closure-of-closure. No autorizan release, deploy ni el
+inicio de PBI-028.

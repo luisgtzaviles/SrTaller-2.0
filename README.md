@@ -12,7 +12,8 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 - **Frontend:** React `19.2.8` + Vite `8.2.0`; Design System y Application
   Shell V1 integrados en `main`.
 - **Backend:** NestJS `11.1.28` sobre Express; health y Repair Workstream local
-  integrado con límites tenant/branch y Operational Session HTTP server-side.
+  integrado con límites tenant/branch, Operational Session y Contextual
+  Authorization HTTP server-side.
 - **Persistencia:** PostgreSQL `18.4` local; Kysely + `pg`; tenants, sucursales,
   Trusted Station Context, User Directory, Roles/Capabilities/Assignments,
   credencial PIN y persistencia append-only de los slices integrados de
@@ -23,14 +24,15 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
   de técnico, inicio de diagnóstico, movimiento interno y login/logout/switch
   están integrados en contexto local; todavía no existe un flujo productivo E2E.
 - **CI:** la baseline auditada
-  `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7` pasó el run autoritativo
-  `34150632738` con run-1, run-2 y comparison verdes.
+  `4db5d9384d13c200eb2031dceb32dd89efcca64d` pasó el run autoritativo
+  `34158203438` con run-1, run-2 y comparison verdes.
 - **PBI-030:** `Done`; implementación integrada, Owner Acceptance
   aprobada y riesgo AT/cross-browser residual LOW aceptado. `Released: NO`.
 - **Roadmap:** Sprint 01 está `Closed`; PBI-033 Roles, Assignments and
   Capability Catalog está `Done` y G2 `PASS`. SPRINT-02 está `Active` con
-  PBI-025 `Done` y PBI-034 `Done candidate`; no hay PBI actual y WIP es `0/1`.
-  G3 es `PASS candidate`; PBI-026 está seleccionado y no iniciado.
+  PBI-025/PBI-034 `Done`, G3 `PASS`, PBI-026 `Done candidate` y G4
+  `PASS candidate`; no hay PBI actual, WIP es `0/1` y PBI-028 está seleccionado sin
+  iniciar.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).
@@ -74,8 +76,8 @@ conversaciones no sustituyen a `main`.
 
 ## Estado del documento
 
-**Estado:** Entrada operativa reconciliada con la baseline y el candidato
-PBI-034 auditados documentalmente el 2026-09-07.
+**Estado:** Entrada operativa reconciliada con la baseline funcional PBI-026
+auditada documentalmente el 2026-09-07.
 
 **Próxima revisión:** cuando cambie la baseline integrada, el gate de CI, la
 superficie funcional o el punto de entrada del backlog.

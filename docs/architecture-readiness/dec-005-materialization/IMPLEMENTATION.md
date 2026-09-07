@@ -55,7 +55,8 @@ La materialización de PBI-034, sus invariantes y la evidencia exacta se
 detallan en
 [PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md). Ese
 expediente está verificado y no reescribe los resultados históricos de PBI-022.
-La extensión de PBI-026 y sus límites se registran en
+La extensión de PBI-026, sus límites y su evidencia exacta verificada se
+registran en
 [PBI-026 Option A Verification](PBI_026_OPTION_A_VERIFICATION.md).
 
 ## Autoridad y baseline

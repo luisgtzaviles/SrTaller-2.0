@@ -73,4 +73,5 @@ La inspección acotada de las primeras dos aristas para PBI-034 se registra en
 [PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md); checker,
 fixtures y mutaciones, candidate CI y exact-main CI están verdes. La tercera
 arista y su boundary de PBI-026 se registran en
-[PBI-026 Option A Verification](PBI_026_OPTION_A_VERIFICATION.md).
+[PBI-026 Option A Verification](PBI_026_OPTION_A_VERIFICATION.md); candidate,
+focused review, merge funcional y exact-main CI también están verdes.

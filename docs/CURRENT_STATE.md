@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** Fotografía del candidato local de PBI-026 sobre la baseline
-  canónica; permanece `In progress` y no integrado.
+- **Estado:** Fotografía del cierre candidato de PBI-026 sobre la baseline
+  canónica; alcance funcional integrado y cierre documental pendiente.
 - **Baseline auditada:** `main` en
-  `54ddc251cda8ec7465b7913786c647f8d3ccbeac`.
-- **CI autoritativo:** run `34153470560`, `SUCCESS`; VC-024 run-1, run-2 y
+  `4db5d9384d13c200eb2031dceb32dd89efcca64d`.
+- **CI autoritativo:** run `34158203438`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -24,24 +24,24 @@ alcance funcional de PIN, su remediación y su cierre pertenecen a `main`;
 PBI-025 está `Done`, con Owner Acceptance `APPROVED` y `Released: NO`.
 Operational Session pertenece a `main`; PBI-034 está `Done` y G3 está `PASS`
 después del cierre PR #34 y su CI exacto. SPRINT-01 quedó cerrado y SPRINT-02
-sigue activo con PBI-026 como único PBI actual, WIP `1/1`. Contextual
-Authorization está `In progress` bajo DoR PASS, tamaño Large, riesgo Critical
-preservado y Owner Start del Identity Master Goal. Existe un candidato local
-materializado: full verify y PostgreSQL 18.4 material están GREEN. Todavía no
-tiene validación visual final, candidate SHA/CI, focused review, merge, CI de
-`main`, Owner Acceptance ni cierre canónico.
+sigue activo. PBI-026 tiene alcance funcional integrado, DoR PASS, tamaño
+Large, riesgo Critical preservado, focused review PASS, CI candidate y
+exact-main GREEN y Owner Acceptance `APPROVED`; queda `Done candidate` y G4
+`PASS candidate` mientras se integra su cierre documental. No existe PBI
+actual, WIP `0/1`; PBI-028 está seleccionado como siguiente candidato y no ha
+iniciado.
 
 ## Git y CI
 
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `54ddc251cda8ec7465b7913786c647f8d3ccbeac` |
+| HEAD auditado | `4db5d9384d13c200eb2031dceb32dd89efcca64d` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `34153470560` SUCCESS |
-| Última integración | PR #34 — cierre canónico de PBI-034 |
+| CI | `34158203438` SUCCESS |
+| Última integración | PR #35 — alcance funcional de PBI-026 |
 
 PR #30 integró el candidate funcional exacto de PBI-025 tras un primer intento
 rojo y un rerun verde. La integración fue una desviación de DEC-051/DEC-063,
@@ -60,6 +60,14 @@ PR #34 integró el cierre documental como
 GREEN. Conforme a la semántica post-merge, PBI-034 está `Done`, G3 está
 `PASS` y `Released: NO`.
 
+PR #35 integró el candidate PBI-026
+`54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7` mediante merge ordinario
+`4db5d9384d13c200eb2031dceb32dd89efcca64d` el
+`2026-09-07T20:07:36Z`. Candidate CI `34157187442`, focused Critical-risk
+review (`0B/0H/0M/0L`) y exact-main CI `34158203438` quedaron GREEN; la Owner
+Acceptance condicional quedó `APPROVED`. El cierre documental pendiente deja
+PBI-026 `Done candidate` y G4 `PASS candidate`.
+
 ## Stack actual
 
 - Node.js `24.18.0`, pnpm `11.15.1`, TypeScript.
@@ -71,7 +79,7 @@ GREEN. Conforme a la semántica post-merge, PBI-034 está `Done`, G3 está
 - Preview/Dokploy existe como ambiente separado; no fue modificado ni
   verificado nuevamente por esta reconciliación.
 
-## PBI-034 cerrado y PBI-026 activo
+## PBI-034 cerrado y PBI-026 en cierre
 
 PBI-034 agrega una Session Access-owned stateful con una activa por
 Station, bearer opaco y CSRF aleatorios, persistencia sólo de verificadores,
@@ -88,7 +96,8 @@ visual pasaron. El candidato `cdf2805344a5302844a8f7f6f042cb39fbe1515c`
 tuvo CI `34149620560` GREEN y focused review PASS con `0`
 BLOCKER/HIGH/MEDIUM y `1` LOW. Su merge funcional y CI exacto de `main`
 constan arriba; PR #34 y CI `34153470560` completaron el cierre. PBI-026 inició
-después con autorización propia; no existe autorización de release o deploy.
+después con autorización propia y su alcance funcional ya está integrado; no
+existe autorización de release o deploy.
 
 ## Capacidades integradas
 
@@ -119,15 +128,17 @@ después con autorización propia; no existe autorización de release o deploy.
 - D6.1 transición `pending → diagnosing`.
 - D6.2 movimiento `pending_area → workshop`.
 - Idempotencia, versiones, concurrencia e aislamiento tenant/branch aplicables.
+- Contextual Authorization server-side deny-by-default para lecturas de Repairs
+  y Operational Note, con capabilities frescas y scope de recurso efectivo.
 
 ## Limitaciones vigentes
 
-- El directorio User tenant-scoped, Roles/Capabilities/Assignments, PIN y
-  Operational Session están integrados. La superficie login/logout/switch es
-  local; contextual authorization todavía no está integrada.
+- El directorio User tenant-scoped, Roles/Capabilities/Assignments, PIN,
+  Operational Session y contextual authorization están integrados. La
+  superficie login/logout/switch permanece local.
 - Los read models de grants son proyecciones, no veredictos finales de
-  autorización. PBI-026 debe intersectarlos con User activo, Station/Branch
-  confiable y sesión antes de permitir un efecto protegido.
+  autorización. PBI-026 los intersecta server-side con User activo,
+  Station/Branch confiable y Session antes de permitir un efecto protegido.
 - Trusted Station Runtime Context está `Done` canónico; no incorpora enrollment
   productivo ni administración completa de bindings.
 - `LocalRepairContext` sólo habilita contexto fijo en desarrollo.
@@ -145,7 +156,7 @@ después con autorización propia; no existe autorización de release o deploy.
 - D6.1: integrated.
 - D6.2: integrated.
 - Repairs complete: NO.
-- Siguiente dirección: Operational Authentication & Authorization.
+- Siguiente dirección: auditoría/correlation mínima y actor real.
 
 ## Roadmap y WIP
 
@@ -155,9 +166,9 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 |---|---|
 | Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
 | Sprint 01 | Closed — cinco PBIs committed `Done`; ninguno `Released` |
-| PBI actual | PBI-026 — Contextual Authorization; `In progress` |
-| Siguiente candidato | PBI-028 — Minimum Business Audit and Correlation; no iniciado |
-| WIP permitido | Uno; actual `1/1` |
+| PBI actual | NONE |
+| Siguiente candidato | PBI-028 — Minimum Business Audit and Correlation; seleccionado, no iniciado |
+| WIP permitido | Uno; actual `0/1` |
 
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
@@ -225,13 +236,14 @@ sin downgrade, focused review PASS y Owner Acceptance `APPROVED`. PR #32 y CI
 exacto `34124746317` completaron su cierre; está `Done`, `Released: NO`.
 
 PBI-034 está `Done`, tamaño `Large`, riesgo `Critical` y `Released: NO`.
-PBI-026 está `In progress`, tamaño `Large`, riesgo `Critical`, threat model y
-DoR `PASS`. El catálogo mínimo autoriza sólo lecturas de Repairs y Operational
-Note; las mutaciones sin capability aprobada quedan deny-by-default. PBI-028
-permanece seleccionado y no iniciado.
+PBI-026 queda `Done candidate`, tamaño `Large`, riesgo `Critical`, threat model
+y DoR `PASS`, alcance funcional integrado, CI exacto GREEN, focused review PASS
+y Owner Acceptance `APPROVED`. El catálogo mínimo autoriza sólo lecturas de
+Repairs y Operational Note; las mutaciones sin capability aprobada quedan
+deny-by-default. PBI-028 permanece seleccionado y no iniciado.
 
 ## Próxima acción
 
-Completar el candidato PBI-026, ejecutar focused Critical-risk review y llegar
-a Owner Review. PBI-028 permanece no iniciado; no existe autorización de
-release o deploy.
+Integrar el cierre documental de PBI-026 y exigir CI exacto GREEN para volver
+efectivos `Done` y G4 `PASS`. PBI-028 permanece seleccionado y no iniciado; no
+existe autorización de release o deploy.

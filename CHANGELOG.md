@@ -6,6 +6,14 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Governance
 
+- Preparado el cierre canónico de PBI-026 después de candidate
+  `54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7`, CI `34157187442` GREEN,
+  focused Critical-risk review PASS (`0B/0H/0M/0L`), PR #35 merge funcional
+  `4db5d9384d13c200eb2031dceb32dd89efcca64d` y exact-main CI `34158203438`
+  GREEN. Owner Acceptance condicional: `APPROVED`; `Released: NO`. PBI-026
+  queda `Done candidate`, G4 `PASS candidate`, Current PBI `NONE`, WIP `0/1` y
+  PBI-028 seleccionado sin iniciar.
+
 - Iniciado PBI-026 Contextual Authorization como único PBI actual de
   SPRINT-02, con tamaño `Large`, riesgo `Critical` preservado, threat model,
   DoR `PASS`, Owner Start Authorization y DEC-005 Option A dirigida. PBI-034
