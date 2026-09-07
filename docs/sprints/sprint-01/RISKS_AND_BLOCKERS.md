@@ -21,7 +21,7 @@
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
 | PBI-032 | Cierre documental autorizado, mergeado y verificado | PR #27 merge `db6637ee`; CI post-cierre `34074457695` GREEN | Closed |
-| PBI-033 | No existe bloqueo Owner vigente; faltan validación material/review/CI del candidate | Mantener WIP `1/1`; no integrar ni avanzar sin gates GREEN | Open |
+| PBI-033 | No existe bloqueo Owner vigente; validación material y CI `34080940466` del implementation checkpoint PASS; falta revalidar el HEAD final tras reconciliar trazabilidad y concluir focused review | Mantener WIP `1/1`; no integrar ni avanzar sin gates GREEN | Open |
 | Migración timezone | Backfill histórico equivocado o cambio de instante | Fallback IANA documentado, validación y pruebas PostgreSQL; roll-forward en compartido | Mitigated |
 
 ## Próxima revisión

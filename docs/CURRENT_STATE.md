@@ -170,6 +170,6 @@ baseline integrada ni autorización de producto.
 
 ## Próxima acción
 
-Completar PBI-033 hasta Draft PR, CI autoritativo y focused high-risk review
-bajo el Master Goal. No seleccionar ni iniciar PBI-025, no integrar sin gates
-y no desplegar.
+Revalidar el HEAD final exacto del Draft PR #28 después de la reconciliación de
+trazabilidad y concluir focused high-risk review bajo el Master Goal. No
+seleccionar ni iniciar PBI-025, no integrar sin gates y no desplegar.

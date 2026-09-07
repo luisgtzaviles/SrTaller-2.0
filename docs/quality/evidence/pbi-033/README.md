@@ -2,7 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** implementation candidate validado localmente; PR/CI pendientes.
+- **Estado:** implementation candidate en Draft PR #28; validación local y CI
+  del implementation checkpoint PASS; exact-final-HEAD CI/focused review
+  pendientes tras esta reconciliación de trazabilidad.
 - **Autoridad:** PBI-033, ADR-012 y Master Goal Owner de Identity.
 - **Regla:** registra evidencia observada; no predeclara gates futuros.
 
@@ -13,6 +15,11 @@
   `db6637ee6902b9b0e4a40ba39d7f203cb6889352`; authoritative CI
   `34074457695` GREEN.
 - Branch: `feature/pbi-033-roles-capabilities`.
+- Draft PR: #28 — `Add tenant-scoped roles and capabilities`.
+- Implementation/review checkpoint:
+  `90a4a970a807fdb855587d1b55f0bcc0d58c0294`.
+- Authoritative CI del checkpoint: run `34080940466`; run-1, run-2 y
+  comparison `SUCCESS` sobre el mismo SHA.
 - DoR: [PASS](./DEFINITION_OF_READY.md).
 - Risk: High; Owner-authorized within the Identity Master Goal.
 - Size: Large.
@@ -76,9 +83,11 @@ create a productive bootstrap path or change the authority of names.
 | `git diff --check` | PASS. |
 | External configuration / secret scan | PASS — governed external-configuration boundary and no high-confidence credential material in changed files. |
 
-The remaining pre-review gate is the authoritative Draft PR CI: run-1,
-run-2 and comparison must be GREEN on the exact final HEAD. PR number, exact
-review HEAD and CI run are recorded after GitHub materializes them.
+Draft PR creation, local material validation and authoritative CI of the
+implementation checkpoint are complete. Because this traceability-only change
+advances the branch, run-1, run-2 and comparison must still be GREEN on the
+exact final HEAD. That final HEAD/CI pair is bound by GitHub and the
+focused-review record without making this evidence file self-referential.
 
 ## Boundaries retained
 
@@ -93,13 +102,13 @@ review HEAD and CI run are recorded after GitHub materializes them.
 
 ## Review boundary
 
-PBI-033 remains `In progress` until Draft PR and exact-HEAD CI are complete. A
-green branch remains a candidate;
+PBI-033 remains `In progress` until exact-HEAD CI and focused review are
+complete. A green branch remains a candidate;
 focused high-risk review, merge/main CI, Owner Acceptance and canonical closure
 are separate gates.
 
 ## Próxima revisión
 
-Registrar PR/SHA/CI exactos al alcanzar Draft PR. Si un gate material falla,
-conservar PBI-033 `In progress` y registrar la remediación antes de focused
-review.
+Concluir CI autoritativo y focused review sobre el HEAD final exacto del Draft
+PR #28. Si un gate material falla, conservar PBI-033 `In progress` y registrar
+la remediación antes de integración.

@@ -34,7 +34,7 @@
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| PBI-033 | Sin bloqueo Owner vigente; candidate/review/CI todavía pendientes | Mantener `In progress` y WIP `1/1` hasta completar sus gates |
+| PBI-033 | Sin bloqueo Owner vigente; candidate material y CI `34080940466` del implementation checkpoint PASS en Draft PR #28; exact-final-HEAD CI/focused review pendientes tras reconciliar trazabilidad | Mantener `In progress` y WIP `1/1` hasta completar sus gates |
 
 ## Reglas de cambio
 
