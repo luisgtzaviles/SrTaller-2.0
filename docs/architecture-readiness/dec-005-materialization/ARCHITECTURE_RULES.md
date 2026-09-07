@@ -34,7 +34,7 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R021 | SHOULD | Utilidad permanece local hasta demostrar transversalidad | Reducir abstracción prematura | Revisión; no hay utilidades | Advisory | Sí, documentada por Arquitectura |
 | D5-R022 | MUST | Infraestructura de módulo permanece con su owner | Evitar adapters globales | Paths/patrones + revisión de ownership | Major | Facility técnica revisada por Arquitectura |
 | D5-R023 | MUST | `AppModule` sólo composition root y compone exactamente los módulos autorizados | Evitar agregado técnico universal y wiring ficticio | AST de clase, `@Module`, metadata, arreglo `imports` e imports nombrados exactos | Blocker | No |
-| D5-R024 | MAY restringido | Sólo `AppModule` importa `<module>.module.ts` | Separar contrato y wiring | Source/target del import | Blocker | No |
+| D5-R024 | MAY restringido | `AppModule` conserva la composición exterior; un módulo sólo puede importar otro `<module>.module.ts` mediante una arista de composición dirigida registrada, estática y exacta | Separar contrato y wiring sin impedir DI explícita entre capacidades aprobadas | Policy v4 + AST de consumer/producer, clases/specifiers exactos, `@Module imports`, tokens/interfaces públicos, provider/export/inject y ausencia de aliases/dynamic/namespace | Blocker | Sólo edge, módulos y bindings aprobados previamente por Arquitectura; no hay excepción implícita |
 | D5-R025 | MUST NOT | Usar `forwardRef` en R0 | Exponer ciclos | Identidad AST normalizada de `@nestjs/common.forwardRef` | Blocker | No |
 | D5-R026 | MUST NOT | `ModuleRef` resuelve flujos funcionales | Dependencias explícitas | Identidad AST normalizada de `@nestjs/core.ModuleRef` | Blocker | No |
 | D5-R027 | MUST NOT | Módulo Nest funcional global | Evitar dependencias invisibles | Identidad AST normalizada del decorador `@nestjs/common.Global` | Blocker | No |
@@ -43,7 +43,7 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R030 | SHOULD | Casos de uso TypeScript plano y sin Nest | Testabilidad | No aplicable aún; prueba futura | Major | Justificación de Arquitectura + Ingeniería |
 | D5-R031 | MUST | Imports ESM respetan NodeNext | Reproducibilidad | Typecheck y extensión JS explícita | Blocker | No |
 | D5-R032 | MUST | Enforcement local determinista/no interactivo | Repetibilidad | Doble corrida por fixture y del gate | Blocker | No |
-| D5-R033 | MUST | Toda regla automatizable tiene caso inválido | Evitar checks decorativos | Policy→fixture, ejecución efectiva e identidad canónica comprobadas; el baseline histórico PBI-022 conserva 98/23/6/26 y la extensión PBI-023 eleva el estado vigente a 144 fixtures, 35 mutaciones de producto y 54 contratos críticos únicos | Major | Límite temporal fechado por Arquitectura + Ingeniería |
+| D5-R033 | MUST | Toda regla automatizable tiene caso inválido | Evitar checks decorativos | Policy→fixture, ejecución efectiva e identidad canónica comprobadas; el baseline histórico PBI-022 conserva 98/23/6/26 y el estado ejecutable vigente comprende 188 fixtures, 53 mutaciones de producto y 68 contratos críticos únicos | Major | Límite temporal fechado por Arquitectura + Ingeniería |
 | D5-R034 | MUST | Excepción registrada antes de merge | Evitar deuda silenciosa | Policy fail-closed; no hay excepciones | Blocker | No |
 | D5-R035 | MUST | Toda superficie HTTP funcional requiere autorización posterior a DEC-005, registro exacto, owner único, capa `presentation` y composición explícita en su módulo | Preservar gates H0/H1 sin convertir el shell en un bloqueo permanente | Registry fail-closed, allowlist de source e identidad AST normalizada de Controller/decoradores HTTP | Blocker | Sólo mediante autoridad funcional previa y registro canónico |
 | D5-R036 | MUST NOT | Controller decide contexto confiable o autorización final | Cumplir ADR-005/010/012 | Identidad AST normalizada de `@nestjs/common.Controller` y símbolos de autoridad definidos en policy | Blocker | No |
@@ -57,13 +57,32 @@ emite diagnósticos ordenados con el ID normativo D5 correspondiente.
 | D5-R044 | MUST | Cada operación persistente exige scope tenant estructural no opcional | Evitar bypass implícito/global | Firma AST, tipo de scope allowlisted, optional/nullable/default rechazados | Blocker | Sólo scopes registrados; sin excepciones silenciosas |
 | D5-R045 | MUST | Facility DB tiene owner, API y consumidor registrados | Evitar placeholders/runners desconectados | Registry fail-closed, exports exactos y consumo local resuelto | Blocker | Runner materializado puede diferir consumidor hasta el gate de migraciones declarado |
 | D5-R046 | MUST NOT | SQL ejecutable fuera de migración autorizada | Evitar bypass del query builder/ownership | Procedencia de `kysely.sql`, `.raw` y `query()` sobre executor tipado | Blocker | Migración central; probe connection owner-scoped literal `select 1` |
-| D5-R047 | MUST | Operación Kysely usa objeto DB del owner registrado | Aplicar ownership físico preventivo | Executor tipado + `selectFrom`/`insertInto`/`updateTable`/`deleteFrom` + registry fail-closed | Blocker | Ninguna |
+| D5-R047 | MUST | Operación Kysely y toda migración no incluida en el baseline legacy exacto usan exclusivamente objetos DB del owner registrado | Aplicar ownership físico preventivo también a DDL, funciones y triggers sin bypass cronológico | Executor tipado + registry fail-closed; allowlist legacy cerrada y registro exacto owner/tablas/funciones/triggers contrastado contra AST Kysely y SQL estático para cualquier migración nueva, incluso backdated | Blocker | Ninguna |
 | D5-R048 | MUST | Frontera transaccional explícita, owner-internal y sin control manual | Evitar transacciones implícitas, nesting silencioso y fuga de executor | Imports/reexports/dynamic imports de async context, target interno resuelto, consumidores prohibidos y métodos manuales | Blocker | Ninguna; savepoints o propagación implícita requieren decisión separada |
 | D5-R049 | MUST | Capability y proveedor de migraciones permanecen owner-internal y el runner no se consume desde startup o capas funcionales | Evitar ejecución automática, acceso lateral y bypass del flujo operativo gobernado | Targets locales resueltos contra `migrationBoundary.allowedInternalConsumers` y consumidores prohibidos del runner | Blocker | Ninguna; la composición operativa requiere un gate posterior explícito |
 | D5-R050 | MUST | La primera migración crea sólo `tenants` y `branches` con columnas, tipos y nullability exactos | Impedir schema no autorizado en el primer cambio irreversible | AST de cadenas Kysely contra `persistence.initialSchema` | Blocker | Ninguna; ampliar el schema requiere gate posterior |
 | D5-R051 | MUST | `branches` conserva PK tenant-scoped y FK restrictiva a `tenants` | Impedir identidad global o sucursal huérfana/cross-tenant | AST de PK/FK, columnas, target y políticas `RESTRICT` | Blocker | Ninguna |
 | D5-R052 | MUST NOT | La primera migración contiene DML, seed o SQL raw | Separar estructura de datos y evitar bypass no revisado | AST de operaciones DML y procedencia de `kysely.sql`, incluidos alias/namespace | Blocker | Ninguna |
 | D5-R053 | MUST | `down` elimina `branches` antes de `tenants` y no usa `CASCADE` | Reversión explícita, predecible y fail-closed ante dependencias | AST de cadenas `dropTable` y ausencia de `cascade` | Blocker | Ninguna |
+
+## Interpretación vigente de composición dirigida
+
+La policy v4 registra exactamente `access->stations` y `access->users` como
+composición runtime dirigida. D5-R024 exige conjuntamente el edge del grafo, el
+registro de módulos y specifiers, imports nombrados sin alias, metadata
+`@Module` estática, contratos/tokens desde el `index.ts` público y bindings
+`provide`/`exports`/`inject` únicos. Un edge presente sólo en `dependencies` no
+autoriza importar el archivo Nest del productor.
+
+El detector falla cerrado ante metadata faltante o duplicada, imports por
+alias, namespace, `import()`, `require`, reexport o forma dinámica. D5-R005,
+D5-R007, D5-R014, D5-R016 y D5-R025–R027 siguen aplicando de forma acumulativa:
+Option A no permite internals, repositories, ciclos, `forwardRef`, `ModuleRef`
+ni módulos globales. `AppModule` conserva en D5-R023 su registro exterior exacto.
+
+La aplicación de estas invariantes al candidato PBI-034 y los resultados aún
+pendientes sobre su SHA final se separan en
+[PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md).
 
 ## Interpretación vigente de la superficie HTTP
 
@@ -102,6 +121,8 @@ El checker usa el AST de TypeScript para reconocer:
 - declaraciones públicas directas, su export y su nombre exacto;
 - decoradores de clase y su metadata estática;
 - composición exacta del arreglo `imports` de `AppModule`;
+- composición dirigida exacta por consumer/producer, módulos, specifiers,
+  tokens, interfaces y bindings registrados;
 - identidad de símbolos importados por nombre directo, alias o namespace desde
   `@nestjs/common`/`@nestjs/core`;
 - wrappers transparentes, iterativos y anidados:
@@ -176,8 +197,9 @@ Posibles falsos negativos:
 - semántica de un hecho público, mutabilidad efectiva o autoridad de negocio;
 - una decisión de autoridad expresada con vocabulario distinto de los símbolos
   conservadores registrados en policy;
-- operaciones DB calculadas distintas de las APIs Kysely registradas; deben
-  rechazarse en revisión hasta ampliar semánticamente D5-R047.
+- operaciones DB calculadas distintas de las APIs Kysely registradas; en
+  migraciones gobernadas, toda referencia SQL dinámica se rechaza porque no
+  puede contrastarse con el registro exacto de D5-R047.
 
 Estos límites no habilitan excepciones. Si aparece una sintaxis no cubierta,
 el cambio se detiene y Arquitectura decide si se amplía el checker o se adopta
@@ -193,9 +215,9 @@ demuestre equivalencia.
 La correspondencia completa entre policy, detector, diagnóstico y pruebas está
 en [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md).
 
-Estado vigente de cobertura tras la primera migración productiva de PBI-023:
+Estado vigente de cobertura tras PBI-023 y el hardening acumulado hasta PBI-034:
 44 reglas directas del checker, una externa, dos compuestas y seis
-documentales; 160 fixtures (23 positivos y 137 negativos), 40 mutaciones de
+documentales; 188 fixtures (24 positivos y 164 negativos), 53 mutaciones de
 producto y 68 contratos
 semánticos críticos únicos. Los conteos fechados de las verificaciones formales
 de PBI-022 permanecen históricos.

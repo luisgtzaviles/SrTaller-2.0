@@ -5,6 +5,7 @@ export const ownerScopedPostgresqlTestFiles = Object.freeze([
   'test/user-directory-postgresql.test.mjs',
   'test/access-role-postgresql.test.mjs',
   'test/access-pin-postgresql.test.mjs',
+  'test/access-session-postgresql.test.mjs',
 ]);
 
 export const ownerScopedPostgresqlNodeTestArguments = Object.freeze([

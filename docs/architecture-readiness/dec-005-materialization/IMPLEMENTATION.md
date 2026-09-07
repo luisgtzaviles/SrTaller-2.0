@@ -12,6 +12,45 @@ posteriores.
 > [HTTP Surface Reconciliation](HTTP_SURFACE_RECONCILIATION.md). No se reescribe
 > el hecho histórico de que PBI-022 no registró controllers de producto.
 
+## Vigencia — composición dirigida Option A
+
+La policy v4 conserva `AppModule` como composition root exterior y agrega una
+excepción generalizable, explícita y cerrada: un módulo funcional puede
+componer otro módulo sólo cuando la pareja consumer/producer, ambos archivos y
+clases de módulo, el specifier relativo y cada token/contrato público están
+registrados en `directedModuleComposition`.
+
+La primera materialización registra únicamente:
+
+- `AccessModule -> StationsModule`, mediante
+  `TRUSTED_STATION_CONTEXT_RESOLVER` / `TrustedStationContextResolver` y
+  `TRUSTED_STATION_ADMISSION_VALIDATOR` /
+  `TrustedStationAdmissionValidator`;
+- `AccessModule -> UsersModule`, mediante
+  `AUTHENTICATION_USER_READER` / `AuthenticationUserReader` y
+  `AUTHENTICATION_USER_ADMISSION_VALIDATOR` /
+  `AuthenticationUserAdmissionValidator`.
+
+Los validadores reciben únicamente el contexto técnico opaco de la transacción
+compuesta. Cada owner conserva su executor, bloquea sus propias filas y
+devuelve el snapshot monotónico usado por Operational Session; no se exponen
+tablas, Kysely ni una excepción cross-owner.
+
+El checker exige imports nombrados estáticos y sin alias, metadata `@Module`
+literal, `imports` exactos, una sola inyección por token y un único binding y
+export del productor. Continúan prohibidos deep imports, acceso a
+infrastructure/repositories ajenos, aristas graph-only, dirección inversa,
+ciclos, `forwardRef`, `ModuleRef`, `@Global` y composición dinámica. Los
+controllers y artefactos de persistencia posteriores se registran en sus
+inventarios existentes; el registro no transfiere ownership ni otorga
+autoridad funcional.
+
+La materialización de PBI-034, sus invariantes y la evidencia que debe fijarse
+sobre el SHA final se detallan en
+[PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md). Ese
+expediente permanece `Pending` y no reescribe los resultados históricos de
+PBI-022.
+
 ## Autoridad y baseline
 
 - PBI ejecutado: [PBI-022](../../backlog/pbis/PBI-022.md).
@@ -59,16 +98,16 @@ técnico existente no cambiaron.
 | `scripts/lib/architecture-checker.mjs` | Análisis AST, normalización iterativa, identidad de imports directos/default/alias/namespace/import-equals/require, shadowing, contenido estructural, NodeNext, grafo, capas, composición, persistencia tenant-scoped y ownership |
 | `scripts/check-architecture.mjs` | CLI no interactiva con exit code y diagnóstico estable |
 | `scripts/smoke-start.mjs` | Coordinador comprobable e independiente del orden para marker, listener, timeout, salida y cleanup del smoke compilado |
-| `test/architecture-fixtures.mjs` | 98 casos aislados: 12 positivos y 86 negativos |
-| `test/architecture-persistence-fixtures.mjs` | 36 fixtures PBI-023: cinco positivos y 31 negativos para D5-R037–D5-R047 |
+| `test/architecture-fixtures.mjs` | 126 casos aislados vigentes: 14 positivos y 112 negativos |
+| `test/architecture-persistence-fixtures.mjs` | 62 fixtures vigentes: diez positivos y 52 negativos para D5-R037–D5-R053 |
 | `test/architecture-fixtures.test.mjs` | Ejecución duplicada, comparación determinista y conjunto completo de reglas/paths por fixture |
 | `test/architecture-remediation-mutations.mjs` | Cinco mutaciones FV4 con wrappers, source contractual y una familia por regla afectada |
-| `test/architecture-mutations.test.mjs` | 23 mutaciones controladas en 12 familias normativas con reglas/paths exactos, rechazo y restauración |
-| `test/architecture-persistence-mutations.mjs` | Once mutaciones owner/tenant/DB, una por regla nueva |
+| `test/architecture-mutations.test.mjs` | 36 mutaciones controladas de arquitectura general con reglas/paths exactos, rechazo y restauración |
+| `test/architecture-persistence-mutations.mjs` | Diecisiete mutaciones owner/tenant/DB, una por D5-R037–D5-R053 |
 | `test/architecture-persistence-mutations.test.mjs` | Mutación, neutralización fixture-only, restauración y determinismo por regla |
 | `test/architecture-semantic-coverage.mjs` | Identidad canónica D5-R033 central: snapshot efectivo, tokens de source, paths, serialización tipada, detección y diagnóstico |
 | `test/architecture-semantic-coverage.test.mjs` | Seis mutaciones semánticas con restauración, diez rechazos de equivalencia y ocho controles de distinción legítima |
-| `test/architecture-coverage.test.mjs` | Contrato D5-R033 de 49 coberturas críticas únicas, correspondencia exacta con policy y unitarias del normalizador AST |
+| `test/architecture-coverage.test.mjs` | Contrato D5-R033 de 68 coberturas críticas únicas, correspondencia exacta con policy y unitarias del normalizador AST |
 | `test/architecture-policy.test.mjs` | Consistencia policy/documentos y diez órdenes/fallos/cleanup del coordinador de smoke |
 | `test/architecture-support.mjs` | Creación y eliminación segura de árboles temporales |
 | `architecture` / `verify:architecture` | Alias solicitado y verificación del árbol real con toolchain exacta |
@@ -128,6 +167,9 @@ técnico existente no cambiaron.
 18. La neutralización de reglas existe sólo como prueba adversarial
     in-process sobre fixtures; el checker rechaza ese parámetro en producto y
     el CLI no ofrece flag para desactivar reglas.
+19. Policy v4 separa el permiso de dependencia lógica del permiso de
+    composición runtime: una arista en `dependencies` es necesaria pero no
+    suficiente sin el registro exacto de `directedModuleComposition`.
 
 ## Paths no materializados
 

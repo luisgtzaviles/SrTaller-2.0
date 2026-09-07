@@ -28,6 +28,10 @@ const pinCredentialPortPath =
   'src/modules/access/application/ports/pin-credential-repository.port.ts';
 const pinCredentialAdapterPath =
   'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts';
+const operationalSessionPortPath =
+  'src/modules/access/application/ports/operational-session-repository.port.ts';
+const operationalSessionAdapterPath =
+  'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts';
 
 test('owner-scoped ports and adapters retain exact ownership registration', async () => {
   const policy = JSON.parse(
@@ -112,6 +116,18 @@ test('owner-scoped ports and adapters retain exact ownership registration', asyn
     composition: 'src/modules/users/users.module.ts',
     status: 'materialized-owner-adapter',
   });
+  assert.deepEqual(policy.persistence.ports[operationalSessionPortPath], {
+    owner: 'access',
+    contract: 'OperationalSessionRepositoryPort',
+    allowedScopes: ['OperationalSessionPersistenceScope'],
+    status: 'materialized-owner-port',
+  });
+  assert.deepEqual(policy.persistence.adapters[operationalSessionAdapterPath], {
+    owner: 'access',
+    port: operationalSessionPortPath,
+    composition: 'src/modules/access/access.module.ts',
+    status: 'materialized-owner-adapter',
+  });
 });
 
 test('persistence capability is internal and has only exact adapter consumers', async () => {
@@ -134,6 +150,8 @@ test('persistence capability is internal and has only exact adapter consumers', 
     consumers: [
       'src/infrastructure/database/database-connection.ts',
       'src/infrastructure/database/database-runtime.ts',
+      'src/infrastructure/runtime/application-database-runtime.provider.ts',
+      'src/infrastructure/runtime/index.ts',
       branchAdapterPath,
       'src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts',
       tenantAdapterPath,
@@ -141,6 +159,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
       authenticationUserAdapterPath,
       accessAdapterPath,
       pinCredentialAdapterPath,
+      operationalSessionAdapterPath,
     ],
     status: 'materialized-owner-internal-capability',
   });
@@ -159,7 +178,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   );
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits'>/u,
+    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits' \| 'access_operational_session_station_guards' \| 'access_operational_sessions'>/u,
   );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),

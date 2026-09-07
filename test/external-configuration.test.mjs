@@ -60,6 +60,7 @@ test('catalog distinguishes active non-secret configuration from server-only sec
       { name: 'NODE_ENV', classification: 'non-secret' },
       { name: 'PORT', classification: 'non-secret' },
       { name: 'SR_DB_ENVIRONMENT', classification: 'non-secret' },
+      { name: 'SR_LOCAL_RUNTIME', classification: 'non-secret' },
     ],
   );
   assert.ok(externalConfigurationCatalog.every(Object.isFrozen));
@@ -132,6 +133,78 @@ test('application startup requires the active database secret before opening the
   const source = await (await import('node:fs/promises')).readFile('src/main.ts', 'utf8');
   assert.match(
     source,
-    /loadRequiredServerSecrets\(process\.env, \['SR_DB_PASSWORD'\]\)/u,
+    /loadRequiredServerSecrets\(process\.env, \['SR_DB_PASSWORD', 'SR_PIN_PEPPER'\]\)/u,
+  );
+  assert.ok(source.indexOf('await application.init();') < source.indexOf('await database.verify();'));
+  assert.ok(source.indexOf('await database.verify();') < source.indexOf('await application.listen('));
+});
+
+test('executable startup fails closed before listening when the database role contract is absent', async () => {
+  const environment = { ...process.env };
+  for (const name of Object.keys(environment)) {
+    if (name.startsWith('SR_DB_') || name.startsWith('SR_TEST_DB_')) {
+      delete environment[name];
+    }
+  }
+  const databaseSecret = 'synthetic-database-secret-for-startup-regression';
+  const pinSecret = Buffer.alloc(32, 0x42).toString('base64url');
+  Object.assign(environment, {
+    HOST: '127.0.0.1',
+    NODE_ENV: 'test',
+    PORT: '65534',
+    SR_DB_PASSWORD: databaseSecret,
+    SR_PIN_PEPPER: pinSecret,
+  });
+
+  await assert.rejects(
+    execFileAsync(process.execPath, ['dist/main.js'], {
+      env: environment,
+      timeout: 5_000,
+    }),
+    (error) => {
+      const stdout = String(error?.stdout ?? '');
+      const stderr = String(error?.stderr ?? '');
+      assert.doesNotMatch(stdout, /technical_shell_listening/u);
+      assert.match(stderr, /technical_shell_startup_failed/u);
+      assert.doesNotMatch(`${stdout}\n${stderr}`, new RegExp(`${databaseSecret}|${pinSecret}`, 'u'));
+      return true;
+    },
+  );
+});
+
+test('executable startup rejects malformed active PIN configuration before listening', async () => {
+  const environment = { ...process.env };
+  for (const name of Object.keys(environment)) {
+    if (name.startsWith('SR_DB_') || name.startsWith('SR_TEST_DB_')) {
+      delete environment[name];
+    }
+  }
+  const databaseSecret = 'synthetic-database-secret-for-pin-startup-regression';
+  const malformedPinSecret = 'synthetic-malformed-pin-pepper';
+  Object.assign(environment, {
+    HOST: '127.0.0.1',
+    NODE_ENV: 'test',
+    PORT: '65534',
+    SR_DB_PASSWORD: databaseSecret,
+    SR_PIN_PEPPER: malformedPinSecret,
+  });
+
+  await assert.rejects(
+    execFileAsync(process.execPath, ['dist/main.js'], {
+      env: environment,
+      timeout: 5_000,
+    }),
+    (error) => {
+      const stdout = String(error?.stdout ?? '');
+      const stderr = String(error?.stderr ?? '');
+      assert.doesNotMatch(stdout, /technical_shell_listening/u);
+      assert.match(stderr, /technical_shell_startup_failed/u);
+      assert.match(stderr, /PIN_HASHING_CONFIGURATION_INVALID/u);
+      assert.doesNotMatch(
+        `${stdout}\n${stderr}`,
+        new RegExp(`${databaseSecret}|${malformedPinSecret}`, 'u'),
+      );
+      return true;
+    },
   );
 });

@@ -33,6 +33,12 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'access_operational_sessions',
+  'access_operational_session_station_guards',
+  'access_pin_attempt_limits',
+  'access_pin_attempt_station_guards',
+  'access_pin_credential_commands',
+  'access_pin_credentials',
   'access_role_assignment_commands',
   'access_role_assignments',
   'access_role_capabilities',
@@ -126,6 +132,11 @@ function authorization(item) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists stations_advance_admission_revision() cascade');
+  await admin.query('drop function if exists users_advance_admission_revision() cascade');
+  await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
+  await admin.query('drop function if exists access_invalidate_operational_sessions_for_context_change() cascade');
+  await admin.query('drop function if exists access_advance_pin_credential_version() cascade');
   await admin.query(
     `drop table if exists ${tables.map((name) => `"${name}"`).join(', ')} cascade`,
   );
@@ -158,7 +169,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 20);
+      assert.equal(applied.status.migrations.length, 23);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await admin.query(
         `insert into tenants (tenant_id, created_at) values ($1, now()), ($2, now())`,
@@ -202,8 +213,14 @@ test(
           tenantId: context.tenantId,
           branchId: context.branchId,
           stationId: context.stationId,
+          stationCredentialId: context.stationCredentialId,
         },
-        { tenantId: tenantA, branchId: branchA, stationId: stationA },
+        {
+          tenantId: tenantA,
+          branchId: branchA,
+          stationId: stationA,
+          stationCredentialId: '70000000-0000-4000-8000-000000000024',
+        },
       );
 
       await admin.query(

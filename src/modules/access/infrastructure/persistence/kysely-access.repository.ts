@@ -1,4 +1,4 @@
-import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
+import type { InternalDatabasePersistenceConnection } from '../../../../infrastructure/database/database-persistence-capability.js';
 import { useDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
   InternalDatabasePersistenceExecutor,
@@ -704,7 +704,7 @@ class KyselyAccessRepository implements AccessRepositoryPort {
 }
 
 export function createKyselyAccessRepository(
-  connection: DatabaseConnection,
+  connection: InternalDatabasePersistenceConnection,
 ): AccessRepositoryPort {
   return new KyselyAccessRepository((operation) =>
     useDatabasePersistenceExecutor(connection, 'access', operation),

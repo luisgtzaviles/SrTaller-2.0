@@ -7,6 +7,7 @@ import {
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
+  RefreshCw,
   Settings,
   Sun,
   UserCircle,
@@ -21,6 +22,7 @@ import { IconButton } from '../ui/controls.js';
 import { useFocusTrap } from '../ui/overlays.js';
 import { classNames } from '../ui/class-names.js';
 import { useTheme } from '../../foundation/theme.js';
+import type { ActiveOperationalSession } from '../../session/session-api.js';
 import styles from './application-shell.module.css';
 
 const SIDEBAR_STORAGE_KEY = 'srtaller.sidebar.collapsed';
@@ -110,26 +112,67 @@ function ThemeControl(): React.JSX.Element {
   );
 }
 
-function OperatorMenu(): React.JSX.Element {
+function OperatorMenu({
+  actor,
+  busy,
+  triggerRef,
+  onChangeUser,
+  onLogout,
+}: Readonly<{
+  actor: ActiveOperationalSession;
+  busy: boolean;
+  triggerRef: React.RefObject<HTMLElement | null>;
+  onChangeUser(): void;
+  onLogout(): void;
+}>): React.JSX.Element {
+  const menuRef = useRef<HTMLDetailsElement>(null);
+  const runAction = (action: () => void): void => {
+    menuRef.current?.removeAttribute('open');
+    action();
+  };
   return (
-    <details className={styles.operatorMenu}>
-      <summary aria-label="Abrir menú del operador sintético">
+    <details ref={menuRef} className={styles.operatorMenu}>
+      <summary ref={triggerRef} aria-label={`Abrir menú de ${actor.displayName}`}>
         <UserCircle aria-hidden="true" size={20} />
-        <span><strong>Operador sintético</strong><small>Sin identidad integrada</small></span>
+        <span><strong>{actor.displayName}</strong><small>Sesión operativa</small></span>
         <ChevronDown aria-hidden="true" size={16} />
       </summary>
       <div className={styles.operatorPopover}>
-        <p>Presentación únicamente. PBI-024 e identidad no están integrados.</p>
-        <button type="button" disabled><LogOut aria-hidden="true" size={16} />Cerrar sesión no disponible</button>
+        <p><strong>{actor.displayName}</strong> está operando desde una estación reconocida y una sucursal vinculada.</p>
+        <div className={styles.operatorActions}>
+          <button type="button" disabled={busy} onClick={() => runAction(onChangeUser)}>
+            <RefreshCw aria-hidden="true" size={16} />Cambiar usuario
+          </button>
+          <button type="button" disabled={busy} onClick={() => runAction(onLogout)}>
+            <LogOut aria-hidden="true" size={16} />Cerrar sesión
+          </button>
+        </div>
       </div>
     </details>
   );
 }
 
-export function ApplicationShell({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
+export function ApplicationShell({
+  actor,
+  busy,
+  errorMessage,
+  focusTarget,
+  onChangeUser,
+  onLogout,
+  children,
+}: Readonly<{
+  actor: ActiveOperationalSession;
+  busy: boolean;
+  errorMessage: string | null;
+  focusTarget: 'main' | 'operator' | null;
+  onChangeUser(): void;
+  onLogout(): void;
+  children: React.ReactNode;
+}>): React.JSX.Element {
   const [collapsed, setCollapsed] = useState(readCollapsedPreference);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLElement>(null);
+  const operatorTriggerRef = useRef<HTMLElement>(null);
   const location = useLocation();
   const closeDrawer = useCallback((): void => setDrawerOpen(false), []);
   useFocusTrap(drawerOpen, drawerRef, closeDrawer);
@@ -142,6 +185,21 @@ export function ApplicationShell({ children }: Readonly<{ children: React.ReactN
     document.body.classList.toggle('srt-drawer-open', drawerOpen);
     return () => document.body.classList.remove('srt-drawer-open');
   }, [drawerOpen]);
+
+  useEffect(() => {
+    if (!focusTarget) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      if (focusTarget === 'operator') {
+        operatorTriggerRef.current?.focus();
+        return;
+      }
+      const activeElement = document.activeElement;
+      if (!activeElement || activeElement === document.body || !activeElement.isConnected) {
+        document.getElementById('main-content')?.focus();
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusTarget]);
 
   const toggleCollapsed = (): void => {
     setCollapsed((current) => {
@@ -168,34 +226,46 @@ export function ApplicationShell({ children }: Readonly<{ children: React.ReactN
             tooltip={collapsed ? 'Expandir navegación' : 'Colapsar navegación'}
             onClick={toggleCollapsed}
           />
-          <Brand className={styles.headerBrand} meta="Sucursal sintética · Preview" />
+          <Brand className={styles.headerBrand} meta="Sucursal vinculada · Estación reconocida" />
         </div>
         <div className={styles.headerEnd}>
-          <span className={styles.previewBadge}>Preview · Datos sintéticos</span>
+          <span className={styles.previewBadge}>{__SRT_DEPLOY_ENV__ === 'local' ? 'Local' : 'Preview'} · Datos sintéticos</span>
           <ThemeControl />
-          <OperatorMenu />
-          <button className={styles.logoutButton} type="button" disabled aria-label="Cerrar sesión no disponible" title="La autenticación no está integrada">
+          <OperatorMenu
+            actor={actor}
+            busy={busy}
+            triggerRef={operatorTriggerRef}
+            onChangeUser={onChangeUser}
+            onLogout={onLogout}
+          />
+          <button className={styles.logoutButton} type="button" disabled={busy} onClick={onLogout} aria-label="Cerrar sesión">
             <LogOut aria-hidden="true" size={20} />
-            <span>Cerrar sesión</span>
+            <span>{busy ? 'Procesando…' : 'Cerrar sesión'}</span>
           </button>
         </div>
       </header>
 
       <div className={styles.desktopBody}>
         <aside className={styles.sidebar} aria-label="Shell principal">
-          <Brand className={styles.sidebarIdentity} collapsed={collapsed} meta="Sucursal sintética" />
+          <Brand className={styles.sidebarIdentity} collapsed={collapsed} meta="Sucursal vinculada" />
           <Navigation collapsed={collapsed} />
           <div className={styles.sidebarFooter}>
             <span className={styles.environmentDot} aria-hidden="true" />
-            <span className={classNames(styles.environmentCopy, collapsed && styles.collapsedOnly)}><strong>Preview aislado</strong><small>Sin datos reales</small></span>
+            <span className={classNames(styles.environmentCopy, collapsed && styles.collapsedOnly)}><strong>Estación reconocida</strong><small>{actor.displayName} · Sesión activa</small></span>
           </div>
         </aside>
 
         <div className={styles.workspace}>
           <div className={styles.blockingBanner}>
-            <Alert tone="warning" title="Contexto operativo no integrado">
-              Empresa, sucursal, estación e identidad siguen sin una fuente backend confiable. Las superficies son demostraciones sintéticas.
+            <Alert tone="info" title={__SRT_DEPLOY_ENV__ === 'local' ? 'Entorno local de desarrollo' : 'Entorno de preview'}>
+              {__SRT_DEPLOY_ENV__ === 'local'
+                ? 'El contexto confiable y la sesión provienen del servidor local.'
+                : 'El contexto confiable y la sesión provienen del servidor de preview.'}
+              {' '}Los registros operativos siguen siendo fixtures sintéticos; esto no corresponde a Production.
             </Alert>
+            {errorMessage ? (
+              <Alert tone="danger" title="No se completó la acción">{errorMessage}</Alert>
+            ) : null}
           </div>
 
           <main id="main-content" className={styles.mainContent} tabIndex={-1}>{children}</main>
@@ -208,7 +278,7 @@ export function ApplicationShell({ children }: Readonly<{ children: React.ReactN
           <aside ref={drawerRef} className={styles.drawer} role="dialog" aria-modal="true" aria-label="Navegación móvil" tabIndex={-1}>
             <header><Brand /><IconButton icon={X} label="Cerrar navegación" tone="inverse" onClick={closeDrawer} /></header>
             <Navigation collapsed={false} onNavigate={closeDrawer} />
-            <footer><span className={styles.environmentDot} aria-hidden="true" /><span><strong>Preview aislado</strong><small>Sin datos reales</small></span></footer>
+            <footer><span className={styles.environmentDot} aria-hidden="true" /><span><strong>Estación reconocida</strong><small>{actor.displayName} · Sesión activa</small></span></footer>
           </aside>
         </div>
       ) : null}

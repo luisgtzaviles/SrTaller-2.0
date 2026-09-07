@@ -13,7 +13,7 @@ no se copia a logs, serialización ni diagnóstico.
 | No secreto de persistencia | `SR_DB_ENVIRONMENT` | Activo | Database configuration |
 | Secreto activo | `SR_DB_PASSWORD`, `SR_TEST_DB_PASSWORD` | Activo | Database configuration |
 | Secreto activo | `SR_PIN_PEPPER` | Consumido por Access/PBI-025 | Server-only; nunca navegador, logs ni evidencia |
-| Secreto reservado | `SR_SESSION_SIGNING_KEY` | Sin consumidor | PBI-034 futuro |
+| Secreto reservado | `SR_SESSION_SIGNING_KEY` | Sin consumidor | PBI-034 mantiene Session stateful con bearer aleatorio; no requiere firma |
 | Secreto activo local/test | `SR_STATION_BOOTSTRAP_SECRET` | Bootstrap técnico de Station en PBI-024 | Sólo `.env.local` o runner efímero; no enrollment productivo |
 | Secreto activo local/test | `SR_USER_BOOTSTRAP_SECRET` | Provisioning server-only del primer User en PBI-032 | Sólo `.env.local`; no endpoint, administración ni provisioning productivo |
 
@@ -51,9 +51,11 @@ no están implícitas en este contrato.
 
 ## Próxima revisión
 
-PBI-025 materializa el primer consumidor criptografico de este contrato:
+PBI-025 materializa el primer consumidor criptográfico de este contrato:
 `SR_PIN_PEPPER` es obligatorio y fail-closed al construir el hasher de Access.
-La siguiente revision corresponde antes de que PBI-034 declare un consumidor
-activo para `SR_SESSION_SIGNING_KEY`, y antes de materializar Production. Los
-consumidores bootstrap de PBI-024 y PBI-032 siguen limitados a desarrollo/test
-y no autorizan enrollment ni provisioning productivos.
+PBI-034 conserva `SR_SESSION_SIGNING_KEY` reservado y sin consumidor: el
+candidate usa bearer y CSRF aleatorios de alta entropía, almacena sólo sus
+verificadores SHA-256 y no introduce JWT. La siguiente revisión corresponde si
+una decisión futura propone activar ese secreto o antes de materializar
+Production. Los consumidores bootstrap de PBI-024 y PBI-032 siguen limitados a
+desarrollo/test y no autorizan enrollment ni provisioning productivos.

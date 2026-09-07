@@ -297,6 +297,7 @@ export function startupEnvironment(values) {
     HOST: values.SR_LOCAL_BACKEND_HOST,
     NODE_ENV: 'development',
     PORT: values.SR_LOCAL_BACKEND_PORT,
+    SR_LOCAL_RUNTIME: 'true',
   });
 }
 

@@ -11,6 +11,8 @@ export type AuthenticationUserRecord = Readonly<{
   displayName: string;
   status: 'active' | 'inactive' | 'revoked';
   version: number;
+  /** Monotonic owner authority for lifecycle admission. */
+  admissionRevision: number;
 }>;
 
 export interface AuthenticationUserScope {
@@ -24,3 +26,28 @@ export interface AuthenticationUserReader {
     userId: string,
   ): Promise<AuthenticationUserRecord | null>;
 }
+
+export interface AuthenticationUserAdmissionSnapshot {
+  readonly user: AuthenticationUserRecord;
+  /** Monotonic Users-owned lifecycle authority. */
+  readonly admissionRevision: number;
+}
+
+/** Owner-scoped exact-version check for a composed admission transaction. */
+export interface AuthenticationUserAdmissionValidator {
+  validateAuthenticationUserAdmission(
+    scope: AuthenticationUserScope,
+    userId: string,
+    expectedVersion: number,
+    expectedAdmissionRevision: number,
+    transactionContext: object,
+  ): Promise<AuthenticationUserAdmissionSnapshot | null>;
+}
+
+export const AUTHENTICATION_USER_READER: unique symbol = Symbol(
+  'srtaller.users.authentication-user-reader',
+);
+
+export const AUTHENTICATION_USER_ADMISSION_VALIDATOR: unique symbol = Symbol(
+  'srtaller.users.authentication-user-admission-validator',
+);

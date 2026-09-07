@@ -1,5 +1,5 @@
 {
-  "policyVersion": 3,
+  "policyVersion": 4,
   "allowedModules": ["access", "repairs", "stations", "tenancy", "users"],
   "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
@@ -14,11 +14,21 @@
     "repairs": ["RepairsModuleContract"],
     "stations": [
       "StationsModuleContract",
+      "TRUSTED_STATION_ADMISSION_VALIDATOR",
+      "TRUSTED_STATION_CONTEXT_RESOLVER",
+      "TrustedStationAdmissionSnapshot",
+      "TrustedStationAdmissionValidator",
       "TrustedStationContext",
+      "TrustedStationContextError",
+      "TrustedStationContextResolver",
       "isTrustedStationContext"
     ],
     "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"],
     "users": [
+      "AUTHENTICATION_USER_ADMISSION_VALIDATOR",
+      "AUTHENTICATION_USER_READER",
+      "AuthenticationUserAdmissionSnapshot",
+      "AuthenticationUserAdmissionValidator",
       "AuthenticationUserReader",
       "AuthenticationUserRecord",
       "AuthenticationUserScope",
@@ -111,9 +121,224 @@
       "UsersModule": "./modules/users/users.module.js"
     }
   },
+  "directedModuleComposition": {
+    "decorator": "Module",
+    "edges": [
+      {
+        "consumer": "access",
+        "producer": "stations",
+        "consumerModule": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule"
+        },
+        "producerModule": {
+          "file": "src/modules/stations/stations.module.ts",
+          "className": "StationsModule",
+          "importSpecifier": "../stations/stations.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "TRUSTED_STATION_ADMISSION_VALIDATOR",
+            "contract": "TrustedStationAdmissionValidator",
+            "consumerImportSpecifier": "../stations/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "TRUSTED_STATION_CONTEXT_RESOLVER",
+            "contract": "TrustedStationContextResolver",
+            "consumerImportSpecifier": "../stations/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
+      },
+      {
+        "consumer": "access",
+        "producer": "users",
+        "consumerModule": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule"
+        },
+        "producerModule": {
+          "file": "src/modules/users/users.module.ts",
+          "className": "UsersModule",
+          "importSpecifier": "../users/users.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "AUTHENTICATION_USER_ADMISSION_VALIDATOR",
+            "contract": "AuthenticationUserAdmissionValidator",
+            "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "AUTHENTICATION_USER_READER",
+            "contract": "AuthenticationUserReader",
+            "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeInfrastructureComposition": {
+    "decorator": "Module",
+    "module": {
+      "file": "src/infrastructure/runtime/runtime-infrastructure.module.ts",
+      "className": "RuntimeInfrastructureModule"
+    },
+    "publicSurface": {
+      "file": "src/infrastructure/runtime/index.ts",
+      "exports": [
+        "ACCESS_PIN_HASHER_FACTORY",
+        "APPLICATION_DATABASE_CONNECTION",
+        "LOCAL_RUNTIME_CONFIGURATION",
+        "SESSION_TRANSPORT_POLICY",
+        "AccessPinHasherFactory",
+        "ApplicationDatabaseConnection",
+        "LocalRuntimeConfiguration",
+        "SessionTransportPolicy"
+      ]
+    },
+    "environmentReader": {
+      "file": "src/infrastructure/runtime/runtime-environment.reader.ts",
+      "className": "RuntimeEnvironmentReader",
+      "ambientExpression": "process.env"
+    },
+    "lifecycleProvider": {
+      "file": "src/infrastructure/runtime/application-database-runtime.provider.ts",
+      "className": "ApplicationDatabaseRuntimeProvider"
+    },
+    "providers": [
+      {
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "strategy": "useExisting",
+        "implementation": "ApplicationDatabaseRuntimeProvider",
+        "consumers": [
+          "src/main.ts",
+          "src/modules/access/access.module.ts",
+          "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
+          "src/modules/stations/stations.module.ts",
+          "src/modules/users/users.module.ts"
+        ]
+      },
+      {
+        "token": "ACCESS_PIN_HASHER_FACTORY",
+        "contract": "AccessPinHasherFactory",
+        "strategy": "useFactory",
+        "implementation": "RuntimeEnvironmentReader",
+        "consumers": ["src/modules/access/access.module.ts"]
+      },
+      {
+        "token": "LOCAL_RUNTIME_CONFIGURATION",
+        "contract": "LocalRuntimeConfiguration",
+        "strategy": "useFactory",
+        "implementation": "RuntimeEnvironmentReader",
+        "consumers": [
+          "src/modules/stations/stations.module.ts"
+        ]
+      },
+      {
+        "token": "SESSION_TRANSPORT_POLICY",
+        "contract": "SessionTransportPolicy",
+        "strategy": "useFactory",
+        "implementation": "RuntimeEnvironmentReader",
+        "consumers": [
+          "src/modules/access/presentation/access-session.controller.ts"
+        ]
+      }
+    ],
+    "moduleConsumers": [
+      {
+        "owner": "access",
+        "file": "src/modules/access/access.module.ts",
+        "className": "AccessModule",
+        "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
+      },
+      {
+        "owner": "stations",
+        "file": "src/modules/stations/stations.module.ts",
+        "className": "StationsModule",
+        "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
+      },
+      {
+        "owner": "users",
+        "file": "src/modules/users/users.module.ts",
+        "className": "UsersModule",
+        "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
+      }
+    ],
+    "bindingSites": [
+      {
+        "file": "src/main.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "./infrastructure/runtime/index.js",
+        "kind": "application-get"
+      },
+      {
+        "file": "src/modules/access/access.module.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../../../infrastructure/runtime/index.js",
+        "kind": "contract-only"
+      },
+      {
+        "file": "src/modules/access/access.module.ts",
+        "token": "ACCESS_PIN_HASHER_FACTORY",
+        "contract": "AccessPinHasherFactory",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/access/presentation/access-session.controller.ts",
+        "token": "SESSION_TRANSPORT_POLICY",
+        "contract": "SessionTransportPolicy",
+        "importSpecifier": "../../../infrastructure/runtime/index.js",
+        "kind": "constructor-inject"
+      },
+      {
+        "file": "src/modules/stations/stations.module.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/stations/stations.module.ts",
+        "token": "LOCAL_RUNTIME_CONFIGURATION",
+        "contract": "LocalRuntimeConfiguration",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/users/users.module.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      }
+    ]
+  },
   "httpSurfacePolicy": {
     "allowedModuleLayer": "presentation",
     "controllers": {
+      "src/modules/access/presentation/access-session.controller.ts": {
+        "owner": "access",
+        "className": "AccessSessionController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/access-session.controller.js"
+        }
+      },
       "src/modules/repairs/presentation/repairs.controller.ts": {
         "owner": "repairs",
         "className": "RepairsController",
@@ -121,6 +346,15 @@
           "file": "src/modules/repairs/repairs.module.ts",
           "className": "RepairsModule",
           "importSpecifier": "./presentation/repairs.controller.js"
+        }
+      },
+      "src/modules/stations/presentation/local-station-bootstrap.controller.ts": {
+        "owner": "stations",
+        "className": "LocalStationBootstrapController",
+        "composition": {
+          "file": "src/modules/stations/stations.module.ts",
+          "className": "StationsModule",
+          "importSpecifier": "./presentation/local-station-bootstrap.controller.js"
         }
       }
     }
@@ -165,8 +399,88 @@
       "src/infrastructure/database/migrations/20260906180000_access_create_capability_catalog.ts",
       "src/infrastructure/database/migrations/20260906181000_access_create_roles.ts",
       "src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts",
-      "src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts"
+      "src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts",
+      "src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts",
+      "src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts",
+      "src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts"
     ],
+    "migrationOwnership": {
+      "legacyMigrations": [
+        "src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts",
+        "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
+        "src/infrastructure/database/migrations/20260819140000_repairs_create_timeline_entries.ts",
+        "src/infrastructure/database/migrations/20260819150000_repairs_create_attachments.ts",
+        "src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts",
+        "src/infrastructure/database/migrations/20260902090000_repairs_create_technician_assignment.ts",
+        "src/infrastructure/database/migrations/20260902093000_repairs_add_technician_unassignment_idempotency.ts",
+        "src/infrastructure/database/migrations/20260902100000_repairs_enforce_technician_scope.ts",
+        "src/infrastructure/database/migrations/20260903120000_repairs_create_workflow_transitions.ts",
+        "src/infrastructure/database/migrations/20260903130000_repairs_create_location_movements.ts",
+        "src/infrastructure/database/migrations/20260904120000_stations_add_branch_timezone.ts",
+        "src/infrastructure/database/migrations/20260905160000_stations_create_trusted_runtime_context.ts",
+        "src/infrastructure/database/migrations/20260906170000_users_create_directory.ts",
+        "src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts",
+        "src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts",
+        "src/infrastructure/database/migrations/20260906180000_access_create_capability_catalog.ts",
+        "src/infrastructure/database/migrations/20260906181000_access_create_roles.ts",
+        "src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts",
+        "src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts"
+      ],
+      "registrations": {
+        "src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts": {
+          "owner": "stations",
+          "tables": [
+            "branches",
+            "station_bindings",
+            "station_credentials",
+            "stations"
+          ],
+          "functions": [
+            "stations_advance_admission_revision"
+          ],
+          "triggers": [
+            "stations_advance_binding_admission_revision",
+            "stations_advance_branch_admission_revision",
+            "stations_advance_credential_admission_revision",
+            "stations_advance_station_admission_revision"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts": {
+          "owner": "users",
+          "tables": [
+            "users"
+          ],
+          "functions": [
+            "users_advance_admission_revision"
+          ],
+          "triggers": [
+            "users_advance_admission_revision"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts": {
+          "owner": "access",
+          "tables": [
+            "access_operational_session_station_guards",
+            "access_operational_sessions",
+            "access_pin_credentials",
+            "access_role_assignments",
+            "access_roles"
+          ],
+          "functions": [
+            "access_advance_pin_credential_version",
+            "access_invalidate_operational_sessions_for_context_change",
+            "access_validate_operational_session_admission"
+          ],
+          "triggers": [
+            "access_advance_pin_credential_version",
+            "access_sessions_invalidate_pin_credential",
+            "access_sessions_invalidate_role",
+            "access_sessions_invalidate_role_assignment",
+            "access_sessions_validate_admission"
+          ]
+        }
+      }
+    },
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
         "owner": "database",
@@ -205,6 +519,9 @@
           "AccessPinCredentialCommandTable",
           "AccessPinAttemptStationGuardTable",
           "AccessPinAttemptLimitTable",
+          "AccessOperationalSessionStatus",
+          "AccessOperationalSessionStationGuardTable",
+          "AccessOperationalSessionTable",
           "DatabaseSchema",
           "TenantRow",
           "NewTenant",
@@ -246,6 +563,11 @@
           "AccessPinAttemptLimitRow",
           "NewAccessPinAttemptLimit",
           "AccessPinAttemptLimitUpdate",
+          "AccessOperationalSessionRow",
+          "NewAccessOperationalSession",
+          "AccessOperationalSessionUpdate",
+          "AccessOperationalSessionStationGuardRow",
+          "NewAccessOperationalSessionStationGuard",
           "RepairTable",
           "RepairRow",
           "NewRepair",
@@ -302,6 +624,9 @@
           "src/infrastructure/database/migrations/20260906181000_access_create_roles.ts",
           "src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts",
           "src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts",
+          "src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts",
+          "src/infrastructure/database/migrations/20260907111000_users_add_admission_revision.ts",
+          "src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -310,7 +635,8 @@
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
           "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
           "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
-          "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts"
+          "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
         ],
         "status": "materialized-schema-contract"
       },
@@ -388,13 +714,16 @@
         "consumers": [
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/database-runtime.ts",
+          "src/infrastructure/runtime/application-database-runtime.provider.ts",
+          "src/infrastructure/runtime/index.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
           "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
           "src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts",
           "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
-          "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts"
+          "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
         ],
         "status": "materialized-owner-internal-capability"
       },
@@ -413,8 +742,12 @@
         ],
         "consumers": [
           "src/infrastructure/database/database-connection.ts",
+          "src/infrastructure/database/database-runtime.ts",
           "src/infrastructure/database/database-persistence-capability.ts",
-          "src/infrastructure/database/transaction-runner.ts"
+          "src/infrastructure/database/transaction-runner.ts",
+          "src/infrastructure/runtime/application-database-runtime.provider.ts",
+          "src/infrastructure/runtime/index.ts",
+          "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
         ],
         "status": "materialized-owner-internal-capability"
       },
@@ -457,7 +790,9 @@
           "createDatabaseRuntime",
           "sanitizeDatabaseRuntimeState"
         ],
-        "consumers": ["src/main.ts"],
+        "consumers": [
+          "src/infrastructure/runtime/application-database-runtime.provider.ts"
+        ],
         "status": "materialized-database-runtime"
       }
     },
@@ -503,6 +838,12 @@
         "contract": "AuthenticationUserReaderPort",
         "allowedScopes": ["AuthenticationUserPersistenceScope"],
         "status": "materialized-owner-port"
+      },
+      "src/modules/access/application/ports/operational-session-repository.port.ts": {
+        "owner": "access",
+        "contract": "OperationalSessionRepositoryPort",
+        "allowedScopes": ["OperationalSessionPersistenceScope"],
+        "status": "materialized-owner-port"
       }
     },
     "scopeTypes": {
@@ -515,7 +856,8 @@
       "AccessPrincipalScope": ["tenantId", "branchId", "userId"],
       "PinCredentialTenantScope": ["tenantId"],
       "PinCredentialStationScope": ["tenantId", "branchId", "stationId"],
-      "AuthenticationUserPersistenceScope": ["tenantId"]
+      "AuthenticationUserPersistenceScope": ["tenantId"],
+      "OperationalSessionPersistenceScope": ["tenantId", "branchId", "stationId", "stationCredentialId"]
     },
     "adapters": {
       "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts": {
@@ -558,6 +900,12 @@
         "owner": "users",
         "port": "src/modules/users/application/ports/authentication-user-reader.port.ts",
         "composition": "src/modules/users/users.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts": {
+        "owner": "access",
+        "port": "src/modules/access/application/ports/operational-session-repository.port.ts",
+        "composition": "src/modules/access/access.module.ts",
         "status": "materialized-owner-adapter"
       }
     },
@@ -669,6 +1017,14 @@
       "access_pin_attempt_station_guards": {
         "owner": "access",
         "kind": "table"
+      },
+      "access_operational_session_station_guards": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_operational_sessions": {
+        "owner": "access",
+        "kind": "table"
       }
     },
     "databaseExecutorTypes": {
@@ -710,9 +1066,13 @@
       "capability": "src/infrastructure/database/database-transaction-capability.ts",
       "allowedCapabilityConsumers": [
         "src/infrastructure/database/database-connection.ts",
+        "src/infrastructure/database/database-runtime.ts",
         "src/infrastructure/database/database-persistence-capability.ts",
         "src/infrastructure/database/transaction-runner.ts",
-        "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts"
+        "src/infrastructure/runtime/application-database-runtime.provider.ts",
+        "src/infrastructure/runtime/index.ts",
+        "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts",
+        "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
       ],
       "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
       "forbiddenManualMethods": [
@@ -897,24 +1257,33 @@
     "src/modules/access/application/access-input.ts",
     "src/modules/access/application/pin-input.ts",
     "src/modules/access/application/ports/access-repository.port.ts",
+    "src/modules/access/application/ports/operational-session-repository.port.ts",
     "src/modules/access/application/ports/pin-credential-repository.port.ts",
     "src/modules/access/application/ports/pin-secret-hasher.port.ts",
+    "src/modules/access/application/ports/session-token.port.ts",
     "src/modules/access/application/use-cases/authenticate-pin.use-case.ts",
     "src/modules/access/application/use-cases/assign-role.use-case.ts",
     "src/modules/access/application/use-cases/list-access-matrix.use-case.ts",
     "src/modules/access/application/use-cases/list-applicable-users.use-case.ts",
+    "src/modules/access/application/use-cases/operational-session.use-cases.ts",
     "src/modules/access/application/use-cases/provision-pin-credential.use-case.ts",
     "src/modules/access/application/use-cases/resolve-effective-capabilities.use-case.ts",
     "src/modules/access/application/use-cases/revoke-role-assignment.use-case.ts",
     "src/modules/access/domain/capability.ts",
+    "src/modules/access/domain/operational-session.ts",
     "src/modules/access/domain/pin-credential.ts",
     "src/modules/access/domain/role-assignment.ts",
     "src/modules/access/domain/role.ts",
-    "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
+        "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
+    "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
     "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
     "src/modules/access/infrastructure/security/node-argon2-pin-hasher.ts",
+    "src/modules/access/infrastructure/security/node-session-token.ts",
+    "src/modules/access/presentation/access-session-cookie.ts",
+    "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/stations/index.ts",
     "src/modules/stations/application/branch-time-zone.ts",
+    "src/modules/stations/application/ports/local-station-bootstrap-runtime.port.ts",
     "src/modules/stations/application/ports/branch-repository.port.ts",
     "src/modules/stations/application/contracts/trusted-station-context.ts",
     "src/modules/stations/application/ports/station-credential.port.ts",
@@ -925,6 +1294,7 @@
     "src/modules/stations/infrastructure/http/trusted-station-request-context.resolver.ts",
     "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
     "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
+    "src/modules/stations/presentation/local-station-bootstrap.controller.ts",
     "src/modules/stations/stations.module.ts",
     "src/modules/repairs/index.ts",
     "src/modules/repairs/repairs.module.ts",

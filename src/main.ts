@@ -5,9 +5,13 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 
 import { AppModule } from './app.module.js';
 import { HealthReadiness } from './health/health-readiness.service.js';
-import { createDatabaseRuntime } from './infrastructure/database/database-runtime.js';
-import type { DatabaseRuntime } from './infrastructure/database/database-runtime.js';
 import { loadRequiredServerSecrets } from './infrastructure/config/external-configuration.js';
+import {
+  APPLICATION_DATABASE_CONNECTION,
+} from './infrastructure/runtime/index.js';
+import type {
+  ApplicationDatabaseConnection,
+} from './infrastructure/runtime/index.js';
 import { configurePreviewStaticFiles } from './preview-static.js';
 import { loadStartupConfig } from './startup-config.js';
 
@@ -39,19 +43,28 @@ async function bootstrap(): Promise<void> {
   // The persistence runtime remains the owner of connection parsing. This
   // foundation establishes that its active credential is external and required
   // before startup can proceed, without exposing it to diagnostics or clients.
-  void loadRequiredServerSecrets(process.env, ['SR_DB_PASSWORD']);
+  void loadRequiredServerSecrets(process.env, ['SR_DB_PASSWORD', 'SR_PIN_PEPPER']);
   const config = loadStartupConfig(process.env);
-  const database = createDatabaseRuntime(process.env);
   let application: NestExpressApplication | null = null;
 
   try {
-    await database.initialize();
     application = await NestFactory.create<NestExpressApplication>(AppModule, {
+      abortOnError: false,
       logger: ['error', 'warn'],
     });
+    await configurePreviewStaticFiles(application);
+    // Provider lifecycle hooks initialize the application database runtime.
+    // `listen()` would normally trigger them, but startup readiness must be
+    // proven before opening the listener.
+    await application.init();
+    const database = application.get<ApplicationDatabaseConnection>(
+      APPLICATION_DATABASE_CONNECTION
+    );
     const readiness = application.get(HealthReadiness);
     readiness.attachDependency(database);
-    await configurePreviewStaticFiles(application);
+    // Nest unit tests may compose AppModule without a configured database, but
+    // the executable process must never begin listening in that state.
+    await database.verify();
     await application.listen(config.port, config.host);
     readiness.markReady();
 
@@ -60,7 +73,6 @@ async function bootstrap(): Promise<void> {
       shutdownPromise ??= (async () => {
         readiness.markNotReady();
         await application?.close();
-        await database.close();
       })();
       return shutdownPromise;
     };
@@ -81,7 +93,6 @@ async function bootstrap(): Promise<void> {
     process.stdout.write('{"event":"technical_shell_listening"}\n');
   } catch (error: unknown) {
     await application?.close().catch(() => undefined);
-    await database.close().catch(() => undefined);
     throw error;
   }
 }

@@ -13,7 +13,8 @@ export type ExternalConfigurationName =
   | 'HOST'
   | 'NODE_ENV'
   | 'PORT'
-  | 'SR_DB_ENVIRONMENT';
+  | 'SR_DB_ENVIRONMENT'
+  | 'SR_LOCAL_RUNTIME';
 
 type ConfigurationStatus = 'active' | 'reserved';
 
@@ -63,6 +64,14 @@ export const externalConfigurationCatalog = Object.freeze([
     name: 'SR_DB_ENVIRONMENT',
     classification: 'non-secret' as const,
     consumer: 'database' as const,
+    status: 'active' as const,
+    source: 'process-environment' as const,
+    clientExposure: 'forbidden' as const,
+  }),
+  Object.freeze({
+    name: 'SR_LOCAL_RUNTIME',
+    classification: 'non-secret' as const,
+    consumer: 'stations-bootstrap' as const,
     status: 'active' as const,
     source: 'process-environment' as const,
     clientExposure: 'forbidden' as const,

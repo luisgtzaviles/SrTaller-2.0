@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 
-import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
+import type { InternalDatabasePersistenceConnection } from '../../../../infrastructure/database/database-persistence-capability.js';
 import {
   useDatabasePersistenceExecutor,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
@@ -519,7 +519,7 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
 }
 
 export function createKyselyPinCredentialRepository(
-  connection: DatabaseConnection,
+  connection: InternalDatabasePersistenceConnection,
 ): PinCredentialRepositoryPort {
   return new KyselyPinCredentialRepository((operation) =>
     useDatabasePersistenceExecutor(connection, 'access', operation),

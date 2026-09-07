@@ -5,11 +5,11 @@
 - **Sprint:** SPRINT-02.
 - **Estado:** Active.
 - **Periodo:** TBD.
-- **PBI actual:** NONE.
-- **WIP:** 0/1.
-- **Autoridad:** Identity Master Goal para la secuencia; Part D autoriza el
-  slice actual PBI-025. Cada PBI posterior conserva DoR y Owner Start
-  Authorization propios; no se autoriza deploy o release.
+- **PBI actual:** PBI-034 — Operational Session.
+- **WIP:** 1/1.
+- **Autoridad:** Identity Master Goal para la secuencia y decisión Owner de
+  reanudación; PBI-034 tiene DoR PASS y Owner Start propio. Cada PBI posterior
+  conserva sus gates; no se autoriza deploy o release.
 
 ## Objetivo
 
@@ -41,6 +41,5 @@ PBI antes de cerrar canónicamente el anterior.
 
 ## Próxima revisión
 
-- **Fecha:** al resolver el cierre documental de PBI-025.
-- **Disparador:** Owner merge review y CI exacto de main del closure PR, o
-  una contradicción material anterior.
+- **Fecha:** al completar el candidato PBI-034.
+- **Disparador:** focused Critical-risk review o contradicción material.

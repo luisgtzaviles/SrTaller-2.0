@@ -18,9 +18,10 @@ export function readStationCredentialCookie(
   const found = header
     .split(';')
     .map((part) => part.trim())
-    .find((part) => part.startsWith(`${stationCredentialCookieName}=`));
-  if (!found) return null;
-  const value = found.slice(stationCredentialCookieName.length + 1);
+    .filter((part) => part.startsWith(`${stationCredentialCookieName}=`));
+  if (found.length === 0) return null;
+  if (found.length !== 1) return null;
+  const value = found[0]!.slice(stationCredentialCookieName.length + 1);
   return isOpaqueStationCredential(value) ? value : null;
 }
 

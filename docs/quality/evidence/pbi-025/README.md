@@ -2,9 +2,8 @@
 
 ## Estado
 
-- **Estado:** `Done candidate`; functional scope and deterministic CI
-  remediation integrated; [canonical closure](./CLOSURE_CANDIDATE.md) pending.
-- **PBI:** PBI-025; current PBI NONE; WIP 0/1.
+- **Estado:** `Done`; [canonical closure](./CLOSURE_CANDIDATE.md) integrated.
+- **PBI:** PBI-025; current PBI PBI-034; WIP 1/1.
 - **Risk / size:** Critical / Large.
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
 - **Threat model:** [complete](./THREAT_MODEL.md).
@@ -25,6 +24,9 @@
 - **Owner ratification:** PR #30 integration ratified only for PBI-025 closure;
   the recorded DEC-051/DEC-063 deviation remains, with no general waiver.
 - **Owner Acceptance:** APPROVED conditionally; all material predicates passed.
+- **Closure:** PR #32 merge
+  `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`; exact-main CI
+  `34124746317` GREEN in attempt 1.
 - **Released / deployed:** NO / NO.
 
 ## Candidate scope
@@ -111,12 +113,11 @@ with no open BLOCKER/HIGH/MEDIUM finding. A later independent DoD audit found
 the separate CI determinism blocker recorded above; it does not reopen the
 resolved product findings.
 
-## Closure pending
+## Canonical closure
 
-Only the merge authorization and exact-main CI of the
-[closure candidate](./CLOSURE_CANDIDATE.md) remain. They turn the pre-merge
-`Done candidate` wording into canonical `Done`; they do not authorize
-release or deploy.
+The authorized merge of the [closure candidate](./CLOSURE_CANDIDATE.md) and
+exact-main CI `34124746317` GREEN satisfy the post-merge semantics. PBI-025 is
+canonically `Done`; this does not authorize release or deploy.
 
 ## Boundaries
 

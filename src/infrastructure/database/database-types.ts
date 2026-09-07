@@ -14,6 +14,8 @@ export interface BranchTable {
   readonly branch_id: ImmutableColumn<string>;
   readonly time_zone: MutableColumn<string>;
   readonly active: DefaultedImmutableColumn<boolean>;
+  /** Stations-owned monotonic epoch for Session admission authority. */
+  readonly admission_revision: DefaultedImmutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
 }
 
@@ -24,6 +26,8 @@ export interface StationTable {
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: ImmutableColumn<Date>;
   readonly revoked_at: ImmutableColumn<Date | null>;
+  /** Stations-owned monotonic epoch for lifecycle authority. */
+  readonly admission_revision: DefaultedImmutableColumn<number>;
 }
 
 export interface StationBindingTable {
@@ -32,6 +36,8 @@ export interface StationBindingTable {
   readonly branch_id: ImmutableColumn<string>;
   readonly revoked_at: ImmutableColumn<Date | null>;
   readonly created_at: ImmutableColumn<Date>;
+  /** Stations-owned monotonic epoch for binding authority. */
+  readonly admission_revision: DefaultedImmutableColumn<number>;
 }
 
 export interface StationCredentialTable {
@@ -41,6 +47,8 @@ export interface StationCredentialTable {
   readonly station_id: ImmutableColumn<string>;
   readonly revoked_at: ImmutableColumn<Date | null>;
   readonly created_at: ImmutableColumn<Date>;
+  /** Stations-owned monotonic epoch for exact credential authority. */
+  readonly admission_revision: DefaultedImmutableColumn<number>;
 }
 
 export interface UserTable {
@@ -50,6 +58,8 @@ export interface UserTable {
   readonly operational_identifier: MutableColumn<string | null>;
   readonly status: MutableColumn<'active' | 'inactive' | 'revoked'>;
   readonly version: MutableColumn<number>;
+  /** Users-owned monotonic epoch for authentication lifecycle authority. */
+  readonly admission_revision: DefaultedImmutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
 }
@@ -198,6 +208,45 @@ export interface AccessPinAttemptLimitTable {
   readonly window_started_at: MutableColumn<Date>;
   readonly blocked_until: MutableColumn<Date | null>;
   readonly updated_at: MutableColumn<Date>;
+}
+
+export type AccessOperationalSessionStatus =
+  | 'active'
+  | 'expired'
+  | 'invalidated'
+  | 'logged_out'
+  | 'replaced';
+
+/** Access-owned lock row used to serialize the active Session for a Station. */
+export interface AccessOperationalSessionStationGuardTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface AccessOperationalSessionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly station_credential_id: ImmutableColumn<string>;
+  readonly branch_admission_revision: ImmutableColumn<number>;
+  readonly station_admission_revision: ImmutableColumn<number>;
+  readonly station_binding_admission_revision: ImmutableColumn<number>;
+  readonly station_credential_admission_revision: ImmutableColumn<number>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly user_version: ImmutableColumn<number>;
+  readonly user_admission_revision: ImmutableColumn<number>;
+  readonly credential_version: ImmutableColumn<number>;
+  readonly token_verifier: ImmutableColumn<Uint8Array>;
+  readonly csrf_verifier: ImmutableColumn<Uint8Array>;
+  readonly status: MutableColumn<AccessOperationalSessionStatus>;
+  readonly version: MutableColumn<number>;
+  readonly issued_at: ImmutableColumn<Date>;
+  readonly last_activity_at: MutableColumn<Date>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly ended_at: MutableColumn<Date | null>;
 }
 
 export interface RepairTable {
@@ -366,6 +415,8 @@ export interface DatabaseSchema {
   readonly access_pin_credential_commands: AccessPinCredentialCommandTable;
   readonly access_pin_attempt_station_guards: AccessPinAttemptStationGuardTable;
   readonly access_pin_attempt_limits: AccessPinAttemptLimitTable;
+  readonly access_operational_session_station_guards: AccessOperationalSessionStationGuardTable;
+  readonly access_operational_sessions: AccessOperationalSessionTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
@@ -435,6 +486,14 @@ export type AccessPinAttemptStationGuardRow =
   Selectable<AccessPinAttemptStationGuardTable>;
 export type NewAccessPinAttemptStationGuard =
   Insertable<AccessPinAttemptStationGuardTable>;
+
+export type AccessOperationalSessionRow = Selectable<AccessOperationalSessionTable>;
+export type NewAccessOperationalSession = Insertable<AccessOperationalSessionTable>;
+export type AccessOperationalSessionUpdate = Updateable<AccessOperationalSessionTable>;
+export type AccessOperationalSessionStationGuardRow =
+  Selectable<AccessOperationalSessionStationGuardTable>;
+export type NewAccessOperationalSessionStationGuard =
+  Insertable<AccessOperationalSessionStationGuardTable>;
 
 export type RepairRow = Selectable<RepairTable>;
 export type NewRepair = Insertable<RepairTable>;
