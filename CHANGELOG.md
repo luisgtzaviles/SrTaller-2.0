@@ -12,6 +12,16 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Reconciliado el estado posterior a PR #30: PBI-025 tiene alcance funcional
+  integrado en `main` por merge `328bdf541be88b21a2e7dbea28f4a2a6f32f6986`
+  y CI exacto `34094803024` GREEN, pero permanece `In review`, WIP `1/1`, sin
+  Owner Acceptance ni `Done`, por el incidente Critical de flakiness de CI.
+- Registrado el primer intento rojo de CI candidato `34092781952` como
+  evidencia material y la integración posterior como desviación de
+  DEC-051/DEC-063, no como waiver. PR #31 propone restaurar el gate mediante
+  diagnóstico seguro, `--no-maglev` acotado al proceso Critical, Linux x64 5x
+  y un nuevo CI first-attempt exacto; PBI-034 permanece candidato no iniciado.
+
 - Iniciado PBI-025 PIN Credential Authentication como único PBI actual de
   SPRINT-02, con estimación `Large`, riesgo `Critical` preservado, threat model
   y DoR `PASS` bajo el Identity Master Goal. El slice no incluye Session,

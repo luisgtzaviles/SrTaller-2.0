@@ -40,7 +40,7 @@ conservan TBD.
 | [PBI-022](PBI-022.md) | Materialize DEC-005 modular structure and local enforcement | Done |
 | [PBI-023](PBI-023.md) | Establish tenant-scoped persistence and migration foundation | Closed |
 | [PBI-024](PBI-024.md) | Trusted Station Runtime Context | Done; Released: NO |
-| [PBI-025](PBI-025.md) | PIN Credential Authentication | In progress; SPRINT-02 current; Critical / Large / DoR PASS |
+| [PBI-025](PBI-025.md) | PIN Credential Authentication | In review; functional scope integrated; Critical CI remediation; SPRINT-02 current |
 | [PBI-026](PBI-026.md) | Contextual Authorization | Candidate; not started |
 | [PBI-027](PBI-027.md) | Branch Timezone Minimum | Done; Released: NO |
 | [PBI-028](PBI-028.md) | Minimum Business Audit and Correlation | Candidate; not started |
@@ -57,5 +57,5 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-Focused Critical-risk review del candidate exacto de PBI-025. PBI-034 no se
-inicia antes del cierre canónico de PBI-025.
+Focused review y CI first-attempt exacto de PR #31. PBI-034 no se inicia antes
+del cierre canónico de PBI-025.

@@ -8,6 +8,11 @@ import {
 } from '../scripts/lib/postgresql-ci-evidence.mjs';
 import {
   assertPostgresqlTestSummary,
+  createPostgresqlChildFailureMarker,
+  formatPostgresqlChildFailureDiagnostic,
+  ownerScopedPostgresqlNodeTestArguments,
+  ownerScopedPostgresqlTestFiles,
+  parsePostgresqlChildFailureMarker,
 } from '../scripts/lib/postgresql-test-output.mjs';
 
 const workflow = await readFile(
@@ -76,11 +81,7 @@ test('PostgreSQL runner pins the governed digest and exact suite inventory', () 
 });
 
 test('owner-scoped PostgreSQL runner retains the exact material adapter inventory', () => {
-  const materialAdapterTests = Array.from(
-    ownerScopedRunner.matchAll(/^\s*'(test\/[^']+\.test\.mjs)',?\s*$/gmu),
-    (match) => match[1],
-  );
-  assert.deepEqual(materialAdapterTests, [
+  assert.deepEqual(ownerScopedPostgresqlTestFiles, [
     'test/owner-scoped-persistence-postgresql.test.mjs',
     'test/repair-persistence-postgresql.test.mjs',
     'test/trusted-station-context-postgresql.test.mjs',
@@ -88,6 +89,95 @@ test('owner-scoped PostgreSQL runner retains the exact material adapter inventor
     'test/access-role-postgresql.test.mjs',
     'test/access-pin-postgresql.test.mjs',
   ]);
+  assert.deepEqual(ownerScopedPostgresqlNodeTestArguments, [
+    '--no-maglev',
+    '--test',
+    '--test-concurrency=1',
+    ...ownerScopedPostgresqlTestFiles,
+  ]);
+  assert.match(
+    ownerScopedRunner,
+    /ownerScopedPostgresqlNodeTestArguments/u,
+  );
+});
+
+test('PostgreSQL child diagnostics expose only allowlisted failure identity', () => {
+  const secret = 'synthetic_secret_that_must_not_escape';
+  const marker = createPostgresqlChildFailureMarker({
+    code: 1,
+    cmd: `${process.execPath} --test --password=${secret}`,
+    killed: false,
+    message: `database failure ${secret}`,
+    signal: null,
+    stderr: `password=${secret}`,
+    stdout: [
+      `✖ assertion included ${secret}`,
+      'test at test/access-pin-postgresql.test.mjs:366:1',
+      `Error: ${secret}`,
+    ].join('\n'),
+  });
+  assert.doesNotMatch(marker, new RegExp(secret, 'u'));
+
+  const payload = parsePostgresqlChildFailureMarker(
+    `${marker}\nignored outer stack ${secret}`,
+  );
+  assert.deepEqual(payload, {
+    schemaVersion: 1,
+    operation: 'owner-scoped-adapters-node-test',
+    failedTests: ['test/access-pin-postgresql.test.mjs'],
+    exitCode: 1,
+    signal: null,
+    timeout: false,
+  });
+  const diagnostic = formatPostgresqlChildFailureDiagnostic(payload);
+  assert.equal(
+    diagnostic,
+    'operation=owner-scoped-adapters-node-test; ' +
+      'failedTests=test/access-pin-postgresql.test.mjs; ' +
+      'exitCode=1; signal=none; timeout=no',
+  );
+  assert.doesNotMatch(diagnostic, new RegExp(secret, 'u'));
+});
+
+test('PostgreSQL child diagnostics reject forged or ambiguous markers', () => {
+  const marker = createPostgresqlChildFailureMarker({
+    code: null,
+    killed: true,
+    signal: 'SIGTERM',
+    stdout: '',
+  });
+  assert.deepEqual(parsePostgresqlChildFailureMarker(marker), {
+    schemaVersion: 1,
+    operation: 'owner-scoped-adapters-node-test',
+    failedTests: [],
+    exitCode: null,
+    signal: 'SIGTERM',
+    timeout: true,
+  });
+  assert.equal(
+    parsePostgresqlChildFailureMarker(
+      'SR_POSTGRESQL_CHILD_FAILURE=' +
+        JSON.stringify({
+          schemaVersion: 1,
+          operation: 'owner-scoped-adapters-node-test',
+          failedTests: ['secret.txt'],
+          exitCode: 1,
+          signal: null,
+          timeout: false,
+        }),
+    ),
+    null,
+  );
+  assert.equal(
+    parsePostgresqlChildFailureMarker(`${marker}\n${marker}`),
+    null,
+  );
+  assert.equal(
+    parsePostgresqlChildFailureMarker(
+      marker.replace('SIGTERM', 'SIGSECRET'),
+    ),
+    null,
+  );
 });
 
 test('critical test summary accepts zero skips and fails closed on any skip', () => {

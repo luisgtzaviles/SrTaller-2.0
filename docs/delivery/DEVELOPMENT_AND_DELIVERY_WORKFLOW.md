@@ -24,7 +24,8 @@ NestJS ejecutable, React/Vite, PostgreSQL y el Repair Workstream local con D5,
 D6.1 y D6.2. Trusted Station Context, User Directory y
 Roles/Capabilities/Assignments están integrados y cerrados canónicamente; el
 actor local sigue siendo sintético. Operational Authentication está en
-ejecución mediante PBI-025 bajo WIP=1.
+revisión mediante PBI-025 bajo WIP=1: el alcance funcional PIN está integrado,
+pero un incidente Critical de CI bloquea Owner Acceptance y cierre.
 
 ## Jerarquía de autoridad documental
 
@@ -98,11 +99,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34084930812` on `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` |
+| Authoritative CI at audited HEAD | Green: run `34094803024` on `328bdf541be88b21a2e7dbea28f4a2a6f32f6986` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
 | Sprint | SPRINT-02 `Active`; WIP `1/1` |
-| Current / next PBI | Current: PBI-025 `In progress`, Critical / Large / DoR PASS; next: PBI-034 candidate, not started |
-| Current blocking gate | Candidate exacto de PBI-025 debe completar focused Critical-risk review y CI exacto GREEN |
+| Current / next PBI | Current: PBI-025 `In review`, functional scope integrated, Critical / Large / DoR PASS; next: PBI-034 candidate, not started |
+| Current blocking gate | PR #31 tiene Linux x64 5x y focused technical review PASS; exige final-candidate review y first-attempt exact-HEAD CI GREEN |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -123,7 +124,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory y Roles/Capabilities/Assignments están integrados; PBI-025 PIN está en ejecución local y no hay Session/authorization productivos |
+| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory, Roles/Capabilities/Assignments y el alcance funcional PIN están integrados; PBI-025 sigue `In review` por CI y no hay Session/authorization productivos |
 
 ## Current, planned and required before Production
 

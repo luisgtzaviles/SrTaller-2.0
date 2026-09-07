@@ -9,7 +9,7 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
 [SPRINT-02](sprint-02/SPRINT_GOAL.md) `Active`.
 **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization;
-PBI-025 es el único PBI actual, `In progress`, con WIP `1/1`. PBI-034 es el
+PBI-025 es el único PBI actual, `In review`, con WIP `1/1`. PBI-034 es el
 siguiente candidato y no está iniciado.
 
 ## Reglas propuestas
@@ -51,9 +51,9 @@ Los cinco PBIs están `Done` y ninguno está `Released`.
 ## SPRINT-02
 
 SPRINT-02 ejecuta Operational Authentication & Authorization con WIP=1.
-PBI-025 está `In progress`, conserva riesgo `Critical` y tamaño `Large`, y
-tiene DoR `PASS` bajo el Identity Master Goal. PBI-034, PBI-026 y PBI-028
-permanecen candidatos no iniciados.
+PBI-025 está `In review`: su alcance funcional está integrado, conserva riesgo
+`Critical` y tamaño `Large`, y PR #31 remedia el gate Critical de CI. PBI-034,
+PBI-026 y PBI-028 permanecen candidatos no iniciados.
 
 - [Objetivo](sprint-02/SPRINT_GOAL.md)
 - [Backlog](sprint-02/SPRINT_BACKLOG.md)
@@ -63,4 +63,4 @@ permanecen candidatos no iniciados.
 
 ## Próxima revisión
 
-Ante focused Critical-risk review del candidate exacto de PBI-025.
+Ante focused review y CI first-attempt exacto de la remediación PR #31.
