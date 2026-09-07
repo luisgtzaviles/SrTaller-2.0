@@ -17,8 +17,8 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
 **Orden operativo:** PBI-030, PBI-027, PBI-029 y PBI-024 están `Done` y
-`Released: NO`; Sprint 01 está `Active` con PBI-032 como PBI actual en `In
-review candidate`. PBI-033 está seleccionado y no iniciado.
+`Released: NO`; Sprint 01 está `Active`, PBI-032 está `Done candidate` y no
+existe PBI actual. PBI-033 está seleccionado y no iniciado.
 
 ## Estructura
 
@@ -69,5 +69,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Focused Owner Review de PBI-032. PBI-033 no inicia hasta que PBI-032 complete
-su cierre canónico.
+Owner merge review del cierre documental de PBI-032. PBI-033 no inicia hasta
+que PBI-032 complete su cierre canónico y obtenga sus propios gates.

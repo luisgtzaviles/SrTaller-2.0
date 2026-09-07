@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-032 en review candidate.
-- **PBI actual:** PBI-032 — User Directory and Lifecycle.
-- **WIP:** 1/1.
+- **Estado:** Active — PBI-032 en cierre documental candidato.
+- **PBI actual:** NONE.
+- **WIP:** 0/1 durante el cierre documental.
 - **Siguiente candidato:** PBI-033 — seleccionado, no iniciado.
 
 ## Gate externo de activación
@@ -20,7 +20,7 @@
 | [PBI-027](../../backlog/pbis/PBI-027.md) | Done | Cierre canónico integrado por PR #20; `Released: NO`. |
 | [PBI-029](../../backlog/pbis/PBI-029.md) | Done | Merge funcional `36d93736`; CI main funcional `33974100385` GREEN; riesgo `CRITICAL` aceptado y Owner Acceptance APPROVED; cierre documental merge `41914c787` y CI post-cierre `33988752597` GREEN; `Released: NO`. |
 | [PBI-024](../../backlog/pbis/PBI-024.md) | Done | Cierre canónico integrado; `Released: NO`. |
-| [PBI-032](../../backlog/pbis/PBI-032.md) | In review candidate | DoR PASS, High Risk/Size Large y Owner Start Authorization aprobados; espera review, merge y CI exacto de main. |
+| [PBI-032](../../backlog/pbis/PBI-032.md) | Done candidate | Focused review PASS; merge funcional `66aebdbb`; CI `main` `34072709330` GREEN; Owner Acceptance condicional satisfecha; `Released: NO`. |
 
 ## Candidatos ordenados
 
@@ -32,7 +32,7 @@
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| PBI-032 | Focused review, merge funcional autorizado, CI exacto de `main`, Owner Acceptance y cierre documental autorizado con CI exacto post-cierre | No declarar `Done` ni iniciar PBI-033 antes de completar esos gates |
+| PBI-032 | Merge autorizado del cierre documental y CI exacto post-cierre de `main` | No declarar `Done` efectivo ni iniciar PBI-033 antes de completar esos gates |
 
 ## Reglas de cambio
 
@@ -44,4 +44,4 @@
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Focused Owner Review de PBI-032.
+- **Disparador:** Owner merge review del cierre documental de PBI-032.

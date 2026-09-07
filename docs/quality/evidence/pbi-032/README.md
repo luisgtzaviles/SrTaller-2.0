@@ -23,11 +23,18 @@
 - DoR PASS, Size Large and High Risk were explicitly Owner-authorized.
 - Owner Start Authorization and first-user bootstrap decision are recorded in
   the governed delivery history.
-- Draft PR: [#26 — User Directory and Lifecycle](https://github.com/luisgtzaviles/SrTaller-2.0/pull/26).
-- Candidate validation requires `pnpm run verify`, PostgreSQL 18.4 material
-  tests, focused architecture/contract coverage and authoritative CI GREEN on
-  the exact final PR HEAD. The final SHA and run remain pending current
-  remediation and must not be inferred from an earlier HEAD.
+- Functional PR: [#26 — User Directory and Lifecycle](https://github.com/luisgtzaviles/SrTaller-2.0/pull/26).
+- Reviewed candidate: `326a11802a4be32970d4e0634a61841b6bcb9b86`;
+  authoritative candidate CI [34072027504](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34072027504)
+  passed run-1, run-2 and comparison.
+- Focused high-risk review: PASS; open BLOCKER/HIGH/MEDIUM/LOW findings: 0.
+- Functional merge: `66aebdbb45f368755107db315772654bee5399a3`;
+  authoritative `main` CI [34072709330](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34072709330)
+  passed run-1, run-2 and comparison.
+- Conditional Owner Acceptance: APPROVED; its exact-candidate, exact-merge,
+  scope, evidence and GREEN `main` CI predicates were satisfied.
+- Canonical status: `Done candidate`; `Released: NO`. See the
+  [closure candidate](./CLOSURE_CANDIDATE.md).
 
 ## Local material verification
 
@@ -39,8 +46,8 @@
   lifecycle CAS/concurrency/idempotency, all approved transitions and terminal
   revocation.
 - Focused application, architecture, contract, typecheck and build checks:
-  PASS. Full `pnpm run verify` and exact-HEAD authoritative CI are final
-  candidate gates and remain to be recorded after the current commit.
+  PASS. Full `pnpm run verify` and exact-HEAD authoritative candidate and
+  `main` CI are GREEN.
 - The local bootstrap authority guard is behaviorally verified for valid,
   missing, incorrect and non-local inputs before persistence can be acquired;
   the command retains a static ordering assertion for that boundary.

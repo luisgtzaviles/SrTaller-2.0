@@ -10,10 +10,11 @@
 
 - **Objetivo:** Identity & Context Foundation.
 - **Resultado:** PBI-027, PBI-029 y PBI-024 están `Done`; `Released: NO`.
-  PBI-032 está `In review candidate`; PBI-033 permanece seleccionado, no
-  iniciado.
-- **Evidencia:** [cierre canónico PBI-029](../../quality/evidence/pbi-029/CLOSURE_CANDIDATE.md)
-  y [cierre candidato PBI-024](../../quality/evidence/pbi-024/CLOSURE_CANDIDATE.md).
+  PBI-032 está `Done candidate`, con merge funcional y CI de `main` GREEN;
+  PBI-033 permanece seleccionado, no iniciado.
+- **Evidencia:** [cierre canónico PBI-029](../../quality/evidence/pbi-029/CLOSURE_CANDIDATE.md),
+  [cierre candidato PBI-024](../../quality/evidence/pbi-024/CLOSURE_CANDIDATE.md)
+  y [cierre candidato PBI-032](../../quality/evidence/pbi-032/CLOSURE_CANDIDATE.md).
 
 ## Aceptación
 
@@ -23,4 +24,5 @@
 
 ## Próxima revisión
 
-- **Disparador:** Focused Owner Review de PBI-032 o cierre del Sprint.
+- **Disparador:** Owner merge review del cierre documental de PBI-032 o cierre
+  del Sprint.
