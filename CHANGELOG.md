@@ -12,6 +12,16 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Iniciado PBI-033 Roles, Assignments and Capability Catalog bajo DoR PASS,
+  riesgo High, tamaño Large y autorización del Identity Master Goal. El
+  catálogo se limita a `users.read`, `access_matrix.read`, `repairs.read` y
+  `repairs.add_note`; el candidate conserva WIP `1/1`, sin PIN, Session,
+  enforcement PBI-026, merge, release ni deploy.
+
+- Reconciliado PBI-032 como `Done` efectivo: cierre PR #27 merge
+  `db6637ee6902b9b0e4a40ba39d7f203cb6889352` y CI post-cierre
+  `34074457695` GREEN completaron la semántica post-merge. `Released: NO`.
+
 - Preparado el cierre canónico candidato de PBI-032: candidate funcional
   `326a11802a4be32970d4e0634a61841b6bcb9b86`, CI candidato `34072027504`
   GREEN, focused high-risk review PASS, merge funcional
@@ -84,6 +94,11 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Cierre de DEC-002 y DEC-062 por el Responsable de Producto: R0 queda definido como fundación ejecutable multi-tenant, con inclusiones, exclusiones, escenarios y autoridad de aceptación verificables; implementación y aceptación permanecen pendientes.
 
 ### Implementación
+
+- En curso el candidate PBI-033: catálogo mínimo de capabilities, roles
+  tenant-scoped, assignments tenant-wide/branch-restricted, read models,
+  commands server-only, migraciones aditivas y fixtures sintéticos. No expone
+  administración HTTP/UI ni concede autorización contextual final.
 
 - Materializado el candidato PBI-032 User Directory and Lifecycle: identidad
   tenant-scoped, bootstrap server-only de primer User, lecturas list/get,

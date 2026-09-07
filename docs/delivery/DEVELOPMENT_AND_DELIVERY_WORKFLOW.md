@@ -96,11 +96,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `33821753091` on `117ada7f70494b2cb35ed7adf78c3529dd271391` |
+| Authoritative CI at audited HEAD | Green: run `34074457695` on `db6637ee6902b9b0e4a40ba39d7f203cb6889352` |
 | Program / phase | MVP Operating Roadmap / Identity & Context Foundation |
-| Sprint | SPRINT-01 `Planned — pending PBI-027 readiness/Owner authorization`; no active Sprint |
-| Current / next PBI | Current: none; next candidate: PBI-027, DoR/estimation pending |
-| Current blocking gate | Complete PBI-027 DoR/estimation and obtain Owner authorization |
+| Sprint | SPRINT-01 `Active`; PBI-033 ocupa WIP `1/1` |
+| Current / next PBI | Current: PBI-033 `In progress`; next: none mientras el WIP esté ocupado; PBI-025 sólo permanece ordenado |
+| Current blocking gate | Completar candidate, revisión High y CI exacto de PBI-033 antes de integración/cierre |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -121,7 +121,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Repair endpoints materialized for the local synthetic workflow; productive identity/context are not materialized |
+| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context y User Directory están integrados, mientras roles/capabilities siguen candidate local y no hay PIN/Session/authorization productivos |
 
 ## Current, planned and required before Production
 

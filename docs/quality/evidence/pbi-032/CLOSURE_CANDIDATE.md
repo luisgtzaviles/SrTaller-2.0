@@ -6,6 +6,12 @@
 materiales de DoD para que el PR documental de avance materialice el cierre
 efectivo en `main`. No autoriza release, deploy ni el inicio de PBI-033.
 
+El candidate fue integrado mediante PR #27 como
+`db6637ee6902b9b0e4a40ba39d7f203cb6889352`; el run autoritativo de `main`
+`34074457695` pasó run-1, run-2 y comparison. Conforme a la semántica
+post-merge, esos hechos convierten este wording preventivo en `Done` efectivo
+sin requerir un PR recursivo. `Released: NO`.
+
 ## Trazabilidad
 
 | Campo | Evidencia |
@@ -20,6 +26,9 @@ efectivo en `main`. No autoriza release, deploy ni el inicio de PBI-033.
 | Focused high-risk review | PASS; findings abiertos BLOCKER/HIGH/MEDIUM/LOW: 0 |
 | Owner risk/start authorization | HIGH — authorized; first-user bootstrap authority approved |
 | Owner Acceptance del resultado | APPROVED condicionalmente; todos sus predicados materiales se cumplieron |
+| PR de cierre | [#27 — Close PBI-032 and advance roadmap](https://github.com/luisgtzaviles/SrTaller-2.0/pull/27) |
+| Merge de cierre | `db6637ee6902b9b0e4a40ba39d7f203cb6889352` |
+| CI post-cierre | [Run 34074457695](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34074457695) — SUCCESS |
 | Released | NO |
 
 ## DoD
@@ -30,8 +39,8 @@ efectivo en `main`. No autoriza release, deploy ni el inicio de PBI-033.
 - CI autoritativo sobre el SHA integrado exacto: PASS.
 - Evidencia, riesgos y documentación funcional: PASS.
 - Owner Acceptance condicional: PASS.
-- Cierre documental: pendiente de merge autorizado y CI autoritativo GREEN
-  sobre el SHA exacto de ese merge.
+- Cierre documental: PASS; merge autorizado y CI autoritativo GREEN sobre el
+  SHA exacto de ese merge.
 
 ## Límite de autoridad
 
@@ -39,5 +48,5 @@ El slice integra User tenant-scoped, bootstrap server-only del primer User,
 lecturas list/get, lifecycle optimista, idempotencia durable, concurrencia y
 aislamiento. No integra Roles, assignments, capabilities, PIN, Operational
 Session, contextual authorization, superficie HTTP/UI de Users, release ni
-deploy. PBI-033 permanece seleccionado y no iniciado; requiere sus propios
-DoR, estimación, riesgo y autorización Owner.
+deploy. PBI-033 se inició después de este cierre bajo DoR, riesgo, estimación y
+autorización propios; no cambia retrospectivamente el alcance de PBI-032.

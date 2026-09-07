@@ -4,9 +4,9 @@
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
 - **Baseline auditada:** `main` en
-  `66aebdbb45f368755107db315772654bee5399a3`; la rama documental de cierre no
-  se convierte en baseline hasta merge autorizado y CI de `main`.
-- **CI autoritativo:** run `34072709330`, `SUCCESS`; VC-024 run-1, run-2 y
+  `db6637ee6902b9b0e4a40ba39d7f203cb6889352`; PBI-033 se ejecuta en una rama
+  temporal y no forma parte de la baseline hasta merge autorizado.
+- **CI autoritativo:** run `34074457695`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -18,24 +18,24 @@ local integrado. D5 Technician Assignment, D6.1 Start Diagnosis y D6.2 Internal
 Physical Location pertenecen a `main` y tienen CI verde.
 
 Repairs no está completo ni listo para operación productiva. Trusted Station
-Runtime Context está cerrado canónicamente y PBI-032 User Directory and
-Lifecycle está integrado funcionalmente en `main`. PBI-032 permanece como
-`Done candidate` hasta integrar su cierre documental y obtener CI autoritativo
-GREEN sobre ese merge; Roles, PIN, Operational Session y contextual
-authorization todavía no existen. Por ello el roadmap aprobado detiene nuevas
-features profundas de Repairs y prioriza Identity & Context Foundation.
+Runtime Context y PBI-032 User Directory and Lifecycle están cerrados
+canónicamente. PBI-033 Roles, Assignments and Capability Catalog es el único
+PBI actual y materializa un candidate local server-only; roles/capabilities no
+pertenecen todavía a `main`, y PIN, Operational Session y contextual
+authorization aún no existen. El roadmap continúa deteniendo nuevas features
+profundas de Repairs para priorizar Identity & Context Foundation.
 
 ## Git y CI
 
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `66aebdbb45f368755107db315772654bee5399a3` |
+| HEAD auditado | `db6637ee6902b9b0e4a40ba39d7f203cb6889352` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `34072709330` SUCCESS |
-| Última integración | PR #26 — User Directory and Lifecycle |
+| CI | `34074457695` SUCCESS |
+| Última integración | PR #27 — cierre canónico de PBI-032 |
 
 La rama documental que modifique esta fotografía no se convierte en baseline
 hasta integrarse a `main` con autorización y CI propios.
@@ -81,9 +81,10 @@ hasta integrarse a `main` con autorización y CI propios.
 
 ## Limitaciones vigentes
 
-- El directorio User tenant-scoped está integrado; `access` todavía no
-  contiene credentials, roles o sessions y no existe superficie HTTP/UI de
-  Users.
+- El directorio User tenant-scoped está integrado. Roles, capabilities y
+  assignments permanecen como candidate local de PBI-033; `access` todavía no
+  contiene credentials o sessions y no existe superficie HTTP/UI productiva
+  de Users/Roles.
 - Trusted Station Runtime Context está `Done` canónico; no incorpora enrollment
   productivo ni administración completa de bindings.
 - `LocalRepairContext` sólo habilita contexto fijo en desarrollo.
@@ -110,10 +111,10 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 | Elemento | Estado |
 |---|---|
 | Sprint activo | Sprint 01 |
-| Sprint 01 | Active — PBI-032 en cierre documental candidato |
-| PBI actual | NONE |
-| Siguiente candidato | PBI-033 — sólo candidato, no iniciado |
-| WIP permitido | Uno; actual `0/1` durante el cierre documental |
+| Sprint 01 | Active — PBI-033 `In progress` |
+| PBI actual | PBI-033 — Roles, Assignments and Capability Catalog |
+| Siguiente candidato | NONE durante la ejecución; PBI-025 permanece ordenado, no seleccionado |
+| WIP permitido | Uno; actual `1/1` |
 
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
@@ -135,8 +136,15 @@ PBI-032 integró el candidato funcional
 `66aebdbb45f368755107db315772654bee5399a3`; CI de candidato `34072027504` y
 CI de `main` `34072709330` quedaron GREEN en run-1, run-2 y comparison. La
 focused review fue PASS y la Owner Acceptance condicional quedó satisfecha.
-Permanece `Done candidate`, `Released: NO`, hasta integrar el cierre
-documental y obtener su CI exacto de `main`.
+PR #27 integró su cierre como
+`db6637ee6902b9b0e4a40ba39d7f203cb6889352`; CI post-cierre `34074457695`
+quedó GREEN. Conforme a la semántica post-merge, PBI-032 está `Done` canónico
+y `Released: NO`.
+
+PBI-033 pasó DoR con riesgo High, tamaño Large y Owner Start Authorization
+cubierta por el Master Goal. Es el único PBI actual (`1/1`) y permanece
+`In progress`; su código, migraciones y evidencia son candidate local, no
+baseline integrada ni autorización de producto.
 
 ## Identity Foundation reconciliada
 
@@ -162,6 +170,6 @@ documental y obtener su CI exacto de `main`.
 
 ## Próxima acción
 
-Owner merge review del cierre documental candidato de PBI-032. PBI-033
-permanece seleccionado, no iniciado, y requiere sus propios DoR, estimación,
-riesgo y autorización Owner después del cierre canónico de PBI-032.
+Completar PBI-033 hasta Draft PR, CI autoritativo y focused high-risk review
+bajo el Master Goal. No seleccionar ni iniciar PBI-025, no integrar sin gates
+y no desplegar.

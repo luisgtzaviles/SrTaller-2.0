@@ -2,15 +2,15 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-032 `Done candidate`; WIP 0/1 durante el cierre
-  documental.
+- **Estado:** Active — PBI-033 `In progress`; WIP 1/1.
 - **Sprint:** SPRINT-01.
 - **Periodo:** TBD.
 - **Estado del sprint:** Active.
 - **Gate de activación:** PASS — PBI-027 y PBI-029 están `Done`; PBI-029
   cuenta con merge documental integrado y CI post-cierre de `main` GREEN.
-- **PBI actual:** NONE.
-- **Siguiente candidato:** PBI-033 — seleccionado, no iniciado.
+- **PBI actual:** PBI-033 — Roles, Assignments and Capability Catalog.
+- **Siguiente candidato:** NONE durante la ejecución; PBI-025 permanece
+  ordenado, no seleccionado.
 
 ## Objetivo
 
@@ -41,14 +41,14 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 - [x] PBI-027 `Done`; `Released: NO`.
 - [x] PBI-029 `Done`; `Released: NO`.
 - [x] PBI-024 `Done`; `Released: NO`.
-- [ ] PBI-032 `Done` — candidate completo; pendiente merge/CI del cierre
-  documental.
+- [x] PBI-032 `Done`; cierre PR #27 y CI post-cierre `34074457695` GREEN;
+  `Released: NO`.
 - [ ] PBI-033 `Done`.
-- [ ] No existe más de un PBI en ejecución/cierre.
+- [x] No existe más de un PBI en ejecución/cierre; PBI-033 ocupa WIP `1/1`.
 - [ ] El siguiente PBI de autenticación queda seleccionado, no iniciado.
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner merge review del cierre documental de PBI-032 o cierre
-  del Sprint.
+- **Disparador:** focused high-risk review de PBI-033 bajo el Master Goal o
+  cierre del Sprint después de su cierre canónico.

@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `66aebdbb45f368755107db315772654bee5399a3`; CI `34072709330` GREEN.
+  `db6637ee6902b9b0e4a40ba39d7f203cb6889352`; CI `34074457695` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -16,8 +16,8 @@ flowchart TD
     S1 --> P27[PBI-027 Branch Timezone<br/>Done]
     P27 --> P29[PBI-029 Secrets / Config<br/>Done]
     P29 --> P24[PBI-024 Trusted Station Runtime Context<br/>Done]
-    P24 --> P32[PBI-032 User Directory<br/>Done candidate]
-    P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog]
+    P24 --> P32[PBI-032 User Directory<br/>Done]
+    P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>In progress]
     P33 --> P25[PBI-025 PIN Credential]
     P24 --> P25
     P29 --> P25
@@ -64,15 +64,18 @@ flowchart TD
 
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
-- Sprint 01: `Active`; WIP=`0/1` durante el cierre documental de PBI-032.
+- Sprint 01: `Active`; PBI-033 es el único PBI actual y WIP=`1/1`.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
   CI post-cierre PASS; `Released: NO`.
 - PBI-024: `Done` canónico; `Released: NO`.
-- PBI-032: `Done candidate`; focused review, merge funcional, CI exacto de
-  `main` y Owner Acceptance condicional PASS. No existe PBI actual; PBI-033
-  permanece candidato ordenado y no iniciado.
+- PBI-032: `Done`; focused review, merge funcional, CI exacto de `main`, Owner
+  Acceptance, cierre PR #27 y CI post-cierre `34074457695` PASS;
+  `Released: NO`.
+- PBI-033: `In progress`; DoR PASS, riesgo High y tamaño Large. PBI-025
+  permanece una dependencia posterior ordenada, no un siguiente candidato
+  seleccionado durante el WIP actual.
 
 ## Stage 2
 
@@ -82,5 +85,5 @@ diferidos.
 
 ## Próxima revisión
 
-Ante Owner merge review del cierre documental de PBI-032 o si cambia una
+Ante focused high-risk review de PBI-033 bajo el Master Goal o si cambia una
 dependencia aprobada.
