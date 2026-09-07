@@ -9,9 +9,9 @@
 | Authoritative run | [34092781952](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34092781952) |
 | Owner | Quality + Operations; Engineering owns the technical remediation |
 | Classification | CI flakiness affecting a Critical authentication/persistence gate |
-| Status | Open until the remediation HEAD satisfies the restoration criteria below |
+| Status | Remediated; original red and process deviation preserved |
 | Quarantine | None; the critical suite remains blocking |
-| Remediation | Draft PR #31; code commit `e1c1a9ddcbcb57b43986697076078800fcb3b509` |
+| Remediation | PR #31 merge `a51ddcca13cfc43fccb77378643b6874dfb772da`; CI `34100056690` attempt 1 GREEN |
 
 This record preserves the first red result under the flakiness rules of
 [DEC-051](../../../decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md)
@@ -63,10 +63,11 @@ deterministically red; it still does not erase or explain attempt 1 of run
 PR #30 was merged after the green diagnostic rerun even though DEC-051 and
 DEC-063 prohibit turning a flaky Critical gate green through reexecution.
 This is recorded as a **process/governance deviation**, not a waiver or a
-change to those decisions. The merge and later green `main` run establish the
-functional baseline only: they do not grant PBI-025 Owner Acceptance, `Done`,
-release or deploy. PR #31 must restore the reproducible Critical gate before
-canonical closure can proceed.
+change to those decisions. The Owner later ratified that integration
+explicitly and exclusively to permit PBI-025 closure. The ratification
+preserves the first red, creates no general waiver or precedent, and changes
+neither DEC-051 nor DEC-063. PR #31 restored the reproducible Critical gate;
+Owner Acceptance remained conditional on all material closure predicates.
 
 An isolated stress reproduction used a read-only archive of exact candidate
 `9ce69334692e919276dbe1100d232e695b6ae115` on Linux x86_64, Node.js
@@ -144,8 +145,14 @@ The remediation is intentionally narrow:
 
 This removes one plausible Node 24.18 JIT failure surface, tightens the serial
 timing variance observed in stress, and repairs the diagnostic blind spot. It
-does not claim that Maglev caused the original event or that the incident is
-closed before the restoration evidence exists.
+does not claim that Maglev caused the original event.
+
+## Restoration result
+
+PR #31 satisfied the restoration criteria: focused contracts and review
+passed, Linux x64 completed five material executions, no
+BLOCKER/HIGH/MEDIUM/LOW finding remained, and exact-main CI `34100056690`
+completed run-1, run-2 and comparison as `SUCCESS` on attempt 1.
 
 ## Restoration criteria
 
@@ -169,7 +176,6 @@ diagnostics.
 
 ## Delivery boundary
 
-This incident record does not change the PBI lifecycle state, authorize merge,
-infer Owner Acceptance, reduce the `Critical` risk, declare `Done` or authorize
+This incident record does not reduce the `Critical` risk or authorize
 release/deploy. It adds no quarantine or bypass. The PBI-025 evidence index
-remains authoritative for candidate, review and closure status.
+and closure candidate remain authoritative for lifecycle status.

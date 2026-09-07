@@ -9,7 +9,7 @@
 - **Gate de activación:** PASS — PBI-027 y PBI-029 están `Done`; PBI-029
   cuenta con merge documental integrado y CI post-cierre de `main` GREEN.
 - **PBI actual:** NONE.
-- **Siguiente Sprint:** SPRINT-02 — Active; PBI-025 In review.
+- **Siguiente Sprint:** SPRINT-02 — Active; PBI-025 Done candidate.
 
 ## Objetivo
 
