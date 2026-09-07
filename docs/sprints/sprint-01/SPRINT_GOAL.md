@@ -2,13 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-032 `In review candidate`; WIP 1/1.
+- **Estado:** Active — PBI-032 `Done candidate`; WIP 0/1 durante el cierre
+  documental.
 - **Sprint:** SPRINT-01.
 - **Periodo:** TBD.
 - **Estado del sprint:** Active.
 - **Gate de activación:** PASS — PBI-027 y PBI-029 están `Done`; PBI-029
   cuenta con merge documental integrado y CI post-cierre de `main` GREEN.
-- **PBI actual:** PBI-032 — User Directory and Lifecycle.
+- **PBI actual:** NONE.
 - **Siguiente candidato:** PBI-033 — seleccionado, no iniciado.
 
 ## Objetivo
@@ -40,7 +41,8 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 - [x] PBI-027 `Done`; `Released: NO`.
 - [x] PBI-029 `Done`; `Released: NO`.
 - [x] PBI-024 `Done`; `Released: NO`.
-- [ ] PBI-032 `Done`.
+- [ ] PBI-032 `Done` — candidate completo; pendiente merge/CI del cierre
+  documental.
 - [ ] PBI-033 `Done`.
 - [ ] No existe más de un PBI en ejecución/cierre.
 - [ ] El siguiente PBI de autenticación queda seleccionado, no iniciado.
@@ -48,4 +50,5 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Focused Owner Review de PBI-032 o cierre del Sprint.
+- **Disparador:** Owner merge review del cierre documental de PBI-032 o cierre
+  del Sprint.

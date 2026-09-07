@@ -46,8 +46,8 @@ las demás permanecen TBD.
 | 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Done; risk acceptance, merge, CI main, cierre documental y Owner Acceptance PASS | Crítica | Cerrado; `Released: NO` |
 | 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
-| 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | In review candidate | Crítica | Sprint 01 current PBI |
-| 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | Draft | Crítica | Candidate Sprint 01 |
+| 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Done candidate; cierre documental pendiente | Crítica | Sprint 01 closure; `Released: NO` |
+| 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | Draft / selected; not started | Crítica | Candidate Sprint 01 |
 | 34 | [PBI-034](pbis/PBI-034.md) Operational Session | Identity / Security | EPIC-003 | Blocked por dependencias | Crítica | Candidate Sprint 01 |
 | 35 | [PBI-035](pbis/PBI-035.md) Reinforced Authorization | Authorization / Security | EPIC-003 | Draft / Deferred | Crítica | Unassigned |
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
@@ -75,11 +75,16 @@ las demás permanecen TBD.
 - PBI-030 tiene implementación, revisión, Owner Acceptance y disposición de
   riesgo aprobadas; el cierre se evidencia en merge `117ada7f70494b2cb35ed7adf78c3529dd271391`
   y CI `33821753091`. `Released` permanece `NO`.
+- PBI-032 tiene focused review PASS, candidato funcional
+  `326a11802a4be32970d4e0634a61841b6bcb9b86`, CI candidato `34072027504`,
+  merge funcional `66aebdbb45f368755107db315772654bee5399a3`, CI de `main`
+  `34072709330` GREEN y Owner Acceptance condicional satisfecha. Está `Done
+  candidate`; `Released: NO` hasta completar el cierre documental canónico.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-PBI-024 está `Done` canónico por PR #25 y CI post-cierre GREEN. PBI-032 es el
-PBI actual en `In review candidate`; PBI-033 es el siguiente candidato, no
-iniciado.
+PBI-024 está `Done` canónico por PR #25 y CI post-cierre GREEN. PBI-032 está
+`Done candidate`; no existe PBI actual. PBI-033 es el siguiente candidato, no
+iniciado, pendiente de cierre canónico de PBI-032 y de sus gates propios.

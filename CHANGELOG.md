@@ -12,6 +12,14 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Preparado el cierre canónico candidato de PBI-032: candidate funcional
+  `326a11802a4be32970d4e0634a61841b6bcb9b86`, CI candidato `34072027504`
+  GREEN, focused high-risk review PASS, merge funcional
+  `66aebdbb45f368755107db315772654bee5399a3`, CI de `main` `34072709330`
+  GREEN y Owner Acceptance condicional satisfecha. PBI-032 queda `Done
+  candidate`, `Released: NO`; no existe PBI actual y PBI-033 permanece
+  seleccionado, no iniciado.
+
 - Reconciliado PBI-024 como `Done` canónico mediante PR #25, merge
   `2b0ab85bb19b795c71332b5f2ef36ee26a75cdfe` y CI `34044488745` GREEN;
   `Released` y deploy permanecen NO. PBI-032 pasa a candidato en revisión y

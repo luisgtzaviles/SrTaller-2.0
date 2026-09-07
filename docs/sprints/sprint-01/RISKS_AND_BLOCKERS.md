@@ -2,8 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** Active — PBI-032 `In review candidate`; WIP 1/1.
-- **Última revisión:** 2026-09-06.
+- **Estado:** Active — PBI-032 `Done candidate`; WIP 0/1 durante el cierre
+  documental.
+- **Última revisión:** 2026-09-07.
 
 ## Riesgos
 
@@ -18,10 +19,11 @@
 
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
-| PBI-032 | Focused review, merge funcional autorizado, CI exacto de `main`, Owner Acceptance y cierre documental con CI post-cierre | No declarar `Done` ni iniciar PBI-033 antes de completar el cierre | Open |
+| PBI-032 | Merge autorizado del cierre documental y CI exacto post-cierre de `main` | No declarar `Done` efectivo ni iniciar PBI-033 antes de completar el cierre | Open |
 | Migración timezone | Backfill histórico equivocado o cambio de instante | Fallback IANA documentado, validación y pruebas PostgreSQL; roll-forward en compartido | Mitigated |
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Focused Owner Review de PBI-032 o un hallazgo de CI.
+- **Disparador:** Owner merge review del cierre documental de PBI-032 o un
+  hallazgo de CI.
