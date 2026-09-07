@@ -24,9 +24,8 @@
 - **Dependencias:** EPIC-000 y ADRs técnicos aceptados.
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
-- **Estado:** PBI-023 `Closed`; Identity & Context Foundation en cierre
-  candidato y Sprint 01 `Active — closure candidate`, sin PBI actual y WIP
-  `0/1`.
+- **Estado:** PBI-023 `Closed`; Identity & Context Foundation cerrada en
+  Sprint 01. SPRINT-02 está `Active` con PBI-025 `In progress` y WIP `1/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
@@ -34,8 +33,8 @@
   Context con recuperación histórica selectiva. PBI-025–PBI-029 y
   PBI-031–PBI-036 separan PIN, sesión, autorización, auditoría y observabilidad.
   [PBI-030](pbis/PBI-030.md) tiene cierre `Done`; PBI-027/PBI-029/PBI-024/
-  PBI-032 están `Done`, PBI-033 está `Done candidate` y PBI-025 queda
-  seleccionado, no iniciado.
+  PBI-032/PBI-033 están `Done`; PBI-025 está `In progress` en SPRINT-02 y
+  PBI-034 es candidato no iniciado.
 
 ## EPIC-002 — Tenant and Platform Administration
 
@@ -56,9 +55,9 @@
 - **Dependencias:** EPIC-000, Tenant Management y políticas de seguridad.
 - **Riesgos:** escalamiento de privilegios, reglas inmanejables y recuperación de cuenta débil.
 - **Exclusiones:** algoritmos criptográficos finales antes de threat modeling.
-- **Estado:** User Directory y Roles/Capabilities/Assignments integrados;
-  PBI-033 está `Done candidate`. Operational Authentication no está iniciada y
-  PBI-025 sólo queda seleccionado bajo gates propios.
+- **Estado:** User Directory y Roles/Capabilities/Assignments `Done`; G2
+  `PASS`. Operational Authentication está en ejecución mediante PBI-025 bajo
+  sus gates Critical y WIP=1; PBI-034 no está iniciado.
 - **Puede descomponerse cuando:** actores, matriz de acciones sensibles y lifecycle de acceso estén aprobados.
 
 ## EPIC-004 — Branch and Device Management

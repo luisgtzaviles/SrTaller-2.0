@@ -21,14 +21,14 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 - **Producto funcional:** Worklist, Repair Detail, notas operativas, asignación
   de técnico, inicio de diagnóstico y movimiento interno están integrados en
   contexto local sintético; no constituyen todavía un flujo productivo E2E.
-- **CI:** la baseline auditada `065b859e3db64f82f033ce75ce5fb33df9b3ade1`
-  pasó el run autoritativo `34082394514` con run-1, run-2 y comparison verdes.
+- **CI:** la baseline auditada `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1`
+  pasó el run autoritativo `34084930812` con run-1, run-2 y comparison verdes.
 - **PBI-030:** `Done`; implementación integrada, Owner Acceptance
   aprobada y riesgo AT/cross-browser residual LOW aceptado. `Released: NO`.
-- **Roadmap:** Sprint 01 está `Active — closure candidate`; PBI-033 Roles,
-  Assignments and Capability Catalog está `Done candidate`, sin PBI actual y
-  con WIP `0/1`. PBI-025 queda seleccionado, no iniciado, con riesgo `Critical`,
-  estimación `TBD` y DoR pendiente.
+- **Roadmap:** Sprint 01 está `Closed`; PBI-033 Roles, Assignments and
+  Capability Catalog está `Done` y G2 `PASS`. SPRINT-02 está `Active` con
+  PBI-025 `In progress`, riesgo `Critical`, estimación `Large`, DoR `PASS` y
+  WIP `1/1`; PBI-034 es candidato no iniciado.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).

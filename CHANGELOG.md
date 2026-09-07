@@ -12,6 +12,16 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Iniciado PBI-025 PIN Credential Authentication como único PBI actual de
+  SPRINT-02, con estimación `Large`, riesgo `Critical` preservado, threat model
+  y DoR `PASS` bajo el Identity Master Goal. El slice no incluye Session,
+  login, autorización, release ni deploy.
+
+- Reconciliado PBI-033 como `Done` y G2 como `PASS`: PR #29 merge
+  `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` y CI exacto post-cierre
+  `34084930812` GREEN completaron la semántica post-merge. Sprint 01 está
+  `Closed`; ninguno de sus PBIs está `Released`.
+
 - Preparado el cierre canónico candidato de PBI-033: candidate funcional
   `bb5a1efde19171703d0b3ce84567ff14538b32b7`, CI candidato `34081637692`
   GREEN, focused high-risk review PASS sin hallazgos BLOCKER/HIGH/MEDIUM,
