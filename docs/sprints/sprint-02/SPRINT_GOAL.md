@@ -5,7 +5,7 @@
 - **Sprint:** SPRINT-02.
 - **Estado:** Active.
 - **Periodo:** TBD.
-- **PBI actual:** PBI-025 — PIN Credential Authentication; In progress.
+- **PBI actual:** PBI-025 — PIN Credential Authentication; In review.
 - **WIP:** 1/1.
 - **Autoridad:** Identity Master Goal para la secuencia; Part D autoriza el
   slice actual PBI-025. Cada PBI posterior conserva DoR y Owner Start
@@ -41,6 +41,7 @@ PBI antes de cerrar canónicamente el anterior.
 
 ## Próxima revisión
 
-- **Fecha:** al alcanzar Owner Review de PBI-025.
-- **Disparador:** candidate exacto, focused Critical-risk review y CI
-  autoritativo de PBI-025, o una contradicción material anterior.
+- **Fecha:** al completar la remediación Critical de CI de PBI-025.
+- **Disparador:** focused review del candidate final y CI autoritativo
+  first-attempt GREEN del HEAD exacto de PR #31; Linux x64 5x ya está PASS, o
+  una contradicción material anterior.

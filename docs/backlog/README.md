@@ -18,9 +18,10 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
 **Orden operativo:** PBI-030, PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033
 están `Done` y `Released: NO`; Sprint 01 está `Closed`. SPRINT-02 está
-`Active`, PBI-025 es el único PBI actual, `In progress`, con riesgo `Critical`,
-estimación `Large`, DoR `PASS` y WIP `1/1`. PBI-034 es el siguiente candidato,
-no iniciado.
+`Active`, PBI-025 es el único PBI actual, `In review`, con alcance funcional
+integrado, riesgo `Critical`, estimación `Large`, DoR `PASS` y WIP `1/1`. PR
+#31 remedia el gate Critical de CI. PBI-034 es el siguiente candidato, no
+iniciado.
 
 ## Estructura
 
@@ -71,5 +72,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Focused Critical-risk review del candidate exacto de PBI-025. PBI-034 no se
-inicia antes de su cierre canónico.
+Focused review y CI first-attempt exacto de la remediación PR #31. PBI-034 no
+se inicia antes del cierre canónico de PBI-025.

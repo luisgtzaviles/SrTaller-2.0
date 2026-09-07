@@ -10,6 +10,9 @@
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
 - **Threat model:** [complete](./THREAT_MODEL.md).
 - **CI determinism:** [flakiness incident and scoped remediation](./CI_FLAKINESS_INCIDENT.md).
+- **Remediation:** Draft PR #31; code commit
+  `e1c1a9ddcbcb57b43986697076078800fcb3b509`, incident record commit
+  `8b1079b19bb8ff9c8d0863e5e8b3c2ad21d62839`.
 - **Functional candidate:** `9ce69334692e919276dbe1100d232e695b6ae115`;
   focused Critical-risk review PASS with no open BLOCKER/HIGH/MEDIUM finding.
 - **Functional integration:** PR #30, merge
@@ -74,7 +77,7 @@
 | Migration up/down/reapply and constraints | PostgreSQL 18.4 | PASS, including negative CHECK/FK writes for credential and abuse-control tables |
 | No Session/login/authorization surface | contract and production exclusion | PASS local |
 | DEC-005/049 ownership and exact inventories | architecture + mutations | PASS local |
-| Reproducibility | owner-scoped PostgreSQL run-1/run-2/comparison | BLOCKED for closure by the recorded CI flakiness incident; scoped remediation and new first-attempt exact-HEAD CI pending |
+| Reproducibility | owner-scoped PostgreSQL run-1/run-2/comparison | BLOCKED for closure by the recorded CI flakiness incident; PR #31 has Linux x64 5x and focused boundary review PASS, but new first-attempt exact-HEAD CI is pending |
 
 The material PostgreSQL runner completed `6/6` adapter suites in each of two
 independent runs, cleanup passed, comparison matched and the material evidence
@@ -106,8 +109,8 @@ resolved product findings.
 
 ## Evidence pending
 
-- CI-determinism remediation SHA and first-attempt authoritative run;
-- focused review of the remediation boundary;
+- final PR #31 HEAD and first-attempt authoritative run;
+- merge/main-CI disposition of the reviewed remediation;
 - Owner Acceptance and canonical closure evidence after the blocker closes.
 
 The final evidence update must bind every `PASS` above to the exact candidate

@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1`; CI `34084930812` GREEN.
+  `328bdf541be88b21a2e7dbea28f4a2a6f32f6986`; CI `34094803024` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -19,7 +19,7 @@ flowchart TD
     P24 --> P32[PBI-032 User Directory<br/>Done]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>Done]
     P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=1/1]
-    S2 --> P25[PBI-025 PIN Credential<br/>In progress]
+    S2 --> P25[PBI-025 PIN Credential<br/>In review / CI remediation]
     P24 --> P25
     P29 --> P25
     P25 --> P34[PBI-034 Operational Session]
@@ -79,9 +79,10 @@ flowchart TD
 - PBI-033: `Done`; cierre PR #29 merge
   `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` y CI post-cierre
   `34084930812` GREEN; `Released: NO`. G2 está `PASS`.
-- PBI-025: `In progress`; riesgo `Critical` conocido sin downgrade,
-  estimación `Large`, threat model completo y DoR `PASS`; ejecución autorizada
-  dentro del Identity Master Goal.
+- PBI-025: `In review`; alcance funcional integrado por PR #30, riesgo
+  `Critical` conocido sin downgrade, estimación `Large`, threat model completo
+  y DoR `PASS`. El incidente de flakiness del gate Critical y PR #31 bloquean
+  Owner Acceptance y cierre canónico.
 - PBI-034: candidato siguiente, no iniciado; exige PBI-025 `Done`.
 
 ## Stage 2
@@ -92,5 +93,5 @@ diferidos.
 
 ## Próxima revisión
 
-Ante focused Critical-risk review del candidate exacto de PBI-025 o si cambia
-una dependencia aprobada.
+Ante focused review y CI first-attempt exacto de PR #31, o si cambia una
+dependencia aprobada.

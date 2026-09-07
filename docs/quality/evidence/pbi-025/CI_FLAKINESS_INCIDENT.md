@@ -11,6 +11,7 @@
 | Classification | CI flakiness affecting a Critical authentication/persistence gate |
 | Status | Open until the remediation HEAD satisfies the restoration criteria below |
 | Quarantine | None; the critical suite remains blocking |
+| Remediation | Draft PR #31; code commit `e1c1a9ddcbcb57b43986697076078800fcb3b509` |
 
 This record preserves the first red result under the flakiness rules of
 [DEC-051](../../../decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md)
@@ -59,11 +60,19 @@ successful reproduction and confirms that the merged product tree is not
 deterministically red; it still does not erase or explain attempt 1 of run
 `34092781952`.
 
+PR #30 was merged after the green diagnostic rerun even though DEC-051 and
+DEC-063 prohibit turning a flaky Critical gate green through reexecution.
+This is recorded as a **process/governance deviation**, not a waiver or a
+change to those decisions. The merge and later green `main` run establish the
+functional baseline only: they do not grant PBI-025 Owner Acceptance, `Done`,
+release or deploy. PR #31 must restore the reproducible Critical gate before
+canonical closure can proceed.
+
 An isolated stress reproduction used a read-only archive of exact candidate
 `9ce69334692e919276dbe1100d232e695b6ae115` on Linux x86_64, Node.js
-`24.18.0`, PostgreSQL `18.4` at the governed digest, UTC and UTF8. The same six
-test files ran serially and under four-container contention with explicit CPU
-and memory limits:
+`24.18.0`, PostgreSQL `18.4` at the governed digest, UTC and UTF8. It invoked
+the same six-file nested command directly, serially and under four-container
+contention with explicit CPU and memory limits:
 
 - baseline: `13/13` batches passed;
 - `--no-maglev`: `13/13` batches passed, including five consecutive serial
@@ -76,6 +85,19 @@ the sanitized counts and timings were recorded. The failure was not reproduced
 even under stronger contention, and `--no-maglev` did not change correctness.
 This evidence rejects a deterministic PBI-025 assertion or schema defect; it
 does not manufacture a cause for the original opaque runner event.
+
+A second isolated Linux x86_64 verification used the actual committed wrapper
+from exact evidence HEAD `8b1079b19bb8ff9c8d0863e5e8b3c2ad21d62839` with
+`--runs 5`. All five material runs passed `6/6`; cleanup passed and the
+material comparison matched. The committed argument inventory supplied
+`--no-maglev` to every nested process, and the focused diagnostic contract
+passed `7/7`. Because Docker Desktop exposes host-created PostgreSQL
+containers outside the Linux runner namespace, this verification used a
+temporary local TCP proxy solely to reach each published loopback port. It was
+not a native GitHub Ubuntu VM, and the successful path did not execute the
+runtime failure-catch branch; that branch is covered by the focused contract
+tests. No product code or committed command was altered, and all temporary
+resources were removed.
 
 ## Root-cause classification
 
