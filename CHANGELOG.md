@@ -6,11 +6,24 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Desarrollo local
 
+- Extendido el candidato local con bootstrap de Station restringido a
+  loopback/same-origin, Session Access-owned, login/logout/cambio de User y
+  gate del Application Shell. Full verify, PostgreSQL 18.4 material, lifecycle
+  HTTP y validación visual responsive Light/Dark pasan localmente; SHA/CI
+  exactos del candidato permanecen pendientes. No cambia Preview ni Dokploy.
+
 - Materializado el contrato de desarrollo local con PostgreSQL 18.4 aislado,
   roles `migration`/`application`, migración real, seed sintético determinista,
   reset fail-closed y proxy Vite local. No cambia Preview ni Dokploy.
 
 ### Documentación
+
+- Preparado PBI-034 como candidato de integración `In review`, PBI actual de
+  SPRINT-02 con WIP `1/1`. Se reconciliaron su alcance stateful, el hecho de que
+  `SR_SESSION_SIGNING_KEY` permanece sin consumidor y la materialización
+  DEC-005 Option A policy v4. Verificaciones locales pasan; SHA final, focused
+  Critical-risk review, PR y CI exactos permanecen pendientes. PBI-034 no está
+  `Done`, G3 sigue `Pending` y PBI-026 no ha iniciado.
 
 - Iniciado PBI-034 Operational Session como único PBI actual de SPRINT-02,
   con tamaño `Large`, riesgo `Critical` preservado, threat model, DoR `PASS`,
@@ -139,6 +152,13 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Implementación
 
+- Materializado localmente el candidato PBI-034: Session stateful con una
+  activa por Station, bearer/CSRF aleatorios con sólo verificadores
+  persistidos, start/resolve/touch/logout/switch, invalidación de lifecycle,
+  HTTP same-origin/no-store, PostgreSQL 18.4, gate de login y composición
+  dirigida DEC-005 Option A policy v4. `SR_SESSION_SIGNING_KEY` no tiene
+  consumidor; contextual authorization, release y deploy quedan fuera.
+
 - Integrado funcionalmente el candidate PBI-033: catálogo mínimo de
   capabilities, roles tenant-scoped, assignments
   tenant-wide/branch-restricted, read models, commands server-only, migraciones
@@ -219,9 +239,10 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 ### Estado conocido no resuelto
 
 - El Repair Workstream local está integrado, pero sigue usando contexto y actor
-  sintéticos. Trusted Station Context, Users y Roles/Capabilities/Assignments
-  están integrados server-side; aún no existen PIN, Operational Session ni
-  contextual authorization productivos.
+  sintéticos. Trusted Station Context, Users, Roles/Capabilities/Assignments y
+  PIN están integrados server-side. Operational Session existe sólo en el
+  candidato PBI-034 no integrado; contextual authorization sigue sin
+  materializar y PBI-026 no ha iniciado.
 - La PR draft histórica de PBI-024 no se integra completa. Sólo puede aportar
   piezas recuperadas selectivamente y revalidadas bajo el nuevo alcance.
 

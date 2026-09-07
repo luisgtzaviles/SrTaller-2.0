@@ -1,5 +1,31 @@
 # Reconciliación de superficies HTTP con DEC-005
 
+## Vigencia de policy 4 — PBI-034
+
+La materialización de PBI-034 amplía de forma cerrada el registry HTTP, sin
+convertir la reconciliación histórica de Repairs en una autorización general.
+`architecture/dec-005-policy.json` registra ahora exactamente estas superficies
+modulares:
+
+- `AccessSessionController`, compuesto por `AccessModule` desde
+  `./presentation/access-session.controller.js`;
+- `RepairsController`, compuesto por `RepairsModule` desde
+  `./presentation/repairs.controller.js`;
+- `LocalStationBootstrapController`, compuesto por `StationsModule` desde
+  `./presentation/local-station-bootstrap.controller.js`.
+
+La última superficie es exclusivamente un bootstrap local/de prueba autorizado
+por PBI-034; su presencia en el registry no crea enrollment productivo. Health
+conserva su contrato técnico independiente. Para cada controller modular, el
+checker sigue exigiendo owner, archivo, clase, import y composición exactos. Un
+controller adicional, una composición implícita o un registro incompleto falla
+cerrado.
+
+El apartado histórico «Lo que no cambia» describe el alcance de la
+reconciliación original. Su frase sobre una única superficie queda superseded
+únicamente por las entradas exactas anteriores; no existe una autorización
+abierta para nuevos endpoints o controllers.
+
 ## Estado
 
 - Resultado arquitectónico: `CONTRACT EVOLUTION` con una guarda estructural obsoleta.

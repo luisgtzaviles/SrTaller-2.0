@@ -51,8 +51,9 @@ Los cinco PBIs están `Done` y ninguno está `Released`.
 
 SPRINT-02 ejecuta Operational Authentication & Authorization con WIP=1.
 PBI-025 está `Done`: cierre PR #32 y CI exacto de main GREEN. PBI-034 está
-`In progress`, con threat model/DoR PASS, riesgo `Critical`, tamaño `Large`;
-PBI-026 y PBI-028 permanecen candidatos no iniciados.
+`In review` como candidato no integrado ni `Done`, con threat model/DoR PASS,
+riesgo `Critical`, tamaño `Large`; G3 permanece `Pending` y PBI-026/PBI-028
+continúan como candidatos no iniciados.
 
 - [Objetivo](sprint-02/SPRINT_GOAL.md)
 - [Backlog](sprint-02/SPRINT_BACKLOG.md)

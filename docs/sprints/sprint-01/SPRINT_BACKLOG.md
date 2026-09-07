@@ -5,7 +5,8 @@
 - **Estado:** Closed; PBI-033 `Done`.
 - **PBI actual:** NONE.
 - **WIP:** 0/1 al cierre.
-- **Handoff:** SPRINT-02 activo; PBI-025 Done y PBI-034 In progress.
+- **Handoff:** SPRINT-02 activo; PBI-025 Done y PBI-034 In review como
+  candidato no integrado ni Done.
 
 ## Gate externo de activación
 

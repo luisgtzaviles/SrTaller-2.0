@@ -7,8 +7,8 @@ conservan su historia; PBI-024–PBI-029 fueron acotados conforme a Identity &
 Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
 tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release. PBI-033 también está
-`Done`; PBI-025 también está `Done`. PBI-034 es el PBI actual de SPRINT-02 con
-WIP `1/1`.
+`Done`; PBI-025 también está `Done`. PBI-034 es el PBI actual de SPRINT-02,
+está `In review` como candidato de integración y conserva WIP `1/1`.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033 `Large` y PBI-025
@@ -53,7 +53,7 @@ su clasificación explícita.
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
 | 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Done; Released: NO | Crítica | Sprint 01 completed |
 | 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | Done; Released: NO | Crítica | Sprint 01 completed; High / Large |
-| 34 | [PBI-034](pbis/PBI-034.md) Operational Session | Identity / Security | EPIC-003 | In progress | Crítica | SPRINT-02 current; Critical / Large; WIP 1/1 |
+| 34 | [PBI-034](pbis/PBI-034.md) Operational Session | Identity / Security | EPIC-003 | In review; not Done | Crítica | SPRINT-02 current; Critical / Large; WIP 1/1 |
 | 35 | [PBI-035](pbis/PBI-035.md) Reinforced Authorization | Authorization / Security | EPIC-003 | Draft / Deferred | Crítica | Unassigned |
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
 
@@ -101,12 +101,15 @@ su clasificación explícita.
   estimación `Large`, DoR `PASS` y Owner Acceptance APPROVED. PR #32 cerró el
   PBI mediante merge `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e` y CI
   exacto `34124746317` GREEN; `Released: NO`.
-- PBI-034 es el PBI actual `In progress`, con threat model/DoR PASS, riesgo
-  `Critical`, tamaño `Large` y Owner Start Authorization vigente.
+- PBI-034 es el PBI actual `In review`, con threat model/DoR PASS, riesgo
+  `Critical`, tamaño `Large` y Owner Start Authorization vigente. El candidato
+  local materializa Operational Session y DEC-005 Option A policy v4, pero no
+  está integrado ni `Done`; G3 permanece `Pending`.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-Focused Critical-risk review del candidato PBI-034. PBI-026 no inicia antes de
-su cierre canónico.
+Fijar el SHA y la evidencia final, ejecutar focused Critical-risk review y CI
+exacto del candidato PBI-034. PBI-026 permanece no iniciado y no puede comenzar
+antes del cierre canónico de PBI-034 y sus gates propios.

@@ -25,7 +25,8 @@
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** PBI-023 `Closed`; Identity & Context Foundation cerrada en
-  Sprint 01. SPRINT-02 está `Active` con PBI-034 `In progress` y WIP `1/1`.
+  Sprint 01. SPRINT-02 está `Active` con PBI-034 `In review` como candidato no
+  integrado ni `Done` y WIP `1/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
@@ -33,8 +34,8 @@
   Context con recuperación histórica selectiva. PBI-025–PBI-029 y
   PBI-031–PBI-036 separan PIN, sesión, autorización, auditoría y observabilidad.
   [PBI-030](pbis/PBI-030.md) tiene cierre `Done`; PBI-027/PBI-029/PBI-024/
-  PBI-032/PBI-033/PBI-025 están `Done`; PBI-034 está `In progress` con riesgo
-  Critical preservado y tamaño Large.
+  PBI-032/PBI-033/PBI-025 están `Done`; PBI-034 está `In review` como candidato
+  no integrado ni `Done`, con riesgo Critical preservado y tamaño Large.
 
 ## EPIC-002 — Tenant and Platform Administration
 

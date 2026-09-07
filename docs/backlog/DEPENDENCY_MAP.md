@@ -22,8 +22,8 @@ flowchart TD
     S2 --> P25[PBI-025 PIN Credential<br/>Done]
     P24 --> P25
     P29 --> P25
-    P25 --> P34[PBI-034 Operational Session<br/>In progress]
-    P34 --> P26[PBI-026 Contextual Authorization]
+    P25 --> P34[PBI-034 Operational Session<br/>In review candidate]
+    P34 --> P26[PBI-026 Contextual Authorization<br/>Not started]
     P33 --> P26
     P26 --> P28[PBI-028 Minimum Business Audit]
     P27 --> P28
@@ -67,7 +67,8 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; PBI-034 es actual y WIP=`1/1`.
+- Sprint 02: `Active`; PBI-034 es actual, está `In review` como candidato de
+  integración y WIP=`1/1`.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -83,8 +84,10 @@ flowchart TD
   riesgo `Critical` sin downgrade, DoR `PASS`, ratificación Owner acotada
   para PR #30 y Owner Acceptance APPROVED; cierre PR #32 merge
   `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`, CI `34124746317` GREEN.
-- PBI-034: `In progress`; threat model/DoR PASS, Critical/Large y Owner Start
-  vigente. PBI-026 permanece no iniciado.
+- PBI-034: `In review`; threat model/DoR PASS, Critical/Large y Owner Start
+  vigente. El candidato local materializa Session y DEC-005 Option A policy v4,
+  pero su SHA/evidencia finales, focused review e integración permanecen
+  pendientes. G3 está `Pending`; PBI-026 permanece no iniciado.
 
 ## Stage 2
 
@@ -94,5 +97,5 @@ diferidos.
 
 ## Próxima revisión
 
-Ante focused Critical-risk review de PBI-034, o si cambia una dependencia
-aprobada.
+Al fijar el candidato PBI-034 para focused Critical-risk review, o si cambia
+una dependencia aprobada.

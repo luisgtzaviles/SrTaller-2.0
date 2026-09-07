@@ -6,14 +6,15 @@
 - **Datos:** únicamente sintéticos y desechables; no se conecta a Preview.
 - **Toolchain:** Node.js `24.18.0`, pnpm `11.15.1`, Docker Desktop y
   PostgreSQL `18.4`.
-- **Próxima revisión:** al cambiar el contrato `SR_DB_*`, el esquema inicial o
-  los puertos locales.
+- **Próxima revisión:** al cambiar el contrato `SR_DB_*`, Operational Session,
+  el esquema local o los puertos locales.
 
 Este documento materializa el ciclo local sin crear una segunda arquitectura
 de aplicación. La base se reconstruye desde PostgreSQL vacío, las migraciones
-integradas y un seed mínimo. Docker CLI se usa directamente para conservar una
-topología pequeña y portable; no se añade Docker Compose ni una dependencia de
-multiplexación.
+presentes en el checkout y un seed mínimo; la migración PBI-034 sigue siendo
+parte de un candidato no integrado. Docker CLI se usa directamente para
+conservar una topología pequeña y portable; no se añade Docker Compose ni una
+dependencia de multiplexación.
 
 ## Límites y seguridad
 
@@ -21,11 +22,13 @@ multiplexación.
   distintas.
 - No se copian bases, dumps ni secretos de Preview.
 - No se ejecuta ninguna migración, seed o reset contra Dokploy.
-- No se crean tablas de clientes, pagos, Session ni autorización contextual.
-  Las migraciones locales materializan Trusted Station, Users, catálogo de
-  roles/capabilities, credencial PIN server-only, Reparaciones, intake,
-  timeline, evidencia, asignación técnica y los historiales acotados D6.1 y
-  D6.2; no materializan writes de Custody ni el resto de D6.
+- No se crean tablas de clientes, pagos ni autorización contextual. El
+  candidato PBI-034 agrega exclusivamente las tablas Access-owned de
+  Operational Session. Las migraciones locales también materializan Trusted
+  Station, Users, catálogo de roles/capabilities, credencial PIN server-only,
+  Reparaciones, intake, timeline, evidencia, asignación técnica y los
+  historiales acotados D6.1 y D6.2; no materializan writes de Custody ni el
+  resto de D6.
 - `DATABASE_URL` y las variables de fallback `PG*` continúan prohibidas.
 - El archivo `.env.local` es ignorado, se crea con permisos `0600` y contiene
   credenciales generadas para esta máquina. No se imprimen.
@@ -98,10 +101,12 @@ PBI-029 añade la clasificación server-only de secretos y configuración
 técnica. `SR_DB_PASSWORD` se exige al iniciar el backend, pero los scripts
 locales lo derivan sólo en memoria desde `.env.local`; ningún comando lo
 imprime. `SR_PIN_PEPPER` tiene un consumidor server-only en Access/PBI-025 y
-se genera localmente sin imprimirse; el secreto de firma de sesión permanece
-reservado y sin consumidor hasta PBI-034. Los secretos bootstrap de Station y
-User tienen consumidores exclusivamente locales y no constituyen enrollment o
-provisioning productivo. Nunca se usa `VITE_*` para un secreto.
+se genera localmente sin imprimirse. `SR_SESSION_SIGNING_KEY` permanece
+reservado y sin consumidor también en el candidato PBI-034: la Session es
+stateful, usa bearer/CSRF aleatorios y conserva sólo verificadores SHA-256. Los
+secretos bootstrap de Station y User tienen consumidores exclusivamente
+locales y no constituyen enrollment o provisioning productivo. Nunca se usa
+`VITE_*` para un secreto.
 
 El primer User se provisiona sólo después de crear y migrar la base local. La
 autoridad se presenta desde el archivo local ignorado sin imprimir su valor:
@@ -136,8 +141,10 @@ los permisos mínimos sobre las tablas creadas. No se ejecuta en bootstrap HTTP.
 
 La baseline crea `tenants` y `branches`. Trusted Station añade Stations,
 bindings y credenciales técnicas; Identity añade Users, bootstrap/lifecycle,
-catálogo Access, asignaciones y credenciales PIN protegidas. La cadena local
-de Reparaciones añade
+catálogo Access, asignaciones y credenciales PIN protegidas. PBI-034 agrega
+`access_operational_session_station_guards` y `access_operational_sessions`,
+con una Session activa por Station, verificadores y estados de cierre
+explícitos. La cadena local de Reparaciones añade
 `repairs` para Worklist, `repair_intakes` para D1,
 `repair_timeline_entries` para D2/D3 y `repair_attachments` para D4, más la
 restricción de idempotencia de notas operativas, las tablas D5 de técnicos y
@@ -145,8 +152,8 @@ asignación, `repair_workflow_transitions` para D6.1, y
 `repair_locations`/`repair_location_movements` para D6.2. D6.1 conserva un
 historial append-only y sólo admite `pending → diagnosing`; D6.2 conserva un
 historial/versionado independiente y sólo admite `Área de pendientes → Taller`.
-No se inventan tablas de clientes, pagos, Session ni otros módulos
-funcionales.
+No se inventan tablas de clientes, pagos, autorización contextual ni otros
+módulos funcionales.
 
 ## Seed sintético V1
 
@@ -164,7 +171,8 @@ evidencia para D1, D2 y D4, catálogo/asignaciones D5, transiciones D6.1 y
 colocaciones/movimientos D6.2 deterministas. Una reparación conserva ubicación
 no registrada para probar la proyección honesta. Los datos de cliente son
 snapshots dentro de `repairs`; no existe una tabla de clientes ni se agregan
-importes o pagos.
+importes o pagos. El seed no crea Sessions activas: se inician mediante el
+login local con contexto de Station verificado y PIN sintético.
 
 ## Reset y parada
 
@@ -185,6 +193,16 @@ El backend local arranca con `SR_DB_ROLE=application` y expone:
 
 - `GET http://127.0.0.1:3000/livez` — 200 mientras el proceso está vivo;
 - `GET http://127.0.0.1:3000/readyz` — 200 con DB, journal y schema listos;
+- `POST http://127.0.0.1:3000/api/stations/local-bootstrap` — instala la cookie
+  de Station sintética sólo en runtime `local`, loopback y same-origin; fuera de
+  ese contrato falla cerrado;
+- `GET http://127.0.0.1:3000/api/access/session` — resuelve Station server-side,
+  lista Users elegibles y devuelve el snapshot de Session con `no-store`;
+- `POST http://127.0.0.1:3000/api/access/session` — inicia o cambia User con PIN
+  nuevo, JSON, same-origin y coincidencia cookie/header CSRF; un fallo de switch
+  conserva la Session vigente;
+- `DELETE http://127.0.0.1:3000/api/access/session` — termina la Session con el
+  mismo contrato same-origin/JSON/CSRF y no revoca el binding de Station;
 - `GET http://127.0.0.1:3000/api/repairs` — Worklist V1 read-only con búsqueda,
   periodos relativos evaluados contra la fecha actual del backend, filtros
   avanzados y paginación server-side; `%` y `_` se buscan literalmente;
@@ -211,7 +229,9 @@ El backend local arranca con `SR_DB_ROLE=application` y expone:
 Vite conserva HMR y sirve el frontend en
 `http://127.0.0.1:4173`. Sólo el servidor Vite en modo `local` añade proxy
 para `/api`, `/livez` y `/readyz` hacia el backend local. El build de Preview y
-el runtime OCI no cambian.
+el runtime OCI no cambian. El candidato PBI-034 bloquea el Application Shell
+hasta resolver una Station y una Session válidas; presenta login, cambio de
+User y logout sin guardar PIN o bearer en `localStorage`/`sessionStorage`.
 
 Comando Vite independiente:
 
@@ -246,4 +266,6 @@ container inexistente/vacío
 
 Las suites PostgreSQL autoritativas de CI siguen siendo la evidencia Linux;
 esta ruta local aporta feedback rápido y reproducible en macOS, no reemplaza
-CI ni autoriza merge/deploy.
+CI ni autoriza merge/deploy. Los resultados concretos de PBI-034 permanecen
+pendientes de vincular al SHA final en su
+[expediente de evidencia](../quality/evidence/pbi-034/README.md).

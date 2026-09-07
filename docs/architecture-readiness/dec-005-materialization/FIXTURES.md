@@ -16,11 +16,44 @@ Los casos se declaran en `test/architecture-fixtures.mjs` y se escriben en un
 directorio temporal único por prueba. El código de producto no se muta. Cada
 caso corre dos veces y compara exit code, stdout y stderr.
 
+## Composición dirigida — policy v4
+
+La enmienda Option A añade un árbol positivo que materializa exclusivamente
+`access->stations` y `access->users` y veintidós fixtures negativos de
+composición y fronteras. La
+matriz comprueba registro previo de la arista, imports nombrados estáticos sin
+alias, metadata `@Module` literal y única, tokens/interfaces desde `index.ts`,
+inyección del consumidor, binding/export del productor y ausencia de aristas
+inversas o ciclos. Las formas dinámicas, namespace y `forwardRef` fallan
+cerrado; D5-R025 continúa reportándose además cuando corresponde.
+
+El control se suma a los fixtures existentes de deep import, infrastructure
+privada, repository, `ModuleRef` y `@Global`; Option A no neutraliza esas
+reglas ni convierte el grafo lógico en permiso de composición runtime.
+
 ## Matriz de fixtures
 
 | Caso | Tipo | Regla esperada | Exit esperado |
 | --- | --- | --- | --- |
 | Grafo permitido por índices públicos | Positivo | Ninguna | `0` |
+| Composición dirigida registrada Access→Stations/Users | Positivo | Ninguna | `0` |
+| Arista de módulo presente sólo en el grafo | Negativo | D5-R024 | `1` |
+| Clase de módulo importada con alias | Negativo | D5-R024 | `1` |
+| Clase de módulo importada por namespace | Negativo | D5-R024 | `1` |
+| Clase de módulo cargada dinámicamente | Negativo | D5-R024 | `1` |
+| Composición dirigida mediante `forwardRef` | Negativo | D5-R024 y D5-R025 | `1` |
+| Metadata `imports` ausente o duplicada | Negativo | D5-R024 | `1` |
+| Token público ausente o con alias | Negativo | D5-R024 | `1` |
+| Token público inyectado dos veces | Negativo | D5-R024 | `1` |
+| Binding de productor ausente | Negativo | D5-R024 | `1` |
+| Export de productor ausente o duplicado | Negativo | D5-R024 | `1` |
+| Contrato público de productor ausente | Negativo | D5-R024 | `1` |
+| Arista inversa que introduce ciclo | Negativo | D5-R007 y D5-R024 | `1` |
+| `ModuleRef` dentro del consumidor dirigido | Negativo | D5-R026 | `1` |
+| `@Global` dentro del consumidor dirigido | Negativo | D5-R027 | `1` |
+| Acceso del consumidor a infrastructure privada | Negativo | D5-R014 | `1` |
+| Acceso del consumidor a repository privado | Negativo | D5-R014 | `1` |
+| Contrato público acoplado a NestJS | Negativo | D5-R016 | `1` |
 | Export framework-free directo | Positivo | Ninguna | `0` |
 | Directorio vacío fuera de roots gobernados | Positivo | Ninguna | `0` |
 | Símbolos Nest-like desde otro paquete | Positivo | Ninguna | `0` |
@@ -63,7 +96,7 @@ caso corre dos veces y compara exit code, stdout y stderr.
 | Contenido en `shared` | Negativo | D5-R019 | `1` |
 | Dominio importa aplicación | Negativo | D5-R008 | `1` |
 | Aplicación importa infraestructura | Negativo | D5-R009 | `1` |
-| Módulo Nest importado fuera de AppModule | Negativo | D5-R024 | `1` |
+| Módulo Nest importado sin registro de composición | Negativo | D5-R024 | `1` |
 | Comportamiento funcional | Negativo | D5-R035 | `1` |
 | Import relativo sin extensión NodeNext | Negativo | D5-R031 | `1` |
 | Port fuera de aplicación | Negativo | D5-R012 | `1` |
@@ -127,6 +160,11 @@ violación, exige exit `1`, retira la mutación y exige exit `0`.
 | --- | --- | --- | --- |
 | Superficie/frontera | Deep import | D5-R005 | PASS |
 | Grafo | Ciclo intermodular | D5-R007 | PASS |
+| Composición dirigida | Alias de clase de módulo | D5-R024 | PASS |
+| Composición dirigida | Arista graph-only sin registro | D5-R024 | PASS |
+| Composición dirigida | Token de inyección retirado | D5-R024 | PASS |
+| Composición dirigida | Export público del productor retirado | D5-R024 | PASS |
+| Composición dirigida | Arista inversa/ciclo | D5-R007 y D5-R024 | PASS |
 | Framework | NestJS en dominio | D5-R010 | PASS |
 | Composición | `forwardRef` | D5-R025 | PASS |
 | Composición | Alias de `forwardRef` | D5-R025 | PASS |
@@ -174,7 +212,7 @@ source ejecutable.
 ## Extensión PBI-023
 
 `test/architecture-persistence-fixtures.mjs` agrega 62 árboles sintéticos:
-once positivos y 51 negativos. Cubren D5-R037–D5-R053, imports directos,
+diez positivos y 52 negativos. Cubren D5-R037–D5-R053, imports directos,
 default, aliases, namespace, type-only, `import =`, `require`, `import()`,
 reexports, barrels, qualified names, type aliases, shadowing, homónimos,
 paquetes ajenos, comentarios/strings, scope tenant/branch, migración central,
@@ -190,18 +228,19 @@ rechaza neutralización fuera de `fixture: true`.
 ## Criterio de suficiencia
 
 El baseline histórico PBI-022 conserva 98 fixtures (12 positivos y 86
-negativos). El estado vigente es **160 fixtures: 23 positivos y 137
-negativos**. Cubren las 44 reglas ejecutadas directamente por el checker;
+negativos). El estado ejecutable vigente es **188 fixtures: 24 positivos y 164
+negativos**, verificado localmente sin fallos. Cubren las 44 reglas ejecutadas directamente por el checker;
 D5-R001 pertenece al verificador
 externo de DEC-004, D5-R032/D5-R033 son compuestas y seis reglas son
 documentales/no aplicables al árbol sin funcionalidad.
 
-Las 23 mutaciones históricas cubren 12 familias normativas distintas: D5-R003, D5-R005,
-D5-R007, D5-R010, D5-R019, D5-R020, D5-R023, D5-R025, D5-R027, D5-R029,
-D5-R035 y D5-R036. Cada una exige el conjunto exacto de reglas y paths
-permitidos, restaura la copia temporal y vuelve a exigir PASS; no son búsquedas
-de texto que omitan la ejecución del checker. PBI-023 suma 17 familias
-D5-R037–D5-R053; el total vigente es **40 mutaciones de producto**.
+La suite vigente ejecuta **36 mutaciones controladas de arquitectura general**,
+incluidas cinco de Option A y cuatro guardas nuevas de ownership de migración,
+más las 17 mutaciones aisladas D5-R037–D5-R053 de PBI-023: **53 mutaciones de
+producto**, todas PASS local. Una guarda adicional prohíbe neutralizar reglas
+en producción, por lo que el archivo combinado reporta 54 tests. Cada mutación
+exige el conjunto exacto de reglas y paths, restaura la copia temporal y vuelve
+a exigir PASS; no son búsquedas de texto que omitan la ejecución del checker.
 
 D5-R048 incluye casos directos, alias, namespace, reexport, `import()`,
 shadowing positivo, consumo desde controller, deep import de capability y

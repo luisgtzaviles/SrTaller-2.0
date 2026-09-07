@@ -1,5 +1,19 @@
 # Remediación de PBI-022 posterior al FAIL formal
 
+## Enmienda vigente — Option A
+
+Este expediente histórico queda complementado por la enmienda Owner de
+composición dirigida. Policy v4 reemplaza la prohibición absoluta de importar
+un módulo Nest fuera de `AppModule` por un registro fail-closed de aristas
+runtime. Sólo `access->stations` y `access->users` están materializadas; cada
+una declara consumer, producer, archivos/clases/specifier y token/interfaz
+públicos exactos.
+
+La remediación modifica D5-R024 y sus fixtures/mutaciones, no D5-R005,
+D5-R007, D5-R014 ni D5-R025–D5-R027. Por ello siguen fallando deep/private/
+repository imports, reverse/cycle, `forwardRef`, `ModuleRef` y `@Global`.
+No se crea una excepción implícita ni se altera ownership.
+
 ## Autoridad y alcance
 
 Este documento registra la remediación técnica de los hallazgos de

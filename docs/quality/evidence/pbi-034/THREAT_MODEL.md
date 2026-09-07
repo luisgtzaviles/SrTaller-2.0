@@ -37,13 +37,14 @@ invalida la Session.
 | Replay de token terminado | estados closed/replaced/expired/invalidated y lookup por digest | negativos PostgreSQL |
 | CSRF/login CSRF | double-submit CSRF, Origin exacto, Fetch Metadata same-origin, JSON-only, no CORS | HTTP contract negatives |
 | Manipulación Tenant/Branch/Station | contexto sólo desde Station verifier; payload no acepta IDs de contexto | isolation/contract tests |
-| User no elegible/revocado | Users reader + assignments + PIN version revalidados | lifecycle negatives |
-| Station/binding revocados | Trusted Station resolver en cada request autenticado | context negatives |
+| User no elegible/revocado | Users owner validator + epoch monotónico, assignments y PIN version revalidados en la transacción | lifecycle/race negatives |
+| Station/binding/Branch/credential revocados | Trusted Station owner validator + epochs monotónicos exactos; restore no revive | context/race negatives |
 | Expiración eludida | idle 60m y absolute 12h server-side con reloj controlado | boundary tests |
 | Touch infinito | actividad sólo tras todos los predicados; absolute expiry inmutable | material tests |
 | Carrera de login/switch | guard por Station + unique partial active; reemplazo atómico | concurrent tests |
 | Switch fallido cierra actor vigente | autenticar y validar primero; reemplazar sólo dentro del commit exitoso | negative/material tests |
 | Carrera logout/touch | versión/estado atómicos; closed nunca revive | concurrent tests |
+| Contención del runtime compartido | persistencias concurrentes; transacciones FIFO exclusivas; cola máxima 256 y espera máxima 25s fail-closed; shutdown drena sólo trabajo ya admitido | scheduler unit tests + same-runtime PostgreSQL test |
 | Enumeración | errores genéricos, PIN dummy path heredado y `no-store` | contract/timing-seam tests |
 | Proof reutilizable | `PinAuthenticationProof` se consume una sola vez en proceso y nunca se serializa | unit tests |
 | Bootstrap local en producción | endpoint/fixture exige entorno development/test y contrato local explícito | production exclusion tests |
@@ -57,7 +58,8 @@ invalida la Session.
   same-origin, Fetch Metadata same-origin y content type JSON.
 - No se habilita CORS. Toda respuesta de Session/User usa
   `Cache-Control: no-store`.
-- Logout expira sólo `sr_session`; la credencial `sr_station` permanece.
+- Logout expira `sr_session` y `sr_session_csrf`; la credencial
+  `sr_station` permanece.
 
 ## Tiempo y lifecycle
 

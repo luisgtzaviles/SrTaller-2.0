@@ -49,7 +49,7 @@ conservan TBD.
 | [PBI-031](PBI-031.md) | Station Binding Administration | Draft / Deferred |
 | [PBI-032](PBI-032.md) | User Directory and Lifecycle | Done; Released: NO |
 | [PBI-033](PBI-033.md) | Roles, Assignments and Capability Catalog | Done; Released: NO |
-| [PBI-034](PBI-034.md) | Operational Session | SPRINT-02 current; In progress; Critical / Large; WIP 1/1 |
+| [PBI-034](PBI-034.md) | Operational Session | SPRINT-02 current; In review candidate; not integrated/Done; Critical / Large; WIP 1/1 |
 | [PBI-035](PBI-035.md) | Reinforced Authorization | Draft / Deferred |
 | [PBI-036](PBI-036.md) | Extended Observability | Deferred |
 

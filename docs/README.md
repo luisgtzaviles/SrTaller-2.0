@@ -13,7 +13,8 @@ producto y condiciones pendientes antes de la siguiente iteración.
 PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos. SPRINT-02 está
 `Active`.
 **Fase:** Operational Authentication & Authorization, con PBI-025 `Done` y
-PBI-034 como único PBI actual `In progress`; WIP operacional `1/1`.
+PBI-034 como único PBI actual `In review`, candidato no integrado ni `Done`;
+WIP operacional `1/1`. G3 permanece `Pending` y PBI-026 no ha iniciado.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Gate actual de integración:** el CI canónico de `main` está verde en

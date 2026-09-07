@@ -362,8 +362,10 @@ No exporta entidades mutables, agregados, repositorios, modelos de persistencia,
 controllers, adapters, providers Nest ni utilidades internas. Los barrels
 internos no se usan para ocultar dependencias o resolver ciclos.
 
-El archivo `<module>.module.ts` es una superficie exclusiva de composición: sólo
-`AppModule` puede importarlo. No forma parte de la API funcional entre módulos.
+El archivo `<module>.module.ts` es una superficie exclusiva de composición. Lo
+puede importar `AppModule` y, bajo la composición dirigida de Option A, un
+módulo consumidor registrado de forma exacta. No forma parte de la API
+funcional entre módulos y no autoriza acceso a internals del productor.
 
 ### Imports
 
@@ -384,7 +386,9 @@ otro sólo si:
 
 1. la relación aparece en el grafo aprobado;
 2. el productor conserva ownership;
-3. el consumidor usa sólo `index.ts`;
+3. el consumidor usa `index.ts` para contratos funcionales; el único import
+   adicional admisible es el `<module>.module.ts` productor registrado para
+   composición dirigida;
 4. el contrato no filtra framework, entidad mutable ni persistencia;
 5. no se forma un ciclo directo o transitivo;
 6. la necesidad no puede resolverse de forma local sin duplicar autoridad.
@@ -402,6 +406,48 @@ otro sólo si:
   con owner y frescura explícitos; DEC-049 define el mecanismo de datos.
 - Los datos compartidos son identificadores, snapshots o hechos inmutables con
   procedencia. Una copia no se convierte en fuente de verdad.
+
+### Composición dirigida registrada — Option A
+
+Cuando un caso de uso autorizado necesita dos capacidades runtime de módulos
+productores, el módulo consumidor puede componerlas sólo si se cumplen todas
+estas condiciones:
+
+1. el edge consumidor→productor ya existe en el grafo aprobado y no introduce
+   dirección inversa ni ciclo;
+2. `architecture/dec-005-policy.json` registra consumidor, productor, archivos
+   y clases de ambos módulos, specifier exacto, token público, interfaz pública
+   y bindings;
+3. el consumidor importa la clase del módulo productor con un import nombrado,
+   estático, exacto y sin alias, y la declara directamente en el arreglo
+   literal `@Module({ imports: [...] })`;
+4. token e interfaz se importan únicamente desde `index.ts`; el token es un
+   valor público y la interfaz permanece framework-free;
+5. el productor vincula y exporta el token una sola vez; el consumidor lo
+   inyecta explícitamente una sola vez;
+6. quedan prohibidos `forwardRef`, `ModuleRef`, `@Global`, imports dinámicos o
+   namespace, aliases, deep imports, repositories/adapters ajenos y cualquier
+   dependencia implícita no registrada.
+
+La primera materialización autorizada registra exactamente
+`access->stations` mediante
+`TRUSTED_STATION_CONTEXT_RESOLVER`/`TrustedStationContextResolver` más
+`TRUSTED_STATION_ADMISSION_VALIDATOR`/`TrustedStationAdmissionValidator`, y
+`access->users` mediante
+`AUTHENTICATION_USER_READER`/`AuthenticationUserReader` más
+`AUTHENTICATION_USER_ADMISSION_VALIDATOR`/`AuthenticationUserAdmissionValidator`.
+Los validadores se unen a la transacción técnica por un contexto opaco y cada
+owner bloquea y valida exclusivamente sus filas, incluyendo su autoridad
+monotónica de admisión. Los productores
+conservan ownership; `access` sólo recibe capacidades estrechas para componer
+la sesión operacional. `AppModule` conserva su composición exterior y no se
+convierte en service locator ni en puente de capacidades funcionales.
+
+El contrato y la evidencia todavía pendiente sobre el candidato exacto se
+separan en la
+[verificación acotada de Option A para PBI-034](../../architecture-readiness/dec-005-materialization/PBI_034_OPTION_A_VERIFICATION.md).
+La materialización local no equivale por sí sola a verificación final, merge o
+aprobación de G3.
 
 ## 9. Shared kernel mínimo
 
@@ -568,7 +614,7 @@ o excepción vigente; **Advisory** exige justificación visible.
 | D5-R021 | Una utilidad SHOULD permanecer local hasta demostrar transversalidad | Reducir abstracción prematura | revisión | Advisory | Sí, documentada |
 | D5-R022 | Infraestructura de un módulo MUST permanecer con ese owner | Evitar adapters globales | paths | Major | Sí para facility técnica de proceso |
 | D5-R023 | `AppModule` MUST ser sólo composition root | Evitar agregado técnico universal | revisión e imports | Blocker | No |
-| D5-R024 | Sólo `AppModule` MAY importar `<module>.module.ts` | Separar API funcional de wiring | análisis de imports | Blocker | No |
+| D5-R024 | `AppModule` conserva la composición exterior; otro módulo sólo MAY importar `<module>.module.ts` mediante una arista dirigida registrada, estática y exacta | Separar API funcional de wiring sin impedir DI explícita entre capacidades aprobadas | policy v4 + análisis AST de módulo, metadata, imports, tokens, bindings, exports e inyección | Blocker | Sólo registro previo aprobado por Arquitectura; no hay excepción implícita |
 | D5-R025 | `forwardRef` MUST NOT usarse en R0 | Exponer y eliminar ciclos | búsqueda estructural | Blocker | No |
 | D5-R026 | `ModuleRef` o service locator MUST NOT resolver flujos funcionales | Dependencias explícitas | búsqueda y revisión | Blocker | No |
 | D5-R027 | Módulos Nest funcionales MUST NOT ser globales | Evitar dependencias invisibles | búsqueda de `@Global` | Blocker | No |
