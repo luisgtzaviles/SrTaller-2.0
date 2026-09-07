@@ -156,7 +156,12 @@ async function seed(admin) {
   await admin.query("insert into access_pin_credentials (tenant_id,user_id,credential_id,status,algorithm,profile_version,pepper_version,memory_kib,passes,parallelism,salt,verifier,credential_version,consecutive_failures,created_at,updated_at) values ($1,$2,gen_random_uuid(),'active','argon2id',1,1,65536,3,4,$4,$5,3,0,now(),now()),($3,$2,gen_random_uuid(),'active','argon2id',1,1,65536,3,4,$4,$5,3,0,now(),now())", [tenantA, userA, tenantB, Buffer.alloc(16, 1), Buffer.alloc(32, 2)]);
 }
 
-function input(sessionId, fill, occurredAt = '2026-09-07T12:00:00.000Z') {
+function input(
+  sessionId,
+  fill,
+  occurredAt = '2026-09-07T12:00:00.000Z',
+  expectedSessionId = null,
+) {
   return Object.freeze({
     sessionId,
     userId: userA,
@@ -165,12 +170,18 @@ function input(sessionId, fill, occurredAt = '2026-09-07T12:00:00.000Z') {
     credentialVersion: 3,
     bearerVerifier: Buffer.alloc(32, fill),
     csrfVerifier: Buffer.alloc(32, fill + 1),
+    expectedSessionId,
     occurredAt,
     expiresAt: new Date(new Date(occurredAt).getTime() + 12 * 60 * 60 * 1_000).toISOString(),
   });
 }
 
-function tokenInput(sessionId, material, occurredAt = '2026-09-07T12:00:00.000Z') {
+function tokenInput(
+  sessionId,
+  material,
+  occurredAt = '2026-09-07T12:00:00.000Z',
+  expectedSessionId = null,
+) {
   return Object.freeze({
     sessionId,
     userId: userA,
@@ -179,6 +190,7 @@ function tokenInput(sessionId, material, occurredAt = '2026-09-07T12:00:00.000Z'
     credentialVersion: 3,
     bearerVerifier: material.bearerVerifier,
     csrfVerifier: material.csrfVerifier,
+    expectedSessionId,
     occurredAt,
     expiresAt: new Date(new Date(occurredAt).getTime() + 12 * 60 * 60 * 1_000).toISOString(),
   });
@@ -269,14 +281,35 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     assert.equal(first.status, 'active');
     assert.equal(await repositoryA.findByBearerVerifier(wrongBranch, Buffer.alloc(32, 1)), null);
 
-    const [left, right] = await Promise.all([
-      repositoryA.createReplacingActive(contextA, input('81000000-0000-4000-8000-000000000034', 2, '2026-09-07T12:00:01.000Z')),
-      repositoryB.createReplacingActive(contextA, input('82000000-0000-4000-8000-000000000034', 3, '2026-09-07T12:00:01.000Z')),
+    const concurrentStarts = await Promise.allSettled([
+      repositoryA.createReplacingActive(contextA, input(
+        '81000000-0000-4000-8000-000000000034',
+        2,
+        '2026-09-07T12:00:01.000Z',
+        first.sessionId,
+      )),
+      repositoryB.createReplacingActive(contextA, input(
+        '82000000-0000-4000-8000-000000000034',
+        3,
+        '2026-09-07T12:00:01.000Z',
+        first.sessionId,
+      )),
     ]);
-    assert.equal(left.status, 'active');
-    assert.equal(right.status, 'active');
+    assert.equal(concurrentStarts.filter(({ status }) => status === 'fulfilled').length, 1);
+    assert.equal(concurrentStarts.filter(({ status }) => status === 'rejected').length, 1);
+    const rejectedStart = concurrentStarts.find(({ status }) => status === 'rejected');
+    assert.ok(rejectedStart?.reason instanceof OperationalSessionAdmissionError);
     const rows = await admin.query("select status,count(*)::integer count from access_operational_sessions where tenant_id=$1 and station_id=$2 group by status order by status", [tenantA, stationA]);
-    assert.deepEqual(rows.rows, [{ status: 'active', count: 1 }, { status: 'replaced', count: 2 }]);
+    assert.deepEqual(rows.rows, [{ status: 'active', count: 1 }, { status: 'replaced', count: 1 }]);
+    const concurrentActiveSessionId = (await admin.query(
+      "select session_id from access_operational_sessions where tenant_id=$1 and station_id=$2 and status='active'",
+      [tenantA, stationA],
+    )).rows[0].session_id;
+    const losingFill = concurrentActiveSessionId === '81000000-0000-4000-8000-000000000034' ? 3 : 2;
+    assert.equal(
+      await repositoryA.findByBearerVerifier(contextA, Buffer.alloc(32, losingFill)),
+      null,
+    );
 
     const sharedRuntime = new ApplicationDatabaseRuntimeProvider(
       applicationRuntimeEnvironment('srtaller-access-session-shared-runtime'),
@@ -289,19 +322,35 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
         new KyselyAuthenticationUserReader(sharedRuntime),
       );
       const sharedUserReader = new KyselyAuthenticationUserReader(sharedRuntime);
-      const [sharedLeft, sharedUser, sharedRight] = await Promise.all([
-        sharedRepository.createReplacingActive(
-          contextA,
-          input('82500000-0000-4000-8000-000000000034', 11, '2026-09-07T12:00:02.000Z'),
-        ),
+      const [sharedStarts, sharedUser] = await Promise.all([
+        Promise.allSettled([
+          sharedRepository.createReplacingActive(
+            contextA,
+            input(
+              '82500000-0000-4000-8000-000000000034',
+              11,
+              '2026-09-07T12:00:02.000Z',
+              concurrentActiveSessionId,
+            ),
+          ),
+          sharedRepository.createReplacingActive(
+            contextA,
+            input(
+              '82600000-0000-4000-8000-000000000034',
+              13,
+              '2026-09-07T12:00:03.000Z',
+              concurrentActiveSessionId,
+            ),
+          ),
+        ]),
         sharedUserReader.findAuthenticationUser({ tenantId: tenantA }, userA),
-        sharedRepository.createReplacingActive(
-          contextA,
-          input('82600000-0000-4000-8000-000000000034', 13, '2026-09-07T12:00:03.000Z'),
-        ),
       ]);
-      assert.equal(sharedLeft.status, 'active');
-      assert.equal(sharedRight.status, 'active');
+      assert.equal(sharedStarts.filter(({ status }) => status === 'fulfilled').length, 1);
+      assert.equal(sharedStarts.filter(({ status }) => status === 'rejected').length, 1);
+      assert.ok(
+        sharedStarts.find(({ status }) => status === 'rejected')?.reason instanceof
+          OperationalSessionAdmissionError,
+      );
       assert.equal(sharedUser?.userId, userA);
       assert.equal(
         (await admin.query(
@@ -346,7 +395,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     ].includes(touched.last_activity_at.toISOString()));
 
     await assert.rejects(
-      repositoryA.createReplacingActive(wrongBranch, input('83000000-0000-4000-8000-000000000034', 4)),
+      repositoryA.createReplacingActive(wrongBranch, input(
+        '83000000-0000-4000-8000-000000000034',
+        4,
+        '2026-09-07T12:00:00.000Z',
+        activeBeforeTouches.session_id,
+      )),
       OperationalSessionAdmissionError,
     );
     assert.equal(
@@ -363,7 +417,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     await assert.rejects(
       repositoryA.createReplacingActive(
         contextA,
-        input('83100000-0000-4000-8000-000000000034', 15),
+        input(
+          '83100000-0000-4000-8000-000000000034',
+          15,
+          '2026-09-07T12:00:00.000Z',
+          activeBeforeTouches.session_id,
+        ),
       ),
       OperationalSessionAdmissionError,
     );
@@ -374,7 +433,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     await assert.rejects(
       repositoryA.createReplacingActive(
         contextA,
-        input('83150000-0000-4000-8000-000000000034', 16),
+        input(
+          '83150000-0000-4000-8000-000000000034',
+          16,
+          '2026-09-07T12:00:00.000Z',
+          activeBeforeTouches.session_id,
+        ),
       ),
       OperationalSessionAdmissionError,
     );
@@ -389,7 +453,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
       );
       const racedStationAdmission = repositoryA.createReplacingActive(
         contextA,
-        input('83160000-0000-4000-8000-000000000034', 18),
+        input(
+          '83160000-0000-4000-8000-000000000034',
+          18,
+          '2026-09-07T12:00:00.000Z',
+          activeBeforeTouches.session_id,
+        ),
       );
       const releaseRevocation = setTimeout(
         () => void stationAdmissionRaceClient.query('commit'),
@@ -417,7 +486,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     await assert.rejects(
       repositoryA.createReplacingActive(
         contextA,
-        input('83200000-0000-4000-8000-000000000034', 17),
+        input(
+          '83200000-0000-4000-8000-000000000034',
+          17,
+          '2026-09-07T12:00:00.000Z',
+          activeBeforeTouches.session_id,
+        ),
       ),
       OperationalSessionAdmissionError,
     );
@@ -435,7 +509,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
       );
       const racedAdmission = repositoryA.createReplacingActive(
         contextA,
-        input('83300000-0000-4000-8000-000000000034', 19),
+        input(
+          '83300000-0000-4000-8000-000000000034',
+          19,
+          '2026-09-07T12:00:00.000Z',
+          activeBeforeTouches.session_id,
+        ),
       );
       const releaseRevocation = setTimeout(
         () => void admissionRaceClient.query('commit'),
@@ -454,13 +533,23 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     await repositoryA.createReplacingActive(
       contextA,
       {
-        ...input('83400000-0000-4000-8000-000000000034', 21),
+        ...input(
+          '83400000-0000-4000-8000-000000000034',
+          21,
+          '2026-09-07T12:00:00.000Z',
+          activeBeforeTouches.session_id,
+        ),
         userAdmissionRevision: 2,
       },
     );
 
     const invalidVerifier = {
-      ...input('84000000-0000-4000-8000-000000000034', 5),
+      ...input(
+        '84000000-0000-4000-8000-000000000034',
+        5,
+        '2026-09-07T12:00:00.000Z',
+        '83400000-0000-4000-8000-000000000034',
+      ),
       userAdmissionRevision: 2,
     };
     await assert.rejects(
@@ -471,7 +560,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
       /access_operational_sessions_verifier_ck|constraint/iu,
     );
     const invalidLifetime = {
-      ...input('85000000-0000-4000-8000-000000000034', 6),
+      ...input(
+        '85000000-0000-4000-8000-000000000034',
+        6,
+        '2026-09-07T12:00:00.000Z',
+        '83400000-0000-4000-8000-000000000034',
+      ),
       userAdmissionRevision: 2,
     };
     await assert.rejects(
@@ -497,8 +591,19 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
       tokenService,
       () => new Date(now.value),
     );
-    const createMaterialSession = async (id, occurredAt = '2026-09-07T14:00:00.000Z') => {
+    const currentActiveSessionId = async () => (await admin.query(
+      "select session_id from access_operational_sessions where tenant_id=$1 and station_id=$2 and status='active'",
+      [tenantA, stationA],
+    )).rows[0]?.session_id ?? null;
+    const createMaterialSession = async (
+      id,
+      occurredAt = '2026-09-07T14:00:00.000Z',
+      expectedOverride = undefined,
+    ) => {
       const material = tokenService.issue();
+      const expectedSessionId = expectedOverride === undefined
+        ? await currentActiveSessionId()
+        : expectedOverride;
       const userVersion = (await admin.query(
         'select version from users where tenant_id=$1 and user_id=$2',
         [tenantA, userA],
@@ -515,6 +620,7 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
         contextA,
         {
           ...tokenInput(id, material, occurredAt),
+          expectedSessionId,
           userVersion,
           userAdmissionRevision,
           credentialVersion,
@@ -532,7 +638,11 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
       [tenantA, id],
     )).rows[0]?.status;
 
-    const plaintextMaterial = await createMaterialSession('86000000-0000-4000-8000-000000000034');
+    const plaintextMaterial = await createMaterialSession(
+      '86000000-0000-4000-8000-000000000034',
+      '2026-09-07T14:00:00.000Z',
+      null,
+    );
     const storedVerifier = (await admin.query(
       "select encode(token_verifier,'hex') token_hex, encode(csrf_verifier,'hex') csrf_hex, row_to_json(access_operational_sessions)::text serialized from access_operational_sessions where tenant_id=$1 and session_id=$2",
       [tenantA, '86000000-0000-4000-8000-000000000034'],
@@ -592,7 +702,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     const roleMaterial = tokenService.issue();
     await repositoryA.createReplacingActive(
       contextA,
-      { ...tokenInput('90500000-0000-4000-8000-000000000034', roleMaterial), userVersion: 2, userAdmissionRevision: 4 },
+      {
+        ...tokenInput('90500000-0000-4000-8000-000000000034', roleMaterial),
+        expectedSessionId: await currentActiveSessionId(),
+        userVersion: 2,
+        userAdmissionRevision: 4,
+      },
     );
     await admin.query("update access_roles set status='disabled',version=version+1,updated_at=clock_timestamp() where tenant_id=$1 and role_id=$2", [tenantA, roleA]);
     assert.equal(await persistedStatus('90500000-0000-4000-8000-000000000034'), 'invalidated');
@@ -601,7 +716,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     const assignmentMaterial = tokenService.issue();
     await repositoryA.createReplacingActive(
       contextA,
-      { ...tokenInput('91000000-0000-4000-8000-000000000034', assignmentMaterial), userVersion: 2, userAdmissionRevision: 4 },
+      {
+        ...tokenInput('91000000-0000-4000-8000-000000000034', assignmentMaterial),
+        expectedSessionId: await currentActiveSessionId(),
+        userVersion: 2,
+        userAdmissionRevision: 4,
+      },
     );
     await admin.query("update access_role_assignments set status='revoked',version=version+1,revoked_at=clock_timestamp() where tenant_id=$1 and assignment_id=$2", [tenantA, assignmentA]);
     assert.equal(await persistedStatus('91000000-0000-4000-8000-000000000034'), 'invalidated');
@@ -612,7 +732,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     const pinMaterial = tokenService.issue();
     await repositoryA.createReplacingActive(
       contextA,
-      { ...tokenInput('92000000-0000-4000-8000-000000000034', pinMaterial), userVersion: 2, userAdmissionRevision: 4 },
+      {
+        ...tokenInput('92000000-0000-4000-8000-000000000034', pinMaterial),
+        expectedSessionId: await currentActiveSessionId(),
+        userVersion: 2,
+        userAdmissionRevision: 4,
+      },
     );
     await admin.query("update access_pin_credentials set status='revoked',revoked_at=clock_timestamp(),updated_at=clock_timestamp() where tenant_id=$1 and user_id=$2", [tenantA, userA]);
     assert.equal(await persistedStatus('92000000-0000-4000-8000-000000000034'), 'invalidated');
@@ -622,7 +747,12 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     await assert.rejects(
       repositoryA.createReplacingActive(
         contextA,
-        { ...tokenInput('92500000-0000-4000-8000-000000000034', tokenService.issue()), userVersion: 2, userAdmissionRevision: 4 },
+        {
+          ...tokenInput('92500000-0000-4000-8000-000000000034', tokenService.issue()),
+          expectedSessionId: await currentActiveSessionId(),
+          userVersion: 2,
+          userAdmissionRevision: 4,
+        },
       ),
       OperationalSessionAdmissionError,
     );
@@ -630,10 +760,23 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     const raceMaterial = await createMaterialSession('93000000-0000-4000-8000-000000000034');
     const raceBefore = await repositoryA.findByBearerVerifier(contextA, raceMaterial.bearerVerifier);
     assert.ok(raceBefore);
+    assert.equal(await repositoryA.closeAuthenticated(wrongBranch, {
+      bearerVerifier: raceMaterial.bearerVerifier,
+      csrfVerifier: raceMaterial.csrfVerifier,
+      status: 'logged_out',
+      occurredAt: '2026-09-07T14:00:09.000Z',
+    }), false);
+    assert.equal(await repositoryA.closeAuthenticated(contextA, {
+      bearerVerifier: raceMaterial.bearerVerifier,
+      csrfVerifier: Buffer.alloc(32, 0xff),
+      status: 'logged_out',
+      occurredAt: '2026-09-07T14:00:09.000Z',
+    }), false);
+    assert.equal(await persistedStatus('93000000-0000-4000-8000-000000000034'), 'active');
     const [closed, racedTouch] = await Promise.all([
-      repositoryA.close(contextA, {
-        sessionId: raceBefore.sessionId,
-        expectedVersion: raceBefore.version,
+      repositoryA.closeAuthenticated(contextA, {
+        bearerVerifier: raceMaterial.bearerVerifier,
+        csrfVerifier: raceMaterial.csrfVerifier,
         status: 'logged_out',
         occurredAt: '2026-09-07T14:00:11.000Z',
       }),
@@ -644,25 +787,83 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
         recordActivity: true,
       }),
     ]);
-    assert.ok(
-      (closed === true && racedTouch === null) ||
-      (closed === false && racedTouch?.status === 'active'),
-    );
+    assert.equal(closed, true);
+    assert.ok(racedTouch === null || racedTouch.status === 'active');
     const raceAfter = (await admin.query(
       'select status,version,last_activity_at from access_operational_sessions where tenant_id=$1 and session_id=$2',
       [tenantA, raceBefore.sessionId],
     )).rows[0];
-    if (raceAfter.status === 'active') {
-      assert.equal(raceAfter.last_activity_at.toISOString(), '2026-09-07T14:00:10.000Z');
-      assert.equal(await repositoryA.close(contextA, {
-        sessionId: raceBefore.sessionId,
-        expectedVersion: raceAfter.version,
-        status: 'logged_out',
-        occurredAt: '2026-09-07T14:00:11.000Z',
-      }), true);
-    }
+    assert.equal(raceAfter.status, 'logged_out');
     assert.equal(await persistedStatus('93000000-0000-4000-8000-000000000034'), 'logged_out');
     await assert.rejects(resolveMaterial(raceMaterial), OperationalSessionError);
+
+    await createMaterialSession(
+      '94000000-0000-4000-8000-000000000034',
+      '2026-09-07T15:00:00.000Z',
+      null,
+    );
+    await assert.rejects(
+      createMaterialSession(
+        '94100000-0000-4000-8000-000000000034',
+        '2026-09-07T15:59:59.999Z',
+        null,
+      ),
+      OperationalSessionAdmissionError,
+    );
+    assert.equal(await persistedStatus('94000000-0000-4000-8000-000000000034'), 'active');
+    await createMaterialSession(
+      '94200000-0000-4000-8000-000000000034',
+      '2026-09-07T16:00:00.000Z',
+      null,
+    );
+    assert.equal(await persistedStatus('94000000-0000-4000-8000-000000000034'), 'expired');
+    assert.equal(await persistedStatus('94200000-0000-4000-8000-000000000034'), 'active');
+
+    const transitionA = tokenService.issue();
+    await repositoryA.createReplacingActive(contextA, {
+      ...tokenInput(
+        '95000000-0000-4000-8000-000000000034',
+        transitionA,
+        '2026-09-07T16:00:01.000Z',
+      ),
+      expectedSessionId: '94200000-0000-4000-8000-000000000034',
+      userVersion: 2,
+      userAdmissionRevision: 4,
+      credentialVersion: 5,
+    });
+    const transitionB = tokenService.issue();
+    const [createTransition, closeTransition] = await Promise.allSettled([
+      repositoryA.createReplacingActive(contextA, {
+        ...tokenInput(
+          '95100000-0000-4000-8000-000000000034',
+          transitionB,
+          '2026-09-07T16:00:02.000Z',
+        ),
+        expectedSessionId: '95000000-0000-4000-8000-000000000034',
+        userVersion: 2,
+        userAdmissionRevision: 4,
+        credentialVersion: 5,
+      }),
+      repositoryB.closeAuthenticated(contextA, {
+        bearerVerifier: transitionA.bearerVerifier,
+        csrfVerifier: transitionA.csrfVerifier,
+        status: 'logged_out',
+        occurredAt: '2026-09-07T16:00:02.000Z',
+      }),
+    ]);
+    const createWon = createTransition.status === 'fulfilled';
+    const closeWon = closeTransition.status === 'fulfilled' && closeTransition.value;
+    assert.equal(Number(createWon) + Number(closeWon), 1);
+    if (createWon) {
+      assert.equal(closeTransition.status, 'fulfilled');
+      assert.equal(closeTransition.value, false);
+      assert.equal(await persistedStatus('95000000-0000-4000-8000-000000000034'), 'replaced');
+      assert.equal(await persistedStatus('95100000-0000-4000-8000-000000000034'), 'active');
+    } else {
+      assert.ok(createTransition.reason instanceof OperationalSessionAdmissionError);
+      assert.equal(await persistedStatus('95000000-0000-4000-8000-000000000034'), 'logged_out');
+      assert.equal(await persistedStatus('95100000-0000-4000-8000-000000000034'), undefined);
+    }
   } finally {
     await Promise.allSettled([firstConnection.close(), secondConnection.close(), migrationConnection.close()]);
     await reset(admin).catch(() => undefined);

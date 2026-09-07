@@ -138,6 +138,9 @@ test('Argon2id profile is explicit, peppered, context-bound, bounded and redacte
     configuration,
     /name: 'SR_PIN_PEPPER'[\s\S]*consumer: 'access'[\s\S]*status: 'active'[\s\S]*clientExposure: 'forbidden'/u,
   );
+  const accessModule = await readFile('src/modules/access/access.module.ts', 'utf8');
+  assert.match(accessModule, /const pinHasher = pinHashers\.create\(NodeArgon2PinHasher\)/u);
+  assert.doesNotMatch(accessModule, /createDeferredNodeArgon2PinHasher/u);
 });
 
 test('Node Argon2id hasher protects, binds and verifies PIN material without diagnostic disclosure', async () => {

@@ -147,7 +147,7 @@ test('executable startup fails closed before listening when the database role co
     }
   }
   const databaseSecret = 'synthetic-database-secret-for-startup-regression';
-  const pinSecret = 'synthetic-pin-pepper-for-startup-regression';
+  const pinSecret = Buffer.alloc(32, 0x42).toString('base64url');
   Object.assign(environment, {
     HOST: '127.0.0.1',
     NODE_ENV: 'test',
@@ -167,6 +167,43 @@ test('executable startup fails closed before listening when the database role co
       assert.doesNotMatch(stdout, /technical_shell_listening/u);
       assert.match(stderr, /technical_shell_startup_failed/u);
       assert.doesNotMatch(`${stdout}\n${stderr}`, new RegExp(`${databaseSecret}|${pinSecret}`, 'u'));
+      return true;
+    },
+  );
+});
+
+test('executable startup rejects malformed active PIN configuration before listening', async () => {
+  const environment = { ...process.env };
+  for (const name of Object.keys(environment)) {
+    if (name.startsWith('SR_DB_') || name.startsWith('SR_TEST_DB_')) {
+      delete environment[name];
+    }
+  }
+  const databaseSecret = 'synthetic-database-secret-for-pin-startup-regression';
+  const malformedPinSecret = 'synthetic-malformed-pin-pepper';
+  Object.assign(environment, {
+    HOST: '127.0.0.1',
+    NODE_ENV: 'test',
+    PORT: '65534',
+    SR_DB_PASSWORD: databaseSecret,
+    SR_PIN_PEPPER: malformedPinSecret,
+  });
+
+  await assert.rejects(
+    execFileAsync(process.execPath, ['dist/main.js'], {
+      env: environment,
+      timeout: 5_000,
+    }),
+    (error) => {
+      const stdout = String(error?.stdout ?? '');
+      const stderr = String(error?.stderr ?? '');
+      assert.doesNotMatch(stdout, /technical_shell_listening/u);
+      assert.match(stderr, /technical_shell_startup_failed/u);
+      assert.match(stderr, /PIN_HASHING_CONFIGURATION_INVALID/u);
+      assert.doesNotMatch(
+        `${stdout}\n${stderr}`,
+        new RegExp(`${databaseSecret}|${malformedPinSecret}`, 'u'),
+      );
       return true;
     },
   );

@@ -35,15 +35,17 @@ import type {
 import type { SessionTokenPort } from '../application/ports/session-token.port.js';
 import {
   OPERATIONAL_SESSION_IDLE_MS,
+  assertSessionId,
 } from '../domain/operational-session.js';
 import {
   expireOperationalSessionCookies,
   OperationalSessionCookieError,
   operationalSessionCsrfHeaderName,
   readOperationalSessionCookies,
+  readOperationalSessionLoginCsrfCookie,
   requestIsSameOrigin,
   serializeOperationalSessionCookies,
-  serializeOperationalSessionCsrfCookie,
+  serializeOperationalSessionLoginCsrfCookie,
 } from './access-session-cookie.js';
 
 export const ACCESS_SESSION_RUNTIME = Symbol('srtaller.access.session-runtime');
@@ -93,6 +95,32 @@ function sameOrigin(headers: HeadersValue): boolean {
   });
 }
 
+function parseCreateRequest(value: unknown): Readonly<{
+  pinInput: Readonly<{ userId: unknown; pin: unknown }>;
+  expectedSessionId: string | null;
+}> {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    Array.isArray(value) ||
+    Object.keys(value).length !== 3 ||
+    Object.keys(value).some((key) => !['expectedSessionId', 'pin', 'userId'].includes(key))
+  ) throw new AccessSessionRequestError();
+  const input = value as Readonly<Record<string, unknown>>;
+  let expectedSessionId: string | null;
+  try {
+    expectedSessionId = input.expectedSessionId === null
+      ? null
+      : assertSessionId(input.expectedSessionId as string);
+  } catch {
+    throw new AccessSessionRequestError();
+  }
+  return Object.freeze({
+    pinInput: Object.freeze({ userId: input.userId, pin: input.pin }),
+    expectedSessionId,
+  });
+}
+
 function sessionResponse(session: Awaited<ReturnType<ResolveOperationalSessionUseCase['execute']>>) {
   return {
     sessionId: session.sessionId,
@@ -134,6 +162,38 @@ export class AccessSessionController {
     });
   }
 
+  private loginChallenge(headers: HeadersValue, response: Response): string {
+    let csrfToken: string | null = null;
+    try {
+      csrfToken = readOperationalSessionLoginCsrfCookie(scalar(headers, 'cookie'));
+      if (csrfToken) this.runtime.tokens.verifyCsrf(csrfToken);
+    } catch {
+      csrfToken = null;
+    }
+    if (csrfToken) return csrfToken;
+    const issued = this.runtime.tokens.issue().csrf;
+    response.setHeader(
+      'Set-Cookie',
+      serializeOperationalSessionLoginCsrfCookie(issued, this.secureCookie(headers)),
+    );
+    return issued;
+  }
+
+  private unauthenticatedSnapshot(
+    context: Awaited<ReturnType<TrustedStationContextResolver['resolve']>>,
+    users: Awaited<ReturnType<ListLoginUsersUseCase['execute']>>,
+    headers: HeadersValue,
+    response: Response,
+  ) {
+    return {
+      station: { stationId: context.stationId, branchId: context.branchId },
+      users,
+      csrfToken: this.loginChallenge(headers, response),
+      session: null,
+      revalidateAfterMs: null,
+    };
+  }
+
   @Get()
   async get(
     @Headers() headers: HeadersValue,
@@ -153,43 +213,27 @@ export class AccessSessionController {
     }
     try {
       const cookies = readOperationalSessionCookies(scalar(headers, 'cookie'));
-      let csrfToken = cookies.csrf;
-      let session = null;
-      if (cookies.bearer) {
-        if (!csrfToken) throw new Error('Incomplete session cookie.');
-        session = sessionResponse(await this.runtime.resolveSession.execute(context, {
-          bearer: cookies.bearer,
-          csrfCookie: csrfToken,
-          touch: false,
-        }));
-      } else {
-        if (csrfToken) this.runtime.tokens.verifyCsrf(csrfToken);
-        else {
-          csrfToken = this.runtime.tokens.issue().csrf;
-          response.setHeader('Set-Cookie', serializeOperationalSessionCsrfCookie(csrfToken, this.secureCookie(headers)));
-        }
+      if (!cookies.bearer || !cookies.csrf) {
+        return this.unauthenticatedSnapshot(context, users, headers, response);
       }
+      const session = sessionResponse(await this.runtime.resolveSession.execute(context, {
+        bearer: cookies.bearer,
+        csrfCookie: cookies.csrf,
+        touch: false,
+      }));
       return {
         station: { stationId: context.stationId, branchId: context.branchId },
         users,
-        csrfToken,
+        csrfToken: cookies.csrf,
         session,
         revalidateAfterMs: revalidateAfterMs(session),
       };
     } catch (error: unknown) {
       if (!isAuthenticationDenial(error)) throw error;
-      const csrfToken = this.runtime.tokens.issue().csrf;
-      response.setHeader('Set-Cookie', [
-        expireOperationalSessionCookies(this.secureCookie(headers))[0]!,
-        serializeOperationalSessionCsrfCookie(csrfToken, this.secureCookie(headers)),
-      ]);
-      return {
-        station: { stationId: context.stationId, branchId: context.branchId },
-        users,
-        csrfToken,
-        session: null,
-        revalidateAfterMs: null,
-      };
+      // GET never mutates authoritative Session cookies. A delayed read may
+      // only issue the disjoint login challenge and therefore cannot erase or
+      // rotate a newer login/switch response in the browser cookie jar.
+      return this.unauthenticatedSnapshot(context, users, headers, response);
     }
   }
 
@@ -204,16 +248,45 @@ export class AccessSessionController {
       throw new ForbiddenException({ code: 'ACCESS_SESSION_DENIED' });
     }
     try {
-      const cookies = readOperationalSessionCookies(scalar(headers, 'cookie'));
+      const request = parseCreateRequest(body);
       const csrfHeader = scalar(headers, operationalSessionCsrfHeaderName);
-      if (!cookies.csrf || !csrfHeader || cookies.csrf !== csrfHeader) {
+      let csrfCookie: string | null;
+      let bearerCookie: string | null = null;
+      if (request.expectedSessionId === null) {
+        // Initial authentication is deliberately independent from stale or
+        // malformed authoritative cookies. PostgreSQL still admits it only
+        // when the Station has no active Session.
+        csrfCookie = readOperationalSessionLoginCsrfCookie(scalar(headers, 'cookie'));
+      } else {
+        const cookies = readOperationalSessionCookies(scalar(headers, 'cookie'));
+        bearerCookie = cookies.bearer;
+        csrfCookie = bearerCookie ? cookies.csrf : null;
+      }
+      if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
         throw new AccessSessionRequestError();
       }
-      this.runtime.tokens.verifyCsrf(cookies.csrf);
+      this.runtime.tokens.verifyCsrf(csrfCookie);
       const context = await this.runtime.trustedStations.resolve(scalar(headers, 'cookie'));
+      if (request.expectedSessionId !== null) {
+        if (!bearerCookie) throw new AccessSessionRequestError();
+        const active = await this.runtime.resolveSession.execute(context, {
+          bearer: bearerCookie,
+          csrfCookie,
+          csrfHeader,
+          requireCsrf: true,
+          touch: false,
+        });
+        if (active.sessionId !== request.expectedSessionId) {
+          throw new AccessSessionRequestError();
+        }
+      }
       const users = await this.runtime.listLoginUsers.execute(context);
-      const proof = await this.runtime.authenticatePin.execute(context, body);
-      const created = await this.runtime.createSession.execute(context, proof);
+      const proof = await this.runtime.authenticatePin.execute(context, request.pinInput);
+      const created = await this.runtime.createSession.execute(
+        context,
+        proof,
+        request.expectedSessionId,
+      );
       response.setHeader('Set-Cookie', serializeOperationalSessionCookies(
         created.tokens.bearer,
         created.tokens.csrf,
@@ -263,7 +336,6 @@ export class AccessSessionController {
       });
     } catch (error: unknown) {
       if (!isAuthenticationDenial(error)) throw error;
-      response.setHeader('Set-Cookie', expireOperationalSessionCookies(this.secureCookie(headers)));
       return;
     }
     response.setHeader('Set-Cookie', expireOperationalSessionCookies(this.secureCookie(headers)));

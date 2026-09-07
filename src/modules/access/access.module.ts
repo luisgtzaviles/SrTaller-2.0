@@ -46,7 +46,7 @@ import {
 import { createKyselyAccessRepository } from './infrastructure/persistence/kysely-access.repository.js';
 import { createKyselyPinCredentialRepository } from './infrastructure/persistence/kysely-pin-credential.repository.js';
 import { KyselyOperationalSessionRepository } from './infrastructure/persistence/kysely-operational-session.repository.js';
-import { createDeferredNodeArgon2PinHasher, NodeArgon2PinHasher } from './infrastructure/security/node-argon2-pin-hasher.js';
+import { NodeArgon2PinHasher } from './infrastructure/security/node-argon2-pin-hasher.js';
 import { NodeSessionToken } from './infrastructure/security/node-session-token.js';
 import {
   ACCESS_SESSION_RUNTIME,
@@ -91,6 +91,10 @@ type RegisteredAccessUseCases =
       ): AccessSessionRuntime => {
         const accessRepository = createKyselyAccessRepository(database);
         const pinRepository = createKyselyPinCredentialRepository(database);
+        // Active credential configuration is a readiness predicate. Construct
+        // the hasher while the module is composed so a malformed pepper cannot
+        // leave the process listening with every login guaranteed to fail.
+        const pinHasher = pinHashers.create(NodeArgon2PinHasher);
         const sessionRepository = new KyselyOperationalSessionRepository(
           database,
           stationAdmission,
@@ -109,9 +113,7 @@ type RegisteredAccessUseCases =
           authenticatePin: new AuthenticatePinUseCase(
             pinRepository,
             users,
-            createDeferredNodeArgon2PinHasher(
-              () => pinHashers.create(NodeArgon2PinHasher),
-            ),
+            pinHasher,
           ),
           createSession: new CreateOperationalSessionUseCase(
             sessionRepository,
@@ -121,8 +123,8 @@ type RegisteredAccessUseCases =
           ),
           resolveSession,
           endSession: new EndOperationalSessionUseCase(
-            resolveSession,
             sessionRepository,
+            tokens,
           ),
           listLoginUsers: new ListLoginUsersUseCase(users, applicableUsers),
           tokens,

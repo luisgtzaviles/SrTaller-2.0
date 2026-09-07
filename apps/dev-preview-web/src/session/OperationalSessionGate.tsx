@@ -6,11 +6,13 @@ import { Alert, Spinner } from '../components/ui/feedback.js';
 import { useTheme } from '../foundation/theme.js';
 import {
   OperationalSessionApiError,
+  OperationalSessionStateChangedError,
   bootstrapLocalStation,
   getOperationalSession,
   logoutOperationalSession,
   startOrSwitchOperationalSession,
 } from './session-api.js';
+import { subscribeToRemoteSessionChanges } from './session-request-coordinator.mjs';
 import type {
   ActiveOperationalSession,
   OperationalSessionSnapshot,
@@ -332,7 +334,58 @@ export function OperationalSessionGate({
   const operationGeneration = useRef(0);
 
   useEffect(() => {
+    let disposed = false;
+    let reconciling = false;
+    let pending = false;
+    const reconcile = async (): Promise<void> => {
+      if (reconciling) return;
+      reconciling = true;
+      while (pending && !disposed) {
+        pending = false;
+        const generation = operationGeneration.current;
+        try {
+          const next = await getOperationalSession();
+          if (disposed || !isLatestOperationGeneration(operationGeneration.current, generation)) {
+            continue;
+          }
+          setSnapshot(next);
+          setSwitching(false);
+          setPhase('ready');
+        } catch {
+          if (disposed || !isLatestOperationGeneration(operationGeneration.current, generation)) {
+            continue;
+          }
+          setSnapshot(null);
+          setSwitching(false);
+          setPhase('failed');
+        }
+      }
+      reconciling = false;
+    };
+    let unsubscribe: (() => void) | undefined;
+    try {
+      unsubscribe = subscribeToRemoteSessionChanges(() => {
+        operationGeneration.current += 1;
+        pending = true;
+        setBusy(false);
+        setSwitching(false);
+        setSnapshot(null);
+        setPhase('loading');
+        void reconcile();
+      });
+    } catch {
+      setSnapshot(null);
+      setPhase('failed');
+    }
+    return () => {
+      disposed = true;
+      unsubscribe?.();
+    };
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
+    const generation = operationGeneration.current;
     const initialize = async (): Promise<void> => {
       setPhase('loading');
       setErrorMessage(null);
@@ -349,13 +402,20 @@ export function OperationalSessionGate({
           await bootstrapLocalStationOnce();
           next = await getOperationalSession(controller.signal);
         }
-        if (!controller.signal.aborted) {
+        if (
+          !controller.signal.aborted &&
+          isLatestOperationGeneration(operationGeneration.current, generation)
+        ) {
           setSnapshot(next);
           setSwitching(false);
           setPhase('ready');
         }
       } catch (error) {
-        if (!controller.signal.aborted && !isAbortError(error)) {
+        if (
+          !controller.signal.aborted &&
+          !isAbortError(error) &&
+          isLatestOperationGeneration(operationGeneration.current, generation)
+        ) {
           setSnapshot(null);
           setPhase('failed');
         }
@@ -370,12 +430,16 @@ export function OperationalSessionGate({
     if (snapshot.revalidateAfterMs === null) return undefined;
     const delay = sessionRevalidationDelay(snapshot.revalidateAfterMs);
     const requestGuard = createLatestRequestCommitGuard();
+    let inFlight: AbortController | null = null;
     const revalidate = async (): Promise<void> => {
       const permit = requestGuard.start();
       if (!permit) return;
       const generation = operationGeneration.current;
+      inFlight?.abort();
+      const controller = new AbortController();
+      inFlight = controller;
       try {
-        const next = await getOperationalSession();
+        const next = await getOperationalSession(controller.signal);
         if (
           !permit.mayCommit() ||
           !isLatestOperationGeneration(operationGeneration.current, generation)
@@ -383,7 +447,8 @@ export function OperationalSessionGate({
         setSnapshot(next);
         setSwitching(false);
         setPhase('ready');
-      } catch {
+      } catch (error) {
+        if (isAbortError(error)) return;
         if (
           permit.mayCommit() &&
           isLatestOperationGeneration(operationGeneration.current, generation)
@@ -398,11 +463,14 @@ export function OperationalSessionGate({
       if (document.visibilityState === 'visible') void revalidate();
     };
     window.addEventListener('focus', revalidate);
+    window.addEventListener('pageshow', revalidate);
     document.addEventListener('visibilitychange', handleVisibility);
     return () => {
       requestGuard.dispose();
+      inFlight?.abort();
       window.clearTimeout(timer);
       window.removeEventListener('focus', revalidate);
+      window.removeEventListener('pageshow', revalidate);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [busy, phase, snapshot?.revalidateAfterMs, snapshot?.session, switching]);
@@ -415,13 +483,20 @@ export function OperationalSessionGate({
     setErrorMessage(null);
     const previousSessionId = snapshot.session?.sessionId ?? null;
     try {
-      const next = await startOrSwitchOperationalSession({ userId, pin }, snapshot.csrfToken);
+      const next = await startOrSwitchOperationalSession({ userId, pin }, previousSessionId);
       if (!next.session) throw new OperationalSessionApiError(0);
       if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;
       setSnapshot(next);
       setSwitching(false);
       setFocusTarget('main');
     } catch (error: unknown) {
+      if (error instanceof OperationalSessionStateChangedError) {
+        if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;
+        setSnapshot(error.snapshot);
+        setSwitching(false);
+        setFocusTarget(error.snapshot.session ? 'main' : null);
+        return;
+      }
       let verified: OperationalSessionSnapshot;
       try {
         verified = await getOperationalSession();
@@ -451,21 +526,28 @@ export function OperationalSessionGate({
 
   const logout = useCallback((): void => {
     if (!snapshot?.session || busy) return;
+    const expectedSessionId = snapshot.session.sessionId;
     const generation = operationGeneration.current + 1;
     operationGeneration.current = generation;
     const closeSession = async (): Promise<void> => {
       setBusy(true);
       setErrorMessage(null);
       try {
-        await logoutOperationalSession(snapshot.csrfToken);
-        const next = await getOperationalSession();
+        const next = await logoutOperationalSession(expectedSessionId);
         if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;
         setSnapshot(next);
         setSwitching(false);
         setErrorMessage(next.session
           ? 'No fue posible confirmar el cierre. La identidad verificada continúa activa.'
           : null);
-      } catch {
+      } catch (error) {
+        if (error instanceof OperationalSessionStateChangedError) {
+          if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;
+          setSnapshot(error.snapshot);
+          setSwitching(false);
+          setErrorMessage(null);
+          return;
+        }
         try {
           const verified = await getOperationalSession();
           if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;

@@ -1,5 +1,6 @@
 export const operationalSessionCookieName = 'sr_session';
 export const operationalSessionCsrfCookieName = 'sr_session_csrf';
+export const operationalSessionLoginCsrfCookieName = 'sr_session_login_csrf';
 export const operationalSessionCsrfHeaderName = 'x-sr-csrf-token';
 
 const tokenPattern = /^[A-Za-z0-9_-]{43}$/u;
@@ -30,6 +31,10 @@ export function readOperationalSessionCookies(header: string | undefined) {
   return Object.freeze({ bearer, csrf });
 }
 
+export function readOperationalSessionLoginCsrfCookie(header: string | undefined): string | null {
+  return readUniqueCookie(header, operationalSessionLoginCsrfCookieName);
+}
+
 function attributes(secure: boolean): readonly string[] {
   return ['SameSite=Strict', 'Path=/', ...(secure ? ['Secure'] : [])];
 }
@@ -45,6 +50,17 @@ export function serializeOperationalSessionCookies(bearer: string, csrf: string,
 export function serializeOperationalSessionCsrfCookie(csrf: string, secure: boolean): string {
   if (!tokenPattern.test(csrf)) throw new TypeError('Session CSRF material is invalid.');
   return [`${operationalSessionCsrfCookieName}=${csrf}`, ...attributes(secure), 'Max-Age=43200'].join('; ');
+}
+
+export function serializeOperationalSessionLoginCsrfCookie(csrf: string, secure: boolean): string {
+  if (!tokenPattern.test(csrf)) throw new TypeError('Login CSRF material is invalid.');
+  return [
+    `${operationalSessionLoginCsrfCookieName}=${csrf}`,
+    'SameSite=Strict',
+    'Path=/api/access/session',
+    ...(secure ? ['Secure'] : []),
+    'Max-Age=900',
+  ].join('; ');
 }
 
 export function expireOperationalSessionCookies(secure: boolean): readonly string[] {

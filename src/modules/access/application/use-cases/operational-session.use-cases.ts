@@ -63,7 +63,11 @@ export class CreateOperationalSessionUseCase {
     private readonly createId: () => string = randomUUID,
   ) {}
 
-  async execute(context: TrustedStationContext, proofValue: unknown): Promise<Readonly<{
+  async execute(
+    context: TrustedStationContext,
+    proofValue: unknown,
+    expectedSessionId: string | null = null,
+  ): Promise<Readonly<{
     session: OperationalSessionContext;
     tokens: OperationalSessionTokenMaterial;
   }>> {
@@ -101,6 +105,7 @@ export class CreateOperationalSessionUseCase {
         credentialVersion: proof.credentialVersion,
         bearerVerifier: tokens.bearerVerifier,
         csrfVerifier: tokens.csrfVerifier,
+        expectedSessionId,
         occurredAt: occurredAt.toISOString(),
         expiresAt: new Date(occurredAt.getTime() + OPERATIONAL_SESSION_ABSOLUTE_MS).toISOString(),
       });
@@ -189,8 +194,8 @@ export class ResolveOperationalSessionUseCase {
 
 export class EndOperationalSessionUseCase {
   constructor(
-    private readonly resolver: ResolveOperationalSessionUseCase,
     private readonly repository: OperationalSessionRepositoryPort,
+    private readonly tokens: SessionTokenPort,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -199,21 +204,22 @@ export class EndOperationalSessionUseCase {
     csrfCookie: string;
     csrfHeader: string | undefined;
   }>): Promise<void> {
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      const session = await this.resolver.execute(context, {
-        ...input,
-        requireCsrf: true,
-        touch: false,
-      });
-      const closed = await this.repository.close(context, {
-        sessionId: session.sessionId,
-        expectedVersion: session.version,
-        status: 'logged_out',
-        occurredAt: this.now().toISOString(),
-      });
-      if (closed) return;
+    if (input.csrfHeader !== input.csrfCookie) deny();
+    let bearerVerifier: Uint8Array;
+    let csrfVerifier: Uint8Array;
+    try {
+      bearerVerifier = this.tokens.verifyBearer(input.bearer);
+      csrfVerifier = this.tokens.verifyCsrf(input.csrfCookie);
+    } catch {
+      deny();
     }
-    deny();
+    const closed = await this.repository.closeAuthenticated(context, {
+      bearerVerifier,
+      csrfVerifier,
+      status: 'logged_out',
+      occurredAt: this.now().toISOString(),
+    });
+    if (!closed) deny();
   }
 }
 

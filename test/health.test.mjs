@@ -7,9 +7,12 @@ import { AppModule } from '../dist/app.module.js';
 import { HealthReadiness } from '../dist/health/health-readiness.service.js';
 
 test('health endpoints expose bounded liveness and bootstrap readiness', async () => {
-  const application = await NestFactory.create(AppModule, { logger: false });
-  await application.listen(0, '127.0.0.1');
+  const previousPinPepper = process.env.SR_PIN_PEPPER;
+  process.env.SR_PIN_PEPPER = Buffer.alloc(32, 0x34).toString('base64url');
+  let application;
   try {
+    application = await NestFactory.create(AppModule, { logger: false });
+    await application.listen(0, '127.0.0.1');
     const address = application.getHttpServer().address();
     assert.ok(address && typeof address !== 'string');
     const baseUrl = `http://127.0.0.1:${address.port}`;
@@ -41,6 +44,8 @@ test('health endpoints expose bounded liveness and bootstrap readiness', async (
     const unknown = await fetch(`${baseUrl}/unknown`);
     assert.equal(unknown.status, 404);
   } finally {
-    await application.close();
+    await application?.close();
+    if (previousPinPepper === undefined) delete process.env.SR_PIN_PEPPER;
+    else process.env.SR_PIN_PEPPER = previousPinPepper;
   }
 });

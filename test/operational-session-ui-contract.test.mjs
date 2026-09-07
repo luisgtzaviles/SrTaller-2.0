@@ -17,6 +17,7 @@ const [
   shellStyles,
   localDevSource,
   localBackendSource,
+  coordinatorSource,
 ] = await Promise.all([
   readFile('apps/dev-preview-web/src/App.tsx', 'utf8'),
   readFile('apps/dev-preview-web/src/session/session-api.ts', 'utf8'),
@@ -27,6 +28,7 @@ const [
   readFile('apps/dev-preview-web/src/components/shell/application-shell.module.css', 'utf8'),
   readFile('scripts/local-dev.mjs', 'utf8'),
   readFile('scripts/local-backend.mjs', 'utf8'),
+  readFile('apps/dev-preview-web/src/session/session-request-coordinator.mjs', 'utf8'),
 ]);
 
 function sourceSection(source, startMarker, endMarker) {
@@ -42,9 +44,9 @@ test('session HTTP client uses the single cookie-backed, CSRF-protected contract
   assert.match(apiSource, /const LOCAL_STATION_BOOTSTRAP_PATH = '\/api\/stations\/local-bootstrap';/u);
   assert.equal(apiSource.match(/credentials: 'include'/gu)?.length, 4);
   assert.equal(apiSource.match(/cache: 'no-store'/gu)?.length, 4);
-  assert.equal(apiSource.match(/\[CSRF_HEADER\]: csrfToken/gu)?.length, 2);
+  assert.equal(apiSource.match(/\[CSRF_HEADER\]: before\.csrfToken/gu)?.length, 2);
   assert.equal(apiSource.match(/'Content-Type': 'application\/json'/gu)?.length, 2);
-  assert.match(apiSource, /body: JSON\.stringify\(\{ userId: request\.userId, pin: request\.pin \}\)/u);
+  assert.match(apiSource, /body: JSON\.stringify\(\{[\s\S]*?userId: request\.userId,[\s\S]*?pin: request\.pin,[\s\S]*?expectedSessionId,/u);
   assert.doesNotMatch(apiSource, /login-context|localStorage|sessionStorage/iu);
 
   const bootstrap = sourceSection(
@@ -62,8 +64,65 @@ test('session HTTP client uses the single cookie-backed, CSRF-protected contract
   );
   assert.match(logout, /method: 'DELETE'/u);
   assert.match(logout, /'Content-Type': 'application\/json'/u);
-  assert.match(logout, /\[CSRF_HEADER\]: csrfToken/u);
+  assert.match(logout, /\[CSRF_HEADER\]: before\.csrfToken/u);
   assert.doesNotMatch(logout, /body:/u);
+});
+
+test('browser coordination serializes complete Session exchanges and publishes only invalidation', () => {
+  assert.match(coordinatorSource, /globalThis\.navigator\?\.locks/u);
+  assert.match(coordinatorSource, /new Channel\(CHANNEL_NAME\)/u);
+  assert.match(coordinatorSource, /LOCK_NAME,[\s\S]*?\{ mode: 'exclusive', signal: exchange\.signal \}/u);
+  assert.match(coordinatorSource, /DEFAULT_EXCHANGE_TIMEOUT_MS = 15_000/u);
+  assert.match(coordinatorSource, /exchange\.abort\(new OperationalSessionCoordinationError\(\)\)/u);
+  assert.match(coordinatorSource, /publishChange\('session-changing'\)/u);
+  assert.match(coordinatorSource, /publishChange\('session-changed'\)/u);
+  assert.match(coordinatorSource, /channel\.postMessage\(\{ type, version: 1 \}\)/u);
+  assert.doesNotMatch(coordinatorSource, /localStorage|sessionStorage/iu);
+  assert.doesNotMatch(
+    sourceSection(coordinatorSource, 'const publishChange =', '\n  };'),
+    /actor|bearer|csrf|pin|sessionId|userId/iu,
+  );
+
+  const start = sourceSection(
+    apiSource,
+    'export async function startOrSwitchOperationalSession',
+    'export async function logoutOperationalSession',
+  );
+  assert.match(start, /const before = await requestSnapshot\(signal\)/u);
+  assert.match(start, /sessionId\(before\) !== expectedSessionId/u);
+  assert.match(start, /markMayHaveChanged\(\)/u);
+  assert.match(start, /const confirmed = await requestSnapshot\(signal\)/u);
+  assert.match(start, /sessionId\(confirmed\) !== created\.session\.sessionId/u);
+  assert.ok(
+    start.indexOf('markMayHaveChanged()') < start.indexOf('const response = await fetch'),
+    'peer snapshots must be invalidated before the Session POST is dispatched',
+  );
+
+  const logout = apiSource.slice(apiSource.indexOf('export async function logoutOperationalSession'));
+  assert.match(logout, /const before = await requestSnapshot\(signal\)/u);
+  assert.match(logout, /sessionId\(before\) !== expectedSessionId/u);
+  assert.match(logout, /const confirmed = await requestSnapshot\(signal\)/u);
+  assert.ok(
+    logout.indexOf('markMayHaveChanged()') < logout.indexOf('const response = await fetch'),
+    'peer snapshots must be invalidated before the Session DELETE is dispatched',
+  );
+});
+
+test('remote mutation invalidation hides the actor before queued reconciliation', () => {
+  const subscription = sourceSection(
+    gateSource,
+    'unsubscribe = subscribeToRemoteSessionChanges',
+    '    } catch {',
+  );
+  assert.match(subscription, /operationGeneration\.current \+= 1/u);
+  assert.match(subscription, /pending = true/u);
+  assert.match(subscription, /setSnapshot\(null\)/u);
+  assert.match(subscription, /setPhase\('loading'\)/u);
+  assert.match(subscription, /void reconcile\(\)/u);
+  assert.ok(
+    subscription.indexOf("setPhase('loading')") < subscription.indexOf('void reconcile()'),
+    'the verified actor must be hidden before reconciliation waits for the Session lock',
+  );
 });
 
 test('session snapshots fail closed before reaching the shell', () => {
@@ -127,6 +186,8 @@ test('active Session revalidation is server-scheduled and runs on timer, focus, 
   assert.match(gateSource, /window\.setTimeout\(\(\) => void revalidate\(\), delay\)/u);
   assert.match(gateSource, /window\.addEventListener\('focus', revalidate\)/u);
   assert.match(gateSource, /document\.addEventListener\('visibilitychange', handleVisibility\)/u);
+  assert.match(gateSource, /window\.addEventListener\('pageshow', revalidate\)/u);
+  assert.match(gateSource, /inFlight\?\.abort\(\)/u);
   assert.match(gateSource, /const requestGuard = createLatestRequestCommitGuard\(\)/u);
   assert.match(gateSource, /const permit = requestGuard\.start\(\)/u);
   assert.match(
@@ -203,7 +264,7 @@ test('switch, cancellation, and logout reconcile server truth and restore determ
     'const logout = useCallback',
   );
   assert.match(authenticate, /const previousSessionId = snapshot\.session\?\.sessionId \?\? null/u);
-  assert.match(authenticate, /const next = await startOrSwitchOperationalSession/u);
+  assert.match(authenticate, /startOrSwitchOperationalSession\(\{ userId, pin \}, previousSessionId\)/u);
   assert.match(authenticate, /verified\.session\.sessionId !== previousSessionId/u);
   assert.match(authenticate, /setSwitching\(verified\.session !== null && previousSessionId !== null\)/u);
   assert.match(authenticate, /setFocusTarget\('main'\)/u);
@@ -213,8 +274,7 @@ test('switch, cancellation, and logout reconcile server truth and restore determ
     'const logout = useCallback',
     'const beginUserSwitch = useCallback',
   );
-  assert.match(logout, /await logoutOperationalSession\(snapshot\.csrfToken\)/u);
-  assert.match(logout, /const next = await getOperationalSession\(\)/u);
+  assert.match(logout, /await logoutOperationalSession\(expectedSessionId\)/u);
   assert.match(logout, /const verified = await getOperationalSession\(\)/u);
   assert.match(logout, /La identidad verificada continúa activa/u);
   assert.match(

@@ -330,26 +330,3 @@ export function createNodeArgon2PinHasher(
   const secrets = loadRequiredServerSecrets(environment, ['SR_PIN_PEPPER']);
   return new NodeArgon2PinHasher(secrets.get('SR_PIN_PEPPER'));
 }
-
-/**
- * Keeps Nest module composition side-effect free while startup remains the
- * authority that requires active server secrets. A missing/invalid pepper is
- * still rejected before any PIN operation can derive an identity proof.
- */
-export function createDeferredNodeArgon2PinHasher(
-  createHasher: () => NodeArgon2PinHasher,
-): PinSecretHasherPort {
-  let current: NodeArgon2PinHasher | null = null;
-  const requireHasher = (): NodeArgon2PinHasher => {
-    current ??= createHasher();
-    return current;
-  };
-  return Object.freeze({
-    rateLimitPrincipalId: (input: Parameters<PinSecretHasherPort['rateLimitPrincipalId']>[0]) =>
-      requireHasher().rateLimitPrincipalId(input),
-    hash: (input: Parameters<PinSecretHasherPort['hash']>[0]) =>
-      requireHasher().hash(input),
-    verify: (input: Parameters<PinSecretHasherPort['verify']>[0]) =>
-      requireHasher().verify(input),
-  });
-}

@@ -49,6 +49,7 @@ async function bootstrap(): Promise<void> {
 
   try {
     application = await NestFactory.create<NestExpressApplication>(AppModule, {
+      abortOnError: false,
       logger: ['error', 'warn'],
     });
     await configurePreviewStaticFiles(application);

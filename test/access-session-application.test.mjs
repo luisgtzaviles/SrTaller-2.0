@@ -60,6 +60,13 @@ function fixture(now = '2026-09-07T12:00:00.000Z') {
     closeConflicts: 0,
     async createReplacingActive(trusted, input) {
       if (createFailure) throw createFailure;
+      const active = rows.find((candidate) =>
+        candidate.tenantId === trusted.tenantId &&
+        candidate.stationId === trusted.stationId &&
+        candidate.status === 'active');
+      if ((active?.sessionId ?? null) !== input.expectedSessionId) {
+        throw new OperationalSessionAdmissionError();
+      }
       creates += 1;
       const occurredAt = input.occurredAt;
       for (const existing of rows) {
@@ -158,14 +165,17 @@ function fixture(now = '2026-09-07T12:00:00.000Z') {
       row.version += 1;
       return true;
     },
-    async closeActiveForStation(trusted, input) {
+    async closeAuthenticated(trusted, input) {
       if (closeFailure) throw closeFailure;
-      const row = [...rows].reverse().find((candidate) =>
+      const row = rows.find((candidate) =>
         candidate.tenantId === trusted.tenantId &&
         candidate.branchId === trusted.branchId &&
         candidate.stationId === trusted.stationId &&
+        candidate.stationCredentialId === trusted.stationCredentialId &&
+        Buffer.from(candidate.bearerVerifier).equals(Buffer.from(input.bearerVerifier)) &&
+        Buffer.from(candidate.csrfVerifier).equals(Buffer.from(input.csrfVerifier)) &&
         candidate.status === 'active');
-      if (!row) return true;
+      if (!row) return false;
       row.status = input.status;
       row.endedAt = input.occurredAt;
       row.version += 1;
@@ -198,8 +208,8 @@ function fixture(now = '2026-09-07T12:00:00.000Z') {
     () => clock.now(),
   );
   const end = new EndOperationalSessionUseCase(
-    resolve,
     repository,
+    tokens,
     () => clock.now(),
   );
   return {
@@ -322,10 +332,23 @@ test('failed switching preserves the prior Session and successful switching repl
   const second = await state.create.execute(
     context,
     proof({ userId: secondUserId, displayName: 'Ana Operadora', authenticatedAt: '2026-09-07T12:00:01.000Z' }),
+    first.session.sessionId,
   );
   assert.equal(state.creates, 2);
   assert.deepEqual(state.rows.map(({ status }) => status), ['replaced', 'active']);
   await assert.rejects(state.resolve.execute(context, cookieInput(first)), OperationalSessionError);
+  assert.equal((await state.resolve.execute(context, cookieInput(second))).userId, secondUserId);
+
+  state.clock.value = new Date('2026-09-07T12:00:02.000Z');
+  await assert.rejects(
+    state.create.execute(
+      context,
+      proof({ authenticatedAt: '2026-09-07T12:00:02.000Z' }),
+      first.session.sessionId,
+    ),
+    OperationalSessionError,
+  );
+  assert.equal(state.creates, 2);
   assert.equal((await state.resolve.execute(context, cookieInput(second))).userId, secondUserId);
 });
 
@@ -420,14 +443,14 @@ test('logout requires the bound bearer and CSRF, is replay-safe, and distinguish
 });
 
 test('logout closes only the Session authenticated by its bearer and cannot terminate a concurrent replacement', async () => {
-  let scopedClose = null;
+  let authenticatedClose = null;
   let scopedCloseCalls = 0;
   let stationWideCloseCalls = 0;
   const repository = {
-    async close(_context, input) {
+    async closeAuthenticated(_context, input) {
       scopedCloseCalls += 1;
-      scopedClose = input;
-      // A false CAS result models that this Session was concurrently replaced.
+      authenticatedClose = input;
+      // A false result models that this exact bearer was concurrently replaced.
       return false;
     },
     async closeActiveForStation() {
@@ -435,31 +458,10 @@ test('logout closes only the Session authenticated by its bearer and cannot term
       return true;
     },
   };
-  let resolveCalls = 0;
-  const resolver = {
-    async execute() {
-      resolveCalls += 1;
-      if (resolveCalls > 1) throw new OperationalSessionError();
-      return {
-        sessionId,
-        tenantId,
-        branchId,
-        stationId,
-        userId,
-        displayName: 'Jorge Operador',
-        credentialVersion: 3,
-        status: 'active',
-        version: 7,
-        issuedAt: '2026-09-07T12:00:00.000Z',
-        lastActivityAt: '2026-09-07T12:01:00.000Z',
-        expiresAt: '2026-09-08T00:00:00.000Z',
-        endedAt: null,
-      };
-    },
-  };
+  const tokens = new NodeSessionToken();
   const end = new EndOperationalSessionUseCase(
-    resolver,
     repository,
+    tokens,
     () => new Date('2026-09-07T12:02:00.000Z'),
   );
   await assert.rejects(
@@ -470,9 +472,9 @@ test('logout closes only the Session authenticated by its bearer and cannot term
     }),
     OperationalSessionError,
   );
-  assert.deepEqual(scopedClose, {
-    sessionId,
-    expectedVersion: 7,
+  assert.deepEqual(authenticatedClose, {
+    bearerVerifier: tokens.verifyBearer('a'.repeat(43)),
+    csrfVerifier: tokens.verifyCsrf('b'.repeat(43)),
     status: 'logged_out',
     occurredAt: '2026-09-07T12:02:00.000Z',
   });
@@ -480,45 +482,24 @@ test('logout closes only the Session authenticated by its bearer and cannot term
   assert.equal(stationWideCloseCalls, 0);
 });
 
-test('logout retries a benign concurrent touch with the refreshed CAS version', async () => {
-  let version = 7;
-  const attempts = [];
+test('logout uses a terminal authenticated close that is independent from touch versions', async () => {
+  const calls = [];
+  const tokens = new NodeSessionToken();
   const repository = {
-    async close(_context, input) {
-      attempts.push(input.expectedVersion);
-      if (input.expectedVersion === 7) {
-        version = 8;
-        return false;
-      }
-      return input.expectedVersion === 8;
+    async closeAuthenticated(_context, input) {
+      calls.push(input);
+      return true;
     },
   };
-  const resolver = {
-    async execute() {
-      return {
-        sessionId,
-        tenantId,
-        branchId,
-        stationId,
-        userId,
-        displayName: 'Jorge Operador',
-        credentialVersion: 3,
-        status: 'active',
-        version,
-        issuedAt: '2026-09-07T12:00:00.000Z',
-        lastActivityAt: '2026-09-07T12:01:00.000Z',
-        expiresAt: '2026-09-08T00:00:00.000Z',
-        endedAt: null,
-      };
-    },
-  };
-  const end = new EndOperationalSessionUseCase(resolver, repository);
+  const end = new EndOperationalSessionUseCase(repository, tokens);
   await end.execute(context, {
     bearer: 'a'.repeat(43),
     csrfCookie: 'b'.repeat(43),
     csrfHeader: 'b'.repeat(43),
   });
-  assert.deepEqual(attempts, [7, 8]);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0].bearerVerifier, tokens.verifyBearer('a'.repeat(43)));
+  assert.deepEqual(calls[0].csrfVerifier, tokens.verifyCsrf('b'.repeat(43)));
 });
 
 test('login users are branch-applicable, active, minimal, and deterministically sorted', async () => {

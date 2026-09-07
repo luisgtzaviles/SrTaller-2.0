@@ -28,6 +28,7 @@ export interface OperationalSessionRepositoryPort {
       credentialVersion: number;
       bearerVerifier: Uint8Array;
       csrfVerifier: Uint8Array;
+      expectedSessionId: string | null;
       occurredAt: string;
       expiresAt: string;
     }>,
@@ -53,6 +54,16 @@ export interface OperationalSessionRepositoryPort {
     input: Readonly<{
       sessionId: string;
       expectedVersion: number;
+      status: Exclude<OperationalSessionStatus, 'active'>;
+      occurredAt: string;
+    }>,
+  ): Promise<boolean>;
+
+  closeAuthenticated(
+    scope: OperationalSessionPersistenceScope,
+    input: Readonly<{
+      bearerVerifier: Uint8Array;
+      csrfVerifier: Uint8Array;
       status: Exclude<OperationalSessionStatus, 'active'>;
       occurredAt: string;
     }>,

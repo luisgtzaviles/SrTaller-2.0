@@ -1,3 +1,8 @@
+import {
+  runCoordinatedSessionMutation,
+  runCoordinatedSessionRead,
+} from './session-request-coordinator.mjs';
+
 export interface OperationalSessionStation {
   readonly stationId: string;
   readonly branchId: string;
@@ -33,6 +38,13 @@ export class OperationalSessionApiError extends Error {
   constructor(readonly status: number) {
     super('No fue posible verificar la sesión operativa.');
     this.name = 'OperationalSessionApiError';
+  }
+}
+
+export class OperationalSessionStateChangedError extends OperationalSessionApiError {
+  constructor(readonly snapshot: OperationalSessionSnapshot) {
+    super(409);
+    this.name = 'OperationalSessionStateChangedError';
   }
 }
 
@@ -147,7 +159,7 @@ async function readSnapshot(response: Response): Promise<OperationalSessionSnaps
   }
 }
 
-export async function getOperationalSession(signal?: AbortSignal): Promise<OperationalSessionSnapshot> {
+async function requestSnapshot(signal?: AbortSignal): Promise<OperationalSessionSnapshot> {
   const response = await fetch(SESSION_PATH, {
     method: 'GET',
     credentials: 'include',
@@ -158,44 +170,92 @@ export async function getOperationalSession(signal?: AbortSignal): Promise<Opera
   return readSnapshot(response);
 }
 
+function sessionId(snapshot: OperationalSessionSnapshot): string | null {
+  return snapshot.session?.sessionId ?? null;
+}
+
+export async function getOperationalSession(signal?: AbortSignal): Promise<OperationalSessionSnapshot> {
+  return runCoordinatedSessionRead(
+    (exchangeSignal) => requestSnapshot(exchangeSignal),
+    signal,
+  );
+}
+
 export async function bootstrapLocalStation(): Promise<void> {
-  const response = await fetch(LOCAL_STATION_BOOTSTRAP_PATH, {
-    method: 'POST',
-    credentials: 'include',
-    cache: 'no-store',
-    headers: { Accept: 'application/json' },
+  return runCoordinatedSessionMutation(async (markMayHaveChanged, signal) => {
+    markMayHaveChanged();
+    const response = await fetch(LOCAL_STATION_BOOTSTRAP_PATH, {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+      signal,
+    });
+    if (response.status !== 204) throw new OperationalSessionApiError(response.status);
   });
-  if (response.status !== 204) throw new OperationalSessionApiError(response.status);
 }
 
 export async function startOrSwitchOperationalSession(
   request: Readonly<{ userId: string; pin: string }>,
-  csrfToken: string,
+  expectedSessionId: string | null,
 ): Promise<OperationalSessionSnapshot> {
-  const response = await fetch(SESSION_PATH, {
-    method: 'POST',
-    credentials: 'include',
-    cache: 'no-store',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      [CSRF_HEADER]: csrfToken,
-    },
-    body: JSON.stringify({ userId: request.userId, pin: request.pin }),
+  return runCoordinatedSessionMutation(async (markMayHaveChanged, signal) => {
+    const before = await requestSnapshot(signal);
+    if (sessionId(before) !== expectedSessionId) {
+      throw new OperationalSessionStateChangedError(before);
+    }
+    markMayHaveChanged();
+    const response = await fetch(SESSION_PATH, {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        [CSRF_HEADER]: before.csrfToken,
+      },
+      body: JSON.stringify({
+        userId: request.userId,
+        pin: request.pin,
+        expectedSessionId,
+      }),
+      signal,
+    });
+    const created = await readSnapshot(response);
+    if (!created.session) throw new OperationalSessionApiError(0);
+    const confirmed = await requestSnapshot(signal);
+    if (sessionId(confirmed) !== created.session.sessionId) {
+      throw new OperationalSessionStateChangedError(confirmed);
+    }
+    return confirmed;
   });
-  return readSnapshot(response);
 }
 
-export async function logoutOperationalSession(csrfToken: string): Promise<void> {
-  const response = await fetch(SESSION_PATH, {
-    method: 'DELETE',
-    credentials: 'include',
-    cache: 'no-store',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      [CSRF_HEADER]: csrfToken,
-    },
+export async function logoutOperationalSession(
+  expectedSessionId: string,
+): Promise<OperationalSessionSnapshot> {
+  return runCoordinatedSessionMutation(async (markMayHaveChanged, signal) => {
+    const before = await requestSnapshot(signal);
+    if (sessionId(before) !== expectedSessionId) {
+      throw new OperationalSessionStateChangedError(before);
+    }
+    markMayHaveChanged();
+    const response = await fetch(SESSION_PATH, {
+      method: 'DELETE',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        [CSRF_HEADER]: before.csrfToken,
+      },
+      signal,
+    });
+    if (response.status !== 204) throw new OperationalSessionApiError(response.status);
+    const confirmed = await requestSnapshot(signal);
+    if (sessionId(confirmed) === expectedSessionId) {
+      throw new OperationalSessionApiError(0);
+    }
+    return confirmed;
   });
-  if (response.status !== 204) throw new OperationalSessionApiError(response.status);
 }

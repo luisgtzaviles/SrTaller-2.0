@@ -13,9 +13,11 @@ import {
 import {
   expireOperationalSessionCookies,
   readOperationalSessionCookies,
+  readOperationalSessionLoginCsrfCookie,
   requestIsSameOrigin,
   serializeOperationalSessionCookies,
   serializeOperationalSessionCsrfCookie,
+  serializeOperationalSessionLoginCsrfCookie,
 } from '../dist/modules/access/presentation/access-session-cookie.js';
 import { NodeSessionToken } from '../dist/modules/access/infrastructure/security/node-session-token.js';
 import { createTrustedStationContext } from '../dist/modules/stations/application/contracts/trusted-station-context.js';
@@ -107,7 +109,7 @@ const secureTransportPolicy = Object.freeze({
   requiresSecureCookies: () => true,
 });
 
-test('Session cookies are host-only, bounded, and split bearer from readable CSRF', () => {
+test('Session cookies split the authoritative pair from a bounded login-only CSRF challenge', () => {
   const material = new NodeSessionToken().issue();
   const cookies = serializeOperationalSessionCookies(material.bearer, material.csrf, true);
   assert.equal(cookies.length, 2);
@@ -115,6 +117,14 @@ test('Session cookies are host-only, bounded, and split bearer from readable CSR
   assert.match(cookies[1], /^sr_session_csrf=.*; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
   assert.doesNotMatch(cookies.join('\n'), /Domain=/u);
   assert.match(serializeOperationalSessionCsrfCookie(material.csrf, false), /^sr_session_csrf=.*; SameSite=Strict; Path=\/; Max-Age=43200$/u);
+  assert.match(
+    serializeOperationalSessionLoginCsrfCookie(material.csrf, false),
+    /^sr_session_login_csrf=.*; SameSite=Strict; Path=\/api\/access\/session; Max-Age=900$/u,
+  );
+  assert.equal(
+    readOperationalSessionLoginCsrfCookie(`sr_session_login_csrf=${material.csrf}`),
+    material.csrf,
+  );
   assert.deepEqual(
     readOperationalSessionCookies(`sr_session=${material.bearer}; sr_session_csrf=${material.csrf}`),
     { bearer: material.bearer, csrf: material.csrf },
@@ -166,7 +176,7 @@ test('owner migrations enforce monotonic admission epochs and Access migration s
   assert.doesNotMatch(source, /SR_SESSION_SIGNING_KEY|plaintext|raw_token/iu);
 });
 
-test('GET is no-store, returns the minimum login snapshot, rotates malformed Session state, and preserves infrastructure errors', async () => {
+test('GET is no-store, mutates only the login challenge, and preserves active cookies and infrastructure errors', async () => {
   const runtime = runtimeDouble();
   const controller = new AccessSessionController(runtime, secureTransportPolicy);
   const freshResponse = responseDouble();
@@ -177,7 +187,7 @@ test('GET is no-store, returns the minimum login snapshot, rotates malformed Ses
   assert.equal(fresh.session, null);
   assert.equal(fresh.revalidateAfterMs, null);
   assert.match(fresh.csrfToken, /^[A-Za-z0-9_-]{43}$/u);
-  assert.match(freshResponse.headers.get('set-cookie'), /^sr_session_csrf=/u);
+  assert.match(freshResponse.headers.get('set-cookie'), /^sr_session_login_csrf=/u);
 
   const malformedResponse = responseDouble();
   const malformed = await controller.get({
@@ -186,11 +196,22 @@ test('GET is no-store, returns the minimum login snapshot, rotates malformed Ses
   assert.equal(malformed.session, null);
   assert.equal(malformed.revalidateAfterMs, null);
   assert.equal(malformedResponse.headers.get('cache-control'), 'no-store');
-  assert.equal(malformedResponse.headers.get('set-cookie').length, 2);
-  assert.match(malformedResponse.headers.get('set-cookie')[0], /Max-Age=0/u);
-  assert.match(malformedResponse.headers.get('set-cookie')[1], /^sr_session_csrf=/u);
+  assert.match(malformedResponse.headers.get('set-cookie'), /^sr_session_login_csrf=/u);
+  assert.doesNotMatch(malformedResponse.headers.get('set-cookie'), /^sr_session(?:=|_csrf=)/u);
 
   const material = runtime.tokens.issue();
+  const inactiveMaterial = runtime.tokens.issue();
+  const inactiveResponse = responseDouble();
+  const inactive = new AccessSessionController(runtimeDouble({
+    resolveSession: { async execute() { throw new OperationalSessionError(); } },
+  }), secureTransportPolicy);
+  const inactiveSnapshot = await inactive.get({
+    cookie: `sr_session=${inactiveMaterial.bearer}; sr_session_csrf=${inactiveMaterial.csrf}; sr_session_login_csrf=${material.csrf}`,
+  }, inactiveResponse);
+  assert.equal(inactiveSnapshot.session, null);
+  assert.equal(inactiveSnapshot.csrfToken, material.csrf);
+  assert.equal(inactiveResponse.headers.has('set-cookie'), false);
+
   const infrastructureFailure = new Error('repository unavailable');
   const failing = new AccessSessionController(runtimeDouble({
     resolveSession: { async execute() { throw infrastructureFailure; } },
@@ -208,15 +229,15 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
   const controller = new AccessSessionController(runtime, secureTransportPolicy);
 
   await assert.rejects(
-    controller.create({ userId, pin: '123456' }, { ...sameOriginHeaders(cookie, material.csrf), origin: 'https://evil.example' }, responseDouble()),
+    controller.create({ userId, pin: '123456', expectedSessionId: sessionRecord().sessionId }, { ...sameOriginHeaders(cookie, material.csrf), origin: 'https://evil.example' }, responseDouble()),
     ForbiddenException,
   );
   await assert.rejects(
-    controller.create({ userId, pin: '123456' }, { ...sameOriginHeaders(cookie, material.csrf), 'content-type': 'text/plain' }, responseDouble()),
+    controller.create({ userId, pin: '123456', expectedSessionId: sessionRecord().sessionId }, { ...sameOriginHeaders(cookie, material.csrf), 'content-type': 'text/plain' }, responseDouble()),
     ForbiddenException,
   );
   await assert.rejects(
-    controller.create({ userId, pin: '123456' }, sameOriginHeaders(cookie, `${material.csrf.slice(0, -1)}x`), responseDouble()),
+    controller.create({ userId, pin: '123456', expectedSessionId: sessionRecord().sessionId }, sameOriginHeaders(cookie, `${material.csrf.slice(0, -1)}x`), responseDouble()),
     UnauthorizedException,
   );
 
@@ -225,7 +246,7 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
     authenticatePin: { async execute() { throw new OperationalSessionError(); } },
   }), secureTransportPolicy);
   await assert.rejects(
-    denied.create({ userId, pin: '000000' }, sameOriginHeaders(cookie, material.csrf), deniedResponse),
+    denied.create({ userId, pin: '000000', expectedSessionId: sessionRecord().sessionId }, sameOriginHeaders(cookie, material.csrf), deniedResponse),
     UnauthorizedException,
   );
   assert.equal(deniedResponse.headers.has('set-cookie'), false);
@@ -233,8 +254,8 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
 
   const successResponse = responseDouble();
   const success = await controller.create(
-    { userId, pin: '123456' },
-    sameOriginHeaders(`sr_session_csrf=${material.csrf}`, material.csrf),
+    { userId, pin: '123456', expectedSessionId: null },
+    sameOriginHeaders(`sr_session_login_csrf=${material.csrf}`, material.csrf),
     successResponse,
   );
   assert.equal(success.session.userId, userId);
@@ -247,7 +268,215 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
   assert.match(setCookies[1], /^sr_session_csrf=.*; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
 });
 
-test('DELETE is no-store, rejects cross-origin and missing CSRF, expires replayed auth denials, and surfaces infrastructure failure', async () => {
+test('POST requires exact optimistic state and never accepts the login challenge as switch CSRF', async () => {
+  const tokens = new NodeSessionToken();
+  const active = tokens.issue();
+  const login = tokens.issue();
+  const cookie = [
+    `sr_session=${active.bearer}`,
+    `sr_session_csrf=${active.csrf}`,
+    `sr_session_login_csrf=${login.csrf}`,
+  ].join('; ');
+  let authenticationCalls = 0;
+  let creationCalls = 0;
+  let observedExpectedSessionId;
+  const runtime = runtimeDouble({
+    authenticatePin: {
+      async execute() {
+        authenticationCalls += 1;
+        return Object.freeze({});
+      },
+    },
+    createSession: {
+      async execute(_context, _proof, expectedSessionId) {
+        creationCalls += 1;
+        observedExpectedSessionId = expectedSessionId;
+        const material = tokens.issue();
+        return { tokens: material, session: sessionRecord({ version: 0 }) };
+      },
+    },
+  });
+  const controller = new AccessSessionController(runtime, secureTransportPolicy);
+  for (const invalidBody of [
+    { userId, pin: '123456' },
+    { userId, pin: '123456', expectedSessionId: 'not-a-session-id' },
+    { userId, pin: '123456', expectedSessionId: null, extra: true },
+  ]) {
+    const response = responseDouble();
+    await assert.rejects(
+      controller.create(invalidBody, sameOriginHeaders(cookie, login.csrf), response),
+      UnauthorizedException,
+    );
+    assert.equal(response.headers.has('set-cookie'), false);
+  }
+  assert.equal(authenticationCalls, 0);
+  assert.equal(creationCalls, 0);
+
+  const expectedSessionId = sessionRecord().sessionId;
+  await assert.rejects(
+    controller.create(
+      { userId, pin: '123456', expectedSessionId },
+      sameOriginHeaders(cookie, login.csrf),
+      responseDouble(),
+    ),
+    UnauthorizedException,
+  );
+  assert.equal(authenticationCalls, 0);
+
+  await controller.create(
+    { userId, pin: '123456', expectedSessionId },
+    sameOriginHeaders(cookie, active.csrf),
+    responseDouble(),
+  );
+  assert.equal(authenticationCalls, 1);
+  assert.equal(creationCalls, 1);
+  assert.equal(observedExpectedSessionId, expectedSessionId);
+
+  await controller.create(
+    { userId, pin: '123456', expectedSessionId: null },
+    sameOriginHeaders(cookie, login.csrf),
+    responseDouble(),
+  );
+  assert.equal(observedExpectedSessionId, null);
+
+  const malformedAuthoritativeCookie = [
+    `sr_session=${active.bearer}`,
+    `sr_session=${active.bearer}`,
+    `sr_session_csrf=${active.csrf}`,
+    `sr_session_login_csrf=${login.csrf}`,
+  ].join('; ');
+  await controller.create(
+    { userId, pin: '123456', expectedSessionId: null },
+    sameOriginHeaders(malformedAuthoritativeCookie, login.csrf),
+    responseDouble(),
+  );
+  assert.equal(authenticationCalls, 3);
+  assert.equal(creationCalls, 3);
+  assert.equal(observedExpectedSessionId, null);
+});
+
+test('POST switch proves the authoritative bearer belongs to the expected active Session before PIN authentication', async () => {
+  const tokens = new NodeSessionToken();
+  const forged = tokens.issue();
+  const expectedSessionId = sessionRecord().sessionId;
+  let authenticationCalls = 0;
+  let creationCalls = 0;
+  const controller = new AccessSessionController(runtimeDouble({
+    resolveSession: {
+      async execute() {
+        throw new OperationalSessionError();
+      },
+    },
+    authenticatePin: {
+      async execute() {
+        authenticationCalls += 1;
+        return Object.freeze({});
+      },
+    },
+    createSession: {
+      async execute() {
+        creationCalls += 1;
+        throw new Error('must not create');
+      },
+    },
+  }), secureTransportPolicy);
+  const forgedResponse = responseDouble();
+  await assert.rejects(
+    controller.create(
+      { userId, pin: '123456', expectedSessionId },
+      sameOriginHeaders(
+        `sr_session=${forged.bearer}; sr_session_csrf=${forged.csrf}`,
+        forged.csrf,
+      ),
+      forgedResponse,
+    ),
+    UnauthorizedException,
+  );
+  assert.equal(authenticationCalls, 0);
+  assert.equal(creationCalls, 0);
+  assert.equal(forgedResponse.headers.has('set-cookie'), false);
+
+  const other = tokens.issue();
+  const mismatchResponse = responseDouble();
+  const mismatch = new AccessSessionController(runtimeDouble({
+    resolveSession: {
+      async execute() {
+        return sessionRecord({ sessionId: '00000000-0000-4000-8000-000000000802' });
+      },
+    },
+    authenticatePin: {
+      async execute() {
+        authenticationCalls += 1;
+        return Object.freeze({});
+      },
+    },
+    createSession: {
+      async execute() {
+        creationCalls += 1;
+        throw new Error('must not create');
+      },
+    },
+  }), secureTransportPolicy);
+  await assert.rejects(
+    mismatch.create(
+      { userId, pin: '123456', expectedSessionId },
+      sameOriginHeaders(
+        `sr_session=${other.bearer}; sr_session_csrf=${other.csrf}`,
+        other.csrf,
+      ),
+      mismatchResponse,
+    ),
+    UnauthorizedException,
+  );
+  assert.equal(authenticationCalls, 0);
+  assert.equal(creationCalls, 0);
+  assert.equal(mismatchResponse.headers.has('set-cookie'), false);
+});
+
+test('adversarial response completion cannot let stale GET or DELETE overwrite a newer authoritative cookie pair', async () => {
+  const tokens = new NodeSessionToken();
+  const previous = tokens.issue();
+  const current = tokens.issue();
+  const jar = new Map();
+  const applySetCookie = (header) => {
+    for (const value of header === undefined ? [] : Array.isArray(header) ? header : [header]) {
+      const [pair] = value.split(';', 1);
+      const separator = pair.indexOf('=');
+      jar.set(pair.slice(0, separator), pair.slice(separator + 1));
+    }
+  };
+
+  applySetCookie(serializeOperationalSessionCookies(current.bearer, current.csrf, true));
+
+  const delayedGetResponse = responseDouble();
+  const delayedGet = new AccessSessionController(runtimeDouble({
+    resolveSession: { async execute() { throw new OperationalSessionError(); } },
+  }), secureTransportPolicy);
+  await delayedGet.get({
+    cookie: `sr_session=${previous.bearer}; sr_session_csrf=${previous.csrf}`,
+  }, delayedGetResponse);
+  applySetCookie(delayedGetResponse.headers.get('set-cookie'));
+  assert.equal(jar.get('sr_session'), current.bearer);
+  assert.equal(jar.get('sr_session_csrf'), current.csrf);
+  assert.match(jar.get('sr_session_login_csrf'), /^[A-Za-z0-9_-]{43}$/u);
+
+  const replayedDeleteResponse = responseDouble();
+  const replayedDelete = new AccessSessionController(runtimeDouble({
+    endSession: { async execute() { throw new OperationalSessionError(); } },
+  }), secureTransportPolicy);
+  await replayedDelete.end(
+    sameOriginHeaders(
+      `sr_session=${previous.bearer}; sr_session_csrf=${previous.csrf}`,
+      previous.csrf,
+    ),
+    replayedDeleteResponse,
+  );
+  applySetCookie(replayedDeleteResponse.headers.get('set-cookie'));
+  assert.equal(jar.get('sr_session'), current.bearer);
+  assert.equal(jar.get('sr_session_csrf'), current.csrf);
+});
+
+test('DELETE is no-store, rejects cross-origin and missing CSRF, preserves newer cookies on replay denial, and surfaces infrastructure failure', async () => {
   const runtime = runtimeDouble();
   const material = runtime.tokens.issue();
   const cookie = `sr_session=${material.bearer}; sr_session_csrf=${material.csrf}`;
@@ -261,14 +490,19 @@ test('DELETE is no-store, rejects cross-origin and missing CSRF, expires replaye
     UnauthorizedException,
   );
 
+  const successResponse = responseDouble();
+  await controller.end(sameOriginHeaders(cookie, material.csrf), successResponse);
+  assert.equal(successResponse.headers.get('cache-control'), 'no-store');
+  assert.equal(successResponse.headers.get('set-cookie').length, 2);
+  assert.ok(successResponse.headers.get('set-cookie').every((value) => /Max-Age=0$/u.test(value)));
+
   const replayResponse = responseDouble();
   const replay = new AccessSessionController(runtimeDouble({
     endSession: { async execute() { throw new OperationalSessionError(); } },
   }), secureTransportPolicy);
   await replay.end(sameOriginHeaders(cookie, material.csrf), replayResponse);
   assert.equal(replayResponse.headers.get('cache-control'), 'no-store');
-  assert.equal(replayResponse.headers.get('set-cookie').length, 2);
-  assert.ok(replayResponse.headers.get('set-cookie').every((value) => /Max-Age=0$/u.test(value)));
+  assert.equal(replayResponse.headers.has('set-cookie'), false);
 
   const infrastructureFailure = new Error('database unavailable');
   const failureResponse = responseDouble();
@@ -284,9 +518,12 @@ test('DELETE is no-store, rejects cross-origin and missing CSRF, expires replaye
 });
 
 test('real AppModule/Nest routing fails closed without a trusted Station and never enables local bootstrap by default', async () => {
-  const application = await NestFactory.create(AppModule, { logger: false });
-  await application.listen(0, '127.0.0.1');
+  const previousPinPepper = process.env.SR_PIN_PEPPER;
+  process.env.SR_PIN_PEPPER = Buffer.alloc(32, 0x34).toString('base64url');
+  let application;
   try {
+    application = await NestFactory.create(AppModule, { logger: false });
+    await application.listen(0, '127.0.0.1');
     const address = application.getHttpServer().address();
     assert.ok(address && typeof address !== 'string');
     const baseUrl = `http://127.0.0.1:${address.port}`;
@@ -304,6 +541,8 @@ test('real AppModule/Nest routing fails closed without a trusted Station and nev
     assert.equal(bootstrap.status, 403);
     assert.equal(bootstrap.headers.has('set-cookie'), false);
   } finally {
-    await application.close();
+    await application?.close();
+    if (previousPinPepper === undefined) delete process.env.SR_PIN_PEPPER;
+    else process.env.SR_PIN_PEPPER = previousPinPepper;
   }
 });
