@@ -34,7 +34,7 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     )
     .addCheckConstraint(
       'user_lifecycle_commands_status_ck',
-      sql`requested_status in ('active', 'inactive', 'revoked') and result_status in ('active', 'inactive', 'revoked')`,
+      sql`requested_status in ('active', 'inactive', 'revoked') and result_status = requested_status`,
     )
     .addCheckConstraint(
       'user_lifecycle_commands_version_ck',

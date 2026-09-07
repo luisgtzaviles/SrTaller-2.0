@@ -399,11 +399,11 @@ class KyselyUserRepository implements UserRepositoryPort {
           if (!current) {
             throw new UserPersistenceError('USER_NOT_FOUND');
           }
-          if (!canTransitionUser(current.status, trustedInput.status)) {
-            throw new UserPersistenceError('USER_LIFECYCLE_CONFLICT');
-          }
           if (current.version !== trustedInput.expectedVersion) {
             throw new UserPersistenceError('USER_STALE_WRITE');
+          }
+          if (!canTransitionUser(current.status, trustedInput.status)) {
+            throw new UserPersistenceError('USER_LIFECYCLE_CONFLICT');
           }
 
           const row = await transaction

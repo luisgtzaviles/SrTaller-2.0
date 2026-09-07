@@ -15,6 +15,10 @@ const workflow = await readFile(
   'utf8',
 );
 const runner = await readFile('scripts/run-postgresql-ci.mjs', 'utf8');
+const ownerScopedRunner = await readFile(
+  'scripts/test-owner-scoped-persistence-postgresql.mjs',
+  'utf8',
+);
 
 test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', () => {
   assert.match(workflow, /execution:\s*\n\s+- run-1\s*\n\s+- run-2/u);
@@ -69,6 +73,19 @@ test('PostgreSQL runner pins the governed digest and exact suite inventory', () 
     postgresqlImage,
     'postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf',
   );
+});
+
+test('owner-scoped PostgreSQL runner retains the exact material adapter inventory', () => {
+  const materialAdapterTests = Array.from(
+    ownerScopedRunner.matchAll(/^\s*'(test\/[^']+\.test\.mjs)',?\s*$/gmu),
+    (match) => match[1],
+  );
+  assert.deepEqual(materialAdapterTests, [
+    'test/owner-scoped-persistence-postgresql.test.mjs',
+    'test/repair-persistence-postgresql.test.mjs',
+    'test/trusted-station-context-postgresql.test.mjs',
+    'test/user-directory-postgresql.test.mjs',
+  ]);
 });
 
 test('critical test summary accepts zero skips and fails closed on any skip', () => {

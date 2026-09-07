@@ -55,7 +55,10 @@ const tenantA = '10000000-0000-4000-8000-000000000032';
 const tenantB = '20000000-0000-4000-8000-000000000032';
 const tenantC = '30000000-0000-4000-8000-000000000032';
 const tenantD = '31000000-0000-4000-8000-000000000032';
+const tenantE = '32000000-0000-4000-8000-000000000032';
 const sharedUserId = '40000000-0000-4000-8000-000000000032';
+const userB1 = '41000000-0000-4000-8000-000000000032';
+const userB2 = '42000000-0000-4000-8000-000000000032';
 const userC1 = '50000000-0000-4000-8000-000000000032';
 const userC2 = '60000000-0000-4000-8000-000000000032';
 const requestA = '70000000-0000-4000-8000-000000000032';
@@ -73,6 +76,10 @@ const competingRevokedRequest = 'ac000000-0000-4000-8000-000000000032';
 const rollbackRequest = 'ad000000-0000-4000-8000-000000000032';
 const existingUserRequest = 'ae000000-0000-4000-8000-000000000032';
 const userD = 'af000000-0000-4000-8000-000000000032';
+const requestE = 'b0000000-0000-4000-8000-000000000032';
+const revokeRequestB = 'b1000000-0000-4000-8000-000000000032';
+const afterRevokeRequestB = 'b2000000-0000-4000-8000-000000000032';
+const contradictoryJournalRequest = 'b3000000-0000-4000-8000-000000000032';
 
 function databaseConfig() {
   return Object.freeze({
@@ -239,6 +246,7 @@ test(
       ]);
 
       const idempotentApply = await runner.migrateToLatest();
+      assert.deepEqual(idempotentApply.results, []);
       assert.ok(
         idempotentApply.status.migrations.every(
           ({ state }) => state === 'applied',
@@ -247,8 +255,8 @@ test(
 
       await admin.query(
         `insert into tenants (tenant_id, created_at)
-         values ($1, now()), ($2, now()), ($3, now()), ($4, now())`,
-        [tenantA, tenantB, tenantC, tenantD],
+         values ($1, now()), ($2, now()), ($3, now()), ($4, now()), ($5, now())`,
+        [tenantA, tenantB, tenantC, tenantD, tenantE],
       );
 
       await admin.query(
@@ -307,15 +315,26 @@ test(
         'FIRST_USER_ALREADY_PROVISIONED',
       );
 
-      const sameRequestB = bootstrapInput({
+      const sameRequestB1 = bootstrapInput({
+        userId: userB1,
+        displayName: 'Primera persona B',
+        operationalIdentifier: 'persona-a',
+      });
+      const sameRequestB2 = bootstrapInput({
+        userId: userB2,
         displayName: 'Primera persona B',
         operationalIdentifier: 'persona-a',
       });
       const concurrentReplayB = await Promise.all([
-        repository.bootstrap({ tenantId: tenantB }, sameRequestB),
-        repository.bootstrap({ tenantId: tenantB }, sameRequestB),
+        repository.bootstrap({ tenantId: tenantB }, sameRequestB1),
+        repository.bootstrap({ tenantId: tenantB }, sameRequestB2),
       ]);
       assert.deepEqual(concurrentReplayB[0], concurrentReplayB[1]);
+
+      const firstE = await repository.bootstrap(
+        { tenantId: tenantE },
+        bootstrapInput({ clientRequestId: requestE }),
+      );
 
       const competingC = await Promise.allSettled([
         repository.bootstrap(
@@ -362,6 +381,7 @@ test(
         { tenant_id: tenantA, count: 1 },
         { tenant_id: tenantB, count: 1 },
         { tenant_id: tenantC, count: 1 },
+        { tenant_id: tenantE, count: 1 },
       ]);
       const gates = await admin.query(
         `select tenant_id, count(*)::integer as count
@@ -446,8 +466,15 @@ test(
         firstA,
       );
       assert.deepEqual(
-        await repository.findById({ tenantId: tenantB }, sharedUserId),
+        await repository.findById(
+          { tenantId: tenantB },
+          concurrentReplayB[0].userId,
+        ),
         concurrentReplayB[0],
+      );
+      assert.deepEqual(
+        await repository.findById({ tenantId: tenantE }, sharedUserId),
+        firstE,
       );
       const provisionedC = fulfilledC.value;
       assert.deepEqual(
@@ -574,18 +601,44 @@ test(
       const inactiveB = await repository.transition(
         { tenantId: tenantB },
         transitionInput({
+          userId: concurrentReplayB[0].userId,
           occurredAt: '2026-09-06T18:06:00.000Z',
         }),
       );
       assert.equal(inactiveB.status, 'inactive');
       assert.equal(inactiveB.version, 1);
+      const revokedB = await repository.transition(
+        { tenantId: tenantB },
+        transitionInput({
+          userId: concurrentReplayB[0].userId,
+          status: 'revoked',
+          expectedVersion: 1,
+          clientRequestId: revokeRequestB,
+          occurredAt: '2026-09-06T18:06:30.000Z',
+        }),
+      );
+      assert.equal(revokedB.status, 'revoked');
+      assert.equal(revokedB.version, 2);
+      await rejectsWithCode(
+        repository.transition(
+          { tenantId: tenantB },
+          transitionInput({
+            userId: concurrentReplayB[0].userId,
+            status: 'active',
+            expectedVersion: 2,
+            clientRequestId: afterRevokeRequestB,
+            occurredAt: '2026-09-06T18:06:45.000Z',
+          }),
+        ),
+        'USER_LIFECYCLE_CONFLICT',
+      );
       assert.equal(
         (await repository.list({ tenantId: tenantA }))[0]?.status,
         'revoked',
       );
       assert.equal(
         (await repository.list({ tenantId: tenantB }))[0]?.status,
-        'inactive',
+        'revoked',
       );
 
       const competingLifecycleC = await Promise.allSettled([
@@ -613,6 +666,20 @@ test(
           ({ status: state }) => state === 'fulfilled',
         ).length,
         1,
+      );
+
+      await assert.rejects(
+        admin.query(
+          `insert into user_lifecycle_commands (
+             tenant_id, client_request_id, user_id, requested_status,
+             expected_version, result_display_name,
+             result_operational_identifier, result_status, result_version,
+             result_created_at, result_updated_at, applied_at
+           ) values ($1, $2, $3, 'revoked', 2, 'Snapshot contradictorio',
+             null, 'active', 3, now(), now(), now())`,
+          [tenantB, contradictoryJournalRequest, concurrentReplayB[0].userId],
+        ),
+        (error) => error?.code === '23514',
       );
       const lifecycleLoser = competingLifecycleC.find(
         ({ status: state }) => state === 'rejected',
@@ -650,30 +717,36 @@ test(
           ({ tenant_id: commandTenantId }) => commandTenantId !== tenantC,
         ),
         [
-        {
-          tenant_id: tenantA,
-          client_request_id: deactivateRequestA,
-          requested_status: 'inactive',
-          result_version: 1,
-        },
-        {
-          tenant_id: tenantA,
-          client_request_id: reactivateRequestA,
-          requested_status: 'active',
-          result_version: 2,
-        },
-        {
-          tenant_id: tenantA,
-          client_request_id: revokeRequestA,
-          requested_status: 'revoked',
-          result_version: 3,
-        },
-        {
-          tenant_id: tenantB,
-          client_request_id: deactivateRequestA,
-          requested_status: 'inactive',
-          result_version: 1,
-        },
+          {
+            tenant_id: tenantA,
+            client_request_id: deactivateRequestA,
+            requested_status: 'inactive',
+            result_version: 1,
+          },
+          {
+            tenant_id: tenantA,
+            client_request_id: reactivateRequestA,
+            requested_status: 'active',
+            result_version: 2,
+          },
+          {
+            tenant_id: tenantA,
+            client_request_id: revokeRequestA,
+            requested_status: 'revoked',
+            result_version: 3,
+          },
+          {
+            tenant_id: tenantB,
+            client_request_id: deactivateRequestA,
+            requested_status: 'inactive',
+            result_version: 1,
+          },
+          {
+            tenant_id: tenantB,
+            client_request_id: revokeRequestB,
+            requested_status: 'revoked',
+            result_version: 2,
+          },
         ],
       );
 
