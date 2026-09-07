@@ -5,8 +5,11 @@ import type { ListUsersUseCase } from './application/use-cases/list-users.use-ca
 import type { ProvisionFirstUserUseCase } from './application/use-cases/provision-first-user.use-case.js';
 import type { TransitionUserStatusUseCase } from './application/use-cases/transition-user-status.use-case.js';
 import type { KyselyUserRepositoryFactory } from './infrastructure/persistence/kysely-user.repository.js';
+import type { KyselyAuthenticationUserReader } from './infrastructure/persistence/kysely-authentication-user.reader.js';
 
-type RegisteredUsersPersistenceAdapter = KyselyUserRepositoryFactory;
+type RegisteredUsersPersistenceAdapter =
+  | KyselyUserRepositoryFactory
+  | KyselyAuthenticationUserReader;
 type RegisteredUsersUseCases =
   | GetUserUseCase
   | ListUsersUseCase

@@ -1,4 +1,4 @@
-import type { TrustedStationContext } from '../../application/contracts/trusted-station-context.js';
+import type { TrustedStationContext } from '../../index.js';
 import { ResolveTrustedStationContextUseCase } from '../../application/use-cases/resolve-trusted-station-context.js';
 import { readStationCredentialCookie } from './station-credential-cookie.js';
 

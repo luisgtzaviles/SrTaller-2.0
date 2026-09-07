@@ -139,6 +139,59 @@ export interface AccessRoleAssignmentCommandTable {
   readonly applied_at: ImmutableColumn<Date>;
 }
 
+export type AccessPinCredentialStatus = 'active' | 'revoked';
+
+/**
+ * The access owner keeps PIN credential material separate from the User row.
+ * The composite primary key enforces at most one credential per tenant/User.
+ */
+export interface AccessPinCredentialTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly credential_id: ImmutableColumn<string>;
+  readonly status: MutableColumn<AccessPinCredentialStatus>;
+  readonly algorithm: MutableColumn<'argon2id'>;
+  readonly profile_version: MutableColumn<number>;
+  readonly pepper_version: MutableColumn<number>;
+  readonly memory_kib: MutableColumn<number>;
+  readonly passes: MutableColumn<number>;
+  readonly parallelism: MutableColumn<number>;
+  readonly salt: MutableColumn<Uint8Array>;
+  readonly verifier: MutableColumn<Uint8Array>;
+  readonly credential_version: MutableColumn<number>;
+  readonly consecutive_failures: MutableColumn<number>;
+  readonly locked_until: MutableColumn<Date | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+  readonly revoked_at: MutableColumn<Date | null>;
+}
+
+/** Immutable replay evidence for the server-only provisioning command. */
+export interface AccessPinCredentialCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly credential_id: ImmutableColumn<string>;
+  readonly command_type: ImmutableColumn<'provision'>;
+  readonly request_fingerprint: ImmutableColumn<Uint8Array>;
+  readonly result_status: ImmutableColumn<'active'>;
+  readonly result_credential_version: ImmutableColumn<number>;
+  readonly result_created_at: ImmutableColumn<Date>;
+  readonly result_updated_at: ImmutableColumn<Date>;
+  readonly applied_at: ImmutableColumn<Date>;
+}
+
+/** Additional abuse-control state scoped to a trusted Station and User. */
+export interface AccessPinAttemptLimitTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly attempt_count: MutableColumn<number>;
+  readonly window_started_at: MutableColumn<Date>;
+  readonly blocked_until: MutableColumn<Date | null>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
 export interface RepairTable {
   readonly repair_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -301,6 +354,9 @@ export interface DatabaseSchema {
   readonly access_role_capabilities: AccessRoleCapabilityTable;
   readonly access_role_assignments: AccessRoleAssignmentTable;
   readonly access_role_assignment_commands: AccessRoleAssignmentCommandTable;
+  readonly access_pin_credentials: AccessPinCredentialTable;
+  readonly access_pin_credential_commands: AccessPinCredentialCommandTable;
+  readonly access_pin_attempt_limits: AccessPinAttemptLimitTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
@@ -352,6 +408,19 @@ export type AccessRoleAssignmentCommandRow =
   Selectable<AccessRoleAssignmentCommandTable>;
 export type NewAccessRoleAssignmentCommand =
   Insertable<AccessRoleAssignmentCommandTable>;
+
+export type AccessPinCredentialRow = Selectable<AccessPinCredentialTable>;
+export type NewAccessPinCredential = Insertable<AccessPinCredentialTable>;
+export type AccessPinCredentialUpdate = Updateable<AccessPinCredentialTable>;
+
+export type AccessPinCredentialCommandRow =
+  Selectable<AccessPinCredentialCommandTable>;
+export type NewAccessPinCredentialCommand =
+  Insertable<AccessPinCredentialCommandTable>;
+
+export type AccessPinAttemptLimitRow = Selectable<AccessPinAttemptLimitTable>;
+export type NewAccessPinAttemptLimit = Insertable<AccessPinAttemptLimitTable>;
+export type AccessPinAttemptLimitUpdate = Updateable<AccessPinAttemptLimitTable>;
 
 export type RepairRow = Selectable<RepairTable>;
 export type NewRepair = Insertable<RepairTable>;
