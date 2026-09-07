@@ -24,9 +24,10 @@ NestJS ejecutable, React/Vite, PostgreSQL y el Repair Workstream local con D5,
 D6.1 y D6.2. Trusted Station Context, User Directory y
 Roles/Capabilities/Assignments están integrados y cerrados canónicamente. Los
 writes integrados de Repairs aún usan actor sintético; PBI-034 atribuye una
-Session a un User visible, pero todavía no autoriza ni retrofitea efectos de
-negocio. PBI-025 está `Done`; PBI-034 Operational Session está integrado y en
-`Done candidate`, sin PBI actual y con WIP `0/1`.
+Session a un User visible, pero no autoriza ni retrofitea por sí solo efectos de
+negocio. PBI-025 y PBI-034 están `Done`; PBI-026 Contextual Authorization está
+`In progress` como único PBI actual de SPRINT-02, con WIP `1/1`. Su candidato
+local no está integrado y PBI-028 permanece no iniciado.
 
 ## Jerarquía de autoridad documental
 
@@ -100,11 +101,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34150632738` on `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7` |
+| Authoritative CI at audited HEAD | Green: run `34153470560` on `54ddc251cda8ec7465b7913786c647f8d3ccbeac` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `0/1` |
-| Current / next PBI | Current: NONE; next: PBI-026 selected, not started |
-| Current blocking gate | Merge autorizado del cierre PBI-034 + exact-main CI GREEN |
+| Sprint | SPRINT-02 `Active`; WIP `1/1` |
+| Current / next PBI | Current: PBI-026 In progress; next: PBI-028 not started |
+| Current blocking gate | Candidate PBI-026 + focused Critical-risk review + exact-head CI GREEN |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |

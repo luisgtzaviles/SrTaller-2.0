@@ -32,6 +32,7 @@ import type {
   ListLoginUsersUseCase,
   ResolveOperationalSessionUseCase,
 } from '../application/use-cases/operational-session.use-cases.js';
+import type { ResolveEffectiveCapabilitiesUseCase } from '../application/use-cases/resolve-effective-capabilities.use-case.js';
 import type { SessionTokenPort } from '../application/ports/session-token.port.js';
 import {
   OPERATIONAL_SESSION_IDLE_MS,
@@ -55,6 +56,7 @@ export interface AccessSessionRuntime {
   readonly authenticatePin: AuthenticatePinUseCase;
   readonly createSession: CreateOperationalSessionUseCase;
   readonly resolveSession: ResolveOperationalSessionUseCase;
+  readonly resolveCapabilities: ResolveEffectiveCapabilitiesUseCase;
   readonly endSession: EndOperationalSessionUseCase;
   readonly listLoginUsers: ListLoginUsersUseCase;
   readonly tokens: SessionTokenPort;
@@ -188,6 +190,7 @@ export class AccessSessionController {
     return {
       station: { stationId: context.stationId, branchId: context.branchId },
       users,
+      capabilities: Object.freeze([]),
       csrfToken: this.loginChallenge(headers, response),
       session: null,
       revalidateAfterMs: null,
@@ -216,14 +219,21 @@ export class AccessSessionController {
       if (!cookies.bearer || !cookies.csrf) {
         return this.unauthenticatedSnapshot(context, users, headers, response);
       }
-      const session = sessionResponse(await this.runtime.resolveSession.execute(context, {
+      const resolvedSession = await this.runtime.resolveSession.execute(context, {
         bearer: cookies.bearer,
         csrfCookie: cookies.csrf,
         touch: false,
-      }));
+      });
+      const session = sessionResponse(resolvedSession);
+      const capabilities = await this.runtime.resolveCapabilities.execute({
+        tenantId: context.tenantId,
+        branchId: context.branchId,
+        userId: resolvedSession.userId,
+      });
       return {
         station: { stationId: context.stationId, branchId: context.branchId },
         users,
+        capabilities,
         csrfToken: cookies.csrf,
         session,
         revalidateAfterMs: revalidateAfterMs(session),
@@ -282,6 +292,16 @@ export class AccessSessionController {
       }
       const users = await this.runtime.listLoginUsers.execute(context);
       const proof = await this.runtime.authenticatePin.execute(context, request.pinInput);
+      // The capability snapshot is advisory UI data. Resolve it before the
+      // authoritative Session replacement so a projection failure cannot
+      // strand the Station with a Session whose credentials were never
+      // delivered to the browser. Every protected request still re-evaluates
+      // capabilities after resolving the active Session.
+      const capabilities = await this.runtime.resolveCapabilities.execute({
+        tenantId: context.tenantId,
+        branchId: context.branchId,
+        userId: proof.userId,
+      });
       const created = await this.runtime.createSession.execute(
         context,
         proof,
@@ -295,6 +315,7 @@ export class AccessSessionController {
       return {
         station: { stationId: context.stationId, branchId: context.branchId },
         users,
+        capabilities,
         csrfToken: created.tokens.csrf,
         session: sessionResponse(created.session),
         revalidateAfterMs: revalidateAfterMs(created.session),

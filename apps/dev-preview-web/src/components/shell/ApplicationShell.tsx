@@ -22,7 +22,8 @@ import { IconButton } from '../ui/controls.js';
 import { useFocusTrap } from '../ui/overlays.js';
 import { classNames } from '../ui/class-names.js';
 import { useTheme } from '../../foundation/theme.js';
-import type { ActiveOperationalSession } from '../../session/session-api.js';
+import { hasOperationalCapability } from '../../session/session-capabilities.mjs';
+import type { ActiveOperationalSession, OperationalCapability } from '../../session/session-api.js';
 import styles from './application-shell.module.css';
 
 const SIDEBAR_STORAGE_KEY = 'srtaller.sidebar.collapsed';
@@ -32,9 +33,10 @@ const navigation: readonly Readonly<{
   label: string;
   icon: LucideIcon;
   end?: boolean;
+  requiredCapability?: OperationalCapability;
 }>[] = [
   { to: '/', label: 'Inicio', icon: Home, end: true },
-  { to: '/reparaciones', label: 'Reparaciones', icon: Wrench },
+  { to: '/reparaciones', label: 'Reparaciones', icon: Wrench, requiredCapability: 'repairs.read' },
   { to: '/configuracion', label: 'Configuración', icon: Settings },
 ];
 
@@ -48,11 +50,17 @@ function readCollapsedPreference(): boolean {
   return !window.matchMedia('(min-width: 1280px)').matches;
 }
 
-function Navigation({ collapsed, onNavigate }: Readonly<{ collapsed: boolean; onNavigate?: () => void }>): React.JSX.Element {
+function Navigation({ capabilities, collapsed, onNavigate }: Readonly<{
+  capabilities: readonly OperationalCapability[];
+  collapsed: boolean;
+  onNavigate?: () => void;
+}>): React.JSX.Element {
   return (
     <nav aria-label="Navegación principal" className={styles.navigation}>
       <span className={styles.navigationGroup}>Operación</span>
-      {navigation.map(({ to, label, icon: Icon, end }) => (
+      {navigation.filter(({ requiredCapability }) => (
+        !requiredCapability || hasOperationalCapability(capabilities, requiredCapability)
+      )).map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
           to={to}
@@ -154,6 +162,7 @@ function OperatorMenu({
 
 export function ApplicationShell({
   actor,
+  capabilities,
   busy,
   errorMessage,
   focusTarget,
@@ -162,6 +171,7 @@ export function ApplicationShell({
   children,
 }: Readonly<{
   actor: ActiveOperationalSession;
+  capabilities: readonly OperationalCapability[];
   busy: boolean;
   errorMessage: string | null;
   focusTarget: 'main' | 'operator' | null;
@@ -248,7 +258,7 @@ export function ApplicationShell({
       <div className={styles.desktopBody}>
         <aside className={styles.sidebar} aria-label="Shell principal">
           <Brand className={styles.sidebarIdentity} collapsed={collapsed} meta="Sucursal vinculada" />
-          <Navigation collapsed={collapsed} />
+          <Navigation capabilities={capabilities} collapsed={collapsed} />
           <div className={styles.sidebarFooter}>
             <span className={styles.environmentDot} aria-hidden="true" />
             <span className={classNames(styles.environmentCopy, collapsed && styles.collapsedOnly)}><strong>Estación reconocida</strong><small>{actor.displayName} · Sesión activa</small></span>
@@ -277,7 +287,7 @@ export function ApplicationShell({
           <div className={styles.drawerBackdrop} aria-hidden="true" onClick={closeDrawer} />
           <aside ref={drawerRef} className={styles.drawer} role="dialog" aria-modal="true" aria-label="Navegación móvil" tabIndex={-1}>
             <header><Brand /><IconButton icon={X} label="Cerrar navegación" tone="inverse" onClick={closeDrawer} /></header>
-            <Navigation collapsed={false} onNavigate={closeDrawer} />
+            <Navigation capabilities={capabilities} collapsed={false} onNavigate={closeDrawer} />
             <footer><span className={styles.environmentDot} aria-hidden="true" /><span><strong>Estación reconocida</strong><small>{actor.displayName} · Sesión activa</small></span></footer>
           </aside>
         </div>

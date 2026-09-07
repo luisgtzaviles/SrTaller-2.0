@@ -89,6 +89,7 @@ test('owner-scoped PostgreSQL runner retains the exact material adapter inventor
     'test/access-role-postgresql.test.mjs',
     'test/access-pin-postgresql.test.mjs',
     'test/access-session-postgresql.test.mjs',
+    'test/contextual-authorization-postgresql.test.mjs',
   ]);
   assert.deepEqual(ownerScopedPostgresqlNodeTestArguments, [
     '--no-maglev',

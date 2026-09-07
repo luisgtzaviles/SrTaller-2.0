@@ -81,9 +81,10 @@ documento no autoriza por sí solo commit, push, merge, deploy ni release.
 - PBI-024 fue acotado a Trusted Station Runtime Context. La PR draft histórica
   #3 sólo puede usarse como fuente de recuperación selectiva; no conserva
   autorización ni se integra completa.
-- PBI-030 está integrado en `main` y permanece `In review` con `XL — agreed`;
-  el cierre y el riesgo AT residual LOW están aprobados, pero `Done` espera la
-  integración documental. Sprint 01 permanece `Planned` y no hay PBI actual.
+- PBI-030 está `Done`; Sprint 01 está `Closed`. SPRINT-02 está `Active` con
+  PBI-026 Contextual Authorization como único PBI actual, WIP `1/1`; su
+  candidato local permanece `In progress` y no integrado. PBI-028 es el
+  siguiente candidato y no ha iniciado.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
 - `DEC063-C02`: materializar clasificación de riesgo.
 - `DEC063-C08`: materializar waivers y excepciones.

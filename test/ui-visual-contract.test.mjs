@@ -65,9 +65,9 @@ test('focus and touch contracts are explicit for shared controls', () => {
   assert.match(repairDetailSource, /getRepairDetail\(id, signal\)/u);
   assert.match(repairDetailSource, /Volver a reparaciones/u);
   assert.doesNotMatch(repairDetailSource, /Cambiar estado|Guardar cambios|Precio estimado|WhatsApp|Imprimir/iu);
-  assert.match(repairsSource, /failed \? 'No disponible' : loading \? 'Cargando…' : null/u);
+  assert.match(repairsSource, /failed \|\| denied \? 'No disponible' : loading \? 'Cargando…' : null/u);
   assert.match(repairsSource, /<strong>\{totalCount\}<\/strong>/u);
-  assert.match(repairsSource, /<ButtonLink to="\/reparaciones\/nueva" tone="primary">/u);
+  assert.doesNotMatch(repairsSource, /to="\/reparaciones\/nueva"|Nueva reparación/u);
   assert.match(overlaySource, /variant\?: 'standard' \| 'workspace'/u);
   assert.match(uiSource, /\.overlayWorkspace \.backdrop[\s\S]*?blur\(5px\)/u);
   assert.match(repairDetailSource, /size="workspace"[\s\S]*?variant="workspace"/u);

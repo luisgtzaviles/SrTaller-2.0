@@ -1,16 +1,26 @@
 {
-  "policyVersion": 4,
+  "policyVersion": 5,
   "allowedModules": ["access", "repairs", "stations", "tenancy", "users"],
   "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy", "users"],
-    "repairs": ["tenancy"],
+    "repairs": ["access", "tenancy"],
     "stations": ["tenancy"],
     "tenancy": [],
     "users": ["tenancy"]
   },
   "publicSurfaces": {
-    "access": ["AccessModuleContract"],
+    "access": [
+      "AccessModuleContract",
+      "AuthorizedOperationalContext",
+      "CONTEXTUAL_AUTHORIZATION_EXECUTOR",
+      "ContextualAuthorizationError",
+      "ContextualAuthorizationErrorCode",
+      "ContextualAuthorizationExecutor",
+      "ProtectedOperationKind",
+      "ProtectedOperationRequirement",
+      "ProtectedRequestEvidence"
+    ],
     "repairs": ["RepairsModuleContract"],
     "stations": [
       "StationsModuleContract",
@@ -36,7 +46,7 @@
     ]
   },
   "consumers": {
-    "access": ["AppModule"],
+    "access": ["AppModule", "repairs"],
     "repairs": ["AppModule"],
     "stations": ["access"],
     "tenancy": ["access", "stations", "users"],
@@ -174,6 +184,27 @@
             "token": "AUTHENTICATION_USER_READER",
             "contract": "AuthenticationUserReader",
             "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
+      },
+      {
+        "consumer": "repairs",
+        "producer": "access",
+        "consumerModule": {
+          "file": "src/modules/repairs/repairs.module.ts",
+          "className": "RepairsModule"
+        },
+        "producerModule": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "../access/access.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "CONTEXTUAL_AUTHORIZATION_EXECUTOR",
+            "contract": "ContextualAuthorizationExecutor",
+            "consumerImportSpecifier": "../access/index.js",
             "producerImportSpecifier": "./index.js"
           }
         ]
@@ -1281,6 +1312,7 @@
     "src/modules/access/infrastructure/security/node-session-token.ts",
     "src/modules/access/presentation/access-session-cookie.ts",
     "src/modules/access/presentation/access-session.controller.ts",
+    "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/stations/index.ts",
     "src/modules/stations/application/branch-time-zone.ts",
     "src/modules/stations/application/ports/local-station-bootstrap-runtime.port.ts",
@@ -1298,6 +1330,7 @@
     "src/modules/stations/stations.module.ts",
     "src/modules/repairs/index.ts",
     "src/modules/repairs/repairs.module.ts",
+    "src/modules/repairs/application/repair-protected-operations.ts",
     "src/modules/repairs/application/ports/repair-repository.port.ts",
     "src/modules/repairs/application/ports/repair-evidence-storage.port.ts",
     "src/modules/repairs/application/use-cases/add-repair-operational-note.use-case.ts",

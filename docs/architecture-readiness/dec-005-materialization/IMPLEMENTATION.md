@@ -14,13 +14,13 @@ posteriores.
 
 ## Vigencia — composición dirigida Option A
 
-La policy v4 conserva `AppModule` como composition root exterior y agrega una
+La policy v5 conserva `AppModule` como composition root exterior y agrega una
 excepción generalizable, explícita y cerrada: un módulo funcional puede
 componer otro módulo sólo cuando la pareja consumer/producer, ambos archivos y
 clases de módulo, el specifier relativo y cada token/contrato público están
 registrados en `directedModuleComposition`.
 
-La primera materialización registra únicamente:
+La primera materialización registra:
 
 - `AccessModule -> StationsModule`, mediante
   `TRUSTED_STATION_CONTEXT_RESOLVER` / `TrustedStationContextResolver` y
@@ -30,6 +30,12 @@ La primera materialización registra únicamente:
   `AUTHENTICATION_USER_READER` / `AuthenticationUserReader` y
   `AUTHENTICATION_USER_ADMISSION_VALIDATOR` /
   `AuthenticationUserAdmissionValidator`.
+
+PBI-026 extiende el mismo contrato con una sola arista adicional:
+
+- `RepairsModule -> AccessModule`, mediante
+  `CONTEXTUAL_AUTHORIZATION_EXECUTOR` /
+  `ContextualAuthorizationExecutor`.
 
 Los validadores reciben únicamente el contexto técnico opaco de la transacción
 compuesta. Cada owner conserva su executor, bloquea sus propias filas y
@@ -49,6 +55,8 @@ La materialización de PBI-034, sus invariantes y la evidencia exacta se
 detallan en
 [PBI-034 Option A Verification](PBI_034_OPTION_A_VERIFICATION.md). Ese
 expediente está verificado y no reescribe los resultados históricos de PBI-022.
+La extensión de PBI-026 y sus límites se registran en
+[PBI-026 Option A Verification](PBI_026_OPTION_A_VERIFICATION.md).
 
 ## Autoridad y baseline
 

@@ -2,6 +2,10 @@ import {
   runCoordinatedSessionMutation,
   runCoordinatedSessionRead,
 } from './session-request-coordinator.mjs';
+import { parseSessionCapabilities } from './session-capabilities.mjs';
+import type { OperationalCapability } from './session-capabilities.mjs';
+
+export type { OperationalCapability } from './session-capabilities.mjs';
 
 export interface OperationalSessionStation {
   readonly stationId: string;
@@ -31,6 +35,7 @@ export interface OperationalSessionSnapshot {
   readonly users: readonly OperationalSessionUser[];
   readonly csrfToken: string;
   readonly session: ActiveOperationalSession | null;
+  readonly capabilities: readonly OperationalCapability[];
   readonly revalidateAfterMs: number | null;
 }
 
@@ -129,6 +134,7 @@ function parseSnapshot(value: unknown): OperationalSessionSnapshot {
   const csrfToken = requiredString(value, 'csrfToken');
   if (!CSRF_PATTERN.test(csrfToken)) throw new OperationalSessionApiError(0);
   const session = parseActiveSession(value.session, station, users);
+  const capabilities = parseSessionCapabilities(value.capabilities, session !== null);
   const revalidateAfterMs = value.revalidateAfterMs;
   if (session === null) {
     if (revalidateAfterMs !== null) throw new OperationalSessionApiError(0);
@@ -145,6 +151,7 @@ function parseSnapshot(value: unknown): OperationalSessionSnapshot {
     users,
     csrfToken,
     session,
+    capabilities,
     revalidateAfterMs,
   });
 }

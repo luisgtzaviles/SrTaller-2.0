@@ -63,18 +63,17 @@ test('D5 commands validate scope server-side and preserve idempotent optimistic 
   assert.match(repository, /existing\.reason !== input\.reason/u);
 });
 
-test('D5 exposes honest local identity and renders current plus assignment history', () => {
+test('D5 read projection remains visible while uncataloged assignment writes stay hidden', () => {
   assert.match(repository, /Operador sintético|local\.technician_assignment/u);
   assert.match(api, /listRepairTechnicians/u);
   assert.match(api, /assignRepairTechnician/u);
   assert.match(api, /reassignRepairTechnician/u);
   assert.match(api, /unassignRepairTechnician/u);
   assert.match(api, /TechnicianAssignmentHistory/u);
-  assert.match(page, /Asignar técnico/u);
-  assert.match(page, /Cambiar técnico/u);
-  assert.match(page, /Quitar asignación/u);
   assert.match(page, /Historial de asignaciones/u);
-  assert.match(page, /expectedVersion/u);
+  assert.match(page, /currentTechnician\?\.displayName \?\? 'Sin técnico asignado'/u);
+  assert.doesNotMatch(page, /assignRepairTechnician|reassignRepairTechnician|unassignRepairTechnician|listRepairTechnicians/u);
+  assert.doesNotMatch(page, />Asignar<|>Cambiar<|Quitar asignación/u);
   assert.match(styles, /\.assignmentHistory/u);
   assert.match(seed, /localRepairTechnicianAssignmentRows/u);
 });

@@ -16,11 +16,13 @@ Los casos se declaran en `test/architecture-fixtures.mjs` y se escriben en un
 directorio temporal único por prueba. El código de producto no se muta. Cada
 caso corre dos veces y compara exit code, stdout y stderr.
 
-## Composición dirigida — policy v4
+## Composición dirigida — policy v5
 
-La enmienda Option A añade un árbol positivo que materializa exclusivamente
-`access->stations` y `access->users` y veintidós fixtures negativos de
-composición y fronteras. La
+La enmienda Option A conserva el fixture positivo aislado que materializa
+`access->stations` y `access->users`; policy v5 agrega al árbol productivo
+exacto `repairs->access`. `test/architecture-policy.test.mjs` exige las tres
+aristas y el binding público de PBI-026, mientras los veintidós fixtures
+negativos de composición y fronteras ejercitan el contrato general cerrado. La
 matriz comprueba registro previo de la arista, imports nombrados estáticos sin
 alias, metadata `@Module` literal y única, tokens/interfaces desde `index.ts`,
 inyección del consumidor, binding/export del productor y ausencia de aristas
