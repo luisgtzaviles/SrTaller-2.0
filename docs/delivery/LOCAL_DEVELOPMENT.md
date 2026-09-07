@@ -21,10 +21,11 @@ multiplexación.
   distintas.
 - No se copian bases, dumps ni secretos de Preview.
 - No se ejecuta ninguna migración, seed o reset contra Dokploy.
-- No se crean tablas de clientes, usuarios, roles o pagos. Las slices locales
-  materializan Reparaciones, intake, timeline, evidencia, asignación técnica y
-  el historial acotado D6.1; no materializan Location, writes de Custody ni el
-  resto de D6.
+- No se crean tablas de clientes, pagos, Session ni autorización contextual.
+  Las migraciones locales materializan Trusted Station, Users, catálogo de
+  roles/capabilities, credencial PIN server-only, Reparaciones, intake,
+  timeline, evidencia, asignación técnica y los historiales acotados D6.1 y
+  D6.2; no materializan writes de Custody ni el resto de D6.
 - `DATABASE_URL` y las variables de fallback `PG*` continúan prohibidas.
 - El archivo `.env.local` es ignorado, se crea con permisos `0600` y contiene
   credenciales generadas para esta máquina. No se imprimen.
@@ -133,7 +134,10 @@ exclusivamente las migraciones integradas con el rol `migration`, verifica el
 manifest/journal mediante el runner existente y concede al rol `application`
 los permisos mínimos sobre las tablas creadas. No se ejecuta en bootstrap HTTP.
 
-La baseline crea `tenants` y `branches`. La cadena local de Reparaciones añade
+La baseline crea `tenants` y `branches`. Trusted Station añade Stations,
+bindings y credenciales técnicas; Identity añade Users, bootstrap/lifecycle,
+catálogo Access, asignaciones y credenciales PIN protegidas. La cadena local
+de Reparaciones añade
 `repairs` para Worklist, `repair_intakes` para D1,
 `repair_timeline_entries` para D2/D3 y `repair_attachments` para D4, más la
 restricción de idempotencia de notas operativas, las tablas D5 de técnicos y
@@ -141,8 +145,8 @@ asignación, `repair_workflow_transitions` para D6.1, y
 `repair_locations`/`repair_location_movements` para D6.2. D6.1 conserva un
 historial append-only y sólo admite `pending → diagnosing`; D6.2 conserva un
 historial/versionado independiente y sólo admite `Área de pendientes → Taller`.
-No se inventan
-tablas de clientes, pagos ni otros módulos funcionales.
+No se inventan tablas de clientes, pagos, Session ni otros módulos
+funcionales.
 
 ## Seed sintético V1
 
@@ -151,13 +155,16 @@ pnpm run local:db:seed
 ```
 
 El seed usa el rol `application`, una transacción y upserts idempotentes. Crea
-un tenant técnico sintético, dos sucursales sintéticas y 15 reparaciones
-sintéticas mediante UUIDs fijos y fechas deterministas. También materializa
-intakes, timeline y referencias de evidencia sintéticas para D1, D2 y D4, el
-catálogo/asignaciones D5, transiciones D6.1 y colocaciones/movimientos D6.2
-deterministas. Una reparación conserva ubicación no registrada para probar la
-proyección honesta. Los datos de cliente son snapshots dentro de
-`repairs`; no existe una tabla de clientes ni se agregan importes o pagos.
+un tenant técnico sintético, dos sucursales, Stations/bindings, tres Users,
+roles/capabilities/asignaciones, tres credenciales PIN y 15 reparaciones
+sintéticas mediante UUIDs fijos y fechas deterministas. El PIN sólo vive en
+`.env.local`; PostgreSQL recibe salt, verifier Argon2id y fingerprint Argon2id,
+nunca plaintext. También materializa intakes, timeline y referencias de
+evidencia para D1, D2 y D4, catálogo/asignaciones D5, transiciones D6.1 y
+colocaciones/movimientos D6.2 deterministas. Una reparación conserva ubicación
+no registrada para probar la proyección honesta. Los datos de cliente son
+snapshots dentro de `repairs`; no existe una tabla de clientes ni se agregan
+importes o pagos.
 
 ## Reset y parada
 

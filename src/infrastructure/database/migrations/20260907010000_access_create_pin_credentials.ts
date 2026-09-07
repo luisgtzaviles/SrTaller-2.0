@@ -121,10 +121,33 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .execute();
 
   await database.schema
+    .createTable('access_pin_attempt_station_guards')
+    .addColumn('tenant_id', 'uuid', (column) => column.notNull())
+    .addColumn('station_id', 'uuid', (column) => column.notNull())
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull())
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull())
+    .addPrimaryKeyConstraint('access_pin_attempt_station_guards_pk', [
+      'tenant_id',
+      'station_id',
+    ])
+    .addForeignKeyConstraint(
+      'access_pin_attempt_station_guards_station_fk',
+      ['tenant_id', 'station_id'],
+      'stations',
+      ['tenant_id', 'station_id'],
+      (constraint) => constraint.onUpdate('restrict').onDelete('restrict'),
+    )
+    .addCheckConstraint(
+      'access_pin_attempt_station_guards_time_ck',
+      sql`updated_at >= created_at`,
+    )
+    .execute();
+
+  await database.schema
     .createTable('access_pin_attempt_limits')
     .addColumn('tenant_id', 'uuid', (column) => column.notNull())
     .addColumn('station_id', 'uuid', (column) => column.notNull())
-    .addColumn('user_id', 'uuid', (column) => column.notNull())
+    .addColumn('rate_principal_id', 'uuid', (column) => column.notNull())
     .addColumn('attempt_count', 'integer', (column) =>
       column.notNull().defaultTo(0),
     )
@@ -136,7 +159,7 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .addPrimaryKeyConstraint('access_pin_attempt_limits_pk', [
       'tenant_id',
       'station_id',
-      'user_id',
+      'rate_principal_id',
     ])
     .addForeignKeyConstraint(
       'access_pin_attempt_limits_station_fk',
@@ -158,6 +181,7 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
 
 export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
   await database.schema.dropTable('access_pin_attempt_limits').execute();
+  await database.schema.dropTable('access_pin_attempt_station_guards').execute();
   await database.schema.dropTable('access_pin_credential_commands').execute();
   await database.schema.dropTable('access_pin_credentials').execute();
 }

@@ -97,11 +97,56 @@ function decodePepper(value: string): Buffer {
   return pepper;
 }
 
-function associatedData(tenantId: string, userId: string): Buffer {
+type PinDerivationPurpose = 'credential' | 'provision-fingerprint';
+
+function associatedData(
+  purpose: PinDerivationPurpose,
+  tenantId: string,
+  userId: string,
+): Buffer {
   return Buffer.from(
-    `srtaller-pin-credential\0v1\0${tenantId}\0${userId}`,
+    `srtaller-pin-${purpose}\0v1\0${tenantId}\0${userId}`,
     'utf8',
   );
+}
+
+function provisioningFingerprintSalt(
+  pepper: Buffer,
+  tenantId: string,
+  userId: string,
+  clientRequestId: string,
+): Buffer {
+  const digest = createHmac('sha256', pepper)
+    .update(
+      `srtaller-pin-provision-salt\0v1\0${tenantId}\0${userId}\0${clientRequestId}`,
+      'utf8',
+    )
+    .digest();
+  try {
+    return Buffer.from(digest.subarray(0, PIN_KDF_PROFILE.saltLength));
+  } finally {
+    digest.fill(0);
+  }
+}
+
+function rateLimitPrincipalId(
+  pepper: Buffer,
+  tenantId: string,
+  userId: string,
+): string {
+  const digest = createHmac('sha256', pepper)
+    .update(`srtaller-pin-rate-principal\0v1\0${tenantId}\0${userId}`, 'utf8')
+    .digest();
+  try {
+    const bytes = Buffer.from(digest.subarray(0, 16));
+    bytes.writeUInt8((bytes.readUInt8(6) & 0x0f) | 0x40, 6);
+    bytes.writeUInt8((bytes.readUInt8(8) & 0x3f) | 0x80, 8);
+    const hex = bytes.toString('hex');
+    bytes.fill(0);
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  } finally {
+    digest.fill(0);
+  }
 }
 
 function argon2id(
@@ -162,10 +207,22 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
     this.#pepper = decodePepper(pepper);
   }
 
-  async #derive(pin: string, salt: Buffer, tenantId: string, userId: string) {
+  rateLimitPrincipalId(
+    input: Parameters<PinSecretHasherPort['rateLimitPrincipalId']>[0],
+  ): string {
+    return rateLimitPrincipalId(this.#pepper, input.tenantId, input.userId);
+  }
+
+  async #derive(
+    pin: string,
+    salt: Buffer,
+    tenantId: string,
+    userId: string,
+    purpose: PinDerivationPurpose,
+  ) {
     const message = Buffer.from(parsePin(pin), 'ascii');
     const secret = Buffer.from(this.#pepper);
-    const context = associatedData(tenantId, userId);
+    const context = associatedData(purpose, tenantId, userId);
     try {
       return await this.#limiter.run(() =>
         argon2id(message, salt, secret, context),
@@ -182,17 +239,30 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
 
   async hash(input: Parameters<PinSecretHasherPort['hash']>[0]): Promise<PinSecretMaterial> {
     const salt = randomBytes(PIN_KDF_PROFILE.saltLength);
-    const verifier = await this.#derive(
-      input.pin,
-      salt,
-      input.tenantId,
-      input.userId,
-    );
-    const fingerprintInput = Buffer.from(
-      `srtaller-pin-provision\0v1\0${input.tenantId}\0${input.userId}\0${input.clientRequestId}\0${input.pin}`,
-      'utf8',
-    );
+    let verifier: Buffer | undefined;
+    let fingerprintSalt: Buffer | undefined;
+    let requestFingerprint: Buffer | undefined;
     try {
+      verifier = await this.#derive(
+        input.pin,
+        salt,
+        input.tenantId,
+        input.userId,
+        'credential',
+      );
+      fingerprintSalt = provisioningFingerprintSalt(
+        this.#pepper,
+        input.tenantId,
+        input.userId,
+        input.clientRequestId,
+      );
+      requestFingerprint = await this.#derive(
+        input.pin,
+        fingerprintSalt,
+        input.tenantId,
+        input.userId,
+        'provision-fingerprint',
+      );
       return Object.freeze({
         algorithm: PIN_KDF_PROFILE.algorithm,
         profileVersion: PIN_KDF_PROFILE.profileVersion,
@@ -202,16 +272,13 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
         parallelism: PIN_KDF_PROFILE.parallelism,
         salt: Uint8Array.from(salt),
         verifier: Uint8Array.from(verifier),
-        requestFingerprint: Uint8Array.from(
-          createHmac('sha256', this.#pepper)
-            .update(fingerprintInput)
-            .digest(),
-        ),
+        requestFingerprint: Uint8Array.from(requestFingerprint),
       });
     } finally {
       salt.fill(0);
-      verifier.fill(0);
-      fingerprintInput.fill(0);
+      verifier?.fill(0);
+      fingerprintSalt?.fill(0);
+      requestFingerprint?.fill(0);
     }
   }
 
@@ -228,9 +295,11 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
       salt,
       input.tenantId,
       input.userId,
+      'credential',
     );
     try {
-      return valid && timingSafeEqual(actual, expected);
+      const matched = timingSafeEqual(actual, expected);
+      return valid && matched;
     } finally {
       salt.fill(0);
       expected.fill(0);

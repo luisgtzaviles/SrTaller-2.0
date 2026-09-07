@@ -203,6 +203,7 @@
           "AccessPinCredentialStatus",
           "AccessPinCredentialTable",
           "AccessPinCredentialCommandTable",
+          "AccessPinAttemptStationGuardTable",
           "AccessPinAttemptLimitTable",
           "DatabaseSchema",
           "TenantRow",
@@ -240,6 +241,8 @@
           "AccessPinCredentialUpdate",
           "AccessPinCredentialCommandRow",
           "NewAccessPinCredentialCommand",
+          "AccessPinAttemptStationGuardRow",
+          "NewAccessPinAttemptStationGuard",
           "AccessPinAttemptLimitRow",
           "NewAccessPinAttemptLimit",
           "AccessPinAttemptLimitUpdate",
@@ -660,6 +663,10 @@
         "kind": "table"
       },
       "access_pin_attempt_limits": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_pin_attempt_station_guards": {
         "owner": "access",
         "kind": "table"
       }

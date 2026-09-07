@@ -39,12 +39,13 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     access_role_assignment_commands: DatabaseSchema['access_role_assignment_commands'];
     access_pin_credentials: DatabaseSchema['access_pin_credentials'];
     access_pin_credential_commands: DatabaseSchema['access_pin_credential_commands'];
+    access_pin_attempt_station_guards: DatabaseSchema['access_pin_attempt_station_guards'];
     access_pin_attempt_limits: DatabaseSchema['access_pin_attempt_limits'];
   }>;
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
   Owner extends 'access'
-    ? Pick<DatabaseSchema, 'access_capabilities' | 'access_roles' | 'access_role_capabilities' | 'access_role_assignments' | 'access_role_assignment_commands' | 'access_pin_credentials' | 'access_pin_credential_commands' | 'access_pin_attempt_limits'>
+    ? Pick<DatabaseSchema, 'access_capabilities' | 'access_roles' | 'access_role_capabilities' | 'access_role_assignments' | 'access_role_assignment_commands' | 'access_pin_credentials' | 'access_pin_credential_commands' | 'access_pin_attempt_station_guards' | 'access_pin_attempt_limits'>
     : Owner extends 'database'
     ? DatabaseTechnicalSchema
     : Owner extends 'repairs'

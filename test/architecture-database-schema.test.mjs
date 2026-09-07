@@ -36,6 +36,7 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     access_role_assignment_commands: { owner: 'access', kind: 'table' },
     access_pin_credentials: { owner: 'access', kind: 'table' },
     access_pin_credential_commands: { owner: 'access', kind: 'table' },
+    access_pin_attempt_station_guards: { owner: 'access', kind: 'table' },
     access_pin_attempt_limits: { owner: 'access', kind: 'table' },
   });
   assert.deepEqual(policy.persistence.initialSchema, {

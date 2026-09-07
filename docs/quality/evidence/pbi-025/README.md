@@ -2,7 +2,8 @@
 
 ## Estado
 
-- **Estado:** implementation evidence in progress.
+- **Estado:** integration candidate in Draft PR #30; exact-head CI and final
+  focused Critical-risk disposition pending.
 - **PBI:** PBI-025; current PBI; WIP 1/1.
 - **Risk / size:** Critical / Large.
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
@@ -10,6 +11,9 @@
 - **Baseline:** `main` at
   `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1`; exact-main CI
   `34084930812` GREEN.
+- **Superseded review checkpoint:** `4ba81eebbf4159febe37bc3b9a641c9ecfc3c80a`
+  in Draft PR #30 passed candidate CI `34090023213`; subsequent focused
+  security findings require a new final SHA and exact-head CI.
 - **Released / deployed:** NO / NO.
 
 ## Candidate scope
@@ -18,7 +22,7 @@
 - Argon2id versionado con salt/pepper;
 - provisioning server-only local/test e idempotencia;
 - verificación sobre Trusted Station + User seleccionado;
-- cinco fallos/lock cinco minutos y rate limit Station/User;
+- cinco fallos/lock cinco minutos y rate limit Station/principal opaco;
 - prueba de autenticación efímera; ninguna Session/capability/action.
 
 ## Artifact inventory
@@ -60,10 +64,10 @@
 | Argon2id profile, pepper, salt and redaction | contract tests + external-configuration scan | PASS local |
 | Provisioning idempotency/concurrency | PostgreSQL material | PASS, two deterministic runs |
 | Five failures, lock and expiry | PostgreSQL material | PASS, including concurrent threshold |
-| Station/User rate limit | PostgreSQL material | PASS, including successful and unknown-principal attempts |
+| Station/principal rate limit | PostgreSQL material | PASS, including successful, unknown, opaque-key, eligibility-invariant and concurrent-cap attempts |
 | Tenant/Station/User isolation | PostgreSQL material negative cases | PASS |
 | Inactive/revoked/missing User or credential | application + PostgreSQL | PASS; revoked credential uses dummy KDF and remains immutable |
-| Migration up/down/reapply and constraints | PostgreSQL 18.4 | PASS |
+| Migration up/down/reapply and constraints | PostgreSQL 18.4 | PASS, including negative CHECK/FK writes for credential and abuse-control tables |
 | No Session/login/authorization surface | contract and production exclusion | PASS local |
 | DEC-005/049 ownership and exact inventories | architecture + mutations | PASS local |
 | Reproducibility | owner-scoped PostgreSQL run-1/run-2/comparison | PASS local; candidate VC-024 pending |
@@ -75,24 +79,30 @@ digest was
 
 ## Implementation audit remediation
 
-One HIGH finding was identified before the candidate was committed: the
-Argon2 work limiter released capacity before handing a permit to a queued
-operation and its default capacity was instance-local. That could exceed the
-governed memory bound when a new caller barged ahead of a resumed waiter or
-when multiple default hasher instances existed. The implementation now uses a
-race-free permit transfer and a process-wide default limiter; invalid custom
-limits, zero-queue exhaustion and cross-instance capacity are covered by
-contract tests. A focused documentation review also found a MEDIUM stale
-configuration statement that still classified `SR_PIN_PEPPER` as reserved;
-the configuration and local-development contracts now identify the active
-server-only Access consumer. No BLOCKER/HIGH/MEDIUM finding remains from this
-audit.
+Focused review found and remediated four HIGH issues before final review: the
+Argon2 limiter could transfer capacity unsafely and was instance-local; the
+provisioning journal used a cheap HMAC over the six-digit PIN as an offline
+oracle; and eligibility selected a shared versus per-User rate bucket, making
+active Users enumerable after saturation; an active credential under lock
+also skipped the dummy verifier on a fresh Station and exposed a timing
+oracle. The implementation now uses a
+race-free process-wide limiter, an Argon2id provisioning fingerprint with a
+domain-separated deterministic salt, and an eligibility-invariant opaque
+rate principal with bounded Station-local retention. Locked, missing,
+ineligible and invalid-credential paths traverse the same dummy verifier seam
+when rate capacity is available. Public failures collapse to one denial and
+repository exceptions are sanitized. Contract and material tests cover
+limiter capacity, divergent replay, local-fixture equivalence,
+cross-eligibility rate state and locked-credential dummy verification. A
+MEDIUM stale configuration statement that still classified `SR_PIN_PEPPER` as
+reserved was also corrected. No BLOCKER/HIGH/MEDIUM finding remains in the
+local remediation audit; the final independent disposition remains pending.
 
 ## Evidence pending
 
-- exact implementation commits and Draft PR;
+- final candidate SHA after focused-review remediations;
 - candidate CI exact run-1/run-2/comparison;
-- focused Critical-risk review;
+- final focused Critical-risk review disposition;
 - merge/main CI/Owner Acceptance and closure evidence.
 
 The final evidence update must bind every `PASS` above to the exact candidate

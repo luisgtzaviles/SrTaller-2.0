@@ -38,11 +38,11 @@ const definitions = Object.freeze([
   }),
 ]);
 
-function derivePin(pin, salt, pepper, userId) {
+function derivePin(pin, salt, pepper, userId, purpose) {
   const message = Buffer.from(pin, 'ascii');
   const secret = Buffer.from(pepper);
   const associatedData = Buffer.from(
-    `srtaller-pin-credential\0v1\0${LOCAL_TENANT_ID}\0${userId}`,
+    `srtaller-pin-${purpose}\0v1\0${LOCAL_TENANT_ID}\0${userId}`,
     'utf8',
   );
   return new Promise((resolve, reject) => {
@@ -69,6 +69,20 @@ function derivePin(pin, salt, pepper, userId) {
   });
 }
 
+function provisioningFingerprintSalt(pepper, userId, clientRequestId) {
+  const digest = createHmac('sha256', pepper)
+    .update(
+      `srtaller-pin-provision-salt\0v1\0${LOCAL_TENANT_ID}\0${userId}\0${clientRequestId}`,
+      'utf8',
+    )
+    .digest();
+  try {
+    return Buffer.from(digest.subarray(0, profile.saltLength));
+  } finally {
+    digest.fill(0);
+  }
+}
+
 function decodePepper(value) {
   if (!/^[A-Za-z0-9_-]{43}$/u.test(value)) {
     throw new Error('Local PIN fixture configuration is invalid.');
@@ -92,12 +106,29 @@ export async function localPinCredentialRows(values) {
         throw new Error('Local PIN fixture configuration is invalid.');
       }
       const salt = randomBytes(profile.saltLength);
-      const verifier = await derivePin(pin, salt, pepper, definition.userId);
-      const fingerprintInput = Buffer.from(
-        `srtaller-pin-provision\0v1\0${LOCAL_TENANT_ID}\0${definition.userId}\0${definition.clientRequestId}\0${pin}`,
-        'utf8',
-      );
+      let verifier;
+      let fingerprintSalt;
+      let requestFingerprint;
       try {
+        verifier = await derivePin(
+          pin,
+          salt,
+          pepper,
+          definition.userId,
+          'credential',
+        );
+        fingerprintSalt = provisioningFingerprintSalt(
+          pepper,
+          definition.userId,
+          definition.clientRequestId,
+        );
+        requestFingerprint = await derivePin(
+          pin,
+          fingerprintSalt,
+          pepper,
+          definition.userId,
+          'provision-fingerprint',
+        );
         rows.push(Object.freeze({
           tenantId: LOCAL_TENANT_ID,
           userId: definition.userId,
@@ -111,15 +142,14 @@ export async function localPinCredentialRows(values) {
           parallelism: profile.parallelism,
           salt: Buffer.from(salt),
           verifier: Buffer.from(verifier),
-          requestFingerprint: createHmac('sha256', pepper)
-            .update(fingerprintInput)
-            .digest(),
+          requestFingerprint: Buffer.from(requestFingerprint),
           createdAt: LOCAL_SEED_TIMESTAMP,
         }));
       } finally {
         salt.fill(0);
-        verifier.fill(0);
-        fingerprintInput.fill(0);
+        verifier?.fill(0);
+        fingerprintSalt?.fill(0);
+        requestFingerprint?.fill(0);
       }
     }
     return Object.freeze(rows);

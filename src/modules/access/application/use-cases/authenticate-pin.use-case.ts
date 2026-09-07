@@ -6,9 +6,7 @@ import { parseAuthenticatePinInput, parseTrustedPinContext } from '../pin-input.
 import type { PinCredentialRepositoryPort } from '../ports/pin-credential-repository.port.js';
 import type { PinSecretHasherPort } from '../ports/pin-secret-hasher.port.js';
 
-export type PinAuthenticationErrorCode =
-  | 'PIN_AUTHENTICATION_DENIED'
-  | 'PIN_AUTHENTICATION_TEMPORARILY_UNAVAILABLE';
+export type PinAuthenticationErrorCode = 'PIN_AUTHENTICATION_DENIED';
 
 export class PinAuthenticationError extends Error {
   readonly category = 'Authentication';
@@ -45,36 +43,40 @@ export class AuthenticatePinUseCase {
     const context = parseTrustedPinContext(contextValue);
     const input = parseAuthenticatePinInput(value);
     let user;
+    let rateLimitPrincipalId: string;
     try {
       user = await this.users.findAuthenticationUser(
         { tenantId: context.tenantId },
         input.userId,
       );
+      rateLimitPrincipalId = this.hasher.rateLimitPrincipalId({
+        tenantId: context.tenantId,
+        userId: input.userId,
+      });
     } catch {
-      throw new PinAuthenticationError(
-        'PIN_AUTHENTICATION_TEMPORARILY_UNAVAILABLE',
-      );
+      throw new PinAuthenticationError('PIN_AUTHENTICATION_DENIED');
     }
     const occurredAt = this.now().toISOString();
-    const result = await this.repository.authenticateAttempt(
-      context,
-      {
-        userId: input.userId,
-        userEligible: user?.status === 'active',
-        occurredAt,
-      },
-      (stored) =>
-        this.hasher.verify({
-          tenantId: context.tenantId,
+    let result;
+    try {
+      result = await this.repository.authenticateAttempt(
+        context,
+        {
           userId: input.userId,
-          pin: input.pin,
-          stored,
-        }),
-    );
-    if (result.status === 'temporarily-unavailable') {
-      throw new PinAuthenticationError(
-        'PIN_AUTHENTICATION_TEMPORARILY_UNAVAILABLE',
+          userEligible: user?.status === 'active',
+          rateLimitPrincipalId,
+          occurredAt,
+        },
+        (stored) =>
+          this.hasher.verify({
+            tenantId: context.tenantId,
+            userId: input.userId,
+            pin: input.pin,
+            stored,
+          }),
       );
+    } catch {
+      throw new PinAuthenticationError('PIN_AUTHENTICATION_DENIED');
     }
     if (result.status !== 'authenticated' || user?.status !== 'active') {
       throw new PinAuthenticationError('PIN_AUTHENTICATION_DENIED');

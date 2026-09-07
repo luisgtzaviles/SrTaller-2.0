@@ -29,6 +29,7 @@ const stationId = '30000000-0000-4000-8000-000000000025';
 const userId = '40000000-0000-4000-8000-000000000025';
 const credentialId = '50000000-0000-4000-8000-000000000025';
 const clientRequestId = '60000000-0000-4000-8000-000000000025';
+const rateLimitPrincipalId = '65000000-0000-4000-8000-000000000025';
 const pin = '270625';
 const now = new Date('2026-09-07T01:00:00.000Z');
 const context = createTrustedStationContext({ tenantId, branchId, stationId });
@@ -87,6 +88,10 @@ function fixture({ user = activeUser, attemptStatus = 'authenticated' } = {}) {
       },
     },
     hasher: {
+      rateLimitPrincipalId(input) {
+        calls.push(['rateLimitPrincipalId', input]);
+        return rateLimitPrincipalId;
+      },
       async hash(input) {
         calls.push(['hash', input]);
         return secretMaterial;
@@ -232,10 +237,16 @@ test('active User plus matching PIN yields a narrow proof, not a Session or auth
   assert.equal('pin' in proof, false);
   assert.deepEqual(subject.calls, [
     ['findAuthenticationUser', { tenantId }, userId],
+    ['rateLimitPrincipalId', { tenantId, userId }],
     [
       'authenticateAttempt',
       context,
-      { userId, userEligible: true, occurredAt: now.toISOString() },
+      {
+        userId,
+        userEligible: true,
+        rateLimitPrincipalId,
+        occurredAt: now.toISOString(),
+      },
     ],
     [
       'verify',
@@ -288,7 +299,7 @@ test('missing, inactive and invalid-credential Users fail with the same non-enum
   assert.doesNotMatch(JSON.stringify(errors), /inactive|revoked|missing|credential/iu);
 });
 
-test('temporary throttling is generic and does not mint a proof', async () => {
+test('temporary repository conditions collapse to the same public denial and never mint a proof', async () => {
   const subject = fixture({ attemptStatus: 'temporarily-unavailable' });
   const useCase = new AuthenticatePinUseCase(
     subject.repository,
@@ -300,7 +311,7 @@ test('temporary throttling is generic and does not mint a proof', async () => {
     useCase.execute(context, { userId, pin }),
     (error) => {
       assert.ok(error instanceof PinAuthenticationError);
-      assert.equal(error.code, 'PIN_AUTHENTICATION_TEMPORARILY_UNAVAILABLE');
+      assert.equal(error.code, 'PIN_AUTHENTICATION_DENIED');
       assert.equal(error.message, 'PIN authentication was not accepted.');
       assert.doesNotMatch(JSON.stringify(error), new RegExp(`${userId}|${pin}`, 'u'));
       return true;
@@ -308,7 +319,7 @@ test('temporary throttling is generic and does not mint a proof', async () => {
   );
 });
 
-test('User lookup failure is sanitized as temporary authentication unavailability', async () => {
+test('User lookup failure is sanitized as the same non-enumerating denial', async () => {
   const subject = fixture();
   subject.users.findAuthenticationUser = async () => {
     throw new Error(`driver leaked ${userId} ${pin}`);
@@ -323,12 +334,34 @@ test('User lookup failure is sanitized as temporary authentication unavailabilit
     useCase.execute(context, { userId, pin }),
     (error) =>
       error instanceof PinAuthenticationError &&
-      error.code === 'PIN_AUTHENTICATION_TEMPORARILY_UNAVAILABLE' &&
+      error.code === 'PIN_AUTHENTICATION_DENIED' &&
       !JSON.stringify(error).includes(userId) &&
       !JSON.stringify(error).includes(pin),
   );
   assert.equal(
     subject.calls.some(([name]) => name === 'authenticateAttempt'),
     false,
+  );
+});
+
+test('repository failures are sanitized as the same non-enumerating denial', async () => {
+  const subject = fixture();
+  subject.repository.authenticateAttempt = async () => {
+    throw new Error(`driver leaked ${userId} ${pin} select * from credentials`);
+  };
+  const useCase = new AuthenticatePinUseCase(
+    subject.repository,
+    subject.users,
+    subject.hasher,
+    () => now,
+  );
+  await assert.rejects(
+    useCase.execute(context, { userId, pin }),
+    (error) =>
+      error instanceof PinAuthenticationError &&
+      error.code === 'PIN_AUTHENTICATION_DENIED' &&
+      !JSON.stringify(error).includes(userId) &&
+      !JSON.stringify(error).includes(pin) &&
+      !JSON.stringify(error).includes('select'),
   );
 });

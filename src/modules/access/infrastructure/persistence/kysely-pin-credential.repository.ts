@@ -38,7 +38,7 @@ const canonicalUuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const rateWindowMs = 60_000;
 const credentialLockMs = 5 * 60_000;
-const unknownPrincipalRateKey = '00000000-0000-4000-8000-000000000000';
+const maxRatePrincipalsPerStation = 1_024;
 
 function driverErrorCode(error: unknown): string {
   if (typeof error !== 'object' || error === null) return '';
@@ -262,17 +262,53 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
 
   async #reserveAttempt(
     context: Parameters<PinCredentialRepositoryPort['authenticateAttempt']>[0],
-    userId: string,
+    rateLimitPrincipalId: string,
     occurredAt: Date,
   ): Promise<boolean> {
     return this.execute(async (database: AccessExecutor) =>
       database.transaction().execute(async (transaction) => {
         await transaction
+          .insertInto('access_pin_attempt_station_guards')
+          .values({
+            tenant_id: context.tenantId,
+            station_id: context.stationId,
+            created_at: occurredAt,
+            updated_at: occurredAt,
+          })
+          .onConflict((conflict) => conflict.doNothing())
+          .execute();
+        await transaction
+          .selectFrom('access_pin_attempt_station_guards')
+          .select('station_id')
+          .where('tenant_id', '=', context.tenantId)
+          .where('station_id', '=', context.stationId)
+          .forUpdate()
+          .executeTakeFirstOrThrow();
+        await transaction
+          .deleteFrom('access_pin_attempt_limits')
+          .where('tenant_id', '=', context.tenantId)
+          .where('station_id', '=', context.stationId)
+          .where(
+            'window_started_at',
+            '<=',
+            new Date(occurredAt.getTime() - rateWindowMs),
+          )
+          .execute();
+        const activePrincipalCount = await transaction
+          .selectFrom('access_pin_attempt_limits')
+          .select(({ fn }) => fn.countAll<number>().as('count'))
+          .where('tenant_id', '=', context.tenantId)
+          .where('station_id', '=', context.stationId)
+          .executeTakeFirstOrThrow();
+        if (Number(activePrincipalCount.count) >= maxRatePrincipalsPerStation) {
+          return false;
+        }
+        await transaction
           .insertInto('access_pin_attempt_limits')
           .values({
             tenant_id: context.tenantId,
             station_id: context.stationId,
-            user_id: userId,
+            rate_principal_id: rateLimitPrincipalId,
             attempt_count: 0,
             window_started_at: occurredAt,
             blocked_until: null,
@@ -285,7 +321,7 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
           .selectAll()
           .where('tenant_id', '=', context.tenantId)
           .where('station_id', '=', context.stationId)
-          .where('user_id', '=', userId)
+          .where('rate_principal_id', '=', rateLimitPrincipalId)
           .forUpdate()
           .executeTakeFirstOrThrow();
         const windowEnd = new Date(
@@ -320,7 +356,7 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
           })
           .where('tenant_id', '=', context.tenantId)
           .where('station_id', '=', context.stationId)
-          .where('user_id', '=', userId)
+          .where('rate_principal_id', '=', rateLimitPrincipalId)
           .executeTakeFirst();
         return true;
       }),
@@ -412,7 +448,8 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
   ): Promise<PinAttemptResult> {
     if (
       !isTrustedStationContext(context) ||
-      !validInstant(input?.occurredAt)
+      !validInstant(input?.occurredAt) ||
+      !canonicalUuid.test(input?.rateLimitPrincipalId ?? '')
     ) {
       return Object.freeze({ status: 'denied' });
     }
@@ -426,7 +463,7 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
     try {
       const reserved = await this.#reserveAttempt(
         context,
-        input.userEligible ? userId : unknownPrincipalRateKey,
+        input.rateLimitPrincipalId,
         occurredAt,
       );
       if (!reserved) {
@@ -440,13 +477,6 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
           .where('user_id', '=', userId)
           .executeTakeFirst(),
       );
-      const credentialLocked =
-        credential?.status === 'active' &&
-        credential.locked_until !== null &&
-        credential.locked_until > occurredAt;
-      if (credentialLocked) {
-        return Object.freeze({ status: 'denied' });
-      }
       const canVerify =
         input.userEligible === true &&
         credential?.status === 'active' &&

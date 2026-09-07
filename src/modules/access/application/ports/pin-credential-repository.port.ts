@@ -69,6 +69,7 @@ export interface PinCredentialRepositoryPort {
     input: Readonly<{
       userId: AccessUserId;
       userEligible: boolean;
+      rateLimitPrincipalId: string;
       occurredAt: string;
     }>,
     verify: (stored: PinStoredVerifier | null) => Promise<boolean>,

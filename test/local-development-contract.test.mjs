@@ -168,7 +168,8 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
 });
 
 test('local PIN fixtures use the governed profile and persist no plaintext PIN', async () => {
-  const rows = await localPinCredentialRows(validLocalValues());
+  const values = validLocalValues();
+  const rows = await localPinCredentialRows(values);
   assert.equal(rows.length, 3);
   assert.deepEqual(LOCAL_PIN_FIXTURE_PROFILE, {
     algorithm: 'argon2id',
@@ -187,6 +188,37 @@ test('local PIN fixtures use the governed profile and persist no plaintext PIN',
   const rendered = JSON.stringify(rows);
   assert.doesNotMatch(rendered, /270601|270602|270603/u);
   assert.doesNotMatch(rendered, /SR_LOCAL_PIN|SR_PIN_PEPPER/u);
+
+  const { NodeArgon2PinHasher } = await import(
+    '../dist/modules/access/infrastructure/security/node-argon2-pin-hasher.js'
+  );
+  const hasher = new NodeArgon2PinHasher(values.SR_PIN_PEPPER);
+  const pins = [
+    values.SR_LOCAL_PIN_JORGE,
+    values.SR_LOCAL_PIN_MARIA,
+    values.SR_LOCAL_PIN_CARLOS,
+  ];
+  for (const [index, row] of rows.entries()) {
+    const runtimeMaterial = await hasher.hash({
+      tenantId: row.tenantId,
+      userId: row.userId,
+      clientRequestId: row.clientRequestId,
+      pin: pins[index],
+    });
+    assert.deepEqual(
+      Buffer.from(row.requestFingerprint),
+      Buffer.from(runtimeMaterial.requestFingerprint),
+    );
+    assert.equal(
+      await hasher.verify({
+        tenantId: row.tenantId,
+        userId: row.userId,
+        pin: pins[index],
+        stored: row,
+      }),
+      true,
+    );
+  }
 });
 
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {

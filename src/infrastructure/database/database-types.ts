@@ -181,11 +181,19 @@ export interface AccessPinCredentialCommandTable {
   readonly applied_at: ImmutableColumn<Date>;
 }
 
-/** Additional abuse-control state scoped to a trusted Station and User. */
+/** Serializes bounded abuse-control cardinality for one trusted Station. */
+export interface AccessPinAttemptStationGuardTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+/** Bounded abuse-control state scoped to a trusted Station and opaque principal. */
 export interface AccessPinAttemptLimitTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly station_id: ImmutableColumn<string>;
-  readonly user_id: ImmutableColumn<string>;
+  readonly rate_principal_id: ImmutableColumn<string>;
   readonly attempt_count: MutableColumn<number>;
   readonly window_started_at: MutableColumn<Date>;
   readonly blocked_until: MutableColumn<Date | null>;
@@ -356,6 +364,7 @@ export interface DatabaseSchema {
   readonly access_role_assignment_commands: AccessRoleAssignmentCommandTable;
   readonly access_pin_credentials: AccessPinCredentialTable;
   readonly access_pin_credential_commands: AccessPinCredentialCommandTable;
+  readonly access_pin_attempt_station_guards: AccessPinAttemptStationGuardTable;
   readonly access_pin_attempt_limits: AccessPinAttemptLimitTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
@@ -421,6 +430,11 @@ export type NewAccessPinCredentialCommand =
 export type AccessPinAttemptLimitRow = Selectable<AccessPinAttemptLimitTable>;
 export type NewAccessPinAttemptLimit = Insertable<AccessPinAttemptLimitTable>;
 export type AccessPinAttemptLimitUpdate = Updateable<AccessPinAttemptLimitTable>;
+
+export type AccessPinAttemptStationGuardRow =
+  Selectable<AccessPinAttemptStationGuardTable>;
+export type NewAccessPinAttemptStationGuard =
+  Insertable<AccessPinAttemptStationGuardTable>;
 
 export type RepairRow = Selectable<RepairTable>;
 export type NewRepair = Insertable<RepairTable>;

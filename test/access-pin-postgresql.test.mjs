@@ -71,6 +71,7 @@ const migrationRoot = fileURLToPath(
 
 const pinTables = [
   'access_pin_attempt_limits',
+  'access_pin_attempt_station_guards',
   'access_pin_credential_commands',
   'access_pin_credentials',
 ];
@@ -116,7 +117,8 @@ const concurrentUser = '71000000-0000-4000-8000-000000000025';
 const lockUser = '72000000-0000-4000-8000-000000000025';
 const unknownUser = '73000000-0000-4000-8000-000000000025';
 const missingCredentialUser = '74000000-0000-4000-8000-000000000025';
-const unknownPrincipalRateKey = '00000000-0000-4000-8000-000000000000';
+const invalidRatePrincipalA = 'd0000000-0000-4000-8000-000000000001';
+const invalidRatePrincipalB = 'd0000000-0000-4000-8000-000000000002';
 const credentialA = '80000000-0000-4000-8000-000000000025';
 const replayCredentialA = '81000000-0000-4000-8000-000000000025';
 const concurrentCredentialA = '82000000-0000-4000-8000-000000000025';
@@ -457,6 +459,21 @@ test(
       );
       assert.deepEqual(replay, first);
       assert.equal(first.credentialId, credentialA);
+      await assert.rejects(
+        provision(
+          useCases,
+          tenantA,
+          {
+            userId: sharedUser,
+            pin: wrongPin,
+            clientRequestId: requestA,
+          },
+          replayCredentialA,
+        ),
+        (error) =>
+          error instanceof PinCredentialPersistenceError &&
+          error.code === 'PIN_CREDENTIAL_IDEMPOTENCY_CONFLICT',
+      );
 
       const [concurrentA, concurrentB] = await Promise.all([
         provision(
@@ -549,6 +566,9 @@ test(
         useCases.repository,
         createKyselyAuthenticationUserReader(connection),
         {
+          rateLimitPrincipalId(input) {
+            return useCases.hasher.rateLimitPrincipalId(input);
+          },
           async verify(input) {
             revokedVerifierCalls += 1;
             assert.equal(input.stored, null);
@@ -642,6 +662,95 @@ test(
         assert.equal(plaintext.rows[0].found, false);
       }
 
+      const rejectedConstraintMutations = [
+        `update access_pin_credentials
+         set status = 'revoked'
+         where tenant_id = $1 and user_id = $2`,
+        `update access_pin_credentials
+         set memory_kib = 8192
+         where tenant_id = $1 and user_id = $2`,
+        `update access_pin_credentials
+         set salt = decode('00', 'hex')
+         where tenant_id = $1 and user_id = $2`,
+        `update access_pin_credentials
+         set credential_version = -1
+         where tenant_id = $1 and user_id = $2`,
+        `update access_pin_credentials
+         set consecutive_failures = 6
+         where tenant_id = $1 and user_id = $2`,
+        `update access_pin_credentials
+         set updated_at = created_at - interval '1 second'
+         where tenant_id = $1 and user_id = $2`,
+        `update access_pin_credential_commands
+         set request_fingerprint = decode('00', 'hex')
+         where tenant_id = $1 and user_id = $2`,
+      ];
+      for (const statement of rejectedConstraintMutations) {
+        await assert.rejects(
+          admin.query(statement, [tenantA, sharedUser]),
+          (error) => error?.code === '23514',
+        );
+      }
+      const rejectedAbuseControlWrites = [
+        {
+          code: '23514',
+          statement: `insert into access_pin_attempt_limits (
+             tenant_id, station_id, rate_principal_id, attempt_count,
+             window_started_at, blocked_until, updated_at
+           ) values ($1, $2, $3, 6, $4, null, $4)`,
+          values: [tenantA, stationA, invalidRatePrincipalA, provisionedAt],
+        },
+        {
+          code: '23514',
+          statement: `insert into access_pin_attempt_limits (
+             tenant_id, station_id, rate_principal_id, attempt_count,
+             window_started_at, blocked_until, updated_at
+           ) values ($1, $2, $3, 0, $4, null,
+                     $4::timestamptz - interval '1 second')`,
+          values: [tenantA, stationA, invalidRatePrincipalB, provisionedAt],
+        },
+        {
+          code: '23514',
+          statement: `insert into access_pin_attempt_station_guards (
+             tenant_id, station_id, created_at, updated_at
+           ) values ($1, $2, $3,
+                     $3::timestamptz - interval '1 second')`,
+          values: [tenantA, stationA2, provisionedAt],
+        },
+        {
+          code: '23503',
+          statement: `insert into access_pin_attempt_station_guards (
+             tenant_id, station_id, created_at, updated_at
+           ) values ($1, $2, $3, $3)`,
+          values: [tenantA, stationB, provisionedAt],
+        },
+        {
+          code: '23503',
+          statement: `insert into access_pin_attempt_limits (
+             tenant_id, station_id, rate_principal_id, attempt_count,
+             window_started_at, blocked_until, updated_at
+           ) values ($1, $2, $3, 0, $4, null, $4)`,
+          values: [tenantB, stationA, invalidRatePrincipalA, provisionedAt],
+        },
+      ];
+      for (const { code, statement, values } of rejectedAbuseControlWrites) {
+        await assert.rejects(
+          admin.query(statement, values),
+          (error) => error?.code === code,
+        );
+      }
+      assert.equal(
+        (
+          await admin.query(
+            `select count(*)::integer as count
+             from access_pin_attempt_limits
+             where rate_principal_id = any($1::uuid[])`,
+            [[invalidRatePrincipalA, invalidRatePrincipalB]],
+          )
+        ).rows[0].count,
+        0,
+      );
+
       const proofA = await useCases.authenticate.execute(contextA, {
         userId: sharedUser,
         pin: pinA,
@@ -728,20 +837,29 @@ test(
       let lockedVerifyCalls = 0;
       assert.deepEqual(
         await useCases.repository.authenticateAttempt(
-          contextA,
+          contextA2,
           {
             userId: lockUser,
             userEligible: true,
+            rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+              tenantId: tenantA,
+              userId: lockUser,
+            }),
             occurredAt: now.value.toISOString(),
           },
-          async () => {
+          async (stored) => {
             lockedVerifyCalls += 1;
-            return true;
+            assert.equal(
+              stored,
+              null,
+              'a locked credential must use the same dummy-verifier seam as an unknown principal',
+            );
+            return false;
           },
         ),
         { status: 'denied' },
       );
-      assert.equal(lockedVerifyCalls, 0);
+      assert.equal(lockedVerifyCalls, 1);
       now.value = new Date('2026-09-07T03:05:01.000Z');
       const unlocked = await useCases.authenticate.execute(contextA, {
         userId: lockUser,
@@ -767,6 +885,10 @@ test(
           {
             userId: unknownUser,
             userEligible: false,
+            rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+              tenantId: tenantA,
+              userId: unknownUser,
+            }),
             occurredAt: new Date(
               unknownStart.getTime() + index * 1_000,
             ).toISOString(),
@@ -781,6 +903,10 @@ test(
           {
             userId: unknownUser,
             userEligible: false,
+            rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+              tenantId: tenantA,
+              userId: unknownUser,
+            }),
             occurredAt: new Date(
               unknownStart.getTime() + 5_000,
             ).toISOString(),
@@ -795,6 +921,10 @@ test(
           {
             userId: unknownUser,
             userEligible: false,
+            rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+              tenantId: tenantA,
+              userId: unknownUser,
+            }),
             occurredAt: new Date(
               unknownStart.getTime() + 5_000,
             ).toISOString(),
@@ -804,17 +934,26 @@ test(
         { status: 'denied' },
       );
       const unknownLimits = await admin.query(
-        `select tenant_id, station_id, attempt_count, blocked_until
+        `select tenant_id, station_id, rate_principal_id, attempt_count, blocked_until
          from access_pin_attempt_limits
-         where user_id = $1
+         where tenant_id = $1 and rate_principal_id = $2
          order by tenant_id, station_id`,
-        [unknownPrincipalRateKey],
+        [
+          tenantA,
+          useCases.hasher.rateLimitPrincipalId({
+            tenantId: tenantA,
+            userId: unknownUser,
+          }),
+        ],
       );
       assert.deepEqual(
         unknownLimits.rows.map(
-          ({ tenant_id, station_id, attempt_count, blocked_until }) => ({
+          ({ tenant_id, station_id, rate_principal_id, attempt_count, blocked_until }) => ({
             tenantId: tenant_id,
             stationId: station_id,
+            opaquePrincipal:
+              /^[0-9a-f-]{36}$/u.test(rate_principal_id) &&
+              rate_principal_id !== unknownUser,
             attemptCount: attempt_count,
             blocked: blocked_until !== null,
           }),
@@ -823,12 +962,14 @@ test(
           {
             tenantId: tenantA,
             stationId: stationA,
+            opaquePrincipal: true,
             attemptCount: 5,
             blocked: true,
           },
           {
             tenantId: tenantA,
             stationId: stationA2,
+            opaquePrincipal: true,
             attemptCount: 1,
             blocked: false,
           },
@@ -839,7 +980,7 @@ test(
           await admin.query(
             `select count(*)::integer as count
              from access_pin_attempt_limits
-             where user_id = $1`,
+             where rate_principal_id = $1`,
             [unknownUser],
           )
         ).rows[0].count,
@@ -863,7 +1004,7 @@ test(
           userId: missingCredentialUser,
           pin: wrongPin,
         }),
-        'PIN_AUTHENTICATION_TEMPORARILY_UNAVAILABLE',
+        'PIN_AUTHENTICATION_DENIED',
       );
       await rejectsAuthentication(
         useCases.authenticate.execute(contextA2, {
@@ -875,9 +1016,15 @@ test(
       const missingCredentialLimits = await admin.query(
         `select station_id, attempt_count, blocked_until
          from access_pin_attempt_limits
-         where tenant_id = $1 and user_id = $2
+         where tenant_id = $1 and rate_principal_id = $2
          order by station_id`,
-        [tenantA, missingCredentialUser],
+        [
+          tenantA,
+          useCases.hasher.rateLimitPrincipalId({
+            tenantId: tenantA,
+            userId: missingCredentialUser,
+          }),
+        ],
       );
       assert.deepEqual(
         missingCredentialLimits.rows.map(
@@ -904,6 +1051,60 @@ test(
         0,
       );
 
+      const eligibilityStart = new Date('2026-09-07T04:04:00.000Z');
+      let ineligibleVerifierCalls = 0;
+      for (let index = 0; index < 5; index += 1) {
+        assert.deepEqual(
+          await useCases.repository.authenticateAttempt(
+            contextA,
+            {
+              userId: concurrentUser,
+              userEligible: false,
+              rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+                tenantId: tenantA,
+                userId: concurrentUser,
+              }),
+              occurredAt: new Date(
+                eligibilityStart.getTime() + index * 1_000,
+              ).toISOString(),
+            },
+            async () => {
+              ineligibleVerifierCalls += 1;
+              return false;
+            },
+          ),
+          { status: 'denied' },
+        );
+      }
+      assert.equal(ineligibleVerifierCalls, 5);
+      let eligibilityProbeVerifierCalls = 0;
+      assert.deepEqual(
+        await useCases.repository.authenticateAttempt(
+          contextA,
+          {
+            userId: concurrentUser,
+            userEligible: true,
+            rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+              tenantId: tenantA,
+              userId: concurrentUser,
+            }),
+            occurredAt: new Date(
+              eligibilityStart.getTime() + 5_000,
+            ).toISOString(),
+          },
+          async () => {
+            eligibilityProbeVerifierCalls += 1;
+            return false;
+          },
+        ),
+        { status: 'temporarily-unavailable' },
+      );
+      assert.equal(
+        eligibilityProbeVerifierCalls,
+        0,
+        'eligibility must not select a fresh rate bucket or reveal User state',
+      );
+
       const successRateStart = new Date('2026-09-07T05:00:00.000Z');
       for (let index = 0; index < 5; index += 1) {
         now.value = new Date(successRateStart.getTime() + index * 1_000);
@@ -920,6 +1121,10 @@ test(
           {
             userId: sharedUser,
             userEligible: true,
+            rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+              tenantId: tenantA,
+              userId: sharedUser,
+            }),
             occurredAt: new Date(
               successRateStart.getTime() + 5_000,
             ).toISOString(),
@@ -938,6 +1143,170 @@ test(
         { userId: sharedUser, pin: pinA },
       );
       assert.equal(stationIsolatedProof.stationId, stationA2);
+
+      const ceilingStart = new Date('2026-09-07T07:00:00.000Z');
+      const existingRatePrincipal = useCases.hasher.rateLimitPrincipalId({
+        tenantId: tenantB,
+        userId: sharedUser,
+      });
+      await admin.query(
+        `delete from access_pin_attempt_limits
+         where tenant_id = $1 and station_id = $2`,
+        [tenantB, stationB],
+      );
+      await admin.query(
+        `insert into access_pin_attempt_limits (
+           tenant_id, station_id, rate_principal_id, attempt_count,
+           window_started_at, blocked_until, updated_at
+         ) values ($1, $2, $3, 0, $4, null, $4)`,
+        [tenantB, stationB, existingRatePrincipal, ceilingStart],
+      );
+      await admin.query(
+        `insert into access_pin_attempt_limits (
+           tenant_id, station_id, rate_principal_id, attempt_count,
+           window_started_at, blocked_until, updated_at
+         )
+         select $1, $2,
+                ('f0000000-0000-4000-8000-' || lpad(to_hex(value), 12, '0'))::uuid,
+                0, $3, null, $3
+         from generate_series(1, 1022) as value`,
+        [tenantB, stationB, ceilingStart],
+      );
+      assert.equal(
+        (
+          await admin.query(
+            `select count(*)::integer as count
+             from access_pin_attempt_limits
+             where tenant_id = $1 and station_id = $2`,
+            [tenantB, stationB],
+          )
+        ).rows[0].count,
+        1023,
+      );
+      const ceilingRaceUsers = Array.from(
+        { length: 8 },
+        (_, index) =>
+          `e0000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+      );
+      let ceilingRaceVerifierCalls = 0;
+      const ceilingRaceResults = await Promise.all(
+        ceilingRaceUsers.map((candidate) =>
+          useCases.repository.authenticateAttempt(
+            contextB,
+            {
+              userId: candidate,
+              userEligible: false,
+              rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+                tenantId: tenantB,
+                userId: candidate,
+              }),
+              occurredAt: new Date(
+                ceilingStart.getTime() + 1_000,
+              ).toISOString(),
+            },
+            async () => {
+              ceilingRaceVerifierCalls += 1;
+              return false;
+            },
+          ),
+        ),
+      );
+      assert.equal(
+        ceilingRaceResults.filter(({ status }) => status === 'denied').length,
+        1,
+      );
+      assert.equal(
+        ceilingRaceResults.filter(
+          ({ status }) => status === 'temporarily-unavailable',
+        ).length,
+        7,
+      );
+      assert.equal(ceilingRaceVerifierCalls, 1);
+      assert.equal(
+        (
+          await admin.query(
+            `select count(*)::integer as count
+             from access_pin_attempt_limits
+             where tenant_id = $1 and station_id = $2`,
+            [tenantB, stationB],
+          )
+        ).rows[0].count,
+        1024,
+      );
+      for (const candidate of [sharedUser, unknownUser]) {
+        let ceilingVerifierCalls = 0;
+        assert.deepEqual(
+          await useCases.repository.authenticateAttempt(
+            contextB,
+            {
+              userId: candidate,
+              userEligible: candidate === sharedUser,
+              rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+                tenantId: tenantB,
+                userId: candidate,
+              }),
+              occurredAt: new Date(
+                ceilingStart.getTime() + 1_000,
+              ).toISOString(),
+            },
+            async () => {
+              ceilingVerifierCalls += 1;
+              return true;
+            },
+          ),
+          { status: 'temporarily-unavailable' },
+        );
+        assert.equal(ceilingVerifierCalls, 0);
+      }
+      let stationIsolationVerifierCalls = 0;
+      assert.deepEqual(
+        await useCases.repository.authenticateAttempt(
+          contextA,
+          {
+            userId: unknownUser,
+            userEligible: false,
+            rateLimitPrincipalId: useCases.hasher.rateLimitPrincipalId({
+              tenantId: tenantA,
+              userId: unknownUser,
+            }),
+            occurredAt: new Date(
+              ceilingStart.getTime() + 1_000,
+            ).toISOString(),
+          },
+          async () => {
+            stationIsolationVerifierCalls += 1;
+            return false;
+          },
+        ),
+        { status: 'denied' },
+      );
+      assert.equal(stationIsolationVerifierCalls, 1);
+      assert.deepEqual(
+        await useCases.repository.authenticateAttempt(
+          contextB,
+          {
+            userId: sharedUser,
+            userEligible: true,
+            rateLimitPrincipalId: existingRatePrincipal,
+            occurredAt: new Date(
+              ceilingStart.getTime() + 61_000,
+            ).toISOString(),
+          },
+          async () => true,
+        ),
+        { status: 'authenticated', credentialVersion: 0 },
+      );
+      assert.equal(
+        (
+          await admin.query(
+            `select count(*)::integer as count
+             from access_pin_attempt_limits
+             where tenant_id = $1 and station_id = $2`,
+            [tenantB, stationB],
+          )
+        ).rows[0].count,
+        1,
+      );
 
       await assert.rejects(
         provision(

@@ -25,6 +25,10 @@ export type PinStoredVerifier = Readonly<{
 }>;
 
 export interface PinSecretHasherPort {
+  rateLimitPrincipalId(input: Readonly<{
+    tenantId: TenantId;
+    userId: AccessUserId;
+  }>): string;
   hash(input: Readonly<{
     tenantId: TenantId;
     userId: AccessUserId;

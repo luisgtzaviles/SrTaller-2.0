@@ -36,11 +36,25 @@ test('PBI-025 persists a separate tenant/User credential with governed lock and 
   assert.match(migration, /createTable\('access_pin_attempt_limits'\)/u);
   assert.match(
     migration,
-    /addPrimaryKeyConstraint\('access_pin_attempt_limits_pk', \[\s*'tenant_id',\s*'station_id',\s*'user_id',?\s*\]\)/u,
+    /createTable\('access_pin_attempt_station_guards'\)/u,
+  );
+  assert.match(
+    migration,
+    /addPrimaryKeyConstraint\('access_pin_attempt_limits_pk', \[\s*'tenant_id',\s*'station_id',\s*'rate_principal_id',?\s*\]\)/u,
   );
   assert.match(
     migration,
     /\['tenant_id', 'station_id'\][\s\S]*'stations'[\s\S]*\['tenant_id', 'station_id'\]/u,
+  );
+  const repository = await readFile(
+    'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
+    'utf8',
+  );
+  assert.match(repository, /maxRatePrincipalsPerStation = 1_024/u);
+  assert.match(repository, /deleteFrom\('access_pin_attempt_limits'\)/u);
+  assert.match(
+    repository,
+    /access_pin_attempt_station_guards'[\s\S]*forUpdate\(\)/u,
   );
   assert.doesNotMatch(migration, /addColumn\(['"]pin['"]/iu);
 });
@@ -93,6 +107,16 @@ test('Argon2id profile is explicit, peppered, context-bound, bounded and redacte
   assert.match(hasherSource, /secret,/u);
   assert.match(hasherSource, /associatedData: context/u);
   assert.match(hasherSource, /randomBytes\(PIN_KDF_PROFILE\.saltLength\)/u);
+  assert.match(hasherSource, /provisioningFingerprintSalt/u);
+  assert.match(hasherSource, /srtaller-pin-rate-principal/u);
+  assert.match(
+    hasherSource,
+    /requestFingerprint = await this\.#derive\([\s\S]*'provision-fingerprint'/u,
+  );
+  assert.doesNotMatch(
+    hasherSource,
+    /srtaller-pin-provision-salt[^\n]*input\.pin/u,
+  );
   assert.match(hasherSource, /timingSafeEqual\(actual, expected\)/u);
   assert.match(hasherSource, /BoundedArgon2WorkLimiter/u);
   assert.match(
@@ -126,6 +150,21 @@ test('Node Argon2id hasher protects, binds and verifies PIN material without dia
   );
 
   const hasher = new NodeArgon2PinHasher(pepper);
+  const ratePrincipal = hasher.rateLimitPrincipalId({ tenantId, userId });
+  assert.match(ratePrincipal, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u);
+  assert.equal(
+    hasher.rateLimitPrincipalId({ tenantId, userId }),
+    ratePrincipal,
+  );
+  assert.notEqual(
+    hasher.rateLimitPrincipalId({ tenantId, userId: otherUserId }),
+    ratePrincipal,
+  );
+  assert.notEqual(
+    hasher.rateLimitPrincipalId({ tenantId: otherTenantId, userId }),
+    ratePrincipal,
+  );
+  assert.notEqual(ratePrincipal, userId);
   const first = await hasher.hash({
     tenantId,
     userId,
@@ -136,6 +175,18 @@ test('Node Argon2id hasher protects, binds and verifies PIN material without dia
     tenantId,
     userId,
     clientRequestId,
+    pin,
+  });
+  const differentPin = await hasher.hash({
+    tenantId,
+    userId,
+    clientRequestId,
+    pin: '270626',
+  });
+  const differentRequest = await hasher.hash({
+    tenantId,
+    userId,
+    clientRequestId: '60000000-0000-4000-8000-000000000026',
     pin,
   });
 
@@ -165,6 +216,8 @@ test('Node Argon2id hasher protects, binds and verifies PIN material without dia
   assert.notDeepEqual(first.salt, second.salt);
   assert.notDeepEqual(first.verifier, second.verifier);
   assert.deepEqual(first.requestFingerprint, second.requestFingerprint);
+  assert.notDeepEqual(first.requestFingerprint, differentPin.requestFingerprint);
+  assert.notDeepEqual(first.requestFingerprint, differentRequest.requestFingerprint);
   assert.equal(
     await hasher.verify({ tenantId, userId, pin, stored: first }),
     true,

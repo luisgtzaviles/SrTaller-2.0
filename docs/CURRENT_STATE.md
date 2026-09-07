@@ -187,6 +187,8 @@ candidate exacto; no incorpora login, Session ni autorización.
 
 ## Próxima acción
 
-Completar implementación, PostgreSQL material, evidencia, Draft PR, CI y
-focused Critical-risk review de PBI-025. PBI-034 permanece candidato no
-iniciado. No desplegar ni declarar `Released` desde este estado.
+La implementación, PostgreSQL material, evidencia y Draft PR #30 de PBI-025
+están materializados. Completar remediaciones de focused Critical-risk review,
+obtener CI autoritativo GREEN sobre el HEAD final y cerrar la revisión antes de
+cualquier merge. PBI-034 permanece candidato no iniciado. No desplegar ni
+declarar `Released` desde este estado.
