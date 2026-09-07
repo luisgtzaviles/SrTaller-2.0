@@ -4,6 +4,7 @@ import { useDatabaseTransactionExecutor } from './database-transaction-capabilit
 import type { DatabaseSchema } from './database-types.js';
 
 export type InternalDatabasePersistenceOwner =
+  | 'access'
   | 'database'
   | 'repairs'
   | 'stations'
@@ -31,10 +32,17 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     users: DatabaseSchema['users'];
     user_provisioning_bootstraps: DatabaseSchema['user_provisioning_bootstraps'];
     user_lifecycle_commands: DatabaseSchema['user_lifecycle_commands'];
+    access_capabilities: DatabaseSchema['access_capabilities'];
+    access_roles: DatabaseSchema['access_roles'];
+    access_role_capabilities: DatabaseSchema['access_role_capabilities'];
+    access_role_assignments: DatabaseSchema['access_role_assignments'];
+    access_role_assignment_commands: DatabaseSchema['access_role_assignment_commands'];
   }>;
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
-  Owner extends 'database'
+  Owner extends 'access'
+    ? Pick<DatabaseSchema, 'access_capabilities' | 'access_roles' | 'access_role_capabilities' | 'access_role_assignments' | 'access_role_assignment_commands'>
+    : Owner extends 'database'
     ? DatabaseTechnicalSchema
     : Owner extends 'repairs'
     ? Pick<DatabaseSchema, 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements'>

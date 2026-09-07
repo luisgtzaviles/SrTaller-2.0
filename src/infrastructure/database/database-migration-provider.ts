@@ -14,7 +14,13 @@ import type { MigrationProvider } from 'kysely/migration';
 
 type MigrationArtifactMode = 'compiled' | 'source';
 
-type MigrationOwner = 'database' | 'repairs' | 'stations' | 'tenancy' | 'users';
+type MigrationOwner =
+  | 'access'
+  | 'database'
+  | 'repairs'
+  | 'stations'
+  | 'tenancy'
+  | 'users';
 
 type InternalMigrationProviderErrorCode =
   | 'DIRECTORY_MISSING'
@@ -83,7 +89,7 @@ export class InternalMigrationProviderError extends Error {
 }
 
 const migrationPattern =
-  /^(?<timestamp>\d{14})_(?<owner>database|repairs|stations|tenancy|users)_(?<action>[a-z][a-z0-9]*(?:_[a-z0-9]+)+)\.(?<extension>ts|js)$/u;
+  /^(?<timestamp>\d{14})_(?<owner>access|database|repairs|stations|tenancy|users)_(?<action>[a-z][a-z0-9]*(?:_[a-z0-9]+)+)\.(?<extension>ts|js)$/u;
 
 function isContained(parent: string, candidate: string): boolean {
   const difference = relative(parent, candidate);
