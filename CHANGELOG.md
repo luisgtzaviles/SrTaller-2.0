@@ -12,6 +12,11 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
+- Reconciliado PBI-024 como `Done` canónico mediante PR #25, merge
+  `2b0ab85bb19b795c71332b5f2ef36ee26a75cdfe` y CI `34044488745` GREEN;
+  `Released` y deploy permanecen NO. PBI-032 pasa a candidato en revisión y
+  PBI-033 permanece seleccionado, no iniciado.
+
 - Preparado el cierre canónico candidato de PBI-024: merge funcional
   `5966d2f20fcf29aedf91a841a4fe331cb9bae410`, CI de `main` `34019773228`
   GREEN, focused high-risk review PASS y Owner Acceptance condicional
@@ -71,6 +76,12 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 - Cierre de DEC-002 y DEC-062 por el Responsable de Producto: R0 queda definido como fundación ejecutable multi-tenant, con inclusiones, exclusiones, escenarios y autoridad de aceptación verificables; implementación y aceptación permanecen pendientes.
 
 ### Implementación
+
+- Materializado el candidato PBI-032 User Directory and Lifecycle: identidad
+  tenant-scoped, bootstrap server-only de primer User, lecturas list/get,
+  lifecycle optimista con journal durable de idempotencia y pruebas materiales
+  PostgreSQL de aislamiento y concurrencia. No agrega HTTP/UI de Users, roles,
+  PIN, sesión, autorización, deploy ni secretos productivos.
 
 - Materializada la foundation mínima de configuración externa server-only:
   catálogo de secretos activos/reservados, requisitos fail-closed, diagnósticos

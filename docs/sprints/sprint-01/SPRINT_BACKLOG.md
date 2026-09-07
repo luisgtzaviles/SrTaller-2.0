@@ -32,7 +32,7 @@
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| PBI-032 | Focused Owner Review, merge autorizado y CI exacto de main | No declarar Done ni iniciar PBI-033 antes de completar esos gates |
+| PBI-032 | Focused review, merge funcional autorizado, CI exacto de `main`, Owner Acceptance y cierre documental autorizado con CI exacto post-cierre | No declarar `Done` ni iniciar PBI-033 antes de completar esos gates |
 
 ## Reglas de cambio
 
@@ -44,4 +44,4 @@
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner merge review del cierre documental de PBI-024.
+- **Disparador:** Focused Owner Review de PBI-032.

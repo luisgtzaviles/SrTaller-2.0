@@ -3,9 +3,10 @@
 ## Estado del documento
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
-- **Baseline auditada:** `main` más rama activa de PBI-032; la rama no se
-  convierte en baseline hasta merge autorizado y CI de `main`.
-- **CI autoritativo:** run `34019773228`, `SUCCESS`; VC-024 run-1, run-2 y
+- **Baseline auditada:** `main` en
+  `2b0ab85bb19b795c71332b5f2ef36ee26a75cdfe` más rama activa de PBI-032; la
+  rama no se convierte en baseline hasta merge autorizado y CI de `main`.
+- **CI autoritativo:** run `34044488745`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -16,23 +17,24 @@ SR Taller 2.0 tiene una foundation técnica ejecutable y un Repair Workstream
 local integrado. D5 Technician Assignment, D6.1 Start Diagnosis y D6.2 Internal
 Physical Location pertenecen a `main` y tienen CI verde.
 
-Repairs no está completo ni listo para operación productiva. El runtime local
-usa contexto y actor sintéticos; no existen todavía Users, PIN, Operational
-Session, contextual authorization o Trusted Station Runtime Context en
-`main`. Por ello el roadmap aprobado detiene nuevas features profundas de
-Repairs y prioriza Identity & Context Foundation.
+Repairs no está completo ni listo para operación productiva. Trusted Station
+Runtime Context está integrado y cerrado canónicamente. PBI-032 aporta el
+directorio User como candidato todavía no integrado; PIN, Operational Session
+y contextual authorization todavía no existen en `main`. Por ello el roadmap
+aprobado detiene nuevas features profundas de Repairs y prioriza Identity &
+Context Foundation.
 
 ## Git y CI
 
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `5966d2f20fcf29aedf91a841a4fe331cb9bae410` |
+| HEAD auditado | `2b0ab85bb19b795c71332b5f2ef36ee26a75cdfe` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `34019773228` SUCCESS |
-| Última integración | PR #24 — Trusted Station Runtime Context |
+| CI | `34044488745` SUCCESS |
+| Última integración | PR #25 — cierre canónico de Trusted Station Runtime Context |
 
 La rama documental que modifique esta fotografía no se convierte en baseline
 hasta integrarse a `main` con autorización y CI propios.
@@ -80,9 +82,8 @@ hasta integrarse a `main` con autorización y CI propios.
 
 - `access` no contiene credentials, roles o sessions. PBI-032 aporta un
   directorio User tenant-scoped candidato, aún no integrado.
-- Existe Trusted Station Runtime Context persistente en `main`; su cierre
-  canónico documental permanece pendiente. No incorpora enrollment productivo
-  ni administración de binding.
+- Trusted Station Runtime Context está `Done` canónico; no incorpora enrollment
+  productivo ni administración completa de bindings.
 - `LocalRepairContext` sólo habilita contexto fijo en desarrollo.
 - Writes de Repairs integrados todavía registran actor sintético.
 - New Repair es una superficie visual, no un write productivo persistente.
@@ -123,10 +124,9 @@ PBI-027 quedó `Done` canónico al integrar PR #20; `Released: NO`. PBI-029 qued
 CI `33974100385` GREEN, focused security review PASS, riesgo `CRITICAL`
 aceptado, Owner Acceptance APPROVED, PR #22 merge
 `41914c78724303d66136989937cf8f38e4ea8a88` y CI post-cierre `33988752597`
-GREEN. `Released: NO`. PBI-024 tiene merge funcional
-`5966d2f20fcf29aedf91a841a4fe331cb9bae410`, CI de `main` `34019773228`
-GREEN, focused review PASS y Owner Acceptance condicional satisfecha. El cierre
-documental normal decide su estado `Done` efectivo; `Released: NO`.
+GREEN. `Released: NO`. PBI-024 quedó `Done` canónico mediante PR #25, merge
+`2b0ab85bb19b795c71332b5f2ef36ee26a75cdfe` y CI `34044488745` GREEN;
+`Released: NO`.
 
 ## Identity Foundation reconciliada
 
@@ -152,5 +152,6 @@ documental normal decide su estado `Done` efectivo; `Released: NO`.
 
 ## Próxima acción
 
-Owner merge review del cierre documental de PBI-024. No se autoriza DoR,
-implementación, deploy ni release de PBI-032.
+Focused Owner Review del candidato PBI-032. PBI-032 no está `Done` ni
+`Released`; PBI-033 permanece seleccionado y no puede iniciar hasta completar
+el cierre canónico de PBI-032.
