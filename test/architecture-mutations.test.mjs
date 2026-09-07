@@ -23,6 +23,7 @@ import { remediationMutations } from './architecture-remediation-mutations.mjs';
 
 const withAccessPersistenceComposition = (content) => [
   "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
+  "import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';",
   content,
 ].join('\n');
 
@@ -64,10 +65,32 @@ const mutations = [
   },
   {
     name: 'inter-module dependency cycle',
-    path: 'src/modules/tenancy/index.ts',
-    expectedPath: 'src/modules/stations/index.ts',
+    path: 'src/modules/users/index.ts',
+    expectedPath: 'src/modules/access/index.ts',
     rule: 'D5-R007',
-    content: "import type { StationsModuleContract } from '../stations/index.js';\nexport interface TenancyModuleContract { readonly stations: StationsModuleContract; }\n",
+    content: [
+      "import type { AccessModuleContract } from '../access/index.js';",
+      "import type { TenantId } from '../tenancy/index.js';",
+      'export interface UsersModuleContract {',
+      "  readonly module: 'users';",
+      '  readonly access: AccessModuleContract;',
+      '}',
+      'export type AuthenticationUserRecord = Readonly<{',
+      '  tenantId: TenantId;',
+      '  userId: string;',
+      '  displayName: string;',
+      "  status: 'active' | 'inactive' | 'revoked';",
+      '  version: number;',
+      '}>;',
+      'export interface AuthenticationUserScope { readonly tenantId: TenantId; }',
+      'export interface AuthenticationUserReader {',
+      '  findAuthenticationUser(',
+      '    scope: AuthenticationUserScope,',
+      '    userId: string,',
+      '  ): Promise<AuthenticationUserRecord | null>;',
+      '}',
+      '',
+    ].join('\n'),
   },
   {
     name: 'framework boundary',
@@ -106,8 +129,10 @@ const mutations = [
   {
     name: 'Access persistence adapter composition removed',
     path: 'src/modules/access/access.module.ts',
-    expectedPath:
+    expectedPaths: [
       'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
+    ],
     rule: 'D5-R041',
     content: "import { Module } from '@nestjs/common';\n@Module({})\nexport class AccessModule {}\n",
   },
@@ -199,6 +224,7 @@ const mutations = [
     expectedPaths: [
       'src/modules/access/access.module.ts',
       'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
     ],
     content: '',
   },

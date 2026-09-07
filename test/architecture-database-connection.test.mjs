@@ -28,7 +28,9 @@ test('connection facility retains its exact owner, API and transaction consumer'
       'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
       'src/modules/users/infrastructure/persistence/kysely-user.repository.ts',
+      'src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts',
       'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
     ],
     status: 'materialized-connection-facility',
   });

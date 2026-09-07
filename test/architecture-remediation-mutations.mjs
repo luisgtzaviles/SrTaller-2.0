@@ -1,18 +1,24 @@
+const withAccessPersistenceComposition = (content) =>
+  [
+    "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
+    "import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';",
+    content,
+  ].join('\n');
+
 export const remediationMutations = [
   {
     name: 'parenthesized forwardRef alias escape hatch',
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R025',
-    content: [
-      "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
+    content: withAccessPersistenceComposition([
       "import { forwardRef as nestForwardRef, Module } from '@nestjs/common';",
       '@Module({',
       '  imports: [((nestForwardRef as typeof nestForwardRef))(() => class {})],',
       '})',
       'export class AccessModule {}',
       '',
-    ].join('\n'),
+    ].join('\n')),
     coverage: {
       ids: ['mutation:D5-R025:transparent-wrapper'],
       evidence: ['((nestForwardRef as typeof nestForwardRef))'],
@@ -23,15 +29,14 @@ export const remediationMutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R027',
-    content: [
-      "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
+    content: withAccessPersistenceComposition([
       "import { Module } from '@nestjs/common';",
       "import * as Nest from '@nestjs/common';",
       '@((Nest.Global))()',
       '@Module({})',
       'export class AccessModule {}',
       '',
-    ].join('\n'),
+    ].join('\n')),
     coverage: {
       ids: ['mutation:D5-R027:transparent-wrapper'],
       evidence: ['@((Nest.Global))()'],

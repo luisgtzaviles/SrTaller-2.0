@@ -292,6 +292,7 @@ export async function collectEvidenceManifest({
     await readFile(resolve(projectRoot, 'package.json'), 'utf8'),
   );
   const inputPaths = [
+    '.env.local.example',
     '.node-version',
     '.nvmrc',
     '.npmrc',
@@ -303,6 +304,7 @@ export async function collectEvidenceManifest({
     'scripts/lib/postgresql-ci-evidence.mjs',
     'scripts/lib/postgresql-test-output.mjs',
     'scripts/lib/local-development.mjs',
+    'scripts/lib/local-pin-fixtures.mjs',
     'scripts/local-db-seed.mjs',
     'scripts/run-postgresql-ci.mjs',
     'scripts/test-database-connection-postgresql.mjs',
@@ -317,8 +319,11 @@ export async function collectEvidenceManifest({
     'src/infrastructure/database/migrations/20260906180000_access_create_capability_catalog.ts',
     'src/infrastructure/database/migrations/20260906181000_access_create_roles.ts',
     'src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts',
+    'src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts',
     'supply-chain-policy.json',
     'test/database-schema-postgresql.test.mjs',
+    'test/local-development-contract.test.mjs',
+    'test/access-pin-postgresql.test.mjs',
     'test/access-role-postgresql.test.mjs',
     'test/trusted-station-context-postgresql.test.mjs',
     'test/user-directory-postgresql.test.mjs',

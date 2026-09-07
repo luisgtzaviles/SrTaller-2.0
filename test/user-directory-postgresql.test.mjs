@@ -782,6 +782,16 @@ test(
         .find(({ state }) => state === 'applied');
       assert.equal(
         latest?.name,
+        '20260907010000_access_create_pin_credentials',
+      );
+      await runner.migrateDown(authorization(latest));
+
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      assert.equal(
+        latest?.name,
         '20260906182000_access_create_role_assignments',
       );
       await runner.migrateDown(authorization(latest));
