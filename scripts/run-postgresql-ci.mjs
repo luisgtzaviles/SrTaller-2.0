@@ -10,6 +10,10 @@ import {
   postgresqlImageDigest,
   productiveMigration,
 } from './lib/postgresql-ci-evidence.mjs';
+import {
+  formatPostgresqlChildFailureDiagnostic,
+  parsePostgresqlChildFailureMarker,
+} from './lib/postgresql-test-output.mjs';
 import { sha256File } from './lib/ci-evidence.mjs';
 
 const execute = promisify(execFile);
@@ -52,9 +56,22 @@ async function command(commandName, argumentsList, options = {}) {
       maxBuffer: 20 * 1024 * 1024,
       ...options,
     });
-  } catch {
+  } catch (error) {
+    const childFailure = parsePostgresqlChildFailureMarker(
+      error !== null &&
+        typeof error === 'object' &&
+        typeof error.stderr === 'string'
+        ? error.stderr
+        : '',
+    );
+    const diagnostic =
+      childFailure === null
+        ? null
+        : formatPostgresqlChildFailureDiagnostic(childFailure);
     throw new Error(
-      `PostgreSQL CI operation failed: ${argumentsList[0] ?? commandName}`,
+      `PostgreSQL CI operation failed: ${
+        argumentsList[0] ?? commandName
+      }${diagnostic === null ? '' : `; ${diagnostic}`}`,
     );
   }
 }

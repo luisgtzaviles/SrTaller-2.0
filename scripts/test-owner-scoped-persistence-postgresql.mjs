@@ -2,7 +2,11 @@ import { execFile } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { promisify } from 'node:util';
 
-import { assertPostgresqlTestSummary } from './lib/postgresql-test-output.mjs';
+import {
+  assertPostgresqlTestSummary,
+  createPostgresqlChildFailureMarker,
+  ownerScopedPostgresqlNodeTestArguments,
+} from './lib/postgresql-test-output.mjs';
 
 const execute = promisify(execFile);
 const imageDigest =
@@ -195,39 +199,38 @@ async function runOnce() {
       throw new Error('Docker did not assign a loopback test port');
     }
 
-    const { stdout: testOutput } = await execute(
-      process.execPath,
-      [
-        '--test',
-        '--test-concurrency=1',
-        'test/owner-scoped-persistence-postgresql.test.mjs',
-        'test/repair-persistence-postgresql.test.mjs',
-        'test/trusted-station-context-postgresql.test.mjs',
-        'test/user-directory-postgresql.test.mjs',
-        'test/access-role-postgresql.test.mjs',
-        'test/access-pin-postgresql.test.mjs',
-      ],
-      {
-        encoding: 'utf8',
-        env: {
-          ...process.env,
-          SR_OWNER_SCOPED_PG_HOST: '127.0.0.1',
-          SR_OWNER_SCOPED_PG_NAME: database,
-          SR_OWNER_SCOPED_PG_PASSWORD: password,
-          SR_OWNER_SCOPED_PG_PORT: port,
-          SR_OWNER_SCOPED_PG_TEST: '1',
-          SR_OWNER_SCOPED_PG_USER: user,
-          SR_STATION_PG_HOST: '127.0.0.1',
-          SR_STATION_PG_NAME: database,
-          SR_STATION_PG_PASSWORD: password,
-          SR_STATION_PG_PORT: port,
-          SR_STATION_PG_TEST: '1',
-          SR_STATION_PG_USER: user,
+    let testOutput;
+    try {
+      ({ stdout: testOutput } = await execute(
+        process.execPath,
+        ownerScopedPostgresqlNodeTestArguments,
+        {
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            SR_OWNER_SCOPED_PG_HOST: '127.0.0.1',
+            SR_OWNER_SCOPED_PG_NAME: database,
+            SR_OWNER_SCOPED_PG_PASSWORD: password,
+            SR_OWNER_SCOPED_PG_PORT: port,
+            SR_OWNER_SCOPED_PG_TEST: '1',
+            SR_OWNER_SCOPED_PG_USER: user,
+            SR_STATION_PG_HOST: '127.0.0.1',
+            SR_STATION_PG_NAME: database,
+            SR_STATION_PG_PASSWORD: password,
+            SR_STATION_PG_PORT: port,
+            SR_STATION_PG_TEST: '1',
+            SR_STATION_PG_USER: user,
+          },
+          maxBuffer: 10 * 1024 * 1024,
+          timeout: 150_000,
         },
-        maxBuffer: 10 * 1024 * 1024,
-        timeout: 150_000,
-      },
-    );
+      ));
+    } catch (error) {
+      process.stderr.write(
+        `${createPostgresqlChildFailureMarker(error)}\n`,
+      );
+      throw new Error('PostgreSQL adapter critical tests failed');
+    }
     const tests = assertPostgresqlTestSummary(testOutput);
 
     const { stdout: schemaOutput } = await docker([
