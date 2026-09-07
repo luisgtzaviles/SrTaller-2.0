@@ -2,28 +2,37 @@
 
 ## Estado del documento
 
-- **Estado:** implementation candidate en Draft PR #28; validación local y CI
-  del implementation checkpoint PASS; exact-final-HEAD CI/focused review
-  pendientes tras esta reconciliación de trazabilidad.
+- **Estado:** cierre canónico candidato; validación material, candidate/CI
+  exactos, focused high-risk review, merge funcional, CI exacto de `main` y
+  Owner Acceptance condicional PASS. Cierre documental merge/CI pendiente.
 - **Autoridad:** PBI-033, ADR-012 y Master Goal Owner de Identity.
 - **Regla:** registra evidencia observada; no predeclara gates futuros.
 
 ## Candidate state
 
-- Status: `In progress — implementation candidate`.
+- Status: `Done candidate — cierre documental pendiente`; `Released: NO`.
 - Baseline: `main` at
-  `db6637ee6902b9b0e4a40ba39d7f203cb6889352`; authoritative CI
-  `34074457695` GREEN.
+  `065b859e3db64f82f033ce75ce5fb33df9b3ade1`; authoritative CI
+  `34082394514` GREEN.
 - Branch: `feature/pbi-033-roles-capabilities`.
-- Draft PR: #28 — `Add tenant-scoped roles and capabilities`.
+- Functional PR: #28 — `Add tenant-scoped roles and capabilities`; merged.
 - Implementation/review checkpoint:
   `90a4a970a807fdb855587d1b55f0bcc0d58c0294`.
 - Authoritative CI del checkpoint: run `34080940466`; run-1, run-2 y
   comparison `SUCCESS` sobre el mismo SHA.
+- Reviewed candidate: `bb5a1efde19171703d0b3ce84567ff14538b32b7`.
+- Candidate CI: run `34081637692`; run-1, run-2 y comparison `SUCCESS` sobre
+  el mismo SHA.
+- Functional merge: `065b859e3db64f82f033ce75ce5fb33df9b3ade1` at
+  `2026-09-07T04:15:05Z`.
+- Exact-`main` CI: run `34082394514`; run-1, run-2 y comparison `SUCCESS`.
+- Focused high-risk review: PASS; findings abiertos BLOCKER/HIGH/MEDIUM: 0;
+  residual grant-projection boundary LOW.
+- Conditional Owner Acceptance: satisfied.
 - DoR: [PASS](./DEFINITION_OF_READY.md).
 - Risk: High; Owner-authorized within the Identity Master Goal.
 - Size: Large.
-- WIP: `1/1`; PBI-033 is the only current PBI.
+- WIP: `0/1`; current PBI: NONE. PBI-025 is selected, not started.
 - Released/deployed: NO.
 - Functional commits:
   - `2453019f914fefeac01eb99d5ca70e88ec8e38cd` — modelo, migraciones y
@@ -54,8 +63,8 @@
 
 Ownership remains in `access`; Users, Branches and Tenants are referenced
 through governed contracts and composite tenant-safe keys. The migration chain
-must prove fresh apply, zero-work rerun, down/reapply and cleanup on PostgreSQL
-18.4 before focused review.
+proved fresh apply, zero-work rerun, down/reapply and cleanup on PostgreSQL 18.4
+before focused review.
 
 ## Local/test scenario
 
@@ -83,11 +92,12 @@ create a productive bootstrap path or change the authority of names.
 | `git diff --check` | PASS. |
 | External configuration / secret scan | PASS — governed external-configuration boundary and no high-confidence credential material in changed files. |
 
-Draft PR creation, local material validation and authoritative CI of the
-implementation checkpoint are complete. Because this traceability-only change
-advances the branch, run-1, run-2 and comparison must still be GREEN on the
-exact final HEAD. That final HEAD/CI pair is bound by GitHub and the
-focused-review record without making this evidence file self-referential.
+Draft PR creation, local material validation, implementation-checkpoint CI and
+exact reviewed-candidate CI are complete. GitHub binds the exact pair
+`bb5a1efde19171703d0b3ce84567ff14538b32b7` / `34081637692`; this file does
+not require its own future SHA. PR #28 merged as
+`065b859e3db64f82f033ce75ce5fb33df9b3ade1`, whose exact `main` CI
+`34082394514` is GREEN.
 
 ## Boundaries retained
 
@@ -102,13 +112,14 @@ focused-review record without making this evidence file self-referential.
 
 ## Review boundary
 
-PBI-033 remains `In progress` until exact-HEAD CI and focused review are
-complete. A green branch remains a candidate;
-focused high-risk review, merge/main CI, Owner Acceptance and canonical closure
-are separate gates.
+PBI-033 is `Done candidate`. Candidate CI, focused high-risk review, functional
+merge, exact-`main` CI and conditional Owner Acceptance are complete. Canonical
+closure remains a separate gate: this documentation change needs authorized
+merge and GREEN CI on its exact `main` SHA. The [closure packet](./CLOSURE_CANDIDATE.md)
+records that boundary.
 
 ## Próxima revisión
 
-Concluir CI autoritativo y focused review sobre el HEAD final exacto del Draft
-PR #28. Si un gate material falla, conservar PBI-033 `In progress` y registrar
-la remediación antes de integración.
+Owner merge review del cierre documental candidato. Si su merge o CI exacto
+falla, conservar PBI-033 y G2 como candidates y remediar dentro del alcance
+documental. PBI-025 permanece seleccionado, no iniciado.

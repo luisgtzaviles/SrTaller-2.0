@@ -15,7 +15,8 @@
 - No first-user administrator role or capability.
 - No PIN, session, authorization, station administration or production deploy.
 - No hard delete; `revoked` remains terminal.
-- No Users HTTP/UI surface before PBI-033 contextual authorization; omission is
+- No Users HTTP/UI surface before PBI-026 contextual authorization; PBI-033
+  roles/grants alone are not a final authorization verdict, so the omission is
   deliberate and avoids a read bypass.
 
 ## Review evidence

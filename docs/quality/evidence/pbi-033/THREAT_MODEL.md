@@ -65,6 +65,7 @@ release, deploy ni exposición de administración antes de los PBIs posteriores.
 
 ## Próxima revisión
 
-Focused high-risk review sobre el HEAD exacto del candidate. Reabrir el modelo
-si se agrega superficie HTTP/UI, un nuevo capability, cache, secreto, control
-reforzado o riesgo CRITICAL.
+Focused high-risk review PASS sobre el candidate exacto
+`bb5a1efde19171703d0b3ce84567ff14538b32b7`. Reabrir el modelo si se agrega
+superficie HTTP/UI, un nuevo capability, cache, secreto, control reforzado o
+riesgo CRITICAL.

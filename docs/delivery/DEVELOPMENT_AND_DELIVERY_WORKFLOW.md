@@ -21,8 +21,10 @@ y el [alcance](../product/PRODUCT_SCOPE.md).
 
 La baseline actual no es todavía un producto E2E. Contiene una aplicación
 NestJS ejecutable, React/Vite, PostgreSQL y el Repair Workstream local con D5,
-D6.1 y D6.2. El actor y contexto local siguen siendo sintéticos; Identity &
-Context Foundation es la siguiente dirección aprobada.
+D6.1 y D6.2. Trusted Station Context, User Directory y
+Roles/Capabilities/Assignments están integrados; el actor local sigue siendo
+sintético y Operational Authentication es la siguiente dirección seleccionada,
+no iniciada.
 
 ## Jerarquía de autoridad documental
 
@@ -96,11 +98,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34074457695` on `db6637ee6902b9b0e4a40ba39d7f203cb6889352` |
-| Program / phase | MVP Operating Roadmap / Identity & Context Foundation |
-| Sprint | SPRINT-01 `Active`; PBI-033 ocupa WIP `1/1` |
-| Current / next PBI | Current: PBI-033 `In progress`; next: none mientras el WIP esté ocupado; PBI-025 sólo permanece ordenado |
-| Current blocking gate | Completar candidate, revisión High y CI exacto de PBI-033 antes de integración/cierre |
+| Authoritative CI at audited HEAD | Green: run `34082394514` on `065b859e3db64f82f033ce75ce5fb33df9b3ade1` |
+| Program / phase | MVP Operating Roadmap / Identity & Context Foundation closure candidate |
+| Sprint | SPRINT-01 `Active — closure candidate`; WIP `0/1` |
+| Current / next PBI | Current: NONE; next: PBI-025 seleccionado, no iniciado; Critical / TBD / DoR pendiente |
+| Current blocking gate | Merge autorizado del cierre documental de PBI-033 y CI exacto post-cierre de `main` |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -121,7 +123,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context y User Directory están integrados, mientras roles/capabilities siguen candidate local y no hay PIN/Session/authorization productivos |
+| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory y Roles/Capabilities/Assignments están integrados; no hay PIN/Session/authorization productivos |
 
 ## Current, planned and required before Production
 
@@ -129,7 +131,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|---|
 | `CURRENT` | Existe y puede verificarse ahora. | `main`, Dockerfile OCI, Dokploy Preview, health, React/Vite, PostgreSQL 18.4, migraciones y Repair Workstream local integrado. |
 | `PLANNED` | Dirección futura, no infraestructura existente ni autorización de creación. | Staging, Production, promoción por digest, Redis, workers, WAHA y R2 según necesidad. |
-| `REQUIRED BEFORE PRODUCTION` | Gate que debe resolverse antes de almacenar/operar datos reales. | Staging, artefacto inmutable promovible, backup/restore probado, RPO/RTO/retención, roles y accesos, observabilidad, rollback, autoridad Owner y seguridad operativa. |
+| `REQUIRED BEFORE PRODUCTION` | Gate que debe resolverse antes de almacenar/operar datos reales. | Staging, artefacto inmutable promovible, backup/restore probado, RPO/RTO/retención, autenticación y autorización contextual, observabilidad, rollback, autoridad Owner y seguridad operativa. |
 
 ## Golden path
 
