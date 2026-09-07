@@ -16,6 +16,10 @@ const userPortPath =
   'src/modules/users/application/ports/user-repository.port.ts';
 const userAdapterPath =
   'src/modules/users/infrastructure/persistence/kysely-user.repository.ts';
+const accessPortPath =
+  'src/modules/access/application/ports/access-repository.port.ts';
+const accessAdapterPath =
+  'src/modules/access/infrastructure/persistence/kysely-access.repository.ts';
 
 test('owner-scoped ports and adapters retain exact ownership registration', async () => {
   const policy = JSON.parse(
@@ -60,6 +64,22 @@ test('owner-scoped ports and adapters retain exact ownership registration', asyn
     composition: 'src/modules/users/users.module.ts',
     status: 'materialized-owner-adapter',
   });
+  assert.deepEqual(policy.persistence.ports[accessPortPath], {
+    owner: 'access',
+    contract: 'AccessRepositoryPort',
+    allowedScopes: [
+      'AccessTenantScope',
+      'AccessBranchScope',
+      'AccessPrincipalScope',
+    ],
+    status: 'materialized-owner-port',
+  });
+  assert.deepEqual(policy.persistence.adapters[accessAdapterPath], {
+    owner: 'access',
+    port: accessPortPath,
+    composition: 'src/modules/access/access.module.ts',
+    status: 'materialized-owner-adapter',
+  });
 });
 
 test('persistence capability is internal and has only exact adapter consumers', async () => {
@@ -86,11 +106,13 @@ test('persistence capability is internal and has only exact adapter consumers', 
       'src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts',
       tenantAdapterPath,
       userAdapterPath,
+      accessAdapterPath,
     ],
     status: 'materialized-owner-internal-capability',
   });
   assert.match(source, /Owner extends 'tenancy'/u);
   assert.match(source, /Owner extends 'database'/u);
+  assert.match(source, /Owner extends 'access'/u);
   assert.match(source, /kysely_migration: DatabaseMigrationJournalTable/u);
   assert.match(source, /Pick<DatabaseSchema, 'tenants'>/u);
   assert.match(
@@ -100,6 +122,10 @@ test('persistence capability is internal and has only exact adapter consumers', 
   assert.match(
     source,
     /Pick<DatabaseSchema, 'users' \| 'user_provisioning_bootstraps' \| 'user_lifecycle_commands'>/u,
+  );
+  assert.match(
+    source,
+    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands'>/u,
   );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),

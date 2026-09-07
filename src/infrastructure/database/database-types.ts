@@ -80,6 +80,65 @@ export interface UserLifecycleCommandTable {
   readonly applied_at: ImmutableColumn<Date>;
 }
 
+export type AccessCapabilityCode =
+  | 'access_matrix.read'
+  | 'repairs.add_note'
+  | 'repairs.read'
+  | 'users.read';
+
+export interface AccessCapabilityTable {
+  readonly capability_code: ImmutableColumn<AccessCapabilityCode>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface AccessRoleTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly role_id: ImmutableColumn<string>;
+  readonly role_key: ImmutableColumn<string>;
+  readonly display_name: MutableColumn<string>;
+  readonly status: MutableColumn<'active' | 'disabled' | 'archived'>;
+  readonly version: MutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface AccessRoleCapabilityTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly role_id: ImmutableColumn<string>;
+  readonly capability_code: ImmutableColumn<AccessCapabilityCode>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface AccessRoleAssignmentTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly assignment_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly role_id: ImmutableColumn<string>;
+  readonly assignment_scope: ImmutableColumn<'TENANT_WIDE' | 'BRANCH_RESTRICTED'>;
+  readonly branch_id: ImmutableColumn<string | null>;
+  readonly status: MutableColumn<'active' | 'revoked'>;
+  readonly version: MutableColumn<number>;
+  readonly assigned_at: ImmutableColumn<Date>;
+  readonly revoked_at: MutableColumn<Date | null>;
+}
+
+export interface AccessRoleAssignmentCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly command_type: ImmutableColumn<'assign' | 'revoke'>;
+  readonly assignment_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly role_id: ImmutableColumn<string>;
+  readonly assignment_scope: ImmutableColumn<'TENANT_WIDE' | 'BRANCH_RESTRICTED'>;
+  readonly branch_id: ImmutableColumn<string | null>;
+  readonly expected_version: ImmutableColumn<number | null>;
+  readonly result_status: ImmutableColumn<'active' | 'revoked'>;
+  readonly result_version: ImmutableColumn<number>;
+  readonly result_assigned_at: ImmutableColumn<Date>;
+  readonly result_revoked_at: ImmutableColumn<Date | null>;
+  readonly applied_at: ImmutableColumn<Date>;
+}
+
 export interface RepairTable {
   readonly repair_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -237,6 +296,11 @@ export interface DatabaseSchema {
   readonly users: UserTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;
   readonly user_lifecycle_commands: UserLifecycleCommandTable;
+  readonly access_capabilities: AccessCapabilityTable;
+  readonly access_roles: AccessRoleTable;
+  readonly access_role_capabilities: AccessRoleCapabilityTable;
+  readonly access_role_assignments: AccessRoleAssignmentTable;
+  readonly access_role_assignment_commands: AccessRoleAssignmentCommandTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
@@ -269,6 +333,25 @@ export type UserProvisioningBootstrapRow = Selectable<UserProvisioningBootstrapT
 export type NewUserProvisioningBootstrap = Insertable<UserProvisioningBootstrapTable>;
 export type UserLifecycleCommandRow = Selectable<UserLifecycleCommandTable>;
 export type NewUserLifecycleCommand = Insertable<UserLifecycleCommandTable>;
+
+export type AccessCapabilityRow = Selectable<AccessCapabilityTable>;
+export type NewAccessCapability = Insertable<AccessCapabilityTable>;
+
+export type AccessRoleRow = Selectable<AccessRoleTable>;
+export type NewAccessRole = Insertable<AccessRoleTable>;
+export type AccessRoleUpdate = Updateable<AccessRoleTable>;
+
+export type AccessRoleCapabilityRow = Selectable<AccessRoleCapabilityTable>;
+export type NewAccessRoleCapability = Insertable<AccessRoleCapabilityTable>;
+
+export type AccessRoleAssignmentRow = Selectable<AccessRoleAssignmentTable>;
+export type NewAccessRoleAssignment = Insertable<AccessRoleAssignmentTable>;
+export type AccessRoleAssignmentUpdate = Updateable<AccessRoleAssignmentTable>;
+
+export type AccessRoleAssignmentCommandRow =
+  Selectable<AccessRoleAssignmentCommandTable>;
+export type NewAccessRoleAssignmentCommand =
+  Insertable<AccessRoleAssignmentCommandTable>;
 
 export type RepairRow = Selectable<RepairTable>;
 export type NewRepair = Insertable<RepairTable>;

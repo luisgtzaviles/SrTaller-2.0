@@ -5,11 +5,10 @@
 **Estado:** Índice reconciliado con el MVP Operating Roadmap. PBI-024–PBI-029
 conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
 splits aprobados. PBI-030 tiene cierre `Done`; Sprint 01 está `Active` y
-PBI-027, PBI-029 y PBI-024 están `Done`; permanecen `Released: NO`. PBI-032
-está `Done candidate`, no existe PBI actual y PBI-033 es el siguiente
-candidato.
-**Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed` mediante
-T-shirt sizing; los demás casos conservan TBD.
+PBI-027, PBI-029, PBI-024 y PBI-032 están `Done`; permanecen `Released: NO`.
+PBI-033 es el único PBI actual y está `In progress` con WIP `1/1`.
+**Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032 y
+PBI-033 tienen `Large` mediante T-shirt sizing; los demás casos conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
 00. PBI-021–PBI-030 están `Unassigned`.
 
@@ -46,8 +45,8 @@ T-shirt sizing; los demás casos conservan TBD.
 | [PBI-029](PBI-029.md) | Secrets and External Configuration Foundation | Done; merge, CI main, cierre documental y Owner Acceptance PASS |
 | [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | Done |
 | [PBI-031](PBI-031.md) | Station Binding Administration | Draft / Deferred |
-| [PBI-032](PBI-032.md) | User Directory and Lifecycle | Done candidate; Released: NO |
-| [PBI-033](PBI-033.md) | Roles, Assignments and Capability Catalog | Draft / selected; not started |
+| [PBI-032](PBI-032.md) | User Directory and Lifecycle | Done; Released: NO |
+| [PBI-033](PBI-033.md) | Roles, Assignments and Capability Catalog | In progress; High / Large; WIP 1/1 |
 | [PBI-034](PBI-034.md) | Operational Session | Blocked por dependencias |
 | [PBI-035](PBI-035.md) | Reinforced Authorization | Draft / Deferred |
 | [PBI-036](PBI-036.md) | Extended Observability | Deferred |
@@ -56,5 +55,5 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-Owner merge review del cierre documental de PBI-032. PBI-033 permanece
-seleccionado y no inicia hasta que PBI-032 complete su cierre canónico.
+Focused high-risk review de PBI-033 bajo el Master Goal después de completar
+candidate, Draft PR y CI exacto. PBI-025 no está seleccionado ni iniciado.

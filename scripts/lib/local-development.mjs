@@ -300,9 +300,99 @@ export function localSeedRows() {
 export function localUserRows() {
   return Object.freeze([
     ['00000000-0000-4000-8000-000000000501', 'Jorge Sintético', 'JORGE', 'active'],
-    ['00000000-0000-4000-8000-000000000502', 'María Sintética', null, 'inactive'],
-    ['00000000-0000-4000-8000-000000000503', 'Carlos Sintético', null, 'revoked'],
+    ['00000000-0000-4000-8000-000000000502', 'María Sintética', 'MARIA', 'active'],
+    ['00000000-0000-4000-8000-000000000503', 'Carlos Sintético', 'CARLOS', 'active'],
   ].map(([userId, displayName, operationalIdentifier, status]) => Object.freeze({ userId, tenantId: LOCAL_TENANT_ID, displayName, operationalIdentifier, status, version: 0, createdAt: LOCAL_SEED_TIMESTAMP, updatedAt: LOCAL_SEED_TIMESTAMP })));
+}
+
+export function localAccessCapabilityRows() {
+  return Object.freeze([
+    'access_matrix.read',
+    'repairs.add_note',
+    'repairs.read',
+    'users.read',
+  ].map((capabilityCode) => Object.freeze({
+    capabilityCode,
+    createdAt: LOCAL_SEED_TIMESTAMP,
+  })));
+}
+
+export function localAccessRoleRows() {
+  return Object.freeze([
+    ['00000000-0000-4000-8000-000000000601', 'administrator', 'Administrador'],
+    ['00000000-0000-4000-8000-000000000602', 'customer_service', 'Atención al cliente'],
+    ['00000000-0000-4000-8000-000000000603', 'technician', 'Técnico'],
+  ].map(([roleId, roleKey, displayName]) => Object.freeze({
+    tenantId: LOCAL_TENANT_ID,
+    roleId,
+    roleKey,
+    displayName,
+    status: 'active',
+    version: 0,
+    createdAt: LOCAL_SEED_TIMESTAMP,
+    updatedAt: LOCAL_SEED_TIMESTAMP,
+  })));
+}
+
+export function localAccessRoleCapabilityRows() {
+  const roleIds = Object.freeze({
+    administrator: '00000000-0000-4000-8000-000000000601',
+    customerService: '00000000-0000-4000-8000-000000000602',
+    technician: '00000000-0000-4000-8000-000000000603',
+  });
+  const rows = [
+    [roleIds.administrator, 'access_matrix.read'],
+    [roleIds.administrator, 'repairs.add_note'],
+    [roleIds.administrator, 'repairs.read'],
+    [roleIds.administrator, 'users.read'],
+    [roleIds.customerService, 'repairs.add_note'],
+    [roleIds.customerService, 'repairs.read'],
+    [roleIds.technician, 'repairs.add_note'],
+    [roleIds.technician, 'repairs.read'],
+  ];
+  return Object.freeze(rows.map(([roleId, capabilityCode]) => Object.freeze({
+    tenantId: LOCAL_TENANT_ID,
+    roleId,
+    capabilityCode,
+    createdAt: LOCAL_SEED_TIMESTAMP,
+  })));
+}
+
+export function localAccessRoleAssignmentRows() {
+  return Object.freeze([
+    [
+      '00000000-0000-4000-8000-000000000701',
+      '00000000-0000-4000-8000-000000000501',
+      '00000000-0000-4000-8000-000000000601',
+      'TENANT_WIDE',
+      null,
+    ],
+    [
+      '00000000-0000-4000-8000-000000000702',
+      '00000000-0000-4000-8000-000000000502',
+      '00000000-0000-4000-8000-000000000602',
+      'TENANT_WIDE',
+      null,
+    ],
+    [
+      '00000000-0000-4000-8000-000000000703',
+      '00000000-0000-4000-8000-000000000503',
+      '00000000-0000-4000-8000-000000000603',
+      'BRANCH_RESTRICTED',
+      LOCAL_BRANCH_IDS[0],
+    ],
+  ].map(([assignmentId, userId, roleId, assignmentScope, branchId]) => Object.freeze({
+    tenantId: LOCAL_TENANT_ID,
+    assignmentId,
+    userId,
+    roleId,
+    assignmentScope,
+    branchId,
+    status: 'active',
+    version: 0,
+    assignedAt: LOCAL_SEED_TIMESTAMP,
+    revokedAt: null,
+  })));
 }
 
 export function localRepairRows() {

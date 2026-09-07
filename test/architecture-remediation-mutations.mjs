@@ -5,6 +5,7 @@ export const remediationMutations = [
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R025',
     content: [
+      "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
       "import { forwardRef as nestForwardRef, Module } from '@nestjs/common';",
       '@Module({',
       '  imports: [((nestForwardRef as typeof nestForwardRef))(() => class {})],',
@@ -23,6 +24,7 @@ export const remediationMutations = [
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R027',
     content: [
+      "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
       "import { Module } from '@nestjs/common';",
       "import * as Nest from '@nestjs/common';",
       '@((Nest.Global))()',

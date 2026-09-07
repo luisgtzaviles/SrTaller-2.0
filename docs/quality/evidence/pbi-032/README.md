@@ -33,7 +33,11 @@
   passed run-1, run-2 and comparison.
 - Conditional Owner Acceptance: APPROVED; its exact-candidate, exact-merge,
   scope, evidence and GREEN `main` CI predicates were satisfied.
-- Canonical status: `Done candidate`; `Released: NO`. See the
+- Closure PR [#27](https://github.com/luisgtzaviles/SrTaller-2.0/pull/27)
+  merged as `db6637ee6902b9b0e4a40ba39d7f203cb6889352`; authoritative
+  post-closure CI [34074457695](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34074457695)
+  passed run-1, run-2 and comparison.
+- Canonical status: `Done`; `Released: NO`. See the
   [closure candidate](./CLOSURE_CANDIDATE.md).
 
 ## Local material verification

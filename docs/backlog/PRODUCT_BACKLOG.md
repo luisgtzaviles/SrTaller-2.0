@@ -9,9 +9,11 @@ tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
-`XL — agreed` y PBI-032 `Large — Owner autorizado` mediante T-shirt sizing;
-las demás permanecen TBD.
-**Sprint en los PBIs:** Unassigned; la inclusión en SPRINT-00 es una propuesta de planificación.
+`XL — agreed`, PBI-032 `Large — Owner autorizado` y PBI-033 `Large` mediante
+T-shirt sizing; las demás permanecen TBD.
+**Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 está
+activo para Identity & Context Foundation y los ítems restantes conservan su
+clasificación explícita.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
 |---:|---|---|---|---|---|---|
@@ -46,8 +48,8 @@ las demás permanecen TBD.
 | 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Done; risk acceptance, merge, CI main, cierre documental y Owner Acceptance PASS | Crítica | Cerrado; `Released: NO` |
 | 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
-| 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Done candidate; cierre documental pendiente | Crítica | Sprint 01 closure; `Released: NO` |
-| 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | Draft / selected; not started | Crítica | Candidate Sprint 01 |
+| 32 | [PBI-032](pbis/PBI-032.md) User Directory and Lifecycle | Identity | EPIC-003 | Done; Released: NO | Crítica | Sprint 01 completed |
+| 33 | [PBI-033](pbis/PBI-033.md) Roles, Assignments and Capability Catalog | Authorization | EPIC-003 | In progress | Crítica | Current PBI; High / Large; WIP 1/1 |
 | 34 | [PBI-034](pbis/PBI-034.md) Operational Session | Identity / Security | EPIC-003 | Blocked por dependencias | Crítica | Candidate Sprint 01 |
 | 35 | [PBI-035](pbis/PBI-035.md) Reinforced Authorization | Authorization / Security | EPIC-003 | Draft / Deferred | Crítica | Unassigned |
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
@@ -78,13 +80,17 @@ las demás permanecen TBD.
 - PBI-032 tiene focused review PASS, candidato funcional
   `326a11802a4be32970d4e0634a61841b6bcb9b86`, CI candidato `34072027504`,
   merge funcional `66aebdbb45f368755107db315772654bee5399a3`, CI de `main`
-  `34072709330` GREEN y Owner Acceptance condicional satisfecha. Está `Done
-  candidate`; `Released: NO` hasta completar el cierre documental canónico.
+  `34072709330` GREEN y Owner Acceptance condicional satisfecha. El cierre PR
+  #27 merge `db6637ee6902b9b0e4a40ba39d7f203cb6889352` y CI post-cierre
+  `34074457695` GREEN lo dejan `Done`; `Released: NO`.
+- PBI-033 es el único PBI actual. Su DoR es PASS, riesgo High y tamaño Large;
+  el Master Goal autoriza la ejecución. Permanece `In progress`, sin merge,
+  release ni deploy.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-PBI-024 está `Done` canónico por PR #25 y CI post-cierre GREEN. PBI-032 está
-`Done candidate`; no existe PBI actual. PBI-033 es el siguiente candidato, no
-iniciado, pendiente de cierre canónico de PBI-032 y de sus gates propios.
+PBI-024 y PBI-032 están `Done` canónico con CI post-cierre GREEN. PBI-033 es el
+PBI actual (`In progress`, WIP `1/1`). PBI-025 permanece ordenado después del
+Sprint, no seleccionado ni iniciado.

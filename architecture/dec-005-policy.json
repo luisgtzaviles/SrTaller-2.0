@@ -3,7 +3,7 @@
   "allowedModules": ["access", "repairs", "stations", "tenancy", "users"],
   "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
-    "access": ["stations", "tenancy"],
+    "access": ["stations", "tenancy", "users"],
     "repairs": ["tenancy"],
     "stations": ["tenancy"],
     "tenancy": [],
@@ -21,7 +21,7 @@
     "repairs": ["AppModule"],
     "stations": ["access"],
     "tenancy": ["access", "stations", "users"],
-    "users": ["AppModule"]
+    "users": ["access", "AppModule"]
   },
   "governedRoots": ["src/modules"],
   "nonStructuralFileNames": [".DS_Store", ".gitkeep"],
@@ -128,6 +128,7 @@
     "dependencyPackagePrefixes": ["pg-"],
     "allowedDependencyRoots": [
       "src/infrastructure/database/",
+      "src/modules/access/infrastructure/persistence/",
       "src/modules/repairs/infrastructure/persistence/",
       "src/modules/stations/infrastructure/persistence/",
       "src/modules/tenancy/infrastructure/persistence/",
@@ -135,7 +136,7 @@
     ],
     "databaseRoot": "src/infrastructure/database/",
     "migrationRoot": "src/infrastructure/database/migrations/",
-    "migrationFilePattern": "^\\d{14}_(database|repairs|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "migrationFilePattern": "^\\d{14}_(access|database|repairs|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
     "allowedMigrations": [
       "src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts",
       "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
@@ -151,7 +152,10 @@
       "src/infrastructure/database/migrations/20260905160000_stations_create_trusted_runtime_context.ts",
       "src/infrastructure/database/migrations/20260906170000_users_create_directory.ts",
       "src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts",
-      "src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts"
+      "src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts",
+      "src/infrastructure/database/migrations/20260906180000_access_create_capability_catalog.ts",
+      "src/infrastructure/database/migrations/20260906181000_access_create_roles.ts",
+      "src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts"
     ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
@@ -180,6 +184,12 @@
           "UserTable",
           "UserProvisioningBootstrapTable",
           "UserLifecycleCommandTable",
+          "AccessCapabilityCode",
+          "AccessCapabilityTable",
+          "AccessRoleTable",
+          "AccessRoleCapabilityTable",
+          "AccessRoleAssignmentTable",
+          "AccessRoleAssignmentCommandTable",
           "DatabaseSchema",
           "TenantRow",
           "NewTenant",
@@ -199,6 +209,18 @@
           "NewUserProvisioningBootstrap",
           "UserLifecycleCommandRow",
           "NewUserLifecycleCommand",
+          "AccessCapabilityRow",
+          "NewAccessCapability",
+          "AccessRoleRow",
+          "NewAccessRole",
+          "AccessRoleUpdate",
+          "AccessRoleCapabilityRow",
+          "NewAccessRoleCapability",
+          "AccessRoleAssignmentRow",
+          "NewAccessRoleAssignment",
+          "AccessRoleAssignmentUpdate",
+          "AccessRoleAssignmentCommandRow",
+          "NewAccessRoleAssignmentCommand",
           "RepairTable",
           "RepairRow",
           "NewRepair",
@@ -251,13 +273,17 @@
           "src/infrastructure/database/migrations/20260906170000_users_create_directory.ts",
           "src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts",
           "src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts",
+          "src/infrastructure/database/migrations/20260906180000_access_create_capability_catalog.ts",
+          "src/infrastructure/database/migrations/20260906181000_access_create_roles.ts",
+          "src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
-          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
+          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts"
         ],
         "status": "materialized-schema-contract"
       },
@@ -278,7 +304,8 @@
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
-          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
+          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts"
         ],
         "status": "materialized-connection-facility"
       },
@@ -335,7 +362,8 @@
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
-          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
+          "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts"
         ],
         "status": "materialized-owner-internal-capability"
       },
@@ -426,13 +454,22 @@
         "contract": "UserRepositoryPort",
         "allowedScopes": ["UserScope"],
         "status": "materialized-owner-port"
+      },
+      "src/modules/access/application/ports/access-repository.port.ts": {
+        "owner": "access",
+        "contract": "AccessRepositoryPort",
+        "allowedScopes": ["AccessTenantScope", "AccessBranchScope", "AccessPrincipalScope"],
+        "status": "materialized-owner-port"
       }
     },
     "scopeTypes": {
       "RepairPersistenceScope": ["tenantId", "branchId"],
       "TenantBranchPersistenceScope": ["tenantId", "branchId"],
       "TenantPersistenceScope": ["tenantId"],
-      "UserScope": ["tenantId"]
+      "UserScope": ["tenantId"],
+      "AccessTenantScope": ["tenantId"],
+      "AccessBranchScope": ["tenantId", "branchId"],
+      "AccessPrincipalScope": ["tenantId", "branchId", "userId"]
     },
     "adapters": {
       "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts": {
@@ -457,6 +494,12 @@
         "owner": "users",
         "port": "src/modules/users/application/ports/user-repository.port.ts",
         "composition": "src/modules/users/users.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/access/infrastructure/persistence/kysely-access.repository.ts": {
+        "owner": "access",
+        "port": "src/modules/access/application/ports/access-repository.port.ts",
+        "composition": "src/modules/access/access.module.ts",
         "status": "materialized-owner-adapter"
       }
     },
@@ -531,6 +574,26 @@
       },
       "user_lifecycle_commands": {
         "owner": "users",
+        "kind": "table"
+      },
+      "access_capabilities": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_roles": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_role_capabilities": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_role_assignments": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_role_assignment_commands": {
+        "owner": "access",
         "kind": "table"
       }
     },
@@ -757,6 +820,17 @@
   "productModuleFiles": [
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
+    "src/modules/access/application/access-input.ts",
+    "src/modules/access/application/ports/access-repository.port.ts",
+    "src/modules/access/application/use-cases/assign-role.use-case.ts",
+    "src/modules/access/application/use-cases/list-access-matrix.use-case.ts",
+    "src/modules/access/application/use-cases/list-applicable-users.use-case.ts",
+    "src/modules/access/application/use-cases/resolve-effective-capabilities.use-case.ts",
+    "src/modules/access/application/use-cases/revoke-role-assignment.use-case.ts",
+    "src/modules/access/domain/capability.ts",
+    "src/modules/access/domain/role-assignment.ts",
+    "src/modules/access/domain/role.ts",
+    "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
     "src/modules/stations/index.ts",
     "src/modules/stations/application/branch-time-zone.ts",
     "src/modules/stations/application/ports/branch-repository.port.ts",

@@ -29,6 +29,11 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'access_role_assignment_commands',
+  'access_role_assignments',
+  'access_role_capabilities',
+  'access_roles',
+  'access_capabilities',
   'user_lifecycle_commands',
   'user_provisioning_bootstraps',
   'users',
@@ -195,6 +200,27 @@ async function assertUserTables(admin, expected) {
            'users',
            'user_provisioning_bootstraps',
            'user_lifecycle_commands'
+         ]::text[]
+       )
+     order by tablename`,
+  );
+  assert.deepEqual(
+    result.rows.map(({ tablename }) => tablename),
+    [...expected].sort(),
+  );
+}
+
+async function assertAccessTables(admin, expected) {
+  const result = await admin.query(
+    `select tablename from pg_catalog.pg_tables
+     where schemaname = 'public'
+       and tablename = any(
+         array[
+           'access_capabilities',
+           'access_roles',
+           'access_role_capabilities',
+           'access_role_assignments',
+           'access_role_assignment_commands'
          ]::text[]
        )
      order by tablename`,
@@ -756,6 +782,40 @@ test(
         .find(({ state }) => state === 'applied');
       assert.equal(
         latest?.name,
+        '20260906182000_access_create_role_assignments',
+      );
+      await runner.migrateDown(authorization(latest));
+      await assertAccessTables(admin, [
+        'access_capabilities',
+        'access_roles',
+        'access_role_capabilities',
+      ]);
+
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      assert.equal(latest?.name, '20260906181000_access_create_roles');
+      await runner.migrateDown(authorization(latest));
+      await assertAccessTables(admin, ['access_capabilities']);
+
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      assert.equal(
+        latest?.name,
+        '20260906180000_access_create_capability_catalog',
+      );
+      await runner.migrateDown(authorization(latest));
+      await assertAccessTables(admin, []);
+
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      assert.equal(
+        latest?.name,
         '20260906172000_users_create_lifecycle_commands',
       );
       await runner.migrateDown(authorization(latest));
@@ -791,6 +851,13 @@ test(
         'users',
         'user_provisioning_bootstraps',
         'user_lifecycle_commands',
+      ]);
+      await assertAccessTables(admin, [
+        'access_capabilities',
+        'access_roles',
+        'access_role_capabilities',
+        'access_role_assignments',
+        'access_role_assignment_commands',
       ]);
 
       status = await runner.getMigrationStatus();

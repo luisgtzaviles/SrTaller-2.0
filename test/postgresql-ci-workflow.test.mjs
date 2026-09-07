@@ -85,6 +85,7 @@ test('owner-scoped PostgreSQL runner retains the exact material adapter inventor
     'test/repair-persistence-postgresql.test.mjs',
     'test/trusted-station-context-postgresql.test.mjs',
     'test/user-directory-postgresql.test.mjs',
+    'test/access-role-postgresql.test.mjs',
   ]);
 });
 

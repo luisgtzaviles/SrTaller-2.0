@@ -21,6 +21,11 @@ import {
 } from './architecture-support.mjs';
 import { remediationMutations } from './architecture-remediation-mutations.mjs';
 
+const withAccessPersistenceComposition = (content) => [
+  "import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';",
+  content,
+].join('\n');
+
 async function missingParents(path, root) {
   const parents = [];
   let current = path;
@@ -76,21 +81,35 @@ const mutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R025',
-    content: "import { forwardRef, Module } from '@nestjs/common';\n@Module({ imports: [forwardRef(() => class {})] })\nexport class AccessModule {}\n",
+    content: withAccessPersistenceComposition(
+      "import { forwardRef, Module } from '@nestjs/common';\n@Module({ imports: [forwardRef(() => class {})] })\nexport class AccessModule {}\n",
+    ),
   },
   {
     name: 'Nest composition escape hatch through alias',
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R025',
-    content: "import { forwardRef as nestForwardRef, Module } from '@nestjs/common';\n@Module({ imports: [nestForwardRef(() => class {})] })\nexport class AccessModule {}\n",
+    content: withAccessPersistenceComposition(
+      "import { forwardRef as nestForwardRef, Module } from '@nestjs/common';\n@Module({ imports: [nestForwardRef(() => class {})] })\nexport class AccessModule {}\n",
+    ),
   },
   {
     name: 'functional global module through alias',
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R027',
-    content: "import { Global as NestGlobal, Module } from '@nestjs/common';\n@NestGlobal()\n@Module({})\nexport class AccessModule {}\n",
+    content: withAccessPersistenceComposition(
+      "import { Global as NestGlobal, Module } from '@nestjs/common';\n@NestGlobal()\n@Module({})\nexport class AccessModule {}\n",
+    ),
+  },
+  {
+    name: 'Access persistence adapter composition removed',
+    path: 'src/modules/access/access.module.ts',
+    expectedPath:
+      'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+    rule: 'D5-R041',
+    content: "import { Module } from '@nestjs/common';\n@Module({})\nexport class AccessModule {}\n",
   },
   {
     name: 'generic global root',
@@ -176,16 +195,18 @@ const mutations = [
     path: 'src/modules/access/access.module.ts',
     expectedPath: 'src/modules/access/access.module.ts',
     rule: 'D5-R003',
+    expectedRules: ['D5-R003', 'D5-R041'],
+    expectedPaths: [
+      'src/modules/access/access.module.ts',
+      'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+    ],
     content: '',
   },
   {
     name: 'empty governed directory',
     directory: 'src/modules/access/domain/future',
     expectedPath: 'src/modules/access/domain/future',
-    expectedPaths: [
-      'src/modules/access/domain',
-      'src/modules/access/domain/future',
-    ],
+    expectedPaths: ['src/modules/access/domain/future'],
     rule: 'D5-R003',
   },
   {

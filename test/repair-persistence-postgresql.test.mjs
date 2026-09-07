@@ -32,6 +32,11 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'access_role_assignment_commands',
+  'access_role_assignments',
+  'access_role_capabilities',
+  'access_roles',
+  'access_capabilities',
   'user_lifecycle_commands',
   'user_provisioning_bootstraps',
   'users',
@@ -360,7 +365,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 16);
+      assert.equal(applied.status.migrations.length, 19);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
 
