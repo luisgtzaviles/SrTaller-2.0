@@ -12,15 +12,23 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Documentación
 
-- Reconciliado el estado posterior a PR #30: PBI-025 tiene alcance funcional
+- Preparado el cierre canónico candidato de PBI-025: PR #30 funcional
+  `328bdf541be88b21a2e7dbea28f4a2a6f32f6986`, CI `34094803024`, PR #31
+  remediación `a51ddcca13cfc43fccb77378643b6874dfb772da`, CI `34100056690`
+  first-attempt GREEN, focused review PASS y Owner Acceptance condicional
+  APPROVED. La ratificación Owner de PR #30 es exclusiva de este cierre,
+  conserva el primer rojo y no constituye waiver general. PBI-034 queda
+  seleccionado, no iniciado; G3 permanece Pending.
+
+- Reconciliado el estado histórico posterior a PR #30: PBI-025 tenía alcance funcional
   integrado en `main` por merge `328bdf541be88b21a2e7dbea28f4a2a6f32f6986`
-  y CI exacto `34094803024` GREEN, pero permanece `In review`, WIP `1/1`, sin
-  Owner Acceptance ni `Done`, por el incidente Critical de flakiness de CI.
+  y CI exacto `34094803024` GREEN, pero permanecía `In review`, WIP `1/1`,
+  sin Owner Acceptance ni `Done`, por el incidente Critical de flakiness.
 - Registrado el primer intento rojo de CI candidato `34092781952` como
   evidencia material y la integración posterior como desviación de
-  DEC-051/DEC-063, no como waiver. PR #31 propone restaurar el gate mediante
+  DEC-051/DEC-063, no como waiver. PR #31 restauró el gate mediante
   diagnóstico seguro, `--no-maglev` acotado al proceso Critical, Linux x64 5x
-  y un nuevo CI first-attempt exacto; PBI-034 permanece candidato no iniciado.
+  y CI first-attempt exacto; PBI-034 permanece seleccionado, no iniciado.
 
 - Iniciado PBI-025 PIN Credential Authentication como único PBI actual de
   SPRINT-02, con estimación `Large`, riesgo `Critical` preservado, threat model

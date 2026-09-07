@@ -4,20 +4,20 @@
 
 - **Estado:** Roadmap aprobado; SPRINT-02 activo con límite WIP=1.
 - **Baseline de la reconciliación:** `main` en
-  `328bdf541be88b21a2e7dbea28f4a2a6f32f6986`; CI autoritativo
-  `34094803024`, `SUCCESS`.
+  `a51ddcca13cfc43fccb77378643b6874dfb772da`; CI autoritativo
+  `34100056690`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Operational Authentication & Authorization.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** PBI-025 — PIN Credential Authentication; `In review`.
+- **PBI actual:** NONE; WIP `0/1`.
 - **Siguiente PBI candidato:** PBI-034 — Operational Session; candidato, no
   iniciado.
-- **Blocking gate:** PR #31 debe restaurar el gate Critical reproducible de
-  PBI-025 antes de Owner Acceptance y cierre canónico.
-- **WIP operacional:** `1/1`.
+- **Blocking gate:** merge autorizado y CI exacto de main del cierre
+  documental de PBI-025.
+- **WIP operacional:** `0/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
 
@@ -96,11 +96,11 @@ están `Released`. G1 y G2 están `PASS`.
 | Stage | MVP |
 | Phase | Operational Authentication & Authorization |
 | Sprint | SPRINT-02 |
-| Sprint status | Active — WIP=1/1 |
-| Current PBI | PBI-025 — PIN Credential Authentication; In review; Critical / Large; DoR PASS; functional scope integrated |
+| Sprint status | Active — WIP=0/1 |
+| Current PBI | NONE |
 | Next PBI candidate | PBI-034 — Operational Session; candidato, no iniciado |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | PR #31 tiene Linux x64 5x y focused technical review PASS; exige final-candidate review y first-attempt exact-HEAD CI GREEN |
+| Blocking gate | PBI-025 closure candidate requiere Owner merge authorization y exact-main CI GREEN |
 
 ## Fases aprobadas
 
@@ -168,7 +168,7 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | G0 ROADMAP | PASS | PR #17 merge `117ada7f70494b2cb35ed7adf78c3529dd271391`; CI `33821753091` GREEN |
 | G1 CONTEXT | PASS | PBI-024 `Done`: Trusted Station Context server-side y fail-closed; cierre PR #25 y CI exacto `34044488745` GREEN. |
 | G2 IDENTITY | PASS | PBI-032 `Done`; PBI-033 cierre PR #29 merge `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` y CI exacto `34084930812` GREEN. |
-| G3 AUTHENTICATION | Pending | PBI-025 está `In review`; PIN por sí solo no satisface G3, que también exige PBI-034 Operational Session GREEN. |
+| G3 AUTHENTICATION | Pending | PBI-025 es `Done candidate`; PIN por sí solo no satisface G3, que también exige PBI-034 Operational Session GREEN. |
 | G4–G12 | Pending | No existe evidencia material adicional para estos gates. |
 
 ## Cierre y avance documental de un PBI
@@ -200,25 +200,23 @@ merge funcional, Owner Acceptance, cierre PR #27 y CI exacto post-cierre
 focused high-risk review PASS, merge funcional PR #28, Owner Acceptance y
 cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 
-SPRINT-02 está `Active` con PBI-025 como único PBI actual y WIP `1/1`. Su
+SPRINT-02 está `Active` sin PBI actual y WIP `0/1`. PBI-025 es `Done
+candidate`. Su
 alcance funcional fue integrado por PR #30 como
 `328bdf541be88b21a2e7dbea28f4a2a6f32f6986` y el CI exacto de `main`
 `34094803024` quedó GREEN, pero el primer intento del CI candidato falló de
 forma opaca en ambos legs Critical antes de pasar en rerun. Esa integración se
-registra como desviación de DEC-051/DEC-063, no como waiver: PBI-025 permanece
-`In review`, sin Owner Acceptance ni `Done`, hasta que PR #31 restaure el gate
-reproducible. Su riesgo `Critical`, estimación `Large` y DoR `PASS` se
-conservan. PBI-034 permanece candidato no iniciado. Ninguno de estos estados
-autoriza release o deploy.
+registra como desviación de DEC-051/DEC-063. El Owner ratificó expresamente
+esa integración sólo para cerrar PBI-025; no existe waiver general. PR #31
+restauró el gate reproducible, mergeó como
+`a51ddcca13cfc43fccb77378643b6874dfb772da` y CI `34100056690` quedó GREEN
+en attempt 1. Owner Acceptance condicional: APPROVED. PBI-034 permanece
+seleccionado, no iniciado. Ningún estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** PR #31 completa focused review del candidate final y CI
-  autoritativo first-attempt GREEN sobre su HEAD exacto; Linux x64 5x ya está
-  PASS.
-- **Resultado esperado si pasa:** la remediación puede seguir el flujo
-  autorizado de merge y CI de `main`; después PBI-025 puede recibir Owner
-  Acceptance y cierre. G3 permanece pendiente hasta que Operational Session
-  también esté GREEN.
-- **Si falla:** PBI-025 permanece `In review`; el primer rojo no se sustituye
-  mediante rerun y PBI-034 no inicia.
+- **Disparador:** Owner merge review del cierre documental.
+- **Resultado esperado si pasa:** merge autorizado + CI exacto de `main`
+  GREEN convierten PBI-025 en `Done`. G3 permanece pendiente hasta que
+  Operational Session también esté GREEN.
+- **Si falla:** PBI-025 permanece `Done candidate` y PBI-034 no inicia.
