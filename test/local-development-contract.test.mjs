@@ -22,6 +22,10 @@ import {
   localUserRows,
   parseLocalEnvironment,
 } from '../scripts/lib/local-development.mjs';
+import {
+  LOCAL_PIN_FIXTURE_PROFILE,
+  localPinCredentialRows,
+} from '../scripts/lib/local-pin-fixtures.mjs';
 
 function validLocalValues() {
   return {
@@ -41,6 +45,10 @@ function validLocalValues() {
     SR_LOCAL_VITE_PORT: '4173',
     SR_STATION_BOOTSTRAP_SECRET: 'synthetic-local-station-bootstrap-secret',
     SR_USER_BOOTSTRAP_SECRET: 'synthetic-local-user-bootstrap-secret',
+    SR_PIN_PEPPER: Buffer.alloc(32, 0x25).toString('base64url'),
+    SR_LOCAL_PIN_JORGE: '270601',
+    SR_LOCAL_PIN_MARIA: '270602',
+    SR_LOCAL_PIN_CARLOS: '270603',
   };
 }
 
@@ -157,6 +165,60 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
     JSON.stringify({ capabilities, roles, grants, assignments }),
     /pin|password|credential|secret|hash|salt|pepper/iu,
   );
+});
+
+test('local PIN fixtures use the governed profile and persist no plaintext PIN', async () => {
+  const values = validLocalValues();
+  const rows = await localPinCredentialRows(values);
+  assert.equal(rows.length, 3);
+  assert.deepEqual(LOCAL_PIN_FIXTURE_PROFILE, {
+    algorithm: 'argon2id',
+    memoryKiB: 65_536,
+    passes: 3,
+    parallelism: 4,
+    profileVersion: 1,
+    pepperVersion: 1,
+    saltLength: 16,
+    tagLength: 32,
+  });
+  assert.ok(rows.every((row) => row.salt.byteLength === 16));
+  assert.ok(rows.every((row) => row.verifier.byteLength === 32));
+  assert.ok(rows.every((row) => row.requestFingerprint.byteLength === 32));
+  assert.ok(rows.every(Object.isFrozen));
+  const rendered = JSON.stringify(rows);
+  assert.doesNotMatch(rendered, /270601|270602|270603/u);
+  assert.doesNotMatch(rendered, /SR_LOCAL_PIN|SR_PIN_PEPPER/u);
+
+  const { NodeArgon2PinHasher } = await import(
+    '../dist/modules/access/infrastructure/security/node-argon2-pin-hasher.js'
+  );
+  const hasher = new NodeArgon2PinHasher(values.SR_PIN_PEPPER);
+  const pins = [
+    values.SR_LOCAL_PIN_JORGE,
+    values.SR_LOCAL_PIN_MARIA,
+    values.SR_LOCAL_PIN_CARLOS,
+  ];
+  for (const [index, row] of rows.entries()) {
+    const runtimeMaterial = await hasher.hash({
+      tenantId: row.tenantId,
+      userId: row.userId,
+      clientRequestId: row.clientRequestId,
+      pin: pins[index],
+    });
+    assert.deepEqual(
+      Buffer.from(row.requestFingerprint),
+      Buffer.from(runtimeMaterial.requestFingerprint),
+    );
+    assert.equal(
+      await hasher.verify({
+        tenantId: row.tenantId,
+        userId: row.userId,
+        pin: pins[index],
+        stored: row,
+      }),
+      true,
+    );
+  }
 });
 
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {

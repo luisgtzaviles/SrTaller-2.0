@@ -27,6 +27,6 @@ export function createTrustedStationContext(input: Readonly<{
   return context;
 }
 
-export function isTrustedStationContext(value: unknown): value is TrustedStationContext {
+export function recognizesTrustedStationContext(value: unknown): value is TrustedStationContext {
   return typeof value === 'object' && value !== null && trustedContexts.has(value);
 }

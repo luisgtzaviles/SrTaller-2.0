@@ -25,6 +25,7 @@ import {
   localStationBootstrapCredentialHash,
 } from './lib/local-development.mjs';
 import { materializeLocalEvidenceFixtures } from './lib/local-evidence-fixtures.mjs';
+import { localPinCredentialRows } from './lib/local-pin-fixtures.mjs';
 import { grantApplicationAccess, localDbUp } from './local-db.mjs';
 
 const values = await ensureLocalEnvironment();
@@ -47,6 +48,7 @@ const pool = new Pool({
 });
 
 const rows = localSeedRows();
+const pinCredentials = await localPinCredentialRows(values);
 await materializeLocalEvidenceFixtures();
 const client = await pool.connect();
 try {
@@ -69,6 +71,58 @@ try {
        VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, $7::timestamptz, $8::timestamptz)
        ON CONFLICT (tenant_id, user_id) DO UPDATE SET display_name = EXCLUDED.display_name, operational_identifier = EXCLUDED.operational_identifier, status = EXCLUDED.status, version = EXCLUDED.version, updated_at = EXCLUDED.updated_at`,
       [user.userId, user.tenantId, user.displayName, user.operationalIdentifier, user.status, user.version, user.createdAt, user.updatedAt],
+    );
+  }
+  for (const credential of pinCredentials) {
+    await client.query(
+      `INSERT INTO access_pin_credentials (
+         tenant_id, user_id, credential_id, status, algorithm,
+         profile_version, pepper_version, memory_kib, passes, parallelism,
+         salt, verifier, credential_version, consecutive_failures,
+         locked_until, created_at, updated_at, revoked_at
+       ) VALUES (
+         $1::uuid, $2::uuid, $3::uuid, 'active', $4,
+         $5, $6, $7, $8, $9,
+         $10::bytea, $11::bytea, 0, 0,
+         null, $12::timestamptz, $12::timestamptz, null
+       )
+       ON CONFLICT (tenant_id, user_id) DO NOTHING`,
+      [
+        credential.tenantId,
+        credential.userId,
+        credential.credentialId,
+        credential.algorithm,
+        credential.profileVersion,
+        credential.pepperVersion,
+        credential.memoryKiB,
+        credential.passes,
+        credential.parallelism,
+        credential.salt,
+        credential.verifier,
+        credential.createdAt,
+      ],
+    );
+    await client.query(
+      `INSERT INTO access_pin_credential_commands (
+         tenant_id, client_request_id, user_id, credential_id, command_type,
+         request_fingerprint, result_status, result_credential_version,
+         result_created_at, result_updated_at, applied_at
+       )
+       SELECT $1::uuid, $2::uuid, $3::uuid, $4::uuid, 'provision',
+         $5::bytea, 'active', 0, $6::timestamptz, $6::timestamptz, $6::timestamptz
+       WHERE EXISTS (
+         SELECT 1 FROM access_pin_credentials
+         WHERE tenant_id = $1::uuid AND user_id = $3::uuid AND credential_id = $4::uuid
+       )
+       ON CONFLICT (tenant_id, client_request_id) DO NOTHING`,
+      [
+        credential.tenantId,
+        credential.clientRequestId,
+        credential.userId,
+        credential.credentialId,
+        credential.requestFingerprint,
+        credential.createdAt,
+      ],
     );
   }
   for (const capability of localAccessCapabilityRows()) {
@@ -402,6 +456,7 @@ process.stdout.write(`${JSON.stringify({
   accessRoleCount: localAccessRoleRows().length,
   accessRoleCapabilityCount: localAccessRoleCapabilityRows().length,
   accessRoleAssignmentCount: localAccessRoleAssignmentRows().length,
+  pinCredentialCount: pinCredentials.length,
   repairCount: localRepairRows().length,
   repairIntakeCount: localRepairIntakeRows().length,
   repairTimelineEntryCount: localRepairTimelineRows().length,

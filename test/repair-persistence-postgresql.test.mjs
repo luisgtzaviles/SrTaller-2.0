@@ -365,7 +365,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 19);
+      assert.equal(applied.status.migrations.length, 20);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
 

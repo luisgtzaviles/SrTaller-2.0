@@ -12,9 +12,18 @@
   "publicSurfaces": {
     "access": ["AccessModuleContract"],
     "repairs": ["RepairsModuleContract"],
-    "stations": ["StationsModuleContract"],
+    "stations": [
+      "StationsModuleContract",
+      "TrustedStationContext",
+      "isTrustedStationContext"
+    ],
     "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"],
-    "users": ["UsersModuleContract"]
+    "users": [
+      "AuthenticationUserReader",
+      "AuthenticationUserRecord",
+      "AuthenticationUserScope",
+      "UsersModuleContract"
+    ]
   },
   "consumers": {
     "access": ["AppModule"],
@@ -155,7 +164,8 @@
       "src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts",
       "src/infrastructure/database/migrations/20260906180000_access_create_capability_catalog.ts",
       "src/infrastructure/database/migrations/20260906181000_access_create_roles.ts",
-      "src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts"
+      "src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts",
+      "src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts"
     ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
@@ -190,6 +200,11 @@
           "AccessRoleCapabilityTable",
           "AccessRoleAssignmentTable",
           "AccessRoleAssignmentCommandTable",
+          "AccessPinCredentialStatus",
+          "AccessPinCredentialTable",
+          "AccessPinCredentialCommandTable",
+          "AccessPinAttemptStationGuardTable",
+          "AccessPinAttemptLimitTable",
           "DatabaseSchema",
           "TenantRow",
           "NewTenant",
@@ -221,6 +236,16 @@
           "AccessRoleAssignmentUpdate",
           "AccessRoleAssignmentCommandRow",
           "NewAccessRoleAssignmentCommand",
+          "AccessPinCredentialRow",
+          "NewAccessPinCredential",
+          "AccessPinCredentialUpdate",
+          "AccessPinCredentialCommandRow",
+          "NewAccessPinCredentialCommand",
+          "AccessPinAttemptStationGuardRow",
+          "NewAccessPinAttemptStationGuard",
+          "AccessPinAttemptLimitRow",
+          "NewAccessPinAttemptLimit",
+          "AccessPinAttemptLimitUpdate",
           "RepairTable",
           "RepairRow",
           "NewRepair",
@@ -276,6 +301,7 @@
           "src/infrastructure/database/migrations/20260906180000_access_create_capability_catalog.ts",
           "src/infrastructure/database/migrations/20260906181000_access_create_roles.ts",
           "src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts",
+          "src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -283,7 +309,8 @@
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
           "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
-          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts"
+          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts"
         ],
         "status": "materialized-schema-contract"
       },
@@ -305,7 +332,9 @@
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
           "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
-          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts"
+          "src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts",
+          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts"
         ],
         "status": "materialized-connection-facility"
       },
@@ -363,7 +392,9 @@
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
           "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
-          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts"
+          "src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts",
+          "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts"
         ],
         "status": "materialized-owner-internal-capability"
       },
@@ -460,6 +491,18 @@
         "contract": "AccessRepositoryPort",
         "allowedScopes": ["AccessTenantScope", "AccessBranchScope", "AccessPrincipalScope"],
         "status": "materialized-owner-port"
+      },
+      "src/modules/access/application/ports/pin-credential-repository.port.ts": {
+        "owner": "access",
+        "contract": "PinCredentialRepositoryPort",
+        "allowedScopes": ["PinCredentialTenantScope", "PinCredentialStationScope"],
+        "status": "materialized-owner-port"
+      },
+      "src/modules/users/application/ports/authentication-user-reader.port.ts": {
+        "owner": "users",
+        "contract": "AuthenticationUserReaderPort",
+        "allowedScopes": ["AuthenticationUserPersistenceScope"],
+        "status": "materialized-owner-port"
       }
     },
     "scopeTypes": {
@@ -469,7 +512,10 @@
       "UserScope": ["tenantId"],
       "AccessTenantScope": ["tenantId"],
       "AccessBranchScope": ["tenantId", "branchId"],
-      "AccessPrincipalScope": ["tenantId", "branchId", "userId"]
+      "AccessPrincipalScope": ["tenantId", "branchId", "userId"],
+      "PinCredentialTenantScope": ["tenantId"],
+      "PinCredentialStationScope": ["tenantId", "branchId", "stationId"],
+      "AuthenticationUserPersistenceScope": ["tenantId"]
     },
     "adapters": {
       "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts": {
@@ -500,6 +546,18 @@
         "owner": "access",
         "port": "src/modules/access/application/ports/access-repository.port.ts",
         "composition": "src/modules/access/access.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts": {
+        "owner": "access",
+        "port": "src/modules/access/application/ports/pin-credential-repository.port.ts",
+        "composition": "src/modules/access/access.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts": {
+        "owner": "users",
+        "port": "src/modules/users/application/ports/authentication-user-reader.port.ts",
+        "composition": "src/modules/users/users.module.ts",
         "status": "materialized-owner-adapter"
       }
     },
@@ -593,6 +651,22 @@
         "kind": "table"
       },
       "access_role_assignment_commands": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_pin_credentials": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_pin_credential_commands": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_pin_attempt_limits": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_pin_attempt_station_guards": {
         "owner": "access",
         "kind": "table"
       }
@@ -821,16 +895,24 @@
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
     "src/modules/access/application/access-input.ts",
+    "src/modules/access/application/pin-input.ts",
     "src/modules/access/application/ports/access-repository.port.ts",
+    "src/modules/access/application/ports/pin-credential-repository.port.ts",
+    "src/modules/access/application/ports/pin-secret-hasher.port.ts",
+    "src/modules/access/application/use-cases/authenticate-pin.use-case.ts",
     "src/modules/access/application/use-cases/assign-role.use-case.ts",
     "src/modules/access/application/use-cases/list-access-matrix.use-case.ts",
     "src/modules/access/application/use-cases/list-applicable-users.use-case.ts",
+    "src/modules/access/application/use-cases/provision-pin-credential.use-case.ts",
     "src/modules/access/application/use-cases/resolve-effective-capabilities.use-case.ts",
     "src/modules/access/application/use-cases/revoke-role-assignment.use-case.ts",
     "src/modules/access/domain/capability.ts",
+    "src/modules/access/domain/pin-credential.ts",
     "src/modules/access/domain/role-assignment.ts",
     "src/modules/access/domain/role.ts",
     "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
+    "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
+    "src/modules/access/infrastructure/security/node-argon2-pin-hasher.ts",
     "src/modules/stations/index.ts",
     "src/modules/stations/application/branch-time-zone.ts",
     "src/modules/stations/application/ports/branch-repository.port.ts",
@@ -867,6 +949,7 @@
     "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
     "src/modules/tenancy/tenancy.module.ts"
     ,"src/modules/users/index.ts"
+    ,"src/modules/users/application/ports/authentication-user-reader.port.ts"
     ,"src/modules/users/application/ports/user-repository.port.ts"
     ,"src/modules/users/application/user-input.ts"
     ,"src/modules/users/application/use-cases/get-user.use-case.ts"
@@ -874,6 +957,7 @@
     ,"src/modules/users/application/use-cases/provision-first-user.use-case.ts"
     ,"src/modules/users/application/use-cases/transition-user-status.use-case.ts"
     ,"src/modules/users/domain/user.ts"
+    ,"src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
     ,"src/modules/users/users.module.ts"
   ],

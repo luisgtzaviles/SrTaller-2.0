@@ -205,6 +205,7 @@ async function runOnce() {
         'test/trusted-station-context-postgresql.test.mjs',
         'test/user-directory-postgresql.test.mjs',
         'test/access-role-postgresql.test.mjs',
+        'test/access-pin-postgresql.test.mjs',
       ],
       {
         encoding: 'utf8',
@@ -263,6 +264,11 @@ async function runOnce() {
       node: '24.18.0',
       postgres: '18.4',
       scenarios: Object.freeze([
+        'access-pin-authentication-lock-and-rate-limit',
+        'access-pin-migration-up-down-reapply',
+        'access-pin-provisioning-concurrency-and-idempotency',
+        'access-pin-tenant-and-station-isolation',
+        'access-pin-verifier-not-plaintext',
         'access-assignment-concurrency-and-idempotency',
         'access-capability-and-role-catalog',
         'access-migration-up-down-reapply',

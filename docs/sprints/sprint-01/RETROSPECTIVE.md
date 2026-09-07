@@ -2,16 +2,18 @@
 
 ## Estado del documento
 
-- **Estado:** Draft; Sprint en cierre candidato. No se infieren aprendizajes ni
-  acciones sin realizar la retrospectiva.
-- **Fecha:** TBD.
+- **Estado:** Closed.
+- **Fecha:** 2026-09-06.
 
 ## Señales y acciones
 
-- Funcionó y conviene conservar: TBD.
-- Generó fricción: TBD.
-- Acciones de mejora: TBD.
+- Funcionó y conviene conservar: WIP=1, candidate SHA exacto, dos ejecuciones
+  PostgreSQL y cierre post-merge sin recursión documental.
+- Generó fricción: snapshots preventivos `Done candidate` requieren leer la
+  evidencia Git/CI post-merge para determinar el estado efectivo.
+- Acciones de mejora: mantener expedientes por PBI y no iniciar el siguiente
+  hasta que el cierre previo sea efectivo.
 
 ## Próxima revisión
 
-- **Disparador:** cierre efectivo de PBI-033 y retrospectiva de Sprint 01.
+- **Disparador:** futura revisión de proceso.

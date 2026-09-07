@@ -308,7 +308,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 19);
+      assert.equal(applied.status.migrations.length, 20);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -921,6 +921,16 @@ test(
 
       let status = await runner.getMigrationStatus();
       let latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      assert.equal(
+        latest?.name,
+        '20260907010000_access_create_pin_credentials',
+      );
+      await runner.migrateDown(authorization(latest));
+
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
       assert.equal(

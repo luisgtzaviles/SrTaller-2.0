@@ -34,6 +34,10 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     access_role_capabilities: { owner: 'access', kind: 'table' },
     access_role_assignments: { owner: 'access', kind: 'table' },
     access_role_assignment_commands: { owner: 'access', kind: 'table' },
+    access_pin_credentials: { owner: 'access', kind: 'table' },
+    access_pin_credential_commands: { owner: 'access', kind: 'table' },
+    access_pin_attempt_station_guards: { owner: 'access', kind: 'table' },
+    access_pin_attempt_limits: { owner: 'access', kind: 'table' },
   });
   assert.deepEqual(policy.persistence.initialSchema, {
     migration: migrationPath,
@@ -90,6 +94,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260906180000_access_create_capability_catalog.ts',
       '20260906181000_access_create_roles.ts',
       '20260906182000_access_create_role_assignments.ts',
+      '20260907010000_access_create_pin_credentials.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

@@ -4,9 +4,8 @@
 
 - **Estado:** Fotografía reconciliada de la baseline canónica.
 - **Baseline auditada:** `main` en
-  `065b859e3db64f82f033ce75ce5fb33df9b3ade1`; la rama documental de cierre no
-  se convierte en baseline hasta merge autorizado y CI de `main`.
-- **CI autoritativo:** run `34082394514`, `SUCCESS`; VC-024 run-1, run-2 y
+  `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1`.
+- **CI autoritativo:** run `34084930812`, `SUCCESS`; VC-024 run-1, run-2 y
   comparison verdes sobre el mismo SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, deploy, migración o infraestructura.
@@ -18,28 +17,26 @@ local integrado. D5 Technician Assignment, D6.1 Start Diagnosis y D6.2 Internal
 Physical Location pertenecen a `main` y tienen CI verde.
 
 Repairs no está completo ni listo para operación productiva. Trusted Station
-Runtime Context y PBI-032 User Directory and Lifecycle están cerrados
-canónicamente. PBI-033 Roles, Assignments and Capability Catalog está integrado
-funcionalmente en `main` y permanece `Done candidate` hasta integrar este cierre
-documental y obtener CI autoritativo GREEN sobre ese merge. PIN, Operational
-Session y contextual authorization aún no existen. El roadmap continúa
-deteniendo nuevas features profundas de Repairs y selecciona PBI-025 sin
-iniciarlo.
+Runtime Context, User Directory and Lifecycle y Roles, Assignments and
+Capability Catalog están cerrados canónicamente; G1 y G2 están `PASS`. PIN,
+Operational Session y contextual authorization aún no pertenecen a `main`.
+SPRINT-01 quedó cerrado y SPRINT-02 está activo con PBI-025 como único PBI en
+ejecución local bajo el Identity Master Goal.
 
 ## Git y CI
 
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `065b859e3db64f82f033ce75ce5fb33df9b3ade1` |
+| HEAD auditado | `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` |
 | `origin/main` auditado | mismo SHA |
 | Divergencia al iniciar reconciliación | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `34082394514` SUCCESS |
-| Última integración | PR #28 — Roles, Assignments and Capability Catalog |
+| CI | `34084930812` SUCCESS |
+| Última integración | PR #29 — cierre canónico de PBI-033 y avance del roadmap |
 
-La rama documental que modifique esta fotografía no se convierte en baseline
-hasta integrarse a `main` con autorización y CI propios.
+La rama funcional de PBI-025 no se convierte en baseline hasta integrarse a
+`main` con autorización y CI propios.
 
 ## Stack actual
 
@@ -57,7 +54,8 @@ hasta integrarse a `main` con autorización y CI propios.
 ### Platform foundation
 
 - Tenants y Branches persistentes.
-- Users, Roles, catálogo de capabilities y assignments tenant/Branch-scoped.
+- Users, Roles, catálogo de capabilities y assignments tenant/Branch-scoped;
+  PBI-033 está `Done` y G2 `PASS`.
 - Health `/livez` y readiness `/readyz`.
 - Propiedad modular y acceso a persistencia gobernados.
 - Desarrollo local con PostgreSQL, migración y seed sintético.
@@ -84,8 +82,8 @@ hasta integrarse a `main` con autorización y CI propios.
 ## Limitaciones vigentes
 
 - El directorio User tenant-scoped y Roles/Capabilities/Assignments están
-  integrados; `access` todavía no contiene credentials o sessions y no existe
-  superficie HTTP/UI productiva de Users/Roles.
+  integrados; la baseline todavía no contiene credentials o sessions y no
+  existe superficie HTTP/UI productiva de Users/Roles.
 - Los read models de grants son proyecciones, no veredictos finales de
   autorización. PBI-026 debe intersectarlos con User activo, Station/Branch
   confiable y sesión antes de permitir un efecto protegido.
@@ -106,7 +104,7 @@ hasta integrarse a `main` con autorización y CI propios.
 - D6.1: integrated.
 - D6.2: integrated.
 - Repairs complete: NO.
-- Siguiente dirección: Identity & Context Foundation.
+- Siguiente dirección: Operational Authentication & Authorization.
 
 ## Roadmap y WIP
 
@@ -114,11 +112,11 @@ La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md)
 
 | Elemento | Estado |
 |---|---|
-| Sprint activo | Sprint 01 — closure candidate |
-| Sprint 01 | Active — PBI-033 `Done candidate` en cierre documental |
-| PBI actual | NONE |
-| Siguiente candidato | PBI-025 — seleccionado, no iniciado; Critical / TBD / DoR pendiente |
-| WIP permitido | Uno; actual `0/1` durante el cierre documental |
+| Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
+| Sprint 01 | Closed — cinco PBIs committed `Done`; ninguno `Released` |
+| PBI actual | PBI-025 — PIN Credential Authentication; `In progress` |
+| Siguiente candidato | PBI-034 — Operational Session; candidato, no iniciado |
+| WIP permitido | Uno; actual `1/1` |
 
 PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
 aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
@@ -151,9 +149,11 @@ PBI-033 integró el candidate revisado
 `2026-09-07T04:15:05Z`; CI de candidato `34081637692` y CI exacto de `main`
 `34082394514` quedaron GREEN en run-1, run-2 y comparison. La focused
 high-risk review fue PASS con hallazgos abiertos BLOCKER/HIGH/MEDIUM: 0; la
-Owner Acceptance condicional quedó satisfecha. Permanece `Done candidate`,
-`Released: NO`, hasta integrar el cierre documental y obtener su CI exacto de
-`main`. El límite residual de proyección de grants se conserva como LOW.
+Owner Acceptance condicional quedó satisfecha. PR #29 integró el cierre como
+`d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` y su CI exacto de `main`
+`34084930812` quedó GREEN. Conforme a la semántica post-merge, PBI-033 está
+`Done`, G2 está `PASS` y `Released: NO`. El límite residual de proyección de
+grants se conserva como LOW.
 
 ## Identity Foundation reconciliada
 
@@ -177,9 +177,18 @@ Owner Acceptance condicional quedó satisfecha. Permanece `Done candidate`,
 - PostgreSQL remoto: sin cambios.
 - DNS/secrets/infraestructura: sin cambios.
 
+## Ejecución vigente
+
+PBI-025 tiene threat model, estimación `Large` y DoR `PASS`; conserva riesgo
+`Critical` sin downgrade. El Identity Master Goal autoriza su ejecución como
+riesgo de PIN conocido y previsto, y obliga a detenerse ante un `Critical`
+nuevo no previsto. El PBI debe llegar a focused Critical-risk review sobre el
+candidate exacto; no incorpora login, Session ni autorización.
+
 ## Próxima acción
 
-Owner merge review del cierre documental candidato de PBI-033. PBI-025 queda
-seleccionado, no iniciado, y requiere threat model, estimación, DoR y
-autorización Owner propios antes de cualquier implementación. No desplegar ni
+La implementación, PostgreSQL material, evidencia y Draft PR #30 de PBI-025
+están materializados. Completar remediaciones de focused Critical-risk review,
+obtener CI autoritativo GREEN sobre el HEAD final y cerrar la revisión antes de
+cualquier merge. PBI-034 permanece candidato no iniciado. No desplegar ni
 declarar `Released` desde este estado.

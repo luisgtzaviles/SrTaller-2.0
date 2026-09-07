@@ -2,11 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** Active — closure candidate; PBI-033 `Done candidate`.
+- **Estado:** Closed; PBI-033 `Done`.
 - **PBI actual:** NONE.
-- **WIP:** 0/1 durante el cierre documental.
-- **Siguiente candidato:** PBI-025 — seleccionado, no iniciado; riesgo
-  `Critical`, estimación `TBD` y DoR pendiente.
+- **WIP:** 0/1 al cierre.
+- **Handoff:** SPRINT-02 activo; PBI-025 In progress bajo sus propios gates.
 
 ## Gate externo de activación
 
@@ -22,20 +21,20 @@
 | [PBI-029](../../backlog/pbis/PBI-029.md) | Done | Merge funcional `36d93736`; CI main funcional `33974100385` GREEN; riesgo `CRITICAL` aceptado y Owner Acceptance APPROVED; cierre documental merge `41914c787` y CI post-cierre `33988752597` GREEN; `Released: NO`. |
 | [PBI-024](../../backlog/pbis/PBI-024.md) | Done | Cierre canónico integrado; `Released: NO`. |
 | [PBI-032](../../backlog/pbis/PBI-032.md) | Done | Cierre PR #27 merge `db6637ee`; CI post-cierre `34074457695` GREEN; `Released: NO`. |
-| [PBI-033](../../backlog/pbis/PBI-033.md) | Done candidate | Candidate `bb5a1efde19171703d0b3ce84567ff14538b32b7`, CI `34081637692`, focused high-risk review PASS, merge PR #28 `065b859e3db64f82f033ce75ce5fb33df9b3ade1`, CI exacto de `main` `34082394514` y Owner Acceptance condicional PASS; cierre documental pendiente; `Released: NO`. |
+| [PBI-033](../../backlog/pbis/PBI-033.md) | Done | Cierre PR #29 merge `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1`; CI `34084930812` GREEN; `Released: NO`. |
 
-## Secuencia posterior, seleccionada y no iniciada
+## Handoff posterior
 
 | Orden | PBI | Estado | Condición de entrada |
 |---:|---|---|---|
-| 1 | [PBI-025](../../backlog/pbis/PBI-025.md) | Blocked / selected; not started | PBI-033 Done efectivo; threat model, estimación, DoR y autorización Owner propios antes de iniciar |
+| 1 | [PBI-025](../../backlog/pbis/PBI-025.md) | In progress en SPRINT-02 | DoR PASS; Identity Master Goal vigente |
 
 ## Bloqueos
 
 | PBI | Bloqueo | Condición de salida |
 |---|---|---|
-| PBI-033 | Merge autorizado del cierre documental y CI exacto post-cierre de `main` | Mantener `Done candidate`, G2 `PASS candidate` y WIP `0/1` hasta completar el cierre |
-| PBI-025 | Riesgo `Critical`; threat model, estimación, DoR y autorización de inicio pendientes | Mantener seleccionado, no iniciado, hasta satisfacer sus gates propios |
+| PBI-033 | Ninguno | Closed |
+| PBI-025 | Fuera del alcance de Sprint 01 | Gestionado por SPRINT-02 |
 
 ## Reglas de cambio
 
@@ -46,6 +45,6 @@
 
 ## Próxima revisión
 
-- **Fecha:** TBD.
-- **Disparador:** Owner merge review/CI del cierre documental candidato de
-  PBI-033 o cambio material de los gates de PBI-025.
+- **Fecha:** no aplica; Sprint cerrado.
+- **Disparador:** sólo una inconsistencia material en la evidencia de cierre.
+  El trabajo de PBI-025 pertenece a SPRINT-02.

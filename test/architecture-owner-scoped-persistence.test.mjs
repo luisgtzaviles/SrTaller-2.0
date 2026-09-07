@@ -16,10 +16,18 @@ const userPortPath =
   'src/modules/users/application/ports/user-repository.port.ts';
 const userAdapterPath =
   'src/modules/users/infrastructure/persistence/kysely-user.repository.ts';
+const authenticationUserPortPath =
+  'src/modules/users/application/ports/authentication-user-reader.port.ts';
+const authenticationUserAdapterPath =
+  'src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts';
 const accessPortPath =
   'src/modules/access/application/ports/access-repository.port.ts';
 const accessAdapterPath =
   'src/modules/access/infrastructure/persistence/kysely-access.repository.ts';
+const pinCredentialPortPath =
+  'src/modules/access/application/ports/pin-credential-repository.port.ts';
+const pinCredentialAdapterPath =
+  'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts';
 
 test('owner-scoped ports and adapters retain exact ownership registration', async () => {
   const policy = JSON.parse(
@@ -80,6 +88,30 @@ test('owner-scoped ports and adapters retain exact ownership registration', asyn
     composition: 'src/modules/access/access.module.ts',
     status: 'materialized-owner-adapter',
   });
+  assert.deepEqual(policy.persistence.ports[pinCredentialPortPath], {
+    owner: 'access',
+    contract: 'PinCredentialRepositoryPort',
+    allowedScopes: ['PinCredentialTenantScope', 'PinCredentialStationScope'],
+    status: 'materialized-owner-port',
+  });
+  assert.deepEqual(policy.persistence.adapters[pinCredentialAdapterPath], {
+    owner: 'access',
+    port: pinCredentialPortPath,
+    composition: 'src/modules/access/access.module.ts',
+    status: 'materialized-owner-adapter',
+  });
+  assert.deepEqual(policy.persistence.ports[authenticationUserPortPath], {
+    owner: 'users',
+    contract: 'AuthenticationUserReaderPort',
+    allowedScopes: ['AuthenticationUserPersistenceScope'],
+    status: 'materialized-owner-port',
+  });
+  assert.deepEqual(policy.persistence.adapters[authenticationUserAdapterPath], {
+    owner: 'users',
+    port: authenticationUserPortPath,
+    composition: 'src/modules/users/users.module.ts',
+    status: 'materialized-owner-adapter',
+  });
 });
 
 test('persistence capability is internal and has only exact adapter consumers', async () => {
@@ -106,7 +138,9 @@ test('persistence capability is internal and has only exact adapter consumers', 
       'src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts',
       tenantAdapterPath,
       userAdapterPath,
+      authenticationUserAdapterPath,
       accessAdapterPath,
+      pinCredentialAdapterPath,
     ],
     status: 'materialized-owner-internal-capability',
   });
@@ -125,7 +159,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   );
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands'>/u,
+    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits'>/u,
   );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),
@@ -134,10 +168,13 @@ test('persistence capability is internal and has only exact adapter consumers', 
 });
 
 test('ports require nominal scopes without leaking database drivers', async () => {
-  const [tenantPort, branchPort] = await Promise.all([
-    readFile(tenantPortPath, 'utf8'),
-    readFile(branchPortPath, 'utf8'),
-  ]);
+  const [tenantPort, branchPort, pinCredentialPort, authenticationUserPort] =
+    await Promise.all([
+      readFile(tenantPortPath, 'utf8'),
+      readFile(branchPortPath, 'utf8'),
+      readFile(pinCredentialPortPath, 'utf8'),
+      readFile(authenticationUserPortPath, 'utf8'),
+    ]);
   assert.match(tenantPort, /readonly tenantId: ScopedTenantId/u);
   assert.match(branchPort, /readonly branchId: BranchId/u);
   assert.match(
@@ -148,8 +185,24 @@ test('ports require nominal scopes without leaking database drivers', async () =
     branchPort,
     /listBranchesByTenant\(\s*scope: TenantPersistenceScope/u,
   );
+  assert.match(
+    pinCredentialPort,
+    /type PinCredentialScopedTenantId = string & TenantId/u,
+  );
+  assert.match(
+    pinCredentialPort,
+    /authenticateAttempt\(\s*context: PinCredentialStationScope/u,
+  );
+  assert.match(
+    authenticationUserPort,
+    /type AuthenticationUserScopedTenantId = string & TenantId/u,
+  );
+  assert.match(
+    authenticationUserPort,
+    /findAuthenticationUser\(\s*scope: AuthenticationUserPersistenceScope/u,
+  );
   assert.doesNotMatch(
-    `${tenantPort}\n${branchPort}`,
+    `${tenantPort}\n${branchPort}\n${pinCredentialPort}\n${authenticationUserPort}`,
     /from ['"](?:kysely|pg)['"]|PoolClient|QueryResult|RawBuilder/u,
   );
 });

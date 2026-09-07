@@ -2,15 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Active — closure candidate; PBI-033 `Done candidate`; WIP 0/1.
+- **Estado:** Closed; todos los PBIs committed están `Done`; WIP 0/1.
 - **Sprint:** SPRINT-01.
 - **Periodo:** TBD.
-- **Estado del sprint:** Active — closure candidate.
+- **Estado del sprint:** Closed.
 - **Gate de activación:** PASS — PBI-027 y PBI-029 están `Done`; PBI-029
   cuenta con merge documental integrado y CI post-cierre de `main` GREEN.
 - **PBI actual:** NONE.
-- **Siguiente candidato:** PBI-025 — seleccionado, no iniciado; riesgo
-  `Critical`, estimación `TBD` y DoR pendiente.
+- **Siguiente Sprint:** SPRINT-02 — Active; PBI-025 In progress.
 
 ## Objetivo
 
@@ -43,15 +42,14 @@ seguir atribuyendo nuevos writes productivos a un actor sintético.
 - [x] PBI-024 `Done`; `Released: NO`.
 - [x] PBI-032 `Done`; cierre PR #27 y CI post-cierre `34074457695` GREEN;
   `Released: NO`.
-- [ ] PBI-033 `Done` — candidate completo; pendiente merge/CI del cierre
-  documental para volverlo efectivo. `Released: NO`.
+- [x] PBI-033 `Done` — cierre PR #29 merge `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1`
+  y CI `34084930812` GREEN; `Released: NO`.
 - [x] No existe más de un PBI en ejecución/cierre; no hay PBI actual y el WIP
   es `0/1` durante el cierre documental.
-- [x] PBI-025 queda seleccionado, no iniciado; sus gates propios siguen
-  pendientes.
+- [x] El siguiente trabajo se transfirió a SPRINT-02 sin ampliar el alcance de
+  este Sprint.
 
 ## Próxima revisión
 
 - **Fecha:** TBD.
-- **Disparador:** Owner merge review/CI del cierre documental candidato de
-  PBI-033 y cierre de la review/retrospectiva del Sprint.
+- **Disparador:** cambio material de la evidencia cerrada.

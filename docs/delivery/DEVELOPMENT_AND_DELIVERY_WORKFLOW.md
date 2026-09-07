@@ -22,9 +22,9 @@ y el [alcance](../product/PRODUCT_SCOPE.md).
 La baseline actual no es todavía un producto E2E. Contiene una aplicación
 NestJS ejecutable, React/Vite, PostgreSQL y el Repair Workstream local con D5,
 D6.1 y D6.2. Trusted Station Context, User Directory y
-Roles/Capabilities/Assignments están integrados; el actor local sigue siendo
-sintético y Operational Authentication es la siguiente dirección seleccionada,
-no iniciada.
+Roles/Capabilities/Assignments están integrados y cerrados canónicamente; el
+actor local sigue siendo sintético. Operational Authentication está en
+ejecución mediante PBI-025 bajo WIP=1.
 
 ## Jerarquía de autoridad documental
 
@@ -98,11 +98,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34082394514` on `065b859e3db64f82f033ce75ce5fb33df9b3ade1` |
-| Program / phase | MVP Operating Roadmap / Identity & Context Foundation closure candidate |
-| Sprint | SPRINT-01 `Active — closure candidate`; WIP `0/1` |
-| Current / next PBI | Current: NONE; next: PBI-025 seleccionado, no iniciado; Critical / TBD / DoR pendiente |
-| Current blocking gate | Merge autorizado del cierre documental de PBI-033 y CI exacto post-cierre de `main` |
+| Authoritative CI at audited HEAD | Green: run `34084930812` on `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` |
+| Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
+| Sprint | SPRINT-02 `Active`; WIP `1/1` |
+| Current / next PBI | Current: PBI-025 `In progress`, Critical / Large / DoR PASS; next: PBI-034 candidate, not started |
+| Current blocking gate | Candidate exacto de PBI-025 debe completar focused Critical-risk review y CI exacto GREEN |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -123,7 +123,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory y Roles/Capabilities/Assignments están integrados; no hay PIN/Session/authorization productivos |
+| Product API | Repair endpoints materialized for the local synthetic workflow; Trusted Station Context, User Directory y Roles/Capabilities/Assignments están integrados; PBI-025 PIN está en ejecución local y no hay Session/authorization productivos |
 
 ## Current, planned and required before Production
 

@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Active — closure candidate; PBI-033 `Done candidate`; WIP 0/1.
+- **Estado:** Closed; PBI-033 `Done`; WIP 0/1.
 - **Última revisión:** 2026-09-06.
 
 ## Riesgos
@@ -22,12 +22,12 @@
 | Elemento | Bloqueo | Condición de salida | Estado |
 |---|---|---|---|
 | PBI-032 | Cierre documental autorizado, mergeado y verificado | PR #27 merge `db6637ee`; CI post-cierre `34074457695` GREEN | Closed |
-| PBI-033 | Merge autorizado del cierre documental y CI exacto post-cierre de `main` | Mantener `Done candidate`, G2 `PASS candidate` y WIP `0/1`; no declarar cierre efectivo antes de ambos hechos | Open |
-| PBI-025 | Riesgo `Critical`; threat model, estimación, DoR y autorización de inicio pendientes | Mantener seleccionado, no iniciado | Open |
+| PBI-033 | Cierre documental y CI exacto | PR #29 merge y CI `34084930812` GREEN | Closed |
+| PBI-025 | Fuera del alcance de Sprint 01 | SPRINT-02 y DoR propios | Transferred |
 | Migración timezone | Backfill histórico equivocado o cambio de instante | Fallback IANA documentado, validación y pruebas PostgreSQL; roll-forward en compartido | Mitigated |
 
 ## Próxima revisión
 
-- **Fecha:** TBD.
-- **Disparador:** Owner merge review/CI del cierre documental candidato de
-  PBI-033 o cambio material de los gates de PBI-025.
+- **Fecha:** no aplica; Sprint cerrado.
+- **Disparador:** sólo una inconsistencia material en la evidencia de cierre.
+  PBI-025 se gobierna desde SPRINT-02.

@@ -1,0 +1,118 @@
+# PBI-025 — PIN Credential Authentication Evidence
+
+## Estado
+
+- **Estado:** integration candidate in Draft PR #30; exact-head CI and final
+  focused Critical-risk disposition pending.
+- **PBI:** PBI-025; current PBI; WIP 1/1.
+- **Risk / size:** Critical / Large.
+- **DoR:** [PASS](./DEFINITION_OF_READY.md).
+- **Threat model:** [complete](./THREAT_MODEL.md).
+- **Baseline:** `main` at
+  `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1`; exact-main CI
+  `34084930812` GREEN.
+- **Superseded review checkpoint:** `4ba81eebbf4159febe37bc3b9a641c9ecfc3c80a`
+  in Draft PR #30 passed candidate CI `34090023213`; subsequent focused
+  security findings require a new final SHA and exact-head CI.
+- **Released / deployed:** NO / NO.
+
+## Candidate scope
+
+- credencial PIN Access-owned separada del User;
+- Argon2id versionado con salt/pepper;
+- provisioning server-only local/test e idempotencia;
+- verificación sobre Trusted Station + User seleccionado;
+- cinco fallos/lock cinco minutos y rate limit Station/principal opaco;
+- prueba de autenticación efímera; ninguna Session/capability/action.
+
+## Artifact inventory
+
+### Product and persistence
+
+- `src/modules/access/domain/pin-credential.ts`;
+- `src/modules/access/application/pin-input.ts`;
+- `src/modules/access/application/ports/pin-secret-hasher.port.ts`;
+- `src/modules/access/application/ports/pin-credential-repository.port.ts`;
+- `src/modules/access/application/use-cases/provision-pin-credential.use-case.ts`;
+- `src/modules/access/application/use-cases/authenticate-pin.use-case.ts`;
+- `src/modules/access/infrastructure/security/node-argon2-pin-hasher.ts`;
+- `src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts`;
+- narrow Users authentication reader and public Trusted Station context seam;
+- `20260907010000_access_create_pin_credentials.ts` additive migration;
+- local-only ignored-environment PIN/pepper generation and hashed seed rows.
+
+### Tests and authoritative inventory
+
+- `test/access-pin-application.test.mjs`: exact input, generic denial, proof
+  boundary and no Session/authorization;
+- `test/access-pin-contract.test.mjs`: schema/KDF/configuration/redaction and
+  production exclusions;
+- `test/access-pin-postgresql.test.mjs`: real migration, provisioning,
+  idempotency, concurrency, lock/rate, tenant/Station/User isolation and
+  plaintext exclusion;
+- `test/local-development-contract.test.mjs`: synthetic local fixtures persist
+  only verifier material;
+- architecture migration/schema/persistence contracts and full mutation suite;
+- owner-scoped PostgreSQL runner and VC-024 evidence manifest register the
+  migration and material suite explicitly.
+
+## Verification matrix
+
+| Risk / criterion | Evidence | Candidate result |
+|---|---|---|
+| Six ASCII digits and exact payload | application/contract tests | PASS local |
+| Argon2id profile, pepper, salt and redaction | contract tests + external-configuration scan | PASS local |
+| Provisioning idempotency/concurrency | PostgreSQL material | PASS, two deterministic runs |
+| Five failures, lock and expiry | PostgreSQL material | PASS, including concurrent threshold |
+| Station/principal rate limit | PostgreSQL material | PASS, including successful, unknown, opaque-key, eligibility-invariant and concurrent-cap attempts |
+| Tenant/Station/User isolation | PostgreSQL material negative cases | PASS |
+| Inactive/revoked/missing User or credential | application + PostgreSQL | PASS; revoked credential uses dummy KDF and remains immutable |
+| Migration up/down/reapply and constraints | PostgreSQL 18.4 | PASS, including negative CHECK/FK writes for credential and abuse-control tables |
+| No Session/login/authorization surface | contract and production exclusion | PASS local |
+| DEC-005/049 ownership and exact inventories | architecture + mutations | PASS local |
+| Reproducibility | owner-scoped PostgreSQL run-1/run-2/comparison | PASS local; candidate VC-024 pending |
+
+The material PostgreSQL runner completed `6/6` adapter suites in each of two
+independent runs, cleanup passed, comparison matched and the material evidence
+digest was
+`cd7fcb704b4b3dd8d2e29ee3b8c02291b2a9add9751c1de81ab25fc2af03101f`.
+
+## Implementation audit remediation
+
+Focused review found and remediated four HIGH issues before final review: the
+Argon2 limiter could transfer capacity unsafely and was instance-local; the
+provisioning journal used a cheap HMAC over the six-digit PIN as an offline
+oracle; and eligibility selected a shared versus per-User rate bucket, making
+active Users enumerable after saturation; an active credential under lock
+also skipped the dummy verifier on a fresh Station and exposed a timing
+oracle. The implementation now uses a
+race-free process-wide limiter, an Argon2id provisioning fingerprint with a
+domain-separated deterministic salt, and an eligibility-invariant opaque
+rate principal with bounded Station-local retention. Locked, missing,
+ineligible and invalid-credential paths traverse the same dummy verifier seam
+when rate capacity is available. Public failures collapse to one denial and
+repository exceptions are sanitized. Contract and material tests cover
+limiter capacity, divergent replay, local-fixture equivalence,
+cross-eligibility rate state and locked-credential dummy verification. A
+MEDIUM stale configuration statement that still classified `SR_PIN_PEPPER` as
+reserved was also corrected. No BLOCKER/HIGH/MEDIUM finding remains in the
+local remediation audit; the final independent disposition remains pending.
+
+## Evidence pending
+
+- final candidate SHA after focused-review remediations;
+- candidate CI exact run-1/run-2/comparison;
+- final focused Critical-risk review disposition;
+- merge/main CI/Owner Acceptance and closure evidence.
+
+The final evidence update must bind every `PASS` above to the exact candidate
+SHA and CI run. Local success does not imply review, merge, `Done`, release or
+deploy.
+
+## Boundaries
+
+No login UI/HTTP, Operational Session, contextual authorization, business
+audit, operational reset/revocation command or surface, production secret,
+remote infrastructure, release or deploy. `Identity Master Goal — Part D`
+autoriza esta secuencia: estado/versionado y fallo cerrado aquí no afirman que
+el lifecycle operacional futuro ya esté implementado.

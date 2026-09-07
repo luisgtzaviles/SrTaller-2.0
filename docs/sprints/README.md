@@ -5,11 +5,12 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 ## Estado del documento
 
 **Estado:** Sprint 00 `Closed`.
-**Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed` y
-[SPRINT-01](sprint-01/SPRINT_GOAL.md) `Active — closure candidate`.
-**Sprint activo:** Sprint 01; PBI-027, PBI-029, PBI-024 y PBI-032 están `Done`
-y `Released: NO`. PBI-033 está `Done candidate`, no existe PBI actual y el WIP
-es `0/1`. PBI-025 queda seleccionado, no iniciado.
+**Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed`,
+[SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
+[SPRINT-02](sprint-02/SPRINT_GOAL.md) `Active`.
+**Sprint activo:** SPRINT-02 — Operational Authentication & Authorization;
+PBI-025 es el único PBI actual, `In progress`, con WIP `1/1`. PBI-034 es el
+siguiente candidato y no está iniciado.
 
 ## Reglas propuestas
 
@@ -37,11 +38,9 @@ Sus documentos son:
 
 ## SPRINT-01
 
-SPRINT-01 ejecuta Identity & Context Foundation y está en cierre candidato. Su
+SPRINT-01 ejecutó Identity & Context Foundation y está cerrado. Su
 backlog ordena PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033, uno a la vez.
-PBI-027, PBI-029, PBI-024 y PBI-032 están `Done`; PBI-033 está `Done candidate`.
-PBI-025 queda seleccionado después del Sprint, no iniciado, con riesgo
-`Critical`, estimación `TBD` y DoR pendiente.
+Los cinco PBIs están `Done` y ninguno está `Released`.
 
 - [Objetivo](sprint-01/SPRINT_GOAL.md)
 - [Backlog](sprint-01/SPRINT_BACKLOG.md)
@@ -49,7 +48,19 @@ PBI-025 queda seleccionado después del Sprint, no iniciado, con riesgo
 - [Review](sprint-01/REVIEW.md)
 - [Retrospectiva](sprint-01/RETROSPECTIVE.md)
 
+## SPRINT-02
+
+SPRINT-02 ejecuta Operational Authentication & Authorization con WIP=1.
+PBI-025 está `In progress`, conserva riesgo `Critical` y tamaño `Large`, y
+tiene DoR `PASS` bajo el Identity Master Goal. PBI-034, PBI-026 y PBI-028
+permanecen candidatos no iniciados.
+
+- [Objetivo](sprint-02/SPRINT_GOAL.md)
+- [Backlog](sprint-02/SPRINT_BACKLOG.md)
+- [Riesgos y bloqueos](sprint-02/RISKS_AND_BLOCKERS.md)
+- [Review](sprint-02/REVIEW.md)
+- [Retrospectiva](sprint-02/RETROSPECTIVE.md)
+
 ## Próxima revisión
 
-Ante Owner merge review/CI del cierre documental candidato de PBI-033 y la
-review/retrospectiva de cierre de Sprint 01.
+Ante focused Critical-risk review del candidate exacto de PBI-025.
