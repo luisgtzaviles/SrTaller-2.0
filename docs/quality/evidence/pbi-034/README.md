@@ -2,30 +2,30 @@
 
 ## Estado
 
-- **Estado:** In review; candidato de integración todavía no integrado ni
-  `Done`.
-- **PBI actual / WIP:** PBI-034 / `1/1`.
+- **Estado:** Done candidate; implementación funcional integrada, cierre
+  documental pendiente.
+- **PBI actual / WIP:** NONE / `0/1`.
 - **Risk / size:** Critical / Large.
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
 - **Threat model:** [complete](./THREAT_MODEL.md).
 - **Owner Start Authorization:** Identity Master Goal y decisión Owner de
   reanudación vigentes para este slice exacto.
-- **DEC-005 Option A:** policy v4 materializada para composición dirigida por
-  aristas explícitas y contratos públicos; verificación local PASS, SHA/CI
-  exactos pendientes.
+- **DEC-005 Option A:** policy v4 integrada para composición dirigida por
+  aristas explícitas y contratos públicos; verificación exacta PASS.
 - **Released / deployed:** NO / NO.
 
-## Baseline
+## Evidencia exacta
 
-- `main`: `ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`.
-- Cierre PBI-025: PR #32, merge exacto anterior.
-- CI autoritativo exact-main: run `34124746317`, run-1/run-2/comparison GREEN
-  en attempt 1.
-- PBI-025: `Done`; G3 permanece Pending hasta cerrar PBI-034.
-
-La baseline anterior es evidencia histórica de `main`, no identidad del
-candidato actual. SHA final, PR y runs de CI del candidato permanecen
-pendientes; no se reutilizan los identificadores de PBI-025.
+- Candidate: `cdf2805344a5302844a8f7f6f042cb39fbe1515c`.
+- Candidate CI: `34149620560`; run-1/run-2/comparison `SUCCESS`.
+- Focused Critical-risk review: PASS; `0` BLOCKER, `0` HIGH, `0` MEDIUM, `1`
+  LOW.
+- PR funcional: #33.
+- Merge funcional: `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7`,
+  `2026-09-07T18:11:35Z`.
+- CI autoritativo exact-main: `34150632738`; run-1/run-2/comparison `SUCCESS`.
+- Owner Acceptance condicional: `APPROVED`.
+- Cierre: [candidato de cierre](./CLOSURE_CANDIDATE.md).
 
 ## Candidate scope
 
@@ -70,7 +70,7 @@ no implementa la autorización contextual de PBI-026.
 | Lifecycle invalidation | PostgreSQL material negatives | PASS local |
 | DEC-005 Option A | checker + 188 fixtures/53 product mutations | PASS local |
 | Light/Dark/responsive/focus | local visual validation | PASS local; 390/768/1024/1280/1440 |
-| Two-run reproducibility | CI run-1/run-2/comparison | Pending |
+| Two-run reproducibility | CI run-1/run-2/comparison | PASS exact candidate/main |
 
 ## Local verification
 
@@ -97,23 +97,23 @@ no implementa la autorización contextual de PBI-026.
   through the local HTTP contract without printing credential values.
 - `git diff --check`: PASS.
 
-Los resultados anteriores corresponden al working tree remediado. Todavía no
-son identidad de candidato ni sustituyen focused review/CI del SHA final.
+Los resultados anteriores quedaron confirmados por candidate CI, focused
+review, merge funcional y CI exacto de `main`.
 
-## Evidencia pendiente del candidato exacto
+## Evidencia del candidato exacto
 
 | Evidencia | Estado |
 |---|---|
-| SHA final del candidato | Pending |
+| SHA final del candidato | `cdf2805344a5302844a8f7f6f042cb39fbe1515c` |
 | `pnpm run typecheck` | PASS local |
 | `pnpm run build` | PASS local |
 | `pnpm run test:architecture` | PASS local `307/307` |
-| Suites funcionales y PostgreSQL 18.4 de Session | PASS local; CI exacto pendiente |
+| Suites funcionales y PostgreSQL 18.4 de Session | PASS local y CI exacto |
 | Validación visual local responsive/focus | PASS local |
-| Focused Critical-risk review | working tree `0 BLOCKER/HIGH/MEDIUM`; SHA final pendiente |
-| PR y candidate CI run-1/run-2/comparison | Pending |
-| Merge autorizado y CI exacto de `main` | Pending |
-| Owner Acceptance y cierre documental | Pending |
+| Focused Critical-risk review | PASS; `0B/0H/0M/1L` |
+| PR y candidate CI run-1/run-2/comparison | PR #33; `34149620560` GREEN |
+| Merge autorizado y CI exacto de `main` | `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7`; `34150632738` GREEN |
+| Owner Acceptance y cierre documental | APPROVED; cierre candidate pendiente de integración |
 
 ## Remediación del primer CI candidato
 
@@ -128,7 +128,7 @@ Nest ejecutara `onModuleInit()` y materializara el runtime de base de datos.
 La remediación hace explícito `application.init()` antes de la verificación
 fail-closed y mantiene `database.verify()` antes de abrir el listener. Agrega
 un contrato de orden y pasó localmente typecheck, build, el test focalizado de
-configuración/startup y `smoke:start` contra PostgreSQL 18.4. Requiere nuevo
+configuración/startup y `smoke:start` contra PostgreSQL 18.4. Requirió nuevo
 commit, focused review y CI autoritativo completo sobre el nuevo HEAD; el run
 fallido permanece como trazabilidad, no como waiver ni señal intermitente.
 
@@ -151,7 +151,7 @@ MEDIUM / 0 LOW` antes de remediación:
 4. `SR_PIN_PEPPER` malformado no se materializaba durante startup;
 5. evidencia/PR declaraban PASS antes de completar la revisión exacta.
 
-La remediación en working tree introduce coordinación origin-wide fail-closed,
+La remediación integrada introduce coordinación origin-wide fail-closed,
 invalidación previa y final sin identidad, CAS explícito, prueba de posesión del
 bearer para switch, logout autenticado y atómico, challenge CSRF disjunto,
 recovery sólo de Sessions materialmente vencidas y validación eager del pepper.
@@ -160,9 +160,9 @@ un commit servidor cuyo `Set-Cookie` se pierda por abandono cliente. Los tests
 adversariales cubren success/error, response ordering, replay, cancelación,
 timeouts pre-admisión y carreras PostgreSQL.
 
-Estos findings quedaron cerrados en el working tree verificado, con BLOCKER
-`0`, HIGH `0` y MEDIUM `0` restante. El dictamen debe fijarse sobre el nuevo
-SHA y su CI autoritativo antes de Owner Review.
+Estos findings quedaron cerrados en el candidato verificado, con BLOCKER `0`,
+HIGH `0` y MEDIUM `0` restante. El dictamen final quedó fijado sobre
+`cdf2805344a5302844a8f7f6f042cb39fbe1515c` y su CI autoritativo.
 
 Durante esa remediación, el gate ejecutable D5-R046 detectó además un BLOCKER:
 un predicado temporal nuevo había usado raw SQL fuera de una migración y hacía
@@ -178,6 +178,6 @@ retrofit, production secrets, remote infrastructure, release or deploy.
 
 ## Siguiente gate
 
-Fijar el SHA final, confirmar focused Critical-risk review y, sólo si pasa
-junto con CI exacto GREEN, entregar a Owner Review. G3
-permanece `Pending` y PBI-026 no ha iniciado.
+Integrar el cierre documental con autorización Owner y obtener CI exacto de
+`main`. Entonces PBI-034 será `Done` y G3 `PASS` efectivos sin
+closure-of-closure. PBI-026 está seleccionado y no iniciado.

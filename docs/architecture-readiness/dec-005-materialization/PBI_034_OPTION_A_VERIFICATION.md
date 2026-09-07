@@ -3,16 +3,16 @@
 ## Estado
 
 - **PBI:** PBI-034 — Operational Session.
-- **Estado del PBI:** `In review`; candidato de integración no integrado ni
-  `Done`.
+- **Estado del PBI:** `Done candidate`; implementación funcional integrada y
+  cierre documental pendiente.
 - **Decisión materializada:** DEC-005 Option A mediante policy v4.
 - **Resultado de este documento:** contrato, inspección estática y ejecución
   local reconciliados; checker, 188 fixtures y 53 mutaciones controladas de
-  producto `PASS`. SHA final y CI del candidato permanecen `Pending`.
-- **G3:** `Pending`.
+  producto `PASS`; candidate y exact-main CI GREEN.
+- **G3:** `PASS candidate`; efectivo después del merge/CI del cierre.
 
-Este documento no reemplaza una focused Critical-risk review ni convierte los
-resultados locales en un SHA, PR o run de CI todavía inexistentes.
+Este documento no reemplaza la focused Critical-risk review ni autoriza el
+cierre, PBI-026, release o deploy.
 
 ## Autoridad y límite
 
@@ -64,7 +64,7 @@ La verificación final debe demostrar conjuntamente que:
 
 ## Superficies inspeccionadas
 
-| Superficie | Hecho observado en el working tree | Ejecución local |
+| Superficie | Hecho verificado en el candidato exacto | Ejecución |
 |---|---|---|
 | `architecture/dec-005-policy.json` | policy v4, dos aristas y cuatro bindings dirigidos presentes | PASS |
 | `scripts/lib/architecture-checker.mjs` | enforcement de composición dirigida presente | PASS |
@@ -73,11 +73,11 @@ La verificación final debe demostrar conjuntamente que:
 | `src/modules/users/{index.ts,users.module.ts}` | contrato, token, binding y export presentes | PASS |
 | fixtures y mutaciones DEC-005 | 188 fixtures y 53 mutaciones controladas de producto | PASS |
 
-Los resultados anteriores pertenecen al working tree verificado; cambiar un
-archivo relevante obliga a reejecutarlos sobre el nuevo SHA. El CI exacto y
-la focused review siguen siendo gates separados.
+Los resultados anteriores pertenecen al candidato exacto integrado; cambiar
+un archivo relevante obliga a reejecutarlos sobre el nuevo SHA. CI y focused
+review permanecen como gates separados.
 
-## Evidencia requerida antes de Owner Review
+## Evidencia exacta satisfecha
 
 - SHA final del candidato y diff fijado;
 - checker y suites de arquitectura ejecutados sobre ese SHA;
@@ -86,8 +86,9 @@ la focused review siguen siendo gates separados.
 - focused Critical-risk review sin hallazgos BLOCKER/HIGH/MEDIUM abiertos;
 - CI del candidato con run-1, run-2 y comparison GREEN.
 
-Hasta entonces, el candidato conserva integración `Pending`. El PASS local no
-autoriza merge, `Done`, G3 `PASS`, PBI-026, release ni deploy.
+Candidate y exact-main CI, focused review, merge funcional y Owner Acceptance
+están completos. La verificación arquitectónica no autoriza por sí sola el
+cierre, PBI-026, release ni deploy.
 
 ## Trazabilidad
 
@@ -100,5 +101,5 @@ autoriza merge, `Done`, G3 `PASS`, PBI-026, release ni deploy.
 
 ## Próxima revisión
 
-Al fijar el SHA final o modificar policy, checker, grafo, módulos, tokens,
-bindings, exports, fixtures o mutaciones de Option A.
+Al modificar policy, checker, grafo, módulos, tokens, bindings, exports,
+fixtures o mutaciones de Option A.

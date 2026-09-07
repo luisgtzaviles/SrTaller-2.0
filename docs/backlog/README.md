@@ -19,9 +19,9 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 **Orden operativo:** PBI-030, PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033
 están `Done` y `Released: NO`; Sprint 01 está `Closed`. SPRINT-02 está
 `Active`; PBI-025 quedó `Done` mediante PR #32 y CI exacto de `main` GREEN.
-PBI-034 es el único PBI actual, `In review` como candidato no integrado ni
-`Done`, con threat model/DoR PASS, riesgo `Critical`, estimación `Large` y WIP
-`1/1`. G3 permanece `Pending` y PBI-026 no ha iniciado.
+PBI-034 está en `Done candidate`, con candidate/CI, review, merge funcional,
+exact-main CI y Owner Acceptance completos. No hay PBI actual, WIP es `0/1`,
+G3 es `PASS candidate` y PBI-026 está seleccionado, no iniciado.
 
 ## Estructura
 

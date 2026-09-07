@@ -11,8 +11,8 @@
 
 Este documento materializa el ciclo local sin crear una segunda arquitectura
 de aplicación. La base se reconstruye desde PostgreSQL vacío, las migraciones
-presentes en el checkout y un seed mínimo; la migración PBI-034 sigue siendo
-parte de un candidato no integrado. Docker CLI se usa directamente para
+presentes en el checkout y un seed mínimo; la migración PBI-034 está integrada.
+Docker CLI se usa directamente para
 conservar una topología pequeña y portable; no se añade Docker Compose ni una
 dependencia de multiplexación.
 
@@ -23,7 +23,7 @@ dependencia de multiplexación.
 - No se copian bases, dumps ni secretos de Preview.
 - No se ejecuta ninguna migración, seed o reset contra Dokploy.
 - No se crean tablas de clientes, pagos ni autorización contextual. El
-  candidato PBI-034 agrega exclusivamente las tablas Access-owned de
+  PBI-034 agrega exclusivamente las tablas Access-owned de
   Operational Session. Las migraciones locales también materializan Trusted
   Station, Users, catálogo de roles/capabilities, credencial PIN server-only,
   Reparaciones, intake, timeline, evidencia, asignación técnica y los
@@ -102,7 +102,7 @@ técnica. `SR_DB_PASSWORD` se exige al iniciar el backend, pero los scripts
 locales lo derivan sólo en memoria desde `.env.local`; ningún comando lo
 imprime. `SR_PIN_PEPPER` tiene un consumidor server-only en Access/PBI-025 y
 se genera localmente sin imprimirse. `SR_SESSION_SIGNING_KEY` permanece
-reservado y sin consumidor también en el candidato PBI-034: la Session es
+reservado y sin consumidor también en PBI-034: la Session es
 stateful, usa bearer/CSRF aleatorios y conserva sólo verificadores SHA-256. Los
 secretos bootstrap de Station y User tienen consumidores exclusivamente
 locales y no constituyen enrollment o provisioning productivo. Nunca se usa
@@ -229,7 +229,7 @@ El backend local arranca con `SR_DB_ROLE=application` y expone:
 Vite conserva HMR y sirve el frontend en
 `http://127.0.0.1:4173`. Sólo el servidor Vite en modo `local` añade proxy
 para `/api`, `/livez` y `/readyz` hacia el backend local. El build de Preview y
-el runtime OCI no cambian. El candidato PBI-034 bloquea el Application Shell
+el runtime OCI no cambian. PBI-034 bloquea el Application Shell
 hasta resolver una Station y una Session válidas; presenta login, cambio de
 User y logout sin guardar PIN o bearer en `localStorage`/`sessionStorage`.
 
@@ -266,6 +266,6 @@ container inexistente/vacío
 
 Las suites PostgreSQL autoritativas de CI siguen siendo la evidencia Linux;
 esta ruta local aporta feedback rápido y reproducible en macOS, no reemplaza
-CI ni autoriza merge/deploy. Los resultados concretos de PBI-034 permanecen
-pendientes de vincular al SHA final en su
+CI ni autoriza merge/deploy. Los resultados exactos de PBI-034 están
+vinculados en su
 [expediente de evidencia](../quality/evidence/pbi-034/README.md).

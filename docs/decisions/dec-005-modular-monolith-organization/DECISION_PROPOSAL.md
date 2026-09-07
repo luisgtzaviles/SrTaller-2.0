@@ -443,11 +443,10 @@ conservan ownership; `access` sólo recibe capacidades estrechas para componer
 la sesión operacional. `AppModule` conserva su composición exterior y no se
 convierte en service locator ni en puente de capacidades funcionales.
 
-El contrato y la evidencia todavía pendiente sobre el candidato exacto se
-separan en la
+El contrato y la evidencia exacta de PBI-034 se separan en la
 [verificación acotada de Option A para PBI-034](../../architecture-readiness/dec-005-materialization/PBI_034_OPTION_A_VERIFICATION.md).
-La materialización local no equivale por sí sola a verificación final, merge o
-aprobación de G3.
+La materialización no equivale por sí sola a autorización de negocio; el
+estado de cierre y G3 se deriva de la evidencia canónica del PBI.
 
 ## 9. Shared kernel mínimo
 
