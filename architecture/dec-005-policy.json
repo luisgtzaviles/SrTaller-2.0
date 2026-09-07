@@ -150,7 +150,8 @@
       "src/infrastructure/database/migrations/20260904120000_stations_add_branch_timezone.ts",
       "src/infrastructure/database/migrations/20260905160000_stations_create_trusted_runtime_context.ts",
       "src/infrastructure/database/migrations/20260906170000_users_create_directory.ts",
-      "src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts"
+      "src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts",
+      "src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts"
     ],
     "infrastructureFiles": {
       "src/infrastructure/database/database-config.ts": {
@@ -178,6 +179,7 @@
           "StationCredentialTable",
           "UserTable",
           "UserProvisioningBootstrapTable",
+          "UserLifecycleCommandTable",
           "DatabaseSchema",
           "TenantRow",
           "NewTenant",
@@ -195,6 +197,8 @@
           "NewUser",
           "UserProvisioningBootstrapRow",
           "NewUserProvisioningBootstrap",
+          "UserLifecycleCommandRow",
+          "NewUserLifecycleCommand",
           "RepairTable",
           "RepairRow",
           "NewRepair",
@@ -246,6 +250,7 @@
           "src/infrastructure/database/migrations/20260905160000_stations_create_trusted_runtime_context.ts",
           "src/infrastructure/database/migrations/20260906170000_users_create_directory.ts",
           "src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts",
+          "src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -447,6 +452,12 @@
         "port": "src/modules/tenancy/application/ports/tenant-repository.port.ts",
         "composition": "src/modules/tenancy/tenancy.module.ts",
         "status": "materialized-owner-adapter"
+      },
+      "src/modules/users/infrastructure/persistence/kysely-user.repository.ts": {
+        "owner": "users",
+        "port": "src/modules/users/application/ports/user-repository.port.ts",
+        "composition": "src/modules/users/users.module.ts",
+        "status": "materialized-owner-adapter"
       }
     },
     "databaseObjects": {
@@ -515,6 +526,10 @@
         "kind": "table"
       },
       "user_provisioning_bootstraps": {
+        "owner": "users",
+        "kind": "table"
+      },
+      "user_lifecycle_commands": {
         "owner": "users",
         "kind": "table"
       }
@@ -779,7 +794,11 @@
     "src/modules/tenancy/tenancy.module.ts"
     ,"src/modules/users/index.ts"
     ,"src/modules/users/application/ports/user-repository.port.ts"
+    ,"src/modules/users/application/user-input.ts"
+    ,"src/modules/users/application/use-cases/get-user.use-case.ts"
     ,"src/modules/users/application/use-cases/list-users.use-case.ts"
+    ,"src/modules/users/application/use-cases/provision-first-user.use-case.ts"
+    ,"src/modules/users/application/use-cases/transition-user-status.use-case.ts"
     ,"src/modules/users/domain/user.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
     ,"src/modules/users/users.module.ts"

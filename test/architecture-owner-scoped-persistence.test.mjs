@@ -12,6 +12,10 @@ const branchPortPath =
   'src/modules/stations/application/ports/branch-repository.port.ts';
 const branchAdapterPath =
   'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts';
+const userPortPath =
+  'src/modules/users/application/ports/user-repository.port.ts';
+const userAdapterPath =
+  'src/modules/users/infrastructure/persistence/kysely-user.repository.ts';
 
 test('owner-scoped ports and adapters retain exact ownership registration', async () => {
   const policy = JSON.parse(
@@ -44,6 +48,18 @@ test('owner-scoped ports and adapters retain exact ownership registration', asyn
     composition: 'src/modules/stations/stations.module.ts',
     status: 'materialized-owner-adapter',
   });
+  assert.deepEqual(policy.persistence.ports[userPortPath], {
+    owner: 'users',
+    contract: 'UserRepositoryPort',
+    allowedScopes: ['UserScope'],
+    status: 'materialized-owner-port',
+  });
+  assert.deepEqual(policy.persistence.adapters[userAdapterPath], {
+    owner: 'users',
+    port: userPortPath,
+    composition: 'src/modules/users/users.module.ts',
+    status: 'materialized-owner-adapter',
+  });
 });
 
 test('persistence capability is internal and has only exact adapter consumers', async () => {
@@ -69,7 +85,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
       branchAdapterPath,
       'src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts',
       tenantAdapterPath,
-      'src/modules/users/infrastructure/persistence/kysely-user.repository.ts',
+      userAdapterPath,
     ],
     status: 'materialized-owner-internal-capability',
   });
@@ -83,7 +99,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   );
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'users' \| 'user_provisioning_bootstraps'>/u,
+    /Pick<DatabaseSchema, 'users' \| 'user_provisioning_bootstraps' \| 'user_lifecycle_commands'>/u,
   );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),

@@ -203,6 +203,7 @@ async function runOnce() {
         'test/owner-scoped-persistence-postgresql.test.mjs',
         'test/repair-persistence-postgresql.test.mjs',
         'test/trusted-station-context-postgresql.test.mjs',
+        'test/user-directory-postgresql.test.mjs',
       ],
       {
         encoding: 'utf8',
@@ -278,6 +279,10 @@ async function runOnce() {
         'tenant-create-find-exists',
         'tenant-foreign-key',
         'transaction-commit',
+        'user-bootstrap-concurrency-and-idempotency',
+        'user-lifecycle-concurrency-and-idempotency',
+        'user-migration-up-down-reapply',
+        'user-tenant-isolation',
       ]),
       status: 'PASS',
       tests,

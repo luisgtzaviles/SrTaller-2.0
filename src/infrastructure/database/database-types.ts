@@ -59,7 +59,25 @@ export interface UserProvisioningBootstrapTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly first_user_id: ImmutableColumn<string>;
   readonly client_request_id: ImmutableColumn<string>;
+  readonly display_name: ImmutableColumn<string>;
+  readonly operational_identifier: ImmutableColumn<string | null>;
   readonly provisioned_at: ImmutableColumn<Date>;
+}
+
+/** Immutable replay record for a tenant-scoped User lifecycle command. */
+export interface UserLifecycleCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly requested_status: ImmutableColumn<'active' | 'inactive' | 'revoked'>;
+  readonly expected_version: ImmutableColumn<number>;
+  readonly result_display_name: ImmutableColumn<string>;
+  readonly result_operational_identifier: ImmutableColumn<string | null>;
+  readonly result_status: ImmutableColumn<'active' | 'inactive' | 'revoked'>;
+  readonly result_version: ImmutableColumn<number>;
+  readonly result_created_at: ImmutableColumn<Date>;
+  readonly result_updated_at: ImmutableColumn<Date>;
+  readonly applied_at: ImmutableColumn<Date>;
 }
 
 export interface RepairTable {
@@ -218,6 +236,7 @@ export interface DatabaseSchema {
   readonly station_credentials: StationCredentialTable;
   readonly users: UserTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;
+  readonly user_lifecycle_commands: UserLifecycleCommandTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
@@ -248,6 +267,8 @@ export type UserRow = Selectable<UserTable>;
 export type NewUser = Insertable<UserTable>;
 export type UserProvisioningBootstrapRow = Selectable<UserProvisioningBootstrapTable>;
 export type NewUserProvisioningBootstrap = Insertable<UserProvisioningBootstrapTable>;
+export type UserLifecycleCommandRow = Selectable<UserLifecycleCommandTable>;
+export type NewUserLifecycleCommand = Insertable<UserLifecycleCommandTable>;
 
 export type RepairRow = Selectable<RepairTable>;
 export type NewRepair = Insertable<RepairTable>;

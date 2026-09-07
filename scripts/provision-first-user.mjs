@@ -1,19 +1,78 @@
-import { randomUUID, timingSafeEqual } from 'node:crypto';
-import { Pool } from 'pg';
-import { databaseEnvironment, ensureLocalEnvironment } from './lib/local-development.mjs';
+import { timingSafeEqual } from 'node:crypto';
 
-const [tenantId, displayName, clientRequestId] = process.argv.slice(2);
-const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/iu;
-if (!uuid.test(tenantId ?? '') || !displayName?.trim() || !uuid.test(clientRequestId ?? '')) throw new Error('Usage: provision-first-user <tenant-id> <display-name> <client-request-id>');
+import {
+  databaseEnvironment,
+  ensureLocalEnvironment,
+} from './lib/local-development.mjs';
+
+const [tenantId, displayName, clientRequestId, operationalIdentifier = ''] =
+  process.argv.slice(2);
+
+if (!tenantId || !displayName || !clientRequestId) {
+  throw new Error(
+    'Usage: provision-first-user <tenant-id> <display-name> <client-request-id> [operational-identifier]',
+  );
+}
+
 const values = await ensureLocalEnvironment({ create: false });
 const expected = Buffer.from(values.SR_USER_BOOTSTRAP_SECRET, 'utf8');
 const actual = Buffer.from(process.env.SR_USER_BOOTSTRAP_SECRET ?? '', 'utf8');
-if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) throw new Error('First-user provisioning authority rejected.');
+if (
+  expected.length !== actual.length ||
+  !timingSafeEqual(expected, actual)
+) {
+  throw new Error('First-user provisioning authority rejected.');
+}
+
+const { parseDatabaseConfig } = await import(
+  '../dist/infrastructure/database/database-config.js'
+);
+const { createDatabaseConnection } = await import(
+  '../dist/infrastructure/database/database-connection.js'
+);
+const { createKyselyUserRepository } = await import(
+  '../dist/modules/users/infrastructure/persistence/kysely-user.repository.js'
+);
+const { ProvisionFirstUserUseCase } = await import(
+  '../dist/modules/users/application/use-cases/provision-first-user.use-case.js'
+);
+const { UserInputError } = await import(
+  '../dist/modules/users/application/user-input.js'
+);
+const { UserPersistenceError } = await import(
+  '../dist/modules/users/application/ports/user-repository.port.js'
+);
+
 const environment = databaseEnvironment(values, 'application');
-const pool = new Pool({ host: environment.SR_DB_HOST, port: Number(environment.SR_DB_PORT), database: environment.SR_DB_NAME, user: environment.SR_DB_USER, password: environment.SR_DB_PASSWORD, ssl: false });
+const connection = createDatabaseConnection(parseDatabaseConfig(environment));
 try {
-  const userId = randomUUID();
-  const result = await pool.query('with existing_gate as (select first_user_id, client_request_id from user_provisioning_bootstraps where tenant_id = $1::uuid), existing as (select 1 from users where tenant_id = $1::uuid limit 1), gate as (insert into user_provisioning_bootstraps (tenant_id, first_user_id, client_request_id, provisioned_at) select $1::uuid, $2::uuid, $3::uuid, now() where not exists (select 1 from existing_gate) and not exists (select 1 from existing) on conflict (tenant_id) do nothing returning first_user_id), inserted as (insert into users (user_id, tenant_id, display_name, operational_identifier, status, version, created_at, updated_at) select $2::uuid, $1::uuid, $4, null, \'active\', 0, now(), now() from gate returning user_id), replay as (select users.user_id from existing_gate join users on users.tenant_id = $1::uuid and users.user_id = existing_gate.first_user_id where existing_gate.client_request_id = $3::uuid) select user_id from inserted union all select user_id from replay', [tenantId, userId, clientRequestId, displayName.trim()]);
-  if (result.rowCount !== 1) throw new Error('FIRST_USER_ALREADY_PROVISIONED');
-  process.stdout.write(`${JSON.stringify({ event: 'first_user_provisioned', tenantId, userId: result.rows[0].user_id })}\n`);
-} finally { await pool.end(); }
+  await connection.verify();
+  const useCase = new ProvisionFirstUserUseCase(
+    createKyselyUserRepository(connection),
+  );
+  const result = await useCase.execute(
+    { tenantId },
+    {
+      displayName,
+      operationalIdentifier: operationalIdentifier.trim() || null,
+      clientRequestId,
+    },
+  );
+  process.stdout.write(
+    `${JSON.stringify({
+      event: 'first_user_provisioned',
+      tenantId: result.tenantId,
+      userId: result.userId,
+    })}\n`,
+  );
+} catch (error) {
+  if (error instanceof UserInputError) {
+    throw new Error(`FIRST_USER_PROVISIONING_INPUT_${error.parameter}`);
+  }
+  if (error instanceof UserPersistenceError) {
+    throw new Error(error.code);
+  }
+  throw new Error('FIRST_USER_PROVISIONING_FAILED');
+} finally {
+  await connection.close();
+}

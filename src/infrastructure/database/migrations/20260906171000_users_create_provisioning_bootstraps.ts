@@ -7,6 +7,8 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .addColumn('tenant_id', 'uuid', (column) => column.primaryKey())
     .addColumn('first_user_id', 'uuid', (column) => column.notNull())
     .addColumn('client_request_id', 'uuid', (column) => column.notNull())
+    .addColumn('display_name', 'varchar(160)', (column) => column.notNull())
+    .addColumn('operational_identifier', 'varchar(160)')
     .addColumn('provisioned_at', 'timestamptz', (column) => column.notNull())
     .addForeignKeyConstraint('user_provisioning_bootstraps_tenant_fk', ['tenant_id'], 'tenants', ['tenant_id'])
     .execute();

@@ -309,9 +309,13 @@ export async function collectEvidenceManifest({
     'scripts/test-database-transaction-postgresql.mjs',
     'scripts/test-owner-scoped-persistence-postgresql.mjs',
     'src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts',
+    'src/infrastructure/database/migrations/20260906170000_users_create_directory.ts',
+    'src/infrastructure/database/migrations/20260906171000_users_create_provisioning_bootstraps.ts',
+    'src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts',
     'supply-chain-policy.json',
     'test/database-schema-postgresql.test.mjs',
     'test/trusted-station-context-postgresql.test.mjs',
+    'test/user-directory-postgresql.test.mjs',
     'tsconfig.build.json',
     'tsconfig.json',
   ];

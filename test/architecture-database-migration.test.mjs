@@ -92,6 +92,7 @@ test('public migration API remains narrow with governed productive migrations', 
     '20260905160000_stations_create_trusted_runtime_context.ts',
     '20260906170000_users_create_directory.ts',
     '20260906171000_users_create_provisioning_bootstraps.ts',
+    '20260906172000_users_create_lifecycle_commands.ts',
   ]);
 });
 
