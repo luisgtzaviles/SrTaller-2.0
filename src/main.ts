@@ -51,6 +51,11 @@ async function bootstrap(): Promise<void> {
     application = await NestFactory.create<NestExpressApplication>(AppModule, {
       logger: ['error', 'warn'],
     });
+    await configurePreviewStaticFiles(application);
+    // Provider lifecycle hooks initialize the application database runtime.
+    // `listen()` would normally trigger them, but startup readiness must be
+    // proven before opening the listener.
+    await application.init();
     const database = application.get<ApplicationDatabaseConnection>(
       APPLICATION_DATABASE_CONNECTION
     );
@@ -59,7 +64,6 @@ async function bootstrap(): Promise<void> {
     // Nest unit tests may compose AppModule without a configured database, but
     // the executable process must never begin listening in that state.
     await database.verify();
-    await configurePreviewStaticFiles(application);
     await application.listen(config.port, config.host);
     readiness.markReady();
 

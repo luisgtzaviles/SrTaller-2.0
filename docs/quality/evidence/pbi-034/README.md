@@ -103,6 +103,23 @@ no implementa la autorización contextual de PBI-026.
 | Merge autorizado y CI exacto de `main` | Pending |
 | Owner Acceptance y cierre documental | Pending |
 
+## Remediación del primer CI candidato
+
+El run autoritativo `34144612467` sobre
+`e0a38fd0b250115b29fae391183b892aa9b46d68` ejecutó correctamente
+arquitectura, typecheck, build, PostgreSQL material, full tests y el gate
+canónico en ambos legs, pero ambos fallaron en `smoke:start`; comparison quedó
+omitida y ese run **no** es evidencia GREEN reutilizable. La causa fue de
+startup: `main.ts` intentaba verificar la conexión antes de que el lifecycle de
+Nest ejecutara `onModuleInit()` y materializara el runtime de base de datos.
+
+La remediación hace explícito `application.init()` antes de la verificación
+fail-closed y mantiene `database.verify()` antes de abrir el listener. Agrega
+un contrato de orden y pasó localmente typecheck, build, el test focalizado de
+configuración/startup y `smoke:start` contra PostgreSQL 18.4. Requiere nuevo
+commit, focused review y CI autoritativo completo sobre el nuevo HEAD; el run
+fallido permanece como trazabilidad, no como waiver ni señal intermitente.
+
 ## Boundaries
 
 No contextual business authorization, business audit, Operational Note

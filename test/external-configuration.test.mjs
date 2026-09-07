@@ -135,6 +135,7 @@ test('application startup requires the active database secret before opening the
     source,
     /loadRequiredServerSecrets\(process\.env, \['SR_DB_PASSWORD', 'SR_PIN_PEPPER'\]\)/u,
   );
+  assert.ok(source.indexOf('await application.init();') < source.indexOf('await database.verify();'));
   assert.ok(source.indexOf('await database.verify();') < source.indexOf('await application.listen('));
 });
 
