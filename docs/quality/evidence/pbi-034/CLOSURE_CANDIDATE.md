@@ -1,6 +1,6 @@
 # PBI-034 — Canonical Closure Candidate
 
-## Estado
+## Snapshot preventivo pre-merge
 
 - **PBI:** PBI-034 — Operational Session.
 - **Estado candidato:** `Done candidate`.
@@ -8,6 +8,17 @@
 - **Sprint:** SPRINT-02 `Active`.
 - **Current PBI / WIP:** NONE / `0/1`.
 - **Next candidate:** PBI-026 — Contextual Authorization; selected, not started.
+
+Los campos anteriores preservan el estado en que se redactó el cierre. No son
+el puntero operativo vigente.
+
+## Resultado post-merge
+
+PR #34 integró este candidato como
+`54ddc251cda8ec7465b7913786c647f8d3ccbeac`; CI exacto de `main`
+`34153470560` quedó GREEN. Conforme a la semántica post-merge, PBI-034 está
+`Done`, G3 `PASS` y no se requiere closure-of-closure. El puntero vigente es
+PBI-026 `In progress`, WIP `1/1`; PBI-028 permanece no iniciado.
 
 ## Predicados materiales
 
@@ -32,9 +43,9 @@ La implementación, migración, pruebas, review, merge funcional, CI exacto de
 `main`, evidencia y Owner Acceptance están satisfechos. Este PR documental es
 el único cierre normal requerido.
 
-G3 AUTHENTICATION queda `PASS candidate`: PBI-025 está `Done` y PBI-034 aporta
-Operational Session GREEN. Conforme a la semántica post-merge, el merge
-autorizado de este cierre y su CI exacto GREEN vuelven efectivos PBI-034
+En el snapshot preventivo, G3 AUTHENTICATION quedaba `PASS candidate`:
+PBI-025 estaba `Done` y PBI-034 aportaba Operational Session GREEN. El merge
+autorizado de este cierre y su CI exacto GREEN volvieron efectivos PBI-034
 `Done` y G3 `PASS`. El wording preventivo `Done candidate` no exige un
 closure-of-closure.
 

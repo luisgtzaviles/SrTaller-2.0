@@ -2,9 +2,8 @@
 
 ## Estado
 
-- **Estado:** Done candidate; implementación funcional integrada, cierre
-  documental pendiente.
-- **PBI actual / WIP:** NONE / `0/1`.
+- **Estado:** Done; cierre documental integrado y CI exacto GREEN.
+- **PBI actual / WIP:** PBI-026 / `1/1`.
 - **Risk / size:** Critical / Large.
 - **DoR:** [PASS](./DEFINITION_OF_READY.md).
 - **Threat model:** [complete](./THREAT_MODEL.md).
@@ -26,6 +25,9 @@
 - CI autoritativo exact-main: `34150632738`; run-1/run-2/comparison `SUCCESS`.
 - Owner Acceptance condicional: `APPROVED`.
 - Cierre: [candidato de cierre](./CLOSURE_CANDIDATE.md).
+- PR de cierre: #34; merge
+  `54ddc251cda8ec7465b7913786c647f8d3ccbeac`.
+- CI exacto post-cierre: `34153470560`; run-1/run-2/comparison `SUCCESS`.
 
 ## Candidate scope
 
@@ -113,7 +115,7 @@ review, merge funcional y CI exacto de `main`.
 | Focused Critical-risk review | PASS; `0B/0H/0M/1L` |
 | PR y candidate CI run-1/run-2/comparison | PR #33; `34149620560` GREEN |
 | Merge autorizado y CI exacto de `main` | `f3e394b59ec7421e13b36ed6bfddff28e45c0dd7`; `34150632738` GREEN |
-| Owner Acceptance y cierre documental | APPROVED; cierre candidate pendiente de integración |
+| Owner Acceptance y cierre documental | APPROVED; PR #34/CI `34153470560` completan `Done` |
 
 ## Remediación del primer CI candidato
 
@@ -178,6 +180,5 @@ retrofit, production secrets, remote infrastructure, release or deploy.
 
 ## Siguiente gate
 
-Integrar el cierre documental con autorización Owner y obtener CI exacto de
-`main`. Entonces PBI-034 será `Done` y G3 `PASS` efectivos sin
-closure-of-closure. PBI-026 está seleccionado y no iniciado.
+PBI-034 está `Done` y G3 `PASS` sin closure-of-closure. PBI-026 está `In
+progress`; PBI-028 permanece no iniciado.
