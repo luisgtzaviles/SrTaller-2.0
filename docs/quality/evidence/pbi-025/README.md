@@ -82,7 +82,11 @@ governed memory bound when a new caller barged ahead of a resumed waiter or
 when multiple default hasher instances existed. The implementation now uses a
 race-free permit transfer and a process-wide default limiter; invalid custom
 limits, zero-queue exhaustion and cross-instance capacity are covered by
-contract tests. No BLOCKER/HIGH/MEDIUM finding remains from this audit.
+contract tests. A focused documentation review also found a MEDIUM stale
+configuration statement that still classified `SR_PIN_PEPPER` as reserved;
+the configuration and local-development contracts now identify the active
+server-only Access consumer. No BLOCKER/HIGH/MEDIUM finding remains from this
+audit.
 
 ## Evidence pending
 

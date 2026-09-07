@@ -96,10 +96,11 @@ puertos alternos, nombres de base distintos, variables `SR_DB_*` persistidas en
 PBI-029 añade la clasificación server-only de secretos y configuración
 técnica. `SR_DB_PASSWORD` se exige al iniciar el backend, pero los scripts
 locales lo derivan sólo en memoria desde `.env.local`; ningún comando lo
-imprime. PIN y sesión permanecen reservados y sin consumidor. Los secretos
-bootstrap de Station y User tienen consumidores exclusivamente locales y no
-constituyen enrollment o provisioning productivo. Nunca se usa `VITE_*` para
-un secreto.
+imprime. `SR_PIN_PEPPER` tiene un consumidor server-only en Access/PBI-025 y
+se genera localmente sin imprimirse; el secreto de firma de sesión permanece
+reservado y sin consumidor hasta PBI-034. Los secretos bootstrap de Station y
+User tienen consumidores exclusivamente locales y no constituyen enrollment o
+provisioning productivo. Nunca se usa `VITE_*` para un secreto.
 
 El primer User se provisiona sólo después de crear y migrar la base local. La
 autoridad se presenta desde el archivo local ignorado sin imprimir su valor:
