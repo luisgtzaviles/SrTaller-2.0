@@ -101,6 +101,7 @@ const tables = [
   'access_roles',
   'access_capabilities',
   'user_lifecycle_commands',
+  'user_profile_update_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -149,6 +150,8 @@ const concurrentNoteRequest = 'd4000000-0000-4000-8000-000000000026';
 const auditFailureRequest = 'd5000000-0000-4000-8000-000000000026';
 const toctouRequest = 'd6000000-0000-4000-8000-000000000026';
 const expiredCommitRequest = 'd7000000-0000-4000-8000-000000000026';
+const lockExpiredCommitRequest = 'd8000000-0000-4000-8000-000000000026';
+const authorityLinearizationRequest = 'd9000000-0000-4000-8000-000000000026';
 const stationSecretA = 'A'.repeat(43);
 const stationSecretB = 'B'.repeat(43);
 const authorizationNow = new Date();
@@ -408,6 +411,43 @@ async function effectCounts(admin) {
        (select count(*)::integer from repair_location_movements) as locations`,
   );
   return result.rows[0];
+}
+
+async function waitForRepairLockWait(admin) {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const result = await admin.query(
+      `select exists (
+         select 1
+         from pg_stat_activity
+         where application_name = 'srtaller-contextual-authorization-postgresql'
+           and state = 'active'
+           and wait_event_type = 'Lock'
+           and query ilike '%from "repairs"%for update%'
+       ) as waiting`,
+    );
+    if (result.rows[0].waiting) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.fail('Operational Note transaction did not reach the Repair row lock');
+}
+
+async function waitForCapabilityRevocationLockWait(admin) {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const result = await admin.query(
+      `select exists (
+         select 1
+         from pg_stat_activity
+         where state = 'active'
+           and wait_event_type = 'Lock'
+           and query ilike '%delete from access_role_capabilities%'
+       ) as waiting`,
+    );
+    if (result.rows[0].waiting) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.fail('Capability revocation did not wait on the commit guard lock');
 }
 
 test(
@@ -849,7 +889,7 @@ test(
         (error) => error?.code === '23514',
       );
 
-      const afterAuthorizedNote = await effectCounts(admin);
+      let afterAuthorizedNote = await effectCounts(admin);
       await assert.rejects(
         repairs.addRepairOperationalNote(
           evidence,
@@ -994,6 +1034,9 @@ test(
             );
             return contextBeforeExpiry.commitGuard.confirmCurrent(transactionContext);
           },
+          async confirmTemporalCurrent(transactionContext) {
+            return contextBeforeExpiry.commitGuard.confirmTemporalCurrent(transactionContext);
+          },
         }),
       }, {
         repairId: repairA,
@@ -1012,6 +1055,67 @@ test(
         RepairOperationalNoteAuthorizationChangedError,
       );
       assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      await admin.query(
+        `update access_operational_sessions
+         set issued_at = $3, last_activity_at = $4, expires_at = $5
+         where tenant_id = $1 and session_id = $2`,
+        [
+          tenantA,
+          sessionA,
+          originalSessionTimes.issued_at,
+          originalSessionTimes.last_activity_at,
+          originalSessionTimes.expires_at,
+        ],
+      );
+
+      const repairLocker = await admin.connect();
+      try {
+        await repairLocker.query('begin');
+        await repairLocker.query(
+          `select repair_id from repairs
+           where tenant_id = $1 and branch_id = $2 and repair_id = $3
+           for update`,
+          [tenantA, branchA, repairA],
+        );
+        await admin.query(
+          `update access_operational_sessions
+           set issued_at = now() - interval '2 hours',
+               last_activity_at = now() - interval '59 minutes 58 seconds',
+               expires_at = now() + interval '10 hours'
+           where tenant_id = $1 and session_id = $2`,
+          [tenantA, sessionA],
+        );
+        const pendingAcrossDeadline = repairRepository.addOperationalNote(
+          contextBeforeExpiry,
+          {
+            repairId: repairA,
+            entryId: 'e8000000-0000-4000-8000-000000000026',
+            auditEventId: 'e8100000-0000-4000-8000-000000000026',
+            correlationId: 'e8200000-0000-4000-8000-000000000026',
+            clientRequestId: lockExpiredCommitRequest,
+            body: 'La sesión no debe confirmar después de esperar el lock.',
+            action: 'repair.operational_note.added',
+            resourceType: 'repair',
+            result: 'succeeded',
+            occurredAt: new Date(),
+          },
+        );
+        const observedAcrossDeadline = pendingAcrossDeadline.then(
+          (value) => ({ value }),
+          (error) => ({ error }),
+        );
+        await waitForRepairLockWait(admin);
+        await admin.query('select pg_sleep(2.25)');
+        await repairLocker.query('commit');
+        const result = await observedAcrossDeadline;
+        assert.ok(
+          result.error instanceof RepairOperationalNoteAuthorizationChangedError,
+        );
+        assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      } finally {
+        await repairLocker.query('rollback');
+        repairLocker.release();
+      }
       await admin.query(
         `update access_operational_sessions
          set issued_at = $3, last_activity_at = $4, expires_at = $5
@@ -1063,6 +1167,78 @@ test(
         'AUTHENTICATION_REQUIRED',
       );
       assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+
+      const authorityLocker = await admin.connect();
+      try {
+        await authorityLocker.query('begin');
+        await authorityLocker.query(
+          `select repair_id from repairs
+           where tenant_id = $1 and branch_id = $2 and repair_id = $3
+           for update`,
+          [tenantA, branchA, repairA],
+        );
+        const linearizedNote = repairRepository.addOperationalNote(
+          {
+            ...contextBeforeExpiry,
+            actorUserId: contextBeforeExpiry.userId,
+            actorDisplayName: contextBeforeExpiry.userDisplayName,
+          },
+          {
+            repairId: repairA,
+            entryId: 'e9000000-0000-4000-8000-000000000026',
+            auditEventId: 'e9100000-0000-4000-8000-000000000026',
+            correlationId: 'e9200000-0000-4000-8000-000000000026',
+            clientRequestId: authorityLinearizationRequest,
+            body: 'La revocación concurrente respeta el orden de locks.',
+            action: 'repair.operational_note.added',
+            resourceType: 'repair',
+            result: 'succeeded',
+            occurredAt: new Date(),
+          },
+        );
+        await waitForRepairLockWait(admin);
+        const revocation = admin.query(
+          `delete from access_role_capabilities
+           where tenant_id = $1 and role_id = $2
+             and capability_code = 'repairs.add_note'`,
+          [tenantA, roleA],
+        );
+        const observedRevocation = revocation.then(
+          (value) => ({ value }),
+          (error) => ({ error }),
+        );
+        await waitForCapabilityRevocationLockWait(admin);
+        await authorityLocker.query('commit');
+        assert.equal((await linearizedNote)?.actorId, userA);
+        const revocationResult = await observedRevocation;
+        assert.equal(revocationResult.error, undefined);
+        assert.equal(revocationResult.value?.rowCount, 1);
+      } finally {
+        await authorityLocker.query('rollback');
+        authorityLocker.release();
+      }
+      await assert.rejects(
+        repairRepository.addOperationalNote(contextBeforeExpiry, {
+          repairId: repairA,
+          entryId: 'ea000000-0000-4000-8000-000000000026',
+          auditEventId: 'ea100000-0000-4000-8000-000000000026',
+          correlationId: 'ea200000-0000-4000-8000-000000000026',
+          clientRequestId: 'da000000-0000-4000-8000-000000000026',
+          body: 'La siguiente transacción debe observar la revocación.',
+          action: 'repair.operational_note.added',
+          resourceType: 'repair',
+          result: 'succeeded',
+          occurredAt: new Date(),
+        }),
+        RepairOperationalNoteAuthorizationChangedError,
+      );
+      await admin.query(
+        `insert into access_role_capabilities (
+           tenant_id, role_id, capability_code, created_at
+         ) values ($1, $2, 'repairs.add_note', now())`,
+        [tenantA, roleA],
+      );
+      afterAuthorizedNote = await effectCounts(admin);
 
       await admin.query(
         `update access_role_assignments

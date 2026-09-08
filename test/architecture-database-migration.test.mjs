@@ -106,6 +106,7 @@ test('public migration API remains narrow with governed productive migrations', 
     '20260908001000_repairs_create_operational_note_request_guards.ts',
     '20260908002000_access_add_role_editing_commands.ts',
     '20260908010000_access_narrow_pin_eligibility_triggers.ts',
+    '20260908020000_users_create_profile_update_commands.ts',
   ]);
 });
 

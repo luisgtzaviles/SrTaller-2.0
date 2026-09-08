@@ -41,11 +41,17 @@ const forbiddenPaths = [
 ];
 
 async function docker(arguments_, options = {}) {
-  return execFileAsync('docker', arguments_, {
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-    ...options,
-  });
+  try {
+    return await execFileAsync('docker', arguments_, {
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024,
+      ...options,
+    });
+  } catch {
+    throw new Error(
+      `OCI verification Docker operation failed: ${arguments_[0] ?? 'unknown'}`,
+    );
+  }
 }
 
 function assert(condition, message) {

@@ -130,4 +130,37 @@ implements OperationalAuthorizationCommitGuardPort {
       },
     );
   }
+
+  async confirmTemporalCurrent(
+    station: TrustedStationContext,
+    session: OperationalSessionContext,
+    transactionContext: object,
+  ): Promise<boolean> {
+    return useTransactionalDatabasePersistenceExecutor(
+      transactionContext,
+      'access',
+      async (database) => {
+        const current = await database
+          .selectFrom('access_operational_sessions')
+          .select(['expires_at', 'last_activity_at'])
+          .select(({ fn }) => fn<Date>('clock_timestamp', []).as('database_now'))
+          .where('tenant_id', '=', station.tenantId)
+          .where('branch_id', '=', station.branchId)
+          .where('station_id', '=', station.stationId)
+          .where('station_credential_id', '=', station.stationCredentialId)
+          .where('session_id', '=', session.sessionId)
+          .where('user_id', '=', session.userId)
+          .where('status', '=', 'active')
+          .where('user_version', '=', session.userVersion)
+          .where('user_admission_revision', '=', session.userAdmissionRevision)
+          .where('credential_version', '=', session.credentialVersion)
+          .forShare()
+          .executeTakeFirst();
+        return current !== undefined &&
+          current.expires_at.getTime() > current.database_now.getTime() &&
+          current.last_activity_at.getTime() >
+            current.database_now.getTime() - OPERATIONAL_SESSION_IDLE_MS;
+      },
+    );
+  }
 }

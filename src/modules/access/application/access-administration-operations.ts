@@ -128,16 +128,24 @@ export class AccessAdministrationOperations {
   private mutationGuard(
     context: AuthorizedOperationalContext,
     capability: CapabilityCode,
+    additionalCapabilities: readonly CapabilityCode[] = [],
   ): AdministrationMutationGuard {
+    const requiredCapabilities = [capability, ...additionalCapabilities];
     return Object.freeze({
-      confirmCurrent: async (transactionContext: object) =>
-        await context.commitGuard.confirmCurrent(transactionContext) &&
-        this.administrationCommitGuard !== undefined &&
-        await this.administrationCommitGuard.confirmCurrent(
-          { tenantId: context.tenantId, userId: context.userId },
-          capability,
-          transactionContext,
-        ),
+      confirmCurrent: async (transactionContext: object) => {
+        if (
+          !await context.commitGuard.confirmCurrent(transactionContext) ||
+          this.administrationCommitGuard === undefined
+        ) return false;
+        for (const required of requiredCapabilities) {
+          if (!await this.administrationCommitGuard.confirmCurrent(
+            { tenantId: context.tenantId, userId: context.userId },
+            required,
+            transactionContext,
+          )) return false;
+        }
+        return true;
+      },
       confirmContinuity: async (transactionContext: object) =>
         this.administrationCommitGuard !== undefined &&
         await this.administrationCommitGuard.confirmContinuity(
@@ -172,6 +180,35 @@ export class AccessAdministrationOperations {
       throw new ContextualAuthorizationError('ACCESS_DENIED');
     }
     return matrix;
+  }
+
+  private async requireTenantWideAuthorities(
+    context: AuthorizedOperationalContext,
+    capabilities: readonly CapabilityCode[],
+  ): Promise<void> {
+    const matrix = accessMatrix(
+      await this.listAccessMatrix({ tenantId: context.tenantId }),
+    );
+    const activeRoles = new Map(
+      matrix.roles
+        .filter((role) => role.status === 'active')
+        .map((role) => [role.roleId, new Set(role.capabilityCodes)]),
+    );
+    const granted = new Set<string>();
+    for (const assignment of matrix.assignments) {
+      if (
+        assignment.userId !== context.userId ||
+        assignment.status !== 'active' ||
+        assignment.assignmentScope !== 'TENANT_WIDE' ||
+        assignment.branchId !== null
+      ) continue;
+      for (const capability of activeRoles.get(assignment.roleId) ?? []) {
+        granted.add(capability);
+      }
+    }
+    if (!capabilities.every((capability) => granted.has(capability))) {
+      throw new ContextualAuthorizationError('ACCESS_DENIED');
+    }
   }
 
   private async withPinConfigured(
@@ -233,6 +270,7 @@ export class AccessAdministrationOperations {
         await this.requireTenantWideAuthority(context, usersManageRequirement.capability);
         const parsedUserId = uuid(userId, 'userId');
         const body = exactObject(input, [
+          'clientRequestId',
           'displayName',
           'expectedVersion',
           'operationalIdentifier',
@@ -394,7 +432,10 @@ export class AccessAdministrationOperations {
       evidence,
       usersManageRequirement,
       async (context) => {
-        await this.requireTenantWideAuthority(context, usersManageRequirement.capability);
+        await this.requireTenantWideAuthorities(context, [
+          usersManageRequirement.capability,
+          accessMatrixManageRequirement.capability,
+        ]);
         const parsedUserId = uuid(userId, 'userId');
         const body = exactObject(input, ['clientRequestId', 'pin']);
         if (typeof body.pin !== 'string' || !localAdminPinPattern.test(body.pin)) {
@@ -409,14 +450,21 @@ export class AccessAdministrationOperations {
           return await this.replacePin(
             { tenantId: context.tenantId },
             payload,
-            this.mutationGuard(context, usersManageRequirement.capability),
+            this.mutationGuard(context, usersManageRequirement.capability, [
+              accessMatrixManageRequirement.capability,
+            ]),
           );
         } catch (error: unknown) {
-          if (!hasErrorCode(error, 'PIN_CREDENTIAL_USER_INVALID')) throw error;
+          if (
+            !hasErrorCode(error, 'PIN_CREDENTIAL_USER_INVALID') &&
+            !hasErrorCode(error, 'PIN_CREDENTIAL_IDEMPOTENCY_CONFLICT')
+          ) throw error;
           return this.provisionPin(
             { tenantId: context.tenantId },
             payload,
-            this.mutationGuard(context, usersManageRequirement.capability),
+            this.mutationGuard(context, usersManageRequirement.capability, [
+              accessMatrixManageRequirement.capability,
+            ]),
           );
         }
       },

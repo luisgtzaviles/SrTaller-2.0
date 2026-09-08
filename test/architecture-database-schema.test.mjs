@@ -34,6 +34,7 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     users: { owner: 'users', kind: 'table' },
     user_provisioning_bootstraps: { owner: 'users', kind: 'table' },
     user_lifecycle_commands: { owner: 'users', kind: 'table' },
+    user_profile_update_commands: { owner: 'users', kind: 'table' },
     access_capabilities: { owner: 'access', kind: 'table' },
     access_roles: { owner: 'access', kind: 'table' },
     access_role_capabilities: { owner: 'access', kind: 'table' },
@@ -119,6 +120,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260908001000_repairs_create_operational_note_request_guards.ts',
       '20260908002000_access_add_role_editing_commands.ts',
       '20260908010000_access_narrow_pin_eligibility_triggers.ts',
+      '20260908020000_users_create_profile_update_commands.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

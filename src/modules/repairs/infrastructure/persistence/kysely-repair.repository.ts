@@ -858,6 +858,16 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .executeTakeFirst();
       if (!repair) return null;
 
+      // The Repair lock above can wait long enough for an otherwise valid
+      // operational Session to cross an idle or absolute deadline. Re-read
+      // the database clock after that final blocking lock and before either
+      // half of the atomic note/audit pair is written.
+      if (!await scope.commitGuard.confirmTemporalCurrent(transactionContext)) {
+        return operationalNoteCommandError(
+          new RepairOperationalNoteAuthorizationChangedError(),
+        );
+      }
+
       const inserted = await executor
         .insertInto('repair_timeline_entries')
         .values({

@@ -42,7 +42,7 @@ export function App(): React.JSX.Element {
 
   return (
     <SessionProvider>
-      {({ session, capabilities, csrfToken, busy, errorMessage, focusTarget, beginUserSwitch, logout }) => (
+      {({ session, capabilities, administrationCapabilities, csrfToken, busy, errorMessage, focusTarget, beginUserSwitch, logout }) => (
         <ApplicationShell
           actor={session}
           capabilities={capabilities}
@@ -58,9 +58,9 @@ export function App(): React.JSX.Element {
               <Route path="/reparaciones" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairsPage /></CapabilityBoundary>} />
               <Route path="/reparaciones/nueva" element={<AccessDeniedPage />} />
               <Route path="/reparaciones/:id" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairDetailPage capabilities={capabilities} csrfToken={csrfToken} sessionId={session.sessionId} /></CapabilityBoundary>} />
-              <Route path="/configuracion" element={<SettingsPage capabilities={capabilities} />} />
-              <Route path="/configuracion/roles" element={<CapabilityBoundary capabilities={capabilities} capability="access_matrix.read"><RolesPage capabilities={capabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
-              <Route path="/configuracion/usuarios" element={<CapabilityBoundary capabilities={capabilities} capability="users.read"><UsersPage capabilities={capabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
+              <Route path="/configuracion" element={<SettingsPage capabilities={administrationCapabilities} />} />
+              <Route path="/configuracion/roles" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="access_matrix.read"><RolesPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
+              <Route path="/configuracion/usuarios" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="users.read"><UsersPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
               {UiCatalogPage ? <Route path="/__internal/ui-catalog" element={<UiCatalogPage />} /> : null}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

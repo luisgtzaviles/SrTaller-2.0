@@ -11,6 +11,7 @@ import {
   LOCAL_TENANT_ID,
   assertLocalUserBootstrapAuthority,
   assertLocalTarget,
+  cleanChildEnvironment,
   databaseEnvironment,
   localAccessCapabilityRows,
   localAccessRoleAssignmentRows,
@@ -241,6 +242,14 @@ test('demo PINs are one-shot seed inputs and are scrubbed from local configurati
   assert.match(localDevelopmentSource, /Object\.entries\(values\)\.filter\(\(\[key\]\) => !ephemeralLocalPinKeys\.includes\(key\)\)/u);
   assert.doesNotMatch(localDevelopmentSource, /function randomPin\b|randomPin\(\)/u);
   assert.doesNotMatch(localDevelopmentSource, /SR_LOCAL_PIN_[A-Z]+:\s*random/u);
+  assert.deepEqual(
+    cleanChildEnvironment({
+      SAFE_VALUE: 'preserved',
+      SR_LOCAL_PIN_CARLOS: 'synthetic',
+      SR_LOCAL_PIN_LUIS: 'synthetic',
+    }),
+    { SAFE_VALUE: 'preserved' },
+  );
 });
 
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {

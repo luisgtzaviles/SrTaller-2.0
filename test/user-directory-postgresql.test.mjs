@@ -45,6 +45,7 @@ const tables = [
   'access_roles',
   'access_capabilities',
   'user_lifecycle_commands',
+  'user_profile_update_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -95,6 +96,7 @@ const requestE = 'b0000000-0000-4000-8000-000000000032';
 const revokeRequestB = 'b1000000-0000-4000-8000-000000000032';
 const afterRevokeRequestB = 'b2000000-0000-4000-8000-000000000032';
 const contradictoryJournalRequest = 'b3000000-0000-4000-8000-000000000032';
+const profileUpdateRequest = 'b4000000-0000-4000-8000-000000000032';
 
 function databaseConfig() {
   return Object.freeze({
@@ -215,7 +217,8 @@ async function assertUserTables(admin, expected) {
          array[
            'users',
            'user_provisioning_bootstraps',
-           'user_lifecycle_commands'
+           'user_lifecycle_commands',
+           'user_profile_update_commands'
          ]::text[]
        )
      order by tablename`,
@@ -285,6 +288,7 @@ test(
         'users',
         'user_provisioning_bootstraps',
         'user_lifecycle_commands',
+        'user_profile_update_commands',
       ]);
 
       const idempotentApply = await runner.migrateToLatest();
@@ -376,6 +380,44 @@ test(
       const firstE = await repository.bootstrap(
         { tenantId: tenantE },
         bootstrapInput({ clientRequestId: requestE }),
+      );
+      const profileUpdateE = {
+        userId: firstE.userId,
+        displayName: 'Persona E editada',
+        operationalIdentifier: 'persona-e-editada',
+        expectedVersion: firstE.version,
+        clientRequestId: profileUpdateRequest,
+        occurredAt: '2026-09-06T17:45:00.000Z',
+      };
+      const updatedE = await repository.update({ tenantId: tenantE }, profileUpdateE);
+      assert.deepEqual(
+        await repository.update({ tenantId: tenantE }, profileUpdateE),
+        updatedE,
+      );
+      await rejectsWithCode(
+        repository.update(
+          { tenantId: tenantE },
+          { ...profileUpdateE, displayName: 'Intento divergente' },
+        ),
+        'USER_IDEMPOTENCY_CONFLICT',
+      );
+      assert.deepEqual(
+        (
+          await admin.query(
+            `select requested_display_name, requested_operational_identifier,
+                    expected_version, result_display_name, result_version
+             from user_profile_update_commands
+             where tenant_id = $1 and client_request_id = $2`,
+            [tenantE, profileUpdateRequest],
+          )
+        ).rows,
+        [{
+          requested_display_name: 'Persona E editada',
+          requested_operational_identifier: 'persona-e-editada',
+          expected_version: 0,
+          result_display_name: 'Persona E editada',
+          result_version: 1,
+        }],
       );
 
       const competingC = await Promise.allSettled([
@@ -516,7 +558,7 @@ test(
       );
       assert.deepEqual(
         await repository.findById({ tenantId: tenantE }, sharedUserId),
-        firstE,
+        updatedE,
       );
       const provisionedC = fulfilledC.value;
       assert.deepEqual(
@@ -909,6 +951,7 @@ test(
         'users',
         'user_provisioning_bootstraps',
         'user_lifecycle_commands',
+        'user_profile_update_commands',
       ]);
       await assertAccessTables(admin, [
         'access_capabilities',

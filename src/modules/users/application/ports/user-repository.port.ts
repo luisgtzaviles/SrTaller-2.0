@@ -41,6 +41,7 @@ export type UpdateUserInput = Readonly<{
   displayName: string;
   operationalIdentifier: string | null;
   expectedVersion: number;
+  clientRequestId: string;
   occurredAt: string;
 }>;
 

@@ -3,6 +3,13 @@ import type { AdministrationAuthorizationCommitGuardPort } from '../../applicati
 
 export class KyselyAdministrationAuthorizationCommitGuard
 implements AdministrationAuthorizationCommitGuardPort {
+  private static readonly productAdministratorCapabilities = Object.freeze([
+    'users.read',
+    'users.manage',
+    'access_matrix.read',
+    'access_matrix.manage',
+  ] as const);
+
   private async hasTenantWideCapability(
     scope: Parameters<AdministrationAuthorizationCommitGuardPort['confirmCurrent']>[0],
     capability: Parameters<AdministrationAuthorizationCommitGuardPort['confirmCurrent']>[1],
@@ -89,6 +96,9 @@ implements AdministrationAuthorizationCommitGuardPort {
           .innerJoin('access_role_capabilities', (join) => join
             .onRef('access_role_capabilities.tenant_id', '=', 'access_roles.tenant_id')
             .onRef('access_role_capabilities.role_id', '=', 'access_roles.role_id'))
+          .innerJoin('access_pin_credentials', (join) => join
+            .onRef('access_pin_credentials.tenant_id', '=', 'access_role_assignments.tenant_id')
+            .onRef('access_pin_credentials.user_id', '=', 'access_role_assignments.user_id'))
           .select([
             'access_role_assignments.user_id',
             'access_role_capabilities.capability_code',
@@ -100,14 +110,19 @@ implements AdministrationAuthorizationCommitGuardPort {
           .where('access_role_assignments.status', '=', 'active')
           .where('access_role_assignments.revoked_at', 'is', null)
           .where('access_roles.status', '=', 'active')
-          .where('access_role_capabilities.capability_code', 'in', [
-            'users.manage',
-            'access_matrix.manage',
-          ])
+          .where('access_pin_credentials.status', '=', 'active')
+          .where('access_pin_credentials.revoked_at', 'is', null)
+          .where('access_pin_credentials.lookup_digest', 'is not', null)
+          .where(
+            'access_role_capabilities.capability_code',
+            'in',
+            KyselyAdministrationAuthorizationCommitGuard.productAdministratorCapabilities,
+          )
           .forShare([
             'access_role_assignments',
             'access_roles',
             'access_role_capabilities',
+            'access_pin_credentials',
           ])
           .execute();
         const byUser = new Map<string, Set<string>>();
@@ -117,8 +132,8 @@ implements AdministrationAuthorizationCommitGuardPort {
           byUser.set(grant.user_id, capabilities);
         }
         return [...byUser.values()].some((capabilities) =>
-          capabilities.has('users.manage') &&
-          capabilities.has('access_matrix.manage'),
+          KyselyAdministrationAuthorizationCommitGuard.productAdministratorCapabilities
+            .every((capability) => capabilities.has(capability)),
         );
       },
     );

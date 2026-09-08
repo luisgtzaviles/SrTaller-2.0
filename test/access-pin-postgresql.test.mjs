@@ -109,6 +109,7 @@ const tables = [
   'access_roles',
   'access_capabilities',
   'user_lifecycle_commands',
+  'user_profile_update_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -433,7 +434,7 @@ test(
         fresh.status.migrations.length,
         inspection.manifest.migrations.length,
       );
-      assert.equal(fresh.status.migrations.length, 29);
+      assert.equal(fresh.status.migrations.length, 30);
       assert.ok(
         fresh.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -484,7 +485,7 @@ test(
 
       await seedAuthorities(admin);
       const upgraded = await runner.migrateToLatest();
-      assert.equal(upgraded.results.length, 10);
+      assert.equal(upgraded.results.length, 11);
       assert.equal(
         upgraded.results[0]?.name,
         '20260907010000_access_create_pin_credentials',
@@ -736,6 +737,44 @@ test(
         (await useCases.authenticatePinOnly.execute(contextA, { pin: pinA })).userId,
         sharedUser,
       );
+      const mixedAttemptStart = new Date('2026-09-07T02:03:10.000Z');
+      for (let index = 0; index < 4; index += 1) {
+        now.value = new Date(mixedAttemptStart.getTime() + index * 1_000);
+        await rejectsAuthentication(
+          useCases.authenticatePinOnly.execute(contextA, { pin: wrongPin }),
+          'PIN_AUTHENTICATION_DENIED',
+        );
+      }
+      now.value = new Date(mixedAttemptStart.getTime() + 4_000);
+      assert.equal(
+        (await useCases.authenticatePinOnly.execute(contextA, { pin: pinA })).userId,
+        sharedUser,
+        'a valid low-privilege PIN must not clear prior Station failures',
+      );
+      now.value = new Date(mixedAttemptStart.getTime() + 5_000);
+      await rejectsAuthentication(
+        useCases.authenticatePinOnly.execute(contextA, { pin: wrongPin }),
+        'PIN_AUTHENTICATION_DENIED',
+      );
+      let mixedBlockedVerifierCalls = 0;
+      assert.deepEqual(
+        await useCases.repository.authenticatePinOnlyAttempt(
+          contextA,
+          {
+            eligibleUserIds: [sharedUser],
+            lookupDigest: useCases.hasher.lookupDigest({ tenantId: tenantA, pin: wrongPin }),
+            rateLimitPrincipalId: useCases.hasher.rateLimitPinPrincipalId({ tenantId: tenantA }),
+            occurredAt: new Date(mixedAttemptStart.getTime() + 6_000).toISOString(),
+          },
+          async () => {
+            mixedBlockedVerifierCalls += 1;
+            return false;
+          },
+        ),
+        { status: 'temporarily-unavailable' },
+      );
+      assert.equal(mixedBlockedVerifierCalls, 0);
+      now.value = new Date(mixedAttemptStart.getTime() + 61_000);
       await assert.rejects(
         admin.query(
           `update access_role_assignments
@@ -1592,7 +1631,7 @@ test(
       );
 
       const reapplied = await runner.migrateToLatest();
-      assert.equal(reapplied.results.length, 10);
+      assert.equal(reapplied.results.length, 11);
       await assertPinTables(admin, pinTables);
 
       status = await runner.getMigrationStatus();

@@ -18,4 +18,9 @@ export interface OperationalAuthorizationCommitGuardPort {
     capability: CapabilityCode,
     transactionContext: object,
   ): Promise<boolean>;
+  confirmTemporalCurrent(
+    station: TrustedStationContext,
+    session: OperationalSessionContext,
+    transactionContext: object,
+  ): Promise<boolean>;
 }

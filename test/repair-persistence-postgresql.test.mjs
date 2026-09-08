@@ -44,6 +44,7 @@ const tables = [
   'access_roles',
   'access_capabilities',
   'user_lifecycle_commands',
+  'user_profile_update_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -434,7 +435,10 @@ test(
         actorUserId: actorId,
         actorDisplayName: 'Operador sintético',
         capability: 'repairs.add_note',
-        commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
+        commitGuard: Object.freeze({
+          async confirmCurrent() { return true; },
+          async confirmTemporalCurrent() { return true; },
+        }),
       });
       const noteContextB = Object.freeze({
         ...scopeB,
@@ -443,7 +447,10 @@ test(
         actorUserId: '40000000-0000-4000-8000-000000000002',
         actorDisplayName: 'Operador B',
         capability: 'repairs.add_note',
-        commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
+        commitGuard: Object.freeze({
+          async confirmCurrent() { return true; },
+          async confirmTemporalCurrent() { return true; },
+        }),
       });
 
       const allA = await repository.listWorklist(scopeA, listQuery());

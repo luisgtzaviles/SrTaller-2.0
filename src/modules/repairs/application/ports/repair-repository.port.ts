@@ -157,6 +157,7 @@ export interface RepairOperationalNoteContext {
   readonly capability: 'repairs.add_note';
   readonly commitGuard: Readonly<{
     confirmCurrent(transactionContext: object): Promise<boolean>;
+    confirmTemporalCurrent(transactionContext: object): Promise<boolean>;
   }>;
 }
 

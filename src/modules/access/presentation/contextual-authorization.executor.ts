@@ -133,6 +133,12 @@ implements ContextualAuthorizationExecutor {
               requirement.capability,
               transactionContext,
             ),
+          confirmTemporalCurrent: (transactionContext: object) =>
+            this.runtime.resolveSession.confirmTemporalAtCommit(
+              station,
+              session,
+              transactionContext,
+            ),
         }),
       });
     } catch (error: unknown) {

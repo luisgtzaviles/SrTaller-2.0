@@ -92,6 +92,25 @@ function runtimeDouble(overrides = {}) {
     listLoginUsers: {
       async execute() { return [{ userId, displayName: 'Jorge Operador' }]; },
     },
+    listAccessMatrix: {
+      async execute() {
+        return {
+          capabilities: [],
+          roles: [{
+            roleId: 'f1000000-0000-4000-8000-000000000001',
+            status: 'active',
+            capabilityCodes: ['users.read', 'users.manage'],
+          }],
+          assignments: [{
+            userId,
+            roleId: 'f1000000-0000-4000-8000-000000000001',
+            status: 'active',
+            assignmentScope: 'TENANT_WIDE',
+            branchId: null,
+          }],
+        };
+      },
+    },
     tokens,
     ...overrides,
   };
@@ -195,6 +214,7 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
   assert.equal(fresh.hasEligibleUsers, true);
   assert.equal('users' in fresh, false);
   assert.deepEqual(fresh.capabilities, []);
+  assert.deepEqual(fresh.administrationCapabilities, []);
   assert.equal(fresh.session, null);
   assert.equal(fresh.revalidateAfterMs, null);
   assert.match(fresh.csrfToken, /^[A-Za-z0-9_-]{43}$/u);
@@ -217,6 +237,10 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
   assert.deepEqual(authenticated.capabilities, [
     'repairs.read',
     'repairs.add_note',
+  ]);
+  assert.deepEqual(authenticated.administrationCapabilities, [
+    'users.manage',
+    'users.read',
   ]);
   const inactiveMaterial = runtime.tokens.issue();
   const inactiveResponse = responseDouble();

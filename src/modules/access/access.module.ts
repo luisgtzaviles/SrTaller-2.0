@@ -154,7 +154,11 @@ type RegisteredAccessUseCases =
             sessionRepository,
             tokens,
           ),
-          listLoginUsers: new ListLoginUsersUseCase(users, applicableUsers),
+          listLoginUsers: new ListLoginUsersUseCase(
+            users,
+            applicableUsers,
+            (scope) => pinRepository.listConfiguredUserIds(scope as never),
+          ),
           listAccessMatrix: new ListAccessMatrixUseCase(accessRepository),
           createAccessRole: new CreateAccessRoleUseCase(accessRepository),
           replaceAccessRoleCapabilities: new ReplaceAccessRoleCapabilitiesUseCase(accessRepository),

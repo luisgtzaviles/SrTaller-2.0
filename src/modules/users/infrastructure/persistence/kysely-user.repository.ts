@@ -8,6 +8,7 @@ import type { DatabaseConnection } from '../../../../infrastructure/database/dat
 import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type {
   UserLifecycleCommandRow,
+  UserProfileUpdateCommandRow,
   UserRow,
 } from '../../../../infrastructure/database/database-types.js';
 import { parseTenantId } from '../../../tenancy/index.js';
@@ -174,6 +175,7 @@ function validateUpdateInput(input: UpdateUserInput): Readonly<{
   displayName: string;
   operationalIdentifier: string | null;
   expectedVersion: number;
+  clientRequestId: string;
   occurredAt: Date;
 }> {
   try {
@@ -185,11 +187,45 @@ function validateUpdateInput(input: UpdateUserInput): Readonly<{
       displayName: validateName(input.displayName),
       operationalIdentifier: validateOperationalIdentifier(input.operationalIdentifier),
       expectedVersion: input.expectedVersion,
+      clientRequestId: validateClientRequestId(input.clientRequestId),
       occurredAt: new Date(input.occurredAt),
     });
   } catch {
     throw new UserPersistenceError('USER_INPUT_INVALID');
   }
+}
+
+function matchesProfileUpdateCommand(
+  command: UserProfileUpdateCommandRow,
+  input: ReturnType<typeof validateUpdateInput>,
+): boolean {
+  return command.user_id === input.userId &&
+    command.requested_display_name === input.displayName &&
+    command.requested_operational_identifier === input.operationalIdentifier &&
+    command.expected_version === input.expectedVersion;
+}
+
+function mapProfileUpdateCommand(command: UserProfileUpdateCommandRow): UserRecord {
+  return Object.freeze({
+    userId: parseUserId(command.user_id),
+    tenantId: parseTenantId(command.tenant_id),
+    displayName: command.result_display_name,
+    operationalIdentifier: command.result_operational_identifier,
+    status: parseUserStatus(command.result_status),
+    version: command.result_version,
+    createdAt: command.result_created_at.toISOString(),
+    updatedAt: command.result_updated_at.toISOString(),
+  });
+}
+
+function replayProfileUpdateCommand(
+  command: UserProfileUpdateCommandRow,
+  input: ReturnType<typeof validateUpdateInput>,
+): UserRecord {
+  if (!matchesProfileUpdateCommand(command, input)) {
+    throw new UserPersistenceError('USER_IDEMPOTENCY_CONFLICT');
+  }
+  return mapProfileUpdateCommand(command);
 }
 
 function mapUserRecord(row: UserRow): UserRecord {
@@ -543,6 +579,13 @@ class KyselyUserRepository implements UserRepositoryPort {
         if (guard && !await guard.confirmCurrent(transactionContext)) {
           throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
         }
+        const prior = await transaction
+          .selectFrom('user_profile_update_commands')
+          .selectAll()
+          .where('tenant_id', '=', trustedScope.tenantId)
+          .where('client_request_id', '=', trustedInput.clientRequestId)
+          .executeTakeFirst();
+        if (prior) return replayProfileUpdateCommand(prior, trustedInput);
         const current = await transaction.selectFrom('users').select('version')
           .where('tenant_id', '=', trustedScope.tenantId).where('user_id', '=', trustedInput.userId).executeTakeFirst();
         if (!current) throw new UserPersistenceError('USER_NOT_FOUND');
@@ -555,7 +598,41 @@ class KyselyUserRepository implements UserRepositoryPort {
         }).where('tenant_id', '=', trustedScope.tenantId).where('user_id', '=', trustedInput.userId)
           .where('version', '=', trustedInput.expectedVersion).returningAll().executeTakeFirst();
         if (!row) throw new UserPersistenceError('USER_STALE_WRITE');
-        return mapUserRecord(row);
+        const command = await transaction
+          .insertInto('user_profile_update_commands')
+          .values({
+            tenant_id: trustedScope.tenantId,
+            client_request_id: trustedInput.clientRequestId,
+            user_id: trustedInput.userId,
+            requested_display_name: trustedInput.displayName,
+            requested_operational_identifier: trustedInput.operationalIdentifier,
+            expected_version: trustedInput.expectedVersion,
+            result_display_name: row.display_name,
+            result_operational_identifier: row.operational_identifier,
+            result_status: row.status,
+            result_version: row.version,
+            result_created_at: row.created_at,
+            result_updated_at: row.updated_at,
+            applied_at: trustedInput.occurredAt,
+          })
+          .onConflict((conflict) =>
+            conflict.columns(['tenant_id', 'client_request_id']).doNothing(),
+          )
+          .returningAll()
+          .executeTakeFirst();
+        if (!command) {
+          const concurrent = await transaction
+            .selectFrom('user_profile_update_commands')
+            .selectAll()
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('client_request_id', '=', trustedInput.clientRequestId)
+            .executeTakeFirstOrThrow();
+          return replayProfileUpdateCommand(concurrent, trustedInput);
+        }
+        if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+          throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+        }
+        return mapProfileUpdateCommand(command);
       });
     } catch (error: unknown) { throw mapUserError(error); }
   }

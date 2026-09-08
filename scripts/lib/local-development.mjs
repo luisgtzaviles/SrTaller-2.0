@@ -306,6 +306,7 @@ export function cleanChildEnvironment(base = process.env) {
   for (const key of Object.keys(environment)) {
     if (
       forbiddenLocalKeys.includes(key) ||
+      ephemeralLocalPinKeys.includes(key) ||
       key === 'DATABASE_URL' ||
       key.startsWith('SR_DB_') ||
       key.startsWith('SR_TEST_DB_')

@@ -144,6 +144,18 @@ export class ResolveOperationalSessionUseCase {
     );
   }
 
+  confirmTemporalAtCommit(
+    station: TrustedStationContext,
+    session: OperationalSessionContext,
+    transactionContext: object,
+  ): Promise<boolean> {
+    return this.repository.confirmTemporalCurrent(
+      station,
+      session,
+      transactionContext,
+    );
+  }
+
   async execute(context: TrustedStationContext, input: Readonly<{
     bearer: string;
     csrfCookie: string;
@@ -242,13 +254,21 @@ export class ListLoginUsersUseCase {
   constructor(
     private readonly users: AuthenticationUserReader,
     private readonly applicableUsers: ListApplicableUsersUseCase,
+    private readonly listConfiguredPinUserIds: (
+      scope: Readonly<{ tenantId: string }>,
+    ) => Promise<readonly string[]>,
   ) {}
 
   async execute(context: TrustedStationContext) {
-    const ids = await this.applicableUsers.execute({
-      tenantId: context.tenantId,
-      branchId: context.branchId,
-    });
+    const [applicableIds, configuredIds] = await Promise.all([
+      this.applicableUsers.execute({
+        tenantId: context.tenantId,
+        branchId: context.branchId,
+      }),
+      this.listConfiguredPinUserIds({ tenantId: context.tenantId }),
+    ]);
+    const configured = new Set(configuredIds);
+    const ids = applicableIds.filter((userId) => configured.has(userId));
     const users = await Promise.all(ids.map((userId) =>
       this.users.findAuthenticationUser({ tenantId: context.tenantId }, userId)));
     return Object.freeze(users

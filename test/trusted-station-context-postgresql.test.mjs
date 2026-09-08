@@ -49,6 +49,7 @@ const tables = [
   'access_roles',
   'access_capabilities',
   'user_lifecycle_commands',
+  'user_profile_update_commands',
   'user_provisioning_bootstraps',
   'users',
   'station_credentials',
@@ -174,7 +175,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 29);
+      assert.equal(applied.status.migrations.length, 30);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await admin.query(
         `insert into tenants (tenant_id, created_at) values ($1, now()), ($2, now())`,

@@ -39,8 +39,10 @@ const USERS_PATH = '/api/access/administration/users';
 const ROLES_PATH = '/api/access/administration/users/roles';
 const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
 
-function requestSessionRevalidation(): void {
-  window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT));
+function requestSessionRevalidation(background: boolean): void {
+  window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT, {
+    detail: { background },
+  }));
 }
 
 async function request<Response>(path: string, init: RequestInit = {}): Promise<Response> {
@@ -54,7 +56,9 @@ async function request<Response>(path: string, init: RequestInit = {}): Promise<
     },
   });
   if (!response.ok) {
-    if (response.status === 401) requestSessionRevalidation();
+    if (response.status === 401 || response.status === 403) {
+      requestSessionRevalidation(response.status === 403);
+    }
     throw new PreviewApiError(response.status);
   }
   return response.json() as Promise<Response>;
@@ -62,7 +66,7 @@ async function request<Response>(path: string, init: RequestInit = {}): Promise<
 
 async function mutationRequest<Response>(path: string, init: RequestInit): Promise<Response> {
   const response = await request<Response>(path, init);
-  requestSessionRevalidation();
+  requestSessionRevalidation(true);
   return response;
 }
 
@@ -86,7 +90,7 @@ export function createProductUser(
 
 export function updateProductUser(
   userId: string,
-  input: Readonly<{ displayName: string; operationalIdentifier: string | null; expectedVersion: number }>,
+  input: Readonly<{ displayName: string; operationalIdentifier: string | null; expectedVersion: number; clientRequestId: string }>,
   csrfToken: string,
 ): Promise<ProductUser> {
   return mutationRequest<ProductUser>(`${USERS_PATH}/${encodeURIComponent(userId)}`, { method: 'POST', headers: { 'X-SR-CSRF-Token': csrfToken }, body: JSON.stringify(input) });

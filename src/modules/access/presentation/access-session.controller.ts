@@ -34,6 +34,7 @@ import type {
   ResolveOperationalSessionUseCase,
 } from '../application/use-cases/operational-session.use-cases.js';
 import type { ResolveEffectiveCapabilitiesUseCase } from '../application/use-cases/resolve-effective-capabilities.use-case.js';
+import type { CapabilityCode } from '../domain/capability.js';
 import type { ListAccessMatrixUseCase } from '../application/use-cases/list-access-matrix.use-case.js';
 import type { CreateAccessRoleUseCase } from '../application/use-cases/create-access-role.use-case.js';
 import type { ReplaceAccessRoleCapabilitiesUseCase } from '../application/use-cases/replace-access-role-capabilities.use-case.js';
@@ -114,6 +115,39 @@ function sameOrigin(headers: HeadersValue): boolean {
     forwardedProto: scalar(headers, 'x-forwarded-proto'),
     fetchSite: scalar(headers, 'sec-fetch-site'),
   });
+}
+
+const administrationCapabilityCodes = new Set<CapabilityCode>([
+  'users.read',
+  'users.manage',
+  'access_matrix.read',
+  'access_matrix.manage',
+]);
+
+async function resolveTenantWideAdministrationCapabilities(
+  runtime: AccessSessionRuntime,
+  tenantId: string,
+  userId: string,
+): Promise<readonly CapabilityCode[]> {
+  const matrix = await runtime.listAccessMatrix.execute({ tenantId });
+  const activeRoles = new Map(
+    matrix.roles
+      .filter((role) => role.status === 'active')
+      .map((role) => [role.roleId, role.capabilityCodes]),
+  );
+  const capabilities = new Set<CapabilityCode>();
+  for (const assignment of matrix.assignments) {
+    if (
+      assignment.userId !== userId ||
+      assignment.status !== 'active' ||
+      assignment.assignmentScope !== 'TENANT_WIDE' ||
+      assignment.branchId !== null
+    ) continue;
+    for (const capability of activeRoles.get(assignment.roleId) ?? []) {
+      if (administrationCapabilityCodes.has(capability)) capabilities.add(capability);
+    }
+  }
+  return Object.freeze([...capabilities].sort());
 }
 
 function parseCreateRequest(value: unknown): Readonly<{
@@ -208,6 +242,7 @@ export class AccessSessionController {
       station: { stationId: context.stationId, branchId: context.branchId },
       hasEligibleUsers: users.length > 0,
       capabilities: Object.freeze([]),
+      administrationCapabilities: Object.freeze([]),
       csrfToken: this.loginChallenge(headers, response),
       session: null,
       revalidateAfterMs: null,
@@ -242,15 +277,23 @@ export class AccessSessionController {
         touch: false,
       });
       const session = sessionResponse(resolvedSession);
-      const capabilities = await this.runtime.resolveCapabilities.execute({
-        tenantId: context.tenantId,
-        branchId: context.branchId,
-        userId: resolvedSession.userId,
-      });
+      const [capabilities, administrationCapabilities] = await Promise.all([
+        this.runtime.resolveCapabilities.execute({
+          tenantId: context.tenantId,
+          branchId: context.branchId,
+          userId: resolvedSession.userId,
+        }),
+        resolveTenantWideAdministrationCapabilities(
+          this.runtime,
+          context.tenantId,
+          resolvedSession.userId,
+        ),
+      ]);
       return {
         station: { stationId: context.stationId, branchId: context.branchId },
         hasEligibleUsers: users.length > 0,
         capabilities,
+        administrationCapabilities,
         csrfToken: cookies.csrf,
         session,
         revalidateAfterMs: revalidateAfterMs(session),
@@ -316,11 +359,18 @@ export class AccessSessionController {
       // strand the Station with a Session whose credentials were never
       // delivered to the browser. Every protected request still re-evaluates
       // capabilities after resolving the active Session.
-      const capabilities = await this.runtime.resolveCapabilities.execute({
-        tenantId: context.tenantId,
-        branchId: context.branchId,
-        userId: proof.userId,
-      });
+      const [capabilities, administrationCapabilities] = await Promise.all([
+        this.runtime.resolveCapabilities.execute({
+          tenantId: context.tenantId,
+          branchId: context.branchId,
+          userId: proof.userId,
+        }),
+        resolveTenantWideAdministrationCapabilities(
+          this.runtime,
+          context.tenantId,
+          proof.userId,
+        ),
+      ]);
       const created = await this.runtime.createSession.execute(
         context,
         proof,
@@ -335,6 +385,7 @@ export class AccessSessionController {
         station: { stationId: context.stationId, branchId: context.branchId },
         hasEligibleUsers: users.length > 0,
         capabilities,
+        administrationCapabilities,
         csrfToken: created.tokens.csrf,
         session: sessionResponse(created.session),
         revalidateAfterMs: revalidateAfterMs(created.session),

@@ -46,6 +46,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
   const canManage = hasOperationalCapability(capabilities, 'users.manage');
   const canReadMatrix = hasOperationalCapability(capabilities, 'access_matrix.read');
   const canManageMatrix = hasOperationalCapability(capabilities, 'access_matrix.manage');
+  const canManagePin = canManage && canManageMatrix;
   const [users, setUsers] = useState<readonly ProductUser[] | null>(null);
   const [matrix, setMatrix] = useState<ProductAccessMatrix | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [confirmingDeactivate, setConfirmingDeactivate] = useState(false);
   const createRequestId = useRef<string | null>(null);
+  const profileRequestId = useRef<string | null>(null);
   const pinRequestId = useRef<string | null>(null);
   const mutationRequestIds = useRef(new Map<string, string>());
 
@@ -193,10 +195,13 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
         displayName: editDisplayName.trim(),
         operationalIdentifier: editIdentifier.trim() || null,
         expectedVersion: selectedUser.version,
+        clientRequestId: profileRequestId.current ??= crypto.randomUUID(),
       }, csrfToken);
+      profileRequestId.current = null;
       setUsers((current) => current?.map((user) => user.userId === updated.userId ? updated : user) ?? current);
       setNotice({ tone: 'success', message: 'Los datos del usuario se actualizaron.' });
     } catch {
+      await load();
       setNotice({ tone: 'danger', message: 'No fue posible actualizar los datos. Recarga la información e intenta de nuevo.' });
     } finally {
       setBusyAction(null);
@@ -394,8 +399,8 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
             <section className={styles.editorSection} aria-labelledby="identity-section-title">
               <header><span className={styles.sectionIcon}><UserPlus aria-hidden="true" size={20} /></span><div><h3 id="identity-section-title">Identidad operativa</h3><p>Información visible para reconocer a la persona en la operación.</p></div></header>
               <form className={styles.sectionForm} onSubmit={(event) => void saveProfile(event)}>
-                <Field id="edit-user-name" label="Nombre completo" required><Input id="edit-user-name" value={editDisplayName} maxLength={160} disabled={!canManage || busyAction !== null} autoComplete="off" onChange={(event) => setEditDisplayName(event.target.value)} /></Field>
-                <Field id="edit-user-identifier" label="ID operativo"><Input id="edit-user-identifier" value={editIdentifier} maxLength={160} disabled={!canManage || busyAction !== null} autoComplete="off" onChange={(event) => setEditIdentifier(event.target.value)} /></Field>
+                <Field id="edit-user-name" label="Nombre completo" required><Input id="edit-user-name" value={editDisplayName} maxLength={160} disabled={!canManage || busyAction !== null} autoComplete="off" onChange={(event) => { profileRequestId.current = null; setEditDisplayName(event.target.value); }} /></Field>
+                <Field id="edit-user-identifier" label="ID operativo"><Input id="edit-user-identifier" value={editIdentifier} maxLength={160} disabled={!canManage || busyAction !== null} autoComplete="off" onChange={(event) => { profileRequestId.current = null; setEditIdentifier(event.target.value); }} /></Field>
                 {canManage ? <Button type="submit" tone="secondary" disabled={busyAction !== null}>{busyAction === 'profile' ? 'Guardando…' : 'Guardar datos'}</Button> : null}
               </form>
             </section>
@@ -416,7 +421,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
 
             <section className={styles.editorSection} aria-labelledby="pin-section-title">
               <header><span className={styles.sectionIcon}><KeyRound aria-hidden="true" size={20} /></span><div><h3 id="pin-section-title">PIN de acceso</h3><p>{selectedUser.pinConfigured ? 'PIN configurado. Usa esta acción sólo para reemplazarlo.' : 'Aún no tiene un PIN configurado.'}</p></div></header>
-              {canManage ? (
+              {canManagePin ? (
                 <form className={styles.pinForm} onSubmit={(event) => void savePin(event)}>
                   <Field id="edit-user-pin" label={selectedUser.pinConfigured ? 'Nuevo PIN' : 'PIN'} hint="Exactamente 4 dígitos. No se mostrará después de guardarlo." required>
                     <Input id="edit-user-pin" name="new-pin" type="password" inputMode="numeric" pattern="[0-9]{4}" minLength={4} maxLength={4} autoComplete="new-password" aria-describedby="edit-user-pin-description" value={pin} disabled={busyAction !== null} onChange={(event) => { pinRequestId.current = null; setPin(event.target.value.replace(/\D/gu, '').slice(0, 4)); }} />

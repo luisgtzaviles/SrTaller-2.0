@@ -83,6 +83,18 @@ export class KyselyOperationalSessionRepository
     );
   }
 
+  confirmTemporalCurrent(
+    station: TrustedStationContext,
+    session: import('../../domain/operational-session.js').OperationalSessionContext,
+    transactionContext: object,
+  ): Promise<boolean> {
+    return this.#commitGuard.confirmTemporalCurrent(
+      station,
+      session,
+      transactionContext,
+    );
+  }
+
   async createReplacingActive(context: TrustedStationContext, input: Parameters<OperationalSessionRepositoryPort['createReplacingActive']>[1]) {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {

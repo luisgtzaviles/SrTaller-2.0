@@ -303,6 +303,7 @@ function LoginPage({
 export interface AuthenticatedSessionView {
   readonly session: ActiveOperationalSession;
   readonly capabilities: readonly OperationalCapability[];
+  readonly administrationCapabilities: readonly OperationalCapability[];
   readonly csrfToken: string;
   readonly busy: boolean;
   readonly errorMessage: string | null;
@@ -354,19 +355,26 @@ export function OperationalSessionGate({
       }
       reconciling = false;
     };
-    const invalidate = (): void => {
+    const invalidate = (background = false): void => {
       operationGeneration.current += 1;
       pending = true;
       setBusy(false);
       setSwitching(false);
-      setSnapshot(null);
-      setPhase('loading');
+      if (!background) {
+        setSnapshot(null);
+        setPhase('loading');
+      }
       void reconcile();
+    };
+    const localInvalidation = (event: Event): void => {
+      const background = event instanceof CustomEvent &&
+        event.detail?.background === true;
+      invalidate(background);
     };
     let unsubscribe: (() => void) | undefined;
     try {
-      unsubscribe = subscribeToRemoteSessionChanges(invalidate);
-      window.addEventListener(SESSION_INVALIDATED_EVENT, invalidate);
+      unsubscribe = subscribeToRemoteSessionChanges(() => invalidate(false));
+      window.addEventListener(SESSION_INVALIDATED_EVENT, localInvalidation);
     } catch {
       setSnapshot(null);
       setPhase('failed');
@@ -374,7 +382,7 @@ export function OperationalSessionGate({
     return () => {
       disposed = true;
       unsubscribe?.();
-      window.removeEventListener(SESSION_INVALIDATED_EVENT, invalidate);
+      window.removeEventListener(SESSION_INVALIDATED_EVENT, localInvalidation);
     };
   }, []);
 
@@ -527,7 +535,11 @@ export function OperationalSessionGate({
     const closeSession = async (): Promise<void> => {
       setBusy(true);
       setErrorMessage(null);
-      setSnapshot((current) => current ? { ...current, capabilities: EMPTY_CAPABILITIES } : current);
+      setSnapshot((current) => current ? {
+        ...current,
+        capabilities: EMPTY_CAPABILITIES,
+        administrationCapabilities: EMPTY_CAPABILITIES,
+      } : current);
       setPhase('loading');
       try {
         const next = await logoutOperationalSession(expectedSessionId);
@@ -573,7 +585,11 @@ export function OperationalSessionGate({
     const generation = operationGeneration.current + 1;
     operationGeneration.current = generation;
     setFocusTarget(null);
-    setSnapshot((current) => current ? { ...current, capabilities: EMPTY_CAPABILITIES } : current);
+    setSnapshot((current) => current ? {
+      ...current,
+      capabilities: EMPTY_CAPABILITIES,
+      administrationCapabilities: EMPTY_CAPABILITIES,
+    } : current);
     setSwitching(true);
     const prepare = async (): Promise<void> => {
       setBusy(true);
@@ -639,6 +655,7 @@ export function OperationalSessionGate({
       {children({
         session: snapshot.session,
         capabilities: snapshot.capabilities,
+        administrationCapabilities: snapshot.administrationCapabilities,
         csrfToken: snapshot.csrfToken,
         busy,
         errorMessage,

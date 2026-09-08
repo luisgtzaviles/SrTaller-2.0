@@ -505,7 +505,12 @@ test('logout uses a terminal authenticated close that is independent from touch 
 test('login users are branch-applicable, active, minimal, and deterministically sorted', async () => {
   const state = fixture();
   state.setApplicable([userId, secondUserId]);
-  const list = new ListLoginUsersUseCase(state.users, state.applicable);
+  let configured = [userId, secondUserId];
+  const list = new ListLoginUsersUseCase(
+    state.users,
+    state.applicable,
+    async () => configured,
+  );
   assert.deepEqual(await list.execute(context), [
     { userId: secondUserId, displayName: 'Ana Operadora' },
     { userId, displayName: 'Jorge Operador' },
@@ -514,6 +519,8 @@ test('login users are branch-applicable, active, minimal, and deterministically 
   assert.deepEqual(await list.execute(context), [
     { userId, displayName: 'Jorge Operador' },
   ]);
+  configured = [];
+  assert.deepEqual(await list.execute(context), []);
   const wrongContext = createTrustedStationContext({ tenantId, branchId: otherBranchId, stationId, stationCredentialId, ...stationAdmission });
   assert.deepEqual(await list.execute(wrongContext), []);
 });

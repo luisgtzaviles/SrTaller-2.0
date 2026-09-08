@@ -157,14 +157,24 @@ export function parseUpdateUserInput(value: unknown): Readonly<{
   displayName: string;
   operationalIdentifier: string | null;
   expectedVersion: number;
+  clientRequestId: string;
 }> {
-  const input = exactObject(value, ['displayName', 'expectedVersion', 'operationalIdentifier']);
+  const input = exactObject(value, [
+    'clientRequestId',
+    'displayName',
+    'expectedVersion',
+    'operationalIdentifier',
+  ]);
   if (
-    Object.keys(input).length !== 3 ||
+    Object.keys(input).length !== 4 ||
     typeof input.displayName !== 'string' ||
     !Number.isSafeInteger(input.expectedVersion) ||
     (input.expectedVersion as number) < 0
   ) throw new UserInputError('payload');
+  if (
+    typeof input.clientRequestId !== 'string' ||
+    !canonicalUuid.test(input.clientRequestId)
+  ) throw new UserInputError('clientRequestId');
   const displayName = input.displayName.trim();
   if (displayName.length < 1 || displayName.length > 160) throw new UserInputError('displayName');
   let operationalIdentifier: string | null = null;
@@ -175,5 +185,10 @@ export function parseUpdateUserInput(value: unknown): Readonly<{
       throw new UserInputError('operationalIdentifier');
     }
   }
-  return Object.freeze({ displayName, operationalIdentifier, expectedVersion: input.expectedVersion as number });
+  return Object.freeze({
+    displayName,
+    operationalIdentifier,
+    expectedVersion: input.expectedVersion as number,
+    clientRequestId: input.clientRequestId,
+  });
 }

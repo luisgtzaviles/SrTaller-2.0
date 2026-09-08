@@ -34,6 +34,7 @@ test('operational note input is strict, trimmed, bounded, and server-owned', () 
   assert.match(useCaseSource, /const correlationId = this\.createId\(\)/u);
   assert.match(useCaseSource, /this\.repository\.addOperationalNote\(context,/u);
   assert.match(useCaseSource, /value\.commitGuard\.confirmCurrent/u);
+  assert.match(useCaseSource, /value\.commitGuard\.confirmTemporalCurrent/u);
   assert.match(useCaseSource, /action: 'repair\.operational_note\.added'/u);
   assert.match(useCaseSource, /resourceType: 'repair'/u);
   assert.match(useCaseSource, /result: 'succeeded'/u);
@@ -71,6 +72,7 @@ test('repository atomically persists one scoped note and one append-only audit e
   assert.match(writeMethod, /station_id: scope\.stationId/u);
   assert.match(writeMethod, /session_id: scope\.sessionId/u);
   assert.match(writeMethod, /scope\.commitGuard\.confirmCurrent\(transactionContext\)/u);
+  assert.match(writeMethod, /scope\.commitGuard\.confirmTemporalCurrent\(transactionContext\)/u);
   assert.match(writeMethod, /insertInto\('repair_operational_note_request_guards'\)/u);
   assert.match(writeMethod, /existing\.body !== note\.body/u);
   assert.match(writeMethod, /RepairOperationalNoteIdempotencyConflictError/u);
@@ -88,7 +90,10 @@ test('use case derives actor/context and authoritative correlation server-side',
     actorUserId: 'a3000000-0000-4000-8000-000000000001',
     actorDisplayName: 'Ada Operadora',
     capability: 'repairs.add_note',
-    commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
+    commitGuard: Object.freeze({
+      async confirmCurrent() { return true; },
+      async confirmTemporalCurrent() { return true; },
+    }),
   });
   const generatedIds = [
     'b0000000-0000-4000-8000-000000000001',
@@ -168,7 +173,10 @@ test('use case maps a conflicting idempotency retry without leaking persistence 
       actorUserId: 'a3000000-0000-4000-8000-000000000001',
       actorDisplayName: 'Ada Operadora',
       capability: 'repairs.add_note',
-      commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
+      commitGuard: Object.freeze({
+        async confirmCurrent() { return true; },
+        async confirmTemporalCurrent() { return true; },
+      }),
     }),
   );
   await assert.rejects(

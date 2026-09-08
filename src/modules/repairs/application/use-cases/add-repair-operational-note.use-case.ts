@@ -62,7 +62,8 @@ function trustedContext(
     value.actorDisplayName.trim().length > 160 ||
     typeof value.commitGuard !== 'object' ||
     value.commitGuard === null ||
-    typeof value.commitGuard.confirmCurrent !== 'function'
+    typeof value.commitGuard.confirmCurrent !== 'function' ||
+    typeof value.commitGuard.confirmTemporalCurrent !== 'function'
   ) {
     throw new Error('Trusted operational note context is invalid.');
   }

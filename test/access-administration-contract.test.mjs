@@ -36,6 +36,7 @@ const requestIds = Object.freeze({
   roleCreate: '95000000-0000-4000-8000-000000000001',
   roleCapabilities: '96000000-0000-4000-8000-000000000001',
   roleUpdate: '97000000-0000-4000-8000-000000000001',
+  profileUpdate: '98000000-0000-4000-8000-000000000001',
 });
 
 const requestEvidence = Object.freeze({
@@ -109,7 +110,15 @@ function assignmentRecord(overrides = {}) {
   });
 }
 
-function matrix(adminScope = 'TENANT_WIDE') {
+function matrix(
+  adminScope = 'TENANT_WIDE',
+  adminCapabilities = [
+    'users.read',
+    'users.manage',
+    'access_matrix.read',
+    'access_matrix.manage',
+  ],
+) {
   return Object.freeze({
     capabilities: Object.freeze([
       Object.freeze({
@@ -122,12 +131,7 @@ function matrix(adminScope = 'TENANT_WIDE') {
         roleId: adminRoleId,
         roleKey: 'administracion',
         displayName: 'Administración',
-        capabilityCodes: Object.freeze([
-          'users.read',
-          'users.manage',
-          'access_matrix.read',
-          'access_matrix.manage',
-        ]),
+        capabilityCodes: Object.freeze(adminCapabilities),
       }),
       roleRecord(),
     ]),
@@ -144,7 +148,11 @@ function matrix(adminScope = 'TENANT_WIDE') {
   });
 }
 
-function operationsFixture(adminScope = 'TENANT_WIDE', legacyPin = false) {
+function operationsFixture(
+  adminScope = 'TENANT_WIDE',
+  replacementErrorCode = null,
+  adminCapabilities = undefined,
+) {
   const calls = [];
   const transactionContext = Object.freeze({ marker: 'admin-mutation' });
   const applyGuard = async (guard) => {
@@ -183,7 +191,7 @@ function operationsFixture(adminScope = 'TENANT_WIDE', legacyPin = false) {
     users,
     async (scope) => {
       calls.push({ operation: 'listAccessMatrix', scope });
-      return matrix(adminScope);
+      return matrix(adminScope, adminCapabilities);
     },
     async (scope, input, guard) => {
       await applyGuard(guard);
@@ -221,9 +229,9 @@ function operationsFixture(adminScope = 'TENANT_WIDE', legacyPin = false) {
     async (scope, input, guard) => {
       await applyGuard(guard);
       calls.push({ operation: 'replacePin', scope, input });
-      if (legacyPin) {
-        throw Object.assign(new Error('legacy credential absent from PIN-only readiness'), {
-          code: 'PIN_CREDENTIAL_USER_INVALID',
+      if (replacementErrorCode) {
+        throw Object.assign(new Error('replace PIN requires fallback'), {
+          code: replacementErrorCode,
         });
       }
       return { replaced: true };
@@ -281,6 +289,7 @@ test('administration operations enforce exact capability and tenant-wide authori
     displayName: 'Persona Editada',
     operationalIdentifier: 'OP-2',
     expectedVersion: 3,
+    clientRequestId: requestIds.profileUpdate,
   });
   await operations.assignRole(requestEvidence, targetUserId, {
     roleId: targetRoleId,
@@ -310,7 +319,7 @@ test('administration operations enforce exact capability and tenant-wide authori
   assert.ok(calls.filter(({ operation }) => operation === 'commitGuard').every(({ allowed }) => allowed));
   assert.equal(calls.filter(({ operation }) => operation === 'continuityGuard').length, 9);
   assert.ok(calls.filter(({ operation }) => operation === 'continuityGuard').every(({ allowed }) => allowed));
-  assert.equal(calls.filter(({ operation }) => operation === 'tenantWideCommitGuard').length, 9);
+  assert.equal(calls.filter(({ operation }) => operation === 'tenantWideCommitGuard').length, 10);
   assert.equal(calls.filter(({ operation }) => operation === 'tenantWideContinuityGuard').length, 9);
   assert.deepEqual(
     calls.filter(({ operation }) => operation === 'authorize').map(({ requirement }) => requirement),
@@ -358,13 +367,46 @@ test('administration operations enforce exact capability and tenant-wide authori
 });
 
 test('PIN administration attempts replacement first and provisions only when no credential row exists', async () => {
-  const { calls, operations } = operationsFixture('TENANT_WIDE', true);
+  const { calls, operations } = operationsFixture(
+    'TENANT_WIDE',
+    'PIN_CREDENTIAL_USER_INVALID',
+  );
   await operations.provisionFourDigitPin(requestEvidence, targetUserId, {
     pin: '0000',
     clientRequestId: requestIds.pin,
   });
   assert.ok(call(calls, 'replacePin'));
   assert.ok(call(calls, 'provisionPin'));
+});
+
+test('PIN administration replays a committed provision after an ambiguous response', async () => {
+  const { calls, operations } = operationsFixture(
+    'TENANT_WIDE',
+    'PIN_CREDENTIAL_IDEMPOTENCY_CONFLICT',
+  );
+  await operations.provisionFourDigitPin(requestEvidence, targetUserId, {
+    pin: '0000',
+    clientRequestId: requestIds.pin,
+  });
+  assert.ok(call(calls, 'replacePin'));
+  assert.ok(call(calls, 'provisionPin'));
+});
+
+test('users.manage alone cannot replace another identity PIN', async () => {
+  const { calls, operations } = operationsFixture(
+    'TENANT_WIDE',
+    null,
+    ['users.read', 'users.manage'],
+  );
+  await assert.rejects(
+    operations.provisionFourDigitPin(requestEvidence, targetUserId, {
+      pin: '0000',
+      clientRequestId: requestIds.pin,
+    }),
+    (error) => error instanceof ContextualAuthorizationError && error.code === 'ACCESS_DENIED',
+  );
+  assert.equal(call(calls, 'replacePin'), undefined);
+  assert.equal(call(calls, 'provisionPin'), undefined);
 });
 
 test('branch-restricted administration authority cannot read or mutate tenant-wide resources', async () => {

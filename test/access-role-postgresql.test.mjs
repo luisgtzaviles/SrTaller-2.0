@@ -47,6 +47,7 @@ const tables = [
   'access_operational_session_station_guards',
   ...accessTables,
   'user_lifecycle_commands',
+  'user_profile_update_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -111,6 +112,7 @@ const rollbackRevokeRequestA = '8f000000-0000-4000-8000-000000000033';
 const deniedAssignRequestA = '9f000000-0000-4000-8000-000000000033';
 const continuityRequestA = '9e000000-0000-4000-8000-000000000033';
 const authorityRaceRequestA = '9d000000-0000-4000-8000-000000000033';
+const unusableAdminRequestA = '9c000000-0000-4000-8000-000000000033';
 
 function databaseConfig() {
   return Object.freeze({
@@ -307,6 +309,26 @@ async function seedAuthorities(admin) {
        ($4, $5, 'repairs.read', now())`,
     [tenantA, sharedAdminRole, technicianRoleA, tenantB, roleOnlyB],
   );
+  await admin.query(
+    `insert into access_pin_credentials (
+       tenant_id, user_id, credential_id, status, algorithm,
+       profile_version, pepper_version, memory_kib, passes, parallelism,
+       salt, verifier, lookup_digest, credential_version,
+       consecutive_failures, created_at, updated_at
+     ) values (
+       $1, $2, gen_random_uuid(), 'active', 'argon2id',
+       1, 1, 65536, 3, 4,
+       $3, $4, $5, 0,
+       0, now(), now()
+     )`,
+    [
+      tenantA,
+      sharedAdminUser,
+      Buffer.alloc(16, 1),
+      Buffer.alloc(32, 2),
+      Buffer.alloc(32, 3),
+    ],
+  );
 }
 
 test(
@@ -329,7 +351,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 29);
+      assert.equal(applied.status.migrations.length, 30);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -443,6 +465,39 @@ test(
           transactionContext,
         ),
       });
+      await admin.query(
+        `update access_pin_credentials
+         set lookup_digest = null
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedAdminUser],
+      );
+      await rejectsWithCode(
+        repository.replaceRoleCapabilities(
+          { tenantId: tenantA },
+          {
+            roleId: sharedAdminRole,
+            expectedVersion: 0,
+            capabilityCodes: [
+              'users.read',
+              'users.manage',
+              'access_matrix.read',
+              'access_matrix.manage',
+              'repairs.read',
+              'repairs.add_note',
+            ],
+            clientRequestId: unusableAdminRequestA,
+            occurredAt: new Date().toISOString(),
+          },
+          authorityGuard,
+        ),
+        'ACCESS_AUTHORIZATION_CHANGED',
+      );
+      await admin.query(
+        `update access_pin_credentials
+         set lookup_digest = $3
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedAdminUser, Buffer.alloc(32, 3)],
+      );
       await rejectsWithCode(
         repository.replaceRoleCapabilities(
           { tenantId: tenantA },

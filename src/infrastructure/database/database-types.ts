@@ -90,6 +90,23 @@ export interface UserLifecycleCommandTable {
   readonly applied_at: ImmutableColumn<Date>;
 }
 
+/** Immutable replay record for a User identity-metadata edit. */
+export interface UserProfileUpdateCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly requested_display_name: ImmutableColumn<string>;
+  readonly requested_operational_identifier: ImmutableColumn<string | null>;
+  readonly expected_version: ImmutableColumn<number>;
+  readonly result_display_name: ImmutableColumn<string>;
+  readonly result_operational_identifier: ImmutableColumn<string | null>;
+  readonly result_status: ImmutableColumn<'active' | 'inactive' | 'revoked'>;
+  readonly result_version: ImmutableColumn<number>;
+  readonly result_created_at: ImmutableColumn<Date>;
+  readonly result_updated_at: ImmutableColumn<Date>;
+  readonly applied_at: ImmutableColumn<Date>;
+}
+
 export type AccessCapabilityCode =
   | 'access_matrix.read'
   | 'access_matrix.manage'
@@ -463,6 +480,7 @@ export interface DatabaseSchema {
   readonly users: UserTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;
   readonly user_lifecycle_commands: UserLifecycleCommandTable;
+  readonly user_profile_update_commands: UserProfileUpdateCommandTable;
   readonly access_capabilities: AccessCapabilityTable;
   readonly access_roles: AccessRoleTable;
   readonly access_role_commands: AccessRoleCommandTable;
@@ -510,6 +528,8 @@ export type UserProvisioningBootstrapRow = Selectable<UserProvisioningBootstrapT
 export type NewUserProvisioningBootstrap = Insertable<UserProvisioningBootstrapTable>;
 export type UserLifecycleCommandRow = Selectable<UserLifecycleCommandTable>;
 export type NewUserLifecycleCommand = Insertable<UserLifecycleCommandTable>;
+export type UserProfileUpdateCommandRow = Selectable<UserProfileUpdateCommandTable>;
+export type NewUserProfileUpdateCommand = Insertable<UserProfileUpdateCommandTable>;
 
 export type AccessCapabilityRow = Selectable<AccessCapabilityTable>;
 export type NewAccessCapability = Insertable<AccessCapabilityTable>;

@@ -585,25 +585,43 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
     });
   }
 
-  async #resetAttemptLimit(
+  async #releaseSuccessfulAttempt(
     context: Parameters<PinCredentialRepositoryPort['authenticateAttempt']>[0],
     rateLimitPrincipalId: string,
     occurredAt: Date,
   ): Promise<void> {
-    await this.execute(async (database: AccessExecutor) => {
-      await database
-        .updateTable('access_pin_attempt_limits')
-        .set({
-          attempt_count: 0,
-          window_started_at: occurredAt,
-          blocked_until: null,
-          updated_at: occurredAt,
-        })
-        .where('tenant_id', '=', context.tenantId)
-        .where('station_id', '=', context.stationId)
-        .where('rate_principal_id', '=', rateLimitPrincipalId)
-        .executeTakeFirst();
-    });
+    await this.execute(async (database: AccessExecutor) =>
+      database.transaction().execute(async (transaction) => {
+        await transaction
+          .selectFrom('access_pin_attempt_station_guards')
+          .select('station_id')
+          .where('tenant_id', '=', context.tenantId)
+          .where('station_id', '=', context.stationId)
+          .forUpdate()
+          .executeTakeFirstOrThrow();
+        const limit = await transaction
+          .selectFrom('access_pin_attempt_limits')
+          .selectAll()
+          .where('tenant_id', '=', context.tenantId)
+          .where('station_id', '=', context.stationId)
+          .where('rate_principal_id', '=', rateLimitPrincipalId)
+          .forUpdate()
+          .executeTakeFirst();
+        if (!limit) return;
+        const remaining = Math.max(0, limit.attempt_count - 1);
+        await transaction
+          .updateTable('access_pin_attempt_limits')
+          .set({
+            attempt_count: remaining,
+            blocked_until: remaining >= 5 ? limit.blocked_until : null,
+            updated_at: occurredAt,
+          })
+          .where('tenant_id', '=', context.tenantId)
+          .where('station_id', '=', context.stationId)
+          .where('rate_principal_id', '=', rateLimitPrincipalId)
+          .executeTakeFirst();
+      }),
+    );
   }
 
   async authenticateAttempt(
@@ -672,7 +690,10 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
         occurredAt,
       );
       if (committed) {
-        await this.#resetAttemptLimit(
+        // A successful verification consumes only its own reservation. It
+        // must never erase failures accumulated by other PIN-only attempts in
+        // the shared Station bucket.
+        await this.#releaseSuccessfulAttempt(
           context,
           input.rateLimitPrincipalId,
           occurredAt,
@@ -766,7 +787,7 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
         occurredAt,
       );
       if (committed) {
-        await this.#resetAttemptLimit(
+        await this.#releaseSuccessfulAttempt(
           context,
           input.rateLimitPrincipalId,
           occurredAt,

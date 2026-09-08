@@ -16,11 +16,12 @@ function sourceSection(source, startMarker, endMarker) {
   return source.slice(start, end);
 }
 
-test('administration mutations revalidate Session authority and fail closed on 401', () => {
-  assert.match(apiSource, /response\.status === 401\) requestSessionRevalidation\(\)/u);
+test('administration mutations revalidate Session authority and fail closed on 401/403', () => {
+  assert.match(apiSource, /response\.status === 401 \|\| response\.status === 403/u);
+  assert.match(apiSource, /requestSessionRevalidation\(response\.status === 403\)/u);
   assert.match(
     apiSource,
-    /async function mutationRequest[\s\S]*?await request<Response>\(path, init\);[\s\S]*?requestSessionRevalidation\(\)/u,
+    /async function mutationRequest[\s\S]*?await request<Response>\(path, init\);[\s\S]*?requestSessionRevalidation\(true\)/u,
   );
   for (const operation of [
     'createProductUser',
@@ -75,6 +76,14 @@ test('PIN UI keeps a retry identity only while the masked value is unchanged', (
   assert.match(usersSource, /PIN configurado\. Usa esta acción sólo para reemplazarlo\./u);
   assert.match(usersSource, /El valor no se conserva ni vuelve a mostrarse\./u);
   assert.doesNotMatch(usersSource, /pinPlaintext|credentialVerifier|lookupDigest/u);
+  assert.match(usersSource, /const canManagePin = canManage && canManageMatrix/u);
+});
+
+test('profile editing keeps an idempotency key across ambiguous responses', () => {
+  assert.match(usersSource, /const profileRequestId = useRef<string \| null>\(null\)/u);
+  assert.match(usersSource, /clientRequestId: profileRequestId\.current \?\?= crypto\.randomUUID\(\)/u);
+  assert.match(usersSource, /await load\(\)/u);
+  assert.match(usersSource, /profileRequestId\.current = null; setEditDisplayName/u);
 });
 
 test('role editing reports partial metadata success and reloads authoritative state', () => {

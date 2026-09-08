@@ -31,6 +31,7 @@ export interface ProtectedOperationRequirement {
 /** Server-owned guard evaluated inside the consumer's effect transaction. */
 export interface AuthorizedOperationCommitGuard {
   confirmCurrent(transactionContext: object): Promise<boolean>;
+  confirmTemporalCurrent(transactionContext: object): Promise<boolean>;
 }
 
 /** Immutable authority composed server-side for one protected operation. */

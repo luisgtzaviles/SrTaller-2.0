@@ -61,16 +61,25 @@ test('authenticated capability snapshots accept only a canonical finite set', ()
 
 test('Session API parses capabilities at the snapshot boundary and clears unauthenticated authority', () => {
   assert.match(sessionApiSource, /readonly capabilities: readonly OperationalCapability\[\]/u);
+  assert.match(sessionApiSource, /readonly administrationCapabilities: readonly OperationalCapability\[\]/u);
   assert.match(sessionApiSource, /parseSessionCapabilities\(value\.capabilities, session !== null\)/u);
-  assert.match(sessionApiSource, /capabilities,\s+revalidateAfterMs,/u);
+  assert.match(sessionApiSource, /value\.administrationCapabilities \?\? \[\]/u);
+  assert.match(sessionApiSource, /capabilities,\s+administrationCapabilities,\s+revalidateAfterMs,/u);
   assert.match(sessionGateSource, /readonly capabilities: readonly OperationalCapability\[\]/u);
+  assert.match(sessionGateSource, /readonly administrationCapabilities: readonly OperationalCapability\[\]/u);
   assert.match(sessionGateSource, /readonly csrfToken: string/u);
   assert.match(sessionGateSource, /capabilities: snapshot\.capabilities/u);
+  assert.match(sessionGateSource, /administrationCapabilities: snapshot\.administrationCapabilities/u);
   assert.match(sessionGateSource, /csrfToken: snapshot\.csrfToken/u);
   assert.equal(
     sessionGateSource.match(/capabilities: EMPTY_CAPABILITIES/gu)?.length,
     2,
     'logout and user switch must remove the prior actor capability snapshot immediately',
+  );
+  assert.equal(
+    sessionGateSource.match(/administrationCapabilities: EMPTY_CAPABILITIES/gu)?.length,
+    2,
+    'logout and user switch must remove the prior administration snapshot immediately',
   );
   assert.match(sessionGateSource, /setSwitching\(true\)/u);
   assert.doesNotMatch(sessionApiSource, /localStorage|sessionStorage/iu);
@@ -102,7 +111,8 @@ test('Repair reads include cookies and an operational note carries the current C
     /addRepairOperationalNote\([\s\S]*?csrfToken: string,[\s\S]*?headers: \{ \[CSRF_HEADER\]: csrfToken \}/u,
   );
   assert.match(repairsApiSource, /response\.status === 401[\s\S]*?SESSION_INVALIDATED_EVENT/u);
-  assert.match(sessionGateSource, /window\.addEventListener\(SESSION_INVALIDATED_EVENT, invalidate\)/u);
+  assert.match(sessionGateSource, /event\.detail\?\.background === true/u);
+  assert.match(sessionGateSource, /window\.addEventListener\(SESSION_INVALIDATED_EVENT, localInvalidation\)/u);
   assert.match(sessionGateSource, /setSnapshot\(null\)[\s\S]*?setPhase\('loading'\)/u);
 
   assert.match(detailSource, /hasOperationalCapability\(capabilities, 'repairs\.add_note'\)/u);

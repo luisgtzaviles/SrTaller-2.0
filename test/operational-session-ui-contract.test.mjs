@@ -116,23 +116,27 @@ test('browser coordination serializes complete Session exchanges and publishes o
 test('remote mutation invalidation hides the actor before queued reconciliation', () => {
   const subscription = sourceSection(
     gateSource,
-    'const invalidate = (): void => {',
+    'const invalidate = (background = false): void => {',
     '    let unsubscribe:',
   );
   assert.match(subscription, /operationGeneration\.current \+= 1/u);
   assert.match(subscription, /pending = true/u);
-  assert.match(subscription, /setSnapshot\(null\)/u);
-  assert.match(subscription, /setPhase\('loading'\)/u);
+  assert.match(subscription, /if \(!background\) \{[\s\S]*?setSnapshot\(null\)[\s\S]*?setPhase\('loading'\)/u);
   assert.match(subscription, /void reconcile\(\)/u);
   assert.ok(
     subscription.indexOf("setPhase('loading')") < subscription.indexOf('void reconcile()'),
     'the verified actor must be hidden before reconciliation waits for the Session lock',
   );
-  assert.match(gateSource, /subscribeToRemoteSessionChanges\(invalidate\)/u);
-  assert.match(gateSource, /window\.addEventListener\(SESSION_INVALIDATED_EVENT, invalidate\)/u);
+  assert.match(gateSource, /subscribeToRemoteSessionChanges\(\(\) => invalidate\(false\)\)/u);
+  assert.match(gateSource, /window\.addEventListener\(SESSION_INVALIDATED_EVENT, localInvalidation\)/u);
 });
 
 test('session snapshots fail closed before reaching the shell', () => {
+  assert.match(apiSource, /administrationCapabilities: readonly OperationalCapability\[\]/u);
+  assert.match(apiSource, /value\.administrationCapabilities \?\? \[\]/u);
+  assert.match(gateSource, /administrationCapabilities: snapshot\.administrationCapabilities/u);
+  assert.match(appSource, /capabilities=\{administrationCapabilities\} capability="users\.read"/u);
+  assert.match(appSource, /capabilities=\{administrationCapabilities\} capability="access_matrix\.read"/u);
   assert.match(apiSource, /const CSRF_PATTERN = \/\^\[A-Za-z0-9_-\]\{43\}\$\/u/u);
   assert.match(apiSource, /session\.stationId !== station\.stationId/u);
   assert.match(apiSource, /session\.branchId !== station\.branchId/u);

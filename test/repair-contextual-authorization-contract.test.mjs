@@ -51,7 +51,10 @@ const authorizedContext = Object.freeze({
   userId: 'a3000000-0000-4000-8000-000000000001',
   userDisplayName: 'Ada Operadora',
   capability: 'repairs.read',
-  commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
+  commitGuard: Object.freeze({
+    async confirmCurrent() { return true; },
+    async confirmTemporalCurrent() { return true; },
+  }),
 });
 
 const requestEvidence = Object.freeze({
