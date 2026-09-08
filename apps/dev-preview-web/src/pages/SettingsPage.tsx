@@ -150,8 +150,8 @@ export function SettingsPage({ capabilities }: Readonly<{
             </div>
 
             <div className={styles.presetBlock}>
-              <span className={styles.controlLabel}>Presets útiles</span>
-              <div className={styles.presetList} role="group" aria-label="Presets de color de marca">
+              <span className={styles.controlLabel}>Opciones predeterminadas</span>
+              <div className={styles.presetList} role="group" aria-label="Opciones predeterminadas de color de marca">
                 {BRAND_PRESETS.map((preset) => {
                   const isSelected = selectedPreset === preset.name;
                   return (
@@ -176,7 +176,7 @@ export function SettingsPage({ capabilities }: Readonly<{
             <div className={styles.stateNote} role="status" aria-live="polite">
               <span className={styles.stateDot} aria-hidden="true" />
               <span>Guardado automáticamente en este navegador.</span>
-              {brandWasAdapted ? <strong>El resolver adaptó este color para mantener el contraste.</strong> : null}
+              {brandWasAdapted ? <strong>El sistema ajustó este color para mantener el contraste.</strong> : null}
             </div>
 
             <Button tone="secondary" onClick={restoreDefault}>
@@ -209,8 +209,8 @@ export function SettingsPage({ capabilities }: Readonly<{
                   <span>Reparaciones</span>
                 </div>
                 <label className={styles.previewFocusField}>
-                  <span>Campo con focus</span>
-                  <input aria-label="Campo con focus de vista previa" defaultValue="Cliente sintético" />
+                  <span>Campo enfocado</span>
+                  <input aria-label="Campo enfocado de vista previa" defaultValue="Cliente sintético" />
                 </label>
               </div>
             </div>

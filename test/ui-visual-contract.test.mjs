@@ -100,7 +100,11 @@ test('product settings present theme and brand roles in business Spanish', () =>
     'Acción',
     'Texto sobre superficie',
     'Texto sobre acción',
+    'Opciones predeterminadas',
+    'Campo enfocado',
+    'El sistema ajustó este color',
   ]) assert.match(settingsSource, new RegExp(label, 'u'));
   assert.doesNotMatch(settingsSource, />Light<|>Dark<|>Input<|>Base foreground<|>Surface<|>Action</u);
   assert.doesNotMatch(settingsSource, /success, warning, danger e info/u);
+  assert.doesNotMatch(settingsSource, /Presets|Campo con focus|El resolver adaptó/u);
 });
