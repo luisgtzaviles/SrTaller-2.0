@@ -5,10 +5,10 @@ Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
 Status: Exact local candidate green; final PIN browser proof pending
 Progress: 9 / 12 checkpoint blocks completed
-Current work: Reconcile evidence and prepare the hardened candidate commits.
+Current work: Remediate and re-review the exact hardened candidate HEAD.
 Next block: Complete the PIN/login browser walkthrough over the exact hardened UI.
 Blockers: None. Merge and deploy remain unauthorized.
-Updated: 2026-09-07 19:44 MST
+Updated: 2026-09-07 19:49 MST
 
 ## Master checkpoint
 
@@ -110,6 +110,7 @@ Updated: 2026-09-07 19:44 MST
 - [x] Role/user/PIN mutations use durable request identity, optimistic versions and rollback-safe persistence
 - [x] PBI-028 note plus audit is atomic, idempotent, append-only and commit-authorized
 - [x] Commit authorization is authority-linearized before Repair lookup and Session time is rechecked after the final blocking Repair lock
+- [x] PostgreSQL materially covers revocation before transaction, after its serializable snapshot and after its authority lock
 - [x] Correlation UUID is generated server-side for success and error paths, including malformed JSON
 - [x] PostgreSQL 18.4 material suite passed 8/8 after remediation; cleanup PASS and fingerprint stable
 - [x] New additive User profile idempotency migration passed material coverage, local upgrade and two consecutive `0 pending` runs

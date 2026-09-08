@@ -45,7 +45,8 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   correlation UUID server-side también en errores. Users/Roles usan lenguaje
   de negocio, múltiples Roles, lifecycle sin delete y nunca muestran PIN.
   El focused review fue remediado con autoridad temporal posterior al último
-  lock de Repair, rate bucket compartido que no se borra por éxito ajeno,
+  lock de Repair y las tres intercalaciones de revocación, rate bucket
+  compartido que no se borra por éxito ajeno,
   continuidad de administrador PIN-authenticable, autoridad dual para cambiar
   PIN, proyección administrativa tenant-wide e idempotencia durable de edición
   de perfil. `pnpm run verify` pasó `626/609/17/0`; PostgreSQL 18.4 material

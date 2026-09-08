@@ -103,7 +103,8 @@ authorization revocation, PBI-028 atomicity/idempotency/concurrency/rollback and
 owner-scoped migrations. Focused remediation also covers successful
 authentication rate-window reset, legacy credential replacement, commit-time
 Session expiry after a blocking Repair lock, authority/revocation
-linearization, malformed JSON correlation, tenant-wide administration
+linearization across all three transaction orderings, malformed JSON
+correlation, tenant-wide administration
 projection, administrator continuity and administration Session revalidation.
 The OCI verifier uses an ephemeral database and a synthetic in-memory pepper;
 no secret is built into the image or retained in command failure diagnostics.

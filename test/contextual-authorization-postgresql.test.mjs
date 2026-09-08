@@ -152,6 +152,7 @@ const toctouRequest = 'd6000000-0000-4000-8000-000000000026';
 const expiredCommitRequest = 'd7000000-0000-4000-8000-000000000026';
 const lockExpiredCommitRequest = 'd8000000-0000-4000-8000-000000000026';
 const authorityLinearizationRequest = 'd9000000-0000-4000-8000-000000000026';
+const snapshotRevocationRequest = 'da000000-0000-4000-8000-000000000026';
 const stationSecretA = 'A'.repeat(43);
 const stationSecretB = 'B'.repeat(43);
 const authorizationNow = new Date();
@@ -1239,6 +1240,64 @@ test(
         [tenantA, roleA],
       );
       afterAuthorizedNote = await effectCounts(admin);
+
+      let releaseAuthorityCheck;
+      let markAuthorityCheckReached;
+      const authorityCheckReached = new Promise((resolve) => {
+        markAuthorityCheckReached = resolve;
+      });
+      const authorityCheckReleased = new Promise((resolve) => {
+        releaseAuthorityCheck = resolve;
+      });
+      const snapshotRaceNote = repairRepository.addOperationalNote({
+        ...contextBeforeExpiry,
+        actorUserId: contextBeforeExpiry.userId,
+        actorDisplayName: contextBeforeExpiry.userDisplayName,
+        commitGuard: Object.freeze({
+          async confirmCurrent(transactionContext) {
+            markAuthorityCheckReached();
+            await authorityCheckReleased;
+            return contextBeforeExpiry.commitGuard.confirmCurrent(transactionContext);
+          },
+          async confirmTemporalCurrent(transactionContext) {
+            return contextBeforeExpiry.commitGuard.confirmTemporalCurrent(transactionContext);
+          },
+        }),
+      }, {
+        repairId: repairA,
+        entryId: 'eb000000-0000-4000-8000-000000000026',
+        auditEventId: 'eb100000-0000-4000-8000-000000000026',
+        correlationId: 'eb200000-0000-4000-8000-000000000026',
+        clientRequestId: snapshotRevocationRequest,
+        body: 'La revocación posterior al snapshot debe forzar denegación.',
+        action: 'repair.operational_note.added',
+        resourceType: 'repair',
+        result: 'succeeded',
+        occurredAt: new Date(),
+      });
+      await authorityCheckReached;
+      try {
+        const revocation = await admin.query(
+          `delete from access_role_capabilities
+           where tenant_id = $1 and role_id = $2
+             and capability_code = 'repairs.add_note'`,
+          [tenantA, roleA],
+        );
+        assert.equal(revocation.rowCount, 1);
+      } finally {
+        releaseAuthorityCheck();
+      }
+      await assert.rejects(
+        snapshotRaceNote,
+        RepairOperationalNoteAuthorizationChangedError,
+      );
+      assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      await admin.query(
+        `insert into access_role_capabilities (
+           tenant_id, role_id, capability_code, created_at
+         ) values ($1, $2, 'repairs.add_note', now())`,
+        [tenantA, roleA],
+      );
 
       await admin.query(
         `update access_role_assignments
