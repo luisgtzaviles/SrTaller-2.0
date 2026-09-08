@@ -3,12 +3,12 @@
 Milestone: Hardened Identity + Users & Roles Checkpoint
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
-Status: Exact source and OCI candidate green; final PIN browser proof pending
-Progress: 9 / 12 checkpoint blocks completed
-Current work: Final PIN-sensitive browser walkthrough awaiting immediate Owner confirmation.
-Next block: Complete the PIN/login browser walkthrough over the exact hardened UI.
-Blockers: No technical blocker. Credential entry is paused until current Owner confirmation; merge and deploy remain unauthorized.
-Updated: 2026-09-07 20:33 MST
+Status: Exact source, OCI and hardened browser candidate green; integration candidate preparation in progress
+Progress: 10 / 12 checkpoint blocks completed
+Current work: Exact documentation checkpoint, ordinary push, Draft PR and authoritative CI.
+Next block: Publish the exact candidate through the authorized Draft PR path and compare both CI runs.
+Blockers: No technical blocker. Merge and deploy remain unauthorized.
+Updated: 2026-09-07 21:02 MST
 
 ## Master checkpoint
 
@@ -21,7 +21,7 @@ Updated: 2026-09-07 20:33 MST
 - [x] PBI-028 audit/correlation hardened
 - [x] PostgreSQL 18.4 fresh / upgrade / 0-pending verification
 - [x] Full local verification
-- [~] Browser QA and Owner-review localhost
+- [x] Browser QA and Owner-review localhost
 - [ ] Logical commits, Draft PR, CI and focused review
 - [ ] Owner merge authorization / canonical integration
 
@@ -40,7 +40,7 @@ Updated: 2026-09-07 20:33 MST
 - [x] Functional logic
 - [x] UI redesign in business language
 - [x] Security and API hardening
-- [~] Verification (full, PostgreSQL and OCI gates green; final PIN browser walkthrough pending)
+- [x] Verification
 - [ ] Integration candidate / CI / focused review
 
 ### Functional surface already proven
@@ -98,7 +98,11 @@ Updated: 2026-09-07 20:33 MST
 - [x] Repair `SR-2026-001` accepts an Operational Note as real actor `Luis`
 - [x] Timeline preserves the actor and note after reload
 - [x] Business audit row contains the allowed action/resource/context/correlation/timestamp metadata and no note body field
-- [ ] Final PIN-only error/reload/logout/switch walkthrough over the hardened UI
+- [x] Final PIN-only error/reload/logout/switch walkthrough over the hardened UI
+- [x] Efrén and Valeria each authenticate to their own Session with distinct synthetic local PINs
+- [x] Efrén and Valeria retain `repairs.read` while administration and Operational Note remain unavailable
+- [x] Valeria persisted after reload, was denied while inactive, then authenticated again after reactivation
+- [x] Localhost returned to the active `Luis` administrator Session for Owner Review
 
 ## Hardening evidence
 

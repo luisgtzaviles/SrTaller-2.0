@@ -139,8 +139,18 @@ no secret is built into the image or retained in command failure diagnostics.
   timeline kept actor and content after reload.
 - The corresponding audit row confirmed `repairs.add_note`, scoped context,
   server UUID correlation and timestamp without a note-body column.
-- The final hardened PIN error/reload/logout/switch/restricted-user walkthrough
-  is pending immediate action-time confirmation before credential entry.
+- A final hardened PIN-only walkthrough used three authorized synthetic local
+  identities without recording credential values. An unknown PIN produced the
+  same non-enumerating error; Efrén and Valeria each created the correct
+  server-backed Session; Valeria's Session survived reload; and the explicit
+  change-user action replaced Efrén with Valeria.
+- Both `Ventas` users could open Repairs and Repair Detail while administration
+  was denied and the Operational Note control remained absent. Valeria kept
+  her identity, Role and configured-PIN indicator through deactivation; login
+  was denied while inactive, then succeeded after reactivation.
+- The browser was returned to the active `Luis` administrator Session on
+  `/configuracion/usuarios`; the directory showed Efrén and Valeria active,
+  assigned to `Ventas`, and only `Configurado` rather than any plaintext PIN.
 
 Local URLs remain `http://127.0.0.1:4173`,
 `http://127.0.0.1:3000/livez` and `http://127.0.0.1:3000/readyz`; all three
@@ -148,7 +158,6 @@ returned HTTP 200 during candidate validation.
 
 ## Candidate gates still pending
 
-- final PIN-sensitive browser walkthrough;
 - exact final documentation commit;
 - ordinary push and Draft PR;
 - authoritative CI run-1, run-2 and comparison on the exact PR HEAD;
