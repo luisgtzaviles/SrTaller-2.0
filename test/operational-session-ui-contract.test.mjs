@@ -136,7 +136,8 @@ test('remote mutation invalidation hides the actor before queued reconciliation'
 
 test('session snapshots fail closed before reaching the shell', () => {
   assert.match(apiSource, /administrationCapabilities: readonly OperationalCapability\[\]/u);
-  assert.match(apiSource, /value\.administrationCapabilities \?\? \[\]/u);
+  assert.match(apiSource, /parseSessionCapabilities\([\s\S]*?value\.administrationCapabilities,[\s\S]*?session !== null/u);
+  assert.doesNotMatch(apiSource, /value\.administrationCapabilities \?\? \[\]/u);
   assert.match(gateSource, /administrationCapabilities: snapshot\.administrationCapabilities/u);
   assert.match(appSource, /capabilities=\{administrationCapabilities\} capability="users\.read"/u);
   assert.match(appSource, /capabilities=\{administrationCapabilities\} capability="access_matrix\.read"/u);

@@ -113,7 +113,7 @@ function parseSnapshot(value: unknown): OperationalSessionSnapshot {
   const session = parseActiveSession(value.session, station);
   const capabilities = parseSessionCapabilities(value.capabilities, session !== null);
   const administrationCapabilities = parseSessionCapabilities(
-    value.administrationCapabilities ?? [],
+    value.administrationCapabilities,
     session !== null,
   );
   const revalidateAfterMs = value.revalidateAfterMs;

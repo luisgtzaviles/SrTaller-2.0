@@ -13,6 +13,7 @@ const catalogSource = await readFile('apps/dev-preview-web/src/catalog/UiCatalog
 const catalogStyles = await readFile('apps/dev-preview-web/src/catalog/ui-catalog.module.css', 'utf8');
 const repairDetailSource = await readFile('apps/dev-preview-web/src/pages/RepairDetailPage.tsx', 'utf8');
 const repairsSource = await readFile('apps/dev-preview-web/src/pages/RepairsPage.tsx', 'utf8');
+const settingsSource = await readFile('apps/dev-preview-web/src/pages/SettingsPage.tsx', 'utf8');
 
 function themeTokens(theme) {
   const selector = theme === 'light' ? ':root,\n[data-theme="light"]' : '[data-theme="dark"]';
@@ -87,4 +88,19 @@ test('materiality hierarchy is explicit without bypassing governed surfaces', ()
   assert.match(tokensSource, /--color-brand-chrome-active:/u);
   assert.match(tokensSource, /--color-brand-chrome-border:/u);
   assert.match(tokensSource, /--color-brand-chrome-muted:/u);
+});
+
+test('product settings present theme and brand roles in business Spanish', () => {
+  for (const label of [
+    'Tema claro',
+    'Tema oscuro',
+    'Color elegido',
+    'Texto principal',
+    'Superficie',
+    'Acción',
+    'Texto sobre superficie',
+    'Texto sobre acción',
+  ]) assert.match(settingsSource, new RegExp(label, 'u'));
+  assert.doesNotMatch(settingsSource, />Light<|>Dark<|>Input<|>Base foreground<|>Surface<|>Action</u);
+  assert.doesNotMatch(settingsSource, /success, warning, danger e info/u);
 });

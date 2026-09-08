@@ -191,7 +191,7 @@ export function SettingsPage({ capabilities }: Readonly<{
                 <span className={styles.previewEyebrow}>Vista previa</span>
                 <h3 id="brand-preview-title">Así se verá en la operación</h3>
               </div>
-              <span className={styles.themeBadge}>{resolvedTheme === 'light' ? 'Light' : 'Dark'}</span>
+              <span className={styles.themeBadge}>{resolvedTheme === 'light' ? 'Tema claro' : 'Tema oscuro'}</span>
             </div>
             <div className={styles.previewSurface}>
               <div className={styles.previewTopline}>
@@ -215,14 +215,14 @@ export function SettingsPage({ capabilities }: Readonly<{
               </div>
             </div>
             <dl className={styles.previewRoleGrid} aria-label="Roles de marca resueltos">
-              <div><dt>Input</dt><dd><code>{brand.input}</code></dd></div>
-              <div><dt>Base foreground</dt><dd><code>{brand.onBase}</code></dd></div>
-              <div><dt>Surface</dt><dd><code>{brand.surface}</code></dd></div>
-              <div><dt>Action</dt><dd><code>{brand.action}</code></dd></div>
-              <div><dt>Surface foreground</dt><dd><code>{brand.surfaceFocus}</code></dd></div>
-              <div><dt>Action foreground</dt><dd><code>{brand.contrast}</code></dd></div>
+              <div><dt>Color elegido</dt><dd><code>{brand.input}</code></dd></div>
+              <div><dt>Texto principal</dt><dd><code>{brand.onBase}</code></dd></div>
+              <div><dt>Superficie</dt><dd><code>{brand.surface}</code></dd></div>
+              <div><dt>Acción</dt><dd><code>{brand.action}</code></dd></div>
+              <div><dt>Texto sobre superficie</dt><dd><code>{brand.surfaceFocus}</code></dd></div>
+              <div><dt>Texto sobre acción</dt><dd><code>{brand.contrast}</code></dd></div>
             </dl>
-            <p className={styles.previewNote}>El resolver mantiene fidelidad, contraste y separación de roles para {resolvedTheme}; success, warning, danger e info permanecen independientes.</p>
+            <p className={styles.previewNote}>El color conserva fidelidad y contraste en el tema {resolvedTheme === 'light' ? 'claro' : 'oscuro'}; los estados de éxito, advertencia, peligro e información permanecen independientes.</p>
           </div>
         </article>
       </section>
