@@ -102,6 +102,8 @@ permissions or credential disclosure.
 | PostgreSQL material fingerprint | `50d539575718151676ce139a1a9b079c383559049e6207930538173ca343066d` |
 | Local migration upgrade / rerun | PASS — final additive migration applied once, then the second run left `0 pending`; manifest `1165e175ff10faafbe3f8e5c71d1b065e54a0d76eabd1bdca6835d7ee84a7092` |
 | Production dependency audit | PASS — 0 vulnerabilities; `qs` resolves only to `6.16.0` |
+| Candidate secret scan | PASS — no private-key or provider-token signatures; literal credential-name matches were confined to synthetic tests and non-secret type/algorithm values |
+| Markdown links | PASS — 601 tracked Markdown files, 0 broken local targets |
 | OCI contract | PASS — exact-code image `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b`; 31 fresh migrations, second run `0 applied / 0 pending`, read-only uid `1000:1000` runtime, no filesystem diff, health/routes and clean SIGTERM; verifier errors redact generated secrets |
 | DEC-005 / UI / external configuration | PASS in canonical verify |
 | Focused contracts | PASS — administration, role input, Session UI, note/audit and global correlation |

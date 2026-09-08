@@ -59,7 +59,8 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   `50d539575718151676ce139a1a9b079c383559049e6207930538173ca343066d`;
   OCI final `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b`
   pasó fresh `31` + rerun `0/0`, uid no-root, root read-only, rutas/health y
-  SIGTERM limpio. La auditoría productiva reportó `0` vulnerabilidades,
+  SIGTERM limpio. Frozen install, secret scan del candidato y los 601 enlaces
+  Markdown locales pasan; la auditoría productiva reportó `0` vulnerabilidades,
   Light/Dark, responsive y real-actor reload PASS. Los PIN demo son inputs
   efímeros del seed y `.env.local` limpia claves heredadas; fallos del
   verificador OCI tampoco imprimen secretos generados. Falta sólo el

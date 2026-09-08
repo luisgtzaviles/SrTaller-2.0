@@ -5,10 +5,10 @@ Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
 Status: Exact source and OCI candidate green; final PIN browser proof pending
 Progress: 9 / 12 checkpoint blocks completed
-Current work: Restore one coherent localhost runtime for final browser QA.
+Current work: Final PIN-sensitive browser walkthrough awaiting immediate Owner confirmation.
 Next block: Complete the PIN/login browser walkthrough over the exact hardened UI.
-Blockers: None. Merge and deploy remain unauthorized.
-Updated: 2026-09-07 20:27 MST
+Blockers: No technical blocker. Credential entry is paused until current Owner confirmation; merge and deploy remain unauthorized.
+Updated: 2026-09-07 20:33 MST
 
 ## Master checkpoint
 
@@ -120,6 +120,8 @@ Updated: 2026-09-07 20:27 MST
 - [x] Additive User profile and User-create idempotency migrations passed material coverage; local upgrade applied the final migration once and a second run left `0 pending` (manifest `1165e175ff10faafbe3f8e5c71d1b065e54a0d76eabd1bdca6835d7ee84a7092`)
 - [x] `pnpm install --frozen-lockfile` and final `pnpm run verify` on `9c9ba04` passed: 630 tests, 613 pass, 17 expected PostgreSQL skips, 0 fail
 - [x] Production dependency audit passed: 0 vulnerabilities and one resolved `qs@6.16.0`
+- [x] Candidate secret scan found no private-key or provider-token signatures; remaining literal matches are synthetic test material or non-secret type/algorithm values
+- [x] All 601 tracked Markdown files passed local link validation with 0 broken targets
 - [x] Final OCI image `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b` passed with read-only filesystem, non-root uid `1000:1000`, 31 fresh migrations, second run `0 applied / 0 pending`, health/routes and clean SIGTERM
 - [x] OCI verifier failures redact generated database/PIN secret material
 - [x] Exact code reviews on PBI-028, PIN/Access and UI/API closed at `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`
