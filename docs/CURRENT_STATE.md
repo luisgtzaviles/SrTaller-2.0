@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Fotografía del candidato local endurecido de PBI-028 y del slice
-  PBI-037; PBI-026 y G4 están cerrados efectivamente.
+- **Estado:** Fotografía del Draft PR #37 para el candidato endurecido de
+  PBI-028 y el slice PBI-037; PBI-026 y G4 están cerrados efectivamente.
 - **Baseline auditada:** `main` en
   `0b39e3794a97c22d5471c0b6dfa278026f237b03`.
 - **CI autoritativo:** run `34161029937`, `SUCCESS`; VC-024 run-1, run-2 y
@@ -28,9 +28,11 @@ sigue activo. PBI-026 está `Done` después del cierre PR #36 y G4 está `PASS`.
 PBI-028 tiene tamaño `Large`, riesgo `High` preservado, threat model, contrato
 acotado de auditoría/correlation, DoR `PASS` y Owner Start. Es el único PBI
 actual y WIP es `1/1`. Su rama contiene un checkpoint local endurecido con
-PBI-037 explícitamente trazado, full verify, PostgreSQL 18.4, OCI y prueba
-visual no sensible verdes. Draft PR, CI autoritativo, focused review y merge
-siguen pendientes; no se atribuye este trabajo a `main`.
+PBI-037 explícitamente trazado, full verify, PostgreSQL 18.4, OCI y walkthrough
+PIN-sensitive verdes. El Draft PR #37 está abierto y su CI inicial
+`34190625347` pasó run-1, run-2 y comparison; la CI y focused review del HEAD
+documental final, la autorización de merge y la integración siguen pendientes.
+No se atribuye este trabajo a `main`.
 
 ## Git y CI
 
@@ -43,6 +45,7 @@ siguen pendientes; no se atribuye este trabajo a `main`.
 | Working tree al iniciar | limpio |
 | CI | `34161029937` SUCCESS |
 | Última integración | PR #36 — cierre canónico de PBI-026 |
+| Candidato PBI-028 | Draft PR #37; CI inicial `34190625347` GREEN; no integrado |
 
 PR #30 integró el candidate funcional exacto de PBI-025 tras un primer intento
 rojo y un rerun verde. La integración fue una desviación de DEC-051/DEC-063,
@@ -251,7 +254,7 @@ todavía en estado integrado.
 
 ## Próxima acción
 
-Completar el walkthrough PIN-sensitive, crear Draft PR, obtener CI
-run-1/run-2/comparison y focused High-risk review sobre el HEAD exacto. Detener
-antes del merge para autorización Owner. No iniciar otro PBI; no existe
-autorización de release o deploy.
+Cerrar los findings documentales de la revisión, obtener CI
+run-1/run-2/comparison y focused High-risk review verdes sobre el HEAD final
+exacto del Draft PR #37. Detener antes del merge para autorización Owner. No
+iniciar otro PBI; no existe autorización de release o deploy.

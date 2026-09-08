@@ -5,7 +5,7 @@ Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
 Status: Hardened Draft PR candidate green; final exact-HEAD CI and focused review in progress
 Progress: 11 / 12 checkpoint blocks completed
-Current work: Freeze final documentary HEAD, rerun authoritative CI and perform exact-HEAD focused review.
+Current work: Remediate the exact-HEAD review's PR binding and canonical lifecycle documentation findings.
 Next block: Stop at Owner merge authorization after final run-1/run-2/comparison and review are green.
 Blockers: No technical blocker. Merge and deploy remain unauthorized.
 Updated: 2026-09-07 22:42 MST
@@ -131,7 +131,7 @@ Updated: 2026-09-07 22:42 MST
 - [x] OCI verifier failures redact generated database/PIN secret material
 - [x] Exact code reviews on PBI-028, PIN/Access and UI/API closed at `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`
 - [x] Draft PR #37 opened without merge; CI `34190625347` passed run-1, run-2 and semantic/artifact comparison on `51ca8d1`
-- [~] Final exact-HEAD CI and focused High-risk review after recording CI evidence
+- [~] Final exact-HEAD CI and focused High-risk review after documentary finding remediation
 
 ## Scope guard
 

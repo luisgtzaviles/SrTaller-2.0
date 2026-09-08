@@ -34,13 +34,13 @@ PBI antes de cerrar canónicamente el anterior.
 - [x] G4 Authorization PASS efectivo; cierre PBI-026 PR #36 + CI exacto
   `34161029937` GREEN.
 - [ ] G5 Audit PASS.
-- [~] Login/logout/User switching visible y persistente en localhost; lógica
-  funcional probada y walkthrough endurecido final pendiente de confirmación
-  inmediata antes de introducir PIN.
+- [x] Login/logout/User switching visible y persistente en localhost; lógica
+  funcional y walkthrough endurecido final probados con identidades sintéticas.
 - [x] Operational Note usa actor, Station, Session, Tenant, Branch y correlation
   reales en el candidato local; no “Operador sintético”.
 - [~] PostgreSQL 18.4, arquitectura, Light/Dark, responsive, full verify y OCI
-  local GREEN; CI autoritativo del candidate pendiente.
+  local GREEN; Draft PR #37 y CI inicial `34190625347` GREEN; CI y focused
+  review del HEAD documental final pendientes.
 - [ ] Released: NO; deploy: NO.
 
 ## Próxima revisión

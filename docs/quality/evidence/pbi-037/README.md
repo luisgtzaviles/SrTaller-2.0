@@ -37,6 +37,7 @@ recorded in the
 
 ## Remaining authority
 
-Draft PR, exact candidate CI, focused review and explicit Owner merge
-authorization are still required. No Production credential, remote database,
-release or deploy belongs to this evidence.
+Draft PR #37 is open and initial candidate CI `34190625347` passed both VC-024
+executions and comparison. Final exact-HEAD CI, focused review and explicit
+Owner merge authorization are still required. No Production credential,
+remote database, release or deploy belongs to this evidence.
