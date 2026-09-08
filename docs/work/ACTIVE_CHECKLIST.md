@@ -3,11 +3,11 @@
 Milestone: PBI-028 Canonical Closure & Roadmap Advance
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: NONE — PBI-028 is `Done candidate`; PBI-037 remains an integrated Owner-authorized slice
-Status: Documentary closure candidate; merge and exact-main CI of this PR remain pending
-Progress: 12 / 13 closure blocks completed
-Current work: Validate, review and obtain authoritative CI for the docs-only closure PR.
-Next block: Stop at Owner merge authorization.
-Blockers: No technical blocker. Merge, release and deploy remain unauthorized.
+Status: Documentary closure candidate; CI and focused documentary review GREEN; Owner merge authorization pending
+Progress: 13 / 14 closure blocks completed
+Current work: Stop at Owner merge authorization.
+Next block: No next PBI action; merge authorization is the only remaining closure predicate.
+Blockers: No technical blocker. Owner merge authorization, release and deploy remain unauthorized.
 Updated: 2026-09-08 MST
 
 ## Canonical closure
@@ -24,7 +24,9 @@ Updated: 2026-09-08 MST
 - [x] G5 AUDIT marked `PASS candidate`
 - [x] Current PBI / WIP advanced preventively to `NONE` / `0/1`
 - [x] Next candidate assessed as `NONE`; no existing PBI is selected or ready
-- [ ] Docs-only PR CI, focused documentary review and Owner merge authorization
+- [x] Docs-only PR CI `34199627015`: run-1/run-2/comparison GREEN
+- [x] Focused documentary review of exact HEAD: docs-only, links, consistency, diff and secret scan PASS
+- [ ] Owner merge authorization
 
 ## PBI-028 — Audit and Correlation
 
