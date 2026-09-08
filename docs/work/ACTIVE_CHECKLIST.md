@@ -3,12 +3,12 @@
 Milestone: Hardened Identity + Users & Roles Checkpoint
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
-Status: Exact local candidate green; final PIN browser proof pending
+Status: Exact source and OCI candidate green; final PIN browser proof pending
 Progress: 9 / 12 checkpoint blocks completed
-Current work: Remediate and re-review the exact hardened candidate HEAD.
+Current work: Restore one coherent localhost runtime for final browser QA.
 Next block: Complete the PIN/login browser walkthrough over the exact hardened UI.
 Blockers: None. Merge and deploy remain unauthorized.
-Updated: 2026-09-07 19:49 MST
+Updated: 2026-09-07 20:27 MST
 
 ## Master checkpoint
 
@@ -108,16 +108,21 @@ Updated: 2026-09-07 19:49 MST
 - [x] Administration reads and writes require tenant-wide server-side capability authority
 - [x] Administration mutation authority is rechecked inside the same transaction as the effect
 - [x] Role/user/PIN mutations use durable request identity, optimistic versions and rollback-safe persistence
+- [x] Ordinary User creation uses a durable request journal for exact replay, payload conflict and concurrent retry safety
+- [x] Ambiguous User profile updates preserve one immutable command and reconcile against authoritative state before retry
+- [x] PIN configured/admin-continuity projections accept only the supported credential profile and pepper version
+- [x] Session administration capabilities are canonically composed before browser parsing
 - [x] PBI-028 note plus audit is atomic, idempotent, append-only and commit-authorized
 - [x] Commit authorization is authority-linearized before Repair lookup and Session time is rechecked after the final blocking Repair lock
 - [x] PostgreSQL materially covers revocation before transaction, after its serializable snapshot and after its authority lock
 - [x] Correlation UUID is generated server-side for success and error paths, including malformed JSON
 - [x] PostgreSQL 18.4 material suite passed 8/8 after remediation; cleanup PASS and fingerprint stable
-- [x] New additive User profile idempotency migration passed material coverage, local upgrade and two consecutive `0 pending` runs
-- [x] `pnpm install --frozen-lockfile` and `pnpm run verify` passed: 626 tests, 609 pass, 17 expected PostgreSQL skips, 0 fail
+- [x] Additive User profile and User-create idempotency migrations passed material coverage; local upgrade applied the final migration once and a second run left `0 pending` (manifest `1165e175ff10faafbe3f8e5c71d1b065e54a0d76eabd1bdca6835d7ee84a7092`)
+- [x] `pnpm install --frozen-lockfile` and final `pnpm run verify` on `9c9ba04` passed: 630 tests, 613 pass, 17 expected PostgreSQL skips, 0 fail
 - [x] Production dependency audit passed: 0 vulnerabilities and one resolved `qs@6.16.0`
-- [x] OCI image verification passed with read-only filesystem, non-root runtime, 30 fresh migrations, second run `0 applied / 0 pending`, health/routes and clean SIGTERM
+- [x] Final OCI image `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b` passed with read-only filesystem, non-root uid `1000:1000`, 31 fresh migrations, second run `0 applied / 0 pending`, health/routes and clean SIGTERM
 - [x] OCI verifier failures redact generated database/PIN secret material
+- [x] Exact code reviews on PBI-028, PIN/Access and UI/API closed at `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`
 
 ## Scope guard
 

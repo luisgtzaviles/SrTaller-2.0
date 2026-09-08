@@ -11,6 +11,8 @@
   `f608ef165763c86a592f5062218cd93b6ca0eb7a`.
 - **Hardened implementation checkpoint:**
   `cc2b756` (`feat(identity): harden audit and administration checkpoint`).
+- **Final reviewed implementation HEAD:**
+  `9c9ba0496ee62cbcd6f3174c6d2380d4f0fe7cef`.
 - **Risk / size:** High / Large.
 - **Released / deployed:** NO / NO.
 
@@ -55,6 +57,14 @@ permissions or credential disclosure.
 - Create/edit Role, replace capability set, create/edit User, assign/revoke
   Role, set/replace PIN and active/inactive transitions use strict payloads,
   durable request identity and optimistic versions.
+- Ordinary User creation has a durable request journal: an exact retry returns
+  the original server-owned identity, a divergent payload conflicts, and a
+  concurrent loser rolls back before replaying the winner.
+- Ambiguous profile-update retries retain an immutable command and reconcile
+  the authoritative User projection before issuing the same command again.
+- PIN configured/administrator-continuity projections count only the supported
+  credential profile and pepper version. Administration capabilities are
+  canonically composed before the browser consumes them.
 - Both reads and writes require the exact administration capability with
   tenant-wide authority. Mutation authority is revalidated in the same
   transaction as the effect to close the authorization TOCTOU window.
@@ -87,14 +97,15 @@ permissions or credential disclosure.
 |---|---|
 | Toolchain | Node.js `24.18.0`; pnpm `11.15.1`; PostgreSQL `18.4` |
 | Frozen install | PASS |
-| `pnpm run verify` | PASS — 626 total, 609 pass, 17 expected material skips, 0 fail |
+| `pnpm run verify` | PASS on `9c9ba04` — 630 total, 613 pass, 17 expected material skips, 0 fail |
 | PostgreSQL owner-scoped material | PASS — 8/8, 0 skipped, cleanup PASS |
-| PostgreSQL material fingerprint | `b6cbc03d7c758b613e31a4131c01e547603da691c846f04db205fc0c09a353b7` |
-| Local migration upgrade / rerun | PASS — one additive migration applied, then two consecutive runs left `0 pending`; manifest `931ca8eef7f054d58f65343d9bc243edf58528774497835e05233bc785ce860b` |
+| PostgreSQL material fingerprint | `50d539575718151676ce139a1a9b079c383559049e6207930538173ca343066d` |
+| Local migration upgrade / rerun | PASS — final additive migration applied once, then the second run left `0 pending`; manifest `1165e175ff10faafbe3f8e5c71d1b065e54a0d76eabd1bdca6835d7ee84a7092` |
 | Production dependency audit | PASS — 0 vulnerabilities; `qs` resolves only to `6.16.0` |
-| OCI contract | PASS — 30 fresh migrations, second run `0 applied / 0 pending`, read-only uid 1000 runtime, health/routes and clean SIGTERM; verifier errors redact generated secrets |
+| OCI contract | PASS — exact-code image `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b`; 31 fresh migrations, second run `0 applied / 0 pending`, read-only uid `1000:1000` runtime, no filesystem diff, health/routes and clean SIGTERM; verifier errors redact generated secrets |
 | DEC-005 / UI / external configuration | PASS in canonical verify |
 | Focused contracts | PASS — administration, role input, Session UI, note/audit and global correlation |
+| Focused High-risk reviews | PASS — PBI-028, PIN/Access and UI/API each closed at `0B/0H/0M/0L` |
 | `git diff --check` | PASS |
 
 The material PostgreSQL runner covers PIN collision, lockout, replacement,
@@ -106,6 +117,9 @@ Session expiry after a blocking Repair lock, authority/revocation
 linearization across all three transaction orderings, malformed JSON
 correlation, tenant-wide administration
 projection, administrator continuity and administration Session revalidation.
+It also covers durable ordinary-User creation replay/conflict/concurrency,
+unsupported PIN pepper-version exclusion, canonical administration capability
+ordering and immutable profile retry reconciliation.
 The OCI verifier uses an ephemeral database and a synthetic in-memory pepper;
 no secret is built into the image or retained in command failure diagnostics.
 

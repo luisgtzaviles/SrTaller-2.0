@@ -49,8 +49,17 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   compartido que no se borra por éxito ajeno,
   continuidad de administrador PIN-authenticable, autoridad dual para cambiar
   PIN, proyección administrativa tenant-wide e idempotencia durable de edición
-  de perfil. `pnpm run verify` pasó `626/609/17/0`; PostgreSQL 18.4 material
-  `8/8`, OCI fresh `30` + rerun `0/0`, auditoría productiva `0` vulnerabilidades,
+  de perfil. El cierre de hardening agrega idempotencia durable y concurrencia
+  segura a la creación ordinaria de Users, reintento inmutable de perfil,
+  exclusión de perfiles PIN/pepper no soportados y composición canónica de
+  capabilities administrativas; el cliente exige esa proyección fail-closed y
+  Configuración presenta sus roles visuales en lenguaje de producto accesible.
+  `pnpm run verify` final sobre `9c9ba04` pasó `630/613/17/0`;
+  PostgreSQL 18.4 material `8/8` con fingerprint
+  `50d539575718151676ce139a1a9b079c383559049e6207930538173ca343066d`;
+  OCI final `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b`
+  pasó fresh `31` + rerun `0/0`, uid no-root, root read-only, rutas/health y
+  SIGTERM limpio. La auditoría productiva reportó `0` vulnerabilidades,
   Light/Dark, responsive y real-actor reload PASS. Los PIN demo son inputs
   efímeros del seed y `.env.local` limpia claves heredadas; fallos del
   verificador OCI tampoco imprimen secretos generados. Falta sólo el
