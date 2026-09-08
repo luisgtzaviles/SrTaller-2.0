@@ -21,6 +21,9 @@ import type {
 } from '../../../infrastructure/runtime/index.js';
 import { TrustedStationContextError } from '../../stations/index.js';
 import type { TrustedStationContextResolver } from '../../stations/index.js';
+import type {
+  BranchSettingsRuntime,
+} from '../../stations/index.js';
 import { PinInputError } from '../application/pin-input.js';
 import { SessionTokenInputError } from '../application/ports/session-token.port.js';
 import { PinAuthenticationError } from '../application/use-cases/authenticate-pin.use-case.js';
@@ -66,6 +69,8 @@ export const ACCESS_SESSION_RUNTIME = Symbol('srtaller.access.session-runtime');
 
 export interface AccessSessionRuntime {
   readonly trustedStations: TrustedStationContextResolver;
+  readonly readTimeZone: BranchSettingsRuntime['readTimeZone'];
+  readonly updateTimeZone: BranchSettingsRuntime['updateTimeZone'];
   readonly authenticatePin: AuthenticatePinUseCase;
   readonly authenticatePinOnly: AuthenticatePinOnlyUseCase;
   readonly createSession: CreateOperationalSessionUseCase;
@@ -203,6 +208,22 @@ function revalidateAfterMs(
   return Math.max(1_000, Math.min(OPERATIONAL_SESSION_IDLE_MS, remaining));
 }
 
+async function stationResponse(
+  runtime: AccessSessionRuntime,
+  context: Awaited<ReturnType<TrustedStationContextResolver['resolve']>>,
+) {
+  const branch = await runtime.readTimeZone({
+    tenantId: context.tenantId,
+    branchId: context.branchId,
+  });
+  if (!branch) throw new Error('Trusted Station Branch timezone is unavailable.');
+  return Object.freeze({
+    stationId: context.stationId,
+    branchId: context.branchId,
+    timeZone: branch.timeZone,
+  });
+}
+
 @Controller('api/access/session')
 export class AccessSessionController {
   constructor(
@@ -237,12 +258,13 @@ export class AccessSessionController {
 
   private unauthenticatedSnapshot(
     context: Awaited<ReturnType<TrustedStationContextResolver['resolve']>>,
+    station: Awaited<ReturnType<typeof stationResponse>>,
     users: Awaited<ReturnType<ListLoginUsersUseCase['execute']>>,
     headers: HeadersValue,
     response: Response,
   ) {
     return {
-      station: { stationId: context.stationId, branchId: context.branchId },
+      station,
       hasEligibleUsers: users.length > 0,
       capabilities: Object.freeze([]),
       administrationCapabilities: Object.freeze([]),
@@ -260,9 +282,13 @@ export class AccessSessionController {
     response.setHeader('Cache-Control', 'no-store');
     let context;
     let users;
+    let station;
     try {
       context = await this.runtime.trustedStations.resolve(scalar(headers, 'cookie'));
-      users = await this.runtime.listLoginUsers.execute(context);
+      [users, station] = await Promise.all([
+        this.runtime.listLoginUsers.execute(context),
+        stationResponse(this.runtime, context),
+      ]);
     } catch (error: unknown) {
       if (error instanceof TrustedStationContextError) {
         throw new UnauthorizedException({ code: 'ACCESS_SESSION_DENIED' });
@@ -272,7 +298,7 @@ export class AccessSessionController {
     try {
       const cookies = readOperationalSessionCookies(scalar(headers, 'cookie'));
       if (!cookies.bearer || !cookies.csrf) {
-        return this.unauthenticatedSnapshot(context, users, headers, response);
+        return this.unauthenticatedSnapshot(context, station, users, headers, response);
       }
       const resolvedSession = await this.runtime.resolveSession.execute(context, {
         bearer: cookies.bearer,
@@ -293,7 +319,7 @@ export class AccessSessionController {
         ),
       ]);
       return {
-        station: { stationId: context.stationId, branchId: context.branchId },
+        station,
         hasEligibleUsers: users.length > 0,
         capabilities,
         administrationCapabilities,
@@ -306,7 +332,7 @@ export class AccessSessionController {
       // GET never mutates authoritative Session cookies. A delayed read may
       // only issue the disjoint login challenge and therefore cannot erase or
       // rotate a newer login/switch response in the browser cookie jar.
-      return this.unauthenticatedSnapshot(context, users, headers, response);
+      return this.unauthenticatedSnapshot(context, station, users, headers, response);
     }
   }
 
@@ -353,7 +379,10 @@ export class AccessSessionController {
           throw new AccessSessionRequestError();
         }
       }
-      const users = await this.runtime.listLoginUsers.execute(context);
+      const [users, station] = await Promise.all([
+        this.runtime.listLoginUsers.execute(context),
+        stationResponse(this.runtime, context),
+      ]);
       const proof = await this.runtime.authenticatePinOnly.execute(context, {
         pin: request.pin,
       });
@@ -385,7 +414,7 @@ export class AccessSessionController {
         this.secureCookie(headers),
       ));
       return {
-        station: { stationId: context.stationId, branchId: context.branchId },
+        station,
         hasEligibleUsers: users.length > 0,
         capabilities,
         administrationCapabilities,

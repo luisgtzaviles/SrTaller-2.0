@@ -73,6 +73,10 @@ const repairA = '30000000-0000-4000-8000-000000000001';
 const repairPercent = '30000000-0000-4000-8000-000000000002';
 const repairB = '30000000-0000-4000-8000-000000000003';
 const repairA2 = '30000000-0000-4000-8000-000000000004';
+const repairDateBoundary = '30000000-0000-4000-8000-000000000005';
+const repairWeekBoundary = '30000000-0000-4000-8000-000000000006';
+const repairMonthBoundary = '30000000-0000-4000-8000-000000000007';
+const repairExactBoundary = '30000000-0000-4000-8000-000000000008';
 const actorId = '40000000-0000-4000-8000-000000000001';
 const auditStationId = '41000000-0000-4000-8000-000000000001';
 const auditSessionId = '42000000-0000-4000-8000-000000000001';
@@ -429,6 +433,8 @@ test(
       const scopeA = Object.freeze({ tenantId: tenantA, branchId: branchA });
       const scopeA2 = Object.freeze({ tenantId: tenantA, branchId: branchA2 });
       const scopeB = Object.freeze({ tenantId: tenantB, branchId: branchB });
+      const branchATimeZone = 'America/Tijuana';
+      const branchBTimeZone = 'America/Hermosillo';
       const noteContextA = Object.freeze({
         ...scopeA,
         stationId: auditStationId,
@@ -454,7 +460,7 @@ test(
         }),
       });
 
-      const allA = await repository.listWorklist(scopeA, listQuery());
+      const allA = await repository.listWorklist(scopeA, listQuery(), branchATimeZone);
       assert.equal(allA.totalCount, 2);
       assert.deepEqual(allA.items.map(({ id }) => id), [repairA, repairPercent]);
       assert.equal(allA.technicians.length, 2);
@@ -466,11 +472,114 @@ test(
         ),
         (error) => error?.code === '23503',
       );
-      assert.equal((await repository.listWorklist(scopeB, listQuery())).totalCount, 1);
-      assert.equal((await repository.listWorklist(scopeA, listQuery({ period: 'today' }))).totalCount, 1);
-      assert.equal((await repository.listWorklist(scopeA, listQuery({ q: '%' }))).items[0]?.id, repairPercent);
-      assert.equal((await repository.listWorklist(scopeA, listQuery({ q: '_' }))).totalCount, 0);
-      assert.equal((await repository.listWorklist(scopeA, listQuery({ pageSize: 1 }))).hasNextPage, true);
+      assert.equal((await repository.listWorklist(scopeB, listQuery(), branchBTimeZone)).totalCount, 1);
+      assert.equal((await repository.listWorklist(scopeA, listQuery({ period: 'today' }), branchATimeZone)).totalCount, 1);
+      assert.equal((await repository.listWorklist(scopeA, listQuery({ q: '%' }), branchATimeZone)).items[0]?.id, repairPercent);
+      assert.equal((await repository.listWorklist(scopeA, listQuery({ q: '_' }), branchATimeZone)).totalCount, 0);
+      assert.equal((await repository.listWorklist(scopeA, listQuery({ pageSize: 1 }), branchATimeZone)).hasNextPage, true);
+
+      await admin.query(
+        `insert into repairs (
+           repair_id, tenant_id, branch_id, folio, received_at, customer_name,
+           customer_phone, device_brand, device_model, reported_issue,
+           technician_id, technician_display_name, repair_status, custody_status, created_at
+         ) values
+           ($1, $4, $5, 'SR-DATE-BOUNDARY', '2026-08-21T06:30:00Z', 'Fecha límite', '6621000011',
+            'Marca', 'Fecha', 'Prueba día local', null, null, 'pending', 'active', $6),
+           ($2, $4, $5, 'SR-WEEK-BOUNDARY', '2026-08-17T06:30:00Z', 'Semana límite', '6621000012',
+            'Marca', 'Semana', 'Prueba semana local', null, null, 'pending', 'active', $6),
+           ($3, $4, $5, 'SR-MONTH-BOUNDARY', '2026-08-01T06:30:00Z', 'Mes límite', '6621000013',
+            'Marca', 'Mes', 'Prueba mes local', null, null, 'pending', 'active', $6),
+           ($7, $4, $5, 'SR-EXACT-BOUNDARY', '2026-08-21T07:00:00Z', 'Límite exacto', '6621000014',
+            'Marca', 'Límite', 'Prueba inicio inclusivo', null, null, 'pending', 'active', $6)`,
+        [
+          repairDateBoundary,
+          repairWeekBoundary,
+          repairMonthBoundary,
+          tenantA,
+          branchA,
+          '2026-08-21T12:00:00.000Z',
+          repairExactBoundary,
+        ],
+      );
+      const storedBeforeTimeZoneChange = await admin.query(
+        `select repair_id, received_at from repairs
+         where repair_id = any($1::uuid[]) order by repair_id`,
+        [[repairDateBoundary, repairWeekBoundary, repairMonthBoundary, repairExactBoundary]],
+      );
+
+      await branchRepository.updateBranchTimeZone(scopeA, 'America/Hermosillo');
+      const hermosillo = 'America/Hermosillo';
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ period: 'today' }), hermosillo))
+          .items.some(({ id }) => id === repairDateBoundary),
+        false,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ period: 'week' }), hermosillo))
+          .items.some(({ id }) => id === repairWeekBoundary),
+        false,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ period: 'month' }), hermosillo))
+          .items.some(({ id }) => id === repairMonthBoundary),
+        false,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ from: '2026-08-21' }), hermosillo))
+          .items.some(({ id }) => id === repairDateBoundary),
+        false,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ to: '2026-08-20' }), hermosillo))
+          .items.some(({ id }) => id === repairDateBoundary),
+        true,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ from: '2026-08-21', to: '2026-08-21' }), hermosillo))
+          .items.some(({ id }) => id === repairExactBoundary),
+        true,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ to: '2026-08-20' }), hermosillo))
+          .items.some(({ id }) => id === repairExactBoundary),
+        false,
+      );
+
+      await branchRepository.updateBranchTimeZone(scopeA, 'America/Cancun');
+      const cancun = 'America/Cancun';
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ period: 'today' }), cancun))
+          .items.some(({ id }) => id === repairDateBoundary),
+        true,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ period: 'week' }), cancun))
+          .items.some(({ id }) => id === repairWeekBoundary),
+        true,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ period: 'month' }), cancun))
+          .items.some(({ id }) => id === repairMonthBoundary),
+        true,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ from: '2026-08-21' }), cancun))
+          .items.some(({ id }) => id === repairDateBoundary),
+        true,
+      );
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ to: '2026-08-20' }), cancun))
+          .items.some(({ id }) => id === repairDateBoundary),
+        false,
+      );
+      const storedAfterTimeZoneChange = await admin.query(
+        `select repair_id, received_at from repairs
+         where repair_id = any($1::uuid[]) order by repair_id`,
+        [[repairDateBoundary, repairWeekBoundary, repairMonthBoundary, repairExactBoundary]],
+      );
+      assert.deepEqual(storedAfterTimeZoneChange.rows, storedBeforeTimeZoneChange.rows);
+      await branchRepository.updateBranchTimeZone(scopeA, 'America/Hermosillo');
 
       const detail = await repository.getRepairById(scopeA, repairA);
       assert.equal(detail?.customerName, 'Cliente A');
@@ -666,7 +775,7 @@ test(
       assert.equal(afterWorkflow?.custodyStatus, 'active');
       assert.equal(afterWorkflow?.timeline.items[0]?.title, 'Diagnóstico iniciado');
       assert.equal(afterWorkflow?.timeline.items[0]?.source, 'local.workflow');
-      assert.equal((await repository.listWorklist(scopeA, listQuery({ status: 'diagnosing' }))).items.some(({ id }) => id === repairA), true);
+      assert.equal((await repository.listWorklist(scopeA, listQuery({ status: 'diagnosing' }), branchATimeZone)).items.some(({ id }) => id === repairA), true);
 
       await placeInPendingArea(admin, repairA, '1');
       const beforeLocation = await repository.getRepairById(scopeA, repairA);

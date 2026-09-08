@@ -3446,6 +3446,19 @@ export async function checkArchitecture({
     const consumerEdges = compositionEdgesByConsumer.get(edge.consumer) ?? [];
     consumerEdges.push(edge);
     compositionEdgesByConsumer.set(edge.consumer, consumerEdges);
+  }
+  // A synthetic fixture can deliberately remove one consumer while retaining
+  // another consumer of the same producer. The producer still has to expose
+  // its complete registered public surface; otherwise a negative consumer
+  // fixture would accidentally turn valid producer exports into diagnostics.
+  const producerValidationEdges = fixture
+    ? directedCompositionEdges.filter((edge) =>
+      requiredDirectedCompositionEdges.some(
+        (required) => required.producer === edge.producer,
+      ),
+    )
+    : requiredDirectedCompositionEdges;
+  for (const edge of producerValidationEdges) {
     const producerEdges = compositionEdgesByProducer.get(edge.producer) ?? [];
     producerEdges.push(edge);
     compositionEdgesByProducer.set(edge.producer, producerEdges);

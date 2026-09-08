@@ -3,6 +3,9 @@ import { Module } from '@nestjs/common';
 import { AccessModule } from '../access/access.module.js';
 import { CONTEXTUAL_AUTHORIZATION_EXECUTOR } from '../access/index.js';
 import type { ContextualAuthorizationExecutor } from '../access/index.js';
+import { StationsModule } from '../stations/stations.module.js';
+import { BRANCH_SETTINGS_RUNTIME } from '../stations/index.js';
+import type { BranchSettingsRuntime } from '../stations/index.js';
 
 import { RepairProtectedOperations } from './application/repair-protected-operations.js';
 import type { RepairEvidenceStoragePort } from './application/ports/repair-evidence-storage.port.js';
@@ -16,7 +19,7 @@ export const REPAIR_REPOSITORY = Symbol('srtaller.repairs.repository');
 export const REPAIR_EVIDENCE_STORAGE = Symbol('srtaller.repairs.evidence-storage');
 
 @Module({
-  imports: [AccessModule],
+  imports: [AccessModule, StationsModule],
   controllers: [RepairsController],
   providers: [
     RepairDatabaseConnection,
@@ -36,15 +39,18 @@ export const REPAIR_EVIDENCE_STORAGE = Symbol('srtaller.repairs.evidence-storage
         CONTEXTUAL_AUTHORIZATION_EXECUTOR,
         REPAIR_REPOSITORY,
         REPAIR_EVIDENCE_STORAGE,
+        BRANCH_SETTINGS_RUNTIME,
       ],
       useFactory: (
         authorization: ContextualAuthorizationExecutor,
         repository: RepairRepositoryPort,
         storage: RepairEvidenceStoragePort,
+        branchSettings: BranchSettingsRuntime,
       ): RepairProtectedOperations => new RepairProtectedOperations(
         authorization,
         repository,
         storage,
+        branchSettings,
       ),
     },
   ],

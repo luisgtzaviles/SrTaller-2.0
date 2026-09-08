@@ -26,6 +26,19 @@ export interface OperationalDateTime {
   readonly timeZone: BranchTimeZone;
 }
 
+const calendarDate = /^\d{4}-\d{2}-\d{2}$/u;
+const boundarySearchWindowMs = 36 * 60 * 60 * 1_000;
+
+function assertCalendarDate(value: string): void {
+  if (!calendarDate.test(value)) {
+    throw new TypeError('Operational calendar date must be an ISO calendar date.');
+  }
+  const candidate = new Date(`${value}T00:00:00.000Z`);
+  if (!Number.isFinite(candidate.getTime()) || candidate.toISOString().slice(0, 10) !== value) {
+    throw new TypeError('Operational calendar date must be valid.');
+  }
+}
+
 /**
  * Renders an already-authoritative instant for a Branch. It never derives or
  * mutates the stored instant, so a later branch time-zone change has no
@@ -55,4 +68,44 @@ export function presentOperationalDateTime(
     time: `${part('hour')}:${part('minute')}`,
     timeZone,
   });
+}
+
+/** Derives a Branch-local calendar date from an authoritative UTC instant. */
+export function branchLocalCalendarDate(
+  instant: Date,
+  timeZone: BranchTimeZone,
+): string {
+  return presentOperationalDateTime(instant, timeZone).date;
+}
+
+/**
+ * Converts a Branch-local calendar start to UTC using IANA rules. This does
+ * not mutate persisted instants or depend on a process-global timezone.
+ */
+export function branchLocalCalendarBoundaryToUtc(
+  localDate: string,
+  timeZone: BranchTimeZone,
+): Date {
+  assertCalendarDate(localDate);
+  const nominalUtc = new Date(`${localDate}T00:00:00.000Z`).getTime();
+  let lower = nominalUtc - boundarySearchWindowMs;
+  let upper = nominalUtc + boundarySearchWindowMs;
+
+  if (
+    branchLocalCalendarDate(new Date(lower), timeZone) >= localDate ||
+    branchLocalCalendarDate(new Date(upper), timeZone) < localDate
+  ) {
+    throw new RangeError('Operational calendar boundary is outside the supported IANA window.');
+  }
+
+  while (upper - lower > 1) {
+    const midpoint = lower + Math.floor((upper - lower) / 2);
+    if (branchLocalCalendarDate(new Date(midpoint), timeZone) < localDate) {
+      lower = midpoint;
+    } else {
+      upper = midpoint;
+    }
+  }
+
+  return new Date(upper);
 }

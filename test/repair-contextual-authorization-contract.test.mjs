@@ -91,9 +91,10 @@ test('every Repairs HTTP endpoint belongs to the exact closed authorization matr
   ]);
 });
 
-test('RepairsModule composes Access and no longer wires LocalRepairContext or uncatalogued writes', () => {
-  assert.match(moduleSource, /imports: \[AccessModule\]/u);
+test('RepairsModule composes Access and the public Stations timezone contract', () => {
+  assert.match(moduleSource, /imports: \[AccessModule, StationsModule\]/u);
   assert.match(moduleSource, /CONTEXTUAL_AUTHORIZATION_EXECUTOR/u);
+  assert.match(moduleSource, /BRANCH_SETTINGS_RUNTIME/u);
   assert.match(moduleSource, /provide: RepairProtectedOperations/u);
   assert.doesNotMatch(moduleSource, /LocalRepairContext/u);
   assert.doesNotMatch(
@@ -105,6 +106,7 @@ test('RepairsModule composes Access and no longer wires LocalRepairContext or un
 test('authorized repairs operations use only the trusted scope and exact fixed capabilities', async () => {
   const authorizationCalls = [];
   const repositoryCalls = [];
+  const branchSettingsCalls = [];
   const authorization = {
     async execute(evidence, requirement, operation) {
       authorizationCalls.push({ evidence, requirement });
@@ -112,8 +114,8 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     },
   };
   const repository = {
-    async listWorklist(scope, query) {
-      repositoryCalls.push({ operation: 'list', scope, query });
+    async listWorklist(scope, query, timeZone) {
+      repositoryCalls.push({ operation: 'list', scope, query, timeZone });
       return {
         items: [],
         page: query.page,
@@ -155,6 +157,12 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     authorization,
     repository,
     { async read() { return undefined; } },
+    {
+      async readTimeZone(scope) {
+        branchSettingsCalls.push(scope);
+        return { timeZone: 'America/Hermosillo' };
+      },
+    },
   );
 
   await operations.listRepairs(requestEvidence, {
@@ -193,6 +201,11 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     scope.tenantId === authorizedContext.tenantId &&
     scope.branchId === authorizedContext.branchId
   )));
+  assert.deepEqual(branchSettingsCalls, [{
+    tenantId: authorizedContext.tenantId,
+    branchId: authorizedContext.branchId,
+  }]);
+  assert.equal(repositoryCalls[0].timeZone, 'America/Hermosillo');
   const noteCall = repositoryCalls.find(({ operation }) => operation === 'note');
   assert.deepEqual(noteCall.scope, {
     tenantId: authorizedContext.tenantId,
@@ -223,6 +236,7 @@ test('uncatalogued D5 and D6 HTTP commands fail closed before authorization or r
     { async execute() { authorizationCalls += 1; throw new Error('must not execute'); } },
     {},
     { async read() { throw new Error('must not read'); } },
+    { async readTimeZone() { throw new Error('must not read'); } },
   );
   assert.throws(
     () => operations.rejectUncataloguedWrite(),

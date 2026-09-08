@@ -29,10 +29,11 @@ import { hasOperationalCapability } from '../session/session-capabilities.mjs';
 import type { OperationalCapability } from '../session/session-api.js';
 import styles from './pages.module.css';
 
-function receivedAt(value: string): string {
+function receivedAt(value: string, timeZone: string): string {
   return new Intl.DateTimeFormat('es-MX', {
     dateStyle: 'medium',
     timeStyle: 'short',
+    timeZone,
   }).format(new Date(value));
 }
 
@@ -95,6 +96,7 @@ export function RepairDetailWorkspace({
   host = 'page',
   capabilities,
   csrfToken,
+  timeZone,
   onNoteAdded,
   onDraftDirtyChange,
 }: Readonly<{
@@ -103,6 +105,7 @@ export function RepairDetailWorkspace({
   host?: 'page' | 'overlay';
   capabilities: readonly OperationalCapability[];
   csrfToken: string;
+  timeZone: string;
   onNoteAdded(note: RepairTimelineItem): void;
   onDraftDirtyChange(dirty: boolean): void;
 }>): React.JSX.Element {
@@ -225,7 +228,7 @@ export function RepairDetailWorkspace({
         </div>
 
         <dl className={styles.workspaceHeroSummary}>
-          <div><dt><Clock3 aria-hidden="true" size={16} />Recepción</dt><dd><time dateTime={repair.intake.receivedAt}>{receivedAt(repair.intake.receivedAt)}</time></dd></div>
+          <div><dt><Clock3 aria-hidden="true" size={16} />Recepción</dt><dd><time dateTime={repair.intake.receivedAt}>{receivedAt(repair.intake.receivedAt, timeZone)}</time></dd></div>
           <div><dt><Wrench aria-hidden="true" size={16} />Estado</dt><dd><StatusBadge tone={repair.currentSituation.repairStatus.tone}>{repair.currentSituation.repairStatus.label}</StatusBadge></dd></div>
         </dl>
       </section>
@@ -254,7 +257,7 @@ export function RepairDetailWorkspace({
                       <strong>{entry.technician.displayName}</strong>
                       <span>{entry.endedAt ? 'Finalizada' : 'Activa'}</span>
                     </div>
-                    <time dateTime={entry.assignedAt}>{receivedAt(entry.assignedAt)}</time>
+                    <time dateTime={entry.assignedAt}>{receivedAt(entry.assignedAt, timeZone)}</time>
                     {entry.reason ? <p>{entry.reason}</p> : null}
                   </li>
                 ))}
@@ -318,7 +321,7 @@ export function RepairDetailWorkspace({
                     <article>
                       <div className={styles.timelineItemMeta}>
                         <span className={styles.timelineType}>{timelineTypeLabel(entry.type)}</span>
-                        <time dateTime={entry.occurredAt}>{receivedAt(entry.occurredAt)}</time>
+                        <time dateTime={entry.occurredAt}>{receivedAt(entry.occurredAt, timeZone)}</time>
                       </div>
                       <h3>{entry.title ?? timelineTypeLabel(entry.type)}</h3>
                       <strong>{entry.actor.displayName}</strong>
@@ -441,7 +444,7 @@ export function RepairDetailWorkspace({
             )}
             <figcaption>
               <strong>{activeEvidence.caption ?? 'Sin descripción registrada'}</strong>
-              <span>{activeEvidence.category === 'intake' ? 'Recepción' : 'General'} · {receivedAt(activeEvidence.uploadedAt)}</span>
+              <span>{activeEvidence.category === 'intake' ? 'Recepción' : 'General'} · {receivedAt(activeEvidence.uploadedAt, timeZone)}</span>
             </figcaption>
           </figure>
         )}
@@ -454,11 +457,13 @@ export function RepairDetailPage({
   capabilities,
   csrfToken,
   sessionId,
+  timeZone,
   host = 'page',
 }: Readonly<{
   capabilities: readonly OperationalCapability[];
   csrfToken: string;
   sessionId: string;
+  timeZone: string;
   host?: 'page' | 'overlay';
 }>): React.JSX.Element {
   const { id = '' } = useParams();
@@ -570,6 +575,7 @@ export function RepairDetailPage({
         sessionId={sessionId}
         capabilities={capabilities}
         csrfToken={csrfToken}
+        timeZone={timeZone}
         host={host}
         onNoteAdded={addNoteToTimeline}
         onDraftDirtyChange={setDraftDirty}

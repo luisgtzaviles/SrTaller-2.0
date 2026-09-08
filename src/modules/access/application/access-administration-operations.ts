@@ -5,6 +5,7 @@ import type {
 } from '../index.js';
 import { ContextualAuthorizationError } from '../index.js';
 import type { UserProductRuntime } from '../../users/index.js';
+import type { BranchSettingsRuntime } from '../../stations/index.js';
 import type { CapabilityCode } from '../domain/capability.js';
 import type { AccessMatrixRecord } from './ports/access-repository.port.js';
 import type { AdministrationAuthorizationCommitGuardPort } from './ports/administration-authorization-commit-guard.port.js';
@@ -32,6 +33,11 @@ const accessMatrixReadRequirement = Object.freeze({
 const accessMatrixManageRequirement = Object.freeze({
   capability: 'access_matrix.manage' as const,
   kind: 'state-change' as const,
+});
+
+const branchSettingsReadRequirement = Object.freeze({
+  capability: 'access_matrix.manage' as const,
+  kind: 'read' as const,
 });
 
 const canonicalUuid =
@@ -123,7 +129,13 @@ export class AccessAdministrationOperations {
     private readonly replacePin: (scope: unknown, input: unknown, guard?: AdministrationMutationGuard) => Promise<unknown>,
     private readonly listConfiguredPinUserIds: (scope: unknown) => Promise<readonly string[]>,
     private readonly administrationCommitGuard?: AdministrationAuthorizationCommitGuardPort,
+    private readonly branchSettings?: BranchSettingsRuntime,
   ) {}
+
+  private branchSettingsRuntime(): BranchSettingsRuntime {
+    if (this.branchSettings === undefined) throw new AccessAdministrationInvariantError();
+    return this.branchSettings;
+  }
 
   private mutationGuard(
     context: AuthorizedOperationalContext,
@@ -294,6 +306,43 @@ export class AccessAdministrationOperations {
         context,
         accessMatrixReadRequirement.capability,
       ),
+    );
+  }
+
+  readBranchSettings(evidence: ProtectedRequestEvidence) {
+    return this.authorization.execute(
+      evidence,
+      branchSettingsReadRequirement,
+      async (context) => {
+        await this.requireTenantWideAuthority(
+          context,
+          branchSettingsReadRequirement.capability,
+        );
+        const settings = await this.branchSettingsRuntime().readTimeZone({
+          tenantId: context.tenantId,
+          branchId: context.branchId,
+        });
+        if (settings === null) throw new AccessAdministrationResourceNotFoundError();
+        return settings;
+      },
+    );
+  }
+
+  updateBranchSettings(evidence: ProtectedRequestEvidence, input: unknown) {
+    return this.authorization.execute(
+      evidence,
+      accessMatrixManageRequirement,
+      async (context) => {
+        await this.requireTenantWideAuthority(
+          context,
+          accessMatrixManageRequirement.capability,
+        );
+        const body = exactObject(input, ['timeZone']);
+        return this.branchSettingsRuntime().updateTimeZone({
+          tenantId: context.tenantId,
+          branchId: context.branchId,
+        }, body.timeZone);
+      },
     );
   }
 

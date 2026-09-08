@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Active; PBI-025/PBI-034/PBI-026 Done; PBI-028 Done candidate;
-  WIP 0/1.
+- **Estado:** Active; PBI-025/PBI-034/PBI-026/PBI-028 Done; PBI-038 current;
+  WIP 1/1.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
@@ -14,9 +14,10 @@
 | Bypass por composición modular | High | DEC-005 Option A sólo por aristas explícitas y contratos públicos; checker/mutations fail-closed | Control verificado; PBI-026 agrega sólo `repairs -> access` |
 | Grant usado sin contexto | Critical | PBI-026 deny-by-default compone todos los predicados y resource scope | Control verificado; PBI-026 Done; G4 PASS |
 | D5/D6 expuestos sin capability específica | High | matriz cerrada `DENY_UNSUPPORTED` y UI suprimida | Control verificado; PBI-026 Done |
-| Actor sintético persiste fuera de la primera prueba | High | PBI-028 entrega Operational Note; retrofit restante continúa diferido | Control PBI-028 PASS candidate; no ampliar este cierre |
-| Auditoría diverge del efecto | High | misma transacción; fallo obligatorio revierte la nota | Control PBI-028 PASS candidate |
-| Secretos o body en el store de auditoría de Repairs | High | esquema/allowlist fija y pruebas negativas | Control PBI-028 PASS candidate |
+| Actor sintético persiste fuera de la primera prueba | High | PBI-028 entrega Operational Note; retrofit restante continúa diferido | Control PBI-028 PASS; no ampliar este alcance |
+| Auditoría diverge del efecto | High | misma transacción; fallo obligatorio revierte la nota | Control PBI-028 PASS |
+| Secretos o body en el store de auditoría de Repairs | High | esquema/allowlist fija y pruebas negativas | Control PBI-028 PASS |
+| Fronteras de fecha local incorrectas | Medium | IANA Branch, rangos `[start, next)` y PostgreSQL material | PBI-038 candidate verification in progress |
 | WIP paralelo | Medium | WIP=1 | Controlled |
 
 Un Critical nuevo no previsto, criptografía custom, secreto remoto o cambio
@@ -24,5 +25,5 @@ destructivo obliga a detenerse. El Critical conocido de PBI-025 no se rebaja.
 
 ## Próxima revisión
 
-- **Fecha:** al integrar o revisar el cierre documental de PBI-028.
-- **Disparador:** nuevo riesgo material, cambio de controles o CI del cierre.
+- **Fecha:** al completar CI/focused review de PBI-038.
+- **Disparador:** nuevo riesgo material, cambio de controles o CI del candidato.

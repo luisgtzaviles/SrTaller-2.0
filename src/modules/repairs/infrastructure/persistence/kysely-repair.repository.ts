@@ -7,6 +7,11 @@ import { DatabaseTransactionError, runInTransaction } from '../../../../infrastr
 import type { InternalDatabasePersistenceOperation } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { DatabaseSchema, RepairRow, RepairTechnicianAssignmentRow } from '../../../../infrastructure/database/database-types.js';
 import { parseTenantId } from '../../../tenancy/index.js';
+import {
+  branchLocalCalendarBoundaryToUtc,
+  branchLocalCalendarDate,
+} from '../../../stations/index.js';
+import type { BranchTimeZone } from '../../../stations/index.js';
 import type {
   AddRepairOperationalNoteRecord,
   AssignRepairTechnicianRecord,
@@ -59,27 +64,37 @@ function validateScope(scope: RepairPersistenceScope): RepairPersistenceScope {
 function dateRange(
   query: RepairWorklistQuery,
   referenceDate: Date,
+  timeZone: BranchTimeZone,
 ): Readonly<{ from?: Date | undefined; to?: Date | undefined }> {
-  let from = query.from ? new Date(`${query.from}T00:00:00.000Z`) : undefined;
-  let to = query.to ? new Date(`${query.to}T00:00:00.000Z`) : undefined;
-  if (to) {
-    to = new Date(to.getTime() + 86_400_000);
-  }
+  const addCalendarDays = (date: string, days: number): string => {
+    const calendar = new Date(`${date}T00:00:00.000Z`);
+    calendar.setUTCDate(calendar.getUTCDate() + days);
+    return calendar.toISOString().slice(0, 10);
+  };
+  let from = query.from
+    ? branchLocalCalendarBoundaryToUtc(query.from, timeZone)
+    : undefined;
+  let to = query.to
+    ? branchLocalCalendarBoundaryToUtc(addCalendarDays(query.to, 1), timeZone)
+    : undefined;
   if (query.period && query.period !== 'all') {
-    const year = referenceDate.getUTCFullYear();
-    const month = referenceDate.getUTCMonth();
-    const day = referenceDate.getUTCDate();
+    const localDate = branchLocalCalendarDate(referenceDate, timeZone);
     if (query.period === 'today') {
-      from = new Date(Date.UTC(year, month, day));
-      to = new Date(Date.UTC(year, month, day + 1));
+      from = branchLocalCalendarBoundaryToUtc(localDate, timeZone);
+      to = branchLocalCalendarBoundaryToUtc(addCalendarDays(localDate, 1), timeZone);
     } else if (query.period === 'month') {
-      from = new Date(Date.UTC(year, month, 1));
-      to = new Date(Date.UTC(year, month + 1, 1));
+      const monthStart = `${localDate.slice(0, 7)}-01`;
+      from = branchLocalCalendarBoundaryToUtc(monthStart, timeZone);
+      to = branchLocalCalendarBoundaryToUtc(
+        `${addCalendarDays(monthStart, 32).slice(0, 7)}-01`,
+        timeZone,
+      );
     } else {
-      const weekday = referenceDate.getUTCDay();
+      const weekday = new Date(`${localDate}T00:00:00.000Z`).getUTCDay();
       const mondayOffset = weekday === 0 ? -6 : 1 - weekday;
-      from = new Date(Date.UTC(year, month, day + mondayOffset));
-      to = new Date(from.getTime() + 7 * 86_400_000);
+      const weekStart = addCalendarDays(localDate, mondayOffset);
+      from = branchLocalCalendarBoundaryToUtc(weekStart, timeZone);
+      to = branchLocalCalendarBoundaryToUtc(addCalendarDays(weekStart, 7), timeZone);
     }
   }
   return Object.freeze({ from, to });
@@ -440,10 +455,11 @@ class KyselyRepairRepository implements RepairRepositoryPort {
   async listWorklist(
     scope: RepairPersistenceScope,
     query: RepairWorklistQuery,
+    timeZone: BranchTimeZone,
   ): Promise<RepairWorklistPage> {
     const validatedScope = validateScope(scope);
     const validatedQuery = query;
-    const range = dateRange(validatedQuery, this.now());
+    const range = dateRange(validatedQuery, this.now(), timeZone);
 
     return this.execute(async (executor: RepairExecutor) => {
       let filtered = executor

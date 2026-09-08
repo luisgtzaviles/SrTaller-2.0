@@ -18,6 +18,9 @@ import {
 import {
   AccessAdministrationController,
 } from '../dist/modules/access/presentation/access-administration.controller.js';
+import {
+  BranchSettingsAdministrationController,
+} from '../dist/modules/access/presentation/branch-settings-administration.controller.js';
 
 const tenantId = '10000000-0000-4000-8000-000000000001';
 const branchId = '20000000-0000-4000-8000-000000000001';
@@ -250,6 +253,16 @@ function operationsFixture(
         return context === transactionContext;
       },
     },
+    {
+      async readTimeZone(scope) {
+        calls.push({ operation: 'readBranchTimeZone', scope });
+        return { timeZone: 'America/Hermosillo' };
+      },
+      async updateTimeZone(scope, timeZone) {
+        calls.push({ operation: 'updateBranchTimeZone', scope, timeZone });
+        return { timeZone };
+      },
+    },
   );
   return { calls, operations };
 }
@@ -431,6 +444,60 @@ test('branch-restricted administration authority cannot read or mutate tenant-wi
   );
 });
 
+test('branch timezone settings use contextual Branch authority and require access management', async () => {
+  const { calls, operations } = operationsFixture();
+  const current = await operations.readBranchSettings(requestEvidence);
+  const updated = await operations.updateBranchSettings(requestEvidence, {
+    timeZone: 'America/Tijuana',
+  });
+
+  assert.deepEqual(current, { timeZone: 'America/Hermosillo' });
+  assert.deepEqual(updated, { timeZone: 'America/Tijuana' });
+  assert.deepEqual(call(calls, 'readBranchTimeZone').scope, { tenantId, branchId });
+  assert.deepEqual(call(calls, 'updateBranchTimeZone'), {
+    operation: 'updateBranchTimeZone',
+    scope: { tenantId, branchId },
+    timeZone: 'America/Tijuana',
+  });
+  assert.deepEqual(
+    calls.filter(({ operation }) => operation === 'authorize').map(({ requirement }) => requirement),
+    [
+      { capability: 'access_matrix.manage', kind: 'read' },
+      { capability: 'access_matrix.manage', kind: 'state-change' },
+    ],
+  );
+});
+
+test('restricted administration cannot read or update branch timezone settings', async () => {
+  const { calls, operations } = operationsFixture('BRANCH_RESTRICTED');
+  for (const request of [
+    () => operations.readBranchSettings(requestEvidence),
+    () => operations.updateBranchSettings(requestEvidence, { timeZone: 'America/Tijuana' }),
+  ]) {
+    await assert.rejects(
+      request,
+      (error) => error instanceof ContextualAuthorizationError && error.code === 'ACCESS_DENIED',
+    );
+  }
+  assert.equal(call(calls, 'readBranchTimeZone'), undefined);
+  assert.equal(call(calls, 'updateBranchTimeZone'), undefined);
+});
+
+test('branch timezone settings reject client scope and unexpected fields before persistence', async () => {
+  const { calls, operations } = operationsFixture();
+  for (const body of [
+    { timeZone: 'America/Tijuana', branchId },
+    { timeZone: 'America/Tijuana', tenantId },
+    { branchId },
+  ]) {
+    await assert.rejects(
+      operations.updateBranchSettings(requestEvidence, body),
+      AccessAdministrationRequestError,
+    );
+  }
+  assert.equal(call(calls, 'updateBranchTimeZone'), undefined);
+});
+
 test('administration mutations reject unknown fields and invalid request IDs before effects', async () => {
   const scenarios = [
     ['createUser', [requestEvidence, {
@@ -542,6 +609,24 @@ test('administration HTTP boundary maps denials, invalid input, absence, and con
   await assert.rejects(
     controllerWithFailure(infrastructureFailure).list({}),
     (caught) => caught === infrastructureFailure,
+  );
+});
+
+test('branch settings HTTP boundary maps a missing server-derived branch to 404', async () => {
+  const controller = new BranchSettingsAdministrationController({
+    async readBranchSettings() {
+      throw Object.assign(new Error('missing branch'), {
+        code: 'BRANCH_PERSISTENCE_NOT_FOUND',
+      });
+    },
+  });
+
+  await assert.rejects(
+    controller.read({}),
+    (caught) =>
+      caught instanceof NotFoundException &&
+      caught.getStatus() === 404 &&
+      caught.getResponse().code === 'ADMIN_RESOURCE_NOT_FOUND',
   );
 });
 

@@ -102,11 +102,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34197268832` on `a9bb0744ebf8b32b91a9ddf90f67570830182afc` |
+| Authoritative CI at audited HEAD | Green: run `34249869167` on `2b712fc3a3842f197324e8870011bf170846ddb8` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `0/1` |
-| Current / next PBI | Current: NONE; PBI-028 Done candidate; next: NONE selected |
-| Current blocking gate | PBI-028 documentary closure requires its own authorized merge and exact-main CI; G5 is PASS candidate |
+| Sprint | SPRINT-02 `Active`; WIP `1/1` |
+| Current / next PBI | Current: PBI-038; PBI-028 Done / G5 PASS; next: NONE selected |
+| Current blocking gate | PBI-038 candidate CI and focused review; merge and deploy remain separately authorized |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -127,7 +127,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Repair endpoints, Trusted Station Context, User Directory, Roles/Capabilities/Assignments, PIN, Session, contextual authorization and PBI-028 business audit/real actor are integrated; closure documentation is pending |
+| Product API | Repair endpoints, Trusted Station Context, User Directory, Roles/Capabilities/Assignments, PIN, Session, contextual authorization and PBI-028 business audit/real actor are integrated; PBI-038 timezone candidate is local and not yet integrated |
 
 ## Current, planned and required before Production
 

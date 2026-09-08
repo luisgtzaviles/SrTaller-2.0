@@ -9,6 +9,8 @@ modulares:
 
 - `AccessSessionController`, compuesto por `AccessModule` desde
   `./presentation/access-session.controller.js`;
+- `AccessAdministrationController` y `BranchSettingsAdministrationController`,
+  compuestos por `AccessModule` desde sus adapters de administración exactos;
 - `RepairsController`, compuesto por `RepairsModule` desde
   `./presentation/repairs.controller.js`;
 - `LocalStationBootstrapController`, compuesto por `StationsModule` desde
@@ -25,6 +27,14 @@ El apartado histórico «Lo que no cambia» describe el alcance de la
 reconciliación original. Su frase sobre una única superficie queda superseded
 únicamente por las entradas exactas anteriores; no existe una autorización
 abierta para nuevos endpoints o controllers.
+
+## Extensión cerrada de Timezone Foundation
+
+La policy v6 incorpora exclusivamente `BranchSettingsAdministrationController`
+como adapter HTTP de Access. La lectura y escritura de la zona horaria se
+autoriza por Access y deriva tenant/Branch del contexto de Station confiable;
+el controller no acepta scope de cliente. Este registry no abre una superficie
+genérica de configuración.
 
 ## Estado
 

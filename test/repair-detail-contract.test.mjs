@@ -112,7 +112,7 @@ test('worklist contract remains present and separate from detail D1', () => {
 
 test('worklist overlay reuses the canonical detail workspace without breaking direct routes', () => {
   assert.match(appSource, /location=\{backgroundLocation \?\? location\}/u);
-  assert.match(appSource, /<RepairDetailPage capabilities=\{capabilities\} csrfToken=\{csrfToken\} sessionId=\{session\.sessionId\} host="overlay" \/>/u);
+  assert.match(appSource, /<RepairDetailPage capabilities=\{capabilities\} csrfToken=\{csrfToken\} sessionId=\{session\.sessionId\} timeZone=\{timeZone\} host="overlay" \/>/u);
   assert.match(appSource, /backgroundLocation && hasOperationalCapability\(capabilities, 'repairs\.read'\)/u);
   assert.match(repairsPageSource, /backgroundLocation: location/u);
   assert.match(repairsPageSource, /restoreFocusSelector/u);

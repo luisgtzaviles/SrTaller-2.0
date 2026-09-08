@@ -76,6 +76,8 @@ function runtimeDouble(overrides = {}) {
   const tokens = new NodeSessionToken();
   return {
     trustedStations: { async resolve() { return context; } },
+    readTimeZone: async () => ({ timeZone: 'America/Hermosillo' }),
+    updateTimeZone: async () => ({ timeZone: 'America/Hermosillo' }),
     authenticatePin: { async execute() { return Object.freeze({}); } },
     authenticatePinOnly: { async execute() { return Object.freeze({ userId }); } },
     createSession: {
@@ -215,7 +217,7 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
   const freshResponse = responseDouble();
   const fresh = await controller.get({ cookie: 'sr_station=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ' }, freshResponse);
   assert.equal(freshResponse.headers.get('cache-control'), 'no-store');
-  assert.deepEqual(fresh.station, { stationId, branchId });
+  assert.deepEqual(fresh.station, { stationId, branchId, timeZone: 'America/Hermosillo' });
   assert.equal(fresh.hasEligibleUsers, true);
   assert.equal('users' in fresh, false);
   assert.deepEqual(fresh.capabilities, []);

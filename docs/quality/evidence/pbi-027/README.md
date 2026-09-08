@@ -28,6 +28,6 @@
 | Owner Acceptance | APPROVED — PBI-027 aceptado funcionalmente; `Released: NO` |
 
 No hubo deploy, cambio de Preview, PostgreSQL remoto, DNS, secretos ni
-infraestructura. El [cierre candidato](./CLOSURE_CANDIDATE.md) enlaza la
-aceptación Owner, el merge y el CI de `main`. El estado `Done` será canónico
-únicamente al integrar el PR documental de avance.
+infraestructura. El [cierre canónico](./CLOSURE_CANDIDATE.md) enlaza la
+aceptación Owner, el merge y el CI de `main`; PBI-027 está `Done` y no está
+`Released`.

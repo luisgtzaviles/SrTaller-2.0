@@ -12,10 +12,12 @@ import type {
 import { StationsModule } from '../stations/stations.module.js';
 import { UsersModule } from '../users/users.module.js';
 import {
+  BRANCH_SETTINGS_RUNTIME,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from '../stations/index.js';
 import type {
+  BranchSettingsRuntime,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
 } from '../stations/index.js';
@@ -64,7 +66,10 @@ import {
   AccessSessionController,
 } from './presentation/access-session.controller.js';
 import type { AccessSessionRuntime } from './presentation/access-session.controller.js';
-import { AccessAdministrationController } from './presentation/access-administration.controller.js';
+import {
+  AccessAdministrationController,
+} from './presentation/access-administration.controller.js';
+import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
 import { AccessAdministrationOperations } from './application/access-administration-operations.js';
 
@@ -85,7 +90,11 @@ type RegisteredAccessUseCases =
 
 @Module({
   imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],
-  controllers: [AccessSessionController, AccessAdministrationController],
+  controllers: [
+    AccessSessionController,
+    AccessAdministrationController,
+    BranchSettingsAdministrationController,
+  ],
   providers: [
     {
       provide: ACCESS_SESSION_RUNTIME,
@@ -96,6 +105,7 @@ type RegisteredAccessUseCases =
         AUTHENTICATION_USER_ADMISSION_VALIDATOR,
         AUTHENTICATION_USER_READER,
         ACCESS_PIN_HASHER_FACTORY,
+        BRANCH_SETTINGS_RUNTIME,
       ],
       useFactory: (
         database: ApplicationDatabaseConnection,
@@ -104,6 +114,7 @@ type RegisteredAccessUseCases =
         userAdmission: AuthenticationUserAdmissionValidator,
         users: AuthenticationUserReader,
         pinHashers: AccessPinHasherFactory,
+        branchSettings: BranchSettingsRuntime,
       ): AccessSessionRuntime => {
         const accessRepository = createKyselyAccessRepository(database);
         const pinRepository = createKyselyPinCredentialRepository(database);
@@ -140,6 +151,13 @@ type RegisteredAccessUseCases =
         );
         return Object.freeze({
           trustedStations,
+          readTimeZone: (
+            scope: Parameters<BranchSettingsRuntime['readTimeZone']>[0],
+          ) => branchSettings.readTimeZone(scope),
+          updateTimeZone: (
+            scope: Parameters<BranchSettingsRuntime['updateTimeZone']>[0],
+            timeZone: Parameters<BranchSettingsRuntime['updateTimeZone']>[1],
+          ) => branchSettings.updateTimeZone(scope, timeZone),
           authenticatePin,
           authenticatePinOnly: pinOnly,
           createSession: new CreateOperationalSessionUseCase(
@@ -182,7 +200,11 @@ type RegisteredAccessUseCases =
     },
     {
       provide: AccessAdministrationOperations,
-      inject: [CONTEXTUAL_AUTHORIZATION_EXECUTOR, USER_PRODUCT_RUNTIME, ACCESS_SESSION_RUNTIME],
+      inject: [
+        CONTEXTUAL_AUTHORIZATION_EXECUTOR,
+        USER_PRODUCT_RUNTIME,
+        ACCESS_SESSION_RUNTIME,
+      ],
       useFactory: (
         authorization: ContextualAuthorizationExecutor,
         users: UserProductRuntime,
@@ -200,6 +222,7 @@ type RegisteredAccessUseCases =
         (scope: unknown, input: unknown, guard) => runtime.replacePin.execute(scope, input, guard),
         (scope: unknown) => runtime.listConfiguredPinUserIds(scope),
         new KyselyAdministrationAuthorizationCommitGuard(),
+        runtime,
       ),
     },
   ],
