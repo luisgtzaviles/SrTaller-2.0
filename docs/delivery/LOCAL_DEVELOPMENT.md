@@ -43,9 +43,22 @@ pnpm install --frozen-lockfile
 pnpm run local:config
 pnpm run local:db:up
 pnpm run local:db:migrate
+read -r -s 'SR_LOCAL_PIN_JORGE?PIN sintético para Jorge: '
+echo
+read -r -s 'SR_LOCAL_PIN_MARIA?PIN sintético para María: '
+echo
+read -r -s 'SR_LOCAL_PIN_CARLOS?PIN sintético para Carlos: '
+echo
+export SR_LOCAL_PIN_JORGE SR_LOCAL_PIN_MARIA SR_LOCAL_PIN_CARLOS
 pnpm run local:db:seed
+unset SR_LOCAL_PIN_JORGE SR_LOCAL_PIN_MARIA SR_LOCAL_PIN_CARLOS
 pnpm run local:dev
 ```
+
+Los tres PIN se presentan una sola vez al proceso de seed. El shell no los
+muestra y el script no los escribe en `.env.local`; deben ser sintéticos,
+distintos y de cuatro dígitos. Si el seed falla, vuelve a introducirlos antes
+de reintentarlo en lugar de guardarlos en un archivo.
 
 `local:dev` mantiene dos procesos en la misma terminal: NestJS en
 `http://127.0.0.1:3000` y Vite en `http://127.0.0.1:4173`. Para depurar por
@@ -164,8 +177,10 @@ pnpm run local:db:seed
 El seed usa el rol `application`, una transacción y upserts idempotentes. Crea
 un tenant técnico sintético, dos sucursales, Stations/bindings, tres Users,
 roles/capabilities/asignaciones, tres credenciales PIN y 15 reparaciones
-sintéticas mediante UUIDs fijos y fechas deterministas. El PIN sólo vive en
-`.env.local`; PostgreSQL recibe salt, verifier Argon2id y fingerprint Argon2id,
+sintéticas mediante UUIDs fijos y fechas deterministas. Cada PIN se entrega
+como variable de entorno efímera únicamente al proceso de seed y se elimina
+del shell al terminar; `.env.local` lo excluye y limpia claves heredadas.
+PostgreSQL recibe salt, verifier Argon2id, lookup digest y fingerprint,
 nunca plaintext. También materializa intakes, timeline y referencias de
 evidencia para D1, D2 y D4, catálogo/asignaciones D5, transiciones D6.1 y
 colocaciones/movimientos D6.2 deterministas. Una reparación conserva ubicación
@@ -185,7 +200,9 @@ pnpm run local:db:reset
 es **DESTRUCTIVE — LOCAL ONLY**: elimina únicamente el container etiquetado y
 el volumen `srtaller-postgres-local-data`, lo recrea y ejecuta en orden
 `up → migrate → seed`. Se niega antes de tocar cualquier target que no cumpla
-el contrato local.
+el contrato local. Antes de invocarlo presenta y exporta los tres PIN
+sintéticos con el mismo bloque de lectura silenciosa usado para el seed, y
+elimínalos del shell al finalizar.
 
 ## Backend y frontend
 

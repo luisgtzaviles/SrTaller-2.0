@@ -3,10 +3,10 @@
 Milestone: Hardened Identity + Users & Roles Checkpoint
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
-Status: Hardened local candidate; final browser proof and integration preparation in progress
+Status: Hardened local candidate; final PIN browser proof pending
 Progress: 9 / 12 checkpoint blocks completed
-Current work: Complete the remaining PIN/login browser walkthrough, then rerun final verification over the exact candidate.
-Next block: Reconcile canonical documentation, create logical commits, Draft PR, CI run-1/run-2 and focused review.
+Current work: Complete the remaining PIN/login browser walkthrough over the exact hardened UI.
+Next block: Prepare logical commits, Draft PR, CI run-1/run-2 and focused review.
 Blockers: None. Merge and deploy remain unauthorized.
 Updated: 2026-09-07 18:10 MST
 
@@ -40,7 +40,7 @@ Updated: 2026-09-07 18:10 MST
 - [x] Functional logic
 - [x] UI redesign in business language
 - [x] Security and API hardening
-- [~] Verification (automated and PostgreSQL gates green; final PIN browser walkthrough pending)
+- [~] Verification (automated, PostgreSQL and OCI gates green; final PIN browser walkthrough pending)
 - [ ] Integration candidate / CI / focused review
 
 ### Functional surface already proven
@@ -110,10 +110,11 @@ Updated: 2026-09-07 18:10 MST
 - [x] Role/user/PIN mutations use durable request identity, optimistic versions and rollback-safe persistence
 - [x] PBI-028 note plus audit is atomic, idempotent, append-only and commit-authorized
 - [x] Correlation UUID is generated server-side for success and error paths, including malformed JSON
-- [x] PostgreSQL 18.4 material suite passed 8/8 with fresh/upgrade/second-run coverage
+- [x] PostgreSQL 18.4 material suite passed 8/8 after remediation; cleanup PASS and fingerprint stable
 - [x] Local migrations report `0 pending` on consecutive runs
-- [x] `pnpm install --frozen-lockfile` and `pnpm run verify` passed: 614 tests, 597 pass, 17 expected PostgreSQL skips, 0 fail
-- [x] OCI image verification passed with read-only filesystem, non-root runtime, 28 fresh migrations, second run `0 applied / 0 pending`, health and route smoke, and clean SIGTERM
+- [x] `pnpm install --frozen-lockfile` and `pnpm run verify` passed: 621 tests, 604 pass, 17 expected PostgreSQL skips, 0 fail
+- [x] Production dependency audit passed: 0 vulnerabilities and one resolved `qs@6.16.0`
+- [x] OCI image verification passed with read-only filesystem, non-root runtime, 29 fresh migrations, second run `0 applied / 0 pending`, health/routes and clean SIGTERM
 
 ## Scope guard
 

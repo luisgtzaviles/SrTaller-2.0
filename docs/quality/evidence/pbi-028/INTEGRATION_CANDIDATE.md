@@ -84,11 +84,12 @@ permissions or credential disclosure.
 |---|---|
 | Toolchain | Node.js `24.18.0`; pnpm `11.15.1`; PostgreSQL `18.4` |
 | Frozen install | PASS |
-| `pnpm run verify` | PASS — 614 total, 597 pass, 17 expected material skips, 0 fail |
+| `pnpm run verify` | PASS — 621 total, 604 pass, 17 expected material skips, 0 fail |
 | PostgreSQL owner-scoped material | PASS — 8/8, 0 skipped, cleanup PASS |
 | PostgreSQL material fingerprint | `b6cbc03d7c758b613e31a4131c01e547603da691c846f04db205fc0c09a353b7` |
-| Local migration upgrade / rerun | PASS — consecutive runs leave `0 pending` |
-| OCI contract | PASS — 28 fresh migrations, second run `0 applied / 0 pending`, read-only uid 1000 runtime, health/routes and clean SIGTERM |
+| Local migration upgrade / rerun | PASS — consecutive runs leave `0 pending`; manifest `6c8d86d2fc6ac0d344fc8f608bd24fbfdb843d39e673a5ed471e03d4cad6cf56` |
+| Production dependency audit | PASS — 0 vulnerabilities; `qs` resolves only to `6.16.0` |
+| OCI contract | PASS — 29 fresh migrations, second run `0 applied / 0 pending`, read-only uid 1000 runtime, health/routes and clean SIGTERM |
 | DEC-005 / UI / external configuration | PASS in canonical verify |
 | Focused contracts | PASS — administration, role input, Session UI, note/audit and global correlation |
 | `git diff --check` | PASS |
@@ -96,8 +97,11 @@ permissions or credential disclosure.
 The material PostgreSQL runner covers PIN collision, lockout, replacement,
 tenant/Station isolation, Session concurrency, role union and mutation,
 authorization revocation, PBI-028 atomicity/idempotency/concurrency/rollback and
-owner-scoped migrations. The OCI verifier uses an ephemeral database and a
-synthetic in-memory pepper; no secret is built into the image.
+owner-scoped migrations. Focused remediation also covers successful
+authentication rate-window reset, legacy credential replacement, commit-time
+Session expiry, malformed JSON correlation and administration Session
+revalidation. The OCI verifier uses an ephemeral database and a synthetic
+in-memory pepper; no secret is built into the image.
 
 ## Browser evidence on localhost
 
@@ -144,4 +148,3 @@ local evidence.
   observability, legal retention, export and other writes remain separate work.
 - Customers, New Repair, Pricing, Payments, Inventory and deploy remain outside
   this checkpoint.
-

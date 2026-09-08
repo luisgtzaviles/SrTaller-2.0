@@ -50,7 +50,7 @@ detenerse.
 | User inactivo/revocado | read contract Users antes de verify; resultado nunca concede Session | negative tests |
 | Credential revocada/corrupta | status/perfil validados, dummy path y fail closed | negative tests |
 | Efecto parcial | provisioning/journal transaccionales; attempt reservation/finalization durable | rollback and restart tests |
-| Fixture local usado en Production | secreto/PIN demo sólo en `.env.local` ignorado y seed local; sin endpoint productivo | production exclusion tests |
+| Fixture local usado en Production | PIN demo sólo como input efímero del proceso de seed local, nunca en `.env.local`; sin endpoint productivo | production exclusion tests y contrato local |
 
 ## Lock y rate-limit exactos
 

@@ -14,10 +14,13 @@ integration, release or deploy.
   lifecycle without destructive delete;
 - four-digit PIN initial provisioning and explicit replacement without
   plaintext response, persistence or post-save display;
+- demo PIN inputs supplied only to the local seed process and scrubbed from
+  `.env.local`, including inherited fixture keys;
 - PIN-only login, server-resolved identity and real Operational Session;
 - effective permissions derived only as the union of applicable Roles;
 - tenant-wide server authorization for administration reads and writes, with
-  transactional commit-time revalidation;
+  transactional commit-time revalidation and preservation of at least one
+  active tenant administrator across authority-removing mutations;
 - PostgreSQL collision/concurrency/idempotency/isolation coverage and a clean,
   responsive Light/Dark UI.
 
