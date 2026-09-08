@@ -14,6 +14,12 @@ export function useFocusTrap(
   onEscape: () => void,
   restoreFocusSelector?: string,
 ): void {
+  const onEscapeRef = useRef(onEscape);
+
+  useEffect(() => {
+    onEscapeRef.current = onEscape;
+  }, [onEscape]);
+
   useEffect(() => {
     if (!active || !container.current) return undefined;
     const root = container.current;
@@ -25,7 +31,7 @@ export function useFocusTrap(
       if (ownerLayer && dialogLayers.at(-1) !== ownerLayer) return;
       if (event.key === 'Escape') {
         event.preventDefault();
-        onEscape();
+        onEscapeRef.current();
         return;
       }
       if (event.key !== 'Tab') return;
@@ -56,7 +62,7 @@ export function useFocusTrap(
         (explicitTarget ?? previous)?.focus();
       });
     };
-  }, [active, container, onEscape, restoreFocusSelector]);
+  }, [active, container, restoreFocusSelector]);
 }
 
 export function Dialog({
