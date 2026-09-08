@@ -2,9 +2,10 @@
 
 ## Boundary y clasificación
 
-PBI-025 verifica que un User seleccionado conoce un PIN de seis dígitos dentro
-del Tenant ya resuelto por `TrustedStationContext`. No busca Users globalmente,
-no crea Session y no concede capabilities.
+PBI-025 verifica un PIN operativo de cuatro dígitos dentro del Tenant ya
+resuelto por `TrustedStationContext`. El flujo vigente PIN-only resuelve como
+máximo un User elegible para la Station, no expone el directorio, y entrega la
+prueba necesaria para crear o reemplazar una Session; no concede capabilities.
 
 **Riesgo:** `Critical`, preservado. La superficie combina secretos cortos,
 autenticación, multitenancy, configuración externa y persistencia concurrente.
@@ -34,7 +35,7 @@ detenerse.
 
 | Amenaza | Control | Evidencia requerida |
 |---|---|---|
-| Fuerza bruta online sobre 10^6 valores | Cinco fallos consecutivos, lock 5 min, ventana Station/User de cinco inicios por 60 s y Argon2 acotado | tests secuenciales/concurrentes y PostgreSQL |
+| Fuerza bruta online sobre 10^4 valores | Cinco intentos fallidos por ventana compartida PIN-only/Station, lock de credencial 5 min donde aplica y Argon2 acotado | tests secuenciales/concurrentes, mezcla fallo-éxito y PostgreSQL |
 | Compromiso sólo de DB | salt individual + Argon2id + pepper externo ausente de DB | inspección schema/fixtures/secret scan |
 | DB + pepper | no se promete resistencia absoluta; Argon2 aumenta costo y rotación queda fuera sin mentir | riesgo residual documentado |
 | PIN/salt/verifier/pepper en logs o UI | errores sanitizados, ningún controller PBI-025, catálogo server-only, evidencia sin material | contract tests y scan |
@@ -60,13 +61,15 @@ detenerse.
   un principal inexistente y se devuelve el mismo error genérico; no se muta
   el contador. Al expirar, el siguiente intento comienza una secuencia nueva.
 - Autenticación correcta limpia contador y lock sin cambiar credential version.
-- Cada `(tenantId, stationId, ratePrincipalId)` admite cinco verificaciones
-  iniciadas en una ventana fija de 60 segundos, éxitos incluidos. El
-  `ratePrincipalId` es un UUID opaco HMAC derivado siempre del mismo
-  Tenant/User solicitado, exista o no y sin depender de elegibilidad; la
-  colisión de sus 122 bits efectivos es despreciable y no se persiste el User
-  solicitado en la tabla de rate. La sexta falla antes del KDF con la misma
-  denegación pública genérica.
+- Cada `(tenantId, stationId, ratePrincipalId)` admite hasta cinco reservas en
+  una ventana fija de 60 segundos. El flujo PIN-only usa un principal opaco
+  compartido por Tenant dentro de cada Station, de modo que probar un PIN
+  válido de baja autoridad no abre un bucket nuevo para seguir adivinando otro
+  PIN. Una verificación correcta libera únicamente su propia reserva; nunca
+  limpia los fallos anteriores. El flujo legado con User explícito deriva un
+  UUID opaco HMAC Tenant/User sin persistir el User solicitado en la tabla de
+  rate. Al agotarse la ventana, el siguiente intento falla antes del KDF con la
+  misma denegación pública genérica.
 - Las filas expiradas se eliminan bajo un guard transaccional por Station. Un
   máximo de 1,024 principals activos por ventana limita cardinalidad: al
   alcanzarse, toda autenticación de esa Station falla cerrada hasta que expire

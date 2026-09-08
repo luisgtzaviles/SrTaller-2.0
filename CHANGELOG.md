@@ -44,10 +44,15 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   auditoría allowlisted/append-only en una transacción, con idempotencia y
   correlation UUID server-side también en errores. Users/Roles usan lenguaje
   de negocio, múltiples Roles, lifecycle sin delete y nunca muestran PIN.
-  `pnpm run verify` pasó `621/604/17/0`; PostgreSQL 18.4 material `8/8`, OCI
-  fresh `29` + rerun `0/0`, auditoría productiva `0` vulnerabilidades,
+  El focused review fue remediado con autoridad temporal posterior al último
+  lock de Repair, rate bucket compartido que no se borra por éxito ajeno,
+  continuidad de administrador PIN-authenticable, autoridad dual para cambiar
+  PIN, proyección administrativa tenant-wide e idempotencia durable de edición
+  de perfil. `pnpm run verify` pasó `626/609/17/0`; PostgreSQL 18.4 material
+  `8/8`, OCI fresh `30` + rerun `0/0`, auditoría productiva `0` vulnerabilidades,
   Light/Dark, responsive y real-actor reload PASS. Los PIN demo son inputs
-  efímeros del seed y `.env.local` limpia claves heredadas. Falta sólo el
+  efímeros del seed y `.env.local` limpia claves heredadas; fallos del
+  verificador OCI tampoco imprimen secretos generados. Falta sólo el
   walkthrough PIN-sensitive antes del Draft PR.
 
 - Materializado el candidato local PBI-026 Contextual Authorization con

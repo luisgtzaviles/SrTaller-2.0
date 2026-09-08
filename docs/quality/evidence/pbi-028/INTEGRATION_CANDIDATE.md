@@ -70,6 +70,9 @@ permissions or credential disclosure.
 - A durable request guard provides exactly-once retry/concurrency behavior and
   retains the correlation of the confirmed effect.
 - Operational authorization is revalidated inside the write transaction.
+- The full Station/User/credential/grant authority guard runs before Repair
+  lookup, then Session idle/absolute time is rechecked after the final blocking
+  Repair lock and immediately before the atomic effect.
 - Correlation is a server-generated UUID on both success and error paths,
   including malformed JSON; it is separate from `clientRequestId` and cannot be
   chosen by the frontend.
@@ -84,12 +87,12 @@ permissions or credential disclosure.
 |---|---|
 | Toolchain | Node.js `24.18.0`; pnpm `11.15.1`; PostgreSQL `18.4` |
 | Frozen install | PASS |
-| `pnpm run verify` | PASS — 621 total, 604 pass, 17 expected material skips, 0 fail |
+| `pnpm run verify` | PASS — 626 total, 609 pass, 17 expected material skips, 0 fail |
 | PostgreSQL owner-scoped material | PASS — 8/8, 0 skipped, cleanup PASS |
 | PostgreSQL material fingerprint | `b6cbc03d7c758b613e31a4131c01e547603da691c846f04db205fc0c09a353b7` |
-| Local migration upgrade / rerun | PASS — consecutive runs leave `0 pending`; manifest `6c8d86d2fc6ac0d344fc8f608bd24fbfdb843d39e673a5ed471e03d4cad6cf56` |
+| Local migration upgrade / rerun | PASS — one additive migration applied, then two consecutive runs left `0 pending`; manifest `931ca8eef7f054d58f65343d9bc243edf58528774497835e05233bc785ce860b` |
 | Production dependency audit | PASS — 0 vulnerabilities; `qs` resolves only to `6.16.0` |
-| OCI contract | PASS — 29 fresh migrations, second run `0 applied / 0 pending`, read-only uid 1000 runtime, health/routes and clean SIGTERM |
+| OCI contract | PASS — 30 fresh migrations, second run `0 applied / 0 pending`, read-only uid 1000 runtime, health/routes and clean SIGTERM; verifier errors redact generated secrets |
 | DEC-005 / UI / external configuration | PASS in canonical verify |
 | Focused contracts | PASS — administration, role input, Session UI, note/audit and global correlation |
 | `git diff --check` | PASS |
@@ -99,9 +102,11 @@ tenant/Station isolation, Session concurrency, role union and mutation,
 authorization revocation, PBI-028 atomicity/idempotency/concurrency/rollback and
 owner-scoped migrations. Focused remediation also covers successful
 authentication rate-window reset, legacy credential replacement, commit-time
-Session expiry, malformed JSON correlation and administration Session
-revalidation. The OCI verifier uses an ephemeral database and a synthetic
-in-memory pepper; no secret is built into the image.
+Session expiry after a blocking Repair lock, authority/revocation
+linearization, malformed JSON correlation, tenant-wide administration
+projection, administrator continuity and administration Session revalidation.
+The OCI verifier uses an ephemeral database and a synthetic in-memory pepper;
+no secret is built into the image or retained in command failure diagnostics.
 
 ## Browser evidence on localhost
 
