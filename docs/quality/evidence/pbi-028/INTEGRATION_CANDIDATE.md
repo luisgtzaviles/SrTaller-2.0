@@ -2,18 +2,18 @@
 
 ## Estado
 
-- **Estado:** Draft PR #37 abierto; candidato local/OCI/browser y primera CI
-  autoritativa verdes; CI y focused High-risk review del HEAD documental final
-  pendientes.
-- **Current PBI / WIP:** PBI-028 / `1/1`.
+- **Estado:** Integrado funcionalmente por PR #37 y remediado por PR #38;
+  cierre documental candidato pendiente de merge autorizado y CI exacto.
+- **Current PBI / WIP:** NONE / `0/1` en el snapshot de cierre.
 - **Baseline:** `main` at
-  `0b39e3794a97c22d5471c0b6dfa278026f237b03`.
+  `a9bb0744ebf8b32b91a9ddf90f67570830182afc`.
 - **Recovery checkpoint:**
   `f608ef165763c86a592f5062218cd93b6ca0eb7a`.
 - **Hardened implementation checkpoint:**
   `cc2b756` (`feat(identity): harden audit and administration checkpoint`).
-- **Final reviewed implementation HEAD:**
-  `9c9ba0496ee62cbcd6f3174c6d2380d4f0fe7cef`.
+- **Functional PR / merge:** PR #37 / `ab8e8ba9a1274030e27ad920d61c66ed461bf122`.
+- **PIN focus remediation / merge:** PR #38 /
+  `a9bb0744ebf8b32b91a9ddf90f67570830182afc`.
 - **Risk / size:** High / Large.
 - **Released / deployed:** NO / NO.
 
@@ -110,7 +110,9 @@ permissions or credential disclosure.
 | DEC-005 / UI / external configuration | PASS in canonical verify |
 | Focused contracts | PASS — administration, role input, Session UI, note/audit and global correlation |
 | Focused High-risk reviews | PASS — PBI-028, PIN/Access and UI/API each closed at `0B/0H/0M/0L` |
-| Initial Draft PR CI | PASS — run `34190625347` on `51ca8d1`: VC-024 run-1, run-2 and comparison SUCCESS |
+| PR #37 candidate CI | PASS — run `34192344782` on `a24f67f`: VC-024 run-1, run-2 and comparison SUCCESS |
+| PR #37 exact-main CI | PASS — run `34193770228` on `ab8e8ba`: VC-024 run-1, run-2 and comparison SUCCESS |
+| PR #38 candidate / exact-main CI | PASS — candidate run `34195845242` on `e572ff8`; exact-main run `34197268832` on `a9bb074`; both run-1, run-2 and comparison SUCCESS |
 | `git diff --check` | PASS |
 
 The material PostgreSQL runner covers PIN collision, lockout, replacement,
@@ -158,15 +160,12 @@ Local URLs remain `http://127.0.0.1:4173`,
 `http://127.0.0.1:3000/livez` and `http://127.0.0.1:3000/readyz`; all three
 returned HTTP 200 during candidate validation.
 
-## Candidate gates still pending
+## Closure gate still pending
 
-- final authoritative CI run-1, run-2 and comparison after this evidence-only commit;
-- focused High-risk review of that exact HEAD and remediation of any material
-  finding;
-- explicit Owner merge authorization.
-
-No merge, exact-main CI, Owner Acceptance, release or deploy is claimed by this
-local evidence.
+Focused review closed with `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`; Owner
+Acceptance was granted and PR #37/PR #38 have exact-main CI GREEN. The only
+remaining predicate is the authorized merge and exact-main CI of the single
+documentary closure PR. It does not authorize release or deploy.
 
 ## Residual boundaries
 

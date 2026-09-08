@@ -5,11 +5,12 @@
 - **Sprint:** SPRINT-02.
 - **Estado:** Active.
 - **Periodo:** TBD.
-- **PBI actual:** PBI-028 — Minimum Business Audit and Correlation.
-- **WIP:** 1/1.
+- **PBI actual:** `NONE`; PBI-028 está en cierre documental candidato.
+- **WIP:** 0/1.
 - **Autoridad:** Identity Master Goal para la secuencia y decisión Owner de
-  reanudación; PBI-028 tiene DoR PASS, riesgo High preservado y Owner Start
-  propio. No se autoriza deploy o release.
+  reanudación; PBI-028 tiene DoR PASS, riesgo High preservado, integración,
+  Owner Acceptance y cierre documental pendiente. No se autoriza deploy o
+  release.
 
 ## Objetivo
 
@@ -33,17 +34,17 @@ PBI antes de cerrar canónicamente el anterior.
 - [x] G3 Authentication PASS efectivo; cierre PBI-034 PR #34 + CI exacto GREEN.
 - [x] G4 Authorization PASS efectivo; cierre PBI-026 PR #36 + CI exacto
   `34161029937` GREEN.
-- [ ] G5 Audit PASS.
+- [~] G5 Audit PASS candidate — PR #37/PR #38 y sus exact-main CI están GREEN;
+  falta el merge/CI de este cierre documental.
 - [x] Login/logout/User switching visible y persistente en localhost; lógica
   funcional y walkthrough endurecido final probados con identidades sintéticas.
 - [x] Operational Note usa actor, Station, Session, Tenant, Branch y correlation
   reales en el candidato local; no “Operador sintético”.
-- [~] PostgreSQL 18.4, arquitectura, Light/Dark, responsive, full verify y OCI
-  local GREEN; Draft PR #37 y CI inicial `34190625347` GREEN; CI y focused
-  review del HEAD documental final pendientes.
+- [x] PostgreSQL 18.4, arquitectura, Light/Dark, responsive, full verify, OCI,
+  browser proof, focused review y CI de PR #37/PR #38 GREEN.
 - [ ] Released: NO; deploy: NO.
 
 ## Próxima revisión
 
-- **Fecha:** al completar el candidato PBI-028.
-- **Disparador:** focused High-risk review, CI exacto o contradicción material.
+- **Fecha:** al integrar o revisar el cierre documental de PBI-028.
+- **Disparador:** CI exacto de este PR documental o contradicción material.

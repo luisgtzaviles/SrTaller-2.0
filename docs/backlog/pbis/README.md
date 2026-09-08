@@ -7,7 +7,7 @@ conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
 splits aprobados. PBI-030 tiene cierre `Done`; Sprint 01 está `Closed` y
 PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033 están `Done`; permanecen
 `Released: NO`. SPRINT-02 está `Active`; PBI-026 está `Done`, PBI-028 está
-`In progress` como único PBI actual y el WIP es `1/1`.
+`Done candidate`, Current PBI es `NONE` y el WIP es `0/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
 PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt sizing; los demás casos
 conservan TBD.
@@ -43,7 +43,7 @@ conservan TBD.
 | [PBI-025](PBI-025.md) | PIN Credential Authentication | Done; Released: NO |
 | [PBI-026](PBI-026.md) | Contextual Authorization | Done; G4 PASS; Critical / Large; Released: NO |
 | [PBI-027](PBI-027.md) | Branch Timezone Minimum | Done; Released: NO |
-| [PBI-028](PBI-028.md) | Minimum Business Audit and Correlation | In progress; High / Large; DoR PASS |
+| [PBI-028](PBI-028.md) | Minimum Business Audit and Correlation | Done candidate; G5 PASS candidate; Released: NO |
 | [PBI-029](PBI-029.md) | Secrets and External Configuration Foundation | Done; merge, CI main, cierre documental y Owner Acceptance PASS |
 | [PBI-030](PBI-030.md) | Materialize UI Foundation and Application Shell V1 | Done |
 | [PBI-031](PBI-031.md) | Station Binding Administration | Draft / Deferred |
@@ -52,11 +52,11 @@ conservan TBD.
 | [PBI-034](PBI-034.md) | Operational Session | Done; G3 PASS; Released: NO |
 | [PBI-035](PBI-035.md) | Reinforced Authorization | Draft / Deferred |
 | [PBI-036](PBI-036.md) | Extended Observability | Deferred |
-| [PBI-037](PBI-037.md) | Users & Roles Administration Product Iteration | Functional first — local Owner iteration |
+| [PBI-037](PBI-037.md) | Users & Roles Administration Product Iteration | Integrated slice within PBI-028; no independent lifecycle |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-Completar PBI-028, focused High-risk review y CI exacto del candidato. No
-iniciar otro PBI, liberar ni desplegar.
+Completar CI/revisión del cierre documental PBI-028 y detenerse para merge
+autorizado. No iniciar otro PBI, liberar ni desplegar.

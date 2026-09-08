@@ -1,142 +1,57 @@
 # Active Development Checklist
 
-Milestone: Hardened Identity + Users & Roles Checkpoint
+Milestone: PBI-028 Canonical Closure & Roadmap Advance
 Sprint: SPRINT-02 — Operational Authentication & Authorization
-Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
-Status: Hardened Draft PR candidate green; final exact-HEAD CI and focused review in progress
-Progress: 11 / 12 checkpoint blocks completed
-Current work: All canonical lifecycle wording reconciled; run exact-HEAD CI and focused review on the resulting documentation commit.
-Next block: Stop at Owner merge authorization after final run-1/run-2/comparison and review are green.
-Blockers: No technical blocker. Merge and deploy remain unauthorized.
-Updated: 2026-09-07 22:56 MST
+Current PBI: NONE — PBI-028 is `Done candidate`; PBI-037 remains an integrated Owner-authorized slice
+Status: Documentary closure candidate; CI and focused documentary review GREEN; Owner merge authorization pending
+Progress: 13 / 14 closure blocks completed
+Current work: Stop at Owner merge authorization.
+Next block: No next PBI action; merge authorization is the only remaining closure predicate.
+Blockers: No technical blocker. Owner merge authorization, release and deploy remain unauthorized.
+Updated: 2026-09-08 MST
 
-## Master checkpoint
+## Canonical closure
 
-- [x] Proven functional baseline preserved
-- [x] Git baseline, large mixed worktree and migrations inventoried
-- [x] Canonical scope and Owner authority reconciled for hardening
-- [x] Security, API, database, architecture and concurrency audit
-- [x] Identity / Login UX coherent and hardened
-- [x] Users & Roles UX coherent and hardened
-- [x] PBI-028 audit/correlation hardened
-- [x] PostgreSQL 18.4 fresh / upgrade / 0-pending verification
-- [x] Full local verification
-- [x] Browser QA and Owner-review localhost
-- [~] Logical commits, Draft PR, CI and focused review (Draft PR #37; initial exact-HEAD CI green, final documentary HEAD pending)
-- [ ] Owner merge authorization / canonical integration
+- [x] Main revalidated: local = `origin/main`, divergence `0/0`, working tree clean
+- [x] PR #37 functional integration verified: merge `ab8e8ba9a1274030e27ad920d61c66ed461bf122`
+- [x] PR #37 exact-main CI `34193770228`: run-1/run-2/comparison GREEN
+- [x] PR #38 PIN focus remediation verified: merge `a9bb0744ebf8b32b91a9ddf90f67570830182afc`
+- [x] PR #38 exact-main CI `34197268832`: run-1/run-2/comparison GREEN
+- [x] Focused review: `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`
+- [x] Owner Acceptance explicitly recorded
+- [x] PBI-028 scope, evidence, DoD and residual limits reconciled
+- [x] PBI-037 reconciled as integrated product slice, without independent lifecycle
+- [x] G5 AUDIT marked `PASS candidate`
+- [x] Current PBI / WIP advanced preventively to `NONE` / `0/1`
+- [x] Next candidate assessed as `NONE`; no existing PBI is selected or ready
+- [x] Docs-only PR CI `34199627015`: run-1/run-2/comparison GREEN
+- [x] Focused documentary review of exact HEAD: docs-only, links, consistency, diff and secret scan PASS
+- [ ] Owner merge authorization
 
 ## PBI-028 — Audit and Correlation
 
-- [x] Functional Local
-- [x] Owner Functional Acceptance
-- [x] Hardening
-- [x] Verification
-- [ ] Integration candidate / CI / focused review
-- [ ] Merge
-- [ ] Done
+- [x] Functional Local and real-actor Operational Note proof
+- [x] Atomic, idempotent, append-only business audit with safe allowlist
+- [x] Server-generated correlation on success and errors
+- [x] PostgreSQL 18.4, architecture, full verify, OCI and browser proof
+- [x] Functional integration and exact-main CI
+- [x] Owner Acceptance
+- [~] `Done candidate` — requires this closure PR's merge and exact-main CI
+- [ ] `Done` effective
 
 ## PBI-037 — Users & Roles Administration
 
-- [x] Functional logic
-- [x] UI redesign in business language
-- [x] Security and API hardening
-- [x] Verification
-- [ ] Integration candidate / CI / focused review
+- [x] Role-to-capabilities and multi-role union proof
+- [x] User-to-roles with no direct permissions
+- [x] PIN-to-user/session proof; inactive user login denied
+- [x] User editing, explicit PIN change and lifecycle persistence
+- [x] PIN is never returned, persisted or displayed plaintext
+- [x] PIN dialog focus remediation integrated and regression-covered
+- [x] Integrated and traceable within PBI-028 checkpoint
+- [ ] Independent `Done` state — not applicable; PBI-037 has none
 
-### Functional surface already proven
+## Guardrails
 
-- [x] Roles screen
-- [x] Crear rol
-- [x] Editar rol
-- [x] Capability matrix
-- [x] Users screen
-- [x] Crear usuario
-- [x] Editar usuario
-- [x] Asignar roles
-- [x] PIN 4 dígitos
-- [x] Activar / desactivar
-- [x] Login con usuario creado
-- [x] Permission proof
-- [ ] Owner UX Review
-
-## Required business-logic proof
-
-- [x] Role `Ventas` created with only existing capability `repairs.read`
-- [x] `Efrén Demo` has `Ventas` and a unique local four-digit PIN
-- [x] `Valeria Demo` has `Ventas` and a different local four-digit PIN
-- [x] Both users have no direct permissions and inherit exactly `Ventas`
-- [x] PIN login creates and preserves the correct operational session for each user
-- [x] Editing `Ventas` adds then removes `repairs.add_note` for both users without editing them
-- [x] Server-protected Repair Detail UI reflects the changed capability
-- [x] Temporary `Técnico` plus `Ventas` proves the union for Efrén Demo
-- [x] Valeria Demo was deactivated, denied login, then reactivated with a persisted session after reload
-
-## Credential presentation finding
-
-- [x] No local source or database field contains the reported value `4511`
-- [x] Operational identifiers are explicitly labelled `ID operativo`
-- [x] User responses and UI expose only `pinConfigured`; no plaintext PIN, hash, verifier, or credential material
-
-## Required user-editing proof
-
-- [x] Efrén Demo renamed and operational identifier changed through Configuración → Usuarios
-- [x] Profile change persisted after reload
-- [x] Temporary `Técnico` role removed; only `Ventas` remained after reload
-- [x] PIN replaced explicitly; prior PIN was denied and new PIN created Efrén's session
-- [x] Efrén's effective capabilities matched only `Ventas`: Repair Detail read succeeded and Operational Note was absent
-- [x] Efrén was deactivated and denied login with the new PIN
-- [x] Efrén was reactivated and the new PIN authenticated again
-
-## Hardened local browser proof
-
-- [x] Configuración routes coherently to Users and Roles y permisos
-- [x] Roles list/create/edit/capability grouping uses business labels and persists after reload
-- [x] Users list/create/edit/multi-role/status changes persist after reload
-- [x] User administration never renders a plaintext PIN or destructive delete action
-- [x] Light/dark theme switches correctly
-- [x] Mobile viewport has no horizontal overflow and preserves the user administration flow
-- [x] Repair `SR-2026-001` accepts an Operational Note as real actor `Luis`
-- [x] Timeline preserves the actor and note after reload
-- [x] Business audit row contains the allowed action/resource/context/correlation/timestamp metadata and no note body field
-- [x] Final PIN-only error/reload/logout/switch walkthrough over the hardened UI
-- [x] Efrén and Valeria each authenticate to their own Session with distinct synthetic local PINs
-- [x] Efrén and Valeria retain `repairs.read` while administration and Operational Note remain unavailable
-- [x] Valeria persisted after reload, was denied while inactive, then authenticated again after reactivation
-- [x] Localhost returned to the active `Luis` administrator Session for Owner Review
-
-## Hardening evidence
-
-- [x] PIN lookup uses keyed digest plus Argon2id verification, anonymous anti-enumeration and rate-limit/lockout controls
-- [x] Branch-scoped collision guards reject ambiguous concurrently eligible PINs
-- [x] PIN replacement and inactive-user login behavior are durable and covered materially
-- [x] Administration reads and writes require tenant-wide server-side capability authority
-- [x] Administration mutation authority is rechecked inside the same transaction as the effect
-- [x] Role/user/PIN mutations use durable request identity, optimistic versions and rollback-safe persistence
-- [x] Ordinary User creation uses a durable request journal for exact replay, payload conflict and concurrent retry safety
-- [x] Ambiguous User profile updates preserve one immutable command and reconcile against authoritative state before retry
-- [x] PIN configured/admin-continuity projections accept only the supported credential profile and pepper version
-- [x] Session administration capabilities are canonically composed before browser parsing
-- [x] PBI-028 note plus audit is atomic, idempotent, append-only and commit-authorized
-- [x] Commit authorization is authority-linearized before Repair lookup and Session time is rechecked after the final blocking Repair lock
-- [x] PostgreSQL materially covers revocation before transaction, after its serializable snapshot and after its authority lock
-- [x] Correlation UUID is generated server-side for success and error paths, including malformed JSON
-- [x] PostgreSQL 18.4 material suite passed 8/8 after remediation; cleanup PASS and fingerprint stable
-- [x] Additive User profile and User-create idempotency migrations passed material coverage; local upgrade applied the final migration once and a second run left `0 pending` (manifest `1165e175ff10faafbe3f8e5c71d1b065e54a0d76eabd1bdca6835d7ee84a7092`)
-- [x] `pnpm install --frozen-lockfile` and final `pnpm run verify` on `9c9ba04` passed: 630 tests, 613 pass, 17 expected PostgreSQL skips, 0 fail
-- [x] Production dependency audit passed: 0 vulnerabilities and one resolved `qs@6.16.0`
-- [x] Candidate secret scan found no private-key or provider-token signatures; remaining literal matches are synthetic test material or non-secret type/algorithm values
-- [x] All 601 tracked Markdown files passed local link validation with 0 broken targets
-- [x] Git hygiene preserved the deliberate `.runtime/recovered-duplicates` recovery evidence and removed only one ignored, stale, regenerable `node_modules/.modules 2.yaml` copy; tracked worktree remains clean
-- [x] Final OCI image `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b` passed with read-only filesystem, non-root uid `1000:1000`, 31 fresh migrations, second run `0 applied / 0 pending`, health/routes and clean SIGTERM
-- [x] OCI verifier failures redact generated database/PIN secret material
-- [x] Exact code reviews on PBI-028, PIN/Access and UI/API closed at `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`
-- [x] Draft PR #37 opened without merge; CI `34190625347` passed run-1, run-2 and semantic/artifact comparison on `51ca8d1`
-- [~] Final exact-HEAD CI and focused High-risk review after documentary finding remediation
-
-## Scope guard
-
-The Owner-authorized Master Goal permits hardening, logical commits, ordinary
-push, a Draft PR, CI and focused review for this accumulated local checkpoint.
-It does not authorize merge, deploy, remote database or another milestone.
-PBI-028 remains the canonical current PBI; PBI-037 stays explicitly traceable
-as the product-administration slice and does not reopen completed foundations.
+- [x] No new PBI started; no DoR inferred
+- [x] No merge by this checklist update
+- [x] No deploy, Preview remoto, Dokploy, remote DB, DNS or infrastructure change
