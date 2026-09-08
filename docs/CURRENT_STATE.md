@@ -2,258 +2,84 @@
 
 ## Estado del documento
 
-- **Estado:** Fotografía del Draft PR #37 para el candidato endurecido de
-  PBI-028 y el slice PBI-037; PBI-026 y G4 están cerrados efectivamente.
+- **Estado:** Snapshot preventivo del cierre canónico de PBI-028.
 - **Baseline auditada:** `main` en
-  `0b39e3794a97c22d5471c0b6dfa278026f237b03`.
-- **CI autoritativo:** run `34161029937`, `SUCCESS`; VC-024 run-1, run-2 y
-  comparison verdes sobre el mismo SHA.
+  `a9bb0744ebf8b32b91a9ddf90f67570830182afc`.
+- **CI autoritativo de la baseline:** run `34197268832`, `SUCCESS`; VC-024
+  run-1, run-2 y comparison verdes sobre ese SHA.
 - **Regla:** este documento describe estado; no autoriza implementación,
-  merge, deploy, migración o infraestructura.
+  merge, release, deploy, migración ni infraestructura.
 
 ## Resumen ejecutivo
 
-SR Taller 2.0 tiene una foundation técnica ejecutable y un Repair Workstream
-local integrado. D5 Technician Assignment, D6.1 Start Diagnosis y D6.2 Internal
-Physical Location pertenecen a `main` y tienen CI verde.
+La foundation técnica y el Repair Workstream permanecen integrados en `main`.
+SPRINT-01 está cerrado; SPRINT-02 sigue activo. PBI-025, PBI-034 y PBI-026
+están `Done` y G3/G4 están `PASS`; ninguno está `Released`.
 
-Repairs no está completo ni listo para operación productiva. Trusted Station
-Runtime Context, User Directory and Lifecycle y Roles, Assignments and
-Capability Catalog están cerrados canónicamente; G1 y G2 están `PASS`. El
-alcance funcional de PIN, su remediación y su cierre pertenecen a `main`;
-PBI-025 está `Done`, con Owner Acceptance `APPROVED` y `Released: NO`.
-Operational Session pertenece a `main`; PBI-034 está `Done` y G3 está `PASS`
-después del cierre PR #34 y su CI exacto. SPRINT-01 quedó cerrado y SPRINT-02
-sigue activo. PBI-026 está `Done` después del cierre PR #36 y G4 está `PASS`.
-PBI-028 tiene tamaño `Large`, riesgo `High` preservado, threat model, contrato
-acotado de auditoría/correlation, DoR `PASS` y Owner Start. Es el único PBI
-actual y WIP es `1/1`. Su rama contiene un checkpoint local endurecido con
-PBI-037 explícitamente trazado, full verify, PostgreSQL 18.4, OCI y walkthrough
-PIN-sensitive verdes. El Draft PR #37 está abierto y su CI inicial
-`34190625347` pasó run-1, run-2 y comparison; la CI y focused review del HEAD
-documental final, la autorización de merge y la integración siguen pendientes.
-No se atribuye este trabajo a `main`.
+PBI-028 está materialmente integrado por PR #37: Operational Note obtiene
+actor y contexto reales server-side, y su business audit/correlation mínimo es
+atómico, append-only y libre de secretos. PR #38 corrigió el único defecto UX
+post-integración conocido: el campo PIN controlado ya no pierde foco al cambiar
+de estado. Owner Acceptance fue otorgada. Este PR documental deja PBI-028 como
+`Done candidate` y G5 como `PASS candidate`; sólo su eventual merge autorizado
+y CI exacto de `main` vuelven esos estados efectivos.
+
+PBI-037 es el slice de administración Users & Roles autorizado por Owner y
+materializado dentro del checkpoint PBI-028. No es un segundo PBI actual ni
+tiene un lifecycle `Done` independiente: no reabre PBI-032/PBI-033.
 
 ## Git y CI
 
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado | `0b39e3794a97c22d5471c0b6dfa278026f237b03` |
-| `origin/main` auditado | mismo SHA |
-| Divergencia al iniciar reconciliación | `0/0` |
+| HEAD auditado / `origin/main` | `a9bb0744ebf8b32b91a9ddf90f67570830182afc` |
+| Divergencia al iniciar este cierre | `0/0` |
 | Working tree al iniciar | limpio |
-| CI | `34161029937` SUCCESS |
-| Última integración | PR #36 — cierre canónico de PBI-026 |
-| Candidato PBI-028 | Draft PR #37; CI inicial `34190625347` GREEN; no integrado |
+| PR #37 funcional | merge ordinario `ab8e8ba9a1274030e27ad920d61c66ed461bf122` |
+| CI exacta de PR #37 en `main` | `34193770228` SUCCESS; run-1/run-2/comparison GREEN |
+| PR #38 remediación PIN focus | merge ordinario `a9bb0744ebf8b32b91a9ddf90f67570830182afc` |
+| CI exacta de PR #38 en `main` | `34197268832` SUCCESS; run-1/run-2/comparison GREEN |
 
-PR #30 integró el candidate funcional exacto de PBI-025 tras un primer intento
-rojo y un rerun verde. La integración fue una desviación de DEC-051/DEC-063,
-ratificada expresamente por el Owner sólo para este cierre: se conserva el
-primer rojo y no existe waiver general. PR #31 integró la remediación como
-`a51ddcca13cfc43fccb77378643b6874dfb772da`; CI `34100056690` quedó GREEN
-en el primer intento. PR #32 integró el cierre como
-`ccdd7e243265c0f4d19e9798b8ddfa90d97e8c9e`; CI exacto `34124746317` quedó
-GREEN en attempt 1. Conforme a la semántica post-merge, PBI-025 está `Done`.
-PR #33 integró PBI-034 mediante merge ordinario
-`f3e394b59ec7421e13b36ed6bfddff28e45c0dd7` el
-`2026-09-07T18:11:35Z`; CI exacto `34150632738` quedó GREEN y la Owner
-Acceptance condicional quedó `APPROVED`.
-PR #34 integró el cierre documental como
-`54ddc251cda8ec7465b7913786c647f8d3ccbeac`; CI exacto `34153470560` quedó
-GREEN. Conforme a la semántica post-merge, PBI-034 está `Done`, G3 está
-`PASS` y `Released: NO`.
+## Capacidades integradas relevantes
 
-PR #35 integró el candidate PBI-026
-`54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7` mediante merge ordinario
-`4db5d9384d13c200eb2031dceb32dd89efcca64d` el
-`2026-09-07T20:07:36Z`. Candidate CI `34157187442`, focused Critical-risk
-review (`0B/0H/0M/0L`) y exact-main CI `34158203438` quedaron GREEN; la Owner
-Acceptance condicional quedó `APPROVED`. PR #36 integró el cierre como
-`0b39e3794a97c22d5471c0b6dfa278026f237b03`; CI exacto `34161029937` quedó
-GREEN. PBI-026 está `Done`, G4 está `PASS` y `Released: NO`.
+- Trusted Station Context, Users, Roles, catálogo de capabilities, PIN,
+  Operational Session y autorización contextual server-side.
+- Repairs Worklist/Detail y Operational Note append-only.
+- `repairs.add_note` deriva actor, Tenant, Branch, Station y Session de la
+  autoridad server-side; timeline y business audit se confirman en la misma
+  transacción.
+- Correlation UUID es generado por servidor en éxitos y errores; permanece
+  separado de `clientRequestId` y no es elegido por frontend.
+- Configuración → Roles y Usuarios permite administración local de Roles,
+  Users, lifecycle y PIN sin permisos directos por User ni PIN plaintext.
 
-## Stack actual
+## Límites vigentes
 
-- Node.js `24.18.0`, pnpm `11.15.1`, TypeScript.
-- NestJS modular monolith.
-- React/Vite en `apps/dev-preview-web`.
-- PostgreSQL 18.x, Kysely y migraciones one-shot.
-- Imagen OCI mediante Dockerfile.
-- CI Linux reproducible con PostgreSQL material, dos runs y comparison.
-- Preview/Dokploy existe como ambiente separado; no fue modificado ni
-  verificado nuevamente por esta reconciliación.
-
-## PBI-034 cerrado y PBI-026 en cierre
-
-PBI-034 agrega una Session Access-owned stateful con una activa por
-Station, bearer opaco y CSRF aleatorios, persistencia sólo de verificadores,
-idle timeout de 60 minutos y lifetime absoluto de 12 horas. Materializa
-start/resolve/touch/logout/switch, invalidación ante cambios de los predicados
-de admisión, superficie HTTP same-origin/no-store, bootstrap de Station sólo
-local/test y un gate visible de login/cambio de User en el Application Shell.
-
-DEC-005 Option A quedó materializada como policy v4 únicamente para las
-composiciones dirigidas `access->stations` y `access->users`, mediante tokens y
-contratos públicos. `SR_SESSION_SIGNING_KEY` permanece reservado y sin
-consumidor. Full verify, PostgreSQL 18.4 material, lifecycle HTTP y validación
-visual pasaron. El candidato `cdf2805344a5302844a8f7f6f042cb39fbe1515c`
-tuvo CI `34149620560` GREEN y focused review PASS con `0`
-BLOCKER/HIGH/MEDIUM y `1` LOW. Su merge funcional y CI exacto de `main`
-constan arriba; PR #34 y CI `34153470560` completaron el cierre. PBI-026 inició
-después con autorización propia y su alcance funcional ya está integrado; no
-existe autorización de release o deploy.
-
-## Capacidades integradas
-
-### Platform foundation
-
-- Tenants y Branches persistentes.
-- Users, Roles, catálogo de capabilities y assignments tenant/Branch-scoped;
-  PBI-033 está `Done` y G2 `PASS`.
-- Health `/livez` y readiness `/readyz`.
-- Propiedad modular y acceso a persistencia gobernados.
-- Desarrollo local con PostgreSQL, migración y seed sintético.
-
-### UI foundation
-
-- Design System y Application Shell V1.
-- Temas Light/Dark, Brand System, navegación y responsive.
-- Worklist y Repair Detail operational workspace.
-- PBI-030: `Done`; Owner Acceptance `APPROVED`, riesgo AT/cross-browser LOW
-  aceptado y `Released: NO`.
-
-### Repairs
-
-- Worklist, búsqueda y filtros.
-- Detail, intake read model y timeline.
-- Evidencias locales y contenido rehidratable.
-- Operational Note append-only.
-- D5 asignación, reasignación y desasignación de técnico.
-- D6.1 transición `pending → diagnosing`.
-- D6.2 movimiento `pending_area → workshop`.
-- Idempotencia, versiones, concurrencia e aislamiento tenant/branch aplicables.
-- Contextual Authorization server-side deny-by-default para lecturas de Repairs
-  y Operational Note, con capabilities frescas y scope de recurso efectivo.
-
-## Limitaciones vigentes
-
-- El directorio User tenant-scoped, Roles/Capabilities/Assignments, PIN,
-  Operational Session y contextual authorization están integrados. La
-  superficie login/logout/switch permanece local.
-- Los read models de grants son proyecciones, no veredictos finales de
-  autorización. PBI-026 los intersecta server-side con User activo,
-  Station/Branch confiable y Session antes de permitir un efecto protegido.
-- Trusted Station Runtime Context está `Done` canónico; no incorpora enrollment
-  productivo ni administración completa de bindings.
-- `LocalRepairContext` sólo habilita contexto fijo en desarrollo.
-- Los writes de Repairs integrados en `main` todavía registran actor sintético.
-  El candidato local PBI-028 reemplaza el actor de `repairs.add_note` por la
-  Session real y agrega auditoría/correlation atómicas; aún no está integrado.
-- New Repair es una superficie visual, no un write productivo persistente.
-- No existen Customers, Pricing Catalog, Quote, Payments, Cash o Delivery
-  completos.
-- No existe Production materializada ni autorización de deploy en esta tarea.
-
-## Checkpoint de producto
-
-`REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`
-
-- D5: integrated.
-- D6.1: integrated.
-- D6.2: integrated.
-- Repairs complete: NO.
-- Siguiente dirección: auditoría/correlation mínima y actor real.
+- El audit de PBI-028 está acotado a `repairs.add_note`; no hay query/export UI,
+  observabilidad extendida ni retrofit de todos los writes de Repairs.
+- PBI-037 no convierte la administración local en un módulo IAM genérico ni
+  reabre foundations ya cerradas.
+- Customers, New Repair persistente, Pricing, Payments, Inventory y Delivery
+  permanecen fuera de este checkpoint.
+- Preview remoto, Dokploy, PostgreSQL remoto, DNS, secretos e infraestructura
+  no fueron modificados. Production no está materializada.
 
 ## Roadmap y WIP
 
-La fuente canónica es [MVP Operating Roadmap](product/MVP_OPERATING_ROADMAP.md).
-
-| Elemento | Estado |
+| Elemento | Estado preventivo de este closure PR |
 |---|---|
 | Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
-| Sprint 01 | Closed — cinco PBIs committed `Done`; ninguno `Released` |
-| PBI actual | PBI-028 — Minimum Business Audit and Correlation |
-| Siguiente candidato | NONE mientras PBI-028 está en ejecución |
-| WIP permitido | Uno; actual `1/1` |
-
-PBI-030 tiene implementación, independent review, merge, CI y Owner Acceptance
-aprobados. Su [auditoría final](quality/evidence/pbi-030/FINAL_CLOSURE_AUDIT.md)
-registra la cobertura AT/cross-browser formal pendiente como
-`Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`. No está `Released` y no bloquea
-la preparación de PBI-027; su evidencia canónica preserva esta fotografía.
-
-PBI-027 quedó `Done` canónico al integrar PR #20; `Released: NO`. PBI-029 quedó
-`Done` al combinar su merge funcional `36d93736d46b69acadadd95ef66809332fbb5bd4`,
-CI `33974100385` GREEN, focused security review PASS, riesgo `CRITICAL`
-aceptado, Owner Acceptance APPROVED, PR #22 merge
-`41914c78724303d66136989937cf8f38e4ea8a88` y CI post-cierre `33988752597`
-GREEN. `Released: NO`. PBI-024 quedó `Done` canónico mediante PR #25, merge
-`2b0ab85bb19b795c71332b5f2ef36ee26a75cdfe` y CI `34044488745` GREEN;
-`Released: NO`.
-
-PBI-032 integró el candidato funcional
-`326a11802a4be32970d4e0634a61841b6bcb9b86` mediante PR #26, merge
-`66aebdbb45f368755107db315772654bee5399a3`; CI de candidato `34072027504` y
-CI de `main` `34072709330` quedaron GREEN en run-1, run-2 y comparison. La
-focused review fue PASS y la Owner Acceptance condicional quedó satisfecha.
-PR #27 integró su cierre como
-`db6637ee6902b9b0e4a40ba39d7f203cb6889352`; CI post-cierre `34074457695`
-quedó GREEN. Conforme a la semántica post-merge, PBI-032 está `Done` canónico
-y `Released: NO`.
-
-PBI-033 integró el candidate revisado
-`bb5a1efde19171703d0b3ce84567ff14538b32b7` mediante PR #28, merge
-`065b859e3db64f82f033ce75ce5fb33df9b3ade1` a las
-`2026-09-07T04:15:05Z`; CI de candidato `34081637692` y CI exacto de `main`
-`34082394514` quedaron GREEN en run-1, run-2 y comparison. La focused
-high-risk review fue PASS con hallazgos abiertos BLOCKER/HIGH/MEDIUM: 0; la
-Owner Acceptance condicional quedó satisfecha. PR #29 integró el cierre como
-`d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` y su CI exacto de `main`
-`34084930812` quedó GREEN. Conforme a la semántica post-merge, PBI-033 está
-`Done`, G2 está `PASS` y `Released: NO`. El límite residual de proyección de
-grants se conserva como LOW.
-
-## Identity Foundation reconciliada
-
-- PBI-024 — Trusted Station Runtime Context.
-- PBI-027 — Branch Timezone Minimum.
-- PBI-029 — Secrets and External Configuration.
-- PBI-032 — User Directory and Lifecycle.
-- PBI-033 — Roles, Assignments and Capability Catalog.
-- PBI-025 — PIN Credential Authentication.
-- PBI-034 — Operational Session.
-- PBI-026 — Contextual Authorization.
-- PBI-028 — Minimum Business Audit and Correlation.
-- PBI-031/PBI-035/PBI-036 conservan administración completa, autorización
-  reforzada y observabilidad extendida como slices separados.
-
-## Impacto remoto de esta reconciliación
-
-- Deploy: NO.
-- Preview: sin cambios.
-- Dokploy: sin cambios.
-- PostgreSQL remoto: sin cambios.
-- DNS/secrets/infraestructura: sin cambios.
-
-## Ejecución vigente
-
-PBI-025 tiene threat model, estimación `Large`, DoR `PASS`, riesgo `Critical`
-sin downgrade, focused review PASS y Owner Acceptance `APPROVED`. PR #32 y CI
-exacto `34124746317` completaron su cierre; está `Done`, `Released: NO`.
-
-PBI-034 está `Done`, tamaño `Large`, riesgo `Critical` y `Released: NO`.
-PBI-026 está `Done`, tamaño `Large`, riesgo `Critical`, threat model y DoR
-`PASS`, alcance funcional/cierre integrados y G4 `PASS`. El catálogo mínimo
-autoriza sólo lecturas de Repairs y Operational Note; las mutaciones sin
-capability aprobada quedan deny-by-default. PBI-028 está `In progress`, tamaño
-`Large`, riesgo `High`, DoR `PASS` y Owner Start; WIP `1/1`. El
-[candidato local endurecido](quality/evidence/pbi-028/INTEGRATION_CANDIDATE.md)
-materializa actor real/auditoría y la administración PBI-037 sin convertirlos
-todavía en estado integrado.
+| Current PBI | `NONE` |
+| WIP | `0/1` |
+| PBI-028 | `Done candidate`; `Released: NO` |
+| G5 AUDIT | `PASS candidate` |
+| PBI-037 | Slice integrado y trazable dentro de PBI-028; sin lifecycle independiente |
+| Next candidate | `NONE` — el roadmap apunta a proof/retrofit de actor real y luego Customers, pero no existe PBI seleccionado/ready ni autorización de inicio |
 
 ## Próxima acción
 
-Obtener CI run-1/run-2/comparison y focused High-risk review verdes sobre el
-HEAD final exacto del Draft PR #37. Detener antes del merge para autorización
-Owner. No iniciar otro PBI; no existe autorización de release o deploy.
+Revisar este PR documental, obtener CI autoritativo sobre su HEAD exacto y
+detenerse para autorización Owner de merge. Su merge autorizado y CI de `main`
+GREEN materializarán PBI-028 `Done` y G5 `PASS`. No iniciar otro PBI y no
+desplegar.

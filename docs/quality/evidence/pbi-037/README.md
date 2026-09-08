@@ -2,10 +2,10 @@
 
 ## State
 
-PBI-037 is the Owner-authorized Users & Roles product slice hardened inside the
-active PBI-028 identity checkpoint. It does not become a second current PBI,
-does not reopen the completed PBI-032/PBI-033 foundations and does not claim
-integration, release or deploy.
+PBI-037 is the Owner-authorized Users & Roles product slice integrated inside
+the PBI-028 identity checkpoint. It does not become a second current PBI, does
+not reopen the completed PBI-032/PBI-033 foundations and has no independent
+`Done`, release or deploy claim.
 
 ## Material result
 
@@ -35,9 +35,12 @@ The shared exact evidence, commands, local browser proof and remaining gates are
 recorded in the
 [PBI-028 hardened integration candidate](../pbi-028/INTEGRATION_CANDIDATE.md).
 
-## Remaining authority
+## Canonical relation and remaining authority
 
-Draft PR #37 is open and initial candidate CI `34190625347` passed both VC-024
-executions and comparison. Final exact-HEAD CI, focused review and explicit
-Owner merge authorization are still required. No Production credential,
-remote database, release or deploy belongs to this evidence.
+PR #37 integrated the shared checkpoint at
+`ab8e8ba9a1274030e27ad920d61c66ed461bf122`; its exact-main CI `34193770228`
+is GREEN. PR #38 integrated the PIN-dialog focus remediation at
+`a9bb0744ebf8b32b91a9ddf90f67570830182afc`; its exact-main CI `34197268832`
+is GREEN. The remaining gate belongs exclusively to PBI-028's documentary
+closure PR. No Production credential, remote database, release or deploy
+belongs to this evidence.
