@@ -5,6 +5,7 @@ import test from 'node:test';
 import {
   EXPECTED_NODE_VERSION,
   EXPECTED_PNPM_VERSION,
+  EXPECTED_PNPM_WORKSPACE_MANIFEST,
   parsePnpmVersion,
   readJson,
   validateRuntimeFacts,
@@ -56,7 +57,7 @@ test('package manifest pins the accepted baseline and blocks lifecycle scripts',
   assert.deepEqual(supplyChainPolicy.allowlist, []);
   assert.equal(
     workspaceManifest,
-    'packages:\n  - .\n  - apps/dev-preview-web\n',
+    EXPECTED_PNPM_WORKSPACE_MANIFEST,
   );
   assert.equal(previewManifest.dependencies.react, '19.2.8');
   assert.equal(previewManifest.devDependencies.vite, '8.2.0');

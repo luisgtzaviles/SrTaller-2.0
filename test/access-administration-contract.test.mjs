@@ -144,11 +144,12 @@ function matrix(adminScope = 'TENANT_WIDE') {
   });
 }
 
-function operationsFixture(adminScope = 'TENANT_WIDE') {
+function operationsFixture(adminScope = 'TENANT_WIDE', legacyPin = false) {
   const calls = [];
   const transactionContext = Object.freeze({ marker: 'admin-mutation' });
   const applyGuard = async (guard) => {
     calls.push({ operation: 'commitGuard', allowed: await guard.confirmCurrent(transactionContext) });
+    calls.push({ operation: 'continuityGuard', allowed: await guard.confirmContinuity(transactionContext) });
   };
   const authorization = {
     async execute(evidence, requirement, operation) {
@@ -220,6 +221,11 @@ function operationsFixture(adminScope = 'TENANT_WIDE') {
     async (scope, input, guard) => {
       await applyGuard(guard);
       calls.push({ operation: 'replacePin', scope, input });
+      if (legacyPin) {
+        throw Object.assign(new Error('legacy credential absent from PIN-only readiness'), {
+          code: 'PIN_CREDENTIAL_USER_INVALID',
+        });
+      }
       return { replaced: true };
     },
     async (scope) => {
@@ -229,6 +235,10 @@ function operationsFixture(adminScope = 'TENANT_WIDE') {
     {
       async confirmCurrent(scope, capability, context) {
         calls.push({ operation: 'tenantWideCommitGuard', scope, capability });
+        return context === transactionContext;
+      },
+      async confirmContinuity(scope, context) {
+        calls.push({ operation: 'tenantWideContinuityGuard', scope });
         return context === transactionContext;
       },
     },
@@ -298,7 +308,10 @@ test('administration operations enforce exact capability and tenant-wide authori
   assert.equal(roles.roles.length, 2);
   assert.equal(calls.filter(({ operation }) => operation === 'commitGuard').length, 9);
   assert.ok(calls.filter(({ operation }) => operation === 'commitGuard').every(({ allowed }) => allowed));
+  assert.equal(calls.filter(({ operation }) => operation === 'continuityGuard').length, 9);
+  assert.ok(calls.filter(({ operation }) => operation === 'continuityGuard').every(({ allowed }) => allowed));
   assert.equal(calls.filter(({ operation }) => operation === 'tenantWideCommitGuard').length, 9);
+  assert.equal(calls.filter(({ operation }) => operation === 'tenantWideContinuityGuard').length, 9);
   assert.deepEqual(
     calls.filter(({ operation }) => operation === 'authorize').map(({ requirement }) => requirement),
     [
@@ -309,8 +322,8 @@ test('administration operations enforce exact capability and tenant-wide authori
       { capability: 'access_matrix.manage', kind: 'state-change' },
       { capability: 'access_matrix.manage', kind: 'state-change' },
       { capability: 'users.manage', kind: 'state-change' },
-      { capability: 'users.manage', kind: 'state-change' },
-      { capability: 'users.manage', kind: 'state-change' },
+      { capability: 'access_matrix.manage', kind: 'state-change' },
+      { capability: 'access_matrix.manage', kind: 'state-change' },
       { capability: 'users.manage', kind: 'state-change' },
       { capability: 'users.manage', kind: 'state-change' },
     ],
@@ -342,6 +355,16 @@ test('administration operations enforce exact capability and tenant-wide authori
     expectedVersion: 3,
     clientRequestId: requestIds.status,
   });
+});
+
+test('PIN administration attempts replacement first and provisions only when no credential row exists', async () => {
+  const { calls, operations } = operationsFixture('TENANT_WIDE', true);
+  await operations.provisionFourDigitPin(requestEvidence, targetUserId, {
+    pin: '0000',
+    clientRequestId: requestIds.pin,
+  });
+  assert.ok(call(calls, 'replacePin'));
+  assert.ok(call(calls, 'provisionPin'));
 });
 
 test('branch-restricted administration authority cannot read or mutate tenant-wide resources', async () => {

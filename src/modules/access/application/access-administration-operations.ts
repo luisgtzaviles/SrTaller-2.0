@@ -11,6 +11,7 @@ import type { AdministrationAuthorizationCommitGuardPort } from './ports/adminis
 
 type AdministrationMutationGuard = Readonly<{
   confirmCurrent(transactionContext: object): Promise<boolean>;
+  confirmContinuity(transactionContext: object): Promise<boolean>;
 }>;
 
 const usersReadRequirement = Object.freeze({
@@ -85,6 +86,11 @@ function uuid(value: unknown, parameter: string): string {
   return value;
 }
 
+function hasErrorCode(error: unknown, code: string): boolean {
+  return typeof error === 'object' && error !== null &&
+    'code' in error && error.code === code;
+}
+
 function accessMatrix(value: unknown): AccessMatrixRecord {
   if (
     typeof value !== 'object' ||
@@ -130,6 +136,12 @@ export class AccessAdministrationOperations {
         await this.administrationCommitGuard.confirmCurrent(
           { tenantId: context.tenantId, userId: context.userId },
           capability,
+          transactionContext,
+        ),
+      confirmContinuity: async (transactionContext: object) =>
+        this.administrationCommitGuard !== undefined &&
+        await this.administrationCommitGuard.confirmContinuity(
+          { tenantId: context.tenantId, userId: context.userId },
           transactionContext,
         ),
     });
@@ -326,9 +338,12 @@ export class AccessAdministrationOperations {
   assignRole(evidence: ProtectedRequestEvidence, userId: string, input: unknown) {
     return this.authorization.execute(
       evidence,
-      usersManageRequirement,
+      accessMatrixManageRequirement,
       async (context) => {
-        await this.requireTenantWideAuthority(context, usersManageRequirement.capability);
+        await this.requireTenantWideAuthority(
+          context,
+          accessMatrixManageRequirement.capability,
+        );
         const parsedUserId = uuid(userId, 'userId');
         const body = exactObject(input, ['clientRequestId', 'roleId']);
         return this.assignRoleUseCase({ tenantId: context.tenantId }, {
@@ -337,7 +352,7 @@ export class AccessAdministrationOperations {
           assignmentScope: 'TENANT_WIDE',
           branchId: null,
           clientRequestId: uuid(body.clientRequestId, 'clientRequestId'),
-        }, this.mutationGuard(context, usersManageRequirement.capability));
+        }, this.mutationGuard(context, accessMatrixManageRequirement.capability));
       },
     );
   }
@@ -350,11 +365,11 @@ export class AccessAdministrationOperations {
   ) {
     return this.authorization.execute(
       evidence,
-      usersManageRequirement,
+      accessMatrixManageRequirement,
       async (context) => {
         const matrix = await this.requireTenantWideAuthority(
           context,
-          usersManageRequirement.capability,
+          accessMatrixManageRequirement.capability,
         );
         const parsedUserId = uuid(userId, 'userId');
         const parsedAssignmentId = uuid(assignmentId, 'assignmentId');
@@ -369,7 +384,7 @@ export class AccessAdministrationOperations {
           assignmentId: parsedAssignmentId,
           expectedVersion: body.expectedVersion,
           clientRequestId: uuid(body.clientRequestId, 'clientRequestId'),
-        }, this.mutationGuard(context, usersManageRequirement.capability));
+        }, this.mutationGuard(context, accessMatrixManageRequirement.capability));
       },
     );
   }
@@ -390,20 +405,20 @@ export class AccessAdministrationOperations {
           pin: body.pin,
           clientRequestId: uuid(body.clientRequestId, 'clientRequestId'),
         };
-        const configured = await this.listConfiguredPinUserIds({
-          tenantId: context.tenantId,
-        });
-        return configured.includes(parsedUserId)
-          ? this.replacePin(
-            { tenantId: context.tenantId },
-            payload,
-            this.mutationGuard(context, usersManageRequirement.capability),
-          )
-          : this.provisionPin(
+        try {
+          return await this.replacePin(
             { tenantId: context.tenantId },
             payload,
             this.mutationGuard(context, usersManageRequirement.capability),
           );
+        } catch (error: unknown) {
+          if (!hasErrorCode(error, 'PIN_CREDENTIAL_USER_INVALID')) throw error;
+          return this.provisionPin(
+            { tenantId: context.tenantId },
+            payload,
+            this.mutationGuard(context, usersManageRequirement.capability),
+          );
+        }
       },
     );
   }

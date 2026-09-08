@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -52,9 +52,13 @@ const requiredLocalKeys = Object.freeze([
   'SR_STATION_BOOTSTRAP_SECRET',
   'SR_USER_BOOTSTRAP_SECRET',
   'SR_PIN_PEPPER',
+]);
+
+const ephemeralLocalPinKeys = Object.freeze([
   'SR_LOCAL_PIN_JORGE',
   'SR_LOCAL_PIN_MARIA',
   'SR_LOCAL_PIN_CARLOS',
+  'SR_LOCAL_PIN_LUIS',
 ]);
 
 const forbiddenLocalKeys = Object.freeze([
@@ -76,18 +80,7 @@ function randomPinPepper() {
   return randomBytes(32).toString('base64url');
 }
 
-function randomLocalPin() {
-  return String(randomInt(0, 10_000)).padStart(4, '0');
-}
-
-function randomDistinctLocalPins(count) {
-  const values = new Set();
-  while (values.size < count) values.add(randomLocalPin());
-  return [...values];
-}
-
 function defaultLocalValues() {
-  const [jorgePin, mariaPin, carlosPin] = randomDistinctLocalPins(3);
   return Object.freeze({
     SR_LOCAL_ENVIRONMENT: LOCAL_ENVIRONMENT,
     SR_LOCAL_DB_HOST: LOCAL_DB_HOST,
@@ -106,9 +99,6 @@ function defaultLocalValues() {
     SR_STATION_BOOTSTRAP_SECRET: randomSecret(),
     SR_USER_BOOTSTRAP_SECRET: randomSecret(),
     SR_PIN_PEPPER: randomPinPepper(),
-    SR_LOCAL_PIN_JORGE: jorgePin,
-    SR_LOCAL_PIN_MARIA: mariaPin,
-    SR_LOCAL_PIN_CARLOS: carlosPin,
   });
 }
 
@@ -218,22 +208,15 @@ export async function ensureLocalEnvironment({ create = true } = {}) {
     await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
     await chmod(LOCAL_ENV_FILE, 0o600);
   }
-  for (const key of [
-    'SR_LOCAL_PIN_JORGE',
-    'SR_LOCAL_PIN_MARIA',
-    'SR_LOCAL_PIN_CARLOS',
-  ]) {
-    if (values[key] === undefined && create) {
-      values = {
-        ...values,
-        [key]: randomLocalPin(),
-      };
-      const contents = `${Object.entries(values)
-        .map(([entryKey, entryValue]) => `${entryKey}=${entryValue}`)
-        .join('\n')}\n`;
-      await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
-      await chmod(LOCAL_ENV_FILE, 0o600);
-    }
+  const persistedValues = Object.fromEntries(
+    Object.entries(values).filter(([key]) => !ephemeralLocalPinKeys.includes(key)),
+  );
+  if (Object.keys(persistedValues).length !== Object.keys(values).length) {
+    const contents = `${Object.entries(persistedValues)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n')}\n`;
+    await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
+    await chmod(LOCAL_ENV_FILE, 0o600);
   }
   return Object.freeze({ ...assertLocalTarget(values) });
 }

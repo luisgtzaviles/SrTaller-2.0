@@ -63,6 +63,7 @@ export class PinCredentialPersistenceError extends Error {
 
 export interface PinCredentialMutationCommitGuard {
   confirmCurrent(transactionContext: object): Promise<boolean>;
+  confirmContinuity?(transactionContext: object): Promise<boolean>;
 }
 
 export interface PinCredentialRepositoryPort {

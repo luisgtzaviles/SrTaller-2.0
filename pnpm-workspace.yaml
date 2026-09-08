@@ -1,3 +1,6 @@
 packages:
   - .
   - apps/dev-preview-web
+
+overrides:
+  qs: 6.16.0

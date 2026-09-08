@@ -10,6 +10,9 @@ const enabled = process.env.SR_OWNER_SCOPED_PG_TEST === '1';
 const { createDatabaseConnection } = enabled
   ? await import('../dist/infrastructure/database/database-connection.js')
   : {};
+const { useTransactionalDatabasePersistenceExecutor } = enabled
+  ? await import('../dist/infrastructure/database/database-persistence-capability.js')
+  : {};
 const {
   databaseMigrationSourceOverride,
   inspectMigrationSource,
@@ -72,6 +75,9 @@ const {
   : {};
 const { createKyselyRepairRepository } = enabled
   ? await import('../dist/modules/repairs/infrastructure/persistence/kysely-repair.repository.js')
+  : {};
+const { RepairOperationalNoteAuthorizationChangedError } = enabled
+  ? await import('../dist/modules/repairs/application/ports/repair-repository.port.js')
   : {};
 
 const migrationRoot = fileURLToPath(
@@ -142,9 +148,10 @@ const foreignTenantRequest = 'd3000000-0000-4000-8000-000000000026';
 const concurrentNoteRequest = 'd4000000-0000-4000-8000-000000000026';
 const auditFailureRequest = 'd5000000-0000-4000-8000-000000000026';
 const toctouRequest = 'd6000000-0000-4000-8000-000000000026';
+const expiredCommitRequest = 'd7000000-0000-4000-8000-000000000026';
 const stationSecretA = 'A'.repeat(43);
 const stationSecretB = 'B'.repeat(43);
-const authorizationNow = new Date('2026-09-07T20:00:01.000Z');
+const authorizationNow = new Date();
 
 function databaseConfig() {
   return Object.freeze({
@@ -464,8 +471,8 @@ test(
         bearerVerifier: tokenMaterial.bearerVerifier,
         csrfVerifier: tokenMaterial.csrfVerifier,
         expectedSessionId: null,
-        occurredAt: '2026-09-07T20:00:00.000Z',
-        expiresAt: '2026-09-08T08:00:00.000Z',
+        occurredAt: new Date(authorizationNow.getTime() - 1_000).toISOString(),
+        expiresAt: new Date(authorizationNow.getTime() + 12 * 60 * 60 * 1_000 - 1_000).toISOString(),
       });
 
       const applicableUsers = new ListApplicableUsersUseCase(accessRepository);
@@ -952,6 +959,70 @@ test(
            tenant_id, role_id, capability_code, created_at
          ) values ($1, $2, 'repairs.add_note', now())`,
         [tenantA, roleA],
+      );
+
+      const contextBeforeExpiry = await authorization.execute(
+        evidence,
+        { capability: 'repairs.add_note', kind: 'state-change' },
+        async (context) => context,
+      );
+      const originalSessionTimes = (
+        await admin.query(
+          `select issued_at, last_activity_at, expires_at
+           from access_operational_sessions
+           where tenant_id = $1 and session_id = $2`,
+          [tenantA, sessionA],
+        )
+      ).rows[0];
+      const pendingExpiredCommit = repairRepository.addOperationalNote({
+        ...contextBeforeExpiry,
+        commitGuard: Object.freeze({
+          async confirmCurrent(transactionContext) {
+            await useTransactionalDatabasePersistenceExecutor(
+              transactionContext,
+              'access',
+              async (database) => await database
+                .updateTable('access_operational_sessions')
+                .set({
+                  issued_at: new Date(Date.now() - 2 * 60 * 60 * 1_000),
+                  last_activity_at: new Date(Date.now() - 61 * 60 * 1_000),
+                  expires_at: new Date(Date.now() + 10 * 60 * 60 * 1_000),
+                })
+                .where('tenant_id', '=', tenantA)
+                .where('session_id', '=', sessionA)
+                .executeTakeFirst(),
+            );
+            return contextBeforeExpiry.commitGuard.confirmCurrent(transactionContext);
+          },
+        }),
+      }, {
+        repairId: repairA,
+        entryId: 'e7000000-0000-4000-8000-000000000026',
+        auditEventId: 'e7100000-0000-4000-8000-000000000026',
+        correlationId: 'e7200000-0000-4000-8000-000000000026',
+        clientRequestId: expiredCommitRequest,
+        body: 'La sesión vencida no debe confirmar esta nota.',
+        action: 'repair.operational_note.added',
+        resourceType: 'repair',
+        result: 'succeeded',
+        occurredAt: new Date(),
+      });
+      await assert.rejects(
+        pendingExpiredCommit,
+        RepairOperationalNoteAuthorizationChangedError,
+      );
+      assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      await admin.query(
+        `update access_operational_sessions
+         set issued_at = $3, last_activity_at = $4, expires_at = $5
+         where tenant_id = $1 and session_id = $2`,
+        [
+          tenantA,
+          sessionA,
+          originalSessionTimes.issued_at,
+          originalSessionTimes.last_activity_at,
+          originalSessionTimes.expires_at,
+        ],
       );
       await admin.query(
         `delete from access_role_capabilities

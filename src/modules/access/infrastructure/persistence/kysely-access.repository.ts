@@ -643,6 +643,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             })
             .returningAll()
             .executeTakeFirstOrThrow();
+          if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
           return mapRoleCommand(command);
         });
     } catch (error: unknown) {
@@ -1078,6 +1081,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             .returningAll()
             .executeTakeFirst();
 
+          if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
           if (!command) {
             const prior = await transaction
               .selectFrom('access_role_assignment_commands')

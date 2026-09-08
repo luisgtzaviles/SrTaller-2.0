@@ -118,6 +118,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260908000000_access_harden_pin_only_lookup.ts',
       '20260908001000_repairs_create_operational_note_request_guards.ts',
       '20260908002000_access_add_role_editing_commands.ts',
+      '20260908010000_access_narrow_pin_eligibility_triggers.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

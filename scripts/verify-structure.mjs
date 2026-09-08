@@ -1,7 +1,10 @@
 import { access, readFile, readdir } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 
-import { readJson } from './lib/toolchain-contract.mjs';
+import {
+  EXPECTED_PNPM_WORKSPACE_MANIFEST,
+  readJson,
+} from './lib/toolchain-contract.mjs';
 import {
   authorizedHealthSurfacePath,
   validateAuthorizedHealthSurface,
@@ -130,9 +133,9 @@ const workspaceManifest = await readFile(
   resolve(process.cwd(), 'pnpm-workspace.yaml'),
   'utf8',
 );
-if (workspaceManifest !== 'packages:\n  - .\n  - apps/dev-preview-web\n') {
+if (workspaceManifest !== EXPECTED_PNPM_WORKSPACE_MANIFEST) {
   failures.push(
-    'pnpm-workspace.yaml must contain only the root and authorized app packages',
+    'pnpm-workspace.yaml must contain only the authorized packages and governed overrides',
   );
 }
 

@@ -200,6 +200,7 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
           .select('user_id')
           .where('tenant_id', '=', tenantId)
           .where('status', '=', 'active')
+          .where('lookup_digest', 'is not', null)
           .orderBy('user_id', 'asc')
           .execute();
         return Object.freeze(rows.map((row) => parseAccessUserId(row.user_id)));
@@ -584,6 +585,27 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
     });
   }
 
+  async #resetAttemptLimit(
+    context: Parameters<PinCredentialRepositoryPort['authenticateAttempt']>[0],
+    rateLimitPrincipalId: string,
+    occurredAt: Date,
+  ): Promise<void> {
+    await this.execute(async (database: AccessExecutor) => {
+      await database
+        .updateTable('access_pin_attempt_limits')
+        .set({
+          attempt_count: 0,
+          window_started_at: occurredAt,
+          blocked_until: null,
+          updated_at: occurredAt,
+        })
+        .where('tenant_id', '=', context.tenantId)
+        .where('station_id', '=', context.stationId)
+        .where('rate_principal_id', '=', rateLimitPrincipalId)
+        .executeTakeFirst();
+    });
+  }
+
   async authenticateAttempt(
     context: Parameters<PinCredentialRepositoryPort['authenticateAttempt']>[0],
     input: Parameters<PinCredentialRepositoryPort['authenticateAttempt']>[1],
@@ -649,6 +671,13 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
         credential.credential_version,
         occurredAt,
       );
+      if (committed) {
+        await this.#resetAttemptLimit(
+          context,
+          input.rateLimitPrincipalId,
+          occurredAt,
+        );
+      }
       return committed
         ? Object.freeze({
             status: 'authenticated',
@@ -736,6 +765,13 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
         credential.credential_version,
         occurredAt,
       );
+      if (committed) {
+        await this.#resetAttemptLimit(
+          context,
+          input.rateLimitPrincipalId,
+          occurredAt,
+        );
+      }
       return committed
         ? Object.freeze({
             status: 'authenticated',

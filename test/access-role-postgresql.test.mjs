@@ -24,6 +24,9 @@ const { createKyselyAccessRepository } = enabled
 const { AccessPersistenceError } = enabled
   ? await import('../dist/modules/access/application/ports/access-repository.port.js')
   : {};
+const { KyselyAdministrationAuthorizationCommitGuard } = enabled
+  ? await import('../dist/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.js')
+  : {};
 
 const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
@@ -106,6 +109,8 @@ const secondRoleRequestB = '8d000000-0000-4000-8000-000000000033';
 const rollbackAssignRequestB = '8e000000-0000-4000-8000-000000000033';
 const rollbackRevokeRequestA = '8f000000-0000-4000-8000-000000000033';
 const deniedAssignRequestA = '9f000000-0000-4000-8000-000000000033';
+const continuityRequestA = '9e000000-0000-4000-8000-000000000033';
+const authorityRaceRequestA = '9d000000-0000-4000-8000-000000000033';
 
 function databaseConfig() {
   return Object.freeze({
@@ -293,6 +298,8 @@ async function seedAuthorities(admin) {
        ($1, $2, 'access_matrix.read', now()),
        ($1, $2, 'repairs.read', now()),
        ($1, $2, 'repairs.add_note', now()),
+       ($1, $2, 'users.manage', now()),
+       ($1, $2, 'access_matrix.manage', now()),
        ($1, $3, 'repairs.read', now()),
        ($1, $3, 'repairs.add_note', now()),
        ($4, $2, 'users.read', now()),
@@ -322,7 +329,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 28);
+      assert.equal(applied.status.migrations.length, 29);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -423,6 +430,91 @@ test(
       );
       assert.equal(assignedAdminA.status, 'active');
       assert.equal(assignedAdminA.version, 0);
+
+      const administrationGuard = new KyselyAdministrationAuthorizationCommitGuard();
+      const authorityGuard = Object.freeze({
+        confirmCurrent: (transactionContext) => administrationGuard.confirmCurrent(
+          { tenantId: tenantA, userId: sharedAdminUser },
+          'access_matrix.manage',
+          transactionContext,
+        ),
+        confirmContinuity: (transactionContext) => administrationGuard.confirmContinuity(
+          { tenantId: tenantA, userId: sharedAdminUser },
+          transactionContext,
+        ),
+      });
+      await rejectsWithCode(
+        repository.replaceRoleCapabilities(
+          { tenantId: tenantA },
+          {
+            roleId: sharedAdminRole,
+            expectedVersion: 0,
+            capabilityCodes: [
+              'users.read',
+              'access_matrix.read',
+              'access_matrix.manage',
+              'repairs.read',
+              'repairs.add_note',
+            ],
+            clientRequestId: continuityRequestA,
+            occurredAt: new Date().toISOString(),
+          },
+          authorityGuard,
+        ),
+        'ACCESS_AUTHORIZATION_CHANGED',
+      );
+      assert.deepEqual(
+        (
+          await admin.query(
+            `select version,
+                    exists (
+                      select 1 from access_role_capabilities
+                      where tenant_id = $1 and role_id = $2
+                        and capability_code = 'users.manage'
+                    ) as users_manage
+             from access_roles where tenant_id = $1 and role_id = $2`,
+            [tenantA, sharedAdminRole],
+          )
+        ).rows,
+        [{ version: 0, users_manage: true }],
+      );
+
+      const pendingAuthorityRace = repository.assignRole(
+        { tenantId: tenantA },
+        assignment({
+          assignmentId: deniedAssignmentA,
+          userId: concurrentUserA,
+          roleId: technicianRoleA,
+          clientRequestId: authorityRaceRequestA,
+        }),
+        {
+          async confirmCurrent(transactionContext) {
+            await admin.query(
+              `delete from access_role_capabilities
+               where tenant_id = $1 and role_id = $2
+                 and capability_code = 'access_matrix.manage'`,
+              [tenantA, sharedAdminRole],
+            );
+            return authorityGuard.confirmCurrent(transactionContext);
+          },
+          confirmContinuity: authorityGuard.confirmContinuity,
+        },
+      );
+      await rejectsWithCode(pendingAuthorityRace, 'ACCESS_AUTHORIZATION_CHANGED');
+      assert.equal(
+        Number((await admin.query(
+          `select count(*) from access_role_assignments
+           where tenant_id = $1 and assignment_id = $2`,
+          [tenantA, deniedAssignmentA],
+        )).rows[0].count),
+        0,
+      );
+      await admin.query(
+        `insert into access_role_capabilities (
+           tenant_id, role_id, capability_code, created_at
+         ) values ($1, $2, 'access_matrix.manage', now())`,
+        [tenantA, sharedAdminRole],
+      );
       assert.deepEqual(
         await repository.assignRole({ tenantId: tenantA }, assignment()),
         assignedAdminA,
@@ -699,7 +791,9 @@ test(
             roleKey: 'administrador',
             capabilityCodes: [
               'users.read',
+              'users.manage',
               'access_matrix.read',
+              'access_matrix.manage',
               'repairs.read',
               'repairs.add_note',
             ],
@@ -776,7 +870,9 @@ test(
         }),
         [
           'users.read',
+          'users.manage',
           'access_matrix.read',
+          'access_matrix.manage',
           'repairs.read',
           'repairs.add_note',
         ],

@@ -525,6 +525,9 @@ class KyselyUserRepository implements UserRepositoryPort {
               .executeTakeFirstOrThrow();
             return replayLifecycleCommand(prior, trustedInput);
           }
+          if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+            throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+          }
           return mapLifecycleCommand(command);
         });
     } catch (error: unknown) {

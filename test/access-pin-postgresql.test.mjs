@@ -156,6 +156,7 @@ const concurrentRequest = '91000000-0000-4000-8000-000000000025';
 const lockRequest = '92000000-0000-4000-8000-000000000025';
 const requestB = '93000000-0000-4000-8000-000000000025';
 const replacementRequest = '94000000-0000-4000-8000-000000000025';
+const legacyReplacementRequest = '94100000-0000-4000-8000-000000000025';
 const roleId = '95000000-0000-4000-8000-000000000025';
 const assignmentA = '96000000-0000-4000-8000-000000000025';
 const assignmentA2 = '97000000-0000-4000-8000-000000000025';
@@ -432,7 +433,7 @@ test(
         fresh.status.migrations.length,
         inspection.manifest.migrations.length,
       );
-      assert.equal(fresh.status.migrations.length, 28);
+      assert.equal(fresh.status.migrations.length, 29);
       assert.ok(
         fresh.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -483,7 +484,7 @@ test(
 
       await seedAuthorities(admin);
       const upgraded = await runner.migrateToLatest();
-      assert.equal(upgraded.results.length, 9);
+      assert.equal(upgraded.results.length, 10);
       assert.equal(
         upgraded.results[0]?.name,
         '20260907010000_access_create_pin_credentials',
@@ -604,6 +605,37 @@ test(
         ).rows[0].count,
         4,
       );
+
+      await admin.query(
+        `update access_pin_credentials
+         set lookup_digest = null
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedUser],
+      );
+      assert.equal(
+        (await useCases.repository.listConfiguredUserIds({ tenantId: tenantA }))
+          .includes(sharedUser),
+        false,
+        'a legacy credential without PIN-only lookup material must not be presented as configured',
+      );
+      const upgradedLegacy = await new ReplacePinCredentialUseCase(
+        useCases.repository,
+        useCases.hasher,
+        () => provisionedAt,
+      ).execute(
+        { tenantId: tenantA },
+        {
+          userId: sharedUser,
+          pin: pinA,
+          clientRequestId: legacyReplacementRequest,
+        },
+      );
+      assert.equal(upgradedLegacy.credentialVersion, 1);
+      assert.equal(
+        (await useCases.repository.listConfiguredUserIds({ tenantId: tenantA }))
+          .includes(sharedUser),
+        true,
+      );
       assert.equal(
         (
           await admin.query(
@@ -611,7 +643,7 @@ test(
              from access_pin_credential_commands`,
           )
         ).rows[0].count,
-        4,
+        5,
       );
 
       await admin.query(
@@ -672,6 +704,37 @@ test(
       assert.equal(
         (await useCases.authenticatePinOnly.execute(contextA2, { pin: pinA })).userId,
         concurrentUser,
+      );
+      const pinOnlyFailureStart = new Date('2026-09-07T02:02:00.000Z');
+      for (let index = 0; index < 5; index += 1) {
+        now.value = new Date(pinOnlyFailureStart.getTime() + index * 1_000);
+        await rejectsAuthentication(
+          useCases.authenticatePinOnly.execute(contextA, { pin: wrongPin }),
+          'PIN_AUTHENTICATION_DENIED',
+        );
+      }
+      let blockedPinOnlyVerifyCalls = 0;
+      assert.deepEqual(
+        await useCases.repository.authenticatePinOnlyAttempt(
+          contextA,
+          {
+            eligibleUserIds: [sharedUser],
+            lookupDigest: useCases.hasher.lookupDigest({ tenantId: tenantA, pin: wrongPin }),
+            rateLimitPrincipalId: useCases.hasher.rateLimitPinPrincipalId({ tenantId: tenantA }),
+            occurredAt: new Date(pinOnlyFailureStart.getTime() + 5_000).toISOString(),
+          },
+          async () => {
+            blockedPinOnlyVerifyCalls += 1;
+            return false;
+          },
+        ),
+        { status: 'temporarily-unavailable' },
+      );
+      assert.equal(blockedPinOnlyVerifyCalls, 0);
+      now.value = new Date(pinOnlyFailureStart.getTime() + 61_000);
+      assert.equal(
+        (await useCases.authenticatePinOnly.execute(contextA, { pin: pinA })).userId,
+        sharedUser,
       );
       await assert.rejects(
         admin.query(
@@ -1262,9 +1325,8 @@ test(
         });
         assert.equal(proof.userId, sharedUser);
       }
-      let rateLimitedVerifyCalls = 0;
-      assert.deepEqual(
-        await useCases.repository.authenticateAttempt(
+      let sixthSuccessVerifyCalls = 0;
+      const sixthSuccess = await useCases.repository.authenticateAttempt(
           contextA,
           {
             userId: sharedUser,
@@ -1278,13 +1340,12 @@ test(
             ).toISOString(),
           },
           async () => {
-            rateLimitedVerifyCalls += 1;
+            sixthSuccessVerifyCalls += 1;
             return true;
           },
-        ),
-        { status: 'temporarily-unavailable' },
-      );
-      assert.equal(rateLimitedVerifyCalls, 0);
+        );
+      assert.equal(sixthSuccess.status, 'authenticated');
+      assert.equal(sixthSuccessVerifyCalls, 1);
       now.value = new Date(successRateStart.getTime() + 5_000);
       const stationIsolatedProof = await useCases.authenticate.execute(
         contextA2,
@@ -1531,7 +1592,7 @@ test(
       );
 
       const reapplied = await runner.migrateToLatest();
-      assert.equal(reapplied.results.length, 9);
+      assert.equal(reapplied.results.length, 10);
       await assertPinTables(admin, pinTables);
 
       status = await runner.getMigrationStatus();

@@ -8,6 +8,7 @@ import type {
 } from '../../application/ports/operational-authorization-commit-guard.port.js';
 import type { CapabilityCode } from '../../domain/capability.js';
 import type { OperationalSessionContext } from '../../domain/operational-session.js';
+import { OPERATIONAL_SESSION_IDLE_MS } from '../../domain/operational-session.js';
 import type { TrustedStationContext } from '../../../stations/index.js';
 
 export class KyselyOperationalAuthorizationCommitGuard
@@ -111,13 +112,21 @@ implements OperationalAuthorizationCommitGuardPort {
 
         const lockedSession = await database
           .selectFrom('access_operational_sessions')
-          .select('session_id')
+          .select([
+            'session_id',
+            'expires_at',
+            'last_activity_at',
+          ])
+          .select(({ fn }) => fn<Date>('clock_timestamp', []).as('database_now'))
           .where('tenant_id', '=', candidate.tenant_id)
           .where('session_id', '=', candidate.session_id)
           .where('status', '=', 'active')
           .forShare()
           .executeTakeFirst();
-        return lockedSession !== undefined;
+        return lockedSession !== undefined &&
+          lockedSession.expires_at.getTime() > lockedSession.database_now.getTime() &&
+          lockedSession.last_activity_at.getTime() >
+            lockedSession.database_now.getTime() - OPERATIONAL_SESSION_IDLE_MS;
       },
     );
   }

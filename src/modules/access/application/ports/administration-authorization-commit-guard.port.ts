@@ -8,4 +8,8 @@ export interface AdministrationAuthorizationCommitGuardPort {
     capability: CapabilityCode,
     transactionContext: object,
   ): Promise<boolean>;
+  confirmContinuity(
+    scope: Readonly<{ tenantId: TenantId; userId: string }>,
+    transactionContext: object,
+  ): Promise<boolean>;
 }

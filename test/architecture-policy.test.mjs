@@ -241,10 +241,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260908000000_access_harden_pin_only_lookup.ts',
     'src/infrastructure/database/migrations/20260908001000_repairs_create_operational_note_request_guards.ts',
     'src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts',
+    'src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     assert.deepEqual(Object.keys(registration).sort(), [

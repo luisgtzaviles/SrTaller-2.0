@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import {
   EXPECTED_NODE_VERSION,
   EXPECTED_PNPM_VERSION,
+  EXPECTED_PNPM_WORKSPACE_MANIFEST,
   parsePnpmVersion,
   readJson,
   validateRuntimeFacts,
@@ -66,9 +67,9 @@ const workspaceManifest = await readFile(
   resolve(process.cwd(), 'pnpm-workspace.yaml'),
   'utf8',
 );
-if (workspaceManifest !== 'packages:\n  - .\n  - apps/dev-preview-web\n') {
+if (workspaceManifest !== EXPECTED_PNPM_WORKSPACE_MANIFEST) {
   failures.push(
-    'pnpm-workspace.yaml must contain only the root and authorized app packages',
+    'pnpm-workspace.yaml must contain only the authorized packages and governed overrides',
   );
 }
 

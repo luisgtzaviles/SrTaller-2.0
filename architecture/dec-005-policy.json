@@ -456,7 +456,8 @@
       "src/infrastructure/database/migrations/20260907230000_access_add_local_administration_capabilities.ts",
       "src/infrastructure/database/migrations/20260908000000_access_harden_pin_only_lookup.ts",
       "src/infrastructure/database/migrations/20260908001000_repairs_create_operational_note_request_guards.ts",
-      "src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts"
+      "src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts",
+      "src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -593,6 +594,22 @@
           ],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts": {
+          "owner": "access",
+          "tables": [
+            "access_pin_credentials",
+            "access_role_assignments",
+            "access_roles"
+          ],
+          "functions": [
+            "access_assert_unambiguous_pin_eligibility"
+          ],
+          "triggers": [
+            "access_pin_credentials_pin_eligibility_guard",
+            "access_role_assignments_pin_eligibility_guard",
+            "access_roles_pin_eligibility_guard"
+          ]
         }
       }
     },
@@ -759,6 +776,7 @@
           "src/infrastructure/database/migrations/20260908000000_access_harden_pin_only_lookup.ts",
           "src/infrastructure/database/migrations/20260908001000_repairs_create_operational_note_request_guards.ts",
           "src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts",
+          "src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",

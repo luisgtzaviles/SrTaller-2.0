@@ -27,6 +27,11 @@ import {
   localPinCredentialRows,
 } from '../scripts/lib/local-pin-fixtures.mjs';
 
+const [localDevelopmentSource, localEnvironmentExample] = await Promise.all([
+  readFile('scripts/lib/local-development.mjs', 'utf8'),
+  readFile('.env.local.example', 'utf8'),
+]);
+
 function validLocalValues() {
   return {
     SR_LOCAL_ENVIRONMENT: 'local',
@@ -227,6 +232,15 @@ test('local PIN fixtures use the governed profile and persist no plaintext PIN',
       true,
     );
   }
+});
+
+test('demo PINs are one-shot seed inputs and are scrubbed from local configuration', () => {
+  assert.doesNotMatch(localEnvironmentExample, /^SR_LOCAL_PIN_[A-Z]+=.*$/mu);
+  assert.match(localEnvironmentExample, /supplied only to the seed process/u);
+  assert.match(localDevelopmentSource, /const ephemeralLocalPinKeys = Object\.freeze\(/u);
+  assert.match(localDevelopmentSource, /Object\.entries\(values\)\.filter\(\(\[key\]\) => !ephemeralLocalPinKeys\.includes\(key\)\)/u);
+  assert.doesNotMatch(localDevelopmentSource, /function randomPin\b|randomPin\(\)/u);
+  assert.doesNotMatch(localDevelopmentSource, /SR_LOCAL_PIN_[A-Z]+:\s*random/u);
 });
 
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {
