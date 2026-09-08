@@ -254,7 +254,6 @@ todavía en estado integrado.
 
 ## Próxima acción
 
-Cerrar los findings documentales de la revisión, obtener CI
-run-1/run-2/comparison y focused High-risk review verdes sobre el HEAD final
-exacto del Draft PR #37. Detener antes del merge para autorización Owner. No
-iniciar otro PBI; no existe autorización de release o deploy.
+Obtener CI run-1/run-2/comparison y focused High-risk review verdes sobre el
+HEAD final exacto del Draft PR #37. Detener antes del merge para autorización
+Owner. No iniciar otro PBI; no existe autorización de release o deploy.

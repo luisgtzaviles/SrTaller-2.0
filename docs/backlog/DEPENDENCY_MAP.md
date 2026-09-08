@@ -104,5 +104,5 @@ diferidos.
 
 ## Próxima revisión
 
-Al completar walkthrough, Draft PR, CI y focused review del candidato PBI-028,
+Al completar CI y focused review del HEAD final del Draft PR #37 para PBI-028,
 o si cambia una dependencia aprobada.
