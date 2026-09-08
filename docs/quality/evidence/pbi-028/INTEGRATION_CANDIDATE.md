@@ -104,6 +104,7 @@ permissions or credential disclosure.
 | Production dependency audit | PASS — 0 vulnerabilities; `qs` resolves only to `6.16.0` |
 | Candidate secret scan | PASS — no private-key or provider-token signatures; literal credential-name matches were confined to synthetic tests and non-secret type/algorithm values |
 | Markdown links | PASS — 601 tracked Markdown files, 0 broken local targets |
+| Git hygiene | PASS — recovery evidence preserved; one ignored stale generated pnpm manifest copy removed; tracked worktree clean |
 | OCI contract | PASS — exact-code image `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b`; 31 fresh migrations, second run `0 applied / 0 pending`, read-only uid `1000:1000` runtime, no filesystem diff, health/routes and clean SIGTERM; verifier errors redact generated secrets |
 | DEC-005 / UI / external configuration | PASS in canonical verify |
 | Focused contracts | PASS — administration, role input, Session UI, note/audit and global correlation |

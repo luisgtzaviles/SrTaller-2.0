@@ -122,6 +122,7 @@ Updated: 2026-09-07 20:33 MST
 - [x] Production dependency audit passed: 0 vulnerabilities and one resolved `qs@6.16.0`
 - [x] Candidate secret scan found no private-key or provider-token signatures; remaining literal matches are synthetic test material or non-secret type/algorithm values
 - [x] All 601 tracked Markdown files passed local link validation with 0 broken targets
+- [x] Git hygiene preserved the deliberate `.runtime/recovered-duplicates` recovery evidence and removed only one ignored, stale, regenerable `node_modules/.modules 2.yaml` copy; tracked worktree remains clean
 - [x] Final OCI image `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b` passed with read-only filesystem, non-root uid `1000:1000`, 31 fresh migrations, second run `0 applied / 0 pending`, health/routes and clean SIGTERM
 - [x] OCI verifier failures redact generated database/PIN secret material
 - [x] Exact code reviews on PBI-028, PIN/Access and UI/API closed at `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`
