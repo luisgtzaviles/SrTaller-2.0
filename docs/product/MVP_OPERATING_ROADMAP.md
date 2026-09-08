@@ -15,9 +15,9 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** PBI-028 — Minimum Business Audit and Correlation.
 - **Siguiente PBI candidato:** NONE mientras PBI-028 está en ejecución.
-- **Blocking gate:** walkthrough PIN-sensitive, Draft PR, focused High-risk
-  review y CI exacto del candidato PBI-028; merge, cierre, release y deploy
-  conservan autoridades propias.
+- **Blocking gate:** CI exacto y focused High-risk review del HEAD documental
+  final del Draft PR #37; merge, cierre, release y deploy conservan autoridades
+  propias.
 - **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
@@ -232,8 +232,8 @@ deploy.
 
 ## Próxima revisión
 
-- **Disparador:** walkthrough final, Draft PR y candidato PBI-028 listo para
-  focused High-risk review.
+- **Disparador:** CI exacto y focused High-risk review del HEAD documental final
+  del Draft PR #37.
 - **Resultado esperado si pasa:** candidate CI exacto GREEN y Owner Review,
   sin inferir merge, cierre, release o deploy.
 - **Después:** seguir el workflow canónico; no iniciar otro PBI automáticamente.

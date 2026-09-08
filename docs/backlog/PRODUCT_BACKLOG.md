@@ -122,5 +122,5 @@ su clasificación explícita.
 
 ## Próxima revisión
 
-Completar el walkthrough PIN-sensitive, Draft PR, focused High-risk review y CI
-exacto del candidato PBI-028/PBI-037. No iniciar otro PBI, liberar ni desplegar.
+Completar el CI exacto y focused High-risk review del HEAD documental final del
+Draft PR #37 para PBI-028/PBI-037. No iniciar otro PBI, liberar ni desplegar.
