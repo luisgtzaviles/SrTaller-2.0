@@ -18,6 +18,7 @@ import type {
 import { parseTenantId } from '../../../tenancy/index.js';
 import { isTrustedStationContext } from '../../../stations/index.js';
 import {
+  PIN_ACTIVE_PEPPER_VERSION,
   PIN_KDF_PROFILE,
   parsePinCredentialId,
 } from '../../domain/pin-credential.js';
@@ -91,7 +92,7 @@ function validSecretMaterial(
   return (
     value.algorithm === PIN_KDF_PROFILE.algorithm &&
     value.profileVersion === PIN_KDF_PROFILE.profileVersion &&
-    value.pepperVersion === 1 &&
+    value.pepperVersion === PIN_ACTIVE_PEPPER_VERSION &&
     value.memoryKiB === PIN_KDF_PROFILE.memoryKiB &&
     value.passes === PIN_KDF_PROFILE.passes &&
     value.parallelism === PIN_KDF_PROFILE.parallelism &&
@@ -200,6 +201,7 @@ class KyselyPinCredentialRepository implements PinCredentialRepositoryPort {
           .select('user_id')
           .where('tenant_id', '=', tenantId)
           .where('status', '=', 'active')
+          .where('pepper_version', '=', PIN_ACTIVE_PEPPER_VERSION)
           .where('lookup_digest', 'is not', null)
           .orderBy('user_id', 'asc')
           .execute();

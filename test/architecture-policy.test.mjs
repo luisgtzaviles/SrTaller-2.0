@@ -243,10 +243,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts',
     'src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts',
     'src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts',
+    'src/infrastructure/database/migrations/20260908021000_users_create_commands.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     assert.deepEqual(Object.keys(registration).sort(), [
@@ -261,6 +262,7 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260908001000_repairs_create_operational_note_request_guards.ts',
       'src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts',
       'src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts',
+      'src/infrastructure/database/migrations/20260908021000_users_create_commands.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);

@@ -10,6 +10,12 @@ import { Dialog } from '../components/ui/overlays.js';
 import { hasOperationalCapability } from '../session/session-capabilities.mjs';
 import type { OperationalCapability } from '../session/session-api.js';
 import {
+  createPendingProfileUpdate,
+  isPendingProfileInput,
+  isProfileUpdateConfirmed,
+} from './pending-profile-update.mjs';
+import type { PendingProfileUpdate } from './pending-profile-update.mjs';
+import {
   assignProductRole,
   createProductUser,
   listProductAccessMatrix,
@@ -62,7 +68,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [confirmingDeactivate, setConfirmingDeactivate] = useState(false);
   const createRequestId = useRef<string | null>(null);
-  const profileRequestId = useRef<string | null>(null);
+  const pendingProfileUpdate = useRef<PendingProfileUpdate | null>(null);
   const pinRequestId = useRef<string | null>(null);
   const mutationRequestIds = useRef(new Map<string, string>());
 
@@ -74,7 +80,10 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     return created;
   };
 
-  const load = useCallback(async (): Promise<void> => {
+  const load = useCallback(async (): Promise<Readonly<{
+    users: readonly ProductUser[];
+    matrix: ProductAccessMatrix | null;
+  }> | null> => {
     setLoading(true);
     setLoadError(false);
     try {
@@ -84,10 +93,12 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
       ]);
       setUsers(loadedUsers);
       setMatrix(loadedMatrix);
+      return { users: loadedUsers, matrix: loadedMatrix };
     } catch {
       setUsers(null);
       setMatrix(null);
       setLoadError(true);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -126,6 +137,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     setEditIdentifier('');
     setSelectedRoleId('');
     setPin('');
+    pendingProfileUpdate.current = null;
     pinRequestId.current = null;
     setConfirmingDeactivate(false);
   };
@@ -151,6 +163,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     setEditIdentifier(user.operationalIdentifier ?? '');
     setSelectedRoleId('');
     setPin('');
+    pendingProfileUpdate.current = null;
     setConfirmingDeactivate(false);
     setDialog(user.userId);
   };
@@ -190,19 +203,41 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     }
     setBusyAction('profile');
     setNotice(null);
+    const normalizedDisplayName = editDisplayName.trim();
+    const normalizedIdentifier = editIdentifier.trim() || null;
+    const existing = pendingProfileUpdate.current;
+    const command = existing && isPendingProfileInput(
+      existing,
+      selectedUser.userId,
+      normalizedDisplayName,
+      normalizedIdentifier,
+    ) ? existing : createPendingProfileUpdate({
+      userId: selectedUser.userId,
+      expectedVersion: selectedUser.version,
+      displayName: normalizedDisplayName,
+      operationalIdentifier: normalizedIdentifier,
+      clientRequestId: crypto.randomUUID(),
+    });
+    pendingProfileUpdate.current = command;
     try {
-      const updated = await updateProductUser(selectedUser.userId, {
-        displayName: editDisplayName.trim(),
-        operationalIdentifier: editIdentifier.trim() || null,
-        expectedVersion: selectedUser.version,
-        clientRequestId: profileRequestId.current ??= crypto.randomUUID(),
+      const updated = await updateProductUser(command.userId, {
+        displayName: command.displayName,
+        operationalIdentifier: command.operationalIdentifier,
+        expectedVersion: command.expectedVersion,
+        clientRequestId: command.clientRequestId,
       }, csrfToken);
-      profileRequestId.current = null;
+      pendingProfileUpdate.current = null;
       setUsers((current) => current?.map((user) => user.userId === updated.userId ? updated : user) ?? current);
       setNotice({ tone: 'success', message: 'Los datos del usuario se actualizaron.' });
     } catch {
-      await load();
-      setNotice({ tone: 'danger', message: 'No fue posible actualizar los datos. Recarga la información e intenta de nuevo.' });
+      const authoritative = await load();
+      const confirmed = authoritative?.users.find((user) => user.userId === command.userId);
+      if (confirmed && isProfileUpdateConfirmed(command, confirmed)) {
+        pendingProfileUpdate.current = null;
+        setNotice({ tone: 'success', message: 'Los datos del usuario se actualizaron.' });
+      } else {
+        setNotice({ tone: 'danger', message: 'No fue posible confirmar el cambio. Puedes reintentar sin modificar los datos.' });
+      }
     } finally {
       setBusyAction(null);
     }
@@ -399,8 +434,8 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
             <section className={styles.editorSection} aria-labelledby="identity-section-title">
               <header><span className={styles.sectionIcon}><UserPlus aria-hidden="true" size={20} /></span><div><h3 id="identity-section-title">Identidad operativa</h3><p>Información visible para reconocer a la persona en la operación.</p></div></header>
               <form className={styles.sectionForm} onSubmit={(event) => void saveProfile(event)}>
-                <Field id="edit-user-name" label="Nombre completo" required><Input id="edit-user-name" value={editDisplayName} maxLength={160} disabled={!canManage || busyAction !== null} autoComplete="off" onChange={(event) => { profileRequestId.current = null; setEditDisplayName(event.target.value); }} /></Field>
-                <Field id="edit-user-identifier" label="ID operativo"><Input id="edit-user-identifier" value={editIdentifier} maxLength={160} disabled={!canManage || busyAction !== null} autoComplete="off" onChange={(event) => { profileRequestId.current = null; setEditIdentifier(event.target.value); }} /></Field>
+                <Field id="edit-user-name" label="Nombre completo" required><Input id="edit-user-name" value={editDisplayName} maxLength={160} disabled={!canManage || busyAction !== null} autoComplete="off" onChange={(event) => { pendingProfileUpdate.current = null; setEditDisplayName(event.target.value); }} /></Field>
+                <Field id="edit-user-identifier" label="ID operativo"><Input id="edit-user-identifier" value={editIdentifier} maxLength={160} disabled={!canManage || busyAction !== null} autoComplete="off" onChange={(event) => { pendingProfileUpdate.current = null; setEditIdentifier(event.target.value); }} /></Field>
                 {canManage ? <Button type="submit" tone="secondary" disabled={busyAction !== null}>{busyAction === 'profile' ? 'Guardando…' : 'Guardar datos'}</Button> : null}
               </form>
             </section>

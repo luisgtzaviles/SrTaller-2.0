@@ -6,6 +6,9 @@ import {
   createLatestRequestCommitGuard,
   isLatestOperationGeneration,
 } from '../apps/dev-preview-web/src/session/latest-request-commit-guard.mjs';
+import {
+  parseSessionCapabilities,
+} from '../apps/dev-preview-web/src/session/session-capabilities.mjs';
 
 const [
   appSource,
@@ -148,6 +151,20 @@ test('session snapshots fail closed before reaching the shell', () => {
   assert.match(apiSource, /!Number\.isSafeInteger\(revalidateAfterMs\)/u);
   assert.match(apiSource, /revalidateAfterMs < 1_000/u);
   assert.match(apiSource, /revalidateAfterMs > 60 \* 60 \* 1_000/u);
+});
+
+test('tenant-wide administration grants satisfy the browser catalog-order contract', () => {
+  assert.deepEqual(parseSessionCapabilities([
+    'users.read',
+    'users.manage',
+    'access_matrix.read',
+    'access_matrix.manage',
+  ], true), [
+    'users.read',
+    'users.manage',
+    'access_matrix.read',
+    'access_matrix.manage',
+  ]);
 });
 
 test('provider bootstraps only a missing local Station and treats session null as the login gate', () => {

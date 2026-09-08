@@ -48,6 +48,7 @@ const tables = [
   ...accessTables,
   'user_lifecycle_commands',
   'user_profile_update_commands',
+  'user_create_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -113,6 +114,7 @@ const deniedAssignRequestA = '9f000000-0000-4000-8000-000000000033';
 const continuityRequestA = '9e000000-0000-4000-8000-000000000033';
 const authorityRaceRequestA = '9d000000-0000-4000-8000-000000000033';
 const unusableAdminRequestA = '9c000000-0000-4000-8000-000000000033';
+const unsupportedPepperAdminRequestA = '9b000000-0000-4000-8000-000000000033';
 
 function databaseConfig() {
   return Object.freeze({
@@ -351,7 +353,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 30);
+      assert.equal(applied.status.migrations.length, 31);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -497,6 +499,39 @@ test(
          set lookup_digest = $3
          where tenant_id = $1 and user_id = $2`,
         [tenantA, sharedAdminUser, Buffer.alloc(32, 3)],
+      );
+      await admin.query(
+        `update access_pin_credentials
+         set pepper_version = 2
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedAdminUser],
+      );
+      await rejectsWithCode(
+        repository.replaceRoleCapabilities(
+          { tenantId: tenantA },
+          {
+            roleId: sharedAdminRole,
+            expectedVersion: 0,
+            capabilityCodes: [
+              'users.read',
+              'users.manage',
+              'access_matrix.read',
+              'access_matrix.manage',
+              'repairs.read',
+              'repairs.add_note',
+            ],
+            clientRequestId: unsupportedPepperAdminRequestA,
+            occurredAt: new Date().toISOString(),
+          },
+          authorityGuard,
+        ),
+        'ACCESS_AUTHORIZATION_CHANGED',
+      );
+      await admin.query(
+        `update access_pin_credentials
+         set pepper_version = 1
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedAdminUser],
       );
       await rejectsWithCode(
         repository.replaceRoleCapabilities(

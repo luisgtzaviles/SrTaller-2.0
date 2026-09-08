@@ -2,6 +2,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
+import {
+  createPendingProfileUpdate,
+  isPendingProfileInput,
+  isProfileUpdateConfirmed,
+} from '../apps/dev-preview-web/src/pages/pending-profile-update.mjs';
+
 const [apiSource, usersSource, rolesSource] = await Promise.all([
   readFile('apps/dev-preview-web/src/users-api.ts', 'utf8'),
   readFile('apps/dev-preview-web/src/pages/UsersPage.tsx', 'utf8'),
@@ -80,10 +86,43 @@ test('PIN UI keeps a retry identity only while the masked value is unchanged', (
 });
 
 test('profile editing keeps an idempotency key across ambiguous responses', () => {
-  assert.match(usersSource, /const profileRequestId = useRef<string \| null>\(null\)/u);
-  assert.match(usersSource, /clientRequestId: profileRequestId\.current \?\?= crypto\.randomUUID\(\)/u);
-  assert.match(usersSource, /await load\(\)/u);
-  assert.match(usersSource, /profileRequestId\.current = null; setEditDisplayName/u);
+  assert.match(usersSource, /const pendingProfileUpdate = useRef<PendingProfileUpdate \| null>\(null\)/u);
+  assert.match(usersSource, /expectedVersion: command\.expectedVersion/u);
+  assert.match(usersSource, /clientRequestId: command\.clientRequestId/u);
+  assert.match(usersSource, /const authoritative = await load\(\)/u);
+  assert.match(usersSource, /isProfileUpdateConfirmed\(command, confirmed\)/u);
+  assert.match(usersSource, /pendingProfileUpdate\.current = null; setEditDisplayName/u);
+});
+
+test('profile retry command remains immutable and confirms only the intended committed state', () => {
+  const command = createPendingProfileUpdate({
+    userId: 'user-a',
+    expectedVersion: 3,
+    displayName: 'Efrén Demo',
+    operationalIdentifier: 'EFREN',
+    clientRequestId: 'request-a',
+  });
+  assert.equal(Object.isFrozen(command), true);
+  assert.equal(isPendingProfileInput(command, 'user-a', 'Efrén Demo', 'EFREN'), true);
+  assert.equal(isPendingProfileInput(command, 'user-b', 'Efrén Demo', 'EFREN'), false);
+  assert.equal(isProfileUpdateConfirmed(command, {
+    userId: 'user-a',
+    version: 4,
+    displayName: 'Efrén Demo',
+    operationalIdentifier: 'EFREN',
+  }), true);
+  assert.equal(isProfileUpdateConfirmed(command, {
+    userId: 'user-a',
+    version: 3,
+    displayName: 'Efrén Demo',
+    operationalIdentifier: 'EFREN',
+  }), false);
+  assert.equal(isProfileUpdateConfirmed(command, {
+    userId: 'user-a',
+    version: 4,
+    displayName: 'Otro nombre',
+    operationalIdentifier: 'EFREN',
+  }), false);
 });
 
 test('role editing reports partial metadata success and reloads authoritative state', () => {

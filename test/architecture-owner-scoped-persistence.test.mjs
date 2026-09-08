@@ -176,7 +176,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   );
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'users' \| 'user_provisioning_bootstraps' \| 'user_lifecycle_commands' \| 'user_profile_update_commands'>/u,
+    /Pick<DatabaseSchema, 'users' \| 'user_provisioning_bootstraps' \| 'user_lifecycle_commands' \| 'user_profile_update_commands' \| 'user_create_commands'>/u,
   );
   assert.match(
     source,

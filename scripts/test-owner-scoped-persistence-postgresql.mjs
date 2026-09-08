@@ -304,6 +304,7 @@ async function runOnce() {
         'tenant-foreign-key',
         'transaction-commit',
         'user-bootstrap-concurrency-and-idempotency',
+        'user-create-concurrency-and-idempotency',
         'user-lifecycle-concurrency-and-idempotency',
         'user-migration-up-down-reapply',
         'user-tenant-isolation',

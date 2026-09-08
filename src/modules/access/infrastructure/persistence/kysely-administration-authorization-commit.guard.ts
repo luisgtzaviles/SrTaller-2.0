@@ -1,5 +1,6 @@
 import { useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { AdministrationAuthorizationCommitGuardPort } from '../../application/ports/administration-authorization-commit-guard.port.js';
+import { PIN_ACTIVE_PEPPER_VERSION } from '../../domain/pin-credential.js';
 
 export class KyselyAdministrationAuthorizationCommitGuard
 implements AdministrationAuthorizationCommitGuardPort {
@@ -111,6 +112,7 @@ implements AdministrationAuthorizationCommitGuardPort {
           .where('access_role_assignments.revoked_at', 'is', null)
           .where('access_roles.status', '=', 'active')
           .where('access_pin_credentials.status', '=', 'active')
+          .where('access_pin_credentials.pepper_version', '=', PIN_ACTIVE_PEPPER_VERSION)
           .where('access_pin_credentials.revoked_at', 'is', null)
           .where('access_pin_credentials.lookup_digest', 'is not', null)
           .where(

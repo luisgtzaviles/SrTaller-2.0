@@ -34,6 +34,9 @@ import type {
   ResolveOperationalSessionUseCase,
 } from '../application/use-cases/operational-session.use-cases.js';
 import type { ResolveEffectiveCapabilitiesUseCase } from '../application/use-cases/resolve-effective-capabilities.use-case.js';
+import {
+  composeEffectiveCapabilities,
+} from '../domain/capability.js';
 import type { CapabilityCode } from '../domain/capability.js';
 import type { ListAccessMatrixUseCase } from '../application/use-cases/list-access-matrix.use-case.js';
 import type { CreateAccessRoleUseCase } from '../application/use-cases/create-access-role.use-case.js';
@@ -147,7 +150,7 @@ async function resolveTenantWideAdministrationCapabilities(
       if (administrationCapabilityCodes.has(capability)) capabilities.add(capability);
     }
   }
-  return Object.freeze([...capabilities].sort());
+  return composeEffectiveCapabilities([...capabilities]);
 }
 
 function parseCreateRequest(value: unknown): Readonly<{

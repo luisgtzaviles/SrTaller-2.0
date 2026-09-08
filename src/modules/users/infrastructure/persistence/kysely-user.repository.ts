@@ -7,6 +7,7 @@ import type {
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type {
+  UserCreateCommandRow,
   UserLifecycleCommandRow,
   UserProfileUpdateCommandRow,
   UserRow,
@@ -228,6 +229,37 @@ function replayProfileUpdateCommand(
   return mapProfileUpdateCommand(command);
 }
 
+function matchesCreateCommand(
+  command: UserCreateCommandRow,
+  input: ReturnType<typeof validateBootstrapInput>,
+): boolean {
+  return command.requested_display_name === input.displayName &&
+    command.requested_operational_identifier === input.operationalIdentifier;
+}
+
+function mapCreateCommand(command: UserCreateCommandRow): UserRecord {
+  return Object.freeze({
+    userId: parseUserId(command.user_id),
+    tenantId: parseTenantId(command.tenant_id),
+    displayName: command.result_display_name,
+    operationalIdentifier: command.result_operational_identifier,
+    status: parseUserStatus(command.result_status),
+    version: command.result_version,
+    createdAt: command.result_created_at.toISOString(),
+    updatedAt: command.result_updated_at.toISOString(),
+  });
+}
+
+function replayCreateCommand(
+  command: UserCreateCommandRow,
+  input: ReturnType<typeof validateBootstrapInput>,
+): UserRecord {
+  if (!matchesCreateCommand(command, input)) {
+    throw new UserPersistenceError('USER_IDEMPOTENCY_CONFLICT');
+  }
+  return mapCreateCommand(command);
+}
+
 function mapUserRecord(row: UserRow): UserRecord {
   return Object.freeze({
     userId: parseUserId(row.user_id),
@@ -444,7 +476,21 @@ class KyselyUserRepository implements UserRepositoryPort {
   async create(scope: UserScope, input: CreateUserInput, guard?: UserMutationCommitGuard): Promise<UserRecord> {
     const trustedScope = validateScope(scope);
     const trustedInput = validateBootstrapInput(input);
+    const replay = async (): Promise<UserRecord | null> => this.executeTransaction(async (database, transactionContext) => {
+      if (guard && !await guard.confirmCurrent(transactionContext)) {
+        throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+      }
+      const command = await database
+        .selectFrom('user_create_commands')
+        .selectAll()
+        .where('tenant_id', '=', trustedScope.tenantId)
+        .where('client_request_id', '=', trustedInput.clientRequestId)
+        .executeTakeFirst();
+      return command ? replayCreateCommand(command, trustedInput) : null;
+    });
     try {
+      const prior = await replay();
+      if (prior) return prior;
       return await this.executeTransaction(async (database, transactionContext) => {
         if (guard && !await guard.confirmCurrent(transactionContext)) {
           throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
@@ -459,9 +505,42 @@ class KyselyUserRepository implements UserRepositoryPort {
           created_at: trustedInput.occurredAt,
           updated_at: trustedInput.occurredAt,
         }).returningAll().executeTakeFirstOrThrow();
-        return mapUserRecord(row);
+        const command = await database
+          .insertInto('user_create_commands')
+          .values({
+            tenant_id: trustedScope.tenantId,
+            client_request_id: trustedInput.clientRequestId,
+            user_id: row.user_id,
+            requested_display_name: trustedInput.displayName,
+            requested_operational_identifier: trustedInput.operationalIdentifier,
+            result_display_name: row.display_name,
+            result_operational_identifier: row.operational_identifier,
+            result_status: 'active',
+            result_version: 0,
+            result_created_at: row.created_at,
+            result_updated_at: row.updated_at,
+            applied_at: trustedInput.occurredAt,
+          })
+          .onConflict((conflict) =>
+            conflict.columns(['tenant_id', 'client_request_id']).doNothing(),
+          )
+          .returningAll()
+          .executeTakeFirst();
+        if (!command) {
+          throw new UserPersistenceError('USER_PERSISTENCE_CONFLICT');
+        }
+        if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+          throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+        }
+        return mapCreateCommand(command);
       });
     } catch (error: unknown) {
+      try {
+        const prior = await replay();
+        if (prior) return prior;
+      } catch (replayError: unknown) {
+        throw mapUserError(replayError);
+      }
       throw mapUserError(error);
     }
   }

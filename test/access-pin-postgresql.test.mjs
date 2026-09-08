@@ -110,6 +110,7 @@ const tables = [
   'access_capabilities',
   'user_lifecycle_commands',
   'user_profile_update_commands',
+  'user_create_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -434,7 +435,7 @@ test(
         fresh.status.migrations.length,
         inspection.manifest.migrations.length,
       );
-      assert.equal(fresh.status.migrations.length, 30);
+      assert.equal(fresh.status.migrations.length, 31);
       assert.ok(
         fresh.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -485,7 +486,7 @@ test(
 
       await seedAuthorities(admin);
       const upgraded = await runner.migrateToLatest();
-      assert.equal(upgraded.results.length, 11);
+      assert.equal(upgraded.results.length, 12);
       assert.equal(
         upgraded.results[0]?.name,
         '20260907010000_access_create_pin_credentials',
@@ -636,6 +637,24 @@ test(
         (await useCases.repository.listConfiguredUserIds({ tenantId: tenantA }))
           .includes(sharedUser),
         true,
+      );
+      await admin.query(
+        `update access_pin_credentials
+         set pepper_version = 2
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedUser],
+      );
+      assert.equal(
+        (await useCases.repository.listConfiguredUserIds({ tenantId: tenantA }))
+          .includes(sharedUser),
+        false,
+        'a credential from an unsupported pepper version must not be presented as configured',
+      );
+      await admin.query(
+        `update access_pin_credentials
+         set pepper_version = 1
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedUser],
       );
       assert.equal(
         (
@@ -1631,7 +1650,7 @@ test(
       );
 
       const reapplied = await runner.migrateToLatest();
-      assert.equal(reapplied.results.length, 11);
+      assert.equal(reapplied.results.length, 12);
       await assertPinTables(admin, pinTables);
 
       status = await runner.getMigrationStatus();

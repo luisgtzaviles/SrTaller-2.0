@@ -6,6 +6,8 @@ export type PinCredentialId = string & {
 };
 export type PinCredentialStatus = 'active' | 'revoked';
 
+export const PIN_ACTIVE_PEPPER_VERSION = 1 as const;
+
 export const PIN_KDF_PROFILE = Object.freeze({
   algorithm: 'argon2id' as const,
   memoryKiB: 65_536,

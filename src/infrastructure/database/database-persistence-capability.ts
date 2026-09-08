@@ -35,6 +35,7 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     user_provisioning_bootstraps: DatabaseSchema['user_provisioning_bootstraps'];
     user_lifecycle_commands: DatabaseSchema['user_lifecycle_commands'];
     user_profile_update_commands: DatabaseSchema['user_profile_update_commands'];
+    user_create_commands: DatabaseSchema['user_create_commands'];
     access_capabilities: DatabaseSchema['access_capabilities'];
     access_roles: DatabaseSchema['access_roles'];
     access_role_commands: DatabaseSchema['access_role_commands'];
@@ -60,7 +61,7 @@ type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
     : Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'tenants'>
     : Owner extends 'users'
-    ? Pick<DatabaseSchema, 'users' | 'user_provisioning_bootstraps' | 'user_lifecycle_commands' | 'user_profile_update_commands'>
+    ? Pick<DatabaseSchema, 'users' | 'user_provisioning_bootstraps' | 'user_lifecycle_commands' | 'user_profile_update_commands' | 'user_create_commands'>
     : Pick<DatabaseSchema, 'branches' | 'stations' | 'station_bindings' | 'station_credentials'>;
 
 export type InternalDatabasePersistenceExecutor<

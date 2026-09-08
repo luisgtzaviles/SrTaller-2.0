@@ -7,6 +7,7 @@ test('PBI-032 keeps identity tenant-scoped and lifecycle fail-closed', async () 
   const domain = await readFile('src/modules/users/domain/user.ts', 'utf8');
   const repository = await readFile('src/modules/users/infrastructure/persistence/kysely-user.repository.ts', 'utf8');
   const lifecycleMigration = await readFile('src/infrastructure/database/migrations/20260906172000_users_create_lifecycle_commands.ts', 'utf8');
+  const createMigration = await readFile('src/infrastructure/database/migrations/20260908021000_users_create_commands.ts', 'utf8');
   const module = await readFile('src/modules/users/users.module.ts', 'utf8');
   const provisioning = await readFile('scripts/provision-first-user.mjs', 'utf8');
   const packageManifest = JSON.parse(await readFile('package.json', 'utf8'));
@@ -21,6 +22,11 @@ test('PBI-032 keeps identity tenant-scoped and lifecycle fail-closed', async () 
   assert.match(repository, /findById/u);
   assert.match(lifecycleMigration, /user_lifecycle_commands_pk/u);
   assert.match(lifecycleMigration, /result_version = expected_version \+ 1/u);
+  assert.match(createMigration, /user_create_commands_pk/u);
+  assert.match(createMigration, /result_status = 'active'/u);
+  assert.match(repository, /selectFrom\('user_create_commands'\)/u);
+  assert.match(repository, /insertInto\('user_create_commands'\)/u);
+  assert.match(repository, /replayCreateCommand/u);
   assert.match(module, /KyselyUserRepositoryFactory/u);
   assert.doesNotMatch(`${repository}\n${module}`, /@Controller|@Get|@Post|@Patch|@Delete/u);
   assert.doesNotMatch(repository, /deleteFrom\('users'\)/u);

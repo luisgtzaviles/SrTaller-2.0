@@ -55,7 +55,7 @@ const allTables = [
   'access_pin_eligibility_tenant_guards',
   'access_role_assignment_commands', 'access_role_commands', 'access_role_assignments',
   'access_role_capabilities', 'access_roles', 'access_capabilities',
-  'user_lifecycle_commands', 'user_profile_update_commands',
+  'user_lifecycle_commands', 'user_profile_update_commands', 'user_create_commands',
   'user_provisioning_bootstraps', 'users',
   'repair_business_audit_events', 'repair_location_movements', 'repair_locations', 'repair_attachments',
   'repair_timeline_entries', 'repair_intakes', 'repair_technician_assignments',

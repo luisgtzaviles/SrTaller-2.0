@@ -99,7 +99,12 @@ function runtimeDouble(overrides = {}) {
           roles: [{
             roleId: 'f1000000-0000-4000-8000-000000000001',
             status: 'active',
-            capabilityCodes: ['users.read', 'users.manage'],
+            capabilityCodes: [
+              'access_matrix.manage',
+              'users.read',
+              'access_matrix.read',
+              'users.manage',
+            ],
           }],
           assignments: [{
             userId,
@@ -239,8 +244,10 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
     'repairs.add_note',
   ]);
   assert.deepEqual(authenticated.administrationCapabilities, [
-    'users.manage',
     'users.read',
+    'users.manage',
+    'access_matrix.read',
+    'access_matrix.manage',
   ]);
   const inactiveMaterial = runtime.tokens.issue();
   const inactiveResponse = responseDouble();

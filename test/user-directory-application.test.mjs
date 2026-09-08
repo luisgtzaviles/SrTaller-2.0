@@ -10,6 +10,9 @@ const { ListUsersUseCase } = await import(
 const { ProvisionFirstUserUseCase } = await import(
   '../dist/modules/users/application/use-cases/provision-first-user.use-case.js'
 );
+const { CreateUserUseCase } = await import(
+  '../dist/modules/users/application/use-cases/create-user.use-case.js'
+);
 const { TransitionUserStatusUseCase } = await import(
   '../dist/modules/users/application/use-cases/transition-user-status.use-case.js'
 );
@@ -47,6 +50,10 @@ function fixtureRepository() {
       },
       async bootstrap(scope, input) {
         calls.push(['bootstrap', scope, input]);
+        return record;
+      },
+      async create(scope, input) {
+        calls.push(['create', scope, input]);
         return record;
       },
       async transition(scope, input) {
@@ -144,6 +151,27 @@ test('first-user provisioning normalizes names and owns identity and time', asyn
     ),
     'clientRequestId',
   );
+});
+
+test('ordinary User creation preserves the client request identity while owning ID and time', async () => {
+  const fixture = fixtureRepository();
+  const useCase = new CreateUserUseCase(
+    fixture.repository,
+    () => userId,
+    () => now,
+  );
+  assert.equal(await useCase.execute({ tenantId }, {
+    displayName: '  Efrén Demo  ',
+    operationalIdentifier: null,
+    clientRequestId: requestId,
+  }), record);
+  assert.deepEqual(fixture.calls[0], ['create', { tenantId }, {
+    displayName: 'Efrén Demo',
+    operationalIdentifier: null,
+    clientRequestId: requestId,
+    userId,
+    occurredAt: now.toISOString(),
+  }]);
 });
 
 test('lifecycle use case requires exact optimistic and idempotency input', async () => {

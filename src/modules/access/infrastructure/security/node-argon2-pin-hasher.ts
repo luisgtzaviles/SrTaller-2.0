@@ -7,7 +7,7 @@ import {
 import { inspect } from 'node:util';
 
 import { loadRequiredServerSecrets } from '../../../../infrastructure/config/external-configuration.js';
-import { PIN_KDF_PROFILE, parsePin } from '../../domain/pin-credential.js';
+import { PIN_ACTIVE_PEPPER_VERSION, PIN_KDF_PROFILE, parsePin } from '../../domain/pin-credential.js';
 import type {
   PinSecretHasherPort,
   PinSecretMaterial,
@@ -215,7 +215,7 @@ function validStoredVerifier(value: PinStoredVerifier | null): value is PinStore
     value !== null &&
     value.algorithm === PIN_KDF_PROFILE.algorithm &&
     value.profileVersion === PIN_KDF_PROFILE.profileVersion &&
-    value.pepperVersion === 1 &&
+    value.pepperVersion === PIN_ACTIVE_PEPPER_VERSION &&
     value.memoryKiB === PIN_KDF_PROFILE.memoryKiB &&
     value.passes === PIN_KDF_PROFILE.passes &&
     value.parallelism === PIN_KDF_PROFILE.parallelism &&
@@ -319,7 +319,7 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
       return Object.freeze({
         algorithm: PIN_KDF_PROFILE.algorithm,
         profileVersion: PIN_KDF_PROFILE.profileVersion,
-        pepperVersion: 1,
+        pepperVersion: PIN_ACTIVE_PEPPER_VERSION,
         memoryKiB: PIN_KDF_PROFILE.memoryKiB,
         passes: PIN_KDF_PROFILE.passes,
         parallelism: PIN_KDF_PROFILE.parallelism,

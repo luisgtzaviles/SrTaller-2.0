@@ -45,6 +45,7 @@ const tables = [
   'access_capabilities',
   'user_lifecycle_commands',
   'user_profile_update_commands',
+  'user_create_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',

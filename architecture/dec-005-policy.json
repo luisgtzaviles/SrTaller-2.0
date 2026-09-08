@@ -458,7 +458,8 @@
       "src/infrastructure/database/migrations/20260908001000_repairs_create_operational_note_request_guards.ts",
       "src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts",
       "src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts",
-      "src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts"
+      "src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts",
+      "src/infrastructure/database/migrations/20260908021000_users_create_commands.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -620,6 +621,15 @@
           ],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908021000_users_create_commands.ts": {
+          "owner": "users",
+          "tables": [
+            "user_create_commands",
+            "users"
+          ],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -651,6 +661,7 @@
           "UserProvisioningBootstrapTable",
           "UserLifecycleCommandTable",
           "UserProfileUpdateCommandTable",
+          "UserCreateCommandTable",
           "AccessCapabilityCode",
           "AccessCapabilityTable",
           "AccessRoleTable",
@@ -686,6 +697,8 @@
           "NewUserLifecycleCommand",
           "UserProfileUpdateCommandRow",
           "NewUserProfileUpdateCommand",
+          "UserCreateCommandRow",
+          "NewUserCreateCommand",
           "AccessCapabilityRow",
           "NewAccessCapability",
           "AccessRoleRow",
@@ -791,6 +804,7 @@
           "src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts",
           "src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts",
           "src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts",
+          "src/infrastructure/database/migrations/20260908021000_users_create_commands.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1163,6 +1177,10 @@
         "kind": "table"
       },
       "user_profile_update_commands": {
+        "owner": "users",
+        "kind": "table"
+      },
+      "user_create_commands": {
         "owner": "users",
         "kind": "table"
       },
