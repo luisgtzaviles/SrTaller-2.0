@@ -3,10 +3,10 @@
 Milestone: Timezone Foundation — Hardening & Integration Candidate
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-038 — Timezone Foundation Integration and Hardening; WIP 1/1
-Status: Candidate hardening complete; local delivery checks and Draft PR preparation pending
-Progress: 6 / 11
-Current work: Reconcile evidence, complete delivery checks and create the Draft PR.
-Next block: Wait for exact-head CI and complete focused review; no merge or deploy.
+Status: Draft integration candidate; exact-head CI and focused review passed; awaiting Owner merge authorization.
+Progress: 8 / 11
+Current work: Preserve the frozen candidate and await an explicit Owner decision.
+Next block: Owner authorization is required for an ordinary merge; no merge or deploy.
 Blocked: No technical blocker.
 Last updated: 2026-09-08 MST
 
@@ -18,8 +18,8 @@ Last updated: 2026-09-08 MST
 - [x] PostgreSQL material — isolated PostgreSQL 18.4 Repairs and authorization suites pass
 - [x] Full verification — `pnpm run verify` PASS with Node 24.18.0 / pnpm 11.15.1
 - [x] Browser QA — Hermosillo → Cancún → Hermosillo, reload, Repair Detail/Timeline and Worklist verified locally
-- [ ] Candidate CI
-- [ ] Focused review
+- [x] Candidate CI — PR #40, runs `34273725808` / `102221467690` / `102221467415` and comparison `102226350998` passed for candidate `d199873658bbdf067767a75f2407973f54c73309`
+- [x] Focused review — exact candidate reviewed: 0 BLOCKER / 0 HIGH / 0 MEDIUM; no unresolved LOW finding
 - [ ] Merge
 - [ ] Exact-main CI
 - [ ] Canonical integration/closure
