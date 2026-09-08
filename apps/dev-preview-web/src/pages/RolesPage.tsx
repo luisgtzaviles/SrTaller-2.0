@@ -175,6 +175,7 @@ export function RolesPage({ capabilities, csrfToken }: Readonly<{
     }
     setSaving(true);
     setNotice(null);
+    let metadataCommitted = false;
     try {
       if (dialog === 'create') {
         const name = displayName.trim();
@@ -214,6 +215,7 @@ export function RolesPage({ capabilities, csrfToken }: Readonly<{
             clientRequestId: metadataRequestId.current ??= crypto.randomUUID(),
           }, csrfToken);
           updated = metadataUpdated;
+          metadataCommitted = true;
           metadataRequestId.current = null;
           setMatrix((current) => current ? {
             ...current,
@@ -236,7 +238,12 @@ export function RolesPage({ capabilities, csrfToken }: Readonly<{
       }
       resetDialog();
     } catch {
-      setNotice({ tone: 'danger', message: 'No fue posible guardar el rol. Actualiza la información e intenta de nuevo.' });
+      if (metadataCommitted) {
+        await load();
+        setNotice({ tone: 'danger', message: 'El nombre y la descripción sí se guardaron, pero los permisos no. Revisa la información y vuelve a intentar.' });
+      } else {
+        setNotice({ tone: 'danger', message: 'No fue posible guardar el rol. Actualiza la información e intenta de nuevo.' });
+      }
     } finally {
       setSaving(false);
     }
@@ -319,14 +326,14 @@ export function RolesPage({ capabilities, csrfToken }: Readonly<{
           {notice ? <Alert tone={notice.tone}>{notice.message}</Alert> : null}
           <div className={styles.metadataFields}>
             <Field id="role-name" label="Nombre del rol" hint="Usa el nombre de la función, por ejemplo Ventas o Recepción." required>
-              <Input id="role-name" value={displayName} maxLength={160} disabled={saving} autoComplete="off" onChange={(event) => {
+              <Input id="role-name" aria-describedby="role-name-description" value={displayName} maxLength={160} disabled={saving} autoComplete="off" onChange={(event) => {
                 createRequestId.current = null;
                 metadataRequestId.current = null;
                 setDisplayName(event.target.value);
               }} />
             </Field>
             <Field id="role-description" label="Descripción" hint="Opcional. Explica para quién es este rol o cuándo debe usarse." fullWidth>
-              <Textarea id="role-description" value={description} maxLength={320} rows={3} disabled={saving} onChange={(event) => {
+              <Textarea id="role-description" aria-describedby="role-description-description" value={description} maxLength={320} rows={3} disabled={saving} onChange={(event) => {
                 createRequestId.current = null;
                 metadataRequestId.current = null;
                 setDescription(event.target.value);

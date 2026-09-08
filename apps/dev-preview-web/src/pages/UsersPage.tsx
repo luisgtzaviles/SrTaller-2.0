@@ -45,6 +45,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
 }>): React.JSX.Element {
   const canManage = hasOperationalCapability(capabilities, 'users.manage');
   const canReadMatrix = hasOperationalCapability(capabilities, 'access_matrix.read');
+  const canManageMatrix = hasOperationalCapability(capabilities, 'access_matrix.manage');
   const [users, setUsers] = useState<readonly ProductUser[] | null>(null);
   const [matrix, setMatrix] = useState<ProductAccessMatrix | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [confirmingDeactivate, setConfirmingDeactivate] = useState(false);
   const createRequestId = useRef<string | null>(null);
+  const pinRequestId = useRef<string | null>(null);
   const mutationRequestIds = useRef(new Map<string, string>());
 
   const requestIdFor = (key: string): string => {
@@ -122,6 +124,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     setEditIdentifier('');
     setSelectedRoleId('');
     setPin('');
+    pinRequestId.current = null;
     setConfirmingDeactivate(false);
   };
 
@@ -148,11 +151,6 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     setPin('');
     setConfirmingDeactivate(false);
     setDialog(user.userId);
-  };
-
-  const refreshAssignments = async (): Promise<void> => {
-    if (!canReadMatrix) return;
-    setMatrix(await listProductAccessMatrix());
   };
 
   const submitCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -196,8 +194,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
         operationalIdentifier: editIdentifier.trim() || null,
         expectedVersion: selectedUser.version,
       }, csrfToken);
-      const safeUpdated = { ...updated, pinConfigured: selectedUser.pinConfigured };
-      setUsers((current) => current?.map((user) => user.userId === safeUpdated.userId ? safeUpdated : user) ?? current);
+      setUsers((current) => current?.map((user) => user.userId === updated.userId ? updated : user) ?? current);
       setNotice({ tone: 'success', message: 'Los datos del usuario se actualizaron.' });
     } catch {
       setNotice({ tone: 'danger', message: 'No fue posible actualizar los datos. Recarga la información e intenta de nuevo.' });
@@ -212,9 +209,12 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     setBusyAction('role');
     setNotice(null);
     try {
-      await assignProductRole(selectedUser.userId, selectedRoleId, requestIdFor(requestKey), csrfToken);
+      const assigned = await assignProductRole(selectedUser.userId, selectedRoleId, requestIdFor(requestKey), csrfToken);
+      setMatrix((current) => current ? {
+        ...current,
+        assignments: [...current.assignments, assigned],
+      } : current);
       mutationRequestIds.current.delete(requestKey);
-      await refreshAssignments();
       setSelectedRoleId('');
       setNotice({ tone: 'success', message: 'Rol asignado. Sus permisos se aplican automáticamente.' });
     } catch {
@@ -230,9 +230,13 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     setBusyAction(`role-${assignmentId}`);
     setNotice(null);
     try {
-      await revokeProductRole(selectedUser.userId, assignmentId, expectedVersion, requestIdFor(requestKey), csrfToken);
+      const revoked = await revokeProductRole(selectedUser.userId, assignmentId, expectedVersion, requestIdFor(requestKey), csrfToken);
+      setMatrix((current) => current ? {
+        ...current,
+        assignments: current.assignments.map((assignment) =>
+          assignment.assignmentId === revoked.assignmentId ? revoked : assignment),
+      } : current);
       mutationRequestIds.current.delete(requestKey);
-      await refreshAssignments();
       setNotice({ tone: 'success', message: `El rol ${roleName} fue retirado. Los permisos efectivos se recalcularon.` });
     } catch {
       setNotice({ tone: 'danger', message: `No fue posible retirar el rol ${roleName}.` });
@@ -250,13 +254,15 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
     setBusyAction('pin');
     setNotice(null);
     try {
-      await provisionProductLocalPin(selectedUser.userId, pin, crypto.randomUUID(), csrfToken);
+      pinRequestId.current ??= crypto.randomUUID();
+      await provisionProductLocalPin(selectedUser.userId, pin, pinRequestId.current, csrfToken);
+      pinRequestId.current = null;
+      setPin('');
       setUsers((current) => current?.map((user) => user.userId === selectedUser.userId ? { ...user, pinConfigured: true } : user) ?? current);
       setNotice({ tone: 'success', message: 'PIN configurado. El valor no se conserva ni vuelve a mostrarse.' });
     } catch {
-      setNotice({ tone: 'danger', message: 'No fue posible configurar el PIN.' });
+      setNotice({ tone: 'danger', message: 'No fue posible confirmar el cambio. Puedes reintentar sin modificar el PIN.' });
     } finally {
-      setPin('');
       setBusyAction(null);
     }
   };
@@ -273,8 +279,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
         clientRequestId: requestIdFor(requestKey),
       }, csrfToken);
       mutationRequestIds.current.delete(requestKey);
-      const safeUpdated = { ...updated, pinConfigured: selectedUser.pinConfigured };
-      setUsers((current) => current?.map((user) => user.userId === safeUpdated.userId ? safeUpdated : user) ?? current);
+      setUsers((current) => current?.map((user) => user.userId === updated.userId ? updated : user) ?? current);
       setConfirmingDeactivate(false);
       setNotice({ tone: 'success', message: status === 'active'
         ? 'Usuario activado. Puede volver a iniciar sesión con su PIN vigente.'
@@ -369,8 +374,8 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
       >
         <form id="create-user-form" className={styles.dialogForm} onSubmit={(event) => void submitCreate(event)}>
           {notice ? <Alert tone={notice.tone}>{notice.message}</Alert> : null}
-          <Field id="new-user-name" label="Nombre completo" required><Input id="new-user-name" value={displayName} maxLength={160} disabled={busyAction !== null} autoComplete="off" onChange={(event) => setDisplayName(event.target.value)} /></Field>
-          <Field id="new-user-identifier" label="ID operativo" hint="Opcional. Usa el alias con el que el equipo reconoce a esta persona."><Input id="new-user-identifier" value={identifier} maxLength={160} disabled={busyAction !== null} autoComplete="off" onChange={(event) => setIdentifier(event.target.value)} /></Field>
+          <Field id="new-user-name" label="Nombre completo" required><Input id="new-user-name" value={displayName} maxLength={160} disabled={busyAction !== null} autoComplete="off" onChange={(event) => { createRequestId.current = null; setDisplayName(event.target.value); }} /></Field>
+          <Field id="new-user-identifier" label="ID operativo" hint="Opcional. Usa el alias con el que el equipo reconoce a esta persona."><Input id="new-user-identifier" aria-describedby="new-user-identifier-description" value={identifier} maxLength={160} disabled={busyAction !== null} autoComplete="off" onChange={(event) => { createRequestId.current = null; setIdentifier(event.target.value); }} /></Field>
         </form>
       </Dialog>
 
@@ -402,9 +407,9 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
                   {activeAssignments.length === 0 ? <span className={styles.muted}>Sin roles asignados</span> : activeAssignments.map((assignment) => {
                     const role = matrix.roles.find((candidate) => candidate.roleId === assignment.roleId);
                     if (!role) return null;
-                    return <div key={assignment.assignmentId} className={styles.assignmentRow}><span>{role.displayName}</span>{canManage ? <Button size="compact" tone="quiet" disabled={busyAction !== null} aria-label={`Quitar ${role.displayName} de ${selectedUser.displayName}`} onClick={() => void revokeRole(assignment.assignmentId, assignment.version, role.displayName)}>{busyAction === `role-${assignment.assignmentId}` ? 'Quitando…' : 'Quitar'}</Button> : null}</div>;
+                    return <div key={assignment.assignmentId} className={styles.assignmentRow}><span>{role.displayName}</span>{canManageMatrix ? <Button size="compact" tone="quiet" disabled={busyAction !== null} aria-label={`Quitar ${role.displayName} de ${selectedUser.displayName}`} onClick={() => void revokeRole(assignment.assignmentId, assignment.version, role.displayName)}>{busyAction === `role-${assignment.assignmentId}` ? 'Quitando…' : 'Quitar'}</Button> : null}</div>;
                   })}
-                  {canManage && availableRoles.length > 0 ? <div className={styles.assignmentControls}><label htmlFor="assign-user-role">Asignar otro rol</label><div><select id="assign-user-role" value={selectedRoleId} disabled={busyAction !== null} onChange={(event) => setSelectedRoleId(event.target.value)}><option value="">Selecciona un rol…</option>{availableRoles.map((role) => <option key={role.roleId} value={role.roleId}>{role.displayName}</option>)}</select><Button tone="secondary" disabled={!selectedRoleId || busyAction !== null} onClick={() => void assignRole()}>{busyAction === 'role' ? 'Asignando…' : 'Asignar rol'}</Button></div></div> : null}
+                  {canManageMatrix && availableRoles.length > 0 ? <div className={styles.assignmentControls}><label htmlFor="assign-user-role">Asignar otro rol</label><div><select id="assign-user-role" value={selectedRoleId} disabled={busyAction !== null} onChange={(event) => setSelectedRoleId(event.target.value)}><option value="">Selecciona un rol…</option>{availableRoles.map((role) => <option key={role.roleId} value={role.roleId}>{role.displayName}</option>)}</select><Button tone="secondary" disabled={!selectedRoleId || busyAction !== null} onClick={() => void assignRole()}>{busyAction === 'role' ? 'Asignando…' : 'Asignar rol'}</Button></div></div> : null}
                 </div>
               ) : <Alert tone="info">La matriz de roles no está disponible para esta sesión.</Alert>}
             </section>
@@ -414,7 +419,7 @@ export function UsersPage({ capabilities, csrfToken }: Readonly<{
               {canManage ? (
                 <form className={styles.pinForm} onSubmit={(event) => void savePin(event)}>
                   <Field id="edit-user-pin" label={selectedUser.pinConfigured ? 'Nuevo PIN' : 'PIN'} hint="Exactamente 4 dígitos. No se mostrará después de guardarlo." required>
-                    <Input id="edit-user-pin" name="new-pin" type="password" inputMode="numeric" pattern="[0-9]{4}" minLength={4} maxLength={4} autoComplete="new-password" aria-describedby="edit-user-pin-description" value={pin} disabled={busyAction !== null} onChange={(event) => setPin(event.target.value.replace(/\D/gu, '').slice(0, 4))} />
+                    <Input id="edit-user-pin" name="new-pin" type="password" inputMode="numeric" pattern="[0-9]{4}" minLength={4} maxLength={4} autoComplete="new-password" aria-describedby="edit-user-pin-description" value={pin} disabled={busyAction !== null} onChange={(event) => { pinRequestId.current = null; setPin(event.target.value.replace(/\D/gu, '').slice(0, 4)); }} />
                   </Field>
                   <Button type="submit" tone="secondary" disabled={busyAction !== null || pin.length !== 4}>{busyAction === 'pin' ? 'Guardando…' : selectedUser.pinConfigured ? 'Cambiar PIN' : 'Configurar PIN'}</Button>
                 </form>

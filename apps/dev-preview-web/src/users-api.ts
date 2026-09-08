@@ -24,17 +24,24 @@ export type ProductRole = Readonly<{
 export type ProductAccessMatrix = Readonly<{
   capabilities: readonly Readonly<{ capabilityCode: string }>[],
   roles: readonly ProductRole[],
-  assignments: readonly Readonly<{
-    assignmentId: string;
-    userId: string;
-    roleId: string;
-    status: 'active' | 'revoked';
-    version: number;
-  }>[],
+  assignments: readonly ProductRoleAssignment[],
+}>;
+
+export type ProductRoleAssignment = Readonly<{
+  assignmentId: string;
+  userId: string;
+  roleId: string;
+  status: 'active' | 'revoked';
+  version: number;
 }>;
 
 const USERS_PATH = '/api/access/administration/users';
 const ROLES_PATH = '/api/access/administration/users/roles';
+const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
+
+function requestSessionRevalidation(): void {
+  window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT));
+}
 
 async function request<Response>(path: string, init: RequestInit = {}): Promise<Response> {
   const response = await fetch(path, {
@@ -46,8 +53,17 @@ async function request<Response>(path: string, init: RequestInit = {}): Promise<
       ...init.headers,
     },
   });
-  if (!response.ok) throw new PreviewApiError(response.status);
+  if (!response.ok) {
+    if (response.status === 401) requestSessionRevalidation();
+    throw new PreviewApiError(response.status);
+  }
   return response.json() as Promise<Response>;
+}
+
+async function mutationRequest<Response>(path: string, init: RequestInit): Promise<Response> {
+  const response = await request<Response>(path, init);
+  requestSessionRevalidation();
+  return response;
 }
 
 export async function listProductUsers(signal?: AbortSignal): Promise<readonly ProductUser[]> {
@@ -61,7 +77,7 @@ export function createProductUser(
   input: Readonly<{ displayName: string; operationalIdentifier: string | null; clientRequestId: string }>,
   csrfToken: string,
 ): Promise<ProductUser> {
-  return request<ProductUser>(USERS_PATH, {
+  return mutationRequest<ProductUser>(USERS_PATH, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
     body: JSON.stringify(input),
@@ -73,7 +89,7 @@ export function updateProductUser(
   input: Readonly<{ displayName: string; operationalIdentifier: string | null; expectedVersion: number }>,
   csrfToken: string,
 ): Promise<ProductUser> {
-  return request<ProductUser>(`${USERS_PATH}/${encodeURIComponent(userId)}`, { method: 'POST', headers: { 'X-SR-CSRF-Token': csrfToken }, body: JSON.stringify(input) });
+  return mutationRequest<ProductUser>(`${USERS_PATH}/${encodeURIComponent(userId)}`, { method: 'POST', headers: { 'X-SR-CSRF-Token': csrfToken }, body: JSON.stringify(input) });
 }
 
 export function listProductAccessMatrix(signal?: AbortSignal): Promise<ProductAccessMatrix> {
@@ -90,7 +106,7 @@ export function createProductRole(
   }>,
   csrfToken: string,
 ): Promise<ProductRole> {
-  return request<ProductRole>(ROLES_PATH, {
+  return mutationRequest<ProductRole>(ROLES_PATH, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
     body: JSON.stringify(input),
@@ -107,7 +123,7 @@ export function updateProductRole(
   }>,
   csrfToken: string,
 ): Promise<ProductRole> {
-  return request<ProductRole>(`${ROLES_PATH}/${encodeURIComponent(roleId)}`, {
+  return mutationRequest<ProductRole>(`${ROLES_PATH}/${encodeURIComponent(roleId)}`, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
     body: JSON.stringify(input),
@@ -119,7 +135,7 @@ export function replaceProductRoleCapabilities(
   input: Readonly<{ expectedVersion: number; capabilityCodes: readonly string[]; clientRequestId: string }>,
   csrfToken: string,
 ): Promise<ProductRole> {
-  return request<ProductRole>(`${ROLES_PATH}/${encodeURIComponent(roleId)}/capabilities`, {
+  return mutationRequest<ProductRole>(`${ROLES_PATH}/${encodeURIComponent(roleId)}/capabilities`, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
     body: JSON.stringify(input),
@@ -131,16 +147,16 @@ export function assignProductRole(
   roleId: string,
   clientRequestId: string,
   csrfToken: string,
-): Promise<void> {
-  return request<void>(`${USERS_PATH}/${encodeURIComponent(userId)}/roles`, {
+): Promise<ProductRoleAssignment> {
+  return mutationRequest<ProductRoleAssignment>(`${USERS_PATH}/${encodeURIComponent(userId)}/roles`, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
     body: JSON.stringify({ roleId, clientRequestId }),
   });
 }
 
-export function revokeProductRole(userId: string, assignmentId: string, expectedVersion: number, clientRequestId: string, csrfToken: string): Promise<void> {
-  return request<void>(`${USERS_PATH}/${encodeURIComponent(userId)}/roles/${encodeURIComponent(assignmentId)}/revoke`, { method: 'POST', headers: { 'X-SR-CSRF-Token': csrfToken }, body: JSON.stringify({ expectedVersion, clientRequestId }) });
+export function revokeProductRole(userId: string, assignmentId: string, expectedVersion: number, clientRequestId: string, csrfToken: string): Promise<ProductRoleAssignment> {
+  return mutationRequest<ProductRoleAssignment>(`${USERS_PATH}/${encodeURIComponent(userId)}/roles/${encodeURIComponent(assignmentId)}/revoke`, { method: 'POST', headers: { 'X-SR-CSRF-Token': csrfToken }, body: JSON.stringify({ expectedVersion, clientRequestId }) });
 }
 
 export function provisionProductLocalPin(
@@ -149,7 +165,7 @@ export function provisionProductLocalPin(
   clientRequestId: string,
   csrfToken: string,
 ): Promise<void> {
-  return request<void>(`${USERS_PATH}/${encodeURIComponent(userId)}/pin`, {
+  return mutationRequest<void>(`${USERS_PATH}/${encodeURIComponent(userId)}/pin`, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
     body: JSON.stringify({ pin, clientRequestId }),
@@ -161,7 +177,7 @@ export function transitionProductUser(
   input: Readonly<{ status: 'active' | 'inactive'; expectedVersion: number; clientRequestId: string }>,
   csrfToken: string,
 ): Promise<ProductUser> {
-  return request<ProductUser>(`${USERS_PATH}/${encodeURIComponent(userId)}/status`, {
+  return mutationRequest<ProductUser>(`${USERS_PATH}/${encodeURIComponent(userId)}/status`, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
     body: JSON.stringify(input),
