@@ -2,8 +2,9 @@
 
 ## Estado
 
-- **Estado:** local candidate verified; Draft PR, authoritative CI and focused
-  High-risk review pending.
+- **Estado:** Draft PR #37 abierto; candidato local/OCI/browser y primera CI
+  autoritativa verdes; CI y focused High-risk review del HEAD documental final
+  pendientes.
 - **Current PBI / WIP:** PBI-028 / `1/1`.
 - **Baseline:** `main` at
   `0b39e3794a97c22d5471c0b6dfa278026f237b03`.
@@ -109,6 +110,7 @@ permissions or credential disclosure.
 | DEC-005 / UI / external configuration | PASS in canonical verify |
 | Focused contracts | PASS — administration, role input, Session UI, note/audit and global correlation |
 | Focused High-risk reviews | PASS — PBI-028, PIN/Access and UI/API each closed at `0B/0H/0M/0L` |
+| Initial Draft PR CI | PASS — run `34190625347` on `51ca8d1`: VC-024 run-1, run-2 and comparison SUCCESS |
 | `git diff --check` | PASS |
 
 The material PostgreSQL runner covers PIN collision, lockout, replacement,
@@ -158,9 +160,7 @@ returned HTTP 200 during candidate validation.
 
 ## Candidate gates still pending
 
-- exact final documentation commit;
-- ordinary push and Draft PR;
-- authoritative CI run-1, run-2 and comparison on the exact PR HEAD;
+- final authoritative CI run-1, run-2 and comparison after this evidence-only commit;
 - focused High-risk review of that exact HEAD and remediation of any material
   finding;
 - explicit Owner merge authorization.

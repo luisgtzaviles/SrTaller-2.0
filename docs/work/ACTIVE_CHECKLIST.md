@@ -3,12 +3,12 @@
 Milestone: Hardened Identity + Users & Roles Checkpoint
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
-Status: Exact source, OCI and hardened browser candidate green; integration candidate preparation in progress
-Progress: 10 / 12 checkpoint blocks completed
-Current work: Exact documentation checkpoint, ordinary push, Draft PR and authoritative CI.
-Next block: Publish the exact candidate through the authorized Draft PR path and compare both CI runs.
+Status: Hardened Draft PR candidate green; final exact-HEAD CI and focused review in progress
+Progress: 11 / 12 checkpoint blocks completed
+Current work: Freeze final documentary HEAD, rerun authoritative CI and perform exact-HEAD focused review.
+Next block: Stop at Owner merge authorization after final run-1/run-2/comparison and review are green.
 Blockers: No technical blocker. Merge and deploy remain unauthorized.
-Updated: 2026-09-07 21:02 MST
+Updated: 2026-09-07 22:42 MST
 
 ## Master checkpoint
 
@@ -22,7 +22,7 @@ Updated: 2026-09-07 21:02 MST
 - [x] PostgreSQL 18.4 fresh / upgrade / 0-pending verification
 - [x] Full local verification
 - [x] Browser QA and Owner-review localhost
-- [ ] Logical commits, Draft PR, CI and focused review
+- [~] Logical commits, Draft PR, CI and focused review (Draft PR #37; initial exact-HEAD CI green, final documentary HEAD pending)
 - [ ] Owner merge authorization / canonical integration
 
 ## PBI-028 — Audit and Correlation
@@ -130,6 +130,8 @@ Updated: 2026-09-07 21:02 MST
 - [x] Final OCI image `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b` passed with read-only filesystem, non-root uid `1000:1000`, 31 fresh migrations, second run `0 applied / 0 pending`, health/routes and clean SIGTERM
 - [x] OCI verifier failures redact generated database/PIN secret material
 - [x] Exact code reviews on PBI-028, PIN/Access and UI/API closed at `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`
+- [x] Draft PR #37 opened without merge; CI `34190625347` passed run-1, run-2 and semantic/artifact comparison on `51ca8d1`
+- [~] Final exact-HEAD CI and focused High-risk review after recording CI evidence
 
 ## Scope guard
 
