@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Fotografía del inicio autorizado de PBI-028; PBI-026 y G4 están
-  cerrados efectivamente.
+- **Estado:** Fotografía del candidato local endurecido de PBI-028 y del slice
+  PBI-037; PBI-026 y G4 están cerrados efectivamente.
 - **Baseline auditada:** `main` en
   `0b39e3794a97c22d5471c0b6dfa278026f237b03`.
 - **CI autoritativo:** run `34161029937`, `SUCCESS`; VC-024 run-1, run-2 y
@@ -27,7 +27,10 @@ después del cierre PR #34 y su CI exacto. SPRINT-01 quedó cerrado y SPRINT-02
 sigue activo. PBI-026 está `Done` después del cierre PR #36 y G4 está `PASS`.
 PBI-028 tiene tamaño `Large`, riesgo `High` preservado, threat model, contrato
 acotado de auditoría/correlation, DoR `PASS` y Owner Start. Es el único PBI
-actual y WIP es `1/1`.
+actual y WIP es `1/1`. Su rama contiene un checkpoint local endurecido con
+PBI-037 explícitamente trazado, full verify, PostgreSQL 18.4, OCI y prueba
+visual no sensible verdes. Draft PR, CI autoritativo, focused review y merge
+siguen pendientes; no se atribuye este trabajo a `main`.
 
 ## Git y CI
 
@@ -141,7 +144,9 @@ existe autorización de release o deploy.
 - Trusted Station Runtime Context está `Done` canónico; no incorpora enrollment
   productivo ni administración completa de bindings.
 - `LocalRepairContext` sólo habilita contexto fijo en desarrollo.
-- Writes de Repairs integrados todavía registran actor sintético.
+- Los writes de Repairs integrados en `main` todavía registran actor sintético.
+  El candidato local PBI-028 reemplaza el actor de `repairs.add_note` por la
+  Session real y agrega auditoría/correlation atómicas; aún no está integrado.
 - New Repair es una superficie visual, no un write productivo persistente.
 - No existen Customers, Pricing Catalog, Quote, Payments, Cash o Delivery
   completos.
@@ -236,12 +241,17 @@ exacto `34124746317` completaron su cierre; está `Done`, `Released: NO`.
 
 PBI-034 está `Done`, tamaño `Large`, riesgo `Critical` y `Released: NO`.
 PBI-026 está `Done`, tamaño `Large`, riesgo `Critical`, threat model y DoR
-`PASS`, alcance funcional/cierre integrados y G4 `PASS`. El catálogo mínimo autoriza sólo lecturas de
-Repairs y Operational Note; las mutaciones sin capability aprobada quedan
-deny-by-default. PBI-028 está `In progress`, tamaño `Large`, riesgo `High`, DoR
-`PASS` y Owner Start; WIP `1/1`.
+`PASS`, alcance funcional/cierre integrados y G4 `PASS`. El catálogo mínimo
+autoriza sólo lecturas de Repairs y Operational Note; las mutaciones sin
+capability aprobada quedan deny-by-default. PBI-028 está `In progress`, tamaño
+`Large`, riesgo `High`, DoR `PASS` y Owner Start; WIP `1/1`. El
+[candidato local endurecido](quality/evidence/pbi-028/INTEGRATION_CANDIDATE.md)
+materializa actor real/auditoría y la administración PBI-037 sin convertirlos
+todavía en estado integrado.
 
 ## Próxima acción
 
-Completar el candidato PBI-028, focused High-risk review y CI exacto. No iniciar
-otro PBI; no existe autorización de release o deploy.
+Completar el walkthrough PIN-sensitive, crear Draft PR, obtener CI
+run-1/run-2/comparison y focused High-risk review sobre el HEAD exacto. Detener
+antes del merge para autorización Owner. No iniciar otro PBI; no existe
+autorización de release o deploy.

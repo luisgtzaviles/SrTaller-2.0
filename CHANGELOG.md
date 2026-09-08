@@ -6,6 +6,13 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Governance
 
+- Preparado el checkpoint local endurecido PBI-028/PBI-037 sobre baseline
+  `0b39e3794a97c22d5471c0b6dfa278026f237b03`, con recovery commit
+  `f608ef165763c86a592f5062218cd93b6ca0eb7a` e implementation checkpoint
+  `cc2b756`. PBI-028 permanece `In progress`, Current PBI único y WIP `1/1`;
+  PBI-037 queda trazado como slice Owner-autorizado. Draft PR, CI, focused
+  review, merge y Owner Acceptance permanecen pendientes; release/deploy: NO.
+
 - Preparado el cierre canónico de PBI-026 después de candidate
   `54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7`, CI `34157187442` GREEN,
   focused Critical-risk review PASS (`0B/0H/0M/0L`), PR #35 merge funcional
@@ -30,6 +37,16 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   WIP `0/1` y PBI-026 seleccionado sin iniciar.
 
 ### Desarrollo local
+
+- Endurecidos PIN-only login, colisiones por Branch, Argon2id/pepper,
+  lockout/rate-limit, Sessions y administración server-side de Users/Roles con
+  revalidación transaccional de autoridad. PBI-028 confirma Operational Note y
+  auditoría allowlisted/append-only en una transacción, con idempotencia y
+  correlation UUID server-side también en errores. Users/Roles usan lenguaje
+  de negocio, múltiples Roles, lifecycle sin delete y nunca muestran PIN.
+  `pnpm run verify` pasó `614/597/17/0`; PostgreSQL 18.4 material `8/8`, OCI
+  fresh `28` + rerun `0/0`, Light/Dark, responsive y real-actor reload PASS.
+  Falta sólo el walkthrough PIN-sensitive antes del Draft PR.
 
 - Materializado el candidato local PBI-026 Contextual Authorization con
   resolución server-side fresca de Station, Session, User y capabilities,

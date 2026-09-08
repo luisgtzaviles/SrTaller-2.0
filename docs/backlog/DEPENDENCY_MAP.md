@@ -58,6 +58,9 @@ flowchart TD
   PBI-026 intersecta grants/contexto y autoriza.
 - PBI-028 registra actor/contexto/correlación. Sólo entonces Operational Note
   puede probar el stack real y comenzar el retrofit de Repairs.
+- PBI-037 materializa la administración local de Users/Roles sobre las
+  foundations cerradas y se endurece como slice explícito del candidato
+  PBI-028; no altera la secuencia ni añade WIP.
 - PBI-035 se incorpora cuando una acción concreta necesita reautenticación o
   segundo aprobador; no bloquea capacidades ordinarias.
 - PBI-036 no bloquea el MVP mientras PBI-028 entregue auditoría mínima.
@@ -90,7 +93,8 @@ flowchart TD
   `4db5d9384d13c200eb2031dceb32dd89efcca64d`, exact-main CI `34158203438` y
   Owner Acceptance, cierre PR #36 merge
   `0b39e3794a97c22d5471c0b6dfa278026f237b03` y CI `34161029937` completos.
-  G4 es `PASS`; PBI-028 está `In progress` con DoR/Owner Start propios.
+  G4 es `PASS`; PBI-028 está `In progress` con DoR/Owner Start propios y un
+  checkpoint local endurecido pendiente de Draft PR/CI/review.
 
 ## Stage 2
 
@@ -100,4 +104,5 @@ diferidos.
 
 ## Próxima revisión
 
-Al completar el candidato PBI-028, o si cambia una dependencia aprobada.
+Al completar walkthrough, Draft PR, CI y focused review del candidato PBI-028,
+o si cambia una dependencia aprobada.

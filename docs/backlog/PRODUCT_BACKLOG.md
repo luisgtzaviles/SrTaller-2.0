@@ -8,7 +8,8 @@ Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
 tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release. PBI-033 también está
 `Done`; PBI-025, PBI-034 y PBI-026 también están `Done`. SPRINT-02 tiene
-PBI-028 `In progress` como único PBI actual y WIP es `1/1`.
+PBI-028 `In progress` como único PBI actual y WIP es `1/1`; su checkpoint local
+endurecido incluye el slice PBI-037 sin convertirlo en WIP paralelo.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
@@ -121,5 +122,5 @@ su clasificación explícita.
 
 ## Próxima revisión
 
-Completar PBI-028 dentro del alcance H1 autorizado, focused High-risk review y
-CI exacto del candidato. No iniciar otro PBI, liberar ni desplegar.
+Completar el walkthrough PIN-sensitive, Draft PR, focused High-risk review y CI
+exacto del candidato PBI-028/PBI-037. No iniciar otro PBI, liberar ni desplegar.

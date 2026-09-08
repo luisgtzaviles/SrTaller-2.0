@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 activo, PBI-028 en ejecución y límite
-  WIP=1.
+- **Estado:** Roadmap aprobado; SPRINT-02 activo, PBI-028 en ejecución con
+  candidato local endurecido y límite WIP=1.
 - **Baseline de la reconciliación:** `main` en
   `0b39e3794a97c22d5471c0b6dfa278026f237b03`; CI autoritativo
   `34161029937`, `SUCCESS`.
@@ -15,8 +15,9 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** PBI-028 — Minimum Business Audit and Correlation.
 - **Siguiente PBI candidato:** NONE mientras PBI-028 está en ejecución.
-- **Blocking gate:** candidato PBI-028, focused High-risk review y CI exacto;
-  merge, cierre, release y deploy conservan autoridades propias.
+- **Blocking gate:** walkthrough PIN-sensitive, Draft PR, focused High-risk
+  review y CI exacto del candidato PBI-028; merge, cierre, release y deploy
+  conservan autoridades propias.
 - **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
@@ -202,7 +203,10 @@ focused high-risk review PASS, merge funcional PR #28, Owner Acceptance y
 cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 
 SPRINT-02 está `Active`; PBI-026 está `Done`, G4 `PASS`, PBI-028 es el PBI
-actual y WIP es `1/1`.
+actual y WIP es `1/1`. PBI-028/PBI-037 tienen un
+[checkpoint local endurecido](../quality/evidence/pbi-028/INTEGRATION_CANDIDATE.md)
+con full verify, PostgreSQL 18.4, OCI y prueba visual no sensible verdes; esto
+no equivale a integración ni crea un segundo PBI actual.
 PBI-025 está `Done`. Su
 alcance funcional fue integrado por PR #30 como
 `328bdf541be88b21a2e7dbea28f4a2a6f32f6986` y el CI exacto de `main`
@@ -228,7 +232,8 @@ deploy.
 
 ## Próxima revisión
 
-- **Disparador:** candidato PBI-028 listo para focused High-risk review.
+- **Disparador:** walkthrough final, Draft PR y candidato PBI-028 listo para
+  focused High-risk review.
 - **Resultado esperado si pasa:** candidate CI exacto GREEN y Owner Review,
   sin inferir merge, cierre, release o deploy.
 - **Después:** seguir el workflow canónico; no iniciar otro PBI automáticamente.
