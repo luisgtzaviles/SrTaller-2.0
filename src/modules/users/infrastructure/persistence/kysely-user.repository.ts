@@ -1,9 +1,11 @@
-import { useDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
   InternalDatabasePersistenceConnection,
   InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
+import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
+import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type {
   UserLifecycleCommandRow,
   UserRow,
@@ -22,12 +24,16 @@ import type {
   UpdateUserInput,
   UserRecord,
   UserRepositoryPort,
+  UserMutationCommitGuard,
   UserScope,
 } from '../../application/ports/user-repository.port.js';
 
 type UserExecutor = InternalDatabasePersistenceExecutor<'users'>;
 type UserOperation = <Result>(
   operation: InternalDatabasePersistenceOperation<'users', Result>,
+) => Promise<Result>;
+type UserTransactionOperation = <Result>(
+  operation: (executor: UserExecutor, transactionContext: object) => Promise<Result>,
 ) => Promise<Result>;
 
 const canonicalUuid =
@@ -245,7 +251,10 @@ function replayLifecycleCommand(
 }
 
 class KyselyUserRepository implements UserRepositoryPort {
-  constructor(private readonly execute: UserOperation) {}
+  constructor(
+    private readonly execute: UserOperation,
+    private readonly executeTransaction: UserTransactionOperation,
+  ) {}
 
   async list(scope: UserScope): Promise<readonly UserRecord[]> {
     const trustedScope = validateScope(scope);
@@ -396,11 +405,14 @@ class KyselyUserRepository implements UserRepositoryPort {
     }
   }
 
-  async create(scope: UserScope, input: CreateUserInput): Promise<UserRecord> {
+  async create(scope: UserScope, input: CreateUserInput, guard?: UserMutationCommitGuard): Promise<UserRecord> {
     const trustedScope = validateScope(scope);
     const trustedInput = validateBootstrapInput(input);
     try {
-      return await this.execute(async (database: UserExecutor) => {
+      return await this.executeTransaction(async (database, transactionContext) => {
+        if (guard && !await guard.confirmCurrent(transactionContext)) {
+          throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+        }
         const row = await database.insertInto('users').values({
           user_id: trustedInput.userId,
           tenant_id: trustedScope.tenantId,
@@ -421,12 +433,15 @@ class KyselyUserRepository implements UserRepositoryPort {
   async transition(
     scope: UserScope,
     input: TransitionUserInput,
+    guard?: UserMutationCommitGuard,
   ): Promise<UserRecord> {
     const trustedScope = validateScope(scope);
     const trustedInput = validateTransitionInput(input);
     try {
-      return await this.execute(async (database: UserExecutor) =>
-        database.transaction().execute(async (transaction) => {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+          if (guard && !await guard.confirmCurrent(transactionContext)) {
+            throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+          }
           const previousCommand = await transaction
             .selectFrom('user_lifecycle_commands')
             .selectAll()
@@ -511,18 +526,20 @@ class KyselyUserRepository implements UserRepositoryPort {
             return replayLifecycleCommand(prior, trustedInput);
           }
           return mapLifecycleCommand(command);
-        }),
-      );
+        });
     } catch (error: unknown) {
       throw mapUserError(error);
     }
   }
 
-  async update(scope: UserScope, input: UpdateUserInput): Promise<UserRecord> {
+  async update(scope: UserScope, input: UpdateUserInput, guard?: UserMutationCommitGuard): Promise<UserRecord> {
     const trustedScope = validateScope(scope);
     const trustedInput = validateUpdateInput(input);
     try {
-      return await this.execute(async (database: UserExecutor) => database.transaction().execute(async (transaction) => {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+        if (guard && !await guard.confirmCurrent(transactionContext)) {
+          throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+        }
         const current = await transaction.selectFrom('users').select('version')
           .where('tenant_id', '=', trustedScope.tenantId).where('user_id', '=', trustedInput.userId).executeTakeFirst();
         if (!current) throw new UserPersistenceError('USER_NOT_FOUND');
@@ -536,7 +553,7 @@ class KyselyUserRepository implements UserRepositoryPort {
           .where('version', '=', trustedInput.expectedVersion).returningAll().executeTakeFirst();
         if (!row) throw new UserPersistenceError('USER_STALE_WRITE');
         return mapUserRecord(row);
-      }));
+      });
     } catch (error: unknown) { throw mapUserError(error); }
   }
 }
@@ -544,8 +561,41 @@ class KyselyUserRepository implements UserRepositoryPort {
 export function createKyselyUserRepository(
   connection: InternalDatabasePersistenceConnection,
 ): UserRepositoryPort {
-  return new KyselyUserRepository((operation) =>
-    useDatabasePersistenceExecutor(connection, 'users', operation),
+  let transactionTail = Promise.resolve();
+  return new KyselyUserRepository(
+    (operation) => useDatabasePersistenceExecutor(connection, 'users', operation),
+    async (operation) => {
+      let releaseTurn!: () => void;
+      const previousTurn = transactionTail;
+      transactionTail = new Promise<void>((resolve) => { releaseTurn = resolve; });
+      await previousTurn;
+      let operationFailed = false;
+      let operationError: unknown;
+      try {
+        return await runInTransaction(
+          connection as unknown as DatabaseConnection,
+          { isolationLevel: 'serializable' },
+          async (transactionContext) => {
+            try {
+              return await useTransactionalDatabasePersistenceExecutor(
+                transactionContext,
+                'users',
+                (executor) => operation(executor, transactionContext),
+              );
+            } catch (error: unknown) {
+              operationFailed = true;
+              operationError = error;
+              throw error;
+            }
+          },
+        );
+      } catch (error: unknown) {
+        if (operationFailed) throw operationError;
+        throw error;
+      } finally {
+        releaseTurn();
+      }
+    },
   );
 }
 

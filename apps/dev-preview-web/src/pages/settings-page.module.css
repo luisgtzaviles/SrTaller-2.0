@@ -10,6 +10,37 @@
   gap: var(--space-5);
 }
 
+.administrationGrid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.administrationCard {
+  display: grid;
+  min-width: 0;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.administrationCard h3 {
+  margin: var(--space-0) 0 var(--space-1);
+  font-size: 1rem;
+}
+
+.administrationCard p,
+.restrictedCopy {
+  margin: var(--space-0);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.administrationCard a { justify-self: start; }
+
 .sectionHeader {
   max-width: 720px;
 }
@@ -375,6 +406,7 @@
 }
 
 @media (min-width: 1280px) {
+  .administrationGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .brandCard { grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr); }
   .previewPanel { border-top: 0; border-left: 1px solid var(--color-border); }
 }

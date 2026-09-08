@@ -56,7 +56,7 @@ export const USER_PRODUCT_RUNTIME: unique symbol = Symbol('srtaller.users.produc
 
 export interface UserProductRuntime {
   list(scope: unknown): Promise<readonly import('./application/ports/user-repository.port.js').UserRecord[]>;
-  create(scope: unknown, input: unknown): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
-  update(scope: unknown, userId: unknown, input: unknown): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
-  transition(scope: unknown, input: unknown): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
+  create(scope: unknown, input: unknown, guard?: import('./application/ports/user-repository.port.js').UserMutationCommitGuard): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
+  update(scope: unknown, userId: unknown, input: unknown, guard?: import('./application/ports/user-repository.port.js').UserMutationCommitGuard): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
+  transition(scope: unknown, input: unknown, guard?: import('./application/ports/user-repository.port.js').UserMutationCommitGuard): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
 }

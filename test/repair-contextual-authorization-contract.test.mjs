@@ -51,6 +51,7 @@ const authorizedContext = Object.freeze({
   userId: 'a3000000-0000-4000-8000-000000000001',
   userDisplayName: 'Ada Operadora',
   capability: 'repairs.read',
+  commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
 });
 
 const requestEvidence = Object.freeze({
@@ -138,8 +139,8 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
         id: note.entryId,
         occurredAt: note.occurredAt.toISOString(),
         type: 'note',
-        actorId: note.actorUserId,
-        actorDisplayName: note.actorDisplayName,
+        actorId: scope.actorUserId,
+        actorDisplayName: scope.actorDisplayName,
         title: 'Nota',
         body: note.body,
         source: 'repairs.operational_note',
@@ -198,12 +199,13 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     actorUserId: authorizedContext.userId,
     actorDisplayName: authorizedContext.userDisplayName,
     capability: 'repairs.add_note',
+    commitGuard: authorizedContext.commitGuard,
   });
-  assert.equal(noteCall.note.stationId, authorizedContext.stationId);
-  assert.equal(noteCall.note.sessionId, authorizedContext.sessionId);
-  assert.equal(noteCall.note.actorUserId, authorizedContext.userId);
-  assert.equal(noteCall.note.actorDisplayName, authorizedContext.userDisplayName);
-  assert.equal(noteCall.note.capability, 'repairs.add_note');
+  assert.equal(noteCall.note.stationId, undefined);
+  assert.equal(noteCall.note.sessionId, undefined);
+  assert.equal(noteCall.note.actorUserId, undefined);
+  assert.equal(noteCall.note.actorDisplayName, undefined);
+  assert.equal(noteCall.note.capability, undefined);
   assert.equal(noteCall.note.action, 'repair.operational_note.added');
   assert.equal(noteCall.note.resourceType, 'repair');
   assert.equal(noteCall.note.result, 'succeeded');

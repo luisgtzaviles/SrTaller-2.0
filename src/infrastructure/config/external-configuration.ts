@@ -6,11 +6,7 @@ export type SecretConfigurationName =
   | 'SR_PIN_PEPPER'
   | 'SR_SESSION_SIGNING_KEY'
   | 'SR_STATION_BOOTSTRAP_SECRET'
-  | 'SR_USER_BOOTSTRAP_SECRET'
-  | 'SR_LOCAL_PIN_JORGE'
-  | 'SR_LOCAL_PIN_MARIA'
-  | 'SR_LOCAL_PIN_CARLOS'
-  | 'SR_LOCAL_PIN_LUIS';
+  | 'SR_USER_BOOTSTRAP_SECRET';
 
 export type ExternalConfigurationName =
   | SecretConfigurationName
@@ -128,14 +124,6 @@ export const externalConfigurationCatalog = Object.freeze([
     source: 'process-environment' as const,
     clientExposure: 'forbidden' as const,
   }),
-  ...(['SR_LOCAL_PIN_JORGE', 'SR_LOCAL_PIN_MARIA', 'SR_LOCAL_PIN_CARLOS', 'SR_LOCAL_PIN_LUIS'] as const).map((name) => Object.freeze({
-    name,
-    classification: 'secret' as const,
-    consumer: 'access' as const,
-    status: 'active' as const,
-    source: 'process-environment' as const,
-    clientExposure: 'forbidden' as const,
-  })),
 ] satisfies readonly ExternalConfigurationDefinition[]);
 
 type ExternalConfigurationErrorCode =

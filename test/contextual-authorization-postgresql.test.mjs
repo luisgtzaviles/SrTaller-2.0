@@ -64,7 +64,10 @@ const {
 const { RepairDetailNotFoundError } = enabled
   ? await import('../dist/modules/repairs/application/use-cases/get-repair-detail.use-case.js')
   : {};
-const { RepairOperationalNoteRepairNotFoundError } = enabled
+const {
+  AddRepairOperationalNoteAuthorizationError,
+  RepairOperationalNoteRepairNotFoundError,
+} = enabled
   ? await import('../dist/modules/repairs/application/use-cases/add-repair-operational-note.use-case.js')
   : {};
 const { createKyselyRepairRepository } = enabled
@@ -76,14 +79,17 @@ const migrationRoot = fileURLToPath(
 );
 
 const tables = [
+  'repair_operational_note_request_guards',
   'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   'access_pin_attempt_limits',
   'access_pin_attempt_station_guards',
   'access_pin_credential_commands',
+  'access_pin_eligibility_tenant_guards',
   'access_pin_credentials',
   'access_role_assignment_commands',
+  'access_role_commands',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
@@ -135,6 +141,7 @@ const foreignBranchRequest = 'd2000000-0000-4000-8000-000000000026';
 const foreignTenantRequest = 'd3000000-0000-4000-8000-000000000026';
 const concurrentNoteRequest = 'd4000000-0000-4000-8000-000000000026';
 const auditFailureRequest = 'd5000000-0000-4000-8000-000000000026';
+const toctouRequest = 'd6000000-0000-4000-8000-000000000026';
 const stationSecretA = 'A'.repeat(43);
 const stationSecretB = 'B'.repeat(43);
 const authorizationNow = new Date('2026-09-07T20:00:01.000Z');
@@ -479,9 +486,13 @@ test(
           resolveCapabilities,
         }),
       );
+      const repairRepository = createKyselyRepairRepository(
+        connection,
+        () => new Date(authorizationNow),
+      );
       const repairs = new RepairProtectedOperations(
         authorization,
-        createKyselyRepairRepository(connection, () => new Date(authorizationNow)),
+        repairRepository,
         Object.freeze({ read: async () => null }),
       );
       await concurrentConnection.verify();
@@ -862,6 +873,44 @@ test(
         'ACCESS_DENIED',
       );
       assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+
+      let releaseCommitGuard;
+      let authorizationResolved;
+      const commitGuardRelease = new Promise((resolve) => { releaseCommitGuard = resolve; });
+      const authorizationBarrier = new Promise((resolve) => { authorizationResolved = resolve; });
+      const delayedRepairs = new RepairProtectedOperations(
+        authorization,
+        {
+          async addOperationalNote(scope, command) {
+            authorizationResolved();
+            await commitGuardRelease;
+            return repairRepository.addOperationalNote(scope, command);
+          },
+        },
+        Object.freeze({ read: async () => null }),
+      );
+      const pendingEffect = delayedRepairs.addRepairOperationalNote(
+        evidence,
+        noteInput(repairA, toctouRequest, 'No debe confirmarse tras revocación.'),
+      );
+      await authorizationBarrier;
+      await admin.query(
+        `delete from access_role_capabilities
+         where tenant_id = $1 and role_id = $2 and capability_code = 'repairs.add_note'`,
+        [tenantA, roleA],
+      );
+      releaseCommitGuard();
+      await assert.rejects(
+        pendingEffect,
+        AddRepairOperationalNoteAuthorizationError,
+      );
+      assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      await admin.query(
+        `insert into access_role_capabilities (
+           tenant_id, role_id, capability_code, created_at
+         ) values ($1, $2, 'repairs.add_note', now())`,
+        [tenantA, roleA],
+      );
 
       await admin.query(
         `delete from access_role_capabilities

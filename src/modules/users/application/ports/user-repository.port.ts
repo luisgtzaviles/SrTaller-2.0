@@ -52,6 +52,7 @@ export type UserPersistenceErrorCode =
   | 'USER_NOT_FOUND'
   | 'USER_PERSISTENCE_CONFLICT'
   | 'USER_PERSISTENCE_FAILED'
+  | 'USER_AUTHORIZATION_CHANGED'
   | 'USER_STALE_WRITE'
   | 'USER_TENANT_NOT_FOUND'
   | 'USER_TENANT_SCOPE_REQUIRED';
@@ -67,11 +68,15 @@ export class UserPersistenceError extends Error {
   }
 }
 
+export interface UserMutationCommitGuard {
+  confirmCurrent(transactionContext: object): Promise<boolean>;
+}
+
 export interface UserRepositoryPort {
   list(scope: UserScope): Promise<readonly UserRecord[]>;
   findById(scope: UserScope, userId: UserRecord['userId']): Promise<UserRecord | null>;
   bootstrap(scope: UserScope, input: BootstrapUserInput): Promise<UserRecord>;
-  create(scope: UserScope, input: CreateUserInput): Promise<UserRecord>;
-  update(scope: UserScope, input: UpdateUserInput): Promise<UserRecord>;
-  transition(scope: UserScope, input: TransitionUserInput): Promise<UserRecord>;
+  create(scope: UserScope, input: CreateUserInput, guard?: UserMutationCommitGuard): Promise<UserRecord>;
+  update(scope: UserScope, input: UpdateUserInput, guard?: UserMutationCommitGuard): Promise<UserRecord>;
+  transition(scope: UserScope, input: TransitionUserInput, guard?: UserMutationCommitGuard): Promise<UserRecord>;
 }

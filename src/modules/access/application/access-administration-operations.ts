@@ -1,9 +1,17 @@
 import type {
+  AuthorizedOperationalContext,
   ContextualAuthorizationExecutor,
   ProtectedRequestEvidence,
 } from '../index.js';
+import { ContextualAuthorizationError } from '../index.js';
 import type { UserProductRuntime } from '../../users/index.js';
-import { randomUUID } from 'node:crypto';
+import type { CapabilityCode } from '../domain/capability.js';
+import type { AccessMatrixRecord } from './ports/access-repository.port.js';
+import type { AdministrationAuthorizationCommitGuardPort } from './ports/administration-authorization-commit-guard.port.js';
+
+type AdministrationMutationGuard = Readonly<{
+  confirmCurrent(transactionContext: object): Promise<boolean>;
+}>;
 
 const usersReadRequirement = Object.freeze({
   capability: 'users.read' as const,
@@ -25,7 +33,74 @@ const accessMatrixManageRequirement = Object.freeze({
   kind: 'state-change' as const,
 });
 
+const canonicalUuid =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const localAdminPinPattern = /^[0-9]{4}$/u;
+
+export class AccessAdministrationRequestError extends Error {
+  readonly code = 'ADMIN_REQUEST_INVALID';
+
+  constructor(readonly parameter: string) {
+    super('Invalid access administration request.');
+    this.name = 'AccessAdministrationRequestError';
+  }
+}
+
+export class AccessAdministrationResourceNotFoundError extends Error {
+  readonly code = 'ADMIN_RESOURCE_NOT_FOUND';
+
+  constructor() {
+    super('The requested administration resource was not found.');
+    this.name = 'AccessAdministrationResourceNotFoundError';
+  }
+}
+
+class AccessAdministrationInvariantError extends Error {
+  constructor() {
+    super('Access administration authority could not be resolved.');
+    this.name = 'AccessAdministrationInvariantError';
+  }
+}
+
+function exactObject(
+  value: unknown,
+  allowedKeys: readonly string[],
+): Readonly<Record<string, unknown>> {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    Array.isArray(value) ||
+    Object.keys(value).length !== allowedKeys.length ||
+    Object.keys(value).some((key) => !allowedKeys.includes(key))
+  ) {
+    throw new AccessAdministrationRequestError('payload');
+  }
+  return value as Readonly<Record<string, unknown>>;
+}
+
+function uuid(value: unknown, parameter: string): string {
+  if (typeof value !== 'string' || !canonicalUuid.test(value)) {
+    throw new AccessAdministrationRequestError(parameter);
+  }
+  return value;
+}
+
+function accessMatrix(value: unknown): AccessMatrixRecord {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    Array.isArray(value) ||
+    !Array.isArray((value as { capabilities?: unknown }).capabilities) ||
+    !Array.isArray((value as { roles?: unknown }).roles) ||
+    !Array.isArray((value as { assignments?: unknown }).assignments)
+  ) {
+    throw new AccessAdministrationInvariantError();
+  }
+  return value as AccessMatrixRecord;
+}
+
+type AdministrationUser = Awaited<ReturnType<UserProductRuntime['create']>> &
+  Readonly<{ pinConfigured: boolean }>;
 
 /** Access composes User commands only after server-side authorization. */
 export class AccessAdministrationOperations {
@@ -33,20 +108,77 @@ export class AccessAdministrationOperations {
     private readonly authorization: ContextualAuthorizationExecutor,
     private readonly users: UserProductRuntime,
     private readonly listAccessMatrix: (scope: unknown) => Promise<unknown>,
-    private readonly createAccessRole: (scope: unknown, input: unknown) => Promise<unknown>,
-    private readonly replaceAccessRoleCapabilities: (scope: unknown, roleId: unknown, input: unknown) => Promise<unknown>,
-    private readonly assignRoleUseCase: (scope: unknown, input: unknown) => Promise<unknown>,
-    private readonly revokeRoleAssignmentUseCase: (scope: unknown, input: unknown) => Promise<unknown>,
-    private readonly provisionPin: (scope: unknown, input: unknown) => Promise<unknown>,
-    private readonly replacePin: (scope: unknown, input: unknown) => Promise<unknown>,
+    private readonly createAccessRole: (scope: unknown, input: unknown, guard?: AdministrationMutationGuard) => Promise<unknown>,
+    private readonly replaceAccessRoleCapabilities: (scope: unknown, roleId: unknown, input: unknown, guard?: AdministrationMutationGuard) => Promise<unknown>,
+    private readonly updateAccessRole: (scope: unknown, roleId: unknown, input: unknown, guard?: AdministrationMutationGuard) => Promise<unknown>,
+    private readonly assignRoleUseCase: (scope: unknown, input: unknown, guard?: AdministrationMutationGuard) => Promise<unknown>,
+    private readonly revokeRoleAssignmentUseCase: (scope: unknown, input: unknown, guard?: AdministrationMutationGuard) => Promise<unknown>,
+    private readonly provisionPin: (scope: unknown, input: unknown, guard?: AdministrationMutationGuard) => Promise<unknown>,
+    private readonly replacePin: (scope: unknown, input: unknown, guard?: AdministrationMutationGuard) => Promise<unknown>,
     private readonly listConfiguredPinUserIds: (scope: unknown) => Promise<readonly string[]>,
+    private readonly administrationCommitGuard?: AdministrationAuthorizationCommitGuardPort,
   ) {}
+
+  private mutationGuard(
+    context: AuthorizedOperationalContext,
+    capability: CapabilityCode,
+  ): AdministrationMutationGuard {
+    return Object.freeze({
+      confirmCurrent: async (transactionContext: object) =>
+        await context.commitGuard.confirmCurrent(transactionContext) &&
+        this.administrationCommitGuard !== undefined &&
+        await this.administrationCommitGuard.confirmCurrent(
+          { tenantId: context.tenantId, userId: context.userId },
+          capability,
+          transactionContext,
+        ),
+    });
+  }
+
+  private async requireTenantWideAuthority(
+    context: AuthorizedOperationalContext,
+    capability: CapabilityCode,
+  ): Promise<AccessMatrixRecord> {
+    const matrix = accessMatrix(
+      await this.listAccessMatrix({ tenantId: context.tenantId }),
+    );
+    const activeRoleIds = new Set(
+      matrix.roles
+        .filter((role) =>
+          role.status === 'active' && role.capabilityCodes.includes(capability),
+        )
+        .map((role) => role.roleId),
+    );
+    const authorized = matrix.assignments.some((assignment) =>
+      assignment.userId === context.userId &&
+      assignment.status === 'active' &&
+      assignment.assignmentScope === 'TENANT_WIDE' &&
+      assignment.branchId === null &&
+      activeRoleIds.has(assignment.roleId),
+    );
+    if (!authorized) {
+      throw new ContextualAuthorizationError('ACCESS_DENIED');
+    }
+    return matrix;
+  }
+
+  private async withPinConfigured(
+    tenantId: string,
+    user: Awaited<ReturnType<UserProductRuntime['create']>>,
+  ): Promise<AdministrationUser> {
+    const configured = await this.listConfiguredPinUserIds({ tenantId });
+    return Object.freeze({
+      ...user,
+      pinConfigured: configured.includes(user.userId),
+    });
+  }
 
   listUsers(evidence: ProtectedRequestEvidence) {
     return this.authorization.execute(
       evidence,
       usersReadRequirement,
       async (context) => {
+        await this.requireTenantWideAuthority(context, usersReadRequirement.capability);
         const [users, configuredUserIds] = await Promise.all([
           this.users.list({ tenantId: context.tenantId }),
           this.listConfiguredPinUserIds({ tenantId: context.tenantId }),
@@ -64,7 +196,20 @@ export class AccessAdministrationOperations {
     return this.authorization.execute(
       evidence,
       usersManageRequirement,
-      (context) => this.users.create({ tenantId: context.tenantId }, input),
+      async (context) => {
+        await this.requireTenantWideAuthority(context, usersManageRequirement.capability);
+        const body = exactObject(input, [
+          'clientRequestId',
+          'displayName',
+          'operationalIdentifier',
+        ]);
+        const user = await this.users.create(
+          { tenantId: context.tenantId },
+          body,
+          this.mutationGuard(context, usersManageRequirement.capability),
+        );
+        return this.withPinConfigured(context.tenantId, user);
+      },
     );
   }
 
@@ -72,7 +217,22 @@ export class AccessAdministrationOperations {
     return this.authorization.execute(
       evidence,
       usersManageRequirement,
-      (context) => this.users.update({ tenantId: context.tenantId }, userId, input),
+      async (context) => {
+        await this.requireTenantWideAuthority(context, usersManageRequirement.capability);
+        const parsedUserId = uuid(userId, 'userId');
+        const body = exactObject(input, [
+          'displayName',
+          'expectedVersion',
+          'operationalIdentifier',
+        ]);
+        const user = await this.users.update(
+          { tenantId: context.tenantId },
+          parsedUserId,
+          body,
+          this.mutationGuard(context, usersManageRequirement.capability),
+        );
+        return this.withPinConfigured(context.tenantId, user);
+      },
     );
   }
 
@@ -80,7 +240,10 @@ export class AccessAdministrationOperations {
     return this.authorization.execute(
       evidence,
       accessMatrixReadRequirement,
-      (context) => this.listAccessMatrix({ tenantId: context.tenantId }),
+      (context) => this.requireTenantWideAuthority(
+        context,
+        accessMatrixReadRequirement.capability,
+      ),
     );
   }
 
@@ -88,7 +251,24 @@ export class AccessAdministrationOperations {
     return this.authorization.execute(
       evidence,
       accessMatrixManageRequirement,
-      (context) => this.createAccessRole({ tenantId: context.tenantId }, input),
+      async (context) => {
+        await this.requireTenantWideAuthority(
+          context,
+          accessMatrixManageRequirement.capability,
+        );
+        const body = exactObject(input, [
+          'capabilityCodes',
+          'clientRequestId',
+          'description',
+          'displayName',
+          'roleKey',
+        ]);
+        return this.createAccessRole(
+          { tenantId: context.tenantId },
+          body,
+          this.mutationGuard(context, accessMatrixManageRequirement.capability),
+        );
+      },
     );
   }
 
@@ -96,67 +276,158 @@ export class AccessAdministrationOperations {
     return this.authorization.execute(
       evidence,
       accessMatrixManageRequirement,
-      (context) => this.replaceAccessRoleCapabilities({ tenantId: context.tenantId }, roleId, input),
+      async (context) => {
+        await this.requireTenantWideAuthority(
+          context,
+          accessMatrixManageRequirement.capability,
+        );
+        const parsedRoleId = uuid(roleId, 'roleId');
+        const body = exactObject(input, [
+          'capabilityCodes',
+          'clientRequestId',
+          'expectedVersion',
+        ]);
+        return this.replaceAccessRoleCapabilities(
+          { tenantId: context.tenantId },
+          parsedRoleId,
+          body,
+          this.mutationGuard(context, accessMatrixManageRequirement.capability),
+        );
+      },
+    );
+  }
+
+  updateRole(evidence: ProtectedRequestEvidence, roleId: string, input: unknown) {
+    return this.authorization.execute(
+      evidence,
+      accessMatrixManageRequirement,
+      async (context) => {
+        await this.requireTenantWideAuthority(
+          context,
+          accessMatrixManageRequirement.capability,
+        );
+        const parsedRoleId = uuid(roleId, 'roleId');
+        const body = exactObject(input, [
+          'clientRequestId',
+          'description',
+          'displayName',
+          'expectedVersion',
+        ]);
+        return this.updateAccessRole(
+          { tenantId: context.tenantId },
+          parsedRoleId,
+          body,
+          this.mutationGuard(context, accessMatrixManageRequirement.capability),
+        );
+      },
     );
   }
 
   assignRole(evidence: ProtectedRequestEvidence, userId: string, input: unknown) {
-    const body = input as Readonly<Record<string, unknown>> | null;
-    return this.authorization.execute(
-      evidence,
-      usersManageRequirement,
-      (context) => this.assignRoleUseCase({ tenantId: context.tenantId }, {
-        userId,
-        roleId: body?.roleId,
-        assignmentScope: 'TENANT_WIDE',
-        branchId: null,
-        clientRequestId: randomUUID(),
-      }),
-    );
-  }
-
-  revokeRole(evidence: ProtectedRequestEvidence, assignmentId: string, input: unknown) {
-    const body = input as Readonly<Record<string, unknown>> | null;
-    return this.authorization.execute(
-      evidence,
-      usersManageRequirement,
-      (context) => this.revokeRoleAssignmentUseCase({ tenantId: context.tenantId }, {
-        assignmentId,
-        expectedVersion: body?.expectedVersion,
-        clientRequestId: randomUUID(),
-      }),
-    );
-  }
-
-  provisionLocalFourDigitPin(evidence: ProtectedRequestEvidence, userId: string, input: unknown) {
-    const body = input as Readonly<Record<string, unknown>> | null;
-    if (typeof body?.pin !== 'string' || !localAdminPinPattern.test(body.pin)) {
-      throw new Error('Local PIN must contain four digits.');
-    }
     return this.authorization.execute(
       evidence,
       usersManageRequirement,
       async (context) => {
-        const payload = { userId, pin: `00${body.pin}`, clientRequestId: randomUUID() };
-        const configured = await this.listConfiguredPinUserIds({ tenantId: context.tenantId });
-        return configured.includes(userId)
-          ? this.replacePin({ tenantId: context.tenantId }, payload)
-          : this.provisionPin({ tenantId: context.tenantId }, payload);
+        await this.requireTenantWideAuthority(context, usersManageRequirement.capability);
+        const parsedUserId = uuid(userId, 'userId');
+        const body = exactObject(input, ['clientRequestId', 'roleId']);
+        return this.assignRoleUseCase({ tenantId: context.tenantId }, {
+          userId: parsedUserId,
+          roleId: uuid(body.roleId, 'roleId'),
+          assignmentScope: 'TENANT_WIDE',
+          branchId: null,
+          clientRequestId: uuid(body.clientRequestId, 'clientRequestId'),
+        }, this.mutationGuard(context, usersManageRequirement.capability));
+      },
+    );
+  }
+
+  revokeRole(
+    evidence: ProtectedRequestEvidence,
+    userId: string,
+    assignmentId: string,
+    input: unknown,
+  ) {
+    return this.authorization.execute(
+      evidence,
+      usersManageRequirement,
+      async (context) => {
+        const matrix = await this.requireTenantWideAuthority(
+          context,
+          usersManageRequirement.capability,
+        );
+        const parsedUserId = uuid(userId, 'userId');
+        const parsedAssignmentId = uuid(assignmentId, 'assignmentId');
+        const body = exactObject(input, ['clientRequestId', 'expectedVersion']);
+        const assignment = matrix.assignments.find(
+          (candidate) => candidate.assignmentId === parsedAssignmentId,
+        );
+        if (assignment?.userId !== parsedUserId) {
+          throw new AccessAdministrationResourceNotFoundError();
+        }
+        return this.revokeRoleAssignmentUseCase({ tenantId: context.tenantId }, {
+          assignmentId: parsedAssignmentId,
+          expectedVersion: body.expectedVersion,
+          clientRequestId: uuid(body.clientRequestId, 'clientRequestId'),
+        }, this.mutationGuard(context, usersManageRequirement.capability));
+      },
+    );
+  }
+
+  provisionFourDigitPin(evidence: ProtectedRequestEvidence, userId: string, input: unknown) {
+    return this.authorization.execute(
+      evidence,
+      usersManageRequirement,
+      async (context) => {
+        await this.requireTenantWideAuthority(context, usersManageRequirement.capability);
+        const parsedUserId = uuid(userId, 'userId');
+        const body = exactObject(input, ['clientRequestId', 'pin']);
+        if (typeof body.pin !== 'string' || !localAdminPinPattern.test(body.pin)) {
+          throw new AccessAdministrationRequestError('pin');
+        }
+        const payload = {
+          userId: parsedUserId,
+          pin: body.pin,
+          clientRequestId: uuid(body.clientRequestId, 'clientRequestId'),
+        };
+        const configured = await this.listConfiguredPinUserIds({
+          tenantId: context.tenantId,
+        });
+        return configured.includes(parsedUserId)
+          ? this.replacePin(
+            { tenantId: context.tenantId },
+            payload,
+            this.mutationGuard(context, usersManageRequirement.capability),
+          )
+          : this.provisionPin(
+            { tenantId: context.tenantId },
+            payload,
+            this.mutationGuard(context, usersManageRequirement.capability),
+          );
       },
     );
   }
 
   transitionUser(evidence: ProtectedRequestEvidence, userId: string, input: unknown) {
-    const body = input as Readonly<Record<string, unknown>> | null;
     return this.authorization.execute(
       evidence,
       usersManageRequirement,
-      (context) => this.users.transition({ tenantId: context.tenantId }, {
-        userId,
-        status: body?.status,
-        expectedVersion: body?.expectedVersion,
-        clientRequestId: randomUUID(),
-      }),
+      async (context) => {
+        await this.requireTenantWideAuthority(context, usersManageRequirement.capability);
+        const parsedUserId = uuid(userId, 'userId');
+        const body = exactObject(input, [
+          'clientRequestId',
+          'expectedVersion',
+          'status',
+        ]);
+        const user = await this.users.transition({ tenantId: context.tenantId }, {
+          userId: parsedUserId,
+          status: body.status,
+          expectedVersion: body.expectedVersion,
+          clientRequestId: uuid(body.clientRequestId, 'clientRequestId'),
+        }, this.mutationGuard(context, usersManageRequirement.capability));
+        return this.withPinConfigured(context.tenantId, user);
+      },
     );
   }
 }

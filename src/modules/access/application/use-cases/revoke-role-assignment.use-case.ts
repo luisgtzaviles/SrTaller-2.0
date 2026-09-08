@@ -1,4 +1,5 @@
 import type {
+  AccessMutationCommitGuard,
   AccessRepositoryPort,
   AccessRoleAssignmentRecord,
 } from '../ports/access-repository.port.js';
@@ -14,13 +15,14 @@ export class RevokeRoleAssignmentUseCase {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  execute(scope: unknown, input: unknown): Promise<AccessRoleAssignmentRecord> {
+  execute(scope: unknown, input: unknown, guard?: AccessMutationCommitGuard): Promise<AccessRoleAssignmentRecord> {
     return this.repository.revokeRoleAssignment(
       parseAccessTenantScope(scope),
       {
         ...parseRevokeRoleAssignmentInput(input),
         occurredAt: this.now().toISOString(),
       },
+      guard,
     );
   }
 }

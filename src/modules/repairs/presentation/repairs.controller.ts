@@ -17,7 +17,6 @@ import {
   StreamableFile,
   UnauthorizedException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import type { Response } from 'express';
 
 import { ContextualAuthorizationError } from '../../access/index.js';
@@ -43,6 +42,7 @@ import {
   RepairEvidenceContentNotFoundError,
 } from '../application/use-cases/get-repair-evidence-content.use-case.js';
 import {
+  AddRepairOperationalNoteAuthorizationError,
   AddRepairOperationalNoteConflictError,
   AddRepairOperationalNoteInputError,
   AddRepairOperationalNoteUseCase,
@@ -337,8 +337,6 @@ export class RepairsController {
     @Body() request: unknown,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const responseCorrelationId = randomUUID();
-    response.setHeader('X-Correlation-ID', responseCorrelationId);
     try {
       const result = await this.operations.addRepairOperationalNote(
         repairProtectedRequestEvidence(headers),
@@ -362,6 +360,9 @@ export class RepairsController {
       }
       if (error instanceof AddRepairOperationalNoteConflictError) {
         throw new ConflictException({ code: 'REPAIR_NOTE_IDEMPOTENCY_CONFLICT' });
+      }
+      if (error instanceof AddRepairOperationalNoteAuthorizationError) {
+        throw new ForbiddenException({ code: 'ACCESS_DENIED' });
       }
       if (error instanceof Error && error.name.includes('Database')) {
         throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });

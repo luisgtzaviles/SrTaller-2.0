@@ -154,13 +154,13 @@ function LoginPage({
   const pinRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const switching = currentSession !== null;
-  const hasUsers = snapshot.users.length > 0;
+  const hasEligibleUsers = snapshot.hasEligibleUsers;
   const pinHasError = error?.field === 'pin';
 
   useEffect(() => {
-    if (hasUsers) pinRef.current?.focus();
+    if (hasEligibleUsers) pinRef.current?.focus();
     else titleRef.current?.focus();
-  }, [hasUsers]);
+  }, [hasEligibleUsers]);
 
   useEffect(() => {
     if (!onCancel) return undefined;
@@ -205,11 +205,11 @@ function LoginPage({
         <section className={styles.contextPanel} aria-label="Contexto de estación">
           <span className={styles.contextIcon}><ShieldCheck aria-hidden="true" size={28} /></span>
           <p className={styles.eyebrow}>Contexto confiable</p>
-          <h1>Sucursal Centro</h1>
+          <h1>Sucursal vinculada</h1>
           <p>Tu estación está reconocida y lista para operar.</p>
           <dl>
-            <div><dt>Estación</dt><dd>Estación local</dd></div>
-            <div><dt>Sucursal</dt><dd>Sucursal Centro</dd></div>
+            <div><dt>Estación</dt><dd>Reconocida</dd></div>
+            <div><dt>Sucursal</dt><dd>Contexto confirmado</dd></div>
             <div><dt>Entorno</dt><dd>{__SRT_DEPLOY_ENV__ === 'local' ? 'Local' : 'Preview'}</dd></div>
           </dl>
         </section>
@@ -217,7 +217,7 @@ function LoginPage({
         <section className={styles.loginPanel} aria-labelledby="session-title">
           <div className={styles.loginIcon}><KeyRound aria-hidden="true" size={24} /></div>
           <p className={styles.eyebrow}>{switching ? 'Cambio de usuario' : 'Sesión operativa'}</p>
-          <h2 ref={titleRef} id="session-title" tabIndex={hasUsers ? undefined : -1}>
+          <h2 ref={titleRef} id="session-title" tabIndex={hasEligibleUsers ? undefined : -1}>
             Ingresa tu PIN
           </h2>
           <p className={styles.loginDescription}>
@@ -226,7 +226,7 @@ function LoginPage({
               : 'Tu PIN identifica tu sesión para esta sucursal.'}
           </p>
 
-          {!hasUsers ? (
+          {!hasEligibleUsers ? (
             <Alert tone="danger" title="Sin usuarios elegibles">
               No hay una identidad habilitada para operar en esta estación.
             </Alert>
@@ -249,7 +249,7 @@ function LoginPage({
                   minLength={4}
                   maxLength={4}
                   required
-                  disabled={submitting || busy || !hasUsers}
+                  disabled={submitting || busy || !hasEligibleUsers}
                   aria-describedby={`operational-pin-hint${pinHasError ? ' session-error' : ''}`}
                   aria-invalid={pinHasError || undefined}
                   onChange={(event) => {
@@ -266,19 +266,19 @@ function LoginPage({
                 <button
                   key={digit}
                   type="button"
-                  disabled={submitting || busy || !hasUsers}
+                  disabled={submitting || busy || !hasEligibleUsers}
                   onClick={() => {
                     setPin((current) => `${current}${digit}`.slice(0, 4));
                     if (pinHasError) setError(null);
                   }}
                 >{digit}</button>
               ))}
-              <button type="button" disabled={submitting || busy || !hasUsers} aria-label="Borrar último dígito" onClick={() => setPin((current) => current.slice(0, -1))}>←</button>
-              <button type="button" disabled={submitting || busy || !hasUsers} onClick={() => {
+              <button type="button" disabled={submitting || busy || !hasEligibleUsers} aria-label="Borrar último dígito" onClick={() => setPin((current) => current.slice(0, -1))}>←</button>
+              <button type="button" disabled={submitting || busy || !hasEligibleUsers} onClick={() => {
                 setPin((current) => `${current}0`.slice(0, 4));
                 if (pinHasError) setError(null);
               }}>0</button>
-              <button type="submit" disabled={submitting || busy || !hasUsers} aria-label="Continuar con el PIN">✓</button>
+              <button type="submit" disabled={submitting || busy || !hasEligibleUsers || pin.length !== 4} aria-label="Continuar con el PIN">✓</button>
             </div>
 
             <div id="session-error" className={styles.formMessage} role="alert" aria-live="assertive">
@@ -289,7 +289,7 @@ function LoginPage({
               {onCancel ? (
                 <Button disabled={submitting || busy} onClick={() => void onCancel()}>Cancelar</Button>
               ) : null}
-              <Button type="submit" tone="primary" disabled={submitting || busy || !hasUsers}>
+              <Button type="submit" tone="primary" disabled={submitting || busy || !hasEligibleUsers || pin.length !== 4}>
                 {submitting || busy ? 'Procesando…' : 'Continuar'}
               </Button>
             </div>

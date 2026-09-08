@@ -1,4 +1,4 @@
-import { Check, Moon, RotateCcw, Sparkles, UserCircle } from 'lucide-react';
+import { Check, Moon, RotateCcw, ShieldCheck, Sparkles, UserCircle, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { BRAND_DEFAULT, normalizeHex } from '../foundation/accent.mjs';
@@ -7,6 +7,8 @@ import { Button, Field, Input } from '../components/ui/controls.js';
 import { ButtonLink } from '../components/ui/controls.js';
 import { PageHeader } from '../components/ui/navigation.js';
 import { classNames } from '../components/ui/class-names.js';
+import { hasOperationalCapability } from '../session/session-capabilities.mjs';
+import type { OperationalCapability } from '../session/session-api.js';
 import styles from './settings-page.module.css';
 
 const BRAND_PRESETS = Object.freeze([
@@ -19,7 +21,9 @@ const BRAND_PRESETS = Object.freeze([
   { name: 'Rojo', hex: '#DC2626' },
 ] as const);
 
-export function SettingsPage(): React.JSX.Element {
+export function SettingsPage({ capabilities }: Readonly<{
+  capabilities: readonly OperationalCapability[];
+}>): React.JSX.Element {
   const { brand, resolvedTheme, syntheticAccent, setSyntheticAccent } = useTheme();
   const defaultInput = BRAND_DEFAULT;
   const sourceInput = syntheticAccent ?? defaultInput;
@@ -37,6 +41,10 @@ export function SettingsPage(): React.JSX.Element {
     [sourceInput],
   );
   const brandWasAdapted = Boolean(syntheticAccent && brand.fallback);
+  const canReadUsers = hasOperationalCapability(capabilities, 'users.read');
+  const canReadRoles = hasOperationalCapability(capabilities, 'access_matrix.read');
+  const canManageUsers = hasOperationalCapability(capabilities, 'users.manage');
+  const canManageRoles = hasOperationalCapability(capabilities, 'access_matrix.manage');
 
   const applyInput = (value: string): void => {
     const normalized = normalizeHex(value);
@@ -61,12 +69,28 @@ export function SettingsPage(): React.JSX.Element {
         <header className={styles.sectionHeader}>
           <span className={styles.sectionEyebrow}>Administración local</span>
           <h2 id="administration-title">Equipo y permisos</h2>
-          <p>Administra usuarios operativos y consulta roles/capabilities locales.</p>
+          <p>Consulta las identidades operativas y los permisos disponibles para el equipo.</p>
         </header>
-        <div className={styles.colorControls}>
-          <ButtonLink to="/configuracion/usuarios" tone="primary">Abrir usuarios</ButtonLink>
-          <ButtonLink to="/configuracion/roles" tone="secondary">Abrir roles</ButtonLink>
-        </div>
+        {canReadUsers || canReadRoles ? (
+          <div className={styles.administrationGrid}>
+            {canReadUsers ? (
+              <article className={styles.administrationCard}>
+                <span className={styles.cardIcon} aria-hidden="true"><UsersRound size={20} /></span>
+                <div><h3>Usuarios</h3><p>Identidades operativas, roles, estado de acceso y PIN.</p></div>
+                <ButtonLink to="/configuracion/usuarios" tone="primary">{canManageUsers ? 'Administrar usuarios' : 'Consultar usuarios'}</ButtonLink>
+              </article>
+            ) : null}
+            {canReadRoles ? (
+              <article className={styles.administrationCard}>
+                <span className={styles.cardIcon} aria-hidden="true"><ShieldCheck size={20} /></span>
+                <div><h3>Roles y permisos</h3><p>Perfiles reutilizables que determinan qué puede hacer cada persona.</p></div>
+                <ButtonLink to="/configuracion/roles" tone="secondary">{canManageRoles ? 'Administrar roles' : 'Consultar roles'}</ButtonLink>
+              </article>
+            ) : null}
+          </div>
+        ) : (
+          <p className={styles.restrictedCopy}>Tu sesión no tiene acceso a la administración del equipo.</p>
+        )}
       </section>
 
       <section className={styles.appearanceSection} aria-labelledby="appearance-title">

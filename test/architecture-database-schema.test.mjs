@@ -19,6 +19,10 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     repair_intakes: { owner: 'repairs', kind: 'table' },
     repair_timeline_entries: { owner: 'repairs', kind: 'table' },
     repair_business_audit_events: { owner: 'repairs', kind: 'table' },
+    repair_operational_note_request_guards: {
+      owner: 'repairs',
+      kind: 'table',
+    },
     repair_attachments: { owner: 'repairs', kind: 'table' },
     repair_technicians: { owner: 'repairs', kind: 'table' },
     repair_technician_branches: { owner: 'repairs', kind: 'table' },
@@ -35,8 +39,13 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     access_role_capabilities: { owner: 'access', kind: 'table' },
     access_role_assignments: { owner: 'access', kind: 'table' },
     access_role_assignment_commands: { owner: 'access', kind: 'table' },
+    access_role_commands: { owner: 'access', kind: 'table' },
     access_pin_credentials: { owner: 'access', kind: 'table' },
     access_pin_credential_commands: { owner: 'access', kind: 'table' },
+    access_pin_eligibility_tenant_guards: {
+      owner: 'access',
+      kind: 'table',
+    },
     access_pin_attempt_station_guards: { owner: 'access', kind: 'table' },
     access_pin_attempt_limits: { owner: 'access', kind: 'table' },
     access_operational_session_station_guards: {
@@ -105,6 +114,10 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260907111000_users_add_admission_revision.ts',
       '20260907120000_access_create_operational_sessions.ts',
       '20260907220000_repairs_create_business_audit_events.ts',
+      '20260907230000_access_add_local_administration_capabilities.ts',
+      '20260908000000_access_harden_pin_only_lookup.ts',
+      '20260908001000_repairs_create_operational_note_request_guards.ts',
+      '20260908002000_access_add_role_editing_commands.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

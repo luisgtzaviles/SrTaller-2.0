@@ -2,6 +2,7 @@ import type { TenantId } from '../../../tenancy/index.js';
 import type { CapabilityCode } from '../../domain/capability.js';
 import type {
   RoleDisplayName,
+  RoleDescription,
   RoleId,
   RoleKey,
   RoleStatus,
@@ -43,6 +44,7 @@ export type AccessRoleRecord = Readonly<{
   roleId: RoleId;
   roleKey: RoleKey;
   displayName: RoleDisplayName;
+  description: RoleDescription | null;
   status: RoleStatus;
   version: number;
   capabilityCodes: readonly CapabilityCode[];
@@ -83,7 +85,9 @@ export type CreateAccessRoleInput = Readonly<{
   roleId: RoleId;
   roleKey: RoleKey;
   displayName: RoleDisplayName;
+  description: RoleDescription | null;
   capabilityCodes: readonly CapabilityCode[];
+  clientRequestId: string;
   occurredAt: string;
 }>;
 
@@ -91,6 +95,16 @@ export type ReplaceAccessRoleCapabilitiesInput = Readonly<{
   roleId: RoleId;
   expectedVersion: number;
   capabilityCodes: readonly CapabilityCode[];
+  clientRequestId: string;
+  occurredAt: string;
+}>;
+
+export type UpdateAccessRoleInput = Readonly<{
+  roleId: RoleId;
+  displayName: RoleDisplayName;
+  description: RoleDescription | null;
+  expectedVersion: number;
+  clientRequestId: string;
   occurredAt: string;
 }>;
 
@@ -105,6 +119,7 @@ export type AccessPersistenceErrorCode =
   | 'ACCESS_ASSIGNMENT_CONFLICT'
   | 'ACCESS_ASSIGNMENT_NOT_FOUND'
   | 'ACCESS_ASSIGNMENT_REVOKED'
+  | 'ACCESS_AUTHORIZATION_CHANGED'
   | 'ACCESS_IDEMPOTENCY_CONFLICT'
   | 'ACCESS_INPUT_INVALID'
   | 'ACCESS_PERSISTENCE_FAILED'
@@ -123,6 +138,10 @@ export class AccessPersistenceError extends Error {
   }
 }
 
+export interface AccessMutationCommitGuard {
+  confirmCurrent(transactionContext: object): Promise<boolean>;
+}
+
 export interface AccessRepositoryPort {
   listMatrix(scope: AccessTenantScope): Promise<AccessMatrixRecord>;
   listApplicableUserIds(
@@ -134,17 +153,26 @@ export interface AccessRepositoryPort {
   createRole(
     scope: AccessTenantScope,
     input: CreateAccessRoleInput,
+    guard?: AccessMutationCommitGuard,
   ): Promise<AccessRoleRecord>;
   replaceRoleCapabilities(
     scope: AccessTenantScope,
     input: ReplaceAccessRoleCapabilitiesInput,
+    guard?: AccessMutationCommitGuard,
+  ): Promise<AccessRoleRecord>;
+  updateRole(
+    scope: AccessTenantScope,
+    input: UpdateAccessRoleInput,
+    guard?: AccessMutationCommitGuard,
   ): Promise<AccessRoleRecord>;
   assignRole(
     scope: AccessTenantScope,
     input: AssignRoleInput,
+    guard?: AccessMutationCommitGuard,
   ): Promise<AccessRoleAssignmentRecord>;
   revokeRoleAssignment(
     scope: AccessTenantScope,
     input: RevokeRoleAssignmentInput,
+    guard?: AccessMutationCommitGuard,
   ): Promise<AccessRoleAssignmentRecord>;
 }

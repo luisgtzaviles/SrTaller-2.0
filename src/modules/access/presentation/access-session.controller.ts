@@ -25,7 +25,7 @@ import { PinInputError } from '../application/pin-input.js';
 import { SessionTokenInputError } from '../application/ports/session-token.port.js';
 import { PinAuthenticationError } from '../application/use-cases/authenticate-pin.use-case.js';
 import type { AuthenticatePinUseCase } from '../application/use-cases/authenticate-pin.use-case.js';
-import type { AuthenticateLocalPinOnlyUseCase } from '../application/use-cases/authenticate-local-pin-only.use-case.js';
+import type { AuthenticatePinOnlyUseCase } from '../application/use-cases/authenticate-pin-only.use-case.js';
 import { OperationalSessionError } from '../application/use-cases/operational-session.use-cases.js';
 import type {
   CreateOperationalSessionUseCase,
@@ -37,6 +37,7 @@ import type { ResolveEffectiveCapabilitiesUseCase } from '../application/use-cas
 import type { ListAccessMatrixUseCase } from '../application/use-cases/list-access-matrix.use-case.js';
 import type { CreateAccessRoleUseCase } from '../application/use-cases/create-access-role.use-case.js';
 import type { ReplaceAccessRoleCapabilitiesUseCase } from '../application/use-cases/replace-access-role-capabilities.use-case.js';
+import type { UpdateAccessRoleUseCase } from '../application/use-cases/update-access-role.use-case.js';
 import type { AssignRoleUseCase } from '../application/use-cases/assign-role.use-case.js';
 import type { RevokeRoleAssignmentUseCase } from '../application/use-cases/revoke-role-assignment.use-case.js';
 import type { ProvisionPinCredentialUseCase } from '../application/use-cases/provision-pin-credential.use-case.js';
@@ -62,7 +63,7 @@ export const ACCESS_SESSION_RUNTIME = Symbol('srtaller.access.session-runtime');
 export interface AccessSessionRuntime {
   readonly trustedStations: TrustedStationContextResolver;
   readonly authenticatePin: AuthenticatePinUseCase;
-  readonly authenticateLocalPinOnly: AuthenticateLocalPinOnlyUseCase | null;
+  readonly authenticatePinOnly: AuthenticatePinOnlyUseCase;
   readonly createSession: CreateOperationalSessionUseCase;
   readonly resolveSession: ResolveOperationalSessionUseCase;
   readonly resolveCapabilities: ResolveEffectiveCapabilitiesUseCase;
@@ -71,6 +72,7 @@ export interface AccessSessionRuntime {
   readonly listAccessMatrix: ListAccessMatrixUseCase;
   readonly createAccessRole: CreateAccessRoleUseCase;
   readonly replaceAccessRoleCapabilities: ReplaceAccessRoleCapabilitiesUseCase;
+  readonly updateAccessRole: UpdateAccessRoleUseCase;
   readonly assignRole: AssignRoleUseCase;
   readonly revokeRoleAssignment: RevokeRoleAssignmentUseCase;
   readonly provisionPin: ProvisionPinCredentialUseCase;
@@ -115,32 +117,6 @@ function sameOrigin(headers: HeadersValue): boolean {
 }
 
 function parseCreateRequest(value: unknown): Readonly<{
-  pinInput: Readonly<{ userId: unknown; pin: unknown }>;
-  expectedSessionId: string | null;
-}> {
-  if (
-    typeof value !== 'object' ||
-    value === null ||
-    Array.isArray(value) ||
-    Object.keys(value).length !== 3 ||
-    Object.keys(value).some((key) => !['expectedSessionId', 'pin', 'userId'].includes(key))
-  ) throw new AccessSessionRequestError();
-  const input = value as Readonly<Record<string, unknown>>;
-  let expectedSessionId: string | null;
-  try {
-    expectedSessionId = input.expectedSessionId === null
-      ? null
-      : assertSessionId(input.expectedSessionId as string);
-  } catch {
-    throw new AccessSessionRequestError();
-  }
-  return Object.freeze({
-    pinInput: Object.freeze({ userId: input.userId, pin: input.pin }),
-    expectedSessionId,
-  });
-}
-
-function parseLocalPinOnlyCreateRequest(value: unknown): Readonly<{
   pin: unknown;
   expectedSessionId: string | null;
 }> {
@@ -230,7 +206,7 @@ export class AccessSessionController {
   ) {
     return {
       station: { stationId: context.stationId, branchId: context.branchId },
-      users,
+      hasEligibleUsers: users.length > 0,
       capabilities: Object.freeze([]),
       csrfToken: this.loginChallenge(headers, response),
       session: null,
@@ -273,7 +249,7 @@ export class AccessSessionController {
       });
       return {
         station: { stationId: context.stationId, branchId: context.branchId },
-        users,
+        hasEligibleUsers: users.length > 0,
         capabilities,
         csrfToken: cookies.csrf,
         session,
@@ -332,7 +308,9 @@ export class AccessSessionController {
         }
       }
       const users = await this.runtime.listLoginUsers.execute(context);
-      const proof = await this.runtime.authenticatePin.execute(context, request.pinInput);
+      const proof = await this.runtime.authenticatePinOnly.execute(context, {
+        pin: request.pin,
+      });
       // The capability snapshot is advisory UI data. Resolve it before the
       // authoritative Session replacement so a projection failure cannot
       // strand the Station with a Session whose credentials were never
@@ -355,86 +333,7 @@ export class AccessSessionController {
       ));
       return {
         station: { stationId: context.stationId, branchId: context.branchId },
-        users,
-        capabilities,
-        csrfToken: created.tokens.csrf,
-        session: sessionResponse(created.session),
-        revalidateAfterMs: revalidateAfterMs(created.session),
-      };
-    } catch (error: unknown) {
-      if (isAuthenticationDenial(error)) {
-        throw new UnauthorizedException({ code: 'ACCESS_SESSION_DENIED' });
-      }
-      throw error;
-    }
-  }
-
-  /** Development-local daily-login experiment; canonical PIN login remains POST /. */
-  @Post('local-pin')
-  async createFromLocalPinOnly(
-    @Body() body: unknown,
-    @Headers() headers: HeadersValue,
-    @Res({ passthrough: true }) response: Response,
-  ) {
-    response.setHeader('Cache-Control', 'no-store');
-    if (
-      !this.runtime.authenticateLocalPinOnly ||
-      !this.transportPolicy.isExplicitLocalRequest({ host: scalar(headers, 'host') }) ||
-      !sameOrigin(headers) ||
-      !/^application\/json(?:\s*;|$)/iu.test(scalar(headers, 'content-type') ?? '')
-    ) {
-      throw new ForbiddenException({ code: 'ACCESS_SESSION_DENIED' });
-    }
-    try {
-      const request = parseLocalPinOnlyCreateRequest(body);
-      const csrfHeader = scalar(headers, operationalSessionCsrfHeaderName);
-      let csrfCookie: string | null;
-      let bearerCookie: string | null = null;
-      if (request.expectedSessionId === null) {
-        csrfCookie = readOperationalSessionLoginCsrfCookie(scalar(headers, 'cookie'));
-      } else {
-        const cookies = readOperationalSessionCookies(scalar(headers, 'cookie'));
-        bearerCookie = cookies.bearer;
-        csrfCookie = bearerCookie ? cookies.csrf : null;
-      }
-      if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
-        throw new AccessSessionRequestError();
-      }
-      this.runtime.tokens.verifyCsrf(csrfCookie);
-      const context = await this.runtime.trustedStations.resolve(scalar(headers, 'cookie'));
-      if (request.expectedSessionId !== null) {
-        if (!bearerCookie) throw new AccessSessionRequestError();
-        const active = await this.runtime.resolveSession.execute(context, {
-          bearer: bearerCookie,
-          csrfCookie,
-          csrfHeader,
-          requireCsrf: true,
-          touch: false,
-        });
-        if (active.sessionId !== request.expectedSessionId) {
-          throw new AccessSessionRequestError();
-        }
-      }
-      const proof = await this.runtime.authenticateLocalPinOnly.execute(context, { pin: request.pin });
-      const capabilities = await this.runtime.resolveCapabilities.execute({
-        tenantId: context.tenantId,
-        branchId: context.branchId,
-        userId: proof.userId,
-      });
-      const created = await this.runtime.createSession.execute(
-        context,
-        proof,
-        request.expectedSessionId,
-      );
-      const users = await this.runtime.listLoginUsers.execute(context);
-      response.setHeader('Set-Cookie', serializeOperationalSessionCookies(
-        created.tokens.bearer,
-        created.tokens.csrf,
-        this.secureCookie(headers),
-      ));
-      return {
-        station: { stationId: context.stationId, branchId: context.branchId },
-        users,
+        hasEligibleUsers: users.length > 0,
         capabilities,
         csrfToken: created.tokens.csrf,
         session: sessionResponse(created.session),

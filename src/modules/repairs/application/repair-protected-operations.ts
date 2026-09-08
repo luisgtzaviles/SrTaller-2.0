@@ -64,6 +64,7 @@ function repairOperationalNoteContext(
     actorUserId: context.userId,
     actorDisplayName: context.userDisplayName,
     capability: context.capability,
+    commitGuard: context.commitGuard,
   });
 }
 

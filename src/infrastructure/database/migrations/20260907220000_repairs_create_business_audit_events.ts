@@ -96,10 +96,4 @@ export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
     .dropIndex('repair_business_audit_events_scope_time_idx')
     .execute();
   await database.schema.dropTable('repair_business_audit_events').execute();
-  await database.schema
-    .alterTable('repair_timeline_entries')
-    .alterColumn('actor_display_name', (column) =>
-      column.setDataType('varchar(120)'),
-    )
-    .execute();
 }

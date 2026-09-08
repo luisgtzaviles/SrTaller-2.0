@@ -41,7 +41,7 @@ function sourceSection(source, startMarker, endMarker) {
 
 test('session HTTP client uses the single cookie-backed, CSRF-protected contract', () => {
   assert.match(apiSource, /const SESSION_PATH = '\/api\/access\/session';/u);
-  assert.match(apiSource, /const LOCAL_PIN_SESSION_PATH = '\/api\/access\/session\/local-pin';/u);
+  assert.doesNotMatch(apiSource, /\/api\/access\/session\/local-pin/u);
   assert.match(apiSource, /const LOCAL_STATION_BOOTSTRAP_PATH = '\/api\/stations\/local-bootstrap';/u);
   assert.equal(apiSource.match(/credentials: 'include'/gu)?.length, 4);
   assert.equal(apiSource.match(/cache: 'no-store'/gu)?.length, 4);
@@ -136,9 +136,9 @@ test('session snapshots fail closed before reaching the shell', () => {
   assert.match(apiSource, /const CSRF_PATTERN = \/\^\[A-Za-z0-9_-\]\{43\}\$\/u/u);
   assert.match(apiSource, /session\.stationId !== station\.stationId/u);
   assert.match(apiSource, /session\.branchId !== station\.branchId/u);
-  assert.match(apiSource, /user\.displayName !== session\.displayName/u);
+  assert.match(apiSource, /typeof hasEligibleUsers !== 'boolean'/u);
   assert.match(apiSource, /if \(!isRecord\(value\) \|\| value\.status !== 'active'\)/u);
-  assert.match(apiSource, /const session = parseActiveSession\(value\.session, station, users\)/u);
+  assert.match(apiSource, /const session = parseActiveSession\(value\.session, station\)/u);
   assert.match(apiSource, /if \(session === null\) \{[\s\S]*?revalidateAfterMs !== null/u);
   assert.match(apiSource, /typeof revalidateAfterMs !== 'number'/u);
   assert.match(apiSource, /!Number\.isSafeInteger\(revalidateAfterMs\)/u);
@@ -157,12 +157,12 @@ test('provider bootstraps only a missing local Station and treats session null a
   assert.match(gateSource, /if \(!snapshot\.session \|\| switching\)/u);
   assert.match(gateSource, /function LoginPage/u);
   assert.doesNotMatch(gateSource, /localStorage|sessionStorage/iu);
-  assert.match(gateSource, /Sucursal Centro/u);
-  assert.match(gateSource, /Estación local/u);
+  assert.match(gateSource, /Sucursal vinculada/u);
+  assert.match(gateSource, /Contexto confirmado/u);
   assert.doesNotMatch(apiSource, /JSON\.stringify\([^\n]*(?:stationId|branchId|tenantId)/u);
 });
 
-test('login page uses the local four-digit PIN-only experiment without exposing user selection', () => {
+test('login page uses the four-digit PIN-only flow without exposing a user directory', () => {
   assert.match(gateSource, /const PIN_PATTERN = \/\^\\d\{4\}\$\/u/u);
   assert.match(gateSource, /inputMode="numeric"/u);
   assert.match(gateSource, /autoComplete="off"/u);

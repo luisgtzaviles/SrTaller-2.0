@@ -15,7 +15,8 @@ export type ProductRole = Readonly<{
   roleId: string;
   roleKey: string;
   displayName: string;
-  status: 'active' | 'inactive' | 'revoked';
+  description: string | null;
+  status: 'active' | 'disabled' | 'archived';
   version: number;
   capabilityCodes: readonly string[];
 }>;
@@ -80,7 +81,13 @@ export function listProductAccessMatrix(signal?: AbortSignal): Promise<ProductAc
 }
 
 export function createProductRole(
-  input: Readonly<{ roleKey: string; displayName: string; capabilityCodes: readonly string[] }>,
+  input: Readonly<{
+    roleKey: string;
+    displayName: string;
+    description: string | null;
+    capabilityCodes: readonly string[];
+    clientRequestId: string;
+  }>,
   csrfToken: string,
 ): Promise<ProductRole> {
   return request<ProductRole>(ROLES_PATH, {
@@ -90,9 +97,26 @@ export function createProductRole(
   });
 }
 
+export function updateProductRole(
+  roleId: string,
+  input: Readonly<{
+    displayName: string;
+    description: string | null;
+    expectedVersion: number;
+    clientRequestId: string;
+  }>,
+  csrfToken: string,
+): Promise<ProductRole> {
+  return request<ProductRole>(`${ROLES_PATH}/${encodeURIComponent(roleId)}`, {
+    method: 'POST',
+    headers: { 'X-SR-CSRF-Token': csrfToken },
+    body: JSON.stringify(input),
+  });
+}
+
 export function replaceProductRoleCapabilities(
   roleId: string,
-  input: Readonly<{ expectedVersion: number; capabilityCodes: readonly string[] }>,
+  input: Readonly<{ expectedVersion: number; capabilityCodes: readonly string[]; clientRequestId: string }>,
   csrfToken: string,
 ): Promise<ProductRole> {
   return request<ProductRole>(`${ROLES_PATH}/${encodeURIComponent(roleId)}/capabilities`, {
@@ -105,34 +129,36 @@ export function replaceProductRoleCapabilities(
 export function assignProductRole(
   userId: string,
   roleId: string,
+  clientRequestId: string,
   csrfToken: string,
 ): Promise<void> {
   return request<void>(`${USERS_PATH}/${encodeURIComponent(userId)}/roles`, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
-    body: JSON.stringify({ roleId }),
+    body: JSON.stringify({ roleId, clientRequestId }),
   });
 }
 
-export function revokeProductRole(userId: string, assignmentId: string, expectedVersion: number, csrfToken: string): Promise<void> {
-  return request<void>(`${USERS_PATH}/${encodeURIComponent(userId)}/roles/${encodeURIComponent(assignmentId)}/revoke`, { method: 'POST', headers: { 'X-SR-CSRF-Token': csrfToken }, body: JSON.stringify({ expectedVersion }) });
+export function revokeProductRole(userId: string, assignmentId: string, expectedVersion: number, clientRequestId: string, csrfToken: string): Promise<void> {
+  return request<void>(`${USERS_PATH}/${encodeURIComponent(userId)}/roles/${encodeURIComponent(assignmentId)}/revoke`, { method: 'POST', headers: { 'X-SR-CSRF-Token': csrfToken }, body: JSON.stringify({ expectedVersion, clientRequestId }) });
 }
 
 export function provisionProductLocalPin(
   userId: string,
   pin: string,
+  clientRequestId: string,
   csrfToken: string,
 ): Promise<void> {
   return request<void>(`${USERS_PATH}/${encodeURIComponent(userId)}/pin`, {
     method: 'POST',
     headers: { 'X-SR-CSRF-Token': csrfToken },
-    body: JSON.stringify({ pin }),
+    body: JSON.stringify({ pin, clientRequestId }),
   });
 }
 
 export function transitionProductUser(
   userId: string,
-  input: Readonly<{ status: 'active' | 'inactive'; expectedVersion: number }>,
+  input: Readonly<{ status: 'active' | 'inactive'; expectedVersion: number; clientRequestId: string }>,
   csrfToken: string,
 ): Promise<ProductUser> {
   return request<ProductUser>(`${USERS_PATH}/${encodeURIComponent(userId)}/status`, {

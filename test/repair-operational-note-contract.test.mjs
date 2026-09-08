@@ -6,6 +6,8 @@ const useCaseSource = await readFile('src/modules/repairs/application/use-cases/
 const portSource = await readFile('src/modules/repairs/application/ports/repair-repository.port.ts', 'utf8');
 const repositorySource = await readFile('src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts', 'utf8');
 const controllerSource = await readFile('src/modules/repairs/presentation/repairs.controller.ts', 'utf8');
+const correlationFilterSource = await readFile('src/infrastructure/runtime/http-correlation-exception.filter.ts', 'utf8');
+const appModuleSource = await readFile('src/app.module.ts', 'utf8');
 const migrationSource = await readFile('src/infrastructure/database/migrations/20260820090000_repairs_add_operational_note_idempotency.ts', 'utf8');
 const timelineMigrationSource = await readFile('src/infrastructure/database/migrations/20260819140000_repairs_create_timeline_entries.ts', 'utf8');
 const apiSource = await readFile('apps/dev-preview-web/src/api.ts', 'utf8');
@@ -30,11 +32,8 @@ test('operational note input is strict, trimmed, bounded, and server-owned', () 
   assert.match(useCaseSource, /const context = trustedContext\(this\.resolveContext\(\)\)/u);
   assert.match(useCaseSource, /const auditEventId = this\.createId\(\)/u);
   assert.match(useCaseSource, /const correlationId = this\.createId\(\)/u);
-  assert.match(useCaseSource, /stationId: context\.stationId/u);
-  assert.match(useCaseSource, /sessionId: context\.sessionId/u);
-  assert.match(useCaseSource, /actorUserId: context\.actorUserId/u);
-  assert.match(useCaseSource, /actorDisplayName: context\.actorDisplayName/u);
-  assert.match(useCaseSource, /capability: context\.capability/u);
+  assert.match(useCaseSource, /this\.repository\.addOperationalNote\(context,/u);
+  assert.match(useCaseSource, /value\.commitGuard\.confirmCurrent/u);
   assert.match(useCaseSource, /action: 'repair\.operational_note\.added'/u);
   assert.match(useCaseSource, /resourceType: 'repair'/u);
   assert.match(useCaseSource, /result: 'succeeded'/u);
@@ -47,7 +46,7 @@ test('operational note input is strict, trimmed, bounded, and server-owned', () 
 });
 
 test('repository atomically persists one scoped note and one append-only audit event', () => {
-  assert.match(portSource, /addOperationalNote\([\s\S]*?scope: RepairPersistenceScope,[\s\S]*?note: AddRepairOperationalNoteRecord/u);
+  assert.match(portSource, /addOperationalNote\([\s\S]*?scope: RepairOperationalNoteContext,[\s\S]*?note: AddRepairOperationalNoteRecord/u);
   const transactionHelper = repositorySource.slice(
     repositorySource.indexOf('async #runOperationalNoteTransaction'),
     repositorySource.indexOf('async listWorklist'),
@@ -68,13 +67,15 @@ test('repository atomically persists one scoped note and one append-only audit e
   assert.match(writeMethod, /source: operationalNoteTimelineSource/u);
   assert.match(writeMethod, /audit_id: note\.auditEventId/u);
   assert.match(writeMethod, /correlation_id: note\.correlationId/u);
-  assert.match(writeMethod, /actor_user_id: note\.actorUserId/u);
-  assert.match(writeMethod, /station_id: note\.stationId/u);
-  assert.match(writeMethod, /session_id: note\.sessionId/u);
+  assert.match(writeMethod, /actor_user_id: scope\.actorUserId/u);
+  assert.match(writeMethod, /station_id: scope\.stationId/u);
+  assert.match(writeMethod, /session_id: scope\.sessionId/u);
+  assert.match(writeMethod, /scope\.commitGuard\.confirmCurrent\(transactionContext\)/u);
+  assert.match(writeMethod, /insertInto\('repair_operational_note_request_guards'\)/u);
   assert.match(writeMethod, /existing\.body !== note\.body/u);
   assert.match(writeMethod, /RepairOperationalNoteIdempotencyConflictError/u);
   assert.match(writeMethod, /RepairOperationalNoteAuditIntegrityError/u);
-  assert.doesNotMatch(writeMethod, /updateTable|deleteFrom|onConflict|upsert/iu);
+  assert.doesNotMatch(writeMethod, /updateTable|deleteFrom|upsert/iu);
 });
 
 test('use case derives actor/context and authoritative correlation server-side', async () => {
@@ -87,6 +88,7 @@ test('use case derives actor/context and authoritative correlation server-side',
     actorUserId: 'a3000000-0000-4000-8000-000000000001',
     actorDisplayName: 'Ada Operadora',
     capability: 'repairs.add_note',
+    commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
   });
   const generatedIds = [
     'b0000000-0000-4000-8000-000000000001',
@@ -100,8 +102,8 @@ test('use case derives actor/context and authoritative correlation server-side',
         id: note.entryId,
         occurredAt: note.occurredAt.toISOString(),
         type: 'note',
-        actorId: note.actorUserId,
-        actorDisplayName: note.actorDisplayName,
+        actorId: scope.actorUserId,
+        actorDisplayName: scope.actorDisplayName,
         title: 'Nota',
         body: note.body,
         source: 'repairs.operational_note',
@@ -130,12 +132,7 @@ test('use case derives actor/context and authoritative correlation server-side',
     auditEventId: 'b1000000-0000-4000-8000-000000000001',
     correlationId: 'b2000000-0000-4000-8000-000000000001',
     clientRequestId,
-    stationId: context.stationId,
-    sessionId: context.sessionId,
-    actorUserId: context.actorUserId,
-    actorDisplayName: context.actorDisplayName,
     body: 'Nota atribuida',
-    capability: 'repairs.add_note',
     action: 'repair.operational_note.added',
     resourceType: 'repair',
     result: 'succeeded',
@@ -171,6 +168,7 @@ test('use case maps a conflicting idempotency retry without leaking persistence 
       actorUserId: 'a3000000-0000-4000-8000-000000000001',
       actorDisplayName: 'Ada Operadora',
       capability: 'repairs.add_note',
+      commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
     }),
   );
   await assert.rejects(
@@ -216,15 +214,12 @@ test('HTTP contract accepts only the note payload, returns a minimized 201 body,
     controllerSource,
     /response\.setHeader\('X-Correlation-ID', result\.attribution\.correlationId\)/u,
   );
-  assert.match(controllerSource, /import \{ randomUUID \} from 'node:crypto';/u);
-  const operationalNoteHandler = controllerSource.slice(
-    controllerSource.indexOf('async addOperationalNote'),
-    controllerSource.indexOf("@Get(':repairId/evidence"),
-  );
-  assert.match(
-    operationalNoteHandler,
-    /const responseCorrelationId = randomUUID\(\);[\s\S]*?response\.setHeader\('X-Correlation-ID', responseCorrelationId\);[\s\S]*?try \{/u,
-  );
+  assert.doesNotMatch(controllerSource, /randomUUID|responseCorrelationId/u);
+  assert.match(correlationFilterSource, /const correlationId = randomUUID\(\)/u);
+  assert.match(correlationFilterSource, /response\.setHeader\('X-Correlation-ID', correlationId\)/u);
+  assert.match(correlationFilterSource, /event: 'http_request_failed'/u);
+  assert.doesNotMatch(correlationFilterSource, /request\.(?:body|headers)|payload:|body: exception/iu);
+  assert.match(appModuleSource, /provide: APP_FILTER, useClass: HttpCorrelationExceptionFilter/u);
   assert.doesNotMatch(controllerSource, /@Get\([^)]*(?:audit|business)/iu);
   assert.doesNotMatch(detailPageSource, /Contexto verificado|entry\.attribution|correlationId/iu);
 });

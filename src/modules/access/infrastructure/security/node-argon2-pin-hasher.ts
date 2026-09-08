@@ -149,6 +149,40 @@ function rateLimitPrincipalId(
   }
 }
 
+function pinLookupDigest(pepper: Buffer, tenantId: string, pin: string): Buffer {
+  const message = Buffer.from(parsePin(pin), 'ascii');
+  try {
+    return createHmac('sha256', pepper)
+      .update('srtaller-pin-lookup\0v1\0', 'utf8')
+      .update(tenantId, 'utf8')
+      .update('\0', 'utf8')
+      .update(message)
+      .digest();
+  } finally {
+    message.fill(0);
+  }
+}
+
+function pinRateLimitPrincipalId(
+  pepper: Buffer,
+  tenantId: string,
+): string {
+  const digest = createHmac('sha256', pepper)
+    .update('srtaller-pin-rate-station\0v1\0', 'utf8')
+    .update(tenantId, 'utf8')
+    .digest();
+  try {
+    const bytes = Buffer.from(digest.subarray(0, 16));
+    bytes.writeUInt8((bytes.readUInt8(6) & 0x0f) | 0x40, 6);
+    bytes.writeUInt8((bytes.readUInt8(8) & 0x3f) | 0x80, 8);
+    const hex = bytes.toString('hex');
+    bytes.fill(0);
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  } finally {
+    digest.fill(0);
+  }
+}
+
 function argon2id(
   message: Buffer,
   salt: Buffer,
@@ -213,6 +247,23 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
     return rateLimitPrincipalId(this.#pepper, input.tenantId, input.userId);
   }
 
+  lookupDigest(
+    input: Parameters<PinSecretHasherPort['lookupDigest']>[0],
+  ): Uint8Array {
+    const digest = pinLookupDigest(this.#pepper, input.tenantId, input.pin);
+    try {
+      return Uint8Array.from(digest);
+    } finally {
+      digest.fill(0);
+    }
+  }
+
+  rateLimitPinPrincipalId(
+    input: Parameters<PinSecretHasherPort['rateLimitPinPrincipalId']>[0],
+  ): string {
+    return pinRateLimitPrincipalId(this.#pepper, input.tenantId);
+  }
+
   async #derive(
     pin: string,
     salt: Buffer,
@@ -242,6 +293,7 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
     let verifier: Buffer | undefined;
     let fingerprintSalt: Buffer | undefined;
     let requestFingerprint: Buffer | undefined;
+    let lookupDigest: Buffer | undefined;
     try {
       verifier = await this.#derive(
         input.pin,
@@ -263,6 +315,7 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
         input.userId,
         'provision-fingerprint',
       );
+      lookupDigest = pinLookupDigest(this.#pepper, input.tenantId, input.pin);
       return Object.freeze({
         algorithm: PIN_KDF_PROFILE.algorithm,
         profileVersion: PIN_KDF_PROFILE.profileVersion,
@@ -272,6 +325,7 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
         parallelism: PIN_KDF_PROFILE.parallelism,
         salt: Uint8Array.from(salt),
         verifier: Uint8Array.from(verifier),
+        lookupDigest: Uint8Array.from(lookupDigest),
         requestFingerprint: Uint8Array.from(requestFingerprint),
       });
     } finally {
@@ -279,6 +333,7 @@ export class NodeArgon2PinHasher implements PinSecretHasherPort {
       verifier?.fill(0);
       fingerprintSalt?.fill(0);
       requestFingerprint?.fill(0);
+      lookupDigest?.fill(0);
     }
   }
 

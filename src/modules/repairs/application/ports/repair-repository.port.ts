@@ -147,12 +147,17 @@ export interface RepairOperationalNoteAttributionRecord {
 }
 
 /** Server-derived authority for the approved real-actor Repairs write. */
-export interface RepairOperationalNoteContext extends RepairPersistenceScope {
+export interface RepairOperationalNoteContext {
+  readonly tenantId: string;
+  readonly branchId: string;
   readonly stationId: string;
   readonly sessionId: string;
   readonly actorUserId: string;
   readonly actorDisplayName: string;
   readonly capability: 'repairs.add_note';
+  readonly commitGuard: Readonly<{
+    confirmCurrent(transactionContext: object): Promise<boolean>;
+  }>;
 }
 
 export interface AddRepairOperationalNoteRecord {
@@ -161,12 +166,7 @@ export interface AddRepairOperationalNoteRecord {
   readonly auditEventId: string;
   readonly correlationId: string;
   readonly clientRequestId: string;
-  readonly stationId: string;
-  readonly sessionId: string;
-  readonly actorUserId: string;
-  readonly actorDisplayName: string;
   readonly body: string;
-  readonly capability: 'repairs.add_note';
   readonly action: 'repair.operational_note.added';
   readonly resourceType: 'repair';
   readonly result: 'succeeded';
@@ -177,6 +177,13 @@ export class RepairOperationalNoteIdempotencyConflictError extends Error {
   constructor() {
     super('Operational note idempotency key was reused with different content.');
     this.name = 'RepairOperationalNoteIdempotencyConflictError';
+  }
+}
+
+export class RepairOperationalNoteAuthorizationChangedError extends Error {
+  constructor() {
+    super('Operational note authorization changed before confirmation.');
+    this.name = 'RepairOperationalNoteAuthorizationChangedError';
   }
 }
 
@@ -337,7 +344,7 @@ export interface RepairRepositoryPort {
     repairId: string,
   ): Promise<RepairDetailRecord | null>;
   addOperationalNote(
-    scope: RepairPersistenceScope,
+    scope: RepairOperationalNoteContext,
     note: AddRepairOperationalNoteRecord,
   ): Promise<RepairTimelineItemRecord | null>;
   listEligibleTechnicians(

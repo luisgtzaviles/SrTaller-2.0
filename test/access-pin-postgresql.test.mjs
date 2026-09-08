@@ -44,6 +44,26 @@ const { ProvisionPinCredentialUseCase } = enabled
       '../dist/modules/access/application/use-cases/provision-pin-credential.use-case.js'
     )
   : {};
+const { ReplacePinCredentialUseCase } = enabled
+  ? await import(
+      '../dist/modules/access/application/use-cases/replace-pin-credential.use-case.js'
+    )
+  : {};
+const { AuthenticatePinOnlyUseCase } = enabled
+  ? await import(
+      '../dist/modules/access/application/use-cases/authenticate-pin-only.use-case.js'
+    )
+  : {};
+const { ListApplicableUsersUseCase } = enabled
+  ? await import(
+      '../dist/modules/access/application/use-cases/list-applicable-users.use-case.js'
+    )
+  : {};
+const { createKyselyAccessRepository } = enabled
+  ? await import(
+      '../dist/modules/access/infrastructure/persistence/kysely-access.repository.js'
+    )
+  : {};
 const { PinCredentialPersistenceError } = enabled
   ? await import(
       '../dist/modules/access/application/ports/pin-credential-repository.port.js'
@@ -70,17 +90,20 @@ const migrationRoot = fileURLToPath(
 );
 
 const pinTables = [
+  'access_pin_eligibility_tenant_guards',
   'access_pin_attempt_limits',
   'access_pin_attempt_station_guards',
   'access_pin_credential_commands',
   'access_pin_credentials',
 ];
 const tables = [
+  'repair_operational_note_request_guards',
   'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   ...pinTables,
   'access_role_assignment_commands',
+  'access_role_commands',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
@@ -132,17 +155,21 @@ const requestA = '90000000-0000-4000-8000-000000000025';
 const concurrentRequest = '91000000-0000-4000-8000-000000000025';
 const lockRequest = '92000000-0000-4000-8000-000000000025';
 const requestB = '93000000-0000-4000-8000-000000000025';
+const replacementRequest = '94000000-0000-4000-8000-000000000025';
+const roleId = '95000000-0000-4000-8000-000000000025';
+const assignmentA = '96000000-0000-4000-8000-000000000025';
+const assignmentA2 = '97000000-0000-4000-8000-000000000025';
 const stationCredentialIdA = 'a0000000-0000-4000-8000-000000000025';
 const stationCredentialIdA2 = 'a1000000-0000-4000-8000-000000000025';
 const stationCredentialIdB = 'a2000000-0000-4000-8000-000000000025';
 const stationSecretA = 'A'.repeat(43);
 const stationSecretA2 = 'B'.repeat(43);
 const stationSecretB = 'C'.repeat(43);
-const pinA = '270625';
-const pinB = '270626';
-const concurrentPin = '112233';
-const lockPin = '654321';
-const wrongPin = '000000';
+const pinA = '0625';
+const pinB = '0626';
+const concurrentPin = '2233';
+const lockPin = '4321';
+const wrongPin = '0000';
 const pepper = Buffer.alloc(32, 0x25).toString('base64url');
 const provisionedAt = new Date('2026-09-07T01:00:00.000Z');
 
@@ -214,6 +241,7 @@ function authorization(item) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists access_assert_unambiguous_pin_eligibility() cascade');
   await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
@@ -334,6 +362,7 @@ async function seedAuthorities(admin) {
 
 function pinUseCases(connection, now) {
   const repository = createKyselyPinCredentialRepository(connection);
+  const accessRepository = createKyselyAccessRepository(connection);
   const users = createKyselyAuthenticationUserReader(connection);
   const hasher = new NodeArgon2PinHasher(pepper, {
     maxActive: 2,
@@ -346,6 +375,14 @@ function pinUseCases(connection, now) {
       hasher,
       () => now.value,
     ),
+    authenticatePinOnly: new AuthenticatePinOnlyUseCase(
+      repository,
+      users,
+      new ListApplicableUsersUseCase(accessRepository),
+      hasher,
+      () => now.value,
+    ),
+    accessRepository,
     hasher,
     repository,
   });
@@ -395,7 +432,7 @@ test(
         fresh.status.migrations.length,
         inspection.manifest.migrations.length,
       );
-      assert.equal(fresh.status.migrations.length, 24);
+      assert.equal(fresh.status.migrations.length, 28);
       assert.ok(
         fresh.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -405,6 +442,17 @@ test(
       let latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
+      while (
+        latest?.name !==
+        '20260907220000_repairs_create_business_audit_events'
+      ) {
+        assert.ok(latest);
+        await runner.migrateDown(authorization(latest));
+        status = await runner.getMigrationStatus();
+        latest = [...status.migrations]
+          .reverse()
+          .find(({ state }) => state === 'applied');
+      }
       assert.equal(
         latest?.name,
         '20260907220000_repairs_create_business_audit_events',
@@ -435,7 +483,7 @@ test(
 
       await seedAuthorities(admin);
       const upgraded = await runner.migrateToLatest();
-      assert.equal(upgraded.results.length, 5);
+      assert.equal(upgraded.results.length, 9);
       assert.equal(
         upgraded.results[0]?.name,
         '20260907010000_access_create_pin_credentials',
@@ -566,6 +614,76 @@ test(
         4,
       );
 
+      await admin.query(
+        `insert into access_roles (
+           tenant_id, role_id, role_key, display_name, status, version,
+           created_at, updated_at
+         ) values ($1, $2, 'pin_proof', 'PIN proof', 'active', 0, now(), now())`,
+        [tenantA, roleId],
+      );
+      await admin.query(
+        `insert into access_role_assignments (
+           tenant_id, assignment_id, user_id, role_id, assignment_scope,
+           branch_id, status, version, assigned_at, revoked_at
+         ) values
+           ($1, $2, $3, $4, 'BRANCH_RESTRICTED', $5, 'active', 0, now(), null),
+           ($1, $6, $7, $4, 'BRANCH_RESTRICTED', $8, 'active', 0, now(), null)`,
+        [
+          tenantA,
+          assignmentA,
+          sharedUser,
+          roleId,
+          branchA,
+          assignmentA2,
+          concurrentUser,
+          branchA2,
+        ],
+      );
+      const replacement = new ReplacePinCredentialUseCase(
+        useCases.repository,
+        useCases.hasher,
+        () => provisionedAt,
+      );
+      const replaced = await replacement.execute(
+        { tenantId: tenantA },
+        {
+          userId: concurrentUser,
+          pin: pinA,
+          clientRequestId: replacementRequest,
+        },
+      );
+      assert.equal(replaced.credentialVersion, 1);
+      assert.deepEqual(
+        await replacement.execute(
+          { tenantId: tenantA },
+          {
+            userId: concurrentUser,
+            pin: pinA,
+            clientRequestId: replacementRequest,
+          },
+        ),
+        replaced,
+      );
+      assert.equal(
+        (await useCases.authenticatePinOnly.execute(contextA, { pin: pinA })).userId,
+        sharedUser,
+      );
+      now.value = new Date(now.value.getTime() + 61_000);
+      assert.equal(
+        (await useCases.authenticatePinOnly.execute(contextA2, { pin: pinA })).userId,
+        concurrentUser,
+      );
+      await assert.rejects(
+        admin.query(
+          `update access_role_assignments
+           set branch_id = $3
+           where tenant_id = $1 and assignment_id = $2`,
+          [tenantA, assignmentA2, branchA],
+        ),
+        (error) => error?.code === '23505' &&
+          error.constraint === 'access_pin_branch_eligibility_uq',
+      );
+
       const revokedAt = new Date('2026-09-07T02:00:30.000Z');
       const revokedCredential = await admin.query(
         `update access_pin_credentials
@@ -587,7 +705,7 @@ test(
         {
           rowCount: 1,
           status: 'revoked',
-          credentialVersion: 1,
+          credentialVersion: 2,
           revokedAt: revokedAt.toISOString(),
         },
       );
@@ -627,7 +745,7 @@ test(
         ).rows[0],
         {
           status: 'revoked',
-          credential_version: 1,
+          credential_version: 2,
           consecutive_failures: 0,
           locked_until: null,
           revoked_at: revokedAt,
@@ -1365,6 +1483,17 @@ test(
       latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
+      while (
+        latest?.name !==
+        '20260907220000_repairs_create_business_audit_events'
+      ) {
+        assert.ok(latest);
+        await runner.migrateDown(authorization(latest));
+        status = await runner.getMigrationStatus();
+        latest = [...status.migrations]
+          .reverse()
+          .find(({ state }) => state === 'applied');
+      }
       assert.equal(
         latest?.name,
         '20260907220000_repairs_create_business_audit_events',
@@ -1402,7 +1531,7 @@ test(
       );
 
       const reapplied = await runner.migrateToLatest();
-      assert.equal(reapplied.results.length, 5);
+      assert.equal(reapplied.results.length, 9);
       await assertPinTables(admin, pinTables);
 
       status = await runner.getMigrationStatus();

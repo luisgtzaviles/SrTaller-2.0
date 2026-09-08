@@ -32,10 +32,13 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'repair_operational_note_request_guards',
   'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   'access_role_assignment_commands',
+  'access_role_commands',
+  'access_pin_eligibility_tenant_guards',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
@@ -293,12 +296,7 @@ function note(overrides = {}) {
     auditEventId: '86000000-0000-4000-8000-000000000001',
     correlationId: '87000000-0000-4000-8000-000000000001',
     clientRequestId: '90000000-0000-4000-8000-000000000001',
-    stationId: auditStationId,
-    sessionId: auditSessionId,
-    actorUserId: actorId,
-    actorDisplayName: 'Operador sintético',
     body: 'Nota idempotente',
-    capability: 'repairs.add_note',
     action: 'repair.operational_note.added',
     resourceType: 'repair',
     result: 'succeeded',
@@ -384,7 +382,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 24);
+      assert.equal(applied.status.migrations.length, inspection.manifest.migrations.length);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await seed(admin);
 
@@ -436,6 +434,7 @@ test(
         actorUserId: actorId,
         actorDisplayName: 'Operador sintético',
         capability: 'repairs.add_note',
+        commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
       });
       const noteContextB = Object.freeze({
         ...scopeB,
@@ -444,6 +443,7 @@ test(
         actorUserId: '40000000-0000-4000-8000-000000000002',
         actorDisplayName: 'Operador B',
         capability: 'repairs.add_note',
+        commitGuard: Object.freeze({ async confirmCurrent() { return true; } }),
       });
 
       const allA = await repository.listWorklist(scopeA, listQuery());
@@ -521,7 +521,6 @@ test(
           entryId: '80000000-0000-4000-8000-000000000008',
           auditEventId: '86000000-0000-4000-8000-000000000008',
           correlationId: '87000000-0000-4000-8000-000000000008',
-          sessionId: changedSessionContext.sessionId,
         })),
         RepairOperationalNoteIdempotencyConflictError,
       );
@@ -564,6 +563,37 @@ test(
         { client_request_id: '90000000-0000-4000-8000-000000000002', count: 1 },
         { client_request_id: '90000000-0000-4000-8000-000000000003', count: 1 },
       ]);
+
+      const crossResourceRequestId = '90000000-0000-4000-8000-000000000010';
+      const crossResource = await Promise.allSettled([
+        repository.addOperationalNote(noteContextA, note({
+          entryId: '80000000-0000-4000-8000-000000000010',
+          auditEventId: '86000000-0000-4000-8000-000000000010',
+          correlationId: '87000000-0000-4000-8000-000000000010',
+          clientRequestId: crossResourceRequestId,
+        })),
+        concurrentRepository.addOperationalNote(noteContextA, note({
+          repairId: repairPercent,
+          entryId: '80000000-0000-4000-8000-000000000011',
+          auditEventId: '86000000-0000-4000-8000-000000000011',
+          correlationId: '87000000-0000-4000-8000-000000000011',
+          clientRequestId: crossResourceRequestId,
+        })),
+      ]);
+      assert.equal(crossResource.filter(({ status }) => status === 'fulfilled').length, 1);
+      const rejectedCrossResource = crossResource.find(({ status }) => status === 'rejected');
+      assert.ok(rejectedCrossResource);
+      assert.ok(rejectedCrossResource.reason instanceof RepairOperationalNoteIdempotencyConflictError);
+      const crossResourceCounts = (await admin.query(
+        `select
+           (select count(*)::integer from repair_timeline_entries
+              where tenant_id = $1 and branch_id = $2 and client_request_id = $3) as notes,
+           (select count(*)::integer from repair_business_audit_events
+              where tenant_id = $1 and branch_id = $2 and client_request_id = $3) as audits`,
+        [tenantA, branchA, crossResourceRequestId],
+      )).rows[0];
+      assert.deepEqual(crossResourceCounts, { notes: 1, audits: 1 });
+
       assert.equal(await repository.addOperationalNote(noteContextB, note()), null);
       assert.equal(await repository.addOperationalNote(noteContextA, note({
         repairId: '30000000-0000-4000-8000-000000000099',
@@ -869,7 +899,11 @@ test(
         (error) => error?.code === '23514',
       );
 
-      await repository.addOperationalNote(noteContextA, note({
+      const longActorContext = Object.freeze({
+        ...noteContextA,
+        actorDisplayName: 'A'.repeat(160),
+      });
+      await repository.addOperationalNote(longActorContext, note({
         entryId: '80000000-0000-4000-8000-000000000007',
         auditEventId: '86000000-0000-4000-8000-000000000007',
         correlationId: '87000000-0000-4000-8000-000000000007',

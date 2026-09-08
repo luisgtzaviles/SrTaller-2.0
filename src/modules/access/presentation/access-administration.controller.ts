@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  ConflictException,
   Controller,
   ForbiddenException,
   Get,
   Header,
   Headers,
+  NotFoundException,
   Post,
   Param,
   Body,
@@ -46,9 +48,103 @@ function userResponse(user: Awaited<ReturnType<AccessAdministrationOperations['c
     version: user.version,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-    pinConfigured: false,
+    pinConfigured: user.pinConfigured,
   };
 }
+
+function record(value: unknown): Readonly<Record<string, unknown>> {
+  return value as Readonly<Record<string, unknown>>;
+}
+
+function roleResponse(value: unknown) {
+  const role = record(value);
+  return {
+    tenantId: role.tenantId,
+    roleId: role.roleId,
+    roleKey: role.roleKey,
+    displayName: role.displayName,
+    description: role.description,
+    status: role.status,
+    version: role.version,
+    capabilityCodes: role.capabilityCodes,
+    createdAt: role.createdAt,
+    updatedAt: role.updatedAt,
+  };
+}
+
+function assignmentResponse(value: unknown) {
+  const assignment = record(value);
+  return {
+    tenantId: assignment.tenantId,
+    assignmentId: assignment.assignmentId,
+    userId: assignment.userId,
+    roleId: assignment.roleId,
+    assignmentScope: assignment.assignmentScope,
+    branchId: assignment.branchId,
+    status: assignment.status,
+    version: assignment.version,
+    assignedAt: assignment.assignedAt,
+    revokedAt: assignment.revokedAt,
+  };
+}
+
+function matrixResponse(value: unknown) {
+  const matrix = record(value);
+  return {
+    capabilities: (matrix.capabilities as readonly unknown[]).map((value) => {
+      const capability = record(value);
+      return {
+        capabilityCode: capability.capabilityCode,
+        createdAt: capability.createdAt,
+      };
+    }),
+    roles: (matrix.roles as readonly unknown[]).map(roleResponse),
+    assignments: (matrix.assignments as readonly unknown[]).map(assignmentResponse),
+  };
+}
+
+function errorCode(error: unknown): string | undefined {
+  if (typeof error !== 'object' || error === null || !('code' in error)) {
+    return undefined;
+  }
+  return typeof error.code === 'string' ? error.code : undefined;
+}
+
+const badRequestCodes = new Set([
+  'ACCESS_INPUT_INVALID',
+  'ADMIN_REQUEST_INVALID',
+  'PIN_CREDENTIAL_INPUT_INVALID',
+  'USER_INPUT_INVALID',
+]);
+
+const notFoundCodes = new Set([
+  'ACCESS_ASSIGNMENT_NOT_FOUND',
+  'ACCESS_REFERENCE_NOT_FOUND',
+  'ADMIN_RESOURCE_NOT_FOUND',
+  'PIN_CREDENTIAL_USER_INVALID',
+  'USER_NOT_FOUND',
+  'USER_TENANT_NOT_FOUND',
+]);
+
+const conflictCodes = new Set([
+  'ACCESS_ASSIGNMENT_CONFLICT',
+  'ACCESS_ASSIGNMENT_REVOKED',
+  'ACCESS_IDEMPOTENCY_CONFLICT',
+  'ACCESS_STALE_WRITE',
+  'FIRST_USER_ALREADY_PROVISIONED',
+  'PIN_CREDENTIAL_EXISTS',
+  'PIN_CREDENTIAL_IDEMPOTENCY_CONFLICT',
+  'USER_IDEMPOTENCY_CONFLICT',
+  'USER_LIFECYCLE_CONFLICT',
+  'USER_PERSISTENCE_CONFLICT',
+  'USER_STALE_WRITE',
+]);
+
+const authorizationChangedCodes = new Set([
+  'ACCESS_AUTHORIZATION_CHANGED',
+  'PIN_CREDENTIAL_AUTHORIZATION_CHANGED',
+  'USER_AUTHORIZATION_CHANGED',
+]);
 
 function translateError(error: unknown): never {
   if (error instanceof ContextualAuthorizationError) {
@@ -57,10 +153,29 @@ function translateError(error: unknown): never {
     }
     throw new ForbiddenException({ code: 'ACCESS_DENIED' });
   }
-  throw new BadRequestException({ code: 'USER_OPERATION_REJECTED' });
+  const code = errorCode(error);
+  const name = error instanceof Error ? error.name : undefined;
+  if (code !== undefined && authorizationChangedCodes.has(code)) {
+    throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+  }
+  if (
+    (code !== undefined && badRequestCodes.has(code)) ||
+    name === 'AccessInputError' ||
+    name === 'PinInputError' ||
+    name === 'UserInputError'
+  ) {
+    throw new BadRequestException({ code: 'ADMIN_REQUEST_INVALID' });
+  }
+  if (code !== undefined && notFoundCodes.has(code)) {
+    throw new NotFoundException({ code: 'ADMIN_RESOURCE_NOT_FOUND' });
+  }
+  if (code !== undefined && conflictCodes.has(code)) {
+    throw new ConflictException({ code: 'ADMIN_CONFLICT' });
+  }
+  throw error;
 }
 
-/** Local Product Mode administration adapter. Authority is always resolved by Access. */
+/** Product administration adapter. Authority is always resolved by Access. */
 @Controller('api/access/administration/users')
 export class AccessAdministrationController {
   constructor(private readonly operations: AccessAdministrationOperations) {}
@@ -70,7 +185,7 @@ export class AccessAdministrationController {
   async list(@Headers() headers: RequestHeaders) {
     try {
       const users = await this.operations.listUsers(evidence(headers));
-      return { items: users };
+      return { items: users.map(userResponse) };
     } catch (error: unknown) {
       return translateError(error);
     }
@@ -94,7 +209,7 @@ export class AccessAdministrationController {
   @Header('Cache-Control', 'private, no-store')
   async listRoles(@Headers() headers: RequestHeaders) {
     try {
-      return await this.operations.listRoles(evidence(headers));
+      return matrixResponse(await this.operations.listRoles(evidence(headers)));
     } catch (error: unknown) {
       return translateError(error);
     }
@@ -107,7 +222,7 @@ export class AccessAdministrationController {
     @Headers() headers: RequestHeaders,
   ) {
     try {
-      return await this.operations.createRole(evidence(headers), body);
+      return roleResponse(await this.operations.createRole(evidence(headers), body));
     } catch (error: unknown) {
       return translateError(error);
     }
@@ -121,7 +236,25 @@ export class AccessAdministrationController {
     @Headers() headers: RequestHeaders,
   ) {
     try {
-      return await this.operations.replaceRoleCapabilities(evidence(headers), roleId, body);
+      return roleResponse(
+        await this.operations.replaceRoleCapabilities(evidence(headers), roleId, body),
+      );
+    } catch (error: unknown) {
+      return translateError(error);
+    }
+  }
+
+  @Post('roles/:roleId')
+  @Header('Cache-Control', 'private, no-store')
+  async updateRole(
+    @Param('roleId') roleId: string,
+    @Body() body: unknown,
+    @Headers() headers: RequestHeaders,
+  ) {
+    try {
+      return roleResponse(
+        await this.operations.updateRole(evidence(headers), roleId, body),
+      );
     } catch (error: unknown) {
       return translateError(error);
     }
@@ -135,7 +268,9 @@ export class AccessAdministrationController {
     @Headers() headers: RequestHeaders,
   ) {
     try {
-      return await this.operations.assignRole(evidence(headers), userId, body);
+      return assignmentResponse(
+        await this.operations.assignRole(evidence(headers), userId, body),
+      );
     } catch (error: unknown) {
       return translateError(error);
     }
@@ -144,12 +279,15 @@ export class AccessAdministrationController {
   @Post(':userId/roles/:assignmentId/revoke')
   @Header('Cache-Control', 'private, no-store')
   async revokeRole(
+    @Param('userId') userId: string,
     @Param('assignmentId') assignmentId: string,
     @Body() body: unknown,
     @Headers() headers: RequestHeaders,
   ) {
     try {
-      return await this.operations.revokeRole(evidence(headers), assignmentId, body);
+      return assignmentResponse(
+        await this.operations.revokeRole(evidence(headers), userId, assignmentId, body),
+      );
     } catch (error: unknown) {
       return translateError(error);
     }
@@ -157,13 +295,13 @@ export class AccessAdministrationController {
 
   @Post(':userId/pin')
   @Header('Cache-Control', 'private, no-store')
-  async provisionLocalPin(
+  async provisionPin(
     @Param('userId') userId: string,
     @Body() body: unknown,
     @Headers() headers: RequestHeaders,
   ) {
     try {
-      await this.operations.provisionLocalFourDigitPin(evidence(headers), userId, body);
+      await this.operations.provisionFourDigitPin(evidence(headers), userId, body);
       return { provisioned: true };
     } catch (error: unknown) {
       return translateError(error);

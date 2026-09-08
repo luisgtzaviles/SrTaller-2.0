@@ -29,13 +29,16 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const accessTables = [
+  'access_role_commands',
   'access_role_assignment_commands',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
   'access_capabilities',
+  'access_pin_eligibility_tenant_guards',
 ];
 const tables = [
+  'repair_operational_note_request_guards',
   'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
@@ -85,6 +88,7 @@ const idempotentCompetingAssignmentA =
   '7a000000-0000-4000-8000-000000000033';
 const secondRoleAssignmentB = '7b000000-0000-4000-8000-000000000033';
 const rollbackAssignmentB = '7c000000-0000-4000-8000-000000000033';
+const deniedAssignmentA = '7d000000-0000-4000-8000-000000000033';
 const assignAdminRequestA = '80000000-0000-4000-8000-000000000033';
 const assignTechnicianRequestA = '81000000-0000-4000-8000-000000000033';
 const assignAdminRequestB = '82000000-0000-4000-8000-000000000033';
@@ -101,6 +105,7 @@ const idempotentAssignRequestA = '8c000000-0000-4000-8000-000000000033';
 const secondRoleRequestB = '8d000000-0000-4000-8000-000000000033';
 const rollbackAssignRequestB = '8e000000-0000-4000-8000-000000000033';
 const rollbackRevokeRequestA = '8f000000-0000-4000-8000-000000000033';
+const deniedAssignRequestA = '9f000000-0000-4000-8000-000000000033';
 
 function databaseConfig() {
   return Object.freeze({
@@ -317,7 +322,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 24);
+      assert.equal(applied.status.migrations.length, 28);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -334,17 +339,27 @@ test(
       assert.deepEqual(
         catalog.rows.map(({ capability_code }) => capability_code),
         [
+          'access_matrix.manage',
           'access_matrix.read',
           'repairs.add_note',
           'repairs.read',
+          'users.manage',
           'users.read',
         ],
       );
-      assert.ok(
-        catalog.rows.every(
-          ({ created_at }) =>
-            created_at.toISOString() === '2026-09-06T18:00:00.000Z',
-        ),
+      assert.deepEqual(
+        catalog.rows.map(({ capability_code, created_at }) => ({
+          capabilityCode: capability_code,
+          createdAt: created_at.toISOString(),
+        })),
+        [
+          { capabilityCode: 'access_matrix.manage', createdAt: '2026-09-07T23:00:00.000Z' },
+          { capabilityCode: 'access_matrix.read', createdAt: '2026-09-06T18:00:00.000Z' },
+          { capabilityCode: 'repairs.add_note', createdAt: '2026-09-06T18:00:00.000Z' },
+          { capabilityCode: 'repairs.read', createdAt: '2026-09-06T18:00:00.000Z' },
+          { capabilityCode: 'users.manage', createdAt: '2026-09-07T23:00:00.000Z' },
+          { capabilityCode: 'users.read', createdAt: '2026-09-06T18:00:00.000Z' },
+        ],
       );
       await assert.rejects(
         admin.query(
@@ -355,6 +370,26 @@ test(
       );
 
       await seedAuthorities(admin);
+
+      await rejectsWithCode(
+        repository.assignRole(
+          { tenantId: tenantA },
+          assignment({
+            assignmentId: deniedAssignmentA,
+            clientRequestId: deniedAssignRequestA,
+          }),
+          { async confirmCurrent() { return false; } },
+        ),
+        'ACCESS_AUTHORIZATION_CHANGED',
+      );
+      assert.equal(
+        Number((await admin.query(
+          `select count(*) from access_role_assignments
+           where tenant_id = $1 and assignment_id = $2`,
+          [tenantA, deniedAssignmentA],
+        )).rows[0].count),
+        0,
+      );
 
       await assert.rejects(
         admin.query(
@@ -646,9 +681,11 @@ test(
       assert.deepEqual(
         matrixA.capabilities.map(({ capabilityCode }) => capabilityCode),
         [
+          'access_matrix.manage',
           'access_matrix.read',
           'repairs.add_note',
           'repairs.read',
+          'users.manage',
           'users.read',
         ],
       );
@@ -932,6 +969,17 @@ test(
       let latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
+      while (
+        latest?.name !==
+        '20260907220000_repairs_create_business_audit_events'
+      ) {
+        assert.ok(latest);
+        await runner.migrateDown(authorization(latest));
+        status = await runner.getMigrationStatus();
+        latest = [...status.migrations]
+          .reverse()
+          .find(({ state }) => state === 'applied');
+      }
       assert.equal(
         latest?.name,
         '20260907220000_repairs_create_business_audit_events',

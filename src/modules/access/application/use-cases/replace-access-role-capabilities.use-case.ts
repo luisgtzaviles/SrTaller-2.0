@@ -3,7 +3,7 @@ import {
   parseAccessTenantScope,
   parseReplaceAccessRoleCapabilitiesInput,
 } from '../access-input.js';
-import type { AccessRepositoryPort, AccessRoleRecord } from '../ports/access-repository.port.js';
+import type { AccessMutationCommitGuard, AccessRepositoryPort, AccessRoleRecord } from '../ports/access-repository.port.js';
 
 /** Replaces a reusable role matrix atomically; users never receive direct grants. */
 export class ReplaceAccessRoleCapabilitiesUseCase {
@@ -12,11 +12,11 @@ export class ReplaceAccessRoleCapabilitiesUseCase {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  execute(scope: unknown, roleId: unknown, input: unknown): Promise<AccessRoleRecord> {
+  execute(scope: unknown, roleId: unknown, input: unknown, guard?: AccessMutationCommitGuard): Promise<AccessRoleRecord> {
     return this.repository.replaceRoleCapabilities(parseAccessTenantScope(scope), {
       ...parseReplaceAccessRoleCapabilitiesInput(input),
       roleId: parseRoleId(roleId),
       occurredAt: this.now().toISOString(),
-    });
+    }, guard);
   }
 }

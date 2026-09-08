@@ -33,7 +33,9 @@ const [
 test('authenticated capability snapshots accept only a canonical finite set', () => {
   assert.deepEqual(OPERATIONAL_CAPABILITY_CATALOG, [
     'users.read',
+    'users.manage',
     'access_matrix.read',
+    'access_matrix.manage',
     'repairs.read',
     'repairs.add_note',
   ]);

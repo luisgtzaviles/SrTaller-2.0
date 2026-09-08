@@ -108,10 +108,28 @@ export interface AccessRoleTable {
   readonly role_id: ImmutableColumn<string>;
   readonly role_key: ImmutableColumn<string>;
   readonly display_name: MutableColumn<string>;
+  readonly description: MutableColumn<string | null>;
   readonly status: MutableColumn<'active' | 'disabled' | 'archived'>;
   readonly version: MutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
+}
+
+export interface AccessRoleCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly command_type: ImmutableColumn<'create' | 'update' | 'replace_capabilities'>;
+  readonly role_id: ImmutableColumn<string>;
+  readonly request_fingerprint: ImmutableColumn<Uint8Array>;
+  readonly result_role_key: ImmutableColumn<string>;
+  readonly result_display_name: ImmutableColumn<string>;
+  readonly result_description: ImmutableColumn<string | null>;
+  readonly result_status: ImmutableColumn<'active' | 'disabled' | 'archived'>;
+  readonly result_version: ImmutableColumn<number>;
+  readonly result_capability_codes: ImmutableColumn<string[]>;
+  readonly result_created_at: ImmutableColumn<Date>;
+  readonly result_updated_at: ImmutableColumn<Date>;
+  readonly applied_at: ImmutableColumn<Date>;
 }
 
 export interface AccessRoleCapabilityTable {
@@ -170,6 +188,8 @@ export interface AccessPinCredentialTable {
   readonly parallelism: MutableColumn<number>;
   readonly salt: MutableColumn<Uint8Array>;
   readonly verifier: MutableColumn<Uint8Array>;
+  /** Pepper-keyed lookup tag; never a plaintext PIN or reusable verifier. */
+  readonly lookup_digest: MutableColumn<Uint8Array | null>;
   readonly credential_version: MutableColumn<number>;
   readonly consecutive_failures: MutableColumn<number>;
   readonly locked_until: MutableColumn<Date | null>;
@@ -184,13 +204,19 @@ export interface AccessPinCredentialCommandTable {
   readonly client_request_id: ImmutableColumn<string>;
   readonly user_id: ImmutableColumn<string>;
   readonly credential_id: ImmutableColumn<string>;
-  readonly command_type: ImmutableColumn<'provision'>;
+  readonly command_type: ImmutableColumn<'provision' | 'replace'>;
   readonly request_fingerprint: ImmutableColumn<Uint8Array>;
   readonly result_status: ImmutableColumn<'active'>;
   readonly result_credential_version: ImmutableColumn<number>;
   readonly result_created_at: ImmutableColumn<Date>;
   readonly result_updated_at: ImmutableColumn<Date>;
   readonly applied_at: ImmutableColumn<Date>;
+}
+
+/** Serializes tenant-wide mutations that can change PIN-only eligibility. */
+export interface AccessPinEligibilityTenantGuardTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
 }
 
 /** Serializes bounded abuse-control cardinality for one trusted Station. */
@@ -318,6 +344,15 @@ export interface RepairBusinessAuditEventTable {
   readonly created_at: ImmutableColumn<Date>;
 }
 
+/** Repairs-owned durable serialization key for operational-note retries. */
+export interface RepairOperationalNoteRequestGuardTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly action: ImmutableColumn<'repair.operational_note.added'>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
 export interface RepairAttachmentTable {
   readonly attachment_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -430,11 +465,13 @@ export interface DatabaseSchema {
   readonly user_lifecycle_commands: UserLifecycleCommandTable;
   readonly access_capabilities: AccessCapabilityTable;
   readonly access_roles: AccessRoleTable;
+  readonly access_role_commands: AccessRoleCommandTable;
   readonly access_role_capabilities: AccessRoleCapabilityTable;
   readonly access_role_assignments: AccessRoleAssignmentTable;
   readonly access_role_assignment_commands: AccessRoleAssignmentCommandTable;
   readonly access_pin_credentials: AccessPinCredentialTable;
   readonly access_pin_credential_commands: AccessPinCredentialCommandTable;
+  readonly access_pin_eligibility_tenant_guards: AccessPinEligibilityTenantGuardTable;
   readonly access_pin_attempt_station_guards: AccessPinAttemptStationGuardTable;
   readonly access_pin_attempt_limits: AccessPinAttemptLimitTable;
   readonly access_operational_session_station_guards: AccessOperationalSessionStationGuardTable;
@@ -443,6 +480,7 @@ export interface DatabaseSchema {
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
   readonly repair_business_audit_events: RepairBusinessAuditEventTable;
+  readonly repair_operational_note_request_guards: RepairOperationalNoteRequestGuardTable;
   readonly repair_attachments: RepairAttachmentTable;
   readonly repair_technicians: RepairTechnicianTable;
   readonly repair_technician_branches: RepairTechnicianBranchTable;
@@ -479,6 +517,8 @@ export type NewAccessCapability = Insertable<AccessCapabilityTable>;
 export type AccessRoleRow = Selectable<AccessRoleTable>;
 export type NewAccessRole = Insertable<AccessRoleTable>;
 export type AccessRoleUpdate = Updateable<AccessRoleTable>;
+export type AccessRoleCommandRow = Selectable<AccessRoleCommandTable>;
+export type NewAccessRoleCommand = Insertable<AccessRoleCommandTable>;
 
 export type AccessRoleCapabilityRow = Selectable<AccessRoleCapabilityTable>;
 export type NewAccessRoleCapability = Insertable<AccessRoleCapabilityTable>;
@@ -500,6 +540,11 @@ export type AccessPinCredentialCommandRow =
   Selectable<AccessPinCredentialCommandTable>;
 export type NewAccessPinCredentialCommand =
   Insertable<AccessPinCredentialCommandTable>;
+
+export type AccessPinEligibilityTenantGuardRow =
+  Selectable<AccessPinEligibilityTenantGuardTable>;
+export type NewAccessPinEligibilityTenantGuard =
+  Insertable<AccessPinEligibilityTenantGuardTable>;
 
 export type AccessPinAttemptLimitRow = Selectable<AccessPinAttemptLimitTable>;
 export type NewAccessPinAttemptLimit = Insertable<AccessPinAttemptLimitTable>;
@@ -532,6 +577,8 @@ export type RepairTimelineEntryUpdate = Updateable<RepairTimelineEntryTable>;
 
 export type RepairBusinessAuditEventRow = Selectable<RepairBusinessAuditEventTable>;
 export type NewRepairBusinessAuditEvent = Insertable<RepairBusinessAuditEventTable>;
+export type RepairOperationalNoteRequestGuardRow = Selectable<RepairOperationalNoteRequestGuardTable>;
+export type NewRepairOperationalNoteRequestGuard = Insertable<RepairOperationalNoteRequestGuardTable>;
 
 export type RepairAttachmentRow = Selectable<RepairAttachmentTable>;
 export type NewRepairAttachment = Insertable<RepairAttachmentTable>;

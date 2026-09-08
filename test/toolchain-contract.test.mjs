@@ -108,7 +108,10 @@ test('technical shell has only the authorized health route surface', async () =>
     await Promise.all(sourceFiles.map((file) => readFile(file, 'utf8')))
   ).join('\n');
 
-  assert.match(source, /providers: \[HealthReadiness, TechnicalShellService\]/u);
+  assert.match(
+    source,
+    /providers: \[[\s\S]*HealthReadiness,[\s\S]*TechnicalShellService,[\s\S]*APP_FILTER[\s\S]*HttpCorrelationExceptionFilter[\s\S]*\]/u,
+  );
   assert.match(source, /@Controller\(\)/u);
   assert.match(source, /@Get\('livez'\)/u);
   assert.match(source, /@Get\('readyz'\)/u);

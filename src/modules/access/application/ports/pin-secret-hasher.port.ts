@@ -10,6 +10,7 @@ export type PinSecretMaterial = Readonly<{
   parallelism: 4;
   salt: Uint8Array;
   verifier: Uint8Array;
+  lookupDigest: Uint8Array;
   requestFingerprint: Uint8Array;
 }>;
 
@@ -25,6 +26,13 @@ export type PinStoredVerifier = Readonly<{
 }>;
 
 export interface PinSecretHasherPort {
+  lookupDigest(input: Readonly<{
+    tenantId: TenantId;
+    pin: string;
+  }>): Uint8Array;
+  rateLimitPinPrincipalId(input: Readonly<{
+    tenantId: TenantId;
+  }>): string;
   rateLimitPrincipalId(input: Readonly<{
     tenantId: TenantId;
     userId: AccessUserId;

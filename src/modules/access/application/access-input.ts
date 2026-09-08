@@ -3,6 +3,7 @@ import type { TenantId } from '../../tenancy/index.js';
 import {
   parseRoleId,
   parseRoleDisplayName,
+  parseRoleDescription,
   parseRoleKey,
 } from '../domain/role.js';
 import type { RoleId } from '../domain/role.js';
@@ -34,6 +35,7 @@ export class AccessInputError extends Error {
       | 'clientRequestId'
       | 'expectedVersion'
       | 'displayName'
+      | 'description'
       | 'payload'
       | 'roleId'
       | 'roleKey'
@@ -193,9 +195,17 @@ export function parseAssignRoleInput(value: unknown): Readonly<{
 export function parseCreateAccessRoleInput(value: unknown): Readonly<{
   roleKey: ReturnType<typeof parseRoleKey>;
   displayName: ReturnType<typeof parseRoleDisplayName>;
+  description: ReturnType<typeof parseRoleDescription>;
   capabilityCodes: readonly CapabilityCode[];
+  clientRequestId: string;
 }> {
-  const input = exactObject(value, ['capabilityCodes', 'displayName', 'roleKey']);
+  const input = exactObject(value, [
+    'capabilityCodes',
+    'clientRequestId',
+    'description',
+    'displayName',
+    'roleKey',
+  ]);
   if (!Array.isArray(input.capabilityCodes) || input.capabilityCodes.length < 1) {
     throw new AccessInputError('capabilityCodes');
   }
@@ -207,7 +217,9 @@ export function parseCreateAccessRoleInput(value: unknown): Readonly<{
     return Object.freeze({
       roleKey: parseRoleKey(input.roleKey),
       displayName: parseRoleDisplayName(input.displayName),
+      description: parseRoleDescription(input.description),
       capabilityCodes: Object.freeze(capabilityCodes),
+      clientRequestId: parseRequestId(input.clientRequestId),
     });
   } catch {
     throw new AccessInputError('payload');
@@ -217,10 +229,15 @@ export function parseCreateAccessRoleInput(value: unknown): Readonly<{
 export function parseReplaceAccessRoleCapabilitiesInput(value: unknown): Readonly<{
   expectedVersion: number;
   capabilityCodes: readonly CapabilityCode[];
+  clientRequestId: string;
 }> {
-  const input = exactObject(value, ['capabilityCodes', 'expectedVersion']);
+  const input = exactObject(value, [
+    'capabilityCodes',
+    'clientRequestId',
+    'expectedVersion',
+  ]);
   if (
-    Object.keys(input).length !== 2 ||
+    Object.keys(input).length !== 3 ||
     !Number.isSafeInteger(input.expectedVersion) ||
     (input.expectedVersion as number) < 0 ||
     !Array.isArray(input.capabilityCodes) ||
@@ -234,6 +251,37 @@ export function parseReplaceAccessRoleCapabilitiesInput(value: unknown): Readonl
     return Object.freeze({
       expectedVersion: input.expectedVersion as number,
       capabilityCodes: Object.freeze(capabilityCodes),
+      clientRequestId: parseRequestId(input.clientRequestId),
+    });
+  } catch {
+    throw new AccessInputError('payload');
+  }
+}
+
+export function parseUpdateAccessRoleInput(value: unknown): Readonly<{
+  displayName: ReturnType<typeof parseRoleDisplayName>;
+  description: ReturnType<typeof parseRoleDescription>;
+  expectedVersion: number;
+  clientRequestId: string;
+}> {
+  const input = exactObject(value, [
+    'clientRequestId',
+    'description',
+    'displayName',
+    'expectedVersion',
+  ]);
+  if (
+    !Number.isSafeInteger(input.expectedVersion) ||
+    (input.expectedVersion as number) < 0
+  ) {
+    throw new AccessInputError('expectedVersion');
+  }
+  try {
+    return Object.freeze({
+      displayName: parseRoleDisplayName(input.displayName),
+      description: parseRoleDescription(input.description),
+      expectedVersion: input.expectedVersion as number,
+      clientRequestId: parseRequestId(input.clientRequestId),
     });
   } catch {
     throw new AccessInputError('payload');

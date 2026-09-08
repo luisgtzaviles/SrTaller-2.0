@@ -5,7 +5,7 @@ import type {
   RepairRepositoryPort,
   RepairTimelineItemRecord,
 } from '../ports/repair-repository.port.js';
-import { RepairOperationalNoteIdempotencyConflictError } from '../ports/repair-repository.port.js';
+import { RepairOperationalNoteAuthorizationChangedError, RepairOperationalNoteIdempotencyConflictError } from '../ports/repair-repository.port.js';
 
 const canonicalUuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
@@ -35,6 +35,13 @@ export class AddRepairOperationalNoteConflictError extends Error {
   }
 }
 
+export class AddRepairOperationalNoteAuthorizationError extends Error {
+  constructor() {
+    super('Operational note authorization changed before confirmation.');
+    this.name = 'AddRepairOperationalNoteAuthorizationError';
+  }
+}
+
 export interface AddRepairOperationalNoteInput {
   readonly repairId: unknown;
   readonly request: unknown;
@@ -52,7 +59,10 @@ function trustedContext(
     value.capability !== 'repairs.add_note' ||
     typeof value.actorDisplayName !== 'string' ||
     value.actorDisplayName.trim().length < 1 ||
-    value.actorDisplayName.trim().length > 160
+    value.actorDisplayName.trim().length > 160 ||
+    typeof value.commitGuard !== 'object' ||
+    value.commitGuard === null ||
+    typeof value.commitGuard.confirmCurrent !== 'function'
   ) {
     throw new Error('Trusted operational note context is invalid.');
   }
@@ -123,12 +133,7 @@ export class AddRepairOperationalNoteUseCase {
         auditEventId,
         correlationId,
         clientRequestId: request.clientRequestId,
-        stationId: context.stationId,
-        sessionId: context.sessionId,
-        actorUserId: context.actorUserId,
-        actorDisplayName: context.actorDisplayName,
         body: request.body,
-        capability: context.capability,
         action: 'repair.operational_note.added',
         resourceType: 'repair',
         result: 'succeeded',
@@ -137,6 +142,9 @@ export class AddRepairOperationalNoteUseCase {
     } catch (error: unknown) {
       if (error instanceof RepairOperationalNoteIdempotencyConflictError) {
         throw new AddRepairOperationalNoteConflictError();
+      }
+      if (error instanceof RepairOperationalNoteAuthorizationChangedError) {
+        throw new AddRepairOperationalNoteAuthorizationError();
       }
       throw error;
     }

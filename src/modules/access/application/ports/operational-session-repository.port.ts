@@ -2,6 +2,7 @@ import type {
   OperationalSessionRecord,
   OperationalSessionStatus,
 } from '../../domain/operational-session.js';
+import type { OperationalAuthorizationCommitGuardPort } from './operational-authorization-commit-guard.port.js';
 
 export interface OperationalSessionPersistenceScope {
   readonly tenantId: string;
@@ -17,7 +18,8 @@ export class OperationalSessionAdmissionError extends Error {
   }
 }
 
-export interface OperationalSessionRepositoryPort {
+export interface OperationalSessionRepositoryPort
+  extends OperationalAuthorizationCommitGuardPort {
   createReplacingActive(
     scope: OperationalSessionPersistenceScope,
     input: Readonly<{

@@ -46,9 +46,9 @@ function validLocalValues() {
     SR_STATION_BOOTSTRAP_SECRET: 'synthetic-local-station-bootstrap-secret',
     SR_USER_BOOTSTRAP_SECRET: 'synthetic-local-user-bootstrap-secret',
     SR_PIN_PEPPER: Buffer.alloc(32, 0x25).toString('base64url'),
-    SR_LOCAL_PIN_JORGE: '270601',
-    SR_LOCAL_PIN_MARIA: '270602',
-    SR_LOCAL_PIN_CARLOS: '270603',
+    SR_LOCAL_PIN_JORGE: '0601',
+    SR_LOCAL_PIN_MARIA: '0602',
+    SR_LOCAL_PIN_CARLOS: '0603',
   };
 }
 
@@ -146,14 +146,21 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
   assert.deepEqual(assignments, localAccessRoleAssignmentRows());
   assert.deepEqual(
     capabilities.map(({ capabilityCode }) => capabilityCode),
-    ['access_matrix.read', 'repairs.add_note', 'repairs.read', 'users.read'],
+    [
+      'access_matrix.read',
+      'access_matrix.manage',
+      'repairs.add_note',
+      'repairs.read',
+      'users.read',
+      'users.manage',
+    ],
   );
   assert.deepEqual(roles.map(({ displayName }) => displayName), [
     'Administrador',
     'Atención al cliente',
     'Técnico',
   ]);
-  assert.equal(grants.length, 8);
+  assert.equal(grants.length, 10);
   assert.deepEqual(assignments.map(({ assignmentScope }) => assignmentScope), [
     'TENANT_WIDE',
     'TENANT_WIDE',
@@ -183,10 +190,11 @@ test('local PIN fixtures use the governed profile and persist no plaintext PIN',
   });
   assert.ok(rows.every((row) => row.salt.byteLength === 16));
   assert.ok(rows.every((row) => row.verifier.byteLength === 32));
+  assert.ok(rows.every((row) => row.lookupDigest.byteLength === 32));
   assert.ok(rows.every((row) => row.requestFingerprint.byteLength === 32));
   assert.ok(rows.every(Object.isFrozen));
   const rendered = JSON.stringify(rows);
-  assert.doesNotMatch(rendered, /270601|270602|270603/u);
+  assert.doesNotMatch(rendered, /0601|0602|0603/u);
   assert.doesNotMatch(rendered, /SR_LOCAL_PIN|SR_PIN_PEPPER/u);
 
   const { NodeArgon2PinHasher } = await import(

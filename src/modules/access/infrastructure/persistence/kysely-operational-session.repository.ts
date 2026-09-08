@@ -21,6 +21,8 @@ import type {
   OperationalSessionRecord,
 } from '../../domain/operational-session.js';
 import { OPERATIONAL_SESSION_IDLE_MS } from '../../domain/operational-session.js';
+import type { CapabilityCode } from '../../domain/capability.js';
+import { KyselyOperationalAuthorizationCommitGuard } from './kysely-operational-authorization-commit.guard.js';
 
 type AccessTables = Pick<DatabaseSchema,
   | 'access_role_assignments'
@@ -54,11 +56,32 @@ function map(row: AccessOperationalSessionRow): OperationalSessionRecord {
 
 export class KyselyOperationalSessionRepository
   implements OperationalSessionRepositoryPort {
+  readonly #commitGuard: KyselyOperationalAuthorizationCommitGuard;
+
   constructor(
     private readonly connection: ApplicationDatabaseConnection,
     private readonly stations: TrustedStationAdmissionValidator,
     private readonly users: AuthenticationUserAdmissionValidator,
-  ) {}
+  ) {
+    this.#commitGuard = new KyselyOperationalAuthorizationCommitGuard(
+      stations,
+      users,
+    );
+  }
+
+  confirmCurrent(
+    station: TrustedStationContext,
+    session: import('../../domain/operational-session.js').OperationalSessionContext,
+    capability: CapabilityCode,
+    transactionContext: object,
+  ): Promise<boolean> {
+    return this.#commitGuard.confirmCurrent(
+      station,
+      session,
+      capability,
+      transactionContext,
+    );
+  }
 
   async createReplacingActive(context: TrustedStationContext, input: Parameters<OperationalSessionRepositoryPort['createReplacingActive']>[1]) {
     for (let attempt = 0; attempt < 3; attempt += 1) {

@@ -20,6 +20,7 @@ const postgresImage =
 const databaseName = 'srtaller_preview_oci';
 const databaseUser = 'srtaller_preview_oci';
 const databasePassword = `synthetic_${randomBytes(24).toString('hex')}`;
+const pinPepper = randomBytes(32).toString('base64url');
 const expectedRootEntries = ['dist', 'node_modules', 'package.json'];
 const forbiddenPaths = [
   '/app/.env',
@@ -152,6 +153,7 @@ function databaseEnvironment(role) {
     SR_DB_ROLE: role,
     SR_DB_ACCESS_MODE: 'read-write',
     SR_DB_MIGRATIONS_ENABLED: role === 'migration' ? 'true' : 'false',
+    ...(role === 'application' ? { SR_PIN_PEPPER: pinPepper } : {}),
   };
 }
 

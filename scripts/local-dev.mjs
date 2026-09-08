@@ -27,11 +27,6 @@ const backend = spawn('pnpm', ['run', 'dev'], {
     ...databaseEnvironment(values, 'application'),
     SR_PIN_PEPPER: values.SR_PIN_PEPPER,
     SR_STATION_BOOTSTRAP_SECRET: values.SR_STATION_BOOTSTRAP_SECRET,
-    SR_LOCAL_PIN_JORGE: values.SR_LOCAL_PIN_JORGE,
-    SR_LOCAL_PIN_MARIA: values.SR_LOCAL_PIN_MARIA,
-    SR_LOCAL_PIN_CARLOS: values.SR_LOCAL_PIN_CARLOS,
-    SR_LOCAL_PIN_LUIS: values.SR_LOCAL_PIN_LUIS,
-    SR_LOCAL_USER_LUIS_ID: values.SR_LOCAL_USER_LUIS_ID,
   },
   stdio: 'inherit',
 });

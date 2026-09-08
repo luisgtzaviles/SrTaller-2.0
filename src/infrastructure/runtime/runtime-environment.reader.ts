@@ -92,26 +92,4 @@ export class RuntimeEnvironmentReader {
     }));
   }
 
-  createLocalPinOnlyBindings<Bindings>(
-    createBindings: (
-      environment: Readonly<Record<string, string | undefined>>,
-    ) => Bindings,
-  ): Bindings {
-    if (!this.localRuntimePolicy().enabled) {
-      throw new Error('Local PIN-only login is unavailable outside development.');
-    }
-    const secrets = loadRequiredServerSecrets(
-      this.#environment,
-      ['SR_LOCAL_PIN_JORGE', 'SR_LOCAL_PIN_MARIA', 'SR_LOCAL_PIN_CARLOS'],
-    );
-    return createBindings(Object.freeze({
-      NODE_ENV: this.#environment.NODE_ENV,
-      SR_DB_ENVIRONMENT: this.#environment.SR_DB_ENVIRONMENT,
-      SR_LOCAL_PIN_JORGE: secrets.get('SR_LOCAL_PIN_JORGE'),
-      SR_LOCAL_PIN_MARIA: secrets.get('SR_LOCAL_PIN_MARIA'),
-      SR_LOCAL_PIN_CARLOS: secrets.get('SR_LOCAL_PIN_CARLOS'),
-      SR_LOCAL_PIN_LUIS: this.#environment.SR_LOCAL_PIN_LUIS,
-      SR_LOCAL_USER_LUIS_ID: this.#environment.SR_LOCAL_USER_LUIS_ID,
-    }));
-  }
 }

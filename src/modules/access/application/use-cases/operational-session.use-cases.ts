@@ -22,6 +22,7 @@ import {
 import type { OperationalSessionRepositoryPort } from '../ports/operational-session-repository.port.js';
 import type { SessionTokenPort } from '../ports/session-token.port.js';
 import type { ListApplicableUsersUseCase } from './list-applicable-users.use-case.js';
+import type { CapabilityCode } from '../../domain/capability.js';
 
 export class OperationalSessionError extends Error {
   readonly category = 'Authentication';
@@ -128,6 +129,20 @@ export class ResolveOperationalSessionUseCase {
     private readonly tokens: SessionTokenPort,
     private readonly now: () => Date = () => new Date(),
   ) {}
+
+  confirmAuthorizedAtCommit(
+    station: TrustedStationContext,
+    session: OperationalSessionContext,
+    capability: CapabilityCode,
+    transactionContext: object,
+  ): Promise<boolean> {
+    return this.repository.confirmCurrent(
+      station,
+      session,
+      capability,
+      transactionContext,
+    );
+  }
 
   async execute(context: TrustedStationContext, input: Readonly<{
     bearer: string;

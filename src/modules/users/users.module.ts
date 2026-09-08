@@ -25,6 +25,7 @@ import { TransitionUserStatusUseCase } from './application/use-cases/transition-
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case.js';
 import { createKyselyUserRepository } from './infrastructure/persistence/kysely-user.repository.js';
 import type { KyselyUserRepositoryFactory } from './infrastructure/persistence/kysely-user.repository.js';
+import type { UserMutationCommitGuard } from './application/ports/user-repository.port.js';
 import { KyselyAuthenticationUserReader } from './infrastructure/persistence/kysely-authentication-user.reader.js';
 
 type RegisteredUsersPersistenceAdapter =
@@ -56,9 +57,9 @@ type UsersRuntimeComposition = Readonly<{
           authenticationReader: new KyselyAuthenticationUserReader(database),
           productRuntime: Object.freeze({
             list: (scope: unknown) => new ListUsersUseCase(repository).execute(scope),
-            create: (scope: unknown, input: unknown) => new CreateUserUseCase(repository).execute(scope, input),
-            update: (scope: unknown, userId: unknown, input: unknown) => new UpdateUserUseCase(repository).execute(scope, userId, input),
-            transition: (scope: unknown, input: unknown) => new TransitionUserStatusUseCase(repository).execute(scope, input),
+            create: (scope: unknown, input: unknown, guard?: UserMutationCommitGuard) => new CreateUserUseCase(repository).execute(scope, input, guard),
+            update: (scope: unknown, userId: unknown, input: unknown, guard?: UserMutationCommitGuard) => new UpdateUserUseCase(repository).execute(scope, userId, input, guard),
+            transition: (scope: unknown, input: unknown, guard?: UserMutationCommitGuard) => new TransitionUserStatusUseCase(repository).execute(scope, input, guard),
           }),
         });
       },

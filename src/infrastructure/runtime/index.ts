@@ -60,9 +60,7 @@ export interface AccessPinHasherFactory {
 }
 
 /**
- * Framework-neutral, local-only configuration capability. Product owners use
- * the callback to derive their own bootstrap material without exposing the
- * configured secret as a value or granting ambient environment access.
+ * Framework-neutral, local-only Station bootstrap configuration capability.
  */
 export interface LocalRuntimeConfiguration {
   readonly enabled: boolean;
@@ -72,11 +70,6 @@ export interface LocalRuntimeConfiguration {
       environment: Readonly<Record<string, string | undefined>>,
     ) => string,
   ): string;
-  createLocalPinOnlyBindings<Bindings>(
-    createBindings: (
-      environment: Readonly<Record<string, string | undefined>>,
-    ) => Bindings,
-  ): Bindings;
 }
 
 /** Server-owned browser transport decisions; no environment values escape. */

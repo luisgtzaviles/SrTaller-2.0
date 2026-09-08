@@ -77,10 +77,17 @@ function randomPinPepper() {
 }
 
 function randomLocalPin() {
-  return String(randomInt(0, 1_000_000)).padStart(6, '0');
+  return String(randomInt(0, 10_000)).padStart(4, '0');
+}
+
+function randomDistinctLocalPins(count) {
+  const values = new Set();
+  while (values.size < count) values.add(randomLocalPin());
+  return [...values];
 }
 
 function defaultLocalValues() {
+  const [jorgePin, mariaPin, carlosPin] = randomDistinctLocalPins(3);
   return Object.freeze({
     SR_LOCAL_ENVIRONMENT: LOCAL_ENVIRONMENT,
     SR_LOCAL_DB_HOST: LOCAL_DB_HOST,
@@ -99,9 +106,9 @@ function defaultLocalValues() {
     SR_STATION_BOOTSTRAP_SECRET: randomSecret(),
     SR_USER_BOOTSTRAP_SECRET: randomSecret(),
     SR_PIN_PEPPER: randomPinPepper(),
-    SR_LOCAL_PIN_JORGE: randomLocalPin(),
-    SR_LOCAL_PIN_MARIA: randomLocalPin(),
-    SR_LOCAL_PIN_CARLOS: randomLocalPin(),
+    SR_LOCAL_PIN_JORGE: jorgePin,
+    SR_LOCAL_PIN_MARIA: mariaPin,
+    SR_LOCAL_PIN_CARLOS: carlosPin,
   });
 }
 

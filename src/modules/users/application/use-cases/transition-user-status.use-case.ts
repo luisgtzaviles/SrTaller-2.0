@@ -1,4 +1,4 @@
-import type { UserRecord, UserRepositoryPort } from '../ports/user-repository.port.js';
+import type { UserMutationCommitGuard, UserRecord, UserRepositoryPort } from '../ports/user-repository.port.js';
 import {
   parseTransitionUserInput,
   parseUserScope,
@@ -11,13 +11,14 @@ export class TransitionUserStatusUseCase {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  execute(scope: unknown, input: unknown): Promise<UserRecord> {
+  execute(scope: unknown, input: unknown, guard?: UserMutationCommitGuard): Promise<UserRecord> {
     return this.repository.transition(
       parseUserScope(scope),
       {
         ...parseTransitionUserInput(input),
         occurredAt: this.now().toISOString(),
       },
+      guard,
     );
   }
 }

@@ -78,15 +78,31 @@ try {
       `INSERT INTO access_pin_credentials (
          tenant_id, user_id, credential_id, status, algorithm,
          profile_version, pepper_version, memory_kib, passes, parallelism,
-         salt, verifier, credential_version, consecutive_failures,
+         salt, verifier, lookup_digest, credential_version, consecutive_failures,
          locked_until, created_at, updated_at, revoked_at
-       ) VALUES (
+       ) SELECT
          $1::uuid, $2::uuid, $3::uuid, 'active', $4,
          $5, $6, $7, $8, $9,
-         $10::bytea, $11::bytea, 0, 0,
-         null, $12::timestamptz, $12::timestamptz, null
+         $10::bytea, $11::bytea, $12::bytea, 0, 0,
+         null, $13::timestamptz, $13::timestamptz, null
+       WHERE EXISTS (
+         SELECT 1 FROM users WHERE tenant_id = $1::uuid AND user_id = $2::uuid
        )
-       ON CONFLICT (tenant_id, user_id) DO NOTHING`,
+       ON CONFLICT (tenant_id, user_id) DO UPDATE SET
+         algorithm = EXCLUDED.algorithm,
+         profile_version = EXCLUDED.profile_version,
+         pepper_version = EXCLUDED.pepper_version,
+         memory_kib = EXCLUDED.memory_kib,
+         passes = EXCLUDED.passes,
+         parallelism = EXCLUDED.parallelism,
+         salt = EXCLUDED.salt,
+         verifier = EXCLUDED.verifier,
+         lookup_digest = EXCLUDED.lookup_digest,
+         credential_version = access_pin_credentials.credential_version + 1,
+         consecutive_failures = 0,
+         locked_until = null,
+         updated_at = greatest(EXCLUDED.updated_at, access_pin_credentials.updated_at)
+       WHERE access_pin_credentials.lookup_digest IS NULL`,
       [
         credential.tenantId,
         credential.userId,
@@ -99,10 +115,11 @@ try {
         credential.parallelism,
         credential.salt,
         credential.verifier,
+        credential.lookupDigest,
         credential.createdAt,
       ],
     );
-    await client.query(
+    if (!credential.existingUserOnly) await client.query(
       `INSERT INTO access_pin_credential_commands (
          tenant_id, client_request_id, user_id, credential_id, command_type,
          request_fingerprint, result_status, result_credential_version,

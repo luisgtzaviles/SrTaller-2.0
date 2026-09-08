@@ -159,6 +159,8 @@ test('persistence capability is internal and has only exact adapter consumers', 
       authenticationUserAdapterPath,
       accessAdapterPath,
       pinCredentialAdapterPath,
+      'src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts',
+      'src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts',
       operationalSessionAdapterPath,
     ],
     status: 'materialized-owner-internal-capability',
@@ -178,7 +180,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   );
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits' \| 'access_operational_session_station_guards' \| 'access_operational_sessions'>/u,
+    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_commands' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_eligibility_tenant_guards' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits' \| 'access_operational_session_station_guards' \| 'access_operational_sessions'>/u,
   );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),

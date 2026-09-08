@@ -14,6 +14,7 @@ import type {
   RepairDetailRecord,
   RepairEvidenceContentRecord,
   RepairEvidenceItemRecord,
+  RepairOperationalNoteContext,
   RepairRepositoryPort,
   RepairOperationalNoteAttributionRecord,
   RepairTimelineItemRecord,
@@ -27,15 +28,19 @@ import type {
   StartRepairDiagnosisRecord,
   UnassignRepairTechnicianRecord,
 } from '../../application/ports/repair-repository.port.js';
-import { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteAuditIntegrityError, RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
+import { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteAuditIntegrityError, RepairOperationalNoteAuthorizationChangedError, RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
 import {
   custodyStatusCodes,
   repairStatusCodes,
 } from '../../domain/repair-status.js';
 
-type RepairTables = 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements';
+type RepairTables = 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_operational_note_request_guards' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements';
 type RepairExecutor = Kysely<Pick<DatabaseSchema, RepairTables>>;
 type ExecuteRepairOperation<Result> = InternalDatabasePersistenceOperation<'repairs', Result>;
+type ExecuteRepairTransaction<Result> = (
+  executor: RepairExecutor,
+  transactionContext: object,
+) => Promise<Result>;
 
 const branchUuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
@@ -363,7 +368,7 @@ function mapRepairDetail(
 class KyselyRepairRepository implements RepairRepositoryPort {
   constructor(
     readonly execute: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>,
-    readonly executeTransaction: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>,
+    readonly executeTransaction: <Result>(operation: ExecuteRepairTransaction<Result>) => Promise<Result>,
     readonly now: () => Date,
   ) {}
 
@@ -414,7 +419,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
   }
 
   async #runOperationalNoteTransaction<Result>(
-    operation: ExecuteRepairOperation<Result>,
+    operation: ExecuteRepairTransaction<Result>,
   ): Promise<Result> {
     try {
       return await this.executeTransaction(operation);
@@ -744,23 +749,33 @@ class KyselyRepairRepository implements RepairRepositoryPort {
   }
 
   async addOperationalNote(
-    scope: RepairPersistenceScope,
+    scope: RepairOperationalNoteContext,
     note: AddRepairOperationalNoteRecord,
   ): Promise<RepairTimelineItemRecord | null> {
     const validatedScope = validateScope(scope);
     const outcome = await this.#runOperationalNoteTransaction<
       OperationalNoteCommandOutcome<RepairTimelineItemRecord | null>
-    >(async (executor: RepairExecutor) => {
-      const repair = await executor
-        .selectFrom('repairs')
-        .select('repair_id')
+    >(async (executor: RepairExecutor, transactionContext: object) => {
+      await executor
+        .insertInto('repair_operational_note_request_guards')
+        .values({
+          tenant_id: validatedScope.tenantId,
+          branch_id: validatedScope.branchId,
+          action: note.action,
+          client_request_id: note.clientRequestId,
+          created_at: note.occurredAt,
+        })
+        .onConflict((conflict) => conflict.doNothing())
+        .execute();
+      await executor
+        .selectFrom('repair_operational_note_request_guards')
+        .select('client_request_id')
         .where('tenant_id', '=', validatedScope.tenantId)
         .where('branch_id', '=', validatedScope.branchId)
-        .where('repair_id', '=', note.repairId)
+        .where('action', '=', note.action)
+        .where('client_request_id', '=', note.clientRequestId)
         .forUpdate()
-        .executeTakeFirst();
-      if (!repair) return null;
-
+        .executeTakeFirstOrThrow();
       const existing = await executor
         .selectFrom('repair_timeline_entries')
         .select([
@@ -796,8 +811,8 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         if (
           existing.entry_type !== 'note' ||
           existing.body !== note.body ||
-          existing.actor_id !== note.actorUserId ||
-          existing.actor_display_name !== note.actorDisplayName ||
+          existing.actor_id !== scope.actorUserId ||
+          existing.actor_display_name !== scope.actorDisplayName ||
           existing.source !== operationalNoteTimelineSource
         ) {
           return operationalNoteCommandError(
@@ -810,11 +825,11 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           );
         }
         if (
-          existingAudit.station_id !== note.stationId ||
-          existingAudit.session_id !== note.sessionId ||
-          existingAudit.actor_user_id !== note.actorUserId ||
-          existingAudit.actor_display_name !== note.actorDisplayName ||
-          existingAudit.capability !== note.capability ||
+          existingAudit.station_id !== scope.stationId ||
+          existingAudit.session_id !== scope.sessionId ||
+          existingAudit.actor_user_id !== scope.actorUserId ||
+          existingAudit.actor_display_name !== scope.actorDisplayName ||
+          existingAudit.capability !== scope.capability ||
           existingAudit.action !== note.action ||
           existingAudit.resource_type !== note.resourceType ||
           existingAudit.resource_id !== note.repairId ||
@@ -828,6 +843,21 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         return mapTimelineEntry(existing, existingAudit);
       }
 
+      if (!await scope.commitGuard.confirmCurrent(transactionContext)) {
+        return operationalNoteCommandError(
+          new RepairOperationalNoteAuthorizationChangedError(),
+        );
+      }
+      const repair = await executor
+        .selectFrom('repairs')
+        .select('repair_id')
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', note.repairId)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!repair) return null;
+
       const inserted = await executor
         .insertInto('repair_timeline_entries')
         .values({
@@ -836,8 +866,8 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           branch_id: validatedScope.branchId,
           repair_id: note.repairId,
           entry_type: 'note',
-          actor_id: note.actorUserId,
-          actor_display_name: note.actorDisplayName,
+          actor_id: scope.actorUserId,
+          actor_display_name: scope.actorDisplayName,
           title: 'Nota',
           body: note.body,
           source: operationalNoteTimelineSource,
@@ -856,11 +886,11 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           audit_id: note.auditEventId,
           tenant_id: validatedScope.tenantId,
           branch_id: validatedScope.branchId,
-          station_id: note.stationId,
-          session_id: note.sessionId,
-          actor_user_id: note.actorUserId,
-          actor_display_name: note.actorDisplayName,
-          capability: note.capability,
+          station_id: scope.stationId,
+          session_id: scope.sessionId,
+          actor_user_id: scope.actorUserId,
+          actor_display_name: scope.actorDisplayName,
+          capability: scope.capability,
           action: note.action,
           resource_type: note.resourceType,
           resource_id: note.repairId,
@@ -1324,7 +1354,11 @@ export function createKyselyRepairRepository(
   return new KyselyRepairRepository(
     (operation) => useDatabasePersistenceExecutor(connection, 'repairs', operation),
     (operation) => runInTransaction(connection, { isolationLevel: 'serializable' }, async (context) =>
-      useTransactionalDatabasePersistenceExecutor(context, 'repairs', operation)),
+      useTransactionalDatabasePersistenceExecutor(
+        context,
+        'repairs',
+        (executor) => operation(executor, context),
+      )),
     now,
   );
 }
