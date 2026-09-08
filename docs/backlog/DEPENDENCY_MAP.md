@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `2b712fc3a3842f197324e8870011bf170846ddb8`; CI `34249869167` GREEN.
+  `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`; CI `34280510716` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -18,7 +18,7 @@ flowchart TD
     P29 --> P24[PBI-024 Trusted Station Runtime Context<br/>Done]
     P24 --> P32[PBI-032 User Directory<br/>Done]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>Done]
-    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=1/1]
+    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=0/1]
     S2 --> P25[PBI-025 PIN Credential<br/>Done]
     P24 --> P25
     P29 --> P25
@@ -29,7 +29,7 @@ flowchart TD
     P27 --> P28
     P29 --> P28
     P28 --> NOTE[First Real-Actor Proof<br/>Operational Note]
-    P27 -. approved integration follow-up .-> P38[PBI-038 Timezone Foundation<br/>In progress]
+    P27 -. approved integration follow-up .-> P38[PBI-038 Timezone Foundation<br/>Done]
     NOTE --> RETRO[Repair writes actor retrofit]
     RETRO --> CUSTOMERS[Customers]
     CUSTOMERS --> INTAKE[Real New Repair / Intake]
@@ -71,8 +71,8 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; PBI-028 `Done`, G5 `PASS`, PBI-038 actual y
-  WIP=`1/1`.
+- Sprint 02: `Active`; PBI-028 `Done`, G5 `PASS`, PBI-038 `Done`, Current PBI
+  `NONE`, WIP=`0/1` y Next candidate `NONE`.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -99,6 +99,9 @@ flowchart TD
   PR #38 de foco integrado, CI exacto `34197268832` GREEN, y cierre PR #39
   merge `2b712fc3a3842f197324e8870011bf170846ddb8` con CI `34249869167` GREEN;
   está `Done` y G5 es `PASS`.
+- PBI-038: `Done`; PR #40 merge
+  `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716`
+  GREEN; `Released: NO`.
 
 ## Stage 2
 
@@ -108,4 +111,4 @@ diferidos.
 
 ## Próxima revisión
 
-Al completar CI/focused review de PBI-038 o si cambia una dependencia aprobada.
+Cuando se seleccione un nuevo PBI o cambie una dependencia aprobada.

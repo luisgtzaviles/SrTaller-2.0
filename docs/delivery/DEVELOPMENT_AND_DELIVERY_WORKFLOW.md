@@ -23,12 +23,11 @@ La baseline actual no es todavía un producto E2E. Contiene una aplicación
 NestJS ejecutable, React/Vite, PostgreSQL y el Repair Workstream local con D5,
 D6.1 y D6.2. Trusted Station Context, User Directory y
 Roles/Capabilities/Assignments están integrados y cerrados canónicamente. Los
-writes integrados de Repairs aún usan actor sintético; PBI-034 atribuye una
-Session a un User visible, pero no autoriza ni retrofitea por sí solo efectos de
-negocio. PBI-025 y PBI-034 están `Done`; PBI-026 Contextual Authorization tiene
-alcance funcional integrado y queda `Done candidate` / G4 `PASS candidate`
-durante su cierre documental. No existe PBI actual en SPRINT-02, WIP es `0/1`
-y PBI-028 está seleccionado sin iniciar.
+writes integrados de Repairs aún usan actor sintético fuera del alcance ya
+entregado. PBI-025, PBI-034, PBI-026, PBI-028 y PBI-038 están `Done`; G4 y G5
+están `PASS`. PBI-038 integra la foundation temporal IANA y límites locales
+sin modificar los instantes UTC. No existe PBI actual en SPRINT-02, WIP es
+`0/1` y no hay siguiente candidato seleccionado.
 
 ## Jerarquía de autoridad documental
 
@@ -102,11 +101,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34249869167` on `2b712fc3a3842f197324e8870011bf170846ddb8` |
+| Authoritative CI at audited HEAD | Green: run `34280510716` on `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `1/1` |
-| Current / next PBI | Current: PBI-038; PBI-028 Done / G5 PASS; next: NONE selected |
-| Current blocking gate | PBI-038 candidate CI and focused review; merge and deploy remain separately authorized |
+| Sprint | SPRINT-02 `Active`; WIP `0/1` |
+| Current / next PBI | Current: NONE; PBI-028 Done / G5 PASS; PBI-038 Done; next: NONE selected |
+| Current blocking gate | selección, readiness y autorización Owner para un nuevo PBI; deploy permanece separado |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -127,7 +126,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | WAHA | Not materialized |
 | R2 application storage | Not materialized |
 | Production customer data | Not present |
-| Product API | Repair endpoints, Trusted Station Context, User Directory, Roles/Capabilities/Assignments, PIN, Session, contextual authorization and PBI-028 business audit/real actor are integrated; PBI-038 timezone candidate is local and not yet integrated |
+| Product API | Repair endpoints, Trusted Station Context, User Directory, Roles/Capabilities/Assignments, PIN, Session, contextual authorization, PBI-028 business audit/real actor and PBI-038 Branch timezone foundation are integrated |
 
 ## Current, planned and required before Production
 

@@ -25,8 +25,8 @@
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** PBI-023 `Closed`; Identity & Context Foundation cerrada en
-  Sprint 01. SPRINT-02 está `Active`, PBI-034/PBI-026/PBI-028 están `Done`,
-  PBI-038 es Current PBI y WIP es `1/1`.
+  Sprint 01. SPRINT-02 está `Active`, PBI-034/PBI-026/PBI-028/PBI-038 están
+  `Done`, Current PBI es `NONE` y WIP es `0/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
@@ -34,8 +34,8 @@
   Context con recuperación histórica selectiva. PBI-025–PBI-029 y
   PBI-031–PBI-036 separan PIN, sesión, autorización, auditoría y observabilidad.
   [PBI-030](pbis/PBI-030.md) tiene cierre `Done`; PBI-027/PBI-029/PBI-024/
-  PBI-032/PBI-033/PBI-025/PBI-034/PBI-026/PBI-028 están `Done`; PBI-038
-  integra el seguimiento de timezone aprobado con riesgo Medium.
+  PBI-032/PBI-033/PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`;
+  PBI-038 cerró el seguimiento de timezone aprobado con riesgo Medium.
 
 ## EPIC-002 — Tenant and Platform Administration
 
@@ -58,8 +58,8 @@
 - **Exclusiones:** algoritmos criptográficos finales antes de threat modeling.
 - **Estado:** User Directory y Roles/Capabilities/Assignments `Done`; G2
   `PASS`. El alcance funcional PIN y su remediación están integrados;
-  PBI-025/PBI-034/PBI-026/PBI-028 están `Done`, G4/G5 `PASS`; PBI-038 es el
-  único PBI actual y el WIP es `1/1`.
+  PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`, G4/G5 `PASS`; no hay
+  PBI actual y el WIP es `0/1`.
 - **Puede descomponerse cuando:** actores, matriz de acciones sensibles y lifecycle de acceso estén aprobados.
 
 ## EPIC-004 — Branch and Device Management

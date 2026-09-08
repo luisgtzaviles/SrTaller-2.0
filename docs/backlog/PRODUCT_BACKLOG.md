@@ -8,8 +8,9 @@ Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
 tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release. PBI-033 también está
 `Done`; PBI-025, PBI-034 y PBI-026 también están `Done`. SPRINT-02 tiene
-PBI-028 `Done`, G5 `PASS`; PBI-038 es el Current PBI con WIP `1/1`. Su
-checkpoint integrado conserva el slice PBI-037 sin convertirlo en WIP paralelo.
+PBI-028 `Done`, G5 `PASS`; PBI-038 también está `Done`, `Released: NO`, y
+Current PBI es `NONE` con WIP `0/1`. Su checkpoint integrado conserva el slice
+PBI-037 sin convertirlo en WIP paralelo.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
@@ -59,7 +60,7 @@ su clasificación explícita.
 | 35 | [PBI-035](pbis/PBI-035.md) Reinforced Authorization | Authorization / Security | EPIC-003 | Draft / Deferred | Crítica | Unassigned |
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
 | 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Integrated slice within PBI-028 | Alta | Product Mode local; no independent lifecycle or canonical delivery claim |
-| 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | In progress | Alta | SPRINT-02 current PBI; Small / Medium; Owner Functional Approval recorded |
+| 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
 
 ## Interpretación
 
@@ -75,9 +76,9 @@ su clasificación explícita.
   completa ni hereda PASS actual.
 - PBI-025/PBI-026/PBI-028 fueron separados de Operational Session,
   Reinforced Authorization y Extended Observability respectivamente.
-- PBI-027 está `Done` tras su cierre documental canónico; PBI-038 integra un
-  seguimiento aprobado sin reabrirlo. `Released` y deploy permanecen fuera de
-  alcance.
+- PBI-027 está `Done` tras su cierre documental canónico; PBI-038 cerró el
+  seguimiento aprobado sin reabrirlo mediante PR #40 y CI exacta de `main`
+  GREEN. `Released` y deploy permanecen fuera de alcance.
 - PBI-029 tiene threat model/DoR `PASS`, riesgo `CRITICAL` aceptado, merge
   funcional, CI autoritativo GREEN de `main`, Owner Acceptance, cierre
   documental integrado y CI post-cierre GREEN. Está `Done`; `Released` y deploy
@@ -124,5 +125,5 @@ su clasificación explícita.
 
 ## Próxima revisión
 
-Completar el CI exacto y focused review de PBI-038. No iniciar otro PBI,
-liberar ni desplegar.
+No existe siguiente candidato seleccionado. No iniciar otro PBI, liberar ni
+desplegar sin nueva autorización Owner.

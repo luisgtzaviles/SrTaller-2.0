@@ -13,13 +13,13 @@ producto y condiciones pendientes antes de la siguiente iteración.
 PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos. SPRINT-02 está
 `Active`.
 **Fase:** Operational Authentication & Authorization, con PBI-025/PBI-034
-`Done`, PBI-026/PBI-028 `Done` y G3–G5 `PASS`; PBI-038 es Current PBI y WIP
-`1/1`.
+`Done`, PBI-026/PBI-028/PBI-038 `Done` y G3–G5 `PASS`; Current PBI es `NONE`
+y WIP `0/1`.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
-**Gate actual de integración:** PBI-028 cerró mediante PR #39,
-`2b712fc3a3842f197324e8870011bf170846ddb8` y CI `34249869167`; PBI-038
-requiere candidate CI y focused review.
+**Última integración:** PBI-038 cerró mediante PR #40,
+`5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI `34280510716` GREEN;
+`Released: NO`. No existe candidato siguiente seleccionado.
 Véase [Current Repository State](CURRENT_STATE.md#git-y-ci).
 
 ## Revisión dirigida de Sprint 00

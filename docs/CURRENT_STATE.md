@@ -2,11 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** Snapshot de baseline y candidato activo PBI-038.
+- **Estado:** Snapshot de baseline post-merge PBI-038.
 - **Baseline auditada:** `main` en
-  `2b712fc3a3842f197324e8870011bf170846ddb8`.
-- **CI autoritativo de la baseline:** run `34249869167`, `SUCCESS`; VC-024
-  run-1, run-2 y comparison verdes sobre ese SHA.
+  `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`.
+- **CI autoritativo de la baseline:** run `34280510716`, `SUCCESS`; VC-024
+  run-1, run-2 y comparison verdes sobre el HEAD actual.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, release, deploy, migración ni infraestructura.
 
@@ -27,17 +27,17 @@ PBI-037 es el slice de administración Users & Roles autorizado por Owner y
 materializado dentro del checkpoint PBI-028. No es un segundo PBI actual ni
 tiene un lifecycle `Done` independiente: no reabre PBI-032/PBI-033.
 
-PBI-038 es el único PBI actual de SPRINT-02: endurece e integra el trabajo
-local aprobado de Timezone Foundation sin reabrir PBI-027 ni introducir una
-capacidad de producto distinta. Está en preparación de candidato; merge,
-release y deploy permanecen pendientes de sus gates propios.
+PBI-038 está `Done` efectivo: PR #40 integró la Timezone Foundation en `main`
+sin reabrir PBI-027 ni introducir una capacidad de producto distinta. Su
+exact-main CI está verde. `Released: NO`; no se autorizó deploy. No existe PBI
+actual ni siguiente candidato seleccionado.
 
 ## Git y CI
 
 | Hecho | Estado |
 |---|---|
 | Baseline | `main` |
-| HEAD auditado / `origin/main` | `2b712fc3a3842f197324e8870011bf170846ddb8` |
+| HEAD auditado / `origin/main` | `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` |
 | Divergencia al iniciar este cierre | `0/0` |
 | Working tree al iniciar | limpio |
 | PR #37 funcional | merge ordinario `ab8e8ba9a1274030e27ad920d61c66ed461bf122` |
@@ -46,6 +46,8 @@ release y deploy permanecen pendientes de sus gates propios.
 | CI exacta de PR #38 en `main` | `34197268832` SUCCESS; run-1/run-2/comparison GREEN |
 | PR #39 cierre canónico PBI-028 | merge ordinario `2b712fc3a3842f197324e8870011bf170846ddb8` |
 | CI exacta de PR #39 en `main` | `34249869167` SUCCESS; run-1/run-2/comparison GREEN |
+| PR #40 Timezone Foundation | merge ordinario `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` del candidato `798e0060e910562cd227824be8949876725a5ee4` |
+| CI exacta de PR #40 en `main` | `34280510716` SUCCESS; run-1 `102243846790`, run-2 `102243847051` y comparison `102247925801` GREEN |
 
 ## Capacidades integradas relevantes
 
@@ -73,17 +75,18 @@ release y deploy permanecen pendientes de sus gates propios.
 
 ## Roadmap y WIP
 
-| Elemento | Estado preventivo de este closure PR |
+| Elemento | Estado efectivo post-merge |
 |---|---|
 | Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
-| Current PBI | `PBI-038` — Timezone Foundation Integration and Hardening |
-| WIP | `1/1` |
+| Current PBI | `NONE` |
+| WIP | `0/1` |
 | PBI-028 | `Done`; `Released: NO` |
 | G5 AUDIT | `PASS` |
 | PBI-037 | Slice integrado y trazable dentro de PBI-028; sin lifecycle independiente |
-| Next candidate | `NONE` — no se selecciona trabajo posterior mientras PBI-038 esté en ejecución |
+| PBI-038 | `Done`; `Released: NO`; `Branch.timeZone: America/Hermosillo`; UTC storage invariant `PASS` |
+| Next candidate | `NONE` — no se seleccionó trabajo posterior |
 
 ## Próxima acción
 
-Completar el candidato PBI-038, su CI autoritativo y focused review; detenerse
-para autorización Owner de merge. No iniciar otro PBI ni desplegar.
+Esperar selección, readiness y autorización Owner de un nuevo PBI. No iniciar
+trabajo, liberar ni desplegar.

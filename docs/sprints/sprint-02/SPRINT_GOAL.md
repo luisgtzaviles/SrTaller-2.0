@@ -5,10 +5,11 @@
 - **Sprint:** SPRINT-02.
 - **Estado:** Active.
 - **Periodo:** TBD.
-- **PBI actual:** `PBI-038` — Timezone Foundation Integration and Hardening.
-- **WIP:** 1/1.
-- **Autoridad:** Owner autorizó esta ronda acotada de hardening e integración;
-  PBI-028 está `Done`, G5 `PASS` y PBI-038 no autoriza deploy o release.
+- **PBI actual:** `NONE`.
+- **WIP:** 0/1.
+- **Autoridad:** PBI-038 cerró por PR #40 y CI exacta de `main`; un PBI nuevo
+  requiere selección, readiness y autorización Owner. No existe autorización
+  de release o deploy.
 
 ## Objetivo
 
@@ -40,11 +41,13 @@ PBI antes de cerrar canónicamente el anterior.
   reales en el candidato local; no “Operador sintético”.
 - [x] PostgreSQL 18.4, arquitectura, Light/Dark, responsive, full verify, OCI,
   browser proof, focused review y CI de PR #37/PR #38 GREEN.
-- [~] PBI-038 — Timezone Foundation Integration and Hardening: candidato en
-  preparación; alcance local aceptado, no autoriza deploy ni merge.
+- [x] PBI-038 — Timezone Foundation Integration and Hardening: PR #40 merge
+  `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN;
+  `Done`, sin release ni deploy.
+- [x] Current PBI `NONE`, WIP `0/1` y Next candidate `NONE`.
 - [ ] Released: NO; deploy: NO.
 
 ## Próxima revisión
 
-- **Fecha:** al completar CI/focused review del candidato PBI-038.
-- **Disparador:** CI exacto del candidato o contradicción material.
+- **Fecha:** al seleccionarse un nuevo PBI.
+- **Disparador:** nueva autorización Owner o contradicción material.

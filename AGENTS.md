@@ -16,7 +16,7 @@ Antes de actuar, leer en este orden:
 
 1. [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md).
 2. [`docs/product/MVP_OPERATING_ROADMAP.md`](docs/product/MVP_OPERATING_ROADMAP.md).
-3. `docs/work/ACTIVE_CHECKLIST.md`, si existe.
+3. [`docs/work/ACTIVE_CHECKLIST.md`](docs/work/ACTIVE_CHECKLIST.md).
 4. Los documentos del Sprint activo.
 5. El documento del PBI actual.
 6. Los ADR/DEC y los contratos de entrega relevantes al alcance, incluidos
@@ -67,8 +67,8 @@ evidencia.
 
 ### Reglas del checklist
 
-- Crear o reconciliar `docs/work/ACTIVE_CHECKLIST.md` antes de iniciar trabajo
-  sustancial cuando exista un Goal o milestone activo.
+- Leer `docs/work/ACTIVE_CHECKLIST.md` al inicio de cualquier Goal de
+  desarrollo. Crearlo antes de continuar si existe trabajo activo y falta.
 - Mantener un único checklist activo.
 - Al reanudar trabajo existente, leer primero el checklist y reconciliarlo
   contra Git, `CURRENT_STATE.md`, Roadmap, Sprint y PBI antes de confiar en él.
@@ -91,6 +91,8 @@ evidencia.
 - Cuando el milestone termine, archivar el checklist en
   `docs/work/history/` con un nombre estable y crear uno nuevo cuando comience
   el siguiente milestone.
+- Reconciliarlo antes de entregar el turno: milestone/meta funcional, Sprint,
+  Current PBI, WIP, progreso, Current, Next, blockers y timestamp.
 
 ### Estados visuales
 
@@ -117,42 +119,15 @@ El checklist debe incluir como mínimo:
 - Bloqueos.
 - Última actualización.
 
-Ejemplo:
+## Contratos transversales y memoria del repositorio
 
-```md
-# Active Development Checklist
+Antes de modificar una superficie que persista, consulte, filtre, agrupe o
+presente fechas/horas, leer
+[`docs/architecture/DATA_ARCHITECTURE.md`](docs/architecture/DATA_ARCHITECTURE.md).
+La timezone del browser, servidor/proceso o la memoria del chat no sustituyen
+ese contrato canónico.
 
-Milestone: Visible Identity Checkpoint
-Sprint: Sprint 02
-Current PBI: PBI-028
-Status: In progress
-Progress: 6 / 9
-Current: Minimum Business Audit
-Next: Operational Note con actor real
-Blocked: No
-Last updated: 2026-09-07 14:40
-
-## Milestone
-
-- [x] Trusted Station Context
-- [x] User Directory
-- [x] Roles / Capabilities
-- [x] PIN Credential
-- [x] Operational Session
-- [x] Contextual Authorization
-- [~] Minimum Business Audit
-- [ ] Operational Note con actor real
-- [ ] Owner local iteration
-
-## Current PBI
-
-- [x] Owner decisions
-- [x] Definition of Ready
-- [~] Functional implementation
-- [ ] PostgreSQL material verification
-- [ ] Local proof
-- [ ] Full verification
-- [ ] PR / CI
-- [ ] Review
-- [ ] Merge / canonical closure
-```
+Las decisiones duraderas deben materializarse en la fuente canónica del
+repositorio. Si una decisión transversal aprobada cambia durante el trabajo,
+identificar y actualizar esa fuente antes del cierre; no usar
+`ACTIVE_CHECKLIST.md` como registro permanente de arquitectura.
