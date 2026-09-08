@@ -5,10 +5,10 @@ Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-028 — Minimum Business Audit and Correlation; PBI-037 is an Owner-authorized product slice within this checkpoint
 Status: Hardened Draft PR candidate green; final exact-HEAD CI and focused review in progress
 Progress: 11 / 12 checkpoint blocks completed
-Current work: Final canonical next-action wording reconciled; run exact-HEAD CI and focused review on the resulting documentation commit.
+Current work: All canonical lifecycle wording reconciled; run exact-HEAD CI and focused review on the resulting documentation commit.
 Next block: Stop at Owner merge authorization after final run-1/run-2/comparison and review are green.
 Blockers: No technical blocker. Merge and deploy remain unauthorized.
-Updated: 2026-09-07 22:53 MST
+Updated: 2026-09-07 22:56 MST
 
 ## Master checkpoint
 

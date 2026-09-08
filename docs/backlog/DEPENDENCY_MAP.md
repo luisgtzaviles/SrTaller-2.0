@@ -93,8 +93,8 @@ flowchart TD
   `4db5d9384d13c200eb2031dceb32dd89efcca64d`, exact-main CI `34158203438` y
   Owner Acceptance, cierre PR #36 merge
   `0b39e3794a97c22d5471c0b6dfa278026f237b03` y CI `34161029937` completos.
-  G4 es `PASS`; PBI-028 está `In progress` con DoR/Owner Start propios y un
-  checkpoint local endurecido pendiente de Draft PR/CI/review.
+  G4 es `PASS`; PBI-028 está `In progress` con DoR/Owner Start propios, Draft
+  PR #37 abierto y CI/focused review del HEAD final pendientes.
 
 ## Stage 2
 
