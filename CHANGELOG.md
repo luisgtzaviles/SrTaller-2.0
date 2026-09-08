@@ -6,6 +6,13 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Governance
 
+- Preparado el checkpoint local endurecido PBI-028/PBI-037 sobre baseline
+  `0b39e3794a97c22d5471c0b6dfa278026f237b03`, con recovery commit
+  `f608ef165763c86a592f5062218cd93b6ca0eb7a` e implementation checkpoint
+  `cc2b756`. PBI-028 permanece `In progress`, Current PBI único y WIP `1/1`;
+  PBI-037 queda trazado como slice Owner-autorizado. Draft PR, CI, focused
+  review, merge y Owner Acceptance permanecen pendientes; release/deploy: NO.
+
 - Preparado el cierre canónico de PBI-026 después de candidate
   `54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7`, CI `34157187442` GREEN,
   focused Critical-risk review PASS (`0B/0H/0M/0L`), PR #35 merge funcional
@@ -30,6 +37,34 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   WIP `0/1` y PBI-026 seleccionado sin iniciar.
 
 ### Desarrollo local
+
+- Endurecidos PIN-only login, colisiones por Branch, Argon2id/pepper,
+  lockout/rate-limit, Sessions y administración server-side de Users/Roles con
+  revalidación transaccional de autoridad. PBI-028 confirma Operational Note y
+  auditoría allowlisted/append-only en una transacción, con idempotencia y
+  correlation UUID server-side también en errores. Users/Roles usan lenguaje
+  de negocio, múltiples Roles, lifecycle sin delete y nunca muestran PIN.
+  El focused review fue remediado con autoridad temporal posterior al último
+  lock de Repair y las tres intercalaciones de revocación, rate bucket
+  compartido que no se borra por éxito ajeno,
+  continuidad de administrador PIN-authenticable, autoridad dual para cambiar
+  PIN, proyección administrativa tenant-wide e idempotencia durable de edición
+  de perfil. El cierre de hardening agrega idempotencia durable y concurrencia
+  segura a la creación ordinaria de Users, reintento inmutable de perfil,
+  exclusión de perfiles PIN/pepper no soportados y composición canónica de
+  capabilities administrativas; el cliente exige esa proyección fail-closed y
+  Configuración presenta sus roles visuales en lenguaje de producto accesible.
+  `pnpm run verify` final sobre `9c9ba04` pasó `630/613/17/0`;
+  PostgreSQL 18.4 material `8/8` con fingerprint
+  `50d539575718151676ce139a1a9b079c383559049e6207930538173ca343066d`;
+  OCI final `sha256:64648ccfd42d8147765d0d5b5a2dcb7b99cd545fa5376b827a713d9b0f905a5b`
+  pasó fresh `31` + rerun `0/0`, uid no-root, root read-only, rutas/health y
+  SIGTERM limpio. Frozen install, secret scan del candidato y los 601 enlaces
+  Markdown locales pasan; la auditoría productiva reportó `0` vulnerabilidades,
+  Light/Dark, responsive y real-actor reload PASS. Los PIN demo son inputs
+  efímeros del seed y `.env.local` limpia claves heredadas; fallos del
+  verificador OCI tampoco imprimen secretos generados. Falta sólo el
+  walkthrough PIN-sensitive antes del Draft PR.
 
 - Materializado el candidato local PBI-026 Contextual Authorization con
   resolución server-side fresca de Station, Session, User y capabilities,

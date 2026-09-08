@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -52,9 +52,13 @@ const requiredLocalKeys = Object.freeze([
   'SR_STATION_BOOTSTRAP_SECRET',
   'SR_USER_BOOTSTRAP_SECRET',
   'SR_PIN_PEPPER',
+]);
+
+const ephemeralLocalPinKeys = Object.freeze([
   'SR_LOCAL_PIN_JORGE',
   'SR_LOCAL_PIN_MARIA',
   'SR_LOCAL_PIN_CARLOS',
+  'SR_LOCAL_PIN_LUIS',
 ]);
 
 const forbiddenLocalKeys = Object.freeze([
@@ -76,10 +80,6 @@ function randomPinPepper() {
   return randomBytes(32).toString('base64url');
 }
 
-function randomLocalPin() {
-  return String(randomInt(0, 1_000_000)).padStart(6, '0');
-}
-
 function defaultLocalValues() {
   return Object.freeze({
     SR_LOCAL_ENVIRONMENT: LOCAL_ENVIRONMENT,
@@ -99,9 +99,6 @@ function defaultLocalValues() {
     SR_STATION_BOOTSTRAP_SECRET: randomSecret(),
     SR_USER_BOOTSTRAP_SECRET: randomSecret(),
     SR_PIN_PEPPER: randomPinPepper(),
-    SR_LOCAL_PIN_JORGE: randomLocalPin(),
-    SR_LOCAL_PIN_MARIA: randomLocalPin(),
-    SR_LOCAL_PIN_CARLOS: randomLocalPin(),
   });
 }
 
@@ -211,22 +208,15 @@ export async function ensureLocalEnvironment({ create = true } = {}) {
     await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
     await chmod(LOCAL_ENV_FILE, 0o600);
   }
-  for (const key of [
-    'SR_LOCAL_PIN_JORGE',
-    'SR_LOCAL_PIN_MARIA',
-    'SR_LOCAL_PIN_CARLOS',
-  ]) {
-    if (values[key] === undefined && create) {
-      values = {
-        ...values,
-        [key]: randomLocalPin(),
-      };
-      const contents = `${Object.entries(values)
-        .map(([entryKey, entryValue]) => `${entryKey}=${entryValue}`)
-        .join('\n')}\n`;
-      await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
-      await chmod(LOCAL_ENV_FILE, 0o600);
-    }
+  const persistedValues = Object.fromEntries(
+    Object.entries(values).filter(([key]) => !ephemeralLocalPinKeys.includes(key)),
+  );
+  if (Object.keys(persistedValues).length !== Object.keys(values).length) {
+    const contents = `${Object.entries(persistedValues)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n')}\n`;
+    await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
+    await chmod(LOCAL_ENV_FILE, 0o600);
   }
   return Object.freeze({ ...assertLocalTarget(values) });
 }
@@ -316,6 +306,7 @@ export function cleanChildEnvironment(base = process.env) {
   for (const key of Object.keys(environment)) {
     if (
       forbiddenLocalKeys.includes(key) ||
+      ephemeralLocalPinKeys.includes(key) ||
       key === 'DATABASE_URL' ||
       key.startsWith('SR_DB_') ||
       key.startsWith('SR_TEST_DB_')
@@ -353,9 +344,11 @@ export function localUserRows() {
 export function localAccessCapabilityRows() {
   return Object.freeze([
     'access_matrix.read',
+    'access_matrix.manage',
     'repairs.add_note',
     'repairs.read',
     'users.read',
+    'users.manage',
   ].map((capabilityCode) => Object.freeze({
     capabilityCode,
     createdAt: LOCAL_SEED_TIMESTAMP,
@@ -387,9 +380,11 @@ export function localAccessRoleCapabilityRows() {
   });
   const rows = [
     [roleIds.administrator, 'access_matrix.read'],
+    [roleIds.administrator, 'access_matrix.manage'],
     [roleIds.administrator, 'repairs.add_note'],
     [roleIds.administrator, 'repairs.read'],
     [roleIds.administrator, 'users.read'],
+    [roleIds.administrator, 'users.manage'],
     [roleIds.customerService, 'repairs.add_note'],
     [roleIds.customerService, 'repairs.read'],
     [roleIds.technician, 'repairs.add_note'],

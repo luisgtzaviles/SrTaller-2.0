@@ -5,6 +5,7 @@ import test from 'node:test';
 import {
   EXPECTED_NODE_VERSION,
   EXPECTED_PNPM_VERSION,
+  EXPECTED_PNPM_WORKSPACE_MANIFEST,
   parsePnpmVersion,
   readJson,
   validateRuntimeFacts,
@@ -56,7 +57,7 @@ test('package manifest pins the accepted baseline and blocks lifecycle scripts',
   assert.deepEqual(supplyChainPolicy.allowlist, []);
   assert.equal(
     workspaceManifest,
-    'packages:\n  - .\n  - apps/dev-preview-web\n',
+    EXPECTED_PNPM_WORKSPACE_MANIFEST,
   );
   assert.equal(previewManifest.dependencies.react, '19.2.8');
   assert.equal(previewManifest.devDependencies.vite, '8.2.0');
@@ -108,7 +109,10 @@ test('technical shell has only the authorized health route surface', async () =>
     await Promise.all(sourceFiles.map((file) => readFile(file, 'utf8')))
   ).join('\n');
 
-  assert.match(source, /providers: \[HealthReadiness, TechnicalShellService\]/u);
+  assert.match(
+    source,
+    /providers: \[[\s\S]*HealthReadiness,[\s\S]*TechnicalShellService,[\s\S]*APP_FILTER[\s\S]*HttpCorrelationExceptionFilter[\s\S]*\]/u,
+  );
   assert.match(source, /@Controller\(\)/u);
   assert.match(source, /@Get\('livez'\)/u);
   assert.match(source, /@Get\('readyz'\)/u);

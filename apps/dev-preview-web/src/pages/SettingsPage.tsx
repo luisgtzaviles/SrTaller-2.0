@@ -1,11 +1,14 @@
-import { Check, Moon, RotateCcw, Sparkles, UserCircle } from 'lucide-react';
+import { Check, Moon, RotateCcw, ShieldCheck, Sparkles, UserCircle, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { BRAND_DEFAULT, normalizeHex } from '../foundation/accent.mjs';
 import { useTheme } from '../foundation/theme.js';
 import { Button, Field, Input } from '../components/ui/controls.js';
+import { ButtonLink } from '../components/ui/controls.js';
 import { PageHeader } from '../components/ui/navigation.js';
 import { classNames } from '../components/ui/class-names.js';
+import { hasOperationalCapability } from '../session/session-capabilities.mjs';
+import type { OperationalCapability } from '../session/session-api.js';
 import styles from './settings-page.module.css';
 
 const BRAND_PRESETS = Object.freeze([
@@ -18,7 +21,9 @@ const BRAND_PRESETS = Object.freeze([
   { name: 'Rojo', hex: '#DC2626' },
 ] as const);
 
-export function SettingsPage(): React.JSX.Element {
+export function SettingsPage({ capabilities }: Readonly<{
+  capabilities: readonly OperationalCapability[];
+}>): React.JSX.Element {
   const { brand, resolvedTheme, syntheticAccent, setSyntheticAccent } = useTheme();
   const defaultInput = BRAND_DEFAULT;
   const sourceInput = syntheticAccent ?? defaultInput;
@@ -36,6 +41,10 @@ export function SettingsPage(): React.JSX.Element {
     [sourceInput],
   );
   const brandWasAdapted = Boolean(syntheticAccent && brand.fallback);
+  const canReadUsers = hasOperationalCapability(capabilities, 'users.read');
+  const canReadRoles = hasOperationalCapability(capabilities, 'access_matrix.read');
+  const canManageUsers = hasOperationalCapability(capabilities, 'users.manage');
+  const canManageRoles = hasOperationalCapability(capabilities, 'access_matrix.manage');
 
   const applyInput = (value: string): void => {
     const normalized = normalizeHex(value);
@@ -55,6 +64,34 @@ export function SettingsPage(): React.JSX.Element {
         title="Configuración"
         description="Configura la apariencia y preferencias de esta sucursal."
       />
+
+      <section className={styles.appearanceSection} aria-labelledby="administration-title">
+        <header className={styles.sectionHeader}>
+          <span className={styles.sectionEyebrow}>Administración local</span>
+          <h2 id="administration-title">Equipo y permisos</h2>
+          <p>Consulta las identidades operativas y los permisos disponibles para el equipo.</p>
+        </header>
+        {canReadUsers || canReadRoles ? (
+          <div className={styles.administrationGrid}>
+            {canReadUsers ? (
+              <article className={styles.administrationCard}>
+                <span className={styles.cardIcon} aria-hidden="true"><UsersRound size={20} /></span>
+                <div><h3>Usuarios</h3><p>Identidades operativas, roles, estado de acceso y PIN.</p></div>
+                <ButtonLink to="/configuracion/usuarios" tone="primary">{canManageUsers ? 'Administrar usuarios' : 'Consultar usuarios'}</ButtonLink>
+              </article>
+            ) : null}
+            {canReadRoles ? (
+              <article className={styles.administrationCard}>
+                <span className={styles.cardIcon} aria-hidden="true"><ShieldCheck size={20} /></span>
+                <div><h3>Roles y permisos</h3><p>Perfiles reutilizables que determinan qué puede hacer cada persona.</p></div>
+                <ButtonLink to="/configuracion/roles" tone="secondary">{canManageRoles ? 'Administrar roles' : 'Consultar roles'}</ButtonLink>
+              </article>
+            ) : null}
+          </div>
+        ) : (
+          <p className={styles.restrictedCopy}>Tu sesión no tiene acceso a la administración del equipo.</p>
+        )}
+      </section>
 
       <section className={styles.appearanceSection} aria-labelledby="appearance-title">
         <header className={styles.sectionHeader}>
@@ -113,8 +150,8 @@ export function SettingsPage(): React.JSX.Element {
             </div>
 
             <div className={styles.presetBlock}>
-              <span className={styles.controlLabel}>Presets útiles</span>
-              <div className={styles.presetList} role="group" aria-label="Presets de color de marca">
+              <span className={styles.controlLabel}>Opciones predeterminadas</span>
+              <div className={styles.presetList} role="group" aria-label="Opciones predeterminadas de color de marca">
                 {BRAND_PRESETS.map((preset) => {
                   const isSelected = selectedPreset === preset.name;
                   return (
@@ -139,7 +176,7 @@ export function SettingsPage(): React.JSX.Element {
             <div className={styles.stateNote} role="status" aria-live="polite">
               <span className={styles.stateDot} aria-hidden="true" />
               <span>Guardado automáticamente en este navegador.</span>
-              {brandWasAdapted ? <strong>El resolver adaptó este color para mantener el contraste.</strong> : null}
+              {brandWasAdapted ? <strong>El sistema ajustó este color para mantener el contraste.</strong> : null}
             </div>
 
             <Button tone="secondary" onClick={restoreDefault}>
@@ -154,7 +191,7 @@ export function SettingsPage(): React.JSX.Element {
                 <span className={styles.previewEyebrow}>Vista previa</span>
                 <h3 id="brand-preview-title">Así se verá en la operación</h3>
               </div>
-              <span className={styles.themeBadge}>{resolvedTheme === 'light' ? 'Light' : 'Dark'}</span>
+              <span className={styles.themeBadge}>{resolvedTheme === 'light' ? 'Tema claro' : 'Tema oscuro'}</span>
             </div>
             <div className={styles.previewSurface}>
               <div className={styles.previewTopline}>
@@ -172,20 +209,20 @@ export function SettingsPage(): React.JSX.Element {
                   <span>Reparaciones</span>
                 </div>
                 <label className={styles.previewFocusField}>
-                  <span>Campo con focus</span>
-                  <input aria-label="Campo con focus de vista previa" defaultValue="Cliente sintético" />
+                  <span>Campo enfocado</span>
+                  <input aria-label="Campo enfocado de vista previa" defaultValue="Cliente sintético" />
                 </label>
               </div>
             </div>
             <dl className={styles.previewRoleGrid} aria-label="Roles de marca resueltos">
-              <div><dt>Input</dt><dd><code>{brand.input}</code></dd></div>
-              <div><dt>Base foreground</dt><dd><code>{brand.onBase}</code></dd></div>
-              <div><dt>Surface</dt><dd><code>{brand.surface}</code></dd></div>
-              <div><dt>Action</dt><dd><code>{brand.action}</code></dd></div>
-              <div><dt>Surface foreground</dt><dd><code>{brand.surfaceFocus}</code></dd></div>
-              <div><dt>Action foreground</dt><dd><code>{brand.contrast}</code></dd></div>
+              <div><dt>Color elegido</dt><dd><code>{brand.input}</code></dd></div>
+              <div><dt>Texto principal</dt><dd><code>{brand.onBase}</code></dd></div>
+              <div><dt>Superficie</dt><dd><code>{brand.surface}</code></dd></div>
+              <div><dt>Acción</dt><dd><code>{brand.action}</code></dd></div>
+              <div><dt>Texto sobre superficie</dt><dd><code>{brand.surfaceFocus}</code></dd></div>
+              <div><dt>Texto sobre acción</dt><dd><code>{brand.contrast}</code></dd></div>
             </dl>
-            <p className={styles.previewNote}>El resolver mantiene fidelidad, contraste y separación de roles para {resolvedTheme}; success, warning, danger e info permanecen independientes.</p>
+            <p className={styles.previewNote}>El color conserva fidelidad y contraste en el tema {resolvedTheme === 'light' ? 'claro' : 'oscuro'}; los estados de éxito, advertencia, peligro e información permanecen independientes.</p>
           </div>
         </article>
       </section>

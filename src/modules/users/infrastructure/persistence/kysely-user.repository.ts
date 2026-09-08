@@ -1,11 +1,15 @@
-import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
-import { useDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
+  InternalDatabasePersistenceConnection,
   InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
+import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
+import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type {
+  UserCreateCommandRow,
   UserLifecycleCommandRow,
+  UserProfileUpdateCommandRow,
   UserRow,
 } from '../../../../infrastructure/database/database-types.js';
 import { parseTenantId } from '../../../tenancy/index.js';
@@ -17,15 +21,21 @@ import {
 import { UserPersistenceError } from '../../application/ports/user-repository.port.js';
 import type {
   BootstrapUserInput,
+  CreateUserInput,
   TransitionUserInput,
+  UpdateUserInput,
   UserRecord,
   UserRepositoryPort,
+  UserMutationCommitGuard,
   UserScope,
 } from '../../application/ports/user-repository.port.js';
 
 type UserExecutor = InternalDatabasePersistenceExecutor<'users'>;
 type UserOperation = <Result>(
   operation: InternalDatabasePersistenceOperation<'users', Result>,
+) => Promise<Result>;
+type UserTransactionOperation = <Result>(
+  operation: (executor: UserExecutor, transactionContext: object) => Promise<Result>,
 ) => Promise<Result>;
 
 const canonicalUuid =
@@ -161,6 +171,95 @@ function validateTransitionInput(input: TransitionUserInput): Readonly<{
   }
 }
 
+function validateUpdateInput(input: UpdateUserInput): Readonly<{
+  userId: UpdateUserInput['userId'];
+  displayName: string;
+  operationalIdentifier: string | null;
+  expectedVersion: number;
+  clientRequestId: string;
+  occurredAt: Date;
+}> {
+  try {
+    if (!Number.isSafeInteger(input?.expectedVersion) || input.expectedVersion < 0 || !validInstant(input.occurredAt)) {
+      throw new Error('invalid update');
+    }
+    return Object.freeze({
+      userId: parseUserId(input.userId),
+      displayName: validateName(input.displayName),
+      operationalIdentifier: validateOperationalIdentifier(input.operationalIdentifier),
+      expectedVersion: input.expectedVersion,
+      clientRequestId: validateClientRequestId(input.clientRequestId),
+      occurredAt: new Date(input.occurredAt),
+    });
+  } catch {
+    throw new UserPersistenceError('USER_INPUT_INVALID');
+  }
+}
+
+function matchesProfileUpdateCommand(
+  command: UserProfileUpdateCommandRow,
+  input: ReturnType<typeof validateUpdateInput>,
+): boolean {
+  return command.user_id === input.userId &&
+    command.requested_display_name === input.displayName &&
+    command.requested_operational_identifier === input.operationalIdentifier &&
+    command.expected_version === input.expectedVersion;
+}
+
+function mapProfileUpdateCommand(command: UserProfileUpdateCommandRow): UserRecord {
+  return Object.freeze({
+    userId: parseUserId(command.user_id),
+    tenantId: parseTenantId(command.tenant_id),
+    displayName: command.result_display_name,
+    operationalIdentifier: command.result_operational_identifier,
+    status: parseUserStatus(command.result_status),
+    version: command.result_version,
+    createdAt: command.result_created_at.toISOString(),
+    updatedAt: command.result_updated_at.toISOString(),
+  });
+}
+
+function replayProfileUpdateCommand(
+  command: UserProfileUpdateCommandRow,
+  input: ReturnType<typeof validateUpdateInput>,
+): UserRecord {
+  if (!matchesProfileUpdateCommand(command, input)) {
+    throw new UserPersistenceError('USER_IDEMPOTENCY_CONFLICT');
+  }
+  return mapProfileUpdateCommand(command);
+}
+
+function matchesCreateCommand(
+  command: UserCreateCommandRow,
+  input: ReturnType<typeof validateBootstrapInput>,
+): boolean {
+  return command.requested_display_name === input.displayName &&
+    command.requested_operational_identifier === input.operationalIdentifier;
+}
+
+function mapCreateCommand(command: UserCreateCommandRow): UserRecord {
+  return Object.freeze({
+    userId: parseUserId(command.user_id),
+    tenantId: parseTenantId(command.tenant_id),
+    displayName: command.result_display_name,
+    operationalIdentifier: command.result_operational_identifier,
+    status: parseUserStatus(command.result_status),
+    version: command.result_version,
+    createdAt: command.result_created_at.toISOString(),
+    updatedAt: command.result_updated_at.toISOString(),
+  });
+}
+
+function replayCreateCommand(
+  command: UserCreateCommandRow,
+  input: ReturnType<typeof validateBootstrapInput>,
+): UserRecord {
+  if (!matchesCreateCommand(command, input)) {
+    throw new UserPersistenceError('USER_IDEMPOTENCY_CONFLICT');
+  }
+  return mapCreateCommand(command);
+}
+
 function mapUserRecord(row: UserRow): UserRecord {
   return Object.freeze({
     userId: parseUserId(row.user_id),
@@ -220,7 +319,10 @@ function replayLifecycleCommand(
 }
 
 class KyselyUserRepository implements UserRepositoryPort {
-  constructor(private readonly execute: UserOperation) {}
+  constructor(
+    private readonly execute: UserOperation,
+    private readonly executeTransaction: UserTransactionOperation,
+  ) {}
 
   async list(scope: UserScope): Promise<readonly UserRecord[]> {
     const trustedScope = validateScope(scope);
@@ -371,15 +473,90 @@ class KyselyUserRepository implements UserRepositoryPort {
     }
   }
 
+  async create(scope: UserScope, input: CreateUserInput, guard?: UserMutationCommitGuard): Promise<UserRecord> {
+    const trustedScope = validateScope(scope);
+    const trustedInput = validateBootstrapInput(input);
+    const replay = async (): Promise<UserRecord | null> => this.executeTransaction(async (database, transactionContext) => {
+      if (guard && !await guard.confirmCurrent(transactionContext)) {
+        throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+      }
+      const command = await database
+        .selectFrom('user_create_commands')
+        .selectAll()
+        .where('tenant_id', '=', trustedScope.tenantId)
+        .where('client_request_id', '=', trustedInput.clientRequestId)
+        .executeTakeFirst();
+      return command ? replayCreateCommand(command, trustedInput) : null;
+    });
+    try {
+      const prior = await replay();
+      if (prior) return prior;
+      return await this.executeTransaction(async (database, transactionContext) => {
+        if (guard && !await guard.confirmCurrent(transactionContext)) {
+          throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+        }
+        const row = await database.insertInto('users').values({
+          user_id: trustedInput.userId,
+          tenant_id: trustedScope.tenantId,
+          display_name: trustedInput.displayName,
+          operational_identifier: trustedInput.operationalIdentifier,
+          status: 'active',
+          version: 0,
+          created_at: trustedInput.occurredAt,
+          updated_at: trustedInput.occurredAt,
+        }).returningAll().executeTakeFirstOrThrow();
+        const command = await database
+          .insertInto('user_create_commands')
+          .values({
+            tenant_id: trustedScope.tenantId,
+            client_request_id: trustedInput.clientRequestId,
+            user_id: row.user_id,
+            requested_display_name: trustedInput.displayName,
+            requested_operational_identifier: trustedInput.operationalIdentifier,
+            result_display_name: row.display_name,
+            result_operational_identifier: row.operational_identifier,
+            result_status: 'active',
+            result_version: 0,
+            result_created_at: row.created_at,
+            result_updated_at: row.updated_at,
+            applied_at: trustedInput.occurredAt,
+          })
+          .onConflict((conflict) =>
+            conflict.columns(['tenant_id', 'client_request_id']).doNothing(),
+          )
+          .returningAll()
+          .executeTakeFirst();
+        if (!command) {
+          throw new UserPersistenceError('USER_PERSISTENCE_CONFLICT');
+        }
+        if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+          throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+        }
+        return mapCreateCommand(command);
+      });
+    } catch (error: unknown) {
+      try {
+        const prior = await replay();
+        if (prior) return prior;
+      } catch (replayError: unknown) {
+        throw mapUserError(replayError);
+      }
+      throw mapUserError(error);
+    }
+  }
+
   async transition(
     scope: UserScope,
     input: TransitionUserInput,
+    guard?: UserMutationCommitGuard,
   ): Promise<UserRecord> {
     const trustedScope = validateScope(scope);
     const trustedInput = validateTransitionInput(input);
     try {
-      return await this.execute(async (database: UserExecutor) =>
-        database.transaction().execute(async (transaction) => {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+          if (guard && !await guard.confirmCurrent(transactionContext)) {
+            throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+          }
           const previousCommand = await transaction
             .selectFrom('user_lifecycle_commands')
             .selectAll()
@@ -463,20 +640,121 @@ class KyselyUserRepository implements UserRepositoryPort {
               .executeTakeFirstOrThrow();
             return replayLifecycleCommand(prior, trustedInput);
           }
+          if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+            throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+          }
           return mapLifecycleCommand(command);
-        }),
-      );
+        });
     } catch (error: unknown) {
       throw mapUserError(error);
     }
   }
+
+  async update(scope: UserScope, input: UpdateUserInput, guard?: UserMutationCommitGuard): Promise<UserRecord> {
+    const trustedScope = validateScope(scope);
+    const trustedInput = validateUpdateInput(input);
+    try {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+        if (guard && !await guard.confirmCurrent(transactionContext)) {
+          throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+        }
+        const prior = await transaction
+          .selectFrom('user_profile_update_commands')
+          .selectAll()
+          .where('tenant_id', '=', trustedScope.tenantId)
+          .where('client_request_id', '=', trustedInput.clientRequestId)
+          .executeTakeFirst();
+        if (prior) return replayProfileUpdateCommand(prior, trustedInput);
+        const current = await transaction.selectFrom('users').select('version')
+          .where('tenant_id', '=', trustedScope.tenantId).where('user_id', '=', trustedInput.userId).executeTakeFirst();
+        if (!current) throw new UserPersistenceError('USER_NOT_FOUND');
+        if (current.version !== trustedInput.expectedVersion) throw new UserPersistenceError('USER_STALE_WRITE');
+        const row = await transaction.updateTable('users').set({
+          display_name: trustedInput.displayName,
+          operational_identifier: trustedInput.operationalIdentifier,
+          version: current.version + 1,
+          updated_at: trustedInput.occurredAt,
+        }).where('tenant_id', '=', trustedScope.tenantId).where('user_id', '=', trustedInput.userId)
+          .where('version', '=', trustedInput.expectedVersion).returningAll().executeTakeFirst();
+        if (!row) throw new UserPersistenceError('USER_STALE_WRITE');
+        const command = await transaction
+          .insertInto('user_profile_update_commands')
+          .values({
+            tenant_id: trustedScope.tenantId,
+            client_request_id: trustedInput.clientRequestId,
+            user_id: trustedInput.userId,
+            requested_display_name: trustedInput.displayName,
+            requested_operational_identifier: trustedInput.operationalIdentifier,
+            expected_version: trustedInput.expectedVersion,
+            result_display_name: row.display_name,
+            result_operational_identifier: row.operational_identifier,
+            result_status: row.status,
+            result_version: row.version,
+            result_created_at: row.created_at,
+            result_updated_at: row.updated_at,
+            applied_at: trustedInput.occurredAt,
+          })
+          .onConflict((conflict) =>
+            conflict.columns(['tenant_id', 'client_request_id']).doNothing(),
+          )
+          .returningAll()
+          .executeTakeFirst();
+        if (!command) {
+          const concurrent = await transaction
+            .selectFrom('user_profile_update_commands')
+            .selectAll()
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('client_request_id', '=', trustedInput.clientRequestId)
+            .executeTakeFirstOrThrow();
+          return replayProfileUpdateCommand(concurrent, trustedInput);
+        }
+        if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+          throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
+        }
+        return mapProfileUpdateCommand(command);
+      });
+    } catch (error: unknown) { throw mapUserError(error); }
+  }
 }
 
 export function createKyselyUserRepository(
-  connection: DatabaseConnection,
+  connection: InternalDatabasePersistenceConnection,
 ): UserRepositoryPort {
-  return new KyselyUserRepository((operation) =>
-    useDatabasePersistenceExecutor(connection, 'users', operation),
+  let transactionTail = Promise.resolve();
+  return new KyselyUserRepository(
+    (operation) => useDatabasePersistenceExecutor(connection, 'users', operation),
+    async (operation) => {
+      let releaseTurn!: () => void;
+      const previousTurn = transactionTail;
+      transactionTail = new Promise<void>((resolve) => { releaseTurn = resolve; });
+      await previousTurn;
+      let operationFailed = false;
+      let operationError: unknown;
+      try {
+        return await runInTransaction(
+          connection as unknown as DatabaseConnection,
+          { isolationLevel: 'serializable' },
+          async (transactionContext) => {
+            try {
+              return await useTransactionalDatabasePersistenceExecutor(
+                transactionContext,
+                'users',
+                (executor) => operation(executor, transactionContext),
+              );
+            } catch (error: unknown) {
+              operationFailed = true;
+              operationError = error;
+              throw error;
+            }
+          },
+        );
+      } catch (error: unknown) {
+        if (operationFailed) throw operationError;
+        throw error;
+      } finally {
+        releaseTurn();
+      }
+    },
   );
 }
 

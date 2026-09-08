@@ -24,7 +24,7 @@ const { ResolveEffectiveCapabilitiesUseCase } = await import(
 const { RevokeRoleAssignmentUseCase } = await import(
   '../dist/modules/access/application/use-cases/revoke-role-assignment.use-case.js'
 );
-const { AccessInputError } = await import(
+const { AccessInputError, parseReplaceAccessRoleCapabilitiesInput } = await import(
   '../dist/modules/access/application/access-input.js'
 );
 
@@ -94,7 +94,9 @@ function rejectsInput(operation, parameter) {
 test('Access capability catalog is finite, action-specific and composed deterministically', () => {
   assert.deepEqual([...ACCESS_CAPABILITY_CATALOG], [
     'users.read',
+    'users.manage',
     'access_matrix.read',
+    'access_matrix.manage',
     'repairs.read',
     'repairs.add_note',
   ]);
@@ -108,6 +110,30 @@ test('Access capability catalog is finite, action-specific and composed determin
   );
   assert.equal(parseCapabilityCode('repairs.read'), 'repairs.read');
   assert.throws(() => parseCapabilityCode('administrator'), TypeError);
+});
+
+test('role capability replacement accepts the exact durable command contract', () => {
+  assert.deepEqual(
+    parseReplaceAccessRoleCapabilitiesInput({
+      expectedVersion: 2,
+      capabilityCodes: ['repairs.read', 'repairs.add_note'],
+      clientRequestId: requestId,
+    }),
+    {
+      expectedVersion: 2,
+      capabilityCodes: ['repairs.read', 'repairs.add_note'],
+      clientRequestId: requestId,
+    },
+  );
+  rejectsInput(
+    () => parseReplaceAccessRoleCapabilitiesInput({
+      expectedVersion: 2,
+      capabilityCodes: ['repairs.read'],
+      clientRequestId: requestId,
+      directPermission: true,
+    }),
+    'payload',
+  );
 });
 
 test('Access read use cases enforce exact tenant, branch and principal scopes', async () => {

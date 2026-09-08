@@ -77,6 +77,7 @@ function runtimeDouble(overrides = {}) {
   return {
     trustedStations: { async resolve() { return context; } },
     authenticatePin: { async execute() { return Object.freeze({}); } },
+    authenticatePinOnly: { async execute() { return Object.freeze({ userId }); } },
     createSession: {
       async execute() {
         const material = tokens.issue();
@@ -90,6 +91,30 @@ function runtimeDouble(overrides = {}) {
     endSession: { async execute() {} },
     listLoginUsers: {
       async execute() { return [{ userId, displayName: 'Jorge Operador' }]; },
+    },
+    listAccessMatrix: {
+      async execute() {
+        return {
+          capabilities: [],
+          roles: [{
+            roleId: 'f1000000-0000-4000-8000-000000000001',
+            status: 'active',
+            capabilityCodes: [
+              'access_matrix.manage',
+              'users.read',
+              'access_matrix.read',
+              'users.manage',
+            ],
+          }],
+          assignments: [{
+            userId,
+            roleId: 'f1000000-0000-4000-8000-000000000001',
+            status: 'active',
+            assignmentScope: 'TENANT_WIDE',
+            branchId: null,
+          }],
+        };
+      },
     },
     tokens,
     ...overrides,
@@ -110,6 +135,11 @@ function sameOriginHeaders(cookie, csrf) {
 const secureTransportPolicy = Object.freeze({
   isExplicitLocalRequest: () => false,
   requiresSecureCookies: () => true,
+});
+
+const localTransportPolicy = Object.freeze({
+  isExplicitLocalRequest: ({ host }) => host === '127.0.0.1:4173',
+  requiresSecureCookies: () => false,
 });
 
 test('Session cookies split the authoritative pair from a bounded login-only CSRF challenge', () => {
@@ -186,8 +216,10 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
   const fresh = await controller.get({ cookie: 'sr_station=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ' }, freshResponse);
   assert.equal(freshResponse.headers.get('cache-control'), 'no-store');
   assert.deepEqual(fresh.station, { stationId, branchId });
-  assert.deepEqual(fresh.users, [{ userId, displayName: 'Jorge Operador' }]);
+  assert.equal(fresh.hasEligibleUsers, true);
+  assert.equal('users' in fresh, false);
   assert.deepEqual(fresh.capabilities, []);
+  assert.deepEqual(fresh.administrationCapabilities, []);
   assert.equal(fresh.session, null);
   assert.equal(fresh.revalidateAfterMs, null);
   assert.match(fresh.csrfToken, /^[A-Za-z0-9_-]{43}$/u);
@@ -210,6 +242,12 @@ test('GET is no-store, mutates only the login challenge, and preserves active co
   assert.deepEqual(authenticated.capabilities, [
     'repairs.read',
     'repairs.add_note',
+  ]);
+  assert.deepEqual(authenticated.administrationCapabilities, [
+    'users.read',
+    'users.manage',
+    'access_matrix.read',
+    'access_matrix.manage',
   ]);
   const inactiveMaterial = runtime.tokens.issue();
   const inactiveResponse = responseDouble();
@@ -241,24 +279,24 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
   const controller = new AccessSessionController(runtime, secureTransportPolicy);
 
   await assert.rejects(
-    controller.create({ userId, pin: '123456', expectedSessionId: sessionRecord().sessionId }, { ...sameOriginHeaders(cookie, material.csrf), origin: 'https://evil.example' }, responseDouble()),
+    controller.create({ pin: '1234', expectedSessionId: sessionRecord().sessionId }, { ...sameOriginHeaders(cookie, material.csrf), origin: 'https://evil.example' }, responseDouble()),
     ForbiddenException,
   );
   await assert.rejects(
-    controller.create({ userId, pin: '123456', expectedSessionId: sessionRecord().sessionId }, { ...sameOriginHeaders(cookie, material.csrf), 'content-type': 'text/plain' }, responseDouble()),
+    controller.create({ pin: '1234', expectedSessionId: sessionRecord().sessionId }, { ...sameOriginHeaders(cookie, material.csrf), 'content-type': 'text/plain' }, responseDouble()),
     ForbiddenException,
   );
   await assert.rejects(
-    controller.create({ userId, pin: '123456', expectedSessionId: sessionRecord().sessionId }, sameOriginHeaders(cookie, `${material.csrf.slice(0, -1)}x`), responseDouble()),
+    controller.create({ pin: '1234', expectedSessionId: sessionRecord().sessionId }, sameOriginHeaders(cookie, `${material.csrf.slice(0, -1)}x`), responseDouble()),
     UnauthorizedException,
   );
 
   const deniedResponse = responseDouble();
   const denied = new AccessSessionController(runtimeDouble({
-    authenticatePin: { async execute() { throw new OperationalSessionError(); } },
+    authenticatePinOnly: { async execute() { throw new OperationalSessionError(); } },
   }), secureTransportPolicy);
   await assert.rejects(
-    denied.create({ userId, pin: '000000', expectedSessionId: sessionRecord().sessionId }, sameOriginHeaders(cookie, material.csrf), deniedResponse),
+    denied.create({ pin: '0000', expectedSessionId: sessionRecord().sessionId }, sameOriginHeaders(cookie, material.csrf), deniedResponse),
     UnauthorizedException,
   );
   assert.equal(deniedResponse.headers.has('set-cookie'), false);
@@ -266,7 +304,7 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
 
   const successResponse = responseDouble();
   const success = await controller.create(
-    { userId, pin: '123456', expectedSessionId: null },
+    { pin: '1234', expectedSessionId: null },
     sameOriginHeaders(`sr_session_login_csrf=${material.csrf}`, material.csrf),
     successResponse,
   );
@@ -281,13 +319,46 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
   assert.match(setCookies[1], /^sr_session_csrf=.*; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
 });
 
+test('canonical PIN-only POST never accepts a client User ID and creates the Session', async () => {
+  const calls = [];
+  const runtime = runtimeDouble({
+    authenticatePinOnly: {
+      async execute(trustedContext, input) {
+        calls.push([trustedContext, input]);
+        return Object.freeze({ userId });
+      },
+    },
+  });
+  const challenge = runtime.tokens.issue();
+  const controller = new AccessSessionController(runtime, localTransportPolicy);
+  const response = responseDouble();
+
+  const created = await controller.create(
+    { pin: '1234', expectedSessionId: null },
+    sameOriginHeaders(`sr_session_login_csrf=${challenge.csrf}`, challenge.csrf),
+    response,
+  );
+  assert.equal(created.session.userId, userId);
+  assert.deepEqual(calls, [[context, { pin: '1234' }]]);
+  assert.equal(response.headers.get('set-cookie').length, 2);
+
+  await assert.rejects(
+    controller.create(
+      { userId, pin: '1234', expectedSessionId: null },
+      sameOriginHeaders(`sr_session_login_csrf=${challenge.csrf}`, challenge.csrf),
+      responseDouble(),
+    ),
+    UnauthorizedException,
+  );
+});
+
 test('POST resolves advisory capabilities before committing a Session replacement', async () => {
   const tokens = new NodeSessionToken();
   const login = tokens.issue();
   let creationCalls = 0;
   const projectionFailure = new Error('capability projection unavailable');
   const controller = new AccessSessionController(runtimeDouble({
-    authenticatePin: {
+    authenticatePinOnly: {
       async execute() { return Object.freeze({ userId }); },
     },
     resolveCapabilities: {
@@ -304,7 +375,7 @@ test('POST resolves advisory capabilities before committing a Session replacemen
 
   await assert.rejects(
     controller.create(
-      { userId, pin: '123456', expectedSessionId: null },
+      { pin: '1234', expectedSessionId: null },
       sameOriginHeaders(`sr_session_login_csrf=${login.csrf}`, login.csrf),
       response,
     ),
@@ -328,7 +399,7 @@ test('POST requires exact optimistic state and never accepts the login challenge
   let creationCalls = 0;
   let observedExpectedSessionId;
   const runtime = runtimeDouble({
-    authenticatePin: {
+    authenticatePinOnly: {
       async execute() {
         authenticationCalls += 1;
         return Object.freeze({});
@@ -345,9 +416,10 @@ test('POST requires exact optimistic state and never accepts the login challenge
   });
   const controller = new AccessSessionController(runtime, secureTransportPolicy);
   for (const invalidBody of [
-    { userId, pin: '123456' },
-    { userId, pin: '123456', expectedSessionId: 'not-a-session-id' },
-    { userId, pin: '123456', expectedSessionId: null, extra: true },
+    { pin: '1234' },
+    { pin: '1234', expectedSessionId: 'not-a-session-id' },
+    { pin: '1234', expectedSessionId: null, extra: true },
+    { userId, pin: '1234', expectedSessionId: null },
   ]) {
     const response = responseDouble();
     await assert.rejects(
@@ -362,7 +434,7 @@ test('POST requires exact optimistic state and never accepts the login challenge
   const expectedSessionId = sessionRecord().sessionId;
   await assert.rejects(
     controller.create(
-      { userId, pin: '123456', expectedSessionId },
+      { pin: '1234', expectedSessionId },
       sameOriginHeaders(cookie, login.csrf),
       responseDouble(),
     ),
@@ -371,7 +443,7 @@ test('POST requires exact optimistic state and never accepts the login challenge
   assert.equal(authenticationCalls, 0);
 
   await controller.create(
-    { userId, pin: '123456', expectedSessionId },
+    { pin: '1234', expectedSessionId },
     sameOriginHeaders(cookie, active.csrf),
     responseDouble(),
   );
@@ -380,7 +452,7 @@ test('POST requires exact optimistic state and never accepts the login challenge
   assert.equal(observedExpectedSessionId, expectedSessionId);
 
   await controller.create(
-    { userId, pin: '123456', expectedSessionId: null },
+    { pin: '1234', expectedSessionId: null },
     sameOriginHeaders(cookie, login.csrf),
     responseDouble(),
   );
@@ -393,7 +465,7 @@ test('POST requires exact optimistic state and never accepts the login challenge
     `sr_session_login_csrf=${login.csrf}`,
   ].join('; ');
   await controller.create(
-    { userId, pin: '123456', expectedSessionId: null },
+    { pin: '1234', expectedSessionId: null },
     sameOriginHeaders(malformedAuthoritativeCookie, login.csrf),
     responseDouble(),
   );
@@ -414,7 +486,7 @@ test('POST switch proves the authoritative bearer belongs to the expected active
         throw new OperationalSessionError();
       },
     },
-    authenticatePin: {
+    authenticatePinOnly: {
       async execute() {
         authenticationCalls += 1;
         return Object.freeze({});
@@ -430,7 +502,7 @@ test('POST switch proves the authoritative bearer belongs to the expected active
   const forgedResponse = responseDouble();
   await assert.rejects(
     controller.create(
-      { userId, pin: '123456', expectedSessionId },
+      { pin: '1234', expectedSessionId },
       sameOriginHeaders(
         `sr_session=${forged.bearer}; sr_session_csrf=${forged.csrf}`,
         forged.csrf,
@@ -451,7 +523,7 @@ test('POST switch proves the authoritative bearer belongs to the expected active
         return sessionRecord({ sessionId: '00000000-0000-4000-8000-000000000802' });
       },
     },
-    authenticatePin: {
+    authenticatePinOnly: {
       async execute() {
         authenticationCalls += 1;
         return Object.freeze({});
@@ -466,7 +538,7 @@ test('POST switch proves the authoritative bearer belongs to the expected active
   }), secureTransportPolicy);
   await assert.rejects(
     mismatch.create(
-      { userId, pin: '123456', expectedSessionId },
+      { pin: '1234', expectedSessionId },
       sameOriginHeaders(
         `sr_session=${other.bearer}; sr_session_csrf=${other.csrf}`,
         other.csrf,

@@ -11,6 +11,7 @@ import {
   LOCAL_TENANT_ID,
   assertLocalUserBootstrapAuthority,
   assertLocalTarget,
+  cleanChildEnvironment,
   databaseEnvironment,
   localAccessCapabilityRows,
   localAccessRoleAssignmentRows,
@@ -26,6 +27,11 @@ import {
   LOCAL_PIN_FIXTURE_PROFILE,
   localPinCredentialRows,
 } from '../scripts/lib/local-pin-fixtures.mjs';
+
+const [localDevelopmentSource, localEnvironmentExample] = await Promise.all([
+  readFile('scripts/lib/local-development.mjs', 'utf8'),
+  readFile('.env.local.example', 'utf8'),
+]);
 
 function validLocalValues() {
   return {
@@ -46,9 +52,9 @@ function validLocalValues() {
     SR_STATION_BOOTSTRAP_SECRET: 'synthetic-local-station-bootstrap-secret',
     SR_USER_BOOTSTRAP_SECRET: 'synthetic-local-user-bootstrap-secret',
     SR_PIN_PEPPER: Buffer.alloc(32, 0x25).toString('base64url'),
-    SR_LOCAL_PIN_JORGE: '270601',
-    SR_LOCAL_PIN_MARIA: '270602',
-    SR_LOCAL_PIN_CARLOS: '270603',
+    SR_LOCAL_PIN_JORGE: '0601',
+    SR_LOCAL_PIN_MARIA: '0602',
+    SR_LOCAL_PIN_CARLOS: '0603',
   };
 }
 
@@ -146,14 +152,21 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
   assert.deepEqual(assignments, localAccessRoleAssignmentRows());
   assert.deepEqual(
     capabilities.map(({ capabilityCode }) => capabilityCode),
-    ['access_matrix.read', 'repairs.add_note', 'repairs.read', 'users.read'],
+    [
+      'access_matrix.read',
+      'access_matrix.manage',
+      'repairs.add_note',
+      'repairs.read',
+      'users.read',
+      'users.manage',
+    ],
   );
   assert.deepEqual(roles.map(({ displayName }) => displayName), [
     'Administrador',
     'Atención al cliente',
     'Técnico',
   ]);
-  assert.equal(grants.length, 8);
+  assert.equal(grants.length, 10);
   assert.deepEqual(assignments.map(({ assignmentScope }) => assignmentScope), [
     'TENANT_WIDE',
     'TENANT_WIDE',
@@ -183,10 +196,11 @@ test('local PIN fixtures use the governed profile and persist no plaintext PIN',
   });
   assert.ok(rows.every((row) => row.salt.byteLength === 16));
   assert.ok(rows.every((row) => row.verifier.byteLength === 32));
+  assert.ok(rows.every((row) => row.lookupDigest.byteLength === 32));
   assert.ok(rows.every((row) => row.requestFingerprint.byteLength === 32));
   assert.ok(rows.every(Object.isFrozen));
   const rendered = JSON.stringify(rows);
-  assert.doesNotMatch(rendered, /270601|270602|270603/u);
+  assert.doesNotMatch(rendered, /0601|0602|0603/u);
   assert.doesNotMatch(rendered, /SR_LOCAL_PIN|SR_PIN_PEPPER/u);
 
   const { NodeArgon2PinHasher } = await import(
@@ -219,6 +233,23 @@ test('local PIN fixtures use the governed profile and persist no plaintext PIN',
       true,
     );
   }
+});
+
+test('demo PINs are one-shot seed inputs and are scrubbed from local configuration', () => {
+  assert.doesNotMatch(localEnvironmentExample, /^SR_LOCAL_PIN_[A-Z]+=.*$/mu);
+  assert.match(localEnvironmentExample, /supplied only to the seed process/u);
+  assert.match(localDevelopmentSource, /const ephemeralLocalPinKeys = Object\.freeze\(/u);
+  assert.match(localDevelopmentSource, /Object\.entries\(values\)\.filter\(\(\[key\]\) => !ephemeralLocalPinKeys\.includes\(key\)\)/u);
+  assert.doesNotMatch(localDevelopmentSource, /function randomPin\b|randomPin\(\)/u);
+  assert.doesNotMatch(localDevelopmentSource, /SR_LOCAL_PIN_[A-Z]+:\s*random/u);
+  assert.deepEqual(
+    cleanChildEnvironment({
+      SAFE_VALUE: 'preserved',
+      SR_LOCAL_PIN_CARLOS: 'synthetic',
+      SR_LOCAL_PIN_LUIS: 'synthetic',
+    }),
+    { SAFE_VALUE: 'preserved' },
+  );
 });
 
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {

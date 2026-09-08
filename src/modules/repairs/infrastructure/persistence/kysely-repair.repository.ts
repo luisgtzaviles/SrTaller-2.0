@@ -14,7 +14,9 @@ import type {
   RepairDetailRecord,
   RepairEvidenceContentRecord,
   RepairEvidenceItemRecord,
+  RepairOperationalNoteContext,
   RepairRepositoryPort,
+  RepairOperationalNoteAttributionRecord,
   RepairTimelineItemRecord,
   RepairWorklistPage,
   RepairWorklistQuery,
@@ -26,20 +28,25 @@ import type {
   StartRepairDiagnosisRecord,
   UnassignRepairTechnicianRecord,
 } from '../../application/ports/repair-repository.port.js';
-import { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
+import { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteAuditIntegrityError, RepairOperationalNoteAuthorizationChangedError, RepairOperationalNoteIdempotencyConflictError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
 import {
   custodyStatusCodes,
   repairStatusCodes,
 } from '../../domain/repair-status.js';
 
-type RepairTables = 'repair_attachments' | 'repair_intakes' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements';
+type RepairTables = 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_operational_note_request_guards' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements';
 type RepairExecutor = Kysely<Pick<DatabaseSchema, RepairTables>>;
 type ExecuteRepairOperation<Result> = InternalDatabasePersistenceOperation<'repairs', Result>;
+type ExecuteRepairTransaction<Result> = (
+  executor: RepairExecutor,
+  transactionContext: object,
+) => Promise<Result>;
 
 const branchUuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const repairTimelineLimit = 20;
 const repairEvidenceLimit = 20;
+const operationalNoteTimelineSource = 'repairs.operational_note';
 
 function validateScope(scope: RepairPersistenceScope): RepairPersistenceScope {
   const tenantId = parseTenantId(scope?.tenantId);
@@ -151,6 +158,12 @@ function assignmentCommandError<T>(error: Error): AssignmentCommandOutcome<T> {
   return Object.freeze({ error });
 }
 
+type OperationalNoteCommandOutcome<T> = T | Readonly<{ error: Error }>;
+
+function operationalNoteCommandError<T>(error: Error): OperationalNoteCommandOutcome<T> {
+  return Object.freeze({ error });
+}
+
 function mapAssignmentHistory(row: AssignmentProjection): TechnicianAssignmentHistoryRecord {
   return Object.freeze({
     assignmentId: row.assignment_id,
@@ -173,6 +186,24 @@ interface RepairTimelineEntryProjection {
   readonly title: string | null;
   readonly body: string | null;
   readonly source: string;
+  readonly client_request_id: string | null;
+  readonly occurred_at: Date;
+}
+
+interface RepairBusinessAuditProjection {
+  readonly tenant_id: string;
+  readonly branch_id: string;
+  readonly station_id: string;
+  readonly session_id: string;
+  readonly actor_user_id: string;
+  readonly actor_display_name: string;
+  readonly capability: 'repairs.add_note';
+  readonly action: 'repair.operational_note.added';
+  readonly resource_type: 'repair';
+  readonly resource_id: string;
+  readonly result: 'succeeded';
+  readonly correlation_id: string;
+  readonly client_request_id: string;
   readonly occurred_at: Date;
 }
 
@@ -222,7 +253,30 @@ function mapEvidence(row: RepairEvidenceProjection): RepairEvidenceItemRecord {
   });
 }
 
-function mapTimelineEntry(row: RepairTimelineEntryProjection): RepairTimelineItemRecord {
+function mapAuditAttribution(
+  row: RepairBusinessAuditProjection,
+): RepairOperationalNoteAttributionRecord {
+  return Object.freeze({
+    tenantId: row.tenant_id,
+    branchId: row.branch_id,
+    stationId: row.station_id,
+    sessionId: row.session_id,
+    actorUserId: row.actor_user_id,
+    actorDisplayNameSnapshot: row.actor_display_name,
+    capability: row.capability,
+    action: row.action,
+    resourceType: row.resource_type,
+    resourceId: row.resource_id,
+    result: row.result,
+    correlationId: row.correlation_id,
+    occurredAt: row.occurred_at.toISOString(),
+  });
+}
+
+function mapTimelineEntry(
+  row: RepairTimelineEntryProjection,
+  audit: RepairBusinessAuditProjection | null = null,
+): RepairTimelineItemRecord {
   if (row.entry_type !== 'note' && row.entry_type !== 'system_event') {
     throw new Error('Database contains an unknown repair timeline type.');
   }
@@ -233,11 +287,12 @@ function mapTimelineEntry(row: RepairTimelineEntryProjection): RepairTimelineIte
     id: row.entry_id,
     occurredAt: row.occurred_at.toISOString(),
     type: row.entry_type,
-    actorId: row.actor_id,
-    actorDisplayName: row.actor_display_name,
+    actorId: audit?.actor_user_id ?? row.actor_id,
+    actorDisplayName: audit?.actor_display_name ?? row.actor_display_name,
     title: row.title,
     body: row.body,
     source: row.source,
+    attribution: audit ? mapAuditAttribution(audit) : null,
   });
 }
 
@@ -313,7 +368,7 @@ function mapRepairDetail(
 class KyselyRepairRepository implements RepairRepositoryPort {
   constructor(
     readonly execute: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>,
-    readonly executeTransaction: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>,
+    readonly executeTransaction: <Result>(operation: ExecuteRepairTransaction<Result>) => Promise<Result>,
     readonly now: () => Date,
   ) {}
 
@@ -359,6 +414,25 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           error.code === 'DATABASE_TRANSACTION_DEADLOCK' ||
           error.code === 'DATABASE_TRANSACTION_NESTED_FORBIDDEN')
       ) throw new RepairLocationConcurrencyConflictError();
+      throw error;
+    }
+  }
+
+  async #runOperationalNoteTransaction<Result>(
+    operation: ExecuteRepairTransaction<Result>,
+  ): Promise<Result> {
+    try {
+      return await this.executeTransaction(operation);
+    } catch (error: unknown) {
+      if (
+        error instanceof DatabaseTransactionError &&
+        (error.code === 'DATABASE_TRANSACTION_SERIALIZATION_FAILURE' ||
+          error.code === 'DATABASE_TRANSACTION_DEADLOCK')
+      ) {
+        // This command has a durable idempotency key. One bounded retry lets a
+        // concurrent exact replay observe and return the already-committed pair.
+        return this.executeTransaction(operation);
+      }
       throw error;
     }
   }
@@ -571,6 +645,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
             'title',
             'body',
             'source',
+            'client_request_id',
             'occurred_at',
           ])
           .orderBy('occurred_at', 'desc')
@@ -662,7 +737,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       };
       return mapRepairDetail(
         projectedRow,
-        timelineRows.map(mapTimelineEntry),
+        timelineRows.map((entry) => mapTimelineEntry(entry)),
         Number(timelineCount.count),
         evidenceRows.map(mapEvidence),
         Number(evidenceCount.count),
@@ -674,19 +749,124 @@ class KyselyRepairRepository implements RepairRepositoryPort {
   }
 
   async addOperationalNote(
-    scope: RepairPersistenceScope,
+    scope: RepairOperationalNoteContext,
     note: AddRepairOperationalNoteRecord,
   ): Promise<RepairTimelineItemRecord | null> {
     const validatedScope = validateScope(scope);
-    return this.execute(async (executor: RepairExecutor) => {
+    const outcome = await this.#runOperationalNoteTransaction<
+      OperationalNoteCommandOutcome<RepairTimelineItemRecord | null>
+    >(async (executor: RepairExecutor, transactionContext: object) => {
+      await executor
+        .insertInto('repair_operational_note_request_guards')
+        .values({
+          tenant_id: validatedScope.tenantId,
+          branch_id: validatedScope.branchId,
+          action: note.action,
+          client_request_id: note.clientRequestId,
+          created_at: note.occurredAt,
+        })
+        .onConflict((conflict) => conflict.doNothing())
+        .execute();
+      await executor
+        .selectFrom('repair_operational_note_request_guards')
+        .select('client_request_id')
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('action', '=', note.action)
+        .where('client_request_id', '=', note.clientRequestId)
+        .forUpdate()
+        .executeTakeFirstOrThrow();
+      const existing = await executor
+        .selectFrom('repair_timeline_entries')
+        .select([
+          'entry_id', 'entry_type', 'actor_id', 'actor_display_name',
+          'title', 'body', 'source', 'client_request_id', 'occurred_at',
+        ])
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('repair_id', '=', note.repairId)
+        .where('client_request_id', '=', note.clientRequestId)
+        .executeTakeFirst();
+      const existingAudit = await executor
+        .selectFrom('repair_business_audit_events')
+        .select([
+          'tenant_id', 'branch_id', 'station_id', 'session_id',
+          'actor_user_id', 'actor_display_name', 'capability', 'action',
+          'resource_type', 'resource_id', 'result', 'correlation_id',
+          'client_request_id', 'occurred_at',
+        ])
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .where('branch_id', '=', validatedScope.branchId)
+        .where('action', '=', note.action)
+        .where('client_request_id', '=', note.clientRequestId)
+        .executeTakeFirst();
+      if (existing || existingAudit) {
+        if (!existing) {
+          return operationalNoteCommandError(
+            existingAudit?.resource_id === note.repairId
+              ? new RepairOperationalNoteAuditIntegrityError()
+              : new RepairOperationalNoteIdempotencyConflictError(),
+          );
+        }
+        if (
+          existing.entry_type !== 'note' ||
+          existing.body !== note.body ||
+          existing.actor_id !== scope.actorUserId ||
+          existing.actor_display_name !== scope.actorDisplayName ||
+          existing.source !== operationalNoteTimelineSource
+        ) {
+          return operationalNoteCommandError(
+            new RepairOperationalNoteIdempotencyConflictError(),
+          );
+        }
+        if (!existingAudit) {
+          return operationalNoteCommandError(
+            new RepairOperationalNoteAuditIntegrityError(),
+          );
+        }
+        if (
+          existingAudit.station_id !== scope.stationId ||
+          existingAudit.session_id !== scope.sessionId ||
+          existingAudit.actor_user_id !== scope.actorUserId ||
+          existingAudit.actor_display_name !== scope.actorDisplayName ||
+          existingAudit.capability !== scope.capability ||
+          existingAudit.action !== note.action ||
+          existingAudit.resource_type !== note.resourceType ||
+          existingAudit.resource_id !== note.repairId ||
+          existingAudit.result !== note.result ||
+          existingAudit.occurred_at.getTime() !== existing.occurred_at.getTime()
+        ) {
+          return operationalNoteCommandError(
+            new RepairOperationalNoteIdempotencyConflictError(),
+          );
+        }
+        return mapTimelineEntry(existing, existingAudit);
+      }
+
+      if (!await scope.commitGuard.confirmCurrent(transactionContext)) {
+        return operationalNoteCommandError(
+          new RepairOperationalNoteAuthorizationChangedError(),
+        );
+      }
       const repair = await executor
         .selectFrom('repairs')
         .select('repair_id')
         .where('tenant_id', '=', validatedScope.tenantId)
         .where('branch_id', '=', validatedScope.branchId)
         .where('repair_id', '=', note.repairId)
+        .forUpdate()
         .executeTakeFirst();
       if (!repair) return null;
+
+      // The Repair lock above can wait long enough for an otherwise valid
+      // operational Session to cross an idle or absolute deadline. Re-read
+      // the database clock after that final blocking lock and before either
+      // half of the atomic note/audit pair is written.
+      if (!await scope.commitGuard.confirmTemporalCurrent(transactionContext)) {
+        return operationalNoteCommandError(
+          new RepairOperationalNoteAuthorizationChangedError(),
+        );
+      }
 
       const inserted = await executor
         .insertInto('repair_timeline_entries')
@@ -696,47 +876,51 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           branch_id: validatedScope.branchId,
           repair_id: note.repairId,
           entry_type: 'note',
-          actor_id: note.actorId,
-          actor_display_name: note.actorDisplayName,
+          actor_id: scope.actorUserId,
+          actor_display_name: scope.actorDisplayName,
           title: 'Nota',
           body: note.body,
-          source: note.source,
+          source: operationalNoteTimelineSource,
           client_request_id: note.clientRequestId,
           occurred_at: note.occurredAt,
           created_at: note.occurredAt,
         })
-        .onConflict((conflict) => conflict
-          .columns(['tenant_id', 'branch_id', 'repair_id', 'client_request_id'])
-          .doNothing())
         .returning([
           'entry_id', 'entry_type', 'actor_id', 'actor_display_name',
-          'title', 'body', 'source', 'occurred_at',
+          'title', 'body', 'source', 'client_request_id', 'occurred_at',
         ])
-        .executeTakeFirst();
-      if (inserted) return mapTimelineEntry(inserted);
-
-      const existing = await executor
-        .selectFrom('repair_timeline_entries')
-        .select([
-          'entry_id', 'entry_type', 'actor_id', 'actor_display_name',
-          'title', 'body', 'source', 'occurred_at',
-        ])
-        .where('tenant_id', '=', validatedScope.tenantId)
-        .where('branch_id', '=', validatedScope.branchId)
-        .where('repair_id', '=', note.repairId)
-        .where('client_request_id', '=', note.clientRequestId)
         .executeTakeFirstOrThrow();
-      if (
-        existing.entry_type !== 'note' ||
-        existing.body !== note.body ||
-        existing.actor_id !== note.actorId ||
-        existing.actor_display_name !== note.actorDisplayName ||
-        existing.source !== note.source
-      ) {
-        throw new RepairOperationalNoteIdempotencyConflictError();
-      }
-      return mapTimelineEntry(existing);
+      const audit = await executor
+        .insertInto('repair_business_audit_events')
+        .values({
+          audit_id: note.auditEventId,
+          tenant_id: validatedScope.tenantId,
+          branch_id: validatedScope.branchId,
+          station_id: scope.stationId,
+          session_id: scope.sessionId,
+          actor_user_id: scope.actorUserId,
+          actor_display_name: scope.actorDisplayName,
+          capability: scope.capability,
+          action: note.action,
+          resource_type: note.resourceType,
+          resource_id: note.repairId,
+          result: note.result,
+          correlation_id: note.correlationId,
+          client_request_id: note.clientRequestId,
+          occurred_at: note.occurredAt,
+          created_at: note.occurredAt,
+        })
+        .returning([
+          'tenant_id', 'branch_id', 'station_id', 'session_id',
+          'actor_user_id', 'actor_display_name', 'capability', 'action',
+          'resource_type', 'resource_id', 'result', 'correlation_id',
+          'client_request_id', 'occurred_at',
+        ])
+        .executeTakeFirstOrThrow();
+      return mapTimelineEntry(inserted, audit);
     });
+    if (outcome && 'error' in outcome) throw outcome.error;
+    return outcome;
   }
 
   async listEligibleTechnicians(
@@ -1180,7 +1364,11 @@ export function createKyselyRepairRepository(
   return new KyselyRepairRepository(
     (operation) => useDatabasePersistenceExecutor(connection, 'repairs', operation),
     (operation) => runInTransaction(connection, { isolationLevel: 'serializable' }, async (context) =>
-      useTransactionalDatabasePersistenceExecutor(context, 'repairs', operation)),
+      useTransactionalDatabasePersistenceExecutor(
+        context,
+        'repairs',
+        (executor) => operation(executor, context),
+      )),
     now,
   );
 }

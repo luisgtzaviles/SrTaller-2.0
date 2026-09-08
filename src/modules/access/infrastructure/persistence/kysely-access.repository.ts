@@ -1,5 +1,8 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
 import type { InternalDatabasePersistenceConnection } from '../../../../infrastructure/database/database-persistence-capability.js';
-import { useDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
+import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
+import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type {
   InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
@@ -8,6 +11,7 @@ import type {
   AccessCapabilityRow,
   AccessRoleAssignmentCommandRow,
   AccessRoleAssignmentRow,
+  AccessRoleCommandRow,
   AccessRoleRow,
 } from '../../../../infrastructure/database/database-types.js';
 import { parseTenantId } from '../../../tenancy/index.js';
@@ -18,6 +22,7 @@ import {
 import type { CapabilityCode } from '../../domain/capability.js';
 import {
   parseRoleDisplayName,
+  parseRoleDescription,
   parseRoleId,
   parseRoleKey,
   parseRoleStatus,
@@ -32,12 +37,16 @@ import {
 import { AccessPersistenceError } from '../../application/ports/access-repository.port.js';
 import type {
   AccessBranchScope,
+  AccessMutationCommitGuard,
   AccessCapabilityRecord,
   AccessMatrixRecord,
   AccessPrincipalScope,
   AccessRepositoryPort,
   AccessRoleAssignmentRecord,
   AccessRoleRecord,
+  CreateAccessRoleInput,
+  ReplaceAccessRoleCapabilitiesInput,
+  UpdateAccessRoleInput,
   AccessTenantScope,
   AssignRoleInput,
   RevokeRoleAssignmentInput,
@@ -46,6 +55,9 @@ import type {
 type AccessExecutor = InternalDatabasePersistenceExecutor<'access'>;
 type AccessOperation = <Result>(
   operation: InternalDatabasePersistenceOperation<'access', Result>,
+) => Promise<Result>;
+type AccessTransactionOperation = <Result>(
+  operation: (executor: AccessExecutor, transactionContext: object) => Promise<Result>,
 ) => Promise<Result>;
 
 const canonicalUuid =
@@ -171,6 +183,91 @@ function validateAssignInput(input: AssignRoleInput): Readonly<{
   }
 }
 
+function validateCreateRoleInput(input: CreateAccessRoleInput): Readonly<{
+  roleId: CreateAccessRoleInput['roleId'];
+  roleKey: CreateAccessRoleInput['roleKey'];
+  displayName: CreateAccessRoleInput['displayName'];
+  description: CreateAccessRoleInput['description'];
+  capabilityCodes: readonly CapabilityCode[];
+  clientRequestId: string;
+  occurredAt: Date;
+}> {
+  try {
+    if (!validInstant(input?.occurredAt) || !Array.isArray(input.capabilityCodes) || input.capabilityCodes.length < 1) {
+      throw new Error('invalid role input');
+    }
+    const capabilityCodes = input.capabilityCodes.map(parseCapabilityCode);
+    if (new Set(capabilityCodes).size !== capabilityCodes.length) throw new Error('duplicate capability');
+    return Object.freeze({
+      roleId: parseRoleId(input.roleId),
+      roleKey: parseRoleKey(input.roleKey),
+      displayName: parseRoleDisplayName(input.displayName),
+      description: parseRoleDescription(input.description),
+      capabilityCodes: Object.freeze(capabilityCodes),
+      clientRequestId: validateClientRequestId(input.clientRequestId),
+      occurredAt: new Date(input.occurredAt),
+    });
+  } catch {
+    throw new AccessPersistenceError('ACCESS_INPUT_INVALID');
+  }
+}
+
+function validateReplaceRoleCapabilitiesInput(input: ReplaceAccessRoleCapabilitiesInput): Readonly<{
+  roleId: ReplaceAccessRoleCapabilitiesInput['roleId'];
+  expectedVersion: number;
+  capabilityCodes: readonly CapabilityCode[];
+  clientRequestId: string;
+  occurredAt: Date;
+}> {
+  try {
+    if (
+      !validInstant(input?.occurredAt) ||
+      !Number.isSafeInteger(input.expectedVersion) ||
+      input.expectedVersion < 0 ||
+      !Array.isArray(input.capabilityCodes) ||
+      input.capabilityCodes.length < 1
+    ) throw new Error('invalid role replacement');
+    const capabilityCodes = input.capabilityCodes.map(parseCapabilityCode);
+    if (new Set(capabilityCodes).size !== capabilityCodes.length) throw new Error('duplicate capability');
+    return Object.freeze({
+      roleId: parseRoleId(input.roleId),
+      expectedVersion: input.expectedVersion,
+      capabilityCodes: Object.freeze(capabilityCodes),
+      clientRequestId: validateClientRequestId(input.clientRequestId),
+      occurredAt: new Date(input.occurredAt),
+    });
+  } catch {
+    throw new AccessPersistenceError('ACCESS_INPUT_INVALID');
+  }
+}
+
+function validateUpdateRoleInput(input: UpdateAccessRoleInput): Readonly<{
+  roleId: UpdateAccessRoleInput['roleId'];
+  displayName: UpdateAccessRoleInput['displayName'];
+  description: UpdateAccessRoleInput['description'];
+  expectedVersion: number;
+  clientRequestId: string;
+  occurredAt: Date;
+}> {
+  try {
+    if (
+      !validInstant(input?.occurredAt) ||
+      !Number.isSafeInteger(input.expectedVersion) ||
+      input.expectedVersion < 0
+    ) throw new Error('invalid role update');
+    return Object.freeze({
+      roleId: parseRoleId(input.roleId),
+      displayName: parseRoleDisplayName(input.displayName),
+      description: parseRoleDescription(input.description),
+      expectedVersion: input.expectedVersion,
+      clientRequestId: validateClientRequestId(input.clientRequestId),
+      occurredAt: new Date(input.occurredAt),
+    });
+  } catch {
+    throw new AccessPersistenceError('ACCESS_INPUT_INVALID');
+  }
+}
+
 function validateRevokeInput(input: RevokeRoleAssignmentInput): Readonly<{
   assignmentId: RevokeRoleAssignmentInput['assignmentId'];
   expectedVersion: number;
@@ -215,12 +312,53 @@ function mapRoleRecord(
     roleId: parseRoleId(row.role_id),
     roleKey: parseRoleKey(row.role_key),
     displayName: parseRoleDisplayName(row.display_name),
+    description: parseRoleDescription(row.description),
     status: parseRoleStatus(row.status),
     version: row.version,
     capabilityCodes: composeEffectiveCapabilities(capabilityCodes),
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   });
+}
+
+function roleFingerprint(value: unknown): Uint8Array {
+  return Uint8Array.from(
+    createHash('sha256').update(JSON.stringify(value), 'utf8').digest(),
+  );
+}
+
+function mapRoleCommand(command: AccessRoleCommandRow): AccessRoleRecord {
+  return Object.freeze({
+    tenantId: parseTenantId(command.tenant_id),
+    roleId: parseRoleId(command.role_id),
+    roleKey: parseRoleKey(command.result_role_key),
+    displayName: parseRoleDisplayName(command.result_display_name),
+    description: parseRoleDescription(command.result_description),
+    status: parseRoleStatus(command.result_status),
+    version: command.result_version,
+    capabilityCodes: composeEffectiveCapabilities(
+      command.result_capability_codes.map(parseCapabilityCode),
+    ),
+    createdAt: command.result_created_at.toISOString(),
+    updatedAt: command.result_updated_at.toISOString(),
+  });
+}
+
+function replayRoleCommand(
+  command: AccessRoleCommandRow,
+  type: AccessRoleCommandRow['command_type'],
+  fingerprint: Uint8Array,
+): AccessRoleRecord {
+  if (
+    command.command_type !== type ||
+    !timingSafeEqual(
+      Buffer.from(command.request_fingerprint),
+      Buffer.from(fingerprint),
+    )
+  ) {
+    throw new AccessPersistenceError('ACCESS_IDEMPOTENCY_CONFLICT');
+  }
+  return mapRoleCommand(command);
 }
 
 function mapAssignmentRecord(
@@ -301,7 +439,10 @@ function replayRevokeCommand(
 }
 
 class KyselyAccessRepository implements AccessRepositoryPort {
-  constructor(private readonly execute: AccessOperation) {}
+  constructor(
+    private readonly execute: AccessOperation,
+    private readonly executeTransaction: AccessTransactionOperation,
+  ) {}
 
   async listMatrix(scope: AccessTenantScope): Promise<AccessMatrixRecord> {
     const trustedScope = validateTenantScope(scope);
@@ -351,6 +492,242 @@ class KyselyAccessRepository implements AccessRepositoryPort {
           assignments: Object.freeze(assignmentRows.map(mapAssignmentRecord)),
         });
       });
+    } catch (error: unknown) {
+      throw mapAccessError(error);
+    }
+  }
+
+  async createRole(
+    scope: AccessTenantScope,
+    input: CreateAccessRoleInput,
+    guard?: AccessMutationCommitGuard,
+  ): Promise<AccessRoleRecord> {
+    const trustedScope = validateTenantScope(scope);
+    const trustedInput = validateCreateRoleInput(input);
+    const fingerprint = roleFingerprint({
+      capabilityCodes: [...trustedInput.capabilityCodes].sort(),
+      description: trustedInput.description,
+      displayName: trustedInput.displayName,
+      roleKey: trustedInput.roleKey,
+    });
+    try {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+          if (guard && !await guard.confirmCurrent(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
+          const prior = await transaction.selectFrom('access_role_commands')
+            .selectAll()
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('client_request_id', '=', trustedInput.clientRequestId)
+            .executeTakeFirst();
+          if (prior) return replayRoleCommand(prior, 'create', fingerprint);
+          const role = await transaction.insertInto('access_roles').values({
+            tenant_id: trustedScope.tenantId,
+            role_id: trustedInput.roleId,
+            role_key: trustedInput.roleKey,
+            display_name: trustedInput.displayName,
+            description: trustedInput.description,
+            status: 'active',
+            version: 0,
+            created_at: trustedInput.occurredAt,
+            updated_at: trustedInput.occurredAt,
+          }).returningAll().executeTakeFirstOrThrow();
+          await transaction.insertInto('access_role_capabilities').values(
+            trustedInput.capabilityCodes.map((capabilityCode) => ({
+              tenant_id: trustedScope.tenantId,
+              role_id: trustedInput.roleId,
+              capability_code: capabilityCode,
+              created_at: trustedInput.occurredAt,
+            })),
+          ).execute();
+          const command = await transaction.insertInto('access_role_commands')
+            .values({
+              tenant_id: trustedScope.tenantId,
+              client_request_id: trustedInput.clientRequestId,
+              command_type: 'create',
+              role_id: role.role_id,
+              request_fingerprint: fingerprint,
+              result_role_key: role.role_key,
+              result_display_name: role.display_name,
+              result_description: role.description,
+              result_status: role.status,
+              result_version: role.version,
+              result_capability_codes: [...trustedInput.capabilityCodes].sort(),
+              result_created_at: role.created_at,
+              result_updated_at: role.updated_at,
+              applied_at: trustedInput.occurredAt,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow();
+          return mapRoleCommand(command);
+        });
+    } catch (error: unknown) {
+      throw mapAccessError(error);
+    }
+  }
+
+  async replaceRoleCapabilities(
+    scope: AccessTenantScope,
+    input: ReplaceAccessRoleCapabilitiesInput,
+    guard?: AccessMutationCommitGuard,
+  ): Promise<AccessRoleRecord> {
+    const trustedScope = validateTenantScope(scope);
+    const trustedInput = validateReplaceRoleCapabilitiesInput(input);
+    const fingerprint = roleFingerprint({
+      capabilityCodes: [...trustedInput.capabilityCodes].sort(),
+      expectedVersion: trustedInput.expectedVersion,
+      roleId: trustedInput.roleId,
+    });
+    try {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+          if (guard && !await guard.confirmCurrent(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
+          const prior = await transaction.selectFrom('access_role_commands')
+            .selectAll()
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('client_request_id', '=', trustedInput.clientRequestId)
+            .executeTakeFirst();
+          if (prior) {
+            return replayRoleCommand(prior, 'replace_capabilities', fingerprint);
+          }
+          const current = await transaction
+            .selectFrom('access_roles')
+            .selectAll()
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('role_id', '=', trustedInput.roleId)
+            .where('status', '=', 'active')
+            .executeTakeFirst();
+          if (!current) throw new AccessPersistenceError('ACCESS_REFERENCE_NOT_FOUND');
+          if (current.version !== trustedInput.expectedVersion) {
+            throw new AccessPersistenceError('ACCESS_STALE_WRITE');
+          }
+          await transaction
+            .deleteFrom('access_role_capabilities')
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('role_id', '=', trustedInput.roleId)
+            .execute();
+          await transaction.insertInto('access_role_capabilities').values(
+            trustedInput.capabilityCodes.map((capabilityCode) => ({
+              tenant_id: trustedScope.tenantId,
+              role_id: trustedInput.roleId,
+              capability_code: capabilityCode,
+              created_at: trustedInput.occurredAt,
+            })),
+          ).execute();
+          const updated = await transaction
+            .updateTable('access_roles')
+            .set({ version: current.version + 1, updated_at: trustedInput.occurredAt })
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('role_id', '=', trustedInput.roleId)
+            .where('version', '=', trustedInput.expectedVersion)
+            .returningAll()
+            .executeTakeFirst();
+          if (!updated) throw new AccessPersistenceError('ACCESS_STALE_WRITE');
+          const command = await transaction.insertInto('access_role_commands')
+            .values({
+              tenant_id: trustedScope.tenantId,
+              client_request_id: trustedInput.clientRequestId,
+              command_type: 'replace_capabilities',
+              role_id: updated.role_id,
+              request_fingerprint: fingerprint,
+              result_role_key: updated.role_key,
+              result_display_name: updated.display_name,
+              result_description: updated.description,
+              result_status: updated.status,
+              result_version: updated.version,
+              result_capability_codes: [...trustedInput.capabilityCodes].sort(),
+              result_created_at: updated.created_at,
+              result_updated_at: updated.updated_at,
+              applied_at: trustedInput.occurredAt,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow();
+          if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
+          return mapRoleCommand(command);
+        });
+    } catch (error: unknown) {
+      throw mapAccessError(error);
+    }
+  }
+
+  async updateRole(
+    scope: AccessTenantScope,
+    input: UpdateAccessRoleInput,
+    guard?: AccessMutationCommitGuard,
+  ): Promise<AccessRoleRecord> {
+    const trustedScope = validateTenantScope(scope);
+    const trustedInput = validateUpdateRoleInput(input);
+    const fingerprint = roleFingerprint({
+      description: trustedInput.description,
+      displayName: trustedInput.displayName,
+      expectedVersion: trustedInput.expectedVersion,
+      roleId: trustedInput.roleId,
+    });
+    try {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+          if (guard && !await guard.confirmCurrent(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
+          const prior = await transaction.selectFrom('access_role_commands')
+            .selectAll()
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('client_request_id', '=', trustedInput.clientRequestId)
+            .executeTakeFirst();
+          if (prior) return replayRoleCommand(prior, 'update', fingerprint);
+          const current = await transaction.selectFrom('access_roles')
+            .selectAll()
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('role_id', '=', trustedInput.roleId)
+            .where('status', '=', 'active')
+            .executeTakeFirst();
+          if (!current) throw new AccessPersistenceError('ACCESS_REFERENCE_NOT_FOUND');
+          if (current.version !== trustedInput.expectedVersion) {
+            throw new AccessPersistenceError('ACCESS_STALE_WRITE');
+          }
+          const capabilities = await transaction.selectFrom('access_role_capabilities')
+            .select('capability_code')
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('role_id', '=', trustedInput.roleId)
+            .orderBy('capability_code', 'asc')
+            .execute();
+          const updated = await transaction.updateTable('access_roles')
+            .set({
+              display_name: trustedInput.displayName,
+              description: trustedInput.description,
+              version: current.version + 1,
+              updated_at: trustedInput.occurredAt,
+            })
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .where('role_id', '=', trustedInput.roleId)
+            .where('version', '=', trustedInput.expectedVersion)
+            .returningAll()
+            .executeTakeFirst();
+          if (!updated) throw new AccessPersistenceError('ACCESS_STALE_WRITE');
+          const capabilityCodes = capabilities.map(({ capability_code }) => capability_code);
+          const command = await transaction.insertInto('access_role_commands')
+            .values({
+              tenant_id: trustedScope.tenantId,
+              client_request_id: trustedInput.clientRequestId,
+              command_type: 'update',
+              role_id: updated.role_id,
+              request_fingerprint: fingerprint,
+              result_role_key: updated.role_key,
+              result_display_name: updated.display_name,
+              result_description: updated.description,
+              result_status: updated.status,
+              result_version: updated.version,
+              result_capability_codes: capabilityCodes,
+              result_created_at: updated.created_at,
+              result_updated_at: updated.updated_at,
+              applied_at: trustedInput.occurredAt,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow();
+          return mapRoleCommand(command);
+        });
     } catch (error: unknown) {
       throw mapAccessError(error);
     }
@@ -500,12 +877,29 @@ class KyselyAccessRepository implements AccessRepositoryPort {
   async assignRole(
     scope: AccessTenantScope,
     input: AssignRoleInput,
+    guard?: AccessMutationCommitGuard,
   ): Promise<AccessRoleAssignmentRecord> {
     const trustedScope = validateTenantScope(scope);
     const trustedInput = validateAssignInput(input);
     try {
-      return await this.execute(async (database: AccessExecutor) =>
-        database.transaction().execute(async (transaction) => {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+          if (guard && !await guard.confirmCurrent(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
+          await transaction
+            .insertInto('access_pin_eligibility_tenant_guards')
+            .values({
+              tenant_id: trustedScope.tenantId,
+              created_at: trustedInput.occurredAt,
+            })
+            .onConflict((conflict) => conflict.column('tenant_id').doNothing())
+            .execute();
+          await transaction
+            .selectFrom('access_pin_eligibility_tenant_guards')
+            .select('tenant_id')
+            .where('tenant_id', '=', trustedScope.tenantId)
+            .forUpdate()
+            .executeTakeFirstOrThrow();
           const previousCommand = await transaction
             .selectFrom('access_role_assignment_commands')
             .selectAll()
@@ -592,8 +986,7 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             return replayAssignCommand(prior, trustedInput);
           }
           return mapCommandResult(command);
-        }),
-      );
+        });
     } catch (error: unknown) {
       throw mapAccessError(error);
     }
@@ -602,12 +995,15 @@ class KyselyAccessRepository implements AccessRepositoryPort {
   async revokeRoleAssignment(
     scope: AccessTenantScope,
     input: RevokeRoleAssignmentInput,
+    guard?: AccessMutationCommitGuard,
   ): Promise<AccessRoleAssignmentRecord> {
     const trustedScope = validateTenantScope(scope);
     const trustedInput = validateRevokeInput(input);
     try {
-      return await this.execute(async (database: AccessExecutor) =>
-        database.transaction().execute(async (transaction) => {
+      return await this.executeTransaction(async (transaction, transactionContext) => {
+          if (guard && !await guard.confirmCurrent(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
           const previousCommand = await transaction
             .selectFrom('access_role_assignment_commands')
             .selectAll()
@@ -685,6 +1081,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             .returningAll()
             .executeTakeFirst();
 
+          if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
+            throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
+          }
           if (!command) {
             const prior = await transaction
               .selectFrom('access_role_assignment_commands')
@@ -695,8 +1094,7 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             return replayRevokeCommand(prior, trustedInput);
           }
           return mapCommandResult(command);
-        }),
-      );
+        });
     } catch (error: unknown) {
       throw mapAccessError(error);
     }
@@ -706,8 +1104,41 @@ class KyselyAccessRepository implements AccessRepositoryPort {
 export function createKyselyAccessRepository(
   connection: InternalDatabasePersistenceConnection,
 ): AccessRepositoryPort {
-  return new KyselyAccessRepository((operation) =>
-    useDatabasePersistenceExecutor(connection, 'access', operation),
+  let transactionTail = Promise.resolve();
+  return new KyselyAccessRepository(
+    (operation) => useDatabasePersistenceExecutor(connection, 'access', operation),
+    async (operation) => {
+      let releaseTurn!: () => void;
+      const previousTurn = transactionTail;
+      transactionTail = new Promise<void>((resolve) => { releaseTurn = resolve; });
+      await previousTurn;
+      let operationFailed = false;
+      let operationError: unknown;
+      try {
+        return await runInTransaction(
+          connection as unknown as DatabaseConnection,
+          { isolationLevel: 'serializable' },
+          async (transactionContext) => {
+            try {
+              return await useTransactionalDatabasePersistenceExecutor(
+                transactionContext,
+                'access',
+                (executor) => operation(executor, transactionContext),
+              );
+            } catch (error: unknown) {
+              operationFailed = true;
+              operationError = error;
+              throw error;
+            }
+          },
+        );
+      } catch (error: unknown) {
+        if (operationFailed) throw operationError;
+        throw error;
+      } finally {
+        releaseTurn();
+      }
+    },
   );
 }
 

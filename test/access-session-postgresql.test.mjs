@@ -48,13 +48,16 @@ const { createTrustedStationContext } = enabled
 const migrationRoot = fileURLToPath(new URL('../dist/infrastructure/database/migrations/', import.meta.url));
 const sessionTables = ['access_operational_sessions', 'access_operational_session_station_guards'];
 const allTables = [
+  'repair_operational_note_request_guards',
   ...sessionTables,
   'access_pin_attempt_limits', 'access_pin_attempt_station_guards',
   'access_pin_credential_commands', 'access_pin_credentials',
-  'access_role_assignment_commands', 'access_role_assignments',
+  'access_pin_eligibility_tenant_guards',
+  'access_role_assignment_commands', 'access_role_commands', 'access_role_assignments',
   'access_role_capabilities', 'access_roles', 'access_capabilities',
-  'user_lifecycle_commands', 'user_provisioning_bootstraps', 'users',
-  'repair_location_movements', 'repair_locations', 'repair_attachments',
+  'user_lifecycle_commands', 'user_profile_update_commands', 'user_create_commands',
+  'user_provisioning_bootstraps', 'users',
+  'repair_business_audit_events', 'repair_location_movements', 'repair_locations', 'repair_attachments',
   'repair_timeline_entries', 'repair_intakes', 'repair_technician_assignments',
   'repair_workflow_transitions', 'repair_technician_branches', 'repair_technicians',
   'repairs', 'station_credentials', 'station_bindings', 'stations', 'branches',
@@ -136,6 +139,7 @@ function authorization(item) {
 }
 
 async function reset(admin) {
+  await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
   await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
@@ -246,7 +250,13 @@ test('PostgreSQL 18.4 enforces Operational Session lifecycle, isolation, and det
     await reset(admin);
     const fresh = await runner.migrateToLatest();
     assert.equal(fresh.status.migrations.length, inspection.manifest.migrations.length);
-    const latest = [...fresh.status.migrations].reverse().find(({ state }) => state === 'applied');
+    let latest = [...fresh.status.migrations].reverse().find(({ state }) => state === 'applied');
+    while (latest?.name !== '20260907120000_access_create_operational_sessions') {
+      assert.ok(latest);
+      await runner.migrateDown(authorization(latest));
+      const intermediateStatus = await runner.getMigrationStatus();
+      latest = [...intermediateStatus.migrations].reverse().find(({ state }) => state === 'applied');
+    }
     assert.equal(latest?.name, '20260907120000_access_create_operational_sessions');
     await runner.migrateDown(authorization(latest));
     assert.deepEqual((await admin.query("select tablename from pg_tables where schemaname='public' and tablename = any($1::text[])", [sessionTables])).rows, []);

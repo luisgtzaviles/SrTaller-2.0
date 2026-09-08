@@ -20,6 +20,7 @@ const postgresImage =
 const databaseName = 'srtaller_preview_oci';
 const databaseUser = 'srtaller_preview_oci';
 const databasePassword = `synthetic_${randomBytes(24).toString('hex')}`;
+const pinPepper = randomBytes(32).toString('base64url');
 const expectedRootEntries = ['dist', 'node_modules', 'package.json'];
 const forbiddenPaths = [
   '/app/.env',
@@ -40,11 +41,17 @@ const forbiddenPaths = [
 ];
 
 async function docker(arguments_, options = {}) {
-  return execFileAsync('docker', arguments_, {
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-    ...options,
-  });
+  try {
+    return await execFileAsync('docker', arguments_, {
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024,
+      ...options,
+    });
+  } catch {
+    throw new Error(
+      `OCI verification Docker operation failed: ${arguments_[0] ?? 'unknown'}`,
+    );
+  }
 }
 
 function assert(condition, message) {
@@ -152,6 +159,7 @@ function databaseEnvironment(role) {
     SR_DB_ROLE: role,
     SR_DB_ACCESS_MODE: 'read-write',
     SR_DB_MIGRATIONS_ENABLED: role === 'migration' ? 'true' : 'false',
+    ...(role === 'application' ? { SR_PIN_PEPPER: pinPepper } : {}),
   };
 }
 

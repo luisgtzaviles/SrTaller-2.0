@@ -24,22 +24,31 @@ const { createKyselyAccessRepository } = enabled
 const { AccessPersistenceError } = enabled
   ? await import('../dist/modules/access/application/ports/access-repository.port.js')
   : {};
+const { KyselyAdministrationAuthorizationCommitGuard } = enabled
+  ? await import('../dist/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.js')
+  : {};
 
 const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const accessTables = [
+  'access_role_commands',
   'access_role_assignment_commands',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
   'access_capabilities',
+  'access_pin_eligibility_tenant_guards',
 ];
 const tables = [
+  'repair_operational_note_request_guards',
+  'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   ...accessTables,
   'user_lifecycle_commands',
+  'user_profile_update_commands',
+  'user_create_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -84,6 +93,7 @@ const idempotentCompetingAssignmentA =
   '7a000000-0000-4000-8000-000000000033';
 const secondRoleAssignmentB = '7b000000-0000-4000-8000-000000000033';
 const rollbackAssignmentB = '7c000000-0000-4000-8000-000000000033';
+const deniedAssignmentA = '7d000000-0000-4000-8000-000000000033';
 const assignAdminRequestA = '80000000-0000-4000-8000-000000000033';
 const assignTechnicianRequestA = '81000000-0000-4000-8000-000000000033';
 const assignAdminRequestB = '82000000-0000-4000-8000-000000000033';
@@ -100,6 +110,11 @@ const idempotentAssignRequestA = '8c000000-0000-4000-8000-000000000033';
 const secondRoleRequestB = '8d000000-0000-4000-8000-000000000033';
 const rollbackAssignRequestB = '8e000000-0000-4000-8000-000000000033';
 const rollbackRevokeRequestA = '8f000000-0000-4000-8000-000000000033';
+const deniedAssignRequestA = '9f000000-0000-4000-8000-000000000033';
+const continuityRequestA = '9e000000-0000-4000-8000-000000000033';
+const authorityRaceRequestA = '9d000000-0000-4000-8000-000000000033';
+const unusableAdminRequestA = '9c000000-0000-4000-8000-000000000033';
+const unsupportedPepperAdminRequestA = '9b000000-0000-4000-8000-000000000033';
 
 function databaseConfig() {
   return Object.freeze({
@@ -192,6 +207,7 @@ function revocation(overrides = {}) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
   await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
@@ -286,12 +302,34 @@ async function seedAuthorities(admin) {
        ($1, $2, 'access_matrix.read', now()),
        ($1, $2, 'repairs.read', now()),
        ($1, $2, 'repairs.add_note', now()),
+       ($1, $2, 'users.manage', now()),
+       ($1, $2, 'access_matrix.manage', now()),
        ($1, $3, 'repairs.read', now()),
        ($1, $3, 'repairs.add_note', now()),
        ($4, $2, 'users.read', now()),
        ($4, $5, 'users.read', now()),
        ($4, $5, 'repairs.read', now())`,
     [tenantA, sharedAdminRole, technicianRoleA, tenantB, roleOnlyB],
+  );
+  await admin.query(
+    `insert into access_pin_credentials (
+       tenant_id, user_id, credential_id, status, algorithm,
+       profile_version, pepper_version, memory_kib, passes, parallelism,
+       salt, verifier, lookup_digest, credential_version,
+       consecutive_failures, created_at, updated_at
+     ) values (
+       $1, $2, gen_random_uuid(), 'active', 'argon2id',
+       1, 1, 65536, 3, 4,
+       $3, $4, $5, 0,
+       0, now(), now()
+     )`,
+    [
+      tenantA,
+      sharedAdminUser,
+      Buffer.alloc(16, 1),
+      Buffer.alloc(32, 2),
+      Buffer.alloc(32, 3),
+    ],
   );
 }
 
@@ -315,7 +353,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 23);
+      assert.equal(applied.status.migrations.length, 31);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -332,17 +370,27 @@ test(
       assert.deepEqual(
         catalog.rows.map(({ capability_code }) => capability_code),
         [
+          'access_matrix.manage',
           'access_matrix.read',
           'repairs.add_note',
           'repairs.read',
+          'users.manage',
           'users.read',
         ],
       );
-      assert.ok(
-        catalog.rows.every(
-          ({ created_at }) =>
-            created_at.toISOString() === '2026-09-06T18:00:00.000Z',
-        ),
+      assert.deepEqual(
+        catalog.rows.map(({ capability_code, created_at }) => ({
+          capabilityCode: capability_code,
+          createdAt: created_at.toISOString(),
+        })),
+        [
+          { capabilityCode: 'access_matrix.manage', createdAt: '2026-09-07T23:00:00.000Z' },
+          { capabilityCode: 'access_matrix.read', createdAt: '2026-09-06T18:00:00.000Z' },
+          { capabilityCode: 'repairs.add_note', createdAt: '2026-09-06T18:00:00.000Z' },
+          { capabilityCode: 'repairs.read', createdAt: '2026-09-06T18:00:00.000Z' },
+          { capabilityCode: 'users.manage', createdAt: '2026-09-07T23:00:00.000Z' },
+          { capabilityCode: 'users.read', createdAt: '2026-09-06T18:00:00.000Z' },
+        ],
       );
       await assert.rejects(
         admin.query(
@@ -353,6 +401,26 @@ test(
       );
 
       await seedAuthorities(admin);
+
+      await rejectsWithCode(
+        repository.assignRole(
+          { tenantId: tenantA },
+          assignment({
+            assignmentId: deniedAssignmentA,
+            clientRequestId: deniedAssignRequestA,
+          }),
+          { async confirmCurrent() { return false; } },
+        ),
+        'ACCESS_AUTHORIZATION_CHANGED',
+      );
+      assert.equal(
+        Number((await admin.query(
+          `select count(*) from access_role_assignments
+           where tenant_id = $1 and assignment_id = $2`,
+          [tenantA, deniedAssignmentA],
+        )).rows[0].count),
+        0,
+      );
 
       await assert.rejects(
         admin.query(
@@ -386,6 +454,157 @@ test(
       );
       assert.equal(assignedAdminA.status, 'active');
       assert.equal(assignedAdminA.version, 0);
+
+      const administrationGuard = new KyselyAdministrationAuthorizationCommitGuard();
+      const authorityGuard = Object.freeze({
+        confirmCurrent: (transactionContext) => administrationGuard.confirmCurrent(
+          { tenantId: tenantA, userId: sharedAdminUser },
+          'access_matrix.manage',
+          transactionContext,
+        ),
+        confirmContinuity: (transactionContext) => administrationGuard.confirmContinuity(
+          { tenantId: tenantA, userId: sharedAdminUser },
+          transactionContext,
+        ),
+      });
+      await admin.query(
+        `update access_pin_credentials
+         set lookup_digest = null
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedAdminUser],
+      );
+      await rejectsWithCode(
+        repository.replaceRoleCapabilities(
+          { tenantId: tenantA },
+          {
+            roleId: sharedAdminRole,
+            expectedVersion: 0,
+            capabilityCodes: [
+              'users.read',
+              'users.manage',
+              'access_matrix.read',
+              'access_matrix.manage',
+              'repairs.read',
+              'repairs.add_note',
+            ],
+            clientRequestId: unusableAdminRequestA,
+            occurredAt: new Date().toISOString(),
+          },
+          authorityGuard,
+        ),
+        'ACCESS_AUTHORIZATION_CHANGED',
+      );
+      await admin.query(
+        `update access_pin_credentials
+         set lookup_digest = $3
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedAdminUser, Buffer.alloc(32, 3)],
+      );
+      await admin.query(
+        `update access_pin_credentials
+         set pepper_version = 2
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedAdminUser],
+      );
+      await rejectsWithCode(
+        repository.replaceRoleCapabilities(
+          { tenantId: tenantA },
+          {
+            roleId: sharedAdminRole,
+            expectedVersion: 0,
+            capabilityCodes: [
+              'users.read',
+              'users.manage',
+              'access_matrix.read',
+              'access_matrix.manage',
+              'repairs.read',
+              'repairs.add_note',
+            ],
+            clientRequestId: unsupportedPepperAdminRequestA,
+            occurredAt: new Date().toISOString(),
+          },
+          authorityGuard,
+        ),
+        'ACCESS_AUTHORIZATION_CHANGED',
+      );
+      await admin.query(
+        `update access_pin_credentials
+         set pepper_version = 1
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, sharedAdminUser],
+      );
+      await rejectsWithCode(
+        repository.replaceRoleCapabilities(
+          { tenantId: tenantA },
+          {
+            roleId: sharedAdminRole,
+            expectedVersion: 0,
+            capabilityCodes: [
+              'users.read',
+              'access_matrix.read',
+              'access_matrix.manage',
+              'repairs.read',
+              'repairs.add_note',
+            ],
+            clientRequestId: continuityRequestA,
+            occurredAt: new Date().toISOString(),
+          },
+          authorityGuard,
+        ),
+        'ACCESS_AUTHORIZATION_CHANGED',
+      );
+      assert.deepEqual(
+        (
+          await admin.query(
+            `select version,
+                    exists (
+                      select 1 from access_role_capabilities
+                      where tenant_id = $1 and role_id = $2
+                        and capability_code = 'users.manage'
+                    ) as users_manage
+             from access_roles where tenant_id = $1 and role_id = $2`,
+            [tenantA, sharedAdminRole],
+          )
+        ).rows,
+        [{ version: 0, users_manage: true }],
+      );
+
+      const pendingAuthorityRace = repository.assignRole(
+        { tenantId: tenantA },
+        assignment({
+          assignmentId: deniedAssignmentA,
+          userId: concurrentUserA,
+          roleId: technicianRoleA,
+          clientRequestId: authorityRaceRequestA,
+        }),
+        {
+          async confirmCurrent(transactionContext) {
+            await admin.query(
+              `delete from access_role_capabilities
+               where tenant_id = $1 and role_id = $2
+                 and capability_code = 'access_matrix.manage'`,
+              [tenantA, sharedAdminRole],
+            );
+            return authorityGuard.confirmCurrent(transactionContext);
+          },
+          confirmContinuity: authorityGuard.confirmContinuity,
+        },
+      );
+      await rejectsWithCode(pendingAuthorityRace, 'ACCESS_AUTHORIZATION_CHANGED');
+      assert.equal(
+        Number((await admin.query(
+          `select count(*) from access_role_assignments
+           where tenant_id = $1 and assignment_id = $2`,
+          [tenantA, deniedAssignmentA],
+        )).rows[0].count),
+        0,
+      );
+      await admin.query(
+        `insert into access_role_capabilities (
+           tenant_id, role_id, capability_code, created_at
+         ) values ($1, $2, 'access_matrix.manage', now())`,
+        [tenantA, sharedAdminRole],
+      );
       assert.deepEqual(
         await repository.assignRole({ tenantId: tenantA }, assignment()),
         assignedAdminA,
@@ -644,9 +863,11 @@ test(
       assert.deepEqual(
         matrixA.capabilities.map(({ capabilityCode }) => capabilityCode),
         [
+          'access_matrix.manage',
           'access_matrix.read',
           'repairs.add_note',
           'repairs.read',
+          'users.manage',
           'users.read',
         ],
       );
@@ -660,7 +881,9 @@ test(
             roleKey: 'administrador',
             capabilityCodes: [
               'users.read',
+              'users.manage',
               'access_matrix.read',
+              'access_matrix.manage',
               'repairs.read',
               'repairs.add_note',
             ],
@@ -737,7 +960,9 @@ test(
         }),
         [
           'users.read',
+          'users.manage',
           'access_matrix.read',
+          'access_matrix.manage',
           'repairs.read',
           'repairs.add_note',
         ],
@@ -928,6 +1153,26 @@ test(
 
       let status = await runner.getMigrationStatus();
       let latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      while (
+        latest?.name !==
+        '20260907220000_repairs_create_business_audit_events'
+      ) {
+        assert.ok(latest);
+        await runner.migrateDown(authorization(latest));
+        status = await runner.getMigrationStatus();
+        latest = [...status.migrations]
+          .reverse()
+          .find(({ state }) => state === 'applied');
+      }
+      assert.equal(
+        latest?.name,
+        '20260907220000_repairs_create_business_audit_events',
+      );
+      await runner.migrateDown(authorization(latest));
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
       assert.equal(latest?.name, '20260907120000_access_create_operational_sessions');

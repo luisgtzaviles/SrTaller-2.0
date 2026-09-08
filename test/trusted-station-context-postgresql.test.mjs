@@ -33,18 +33,24 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'repair_operational_note_request_guards',
+  'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   'access_pin_attempt_limits',
   'access_pin_attempt_station_guards',
   'access_pin_credential_commands',
+  'access_pin_eligibility_tenant_guards',
   'access_pin_credentials',
   'access_role_assignment_commands',
+  'access_role_commands',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
   'access_capabilities',
   'user_lifecycle_commands',
+  'user_profile_update_commands',
+  'user_create_commands',
   'user_provisioning_bootstraps',
   'users',
   'station_credentials',
@@ -132,6 +138,7 @@ function authorization(item) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
   await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
@@ -169,7 +176,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 23);
+      assert.equal(applied.status.migrations.length, 31);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await admin.query(
         `insert into tenants (tenant_id, created_at) values ($1, now()), ($2, now())`,

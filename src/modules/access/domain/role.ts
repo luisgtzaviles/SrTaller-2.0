@@ -1,11 +1,15 @@
 declare const roleIdBrand: unique symbol;
 declare const roleKeyBrand: unique symbol;
 declare const roleDisplayNameBrand: unique symbol;
+declare const roleDescriptionBrand: unique symbol;
 
 export type RoleId = string & { readonly [roleIdBrand]: 'RoleId' };
 export type RoleKey = string & { readonly [roleKeyBrand]: 'RoleKey' };
 export type RoleDisplayName = string & {
   readonly [roleDisplayNameBrand]: 'RoleDisplayName';
+};
+export type RoleDescription = string & {
+  readonly [roleDescriptionBrand]: 'RoleDescription';
 };
 export type RoleStatus = 'active' | 'disabled' | 'archived';
 
@@ -41,6 +45,19 @@ export function parseRoleDisplayName(value: unknown): RoleDisplayName {
     throw new TypeError('Role display name is invalid.');
   }
   return value as RoleDisplayName;
+}
+
+export function parseRoleDescription(value: unknown): RoleDescription | null {
+  if (value === null) return null;
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value.length > 320 ||
+    value !== value.trim()
+  ) {
+    throw new TypeError('Role description is invalid.');
+  }
+  return value as RoleDescription;
 }
 
 export function parseRoleStatus(value: unknown): RoleStatus {

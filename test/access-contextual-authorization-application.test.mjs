@@ -90,6 +90,14 @@ function runtimeFixture(overrides = {}) {
         calls.push(['session', context, input]);
         return activeSession;
       },
+      async confirmAuthorizedAtCommit(context, session, capability, transactionContext) {
+        calls.push(['commit', context, session, capability, transactionContext]);
+        return true;
+      },
+      async confirmTemporalAtCommit(context, session, transactionContext) {
+        calls.push(['temporal-commit', context, session, transactionContext]);
+        return true;
+      },
     },
     resolveCapabilities: {
       async execute(scope) {
@@ -130,7 +138,10 @@ test('contextual authorization resolves immutable server authority in order for 
   );
 
   assert.equal(result, 'allowed');
-  assert.deepEqual(received, {
+  assert.deepEqual({
+    ...received,
+    commitGuard: undefined,
+  }, {
     tenantId,
     branchId,
     stationId,
@@ -138,7 +149,10 @@ test('contextual authorization resolves immutable server authority in order for 
     userId,
     userDisplayName: 'Jorge Operador',
     capability: 'repairs.read',
+    commitGuard: undefined,
   });
+  assert.equal(typeof received.commitGuard.confirmCurrent, 'function');
+  assert.equal(typeof received.commitGuard.confirmTemporalCurrent, 'function');
   assert.equal(Object.isFrozen(received), true);
   assert.deepEqual(fixture.calls.map(([name]) => name), [
     'station',
@@ -151,6 +165,37 @@ test('contextual authorization resolves immutable server authority in order for 
     touch: true,
   });
   assert.deepEqual(fixture.calls[2][1], { tenantId, branchId, userId });
+});
+
+test('commit guard revalidates the exact station, session, and server-selected capability', async () => {
+  const request = requestFixture();
+  const fixture = runtimeFixture();
+  const transactionContext = Object.freeze({ opaque: true });
+  await new ContextualAuthorizationExecutorService(fixture.runtime).execute(
+    request.stateChange,
+    { capability: 'repairs.add_note', kind: 'state-change' },
+    async (context) => context.commitGuard.confirmCurrent(transactionContext),
+  );
+  const call = fixture.calls.find(([name]) => name === 'commit');
+  assert.equal(call[1], station);
+  assert.equal(call[2], activeSession);
+  assert.equal(call[3], 'repairs.add_note');
+  assert.equal(call[4], transactionContext);
+});
+
+test('temporal commit guard revalidates the exact station and session at the effect boundary', async () => {
+  const request = requestFixture();
+  const fixture = runtimeFixture();
+  const transactionContext = Object.freeze({ opaque: true });
+  await new ContextualAuthorizationExecutorService(fixture.runtime).execute(
+    request.stateChange,
+    { capability: 'repairs.add_note', kind: 'state-change' },
+    async (context) => context.commitGuard.confirmTemporalCurrent(transactionContext),
+  );
+  const call = fixture.calls.find(([name]) => name === 'temporal-commit');
+  assert.equal(call[1], station);
+  assert.equal(call[2], activeSession);
+  assert.equal(call[3], transactionContext);
 });
 
 test('missing, malformed, or inactive authentication fails closed before effects', async () => {

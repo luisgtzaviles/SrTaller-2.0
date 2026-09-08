@@ -1,0 +1,46 @@
+import { sql } from 'kysely';
+import type { Kysely } from 'kysely';
+
+import type { DatabaseSchema } from '../database-types.js';
+
+/** Durable replay evidence for ordinary tenant-scoped User creation. */
+export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
+  await database.schema
+    .createTable('user_create_commands')
+    .addColumn('tenant_id', 'uuid', (column) => column.notNull())
+    .addColumn('client_request_id', 'uuid', (column) => column.notNull())
+    .addColumn('user_id', 'uuid', (column) => column.notNull())
+    .addColumn('requested_display_name', 'varchar(160)', (column) => column.notNull())
+    .addColumn('requested_operational_identifier', 'varchar(160)')
+    .addColumn('result_display_name', 'varchar(160)', (column) => column.notNull())
+    .addColumn('result_operational_identifier', 'varchar(160)')
+    .addColumn('result_status', 'varchar(16)', (column) => column.notNull())
+    .addColumn('result_version', 'integer', (column) => column.notNull())
+    .addColumn('result_created_at', 'timestamptz', (column) => column.notNull())
+    .addColumn('result_updated_at', 'timestamptz', (column) => column.notNull())
+    .addColumn('applied_at', 'timestamptz', (column) => column.notNull())
+    .addPrimaryKeyConstraint('user_create_commands_pk', [
+      'tenant_id',
+      'client_request_id',
+    ])
+    .addForeignKeyConstraint(
+      'user_create_commands_user_fk',
+      ['tenant_id', 'user_id'],
+      'users',
+      ['tenant_id', 'user_id'],
+    )
+    .addCheckConstraint(
+      'user_create_commands_result_ck',
+      sql`result_status = 'active'
+          and result_version = 0
+          and result_display_name = requested_display_name
+          and result_operational_identifier is not distinct from requested_operational_identifier
+          and result_created_at = applied_at
+          and result_updated_at = applied_at`,
+    )
+    .execute();
+}
+
+export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
+  await database.schema.dropTable('user_create_commands').execute();
+}

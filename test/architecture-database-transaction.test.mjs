@@ -25,9 +25,12 @@ test('transaction runner and internal capability retain exact registered ownersh
       'runInTransaction',
     ],
     consumers: [
+      'src/modules/access/infrastructure/persistence/kysely-access.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
       'src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts',
       'src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts',
       'src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts',
+      'src/modules/users/infrastructure/persistence/kysely-user.repository.ts',
     ],
     consumerRequirement: 'deferred-until-adapter-composition',
     status: 'materialized-transaction-runner',

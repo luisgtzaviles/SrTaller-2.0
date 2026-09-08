@@ -6,6 +6,9 @@ import {
   createLatestRequestCommitGuard,
   isLatestOperationGeneration,
 } from '../apps/dev-preview-web/src/session/latest-request-commit-guard.mjs';
+import {
+  parseSessionCapabilities,
+} from '../apps/dev-preview-web/src/session/session-capabilities.mjs';
 
 const [
   appSource,
@@ -41,12 +44,17 @@ function sourceSection(source, startMarker, endMarker) {
 
 test('session HTTP client uses the single cookie-backed, CSRF-protected contract', () => {
   assert.match(apiSource, /const SESSION_PATH = '\/api\/access\/session';/u);
+  assert.doesNotMatch(apiSource, /\/api\/access\/session\/local-pin/u);
   assert.match(apiSource, /const LOCAL_STATION_BOOTSTRAP_PATH = '\/api\/stations\/local-bootstrap';/u);
   assert.equal(apiSource.match(/credentials: 'include'/gu)?.length, 4);
   assert.equal(apiSource.match(/cache: 'no-store'/gu)?.length, 4);
   assert.equal(apiSource.match(/\[CSRF_HEADER\]: before\.csrfToken/gu)?.length, 2);
   assert.equal(apiSource.match(/'Content-Type': 'application\/json'/gu)?.length, 2);
-  assert.match(apiSource, /body: JSON\.stringify\(\{[\s\S]*?userId: request\.userId,[\s\S]*?pin: request\.pin,[\s\S]*?expectedSessionId,/u);
+  assert.match(apiSource, /body: JSON\.stringify\(\{[\s\S]*?pin: request\.pin,[\s\S]*?expectedSessionId,/u);
+  assert.doesNotMatch(
+    sourceSection(apiSource, 'export async function startOrSwitchOperationalSession', 'export async function logoutOperationalSession'),
+    /userId: request\.userId/u,
+  );
   assert.doesNotMatch(apiSource, /login-context|localStorage|sessionStorage/iu);
 
   const bootstrap = sourceSection(
@@ -111,34 +119,53 @@ test('browser coordination serializes complete Session exchanges and publishes o
 test('remote mutation invalidation hides the actor before queued reconciliation', () => {
   const subscription = sourceSection(
     gateSource,
-    'const invalidate = (): void => {',
+    'const invalidate = (background = false): void => {',
     '    let unsubscribe:',
   );
   assert.match(subscription, /operationGeneration\.current \+= 1/u);
   assert.match(subscription, /pending = true/u);
-  assert.match(subscription, /setSnapshot\(null\)/u);
-  assert.match(subscription, /setPhase\('loading'\)/u);
+  assert.match(subscription, /if \(!background\) \{[\s\S]*?setSnapshot\(null\)[\s\S]*?setPhase\('loading'\)/u);
   assert.match(subscription, /void reconcile\(\)/u);
   assert.ok(
     subscription.indexOf("setPhase('loading')") < subscription.indexOf('void reconcile()'),
     'the verified actor must be hidden before reconciliation waits for the Session lock',
   );
-  assert.match(gateSource, /subscribeToRemoteSessionChanges\(invalidate\)/u);
-  assert.match(gateSource, /window\.addEventListener\(SESSION_INVALIDATED_EVENT, invalidate\)/u);
+  assert.match(gateSource, /subscribeToRemoteSessionChanges\(\(\) => invalidate\(false\)\)/u);
+  assert.match(gateSource, /window\.addEventListener\(SESSION_INVALIDATED_EVENT, localInvalidation\)/u);
 });
 
 test('session snapshots fail closed before reaching the shell', () => {
+  assert.match(apiSource, /administrationCapabilities: readonly OperationalCapability\[\]/u);
+  assert.match(apiSource, /parseSessionCapabilities\([\s\S]*?value\.administrationCapabilities,[\s\S]*?session !== null/u);
+  assert.doesNotMatch(apiSource, /value\.administrationCapabilities \?\? \[\]/u);
+  assert.match(gateSource, /administrationCapabilities: snapshot\.administrationCapabilities/u);
+  assert.match(appSource, /capabilities=\{administrationCapabilities\} capability="users\.read"/u);
+  assert.match(appSource, /capabilities=\{administrationCapabilities\} capability="access_matrix\.read"/u);
   assert.match(apiSource, /const CSRF_PATTERN = \/\^\[A-Za-z0-9_-\]\{43\}\$\/u/u);
   assert.match(apiSource, /session\.stationId !== station\.stationId/u);
   assert.match(apiSource, /session\.branchId !== station\.branchId/u);
-  assert.match(apiSource, /user\.displayName !== session\.displayName/u);
+  assert.match(apiSource, /typeof hasEligibleUsers !== 'boolean'/u);
   assert.match(apiSource, /if \(!isRecord\(value\) \|\| value\.status !== 'active'\)/u);
-  assert.match(apiSource, /const session = parseActiveSession\(value\.session, station, users\)/u);
+  assert.match(apiSource, /const session = parseActiveSession\(value\.session, station\)/u);
   assert.match(apiSource, /if \(session === null\) \{[\s\S]*?revalidateAfterMs !== null/u);
   assert.match(apiSource, /typeof revalidateAfterMs !== 'number'/u);
   assert.match(apiSource, /!Number\.isSafeInteger\(revalidateAfterMs\)/u);
   assert.match(apiSource, /revalidateAfterMs < 1_000/u);
   assert.match(apiSource, /revalidateAfterMs > 60 \* 60 \* 1_000/u);
+});
+
+test('tenant-wide administration grants satisfy the browser catalog-order contract', () => {
+  assert.deepEqual(parseSessionCapabilities([
+    'users.read',
+    'users.manage',
+    'access_matrix.read',
+    'access_matrix.manage',
+  ], true), [
+    'users.read',
+    'users.manage',
+    'access_matrix.read',
+    'access_matrix.manage',
+  ]);
 });
 
 test('provider bootstraps only a missing local Station and treats session null as the login gate', () => {
@@ -152,27 +179,26 @@ test('provider bootstraps only a missing local Station and treats session null a
   assert.match(gateSource, /if \(!snapshot\.session \|\| switching\)/u);
   assert.match(gateSource, /function LoginPage/u);
   assert.doesNotMatch(gateSource, /localStorage|sessionStorage/iu);
-  assert.match(gateSource, /snapshot\.station\.stationId/u);
-  assert.match(gateSource, /snapshot\.station\.branchId/u);
+  assert.match(gateSource, /Sucursal vinculada/u);
+  assert.match(gateSource, /Contexto confirmado/u);
   assert.doesNotMatch(apiSource, /JSON\.stringify\([^\n]*(?:stationId|branchId|tenantId)/u);
 });
 
-test('login page enforces six PIN digits, clears the PIN, and exposes keyboard focus flows', () => {
-  assert.match(gateSource, /const PIN_PATTERN = \/\^\\d\{6\}\$\/u/u);
+test('login page uses the four-digit PIN-only flow without exposing a user directory', () => {
+  assert.match(gateSource, /const PIN_PATTERN = \/\^\\d\{4\}\$\/u/u);
   assert.match(gateSource, /inputMode="numeric"/u);
   assert.match(gateSource, /autoComplete="off"/u);
-  assert.match(gateSource, /pattern="\[0-9\]\{6\}"/u);
-  assert.match(gateSource, /minLength=\{6\}/u);
-  assert.match(gateSource, /maxLength=\{6\}/u);
-  assert.match(gateSource, /replace\(\/\\D\/gu, ''\)\.slice\(0, 6\)/u);
-  assert.ok(gateSource.indexOf("setPin('');") < gateSource.indexOf('await onAuthenticate(selectedUserId, submittedPin);'));
-  assert.match(gateSource, /userRef\.current\?\.focus\(\)/u);
+  assert.match(gateSource, /pattern="\[0-9\]\{4\}"/u);
+  assert.match(gateSource, /minLength=\{4\}/u);
+  assert.match(gateSource, /maxLength=\{4\}/u);
+  assert.match(gateSource, /replace\(\/\\D\/gu, ''\)\.slice\(0, 4\)/u);
+  assert.ok(gateSource.indexOf("setPin('');") < gateSource.indexOf('await onAuthenticate(submittedPin);'));
   assert.match(gateSource, /pinRef\.current\?\.focus\(\)/u);
-  assert.match(gateSource, /aria-invalid=\{userHasError \|\| undefined\}/u);
   assert.match(gateSource, /aria-invalid=\{pinHasError \|\| undefined\}/u);
-  assert.match(gateSource, /aria-describedby=\{`operational-user-hint\$\{userHasError \? ' session-error' : ''\}`\}/u);
   assert.match(gateSource, /aria-describedby=\{`operational-pin-hint\$\{pinHasError \? ' session-error' : ''\}`\}/u);
   assert.match(gateSource, /Se usa sólo para esta verificación y no se guarda en el almacenamiento del navegador/u);
+  assert.match(gateSource, /styles\.pinKeypad/u);
+  assert.doesNotMatch(gateSource, /operational-user|selectedUserId|UserRoundCheck/u);
   assert.match(gateSource, /submitting \|\| busy \? 'Procesando…'/u);
   assert.match(gateSource, /event\.key === 'Escape'/u);
   assert.match(gateSource, /<form[\s\S]*?onSubmit=/u);
@@ -266,7 +292,7 @@ test('switch, cancellation, and logout reconcile server truth and restore determ
     'const logout = useCallback',
   );
   assert.match(authenticate, /const previousSessionId = snapshot\.session\?\.sessionId \?\? null/u);
-  assert.match(authenticate, /startOrSwitchOperationalSession\(\{ userId, pin \}, previousSessionId\)/u);
+  assert.match(authenticate, /startOrSwitchOperationalSession\(\{ pin \}, previousSessionId\)/u);
   assert.match(authenticate, /verified\.session\.sessionId !== previousSessionId/u);
   assert.match(authenticate, /setSwitching\(verified\.session !== null && previousSessionId !== null\)/u);
   assert.match(authenticate, /setFocusTarget\('main'\)/u);
@@ -328,9 +354,10 @@ test('login gate is mobile-first and covers the governed responsive widths', () 
   assert.match(gateStyles, /@media \(min-width: 1024px\)/u);
   assert.match(gateStyles, /@media \(min-width: 1280px\)/u);
   assert.match(gateStyles, /\.actions \{[\s\S]*?flex-direction: column/u);
+  const actions = sourceSection(gateSource, '<div className={styles.actions}>', '</div>\n          </form>');
   assert.ok(
-    gateSource.indexOf('>Cancelar</Button>') <
-      gateSource.indexOf('type="submit"'),
+    actions.indexOf('>Cancelar</Button>') <
+      actions.indexOf('type="submit"'),
     'mobile visual order must follow the DOM focus order: cancel, then submit',
   );
   assert.match(gateStyles, /@media \(min-width: 768px\) \{[\s\S]*?\.actions \{[\s\S]*?flex-direction: row/u);

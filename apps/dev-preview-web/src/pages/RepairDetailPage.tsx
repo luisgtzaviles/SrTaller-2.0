@@ -49,6 +49,7 @@ function timelineSourceLabel(source: string): string {
     'local.assignment_projection': 'Cambio de asignación',
     'local.operator_note': 'Nota operativa',
     'local.operational_note': 'Nota operativa local',
+    'repairs.operational_note': 'Nota operativa',
     'local.reception': 'Recepción',
     'local.status_projection': 'Cambio de situación',
     'local.technician_assignment': 'Asignación de técnico',
@@ -160,7 +161,6 @@ export function RepairDetailWorkspace({
       }, csrfToken);
       onNoteAdded({
         ...response.item,
-        actor: { id: null, displayName: response.item.actor.displayName },
       });
       noteRequestId.current = null;
       setNoteDraft('');

@@ -51,6 +51,10 @@ const authorizedContext = Object.freeze({
   userId: 'a3000000-0000-4000-8000-000000000001',
   userDisplayName: 'Ada Operadora',
   capability: 'repairs.read',
+  commitGuard: Object.freeze({
+    async confirmCurrent() { return true; },
+    async confirmTemporalCurrent() { return true; },
+  }),
 });
 
 const requestEvidence = Object.freeze({
@@ -138,11 +142,12 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
         id: note.entryId,
         occurredAt: note.occurredAt.toISOString(),
         type: 'note',
-        actorId: note.actorId,
-        actorDisplayName: note.actorDisplayName,
+        actorId: scope.actorUserId,
+        actorDisplayName: scope.actorDisplayName,
         title: 'Nota',
         body: note.body,
-        source: note.source,
+        source: 'repairs.operational_note',
+        attribution: null,
       };
     },
   };
@@ -188,6 +193,26 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     scope.tenantId === authorizedContext.tenantId &&
     scope.branchId === authorizedContext.branchId
   )));
+  const noteCall = repositoryCalls.find(({ operation }) => operation === 'note');
+  assert.deepEqual(noteCall.scope, {
+    tenantId: authorizedContext.tenantId,
+    branchId: authorizedContext.branchId,
+    stationId: authorizedContext.stationId,
+    sessionId: authorizedContext.sessionId,
+    actorUserId: authorizedContext.userId,
+    actorDisplayName: authorizedContext.userDisplayName,
+    capability: 'repairs.add_note',
+    commitGuard: authorizedContext.commitGuard,
+  });
+  assert.equal(noteCall.note.stationId, undefined);
+  assert.equal(noteCall.note.sessionId, undefined);
+  assert.equal(noteCall.note.actorUserId, undefined);
+  assert.equal(noteCall.note.actorDisplayName, undefined);
+  assert.equal(noteCall.note.capability, undefined);
+  assert.equal(noteCall.note.action, 'repair.operational_note.added');
+  assert.equal(noteCall.note.resourceType, 'repair');
+  assert.equal(noteCall.note.result, 'succeeded');
+  assert.notEqual(noteCall.note.correlationId, noteCall.note.clientRequestId);
   assert.equal(repositoryCalls[0].query.tenantId, undefined);
   assert.equal(repositoryCalls[0].query.branchId, undefined);
 });

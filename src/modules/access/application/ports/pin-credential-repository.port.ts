@@ -33,11 +33,20 @@ export type PinAttemptResult =
   | Readonly<{ status: 'authenticated'; credentialVersion: number }>
   | Readonly<{ status: 'denied' | 'temporarily-unavailable' }>;
 
+export type PinOnlyAttemptResult =
+  | Readonly<{
+      status: 'authenticated';
+      userId: AccessUserId;
+      credentialVersion: number;
+    }>
+  | Readonly<{ status: 'denied' | 'temporarily-unavailable' }>;
+
 export type PinCredentialPersistenceErrorCode =
   | 'PIN_CREDENTIAL_EXISTS'
   | 'PIN_CREDENTIAL_IDEMPOTENCY_CONFLICT'
   | 'PIN_CREDENTIAL_INPUT_INVALID'
   | 'PIN_CREDENTIAL_PERSISTENCE_FAILED'
+  | 'PIN_CREDENTIAL_AUTHORIZATION_CHANGED'
   | 'PIN_CREDENTIAL_TENANT_SCOPE_REQUIRED'
   | 'PIN_CREDENTIAL_USER_INVALID';
 
@@ -52,7 +61,17 @@ export class PinCredentialPersistenceError extends Error {
   }
 }
 
+export interface PinCredentialMutationCommitGuard {
+  confirmCurrent(transactionContext: object): Promise<boolean>;
+  confirmContinuity?(transactionContext: object): Promise<boolean>;
+}
+
 export interface PinCredentialRepositoryPort {
+  /** Safe administration read: only active credential ownership, never verifier or PIN material. */
+  listConfiguredUserIds(
+    scope: PinCredentialTenantScope,
+  ): Promise<readonly AccessUserId[]>;
+
   provision(
     scope: PinCredentialTenantScope,
     input: Readonly<{
@@ -62,7 +81,33 @@ export interface PinCredentialRepositoryPort {
       occurredAt: string;
       secret: PinSecretMaterial;
     }>,
+    guard?: PinCredentialMutationCommitGuard,
   ): Promise<PinCredentialRecord>;
+
+  replace(
+    scope: PinCredentialTenantScope,
+    input: Readonly<{
+      userId: AccessUserId;
+      clientRequestId: string;
+      occurredAt: string;
+      secret: PinSecretMaterial;
+    }>,
+    guard?: PinCredentialMutationCommitGuard,
+  ): Promise<PinCredentialRecord>;
+
+  authenticatePinOnlyAttempt(
+    context: PinCredentialStationScope,
+    input: Readonly<{
+      eligibleUserIds: readonly AccessUserId[];
+      lookupDigest: Uint8Array;
+      rateLimitPrincipalId: string;
+      occurredAt: string;
+    }>,
+    verify: (
+      userId: AccessUserId,
+      stored: PinStoredVerifier | null,
+    ) => Promise<boolean>,
+  ): Promise<PinOnlyAttemptResult>;
 
   authenticateAttempt(
     context: PinCredentialStationScope,

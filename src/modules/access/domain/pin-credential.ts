@@ -6,6 +6,8 @@ export type PinCredentialId = string & {
 };
 export type PinCredentialStatus = 'active' | 'revoked';
 
+export const PIN_ACTIVE_PEPPER_VERSION = 1 as const;
+
 export const PIN_KDF_PROFILE = Object.freeze({
   algorithm: 'argon2id' as const,
   memoryKiB: 65_536,
@@ -18,7 +20,7 @@ export const PIN_KDF_PROFILE = Object.freeze({
 
 const canonicalUuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
-const pinPattern = /^[0-9]{6}$/u;
+const pinPattern = /^[0-9]{4}$/u;
 
 export function parsePinCredentialId(value: string): PinCredentialId {
   if (!canonicalUuid.test(value)) {

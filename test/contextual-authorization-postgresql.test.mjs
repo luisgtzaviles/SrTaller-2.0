@@ -10,6 +10,9 @@ const enabled = process.env.SR_OWNER_SCOPED_PG_TEST === '1';
 const { createDatabaseConnection } = enabled
   ? await import('../dist/infrastructure/database/database-connection.js')
   : {};
+const { useTransactionalDatabasePersistenceExecutor } = enabled
+  ? await import('../dist/infrastructure/database/database-persistence-capability.js')
+  : {};
 const {
   databaseMigrationSourceOverride,
   inspectMigrationSource,
@@ -64,11 +67,17 @@ const {
 const { RepairDetailNotFoundError } = enabled
   ? await import('../dist/modules/repairs/application/use-cases/get-repair-detail.use-case.js')
   : {};
-const { RepairOperationalNoteRepairNotFoundError } = enabled
+const {
+  AddRepairOperationalNoteAuthorizationError,
+  RepairOperationalNoteRepairNotFoundError,
+} = enabled
   ? await import('../dist/modules/repairs/application/use-cases/add-repair-operational-note.use-case.js')
   : {};
 const { createKyselyRepairRepository } = enabled
   ? await import('../dist/modules/repairs/infrastructure/persistence/kysely-repair.repository.js')
+  : {};
+const { RepairOperationalNoteAuthorizationChangedError } = enabled
+  ? await import('../dist/modules/repairs/application/ports/repair-repository.port.js')
   : {};
 
 const migrationRoot = fileURLToPath(
@@ -76,18 +85,24 @@ const migrationRoot = fileURLToPath(
 );
 
 const tables = [
+  'repair_operational_note_request_guards',
+  'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   'access_pin_attempt_limits',
   'access_pin_attempt_station_guards',
   'access_pin_credential_commands',
+  'access_pin_eligibility_tenant_guards',
   'access_pin_credentials',
   'access_role_assignment_commands',
+  'access_role_commands',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
   'access_capabilities',
   'user_lifecycle_commands',
+  'user_profile_update_commands',
+  'user_create_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -132,9 +147,16 @@ const noteRequestA = 'd0000000-0000-4000-8000-000000000026';
 const deniedNoteRequest = 'd1000000-0000-4000-8000-000000000026';
 const foreignBranchRequest = 'd2000000-0000-4000-8000-000000000026';
 const foreignTenantRequest = 'd3000000-0000-4000-8000-000000000026';
+const concurrentNoteRequest = 'd4000000-0000-4000-8000-000000000026';
+const auditFailureRequest = 'd5000000-0000-4000-8000-000000000026';
+const toctouRequest = 'd6000000-0000-4000-8000-000000000026';
+const expiredCommitRequest = 'd7000000-0000-4000-8000-000000000026';
+const lockExpiredCommitRequest = 'd8000000-0000-4000-8000-000000000026';
+const authorityLinearizationRequest = 'd9000000-0000-4000-8000-000000000026';
+const snapshotRevocationRequest = 'da000000-0000-4000-8000-000000000026';
 const stationSecretA = 'A'.repeat(43);
 const stationSecretB = 'B'.repeat(43);
-const authorizationNow = new Date('2026-09-07T20:00:01.000Z');
+const authorizationNow = new Date();
 
 function databaseConfig() {
   return Object.freeze({
@@ -194,6 +216,12 @@ function source() {
 }
 
 async function resetDatabase(admin) {
+  await admin.query(
+    'drop function if exists test_reject_pbi028_audit_insert() cascade',
+  );
+  await admin.query(
+    'drop function if exists repairs_reject_business_audit_event_mutation() cascade',
+  );
   await admin.query(
     'drop function if exists stations_advance_admission_revision() cascade',
   );
@@ -379,11 +407,49 @@ async function effectCounts(admin) {
   const result = await admin.query(
     `select
        (select count(*)::integer from repair_timeline_entries) as timeline,
+       (select count(*)::integer from repair_business_audit_events) as audit,
        (select count(*)::integer from repair_technician_assignments) as assignments,
        (select count(*)::integer from repair_workflow_transitions) as workflow,
        (select count(*)::integer from repair_location_movements) as locations`,
   );
   return result.rows[0];
+}
+
+async function waitForRepairLockWait(admin) {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const result = await admin.query(
+      `select exists (
+         select 1
+         from pg_stat_activity
+         where application_name = 'srtaller-contextual-authorization-postgresql'
+           and state = 'active'
+           and wait_event_type = 'Lock'
+           and query ilike '%from "repairs"%for update%'
+       ) as waiting`,
+    );
+    if (result.rows[0].waiting) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.fail('Operational Note transaction did not reach the Repair row lock');
+}
+
+async function waitForCapabilityRevocationLockWait(admin) {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const result = await admin.query(
+      `select exists (
+         select 1
+         from pg_stat_activity
+         where state = 'active'
+           and wait_event_type = 'Lock'
+           and query ilike '%delete from access_role_capabilities%'
+       ) as waiting`,
+    );
+    if (result.rows[0].waiting) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.fail('Capability revocation did not wait on the commit guard lock');
 }
 
 test(
@@ -393,6 +459,7 @@ test(
     assert.equal(process.version, 'v24.18.0');
     const admin = adminPool();
     const connection = createDatabaseConnection(databaseConfig());
+    const concurrentConnection = createDatabaseConnection(databaseConfig());
     const migrationSource = source();
     const inspection = await inspectMigrationSource(migrationSource);
     const runner = createMigrationRunner(connection, {
@@ -446,8 +513,8 @@ test(
         bearerVerifier: tokenMaterial.bearerVerifier,
         csrfVerifier: tokenMaterial.csrfVerifier,
         expectedSessionId: null,
-        occurredAt: '2026-09-07T20:00:00.000Z',
-        expiresAt: '2026-09-08T08:00:00.000Z',
+        occurredAt: new Date(authorizationNow.getTime() - 1_000).toISOString(),
+        expiresAt: new Date(authorizationNow.getTime() + 12 * 60 * 60 * 1_000 - 1_000).toISOString(),
       });
 
       const applicableUsers = new ListApplicableUsersUseCase(accessRepository);
@@ -468,9 +535,54 @@ test(
           resolveCapabilities,
         }),
       );
+      const repairRepository = createKyselyRepairRepository(
+        connection,
+        () => new Date(authorizationNow),
+      );
       const repairs = new RepairProtectedOperations(
         authorization,
-        createKyselyRepairRepository(connection, () => new Date(authorizationNow)),
+        repairRepository,
+        Object.freeze({ read: async () => null }),
+      );
+      await concurrentConnection.verify();
+      const concurrentStationVerifier = new KyselyStationCredentialVerifier(
+        concurrentConnection,
+      );
+      const concurrentTrustedStations = new TrustedStationRequestContextResolver(
+        new ResolveTrustedStationContextUseCase(concurrentStationVerifier),
+      );
+      const concurrentAccessRepository = createKyselyAccessRepository(
+        concurrentConnection,
+      );
+      const concurrentUserReader = new KyselyAuthenticationUserReader(
+        concurrentConnection,
+      );
+      const concurrentSessionRepository = new KyselyOperationalSessionRepository(
+        concurrentConnection,
+        concurrentStationVerifier,
+        concurrentUserReader,
+      );
+      const concurrentAuthorization = new ContextualAuthorizationExecutorService(
+        Object.freeze({
+          trustedStations: concurrentTrustedStations,
+          resolveSession: new ResolveOperationalSessionUseCase(
+            concurrentSessionRepository,
+            concurrentUserReader,
+            new ListApplicableUsersUseCase(concurrentAccessRepository),
+            new NodeSessionToken(),
+            () => new Date(authorizationNow),
+          ),
+          resolveCapabilities: new ResolveEffectiveCapabilitiesUseCase(
+            concurrentAccessRepository,
+          ),
+        }),
+      );
+      const concurrentRepairs = new RepairProtectedOperations(
+        concurrentAuthorization,
+        createKyselyRepairRepository(
+          concurrentConnection,
+          () => new Date(authorizationNow),
+        ),
         Object.freeze({ read: async () => null }),
       );
       const cookieHeader = [
@@ -516,11 +628,270 @@ test(
           repair_id: repairA,
           client_request_id: noteRequestA,
           body: 'Nota autorizada por contexto material.',
-          source: 'local.operational_note',
+          source: 'repairs.operational_note',
         },
       ]);
 
-      const afterAuthorizedNote = await effectCounts(admin);
+      assert.equal(note.actorId, userA);
+      assert.equal(note.actorDisplayName, 'Operadora A');
+      const persistedAudit = (
+        await admin.query(
+          `select audit_id, tenant_id, branch_id, station_id, session_id,
+                  actor_user_id, actor_display_name, capability, action,
+                  resource_type, resource_id, result, correlation_id,
+                  client_request_id
+           from repair_business_audit_events
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+             and client_request_id = $4`,
+          [tenantA, branchA, repairA, noteRequestA],
+        )
+      ).rows;
+      assert.equal(persistedAudit.length, 1);
+      assert.deepEqual(
+        {
+          tenant_id: persistedAudit[0].tenant_id,
+          branch_id: persistedAudit[0].branch_id,
+          station_id: persistedAudit[0].station_id,
+          session_id: persistedAudit[0].session_id,
+          actor_user_id: persistedAudit[0].actor_user_id,
+          actor_display_name: persistedAudit[0].actor_display_name,
+          capability: persistedAudit[0].capability,
+          action: persistedAudit[0].action,
+          resource_type: persistedAudit[0].resource_type,
+          resource_id: persistedAudit[0].resource_id,
+          result: persistedAudit[0].result,
+          client_request_id: persistedAudit[0].client_request_id,
+        },
+        {
+          tenant_id: tenantA,
+          branch_id: branchA,
+          station_id: stationA,
+          session_id: sessionA,
+          actor_user_id: userA,
+          actor_display_name: 'Operadora A',
+          capability: 'repairs.add_note',
+          action: 'repair.operational_note.added',
+          resource_type: 'repair',
+          resource_id: repairA,
+          result: 'succeeded',
+          client_request_id: noteRequestA,
+        },
+      );
+      assert.match(
+        persistedAudit[0].audit_id,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
+      );
+      assert.match(
+        persistedAudit[0].correlation_id,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
+      );
+      assert.ok(![
+        noteRequestA,
+        sessionA,
+        repairA,
+        persistedAudit[0].audit_id,
+      ].includes(persistedAudit[0].correlation_id));
+
+      const auditColumns = (
+        await admin.query(
+          `select column_name
+           from information_schema.columns
+           where table_schema = 'public'
+             and table_name = 'repair_business_audit_events'
+           order by ordinal_position`,
+        )
+      ).rows.map(({ column_name: columnName }) => columnName);
+      for (const prohibitedColumn of [
+        'authorization',
+        'body',
+        'content',
+        'cookie',
+        'headers',
+        'payload',
+        'pin',
+        'secret',
+        'sql',
+        'token',
+      ]) {
+        assert.ok(!auditColumns.includes(prohibitedColumn));
+      }
+      const serializedAudit = JSON.stringify(persistedAudit[0]);
+      for (const sensitiveValue of [
+        'Nota autorizada por contexto material.',
+        stationSecretA,
+        tokenMaterial.bearer,
+        tokenMaterial.csrf,
+      ]) {
+        assert.ok(!serializedAudit.includes(sensitiveValue));
+      }
+
+      const noteRetry = await repairs.addRepairOperationalNote(
+        evidence,
+        noteInput(repairA, noteRequestA, 'Nota autorizada por contexto material.'),
+      );
+      assert.equal(noteRetry.id, note.id);
+      const retryCounts = (
+        await admin.query(
+          `select
+             (select count(*)::integer from repair_timeline_entries
+              where tenant_id = $1 and branch_id = $2 and repair_id = $3
+                and client_request_id = $4) as notes,
+             (select count(*)::integer from repair_business_audit_events
+              where tenant_id = $1 and branch_id = $2 and resource_id = $3
+                and client_request_id = $4) as audits`,
+          [tenantA, branchA, repairA, noteRequestA],
+        )
+      ).rows[0];
+      assert.deepEqual(retryCounts, { notes: 1, audits: 1 });
+
+      const concurrentNotes = await Promise.all([
+        repairs.addRepairOperationalNote(
+          evidence,
+          noteInput(repairA, concurrentNoteRequest, 'Nota concurrente auditada.'),
+        ),
+        concurrentRepairs.addRepairOperationalNote(
+          evidence,
+          noteInput(repairA, concurrentNoteRequest, 'Nota concurrente auditada.'),
+        ),
+      ]);
+      assert.equal(concurrentNotes[0].id, concurrentNotes[1].id);
+      const concurrentCounts = (
+        await admin.query(
+          `select
+             (select count(*)::integer from repair_timeline_entries
+              where tenant_id = $1 and branch_id = $2 and repair_id = $3
+                and client_request_id = $4) as notes,
+             (select count(*)::integer from repair_business_audit_events
+              where tenant_id = $1 and branch_id = $2 and resource_id = $3
+                and client_request_id = $4) as audits`,
+          [tenantA, branchA, repairA, concurrentNoteRequest],
+        )
+      ).rows[0];
+      assert.deepEqual(concurrentCounts, { notes: 1, audits: 1 });
+
+      await admin.query(
+        `create function test_reject_pbi028_audit_insert()
+         returns trigger
+         language plpgsql
+         as $function$
+         begin
+           if new.client_request_id = '${auditFailureRequest}'::uuid then
+             raise check_violation using message = 'forced PBI-028 audit failure';
+           end if;
+           return new;
+         end;
+         $function$`,
+      );
+      await admin.query(
+        `create trigger test_reject_pbi028_audit_insert
+         before insert on repair_business_audit_events
+         for each row execute function test_reject_pbi028_audit_insert()`,
+      );
+      await assert.rejects(
+        repairs.addRepairOperationalNote(
+          evidence,
+          noteInput(repairA, auditFailureRequest, 'Esta nota debe revertirse.'),
+        ),
+        (error) => error?.code === 'DATABASE_TRANSACTION_CALLBACK_FAILED',
+      );
+      await admin.query(
+        'drop trigger test_reject_pbi028_audit_insert on repair_business_audit_events',
+      );
+      await admin.query('drop function test_reject_pbi028_audit_insert()');
+      const rollbackCounts = (
+        await admin.query(
+          `select
+             (select count(*)::integer from repair_timeline_entries
+              where client_request_id = $1) as notes,
+             (select count(*)::integer from repair_business_audit_events
+              where client_request_id = $1) as audits`,
+          [auditFailureRequest],
+        )
+      ).rows[0];
+      assert.deepEqual(rollbackCounts, { notes: 0, audits: 0 });
+
+      await assert.rejects(
+        admin.query(
+          `insert into repair_business_audit_events (
+             audit_id, tenant_id, branch_id, station_id, session_id,
+             actor_user_id, actor_display_name, capability, action,
+             resource_type, resource_id, result, correlation_id,
+             client_request_id, occurred_at, created_at
+           ) values (
+             'e0000000-0000-4000-8000-000000000026', $1, $2, $3, $4,
+             $5, 'Operadora A', 'repairs.add_note',
+             'repair.operational_note.added', 'repair', $6, 'succeeded',
+             'e1000000-0000-4000-8000-000000000026',
+             'e2000000-0000-4000-8000-000000000026', now(), now()
+           )`,
+          [tenantA, branchA2, stationA, sessionA, userA, repairA],
+        ),
+        (error) => error?.code === '23503',
+      );
+      await assert.rejects(
+        admin.query(
+          `insert into repair_business_audit_events (
+             audit_id, tenant_id, branch_id, station_id, session_id,
+             actor_user_id, actor_display_name, capability, action,
+             resource_type, resource_id, result, correlation_id,
+             client_request_id, occurred_at, created_at
+           ) values (
+             'e3000000-0000-4000-8000-000000000026', $1, $2, $3, $4,
+             $5, 'Operador B', 'repairs.add_note',
+             'repair.operational_note.added', 'repair', $6, 'succeeded',
+             'e4000000-0000-4000-8000-000000000026',
+             'e5000000-0000-4000-8000-000000000026', now(), now()
+           )`,
+          [tenantB, branchB, stationB, sessionA, userB, repairA],
+        ),
+        (error) => error?.code === '23503',
+      );
+      await assert.rejects(
+        admin.query(
+          `insert into repair_business_audit_events (
+             audit_id, tenant_id, branch_id, station_id, session_id,
+             actor_user_id, actor_display_name, capability, action,
+             resource_type, resource_id, result, correlation_id,
+             client_request_id, occurred_at, created_at
+           ) values (
+             'e6000000-0000-4000-8000-000000000026', $1, $2, $3, $4,
+             $5, 'Operadora A', 'repairs.add_note',
+             'repair.operational_note.added', 'repair', $6, 'succeeded',
+             $7, 'e7000000-0000-4000-8000-000000000026', now(), now()
+           )`,
+          [
+            tenantA,
+            branchA,
+            stationA,
+            sessionA,
+            userA,
+            repairA,
+            persistedAudit[0].correlation_id,
+          ],
+        ),
+        (error) => error?.code === '23505',
+      );
+      await assert.rejects(
+        admin.query(
+          `update repair_business_audit_events
+           set actor_display_name = 'Sobrescrita'
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+             and client_request_id = $4`,
+          [tenantA, branchA, repairA, noteRequestA],
+        ),
+        (error) => error?.code === '23514',
+      );
+      await assert.rejects(
+        admin.query(
+          `delete from repair_business_audit_events
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+             and client_request_id = $4`,
+          [tenantA, branchA, repairA, noteRequestA],
+        ),
+        (error) => error?.code === '23514',
+      );
+
+      let afterAuthorizedNote = await effectCounts(admin);
       await assert.rejects(
         repairs.addRepairOperationalNote(
           evidence,
@@ -551,6 +922,44 @@ test(
         'ACCESS_DENIED',
       );
       assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+
+      let releaseCommitGuard;
+      let authorizationResolved;
+      const commitGuardRelease = new Promise((resolve) => { releaseCommitGuard = resolve; });
+      const authorizationBarrier = new Promise((resolve) => { authorizationResolved = resolve; });
+      const delayedRepairs = new RepairProtectedOperations(
+        authorization,
+        {
+          async addOperationalNote(scope, command) {
+            authorizationResolved();
+            await commitGuardRelease;
+            return repairRepository.addOperationalNote(scope, command);
+          },
+        },
+        Object.freeze({ read: async () => null }),
+      );
+      const pendingEffect = delayedRepairs.addRepairOperationalNote(
+        evidence,
+        noteInput(repairA, toctouRequest, 'No debe confirmarse tras revocación.'),
+      );
+      await authorizationBarrier;
+      await admin.query(
+        `delete from access_role_capabilities
+         where tenant_id = $1 and role_id = $2 and capability_code = 'repairs.add_note'`,
+        [tenantA, roleA],
+      );
+      releaseCommitGuard();
+      await assert.rejects(
+        pendingEffect,
+        AddRepairOperationalNoteAuthorizationError,
+      );
+      assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      await admin.query(
+        `insert into access_role_capabilities (
+           tenant_id, role_id, capability_code, created_at
+         ) values ($1, $2, 'repairs.add_note', now())`,
+        [tenantA, roleA],
+      );
 
       await admin.query(
         `delete from access_role_capabilities
@@ -593,6 +1002,134 @@ test(
          ) values ($1, $2, 'repairs.add_note', now())`,
         [tenantA, roleA],
       );
+
+      const contextBeforeExpiry = await authorization.execute(
+        evidence,
+        { capability: 'repairs.add_note', kind: 'state-change' },
+        async (context) => context,
+      );
+      const originalSessionTimes = (
+        await admin.query(
+          `select issued_at, last_activity_at, expires_at
+           from access_operational_sessions
+           where tenant_id = $1 and session_id = $2`,
+          [tenantA, sessionA],
+        )
+      ).rows[0];
+      const pendingExpiredCommit = repairRepository.addOperationalNote({
+        ...contextBeforeExpiry,
+        commitGuard: Object.freeze({
+          async confirmCurrent(transactionContext) {
+            await useTransactionalDatabasePersistenceExecutor(
+              transactionContext,
+              'access',
+              async (database) => await database
+                .updateTable('access_operational_sessions')
+                .set({
+                  issued_at: new Date(Date.now() - 2 * 60 * 60 * 1_000),
+                  last_activity_at: new Date(Date.now() - 61 * 60 * 1_000),
+                  expires_at: new Date(Date.now() + 10 * 60 * 60 * 1_000),
+                })
+                .where('tenant_id', '=', tenantA)
+                .where('session_id', '=', sessionA)
+                .executeTakeFirst(),
+            );
+            return contextBeforeExpiry.commitGuard.confirmCurrent(transactionContext);
+          },
+          async confirmTemporalCurrent(transactionContext) {
+            return contextBeforeExpiry.commitGuard.confirmTemporalCurrent(transactionContext);
+          },
+        }),
+      }, {
+        repairId: repairA,
+        entryId: 'e7000000-0000-4000-8000-000000000026',
+        auditEventId: 'e7100000-0000-4000-8000-000000000026',
+        correlationId: 'e7200000-0000-4000-8000-000000000026',
+        clientRequestId: expiredCommitRequest,
+        body: 'La sesión vencida no debe confirmar esta nota.',
+        action: 'repair.operational_note.added',
+        resourceType: 'repair',
+        result: 'succeeded',
+        occurredAt: new Date(),
+      });
+      await assert.rejects(
+        pendingExpiredCommit,
+        RepairOperationalNoteAuthorizationChangedError,
+      );
+      assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      await admin.query(
+        `update access_operational_sessions
+         set issued_at = $3, last_activity_at = $4, expires_at = $5
+         where tenant_id = $1 and session_id = $2`,
+        [
+          tenantA,
+          sessionA,
+          originalSessionTimes.issued_at,
+          originalSessionTimes.last_activity_at,
+          originalSessionTimes.expires_at,
+        ],
+      );
+
+      const repairLocker = await admin.connect();
+      try {
+        await repairLocker.query('begin');
+        await repairLocker.query(
+          `select repair_id from repairs
+           where tenant_id = $1 and branch_id = $2 and repair_id = $3
+           for update`,
+          [tenantA, branchA, repairA],
+        );
+        await admin.query(
+          `update access_operational_sessions
+           set issued_at = now() - interval '2 hours',
+               last_activity_at = now() - interval '59 minutes 58 seconds',
+               expires_at = now() + interval '10 hours'
+           where tenant_id = $1 and session_id = $2`,
+          [tenantA, sessionA],
+        );
+        const pendingAcrossDeadline = repairRepository.addOperationalNote(
+          contextBeforeExpiry,
+          {
+            repairId: repairA,
+            entryId: 'e8000000-0000-4000-8000-000000000026',
+            auditEventId: 'e8100000-0000-4000-8000-000000000026',
+            correlationId: 'e8200000-0000-4000-8000-000000000026',
+            clientRequestId: lockExpiredCommitRequest,
+            body: 'La sesión no debe confirmar después de esperar el lock.',
+            action: 'repair.operational_note.added',
+            resourceType: 'repair',
+            result: 'succeeded',
+            occurredAt: new Date(),
+          },
+        );
+        const observedAcrossDeadline = pendingAcrossDeadline.then(
+          (value) => ({ value }),
+          (error) => ({ error }),
+        );
+        await waitForRepairLockWait(admin);
+        await admin.query('select pg_sleep(2.25)');
+        await repairLocker.query('commit');
+        const result = await observedAcrossDeadline;
+        assert.ok(
+          result.error instanceof RepairOperationalNoteAuthorizationChangedError,
+        );
+        assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      } finally {
+        await repairLocker.query('rollback');
+        repairLocker.release();
+      }
+      await admin.query(
+        `update access_operational_sessions
+         set issued_at = $3, last_activity_at = $4, expires_at = $5
+         where tenant_id = $1 and session_id = $2`,
+        [
+          tenantA,
+          sessionA,
+          originalSessionTimes.issued_at,
+          originalSessionTimes.last_activity_at,
+          originalSessionTimes.expires_at,
+        ],
+      );
       await admin.query(
         `delete from access_role_capabilities
          where tenant_id = $1 and role_id = $2 and capability_code = 'repairs.read'`,
@@ -633,6 +1170,136 @@ test(
       );
       assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
 
+      const authorityLocker = await admin.connect();
+      try {
+        await authorityLocker.query('begin');
+        await authorityLocker.query(
+          `select repair_id from repairs
+           where tenant_id = $1 and branch_id = $2 and repair_id = $3
+           for update`,
+          [tenantA, branchA, repairA],
+        );
+        const linearizedNote = repairRepository.addOperationalNote(
+          {
+            ...contextBeforeExpiry,
+            actorUserId: contextBeforeExpiry.userId,
+            actorDisplayName: contextBeforeExpiry.userDisplayName,
+          },
+          {
+            repairId: repairA,
+            entryId: 'e9000000-0000-4000-8000-000000000026',
+            auditEventId: 'e9100000-0000-4000-8000-000000000026',
+            correlationId: 'e9200000-0000-4000-8000-000000000026',
+            clientRequestId: authorityLinearizationRequest,
+            body: 'La revocación concurrente respeta el orden de locks.',
+            action: 'repair.operational_note.added',
+            resourceType: 'repair',
+            result: 'succeeded',
+            occurredAt: new Date(),
+          },
+        );
+        await waitForRepairLockWait(admin);
+        const revocation = admin.query(
+          `delete from access_role_capabilities
+           where tenant_id = $1 and role_id = $2
+             and capability_code = 'repairs.add_note'`,
+          [tenantA, roleA],
+        );
+        const observedRevocation = revocation.then(
+          (value) => ({ value }),
+          (error) => ({ error }),
+        );
+        await waitForCapabilityRevocationLockWait(admin);
+        await authorityLocker.query('commit');
+        assert.equal((await linearizedNote)?.actorId, userA);
+        const revocationResult = await observedRevocation;
+        assert.equal(revocationResult.error, undefined);
+        assert.equal(revocationResult.value?.rowCount, 1);
+      } finally {
+        await authorityLocker.query('rollback');
+        authorityLocker.release();
+      }
+      await assert.rejects(
+        repairRepository.addOperationalNote(contextBeforeExpiry, {
+          repairId: repairA,
+          entryId: 'ea000000-0000-4000-8000-000000000026',
+          auditEventId: 'ea100000-0000-4000-8000-000000000026',
+          correlationId: 'ea200000-0000-4000-8000-000000000026',
+          clientRequestId: 'da000000-0000-4000-8000-000000000026',
+          body: 'La siguiente transacción debe observar la revocación.',
+          action: 'repair.operational_note.added',
+          resourceType: 'repair',
+          result: 'succeeded',
+          occurredAt: new Date(),
+        }),
+        RepairOperationalNoteAuthorizationChangedError,
+      );
+      await admin.query(
+        `insert into access_role_capabilities (
+           tenant_id, role_id, capability_code, created_at
+         ) values ($1, $2, 'repairs.add_note', now())`,
+        [tenantA, roleA],
+      );
+      afterAuthorizedNote = await effectCounts(admin);
+
+      let releaseAuthorityCheck;
+      let markAuthorityCheckReached;
+      const authorityCheckReached = new Promise((resolve) => {
+        markAuthorityCheckReached = resolve;
+      });
+      const authorityCheckReleased = new Promise((resolve) => {
+        releaseAuthorityCheck = resolve;
+      });
+      const snapshotRaceNote = repairRepository.addOperationalNote({
+        ...contextBeforeExpiry,
+        actorUserId: contextBeforeExpiry.userId,
+        actorDisplayName: contextBeforeExpiry.userDisplayName,
+        commitGuard: Object.freeze({
+          async confirmCurrent(transactionContext) {
+            markAuthorityCheckReached();
+            await authorityCheckReleased;
+            return contextBeforeExpiry.commitGuard.confirmCurrent(transactionContext);
+          },
+          async confirmTemporalCurrent(transactionContext) {
+            return contextBeforeExpiry.commitGuard.confirmTemporalCurrent(transactionContext);
+          },
+        }),
+      }, {
+        repairId: repairA,
+        entryId: 'eb000000-0000-4000-8000-000000000026',
+        auditEventId: 'eb100000-0000-4000-8000-000000000026',
+        correlationId: 'eb200000-0000-4000-8000-000000000026',
+        clientRequestId: snapshotRevocationRequest,
+        body: 'La revocación posterior al snapshot debe forzar denegación.',
+        action: 'repair.operational_note.added',
+        resourceType: 'repair',
+        result: 'succeeded',
+        occurredAt: new Date(),
+      });
+      await authorityCheckReached;
+      try {
+        const revocation = await admin.query(
+          `delete from access_role_capabilities
+           where tenant_id = $1 and role_id = $2
+             and capability_code = 'repairs.add_note'`,
+          [tenantA, roleA],
+        );
+        assert.equal(revocation.rowCount, 1);
+      } finally {
+        releaseAuthorityCheck();
+      }
+      await assert.rejects(
+        snapshotRaceNote,
+        RepairOperationalNoteAuthorizationChangedError,
+      );
+      assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+      await admin.query(
+        `insert into access_role_capabilities (
+           tenant_id, role_id, capability_code, created_at
+         ) values ($1, $2, 'repairs.add_note', now())`,
+        [tenantA, roleA],
+      );
+
       await admin.query(
         `update access_role_assignments
          set status = 'revoked', version = version + 1, revoked_at = now()
@@ -657,9 +1324,29 @@ test(
         'AUTHENTICATION_REQUIRED',
       );
       assert.deepEqual(await effectCounts(admin), afterAuthorizedNote);
+
+      await admin.query(
+        `update users set display_name = 'Operadora A renombrada', updated_at = now()
+         where tenant_id = $1 and user_id = $2`,
+        [tenantA, userA],
+      );
+      const historicalActor = (
+        await admin.query(
+          `select actor_user_id, actor_display_name
+           from repair_business_audit_events
+           where tenant_id = $1 and branch_id = $2 and resource_id = $3
+             and client_request_id = $4`,
+          [tenantA, branchA, repairA, noteRequestA],
+        )
+      ).rows[0];
+      assert.deepEqual(historicalActor, {
+        actor_user_id: userA,
+        actor_display_name: 'Operadora A',
+      });
     } finally {
       await runner.destroy().catch(() => undefined);
       await connection.close().catch(() => undefined);
+      await concurrentConnection.close().catch(() => undefined);
       await resetDatabase(admin).catch(() => undefined);
       await assertNoObjects(admin);
       await admin.end();

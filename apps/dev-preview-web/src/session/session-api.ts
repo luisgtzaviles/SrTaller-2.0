@@ -12,11 +12,6 @@ export interface OperationalSessionStation {
   readonly branchId: string;
 }
 
-export interface OperationalSessionUser {
-  readonly userId: string;
-  readonly displayName: string;
-}
-
 export interface ActiveOperationalSession {
   readonly sessionId: string;
   readonly tenantId: string;
@@ -32,10 +27,11 @@ export interface ActiveOperationalSession {
 
 export interface OperationalSessionSnapshot {
   readonly station: OperationalSessionStation;
-  readonly users: readonly OperationalSessionUser[];
+  readonly hasEligibleUsers: boolean;
   readonly csrfToken: string;
   readonly session: ActiveOperationalSession | null;
   readonly capabilities: readonly OperationalCapability[];
+  readonly administrationCapabilities: readonly OperationalCapability[];
   readonly revalidateAfterMs: number | null;
 }
 
@@ -82,26 +78,9 @@ function parseStation(value: unknown): OperationalSessionStation {
   });
 }
 
-function parseUsers(value: unknown): readonly OperationalSessionUser[] {
-  if (!Array.isArray(value)) throw new OperationalSessionApiError(0);
-  const seen = new Set<string>();
-  const users = value.map((entry) => {
-    if (!isRecord(entry)) throw new OperationalSessionApiError(0);
-    const user = Object.freeze({
-      userId: requiredString(entry, 'userId'),
-      displayName: requiredString(entry, 'displayName'),
-    });
-    if (seen.has(user.userId)) throw new OperationalSessionApiError(0);
-    seen.add(user.userId);
-    return user;
-  });
-  return Object.freeze(users);
-}
-
 function parseActiveSession(
   value: unknown,
   station: OperationalSessionStation,
-  users: readonly OperationalSessionUser[],
 ): ActiveOperationalSession | null {
   if (value === null) return null;
   if (!isRecord(value) || value.status !== 'active') throw new OperationalSessionApiError(0);
@@ -117,12 +96,9 @@ function parseActiveSession(
     expiresAt: requiredDate(value, 'expiresAt'),
     status: 'active' as const,
   });
-  const user = users.find((candidate) => candidate.userId === session.userId);
   if (
     session.stationId !== station.stationId ||
-    session.branchId !== station.branchId ||
-    !user ||
-    user.displayName !== session.displayName
+    session.branchId !== station.branchId
   ) throw new OperationalSessionApiError(0);
   return session;
 }
@@ -130,11 +106,16 @@ function parseActiveSession(
 function parseSnapshot(value: unknown): OperationalSessionSnapshot {
   if (!isRecord(value)) throw new OperationalSessionApiError(0);
   const station = parseStation(value.station);
-  const users = parseUsers(value.users);
+  const hasEligibleUsers = value.hasEligibleUsers;
+  if (typeof hasEligibleUsers !== 'boolean') throw new OperationalSessionApiError(0);
   const csrfToken = requiredString(value, 'csrfToken');
   if (!CSRF_PATTERN.test(csrfToken)) throw new OperationalSessionApiError(0);
-  const session = parseActiveSession(value.session, station, users);
+  const session = parseActiveSession(value.session, station);
   const capabilities = parseSessionCapabilities(value.capabilities, session !== null);
+  const administrationCapabilities = parseSessionCapabilities(
+    value.administrationCapabilities,
+    session !== null,
+  );
   const revalidateAfterMs = value.revalidateAfterMs;
   if (session === null) {
     if (revalidateAfterMs !== null) throw new OperationalSessionApiError(0);
@@ -148,10 +129,11 @@ function parseSnapshot(value: unknown): OperationalSessionSnapshot {
   }
   return Object.freeze({
     station,
-    users,
+    hasEligibleUsers,
     csrfToken,
     session,
     capabilities,
+    administrationCapabilities,
     revalidateAfterMs,
   });
 }
@@ -203,7 +185,7 @@ export async function bootstrapLocalStation(): Promise<void> {
 }
 
 export async function startOrSwitchOperationalSession(
-  request: Readonly<{ userId: string; pin: string }>,
+  request: Readonly<{ pin: string }>,
   expectedSessionId: string | null,
 ): Promise<OperationalSessionSnapshot> {
   return runCoordinatedSessionMutation(async (markMayHaveChanged, signal) => {
@@ -222,7 +204,6 @@ export async function startOrSwitchOperationalSession(
         [CSRF_HEADER]: before.csrfToken,
       },
       body: JSON.stringify({
-        userId: request.userId,
         pin: request.pin,
         expectedSessionId,
       }),

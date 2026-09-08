@@ -28,6 +28,12 @@ export interface ProtectedOperationRequirement {
   readonly kind: ProtectedOperationKind;
 }
 
+/** Server-owned guard evaluated inside the consumer's effect transaction. */
+export interface AuthorizedOperationCommitGuard {
+  confirmCurrent(transactionContext: object): Promise<boolean>;
+  confirmTemporalCurrent(transactionContext: object): Promise<boolean>;
+}
+
 /** Immutable authority composed server-side for one protected operation. */
 export interface AuthorizedOperationalContext {
   readonly tenantId: TenantId;
@@ -37,6 +43,7 @@ export interface AuthorizedOperationalContext {
   readonly userId: string;
   readonly userDisplayName: string;
   readonly capability: CapabilityCode;
+  readonly commitGuard: AuthorizedOperationCommitGuard;
 }
 
 export type ContextualAuthorizationErrorCode =

@@ -125,6 +125,21 @@ implements ContextualAuthorizationExecutor {
         userId: session.userId,
         userDisplayName: session.displayName,
         capability: requirement.capability,
+        commitGuard: Object.freeze({
+          confirmCurrent: (transactionContext: object) =>
+            this.runtime.resolveSession.confirmAuthorizedAtCommit(
+              station,
+              session,
+              requirement.capability,
+              transactionContext,
+            ),
+          confirmTemporalCurrent: (transactionContext: object) =>
+            this.runtime.resolveSession.confirmTemporalAtCommit(
+              station,
+              session,
+              transactionContext,
+            ),
+        }),
       });
     } catch (error: unknown) {
       if (error instanceof ContextualAuthorizationError) throw error;

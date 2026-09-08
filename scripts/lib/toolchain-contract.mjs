@@ -3,6 +3,13 @@ import { resolve } from 'node:path';
 
 export const EXPECTED_NODE_VERSION = '24.18.0';
 export const EXPECTED_PNPM_VERSION = '11.15.1';
+export const EXPECTED_PNPM_WORKSPACE_MANIFEST = `packages:
+  - .
+  - apps/dev-preview-web
+
+overrides:
+  qs: 6.16.0
+`;
 
 export function parsePnpmVersion(userAgent) {
   const match = /^pnpm\/([^\s]+)/u.exec(userAgent ?? '');

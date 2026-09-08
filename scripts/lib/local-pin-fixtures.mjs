@@ -38,6 +38,25 @@ const definitions = Object.freeze([
   }),
 ]);
 
+function configuredDefinitions(values) {
+  const configured = [...definitions];
+  if (
+    typeof values.SR_LOCAL_PIN_LUIS === 'string' &&
+    /^[0-9]{4}(?:[0-9]{2})?$/u.test(values.SR_LOCAL_PIN_LUIS) &&
+    typeof values.SR_LOCAL_USER_LUIS_ID === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(values.SR_LOCAL_USER_LUIS_ID)
+  ) {
+    configured.push(Object.freeze({
+      userId: values.SR_LOCAL_USER_LUIS_ID,
+      credentialId: '00000000-0000-4000-8000-000000000804',
+      clientRequestId: '00000000-0000-4000-8000-000000000814',
+      environmentKey: 'SR_LOCAL_PIN_LUIS',
+      existingUserOnly: true,
+    }));
+  }
+  return configured;
+}
+
 function derivePin(pin, salt, pepper, userId, purpose) {
   const message = Buffer.from(pin, 'ascii');
   const secret = Buffer.from(pepper);
@@ -83,6 +102,15 @@ function provisioningFingerprintSalt(pepper, userId, clientRequestId) {
   }
 }
 
+function lookupDigest(pepper, pin) {
+  return createHmac('sha256', pepper)
+    .update('srtaller-pin-lookup\0v1\0', 'utf8')
+    .update(LOCAL_TENANT_ID, 'utf8')
+    .update('\0', 'utf8')
+    .update(pin, 'ascii')
+    .digest();
+}
+
 function decodePepper(value) {
   if (!/^[A-Za-z0-9_-]{43}$/u.test(value)) {
     throw new Error('Local PIN fixture configuration is invalid.');
@@ -99,16 +127,26 @@ export async function localPinCredentialRows(values) {
   assertLocalTarget(values);
   const pepper = decodePepper(values.SR_PIN_PEPPER);
   const rows = [];
+  const assignedPins = new Set();
   try {
-    for (const definition of definitions) {
-      const pin = values[definition.environmentKey];
-      if (typeof pin !== 'string' || !/^[0-9]{6}$/u.test(pin)) {
+    for (const definition of configuredDefinitions(values)) {
+      const configuredPin = values[definition.environmentKey];
+      if (typeof configuredPin !== 'string' || !/^[0-9]{4}(?:[0-9]{2})?$/u.test(configuredPin)) {
         throw new Error('Local PIN fixture configuration is invalid.');
       }
+      // Existing local environments used six-digit fixtures. Preserve those
+      // environments without exposing the value by canonically migrating the
+      // last four digits to the Owner-approved PIN-only contract.
+      const pin = configuredPin.slice(-4);
+      if (assignedPins.has(pin)) {
+        throw new Error('Local PIN fixture configuration is ambiguous.');
+      }
+      assignedPins.add(pin);
       const salt = randomBytes(profile.saltLength);
       let verifier;
       let fingerprintSalt;
       let requestFingerprint;
+      let pinLookupDigest;
       try {
         verifier = await derivePin(
           pin,
@@ -129,11 +167,13 @@ export async function localPinCredentialRows(values) {
           definition.userId,
           'provision-fingerprint',
         );
+        pinLookupDigest = lookupDigest(pepper, pin);
         rows.push(Object.freeze({
           tenantId: LOCAL_TENANT_ID,
           userId: definition.userId,
           credentialId: definition.credentialId,
           clientRequestId: definition.clientRequestId,
+          existingUserOnly: definition.existingUserOnly === true,
           algorithm: profile.algorithm,
           profileVersion: profile.profileVersion,
           pepperVersion: profile.pepperVersion,
@@ -142,6 +182,7 @@ export async function localPinCredentialRows(values) {
           parallelism: profile.parallelism,
           salt: Buffer.from(salt),
           verifier: Buffer.from(verifier),
+          lookupDigest: Buffer.from(pinLookupDigest),
           requestFingerprint: Buffer.from(requestFingerprint),
           createdAt: LOCAL_SEED_TIMESTAMP,
         }));
@@ -150,6 +191,7 @@ export async function localPinCredentialRows(values) {
         verifier?.fill(0);
         fingerprintSalt?.fill(0);
         requestFingerprint?.fill(0);
+        pinLookupDigest?.fill(0);
       }
     }
     return Object.freeze(rows);

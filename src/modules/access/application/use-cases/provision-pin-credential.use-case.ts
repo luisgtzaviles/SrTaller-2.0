@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { parseAccessTenantScope } from '../access-input.js';
 import { parseProvisionPinInput } from '../pin-input.js';
-import type { PinCredentialRepositoryPort } from '../ports/pin-credential-repository.port.js';
+import type { PinCredentialMutationCommitGuard, PinCredentialRepositoryPort } from '../ports/pin-credential-repository.port.js';
 import type { PinSecretHasherPort } from '../ports/pin-secret-hasher.port.js';
 import { parsePinCredentialId } from '../../domain/pin-credential.js';
 
@@ -15,7 +15,7 @@ export class ProvisionPinCredentialUseCase {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  async execute(scope: unknown, value: unknown) {
+  async execute(scope: unknown, value: unknown, guard?: PinCredentialMutationCommitGuard) {
     const trustedScope = parseAccessTenantScope(scope);
     const input = parseProvisionPinInput(value);
     const credentialId = parsePinCredentialId(this.createId());
@@ -32,6 +32,6 @@ export class ProvisionPinCredentialUseCase {
       clientRequestId: input.clientRequestId,
       occurredAt,
       secret,
-    });
+    }, guard);
   }
 }

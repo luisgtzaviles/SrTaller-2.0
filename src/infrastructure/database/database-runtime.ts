@@ -277,6 +277,16 @@ class ControlledDatabaseRuntime implements DatabaseRuntime {
           .limit(0)
           .execute();
         await database
+          .selectFrom('repair_business_audit_events')
+          .select(['audit_id', 'resource_id', 'tenant_id', 'branch_id'])
+          .limit(0)
+          .execute();
+        await database
+          .selectFrom('repair_operational_note_request_guards')
+          .select(['tenant_id', 'branch_id', 'client_request_id'])
+          .limit(0)
+          .execute();
+        await database
           .selectFrom('repair_attachments')
           .select(['attachment_id', 'repair_id', 'tenant_id', 'branch_id'])
           .limit(0)

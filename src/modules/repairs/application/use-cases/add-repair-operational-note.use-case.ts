@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
 import type {
-  RepairPersistenceScope,
+  RepairOperationalNoteContext,
   RepairRepositoryPort,
   RepairTimelineItemRecord,
 } from '../ports/repair-repository.port.js';
-import { RepairOperationalNoteIdempotencyConflictError } from '../ports/repair-repository.port.js';
+import { RepairOperationalNoteAuthorizationChangedError, RepairOperationalNoteIdempotencyConflictError } from '../ports/repair-repository.port.js';
 
 const canonicalUuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
@@ -13,11 +13,6 @@ const allowedRequestKeys = Object.freeze(['body', 'clientRequestId']);
 
 export const repairOperationalNoteBodyMinLength = 3;
 export const repairOperationalNoteBodyMaxLength = 4000;
-export const localOperationalNoteActor = Object.freeze({
-  id: '00000000-0000-4000-8000-00000000d301',
-  displayName: 'Operador sintético',
-  source: 'local-development',
-});
 
 export class AddRepairOperationalNoteInputError extends Error {
   constructor(readonly parameter: 'body' | 'clientRequestId' | 'payload' | 'repairId') {
@@ -40,9 +35,42 @@ export class AddRepairOperationalNoteConflictError extends Error {
   }
 }
 
+export class AddRepairOperationalNoteAuthorizationError extends Error {
+  constructor() {
+    super('Operational note authorization changed before confirmation.');
+    this.name = 'AddRepairOperationalNoteAuthorizationError';
+  }
+}
+
 export interface AddRepairOperationalNoteInput {
   readonly repairId: unknown;
   readonly request: unknown;
+}
+
+function trustedContext(
+  value: RepairOperationalNoteContext,
+): Readonly<RepairOperationalNoteContext> {
+  if (
+    !canonicalUuid.test(value.tenantId) ||
+    !canonicalUuid.test(value.branchId) ||
+    !canonicalUuid.test(value.stationId) ||
+    !canonicalUuid.test(value.sessionId) ||
+    !canonicalUuid.test(value.actorUserId) ||
+    value.capability !== 'repairs.add_note' ||
+    typeof value.actorDisplayName !== 'string' ||
+    value.actorDisplayName.trim().length < 1 ||
+    value.actorDisplayName.trim().length > 160 ||
+    typeof value.commitGuard !== 'object' ||
+    value.commitGuard === null ||
+    typeof value.commitGuard.confirmCurrent !== 'function' ||
+    typeof value.commitGuard.confirmTemporalCurrent !== 'function'
+  ) {
+    throw new Error('Trusted operational note context is invalid.');
+  }
+  return Object.freeze({
+    ...value,
+    actorDisplayName: value.actorDisplayName.trim(),
+  });
 }
 
 function requestPayload(value: unknown): Readonly<{ body: string; clientRequestId: string }> {
@@ -75,7 +103,7 @@ function requestPayload(value: unknown): Readonly<{ body: string; clientRequestI
 export class AddRepairOperationalNoteUseCase {
   constructor(
     private readonly repository: RepairRepositoryPort,
-    private readonly resolveScope: () => RepairPersistenceScope,
+    private readonly resolveContext: () => RepairOperationalNoteContext,
     private readonly now: () => Date = () => new Date(),
     private readonly createId: () => string = randomUUID,
   ) {}
@@ -85,22 +113,39 @@ export class AddRepairOperationalNoteUseCase {
       throw new AddRepairOperationalNoteInputError('repairId');
     }
     const request = requestPayload(input.request);
+    const context = trustedContext(this.resolveContext());
     const occurredAt = this.now();
+    const entryId = this.createId();
+    const auditEventId = this.createId();
+    const correlationId = this.createId();
+    if (
+      !canonicalUuid.test(entryId) ||
+      !canonicalUuid.test(auditEventId) ||
+      !canonicalUuid.test(correlationId) ||
+      new Set([entryId, auditEventId, correlationId]).size !== 3
+    ) {
+      throw new Error('Server-generated operational note identifiers are invalid.');
+    }
     let result;
     try {
-      result = await this.repository.addOperationalNote(this.resolveScope(), {
+      result = await this.repository.addOperationalNote(context, {
         repairId: input.repairId,
-        entryId: this.createId(),
+        entryId,
+        auditEventId,
+        correlationId,
         clientRequestId: request.clientRequestId,
-        actorId: localOperationalNoteActor.id,
-        actorDisplayName: localOperationalNoteActor.displayName,
         body: request.body,
-        source: 'local.operational_note',
+        action: 'repair.operational_note.added',
+        resourceType: 'repair',
+        result: 'succeeded',
         occurredAt,
       });
     } catch (error: unknown) {
       if (error instanceof RepairOperationalNoteIdempotencyConflictError) {
         throw new AddRepairOperationalNoteConflictError();
+      }
+      if (error instanceof RepairOperationalNoteAuthorizationChangedError) {
+        throw new AddRepairOperationalNoteAuthorizationError();
       }
       throw error;
     }

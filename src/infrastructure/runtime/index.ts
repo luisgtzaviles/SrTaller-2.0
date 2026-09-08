@@ -60,9 +60,7 @@ export interface AccessPinHasherFactory {
 }
 
 /**
- * Framework-neutral, local-only configuration capability. Product owners use
- * the callback to derive their own bootstrap material without exposing the
- * configured secret as a value or granting ambient environment access.
+ * Framework-neutral, local-only Station bootstrap configuration capability.
  */
 export interface LocalRuntimeConfiguration {
   readonly enabled: boolean;

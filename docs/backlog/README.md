@@ -20,8 +20,8 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 están `Done` y `Released: NO`; Sprint 01 está `Closed`. SPRINT-02 está
 `Active`; PBI-025 quedó `Done` mediante PR #32 y CI exacto de `main` GREEN.
 PBI-034 está `Done` después del cierre PR #34 y CI exacto GREEN; G3 está
-`PASS`. PBI-026 queda `Done candidate`, G4 `PASS candidate`; no existe PBI
-actual, WIP es `0/1` y PBI-028 está seleccionado, no iniciado.
+`PASS`. PBI-026 está `Done`, G4 `PASS`; PBI-028 está `In progress` como único
+PBI actual y WIP es `1/1`.
 
 ## Estructura
 
@@ -72,5 +72,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-Merge autorizado y CI exacto del cierre PBI-026. PBI-028 no inicia antes de su
-cierre canónico ni sin readiness y Owner Start propios.
+Completar PBI-028, focused High-risk review y CI exacto del candidato. No
+iniciar otro PBI, liberar ni desplegar.

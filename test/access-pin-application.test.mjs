@@ -19,6 +19,9 @@ const {
 const { ProvisionPinCredentialUseCase } = await import(
   '../dist/modules/access/application/use-cases/provision-pin-credential.use-case.js'
 );
+const { AuthenticatePinOnlyUseCase } = await import(
+  '../dist/modules/access/application/use-cases/authenticate-pin-only.use-case.js'
+);
 const { createTrustedStationContext } = await import(
   '../dist/modules/stations/application/contracts/trusted-station-context.js'
 );
@@ -31,7 +34,7 @@ const userId = '40000000-0000-4000-8000-000000000025';
 const credentialId = '50000000-0000-4000-8000-000000000025';
 const clientRequestId = '60000000-0000-4000-8000-000000000025';
 const rateLimitPrincipalId = '65000000-0000-4000-8000-000000000025';
-const pin = '270625';
+const pin = '0625';
 const now = new Date('2026-09-07T01:00:00.000Z');
 const stationAdmission = Object.freeze({
   branchAdmissionRevision: 0,
@@ -69,6 +72,7 @@ const storedVerifier = Object.freeze({
 
 const secretMaterial = Object.freeze({
   ...storedVerifier,
+  lookupDigest: Uint8Array.from({ length: 32 }, (_, index) => index + 2),
   requestFingerprint: Uint8Array.from(
     { length: 32 },
     (_, index) => 255 - index,
@@ -102,6 +106,14 @@ function fixture({ user = activeUser, attemptStatus = 'authenticated' } = {}) {
       },
     },
     hasher: {
+      lookupDigest(input) {
+        calls.push(['lookupDigest', input]);
+        return secretMaterial.lookupDigest;
+      },
+      rateLimitPinPrincipalId(input) {
+        calls.push(['rateLimitPinPrincipalId', input]);
+        return rateLimitPrincipalId;
+      },
       rateLimitPrincipalId(input) {
         calls.push(['rateLimitPrincipalId', input]);
         return rateLimitPrincipalId;
@@ -135,11 +147,23 @@ function fixture({ user = activeUser, attemptStatus = 'authenticated' } = {}) {
         }
         return Object.freeze({ status: 'denied' });
       },
+      async authenticatePinOnlyAttempt(trustedContext, input, verify) {
+        calls.push(['authenticatePinOnlyAttempt', trustedContext, input]);
+        const matched = await verify(userId, storedVerifier);
+        calls.push(['pinOnlyVerifierResult', matched]);
+        return matched
+          ? Object.freeze({
+              status: 'authenticated',
+              userId,
+              credentialVersion: 7,
+            })
+          : Object.freeze({ status: 'denied' });
+      },
     },
   };
 }
 
-test('PIN inputs require an exact selected User plus a six-digit numeric PIN', () => {
+test('PIN inputs require an exact selected User plus a four-digit numeric PIN', () => {
   assert.deepEqual(parseAuthenticatePinInput({ userId, pin }), { userId, pin });
   assert.ok(Object.isFrozen(parseAuthenticatePinInput({ userId, pin })));
   assert.deepEqual(
@@ -147,7 +171,7 @@ test('PIN inputs require an exact selected User plus a six-digit numeric PIN', (
     { userId, pin, clientRequestId },
   );
 
-  for (const invalidPin of [270625, '27062', '2706250', '27a625', ' 270625', '２７０６２５']) {
+  for (const invalidPin of [625, '625', '06250', '0a25', ' 0625', '０６２５']) {
     assert.throws(
       () => parseAuthenticatePinInput({ userId, pin: invalidPin }),
       expectsPinInput('pin'),
@@ -186,6 +210,41 @@ test('authentication accepts only a branded server-verified Station context', ()
   assert.throws(
     () => parseTrustedPinContext({ tenantId, branchId, stationId }),
     expectsPinInput('context'),
+  );
+});
+
+test('canonical PIN-only authentication resolves identity server-side without a User selector', async () => {
+  const subject = fixture();
+  const useCase = new AuthenticatePinOnlyUseCase(
+    subject.repository,
+    subject.users,
+    { async execute() { return [userId]; } },
+    subject.hasher,
+    () => now,
+  );
+
+  const proof = await useCase.execute(context, { pin });
+  assert.equal(proof.userId, userId);
+  assert.equal(proof.displayName, activeUser.displayName);
+  assert.deepEqual(subject.calls.slice(0, 4), [
+    ['findAuthenticationUser', { tenantId }, userId],
+    ['lookupDigest', { tenantId, pin }],
+    ['rateLimitPinPrincipalId', { tenantId }],
+    ['authenticatePinOnlyAttempt', context, {
+      eligibleUserIds: [userId],
+      lookupDigest: secretMaterial.lookupDigest,
+      rateLimitPrincipalId,
+      occurredAt: now.toISOString(),
+    }],
+  ]);
+  assert.equal(subject.calls.some((call) => call[0] === 'authenticateAttempt'), false);
+  await assert.rejects(
+    useCase.execute(context, { pin: '99999' }),
+    (error) => error instanceof PinAuthenticationError && error.code === 'PIN_AUTHENTICATION_DENIED',
+  );
+  await assert.rejects(
+    useCase.execute(context, { pin, userId }),
+    (error) => error instanceof PinAuthenticationError && error.code === 'PIN_AUTHENTICATION_DENIED',
   );
 });
 

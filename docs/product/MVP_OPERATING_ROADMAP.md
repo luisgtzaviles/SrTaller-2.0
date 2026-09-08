@@ -2,23 +2,23 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 activo, PBI-026 en cierre candidato y
-  límite WIP=1.
+- **Estado:** Roadmap aprobado; SPRINT-02 activo, PBI-028 en ejecución con
+  candidato local endurecido y límite WIP=1.
 - **Baseline de la reconciliación:** `main` en
-  `4db5d9384d13c200eb2031dceb32dd89efcca64d`; CI autoritativo
-  `34158203438`, `SUCCESS`.
+  `0b39e3794a97c22d5471c0b6dfa278026f237b03`; CI autoritativo
+  `34161029937`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Operational Authentication & Authorization.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** NONE.
-- **Siguiente PBI candidato:** PBI-028 — Minimum Business Audit and
-  Correlation; seleccionado, no iniciado.
-- **Blocking gate:** merge autorizado del cierre PBI-026 + CI exacto GREEN;
-  PBI-028 conserva readiness y Owner Start propios.
-- **WIP operacional:** `0/1`.
+- **PBI actual:** PBI-028 — Minimum Business Audit and Correlation.
+- **Siguiente PBI candidato:** NONE mientras PBI-028 está en ejecución.
+- **Blocking gate:** CI exacto y focused High-risk review del HEAD documental
+  final del Draft PR #37; merge, cierre, release y deploy conservan autoridades
+  propias.
+- **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
 
@@ -86,8 +86,8 @@ Owner explícita de merge.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
    salta silenciosamente a otro PBI.
 
-PBI-030, PBI-027, PBI-029, PBI-024, PBI-032, PBI-033, PBI-025 y PBI-034
-están `Done` y no están `Released`. G1, G2 y G3 están `PASS`.
+PBI-030, PBI-027, PBI-029, PBI-024, PBI-032, PBI-033, PBI-025, PBI-034 y
+PBI-026 están `Done` y no están `Released`. G1–G4 están `PASS`.
 
 ## Current execution pointer
 
@@ -97,11 +97,11 @@ están `Done` y no están `Released`. G1, G2 y G3 están `PASS`.
 | Stage | MVP |
 | Phase | Operational Authentication & Authorization |
 | Sprint | SPRINT-02 |
-| Sprint status | Active — WIP=0/1 |
-| Current PBI | NONE |
-| Next PBI candidate | PBI-028 — Minimum Business Audit and Correlation; selected, not started |
+| Sprint status | Active — WIP=1/1 |
+| Current PBI | PBI-028 — Minimum Business Audit and Correlation; In progress |
+| Next PBI candidate | NONE while PBI-028 is active |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | PBI-026 requiere merge autorizado del cierre documental y exact-main CI GREEN; PBI-028 no inicia por selección |
+| Blocking gate | PBI-028 requiere candidato, focused High-risk review y CI exacto; no autoriza merge/release/deploy |
 
 ## Fases aprobadas
 
@@ -170,7 +170,7 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | G1 CONTEXT | PASS | PBI-024 `Done`: Trusted Station Context server-side y fail-closed; cierre PR #25 y CI exacto `34044488745` GREEN. |
 | G2 IDENTITY | PASS | PBI-032 `Done`; PBI-033 cierre PR #29 merge `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` y CI exacto `34084930812` GREEN. |
 | G3 AUTHENTICATION | PASS | PBI-025 y PBI-034 están `Done`; cierre PR #34 merge `54ddc251cda8ec7465b7913786c647f8d3ccbeac` y CI exacto `34153470560` GREEN. |
-| G4 AUTHORIZATION | PASS candidate | PBI-026 candidate `54b3cf01c6b5ae0b51ca0b8f432d23abbb229ab7`, CI `34157187442`, focused review PASS, merge funcional `4db5d9384d13c200eb2031dceb32dd89efcca64d`, exact-main CI `34158203438` y Owner Acceptance APPROVED; efectivo tras merge/CI del cierre. |
+| G4 AUTHORIZATION | PASS | PBI-026 cierre PR #36 merge `0b39e3794a97c22d5471c0b6dfa278026f237b03`; CI exacto `34161029937` GREEN. |
 | G5–G12 | Pending | No existe evidencia material adicional para estos gates. |
 
 ## Cierre y avance documental de un PBI
@@ -202,8 +202,11 @@ merge funcional, Owner Acceptance, cierre PR #27 y CI exacto post-cierre
 focused high-risk review PASS, merge funcional PR #28, Owner Acceptance y
 cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 
-SPRINT-02 está `Active`; PBI-026 queda `Done candidate`, no existe PBI actual y
-WIP es `0/1`.
+SPRINT-02 está `Active`; PBI-026 está `Done`, G4 `PASS`, PBI-028 es el PBI
+actual y WIP es `1/1`. PBI-028/PBI-037 tienen un
+[checkpoint local endurecido](../quality/evidence/pbi-028/INTEGRATION_CANDIDATE.md)
+con full verify, PostgreSQL 18.4, OCI y prueba visual no sensible verdes; esto
+no equivale a integración ni crea un segundo PBI actual.
 PBI-025 está `Done`. Su
 alcance funcional fue integrado por PR #30 como
 `328bdf541be88b21a2e7dbea28f4a2a6f32f6986` y el CI exacto de `main`
@@ -223,14 +226,14 @@ Critical-risk review PASS, merge funcional PR #33
 `54ddc251cda8ec7465b7913786c647f8d3ccbeac` y CI exacto `34153470560` lo
 dejan `Done`; G3 es `PASS`. PBI-026 pasó DoR/threat model, candidate CI,
 focused Critical-risk review, merge funcional, exact-main CI y Owner
-Acceptance; queda `Done candidate` y G4 `PASS candidate` hasta integrar el
-cierre. PBI-028 está seleccionado y no iniciado; ningún estado autoriza release
-o deploy.
+Acceptance y cierre PR #36 + CI exacto; está `Done` y G4 `PASS`. PBI-028 está
+`In progress` con DoR PASS y Owner Start; ningún estado autoriza release o
+deploy.
 
 ## Próxima revisión
 
-- **Disparador:** merge autorizado del cierre PBI-026 y CI exacto de `main`.
-- **Resultado esperado si pasa:** PBI-026 `Done` y G4 `PASS` efectivos, sin
-  closure-of-closure.
-- **Después:** PBI-028 conserva selección, DoR y autorización propios; no inicia
-  automáticamente.
+- **Disparador:** CI exacto y focused High-risk review del HEAD documental final
+  del Draft PR #37.
+- **Resultado esperado si pasa:** candidate CI exacto GREEN y Owner Review,
+  sin inferir merge, cierre, release o deploy.
+- **Después:** seguir el workflow canónico; no iniciar otro PBI automáticamente.

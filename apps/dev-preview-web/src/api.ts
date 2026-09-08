@@ -192,7 +192,7 @@ export interface AddRepairOperationalNoteResponse {
     id: string;
     occurredAt: string;
     type: 'note';
-    actor: Readonly<{ displayName: string }>;
+    actor: Readonly<{ id: string; displayName: string }>;
     title: 'Nota';
     body: string;
     source: string;

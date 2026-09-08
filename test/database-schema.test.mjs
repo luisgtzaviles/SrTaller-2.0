@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 23);
+  assert.equal(first.manifest.migrations.length, 31);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -177,6 +177,54 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260907120000_access_create_operational_sessions',
         order: 22,
         owner: 'access',
+      },
+      {
+        fileName: '20260907220000_repairs_create_business_audit_events.js',
+        migrationName: '20260907220000_repairs_create_business_audit_events',
+        order: 23,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260907230000_access_add_local_administration_capabilities.js',
+        migrationName: '20260907230000_access_add_local_administration_capabilities',
+        order: 24,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908000000_access_harden_pin_only_lookup.js',
+        migrationName: '20260908000000_access_harden_pin_only_lookup',
+        order: 25,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908001000_repairs_create_operational_note_request_guards.js',
+        migrationName: '20260908001000_repairs_create_operational_note_request_guards',
+        order: 26,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908002000_access_add_role_editing_commands.js',
+        migrationName: '20260908002000_access_add_role_editing_commands',
+        order: 27,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908010000_access_narrow_pin_eligibility_triggers.js',
+        migrationName: '20260908010000_access_narrow_pin_eligibility_triggers',
+        order: 28,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908020000_users_create_profile_update_commands.js',
+        migrationName: '20260908020000_users_create_profile_update_commands',
+        order: 29,
+        owner: 'users',
+      },
+      {
+        fileName: '20260908021000_users_create_commands.js',
+        migrationName: '20260908021000_users_create_commands',
+        order: 30,
+        owner: 'users',
       },
     ],
   );

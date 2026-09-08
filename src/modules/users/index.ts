@@ -51,3 +51,12 @@ export const AUTHENTICATION_USER_READER: unique symbol = Symbol(
 export const AUTHENTICATION_USER_ADMISSION_VALIDATOR: unique symbol = Symbol(
   'srtaller.users.authentication-user-admission-validator',
 );
+
+export const USER_PRODUCT_RUNTIME: unique symbol = Symbol('srtaller.users.product-runtime');
+
+export interface UserProductRuntime {
+  list(scope: unknown): Promise<readonly import('./application/ports/user-repository.port.js').UserRecord[]>;
+  create(scope: unknown, input: unknown, guard?: import('./application/ports/user-repository.port.js').UserMutationCommitGuard): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
+  update(scope: unknown, userId: unknown, input: unknown, guard?: import('./application/ports/user-repository.port.js').UserMutationCommitGuard): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
+  transition(scope: unknown, input: unknown, guard?: import('./application/ports/user-repository.port.js').UserMutationCommitGuard): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
+}

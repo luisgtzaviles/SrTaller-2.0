@@ -42,6 +42,7 @@ import {
   RepairEvidenceContentNotFoundError,
 } from '../application/use-cases/get-repair-evidence-content.use-case.js';
 import {
+  AddRepairOperationalNoteAuthorizationError,
   AddRepairOperationalNoteConflictError,
   AddRepairOperationalNoteInputError,
   AddRepairOperationalNoteUseCase,
@@ -235,7 +236,7 @@ function operationalNoteResponse(
       id: item.id,
       type: item.type,
       occurredAt: item.occurredAt,
-      actor: { displayName: item.actorDisplayName },
+      actor: { id: item.actorId, displayName: item.actorDisplayName },
       title: item.title,
       body: item.body,
       source: item.source,
@@ -334,14 +335,18 @@ export class RepairsController {
     @Headers() headers: RepairRequestHeaders,
     @Param('repairId') repairId: string,
     @Body() request: unknown,
+    @Res({ passthrough: true }) response: Response,
   ) {
     try {
-      return operationalNoteResponse(
-        await this.operations.addRepairOperationalNote(
-          repairProtectedRequestEvidence(headers),
-          { repairId, request },
-        ),
+      const result = await this.operations.addRepairOperationalNote(
+        repairProtectedRequestEvidence(headers),
+        { repairId, request },
       );
+      if (!result.attribution) {
+        throw new Error('Confirmed operational note is missing attribution.');
+      }
+      response.setHeader('X-Correlation-ID', result.attribution.correlationId);
+      return operationalNoteResponse(result);
     } catch (error: unknown) {
       translateAuthorizationError(error);
       if (error instanceof AddRepairOperationalNoteInputError) {
@@ -355,6 +360,9 @@ export class RepairsController {
       }
       if (error instanceof AddRepairOperationalNoteConflictError) {
         throw new ConflictException({ code: 'REPAIR_NOTE_IDEMPOTENCY_CONFLICT' });
+      }
+      if (error instanceof AddRepairOperationalNoteAuthorizationError) {
+        throw new ForbiddenException({ code: 'ACCESS_DENIED' });
       }
       if (error instanceof Error && error.name.includes('Database')) {
         throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });

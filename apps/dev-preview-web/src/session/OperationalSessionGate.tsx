@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { KeyRound, LockKeyhole, Moon, ShieldCheck, Sun, UserRoundCheck } from 'lucide-react';
+import { KeyRound, LockKeyhole, Moon, ShieldCheck, Sun } from 'lucide-react';
 
 import { Button, Input } from '../components/ui/controls.js';
 import { Alert, Spinner } from '../components/ui/feedback.js';
@@ -24,7 +24,7 @@ import {
 } from './latest-request-commit-guard.mjs';
 import styles from './operational-session-gate.module.css';
 
-const PIN_PATTERN = /^\d{6}$/u;
+const PIN_PATTERN = /^\d{4}$/u;
 const SESSION_REVALIDATION_MINIMUM_MS = 1_000;
 const SESSION_REVALIDATION_EPSILON_MS = 25;
 const MAX_BROWSER_TIMEOUT_MS = 2_147_483_647;
@@ -33,7 +33,7 @@ const EMPTY_CAPABILITIES: readonly OperationalCapability[] = Object.freeze([]);
 let localStationBootstrapRequest: Promise<void> | null = null;
 
 type LoginError = Readonly<{
-  field: 'user' | 'pin' | 'form';
+  field: 'pin' | 'form';
   message: string;
 }>;
 
@@ -145,26 +145,22 @@ function LoginPage({
   snapshot: OperationalSessionSnapshot;
   currentSession: ActiveOperationalSession | null;
   busy: boolean;
-  onAuthenticate(userId: string, pin: string): Promise<void>;
+  onAuthenticate(pin: string): Promise<void>;
   onCancel?: (() => Promise<void>) | undefined;
 }>): React.JSX.Element {
-  const [selectedUserId, setSelectedUserId] = useState('');
   const [pin, setPin] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<LoginError | null>(null);
-  const userRef = useRef<HTMLSelectElement>(null);
   const pinRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const switching = currentSession !== null;
-  const hasUsers = snapshot.users.length > 0;
-  const shortId = (value: string): string => `…${value.slice(-8)}`;
-  const userHasError = error?.field === 'user';
+  const hasEligibleUsers = snapshot.hasEligibleUsers;
   const pinHasError = error?.field === 'pin';
 
   useEffect(() => {
-    if (hasUsers) userRef.current?.focus();
+    if (hasEligibleUsers) pinRef.current?.focus();
     else titleRef.current?.focus();
-  }, [hasUsers]);
+  }, [hasEligibleUsers]);
 
   useEffect(() => {
     if (!onCancel) return undefined;
@@ -178,13 +174,8 @@ function LoginPage({
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     setError(null);
-    if (!snapshot.users.some((user) => user.userId === selectedUserId)) {
-      setError({ field: 'user', message: 'Selecciona un usuario habilitado.' });
-      userRef.current?.focus();
-      return;
-    }
     if (!PIN_PATTERN.test(pin)) {
-      setError({ field: 'pin', message: 'Ingresa los 6 dígitos de tu PIN.' });
+      setError({ field: 'pin', message: 'Ingresa los 4 dígitos de tu PIN.' });
       pinRef.current?.focus();
       return;
     }
@@ -192,7 +183,7 @@ function LoginPage({
     setPin('');
     setSubmitting(true);
     try {
-      await onAuthenticate(selectedUserId, submittedPin);
+      await onAuthenticate(submittedPin);
     } catch (error: unknown) {
       setError({
         field: 'form',
@@ -214,58 +205,34 @@ function LoginPage({
         <section className={styles.contextPanel} aria-label="Contexto de estación">
           <span className={styles.contextIcon}><ShieldCheck aria-hidden="true" size={28} /></span>
           <p className={styles.eyebrow}>Contexto confiable</p>
-          <h1>{switching ? 'Cambia de usuario con seguridad' : 'Bienvenido a tu estación de trabajo'}</h1>
-          <p>El servidor reconoció esta estación y su sucursal vinculada. El navegador no elige el contexto operativo.</p>
+          <h1>Sucursal vinculada</h1>
+          <p>Tu estación está reconocida y lista para operar.</p>
           <dl>
-            <div><dt>Estación</dt><dd title={snapshot.station.stationId}>{shortId(snapshot.station.stationId)}</dd></div>
-            <div><dt>Sucursal</dt><dd title={snapshot.station.branchId}>{shortId(snapshot.station.branchId)}</dd></div>
+            <div><dt>Estación</dt><dd>Reconocida</dd></div>
+            <div><dt>Sucursal</dt><dd>Contexto confirmado</dd></div>
             <div><dt>Entorno</dt><dd>{__SRT_DEPLOY_ENV__ === 'local' ? 'Local' : 'Preview'}</dd></div>
           </dl>
         </section>
 
         <section className={styles.loginPanel} aria-labelledby="session-title">
-          <div className={styles.loginIcon}><UserRoundCheck aria-hidden="true" size={24} /></div>
-          <p className={styles.eyebrow}>{switching ? 'Reautenticación requerida' : 'Sesión operativa'}</p>
-          <h2 ref={titleRef} id="session-title" tabIndex={hasUsers ? undefined : -1}>
-            {switching ? 'Cambiar usuario' : 'Iniciar sesión'}
+          <div className={styles.loginIcon}><KeyRound aria-hidden="true" size={24} /></div>
+          <p className={styles.eyebrow}>{switching ? 'Cambio de usuario' : 'Sesión operativa'}</p>
+          <h2 ref={titleRef} id="session-title" tabIndex={hasEligibleUsers ? undefined : -1}>
+            Ingresa tu PIN
           </h2>
           <p className={styles.loginDescription}>
             {switching
               ? `La sesión de ${currentSession.displayName} se conserva hasta validar el nuevo PIN.`
-              : 'Selecciona tu usuario e ingresa tu PIN de 6 dígitos.'}
+              : 'Tu PIN identifica tu sesión para esta sucursal.'}
           </p>
 
-          {!hasUsers ? (
+          {!hasEligibleUsers ? (
             <Alert tone="danger" title="Sin usuarios elegibles">
               No hay una identidad habilitada para operar en esta estación.
             </Alert>
           ) : null}
 
           <form className={styles.loginForm} onSubmit={(event) => void handleSubmit(event)} noValidate>
-            <div className={styles.field}>
-              <label htmlFor="operational-user">Usuario</label>
-              <select
-                ref={userRef}
-                id="operational-user"
-                name="userId"
-                value={selectedUserId}
-                required
-                disabled={submitting || busy || !hasUsers}
-                aria-describedby={`operational-user-hint${userHasError ? ' session-error' : ''}`}
-                aria-invalid={userHasError || undefined}
-                onChange={(event) => {
-                  setSelectedUserId(event.target.value);
-                  if (userHasError) setError(null);
-                }}
-              >
-                <option value="">Selecciona tu usuario</option>
-                {snapshot.users.map((user) => (
-                  <option key={user.userId} value={user.userId}>{user.displayName}</option>
-                ))}
-              </select>
-              <small id="operational-user-hint">Sólo se muestran usuarios elegibles para esta estación.</small>
-            </div>
-
             <div className={styles.field}>
               <label htmlFor="operational-pin">PIN</label>
               <div className={styles.pinControl}>
@@ -278,20 +245,40 @@ function LoginPage({
                   value={pin}
                   inputMode="numeric"
                   autoComplete="off"
-                  pattern="[0-9]{6}"
-                  minLength={6}
-                  maxLength={6}
+                  pattern="[0-9]{4}"
+                  minLength={4}
+                  maxLength={4}
                   required
-                  disabled={submitting || busy || !hasUsers}
+                  disabled={submitting || busy || !hasEligibleUsers}
                   aria-describedby={`operational-pin-hint${pinHasError ? ' session-error' : ''}`}
                   aria-invalid={pinHasError || undefined}
                   onChange={(event) => {
-                    setPin(event.target.value.replace(/\D/gu, '').slice(0, 6));
+                    setPin(event.target.value.replace(/\D/gu, '').slice(0, 4));
                     if (pinHasError) setError(null);
                   }}
                 />
               </div>
-              <small id="operational-pin-hint">6 dígitos. Se usa sólo para esta verificación y no se guarda en el almacenamiento del navegador.</small>
+              <small id="operational-pin-hint">4 dígitos. Se usa sólo para esta verificación y no se guarda en el almacenamiento del navegador.</small>
+            </div>
+
+            <div className={styles.pinKeypad} role="group" aria-label="Teclado numérico">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
+                <button
+                  key={digit}
+                  type="button"
+                  disabled={submitting || busy || !hasEligibleUsers}
+                  onClick={() => {
+                    setPin((current) => `${current}${digit}`.slice(0, 4));
+                    if (pinHasError) setError(null);
+                  }}
+                >{digit}</button>
+              ))}
+              <button type="button" disabled={submitting || busy || !hasEligibleUsers} aria-label="Borrar último dígito" onClick={() => setPin((current) => current.slice(0, -1))}>←</button>
+              <button type="button" disabled={submitting || busy || !hasEligibleUsers} onClick={() => {
+                setPin((current) => `${current}0`.slice(0, 4));
+                if (pinHasError) setError(null);
+              }}>0</button>
+              <button type="submit" disabled={submitting || busy || !hasEligibleUsers || pin.length !== 4} aria-label="Continuar con el PIN">✓</button>
             </div>
 
             <div id="session-error" className={styles.formMessage} role="alert" aria-live="assertive">
@@ -302,8 +289,8 @@ function LoginPage({
               {onCancel ? (
                 <Button disabled={submitting || busy} onClick={() => void onCancel()}>Cancelar</Button>
               ) : null}
-              <Button type="submit" tone="primary" disabled={submitting || busy || !hasUsers}>
-                {submitting || busy ? 'Procesando…' : switching ? 'Cambiar usuario' : 'Iniciar sesión'}
+              <Button type="submit" tone="primary" disabled={submitting || busy || !hasEligibleUsers || pin.length !== 4}>
+                {submitting || busy ? 'Procesando…' : 'Continuar'}
               </Button>
             </div>
           </form>
@@ -316,6 +303,7 @@ function LoginPage({
 export interface AuthenticatedSessionView {
   readonly session: ActiveOperationalSession;
   readonly capabilities: readonly OperationalCapability[];
+  readonly administrationCapabilities: readonly OperationalCapability[];
   readonly csrfToken: string;
   readonly busy: boolean;
   readonly errorMessage: string | null;
@@ -367,19 +355,26 @@ export function OperationalSessionGate({
       }
       reconciling = false;
     };
-    const invalidate = (): void => {
+    const invalidate = (background = false): void => {
       operationGeneration.current += 1;
       pending = true;
       setBusy(false);
       setSwitching(false);
-      setSnapshot(null);
-      setPhase('loading');
+      if (!background) {
+        setSnapshot(null);
+        setPhase('loading');
+      }
       void reconcile();
+    };
+    const localInvalidation = (event: Event): void => {
+      const background = event instanceof CustomEvent &&
+        event.detail?.background === true;
+      invalidate(background);
     };
     let unsubscribe: (() => void) | undefined;
     try {
-      unsubscribe = subscribeToRemoteSessionChanges(invalidate);
-      window.addEventListener(SESSION_INVALIDATED_EVENT, invalidate);
+      unsubscribe = subscribeToRemoteSessionChanges(() => invalidate(false));
+      window.addEventListener(SESSION_INVALIDATED_EVENT, localInvalidation);
     } catch {
       setSnapshot(null);
       setPhase('failed');
@@ -387,7 +382,7 @@ export function OperationalSessionGate({
     return () => {
       disposed = true;
       unsubscribe?.();
-      window.removeEventListener(SESSION_INVALIDATED_EVENT, invalidate);
+      window.removeEventListener(SESSION_INVALIDATED_EVENT, localInvalidation);
     };
   }, []);
 
@@ -483,7 +478,7 @@ export function OperationalSessionGate({
     };
   }, [busy, phase, snapshot?.revalidateAfterMs, snapshot?.session, switching]);
 
-  const authenticate = useCallback(async (userId: string, pin: string): Promise<void> => {
+  const authenticate = useCallback(async (pin: string): Promise<void> => {
     if (!snapshot) throw new OperationalSessionApiError(0);
     const generation = operationGeneration.current + 1;
     operationGeneration.current = generation;
@@ -491,7 +486,7 @@ export function OperationalSessionGate({
     setErrorMessage(null);
     const previousSessionId = snapshot.session?.sessionId ?? null;
     try {
-      const next = await startOrSwitchOperationalSession({ userId, pin }, previousSessionId);
+      const next = await startOrSwitchOperationalSession({ pin }, previousSessionId);
       if (!next.session) throw new OperationalSessionApiError(0);
       if (!isLatestOperationGeneration(operationGeneration.current, generation)) return;
       setSnapshot(next);
@@ -540,7 +535,11 @@ export function OperationalSessionGate({
     const closeSession = async (): Promise<void> => {
       setBusy(true);
       setErrorMessage(null);
-      setSnapshot((current) => current ? { ...current, capabilities: EMPTY_CAPABILITIES } : current);
+      setSnapshot((current) => current ? {
+        ...current,
+        capabilities: EMPTY_CAPABILITIES,
+        administrationCapabilities: EMPTY_CAPABILITIES,
+      } : current);
       setPhase('loading');
       try {
         const next = await logoutOperationalSession(expectedSessionId);
@@ -586,7 +585,11 @@ export function OperationalSessionGate({
     const generation = operationGeneration.current + 1;
     operationGeneration.current = generation;
     setFocusTarget(null);
-    setSnapshot((current) => current ? { ...current, capabilities: EMPTY_CAPABILITIES } : current);
+    setSnapshot((current) => current ? {
+      ...current,
+      capabilities: EMPTY_CAPABILITIES,
+      administrationCapabilities: EMPTY_CAPABILITIES,
+    } : current);
     setSwitching(true);
     const prepare = async (): Promise<void> => {
       setBusy(true);
@@ -652,6 +655,7 @@ export function OperationalSessionGate({
       {children({
         session: snapshot.session,
         capabilities: snapshot.capabilities,
+        administrationCapabilities: snapshot.administrationCapabilities,
         csrfToken: snapshot.csrfToken,
         busy,
         errorMessage,

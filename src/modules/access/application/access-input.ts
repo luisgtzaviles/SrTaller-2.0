@@ -2,8 +2,13 @@ import { parseTenantId } from '../../tenancy/index.js';
 import type { TenantId } from '../../tenancy/index.js';
 import {
   parseRoleId,
+  parseRoleDisplayName,
+  parseRoleDescription,
+  parseRoleKey,
 } from '../domain/role.js';
 import type { RoleId } from '../domain/role.js';
+import { parseCapabilityCode } from '../domain/capability.js';
+import type { CapabilityCode } from '../domain/capability.js';
 import {
   parseAccessBranchId,
   parseAccessUserId,
@@ -26,10 +31,14 @@ export class AccessInputError extends Error {
       | 'assignmentId'
       | 'assignmentScope'
       | 'branchId'
+      | 'capabilityCodes'
       | 'clientRequestId'
       | 'expectedVersion'
+      | 'displayName'
+      | 'description'
       | 'payload'
       | 'roleId'
+      | 'roleKey'
       | 'tenantId'
       | 'userId',
   ) {
@@ -181,6 +190,102 @@ export function parseAssignRoleInput(value: unknown): Readonly<{
     branchId: parsedBranchId,
     clientRequestId: parseRequestId(input.clientRequestId),
   });
+}
+
+export function parseCreateAccessRoleInput(value: unknown): Readonly<{
+  roleKey: ReturnType<typeof parseRoleKey>;
+  displayName: ReturnType<typeof parseRoleDisplayName>;
+  description: ReturnType<typeof parseRoleDescription>;
+  capabilityCodes: readonly CapabilityCode[];
+  clientRequestId: string;
+}> {
+  const input = exactObject(value, [
+    'capabilityCodes',
+    'clientRequestId',
+    'description',
+    'displayName',
+    'roleKey',
+  ]);
+  if (!Array.isArray(input.capabilityCodes) || input.capabilityCodes.length < 1) {
+    throw new AccessInputError('capabilityCodes');
+  }
+  try {
+    const capabilityCodes = input.capabilityCodes.map(parseCapabilityCode);
+    if (new Set(capabilityCodes).size !== capabilityCodes.length) {
+      throw new Error('duplicate capability');
+    }
+    return Object.freeze({
+      roleKey: parseRoleKey(input.roleKey),
+      displayName: parseRoleDisplayName(input.displayName),
+      description: parseRoleDescription(input.description),
+      capabilityCodes: Object.freeze(capabilityCodes),
+      clientRequestId: parseRequestId(input.clientRequestId),
+    });
+  } catch {
+    throw new AccessInputError('payload');
+  }
+}
+
+export function parseReplaceAccessRoleCapabilitiesInput(value: unknown): Readonly<{
+  expectedVersion: number;
+  capabilityCodes: readonly CapabilityCode[];
+  clientRequestId: string;
+}> {
+  const input = exactObject(value, [
+    'capabilityCodes',
+    'clientRequestId',
+    'expectedVersion',
+  ]);
+  if (
+    Object.keys(input).length !== 3 ||
+    !Number.isSafeInteger(input.expectedVersion) ||
+    (input.expectedVersion as number) < 0 ||
+    !Array.isArray(input.capabilityCodes) ||
+    input.capabilityCodes.length < 1
+  ) {
+    throw new AccessInputError('payload');
+  }
+  try {
+    const capabilityCodes = input.capabilityCodes.map(parseCapabilityCode);
+    if (new Set(capabilityCodes).size !== capabilityCodes.length) throw new Error('duplicate capability');
+    return Object.freeze({
+      expectedVersion: input.expectedVersion as number,
+      capabilityCodes: Object.freeze(capabilityCodes),
+      clientRequestId: parseRequestId(input.clientRequestId),
+    });
+  } catch {
+    throw new AccessInputError('payload');
+  }
+}
+
+export function parseUpdateAccessRoleInput(value: unknown): Readonly<{
+  displayName: ReturnType<typeof parseRoleDisplayName>;
+  description: ReturnType<typeof parseRoleDescription>;
+  expectedVersion: number;
+  clientRequestId: string;
+}> {
+  const input = exactObject(value, [
+    'clientRequestId',
+    'description',
+    'displayName',
+    'expectedVersion',
+  ]);
+  if (
+    !Number.isSafeInteger(input.expectedVersion) ||
+    (input.expectedVersion as number) < 0
+  ) {
+    throw new AccessInputError('expectedVersion');
+  }
+  try {
+    return Object.freeze({
+      displayName: parseRoleDisplayName(input.displayName),
+      description: parseRoleDescription(input.description),
+      expectedVersion: input.expectedVersion as number,
+      clientRequestId: parseRequestId(input.clientRequestId),
+    });
+  } catch {
+    throw new AccessInputError('payload');
+  }
 }
 
 export function parseRevokeRoleAssignmentInput(value: unknown): Readonly<{

@@ -29,18 +29,24 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'repair_operational_note_request_guards',
+  'repair_business_audit_events',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   'access_pin_attempt_limits',
   'access_pin_attempt_station_guards',
   'access_pin_credential_commands',
+  'access_pin_eligibility_tenant_guards',
   'access_pin_credentials',
   'access_role_assignment_commands',
+  'access_role_commands',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
   'access_capabilities',
   'user_lifecycle_commands',
+  'user_profile_update_commands',
+  'user_create_commands',
   'user_provisioning_bootstraps',
   'users',
   'repair_location_movements',
@@ -91,6 +97,13 @@ const requestE = 'b0000000-0000-4000-8000-000000000032';
 const revokeRequestB = 'b1000000-0000-4000-8000-000000000032';
 const afterRevokeRequestB = 'b2000000-0000-4000-8000-000000000032';
 const contradictoryJournalRequest = 'b3000000-0000-4000-8000-000000000032';
+const profileUpdateRequest = 'b4000000-0000-4000-8000-000000000032';
+const createUserRequest = 'b5000000-0000-4000-8000-000000000032';
+const concurrentCreateUserRequest = 'b6000000-0000-4000-8000-000000000032';
+const createdUserE1 = 'b7000000-0000-4000-8000-000000000032';
+const createdUserE2 = 'b8000000-0000-4000-8000-000000000032';
+const concurrentCreatedUserE1 = 'b9000000-0000-4000-8000-000000000032';
+const concurrentCreatedUserE2 = 'ba000000-0000-4000-8000-000000000032';
 
 function databaseConfig() {
   return Object.freeze({
@@ -182,6 +195,7 @@ function transitionInput(overrides = {}) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
   await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
@@ -210,7 +224,9 @@ async function assertUserTables(admin, expected) {
          array[
            'users',
            'user_provisioning_bootstraps',
-           'user_lifecycle_commands'
+           'user_lifecycle_commands',
+           'user_profile_update_commands',
+           'user_create_commands'
          ]::text[]
        )
      order by tablename`,
@@ -256,6 +272,7 @@ test(
     assert.equal(process.version, 'v24.18.0');
     const admin = adminPool();
     const connection = createDatabaseConnection(databaseConfig());
+    const concurrentConnection = createDatabaseConnection(databaseConfig());
     const migrationSource = source();
     const inspection = await inspectMigrationSource(migrationSource);
     const runner = createMigrationRunner(connection, {
@@ -263,6 +280,7 @@ test(
       [databaseMigrationSourceOverride]: migrationSource,
     });
     const repository = createKyselyUserRepository(connection);
+    const concurrentRepository = createKyselyUserRepository(concurrentConnection);
 
     try {
       await resetDatabase(admin);
@@ -280,6 +298,8 @@ test(
         'users',
         'user_provisioning_bootstraps',
         'user_lifecycle_commands',
+        'user_profile_update_commands',
+        'user_create_commands',
       ]);
 
       const idempotentApply = await runner.migrateToLatest();
@@ -372,6 +392,98 @@ test(
         { tenantId: tenantE },
         bootstrapInput({ clientRequestId: requestE }),
       );
+      const profileUpdateE = {
+        userId: firstE.userId,
+        displayName: 'Persona E editada',
+        operationalIdentifier: 'persona-e-editada',
+        expectedVersion: firstE.version,
+        clientRequestId: profileUpdateRequest,
+        occurredAt: '2026-09-06T17:45:00.000Z',
+      };
+      const updatedE = await repository.update({ tenantId: tenantE }, profileUpdateE);
+      assert.deepEqual(
+        await repository.update({ tenantId: tenantE }, profileUpdateE),
+        updatedE,
+      );
+      await rejectsWithCode(
+        repository.update(
+          { tenantId: tenantE },
+          { ...profileUpdateE, displayName: 'Intento divergente' },
+        ),
+        'USER_IDEMPOTENCY_CONFLICT',
+      );
+      assert.deepEqual(
+        (
+          await admin.query(
+            `select requested_display_name, requested_operational_identifier,
+                    expected_version, result_display_name, result_version
+             from user_profile_update_commands
+             where tenant_id = $1 and client_request_id = $2`,
+            [tenantE, profileUpdateRequest],
+          )
+        ).rows,
+        [{
+          requested_display_name: 'Persona E editada',
+          requested_operational_identifier: 'persona-e-editada',
+          expected_version: 0,
+          result_display_name: 'Persona E editada',
+          result_version: 1,
+        }],
+      );
+
+      await concurrentConnection.verify();
+      const createUserE = {
+        userId: createdUserE1,
+        displayName: 'Persona E adicional',
+        operationalIdentifier: null,
+        clientRequestId: createUserRequest,
+        occurredAt: '2026-09-06T17:46:00.000Z',
+      };
+      const createdE = await repository.create({ tenantId: tenantE }, createUserE);
+      assert.deepEqual(
+        await repository.create({ tenantId: tenantE }, {
+          ...createUserE,
+          userId: createdUserE2,
+          occurredAt: '2026-09-06T17:47:00.000Z',
+        }),
+        createdE,
+      );
+      await rejectsWithCode(
+        repository.create({ tenantId: tenantE }, {
+          ...createUserE,
+          userId: createdUserE2,
+          displayName: 'Payload divergente',
+        }),
+        'USER_IDEMPOTENCY_CONFLICT',
+      );
+
+      const concurrentCreatedE = await Promise.all([
+        repository.create({ tenantId: tenantE }, {
+          userId: concurrentCreatedUserE1,
+          displayName: 'Persona E concurrente',
+          operationalIdentifier: null,
+          clientRequestId: concurrentCreateUserRequest,
+          occurredAt: '2026-09-06T17:48:00.000Z',
+        }),
+        concurrentRepository.create({ tenantId: tenantE }, {
+          userId: concurrentCreatedUserE2,
+          displayName: 'Persona E concurrente',
+          operationalIdentifier: null,
+          clientRequestId: concurrentCreateUserRequest,
+          occurredAt: '2026-09-06T17:49:00.000Z',
+        }),
+      ]);
+      assert.deepEqual(concurrentCreatedE[0], concurrentCreatedE[1]);
+      assert.deepEqual(
+        (await admin.query(
+          `select count(*)::integer as users,
+                  (select count(*)::integer from user_create_commands where tenant_id = $1) as commands
+           from users
+           where tenant_id = $1 and display_name in ('Persona E adicional', 'Persona E concurrente')`,
+          [tenantE],
+        )).rows,
+        [{ users: 2, commands: 2 }],
+      );
 
       const competingC = await Promise.allSettled([
         repository.bootstrap(
@@ -418,7 +530,7 @@ test(
         { tenant_id: tenantA, count: 1 },
         { tenant_id: tenantB, count: 1 },
         { tenant_id: tenantC, count: 1 },
-        { tenant_id: tenantE, count: 1 },
+        { tenant_id: tenantE, count: 3 },
       ]);
       const gates = await admin.query(
         `select tenant_id, count(*)::integer as count
@@ -426,7 +538,12 @@ test(
          group by tenant_id
          order by tenant_id`,
       );
-      assert.deepEqual(gates.rows, counts.rows);
+      assert.deepEqual(gates.rows, [
+        { tenant_id: tenantA, count: 1 },
+        { tenant_id: tenantB, count: 1 },
+        { tenant_id: tenantC, count: 1 },
+        { tenant_id: tenantE, count: 1 },
+      ]);
 
       await assert.rejects(
         admin.query(
@@ -511,7 +628,7 @@ test(
       );
       assert.deepEqual(
         await repository.findById({ tenantId: tenantE }, sharedUserId),
-        firstE,
+        updatedE,
       );
       const provisionedC = fulfilledC.value;
       assert.deepEqual(
@@ -791,6 +908,26 @@ test(
       let latest = [...status.migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
+      while (
+        latest?.name !==
+        '20260907220000_repairs_create_business_audit_events'
+      ) {
+        assert.ok(latest);
+        await runner.migrateDown(authorization(latest));
+        status = await runner.getMigrationStatus();
+        latest = [...status.migrations]
+          .reverse()
+          .find(({ state }) => state === 'applied');
+      }
+      assert.equal(
+        latest?.name,
+        '20260907220000_repairs_create_business_audit_events',
+      );
+      await runner.migrateDown(authorization(latest));
+      status = await runner.getMigrationStatus();
+      latest = [...status.migrations]
+        .reverse()
+        .find(({ state }) => state === 'applied');
       assert.equal(latest?.name, '20260907120000_access_create_operational_sessions');
       await runner.migrateDown(authorization(latest));
       status = await runner.getMigrationStatus();
@@ -884,6 +1021,8 @@ test(
         'users',
         'user_provisioning_bootstraps',
         'user_lifecycle_commands',
+        'user_profile_update_commands',
+        'user_create_commands',
       ]);
       await assertAccessTables(admin, [
         'access_capabilities',
@@ -906,6 +1045,7 @@ test(
       await assertNoObjects(admin);
     } finally {
       await runner.destroy().catch(() => undefined);
+      await concurrentConnection.close().catch(() => undefined);
       await connection.close().catch(() => undefined);
       await resetDatabase(admin).catch(() => undefined);
       await assertNoObjects(admin);

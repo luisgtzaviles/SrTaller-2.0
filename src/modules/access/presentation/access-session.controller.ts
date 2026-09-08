@@ -25,6 +25,7 @@ import { PinInputError } from '../application/pin-input.js';
 import { SessionTokenInputError } from '../application/ports/session-token.port.js';
 import { PinAuthenticationError } from '../application/use-cases/authenticate-pin.use-case.js';
 import type { AuthenticatePinUseCase } from '../application/use-cases/authenticate-pin.use-case.js';
+import type { AuthenticatePinOnlyUseCase } from '../application/use-cases/authenticate-pin-only.use-case.js';
 import { OperationalSessionError } from '../application/use-cases/operational-session.use-cases.js';
 import type {
   CreateOperationalSessionUseCase,
@@ -33,6 +34,18 @@ import type {
   ResolveOperationalSessionUseCase,
 } from '../application/use-cases/operational-session.use-cases.js';
 import type { ResolveEffectiveCapabilitiesUseCase } from '../application/use-cases/resolve-effective-capabilities.use-case.js';
+import {
+  composeEffectiveCapabilities,
+} from '../domain/capability.js';
+import type { CapabilityCode } from '../domain/capability.js';
+import type { ListAccessMatrixUseCase } from '../application/use-cases/list-access-matrix.use-case.js';
+import type { CreateAccessRoleUseCase } from '../application/use-cases/create-access-role.use-case.js';
+import type { ReplaceAccessRoleCapabilitiesUseCase } from '../application/use-cases/replace-access-role-capabilities.use-case.js';
+import type { UpdateAccessRoleUseCase } from '../application/use-cases/update-access-role.use-case.js';
+import type { AssignRoleUseCase } from '../application/use-cases/assign-role.use-case.js';
+import type { RevokeRoleAssignmentUseCase } from '../application/use-cases/revoke-role-assignment.use-case.js';
+import type { ProvisionPinCredentialUseCase } from '../application/use-cases/provision-pin-credential.use-case.js';
+import type { ReplacePinCredentialUseCase } from '../application/use-cases/replace-pin-credential.use-case.js';
 import type { SessionTokenPort } from '../application/ports/session-token.port.js';
 import {
   OPERATIONAL_SESSION_IDLE_MS,
@@ -54,11 +67,21 @@ export const ACCESS_SESSION_RUNTIME = Symbol('srtaller.access.session-runtime');
 export interface AccessSessionRuntime {
   readonly trustedStations: TrustedStationContextResolver;
   readonly authenticatePin: AuthenticatePinUseCase;
+  readonly authenticatePinOnly: AuthenticatePinOnlyUseCase;
   readonly createSession: CreateOperationalSessionUseCase;
   readonly resolveSession: ResolveOperationalSessionUseCase;
   readonly resolveCapabilities: ResolveEffectiveCapabilitiesUseCase;
   readonly endSession: EndOperationalSessionUseCase;
   readonly listLoginUsers: ListLoginUsersUseCase;
+  readonly listAccessMatrix: ListAccessMatrixUseCase;
+  readonly createAccessRole: CreateAccessRoleUseCase;
+  readonly replaceAccessRoleCapabilities: ReplaceAccessRoleCapabilitiesUseCase;
+  readonly updateAccessRole: UpdateAccessRoleUseCase;
+  readonly assignRole: AssignRoleUseCase;
+  readonly revokeRoleAssignment: RevokeRoleAssignmentUseCase;
+  readonly provisionPin: ProvisionPinCredentialUseCase;
+  readonly replacePin: ReplacePinCredentialUseCase;
+  readonly listConfiguredPinUserIds: (scope: unknown) => Promise<readonly string[]>;
   readonly tokens: SessionTokenPort;
 }
 
@@ -97,30 +120,61 @@ function sameOrigin(headers: HeadersValue): boolean {
   });
 }
 
+const administrationCapabilityCodes = new Set<CapabilityCode>([
+  'users.read',
+  'users.manage',
+  'access_matrix.read',
+  'access_matrix.manage',
+]);
+
+async function resolveTenantWideAdministrationCapabilities(
+  runtime: AccessSessionRuntime,
+  tenantId: string,
+  userId: string,
+): Promise<readonly CapabilityCode[]> {
+  const matrix = await runtime.listAccessMatrix.execute({ tenantId });
+  const activeRoles = new Map(
+    matrix.roles
+      .filter((role) => role.status === 'active')
+      .map((role) => [role.roleId, role.capabilityCodes]),
+  );
+  const capabilities = new Set<CapabilityCode>();
+  for (const assignment of matrix.assignments) {
+    if (
+      assignment.userId !== userId ||
+      assignment.status !== 'active' ||
+      assignment.assignmentScope !== 'TENANT_WIDE' ||
+      assignment.branchId !== null
+    ) continue;
+    for (const capability of activeRoles.get(assignment.roleId) ?? []) {
+      if (administrationCapabilityCodes.has(capability)) capabilities.add(capability);
+    }
+  }
+  return composeEffectiveCapabilities([...capabilities]);
+}
+
 function parseCreateRequest(value: unknown): Readonly<{
-  pinInput: Readonly<{ userId: unknown; pin: unknown }>;
+  pin: unknown;
   expectedSessionId: string | null;
 }> {
   if (
     typeof value !== 'object' ||
     value === null ||
     Array.isArray(value) ||
-    Object.keys(value).length !== 3 ||
-    Object.keys(value).some((key) => !['expectedSessionId', 'pin', 'userId'].includes(key))
+    Object.keys(value).length !== 2 ||
+    Object.keys(value).some((key) => !['expectedSessionId', 'pin'].includes(key))
   ) throw new AccessSessionRequestError();
   const input = value as Readonly<Record<string, unknown>>;
-  let expectedSessionId: string | null;
   try {
-    expectedSessionId = input.expectedSessionId === null
-      ? null
-      : assertSessionId(input.expectedSessionId as string);
+    return Object.freeze({
+      pin: input.pin,
+      expectedSessionId: input.expectedSessionId === null
+        ? null
+        : assertSessionId(input.expectedSessionId as string),
+    });
   } catch {
     throw new AccessSessionRequestError();
   }
-  return Object.freeze({
-    pinInput: Object.freeze({ userId: input.userId, pin: input.pin }),
-    expectedSessionId,
-  });
 }
 
 function sessionResponse(session: Awaited<ReturnType<ResolveOperationalSessionUseCase['execute']>>) {
@@ -189,8 +243,9 @@ export class AccessSessionController {
   ) {
     return {
       station: { stationId: context.stationId, branchId: context.branchId },
-      users,
+      hasEligibleUsers: users.length > 0,
       capabilities: Object.freeze([]),
+      administrationCapabilities: Object.freeze([]),
       csrfToken: this.loginChallenge(headers, response),
       session: null,
       revalidateAfterMs: null,
@@ -225,15 +280,23 @@ export class AccessSessionController {
         touch: false,
       });
       const session = sessionResponse(resolvedSession);
-      const capabilities = await this.runtime.resolveCapabilities.execute({
-        tenantId: context.tenantId,
-        branchId: context.branchId,
-        userId: resolvedSession.userId,
-      });
+      const [capabilities, administrationCapabilities] = await Promise.all([
+        this.runtime.resolveCapabilities.execute({
+          tenantId: context.tenantId,
+          branchId: context.branchId,
+          userId: resolvedSession.userId,
+        }),
+        resolveTenantWideAdministrationCapabilities(
+          this.runtime,
+          context.tenantId,
+          resolvedSession.userId,
+        ),
+      ]);
       return {
         station: { stationId: context.stationId, branchId: context.branchId },
-        users,
+        hasEligibleUsers: users.length > 0,
         capabilities,
+        administrationCapabilities,
         csrfToken: cookies.csrf,
         session,
         revalidateAfterMs: revalidateAfterMs(session),
@@ -291,17 +354,26 @@ export class AccessSessionController {
         }
       }
       const users = await this.runtime.listLoginUsers.execute(context);
-      const proof = await this.runtime.authenticatePin.execute(context, request.pinInput);
+      const proof = await this.runtime.authenticatePinOnly.execute(context, {
+        pin: request.pin,
+      });
       // The capability snapshot is advisory UI data. Resolve it before the
       // authoritative Session replacement so a projection failure cannot
       // strand the Station with a Session whose credentials were never
       // delivered to the browser. Every protected request still re-evaluates
       // capabilities after resolving the active Session.
-      const capabilities = await this.runtime.resolveCapabilities.execute({
-        tenantId: context.tenantId,
-        branchId: context.branchId,
-        userId: proof.userId,
-      });
+      const [capabilities, administrationCapabilities] = await Promise.all([
+        this.runtime.resolveCapabilities.execute({
+          tenantId: context.tenantId,
+          branchId: context.branchId,
+          userId: proof.userId,
+        }),
+        resolveTenantWideAdministrationCapabilities(
+          this.runtime,
+          context.tenantId,
+          proof.userId,
+        ),
+      ]);
       const created = await this.runtime.createSession.execute(
         context,
         proof,
@@ -314,8 +386,9 @@ export class AccessSessionController {
       ));
       return {
         station: { stationId: context.stationId, branchId: context.branchId },
-        users,
+        hasEligibleUsers: users.length > 0,
         capabilities,
+        administrationCapabilities,
         csrfToken: created.tokens.csrf,
         session: sessionResponse(created.session),
         revalidateAfterMs: revalidateAfterMs(created.session),
