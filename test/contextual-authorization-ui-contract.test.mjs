@@ -63,7 +63,8 @@ test('Session API parses capabilities at the snapshot boundary and clears unauth
   assert.match(sessionApiSource, /readonly capabilities: readonly OperationalCapability\[\]/u);
   assert.match(sessionApiSource, /readonly administrationCapabilities: readonly OperationalCapability\[\]/u);
   assert.match(sessionApiSource, /parseSessionCapabilities\(value\.capabilities, session !== null\)/u);
-  assert.match(sessionApiSource, /value\.administrationCapabilities \?\? \[\]/u);
+  assert.match(sessionApiSource, /parseSessionCapabilities\([\s\S]*?value\.administrationCapabilities,[\s\S]*?session !== null/u);
+  assert.doesNotMatch(sessionApiSource, /value\.administrationCapabilities \?\? \[\]/u);
   assert.match(sessionApiSource, /capabilities,\s+administrationCapabilities,\s+revalidateAfterMs,/u);
   assert.match(sessionGateSource, /readonly capabilities: readonly OperationalCapability\[\]/u);
   assert.match(sessionGateSource, /readonly administrationCapabilities: readonly OperationalCapability\[\]/u);
