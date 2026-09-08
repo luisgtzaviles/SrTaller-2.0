@@ -6,8 +6,8 @@
 conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
 splits aprobados. PBI-030 tiene cierre `Done`; Sprint 01 está `Closed` y
 PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033 están `Done`; permanecen
-`Released: NO`. SPRINT-02 está `Active`; PBI-026/PBI-028 están `Done`, G5 es
-`PASS`, PBI-038 es el PBI actual y el WIP es `1/1`.
+`Released: NO`. SPRINT-02 está `Active`; PBI-026/PBI-028/PBI-038 están `Done`,
+G5 es `PASS`, Current PBI es `NONE` y WIP es `0/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
 PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt sizing; los demás casos
 conservan TBD.
@@ -53,11 +53,11 @@ conservan TBD.
 | [PBI-035](PBI-035.md) | Reinforced Authorization | Draft / Deferred |
 | [PBI-036](PBI-036.md) | Extended Observability | Deferred |
 | [PBI-037](PBI-037.md) | Users & Roles Administration Product Iteration | Integrated slice within PBI-028; no independent lifecycle |
-| [PBI-038](PBI-038.md) | Timezone Foundation Integration and Hardening | In progress; SPRINT-02 current PBI; no merge/deploy authority |
+| [PBI-038](PBI-038.md) | Timezone Foundation Integration and Hardening | Done; Released: NO; PR #40 and exact-main CI GREEN |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-Completar candidate CI y focused review de PBI-038 y detenerse para merge
-autorizado. No iniciar otro PBI, liberar ni desplegar.
+No existe siguiente candidato seleccionado. No iniciar otro PBI, liberar ni
+desplegar sin nueva autorización Owner.

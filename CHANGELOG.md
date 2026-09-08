@@ -6,10 +6,13 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ### Timezone Foundation
 
-- Preparado PBI-038 como candidato de integración para la Timezone Foundation
-  aprobada localmente: Settings → Sucursal, persistencia IANA, presentación
-  Branch-local y límites de Worklist por calendario local. No hay merge,
-  deploy ni cambio de infraestructura autorizado.
+- Integrado PBI-038 — Timezone Foundation Integration and Hardening — mediante
+  PR #40, merge `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` del candidato
+  `798e0060e910562cd227824be8949876725a5ee4`. El exact-main CI
+  `34280510716` cerró run-1, run-2 y comparison GREEN: PBI-038 queda `Done`,
+  `Released: NO`, Current PBI `NONE`, WIP `0/1` y Next candidate `NONE`.
+  `Branch.timeZone` permanece `America/Hermosillo`; UTC storage invariant
+  `PASS`. No hubo deploy ni cambio de infraestructura.
 
 ### Governance
 
@@ -21,8 +24,9 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
   PR #39 integró después el cierre documental en
   `2b712fc3a3842f197324e8870011bf170846ddb8`, con CI exacto `34249869167`
   GREEN: PBI-028 queda `Done`, G5 `PASS` y `Released: NO`. PBI-037 se conserva
-  como slice integrado y trazable sin lifecycle independiente. PBI-038 es el
-  Current PBI con WIP `1/1`; no hubo deploy.
+  como slice integrado y trazable sin lifecycle independiente. En ese
+  checkpoint histórico PBI-038 pasó a ser el Current PBI con WIP `1/1`; no
+  hubo deploy.
 
 - Preparado el checkpoint local endurecido PBI-028/PBI-037 sobre baseline
   `0b39e3794a97c22d5471c0b6dfa278026f237b03`, con recovery commit

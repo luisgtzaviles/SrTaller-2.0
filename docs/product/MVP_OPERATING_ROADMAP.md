@@ -2,23 +2,21 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 activo y PBI-038 en preparación de
-  candidato de integración.
+- **Estado:** Roadmap aprobado; SPRINT-02 activo sin PBI en ejecución.
 - **Baseline de la reconciliación:** `main` en
-  `2b712fc3a3842f197324e8870011bf170846ddb8`; CI autoritativo
-  `34249869167`, `SUCCESS`.
+  `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`; CI autoritativo
+  `34280510716`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Operational Authentication & Authorization.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** `PBI-038` — Timezone Foundation Integration and Hardening.
-- **Siguiente PBI candidato:** `NONE`; no se selecciona trabajo posterior
-  mientras PBI-038 esté en ejecución.
-- **Blocking gate:** candidate CI y focused review de PBI-038; release y deploy
-  conservan autoridades propias.
-- **WIP operacional:** `1/1`.
+- **PBI actual:** `NONE`.
+- **Siguiente PBI candidato:** `NONE`.
+- **Blocking gate:** selección, readiness y autorización Owner para cualquier
+  trabajo posterior; release y deploy conservan autoridades propias.
+- **WIP operacional:** `0/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
 
@@ -87,7 +85,8 @@ Owner explícita de merge.
    salta silenciosamente a otro PBI.
 
 PBI-030, PBI-027, PBI-029, PBI-024, PBI-032, PBI-033, PBI-025, PBI-034 y
-PBI-026/PBI-028 están `Done` y no están `Released`. G1–G5 están `PASS`.
+PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
+`PASS`.
 
 ## Current execution pointer
 
@@ -97,11 +96,11 @@ PBI-026/PBI-028 están `Done` y no están `Released`. G1–G5 están `PASS`.
 | Stage | MVP |
 | Phase | Operational Authentication & Authorization |
 | Sprint | SPRINT-02 |
-| Sprint status | Active — WIP=1/1 |
-| Current PBI | PBI-038 — Timezone Foundation Integration and Hardening |
-| Next PBI candidate | NONE; no se selecciona trabajo posterior mientras PBI-038 esté en ejecución |
+| Sprint status | Active — WIP=0/1 |
+| Current PBI | NONE |
+| Next PBI candidate | NONE |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | PBI-038 requiere candidate CI y focused review; no release/deploy |
+| Blocking gate | selección, readiness y autorización Owner; no release/deploy |
 
 ## Fases aprobadas
 
@@ -204,7 +203,9 @@ focused high-risk review PASS, merge funcional PR #28, Owner Acceptance y
 cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 
 SPRINT-02 está `Active`; PBI-026 está `Done`, G4 `PASS`; PBI-028 está `Done`,
-G5 es `PASS`; PBI-038 es el Current PBI y WIP es `1/1`.
+G5 es `PASS`; PBI-038 está `Done` después de PR #40 merge
+`5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN.
+Current PBI es `NONE`, WIP es `0/1` y Next candidate es `NONE`.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.
@@ -231,13 +232,13 @@ Acceptance y cierre PR #36 + CI exacto; está `Done` y G4 `PASS`. PBI-028 tiene
 DoR PASS, scope High preservado, PR #37 integrado, PR #38 de foco integrado,
 focused review PASS y Owner Acceptance. PR #39 mergeó como
 `2b712fc3a3842f197324e8870011bf170846ddb8`, con CI `34249869167` GREEN:
-PBI-028 está `Done` y G5 `PASS`. PBI-038 es el seguimiento acotado actual;
-ningún estado autoriza release o deploy.
+PBI-028 está `Done` y G5 `PASS`. PBI-038 está `Done`; `Branch.timeZone`
+permanece `America/Hermosillo` y el UTC storage invariant es `PASS`. Ningún
+estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** CI exacto y focused review del HEAD de PBI-038.
-- **Resultado esperado si pasa:** candidate CI exacto GREEN y Owner Review,
-  sin inferir merge, release o deploy.
-- **Después:** tras su eventual merge/CI, aplicar la semántica de cierre de
-  PBI-038 sin iniciar otro PBI automáticamente.
+- **Disparador:** selección, readiness y autorización Owner de un nuevo PBI.
+- **Resultado esperado si pasa:** un único PBI puede iniciar su flujo propio,
+  sin inferir release o deploy.
+- **Después:** no iniciar otro PBI automáticamente.
