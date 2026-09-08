@@ -302,6 +302,7 @@ function LoginPage({
 
 export interface AuthenticatedSessionView {
   readonly session: ActiveOperationalSession;
+  readonly timeZone: string;
   readonly capabilities: readonly OperationalCapability[];
   readonly administrationCapabilities: readonly OperationalCapability[];
   readonly csrfToken: string;
@@ -654,6 +655,7 @@ export function OperationalSessionGate({
     <>
       {children({
         session: snapshot.session,
+        timeZone: snapshot.station.timeZone,
         capabilities: snapshot.capabilities,
         administrationCapabilities: snapshot.administrationCapabilities,
         csrfToken: snapshot.csrfToken,

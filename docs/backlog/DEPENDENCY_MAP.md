@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline:** `main` en
-  `a9bb0744ebf8b32b91a9ddf90f67570830182afc`; CI `34197268832` GREEN.
+  `2b712fc3a3842f197324e8870011bf170846ddb8`; CI `34249869167` GREEN.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -18,17 +18,18 @@ flowchart TD
     P29 --> P24[PBI-024 Trusted Station Runtime Context<br/>Done]
     P24 --> P32[PBI-032 User Directory<br/>Done]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>Done]
-    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=0/1]
+    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=1/1]
     S2 --> P25[PBI-025 PIN Credential<br/>Done]
     P24 --> P25
     P29 --> P25
     P25 --> P34[PBI-034 Operational Session<br/>Done]
     P34 --> P26[PBI-026 Contextual Authorization<br/>Done / G4 PASS]
     P33 --> P26
-    P26 --> P28[PBI-028 Minimum Business Audit<br/>Done candidate / G5 PASS candidate]
+    P26 --> P28[PBI-028 Minimum Business Audit<br/>Done / G5 PASS]
     P27 --> P28
     P29 --> P28
     P28 --> NOTE[First Real-Actor Proof<br/>Operational Note]
+    P27 -. approved integration follow-up .-> P38[PBI-038 Timezone Foundation<br/>In progress]
     NOTE --> RETRO[Repair writes actor retrofit]
     RETRO --> CUSTOMERS[Customers]
     CUSTOMERS --> INTAKE[Real New Repair / Intake]
@@ -70,8 +71,8 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; PBI-028 `Done candidate`, Current PBI `NONE` y
-  WIP=`0/1`.
+- Sprint 02: `Active`; PBI-028 `Done`, G5 `PASS`, PBI-038 actual y
+  WIP=`1/1`.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -95,9 +96,9 @@ flowchart TD
   Owner Acceptance, cierre PR #36 merge
   `0b39e3794a97c22d5471c0b6dfa278026f237b03` y CI `34161029937` completos.
   G4 es `PASS`. PBI-028 tiene PR #37 integrado, CI exacto `34193770228` GREEN,
-  PR #38 de foco integrado, CI exacto `34197268832` GREEN, focused review PASS
-  y Owner Acceptance; queda `Done candidate` / G5 `PASS candidate` hasta el
-  merge/CI del cierre documental.
+  PR #38 de foco integrado, CI exacto `34197268832` GREEN, y cierre PR #39
+  merge `2b712fc3a3842f197324e8870011bf170846ddb8` con CI `34249869167` GREEN;
+  está `Done` y G5 es `PASS`.
 
 ## Stage 2
 
@@ -107,5 +108,4 @@ diferidos.
 
 ## Próxima revisión
 
-Al completar CI del cierre documental de PBI-028 o si cambia una dependencia
-aprobada.
+Al completar CI/focused review de PBI-038 o si cambia una dependencia aprobada.

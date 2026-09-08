@@ -1,4 +1,5 @@
 import { parseTenantId } from '../../../tenancy/index.js';
+import type { BranchTimeZone } from '../../../stations/index.js';
 import type {
   RepairPersistenceScope,
   RepairRepositoryPort,
@@ -120,12 +121,14 @@ export class ListRepairsUseCase {
   constructor(
     private readonly repository: RepairRepositoryPort,
     private readonly resolveScope: () => RepairPersistenceScope,
+    private readonly timeZone: BranchTimeZone,
   ) {}
 
   async execute(input: ListRepairsInput): Promise<RepairWorklistPage> {
     return this.repository.listWorklist(
       this.resolveScope(),
       parseListRepairsQuery(input),
+      this.timeZone,
     );
   }
 }

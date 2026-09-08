@@ -2,23 +2,23 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 activo y cierre canónico candidato
-  de PBI-028 pendiente de su propio merge/CI.
+- **Estado:** Roadmap aprobado; SPRINT-02 activo y PBI-038 en preparación de
+  candidato de integración.
 - **Baseline de la reconciliación:** `main` en
-  `a9bb0744ebf8b32b91a9ddf90f67570830182afc`; CI autoritativo
-  `34197268832`, `SUCCESS`.
+  `2b712fc3a3842f197324e8870011bf170846ddb8`; CI autoritativo
+  `34249869167`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Operational Authentication & Authorization.
 - **Checkpoint alcanzado:** `REPAIRS OPERATIONAL FOUNDATION CHECKPOINT REACHED`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** `NONE`.
-- **Siguiente PBI candidato:** `NONE`; el roadmap no selecciona todavía un PBI
-  posterior a PBI-028.
-- **Blocking gate:** merge autorizado y CI exacto del PR documental de cierre;
-  release y deploy conservan autoridades propias.
-- **WIP operacional:** `0/1`.
+- **PBI actual:** `PBI-038` — Timezone Foundation Integration and Hardening.
+- **Siguiente PBI candidato:** `NONE`; no se selecciona trabajo posterior
+  mientras PBI-038 esté en ejecución.
+- **Blocking gate:** candidate CI y focused review de PBI-038; release y deploy
+  conservan autoridades propias.
+- **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
 
@@ -87,7 +87,7 @@ Owner explícita de merge.
    salta silenciosamente a otro PBI.
 
 PBI-030, PBI-027, PBI-029, PBI-024, PBI-032, PBI-033, PBI-025, PBI-034 y
-PBI-026 están `Done` y no están `Released`. G1–G4 están `PASS`.
+PBI-026/PBI-028 están `Done` y no están `Released`. G1–G5 están `PASS`.
 
 ## Current execution pointer
 
@@ -97,11 +97,11 @@ PBI-026 están `Done` y no están `Released`. G1–G4 están `PASS`.
 | Stage | MVP |
 | Phase | Operational Authentication & Authorization |
 | Sprint | SPRINT-02 |
-| Sprint status | Active — WIP=0/1 |
-| Current PBI | NONE |
-| Next PBI candidate | NONE; roadmap direction is real-actor retrofit, then Customers, but no PBI is selected or ready |
+| Sprint status | Active — WIP=1/1 |
+| Current PBI | PBI-038 — Timezone Foundation Integration and Hardening |
+| Next PBI candidate | NONE; no se selecciona trabajo posterior mientras PBI-038 esté en ejecución |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | PBI-028 `Done candidate` / G5 `PASS candidate` require this documentary PR's authorized merge and exact-main CI; no release/deploy |
+| Blocking gate | PBI-038 requiere candidate CI y focused review; no release/deploy |
 
 ## Fases aprobadas
 
@@ -171,7 +171,7 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | G2 IDENTITY | PASS | PBI-032 `Done`; PBI-033 cierre PR #29 merge `d1a98c6d158cf53e1718a75c82f8eafbc3aafaf1` y CI exacto `34084930812` GREEN. |
 | G3 AUTHENTICATION | PASS | PBI-025 y PBI-034 están `Done`; cierre PR #34 merge `54ddc251cda8ec7465b7913786c647f8d3ccbeac` y CI exacto `34153470560` GREEN. |
 | G4 AUTHORIZATION | PASS | PBI-026 cierre PR #36 merge `0b39e3794a97c22d5471c0b6dfa278026f237b03`; CI exacto `34161029937` GREEN. |
-| G5 AUDIT | PASS candidate | PBI-028 PR #37 merge `ab8e8ba9a1274030e27ad920d61c66ed461bf122`, exact-main CI `34193770228` GREEN, PR #38 remediation merge `a9bb0744ebf8b32b91a9ddf90f67570830182afc`, exact-main CI `34197268832` GREEN, focused review PASS and Owner Acceptance. |
+| G5 AUDIT | PASS | PBI-028 PR #37/PR #38, cierre PR #39 merge `2b712fc3a3842f197324e8870011bf170846ddb8` y CI exacta `34249869167` GREEN. |
 | G6–G12 | Pending | No existe evidencia material adicional para estos gates. |
 
 ## Cierre y avance documental de un PBI
@@ -203,8 +203,8 @@ merge funcional, Owner Acceptance, cierre PR #27 y CI exacto post-cierre
 focused high-risk review PASS, merge funcional PR #28, Owner Acceptance y
 cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 
-SPRINT-02 está `Active`; PBI-026 está `Done`, G4 `PASS`; PBI-028 es `Done
-candidate`, G5 es `PASS candidate`, Current PBI es `NONE` y WIP es `0/1`.
+SPRINT-02 está `Active`; PBI-026 está `Done`, G4 `PASS`; PBI-028 está `Done`,
+G5 es `PASS`; PBI-038 es el Current PBI y WIP es `1/1`.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.
@@ -229,14 +229,15 @@ dejan `Done`; G3 es `PASS`. PBI-026 pasó DoR/threat model, candidate CI,
 focused Critical-risk review, merge funcional, exact-main CI y Owner
 Acceptance y cierre PR #36 + CI exacto; está `Done` y G4 `PASS`. PBI-028 tiene
 DoR PASS, scope High preservado, PR #37 integrado, PR #38 de foco integrado,
-focused review PASS y Owner Acceptance; es `Done candidate` y G5 es `PASS
-candidate` hasta el merge/CI de este cierre. Ningún estado autoriza release o
-deploy.
+focused review PASS y Owner Acceptance. PR #39 mergeó como
+`2b712fc3a3842f197324e8870011bf170846ddb8`, con CI `34249869167` GREEN:
+PBI-028 está `Done` y G5 `PASS`. PBI-038 es el seguimiento acotado actual;
+ningún estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** CI exacto y focused review del HEAD de este PR documental.
+- **Disparador:** CI exacto y focused review del HEAD de PBI-038.
 - **Resultado esperado si pasa:** candidate CI exacto GREEN y Owner Review,
   sin inferir merge, release o deploy.
-- **Después:** tras su eventual merge/CI, PBI-028 será `Done` y G5 `PASS`; no
-  iniciar otro PBI automáticamente.
+- **Después:** tras su eventual merge/CI, aplicar la semántica de cierre de
+  PBI-038 sin iniciar otro PBI automáticamente.

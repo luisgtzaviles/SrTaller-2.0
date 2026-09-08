@@ -2,6 +2,7 @@ import type {
   CustodyStatusCode,
   RepairStatusCode,
 } from '../../domain/repair-status.js';
+import type { BranchTimeZone } from '../../../stations/index.js';
 
 export interface RepairPersistenceScope {
   readonly tenantId: string;
@@ -339,6 +340,7 @@ export interface RepairRepositoryPort {
   listWorklist(
     scope: RepairPersistenceScope,
     query: RepairWorklistQuery,
+    timeZone: BranchTimeZone,
   ): Promise<RepairWorklistPage>;
   getRepairById(
     scope: RepairPersistenceScope,

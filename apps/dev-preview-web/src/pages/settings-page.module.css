@@ -41,6 +41,59 @@
 
 .administrationCard a { justify-self: start; }
 
+.branchSettingsCard {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 720px;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.branchSettingsForm {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.timeZoneSelect {
+  width: 100%;
+  min-height: var(--control-default);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+}
+
+.timeZoneSelect:focus-visible {
+  outline: 3px solid var(--color-brand-focus);
+  outline-offset: 2px;
+}
+
+.ianaNote,
+.successNotice,
+.errorNotice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-0);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.ianaNote code { color: var(--color-text); }
+.successNotice { color: var(--color-success); }
+.errorNotice { color: var(--color-danger); }
+
+.branchSettingsActions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
 .sectionHeader {
   max-width: 720px;
 }

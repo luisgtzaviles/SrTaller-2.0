@@ -543,6 +543,7 @@ test(
         authorization,
         repairRepository,
         Object.freeze({ read: async () => null }),
+        Object.freeze({ readTimeZone: async () => ({ timeZone: 'America/Hermosillo' }) }),
       );
       await concurrentConnection.verify();
       const concurrentStationVerifier = new KyselyStationCredentialVerifier(
@@ -584,6 +585,7 @@ test(
           () => new Date(authorizationNow),
         ),
         Object.freeze({ read: async () => null }),
+        Object.freeze({ readTimeZone: async () => ({ timeZone: 'America/Hermosillo' }) }),
       );
       const cookieHeader = [
         stationCookieA,
@@ -937,6 +939,7 @@ test(
           },
         },
         Object.freeze({ read: async () => null }),
+        Object.freeze({ readTimeZone: async () => ({ timeZone: 'America/Hermosillo' }) }),
       );
       const pendingEffect = delayedRepairs.addRepairOperationalNote(
         evidence,

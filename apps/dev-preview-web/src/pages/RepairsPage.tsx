@@ -105,11 +105,11 @@ function apiQuery(filters: WorklistFilters): RepairWorklistQuery {
   };
 }
 
-function formatReceivedAt(value: string): string {
+function formatReceivedAt(value: string, timeZone: string): string {
   return new Intl.DateTimeFormat('es-MX', {
     dateStyle: 'medium',
     timeStyle: 'short',
-    timeZone: 'UTC',
+    timeZone,
   }).format(new Date(value));
 }
 
@@ -135,7 +135,7 @@ function dateRangeError(filters: WorklistFilters): string | null {
   return null;
 }
 
-export function RepairsPage(): React.JSX.Element {
+export function RepairsPage({ timeZone }: Readonly<{ timeZone: string }>): React.JSX.Element {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => readFilters(searchParams), [searchParams]);
@@ -255,7 +255,7 @@ export function RepairsPage(): React.JSX.Element {
     {
       key: 'folio',
       header: 'Folio / recepción',
-      render: (repair) => <span className={styles.identity}><Link className={styles.actionLink} data-repair-detail-trigger={repair.id} state={{ ...detailLinkState, restoreFocusSelector: `[data-repair-detail-trigger="${repair.id}"]` }} to={`/reparaciones/${repair.id}?${searchParams.toString()}`}>{repair.folio}</Link><small className={styles.tabular}>{formatReceivedAt(repair.receivedAt)}</small></span>,
+      render: (repair) => <span className={styles.identity}><Link className={styles.actionLink} data-repair-detail-trigger={repair.id} state={{ ...detailLinkState, restoreFocusSelector: `[data-repair-detail-trigger="${repair.id}"]` }} to={`/reparaciones/${repair.id}?${searchParams.toString()}`}>{repair.folio}</Link><small className={styles.tabular}>{formatReceivedAt(repair.receivedAt, timeZone)}</small></span>,
     },
     { key: 'customer', header: 'Cliente', render: (repair) => <span className={styles.identity}><strong>{repair.customer.name}</strong><small>{repair.customer.phone ?? 'Teléfono no registrado'}</small></span> },
     { key: 'device', header: 'Equipo', render: (repair) => <span className={styles.identity}><strong>{repair.device.label}</strong></span> },
@@ -338,7 +338,7 @@ export function RepairsPage(): React.JSX.Element {
         {!failed && !denied && !loading && items.length === 0 ? <EmptyState compact title={data?.unfilteredCount ? 'Sin coincidencias' : 'Aún no hay reparaciones'} description={data?.unfilteredCount ? 'Prueba con otros filtros o limpia la búsqueda.' : 'No existen reparaciones en la sucursal local.'} /> : null}
         {!failed && !denied && items.length > 0 ? <ResponsiveDataList rows={items} columns={columns} rowKey={(repair) => repair.id} label="Reparaciones" renderMobile={(repair) => (
           <div className={styles.mobileEntityCard}>
-            <header><span className={styles.identity}><Link className={styles.actionLink} data-repair-detail-trigger={repair.id} state={{ ...detailLinkState, restoreFocusSelector: `[data-repair-detail-trigger="${repair.id}"]` }} to={`/reparaciones/${repair.id}?${searchParams.toString()}`}>{repair.folio}</Link><small>{formatReceivedAt(repair.receivedAt)}</small></span>{statusBadge(repair)}</header>
+            <header><span className={styles.identity}><Link className={styles.actionLink} data-repair-detail-trigger={repair.id} state={{ ...detailLinkState, restoreFocusSelector: `[data-repair-detail-trigger="${repair.id}"]` }} to={`/reparaciones/${repair.id}?${searchParams.toString()}`}>{repair.folio}</Link><small>{formatReceivedAt(repair.receivedAt, timeZone)}</small></span>{statusBadge(repair)}</header>
             <div><UserRound aria-hidden="true" size={16} /><span><strong>{repair.customer.name}</strong><small>{repair.customer.phone ?? 'Teléfono no registrado'}</small></span></div>
             <div><Smartphone aria-hidden="true" size={16} /><span><strong>{repair.device.label}</strong><small>{repair.reportedIssue}</small></span></div>
             <div><span aria-hidden="true" /><span><small>Técnico</small><strong>{repair.technician?.displayName ?? 'Sin técnico asignado'}</strong></span></div>

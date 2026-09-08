@@ -115,6 +115,7 @@ const badRequestCodes = new Set([
   'ADMIN_REQUEST_INVALID',
   'PIN_CREDENTIAL_INPUT_INVALID',
   'USER_INPUT_INVALID',
+  'BRANCH_PERSISTENCE_TIME_ZONE_INVALID',
 ]);
 
 const notFoundCodes = new Set([
@@ -124,6 +125,7 @@ const notFoundCodes = new Set([
   'PIN_CREDENTIAL_USER_INVALID',
   'USER_NOT_FOUND',
   'USER_TENANT_NOT_FOUND',
+  'BRANCH_PERSISTENCE_NOT_FOUND',
 ]);
 
 const conflictCodes = new Set([

@@ -1,6 +1,35 @@
 import type { TenancyModuleContract } from '../tenancy/index.js';
 import type { TenantId } from '../tenancy/index.js';
 import { recognizesTrustedStationContext } from './application/contracts/trusted-station-context.js';
+import {
+  BRANCH_SETTINGS_RUNTIME as branchSettingsRuntimeToken,
+} from './application/ports/branch-settings-runtime.port.js';
+import type {
+  BranchSettingsRuntime as BranchSettingsRuntimeContract,
+  BranchSettingsScope as BranchSettingsScopeContract,
+} from './application/ports/branch-settings-runtime.port.js';
+import {
+  branchLocalCalendarBoundaryToUtc as toBranchLocalCalendarBoundary,
+  branchLocalCalendarDate as toBranchLocalCalendarDate,
+  parseBranchTimeZone as parseTimeZone,
+  presentOperationalDateTime as presentDateTime,
+} from './application/branch-time-zone.js';
+import type {
+  BranchTimeZone as BranchTimeZoneContract,
+  OperationalDateTime as OperationalDateTimeContract,
+} from './application/branch-time-zone.js';
+
+/** Public façade for the Stations-owned Branch settings capability. */
+export const BRANCH_SETTINGS_RUNTIME: typeof branchSettingsRuntimeToken =
+  branchSettingsRuntimeToken;
+export type BranchSettingsRuntime = BranchSettingsRuntimeContract;
+export type BranchSettingsScope = BranchSettingsScopeContract;
+export type BranchTimeZone = BranchTimeZoneContract;
+export type OperationalDateTime = OperationalDateTimeContract;
+export const branchLocalCalendarBoundaryToUtc = toBranchLocalCalendarBoundary;
+export const branchLocalCalendarDate = toBranchLocalCalendarDate;
+export const parseBranchTimeZone = parseTimeZone;
+export const presentOperationalDateTime = presentDateTime;
 
 export class TrustedStationContextError extends Error {
   constructor() {

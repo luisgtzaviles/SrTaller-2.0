@@ -3,6 +3,7 @@ import type {
   ContextualAuthorizationExecutor,
   ProtectedRequestEvidence,
 } from '../../access/index.js';
+import type { BranchSettingsRuntime } from '../../stations/index.js';
 
 import type { RepairEvidenceStoragePort } from './ports/repair-evidence-storage.port.js';
 import type {
@@ -90,16 +91,26 @@ export class RepairProtectedOperations {
     private readonly authorization: ContextualAuthorizationExecutor,
     private readonly repository: RepairRepositoryPort,
     private readonly evidenceStorage: RepairEvidenceStoragePort,
+    private readonly branchSettings: BranchSettingsRuntime,
   ) {}
 
   listRepairs(evidence: ProtectedRequestEvidence, input: ListRepairsInput) {
     return this.authorization.execute(
       evidence,
       repairsReadRequirement,
-      (context) => new ListRepairsUseCase(
-        this.repository,
-        () => repairScope(context),
-      ).execute(input),
+      async (context) => {
+        const scope = repairScope(context);
+        const branch = await this.branchSettings.readTimeZone({
+          tenantId: context.tenantId,
+          branchId: context.branchId,
+        });
+        if (!branch) throw new RepairOperationAccessDeniedError();
+        return new ListRepairsUseCase(
+          this.repository,
+          () => scope,
+          branch.timeZone,
+        ).execute(input);
+      },
     );
   }
 

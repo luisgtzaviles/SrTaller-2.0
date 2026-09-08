@@ -10,6 +10,7 @@ export type { OperationalCapability } from './session-capabilities.mjs';
 export interface OperationalSessionStation {
   readonly stationId: string;
   readonly branchId: string;
+  readonly timeZone: string;
 }
 
 export interface ActiveOperationalSession {
@@ -72,9 +73,16 @@ function requiredDate(record: Readonly<Record<string, unknown>>, key: string): s
 
 function parseStation(value: unknown): OperationalSessionStation {
   if (!isRecord(value)) throw new OperationalSessionApiError(0);
+  const timeZone = requiredString(value, 'timeZone');
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone });
+  } catch {
+    throw new OperationalSessionApiError(0);
+  }
   return Object.freeze({
     stationId: requiredString(value, 'stationId'),
     branchId: requiredString(value, 'branchId'),
+    timeZone,
   });
 }
 

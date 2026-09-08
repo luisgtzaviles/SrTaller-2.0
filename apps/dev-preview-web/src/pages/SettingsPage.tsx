@@ -1,4 +1,4 @@
-import { Check, Moon, RotateCcw, ShieldCheck, Sparkles, UserCircle, UsersRound } from 'lucide-react';
+import { Building2, Check, Moon, RotateCcw, ShieldCheck, Sparkles, UserCircle, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { BRAND_DEFAULT, normalizeHex } from '../foundation/accent.mjs';
@@ -45,6 +45,7 @@ export function SettingsPage({ capabilities }: Readonly<{
   const canReadRoles = hasOperationalCapability(capabilities, 'access_matrix.read');
   const canManageUsers = hasOperationalCapability(capabilities, 'users.manage');
   const canManageRoles = hasOperationalCapability(capabilities, 'access_matrix.manage');
+  const canManageBranch = hasOperationalCapability(capabilities, 'access_matrix.manage');
 
   const applyInput = (value: string): void => {
     const normalized = normalizeHex(value);
@@ -71,7 +72,7 @@ export function SettingsPage({ capabilities }: Readonly<{
           <h2 id="administration-title">Equipo y permisos</h2>
           <p>Consulta las identidades operativas y los permisos disponibles para el equipo.</p>
         </header>
-        {canReadUsers || canReadRoles ? (
+        {canReadUsers || canReadRoles || canManageBranch ? (
           <div className={styles.administrationGrid}>
             {canReadUsers ? (
               <article className={styles.administrationCard}>
@@ -85,6 +86,13 @@ export function SettingsPage({ capabilities }: Readonly<{
                 <span className={styles.cardIcon} aria-hidden="true"><ShieldCheck size={20} /></span>
                 <div><h3>Roles y permisos</h3><p>Perfiles reutilizables que determinan qué puede hacer cada persona.</p></div>
                 <ButtonLink to="/configuracion/roles" tone="secondary">{canManageRoles ? 'Administrar roles' : 'Consultar roles'}</ButtonLink>
+              </article>
+            ) : null}
+            {canManageBranch ? (
+              <article className={styles.administrationCard}>
+                <span className={styles.cardIcon} aria-hidden="true"><Building2 size={20} /></span>
+                <div><h3>Sucursal</h3><p>Zona horaria usada para presentar la operación local de esta estación.</p></div>
+                <ButtonLink to="/configuracion/sucursal" tone="secondary">Configurar sucursal</ButtonLink>
               </article>
             ) : null}
           </div>

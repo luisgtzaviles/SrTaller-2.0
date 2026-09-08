@@ -10,10 +10,12 @@ import type {
   LocalRuntimeConfiguration,
 } from '../../infrastructure/runtime/index.js';
 import {
+  BRANCH_SETTINGS_RUNTIME,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from './index.js';
 import type {
+  BranchSettingsRuntime,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
 } from './index.js';
@@ -87,6 +89,13 @@ type RegisteredStationsPersistenceAdapter = KyselyBranchRepositoryFactory;
         new KyselyStationCredentialVerifier(database),
     },
     {
+      provide: BRANCH_SETTINGS_RUNTIME,
+      inject: [KyselyStationCredentialVerifier],
+      useFactory: (
+        verifier: KyselyStationCredentialVerifier,
+      ): BranchSettingsRuntime => verifier,
+    },
+    {
       provide: TRUSTED_STATION_CONTEXT_RESOLVER,
       inject: [KyselyStationCredentialVerifier],
       useFactory: (verifier: KyselyStationCredentialVerifier): TrustedStationContextResolver =>
@@ -103,6 +112,7 @@ type RegisteredStationsPersistenceAdapter = KyselyBranchRepositoryFactory;
     },
   ],
   exports: [
+    BRANCH_SETTINGS_RUNTIME,
     TRUSTED_STATION_ADMISSION_VALIDATOR,
     TRUSTED_STATION_CONTEXT_RESOLVER,
   ],

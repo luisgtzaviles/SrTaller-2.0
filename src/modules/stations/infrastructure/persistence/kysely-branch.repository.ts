@@ -1,9 +1,9 @@
-import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import {
   useDatabasePersistenceExecutor,
   useTransactionalDatabasePersistenceExecutor,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
+  InternalDatabasePersistenceConnection,
   InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
@@ -270,7 +270,7 @@ class KyselyBranchRepository implements BranchRepositoryPort {
 }
 
 export function createKyselyBranchRepository(
-  connection: DatabaseConnection,
+  connection: InternalDatabasePersistenceConnection,
 ): BranchRepositoryPort {
   return new KyselyBranchRepository((operation) =>
     useDatabasePersistenceExecutor(connection, 'stations', operation),

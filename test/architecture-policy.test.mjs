@@ -45,17 +45,18 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
     'access->tenancy',
     'access->users',
     'repairs->access',
+    'repairs->stations',
     'repairs->tenancy',
     'stations->tenancy',
     'users->tenancy',
   ]);
 });
 
-test('policy v5 registers exact directed public module composition', async () => {
+test('policy v6 registers exact directed public module composition', async () => {
   const policy = JSON.parse(
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
-  assert.equal(policy.policyVersion, 5);
+  assert.equal(policy.policyVersion, 6);
   assert.deepEqual(policy.directedModuleComposition, {
     decorator: 'Module',
     edges: [
@@ -72,6 +73,12 @@ test('policy v5 registers exact directed public module composition', async () =>
           importSpecifier: '../stations/stations.module.js',
         },
         publicBindings: [
+          {
+            token: 'BRANCH_SETTINGS_RUNTIME',
+            contract: 'BranchSettingsRuntime',
+            consumerImportSpecifier: '../stations/index.js',
+            producerImportSpecifier: './index.js',
+          },
           {
             token: 'TRUSTED_STATION_ADMISSION_VALIDATOR',
             contract: 'TrustedStationAdmissionValidator',
@@ -115,6 +122,27 @@ test('policy v5 registers exact directed public module composition', async () =>
             token: 'USER_PRODUCT_RUNTIME',
             contract: 'UserProductRuntime',
             consumerImportSpecifier: '../users/index.js',
+            producerImportSpecifier: './index.js',
+          },
+        ],
+      },
+      {
+        consumer: 'repairs',
+        producer: 'stations',
+        consumerModule: {
+          file: 'src/modules/repairs/repairs.module.ts',
+          className: 'RepairsModule',
+        },
+        producerModule: {
+          file: 'src/modules/stations/stations.module.ts',
+          className: 'StationsModule',
+          importSpecifier: '../stations/stations.module.js',
+        },
+        publicBindings: [
+          {
+            token: 'BRANCH_SETTINGS_RUNTIME',
+            contract: 'BranchSettingsRuntime',
+            consumerImportSpecifier: '../stations/index.js',
             producerImportSpecifier: './index.js',
           },
         ],
@@ -288,6 +316,15 @@ test('registered module presentation and Health are the explicitly governed HTTP
           file: 'src/modules/access/access.module.ts',
           className: 'AccessModule',
           importSpecifier: './presentation/access-administration.controller.js',
+        },
+      },
+      'src/modules/access/presentation/branch-settings-administration.controller.ts': {
+        owner: 'access',
+        className: 'BranchSettingsAdministrationController',
+        composition: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: './presentation/branch-settings-administration.controller.js',
         },
       },
       'src/modules/access/presentation/access-session.controller.ts': {

@@ -25,6 +25,29 @@ ejecutables actuales basados en Kysely sobre `pg`.
 7. Un módulo no modifica datos propiedad de otro por acceso directo.
 8. Toda evolución de esquema debe ser compatible con el despliegue y recuperable.
 
+## Contrato temporal: almacenamiento y presentación
+
+- Todo instante persistido se almacena y compara en UTC. `Branch.timeZone`,
+  validada y persistida como identificador IANA, es la autoridad para
+  presentación local, días de negocio y futuros horarios de la sucursal.
+- Browser, server, sistema operativo y sesión de PostgreSQL no son autoridad
+  temporal de negocio. PostgreSQL no cambia su timezone por Branch y un offset
+  fijo no se persiste como sustituto de la zona IANA; etiquetas como
+  `(UTC-07:00) Hermosillo` son sólo UX.
+- Cambiar `Branch.timeZone` no reescribe instantes, `created_at`, `updated_at`
+  ni historial. Cambia únicamente la presentación local y la interpretación de
+  límites calendarios en consultas futuras: día local de Branch → límites IANA
+  → instantes UTC → consulta PostgreSQL.
+
+Toda superficie nueva debe clasificar explícitamente cada dato temporal como:
+
+1. instante absoluto almacenado en UTC;
+2. presentación local mediante `Branch.timeZone`; o
+3. fecha/día de negocio convertido desde el límite calendario IANA a UTC.
+
+Esta regla aplica antes de incorporar Caja, Clientes, Inventario, Finanzas,
+reportes, pagos, cierres, horarios o dashboards.
+
 ## Clasificación conceptual
 
 | Clase | Ejemplos preliminares | Tratamiento esperado |

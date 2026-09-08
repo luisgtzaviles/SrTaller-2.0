@@ -8,8 +8,8 @@ Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
 tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release. PBI-033 también está
 `Done`; PBI-025, PBI-034 y PBI-026 también están `Done`. SPRINT-02 tiene
-PBI-028 `Done candidate`, Current PBI `NONE` y WIP `0/1`; su checkpoint
-integrado incluye el slice PBI-037 sin convertirlo en WIP paralelo.
+PBI-028 `Done`, G5 `PASS`; PBI-038 es el Current PBI con WIP `1/1`. Su
+checkpoint integrado conserva el slice PBI-037 sin convertirlo en WIP paralelo.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
@@ -49,7 +49,7 @@ su clasificación explícita.
 | 25 | [PBI-025](pbis/PBI-025.md) PIN Credential Authentication | Identity / Security | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed |
 | 26 | [PBI-026](pbis/PBI-026.md) Contextual Authorization | Authorization / Security | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed; Critical / Large; G4 PASS |
 | 27 | [PBI-027](pbis/PBI-027.md) Branch Timezone Minimum | Architecture / Product | EPIC-001 | Done; Released: NO | Alta | Sprint 01 completed |
-| 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | Done candidate; Released: NO | Alta | SPRINT-02 closure candidate; High / Large; PR #37/PR #38 integrated, CI and Owner Acceptance PASS |
+| 28 | [PBI-028](pbis/PBI-028.md) Minimum Business Audit and Correlation | Operations / Security / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 closure PR #39 merged; G5 PASS |
 | 29 | [PBI-029](pbis/PBI-029.md) Secrets and External Configuration Foundation | Security / Operations | EPIC-001 | Done; risk acceptance, merge, CI main, cierre documental y Owner Acceptance PASS | Crítica | Cerrado; `Released: NO` |
 | 30 | [PBI-030](pbis/PBI-030.md) Materialize UI Foundation and Application Shell V1 | Product / Technical foundation / Quality | EPIC-001 | Done | Alta | Unassigned |
 | 31 | [PBI-031](pbis/PBI-031.md) Station Binding Administration | Administration / Security | EPIC-004 | Draft / Deferred | Crítica | Unassigned |
@@ -59,6 +59,7 @@ su clasificación explícita.
 | 35 | [PBI-035](pbis/PBI-035.md) Reinforced Authorization | Authorization / Security | EPIC-003 | Draft / Deferred | Crítica | Unassigned |
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
 | 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Integrated slice within PBI-028 | Alta | Product Mode local; no independent lifecycle or canonical delivery claim |
+| 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | In progress | Alta | SPRINT-02 current PBI; Small / Medium; Owner Functional Approval recorded |
 
 ## Interpretación
 
@@ -74,8 +75,9 @@ su clasificación explícita.
   completa ni hereda PASS actual.
 - PBI-025/PBI-026/PBI-028 fueron separados de Operational Session,
   Reinforced Authorization y Extended Observability respectivamente.
-- PBI-027 está `Done` tras su cierre documental canónico; `Released` y deploy
-  permanecen fuera de alcance.
+- PBI-027 está `Done` tras su cierre documental canónico; PBI-038 integra un
+  seguimiento aprobado sin reabrirlo. `Released` y deploy permanecen fuera de
+  alcance.
 - PBI-029 tiene threat model/DoR `PASS`, riesgo `CRITICAL` aceptado, merge
   funcional, CI autoritativo GREEN de `main`, Owner Acceptance, cierre
   documental integrado y CI post-cierre GREEN. Está `Done`; `Released` y deploy
@@ -122,5 +124,5 @@ su clasificación explícita.
 
 ## Próxima revisión
 
-Completar el CI exacto y focused review del cierre documental PBI-028. No
-iniciar otro PBI, liberar ni desplegar.
+Completar el CI exacto y focused review de PBI-038. No iniciar otro PBI,
+liberar ni desplegar.

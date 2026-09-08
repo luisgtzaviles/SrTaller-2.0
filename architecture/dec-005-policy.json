@@ -1,10 +1,10 @@
 {
-  "policyVersion": 5,
+  "policyVersion": 6,
   "allowedModules": ["access", "repairs", "stations", "tenancy", "users"],
   "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy", "users"],
-    "repairs": ["access", "tenancy"],
+    "repairs": ["access", "stations", "tenancy"],
     "stations": ["tenancy"],
     "tenancy": [],
     "users": ["tenancy"]
@@ -24,6 +24,11 @@
     ],
     "repairs": ["RepairsModuleContract"],
     "stations": [
+      "BRANCH_SETTINGS_RUNTIME",
+      "BranchSettingsRuntime",
+      "BranchSettingsScope",
+      "BranchTimeZone",
+      "OperationalDateTime",
       "StationsModuleContract",
       "TRUSTED_STATION_ADMISSION_VALIDATOR",
       "TRUSTED_STATION_CONTEXT_RESOLVER",
@@ -32,7 +37,11 @@
       "TrustedStationContext",
       "TrustedStationContextError",
       "TrustedStationContextResolver",
-      "isTrustedStationContext"
+      "branchLocalCalendarBoundaryToUtc",
+      "branchLocalCalendarDate",
+      "isTrustedStationContext",
+      "parseBranchTimeZone",
+      "presentOperationalDateTime"
     ],
     "tenancy": ["TenantId", "TenancyModuleContract", "parseTenantId"],
     "users": [
@@ -51,7 +60,7 @@
   "consumers": {
     "access": ["AppModule", "repairs"],
     "repairs": ["AppModule"],
-    "stations": ["access"],
+    "stations": ["access", "repairs"],
     "tenancy": ["access", "stations", "users"],
     "users": ["access", "AppModule"]
   },
@@ -151,6 +160,12 @@
         },
         "publicBindings": [
           {
+            "token": "BRANCH_SETTINGS_RUNTIME",
+            "contract": "BranchSettingsRuntime",
+            "consumerImportSpecifier": "../stations/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
             "token": "TRUSTED_STATION_ADMISSION_VALIDATOR",
             "contract": "TrustedStationAdmissionValidator",
             "consumerImportSpecifier": "../stations/index.js",
@@ -193,6 +208,27 @@
             "token": "USER_PRODUCT_RUNTIME",
             "contract": "UserProductRuntime",
             "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
+      },
+      {
+        "consumer": "repairs",
+        "producer": "stations",
+        "consumerModule": {
+          "file": "src/modules/repairs/repairs.module.ts",
+          "className": "RepairsModule"
+        },
+        "producerModule": {
+          "file": "src/modules/stations/stations.module.ts",
+          "className": "StationsModule",
+          "importSpecifier": "../stations/stations.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "BRANCH_SETTINGS_RUNTIME",
+            "contract": "BranchSettingsRuntime",
+            "consumerImportSpecifier": "../stations/index.js",
             "producerImportSpecifier": "./index.js"
           }
         ]
@@ -377,6 +413,15 @@
           "file": "src/modules/access/access.module.ts",
           "className": "AccessModule",
           "importSpecifier": "./presentation/access-administration.controller.js"
+        }
+      },
+      "src/modules/access/presentation/branch-settings-administration.controller.ts": {
+        "owner": "access",
+        "className": "BranchSettingsAdministrationController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/branch-settings-administration.controller.js"
         }
       },
       "src/modules/access/presentation/access-session.controller.ts": {
@@ -1501,10 +1546,13 @@
     "src/modules/access/infrastructure/security/node-session-token.ts",
     "src/modules/access/presentation/access-session-cookie.ts",
     "src/modules/access/presentation/access-administration.controller.ts",
+    "src/modules/access/presentation/branch-settings-administration.controller.ts",
     "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/stations/index.ts",
     "src/modules/stations/application/branch-time-zone.ts",
+    "src/modules/stations/application/branch-settings-runtime.service.ts",
+    "src/modules/stations/application/ports/branch-settings-runtime.port.ts",
     "src/modules/stations/application/ports/local-station-bootstrap-runtime.port.ts",
     "src/modules/stations/application/ports/branch-repository.port.ts",
     "src/modules/stations/application/contracts/trusted-station-context.ts",

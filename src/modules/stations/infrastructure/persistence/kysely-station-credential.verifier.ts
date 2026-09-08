@@ -13,6 +13,12 @@ import type {
   TrustedStationContext,
 } from '../../index.js';
 import { isTrustedStationContext } from '../../index.js';
+import { BranchSettingsRuntimeService } from '../../application/branch-settings-runtime.service.js';
+import type {
+  BranchSettingsRuntime,
+  BranchSettingsScope,
+} from '../../application/ports/branch-settings-runtime.port.js';
+import { createKyselyBranchRepository } from './kysely-branch.repository.js';
 import type { StationCredentialVerifier, VerifiedStationCredential } from '../../application/ports/station-credential.port.js';
 import { parseStationId } from '../../domain/station.js';
 import { readStationCredentialCookie } from '../http/station-credential-cookie.js';
@@ -26,8 +32,22 @@ function validCredential(value: string): boolean {
 }
 
 export class KyselyStationCredentialVerifier
-  implements StationCredentialVerifier, TrustedStationAdmissionValidator {
-  constructor(private readonly connection: InternalDatabasePersistenceConnection) {}
+  implements StationCredentialVerifier, TrustedStationAdmissionValidator, BranchSettingsRuntime {
+  private readonly branchSettings: BranchSettingsRuntime;
+
+  constructor(private readonly connection: InternalDatabasePersistenceConnection) {
+    this.branchSettings = new BranchSettingsRuntimeService(
+      createKyselyBranchRepository(connection),
+    );
+  }
+
+  readTimeZone(scope: BranchSettingsScope) {
+    return this.branchSettings.readTimeZone(scope);
+  }
+
+  updateTimeZone(scope: BranchSettingsScope, timeZone: unknown) {
+    return this.branchSettings.updateTimeZone(scope, timeZone);
+  }
 
   async verify(rawCredential: string): Promise<VerifiedStationCredential | null> {
     if (!validCredential(rawCredential)) return null;

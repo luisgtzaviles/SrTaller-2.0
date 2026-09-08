@@ -9,6 +9,7 @@ import { DashboardPage } from './pages/DashboardPage.js';
 import { RepairDetailPage } from './pages/RepairDetailPage.js';
 import { RepairsPage } from './pages/RepairsPage.js';
 import { SettingsPage } from './pages/SettingsPage.js';
+import { BranchSettingsPage } from './pages/BranchSettingsPage.js';
 import { RolesPage } from './pages/RolesPage.js';
 import { UsersPage } from './pages/UsersPage.js';
 import { SessionProvider } from './session/SessionProvider.js';
@@ -42,7 +43,7 @@ export function App(): React.JSX.Element {
 
   return (
     <SessionProvider>
-      {({ session, capabilities, administrationCapabilities, csrfToken, busy, errorMessage, focusTarget, beginUserSwitch, logout }) => (
+      {({ session, timeZone, capabilities, administrationCapabilities, csrfToken, busy, errorMessage, focusTarget, beginUserSwitch, logout }) => (
         <ApplicationShell
           actor={session}
           capabilities={capabilities}
@@ -55,10 +56,11 @@ export function App(): React.JSX.Element {
           <Suspense fallback={<Spinner label="Cargando superficie" />}>
             <Routes location={backgroundLocation ?? location}>
               <Route path="/" element={<DashboardPage />} />
-              <Route path="/reparaciones" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairsPage /></CapabilityBoundary>} />
+              <Route path="/reparaciones" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairsPage timeZone={timeZone} /></CapabilityBoundary>} />
               <Route path="/reparaciones/nueva" element={<AccessDeniedPage />} />
-              <Route path="/reparaciones/:id" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairDetailPage capabilities={capabilities} csrfToken={csrfToken} sessionId={session.sessionId} /></CapabilityBoundary>} />
+              <Route path="/reparaciones/:id" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairDetailPage capabilities={capabilities} csrfToken={csrfToken} sessionId={session.sessionId} timeZone={timeZone} /></CapabilityBoundary>} />
               <Route path="/configuracion" element={<SettingsPage capabilities={administrationCapabilities} />} />
+              <Route path="/configuracion/sucursal" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="access_matrix.manage"><BranchSettingsPage csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/configuracion/roles" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="access_matrix.read"><RolesPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/configuracion/usuarios" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="users.read"><UsersPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
               {UiCatalogPage ? <Route path="/__internal/ui-catalog" element={<UiCatalogPage />} /> : null}
@@ -66,7 +68,7 @@ export function App(): React.JSX.Element {
             </Routes>
             {backgroundLocation && hasOperationalCapability(capabilities, 'repairs.read') ? (
               <Routes>
-                <Route path="/reparaciones/:id" element={<RepairDetailPage capabilities={capabilities} csrfToken={csrfToken} sessionId={session.sessionId} host="overlay" />} />
+                <Route path="/reparaciones/:id" element={<RepairDetailPage capabilities={capabilities} csrfToken={csrfToken} sessionId={session.sessionId} timeZone={timeZone} host="overlay" />} />
               </Routes>
             ) : null}
           </Suspense>
