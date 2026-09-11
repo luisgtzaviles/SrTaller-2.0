@@ -26,11 +26,11 @@ Roles/Capabilities/Assignments están integrados y cerrados canónicamente. Los
 writes integrados de Repairs aún usan actor sintético fuera del alcance ya
 entregado. PBI-025, PBI-034, PBI-026, PBI-028 y PBI-038 están `Done`; G4 y G5
 están `PASS`. PBI-038 integra la foundation temporal IANA y límites locales
-sin modificar los instantes UTC. PBI-039 es el único PBI actual en SPRINT-02,
-WIP es `1/1`: PR #42 tiene Full Verification, CI / PR Readiness y CI
-autoritativa de la remediación `PASS`; los findings de la revisión independiente
-están remediados y el gate vigente es re-review. Todavía no existe merge. No
-hay siguiente candidato seleccionado.
+sin modificar los instantes UTC. PBI-039 está en `Done candidate`, WIP es
+`0/1`: PR #42 y los hotfixes post-deploy #43/#44 están integrados, la CI exacta
+de `main` está verde y Preview pasó validación autenticada. El gate vigente es
+el PR documental de cierre más su CI exacta. No hay siguiente candidato
+seleccionado.
 
 ## Jerarquía de autoridad documental
 
@@ -104,11 +104,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI for remediation implementation | Green: run `34567516069` attempt 3 on PBI-039 head `e51729c1d477e62718b24638f6f83332cd66bf95`; not merged |
+| Authoritative CI for integrated PBI-039 runtime | Green: exact-main run `34619271236` on `0d1c5760ce962d17a8292b841f5de43a8cb453a7` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `1/1` |
-| Current / next PBI | Current: PBI-039 ready for independent re-review in PR #42; next: NONE selected |
-| Current blocking gate | Independent re-review; merge/deploy remain separate and unauthorized |
+| Sprint | SPRINT-02 `Active`; WIP `0/1` |
+| Current / next PBI | Current: PBI-039 `Done candidate` in canonical closure; next: NONE selected |
+| Current blocking gate | Closure documentation PR merge plus exact-main CI; Production remains unauthorized |
 | GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |

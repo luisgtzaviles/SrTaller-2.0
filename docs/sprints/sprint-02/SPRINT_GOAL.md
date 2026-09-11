@@ -5,8 +5,8 @@
 - **Sprint:** SPRINT-02.
 - **Estado:** Active.
 - **Periodo:** TBD.
-- **PBI actual:** `PBI-039` — Customer Minimum + New Repair Classic 2.0.
-- **WIP:** 1/1.
+- **PBI actual:** `PBI-039` — Done candidate / cierre documental.
+- **WIP:** 0/1.
 - **Autoridad:** PBI-038 cerró por PR #40 y CI exacta de `main`; un PBI nuevo
   requiere selección, readiness y autorización Owner. No existe autorización
   de release o deploy.
@@ -25,10 +25,9 @@ Operational Note, manteniendo límites tenant/Branch/Station y deny-by-default.
 4. PBI-028 — Minimum Business Audit and Correlation.
 5. Operational Note como primera prueba integral con actor real.
 6. PBI-039 — Customer Minimum + New Repair Classic 2.0 / Guided V2, slice
-   funcional local congelado y aceptado por Owner; UI Verification, Hardening
-   Batch 1, Full Verification y CI / PR Readiness PASS; PR #42 con CI final
-   `34564110272` PASS, revisión independiente `CHANGES REQUIRED` y remediación
-   exact-head `34567516069` attempt 3 PASS; listo para re-review.
+   aceptado, verificado, re-reviewed e integrado. PR #42 más hotfixes Preview
+   #43/#44 tienen CI exacta de `main` verde; runtime `0d1c576…` validado con
+   create/detail/reload/worklist. Cierre documental `Done candidate`.
 
 Sólo un PBI puede estar en ejecución/cierre. El orden no inicia el siguiente
 PBI antes de cerrar canónicamente el anterior.
@@ -49,14 +48,13 @@ PBI antes de cerrar canónicamente el anterior.
 - [x] PBI-038 — Timezone Foundation Integration and Hardening: PR #40 merge
   `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN;
   `Done`, sin release ni deploy.
-- [x] PBI-039 Customer mínimo + New Repair Classic 2.0 / Guided V2 congelado y
-  aceptado funcionalmente; UI Verification, Hardening, Full Verification, CI /
-  PR Readiness y CI autoritativa de la remediación completadas. La revisión
-  independiente anterior exigió cambios ya remediados; no implica merge ni
-  `Done`.
-- [ ] Released: NO; deploy: NO.
+- [x] PBI-039 Customer mínimo + New Repair Classic 2.0 / Guided V2 aceptado,
+  formalmente verificado, integrado y validado en Preview; queda únicamente el
+  PR documental cuyo merge + CI exacta materializa `Done`.
+- [x] Preview deploy and post-deploy validation: PASS on `0d1c576…`.
+- [ ] Production release/deploy: NO; not authorized.
 
 ## Próxima revisión
 
-- **Fecha:** al concluir la re-review de PBI-039.
-- **Disparador:** fallo de reverificación/CI, nuevo finding o conclusión del gate.
+- **Fecha:** al integrar el cierre documental de PBI-039.
+- **Disparador:** CI exacta del cierre o nueva selección Owner del roadmap.
