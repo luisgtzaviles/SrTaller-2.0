@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { once } from 'node:events';
 import { createServer } from 'node:net';
 import { resolve } from 'node:path';
@@ -75,10 +76,19 @@ try {
 
   assert.equal(root.status, 200);
   assert.match(root.headers.get('content-type') ?? '', /^text\/html/u);
+  assert.equal(root.headers.get('cache-control'), 'no-store');
+  assert.equal(
+    root.headers.get('etag'),
+    `"${createHash('sha256').update(rootHtml).digest('base64url')}"`,
+  );
   assert.match(rootHtml, /<title>SR Taller 2\.0 · Preview<\/title>/u);
   assert.equal(spa.status, 200);
+  assert.equal(spa.headers.get('cache-control'), 'no-store');
+  assert.equal(spa.headers.get('etag'), root.headers.get('etag'));
   assert.equal(spaHtml, rootHtml);
   assert.equal(catalog.status, 200);
+  assert.equal(catalog.headers.get('cache-control'), 'no-store');
+  assert.equal(catalog.headers.get('etag'), root.headers.get('etag'));
   assert.equal(catalog.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
   assert.deepEqual(await live.json(), { status: 'live' });
   assert.deepEqual(await ready.json(), { status: 'ready' });

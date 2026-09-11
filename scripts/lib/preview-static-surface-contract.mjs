@@ -12,7 +12,10 @@ const requiredFragments = Object.freeze([
   "request.accepts('html') === false",
   'await access(indexFile);',
   "await readFile(indexFile, 'utf8');",
+  "createHash('sha256').update(indexSource).digest('base64url')",
   'application.useStaticAssets(publicDirectory, { index: false });',
+  "response.setHeader('Cache-Control', 'no-store');",
+  "response.setHeader('ETag', indexEtag);",
   'response.sendFile(indexFile);',
 ]);
 

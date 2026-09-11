@@ -3,14 +3,16 @@
 Milestone / Functional Goal: New Repair Classic 2.0 + Guided V2
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-039
-Status: Review remediation PASS; ready for independent re-review
+Status: PR #42 merged; Preview cache remediation locally verified
 WIP: 1/1
 Progress: Functional Slice accepted; UI Verification PASS; Hardening PASS; Full Verification PASS; CI / PR Readiness PASS; PR CI PASS
-Current: Remediation implementation head `e51729c…`; authoritative run
-`34567516069` attempt 3 PASS
-Next: Independent re-review of PR #42
+Current: Cache/ETag correction passed authoritative Full Verification campaign
+`local-full-verification-20260911145336-6c04e57c8a5d`, 12/12 stages and cleanup
+PASS, candidate fingerprint `9a7a49d9…`
+Next: Integrate and redeploy the Preview entrypoint cache correction; then
+complete post-deploy validation and PBI closure
 Blocked: None
-Last updated: 2026-09-11 00:20 MST
+Last updated: 2026-09-11 07:58 MST
 
 ## PBI-039 Functional Slice Freeze — Owner Accepted
 
@@ -201,6 +203,30 @@ review, merge, deploy, release or `Done`.
   consumed the two exact-run manifests and produced `equivalent: true`, zero
   differences and identical comparable hash `9fa4a5cf…`
 - [x] Hand off PR #42 as ready for independent re-review
+
+## Merge, Preview deploy and post-deploy validation
+
+- [x] Independent re-review accepted the technical and documentation
+  remediation; the authenticated PR author recorded the formal PASS as a
+  review comment because GitHub disallows self-approval
+- [x] Merge PR #42 normally at exact head `6733765…`; resulting `main` merge
+  commit `6c04e57…`
+- [x] Pass exact-main authoritative CI run `34604591354`, including run-1,
+  run-2, comparison, PostgreSQL material and cleanup
+- [x] Apply all 51 migrations to Preview from the same image and restore the
+  HTTP command explicitly
+- [x] Confirm Preview health (`/livez` 200, `/readyz` 200, unknown API 404) and
+  exact deployed source `6c04e57…`
+- [!] Post-deploy UI validation found a stale cached `index.html` whose weak
+  size/mtime ETag survived a content-hash change and referenced a removed
+  hashed bundle; bounded cache/ETag remediation is in progress
+- [x] Reverify the cache remediation without changing accepted PBI-039 product
+  behavior: authoritative Full Verification 12/12 stages and cleanup PASS
+- [ ] Integrate the cache remediation through its governed PR and exact-main CI
+- [ ] Redeploy Preview and complete authenticated New Repair create/detail/
+  reload smoke with synthetic development-only data
+- [ ] Reconcile closure documentation, merge its governed PR, pass exact-main
+  CI and archive this checklist without selecting the next PBI
 
 El commit posterior que materialice únicamente este registro documental no
 altera el candidato funcional; su propio HEAD debe conservar CI autoritativa
@@ -913,8 +939,10 @@ to Platform and no cross-Tenant signal is exposed in this slice.
 - [x] PR #42 / authoritative final CI run `34564110272` on exact head
   `f32f41d…` — PASS
 - [x] Independent review — CHANGES REQUIRED; remediation authorized
-- [ ] Independent re-review
-- [ ] Merge
+- [x] Independent re-review — PASS recorded as a review comment due GitHub
+  self-approval restriction
+- [x] Merge — PR #42 merged as `6c04e57…`
+- [!] Preview post-deploy validation — cache/ETag defect under remediation
 
 > This checklist is operational visibility only. It records the explicit Owner
 > Acceptance above, but does not grant authority or declare PBI-039 `Done`,
