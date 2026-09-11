@@ -5,7 +5,7 @@
 - **Estado:** Active; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 Done; Current
   PBI PBI-039; WIP 1/1; Functional Slice Frozen / Owner Accepted; UI
   Verification, Hardening, Full Verification, CI / PR Readiness y PR CI PASS;
-  independent review CHANGES REQUIRED; remediation in progress.
+  independent review CHANGES REQUIRED; remediation PASS y lista para re-review.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
@@ -24,13 +24,13 @@
 | Integración de slice local grande | High delivery | freeze explícito, fingerprint pre/post y secuencia UI Verification -> hardening -> full verify -> CI -> review | Control ejecutado; PR #42 sigue sin merge |
 | Orquestación local incompleta | High test infrastructure | `verify:full` fail-fast combina base, PostgreSQL, Preview, smoke, cleanup y evidencia | Cerrado; Full Verification PASS |
 | CI omite dos tests PostgreSQL PBI-039 | High delivery | Customer phone y User preferences en ambos legs y comparison | Cerrado; run `34564110272` PASS |
-| Create Repair omite identidad canónica del tipo en idempotencia | High persistence | incluir `canonicalDeviceTypeId`; replay exacto, incompatibilidad y concurrencia PostgreSQL; full reverify + CI exacta | Finding de review en remediación; bloquea re-review |
-| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Finding de review en remediación |
+| Create Repair omite identidad canónica del tipo en idempotencia | High persistence | incluir `canonicalDeviceTypeId`; replay exacto, incompatibilidad y concurrencia PostgreSQL; full reverify + CI exacta | Remediado; Full Verification de riesgo alto y run `34567516069` attempt 3 PASS |
+| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Remediado; documentos vivos reconciliados para re-review |
 
 Un Critical nuevo no previsto, criptografía custom, secreto remoto o cambio
 destructivo obliga a detenerse. El Critical conocido de PBI-025 no se rebaja.
 
 ## Próxima revisión
 
-- **Fecha:** al concluir la remediación y re-review de PBI-039.
+- **Fecha:** al concluir la re-review de PBI-039.
 - **Disparador:** nuevo riesgo material, fallo de reverificación/CI o cambio de controles.

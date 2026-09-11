@@ -3,8 +3,8 @@
 ## Estado del documento
 
 - **Estado:** Snapshot de baseline integrada más PBI-039 en PR #42;
-  Authoritative CI `PASS`; revisión independiente `CHANGES REQUIRED` y
-  remediación en curso.
+  revisión independiente `CHANGES REQUIRED`, remediación y Authoritative CI
+  exacta `PASS`; listo para re-review independiente.
 - **Baseline Git integrada observada:** `main` y `origin/main` local en
   `94065dfedc55234fd1738a6674289278aa49d224`, merge documental PR #41.
 - **Última baseline de producto con CI autoritativo registrada:**
@@ -16,12 +16,14 @@
   `FUNCTIONAL SLICE FROZEN — OWNER ACCEPTED`, Formal UI Verification `PASS` y
   Hardening Batch 1 `PASS` y Full Verification local `PASS` sobre el candidate
   fingerprint registrado. CI / PR Readiness es PASS, el PR #42 está abierto y
-  la campaña autoritativa final `34564110272` sobre `f32f41d…` está verde. La
-  revisión independiente encontró un finding HIGH de idempotencia Create
-  Repair y uno MEDIUM documental; la remediación está autorizada y el
-  candidato aún no está integrado.
-- **Freshness remota:** `git fetch --prune origin` ejecutado el 2026-09-10;
+  remediación quedó publicada en `e51729c…` y la campaña autoritativa
+  `34567516069` attempt 3 está verde. Los findings HIGH de idempotencia Create
+  Repair y MEDIUM documental están remediados; el candidato está listo para
+  re-review y aún no está integrado.
+- **Freshness remota:** `git fetch origin` ejecutado el 2026-09-11;
   `origin/main` observado en `94065dfedc55234fd1738a6674289278aa49d224`.
+- **Repositorio GitHub:** público; `main` continúa sin branch protection ni
+  ruleset y no existe autoridad de merge.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, release, deploy, migración ni infraestructura.
 
@@ -50,9 +52,10 @@ PBI-039 — Customer Minimum + New Repair Classic 2.0 / Guided V2 — completó 
 construcción Functional First, obtuvo aceptación Owner del slice
 congelado, Formal UI Verification `PASS`, Hardening Batch 1 `PASS` y
 Authoritative Full Verification local `PASS` y CI / PR Readiness `PASS`. El
-candidato está comprometido y publicado. El PR #42 y su CI autoritativa final
-están verdes, pero la revisión independiente concluyó `CHANGES REQUIRED`; la
-remediación actual no declara merge, release ni deploy.
+candidato está comprometido y publicado. La revisión independiente concluyó
+`CHANGES REQUIRED`; ambos findings quedaron remediados, Full Verification de
+riesgo alto y CI exact-head pasaron, y PR #42 está listo para re-review. Esto
+no declara merge, release ni deploy.
 
 La campaña autoritativa `local-full-verification-20260911031648-94065dfedc55`
 ejecutó los 12 stages de `verify:full` sobre el candidato
@@ -74,6 +77,19 @@ posterior quedó validada por la campaña final `34564110272` sobre head
 terminaron `SUCCESS`. La revisión independiente de ese head quedó registrada
 como `CHANGES REQUIRED`; no se reutilizará esa CI para el candidato remediado.
 
+La remediación se publicó como
+`e51729c1d477e62718b24638f6f83332cd66bf95`. El run exact-head
+`34567516069` conservó run-1/run-2 completos en `SUCCESS`; tras desaparecer el
+bloqueo externo de Billing, su attempt 3 ejecutó `comparison` y terminó
+`SUCCESS`. La merge ref `3aef28ac93db7b4b0b86c052461a31c3da1023e5`
+tiene como padres la base y el head exactos y el mismo tree que `e51729c…`.
+La comparación fue `equivalent: true`, sin diferencias y con hash comparable
+`9fa4a5cf…` idéntico entre ambos legs.
+
+El commit posterior que materialice únicamente este registro documental no
+altera el candidato funcional, pero su propio HEAD debe conservar CI
+autoritativa verde antes del handoff.
+
 ## Git y CI
 
 | Hecho | Estado |
@@ -92,7 +108,7 @@ como `CHANGES REQUIRED`; no se reutilizará esa CI para el candidato remediado.
 | PR PBI-039 | [#42](https://github.com/luisgtzaviles/SrTaller-2.0/pull/42), abierto contra `main`, mergeable |
 | CI PBI-039 final antes de review | Run `34564110272` SUCCESS sobre `f32f41d…`; run-1 `103152586085`, run-2 `103152585891`, comparison `103156077697` |
 | Independent review | `CHANGES REQUIRED` sobre `f32f41d…`: HIGH idempotencia Create Repair + MEDIUM documentación viva |
-| Review remediation | En curso; la evidencia anterior no valida el nuevo candidato hasta completar Full Verification y CI exacta |
+| Review remediation | PASS sobre `e51729c…`; Full Verification de riesgo alto PASS y run `34567516069` attempt 3 con run-1/run-2/comparison SUCCESS; listo para re-review |
 | Migraciones locales | 51 archivos / 51 aplicadas / 0 pendientes / 0 huérfanas / 0 timestamps duplicados; 20 introducidas por PBI-039 |
 | Toolchain | Node `24.18.0` y pnpm `11.15.1`; `scripts/pnpm-governed` resuelve los pins del repositorio y rechaza/bypassea el Node ambiental `25.9.0` |
 | PR #37 funcional | merge ordinario `ab8e8ba9a1274030e27ad920d61c66ed461bf122` |
@@ -158,7 +174,8 @@ riesgo alto terminó PASS en la campaña
 fingerprint `c1f8273aa94ad362cdd6e73ddabe83e3f5eb03ebe99c14fa06e5f54778ca1513`
 idéntico before/after, PostgreSQL 17 + 2 material, Preview-like, smoke y cleanup
 PASS. Esta actualización documental es posterior a esa huella. La CI exacta
-del nuevo head sigue siendo obligatoria antes de re-review.
+del head remediado terminó `PASS` en run `34567516069` attempt 3. El siguiente
+gate es re-review independiente.
 
 ## Límites vigentes
 
@@ -178,7 +195,7 @@ del nuevo head sigue siendo obligatoria antes de re-review.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
-| Current PBI | `PBI-039` — PR #42 / review remediation; In progress |
+| Current PBI | `PBI-039` — PR #42 / ready for independent re-review; In progress |
 | WIP | `1/1` |
 | PBI-028 | `Done`; `Released: NO` |
 | G5 AUDIT | `PASS` |
@@ -186,12 +203,12 @@ del nuevo head sigue siendo obligatoria antes de re-review.
 | PBI-038 | `Done`; `Released: NO`; `Branch.timeZone: America/Hermosillo`; UTC storage invariant `PASS` |
 | Next candidate | `NONE` — no se seleccionó trabajo posterior |
 | Formal UI Verification | `PASS — READY FOR HARDENING` |
-| Next PBI-039 gate | High-risk Full Verification, exact-head CI and independent re-review |
+| Next PBI-039 gate | Independent re-review |
 | Hardening / orchestration / full verify / readiness / CI | PASS / PASS / PASS / PASS / PASS |
 | PR / merge / deploy | #42 open / not authorized / not authorized |
 
 ## Próxima acción
 
-Completar la remediación, ejecutar Full Verification de riesgo alto, publicar
-sin force push y exigir CI autoritativa exacta antes de re-review. La CI previa
-no autoriza merge; no ejecutar merge, release, deploy ni iniciar otro PBI.
+Realizar la re-review independiente de PR #42 sobre el candidato remediado. La
+CI verde no autoriza merge; no ejecutar merge, release, deploy ni iniciar otro
+PBI.

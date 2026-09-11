@@ -3,13 +3,14 @@
 Milestone / Functional Goal: New Repair Classic 2.0 + Guided V2
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-039
-Status: Independent review — CHANGES REQUIRED; remediation in progress
+Status: Review remediation PASS; ready for independent re-review
 WIP: 1/1
 Progress: Functional Slice accepted; UI Verification PASS; Hardening PASS; Full Verification PASS; CI / PR Readiness PASS; PR CI PASS
-Current: Prepare and publish the coherent review-remediation commit
-Next: Authoritative exact-head CI, then independent re-review
+Current: Remediation implementation head `e51729c…`; authoritative run
+`34567516069` attempt 3 PASS
+Next: Independent re-review of PR #42
 Blocked: None
-Last updated: 2026-09-10 22:25 MST
+Last updated: 2026-09-11 00:20 MST
 
 ## PBI-039 Functional Slice Freeze — Owner Accepted
 
@@ -194,9 +195,16 @@ review, merge, deploy, release or `Done`.
   12/12 PASS, fingerprint `c1f8273a…` identical before/after, cleanup PASS
 - [x] Reconcile Roadmap, delivery workflow, SPRINT-02, PBI-039, checklist and
   current-state evidence without claiming merge or `Done`
-- [ ] Commit and push the same PR branch without force
-- [ ] Require authoritative exact-head CI run-1, run-2 and comparison PASS
-- [ ] Hand off PR #42 as ready for independent re-review
+- [x] Commit `e51729c…` and push the same PR branch without force
+- [x] Require authoritative exact-head CI run-1, run-2 and comparison PASS:
+  run `34567516069` attempt 3 is `SUCCESS`; comparison job `103181336253`
+  consumed the two exact-run manifests and produced `equivalent: true`, zero
+  differences and identical comparable hash `9fa4a5cf…`
+- [x] Hand off PR #42 as ready for independent re-review
+
+El commit posterior que materialice únicamente este registro documental no
+altera el candidato funcional; su propio HEAD debe conservar CI autoritativa
+verde antes del handoff.
 
 ## Current Functional Goal
 

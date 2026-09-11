@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 activo con PBI-039 en remediación de
-  revisión independiente dentro del PR #42.
+- **Estado:** Roadmap aprobado; SPRINT-02 activo con PBI-039 remediado y listo
+  para re-review independiente dentro del PR #42.
 - **Baseline Git observada:** `main` y `origin/main` local en
   `94065dfedc55234fd1738a6674289278aa49d224`; la última baseline de producto
   con CI autoritativo registrada permanece en `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`,
@@ -13,15 +13,15 @@
 - **Fase:** Operational Authentication & Authorization.
 - **Checkpoint alcanzado:** Functional Slice Owner Accepted, Formal UI
   Verification `PASS`, Hardening `PASS`, Authoritative Full Verification
-  `PASS`, CI / PR Readiness `PASS` y CI autoritativa del PR `PASS`; la revisión
-  independiente concluyó `CHANGES REQUIRED` y la remediación está en curso.
+  `PASS`, CI / PR Readiness `PASS` y CI autoritativa exacta de la remediación
+  `PASS`; la revisión independiente anterior concluyó `CHANGES REQUIRED` y
+  ambos findings están remediados.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `PBI-039` — Customer Minimum + New Repair Classic 2.0.
 - **Siguiente PBI candidato:** `NONE`.
-- **Blocking gate:** cerrar los findings de revisión, reverificar el candidato
-  de riesgo alto y obtener CI autoritativa exacta antes de re-review; merge,
-  release y deploy conservan gates propios.
+- **Blocking gate:** re-review independiente; merge, release y deploy conservan
+  gates propios.
 - **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
@@ -103,10 +103,10 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Phase | Operational Authentication & Authorization |
 | Sprint | SPRINT-02 |
 | Sprint status | Active — WIP=1/1 |
-| Current PBI | PBI-039 — PR #42 / review remediation; In progress |
+| Current PBI | PBI-039 — PR #42 / ready for independent re-review; In progress |
 | Next PBI candidate | NONE |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | Review remediation + high-risk reverify + exact-head CI; merge/release/deploy no inferidos |
+| Blocking gate | Independent re-review; merge/release/deploy no inferidos |
 
 ## Fases aprobadas
 
@@ -149,8 +149,10 @@ funcional está congelado y aceptado por Owner, pero permanece `In progress`,
 WIP `1/1`. Formal UI Verification, Hardening, Authoritative Full Verification,
 CI / PR Readiness y la CI autoritativa final `34564110272` del PR #42 pasaron.
 La revisión independiente sobre `f32f41d…` concluyó `CHANGES REQUIRED` por un
-finding HIGH de idempotencia y uno MEDIUM documental. La remediación vigente no
-autoriza merge, release, deploy ni trabajo posterior.
+finding HIGH de idempotencia y uno MEDIUM documental. Ambos quedaron
+remediados en `e51729c…`; la reverificación de riesgo alto y el run exact-head
+`34567516069` attempt 3 pasaron. El siguiente gate es re-review independiente;
+esto no autoriza merge, release, deploy ni trabajo posterior.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización
@@ -221,8 +223,8 @@ G5 es `PASS`; PBI-038 está `Done` después de PR #40 merge
 `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN.
 Current PBI es PBI-039, WIP es `1/1`, su Functional Slice está Frozen / Owner
 Accepted, Formal UI Verification, Hardening, Full Verification, CI / PR
-Readiness y PR CI están en PASS. La revisión independiente del PR #42 exige
-remediación antes de re-review; Next candidate es `NONE`.
+Readiness y PR CI exact-head están en PASS. La remediación de los findings de
+la revisión independiente está lista para re-review; Next candidate es `NONE`.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.
