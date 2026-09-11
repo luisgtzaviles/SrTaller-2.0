@@ -2,21 +2,22 @@
 
 ## Estado del documento
 
-- **Estado:** Snapshot de baseline integrada más PBI-039 local; Authoritative
-  Full Verification local `PASS`; CI / PR Readiness no iniciado.
+- **Estado:** Snapshot de baseline integrada más PBI-039 local; CI / PR
+  Readiness `PASS`; listo para autorización Owner de creación de PR.
 - **Baseline Git integrada observada:** `main` y `origin/main` local en
   `94065dfedc55234fd1738a6674289278aa49d224`, merge documental PR #41.
 - **Última baseline de producto con CI autoritativo registrada:**
   `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`, run `34280510716`, `SUCCESS`;
   VC-024 run-1, run-2 y comparison verdes.
 - **PBI-039 local:** branch `feature/pbi-039-customer-minimum-new-repair` sobre
-  `94065dfedc55234fd1738a6674289278aa49d224`, con cambios sin commit;
+  `94065dfedc55234fd1738a6674289278aa49d224`, con candidato funcional y de
+  infraestructura en `8b1d91efeafe58c7b56e7b7af2a955d39d635c10`;
   `FUNCTIONAL SLICE FROZEN — OWNER ACCEPTED`, Formal UI Verification `PASS` y
   Hardening Batch 1 `PASS` y Full Verification local `PASS` sobre el candidate
-  fingerprint registrado. No existe candidato integrado y CI no se ha
-  ejecutado.
-- **Freshness remota:** no se ejecutó fetch/pull para este gate documental; la
-  igualdad con `origin/main` describe únicamente la referencia local observada.
+  fingerprint registrado. CI / PR Readiness es PASS, pero no existe candidato
+  integrado, CI no se ha ejecutado y el PR no fue creado.
+- **Freshness remota:** `git fetch --prune origin` ejecutado el 2026-09-10;
+  `origin/main` observado en `94065dfedc55234fd1738a6674289278aa49d224`.
 - **Regla:** este documento describe estado; no autoriza implementación,
   merge, release, deploy, migración ni infraestructura.
 
@@ -44,8 +45,9 @@ exact-main CI está verde. `Released: NO`; no se autorizó deploy.
 PBI-039 — Customer Minimum + New Repair Classic 2.0 / Guided V2 — completó su
 construcción Functional First local, obtuvo aceptación Owner del slice
 congelado, Formal UI Verification `PASS`, Hardening Batch 1 `PASS` y
-Authoritative Full Verification local `PASS`. Esto no convierte el WIP sin
-commit en código integrado y no declara CI, PR, merge, release ni deploy.
+Authoritative Full Verification local `PASS` y CI / PR Readiness `PASS`. El
+candidato está comprometido localmente y limpio, pero no está publicado ni
+integrado; no declara CI, PR, merge, release ni deploy.
 
 La campaña autoritativa `local-full-verification-20260911031648-94065dfedc55`
 ejecutó los 12 stages de `verify:full` sobre el candidato
@@ -54,6 +56,13 @@ Los fingerprints before/after fueron idénticos, cleanup terminó `PASS` y la
 evidencia JSON quedó fuera del repositorio. La reconciliación documental
 posterior registra el resultado sin afirmar que ese WIP esté integrado.
 
+La remediación de delivery se comprometió en
+`8b1d91efeafe58c7b56e7b7af2a955d39d635c10`. Dos campañas completas sobre ese
+SHA —`local-full-verification-20260911034235-8b1d91efeafe` y
+`local-full-verification-20260911034650-8b1d91efeafe`— terminaron 12/12 PASS con
+la misma huella `d8737807d57fc76c91efafa3176581b3406c0930b79a4243ab57f100697c2f14`.
+La CI real continúa pendiente del PR.
+
 ## Git y CI
 
 | Hecho | Estado |
@@ -61,11 +70,15 @@ posterior registra el resultado sin afirmar que ese WIP esté integrado.
 | Baseline Git integrada observada | `main` / `origin/main` local en `94065dfedc55234fd1738a6674289278aa49d224` |
 | Última baseline de producto con CI registrada | `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` |
 | Branch PBI-039 | `feature/pbi-039-customer-minimum-new-repair` |
-| Divergencia branch / `origin/main` local | `0/0` |
+| Divergencia branch / `origin/main` | `0/2`: candidato funcional/infra verificado + registro documental local separado |
 | Working tree pre-remediación | 92 tracked modificados + 105 untracked = 197 entradas al inicio del checkpoint |
 | Working tree durante la campaña | 98 tracked modificados + 115 untracked = 213 entradas; fingerprint autoritativo `034d3ffe…` |
 | Delta posterior a la campaña | Sólo `PBI-039.md`, `ACTIVE_CHECKLIST.md` y `CURRENT_STATE.md` para registrar el dictamen; ninguna fuente de producto, test, migración o infraestructura cambió después del PASS |
 | Escala observada antes del cierre documental | tracked `+9,530/-621`; untracked `11,164` líneas |
+| Candidato coherente verificado | `8b1d91efeafe58c7b56e7b7af2a955d39d635c10`; árbol limpio, 0 tracked pendientes, 0 untracked |
+| Full Verification del candidato Git | Dos campañas 12/12 PASS; fingerprint `d8737807…` idéntico before/after |
+| Cobertura CI PBI-039 preparada | Customer phone + User preferences en run-1/run-2, schema evidence 3 y comparación semántica fail-closed |
+| CI PBI-039 ejecutada | NO; requiere creación autorizada del PR |
 | Migraciones locales | 51 archivos / 51 aplicadas / 0 pendientes / 0 huérfanas / 0 timestamps duplicados; 20 introducidas por PBI-039 |
 | Toolchain | Node `24.18.0` y pnpm `11.15.1`; `scripts/pnpm-governed` resuelve los pins del repositorio y rechaza/bypassea el Node ambiental `25.9.0` |
 | PR #37 funcional | merge ordinario `ab8e8ba9a1274030e27ad920d61c66ed461bf122` |
@@ -90,7 +103,7 @@ posterior registra el resultado sin afirmar que ese WIP esté integrado.
 - Configuración → Roles y Usuarios permite administración local de Roles,
   Users, lifecycle y PIN sin permisos directos por User ni PIN plaintext.
 
-## PBI-039 local — Authoritative Full Verification PASS
+## PBI-039 local — CI / PR Readiness PASS
 
 El WIP local materializa Customer Minimum, New Repair Classic/Guided,
 preferencia personal, policy Branch, catálogos de Risks/Device Types/Brands/
@@ -104,15 +117,20 @@ explícitamente diferidas.
 Formal UI Verification terminó en `PASS — READY FOR HARDENING`. Hardening Batch
 1 corrigió el acceso determinista al toolchain, expectativas antiguas de
 migraciones/schema, fixtures D5-R045 y la contaminación del runner PostgreSQL.
-La campaña final ejecutó el gate base con 798 tests: 779 PASS, 0 fail y 19
+La campaña previa ejecutó el gate base con 798 tests: 779 PASS, 0 fail y 19
 skips PostgreSQL inventariados; después materializó esos skips como 17 tests
 del composite y 2 tests PBI-039, todos PASS y sin skips. Preview-like runtime
 aplicó 51 migraciones desde vacío, dejó 0 pendientes y probó readiness
 200/503/200. Backend compilado y UI smoke pasaron; cleanup dejó 0 recursos
 gobernados. El warning Vite actual de 531.33 kB / 147.52 kB gzip queda
-aceptado para medición posterior. `authoritative-linux-ci.yml` aún no incorpora
-los dos tests PostgreSQL de PBI-039; debe corregirse en CI / PR Readiness antes
-de autorización de PR.
+aceptado para medición posterior.
+
+CI / PR Readiness incorporó los dos contratos PostgreSQL PBI-039 a ambos jobs
+independientes, añadió manifiesto sanitizado/vinculado, comparación semántica y
+cleanup gobernado compartido sin absorberlos en PBI-023. Dos nuevas campañas
+del commit `8b1d91e…` ejecutaron cada una 802 tests base: 783 PASS, 0 fail y 19
+skips esperados, seguidos por 17 + 2 pruebas PostgreSQL materiales, Preview-like
+runtime, smoke y cleanup; ambas terminaron PASS con fingerprint idéntico.
 
 ## Límites vigentes
 
@@ -132,7 +150,7 @@ de autorización de PR.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
-| Current PBI | `PBI-039` — Authoritative Full Verification PASS; In progress |
+| Current PBI | `PBI-039` — CI / PR Readiness PASS; In progress |
 | WIP | `1/1` |
 | PBI-028 | `Done`; `Released: NO` |
 | G5 AUDIT | `PASS` |
@@ -140,12 +158,12 @@ de autorización de PR.
 | PBI-038 | `Done`; `Released: NO`; `Branch.timeZone: America/Hermosillo`; UTC storage invariant `PASS` |
 | Next candidate | `NONE` — no se seleccionó trabajo posterior |
 | Formal UI Verification | `PASS — READY FOR HARDENING` |
-| Next PBI-039 gate | CI / PR Readiness — requiere autorización separada |
-| Hardening / orchestration / full verify / CI | Batch 1 PASS / PASS / PASS / not run |
+| Next PBI-039 gate | Owner authorization to create PR |
+| Hardening / orchestration / full verify / readiness / CI | PASS / PASS / PASS / PASS / not run |
 | PR / merge / deploy | Not created / not authorized / not authorized |
 
 ## Próxima acción
 
-Esperar autorización separada para CI / PR Readiness y allí reconciliar el gap
-de los dos tests PostgreSQL PBI-039 en el workflow. No ejecutar CI, PR, merge,
-release, deploy ni otro PBI por inferencia.
+Esperar autorización Owner explícita para publicar la branch y crear el PR. Ese
+PR deberá ejecutar CI sobre su SHA exacto. No crear PR, ejecutar merge, release,
+deploy ni iniciar otro PBI por inferencia.

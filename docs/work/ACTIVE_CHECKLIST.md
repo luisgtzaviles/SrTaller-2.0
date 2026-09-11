@@ -3,13 +3,13 @@
 Milestone / Functional Goal: New Repair Classic 2.0 + Guided V2
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-039
-Status: CI / PR Readiness — in progress
+Status: CI / PR Readiness — PASS; ready for Owner authorization to create PR
 WIP: 1/1
-Progress: Functional Slice accepted; UI Verification PASS; Hardening Batch 1 PASS; Full Verification PASS
-Current: Reconcile authoritative CI with the two focused PBI-039 PostgreSQL contracts
-Next: Reverify the committed candidate and audit PR coherence
+Progress: Functional Slice accepted; UI Verification PASS; Hardening PASS; Full Verification PASS; CI / PR Readiness PASS
+Current: Candidate locally committed, clean and ready for Owner PR authorization
+Next: Owner authorization to publish branch and create PR
 Blocked: None
-Last updated: 2026-09-10 20:40 MST
+Last updated: 2026-09-10 20:51 MST
 
 ## PBI-039 Functional Slice Freeze — Owner Accepted
 
@@ -120,8 +120,8 @@ review, merge, deploy, release or `Done`.
 - [x] Pass focused orchestration, fingerprint, external-config, dynamic-port and
   smoke-harness contracts plus governed static/infrastructure checks
 - [x] Complete dry inventory only; authoritative `verify:full` was not executed
-- [!] CI gap retained explicitly: `authoritative-linux-ci.yml` does not yet run
-  Customer phone and User preferences PostgreSQL tests; required before PR
+- [x] Historical CI gap recorded at this checkpoint: Customer phone and User
+  preferences PostgreSQL were absent then; resolved in CI / PR Readiness below
 - [x] Preserve first-campaign FAIL evidence: base verify exposed nine stale or
   incomplete contracts; mandatory cleanup and candidate stability both passed
 - [x] Reconcile Device Type, normalization, authorization, Detail and shared
@@ -140,8 +140,8 @@ review, merge, deploy, release or `Done`.
 - [x] Confirm all 12 stages PASS, PostgreSQL 18.4 material 17 + 2 tests with
   zero skips, Preview-like runtime, compiled backend/UI smoke, cleanup and
   identical before/after candidate fingerprints
-- [x] Keep `VITE_MAIN_CHUNK_OVER_500_KB` as an accepted warning and retain the
-  two missing PBI-039 PostgreSQL CI jobs as delivery debt for the next gate
+- [x] Keep `VITE_MAIN_CHUNK_OVER_500_KB` as an accepted warning and carry the
+  then-missing PBI-039 PostgreSQL CI coverage into the next gate for resolution
 
 ## CI / PR Readiness
 
@@ -157,10 +157,12 @@ review, merge, deploy, release or `Done`.
 - [x] Extend `if: always()` cleanup to both PBI-023 and PBI-039 governed labels
 - [x] Prove focused CI/evidence contracts 25/25, PostgreSQL PBI-039 2/2,
   external configuration boundary and Full Verification dry inventory
-- [~] Classify the complete local WIP and prepare one coherent Git candidate
-- [ ] Execute the required reverification on the exact committed candidate
-- [ ] Reconcile PBI-039, checklist and current-state delivery evidence
-- [ ] Stop at Owner authorization for PR; do not publish or create it
+- [x] Classify the complete local WIP and prepare coherent Git candidate
+  `8b1d91efeafe58c7b56e7b7af2a955d39d635c10`
+- [x] Execute two complete independent reverifications on the exact committed
+  candidate: both 12/12 PASS with identical fingerprint `d8737807…`
+- [x] Reconcile PBI-039, checklist and current-state delivery evidence
+- [x] Stop at Owner authorization for PR; do not publish or create it
 
 ## Current Functional Goal
 
@@ -865,6 +867,7 @@ to Platform and no cross-Tenant signal is exposed in this slice.
 - [x] Customer D5-R045 fixture/export debt reconciled; broad architecture
   307/307 PASS
 - [x] Full verification — authoritative local PASS on 2026-09-10
+- [x] CI / PR Readiness — PASS on 2026-09-10; CI itself not run
 - [ ] PR / CI
 - [ ] Merge
 
