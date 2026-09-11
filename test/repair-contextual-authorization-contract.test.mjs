@@ -144,7 +144,14 @@ test('every Repairs HTTP endpoint belongs to the exact closed authorization matr
 });
 
 test('RepairsModule composes Access and the public Stations timezone contract', () => {
-  assert.match(moduleSource, /imports: \[AccessModule, CustomersModule, StationsModule\]/u);
+  assert.match(
+    moduleSource,
+    /imports: \[RuntimeInfrastructureModule, AccessModule, CustomersModule, StationsModule\]/u,
+  );
+  assert.match(moduleSource, /inject: \[APPLICATION_DATABASE_CONNECTION\]/u);
+  assert.match(moduleSource, /createKyselyRepairRepository\(database\)/u);
+  assert.doesNotMatch(moduleSource, /RepairDatabaseConnection/u);
+  assert.doesNotMatch(moduleSource, /NODE_ENV|SR_DB_ENVIRONMENT/u);
   assert.match(moduleSource, /CONTEXTUAL_AUTHORIZATION_EXECUTOR/u);
   assert.match(moduleSource, /BRANCH_SETTINGS_RUNTIME/u);
   assert.match(moduleSource, /CUSTOMER_INTAKE_RUNTIME/u);

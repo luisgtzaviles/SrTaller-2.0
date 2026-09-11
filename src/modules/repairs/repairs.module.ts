@@ -1,5 +1,12 @@
 import { Module } from '@nestjs/common';
 
+import { RuntimeInfrastructureModule } from '../../infrastructure/runtime/runtime-infrastructure.module.js';
+import {
+  APPLICATION_DATABASE_CONNECTION,
+} from '../../infrastructure/runtime/index.js';
+import type {
+  ApplicationDatabaseConnection,
+} from '../../infrastructure/runtime/index.js';
 import { AccessModule } from '../access/access.module.js';
 import { CONTEXTUAL_AUTHORIZATION_EXECUTOR } from '../access/index.js';
 import type { ContextualAuthorizationExecutor } from '../access/index.js';
@@ -14,7 +21,6 @@ import { RepairProtectedOperations } from './application/repair-protected-operat
 import type { RepairEvidenceStoragePort } from './application/ports/repair-evidence-storage.port.js';
 import type { RepairRepositoryPort } from './application/ports/repair-repository.port.js';
 import { createKyselyRepairRepository } from './infrastructure/persistence/kysely-repair.repository.js';
-import { RepairDatabaseConnection } from './infrastructure/persistence/repair-database-connection.js';
 import { LocalRepairEvidenceStorage } from './infrastructure/storage/local-repair-evidence.storage.js';
 import { RepairsController } from './presentation/repairs.controller.js';
 
@@ -22,19 +28,18 @@ export const REPAIR_REPOSITORY = Symbol('srtaller.repairs.repository');
 export const REPAIR_EVIDENCE_STORAGE = Symbol('srtaller.repairs.evidence-storage');
 
 @Module({
-  imports: [AccessModule, CustomersModule, StationsModule],
+  imports: [RuntimeInfrastructureModule, AccessModule, CustomersModule, StationsModule],
   controllers: [RepairsController],
   providers: [
-    RepairDatabaseConnection,
     {
       provide: REPAIR_EVIDENCE_STORAGE,
       useFactory: (): RepairEvidenceStoragePort => new LocalRepairEvidenceStorage(),
     },
     {
       provide: REPAIR_REPOSITORY,
-      inject: [RepairDatabaseConnection],
-      useFactory: (database: RepairDatabaseConnection): RepairRepositoryPort =>
-        createKyselyRepairRepository(database.connection),
+      inject: [APPLICATION_DATABASE_CONNECTION],
+      useFactory: (database: ApplicationDatabaseConnection): RepairRepositoryPort =>
+        createKyselyRepairRepository(database),
     },
     {
       provide: RepairProtectedOperations,
