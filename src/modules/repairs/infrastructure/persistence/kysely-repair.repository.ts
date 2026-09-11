@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
+import type { InternalDatabasePersistenceConnection } from '../../../../infrastructure/database/database-persistence-capability.js';
 import { DatabaseTransactionError, runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type { InternalDatabasePersistenceOperation } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { DatabaseSchema, RepairRow, RepairTechnicianAssignmentRow } from '../../../../infrastructure/database/database-types.js';
@@ -3111,12 +3112,12 @@ class KyselyRepairRepository implements RepairRepositoryPort {
 }
 
 export function createKyselyRepairRepository(
-  connection: DatabaseConnection,
+  connection: InternalDatabasePersistenceConnection,
   now: () => Date = () => new Date(),
 ): RepairRepositoryPort {
   return new KyselyRepairRepository(
     (operation) => useDatabasePersistenceExecutor(connection, 'repairs', operation),
-    (operation) => runInTransaction(connection, { isolationLevel: 'serializable' }, async (context) =>
+    (operation) => runInTransaction(connection as unknown as DatabaseConnection, { isolationLevel: 'serializable' }, async (context) =>
       useTransactionalDatabasePersistenceExecutor(
         context,
         'repairs',

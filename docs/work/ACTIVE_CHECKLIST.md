@@ -3,16 +3,17 @@
 Milestone / Functional Goal: New Repair Classic 2.0 + Guided V2
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-039
-Status: PR #42 merged; Preview cache remediation locally verified
+Status: PR #42 and cache hotfix merged; Preview Repairs runtime hotfix locally verified
 WIP: 1/1
 Progress: Functional Slice accepted; UI Verification PASS; Hardening PASS; Full Verification PASS; CI / PR Readiness PASS; PR CI PASS
-Current: Cache/ETag correction passed authoritative Full Verification campaign
-`local-full-verification-20260911145336-6c04e57c8a5d`, 12/12 stages and cleanup
-PASS, candidate fingerprint `9a7a49d9…`
-Next: Integrate and redeploy the Preview entrypoint cache correction; then
-complete post-deploy validation and PBI closure
+Current: Repairs now consumes the governed shared application database runtime;
+authoritative Full Verification campaign
+`local-full-verification-20260911154146-5ccc525a09d2` passed 12/12 stages and
+cleanup with candidate fingerprint `10fb8439…`
+Next: Governed hotfix PR/CI/merge, redeploy, authenticated create/detail/reload
+validation and PBI closure
 Blocked: None
-Last updated: 2026-09-11 07:58 MST
+Last updated: 2026-09-11 08:46 MST
 
 ## PBI-039 Functional Slice Freeze — Owner Accepted
 
@@ -222,7 +223,21 @@ review, merge, deploy, release or `Done`.
   hashed bundle; bounded cache/ETag remediation is in progress
 - [x] Reverify the cache remediation without changing accepted PBI-039 product
   behavior: authoritative Full Verification 12/12 stages and cleanup PASS
-- [ ] Integrate the cache remediation through its governed PR and exact-main CI
+- [x] Integrate cache remediation PR #43 as `5ccc525…`, pass exact-main CI run
+  `34614530586`, redeploy Preview and prove stale-browser recovery plus current
+  hashed asset, `no-store` HTML, `/livez`, `/readyz` and unknown API behavior
+- [!] Authenticated Preview validation exposed a second real defect: Repairs
+  composed a private connection initialized only for `NODE_ENV=development`,
+  leaving Worklist/catalog/policy repositories unavailable in the production
+  image while the shared runtime remained healthy
+- [x] Recompose Repairs through `APPLICATION_DATABASE_CONNECTION`, remove the
+  obsolete private lifecycle and prove the production-runtime contract
+- [x] Pass authoritative high-risk Full Verification campaign
+  `local-full-verification-20260911154146-5ccc525a09d2`: 12/12 stages,
+  PostgreSQL 17/17 + PBI-039 2/2, compiled smoke, cleanup and candidate
+  integrity PASS; accepted Vite warning unchanged
+- [ ] Integrate the Repairs runtime hotfix through its governed PR and
+  exact-main authoritative CI
 - [ ] Redeploy Preview and complete authenticated New Repair create/detail/
   reload smoke with synthetic development-only data
 - [ ] Reconcile closure documentation, merge its governed PR, pass exact-main
@@ -942,7 +957,8 @@ to Platform and no cross-Tenant signal is exposed in this slice.
 - [x] Independent re-review — PASS recorded as a review comment due GitHub
   self-approval restriction
 - [x] Merge — PR #42 merged as `6c04e57…`
-- [!] Preview post-deploy validation — cache/ETag defect under remediation
+- [!] Preview post-deploy validation — cache/ETag defect closed; Repairs shared
+  runtime composition defect under remediation
 
 > This checklist is operational visibility only. It records the explicit Owner
 > Acceptance above, but does not grant authority or declare PBI-039 `Done`,

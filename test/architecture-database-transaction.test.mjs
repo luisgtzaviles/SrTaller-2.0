@@ -45,7 +45,6 @@ test('transaction runner and internal capability retain exact registered ownersh
       runnerPath,
       'src/infrastructure/runtime/application-database-runtime.provider.ts',
       'src/infrastructure/runtime/index.ts',
-      'src/modules/repairs/infrastructure/persistence/repair-database-connection.ts',
       'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts',
     ],
     forbiddenContextPackages: ['async_hooks', 'node:async_hooks'],

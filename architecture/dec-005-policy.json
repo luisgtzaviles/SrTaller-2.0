@@ -349,6 +349,7 @@
           "src/modules/access/access.module.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
           "src/modules/customers/customers.module.ts",
+          "src/modules/repairs/repairs.module.ts",
           "src/modules/stations/stations.module.ts",
           "src/modules/users/users.module.ts"
         ]
@@ -390,6 +391,12 @@
         "owner": "access",
         "file": "src/modules/access/access.module.ts",
         "className": "AccessModule",
+        "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
+      },
+      {
+        "owner": "repairs",
+        "file": "src/modules/repairs/repairs.module.ts",
+        "className": "RepairsModule",
         "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
       },
       {
@@ -443,6 +450,13 @@
       },
       {
         "file": "src/modules/customers/customers.module.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/repairs/repairs.module.ts",
         "token": "APPLICATION_DATABASE_CONNECTION",
         "contract": "ApplicationDatabaseConnection",
         "importSpecifier": "../../infrastructure/runtime/index.js",
@@ -1322,7 +1336,6 @@
           "src/infrastructure/database/migration-runner.ts",
           "src/infrastructure/database/database-runtime.ts",
           "src/db-migrate.ts",
-          "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
@@ -1909,7 +1922,6 @@
         "src/infrastructure/database/transaction-runner.ts",
         "src/infrastructure/runtime/application-database-runtime.provider.ts",
         "src/infrastructure/runtime/index.ts",
-        "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts",
         "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
       ],
       "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
@@ -2183,7 +2195,6 @@
     "src/modules/repairs/application/use-cases/get-repair-evidence-content.use-case.ts",
     "src/modules/repairs/application/use-cases/list-repairs.use-case.ts",
     "src/modules/repairs/infrastructure/context/local-repair-context.ts",
-    "src/modules/repairs/infrastructure/persistence/repair-database-connection.ts",
     "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
     "src/modules/repairs/infrastructure/storage/local-repair-evidence.storage.ts",
     "src/modules/repairs/presentation/repairs.controller.ts",
