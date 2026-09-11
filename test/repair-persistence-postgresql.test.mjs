@@ -15,7 +15,7 @@ const { databaseMigrationSourceOverride, inspectMigrationSource } = enabled
 const { createMigrationRunner } = enabled
   ? await import('../dist/infrastructure/database/migration-runner.js')
   : {};
-const { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteIdempotencyConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } = enabled
+const { RepairCreateIdempotencyConflictError, RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteIdempotencyConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } = enabled
   ? await import('../dist/modules/repairs/application/ports/repair-repository.port.js')
   : {};
 const { createKyselyRepairRepository } = enabled
@@ -1029,6 +1029,91 @@ test(
       }), async () => { throw new Error('Cross-Tenant Device Type must fail before resolving Customer.'); }), (error) => error?.name === 'RepairCreateDeviceTypeUnavailableError');
       await assert.rejects(admin.query("update repair_device_type_catalog_events set actor_display_name = 'Alterado' where device_type_id = $1", [renamedType.deviceTypeId]), (error) => error?.code === '23514');
 
+      const idempotentDeviceTypeRequest = repairCreateRecord([], '135', {
+        deviceType: 'Tablet QA',
+        canonicalDeviceTypeId: tabletType.deviceTypeId,
+        pendingDeviceTypeValueId: null,
+        reportedIssue: 'Idempotencia de tipo canónico',
+      });
+      const idempotentDeviceTypeRepair = await repository.createRepair(
+        createContext,
+        idempotentDeviceTypeRequest,
+        customerResolverA,
+      );
+      const exactDeviceTypeReplay = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '136', {
+          clientRequestId: idempotentDeviceTypeRequest.clientRequestId,
+          deviceType: 'Tablet QA',
+          canonicalDeviceTypeId: tabletType.deviceTypeId,
+          pendingDeviceTypeValueId: null,
+          reportedIssue: 'Idempotencia de tipo canónico',
+        }),
+        async () => { throw new Error('An exact Create Repair replay must not resolve Customer again.'); },
+      );
+      assert.deepEqual(exactDeviceTypeReplay, idempotentDeviceTypeRepair);
+      await assert.rejects(
+        repository.createRepair(
+          createContext,
+          repairCreateRecord([], '137', {
+            clientRequestId: idempotentDeviceTypeRequest.clientRequestId,
+            deviceType: 'Tablet QA',
+            canonicalDeviceTypeId: '47300000-0000-4000-8000-000000000002',
+            pendingDeviceTypeValueId: null,
+            reportedIssue: 'Idempotencia de tipo canónico',
+          }),
+          async () => { throw new Error('An incompatible Create Repair replay must fail before resolving Customer.'); },
+        ),
+        RepairCreateIdempotencyConflictError,
+      );
+
+      const concurrentDeviceTypeRequest = repairCreateRecord([], '138', {
+        deviceType: 'Tablet QA',
+        canonicalDeviceTypeId: tabletType.deviceTypeId,
+        pendingDeviceTypeValueId: null,
+        reportedIssue: 'Concurrencia de tipo canónico',
+      });
+      const concurrentDeviceTypeRepairs = await Promise.all([
+        repository.createRepair(createContext, concurrentDeviceTypeRequest, customerResolverA),
+        concurrentRepository.createRepair(
+          createContext,
+          repairCreateRecord([], '139', {
+            clientRequestId: concurrentDeviceTypeRequest.clientRequestId,
+            deviceType: 'Tablet QA',
+            canonicalDeviceTypeId: tabletType.deviceTypeId,
+            pendingDeviceTypeValueId: null,
+            reportedIssue: 'Concurrencia de tipo canónico',
+          }),
+          customerResolverA,
+        ),
+      ]);
+      assert.deepEqual(concurrentDeviceTypeRepairs[1], concurrentDeviceTypeRepairs[0]);
+      const createIdempotencyCounts = (await admin.query(
+        `select
+           (select count(*)::integer from repairs
+              where tenant_id = $1 and branch_id = $2 and repair_id = $3) as repairs,
+           (select count(*)::integer from repair_create_commands
+              where tenant_id = $1 and branch_id = $2 and client_request_id = $4) as commands,
+           (select count(*)::integer from repair_timeline_entries
+              where tenant_id = $1 and branch_id = $2 and client_request_id = $4) as timeline_entries,
+           (select count(*)::integer from repair_business_audit_events
+              where tenant_id = $1 and branch_id = $2 and client_request_id = $4) as audit_events`,
+        [tenantA, branchA, concurrentDeviceTypeRepairs[0].repairId, concurrentDeviceTypeRequest.clientRequestId],
+      )).rows[0];
+      assert.deepEqual(createIdempotencyCounts, {
+        repairs: 1,
+        commands: 1,
+        timeline_entries: 1,
+        audit_events: 1,
+      });
+      assert.equal(
+        (await admin.query(
+          'select canonical_device_type_id from repair_intakes where repair_id = $1',
+          [idempotentDeviceTypeRepair.repairId],
+        )).rows[0].canonical_device_type_id,
+        tabletType.deviceTypeId,
+      );
+
       const brandProofRepairIds = [
         selectedAppleRepair.repairId,
         firstApppleRepair.repairId,
@@ -1042,6 +1127,8 @@ test(
         newBrandRepair.repairId,
         platformBrandRepair.repairId,
         canonicalTypeRepair.repairId,
+        idempotentDeviceTypeRepair.repairId,
+        concurrentDeviceTypeRepairs[0].repairId,
         ...freeTypeRepairs.map(({ repairId }) => repairId),
       ];
       await admin.query('delete from repair_problem_classifications where repair_id = any($1::uuid[])', [brandProofRepairIds]);

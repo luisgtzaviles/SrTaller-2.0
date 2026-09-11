@@ -11,7 +11,8 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization;
 PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`; G5 es `PASS`, Current
 PBI es PBI-039 y WIP es `1/1`; Functional Slice Frozen / Owner Accepted y
-Formal UI Verification pendiente.
+Formal UI Verification, Hardening, Full Verification, CI / PR Readiness y PR
+CI están en `PASS`; la revisión independiente exige remediación.
 
 ## Reglas propuestas
 
@@ -55,7 +56,9 @@ SPRINT-02 ejecuta Operational Authentication & Authorization con WIP=1.
 PBI-025/PBI-034 están `Done`; cierre PR #34 y CI exacto de main dejan G3
 `PASS`. PBI-026 está `Done` y G4 `PASS`; PBI-028 está `Done`, G5 `PASS` tras
 PR #39 y su CI exacta; PBI-038 está `Done` tras PR #40 y CI `34280510716`
-GREEN. No existe PBI actual.
+GREEN. PBI-039 es el PBI actual: permanece `In progress` en PR #42, con CI
+autoritativa final `34564110272` verde y revisión independiente `CHANGES
+REQUIRED`; no está integrado.
 
 - [Objetivo](sprint-02/SPRINT_GOAL.md)
 - [Backlog](sprint-02/SPRINT_BACKLOG.md)
@@ -65,4 +68,4 @@ GREEN. No existe PBI actual.
 
 ## Próxima revisión
 
-Al seleccionarse un nuevo PBI.
+Al cerrar la remediación y la re-review de PBI-039, o al cambiar su gate.

@@ -3,13 +3,13 @@
 Milestone / Functional Goal: New Repair Classic 2.0 + Guided V2
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-039
-Status: PR #42 + Authoritative CI — PASS; ready for independent review
+Status: Independent review — CHANGES REQUIRED; remediation in progress
 WIP: 1/1
 Progress: Functional Slice accepted; UI Verification PASS; Hardening PASS; Full Verification PASS; CI / PR Readiness PASS; PR CI PASS
-Current: PR #42 open, mergeable and green; documentation reconciled
-Next: Independent review
+Current: Prepare and publish the coherent review-remediation commit
+Next: Authoritative exact-head CI, then independent re-review
 Blocked: None
-Last updated: 2026-09-10 21:54 MST
+Last updated: 2026-09-10 22:25 MST
 
 ## PBI-039 Functional Slice Freeze — Owner Accepted
 
@@ -180,8 +180,23 @@ review, merge, deploy, release or `Done`.
   runtime annotation as separate non-blocking delivery debt
 - [x] Reconcile PBI-039, checklist and current state in a docs-only commit and
   obtain authoritative CI on that exact final PR head before handoff
-- [ ] Independent review
+- [x] Independent review completed with `CHANGES REQUIRED`: one HIGH Create
+  Repair idempotency finding and one MEDIUM living-documentation finding
 - [ ] Owner merge authorization
+
+## Independent Review Remediation
+
+- [x] Include `canonicalDeviceTypeId` in the Create Repair request fingerprint
+- [x] Prove exact replay, incompatible payload, concurrent same-key creation
+  and canonical Device Type compatibility in material PostgreSQL
+- [x] Execute the required high-risk local reverification on the changed
+  candidate: campaign `local-full-verification-20260911054515-f32f41dfc5ef`,
+  12/12 PASS, fingerprint `c1f8273a…` identical before/after, cleanup PASS
+- [x] Reconcile Roadmap, delivery workflow, SPRINT-02, PBI-039, checklist and
+  current-state evidence without claiming merge or `Done`
+- [ ] Commit and push the same PR branch without force
+- [ ] Require authoritative exact-head CI run-1, run-2 and comparison PASS
+- [ ] Hand off PR #42 as ready for independent re-review
 
 ## Current Functional Goal
 
@@ -887,9 +902,10 @@ to Platform and no cross-Tenant signal is exposed in this slice.
   307/307 PASS
 - [x] Full verification — authoritative local PASS on 2026-09-10
 - [x] CI / PR Readiness — PASS on 2026-09-10
-- [x] PR #42 / authoritative CI run `34562890493` plus final docs-only exact-head
-  revalidation — PASS
-- [ ] Independent review
+- [x] PR #42 / authoritative final CI run `34564110272` on exact head
+  `f32f41d…` — PASS
+- [x] Independent review — CHANGES REQUIRED; remediation authorized
+- [ ] Independent re-review
 - [ ] Merge
 
 > This checklist is operational visibility only. It records the explicit Owner

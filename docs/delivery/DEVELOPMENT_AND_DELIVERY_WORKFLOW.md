@@ -26,8 +26,10 @@ Roles/Capabilities/Assignments están integrados y cerrados canónicamente. Los
 writes integrados de Repairs aún usan actor sintético fuera del alcance ya
 entregado. PBI-025, PBI-034, PBI-026, PBI-028 y PBI-038 están `Done`; G4 y G5
 están `PASS`. PBI-038 integra la foundation temporal IANA y límites locales
-sin modificar los instantes UTC. No existe PBI actual en SPRINT-02, WIP es
-`0/1` y no hay siguiente candidato seleccionado.
+sin modificar los instantes UTC. PBI-039 es el único PBI actual en SPRINT-02,
+WIP es `1/1`: PR #42 tiene Full Verification, CI / PR Readiness y CI
+autoritativa `PASS`, pero la revisión independiente exige remediación y todavía
+no existe merge. No hay siguiente candidato seleccionado.
 
 ## Jerarquía de autoridad documental
 
@@ -101,11 +103,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34280510716` on `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` |
+| Authoritative CI at audited PR HEAD | Green: run `34564110272` on PBI-039 head `f32f41dfc5ef8b78b6954c4829d5b286bc359add`; not merged |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
 | Sprint | SPRINT-02 `Active`; WIP `1/1` |
-| Current / next PBI | Current: PBI-039 Functional Slice Frozen / Owner Accepted; next: NONE selected |
-| Current blocking gate | Authoritative Full Verification local de PBI-039; la orquestación está lista, mientras CI/PR/merge/deploy permanecen separados |
+| Current / next PBI | Current: PBI-039 review remediation in PR #42; next: NONE selected |
+| Current blocking gate | Resolve independent-review findings, high-risk reverify and exact-head authoritative CI before re-review; merge/deploy remain separate and unauthorized |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |

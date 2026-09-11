@@ -4,7 +4,8 @@
 
 - **Estado:** Active; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 Done; Current
   PBI PBI-039; WIP 1/1; Functional Slice Frozen / Owner Accepted; UI
-  Verification, Hardening Batch 1 y orchestration remediation PASS.
+  Verification, Hardening, Full Verification, CI / PR Readiness y PR CI PASS;
+  independent review CHANGES REQUIRED; remediation in progress.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
@@ -20,14 +21,16 @@
 | Secretos o body en el store de auditoría de Repairs | High | esquema/allowlist fija y pruebas negativas | Control PBI-028 PASS |
 | Fronteras de fecha local incorrectas | Medium | IANA Branch, rangos `[start, next)` y PostgreSQL material | Control PBI-038 PASS; `Branch.timeZone` final `America/Hermosillo` |
 | WIP paralelo | Medium | WIP=1 | Controlled |
-| Integración de slice local grande | High delivery | freeze explícito, fingerprint pre/post y secuencia UI Verification -> hardening -> full verify | 95 tracked + 115 untracked; requiere campaña completa antes de PR |
-| Orquestación local incompleta | High test infrastructure | `verify:full` fail-fast combina base, PostgreSQL, Preview, smoke, cleanup y evidencia | Remediado; campaña autoritativa aún no ejecutada |
-| CI omite dos tests PostgreSQL PBI-039 | High delivery | incorporar Customer phone y User preferences al workflow autoritativo | No bloquea Full Verification local; bloquea autorización de PR |
+| Integración de slice local grande | High delivery | freeze explícito, fingerprint pre/post y secuencia UI Verification -> hardening -> full verify -> CI -> review | Control ejecutado; PR #42 sigue sin merge |
+| Orquestación local incompleta | High test infrastructure | `verify:full` fail-fast combina base, PostgreSQL, Preview, smoke, cleanup y evidencia | Cerrado; Full Verification PASS |
+| CI omite dos tests PostgreSQL PBI-039 | High delivery | Customer phone y User preferences en ambos legs y comparison | Cerrado; run `34564110272` PASS |
+| Create Repair omite identidad canónica del tipo en idempotencia | High persistence | incluir `canonicalDeviceTypeId`; replay exacto, incompatibilidad y concurrencia PostgreSQL; full reverify + CI exacta | Finding de review en remediación; bloquea re-review |
+| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Finding de review en remediación |
 
 Un Critical nuevo no previsto, criptografía custom, secreto remoto o cambio
 destructivo obliga a detenerse. El Critical conocido de PBI-025 no se rebaja.
 
 ## Próxima revisión
 
-- **Fecha:** al concluir Authoritative Full Verification local de PBI-039.
-- **Disparador:** nuevo riesgo material, fallo de stage o cambio de controles.
+- **Fecha:** al concluir la remediación y re-review de PBI-039.
+- **Disparador:** nuevo riesgo material, fallo de reverificación/CI o cambio de controles.

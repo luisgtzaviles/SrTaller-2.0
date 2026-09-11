@@ -1999,6 +1999,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       customerPhone: repair.customerPhone,
       addCustomerContactPhone: repair.addCustomerContactPhone,
       deviceType: repair.deviceType,
+      canonicalDeviceTypeId: repair.canonicalDeviceTypeId,
       deviceBrand: repair.deviceBrand,
       canonicalBrandId: repair.canonicalBrandId,
       deviceModel: repair.deviceModel,
@@ -2045,7 +2046,9 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .where('repair_create_commands.client_request_id', '=', repair.clientRequestId)
         .executeTakeFirst();
       if (existing) {
-        if (!Buffer.from(existing.request_fingerprint).equals(fingerprint)) throw new RepairCreateIdempotencyConflictError();
+        if (!Buffer.from(existing.request_fingerprint).equals(fingerprint)) {
+          return Object.freeze({ error: new RepairCreateIdempotencyConflictError() });
+        }
         return Object.freeze({ repairId: existing.repair_id, folio: existing.folio, customerId: existing.customer_id, customerName: existing.customer_name, customerPhone: existing.customer_phone, occurredAt: existing.received_at.toISOString(), correlationId: existing.correlation_id, newRepairPolicyVersion: existing.new_repair_policy_version });
       }
       if (!await scope.commitGuard.confirmCurrent(transactionContext)) throw new RepairCreateAuthorizationChangedError();

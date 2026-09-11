@@ -26,8 +26,8 @@ Operational Note, manteniendo límites tenant/Branch/Station y deny-by-default.
 5. Operational Note como primera prueba integral con actor real.
 6. PBI-039 — Customer Minimum + New Repair Classic 2.0 / Guided V2, slice
    funcional local congelado y aceptado por Owner; UI Verification, Hardening
-   Batch 1 y Full Verification Orchestration Remediation PASS; campaña
-   autoritativa local pendiente.
+   Batch 1, Full Verification y CI / PR Readiness PASS; PR #42 con CI final
+   `34564110272` PASS y revisión independiente `CHANGES REQUIRED` en remediación.
 
 Sólo un PBI puede estar en ejecución/cierre. El orden no inicia el siguiente
 PBI antes de cerrar canónicamente el anterior.
@@ -49,11 +49,12 @@ PBI antes de cerrar canónicamente el anterior.
   `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN;
   `Done`, sin release ni deploy.
 - [x] PBI-039 Customer mínimo + New Repair Classic 2.0 / Guided V2 congelado y
-  aceptado funcionalmente en local; UI Verification, Hardening Batch 1 y
-  remediación de orquestación completadas sin implicar Full Verification o Done.
+  aceptado funcionalmente; UI Verification, Hardening, Full Verification, CI /
+  PR Readiness y CI autoritativa del PR completadas. La revisión independiente
+  exige remediación; no implica merge ni `Done`.
 - [ ] Released: NO; deploy: NO.
 
 ## Próxima revisión
 
-- **Fecha:** al completar Authoritative Full Verification local de PBI-039.
-- **Disparador:** fallo de stage, mutación del candidato o conclusión del gate.
+- **Fecha:** al concluir la remediación y re-review de PBI-039.
+- **Disparador:** fallo de reverificación/CI, nuevo finding o conclusión del gate.
