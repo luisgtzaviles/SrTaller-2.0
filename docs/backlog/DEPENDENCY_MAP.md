@@ -73,8 +73,9 @@ flowchart TD
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - Sprint 02: `Active`; PBI-028 `Done`, G5 `PASS`, PBI-038 `Done`; PBI-039 es
-  Current PBI, su slice funcional local está congelado y aceptado por Owner,
-  WIP=`1/1`, y el siguiente gate autorizado es Formal UI Verification.
+  Current PBI, su slice funcional está congelado y aceptado por Owner, los
+  findings de review están remediados, WIP=`1/1`, y el siguiente gate es la
+  re-review independiente de PR #42.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -113,6 +114,6 @@ diferidos.
 
 ## Próxima revisión
 
-Formal UI Verification debe observar el slice funcional congelado de PBI-039.
-Hardening, full verify, CI, PR, merge y deploy quedan fuera de este gate y no
-se infieren por la aceptación Owner.
+El siguiente gate es la re-review independiente de PR #42 sobre el candidato
+remediado con CI verde. Merge, CI exacta de `main`, cierre y deploy conservan
+sus gates propios y no se infieren por la aceptación Owner ni por CI de PR.

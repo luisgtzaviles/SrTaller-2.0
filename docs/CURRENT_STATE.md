@@ -183,8 +183,9 @@ gate es re-review independiente.
   observabilidad extendida ni retrofit de todos los writes de Repairs.
 - PBI-037 no convierte la administración local en un módulo IAM genérico ni
   reabre foundations ya cerradas.
-- Customers y New Repair persistente existen sólo en el WIP local congelado de
-  PBI-039; todavía no están integrados en Git/CI. Pricing, Payments, Inventory,
+- Customers y New Repair persistente existen en el candidato congelado de
+  PBI-039 dentro de PR #42; todavía no están integrados en `main` ni
+  desplegados. Pricing, Payments, Inventory,
   Delivery, Basic Operational Evidence, Repair Concepts funcional y Diagnosis
   ampliado permanecen diferidos o fuera de alcance.
 - Preview remoto, Dokploy, PostgreSQL remoto, DNS, secretos e infraestructura

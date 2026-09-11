@@ -26,8 +26,10 @@
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** PBI-023 `Closed`; Identity & Context Foundation cerrada en
   Sprint 01. SPRINT-02 está `Active`, PBI-034/PBI-026/PBI-028/PBI-038 están
-  `Done`; PBI-039 es el Current PBI, su slice funcional local está congelado
-  y aceptado por Owner, pendiente de Formal UI Verification; WIP es `1/1`.
+  `Done`; PBI-039 es el Current PBI, su slice funcional está congelado y
+  aceptado por Owner, sus gates de UI Verification, Hardening, Full
+  Verification y PR CI están en `PASS`, y está listo para re-review
+  independiente; WIP es `1/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
@@ -84,9 +86,11 @@
 - **Dependencias:** EPIC-001, multitenancy, sucursales y política de datos.
 - **Riesgos:** duplicados, exposición de PII y ownership ambiguo entre sucursales.
 - **Exclusiones:** CRM avanzado e identidad de cliente final no validada.
-- **Estado:** Customer Minimum de PBI-039 está materializado en WIP local,
-  congelado y aceptado por Owner; Formal UI Verification está pendiente. No
-  está integrado, `Done` ni `Released`; CRM avanzado permanece diferido.
+- **Estado:** Customer Minimum de PBI-039 está materializado en PR #42,
+  congelado y aceptado por Owner; UI Verification, Hardening, Full
+  Verification y PR CI están en `PASS`, y los findings de review están
+  remediados. No está integrado, `Done` ni `Released`; CRM avanzado permanece
+  diferido.
 - **Puede descomponerse cuando:** campos mínimos, deduplicación, privacidad y alcance por sucursal estén acordados.
 
 ## EPIC-006 — Repair Operations
@@ -98,8 +102,9 @@
 - **Riesgos:** workflow demasiado rígido, estados ambiguos y cambios sin auditoría.
 - **Exclusiones:** automatizar procesos no confirmados para todos los talleres.
 - **Estado:** Nueva Reparación y las superficies de Repair Detail incluidas en
-  PBI-039 están materializadas en WIP local, congeladas y aceptadas por Owner;
-  Formal UI Verification está pendiente. No están integradas, `Done` ni
+  PBI-039 están materializadas en PR #42, congeladas y aceptadas por Owner; UI
+  Verification, Hardening, Full Verification y PR CI están en `PASS`, y los
+  findings de review están remediados. No están integradas, `Done` ni
   `Released`; diagnóstico, ejecución y entrega permanecen en ciclos futuros.
 - **Puede descomponerse cuando:** lifecycle, excepciones, autoridades y datos mínimos se validen con usuarios.
 
