@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import type { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -24,18 +24,22 @@ export const Button = forwardRef<HTMLButtonElement, Readonly<
 
 export function ButtonLink({
   to,
+  state,
   children,
   tone = 'secondary',
   size = 'default',
   className,
+  newRepairTrigger = false,
 }: Readonly<{
   to: string;
+  state?: unknown;
   children: React.ReactNode;
   tone?: ButtonTone;
   size?: ButtonSize;
-  className?: string;
+  className?: string | undefined;
+  newRepairTrigger?: boolean;
 }>): React.JSX.Element {
-  return <Link to={to} className={buttonClasses(tone, size, className)}>{children}</Link>;
+  return <Link to={to} state={state} data-new-repair-trigger={newRepairTrigger || undefined} className={buttonClasses(tone, size, className)}>{children}</Link>;
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, Readonly<
@@ -67,6 +71,12 @@ export const Input = forwardRef<HTMLInputElement, Readonly<InputHTMLAttributes<H
   },
 );
 
+export const Select = forwardRef<HTMLSelectElement, Readonly<SelectHTMLAttributes<HTMLSelectElement>>>(
+  function Select({ className, ...props }, ref) {
+    return <select ref={ref} className={classNames(styles.input, styles.select, className)} {...props} />;
+  },
+);
+
 export const Textarea = forwardRef<HTMLTextAreaElement, Readonly<TextareaHTMLAttributes<HTMLTextAreaElement>>>(
   function Textarea({ className, ...props }, ref) {
     return <textarea ref={ref} className={classNames(styles.input, styles.textarea, className)} {...props} />;
@@ -81,18 +91,20 @@ export function Field({
   required,
   children,
   fullWidth = false,
+  className,
 }: Readonly<{
   id: string;
   label: string;
-  hint?: string;
-  error?: string;
+  hint?: string | undefined;
+  error?: string | undefined;
   required?: boolean;
   children: React.ReactNode;
   fullWidth?: boolean;
+  className?: string | undefined;
 }>): React.JSX.Element {
   const descriptionId = hint || error ? `${id}-description` : undefined;
   return (
-    <div className={classNames(styles.field, fullWidth && styles.fieldFull)}>
+    <div className={classNames(styles.field, fullWidth && styles.fieldFull, className)}>
       <label htmlFor={id}>{label}{required ? <span aria-hidden="true"> *</span> : null}</label>
       {children}
       {descriptionId ? (
@@ -109,18 +121,34 @@ export function FormSection({
   title,
   description,
   children,
+  compact = false,
+  icon: Icon,
+  className,
+  status,
 }: Readonly<{
   step: number;
   title: string;
   description: string;
   children: React.ReactNode;
+  compact?: boolean;
+  icon?: LucideIcon;
+  className?: string | undefined;
+  status?: React.ReactNode;
 }>): React.JSX.Element {
   return (
-    <section className={styles.formSection} aria-labelledby={`form-section-${step}`}>
+    <section className={classNames(styles.formSection, compact && styles.formSectionCompact, className)} aria-labelledby={`form-section-${step}`}>
       <header>
-        <span className={styles.step} aria-hidden="true">{step}</span>
-        <h2 id={`form-section-${step}`}>{title}</h2>
-        <p>{description}</p>
+        <span className={styles.formSectionIcon} aria-hidden="true">{Icon ? <Icon size={20} /> : step}</span>
+        <div className={styles.formSectionHeading}>
+          <div>
+            <h2 id={`form-section-${step}`}>{title}</h2>
+            <span className={styles.formSectionMeta}>
+              <span className={styles.formSectionStep}>Paso {step}</span>
+              {status ? <span className={styles.formSectionStatus}>{status}</span> : null}
+            </span>
+          </div>
+          <p>{description}</p>
+        </div>
       </header>
       <div className={styles.formGrid}>{children}</div>
     </section>

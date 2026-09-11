@@ -27,6 +27,7 @@ export interface OperationalDateTime {
 }
 
 const calendarDate = /^\d{4}-\d{2}-\d{2}$/u;
+const localDateTime = /^(?<date>\d{4}-\d{2}-\d{2})T(?<hour>[01]\d|2[0-3]):(?<minute>[0-5]\d)$/u;
 const boundarySearchWindowMs = 36 * 60 * 60 * 1_000;
 
 function assertCalendarDate(value: string): void {
@@ -76,6 +77,46 @@ export function branchLocalCalendarDate(
   timeZone: BranchTimeZone,
 ): string {
   return presentOperationalDateTime(instant, timeZone).date;
+}
+
+/**
+ * Interprets an operator-entered Branch-local wall clock as an absolute UTC
+ * instant. Browser/process time zones are deliberately ignored. Missing and
+ * repeated civil times fail closed instead of silently choosing an offset.
+ */
+export function branchLocalDateTimeToUtc(
+  value: string,
+  timeZone: BranchTimeZone,
+): Date {
+  const match = localDateTime.exec(value);
+  if (!match?.groups) {
+    throw new TypeError('Operational local date and time must use YYYY-MM-DDTHH:mm.');
+  }
+  const date = match.groups.date;
+  const hour = match.groups.hour;
+  const minute = match.groups.minute;
+  if (!date || !hour || !minute) throw new TypeError('Operational local date and time is invalid.');
+  assertCalendarDate(date);
+  const nominalUtc = Date.parse(`${date}T${hour}:${minute}:00.000Z`);
+  const samples = [nominalUtc - 86_400_000, nominalUtc, nominalUtc + 86_400_000];
+  const candidates = new Map<number, Date>();
+
+  for (const sample of samples) {
+    const presented = presentOperationalDateTime(new Date(sample), timeZone);
+    const presentedAsUtc = Date.parse(`${presented.date}T${presented.time}:00.000Z`);
+    const candidate = new Date(nominalUtc - (presentedAsUtc - sample));
+    const roundTrip = presentOperationalDateTime(candidate, timeZone);
+    if (roundTrip.date === date && roundTrip.time === `${hour}:${minute}`) {
+      candidates.set(candidate.getTime(), candidate);
+    }
+  }
+
+  if (candidates.size !== 1) {
+    throw new RangeError('Operational local date and time is missing or ambiguous in the Branch time zone.');
+  }
+  const result = [...candidates.values()][0];
+  if (!result) throw new RangeError('Operational local date and time could not be resolved.');
+  return result;
 }
 
 /**

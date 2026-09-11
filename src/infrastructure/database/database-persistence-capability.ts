@@ -5,6 +5,7 @@ import type { DatabaseSchema } from './database-types.js';
 
 export type InternalDatabasePersistenceOwner =
   | 'access'
+  | 'customers'
   | 'database'
   | 'repairs'
   | 'stations'
@@ -21,6 +22,25 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     kysely_migration: DatabaseMigrationJournalTable;
     repairs: DatabaseSchema['repairs'];
     repair_intakes: DatabaseSchema['repair_intakes'];
+    repair_equipment_corrections: DatabaseSchema['repair_equipment_corrections'];
+    repair_device_types: DatabaseSchema['repair_device_types'];
+    repair_device_type_pending_values: DatabaseSchema['repair_device_type_pending_values'];
+    repair_device_type_catalog_events: DatabaseSchema['repair_device_type_catalog_events'];
+    repair_brands: DatabaseSchema['repair_brands'];
+    repair_brand_pending_values: DatabaseSchema['repair_brand_pending_values'];
+    repair_brand_catalog_events: DatabaseSchema['repair_brand_catalog_events'];
+    repair_models: DatabaseSchema['repair_models'];
+    repair_model_pending_values: DatabaseSchema['repair_model_pending_values'];
+    repair_model_catalog_events: DatabaseSchema['repair_model_catalog_events'];
+    repair_risks: DatabaseSchema['repair_risks'];
+    repair_intervention_risks: DatabaseSchema['repair_intervention_risks'];
+    repair_risk_catalog_events: DatabaseSchema['repair_risk_catalog_events'];
+    repair_problem_categories: DatabaseSchema['repair_problem_categories'];
+    repair_problem_pending_values: DatabaseSchema['repair_problem_pending_values'];
+    repair_problem_category_catalog_events: DatabaseSchema['repair_problem_category_catalog_events'];
+    repair_problem_category_deletion_events: DatabaseSchema['repair_problem_category_deletion_events'];
+    repair_problem_classifications: DatabaseSchema['repair_problem_classifications'];
+    repair_problem_classification_events: DatabaseSchema['repair_problem_classification_events'];
     repair_timeline_entries: DatabaseSchema['repair_timeline_entries'];
     repair_business_audit_events: DatabaseSchema['repair_business_audit_events'];
     repair_operational_note_request_guards: DatabaseSchema['repair_operational_note_request_guards'];
@@ -31,7 +51,14 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     repair_workflow_transitions: DatabaseSchema['repair_workflow_transitions'];
     repair_locations: DatabaseSchema['repair_locations'];
     repair_location_movements: DatabaseSchema['repair_location_movements'];
+    customers: DatabaseSchema['customers'];
+    customer_contact_phones: DatabaseSchema['customer_contact_phones'];
+    repair_create_commands: DatabaseSchema['repair_create_commands'];
+    repair_folio_sequences: DatabaseSchema['repair_folio_sequences'];
+    repair_new_repair_policy_heads: DatabaseSchema['repair_new_repair_policy_heads'];
+    repair_new_repair_policy_versions: DatabaseSchema['repair_new_repair_policy_versions'];
     users: DatabaseSchema['users'];
+    user_preferences: DatabaseSchema['user_preferences'];
     user_provisioning_bootstraps: DatabaseSchema['user_provisioning_bootstraps'];
     user_lifecycle_commands: DatabaseSchema['user_lifecycle_commands'];
     user_profile_update_commands: DatabaseSchema['user_profile_update_commands'];
@@ -54,14 +81,16 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
   Owner extends 'access'
     ? Pick<DatabaseSchema, 'access_capabilities' | 'access_roles' | 'access_role_commands' | 'access_role_capabilities' | 'access_role_assignments' | 'access_role_assignment_commands' | 'access_pin_credentials' | 'access_pin_credential_commands' | 'access_pin_eligibility_tenant_guards' | 'access_pin_attempt_station_guards' | 'access_pin_attempt_limits' | 'access_operational_session_station_guards' | 'access_operational_sessions'>
+    : Owner extends 'customers'
+    ? Pick<DatabaseSchema, 'customers' | 'customer_contact_phones'>
     : Owner extends 'database'
     ? DatabaseTechnicalSchema
     : Owner extends 'repairs'
-    ? Pick<DatabaseSchema, 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_operational_note_request_guards' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements'>
+    ? Pick<DatabaseSchema, 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_equipment_corrections' | 'repair_device_types' | 'repair_device_type_pending_values' | 'repair_device_type_catalog_events' | 'repair_brands' | 'repair_brand_pending_values' | 'repair_brand_catalog_events' | 'repair_models' | 'repair_model_pending_values' | 'repair_model_catalog_events' | 'repair_risks' | 'repair_intervention_risks' | 'repair_risk_catalog_events' | 'repair_problem_categories' | 'repair_problem_pending_values' | 'repair_problem_category_catalog_events' | 'repair_problem_category_deletion_events' | 'repair_problem_classifications' | 'repair_problem_classification_events' | 'repair_operational_note_request_guards' | 'repair_create_commands' | 'repair_folio_sequences' | 'repair_new_repair_policy_heads' | 'repair_new_repair_policy_versions' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements'>
     : Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'tenants'>
     : Owner extends 'users'
-    ? Pick<DatabaseSchema, 'users' | 'user_provisioning_bootstraps' | 'user_lifecycle_commands' | 'user_profile_update_commands' | 'user_create_commands'>
+    ? Pick<DatabaseSchema, 'users' | 'user_preferences' | 'user_provisioning_bootstraps' | 'user_lifecycle_commands' | 'user_profile_update_commands' | 'user_create_commands'>
     : Pick<DatabaseSchema, 'branches' | 'stations' | 'station_bindings' | 'station_credentials'>;
 
 export type InternalDatabasePersistenceExecutor<

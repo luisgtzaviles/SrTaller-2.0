@@ -65,8 +65,9 @@ test('D6.1 status projection remains visible while the uncataloged write stays h
   assert.doesNotMatch(detail, /startRepairDiagnosis|Iniciar diagnóstico|workflowMessageRef/u);
   assert.match(worklist, /srtaller:repairs-changed/u);
   assert.doesNotMatch(detail, /Cambiar estado/u);
-  assert.match(detail, /Ubicación no registrada/u);
-  assert.match(detail, /technicianSummary\.history/u);
+  assert.match(detail, /repair\.currentSituation\.location\?\.label \?\? 'Sin registrar'/u);
+  assert.match(detail, /currentTechnician\?\.displayName \?\? 'Sin asignar'/u);
+  assert.match(detail, /repair\.timeline\.items\.map[\s\S]*RepairTimelineEntry/u);
 });
 
 test('D6.1 seed declares deterministic diagnosing history without widening the writable catalog', () => {

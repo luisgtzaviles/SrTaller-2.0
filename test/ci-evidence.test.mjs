@@ -16,6 +16,10 @@ import {
   postgresqlImageDigest,
   productiveMigration,
 } from '../scripts/lib/postgresql-ci-evidence.mjs';
+import {
+  finalizePbi039PostgresqlCiManifest,
+  pbi039PostgresqlSuites,
+} from '../scripts/lib/pbi039-postgresql-ci-evidence.mjs';
 
 async function createDistFixture({
   absoluteSource = false,
@@ -216,6 +220,77 @@ function postgresqlManifest(label) {
   });
 }
 
+function pbi039PostgresqlManifest(label) {
+  return finalizePbi039PostgresqlCiManifest({
+    schemaVersion: 1,
+    contract: 'PBI-039/POSTGRESQL-CI',
+    execution: {
+      attempt: '1',
+      event: 'pull_request',
+      headSha: '0123456789abcdef0123456789abcdef01234567',
+      label,
+      workflowRunId: '1234',
+    },
+    image: {
+      reference: postgresqlImage,
+      digest: postgresqlImageDigest,
+      os: 'linux',
+      architecture: 'amd64',
+    },
+    postgres: {
+      version: '18.4',
+      encoding: 'UTF8',
+      timezone: 'UTC',
+    },
+    database: {
+      isolation: 'fresh database and container per test file',
+      identitiesExposed: false,
+      persistentStorage: false,
+      suiteDatabases: pbi039PostgresqlSuites.length,
+    },
+    suites: pbi039PostgresqlSuites.map((name) => ({
+      name,
+      status: 'PASS',
+      cleanup: 'PASS',
+      migration: {
+        applied: 51,
+        pending: 0,
+      },
+      tests: {
+        tests: 1,
+        pass: 1,
+        fail: 0,
+        cancelled: 0,
+        skipped: 0,
+        todo: 0,
+      },
+    })),
+    totals: {
+      suites: pbi039PostgresqlSuites.length,
+      testsExecuted: pbi039PostgresqlSuites.length,
+      criticalSkips: 0,
+      failures: 0,
+    },
+    cleanup: {
+      status: 'PASS',
+      containers: 0,
+      volumes: 0,
+      persistentFiles: 0,
+    },
+    sanitization: {
+      status: 'PASS',
+      credentials: 'not recorded',
+      connectionStrings: 'not recorded',
+      rawSqlLogs: 'not recorded',
+      personalPaths: 'not recorded',
+    },
+    materialComparison: 'MATCH',
+    runs: 1,
+    status: 'PASS',
+    result: 'PASS',
+  });
+}
+
 test('dist inspection produces a stable relative SHA-256 inventory', async () => {
   const root = await createDistFixture();
   try {
@@ -380,4 +455,66 @@ test('PostgreSQL evidence fails closed when a critical suite is skipped', () => 
     () => finalizePostgresqlCiManifest(unsafe),
     /skipped or failed/u,
   );
+});
+
+test('schemaVersion 3 compares both PostgreSQL contracts while ignoring run identity', () => {
+  const left = manifest('run-1');
+  left.schemaVersion = 3;
+  left.postgresql = postgresqlManifest('run-1');
+  left.pbi039Postgresql = pbi039PostgresqlManifest('run-1');
+  const right = manifest('run-2');
+  right.schemaVersion = 3;
+  right.postgresql = postgresqlManifest('run-2');
+  right.pbi039Postgresql = pbi039PostgresqlManifest('run-2');
+
+  const comparison = compareEvidenceManifests(left, right);
+  assert.equal(comparison.equivalent, true);
+  assert.equal(
+    comparison.comparableSha256.left,
+    comparison.comparableSha256.right,
+  );
+});
+
+test('schemaVersion 3 fails closed when PBI-039 evidence is absent or unbound', () => {
+  const absent = manifest('run-1');
+  absent.schemaVersion = 3;
+  absent.postgresql = postgresqlManifest('run-1');
+  assert.throws(
+    () => validateEvidenceManifest(absent),
+    /Unsupported PBI-039 PostgreSQL CI evidence contract/u,
+  );
+
+  const unbound = manifest('run-1');
+  unbound.schemaVersion = 3;
+  unbound.postgresql = postgresqlManifest('run-1');
+  unbound.pbi039Postgresql = pbi039PostgresqlManifest('run-2');
+  assert.throws(
+    () => validateEvidenceManifest(unbound),
+    /not bound to the VC-024 execution/u,
+  );
+});
+
+test('PBI-039 PostgreSQL evidence fails closed on skips and material differences', () => {
+  const unsafe = structuredClone(pbi039PostgresqlManifest('run-1'));
+  unsafe.suites[0].tests.skipped = 1;
+  assert.throws(
+    () => finalizePbi039PostgresqlCiManifest(unsafe),
+    /skipped or failed/u,
+  );
+
+  const left = manifest('run-1');
+  left.schemaVersion = 3;
+  left.postgresql = postgresqlManifest('run-1');
+  left.pbi039Postgresql = pbi039PostgresqlManifest('run-1');
+  const right = manifest('run-2');
+  right.schemaVersion = 3;
+  right.postgresql = postgresqlManifest('run-2');
+  right.pbi039Postgresql = pbi039PostgresqlManifest('run-2');
+  right.pbi039Postgresql.suites[0].migration.applied += 1;
+  right.pbi039Postgresql = finalizePbi039PostgresqlCiManifest(
+    right.pbi039Postgresql,
+  );
+
+  const comparison = compareEvidenceManifests(left, right);
+  assert.equal(comparison.equivalent, false);
 });

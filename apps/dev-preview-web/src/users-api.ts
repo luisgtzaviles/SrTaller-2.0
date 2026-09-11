@@ -191,6 +191,13 @@ export function transitionProductUser(
 export const capabilityLabel: Readonly<Record<string, string>> = Object.freeze({
   'repairs.read': 'Ver reparaciones',
   'repairs.add_note': 'Agregar notas operativas',
+  'repairs.create': 'Crear reparaciones',
+  'repairs.correct_intake': 'Corregir equipo de reparaciones',
+  'repairs.classify': 'Clasificar problemas de reparaciones',
+  'repairs.catalogs.read': 'Ver catálogos de Reparaciones',
+  'repairs.catalogs.manage': 'Administrar catálogos de Reparaciones',
+  'repairs.configuration.read': 'Ver configuración de Nueva Reparación',
+  'repairs.configuration.manage': 'Administrar configuración de Nueva Reparación',
   'users.read': 'Ver usuarios',
   'users.manage': 'Administrar usuarios',
   'access_matrix.read': 'Ver roles y permisos',

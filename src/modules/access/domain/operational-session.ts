@@ -4,6 +4,7 @@ import type { PinAuthenticationProof } from './pin-credential.js';
 
 export const OPERATIONAL_SESSION_IDLE_MS = 60 * 60 * 1_000;
 export const OPERATIONAL_SESSION_ABSOLUTE_MS = 12 * 60 * 60 * 1_000;
+export const OPERATIONAL_SESSION_ACTIVITY_TOUCH_INTERVAL_MS = 5_000;
 
 export type OperationalSessionStatus =
   | 'active'

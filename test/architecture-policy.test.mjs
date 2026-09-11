@@ -44,7 +44,9 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
     'access->stations',
     'access->tenancy',
     'access->users',
+    'customers->tenancy',
     'repairs->access',
+    'repairs->customers',
     'repairs->stations',
     'repairs->tenancy',
     'stations->tenancy',
@@ -52,11 +54,11 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
   ]);
 });
 
-test('policy v6 registers exact directed public module composition', async () => {
+test('policy v8 registers exact directed public module composition', async () => {
   const policy = JSON.parse(
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
-  assert.equal(policy.policyVersion, 6);
+  assert.equal(policy.policyVersion, 8);
   assert.deepEqual(policy.directedModuleComposition, {
     decorator: 'Module',
     edges: [
@@ -122,6 +124,33 @@ test('policy v6 registers exact directed public module composition', async () =>
             token: 'USER_PRODUCT_RUNTIME',
             contract: 'UserProductRuntime',
             consumerImportSpecifier: '../users/index.js',
+            producerImportSpecifier: './index.js',
+          },
+          {
+            token: 'USER_PREFERENCES_RUNTIME',
+            contract: 'UserPreferencesRuntime',
+            consumerImportSpecifier: '../users/index.js',
+            producerImportSpecifier: './index.js',
+          },
+        ],
+      },
+      {
+        consumer: 'repairs',
+        producer: 'customers',
+        consumerModule: {
+          file: 'src/modules/repairs/repairs.module.ts',
+          className: 'RepairsModule',
+        },
+        producerModule: {
+          file: 'src/modules/customers/customers.module.ts',
+          className: 'CustomersModule',
+          importSpecifier: '../customers/customers.module.js',
+        },
+        publicBindings: [
+          {
+            token: 'CUSTOMER_INTAKE_RUNTIME',
+            contract: 'CustomerIntakeRuntime',
+            consumerImportSpecifier: '../customers/index.js',
             producerImportSpecifier: './index.js',
           },
         ],
@@ -272,18 +301,40 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts',
     'src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts',
     'src/infrastructure/database/migrations/20260908021000_users_create_commands.ts',
+    'src/infrastructure/database/migrations/20260908110000_access_add_repairs_create_capability.ts',
+    'src/infrastructure/database/migrations/20260908111000_customers_create_branch_minimum.ts',
+    'src/infrastructure/database/migrations/20260908112000_repairs_enable_minimum_intake_creation.ts',
+    'src/infrastructure/database/migrations/20260908113000_repairs_expand_classic_intake.ts',
+    'src/infrastructure/database/migrations/20260908114000_repairs_expand_avicell_reception.ts',
+    'src/infrastructure/database/migrations/20260908115000_access_add_repairs_configuration_capabilities.ts',
+    'src/infrastructure/database/migrations/20260908120000_repairs_create_new_repair_field_policies.ts',
+    'src/infrastructure/database/migrations/20260908121000_access_add_repairs_catalog_capabilities.ts',
+    'src/infrastructure/database/migrations/20260908122000_repairs_create_risk_catalog.ts',
+    'src/infrastructure/database/migrations/20260908123000_repairs_create_brand_catalog.ts',
+    'src/infrastructure/database/migrations/20260910230000_repairs_create_device_type_catalog.ts',
+    'src/infrastructure/database/migrations/20260908124000_repairs_create_model_catalog.ts',
+    'src/infrastructure/database/migrations/20260908125000_repairs_enforce_model_brand_compatibility.ts',
+    'src/infrastructure/database/migrations/20260908125100_access_add_repairs_correct_intake_capability.ts',
+    'src/infrastructure/database/migrations/20260908125200_repairs_create_equipment_corrections.ts',
+    'src/infrastructure/database/migrations/20260908130000_access_add_repairs_classify_capability.ts',
+    'src/infrastructure/database/migrations/20260908130100_repairs_create_problem_category_catalog.ts',
+    'src/infrastructure/database/migrations/20260908131000_repairs_add_problem_capture_reconciliation.ts',
+    'src/infrastructure/database/migrations/20260909100000_repairs_add_problem_category_safe_delete.ts',
+    'src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
-    assert.deepEqual(Object.keys(registration).sort(), [
+    const allowedKeys = [
       'functions',
       'owner',
       'tables',
       'triggers',
-    ]);
+      ...(registration.references ? ['references'] : []),
+    ].sort();
+    assert.deepEqual(Object.keys(registration).sort(), allowedKeys);
     assert.ok(registration.tables.length > 0);
     if ([
       'src/infrastructure/database/migrations/20260907230000_access_add_local_administration_capabilities.ts',
@@ -291,6 +342,18 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts',
       'src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts',
       'src/infrastructure/database/migrations/20260908021000_users_create_commands.ts',
+      'src/infrastructure/database/migrations/20260908110000_access_add_repairs_create_capability.ts',
+      'src/infrastructure/database/migrations/20260908111000_customers_create_branch_minimum.ts',
+      'src/infrastructure/database/migrations/20260908112000_repairs_enable_minimum_intake_creation.ts',
+      'src/infrastructure/database/migrations/20260908113000_repairs_expand_classic_intake.ts',
+      'src/infrastructure/database/migrations/20260908114000_repairs_expand_avicell_reception.ts',
+      'src/infrastructure/database/migrations/20260908115000_access_add_repairs_configuration_capabilities.ts',
+      'src/infrastructure/database/migrations/20260908120000_repairs_create_new_repair_field_policies.ts',
+      'src/infrastructure/database/migrations/20260908121000_access_add_repairs_catalog_capabilities.ts',
+      'src/infrastructure/database/migrations/20260908125100_access_add_repairs_correct_intake_capability.ts',
+      'src/infrastructure/database/migrations/20260908130000_access_add_repairs_classify_capability.ts',
+      'src/infrastructure/database/migrations/20260908131000_repairs_add_problem_capture_reconciliation.ts',
+      'src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);
@@ -334,6 +397,15 @@ test('registered module presentation and Health are the explicitly governed HTTP
           file: 'src/modules/access/access.module.ts',
           className: 'AccessModule',
           importSpecifier: './presentation/access-session.controller.js',
+        },
+      },
+      'src/modules/access/presentation/user-preferences.controller.ts': {
+        owner: 'access',
+        className: 'UserPreferencesController',
+        composition: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: './presentation/user-preferences.controller.js',
         },
       },
       'src/modules/repairs/presentation/repairs.controller.ts': {

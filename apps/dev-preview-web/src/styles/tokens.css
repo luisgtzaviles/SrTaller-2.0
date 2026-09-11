@@ -38,6 +38,12 @@
   --color-info-subtle: #EFF8FF;
   --color-neutral-status: #344054;
   --color-neutral-status-subtle: #F2F4F7;
+  --color-device-tone-1: #111827;
+  --color-device-tone-2: #F8FAFC;
+  --color-device-tone-3: #2563EB;
+  --color-device-tone-4: #DC2626;
+  --color-device-tone-5: #16A34A;
+  --color-device-tone-6: #D4A017;
   --color-shell: #101827;
   --color-shell-raised: #1E293B;
   --color-shell-border: #334155;
@@ -127,6 +133,8 @@
   --control-default: 40px;
   --control-compact: 32px;
   --touch-target: 44px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 1px;
   --sidebar-expanded: 256px;
   --sidebar-collapsed: 72px;
   --drawer-max: 320px;

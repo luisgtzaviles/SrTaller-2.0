@@ -1,0 +1,14 @@
+.page { display: grid; gap: 1rem; width: min(100%, 1280px); min-width: 0; margin: 0 auto; padding: 1.25rem 1.5rem 4rem; }
+.backLink { justify-self: start; }
+.headingRow { display: flex; align-items: end; justify-content: space-between; gap: 2rem; }
+.modulePicker { display: grid; grid-template-columns: auto auto minmax(10rem, 1fr); align-items: center; gap: .55rem; min-width: 22rem; padding: .6rem .7rem; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
+.modulePicker > span { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: var(--radius-md); color: var(--color-brand-action); background: var(--color-brand-subtle); }
+.modulePicker label { color: var(--color-text-muted); font-size: .72rem; font-weight: var(--font-weight-bold); }
+.modulePicker select { min-height: 2rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding-inline: .6rem; color: var(--color-text); background: var(--color-surface-subtle); font: inherit; font-size: .78rem; opacity: 1; }
+.catalogTabs { display: flex; gap: .35rem; min-width: 0; max-width: 100%; padding-bottom: .15rem; overflow-x: auto; }
+.catalogTabs button { min-height: 2.25rem; display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text-muted); background: var(--color-surface); font: inherit; font-size: .76rem; font-weight: var(--font-weight-bold); white-space: nowrap; }
+.catalogTabs button[aria-current='page'] { color: var(--color-brand-action); border-color: color-mix(in srgb, var(--color-brand-action) 38%, var(--color-border)); background: var(--color-brand-subtle); }
+.catalogTabs button:disabled { opacity: .58; }
+.catalogTabs small { padding: .12rem .32rem; border-radius: var(--radius-full); background: var(--color-surface-subtle); font-size: .56rem; text-transform: uppercase; }
+@media (max-width: 1024px) { .headingRow { display: grid; gap: .75rem; } .modulePicker { width: 100%; min-width: 0; } }
+@media (max-width: 768px) { .page { padding: 1rem; } }

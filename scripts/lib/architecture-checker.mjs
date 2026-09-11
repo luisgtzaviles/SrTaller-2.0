@@ -1281,18 +1281,17 @@ function persistenceBoundaryDiagnostics({
       const fileOwner = basename(file).match(
         /^\d{14}_([a-z][a-z0-9]*)_/u,
       )?.[1];
+      const registrationKeys = registration.references === undefined
+        ? ['functions', 'owner', 'tables', 'triggers']
+        : ['functions', 'owner', 'references', 'tables', 'triggers'];
       const validRegistration =
         allowedMigrations.has(file) &&
         isGovernedMigration(file) &&
-        exactObjectKeys(registration, [
-          'functions',
-          'owner',
-          'tables',
-          'triggers',
-        ]) &&
+        exactObjectKeys(registration, registrationKeys) &&
         typeof registration.owner === 'string' &&
         registration.owner === fileOwner &&
         validIdentifierList(registration.tables) &&
+        (registration.references === undefined || validIdentifierList(registration.references)) &&
         validIdentifierList(registration.functions) &&
         validIdentifierList(registration.triggers);
       if (!validRegistration) {
@@ -1311,6 +1310,16 @@ function persistenceBoundaryDiagnostics({
             'D5-R047',
             resolve(projectRoot, file),
             `migration table ${table} is unknown or owned by another module`,
+          );
+        }
+      }
+      for (const table of registration.references ?? []) {
+        const object = persistence.databaseObjects[table];
+        if (!object || object.kind !== 'table' || registration.tables.includes(table)) {
+          add(
+            'D5-R047',
+            resolve(projectRoot, file),
+            `migration referenced table ${table} must exist and remain distinct from owned tables`,
           );
         }
       }
@@ -1611,14 +1620,13 @@ function persistenceBoundaryDiagnostics({
       }
       return;
     }
+    const registrationKeys = registration.references === undefined
+      ? ['functions', 'owner', 'tables', 'triggers']
+      : ['functions', 'owner', 'references', 'tables', 'triggers'];
     if (
-      !exactObjectKeys(registration, [
-        'functions',
-        'owner',
-        'tables',
-        'triggers',
-      ]) ||
+      !exactObjectKeys(registration, registrationKeys) ||
       !validIdentifierList(registration.tables) ||
+      (registration.references !== undefined && !validIdentifierList(registration.references)) ||
       !validIdentifierList(registration.functions) ||
       !validIdentifierList(registration.triggers)
     ) {
@@ -1634,9 +1642,10 @@ function persistenceBoundaryDiagnostics({
       );
     }
 
+    const referencedTables = new Set(registration.references ?? []);
     for (const table of observed.tables) {
       const object = persistence.databaseObjects[table];
-      if (!object || object.kind !== 'table' || object.owner !== registration.owner) {
+      if (!object || object.kind !== 'table' || (!referencedTables.has(table) && object.owner !== registration.owner)) {
         add(
           'D5-R047',
           file,
@@ -1661,7 +1670,7 @@ function persistenceBoundaryDiagnostics({
     }
 
     for (const [kind, registered, actual] of [
-      ['tables', registration.tables, observed.tables],
+      ['tables', [...registration.tables, ...(registration.references ?? [])], observed.tables],
       ['functions', registration.functions, observed.functions],
       ['triggers', registration.triggers, observed.triggers],
     ]) {

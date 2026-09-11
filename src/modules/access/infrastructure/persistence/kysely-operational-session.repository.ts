@@ -20,7 +20,10 @@ import {
 import type {
   OperationalSessionRecord,
 } from '../../domain/operational-session.js';
-import { OPERATIONAL_SESSION_IDLE_MS } from '../../domain/operational-session.js';
+import {
+  OPERATIONAL_SESSION_ACTIVITY_TOUCH_INTERVAL_MS,
+  OPERATIONAL_SESSION_IDLE_MS,
+} from '../../domain/operational-session.js';
 import type { CapabilityCode } from '../../domain/capability.js';
 import { KyselyOperationalAuthorizationCommitGuard } from './kysely-operational-authorization-commit.guard.js';
 
@@ -318,12 +321,19 @@ export class KyselyOperationalSessionRepository
           if (!input.recordActivity) {
             return Object.freeze({ ...map(locked), displayName: trustedUser.user.displayName });
           }
+          const occurredAt = new Date(input.occurredAt);
+          if (
+            locked.last_activity_at.getTime() >=
+              occurredAt.getTime() - OPERATIONAL_SESSION_ACTIVITY_TOUCH_INTERVAL_MS
+          ) {
+            return Object.freeze({ ...map(locked), displayName: trustedUser.user.displayName });
+          }
           const current = await database
             .updateTable('access_operational_sessions')
             .set((expression) => ({
               last_activity_at: expression.fn('greatest', [
                 'last_activity_at',
-                expression.val(new Date(input.occurredAt)),
+                expression.val(occurredAt),
               ]),
               version: expression('version', '+', 1),
             }))

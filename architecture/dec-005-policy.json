@@ -1,10 +1,11 @@
 {
-  "policyVersion": 6,
-  "allowedModules": ["access", "repairs", "stations", "tenancy", "users"],
+  "policyVersion": 8,
+  "allowedModules": ["access", "customers", "repairs", "stations", "tenancy", "users"],
   "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy", "users"],
-    "repairs": ["access", "stations", "tenancy"],
+    "customers": ["tenancy"],
+    "repairs": ["access", "customers", "stations", "tenancy"],
     "stations": ["tenancy"],
     "tenancy": [],
     "users": ["tenancy"]
@@ -21,6 +22,15 @@
       "ProtectedOperationKind",
       "ProtectedOperationRequirement",
       "ProtectedRequestEvidence"
+    ],
+    "customers": [
+      "CUSTOMER_INTAKE_RUNTIME",
+      "CustomerIntakeInput",
+      "CustomerIntakeRecord",
+      "CustomerIntakeRuntime",
+      "CustomerIntakeScope",
+      "CustomerSearchCandidate",
+      "CustomersModuleContract"
     ],
     "repairs": ["RepairsModuleContract"],
     "stations": [
@@ -39,6 +49,7 @@
       "TrustedStationContextResolver",
       "branchLocalCalendarBoundaryToUtc",
       "branchLocalCalendarDate",
+      "branchLocalDateTimeToUtc",
       "isTrustedStationContext",
       "parseBranchTimeZone",
       "presentOperationalDateTime"
@@ -53,15 +64,19 @@
       "AuthenticationUserRecord",
       "AuthenticationUserScope",
       "USER_PRODUCT_RUNTIME",
+      "USER_PREFERENCES_RUNTIME",
+      "NewRepairFormMode",
+      "UserPreferencesRuntime",
       "UserProductRuntime",
       "UsersModuleContract"
     ]
   },
   "consumers": {
     "access": ["AppModule", "repairs"],
+    "customers": ["AppModule", "repairs"],
     "repairs": ["AppModule"],
     "stations": ["access", "repairs"],
-    "tenancy": ["access", "stations", "users"],
+    "tenancy": ["access", "customers", "stations", "users"],
     "users": ["access", "AppModule"]
   },
   "governedRoots": ["src/modules"],
@@ -78,6 +93,17 @@
     "src/modules/access/access.module.ts": {
       "declarationKind": "class",
       "declarationName": "AccessModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
+    },
+    "src/modules/customers/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "CustomersModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/customers/customers.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "CustomersModule",
       "decorator": "Module",
       "rule": "D5-R003"
     },
@@ -137,6 +163,7 @@
     "decorator": "Module",
     "imports": {
       "AccessModule": "./modules/access/access.module.js",
+      "CustomersModule": "./modules/customers/customers.module.js",
       "RepairsModule": "./modules/repairs/repairs.module.js",
       "StationsModule": "./modules/stations/stations.module.js",
       "TenancyModule": "./modules/tenancy/tenancy.module.js",
@@ -208,6 +235,33 @@
             "token": "USER_PRODUCT_RUNTIME",
             "contract": "UserProductRuntime",
             "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "USER_PREFERENCES_RUNTIME",
+            "contract": "UserPreferencesRuntime",
+            "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
+      },
+      {
+        "consumer": "repairs",
+        "producer": "customers",
+        "consumerModule": {
+          "file": "src/modules/repairs/repairs.module.ts",
+          "className": "RepairsModule"
+        },
+        "producerModule": {
+          "file": "src/modules/customers/customers.module.ts",
+          "className": "CustomersModule",
+          "importSpecifier": "../customers/customers.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "CUSTOMER_INTAKE_RUNTIME",
+            "contract": "CustomerIntakeRuntime",
+            "consumerImportSpecifier": "../customers/index.js",
             "producerImportSpecifier": "./index.js"
           }
         ]
@@ -294,6 +348,7 @@
           "src/main.ts",
           "src/modules/access/access.module.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
+          "src/modules/customers/customers.module.ts",
           "src/modules/stations/stations.module.ts",
           "src/modules/users/users.module.ts"
         ]
@@ -325,6 +380,12 @@
       }
     ],
     "moduleConsumers": [
+      {
+        "owner": "customers",
+        "file": "src/modules/customers/customers.module.ts",
+        "className": "CustomersModule",
+        "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
+      },
       {
         "owner": "access",
         "file": "src/modules/access/access.module.ts",
@@ -381,6 +442,13 @@
         "kind": "constructor-inject"
       },
       {
+        "file": "src/modules/customers/customers.module.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
         "file": "src/modules/stations/stations.module.ts",
         "token": "APPLICATION_DATABASE_CONNECTION",
         "contract": "ApplicationDatabaseConnection",
@@ -433,6 +501,15 @@
           "importSpecifier": "./presentation/access-session.controller.js"
         }
       },
+      "src/modules/access/presentation/user-preferences.controller.ts": {
+        "owner": "access",
+        "className": "UserPreferencesController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/user-preferences.controller.js"
+        }
+      },
       "src/modules/repairs/presentation/repairs.controller.ts": {
         "owner": "repairs",
         "className": "RepairsController",
@@ -466,6 +543,7 @@
     "allowedDependencyRoots": [
       "src/infrastructure/database/",
       "src/modules/access/infrastructure/persistence/",
+      "src/modules/customers/infrastructure/persistence/",
       "src/modules/repairs/infrastructure/persistence/",
       "src/modules/stations/infrastructure/persistence/",
       "src/modules/tenancy/infrastructure/persistence/",
@@ -473,7 +551,7 @@
     ],
     "databaseRoot": "src/infrastructure/database/",
     "migrationRoot": "src/infrastructure/database/migrations/",
-    "migrationFilePattern": "^\\d{14}_(access|database|repairs|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "migrationFilePattern": "^\\d{14}_(access|customers|database|repairs|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
     "allowedMigrations": [
       "src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts",
       "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
@@ -504,7 +582,27 @@
       "src/infrastructure/database/migrations/20260908002000_access_add_role_editing_commands.ts",
       "src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts",
       "src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts",
-      "src/infrastructure/database/migrations/20260908021000_users_create_commands.ts"
+      "src/infrastructure/database/migrations/20260908021000_users_create_commands.ts",
+      "src/infrastructure/database/migrations/20260908110000_access_add_repairs_create_capability.ts",
+      "src/infrastructure/database/migrations/20260908111000_customers_create_branch_minimum.ts",
+      "src/infrastructure/database/migrations/20260908112000_repairs_enable_minimum_intake_creation.ts",
+      "src/infrastructure/database/migrations/20260908113000_repairs_expand_classic_intake.ts",
+      "src/infrastructure/database/migrations/20260908114000_repairs_expand_avicell_reception.ts",
+      "src/infrastructure/database/migrations/20260908115000_access_add_repairs_configuration_capabilities.ts",
+      "src/infrastructure/database/migrations/20260908120000_repairs_create_new_repair_field_policies.ts",
+      "src/infrastructure/database/migrations/20260908121000_access_add_repairs_catalog_capabilities.ts",
+      "src/infrastructure/database/migrations/20260908122000_repairs_create_risk_catalog.ts",
+      "src/infrastructure/database/migrations/20260908123000_repairs_create_brand_catalog.ts",
+      "src/infrastructure/database/migrations/20260908124000_repairs_create_model_catalog.ts",
+      "src/infrastructure/database/migrations/20260908125000_repairs_enforce_model_brand_compatibility.ts",
+      "src/infrastructure/database/migrations/20260908125100_access_add_repairs_correct_intake_capability.ts",
+      "src/infrastructure/database/migrations/20260908125200_repairs_create_equipment_corrections.ts",
+      "src/infrastructure/database/migrations/20260908130000_access_add_repairs_classify_capability.ts",
+      "src/infrastructure/database/migrations/20260908130100_repairs_create_problem_category_catalog.ts",
+      "src/infrastructure/database/migrations/20260908131000_repairs_add_problem_capture_reconciliation.ts",
+      "src/infrastructure/database/migrations/20260909100000_repairs_add_problem_category_safe_delete.ts",
+      "src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts",
+      "src/infrastructure/database/migrations/20260910230000_repairs_create_device_type_catalog.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -675,6 +773,294 @@
           ],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908110000_access_add_repairs_create_capability.ts": {
+          "owner": "access",
+          "tables": [
+            "access_capabilities",
+            "access_role_capabilities"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908111000_customers_create_branch_minimum.ts": {
+          "owner": "customers",
+          "tables": [
+            "customer_contact_phones",
+            "customers"
+          ],
+          "references": [
+            "branches"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908112000_repairs_enable_minimum_intake_creation.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_business_audit_events",
+            "repair_create_commands",
+            "repair_folio_sequences",
+            "repairs"
+          ],
+          "references": [
+            "branches",
+            "customers"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908113000_repairs_expand_classic_intake.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_intakes"
+          ],
+          "references": [
+            "repairs"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908114000_repairs_expand_avicell_reception.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_intakes"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908115000_access_add_repairs_configuration_capabilities.ts": {
+          "owner": "access",
+          "tables": [
+            "access_capabilities",
+            "access_role_capabilities"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908120000_repairs_create_new_repair_field_policies.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_intakes",
+            "repair_new_repair_policy_heads",
+            "repair_new_repair_policy_versions"
+          ],
+          "references": [
+            "branches"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908121000_access_add_repairs_catalog_capabilities.ts": {
+          "owner": "access",
+          "tables": [
+            "access_capabilities",
+            "access_role_capabilities"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908122000_repairs_create_risk_catalog.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_intervention_risks",
+            "repair_risk_catalog_events",
+            "repair_risks"
+          ],
+          "references": [
+            "repairs",
+            "tenants"
+          ],
+          "functions": [
+            "repairs_reject_risk_catalog_event_mutation"
+          ],
+          "triggers": [
+            "repair_risk_catalog_events_reject_update",
+            "repair_risk_catalog_events_reject_delete"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260908123000_repairs_create_brand_catalog.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_brand_catalog_events",
+            "repair_brand_pending_values",
+            "repair_brands",
+            "repair_intakes"
+          ],
+          "references": [
+            "tenants"
+          ],
+          "functions": [
+            "repairs_reject_brand_catalog_event_mutation"
+          ],
+          "triggers": [
+            "repair_brand_catalog_events_reject_update",
+            "repair_brand_catalog_events_reject_delete"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260910230000_repairs_create_device_type_catalog.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_device_type_catalog_events",
+            "repair_device_type_pending_values",
+            "repair_device_types",
+            "repair_intakes"
+          ],
+          "references": [
+            "tenants"
+          ],
+          "functions": [
+            "repairs_reject_device_type_catalog_event_mutation"
+          ],
+          "triggers": [
+            "repair_device_type_catalog_events_reject_update",
+            "repair_device_type_catalog_events_reject_delete"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260908124000_repairs_create_model_catalog.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_intakes",
+            "repair_model_catalog_events",
+            "repair_model_pending_values",
+            "repair_models"
+          ],
+          "references": [
+            "repair_brand_pending_values",
+            "repair_brands",
+            "tenants"
+          ],
+          "functions": [
+            "repairs_reject_model_catalog_event_mutation"
+          ],
+          "triggers": [
+            "repair_model_catalog_events_reject_update",
+            "repair_model_catalog_events_reject_delete"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260908125000_repairs_enforce_model_brand_compatibility.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_intakes",
+            "repair_models"
+          ],
+          "references": [
+            "repair_brands"
+          ],
+          "functions": [
+            "repairs_enforce_intake_model_brand_match",
+            "repairs_enforce_model_catalog_brand_scope"
+          ],
+          "triggers": [
+            "repair_intakes_enforce_model_brand_match",
+            "repair_models_enforce_brand_scope"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260908125100_access_add_repairs_correct_intake_capability.ts": {
+          "owner": "access",
+          "tables": [
+            "access_capabilities",
+            "access_role_capabilities"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908125200_repairs_create_equipment_corrections.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_business_audit_events",
+            "repair_equipment_corrections",
+            "repair_intakes"
+          ],
+          "references": [
+            "repairs",
+            "repair_timeline_entries"
+          ],
+          "functions": [
+            "repairs_reject_equipment_correction_mutation"
+          ],
+          "triggers": [
+            "repair_equipment_corrections_reject_update",
+            "repair_equipment_corrections_reject_delete"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260908130000_access_add_repairs_classify_capability.ts": {
+          "owner": "access",
+          "tables": [
+            "access_capabilities",
+            "access_role_capabilities"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260908130100_repairs_create_problem_category_catalog.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_problem_categories",
+            "repair_problem_category_catalog_events",
+            "repair_problem_classifications",
+            "repair_problem_classification_events",
+            "repair_timeline_entries"
+          ],
+          "references": [
+            "branches",
+            "repairs",
+            "tenants"
+          ],
+          "functions": [
+            "repairs_reject_problem_category_catalog_event_mutation",
+            "repairs_reject_problem_classification_event_mutation"
+          ],
+          "triggers": [
+            "repair_problem_category_catalog_events_reject_update",
+            "repair_problem_category_catalog_events_reject_delete",
+            "repair_problem_classification_events_reject_update",
+            "repair_problem_classification_events_reject_delete"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260908131000_repairs_add_problem_capture_reconciliation.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_problem_pending_values",
+            "repair_problem_classifications",
+            "repair_problem_category_catalog_events"
+          ],
+          "references": [
+            "repairs",
+            "repair_problem_categories",
+            "tenants"
+          ],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260909100000_repairs_add_problem_category_safe_delete.ts": {
+          "owner": "repairs",
+          "tables": [
+            "repair_problem_category_catalog_events",
+            "repair_problem_category_deletion_events"
+          ],
+          "references": [
+            "repair_problem_categories",
+            "tenants"
+          ],
+          "functions": [
+            "repairs_reject_problem_category_deletion_event_mutation"
+          ],
+          "triggers": [
+            "repair_problem_category_deletion_events_reject_update",
+            "repair_problem_category_deletion_events_reject_delete"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts": {
+          "owner": "users",
+          "tables": [
+            "user_preferences"
+          ],
+          "references": [
+            "users"
+          ],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -703,6 +1089,8 @@
           "StationBindingTable",
           "StationCredentialTable",
           "UserTable",
+          "NewRepairFormMode",
+          "UserPreferencesTable",
           "UserProvisioningBootstrapTable",
           "UserLifecycleCommandTable",
           "UserProfileUpdateCommandTable",
@@ -721,6 +1109,13 @@
           "AccessOperationalSessionStatus",
           "AccessOperationalSessionStationGuardTable",
           "AccessOperationalSessionTable",
+          "CustomerTable",
+          "CustomerRow",
+          "NewCustomer",
+          "CustomerContactPhoneTable",
+          "RepairEquipmentCorrectionTable",
+          "CustomerContactPhoneRow",
+          "NewCustomerContactPhone",
           "DatabaseSchema",
           "TenantRow",
           "NewTenant",
@@ -782,9 +1177,29 @@
           "NewRepair",
           "RepairUpdate",
           "RepairIntakeTable",
-          "RepairIntakeRow",
-          "NewRepairIntake",
-          "RepairIntakeUpdate",
+            "RepairIntakeRow",
+            "NewRepairIntake",
+            "RepairIntakeUpdate",
+            "RepairDeviceTypeTable",
+            "RepairDeviceTypePendingValueTable",
+            "RepairDeviceTypeCatalogEventTable",
+            "RepairBrandTable",
+            "RepairBrandPendingValueTable",
+            "RepairBrandCatalogEventTable",
+            "RepairModelTable",
+            "RepairModelPendingValueTable",
+            "RepairModelCatalogEventTable",
+            "RepairRiskTable",
+            "RepairInterventionRiskTable",
+            "RepairRiskCatalogEventTable",
+            "RepairProblemCategoryTable",
+            "RepairProblemPendingValueTable",
+            "RepairProblemCategoryCatalogEventTable",
+            "RepairProblemCategoryDeletionEventTable",
+            "RepairProblemClassificationTable",
+            "RepairProblemClassificationEventTable",
+            "RepairNewRepairPolicyHeadTable",
+          "RepairNewRepairPolicyVersionTable",
           "RepairTimelineEntryTable",
           "RepairTimelineEntryRow",
           "NewRepairTimelineEntry",
@@ -817,6 +1232,12 @@
           "RepairOperationalNoteRequestGuardTable",
           "RepairOperationalNoteRequestGuardRow",
           "NewRepairOperationalNoteRequestGuard"
+          ,"RepairCreateCommandTable"
+          ,"RepairCreateCommandRow"
+          ,"NewRepairCreateCommand"
+          ,"RepairFolioSequenceTable"
+          ,"RepairFolioSequenceRow"
+          ,"NewRepairFolioSequence"
         ],
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
@@ -850,18 +1271,41 @@
           "src/infrastructure/database/migrations/20260908010000_access_narrow_pin_eligibility_triggers.ts",
           "src/infrastructure/database/migrations/20260908020000_users_create_profile_update_commands.ts",
           "src/infrastructure/database/migrations/20260908021000_users_create_commands.ts",
+          "src/infrastructure/database/migrations/20260908110000_access_add_repairs_create_capability.ts",
+          "src/infrastructure/database/migrations/20260908111000_customers_create_branch_minimum.ts",
+          "src/infrastructure/database/migrations/20260908112000_repairs_enable_minimum_intake_creation.ts",
+          "src/infrastructure/database/migrations/20260908113000_repairs_expand_classic_intake.ts",
+          "src/infrastructure/database/migrations/20260908114000_repairs_expand_avicell_reception.ts",
+          "src/infrastructure/database/migrations/20260908115000_access_add_repairs_configuration_capabilities.ts",
+          "src/infrastructure/database/migrations/20260908120000_repairs_create_new_repair_field_policies.ts",
+          "src/infrastructure/database/migrations/20260908121000_access_add_repairs_catalog_capabilities.ts",
+          "src/infrastructure/database/migrations/20260908122000_repairs_create_risk_catalog.ts",
+          "src/infrastructure/database/migrations/20260908123000_repairs_create_brand_catalog.ts",
+          "src/infrastructure/database/migrations/20260908124000_repairs_create_model_catalog.ts",
+          "src/infrastructure/database/migrations/20260908125000_repairs_enforce_model_brand_compatibility.ts",
+          "src/infrastructure/database/migrations/20260908125100_access_add_repairs_correct_intake_capability.ts",
+          "src/infrastructure/database/migrations/20260908125200_repairs_create_equipment_corrections.ts",
+          "src/infrastructure/database/migrations/20260908130000_access_add_repairs_classify_capability.ts",
+          "src/infrastructure/database/migrations/20260908130100_repairs_create_problem_category_catalog.ts",
+          "src/infrastructure/database/migrations/20260908131000_repairs_add_problem_capture_reconciliation.ts",
+          "src/infrastructure/database/migrations/20260909100000_repairs_add_problem_category_safe_delete.ts",
+          "src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts",
+          "src/infrastructure/database/migrations/20260910230000_repairs_create_device_type_catalog.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
+          "src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
           "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
+          "src/modules/users/infrastructure/persistence/kysely-user-preferences.repository.ts",
           "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
           "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
           "src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
+          ,"src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts"
         ],
         "status": "materialized-schema-contract"
       },
@@ -1027,6 +1471,12 @@
       }
     },
     "ports": {
+      "src/modules/customers/application/ports/customer-intake-runtime.port.ts": {
+        "owner": "customers",
+        "contract": "CustomerIntakePersistencePort",
+        "allowedScopes": ["CustomerPersistenceScope"],
+        "status": "materialized-owner-port"
+      },
       "src/modules/stations/application/ports/branch-repository.port.ts": {
         "owner": "stations",
         "contract": "BranchRepositoryPort",
@@ -1036,7 +1486,7 @@
     "src/modules/repairs/application/ports/repair-repository.port.ts": {
       "owner": "repairs",
       "contract": "RepairRepositoryPort",
-      "allowedScopes": ["RepairPersistenceScope", "RepairOperationalNoteContext"],
+      "allowedScopes": ["RepairPersistenceScope", "RepairOperationalNoteContext", "RepairCreateContext", "RepairEquipmentCorrectionContext", "RepairConfigurationContext", "RepairRiskCatalogContext", "RepairDeviceTypeCatalogContext", "RepairBrandCatalogContext", "RepairModelCatalogContext", "RepairProblemCategoryCatalogContext", "RepairClassificationContext"],
       "status": "materialized-owner-port"
     },
     "src/modules/tenancy/application/ports/tenant-repository.port.ts": {
@@ -1049,6 +1499,12 @@
         "owner": "users",
         "contract": "UserRepositoryPort",
         "allowedScopes": ["UserScope"],
+        "status": "materialized-owner-port"
+      },
+      "src/modules/users/application/ports/user-preferences-repository.port.ts": {
+        "owner": "users",
+        "contract": "UserPreferencesRepositoryPort",
+        "allowedScopes": ["UserPreferencesScope"],
         "status": "materialized-owner-port"
       },
       "src/modules/access/application/ports/access-repository.port.ts": {
@@ -1077,11 +1533,22 @@
       }
     },
     "scopeTypes": {
+      "CustomerPersistenceScope": ["tenantId", "branchId"],
+      "RepairCreateContext": ["tenantId", "branchId"],
+      "RepairEquipmentCorrectionContext": ["tenantId", "branchId"],
+      "RepairConfigurationContext": ["tenantId", "branchId"],
+      "RepairDeviceTypeCatalogContext": ["tenantId", "branchId"],
+      "RepairBrandCatalogContext": ["tenantId", "branchId"],
+      "RepairModelCatalogContext": ["tenantId", "branchId"],
+      "RepairRiskCatalogContext": ["tenantId", "branchId"],
+      "RepairProblemCategoryCatalogContext": ["tenantId", "branchId"],
+      "RepairClassificationContext": ["tenantId", "branchId"],
       "RepairPersistenceScope": ["tenantId", "branchId"],
       "RepairOperationalNoteContext": ["tenantId", "branchId"],
       "TenantBranchPersistenceScope": ["tenantId", "branchId"],
       "TenantPersistenceScope": ["tenantId"],
       "UserScope": ["tenantId"],
+      "UserPreferencesScope": ["tenantId", "userId"],
       "AccessTenantScope": ["tenantId"],
       "AccessBranchScope": ["tenantId", "branchId"],
       "AccessPrincipalScope": ["tenantId", "branchId", "userId"],
@@ -1091,6 +1558,12 @@
       "OperationalSessionPersistenceScope": ["tenantId", "branchId", "stationId", "stationCredentialId"]
     },
     "adapters": {
+      "src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts": {
+        "owner": "customers",
+        "port": "src/modules/customers/application/ports/customer-intake-runtime.port.ts",
+        "composition": "src/modules/customers/customers.module.ts",
+        "status": "materialized-owner-adapter"
+      },
       "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts": {
         "owner": "stations",
         "port": "src/modules/stations/application/ports/branch-repository.port.ts",
@@ -1112,6 +1585,12 @@
       "src/modules/users/infrastructure/persistence/kysely-user.repository.ts": {
         "owner": "users",
         "port": "src/modules/users/application/ports/user-repository.port.ts",
+        "composition": "src/modules/users/users.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/users/infrastructure/persistence/kysely-user-preferences.repository.ts": {
+        "owner": "users",
+        "port": "src/modules/users/application/ports/user-preferences-repository.port.ts",
         "composition": "src/modules/users/users.module.ts",
         "status": "materialized-owner-adapter"
       },
@@ -1161,7 +1640,107 @@
         "owner": "repairs",
         "kind": "table"
       },
+      "customers": {
+        "owner": "customers",
+        "kind": "table"
+      },
+      "customer_contact_phones": {
+        "owner": "customers",
+        "kind": "table"
+      },
+      "repair_create_commands": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_folio_sequences": {
+        "owner": "repairs",
+        "kind": "table"
+      },
       "repair_intakes": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_equipment_corrections": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_device_types": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_device_type_pending_values": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_device_type_catalog_events": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_brands": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_brand_pending_values": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_brand_catalog_events": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_models": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_model_pending_values": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_model_catalog_events": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_risks": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_intervention_risks": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_risk_catalog_events": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_problem_categories": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_problem_pending_values": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_problem_category_catalog_events": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_problem_category_deletion_events": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_problem_classifications": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_problem_classification_events": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_new_repair_policy_heads": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_new_repair_policy_versions": {
         "owner": "repairs",
         "kind": "table"
       },
@@ -1210,6 +1789,10 @@
         "kind": "table"
       },
       "users": {
+        "owner": "users",
+        "kind": "table"
+      },
+      "user_preferences": {
         "owner": "users",
         "kind": "table"
       },
@@ -1507,10 +2090,16 @@
     "D5-R034"
   ],
   "productModuleFiles": [
+    "src/modules/customers/index.ts",
+    "src/modules/customers/customers.module.ts",
+    "src/modules/customers/application/ports/customer-intake-runtime.port.ts",
+    "src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts",
     "src/modules/access/access.module.ts",
     "src/modules/access/index.ts",
     "src/modules/access/application/access-input.ts",
     "src/modules/access/application/access-administration-operations.ts",
+    "src/modules/access/application/access-self-preferences.operations.ts",
+    "src/modules/access/application/authenticated-self-executor.ts",
     "src/modules/access/application/pin-input.ts",
     "src/modules/access/application/ports/access-repository.port.ts",
     "src/modules/access/application/ports/administration-authorization-commit-guard.port.ts",
@@ -1549,6 +2138,8 @@
     "src/modules/access/presentation/branch-settings-administration.controller.ts",
     "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
+    "src/modules/access/presentation/authenticated-self.executor.ts",
+    "src/modules/access/presentation/user-preferences.controller.ts",
     "src/modules/stations/index.ts",
     "src/modules/stations/application/branch-time-zone.ts",
     "src/modules/stations/application/branch-settings-runtime.service.ts",
@@ -1569,9 +2160,21 @@
     "src/modules/repairs/index.ts",
     "src/modules/repairs/repairs.module.ts",
     "src/modules/repairs/application/repair-protected-operations.ts",
+    "src/modules/repairs/application/new-repair-policy.service.ts",
+    "src/modules/repairs/application/repair-risk-catalog.service.ts",
+    "src/modules/repairs/application/repair-problem-category-catalog.service.ts",
+    "src/modules/repairs/application/change-repair-problem-classification.service.ts",
+    "src/modules/repairs/application/repair-device-type-catalog.service.ts",
+    "src/modules/repairs/application/repair-device-type-read-model.ts",
+    "src/modules/repairs/application/repair-brand-catalog.service.ts",
+    "src/modules/repairs/application/repair-brand-read-model.ts",
+    "src/modules/repairs/application/repair-model-catalog.service.ts",
+    "src/modules/repairs/application/repair-model-read-model.ts",
     "src/modules/repairs/application/ports/repair-repository.port.ts",
     "src/modules/repairs/application/ports/repair-evidence-storage.port.ts",
     "src/modules/repairs/application/use-cases/add-repair-operational-note.use-case.ts",
+    "src/modules/repairs/application/use-cases/create-repair.use-case.ts",
+    "src/modules/repairs/application/use-cases/correct-repair-equipment.use-case.ts",
     "src/modules/repairs/application/use-cases/list-repair-technicians.use-case.ts",
     "src/modules/repairs/application/use-cases/technician-assignment.use-case.ts",
     "src/modules/repairs/application/use-cases/start-repair-diagnosis.use-case.ts",
@@ -1585,6 +2188,8 @@
     "src/modules/repairs/infrastructure/storage/local-repair-evidence.storage.ts",
     "src/modules/repairs/presentation/repairs.controller.ts",
     "src/modules/repairs/domain/repair-status.ts",
+    "src/modules/repairs/domain/new-repair-field-policy.ts",
+    "src/modules/repairs/domain/new-repair-input-normalization.ts",
     "src/modules/tenancy/index.ts",
     "src/modules/tenancy/application/ports/tenant-repository.port.ts",
     "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
@@ -1592,6 +2197,7 @@
     ,"src/modules/users/index.ts"
     ,"src/modules/users/application/ports/authentication-user-reader.port.ts"
     ,"src/modules/users/application/ports/user-repository.port.ts"
+    ,"src/modules/users/application/ports/user-preferences-repository.port.ts"
     ,"src/modules/users/application/user-input.ts"
     ,"src/modules/users/application/use-cases/get-user.use-case.ts"
     ,"src/modules/users/application/use-cases/list-users.use-case.ts"
@@ -1599,9 +2205,11 @@
     ,"src/modules/users/application/use-cases/provision-first-user.use-case.ts"
     ,"src/modules/users/application/use-cases/transition-user-status.use-case.ts"
     ,"src/modules/users/application/use-cases/update-user.use-case.ts"
+    ,"src/modules/users/application/use-cases/user-preferences.use-cases.ts"
     ,"src/modules/users/domain/user.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
+    ,"src/modules/users/infrastructure/persistence/kysely-user-preferences.repository.ts"
     ,"src/modules/users/users.module.ts"
   ],
   "requiredEvidence": [

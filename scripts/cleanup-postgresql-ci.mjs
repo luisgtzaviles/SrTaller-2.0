@@ -16,29 +16,38 @@ async function docker(argumentsList) {
   });
 }
 
-const filter =
-  `label=com.srtaller.pbi023.execution=${executionLabel}`;
-const { stdout } = await docker([
-  'ps',
-  '--all',
-  '--quiet',
-  '--filter',
-  filter,
-]);
-const containers = stdout.trim().split(/\s+/u).filter(Boolean);
-if (containers.length > 0) {
+const filters = [
+  `label=com.srtaller.pbi023.execution=${executionLabel}`,
+  `label=com.srtaller.pbi039.execution=${executionLabel}`,
+];
+const containers = new Set();
+for (const filter of filters) {
+  const { stdout } = await docker([
+    'ps',
+    '--all',
+    '--quiet',
+    '--filter',
+    filter,
+  ]);
+  for (const container of stdout.trim().split(/\s+/u).filter(Boolean)) {
+    containers.add(container);
+  }
+}
+if (containers.size > 0) {
   await docker(['rm', '--force', ...containers]);
 }
 
-const { stdout: remaining } = await docker([
-  'ps',
-  '--all',
-  '--quiet',
-  '--filter',
-  filter,
-]);
-if (remaining.trim() !== '') {
-  throw new Error('PostgreSQL CI cleanup left a governed container');
+for (const filter of filters) {
+  const { stdout: remaining } = await docker([
+    'ps',
+    '--all',
+    '--quiet',
+    '--filter',
+    filter,
+  ]);
+  if (remaining.trim() !== '') {
+    throw new Error('PostgreSQL CI cleanup left a governed container');
+  }
 }
 
 process.stdout.write(

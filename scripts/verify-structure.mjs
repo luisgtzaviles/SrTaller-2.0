@@ -54,6 +54,7 @@ const requiredScripts = [
   'start',
   'dev',
   'verify',
+  'verify:full',
 ];
 
 for (const scriptName of requiredScripts) {

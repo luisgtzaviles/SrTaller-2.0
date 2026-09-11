@@ -36,9 +36,16 @@ test('repair detail owns a distinct read model and uses an explicit minimized pr
     'customer_narrative',
     'physical_condition_summary',
     'documented_risk_summary',
+    'received_power_state',
+    'device_access_type',
+    'initial_budget_amount_minor',
+    'estimated_delivery_at',
+    'repair_status',
+    'custody_status',
   ]) {
     assert.match(detailMethod, new RegExp(`\\b${field}\\b`, 'u'));
   }
+  assert.match(detailMethod, /selectFrom\('repair_intervention_risks'\)[\s\S]*orderBy\('selection_order', 'asc'\)/u);
 });
 
 test('repair intake schema is a scoped repairs-owned extension instead of detail columns on repairs', () => {
@@ -62,12 +69,16 @@ test('repair detail read endpoint derives scope and projects the approved fields
   assert.match(controllerSource, /REPAIR_ID_INVALID/u);
   assert.match(controllerSource, /REPAIR_NOT_FOUND/u);
   const detailReadEndpoint = controllerSource.slice(controllerSource.indexOf("@Get(':id')"));
+  const detailProjection = controllerSource.slice(
+    controllerSource.indexOf('function detailResponse'),
+    controllerSource.indexOf('function operationalNoteResponse'),
+  );
   assert.doesNotMatch(detailReadEndpoint, /@Body|tenantId|branchId/iu);
-  for (const field of ['id', 'folio', 'customer', 'receivedDevice', 'intake', 'receivedAt', 'receivedBy', 'reportedIssue', 'customerNarrative', 'physicalConditionSummary', 'documentedRiskSummary', 'currentSituation', 'technician', 'repairStatus', 'location', 'custody']) {
-    assert.match(controllerSource, new RegExp(`\\b${field}\\b`, 'u'));
+  for (const field of ['id', 'folio', 'customer', 'receivedDevice', 'intake', 'receivedAt', 'receivedBy', 'reportedIssue', 'customerNarrative', 'physicalConditionSummary', 'documentedRiskSummary', 'acceptedInterventionRisks', 'receivedPowerState', 'deviceAccessType', 'initialBudgetAmountMinor', 'estimatedDeliveryAt', 'currentSituation', 'technician', 'repairStatus', 'location', 'custody']) {
+    assert.match(detailProjection, new RegExp(`\\b${field}\\b`, 'u'));
   }
   for (const excluded of ['createdAt', 'financial', 'price', 'history', 'photos', 'whatsapp', 'pin', 'password', 'pattern', 'unlock', 'imei', 'warranty']) {
-    assert.doesNotMatch(controllerSource, new RegExp(`\\b${excluded}\\b`, 'iu'));
+    assert.doesNotMatch(detailProjection, new RegExp(`\\b${excluded}\\b`, 'iu'));
   }
 });
 
@@ -85,19 +96,30 @@ test('repair detail page preserves the worklist return query and keeps D3 as its
   assert.match(detailPageSource, /getRepairDetail\(id, signal\)/u);
   assert.match(detailPageSource, /Volver a reparaciones/u);
   assert.match(detailPageSource, /export function RepairDetailWorkspace/u);
-  for (const section of ['Equipo recibido', 'Recepción', 'Situación actual', 'Historial', 'Evidencias']) {
+  for (const section of ['Equipo recibido', 'Recepción', 'Historial', 'Evidencias']) {
     assert.match(detailPageSource, new RegExp(section, 'u'));
   }
   assert.match(detailPageSource, /Relato del cliente/u);
-  assert.match(detailPageSource, /Riesgo documentado\/informado/u);
-  assert.match(detailPageSource, /Sin técnico asignado/u);
-  assert.match(detailPageSource, /Ubicación no registrada/u);
-  assert.match(detailPageSource, /Sin riesgo documentado/u);
+  assert.match(detailPageSource, /Riesgos aceptados/u);
+  assert.match(detailPageSource, /Estado al recibir/u);
+  assert.doesNotMatch(detailPageSource, /not_verifiable|No verificable/u);
+  assert.match(detailPageSource, />Acceso</u);
+  assert.match(detailPageSource, /Presupuesto inicial/u);
+  assert.match(detailPageSource, /Sin asignar/u);
+  assert.match(detailPageSource, /Sin registrar/u);
+  assert.match(detailPageSource, /acceptedInterventionRisks\.length > 0/u);
   const heroSource = detailPageSource.slice(
     detailPageSource.indexOf('<section className={styles.workspaceHero}'),
     detailPageSource.indexOf('<div className={styles.workspaceMain}>'),
   );
-  assert.doesNotMatch(heroSource, />Técnico<|>Custodia<|>Ubicación</u);
+  for (const summary of ['Promesa de entrega', 'Presupuesto inicial']) assert.match(heroSource, new RegExp(summary, 'u'));
+  for (const indicator of ['Estado', 'Técnico', 'Custodia', 'Ubicación']) assert.match(heroSource, new RegExp(`<dt>${indicator}</dt>`, 'u'));
+  assert.match(heroSource, /aria-label="Resumen de recepción y compromiso inicial"/u);
+  assert.match(heroSource, /aria-label="Situación operativa actual"/u);
+  assert.match(heroSource, /data-empty=\{repair\.intake\.estimatedDeliveryAt === null\}/u);
+  assert.match(heroSource, /data-empty=\{repair\.intake\.initialBudgetAmountMinor === null\}/u);
+  assert.doesNotMatch(heroSource, /<code>\{repair\.id\}<\/code>/u);
+  assert.doesNotMatch(detailPageSource, /Situación actual|operationalRail/u);
   assert.doesNotMatch(detailPageSource, />D[124]\s*·|Proyección sintética|Lectura|Trazabilidad|Documentación visual/u);
   assert.doesNotMatch(detailPageSource, /Cambiar estado|Guardar cambios|Precio estimado|Imprimir|WhatsApp/iu);
   assert.match(detailPageSource, /Nota operativa/u);

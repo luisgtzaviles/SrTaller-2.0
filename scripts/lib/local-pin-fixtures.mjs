@@ -1,6 +1,7 @@
 import { argon2, createHmac, randomBytes } from 'node:crypto';
 
 import {
+  LOCAL_OWNER_USER_ID,
   LOCAL_SEED_TIMESTAMP,
   LOCAL_TENANT_ID,
   assertLocalTarget,
@@ -36,26 +37,13 @@ const definitions = Object.freeze([
     clientRequestId: '00000000-0000-4000-8000-000000000813',
     environmentKey: 'SR_LOCAL_PIN_CARLOS',
   }),
+  Object.freeze({
+    userId: LOCAL_OWNER_USER_ID,
+    credentialId: '00000000-0000-4000-8000-000000000804',
+    clientRequestId: '00000000-0000-4000-8000-000000000814',
+    environmentKey: 'SR_LOCAL_PIN_LUIS',
+  }),
 ]);
-
-function configuredDefinitions(values) {
-  const configured = [...definitions];
-  if (
-    typeof values.SR_LOCAL_PIN_LUIS === 'string' &&
-    /^[0-9]{4}(?:[0-9]{2})?$/u.test(values.SR_LOCAL_PIN_LUIS) &&
-    typeof values.SR_LOCAL_USER_LUIS_ID === 'string' &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(values.SR_LOCAL_USER_LUIS_ID)
-  ) {
-    configured.push(Object.freeze({
-      userId: values.SR_LOCAL_USER_LUIS_ID,
-      credentialId: '00000000-0000-4000-8000-000000000804',
-      clientRequestId: '00000000-0000-4000-8000-000000000814',
-      environmentKey: 'SR_LOCAL_PIN_LUIS',
-      existingUserOnly: true,
-    }));
-  }
-  return configured;
-}
 
 function derivePin(pin, salt, pepper, userId, purpose) {
   const message = Buffer.from(pin, 'ascii');
@@ -129,7 +117,7 @@ export async function localPinCredentialRows(values) {
   const rows = [];
   const assignedPins = new Set();
   try {
-    for (const definition of configuredDefinitions(values)) {
+    for (const definition of definitions) {
       const configuredPin = values[definition.environmentKey];
       if (typeof configuredPin !== 'string' || !/^[0-9]{4}(?:[0-9]{2})?$/u.test(configuredPin)) {
         throw new Error('Local PIN fixture configuration is invalid.');

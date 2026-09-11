@@ -1,4 +1,4 @@
-import { Printer, Search, Smartphone, UserRound } from 'lucide-react';
+import { Plus, Printer, Search, Smartphone, UserRound } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
@@ -10,12 +10,14 @@ import type {
   RepairWorklistQuery,
   RepairWorklistResponse,
 } from '../api.js';
-import { Button, IconButton, Input } from '../components/ui/controls.js';
+import { Button, ButtonLink, IconButton, Input } from '../components/ui/controls.js';
 import { FilterBar, ResponsiveDataList, StatusBadge } from '../components/ui/data-display.js';
 import type { DataColumn } from '../components/ui/data-display.js';
 import { EmptyState, ErrorState, Skeleton } from '../components/ui/feedback.js';
 import { PageHeader } from '../components/ui/navigation.js';
 import styles from './pages.module.css';
+import { hasOperationalCapability } from '../session/session-capabilities.mjs';
+import type { OperationalCapability } from '../session/session-api.js';
 
 const periods = [
   ['today', 'Hoy'],
@@ -135,7 +137,7 @@ function dateRangeError(filters: WorklistFilters): string | null {
   return null;
 }
 
-export function RepairsPage({ timeZone }: Readonly<{ timeZone: string }>): React.JSX.Element {
+export function RepairsPage({ capabilities, timeZone }: Readonly<{ capabilities: readonly OperationalCapability[]; timeZone: string }>): React.JSX.Element {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => readFilters(searchParams), [searchParams]);
@@ -273,6 +275,7 @@ export function RepairsPage({ timeZone }: Readonly<{ timeZone: string }>): React
         description="Consulta el trabajo recibido en esta sucursal. Las acciones de escritura sin capability registrada permanecen fuera de esta superficie."
         primaryAction={(
           <div className={styles.worklistHeaderActions}>
+            {hasOperationalCapability(capabilities, 'repairs.create') ? <ButtonLink to="/reparaciones/nueva" newRepairTrigger state={{ backgroundLocation: location, returnTo: `${location.pathname}${location.search}`, restoreFocusSelector: '[data-new-repair-trigger="true"]' }}><Plus aria-hidden="true" size={18} />Nueva reparación</ButtonLink> : null}
             {countReady ? (
               <div className={styles.worklistCount} aria-live="polite">
                 <strong>{totalCount}</strong>

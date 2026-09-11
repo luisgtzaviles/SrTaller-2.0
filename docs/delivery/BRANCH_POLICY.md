@@ -37,9 +37,9 @@ El autodeploy actual de Preview está deshabilitado y el deployment es manual.
 
 ## Protección de `main`
 
-La condición `DEC051-C02` continúa abierta: el repositorio privado actual no
-dispone de branch protection o rulesets en el plan de GitHub observado. Mientras
-esa condición no se satisfaga o DEC-051 no sea modificada formalmente:
+La condición `DEC051-C02` continúa abierta: el repositorio público observado no
+tiene branch protection ni rulesets configurados. Mientras esa condición no se
+satisfaga o DEC-051 no sea modificada formalmente:
 
 - no se debe afirmar que `main` está protegido técnicamente;
 - checks verdes no equivalen por sí solos a autorización de merge;

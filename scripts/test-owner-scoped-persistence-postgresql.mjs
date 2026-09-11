@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import {
   assertPostgresqlTestSummary,
   createPostgresqlChildFailureMarker,
-  ownerScopedPostgresqlNodeTestArguments,
+  ownerScopedPostgresqlTestFiles,
 } from './lib/postgresql-test-output.mjs';
 
 const execute = promisify(execFile);
@@ -18,6 +18,7 @@ const requestedRuns =
   process.argv[2] === '--runs'
     ? Number.parseInt(process.argv[3] ?? '', 10)
     : 1;
+const activeContainers = new Set();
 
 if (process.version !== 'v24.18.0') {
   throw new Error('Node.js 24.18.0 is required for adapter verification');
@@ -81,7 +82,27 @@ async function assertContainerAbsent(container) {
   }
 }
 
-async function runOnce() {
+async function cleanupContainer(container) {
+  if (!activeContainers.has(container)) return;
+  await docker(['rm', '--force', container]);
+  activeContainers.delete(container);
+  await assertContainerAbsent(container);
+}
+
+async function cleanupAfterSignal(signal) {
+  try {
+    for (const container of [...activeContainers]) {
+      await cleanupContainer(container);
+    }
+  } finally {
+    process.exit(signal === 'SIGINT' ? 130 : 143);
+  }
+}
+
+process.once('SIGINT', () => void cleanupAfterSignal('SIGINT'));
+process.once('SIGTERM', () => void cleanupAfterSignal('SIGTERM'));
+
+async function runFileOnce(file) {
   const suffix = randomBytes(6).toString('hex');
   const container = `srtaller_pbi023_adapters_${suffix}`;
   const database = `srtaller_adapters_${suffix}`;
@@ -124,6 +145,7 @@ async function runOnce() {
       throw new Error('Docker did not return an ephemeral container ID');
     }
     started = true;
+    activeContainers.add(container);
     await waitForHealthy(container);
 
     const { stdout: versionOutput } = await docker([
@@ -203,7 +225,7 @@ async function runOnce() {
     try {
       ({ stdout: testOutput } = await execute(
         process.execPath,
-        ownerScopedPostgresqlNodeTestArguments,
+        ['--no-maglev', '--test', '--test-concurrency=1', file],
         {
           encoding: 'utf8',
           env: {
@@ -229,7 +251,9 @@ async function runOnce() {
       process.stderr.write(
         `${createPostgresqlChildFailureMarker(error)}\n`,
       );
-      throw new Error('PostgreSQL adapter critical tests failed');
+      throw new Error(
+        `PostgreSQL adapter critical test failed: ${file} in ${container}/${database}`,
+      );
     }
     const tests = assertPostgresqlTestSummary(testOutput);
 
@@ -249,11 +273,17 @@ async function runOnce() {
       /\bCREATE TABLE\b/iu.test(schemaOutput) ||
       /tenants|branches|kysely_migration/iu.test(schemaOutput)
     ) {
-      throw new Error('adapter verification retained database objects');
+      const retainedTables = [...schemaOutput.matchAll(
+        /^CREATE TABLE public\."?([a-z0-9_]+)"?/gimu,
+      )].map((match) => match[1]);
+      throw new Error(
+        `adapter verification retained database objects: ${file} in ${container}/${database}: ${retainedTables.join(',') || 'unidentified'}`,
+      );
     }
 
     return Object.freeze({
       cleanup: 'PASS',
+      file,
       environment: Object.freeze({
         clientVersion: clientVersionOutput.trim(),
         encoding: encodingOutput.trim(),
@@ -314,10 +344,42 @@ async function runOnce() {
     });
   } finally {
     if (started) {
-      await docker(['rm', '--force', container]).catch(() => undefined);
+      await cleanupContainer(container);
     }
     await assertContainerAbsent(container);
   }
+}
+
+async function runOnce() {
+  const fileResults = [];
+  for (const file of ownerScopedPostgresqlTestFiles) {
+    fileResults.push(await runFileOnce(file));
+  }
+
+  const { file: _file, tests: _tests, ...common } = fileResults[0];
+  const tests = fileResults.reduce(
+    (summary, result) => {
+      for (const key of Object.keys(summary)) {
+        summary[key] += result.tests[key];
+      }
+      return summary;
+    },
+    {
+      tests: 0,
+      pass: 0,
+      fail: 0,
+      cancelled: 0,
+      skipped: 0,
+      todo: 0,
+    },
+  );
+
+  return Object.freeze({
+    ...common,
+    databaseIsolation: 'fresh database and container per test file',
+    files: Object.freeze(fileResults.map((result) => result.file)),
+    tests: Object.freeze(tests),
+  });
 }
 
 const results = [];

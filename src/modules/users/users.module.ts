@@ -10,11 +10,13 @@ import type {
 import {
   AUTHENTICATION_USER_ADMISSION_VALIDATOR,
   AUTHENTICATION_USER_READER,
+  USER_PREFERENCES_RUNTIME,
   USER_PRODUCT_RUNTIME,
 } from './index.js';
 import type {
   AuthenticationUserAdmissionValidator,
   AuthenticationUserReader,
+  UserPreferencesRuntime,
   UserProductRuntime,
 } from './index.js';
 import type { GetUserUseCase } from './application/use-cases/get-user.use-case.js';
@@ -27,20 +29,29 @@ import { createKyselyUserRepository } from './infrastructure/persistence/kysely-
 import type { KyselyUserRepositoryFactory } from './infrastructure/persistence/kysely-user.repository.js';
 import type { UserMutationCommitGuard } from './application/ports/user-repository.port.js';
 import { KyselyAuthenticationUserReader } from './infrastructure/persistence/kysely-authentication-user.reader.js';
+import { KyselyUserPreferencesRepository } from './infrastructure/persistence/kysely-user-preferences.repository.js';
+import {
+  GetUserPreferencesUseCase,
+  UpdateUserPreferencesUseCase,
+} from './application/use-cases/user-preferences.use-cases.js';
 
 type RegisteredUsersPersistenceAdapter =
   | KyselyUserRepositoryFactory
-  | KyselyAuthenticationUserReader;
+  | KyselyAuthenticationUserReader
+  | KyselyUserPreferencesRepository;
 type RegisteredUsersUseCases =
   | GetUserUseCase
   | ListUsersUseCase
   | ProvisionFirstUserUseCase
-  | TransitionUserStatusUseCase;
+  | TransitionUserStatusUseCase
+  | GetUserPreferencesUseCase
+  | UpdateUserPreferencesUseCase;
 
 const USERS_RUNTIME_COMPOSITION = Symbol('srtaller.users.runtime-composition');
 
 type UsersRuntimeComposition = Readonly<{
   authenticationReader: KyselyAuthenticationUserReader;
+  preferencesRuntime: UserPreferencesRuntime;
   productRuntime: UserProductRuntime;
 }>;
 
@@ -53,8 +64,23 @@ type UsersRuntimeComposition = Readonly<{
       inject: [APPLICATION_DATABASE_CONNECTION],
       useFactory: (database: ApplicationDatabaseConnection): UsersRuntimeComposition => {
         const repository = createKyselyUserRepository(database);
+        const preferencesRepository = new KyselyUserPreferencesRepository(database);
         return Object.freeze({
           authenticationReader: new KyselyAuthenticationUserReader(database),
+          preferencesRuntime: Object.freeze({
+            get: (scope: unknown) =>
+              new GetUserPreferencesUseCase(preferencesRepository).execute(scope),
+            update: (
+              scope: unknown,
+              input: unknown,
+              guard?: import('./application/ports/user-preferences-repository.port.js').UserPreferencesMutationGuard,
+            ) =>
+              new UpdateUserPreferencesUseCase(preferencesRepository).execute(
+                scope,
+                input,
+                guard,
+              ),
+          }),
           productRuntime: Object.freeze({
             list: (scope: unknown) => new ListUsersUseCase(repository).execute(scope),
             create: (scope: unknown, input: unknown, guard?: UserMutationCommitGuard) => new CreateUserUseCase(repository).execute(scope, input, guard),
@@ -68,6 +94,12 @@ type UsersRuntimeComposition = Readonly<{
       provide: KyselyAuthenticationUserReader,
       inject: [USERS_RUNTIME_COMPOSITION],
       useFactory: (composition: UsersRuntimeComposition) => composition.authenticationReader,
+    },
+    {
+      provide: USER_PREFERENCES_RUNTIME,
+      inject: [USERS_RUNTIME_COMPOSITION],
+      useFactory: (composition: UsersRuntimeComposition): UserPreferencesRuntime =>
+        composition.preferencesRuntime,
     },
     {
       provide: USER_PRODUCT_RUNTIME,
@@ -91,6 +123,7 @@ type UsersRuntimeComposition = Readonly<{
   ],
   exports: [
     AUTHENTICATION_USER_ADMISSION_VALIDATOR,
+    USER_PREFERENCES_RUNTIME,
     USER_PRODUCT_RUNTIME,
     AUTHENTICATION_USER_READER,
   ],

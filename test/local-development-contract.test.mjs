@@ -8,6 +8,7 @@ import {
   LOCAL_DB_NAME,
   LOCAL_DB_PORT,
   LOCAL_MIGRATION_USER,
+  LOCAL_OWNER_USER_ID,
   LOCAL_TENANT_ID,
   assertLocalUserBootstrapAuthority,
   assertLocalTarget,
@@ -55,6 +56,7 @@ function validLocalValues() {
     SR_LOCAL_PIN_JORGE: '0601',
     SR_LOCAL_PIN_MARIA: '0602',
     SR_LOCAL_PIN_CARLOS: '0603',
+    SR_LOCAL_PIN_LUIS: '0604',
   };
 }
 
@@ -128,7 +130,20 @@ test('seed contract is deterministic and contains only existing schema entities'
 test('synthetic User fixtures are deterministic, bounded, and secret-free', () => {
   const first = localUserRows();
   assert.deepEqual(first, localUserRows());
-  assert.equal(first.length, 3);
+  assert.equal(first.length, 4);
+  assert.deepEqual(
+    first.find(({ userId }) => userId === LOCAL_OWNER_USER_ID),
+    {
+      userId: LOCAL_OWNER_USER_ID,
+      tenantId: LOCAL_TENANT_ID,
+      displayName: 'Luis',
+      operationalIdentifier: 'LUIS',
+      status: 'active',
+      version: 0,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    },
+  );
   assert.deepEqual(
     new Set(first.map(({ status }) => status)),
     new Set(['active']),
@@ -156,6 +171,13 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
       'access_matrix.read',
       'access_matrix.manage',
       'repairs.add_note',
+      'repairs.create',
+      'repairs.correct_intake',
+      'repairs.classify',
+      'repairs.catalogs.read',
+      'repairs.catalogs.manage',
+      'repairs.configuration.read',
+      'repairs.configuration.manage',
       'repairs.read',
       'users.read',
       'users.manage',
@@ -166,13 +188,29 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
     'Atención al cliente',
     'Técnico',
   ]);
-  assert.equal(grants.length, 10);
+  assert.equal(grants.length, 18);
   assert.deepEqual(assignments.map(({ assignmentScope }) => assignmentScope), [
     'TENANT_WIDE',
     'TENANT_WIDE',
     'BRANCH_RESTRICTED',
+    'TENANT_WIDE',
   ]);
   assert.equal(assignments[2].branchId, '00000000-0000-4000-8000-000000000101');
+  assert.deepEqual(
+    assignments.find(({ userId }) => userId === LOCAL_OWNER_USER_ID),
+    {
+      tenantId: LOCAL_TENANT_ID,
+      assignmentId: '00000000-0000-4000-8000-000000000704',
+      userId: LOCAL_OWNER_USER_ID,
+      roleId: '00000000-0000-4000-8000-000000000601',
+      assignmentScope: 'TENANT_WIDE',
+      branchId: null,
+      status: 'active',
+      version: 0,
+      assignedAt: '2026-01-01T00:00:00.000Z',
+      revokedAt: null,
+    },
+  );
   assert.ok([...capabilities, ...roles, ...grants, ...assignments].every(Object.isFrozen));
   assert.doesNotMatch(
     JSON.stringify({ capabilities, roles, grants, assignments }),
@@ -183,7 +221,7 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
 test('local PIN fixtures use the governed profile and persist no plaintext PIN', async () => {
   const values = validLocalValues();
   const rows = await localPinCredentialRows(values);
-  assert.equal(rows.length, 3);
+  assert.equal(rows.length, 4);
   assert.deepEqual(LOCAL_PIN_FIXTURE_PROFILE, {
     algorithm: 'argon2id',
     memoryKiB: 65_536,
@@ -200,7 +238,7 @@ test('local PIN fixtures use the governed profile and persist no plaintext PIN',
   assert.ok(rows.every((row) => row.requestFingerprint.byteLength === 32));
   assert.ok(rows.every(Object.isFrozen));
   const rendered = JSON.stringify(rows);
-  assert.doesNotMatch(rendered, /0601|0602|0603/u);
+  assert.doesNotMatch(rendered, /0601|0602|0603|0604/u);
   assert.doesNotMatch(rendered, /SR_LOCAL_PIN|SR_PIN_PEPPER/u);
 
   const { NodeArgon2PinHasher } = await import(
@@ -211,6 +249,7 @@ test('local PIN fixtures use the governed profile and persist no plaintext PIN',
     values.SR_LOCAL_PIN_JORGE,
     values.SR_LOCAL_PIN_MARIA,
     values.SR_LOCAL_PIN_CARLOS,
+    values.SR_LOCAL_PIN_LUIS,
   ];
   for (const [index, row] of rows.entries()) {
     const runtimeMaterial = await hasher.hash({
@@ -235,10 +274,12 @@ test('local PIN fixtures use the governed profile and persist no plaintext PIN',
   }
 });
 
-test('demo PINs are one-shot seed inputs and are scrubbed from local configuration', () => {
-  assert.doesNotMatch(localEnvironmentExample, /^SR_LOCAL_PIN_[A-Z]+=.*$/mu);
-  assert.match(localEnvironmentExample, /supplied only to the seed process/u);
+test('demo PINs are scrubbed while the ignored local Owner PIN survives volume resets', () => {
+  assert.match(localEnvironmentExample, /^SR_LOCAL_PIN_LUIS=.*$/mu);
+  assert.doesNotMatch(localEnvironmentExample, /^SR_LOCAL_PIN_(?:JORGE|MARIA|CARLOS)=.*$/mu);
+  assert.match(localEnvironmentExample, /Owner PIN remains only in ignored local configuration/u);
   assert.match(localDevelopmentSource, /const ephemeralLocalPinKeys = Object\.freeze\(/u);
+  assert.match(localDevelopmentSource, /const localPinKeys = Object\.freeze\(/u);
   assert.match(localDevelopmentSource, /Object\.entries\(values\)\.filter\(\(\[key\]\) => !ephemeralLocalPinKeys\.includes\(key\)\)/u);
   assert.doesNotMatch(localDevelopmentSource, /function randomPin\b|randomPin\(\)/u);
   assert.doesNotMatch(localDevelopmentSource, /SR_LOCAL_PIN_[A-Z]+:\s*random/u);

@@ -3,6 +3,7 @@ import type { ColumnType, Insertable, Selectable, Updateable } from 'kysely';
 type ImmutableColumn<T> = ColumnType<T, T, never>;
 type DefaultedImmutableColumn<T> = ColumnType<T, T | undefined, never>;
 type MutableColumn<T> = ColumnType<T, T, T>;
+type DefaultedMutableColumn<T> = ColumnType<T, T | undefined, T>;
 
 export interface TenantTable {
   readonly tenant_id: ImmutableColumn<string>;
@@ -62,6 +63,36 @@ export interface UserTable {
   readonly admission_revision: DefaultedImmutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
+}
+
+export type NewRepairFormMode = 'classic' | 'guided_v2';
+
+/** Users-owned personal presentation preference; absence resolves to Classic. */
+export interface UserPreferencesTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly new_repair_form_mode: DefaultedMutableColumn<NewRepairFormMode>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+/** Customer identity is Branch-scoped; Repairs own their historical snapshots. */
+export interface CustomerTable {
+  readonly customer_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly given_name: ImmutableColumn<string>;
+  readonly family_name: ImmutableColumn<string | null>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+/** Optional lookup aids; a phone is never a Customer identity or global key. */
+export interface CustomerContactPhoneTable {
+  readonly customer_contact_phone_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly customer_id: ImmutableColumn<string>;
+  readonly phone_normalized: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
 }
 
 /** Durable, tenant-scoped gate for the governed first-user bootstrap. */
@@ -127,6 +158,13 @@ export type AccessCapabilityCode =
   | 'access_matrix.read'
   | 'access_matrix.manage'
   | 'repairs.add_note'
+  | 'repairs.create'
+  | 'repairs.correct_intake'
+  | 'repairs.classify'
+  | 'repairs.catalogs.read'
+  | 'repairs.catalogs.manage'
+  | 'repairs.configuration.read'
+  | 'repairs.configuration.manage'
   | 'repairs.read'
   | 'users.read'
   | 'users.manage';
@@ -317,9 +355,10 @@ export interface RepairTable {
   readonly folio: ImmutableColumn<string>;
   readonly received_at: ImmutableColumn<Date>;
   readonly customer_name: ImmutableColumn<string>;
-  readonly customer_phone: ImmutableColumn<string>;
-  readonly device_brand: ImmutableColumn<string>;
-  readonly device_model: ImmutableColumn<string>;
+  readonly customer_phone: ImmutableColumn<string | null>;
+  readonly customer_id: ImmutableColumn<string | null>;
+  readonly device_brand: MutableColumn<string | null>;
+  readonly device_model: MutableColumn<string | null>;
   readonly reported_issue: ImmutableColumn<string>;
   readonly technician_id: ImmutableColumn<string | null>;
   readonly technician_display_name: ImmutableColumn<string | null>;
@@ -333,12 +372,380 @@ export interface RepairIntakeTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly branch_id: ImmutableColumn<string>;
   readonly device_color: ImmutableColumn<string | null>;
+  readonly device_type: ImmutableColumn<string | null>;
+  readonly canonical_device_type_id: DefaultedMutableColumn<string | null>;
+  readonly pending_device_type_value_id: DefaultedMutableColumn<string | null>;
+  readonly device_identifier: ImmutableColumn<string | null>;
+  readonly device_identifier_unavailable: DefaultedImmutableColumn<boolean>;
+  readonly distinctive_signs: ImmutableColumn<string | null>;
+  readonly sim_included: ImmutableColumn<boolean | null>;
+  readonly memory_card_included: ImmutableColumn<boolean | null>;
+  readonly other_accessories: ImmutableColumn<string | null>;
+  readonly warranty_review_requested: DefaultedImmutableColumn<boolean>;
+  readonly previous_repair_id: ImmutableColumn<string | null>;
+  readonly delivered_by_name: ImmutableColumn<string | null>;
+  readonly estimated_delivery_at: ImmutableColumn<Date | null>;
   readonly received_by_id: ImmutableColumn<string | null>;
   readonly received_by_display_name: ImmutableColumn<string | null>;
   readonly customer_narrative: ImmutableColumn<string | null>;
   readonly physical_condition_summary: ImmutableColumn<string | null>;
   readonly documented_risk_summary: ImmutableColumn<string | null>;
+  readonly received_power_state: ImmutableColumn<'powered_on' | 'powered_off' | null>;
+  readonly device_access_type: ImmutableColumn<'none' | 'pin' | 'password' | 'pattern' | null>;
+  readonly initial_budget_amount_minor: ImmutableColumn<string | null>;
+  readonly new_repair_policy_version: ImmutableColumn<number>;
+  readonly canonical_brand_id: MutableColumn<string | null>;
+  readonly pending_brand_value_id: MutableColumn<string | null>;
+  readonly canonical_model_id: MutableColumn<string | null>;
+  readonly pending_model_value_id: MutableColumn<string | null>;
+  readonly equipment_version: DefaultedMutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface RepairDeviceTypeTable {
+  readonly device_type_id: ImmutableColumn<string>; readonly scope: ImmutableColumn<'platform' | 'tenant'>; readonly tenant_id: ImmutableColumn<string | null>; readonly code: ImmutableColumn<string | null>;
+  readonly canonical_label: MutableColumn<string>; readonly normalized_key: MutableColumn<string>; readonly status: MutableColumn<'active' | 'inactive'>; readonly version: MutableColumn<number>;
+  readonly created_by_actor_id: ImmutableColumn<string | null>; readonly updated_by_actor_id: MutableColumn<string | null>; readonly created_at: ImmutableColumn<Date>; readonly updated_at: MutableColumn<Date>;
+}
+export interface RepairDeviceTypePendingValueTable {
+  readonly pending_device_type_value_id: ImmutableColumn<string>; readonly tenant_id: ImmutableColumn<string>; readonly raw_label_example: ImmutableColumn<string>; readonly normalized_key: ImmutableColumn<string>;
+  readonly resolution_status: MutableColumn<'pending' | 'resolved'>; readonly canonical_device_type_id: MutableColumn<string | null>; readonly version: MutableColumn<number>; readonly first_seen_at: ImmutableColumn<Date>; readonly last_seen_at: MutableColumn<Date>; readonly resolved_by_actor_id: MutableColumn<string | null>; readonly resolved_at: MutableColumn<Date | null>;
+}
+export interface RepairDeviceTypeCatalogEventTable {
+  readonly event_id: ImmutableColumn<string>; readonly tenant_id: ImmutableColumn<string>; readonly device_type_id: ImmutableColumn<string | null>; readonly pending_device_type_value_id: ImmutableColumn<string | null>;
+  readonly station_id: ImmutableColumn<string>; readonly session_id: ImmutableColumn<string>; readonly actor_user_id: ImmutableColumn<string>; readonly actor_display_name: ImmutableColumn<string>; readonly capability: ImmutableColumn<'repairs.catalogs.manage'>;
+  readonly action: ImmutableColumn<'repair_device_type.created' | 'repair_device_type.renamed' | 'repair_device_type.deactivated' | 'repair_device_type.reactivated' | 'repair_device_type_pending.resolved' | 'repair_device_type_pending.canonical_created'>;
+  readonly old_version: ImmutableColumn<number | null>; readonly new_version: ImmutableColumn<number>; readonly old_label: ImmutableColumn<string | null>; readonly new_label: ImmutableColumn<string>; readonly old_status: ImmutableColumn<string | null>; readonly new_status: ImmutableColumn<string>;
+  readonly old_canonical_device_type_id: ImmutableColumn<string | null>; readonly new_canonical_device_type_id: ImmutableColumn<string | null>; readonly result: ImmutableColumn<'succeeded'>; readonly correlation_id: ImmutableColumn<string>; readonly occurred_at: ImmutableColumn<Date>;
+}
+
+/** Immutable history and replay evidence for a Brand/Model intake correction. */
+export interface RepairEquipmentCorrectionTable {
+  readonly correction_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly repair_id: ImmutableColumn<string>;
+  readonly timeline_entry_id: ImmutableColumn<string>;
+  readonly audit_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly request_fingerprint: ImmutableColumn<Uint8Array>;
+  readonly expected_version: ImmutableColumn<number>;
+  readonly equipment_version: ImmutableColumn<number>;
+  readonly old_brand_label: ImmutableColumn<string | null>;
+  readonly new_brand_label: ImmutableColumn<string | null>;
+  readonly old_canonical_brand_id: ImmutableColumn<string | null>;
+  readonly new_canonical_brand_id: ImmutableColumn<string | null>;
+  readonly old_pending_brand_value_id: ImmutableColumn<string | null>;
+  readonly new_pending_brand_value_id: ImmutableColumn<string | null>;
+  readonly old_model_label: ImmutableColumn<string | null>;
+  readonly new_model_label: ImmutableColumn<string | null>;
+  readonly old_canonical_model_id: ImmutableColumn<string | null>;
+  readonly new_canonical_model_id: ImmutableColumn<string | null>;
+  readonly old_pending_model_value_id: ImmutableColumn<string | null>;
+  readonly new_pending_model_value_id: ImmutableColumn<string | null>;
+  readonly reason: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.correct_intake'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface RepairBrandTable {
+  readonly brand_id: ImmutableColumn<string>;
+  readonly scope: ImmutableColumn<'platform' | 'tenant'>;
+  readonly tenant_id: ImmutableColumn<string | null>;
+  readonly code: ImmutableColumn<string | null>;
+  readonly canonical_label: MutableColumn<string>;
+  readonly normalized_key: MutableColumn<string>;
+  readonly status: MutableColumn<'active' | 'inactive'>;
+  readonly version: MutableColumn<number>;
+  readonly created_by_actor_id: ImmutableColumn<string | null>;
+  readonly updated_by_actor_id: MutableColumn<string | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface RepairBrandPendingValueTable {
+  readonly pending_brand_value_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly raw_label_example: ImmutableColumn<string>;
+  readonly normalized_key: ImmutableColumn<string>;
+  readonly resolution_status: MutableColumn<'pending' | 'resolved'>;
+  readonly canonical_brand_id: MutableColumn<string | null>;
+  readonly version: MutableColumn<number>;
+  readonly first_seen_at: ImmutableColumn<Date>;
+  readonly last_seen_at: MutableColumn<Date>;
+  readonly resolved_by_actor_id: MutableColumn<string | null>;
+  readonly resolved_at: MutableColumn<Date | null>;
+}
+
+export interface RepairBrandCatalogEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly brand_id: ImmutableColumn<string | null>;
+  readonly pending_brand_value_id: ImmutableColumn<string | null>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.catalogs.manage'>;
+  readonly action: ImmutableColumn<'repair_brand.created' | 'repair_brand.renamed' | 'repair_brand.deactivated' | 'repair_brand.reactivated' | 'repair_brand_pending.resolved' | 'repair_brand_pending.canonical_created' | 'repair_brand_pending.reopened'>;
+  readonly old_version: ImmutableColumn<number | null>;
+  readonly new_version: ImmutableColumn<number>;
+  readonly old_label: ImmutableColumn<string | null>;
+  readonly new_label: ImmutableColumn<string>;
+  readonly old_status: ImmutableColumn<string | null>;
+  readonly new_status: ImmutableColumn<string>;
+  readonly old_canonical_brand_id: ImmutableColumn<string | null>;
+  readonly new_canonical_brand_id: ImmutableColumn<string | null>;
+  readonly result: ImmutableColumn<'succeeded'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface RepairModelTable {
+  readonly model_id: ImmutableColumn<string>;
+  readonly canonical_brand_id: ImmutableColumn<string>;
+  readonly scope: ImmutableColumn<'platform' | 'tenant'>;
+  readonly tenant_id: ImmutableColumn<string | null>;
+  readonly code: ImmutableColumn<string | null>;
+  readonly canonical_label: MutableColumn<string>;
+  readonly normalized_key: MutableColumn<string>;
+  readonly status: MutableColumn<'active' | 'inactive'>;
+  readonly version: MutableColumn<number>;
+  readonly created_by_actor_id: ImmutableColumn<string | null>;
+  readonly updated_by_actor_id: MutableColumn<string | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface RepairModelPendingValueTable {
+  readonly pending_model_value_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly brand_context_key: ImmutableColumn<string>;
+  readonly canonical_brand_id: ImmutableColumn<string | null>;
+  readonly pending_brand_value_id: ImmutableColumn<string | null>;
+  readonly raw_brand_label_example: ImmutableColumn<string | null>;
+  readonly raw_model_label_example: ImmutableColumn<string>;
+  readonly normalized_model_key: ImmutableColumn<string>;
+  readonly resolution_status: MutableColumn<'pending' | 'resolved'>;
+  readonly canonical_model_id: MutableColumn<string | null>;
+  readonly version: MutableColumn<number>;
+  readonly first_seen_at: ImmutableColumn<Date>;
+  readonly last_seen_at: MutableColumn<Date>;
+  readonly resolved_by_actor_id: MutableColumn<string | null>;
+  readonly resolved_at: MutableColumn<Date | null>;
+}
+
+export interface RepairModelCatalogEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly model_id: ImmutableColumn<string | null>;
+  readonly canonical_brand_id: ImmutableColumn<string>;
+  readonly pending_model_value_id: ImmutableColumn<string | null>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.catalogs.manage'>;
+  readonly action: ImmutableColumn<'repair_model.created' | 'repair_model.renamed' | 'repair_model.deactivated' | 'repair_model.reactivated' | 'repair_model_pending.resolved' | 'repair_model_pending.canonical_created'>;
+  readonly old_version: ImmutableColumn<number | null>;
+  readonly new_version: ImmutableColumn<number>;
+  readonly old_label: ImmutableColumn<string | null>;
+  readonly new_label: ImmutableColumn<string>;
+  readonly old_status: ImmutableColumn<string | null>;
+  readonly new_status: ImmutableColumn<string>;
+  readonly old_canonical_model_id: ImmutableColumn<string | null>;
+  readonly new_canonical_model_id: ImmutableColumn<string | null>;
+  readonly result: ImmutableColumn<'succeeded'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface RepairRiskTable {
+  readonly risk_id: ImmutableColumn<string>;
+  readonly scope: ImmutableColumn<'platform' | 'tenant'>;
+  readonly tenant_id: ImmutableColumn<string | null>;
+  readonly code: ImmutableColumn<string | null>;
+  readonly canonical_label: MutableColumn<string>;
+  readonly normalized_key: MutableColumn<string>;
+  readonly status: MutableColumn<'active' | 'inactive'>;
+  readonly version: MutableColumn<number>;
+  readonly created_by_actor_id: ImmutableColumn<string | null>;
+  readonly updated_by_actor_id: MutableColumn<string | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface RepairInterventionRiskTable {
+  readonly repair_id: ImmutableColumn<string>;
+  readonly risk_id: ImmutableColumn<string>;
+  readonly risk_label_snapshot: ImmutableColumn<string>;
+  readonly selection_order: ImmutableColumn<number>;
+  readonly recorded_by_actor_id: ImmutableColumn<string>;
+  readonly recorded_at: ImmutableColumn<Date>;
+}
+
+export interface RepairRiskCatalogEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly risk_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.catalogs.manage'>;
+  readonly action: ImmutableColumn<'repair_risk.created' | 'repair_risk.renamed' | 'repair_risk.deactivated' | 'repair_risk.reactivated'>;
+  readonly old_version: ImmutableColumn<number | null>;
+  readonly new_version: ImmutableColumn<number>;
+  readonly old_label: ImmutableColumn<string | null>;
+  readonly new_label: ImmutableColumn<string>;
+  readonly old_status: ImmutableColumn<'active' | 'inactive' | null>;
+  readonly new_status: ImmutableColumn<'active' | 'inactive'>;
+  readonly result: ImmutableColumn<'succeeded'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface RepairProblemCategoryTable {
+  readonly category_id: ImmutableColumn<string>;
+  readonly scope: ImmutableColumn<'platform' | 'tenant'>;
+  readonly tenant_id: ImmutableColumn<string | null>;
+  readonly code: ImmutableColumn<string | null>;
+  readonly canonical_label: MutableColumn<string>;
+  readonly normalized_key: MutableColumn<string>;
+  readonly status: MutableColumn<'active' | 'inactive'>;
+  readonly version: MutableColumn<number>;
+  readonly created_by_actor_id: ImmutableColumn<string | null>;
+  readonly updated_by_actor_id: MutableColumn<string | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface RepairProblemCategoryCatalogEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly category_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.catalogs.manage'>;
+  readonly pending_problem_value_id: ImmutableColumn<string | null>;
+  readonly action: ImmutableColumn<'repair_problem_category.created' | 'repair_problem_category.renamed' | 'repair_problem_category.deactivated' | 'repair_problem_category.reactivated' | 'repair_problem_pending.resolved' | 'repair_problem_pending.canonical_created'>;
+  readonly old_version: ImmutableColumn<number | null>;
+  readonly new_version: ImmutableColumn<number>;
+  readonly old_label: ImmutableColumn<string | null>;
+  readonly new_label: ImmutableColumn<string>;
+  readonly old_status: ImmutableColumn<'active' | 'inactive' | 'pending' | null>;
+  readonly new_status: ImmutableColumn<'active' | 'inactive' | 'resolved'>;
+  readonly result: ImmutableColumn<'succeeded'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface RepairProblemCategoryDeletionEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly category_id: ImmutableColumn<string>;
+  readonly catalog_scope: ImmutableColumn<'platform' | 'tenant'>;
+  readonly previous_label: ImmutableColumn<string | null>;
+  readonly previous_status: ImmutableColumn<'active' | 'inactive' | null>;
+  readonly category_version: ImmutableColumn<number | null>;
+  readonly expected_version: ImmutableColumn<number>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.catalogs.manage'>;
+  readonly action: ImmutableColumn<'catalog_entry.deleted'>;
+  readonly result: ImmutableColumn<'succeeded' | 'rejected'>;
+  readonly rejection_reason: ImmutableColumn<'not_found' | 'platform_owned' | 'version_conflict' | 'historical_references' | null>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface RepairProblemPendingValueTable {
+  readonly pending_problem_value_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly raw_label_example: ImmutableColumn<string>;
+  readonly normalized_key: ImmutableColumn<string>;
+  readonly resolution_status: MutableColumn<'pending' | 'resolved'>;
+  readonly canonical_category_id: MutableColumn<string | null>;
+  readonly version: MutableColumn<number>;
+  readonly first_seen_at: ImmutableColumn<Date>;
+  readonly last_seen_at: MutableColumn<Date>;
+  readonly resolved_by_actor_id: MutableColumn<string | null>;
+  readonly resolved_at: MutableColumn<Date | null>;
+}
+
+export interface RepairProblemClassificationTable {
+  readonly problem_capture_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly repair_id: ImmutableColumn<string>;
+  readonly category_id: MutableColumn<string | null>;
+  readonly pending_problem_value_id: ImmutableColumn<string | null>;
+  readonly raw_problem_label_snapshot: ImmutableColumn<string>;
+  readonly normalized_problem_key: ImmutableColumn<string>;
+  readonly category_label_snapshot: MutableColumn<string | null>;
+  readonly selection_order: ImmutableColumn<number>;
+  readonly source: ImmutableColumn<'manual'>;
+  readonly stage: ImmutableColumn<'intake' | 'post_intake'>;
+  readonly assigned_by_actor_id: ImmutableColumn<string>;
+  readonly assigned_at: ImmutableColumn<Date>;
+}
+
+export interface RepairProblemClassificationEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly repair_id: ImmutableColumn<string>;
+  readonly category_id: ImmutableColumn<string>;
+  readonly timeline_entry_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.classify'>;
+  readonly action: ImmutableColumn<'repair.problem_category.assigned' | 'repair.problem_category.removed'>;
+  readonly category_label_snapshot: ImmutableColumn<string>;
+  readonly source: ImmutableColumn<'manual'>;
+  readonly stage: ImmutableColumn<'post_intake'>;
+  readonly result: ImmutableColumn<'succeeded'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface RepairNewRepairPolicyHeadTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly schema_version: MutableColumn<number>;
+  readonly current_version: MutableColumn<number>;
+  readonly field_states: MutableColumn<Record<string, string>>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface RepairNewRepairPolicyVersionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly policy_version: ImmutableColumn<number>;
+  readonly schema_version: ImmutableColumn<number>;
+  readonly previous_version: ImmutableColumn<number>;
+  readonly field_states: ImmutableColumn<Record<string, string>>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.configuration.manage'>;
+  readonly action: ImmutableColumn<'new_repair_policy.updated' | 'new_repair_policy.reset'>;
+  readonly result: ImmutableColumn<'succeeded'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
 }
 
 export interface RepairTimelineEntryTable {
@@ -366,8 +773,8 @@ export interface RepairBusinessAuditEventTable {
   readonly session_id: ImmutableColumn<string>;
   readonly actor_user_id: ImmutableColumn<string>;
   readonly actor_display_name: ImmutableColumn<string>;
-  readonly capability: ImmutableColumn<'repairs.add_note'>;
-  readonly action: ImmutableColumn<'repair.operational_note.added'>;
+  readonly capability: ImmutableColumn<'repairs.add_note' | 'repairs.create' | 'repairs.correct_intake'>;
+  readonly action: ImmutableColumn<'repair.operational_note.added' | 'repair.received' | 'repair.equipment.corrected'>;
   readonly resource_type: ImmutableColumn<'repair'>;
   readonly resource_id: ImmutableColumn<string>;
   readonly result: ImmutableColumn<'succeeded'>;
@@ -384,6 +791,25 @@ export interface RepairOperationalNoteRequestGuardTable {
   readonly action: ImmutableColumn<'repair.operational_note.added'>;
   readonly client_request_id: ImmutableColumn<string>;
   readonly created_at: ImmutableColumn<Date>;
+}
+
+/** Repairs-owned replay record for the atomic Customer + Repair intake write. */
+export interface RepairCreateCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly request_fingerprint: ImmutableColumn<Uint8Array>;
+  readonly repair_id: ImmutableColumn<string>;
+  readonly customer_id: ImmutableColumn<string>;
+  readonly folio: ImmutableColumn<string>;
+  readonly applied_at: ImmutableColumn<Date>;
+}
+
+export interface RepairFolioSequenceTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly next_value: MutableColumn<number>;
+  readonly updated_at: MutableColumn<Date>;
 }
 
 export interface RepairAttachmentTable {
@@ -494,6 +920,9 @@ export interface DatabaseSchema {
   readonly station_bindings: StationBindingTable;
   readonly station_credentials: StationCredentialTable;
   readonly users: UserTable;
+  readonly user_preferences: UserPreferencesTable;
+  readonly customers: CustomerTable;
+  readonly customer_contact_phones: CustomerContactPhoneTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;
   readonly user_lifecycle_commands: UserLifecycleCommandTable;
   readonly user_profile_update_commands: UserProfileUpdateCommandTable;
@@ -513,9 +942,32 @@ export interface DatabaseSchema {
   readonly access_operational_sessions: AccessOperationalSessionTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
+  readonly repair_device_types: RepairDeviceTypeTable;
+  readonly repair_device_type_pending_values: RepairDeviceTypePendingValueTable;
+  readonly repair_device_type_catalog_events: RepairDeviceTypeCatalogEventTable;
+  readonly repair_equipment_corrections: RepairEquipmentCorrectionTable;
+  readonly repair_brands: RepairBrandTable;
+  readonly repair_brand_pending_values: RepairBrandPendingValueTable;
+  readonly repair_brand_catalog_events: RepairBrandCatalogEventTable;
+  readonly repair_models: RepairModelTable;
+  readonly repair_model_pending_values: RepairModelPendingValueTable;
+  readonly repair_model_catalog_events: RepairModelCatalogEventTable;
+  readonly repair_risks: RepairRiskTable;
+  readonly repair_intervention_risks: RepairInterventionRiskTable;
+  readonly repair_risk_catalog_events: RepairRiskCatalogEventTable;
+  readonly repair_problem_categories: RepairProblemCategoryTable;
+  readonly repair_problem_pending_values: RepairProblemPendingValueTable;
+  readonly repair_problem_category_catalog_events: RepairProblemCategoryCatalogEventTable;
+  readonly repair_problem_category_deletion_events: RepairProblemCategoryDeletionEventTable;
+  readonly repair_problem_classifications: RepairProblemClassificationTable;
+  readonly repair_problem_classification_events: RepairProblemClassificationEventTable;
+  readonly repair_new_repair_policy_heads: RepairNewRepairPolicyHeadTable;
+  readonly repair_new_repair_policy_versions: RepairNewRepairPolicyVersionTable;
   readonly repair_timeline_entries: RepairTimelineEntryTable;
   readonly repair_business_audit_events: RepairBusinessAuditEventTable;
   readonly repair_operational_note_request_guards: RepairOperationalNoteRequestGuardTable;
+  readonly repair_create_commands: RepairCreateCommandTable;
+  readonly repair_folio_sequences: RepairFolioSequenceTable;
   readonly repair_attachments: RepairAttachmentTable;
   readonly repair_technicians: RepairTechnicianTable;
   readonly repair_technician_branches: RepairTechnicianBranchTable;
@@ -541,6 +993,10 @@ export type StationCredentialRow = Selectable<StationCredentialTable>;
 export type NewStationCredential = Insertable<StationCredentialTable>;
 export type UserRow = Selectable<UserTable>;
 export type NewUser = Insertable<UserTable>;
+export type CustomerRow = Selectable<CustomerTable>;
+export type NewCustomer = Insertable<CustomerTable>;
+export type CustomerContactPhoneRow = Selectable<CustomerContactPhoneTable>;
+export type NewCustomerContactPhone = Insertable<CustomerContactPhoneTable>;
 export type UserProvisioningBootstrapRow = Selectable<UserProvisioningBootstrapTable>;
 export type NewUserProvisioningBootstrap = Insertable<UserProvisioningBootstrapTable>;
 export type UserLifecycleCommandRow = Selectable<UserLifecycleCommandTable>;
@@ -618,6 +1074,10 @@ export type RepairBusinessAuditEventRow = Selectable<RepairBusinessAuditEventTab
 export type NewRepairBusinessAuditEvent = Insertable<RepairBusinessAuditEventTable>;
 export type RepairOperationalNoteRequestGuardRow = Selectable<RepairOperationalNoteRequestGuardTable>;
 export type NewRepairOperationalNoteRequestGuard = Insertable<RepairOperationalNoteRequestGuardTable>;
+export type RepairCreateCommandRow = Selectable<RepairCreateCommandTable>;
+export type NewRepairCreateCommand = Insertable<RepairCreateCommandTable>;
+export type RepairFolioSequenceRow = Selectable<RepairFolioSequenceTable>;
+export type NewRepairFolioSequence = Insertable<RepairFolioSequenceTable>;
 
 export type RepairAttachmentRow = Selectable<RepairAttachmentTable>;
 export type NewRepairAttachment = Insertable<RepairAttachmentTable>;

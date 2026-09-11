@@ -11,21 +11,22 @@ individuales.
 
 | Módulo | Propósito técnico provisional | Owner arquitectónico | Owner funcional | Mantenedores | Superficie pública | Consumidores reales | Dependencias permitidas | Dependencias prohibidas |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `tenancy` | Frontera raíz type-only y módulo Nest de composición | Arquitectura | Autoridad de dominio sobre configuración organizacional; persona pendiente de asignación | Ingeniería; persona pendiente | `TenancyModuleContract`, `TenantId`, `parseTenantId` — marcador de frontera e identidad nominal consumida por los módulos dependientes | `stations`, `access`, `users` | Ninguna | `stations`, `access`, `users`, internals ajenos y todo módulo no aprobado |
-| `stations` | Frontera del contexto operativo confiable, Branch IANA y módulo Nest de composición | Arquitectura | Autoridad de dominio sobre contexto operativo y sucursales; persona pendiente de asignación | Ingeniería; persona pendiente | `StationsModuleContract`, `TrustedStationContext`, `TrustedStationContextError`, `TrustedStationContextResolver`, `TRUSTED_STATION_CONTEXT_RESOLVER`, `TrustedStationAdmissionSnapshot`, `TrustedStationAdmissionValidator`, `TRUSTED_STATION_ADMISSION_VALIDATOR`, `BRANCH_SETTINGS_RUNTIME`, `BranchSettingsRuntime`, `BranchSettingsScope`, `BranchTimeZone`, `OperationalDateTime`, `branchLocalCalendarBoundaryToUtc`, `branchLocalCalendarDate`, `parseBranchTimeZone`, `presentOperationalDateTime`, `isTrustedStationContext` — resolución pública, límite de calendario IANA y validación owner-scoped sin exponer tablas ni driver | `access`, `repairs` | `tenancy` | `access`, `repairs`, internals de `tenancy` y todo módulo no aprobado |
+| `tenancy` | Frontera raíz type-only y módulo Nest de composición | Arquitectura | Autoridad de dominio sobre configuración organizacional; persona pendiente de asignación | Ingeniería; persona pendiente | `TenancyModuleContract`, `TenantId`, `parseTenantId` — marcador de frontera e identidad nominal consumida por los módulos dependientes | `stations`, `access`, `users`, `customers` | Ninguna | `stations`, `access`, `users`, `customers`, internals ajenos y todo módulo no aprobado |
+| `stations` | Frontera del contexto operativo confiable, Branch IANA y módulo Nest de composición | Arquitectura | Autoridad de dominio sobre contexto operativo y sucursales; persona pendiente de asignación | Ingeniería; persona pendiente | `StationsModuleContract`, `TrustedStationContext`, `TrustedStationContextError`, `TrustedStationContextResolver`, `TRUSTED_STATION_CONTEXT_RESOLVER`, `TrustedStationAdmissionSnapshot`, `TrustedStationAdmissionValidator`, `TRUSTED_STATION_ADMISSION_VALIDATOR`, `BRANCH_SETTINGS_RUNTIME`, `BranchSettingsRuntime`, `BranchSettingsScope`, `BranchTimeZone`, `OperationalDateTime`, `branchLocalCalendarBoundaryToUtc`, `branchLocalCalendarDate`, `branchLocalDateTimeToUtc`, `parseBranchTimeZone`, `presentOperationalDateTime`, `isTrustedStationContext` — resolución pública, límites y conversión de calendario IANA y validación owner-scoped sin exponer tablas ni driver | `access`, `repairs` | `tenancy` | `access`, `repairs`, internals de `tenancy` y todo módulo no aprobado |
 | `access` | Frontera consumidora de contexto e identidad aprobados, credencial PIN, sesión y autorización contextual owner-scoped; módulo Nest de composición | Arquitectura | Autoridad de dominio de Identity and Access con participación de Seguridad; persona pendiente de asignación | Ingeniería; persona pendiente | `AccessModuleContract`, `AuthorizedOperationCommitGuard`, `AuthorizedOperationalContext`, `ContextualAuthorizationExecutor`, `CONTEXTUAL_AUTHORIZATION_EXECUTOR`, `ContextualAuthorizationError`, `ContextualAuthorizationErrorCode`, `ProtectedOperationKind`, `ProtectedOperationRequirement`, `ProtectedRequestEvidence` — boundary framework-free; el guard confirma autorización vigente dentro de la transacción del efecto sin exponer persistencia de Access; el proof de PIN y los internals de sesión permanecen privados | `repairs` mediante token/contrato dirigido; `AppModule` para composición exterior | `stations`, `tenancy`, `users` por sus superficies públicas | Internals de productores y todo módulo no aprobado |
-| `repairs` | Worklist, detalle read model, evidencia y nota operativa del slice funcional local; módulo Nest propietario | Arquitectura | Autoridad de dominio de Reparaciones; persona pendiente de asignación | Ingeniería; persona pendiente | `RepairsModuleContract`; controller HTTP exacto registrado en `presentation` y compuesto por `RepairsModule` | `AppModule` para composición; frontend local vía HTTP | `access` por su executor público de autorización contextual, `stations` por la zona IANA de Branch ya autorizada y `tenancy` por superficie pública | Internals de `access`/`stations`/`tenancy`, DB/adapters desde presentation, pagos, clientes y todo módulo no aprobado |
-| `users` | Directorio tenant-scoped y lifecycle de identidad; sin roles, PIN ni sesión | Arquitectura | Identity Foundation; persona pendiente de asignación | Ingeniería; persona pendiente | `UsersModuleContract`, `AuthenticationUserReader`, `AUTHENTICATION_USER_READER`, `AuthenticationUserRecord`, `AuthenticationUserScope`, `AuthenticationUserAdmissionSnapshot`, `AuthenticationUserAdmissionValidator`, `AUTHENTICATION_USER_ADMISSION_VALIDATOR`, `UserProductRuntime`, `USER_PRODUCT_RUNTIME` — lectura, lifecycle y runtime product-local owner-scoped dentro de composición | `access` para elegibilidad de User y administración product-local; `AppModule` para composición | `tenancy` por superficie pública permitida | Roles, PIN, sesión, autorización e internals de tenancy |
+| `customers` | Identidad mínima de Customer acotada a Branch y lookup por nombre/teléfono sin identidad natural | Arquitectura | Autoridad de dominio de Clientes; persona pendiente de asignación | Ingeniería; persona pendiente | `CustomersModuleContract`, `CustomerIntakeScope`, `CustomerIntakeInput`, `CustomerIntakeRecord`, `CustomerSearchCandidate`, `CustomerIntakeRuntime`, `CUSTOMER_INTAKE_RUNTIME` — selección explícita o alta dentro de Intake; teléfono no identifica ni fusiona | `repairs` durante Nueva reparación; `AppModule` para composición exterior | `tenancy` por identidad nominal | Internals de `tenancy`, CRM, autorización y persistencia ajena |
+| `repairs` | Worklist, detalle, alta mínima, política versionada Branch de Nueva Reparación y catálogos Platform/Tenant de Riesgos, Marcas y Modelos; módulo Nest propietario | Arquitectura | Autoridad de dominio de Reparaciones, incluidos riesgos de intervención y referencias canónicas Brand/Model con snapshots históricos; persona pendiente de asignación | Ingeniería; persona pendiente | `RepairsModuleContract`; controller HTTP exacto registrado en `presentation` y compuesto por `RepairsModule`; registro de campos, policy y operaciones de catálogos permanecen internos al módulo | `AppModule` para composición; frontend local vía HTTP | `access` por autorización contextual y capabilities dedicadas, `customers` por selección/alta explícita, `stations` por la zona IANA de Branch ya autorizada y `tenancy` por superficie pública | `GenericCatalogModule` como owner transversal, internals de productores, DB/adapters desde presentation, pagos y todo módulo no aprobado |
+| `users` | Directorio tenant-scoped, lifecycle de identidad y preferencias personales; sin roles, PIN ni sesión | Arquitectura | Identity Foundation; persona pendiente de asignación | Ingeniería; persona pendiente | `UsersModuleContract`, `AuthenticationUserReader`, `AUTHENTICATION_USER_READER`, `AuthenticationUserRecord`, `AuthenticationUserScope`, `AuthenticationUserAdmissionSnapshot`, `AuthenticationUserAdmissionValidator`, `AUTHENTICATION_USER_ADMISSION_VALIDATOR`, `UserProductRuntime`, `USER_PRODUCT_RUNTIME`, `NewRepairFormMode`, `UserPreferencesRuntime`, `USER_PREFERENCES_RUNTIME` — lectura, lifecycle y preferencias owner-scoped dentro de composición | `access` para elegibilidad, administración product-local y preferencia self-service autenticada; `AppModule` para composición | `tenancy` por superficie pública permitida | Roles, PIN, sesión, autorización e internals de tenancy |
 
 ## Superficies Nest separadas
 
-`TenancyModule`, `StationsModule`, `UsersModule`, `AccessModule` y
-`RepairsModule` son
+`TenancyModule`, `StationsModule`, `UsersModule`, `AccessModule`,
+`CustomersModule` y `RepairsModule` son
 superficies exclusivas de composición. `AppModule` conserva la composición
 exterior. Option A permite además que `AccessModule` importe exactamente
 `StationsModule` y `UsersModule`, mediante los edges y bindings registrados en
-policy v5, y que `RepairsModule` importe exactamente `AccessModule` mediante
-`CONTEXTUAL_AUTHORIZATION_EXECUTOR`/`ContextualAuthorizationExecutor`;
+policy v8, y que `RepairsModule` importe exactamente `AccessModule` y
+`CustomersModule` mediante sus tokens y contratos públicos;
 ninguna otra importación de módulo queda implícitamente autorizada.
 Las clases Nest no forman parte del contrato funcional público.
 
@@ -33,6 +34,21 @@ Las clases Nest no forman parte del contrato funcional público.
 únicamente a `repairs`, delega en casos de uso de su propia aplicación y no
 constituye una superficie pública intermodular. Health conserva su contrato
 técnico exacto separado.
+
+Los catálogos de Riesgos, Marcas y Modelos y su auditoría pertenecen
+exclusivamente a `repairs`. Modelo referencia obligatoriamente una Marca
+canónica, mientras Repair preserva los snapshots y puede conservar identidades
+canónicas opcionales. El scope curado Platform y las extensiones Tenant no
+introducen un módulo ni repositorio genérico; Branch sólo aporta contexto
+autorizado para operar y no es owner del catálogo. Fallas y Estados requieren
+contratos de dominio propios antes de materializarse; Técnicos permanece en
+Users + Access + asignaciones de Repairs y no se modela como catálogo.
+
+La corrección posterior de Marca/Modelo también pertenece exclusivamente a
+`repairs`: modifica la proyección vigente del equipo y conserva un registro
+append-only con valores anterior/nuevo, motivo y atribución confiable. Access
+autoriza mediante `repairs.correct_intake`, pero no adquiere ownership sobre el
+comando, su historial, Timeline ni la persistencia de Repair.
 
 La persistencia de PIN queda detrás de `PinCredentialRepositoryPort`, con
 `PinCredentialTenantScope` y `PinCredentialStationScope`, y se materializa en
@@ -44,8 +60,9 @@ superficie pública del módulo; `access` sólo cruza a `stations` y `users` por
 sus contratos y tokens públicos registrados. `StationsModule` conserva el
 binding y export únicos de `TRUSTED_STATION_CONTEXT_RESOLVER`,
 `TRUSTED_STATION_ADMISSION_VALIDATOR` y `BRANCH_SETTINGS_RUNTIME`; `UsersModule` conserva los bindings y
-exports únicos de `AUTHENTICATION_USER_READER` y
-`AUTHENTICATION_USER_ADMISSION_VALIDATOR`; `AccessModule` los inyecta sin
+exports únicos de `AUTHENTICATION_USER_READER`,
+`AUTHENTICATION_USER_ADMISSION_VALIDATOR`, `USER_PRODUCT_RUNTIME` y
+`USER_PREFERENCES_RUNTIME`; `AccessModule` los inyecta sin
 adquirir ownership sobre Station o User y conserva el binding/export único de
 `CONTEXTUAL_AUTHORIZATION_EXECUTOR`; `RepairsModule` inyecta una sola vez ese
 executor y el runtime IANA de Stations para límites locales de Worklist

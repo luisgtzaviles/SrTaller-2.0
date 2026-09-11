@@ -38,6 +38,13 @@ test('authenticated capability snapshots accept only a canonical finite set', ()
     'access_matrix.manage',
     'repairs.read',
     'repairs.add_note',
+    'repairs.create',
+    'repairs.correct_intake',
+    'repairs.classify',
+    'repairs.catalogs.read',
+    'repairs.catalogs.manage',
+    'repairs.configuration.read',
+    'repairs.configuration.manage',
   ]);
 
   const parsed = parseSessionCapabilities(['repairs.read', 'repairs.add_note'], true);
@@ -86,11 +93,11 @@ test('Session API parses capabilities at the snapshot boundary and clears unauth
   assert.doesNotMatch(sessionApiSource, /localStorage|sessionStorage/iu);
 });
 
-test('Repairs routes and navigation fail closed before protected pages can fetch', () => {
+test('Repairs routes and navigation remain capability-gated before protected pages can fetch', () => {
   assert.match(appSource, /function CapabilityBoundary/u);
   assert.match(appSource, /hasOperationalCapability\(capabilities, capability\)/u);
-  assert.match(appSource, /capability="repairs\.read"><RepairsPage/u);
-  assert.match(appSource, /path="\/reparaciones\/nueva" element=\{<AccessDeniedPage \/>\}/u);
+  assert.match(appSource, /capability="repairs\.read"><RepairsPage capabilities=\{capabilities\}/u);
+  assert.match(appSource, /path="\/reparaciones\/nueva" element=\{<CapabilityBoundary capabilities=\{capabilities\} capability="repairs\.create"><CapabilityBoundary capabilities=\{capabilities\} capability="repairs\.read">[\s\S]*?<NewRepairEntryPage csrfToken=\{csrfToken\}/u);
   assert.match(appSource, /capability="repairs\.read"><RepairDetailPage capabilities=\{capabilities\}/u);
   assert.match(accessDeniedSource, /Acceso no autorizado/u);
   assert.match(accessDeniedSource, /servidor vuelve a verificar cada solicitud/u);
@@ -101,7 +108,8 @@ test('Repairs routes and navigation fail closed before protected pages can fetch
   assert.doesNotMatch(dashboardSource, /\/reparaciones\/nueva|Nueva reparación/u);
   assert.doesNotMatch(dashboardSource, /PBI-024 no integrado/u);
   assert.match(dashboardSource, /Estación y sesión verificadas/u);
-  assert.doesNotMatch(repairsSource, /to="\/reparaciones\/nueva"|Nueva reparación/u);
+  assert.match(repairsSource, /hasOperationalCapability\(capabilities, 'repairs\.create'\)/u);
+  assert.match(repairsSource, /to="\/reparaciones\/nueva"/u);
 });
 
 test('Repair reads include cookies and an operational note carries the current CSRF token', () => {
@@ -134,6 +142,7 @@ test('uncataloged Repair writes have no visible controls in the current UI', () 
     detailSource,
     />Asignar<|>Cambiar<|Quitar asignación|Iniciar diagnóstico|Mover a Taller/u,
   );
-  assert.match(detailSource, /<dt>Técnico<\/dt><dd><span>\{currentTechnician/u);
-  assert.match(detailSource, /Historial de asignaciones/u);
+  assert.match(detailSource, /<dt>Técnico<\/dt><dd>\{currentTechnician\?\.displayName \?\? 'Sin asignar'\}<\/dd>/u);
+  assert.match(detailSource, /aria-label="Situación operativa actual"/u);
+  assert.doesNotMatch(detailSource, /Historial de asignaciones|Situación actual/u);
 });

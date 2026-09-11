@@ -1,4 +1,4 @@
-import { Building2, Check, Moon, RotateCcw, ShieldCheck, Sparkles, UserCircle, UsersRound } from 'lucide-react';
+import { Building2, Check, Moon, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles, UserCircle, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { BRAND_DEFAULT, normalizeHex } from '../foundation/accent.mjs';
@@ -21,8 +21,9 @@ const BRAND_PRESETS = Object.freeze([
   { name: 'Rojo', hex: '#DC2626' },
 ] as const);
 
-export function SettingsPage({ capabilities }: Readonly<{
-  capabilities: readonly OperationalCapability[];
+export function SettingsPage({ operationalCapabilities, administrationCapabilities }: Readonly<{
+  operationalCapabilities: readonly OperationalCapability[];
+  administrationCapabilities: readonly OperationalCapability[];
 }>): React.JSX.Element {
   const { brand, resolvedTheme, syntheticAccent, setSyntheticAccent } = useTheme();
   const defaultInput = BRAND_DEFAULT;
@@ -41,11 +42,16 @@ export function SettingsPage({ capabilities }: Readonly<{
     [sourceInput],
   );
   const brandWasAdapted = Boolean(syntheticAccent && brand.fallback);
-  const canReadUsers = hasOperationalCapability(capabilities, 'users.read');
-  const canReadRoles = hasOperationalCapability(capabilities, 'access_matrix.read');
-  const canManageUsers = hasOperationalCapability(capabilities, 'users.manage');
-  const canManageRoles = hasOperationalCapability(capabilities, 'access_matrix.manage');
-  const canManageBranch = hasOperationalCapability(capabilities, 'access_matrix.manage');
+  const canReadUsers = hasOperationalCapability(administrationCapabilities, 'users.read');
+  const canReadRoles = hasOperationalCapability(administrationCapabilities, 'access_matrix.read');
+  const canManageUsers = hasOperationalCapability(administrationCapabilities, 'users.manage');
+  const canManageRoles = hasOperationalCapability(administrationCapabilities, 'access_matrix.manage');
+  const canManageBranch = hasOperationalCapability(administrationCapabilities, 'access_matrix.manage');
+  const canReadNewRepairConfiguration = hasOperationalCapability(administrationCapabilities, 'repairs.configuration.read');
+  const canManageNewRepairConfiguration = hasOperationalCapability(administrationCapabilities, 'repairs.configuration.manage');
+  const canReadRepairCatalogs = hasOperationalCapability(administrationCapabilities, 'repairs.catalogs.read');
+  const canManageRepairCatalogs = hasOperationalCapability(administrationCapabilities, 'repairs.catalogs.manage');
+  const canCreateRepairs = hasOperationalCapability(operationalCapabilities, 'repairs.create');
 
   const applyInput = (value: string): void => {
     const normalized = normalizeHex(value);
@@ -72,7 +78,7 @@ export function SettingsPage({ capabilities }: Readonly<{
           <h2 id="administration-title">Equipo y permisos</h2>
           <p>Consulta las identidades operativas y los permisos disponibles para el equipo.</p>
         </header>
-        {canReadUsers || canReadRoles || canManageBranch ? (
+        {canReadUsers || canReadRoles || canManageBranch || canReadNewRepairConfiguration || canReadRepairCatalogs || canCreateRepairs ? (
           <div className={styles.administrationGrid}>
             {canReadUsers ? (
               <article className={styles.administrationCard}>
@@ -93,6 +99,20 @@ export function SettingsPage({ capabilities }: Readonly<{
                 <span className={styles.cardIcon} aria-hidden="true"><Building2 size={20} /></span>
                 <div><h3>Sucursal</h3><p>Zona horaria usada para presentar la operación local de esta estación.</p></div>
                 <ButtonLink to="/configuracion/sucursal" tone="secondary">Configurar sucursal</ButtonLink>
+              </article>
+            ) : null}
+            {canReadRepairCatalogs || canReadNewRepairConfiguration ? (
+              <article className={styles.administrationCard}>
+                <span className={styles.cardIcon} aria-hidden="true"><SlidersHorizontal size={20} /></span>
+                <div><h3>Catálogos por módulo</h3><p>Riesgos operativos y política de campos de Nueva Reparación.</p></div>
+                <ButtonLink to={canReadRepairCatalogs ? '/configuracion/catalogos' : '/configuracion/catalogos/nueva-reparacion'} tone="secondary">{canManageRepairCatalogs || canManageNewRepairConfiguration ? 'Configurar Reparaciones' : 'Consultar Reparaciones'}</ButtonLink>
+              </article>
+            ) : null}
+            {canCreateRepairs && !canReadRepairCatalogs && !canReadNewRepairConfiguration ? (
+              <article className={styles.administrationCard}>
+                <span className={styles.cardIcon} aria-hidden="true"><UserCircle size={20} /></span>
+                <div><h3>Nueva reparación</h3><p>Elige tu presentación personal para recibir equipos.</p></div>
+                <ButtonLink to="/configuracion/catalogos/nueva-reparacion" tone="secondary">Preferencia personal</ButtonLink>
               </article>
             ) : null}
           </div>

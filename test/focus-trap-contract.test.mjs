@@ -33,3 +33,9 @@ test('the focus trap retains keyboard cycling and close restoration contracts', 
   assert.match(focusTrap, /window\.requestAnimationFrame\(\(\) => \{/u);
   assert.match(focusTrap, /\(explicitTarget \?\? previous\)\?\.focus\(\);/u);
 });
+
+test('the focus trap leaves Escape consumed by a nested interaction alone', () => {
+  const focusTrap = section(overlaySource, 'export function useFocusTrap(', '\nexport function Dialog(');
+
+  assert.match(focusTrap, /if \(event\.key === 'Escape'\) \{\n        if \(event\.defaultPrevented\) return;\n        event\.preventDefault\(\);\n        onEscapeRef\.current\(\);/u);
+});

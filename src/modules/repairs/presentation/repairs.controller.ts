@@ -3,6 +3,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   Header,
@@ -11,6 +12,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   Res,
   ServiceUnavailableException,
@@ -48,6 +50,57 @@ import {
   AddRepairOperationalNoteUseCase,
   RepairOperationalNoteRepairNotFoundError,
 } from '../application/use-cases/add-repair-operational-note.use-case.js';
+import {
+  CreateRepairAuthorizationError,
+  CreateRepairConflictError,
+  CreateRepairInputError,
+} from '../application/use-cases/create-repair.use-case.js';
+import {
+  CorrectRepairEquipmentAuthorizationError,
+  CorrectRepairEquipmentConflictError,
+  CorrectRepairEquipmentInputError,
+  RepairEquipmentCorrectionNotFoundError,
+} from '../application/use-cases/correct-repair-equipment.use-case.js';
+import { NewRepairPolicyAuthorizationChangedError, NewRepairPolicyConcurrencyConflictError, NewRepairPolicyInputError } from '../application/new-repair-policy.service.js';
+import {
+  RepairBrandAuthorizationChangedError,
+  RepairBrandConcurrencyConflictError,
+  RepairBrandDuplicateError,
+  RepairBrandInputError,
+  RepairBrandNotFoundError,
+  RepairBrandPendingNotFoundError,
+} from '../application/repair-brand-catalog.service.js';
+import { RepairDeviceTypeAuthorizationChangedError, RepairDeviceTypeConcurrencyConflictError, RepairDeviceTypeDuplicateError, RepairDeviceTypeInputError, RepairDeviceTypeNotFoundError, RepairDeviceTypePendingNotFoundError } from '../application/repair-device-type-catalog.service.js';
+import {
+  RepairModelAuthorizationChangedError,
+  RepairModelConcurrencyConflictError,
+  RepairModelDuplicateError,
+  RepairModelInputError,
+  RepairModelNotFoundError,
+  RepairModelPendingNotFoundError,
+} from '../application/repair-model-catalog.service.js';
+import {
+  RepairRiskAuthorizationChangedError,
+  RepairRiskConcurrencyConflictError,
+  RepairRiskDuplicateError,
+  RepairRiskInputError,
+  RepairRiskNotFoundError,
+} from '../application/repair-risk-catalog.service.js';
+import {
+  RepairProblemCategoryAuthorizationChangedError,
+  RepairProblemCategoryConcurrencyConflictError,
+  RepairProblemCategoryDeleteNotAllowedError,
+  RepairProblemCategoryDuplicateError,
+  RepairProblemCategoryInputError,
+  RepairProblemCategoryNotFoundError,
+  RepairProblemPendingNotFoundError,
+} from '../application/repair-problem-category-catalog.service.js';
+import {
+  RepairProblemClassificationAuthorizationChangedError,
+  RepairProblemClassificationConflictError,
+  RepairProblemClassificationInputError,
+  RepairProblemClassificationNotFoundError,
+} from '../application/change-repair-problem-classification.service.js';
 
 type RepairQuery = Readonly<Record<string, string | string[] | undefined>>;
 type RepairRequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
@@ -115,9 +168,9 @@ function response(page: ListRepairsResult) {
         phone: item.customerPhone,
       },
       device: {
-        brand: item.deviceBrand,
-        model: item.deviceModel,
-        label: `${item.deviceBrand} ${item.deviceModel}`.trim(),
+        brand: item.deviceBrand.effectiveLabel,
+        model: item.canonicalModel.effectiveLabel,
+        label: [item.deviceBrand.effectiveLabel, item.canonicalModel.effectiveLabel].filter(Boolean).join(' ') || 'Equipo sin identificar',
       },
       reportedIssue: item.reportedIssue,
       technician: item.technicianId && item.technicianDisplayName
@@ -154,10 +207,26 @@ function detailResponse(item: Awaited<ReturnType<GetRepairDetailUseCase['execute
       phone: item.customerPhone,
     },
     receivedDevice: {
-      brand: item.deviceBrand,
-      model: item.deviceModel,
-      label: `${item.deviceBrand} ${item.deviceModel}`.trim(),
+      type: item.deviceType,
+      brand: item.deviceBrand.effectiveLabel,
+      model: item.canonicalModel.effectiveLabel,
+      label: [item.deviceBrand.effectiveLabel, item.canonicalModel.effectiveLabel].filter(Boolean).join(' ') || 'Equipo sin identificar',
+      correction: {
+        version: item.equipmentVersion,
+        capturedBrand: item.capturedBrand,
+        canonicalBrandId: item.canonicalBrandId,
+        capturedModel: item.capturedModel,
+        canonicalModelId: item.canonicalModelId,
+      },
       color: item.deviceColor,
+      identifier: item.deviceIdentifier,
+      identifierUnavailable: item.deviceIdentifierUnavailable,
+      distinctiveSigns: item.distinctiveSigns,
+      accessories: {
+        simIncluded: item.simIncluded,
+        memoryCardIncluded: item.memoryCardIncluded,
+        other: item.otherAccessories,
+      },
     },
     intake: {
       receivedAt: item.receivedAt,
@@ -165,10 +234,21 @@ function detailResponse(item: Awaited<ReturnType<GetRepairDetailUseCase['execute
         ? { id: item.receivedById, displayName: item.receivedByDisplayName }
         : null,
       reportedIssue: item.reportedIssue,
+      reportedProblems: item.problemClassifications.filter((problem) => problem.stage === 'intake').map((problem) => ({ problemCaptureId: problem.problemCaptureId, categoryId: problem.categoryId, label: problem.label, rawLabel: problem.rawLabel, status: problem.status, stage: problem.stage })),
       customerNarrative: item.customerNarrative,
       physicalConditionSummary: item.physicalConditionSummary,
       documentedRiskSummary: item.documentedRiskSummary,
+      acceptedInterventionRisks: item.acceptedInterventionRisks.map((risk) => Object.freeze({ label: risk.label })),
+      receivedPowerState: item.receivedPowerState,
+      deviceAccessType: item.deviceAccessType,
+      initialBudgetAmountMinor: item.initialBudgetAmountMinor,
+      newRepairPolicyVersion: item.newRepairPolicyVersion,
+      warrantyReviewRequested: item.warrantyReviewRequested,
+      previousRepairId: item.previousRepairId,
+      deliveredByName: item.deliveredByName,
+      estimatedDeliveryAt: item.estimatedDeliveryAt,
     },
+    problemClassifications: item.problemClassifications.flatMap((category) => category.stage === 'post_intake' && category.categoryId ? [{ categoryId: category.categoryId, label: category.label, status: category.status === 'pending' ? 'active' : category.status }] : []),
     currentSituation: {
       repairStatus: {
         code: item.repairStatus,
@@ -244,6 +324,105 @@ function operationalNoteResponse(
   };
 }
 
+function operationalRiskResponse(items: Awaited<ReturnType<RepairProtectedOperations['listOperationalRepairRisks']>>) {
+  return {
+    items: items.map((risk) => ({
+      riskId: risk.riskId,
+      code: risk.code,
+      label: risk.canonicalLabel,
+      scope: risk.scope,
+    })),
+  };
+}
+
+function adminRiskResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminRepairRisks']>>) {
+  return {
+    items: items.map((risk) => ({
+      riskId: risk.riskId,
+      code: risk.code,
+      label: risk.canonicalLabel,
+      scope: risk.scope,
+      status: risk.status,
+      version: risk.version,
+      usageCount: risk.usageCount,
+      createdAt: risk.createdAt,
+      updatedAt: risk.updatedAt,
+    })),
+  };
+}
+
+function riskMutationInput(riskId: string, request: unknown): unknown {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) return request;
+  return { ...(request as Readonly<Record<string, unknown>>), riskId };
+}
+
+function problemCategoryMutationInput(categoryId: string, request: unknown): unknown {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) return request;
+  return { ...(request as Readonly<Record<string, unknown>>), categoryId };
+}
+
+function problemCategoryResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminProblemCategories']>>) {
+  return { items: items.map((category) => ({ categoryId: category.categoryId, code: category.code, label: category.canonicalLabel, scope: category.scope, status: category.status, version: category.version, usageCount: category.usageCount, deletable: category.deletable, createdAt: category.createdAt, updatedAt: category.updatedAt })) };
+}
+
+function pendingProblemMutationInput(pendingProblemValueId: string, request: unknown): unknown {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) return request;
+  return { ...(request as Readonly<Record<string, unknown>>), pendingProblemValueId };
+}
+
+function pendingProblemResponse(items: Awaited<ReturnType<RepairProtectedOperations['listPendingProblems']>>) {
+  return { items: items.map((pending) => ({ pendingProblemValueId: pending.pendingProblemValueId, rawLabel: pending.rawLabel, status: pending.resolutionStatus, canonicalCategoryId: pending.canonicalCategoryId, canonicalLabel: pending.canonicalLabel, version: pending.version, usageCount: pending.usageCount, firstSeenAt: pending.firstSeenAt, lastSeenAt: pending.lastSeenAt })) };
+}
+
+function brandMutationInput(brandId: string, request: unknown): unknown {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) return request;
+  return { ...(request as Readonly<Record<string, unknown>>), brandId };
+}
+
+function pendingBrandMutationInput(pendingBrandValueId: string, request: unknown): unknown {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) return request;
+  return { ...(request as Readonly<Record<string, unknown>>), pendingBrandValueId };
+}
+function deviceTypeMutationInput(deviceTypeId: string, request: unknown): unknown { if (typeof request !== 'object' || request === null || Array.isArray(request)) return request; return { ...(request as Readonly<Record<string, unknown>>), deviceTypeId }; }
+function pendingDeviceTypeMutationInput(pendingDeviceTypeValueId: string, request: unknown): unknown { if (typeof request !== 'object' || request === null || Array.isArray(request)) return request; return { ...(request as Readonly<Record<string, unknown>>), pendingDeviceTypeValueId }; }
+function operationalDeviceTypeResponse(items: Awaited<ReturnType<RepairProtectedOperations['listOperationalRepairDeviceTypes']>>) { return { items: items.map((item) => ({ deviceTypeId: item.deviceTypeId, label: item.canonicalLabel, scope: item.scope })) }; }
+function adminDeviceTypeResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminRepairDeviceTypes']>>) { return { items: items.map((item) => ({ deviceTypeId: item.deviceTypeId, code: item.code, label: item.canonicalLabel, scope: item.scope, status: item.status, version: item.version, usageCount: item.usageCount, createdAt: item.createdAt, updatedAt: item.updatedAt })) }; }
+function pendingDeviceTypeResponse(items: Awaited<ReturnType<RepairProtectedOperations['listPendingRepairDeviceTypes']>>) { return { items: items.map((item) => ({ pendingDeviceTypeValueId: item.pendingDeviceTypeValueId, rawLabel: item.rawLabel, status: item.resolutionStatus, canonicalDeviceTypeId: item.canonicalDeviceTypeId, canonicalLabel: item.canonicalLabel, version: item.version, usageCount: item.usageCount, firstSeenAt: item.firstSeenAt, lastSeenAt: item.lastSeenAt })) }; }
+
+function modelMutationInput(modelId: string, request: unknown): unknown {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) return request;
+  return { ...(request as Readonly<Record<string, unknown>>), modelId };
+}
+
+function pendingModelMutationInput(pendingModelValueId: string, request: unknown): unknown {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) return request;
+  return { ...(request as Readonly<Record<string, unknown>>), pendingModelValueId };
+}
+
+function operationalBrandResponse(items: Awaited<ReturnType<RepairProtectedOperations['listOperationalRepairBrands']>>) {
+  return { items: items.map((brand) => ({ brandId: brand.brandId, label: brand.canonicalLabel, scope: brand.scope })) };
+}
+
+function adminBrandResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminRepairBrands']>>) {
+  return { items: items.map((brand) => ({ brandId: brand.brandId, code: brand.code, label: brand.canonicalLabel, scope: brand.scope, status: brand.status, version: brand.version, usageCount: brand.usageCount, createdAt: brand.createdAt, updatedAt: brand.updatedAt })) };
+}
+
+function pendingBrandResponse(items: Awaited<ReturnType<RepairProtectedOperations['listPendingRepairBrands']>>) {
+  return { items: items.map((pending) => ({ pendingBrandValueId: pending.pendingBrandValueId, rawLabel: pending.rawLabel, status: pending.resolutionStatus, canonicalBrandId: pending.canonicalBrandId, canonicalLabel: pending.canonicalLabel, version: pending.version, usageCount: pending.usageCount, firstSeenAt: pending.firstSeenAt, lastSeenAt: pending.lastSeenAt })) };
+}
+
+function operationalModelResponse(items: Awaited<ReturnType<RepairProtectedOperations['listOperationalRepairModels']>>) {
+  return { items: items.map((model) => ({ modelId: model.modelId, brandId: model.canonicalBrandId, brandLabel: model.brandLabel, label: model.canonicalLabel, scope: model.scope })) };
+}
+
+function adminModelResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminRepairModels']>>) {
+  return { items: items.map((model) => ({ modelId: model.modelId, brandId: model.canonicalBrandId, brandLabel: model.brandLabel, code: model.code, label: model.canonicalLabel, scope: model.scope, status: model.status, version: model.version, usageCount: model.usageCount, createdAt: model.createdAt, updatedAt: model.updatedAt })) };
+}
+
+function pendingModelResponse(items: Awaited<ReturnType<RepairProtectedOperations['listPendingRepairModels']>>) {
+  return { items: items.map((pending) => ({ pendingModelValueId: pending.pendingModelValueId, brandId: pending.canonicalBrandId, brandLabel: pending.brandLabel, rawBrandLabel: pending.rawBrandLabel, rawModelLabel: pending.rawModelLabel, status: pending.resolutionStatus, canonicalModelId: pending.canonicalModelId, canonicalModelLabel: pending.canonicalModelLabel, version: pending.version, usageCount: pending.usageCount, firstSeenAt: pending.firstSeenAt, lastSeenAt: pending.lastSeenAt })) };
+}
+
 @Controller('api/repairs')
 export class RepairsController {
   constructor(private readonly operations: RepairProtectedOperations) {}
@@ -290,6 +469,408 @@ export class RepairsController {
     }
   }
 
+  @Post()
+  @Header('Cache-Control', 'private, no-store')
+  async createRepair(
+    @Headers() headers: RepairRequestHeaders,
+    @Body() request: unknown,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    try {
+      const result = await this.operations.createRepair(
+        repairProtectedRequestEvidence(headers),
+        { request },
+      );
+      response.setHeader('X-Correlation-ID', result.correlationId);
+      return {
+        id: result.repairId,
+        folio: result.folio,
+        customer: { id: result.customerId, name: result.customerName, phone: result.customerPhone },
+        receivedAt: result.occurredAt,
+        newRepairPolicyVersion: result.newRepairPolicyVersion,
+      };
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      if (error instanceof CreateRepairInputError) {
+        throw new BadRequestException({ code: 'REPAIR_CREATE_INVALID', parameter: error.parameter });
+      }
+      if (error instanceof CreateRepairConflictError) {
+        throw new ConflictException({ code: 'REPAIR_CREATE_IDEMPOTENCY_CONFLICT' });
+      }
+      if (error instanceof CreateRepairAuthorizationError) {
+        throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+      }
+      if (error instanceof Error && error.name.includes('Database')) {
+        throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+      }
+      throw new InternalServerErrorException({ code: 'REPAIR_CREATE_FAILED' });
+    }
+  }
+
+  @Get('new-repair-policy')
+  @Header('Cache-Control', 'private, no-store')
+  async getOperationalNewRepairPolicy(@Headers() headers: RepairRequestHeaders) {
+    try {
+      return await this.operations.readOperationalNewRepairPolicy(repairProtectedRequestEvidence(headers));
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      throw new ServiceUnavailableException({ code: 'NEW_REPAIR_POLICY_READ_FAILED' });
+    }
+  }
+
+  @Get('risks')
+  @Header('Cache-Control', 'private, no-store')
+  async getOperationalRepairRisks(@Headers() headers: RepairRequestHeaders) {
+    try {
+      return operationalRiskResponse(await this.operations.listOperationalRepairRisks(repairProtectedRequestEvidence(headers)));
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      throw new ServiceUnavailableException({ code: 'REPAIR_RISKS_READ_FAILED' });
+    }
+  }
+
+  @Get('problem-categories')
+  @Header('Cache-Control', 'private, no-store')
+  async getOperationalProblemCategories(@Headers() headers: RepairRequestHeaders) {
+    try { return problemCategoryResponse(await this.operations.listOperationalProblemCategories(repairProtectedRequestEvidence(headers))); }
+    catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_PROBLEM_CATEGORIES_READ_FAILED' }); }
+  }
+
+  @Get('new-repair/problem-categories')
+  @Header('Cache-Control', 'private, no-store')
+  async getIntakeProblemCategories(@Headers() headers: RepairRequestHeaders) {
+    try { return problemCategoryResponse(await this.operations.listIntakeProblemCategories(repairProtectedRequestEvidence(headers))); }
+    catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_PROBLEM_CATEGORIES_READ_FAILED' }); }
+  }
+
+  @Get('brands')
+  @Header('Cache-Control', 'private, no-store')
+  async getOperationalRepairBrands(@Headers() headers: RepairRequestHeaders, @Query('q') query: string | undefined) {
+    try { return operationalBrandResponse(await this.operations.listOperationalRepairBrands(repairProtectedRequestEvidence(headers), query)); }
+    catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_BRANDS_READ_FAILED' }); }
+  }
+
+  @Get('device-types')
+  @Header('Cache-Control', 'private, no-store')
+  async getOperationalRepairDeviceTypes(@Headers() headers: RepairRequestHeaders, @Query('q') query: string | undefined) { try { return operationalDeviceTypeResponse(await this.operations.listOperationalRepairDeviceTypes(repairProtectedRequestEvidence(headers), query)); } catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_DEVICE_TYPES_READ_FAILED' }); } }
+
+  @Get('configuration/catalogs/device-types')
+  @Header('Cache-Control', 'private, no-store')
+  async getAdminRepairDeviceTypes(@Headers() headers: RepairRequestHeaders) { try { return adminDeviceTypeResponse(await this.operations.listAdminRepairDeviceTypes(repairProtectedRequestEvidence(headers))); } catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_DEVICE_TYPES_READ_FAILED' }); } }
+  @Get('configuration/catalogs/device-types/pending')
+  @Header('Cache-Control', 'private, no-store')
+  async getPendingRepairDeviceTypes(@Headers() headers: RepairRequestHeaders) { try { return pendingDeviceTypeResponse(await this.operations.listPendingRepairDeviceTypes(repairProtectedRequestEvidence(headers))); } catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_DEVICE_TYPES_READ_FAILED' }); } }
+  @Post('configuration/catalogs/device-types')
+  @Header('Cache-Control', 'private, no-store')
+  async createRepairDeviceType(@Headers() headers: RepairRequestHeaders, @Body() request: unknown) { try { return { item: adminDeviceTypeResponse([await this.operations.createRepairDeviceType(repairProtectedRequestEvidence(headers), request)]).items[0] }; } catch (error: unknown) { this.translateDeviceTypeMutationError(error); } }
+  @Put('configuration/catalogs/device-types/:deviceTypeId')
+  @Header('Cache-Control', 'private, no-store')
+  async renameRepairDeviceType(@Headers() headers: RepairRequestHeaders, @Param('deviceTypeId') deviceTypeId: string, @Body() request: unknown) { try { return { item: adminDeviceTypeResponse([await this.operations.renameRepairDeviceType(repairProtectedRequestEvidence(headers), deviceTypeMutationInput(deviceTypeId, request))]).items[0] }; } catch (error: unknown) { this.translateDeviceTypeMutationError(error); } }
+  @Post('configuration/catalogs/device-types/:deviceTypeId/deactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async deactivateRepairDeviceType(@Headers() headers: RepairRequestHeaders, @Param('deviceTypeId') deviceTypeId: string, @Body() request: unknown) { try { return { item: adminDeviceTypeResponse([await this.operations.deactivateRepairDeviceType(repairProtectedRequestEvidence(headers), deviceTypeMutationInput(deviceTypeId, request))]).items[0] }; } catch (error: unknown) { this.translateDeviceTypeMutationError(error); } }
+  @Post('configuration/catalogs/device-types/:deviceTypeId/reactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async reactivateRepairDeviceType(@Headers() headers: RepairRequestHeaders, @Param('deviceTypeId') deviceTypeId: string, @Body() request: unknown) { try { return { item: adminDeviceTypeResponse([await this.operations.reactivateRepairDeviceType(repairProtectedRequestEvidence(headers), deviceTypeMutationInput(deviceTypeId, request))]).items[0] }; } catch (error: unknown) { this.translateDeviceTypeMutationError(error); } }
+  @Post('configuration/catalogs/device-types/pending/:pendingDeviceTypeValueId/resolve')
+  @Header('Cache-Control', 'private, no-store')
+  async resolvePendingRepairDeviceType(@Headers() headers: RepairRequestHeaders, @Param('pendingDeviceTypeValueId') pendingDeviceTypeValueId: string, @Body() request: unknown) { try { return { item: pendingDeviceTypeResponse([await this.operations.resolvePendingRepairDeviceType(repairProtectedRequestEvidence(headers), pendingDeviceTypeMutationInput(pendingDeviceTypeValueId, request))]).items[0] }; } catch (error: unknown) { this.translateDeviceTypeMutationError(error); } }
+
+  @Get('models')
+  @Header('Cache-Control', 'private, no-store')
+  async getOperationalRepairModels(@Headers() headers: RepairRequestHeaders, @Query('brandId') brandId: string | undefined, @Query('q') query: string | undefined) {
+    try { return operationalModelResponse(await this.operations.listOperationalRepairModels(repairProtectedRequestEvidence(headers), brandId, query)); }
+    catch (error: unknown) {
+      translateAuthorizationError(error);
+      if (error instanceof RepairModelInputError) throw new BadRequestException({ code: 'REPAIR_MODEL_INVALID', parameter: error.parameter });
+      throw new ServiceUnavailableException({ code: 'REPAIR_MODELS_READ_FAILED' });
+    }
+  }
+
+  @Get('configuration/catalogs/brands')
+  @Header('Cache-Control', 'private, no-store')
+  async getAdminRepairBrands(@Headers() headers: RepairRequestHeaders) {
+    try { return adminBrandResponse(await this.operations.listAdminRepairBrands(repairProtectedRequestEvidence(headers))); }
+    catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_BRANDS_READ_FAILED' }); }
+  }
+
+  @Get('configuration/catalogs/brands/pending')
+  @Header('Cache-Control', 'private, no-store')
+  async getPendingRepairBrands(@Headers() headers: RepairRequestHeaders) {
+    try { return pendingBrandResponse(await this.operations.listPendingRepairBrands(repairProtectedRequestEvidence(headers))); }
+    catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_BRANDS_READ_FAILED' }); }
+  }
+
+  @Post('configuration/catalogs/brands')
+  @Header('Cache-Control', 'private, no-store')
+  async createRepairBrand(@Headers() headers: RepairRequestHeaders, @Body() request: unknown) {
+    try { return { item: adminBrandResponse([await this.operations.createRepairBrand(repairProtectedRequestEvidence(headers), request)]).items[0] }; }
+    catch (error: unknown) { this.translateBrandMutationError(error); }
+  }
+
+  @Put('configuration/catalogs/brands/:brandId')
+  @Header('Cache-Control', 'private, no-store')
+  async renameRepairBrand(@Headers() headers: RepairRequestHeaders, @Param('brandId') brandId: string, @Body() request: unknown) {
+    try { return { item: adminBrandResponse([await this.operations.renameRepairBrand(repairProtectedRequestEvidence(headers), brandMutationInput(brandId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateBrandMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/brands/:brandId/deactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async deactivateRepairBrand(@Headers() headers: RepairRequestHeaders, @Param('brandId') brandId: string, @Body() request: unknown) {
+    try { return { item: adminBrandResponse([await this.operations.deactivateRepairBrand(repairProtectedRequestEvidence(headers), brandMutationInput(brandId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateBrandMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/brands/:brandId/reactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async reactivateRepairBrand(@Headers() headers: RepairRequestHeaders, @Param('brandId') brandId: string, @Body() request: unknown) {
+    try { return { item: adminBrandResponse([await this.operations.reactivateRepairBrand(repairProtectedRequestEvidence(headers), brandMutationInput(brandId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateBrandMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/brands/pending/:pendingBrandValueId/resolve')
+  @Header('Cache-Control', 'private, no-store')
+  async resolvePendingRepairBrand(@Headers() headers: RepairRequestHeaders, @Param('pendingBrandValueId') pendingBrandValueId: string, @Body() request: unknown) {
+    try { return { item: pendingBrandResponse([await this.operations.resolvePendingRepairBrand(repairProtectedRequestEvidence(headers), pendingBrandMutationInput(pendingBrandValueId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateBrandMutationError(error); }
+  }
+
+  @Get('configuration/catalogs/models')
+  @Header('Cache-Control', 'private, no-store')
+  async getAdminRepairModels(@Headers() headers: RepairRequestHeaders, @Query('brandId') brandId: string | undefined) {
+    try { return adminModelResponse(await this.operations.listAdminRepairModels(repairProtectedRequestEvidence(headers), brandId)); }
+    catch (error: unknown) { translateAuthorizationError(error); if (error instanceof RepairModelInputError) throw new BadRequestException({ code: 'REPAIR_MODEL_INVALID', parameter: error.parameter }); throw new ServiceUnavailableException({ code: 'REPAIR_MODELS_READ_FAILED' }); }
+  }
+
+  @Get('configuration/catalogs/models/pending')
+  @Header('Cache-Control', 'private, no-store')
+  async getPendingRepairModels(@Headers() headers: RepairRequestHeaders, @Query('brandId') brandId: string | undefined) {
+    try { return pendingModelResponse(await this.operations.listPendingRepairModels(repairProtectedRequestEvidence(headers), brandId)); }
+    catch (error: unknown) { translateAuthorizationError(error); if (error instanceof RepairModelInputError) throw new BadRequestException({ code: 'REPAIR_MODEL_INVALID', parameter: error.parameter }); throw new ServiceUnavailableException({ code: 'REPAIR_MODELS_READ_FAILED' }); }
+  }
+
+  @Post('configuration/catalogs/models')
+  @Header('Cache-Control', 'private, no-store')
+  async createRepairModel(@Headers() headers: RepairRequestHeaders, @Body() request: unknown) {
+    try { return { item: adminModelResponse([await this.operations.createRepairModel(repairProtectedRequestEvidence(headers), request)]).items[0] }; }
+    catch (error: unknown) { this.translateModelMutationError(error); }
+  }
+
+  @Put('configuration/catalogs/models/:modelId')
+  @Header('Cache-Control', 'private, no-store')
+  async renameRepairModel(@Headers() headers: RepairRequestHeaders, @Param('modelId') modelId: string, @Body() request: unknown) {
+    try { return { item: adminModelResponse([await this.operations.renameRepairModel(repairProtectedRequestEvidence(headers), modelMutationInput(modelId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateModelMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/models/:modelId/deactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async deactivateRepairModel(@Headers() headers: RepairRequestHeaders, @Param('modelId') modelId: string, @Body() request: unknown) {
+    try { return { item: adminModelResponse([await this.operations.deactivateRepairModel(repairProtectedRequestEvidence(headers), modelMutationInput(modelId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateModelMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/models/:modelId/reactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async reactivateRepairModel(@Headers() headers: RepairRequestHeaders, @Param('modelId') modelId: string, @Body() request: unknown) {
+    try { return { item: adminModelResponse([await this.operations.reactivateRepairModel(repairProtectedRequestEvidence(headers), modelMutationInput(modelId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateModelMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/models/pending/:pendingModelValueId/resolve')
+  @Header('Cache-Control', 'private, no-store')
+  async resolvePendingRepairModel(@Headers() headers: RepairRequestHeaders, @Param('pendingModelValueId') pendingModelValueId: string, @Body() request: unknown) {
+    try { return { item: pendingModelResponse([await this.operations.resolvePendingRepairModel(repairProtectedRequestEvidence(headers), pendingModelMutationInput(pendingModelValueId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateModelMutationError(error); }
+  }
+
+  @Get('configuration/catalogs/risks')
+  @Header('Cache-Control', 'private, no-store')
+  async getAdminRepairRisks(@Headers() headers: RepairRequestHeaders) {
+    try {
+      return adminRiskResponse(await this.operations.listAdminRepairRisks(repairProtectedRequestEvidence(headers)));
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      throw new ServiceUnavailableException({ code: 'REPAIR_RISKS_READ_FAILED' });
+    }
+  }
+
+  @Post('configuration/catalogs/risks')
+  @Header('Cache-Control', 'private, no-store')
+  async createRepairRisk(@Headers() headers: RepairRequestHeaders, @Body() request: unknown) {
+    try {
+      return { item: (await adminRiskResponse([await this.operations.createRepairRisk(repairProtectedRequestEvidence(headers), request)])).items[0] };
+    } catch (error: unknown) {
+      this.translateRiskMutationError(error);
+    }
+  }
+
+  @Put('configuration/catalogs/risks/:riskId')
+  @Header('Cache-Control', 'private, no-store')
+  async renameRepairRisk(@Headers() headers: RepairRequestHeaders, @Param('riskId') riskId: string, @Body() request: unknown) {
+    try {
+      return { item: (await adminRiskResponse([await this.operations.renameRepairRisk(repairProtectedRequestEvidence(headers), riskMutationInput(riskId, request))])).items[0] };
+    } catch (error: unknown) {
+      this.translateRiskMutationError(error);
+    }
+  }
+
+  @Post('configuration/catalogs/risks/:riskId/deactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async deactivateRepairRisk(@Headers() headers: RepairRequestHeaders, @Param('riskId') riskId: string, @Body() request: unknown) {
+    try {
+      return { item: (await adminRiskResponse([await this.operations.deactivateRepairRisk(repairProtectedRequestEvidence(headers), riskMutationInput(riskId, request))])).items[0] };
+    } catch (error: unknown) {
+      this.translateRiskMutationError(error);
+    }
+  }
+
+  @Post('configuration/catalogs/risks/:riskId/reactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async reactivateRepairRisk(@Headers() headers: RepairRequestHeaders, @Param('riskId') riskId: string, @Body() request: unknown) {
+    try {
+      return { item: (await adminRiskResponse([await this.operations.reactivateRepairRisk(repairProtectedRequestEvidence(headers), riskMutationInput(riskId, request))])).items[0] };
+    } catch (error: unknown) {
+      this.translateRiskMutationError(error);
+    }
+  }
+
+  @Get('configuration/catalogs/problem-categories')
+  @Header('Cache-Control', 'private, no-store')
+  async getAdminProblemCategories(@Headers() headers: RepairRequestHeaders) {
+    try { return problemCategoryResponse(await this.operations.listAdminProblemCategories(repairProtectedRequestEvidence(headers))); }
+    catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_PROBLEM_CATEGORIES_READ_FAILED' }); }
+  }
+
+  @Get('configuration/catalogs/problem-categories/pending')
+  @Header('Cache-Control', 'private, no-store')
+  async getPendingProblems(@Headers() headers: RepairRequestHeaders) {
+    try { return pendingProblemResponse(await this.operations.listPendingProblems(repairProtectedRequestEvidence(headers))); }
+    catch (error: unknown) { translateAuthorizationError(error); throw new ServiceUnavailableException({ code: 'REPAIR_PROBLEM_CATEGORIES_READ_FAILED' }); }
+  }
+
+  @Post('configuration/catalogs/problem-categories/pending/:pendingProblemValueId/resolve')
+  @Header('Cache-Control', 'private, no-store')
+  async resolvePendingProblem(@Headers() headers: RepairRequestHeaders, @Param('pendingProblemValueId') pendingProblemValueId: string, @Body() request: unknown) {
+    try { return { item: pendingProblemResponse([await this.operations.resolvePendingProblem(repairProtectedRequestEvidence(headers), pendingProblemMutationInput(pendingProblemValueId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateProblemCategoryMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/problem-categories')
+  @Header('Cache-Control', 'private, no-store')
+  async createProblemCategory(@Headers() headers: RepairRequestHeaders, @Body() request: unknown) {
+    try { return { item: problemCategoryResponse([await this.operations.createProblemCategory(repairProtectedRequestEvidence(headers), request)]).items[0] }; }
+    catch (error: unknown) { this.translateProblemCategoryMutationError(error); }
+  }
+
+  @Put('configuration/catalogs/problem-categories/:categoryId')
+  @Header('Cache-Control', 'private, no-store')
+  async renameProblemCategory(@Headers() headers: RepairRequestHeaders, @Param('categoryId') categoryId: string, @Body() request: unknown) {
+    try { return { item: problemCategoryResponse([await this.operations.renameProblemCategory(repairProtectedRequestEvidence(headers), problemCategoryMutationInput(categoryId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateProblemCategoryMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/problem-categories/:categoryId/deactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async deactivateProblemCategory(@Headers() headers: RepairRequestHeaders, @Param('categoryId') categoryId: string, @Body() request: unknown) {
+    try { return { item: problemCategoryResponse([await this.operations.deactivateProblemCategory(repairProtectedRequestEvidence(headers), problemCategoryMutationInput(categoryId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateProblemCategoryMutationError(error); }
+  }
+
+  @Post('configuration/catalogs/problem-categories/:categoryId/reactivate')
+  @Header('Cache-Control', 'private, no-store')
+  async reactivateProblemCategory(@Headers() headers: RepairRequestHeaders, @Param('categoryId') categoryId: string, @Body() request: unknown) {
+    try { return { item: problemCategoryResponse([await this.operations.reactivateProblemCategory(repairProtectedRequestEvidence(headers), problemCategoryMutationInput(categoryId, request))]).items[0] }; }
+    catch (error: unknown) { this.translateProblemCategoryMutationError(error); }
+  }
+
+  @Delete('configuration/catalogs/problem-categories/:categoryId')
+  @Header('Cache-Control', 'private, no-store')
+  async deleteProblemCategory(@Headers() headers: RepairRequestHeaders, @Param('categoryId') categoryId: string, @Body() request: unknown) {
+    try { return { item: await this.operations.deleteProblemCategory(repairProtectedRequestEvidence(headers), problemCategoryMutationInput(categoryId, request)) }; }
+    catch (error: unknown) { this.translateProblemCategoryMutationError(error); }
+  }
+
+  @Get('configuration/new-repair-policy')
+  @Header('Cache-Control', 'private, no-store')
+  async getAdminNewRepairPolicy(@Headers() headers: RepairRequestHeaders) {
+    try {
+      return await this.operations.readAdminNewRepairPolicy(repairProtectedRequestEvidence(headers));
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      throw new ServiceUnavailableException({ code: 'NEW_REPAIR_POLICY_READ_FAILED' });
+    }
+  }
+
+  @Put('configuration/new-repair-policy')
+  @Header('Cache-Control', 'private, no-store')
+  async updateNewRepairPolicy(@Headers() headers: RepairRequestHeaders, @Body() request: unknown) {
+    try {
+      return await this.operations.updateNewRepairPolicy(repairProtectedRequestEvidence(headers), request);
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      if (error instanceof NewRepairPolicyInputError) throw new BadRequestException({ code: 'NEW_REPAIR_POLICY_INVALID', parameter: error.parameter });
+      if (error instanceof NewRepairPolicyConcurrencyConflictError) throw new ConflictException({ code: 'NEW_REPAIR_POLICY_VERSION_CONFLICT' });
+      if (error instanceof NewRepairPolicyAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+      throw new ServiceUnavailableException({ code: 'NEW_REPAIR_POLICY_UPDATE_FAILED' });
+    }
+  }
+
+  @Post('configuration/new-repair-policy/reset')
+  @Header('Cache-Control', 'private, no-store')
+  async resetNewRepairPolicy(@Headers() headers: RepairRequestHeaders, @Body() request: unknown) {
+    try {
+      return await this.operations.resetNewRepairPolicy(repairProtectedRequestEvidence(headers), request);
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      if (error instanceof NewRepairPolicyInputError) throw new BadRequestException({ code: 'NEW_REPAIR_POLICY_INVALID', parameter: error.parameter });
+      if (error instanceof NewRepairPolicyConcurrencyConflictError) throw new ConflictException({ code: 'NEW_REPAIR_POLICY_VERSION_CONFLICT' });
+      if (error instanceof NewRepairPolicyAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+      throw new ServiceUnavailableException({ code: 'NEW_REPAIR_POLICY_RESET_FAILED' });
+    }
+  }
+
+  @Get('customer-lookup')
+  @Header('Cache-Control', 'private, no-store')
+  async searchCustomers(
+    @Headers() headers: RepairRequestHeaders,
+    @Query('q') query: string | undefined,
+  ) {
+    try {
+      const items = await this.operations.searchCustomers(repairProtectedRequestEvidence(headers), query);
+      return { items: items.map((customer) => ({
+        id: customer.customerId,
+        givenName: customer.givenName,
+        familyName: customer.familyName,
+        name: customer.displayName,
+        contactPhone: customer.contactPhone,
+        contactPhones: customer.contactPhones,
+        matchedPhone: customer.matchedPhone,
+      })) };
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      throw new BadRequestException({ code: 'CUSTOMER_SEARCH_INVALID' });
+    }
+  }
+
+  @Get('previous-repair-lookup')
+  @Header('Cache-Control', 'private, no-store')
+  async searchPreviousRepairs(
+    @Headers() headers: RepairRequestHeaders,
+    @Query('q') query: string | undefined,
+  ) {
+    try {
+      const page = await this.operations.searchPreviousRepairs(repairProtectedRequestEvidence(headers), query);
+      return { items: response(page).items };
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      if (error instanceof ListRepairsQueryError) throw new BadRequestException({ code: 'PREVIOUS_REPAIR_SEARCH_INVALID', parameter: error.parameter });
+      if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+      throw new InternalServerErrorException({ code: 'PREVIOUS_REPAIR_SEARCH_FAILED' });
+    }
+  }
+
   @Post(':repairId/technician-assignment')
   @Header('Cache-Control', 'private, no-store')
   assignTechnician(): never {
@@ -327,6 +908,76 @@ export class RepairsController {
       translateAuthorizationError(error);
       throw new ForbiddenException({ code: 'ACCESS_DENIED' });
     }
+  }
+
+  private translateRiskMutationError(error: unknown): never {
+    translateAuthorizationError(error);
+    if (error instanceof RepairRiskInputError) throw new BadRequestException({ code: 'REPAIR_RISK_INVALID', parameter: error.parameter });
+    if (error instanceof RepairRiskDuplicateError) throw new ConflictException({ code: 'REPAIR_RISK_DUPLICATE' });
+    if (error instanceof RepairRiskConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_RISK_VERSION_CONFLICT' });
+    if (error instanceof RepairRiskNotFoundError) throw new NotFoundException({ code: 'REPAIR_RISK_NOT_FOUND' });
+    if (error instanceof RepairRiskAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+    if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+    throw new InternalServerErrorException({ code: 'REPAIR_RISK_WRITE_FAILED' });
+  }
+
+  private translateProblemCategoryMutationError(error: unknown): never {
+    translateAuthorizationError(error);
+    if (error instanceof RepairProblemCategoryInputError) throw new BadRequestException({ code: 'REPAIR_PROBLEM_CATEGORY_INVALID', parameter: error.parameter });
+    if (error instanceof RepairProblemCategoryDuplicateError) throw new ConflictException({ code: 'REPAIR_PROBLEM_CATEGORY_DUPLICATE' });
+    if (error instanceof RepairProblemCategoryConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_PROBLEM_CATEGORY_VERSION_CONFLICT' });
+    if (error instanceof RepairProblemCategoryDeleteNotAllowedError) throw new ConflictException({ code: 'REPAIR_PROBLEM_CATEGORY_DELETE_NOT_ALLOWED', reason: error.reason });
+    if (error instanceof RepairProblemCategoryNotFoundError) throw new NotFoundException({ code: 'REPAIR_PROBLEM_CATEGORY_NOT_FOUND' });
+    if (error instanceof RepairProblemPendingNotFoundError) throw new NotFoundException({ code: 'REPAIR_PROBLEM_PENDING_NOT_FOUND' });
+    if (error instanceof RepairProblemCategoryAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+    if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+    throw new InternalServerErrorException({ code: 'REPAIR_PROBLEM_CATEGORY_WRITE_FAILED' });
+  }
+
+  private translateProblemClassificationMutationError(error: unknown): never {
+    translateAuthorizationError(error);
+    if (error instanceof RepairProblemClassificationInputError) throw new BadRequestException({ code: 'REPAIR_PROBLEM_CLASSIFICATION_INVALID', parameter: error.parameter });
+    if (error instanceof RepairProblemClassificationConflictError) throw new ConflictException({ code: 'REPAIR_PROBLEM_CLASSIFICATION_CONFLICT' });
+    if (error instanceof RepairProblemClassificationNotFoundError) throw new NotFoundException({ code: 'REPAIR_OR_PROBLEM_CATEGORY_NOT_FOUND' });
+    if (error instanceof RepairProblemClassificationAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+    if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+    throw new InternalServerErrorException({ code: 'REPAIR_PROBLEM_CLASSIFICATION_WRITE_FAILED' });
+  }
+
+  private translateBrandMutationError(error: unknown): never {
+    translateAuthorizationError(error);
+    if (error instanceof RepairBrandInputError) throw new BadRequestException({ code: 'REPAIR_BRAND_INVALID', parameter: error.parameter });
+    if (error instanceof RepairBrandDuplicateError) throw new ConflictException({ code: 'REPAIR_BRAND_DUPLICATE' });
+    if (error instanceof RepairBrandConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_BRAND_VERSION_CONFLICT' });
+    if (error instanceof RepairBrandNotFoundError) throw new NotFoundException({ code: 'REPAIR_BRAND_NOT_FOUND' });
+    if (error instanceof RepairBrandPendingNotFoundError) throw new NotFoundException({ code: 'REPAIR_BRAND_PENDING_NOT_FOUND' });
+    if (error instanceof RepairBrandAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+    if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+    throw new InternalServerErrorException({ code: 'REPAIR_BRAND_WRITE_FAILED' });
+  }
+
+  private translateDeviceTypeMutationError(error: unknown): never {
+    translateAuthorizationError(error);
+    if (error instanceof RepairDeviceTypeInputError) throw new BadRequestException({ code: 'REPAIR_DEVICE_TYPE_INVALID', parameter: error.parameter });
+    if (error instanceof RepairDeviceTypeDuplicateError) throw new ConflictException({ code: 'REPAIR_DEVICE_TYPE_DUPLICATE' });
+    if (error instanceof RepairDeviceTypeConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_DEVICE_TYPE_VERSION_CONFLICT' });
+    if (error instanceof RepairDeviceTypeNotFoundError) throw new NotFoundException({ code: 'REPAIR_DEVICE_TYPE_NOT_FOUND' });
+    if (error instanceof RepairDeviceTypePendingNotFoundError) throw new NotFoundException({ code: 'REPAIR_DEVICE_TYPE_PENDING_NOT_FOUND' });
+    if (error instanceof RepairDeviceTypeAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+    if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+    throw new InternalServerErrorException({ code: 'REPAIR_DEVICE_TYPE_WRITE_FAILED' });
+  }
+
+  private translateModelMutationError(error: unknown): never {
+    translateAuthorizationError(error);
+    if (error instanceof RepairModelInputError) throw new BadRequestException({ code: 'REPAIR_MODEL_INVALID', parameter: error.parameter });
+    if (error instanceof RepairModelDuplicateError) throw new ConflictException({ code: 'REPAIR_MODEL_DUPLICATE' });
+    if (error instanceof RepairModelConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_MODEL_VERSION_CONFLICT' });
+    if (error instanceof RepairModelNotFoundError) throw new NotFoundException({ code: 'REPAIR_MODEL_NOT_FOUND' });
+    if (error instanceof RepairModelPendingNotFoundError) throw new NotFoundException({ code: 'REPAIR_MODEL_PENDING_NOT_FOUND' });
+    if (error instanceof RepairModelAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+    if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+    throw new InternalServerErrorException({ code: 'REPAIR_MODEL_WRITE_FAILED' });
   }
 
   @Post(':repairId/notes')
@@ -369,6 +1020,64 @@ export class RepairsController {
       }
       throw new InternalServerErrorException({ code: 'REPAIR_NOTE_WRITE_FAILED' });
     }
+  }
+
+  @Post(':repairId/equipment-correction')
+  @Header('Cache-Control', 'private, no-store')
+  async correctEquipment(
+    @Headers() headers: RepairRequestHeaders,
+    @Param('repairId') repairId: string,
+    @Body() request: unknown,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    try {
+      const result = await this.operations.correctRepairEquipment(
+        repairProtectedRequestEvidence(headers),
+        { repairId, request },
+      );
+      response.setHeader('X-Correlation-ID', result.correlationId);
+      return {
+        item: {
+          repairId: result.repairId,
+          equipmentVersion: result.equipmentVersion,
+          brand: result.deviceBrand,
+          canonicalBrandId: result.canonicalBrandId,
+          model: result.deviceModel,
+          canonicalModelId: result.canonicalModelId,
+          timeline: {
+            id: result.timelineItem.id,
+            type: result.timelineItem.type,
+            occurredAt: result.timelineItem.occurredAt,
+            actor: { id: result.timelineItem.actorId, displayName: result.timelineItem.actorDisplayName },
+            title: result.timelineItem.title,
+            body: result.timelineItem.body,
+            source: result.timelineItem.source,
+          },
+        },
+      };
+    } catch (error: unknown) {
+      translateAuthorizationError(error);
+      if (error instanceof CorrectRepairEquipmentInputError) throw new BadRequestException({ code: 'REPAIR_EQUIPMENT_CORRECTION_INVALID', parameter: error.parameter });
+      if (error instanceof RepairEquipmentCorrectionNotFoundError) throw new NotFoundException({ code: 'REPAIR_NOT_FOUND' });
+      if (error instanceof CorrectRepairEquipmentConflictError) throw new ConflictException({ code: error.kind === 'version' ? 'REPAIR_EQUIPMENT_VERSION_CONFLICT' : 'REPAIR_EQUIPMENT_IDEMPOTENCY_CONFLICT' });
+      if (error instanceof CorrectRepairEquipmentAuthorizationError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+      if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
+      throw new InternalServerErrorException({ code: 'REPAIR_EQUIPMENT_CORRECTION_FAILED' });
+    }
+  }
+
+  @Post(':repairId/problem-classifications/:categoryId')
+  @Header('Cache-Control', 'private, no-store')
+  async addProblemClassification(@Headers() headers: RepairRequestHeaders, @Param('repairId') repairId: string, @Param('categoryId') categoryId: string) {
+    try { return { item: await this.operations.addRepairProblemClassification(repairProtectedRequestEvidence(headers), repairId, categoryId) }; }
+    catch (error: unknown) { this.translateProblemClassificationMutationError(error); }
+  }
+
+  @Post(':repairId/problem-classifications/:categoryId/remove')
+  @Header('Cache-Control', 'private, no-store')
+  async removeProblemClassification(@Headers() headers: RepairRequestHeaders, @Param('repairId') repairId: string, @Param('categoryId') categoryId: string) {
+    try { return { item: await this.operations.removeRepairProblemClassification(repairProtectedRequestEvidence(headers), repairId, categoryId) }; }
+    catch (error: unknown) { this.translateProblemClassificationMutationError(error); }
   }
 
   @Get(':repairId/evidence/:evidenceId/content')

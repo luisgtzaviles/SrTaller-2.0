@@ -8,9 +8,13 @@ Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
 tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release. PBI-033 también está
 `Done`; PBI-025, PBI-034 y PBI-026 también están `Done`. SPRINT-02 tiene
-PBI-028 `Done`, G5 `PASS`; PBI-038 también está `Done`, `Released: NO`, y
-Current PBI es `NONE` con WIP `0/1`. Su checkpoint integrado conserva el slice
-PBI-037 sin convertirlo en WIP paralelo.
+PBI-028 `Done`, G5 `PASS`; PBI-038 también está `Done`, `Released: NO`.
+PBI-039 es Current PBI con WIP `1/1`; su slice funcional está congelado y
+aceptado por Owner, Formal UI Verification, Hardening, Full Verification, CI /
+PR Readiness y PR CI están en `PASS`, y los findings de revisión están
+remediados. PR #42 permanece abierto, no integrado y listo para re-review
+independiente. El checkpoint integrado anterior conserva PBI-037 sin
+convertirlo en WIP paralelo.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
@@ -61,6 +65,7 @@ su clasificación explícita.
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
 | 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Integrated slice within PBI-028 | Alta | Product Mode local; no independent lifecycle or canonical delivery claim |
 | 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
+| 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | In progress; review remediation PASS; ready for independent re-review | Alta | SPRINT-02 current; PR #42 CI GREEN; merge/deploy pendientes |
 
 ## Interpretación
 

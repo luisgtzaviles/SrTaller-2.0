@@ -32,6 +32,10 @@ de governance o revisión autorizada dentro de su alcance.
 
 ## Disciplina de ejecución
 
+- Antes de cualquier comando del repositorio que ejecute Node.js o pnpm, usar
+  `./scripts/pnpm-governed` o activar explícitamente los pins del repositorio
+  (Node.js `24.18.0`, pnpm `11.15.1`). No usar el Node ambiental sólo porque
+  aparezca primero en `PATH` ni relajar `verify:toolchain`.
 - WIP operacional: un solo PBI.
 - No iniciar trabajo sin alcance y autorización vigentes.
 - No inventar decisiones, prioridades, aceptación ni excepciones del Owner.

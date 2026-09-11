@@ -66,7 +66,8 @@ test('repair timestamps use the trusted Branch IANA timezone only for presentati
   assert.match(sessionApiSource, /readonly timeZone: string;/u);
   assert.match(sessionApiSource, /new Intl\.DateTimeFormat\('en-US', \{ timeZone \}\)/u);
   assert.match(repairDetailSource, /timeZone,\s*\}\)\.format\(new Date\(value\)\)/u);
-  assert.match(repairDetailSource, /receivedAt\(entry\.occurredAt, timeZone\)/u);
+  assert.match(repairDetailSource, /compactTimelineAt\(entry\.occurredAt, timeZone\)/u);
+  assert.match(repairDetailSource, /function compactTimelineAt[\s\S]*timeZone,[\s\S]*formatToParts/u);
   assert.match(repairsSource, /function formatReceivedAt\(value: string, timeZone: string\)/u);
   assert.match(repairsSource, /timeZone,\s*\}\)\.format\(new Date\(value\)\)/u);
   assert.doesNotMatch(repairsSource, /timeZone: 'UTC'/u);

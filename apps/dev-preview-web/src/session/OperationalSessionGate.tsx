@@ -27,6 +27,7 @@ import styles from './operational-session-gate.module.css';
 const PIN_PATTERN = /^\d{4}$/u;
 const SESSION_REVALIDATION_MINIMUM_MS = 1_000;
 const SESSION_REVALIDATION_EPSILON_MS = 25;
+const SESSION_LOADING_FEEDBACK_DELAY_MS = 180;
 const MAX_BROWSER_TIMEOUT_MS = 2_147_483_647;
 const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
 const EMPTY_CAPABILITIES: readonly OperationalCapability[] = Object.freeze([]);
@@ -118,6 +119,20 @@ function LoadingGate(): React.JSX.Element {
       </main>
     </SessionFrame>
   );
+}
+
+function DeferredLoadingGate(): React.JSX.Element {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setVisible(true),
+      SESSION_LOADING_FEEDBACK_DELAY_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, []);
+  return visible
+    ? <LoadingGate />
+    : <div className={styles.deferredLoading} aria-busy="true" />;
 }
 
 function FailedGate({ onRetry }: Readonly<{ onRetry(): void }>): React.JSX.Element {
@@ -635,7 +650,7 @@ export function OperationalSessionGate({
     }
   }, [busy, snapshot?.session]);
 
-  if (phase === 'loading') return <LoadingGate />;
+  if (phase === 'loading') return <DeferredLoadingGate />;
   if (phase === 'failed' || !snapshot) {
     return <FailedGate onRetry={() => setRetryKey((current) => current + 1)} />;
   }

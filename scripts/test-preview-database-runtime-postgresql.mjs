@@ -4,9 +4,21 @@ import { randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { promisify } from 'node:util';
 
+import { reserveLoopbackPort } from './lib/loopback-port.mjs';
+
 const execute = promisify(execFile);
 const image =
   'postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf';
+const { inspectMigrationSource } = await import(
+  '../dist/infrastructure/database/database-migration-provider.js'
+);
+const migrationInspection = await inspectMigrationSource({
+  root: 'dist/infrastructure/database/migrations',
+  authorizedRoot: 'dist/infrastructure/database/migrations',
+  normalizedRoot: 'src/infrastructure/database/migrations',
+  mode: 'compiled',
+});
+const expectedMigrationCount = migrationInspection.manifest.migrations.length;
 
 async function docker(argumentsList, options = {}) {
   try {
@@ -119,6 +131,7 @@ const container = `srtaller_preview_runtime_${suffix}`;
 const database = `srtaller_preview_${suffix}`;
 const user = 'srtaller_preview_test';
 const password = `synthetic_${randomBytes(24).toString('hex')}`;
+const applicationPort = await reserveLoopbackPort();
 let application = null;
 let paused = false;
 
@@ -129,6 +142,8 @@ try {
     '--detach',
     '--name',
     container,
+    '--label',
+    'com.srtaller.preview-runtime=postgresql',
     '--publish',
     '127.0.0.1::5432',
     '--tmpfs',
@@ -164,7 +179,8 @@ try {
     ...process.env,
     HOST: '127.0.0.1',
     NODE_ENV: 'production',
-    PORT: '31991',
+    PORT: String(applicationPort),
+    SR_PIN_PEPPER: Buffer.alloc(32, 0x39).toString('base64url'),
   };
   const applicationEnvironment = {
     ...technicalEnvironment,
@@ -193,7 +209,7 @@ try {
   assert.doesNotMatch(firstMigration.stdout + firstMigration.stderr, new RegExp(password, 'u'));
   const firstResult = JSON.parse(firstMigration.stdout.trim());
   assert.equal(firstResult.event, 'database_migration_complete');
-  assert.equal(firstResult.applied, 12);
+  assert.equal(firstResult.applied, expectedMigrationCount);
   assert.equal(firstResult.pending, 0);
 
   const secondMigration = await runEntrypoint('dist/db-migrate.js', migrationEnvironment);
@@ -218,29 +234,29 @@ try {
   application.stderr.on('data', (chunk) => {
     stderr.value += chunk;
   });
-  await waitForApplication(application, stdout, 31991);
+  await waitForApplication(application, stdout, applicationPort);
 
-  const root = await fetch('http://127.0.0.1:31991/');
-  const live = await fetch('http://127.0.0.1:31991/livez');
-  const ready = await fetch('http://127.0.0.1:31991/readyz');
+  const root = await fetch(`http://127.0.0.1:${applicationPort}/`);
+  const live = await fetch(`http://127.0.0.1:${applicationPort}/livez`);
+  const ready = await fetch(`http://127.0.0.1:${applicationPort}/readyz`);
   assert.equal(root.status, 200);
   assert.equal(live.status, 200);
   assert.equal(ready.status, 200);
 
   await docker(['pause', container]);
   paused = true;
-  const unavailable = await fetch('http://127.0.0.1:31991/readyz', {
+  const unavailable = await fetch(`http://127.0.0.1:${applicationPort}/readyz`, {
     signal: AbortSignal.timeout(5_000),
   });
   assert.equal(unavailable.status, 503);
-  const liveWhileUnavailable = await fetch('http://127.0.0.1:31991/livez');
+  const liveWhileUnavailable = await fetch(`http://127.0.0.1:${applicationPort}/livez`);
   assert.equal(liveWhileUnavailable.status, 200);
   await docker(['unpause', container]);
   paused = false;
 
   let recovered = false;
   for (let attempt = 0; attempt < 30; attempt += 1) {
-    const response = await fetch('http://127.0.0.1:31991/readyz');
+    const response = await fetch(`http://127.0.0.1:${applicationPort}/readyz`);
     if (response.status === 200) {
       recovered = true;
       break;
@@ -266,7 +282,7 @@ try {
     '--command',
     "select (select count(*) from tenants), (select count(*) from branches), (select count(*) from kysely_migration);",
   ]);
-  assert.equal(schemaState.trim(), '0|0|12');
+  assert.equal(schemaState.trim(), `0|0|${expectedMigrationCount}`);
   const { stdout: activeConnections } = await docker([
     'exec',
     container,
@@ -286,11 +302,16 @@ try {
     `${JSON.stringify({
       status: 'PASS',
       postgres: '18.4',
-      migration: { firstApplied: 12, secondApplied: 0, pending: 0 },
+      migration: {
+        discovered: expectedMigrationCount,
+        firstApplied: expectedMigrationCount,
+        secondApplied: 0,
+        pending: 0,
+      },
       readiness: { available: 200, unavailable: 503, recovered: 200 },
       livenessWhileDatabaseUnavailable: 200,
       shutdownPoolConnections: 0,
-      data: { tenants: 0, branches: 0, journal: 12 },
+      data: { tenants: 0, branches: 0, journal: expectedMigrationCount },
       secretsExposed: false,
       cleanup: 'PASS',
     })}\n`,

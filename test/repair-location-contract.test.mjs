@@ -66,9 +66,9 @@ test('D6.2 Detail exposes location read-only while the uncataloged write stays h
   assert.match(api, /locationVersion: number/u);
   assert.match(api, /locationSource: 'history' \| 'unrecorded'/u);
   assert.match(api, /moveRepairToWorkshop/u);
-  assert.match(detail, /repair\.currentSituation\.location\?\.label \?\? 'Ubicación no registrada'/u);
+  assert.match(detail, /repair\.currentSituation\.location\?\.label \?\? 'Sin registrar'/u);
   assert.doesNotMatch(detail, /moveRepairToWorkshop|Mover a Taller|Mover equipo a Taller/u);
-  assert.match(detail, /'local\.location': 'Ubicación interna'/u);
+  assert.match(detail, /repair\.timeline\.items\.map[\s\S]*RepairTimelineEntry/u);
   assert.doesNotMatch(worklist, /locationVersion|moveRepairToWorkshop|Ubicación/u);
 });
 

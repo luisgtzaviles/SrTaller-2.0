@@ -26,8 +26,11 @@ Roles/Capabilities/Assignments están integrados y cerrados canónicamente. Los
 writes integrados de Repairs aún usan actor sintético fuera del alcance ya
 entregado. PBI-025, PBI-034, PBI-026, PBI-028 y PBI-038 están `Done`; G4 y G5
 están `PASS`. PBI-038 integra la foundation temporal IANA y límites locales
-sin modificar los instantes UTC. No existe PBI actual en SPRINT-02, WIP es
-`0/1` y no hay siguiente candidato seleccionado.
+sin modificar los instantes UTC. PBI-039 es el único PBI actual en SPRINT-02,
+WIP es `1/1`: PR #42 tiene Full Verification, CI / PR Readiness y CI
+autoritativa de la remediación `PASS`; los findings de la revisión independiente
+están remediados y el gate vigente es re-review. Todavía no existe merge. No
+hay siguiente candidato seleccionado.
 
 ## Jerarquía de autoridad documental
 
@@ -101,11 +104,12 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI at audited HEAD | Green: run `34280510716` on `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` |
+| Authoritative CI for remediation implementation | Green: run `34567516069` attempt 3 on PBI-039 head `e51729c1d477e62718b24638f6f83332cd66bf95`; not merged |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `0/1` |
-| Current / next PBI | Current: NONE; PBI-028 Done / G5 PASS; PBI-038 Done; next: NONE selected |
-| Current blocking gate | selección, readiness y autorización Owner para un nuevo PBI; deploy permanece separado |
+| Sprint | SPRINT-02 `Active`; WIP `1/1` |
+| Current / next PBI | Current: PBI-039 ready for independent re-review in PR #42; next: NONE selected |
+| Current blocking gate | Independent re-review; merge/deploy remain separate and unauthorized |
+| GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |
@@ -218,10 +222,11 @@ Son ramas temporales. No se crean ramas permanentes `preview`, `staging` o
 `production`. Las ramas históricas que ya existen no constituyen otra baseline
 y no se borran como efecto colateral de una tarea.
 
-La protección técnica de `main` no está disponible en el plan privado de GitHub
-observado. Por ello el merge debe seguir siendo explícito, autorizado y
-verificado; nunca se usa force push ni se afirma que checks equivalen a
-autoridad. El contrato detallado está en [BRANCH_POLICY.md](./BRANCH_POLICY.md).
+La protección técnica de `main` no está configurada en el repositorio público
+observado: la API reporta `Branch not protected` y no existen rulesets. Por
+ello el merge debe seguir siendo explícito, autorizado y verificado; nunca se
+usa force push ni se afirma que checks equivalen a autoridad. El contrato
+detallado está en [BRANCH_POLICY.md](./BRANCH_POLICY.md).
 
 ## Ambientes no son ramas
 
@@ -387,7 +392,7 @@ credencial expuesta y nunca registrar su valor.
 
 | Component | Current responsibility |
 |---|---|
-| GitHub | Source control, historial y `main`; sin branch protection en el plan observado. |
+| GitHub | Source control público, historial y `main`; sin branch protection configurada. |
 | Dokploy | Ambientes, deployments, containers, routing/TLS, PostgreSQL, logs/monitoring y operaciones de aplicación. |
 | Hetzner | Infraestructura de cómputo/servidor. |
 | Cloudflare | DNS actual; R2 sólo será futuro si el producto lo necesita. |

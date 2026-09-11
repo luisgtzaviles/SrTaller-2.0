@@ -33,6 +33,7 @@ export const LOCAL_SEED_TIMESTAMP = '2026-01-01T00:00:00.000Z';
 export const LOCAL_REPAIR_REFERENCE_DATE = '2026-08-19T12:00:00.000Z';
 export const LOCAL_STATION_ID = '00000000-0000-4000-8000-000000000401';
 export const LOCAL_STATION_CREDENTIAL_ID = '00000000-0000-4000-8000-000000000402';
+export const LOCAL_OWNER_USER_ID = 'fe67f3c1-8794-461c-be72-7321b958000e';
 
 const requiredLocalKeys = Object.freeze([
   'SR_LOCAL_ENVIRONMENT',
@@ -58,6 +59,10 @@ const ephemeralLocalPinKeys = Object.freeze([
   'SR_LOCAL_PIN_JORGE',
   'SR_LOCAL_PIN_MARIA',
   'SR_LOCAL_PIN_CARLOS',
+]);
+
+const localPinKeys = Object.freeze([
+  ...ephemeralLocalPinKeys,
   'SR_LOCAL_PIN_LUIS',
 ]);
 
@@ -306,7 +311,7 @@ export function cleanChildEnvironment(base = process.env) {
   for (const key of Object.keys(environment)) {
     if (
       forbiddenLocalKeys.includes(key) ||
-      ephemeralLocalPinKeys.includes(key) ||
+      localPinKeys.includes(key) ||
       key === 'DATABASE_URL' ||
       key.startsWith('SR_DB_') ||
       key.startsWith('SR_TEST_DB_')
@@ -338,6 +343,7 @@ export function localUserRows() {
     ['00000000-0000-4000-8000-000000000501', 'Jorge Sintético', 'JORGE', 'active'],
     ['00000000-0000-4000-8000-000000000502', 'María Sintética', 'MARIA', 'active'],
     ['00000000-0000-4000-8000-000000000503', 'Carlos Sintético', 'CARLOS', 'active'],
+    [LOCAL_OWNER_USER_ID, 'Luis', 'LUIS', 'active'],
   ].map(([userId, displayName, operationalIdentifier, status]) => Object.freeze({ userId, tenantId: LOCAL_TENANT_ID, displayName, operationalIdentifier, status, version: 0, createdAt: LOCAL_SEED_TIMESTAMP, updatedAt: LOCAL_SEED_TIMESTAMP })));
 }
 
@@ -346,6 +352,13 @@ export function localAccessCapabilityRows() {
     'access_matrix.read',
     'access_matrix.manage',
     'repairs.add_note',
+    'repairs.create',
+    'repairs.correct_intake',
+    'repairs.classify',
+    'repairs.catalogs.read',
+    'repairs.catalogs.manage',
+    'repairs.configuration.read',
+    'repairs.configuration.manage',
     'repairs.read',
     'users.read',
     'users.manage',
@@ -382,10 +395,18 @@ export function localAccessRoleCapabilityRows() {
     [roleIds.administrator, 'access_matrix.read'],
     [roleIds.administrator, 'access_matrix.manage'],
     [roleIds.administrator, 'repairs.add_note'],
+    [roleIds.administrator, 'repairs.create'],
+    [roleIds.administrator, 'repairs.correct_intake'],
+    [roleIds.administrator, 'repairs.classify'],
+    [roleIds.administrator, 'repairs.catalogs.read'],
+    [roleIds.administrator, 'repairs.catalogs.manage'],
+    [roleIds.administrator, 'repairs.configuration.read'],
+    [roleIds.administrator, 'repairs.configuration.manage'],
     [roleIds.administrator, 'repairs.read'],
     [roleIds.administrator, 'users.read'],
     [roleIds.administrator, 'users.manage'],
     [roleIds.customerService, 'repairs.add_note'],
+    [roleIds.customerService, 'repairs.create'],
     [roleIds.customerService, 'repairs.read'],
     [roleIds.technician, 'repairs.add_note'],
     [roleIds.technician, 'repairs.read'],
@@ -420,6 +441,13 @@ export function localAccessRoleAssignmentRows() {
       '00000000-0000-4000-8000-000000000603',
       'BRANCH_RESTRICTED',
       LOCAL_BRANCH_IDS[0],
+    ],
+    [
+      '00000000-0000-4000-8000-000000000704',
+      LOCAL_OWNER_USER_ID,
+      '00000000-0000-4000-8000-000000000601',
+      'TENANT_WIDE',
+      null,
     ],
   ].map(([assignmentId, userId, roleId, assignmentScope, branchId]) => Object.freeze({
     tenantId: LOCAL_TENANT_ID,

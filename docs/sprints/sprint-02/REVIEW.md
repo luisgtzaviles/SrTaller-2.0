@@ -7,6 +7,11 @@
 La review final exige G3–G5, checkpoint visible, PostgreSQL/CI GREEN y Owner
 Acceptance de cada PBI. No equivale a release o deploy.
 
+PBI-039 continúa dentro del Sprint y no está `Done`: PR #42 alcanzó CI
+autoritativa `PASS`, pero su revisión independiente concluyó `CHANGES REQUIRED`.
+La remediación y su CI exact-head terminaron `PASS`; la re-review independiente
+es el checkpoint vigente. Esto no es la Review final del Sprint.
+
 ## Próxima revisión
 
 - **Fecha:** al completar la secuencia comprometida de SPRINT-02.

@@ -15,11 +15,14 @@ const { databaseMigrationSourceOverride, inspectMigrationSource } = enabled
 const { createMigrationRunner } = enabled
   ? await import('../dist/infrastructure/database/migration-runner.js')
   : {};
-const { RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteIdempotencyConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } = enabled
+const { RepairCreateIdempotencyConflictError, RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairOperationalNoteIdempotencyConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } = enabled
   ? await import('../dist/modules/repairs/application/ports/repair-repository.port.js')
   : {};
 const { createKyselyRepairRepository } = enabled
   ? await import('../dist/modules/repairs/infrastructure/persistence/kysely-repair.repository.js')
+  : {};
+const { systemNewRepairFieldStates } = enabled
+  ? await import('../dist/modules/repairs/domain/new-repair-field-policy.js')
   : {};
 const { createKyselyBranchRepository } = enabled
   ? await import('../dist/modules/stations/infrastructure/persistence/kysely-branch.repository.js')
@@ -32,13 +35,39 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'repair_problem_category_deletion_events',
+  'repair_problem_classification_events',
+  'repair_problem_classifications',
+  'repair_problem_category_catalog_events',
+  'repair_problem_pending_values',
+  'repair_problem_categories',
+  'repair_brand_catalog_events',
+  'repair_brand_pending_values',
+  'repair_brands',
+  'repair_device_type_catalog_events',
+  'repair_device_type_pending_values',
+  'repair_device_types',
+  'repair_model_catalog_events',
+  'repair_model_pending_values',
+  'repair_models',
+  'repair_risk_catalog_events',
+  'repair_intervention_risks',
+  'repair_risks',
+  'repair_new_repair_policy_versions',
+  'repair_new_repair_policy_heads',
   'repair_operational_note_request_guards',
   'repair_business_audit_events',
+  'repair_create_commands',
+  'repair_folio_sequences',
   'access_operational_sessions',
   'access_operational_session_station_guards',
   'access_role_assignment_commands',
   'access_role_commands',
   'access_pin_eligibility_tenant_guards',
+  'access_pin_attempt_station_guards',
+  'access_pin_attempt_limits',
+  'access_pin_credential_commands',
+  'access_pin_credentials',
   'access_role_assignments',
   'access_role_capabilities',
   'access_roles',
@@ -48,6 +77,11 @@ const tables = [
   'user_create_commands',
   'user_provisioning_bootstraps',
   'users',
+  'customer_contact_phones',
+  'customers',
+  'station_bindings',
+  'station_credentials',
+  'stations',
   'repair_location_movements',
   'repair_locations',
   'repair_attachments',
@@ -78,6 +112,7 @@ const repairWeekBoundary = '30000000-0000-4000-8000-000000000006';
 const repairMonthBoundary = '30000000-0000-4000-8000-000000000007';
 const repairExactBoundary = '30000000-0000-4000-8000-000000000008';
 const actorId = '40000000-0000-4000-8000-000000000001';
+const customerA = '43000000-0000-4000-8000-000000000001';
 const auditStationId = '41000000-0000-4000-8000-000000000001';
 const auditSessionId = '42000000-0000-4000-8000-000000000001';
 const pendingLocationA = '91000000-0000-4000-8000-000000000001';
@@ -155,7 +190,14 @@ function authorization(item) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists access_assert_unambiguous_pin_eligibility() cascade');
   await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
+  await admin.query('drop function if exists repairs_reject_brand_catalog_event_mutation() cascade');
+  await admin.query('drop function if exists repairs_reject_device_type_catalog_event_mutation() cascade');
+  await admin.query('drop function if exists repairs_reject_model_catalog_event_mutation() cascade');
+  await admin.query('drop function if exists repairs_reject_risk_catalog_event_mutation() cascade');
+  await admin.query('drop function if exists repairs_reject_problem_category_catalog_event_mutation() cascade');
+  await admin.query('drop function if exists repairs_reject_problem_classification_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
   await admin.query('drop function if exists access_validate_operational_session_admission() cascade');
@@ -190,6 +232,11 @@ async function seed(admin) {
   await admin.query(
     `insert into branches (tenant_id, branch_id, created_at) values ($1, $2, $3)`,
     [tenantA, branchA2, createdAt],
+  );
+  await admin.query(
+    `insert into customers (customer_id, tenant_id, branch_id, given_name, family_name, created_at)
+     values ($1, $2, $3, 'Cliente', 'Riesgo', $4)`,
+    [customerA, tenantA, branchA, createdAt],
   );
   await admin.query(
     `insert into repairs (
@@ -328,6 +375,56 @@ function workflowCommand(repairId, suffix, overrides = {}) {
   });
 }
 
+function repairCreateRecord(acceptedRiskIds, suffix, overrides = {}) {
+  const { reportedIssue = 'Validación de riesgo', reportedProblems, ...recordOverrides } = overrides;
+  const problemItems = reportedProblems ?? [{ problemCaptureId: `67000000-0000-4000-8000-${suffix.padStart(12, '0')}`, pendingProblemValueId: `68000000-0000-4000-8000-${suffix.padStart(12, '0')}`, rawLabel: reportedIssue, normalizedKey: reportedIssue.toLocaleLowerCase('es-MX'), canonicalCategoryId: null }];
+  return Object.freeze({
+    repairId: `61000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    timelineEntryId: `62000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    auditEventId: `63000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    correlationId: `64000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    clientRequestId: `65000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    customerId: null,
+    customerGivenName: 'Cliente riesgo',
+    customerFamilyName: null,
+    customerPhone: null,
+    deviceType: null,
+    canonicalDeviceTypeId: null,
+    pendingDeviceTypeValueId: null,
+    deviceBrand: 'Marca',
+    canonicalBrandId: null,
+    pendingBrandValueId: `66000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    deviceModel: 'Modelo',
+    canonicalModelId: null,
+    pendingModelValueId: `69000000-0000-4000-8000-${suffix.padStart(12, '0')}`,
+    deviceIdentifier: null,
+    deviceIdentifierUnavailable: false,
+    deviceColor: null,
+    distinctiveSigns: null,
+    simIncluded: null,
+    memoryCardIncluded: null,
+    otherAccessories: null,
+    reportedIssueCompatibilitySummary: reportedIssue,
+    reportedProblems: problemItems,
+    customerNarrative: null,
+    physicalConditionSummary: null,
+    documentedRiskSummary: null,
+    acceptedRiskIds,
+    receivedPowerState: null,
+    deviceAccessType: null,
+    initialBudgetAmountMinor: null,
+    newRepairPolicyVersion: 0,
+    warrantyReviewRequested: false,
+    previousRepairId: null,
+    deliveredByName: null,
+    estimatedDeliveryAt: null,
+    action: 'repair.received',
+    occurredAt: new Date('2026-08-21T18:10:00.000Z'),
+    folioYear: 2026,
+    ...recordOverrides,
+  });
+}
+
 function locationCommand(repairId, suffix, overrides = {}) {
   return Object.freeze({
     repairId,
@@ -433,6 +530,615 @@ test(
       const scopeA = Object.freeze({ tenantId: tenantA, branchId: branchA });
       const scopeA2 = Object.freeze({ tenantId: tenantA, branchId: branchA2 });
       const scopeB = Object.freeze({ tenantId: tenantB, branchId: branchB });
+      const defaultFieldStates = systemNewRepairFieldStates();
+      assert.equal(await repository.readNewRepairPolicy(scopeA), null);
+      const policyContext = Object.freeze({
+        ...scopeA,
+        stationId: auditStationId,
+        sessionId: auditSessionId,
+        actorUserId: actorId,
+        actorDisplayName: 'Owner sintético',
+        capability: 'repairs.configuration.manage',
+        commitGuard: Object.freeze({ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }),
+      });
+      const policyV1 = await repository.changeNewRepairPolicy(policyContext, {
+        expectedVersion: 0,
+        schemaVersion: 1,
+        previousFieldStates: defaultFieldStates,
+        fieldStates: Object.freeze({ ...defaultFieldStates, customerFamilyName: 'required', deviceColor: 'hidden' }),
+        action: 'new_repair_policy.updated',
+        correlationId: '43000000-0000-4000-8000-000000000001',
+        occurredAt: new Date('2026-08-21T18:00:00.000Z'),
+      });
+      assert.equal(policyV1.policyVersion, 1);
+      assert.equal(policyV1.fieldStates.customerFamilyName, 'required');
+      assert.equal(policyV1.fieldStates.deviceColor, 'hidden');
+      assert.equal(await repository.readNewRepairPolicy(scopeA2), null);
+      assert.equal(await repository.readNewRepairPolicy(scopeB), null);
+      await assert.rejects(repository.changeNewRepairPolicy(policyContext, {
+        expectedVersion: 0,
+        schemaVersion: 1,
+        previousFieldStates: defaultFieldStates,
+        fieldStates: defaultFieldStates,
+        action: 'new_repair_policy.updated',
+        correlationId: '43000000-0000-4000-8000-000000000002',
+        occurredAt: new Date('2026-08-21T18:01:00.000Z'),
+      }), (error) => error?.name === 'NewRepairPolicyConcurrencyConflictError');
+      const policyV2 = await repository.changeNewRepairPolicy(policyContext, {
+        expectedVersion: 1,
+        schemaVersion: 1,
+        previousFieldStates: policyV1.fieldStates,
+        fieldStates: defaultFieldStates,
+        action: 'new_repair_policy.reset',
+        correlationId: '43000000-0000-4000-8000-000000000003',
+        occurredAt: new Date('2026-08-21T18:02:00.000Z'),
+      });
+      assert.equal(policyV2.policyVersion, 2);
+      assert.deepEqual(policyV2.fieldStates, defaultFieldStates);
+      const policyHistory = await admin.query(`select policy_version, previous_version, capability, action, result from repair_new_repair_policy_versions where tenant_id = $1 and branch_id = $2 order by policy_version`, [tenantA, branchA]);
+      assert.deepEqual(policyHistory.rows, [
+        { policy_version: 1, previous_version: 0, capability: 'repairs.configuration.manage', action: 'new_repair_policy.updated', result: 'succeeded' },
+        { policy_version: 2, previous_version: 1, capability: 'repairs.configuration.manage', action: 'new_repair_policy.reset', result: 'succeeded' },
+      ]);
+
+      const riskContext = Object.freeze({
+        ...scopeA,
+        stationId: auditStationId,
+        sessionId: auditSessionId,
+        actorUserId: actorId,
+        actorDisplayName: 'Owner sintético',
+        capability: 'repairs.catalogs.manage',
+        commitGuard: Object.freeze({ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }),
+      });
+      assert.equal((await repository.listEffectiveActiveRisks(scopeA)).length, 0);
+      const tenantRisk = await repository.createRisk(riskContext, {
+        riskId: '44000000-0000-4000-8000-000000000001',
+        eventId: '45000000-0000-4000-8000-000000000001',
+        correlationId: '46000000-0000-4000-8000-000000000001',
+        canonicalLabel: 'Daño en cámara especial',
+        normalizedKey: 'dano en camara especial',
+        occurredAt: new Date('2026-08-21T18:04:00.000Z'),
+      });
+      const secondTenantRisk = await repository.createRisk(riskContext, {
+        riskId: '44000000-0000-4000-8000-000000000006',
+        eventId: '45000000-0000-4000-8000-000000000006',
+        correlationId: '46000000-0000-4000-8000-000000000006',
+        canonicalLabel: 'Pérdida de información',
+        normalizedKey: 'perdida de informacion',
+        occurredAt: new Date('2026-08-21T18:04:30.000Z'),
+      });
+      assert.equal(tenantRisk.scope, 'tenant');
+      assert.equal((await repository.listEffectiveActiveRisks(scopeA2)).some(({ riskId }) => riskId === tenantRisk.riskId), true);
+      assert.equal((await repository.listEffectiveActiveRisks(scopeB)).some(({ riskId }) => riskId === tenantRisk.riskId), false);
+      await admin.query(`insert into repair_intervention_risks (repair_id, risk_id, risk_label_snapshot, selection_order, recorded_by_actor_id, recorded_at) values ($1, $2, $3, 1, $4, $5), ($1, $6, $7, 2, $4, $5)`, [repairA, tenantRisk.riskId, tenantRisk.canonicalLabel, actorId, '2026-08-21T18:04:45.000Z', secondTenantRisk.riskId, secondTenantRisk.canonicalLabel]);
+      assert.equal((await repository.listAdminRisks(scopeA)).find(({ riskId }) => riskId === tenantRisk.riskId)?.usageCount, 1);
+      const renamedRisk = await repository.changeRisk(riskContext, {
+        riskId: tenantRisk.riskId,
+        eventId: '45000000-0000-4000-8000-000000000002',
+        correlationId: '46000000-0000-4000-8000-000000000002',
+        expectedVersion: 1,
+        canonicalLabel: 'Daño especial en cámara',
+        normalizedKey: 'dano especial en camara',
+        action: 'repair_risk.renamed',
+        occurredAt: new Date('2026-08-21T18:05:00.000Z'),
+      });
+      assert.equal(renamedRisk.riskId, tenantRisk.riskId);
+      assert.equal(renamedRisk.version, 2);
+      await assert.rejects(repository.changeRisk(riskContext, {
+        riskId: tenantRisk.riskId,
+        eventId: '45000000-0000-4000-8000-000000000098',
+        correlationId: '46000000-0000-4000-8000-000000000098',
+        expectedVersion: 1,
+        status: 'inactive',
+        action: 'repair_risk.deactivated',
+        occurredAt: new Date('2026-08-21T18:06:00.000Z'),
+      }), (error) => error?.name === 'RepairRiskConcurrencyConflictError');
+      const inactiveRisk = await repository.changeRisk(riskContext, {
+        riskId: tenantRisk.riskId,
+        eventId: '45000000-0000-4000-8000-000000000003',
+        correlationId: '46000000-0000-4000-8000-000000000003',
+        expectedVersion: 2,
+        status: 'inactive',
+        action: 'repair_risk.deactivated',
+        occurredAt: new Date('2026-08-21T18:07:00.000Z'),
+      });
+      assert.equal(inactiveRisk.version, 3);
+      assert.equal((await repository.listEffectiveActiveRisks(scopeA)).some(({ riskId }) => riskId === tenantRisk.riskId), false);
+      assert.deepEqual((await repository.getRepairById(scopeA, repairA)).acceptedInterventionRisks, [
+        { riskId: tenantRisk.riskId, label: tenantRisk.canonicalLabel },
+        { riskId: secondTenantRisk.riskId, label: secondTenantRisk.canonicalLabel },
+      ]);
+      const createContext = Object.freeze({
+        ...scopeA,
+        stationId: auditStationId,
+        sessionId: auditSessionId,
+        actorUserId: actorId,
+        actorDisplayName: 'Owner sintético',
+        capability: 'repairs.create',
+        commitGuard: Object.freeze({ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }),
+      });
+      const unusedCustomerResolver = async () => { throw new Error('Invalid risk must fail before resolving Customer.'); };
+      await assert.rejects(repository.createRepair(createContext, repairCreateRecord([tenantRisk.riskId], '1'), unusedCustomerResolver), (error) => error?.name === 'RepairCreateRiskUnavailableError');
+      await assert.rejects(repository.createRepair(createContext, repairCreateRecord(['44000000-0000-4000-8000-000000000098'], '2'), unusedCustomerResolver), (error) => error?.name === 'RepairCreateRiskUnavailableError');
+      const tenantBRisk = await repository.createRisk(Object.freeze({ ...riskContext, tenantId: tenantB, branchId: branchB }), {
+        riskId: '44000000-0000-4000-8000-000000000002',
+        eventId: '45000000-0000-4000-8000-000000000005',
+        correlationId: '46000000-0000-4000-8000-000000000005',
+        canonicalLabel: 'Riesgo exclusivo B',
+        normalizedKey: 'riesgo exclusivo b',
+        occurredAt: new Date('2026-08-21T18:07:00.000Z'),
+      });
+      await assert.rejects(repository.createRepair(createContext, repairCreateRecord([tenantBRisk.riskId], '3'), unusedCustomerResolver), (error) => error?.name === 'RepairCreateRiskUnavailableError');
+      const reactivatedRisk = await repository.changeRisk(riskContext, {
+        riskId: tenantRisk.riskId,
+        eventId: '45000000-0000-4000-8000-000000000004',
+        correlationId: '46000000-0000-4000-8000-000000000004',
+        expectedVersion: 3,
+        status: 'active',
+        action: 'repair_risk.reactivated',
+        occurredAt: new Date('2026-08-21T18:08:00.000Z'),
+      });
+      assert.equal(reactivatedRisk.version, 4);
+      const riskAudit = await admin.query(`select action, old_version, new_version from repair_risk_catalog_events where risk_id = $1 order by new_version`, [tenantRisk.riskId]);
+      assert.deepEqual(riskAudit.rows, [
+        { action: 'repair_risk.created', old_version: null, new_version: 1 },
+        { action: 'repair_risk.renamed', old_version: 1, new_version: 2 },
+        { action: 'repair_risk.deactivated', old_version: 2, new_version: 3 },
+        { action: 'repair_risk.reactivated', old_version: 3, new_version: 4 },
+      ]);
+      await assert.rejects(
+        admin.query('update repair_risk_catalog_events set actor_display_name = $1 where risk_id = $2', ['Alterado', tenantRisk.riskId]),
+        (error) => error?.code === '23514',
+      );
+
+      const brandContext = Object.freeze({ ...riskContext });
+      const appleBrand = await repository.createBrand(brandContext, {
+        brandId: '47000000-0000-4000-8000-000000000001',
+        eventId: '47100000-0000-4000-8000-000000000001',
+        correlationId: '47200000-0000-4000-8000-000000000001',
+        canonicalLabel: 'Apple',
+        normalizedKey: 'apple',
+        occurredAt: new Date('2026-08-21T18:09:00.000Z'),
+      });
+      assert.equal(appleBrand.scope, 'tenant');
+      assert.equal((await repository.listEffectiveActiveBrands(scopeA2, 'app')).some(({ brandId }) => brandId === appleBrand.brandId), true);
+      assert.equal((await repository.listEffectiveActiveBrands(scopeB, 'app')).some(({ brandId }) => brandId === appleBrand.brandId), false);
+
+      await admin.query(
+        `insert into repair_brands (
+           brand_id, scope, tenant_id, code, canonical_label, normalized_key,
+           status, version, created_by_actor_id, updated_by_actor_id,
+           created_at, updated_at
+         ) values ($1, 'platform', null, 'brand.motorola', 'Motorola', 'motorola',
+           'active', 1, null, null, $2, $2)`,
+        ['47000000-0000-4000-8000-000000000002', '2026-08-21T18:09:10.000Z'],
+      );
+      assert.equal((await repository.listEffectiveActiveBrands(scopeA, 'motor')).some(({ scope }) => scope === 'platform'), true);
+      assert.equal((await repository.listEffectiveActiveBrands(scopeB, 'motor')).some(({ scope }) => scope === 'platform'), true);
+
+      const tenantBBrand = await repository.createBrand(Object.freeze({ ...brandContext, tenantId: tenantB, branchId: branchB }), {
+        brandId: '47000000-0000-4000-8000-000000000003',
+        eventId: '47100000-0000-4000-8000-000000000003',
+        correlationId: '47200000-0000-4000-8000-000000000003',
+        canonicalLabel: 'Marca exclusiva B',
+        normalizedKey: 'marca exclusiva b',
+        occurredAt: new Date('2026-08-21T18:09:20.000Z'),
+      });
+      assert.equal((await repository.listAdminBrands(scopeA)).some(({ brandId }) => brandId === tenantBBrand.brandId), false);
+      assert.equal((await repository.listAdminBrands(scopeB)).some(({ brandId }) => brandId === appleBrand.brandId), false);
+
+      const customerResolverA = async () => ({ customerId: customerA, tenantId: tenantA, branchId: branchA, givenName: 'Cliente', familyName: 'Riesgo', displayName: 'Cliente Riesgo' });
+      const selectedAppleRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '101', { deviceBrand: 'Apple', canonicalBrandId: appleBrand.brandId, pendingBrandValueId: null, reportedIssue: 'Marca canónica seleccionada' }),
+        customerResolverA,
+      );
+      const firstApppleRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '102', { deviceBrand: 'appple', reportedIssue: 'Marca libre uno' }),
+        customerResolverA,
+      );
+      const secondApppleRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '103', { deviceBrand: 'APPPLE', reportedIssue: 'Marca libre dos' }),
+        customerResolverA,
+      );
+      const thirdApppleRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '109', { deviceBrand: 'Appple', reportedIssue: 'Marca libre tres' }),
+        customerResolverA,
+      );
+      const apleRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '110', { deviceBrand: 'Aple', reportedIssue: 'Variante no exacta uno' }),
+        customerResolverA,
+      );
+      const applRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '111', { deviceBrand: 'Appl', reportedIssue: 'Variante no exacta dos' }),
+        customerResolverA,
+      );
+      const pendingBeforeResolution = (await repository.listPendingBrands(scopeA)).find(({ normalizedKey }) => normalizedKey === 'appple');
+      assert.ok(pendingBeforeResolution);
+      assert.equal(pendingBeforeResolution.usageCount, 3);
+      assert.equal((await repository.listPendingBrands(scopeA2)).find(({ pendingBrandValueId }) => pendingBrandValueId === pendingBeforeResolution.pendingBrandValueId)?.usageCount, 3);
+      assert.equal((await repository.listPendingBrands(scopeA)).some(({ normalizedKey }) => normalizedKey === 'aple'), true);
+      assert.equal((await repository.listPendingBrands(scopeA)).some(({ normalizedKey }) => normalizedKey === 'appl'), true);
+      assert.equal((await repository.listPendingBrands(scopeB)).some(({ normalizedKey }) => normalizedKey === 'appple'), false);
+
+      const unresolvedDetail = await repository.getRepairById(scopeA, firstApppleRepair.repairId);
+      assert.deepEqual(unresolvedDetail?.deviceBrand, {
+        rawLabel: 'appple', canonicalId: null, canonicalLabel: null, effectiveLabel: 'appple',
+      });
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery(), 'America/Tijuana')).items
+          .find(({ id }) => id === firstApppleRepair.repairId)?.deviceBrand.effectiveLabel,
+        'appple',
+      );
+
+      const resolvedAppple = await repository.resolvePendingBrand(brandContext, {
+        pendingBrandValueId: pendingBeforeResolution.pendingBrandValueId,
+        canonicalBrandId: appleBrand.brandId,
+        newBrandId: null,
+        newCanonicalLabel: null,
+        newNormalizedKey: null,
+        eventId: '47100000-0000-4000-8000-000000000004',
+        correlationId: '47200000-0000-4000-8000-000000000004',
+        expectedVersion: pendingBeforeResolution.version,
+        occurredAt: new Date('2026-08-21T18:10:00.000Z'),
+      });
+      assert.equal(resolvedAppple.canonicalBrandId, appleBrand.brandId);
+      const apppleRows = await admin.query(
+        `select repairs.device_brand, repair_intakes.canonical_brand_id, repair_intakes.pending_brand_value_id
+         from repairs join repair_intakes using (repair_id)
+         where repairs.repair_id = any($1::uuid[]) order by repairs.repair_id`,
+        [[firstApppleRepair.repairId, secondApppleRepair.repairId, thirdApppleRepair.repairId]],
+      );
+      assert.deepEqual(apppleRows.rows.map(({ device_brand }) => device_brand), ['appple', 'APPPLE', 'Appple']);
+      assert.ok(apppleRows.rows.every(({ canonical_brand_id, pending_brand_value_id }) => canonical_brand_id === appleBrand.brandId && pending_brand_value_id === pendingBeforeResolution.pendingBrandValueId));
+      assert.deepEqual((await repository.getRepairById(scopeA, firstApppleRepair.repairId))?.deviceBrand, {
+        rawLabel: 'appple', canonicalId: appleBrand.brandId, canonicalLabel: 'Apple', effectiveLabel: 'Apple',
+      });
+      assert.equal(
+        (await repository.listWorklist(scopeA, listQuery({ q: 'Apple' }), 'America/Tijuana')).items
+          .find(({ id }) => id === firstApppleRepair.repairId)?.deviceBrand.effectiveLabel,
+        'Apple',
+      );
+
+      const resolvedAliasRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '104', { deviceBrand: 'Appple', reportedIssue: 'Alias ya resuelto' }),
+        customerResolverA,
+      );
+      const normalizedAppleRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '105', { deviceBrand: 'APPLE', reportedIssue: 'Normalización exacta' }),
+        customerResolverA,
+      );
+      const normalizedAppleLowerRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '112', { deviceBrand: 'apple', reportedIssue: 'Normalización exacta minúscula' }),
+        customerResolverA,
+      );
+      const newBrandRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '106', { deviceBrand: 'Tecno nueva', reportedIssue: 'Marca realmente nueva' }),
+        customerResolverA,
+      );
+      const platformBrandRepair = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '107', { deviceBrand: 'MOTOROLA', reportedIssue: 'Marca Platform normalizada' }),
+        customerResolverA,
+      );
+      const createdBrandLinks = await admin.query(
+        `select repairs.repair_id, repairs.device_brand, repair_intakes.canonical_brand_id, repair_intakes.pending_brand_value_id
+         from repairs join repair_intakes using (repair_id)
+         where repairs.repair_id = any($1::uuid[])`,
+        [[selectedAppleRepair.repairId, resolvedAliasRepair.repairId, normalizedAppleRepair.repairId, normalizedAppleLowerRepair.repairId, newBrandRepair.repairId, platformBrandRepair.repairId]],
+      );
+      const byRepairId = new Map(createdBrandLinks.rows.map((row) => [row.repair_id, row]));
+      assert.equal(byRepairId.get(selectedAppleRepair.repairId).device_brand, 'Apple');
+      assert.equal(byRepairId.get(selectedAppleRepair.repairId).canonical_brand_id, appleBrand.brandId);
+      assert.equal(byRepairId.get(resolvedAliasRepair.repairId).device_brand, 'Appple');
+      assert.equal(byRepairId.get(resolvedAliasRepair.repairId).canonical_brand_id, appleBrand.brandId);
+      assert.equal(byRepairId.get(normalizedAppleRepair.repairId).device_brand, 'APPLE');
+      assert.equal(byRepairId.get(normalizedAppleRepair.repairId).canonical_brand_id, appleBrand.brandId);
+      assert.equal(byRepairId.get(normalizedAppleRepair.repairId).pending_brand_value_id, null);
+      assert.equal(byRepairId.get(normalizedAppleLowerRepair.repairId).device_brand, 'apple');
+      assert.equal(byRepairId.get(normalizedAppleLowerRepair.repairId).canonical_brand_id, appleBrand.brandId);
+      assert.equal(byRepairId.get(normalizedAppleLowerRepair.repairId).pending_brand_value_id, null);
+      assert.equal(byRepairId.get(newBrandRepair.repairId).device_brand, 'Tecno nueva');
+      assert.equal(byRepairId.get(newBrandRepair.repairId).canonical_brand_id, null);
+      assert.ok(byRepairId.get(newBrandRepair.repairId).pending_brand_value_id);
+      assert.equal(byRepairId.get(platformBrandRepair.repairId).canonical_brand_id, '47000000-0000-4000-8000-000000000002');
+      assert.equal((await repository.listAdminBrands(scopeA)).find(({ brandId }) => brandId === appleBrand.brandId)?.usageCount, 7);
+      assert.equal((await repository.listPendingBrands(scopeA)).find(({ normalizedKey }) => normalizedKey === 'tecno nueva')?.usageCount, 1);
+
+      await assert.rejects(
+        repository.createRepair(
+          createContext,
+          repairCreateRecord([], '108', { deviceBrand: 'Marca exclusiva B', canonicalBrandId: tenantBBrand.brandId, pendingBrandValueId: null }),
+          async () => { throw new Error('Cross-Tenant brand must fail before resolving Customer.'); },
+        ),
+        (error) => error?.name === 'RepairCreateBrandUnavailableError',
+      );
+      const renamedApple = await repository.changeBrand(brandContext, {
+        brandId: appleBrand.brandId,
+        eventId: '47100000-0000-4000-8000-000000000008',
+        correlationId: '47200000-0000-4000-8000-000000000008',
+        expectedVersion: 1,
+        canonicalLabel: 'Apple Test',
+        normalizedKey: 'apple test',
+        action: 'repair_brand.renamed',
+        occurredAt: new Date('2026-08-21T18:10:10.000Z'),
+      });
+      assert.equal(renamedApple.version, 2);
+      assert.equal((await repository.getRepairById(scopeA, firstApppleRepair.repairId))?.deviceBrand.effectiveLabel, 'Apple Test');
+      const renamedWorklist = await repository.listWorklist(scopeA, listQuery({ q: 'Apple Test' }), 'America/Tijuana');
+      assert.equal(renamedWorklist.items.find(({ id }) => id === selectedAppleRepair.repairId)?.deviceBrand.effectiveLabel, 'Apple Test');
+      assert.equal(renamedWorklist.items.find(({ id }) => id === firstApppleRepair.repairId)?.deviceBrand.effectiveLabel, 'Apple Test');
+      assert.equal(renamedWorklist.items.find(({ id }) => id === secondApppleRepair.repairId)?.deviceBrand.effectiveLabel, 'Apple Test');
+      assert.equal(renamedWorklist.items.find(({ id }) => id === thirdApppleRepair.repairId)?.deviceBrand.effectiveLabel, 'Apple Test');
+      const restoredApple = await repository.changeBrand(brandContext, {
+        brandId: appleBrand.brandId,
+        eventId: '47100000-0000-4000-8000-000000000009',
+        correlationId: '47200000-0000-4000-8000-000000000009',
+        expectedVersion: 2,
+        canonicalLabel: 'Apple',
+        normalizedKey: 'apple',
+        action: 'repair_brand.renamed',
+        occurredAt: new Date('2026-08-21T18:10:20.000Z'),
+      });
+      assert.equal(restoredApple.version, 3);
+      assert.equal((await repository.getRepairById(scopeA, firstApppleRepair.repairId))?.deviceBrand.effectiveLabel, 'Apple');
+      assert.deepEqual((await admin.query(
+        'select device_brand from repairs where repair_id = $1',
+        [firstApppleRepair.repairId],
+      )).rows, [{ device_brand: 'appple' }]);
+      assert.deepEqual((await repository.getRepairById(scopeA, newBrandRepair.repairId))?.deviceBrand, {
+        rawLabel: 'Tecno nueva', canonicalId: null, canonicalLabel: null, effectiveLabel: 'Tecno nueva',
+      });
+      const inactiveApple = await repository.changeBrand(brandContext, {
+        brandId: appleBrand.brandId,
+        eventId: '47100000-0000-4000-8000-000000000005',
+        correlationId: '47200000-0000-4000-8000-000000000005',
+        expectedVersion: 3,
+        status: 'inactive',
+        action: 'repair_brand.deactivated',
+        occurredAt: new Date('2026-08-21T18:11:00.000Z'),
+      });
+      assert.equal(inactiveApple.version, 4);
+      await assert.rejects(repository.changeBrand(brandContext, {
+        brandId: appleBrand.brandId,
+        eventId: '47100000-0000-4000-8000-000000000006',
+        correlationId: '47200000-0000-4000-8000-000000000006',
+        expectedVersion: 3,
+        canonicalLabel: 'Apple stale',
+        normalizedKey: 'apple stale',
+        action: 'repair_brand.renamed',
+        occurredAt: new Date('2026-08-21T18:11:10.000Z'),
+      }), (error) => error?.name === 'RepairBrandConcurrencyConflictError');
+      const reactivatedApple = await repository.changeBrand(brandContext, {
+        brandId: appleBrand.brandId,
+        eventId: '47100000-0000-4000-8000-000000000007',
+        correlationId: '47200000-0000-4000-8000-000000000007',
+        expectedVersion: 4,
+        status: 'active',
+        action: 'repair_brand.reactivated',
+        occurredAt: new Date('2026-08-21T18:12:00.000Z'),
+      });
+      assert.equal(reactivatedApple.version, 5);
+      await admin.query(
+        'update repair_intakes set canonical_brand_id = null where repair_id = $1',
+        [firstApppleRepair.repairId],
+      );
+      assert.deepEqual((await repository.getRepairById(scopeA, firstApppleRepair.repairId))?.deviceBrand, {
+        rawLabel: 'appple', canonicalId: null, canonicalLabel: null, effectiveLabel: 'appple',
+      });
+      assert.deepEqual((await admin.query(
+        'select device_brand from repairs where repair_id = $1',
+        [firstApppleRepair.repairId],
+      )).rows, [{ device_brand: 'appple' }]);
+      const brandAudit = await admin.query(`select action, old_version, new_version from repair_brand_catalog_events where brand_id = $1 order by occurred_at`, [appleBrand.brandId]);
+      assert.deepEqual(brandAudit.rows, [
+        { action: 'repair_brand.created', old_version: null, new_version: 1 },
+        { action: 'repair_brand_pending.resolved', old_version: 1, new_version: 2 },
+        { action: 'repair_brand.renamed', old_version: 1, new_version: 2 },
+        { action: 'repair_brand.renamed', old_version: 2, new_version: 3 },
+        { action: 'repair_brand.deactivated', old_version: 3, new_version: 4 },
+        { action: 'repair_brand.reactivated', old_version: 4, new_version: 5 },
+      ]);
+      await assert.rejects(
+        admin.query('update repair_brand_catalog_events set actor_display_name = $1 where brand_id = $2', ['Alterado', appleBrand.brandId]),
+        (error) => error?.code === '23514',
+      );
+
+      const deviceTypeContext = Object.freeze({ ...brandContext });
+      const tabletType = await repository.createDeviceType(deviceTypeContext, {
+        deviceTypeId: '47300000-0000-4000-8000-000000000001',
+        eventId: '47400000-0000-4000-8000-000000000001',
+        correlationId: '47500000-0000-4000-8000-000000000001',
+        canonicalLabel: 'Tablet QA', normalizedKey: 'tablet qa',
+        occurredAt: new Date('2026-08-21T18:13:00.000Z'),
+      });
+      assert.equal(tabletType.scope, 'tenant');
+      assert.equal((await repository.listEffectiveActiveDeviceTypes(scopeA2, 'tablet')).some(({ deviceTypeId }) => deviceTypeId === tabletType.deviceTypeId), true);
+      assert.equal((await repository.listEffectiveActiveDeviceTypes(scopeB, 'tablet')).some(({ deviceTypeId }) => deviceTypeId === tabletType.deviceTypeId), false);
+      await admin.query(
+        `insert into repair_device_types (device_type_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
+         values ($1, 'platform', null, 'device-type.phone', 'Teléfono', 'telefono', 'active', 1, null, null, $2, $2)`,
+        ['47300000-0000-4000-8000-000000000002', '2026-08-21T18:13:10.000Z'],
+      );
+      assert.equal((await repository.listEffectiveActiveDeviceTypes(scopeA, 'telefono')).some(({ scope }) => scope === 'platform'), true);
+      assert.equal((await repository.listEffectiveActiveDeviceTypes(scopeB, 'telefono')).some(({ scope }) => scope === 'platform'), true);
+      const tenantBType = await repository.createDeviceType(Object.freeze({ ...deviceTypeContext, tenantId: tenantB, branchId: branchB }), {
+        deviceTypeId: '47300000-0000-4000-8000-000000000003', eventId: '47400000-0000-4000-8000-000000000003', correlationId: '47500000-0000-4000-8000-000000000003',
+        canonicalLabel: 'Tipo exclusivo B', normalizedKey: 'tipo exclusivo b', occurredAt: new Date('2026-08-21T18:13:20.000Z'),
+      });
+      assert.equal((await repository.listAdminDeviceTypes(scopeA)).some(({ deviceTypeId }) => deviceTypeId === tenantBType.deviceTypeId), false);
+
+      const canonicalTypeRepair = await repository.createRepair(createContext, repairCreateRecord([], '130', {
+        deviceType: 'Tablet QA', canonicalDeviceTypeId: tabletType.deviceTypeId, pendingDeviceTypeValueId: null, reportedIssue: 'Tipo canónico',
+      }), customerResolverA);
+      const freeTypeRepairs = [];
+      for (const [suffix, raw] of [['131', 'Consola retro QA'], ['132', 'CONSOLA RETRO QA'], ['133', '  consola retro qa  ']]) {
+        freeTypeRepairs.push(await repository.createRepair(createContext, repairCreateRecord([], suffix, {
+          deviceType: raw, canonicalDeviceTypeId: null, pendingDeviceTypeValueId: `47600000-0000-4000-8000-${suffix.padStart(12, '0')}`, reportedIssue: `Tipo libre ${suffix}`,
+        }), customerResolverA));
+      }
+      const pendingType = (await repository.listPendingDeviceTypes(scopeA)).find(({ normalizedKey }) => normalizedKey === 'consola retro qa');
+      assert.ok(pendingType);
+      assert.equal(pendingType.usageCount, 3);
+      assert.equal((await repository.listPendingDeviceTypes(scopeA2)).find(({ pendingDeviceTypeValueId }) => pendingDeviceTypeValueId === pendingType.pendingDeviceTypeValueId)?.usageCount, 3);
+      assert.equal((await repository.listPendingDeviceTypes(scopeB)).some(({ normalizedKey }) => normalizedKey === 'consola retro qa'), false);
+      assert.deepEqual((await repository.getRepairById(scopeA, freeTypeRepairs[0].repairId))?.deviceTypeIdentity, {
+        rawLabel: 'Consola retro QA', canonicalId: null, canonicalLabel: null, effectiveLabel: 'Consola retro QA',
+      });
+      const resolvedType = await repository.resolvePendingDeviceType(deviceTypeContext, {
+        pendingDeviceTypeValueId: pendingType.pendingDeviceTypeValueId, canonicalDeviceTypeId: null,
+        newDeviceTypeId: '47300000-0000-4000-8000-000000000004', newCanonicalLabel: 'Consola retro QA', newNormalizedKey: 'consola retro qa',
+        eventId: '47400000-0000-4000-8000-000000000004', correlationId: '47500000-0000-4000-8000-000000000004', expectedVersion: pendingType.version,
+        occurredAt: new Date('2026-08-21T18:14:00.000Z'),
+      });
+      assert.equal(resolvedType.usageCount, 3);
+      assert.deepEqual((await repository.getRepairById(scopeA, freeTypeRepairs[0].repairId))?.deviceTypeIdentity, {
+        rawLabel: 'Consola retro QA', canonicalId: '47300000-0000-4000-8000-000000000004', canonicalLabel: 'Consola retro QA', effectiveLabel: 'Consola retro QA',
+      });
+      const renamedType = await repository.changeDeviceType(deviceTypeContext, {
+        deviceTypeId: '47300000-0000-4000-8000-000000000004', eventId: '47400000-0000-4000-8000-000000000005', correlationId: '47500000-0000-4000-8000-000000000005', expectedVersion: 1,
+        canonicalLabel: 'Consola retro Owner', normalizedKey: 'consola retro owner', action: 'repair_device_type.renamed', occurredAt: new Date('2026-08-21T18:14:10.000Z'),
+      });
+      assert.equal(renamedType.version, 2);
+      assert.equal((await repository.getRepairById(scopeA, freeTypeRepairs[0].repairId))?.deviceTypeIdentity.effectiveLabel, 'Consola retro Owner');
+      assert.equal((await admin.query('select device_type from repair_intakes where repair_id = $1', [freeTypeRepairs[0].repairId])).rows[0].device_type, 'Consola retro QA');
+      const inactiveType = await repository.changeDeviceType(deviceTypeContext, {
+        deviceTypeId: renamedType.deviceTypeId, eventId: '47400000-0000-4000-8000-000000000006', correlationId: '47500000-0000-4000-8000-000000000006', expectedVersion: 2,
+        status: 'inactive', action: 'repair_device_type.deactivated', occurredAt: new Date('2026-08-21T18:14:20.000Z'),
+      });
+      assert.equal((await repository.listEffectiveActiveDeviceTypes(scopeA, 'consola')).some(({ deviceTypeId }) => deviceTypeId === renamedType.deviceTypeId), false);
+      await assert.rejects(repository.changeDeviceType(deviceTypeContext, {
+        deviceTypeId: renamedType.deviceTypeId, eventId: '47400000-0000-4000-8000-000000000007', correlationId: '47500000-0000-4000-8000-000000000007', expectedVersion: 2,
+        status: 'active', action: 'repair_device_type.reactivated', occurredAt: new Date('2026-08-21T18:14:30.000Z'),
+      }), (error) => error?.name === 'RepairDeviceTypeConcurrencyConflictError');
+      await repository.changeDeviceType(deviceTypeContext, {
+        deviceTypeId: renamedType.deviceTypeId, eventId: '47400000-0000-4000-8000-000000000008', correlationId: '47500000-0000-4000-8000-000000000008', expectedVersion: inactiveType.version,
+        status: 'active', action: 'repair_device_type.reactivated', occurredAt: new Date('2026-08-21T18:14:40.000Z'),
+      });
+      await assert.rejects(repository.createRepair(createContext, repairCreateRecord([], '134', {
+        deviceType: 'Tipo exclusivo B', canonicalDeviceTypeId: tenantBType.deviceTypeId, pendingDeviceTypeValueId: null,
+      }), async () => { throw new Error('Cross-Tenant Device Type must fail before resolving Customer.'); }), (error) => error?.name === 'RepairCreateDeviceTypeUnavailableError');
+      await assert.rejects(admin.query("update repair_device_type_catalog_events set actor_display_name = 'Alterado' where device_type_id = $1", [renamedType.deviceTypeId]), (error) => error?.code === '23514');
+
+      const idempotentDeviceTypeRequest = repairCreateRecord([], '135', {
+        deviceType: 'Tablet QA',
+        canonicalDeviceTypeId: tabletType.deviceTypeId,
+        pendingDeviceTypeValueId: null,
+        reportedIssue: 'Idempotencia de tipo canónico',
+      });
+      const idempotentDeviceTypeRepair = await repository.createRepair(
+        createContext,
+        idempotentDeviceTypeRequest,
+        customerResolverA,
+      );
+      const exactDeviceTypeReplay = await repository.createRepair(
+        createContext,
+        repairCreateRecord([], '136', {
+          clientRequestId: idempotentDeviceTypeRequest.clientRequestId,
+          deviceType: 'Tablet QA',
+          canonicalDeviceTypeId: tabletType.deviceTypeId,
+          pendingDeviceTypeValueId: null,
+          reportedIssue: 'Idempotencia de tipo canónico',
+        }),
+        async () => { throw new Error('An exact Create Repair replay must not resolve Customer again.'); },
+      );
+      assert.deepEqual(exactDeviceTypeReplay, idempotentDeviceTypeRepair);
+      await assert.rejects(
+        repository.createRepair(
+          createContext,
+          repairCreateRecord([], '137', {
+            clientRequestId: idempotentDeviceTypeRequest.clientRequestId,
+            deviceType: 'Tablet QA',
+            canonicalDeviceTypeId: '47300000-0000-4000-8000-000000000002',
+            pendingDeviceTypeValueId: null,
+            reportedIssue: 'Idempotencia de tipo canónico',
+          }),
+          async () => { throw new Error('An incompatible Create Repair replay must fail before resolving Customer.'); },
+        ),
+        RepairCreateIdempotencyConflictError,
+      );
+
+      const concurrentDeviceTypeRequest = repairCreateRecord([], '138', {
+        deviceType: 'Tablet QA',
+        canonicalDeviceTypeId: tabletType.deviceTypeId,
+        pendingDeviceTypeValueId: null,
+        reportedIssue: 'Concurrencia de tipo canónico',
+      });
+      const concurrentDeviceTypeRepairs = await Promise.all([
+        repository.createRepair(createContext, concurrentDeviceTypeRequest, customerResolverA),
+        concurrentRepository.createRepair(
+          createContext,
+          repairCreateRecord([], '139', {
+            clientRequestId: concurrentDeviceTypeRequest.clientRequestId,
+            deviceType: 'Tablet QA',
+            canonicalDeviceTypeId: tabletType.deviceTypeId,
+            pendingDeviceTypeValueId: null,
+            reportedIssue: 'Concurrencia de tipo canónico',
+          }),
+          customerResolverA,
+        ),
+      ]);
+      assert.deepEqual(concurrentDeviceTypeRepairs[1], concurrentDeviceTypeRepairs[0]);
+      const createIdempotencyCounts = (await admin.query(
+        `select
+           (select count(*)::integer from repairs
+              where tenant_id = $1 and branch_id = $2 and repair_id = $3) as repairs,
+           (select count(*)::integer from repair_create_commands
+              where tenant_id = $1 and branch_id = $2 and client_request_id = $4) as commands,
+           (select count(*)::integer from repair_timeline_entries
+              where tenant_id = $1 and branch_id = $2 and client_request_id = $4) as timeline_entries,
+           (select count(*)::integer from repair_business_audit_events
+              where tenant_id = $1 and branch_id = $2 and client_request_id = $4) as audit_events`,
+        [tenantA, branchA, concurrentDeviceTypeRepairs[0].repairId, concurrentDeviceTypeRequest.clientRequestId],
+      )).rows[0];
+      assert.deepEqual(createIdempotencyCounts, {
+        repairs: 1,
+        commands: 1,
+        timeline_entries: 1,
+        audit_events: 1,
+      });
+      assert.equal(
+        (await admin.query(
+          'select canonical_device_type_id from repair_intakes where repair_id = $1',
+          [idempotentDeviceTypeRepair.repairId],
+        )).rows[0].canonical_device_type_id,
+        tabletType.deviceTypeId,
+      );
+
+      const brandProofRepairIds = [
+        selectedAppleRepair.repairId,
+        firstApppleRepair.repairId,
+        secondApppleRepair.repairId,
+        thirdApppleRepair.repairId,
+        apleRepair.repairId,
+        applRepair.repairId,
+        resolvedAliasRepair.repairId,
+        normalizedAppleRepair.repairId,
+        normalizedAppleLowerRepair.repairId,
+        newBrandRepair.repairId,
+        platformBrandRepair.repairId,
+        canonicalTypeRepair.repairId,
+        idempotentDeviceTypeRepair.repairId,
+        concurrentDeviceTypeRepairs[0].repairId,
+        ...freeTypeRepairs.map(({ repairId }) => repairId),
+      ];
+      await admin.query('delete from repair_problem_classifications where repair_id = any($1::uuid[])', [brandProofRepairIds]);
+      await admin.query('delete from repair_create_commands where repair_id = any($1::uuid[])', [brandProofRepairIds]);
+      await admin.query('alter table repair_business_audit_events disable trigger repair_business_audit_events_reject_delete');
+      await admin.query('delete from repair_business_audit_events where resource_id = any($1::uuid[])', [brandProofRepairIds]);
+      await admin.query('alter table repair_business_audit_events enable trigger repair_business_audit_events_reject_delete');
+      await admin.query('delete from repair_timeline_entries where repair_id = any($1::uuid[])', [brandProofRepairIds]);
+      await admin.query('delete from repair_intakes where repair_id = any($1::uuid[])', [brandProofRepairIds]);
+      await admin.query('delete from repairs where repair_id = any($1::uuid[])', [brandProofRepairIds]);
       const branchATimeZone = 'America/Tijuana';
       const branchBTimeZone = 'America/Hermosillo';
       const noteContextA = Object.freeze({
@@ -1027,6 +1733,100 @@ test(
         clientRequestId: '90000000-0000-4000-8000-000000000004',
         body: 'x'.repeat(4000),
       }));
+      const neverUsedCategory = await repository.createProblemCategory(riskContext, { categoryId: '4c000000-0000-4000-8000-000000000001', eventId: '4c100000-0000-4000-8000-000000000001', correlationId: '4c200000-0000-4000-8000-000000000001', canonicalLabel: 'QA nunca usada', normalizedKey: 'qa nunca usada', occurredAt: new Date('2026-08-21T19:55:00.000Z') });
+      assert.equal(neverUsedCategory.usageCount, 0);
+      assert.equal(neverUsedCategory.deletable, true);
+      assert.equal((await repository.listAdminProblemCategories(scopeA)).find(({ categoryId }) => categoryId === neverUsedCategory.categoryId)?.deletable, true);
+      const deletedCategory = await repository.deleteProblemCategory(riskContext, { categoryId: neverUsedCategory.categoryId, eventId: '4c100000-0000-4000-8000-000000000002', correlationId: '4c200000-0000-4000-8000-000000000002', expectedVersion: neverUsedCategory.version, occurredAt: new Date('2026-08-21T19:55:01.000Z') });
+      assert.deepEqual(deletedCategory, { categoryId: neverUsedCategory.categoryId, previousLabel: 'QA nunca usada', scope: 'tenant', version: 1, deletedAt: '2026-08-21T19:55:01.000Z' });
+      assert.equal((await repository.listAdminProblemCategories(scopeA)).some(({ categoryId }) => categoryId === neverUsedCategory.categoryId), false);
+      assert.equal((await repository.listEffectiveActiveProblemCategories(scopeA)).some(({ categoryId }) => categoryId === neverUsedCategory.categoryId), false);
+      const successfulDeleteAudit = await admin.query(`select action, previous_label, catalog_scope, category_version, expected_version, actor_user_id, tenant_id, station_id, session_id, correlation_id, result, rejection_reason from repair_problem_category_deletion_events where category_id = $1`, [neverUsedCategory.categoryId]);
+      assert.deepEqual(successfulDeleteAudit.rows, [{ action: 'catalog_entry.deleted', previous_label: 'QA nunca usada', catalog_scope: 'tenant', category_version: 1, expected_version: 1, actor_user_id: actorId, tenant_id: tenantA, station_id: auditStationId, session_id: auditSessionId, correlation_id: '4c200000-0000-4000-8000-000000000002', result: 'succeeded', rejection_reason: null }]);
+      await assert.rejects(
+        admin.query('update repair_problem_category_deletion_events set actor_display_name = $1 where category_id = $2', ['Alterado', neverUsedCategory.categoryId]),
+        (error) => error?.code === '23514',
+      );
+      await assert.rejects(
+        admin.query('delete from repair_problem_category_deletion_events where category_id = $1', [neverUsedCategory.categoryId]),
+        (error) => error?.code === '23514',
+      );
+
+      const staleCategory = await repository.createProblemCategory(riskContext, { categoryId: '4c000000-0000-4000-8000-000000000002', eventId: '4c100000-0000-4000-8000-000000000003', correlationId: '4c200000-0000-4000-8000-000000000003', canonicalLabel: 'QA versión', normalizedKey: 'qa version', occurredAt: new Date('2026-08-21T19:56:00.000Z') });
+      await assert.rejects(repository.deleteProblemCategory(riskContext, { categoryId: staleCategory.categoryId, eventId: '4c100000-0000-4000-8000-000000000004', correlationId: '4c200000-0000-4000-8000-000000000004', expectedVersion: 2, occurredAt: new Date('2026-08-21T19:56:01.000Z') }), (error) => error?.name === 'RepairProblemCategoryConcurrencyConflictError');
+      assert.equal((await admin.query(`select result, rejection_reason, category_version, expected_version from repair_problem_category_deletion_events where category_id = $1`, [staleCategory.categoryId])).rows[0].rejection_reason, 'version_conflict');
+
+      await admin.query(`insert into repair_problem_categories (category_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at) values ('4c000000-0000-4000-8000-000000000003', 'platform', null, 'PLATFORM_QA', 'Plataforma QA', 'plataforma qa', 'active', 1, null, null, now(), now())`);
+      const platformCategory = (await repository.listAdminProblemCategories(scopeA)).find(({ categoryId }) => categoryId === '4c000000-0000-4000-8000-000000000003');
+      assert.equal(platformCategory?.deletable, false);
+      await assert.rejects(repository.deleteProblemCategory(riskContext, { categoryId: platformCategory.categoryId, eventId: '4c100000-0000-4000-8000-000000000005', correlationId: '4c200000-0000-4000-8000-000000000005', expectedVersion: 1, occurredAt: new Date('2026-08-21T19:57:00.000Z') }), (error) => error?.name === 'RepairProblemCategoryDeleteNotAllowedError' && error.reason === 'platform_owned');
+      assert.equal((await admin.query(`select result, rejection_reason from repair_problem_category_deletion_events where category_id = $1`, [platformCategory.categoryId])).rows[0].rejection_reason, 'platform_owned');
+
+      const historicallyUsedCategory = await repository.createProblemCategory(riskContext, { categoryId: '4c000000-0000-4000-8000-000000000004', eventId: '4c100000-0000-4000-8000-000000000006', correlationId: '4c200000-0000-4000-8000-000000000006', canonicalLabel: 'QA uso histórico', normalizedKey: 'qa uso historico', occurredAt: new Date('2026-08-21T19:58:00.000Z') });
+      const classificationContext = Object.freeze({ ...riskContext, capability: 'repairs.classify' });
+      await repository.changeProblemClassification(classificationContext, { repairId: repairA, categoryId: historicallyUsedCategory.categoryId, problemCaptureId: '4c300000-0000-4000-8000-000000000001', eventId: '4c400000-0000-4000-8000-000000000001', timelineEntryId: '4c500000-0000-4000-8000-000000000001', correlationId: '4c600000-0000-4000-8000-000000000001', action: 'repair.problem_category.assigned', occurredAt: new Date('2026-08-21T19:58:01.000Z') });
+      await repository.changeProblemClassification(classificationContext, { repairId: repairA, categoryId: historicallyUsedCategory.categoryId, problemCaptureId: '4c300000-0000-4000-8000-000000000002', eventId: '4c400000-0000-4000-8000-000000000002', timelineEntryId: '4c500000-0000-4000-8000-000000000002', correlationId: '4c600000-0000-4000-8000-000000000002', action: 'repair.problem_category.removed', occurredAt: new Date('2026-08-21T19:58:02.000Z') });
+      const historicallyUsedAfterRemoval = (await repository.listAdminProblemCategories(scopeA)).find(({ categoryId }) => categoryId === historicallyUsedCategory.categoryId);
+      assert.equal(historicallyUsedAfterRemoval?.usageCount, 0);
+      assert.equal(historicallyUsedAfterRemoval?.deletable, false);
+      await assert.rejects(repository.deleteProblemCategory(riskContext, { categoryId: historicallyUsedCategory.categoryId, eventId: '4c100000-0000-4000-8000-000000000007', correlationId: '4c200000-0000-4000-8000-000000000007', expectedVersion: 1, occurredAt: new Date('2026-08-21T19:58:03.000Z') }), (error) => error?.name === 'RepairProblemCategoryDeleteNotAllowedError' && error.reason === 'historical_references');
+      assert.equal((await admin.query(`select result, rejection_reason from repair_problem_category_deletion_events where category_id = $1`, [historicallyUsedCategory.categoryId])).rows[0].rejection_reason, 'historical_references');
+      const historicallyUsedInactive = await repository.changeProblemCategory(riskContext, { categoryId: historicallyUsedCategory.categoryId, eventId: '4c100000-0000-4000-8000-000000000008', correlationId: '4c200000-0000-4000-8000-000000000008', expectedVersion: 1, status: 'inactive', action: 'repair_problem_category.deactivated', occurredAt: new Date('2026-08-21T19:58:04.000Z') });
+      assert.equal(historicallyUsedInactive.deletable, false);
+      const pantallaCategory = await repository.createProblemCategory(riskContext, { categoryId: '4d000000-0000-4000-8000-000000000001', eventId: '4d100000-0000-4000-8000-000000000001', correlationId: '4d200000-0000-4000-8000-000000000001', canonicalLabel: 'Pantalla', normalizedKey: 'pantalla', occurredAt: new Date('2026-08-21T20:00:00.000Z') });
+      const microfonoCategory = await repository.createProblemCategory(riskContext, { categoryId: '4d000000-0000-4000-8000-000000000002', eventId: '4d100000-0000-4000-8000-000000000002', correlationId: '4d200000-0000-4000-8000-000000000002', canonicalLabel: 'Micrófono', normalizedKey: 'microfono', occurredAt: new Date('2026-08-21T20:00:01.000Z') });
+      const cargaCategory = await repository.createProblemCategory(riskContext, { categoryId: '4d000000-0000-4000-8000-000000000003', eventId: '4d100000-0000-4000-8000-000000000003', correlationId: '4d200000-0000-4000-8000-000000000003', canonicalLabel: 'Carga', normalizedKey: 'carga', occurredAt: new Date('2026-08-21T20:00:02.000Z') });
+      const multiProblemRepair = await repository.createRepair(createContext, repairCreateRecord([], '120', { reportedIssue: 'Pantalla · Micrófono', reportedProblems: [
+        { problemCaptureId: '4e000000-0000-4000-8000-000000000001', pendingProblemValueId: '4e100000-0000-4000-8000-000000000001', rawLabel: 'Pantalla', normalizedKey: 'pantalla', canonicalCategoryId: pantallaCategory.categoryId },
+        { problemCaptureId: '4e000000-0000-4000-8000-000000000002', pendingProblemValueId: '4e100000-0000-4000-8000-000000000002', rawLabel: 'Micrófono', normalizedKey: 'microfono', canonicalCategoryId: microfonoCategory.categoryId },
+      ] }), async () => ({ customerId: customerA, tenantId: tenantA, branchId: branchA, givenName: 'Cliente', familyName: 'Problemas', displayName: 'Cliente Problemas' }));
+      assert.deepEqual((await repository.getRepairById(scopeA, multiProblemRepair.repairId))?.problemClassifications.map(({ label }) => label), ['Pantalla', 'Micrófono']);
+      const pendingProblemRepair = await repository.createRepair(createContext, repairCreateRecord([], '121', { reportedIssue: 'pantala · Carga', reportedProblems: [
+        { problemCaptureId: '4e000000-0000-4000-8000-000000000003', pendingProblemValueId: '4e100000-0000-4000-8000-000000000003', rawLabel: 'pantala', normalizedKey: 'pantala', canonicalCategoryId: null },
+        { problemCaptureId: '4e000000-0000-4000-8000-000000000004', pendingProblemValueId: '4e100000-0000-4000-8000-000000000004', rawLabel: 'Carga', normalizedKey: 'carga', canonicalCategoryId: cargaCategory.categoryId },
+      ] }), async () => ({ customerId: customerA, tenantId: tenantA, branchId: branchA, givenName: 'Cliente', familyName: 'Pendiente', displayName: 'Cliente Pendiente' }));
+      const pantala = (await repository.listPendingProblems(scopeA)).find(({ normalizedKey }) => normalizedKey === 'pantala');
+      assert.ok(pantala); assert.equal(pantala.usageCount, 1);
+      assert.equal((await repository.listPendingProblems(scopeA2)).some(({ pendingProblemValueId }) => pendingProblemValueId === pantala.pendingProblemValueId), true);
+      assert.equal((await repository.listPendingProblems(scopeB)).some(({ normalizedKey }) => normalizedKey === 'pantala'), false);
+      await repository.resolvePendingProblem(riskContext, { pendingProblemValueId: pantala.pendingProblemValueId, canonicalCategoryId: pantallaCategory.categoryId, newCategoryId: null, newCanonicalLabel: null, newNormalizedKey: null, eventId: '4d100000-0000-4000-8000-000000000004', correlationId: '4d200000-0000-4000-8000-000000000004', expectedVersion: pantala.version, occurredAt: new Date('2026-08-21T20:01:00.000Z') });
+      const reconciledDetail = await repository.getRepairById(scopeA, pendingProblemRepair.repairId);
+      assert.equal(reconciledDetail?.problemClassifications[0].rawLabel, 'pantala'); assert.equal(reconciledDetail?.problemClassifications[0].label, 'Pantalla');
+      const aliasRepair = await repository.createRepair(createContext, repairCreateRecord([], '122', { reportedIssue: 'pantala', reportedProblems: [{ problemCaptureId: '4e000000-0000-4000-8000-000000000005', pendingProblemValueId: '4e100000-0000-4000-8000-000000000005', rawLabel: 'pantala', normalizedKey: 'pantala', canonicalCategoryId: null }] }), async () => ({ customerId: customerA, tenantId: tenantA, branchId: branchA, givenName: 'Cliente', familyName: 'Alias', displayName: 'Cliente Alias' }));
+      assert.equal((await repository.getRepairById(scopeA, aliasRepair.repairId))?.problemClassifications[0].label, 'Pantalla');
+      const nonFuzzyRepair = await repository.createRepair(createContext, repairCreateRecord([], '123', { reportedIssue: 'pantalla rota', reportedProblems: [{ problemCaptureId: '4e000000-0000-4000-8000-000000000006', pendingProblemValueId: '4e100000-0000-4000-8000-000000000006', rawLabel: 'pantalla rota', normalizedKey: 'pantalla rota', canonicalCategoryId: null }] }), async () => ({ customerId: customerA, tenantId: tenantA, branchId: branchA, givenName: 'Cliente', familyName: 'No fuzzy', displayName: 'Cliente No fuzzy' }));
+      assert.equal((await repository.listPendingProblems(scopeA)).some(({ normalizedKey, resolutionStatus }) => normalizedKey === 'pantalla rota' && resolutionStatus === 'pending'), true);
+      assert.equal((await repository.listAdminProblemCategories(scopeA)).find(({ categoryId }) => categoryId === pantallaCategory.categoryId)?.usageCount, 3);
+      const createdWithRisks = await repository.createRepair(
+        createContext,
+        repairCreateRecord([tenantRisk.riskId, secondTenantRisk.riskId], '4', { documentedRiskSummary: 'Cliente informado antes de intervenir.' }),
+        async () => ({ customerId: customerA, tenantId: tenantA, branchId: branchA, givenName: 'Cliente', familyName: 'Riesgo', displayName: 'Cliente Riesgo' }),
+      );
+      const createdRiskDetail = await repository.getRepairById(scopeA, createdWithRisks.repairId);
+      assert.deepEqual(createdRiskDetail.acceptedInterventionRisks, [
+        { riskId: tenantRisk.riskId, label: renamedRisk.canonicalLabel },
+        { riskId: secondTenantRisk.riskId, label: secondTenantRisk.canonicalLabel },
+      ]);
+      assert.equal(createdRiskDetail.documentedRiskSummary, 'Cliente informado antes de intervenir.');
+      assert.equal((await repository.listAdminRisks(scopeA)).find(({ riskId }) => riskId === tenantRisk.riskId)?.usageCount, 2);
+      const problemProofRepairIds = [multiProblemRepair.repairId, pendingProblemRepair.repairId, aliasRepair.repairId, nonFuzzyRepair.repairId];
+      await admin.query('delete from repair_problem_classifications where repair_id = any($1::uuid[])', [problemProofRepairIds]);
+      await admin.query('delete from repair_create_commands where repair_id = any($1::uuid[])', [problemProofRepairIds]);
+      await admin.query('alter table repair_business_audit_events disable trigger repair_business_audit_events_reject_delete');
+      await admin.query('delete from repair_business_audit_events where resource_id = any($1::uuid[])', [problemProofRepairIds]);
+      await admin.query('alter table repair_business_audit_events enable trigger repair_business_audit_events_reject_delete');
+      await admin.query('delete from repair_timeline_entries where repair_id = any($1::uuid[])', [problemProofRepairIds]);
+      await admin.query('delete from repair_intakes where repair_id = any($1::uuid[])', [problemProofRepairIds]);
+      await admin.query('delete from repairs where repair_id = any($1::uuid[])', [problemProofRepairIds]);
+      await admin.query('delete from repair_intervention_risks where repair_id = $1', [createdWithRisks.repairId]);
+      await admin.query('delete from repair_problem_classifications where repair_id = $1', [createdWithRisks.repairId]);
+      await admin.query('delete from repair_create_commands where repair_id = $1', [createdWithRisks.repairId]);
+      await admin.query('alter table repair_business_audit_events disable trigger repair_business_audit_events_reject_delete');
+      await admin.query('delete from repair_business_audit_events where resource_id = $1', [createdWithRisks.repairId]);
+      await admin.query('alter table repair_business_audit_events enable trigger repair_business_audit_events_reject_delete');
+      await admin.query('delete from repair_timeline_entries where repair_id = $1', [createdWithRisks.repairId]);
+      await admin.query('delete from repair_intakes where repair_id = $1', [createdWithRisks.repairId]);
+      await admin.query('delete from repairs where repair_id = $1', [createdWithRisks.repairId]);
       let status = await runner.getMigrationStatus();
       while (status.migrations.some(({ state }) => state === 'applied')) {
         const latest = [...status.migrations].reverse().find(({ state }) => state === 'applied');

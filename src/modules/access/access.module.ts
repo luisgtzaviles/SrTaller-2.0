@@ -24,16 +24,24 @@ import type {
 import {
   AUTHENTICATION_USER_ADMISSION_VALIDATOR,
   AUTHENTICATION_USER_READER,
+  USER_PREFERENCES_RUNTIME,
   USER_PRODUCT_RUNTIME,
 } from '../users/index.js';
 import type {
   AuthenticationUserAdmissionValidator,
   AuthenticationUserReader,
+  UserPreferencesRuntime,
   UserProductRuntime,
 } from '../users/index.js';
 
 import { CONTEXTUAL_AUTHORIZATION_EXECUTOR } from './index.js';
 import type { ContextualAuthorizationExecutor } from './index.js';
+import {
+  AUTHENTICATED_SELF_EXECUTOR,
+} from './application/authenticated-self-executor.js';
+import type {
+  AuthenticatedSelfExecutor,
+} from './application/authenticated-self-executor.js';
 
 import { ListAccessMatrixUseCase } from './application/use-cases/list-access-matrix.use-case.js';
 import { CreateAccessRoleUseCase } from './application/use-cases/create-access-role.use-case.js';
@@ -71,7 +79,10 @@ import {
 } from './presentation/access-administration.controller.js';
 import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
+import { AuthenticatedSelfExecutorService } from './presentation/authenticated-self.executor.js';
 import { AccessAdministrationOperations } from './application/access-administration-operations.js';
+import { AccessSelfPreferencesOperations } from './application/access-self-preferences.operations.js';
+import { UserPreferencesController } from './presentation/user-preferences.controller.js';
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
@@ -94,6 +105,7 @@ type RegisteredAccessUseCases =
     AccessSessionController,
     AccessAdministrationController,
     BranchSettingsAdministrationController,
+    UserPreferencesController,
   ],
   providers: [
     {
@@ -197,6 +209,21 @@ type RegisteredAccessUseCases =
         runtime: AccessSessionRuntime,
       ): ContextualAuthorizationExecutor =>
         new ContextualAuthorizationExecutorService(runtime),
+    },
+    {
+      provide: AUTHENTICATED_SELF_EXECUTOR,
+      inject: [ACCESS_SESSION_RUNTIME],
+      useFactory: (runtime: AccessSessionRuntime): AuthenticatedSelfExecutor =>
+        new AuthenticatedSelfExecutorService(runtime),
+    },
+    {
+      provide: AccessSelfPreferencesOperations,
+      inject: [AUTHENTICATED_SELF_EXECUTOR, USER_PREFERENCES_RUNTIME],
+      useFactory: (
+        authorization: AuthenticatedSelfExecutor,
+        preferences: UserPreferencesRuntime,
+      ): AccessSelfPreferencesOperations =>
+        new AccessSelfPreferencesOperations(authorization, preferences),
     },
     {
       provide: AccessAdministrationOperations,
