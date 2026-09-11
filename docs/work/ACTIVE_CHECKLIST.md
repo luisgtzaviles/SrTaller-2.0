@@ -3,13 +3,13 @@
 Milestone / Functional Goal: New Repair Classic 2.0 + Guided V2
 Sprint: SPRINT-02 — Operational Authentication & Authorization
 Current PBI: PBI-039
-Status: CI / PR Readiness — PASS; ready for Owner authorization to create PR
+Status: PR #42 + Authoritative CI — PASS; ready for independent review
 WIP: 1/1
-Progress: Functional Slice accepted; UI Verification PASS; Hardening PASS; Full Verification PASS; CI / PR Readiness PASS
-Current: Candidate locally committed, clean and ready for Owner PR authorization
-Next: Owner authorization to publish branch and create PR
+Progress: Functional Slice accepted; UI Verification PASS; Hardening PASS; Full Verification PASS; CI / PR Readiness PASS; PR CI PASS
+Current: PR #42 open, mergeable and green; documentation reconciled
+Next: Independent review
 Blocked: None
-Last updated: 2026-09-10 20:51 MST
+Last updated: 2026-09-10 21:54 MST
 
 ## PBI-039 Functional Slice Freeze — Owner Accepted
 
@@ -163,6 +163,25 @@ review, merge, deploy, release or `Done`.
   candidate: both 12/12 PASS with identical fingerprint `d8737807…`
 - [x] Reconcile PBI-039, checklist and current-state delivery evidence
 - [x] Stop at Owner authorization for PR; do not publish or create it
+
+## PR + Authoritative CI
+
+- [x] Receive explicit Owner authorization to publish the branch and create PR
+- [x] Publish `feature/pbi-039-customer-minimum-new-repair` without force push
+- [x] Create PR #42 against exact base
+  `94065dfedc55234fd1738a6674289278aa49d224`
+- [x] Pass authoritative run `34562890493` on head `80c49150…`: run-1,
+  run-2 and semantic comparison all SUCCESS
+- [x] Confirm PBI-023 17/17 and PBI-039 2/2 PostgreSQL material in each leg,
+  zero critical skips/failures and cleanup/sanitization PASS
+- [x] Confirm comparison `equivalent: true`, zero differences and identical
+  comparable hash `f5d5ccc9…`
+- [x] Record Vite 531.33 kB as accepted warning and the GitHub Actions Node 20
+  runtime annotation as separate non-blocking delivery debt
+- [x] Reconcile PBI-039, checklist and current state in a docs-only commit and
+  obtain authoritative CI on that exact final PR head before handoff
+- [ ] Independent review
+- [ ] Owner merge authorization
 
 ## Current Functional Goal
 
@@ -867,8 +886,10 @@ to Platform and no cross-Tenant signal is exposed in this slice.
 - [x] Customer D5-R045 fixture/export debt reconciled; broad architecture
   307/307 PASS
 - [x] Full verification — authoritative local PASS on 2026-09-10
-- [x] CI / PR Readiness — PASS on 2026-09-10; CI itself not run
-- [ ] PR / CI
+- [x] CI / PR Readiness — PASS on 2026-09-10
+- [x] PR #42 / authoritative CI run `34562890493` plus final docs-only exact-head
+  revalidation — PASS
+- [ ] Independent review
 - [ ] Merge
 
 > This checklist is operational visibility only. It records the explicit Owner
