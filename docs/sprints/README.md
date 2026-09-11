@@ -10,7 +10,8 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 [SPRINT-02](sprint-02/SPRINT_GOAL.md) `Active`.
 **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization;
 PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`; G5 es `PASS`, Current
-PBI es `NONE` y WIP es `0/1`.
+PBI es PBI-039 y WIP es `1/1`; Functional Slice Frozen / Owner Accepted y
+Formal UI Verification pendiente.
 
 ## Reglas propuestas
 

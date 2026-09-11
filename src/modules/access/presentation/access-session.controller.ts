@@ -130,6 +130,10 @@ const administrationCapabilityCodes = new Set<CapabilityCode>([
   'users.manage',
   'access_matrix.read',
   'access_matrix.manage',
+  'repairs.catalogs.read',
+  'repairs.catalogs.manage',
+  'repairs.configuration.read',
+  'repairs.configuration.manage',
 ]);
 
 async function resolveTenantWideAdministrationCapabilities(

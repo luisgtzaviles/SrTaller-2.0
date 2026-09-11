@@ -16,6 +16,49 @@ Docker CLI se usa directamente para
 conservar una topología pequeña y portable; no se añade Docker Compose ni una
 dependencia de multiplexación.
 
+Antes de ejecutar scripts del repositorio, comprobar qué resolvería el shell y
+usar el launcher gobernado del repositorio:
+
+```sh
+node --version
+pnpm --version
+./scripts/pnpm-governed run verify:toolchain
+```
+
+El launcher toma los pins de `.node-version` y `package.json`, acepta el runtime
+ambiental cuando ya coincide y, en macOS con Homebrew, descubre el prefijo
+versionado sin fijar una ruta de instalación. Si no encuentra exactamente
+Node.js `24.18.0` y pnpm `11.15.1`, falla antes de ejecutar el comando. También
+puede activarse `.nvmrc` o `.node-version` con el gestor ya instalado y usar
+`pnpm` normalmente; no se introduce ni exige un segundo gestor de versiones.
+Todos los scripts de backend, frontend y verificación vuelven a ejecutar
+`verify:toolchain`; el launcher no sustituye ni relaja ese guard. CI es la
+plataforma autoritativa de entrega y conserva los mismos pins exactos sobre
+Linux; el launcher es la entrada determinista para desarrollo y Codex local.
+
+## Gates de verificación local
+
+`verify` permanece como gate base canónico y rápido. `verify:full` es la campaña
+local de alto riesgo para PBI-039: primero ejecuta `verify` y después materializa
+PostgreSQL composite, los dos tests PostgreSQL PBI-039, runtime Preview-like y
+smoke compilado backend/UI sobre una base PostgreSQL 18.4 exclusiva. También
+verifica la identidad dirty del candidato, contabiliza skips, limpia recursos y
+escribe evidencia JSON fuera del repositorio.
+
+```sh
+./scripts/pnpm-governed run verify:full -- --dry-run
+# Gate posterior con autorización explícita:
+./scripts/pnpm-governed run verify:full
+```
+
+`--dry-run` sólo resuelve scripts, toolchain, Docker, digest disponible,
+fingerprint y clasificación de untracked; no inicia la campaña. La ejecución
+real es fail-fast, usa credenciales sintéticas y puertos loopback efímeros, no
+lee `.env.local`, y deja el warning Vite de tamaño como `ACCEPTED WARNING`. La
+evidencia se escribe en un directorio temporal del sistema o en
+`SR_FULL_VERIFICATION_EVIDENCE_DIR`; esa ruta debe permanecer fuera del
+candidato. Este gate local no sustituye CI ni autoriza PR/merge/deploy.
+
 ## Límites y seguridad
 
 - Local, Preview, Staging y Production tienen bases, volúmenes y credenciales
@@ -49,16 +92,21 @@ read -r -s 'SR_LOCAL_PIN_MARIA?PIN sintético para María: '
 echo
 read -r -s 'SR_LOCAL_PIN_CARLOS?PIN sintético para Carlos: '
 echo
+read -r -s 'SR_LOCAL_PIN_LUIS?PIN local estable para Luis: '
+echo
+printf '\nSR_LOCAL_PIN_LUIS=%s\n' "$SR_LOCAL_PIN_LUIS" >> .env.local
+chmod 600 .env.local
 export SR_LOCAL_PIN_JORGE SR_LOCAL_PIN_MARIA SR_LOCAL_PIN_CARLOS
 pnpm run local:db:seed
-unset SR_LOCAL_PIN_JORGE SR_LOCAL_PIN_MARIA SR_LOCAL_PIN_CARLOS
+unset SR_LOCAL_PIN_JORGE SR_LOCAL_PIN_MARIA SR_LOCAL_PIN_CARLOS SR_LOCAL_PIN_LUIS
 pnpm run local:dev
 ```
 
-Los tres PIN se presentan una sola vez al proceso de seed. El shell no los
-muestra y el script no los escribe en `.env.local`; deben ser sintéticos,
-distintos y de cuatro dígitos. Si el seed falla, vuelve a introducirlos antes
-de reintentarlo en lugar de guardarlos en un archivo.
+Los PIN de Jorge, María y Carlos se presentan una sola vez al proceso de seed.
+El PIN sintético de Luis se conserva únicamente en `.env.local` —archivo
+ignorado y `0600`— para que `local:db:reset` pueda recrear la misma identidad
+Owner en volúmenes nuevos. Ningún PIN se imprime, se versiona o se copia a
+Preview. Todos deben ser distintos y de cuatro dígitos.
 
 `local:dev` mantiene dos procesos en la misma terminal: NestJS en
 `http://127.0.0.1:3000` y Vite en `http://127.0.0.1:4173`. Para depurar por
@@ -175,8 +223,9 @@ pnpm run local:db:seed
 ```
 
 El seed usa el rol `application`, una transacción y upserts idempotentes. Crea
-un tenant técnico sintético, dos sucursales, Stations/bindings, tres Users,
-roles/capabilities/asignaciones, tres credenciales PIN y 15 reparaciones
+un tenant técnico sintético, dos sucursales, Stations/bindings, cuatro Users
+—incluido Luis con rol Administrador—, roles/capabilities/asignaciones, cuatro
+credenciales PIN y 15 reparaciones
 sintéticas mediante UUIDs fijos y fechas deterministas. Cada PIN se entrega
 como variable de entorno efímera únicamente al proceso de seed y se elimina
 del shell al terminar; `.env.local` lo excluye y limpia claves heredadas.
@@ -186,7 +235,9 @@ evidencia para D1, D2 y D4, catálogo/asignaciones D5, transiciones D6.1 y
 colocaciones/movimientos D6.2 deterministas. Una reparación conserva ubicación
 no registrada para probar la proyección honesta. Los datos de cliente son
 snapshots dentro de `repairs`; no existe una tabla de clientes ni se agregan
-importes o pagos. El seed no crea Sessions activas: se inician mediante el
+importes o pagos. Los PIN de los otros usuarios son efímeros; sólo el PIN
+sintético de Luis permanece en `.env.local` para sobrevivir a la recreación
+del volumen. El seed no crea Sessions activas: se inician mediante el
 login local con contexto de Station verificado y PIN sintético.
 
 ## Reset y parada

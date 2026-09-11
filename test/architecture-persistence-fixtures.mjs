@@ -4,6 +4,8 @@ const databaseTypes = [
   'export interface StationTable { readonly tenant_id: string; readonly station_id: string; }',
   'export interface StationBindingTable { readonly tenant_id: string; readonly station_id: string; readonly branch_id: string; }',
   'export interface StationCredentialTable { readonly credential_id: string; readonly credential_hash: string; }',
+  'export interface CustomerTable { readonly customer_id: string; readonly tenant_id: string; readonly branch_id: string; }',
+  'export interface CustomerContactPhoneTable { readonly customer_contact_phone_id: string; readonly customer_id: string; }',
   'export interface DatabaseSchema {',
   '  readonly tenants: TenantTable;',
   '  readonly branches: BranchTable;',
@@ -23,6 +25,10 @@ const databaseTypes = [
   'export type NewStationBinding = StationBindingTable;',
   'export type StationCredentialRow = StationCredentialTable;',
   'export type NewStationCredential = StationCredentialTable;',
+  'export type CustomerRow = CustomerTable;',
+  'export type NewCustomer = CustomerTable;',
+  'export type CustomerContactPhoneRow = CustomerContactPhoneTable;',
+  'export type NewCustomerContactPhone = CustomerContactPhoneTable;',
   '',
 ].join('\n');
 

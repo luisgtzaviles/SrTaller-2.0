@@ -202,8 +202,23 @@ test('login page uses the four-digit PIN-only flow without exposing a user direc
   assert.match(gateSource, /submitting \|\| busy \? 'Procesando…'/u);
   assert.match(gateSource, /event\.key === 'Escape'/u);
   assert.match(gateSource, /<form[\s\S]*?onSubmit=/u);
-  assert.match(gateSource, /<LoadingGate \/>/u);
+  assert.match(gateSource, /<DeferredLoadingGate \/>/u);
   assert.match(gateSource, /<FailedGate onRetry=/u);
+});
+
+test('fast Session verification stays visually quiet while slow verification remains explicit', () => {
+  assert.match(gateSource, /const SESSION_LOADING_FEEDBACK_DELAY_MS = 180;/u);
+  const deferred = sourceSection(
+    gateSource,
+    'function DeferredLoadingGate()',
+    'function FailedGate',
+  );
+  assert.match(deferred, /const \[visible, setVisible\] = useState\(false\)/u);
+  assert.match(deferred, /window\.setTimeout\([\s\S]*?SESSION_LOADING_FEEDBACK_DELAY_MS/u);
+  assert.match(deferred, /window\.clearTimeout\(timer\)/u);
+  assert.match(deferred, /visible[\s\S]*?<LoadingGate \/>[\s\S]*?styles\.deferredLoading/u);
+  assert.match(deferred, /aria-busy="true"/u);
+  assert.match(gateStyles, /\.deferredLoading \{[\s\S]*?min-height: 100dvh;[\s\S]*?background: var\(--color-canvas\)/u);
 });
 
 test('active Session revalidation is server-scheduled and runs on timer, focus, and visibility', () => {

@@ -53,6 +53,25 @@ export const AUTHENTICATION_USER_ADMISSION_VALIDATOR: unique symbol = Symbol(
 );
 
 export const USER_PRODUCT_RUNTIME: unique symbol = Symbol('srtaller.users.product-runtime');
+export const USER_PREFERENCES_RUNTIME: unique symbol = Symbol(
+  'srtaller.users.preferences-runtime',
+);
+
+export type NewRepairFormMode =
+  import('./application/ports/user-preferences-repository.port.js').NewRepairFormMode;
+
+export interface UserPreferencesRuntime {
+  get(scope: unknown): Promise<
+    import('./application/ports/user-preferences-repository.port.js').UserPreferencesRecord
+  >;
+  update(
+    scope: unknown,
+    input: unknown,
+    guard?: import('./application/ports/user-preferences-repository.port.js').UserPreferencesMutationGuard,
+  ): Promise<
+    import('./application/ports/user-preferences-repository.port.js').UserPreferencesRecord
+  >;
+}
 
 export interface UserProductRuntime {
   list(scope: unknown): Promise<readonly import('./application/ports/user-repository.port.js').UserRecord[]>;

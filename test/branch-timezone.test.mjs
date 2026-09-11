@@ -4,9 +4,24 @@ import test from 'node:test';
 import {
   branchLocalCalendarBoundaryToUtc,
   branchLocalCalendarDate,
+  branchLocalDateTimeToUtc,
   parseBranchTimeZone,
   presentOperationalDateTime,
 } from '../dist/modules/stations/application/branch-time-zone.js';
+
+test('Branch-local date/time becomes UTC without browser or process timezone authority', () => {
+  const hermosillo = parseBranchTimeZone('America/Hermosillo');
+  assert.equal(
+    branchLocalDateTimeToUtc('2026-09-10T16:30', hermosillo).toISOString(),
+    '2026-09-10T23:30:00.000Z',
+  );
+});
+
+test('Branch-local date/time fails closed for missing and repeated DST wall clocks', () => {
+  const tijuana = parseBranchTimeZone('America/Tijuana');
+  assert.throws(() => branchLocalDateTimeToUtc('2026-03-08T02:30', tijuana), RangeError);
+  assert.throws(() => branchLocalDateTimeToUtc('2026-11-01T01:30', tijuana), RangeError);
+});
 
 test('Branch time zones require IANA identifiers and reject fixed offsets', () => {
   assert.equal(parseBranchTimeZone('America/Hermosillo'), 'America/Hermosillo');

@@ -103,9 +103,9 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
 | Authoritative CI at audited HEAD | Green: run `34280510716` on `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `0/1` |
-| Current / next PBI | Current: NONE; PBI-028 Done / G5 PASS; PBI-038 Done; next: NONE selected |
-| Current blocking gate | selección, readiness y autorización Owner para un nuevo PBI; deploy permanece separado |
+| Sprint | SPRINT-02 `Active`; WIP `1/1` |
+| Current / next PBI | Current: PBI-039 Functional Slice Frozen / Owner Accepted; next: NONE selected |
+| Current blocking gate | Authoritative Full Verification local de PBI-039; la orquestación está lista, mientras CI/PR/merge/deploy permanecen separados |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
 | Preview deployment platform | Dokploy |

@@ -30,6 +30,7 @@ export function useFocusTrap(
       const ownerLayer = root.closest<HTMLElement>('[data-dialog-layer="true"]');
       if (ownerLayer && dialogLayers.at(-1) !== ownerLayer) return;
       if (event.key === 'Escape') {
+        if (event.defaultPrevented) return;
         event.preventDefault();
         onEscapeRef.current();
         return;
@@ -128,10 +129,11 @@ export function Dialog({
       data-dialog-variant={variant}
     >
       <div className={styles.backdrop} aria-hidden="true" onClick={onClose} />
-      <div ref={dialogRef} className={`${styles.dialog} ${sizeClass}`} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1}>
+      <div ref={dialogRef} className={`${styles.dialog} ${sizeClass}`} data-has-footer={footer === false ? 'false' : 'true'} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1}>
         <header><div><h2 id={titleId}>{title}</h2><p id={descriptionId}>{description}</p></div><IconButton label="Cerrar diálogo" icon={X} onClick={onClose} /></header>
         <div className={styles.dialogBody}>{children}</div>
         {footer === false ? null : <footer>{footer ?? <Button tone="primary" onClick={onClose}>Entendido</Button>}</footer>}
+        <div className={styles.dialogFloatingRoot} data-dialog-floating-root="true" />
       </div>
     </div>,
     document.body,

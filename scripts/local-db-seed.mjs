@@ -54,7 +54,6 @@ const pinCredentials = await localPinCredentialRows({
   SR_LOCAL_PIN_MARIA: process.env.SR_LOCAL_PIN_MARIA ?? values.SR_LOCAL_PIN_MARIA,
   SR_LOCAL_PIN_CARLOS: process.env.SR_LOCAL_PIN_CARLOS ?? values.SR_LOCAL_PIN_CARLOS,
   SR_LOCAL_PIN_LUIS: process.env.SR_LOCAL_PIN_LUIS ?? values.SR_LOCAL_PIN_LUIS,
-  SR_LOCAL_USER_LUIS_ID: process.env.SR_LOCAL_USER_LUIS_ID ?? values.SR_LOCAL_USER_LUIS_ID,
 });
 await materializeLocalEvidenceFixtures();
 const client = await pool.connect();

@@ -5,6 +5,13 @@ export const OPERATIONAL_CAPABILITY_CATALOG = Object.freeze([
   'access_matrix.manage',
   'repairs.read',
   'repairs.add_note',
+  'repairs.create',
+  'repairs.correct_intake',
+  'repairs.classify',
+  'repairs.catalogs.read',
+  'repairs.catalogs.manage',
+  'repairs.configuration.read',
+  'repairs.configuration.manage',
 ]);
 
 const capabilityPosition = new Map(

@@ -176,7 +176,7 @@ test(
     try {
       await resetDatabase(admin);
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 31);
+      assert.equal(applied.status.migrations.length, inspection.manifest.migrations.length);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await admin.query(
         `insert into tenants (tenant_id, created_at) values ($1, now()), ($2, now())`,

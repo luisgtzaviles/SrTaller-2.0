@@ -99,6 +99,13 @@ test('Access capability catalog is finite, action-specific and composed determin
     'access_matrix.manage',
     'repairs.read',
     'repairs.add_note',
+    'repairs.create',
+    'repairs.correct_intake',
+    'repairs.classify',
+    'repairs.catalogs.read',
+    'repairs.catalogs.manage',
+    'repairs.configuration.read',
+    'repairs.configuration.manage',
   ]);
   assert.deepEqual(
     composeEffectiveCapabilities([

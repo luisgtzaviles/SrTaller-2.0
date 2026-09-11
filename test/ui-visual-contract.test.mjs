@@ -57,7 +57,7 @@ test('mobile shell and entity cards remain active below the lg breakpoint', () =
 });
 
 test('focus and touch contracts are explicit for shared controls', () => {
-  assert.match(uiSource, /\.input:focus-visible \{ outline: 3px solid var\(--color-brand-focus\); outline-offset: 2px; \}/u);
+  assert.match(uiSource, /\.input:focus-visible \{ outline: var\(--focus-ring-width\) solid var\(--color-brand-focus\); outline-offset: var\(--focus-ring-offset\); \}/u);
   assert.match(uiSource, /@media \(pointer: coarse\) \{[\s\S]*?\.input \{ min-height: var\(--touch-target\); \}/u);
   assert.match(catalogSource, /aria-pressed=\{preference === theme\}/u);
   assert.doesNotMatch(shellComponentSource, /<button[^>]+drawerBackdrop/gu);
@@ -68,7 +68,8 @@ test('focus and touch contracts are explicit for shared controls', () => {
   assert.doesNotMatch(repairDetailSource, /Cambiar estado|Guardar cambios|Precio estimado|WhatsApp|Imprimir/iu);
   assert.match(repairsSource, /failed \|\| denied \? 'No disponible' : loading \? 'Cargando…' : null/u);
   assert.match(repairsSource, /<strong>\{totalCount\}<\/strong>/u);
-  assert.doesNotMatch(repairsSource, /to="\/reparaciones\/nueva"|Nueva reparación/u);
+  assert.match(repairsSource, /to="\/reparaciones\/nueva"/u);
+  assert.match(repairsSource, /Nueva reparación/u);
   assert.match(overlaySource, /variant\?: 'standard' \| 'workspace'/u);
   assert.match(uiSource, /\.overlayWorkspace \.backdrop[\s\S]*?blur\(5px\)/u);
   assert.match(repairDetailSource, /size="workspace"[\s\S]*?variant="workspace"/u);

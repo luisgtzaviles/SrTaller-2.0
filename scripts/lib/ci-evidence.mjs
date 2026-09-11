@@ -8,6 +8,10 @@ import {
   comparablePostgresqlCiManifest,
   validatePostgresqlCiManifest,
 } from './postgresql-ci-evidence.mjs';
+import {
+  comparablePbi039PostgresqlCiManifest,
+  validatePbi039PostgresqlCiManifest,
+} from './pbi039-postgresql-ci-evidence.mjs';
 
 const execFileAsync = promisify(execFile);
 const forbiddenPathPatterns = [
@@ -114,7 +118,11 @@ function requiredString(value, label) {
 }
 
 export function validateEvidenceManifest(manifest) {
-  if (manifest.schemaVersion !== 1 && manifest.schemaVersion !== 2) {
+  if (
+    manifest.schemaVersion !== 1 &&
+    manifest.schemaVersion !== 2 &&
+    manifest.schemaVersion !== 3
+  ) {
     throw new Error('Unsupported evidence manifest schemaVersion');
   }
   if (manifest.contract !== 'DEC-004/VC-024') {
@@ -178,12 +186,41 @@ export function validateEvidenceManifest(manifest) {
   if (manifest.verdict !== 'PASS') {
     throw new Error('Evidence manifest verdict must be PASS');
   }
-  if (manifest.schemaVersion === 2) {
+  if (manifest.schemaVersion === 3) {
     validatePostgresqlCiManifest(manifest.postgresql);
+    validatePbi039PostgresqlCiManifest(manifest.pbi039Postgresql);
+  } else if (manifest.schemaVersion === 2) {
+    validatePostgresqlCiManifest(manifest.postgresql);
+    if (manifest.pbi039Postgresql !== undefined) {
+      throw new Error(
+        'PBI-039 PostgreSQL evidence requires evidence manifest schemaVersion 3',
+      );
+    }
   } else if (manifest.postgresql !== undefined) {
     throw new Error(
       'PostgreSQL evidence requires evidence manifest schemaVersion 2',
     );
+  }
+  if (
+    manifest.schemaVersion !== 3 &&
+    manifest.pbi039Postgresql !== undefined
+  ) {
+    throw new Error(
+      'PBI-039 PostgreSQL evidence requires evidence manifest schemaVersion 3',
+    );
+  }
+  for (const databaseEvidence of [
+    manifest.postgresql,
+    manifest.pbi039Postgresql,
+  ].filter(Boolean)) {
+    if (
+      databaseEvidence.execution.headSha !== manifest.commit ||
+      databaseEvidence.execution.label !== manifest.execution.label ||
+      databaseEvidence.execution.workflowRunId !==
+        manifest.execution.workflowRunId
+    ) {
+      throw new Error('PostgreSQL evidence is not bound to the VC-024 execution');
+    }
   }
   return manifest;
 }
@@ -205,6 +242,12 @@ function comparableManifest(manifest) {
     comparable.postgresql = {
       ...comparablePostgresqlCiManifest(manifest.postgresql),
       comparableSha256: manifest.postgresql.comparableSha256,
+    };
+  }
+  if (manifest.pbi039Postgresql) {
+    comparable.pbi039Postgresql = {
+      ...comparablePbi039PostgresqlCiManifest(manifest.pbi039Postgresql),
+      comparableSha256: manifest.pbi039Postgresql.comparableSha256,
     };
   }
   return comparable;
@@ -269,6 +312,7 @@ async function detectGlibc() {
 export async function collectEvidenceManifest({
   executionLabel,
   initialClean,
+  pbi039PostgresqlInput,
   postgresqlInput,
   projectRoot = process.cwd(),
   workflowRunId,
@@ -302,11 +346,13 @@ export async function collectEvidenceManifest({
     'pnpm-lock.yaml',
     'scripts/cleanup-postgresql-ci.mjs',
     'scripts/lib/postgresql-ci-evidence.mjs',
+    'scripts/lib/pbi039-postgresql-ci-evidence.mjs',
     'scripts/lib/postgresql-test-output.mjs',
     'scripts/lib/local-development.mjs',
     'scripts/lib/local-pin-fixtures.mjs',
     'scripts/local-db-seed.mjs',
     'scripts/run-postgresql-ci.mjs',
+    'scripts/test-pbi039-postgresql.mjs',
     'scripts/test-database-connection-postgresql.mjs',
     'scripts/test-database-migration-postgresql.mjs',
     'scripts/test-database-schema-postgresql.mjs',
@@ -324,6 +370,8 @@ export async function collectEvidenceManifest({
     'supply-chain-policy.json',
     'test/database-schema-postgresql.test.mjs',
     'test/local-development-contract.test.mjs',
+    'test/customer-phone-postgresql.test.mjs',
+    'test/user-preferences-postgresql.test.mjs',
     'test/access-pin-postgresql.test.mjs',
     'test/access-session-postgresql.test.mjs',
     'test/access-role-postgresql.test.mjs',
@@ -343,9 +391,17 @@ export async function collectEvidenceManifest({
         JSON.parse(await readFile(resolve(postgresqlInput), 'utf8')),
       )
     : undefined;
+  const pbi039Postgresql = pbi039PostgresqlInput
+    ? validatePbi039PostgresqlCiManifest(
+        JSON.parse(await readFile(resolve(pbi039PostgresqlInput), 'utf8')),
+      )
+    : undefined;
+  if (pbi039Postgresql && !postgresql) {
+    throw new Error('PBI-039 PostgreSQL evidence requires PBI-023 PostgreSQL evidence');
+  }
 
   const manifest = {
-    schemaVersion: postgresql ? 2 : 1,
+    schemaVersion: pbi039Postgresql ? 3 : postgresql ? 2 : 1,
     contract: 'DEC-004/VC-024',
     commit: await commandOutput('git', ['rev-parse', 'HEAD']),
     execution: {
@@ -404,12 +460,20 @@ export async function collectEvidenceManifest({
     },
     verdict: 'PASS',
     ...(postgresql ? { postgresql } : {}),
+    ...(pbi039Postgresql ? { pbi039Postgresql } : {}),
   };
 
   if (postgresql) {
     manifest.commands.splice(7, 0, {
       name: 'test:postgresql',
       command: 'node scripts/run-postgresql-ci.mjs',
+      exitCode: 0,
+    });
+  }
+  if (pbi039Postgresql) {
+    manifest.commands.splice(8, 0, {
+      name: 'test:pbi039:postgresql',
+      command: 'node scripts/test-pbi039-postgresql.mjs',
       exitCode: 0,
     });
   }

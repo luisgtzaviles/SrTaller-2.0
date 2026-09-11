@@ -1,26 +1,29 @@
 import {
   ArrowLeft,
   ArrowRight,
+  Banknote,
+  CalendarClock,
   Camera,
   Clock3,
   Image as ImageIcon,
-  MapPin,
-  Palette,
+  Pencil,
   Phone,
   UserRound,
-  Wrench,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import { addRepairOperationalNote, getRepairDetail, PreviewApiError } from '../api.js';
+import { addRepairOperationalNote, addRepairProblemClassification, correctRepairEquipment, getOperationalProblemCategories, getOperationalRepairBrands, getOperationalRepairModels, getRepairDetail, PreviewApiError, removeRepairProblemClassification } from '../api.js';
 import type {
+  OperationalRepairBrand,
+  OperationalRepairModel,
   RepairDetail,
   RepairEvidenceItem,
   RepairTimelineItem,
-  RepairTimelineItemType,
+  RepairProblemCategory,
 } from '../api.js';
-import { Button, Textarea } from '../components/ui/controls.js';
+import { Button, Field, Input, Textarea } from '../components/ui/controls.js';
 import { StatusBadge } from '../components/ui/data-display.js';
 import { ErrorState, Skeleton } from '../components/ui/feedback.js';
 import { PageHeader } from '../components/ui/navigation.js';
@@ -41,23 +44,34 @@ function optionalValue(value: string | null, fallback = 'No registrado'): string
   return value?.trim() || fallback;
 }
 
-function timelineTypeLabel(type: RepairTimelineItemType): string {
-  return type === 'note' ? 'Nota' : 'Actividad';
+function includedAccessory(value: boolean): string {
+  return value ? 'Trae' : 'No trae';
 }
 
-function timelineSourceLabel(source: string): string {
-  const labels: Readonly<Record<string, string>> = Object.freeze({
-    'local.assignment_projection': 'Cambio de asignación',
-    'local.operator_note': 'Nota operativa',
-    'local.operational_note': 'Nota operativa local',
-    'repairs.operational_note': 'Nota operativa',
-    'local.reception': 'Recepción',
-    'local.status_projection': 'Cambio de situación',
-    'local.technician_assignment': 'Asignación de técnico',
-    'local.workflow': 'Flujo de reparación',
-    'local.location': 'Ubicación interna',
-  });
-  return labels[source] ?? 'Actividad registrada';
+function receivedPowerState(value: RepairDetail['intake']['receivedPowerState']): string {
+  return value === 'powered_on' ? 'Encendido' : value === 'powered_off' ? 'Apagado' : 'No registrado';
+}
+
+function accessType(value: RepairDetail['intake']['deviceAccessType']): string {
+  return value === 'none' ? 'Sin bloqueo' : value === 'pin' ? 'PIN — secreto no almacenado' : value === 'password' ? 'Contraseña — secreto no almacenado' : value === 'pattern' ? 'Patrón — secreto no almacenado' : 'No registrado';
+}
+
+function money(value: number | null): string {
+  return value === null
+    ? 'Sin presupuesto inicial'
+    : `$${new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(value / 100)} MXN`;
+}
+
+function compactTimelineAt(value: string, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat('es-MX', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone,
+  }).formatToParts(new Date(value));
+  const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((item) => item.type === type)?.value ?? '';
+  return `${part('day')} ${part('month').replace('.', '')} · ${part('hour')}:${part('minute')} ${part('dayPeriod')}`.trim();
 }
 
 const noteBodyMinLength = 3;
@@ -90,6 +104,21 @@ function evidenceAlt(item: RepairEvidenceItem): string {
     : 'Evidencia visual sintética general');
 }
 
+function RepairTimelineEntry({ entry, timeZone }: Readonly<{ entry: RepairTimelineItem; timeZone: string }>) {
+  const fallbackTitle = entry.type === 'note' ? 'Nota operativa' : 'Actividad registrada';
+
+  return <li data-kind={entry.type}>
+    <article>
+      <div className={styles.timelineItemMeta}>
+        <time dateTime={entry.occurredAt}>{compactTimelineAt(entry.occurredAt, timeZone)}</time>
+        <span className={styles.timelineActor}>{entry.actor.displayName}</span>
+      </div>
+      <h3>{entry.title?.trim() || fallbackTitle}</h3>
+      {entry.body ? <p>{entry.body}</p> : null}
+    </article>
+  </li>;
+}
+
 export function RepairDetailWorkspace({
   repair,
   sessionId,
@@ -98,6 +127,8 @@ export function RepairDetailWorkspace({
   csrfToken,
   timeZone,
   onNoteAdded,
+  onEquipmentCorrected,
+  onClassificationChanged,
   onDraftDirtyChange,
 }: Readonly<{
   repair: RepairDetail;
@@ -107,6 +138,8 @@ export function RepairDetailWorkspace({
   csrfToken: string;
   timeZone: string;
   onNoteAdded(note: RepairTimelineItem): void;
+  onEquipmentCorrected(): void;
+  onClassificationChanged(): void;
   onDraftDirtyChange(dirty: boolean): void;
 }>): React.JSX.Element {
   const [selectedEvidence, setSelectedEvidence] = useState<number | null>(null);
@@ -114,6 +147,22 @@ export function RepairDetailWorkspace({
   const [noteDraft, setNoteDraft] = useState(() => storedDraft(sessionId, repair.id));
   const [noteSubmitState, setNoteSubmitState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [noteMessage, setNoteMessage] = useState('');
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [correctionBusy, setCorrectionBusy] = useState(false);
+  const [correctionMessage, setCorrectionMessage] = useState('');
+  const [brandValue, setBrandValue] = useState('');
+  const [canonicalBrandId, setCanonicalBrandId] = useState<string | null>(null);
+  const [brandOptions, setBrandOptions] = useState<readonly OperationalRepairBrand[]>([]);
+  const [modelValue, setModelValue] = useState('');
+  const [canonicalModelId, setCanonicalModelId] = useState<string | null>(null);
+  const [modelOptions, setModelOptions] = useState<readonly OperationalRepairModel[]>([]);
+  const [correctionReason, setCorrectionReason] = useState('');
+  const [classificationOpen, setClassificationOpen] = useState(false);
+  const [classificationBusy, setClassificationBusy] = useState(false);
+  const [classificationMessage, setClassificationMessage] = useState('');
+  const [categoryOptions, setCategoryOptions] = useState<readonly RepairProblemCategory[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<ReadonlySet<string>>(() => new Set());
+  const correctionRequestId = useRef<string | null>(null);
   const noteRequestId = useRef<string | null>(null);
   const closeEvidence = useCallback(() => setSelectedEvidence(null), []);
   const activeEvidence = selectedEvidence === null
@@ -129,7 +178,66 @@ export function RepairDetailWorkspace({
   const normalizedNote = noteDraft.trim();
   const noteValid = normalizedNote.length >= noteBodyMinLength && normalizedNote.length <= noteBodyMaxLength;
   const canAddNote = hasOperationalCapability(capabilities, 'repairs.add_note');
+  const canCorrectEquipment = hasOperationalCapability(capabilities, 'repairs.correct_intake');
+  const canClassify = hasOperationalCapability(capabilities, 'repairs.classify');
   const currentTechnician = repair.currentSituation.technician;
+  const hasPhysicalState = Boolean(
+    repair.intake.physicalConditionSummary?.trim()
+    || repair.receivedDevice.color?.trim()
+    || repair.intake.receivedPowerState,
+  );
+  const hasReceivedEquipmentFacts = Boolean(
+    repair.receivedDevice.type?.trim()
+    || repair.receivedDevice.identifierUnavailable
+    || repair.receivedDevice.identifier?.trim()
+    || repair.receivedDevice.accessories.simIncluded !== null
+    || repair.receivedDevice.accessories.memoryCardIncluded !== null
+    || repair.receivedDevice.accessories.other?.trim(),
+  );
+  const hasSpecialConditions = Boolean(
+    repair.intake.warrantyReviewRequested
+    || repair.intake.previousRepairId
+    || repair.intake.deliveredByName?.trim()
+    || repair.intake.acceptedInterventionRisks.length > 0
+    || repair.intake.documentedRiskSummary?.trim(),
+  );
+
+  const openClassification = (): void => {
+    setSelectedCategoryIds(new Set(repair.problemClassifications.map((category) => category.categoryId)));
+    setClassificationMessage('');
+    setClassificationOpen(true);
+    void getOperationalProblemCategories().then((response) => setCategoryOptions(response.items)).catch((cause: unknown) => setClassificationMessage(cause instanceof Error ? cause.message : 'No fue posible cargar las categorías.'));
+  };
+
+  const saveClassification = async (): Promise<void> => {
+    if (classificationBusy) return;
+    setClassificationBusy(true); setClassificationMessage('Guardando clasificación…');
+    const current = new Set(repair.problemClassifications.map((category) => category.categoryId));
+    try {
+      for (const categoryId of selectedCategoryIds) if (!current.has(categoryId)) await addRepairProblemClassification(repair.id, categoryId, csrfToken);
+      for (const categoryId of current) if (!selectedCategoryIds.has(categoryId)) await removeRepairProblemClassification(repair.id, categoryId, csrfToken);
+      setClassificationMessage(''); setClassificationOpen(false); onClassificationChanged();
+    } catch (cause: unknown) { setClassificationMessage(cause instanceof PreviewApiError && cause.status === 409 ? 'La clasificación cambió durante la operación. Actualiza el detalle y vuelve a intentar.' : cause instanceof Error ? cause.message : 'No fue posible guardar la clasificación.'); }
+    finally { setClassificationBusy(false); }
+  };
+
+  const removeClassification = async (category: RepairDetail['problemClassifications'][number]): Promise<void> => {
+    if (classificationBusy) return;
+    setClassificationBusy(true);
+    setClassificationMessage('');
+    try {
+      await removeRepairProblemClassification(repair.id, category.categoryId, csrfToken);
+      onClassificationChanged();
+    } catch (cause: unknown) {
+      setClassificationMessage(cause instanceof PreviewApiError && cause.status === 409
+        ? 'La clasificación cambió durante la operación. Actualiza el detalle y vuelve a intentar.'
+        : cause instanceof PreviewApiError && cause.status === 403
+          ? 'Tu sesión no tiene autorización para modificar esta clasificación.'
+          : 'No fue posible retirar la categoría.');
+    } finally {
+      setClassificationBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (!canAddNote) {
@@ -149,6 +257,75 @@ export function RepairDetailWorkspace({
     window.addEventListener('beforeunload', beforeUnload);
     return () => window.removeEventListener('beforeunload', beforeUnload);
   }, [canAddNote, normalizedNote.length]);
+
+  useEffect(() => {
+    if (!correctionOpen) return undefined;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      void getOperationalRepairBrands(brandValue, controller.signal)
+        .then((response) => setBrandOptions(response.items))
+        .catch((cause: unknown) => { if (!(cause instanceof DOMException && cause.name === 'AbortError')) setBrandOptions([]); });
+    }, 120);
+    return () => { window.clearTimeout(timeout); controller.abort(); };
+  }, [brandValue, correctionOpen]);
+
+  useEffect(() => {
+    if (!correctionOpen || !canonicalBrandId) { setModelOptions([]); return undefined; }
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      void getOperationalRepairModels(canonicalBrandId, modelValue, controller.signal)
+        .then((response) => setModelOptions(response.items))
+        .catch((cause: unknown) => { if (!(cause instanceof DOMException && cause.name === 'AbortError')) setModelOptions([]); });
+    }, 120);
+    return () => { window.clearTimeout(timeout); controller.abort(); };
+  }, [canonicalBrandId, correctionOpen, modelValue]);
+
+  const openCorrection = (): void => {
+    setBrandValue(repair.receivedDevice.correction.capturedBrand ?? repair.receivedDevice.brand);
+    setCanonicalBrandId(repair.receivedDevice.correction.canonicalBrandId);
+    setModelValue(repair.receivedDevice.correction.capturedModel ?? repair.receivedDevice.model);
+    setCanonicalModelId(repair.receivedDevice.correction.canonicalModelId);
+    setCorrectionReason('');
+    setCorrectionMessage('');
+    correctionRequestId.current = null;
+    setCorrectionOpen(true);
+  };
+
+  const submitEquipmentCorrection = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    event.preventDefault();
+    const brand = brandValue.trim();
+    const model = modelValue.trim();
+    const reason = correctionReason.trim();
+    if (!brand || !model || reason.length < 3 || correctionBusy) return;
+    const clientRequestId = correctionRequestId.current ?? crypto.randomUUID();
+    correctionRequestId.current = clientRequestId;
+    setCorrectionBusy(true);
+    setCorrectionMessage('Guardando corrección…');
+    try {
+      await correctRepairEquipment(repair.id, {
+        clientRequestId,
+        expectedVersion: repair.receivedDevice.correction.version,
+        deviceBrand: brand,
+        canonicalBrandId,
+        deviceModel: model,
+        canonicalModelId,
+        reason,
+      }, csrfToken);
+      correctionRequestId.current = null;
+      setCorrectionOpen(false);
+      onEquipmentCorrected();
+    } catch (cause: unknown) {
+      setCorrectionMessage(cause instanceof PreviewApiError && cause.status === 409
+        ? 'El equipo cambió en otra sesión. Cierra y vuelve a abrir para revisar los datos actuales.'
+        : cause instanceof PreviewApiError && cause.status === 403
+          ? 'Tu sesión no tiene autorización para corregir este equipo.'
+          : cause instanceof PreviewApiError && cause.status === 400
+            ? 'La Marca o el Modelo ya no están disponibles o no son compatibles.'
+            : 'No fue posible guardar la corrección. Tus datos se conservaron para reintentar.');
+    } finally {
+      setCorrectionBusy(false);
+    }
+  };
 
   const submitNote = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -212,90 +389,119 @@ export function RepairDetailWorkspace({
           <span className={styles.eyebrow}>Equipo recibido</span>
           <h2 id="repair-identity-title">{repair.receivedDevice.label}</h2>
           <p>
-            <UserRound aria-hidden="true" size={16} />
-            <strong>{repair.customer.name}</strong>
-            <span aria-hidden="true">·</span>
-            <Phone aria-hidden="true" size={16} />
-            <span>{optionalValue(repair.customer.phone)}</span>
+            <span><UserRound aria-hidden="true" size={16} /><strong>{repair.customer.name}</strong></span>
+            <span><Phone aria-hidden="true" size={16} />{optionalValue(repair.customer.phone)}</span>
           </p>
           <div className={styles.workspaceFolioLine}>
             <strong>{repair.folio}</strong>
+            {canCorrectEquipment ? <Button size="compact" tone="quiet" onClick={openCorrection}><Pencil aria-hidden="true" size={14} />Corregir equipo</Button> : null}
             <details>
               <summary>Metadata técnica</summary>
-              <code>{repair.id}</code>
+              <dl className={styles.workspaceTechnicalMetadata}>
+                <div><dt>Equipo</dt><dd>v{repair.receivedDevice.correction.version}</dd></div>
+                <div><dt>Política de recepción</dt><dd>v{repair.intake.newRepairPolicyVersion}</dd></div>
+              </dl>
             </details>
           </div>
         </div>
 
-        <dl className={styles.workspaceHeroSummary}>
-          <div><dt><Clock3 aria-hidden="true" size={16} />Recepción</dt><dd><time dateTime={repair.intake.receivedAt}>{receivedAt(repair.intake.receivedAt, timeZone)}</time></dd></div>
-          <div><dt><Wrench aria-hidden="true" size={16} />Estado</dt><dd><StatusBadge tone={repair.currentSituation.repairStatus.tone}>{repair.currentSituation.repairStatus.label}</StatusBadge></dd></div>
-        </dl>
+        <div className={styles.workspaceOperationalHeader}>
+          <dl className={styles.workspaceSummaryCards} aria-label="Resumen de recepción y compromiso inicial">
+            <div>
+              <dt><Clock3 aria-hidden="true" size={15} />Recepción</dt>
+              <dd><time dateTime={repair.intake.receivedAt}>{receivedAt(repair.intake.receivedAt, timeZone)}</time></dd>
+            </div>
+            <div data-empty={repair.intake.estimatedDeliveryAt === null}>
+              <dt><CalendarClock aria-hidden="true" size={15} />Promesa de entrega</dt>
+              <dd>{repair.intake.estimatedDeliveryAt ? <time dateTime={repair.intake.estimatedDeliveryAt}>{receivedAt(repair.intake.estimatedDeliveryAt, timeZone)}</time> : 'Sin promesa'}</dd>
+            </div>
+            <div data-empty={repair.intake.initialBudgetAmountMinor === null}>
+              <dt><Banknote aria-hidden="true" size={15} />Presupuesto inicial</dt>
+              <dd>{money(repair.intake.initialBudgetAmountMinor)}</dd>
+            </div>
+          </dl>
+
+          <dl className={styles.workspaceOperationalIndicators} aria-label="Situación operativa actual">
+            <div><dt>Estado</dt><dd className={styles.workspaceOperationalStatus}><StatusBadge tone={repair.currentSituation.repairStatus.tone}>{repair.currentSituation.repairStatus.label}</StatusBadge></dd></div>
+            <div><dt>Técnico</dt><dd>{currentTechnician?.displayName ?? 'Sin asignar'}</dd></div>
+            <div><dt>Custodia</dt><dd>{repair.currentSituation.custody.label}</dd></div>
+            <div><dt>Ubicación</dt><dd>{repair.currentSituation.location?.label ?? 'Sin registrar'}</dd></div>
+          </dl>
+        </div>
       </section>
 
       <div className={styles.workspaceMain}>
-        <aside className={styles.operationalRail} aria-labelledby="current-situation-title">
-          <header>
-            <h2 id="current-situation-title">Situación actual</h2>
-          </header>
-          <dl>
-            <div><dt>Estado</dt><dd><StatusBadge tone={repair.currentSituation.repairStatus.tone}>{repair.currentSituation.repairStatus.label}</StatusBadge></dd></div>
-            <div><dt>Técnico</dt><dd><span>{currentTechnician?.displayName ?? 'Sin técnico asignado'}</span></dd></div>
-            <div><dt>Custodia</dt><dd>{repair.currentSituation.custody.label}</dd></div>
-            <div><dt><MapPin aria-hidden="true" size={14} />Ubicación</dt><dd>{repair.currentSituation.location?.label ?? 'Ubicación no registrada'}</dd></div>
-          </dl>
-          {repair.currentSituation.technicianSummary.history.length > 0 ? (
-            <section className={styles.assignmentHistory} aria-labelledby="technician-history-title">
-              <header>
-                <h3 id="technician-history-title">Historial de asignaciones</h3>
-                <span>{repair.currentSituation.technicianSummary.historyCount}</span>
-              </header>
-              <ol>
-                {repair.currentSituation.technicianSummary.history.map((entry) => (
-                  <li key={entry.assignmentId}>
-                    <div>
-                      <strong>{entry.technician.displayName}</strong>
-                      <span>{entry.endedAt ? 'Finalizada' : 'Activa'}</span>
-                    </div>
-                    <time dateTime={entry.assignedAt}>{receivedAt(entry.assignedAt, timeZone)}</time>
-                    {entry.reason ? <p>{entry.reason}</p> : null}
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ) : null}
-        </aside>
-
         <article className={styles.intakeCard} aria-labelledby="intake-title">
           <header>
             <h2 id="intake-title">Recepción</h2>
           </header>
-          <dl className={styles.intakeFacts}>
-            <div className={styles.intakeReportedIssue}>
-              <dt>Falla reportada</dt>
-              <dd>{optionalValue(repair.intake.reportedIssue)}</dd>
-            </div>
-            <div>
-              <dt>Relato del cliente</dt>
-              <dd>{optionalValue(repair.intake.customerNarrative, 'Sin relato registrado')}</dd>
-            </div>
-            <div>
-              <dt>Condición física</dt>
-              <dd>{optionalValue(repair.intake.physicalConditionSummary)}</dd>
-            </div>
-            <div className={styles.documentedRisk} data-empty={!repair.intake.documentedRiskSummary}>
-              <dt>Riesgo documentado/informado</dt>
-              <dd>{optionalValue(repair.intake.documentedRiskSummary, 'Sin riesgo documentado')}</dd>
-            </div>
-            <div className={styles.intakeSecondaryFact}>
-              <dt>Recibió</dt>
-              <dd>{repair.intake.receivedBy?.displayName ?? 'No registrado'}</dd>
-            </div>
-            <div className={styles.intakeSecondaryFact}>
-              <dt><Palette aria-hidden="true" size={14} />Color</dt>
-              <dd>{optionalValue(repair.receivedDevice.color, 'Color no registrado')}</dd>
-            </div>
-          </dl>
+          <div className={styles.receptionContent}>
+            <section className={`${styles.receptionGroup} ${styles.receptionProblemGroup}`} aria-labelledby={`reception-problem-${repair.id}`}>
+              <h3 id={`reception-problem-${repair.id}`}>Problema y contexto</h3>
+              <div className={styles.receptionProblemContent}>
+                <div className={styles.receptionPrimaryProblem}>
+                  <span className={styles.receptionFactLabel}>Problemas reportados</span>
+                  <span className={styles.classificationChips}>{repair.intake.reportedProblems.length === 0 ? <em>{optionalValue(repair.intake.reportedIssue, 'Sin problema reportado')}</em> : repair.intake.reportedProblems.map((problem) => <span key={problem.problemCaptureId} data-inactive={problem.status === 'inactive'}>{problem.label}{problem.status === 'pending' ? ' · Por revisar' : problem.status === 'inactive' ? ' · Inactiva' : ''}</span>)}</span>
+                </div>
+                {repair.intake.customerNarrative?.trim() ? <div className={styles.receptionNarrative}>
+                  <span className={styles.receptionFactLabel}>Relato del cliente</span>
+                  <p>{repair.intake.customerNarrative}</p>
+                </div> : null}
+              </div>
+
+              <div className={styles.receptionClassification}>
+                <div>
+                  <span className={styles.receptionFactLabel}>Clasificación</span>
+                  <span className={styles.classificationChips}>{repair.problemClassifications.length === 0 ? <em>Sin clasificación</em> : repair.problemClassifications.map((category) => <span key={category.categoryId} data-inactive={category.status === 'inactive'}>{category.label}{category.status === 'inactive' ? ' · Inactiva' : ''}{canClassify ? <button type="button" disabled={classificationBusy} aria-label={`Retirar ${category.label}`} onClick={() => { void removeClassification(category); }}>×</button> : null}</span>)}</span>
+                </div>
+                {canClassify ? <Button size="compact" tone="quiet" onClick={openClassification}>+ Agregar categoría</Button> : null}
+                {classificationMessage && !classificationOpen ? <small role="status">{classificationMessage}</small> : null}
+              </div>
+            </section>
+
+            {(hasPhysicalState || hasReceivedEquipmentFacts) ? <div className={styles.receptionTwinGroups}>
+              {hasPhysicalState ? <section className={styles.receptionGroup} aria-labelledby={`reception-physical-${repair.id}`}>
+                <h3 id={`reception-physical-${repair.id}`}>Estado físico recibido</h3>
+                <dl className={styles.receptionFactGrid}>
+                  {repair.intake.physicalConditionSummary?.trim() ? <div><dt>Condición física</dt><dd>{repair.intake.physicalConditionSummary}</dd></div> : null}
+                  {repair.receivedDevice.color?.trim() ? <div><dt>Color</dt><dd>{repair.receivedDevice.color}</dd></div> : null}
+                  {repair.intake.receivedPowerState ? <div><dt>Estado al recibir</dt><dd>{receivedPowerState(repair.intake.receivedPowerState)}</dd></div> : null}
+                </dl>
+              </section> : null}
+
+              {hasReceivedEquipmentFacts ? <section className={styles.receptionGroup} aria-labelledby={`reception-equipment-${repair.id}`}>
+                <h3 id={`reception-equipment-${repair.id}`}>Equipo recibido</h3>
+                <dl className={styles.receptionFactGrid}>
+                  {repair.receivedDevice.type?.trim() ? <div><dt>Tipo</dt><dd>{repair.receivedDevice.type}</dd></div> : null}
+                  {(repair.receivedDevice.identifierUnavailable || repair.receivedDevice.identifier?.trim()) ? <div><dt>IMEI / Serie</dt><dd>{repair.receivedDevice.identifierUnavailable ? 'No disponible' : repair.receivedDevice.identifier}</dd></div> : null}
+                  {repair.receivedDevice.accessories.simIncluded !== null ? <div><dt>SIM</dt><dd>{includedAccessory(repair.receivedDevice.accessories.simIncluded)}</dd></div> : null}
+                  {repair.receivedDevice.accessories.memoryCardIncluded !== null ? <div><dt>Memoria</dt><dd>{includedAccessory(repair.receivedDevice.accessories.memoryCardIncluded)}</dd></div> : null}
+                  {repair.receivedDevice.accessories.other?.trim() ? <div className={styles.receptionWideFact}><dt>Accesorios</dt><dd>{repair.receivedDevice.accessories.other}</dd></div> : null}
+                </dl>
+              </section> : null}
+            </div> : null}
+
+            {hasSpecialConditions ? <section className={styles.receptionGroup} aria-labelledby={`reception-special-${repair.id}`}>
+              <h3 id={`reception-special-${repair.id}`}>Condiciones especiales</h3>
+              <dl className={styles.receptionFactGrid}>
+                {repair.intake.warrantyReviewRequested ? <div><dt>Garantía</dt><dd>Revisión solicitada</dd></div> : null}
+                {repair.intake.previousRepairId ? <div><dt>Reparación anterior</dt><dd><Link className={styles.actionLink} to={`/reparaciones/${repair.intake.previousRepairId}`}>Ver reparación relacionada</Link></dd></div> : null}
+                {repair.intake.deliveredByName?.trim() ? <div><dt>Entrega</dt><dd>{repair.intake.deliveredByName}</dd></div> : null}
+                {repair.intake.acceptedInterventionRisks.length > 0 ? <div className={styles.receptionWideFact}>
+                  <dt>Riesgos aceptados</dt>
+                  <dd><span className={styles.receptionRiskChips}>{repair.intake.acceptedInterventionRisks.map((risk, index) => <span key={`${risk.label}-${index}`}>{risk.label}</span>)}</span></dd>
+                </div> : null}
+                {repair.intake.documentedRiskSummary?.trim() ? <div className={styles.receptionWideFact}><dt>Detalle comunicado</dt><dd>{repair.intake.documentedRiskSummary}</dd></div> : null}
+              </dl>
+            </section> : null}
+
+            {repair.intake.deviceAccessType ? <section className={`${styles.receptionGroup} ${styles.receptionAccess}`} aria-labelledby={`reception-access-${repair.id}`}>
+              <h3 id={`reception-access-${repair.id}`}>Acceso</h3>
+              <p>{accessType(repair.intake.deviceAccessType)}</p>
+            </section> : null}
+
+            {repair.intake.receivedBy ? <p className={styles.receptionAttribution}>Recibió: <strong>{repair.intake.receivedBy.displayName}</strong></p> : null}
+          </div>
         </article>
 
         <section className={styles.repairTimeline} data-empty={repair.timeline.items.length === 0} aria-labelledby="repair-timeline-title">
@@ -304,38 +510,12 @@ export function RepairDetailWorkspace({
             {repair.timeline.totalCount > repair.timeline.items.length ? (
               <span>Últimas {repair.timeline.items.length} de {repair.timeline.totalCount}</span>
             ) : (
-              <span>{repair.timeline.totalCount} {repair.timeline.totalCount === 1 ? 'entrada' : 'entradas'}</span>
+              <span>{repair.timeline.totalCount} {repair.timeline.totalCount === 1 ? 'evento' : 'eventos'}</span>
             )}
           </header>
 
-          <div className={styles.timelineContent}>
-            {repair.timeline.items.length === 0 ? (
-              <div className={styles.timelineEmpty}>
-                <strong>No hay actividad registrada todavía.</strong>
-                <span>Las notas y actividades aparecerán aquí.</span>
-              </div>
-            ) : (
-              <ol className={styles.timelineList}>
-                {repair.timeline.items.map((entry) => (
-                  <li key={entry.id}>
-                    <article>
-                      <div className={styles.timelineItemMeta}>
-                        <span className={styles.timelineType}>{timelineTypeLabel(entry.type)}</span>
-                        <time dateTime={entry.occurredAt}>{receivedAt(entry.occurredAt, timeZone)}</time>
-                      </div>
-                      <h3>{entry.title ?? timelineTypeLabel(entry.type)}</h3>
-                      <strong>{entry.actor.displayName}</strong>
-                      {entry.body ? <p>{entry.body}</p> : null}
-                      <small>Origen: {timelineSourceLabel(entry.source)}</small>
-                    </article>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
-
           {canAddNote ? <form className={styles.noteComposer} onSubmit={(event) => void submitNote(event)}>
-            <label htmlFor={`operational-note-${repair.id}`}>Nota operativa</label>
+            <label htmlFor={`operational-note-${repair.id}`}>Agregar nota operativa</label>
             <div className={styles.noteComposerControls}>
               <Textarea
                 id={`operational-note-${repair.id}`}
@@ -366,6 +546,31 @@ export function RepairDetailWorkspace({
               >{noteMessage}</span>
             </div>
           </form> : null}
+
+          <div className={styles.timelineContent}>
+            {repair.timeline.items.length === 0 ? (
+              <div className={styles.timelineEmpty}>
+                <strong>No hay actividad registrada todavía.</strong>
+                <span>Las notas y actividades aparecerán aquí.</span>
+              </div>
+            ) : (
+              <ol className={styles.timelineList} aria-label="Historial de actividad, de la más reciente a la más antigua">
+                {repair.timeline.items.map((entry) => (
+                  <RepairTimelineEntry key={entry.id} entry={entry} timeZone={timeZone} />
+                ))}
+              </ol>
+            )}
+          </div>
+        </section>
+
+        <section className={styles.repairConcepts} aria-labelledby="repair-concepts-title">
+          <header>
+            <h2 id="repair-concepts-title">Conceptos</h2>
+            <span>Próximamente</span>
+          </header>
+          <div className={styles.conceptsPlaceholder}>
+            <p>Las refacciones, servicios y conceptos personalizados aparecerán aquí cuando Lista de precios y Caja estén disponibles.</p>
+          </div>
         </section>
       </div>
 
@@ -404,6 +609,44 @@ export function RepairDetailWorkspace({
           </ul>
         )}
       </section>
+
+      <Dialog
+        open={classificationOpen}
+        title="Clasificación del problema"
+        description="Selecciona una o varias categorías activas para reportes. No sustituye el diagnóstico."
+        onClose={() => !classificationBusy && setClassificationOpen(false)}
+        footer={<><Button disabled={classificationBusy} onClick={() => setClassificationOpen(false)}>Cancelar</Button><Button tone="primary" disabled={classificationBusy} onClick={() => { void saveClassification(); }}>Guardar</Button></>}
+      >
+        <div className={styles.classificationOptions}>{categoryOptions.length === 0 ? <p>No hay categorías activas disponibles.</p> : categoryOptions.map((category) => <label key={category.categoryId}><input type="checkbox" checked={selectedCategoryIds.has(category.categoryId)} onChange={(event) => setSelectedCategoryIds((current) => { const next = new Set(current); if (event.target.checked) next.add(category.categoryId); else next.delete(category.categoryId); return next; })} /><span>{category.label}</span></label>)}{classificationMessage ? <p aria-live="polite">{classificationMessage}</p> : null}</div>
+      </Dialog>
+
+      <Dialog
+        open={correctionOpen}
+        title="Corregir equipo"
+        description="Actualiza únicamente la Marca y el Modelo de esta reparación. La captura anterior quedará en el historial."
+        onClose={() => { if (!correctionBusy) setCorrectionOpen(false); }}
+        footer={false}
+      >
+        <form className={styles.equipmentCorrectionForm} onSubmit={(event) => { void submitEquipmentCorrection(event); }}>
+          <Field id={`correction-brand-${repair.id}`} label="Marca" hint={canonicalBrandId ? 'Marca canónica seleccionada.' : 'Entrada libre; quedará pendiente de reconciliación.'} required>
+            <div className={styles.correctionAutocomplete}>
+              <Input id={`correction-brand-${repair.id}`} value={brandValue} maxLength={160} autoComplete="off" required aria-autocomplete="list" onChange={(event) => { setBrandValue(event.target.value); setCanonicalBrandId(null); setCanonicalModelId(null); correctionRequestId.current = null; }} />
+              {brandValue.trim() && brandOptions.length > 0 ? <div className={styles.correctionOptions} role="listbox" aria-label="Marcas sugeridas">{brandOptions.map((brand) => <button key={brand.brandId} type="button" role="option" aria-selected={canonicalBrandId === brand.brandId} onClick={() => { if (canonicalBrandId !== brand.brandId) { setModelValue(''); setCanonicalModelId(null); } setBrandValue(brand.label); setCanonicalBrandId(brand.brandId); setBrandOptions([]); correctionRequestId.current = null; }}><strong>{brand.label}</strong><small>{brand.scope === 'platform' ? 'Plataforma' : 'Organización'}</small></button>)}</div> : null}
+            </div>
+          </Field>
+          <Field id={`correction-model-${repair.id}`} label="Modelo" hint={canonicalBrandId ? canonicalModelId ? 'Modelo canónico de la Marca seleccionada.' : 'Selecciona una sugerencia o conserva entrada libre.' : 'Entrada libre; selecciona primero una Marca canónica para ver sugerencias.'} required>
+            <div className={styles.correctionAutocomplete}>
+              <Input id={`correction-model-${repair.id}`} value={modelValue} maxLength={160} autoComplete="off" required aria-autocomplete="list" onChange={(event) => { setModelValue(event.target.value); setCanonicalModelId(null); correctionRequestId.current = null; }} />
+              {canonicalBrandId && modelValue.trim() && modelOptions.length > 0 ? <div className={styles.correctionOptions} role="listbox" aria-label="Modelos sugeridos">{modelOptions.map((model) => <button key={model.modelId} type="button" role="option" aria-selected={canonicalModelId === model.modelId} onClick={() => { setModelValue(model.label); setCanonicalModelId(model.modelId); setModelOptions([]); correctionRequestId.current = null; }}><strong>{model.label}</strong><small>{model.brandLabel}</small></button>)}</div> : null}
+            </div>
+          </Field>
+          <Field id={`correction-reason-${repair.id}`} label="Motivo" hint={`${correctionReason.length} / 400`} required>
+            <Textarea id={`correction-reason-${repair.id}`} value={correctionReason} minLength={3} maxLength={400} required placeholder="Ej. Error de captura" onChange={(event) => { setCorrectionReason(event.target.value); correctionRequestId.current = null; }} />
+          </Field>
+          <p className={styles.correctionMessage} data-error={correctionMessage && correctionMessage !== 'Guardando corrección…'} aria-live="polite">{correctionMessage}</p>
+          <div className={styles.equipmentCorrectionActions}><Button disabled={correctionBusy} onClick={() => setCorrectionOpen(false)}>Cancelar</Button><Button type="submit" tone="primary" disabled={correctionBusy || !brandValue.trim() || !modelValue.trim() || correctionReason.trim().length < 3}>{correctionBusy ? 'Guardando…' : 'Guardar corrección'}</Button></div>
+        </form>
+      </Dialog>
 
       <Dialog
         open={activeEvidence !== null}
@@ -578,6 +821,8 @@ export function RepairDetailPage({
         timeZone={timeZone}
         host={host}
         onNoteAdded={addNoteToTimeline}
+        onEquipmentCorrected={() => load()}
+        onClassificationChanged={() => load()}
         onDraftDirtyChange={setDraftDirty}
       />
     );

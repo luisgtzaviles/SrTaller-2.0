@@ -7,6 +7,12 @@
   background: var(--color-canvas);
 }
 
+.deferredLoading {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-canvas);
+}
+
 .gateHeader {
   min-width: 0;
   display: flex;
@@ -266,13 +272,13 @@
 
 .field select:focus {
   border-color: var(--color-brand-focus);
-  box-shadow: 0 0 0 3px var(--color-brand-subtle);
+  box-shadow: none;
   outline: none;
 }
 
 .field select:focus-visible {
-  outline: 3px solid var(--color-brand-focus);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--color-brand-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .field select:disabled { cursor: not-allowed; }
@@ -319,8 +325,8 @@
 
 .pinKeypad button:hover:not(:disabled) { background: var(--color-surface-subtle); }
 .pinKeypad button:focus-visible {
-  outline: 3px solid var(--color-brand-focus);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--color-brand-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 .pinKeypad button:last-child {
   color: var(--color-brand-on-base);

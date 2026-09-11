@@ -118,6 +118,18 @@ jobs:
           node scripts/run-postgresql-ci.mjs \
             --output "${postgresql_dir}/POSTGRESQL_MANIFEST.json"
 
+      - name: Run PBI-039 PostgreSQL 18.4 contracts
+        env:
+          SR_PG_CI_EXECUTION_LABEL: ${{ matrix.execution }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          postgresql_dir="${RUNNER_TEMP}/pbi039-postgresql-${SR_PG_CI_EXECUTION_LABEL}"
+          mkdir -p "${postgresql_dir}"
+          node scripts/test-pbi039-postgresql.mjs \
+            --runs 1 \
+            --output "${postgresql_dir}/PBI039_POSTGRESQL_MANIFEST.json"
+
       - name: Cleanup PostgreSQL persistence suites
         if: always()
         env:
@@ -204,10 +216,15 @@ jobs:
             --output "${evidence_dir}/EVIDENCE_MANIFEST.json" \
             --dist-output "${evidence_dir}/DIST_MANIFEST.json" \
             --postgresql-input \
-              "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json"
+              "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
+            --pbi039-postgresql-input \
+              "${RUNNER_TEMP}/pbi039-postgresql-${VC024_EXECUTION_LABEL}/PBI039_POSTGRESQL_MANIFEST.json"
           cp \
             "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
             "${evidence_dir}/POSTGRESQL_MANIFEST.json"
+          cp \
+            "${RUNNER_TEMP}/pbi039-postgresql-${VC024_EXECUTION_LABEL}/PBI039_POSTGRESQL_MANIFEST.json" \
+            "${evidence_dir}/PBI039_POSTGRESQL_MANIFEST.json"
 
       - name: Upload sanitized execution evidence
         uses: actions/upload-artifact@v4

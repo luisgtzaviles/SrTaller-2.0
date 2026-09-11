@@ -69,8 +69,8 @@
 }
 
 .timeZoneSelect:focus-visible {
-  outline: 3px solid var(--color-brand-focus);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--color-brand-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .ianaNote,
@@ -183,8 +183,8 @@
 }
 
 .colorPicker:focus-visible {
-  outline: 3px solid var(--color-brand-focus);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--color-brand-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .colorSwatch,
@@ -424,7 +424,7 @@
   border-radius: var(--radius-md);
   color: var(--color-text);
   background: var(--color-surface);
-  box-shadow: 0 0 0 3px var(--color-brand-subtle);
+  box-shadow: none;
   outline: none;
 }
 

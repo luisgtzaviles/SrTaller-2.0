@@ -5,8 +5,8 @@
 - **Sprint:** SPRINT-02.
 - **Estado:** Active.
 - **Periodo:** TBD.
-- **PBI actual:** `NONE`.
-- **WIP:** 0/1.
+- **PBI actual:** `PBI-039` — Customer Minimum + New Repair Classic 2.0.
+- **WIP:** 1/1.
 - **Autoridad:** PBI-038 cerró por PR #40 y CI exacta de `main`; un PBI nuevo
   requiere selección, readiness y autorización Owner. No existe autorización
   de release o deploy.
@@ -24,6 +24,10 @@ Operational Note, manteniendo límites tenant/Branch/Station y deny-by-default.
 3. PBI-026 — Contextual Authorization.
 4. PBI-028 — Minimum Business Audit and Correlation.
 5. Operational Note como primera prueba integral con actor real.
+6. PBI-039 — Customer Minimum + New Repair Classic 2.0 / Guided V2, slice
+   funcional local congelado y aceptado por Owner; UI Verification, Hardening
+   Batch 1 y Full Verification Orchestration Remediation PASS; campaña
+   autoritativa local pendiente.
 
 Sólo un PBI puede estar en ejecución/cierre. El orden no inicia el siguiente
 PBI antes de cerrar canónicamente el anterior.
@@ -44,10 +48,12 @@ PBI antes de cerrar canónicamente el anterior.
 - [x] PBI-038 — Timezone Foundation Integration and Hardening: PR #40 merge
   `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN;
   `Done`, sin release ni deploy.
-- [x] Current PBI `NONE`, WIP `0/1` y Next candidate `NONE`.
+- [x] PBI-039 Customer mínimo + New Repair Classic 2.0 / Guided V2 congelado y
+  aceptado funcionalmente en local; UI Verification, Hardening Batch 1 y
+  remediación de orquestación completadas sin implicar Full Verification o Done.
 - [ ] Released: NO; deploy: NO.
 
 ## Próxima revisión
 
-- **Fecha:** al seleccionarse un nuevo PBI.
-- **Disparador:** nueva autorización Owner o contradicción material.
+- **Fecha:** al completar Authoritative Full Verification local de PBI-039.
+- **Disparador:** fallo de stage, mutación del candidato o conclusión del gate.

@@ -353,7 +353,7 @@ test(
       await assertNoObjects(admin);
 
       const applied = await runner.migrateToLatest();
-      assert.equal(applied.status.migrations.length, 31);
+      assert.equal(applied.status.migrations.length, inspection.manifest.migrations.length);
       assert.ok(
         applied.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -373,13 +373,28 @@ test(
           'access_matrix.manage',
           'access_matrix.read',
           'repairs.add_note',
+          'repairs.catalogs.manage',
+          'repairs.catalogs.read',
+          'repairs.classify',
+          'repairs.configuration.manage',
+          'repairs.configuration.read',
+          'repairs.correct_intake',
+          'repairs.create',
           'repairs.read',
           'users.manage',
           'users.read',
         ],
       );
       assert.deepEqual(
-        catalog.rows.map(({ capability_code, created_at }) => ({
+        catalog.rows.filter(({ capability_code }) => ![
+          'repairs.catalogs.manage',
+          'repairs.catalogs.read',
+          'repairs.classify',
+          'repairs.configuration.manage',
+          'repairs.configuration.read',
+          'repairs.correct_intake',
+          'repairs.create',
+        ].includes(capability_code)).map(({ capability_code, created_at }) => ({
           capabilityCode: capability_code,
           createdAt: created_at.toISOString(),
         })),
@@ -392,6 +407,7 @@ test(
           { capabilityCode: 'users.read', createdAt: '2026-09-06T18:00:00.000Z' },
         ],
       );
+      assert.ok(catalog.rows.filter(({ capability_code }) => capability_code.startsWith('repairs.') && !['repairs.add_note', 'repairs.read'].includes(capability_code)).every(({ created_at }) => created_at instanceof Date));
       await assert.rejects(
         admin.query(
           `insert into access_capabilities (capability_code, created_at)
@@ -866,6 +882,13 @@ test(
           'access_matrix.manage',
           'access_matrix.read',
           'repairs.add_note',
+          'repairs.catalogs.manage',
+          'repairs.catalogs.read',
+          'repairs.classify',
+          'repairs.configuration.manage',
+          'repairs.configuration.read',
+          'repairs.correct_intake',
+          'repairs.create',
           'repairs.read',
           'users.manage',
           'users.read',

@@ -7,7 +7,9 @@ flowchart LR
   access --> stations
   access --> tenancy
   access --> users
+  customers --> tenancy
   repairs --> access
+  repairs --> customers
   repairs --> stations
   repairs --> tenancy
   stations --> tenancy
@@ -25,9 +27,11 @@ La flecha va del consumidor al productor.
 | `access` | `stations` | `src/modules/access/access.module.ts` | `StationsModule` más `BRANCH_SETTINGS_RUNTIME`/`BranchSettingsRuntime`, `TRUSTED_STATION_CONTEXT_RESOLVER`/`TrustedStationContextResolver` y `TRUSTED_STATION_ADMISSION_VALIDATOR`/`TrustedStationAdmissionValidator` registrados | Sí; composición dirigida Option A y contexto transaccional opaco |
 | `access` | `tenancy` | `src/modules/access/index.ts` | `TenancyModuleContract` desde `tenancy/index.ts` | Ninguno; `import type` |
 | `access` | `users` | `src/modules/access/index.ts` | `UsersModuleContract` desde `users/index.ts` | Ninguno; `import type` |
-| `access` | `users` | `src/modules/access/access.module.ts` | `UsersModule` más `AUTHENTICATION_USER_READER`/`AuthenticationUserReader` y `AUTHENTICATION_USER_ADMISSION_VALIDATOR`/`AuthenticationUserAdmissionValidator` registrados | Sí; composición dirigida Option A y contexto transaccional opaco |
+| `access` | `users` | `src/modules/access/access.module.ts` | `UsersModule` más `AUTHENTICATION_USER_READER`/`AuthenticationUserReader`, `AUTHENTICATION_USER_ADMISSION_VALIDATOR`/`AuthenticationUserAdmissionValidator`, `USER_PRODUCT_RUNTIME`/`UserProductRuntime` y `USER_PREFERENCES_RUNTIME`/`UserPreferencesRuntime` registrados | Sí; composición dirigida Option A y contexto transaccional opaco |
+| `customers` | `tenancy` | `src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts` | `parseTenantId` desde `tenancy/index.ts` | Sí; validación de identidad Tenant sin aceptar scope del cliente |
 | `repairs` | `access` | `src/modules/repairs/application/repair-protected-operations.ts` | `AuthorizedOperationalContext`, `ContextualAuthorizationExecutor` y `ProtectedRequestEvidence` desde `access/index.ts` | Sí; ejecución de autorización contextual por operación con requirement fijo del servidor |
 | `repairs` | `access` | `src/modules/repairs/repairs.module.ts` | `AccessModule` más `CONTEXTUAL_AUTHORIZATION_EXECUTOR`/`ContextualAuthorizationExecutor` registrados | Sí; composición dirigida Option A |
+| `repairs` | `customers` | `src/modules/repairs/application/use-cases/create-repair.use-case.ts` y `src/modules/repairs/repairs.module.ts` | `CustomerIntakeRuntime`/`CUSTOMER_INTAKE_RUNTIME` desde `customers/index.ts` | Sí; búsqueda y selección/alta Customer dentro del Intake autorizado |
 | `repairs` | `stations` | `src/modules/repairs/application/repair-protected-operations.ts` y `src/modules/repairs/repairs.module.ts` | `BranchTimeZone`, límites de calendario local y `BRANCH_SETTINGS_RUNTIME`/`BranchSettingsRuntime` desde `stations/index.ts` | Sí; composición dirigida para obtener la zona IANA de la Branch ya autorizada; no recibe scope del cliente |
 | `repairs` | `tenancy` | `src/modules/repairs/application/ports/repair-repository.port.ts` | `TenantId` desde `tenancy/index.ts` | Ninguno; `import type` |
 | `users` | `tenancy` | `src/modules/users/index.ts` | `TenancyModuleContract` desde `tenancy/index.ts` | Ninguno; `import type` |
@@ -35,7 +39,7 @@ La flecha va del consumidor al productor.
 El checker local ejecutado reportó exactamente:
 
 ```text
-access->stations, access->tenancy, access->users, repairs->access, repairs->stations, repairs->tenancy, stations->tenancy, users->tenancy
+access->stations, access->tenancy, access->users, customers->tenancy, repairs->access, repairs->customers, repairs->stations, repairs->tenancy, stations->tenancy, users->tenancy
 ```
 
 ## Composición exterior
@@ -44,16 +48,18 @@ access->stations, access->tenancy, access->users, repairs->access, repairs->stat
 
 - `repairs/repairs.module.ts`;
 - `access/access.module.ts`;
+- `customers/customers.module.ts`;
 - `stations/stations.module.ts`;
 - `tenancy/tenancy.module.ts`;
 - `users/users.module.ts`.
 
 `AppModule` conserva la composición exterior exacta de esos módulos. Además,
-la policy v6 registra cuatro imports de composición interna dirigidos:
+la policy v8 registra cinco imports de composición interna dirigidos:
 
 - `AccessModule` importa `StationsModule` porque existe `access->stations`;
 - `AccessModule` importa `UsersModule` porque existe `access->users`;
 - `RepairsModule` importa `AccessModule` porque existe `repairs->access`.
+- `RepairsModule` importa `CustomersModule` porque existe `repairs->customers`.
 - `RepairsModule` importa `StationsModule` porque existe `repairs->stations` y
   consume únicamente el runtime de timezone de la Branch ya autorizada.
 
@@ -67,7 +73,7 @@ bindings. Cualquier otra composición interna falla cerrada.
 
 - El grafo es acíclico.
 - No existen edges inversos.
-- Todo contrato intermodular termina en el `index.ts` productor; sólo las cuatro
+- Todo contrato intermodular termina en el `index.ts` productor; sólo las cinco
   clases Nest registradas cruzan como superficies de composición.
 - No hay acceso a internals, adapters, repositories o persistencia ajena.
 - Un edge nuevo exige actualizar y aprobar la policy antes del import; un nuevo

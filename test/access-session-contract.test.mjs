@@ -36,6 +36,14 @@ const stationAdmission = Object.freeze({
 });
 const context = createTrustedStationContext({ tenantId, branchId, stationId, stationCredentialId, ...stationAdmission });
 
+const [sessionDomainSource, sessionRepositorySource] = await Promise.all([
+  readFile('src/modules/access/domain/operational-session.ts', 'utf8'),
+  readFile(
+    'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts',
+    'utf8',
+  ),
+]);
+
 function responseDouble() {
   const headers = new Map();
   return {
@@ -209,6 +217,30 @@ test('owner migrations enforce monotonic admission epochs and Access migration s
   assert.match(stations, /stations_advance_admission_revision/u);
   assert.match(users, /users_advance_admission_revision/u);
   assert.doesNotMatch(source, /SR_SESSION_SIGNING_KEY|plaintext|raw_token/iu);
+});
+
+test('protected request bursts coalesce Session activity writes without skipping admission validation', () => {
+  assert.match(
+    sessionDomainSource,
+    /OPERATIONAL_SESSION_ACTIVITY_TOUCH_INTERVAL_MS = 5_000/u,
+  );
+  const admissionValidation = sessionRepositorySource.indexOf(
+    'const trustedStation = await this.stations',
+  );
+  const activityCoalescing = sessionRepositorySource.indexOf(
+    'locked.last_activity_at.getTime()',
+  );
+  const activityWrite = sessionRepositorySource.indexOf(
+    ".updateTable('access_operational_sessions')",
+    activityCoalescing,
+  );
+  assert.ok(admissionValidation >= 0);
+  assert.ok(activityCoalescing > admissionValidation);
+  assert.ok(activityWrite > activityCoalescing);
+  assert.match(
+    sessionRepositorySource.slice(activityCoalescing, activityWrite),
+    /OPERATIONAL_SESSION_ACTIVITY_TOUCH_INTERVAL_MS[\s\S]*?return Object\.freeze/u,
+  );
 });
 
 test('GET is no-store, mutates only the login challenge, and preserves active cookies and infrastructure errors', async () => {

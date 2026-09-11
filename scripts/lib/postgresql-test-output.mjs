@@ -9,11 +9,9 @@ export const ownerScopedPostgresqlTestFiles = Object.freeze([
   'test/contextual-authorization-postgresql.test.mjs',
 ]);
 
-export const ownerScopedPostgresqlNodeTestArguments = Object.freeze([
-  '--no-maglev',
-  '--test',
-  '--test-concurrency=1',
-  ...ownerScopedPostgresqlTestFiles,
+export const pbi039PostgresqlTestFiles = Object.freeze([
+  'test/customer-phone-postgresql.test.mjs',
+  'test/user-preferences-postgresql.test.mjs',
 ]);
 
 const childFailureMarker = 'SR_POSTGRESQL_CHILD_FAILURE=';

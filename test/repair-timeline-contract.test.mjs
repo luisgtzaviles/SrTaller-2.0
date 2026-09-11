@@ -10,6 +10,10 @@ const databaseTypesSource = await readFile('src/infrastructure/database/database
 const detailPageSource = await readFile('apps/dev-preview-web/src/pages/RepairDetailPage.tsx', 'utf8');
 const pageStylesSource = await readFile('apps/dev-preview-web/src/pages/pages.module.css', 'utf8');
 const apiSource = await readFile('apps/dev-preview-web/src/api.ts', 'utf8');
+const timelineUi = detailPageSource.slice(
+  detailPageSource.indexOf('<section className={styles.repairTimeline}'),
+  detailPageSource.indexOf('<section className={styles.repairConcepts}'),
+);
 
 test('repair timeline has a typed repairs-owned scoped schema', () => {
   assert.match(databaseTypesSource, /export interface RepairTimelineEntryTable/u);
@@ -40,11 +44,11 @@ test('repair detail read model owns an explicit bounded timeline contract', () =
   assert.match(repositorySource, /row\.entry_type === 'note' && !row\.actor_id/u);
 });
 
-test('existing repair detail endpoint exposes timeline plus the single approved note write', () => {
+test('existing repair detail endpoint exposes timeline and keeps its explicit note write', () => {
   assert.match(controllerSource, /@Get\(':id'\)/u);
   assert.match(controllerSource, /timeline: \{[\s\S]*?items:[\s\S]*?occurredAt:[\s\S]*?actor:[\s\S]*?source:[\s\S]*?totalCount:[\s\S]*?limit:/u);
   assert.match(controllerSource, /@Post\(':repairId\/notes'\)/u);
-  assert.doesNotMatch(controllerSource, /@(?:Patch|Put|Delete)|@Get\(':id\/timeline'\)/u);
+  assert.doesNotMatch(controllerSource, /@Get\(':id\/timeline'\)/u);
   assert.match(controllerSource, /@Post\(':repairId\/technician-assignment'\)/u);
   assert.match(apiSource, /export type RepairTimelineItemType = 'note' \| 'system_event'/u);
   assert.match(apiSource, /readonly timeline: Readonly<\{[\s\S]*?items:[\s\S]*?totalCount:[\s\S]*?limit:/u);
@@ -53,14 +57,17 @@ test('existing repair detail endpoint exposes timeline plus the single approved 
 test('repair detail renders an accessible timeline, honest empty state, and bounded note composer', () => {
   assert.match(detailPageSource, /<section[^>]+aria-labelledby="repair-timeline-title"/u);
   assert.match(detailPageSource, /<h2 id="repair-timeline-title">Historial<\/h2>/u);
-  assert.match(detailPageSource, /<ol className=\{styles\.timelineList\}>[\s\S]*?<li key=\{entry\.id\}>[\s\S]*?<article>/u);
+  assert.match(detailPageSource, /<ol className=\{styles\.timelineList\} aria-label="Historial de actividad, de la más reciente a la más antigua">/u);
+  assert.match(detailPageSource, /function RepairTimelineEntry[\s\S]*?return <li data-kind=\{entry\.type\}>[\s\S]*?<article>/u);
   assert.match(detailPageSource, /<time dateTime=\{entry\.occurredAt\}>/u);
   assert.match(detailPageSource, /No hay actividad registrada todavía\./u);
   assert.match(detailPageSource, /Las notas y actividades aparecerán aquí\./u);
-  assert.match(detailPageSource, /timelineTypeLabel\(entry\.type\)/u);
+  assert.match(detailPageSource, /entry\.title\?\.trim\(\) \|\| fallbackTitle/u);
   assert.match(detailPageSource, /entry\.actor\.displayName/u);
-  assert.doesNotMatch(detailPageSource, /Editar|Eliminar|Cambiar estado|Adjuntar|Guardar cambios|>Guardar</iu);
-  assert.match(detailPageSource, /<form className=\{styles\.noteComposer\}/u);
-  assert.match(detailPageSource, /<Textarea[\s\S]*?maxLength=\{noteBodyMaxLength\}/u);
+  assert.doesNotMatch(timelineUi, /Origen:/u);
+  assert.doesNotMatch(timelineUi, /Editar|Eliminar|Cambiar estado|Adjuntar|Guardar cambios|>Guardar</iu);
+  assert.match(timelineUi, /<form className=\{styles\.noteComposer\}/u);
+  assert.ok(timelineUi.indexOf('className={styles.noteComposer}') < timelineUi.indexOf('className={styles.timelineContent}'));
+  assert.match(timelineUi, /<Textarea[\s\S]*?maxLength=\{noteBodyMaxLength\}/u);
   assert.match(pageStylesSource, /\.timelineList p \{[^}]*overflow-wrap: anywhere;[^}]*white-space: pre-wrap;/u);
 });

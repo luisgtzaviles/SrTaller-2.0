@@ -63,6 +63,19 @@ test('package manifest pins the accepted baseline and blocks lifecycle scripts',
   assert.equal(previewManifest.devDependencies.vite, '8.2.0');
 });
 
+test('governed pnpm launcher derives repository pins and avoids machine-specific paths', async () => {
+  const launcher = await readFile('scripts/pnpm-governed', 'utf8');
+
+  assert.match(launcher, /\.node-version/u);
+  assert.match(launcher, /packageManager/u);
+  assert.match(
+    launcher,
+    /brew --prefix "node@\$\{expected_node%%\.\*\}"/u,
+  );
+  assert.match(launcher, /exec pnpm/u);
+  assert.doesNotMatch(launcher, /\/opt\/homebrew|\/usr\/local\/opt/u);
+});
+
 test('compiled startup config accepts valid values and fails closed', async () => {
   const { loadStartupConfig } = await import('../dist/startup-config.js');
   const valid = loadStartupConfig({

@@ -11,6 +11,7 @@ import type {
 import {
   branchLocalCalendarBoundaryToUtc as toBranchLocalCalendarBoundary,
   branchLocalCalendarDate as toBranchLocalCalendarDate,
+  branchLocalDateTimeToUtc as toBranchLocalDateTime,
   parseBranchTimeZone as parseTimeZone,
   presentOperationalDateTime as presentDateTime,
 } from './application/branch-time-zone.js';
@@ -28,6 +29,7 @@ export type BranchTimeZone = BranchTimeZoneContract;
 export type OperationalDateTime = OperationalDateTimeContract;
 export const branchLocalCalendarBoundaryToUtc = toBranchLocalCalendarBoundary;
 export const branchLocalCalendarDate = toBranchLocalCalendarDate;
+export const branchLocalDateTimeToUtc = toBranchLocalDateTime;
 export const parseBranchTimeZone = parseTimeZone;
 export const presentOperationalDateTime = presentDateTime;
 

@@ -7,7 +7,8 @@ conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
 splits aprobados. PBI-030 tiene cierre `Done`; Sprint 01 está `Closed` y
 PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033 están `Done`; permanecen
 `Released: NO`. SPRINT-02 está `Active`; PBI-026/PBI-028/PBI-038 están `Done`,
-G5 es `PASS`, Current PBI es `NONE` y WIP es `0/1`.
+G5 es `PASS`; PBI-039 tiene su slice funcional local congelado y aceptado por
+Owner, Formal UI Verification pendiente, Current PBI `PBI-039` y WIP `1/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
 PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt sizing; los demás casos
 conservan TBD.
@@ -54,10 +55,12 @@ conservan TBD.
 | [PBI-036](PBI-036.md) | Extended Observability | Deferred |
 | [PBI-037](PBI-037.md) | Users & Roles Administration Product Iteration | Integrated slice within PBI-028; no independent lifecycle |
 | [PBI-038](PBI-038.md) | Timezone Foundation Integration and Hardening | Done; Released: NO; PR #40 and exact-main CI GREEN |
+| [PBI-039](PBI-039.md) | Customer Minimum + New Repair Classic 2.0 | In progress; Functional Slice Frozen / Owner Accepted; Formal UI Verification pending; no CI/PR/merge/deploy |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-No existe siguiente candidato seleccionado. No iniciar otro PBI, liberar ni
-desplegar sin nueva autorización Owner.
+PBI-039 es el único PBI actual. Su siguiente gate es Formal UI Verification;
+no iniciar otro PBI, hardening, full verify, CI, PR, merge, release ni deploy
+por inferencia.

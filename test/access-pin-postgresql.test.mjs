@@ -435,7 +435,6 @@ test(
         fresh.status.migrations.length,
         inspection.manifest.migrations.length,
       );
-      assert.equal(fresh.status.migrations.length, 31);
       assert.ok(
         fresh.status.migrations.every(({ state }) => state === 'applied'),
       );
@@ -485,8 +484,12 @@ test(
       await assertPinTables(admin, []);
 
       await seedAuthorities(admin);
+      status = await runner.getMigrationStatus();
+      const expectedUpgradeCount = status.migrations.filter(
+        ({ state }) => state === 'pending',
+      ).length;
       const upgraded = await runner.migrateToLatest();
-      assert.equal(upgraded.results.length, 12);
+      assert.equal(upgraded.results.length, expectedUpgradeCount);
       assert.equal(
         upgraded.results[0]?.name,
         '20260907010000_access_create_pin_credentials',
@@ -1649,8 +1652,12 @@ test(
         5,
       );
 
+      status = await runner.getMigrationStatus();
+      const expectedReapplyCount = status.migrations.filter(
+        ({ state }) => state === 'pending',
+      ).length;
       const reapplied = await runner.migrateToLatest();
-      assert.equal(reapplied.results.length, 12);
+      assert.equal(reapplied.results.length, expectedReapplyCount);
       await assertPinTables(admin, pinTables);
 
       status = await runner.getMigrationStatus();

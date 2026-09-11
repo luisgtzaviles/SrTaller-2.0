@@ -1,0 +1,13 @@
+.root { position: relative; display: grid; gap: var(--space-2); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chips > span { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 5px 7px 5px 10px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-full); background: var(--color-brand-subtle); color: var(--color-text); font-size: .83rem; }
+.chipLabel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pendingBadge { flex: none; padding: 2px 6px; border-radius: var(--radius-full); color: var(--color-neutral-status); background: var(--color-neutral-status-subtle); font-size: .64rem; font-weight: var(--font-weight-bold); line-height: 1.2; white-space: nowrap; }
+.chips button { display: inline-grid; width: 22px; height: 22px; padding: 0; place-items: center; border: 0; border-radius: var(--radius-full); color: inherit; background: transparent; cursor: pointer; }
+.chips button:hover, .chips button:focus-visible { background: var(--color-surface-raised); }
+.entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); }
+.feedback { color: var(--color-text-subtle); }
+.feedback small { line-height: 1.4; }
+.hint { color: var(--color-text-subtle); }
+.hint { font-size: .74rem; }
+@media (max-width: 640px) { .entry { grid-template-columns: 1fr; } .entry button { justify-content: center; } }

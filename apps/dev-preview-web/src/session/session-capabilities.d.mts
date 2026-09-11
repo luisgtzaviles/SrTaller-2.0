@@ -5,6 +5,13 @@ export const OPERATIONAL_CAPABILITY_CATALOG: readonly [
   'access_matrix.manage',
   'repairs.read',
   'repairs.add_note',
+  'repairs.create',
+  'repairs.correct_intake',
+  'repairs.classify',
+  'repairs.catalogs.read',
+  'repairs.catalogs.manage',
+  'repairs.configuration.read',
+  'repairs.configuration.manage',
 ];
 
 export type OperationalCapability = typeof OPERATIONAL_CAPABILITY_CATALOG[number];

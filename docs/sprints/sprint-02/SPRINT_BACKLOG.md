@@ -3,8 +3,8 @@
 ## Estado del documento
 
 - **Estado:** Active.
-- **PBI actual:** `NONE`.
-- **WIP:** 0/1.
+- **PBI actual:** `PBI-039`.
+- **WIP:** 1/1.
 
 | Orden | PBI | Estado | Dependencia secuencial y gates propios |
 |---:|---|---|---|
@@ -13,13 +13,15 @@
 | 3 | [PBI-026](../../backlog/pbis/PBI-026.md) | Done; Released: NO | Cierre PR #36 merge `0b39e3794a97c22d5471c0b6dfa278026f237b03` + CI exacto `34161029937` GREEN; G4 PASS |
 | 4 | [PBI-028](../../backlog/pbis/PBI-028.md) | Done; Released: NO | PR #39 merge `2b712fc3a3842f197324e8870011bf170846ddb8`, CI `34249869167` GREEN; G5 PASS |
 | 5 | [PBI-038](../../backlog/pbis/PBI-038.md) | Done; Released: NO | PR #40 merge `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`; exact-main CI `34280510716` GREEN |
+| 6 | [PBI-039](../../backlog/pbis/PBI-039.md) | In progress — orchestration remediation PASS | G6/G7 local; UI Verification y Hardening Batch 1 PASS; Full Verification/CI/PR/merge/deploy pendientes |
 
 Operational Note real-actor es el checkpoint integrado, no un PBI paralelo.
 No existe autorización de deploy ni de trabajo fuera del Identity Master Goal.
 PBI-037 se conserva como slice de administración Owner-autorizado e integrado
 del checkpoint integrado; no crea WIP adicional ni reabre foundations.
-No existe PBI posterior seleccionado: el roadmap requiere una selección Owner
-separada después de PBI-038.
+No existe PBI posterior seleccionado. PBI-039 ocupa el único WIP; su siguiente
+gate es Authoritative Full Verification local y no se inicia trabajo posterior
+por inferencia.
 
 ## Próxima revisión
 

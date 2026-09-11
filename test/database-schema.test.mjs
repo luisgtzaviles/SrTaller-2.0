@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 31);
+  assert.equal(first.manifest.migrations.length, 51);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -225,6 +225,126 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260908021000_users_create_commands',
         order: 30,
         owner: 'users',
+      },
+      {
+        fileName: '20260908110000_access_add_repairs_create_capability.js',
+        migrationName: '20260908110000_access_add_repairs_create_capability',
+        order: 31,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908111000_customers_create_branch_minimum.js',
+        migrationName: '20260908111000_customers_create_branch_minimum',
+        order: 32,
+        owner: 'customers',
+      },
+      {
+        fileName: '20260908112000_repairs_enable_minimum_intake_creation.js',
+        migrationName: '20260908112000_repairs_enable_minimum_intake_creation',
+        order: 33,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908113000_repairs_expand_classic_intake.js',
+        migrationName: '20260908113000_repairs_expand_classic_intake',
+        order: 34,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908114000_repairs_expand_avicell_reception.js',
+        migrationName: '20260908114000_repairs_expand_avicell_reception',
+        order: 35,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908115000_access_add_repairs_configuration_capabilities.js',
+        migrationName: '20260908115000_access_add_repairs_configuration_capabilities',
+        order: 36,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908120000_repairs_create_new_repair_field_policies.js',
+        migrationName: '20260908120000_repairs_create_new_repair_field_policies',
+        order: 37,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908121000_access_add_repairs_catalog_capabilities.js',
+        migrationName: '20260908121000_access_add_repairs_catalog_capabilities',
+        order: 38,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908122000_repairs_create_risk_catalog.js',
+        migrationName: '20260908122000_repairs_create_risk_catalog',
+        order: 39,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908123000_repairs_create_brand_catalog.js',
+        migrationName: '20260908123000_repairs_create_brand_catalog',
+        order: 40,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908124000_repairs_create_model_catalog.js',
+        migrationName: '20260908124000_repairs_create_model_catalog',
+        order: 41,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908125000_repairs_enforce_model_brand_compatibility.js',
+        migrationName: '20260908125000_repairs_enforce_model_brand_compatibility',
+        order: 42,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908125100_access_add_repairs_correct_intake_capability.js',
+        migrationName: '20260908125100_access_add_repairs_correct_intake_capability',
+        order: 43,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908125200_repairs_create_equipment_corrections.js',
+        migrationName: '20260908125200_repairs_create_equipment_corrections',
+        order: 44,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908130000_access_add_repairs_classify_capability.js',
+        migrationName: '20260908130000_access_add_repairs_classify_capability',
+        order: 45,
+        owner: 'access',
+      },
+      {
+        fileName: '20260908130100_repairs_create_problem_category_catalog.js',
+        migrationName: '20260908130100_repairs_create_problem_category_catalog',
+        order: 46,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260908131000_repairs_add_problem_capture_reconciliation.js',
+        migrationName: '20260908131000_repairs_add_problem_capture_reconciliation',
+        order: 47,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260909100000_repairs_add_problem_category_safe_delete.js',
+        migrationName: '20260909100000_repairs_add_problem_category_safe_delete',
+        order: 48,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260909220000_users_create_preferences.js',
+        migrationName: '20260909220000_users_create_preferences',
+        order: 49,
+        owner: 'users',
+      },
+      {
+        fileName: '20260910230000_repairs_create_device_type_catalog.js',
+        migrationName: '20260910230000_repairs_create_device_type_catalog',
+        order: 50,
+        owner: 'repairs',
       },
     ],
   );

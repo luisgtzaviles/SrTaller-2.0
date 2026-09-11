@@ -26,7 +26,8 @@
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** PBI-023 `Closed`; Identity & Context Foundation cerrada en
   Sprint 01. SPRINT-02 está `Active`, PBI-034/PBI-026/PBI-028/PBI-038 están
-  `Done`, Current PBI es `NONE` y WIP es `0/1`.
+  `Done`; PBI-039 es el Current PBI, su slice funcional local está congelado
+  y aceptado por Owner, pendiente de Formal UI Verification; WIP es `1/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
@@ -58,8 +59,9 @@
 - **Exclusiones:** algoritmos criptográficos finales antes de threat modeling.
 - **Estado:** User Directory y Roles/Capabilities/Assignments `Done`; G2
   `PASS`. El alcance funcional PIN y su remediación están integrados;
-  PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`, G4/G5 `PASS`; no hay
-  PBI actual y el WIP es `0/1`.
+  PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`, G4/G5 `PASS`. PBI-039
+  es el Current PBI transversal, con slice funcional local congelado y
+  aceptado por Owner; no abre un segundo PBI de identidad y el WIP es `1/1`.
 - **Puede descomponerse cuando:** actores, matriz de acciones sensibles y lifecycle de acceso estén aprobados.
 
 ## EPIC-004 — Branch and Device Management
@@ -82,7 +84,9 @@
 - **Dependencias:** EPIC-001, multitenancy, sucursales y política de datos.
 - **Riesgos:** duplicados, exposición de PII y ownership ambiguo entre sucursales.
 - **Exclusiones:** CRM avanzado e identidad de cliente final no validada.
-- **Estado:** Discovery required.
+- **Estado:** Customer Minimum de PBI-039 está materializado en WIP local,
+  congelado y aceptado por Owner; Formal UI Verification está pendiente. No
+  está integrado, `Done` ni `Released`; CRM avanzado permanece diferido.
 - **Puede descomponerse cuando:** campos mínimos, deduplicación, privacidad y alcance por sucursal estén acordados.
 
 ## EPIC-006 — Repair Operations
@@ -93,7 +97,10 @@
 - **Dependencias:** Customers, Branches, Identity, Inventory, Payments y Files.
 - **Riesgos:** workflow demasiado rígido, estados ambiguos y cambios sin auditoría.
 - **Exclusiones:** automatizar procesos no confirmados para todos los talleres.
-- **Estado:** Discovery required.
+- **Estado:** Nueva Reparación y las superficies de Repair Detail incluidas en
+  PBI-039 están materializadas en WIP local, congeladas y aceptadas por Owner;
+  Formal UI Verification está pendiente. No están integradas, `Done` ni
+  `Released`; diagnóstico, ejecución y entrega permanecen en ciclos futuros.
 - **Puede descomponerse cuando:** lifecycle, excepciones, autoridades y datos mínimos se validen con usuarios.
 
 ## EPIC-007 — Inventory

@@ -3,8 +3,10 @@
 ## Estado del documento
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
-- **Baseline:** `main` en
-  `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`; CI `34280510716` GREEN.
+- **Baseline Git local:** `main`/`origin/main` observados en
+  `94065dfedc55234fd1738a6674289278aa49d224`. La última integración de producto
+  con CI documentada permanece en `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`,
+  CI `34280510716` GREEN. No se verificó frescura remota en este checkpoint.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -18,7 +20,7 @@ flowchart TD
     P29 --> P24[PBI-024 Trusted Station Runtime Context<br/>Done]
     P24 --> P32[PBI-032 User Directory<br/>Done]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>Done]
-    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=0/1]
+    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=1/1]
     S2 --> P25[PBI-025 PIN Credential<br/>Done]
     P24 --> P25
     P29 --> P25
@@ -31,9 +33,8 @@ flowchart TD
     P28 --> NOTE[First Real-Actor Proof<br/>Operational Note]
     P27 -. approved integration follow-up .-> P38[PBI-038 Timezone Foundation<br/>Done]
     NOTE --> RETRO[Repair writes actor retrofit]
-    RETRO --> CUSTOMERS[Customers]
-    CUSTOMERS --> INTAKE[Real New Repair / Intake]
-    INTAKE --> POLISH[UI Coherence]
+    RETRO --> P39[PBI-039 Customer Minimum + New Repair<br/>Functional Slice Frozen / Owner Accepted]
+    P39 --> POLISH[Formal UI Verification<br/>Next authorized gate]
     POLISH --> PRICING[Pricing Catalog]
     PRICING --> QUOTE[Quote / Authorization]
     QUOTE --> MONEY[Payments / Cash]
@@ -71,8 +72,9 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; PBI-028 `Done`, G5 `PASS`, PBI-038 `Done`, Current PBI
-  `NONE`, WIP=`0/1` y Next candidate `NONE`.
+- Sprint 02: `Active`; PBI-028 `Done`, G5 `PASS`, PBI-038 `Done`; PBI-039 es
+  Current PBI, su slice funcional local está congelado y aceptado por Owner,
+  WIP=`1/1`, y el siguiente gate autorizado es Formal UI Verification.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -111,4 +113,6 @@ diferidos.
 
 ## Próxima revisión
 
-Cuando se seleccione un nuevo PBI o cambie una dependencia aprobada.
+Formal UI Verification debe observar el slice funcional congelado de PBI-039.
+Hardening, full verify, CI, PR, merge y deploy quedan fuera de este gate y no
+se infieren por la aceptación Owner.

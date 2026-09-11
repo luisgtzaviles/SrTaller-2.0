@@ -70,6 +70,8 @@ const requestEvidence = Object.freeze({
 test('Repairs owns a fixed operation-to-capability policy behind the Access public contract', () => {
   assert.match(operationsSource, /capability: 'repairs\.read'[\s\S]*?kind: 'read'/u);
   assert.match(operationsSource, /capability: 'repairs\.add_note'[\s\S]*?kind: 'state-change'/u);
+  assert.match(operationsSource, /capability: 'repairs\.create'[\s\S]*?kind: 'state-change'/u);
+  assert.match(operationsSource, /capability: 'repairs\.correct_intake'[\s\S]*?kind: 'state-change'/u);
   assert.match(operationsSource, /ContextualAuthorizationExecutor/u);
   assert.match(operationsSource, /this\.authorization\.execute/u);
   assert.doesNotMatch(controllerSource, /repairs\.read|repairs\.add_note/u);
@@ -79,22 +81,73 @@ test('Repairs owns a fixed operation-to-capability policy behind the Access publ
 test('every Repairs HTTP endpoint belongs to the exact closed authorization matrix', () => {
   assert.deepEqual(registeredRepairRoutes(), [
     { handler: 'getWorklist', method: 'GET', path: '/' },
+    { handler: 'createRepair', method: 'POST', path: '/' },
     { handler: 'getDetail', method: 'GET', path: ':id' },
+    { handler: 'correctEquipment', method: 'POST', path: ':repairId/equipment-correction' },
     { handler: 'getEvidenceContent', method: 'GET', path: ':repairId/evidence/:evidenceId/content' },
     { handler: 'moveToWorkshop', method: 'POST', path: ':repairId/location/move-to-workshop' },
     { handler: 'addOperationalNote', method: 'POST', path: ':repairId/notes' },
+    { handler: 'addProblemClassification', method: 'POST', path: ':repairId/problem-classifications/:categoryId' },
+    { handler: 'removeProblemClassification', method: 'POST', path: ':repairId/problem-classifications/:categoryId/remove' },
     { handler: 'assignTechnician', method: 'POST', path: ':repairId/technician-assignment' },
     { handler: 'reassignTechnician', method: 'POST', path: ':repairId/technician-reassignment' },
     { handler: 'unassignTechnician', method: 'POST', path: ':repairId/technician-unassignment' },
     { handler: 'startDiagnosis', method: 'POST', path: ':repairId/workflow/start-diagnosis' },
+    { handler: 'getOperationalRepairBrands', method: 'GET', path: 'brands' },
+    { handler: 'getAdminRepairBrands', method: 'GET', path: 'configuration/catalogs/brands' },
+    { handler: 'createRepairBrand', method: 'POST', path: 'configuration/catalogs/brands' },
+    { handler: 'renameRepairBrand', method: 'PUT', path: 'configuration/catalogs/brands/:brandId' },
+    { handler: 'deactivateRepairBrand', method: 'POST', path: 'configuration/catalogs/brands/:brandId/deactivate' },
+    { handler: 'reactivateRepairBrand', method: 'POST', path: 'configuration/catalogs/brands/:brandId/reactivate' },
+    { handler: 'getPendingRepairBrands', method: 'GET', path: 'configuration/catalogs/brands/pending' },
+    { handler: 'resolvePendingRepairBrand', method: 'POST', path: 'configuration/catalogs/brands/pending/:pendingBrandValueId/resolve' },
+    { handler: 'getAdminRepairDeviceTypes', method: 'GET', path: 'configuration/catalogs/device-types' },
+    { handler: 'createRepairDeviceType', method: 'POST', path: 'configuration/catalogs/device-types' },
+    { handler: 'renameRepairDeviceType', method: 'PUT', path: 'configuration/catalogs/device-types/:deviceTypeId' },
+    { handler: 'deactivateRepairDeviceType', method: 'POST', path: 'configuration/catalogs/device-types/:deviceTypeId/deactivate' },
+    { handler: 'reactivateRepairDeviceType', method: 'POST', path: 'configuration/catalogs/device-types/:deviceTypeId/reactivate' },
+    { handler: 'getPendingRepairDeviceTypes', method: 'GET', path: 'configuration/catalogs/device-types/pending' },
+    { handler: 'resolvePendingRepairDeviceType', method: 'POST', path: 'configuration/catalogs/device-types/pending/:pendingDeviceTypeValueId/resolve' },
+    { handler: 'getAdminRepairModels', method: 'GET', path: 'configuration/catalogs/models' },
+    { handler: 'createRepairModel', method: 'POST', path: 'configuration/catalogs/models' },
+    { handler: 'renameRepairModel', method: 'PUT', path: 'configuration/catalogs/models/:modelId' },
+    { handler: 'deactivateRepairModel', method: 'POST', path: 'configuration/catalogs/models/:modelId/deactivate' },
+    { handler: 'reactivateRepairModel', method: 'POST', path: 'configuration/catalogs/models/:modelId/reactivate' },
+    { handler: 'getPendingRepairModels', method: 'GET', path: 'configuration/catalogs/models/pending' },
+    { handler: 'resolvePendingRepairModel', method: 'POST', path: 'configuration/catalogs/models/pending/:pendingModelValueId/resolve' },
+    { handler: 'getAdminProblemCategories', method: 'GET', path: 'configuration/catalogs/problem-categories' },
+    { handler: 'createProblemCategory', method: 'POST', path: 'configuration/catalogs/problem-categories' },
+    { handler: 'renameProblemCategory', method: 'PUT', path: 'configuration/catalogs/problem-categories/:categoryId' },
+    { handler: 'deleteProblemCategory', method: 'DELETE', path: 'configuration/catalogs/problem-categories/:categoryId' },
+    { handler: 'deactivateProblemCategory', method: 'POST', path: 'configuration/catalogs/problem-categories/:categoryId/deactivate' },
+    { handler: 'reactivateProblemCategory', method: 'POST', path: 'configuration/catalogs/problem-categories/:categoryId/reactivate' },
+    { handler: 'getPendingProblems', method: 'GET', path: 'configuration/catalogs/problem-categories/pending' },
+    { handler: 'resolvePendingProblem', method: 'POST', path: 'configuration/catalogs/problem-categories/pending/:pendingProblemValueId/resolve' },
+    { handler: 'getAdminRepairRisks', method: 'GET', path: 'configuration/catalogs/risks' },
+    { handler: 'createRepairRisk', method: 'POST', path: 'configuration/catalogs/risks' },
+    { handler: 'renameRepairRisk', method: 'PUT', path: 'configuration/catalogs/risks/:riskId' },
+    { handler: 'deactivateRepairRisk', method: 'POST', path: 'configuration/catalogs/risks/:riskId/deactivate' },
+    { handler: 'reactivateRepairRisk', method: 'POST', path: 'configuration/catalogs/risks/:riskId/reactivate' },
+    { handler: 'getAdminNewRepairPolicy', method: 'GET', path: 'configuration/new-repair-policy' },
+    { handler: 'updateNewRepairPolicy', method: 'PUT', path: 'configuration/new-repair-policy' },
+    { handler: 'resetNewRepairPolicy', method: 'POST', path: 'configuration/new-repair-policy/reset' },
+    { handler: 'searchCustomers', method: 'GET', path: 'customer-lookup' },
+    { handler: 'getOperationalRepairDeviceTypes', method: 'GET', path: 'device-types' },
+    { handler: 'getOperationalRepairModels', method: 'GET', path: 'models' },
+    { handler: 'getOperationalNewRepairPolicy', method: 'GET', path: 'new-repair-policy' },
+    { handler: 'getIntakeProblemCategories', method: 'GET', path: 'new-repair/problem-categories' },
+    { handler: 'searchPreviousRepairs', method: 'GET', path: 'previous-repair-lookup' },
+    { handler: 'getOperationalProblemCategories', method: 'GET', path: 'problem-categories' },
+    { handler: 'getOperationalRepairRisks', method: 'GET', path: 'risks' },
     { handler: 'getTechnicians', method: 'GET', path: 'technicians' },
   ]);
 });
 
 test('RepairsModule composes Access and the public Stations timezone contract', () => {
-  assert.match(moduleSource, /imports: \[AccessModule, StationsModule\]/u);
+  assert.match(moduleSource, /imports: \[AccessModule, CustomersModule, StationsModule\]/u);
   assert.match(moduleSource, /CONTEXTUAL_AUTHORIZATION_EXECUTOR/u);
   assert.match(moduleSource, /BRANCH_SETTINGS_RUNTIME/u);
+  assert.match(moduleSource, /CUSTOMER_INTAKE_RUNTIME/u);
   assert.match(moduleSource, /provide: RepairProtectedOperations/u);
   assert.doesNotMatch(moduleSource, /LocalRepairContext/u);
   assert.doesNotMatch(
@@ -152,6 +205,26 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
         attribution: null,
       };
     },
+    async listEffectiveActiveBrands(scope, query) {
+      repositoryCalls.push({ operation: 'brand-autocomplete', scope, query });
+      return [];
+    },
+    async listAdminBrands(scope) {
+      repositoryCalls.push({ operation: 'brand-admin', scope });
+      return [];
+    },
+    async listPendingBrands(scope) {
+      repositoryCalls.push({ operation: 'brand-pending', scope });
+      return [];
+    },
+    async createBrand(scope, input) {
+      repositoryCalls.push({ operation: 'brand-create', scope, input });
+      return { brandId: input.brandId, code: null, canonicalLabel: input.canonicalLabel, normalizedKey: input.normalizedKey, scope: 'tenant', status: 'active', version: 1, usageCount: 0, createdAt: input.occurredAt.toISOString(), updatedAt: input.occurredAt.toISOString() };
+    },
+    async deleteProblemCategory(scope, input) {
+      repositoryCalls.push({ operation: 'problem-category-delete', scope, input });
+      return { categoryId: input.categoryId, previousLabel: 'QA', scope: 'tenant', version: input.expectedVersion, deletedAt: input.occurredAt.toISOString() };
+    },
   };
   const operations = new RepairProtectedOperations(
     authorization,
@@ -170,6 +243,7 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     tenantId: '20000000-0000-4000-8000-000000000001',
     branchId: 'b0000000-0000-4000-8000-000000000001',
   });
+  await operations.searchPreviousRepairs(requestEvidence, 'SR-2026');
   await assert.rejects(operations.getRepairDetail(requestEvidence, {
     repairId: '30000000-0000-4000-8000-000000000001',
   }));
@@ -178,6 +252,11 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     evidenceId: '70000000-0000-4000-8000-000000000001',
   }));
   await operations.listRepairTechnicians(requestEvidence);
+  await operations.listOperationalRepairBrands(requestEvidence, 'app');
+  await operations.listAdminRepairBrands(requestEvidence);
+  await operations.listPendingRepairBrands(requestEvidence);
+  await operations.createRepairBrand(requestEvidence, { canonicalLabel: 'Apple' });
+  await operations.deleteProblemCategory(requestEvidence, { categoryId: '70000000-0000-4000-8000-000000000001', expectedVersion: 1 });
   await operations.addRepairOperationalNote(requestEvidence, {
     repairId: '30000000-0000-4000-8000-000000000001',
     request: {
@@ -190,9 +269,15 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     authorizationCalls.map(({ requirement }) => requirement),
     [
       { capability: 'repairs.read', kind: 'read' },
+      { capability: 'repairs.create', kind: 'read' },
       { capability: 'repairs.read', kind: 'read' },
       { capability: 'repairs.read', kind: 'read' },
       { capability: 'repairs.read', kind: 'read' },
+      { capability: 'repairs.create', kind: 'read' },
+      { capability: 'repairs.catalogs.read', kind: 'read' },
+      { capability: 'repairs.catalogs.read', kind: 'read' },
+      { capability: 'repairs.catalogs.manage', kind: 'state-change' },
+      { capability: 'repairs.catalogs.manage', kind: 'state-change' },
       { capability: 'repairs.add_note', kind: 'state-change' },
     ],
   );
@@ -201,10 +286,10 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
     scope.tenantId === authorizedContext.tenantId &&
     scope.branchId === authorizedContext.branchId
   )));
-  assert.deepEqual(branchSettingsCalls, [{
-    tenantId: authorizedContext.tenantId,
-    branchId: authorizedContext.branchId,
-  }]);
+  assert.deepEqual(branchSettingsCalls, [
+    { tenantId: authorizedContext.tenantId, branchId: authorizedContext.branchId },
+    { tenantId: authorizedContext.tenantId, branchId: authorizedContext.branchId },
+  ]);
   assert.equal(repositoryCalls[0].timeZone, 'America/Hermosillo');
   const noteCall = repositoryCalls.find(({ operation }) => operation === 'note');
   assert.deepEqual(noteCall.scope, {
@@ -228,6 +313,20 @@ test('authorized repairs operations use only the trusted scope and exact fixed c
   assert.notEqual(noteCall.note.correlationId, noteCall.note.clientRequestId);
   assert.equal(repositoryCalls[0].query.tenantId, undefined);
   assert.equal(repositoryCalls[0].query.branchId, undefined);
+  const previousRepairLookup = repositoryCalls.find(({ operation, query }) => operation === 'list' && query.q === 'SR-2026');
+  assert.ok(previousRepairLookup);
+  assert.equal(previousRepairLookup.query.pageSize, 8);
+  assert.equal(previousRepairLookup.query.tenantId, undefined);
+  assert.equal(previousRepairLookup.query.branchId, undefined);
+  const brandAutocomplete = repositoryCalls.find(({ operation }) => operation === 'brand-autocomplete');
+  assert.equal(brandAutocomplete.query, 'app');
+  const brandCreate = repositoryCalls.find(({ operation }) => operation === 'brand-create');
+  assert.equal(brandCreate.scope.capability, 'repairs.catalogs.manage');
+  assert.equal(brandCreate.scope.actorUserId, authorizedContext.userId);
+  const categoryDelete = repositoryCalls.find(({ operation }) => operation === 'problem-category-delete');
+  assert.equal(categoryDelete.scope.capability, 'repairs.catalogs.manage');
+  assert.equal(categoryDelete.scope.tenantId, authorizedContext.tenantId);
+  assert.equal(categoryDelete.input.expectedVersion, 1);
 });
 
 test('uncatalogued D5 and D6 HTTP commands fail closed before authorization or repository effects', () => {

@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -eu
+
+repository_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+expected_node=$(tr -d '[:space:]' < "$repository_root/.node-version")
+expected_pnpm=$(
+  sed -n 's/.*"packageManager": "pnpm@\([^"]*\)".*/\1/p' \
+    "$repository_root/package.json"
+)
+
+node_binary=$(command -v node 2>/dev/null || true)
+actual_node=$(
+  if [ -n "$node_binary" ]; then
+    "$node_binary" --version 2>/dev/null | sed 's/^v//'
+  fi
+)
+
+if [ "$actual_node" != "$expected_node" ] && command -v brew >/dev/null 2>&1; then
+  node_prefix=$(brew --prefix "node@${expected_node%%.*}" 2>/dev/null || true)
+  if [ -x "$node_prefix/bin/node" ]; then
+    node_binary="$node_prefix/bin/node"
+    actual_node=$($node_binary --version | sed 's/^v//')
+  fi
+fi
+
+if [ "$actual_node" != "$expected_node" ]; then
+  printf '%s\n' \
+    "Repository toolchain unavailable: Node.js $expected_node is required; received ${actual_node:-unknown}." \
+    "Install/activate the version from .nvmrc or .node-version and retry." >&2
+  exit 1
+fi
+
+PATH="$(dirname -- "$node_binary"):$PATH"
+export PATH
+
+actual_pnpm=$(pnpm --version 2>/dev/null || true)
+if [ "$actual_pnpm" != "$expected_pnpm" ]; then
+  printf '%s\n' \
+    "Repository toolchain unavailable: pnpm $expected_pnpm is required; received ${actual_pnpm:-unknown}." >&2
+  exit 1
+fi
+
+cd "$repository_root"
+exec pnpm "$@"

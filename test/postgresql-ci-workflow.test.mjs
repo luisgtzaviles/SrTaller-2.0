@@ -10,8 +10,8 @@ import {
   assertPostgresqlTestSummary,
   createPostgresqlChildFailureMarker,
   formatPostgresqlChildFailureDiagnostic,
-  ownerScopedPostgresqlNodeTestArguments,
   ownerScopedPostgresqlTestFiles,
+  pbi039PostgresqlTestFiles,
   parsePostgresqlChildFailureMarker,
 } from '../scripts/lib/postgresql-test-output.mjs';
 
@@ -22,6 +22,14 @@ const workflow = await readFile(
 const runner = await readFile('scripts/run-postgresql-ci.mjs', 'utf8');
 const ownerScopedRunner = await readFile(
   'scripts/test-owner-scoped-persistence-postgresql.mjs',
+  'utf8',
+);
+const pbi039Runner = await readFile(
+  'scripts/test-pbi039-postgresql.mjs',
+  'utf8',
+);
+const cleanupRunner = await readFile(
+  'scripts/cleanup-postgresql-ci.mjs',
   'utf8',
 );
 
@@ -36,6 +44,15 @@ test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', (
     /name: Cleanup PostgreSQL persistence suites\s*\n\s*if: always\(\)/u,
   );
   assert.match(workflow, /--postgresql-input/u);
+  assert.match(
+    workflow,
+    /node scripts\/test-pbi039-postgresql\.mjs[\s\S]*PBI039_POSTGRESQL_MANIFEST\.json/u,
+  );
+  assert.match(workflow, /--pbi039-postgresql-input/u);
+  assert.match(
+    workflow,
+    /cp[\s\S]*PBI039_POSTGRESQL_MANIFEST\.json[\s\S]*evidence_dir/u,
+  );
   assert.match(workflow, /- r0\/\*\*/u);
   assert.doesNotMatch(workflow, /secrets\./u);
 });
@@ -91,15 +108,52 @@ test('owner-scoped PostgreSQL runner retains the exact material adapter inventor
     'test/access-session-postgresql.test.mjs',
     'test/contextual-authorization-postgresql.test.mjs',
   ]);
-  assert.deepEqual(ownerScopedPostgresqlNodeTestArguments, [
-    '--no-maglev',
-    '--test',
-    '--test-concurrency=1',
-    ...ownerScopedPostgresqlTestFiles,
-  ]);
   assert.match(
     ownerScopedRunner,
-    /ownerScopedPostgresqlNodeTestArguments/u,
+    /for \(const file of ownerScopedPostgresqlTestFiles\)/u,
+  );
+  assert.match(
+    ownerScopedRunner,
+    /fresh database and container per test file/u,
+  );
+  assert.match(ownerScopedRunner, /randomBytes\(6\)/u);
+  assert.match(
+    ownerScopedRunner,
+    /finally \{\s*if \(started\)/u,
+  );
+  assert.match(ownerScopedRunner, /process\.once\('SIGINT'/u);
+  assert.match(ownerScopedRunner, /process\.once\('SIGTERM'/u);
+});
+
+test('PBI-039 PostgreSQL runner isolates each focused test file from local and shared databases', () => {
+  assert.deepEqual(pbi039PostgresqlTestFiles, [
+    'test/customer-phone-postgresql.test.mjs',
+    'test/user-preferences-postgresql.test.mjs',
+  ]);
+  assert.match(pbi039Runner, /fresh database and container per test file/u);
+  assert.match(pbi039Runner, /randomBytes\(6\)/u);
+  assert.match(pbi039Runner, /dist\/db-migrate\.js/u);
+  assert.match(pbi039Runner, /finally \{\s*await cleanupContainer\(container\)/u);
+  assert.match(
+    pbi039Runner,
+    /com\.srtaller\.pbi039\.execution=\$\{executionLabel\}/u,
+  );
+  assert.match(pbi039Runner, /finalizePbi039PostgresqlCiManifest/u);
+  assert.doesNotMatch(pbi039Runner, /ensureLocalEnvironment|SR_LOCAL_DB_/u);
+});
+
+test('always cleanup covers PBI-023 and PBI-039 execution labels', () => {
+  assert.match(
+    cleanupRunner,
+    /com\.srtaller\.pbi023\.execution=\$\{executionLabel\}/u,
+  );
+  assert.match(
+    cleanupRunner,
+    /com\.srtaller\.pbi039\.execution=\$\{executionLabel\}/u,
+  );
+  assert.match(
+    workflow,
+    /name: Cleanup PostgreSQL persistence suites\s*\n\s*if: always\(\)/u,
   );
 });
 
