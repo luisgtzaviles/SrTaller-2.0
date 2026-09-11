@@ -2,27 +2,24 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 activo con PBI-039 remediado y listo
-  para re-review independiente dentro del PR #42.
+- **Estado:** Roadmap aprobado; SPRINT-02 activo con PBI-039 en cierre
+  documental `Done candidate` después de integración y validación Preview.
 - **Baseline Git observada:** `main` y `origin/main` local en
-  `94065dfedc55234fd1738a6674289278aa49d224`; la última baseline de producto
-  con CI autoritativo registrada permanece en `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`,
-  run `34280510716`, `SUCCESS`.
+  `0d1c5760ce962d17a8292b841f5de43a8cb453a7`; CI exacta de `main`
+  `34619271236`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Operational Authentication & Authorization.
 - **Checkpoint alcanzado:** Functional Slice Owner Accepted, Formal UI
-  Verification `PASS`, Hardening `PASS`, Authoritative Full Verification
-  `PASS`, CI / PR Readiness `PASS` y CI autoritativa exacta de la remediación
-  `PASS`; la revisión independiente anterior concluyó `CHANGES REQUIRED` y
-  ambos findings están remediados.
+  Verification, Hardening, Full Verification, re-review, integración, CI
+  exacta de `main` y validación post-deploy de Preview en `PASS`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** `PBI-039` — Customer Minimum + New Repair Classic 2.0.
+- **PBI actual:** `PBI-039` — `Done candidate` durante su cierre documental.
 - **Siguiente PBI candidato:** `NONE`.
-- **Blocking gate:** re-review independiente; merge, release y deploy conservan
-  gates propios.
-- **WIP operacional:** `1/1`.
+- **Blocking gate:** merge del PR documental de cierre y CI exacta del nuevo
+  `main`; Production conserva autoridad separada.
+- **WIP operacional:** `0/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
 
@@ -102,11 +99,11 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Stage | MVP |
 | Phase | Operational Authentication & Authorization |
 | Sprint | SPRINT-02 |
-| Sprint status | Active — WIP=1/1 |
-| Current PBI | PBI-039 — PR #42 / ready for independent re-review; In progress |
+| Sprint status | Active — WIP=0/1 |
+| Current PBI | PBI-039 — Done candidate; canonical closure in progress |
 | Next PBI candidate | NONE |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | Independent re-review; merge/release/deploy no inferidos |
+| Blocking gate | Closure documentation PR merge + exact-main CI |
 
 ## Fases aprobadas
 
@@ -145,14 +142,13 @@ adelantarse sin iniciar implementación:
 11. Retrofit progresivo al resto de los writes de Repairs.
 
 PBI-039 recorrió G6 Customer mínimo y G7 New Repair/Intake juntos. Su slice
-funcional está congelado y aceptado por Owner, pero permanece `In progress`,
-WIP `1/1`. Formal UI Verification, Hardening, Authoritative Full Verification,
-CI / PR Readiness y la CI autoritativa final `34564110272` del PR #42 pasaron.
-La revisión independiente sobre `f32f41d…` concluyó `CHANGES REQUIRED` por un
-finding HIGH de idempotencia y uno MEDIUM documental. Ambos quedaron
-remediados en `e51729c…`; la reverificación de riesgo alto y el run exact-head
-`34567516069` attempt 3 pasaron. El siguiente gate es re-review independiente;
-esto no autoriza merge, release, deploy ni trabajo posterior.
+funcional fue aceptado por Owner y pasó Formal UI Verification, Hardening,
+Full Verification, CI y re-review. PR #42 se integró como `6c04e57…`. Dos
+defectos reales descubiertos en Preview quedaron cerrados por PR #43
+(`5ccc525…`) y PR #44 (`0d1c576…`); cada merge recibió CI exacta de `main`
+verde y el runtime final fue validado con create/detail/reload/worklist
+autenticado. El estado es `Done candidate`, WIP `0/1`; el siguiente gate es el
+merge y CI de este cierre documental. No se seleccionó trabajo posterior.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización
@@ -221,10 +217,9 @@ cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 SPRINT-02 está `Active`; PBI-026 está `Done`, G4 `PASS`; PBI-028 está `Done`,
 G5 es `PASS`; PBI-038 está `Done` después de PR #40 merge
 `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN.
-Current PBI es PBI-039, WIP es `1/1`, su Functional Slice está Frozen / Owner
-Accepted, Formal UI Verification, Hardening, Full Verification, CI / PR
-Readiness y PR CI exact-head están en PASS. La remediación de los findings de
-la revisión independiente está lista para re-review; Next candidate es `NONE`.
+PBI-039 está en `Done candidate`, WIP `0/1`, integrado en `main` y validado en
+Preview. Este PR documental y su CI exacta de `main` materializan el `Done`
+efectivo. Next candidate permanece `NONE`.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.

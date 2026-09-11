@@ -2,10 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** Active; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 Done; Current
-  PBI PBI-039; WIP 1/1; Functional Slice Frozen / Owner Accepted; UI
-  Verification, Hardening, Full Verification, CI / PR Readiness y PR CI PASS;
-  independent review CHANGES REQUIRED; remediation PASS y lista para re-review.
+- **Estado:** Active; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 Done; PBI-039
+  `Done candidate`; WIP 0/1; revisión, integración, CI exacta de `main` y
+  validación Preview PASS; cierre documental pendiente.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
@@ -21,16 +20,18 @@
 | Secretos o body en el store de auditoría de Repairs | High | esquema/allowlist fija y pruebas negativas | Control PBI-028 PASS |
 | Fronteras de fecha local incorrectas | Medium | IANA Branch, rangos `[start, next)` y PostgreSQL material | Control PBI-038 PASS; `Branch.timeZone` final `America/Hermosillo` |
 | WIP paralelo | Medium | WIP=1 | Controlled |
-| Integración de slice local grande | High delivery | freeze explícito, fingerprint pre/post y secuencia UI Verification -> hardening -> full verify -> CI -> review | Control ejecutado; PR #42 sigue sin merge |
+| Integración de slice local grande | High delivery | freeze explícito, fingerprint pre/post y secuencia UI Verification -> hardening -> full verify -> CI -> review | Cerrado; PR #42 integrado y CI exacta verde |
 | Orquestación local incompleta | High test infrastructure | `verify:full` fail-fast combina base, PostgreSQL, Preview, smoke, cleanup y evidencia | Cerrado; Full Verification PASS |
 | CI omite dos tests PostgreSQL PBI-039 | High delivery | Customer phone y User preferences en ambos legs y comparison | Cerrado; run `34564110272` PASS |
 | Create Repair omite identidad canónica del tipo en idempotencia | High persistence | incluir `canonicalDeviceTypeId`; replay exacto, incompatibilidad y concurrencia PostgreSQL; full reverify + CI exacta | Remediado; Full Verification de riesgo alto y run `34567516069` attempt 3 PASS |
-| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Remediado; documentos vivos reconciliados para re-review |
+| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Cerrado; cierre canónico reconciliado |
+| Entrypoint SPA obsoleto tras deploy | High runtime | `no-store`, ETag por contenido y recuperación de navegador con asset actual | Cerrado en PR #43; Preview validado |
+| Repairs sin repositorios en imagen Production-mode | High runtime | conexión compartida `APPLICATION_DATABASE_CONNECTION` y contrato de composición | Cerrado en PR #44; Full Verification, exact-main CI y create/detail/reload PASS |
 
 Un Critical nuevo no previsto, criptografía custom, secreto remoto o cambio
 destructivo obliga a detenerse. El Critical conocido de PBI-025 no se rebaja.
 
 ## Próxima revisión
 
-- **Fecha:** al concluir la re-review de PBI-039.
-- **Disparador:** nuevo riesgo material, fallo de reverificación/CI o cambio de controles.
+- **Fecha:** al integrar el cierre documental de PBI-039.
+- **Disparador:** nuevo riesgo material, fallo de CI exacta o cambio de controles.
