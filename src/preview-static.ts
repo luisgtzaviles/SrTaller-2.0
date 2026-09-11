@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { access, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -42,6 +43,7 @@ export async function configurePreviewStaticFiles(
 
   await access(indexFile);
   const indexSource = await readFile(indexFile, 'utf8');
+  const indexEtag = `"${createHash('sha256').update(indexSource).digest('base64url')}"`;
   const catalogEnabled = indexSource.includes('name="srt-ui-catalog" content="enabled"');
   application.useStaticAssets(publicDirectory, { index: false });
   application.use(
@@ -61,6 +63,8 @@ export async function configurePreviewStaticFiles(
       if (request.path === previewCatalogPath) {
         response.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
       }
+      response.setHeader('Cache-Control', 'no-store');
+      response.setHeader('ETag', indexEtag);
       response.sendFile(indexFile);
     },
   );
