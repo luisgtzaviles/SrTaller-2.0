@@ -52,7 +52,7 @@ async function browserTarget(url) {
   const current = (await targetList()).find((target) => target.type === 'page' && target.url === url);
   if (current) return current;
   const created = await fetch(`${cdp}/json/new?${encodeURIComponent(url)}`, { method: 'PUT' });
-  assert.equal(created.status, 200, `Could not open ${preferredOrigin}`);
+  assert.equal(created.status, 200, `Could not open ${url}`);
   return created.json();
 }
 
