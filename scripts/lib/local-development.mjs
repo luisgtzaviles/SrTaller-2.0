@@ -524,6 +524,87 @@ export function localRepairRows() {
   })));
 }
 
+export function localRepairCatalogRows() {
+  const common = Object.freeze({
+    scope: 'tenant',
+    tenantId: LOCAL_TENANT_ID,
+    code: null,
+    status: 'active',
+    version: 1,
+    createdByActorId: LOCAL_OWNER_USER_ID,
+    updatedByActorId: LOCAL_OWNER_USER_ID,
+    createdAt: LOCAL_SEED_TIMESTAMP,
+    updatedAt: LOCAL_SEED_TIMESTAMP,
+  });
+  const brandIds = Object.freeze({
+    apple: '00000000-0000-4000-8000-000000020201',
+    samsung: '00000000-0000-4000-8000-000000020202',
+    motorola: '00000000-0000-4000-8000-000000020203',
+    xiaomi: '00000000-0000-4000-8000-000000020204',
+    huawei: '00000000-0000-4000-8000-000000020205',
+    oppo: '00000000-0000-4000-8000-000000020206',
+    nokia: '00000000-0000-4000-8000-000000020207',
+    google: '00000000-0000-4000-8000-000000020208',
+    realme: '00000000-0000-4000-8000-000000020209',
+    oneplus: '00000000-0000-4000-8000-000000020210',
+    sony: '00000000-0000-4000-8000-000000020211',
+    asus: '00000000-0000-4000-8000-000000020212',
+  });
+  const rows = {
+    deviceTypes: [
+      ['00000000-0000-4000-8000-000000020101', 'Teléfono', 'telefono'],
+      ['00000000-0000-4000-8000-000000020102', 'Tableta', 'tableta'],
+    ].map(([deviceTypeId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, deviceTypeId, canonicalLabel, normalizedKey })),
+    brands: [
+      [brandIds.apple, 'Apple', 'apple'],
+      [brandIds.samsung, 'Samsung', 'samsung'],
+      [brandIds.motorola, 'Motorola', 'motorola'],
+      [brandIds.xiaomi, 'Xiaomi', 'xiaomi'],
+      [brandIds.huawei, 'Huawei', 'huawei'],
+      [brandIds.oppo, 'OPPO', 'oppo'],
+      [brandIds.nokia, 'Nokia', 'nokia'],
+      [brandIds.google, 'Google', 'google'],
+      [brandIds.realme, 'Realme', 'realme'],
+      [brandIds.oneplus, 'OnePlus', 'oneplus'],
+      [brandIds.sony, 'Sony', 'sony'],
+      [brandIds.asus, 'Asus', 'asus'],
+    ].map(([brandId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, brandId, canonicalLabel, normalizedKey })),
+    models: [
+      ['00000000-0000-4000-8000-000000020301', brandIds.apple, 'iPhone 11', 'iphone 11'],
+      ['00000000-0000-4000-8000-000000020302', brandIds.apple, 'iPhone 13', 'iphone 13'],
+      ['00000000-0000-4000-8000-000000020303', brandIds.samsung, 'Galaxy S22', 'galaxy s22'],
+      ['00000000-0000-4000-8000-000000020304', brandIds.samsung, 'A54', 'a54'],
+      ['00000000-0000-4000-8000-000000020305', brandIds.motorola, 'Edge 40', 'edge 40'],
+      ['00000000-0000-4000-8000-000000020306', brandIds.xiaomi, 'Redmi Note 12', 'redmi note 12'],
+      ['00000000-0000-4000-8000-000000020307', brandIds.huawei, 'P30 Lite', 'p30 lite'],
+      ['00000000-0000-4000-8000-000000020308', brandIds.oppo, 'Reno 8', 'reno 8'],
+      ['00000000-0000-4000-8000-000000020309', brandIds.nokia, 'G50', 'g50'],
+      ['00000000-0000-4000-8000-000000020310', brandIds.google, 'Pixel 7', 'pixel 7'],
+      ['00000000-0000-4000-8000-000000020311', brandIds.realme, 'C55', 'c55'],
+      ['00000000-0000-4000-8000-000000020312', brandIds.oneplus, 'Nord 2', 'nord 2'],
+      ['00000000-0000-4000-8000-000000020313', brandIds.sony, 'Xperia 10', 'xperia 10'],
+      ['00000000-0000-4000-8000-000000020314', brandIds.asus, 'Zenfone 9', 'zenfone 9'],
+      ['00000000-0000-4000-8000-000000020315', brandIds.apple, 'iPad 9', 'ipad 9'],
+    ].map(([modelId, canonicalBrandId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, modelId, canonicalBrandId, canonicalLabel, normalizedKey })),
+    risks: [
+      ['00000000-0000-4000-8000-000000020401', 'Batería inflada', 'bateria inflada'],
+      ['00000000-0000-4000-8000-000000020402', 'Cristal o pantalla quebrada', 'cristal o pantalla quebrada'],
+      ['00000000-0000-4000-8000-000000020403', 'Humedad o contacto con líquido', 'humedad o contacto con liquido'],
+      ['00000000-0000-4000-8000-000000020404', 'Equipo abierto previamente', 'equipo abierto previamente'],
+    ].map(([riskId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, riskId, canonicalLabel, normalizedKey })),
+    problemCategories: [
+      ['00000000-0000-4000-8000-000000020501', 'Pantalla', 'pantalla'],
+      ['00000000-0000-4000-8000-000000020502', 'Encendido', 'encendido'],
+      ['00000000-0000-4000-8000-000000020503', 'Centro de carga', 'centro de carga'],
+      ['00000000-0000-4000-8000-000000020504', 'Batería', 'bateria'],
+      ['00000000-0000-4000-8000-000000020505', 'Audio', 'audio'],
+    ].map(([categoryId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, categoryId, canonicalLabel, normalizedKey })),
+  };
+  return Object.freeze(Object.fromEntries(
+    Object.entries(rows).map(([key, values]) => [key, Object.freeze(values)]),
+  ));
+}
+
 export function localRepairTechnicianRows() {
   const tenantId = LOCAL_TENANT_ID;
   const createdAt = LOCAL_SEED_TIMESTAMP;

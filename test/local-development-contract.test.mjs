@@ -18,7 +18,9 @@ import {
   localAccessRoleAssignmentRows,
   localAccessRoleCapabilityRows,
   localAccessRoleRows,
+  localRepairCatalogRows,
   localRepairIntakeRows,
+  localRepairRows,
   localRepairTimelineRows,
   localSeedRows,
   localUserRows,
@@ -224,6 +226,26 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
     JSON.stringify({ capabilities, roles, grants, assignments }),
     /pin|password|credential|secret|hash|salt|pepper/iu,
   );
+});
+
+test('synthetic Repairs catalogs are deterministic, tenant-wide, and aligned with operational fixtures', () => {
+  const catalogs = localRepairCatalogRows();
+  assert.deepEqual(catalogs, localRepairCatalogRows());
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(catalogs).map(([key, rows]) => [key, rows.length])),
+    { deviceTypes: 2, brands: 12, models: 15, risks: 4, problemCategories: 5 },
+  );
+  const allRows = Object.values(catalogs).flat();
+  assert.ok(allRows.every((row) => row.scope === 'tenant' && row.tenantId === LOCAL_TENANT_ID && row.status === 'active'));
+  assert.ok(allRows.every((row) => Object.isFrozen(row)));
+  assert.ok(Object.values(catalogs).every((rows) => Object.isFrozen(rows)));
+  const repairLabels = new Set(localRepairRows().flatMap((repair) => [repair.deviceBrand, repair.deviceModel, repair.reportedIssue]));
+  assert.ok(catalogs.brands.every((brand) => repairLabels.has(brand.canonicalLabel)));
+  assert.ok(catalogs.models.every((model) => repairLabels.has(model.canonicalLabel)));
+  assert.ok(catalogs.models.every((model) => catalogs.brands.some((brand) => brand.brandId === model.canonicalBrandId)));
+  assert.ok(catalogs.risks.some((risk) => risk.canonicalLabel === 'Batería inflada'));
+  assert.ok(catalogs.problemCategories.some((category) => category.canonicalLabel === 'Pantalla'));
+  assert.doesNotMatch(JSON.stringify(catalogs), /pin|password|credential|secret|hash|salt|pepper/iu);
 });
 
 test('local PIN fixtures use the governed profile and persist no plaintext PIN', async () => {

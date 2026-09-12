@@ -12,6 +12,7 @@ import {
   localRepairRows,
   localRepairTimelineRows,
   localRepairEvidenceRows,
+  localRepairCatalogRows,
   localRepairTechnicianRows,
   localRepairTechnicianBranchRows,
   localRepairTechnicianAssignmentRows,
@@ -48,6 +49,7 @@ const pool = new Pool({
 });
 
 const rows = localSeedRows();
+const repairCatalogs = localRepairCatalogRows();
 const pinCredentials = await localPinCredentialRows({
   ...values,
   SR_LOCAL_PIN_JORGE: process.env.SR_LOCAL_PIN_JORGE ?? values.SR_LOCAL_PIN_JORGE,
@@ -243,6 +245,46 @@ try {
      ON CONFLICT (credential_id) DO UPDATE SET credential_hash = EXCLUDED.credential_hash, revoked_at = null`,
     [LOCAL_STATION_CREDENTIAL_ID, localStationBootstrapCredentialHash(values), rows.tenant.tenantId, LOCAL_STATION_ID, rows.tenant.createdAt],
   );
+  for (const item of repairCatalogs.deviceTypes) {
+    await client.query(
+      `INSERT INTO repair_device_types (device_type_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
+       VALUES ($1::uuid, $2, $3::uuid, $4, $5, $6, $7, $8, $9::uuid, $10::uuid, $11::timestamptz, $12::timestamptz)
+       ON CONFLICT (device_type_id) DO UPDATE SET canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+      [item.deviceTypeId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
+    );
+  }
+  for (const item of repairCatalogs.brands) {
+    await client.query(
+      `INSERT INTO repair_brands (brand_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
+       VALUES ($1::uuid, $2, $3::uuid, $4, $5, $6, $7, $8, $9::uuid, $10::uuid, $11::timestamptz, $12::timestamptz)
+       ON CONFLICT (brand_id) DO UPDATE SET canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+      [item.brandId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
+    );
+  }
+  for (const item of repairCatalogs.models) {
+    await client.query(
+      `INSERT INTO repair_models (model_id, canonical_brand_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
+       VALUES ($1::uuid, $2::uuid, $3, $4::uuid, $5, $6, $7, $8, $9, $10::uuid, $11::uuid, $12::timestamptz, $13::timestamptz)
+       ON CONFLICT (model_id) DO UPDATE SET canonical_brand_id = EXCLUDED.canonical_brand_id, canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+      [item.modelId, item.canonicalBrandId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
+    );
+  }
+  for (const item of repairCatalogs.risks) {
+    await client.query(
+      `INSERT INTO repair_risks (risk_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
+       VALUES ($1::uuid, $2, $3::uuid, $4, $5, $6, $7, $8, $9::uuid, $10::uuid, $11::timestamptz, $12::timestamptz)
+       ON CONFLICT (risk_id) DO UPDATE SET canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+      [item.riskId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
+    );
+  }
+  for (const item of repairCatalogs.problemCategories) {
+    await client.query(
+      `INSERT INTO repair_problem_categories (category_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
+       VALUES ($1::uuid, $2, $3::uuid, $4, $5, $6, $7, $8, $9::uuid, $10::uuid, $11::timestamptz, $12::timestamptz)
+       ON CONFLICT (category_id) DO UPDATE SET canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+      [item.categoryId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
+    );
+  }
   for (const repair of localRepairRows()) {
     await client.query(
       `INSERT INTO repairs (
@@ -481,6 +523,7 @@ process.stdout.write(`${JSON.stringify({
   accessRoleAssignmentCount: localAccessRoleAssignmentRows().length,
   pinCredentialCount: pinCredentials.length,
   repairCount: localRepairRows().length,
+  repairCatalogCount: Object.values(repairCatalogs).reduce((total, items) => total + items.length, 0),
   repairIntakeCount: localRepairIntakeRows().length,
   repairTimelineEntryCount: localRepairTimelineRows().length,
   repairEvidenceCount: localRepairEvidenceRows().length,
