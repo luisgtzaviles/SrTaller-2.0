@@ -31,9 +31,10 @@ import {
   localPinCredentialRows,
 } from '../scripts/lib/local-pin-fixtures.mjs';
 
-const [localDevelopmentSource, localEnvironmentExample] = await Promise.all([
+const [localDevelopmentSource, localEnvironmentExample, localSeedSource] = await Promise.all([
   readFile('scripts/lib/local-development.mjs', 'utf8'),
   readFile('.env.local.example', 'utf8'),
+  readFile('scripts/local-db-seed.mjs', 'utf8'),
 ]);
 
 function validLocalValues() {
@@ -228,7 +229,7 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
   );
 });
 
-test('synthetic Repairs catalogs are deterministic, tenant-wide, and aligned with operational fixtures', () => {
+test('synthetic Repairs catalog labels are deterministic without inventing historical canonical links', () => {
   const catalogs = localRepairCatalogRows();
   assert.deepEqual(catalogs, localRepairCatalogRows());
   assert.deepEqual(
@@ -245,6 +246,9 @@ test('synthetic Repairs catalogs are deterministic, tenant-wide, and aligned wit
   assert.ok(catalogs.models.every((model) => catalogs.brands.some((brand) => brand.brandId === model.canonicalBrandId)));
   assert.ok(catalogs.risks.some((risk) => risk.canonicalLabel === 'Batería inflada'));
   assert.ok(catalogs.problemCategories.some((category) => category.canonicalLabel === 'Pantalla'));
+  assert.ok(localRepairIntakeRows().every((intake) => !Object.keys(intake).some((key) => key.startsWith('canonical'))));
+  assert.match(localSeedSource, /repairCanonicalLinksCreated: 0/u);
+  assert.equal((localSeedSource.match(/ON CONFLICT \((?:device_type_id|brand_id|model_id|risk_id|category_id)\) DO NOTHING/gu) ?? []).length, 5);
   assert.doesNotMatch(JSON.stringify(catalogs), /pin|password|credential|secret|hash|salt|pepper/iu);
 });
 

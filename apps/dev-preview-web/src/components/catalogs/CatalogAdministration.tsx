@@ -194,6 +194,10 @@ export function CatalogUsage({ count }: Readonly<{ count: number }>): React.JSX.
   return <>{count} {count === 1 ? 'reparación' : 'reparaciones'}</>;
 }
 
+export function CatalogCanonicalUsageHeader(): React.JSX.Element {
+  return <abbr title="Reparaciones vinculadas por identidad canónica. No cuenta coincidencias del texto histórico.">Uso canónico</abbr>;
+}
+
 export function formatCatalogResultCount(count: number): string {
   return `${count} ${count === 1 ? 'resultado' : 'resultados'}`;
 }

@@ -6,6 +6,7 @@ import type { AdminRepairBrand, AdminRepairModel, PendingRepairModel } from '../
 import { normalizeInputLookupKey, normalizeRelatedRepairCatalogInput } from '../../../../src/modules/repairs/domain/new-repair-input-normalization.js';
 import {
   CatalogEmptyRow,
+  CatalogCanonicalUsageHeader,
   CatalogEntityName,
   CatalogFeedback,
   CatalogHeader,
@@ -134,7 +135,7 @@ export function RepairModelCatalogPanel({ canManage, csrfToken }: Readonly<{ can
       <CatalogFeedback error={error} success={notice} />
       <CatalogToolbar contextualFilter={brandFilter} lifecycleFilter={surface === 'canonical' ? <CatalogLifecycleFilter value={status} activeCount={activeCount} inactiveCount={contextualModels.length - activeCount} onChange={setStatus} label="Filtrar modelos por estado" /> : undefined} result={surface === 'canonical' ? formatCatalogResultCount(visibleModels.length) : `${visiblePending.length} por revisar`} />
       {loading ? <CatalogLoadingState label={surface === 'canonical' ? 'Cargando modelos…' : 'Cargando valores por revisar…'} /> : surface === 'canonical' ? <CatalogTable>
-        <thead><tr><th>Modelo</th><th>Marca</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true">Uso</th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
+        <thead><tr><th>Modelo</th><th>Marca</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true"><CatalogCanonicalUsageHeader /></th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
         <tbody>{visibleModels.length === 0 ? <CatalogEmptyRow colSpan={6}>No hay modelos {status === 'active' ? 'activos' : status === 'inactive' ? 'inactivos' : 'en esta marca'}.</CatalogEmptyRow> : visibleModels.map((model) => <tr key={model.modelId} data-status={model.status}>
           <td><CatalogEntityName label={model.label} secondary={`v${model.version}`} /></td><td>{model.brandLabel}</td><td data-mobile-hidden="true"><CatalogScopeBadge scope={model.scope} /></td><td><CatalogStatusBadge status={model.status} /></td><td data-mobile-hidden="true"><CatalogUsage count={model.usageCount} /></td><td><CatalogRowActions actions={actions(model)} emptyLabel={model.scope === 'platform' ? 'Sólo lectura' : 'Sin permisos'} /></td>
         </tr>)}</tbody>

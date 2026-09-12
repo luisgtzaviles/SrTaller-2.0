@@ -249,7 +249,7 @@ try {
     await client.query(
       `INSERT INTO repair_device_types (device_type_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
        VALUES ($1::uuid, $2, $3::uuid, $4, $5, $6, $7, $8, $9::uuid, $10::uuid, $11::timestamptz, $12::timestamptz)
-       ON CONFLICT (device_type_id) DO UPDATE SET canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+       ON CONFLICT (device_type_id) DO NOTHING`,
       [item.deviceTypeId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
     );
   }
@@ -257,7 +257,7 @@ try {
     await client.query(
       `INSERT INTO repair_brands (brand_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
        VALUES ($1::uuid, $2, $3::uuid, $4, $5, $6, $7, $8, $9::uuid, $10::uuid, $11::timestamptz, $12::timestamptz)
-       ON CONFLICT (brand_id) DO UPDATE SET canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+       ON CONFLICT (brand_id) DO NOTHING`,
       [item.brandId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
     );
   }
@@ -265,7 +265,7 @@ try {
     await client.query(
       `INSERT INTO repair_models (model_id, canonical_brand_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
        VALUES ($1::uuid, $2::uuid, $3, $4::uuid, $5, $6, $7, $8, $9, $10::uuid, $11::uuid, $12::timestamptz, $13::timestamptz)
-       ON CONFLICT (model_id) DO UPDATE SET canonical_brand_id = EXCLUDED.canonical_brand_id, canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+       ON CONFLICT (model_id) DO NOTHING`,
       [item.modelId, item.canonicalBrandId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
     );
   }
@@ -273,7 +273,7 @@ try {
     await client.query(
       `INSERT INTO repair_risks (risk_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
        VALUES ($1::uuid, $2, $3::uuid, $4, $5, $6, $7, $8, $9::uuid, $10::uuid, $11::timestamptz, $12::timestamptz)
-       ON CONFLICT (risk_id) DO UPDATE SET canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+       ON CONFLICT (risk_id) DO NOTHING`,
       [item.riskId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
     );
   }
@@ -281,7 +281,7 @@ try {
     await client.query(
       `INSERT INTO repair_problem_categories (category_id, scope, tenant_id, code, canonical_label, normalized_key, status, version, created_by_actor_id, updated_by_actor_id, created_at, updated_at)
        VALUES ($1::uuid, $2, $3::uuid, $4, $5, $6, $7, $8, $9::uuid, $10::uuid, $11::timestamptz, $12::timestamptz)
-       ON CONFLICT (category_id) DO UPDATE SET canonical_label = EXCLUDED.canonical_label, normalized_key = EXCLUDED.normalized_key, status = EXCLUDED.status, version = EXCLUDED.version, updated_by_actor_id = EXCLUDED.updated_by_actor_id, updated_at = EXCLUDED.updated_at`,
+       ON CONFLICT (category_id) DO NOTHING`,
       [item.categoryId, item.scope, item.tenantId, item.code, item.canonicalLabel, item.normalizedKey, item.status, item.version, item.createdByActorId, item.updatedByActorId, item.createdAt, item.updatedAt],
     );
   }
@@ -523,7 +523,8 @@ process.stdout.write(`${JSON.stringify({
   accessRoleAssignmentCount: localAccessRoleAssignmentRows().length,
   pinCredentialCount: pinCredentials.length,
   repairCount: localRepairRows().length,
-  repairCatalogCount: Object.values(repairCatalogs).reduce((total, items) => total + items.length, 0),
+  repairCatalogFixtureDefinitionCount: Object.values(repairCatalogs).reduce((total, items) => total + items.length, 0),
+  repairCanonicalLinksCreated: 0,
   repairIntakeCount: localRepairIntakeRows().length,
   repairTimelineEntryCount: localRepairTimelineRows().length,
   repairEvidenceCount: localRepairEvidenceRows().length,

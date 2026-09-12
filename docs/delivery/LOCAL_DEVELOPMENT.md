@@ -243,11 +243,16 @@ login local con contexto de Station verificado y PIN sintético.
 El mismo seed materializa los catálogos Repairs que consumen New Repair y su
 administración: 2 tipos, 12 marcas, 15 modelos, 4 riesgos y 5 categorías de
 problema, todos sintéticos, Tenant-scoped y con identidad determinista. Las
-marcas y modelos cubren exactamente los snapshots de las 15 reparaciones
-locales; no son defaults de plataforma ni bootstrap productivo. Los endpoints
-operativos y de Configuración leen estas mismas tablas, por lo que el seed no
-crea una fuente paralela. Repetir `local:db:seed` actualiza el conjunto por sus
-UUID estables y `local:db:reset` lo elimina junto con el resto del entorno local.
+etiquetas de marcas y modelos cubren los snapshots de las 15 reparaciones
+históricas locales, pero esas filas legacy conservan sus IDs canónicos nulos:
+una coincidencia textual no constituye reconciliación ni incrementa el uso
+canónico. Sólo una captura nueva que seleccione catálogo o una reconciliación
+humana explícita crea el vínculo. No son defaults de plataforma ni bootstrap
+productivo. Los endpoints operativos y de Configuración leen estas mismas
+tablas, por lo que el seed no crea una fuente paralela. Repetir
+`local:db:seed` agrega cualquier fixture ausente por su UUID estable sin
+sobrescribir una fila ya existente, y
+`local:db:reset` lo elimina junto con el resto del entorno local.
 
 ## Reset y parada
 

@@ -12,6 +12,7 @@ import type { AdminRepairRisk } from '../api.js';
 import { normalizeRelatedRepairCatalogInput } from '../../../../src/modules/repairs/domain/new-repair-input-normalization.js';
 import {
   CatalogEmptyRow,
+  CatalogCanonicalUsageHeader,
   CatalogEntityName,
   CatalogFeedback,
   CatalogHeader,
@@ -127,7 +128,7 @@ export function RepairRiskCatalogPanel({ canManage, csrfToken }: Readonly<{
       <CatalogFeedback error={error} success={notice?.message ?? null} successTitle={notice?.title ?? 'Catálogo actualizado'} />
       <CatalogToolbar lifecycleFilter={<CatalogLifecycleFilter value={status} activeCount={activeCount} inactiveCount={inactiveCount} onChange={setStatus} label="Filtrar riesgos por estado" />} result={formatCatalogResultCount(visible.length)} />
       {loading ? <CatalogLoadingState /> : <CatalogTable>
-        <thead><tr><th>Riesgo</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true">Uso</th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
+        <thead><tr><th>Riesgo</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true"><CatalogCanonicalUsageHeader /></th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
         <tbody>{visible.length === 0 ? <CatalogEmptyRow colSpan={5}>No hay riesgos {status === 'inactive' ? 'inactivos' : status === 'active' ? 'activos' : 'disponibles'}.</CatalogEmptyRow> : visible.map((risk) => <tr key={risk.riskId} data-status={risk.status}>
           <td><CatalogEntityName label={risk.label} secondary={`v${risk.version}`} /></td>
           <td data-mobile-hidden="true"><CatalogScopeBadge scope={risk.scope} /></td>

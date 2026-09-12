@@ -43,6 +43,9 @@ test('shared primitives own lifecycle, reconciliation, read-only, usage, and row
   assert.match(source, /canonicalCount === 1 \? 'canónica' : 'canónicas'/u);
   assert.match(source, /actions\.length === 0/u);
   assert.match(source, /export function CatalogSectionTabs/u);
+  assert.match(source, /export function CatalogCanonicalUsageHeader/u);
+  assert.match(source, /Reparaciones vinculadas por identidad canónica/u);
+  assert.match(source, /No cuenta coincidencias del texto histórico/u);
   assert.match(source, /className=\{styles\.sectionTabs\}/u);
   assert.match(source, /aria-current=\{value === option\.value \? 'page'/u);
 });

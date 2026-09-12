@@ -6,6 +6,7 @@ import type { AdminRepairBrand, PendingRepairBrand } from '../api.js';
 import { normalizeInputLookupKey, normalizeRelatedRepairCatalogInput } from '../../../../src/modules/repairs/domain/new-repair-input-normalization.js';
 import {
   CatalogEmptyRow,
+  CatalogCanonicalUsageHeader,
   CatalogEntityName,
   CatalogFeedback,
   CatalogHeader,
@@ -128,7 +129,7 @@ export function RepairBrandCatalogPanel({ canManage, csrfToken }: Readonly<{ can
       <CatalogFeedback error={error} success={notice} />
       <CatalogToolbar lifecycleFilter={surface === 'canonical' ? <CatalogLifecycleFilter value={status} activeCount={activeCount} inactiveCount={brands.length - activeCount} onChange={setStatus} label="Filtrar marcas por estado" /> : undefined} result={surface === 'canonical' ? formatCatalogResultCount(visible.length) : `${pending.length} por revisar`} />
       {loading ? <CatalogLoadingState label={surface === 'canonical' ? 'Cargando marcas…' : 'Cargando valores por revisar…'} /> : surface === 'canonical' ? <CatalogTable>
-        <thead><tr><th>Marca</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true">Uso</th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
+        <thead><tr><th>Marca</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true"><CatalogCanonicalUsageHeader /></th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
         <tbody>{visible.length === 0 ? <CatalogEmptyRow colSpan={5}>No hay marcas {status === 'active' ? 'activas' : status === 'inactive' ? 'inactivas' : 'en el catálogo'}.</CatalogEmptyRow> : visible.map((brand) => <tr key={brand.brandId} data-status={brand.status}>
           <td><CatalogEntityName label={brand.label} secondary={`v${brand.version}`} /></td><td data-mobile-hidden="true"><CatalogScopeBadge scope={brand.scope} /></td><td><CatalogStatusBadge status={brand.status} /></td><td data-mobile-hidden="true"><CatalogUsage count={brand.usageCount} /></td><td><CatalogRowActions actions={actions(brand)} emptyLabel={brand.scope === 'platform' ? 'Sólo lectura' : 'Sin permisos de edición'} /></td>
         </tr>)}</tbody>

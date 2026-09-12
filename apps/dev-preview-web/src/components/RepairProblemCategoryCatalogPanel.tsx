@@ -6,6 +6,7 @@ import type { PendingRepairProblem, RepairProblemCategory } from '../api.js';
 import { normalizeRelatedRepairCatalogInput } from '../../../../src/modules/repairs/domain/new-repair-input-normalization.js';
 import {
   CatalogEmptyRow,
+  CatalogCanonicalUsageHeader,
   CatalogEntityName,
   CatalogFeedback,
   CatalogHeader,
@@ -132,7 +133,7 @@ export function RepairProblemCategoryCatalogPanel({ canManage, csrfToken }: Read
       <CatalogFeedback error={error} success={notice} successTitle="Cambio guardado" />
       <CatalogToolbar lifecycleFilter={surface === 'canonical' ? <CatalogLifecycleFilter value={status} activeCount={activeCount} inactiveCount={items.length - activeCount} onChange={setStatus} label="Filtrar categorías por estado" /> : undefined} result={surface === 'canonical' ? formatCatalogResultCount(visible.length) : `${pendingItems.length} por revisar`} />
       {loading ? <CatalogLoadingState /> : surface === 'canonical' ? <CatalogTable>
-        <thead><tr><th>Categoría</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true">Uso</th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
+        <thead><tr><th>Categoría</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true"><CatalogCanonicalUsageHeader /></th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
         <tbody>{visible.length === 0 ? <CatalogEmptyRow colSpan={5}>No hay categorías {status === 'active' ? 'activas' : status === 'inactive' ? 'inactivas' : 'en el catálogo'}.</CatalogEmptyRow> : visible.map((item) => <tr key={item.categoryId} data-status={item.status}>
           <td><CatalogEntityName label={item.label} secondary={`v${item.version}`} /></td><td data-mobile-hidden="true"><CatalogScopeBadge scope={item.scope} /></td><td><CatalogStatusBadge status={item.status} /></td><td data-mobile-hidden="true"><CatalogUsage count={item.usageCount} /></td><td><CatalogRowActions actions={actions(item)} emptyLabel={item.scope === 'platform' ? 'Sólo lectura' : 'Sin permisos de edición'} /></td>
         </tr>)}</tbody>
