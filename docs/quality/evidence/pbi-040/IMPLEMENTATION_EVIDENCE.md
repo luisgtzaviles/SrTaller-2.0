@@ -65,10 +65,11 @@
   mismas cinco tablas Repairs. La prueba HTTP autenticada devolvió IDs idénticos
   para Riesgos `4/4`, Tipos `2/2`, Marcas `12/12` y Categorías `5/5`; Modelos
   devolvió 15 en administración y los 3 Apple compatibles en operación.
-- El seed local gobernado ahora inserta/upserta 38 fixtures deterministas:
-  2 tipos, 12 marcas, 15 modelos, 4 riesgos y 5 categorías. Son datos
-  exclusivamente sintéticos Tenant-wide, alineados con las reparaciones
-  locales, reversibles con `local:db:reset`; no son defaults productivos.
+- El seed local gobernado define 38 fixtures deterministas: 2 tipos, 12 marcas,
+  15 modelos, 4 riesgos y 5 categorías. Son datos exclusivamente sintéticos
+  Tenant-wide y reversibles con `local:db:reset`; no son defaults productivos.
+  Sus etiquetas cubren los snapshots locales, pero no crean vínculos canónicos
+  para Repairs históricas. Los inserts no sobrescriben una fila existente.
 - `CatalogSectionTabs`, lifecycle, counters, panel/header/table, badges,
   acciones, empty states y estados hover/focus/selected viven en las primitives
   compartidas. Reparaciones y Lista de precios las componen sin duplicar CSS.
@@ -143,6 +144,17 @@
   skips, y PBI-040 aplicó 56 migraciones con p95 `7.87 ms` sobre 10,000 items
   contra presupuesto `750 ms`. Permanece sólo el warning aceptado del chunk
   Vite principal mayor a 500 kB.
+- La auditoría de preservación posterior confirmó ancestry exacto desde
+  `40684d7554…`, PR #42/#43/#44/#45 presentes, cero commits nuevos en main y
+  cero regresiones/desconocidos. El nuevo preflight verificó además 16 blobs
+  protegidos de PBI-039 antes de la campaña.
+- Full Verification de preservación sobre `453eeb0`:
+  `local-full-verification-20260912042901-453eeb0983e3`, `13/13 PASS`, cleanup
+  PASS y fingerprint
+  `cdafe0acacfbf2691ea5acc6f4d4b802e2ee73cb3ed246e98d4f1b7babbc490a`.
+  La base ejecutó 822 pruebas (`802 PASS`, 20 skips PostgreSQL gobernados);
+  PBI-039 material fue `2/2`, el compuesto `17/17` y PBI-040 registró p95
+  `8.23 ms` sobre 10,000 items. El warning de chunk permanece visible.
 
 ## Prueba funcional HTTP local previa a la iteración
 
@@ -203,6 +215,10 @@ Dark/responsive, y confirmar comboboxes, cascada, Por revisar, identificadores y
 operabilidad. Después permanecen
 separados: aceptación Owner, hardening/revisión independiente, PR/CI, merge,
 exact-main CI y cualquier Preview/deploy autorizado.
+
+La auditoría completa de causa raíz, genealogía, diff A-E, linkage, safe delete,
+fixtures y guard permanente vive en
+[`BASELINE_PRESERVATION_AUDIT.md`](BASELINE_PRESERVATION_AUDIT.md).
 
 Para esta iteración, Chrome local autenticado con datos sintéticos confirmó:
 Todos/Todas/Todas; Refacción; Refacción + Pantallas; Refacción + Pantallas +

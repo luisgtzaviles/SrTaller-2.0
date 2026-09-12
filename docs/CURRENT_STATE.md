@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** snapshot del checkpoint de iteración Owner Review de PBI-040.
+- **Estado:** snapshot del gate de preservación de baseline de PBI-040.
 - **Baseline Git integrada observada:** `main` y `origin/main` en
   `40684d7554cdf02551f941e5e3f0beabbe563125`.
 - **CI autoritativa exacta de `main`:** run
@@ -13,7 +13,7 @@
 - **Preview:** desplegado desde el merge exacto `0d1c576…`, saludable y
   validado con un flujo autenticado New Repair create/detail/reload/worklist.
 - **Production:** no desplegada ni autorizada.
-- **Regla:** PBI-040 volvió a Owner Review después de la iteración solicitada;
+- **Regla:** PBI-040 superó la auditoría de preservación y vuelve a Owner Review;
   aceptación sigue pendiente; merge, deploy,
   Production y release no están autorizados.
 
@@ -45,14 +45,24 @@ los valores explícitos se normalizan, preservan y permanecen únicos por Tenant
 Code 128 es una representación futura del código de barras, no una tercera
 identidad. La UI y API de identificadores externos quedan fuera del slice.
 
-La iteración Owner actual converge `Configuración > Catálogos > Reparaciones`
+La iteración Owner anterior convergió `Configuración > Catálogos > Reparaciones`
 y `Lista de precios` sobre las mismas primitives de navegación, lifecycle,
 contadores, acciones y estados visuales. La investigación del catálogo Repairs
 vacío en local confirmó una omisión del seed: las tablas autoritativas no tenían
 filas, aunque las reparaciones sintéticas conservaban snapshots de marca/modelo.
 No fue una regresión de PBI-040, autorización, scope, query o migración. El seed
-gobernado ahora materializa 38 registros Tenant-scoped coherentes; New Repair y
-Configuración obtienen los mismos IDs desde el mismo repositorio Repairs.
+gobernado define 38 registros Tenant-scoped; New Repair y Configuración obtienen
+los mismos IDs desde el mismo repositorio Repairs. Las Repairs históricas
+locales conservan sólo snapshots y cero vínculos canónicos: no se enlazaron por
+nombre. La UI ahora llama **Uso canónico** al contador exacto.
+
+La auditoría de preservación probó que la rama nació de `40684d7554…`, contiene
+los merges #42/#43/#44/#45 y no está detrás de `origin/main`. Worklist, New
+Repair, Repair Detail, CSS, API/read model, controller, repository y contratos
+aceptados conservan los blobs exactos del baseline. Las diferencias restantes
+se clasificaron sólo A (integración necesaria), B (refactor visual neutro) o C
+(tests/fixtures), con D/E en cero. `verify:full` sobre `453eeb0` terminó 13/13
+PASS y Stage 0 verificó ancestry más 16 superficies protegidas.
 
 PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
 Guided V2, política de campos por Branch, catálogos administrativos y las
@@ -98,14 +108,15 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | UI | operación en `/listas/precios`; gobierno en `/configuracion/catalogos?module=price-list` |
 | Cascada | Buscar + Tipo + Category + Brand navegables; Category un Tipo; Brand uno o varios; pares comerciales conocidos; reset determinista |
 | Identificadores | SKU y código de barras internos automáticos server-side; Code 128 es sólo representación futura |
-| Integridad Repairs local | 38 fixtures gobernados Tenant-wide; administración y operación comparten tablas/IDs |
+| Integridad Repairs local | 38 definiciones sintéticas Tenant-wide; Repairs legacy sin canonical IDs; sin matching por texto |
 | UI de Catálogos | Repairs y Lista de precios comparten tabs, lifecycle, counters, acciones y estados |
 | PostgreSQL | 56 migraciones; aislamiento/aplicabilidad/reconciliación/concurrencia PASS; cero skips materiales |
 | Rendimiento | 10,000 items; p95 más reciente 6.98 ms contra presupuesto 750 ms |
 | HTTP local | sesión Owner/Station, fixtures por API, costo protegido y override Branch PASS |
-| Full Verification | iteración de identificadores 13/13 stages PASS; 815 tests base; PostgreSQL material sin skips |
+| Full Verification | preservación 13/13 stages PASS; 822 tests base; PBI-039 2/2 y PostgreSQL material sin skips críticos |
 | Formal UI real | Chrome local autenticado, con dos ventanas lado a lado de Catálogos Repairs/Lista de precios; Owner Review pendiente |
-| Estado de entrega | sin push, PR, CI de branch, merge, deploy o release |
+| Baseline guard | ancestry/merge-base/SHA + 16 blobs PBI-039 antes de campañas grandes |
+| Estado de entrega | Owner Review; sin push, PR, CI de branch, merge, deploy o release |
 
 ## Evidencia de cierre PBI-039
 
@@ -162,7 +173,7 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | Next candidate | ninguno seleccionado; PBI-041 permanece Planned |
 | G6 Customer mínimo | PASS |
 | G7 New Repair / Intake | PASS |
-| G9 Pricing | PBI-040 Owner iteration ready for Owner Review; not accepted |
+| G9 Pricing | PBI-040 baseline preservation PASS; ready for Owner Review; not accepted |
 | Preview | Desplegado y validado en `0d1c576…` |
 | Production / release | NO / NO |
 
