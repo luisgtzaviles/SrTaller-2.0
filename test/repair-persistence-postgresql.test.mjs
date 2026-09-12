@@ -35,6 +35,10 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'catalog_audit_events', 'catalog_commands', 'catalog_reference_cost_revisions',
+  'catalog_branch_price_revisions', 'catalog_base_price_revisions',
+  'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
+  'catalog_brands', 'catalog_categories',
   'repair_problem_category_deletion_events',
   'repair_problem_classification_events',
   'repair_problem_classifications',
@@ -190,6 +194,7 @@ function authorization(item) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query('drop function if exists access_assert_unambiguous_pin_eligibility() cascade');
   await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists repairs_reject_brand_catalog_event_mutation() cascade');
