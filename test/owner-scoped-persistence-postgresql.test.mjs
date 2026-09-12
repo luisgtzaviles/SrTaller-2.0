@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { copyFile, mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -64,6 +63,8 @@ const migrationName =
   '20260725183832_database_create_tenants_and_branches';
 const branchTimezoneMigrationName =
   '20260904120000_stations_add_branch_timezone';
+const tenantCurrencyMigrationName =
+  '20260911180000_tenancy_add_operating_currency';
 const createdAt = '2026-07-25T20:00:00.000Z';
 const timeZone = 'America/Hermosillo';
 
@@ -193,13 +194,13 @@ test(
     const admin = adminPool();
     const connection = createDatabaseConnection(databaseConfig());
     const tenantMigrationRoot = await mkdtemp(
-      join(tmpdir(), 'srtaller-owner-scoped-migration-'),
+      join(migrationRoot, '.owner-scoped-migration-'),
     );
     let runner;
     try {
       await resetDatabase(admin);
       await Promise.all(
-        [migrationName, branchTimezoneMigrationName].flatMap((name) => [
+        [migrationName, branchTimezoneMigrationName, tenantCurrencyMigrationName].flatMap((name) => [
           copyFile(
             join(migrationRoot, `${name}.js`),
             join(tenantMigrationRoot, `${name}.js`),
@@ -212,10 +213,14 @@ test(
       );
       const tenantMigrationSource = source(tenantMigrationRoot);
       const inspection = await inspectMigrationSource(tenantMigrationSource);
-      assert.equal(inspection.manifest.migrations.length, 2);
+      assert.equal(inspection.manifest.migrations.length, 3);
       assert.equal(
         inspection.manifest.migrations[0].migrationName,
         migrationName,
+      );
+      assert.equal(
+        inspection.manifest.migrations[2].migrationName,
+        tenantCurrencyMigrationName,
       );
       runner = createMigrationRunner(connection, {
         expectedManifestHash: inspection.manifest.aggregateSha256,
