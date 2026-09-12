@@ -3,9 +3,9 @@
 ## Estado del documento
 
 **Estado:** Índice reconciliado con el MVP Operating Roadmap. SPRINT-01 y
-SPRINT-02 están cerrados; PBI-039 está Done. SPRINT-03 está activo sólo en
-planning/readiness: PBI-040 Ready y siguiente seleccionado, PBI-041 Planned,
-PBI-042 Planned/Unassigned. WIP `0/1` y ninguna implementación autorizada.
+SPRINT-02 están cerrados; PBI-039 está Done. SPRINT-03 está activo: PBI-040
+está en Owner Review después de la iteración funcional, PBI-041 Planned y
+PBI-042 Planned/Unassigned. WIP `1/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
 PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt sizing; los demás casos
 conservan TBD.
@@ -52,7 +52,7 @@ conservan TBD.
 | [PBI-037](PBI-037.md) | Users & Roles Administration Product Iteration | Integrated slice within PBI-028; no independent lifecycle |
 | [PBI-038](PBI-038.md) | Timezone Foundation Integration and Hardening | Done; Released: NO; PR #40 and exact-main CI GREEN |
 | [PBI-039](PBI-039.md) | Customer Minimum + New Repair Classic 2.0 | Done; Released: NO; PR #45 + exact-main CI `34623060504` |
-| [PBI-040](PBI-040.md) | Catalog & Pricing Core + Fast Price Lookup | Ready; next selected; implementation not authorized |
+| [PBI-040](PBI-040.md) | Catalog & Pricing Core + Fast Price Lookup | Owner Review; Owner iteration pending acceptance |
 | [PBI-041](PBI-041.md) | Supplier Price Import & Reconciliation | Planned; SPRINT-03 Candidate |
 | [PBI-042](PBI-042.md) | Catalog Item Images | Planned / Unassigned |
 
@@ -60,5 +60,5 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-PBI-040 es el siguiente seleccionado y su siguiente gate es autorización Owner
-explícita de implementación. Ready no inicia trabajo ni autoriza release/deploy.
+PBI-040 ocupa el WIP y su siguiente gate es Owner Review/Acceptance. No iniciar
+PBI-041 ni autorizar release/deploy por inferencia.

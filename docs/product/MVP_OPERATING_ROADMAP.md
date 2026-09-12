@@ -2,23 +2,23 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 abierto en
-  planning/readiness para Price List Foundation.
+- **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 activo con
+  PBI-040 en Owner Review para Price List Foundation.
 - **Baseline Git observada:** `main` y `origin/main` local en
   `40684d7554cdf02551f941e5e3f0beabbe563125`; CI exacta de `main`
   `34623060504`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Pricing Catalog.
-- **Checkpoint alcanzado:** PBI-039/Sprint 02 cerrados; architecture y DoR de
-  PBI-040 en PASS, sin implementación.
+- **Checkpoint alcanzado:** PBI-039/Sprint 02 cerrados; iteración Owner de
+  PBI-040 preparada para nueva revisión, todavía sin aceptación.
 - **Sprint activo:** SPRINT-03 — Price List Foundation.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** ninguno en ejecución.
-- **Siguiente PBI candidato:** `PBI-040` — Ready.
-- **Blocking gate:** autorización Owner explícita para iniciar PBI-040;
+- **PBI actual:** `PBI-040` — Owner Review; WIP 1/1.
+- **Siguiente PBI candidato:** ninguno; PBI-041 permanece Planned.
+- **Blocking gate:** Owner Review/Acceptance de PBI-040;
   Production conserva autoridad separada.
-- **WIP operacional:** `0/1`.
+- **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap, cierre PBI-039 y Master Goal de
   Price List Architecture + PBI Readiness.
 
@@ -98,11 +98,11 @@ G1–G7 están `PASS`.
 | Stage | MVP |
 | Phase | Pricing Catalog |
 | Sprint | SPRINT-03 |
-| Sprint status | Active — planning/readiness; WIP=0/1 |
-| Current PBI | NONE in progress; PBI-040 Ready / next selected |
-| Next PBI candidate | PBI-040 |
+| Sprint status | Active — PBI-040 Owner Review; WIP=1/1 |
+| Current PBI | PBI-040 Owner iteration / Owner Review |
+| Next PBI candidate | None; PBI-041 remains Planned |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | Explicit Owner implementation authorization for PBI-040 |
+| Blocking gate | Owner Review / Owner Acceptance for PBI-040 |
 
 ## Fases aprobadas
 
@@ -148,9 +148,9 @@ defectos reales descubiertos en Preview quedaron cerrados por PR #43
 verde y el runtime final fue validado con create/detail/reload/worklist
   autenticado. PR #45 y CI exacta `34623060504` materializaron `Done`.
 
-El ciclo Pricing Catalog se descompone en PBI-040 `Ready` para core + alta
+El ciclo Pricing Catalog se descompone en PBI-040 `Owner Review` para core + alta
 individual + búsqueda, PBI-041 `Planned` para importación masiva y PBI-042
-`Planned/Unassigned` para imágenes. Sólo PBI-040 está seleccionado; no inició.
+`Planned/Unassigned` para imágenes. Sólo PBI-040 ocupa WIP; no está aceptado.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización
@@ -221,9 +221,9 @@ focused high-risk review PASS, merge funcional PR #28, Owner Acceptance y
 cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 
 SPRINT-02 está `Closed`; PBI-039 está `Done` por PR #45 merge `40684d7…` y CI
-exacta `34623060504` SUCCESS. SPRINT-03 está `Active` sólo en
-planning/readiness, WIP `0/1`: PBI-040 es siguiente seleccionado y Ready;
-PBI-041 está Planned. Falta autorización Owner para iniciar PBI-040.
+exacta `34623060504` SUCCESS. SPRINT-03 está `Active`, WIP `1/1`: PBI-040 está
+en Owner Review después de la iteración solicitada; PBI-041 sigue Planned y no
+iniciado.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.

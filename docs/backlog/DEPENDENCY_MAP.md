@@ -33,8 +33,8 @@ flowchart TD
     P27 -. approved integration follow-up .-> P38[PBI-038 Timezone Foundation<br/>Done]
     NOTE --> RETRO[Repair writes actor retrofit]
     RETRO --> P39[PBI-039 Customer Minimum + New Repair<br/>Done]
-    P39 --> S3[SPRINT-03 Price List Foundation<br/>Active / WIP 0/1]
-    S3 --> P40[PBI-040 Catalog + Pricing Core<br/>Ready / Awaiting Owner authorization]
+    P39 --> S3[SPRINT-03 Price List Foundation<br/>Active / WIP 1/1]
+    S3 --> P40[PBI-040 Catalog + Pricing Core<br/>Owner iteration / Owner Review]
     P40 --> P41[PBI-041 Supplier Import<br/>Planned]
     P40 --> QUOTE[Quote / Authorization]
     QUOTE --> MONEY[Payments / Cash]
@@ -79,8 +79,8 @@ flowchart TD
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - Sprint 02: `Closed`; PBI-039 `Done` por PR #45 + exact-main CI
   `34623060504`; todos sus PBIs `Done`, ninguno `Released`.
-- Sprint 03: `Active` en planning/readiness; PBI-040 Ready/siguiente
-  seleccionado, PBI-041 Planned, WIP=`0/1`; falta autorización Owner de inicio.
+- Sprint 03: `Active`; PBI-040 Owner iteration/Owner Review, PBI-041 Planned,
+  WIP=`1/1`; falta Owner Acceptance.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y

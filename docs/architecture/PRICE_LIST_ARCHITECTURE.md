@@ -124,15 +124,27 @@ En el primer ciclo:
 
 ## 5. Categorías, marcas e imágenes
 
-Categorías son Tenant-scoped, planas, obligatorias y con lifecycle. Una
+Categorías son Tenant-scoped, planas, obligatorias y con lifecycle. Cada
+categoría declara exactamente un tipo comercial aplicable; el servidor rechaza
+asignaciones incompatibles y la UI filtra el combobox por el Tipo vigente. Una
 categoría inactiva permanece visible en historia pero no se asigna a nuevos
 artículos. Jerarquías, tags y categorías Platform quedan diferidos.
 
-`CommercialBrand` es Tenant-scoped, opcional y no comparte tabla ni identidad
-con el catálogo `repair_brands`: Apple como fabricante comercial y Apple como
-marca del equipo pueden verse iguales sin ser la misma autoridad. Una futura
-relación explícita puede mapear ambos IDs mediante contratos; no hay sync por
-nombre ni promoción automática.
+`CommercialBrand` es Tenant-scoped, opcional, tiene una sola identidad por
+nombre normalizado dentro del Tenant y puede declarar uno o varios tipos
+aplicables. No se duplica por categoría. Tampoco comparte tabla ni identidad con
+el catálogo `repair_brands`: Apple como fabricante comercial y Apple como marca
+del equipo pueden verse iguales sin ser la misma autoridad. Una futura relación
+explícita puede mapear ambos IDs mediante contratos; no hay sync por nombre ni
+promoción automática.
+
+Categorías y marcas creadas explícitamente desde el combobox operativo nacen
+`PENDING`/Por revisar, se pueden usar sin bloquear el alta y conservan actor,
+Branch, Station, Session y fecha. Configuración > Catálogos > Lista de precios
+es la superficie central para aprobar, editar, retirar o fusionar esos valores.
+La fusión reasigna los artículos de forma transaccional, conserva la identidad
+origen como `MERGED` inactiva y audita destino y cantidad afectada. Un blur nunca
+crea referencias.
 
 La imagen es metadata opcional del artículo, nunca identificador ni criterio de
 matching. `Files` será owner del objeto binario y `catalog` de la asociación de
@@ -156,10 +168,12 @@ acepta URLs externas permanentes ni crea almacenamiento lateral.
 ### Códigos escaneables
 
 `INTERNAL_BARCODE` y `GTIN_8/12/13/14` son schemes distintos. GTIN conserva
-ceros iniciales y valida longitud/dígito; el código interno se genera sólo por
-acción explícita, server-side, en un namespace Tenant-wide y se representa como
-Code 128, nunca fingiendo ser EAN/UPC. No se genera barcode automáticamente por
-cada alta. Un valor exacto identifica como máximo un item dentro del Tenant.
+ceros iniciales y valida longitud/dígito. El código interno se genera
+server-side cuando el campo queda vacío, o se valida y preserva cuando el
+usuario lo aporta, dentro de un namespace Tenant-wide. Puede representarse
+posteriormente como Code 128, nunca fingiendo ser EAN/UPC. Un GTIN externo sólo
+existe si se captura explícitamente y no sustituye al código interno. Un valor
+exacto identifica como máximo un item dentro del Tenant.
 
 El código de proveedor no es SKU ni barcode; pertenece a
 `SupplierItemReference`. Los IDs de URL siguen siendo opacos: SKU/barcode no
@@ -261,14 +275,14 @@ documento.
 - `0` numérico significa cero explícito. Precio negativo es inválido; precio
   cero es válido y se muestra como tal.
 - `[BORRAR]` es el token reservado, visible en preview, para limpiar únicamente
-  descripción, marca, barcode interno o costo opcional; no puede borrar título,
-  tipo, categoría, SKU, moneda ni precio.
+  descripción, marca, GTIN externo o costo opcional; no puede borrar título,
+  tipo, categoría, SKU, código interno, moneda ni precio.
 - Límite configurable y prueba obligatoria de 1,000 filas. Archivos superiores
   al límite se rechazan completos antes de staging.
 
 ### Matching determinista
 
-Orden de claves: `itemId`, SKU interno, barcode/GTIN exacto y tipado,
+Orden de claves: `itemId`, SKU interno, código interno, GTIN externo exacto y tipado,
 `ImportSource + supplierItemCode`. Una clave única encuentra un item; varias
 claves de la misma fila que apunten a items distintos producen `CONFLICT`.
 Nombre, marca, categoría y fuzzy sólo generan candidatos para resolución humana.

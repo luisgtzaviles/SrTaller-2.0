@@ -6,9 +6,9 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 
 **Estado:** SPRINT-00, SPRINT-01 y SPRINT-02 `Closed`.
 **Sprints documentados:** los tres anteriores y SPRINT-03 `Active`.
-**Sprint activo:** SPRINT-03 — Price List Foundation, sólo en
-planning/readiness. PBI-040 es siguiente seleccionado y `Ready`; PBI-041 está
-`Planned`; WIP `0/1`. El gate vigente es autorización Owner de implementación.
+**Sprint activo:** SPRINT-03 — Price List Foundation. PBI-040 está en Owner
+Review después de su iteración funcional; PBI-041 sigue `Planned`; WIP `1/1`.
+El gate vigente es Owner Review/Acceptance de PBI-040.
 
 ## Reglas propuestas
 
@@ -67,9 +67,9 @@ Production sigue sin autorización.
 
 ## SPRINT-03
 
-SPRINT-03 prepara Price List Foundation. PBI-040 está Ready como siguiente
-seleccionado pero no iniciado; PBI-041 permanece Candidate/Planned. PBI-042 no
-pertenece al compromiso inicial.
+SPRINT-03 ejecuta Price List Foundation. PBI-040 está en Owner Review y no
+aceptado; PBI-041 permanece Candidate/Planned. PBI-042 no pertenece al
+compromiso inicial.
 
 - [Objetivo](sprint-03/SPRINT_GOAL.md)
 - [Backlog](sprint-03/SPRINT_BACKLOG.md)
@@ -79,4 +79,4 @@ pertenece al compromiso inicial.
 
 ## Próxima revisión
 
-Al recibir autorización Owner para implementar PBI-040 o cambiar su readiness.
+Al resolver Owner Review de PBI-040 o cambiar su alcance/autoridad.

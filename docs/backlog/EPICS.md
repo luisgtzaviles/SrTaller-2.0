@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado; EPIC-015 tiene decisiones Owner y arquitectura
-suficientes para PBI-040 Ready. Ningún epic autoriza implementación por sí solo.
+**Estado:** Reconciliado; EPIC-015 tiene PBI-040 en Owner Review después de su
+iteración funcional. Ningún epic autoriza aceptación o integración por sí solo.
 **Criterio común:** sólo se descompone cuando el problema, actores, límites y dependencias son suficientemente conocidos.
 
 ## EPIC-000 — Product Discovery and Architecture
@@ -26,7 +26,7 @@ suficientes para PBI-040 Ready. Ningún epic autoriza implementación por sí so
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** PBI-023 `Closed`; Sprint 01 y SPRINT-02 cerrados; PBI-039 Done.
-  SPRINT-03 está activo sólo en planning/readiness para EPIC-015, WIP `0/1`.
+  SPRINT-03 está activo para EPIC-015, con PBI-040 en Owner Review y WIP `1/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
@@ -201,8 +201,8 @@ suficientes para PBI-040 Ready. Ningún epic autoriza implementación por sí so
   historia y apply masivo ambiguo/parcial.
 - **Exclusiones:** Inventory, Procurement, Repair Concepts, Quote/Sales,
   Payments/Caja, Pedidos, Solicitudes, multi-currency/FX e impuestos.
-- **Estado:** Architecture accepted; PBI-040 Ready esperando autorización Owner;
-  PBI-041 Planned; PBI-042 Planned/Unassigned.
+- **Estado:** Architecture accepted; PBI-040 Owner iteration/Owner Review y
+  aceptación pendiente; PBI-041 Planned; PBI-042 Planned/Unassigned.
 - **Descomposición:** [PBI-040](pbis/PBI-040.md),
   [PBI-041](pbis/PBI-041.md) y [PBI-042](pbis/PBI-042.md).
 - **Contrato:** [Price List Architecture](../architecture/PRICE_LIST_ARCHITECTURE.md).

@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** snapshot del checkpoint funcional Owner Review de PBI-040.
+- **Estado:** snapshot del checkpoint de iteración Owner Review de PBI-040.
 - **Baseline Git integrada observada:** `main` y `origin/main` en
   `40684d7554cdf02551f941e5e3f0beabbe563125`.
 - **CI autoritativa exacta de `main`:** run
@@ -13,7 +13,8 @@
 - **Preview:** desplegado desde el merge exacto `0d1c576…`, saludable y
   validado con un flujo autenticado New Repair create/detail/reload/worklist.
 - **Production:** no desplegada ni autorizada.
-- **Regla:** PBI-040 llegó a Owner Review; merge, deploy,
+- **Regla:** PBI-040 volvió a Owner Review después de la iteración solicitada;
+  aceptación sigue pendiente; merge, deploy,
   Production y release no están autorizados.
 
 ## Resumen ejecutivo
@@ -22,7 +23,14 @@ PBI-040 materializó el primer slice vertical de Catalog/Pricing: identidad
 Tenant-wide, precio base Tenant-wide, override Branch con herencia, costo de
 referencia protegido, moneda Tenant, alta/edición individual y búsqueda rápida
 por nombre/SKU/barcode en `Listas > Lista de precios`. El candidato funcional
-está listo para revisión Owner, no está aceptado ni integrado.
+está listo para una nueva revisión Owner, no está aceptado ni integrado.
+
+La revisión humana inicial pidió reconciliar operación rápida con gobierno
+central. La iteración `c97c05d` incorporó Category/Brand como comboboxes
+escribibles con aplicabilidad por Tipo, creación explícita Por revisar y
+reconciliación en `Configuración > Catálogos > Lista de precios`. También separó
+SKU, código interno automático y GTIN/EAN/UPC externo. Cambiar Tipo limpia e
+informa selecciones incompatibles; costo y pricing mantienen sus fronteras.
 
 PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
 Guided V2, política de campos por Branch, catálogos administrativos y las
@@ -65,11 +73,14 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | Dominio/persistencia | Catalog Tenant-wide, revisiones append-only, constraints e índices Tenant-aware |
 | Pricing | Base Tenant + override Branch revocable; moneda desde Tenancy |
 | Seguridad de costo | omisión server-side sin capability; preferencia personal default oculta |
-| UI | alta/edición y lookup en `/listas/precios`; sólo Lista de precios bajo `Listas` |
-| PostgreSQL | 55 migraciones; aislamiento/concurrencia/búsqueda PASS; cero skips materiales |
-| Rendimiento | 10,000 items; p95 local 6.89–8.89 ms contra presupuesto 750 ms |
-| HTTP local | create/reload, tres búsquedas, costo, override/revocación y preferencia PASS |
-| Formal UI real | pendiente de Owner Review; browser nativo no disponible en la sesión de ingeniería |
+| UI | operación en `/listas/precios`; gobierno en `/configuracion/catalogos?module=price-list` |
+| Cascada | Category un Tipo; Brand uno o varios; creación inline Por revisar; cambio de Tipo determinista |
+| Identificadores | SKU y código interno automáticos server-side; externos GTIN separados |
+| PostgreSQL | 56 migraciones; aislamiento/aplicabilidad/reconciliación/concurrencia PASS; cero skips materiales |
+| Rendimiento | 10,000 items; p95 más reciente 6.76 ms contra presupuesto 750 ms |
+| HTTP local | sesión Owner/Station, fixtures por API, costo protegido y override Branch PASS |
+| Full Verification | iteración 13/13 stages PASS; 814 tests base; PostgreSQL material sin skips |
+| Formal UI real | Chrome abierto en `/listas/precios`; revisión inicial produjo feedback y la nueva iteración espera aceptación Owner |
 | Estado de entrega | sin push, PR, CI de branch, merge, deploy o release |
 
 ## Evidencia de cierre PBI-039
@@ -121,18 +132,19 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 
 | Elemento | Estado vigente |
 |---|---|
-| Sprint activo | SPRINT-03 — Price List Foundation; planning/readiness only |
-| Current PBI | `PBI-040` — Owner Review |
+| Sprint activo | SPRINT-03 — Price List Foundation; PBI-040 en Owner Review |
+| Current PBI | `PBI-040` — Owner iteration / Owner Review |
 | WIP | `1/1` |
 | Next candidate | ninguno seleccionado; PBI-041 permanece Planned |
 | G6 Customer mínimo | PASS |
 | G7 New Repair / Intake | PASS |
-| G9 Pricing | PBI-040 functional checkpoint ready for Owner Review |
+| G9 Pricing | PBI-040 Owner iteration ready for Owner Review; not accepted |
 | Preview | Desplegado y validado en `0d1c576…` |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Ejecutar Owner Review de PBI-040 en `/listas/precios`. Según el resultado,
+Ejecutar de nuevo Owner Review de PBI-040 en `/listas/precios` y en el módulo
+Lista de precios de Configuración > Catálogos. Según el resultado,
 registrar Owner Acceptance o remediar feedback sin iniciar PBI-041. PR, merge,
 Production, release y deploy conservan autorización independiente.

@@ -30,6 +30,15 @@ historia de precios, transporte web y ownership entre módulos.
    `403` porque un GET no porta CSRF. Se introdujo requisito
    `catalog.manage/read`; las mutaciones conservan `state-change`, CSRF y guards.
    Regresión focalizada y recorrido HTTP posterior: PASS.
+3. **HIGH — backfill sin semántica de aplicabilidad.** Un backfill universal
+   habría preservado combinaciones como Pantallas/Servicio. Se reemplazó por
+   inferencia desde el Tipo de los artículos existentes; sólo referencias sin
+   uso, donde no existe evidencia, conservan compatibilidad amplia. Cada item
+   previo queda cubierto y todo valor nuevo exige aplicabilidad explícita.
+4. **GATE — registro de ownership incompleto.** La primera campaña de iteración
+   detectó que la lectura de `catalog_items` del backfill no figuraba en su
+   registro DEC-005. Se agregó la tabla exacta a la migración Catalog-owned;
+   arquitectura y 36 mutaciones controladas posteriores PASS.
 
 ## Pendiente independiente
 

@@ -6,7 +6,9 @@
 - **Branch:** `feature/pbi-040-catalog-pricing-core`.
 - **Baseline:** `40684d7554cdf02551f941e5e3f0beabbe563125` con CI de
   `main` `34623060504` SUCCESS.
-- **Candidato de código probado:** `4f0f083cabecdb632c84232101b1f276e86cf6ac`.
+- **Candidato de iteración Owner:** `c97c05d9c2dfe23858df69474c39a43435d4e22b`
+  más hardening de backfill/ownership `37c3dde2c34f`; aceptación Owner todavía
+  pendiente.
 - **No autorizado/no realizado:** push, PR, merge, deploy, release o cambio de
   infraestructura.
 
@@ -25,6 +27,14 @@
 - Alta/edición individual, lifecycle, navegación `Listas > Lista de precios`,
   búsqueda por tokens de nombre y coincidencia exacta de SKU/barcode, filtros y
   precio efectivo quedaron disponibles sin construir importación ni Files.
+- Categoría y Marca son comboboxes escribibles, accesibles y filtrados por Tipo.
+  Una creación explícita por Enter/click nace Por revisar, queda seleccionada y
+  no descarta el draft; blur no crea datos.
+- Configuración > Catálogos incorpora el módulo Lista de precios para gobernar
+  aplicabilidad, lifecycle y reconciliación. Category pertenece a un Tipo;
+  CommercialBrand conserva identidad Tenant-wide y puede aplicar a varios.
+- SKU y código interno se resuelven server-side cuando quedan vacíos. El código
+  interno permanece separado de GTIN/EAN/UPC externos.
 
 ## Seguridad, persistencia y fronteras
 
@@ -35,9 +45,9 @@
 - Writes usan allowlists estrictas, CSRF, idempotencia, `expectedVersion`, actor,
   correlation y auditoría. Constraints Tenant-aware protegen referencias y la
   unicidad histórica de SKU/barcode/GTIN.
-- Cuatro migraciones aditivas materializan moneda operativa, capabilities,
-  preferencia personal y Catalog/Pricing. El rollback de aplicación conserva
-  datos; no existe migración destructiva en el slice.
+- Cinco migraciones aditivas materializan moneda operativa, capabilities,
+  preferencia personal, Catalog/Pricing y gobierno de referencias. El rollback
+  de aplicación conserva datos; no existe migración destructiva en el slice.
 - DEC-005/policy registra la nueva frontera. Catalog/Pricing no adquiere
   ownership de Inventory, Procurement, Repair, Payments, Cash, Files, pedidos o
   solicitudes.
@@ -46,21 +56,32 @@
 
 - Build gobernado y pruebas focalizadas posteriores a la remediación del GET de
   detalle: `13/13 PASS`, cero skips.
-- Base suite: `812` tests; `792 PASS`, `20` skips PostgreSQL gobernados, cero
+- Base suite de iteración: `814` tests; `794 PASS`, `20` skips PostgreSQL gobernados, cero
   failures. Los skips se ejecutan en stages materiales separados.
-- PostgreSQL PBI-040: `55` migraciones, cero skips; aislamiento de dos Tenants,
-  dos Branches, constraints, concurrencia, revisiones, tipos y búsqueda.
-- Benchmark local con `10,000` items: p95 observado entre `6.89 ms` y
-  `8.89 ms`, bajo el presupuesto fijado de `750 ms`.
-- Suite PostgreSQL compuesta aislada: `8/8` files/tests PASS, cero skips.
-- Campaña `verify:full` previa a la remediación final: `13/13` stages PASS,
+- PostgreSQL PBI-040 de la iteración: `56` migraciones, cero skips; aislamiento
+  de dos Tenants/dos Branches, aplicabilidad, Por revisar, aprobación/fusión,
+  identificadores automáticos/explícitos, constraints y concurrencia.
+- Benchmark PostgreSQL más reciente con `10,000` items: p95 `6.76 ms`, bajo el
+  presupuesto fijado de `750 ms`.
+- Suite PostgreSQL compuesta aislada: `5/5` suites, `17` tests PASS, cero skips.
+- Campaña `verify:full` previa a esta iteración: `13/13` stages PASS,
   incluida UI smoke, runtime, schema/migrations y PBI-040 PostgreSQL.
-- La campaña final se ejecuta sobre el HEAD documental reconciliado y su
-  resultado se entrega en el handoff de Owner Review.
+- La campaña final de esta iteración se ejecuta sobre el HEAD documental
+  reconciliado y su resultado se entrega en el handoff de Owner Review.
+- La primera campaña de iteración falló correctamente en Stage 3: el backfill
+  leía `catalog_items`, pero esa tabla no estaba declarada en el registro de
+  ownership de la nueva migración. Se corrigió la declaración exacta en
+  DEC-005/policy; `verify:architecture` y las `36/36` mutaciones controladas
+  posteriores pasaron sin relajar reglas.
+- Full Verification de iteración `local-full-verification-20260912022105-37c3dde2c34f`:
+  `13/13` stages PASS, cleanup PASS, fingerprint
+  `7f4f894abd92750f4cb45783b05a1eb21383707df5923bc1d6af9f5598c836d5`.
+  Único warning: chunk Vite principal >500 kB, deuda ya aceptada y no ocultada.
 
-## Prueba funcional HTTP local
+## Prueba funcional HTTP local previa a la iteración
 
-Con PostgreSQL 18.4, 55 migraciones, datos sintéticos y sesión operacional real:
+El recorrido que originó el primer checkpoint usó PostgreSQL 18.4, 55
+migraciones, datos sintéticos y sesión operacional real:
 
 1. alta de categoría, marca y Refacción con precio, costo, SKU y barcode;
 2. búsqueda inequívoca por nombre, SKU y barcode;
@@ -75,18 +96,53 @@ clasificación de transporte `state-change`. Se corrigió a lectura protegida po
 `catalog.manage`, se agregó una regresión y el recorrido completo terminó
 `PASS`. No se relajó la capability Tenant-wide ni ningún commit guard.
 
+## Fixtures locales de Owner Review
+
+El runtime local se reconstruyó con `local:db:reset`/`local:db:seed`, 56
+migraciones y datos exclusivamente sintéticos. La preparación autenticada creó
+por API gobernada y después cerró su sesión para no bloquear el PIN de Chrome:
+
+- Pantalla iPhone 11 OLED — Refacción/Pantallas/Apple — costo 480, base 1399;
+- Funda iPhone 16 rosa — Producto/Fundas/Apple — costo 105, base 299;
+- Limpieza centro de carga — Servicio/Mantenimiento/sin marca — base 350,
+  override de la Branch de revisión 399;
+- Alcohol isopropílico 1 L — Insumo/Insumos/Steren — costo 65, base 180;
+  permanece excluido del lookup comercial;
+- `Termos QA` y `MobiLab QA` quedan deliberadamente Por revisar, ambos
+  aplicables a Producto, para evaluar gobierno y reconciliación.
+
+Los cuatro artículos resolvieron SKU y código interno server-side. Todo el set
+se elimina de forma reversible con el reset local gobernado; no es Production.
+
 ## UI formal y gates posteriores
 
 La UI compila y sus contratos de navegación, autorización, estados, transporte
-y preferencia pasan; el smoke automatizado también está verde. La superficie de
-browser nativo/Chrome no estuvo disponible en esta sesión (`Sky Computer Use
+y preferencia pasan; el smoke automatizado también está verde. Chrome quedó
+abierto en `http://127.0.0.1:4173/listas/precios`; backend y ruta respondieron
+200. La inspección automatizada nativa no estuvo disponible (`Sky Computer Use
 native pipe startup failed`), por lo que no se inventan screenshots ni se marca
-la matriz visual real como ejecutada.
+la nueva matriz visual humana como ejecutada.
 
-Owner Review debe recorrer `/listas/precios` en Chrome real, al menos en Light y
-Dark/responsive, y confirmar copy/jerarquía/operabilidad. Después permanecen
+La revisión Owner previa produjo esta iteración y no constituye aceptación. El
+nuevo Owner Review debe recorrer `/listas/precios` y
+`/configuracion/catalogos?module=price-list` en Chrome real, al menos en Light y
+Dark/responsive, y confirmar comboboxes, cascada, Por revisar, identificadores y
+operabilidad. Después permanecen
 separados: aceptación Owner, hardening/revisión independiente, PR/CI, merge,
 exact-main CI y cualquier Preview/deploy autorizado.
+
+## Matriz de iteración Owner A-H
+
+| Escenario | Evidencia del candidato |
+|---|---|
+| A Refacción existente | búsqueda y selección filtrada de Category/Brand; alta conserva costo 480 y precio 1399 |
+| B Category nueva | opción Crear explícita por teclado/click; nace PENDING y queda seleccionada |
+| C Brand nueva | mismo flujo, identidad Tenant-wide y visible Por revisar en Configuración |
+| D Servicio sin marca | Brand sigue opcional; Category SERVICE exigida por servidor |
+| E Insumo | se administra en Catalog y continúa excluido del lookup comercial |
+| F cambio de Tipo | conserva compatibles y limpia/informa Category/Brand incompatibles |
+| G auto identifiers | SKU e INTERNAL_BARCODE asignados en la transacción server-side y visibles en reload |
+| H identifiers explícitos | valores válidos se preservan; constraint Tenant-wide impide colisión |
 
 ## Exclusiones verificadas
 
