@@ -97,7 +97,8 @@ async function waitForDetail(connection) {
     if (ready) return;
     await new Promise((resolveWait) => setTimeout(resolveWait, 250));
   }
-  throw new Error('Repair Detail did not become ready');
+  const state = await evaluate(connection, `({ url: location.href, text: document.body.innerText.slice(0, 500) })`);
+  throw new Error(`Repair Detail did not become ready at ${state.url}: ${state.text.replace(/\s+/gu, ' ')}`);
 }
 
 const captureExpression = `(() => {
@@ -138,12 +139,28 @@ async function evidenceBodies() {
 
 async function capturePreview(target, localExchange) {
   const images = await evidenceBodies();
+  const previewSession = {
+    ...localExchange.session,
+    capabilities: localExchange.session.capabilities.filter((capability) => [
+      'repairs.read',
+      'repairs.add_note',
+      'repairs.create',
+      'repairs.correct_intake',
+      'repairs.classify',
+      'repairs.catalogs.read',
+      'repairs.catalogs.manage',
+      'repairs.configuration.read',
+      'repairs.configuration.manage',
+    ].includes(capability)),
+    administrationCapabilities: [],
+  };
   const connection = connect(target, async (paused, call) => {
     const url = new URL(paused.request.url);
     const method = paused.request.method;
     let responseBody = null;
     let contentType = 'application/json; charset=utf-8';
-    if (method === 'GET' && url.pathname === '/api/access/session') responseBody = Buffer.from(JSON.stringify(localExchange.session)).toString('base64');
+    if (method === 'GET' && url.pathname === '/api/access/session') responseBody = Buffer.from(JSON.stringify(previewSession)).toString('base64');
+    if (method === 'GET' && url.pathname === '/api/users/me/preferences') responseBody = Buffer.from(JSON.stringify({ newRepairFormMode: 'classic' })).toString('base64');
     if (method === 'GET' && url.pathname === `/api/repairs/${fixture.repairId}`) responseBody = Buffer.from(JSON.stringify(localExchange.repair)).toString('base64');
     const evidenceMatch = new RegExp(`^/api/repairs/${fixture.repairId}/evidence/([^/]+)/content$`, 'u').exec(url.pathname);
     if (method === 'GET' && evidenceMatch && images.has(evidenceMatch[1])) {
