@@ -20,6 +20,7 @@ const localOrigin = argument('--local-origin', 'http://127.0.0.1:4173');
 const backendOrigin = argument('--backend-origin', 'http://127.0.0.1:3000');
 const output = argument('--output', null);
 const hold = process.argv.includes('--hold');
+const parityViewport = Object.freeze({ width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
@@ -113,6 +114,7 @@ const captureExpression = `(() => {
 async function captureLocal(target) {
   const connection = connect(target);
   await connection.opened;
+  await connection.call('Emulation.setDeviceMetricsOverride', parityViewport);
   await connection.call('Page.navigate', { url: `${localOrigin}/reparaciones/${fixture.repairId}` });
   await waitForDetail(connection);
   const exchange = await evaluate(connection, `(async () => {
@@ -188,6 +190,7 @@ async function capturePreview(target, localExchange) {
     await call('Fetch.continueRequest', { requestId: paused.requestId });
   });
   await connection.opened;
+  await connection.call('Emulation.setDeviceMetricsOverride', parityViewport);
   await connection.call('Fetch.enable', { patterns: [{ urlPattern: '*api/*', requestStage: 'Request' }] });
   await connection.call('Page.navigate', { url: `${fixture.previewBaseline.origin}/reparaciones/${fixture.repairId}` });
   await waitForDetail(connection);
