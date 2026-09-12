@@ -6,8 +6,8 @@
 - **Branch:** `feature/pbi-040-catalog-pricing-core`.
 - **Baseline:** `40684d7554cdf02551f941e5e3f0beabbe563125` con CI de
   `main` `34623060504` SUCCESS.
-- **Candidato de iteración Owner:** simplificación de identificadores sobre los
-  commits de la iteración anterior; aceptación Owner todavía pendiente.
+- **Candidato de iteración Owner:** simplificación de identificadores
+  `a66ff4a`; aceptación Owner todavía pendiente.
 - **No autorizado/no realizado:** push, PR, merge, deploy, release o cambio de
   infraestructura.
 

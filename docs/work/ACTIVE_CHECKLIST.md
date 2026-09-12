@@ -31,6 +31,7 @@ costo sólo viaja con capability y preferencia personal explícita.
 
 - WIP 1/1; PBI-041 y PBI-042 no se inician.
 - Branch: `feature/pbi-040-catalog-pricing-core`, desde `40684d7554…`.
+- Checkpoint local de identificadores: `a66ff4a`; no integrado ni enviado.
 - No merge, push, deploy, release o Production sin autoridad posterior.
 - No ownership de Inventory, Procurement, Repair, Payments o Cash.
 - No se debilitan assertions, scopes, capabilities ni aislamiento.
