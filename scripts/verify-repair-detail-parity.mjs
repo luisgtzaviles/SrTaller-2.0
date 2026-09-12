@@ -255,7 +255,15 @@ await fetch(`${cdp}/json/activate/${previewTarget.id}`).catch(() => undefined);
 
 if (hold) {
   process.stdout.write('{"event":"repair_detail_parity_tabs_ready","status":"HOLDING"}\n');
-  await new Promise(() => undefined);
+  for (;;) {
+    await new Promise((resolveWait) => setTimeout(resolveWait, 1_000));
+    const previewStillReady = await evaluate(preview.connection, `location.pathname === '/reparaciones/${fixture.repairId}' && document.body.innerText.includes('Detalle de reparación')`);
+    if (!previewStillReady) {
+      await preview.connection.call('Page.navigate', { url: `${fixture.previewBaseline.origin}/reparaciones/${fixture.repairId}` });
+      await waitForDetail(preview.connection);
+      process.stdout.write('{"event":"repair_detail_parity_preview_restored","status":"HOLDING"}\n');
+    }
+  }
 } else {
   await preview.connection.call('Fetch.disable');
   preview.connection.websocket.close();

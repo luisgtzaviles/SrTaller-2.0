@@ -25,7 +25,7 @@ export const PBI039_PROTECTED_SURFACES = Object.freeze({
   'test/new-repair-owner-iteration-contract.test.mjs': '3b1dbc40cf691893d9371baffaa9547f05998e5e',
   'scripts/lib/pbi039-repair-detail-parity-fixture.mjs': 'e890bdc088d6cc9e9fbcfb01e0b48d90aa463d12',
   'scripts/lib/repair-detail-parity-contract.mjs': 'f35225ed14e4e8099defc36687fad0e1ebf1c6f2',
-  'scripts/verify-repair-detail-parity.mjs': 'ff0b33ae5cd6b14f0e5ef4dbe3e7a82d4ecaa0f5',
+  'scripts/verify-repair-detail-parity.mjs': '601fdd66cedcb271f6d5b22a8462f1ffa01fd733',
   'test/repair-detail-parity-fixture.test.mjs': 'a29c8e5d65c03c338d7e4cc16315ca200144dc28',
 });
 
