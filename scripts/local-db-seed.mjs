@@ -60,7 +60,7 @@ const client = await pool.connect();
 try {
   await client.query('BEGIN');
   await client.query(
-    `INSERT INTO tenants (tenant_id, created_at) VALUES ($1::uuid, $2::timestamptz)
+    `INSERT INTO tenants (tenant_id, operating_currency, created_at) VALUES ($1::uuid, 'MXN', $2::timestamptz)
      ON CONFLICT (tenant_id) DO UPDATE SET created_at = EXCLUDED.created_at`,
     [rows.tenant.tenantId, rows.tenant.createdAt],
   );
