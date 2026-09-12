@@ -8,6 +8,7 @@ import { RepairModelCatalogPanel } from '../components/RepairModelCatalogPanel.j
 import { RepairProblemCategoryCatalogPanel } from '../components/RepairProblemCategoryCatalogPanel.js';
 import { RepairRiskCatalogPanel } from '../components/RepairRiskCatalogPanel.js';
 import { CatalogPriceListReferencesPanel } from '../components/CatalogPriceListReferencesPanel.js';
+import { CatalogSectionTabs } from '../components/catalogs/CatalogAdministration.js';
 import { ButtonLink } from '../components/ui/controls.js';
 import { PageHeader } from '../components/ui/navigation.js';
 import { hasOperationalCapability } from '../session/session-capabilities.mjs';
@@ -16,6 +17,7 @@ import styles from './repair-catalogs-page.module.css';
 
 const futureCatalogs = ['Estados'] as const;
 type RepairCatalog = 'risks' | 'device-types' | 'brands' | 'models' | 'categories';
+type RepairCatalogTab = RepairCatalog | 'future-statuses';
 
 function repairCatalogFromSearchParams(searchParams: URLSearchParams): RepairCatalog {
   const catalog = searchParams.get('catalog');
@@ -59,14 +61,16 @@ export function RepairCatalogsPage({ capabilities, csrfToken }: Readonly<{
         </div>
       </div>
 
-      {activeModule === 'repairs' ? <><nav className={styles.catalogTabs} aria-label="Catálogos de Reparaciones">
-        <button type="button" aria-current={activeCatalog === 'risks' ? 'page' : undefined} onClick={() => selectCatalog('risks')}>Riesgos</button>
-        <button type="button" aria-current={activeCatalog === 'device-types' ? 'page' : undefined} onClick={() => selectCatalog('device-types')}>Tipos</button>
-        <button type="button" aria-current={activeCatalog === 'brands' ? 'page' : undefined} onClick={() => selectCatalog('brands')}>Marcas</button>
-        <button type="button" aria-current={activeCatalog === 'models' ? 'page' : undefined} onClick={() => selectCatalog('models')}>Modelos</button>
-        <button type="button" aria-current={activeCatalog === 'categories' ? 'page' : undefined} onClick={() => selectCatalog('categories')}>Categorías</button>
-        {futureCatalogs.map((catalog) => <button type="button" key={catalog} disabled>{catalog}<small>Próximamente</small></button>)}
-      </nav>
+      {activeModule === 'repairs' ? <><CatalogSectionTabs<RepairCatalogTab> value={activeCatalog} label="Catálogos de Reparaciones" onChange={(catalog) => {
+        if (catalog !== 'future-statuses') selectCatalog(catalog);
+      }} options={[
+        { value: 'risks', label: 'Riesgos' },
+        { value: 'device-types', label: 'Tipos' },
+        { value: 'brands', label: 'Marcas' },
+        { value: 'models', label: 'Modelos' },
+        { value: 'categories', label: 'Categorías' },
+        ...futureCatalogs.map((catalog) => ({ value: 'future-statuses' as const, label: catalog, badge: 'Próximamente', disabled: true })),
+      ]} />
 
       {activeCatalog === 'risks' ? <RepairRiskCatalogPanel canManage={canManage} csrfToken={csrfToken} /> : null}
       {activeCatalog === 'device-types' ? <RepairDeviceTypeCatalogPanel canManage={canManage} csrfToken={csrfToken} /> : null}

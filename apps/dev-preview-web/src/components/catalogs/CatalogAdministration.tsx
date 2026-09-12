@@ -8,6 +8,44 @@ import styles from './catalog-administration.module.css';
 export type CatalogLifecycle = 'active' | 'inactive' | 'all';
 export type CatalogSurface = 'canonical' | 'pending';
 
+export type CatalogSectionOption<Value extends string> = Readonly<{
+  value: Value;
+  label: string;
+  count?: number;
+  badge?: string;
+  disabled?: boolean;
+}>;
+
+export function CatalogSectionTabs<Value extends string>({
+  value,
+  options,
+  label,
+  onChange,
+}: Readonly<{
+  value: Value;
+  options: readonly CatalogSectionOption<Value>[];
+  label: string;
+  onChange(value: Value): void;
+}>): React.JSX.Element {
+  return (
+    <nav className={styles.sectionTabs} aria-label={label}>
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-current={value === option.value ? 'page' : undefined}
+          disabled={option.disabled}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+          {option.count === undefined ? null : <span>{option.count}</span>}
+          {option.badge ? <small>{option.badge}</small> : null}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
 export function CatalogPanel({ labelledBy, children }: Readonly<{
   labelledBy: string;
   children: React.ReactNode;

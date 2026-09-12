@@ -42,6 +42,9 @@ test('shared primitives own lifecycle, reconciliation, read-only, usage, and row
   assert.match(source, /count === 1 \? 'resultado' : 'resultados'/u);
   assert.match(source, /canonicalCount === 1 \? 'canónica' : 'canónicas'/u);
   assert.match(source, /actions\.length === 0/u);
+  assert.match(source, /export function CatalogSectionTabs/u);
+  assert.match(source, /className=\{styles\.sectionTabs\}/u);
+  assert.match(source, /aria-current=\{value === option\.value \? 'page'/u);
 });
 
 test('reconciliation and domain exceptions stay owned by the correct panels', async () => {
@@ -62,5 +65,25 @@ test('URL selection mounts one domain panel without changing domain ownership', 
   for (const catalog of ['risks', 'brands', 'models', 'categories']) assert.match(source, new RegExp(`catalog === '${catalog}'`, 'u'));
   assert.match(source, /next\.set\('catalog', catalog\)/u);
   assert.match(source, /setSearchParams\(next, \{ replace: true \}\)/u);
+  assert.match(source, /<CatalogSectionTabs/u);
   assert.doesNotMatch(source, /GenericCatalog/u);
+});
+
+test('Repairs and Price List use one shared visual language for catalog sections', async () => {
+  const [page, priceList, sharedStyles, pageStyles] = await Promise.all([
+    readFile('apps/dev-preview-web/src/pages/RepairCatalogsPage.tsx', 'utf8'),
+    readFile('apps/dev-preview-web/src/components/CatalogPriceListReferencesPanel.tsx', 'utf8'),
+    readFile('apps/dev-preview-web/src/components/catalogs/catalog-administration.module.css', 'utf8'),
+    readFile('apps/dev-preview-web/src/pages/repair-catalogs-page.module.css', 'utf8'),
+  ]);
+  assert.match(page, /<CatalogSectionTabs/u);
+  assert.match(priceList, /<CatalogSectionTabs/u);
+  assert.match(priceList, /CatalogPanel/u);
+  assert.match(priceList, /CatalogLifecycleFilter/u);
+  assert.match(priceList, /CatalogStatusBadge/u);
+  assert.match(priceList, /CatalogRowActions/u);
+  assert.match(sharedStyles, /\.sectionTabs button:hover:not\(:disabled\)/u);
+  assert.match(sharedStyles, /\.sectionTabs button:focus-visible/u);
+  assert.match(sharedStyles, /\.sectionTabs button\[aria-current='page'\]/u);
+  assert.doesNotMatch(pageStyles, /\.catalogTabs/u);
 });

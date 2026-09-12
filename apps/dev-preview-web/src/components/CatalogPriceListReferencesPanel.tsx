@@ -8,9 +8,10 @@ import {
 import type { CatalogItemKind, CatalogReference, CatalogReferences } from '../catalog-api.js';
 import {
   CatalogEmptyRow, CatalogEntityName, CatalogFeedback, CatalogHeader, CatalogLoadingState,
-  CatalogPanel, CatalogRowActions, CatalogStatusBadge, CatalogTable, CatalogToolbar,
+  CatalogLifecycleFilter, CatalogPanel, CatalogRowActions, CatalogSectionTabs, CatalogStatusBadge, CatalogTable, CatalogToolbar,
   catalogAdministrationStyles as styles,
 } from './catalogs/CatalogAdministration.js';
+import type { CatalogLifecycle } from './catalogs/CatalogAdministration.js';
 import { Button, Field, Input, Select } from './ui/controls.js';
 import { Dialog } from './ui/overlays.js';
 
@@ -24,6 +25,7 @@ function date(value?: string): string { return value ? new Intl.DateTimeFormat('
 export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfToken: string }>): React.JSX.Element {
   const [references, setReferences] = useState<CatalogReferences>({ categories: [], brands: [], categoryBrandApplicability: [] });
   const [referenceKind, setReferenceKind] = useState<ReferenceKind>('category');
+  const [status, setStatus] = useState<CatalogLifecycle>('active');
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null); const [notice, setNotice] = useState<string | null>(null);
   const [editor, setEditor] = useState<CatalogReference | 'new' | null>(null);
@@ -41,6 +43,8 @@ export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfTo
   const items = referenceKind === 'category' ? references.categories : references.brands;
   const pending = items.filter((item) => item.reviewStatus === 'PENDING');
   const governed = items.filter((item) => item.reviewStatus !== 'MERGED');
+  const activeCount = governed.filter((item) => item.status === 'ACTIVE').length;
+  const visible = status === 'all' ? governed : governed.filter((item) => item.status === status.toUpperCase());
   const mergeTargets = useMemo(() => items.filter((item) => item.reviewStatus === 'APPROVED' && item.status === 'ACTIVE' && mergeSource?.applicableKinds.every((kind) => item.applicableKinds.includes(kind))), [items, mergeSource]);
 
   function openEditor(value: CatalogReference | 'new'): void {
@@ -94,16 +98,16 @@ export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfTo
   }
 
   return <>
-    <nav className={styles.lifecycleFilter} aria-label="Catálogos de Lista de precios">
-      <button type="button" aria-pressed={referenceKind === 'category'} onClick={() => setReferenceKind('category')}>Categorías <span>{references.categories.filter((value) => value.reviewStatus !== 'MERGED').length}</span></button>
-      <button type="button" aria-pressed={referenceKind === 'brand'} onClick={() => setReferenceKind('brand')}>Marcas <span>{references.brands.filter((value) => value.reviewStatus !== 'MERGED').length}</span></button>
-    </nav>
+    <CatalogSectionTabs<ReferenceKind> value={referenceKind} label="Catálogos de Lista de precios" onChange={setReferenceKind} options={[
+      { value: 'category', label: 'Categorías', count: references.categories.filter((value) => value.reviewStatus !== 'MERGED').length },
+      { value: 'brand', label: 'Marcas', count: references.brands.filter((value) => value.reviewStatus !== 'MERGED').length },
+    ]} />
     <CatalogPanel labelledBy="commercial-reference-title">
       <CatalogHeader id="commercial-reference-title" title={referenceKind === 'category' ? 'Categorías comerciales' : 'Marcas comerciales'} description={referenceKind === 'category' ? 'Cada categoría nace gobernada por un Tipo.' : 'Una sola identidad Tenant-wide puede aplicar a varios Tipos.'} metadata={pending.length ? <strong>{pending.length} por revisar</strong> : <span>Sin pendientes</span>} canManage action={<Button tone="primary" size="compact" onClick={() => openEditor('new')}><Plus size={16} aria-hidden="true" />Agregar</Button>} />
       <CatalogFeedback error={error} success={notice} />
-      <CatalogToolbar result={`${governed.length} referencias · ${pending.length} por revisar`} />
+      <CatalogToolbar lifecycleFilter={<CatalogLifecycleFilter value={status} activeCount={activeCount} inactiveCount={governed.length - activeCount} onChange={setStatus} label={`Filtrar ${referenceKind === 'category' ? 'categorías' : 'marcas'} por estado`} />} result={`${visible.length} referencias · ${pending.length} por revisar`} />
       {loading ? <CatalogLoadingState /> : <CatalogTable><thead><tr><th>Referencia</th><th>Aplicable a</th><th>Revisión</th><th data-mobile-hidden="true">Trazabilidad</th><th>Estado</th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead><tbody>
-        {governed.length === 0 ? <CatalogEmptyRow colSpan={6}>Aún no hay referencias.</CatalogEmptyRow> : governed.map((reference) => <tr key={id(reference)}>
+        {visible.length === 0 ? <CatalogEmptyRow colSpan={6}>No hay referencias {status === 'inactive' ? 'inactivas' : status === 'active' ? 'activas' : 'disponibles'}.</CatalogEmptyRow> : visible.map((reference) => <tr key={id(reference)} data-status={reference.status.toLowerCase()}>
           <td><CatalogEntityName label={reference.name} secondary={`v${reference.version} · ${reference.usageCount ?? 0} usos`} /></td>
           <td>{reference.applicableKinds.map((kind) => kindLabels[kind]).join(', ')}</td>
           <td>{reference.reviewStatus === 'PENDING' ? <strong>POR REVISAR</strong> : 'Aprobada'}</td>
