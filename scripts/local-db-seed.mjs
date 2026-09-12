@@ -9,6 +9,8 @@ import {
   localAccessRoleCapabilityRows,
   localAccessRoleRows,
   localRepairIntakeRows,
+  localRepairInterventionRiskRows,
+  localRepairProblemClassificationRows,
   localRepairRows,
   localRepairTimelineRows,
   localRepairEvidenceRows,
@@ -402,34 +404,114 @@ try {
   for (const intake of localRepairIntakeRows()) {
     await client.query(
       `INSERT INTO repair_intakes (
-         repair_id, tenant_id, branch_id, device_color,
-         received_by_id, received_by_display_name, customer_narrative,
-         physical_condition_summary, documented_risk_summary, created_at
+         repair_id, tenant_id, branch_id, device_color, device_type,
+         device_identifier, device_identifier_unavailable, distinctive_signs,
+         sim_included, memory_card_included, other_accessories,
+         warranty_review_requested, previous_repair_id, delivered_by_name,
+         estimated_delivery_at, received_by_id, received_by_display_name,
+         customer_narrative, physical_condition_summary, documented_risk_summary,
+         received_power_state, device_access_type, initial_budget_amount_minor,
+         new_repair_policy_version, created_at
        ) VALUES (
-         $1::uuid, $2::uuid, $3::uuid, $4,
-         $5::uuid, $6, $7, $8, $9, $10::timestamptz
+         $1::uuid, $2::uuid, $3::uuid, $4, $5,
+         $6, $7, $8, $9, $10, $11,
+         $12, $13::uuid, $14, $15::timestamptz, $16::uuid, $17,
+         $18, $19, $20, $21, $22, $23, $24, $25::timestamptz
        )
        ON CONFLICT (repair_id) DO UPDATE SET
          tenant_id = EXCLUDED.tenant_id,
          branch_id = EXCLUDED.branch_id,
          device_color = EXCLUDED.device_color,
+         device_type = EXCLUDED.device_type,
+         device_identifier = EXCLUDED.device_identifier,
+         device_identifier_unavailable = EXCLUDED.device_identifier_unavailable,
+         distinctive_signs = EXCLUDED.distinctive_signs,
+         sim_included = EXCLUDED.sim_included,
+         memory_card_included = EXCLUDED.memory_card_included,
+         other_accessories = EXCLUDED.other_accessories,
+         warranty_review_requested = EXCLUDED.warranty_review_requested,
+         previous_repair_id = EXCLUDED.previous_repair_id,
+         delivered_by_name = EXCLUDED.delivered_by_name,
+         estimated_delivery_at = EXCLUDED.estimated_delivery_at,
          received_by_id = EXCLUDED.received_by_id,
          received_by_display_name = EXCLUDED.received_by_display_name,
          customer_narrative = EXCLUDED.customer_narrative,
          physical_condition_summary = EXCLUDED.physical_condition_summary,
          documented_risk_summary = EXCLUDED.documented_risk_summary,
+         received_power_state = EXCLUDED.received_power_state,
+         device_access_type = EXCLUDED.device_access_type,
+         initial_budget_amount_minor = EXCLUDED.initial_budget_amount_minor,
+         new_repair_policy_version = EXCLUDED.new_repair_policy_version,
          created_at = EXCLUDED.created_at`,
       [
         intake.repairId,
         intake.tenantId,
         intake.branchId,
         intake.deviceColor,
+        intake.deviceType,
+        intake.deviceIdentifier,
+        intake.deviceIdentifierUnavailable,
+        intake.distinctiveSigns,
+        intake.simIncluded,
+        intake.memoryCardIncluded,
+        intake.otherAccessories,
+        intake.warrantyReviewRequested,
+        intake.previousRepairId,
+        intake.deliveredByName,
+        intake.estimatedDeliveryAt,
         intake.receivedById,
         intake.receivedByDisplayName,
         intake.customerNarrative,
         intake.physicalConditionSummary,
         intake.documentedRiskSummary,
+        intake.receivedPowerState,
+        intake.deviceAccessType,
+        intake.initialBudgetAmountMinor,
+        intake.newRepairPolicyVersion,
         intake.createdAt,
+      ],
+    );
+  }
+  for (const problem of localRepairProblemClassificationRows()) {
+    await client.query(
+      `INSERT INTO repair_problem_classifications (
+         problem_capture_id, tenant_id, branch_id, repair_id, category_id,
+         pending_problem_value_id, raw_problem_label_snapshot,
+         normalized_problem_key, category_label_snapshot, selection_order,
+         source, stage, assigned_by_actor_id, assigned_at
+       ) VALUES (
+         $1::uuid, $2::uuid, $3::uuid, $4::uuid, $5::uuid,
+         $6::uuid, $7, $8, $9, $10, $11, $12, $13::uuid, $14::timestamptz
+       ) ON CONFLICT (problem_capture_id) DO UPDATE SET
+         category_id = EXCLUDED.category_id,
+         pending_problem_value_id = EXCLUDED.pending_problem_value_id,
+         raw_problem_label_snapshot = EXCLUDED.raw_problem_label_snapshot,
+         normalized_problem_key = EXCLUDED.normalized_problem_key,
+         category_label_snapshot = EXCLUDED.category_label_snapshot,
+         selection_order = EXCLUDED.selection_order,
+         source = EXCLUDED.source,
+         stage = EXCLUDED.stage,
+         assigned_by_actor_id = EXCLUDED.assigned_by_actor_id,
+         assigned_at = EXCLUDED.assigned_at`,
+      [
+        problem.problemCaptureId, problem.tenantId, problem.branchId,
+        problem.repairId, problem.categoryId, problem.pendingProblemValueId,
+        problem.rawProblemLabelSnapshot, problem.normalizedProblemKey,
+        problem.categoryLabelSnapshot, problem.selectionOrder, problem.source,
+        problem.stage, problem.assignedByActorId, problem.assignedAt,
+      ],
+    );
+  }
+  for (const risk of localRepairInterventionRiskRows()) {
+    await client.query(
+      `INSERT INTO repair_intervention_risks (
+         repair_id, risk_id, risk_label_snapshot, selection_order,
+         recorded_by_actor_id, recorded_at
+       ) VALUES ($1::uuid, $2::uuid, $3, $4, $5::uuid, $6::timestamptz)
+       ON CONFLICT (repair_id, risk_id) DO NOTHING`,
+      [
+        risk.repairId, risk.riskId, risk.riskLabelSnapshot,
+        risk.selectionOrder, risk.recordedByActorId, risk.recordedAt,
       ],
     );
   }
@@ -526,6 +608,8 @@ process.stdout.write(`${JSON.stringify({
   repairCatalogFixtureDefinitionCount: Object.values(repairCatalogs).reduce((total, items) => total + items.length, 0),
   repairCanonicalLinksCreated: 0,
   repairIntakeCount: localRepairIntakeRows().length,
+  repairProblemClassificationCount: localRepairProblemClassificationRows().length,
+  repairInterventionRiskCount: localRepairInterventionRiskRows().length,
   repairTimelineEntryCount: localRepairTimelineRows().length,
   repairEvidenceCount: localRepairEvidenceRows().length,
   technicianCount: localRepairTechnicianRows().length,

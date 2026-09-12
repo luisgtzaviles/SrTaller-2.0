@@ -17,7 +17,7 @@ export const PBI039_PROTECTED_SURFACES = Object.freeze({
   'src/modules/repairs/application/repair-protected-operations.ts': '079be813efc922506c2761efc1dde5592117f30d',
   'src/modules/repairs/application/use-cases/get-repair-detail.use-case.ts': 'b9f1e19fc49a996c9ba77b691596c548fdae2db3',
   'test/repair-detail-contract.test.mjs': 'fa9b26bebeca5d2a43691ac0de59bc19fea49d3d',
-  'test/repair-detail-evidence-contract.test.mjs': '357c679fadcc5eead5c119f3273addc46993f202',
+  'test/repair-detail-evidence-contract.test.mjs': '155177d27728067a9c217f309c4da5cad3a2307f',
   'test/repair-detail-future-concepts-surface.test.mjs': 'e56956beea98c9e409e2c55425a8316981f61402',
   'test/repair-detail-history-information-architecture.test.mjs': '9603ac8f07030ab3085e4e2bb8fca763fd6f0057',
   'test/repair-detail-operational-header.test.mjs': 'e7916c856037034f3d08335e71245ad077770c58',

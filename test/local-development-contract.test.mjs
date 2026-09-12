@@ -330,7 +330,7 @@ test('demo PINs are scrubbed while the ignored local Owner PIN survives volume r
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {
   const first = localRepairIntakeRows();
   assert.deepEqual(first, localRepairIntakeRows());
-  assert.equal(first.length, 15);
+  assert.equal(first.length, 16);
   assert.ok(first.some((row) => row.receivedById === null && row.documentedRiskSummary === null));
   assert.ok(first.some((row) => (row.customerNarrative?.length ?? 0) > 200));
   assert.ok(first.some((row) => row.documentedRiskSummary !== null));
@@ -341,14 +341,14 @@ test('repair intake seed is deterministic, varied, and excludes sensitive intake
 test('repair timeline seed is deterministic, typed, and covers rich, single, and empty scenarios', () => {
   const rows = localRepairTimelineRows();
   assert.deepEqual(rows, localRepairTimelineRows());
-  assert.equal(rows.length, 16);
+  assert.equal(rows.length, 20);
   assert.deepEqual(new Set(rows.map((row) => row.entryType)), new Set(['note', 'system_event']));
   assert.ok(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001003').length >= 6);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001002').length, 3);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001012').length, 2);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001005').length, 1);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001008').length, 0);
-  assert.equal(rows.filter((row) => row.source === 'local.location').length, 7);
+  assert.equal(rows.filter((row) => row.source === 'local.location').length, 8);
   assert.ok(rows.filter((row) => row.source === 'local.location').every((row) => row.title === 'Equipo movido' && row.body === 'Área de pendientes → Taller'));
   assert.ok(new Set(rows.filter((row) => row.actorId).map((row) => row.actorId)).size >= 3);
   assert.ok(rows.some((row) => (row.body?.length ?? 0) > 250));

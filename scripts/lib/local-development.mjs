@@ -3,6 +3,7 @@ import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { LOCAL_EVIDENCE_FIXTURES } from './local-evidence-fixtures.mjs';
+import { PBI039_REPAIR_DETAIL_PARITY_FIXTURE } from './pbi039-repair-detail-parity-fixture.mjs';
 
 export const LOCAL_ENVIRONMENT = 'local';
 export const LOCAL_IMAGE = 'postgres:18.4';
@@ -507,7 +508,7 @@ export function localRepairRows() {
     ['00000000-0000-4000-8000-000000001014', 'SR-2026-014', '2026-07-20T13:00:00.000Z', 'Nora Sintética', '6621000014', 'Sony', 'Xperia 10', 'Pantalla rota', technicians.ana, 'Ana Técnica', 'unsuccessful', 'active'],
     ['00000000-0000-4000-8000-000000001015', 'SR-2026-015', '2026-06-28T10:45:00.000Z', 'Oscar Ejemplo', '6621000015', 'Asus', 'Zenfone 9', 'No carga', technicians.bruno, 'Bruno Técnico', 'delivered', 'ended'],
   ];
-  return Object.freeze(rows.map(([repairId, folio, receivedAt, customerName, customerPhone, deviceBrand, deviceModel, reportedIssue, technicianId, technicianDisplayName, repairStatus, custodyStatus]) => Object.freeze({
+  const mapped = rows.map(([repairId, folio, receivedAt, customerName, customerPhone, deviceBrand, deviceModel, reportedIssue, technicianId, technicianDisplayName, repairStatus, custodyStatus]) => Object.freeze({
     repairId,
     tenantId,
     branchId,
@@ -523,7 +524,8 @@ export function localRepairRows() {
     repairStatus,
     custodyStatus,
     createdAt: receivedAt,
-  })));
+  }));
+  return Object.freeze([...mapped, PBI039_REPAIR_DETAIL_PARITY_FIXTURE.repair]);
 }
 
 export function localRepairCatalogRows() {
@@ -672,7 +674,7 @@ export function localRepairLocationMovementRows() {
   const pending = locations.find(({ code }) => code === 'pending_area');
   const workshop = locations.find(({ code }) => code === 'workshop');
   if (!pending || !workshop) throw new Error('Local repair location catalog is incomplete.');
-  const workshopRepairs = new Set(['002', '003', '005', '006', '007', '012', '013']);
+  const workshopRepairs = new Set(['002', '003', '005', '006', '007', '012', '013', '039']);
   const actorId = '00000000-0000-4000-8000-000000000301';
   const rows = [];
   for (const repair of localRepairRows()) {
@@ -778,7 +780,7 @@ export function localRepairIntakeRows() {
     ['00000000-0000-4000-8000-000000001014', 'Negro', receivers.mar, 'Mar Recepción', 'La pantalla se fracturó por una caída.', 'Cristal frontal fracturado en múltiples zonas.', 'Se informó que el cristal puede desprender fragmentos durante la manipulación.'],
     ['00000000-0000-4000-8000-000000001015', 'Azul', receivers.sol, 'Sol Recepción', 'No reconoce cargadores compatibles.', 'Puerto con desgaste visible; pantalla íntegra.', null],
   ];
-  return Object.freeze(rows.map(([repairId, deviceColor, receivedById, receivedByDisplayName, customerNarrative, physicalConditionSummary, documentedRiskSummary]) => Object.freeze({
+  const mapped = rows.map(([repairId, deviceColor, receivedById, receivedByDisplayName, customerNarrative, physicalConditionSummary, documentedRiskSummary]) => Object.freeze({
     repairId,
     tenantId,
     branchId,
@@ -788,8 +790,32 @@ export function localRepairIntakeRows() {
     customerNarrative,
     physicalConditionSummary,
     documentedRiskSummary,
+    deviceType: null,
+    deviceIdentifier: null,
+    deviceIdentifierUnavailable: false,
+    distinctiveSigns: null,
+    simIncluded: null,
+    memoryCardIncluded: null,
+    otherAccessories: null,
+    warrantyReviewRequested: false,
+    previousRepairId: null,
+    deliveredByName: null,
+    estimatedDeliveryAt: null,
+    receivedPowerState: null,
+    deviceAccessType: null,
+    initialBudgetAmountMinor: null,
+    newRepairPolicyVersion: 0,
     createdAt: LOCAL_SEED_TIMESTAMP,
-  })));
+  }));
+  return Object.freeze([...mapped, PBI039_REPAIR_DETAIL_PARITY_FIXTURE.intake]);
+}
+
+export function localRepairProblemClassificationRows() {
+  return PBI039_REPAIR_DETAIL_PARITY_FIXTURE.problemClassifications;
+}
+
+export function localRepairInterventionRiskRows() {
+  return PBI039_REPAIR_DETAIL_PARITY_FIXTURE.interventionRisks;
 }
 
 export function localRepairTimelineRows() {
@@ -832,7 +858,7 @@ export function localRepairTimelineRows() {
         movement.clientRequestId,
       ];
     });
-  return Object.freeze([...rows, ...locationRows].map(([entryId, repairId, entryType, actorId, actorDisplayName, title, body, source, occurredAt, clientRequestId = null]) => Object.freeze({
+  const mapped = [...rows, ...locationRows].map(([entryId, repairId, entryType, actorId, actorDisplayName, title, body, source, occurredAt, clientRequestId = null]) => Object.freeze({
     entryId,
     tenantId,
     branchId,
@@ -846,7 +872,15 @@ export function localRepairTimelineRows() {
     clientRequestId,
     occurredAt,
     createdAt: occurredAt,
-  })));
+  }));
+  const parityRows = PBI039_REPAIR_DETAIL_PARITY_FIXTURE.timeline.map((entry) => Object.freeze({
+    ...entry,
+    tenantId,
+    branchId,
+    repairId: PBI039_REPAIR_DETAIL_PARITY_FIXTURE.repairId,
+    createdAt: entry.occurredAt,
+  }));
+  return Object.freeze([...mapped, ...parityRows]);
 }
 
 export function localRepairEvidenceRows() {
@@ -864,7 +898,7 @@ export function localRepairEvidenceRows() {
     'Ilustración sintética de marcas visibles en la carcasa.',
     'Ilustración sintética general del equipo recibido.',
   ];
-  const rows = LOCAL_EVIDENCE_FIXTURES.map((fixture, index) => Object.freeze({
+  const rows = LOCAL_EVIDENCE_FIXTURES.slice(0, 6).map((fixture, index) => Object.freeze({
     attachmentId: fixture.id,
     tenantId,
     branchId,
@@ -900,5 +934,18 @@ export function localRepairEvidenceRows() {
     uploadedById: uploaderId,
     uploadedByDisplayName: 'Sol Recepción',
   }));
+  rows.push(...PBI039_REPAIR_DETAIL_PARITY_FIXTURE.evidence.map((evidence) => Object.freeze({
+    ...evidence,
+    tenantId,
+    branchId,
+    repairId: PBI039_REPAIR_DETAIL_PARITY_FIXTURE.repairId,
+    kind: 'photo',
+    mimeType: 'image/png',
+    sizeBytes: LOCAL_EVIDENCE_FIXTURES.find((fixture) => fixture.storageKey === evidence.storageKey)?.sizeBytes,
+    width: 640,
+    height: 420,
+    uploadedById: uploaderId,
+    uploadedByDisplayName: 'Sol Recepción',
+  })));
   return Object.freeze(rows);
 }

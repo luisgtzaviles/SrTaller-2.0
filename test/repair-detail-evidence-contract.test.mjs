@@ -49,7 +49,7 @@ test('content access resolves opaque IDs server-side and fails closed', () => {
 
 test('local evidence is deterministic synthetic data with many one empty and broken scenarios', () => {
   const rows = localRepairEvidenceRows();
-  assert.equal(LOCAL_EVIDENCE_FIXTURES.length, 6);
+  assert.equal(LOCAL_EVIDENCE_FIXTURES.length, 8);
   assert.equal(rows.filter((row) => row.repairId.endsWith('1003')).length, 5);
   assert.equal(rows.filter((row) => row.repairId.endsWith('1002')).length, 1);
   assert.equal(rows.filter((row) => row.repairId.endsWith('1008')).length, 0);
