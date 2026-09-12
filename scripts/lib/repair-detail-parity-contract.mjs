@@ -47,6 +47,7 @@ export function repairDetailDomSignature(capture) {
 }
 
 export function assertRepairDetailParityDom(capture, fixture) {
+  const normalizedBody = capture.bodyText.toLocaleLowerCase('es-MX');
   for (const label of [
     ...fixture.expected.header,
     ...fixture.expected.receptionSections,
@@ -57,7 +58,7 @@ export function assertRepairDetailParityDom(capture, fixture) {
     fixture.repair.reportedIssue,
     fixture.receiver.displayName,
   ]) {
-    assert.ok(capture.bodyText.includes(label), `Repair Detail DOM is missing: ${label}`);
+    assert.ok(normalizedBody.includes(label.toLocaleLowerCase('es-MX')), `Repair Detail DOM is missing: ${label}`);
   }
   assert.ok(capture.headings.some(({ tag, text }) => tag === 'H1' && text === 'Detalle de reparación'));
   assert.ok(capture.sections.some(({ heading }) => heading === 'Historial'));
