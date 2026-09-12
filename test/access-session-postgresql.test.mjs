@@ -48,6 +48,16 @@ const { createTrustedStationContext } = enabled
 const migrationRoot = fileURLToPath(new URL('../dist/infrastructure/database/migrations/', import.meta.url));
 const sessionTables = ['access_operational_sessions', 'access_operational_session_station_guards'];
 const allTables = [
+  'catalog_audit_events',
+  'catalog_commands',
+  'catalog_reference_cost_revisions',
+  'catalog_branch_price_revisions',
+  'catalog_base_price_revisions',
+  'catalog_sku_sequences',
+  'catalog_item_identifiers',
+  'catalog_items',
+  'catalog_brands',
+  'catalog_categories',
   'user_preferences',
   'repair_problem_category_deletion_events',
   'repair_problem_classification_events',
@@ -165,6 +175,7 @@ function authorization(item) {
 }
 
 async function reset(admin) {
+  await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
@@ -175,7 +186,7 @@ async function reset(admin) {
 }
 
 async function seed(admin) {
-  await admin.query("insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'MXN', now())", [tenantA, tenantB]);
+  await admin.query('insert into tenants (tenant_id, created_at) values ($1, now()), ($2, now())', [tenantA, tenantB]);
   await admin.query('insert into branches (tenant_id, branch_id, active, created_at) values ($1,$2,true,now()),($3,$4,true,now())', [tenantA, branchA, tenantB, branchB]);
   await admin.query("insert into stations (tenant_id,station_id,status,created_at,updated_at) values ($1,$2,'active',now(),now()),($3,$4,'active',now(),now())", [tenantA, stationA, tenantB, stationB]);
   await admin.query('insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now()),($4,$5,$6,now())', [tenantA, stationA, branchA, tenantB, stationB, branchB]);
