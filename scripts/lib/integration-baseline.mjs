@@ -23,6 +23,10 @@ export const PBI039_PROTECTED_SURFACES = Object.freeze({
   'test/repair-detail-operational-header.test.mjs': 'e7916c856037034f3d08335e71245ad077770c58',
   'test/repair-detail-reception-information-architecture.test.mjs': '429af0f10764a4baa4ea65831c6606260d900bf4',
   'test/new-repair-owner-iteration-contract.test.mjs': '3b1dbc40cf691893d9371baffaa9547f05998e5e',
+  'scripts/lib/pbi039-repair-detail-parity-fixture.mjs': 'e890bdc088d6cc9e9fbcfb01e0b48d90aa463d12',
+  'scripts/lib/repair-detail-parity-contract.mjs': 'f35225ed14e4e8099defc36687fad0e1ebf1c6f2',
+  'scripts/verify-repair-detail-parity.mjs': 'a61d5570fbe1ef938ec38b6a1e4eabc386a3f588',
+  'test/repair-detail-parity-fixture.test.mjs': 'a29c8e5d65c03c338d7e4cc16315ca200144dc28',
 });
 
 async function git(root, argumentsList) {

@@ -43,7 +43,7 @@ test('materialized Preview is recorded as an ancestor of the integrated PBI-039 
 test('protected-surface inventory accepts the exact accepted PBI-039 blobs', () => {
   const result = evaluateProtectedSurfaces(PBI039_PROTECTED_SURFACES);
   assert.equal(result.status, 'PASS');
-  assert.equal(result.protectedSurfaceCount, 16);
+  assert.equal(result.protectedSurfaceCount, 20);
 });
 
 test('protected-surface inventory reports any drift by path', () => {
