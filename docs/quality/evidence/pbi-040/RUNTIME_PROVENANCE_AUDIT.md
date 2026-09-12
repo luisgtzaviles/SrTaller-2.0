@@ -52,10 +52,12 @@ Genealogía real:
 | Backend `127.0.0.1:3000` | Node PID `59506`, iniciado `2026-09-11 21:36:22` | raíz del mismo worktree/branch | ejecutaba `dist` emitido `2026-09-11 21:35:45`; pertenecía al candidato PBI-040 de ese checkout |
 
 No había listeners alternos en `3000`/`4173`, otro Vite activo, otro backend
-activo ni worktree oculto sirviendo esos puertos. Sí existía una asimetría de
-lifecycle: el frontend llevaba varios días vivo y el backend se había
-reconstruido/reiniciado después. Éste era un riesgo real de runtime stale aunque
-la petición directa al módulo Vite devolvía source actual.
+activo ni worktree oculto sirviendo esos puertos. Sí había un `tsc --watch`
+huérfano, PID `96108`/grupo `96077`, iniciado el 10 de septiembre y sin listener;
+se detuvo junto con los dos árboles runtime identificados. También existía una
+asimetría de lifecycle: el frontend llevaba varios días vivo y el backend se
+había reconstruido/reiniciado después. Éste era un riesgo real de runtime stale
+aunque la petición directa al módulo Vite devolvía source actual.
 
 El build producido durante la auditoría desde `1487dcf…` generó
 `index-CxVd27r4.js` y `index-HgGiKGH9.css`; no coincidía por diseño con Preview
