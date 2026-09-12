@@ -60,7 +60,7 @@ test('PostgreSQL persists personal mode by Tenant and User with restrictive life
   const repository = new KyselyUserPreferencesRepository(connection);
   try {
     await removeFixture(admin);
-    await admin.query('insert into tenants (tenant_id, created_at) values ($1, now()), ($2, now())', [tenantA, tenantB]);
+    await admin.query("insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'MXN', now())", [tenantA, tenantB]);
     await admin.query(`insert into users (tenant_id, user_id, display_name, status, version, created_at, updated_at)
       values ($1, $2, 'Shared A', 'active', 0, now(), now()),
              ($1, $3, 'Other A', 'active', 0, now(), now()),
@@ -68,16 +68,18 @@ test('PostgreSQL persists personal mode by Tenant and User with restrictive life
     [tenantA, sharedUserId, otherUserId, tenantB]);
 
     assert.equal(await repository.read({ tenantId: tenantA, userId: sharedUserId }), null);
-    await repository.upsert({ tenantId: tenantA, userId: sharedUserId }, 'classic', new Date('2026-09-09T22:00:00.000Z'));
-    await repository.upsert({ tenantId: tenantA, userId: sharedUserId }, 'guided_v2', new Date('2026-09-09T22:01:00.000Z'));
-    await repository.upsert({ tenantId: tenantB, userId: sharedUserId }, 'classic', new Date('2026-09-09T22:02:00.000Z'));
+    await repository.upsert({ tenantId: tenantA, userId: sharedUserId }, { newRepairFormMode: 'classic' }, new Date('2026-09-09T22:00:00.000Z'));
+    await repository.upsert({ tenantId: tenantA, userId: sharedUserId }, { newRepairFormMode: 'guided_v2', priceListShowReferenceCost: true }, new Date('2026-09-09T22:01:00.000Z'));
+    await repository.upsert({ tenantId: tenantB, userId: sharedUserId }, { newRepairFormMode: 'classic' }, new Date('2026-09-09T22:02:00.000Z'));
 
     assert.deepEqual(await repository.read({ tenantId: tenantA, userId: sharedUserId }), {
       newRepairFormMode: 'guided_v2',
+      priceListShowReferenceCost: true,
       updatedAt: '2026-09-09T22:01:00.000Z',
     });
     assert.deepEqual(await repository.read({ tenantId: tenantB, userId: sharedUserId }), {
       newRepairFormMode: 'classic',
+      priceListShowReferenceCost: false,
       updatedAt: '2026-09-09T22:02:00.000Z',
     });
     assert.equal(await repository.read({ tenantId: tenantA, userId: otherUserId }), null);

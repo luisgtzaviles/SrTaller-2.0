@@ -5,6 +5,7 @@ import type { DatabaseSchema } from './database-types.js';
 
 export type InternalDatabasePersistenceOwner =
   | 'access'
+  | 'catalog'
   | 'customers'
   | 'database'
   | 'repairs'
@@ -76,11 +77,23 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     access_pin_attempt_limits: DatabaseSchema['access_pin_attempt_limits'];
     access_operational_session_station_guards: DatabaseSchema['access_operational_session_station_guards'];
     access_operational_sessions: DatabaseSchema['access_operational_sessions'];
+    catalog_categories: DatabaseSchema['catalog_categories'];
+    catalog_brands: DatabaseSchema['catalog_brands'];
+    catalog_items: DatabaseSchema['catalog_items'];
+    catalog_item_identifiers: DatabaseSchema['catalog_item_identifiers'];
+    catalog_sku_sequences: DatabaseSchema['catalog_sku_sequences'];
+    catalog_base_price_revisions: DatabaseSchema['catalog_base_price_revisions'];
+    catalog_branch_price_revisions: DatabaseSchema['catalog_branch_price_revisions'];
+    catalog_reference_cost_revisions: DatabaseSchema['catalog_reference_cost_revisions'];
+    catalog_commands: DatabaseSchema['catalog_commands'];
+    catalog_audit_events: DatabaseSchema['catalog_audit_events'];
   }>;
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
   Owner extends 'access'
     ? Pick<DatabaseSchema, 'access_capabilities' | 'access_roles' | 'access_role_commands' | 'access_role_capabilities' | 'access_role_assignments' | 'access_role_assignment_commands' | 'access_pin_credentials' | 'access_pin_credential_commands' | 'access_pin_eligibility_tenant_guards' | 'access_pin_attempt_station_guards' | 'access_pin_attempt_limits' | 'access_operational_session_station_guards' | 'access_operational_sessions'>
+    : Owner extends 'catalog'
+    ? Pick<DatabaseSchema, 'catalog_categories' | 'catalog_brands' | 'catalog_items' | 'catalog_item_identifiers' | 'catalog_sku_sequences' | 'catalog_base_price_revisions' | 'catalog_branch_price_revisions' | 'catalog_reference_cost_revisions' | 'catalog_commands' | 'catalog_audit_events'>
     : Owner extends 'customers'
     ? Pick<DatabaseSchema, 'customers' | 'customer_contact_phones'>
     : Owner extends 'database'

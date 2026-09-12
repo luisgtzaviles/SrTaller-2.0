@@ -221,7 +221,7 @@ async function assertNoObjects(admin) {
 async function seed(admin) {
   const createdAt = '2026-08-21T12:00:00.000Z';
   await admin.query(
-    `insert into tenants (tenant_id, created_at) values ($1, $3), ($2, $3)`,
+    `insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', $3), ($2, 'MXN', $3)`,
     [tenantA, tenantB, createdAt],
   );
   await admin.query(

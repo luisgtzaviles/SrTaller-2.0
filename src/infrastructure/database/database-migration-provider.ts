@@ -16,6 +16,7 @@ type MigrationArtifactMode = 'compiled' | 'source';
 
 type MigrationOwner =
   | 'access'
+  | 'catalog'
   | 'database'
   | 'repairs'
   | 'stations'
@@ -89,7 +90,7 @@ export class InternalMigrationProviderError extends Error {
 }
 
 const migrationPattern =
-  /^(?<timestamp>\d{14})_(?<owner>access|customers|database|repairs|stations|tenancy|users)_(?<action>[a-z][a-z0-9]*(?:_[a-z0-9]+)+)\.(?<extension>ts|js)$/u;
+  /^(?<timestamp>\d{14})_(?<owner>access|catalog|customers|database|repairs|stations|tenancy|users)_(?<action>[a-z][a-z0-9]*(?:_[a-z0-9]+)+)\.(?<extension>ts|js)$/u;
 
 function isContained(parent: string, candidate: string): boolean {
   const difference = relative(parent, candidate);

@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 51);
+  assert.equal(first.manifest.migrations.length, 55);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -345,6 +345,30 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260910230000_repairs_create_device_type_catalog',
         order: 50,
         owner: 'repairs',
+      },
+      {
+        fileName: '20260911180000_tenancy_add_operating_currency.js',
+        migrationName: '20260911180000_tenancy_add_operating_currency',
+        order: 51,
+        owner: 'tenancy',
+      },
+      {
+        fileName: '20260911181000_access_add_catalog_capabilities.js',
+        migrationName: '20260911181000_access_add_catalog_capabilities',
+        order: 52,
+        owner: 'access',
+      },
+      {
+        fileName: '20260911182000_users_add_price_list_cost_preference.js',
+        migrationName: '20260911182000_users_add_price_list_cost_preference',
+        order: 53,
+        owner: 'users',
+      },
+      {
+        fileName: '20260911183000_catalog_create_pricing_core.js',
+        migrationName: '20260911183000_catalog_create_pricing_core',
+        order: 54,
+        owner: 'catalog',
       },
     ],
   );

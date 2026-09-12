@@ -7,6 +7,8 @@ flowchart LR
   access --> stations
   access --> tenancy
   access --> users
+  catalog --> access
+  catalog --> tenancy
   customers --> tenancy
   repairs --> access
   repairs --> customers
@@ -29,6 +31,8 @@ La flecha va del consumidor al productor.
 | `access` | `users` | `src/modules/access/index.ts` | `UsersModuleContract` desde `users/index.ts` | Ninguno; `import type` |
 | `access` | `users` | `src/modules/access/access.module.ts` | `UsersModule` más `AUTHENTICATION_USER_READER`/`AuthenticationUserReader`, `AUTHENTICATION_USER_ADMISSION_VALIDATOR`/`AuthenticationUserAdmissionValidator`, `USER_PRODUCT_RUNTIME`/`UserProductRuntime` y `USER_PREFERENCES_RUNTIME`/`UserPreferencesRuntime` registrados | Sí; composición dirigida Option A y contexto transaccional opaco |
 | `customers` | `tenancy` | `src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts` | `parseTenantId` desde `tenancy/index.ts` | Sí; validación de identidad Tenant sin aceptar scope del cliente |
+| `catalog` | `access` | `src/modules/catalog/catalog.module.ts` y `src/modules/catalog/application/catalog-protected-operations.ts` | `CONTEXTUAL_AUTHORIZATION_EXECUTOR` y `TENANT_WIDE_AUTHORIZATION_EXECUTOR` con contratos públicos | Sí; autorización por capability, alcance Branch o Tenant-wide y guard transaccional según la operación |
+| `catalog` | `tenancy` | `src/modules/catalog/catalog.module.ts` | `TENANT_SETTINGS_RUNTIME`/`TenantSettingsRuntime` | Sí; lectura de moneda operativa Tenant sin duplicar ownership de configuración |
 | `repairs` | `access` | `src/modules/repairs/application/repair-protected-operations.ts` | `AuthorizedOperationalContext`, `ContextualAuthorizationExecutor` y `ProtectedRequestEvidence` desde `access/index.ts` | Sí; ejecución de autorización contextual por operación con requirement fijo del servidor |
 | `repairs` | `access` | `src/modules/repairs/repairs.module.ts` | `AccessModule` más `CONTEXTUAL_AUTHORIZATION_EXECUTOR`/`ContextualAuthorizationExecutor` registrados | Sí; composición dirigida Option A |
 | `repairs` | `customers` | `src/modules/repairs/application/use-cases/create-repair.use-case.ts` y `src/modules/repairs/repairs.module.ts` | `CustomerIntakeRuntime`/`CUSTOMER_INTAKE_RUNTIME` desde `customers/index.ts` | Sí; búsqueda y selección/alta Customer dentro del Intake autorizado |
@@ -39,7 +43,7 @@ La flecha va del consumidor al productor.
 El checker local ejecutado reportó exactamente:
 
 ```text
-access->stations, access->tenancy, access->users, customers->tenancy, repairs->access, repairs->customers, repairs->stations, repairs->tenancy, stations->tenancy, users->tenancy
+access->stations, access->tenancy, access->users, catalog->access, catalog->tenancy, customers->tenancy, repairs->access, repairs->customers, repairs->stations, repairs->tenancy, stations->tenancy, users->tenancy
 ```
 
 ## Composición exterior
@@ -52,9 +56,10 @@ access->stations, access->tenancy, access->users, customers->tenancy, repairs->a
 - `stations/stations.module.ts`;
 - `tenancy/tenancy.module.ts`;
 - `users/users.module.ts`.
+- `catalog/catalog.module.ts`.
 
 `AppModule` conserva la composición exterior exacta de esos módulos. Además,
-la policy v8 registra cinco imports de composición interna dirigidos:
+la policy v9 registra siete imports de composición interna dirigidos:
 
 - `AccessModule` importa `StationsModule` porque existe `access->stations`;
 - `AccessModule` importa `UsersModule` porque existe `access->users`;
@@ -62,6 +67,10 @@ la policy v8 registra cinco imports de composición interna dirigidos:
 - `RepairsModule` importa `CustomersModule` porque existe `repairs->customers`.
 - `RepairsModule` importa `StationsModule` porque existe `repairs->stations` y
   consume únicamente el runtime de timezone de la Branch ya autorizada.
+- `CatalogModule` importa `AccessModule` porque existe `catalog->access` y
+  consume únicamente los dos executors públicos de autorización.
+- `CatalogModule` importa `TenancyModule` porque existe `catalog->tenancy` y
+  consume únicamente la configuración pública de moneda Tenant.
 
 El import de una clase `<module>.module.ts` no sustituye el contrato funcional:
 los tokens e interfaces se consumen desde el `index.ts` público del productor.
@@ -73,7 +82,7 @@ bindings. Cualquier otra composición interna falla cerrada.
 
 - El grafo es acíclico.
 - No existen edges inversos.
-- Todo contrato intermodular termina en el `index.ts` productor; sólo las cinco
+- Todo contrato intermodular termina en el `index.ts` productor; sólo las siete
   clases Nest registradas cruzan como superficies de composición.
 - No hay acceso a internals, adapters, repositories o persistencia ajena.
 - Un edge nuevo exige actualizar y aprobar la policy antes del import; un nuevo

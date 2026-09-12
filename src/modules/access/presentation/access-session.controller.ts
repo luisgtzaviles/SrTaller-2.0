@@ -134,6 +134,11 @@ const administrationCapabilityCodes = new Set<CapabilityCode>([
   'repairs.catalogs.manage',
   'repairs.configuration.read',
   'repairs.configuration.manage',
+  'catalog.manage',
+  'catalog.prices.manage',
+  'catalog.reference_cost.manage',
+  'catalog.import.prepare',
+  'catalog.import.publish',
 ]);
 
 async function resolveTenantWideAdministrationCapabilities(

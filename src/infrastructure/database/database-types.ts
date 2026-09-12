@@ -7,6 +7,7 @@ type DefaultedMutableColumn<T> = ColumnType<T, T | undefined, T>;
 
 export interface TenantTable {
   readonly tenant_id: ImmutableColumn<string>;
+  readonly operating_currency: MutableColumn<string>;
   readonly created_at: ImmutableColumn<Date>;
 }
 
@@ -72,7 +73,150 @@ export interface UserPreferencesTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly user_id: ImmutableColumn<string>;
   readonly new_repair_form_mode: DefaultedMutableColumn<NewRepairFormMode>;
+  readonly price_list_show_reference_cost: DefaultedMutableColumn<boolean>;
   readonly updated_at: MutableColumn<Date>;
+}
+
+export type CatalogItemKind = 'PART' | 'PRODUCT' | 'SERVICE' | 'SUPPLY';
+export type CatalogLifecycle = 'ACTIVE' | 'INACTIVE';
+export type CatalogIdentifierScheme =
+  | 'SKU'
+  | 'INTERNAL_BARCODE'
+  | 'GTIN_8'
+  | 'GTIN_12'
+  | 'GTIN_13'
+  | 'GTIN_14';
+
+export interface CatalogCategoryTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly category_id: ImmutableColumn<string>;
+  readonly display_name: MutableColumn<string>;
+  readonly normalized_name: MutableColumn<string>;
+  readonly status: MutableColumn<CatalogLifecycle>;
+  readonly version: MutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface CatalogBrandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly brand_id: ImmutableColumn<string>;
+  readonly display_name: MutableColumn<string>;
+  readonly normalized_name: MutableColumn<string>;
+  readonly status: MutableColumn<CatalogLifecycle>;
+  readonly version: MutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface CatalogItemTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly item_id: ImmutableColumn<string>;
+  readonly kind: MutableColumn<CatalogItemKind>;
+  readonly title: MutableColumn<string>;
+  readonly normalized_title: MutableColumn<string>;
+  readonly description: MutableColumn<string | null>;
+  readonly category_id: MutableColumn<string>;
+  readonly brand_id: MutableColumn<string | null>;
+  readonly status: MutableColumn<CatalogLifecycle>;
+  readonly sellable: MutableColumn<boolean>;
+  readonly stockable: MutableColumn<boolean>;
+  readonly purchasable: MutableColumn<boolean>;
+  readonly applicable_to_repair: MutableColumn<boolean>;
+  readonly version: MutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface CatalogItemIdentifierTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly identifier_id: ImmutableColumn<string>;
+  readonly item_id: ImmutableColumn<string>;
+  readonly scheme: ImmutableColumn<CatalogIdentifierScheme>;
+  readonly normalized_value: ImmutableColumn<string>;
+  readonly display_value: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface CatalogSkuSequenceTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly kind: ImmutableColumn<CatalogItemKind>;
+  readonly next_value: MutableColumn<string>;
+}
+
+export interface CatalogBasePriceRevisionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly revision_id: ImmutableColumn<string>;
+  readonly item_id: ImmutableColumn<string>;
+  readonly amount_minor: ImmutableColumn<string>;
+  readonly currency: ImmutableColumn<string>;
+  readonly item_version: ImmutableColumn<number>;
+  readonly reason: ImmutableColumn<string | null>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly effective_from: ImmutableColumn<Date>;
+}
+
+export interface CatalogBranchPriceRevisionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly revision_id: ImmutableColumn<string>;
+  readonly item_id: ImmutableColumn<string>;
+  readonly action: ImmutableColumn<'SET' | 'REVOKE'>;
+  readonly amount_minor: ImmutableColumn<string | null>;
+  readonly currency: ImmutableColumn<string>;
+  readonly item_version: ImmutableColumn<number>;
+  readonly reason: ImmutableColumn<string | null>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly effective_from: ImmutableColumn<Date>;
+}
+
+export interface CatalogReferenceCostRevisionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly revision_id: ImmutableColumn<string>;
+  readonly item_id: ImmutableColumn<string>;
+  readonly amount_minor: ImmutableColumn<string>;
+  readonly currency: ImmutableColumn<string>;
+  readonly source_type: ImmutableColumn<'MANUAL' | 'IMPORTED' | 'ESTIMATED' | 'THIRD_PARTY'>;
+  readonly source_label: ImmutableColumn<string | null>;
+  readonly observed_at: ImmutableColumn<Date>;
+  readonly item_version: ImmutableColumn<number>;
+  readonly reason: ImmutableColumn<string | null>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly effective_from: ImmutableColumn<Date>;
+}
+
+export interface CatalogCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly operation: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly request_fingerprint: ImmutableColumn<Uint8Array>;
+  readonly result_item_id: ImmutableColumn<string>;
+  readonly result_version: ImmutableColumn<number>;
+  readonly result_payload: ImmutableColumn<unknown>;
+  readonly applied_at: ImmutableColumn<Date>;
+}
+
+export interface CatalogAuditEventTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly audit_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string | null>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<string>;
+  readonly action: ImmutableColumn<string>;
+  readonly resource_id: ImmutableColumn<string>;
+  readonly old_version: ImmutableColumn<number | null>;
+  readonly new_version: ImmutableColumn<number>;
+  readonly change_summary: ImmutableColumn<unknown>;
+  readonly result: ImmutableColumn<'SUCCEEDED'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
 }
 
 /** Customer identity is Branch-scoped; Repairs own their historical snapshots. */
@@ -166,6 +310,14 @@ export type AccessCapabilityCode =
   | 'repairs.configuration.read'
   | 'repairs.configuration.manage'
   | 'repairs.read'
+  | 'price_list.read'
+  | 'catalog.manage'
+  | 'catalog.prices.manage'
+  | 'catalog.branch_prices.manage'
+  | 'catalog.reference_cost.read'
+  | 'catalog.reference_cost.manage'
+  | 'catalog.import.prepare'
+  | 'catalog.import.publish'
   | 'users.read'
   | 'users.manage';
 
@@ -921,6 +1073,16 @@ export interface DatabaseSchema {
   readonly station_credentials: StationCredentialTable;
   readonly users: UserTable;
   readonly user_preferences: UserPreferencesTable;
+  readonly catalog_categories: CatalogCategoryTable;
+  readonly catalog_brands: CatalogBrandTable;
+  readonly catalog_items: CatalogItemTable;
+  readonly catalog_item_identifiers: CatalogItemIdentifierTable;
+  readonly catalog_sku_sequences: CatalogSkuSequenceTable;
+  readonly catalog_base_price_revisions: CatalogBasePriceRevisionTable;
+  readonly catalog_branch_price_revisions: CatalogBranchPriceRevisionTable;
+  readonly catalog_reference_cost_revisions: CatalogReferenceCostRevisionTable;
+  readonly catalog_commands: CatalogCommandTable;
+  readonly catalog_audit_events: CatalogAuditEventTable;
   readonly customers: CustomerTable;
   readonly customer_contact_phones: CustomerContactPhoneTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;

@@ -2888,6 +2888,7 @@ export async function checkArchitecture({
     }
     if (baselineFixture) {
       omittedFixtureOwners.add('repairs');
+      omittedFixtureOwners.add('catalog');
     }
     const belongsToOmittedFixtureOwner = (value) =>
       [...omittedFixtureOwners].some(
@@ -2897,6 +2898,7 @@ export async function checkArchitecture({
           value.includes(`/${owner}_`) ||
           value.startsWith(`${owner}_`) ||
           (owner === 'access' && value.includes('Access')) ||
+          (owner === 'catalog' && value.includes('Catalog')) ||
           (owner === 'repairs' && value.includes('Repair')) ||
           (owner === 'users' && value.includes('User')),
       );
@@ -2931,6 +2933,15 @@ export async function checkArchitecture({
     persistence.allowedMigrations = persistence.allowedMigrations.filter(
       (path) => !belongsToOmittedFixtureOwner(path),
     );
+    if (baselineFixture) {
+      // The persistence fixtures intentionally model the original two-table
+      // tenancy baseline. Later tenant-owned settings migrations are governed
+      // in production mode and in their dedicated contracts, not retrofitted
+      // into that immutable synthetic baseline.
+      persistence.allowedMigrations = persistence.allowedMigrations.filter(
+        (path) => path !== 'src/infrastructure/database/migrations/20260911180000_tenancy_add_operating_currency.ts',
+      );
+    }
     if (persistence.migrationOwnership?.registrations) {
       persistence.migrationOwnership.legacyMigrations =
         persistence.migrationOwnership.legacyMigrations.filter(

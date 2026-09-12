@@ -179,7 +179,7 @@ test(
       assert.equal(applied.status.migrations.length, inspection.manifest.migrations.length);
       assert.ok(applied.status.migrations.every(({ state }) => state === 'applied'));
       await admin.query(
-        `insert into tenants (tenant_id, created_at) values ($1, now()), ($2, now())`,
+        `insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'MXN', now())`,
         [tenantA, tenantB],
       );
       await admin.query(

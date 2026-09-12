@@ -32,11 +32,15 @@ test('public contextual authorization contract is framework-neutral and sanitize
   assert.match(source, /readonly capability: CapabilityCode/u);
 });
 
-test('Access owns and exports one explicit contextual authorization provider', async () => {
-  const [moduleSource, executorSource] = await Promise.all([
+test('Access owns and exports explicit branch-context and tenant-wide authorization providers', async () => {
+  const [moduleSource, executorSource, tenantWideSource] = await Promise.all([
     readFile('src/modules/access/access.module.ts', 'utf8'),
     readFile(
       'src/modules/access/presentation/contextual-authorization.executor.ts',
+      'utf8',
+    ),
+    readFile(
+      'src/modules/access/presentation/tenant-wide-authorization.executor.ts',
       'utf8',
     ),
   ]);
@@ -44,7 +48,7 @@ test('Access owns and exports one explicit contextual authorization provider', a
     moduleSource,
     /provide: CONTEXTUAL_AUTHORIZATION_EXECUTOR,[\s\S]*inject: \[ACCESS_SESSION_RUNTIME\]/u,
   );
-  assert.match(moduleSource, /exports: \[CONTEXTUAL_AUTHORIZATION_EXECUTOR\]/u);
+  assert.match(moduleSource, /exports: \[CONTEXTUAL_AUTHORIZATION_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR\]/u);
   assert.equal(
     (moduleSource.match(/provide: CONTEXTUAL_AUTHORIZATION_EXECUTOR/gu) ?? []).length,
     1,
@@ -55,6 +59,18 @@ test('Access owns and exports one explicit contextual authorization provider', a
   );
   assert.match(executorSource, /touch: true/u);
   assert.doesNotMatch(executorSource, /capabilit(?:y|ies)Cache|roleName|roleKey/iu);
+  assert.match(
+    moduleSource,
+    /provide: TENANT_WIDE_AUTHORIZATION_EXECUTOR,[\s\S]*inject: \[CONTEXTUAL_AUTHORIZATION_EXECUTOR, ACCESS_SESSION_RUNTIME\]/u,
+  );
+  assert.match(moduleSource, /exports: \[[^\]]*TENANT_WIDE_AUTHORIZATION_EXECUTOR/u);
+  assert.equal(
+    (moduleSource.match(/provide: TENANT_WIDE_AUTHORIZATION_EXECUTOR/gu) ?? []).length,
+    1,
+  );
+  assert.match(tenantWideSource, /assignment\.assignmentScope === 'TENANT_WIDE'/u);
+  assert.match(tenantWideSource, /confirmCurrent/u);
+  assert.doesNotMatch(tenantWideSource, /roleName|roleKey|isAdmin/iu);
 });
 
 test('session projection publishes capabilities only for an authenticated Session', async () => {

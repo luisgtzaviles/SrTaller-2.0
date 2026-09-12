@@ -13,7 +13,13 @@ export interface UserPreferencesScope {
 
 export type UserPreferencesRecord = Readonly<{
   newRepairFormMode: NewRepairFormMode;
+  priceListShowReferenceCost: boolean;
   updatedAt: string | null;
+}>;
+
+export type UserPreferencesPatch = Readonly<{
+  newRepairFormMode?: NewRepairFormMode;
+  priceListShowReferenceCost?: boolean;
 }>;
 
 export type UserPreferencesMutationGuard = Readonly<{
@@ -37,7 +43,7 @@ export interface UserPreferencesRepositoryPort {
   read(scope: UserPreferencesScope): Promise<UserPreferencesRecord | null>;
   upsert(
     scope: UserPreferencesScope,
-    mode: NewRepairFormMode,
+    patch: UserPreferencesPatch,
     occurredAt: Date,
     guard?: UserPreferencesMutationGuard,
   ): Promise<UserPreferencesRecord>;

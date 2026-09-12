@@ -22,3 +22,20 @@ export function parseTenantId(value: unknown): TenantId {
   }
   return value as TenantId;
 }
+
+export type OperatingCurrency = string & { readonly __operatingCurrency: true };
+
+export function parseOperatingCurrency(value: unknown): OperatingCurrency {
+  if (typeof value !== 'string' || !/^[A-Z]{3}$/u.test(value)) {
+    throw new TypeError('Operating currency must be an ISO 4217 alpha code.');
+  }
+  return value as OperatingCurrency;
+}
+
+export interface TenantSettingsRuntime {
+  readOperatingCurrency(scope: Readonly<{ tenantId: TenantId }>): Promise<OperatingCurrency | null>;
+}
+
+export const TENANT_SETTINGS_RUNTIME: unique symbol = Symbol(
+  'srtaller.tenancy.settings-runtime',
+);

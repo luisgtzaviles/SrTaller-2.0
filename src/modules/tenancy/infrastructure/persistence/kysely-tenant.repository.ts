@@ -85,17 +85,20 @@ function validateScope(
 function validateCreateRecord(
   scope: TenantPersistenceScope,
   record: CreateTenantRecord,
-): Readonly<{ tenantId: TenantPersistenceScope['tenantId']; createdAt: Date }> {
+): Readonly<{ tenantId: TenantPersistenceScope['tenantId']; operatingCurrency: string; createdAt: Date }> {
   if (
     typeof record !== 'object' ||
     record === null ||
     record.tenantId !== scope.tenantId ||
-    !validInstant(record.createdAt)
+    !validInstant(record.createdAt) ||
+    typeof record.operatingCurrency !== 'string' ||
+    !/^[A-Z]{3}$/u.test(record.operatingCurrency)
   ) {
     throw new TenantPersistenceError('PERSISTENCE_TENANT_SCOPE_REQUIRED');
   }
   return Object.freeze({
     tenantId: scope.tenantId,
+    operatingCurrency: record.operatingCurrency,
     createdAt: new Date(record.createdAt),
   });
 }
@@ -103,6 +106,7 @@ function validateCreateRecord(
 function mapTenantRecord(row: TenantRow): TenantRecord {
   return Object.freeze({
     tenantId: parseTenantId(row.tenant_id),
+    operatingCurrency: row.operating_currency,
     createdAt: row.created_at.toISOString(),
   });
 }
@@ -122,9 +126,10 @@ class KyselyTenantRepository implements TenantRepositoryPort {
           .insertInto('tenants')
           .values({
             tenant_id: validatedRecord.tenantId,
+            operating_currency: validatedRecord.operatingCurrency,
             created_at: validatedRecord.createdAt,
           })
-          .returning(['tenant_id', 'created_at'])
+          .returning(['tenant_id', 'operating_currency', 'created_at'])
           .executeTakeFirstOrThrow();
         return mapTenantRecord(row);
       });
@@ -141,7 +146,7 @@ class KyselyTenantRepository implements TenantRepositoryPort {
       return await this.execute(async (executor: TenantExecutor) => {
         const row = await executor
           .selectFrom('tenants')
-          .select(['tenant_id', 'created_at'])
+          .select(['tenant_id', 'operating_currency', 'created_at'])
           .where('tenant_id', '=', validatedScope.tenantId)
           .executeTakeFirst();
         return row ? mapTenantRecord(row) : null;
@@ -162,6 +167,20 @@ class KyselyTenantRepository implements TenantRepositoryPort {
           .executeTakeFirst();
         return row !== undefined;
       });
+    } catch (error: unknown) {
+      throw mapTenantError(error);
+    }
+  }
+
+  async readOperatingCurrency(scope: TenantPersistenceScope): Promise<string | null> {
+    const validatedScope = validateScope(scope);
+    try {
+      const row = await this.execute((executor: TenantExecutor) => executor
+        .selectFrom('tenants')
+        .select('operating_currency')
+        .where('tenant_id', '=', validatedScope.tenantId)
+        .executeTakeFirst());
+      return row?.operating_currency ?? null;
     } catch (error: unknown) {
       throw mapTenantError(error);
     }

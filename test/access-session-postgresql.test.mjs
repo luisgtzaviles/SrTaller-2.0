@@ -175,7 +175,7 @@ async function reset(admin) {
 }
 
 async function seed(admin) {
-  await admin.query('insert into tenants (tenant_id, created_at) values ($1, now()), ($2, now())', [tenantA, tenantB]);
+  await admin.query("insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'MXN', now())", [tenantA, tenantB]);
   await admin.query('insert into branches (tenant_id, branch_id, active, created_at) values ($1,$2,true,now()),($3,$4,true,now())', [tenantA, branchA, tenantB, branchB]);
   await admin.query("insert into stations (tenant_id,station_id,status,created_at,updated_at) values ($1,$2,'active',now(),now()),($3,$4,'active',now(),now())", [tenantA, stationA, tenantB, stationB]);
   await admin.query('insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now()),($4,$5,$6,now())', [tenantA, stationA, branchA, tenantB, stationB, branchB]);

@@ -311,8 +311,8 @@ test(
       );
 
       await admin.query(
-        `insert into tenants (tenant_id, created_at)
-         values ($1, now()), ($2, now()), ($3, now()), ($4, now()), ($5, now())`,
+        `insert into tenants (tenant_id, operating_currency, created_at)
+         values ($1, 'MXN', now()), ($2, 'MXN', now()), ($3, 'MXN', now()), ($4, 'MXN', now()), ($5, 'MXN', now())`,
         [tenantA, tenantB, tenantC, tenantD, tenantE],
       );
 

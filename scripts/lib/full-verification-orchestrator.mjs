@@ -5,12 +5,13 @@ export const fullVerificationStages = Object.freeze([
   Object.freeze({ id: 'base-verify', name: 'Stage 3 Base verify gate' }),
   Object.freeze({ id: 'postgresql-composite', name: 'Stage 4 Material PostgreSQL composite' }),
   Object.freeze({ id: 'pbi039-postgresql', name: 'Stage 5 PBI-039 PostgreSQL' }),
-  Object.freeze({ id: 'preview-runtime', name: 'Stage 6 Preview-like PostgreSQL runtime' }),
-  Object.freeze({ id: 'smoke-provision', name: 'Stage 7 Provision compiled-smoke PostgreSQL' }),
-  Object.freeze({ id: 'smoke-start', name: 'Stage 8 Compiled backend smoke' }),
-  Object.freeze({ id: 'smoke-ui', name: 'Stage 9 Compiled UI smoke' }),
-  Object.freeze({ id: 'cleanup', name: 'Stage 10 Cleanup proof' }),
-  Object.freeze({ id: 'candidate-final', name: 'Stage 11 Final fingerprint + evidence' }),
+  Object.freeze({ id: 'pbi040-postgresql', name: 'Stage 6 PBI-040 PostgreSQL' }),
+  Object.freeze({ id: 'preview-runtime', name: 'Stage 7 Preview-like PostgreSQL runtime' }),
+  Object.freeze({ id: 'smoke-provision', name: 'Stage 8 Provision compiled-smoke PostgreSQL' }),
+  Object.freeze({ id: 'smoke-start', name: 'Stage 9 Compiled backend smoke' }),
+  Object.freeze({ id: 'smoke-ui', name: 'Stage 10 Compiled UI smoke' }),
+  Object.freeze({ id: 'cleanup', name: 'Stage 11 Cleanup proof' }),
+  Object.freeze({ id: 'candidate-final', name: 'Stage 12 Final fingerprint + evidence' }),
 ]);
 
 export function renderFullVerificationSummary(evidence) {
@@ -123,6 +124,7 @@ export async function runFullVerificationCampaign({
     results.baseVerify = await stage('base-verify', operations.baseVerify);
     results.postgresql = await stage('postgresql-composite', operations.postgresqlComposite);
     results.pbi039Postgresql = await stage('pbi039-postgresql', operations.pbi039Postgresql);
+    results.pbi040Postgresql = await stage('pbi040-postgresql', operations.pbi040Postgresql);
     results.previewRuntime = await stage('preview-runtime', operations.previewRuntime);
     smoke = await stage('smoke-provision', operations.smokeProvision);
     results.smokeProvision = smoke.evidence;
@@ -166,6 +168,7 @@ export async function runFullVerificationCampaign({
     postgresql: Object.freeze({
       composite: results.postgresql ?? null,
       pbi039: results.pbi039Postgresql ?? null,
+      pbi040: results.pbi040Postgresql ?? null,
       previewRuntime: results.previewRuntime ?? null,
     }),
     smoke: Object.freeze({

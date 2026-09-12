@@ -11,6 +11,16 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   );
   assert.equal(policy.persistence.status, 'tenant-schema-materialized');
   assert.deepEqual(policy.persistence.databaseObjects, {
+    catalog_categories: { owner: 'catalog', kind: 'table' },
+    catalog_brands: { owner: 'catalog', kind: 'table' },
+    catalog_items: { owner: 'catalog', kind: 'table' },
+    catalog_item_identifiers: { owner: 'catalog', kind: 'table' },
+    catalog_sku_sequences: { owner: 'catalog', kind: 'table' },
+    catalog_base_price_revisions: { owner: 'catalog', kind: 'table' },
+    catalog_branch_price_revisions: { owner: 'catalog', kind: 'table' },
+    catalog_reference_cost_revisions: { owner: 'catalog', kind: 'table' },
+    catalog_commands: { owner: 'catalog', kind: 'table' },
+    catalog_audit_events: { owner: 'catalog', kind: 'table' },
     branches: { owner: 'stations', kind: 'table' },
     stations: { owner: 'stations', kind: 'table' },
     station_bindings: { owner: 'stations', kind: 'table' },
@@ -169,6 +179,10 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260909100000_repairs_add_problem_category_safe_delete.ts',
       '20260909220000_users_create_preferences.ts',
       '20260910230000_repairs_create_device_type_catalog.ts',
+      '20260911180000_tenancy_add_operating_currency.ts',
+      '20260911181000_access_add_catalog_capabilities.ts',
+      '20260911182000_users_add_price_list_cost_preference.ts',
+      '20260911183000_catalog_create_pricing_core.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

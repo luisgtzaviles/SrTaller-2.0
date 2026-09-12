@@ -260,11 +260,11 @@ test(
 
       const tenantARecord = await tenantRepository.createTenant(
         { tenantId: tenantA },
-        { tenantId: tenantA, createdAt },
+        { tenantId: tenantA, operatingCurrency: 'MXN', createdAt },
       );
       await tenantRepository.createTenant(
         { tenantId: tenantB },
-        { tenantId: tenantB, createdAt },
+        { tenantId: tenantB, operatingCurrency: 'MXN', createdAt },
       );
       assert.ok(Object.isFrozen(tenantARecord));
       assert.deepEqual(
@@ -278,7 +278,7 @@ test(
       await assert.rejects(
         tenantRepository.createTenant(
           { tenantId: tenantA },
-          { tenantId: tenantA, createdAt },
+          { tenantId: tenantA, operatingCurrency: 'MXN', createdAt },
         ),
         expectsTenantCode('TENANT_PERSISTENCE_CONFLICT'),
       );
@@ -288,7 +288,7 @@ test(
           createTransactionalKyselyTenantRepository(context);
         await repository.createTenant(
           { tenantId: tenantCommitted },
-          { tenantId: tenantCommitted, createdAt },
+          { tenantId: tenantCommitted, operatingCurrency: 'MXN', createdAt },
         );
       });
       assert.equal(
@@ -302,7 +302,7 @@ test(
             createTransactionalKyselyTenantRepository(context);
           await repository.createTenant(
             { tenantId: tenantRolledBack },
-            { tenantId: tenantRolledBack, createdAt },
+            { tenantId: tenantRolledBack, operatingCurrency: 'MXN', createdAt },
           );
           throw new Error('synthetic rollback');
         }),
