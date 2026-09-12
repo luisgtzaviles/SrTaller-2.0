@@ -410,8 +410,8 @@ async function assertTenantIsolation(admin) {
   const createdAt = new Date('2026-07-25T00:00:00.000Z');
 
   await admin.query(
-    `insert into tenants (tenant_id, operating_currency, created_at)
-     values ($1, 'MXN', $3), ($2, 'MXN', $3)`,
+    `insert into tenants (tenant_id, created_at)
+     values ($1, $3), ($2, $3)`,
     [tenantA, tenantB, createdAt],
   );
   await admin.query(
@@ -496,8 +496,8 @@ async function assertTenantIsolation(admin) {
   const extraTenants = Array.from({ length: 48 }, () => randomUUID());
   const tenantTimes = extraTenants.map(() => createdAt);
   await admin.query(
-    `insert into tenants (tenant_id, operating_currency, created_at)
-     select tenant_id, 'MXN', created_at from unnest($1::uuid[], $2::timestamptz[]) as values(tenant_id, created_at)`,
+    `insert into tenants (tenant_id, created_at)
+     select * from unnest($1::uuid[], $2::timestamptz[])`,
     [extraTenants, tenantTimes],
   );
   const branchTenants = [];
