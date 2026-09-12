@@ -12,21 +12,18 @@ producto y condiciones pendientes antes de la siguiente iteración.
 **Estado:** Sprint 00 y Sprint 01 `Closed`; PBI-030, PBI-027, PBI-029,
 PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos. SPRINT-02 está
 `Active`.
-**Fase:** Operational Authentication & Authorization, con PBI-025/PBI-034
-`Done`, PBI-026/PBI-028/PBI-038 `Done` y G3–G5 `PASS`; Current PBI es PBI-039,
-WIP `1/1`, con Functional Slice Frozen / Owner Accepted, Formal UI
-Verification, Hardening, Full Verification, CI / PR Readiness y PR CI en
-`PASS`; los findings de revisión están remediados y el gate vigente es la
-re-review independiente.
+**Fase:** Operational Authentication & Authorization, con PBI-025/PBI-034/
+PBI-026/PBI-028/PBI-038/PBI-039 `Done` y G3–G5 `PASS`; Current PBI es
+[PBI-043](backlog/pbis/PBI-043.md) `Ready`, WIP `0/1`, con arquitectura y DoR
+preparadas y start Owner pendiente. PBI-040 permanece congelado fuera de
+`main`.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
-**Última integración de producto con CI registrada:** PBI-038 cerró mediante PR #40,
-`5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI `34280510716` GREEN;
-`Released: NO`. `main`/`origin/main` local avanzaron por el merge documental PR
-#41 a `94065dfedc55234fd1738a6674289278aa49d224`; PBI-039 permanece como WIP
-en PR #42, no integrado, con HEAD `0e0ceda…` y CI exacta `34577352782` verde.
-No existe candidato siguiente seleccionado.
-Véase [Current Repository State](CURRENT_STATE.md#git-y-ci).
+**Baseline integrada con CI registrada:** PBI-039 quedó `Done` mediante el
+cierre PR #45 en `40684d7554cdf02551f941e5e3f0beabbe563125`; CI exacta
+`34623060504` GREEN. PBI-043 está seleccionado `Ready`, no iniciado y no
+`Released`.
+Véase [Current Repository State](CURRENT_STATE.md).
 
 ## Revisión dirigida de Sprint 00
 
@@ -105,6 +102,7 @@ separados.
 - [Modelo multitenant](architecture/MULTITENANCY_MODEL.md)
 - [Identidad, acceso y permisos](architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md)
 - [Sucursales y dispositivos](architecture/BRANCH_AND_DEVICE_MODEL.md)
+- [Sesiones operativas concurrentes](architecture/CONCURRENT_OPERATIONAL_SESSIONS.md)
 - [Arquitectura de datos](architecture/DATA_ARCHITECTURE.md)
 - [Tiempo real y mensajería](architecture/REALTIME_AND_MESSAGING.md)
 - [Integraciones](architecture/INTEGRATION_ARCHITECTURE.md)

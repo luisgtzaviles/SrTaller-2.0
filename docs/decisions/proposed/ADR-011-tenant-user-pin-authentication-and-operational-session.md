@@ -8,6 +8,13 @@
 
 Decisión arquitectónica aceptada para SR Taller 2.0. La ruta bajo `proposed/` conserva la convención histórica del repositorio; el estado dentro de este ADR y el [registro de decisiones](../README.md) son autoritativos.
 
+**Sustitución parcial vigente:** [ADR-014](ADR-014-concurrent-operational-sessions.md)
+sustituye desde 2026-09-12 únicamente la exclusividad de una Session/User por
+Station, el reemplazo station-wide y la concurrencia antes diferida. Este ADR
+conserva autoridad sobre identidad Tenant-scoped, PIN contextual, sesión,
+estados, expiración, fail-closed y atribución en todo lo no sustituido. El texto
+histórico inferior no se reescribe; debe leerse con esa delimitación.
+
 Este ADR define un contrato conceptual. No autoriza implementación y no diseña tablas, SQL, migraciones, endpoints, middleware, interfaces, tokens, cookies, algoritmos criptográficos ni mecanismos concretos de almacenamiento.
 
 ## Contexto

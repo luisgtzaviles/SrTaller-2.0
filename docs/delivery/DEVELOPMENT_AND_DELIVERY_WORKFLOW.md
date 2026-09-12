@@ -19,18 +19,12 @@ capacidades operativas sin copiar el acoplamiento del sistema anterior. La
 dirección de producto se conserva en la [visión](../product/PRODUCT_VISION.md)
 y el [alcance](../product/PRODUCT_SCOPE.md).
 
-La baseline actual no es todavía un producto E2E. Contiene una aplicación
-NestJS ejecutable, React/Vite, PostgreSQL y el Repair Workstream local con D5,
-D6.1 y D6.2. Trusted Station Context, User Directory y
-Roles/Capabilities/Assignments están integrados y cerrados canónicamente. Los
-writes integrados de Repairs aún usan actor sintético fuera del alcance ya
-entregado. PBI-025, PBI-034, PBI-026, PBI-028 y PBI-038 están `Done`; G4 y G5
-están `PASS`. PBI-038 integra la foundation temporal IANA y límites locales
-sin modificar los instantes UTC. PBI-039 está en `Done candidate`, WIP es
-`0/1`: PR #42 y los hotfixes post-deploy #43/#44 están integrados, la CI exacta
-de `main` está verde y Preview pasó validación autenticada. El gate vigente es
-el PR documental de cierre más su CI exacta. No hay siguiente candidato
-seleccionado.
+La baseline actual contiene Trusted Station Context, Users, roles/capabilities,
+PIN, Operational Session, autorización contextual, atribución de negocio y el
+Repair Workstream PBI-039. PBI-039 está `Done` en `40684d7` con CI exacta
+`34623060504`. PBI-043 es el Current PBI `Ready`, WIP `0/1`, para remediar la
+exclusividad station-wide conforme a ASC-001…ASC-008 y ADR-014; su
+implementación no está autorizada. PBI-040 permanece congelado fuera de `main`.
 
 ## Jerarquía de autoridad documental
 
@@ -79,14 +73,18 @@ y HTTP.
 3. Confirmar con Git la rama, `HEAD`, `origin/main`, divergencia y working tree.
 4. Identificar la tarea/PBI, el resultado esperado, exclusiones y autoridad.
 5. Identificar el ambiente objetivo y si existen datos reales involucrados.
-6. Crear desde `main` una rama temporal `feature/*`, `fix/*` u `ops/*`.
+6. Crear desde `main` actualizado una rama temporal `feature/*`, `fix/*` u
+   `ops/*`: una meta activa usa una rama y una rama integrada nunca se reutiliza.
 7. Implementar el cambio mínimo y actualizar sus contratos/documentación.
 8. Ejecutar verificaciones proporcionales y conservar evidencia útil.
-9. Crear un commit lógico; verificar nuevamente la integración candidata.
+9. Crear un commit lógico; demostrar ancestry/baseline y provenance del runtime,
+   y verificar nuevamente la integración candidata.
 10. Integrar explícitamente a `main` sólo con la autoridad aplicable.
 11. Publicar `origin/main` sin force push.
 12. Para Preview, ejecutar deployment manual en Dokploy y verificar remoto.
-13. Registrar resultado, riesgos residuales y siguiente tarea.
+13. Registrar resultado, riesgos residuales y siguiente tarea. Tras merge y
+   validación Preview, eliminar las ramas absorbidas y ejecutar `fetch --prune`
+   cuando se haya confirmado que no contienen trabajo exclusivo.
 
 Para la iteración funcional local, el ciclo operativo es
 `local:db:up → local:db:migrate → local:db:seed → local:dev`, conforme al
@@ -104,11 +102,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI for integrated PBI-039 runtime | Green: exact-main run `34619271236` on `0d1c5760ce962d17a8292b841f5de43a8cb453a7` |
+| Authoritative CI for current integrated baseline | Green: exact-main run `34623060504` on `40684d7554cdf02551f941e5e3f0beabbe563125` |
 | Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
 | Sprint | SPRINT-02 `Active`; WIP `0/1` |
-| Current / next PBI | Current: PBI-039 `Done candidate` in canonical closure; next: NONE selected |
-| Current blocking gate | Closure documentation PR merge plus exact-main CI; Production remains unauthorized |
+| Current / next PBI | Current: PBI-043 `Ready`; PBI-040 frozen outside `main` |
+| Current blocking gate | Owner implementation authorization for PBI-043; Production remains unauthorized |
 | GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
@@ -220,7 +218,17 @@ cambio terminado no está en `main`, aún no forma parte de la baseline.
 
 Son ramas temporales. No se crean ramas permanentes `preview`, `staging` o
 `production`. Las ramas históricas que ya existen no constituyen otra baseline
-y no se borran como efecto colateral de una tarea.
+y no se borran como efecto colateral de una tarea. Una meta activa conserva una
+sola rama; iteraciones del mismo objetivo permanecen allí hasta integración.
+Una rama integrada nunca se reutiliza: el siguiente objetivo nace del `main`
+actualizado. Antes de Owner Review o gates se verifican ancestry y runtime
+provenance. Después de merge y Preview PASS se limpian ramas absorbidas y se
+ejecuta `fetch --prune`, tras confirmar que no guardan trabajo exclusivo.
+
+Un WIP no integrado que deba esperar una remediación precedente se conserva
+congelado, sin recibir cambios, y después se reconcilia desde el nuevo `main`.
+Este es el tratamiento vigente para PBI-040 mientras PBI-043 espera start y
+cierre. El detalle normativo está en [BRANCH_POLICY.md](./BRANCH_POLICY.md).
 
 La protección técnica de `main` no está configurada en el repositorio público
 observado: la API reporta `Branch not protected` y no existen rulesets. Por

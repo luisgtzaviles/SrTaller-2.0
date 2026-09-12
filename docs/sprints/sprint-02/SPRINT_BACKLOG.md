@@ -2,29 +2,29 @@
 
 ## Estado del documento
 
-- **Estado:** Active.
-- **PBI actual:** `PBI-039` — Done candidate.
-- **WIP:** 0/1.
+- **Estado:** Active; extensión Access aprobada para readiness.
+- **PBI actual:** [PBI-043](../../backlog/pbis/PBI-043.md) — `Ready`; start no
+  autorizado.
+- **WIP:** `0/1`.
 
 | Orden | PBI | Estado | Dependencia secuencial y gates propios |
 |---:|---|---|---|
-| 1 | [PBI-025](../../backlog/pbis/PBI-025.md) | Done; Released: NO | Cierre PR #32 + CI exacto de main GREEN |
-| 2 | [PBI-034](../../backlog/pbis/PBI-034.md) | Done; Released: NO | Cierre PR #34 + CI exacto de main GREEN |
-| 3 | [PBI-026](../../backlog/pbis/PBI-026.md) | Done; Released: NO | Cierre PR #36 merge `0b39e3794a97c22d5471c0b6dfa278026f237b03` + CI exacto `34161029937` GREEN; G4 PASS |
-| 4 | [PBI-028](../../backlog/pbis/PBI-028.md) | Done; Released: NO | PR #39 merge `2b712fc3a3842f197324e8870011bf170846ddb8`, CI `34249869167` GREEN; G5 PASS |
-| 5 | [PBI-038](../../backlog/pbis/PBI-038.md) | Done; Released: NO | PR #40 merge `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`; exact-main CI `34280510716` GREEN |
-| 6 | [PBI-039](../../backlog/pbis/PBI-039.md) | Done candidate — cierre documental | G6/G7 PASS candidate; PR #42 + hotfixes #43/#44 integrados, exact-main CI `34619271236` y Preview validation PASS |
+| 1 | [PBI-025](../../backlog/pbis/PBI-025.md) | Done; Released: NO | Cierre PR #32 + CI exacta de `main` GREEN |
+| 2 | [PBI-034](../../backlog/pbis/PBI-034.md) | Done; Released: NO | Cierre PR #34 + CI exacta; exclusividad histórica sustituida parcialmente por ADR-014 |
+| 3 | [PBI-026](../../backlog/pbis/PBI-026.md) | Done; Released: NO | Cierre PR #36 + CI `34161029937`; G4 PASS |
+| 4 | [PBI-028](../../backlog/pbis/PBI-028.md) | Done; Released: NO | Cierre PR #39 + CI `34249869167`; G5 PASS |
+| 5 | [PBI-038](../../backlog/pbis/PBI-038.md) | Done; Released: NO | Cierre PR #40 + CI `34280510716` GREEN |
+| 6 | [PBI-039](../../backlog/pbis/PBI-039.md) | Done; Released: NO | Cierre PR #45 en `40684d7`; CI exacta `34623060504` PASS |
+| 7 | [PBI-043](../../backlog/pbis/PBI-043.md) | Ready; WIP 0/1 | ADR-014 + DoR + threat model + COS-01…24; requiere autorización Owner de start |
 
-Operational Note real-actor es el checkpoint integrado, no un PBI paralelo.
-No existe autorización de deploy ni de trabajo fuera del Identity Master Goal.
-PBI-037 se conserva como slice de administración Owner-autorizado e integrado
-del checkpoint integrado; no crea WIP adicional ni reabre foundations.
-No existe PBI posterior seleccionado. PBI-039 ya no ocupa WIP funcional; su
-único gate pendiente es integrar este cierre documental y obtener CI exacta de
-`main`. No se inicia trabajo posterior por inferencia.
+PBI-043 es una remediación Access independiente. No implementa administración
+de sesiones, auditoría global de lifecycle ni cambios a PIN/cookies/timeouts.
+PBI-040 se preserva como WIP congelado no integrado de Price List; los IDs
+PBI-041/PBI-042 permanecen reservados como Planned/Deferred. Ninguno forma
+parte de esta extensión.
 
 ## Próxima revisión
 
-- **Fecha:** al seleccionarse un nuevo PBI.
-- **Disparador:** una autorización Owner o una contradicción material en WIP,
-  orden, dependencia o trust boundary.
+- **Fecha:** al autorizar o rechazar el inicio de PBI-043.
+- **Disparador:** decisión Owner explícita o contradicción material de
+  readiness.

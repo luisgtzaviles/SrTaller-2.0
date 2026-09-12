@@ -114,7 +114,7 @@ La propuesta FSR de responsabilidad formal previa a la orden ya fue aclarada por
 
 | Documento/ID | Relación | Acción posterior |
 |---|---|---|
-| UBIQUITOUS_LANGUAGE: sesión operativa/PIN | ADR-011 fija credencial limitada al tenant, una sesión activa por estación y atribución histórica; controles técnicos siguen abiertos | aplicar sin mezclar autenticación y autorización |
+| UBIQUITOUS_LANGUAGE: sesión operativa/PIN | ADR-011 fija credencial limitada al tenant y atribución histórica; ADR-014 permite varias Sessions por Station con actor por Session solicitante | aplicar sin mezclar autenticación y autorización |
 | UBIQUITOUS_LANGUAGE: rol/capacidad | ADR-012 fija rol tenant-scoped, unión de asignaciones y autorización negativa server-side | componer por rebanada sin convertir puestos en permisos |
 | UBIQUITOUS_LANGUAGE: acción sensible/refuerzo | ADR-013 fija niveles 1–4, un solo uso, segundo aprobador e invalidación | clasificar por rebanada; auditoría técnica separada |
 | UBIQUITOUS_LANGUAGE: asignación técnica | se confirma que no equivale a trabajo ni custodia | refinar periodo, participación y resumen |

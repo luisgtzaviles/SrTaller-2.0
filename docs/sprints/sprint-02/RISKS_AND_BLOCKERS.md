@@ -2,9 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Active; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 Done; PBI-039
-  `Done candidate`; WIP 0/1; revisión, integración, CI exacta de `main` y
-  validación Preview PASS; cierre documental pendiente.
+- **Estado:** Active; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039 Done;
+  PBI-043 `Ready`, WIP 0/1 y start Owner no autorizado.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
@@ -27,11 +26,17 @@
 | Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Cerrado; cierre canónico reconciliado |
 | Entrypoint SPA obsoleto tras deploy | High runtime | `no-store`, ETag por contenido y recuperación de navegador con asset actual | Cerrado en PR #43; Preview validado |
 | Repairs sin repositorios en imagen Production-mode | High runtime | conexión compartida `APPLICATION_DATABASE_CONNECTION` y contrato de composición | Cerrado en PR #44; Full Verification, exact-main CI y create/detail/reload PASS |
+| Login de un perfil reemplaza la Session de otro perfil de la misma Station | Critical Access | ADR-014 elimina exclusividad station-wide; admission independiente y switch sólo sobre la Session solicitante | Arquitectura + PBI-043 Ready; implementación pendiente |
+| Carrera entre login independiente y switch | Critical concurrency | transacciones separadas; admission no serializa por Station global; switch usa bearer/CSRF + expected Session/version | COS-05…COS-10 definidos; implementación pendiente |
+| Revocación deja sesiones concurrentes autorizables | Critical authorization | revisión/epoch efectiva inmediatamente; materialización posterior permitida sólo si ningún request vuelve a autorizar | COS-15…COS-19 definidos; implementación pendiente |
+| Lockout PIN termina sesiones válidas | High availability/security | cooldown sólo bloquea autenticaciones nuevas; sesiones ya autorizadas continúan según lifecycle | COS-13/COS-14 definidos; implementación pendiente |
+| PBI-040 se reanuda sobre Access obsoleto | High integration | mantener rama Price List congelada; cerrar PBI-043 y reconciliar desde nuevo `main` antes de continuar | Control operativo vigente |
 
-Un Critical nuevo no previsto, criptografía custom, secreto remoto o cambio
-destructivo obliga a detenerse. El Critical conocido de PBI-025 no se rebaja.
+Un Critical nuevo no previsto por el threat model PBI-043, criptografía custom,
+secreto remoto o cambio destructivo obliga a detenerse. Los riesgos Critical de
+PIN y Session no se rebajan.
 
 ## Próxima revisión
 
-- **Fecha:** al integrar el cierre documental de PBI-039.
-- **Disparador:** nuevo riesgo material, fallo de CI exacta o cambio de controles.
+- **Fecha:** al decidir el inicio de PBI-043 o durante su threat review.
+- **Disparador:** nuevo riesgo material o cambio de ASC-001…ASC-008.

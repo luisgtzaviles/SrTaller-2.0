@@ -4,9 +4,8 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline Git local:** `main`/`origin/main` observados en
-  `94065dfedc55234fd1738a6674289278aa49d224`. La última integración de producto
-  con CI documentada permanece en `5973f355a5e9dfc7ae562a688ded04e7eba8bc34`,
-  CI `34280510716` GREEN. No se verificó frescura remota en este checkpoint.
+  `40684d7554cdf02551f941e5e3f0beabbe563125`; CI exacta `34623060504`
+  GREEN verificada.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
 
@@ -25,6 +24,7 @@ flowchart TD
     P24 --> P25
     P29 --> P25
     P25 --> P34[PBI-034 Operational Session<br/>Done]
+    P34 -. session foundation .-> P43[PBI-043 Concurrent Sessions<br/>Ready / start not authorized]
     P34 --> P26[PBI-026 Contextual Authorization<br/>Done / G4 PASS]
     P33 --> P26
     P26 --> P28[PBI-028 Minimum Business Audit<br/>Done / G5 PASS]
@@ -34,8 +34,9 @@ flowchart TD
     P27 -. approved integration follow-up .-> P38[PBI-038 Timezone Foundation<br/>Done]
     NOTE --> RETRO[Repair writes actor retrofit]
     RETRO --> P39[PBI-039 Customer Minimum + New Repair<br/>Functional Slice Frozen / Owner Accepted]
-    P39 --> POLISH[Formal UI Verification<br/>Next authorized gate]
-    POLISH --> PRICING[Pricing Catalog]
+    P39 --> POLISH[Formal UI Verification<br/>PASS / PBI-039 Done]
+    POLISH --> P43
+    P43 --> PRICING[Pricing Catalog / PBI-040 frozen]
     PRICING --> QUOTE[Quote / Authorization]
     QUOTE --> MONEY[Payments / Cash]
     MONEY --> DELIVERY[Resolution / QC / Delivery / Custody End]
@@ -66,16 +67,16 @@ flowchart TD
 - PBI-035 se incorpora cuando una acción concreta necesita reautenticación o
   segundo aprobador; no bloquea capacidades ordinarias.
 - PBI-036 no bloquea el MVP mientras PBI-028 entregue auditoría mínima.
+- PBI-043 depende de PBI-034 y sustituye su exclusividad station-wide conforme
+  ADR-014; bloquea operativamente la reanudación segura de PBI-040.
 
 ## Estados de transición
 
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; PBI-028 `Done`, G5 `PASS`, PBI-038 `Done`; PBI-039 es
-  Current PBI, su slice funcional está congelado y aceptado por Owner, los
-  findings de review están remediados, WIP=`1/1`, y el siguiente gate es la
-  re-review independiente de PR #42.
+- Sprint 02: `Active`; PBI-039 está `Done`; PBI-043 es Current PBI `Ready`,
+  WIP=`0/1` y espera autorización Owner de implementación.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -105,6 +106,8 @@ flowchart TD
 - PBI-038: `Done`; PR #40 merge
   `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716`
   GREEN; `Released: NO`.
+- PBI-043: `Ready`; ADR-014, DoR, threat model y estrategia de 24 pruebas
+  definidos; implementación, PR, merge y deploy no autorizados.
 
 ## Stage 2
 
@@ -114,6 +117,6 @@ diferidos.
 
 ## Próxima revisión
 
-El siguiente gate es la re-review independiente de PR #42 sobre el candidato
-remediado con CI verde. Merge, CI exacta de `main`, cierre y deploy conservan
-sus gates propios y no se infieren por la aceptación Owner ni por CI de PR.
+El siguiente gate es autorización Owner explícita para iniciar PBI-043 desde
+un `main` actualizado. PBI-040 permanece congelado y después deberá
+reconciliarse desde el nuevo `main`.
