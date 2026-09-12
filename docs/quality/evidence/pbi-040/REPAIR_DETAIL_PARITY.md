@@ -72,7 +72,7 @@ quedan bloqueados con `409 PARITY_FIXTURE_READ_ONLY`.
 - presencia de todos los campos del Header y Recepción;
 - jerarquía `Recepción | Historial | Conceptos | Evidencias`;
 - evento `repairs.received`, actores, timestamps, notas y markers;
-- mismo ancho funcional (`1174 px` a viewport de prueba) y cero overflow.
+- mismo ancho funcional (`1102 px` en el viewport gobernado) y cero overflow.
 
 La firma DOM común fue:
 
@@ -105,4 +105,3 @@ deja de materializar el fixture.
 - No hubo cambios visuales o funcionales en Repair Detail.
 - No se tocó Price List ni se inició PBI-041/PBI-042.
 - No hubo push, PR, merge, deploy, release ni Owner Acceptance.
-
