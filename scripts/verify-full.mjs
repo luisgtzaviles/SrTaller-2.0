@@ -11,6 +11,7 @@ import {
   verifyCandidateWhitespace,
 } from './lib/candidate-fingerprint.mjs';
 import { createFullVerificationSmokeHarness, fullVerificationSmokeLabel } from './lib/full-verification-smoke.mjs';
+import { inspectIntegrationBaseline } from './lib/integration-baseline.mjs';
 import {
   assertExternalEvidenceDirectory,
   fullVerificationStages,
@@ -117,6 +118,7 @@ function parseJsonOutput(stdout, label) {
 
 async function dryInventory() {
   const fingerprint = assertCandidatePreflight(await createCandidateFingerprint(repositoryRoot));
+  const integrationBaseline = await inspectIntegrationBaseline(repositoryRoot);
   const skipInventory = await inspectPostgresqlSkipInventory(repositoryRoot);
   const requiredScripts = [
     'scripts/run-postgresql-ci.mjs',
@@ -142,6 +144,7 @@ async function dryInventory() {
     status: 'READY',
     campaignExecuted: false,
     candidateFingerprint: fingerprint.candidateSha256,
+    integrationBaseline,
     docker: dockerVersion.trim(),
     postgresImage: imageState,
     evidenceLocation: 'external operating-system temporary directory',
@@ -169,7 +172,10 @@ if (process.argv.includes('--dry-run')) {
 
   const operations = {
     candidateFingerprint: () => createCandidateFingerprint(repositoryRoot),
-    candidatePreflight: async (fingerprint) => assertCandidatePreflight(fingerprint),
+    candidatePreflight: async (fingerprint) => {
+      assertCandidatePreflight(fingerprint);
+      return inspectIntegrationBaseline(repositoryRoot);
+    },
     resourcePreflight: assertResourcePreflight,
     toolchain: async () => {
       await runStreamingCommand('pnpm', ['run', 'verify:toolchain']);

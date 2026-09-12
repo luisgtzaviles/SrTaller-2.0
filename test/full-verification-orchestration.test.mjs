@@ -44,7 +44,7 @@ function campaignFixture({ failAt = null, finalFingerprint = fingerprint() } = {
       fingerprintCalls += 1;
       return fingerprintCalls === 1 ? fingerprint() : finalFingerprint;
     },
-    candidatePreflight: operation('candidate-preflight'),
+    candidatePreflight: operation('candidate-preflight', Object.freeze({ status: 'PASS', baselineSha: 'baseline' })),
     resourcePreflight: operation('resource-preflight'),
     toolchain: operation('toolchain', Object.freeze({ node: '24.18.0', pnpm: '11.15.1' })),
     integrity: operation('integrity'),
@@ -114,6 +114,7 @@ test('campaign invokes verify before material PostgreSQL and writes PASS evidenc
   assert.ok(fixture.calls.indexOf('smoke-start') < fixture.calls.indexOf('smoke-ui'));
   assert.ok(fixture.calls.indexOf('cleanup') < fixture.calls.indexOf('fingerprint-after'));
   assert.equal(evidence.verdict, 'PASS');
+  assert.equal(evidence.integrationBaseline.status, 'PASS');
   assert.equal(fixture.readEvidence().warnings[0].disposition, 'ACCEPTED WARNING');
   assert.match(renderFullVerificationSummary(evidence), /Stage 3 Base verify gate/u);
   assert.match(renderFullVerificationSummary(evidence), /Verdict: PASS/u);

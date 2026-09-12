@@ -1,5 +1,5 @@
 export const fullVerificationStages = Object.freeze([
-  Object.freeze({ id: 'candidate-preflight', name: 'Stage 0 Candidate preflight + initial fingerprint' }),
+  Object.freeze({ id: 'candidate-preflight', name: 'Stage 0 Candidate + integration baseline preflight' }),
   Object.freeze({ id: 'toolchain', name: 'Stage 1 Toolchain verification' }),
   Object.freeze({ id: 'repository-integrity', name: 'Stage 2 Repository integrity' }),
   Object.freeze({ id: 'base-verify', name: 'Stage 3 Base verify gate' }),
@@ -115,7 +115,7 @@ export async function runFullVerificationCampaign({
     candidateBefore = await stage('candidate-preflight', async () => {
       const fingerprint = await operations.candidateFingerprint();
       candidateBefore = fingerprint;
-      await operations.candidatePreflight(fingerprint);
+      results.integrationBaseline = await operations.candidatePreflight(fingerprint);
       results.resourcePreflight = await operations.resourcePreflight();
       return fingerprint;
     });
@@ -161,6 +161,7 @@ export async function runFullVerificationCampaign({
     startedAt: startedAt.toISOString(),
     finishedAt: finishedAt.toISOString(),
     baseHead: candidateBefore?.baseHead ?? candidateAfter?.baseHead ?? null,
+    integrationBaseline: results.integrationBaseline ?? null,
     candidateFingerprintBefore: candidateBefore,
     candidateFingerprintAfter: candidateAfter,
     toolchain: results.toolchain ?? null,
