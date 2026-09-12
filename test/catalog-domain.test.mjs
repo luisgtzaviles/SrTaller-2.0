@@ -115,6 +115,7 @@ test('protected operations require fixed server capabilities and never let the c
   };
   const service = {
     async search(_scope, _input, includeCost) { return { includeCost }; },
+    async getItem() { return { version: 1 }; },
     async createItem() { return { version: 1 }; },
   };
   const operations = new CatalogProtectedOperations(contextual, tenantWide, service);
@@ -126,6 +127,8 @@ test('protected operations require fixed server capabilities and never let the c
     ['branch', { capability: 'price_list.read', kind: 'read' }],
     ['branch', { capability: 'catalog.reference_cost.read', kind: 'read' }],
   ]);
+  assert.deepEqual(await operations.getItem({}, '30000000-0000-4000-8000-000000000040'), { version: 1 });
+  assert.deepEqual(observed.splice(0), [['tenant', { capability: 'catalog.manage', kind: 'read' }]]);
   await operations.createItem({}, { referenceCostAmountMinor: 48000 });
   assert.deepEqual(observed.splice(0).map((entry) => entry[1].capability), [
     'catalog.manage', 'catalog.prices.manage', 'catalog.reference_cost.manage',

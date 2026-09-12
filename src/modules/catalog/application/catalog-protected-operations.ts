@@ -10,6 +10,7 @@ import type { CatalogMutationContext, CatalogScope } from './ports/catalog-repos
 
 const requirement = (capability: ProtectedOperationRequirement['capability'], kind: ProtectedOperationRequirement['kind']) => Object.freeze({ capability, kind });
 const priceListRead = requirement('price_list.read', 'read');
+const catalogRead = requirement('catalog.manage', 'read');
 const catalogManage = requirement('catalog.manage', 'state-change');
 const pricesManage = requirement('catalog.prices.manage', 'state-change');
 const branchPricesManage = requirement('catalog.branch_prices.manage', 'state-change');
@@ -77,7 +78,7 @@ export class CatalogProtectedOperations {
   }
 
   getItem(evidence: ProtectedRequestEvidence, itemId: unknown) {
-    return this.tenantWideAuthorization.execute(evidence, catalogManage, (context) => this.service.getItem(scope(context), itemId));
+    return this.tenantWideAuthorization.execute(evidence, catalogRead, (context) => this.service.getItem(scope(context), itemId));
   }
 
   createCategory(evidence: ProtectedRequestEvidence, input: unknown) {
