@@ -2,20 +2,14 @@
 
 ## Estado del documento
 
-**Estado:** Índice reconciliado con el MVP Operating Roadmap. PBI-024–PBI-029
-conservan sus IDs pero tienen alcance acotado; PBI-031–PBI-036 representan los
-splits aprobados. PBI-030 tiene cierre `Done`; Sprint 01 está `Closed` y
-PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033 están `Done`; permanecen
-`Released: NO`. SPRINT-02 está `Active`; PBI-026/PBI-028/PBI-038 están `Done`,
-G5 es `PASS`; PBI-039 tiene su slice funcional congelado y aceptado por Owner,
-Formal UI Verification, Hardening, Full Verification, CI / PR Readiness y PR
-CI en `PASS`, findings de revisión remediados, Current PBI `PBI-039` y WIP
-`1/1`; PR #42 está listo para re-review independiente y no integrado.
+**Estado:** Índice reconciliado con el MVP Operating Roadmap. SPRINT-01 y
+SPRINT-02 están cerrados; PBI-039 está Done. SPRINT-03 está activo sólo en
+planning/readiness: PBI-040 Ready y siguiente seleccionado, PBI-041 Planned,
+PBI-042 Planned/Unassigned. WIP `0/1` y ninguna implementación autorizada.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
 PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt sizing; los demás casos
 conservan TBD.
-**Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
-00. PBI-021–PBI-030 están `Unassigned`.
+**Sprint:** el campo de cada PBI y el Sprint Backlog son autoritativos.
 
 | PBI | Resultado documental | Estado vigente |
 |---|---|---|
@@ -57,12 +51,14 @@ conservan TBD.
 | [PBI-036](PBI-036.md) | Extended Observability | Deferred |
 | [PBI-037](PBI-037.md) | Users & Roles Administration Product Iteration | Integrated slice within PBI-028; no independent lifecycle |
 | [PBI-038](PBI-038.md) | Timezone Foundation Integration and Hardening | Done; Released: NO; PR #40 and exact-main CI GREEN |
-| [PBI-039](PBI-039.md) | Customer Minimum + New Repair Classic 2.0 | In progress; review remediation PASS; PR #42 CI GREEN; ready for independent re-review; no merge/deploy |
+| [PBI-039](PBI-039.md) | Customer Minimum + New Repair Classic 2.0 | Done; Released: NO; PR #45 + exact-main CI `34623060504` |
+| [PBI-040](PBI-040.md) | Catalog & Pricing Core + Fast Price Lookup | Ready; next selected; implementation not authorized |
+| [PBI-041](PBI-041.md) | Supplier Price Import & Reconciliation | Planned; SPRINT-03 Candidate |
+| [PBI-042](PBI-042.md) | Catalog Item Images | Planned / Unassigned |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-PBI-039 es el único PBI actual. Su siguiente gate es la re-review independiente;
-no iniciar otro PBI ni inferir merge, release o deploy a partir de los gates
-verdes.
+PBI-040 es el siguiente seleccionado y su siguiente gate es autorización Owner
+explícita de implementación. Ready no inicia trabajo ni autoriza release/deploy.

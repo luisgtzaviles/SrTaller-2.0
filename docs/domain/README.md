@@ -2,8 +2,9 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery general; Price List reviewed/promoted.
+- **Autoridad:** la sección general no está aprobada; para Lista de precios
+  prevalecen su decision log y arquitectura aceptada.
 - **Propietario de decisión:** Product Owner
 - **Última revisión:** TBD
 - **Próxima revisión:** Después de la entrevista de dominio
@@ -12,7 +13,9 @@
 
 Esta sección hace explícito cómo podría funcionar un taller de reparación: qué conceptos usa, quién interviene, qué reglas protege, qué hechos relevantes ocurren y qué excepciones pueden romper un modelo simple. Modelar el dominio significa describir la operación con lenguaje del negocio y evidencia trazable antes de convertirla en software.
 
-La documentación combina hechos conocidos del repositorio, observaciones declaradas sobre SR Taller anterior, hipótesis, propuestas, preguntas abiertas y decisiones pendientes. No contiene decisiones aprobadas nuevas.
+La documentación combina hechos, observaciones legacy, hipótesis, propuestas y
+preguntas. Price List contiene decisiones aprobadas promovidas explícitamente;
+esa aprobación no se extiende al resto del directorio.
 
 ## Lo que todavía no representa
 
@@ -62,6 +65,8 @@ La documentación combina hechos conocidos del repositorio, observaciones declar
 - [Línea temporal del dominio](DOMAIN_TIMELINE.md)
 - [Modelo de dinero](MONEY_MODEL.md)
 - [Dominio de inventario](INVENTORY_DOMAIN.md)
+- [Discovery de Lista de precios](PRICE_LIST_DOMAIN_DISCOVERY.md)
+- [Arquitectura aceptada de Lista de precios](../architecture/PRICE_LIST_ARCHITECTURE.md)
 - [Valores candidatos](VALUE_OBJECT_CANDIDATES.md)
 
 ### Diseño estratégico candidato

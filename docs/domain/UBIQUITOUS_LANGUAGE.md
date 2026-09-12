@@ -2,10 +2,11 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery con términos delimitados por ADR-004/010
-- **Autoridad:** Responsable de Producto sólo para entradas marcadas `D`; las demás no están aprobadas
+- **Estado:** Draft / Discovery con términos delimitados por decisiones aceptadas.
+- **Autoridad:** Responsable de Producto para entradas `D`; Price List usa
+  PLD-001–008/018 y PRICE_LIST_ARCHITECTURE.
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** 2026-07-21
+- **Última revisión:** 2026-09-11
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Uso
@@ -68,8 +69,8 @@ Las definiciones con estado I son hipótesis iniciales, P significa comprensión
 | Evidencia | Registro verificable que sustenta una condición, decisión o acción. | foto, firma, nota | log técnico por sí solo | Foto de daño de entrada. | I | DQ-007 |
 | Cotización | Propuesta versionable de alcance, importes y condiciones. | presupuesto | autorización o pago | Cotización v2 añade una pantalla. | I | DQ-009 |
 | Partida de cotización | Elemento ofrecido dentro de una versión de cotización. | concepto, línea | servicio completo o refacción física | Cambio de pantalla como una partida. | I | DQ-009 |
-| Servicio | Trabajo comercializable descrito para el cliente. | labor, reparación | partida concreta o mano de obra | Servicio de cambio de centro de carga. | I | Q014 |
-| Refacción | Componente usado o propuesto para intervenir un equipo. | repuesto, pieza | producto genérico de inventario | Pantalla compatible para el modelo. | I | DQ-010 |
+| Servicio | Trabajo cobrable, interno o tercerizado; puede no tener costo o usar costo estimado/directo. | labor, reparación | partida aplicada, stock o mano de obra aislada | Limpieza de centro de carga por $350. | D | PLD-001/004 |
+| Refacción | Artículo físico pensado para reparar; su identidad comercial no prueba existencia ni uso. | repuesto, pieza | existencia o concepto aplicado | Pantalla iPhone 11 OLED distinta de LCD. | D | PLD-001/005 |
 | Mano de obra | Valor o esfuerzo comercial asociado al trabajo humano. | labor | servicio completo | Importe por instalación. | I | Q014 |
 | Autorización comercial | Decisión atribuible que permite un alcance y versión concretos de una cotización. | aprobación, visto bueno | autorización del sistema o pago | El propietario aprueba la cotización v2. | I | DQ-011 |
 | Rechazo | Decisión de no aceptar una propuesta o reclamación. | declinación | cancelación automática | Cliente rechaza la cotización. | I | Q014 |
@@ -110,8 +111,16 @@ Las definiciones con estado I son hipótesis iniciales, P significa comprensión
 
 | Término | Definición preliminar | Sinónimos usados | No confundir con | Ejemplo operativo | Validación | Preguntas |
 |---|---|---|---|---|---|---|
-| Inventario | Capacidad de controlar catálogo, disponibilidad y movimientos. | stock, almacén | catálogo por sí solo | La sucursal consulta disponibilidad. | I | Q015–Q016 |
-| Producto | Elemento catalogado que puede comprarse, venderse o consumirse. | artículo, SKU | refacción concreta o existencia | Catálogo de pantallas compatibles. | I | DQ-010 |
+| Artículo de catálogo | Identidad Tenant-wide de una Refacción, Producto, Servicio o Insumo. | item, artículo | existencia, oferta de proveedor o línea aplicada | Un mismo termo se consulta en dos sucursales. | D | PLD-001/005 |
+| Producto | Bien destinado a reventa, incluso si no es electrónico. | mercancía, artículo | refacción, insumo o existencia | Termo rosa a $299. | D | PLD-001/002 |
+| Insumo | Artículo de consumo interno, excluido de Lista de precios. | consumible | Producto vendible | Alcohol usado por el taller. | D | PLD-001/002 |
+| Precio base | Precio final de referencia publicado por Tenant en su moneda. | precio general | costo, pago o total histórico | $350 MXN para limpieza. | D | PLD-005/006 |
+| Override de Branch | Precio local que sustituye temporalmente la base para un item; revocarlo restaura herencia. | precio sucursal | copia del item o de la base | Norte cobra $399 y Centro hereda $350. | D | PLD-005 |
+| Precio efectivo | Override Branch activo o, en su ausencia, base Tenant, con procedencia/revisión. | precio aplicable | snapshot de cotización | La lista muestra $399, Override Branch. | D | PLD-005 |
+| Costo de referencia | Dato interno opcional con fuente/momento para pricing y margen. | costo estimado | promedio, valuación o última compra | Servicio tercerizado registra $180 de referencia. | D | PLD-003/004 |
+| SKU interno | Identificador humano estable, único Tenant-wide, aportado o generado server-side. | clave, código | ID opaco, barcode o código proveedor | REF-000042. | D | PLD-007/009 |
+| Batch de importación | Intención versionada que reconcilia filas y sólo publica con cero decisiones pendientes. | carga, import | script de update directo | 1,000 filas terminan create/update/no-change/excluded. | D | PLD-007/008 |
+| Inventario | Capacidad de controlar existencia, disponibilidad, reservas y movimientos sobre items referenciados. | stock, almacén | catálogo comercial o Lista de precios | La sucursal consulta disponibilidad. | I | Q015–Q016 |
 | Existencia | Cantidad reconocida en un alcance y ubicación. | stock, disponible | reserva o producto | Hay una pantalla disponible en Centro. | I | Q015 |
 | Reserva | Compromiso temporal de cantidad para un propósito. | apartado | consumo | Se aparta una pantalla para OT-123. | I | DQ-023 |
 | Consumo | Hecho de aplicar una cantidad de refacción al trabajo. | salida, uso | reserva o merma | La pantalla se instala en la orden. | I | DQ-023 |

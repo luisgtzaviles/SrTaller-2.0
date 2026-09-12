@@ -2,10 +2,11 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery general; Catalog/Pricing boundary accepted.
+- **Autoridad:** Price List row approved under PLD decisions; remaining rows
+  retain their prior status.
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-09-11
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Advertencia
@@ -21,7 +22,8 @@ Un contexto candidato delimita lenguaje y ownership; no equivale a microservicio
 | Repair Operations | Core domain | orden, reparación, intervención, progreso | WorkOrder, Repair, intervención, asignación | cliente, dispositivo, cotización, pago | no posee pago, stock ni identidad | recepción, autorización, disponibilidad | EVENT-007–009, 020–031, 036/039 | Customers, Diagnosis, Quote, Inventory, Payments, Delivery | agregado gigante y orquestación implícita | DQ-001/018 |
 | Technical Diagnosis | Core domain TBD | falla, hallazgo, diagnóstico, prueba | Diagnosis, Finding | orden, dispositivo, técnico | no fija precio ni autoriza trabajo | falla/condición | EVENT-010/011/012 | Repair, IAM | mezclar síntoma con conclusión | DQ-008/026 |
 | Quoting and Authorization | Core domain TBD | versión, partida, oferta, decisión | Quote, QuoteVersion, Authorization | orden, diagnóstico, cliente | no registra pago ni ejecuta reparación | diagnóstico, catálogo, decisión | EVENT-013–020 | Repair, Customers, Inventory/Services | autorización dependiente de mensajes | DQ-009/011 |
-| Inventory | Supporting/Core TBD | producto, existencia, reserva, movimiento | Product, Stock, Reservation, Movement | sucursal, orden, refacción | no decide reparación ni precio final | solicitud/reserva/consumo | EVENT-024/025/026 | Branch, Repair, Audit | llamadas recíprocas con Repair | DQ-010/023 |
+| Catalog and Pricing | Supporting; Accepted for EPIC-015 | item, tipo/capability, identifier, base/override/reference cost, import | CatalogItem, CommercialCategory/Brand, PriceRevision, ImportBatch | tenant currency, branch, actor | no posee stock, Supplier/compra, Repair Concept, venta/pago/Caja | alta/edición/import reconciliado | readers/resolver/snapshot/eventos mínimos futuros | Tenancy, Branch context, Users, Access, Audit | convertirlo en inventario o shared tables | PLD-001–008/018 |
+| Inventory | Supporting/Core TBD | existencia, reserva, movimiento, valuación | Stock, Reservation, Movement | CatalogItem, sucursal, orden | no decide identidad comercial, precio final ni Reference Cost | solicitud/reserva/consumo | EVENT-024/025/026 | Catalog, Branch, Repair, Audit | llamadas recíprocas con Repair | DQ-010/023 |
 | Payments | Supporting | obligación, aplicación, pago, reembolso, saldo | Payment, application, financial status | orden, cotización, sucursal | no posee caja física ni billing SaaS | cobro/reembolso | EVENT-032–035 | Quote, Cash, Audit | escribir estados de Repair directamente | DQ-012/019 |
 | Cash Management | Supporting | caja, sesión, conteo, movimiento, diferencia | CashRegister/Session/Movement TBD | pago, sucursal, operador | no decide obligación o reparación | pago en efectivo, apertura/cierre | CashMovementRecorded TBD | Payments, Branch, IAM | confundir pago con movimiento | Q022, FINDING-011 |
 | Delivery | Core/Supporting TBD | listo, programación, receptor, custodia, evidencia | Delivery, RecipientEvidence | orden, dispositivo, saldo, garantía | no determina saldo ni cobertura | EVENT-029/035, solicitud de salida | EVENT-036/037/038 | Repair, Payments, Customers | leer/escribir toda la orden | DQ-014/020 |

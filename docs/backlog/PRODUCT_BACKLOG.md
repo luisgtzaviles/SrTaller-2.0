@@ -9,21 +9,18 @@ tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
 aceptado; su estado es `Done` sin declarar release. PBI-033 también está
 `Done`; PBI-025, PBI-034 y PBI-026 también están `Done`. SPRINT-02 tiene
 PBI-028 `Done`, G5 `PASS`; PBI-038 también está `Done`, `Released: NO`.
-PBI-039 es Current PBI con WIP `1/1`; su slice funcional está congelado y
-aceptado por Owner, Formal UI Verification, Hardening, Full Verification, CI /
-PR Readiness y PR CI están en `PASS`, y los findings de revisión están
-remediados. PR #42 permanece abierto, no integrado y listo para re-review
-independiente. El checkpoint integrado anterior conserva PBI-037 sin
-convertirlo en WIP paralelo.
+PBI-039 está `Done` por PR #45 y CI exacta `34623060504`. SPRINT-02 está
+cerrado. SPRINT-03 está abierto en planning/readiness: PBI-040 es el siguiente
+seleccionado y está `Ready`, WIP `0/1`, esperando autorización Owner; PBI-041
+está `Planned` y PBI-042 `Planned/Unassigned`.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
 y PBI-026 `Large` mediante T-shirt sizing; PBI-028 también es `Large`; las
 demás permanecen TBD.
-**Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 está
-cerrado para Identity & Context Foundation; SPRINT-02 está activo para
-Operational Authentication & Authorization y los ítems restantes conservan
-su clasificación explícita.
+**Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 y
+SPRINT-02 están cerrados; SPRINT-03 está activo sólo para planificación/
+readiness hasta nueva autorización Owner.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
 |---:|---|---|---|---|---|---|
@@ -65,7 +62,10 @@ su clasificación explícita.
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
 | 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Integrated slice within PBI-028 | Alta | Product Mode local; no independent lifecycle or canonical delivery claim |
 | 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
-| 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | In progress; review remediation PASS; ready for independent re-review | Alta | SPRINT-02 current; PR #42 CI GREEN; merge/deploy pendientes |
+| 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | Done; Released: NO | Alta | SPRINT-02 closed; PR #45 + exact-main CI `34623060504` |
+| 40 | [PBI-040](pbis/PBI-040.md) Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Ready; implementation not authorized | Alta | SPRINT-03 Committed; next selected; WIP 0/1 |
+| 41 | [PBI-041](pbis/PBI-041.md) Supplier Price Import & Reconciliation | Product / Data / Jobs / Security | EPIC-015 | Planned | Alta | SPRINT-03 Candidate; not selected |
+| 42 | [PBI-042](pbis/PBI-042.md) Catalog Item Images | Product / Files / Security / UI | EPIC-015 | Planned / Deferred | Media | Unassigned Candidate |
 
 ## Interpretación
 
@@ -130,5 +130,5 @@ su clasificación explícita.
 
 ## Próxima revisión
 
-No existe siguiente candidato seleccionado. No iniciar otro PBI, liberar ni
-desplegar sin nueva autorización Owner.
+PBI-040 es el siguiente seleccionado y está Ready. No implementarlo, iniciar
+PBI-041/PBI-042, liberar ni desplegar sin la autorización Owner correspondiente.

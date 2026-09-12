@@ -2,9 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Active; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 Done; PBI-039
-  `Done candidate`; WIP 0/1; revisión, integración, CI exacta de `main` y
-  validación Preview PASS; cierre documental pendiente.
+- **Estado:** Closed; todos los PBIs Done; WIP 0/1. PBI-039 cerró por PR #45
+  merge `40684d7…` y CI exacta `34623060504` SUCCESS.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
@@ -24,7 +23,7 @@
 | Orquestación local incompleta | High test infrastructure | `verify:full` fail-fast combina base, PostgreSQL, Preview, smoke, cleanup y evidencia | Cerrado; Full Verification PASS |
 | CI omite dos tests PostgreSQL PBI-039 | High delivery | Customer phone y User preferences en ambos legs y comparison | Cerrado; run `34564110272` PASS |
 | Create Repair omite identidad canónica del tipo en idempotencia | High persistence | incluir `canonicalDeviceTypeId`; replay exacto, incompatibilidad y concurrencia PostgreSQL; full reverify + CI exacta | Remediado; Full Verification de riesgo alto y run `34567516069` attempt 3 PASS |
-| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Cerrado; cierre canónico reconciliado |
+| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Cerrado; PR #45 + CI exacta y reconciliación posterior |
 | Entrypoint SPA obsoleto tras deploy | High runtime | `no-store`, ETag por contenido y recuperación de navegador con asset actual | Cerrado en PR #43; Preview validado |
 | Repairs sin repositorios en imagen Production-mode | High runtime | conexión compartida `APPLICATION_DATABASE_CONNECTION` y contrato de composición | Cerrado en PR #44; Full Verification, exact-main CI y create/detail/reload PASS |
 
@@ -33,5 +32,4 @@ destructivo obliga a detenerse. El Critical conocido de PBI-025 no se rebaja.
 
 ## Próxima revisión
 
-- **Fecha:** al integrar el cierre documental de PBI-039.
-- **Disparador:** nuevo riesgo material, fallo de CI exacta o cambio de controles.
+- **Disparador:** nuevo riesgo material o evidencia que contradiga el cierre.

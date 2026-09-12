@@ -4,16 +4,11 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 
 ## Estado del documento
 
-**Estado:** Sprint 00 `Closed`.
-**Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed`,
-[SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
-[SPRINT-02](sprint-02/SPRINT_GOAL.md) `Active`.
-**Sprint activo:** SPRINT-02 — Operational Authentication & Authorization;
-PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`; G5 es `PASS`, Current
-PBI es PBI-039 en `Done candidate` y WIP es `0/1`; Functional Slice, Formal UI
-Verification, Hardening, Full Verification, revisión independiente,
-integración, CI exacta de `main` y validación Preview están en `PASS`. El gate
-vigente es el cierre documental; no existe siguiente PBI seleccionado.
+**Estado:** SPRINT-00, SPRINT-01 y SPRINT-02 `Closed`.
+**Sprints documentados:** los tres anteriores y SPRINT-03 `Active`.
+**Sprint activo:** SPRINT-03 — Price List Foundation, sólo en
+planning/readiness. PBI-040 es siguiente seleccionado y `Ready`; PBI-041 está
+`Planned`; WIP `0/1`. El gate vigente es autorización Owner de implementación.
 
 ## Reglas propuestas
 
@@ -53,16 +48,16 @@ Los cinco PBIs están `Done` y ninguno está `Released`.
 
 ## SPRINT-02
 
-SPRINT-02 ejecuta Operational Authentication & Authorization con WIP=1.
+SPRINT-02 ejecutó Operational Authentication & Authorization con WIP=1.
 PBI-025/PBI-034 están `Done`; cierre PR #34 y CI exacto de main dejan G3
 `PASS`. PBI-026 está `Done` y G4 `PASS`; PBI-028 está `Done`, G5 `PASS` tras
 PR #39 y su CI exacta; PBI-038 está `Done` tras PR #40 y CI `34280510716`
-GREEN. PBI-039 está en cierre `Done candidate`. PR #42 fue re-reviewed PASS e
+GREEN. PBI-039 está `Done`. PR #42 fue re-reviewed PASS e
 integrado como `6c04e57…`; PR #43 cerró el cache/ETag de Preview y PR #44
 corrigió la composición runtime de Repairs. La baseline `0d1c576…` pasó CI
-exacta de `main` `34619271236` y validación autenticada de Preview. Este PR
-documental y su CI exacta materializan `Done`; Production y trabajo posterior
-siguen sin autorización.
+exacta de `main` `34619271236` y validación autenticada de Preview. PR #45
+integró el cierre como `40684d7…`; CI exacta `34623060504` terminó SUCCESS.
+Production sigue sin autorización.
 
 - [Objetivo](sprint-02/SPRINT_GOAL.md)
 - [Backlog](sprint-02/SPRINT_BACKLOG.md)
@@ -70,7 +65,18 @@ siguen sin autorización.
 - [Review](sprint-02/REVIEW.md)
 - [Retrospectiva](sprint-02/RETROSPECTIVE.md)
 
+## SPRINT-03
+
+SPRINT-03 prepara Price List Foundation. PBI-040 está Ready como siguiente
+seleccionado pero no iniciado; PBI-041 permanece Candidate/Planned. PBI-042 no
+pertenece al compromiso inicial.
+
+- [Objetivo](sprint-03/SPRINT_GOAL.md)
+- [Backlog](sprint-03/SPRINT_BACKLOG.md)
+- [Riesgos](sprint-03/RISKS_AND_BLOCKERS.md)
+- [Review](sprint-03/REVIEW.md)
+- [Retrospectiva](sprint-03/RETROSPECTIVE.md)
+
 ## Próxima revisión
 
-Al integrar el cierre documental de PBI-039 o al recibir una nueva selección
-Owner de roadmap.
+Al recibir autorización Owner para implementar PBI-040 o cambiar su readiness.

@@ -3,13 +3,14 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-02.
-- **Estado:** Active.
+- **Estado:** Closed — 2026-09-11.
 - **Periodo:** TBD.
-- **PBI actual:** `PBI-039` — Done candidate / cierre documental.
+- **PBI actual:** ninguno; `PBI-039` está Done.
 - **WIP:** 0/1.
-- **Autoridad:** PBI-038 cerró por PR #40 y CI exacta de `main`; un PBI nuevo
-  requiere selección, readiness y autorización Owner. No existe autorización
-  de release o deploy.
+- **Autoridad de cierre:** PR #45 merge
+  `40684d7554cdf02551f941e5e3f0beabbe563125` y CI exacta de `main`
+  `34623060504` SUCCESS materializaron el cierre efectivo de PBI-039. No existe
+  autorización de release o deploy.
 
 ## Objetivo
 
@@ -49,12 +50,17 @@ PBI antes de cerrar canónicamente el anterior.
   `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN;
   `Done`, sin release ni deploy.
 - [x] PBI-039 Customer mínimo + New Repair Classic 2.0 / Guided V2 aceptado,
-  formalmente verificado, integrado y validado en Preview; queda únicamente el
-  PR documental cuyo merge + CI exacta materializa `Done`.
+  formalmente verificado, integrado y validado en Preview; PR documental #45 y
+  CI exacta `34623060504` materializan `Done`.
 - [x] Preview deploy and post-deploy validation: PASS on `0d1c576…`.
 - [ ] Production release/deploy: NO; not authorized.
 
+## Cierre
+
+El objetivo se cumplió y todos los PBIs comprometidos están Done. Production
+permanece `NO`; esa exclusión no impide cerrar un Sprint de producto ya validado
+en su ambiente autorizado.
+
 ## Próxima revisión
 
-- **Fecha:** al integrar el cierre documental de PBI-039.
-- **Disparador:** CI exacta del cierre o nueva selección Owner del roadmap.
+- **Disparador:** nueva evidencia que contradiga el cierre.

@@ -2,11 +2,12 @@
 
 ## Metadatos
 
-- **Estado:** Initial hypothesis / Pending Product Owner validation
+- **Estado:** Initial hypothesis general; Price List rows marked Accepted are
+  authoritative under the 2026-09-11 Master Goal.
 - **Propósito:** Identificar posibles fuentes de verdad y conflictos de autoridad sin establecer ownership definitivo.
 - **Alcance:** Información organizacional, operativa, financiera, de inventario, comunicación, auditoría y suscripción.
 - **Audiencia:** Product Owner, responsables operativos, administración, finanzas, inventario, soporte y arquitectura.
-- **Última actualización:** 2026-07-13
+- **Última actualización:** 2026-09-11
 
 ## Cómo leer la matriz
 
@@ -55,7 +56,7 @@ La columna de consistencia describe una necesidad candidata. `Inmediata local` n
 | OWN-019 | asignación técnica | Repair Operations | coordinador/técnico TBD | autoridad operacional | técnico, Branch, Audit | orden/sucursal | inmediata local | EVENT-021, INV-009 | DQ-013/027 | Initial hypothesis |
 | OWN-020 | intervención | Repair Operations o registro técnico especializado TBD | técnico | técnico/supervisor con historia | QC, Warranty, Quote, Audit | reparación/orden | orden relativo preservado | EVENT-022/023/027 | DQ-013/026 | Initial hypothesis |
 | OWN-021 | QC | Repair Operations o capacidad de calidad TBD | técnico distinto/supervisor TBD | autoridad de calidad | Delivery, Warranty, Audit | reparación/orden | vigente antes de declarar listo | EVENT-028–030, INV-008 | DQ-013 | Initial hypothesis |
-| OWN-022 | refacción | Inventory para catálogo/stock; Repair para necesidad técnica | compras/inventario/técnico | según aspecto del concepto | Quote, Repair, Warranty | tenant/sucursal/orden según aspecto | límites todavía ambiguos | EVENT-024–026 | DQ-010/023 | Unknown |
+| OWN-022 | refacción | Catalog para identidad comercial; Inventory para stock/valuación; Repair para uso técnico | catálogo/compras/inventario/técnico según aspecto | sólo el owner de cada aspecto | Quote, Repair, Inventory, Warranty | item Tenant; stock Branch/location; uso Repair | contratos/snapshot, nunca tabla compartida | PRICE_LIST_ARCHITECTURE | DQ-010/023 | Partially resolved; Catalog identity Accepted |
 | OWN-023 | disponibilidad | Inventory como dato derivado candidato | existencias, reservas y políticas | Inventory | Quote, Repair | sucursal/ubicación | posible inmediata al reservar; vista eventual | INV-007/013 | DQ-023 | Initial hypothesis |
 | OWN-024 | reserva | Inventory | Repair solicita; Inventory acepta/rechaza | Inventory | Repair, Quote, Audit | sucursal/orden | inmediata local | EVENT-024/025 | DQ-010/023 | Initial hypothesis |
 | OWN-025 | pieza instalada | Repair conserva el hecho técnico; Inventory conserva consumo candidato | técnico | corrección técnica e inventario según aspecto | Warranty, Quote, Audit | orden/intervención | coordinación con orden explícito | EVENT-026/027 | DQ-010/026 | Unknown |
@@ -71,12 +72,17 @@ La columna de consistencia describe una necesidad candidata. `Inmediata local` n
 | OWN-035 | notificación | Notifications para intento; hecho original permanece en productor | contexto solicitante/política | Notifications | destinatario, Repair, Messaging, Audit reducido | tenant/destinatario | eventual | EVENT-014/036/038 | Q017–Q020 | Initial hypothesis |
 | OWN-036 | auditoría | Audit para evidencia transversal candidata; cada contexto conserva su hecho | contextos y actores | anexos/correcciones controladas TBD | cumplimiento, soporte, administración | tenant/global TBD | posterior sin pérdida por validar | RULE-021, INV-012 | DQ-025 | Initial hypothesis |
 | OWN-037 | suscripción SaaS | Subscription Billing | plataforma/proveedor comercial | autoridad comercial de plataforma | Tenant Administration, Audit | tenant/global de plataforma | vigente para nuevas acciones según política TBD | DOMAIN-FINDING-012 | Q023–Q025 | Initial hypothesis |
-| OWN-038 | catálogo de producto | Inventory o compras TBD | compras/proveedor | inventario/compras | Quote, Repair, Warranty | tenant/global desconocido | publicación eventual | Q015/Q016 | DQ-010 | Unknown |
+| OWN-038 | identidad de artículo comercial | Catalog | administrador/import reconciliado | capabilities Catalog | Price List, Repair, Inventory, Procurement, Reporting | Tenant | inmediata local; readers/snapshots | PRICE_LIST_ARCHITECTURE | PLD-001/005 | Accepted |
 | OWN-039 | existencia física | Inventory con custodio de sucursal/ubicación | recepción, conteo, movimientos | inventario con evidencia | disponibilidad, Repair, Reporting | sucursal/ubicación | inmediata local; conteo reconciliado | RULE-020 | DQ-023 | Initial hypothesis |
-| OWN-040 | costo | Inventory, compras o capacidad financiera TBD | compra/proveedor | autoridad comercial/financiera TBD | Quote, Reporting | tenant/sucursal/lote TBD | versionada o histórica por validar | Q015–Q016 | DQ-010 | Unknown |
+| OWN-040 | costo | Catalog posee sólo Reference Cost; Inventory/Procurement poseerán valuación/costo de compra | manual/import/proveedor o compra según concepto | capability del owner correspondiente | Pricing, Procurement, Inventory, Reporting autorizado | referencia Tenant; otros scopes futuros | revisiones con procedencia; no equivalentes | PRICE_LIST_ARCHITECTURE | PLD-003/004 | Partially resolved; Reference Cost Accepted |
 | OWN-041 | transferencia de inventario | Inventory con sucursales participantes | sucursal origen | origen/destino según etapa TBD | disponibilidad, Repair, Audit | tenant/múltiples sucursales | etapas explícitas; no simultaneidad supuesta | SCENARIO-020 | DQ-002/031 | Initial hypothesis |
 | OWN-042 | garantía de proveedor | Inventory, compras o Warranty TBD | proveedor/compras | autoridad de reclamación TBD | Inventory, Repair, finanzas | proveedor/parte/tenant TBD | eventual por respuesta externa | EDGE-022 | DQ-010/021 | Unknown |
 | OWN-043 | consumo de inventario | Inventory conserva movimiento; Repair origina uso técnico candidato | técnico/Repair | Inventory y corrección técnica según aspecto | disponibilidad, Warranty, Audit | sucursal/orden | coordinación cercana por validar | EVENT-026, INV-007 | DQ-010/023 | Initial hypothesis |
+| OWN-044 | precio base | Catalog / Pricing interno | administrador/import publicado | `catalog.prices.manage` / import publisher | Price List, futuros Quote/Repair/Sales/Reporting | Tenant | revisión append-only; resolución inmediata | PRICE_LIST_ARCHITECTURE | PLD-005/006 | Accepted |
+| OWN-045 | override de precio | Catalog / Pricing interno | administrador autorizado | `catalog.branch_prices.manage` | Price List y futuros resolvers | Tenant + Branch | revisión append-only; revocar hereda | PRICE_LIST_ARCHITECTURE | PLD-005 | Accepted |
+| OWN-046 | categoría y marca comercial | Catalog | administrador/import reconciliado | `catalog.manage` | Price List y futuros consumidores | Tenant | lifecycle; sin sync por nombre | PRICE_LIST_ARCHITECTURE | PLD-001/012 | Accepted |
+| OWN-047 | identificadores SKU/barcode/GTIN | Catalog | administrador/generador/import reconciliado | `catalog.manage` | búsqueda y futuros consumidores | Tenant + scheme | unicidad inmediata; no reutilización | PRICE_LIST_ARCHITECTURE | PLD-007/009/010 | Accepted |
+| OWN-048 | batch/import row/source reference | Catalog | usuario/importador | prepare/publish capabilities | administración y Audit; Reporting futuro reducido | Tenant; target base/Branch | state machine/version/idempotencia | PRICE_LIST_ARCHITECTURE | PLD-007/008 | Accepted |
 
 ## Conflictos de ownership
 

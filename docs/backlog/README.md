@@ -16,15 +16,11 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 ## Estado del documento
 
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
-**Orden operativo:** PBI-030, PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033
-están `Done` y `Released: NO`; Sprint 01 está `Closed`. SPRINT-02 está
-`Active`; PBI-025 quedó `Done` mediante PR #32 y CI exacto de `main` GREEN.
-PBI-034 está `Done` después del cierre PR #34 y CI exacto GREEN; G3 está
-`PASS`. PBI-026/PBI-028/PBI-038 están `Done`, G4/G5 `PASS`; Current PBI es
-PBI-039, SPRINT-02 tiene WIP `1/1`, Functional Slice Frozen / Owner Accepted y
-Formal UI Verification, Hardening, Full Verification, CI / PR Readiness y PR
-CI en `PASS`; los findings de revisión están remediados y PR #42 está listo
-para re-review independiente, todavía sin merge ni deploy.
+**Orden operativo:** Sprint 01 y SPRINT-02 están `Closed`; PBI-039 está `Done`
+por PR #45 y CI exacta `34623060504`. SPRINT-03 está `Active` únicamente en
+planning/readiness; PBI-040 es siguiente seleccionado y `Ready`, PBI-041
+`Planned`, PBI-042 `Planned/Unassigned`, WIP `0/1`. Falta autorización Owner
+para iniciar implementación.
 
 ## Estructura
 

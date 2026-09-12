@@ -4,7 +4,9 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Propuesta conceptual de límites y ownership; no es diseño de tablas, paquetes, endpoints ni despliegues.
-- **Aprobación:** Pendiente de descubrimiento y de las decisiones arquitectónicas relacionadas.
+- **Aprobación:** mapa general pendiente; la frontera Catalog/Pricing está
+  aceptada específicamente en `PRICE_LIST_ARCHITECTURE` y prevalece para ese
+  alcance.
 - **Arquitectura de referencia:** Monolito modular orientado al dominio, aceptado en ADR-002; cada módulo no equivale a un microservicio ni a un desplegable.
 
 ## Convenciones
@@ -88,7 +90,10 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 ## Tenant Management
 
 - **Responsabilidad principal — propuesta:** administrar identidad, estado y ciclo de vida del tenant como límite organizacional de la plataforma.
-- **Datos propios — propuesta:** tenant, nombre o identificadores de negocio necesarios, estado de ciclo de vida y metadatos de alta/suspensión/cierre. No es propietario de identidades globales ni de la operación del taller.
+- **Datos propios — propuesta:** tenant, nombre o identificadores de negocio
+  necesarios, estado de ciclo de vida, moneda operativa Tenant aceptada para
+  Price List y metadatos de alta/suspensión/cierre. No es propietario de
+  identidades globales ni de la operación del taller.
 - **Eventos posibles:** tenant creado, activado, suspendido, reactivado o cerrado.
 - **Dependencias permitidas:** Configuration para valores del tenant y Audit para trazabilidad. Publica su ciclo de vida para Subscription and Billing; no lo consulta directamente para decidir elegibilidad comercial. Identity y Access Control participan en el alta inicial mediante contratos, sin fusionar ownership.
 - **Preguntas abiertas:** alta, suspensión, exportación, eliminación y primer administrador. Véase [QUESTION-005](./OPEN_QUESTIONS.md#question-005).
@@ -112,7 +117,11 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 ## Identity
 
 - **Responsabilidad principal — propuesta de titularidad:** representar usuarios ordinarios de tenant e identidades separadas de plataforma, y administrar autenticación/sesión conforme a ADR-011.
-- **Datos propios — propuesta:** usuario con tenant único, credencial PIN, estados de bloqueo/desactivación/revocación, sesión operativa y metadatos de autenticación o recuperación. No se decide aquí el algoritmo de protección, diseño físico ni la correlación de una persona entre tenants.
+- **Datos propios — propuesta:** usuario con tenant único, preferencias
+  personales (incluida presentación de costo, sin conceder capability),
+  credencial PIN, estados de bloqueo/desactivación/revocación, sesión operativa
+  y metadatos de autenticación o recuperación. No se decide aquí el algoritmo
+  de protección, diseño físico ni la correlación de una persona entre tenants.
 - **Eventos posibles:** identidad registrada, identificador verificado, autenticación completada/fallida, identidad bloqueada, recuperada o revocada.
 - **Dependencias permitidas:** servicios técnicos de autenticación y Audit para eventos sensibles. Publica una intención de recuperación para que Notifications la consuma; Identity no depende de Notifications ni de módulos operativos.
 - **Preguntas abiertas:** identificadores, recuperación, correlación de persona entre tenants y separación entre personal/usuario de tenant. Véase [QUESTION-009](./OPEN_QUESTIONS.md#question-009).
@@ -149,13 +158,39 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 - **Dependencias permitidas:** Customers, Branch Management, Inventory para reservas/consumos, Files para evidencia, Notifications/Messaging para comunicación, Payments para conocer liquidación mediante contrato. No debe escribir directamente en esos módulos.
 - **Preguntas abiertas:** recorrido, estados, presupuestos, autorizaciones, garantías, asignación, reapertura y relación reparación/orden. Véanse [QUESTION-013](./OPEN_QUESTIONS.md#question-013) y [QUESTION-014](./OPEN_QUESTIONS.md#question-014).
 
+## Catalog / Pricing
+
+- **Responsabilidad principal — aceptada para EPIC-015:** gobernar identidad y
+  clasificación comercial Tenant-wide, precio base, override de Branch, costo
+  de referencia e importación/reconciliación. `Lista de precios` es su
+  proyección de lectura.
+- **Topología inicial:** un módulo físico futuro `catalog` con Catalog y Pricing
+  como responsabilidades internas explícitas; no son microservicios ni módulos
+  vacíos separados.
+- **Datos propios:** CatalogItem, tipo/capabilities, CommercialCategory,
+  CommercialBrand, ItemIdentifier, revisiones de precio/costo/override,
+  ImportSource/Batch/RowDecision y SupplierItemReference de reconciliación.
+- **Dependencias permitidas:** Tenancy para moneda; Branch/Station/Session para
+  scope confiable; Users para preferencia personal; Access/Audit mediante
+  contratos existentes. Publica readers/resolvers/snapshots mínimos.
+- **No posee:** existencia/valuación, Supplier/compra, Repair Concept,
+  venta/quote, pago/Caja, pedidos, solicitudes ni reportes.
+- **Contrato:** [Arquitectura de Lista de precios](../architecture/PRICE_LIST_ARCHITECTURE.md).
+
 ## Inventory
 
-- **Responsabilidad principal — propuesta:** administrar catálogo operativo, existencias, ubicaciones, reservas y movimientos de partes o artículos.
-- **Datos propios — propuesta:** artículos, unidades, ubicaciones, saldo derivado, movimientos, reservas, lotes/series si se requieren y datos de costo autorizados.
+- **Responsabilidad principal — propuesta:** administrar existencias,
+  ubicaciones, reservas, movimientos y valuación autorizada de artículos
+  referenciados desde Catalog.
+- **Datos propios — propuesta:** unidades de manejo, ubicaciones, saldo derivado,
+  movimientos, reservas, lotes/series si se requieren y datos de costo
+  autoritativo. No posee identidad comercial, precio ni costo de referencia.
 - **Eventos posibles:** artículo creado, existencia recibida/ajustada/transferida/reservada/liberada/consumida, umbral alcanzado.
-- **Dependencias permitidas:** Branch Management; Repairs y Sales solicitan reservas o movimientos mediante contratos; Files para documentación; Audit. La valuación y compras no se asumen dentro del alcance inicial.
-- **Preguntas abiertas:** catálogo tenant-wide, ubicaciones, transferencias, reservas, costos, lotes, series y existencias negativas. Véanse [QUESTION-015](./OPEN_QUESTIONS.md#question-015) y [QUESTION-016](./OPEN_QUESTIONS.md#question-016).
+- **Dependencias permitidas:** CatalogItemReader, Branch Management; Repairs y
+  Sales solicitan reservas/movimientos mediante contratos; Files y Audit. La
+  valuación y compras no se asumen dentro del alcance inicial.
+- **Preguntas abiertas:** unidades, ubicaciones, transferencias, reservas,
+  valuación, lotes, series y existencias negativas. Véanse QUESTION-015/016.
 
 ## Sales
 

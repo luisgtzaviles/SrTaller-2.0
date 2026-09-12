@@ -1,44 +1,36 @@
-# Active Development Checklist
+# ACTIVE CHECKLIST — PBI-040 IMPLEMENTATION
 
-Milestone / Functional Goal: PBI-039 canonical closure
-Sprint: SPRINT-02 — Operational Authentication & Authorization
-Current PBI: PBI-039 — Done candidate
-Status: Closure documentation PR pending merge and exact-main CI
-WIP: 0/1
-Progress: 8 / 10 closure steps complete
-Current: Reconcile canonical closure documentation from integrated and
-post-deploy-validated `main`
-Next: Governed documentation PR, merge, exact-main CI, then stop
-Blocked: None
-Last updated: 2026-09-11 09:18 MST
+## Estado operativo
 
-## Closure gate
+- **Milestone / meta funcional:** PRICE LIST FOUNDATION
+- **Sprint:** SPRINT-03 — Active
+- **PBI actual:** PBI-040 — Catalog & Pricing Core + Fast Price Lookup
+- **Estado general:** In progress — Owner implementation authorization received
+- **Progreso:** 0 / 6 bloques completados
+- **Trabajo actual:** contratos, datos y seguridad de Catalog/Pricing
+- **Siguiente bloque:** casos de uso/APIs y administración individual
+- **Bloqueos:** ninguno
+- **Última actualización:** 2026-09-11 17:10 MST
 
-- [x] Functional Slice — Frozen / Owner Accepted
-- [x] Formal UI Verification — PASS
-- [x] Hardening and Authoritative Full Verification — PASS
-- [x] Independent review findings — remediated and re-reviewed PASS
-- [x] PR #42 merged normally as `6c04e57…`; exact-main CI `34604591354` PASS
-- [x] Preview cache/ETag defect closed through PR #43 / `5ccc525…`; exact-main
-  CI `34614530586` PASS
-- [x] Repairs production-runtime composition defect closed through PR #44 /
-  `0d1c576…`; exact-main CI `34619271236` PASS
-- [x] Preview redeployed and authenticated create/detail/reload/worklist smoke
-  passed with synthetic repair `SR-2026-1000`
-- [~] Reconcile PBI, roadmap, Sprint, Current State and archived checklist in
-  the governed closure PR
-- [ ] Merge closure PR and require exact-main run-1, run-2 and comparison PASS
+## Resultado visible esperado
 
-## Boundaries
+Un administrador registra un artículo y sus precios; un empleado autorizado lo
+encuentra por nombre, SKU o código y ve el precio efectivo de su Branch. El
+costo sólo viaja con capability y preferencia personal explícita.
 
-- [x] No Production deploy
-- [x] No Lista de precios, Caja, Evidencias/R2 or next product cycle started
-- [x] No next PBI selected
-- [x] Accepted warning remains explicit: Vite main chunk approximately
-  531.33 kB
+## Checklist
 
-The historical operational checklist is preserved at
-[`history/PBI-039_ACTIVE_CHECKLIST.md`](history/PBI-039_ACTIVE_CHECKLIST.md).
-This checklist records a `Done candidate`; by repository contract, only the
-authorized merge of this documentation PR plus authoritative exact-main CI
-materializes effective `Done`.
+- [~] Revalidar baseline, autoridades, branch y alcance PBI-040.
+- [ ] Materializar módulo, contratos, migraciones, ownership y pruebas de datos.
+- [ ] Implementar autorización, preferencias, casos de uso y APIs.
+- [ ] Implementar alta/edición y Lista de precios en el shell.
+- [ ] Verificar aislamiento, concurrencia, migración, UI, rendimiento y full verify.
+- [ ] Remediar, reconciliar evidencia/PBI/estado y entregar Owner Review.
+
+## Gates preservados
+
+- WIP 1/1; PBI-041 y PBI-042 no se inician.
+- Branch: `feature/pbi-040-catalog-pricing-core`, desde `40684d7554…`.
+- No merge, push, deploy, release o Production sin autoridad posterior.
+- No ownership de Inventory, Procurement, Repair, Payments o Cash.
+- No se debilitan assertions, scopes, capabilities ni aislamiento.

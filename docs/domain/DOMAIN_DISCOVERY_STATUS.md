@@ -2,10 +2,11 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** ADR-004/010/011/012/013 en sus alcances; el resto del discovery no está aprobado
+- **Estado:** Draft / Discovery general; Price List approved in its recorded scope.
+- **Autoridad:** ADR-004/010/011/012/013 y PRICE_LIST_ARCHITECTURE en sus
+  alcances; el resto del discovery no se eleva por esa aprobación.
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-09-11
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Criterio
@@ -25,7 +26,8 @@ Los niveles permitidos son Unknown, Initial hypothesis, Partially understood, Va
 | Autorización | Initial hypothesis | Q014 | actor, evidencia, parcialidad | Crítico | Sí | Abierto |
 | Reparación | Initial hypothesis | Alcance y módulo Repairs | estados, pausas, reingreso | Crítico | Sí | Abierto |
 | Técnicos | Partially understood | Actores preliminares | asignación, supervisión, multi-sucursal | Alto | Sí | Abierto |
-| Refacciones | Initial hypothesis | Módulo Inventory | ownership, refacción del cliente, compatibilidad | Alto | Sí | Abierto |
+| Refacciones | Partially understood | Catalog/Pricing architecture + Inventory discovery | identidad comercial resuelta; compatibilidad/stock/uso aún abiertos | Alto | Sí para Inventory/Repair | Parcialmente resuelto |
+| Lista de precios / catálogo comercial | Approved | PRICE_LIST_DOMAIN_DISCOVERY + PRICE_LIST_ARCHITECTURE | futuras reglas fiscales/perfiles no bloquean el core | Alto | No para PBI-040 | Aprobado para readiness |
 | Inventario | Initial hypothesis | Q015–Q016 | reservas, negativos, ubicación, costo | Crítico | Sí | Abierto |
 | Pagos | Initial hypothesis | Q021, Payments | anticipos, parcialidades, devoluciones | Crítico | Sí | Abierto |
 | Caja | Unknown | Q022 | caja, terminal, turno y responsable | Crítico | Sí | Abierto |
@@ -48,18 +50,19 @@ Los niveles permitidos son Unknown, Initial hypothesis, Partially understood, Va
 
 | Nivel | Áreas | Porcentaje aproximado |
 |---|---:|---:|
-| Unknown | 3 | 11.1 % |
-| Initial hypothesis | 20 | 74.1 % |
-| Partially understood | 4 | 14.8 % |
+| Unknown | 3 | 10.7 % |
+| Initial hypothesis | 19 | 67.9 % |
+| Partially understood | 5 | 17.9 % |
 | Validated by Product Owner | 0 | 0 % |
-| Approved | 0 | 0 % |
-| **Total** | **27** | **100 %** |
+| Approved | 1 | 3.6 % |
+| **Total** | **28** | **100 %** |
 
 ## Hechos y límites actuales
 
 - **Hecho conocido:** SR Taller 2.0 se documenta como SaaS multitenant para talleres de reparación.
 - **Hecho conocido:** ADR-002, ADR-004, ADR-010, ADR-011, ADR-012 y ADR-013 están aceptados; QUESTION-004 y QUESTION-006 a QUESTION-012 quedaron resueltas o acotadas en sus alcances, mientras las demás conservan su estado.
-- **Hecho conocido:** no existe implementación funcional ni autorización para prototipos.
+- **Hecho conocido:** Lista de precios tiene arquitectura/PBI Ready, pero no
+  implementación ni autorización de inicio.
 - **Observación del sistema anterior:** sus lecciones señalan acoplamiento, complejidad y necesidad de mejor trazabilidad; no prueban reglas operativas.
 - **Hipótesis:** recepción a entrega es el recorrido central más útil para discovery.
 - **Decisión pendiente:** el Product Owner debe confirmar segmento, alcance y operación real.

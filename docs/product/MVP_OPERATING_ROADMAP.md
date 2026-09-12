@@ -2,26 +2,25 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 activo con PBI-039 en cierre
-  documental `Done candidate` después de integración y validación Preview.
+- **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 abierto en
+  planning/readiness para Price List Foundation.
 - **Baseline Git observada:** `main` y `origin/main` local en
-  `0d1c5760ce962d17a8292b841f5de43a8cb453a7`; CI exacta de `main`
-  `34619271236`, `SUCCESS`.
+  `40684d7554cdf02551f941e5e3f0beabbe563125`; CI exacta de `main`
+  `34623060504`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
-- **Fase:** Operational Authentication & Authorization.
-- **Checkpoint alcanzado:** Functional Slice Owner Accepted, Formal UI
-  Verification, Hardening, Full Verification, re-review, integración, CI
-  exacta de `main` y validación post-deploy de Preview en `PASS`.
-- **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization.
+- **Fase:** Pricing Catalog.
+- **Checkpoint alcanzado:** PBI-039/Sprint 02 cerrados; architecture y DoR de
+  PBI-040 en PASS, sin implementación.
+- **Sprint activo:** SPRINT-03 — Price List Foundation.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** `PBI-039` — `Done candidate` durante su cierre documental.
-- **Siguiente PBI candidato:** `NONE`.
-- **Blocking gate:** merge del PR documental de cierre y CI exacta del nuevo
-  `main`; Production conserva autoridad separada.
+- **PBI actual:** ninguno en ejecución.
+- **Siguiente PBI candidato:** `PBI-040` — Ready.
+- **Blocking gate:** autorización Owner explícita para iniciar PBI-040;
+  Production conserva autoridad separada.
 - **WIP operacional:** `0/1`.
-- **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
-  Identity Master Goal vigente.
+- **Autoridad:** decisiones Owner de roadmap, cierre PBI-039 y Master Goal de
+  Price List Architecture + PBI Readiness.
 
 ## Objetivo
 
@@ -87,9 +86,9 @@ Owner explícita de merge.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
    salta silenciosamente a otro PBI.
 
-PBI-030, PBI-027, PBI-029, PBI-024, PBI-032, PBI-033, PBI-025, PBI-034 y
-PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
-`PASS`.
+PBI-030, PBI-027, PBI-029, PBI-024, PBI-032, PBI-033, PBI-025, PBI-034,
+PBI-026, PBI-028, PBI-038 y PBI-039 están `Done` y no están `Released`.
+G1–G7 están `PASS`.
 
 ## Current execution pointer
 
@@ -97,13 +96,13 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
-| Phase | Operational Authentication & Authorization |
-| Sprint | SPRINT-02 |
-| Sprint status | Active — WIP=0/1 |
-| Current PBI | PBI-039 — Done candidate; canonical closure in progress |
-| Next PBI candidate | NONE |
+| Phase | Pricing Catalog |
+| Sprint | SPRINT-03 |
+| Sprint status | Active — planning/readiness; WIP=0/1 |
+| Current PBI | NONE in progress; PBI-040 Ready / next selected |
+| Next PBI candidate | PBI-040 |
 | PBI-029 status | Done — cierre documental integrado y CI post-cierre GREEN |
-| Blocking gate | Closure documentation PR merge + exact-main CI |
+| Blocking gate | Explicit Owner implementation authorization for PBI-040 |
 
 ## Fases aprobadas
 
@@ -147,8 +146,11 @@ Full Verification, CI y re-review. PR #42 se integró como `6c04e57…`. Dos
 defectos reales descubiertos en Preview quedaron cerrados por PR #43
 (`5ccc525…`) y PR #44 (`0d1c576…`); cada merge recibió CI exacta de `main`
 verde y el runtime final fue validado con create/detail/reload/worklist
-autenticado. El estado es `Done candidate`, WIP `0/1`; el siguiente gate es el
-merge y CI de este cierre documental. No se seleccionó trabajo posterior.
+  autenticado. PR #45 y CI exacta `34623060504` materializaron `Done`.
+
+El ciclo Pricing Catalog se descompone en PBI-040 `Ready` para core + alta
+individual + búsqueda, PBI-041 `Planned` para importación masiva y PBI-042
+`Planned/Unassigned` para imágenes. Sólo PBI-040 está seleccionado; no inició.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización
@@ -168,7 +170,7 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | G6 CUSTOMERS | Customer mínimo GREEN |
 | G7 INTAKE | New Repair atómica GREEN |
 | G8 REPAIR ACTOR | Sin actor sintético en writes productivos aprobados |
-| G9 PRICING | Catálogo, quote y autorización definidos y GREEN |
+| G9 PRICING | Catálogo/precio efectivo GREEN; Quote/Authorization conserva su slice posterior |
 | G10 MONEY | Payment ledger y correcciones GREEN |
 | G11 DELIVERY | Entrega y terminación de custodia GREEN |
 | G12 MVP | E2E completo y Owner Acceptance GREEN |
@@ -183,7 +185,11 @@ extendida. Ninguno amplía silenciosamente el PBI actual.
 | G3 AUTHENTICATION | PASS | PBI-025 y PBI-034 están `Done`; cierre PR #34 merge `54ddc251cda8ec7465b7913786c647f8d3ccbeac` y CI exacto `34153470560` GREEN. |
 | G4 AUTHORIZATION | PASS | PBI-026 cierre PR #36 merge `0b39e3794a97c22d5471c0b6dfa278026f237b03`; CI exacto `34161029937` GREEN. |
 | G5 AUDIT | PASS | PBI-028 PR #37/PR #38, cierre PR #39 merge `2b712fc3a3842f197324e8870011bf170846ddb8` y CI exacta `34249869167` GREEN. |
-| G6–G12 | Pending | No existe evidencia material adicional para estos gates. |
+| G6 CUSTOMERS | PASS | PBI-039 Customer Minimum Owner Accepted, integrado y cerrado por PR #45 + CI `34623060504`. |
+| G7 INTAKE | PASS | PBI-039 New Repair create/detail/reload/worklist validado y cerrado. |
+| G8 REPAIR ACTOR | Partial | Writes aprobados de PBI-039 usan actor real; el retrofit total conserva alcance propio. |
+| G9 PRICING | Ready, not started | Arquitectura aceptada y PBI-040 DoR PASS; falta autorización Owner de implementación. |
+| G10–G12 | Pending | No existe evidencia material para esos gates. |
 
 ## Cierre y avance documental de un PBI
 
@@ -214,12 +220,10 @@ merge funcional, Owner Acceptance, cierre PR #27 y CI exacto post-cierre
 focused high-risk review PASS, merge funcional PR #28, Owner Acceptance y
 cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 
-SPRINT-02 está `Active`; PBI-026 está `Done`, G4 `PASS`; PBI-028 está `Done`,
-G5 es `PASS`; PBI-038 está `Done` después de PR #40 merge
-`5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN.
-PBI-039 está en `Done candidate`, WIP `0/1`, integrado en `main` y validado en
-Preview. Este PR documental y su CI exacta de `main` materializan el `Done`
-efectivo. Next candidate permanece `NONE`.
+SPRINT-02 está `Closed`; PBI-039 está `Done` por PR #45 merge `40684d7…` y CI
+exacta `34623060504` SUCCESS. SPRINT-03 está `Active` sólo en
+planning/readiness, WIP `0/1`: PBI-040 es siguiente seleccionado y Ready;
+PBI-041 está Planned. Falta autorización Owner para iniciar PBI-040.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.

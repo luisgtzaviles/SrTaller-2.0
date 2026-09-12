@@ -2,21 +2,19 @@
 
 ## Estado del documento
 
-- **Estado:** snapshot del cierre candidato de PBI-039 sobre la baseline
-  integrada y validada en Preview.
+- **Estado:** snapshot post-cierre PBI-039 y readiness de Lista de precios.
 - **Baseline Git integrada observada:** `main` y `origin/main` en
-  `0d1c5760ce962d17a8292b841f5de43a8cb453a7`.
+  `40684d7554cdf02551f941e5e3f0beabbe563125`.
 - **CI autoritativa exacta de `main`:** run
-  [`34619271236`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34619271236),
+  [`34623060504`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34623060504),
   `SUCCESS`; run-1, run-2 y comparison verdes.
-- **PBI actual:** `PBI-039` en `Done candidate`; el merge autorizado y CI
-  autoritativa de `main` de este PR documental materializan `Done` efectivo.
-- **WIP:** `0/1`; no existe siguiente PBI seleccionado ni autorizado.
+- **PBI actual:** `PBI-040` — In progress; Owner autorizó implementación.
+- **WIP:** `1/1`.
 - **Preview:** desplegado desde el merge exacto `0d1c576…`, saludable y
   validado con un flujo autenticado New Repair create/detail/reload/worklist.
 - **Production:** no desplegada ni autorizada.
-- **Regla:** este documento describe estado; no autoriza iniciar otro PBI,
-  Production, infraestructura o un release adicional.
+- **Regla:** PBI-040 puede avanzar hasta Owner Review; merge, deploy,
+  Production y release no están autorizados.
 
 ## Resumen ejecutivo
 
@@ -46,9 +44,12 @@ integración, ya cerrados sin reabrir decisiones de producto:
    conexión compartida gobernada para que el runtime OCI de Preview use los
    repositorios persistentes. CI exacta de `main` `34619271236` terminó verde.
 
+PR #45 integró el cierre documental como `40684d7554…`; CI exacta de `main`
+`34623060504` terminó SUCCESS. PBI-039 y SPRINT-02 están cerrados.
+
 El único warning de build aceptado es el chunk Vite de aproximadamente
 531.33 kB. No se redujo cobertura, no se ocultaron skips materiales y no se
-inició Lista de precios, Caja, Evidencias/R2 ni otro ciclo.
+inició implementación de Lista de precios, Caja, Evidencias/R2 ni otro ciclo.
 
 ## Evidencia de cierre PBI-039
 
@@ -99,17 +100,18 @@ inició Lista de precios, Caja, Evidencias/R2 ni otro ciclo.
 
 | Elemento | Estado vigente |
 |---|---|
-| Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
-| Current PBI | `PBI-039` — Done candidate durante este PR documental |
-| WIP | `0/1` |
-| Next candidate | `NONE` |
-| G6 Customer mínimo | PASS candidate |
-| G7 New Repair / Intake | PASS candidate |
+| Sprint activo | SPRINT-03 — Price List Foundation; planning/readiness only |
+| Current PBI | `PBI-040` — In progress |
+| WIP | `1/1` |
+| Next candidate | `PBI-040` — Catalog & Pricing Core + Fast Price Lookup |
+| G6 Customer mínimo | PASS |
+| G7 New Repair / Intake | PASS |
+| G9 Pricing | PBI-040 implementation authorized; functional checkpoint pending |
 | Preview | Desplegado y validado en `0d1c576…` |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Revisar, integrar y ejecutar CI autoritativa sobre el SHA exacto de `main` de
-este PR documental. Ese resultado materializa PBI-039 `Done`; después, detenerse
-sin seleccionar ni iniciar otro PBI.
+Implementar PBI-040 sobre `feature/pbi-040-catalog-pricing-core` hasta Owner
+Review con evidencia proporcional. No iniciar PBI-041, merge, Production,
+release o deploy por inferencia.
