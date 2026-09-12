@@ -48,8 +48,8 @@ async function targetList() {
   return response.json();
 }
 
-async function browserTarget(url, preferredOrigin) {
-  const current = (await targetList()).find((target) => target.type === 'page' && target.url.startsWith(preferredOrigin));
+async function browserTarget(url) {
+  const current = (await targetList()).find((target) => target.type === 'page' && target.url === url);
   if (current) return current;
   const created = await fetch(`${cdp}/json/new?${encodeURIComponent(url)}`, { method: 'PUT' });
   assert.equal(created.status, 200, `Could not open ${preferredOrigin}`);
@@ -94,8 +94,15 @@ async function evaluate(connection, expression, awaitPromise = false) {
 
 async function waitForDetail(connection) {
   for (let attempt = 0; attempt < 40; attempt += 1) {
-    const ready = await evaluate(connection, `document.body.innerText.includes('Detalle de reparación') && !document.body.innerText.includes('Cargando reparación')`);
-    if (ready) return;
+    const ready = await evaluate(connection, `location.pathname === '/reparaciones/${fixture.repairId}' && document.body.innerText.includes('Detalle de reparación') && !document.body.innerText.includes('Cargando reparación')`);
+    if (ready) {
+      for (let stableAttempt = 0; stableAttempt < 4; stableAttempt += 1) {
+        await new Promise((resolveWait) => setTimeout(resolveWait, 250));
+        const stable = await evaluate(connection, `location.pathname === '/reparaciones/${fixture.repairId}' && document.body.innerText.includes('Detalle de reparación')`);
+        assert.equal(stable, true, 'Repair Detail did not remain stable after rendering');
+      }
+      return;
+    }
     await new Promise((resolveWait) => setTimeout(resolveWait, 250));
   }
   const state = await evaluate(connection, `({ url: location.href, text: document.body.innerText.slice(0, 500) })`);
@@ -211,8 +218,8 @@ assert.equal(localProvenance.sourceState, 'clean', 'Local frontend does not serv
 assert.equal(backendReadyResponse.headers.get('x-sr-source-revision'), localProvenance.sourceRevision, 'Frontend/backend revisions differ');
 assert.equal(backendReadyResponse.headers.get('x-sr-source-state'), 'clean', 'Local backend does not serve a clean candidate');
 
-const localTarget = await browserTarget(`${localOrigin}/reparaciones/${fixture.repairId}`, localOrigin);
-const previewTarget = await browserTarget(`${fixture.previewBaseline.origin}/reparaciones/${fixture.repairId}`, fixture.previewBaseline.origin);
+const localTarget = await browserTarget(`${localOrigin}/reparaciones/${fixture.repairId}`);
+const previewTarget = await browserTarget(`${fixture.previewBaseline.origin}/reparaciones/${fixture.repairId}`);
 const local = await captureLocal(localTarget);
 const preview = await capturePreview(previewTarget, local.exchange);
 
