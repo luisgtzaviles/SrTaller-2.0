@@ -115,6 +115,21 @@ abajo. Ambos comandos de backend rehidratan de forma idempotente los fixtures
 sintéticos de evidencia local antes de arrancar HTTP; no sustituyen el seed ni
 crean metadata en PostgreSQL.
 
+El launcher obtiene `HEAD` y el estado `clean|dirty` una sola vez antes de
+arrancar. Vite lo publica en `/runtime-provenance.json`; Nest lo publica en los
+headers `X-SR-Source-Revision` y `X-SR-Source-State` de `/readyz`. `local:dev`
+espera ambos y termina si no describen exactamente el mismo worktree. Para
+contestar de forma ejecutable qué source está viendo el runtime:
+
+```sh
+./scripts/pnpm-governed run verify:runtime-provenance
+```
+
+El JSON público contiene sólo rol, SHA Git exacto y estado del source. No
+contiene branch, cwd, configuración, datos ni secretos. Después de un commit o
+cambio en el worktree hay que reiniciar `local:dev`; el verificador detecta el
+proceso anterior en vez de aceptar una pestaña aparentemente actual.
+
 ## Uso diario
 
 ```sh

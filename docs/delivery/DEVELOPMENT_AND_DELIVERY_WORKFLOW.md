@@ -105,10 +105,10 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
 | Authoritative CI for integrated PBI-039 runtime | Green: exact-main run `34619271236` on `0d1c5760ce962d17a8292b841f5de43a8cb453a7` |
-| Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Active`; WIP `0/1` |
-| Current / next PBI | Current: PBI-039 `Done candidate` in canonical closure; next: NONE selected |
-| Current blocking gate | Closure documentation PR merge plus exact-main CI; Production remains unauthorized |
+| Program / phase | MVP Operating Roadmap / Price List Foundation |
+| Sprint | SPRINT-03 `Active`; WIP `1/1` |
+| Current / next PBI | Current: PBI-040 `Owner Review`; PBI-041 remains Planned and is not selected |
+| Current blocking gate | Owner Review/Acceptance; PR, merge, deploy and Production remain unauthorized |
 | GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
@@ -258,6 +258,8 @@ Inventario operativo:
 - Server: `srtaller-app-01`.
 - Domain: `https://preview.srtaller.dev`.
 - Source: `main`; build: `Dockerfile`; autodeploy: disabled.
+- Exact source deployed: `0d1c5760ce962d17a8292b841f5de43a8cb453a7`;
+  verified from server checkout and byte-identical rebuild of served assets.
 - PostgreSQL: `srtaller-postgres`, versión 18.4, volumen persistente, red
   interna y sin puerto público.
 - Routing/TLS: Traefik administrado por Dokploy; DNS de Cloudflare resuelve el

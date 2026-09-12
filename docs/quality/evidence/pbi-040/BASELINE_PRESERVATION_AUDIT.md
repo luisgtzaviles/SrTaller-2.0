@@ -23,9 +23,10 @@ Hay dos causas independientes:
    `Uso = 0` era correcto en persistencia y confuso en presentación.
 2. Repair Detail no perdió funcionalidad. El código, CSS, read model,
    persistencia y pruebas son byte por byte los de `origin/main`. La diferencia
-   observada entre Local y Preview corresponde a registros/fixtures distintos:
-   un Repair local con campos opcionales vacíos presenta menos contenido que un
-   registro Preview enriquecido.
+   observada entre Local y Preview corresponde a registros/fixtures distintos.
+   La auditoría runtime posterior confirmó que Preview tiene el Repair escaso y
+   Local el enriquecido; al usar exactamente el mismo read model, ambos builds
+   materializan la misma estructura PBI-039.
 
 La base local observada durante esta auditoría contenía 15 intakes, cero IDs
 canónicos para Tipo/Marca/Modelo, cero Repairs relacionadas a Riesgos y cero
@@ -163,6 +164,11 @@ borrado físico.
 El guard usa ancestry, merge-base, SHA y Git blob IDs; no usa timestamps. Un
 futuro cambio autorizado a esas superficies deberá actualizar deliberadamente
 el inventario y sus contratos, haciendo visible la decisión.
+
+Este guard de source no demuestra por sí solo qué proceso o build ve el
+navegador. La auditoría posterior y su guard complementario de frontend/backend
+viven en
+[`RUNTIME_PROVENANCE_AUDIT.md`](RUNTIME_PROVENANCE_AUDIT.md).
 
 ## 9. Evidencia ejecutada
 

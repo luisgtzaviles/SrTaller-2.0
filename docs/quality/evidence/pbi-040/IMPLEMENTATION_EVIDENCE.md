@@ -6,8 +6,8 @@
 - **Branch:** `feature/pbi-040-catalog-pricing-core`.
 - **Baseline:** `40684d7554cdf02551f941e5e3f0beabbe563125` con CI de
   `main` `34623060504` SUCCESS.
-- **Candidato de iteración Owner:** simplificación de identificadores
-  `a66ff4a`; aceptación Owner todavía pendiente.
+- **Candidato de iteración Owner:** funcionalidad congelada durante la
+  reconciliación de runtime provenance; aceptación Owner todavía pendiente.
 - **No autorizado/no realizado:** push, PR, merge, deploy, release o cambio de
   infraestructura.
 
@@ -89,6 +89,29 @@
 - DEC-005/policy registra la nueva frontera. Catalog/Pricing no adquiere
   ownership de Inventory, Procurement, Repair, Payments, Cash, Files, pedidos o
   solicitudes.
+
+## Reconciliación de runtime PBI-039
+
+- Preview fue identificado materialmente en `0d1c5760ce962d17a8292b841f5de43a8cb453a7`
+  mediante checkout Dokploy, imagen en ejecución y assets HTTP. Un rebuild
+  limpio reprodujo exactamente sus hashes.
+- PR #42 y #43 son ancestros; PR #44 es el SHA desplegado; PR #45
+  `40684d7554…` es su hijo documental y la baseline integrada actual.
+- El Vite local previo era un proceso longevo sin identidad de source; el
+  backend provenía del mismo worktree pero de un build/reinicio posterior. No
+  había listeners duplicados ni worktrees alternos en los puertos servidos.
+- La comparación runtime contra runtime usó el mismo read model sintético. Las
+  superficies Header, Recepción, Historial, Conceptos y Evidencias resultaron
+  iguales; la única diferencia fue el shell `Listas` legítimo de PBI-040.
+- Preview `SR-2026-1000` es escasa y Local `SR-2026-003` es rica. Esa diferencia
+  de datos activa bloques condicionales distintos y explica la divergencia
+  visual; no se encontró una regresión de source PBI-039.
+- El launcher y smoke nuevos verifican SHA/estado de frontend y backend. La
+  imagen OCI futura falla sin SHA y el verificador exige igualdad de label,
+  manifest y headers. No se desplegó este cambio.
+
+La evidencia completa está en
+[`RUNTIME_PROVENANCE_AUDIT.md`](RUNTIME_PROVENANCE_AUDIT.md).
 
 ## Evidencia automatizada
 
@@ -219,6 +242,10 @@ exact-main CI y cualquier Preview/deploy autorizado.
 La auditoría completa de causa raíz, genealogía, diff A-E, linkage, safe delete,
 fixtures y guard permanente vive en
 [`BASELINE_PRESERVATION_AUDIT.md`](BASELINE_PRESERVATION_AUDIT.md).
+
+La reconciliación posterior reemplaza cualquier inferencia basada sólo en blobs
+con evidencia de checkout, build, assets y runtime:
+[`RUNTIME_PROVENANCE_AUDIT.md`](RUNTIME_PROVENANCE_AUDIT.md).
 
 Para esta iteración, Chrome local autenticado con datos sintéticos confirmó:
 Todos/Todas/Todas; Refacción; Refacción + Pantallas; Refacción + Pantallas +

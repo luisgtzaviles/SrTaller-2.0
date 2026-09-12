@@ -2,7 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** snapshot del gate de preservación de baseline de PBI-040.
+- **Estado:** snapshot de runtime provenance y reconciliación visual PBI-039
+  dentro de PBI-040.
 - **Baseline Git integrada observada:** `main` y `origin/main` en
   `40684d7554cdf02551f941e5e3f0beabbe563125`.
 - **CI autoritativa exacta de `main`:** run
@@ -13,8 +14,9 @@
 - **Preview:** desplegado desde el merge exacto `0d1c576…`, saludable y
   validado con un flujo autenticado New Repair create/detail/reload/worklist.
 - **Production:** no desplegada ni autorizada.
-- **Regla:** PBI-040 superó la auditoría de preservación y vuelve a Owner Review;
-  aceptación sigue pendiente; merge, deploy,
+- **Regla:** PBI-040 detuvo trabajo de producto, reconcilió Preview/local y
+  vuelve a Owner Review sólo con provenance material; aceptación sigue
+  pendiente; merge, deploy,
   Production y release no están autorizados.
 
 ## Resumen ejecutivo
@@ -63,6 +65,17 @@ aceptados conservan los blobs exactos del baseline. Las diferencias restantes
 se clasificaron sólo A (integración necesaria), B (refactor visual neutro) o C
 (tests/fixtures), con D/E en cero. `verify:full` sobre `453eeb0` terminó 13/13
 PASS y Stage 0 verificó ancestry más 16 superficies protegidas.
+
+La auditoría runtime posterior identificó el Preview desplegado mediante
+checkout, imagen y assets: el SHA exacto es `0d1c5760ce962d17a8292b841f5de43a8cb453a7`
+y un rebuild limpio produjo HTML/JS/CSS byte-identical. El proceso Vite local
+era anterior al ciclo PBI-039 y no publicaba SHA, mientras el backend había sido
+reconstruido después. Con el mismo read model controlado, ambos runtimes
+mostraron la misma estructura de Repair Detail; la divergencia visible provenía
+de densidad de datos distinta, no de una pérdida del componente. El launcher
+local ahora exige igualdad entre `git HEAD/status`, manifest frontend y headers
+backend. El próximo build OCI autorizado deberá grabar la misma revisión en
+label, frontend y backend; Preview no fue redesplegado.
 
 PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
 Guided V2, política de campos por Branch, catálogos administrativos y las
@@ -115,7 +128,8 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | HTTP local | sesión Owner/Station, fixtures por API, costo protegido y override Branch PASS |
 | Full Verification | preservación 13/13 stages PASS; 822 tests base; PBI-039 2/2 y PostgreSQL material sin skips críticos |
 | Formal UI real | Chrome local autenticado, con dos ventanas lado a lado de Catálogos Repairs/Lista de precios; Owner Review pendiente |
-| Baseline guard | ancestry/merge-base/SHA + 16 blobs PBI-039 antes de campañas grandes |
+| Baseline guard | ancestry/merge-base/SHA + 16 blobs; genealogía material `0d1c576…` → `40684d7…` |
+| Runtime provenance | manifest frontend + headers backend + launcher fail-closed; SHA exacto consultable con `verify:runtime-provenance` |
 | Estado de entrega | Owner Review; sin push, PR, CI de branch, merge, deploy o release |
 
 ## Evidencia de cierre PBI-039
@@ -173,7 +187,7 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | Next candidate | ninguno seleccionado; PBI-041 permanece Planned |
 | G6 Customer mínimo | PASS |
 | G7 New Repair / Intake | PASS |
-| G9 Pricing | PBI-040 baseline preservation PASS; ready for Owner Review; not accepted |
+| G9 Pricing | PBI-040 runtime provenance PASS; ready for Owner Review; not accepted |
 | Preview | Desplegado y validado en `0d1c576…` |
 | Production / release | NO / NO |
 

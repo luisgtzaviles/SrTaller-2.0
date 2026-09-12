@@ -11,15 +11,18 @@ no se copia a logs, serialización ni diagnóstico.
 |---|---|---|---|
 | No secreto técnico | `HOST`, `NODE_ENV`, `PORT` | Activo | Technical shell |
 | No secreto de persistencia | `SR_DB_ENVIRONMENT` | Activo | Database configuration |
+| No secreto de procedencia | `SR_RUNTIME_GIT_SHA`, `SR_RUNTIME_SOURCE_STATE` | Activo | Technical shell; exposición pública acotada a SHA Git de 40 hex y `clean`/`dirty` |
 | Secreto activo | `SR_DB_PASSWORD`, `SR_TEST_DB_PASSWORD` | Activo | Database configuration |
 | Secreto activo | `SR_PIN_PEPPER` | Consumido por Access/PBI-025 | Server-only; nunca navegador, logs ni evidencia |
 | Secreto reservado | `SR_SESSION_SIGNING_KEY` | Sin consumidor | PBI-034 mantiene Session stateful con bearer aleatorio; no requiere firma |
 | Secreto activo local/test | `SR_STATION_BOOTSTRAP_SECRET` | Bootstrap técnico de Station en PBI-024 | Sólo `.env.local` o runner efímero; no enrollment productivo |
 | Secreto activo local/test | `SR_USER_BOOTSTRAP_SECRET` | Provisioning server-only del primer User en PBI-032 | Sólo `.env.local`; no endpoint, administración ni provisioning productivo |
 
-La clasificación no autoriza exponer nada al cliente: todos estos nombres son
-server-only. La configuración pública de Vite continúa siendo una superficie
-separada y no puede usar un nombre secreto.
+La clasificación no autoriza exponer secretos al cliente. Sólo los dos valores
+de procedencia se publican de forma acotada para identificar el source del
+runtime; no contienen branch, paths, credenciales ni configuración de negocio.
+La configuración pública de Vite continúa siendo una superficie separada y no
+puede usar un nombre secreto.
 
 ## Reglas fail-closed
 
