@@ -54,6 +54,10 @@ function NewRepairConfigurationBoundary({
     : <AccessDeniedPage />;
 }
 
+function CatalogConfigurationBoundary({ capabilities, children }: Readonly<{ capabilities: readonly OperationalCapability[]; children: React.ReactNode }>): React.JSX.Element {
+  return hasOperationalCapability(capabilities, 'repairs.catalogs.read') || hasOperationalCapability(capabilities, 'catalog.manage') ? <>{children}</> : <AccessDeniedPage />;
+}
+
 export function App(): React.JSX.Element {
   const location = useLocation();
   const routeState = location.state as Readonly<{
@@ -89,7 +93,7 @@ export function App(): React.JSX.Element {
               <Route path="/configuracion/roles" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="access_matrix.read"><RolesPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/configuracion/usuarios" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="users.read"><UsersPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/configuracion/catalogos/nueva-reparacion" element={<NewRepairConfigurationBoundary operationalCapabilities={capabilities} administrationCapabilities={administrationCapabilities}><NewRepairConfigurationPage operationalCapabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} /></NewRepairConfigurationBoundary>} />
-              <Route path="/configuracion/catalogos" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="repairs.catalogs.read"><RepairCatalogsPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
+              <Route path="/configuracion/catalogos" element={<CatalogConfigurationBoundary capabilities={administrationCapabilities}><RepairCatalogsPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CatalogConfigurationBoundary>} />
               {UiCatalogPage ? <Route path="/__internal/ui-catalog" element={<UiCatalogPage />} /> : null}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

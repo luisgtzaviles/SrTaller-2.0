@@ -2,12 +2,15 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const [app, shell, page, api, preferences] = await Promise.all([
+const [app, shell, page, api, preferences, combobox, catalogsPage, commercialCatalogs] = await Promise.all([
   readFile('apps/dev-preview-web/src/App.tsx', 'utf8'),
   readFile('apps/dev-preview-web/src/components/shell/ApplicationShell.tsx', 'utf8'),
   readFile('apps/dev-preview-web/src/pages/PriceListPage.tsx', 'utf8'),
   readFile('apps/dev-preview-web/src/catalog-api.ts', 'utf8'),
   readFile('apps/dev-preview-web/src/user-preferences/UserPreferencesProvider.tsx', 'utf8'),
+  readFile('apps/dev-preview-web/src/components/CatalogReferenceCombobox.tsx', 'utf8'),
+  readFile('apps/dev-preview-web/src/pages/RepairCatalogsPage.tsx', 'utf8'),
+  readFile('apps/dev-preview-web/src/components/CatalogPriceListReferencesPanel.tsx', 'utf8'),
 ]);
 
 test('price list is capability-gated and is the only initial Listas destination', () => {
@@ -17,6 +20,23 @@ test('price list is capability-gated and is the only initial Listas destination'
   assert.doesNotMatch(shell, /Pedidos|Solicitudes de clientes/u);
   const listBlock = shell.match(/const listNavigation[\s\S]*?\n\]\);/u)?.[0] ?? '';
   assert.equal((listBlock.match(/\{ to:/gu) ?? []).length, 1);
+});
+
+test('Owner iteration centralizes governance and keeps operation reconciliable', () => {
+  assert.match(catalogsPage, /Lista de precios/u);
+  assert.match(commercialCatalogs, /POR REVISAR/u);
+  assert.match(commercialCatalogs, /Aprobar/u);
+  assert.match(commercialCatalogs, /Fusionar/u);
+  assert.match(commercialCatalogs, /applicableKinds/u);
+  assert.match(page, /CatalogReferenceCombobox/u);
+  assert.match(combobox, /autocompleteInputProps/u);
+  assert.match(combobox, /event\.key === 'Enter'[\s\S]*choose\(safeActiveIndex\)/u);
+  assert.match(combobox, /Crear “\$\{query\.trim\(\)\}”/u);
+  assert.match(combobox, /onSelect=\{\(index\) => \{ void choose\(index\); \}\}/u);
+  assert.doesNotMatch(page, />Catálogos comerciales</u);
+  assert.match(page, /Limpiamos Categoría o Marca porque no aplican al nuevo Tipo/u);
+  assert.match(page, /Automático si lo dejas vacío/u);
+  assert.match(page, /GTIN \/ EAN \/ UPC externo/u);
 });
 
 test('price lookup sends no cost request unless capability and personal preference both allow it', () => {

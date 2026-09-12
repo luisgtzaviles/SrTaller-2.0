@@ -9,8 +9,10 @@ import {
   parseCatalogItemKind,
   parseMinorAmount,
 } from '../domain/catalog-item.js';
-import type { CatalogIdentifierScheme, CatalogLifecycle } from '../domain/catalog-item.js';
+import type { CatalogIdentifierScheme, CatalogItemKind, CatalogLifecycle } from '../domain/catalog-item.js';
 import type {
+  CatalogBrandRecord,
+  CatalogCategoryRecord,
   CatalogMutationContext,
   CatalogRepositoryPort,
   CatalogScope,
@@ -63,6 +65,13 @@ function referenceSource(value: unknown): 'MANUAL' | 'ESTIMATED' | 'THIRD_PARTY'
   return value;
 }
 
+function applicableKinds(value: unknown, parameter: string, category: boolean): readonly CatalogItemKind[] {
+  if (!Array.isArray(value) || value.length < 1 || (category && value.length !== 1)) throw new CatalogInputError(parameter);
+  const parsed = value.map((entry) => parseCatalogItemKind(entry));
+  if (new Set(parsed).size !== parsed.length) throw new CatalogInputError(parameter);
+  return Object.freeze(parsed);
+}
+
 function barcode(value: unknown): Readonly<{ identifierId: string; scheme: CatalogIdentifierScheme; normalizedValue: string; displayValue: string }> | null {
   if (value === null || value === undefined) return null;
   const candidate = object(value, ['scheme', 'value']);
@@ -79,31 +88,77 @@ export class CatalogService {
   ) {}
 
   listReferences(scope: CatalogScope) { return this.repository.listReferences(scope); }
+  async listOperationalReferences(scope: CatalogScope) {
+    const references = await this.repository.listReferences(scope);
+    const category = ({ categoryId, name, status, reviewStatus, applicableKinds, version }: CatalogCategoryRecord) => Object.freeze({ categoryId, name, status, reviewStatus, applicableKinds, version });
+    const brand = ({ brandId, name, status, reviewStatus, applicableKinds, version }: CatalogBrandRecord) => Object.freeze({ brandId, name, status, reviewStatus, applicableKinds, version });
+    return Object.freeze({ categories: Object.freeze(references.categories.map(category)), brands: Object.freeze(references.brands.map(brand)) });
+  }
   getItem(scope: CatalogScope, itemId: unknown) { return this.repository.getItem(scope, identifier(itemId, 'itemId')); }
 
-  async createCategory(context: CatalogMutationContext, value: unknown) {
-    const input = object(value, ['name', 'expectedVersion', 'clientRequestId']);
+  async createCategory(context: CatalogMutationContext, value: unknown, reviewStatus: 'APPROVED' | 'PENDING' = 'APPROVED') {
+    const input = object(value, ['name', 'applicableKinds', 'expectedVersion', 'clientRequestId']);
     const name = text(input.name, 'name', 120) as string;
     const mutation = commonMutation(input, 0);
     if (mutation.expectedVersion !== 0) throw new CatalogInputError('expectedVersion');
     return this.repository.createCategory(context, {
-      referenceId: randomUUID(), name, normalizedName: normalizeCatalogText(name), ...mutation, expectedVersion: 0,
+      referenceId: randomUUID(), name, normalizedName: normalizeCatalogText(name),
+      applicableKinds: applicableKinds(input.applicableKinds, 'applicableKinds', true), reviewStatus,
+      ...mutation, expectedVersion: 0,
     });
   }
 
-  async createBrand(context: CatalogMutationContext, value: unknown) {
-    const input = object(value, ['name', 'expectedVersion', 'clientRequestId']);
+  async createBrand(context: CatalogMutationContext, value: unknown, reviewStatus: 'APPROVED' | 'PENDING' = 'APPROVED') {
+    const input = object(value, ['name', 'applicableKinds', 'expectedVersion', 'clientRequestId']);
     const name = text(input.name, 'name', 120) as string;
     const mutation = commonMutation(input, 0);
     if (mutation.expectedVersion !== 0) throw new CatalogInputError('expectedVersion');
     return this.repository.createBrand(context, {
-      referenceId: randomUUID(), name, normalizedName: normalizeCatalogText(name), ...mutation, expectedVersion: 0,
+      referenceId: randomUUID(), name, normalizedName: normalizeCatalogText(name),
+      applicableKinds: applicableKinds(input.applicableKinds, 'applicableKinds', false), reviewStatus,
+      ...mutation, expectedVersion: 0,
     });
+  }
+
+  updateCategory(context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    return this.updateReference('category', context, referenceId, value) as Promise<CatalogCategoryRecord>;
+  }
+
+  updateBrand(context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    return this.updateReference('brand', context, referenceId, value) as Promise<CatalogBrandRecord>;
+  }
+
+  private updateReference(kind: 'category' | 'brand', context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    const input = object(value, ['name', 'status', 'applicableKinds', 'expectedVersion', 'clientRequestId']);
+    const name = text(input.name, 'name', 120) as string;
+    const status: CatalogLifecycle = input.status === 'ACTIVE' || input.status === 'INACTIVE' ? input.status : (() => { throw new CatalogInputError('status'); })();
+    const parsed = {
+      referenceId: identifier(referenceId, `${kind}Id`), name, normalizedName: normalizeCatalogText(name), status,
+      applicableKinds: applicableKinds(input.applicableKinds, 'applicableKinds', kind === 'category'),
+      ...commonMutation(input, 1),
+    };
+    return kind === 'category' ? this.repository.updateCategory(context, parsed) : this.repository.updateBrand(context, parsed);
+  }
+
+  resolveCategory(context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    return this.resolveReference('category', context, referenceId, value) as Promise<CatalogCategoryRecord>;
+  }
+
+  resolveBrand(context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    return this.resolveReference('brand', context, referenceId, value) as Promise<CatalogBrandRecord>;
+  }
+
+  private resolveReference(kind: 'category' | 'brand', context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    const input = object(value, ['resolution', 'targetId', 'expectedVersion', 'clientRequestId']);
+    if (input.resolution !== 'APPROVE' && input.resolution !== 'MERGE') throw new CatalogInputError('resolution');
+    const targetId = input.resolution === 'MERGE' ? identifier(input.targetId, 'targetId') : null;
+    const parsed = { referenceId: identifier(referenceId, `${kind}Id`), resolution: input.resolution, targetId, ...commonMutation(input, 1) } as const;
+    return kind === 'category' ? this.repository.resolveCategory(context, parsed) : this.repository.resolveBrand(context, parsed);
   }
 
   async createItem(context: CatalogMutationContext, value: unknown) {
     const input = object(value, [
-      'kind', 'title', 'description', 'categoryId', 'brandId', 'sku', 'barcode',
+      'kind', 'title', 'description', 'categoryId', 'brandId', 'sku', 'internalCode', 'externalIdentifier', 'barcode',
       'basePriceAmountMinor', 'referenceCostAmountMinor',
       'referenceCostSourceType', 'referenceCostSourceLabel',
       'expectedVersion', 'clientRequestId',
@@ -111,7 +166,12 @@ export class CatalogService {
     const kind = parseCatalogItemKind(input.kind);
     const title = text(input.title, 'title', 200) as string;
     const sku = input.sku === null || input.sku === undefined || input.sku === '' ? null : normalizedSku(input.sku);
-    const optionalBarcode = barcode(input.barcode);
+    const legacyBarcode = barcode(input.barcode);
+    const internalCodeSource = input.internalCode ?? (legacyBarcode?.scheme === 'INTERNAL_BARCODE' ? legacyBarcode.displayValue : null);
+    const internalCode = internalCodeSource === null || internalCodeSource === undefined || internalCodeSource === ''
+      ? null : normalizeCatalogIdentifier('INTERNAL_BARCODE', internalCodeSource);
+    const external = barcode(input.externalIdentifier ?? (legacyBarcode?.scheme !== 'INTERNAL_BARCODE' ? input.barcode : null));
+    if (external?.scheme === 'INTERNAL_BARCODE' || external?.scheme === 'SKU') throw new CatalogInputError('externalIdentifier.scheme');
     const currency = await this.currency(context.tenantId);
     const mutation = commonMutation(input, 0);
     if (mutation.expectedVersion !== 0) throw new CatalogInputError('expectedVersion');
@@ -128,8 +188,8 @@ export class CatalogService {
       description: text(input.description, 'description', 2000, true, true),
       categoryId: identifier(input.categoryId, 'categoryId'),
       brandId: input.brandId === null || input.brandId === undefined || input.brandId === '' ? null : identifier(input.brandId, 'brandId'),
-      sku,
-      identifiers: optionalBarcode ? [optionalBarcode] : [],
+      sku, internalCode,
+      externalIdentifiers: external ? [external as Exclude<typeof external, null> & { scheme: 'GTIN_8' | 'GTIN_12' | 'GTIN_13' | 'GTIN_14' }] : [],
       basePrice: { revisionId: randomUUID(), amountMinor: parseMinorAmount(input.basePriceAmountMinor, 'basePriceAmountMinor') },
       referenceCost,
       currency,

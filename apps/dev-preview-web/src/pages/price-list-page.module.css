@@ -23,10 +23,13 @@
 .pagination > div { display: flex; align-items: center; gap: var(--space-2); }
 .dialogBody { display: grid; gap: var(--space-5); padding: var(--space-4); }
 .formGrid, .moneyGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.externalIdentifier { grid-column: 1 / -1; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-subtle); }
+.externalIdentifier summary { cursor: pointer; color: var(--color-text-muted); font-size: .8125rem; font-weight: var(--font-weight-semibold); }
+.externalIdentifier > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-3); }
 .referenceCreator, .moneyActions { display: grid; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
 .referenceCreator h3, .moneyActions h3 { margin: 0; font-size: .875rem; }
 .referenceCreator > div { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: var(--space-2); }
 .moneyActions > div { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: var(--space-2); }
 .dialogFooter { display: flex; justify-content: flex-end; gap: var(--space-2); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
-@media (max-width: 768px) { .toolbar, .formGrid, .moneyGrid { grid-template-columns: 1fr; } .priceCard { grid-template-columns: 1fr; } .cardPrice { justify-items: start; text-align: left; } .referenceCreator > div, .moneyActions > div { grid-template-columns: 1fr; } .pagination { align-items: stretch; flex-direction: column; } .pagination > div { justify-content: space-between; } }
+@media (max-width: 768px) { .toolbar, .formGrid, .moneyGrid, .externalIdentifier > div { grid-template-columns: 1fr; } .priceCard { grid-template-columns: 1fr; } .cardPrice { justify-items: start; text-align: left; } .referenceCreator > div, .moneyActions > div { grid-template-columns: 1fr; } .pagination { align-items: stretch; flex-direction: column; } .pagination > div { justify-content: space-between; } }
 @media (max-width: 640px) { .priceCard, .toolbar { padding: var(--space-3); } .dialogBody { padding: var(--space-2); } }

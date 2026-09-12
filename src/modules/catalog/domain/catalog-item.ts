@@ -1,6 +1,7 @@
 export const catalogItemKinds = ['PART', 'PRODUCT', 'SERVICE', 'SUPPLY'] as const;
 export type CatalogItemKind = (typeof catalogItemKinds)[number];
 export type CatalogLifecycle = 'ACTIVE' | 'INACTIVE';
+export type CatalogReferenceReviewStatus = 'APPROVED' | 'PENDING' | 'MERGED';
 export type CatalogIdentifierScheme = 'SKU' | 'INTERNAL_BARCODE' | 'GTIN_8' | 'GTIN_12' | 'GTIN_13' | 'GTIN_14';
 
 export const catalogKindCapabilities = Object.freeze({

@@ -7,6 +7,7 @@ import {
   revokeCatalogBranchPrice, searchPriceList, setCatalogBranchPrice, updateCatalogItem,
 } from '../catalog-api.js';
 import type { CatalogItem, CatalogItemKind, CatalogReferences, PriceListItem, PriceListPage } from '../catalog-api.js';
+import { CatalogReferenceCombobox } from '../components/CatalogReferenceCombobox.js';
 import { Button, Field, Input, Select, Textarea } from '../components/ui/controls.js';
 import { Alert, EmptyState, ErrorState, Skeleton, Spinner } from '../components/ui/feedback.js';
 import { PageHeader } from '../components/ui/navigation.js';
@@ -29,6 +30,7 @@ function minor(value: string): number | null {
   return Number.isSafeInteger(result) ? result : null;
 }
 function sku(item: CatalogItem): string { return item.identifiers.find(({ scheme }) => scheme === 'SKU')?.value ?? 'Sin SKU'; }
+function identifierName(scheme: string): string { return scheme === 'INTERNAL_BARCODE' ? 'Código interno' : scheme.replace('_', '-'); }
 
 function PriceCard({ value, canManage, onManage }: Readonly<{ value: PriceListItem; canManage: boolean; onManage(itemId: string): void }>) {
   return (
@@ -38,7 +40,7 @@ function PriceCard({ value, canManage, onManage }: Readonly<{ value: PriceListIt
         <div>
           <h2>{value.item.title}</h2>
           <p>{kindLabels[value.item.kind]} · {value.item.category.name}{value.item.brand ? ` · ${value.item.brand.name}` : ''}</p>
-          <div className={styles.identifiers}><span><Tag size={14} aria-hidden="true" />{sku(value.item)}</span>{value.item.identifiers.filter(({ scheme }) => scheme !== 'SKU').map((identifier) => <span key={identifier.identifierId}><Barcode size={14} aria-hidden="true" />{identifier.value}</span>)}</div>
+          <div className={styles.identifiers}><span><Tag size={14} aria-hidden="true" />SKU {sku(value.item)}</span>{value.item.identifiers.filter(({ scheme }) => scheme !== 'SKU').map((identifier) => <span key={identifier.identifierId}><Barcode size={14} aria-hidden="true" />{identifierName(identifier.scheme)} {identifier.value}</span>)}</div>
         </div>
       </div>
       <div className={styles.cardPrice}>
@@ -65,9 +67,8 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const [selected, setSelected] = useState<CatalogItem | null>(null); const [saving, setSaving] = useState(false);
   const [kind, setKind] = useState<CatalogItemKind>('PART'); const [title, setTitle] = useState(''); const [description, setDescription] = useState('');
   const [formCategoryId, setFormCategoryId] = useState(''); const [formBrandId, setFormBrandId] = useState(''); const [formStatus, setFormStatus] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE');
-  const [formSku, setFormSku] = useState(''); const [barcodeScheme, setBarcodeScheme] = useState(''); const [barcodeValue, setBarcodeValue] = useState('');
+  const [formSku, setFormSku] = useState(''); const [internalCode, setInternalCode] = useState(''); const [externalScheme, setExternalScheme] = useState(''); const [externalValue, setExternalValue] = useState('');
   const [basePrice, setBasePrice] = useState(''); const [referenceCost, setReferenceCost] = useState(''); const [overridePrice, setOverridePrice] = useState('');
-  const [newCategory, setNewCategory] = useState(''); const [newBrand, setNewBrand] = useState('');
   const requestId = useRef<string | null>(null);
 
   const includeCost = canReadCost && preferences.priceListShowReferenceCost;
@@ -86,7 +87,9 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
 
   const activeCategories = useMemo(() => references?.categories.filter(({ status }) => status === 'ACTIVE') ?? [], [references]);
   const activeBrands = useMemo(() => references?.brands.filter(({ status }) => status === 'ACTIVE') ?? [], [references]);
-  const resetForm = (): void => { setSelected(null); setKind('PART'); setTitle(''); setDescription(''); setFormCategoryId(activeCategories[0]?.categoryId ?? ''); setFormBrandId(''); setFormStatus('ACTIVE'); setFormSku(''); setBarcodeScheme(''); setBarcodeValue(''); setBasePrice(''); setReferenceCost(''); setOverridePrice(''); requestId.current = null; };
+  const applicableCategories = useMemo(() => activeCategories.filter((reference) => reference.applicableKinds.includes(kind)), [activeCategories, kind]);
+  const applicableBrands = useMemo(() => activeBrands.filter((reference) => reference.applicableKinds.includes(kind)), [activeBrands, kind]);
+  const resetForm = (): void => { setSelected(null); setKind('PART'); setTitle(''); setDescription(''); setFormCategoryId(''); setFormBrandId(''); setFormStatus('ACTIVE'); setFormSku(''); setInternalCode(''); setExternalScheme(''); setExternalValue(''); setBasePrice(''); setReferenceCost(''); setOverridePrice(''); requestId.current = null; };
   const openCreate = (): void => { resetForm(); setDialog('create'); setNotice(null); };
   const openManage = async (itemId: string): Promise<void> => {
     setSaving(true); setNotice(null);
@@ -98,25 +101,30 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const nextRequestId = (): string => requestId.current ??= crypto.randomUUID();
   const commandDone = async (message: string): Promise<void> => { requestId.current = null; await refreshReferences(); await refresh(); setNotice({ tone: 'success', message }); };
 
-  const addCategory = async (): Promise<void> => {
-    if (!newCategory.trim()) return; setSaving(true);
-    try { const created = await createCatalogCategory(newCategory.trim(), csrfToken); const refs = await refreshReferences(); setFormCategoryId(created.categoryId ?? refs.categories.at(-1)?.categoryId ?? ''); setNewCategory(''); setNotice({ tone: 'success', message: 'Categoría creada.' }); }
-    catch { setNotice({ tone: 'danger', message: 'No fue posible crear la categoría. Revisa duplicados.' }); }
-    finally { setSaving(false); }
+  const addCategory = async (name: string) => {
+    try { const created = await createCatalogCategory(name, [kind], csrfToken, true); await refreshReferences(); setNotice({ tone: 'warning', message: `Categoría “${created.name}” creada como Por revisar. Puedes continuar con el artículo.` }); return created; }
+    catch (error) { setNotice({ tone: 'danger', message: 'No fue posible crear la categoría. Revisa si ya existe una equivalente.' }); throw error; }
   };
-  const addBrand = async (): Promise<void> => {
-    if (!newBrand.trim()) return; setSaving(true);
-    try { const created = await createCatalogBrand(newBrand.trim(), csrfToken); await refreshReferences(); setFormBrandId(created.brandId ?? ''); setNewBrand(''); setNotice({ tone: 'success', message: 'Marca creada.' }); }
-    catch { setNotice({ tone: 'danger', message: 'No fue posible crear la marca. Revisa duplicados.' }); }
-    finally { setSaving(false); }
+  const addBrand = async (name: string) => {
+    try { const created = await createCatalogBrand(name, [kind], csrfToken, true); await refreshReferences(); setNotice({ tone: 'warning', message: `Marca “${created.name}” creada como Por revisar. Puedes continuar con el artículo.` }); return created; }
+    catch (error) { setNotice({ tone: 'danger', message: 'No fue posible crear la marca. Revisa si ya existe una equivalente.' }); throw error; }
+  };
+  const changeKind = (next: CatalogItemKind): void => {
+    const categoryCompatible = activeCategories.find((value) => value.categoryId === formCategoryId)?.applicableKinds.includes(next) ?? false;
+    const brandCompatible = !formBrandId || (activeBrands.find((value) => value.brandId === formBrandId)?.applicableKinds.includes(next) ?? false);
+    setKind(next);
+    if (!categoryCompatible) setFormCategoryId('');
+    if (!brandCompatible) setFormBrandId('');
+    if ((formCategoryId && !categoryCompatible) || (formBrandId && !brandCompatible)) setNotice({ tone: 'warning', message: 'Limpiamos Categoría o Marca porque no aplican al nuevo Tipo.' });
   };
   const submitCreate = async (): Promise<void> => {
     const price = minor(basePrice); const cost = referenceCost ? minor(referenceCost) : null;
     if (!title.trim() || !formCategoryId || price === null || (referenceCost && cost === null)) { setNotice({ tone: 'danger', message: 'Completa título, categoría y precio con hasta dos decimales.' }); return; }
     setSaving(true);
     try {
-      await createCatalogItem({ kind, title, description: description || null, categoryId: formCategoryId, brandId: formBrandId || null, sku: formSku || null, barcode: barcodeScheme && barcodeValue ? { scheme: barcodeScheme, value: barcodeValue } : null, basePriceAmountMinor: price, referenceCostAmountMinor: cost, referenceCostSourceType: 'MANUAL', expectedVersion: 0, clientRequestId: nextRequestId() }, csrfToken);
-      await commandDone(kind === 'SUPPLY' ? 'Insumo creado en catálogo; no forma parte de la Lista de precios comercial.' : 'Artículo creado y disponible en la lista.'); setDialog(null); resetForm();
+      const created = await createCatalogItem({ kind, title, description: description || null, categoryId: formCategoryId, brandId: formBrandId || null, sku: formSku || null, internalCode: internalCode || null, externalIdentifier: externalScheme && externalValue ? { scheme: externalScheme, value: externalValue } : null, basePriceAmountMinor: price, referenceCostAmountMinor: cost, referenceCostSourceType: 'MANUAL', expectedVersion: 0, clientRequestId: nextRequestId() }, csrfToken);
+      const createdSku = created.identifiers.find((value) => value.scheme === 'SKU')?.value; const createdCode = created.identifiers.find((value) => value.scheme === 'INTERNAL_BARCODE')?.value;
+      await commandDone(`${kind === 'SUPPLY' ? 'Insumo creado en catálogo; no forma parte de la Lista de precios comercial.' : 'Artículo creado y disponible en la lista.'} SKU ${createdSku ?? '—'} · Código interno ${createdCode ?? '—'}`); setDialog(null); resetForm();
     } catch { setNotice({ tone: 'danger', message: 'No fue posible crear. Revisa SKU/código, permisos y datos.' }); }
     finally { setSaving(false); }
   };
@@ -160,15 +168,14 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
         <div className={styles.dialogBody}>
           {notice ? <Alert tone={notice.tone}>{notice.message}</Alert> : null}
           <section className={styles.formGrid} aria-label="Identidad del artículo">
-            {dialog === 'create' ? <Field id="catalog-kind" label="Tipo" required><Select id="catalog-kind" value={kind} onChange={(event) => setKind(event.target.value as CatalogItemKind)}><option value="PART">Refacción</option><option value="PRODUCT">Producto</option><option value="SERVICE">Servicio</option><option value="SUPPLY">Insumo (no aparece en Lista)</option></Select></Field> : null}
+            {dialog === 'create' ? <Field id="catalog-kind" label="Tipo" required><Select id="catalog-kind" value={kind} onChange={(event) => changeKind(event.target.value as CatalogItemKind)}><option value="PART">Refacción</option><option value="PRODUCT">Producto</option><option value="SERVICE">Servicio</option><option value="SUPPLY">Insumo (no aparece en Lista)</option></Select></Field> : null}
             <Field id="catalog-title" label="Título" required fullWidth><Input id="catalog-title" value={title} maxLength={200} onChange={(event) => setTitle(event.target.value)} /></Field>
             <Field id="catalog-description" label="Descripción" fullWidth><Textarea id="catalog-description" value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} /></Field>
-            <Field id="catalog-category" label="Categoría" required><Select id="catalog-category" value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}><option value="">Selecciona…</option>{activeCategories.map((value) => <option key={value.categoryId} value={value.categoryId}>{value.name}</option>)}</Select></Field>
-            <Field id="catalog-brand" label="Marca"><Select id="catalog-brand" value={formBrandId} onChange={(event) => setFormBrandId(event.target.value)}><option value="">Sin marca</option>{activeBrands.map((value) => <option key={value.brandId} value={value.brandId}>{value.name}</option>)}</Select></Field>
+            <Field id="catalog-category" label="Categoría" required hint="Busca o crea explícitamente un valor Por revisar."><CatalogReferenceCombobox id="catalog-category" label="Categorías aplicables" emptyLabel="Buscar categoría…" value={formCategoryId} references={applicableCategories} canCreate={canManage} onChange={setFormCategoryId} onCreate={addCategory} /></Field>
+            <Field id="catalog-brand" label="Marca" hint="Opcional; deja vacío para Sin marca."><CatalogReferenceCombobox id="catalog-brand" label="Marcas aplicables" emptyLabel="Sin marca / buscar…" value={formBrandId} references={applicableBrands} canCreate={canManage} onChange={setFormBrandId} onCreate={addBrand} /></Field>
             {dialog === 'manage' ? <Field id="catalog-status" label="Estado"><Select id="catalog-status" value={formStatus} onChange={(event) => setFormStatus(event.target.value as 'ACTIVE' | 'INACTIVE')}><option value="ACTIVE">Activo</option><option value="INACTIVE">Inactivo</option></Select></Field> : null}
-            {dialog === 'create' ? <><Field id="catalog-sku" label="SKU" hint="Déjalo vacío para generar uno server-side."><Input id="catalog-sku" value={formSku} onChange={(event) => setFormSku(event.target.value)} placeholder="REF-000042" /></Field><Field id="catalog-barcode-scheme" label="Código opcional"><Select id="catalog-barcode-scheme" value={barcodeScheme} onChange={(event) => setBarcodeScheme(event.target.value)}><option value="">Sin código</option><option value="INTERNAL_BARCODE">Código interno</option><option value="GTIN_8">GTIN-8</option><option value="GTIN_12">GTIN-12</option><option value="GTIN_13">GTIN-13</option><option value="GTIN_14">GTIN-14</option></Select></Field>{barcodeScheme ? <Field id="catalog-barcode" label="Valor del código"><Input id="catalog-barcode" value={barcodeValue} onChange={(event) => setBarcodeValue(event.target.value)} inputMode="numeric" /></Field> : null}</> : null}
+            {dialog === 'create' ? <><Field id="catalog-sku" label="SKU" hint="Automático si lo dejas vacío."><Input id="catalog-sku" value={formSku} onChange={(event) => setFormSku(event.target.value)} placeholder="Ej. REF-PANTALLA-11" autoComplete="off" /></Field><Field id="catalog-internal-code" label="Código interno" hint="Identificador SR Taller; automático si lo dejas vacío."><Input id="catalog-internal-code" value={internalCode} onChange={(event) => setInternalCode(event.target.value)} placeholder="Ej. SR-LOCAL-001" autoComplete="off" /></Field><details className={styles.externalIdentifier}><summary>Agregar GTIN / EAN / UPC externo</summary><div><Field id="catalog-external-scheme" label="Esquema externo"><Select id="catalog-external-scheme" value={externalScheme} onChange={(event) => setExternalScheme(event.target.value)}><option value="">Sin identificador externo</option><option value="GTIN_8">GTIN / EAN-8</option><option value="GTIN_12">GTIN / UPC-12</option><option value="GTIN_13">GTIN / EAN-13</option><option value="GTIN_14">GTIN-14</option></Select></Field>{externalScheme ? <Field id="catalog-external-code" label="Valor externo"><Input id="catalog-external-code" value={externalValue} onChange={(event) => setExternalValue(event.target.value)} inputMode="numeric" /></Field> : null}</div></details></> : null}
           </section>
-          {canManage && <section className={styles.referenceCreator}><h3>Catálogos comerciales</h3><div><Input aria-label="Nueva categoría" value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Nueva categoría" /><Button size="compact" disabled={saving || !newCategory.trim()} onClick={() => void addCategory()}>Agregar categoría</Button><Input aria-label="Nueva marca" value={newBrand} onChange={(event) => setNewBrand(event.target.value)} placeholder="Nueva marca" /><Button size="compact" disabled={saving || !newBrand.trim()} onClick={() => void addBrand()}>Agregar marca</Button></div></section>}
           {dialog === 'create' ? <section className={styles.moneyGrid}><Field id="catalog-base-price" label="Precio base" required><Input id="catalog-base-price" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} inputMode="decimal" placeholder="1399.00" /></Field>{canManageCost ? <Field id="catalog-cost" label="Costo de referencia"><Input id="catalog-cost" value={referenceCost} onChange={(event) => setReferenceCost(event.target.value)} inputMode="decimal" placeholder="480.00" /></Field> : null}</section> : null}
           {dialog === 'manage' && selected ? <section className={styles.moneyActions}><h3>Precios y costo</h3>{canManagePrice ? <div><Input aria-label="Nuevo precio base" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} placeholder="Precio base" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('base')}>Cambiar base</Button></div> : null}{canManageBranchPrice ? <div><Input aria-label="Override de esta sucursal" value={overridePrice} onChange={(event) => setOverridePrice(event.target.value)} placeholder="Override Branch" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('override')}>Aplicar override</Button><Button tone="quiet" disabled={saving} onClick={() => void moneyCommand('revoke')}>Revocar override</Button></div> : null}{canManageCost ? <div><Input aria-label="Nuevo costo de referencia" value={referenceCost} onChange={(event) => setReferenceCost(event.target.value)} placeholder="Costo de referencia" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('cost')}>Cambiar costo</Button></div> : null}</section> : null}
           <footer className={styles.dialogFooter}><Button onClick={close} disabled={saving}>Cerrar</Button>{dialog === 'create' ? <Button tone="primary" disabled={saving} onClick={() => void submitCreate()}>{saving ? <Spinner label="Guardando" /> : null}Crear artículo</Button> : <Button tone="primary" disabled={saving} onClick={() => void saveIdentity()}>{saving ? <Spinner label="Guardando" /> : null}Guardar datos</Button>}</footer>

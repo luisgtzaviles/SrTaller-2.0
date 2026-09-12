@@ -1,7 +1,12 @@
 import { PreviewApiError } from './api.js';
 
 export type CatalogItemKind = 'PART' | 'PRODUCT' | 'SERVICE' | 'SUPPLY';
-export type CatalogReference = Readonly<{ categoryId?: string; brandId?: string; name: string; status: 'ACTIVE' | 'INACTIVE'; version: number }>;
+export type CatalogReference = Readonly<{
+  categoryId?: string; brandId?: string; name: string; status: 'ACTIVE' | 'INACTIVE';
+  reviewStatus: 'APPROVED' | 'PENDING' | 'MERGED'; applicableKinds: readonly CatalogItemKind[];
+  usageCount?: number; version: number; createdBy?: string | null; createdAt?: string;
+  createdInBranchId?: string | null; mergedIntoId?: string | null;
+}>;
 export type CatalogItem = Readonly<{
   itemId: string; kind: CatalogItemKind; title: string; description: string | null;
   category: CatalogReference; brand: CatalogReference | null; status: 'ACTIVE' | 'INACTIVE';
@@ -34,6 +39,7 @@ async function mutate<T>(path: string, method: 'POST' | 'PATCH' | 'PUT' | 'DELET
 }
 
 export function listCatalogReferences(signal?: AbortSignal) { return get<CatalogReferences>('/api/catalog/references', signal); }
+export function listCatalogAdministrationReferences(signal?: AbortSignal) { return get<CatalogReferences>('/api/catalog/administration/references', signal); }
 export function searchPriceList(input: Readonly<{ query: string; categoryId: string; brandId: string; page: number; includeReferenceCost: boolean }>, signal?: AbortSignal) {
   const query = new URLSearchParams({ query: input.query, page: String(input.page), pageSize: '25' });
   if (input.categoryId) query.set('categoryId', input.categoryId);
@@ -42,8 +48,12 @@ export function searchPriceList(input: Readonly<{ query: string; categoryId: str
   return get<PriceListPage>(`/api/catalog/price-list?${query.toString()}`, signal);
 }
 export function getCatalogItem(itemId: string, signal?: AbortSignal) { return get<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}`, signal); }
-export function createCatalogCategory(name: string, csrfToken: string) { return mutate<CatalogReference>('/api/catalog/categories', 'POST', { name, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
-export function createCatalogBrand(name: string, csrfToken: string) { return mutate<CatalogReference>('/api/catalog/brands', 'POST', { name, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
+export function createCatalogCategory(name: string, applicableKinds: readonly CatalogItemKind[], csrfToken: string, pending = false) { return mutate<CatalogReference>(`/api/catalog/categories${pending ? '/pending' : ''}`, 'POST', { name, applicableKinds, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
+export function createCatalogBrand(name: string, applicableKinds: readonly CatalogItemKind[], csrfToken: string, pending = false) { return mutate<CatalogReference>(`/api/catalog/brands${pending ? '/pending' : ''}`, 'POST', { name, applicableKinds, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
+export function updateCatalogCategory(categoryId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/categories/${encodeURIComponent(categoryId)}`, 'PATCH', input, csrfToken); }
+export function updateCatalogBrand(brandId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/brands/${encodeURIComponent(brandId)}`, 'PATCH', input, csrfToken); }
+export function resolveCatalogCategory(categoryId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/categories/${encodeURIComponent(categoryId)}/resolve`, 'POST', input, csrfToken); }
+export function resolveCatalogBrand(brandId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/brands/${encodeURIComponent(brandId)}/resolve`, 'POST', input, csrfToken); }
 export function createCatalogItem(input: unknown, csrfToken: string) { return mutate<CatalogItem>('/api/catalog/items', 'POST', input, csrfToken); }
 export function updateCatalogItem(itemId: string, input: unknown, csrfToken: string) { return mutate<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}`, 'PATCH', input, csrfToken); }
 export function changeCatalogBasePrice(itemId: string, input: unknown, csrfToken: string) { return mutate<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}/base-price`, 'POST', input, csrfToken); }

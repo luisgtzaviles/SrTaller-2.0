@@ -79,6 +79,7 @@ export interface UserPreferencesTable {
 
 export type CatalogItemKind = 'PART' | 'PRODUCT' | 'SERVICE' | 'SUPPLY';
 export type CatalogLifecycle = 'ACTIVE' | 'INACTIVE';
+export type CatalogReferenceReviewStatus = 'APPROVED' | 'PENDING' | 'MERGED';
 export type CatalogIdentifierScheme =
   | 'SKU'
   | 'INTERNAL_BARCODE'
@@ -93,6 +94,14 @@ export interface CatalogCategoryTable {
   readonly display_name: MutableColumn<string>;
   readonly normalized_name: MutableColumn<string>;
   readonly status: MutableColumn<CatalogLifecycle>;
+  readonly review_status: DefaultedMutableColumn<CatalogReferenceReviewStatus>;
+  readonly merged_into_id: MutableColumn<string | null>;
+  readonly created_by_actor_id: ImmutableColumn<string | null>;
+  readonly created_in_branch_id: ImmutableColumn<string | null>;
+  readonly created_in_station_id: ImmutableColumn<string | null>;
+  readonly created_in_session_id: ImmutableColumn<string | null>;
+  readonly reviewed_by_actor_id: MutableColumn<string | null>;
+  readonly reviewed_at: MutableColumn<Date | null>;
   readonly version: MutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
@@ -104,6 +113,14 @@ export interface CatalogBrandTable {
   readonly display_name: MutableColumn<string>;
   readonly normalized_name: MutableColumn<string>;
   readonly status: MutableColumn<CatalogLifecycle>;
+  readonly review_status: DefaultedMutableColumn<CatalogReferenceReviewStatus>;
+  readonly merged_into_id: MutableColumn<string | null>;
+  readonly created_by_actor_id: ImmutableColumn<string | null>;
+  readonly created_in_branch_id: ImmutableColumn<string | null>;
+  readonly created_in_station_id: ImmutableColumn<string | null>;
+  readonly created_in_session_id: ImmutableColumn<string | null>;
+  readonly reviewed_by_actor_id: MutableColumn<string | null>;
+  readonly reviewed_at: MutableColumn<Date | null>;
   readonly version: MutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
@@ -141,6 +158,23 @@ export interface CatalogItemIdentifierTable {
 export interface CatalogSkuSequenceTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly kind: ImmutableColumn<CatalogItemKind>;
+  readonly next_value: MutableColumn<string>;
+}
+
+export interface CatalogCategoryKindApplicabilityTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly category_id: ImmutableColumn<string>;
+  readonly kind: ImmutableColumn<CatalogItemKind>;
+}
+
+export interface CatalogBrandKindApplicabilityTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly brand_id: ImmutableColumn<string>;
+  readonly kind: ImmutableColumn<CatalogItemKind>;
+}
+
+export interface CatalogInternalCodeSequenceTable {
+  readonly tenant_id: ImmutableColumn<string>;
   readonly next_value: MutableColumn<string>;
 }
 
@@ -1078,6 +1112,9 @@ export interface DatabaseSchema {
   readonly catalog_items: CatalogItemTable;
   readonly catalog_item_identifiers: CatalogItemIdentifierTable;
   readonly catalog_sku_sequences: CatalogSkuSequenceTable;
+  readonly catalog_category_kind_applicability: CatalogCategoryKindApplicabilityTable;
+  readonly catalog_brand_kind_applicability: CatalogBrandKindApplicabilityTable;
+  readonly catalog_internal_code_sequences: CatalogInternalCodeSequenceTable;
   readonly catalog_base_price_revisions: CatalogBasePriceRevisionTable;
   readonly catalog_branch_price_revisions: CatalogBranchPriceRevisionTable;
   readonly catalog_reference_cost_revisions: CatalogReferenceCostRevisionTable;

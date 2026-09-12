@@ -66,7 +66,11 @@ export class CatalogProtectedOperations {
   }
 
   listReferences(evidence: ProtectedRequestEvidence) {
-    return this.authorization.execute(evidence, priceListRead, (context) => this.service.listReferences(scope(context)));
+    return this.authorization.execute(evidence, priceListRead, (context) => this.service.listOperationalReferences(scope(context)));
+  }
+
+  listAdministrationReferences(evidence: ProtectedRequestEvidence) {
+    return this.tenantWideAuthorization.execute(evidence, catalogRead, (context) => this.service.listReferences(scope(context)));
   }
 
   search(evidence: ProtectedRequestEvidence, input: unknown, includeReferenceCost: boolean) {
@@ -86,6 +90,24 @@ export class CatalogProtectedOperations {
   }
   createBrand(evidence: ProtectedRequestEvidence, input: unknown) {
     return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.createBrand(mutationContext(contexts), input));
+  }
+  createPendingCategory(evidence: ProtectedRequestEvidence, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.createCategory(mutationContext(contexts), input, 'PENDING'));
+  }
+  createPendingBrand(evidence: ProtectedRequestEvidence, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.createBrand(mutationContext(contexts), input, 'PENDING'));
+  }
+  updateCategory(evidence: ProtectedRequestEvidence, categoryId: unknown, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.updateCategory(mutationContext(contexts), categoryId, input));
+  }
+  updateBrand(evidence: ProtectedRequestEvidence, brandId: unknown, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.updateBrand(mutationContext(contexts), brandId, input));
+  }
+  resolveCategory(evidence: ProtectedRequestEvidence, categoryId: unknown, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.resolveCategory(mutationContext(contexts), categoryId, input));
+  }
+  resolveBrand(evidence: ProtectedRequestEvidence, brandId: unknown, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.resolveBrand(mutationContext(contexts), brandId, input));
   }
   createItem(evidence: ProtectedRequestEvidence, input: unknown) {
     const hasCost = typeof input === 'object' && input !== null && 'referenceCostAmountMinor' in input && (input as { referenceCostAmountMinor?: unknown }).referenceCostAmountMinor !== null && (input as { referenceCostAmountMinor?: unknown }).referenceCostAmountMinor !== undefined;

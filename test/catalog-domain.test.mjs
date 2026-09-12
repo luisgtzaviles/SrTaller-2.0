@@ -204,3 +204,28 @@ test('tenant-wide catalog administration rejects branch-only authority and compo
   assert.equal(contextualCommits, 1);
   assert.equal(tenantWideCommits, 1);
 });
+
+test('commercial reference governance is fixed to catalog.manage and preserves inline review intent', async () => {
+  const observed = [];
+  const authorized = Object.freeze({
+    ...mutationContext(), userId: mutationContext().actorUserId, userDisplayName: mutationContext().actorDisplayName,
+    commitGuard: Object.freeze({ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }),
+  });
+  const contextual = { async execute() { throw new Error('branch authorization must not govern Tenant references'); } };
+  const tenantWide = {
+    async execute(_evidence, requirement, operation) {
+      observed.push(requirement); return operation(Object.freeze({ ...authorized, capability: requirement.capability }));
+    },
+  };
+  const service = {
+    async listReferences(scope) { return { scope }; },
+    async createCategory(_context, input, reviewStatus) { return { input, reviewStatus }; },
+  };
+  const operations = new CatalogProtectedOperations(contextual, tenantWide, service);
+  assert.deepEqual(await operations.listAdministrationReferences({}), { scope: { tenantId, branchId } });
+  assert.deepEqual(await operations.createPendingCategory({}, { name: 'Termos' }), { input: { name: 'Termos' }, reviewStatus: 'PENDING' });
+  assert.deepEqual(observed, [
+    { capability: 'catalog.manage', kind: 'read' },
+    { capability: 'catalog.manage', kind: 'state-change' },
+  ]);
+});

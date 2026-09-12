@@ -74,19 +74,19 @@ function command(extra = {}) {
   return { expectedVersion: 0, clientRequestId: randomUUID(), ...extra };
 }
 
-async function category(service, ctx, name) {
-  return service.createCategory(ctx, command({ name }));
+async function category(service, ctx, name, kind = 'PART') {
+  return service.createCategory(ctx, command({ name, applicableKinds: [kind] }));
 }
 
-async function brand(service, ctx, name) {
-  return service.createBrand(ctx, command({ name }));
+async function brand(service, ctx, name, applicableKinds = ['PART', 'PRODUCT', 'SERVICE', 'SUPPLY']) {
+  return service.createBrand(ctx, command({ name, applicableKinds }));
 }
 
 async function item(service, ctx, input) {
   return service.createItem(ctx, command({
     kind: 'PART', title: 'Pantalla iPhone 11 OLED', description: null,
     categoryId: input.categoryId, brandId: input.brandId ?? null,
-    sku: input.sku ?? null, barcode: input.barcode ?? null,
+    sku: input.sku ?? null, internalCode: input.internalCode ?? null, externalIdentifier: input.externalIdentifier ?? input.barcode ?? null,
     basePriceAmountMinor: input.basePriceAmountMinor ?? 139900,
     referenceCostAmountMinor: input.referenceCostAmountMinor ?? null,
     referenceCostSourceType: input.referenceCostSourceType,
@@ -125,11 +125,38 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     const brandA = await brand(service, ctxA1, 'Apple');
     const categoryB = await category(service, ctxB1, 'Pantalla');
     const brandB = await brand(service, ctxB1, 'Apple');
+    const serviceCategory = await category(service, ctxA1, 'Mantenimiento', 'SERVICE');
+    const supplyCategory = await category(service, ctxA1, 'Consumibles', 'SUPPLY');
+    const productCategory = await category(service, ctxA1, 'Fundas', 'PRODUCT');
+    const pendingCategory = await service.createCategory(ctxA1, command({ name: 'Termos', applicableKinds: ['PRODUCT'] }), 'PENDING');
+    const pendingBrand = await service.createBrand(ctxA1, command({ name: 'Marca Owner QA', applicableKinds: ['PRODUCT'] }), 'PENDING');
+    assert.equal(pendingCategory.reviewStatus, 'PENDING');
+    assert.deepEqual(pendingCategory.applicableKinds, ['PRODUCT']);
+    assert.equal(pendingBrand.reviewStatus, 'PENDING');
+    await assert.rejects(
+      item(service, ctxA1, { kind: 'PART', title: 'Combinación inválida', categoryId: pendingCategory.categoryId, brandId: pendingBrand.brandId }),
+      CatalogNotFoundError,
+    );
+    const explicitIdentifiers = await item(service, ctxA1, {
+      kind: 'PRODUCT', title: 'Termo Owner QA', categoryId: pendingCategory.categoryId, brandId: pendingBrand.brandId,
+      sku: 'PRO-TERMO-QA', internalCode: 'SR-TERMO-QA', basePriceAmountMinor: 49900,
+    });
+    assert.equal(explicitIdentifiers.identifiers.some(({ scheme, value }) => scheme === 'SKU' && value === 'PRO-TERMO-QA'), true);
+    assert.equal(explicitIdentifiers.identifiers.some(({ scheme, value }) => scheme === 'INTERNAL_BARCODE' && value === 'SR-TERMO-QA'), true);
+    const approvedPendingBrand = await service.resolveBrand(ctxA1, pendingBrand.brandId, {
+      resolution: 'APPROVE', targetId: null, expectedVersion: pendingBrand.version, clientRequestId: randomUUID(),
+    });
+    assert.equal(approvedPendingBrand.reviewStatus, 'APPROVED');
+    const mergedPendingCategory = await service.resolveCategory(ctxA1, pendingCategory.categoryId, {
+      resolution: 'MERGE', targetId: productCategory.categoryId, expectedVersion: pendingCategory.version, clientRequestId: randomUUID(),
+    });
+    assert.equal(mergedPendingCategory.reviewStatus, 'MERGED');
+    assert.equal((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, explicitIdentifiers.itemId)).category.categoryId, productCategory.categoryId);
 
     const partA = await item(service, ctxA1, {
       categoryId: categoryA.categoryId, brandId: brandA.brandId,
       sku: 'REF-IP11-OLED',
-      barcode: { scheme: 'GTIN_13', value: '7501031311309' },
+      externalIdentifier: { scheme: 'GTIN_13', value: '7501031311309' },
       referenceCostAmountMinor: 48000,
       referenceCostSourceType: 'THIRD_PARTY',
       referenceCostSourceLabel: 'Lista proveedor septiembre',
@@ -137,11 +164,12 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     const partB = await item(service, ctxB1, {
       categoryId: categoryB.categoryId, brandId: brandB.brandId,
       sku: 'REF-IP11-OLED', title: 'Tenant B private item',
-      barcode: { scheme: 'GTIN_13', value: '7501031311309' },
+      externalIdentifier: { scheme: 'GTIN_13', value: '7501031311309' },
       basePriceAmountMinor: 99900,
     });
     assert.equal(partA.identifiers.some(({ value }) => value === 'REF-IP11-OLED'), true);
     assert.equal(partB.identifiers.some(({ value }) => value === 'REF-IP11-OLED'), true);
+    assert.equal(partA.identifiers.some(({ scheme, value }) => scheme === 'INTERNAL_BARCODE' && /^SR-\d{8}$/u.test(value)), true);
     assert.equal(await repository.getItem({ tenantId: tenantB, branchId: branchB1 }, partA.itemId), null);
     await assert.rejects(
       item(service, ctxA1, { categoryId: categoryB.categoryId, sku: 'REF-CROSS-TENANT' }),
@@ -163,12 +191,12 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     assert.equal(withCost.items[0].referenceCost.sourceType, 'THIRD_PARTY');
 
     const serviceItem = await item(service, ctxA1, {
-      kind: 'SERVICE', title: 'Limpieza centro de carga', categoryId: categoryA.categoryId,
+      kind: 'SERVICE', title: 'Limpieza centro de carga', categoryId: serviceCategory.categoryId,
       sku: null, basePriceAmountMinor: 35000,
     });
     assert.deepEqual(serviceItem.capabilities, { sellable: true, stockable: false, purchasable: false, applicableToRepair: true });
     const supply = await item(service, ctxA1, {
-      kind: 'SUPPLY', title: 'Alcohol isopropílico', categoryId: categoryA.categoryId,
+      kind: 'SUPPLY', title: 'Alcohol isopropílico', categoryId: supplyCategory.categoryId,
       sku: 'INS-ALCOHOL', basePriceAmountMinor: 10000,
     });
     assert.equal(supply.capabilities.sellable, false);
@@ -200,7 +228,7 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     );
 
     const duplicateInputs = [0, 1].map((index) => item(service, ctxA1, {
-      kind: 'PRODUCT', title: `Funda duplicada ${index}`, categoryId: categoryA.categoryId,
+      kind: 'PRODUCT', title: `Funda duplicada ${index}`, categoryId: productCategory.categoryId,
       sku: 'PRO-DUPLICATE', basePriceAmountMinor: 29900,
     }));
     const duplicateResults = await Promise.allSettled(duplicateInputs);
@@ -216,7 +244,7 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     assert.equal(inactivated.status, 'INACTIVE');
     assert.equal((await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: 'PRO-DUPLICATE' }, false)).totalCount, 0);
     await assert.rejects(
-      item(service, ctxA1, { kind: 'PRODUCT', title: 'Reuse forbidden', categoryId: categoryA.categoryId, sku: 'PRO-DUPLICATE' }),
+      item(service, ctxA1, { kind: 'PRODUCT', title: 'Reuse forbidden', categoryId: productCategory.categoryId, sku: 'PRO-DUPLICATE' }),
       CatalogConflictError,
     );
 
@@ -253,7 +281,7 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
        select tenant_id, gen_random_uuid(), item_id, 10000, 'MXN', 1,
               'Benchmark seed', $3, gen_random_uuid(), now()
        from inserted`,
-      [tenantA, categoryA.categoryId, actorUserId],
+      [tenantA, productCategory.categoryId, actorUserId],
     );
     const durations = [];
     for (let index = 0; index < 20; index += 1) {

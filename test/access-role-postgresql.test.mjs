@@ -43,8 +43,8 @@ const accessTables = [
 const tables = [
   'catalog_audit_events', 'catalog_commands', 'catalog_reference_cost_revisions',
   'catalog_branch_price_revisions', 'catalog_base_price_revisions',
-  'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
-  'catalog_brands', 'catalog_categories',
+  'catalog_internal_code_sequences', 'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
+  'catalog_brand_kind_applicability', 'catalog_category_kind_applicability', 'catalog_brands', 'catalog_categories',
   'repair_operational_note_request_guards',
   'repair_business_audit_events',
   'access_operational_sessions',

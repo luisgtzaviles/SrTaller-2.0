@@ -1,4 +1,4 @@
-import type { CatalogIdentifierScheme, CatalogItemKind, CatalogLifecycle } from '../../domain/catalog-item.js';
+import type { CatalogIdentifierScheme, CatalogItemKind, CatalogLifecycle, CatalogReferenceReviewStatus } from '../../domain/catalog-item.js';
 
 export interface CatalogScope { readonly tenantId: string; readonly branchId: string }
 export type CatalogCommitGuard = Readonly<{
@@ -17,10 +17,16 @@ export interface CatalogMutationContext {
 }
 
 export type CatalogCategoryRecord = Readonly<{
-  categoryId: string; name: string; status: CatalogLifecycle; version: number;
+  categoryId: string; name: string; status: CatalogLifecycle; reviewStatus: CatalogReferenceReviewStatus;
+  applicableKinds: readonly CatalogItemKind[]; usageCount: number; version: number;
+  createdBy: string | null; createdAt: string; createdInBranchId: string | null;
+  mergedIntoId: string | null;
 }>;
 export type CatalogBrandRecord = Readonly<{
-  brandId: string; name: string; status: CatalogLifecycle; version: number;
+  brandId: string; name: string; status: CatalogLifecycle; reviewStatus: CatalogReferenceReviewStatus;
+  applicableKinds: readonly CatalogItemKind[]; usageCount: number; version: number;
+  createdBy: string | null; createdAt: string; createdInBranchId: string | null;
+  mergedIntoId: string | null;
 }>;
 export type CatalogIdentifierRecord = Readonly<{
   identifierId: string; scheme: CatalogIdentifierScheme; value: string;
@@ -55,12 +61,23 @@ export type CatalogPriceListItem = Readonly<{
 
 export type CreateCatalogReferenceInput = Readonly<{
   referenceId: string; name: string; normalizedName: string; clientRequestId: string;
+  applicableKinds: readonly CatalogItemKind[]; reviewStatus: Exclude<CatalogReferenceReviewStatus, 'MERGED'>;
   expectedVersion: 0; correlationId: string; occurredAt: Date;
+}>;
+export type UpdateCatalogReferenceInput = Readonly<{
+  referenceId: string; name: string; normalizedName: string; status: CatalogLifecycle;
+  applicableKinds: readonly CatalogItemKind[]; expectedVersion: number; clientRequestId: string;
+  correlationId: string; occurredAt: Date;
+}>;
+export type ResolveCatalogReferenceInput = Readonly<{
+  referenceId: string; resolution: 'APPROVE' | 'MERGE'; targetId: string | null;
+  expectedVersion: number; clientRequestId: string; correlationId: string; occurredAt: Date;
 }>;
 export type CreateCatalogItemInput = Readonly<{
   itemId: string; kind: CatalogItemKind; title: string; normalizedTitle: string;
   description: string | null; categoryId: string; brandId: string | null;
-  sku: string | null; identifiers: readonly Readonly<{ identifierId: string; scheme: CatalogIdentifierScheme; normalizedValue: string; displayValue: string }>[];
+  sku: string | null; internalCode: string | null;
+  externalIdentifiers: readonly Readonly<{ identifierId: string; scheme: Exclude<CatalogIdentifierScheme, 'SKU' | 'INTERNAL_BARCODE'>; normalizedValue: string; displayValue: string }>[];
   basePrice: Readonly<{ revisionId: string; amountMinor: number }>;
   referenceCost: Readonly<{ revisionId: string; amountMinor: number; sourceType: 'MANUAL' | 'ESTIMATED' | 'THIRD_PARTY'; sourceLabel: string | null; observedAt: Date }> | null;
   currency: string; expectedVersion: 0; clientRequestId: string; correlationId: string; occurredAt: Date;
@@ -83,6 +100,10 @@ export interface CatalogRepositoryPort {
   listReferences(scope: CatalogScope): Promise<Readonly<{ categories: readonly CatalogCategoryRecord[]; brands: readonly CatalogBrandRecord[] }>>;
   createCategory(context: CatalogMutationContext, input: CreateCatalogReferenceInput): Promise<CatalogCategoryRecord>;
   createBrand(context: CatalogMutationContext, input: CreateCatalogReferenceInput): Promise<CatalogBrandRecord>;
+  updateCategory(context: CatalogMutationContext, input: UpdateCatalogReferenceInput): Promise<CatalogCategoryRecord>;
+  updateBrand(context: CatalogMutationContext, input: UpdateCatalogReferenceInput): Promise<CatalogBrandRecord>;
+  resolveCategory(context: CatalogMutationContext, input: ResolveCatalogReferenceInput): Promise<CatalogCategoryRecord>;
+  resolveBrand(context: CatalogMutationContext, input: ResolveCatalogReferenceInput): Promise<CatalogBrandRecord>;
   createItem(context: CatalogMutationContext, input: CreateCatalogItemInput): Promise<CatalogItemRecord>;
   updateItem(context: CatalogMutationContext, input: UpdateCatalogItemInput): Promise<CatalogItemRecord>;
   changeBasePrice(context: CatalogMutationContext, input: ChangeCatalogMoneyInput): Promise<CatalogItemRecord>;
