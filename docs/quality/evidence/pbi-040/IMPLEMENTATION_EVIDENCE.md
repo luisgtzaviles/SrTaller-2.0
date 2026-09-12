@@ -113,6 +113,15 @@
 La evidencia completa está en
 [`RUNTIME_PROVENANCE_AUDIT.md`](RUNTIME_PROVENANCE_AUDIT.md).
 
+La reconciliación posterior comparó primero los GET y DOM efectivos de las dos
+reparaciones que Owner observaba y clasificó la diferencia como A/D (datos y
+fixture), no B/C (backend o frontend distintos). Después materializó
+`SR-2026-039` y ejecutó ambos runtimes con exactamente el mismo read model. El
+guard verificó Header, Recepción, Historial, Conceptos y Evidencias, cuatro
+eventos, dos evidencias, ancho funcional idéntico y cero overflow. No se cambió
+Repair Detail ni se escribió en Preview. Evidencia completa:
+[`REPAIR_DETAIL_PARITY.md`](REPAIR_DETAIL_PARITY.md).
+
 ## Evidencia automatizada
 
 - Build gobernado y pruebas focalizadas posteriores a la remediación del GET de
@@ -255,6 +264,10 @@ fixtures y guard permanente vive en
 La reconciliación posterior reemplaza cualquier inferencia basada sólo en blobs
 con evidencia de checkout, build, assets y runtime:
 [`RUNTIME_PROVENANCE_AUDIT.md`](RUNTIME_PROVENANCE_AUDIT.md).
+
+La prueba material de paridad con el mismo payload, su matriz A-E y el guard
+permanente están en
+[`REPAIR_DETAIL_PARITY.md`](REPAIR_DETAIL_PARITY.md).
 
 Para esta iteración, Chrome local autenticado con datos sintéticos confirmó:
 Todos/Todas/Todas; Refacción; Refacción + Pantallas; Refacción + Pantallas +

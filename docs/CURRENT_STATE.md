@@ -77,6 +77,15 @@ local ahora exige igualdad entre `git HEAD/status`, manifest frontend y headers
 backend. El próximo build OCI autorizado deberá grabar la misma revisión en
 label, frontend y backend; Preview no fue redesplegado.
 
+La verificación material posterior capturó primero los GET y DOM efectivos:
+Preview `SR-2026-1000` era un registro escaso y Local `SR-2026-003` uno denso.
+La divergencia fue A/D (datos/fixture), no B/C (backend/frontend). El seed local
+ahora materializa el fixture canónico sintético `SR-2026-039`; los assets reales
+de Preview y el runtime local renderizan exactamente su mismo payload con
+Header, Recepción, Historial, Conceptos y Evidencias equivalentes. El guard
+permanente protege fixture, read model, estructura DOM, assets Preview y
+provenance sin cambiar Repair Detail.
+
 PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
 Guided V2, política de campos por Branch, catálogos administrativos y las
 superficies aceptadas de Repair Detail. El Functional Slice fue aceptado por
@@ -128,7 +137,7 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | HTTP local | sesión Owner/Station, fixtures por API, costo protegido y override Branch PASS |
 | Full Verification | runtime provenance 13/13 stages PASS; 828 tests base; PBI-039 2/2 y PostgreSQL material sin skips críticos |
 | Formal UI real | Chrome local autenticado, con dos ventanas lado a lado de Catálogos Repairs/Lista de precios; Owner Review pendiente |
-| Baseline guard | ancestry/merge-base/SHA + 16 blobs; genealogía material `0d1c576…` → `40684d7…` |
+| Baseline guard | ancestry/merge-base/SHA + 20 blobs; fixture/read model/DOM parity; genealogía material `0d1c576…` → `40684d7…` |
 | Runtime provenance | manifest frontend + headers backend + launcher fail-closed; SHA exacto consultable con `verify:runtime-provenance` |
 | Estado de entrega | Owner Review; sin push, PR, CI de branch, merge, deploy o release |
 
