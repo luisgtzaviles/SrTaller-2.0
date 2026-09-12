@@ -7,10 +7,11 @@
 - **PBI actual:** PBI-040 — Catalog & Pricing Core + Fast Price Lookup
 - **Estado general:** Checkpoint preparado — Owner Review pendiente
 - **Progreso:** 5 / 5 bloques de la iteración completados
-- **Trabajo actual:** ninguno de ingeniería; esperando revisión Owner
-- **Siguiente bloque:** Owner evalúa la cascada real y acepta o devuelve feedback
+- **Trabajo actual:** ninguno de ingeniería; esperando revisión Owner.
+- **Siguiente bloque:** Owner revisa SKU y código de barras en Nuevo artículo y
+  confirma o devuelve feedback.
 - **Bloqueos:** ninguno
-- **Última actualización:** 2026-09-11 20:15 MST
+- **Última actualización:** 2026-09-11 21:28 MST
 
 ## Resultado visible esperado
 
@@ -20,11 +21,11 @@ costo sólo viaja con capability y preferencia personal explícita.
 
 ## Checklist
 
-- [x] Revalidar feedback Owner, autoridades, baseline y patrones existentes.
-- [x] Exponer sólo compatibilidades comerciales conocidas y filtrar la búsqueda server-side por Tipo.
-- [x] Integrar Buscar | Tipo | Categoría | Marca con URL y resets deterministas.
-- [x] Verificar cascada, búsqueda combinada, cero resultados, autorización de costo y regresiones.
-- [x] Reconciliar evidencia/documentación y dejar Chrome listo para Owner Review.
+- [x] Revalidar decisión Owner, autoridades, baseline y contrato vigente.
+- [x] Reducir dominio, persistencia y API a SKU + código de barras internos.
+- [x] Eliminar identificadores externos de UI y mantener búsqueda/edición.
+- [x] Ejecutar pruebas de generación, búsqueda, duplicados y aislamiento Tenant.
+- [x] Reconciliar evidencia/documentación y dejar Chrome en Nuevo artículo.
 
 ## Gates preservados
 

@@ -460,7 +460,7 @@ La siguiente es una propuesta conceptual, no una lista de tablas.
 | `CatalogItem` | identidad y descripción estable | Tenant-scoped; ID opaco; no depende de título/SKU |
 | `ItemKind` | semántica primaria: part/product/service/supply | controlado; no texto libre por fila |
 | `ItemCapability` | sellable, stockable, purchasable, usable-in-repair | evita deducir conducta sólo por tipo |
-| `ItemIdentifier` | SKU, GTIN, internal barcode | scheme + valor normalizado; unicidad Tenant |
+| `ItemIdentifier` | SKU y código de barras interno | scheme + valor normalizado; unicidad Tenant |
 | `Category` | clasificación de negocio | ID canónico Tenant; activa/inactiva; reconciliable |
 | `Brand` | fabricante/marca opcional | platform o Tenant; no obligatoria para servicio/insumo |
 | `ItemImage` | referencias visuales | orden, estado y ownership del objeto |
@@ -482,7 +482,7 @@ CatalogItem
   marca: APPLE
   nombre: Pantalla iPhone 11 OLED
   SKU: REF-IPH11-OLED-0042
-  barcode interno: SR2-01J...
+  código de barras: SR00000042
 
 Precio base Tenant:     $1,399 MXN
 Ajuste Branch Centro:   $1,449 MXN
@@ -623,6 +623,13 @@ decisión de producto, no que cada fila invente una etiqueta.
 
 ## 11. SKU y código de barras
 
+> **Decisión Owner posterior — PBI-040 Owner iteration (2026-09-11):** para el
+> slice actual existen únicamente SKU y código de barras internos de SR Taller.
+> El segundo puede representarse después con Code 128, pero la simbología no es
+> otro identificador. Esta decisión sustituye las recomendaciones preliminares
+> de GTIN/EAN/UPC y de un código interno separado; la auditoría histórica de
+> V1/ENL se conserva como evidencia, no como contrato vigente.
+
 ### 11.1 Recomendación
 
 - `itemId` es la identidad técnica inmutable.
@@ -631,10 +638,11 @@ decisión de producto, no que cada fila invente una etiqueta.
 - Un SKU automático se genera server-side desde un namespace estable y una
   secuencia/entropía segura; no depende únicamente del título y no cambia al
   renombrar.
-- Barcode se modela como `scheme + value`.
-- GTIN/EAN/UPC externos se validan y nunca se “inventan”.
-- El código interno imprimible usa un scheme propio (por ejemplo Code 128), con
-  namespace del Tenant y constraint durable.
+- Barcode se modela como el segundo scheme interno (`BARCODE`) y valor
+  normalizado Tenant-wide; si falta se genera server-side y si llega explícito
+  se preserva.
+- Code 128 es una representación imprimible futura de ese mismo valor, no un
+  scheme ni identificador adicional.
 - El código del proveedor vive en `SupplierItemReference`, no en SKU.
 - Una Branch no genera otro SKU para ajustar precio.
 
@@ -644,7 +652,7 @@ Orden recomendado de confianza:
 
 1. `itemId` exportado previamente por SR Taller;
 2. SKU interno Tenant-wide;
-3. GTIN/barcode externo exacto y tipado;
+3. código de barras interno exacto;
 4. `supplierId + supplierItemCode`;
 5. sugerencia humana por título/marca/categoría.
 
@@ -900,7 +908,7 @@ agregan Branches sin otorgar operación cruzada.[^1]
 | Vacío convertido en cero | alto/alto | patch semantics explícita |
 | Publicación parcial | medio/crítico | draft + publish atómico + idempotencia |
 | Costo sin significado | alto/alto | `ReferenceCost` con fuente; valoración separada |
-| Barcode falso tratado como GTIN | medio/alto | schemes separados y validación |
+| Código interno tratado como formato externo | medio/alto | único barcode interno, normalización y representación Code 128 separada |
 | Categorías/marcas duplicadas | alto/medio | canon + pending reconciliation |
 | Precio nuevo reescribe Repair | medio/crítico | snapshots versionados |
 | Branch sin precio visible | medio/alto | fallback/procedencia y estado explícito |
@@ -930,7 +938,7 @@ histórica de este discovery.
 | PLD-007 | ¿Matching masivo permitido? | sólo ID/SKU/barcode/supplier code; fuzzy manual | Resuelta Owner |
 | PLD-008 | ¿Aplicación con errores? | publish sólo con pending decisions = 0; exclusión explícita | Resuelta Owner |
 | PLD-009 | ¿SKU automático por default? | sí si falta, server-side, Tenant-wide | Resuelta técnica |
-| PLD-010 | ¿Código interno automático? | sólo por acción explícita; scheme propio, no GTIN falso | Resuelta técnica |
+| PLD-010 | ¿Código de barras automático? | si falta, server-side; barcode interno único y Code 128 sólo representación | Sustituida por decisión Owner de iteración PBI-040 |
 | PLD-011 | ¿Categoría plana? | sí, Tenant-scoped, lifecycle | Resuelta técnica |
 | PLD-012 | ¿Marca compartida con Repairs? | CommercialBrand separada; mapping futuro explícito | Resuelta técnica |
 | PLD-013 | ¿Precios programados/vigencia? | history/effectiveFrom desde inicio; sin scheduling/backdating UI | Resuelta técnica |

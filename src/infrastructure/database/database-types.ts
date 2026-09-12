@@ -80,13 +80,7 @@ export interface UserPreferencesTable {
 export type CatalogItemKind = 'PART' | 'PRODUCT' | 'SERVICE' | 'SUPPLY';
 export type CatalogLifecycle = 'ACTIVE' | 'INACTIVE';
 export type CatalogReferenceReviewStatus = 'APPROVED' | 'PENDING' | 'MERGED';
-export type CatalogIdentifierScheme =
-  | 'SKU'
-  | 'INTERNAL_BARCODE'
-  | 'GTIN_8'
-  | 'GTIN_12'
-  | 'GTIN_13'
-  | 'GTIN_14';
+export type CatalogIdentifierScheme = 'SKU' | 'BARCODE';
 
 export interface CatalogCategoryTable {
   readonly tenant_id: ImmutableColumn<string>;
@@ -173,7 +167,7 @@ export interface CatalogBrandKindApplicabilityTable {
   readonly kind: ImmutableColumn<CatalogItemKind>;
 }
 
-export interface CatalogInternalCodeSequenceTable {
+export interface CatalogBarcodeSequenceTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly next_value: MutableColumn<string>;
 }
@@ -1114,7 +1108,7 @@ export interface DatabaseSchema {
   readonly catalog_sku_sequences: CatalogSkuSequenceTable;
   readonly catalog_category_kind_applicability: CatalogCategoryKindApplicabilityTable;
   readonly catalog_brand_kind_applicability: CatalogBrandKindApplicabilityTable;
-  readonly catalog_internal_code_sequences: CatalogInternalCodeSequenceTable;
+  readonly catalog_barcode_sequences: CatalogBarcodeSequenceTable;
   readonly catalog_base_price_revisions: CatalogBasePriceRevisionTable;
   readonly catalog_branch_price_revisions: CatalogBranchPriceRevisionTable;
   readonly catalog_reference_cost_revisions: CatalogReferenceCostRevisionTable;

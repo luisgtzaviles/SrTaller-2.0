@@ -66,17 +66,17 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     from catalog_brands brand cross join (values ('PART'), ('PRODUCT'), ('SERVICE'), ('SUPPLY')) as kind(value)
     where not exists (select 1 from catalog_items item where item.tenant_id = brand.tenant_id and item.brand_id = brand.brand_id)`.execute(database);
 
-  await database.schema.createTable('catalog_internal_code_sequences')
+  await database.schema.createTable('catalog_barcode_sequences')
     .addColumn('tenant_id', 'uuid', (column) => column.notNull())
     .addColumn('next_value', 'bigint', (column) => column.notNull())
-    .addPrimaryKeyConstraint('catalog_internal_code_sequences_pk', ['tenant_id'])
-    .addForeignKeyConstraint('catalog_internal_code_sequences_tenant_fk', ['tenant_id'], 'tenants', ['tenant_id'], (constraint) => constraint.onDelete('restrict').onUpdate('restrict'))
-    .addCheckConstraint('catalog_internal_code_sequences_next_ck', sql`next_value >= 1`)
+    .addPrimaryKeyConstraint('catalog_barcode_sequences_pk', ['tenant_id'])
+    .addForeignKeyConstraint('catalog_barcode_sequences_tenant_fk', ['tenant_id'], 'tenants', ['tenant_id'], (constraint) => constraint.onDelete('restrict').onUpdate('restrict'))
+    .addCheckConstraint('catalog_barcode_sequences_next_ck', sql`next_value >= 1`)
     .execute();
 }
 
 export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
-  await database.schema.dropTable('catalog_internal_code_sequences').execute();
+  await database.schema.dropTable('catalog_barcode_sequences').execute();
   await database.schema.dropTable('catalog_brand_kind_applicability').execute();
   await database.schema.dropTable('catalog_category_kind_applicability').execute();
   await database.schema.alterTable('catalog_brands').dropConstraint('catalog_brands_merge_state_ck').execute();

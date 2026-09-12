@@ -6,9 +6,8 @@
 - **Branch:** `feature/pbi-040-catalog-pricing-core`.
 - **Baseline:** `40684d7554cdf02551f941e5e3f0beabbe563125` con CI de
   `main` `34623060504` SUCCESS.
-- **Candidato de iteración Owner:** `c97c05d9c2dfe23858df69474c39a43435d4e22b`
-  más hardening de backfill/ownership `37c3dde2c34f`; aceptación Owner todavía
-  pendiente.
+- **Candidato de iteración Owner:** simplificación de identificadores sobre los
+  commits de la iteración anterior; aceptación Owner todavía pendiente.
 - **No autorizado/no realizado:** push, PR, merge, deploy, release o cambio de
   infraestructura.
 
@@ -33,8 +32,8 @@
 - Configuración > Catálogos incorpora el módulo Lista de precios para gobernar
   aplicabilidad, lifecycle y reconciliación. Category pertenece a un Tipo;
   CommercialBrand conserva identidad Tenant-wide y puede aplicar a varios.
-- SKU y código interno se resuelven server-side cuando quedan vacíos. El código
-  interno permanece separado de GTIN/EAN/UPC externos.
+- SKU y código de barras internos se resuelven server-side cuando quedan vacíos.
+  Code 128 se conserva como representación futura, no como identificador.
 
 ### Iteración Owner — filtros encadenados
 
@@ -58,7 +57,7 @@
   commit guards contextual y Tenant-wide antes del commit.
 - Writes usan allowlists estrictas, CSRF, idempotencia, `expectedVersion`, actor,
   correlation y auditoría. Constraints Tenant-aware protegen referencias y la
-  unicidad histórica de SKU/barcode/GTIN.
+  unicidad histórica de SKU y código de barras.
 - Cinco migraciones aditivas materializan moneda operativa, capabilities,
   preferencia personal, Catalog/Pricing y gobierno de referencias. El rollback
   de aplicación conserva datos; no existe migración destructiva en el slice.
@@ -102,6 +101,13 @@
   El benchmark material PBI-040 de esa campaña registró p95 `7.23 ms` para
   10,000 items, bajo el presupuesto `750 ms`. Permanece visible el warning
   aceptado de chunk Vite principal mayor a 500 kB.
+- Full Verification de la iteración de identificadores:
+  `local-full-verification-20260912032350-7d8f626c5c21`, `13/13 PASS`,
+  cleanup PASS, huella candidata
+  `ad137489eb26b6fa7c3e33ac76cf20298639a32a53da110e81a7eabc71b8aaa7`.
+  La base ejecutó `815` pruebas (`795 PASS`, `20` skips PostgreSQL no
+  materiales) y la etapa PBI-040 aplicó 56 migraciones, cero skips críticos y
+  p95 `6.98 ms` sobre 10,000 items contra presupuesto `750 ms`.
 
 ## Prueba funcional HTTP local previa a la iteración
 
@@ -125,28 +131,28 @@ clasificación de transporte `state-change`. Se corrigió a lectura protegida po
 
 El runtime local se reconstruyó con `local:db:reset`/`local:db:seed`, 56
 migraciones y datos exclusivamente sintéticos. La preparación autenticada creó
-por API gobernada y después cerró su sesión para no bloquear el PIN de Chrome:
+por API gobernada los siguientes fixtures reversibles:
 
-- Pantalla iPhone 11 OLED — Refacción/Pantallas/Apple — costo 480, base 1399;
-- Funda iPhone 16 rosa — Producto/Fundas/Apple — costo 105, base 299;
-- Limpieza centro de carga — Servicio/Mantenimiento/sin marca — base 350,
-  override de la Branch de revisión 399;
-- Alcohol isopropílico 1 L — Insumo/Insumos/Steren — costo 65, base 180;
-  permanece excluido del lookup comercial;
-- `Termos QA` y `MobiLab QA` quedan deliberadamente Por revisar, ambos
-  aplicables a Producto, para evaluar gobierno y reconciliación.
+- Pantalla iPhone 11 OLED QA — Refacción/Pantallas QA/Apple QA — costo 480,
+  base 1399; SKU y barcode automáticos `REF-000001` / `SR00000001`;
+- Funda iPhone 16 rosa QA — Producto/Fundas QA/Apple QA — costo 105, base
+  299; SKU y barcode explícitos preservados;
+- Limpieza centro de carga QA — Servicio/Mantenimiento QA/sin marca — base
+  350; SKU y barcode automáticos.
 
-Los cuatro artículos resolvieron SKU y código interno server-side. Todo el set
+Los cuatro artículos resolvieron SKU y código de barras server-side. Todo el set
 se elimina de forma reversible con el reset local gobernado; no es Production.
 
 ## UI formal y gates posteriores
 
 La UI compila y sus contratos de navegación, autorización, estados, transporte
 y preferencia pasan; el smoke automatizado también está verde. Chrome quedó
-abierto en `http://127.0.0.1:4173/listas/precios`; backend y ruta respondieron
-200. La inspección automatizada nativa no estuvo disponible (`Sky Computer Use
-native pipe startup failed`), por lo que no se inventan screenshots ni se marca
-la nueva matriz visual humana como ejecutada.
+abierto y autenticado en `http://127.0.0.1:4173/listas/precios`, con el diálogo
+`Nuevo artículo` abierto. El recorrido confirmó los tres fixtures, las etiquetas
+SKU/Código de barras y la ausencia de GTIN/EAN/UPC/Código interno. La inspección
+automatizada nativa no estuvo disponible (`Sky Computer Use native pipe startup
+failed`), por lo que no se inventan screenshots ni se marca la matriz visual
+humana como ejecutada.
 
 La revisión Owner previa produjo esta iteración y no constituye aceptación. El
 nuevo Owner Review debe recorrer `/listas/precios` y
@@ -176,7 +182,7 @@ aceptación humana siguen pendientes.
 | D Servicio sin marca | Brand sigue opcional; Category SERVICE exigida por servidor |
 | E Insumo | se administra en Catalog y continúa excluido del lookup comercial |
 | F cambio de Tipo | conserva compatibles y limpia/informa Category/Brand incompatibles |
-| G auto identifiers | SKU e INTERNAL_BARCODE asignados en la transacción server-side y visibles en reload |
+| G auto identifiers | SKU y BARCODE asignados en la transacción server-side y visibles en reload |
 | H identifiers explícitos | valores válidos se preservan; constraint Tenant-wide impide colisión |
 
 ## Exclusiones verificadas

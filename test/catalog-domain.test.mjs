@@ -24,9 +24,8 @@ test('catalog normalization does not turn similar commercial names into identity
   assert.equal(normalizeCatalogText('  Pantalla  ÍPhone  11 OLED '), 'pantalla iphone 11 oled');
   assert.notEqual(normalizeCatalogText('Pantalla iPhone 11 OLED'), normalizeCatalogText('Pantalla iPhone 11 LCD'));
   assert.equal(normalizedSku(' ref.ip11-oled '), 'REF.IP11-OLED');
-  assert.equal(normalizeCatalogIdentifier('INTERNAL_BARCODE', ' avc-0040 '), 'AVC-0040');
-  assert.equal(normalizeCatalogIdentifier('GTIN_13', '7501031311309'), '7501031311309');
-  assert.throws(() => normalizeCatalogIdentifier('GTIN_13', '7501031311308'), CatalogInputError);
+  assert.equal(normalizeCatalogIdentifier('BARCODE', ' sr00000042 '), 'SR00000042');
+  assert.throws(() => normalizeCatalogIdentifier('BARCODE', 'abc'), CatalogInputError);
   assert.throws(() => normalizedSku('ref 40'), CatalogInputError);
 });
 
@@ -81,6 +80,13 @@ test('catalog input is allowlisted, bounded, minor-unit based and currency comes
       expectedVersion: 0, clientRequestId: requestId, tenantId: 'attacker',
     }),
     (error) => error instanceof CatalogInputError && error.parameter === 'payload',
+  );
+  await assert.rejects(
+    service.createItem(mutationContext(), {
+      kind: 'SERVICE', title: 'Limpieza', categoryId, barcode: { value: 'SR00000042' },
+      basePriceAmountMinor: 35000, expectedVersion: 0, clientRequestId: requestId,
+    }),
+    (error) => error instanceof CatalogInputError && error.parameter === 'identifier',
   );
   assert.throws(
     () => service.search({ tenantId, branchId }, { query: 'x'.repeat(121) }, false),

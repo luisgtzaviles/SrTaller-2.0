@@ -37,7 +37,7 @@ function minor(value: string): number | null {
   return Number.isSafeInteger(result) ? result : null;
 }
 function sku(item: CatalogItem): string { return item.identifiers.find(({ scheme }) => scheme === 'SKU')?.value ?? 'Sin SKU'; }
-function identifierName(scheme: string): string { return scheme === 'INTERNAL_BARCODE' ? 'Código interno' : scheme.replace('_', '-'); }
+function barcode(item: CatalogItem): string { return item.identifiers.find(({ scheme }) => scheme === 'BARCODE')?.value ?? 'Sin código'; }
 
 function PriceCard({ value, canManage, onManage }: Readonly<{ value: PriceListItem; canManage: boolean; onManage(itemId: string): void }>) {
   return (
@@ -47,7 +47,7 @@ function PriceCard({ value, canManage, onManage }: Readonly<{ value: PriceListIt
         <div>
           <h2>{value.item.title}</h2>
           <p>{kindLabels[value.item.kind]} · {value.item.category.name}{value.item.brand ? ` · ${value.item.brand.name}` : ''}</p>
-          <div className={styles.identifiers}><span><Tag size={14} aria-hidden="true" />SKU {sku(value.item)}</span>{value.item.identifiers.filter(({ scheme }) => scheme !== 'SKU').map((identifier) => <span key={identifier.identifierId}><Barcode size={14} aria-hidden="true" />{identifierName(identifier.scheme)} {identifier.value}</span>)}</div>
+          <div className={styles.identifiers}><span><Tag size={14} aria-hidden="true" />SKU {sku(value.item)}</span><span><Barcode size={14} aria-hidden="true" />Código de barras {barcode(value.item)}</span></div>
         </div>
       </div>
       <div className={styles.cardPrice}>
@@ -78,7 +78,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const [selected, setSelected] = useState<CatalogItem | null>(null); const [saving, setSaving] = useState(false);
   const [kind, setKind] = useState<CatalogItemKind>('PART'); const [title, setTitle] = useState(''); const [description, setDescription] = useState('');
   const [formCategoryId, setFormCategoryId] = useState(''); const [formBrandId, setFormBrandId] = useState(''); const [formStatus, setFormStatus] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE');
-  const [formSku, setFormSku] = useState(''); const [internalCode, setInternalCode] = useState(''); const [externalScheme, setExternalScheme] = useState(''); const [externalValue, setExternalValue] = useState('');
+  const [formSku, setFormSku] = useState(''); const [formBarcode, setFormBarcode] = useState('');
   const [basePrice, setBasePrice] = useState(''); const [referenceCost, setReferenceCost] = useState(''); const [overridePrice, setOverridePrice] = useState('');
   const requestId = useRef<string | null>(null);
 
@@ -132,7 +132,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
     if (brandCompatible && brandId) next.set('brandId', brandId); else next.delete('brandId');
     setPageNumber(1); setSearchParams(next, { replace: true });
   };
-  const resetForm = (): void => { setSelected(null); setKind('PART'); setTitle(''); setDescription(''); setFormCategoryId(''); setFormBrandId(''); setFormStatus('ACTIVE'); setFormSku(''); setInternalCode(''); setExternalScheme(''); setExternalValue(''); setBasePrice(''); setReferenceCost(''); setOverridePrice(''); requestId.current = null; };
+  const resetForm = (): void => { setSelected(null); setKind('PART'); setTitle(''); setDescription(''); setFormCategoryId(''); setFormBrandId(''); setFormStatus('ACTIVE'); setFormSku(''); setFormBarcode(''); setBasePrice(''); setReferenceCost(''); setOverridePrice(''); requestId.current = null; };
   const openCreate = (): void => { resetForm(); setDialog('create'); setNotice(null); };
   const openManage = async (itemId: string): Promise<void> => {
     setSaving(true); setNotice(null);
@@ -165,9 +165,9 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
     if (!title.trim() || !formCategoryId || price === null || (referenceCost && cost === null)) { setNotice({ tone: 'danger', message: 'Completa título, categoría y precio con hasta dos decimales.' }); return; }
     setSaving(true);
     try {
-      const created = await createCatalogItem({ kind, title, description: description || null, categoryId: formCategoryId, brandId: formBrandId || null, sku: formSku || null, internalCode: internalCode || null, externalIdentifier: externalScheme && externalValue ? { scheme: externalScheme, value: externalValue } : null, basePriceAmountMinor: price, referenceCostAmountMinor: cost, referenceCostSourceType: 'MANUAL', expectedVersion: 0, clientRequestId: nextRequestId() }, csrfToken);
-      const createdSku = created.identifiers.find((value) => value.scheme === 'SKU')?.value; const createdCode = created.identifiers.find((value) => value.scheme === 'INTERNAL_BARCODE')?.value;
-      await commandDone(`${kind === 'SUPPLY' ? 'Insumo creado en catálogo; no forma parte de la Lista de precios comercial.' : 'Artículo creado y disponible en la lista.'} SKU ${createdSku ?? '—'} · Código interno ${createdCode ?? '—'}`); setDialog(null); resetForm();
+      const created = await createCatalogItem({ kind, title, description: description || null, categoryId: formCategoryId, brandId: formBrandId || null, sku: formSku || null, barcode: formBarcode || null, basePriceAmountMinor: price, referenceCostAmountMinor: cost, referenceCostSourceType: 'MANUAL', expectedVersion: 0, clientRequestId: nextRequestId() }, csrfToken);
+      const createdSku = created.identifiers.find((value) => value.scheme === 'SKU')?.value; const createdBarcode = created.identifiers.find((value) => value.scheme === 'BARCODE')?.value;
+      await commandDone(`${kind === 'SUPPLY' ? 'Insumo creado en catálogo; no forma parte de la Lista de precios comercial.' : 'Artículo creado y disponible en la lista.'} SKU ${createdSku ?? '—'} · Código de barras ${createdBarcode ?? '—'}`); setDialog(null); resetForm();
     } catch { setNotice({ tone: 'danger', message: 'No fue posible crear. Revisa SKU/código, permisos y datos.' }); }
     finally { setSaving(false); }
   };
@@ -218,7 +218,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
             <Field id="catalog-category" label="Categoría" required hint="Busca o crea explícitamente un valor Por revisar."><CatalogReferenceCombobox id="catalog-category" label="Categorías aplicables" emptyLabel="Buscar categoría…" value={formCategoryId} references={applicableCategories} canCreate={canManage} onChange={setFormCategoryId} onCreate={addCategory} /></Field>
             <Field id="catalog-brand" label="Marca" hint="Opcional; deja vacío para Sin marca."><CatalogReferenceCombobox id="catalog-brand" label="Marcas aplicables" emptyLabel="Sin marca / buscar…" value={formBrandId} references={applicableBrands} canCreate={canManage} onChange={setFormBrandId} onCreate={addBrand} /></Field>
             {dialog === 'manage' ? <Field id="catalog-status" label="Estado"><Select id="catalog-status" value={formStatus} onChange={(event) => setFormStatus(event.target.value as 'ACTIVE' | 'INACTIVE')}><option value="ACTIVE">Activo</option><option value="INACTIVE">Inactivo</option></Select></Field> : null}
-            {dialog === 'create' ? <><Field id="catalog-sku" label="SKU" hint="Automático si lo dejas vacío."><Input id="catalog-sku" value={formSku} onChange={(event) => setFormSku(event.target.value)} placeholder="Ej. REF-PANTALLA-11" autoComplete="off" /></Field><Field id="catalog-internal-code" label="Código interno" hint="Identificador SR Taller; automático si lo dejas vacío."><Input id="catalog-internal-code" value={internalCode} onChange={(event) => setInternalCode(event.target.value)} placeholder="Ej. SR-LOCAL-001" autoComplete="off" /></Field><details className={styles.externalIdentifier}><summary>Agregar GTIN / EAN / UPC externo</summary><div><Field id="catalog-external-scheme" label="Esquema externo"><Select id="catalog-external-scheme" value={externalScheme} onChange={(event) => setExternalScheme(event.target.value)}><option value="">Sin identificador externo</option><option value="GTIN_8">GTIN / EAN-8</option><option value="GTIN_12">GTIN / UPC-12</option><option value="GTIN_13">GTIN / EAN-13</option><option value="GTIN_14">GTIN-14</option></Select></Field>{externalScheme ? <Field id="catalog-external-code" label="Valor externo"><Input id="catalog-external-code" value={externalValue} onChange={(event) => setExternalValue(event.target.value)} inputMode="numeric" /></Field> : null}</div></details></> : null}
+            {dialog === 'create' ? <><Field id="catalog-sku" label="SKU" hint="Automático si lo dejas vacío."><Input id="catalog-sku" value={formSku} onChange={(event) => setFormSku(event.target.value)} autoComplete="off" /></Field><Field id="catalog-barcode" label="Código de barras" hint="Automático si lo dejas vacío."><Input id="catalog-barcode" value={formBarcode} onChange={(event) => setFormBarcode(event.target.value)} autoComplete="off" /></Field></> : null}
           </section>
           {dialog === 'create' ? <section className={styles.moneyGrid}><Field id="catalog-base-price" label="Precio base" required><Input id="catalog-base-price" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} inputMode="decimal" placeholder="1399.00" /></Field>{canManageCost ? <Field id="catalog-cost" label="Costo de referencia"><Input id="catalog-cost" value={referenceCost} onChange={(event) => setReferenceCost(event.target.value)} inputMode="decimal" placeholder="480.00" /></Field> : null}</section> : null}
           {dialog === 'manage' && selected ? <section className={styles.moneyActions}><h3>Precios y costo</h3>{canManagePrice ? <div><Input aria-label="Nuevo precio base" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} placeholder="Precio base" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('base')}>Cambiar base</Button></div> : null}{canManageBranchPrice ? <div><Input aria-label="Override de esta sucursal" value={overridePrice} onChange={(event) => setOverridePrice(event.target.value)} placeholder="Override Branch" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('override')}>Aplicar override</Button><Button tone="quiet" disabled={saving} onClick={() => void moneyCommand('revoke')}>Revocar override</Button></div> : null}{canManageCost ? <div><Input aria-label="Nuevo costo de referencia" value={referenceCost} onChange={(event) => setReferenceCost(event.target.value)} placeholder="Costo de referencia" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('cost')}>Cambiar costo</Button></div> : null}</section> : null}

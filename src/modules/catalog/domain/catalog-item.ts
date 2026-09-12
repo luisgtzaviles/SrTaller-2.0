@@ -2,7 +2,8 @@ export const catalogItemKinds = ['PART', 'PRODUCT', 'SERVICE', 'SUPPLY'] as cons
 export type CatalogItemKind = (typeof catalogItemKinds)[number];
 export type CatalogLifecycle = 'ACTIVE' | 'INACTIVE';
 export type CatalogReferenceReviewStatus = 'APPROVED' | 'PENDING' | 'MERGED';
-export type CatalogIdentifierScheme = 'SKU' | 'INTERNAL_BARCODE' | 'GTIN_8' | 'GTIN_12' | 'GTIN_13' | 'GTIN_14';
+/** The barcode value is internal; Code 128 is only a future rendering. */
+export type CatalogIdentifierScheme = 'SKU' | 'BARCODE';
 
 export const catalogKindCapabilities = Object.freeze({
   PART: Object.freeze({ sellable: true, stockable: true, purchasable: true, applicableToRepair: true }),
@@ -34,26 +35,11 @@ export function normalizedSku(value: unknown): string {
   return normalized;
 }
 
-function gtinCheckDigit(value: string): number {
-  let sum = 0;
-  for (let index = value.length - 1, position = 0; index >= 0; index -= 1, position += 1) {
-    sum += Number(value[index]) * (position % 2 === 0 ? 3 : 1);
-  }
-  return (10 - (sum % 10)) % 10;
-}
-
 export function normalizeCatalogIdentifier(scheme: CatalogIdentifierScheme, value: unknown): string {
   if (typeof value !== 'string') throw new CatalogInputError('identifier');
-  const normalized = scheme === 'SKU' ? normalizedSku(value) : value.trim();
-  if (scheme === 'INTERNAL_BARCODE') {
-    if (!/^[A-Z0-9._-]{4,64}$/u.test(normalized.toUpperCase())) throw new CatalogInputError('identifier');
-    return normalized.toUpperCase();
-  }
-  if (scheme !== 'SKU') {
-    const length = Number(scheme.slice(5));
-    if (!/^\d+$/u.test(normalized) || normalized.length !== length) throw new CatalogInputError('identifier');
-    if (gtinCheckDigit(normalized.slice(0, -1)) !== Number(normalized.at(-1))) throw new CatalogInputError('identifier');
-  }
+  if (scheme === 'SKU') return normalizedSku(value);
+  const normalized = value.trim().toUpperCase();
+  if (!/^[A-Z0-9._-]{4,64}$/u.test(normalized)) throw new CatalogInputError('identifier');
   return normalized;
 }
 

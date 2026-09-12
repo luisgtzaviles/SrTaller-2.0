@@ -53,7 +53,7 @@ const allTables = [
   'catalog_reference_cost_revisions',
   'catalog_branch_price_revisions',
   'catalog_base_price_revisions',
-  'catalog_internal_code_sequences',
+  'catalog_barcode_sequences',
   'catalog_sku_sequences',
   'catalog_item_identifiers',
   'catalog_items',

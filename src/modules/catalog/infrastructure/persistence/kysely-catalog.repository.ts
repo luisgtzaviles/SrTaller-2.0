@@ -39,7 +39,7 @@ import type {
 } from '../../application/ports/catalog-repository.port.js';
 
 type CatalogTables = 'catalog_categories' | 'catalog_brands' | 'catalog_items' |
-  'catalog_item_identifiers' | 'catalog_sku_sequences' | 'catalog_internal_code_sequences' |
+  'catalog_item_identifiers' | 'catalog_sku_sequences' | 'catalog_barcode_sequences' |
   'catalog_category_kind_applicability' | 'catalog_brand_kind_applicability' | 'catalog_base_price_revisions' |
   'catalog_branch_price_revisions' | 'catalog_reference_cost_revisions' |
   'catalog_commands' | 'catalog_audit_events';
@@ -370,7 +370,7 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
   async createItem(context: CatalogMutationContext, input: CreateCatalogItemInput): Promise<CatalogItemRecord> {
     validateScope(context);
     const operation = 'catalog.item.create';
-    const fp = fingerprint({ kind: input.kind, title: input.title, description: input.description, categoryId: input.categoryId, brandId: input.brandId, sku: input.sku, internalCode: input.internalCode, externalIdentifiers: input.externalIdentifiers.map(({ scheme, normalizedValue }) => ({ scheme, normalizedValue })), basePrice: input.basePrice.amountMinor, referenceCost: input.referenceCost && { amountMinor: input.referenceCost.amountMinor, sourceType: input.referenceCost.sourceType, sourceLabel: input.referenceCost.sourceLabel }, expectedVersion: input.expectedVersion });
+    const fp = fingerprint({ kind: input.kind, title: input.title, description: input.description, categoryId: input.categoryId, brandId: input.brandId, sku: input.sku, barcode: input.barcode, basePrice: input.basePrice.amountMinor, referenceCost: input.referenceCost && { amountMinor: input.referenceCost.amountMinor, sourceType: input.referenceCost.sourceType, sourceLabel: input.referenceCost.sourceLabel }, expectedVersion: input.expectedVersion });
     return this.transaction(async (executor, tx) => {
       const replay = await commandReplay<CatalogItemRecord>(executor, context, operation, input.clientRequestId, fp);
       if (replay) return Object.freeze(replay);
@@ -396,11 +396,10 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
         created_at: input.occurredAt, updated_at: input.occurredAt,
       }).execute();
       const sku = input.sku ?? await this.allocateSku(executor, context.tenantId, input.kind);
-      const internalCode = input.internalCode ?? await this.allocateInternalCode(executor, context.tenantId);
+      const barcode = input.barcode ?? await this.allocateBarcode(executor, context.tenantId);
       await executor.insertInto('catalog_item_identifiers').values([
         { tenant_id: context.tenantId, identifier_id: randomUUID(), item_id: input.itemId, scheme: 'SKU', normalized_value: sku, display_value: sku, created_at: input.occurredAt },
-        { tenant_id: context.tenantId, identifier_id: randomUUID(), item_id: input.itemId, scheme: 'INTERNAL_BARCODE', normalized_value: internalCode, display_value: internalCode, created_at: input.occurredAt },
-        ...input.externalIdentifiers.map((identifier) => ({ tenant_id: context.tenantId, identifier_id: identifier.identifierId, item_id: input.itemId, scheme: identifier.scheme, normalized_value: identifier.normalizedValue, display_value: identifier.displayValue, created_at: input.occurredAt })),
+        { tenant_id: context.tenantId, identifier_id: randomUUID(), item_id: input.itemId, scheme: 'BARCODE', normalized_value: barcode, display_value: barcode, created_at: input.occurredAt },
       ]).execute();
       await executor.insertInto('catalog_base_price_revisions').values({
         tenant_id: context.tenantId, revision_id: input.basePrice.revisionId, item_id: input.itemId,
@@ -417,7 +416,7 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
       }).execute();
       const result = await this.loadItem(executor, context, input.itemId);
       if (!result) throw new CatalogNotFoundError();
-      await recordCommand(executor, context, input, operation, fp, input.itemId, null, result, { kind: input.kind, skuGenerated: input.sku === null, internalCodeGenerated: input.internalCode === null, basePriceAmountMinor: input.basePrice.amountMinor, hasReferenceCost: input.referenceCost !== null });
+      await recordCommand(executor, context, input, operation, fp, input.itemId, null, result, { kind: input.kind, skuGenerated: input.sku === null, barcodeGenerated: input.barcode === null, basePriceAmountMinor: input.basePrice.amountMinor, hasReferenceCost: input.referenceCost !== null });
       return result;
     });
   }
@@ -436,15 +435,15 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
     throw new CatalogConflictError();
   }
 
-  private async allocateInternalCode(executor: CatalogExecutor, tenantId: string): Promise<string> {
+  private async allocateBarcode(executor: CatalogExecutor, tenantId: string): Promise<string> {
     for (let attempt = 0; attempt < 100; attempt += 1) {
-      const row = await executor.insertInto('catalog_internal_code_sequences')
+      const row = await executor.insertInto('catalog_barcode_sequences')
         .values({ tenant_id: tenantId, next_value: '2' })
-        .onConflict((conflict) => conflict.column('tenant_id').doUpdateSet((eb) => ({ next_value: eb('catalog_internal_code_sequences.next_value', '+', '1') })))
+        .onConflict((conflict) => conflict.column('tenant_id').doUpdateSet((eb) => ({ next_value: eb('catalog_barcode_sequences.next_value', '+', '1') })))
         .returning('next_value').executeTakeFirstOrThrow();
-      const candidate = `SR-${String(Number(row.next_value) - 1).padStart(8, '0')}`;
+      const candidate = `SR${String(Number(row.next_value) - 1).padStart(8, '0')}`;
       const exists = await executor.selectFrom('catalog_item_identifiers').select('identifier_id')
-        .where('tenant_id', '=', tenantId).where('scheme', '=', 'INTERNAL_BARCODE').where('normalized_value', '=', candidate).executeTakeFirst();
+        .where('tenant_id', '=', tenantId).where('scheme', '=', 'BARCODE').where('normalized_value', '=', candidate).executeTakeFirst();
       if (!exists) return candidate;
     }
     throw new CatalogConflictError();

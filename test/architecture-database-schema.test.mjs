@@ -18,7 +18,7 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     catalog_sku_sequences: { owner: 'catalog', kind: 'table' },
     catalog_category_kind_applicability: { owner: 'catalog', kind: 'table' },
     catalog_brand_kind_applicability: { owner: 'catalog', kind: 'table' },
-    catalog_internal_code_sequences: { owner: 'catalog', kind: 'table' },
+    catalog_barcode_sequences: { owner: 'catalog', kind: 'table' },
     catalog_base_price_revisions: { owner: 'catalog', kind: 'table' },
     catalog_branch_price_revisions: { owner: 'catalog', kind: 'table' },
     catalog_reference_cost_revisions: { owner: 'catalog', kind: 'table' },

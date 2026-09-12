@@ -36,7 +36,8 @@ test('Owner iteration centralizes governance and keeps operation reconciliable',
   assert.doesNotMatch(page, />Catálogos comerciales</u);
   assert.match(page, /Limpiamos Categoría o Marca porque no aplican al nuevo Tipo/u);
   assert.match(page, /Automático si lo dejas vacío/u);
-  assert.match(page, /GTIN \/ EAN \/ UPC externo/u);
+  assert.match(page, /label="Código de barras" hint="Automático si lo dejas vacío\."/u);
+  assert.doesNotMatch(page, /Código interno|GTIN|EAN|UPC|Esquema externo|externalIdentifier/u);
 });
 
 test('price lookup sends no cost request unless capability and personal preference both allow it', () => {

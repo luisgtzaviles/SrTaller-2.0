@@ -165,18 +165,18 @@ acepta URLs externas permanentes ni crea almacenamiento lateral.
 - La concurrencia se resuelve con constraint + reserva transaccional; no con
   `check then insert` en navegador.
 
-### Códigos escaneables
+### Código de barras
 
-`INTERNAL_BARCODE` y `GTIN_8/12/13/14` son schemes distintos. GTIN conserva
-ceros iniciales y valida longitud/dígito. El código interno se genera
-server-side cuando el campo queda vacío, o se valida y preserva cuando el
-usuario lo aporta, dentro de un namespace Tenant-wide. Puede representarse
-posteriormente como Code 128, nunca fingiendo ser EAN/UPC. Un GTIN externo sólo
-existe si se captura explícitamente y no sustituye al código interno. Un valor
-exacto identifica como máximo un item dentro del Tenant.
+Todo artículo tiene un código de barras interno Tenant-wide. Si queda vacío, el
+servidor lo genera con una secuencia opaca, por ejemplo `SR00000042`; si se
+aporta, lo recorta, normaliza a mayúsculas, valida y preserva. El valor puede
+representarse posteriormente con simbología Code 128: esa simbología no crea un
+tercer identificador ni cambia el valor de dominio. Un valor exacto identifica
+como máximo un item dentro del Tenant. No hay GTIN, EAN, UPC ni código de
+fabricante en PBI-040.
 
-El código de proveedor no es SKU ni barcode; pertenece a
-`SupplierItemReference`. Los IDs de URL siguen siendo opacos: SKU/barcode no
+Un futuro código de proveedor pertenece a `SupplierItemReference` de PBI-041,
+no a SKU ni barcode. Los IDs de URL siguen siendo opacos: SKU/barcode no
 habilitan enumeración ni autorización.
 
 ## 7. Costo de referencia y menor privilegio
@@ -282,14 +282,14 @@ documento.
 - `0` numérico significa cero explícito. Precio negativo es inválido; precio
   cero es válido y se muestra como tal.
 - `[BORRAR]` es el token reservado, visible en preview, para limpiar únicamente
-  descripción, marca, GTIN externo o costo opcional; no puede borrar título,
-  tipo, categoría, SKU, código interno, moneda ni precio.
+  descripción, marca o costo opcional; no puede borrar título, tipo, categoría,
+  SKU, código de barras, moneda ni precio.
 - Límite configurable y prueba obligatoria de 1,000 filas. Archivos superiores
   al límite se rechazan completos antes de staging.
 
 ### Matching determinista
 
-Orden de claves: `itemId`, SKU interno, código interno, GTIN externo exacto y tipado,
+Orden de claves: `itemId`, SKU interno, código de barras interno,
 `ImportSource + supplierItemCode`. Una clave única encuentra un item; varias
 claves de la misma fila que apunten a items distintos producen `CONFLICT`.
 Nombre, marca, categoría y fuzzy sólo generan candidatos para resolución humana.

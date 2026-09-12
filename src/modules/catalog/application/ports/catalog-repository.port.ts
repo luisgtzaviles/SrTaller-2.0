@@ -79,8 +79,7 @@ export type ResolveCatalogReferenceInput = Readonly<{
 export type CreateCatalogItemInput = Readonly<{
   itemId: string; kind: CatalogItemKind; title: string; normalizedTitle: string;
   description: string | null; categoryId: string; brandId: string | null;
-  sku: string | null; internalCode: string | null;
-  externalIdentifiers: readonly Readonly<{ identifierId: string; scheme: Exclude<CatalogIdentifierScheme, 'SKU' | 'INTERNAL_BARCODE'>; normalizedValue: string; displayValue: string }>[];
+  sku: string | null; barcode: string | null;
   basePrice: Readonly<{ revisionId: string; amountMinor: number }>;
   referenceCost: Readonly<{ revisionId: string; amountMinor: number; sourceType: 'MANUAL' | 'ESTIMATED' | 'THIRD_PARTY'; sourceLabel: string | null; observedAt: Date }> | null;
   currency: string; expectedVersion: 0; clientRequestId: string; correlationId: string; occurredAt: Date;

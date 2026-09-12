@@ -74,7 +74,7 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .addPrimaryKeyConstraint('catalog_item_identifiers_pk', ['tenant_id', 'identifier_id'])
     .addUniqueConstraint('catalog_item_identifiers_value_uq', ['tenant_id', 'scheme', 'normalized_value'])
     .addForeignKeyConstraint('catalog_item_identifiers_item_fk', ['tenant_id', 'item_id'], 'catalog_items', ['tenant_id', 'item_id'], (constraint) => constraint.onDelete('restrict').onUpdate('restrict'))
-    .addCheckConstraint('catalog_item_identifiers_scheme_ck', sql`scheme in ('SKU', 'INTERNAL_BARCODE', 'GTIN_8', 'GTIN_12', 'GTIN_13', 'GTIN_14')`)
+    .addCheckConstraint('catalog_item_identifiers_scheme_ck', sql`scheme in ('SKU', 'BARCODE')`)
     .execute();
   await database.schema.createIndex('catalog_item_identifiers_item_idx').on('catalog_item_identifiers').columns(['tenant_id', 'item_id', 'scheme']).execute();
 

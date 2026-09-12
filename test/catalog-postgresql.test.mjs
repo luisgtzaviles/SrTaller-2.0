@@ -86,7 +86,7 @@ async function item(service, ctx, input) {
   return service.createItem(ctx, command({
     kind: 'PART', title: 'Pantalla iPhone 11 OLED', description: null,
     categoryId: input.categoryId, brandId: input.brandId ?? null,
-    sku: input.sku ?? null, internalCode: input.internalCode ?? null, externalIdentifier: input.externalIdentifier ?? input.barcode ?? null,
+    sku: input.sku ?? null, barcode: input.barcode ?? null,
     basePriceAmountMinor: input.basePriceAmountMinor ?? 139900,
     referenceCostAmountMinor: input.referenceCostAmountMinor ?? null,
     referenceCostSourceType: input.referenceCostSourceType,
@@ -139,10 +139,10 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     );
     const explicitIdentifiers = await item(service, ctxA1, {
       kind: 'PRODUCT', title: 'Termo Owner QA', categoryId: pendingCategory.categoryId, brandId: pendingBrand.brandId,
-      sku: 'PRO-TERMO-QA', internalCode: 'SR-TERMO-QA', basePriceAmountMinor: 49900,
+      sku: 'PRO-TERMO-QA', barcode: 'SRTERMOQA', basePriceAmountMinor: 49900,
     });
     assert.equal(explicitIdentifiers.identifiers.some(({ scheme, value }) => scheme === 'SKU' && value === 'PRO-TERMO-QA'), true);
-    assert.equal(explicitIdentifiers.identifiers.some(({ scheme, value }) => scheme === 'INTERNAL_BARCODE' && value === 'SR-TERMO-QA'), true);
+    assert.equal(explicitIdentifiers.identifiers.some(({ scheme, value }) => scheme === 'BARCODE' && value === 'SRTERMOQA'), true);
     const approvedPendingBrand = await service.resolveBrand(ctxA1, pendingBrand.brandId, {
       resolution: 'APPROVE', targetId: null, expectedVersion: pendingBrand.version, clientRequestId: randomUUID(),
     });
@@ -156,7 +156,7 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     const partA = await item(service, ctxA1, {
       categoryId: categoryA.categoryId, brandId: brandA.brandId,
       sku: 'REF-IP11-OLED',
-      externalIdentifier: { scheme: 'GTIN_13', value: '7501031311309' },
+      barcode: 'SR00000042',
       referenceCostAmountMinor: 48000,
       referenceCostSourceType: 'THIRD_PARTY',
       referenceCostSourceLabel: 'Lista proveedor septiembre',
@@ -164,12 +164,12 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     const partB = await item(service, ctxB1, {
       categoryId: categoryB.categoryId, brandId: brandB.brandId,
       sku: 'REF-IP11-OLED', title: 'Tenant B private item',
-      externalIdentifier: { scheme: 'GTIN_13', value: '7501031311309' },
+      barcode: 'SR00000042',
       basePriceAmountMinor: 99900,
     });
     assert.equal(partA.identifiers.some(({ value }) => value === 'REF-IP11-OLED'), true);
     assert.equal(partB.identifiers.some(({ value }) => value === 'REF-IP11-OLED'), true);
-    assert.equal(partA.identifiers.some(({ scheme, value }) => scheme === 'INTERNAL_BARCODE' && /^SR-\d{8}$/u.test(value)), true);
+    assert.equal(partA.identifiers.some(({ scheme, value }) => scheme === 'BARCODE' && /^SR\d{8}$/u.test(value)), true);
     assert.equal(await repository.getItem({ tenantId: tenantB, branchId: branchB1 }, partA.itemId), null);
     await assert.rejects(
       item(service, ctxA1, { categoryId: categoryB.categoryId, sku: 'REF-CROSS-TENANT' }),
@@ -184,7 +184,7 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     assert.equal(byName.items[0].price.source, 'TENANT_BASE');
     const bySku = await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: 'ref-ip11-oled' }, false);
     assert.equal(bySku.items[0].item.itemId, partA.itemId);
-    const byBarcode = await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: '7501031311309' }, false);
+    const byBarcode = await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: 'sr00000042' }, false);
     assert.equal(byBarcode.items[0].item.itemId, partA.itemId);
     const byKind = await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: '', kind: 'PART' }, false);
     assert.equal(byKind.items.some((entry) => entry.item.itemId === partA.itemId), true);
@@ -245,6 +245,18 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     assert.equal(duplicateResults.filter(({ status }) => status === 'fulfilled').length, 1);
     assert.equal(duplicateResults.filter(({ status, reason }) => status === 'rejected' && reason instanceof CatalogConflictError).length, 1);
 
+    await item(service, ctxA1, {
+      kind: 'PRODUCT', title: 'Funda barcode único', categoryId: productCategory.categoryId,
+      sku: 'PRO-BARCODE-0', barcode: 'SRDUPLICATE42', basePriceAmountMinor: 29900,
+    });
+    await assert.rejects(
+      item(service, ctxA1, {
+        kind: 'PRODUCT', title: 'Funda barcode duplicado', categoryId: productCategory.categoryId,
+        sku: 'PRO-BARCODE-1', barcode: 'SRDUPLICATE42', basePriceAmountMinor: 29900,
+      }),
+      CatalogConflictError,
+    );
+
     const inactive = duplicateResults.find(({ status }) => status === 'fulfilled').value;
     const inactivated = await service.updateItem(ctxA1, inactive.itemId, {
       title: inactive.title, description: inactive.description,
@@ -252,6 +264,9 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
       expectedVersion: inactive.version, clientRequestId: randomUUID(),
     });
     assert.equal(inactivated.status, 'INACTIVE');
+    const identifiersBeforeEdit = inactive.identifiers;
+    const reloadedAfterEdit = await service.getItem({ tenantId: tenantA, branchId: branchA1 }, inactive.itemId);
+    assert.deepEqual(reloadedAfterEdit.identifiers, identifiersBeforeEdit);
     assert.equal((await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: 'PRO-DUPLICATE' }, false)).totalCount, 0);
     await assert.rejects(
       item(service, ctxA1, { kind: 'PRODUCT', title: 'Reuse forbidden', categoryId: productCategory.categoryId, sku: 'PRO-DUPLICATE' }),

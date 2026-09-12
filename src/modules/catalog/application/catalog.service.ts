@@ -9,7 +9,7 @@ import {
   parseCatalogItemKind,
   parseMinorAmount,
 } from '../domain/catalog-item.js';
-import type { CatalogIdentifierScheme, CatalogItemKind, CatalogLifecycle } from '../domain/catalog-item.js';
+import type { CatalogItemKind, CatalogLifecycle } from '../domain/catalog-item.js';
 import type {
   CatalogBrandRecord,
   CatalogCategoryRecord,
@@ -72,13 +72,9 @@ function applicableKinds(value: unknown, parameter: string, category: boolean): 
   return Object.freeze(parsed);
 }
 
-function barcode(value: unknown): Readonly<{ identifierId: string; scheme: CatalogIdentifierScheme; normalizedValue: string; displayValue: string }> | null {
-  if (value === null || value === undefined) return null;
-  const candidate = object(value, ['scheme', 'value']);
-  const scheme = candidate.scheme;
-  if (scheme !== 'INTERNAL_BARCODE' && scheme !== 'GTIN_8' && scheme !== 'GTIN_12' && scheme !== 'GTIN_13' && scheme !== 'GTIN_14') throw new CatalogInputError('barcode.scheme');
-  const normalizedValue = normalizeCatalogIdentifier(scheme, candidate.value);
-  return Object.freeze({ identifierId: randomUUID(), scheme, normalizedValue, displayValue: normalizedValue });
+function barcode(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') return null;
+  return normalizeCatalogIdentifier('BARCODE', value);
 }
 
 export class CatalogService {
@@ -162,7 +158,7 @@ export class CatalogService {
 
   async createItem(context: CatalogMutationContext, value: unknown) {
     const input = object(value, [
-      'kind', 'title', 'description', 'categoryId', 'brandId', 'sku', 'internalCode', 'externalIdentifier', 'barcode',
+      'kind', 'title', 'description', 'categoryId', 'brandId', 'sku', 'barcode',
       'basePriceAmountMinor', 'referenceCostAmountMinor',
       'referenceCostSourceType', 'referenceCostSourceLabel',
       'expectedVersion', 'clientRequestId',
@@ -170,12 +166,7 @@ export class CatalogService {
     const kind = parseCatalogItemKind(input.kind);
     const title = text(input.title, 'title', 200) as string;
     const sku = input.sku === null || input.sku === undefined || input.sku === '' ? null : normalizedSku(input.sku);
-    const legacyBarcode = barcode(input.barcode);
-    const internalCodeSource = input.internalCode ?? (legacyBarcode?.scheme === 'INTERNAL_BARCODE' ? legacyBarcode.displayValue : null);
-    const internalCode = internalCodeSource === null || internalCodeSource === undefined || internalCodeSource === ''
-      ? null : normalizeCatalogIdentifier('INTERNAL_BARCODE', internalCodeSource);
-    const external = barcode(input.externalIdentifier ?? (legacyBarcode?.scheme !== 'INTERNAL_BARCODE' ? input.barcode : null));
-    if (external?.scheme === 'INTERNAL_BARCODE' || external?.scheme === 'SKU') throw new CatalogInputError('externalIdentifier.scheme');
+    const barcodeValue = barcode(input.barcode);
     const currency = await this.currency(context.tenantId);
     const mutation = commonMutation(input, 0);
     if (mutation.expectedVersion !== 0) throw new CatalogInputError('expectedVersion');
@@ -192,8 +183,7 @@ export class CatalogService {
       description: text(input.description, 'description', 2000, true, true),
       categoryId: identifier(input.categoryId, 'categoryId'),
       brandId: input.brandId === null || input.brandId === undefined || input.brandId === '' ? null : identifier(input.brandId, 'brandId'),
-      sku, internalCode,
-      externalIdentifiers: external ? [external as Exclude<typeof external, null> & { scheme: 'GTIN_8' | 'GTIN_12' | 'GTIN_13' | 'GTIN_14' }] : [],
+      sku, barcode: barcodeValue,
       basePrice: { revisionId: randomUUID(), amountMinor: parseMinorAmount(input.basePriceAmountMinor, 'basePriceAmountMinor') },
       referenceCost,
       currency,
