@@ -1225,7 +1225,7 @@
         },
         "src/infrastructure/database/migrations/20260911200000_catalog_add_reference_governance.ts": {
           "owner": "catalog",
-          "tables": ["catalog_brand_kind_applicability", "catalog_brands", "catalog_categories", "catalog_category_kind_applicability", "catalog_internal_code_sequences"],
+          "tables": ["catalog_brand_kind_applicability", "catalog_brands", "catalog_categories", "catalog_category_kind_applicability", "catalog_internal_code_sequences", "catalog_items"],
           "references": ["tenants"],
           "functions": [],
           "triggers": []

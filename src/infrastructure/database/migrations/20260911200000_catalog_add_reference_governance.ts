@@ -45,14 +45,26 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .addCheckConstraint('catalog_brand_kind_applicability_kind_ck', sql`kind in ('PART', 'PRODUCT', 'SERVICE', 'SUPPLY')`)
     .execute();
 
-  // The pre-governance model had no applicability contract. Existing values
-  // remain usable in every kind; every newly-created value is explicitly scoped.
+  // The pre-governance model had no applicability contract. Preserve every
+  // existing item by deriving applicability from actual use. Only unused legacy
+  // references remain broadly selectable because there is no evidence from
+  // which to infer a narrower business classification.
+  await sql`insert into catalog_category_kind_applicability (tenant_id, category_id, kind)
+    select distinct category.tenant_id, category.category_id, item.kind
+    from catalog_categories category
+    join catalog_items item on item.tenant_id = category.tenant_id and item.category_id = category.category_id`.execute(database);
   await sql`insert into catalog_category_kind_applicability (tenant_id, category_id, kind)
     select category.tenant_id, category.category_id, kind.value
-    from catalog_categories category cross join (values ('PART'), ('PRODUCT'), ('SERVICE'), ('SUPPLY')) as kind(value)`.execute(database);
+    from catalog_categories category cross join (values ('PART'), ('PRODUCT'), ('SERVICE'), ('SUPPLY')) as kind(value)
+    where not exists (select 1 from catalog_items item where item.tenant_id = category.tenant_id and item.category_id = category.category_id)`.execute(database);
+  await sql`insert into catalog_brand_kind_applicability (tenant_id, brand_id, kind)
+    select distinct brand.tenant_id, brand.brand_id, item.kind
+    from catalog_brands brand
+    join catalog_items item on item.tenant_id = brand.tenant_id and item.brand_id = brand.brand_id`.execute(database);
   await sql`insert into catalog_brand_kind_applicability (tenant_id, brand_id, kind)
     select brand.tenant_id, brand.brand_id, kind.value
-    from catalog_brands brand cross join (values ('PART'), ('PRODUCT'), ('SERVICE'), ('SUPPLY')) as kind(value)`.execute(database);
+    from catalog_brands brand cross join (values ('PART'), ('PRODUCT'), ('SERVICE'), ('SUPPLY')) as kind(value)
+    where not exists (select 1 from catalog_items item where item.tenant_id = brand.tenant_id and item.brand_id = brand.brand_id)`.execute(database);
 
   await database.schema.createTable('catalog_internal_code_sequences')
     .addColumn('tenant_id', 'uuid', (column) => column.notNull())
