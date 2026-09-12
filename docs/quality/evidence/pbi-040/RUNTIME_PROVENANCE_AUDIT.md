@@ -2,7 +2,7 @@
 
 ## Veredicto
 
-**PASS sujeto al reinicio gobernado final del candidato documentado.** La UI
+**PASS.** La UI
 desplegada en Preview proviene exactamente de `0d1c5760ce962d17a8292b841f5de43a8cb453a7`.
 Ese commit contiene los merges #42 y #43, integra el hotfix de runtime mediante
 PR #44 y es padre directo de la baseline documental #45
@@ -170,3 +170,24 @@ autorizado deberá materializar el contrato nuevo.
 - no se inició PBI-041/PBI-042;
 - no hubo push, PR, merge, release ni Owner Acceptance;
 - el guard no convierte Local en CI ni autoriza un deployment.
+
+## 10. Verificación ejecutada
+
+- pruebas focalizadas del guard y contratos relacionados: `45/45 PASS` tras
+  las remediaciones de contrato;
+- build/typecheck: PASS;
+- imagen OCI `srtaller-runtime-provenance:b2798df`, ID
+  `sha256:e35c585e2b4919397e42304100c5f65f065013e439ec054ec7c9748a3101e377`:
+  revisión `b2798df02f2091cff56ba1619b238fccc225b5ca`, 56 migraciones, manifest y
+  headers coincidentes, non-root/read-only y cleanup PASS;
+- Full Verification sobre `52679c2d53273d2858aed526f81c99dc4d682754`:
+  `13/13` stages PASS, `828` tests base (`808 PASS`, `20` skips PostgreSQL
+  gobernados), compuesto PostgreSQL `17/17`, PBI-039 `2/2`, PBI-040 material
+  sin skips y p95 `6.53 ms`, smokes backend/UI y cleanup PASS;
+- fingerprint de candidato Full Verification:
+  `1862684485185049b45a3403645f7eae98af6b8a5741e30dab8a9dc660e3e283`;
+- warning preservado: chunk Vite principal mayor a 500 kB.
+
+La reconciliación documental posterior no modifica código. El runtime local
+final informa su SHA exacto mediante el guard en vez de fijarlo en este
+documento y crear una referencia circular con el commit de evidencia.

@@ -178,6 +178,15 @@ La evidencia completa está en
   La base ejecutó 822 pruebas (`802 PASS`, 20 skips PostgreSQL gobernados);
   PBI-039 material fue `2/2`, el compuesto `17/17` y PBI-040 registró p95
   `8.23 ms` sobre 10,000 items. El warning de chunk permanece visible.
+- Runtime provenance Full Verification sobre `52679c2`: `13/13` stages PASS,
+  base `828` tests (`808 PASS`, `20` skips PostgreSQL gobernados), compuesto
+  PostgreSQL `17/17`, PBI-039 `2/2`, PBI-040 p95 `6.53 ms`, smokes y cleanup
+  PASS. Fingerprint
+  `1862684485185049b45a3403645f7eae98af6b8a5741e30dab8a9dc660e3e283`.
+- Verificación OCI separada sobre imagen local
+  `sha256:e35c585e2b4919397e42304100c5f65f065013e439ec054ec7c9748a3101e377`:
+  label, manifest frontend y headers backend declararon la misma revisión;
+  56 migraciones y cleanup PASS.
 
 ## Prueba funcional HTTP local previa a la iteración
 

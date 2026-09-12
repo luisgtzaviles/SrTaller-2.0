@@ -126,7 +126,7 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | PostgreSQL | 56 migraciones; aislamiento/aplicabilidad/reconciliación/concurrencia PASS; cero skips materiales |
 | Rendimiento | 10,000 items; p95 más reciente 6.98 ms contra presupuesto 750 ms |
 | HTTP local | sesión Owner/Station, fixtures por API, costo protegido y override Branch PASS |
-| Full Verification | preservación 13/13 stages PASS; 822 tests base; PBI-039 2/2 y PostgreSQL material sin skips críticos |
+| Full Verification | runtime provenance 13/13 stages PASS; 828 tests base; PBI-039 2/2 y PostgreSQL material sin skips críticos |
 | Formal UI real | Chrome local autenticado, con dos ventanas lado a lado de Catálogos Repairs/Lista de precios; Owner Review pendiente |
 | Baseline guard | ancestry/merge-base/SHA + 16 blobs; genealogía material `0d1c576…` → `40684d7…` |
 | Runtime provenance | manifest frontend + headers backend + launcher fail-closed; SHA exacto consultable con `verify:runtime-provenance` |
