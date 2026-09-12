@@ -7,6 +7,7 @@ export type CatalogReference = Readonly<{
   usageCount?: number; version: number; createdBy?: string | null; createdAt?: string;
   createdInBranchId?: string | null; mergedIntoId?: string | null;
 }>;
+export type CatalogCategoryBrandApplicability = Readonly<{ categoryId: string; brandId: string; kind: CatalogItemKind }>;
 export type CatalogItem = Readonly<{
   itemId: string; kind: CatalogItemKind; title: string; description: string | null;
   category: CatalogReference; brand: CatalogReference | null; status: 'ACTIVE' | 'INACTIVE';
@@ -19,7 +20,11 @@ export type PriceListItem = Readonly<{
   price: Readonly<{ revisionId: string; amountMinor: number; currency: string; itemVersion: number; effectiveFrom: string; source: 'TENANT_BASE' | 'BRANCH_OVERRIDE' }> | null;
   referenceCost?: Readonly<{ revisionId: string; amountMinor: number; currency: string; itemVersion: number; effectiveFrom: string; sourceType: string; sourceLabel: string | null; observedAt: string }>;
 }>;
-export type CatalogReferences = Readonly<{ categories: readonly CatalogReference[]; brands: readonly CatalogReference[] }>;
+export type CatalogReferences = Readonly<{
+  categories: readonly CatalogReference[];
+  brands: readonly CatalogReference[];
+  categoryBrandApplicability: readonly CatalogCategoryBrandApplicability[];
+}>;
 export type PriceListPage = Readonly<{ items: readonly PriceListItem[]; totalCount: number }>;
 
 const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
@@ -40,8 +45,9 @@ async function mutate<T>(path: string, method: 'POST' | 'PATCH' | 'PUT' | 'DELET
 
 export function listCatalogReferences(signal?: AbortSignal) { return get<CatalogReferences>('/api/catalog/references', signal); }
 export function listCatalogAdministrationReferences(signal?: AbortSignal) { return get<CatalogReferences>('/api/catalog/administration/references', signal); }
-export function searchPriceList(input: Readonly<{ query: string; categoryId: string; brandId: string; page: number; includeReferenceCost: boolean }>, signal?: AbortSignal) {
+export function searchPriceList(input: Readonly<{ query: string; kind: Exclude<CatalogItemKind, 'SUPPLY'> | ''; categoryId: string; brandId: string; page: number; includeReferenceCost: boolean }>, signal?: AbortSignal) {
   const query = new URLSearchParams({ query: input.query, page: String(input.page), pageSize: '25' });
+  if (input.kind) query.set('kind', input.kind);
   if (input.categoryId) query.set('categoryId', input.categoryId);
   if (input.brandId) query.set('brandId', input.brandId);
   if (input.includeReferenceCost) query.set('includeReferenceCost', 'true');

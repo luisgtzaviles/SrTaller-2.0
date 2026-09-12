@@ -32,6 +32,13 @@ reconciliación en `Configuración > Catálogos > Lista de precios`. También se
 SKU, código interno automático y GTIN/EAN/UPC externo. Cambiar Tipo limpia e
 informa selecciones incompatibles; costo y pricing mantienen sus fronteras.
 
+La iteración Owner más reciente incorpora en `/listas/precios` la cascada
+navegable `Buscar | Tipo | Categoría | Marca`: Tipo limita categorías y
+Tipo + Categoría limita marcas a compatibilidades comerciales conocidas de
+artículos activos vendibles. Los cambios preservan sólo filtros compatibles;
+la búsqueda continúa server-side, Tenant/Branch-scoped y sin entregar costo
+sin capability. Insumo permanece fuera de la oferta comercial.
+
 PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
 Guided V2, política de campos por Branch, catálogos administrativos y las
 superficies aceptadas de Repair Detail. El Functional Slice fue aceptado por
@@ -74,7 +81,7 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | Pricing | Base Tenant + override Branch revocable; moneda desde Tenancy |
 | Seguridad de costo | omisión server-side sin capability; preferencia personal default oculta |
 | UI | operación en `/listas/precios`; gobierno en `/configuracion/catalogos?module=price-list` |
-| Cascada | Category un Tipo; Brand uno o varios; creación inline Por revisar; cambio de Tipo determinista |
+| Cascada | Buscar + Tipo + Category + Brand navegables; Category un Tipo; Brand uno o varios; pares comerciales conocidos; reset determinista |
 | Identificadores | SKU y código interno automáticos server-side; externos GTIN separados |
 | PostgreSQL | 56 migraciones; aislamiento/aplicabilidad/reconciliación/concurrencia PASS; cero skips materiales |
 | Rendimiento | 10,000 items; p95 más reciente 6.76 ms contra presupuesto 750 ms |

@@ -186,6 +186,8 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     assert.equal(bySku.items[0].item.itemId, partA.itemId);
     const byBarcode = await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: '7501031311309' }, false);
     assert.equal(byBarcode.items[0].item.itemId, partA.itemId);
+    const byKind = await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: '', kind: 'PART' }, false);
+    assert.equal(byKind.items.some((entry) => entry.item.itemId === partA.itemId), true);
     const withCost = await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: 'REF-IP11-OLED' }, true);
     assert.equal(withCost.items[0].referenceCost.amountMinor, 48000);
     assert.equal(withCost.items[0].referenceCost.sourceType, 'THIRD_PARTY');
@@ -201,6 +203,14 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     });
     assert.equal(supply.capabilities.sellable, false);
     assert.equal((await service.search({ tenantId: tenantA, branchId: branchA1 }, { query: 'alcohol' }, false)).totalCount, 0);
+    await assert.rejects(
+      async () => service.search({ tenantId: tenantA, branchId: branchA1 }, { query: '', kind: 'SUPPLY' }, false),
+      (error) => error?.parameter === 'kind',
+    );
+
+    const operationalReferences = await service.listOperationalReferences({ tenantId: tenantA, branchId: branchA1 });
+    assert.equal(operationalReferences.categoryBrandApplicability.some((entry) => entry.categoryId === categoryA.categoryId && entry.brandId === brandA.brandId && entry.kind === 'PART'), true);
+    assert.equal(operationalReferences.categoryBrandApplicability.some((entry) => entry.kind === 'SUPPLY'), false);
 
     const override = await service.changeBranchOverride(ctxA1, serviceItem.itemId, {
       amountMinor: 39900, reason: 'Precio plaza', expectedVersion: serviceItem.version, clientRequestId: randomUUID(),

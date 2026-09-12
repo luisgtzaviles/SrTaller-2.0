@@ -36,6 +36,20 @@
 - SKU y código interno se resuelven server-side cuando quedan vacíos. El código
   interno permanece separado de GTIN/EAN/UPC externos.
 
+### Iteración Owner — filtros encadenados
+
+- `/listas/precios` conserva `q`, `kind`, `categoryId` y `brandId` en URL. Los
+  cuatro criterios se aplican juntos en la búsqueda server-side; `SUPPLY` se
+  rechaza como Tipo de esa ruta además de permanecer no vendible.
+- Las opciones comerciales no contienen combinaciones escritas en UI: Tipo usa
+  aplicabilidad de Category/Brand; Tipo + Categoría usa la proyección
+  Tenant-scoped de pares presentes en `CatalogItem` activos y vendibles. Esa
+  proyección es de lectura, no crea una asociación persistida ni duplica Brand
+  por Category.
+- El cambio de Tipo conserva sólo Category/Brand compatibles; cambiar
+  Category conserva Brand sólo si existe el par aplicable. Los filtros
+  incompatibles vuelven determinísticamente a Todos/Todas.
+
 ## Seguridad, persistencia y fronteras
 
 - Ocho capabilities gobernadas separan consulta, identidad, precio base,
@@ -77,6 +91,17 @@
   `13/13` stages PASS, cleanup PASS, fingerprint
   `7f4f894abd92750f4cb45783b05a1eb21383707df5923bc1d6af9f5598c836d5`.
   Único warning: chunk Vite principal >500 kB, deuda ya aceptada y no ocultada.
+- Validación focalizada de la iteración de filtros: `typecheck`, build,
+  `catalog-domain` y `catalog-ui-contract` (`12/12 PASS`), más
+  `test:pbi040:postgresql` (`56` migraciones, cero skips, benchmark de 10,000
+  items p95 `8.90 ms` contra presupuesto `750 ms`).
+- Full Verification final de la iteración de filtros:
+  `local-full-verification-20260912024931-aef7d3a70fd0`, `13/13 PASS`, cleanup
+  PASS, PostgreSQL material sin skips críticos y fingerprint de candidato
+  `d16c026e18563592cd23fd99122581da82349ef6c8e087e8df4891b3f24f7e36`.
+  El benchmark material PBI-040 de esa campaña registró p95 `7.23 ms` para
+  10,000 items, bajo el presupuesto `750 ms`. Permanece visible el warning
+  aceptado de chunk Vite principal mayor a 500 kB.
 
 ## Prueba funcional HTTP local previa a la iteración
 
@@ -130,6 +155,16 @@ Dark/responsive, y confirmar comboboxes, cascada, Por revisar, identificadores y
 operabilidad. Después permanecen
 separados: aceptación Owner, hardening/revisión independiente, PR/CI, merge,
 exact-main CI y cualquier Preview/deploy autorizado.
+
+Para esta iteración, Chrome local autenticado con datos sintéticos confirmó:
+Todos/Todas/Todas; Refacción; Refacción + Pantallas; Refacción + Pantallas +
+Apple; búsqueda combinada `OLED`; cero resultados legítimo; y el cambio
+Refacción/Pantallas/Samsung → Servicio, que limpió Category y Brand. La URL
+reflejó cada filtro. El toolbar conserva cuatro columnas a 1280 px y una sola
+columna a 768/640 px; controles nativos `Input`/`Select` aportan foco y
+teclado. Se activó Light/Dark y se restauró Light. Chrome quedó abierto,
+autenticado y restablecido en `/listas/precios` sin filtros. La revisión y
+aceptación humana siguen pendientes.
 
 ## Matriz de iteración Owner A-H
 

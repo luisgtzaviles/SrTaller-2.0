@@ -46,6 +46,26 @@ test('price lookup sends no cost request unless capability and personal preferen
   assert.match(page, /value\.referenceCost \? <small>Costo ref\./u);
 });
 
+test('price lookup composes URL-aware cascading commercial filters without offering incompatible pairs', () => {
+  assert.match(page, /const \[searchParams, setSearchParams\] = useSearchParams\(\)/u);
+  assert.match(page, /const filterKind = priceListKind\(searchParams\.get\('kind'\)\)/u);
+  assert.match(page, /categoryBrandApplicability/u);
+  assert.match(page, /const filterCategories = useMemo\(\(\) => filterKind/u);
+  assert.match(page, /const filterBrands = useMemo\(\(\) => commercialBrands\.filter/u);
+  assert.match(page, /const changeFilterKind = \(nextKind/u);
+  assert.match(page, /const changeFilterCategory = \(nextCategoryId/u);
+  assert.match(page, />Buscar</u);
+  assert.match(page, />Tipo</u);
+  assert.match(page, />Categoría</u);
+  assert.match(page, />Marca</u);
+  assert.match(page, /Todos los tipos/u);
+  assert.match(page, /Todas las categorías/u);
+  assert.match(page, /Todas las marcas/u);
+  assert.match(api, /if \(input\.kind\) query\.set\('kind', input\.kind\)/u);
+  assert.match(api, /categoryBrandApplicability/u);
+  assert.match(page, /kind: filterKind, categoryId, brandId/u);
+});
+
 test('price list covers commercial states without claiming Inventory or bulk import', () => {
   assert.match(page, /Refacción/u);
   assert.match(page, /Producto/u);

@@ -6,11 +6,11 @@
 - **Sprint:** SPRINT-03 — Active
 - **PBI actual:** PBI-040 — Catalog & Pricing Core + Fast Price Lookup
 - **Estado general:** Checkpoint preparado — Owner Review pendiente
-- **Progreso:** 6 / 6 bloques de la iteración completados
+- **Progreso:** 5 / 5 bloques de la iteración completados
 - **Trabajo actual:** ninguno de ingeniería; esperando revisión Owner
-- **Siguiente bloque:** Owner evalúa la superficie y acepta o devuelve feedback
+- **Siguiente bloque:** Owner evalúa la cascada real y acepta o devuelve feedback
 - **Bloqueos:** ninguno
-- **Última actualización:** 2026-09-11 19:26 MST
+- **Última actualización:** 2026-09-11 20:15 MST
 
 ## Resultado visible esperado
 
@@ -21,11 +21,10 @@ costo sólo viaja con capability y preferencia personal explícita.
 ## Checklist
 
 - [x] Revalidar feedback Owner, autoridades, baseline y patrones existentes.
-- [x] Materializar aplicabilidad, revisión y código interno en contratos/persistencia.
-- [x] Extender casos de uso y APIs con autorización, trazabilidad y concurrencia.
-- [x] Integrar autocompletes en operación y gobierno en Configuración → Catálogos.
-- [x] Verificar escenarios A–H, regresiones, PostgreSQL real y full verification.
-- [x] Reconciliar evidencia/PBI/estado y preparar Chrome para Owner Review.
+- [x] Exponer sólo compatibilidades comerciales conocidas y filtrar la búsqueda server-side por Tipo.
+- [x] Integrar Buscar | Tipo | Categoría | Marca con URL y resets deterministas.
+- [x] Verificar cascada, búsqueda combinada, cero resultados, autorización de costo y regresiones.
+- [x] Reconciliar evidencia/documentación y dejar Chrome listo para Owner Review.
 
 ## Gates preservados
 

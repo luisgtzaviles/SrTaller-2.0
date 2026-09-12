@@ -55,10 +55,10 @@ function mutationContext() {
 }
 
 test('catalog input is allowlisted, bounded, minor-unit based and currency comes from Tenancy', async () => {
-  let created;
+  let created; let searched;
   const repository = {
     async createItem(context, input) { created = { context, input }; return { itemId: input.itemId, version: 1 }; },
-    async search(_scope, input) { return { items: [], totalCount: input.page }; },
+    async search(_scope, input) { searched = input; return { items: [], totalCount: input.page }; },
   };
   const service = new CatalogService(repository, async (receivedTenantId) => {
     assert.equal(receivedTenantId, tenantId);
@@ -85,6 +85,12 @@ test('catalog input is allowlisted, bounded, minor-unit based and currency comes
   assert.throws(
     () => service.search({ tenantId, branchId }, { query: 'x'.repeat(121) }, false),
     (error) => error instanceof CatalogInputError && error.parameter === 'query',
+  );
+  await service.search({ tenantId, branchId }, { query: 'pantalla', kind: 'PART' }, false);
+  assert.equal(searched.kind, 'PART');
+  assert.throws(
+    () => service.search({ tenantId, branchId }, { query: '', kind: 'SUPPLY' }, false),
+    (error) => error instanceof CatalogInputError && error.parameter === 'kind',
   );
   await assert.rejects(
     service.createCategory(mutationContext(), { name: 'Pantallas\u0000', expectedVersion: 0, clientRequestId: requestId }),

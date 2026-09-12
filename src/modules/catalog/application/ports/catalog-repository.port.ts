@@ -28,6 +28,9 @@ export type CatalogBrandRecord = Readonly<{
   createdBy: string | null; createdAt: string; createdInBranchId: string | null;
   mergedIntoId: string | null;
 }>;
+export type CatalogCategoryBrandApplicability = Readonly<{
+  categoryId: string; brandId: string; kind: CatalogItemKind;
+}>;
 export type CatalogIdentifierRecord = Readonly<{
   identifierId: string; scheme: CatalogIdentifierScheme; value: string;
 }>;
@@ -97,7 +100,11 @@ export type ChangeCatalogCostInput = ChangeCatalogMoneyInput & Readonly<{
 export type ChangeCatalogOverrideInput = ChangeCatalogMoneyInput & Readonly<{ revoke: boolean }>;
 
 export interface CatalogRepositoryPort {
-  listReferences(scope: CatalogScope): Promise<Readonly<{ categories: readonly CatalogCategoryRecord[]; brands: readonly CatalogBrandRecord[] }>>;
+  listReferences(scope: CatalogScope): Promise<Readonly<{
+    categories: readonly CatalogCategoryRecord[];
+    brands: readonly CatalogBrandRecord[];
+    categoryBrandApplicability: readonly CatalogCategoryBrandApplicability[];
+  }>>;
   createCategory(context: CatalogMutationContext, input: CreateCatalogReferenceInput): Promise<CatalogCategoryRecord>;
   createBrand(context: CatalogMutationContext, input: CreateCatalogReferenceInput): Promise<CatalogBrandRecord>;
   updateCategory(context: CatalogMutationContext, input: UpdateCatalogReferenceInput): Promise<CatalogCategoryRecord>;
@@ -110,5 +117,5 @@ export interface CatalogRepositoryPort {
   changeReferenceCost(context: CatalogMutationContext, input: ChangeCatalogCostInput): Promise<CatalogItemRecord>;
   changeBranchOverride(context: CatalogMutationContext, input: ChangeCatalogOverrideInput): Promise<CatalogItemRecord>;
   getItem(scope: CatalogScope, itemId: string): Promise<CatalogItemRecord | null>;
-  search(scope: CatalogScope, input: Readonly<{ query: string; categoryId: string | null; brandId: string | null; page: number; pageSize: number; includeReferenceCost: boolean }>): Promise<Readonly<{ items: readonly CatalogPriceListItem[]; totalCount: number }>>;
+  search(scope: CatalogScope, input: Readonly<{ query: string; kind: CatalogItemKind | null; categoryId: string | null; brandId: string | null; page: number; pageSize: number; includeReferenceCost: boolean }>): Promise<Readonly<{ items: readonly CatalogPriceListItem[]; totalCount: number }>>;
 }

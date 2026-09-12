@@ -1,5 +1,6 @@
 import { Barcode, Boxes, CircleDollarSign, Plus, Search, Tag } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import {
   changeCatalogBasePrice, changeCatalogReferenceCost, createCatalogBrand,
@@ -18,7 +19,13 @@ import { useUserPreferences } from '../user-preferences/UserPreferencesProvider.
 import styles from './price-list-page.module.css';
 
 const kindLabels: Readonly<Record<CatalogItemKind, string>> = Object.freeze({ PART: 'Refacción', PRODUCT: 'Producto', SERVICE: 'Servicio', SUPPLY: 'Insumo' });
+const commercialKinds = Object.freeze(['PART', 'PRODUCT', 'SERVICE'] as const);
+type CommercialKind = (typeof commercialKinds)[number];
 type Notice = Readonly<{ tone: 'danger' | 'success' | 'warning'; message: string }>;
+
+function priceListKind(value: string | null): CommercialKind | '' {
+  return value === 'PART' || value === 'PRODUCT' || value === 'SERVICE' ? value : '';
+}
 
 function money(amountMinor: number, currency: string): string {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency }).format(amountMinor / 100);
@@ -53,6 +60,7 @@ function PriceCard({ value, canManage, onManage }: Readonly<{ value: PriceListIt
 }
 
 export function PriceListPage({ capabilities, administrationCapabilities, csrfToken }: Readonly<{ capabilities: readonly OperationalCapability[]; administrationCapabilities: readonly OperationalCapability[]; csrfToken: string }>): React.JSX.Element {
+  const [searchParams, setSearchParams] = useSearchParams();
   const canManage = hasOperationalCapability(administrationCapabilities, 'catalog.manage');
   const canManagePrice = hasOperationalCapability(administrationCapabilities, 'catalog.prices.manage');
   const canManageBranchPrice = hasOperationalCapability(capabilities, 'catalog.branch_prices.manage');
@@ -61,7 +69,10 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const preferences = useUserPreferences();
   const [references, setReferences] = useState<CatalogReferences | null>(null);
   const [page, setPage] = useState<PriceListPage | null>(null);
-  const [query, setQuery] = useState(''); const [categoryId, setCategoryId] = useState(''); const [brandId, setBrandId] = useState('');
+  const query = searchParams.get('q') ?? '';
+  const filterKind = priceListKind(searchParams.get('kind'));
+  const categoryId = searchParams.get('categoryId') ?? '';
+  const brandId = searchParams.get('brandId') ?? '';
   const [pageNumber, setPageNumber] = useState(1); const [loading, setLoading] = useState(true); const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null); const [dialog, setDialog] = useState<'create' | 'manage' | null>(null);
   const [selected, setSelected] = useState<CatalogItem | null>(null); const [saving, setSaving] = useState(false);
@@ -74,9 +85,9 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const includeCost = canReadCost && preferences.priceListShowReferenceCost;
   const refreshReferences = useCallback(async () => { const value = await listCatalogReferences(); setReferences(value); return value; }, []);
   const refresh = useCallback(async (signal?: AbortSignal) => {
-    const value = await searchPriceList({ query, categoryId, brandId, page: pageNumber, includeReferenceCost: includeCost }, signal);
+    const value = await searchPriceList({ query, kind: filterKind, categoryId, brandId, page: pageNumber, includeReferenceCost: includeCost }, signal);
     setPage(value); setLoadError(false); setLoading(false);
-  }, [query, categoryId, brandId, pageNumber, includeCost]);
+  }, [query, filterKind, categoryId, brandId, pageNumber, includeCost]);
 
   useEffect(() => { void refreshReferences().catch(() => setLoadError(true)); }, [refreshReferences]);
   useEffect(() => {
@@ -87,8 +98,40 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
 
   const activeCategories = useMemo(() => references?.categories.filter(({ status }) => status === 'ACTIVE') ?? [], [references]);
   const activeBrands = useMemo(() => references?.brands.filter(({ status }) => status === 'ACTIVE') ?? [], [references]);
+  const commercialCategories = useMemo(() => activeCategories.filter((reference) => reference.applicableKinds.some((kind) => commercialKinds.includes(kind as CommercialKind))), [activeCategories]);
+  const commercialBrands = useMemo(() => activeBrands.filter((reference) => reference.applicableKinds.some((kind) => commercialKinds.includes(kind as CommercialKind))), [activeBrands]);
+  const filterCategories = useMemo(() => filterKind ? commercialCategories.filter((reference) => reference.applicableKinds.includes(filterKind)) : commercialCategories, [commercialCategories, filterKind]);
+  const brandIsCompatible = useCallback((candidateBrandId: string, candidateKind: CommercialKind | '', candidateCategoryId: string): boolean => {
+    const brand = commercialBrands.find((value) => value.brandId === candidateBrandId);
+    if (!brand || (candidateKind && !brand.applicableKinds.includes(candidateKind))) return false;
+    if (!candidateCategoryId) return true;
+    return references?.categoryBrandApplicability.some((value) => value.categoryId === candidateCategoryId && value.brandId === candidateBrandId && (!candidateKind || value.kind === candidateKind)) ?? false;
+  }, [commercialBrands, references]);
+  const filterBrands = useMemo(() => commercialBrands.filter((reference) => brandIsCompatible(reference.brandId ?? '', filterKind, categoryId)), [commercialBrands, brandIsCompatible, filterKind, categoryId]);
   const applicableCategories = useMemo(() => activeCategories.filter((reference) => reference.applicableKinds.includes(kind)), [activeCategories, kind]);
   const applicableBrands = useMemo(() => activeBrands.filter((reference) => reference.applicableKinds.includes(kind)), [activeBrands, kind]);
+  const updateListFilter = (key: 'q' | 'kind' | 'categoryId' | 'brandId', value: string): void => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set(key, value); else next.delete(key);
+    setPageNumber(1); setSearchParams(next, { replace: true });
+  };
+  const changeFilterKind = (nextKind: CommercialKind | ''): void => {
+    const categoryCompatible = !categoryId || commercialCategories.some((value) => value.categoryId === categoryId && (!nextKind || value.applicableKinds.includes(nextKind)));
+    const nextCategoryId = categoryCompatible ? categoryId : '';
+    const brandCompatible = !brandId || brandIsCompatible(brandId, nextKind, nextCategoryId);
+    const next = new URLSearchParams(searchParams);
+    if (nextKind) next.set('kind', nextKind); else next.delete('kind');
+    if (nextCategoryId) next.set('categoryId', nextCategoryId); else next.delete('categoryId');
+    if (brandCompatible && brandId) next.set('brandId', brandId); else next.delete('brandId');
+    setPageNumber(1); setSearchParams(next, { replace: true });
+  };
+  const changeFilterCategory = (nextCategoryId: string): void => {
+    const brandCompatible = !brandId || brandIsCompatible(brandId, filterKind, nextCategoryId);
+    const next = new URLSearchParams(searchParams);
+    if (nextCategoryId) next.set('categoryId', nextCategoryId); else next.delete('categoryId');
+    if (brandCompatible && brandId) next.set('brandId', brandId); else next.delete('brandId');
+    setPageNumber(1); setSearchParams(next, { replace: true });
+  };
   const resetForm = (): void => { setSelected(null); setKind('PART'); setTitle(''); setDescription(''); setFormCategoryId(''); setFormBrandId(''); setFormStatus('ACTIVE'); setFormSku(''); setInternalCode(''); setExternalScheme(''); setExternalValue(''); setBasePrice(''); setReferenceCost(''); setOverridePrice(''); requestId.current = null; };
   const openCreate = (): void => { resetForm(); setDialog('create'); setNotice(null); };
   const openManage = async (itemId: string): Promise<void> => {
@@ -154,15 +197,16 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
       <PageHeader eyebrow="Listas" title="Lista de precios" description="Referencia rápida del precio efectivo en esta sucursal." primaryAction={canManage && canManagePrice ? <Button tone="primary" onClick={openCreate}><Plus size={18} aria-hidden="true" />Nuevo artículo</Button> : undefined} />
       {notice ? <Alert tone={notice.tone} title={notice.tone === 'success' ? 'Listo' : 'Atención'}>{notice.message}</Alert> : null}
       <section className={styles.toolbar} aria-label="Buscar y filtrar lista de precios">
-        <label className={styles.search}><Search size={20} aria-hidden="true" /><span className="srt-visually-hidden">Buscar</span><Input value={query} onChange={(event) => { setQuery(event.target.value); setPageNumber(1); }} placeholder="Buscar por nombre, SKU o código…" autoComplete="off" /></label>
-        <label><span className="srt-visually-hidden">Categoría</span><Select value={categoryId} onChange={(event) => { setCategoryId(event.target.value); setPageNumber(1); }}><option value="">Todas las categorías</option>{activeCategories.map((value) => <option key={value.categoryId} value={value.categoryId}>{value.name}</option>)}</Select></label>
-        <label><span className="srt-visually-hidden">Marca</span><Select value={brandId} onChange={(event) => { setBrandId(event.target.value); setPageNumber(1); }}><option value="">Todas las marcas</option>{activeBrands.map((value) => <option key={value.brandId} value={value.brandId}>{value.name}</option>)}</Select></label>
+        <label className={styles.filterField}><span>Buscar</span><span className={styles.search}><Search size={20} aria-hidden="true" /><Input value={query} onChange={(event) => updateListFilter('q', event.target.value)} placeholder="Buscar por nombre, SKU o código…" autoComplete="off" /></span></label>
+        <label className={styles.filterField}><span>Tipo</span><Select value={filterKind} onChange={(event) => changeFilterKind(event.target.value as CommercialKind | '')}><option value="">Todos los tipos</option>{commercialKinds.map((value) => <option key={value} value={value}>{kindLabels[value]}</option>)}</Select></label>
+        <label className={styles.filterField}><span>Categoría</span><Select value={categoryId} onChange={(event) => changeFilterCategory(event.target.value)}><option value="">Todas las categorías</option>{filterCategories.map((value) => <option key={value.categoryId} value={value.categoryId}>{value.name}</option>)}</Select></label>
+        <label className={styles.filterField}><span>Marca</span><Select value={brandId} onChange={(event) => updateListFilter('brandId', event.target.value)}><option value="">Todas las marcas</option>{filterBrands.map((value) => <option key={value.brandId} value={value.brandId}>{value.name}</option>)}</Select></label>
         {canReadCost ? <label className={styles.costToggle}><input type="checkbox" checked={preferences.priceListShowReferenceCost} disabled={preferences.saving} onChange={(event) => { void preferences.setPriceListShowReferenceCost(event.target.checked).catch(() => undefined); }} />Mostrar costos de referencia</label> : null}
       </section>
       {loadError ? <ErrorState title="No pudimos cargar la lista" description="Conservamos el contexto seguro. Intenta de nuevo." />
         : loading ? <Skeleton rows={5} />
           : page?.items.length ? <><div className={styles.results} aria-live="polite">{page.items.map((item) => <PriceCard key={item.item.itemId} value={item} canManage={canManage} onManage={(id) => void openManage(id)} />)}</div><footer className={styles.pagination}><span>{page.totalCount} resultados</span><div><Button size="compact" disabled={pageNumber === 1} onClick={() => setPageNumber((current) => current - 1)}>Anterior</Button><span>Página {pageNumber}</span><Button size="compact" disabled={pageNumber * 25 >= page.totalCount} onClick={() => setPageNumber((current) => current + 1)}>Siguiente</Button></div></footer></>
-          : <EmptyState title="No hay artículos para mostrar" description={query || categoryId || brandId ? 'Prueba otra búsqueda o limpia los filtros.' : 'Crea una refacción, producto o servicio para comenzar.'} />}
+          : <EmptyState title="No hay artículos para mostrar" description={query || filterKind || categoryId || brandId ? 'Prueba otra búsqueda o limpia los filtros.' : 'Crea una refacción, producto o servicio para comenzar.'} />}
 
       <Dialog open={dialog !== null} size="wide" title={dialog === 'create' ? 'Nuevo artículo' : `Administrar ${selected?.title ?? 'artículo'}`} description={dialog === 'create' ? 'Identidad comercial Tenant-wide y precio base.' : 'Los cambios de importe crean revisiones; el override sólo afecta esta sucursal.'} onClose={close} footer={false}>
         <div className={styles.dialogBody}>

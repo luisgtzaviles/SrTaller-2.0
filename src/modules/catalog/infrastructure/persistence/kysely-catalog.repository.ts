@@ -211,13 +211,14 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
     const scope = validateScope(scopeValue);
     try {
       return await this.execute(async (executor) => {
-        const [categories, brands, categoryKinds, brandKinds, usages, creationEvents] = await Promise.all([
+        const [categories, brands, categoryKinds, brandKinds, usages, creationEvents, categoryBrandApplicability] = await Promise.all([
           executor.selectFrom('catalog_categories').selectAll().where('tenant_id', '=', scope.tenantId).orderBy('normalized_name').orderBy('category_id').execute(),
           executor.selectFrom('catalog_brands').selectAll().where('tenant_id', '=', scope.tenantId).orderBy('normalized_name').orderBy('brand_id').execute(),
           executor.selectFrom('catalog_category_kind_applicability').select(['category_id', 'kind']).where('tenant_id', '=', scope.tenantId).orderBy('kind').execute(),
           executor.selectFrom('catalog_brand_kind_applicability').select(['brand_id', 'kind']).where('tenant_id', '=', scope.tenantId).orderBy('kind').execute(),
           executor.selectFrom('catalog_items').select(['category_id', 'brand_id']).select(({ fn }) => fn.countAll<string>().as('count')).where('tenant_id', '=', scope.tenantId).groupBy(['category_id', 'brand_id']).execute(),
           executor.selectFrom('catalog_audit_events').select(['resource_id', 'actor_display_name', 'occurred_at']).where('tenant_id', '=', scope.tenantId).where('action', 'in', ['catalog.category.create', 'catalog.category.create_pending', 'catalog.brand.create', 'catalog.brand.create_pending']).orderBy('occurred_at').execute(),
+          executor.selectFrom('catalog_items').select(['category_id', 'brand_id', 'kind']).distinct().where('tenant_id', '=', scope.tenantId).where('status', '=', 'ACTIVE').where('sellable', '=', true).where('brand_id', 'is not', null).orderBy('category_id').orderBy('brand_id').orderBy('kind').execute(),
         ]);
         const categoryKindMap = new Map<string, CatalogItemKind[]>();
         for (const row of categoryKinds) categoryKindMap.set(row.category_id, [...(categoryKindMap.get(row.category_id) ?? []), row.kind]);
@@ -229,6 +230,7 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
         return Object.freeze({
           categories: Object.freeze(categories.map((row) => Object.freeze({ categoryId: row.category_id, name: row.display_name, status: row.status, reviewStatus: row.review_status, applicableKinds: Object.freeze(categoryKindMap.get(row.category_id) ?? []), usageCount: categoryUsage.get(row.category_id) ?? 0, version: row.version, createdBy: creators.get(row.category_id) ?? null, createdAt: row.created_at.toISOString(), createdInBranchId: row.created_in_branch_id, mergedIntoId: row.merged_into_id }))),
           brands: Object.freeze(brands.map((row) => Object.freeze({ brandId: row.brand_id, name: row.display_name, status: row.status, reviewStatus: row.review_status, applicableKinds: Object.freeze(brandKindMap.get(row.brand_id) ?? []), usageCount: brandUsage.get(row.brand_id) ?? 0, version: row.version, createdBy: creators.get(row.brand_id) ?? null, createdAt: row.created_at.toISOString(), createdInBranchId: row.created_in_branch_id, mergedIntoId: row.merged_into_id }))),
+          categoryBrandApplicability: Object.freeze(categoryBrandApplicability.map((row) => Object.freeze({ categoryId: row.category_id, brandId: row.brand_id!, kind: row.kind }))),
         });
       });
     } catch (error: unknown) { throw translate(error); }
@@ -532,7 +534,7 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
     return mapItem(row, identifiers.get(itemId) ?? []);
   }
 
-  async search(scopeValue: CatalogScope, input: Readonly<{ query: string; categoryId: string | null; brandId: string | null; page: number; pageSize: number; includeReferenceCost: boolean }>) {
+  async search(scopeValue: CatalogScope, input: Readonly<{ query: string; kind: CatalogItemKind | null; categoryId: string | null; brandId: string | null; page: number; pageSize: number; includeReferenceCost: boolean }>) {
     const scope = validateScope(scopeValue);
     try {
       return await this.execute(async (executor) => {
@@ -540,6 +542,7 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
         const tokens = input.query.split(' ').filter(Boolean);
         let query = itemQuery(executor, scope.tenantId).where('catalog_items.status', '=', 'ACTIVE').where('catalog_items.sellable', '=', true);
         let count = executor.selectFrom('catalog_items').select(({ fn }) => fn.countAll<string>().as('count')).where('catalog_items.tenant_id', '=', scope.tenantId).where('catalog_items.status', '=', 'ACTIVE').where('catalog_items.sellable', '=', true);
+        if (input.kind) { query = query.where('catalog_items.kind', '=', input.kind); count = count.where('catalog_items.kind', '=', input.kind); }
         if (input.categoryId) { query = query.where('catalog_items.category_id', '=', input.categoryId); count = count.where('catalog_items.category_id', '=', input.categoryId); }
         if (input.brandId) { query = query.where('catalog_items.brand_id', '=', input.brandId); count = count.where('catalog_items.brand_id', '=', input.brandId); }
         let exactItemId: string | undefined;

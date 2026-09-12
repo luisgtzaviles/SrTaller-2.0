@@ -250,10 +250,17 @@ Reglas:
    aproximada en identidad;
 3. sólo `ACTIVE` y tipos Refacción/Producto/Servicio;
 4. precio efectivo de la Branch confiable, moneda y procedencia visibles;
-5. categoría y marca como filtros opcionales;
-6. orden total estable y paginación; sin cargar todo el Tenant al browser;
-7. costo omitido por default y protegido según la sección anterior;
-8. misma respuesta no reveladora para IDs ajenos/inexistentes y filtros
+5. Tipo, categoría y marca se componen como filtros opcionales y navegables:
+   Tipo limita las categorías según su aplicabilidad gobernada y Tipo +
+   Categoría limita marcas a pares conocidos de artículos activos vendibles. La
+   segunda lista es una proyección de lectura Tenant-scoped, no una relación
+   maestra Category→Brand: Brand conserva una sola identidad Tenant-wide y su
+   propia aplicabilidad por Tipo;
+6. cambiar Tipo o Categoría conserva sólo los filtros que siguen siendo
+   compatibles; los demás vuelven de forma determinista a Todos/Todas;
+7. orden total estable y paginación; sin cargar todo el Tenant al browser;
+8. costo omitido por default y protegido según la sección anterior;
+9. misma respuesta no reveladora para IDs ajenos/inexistentes y filtros
    Tenant en cada query.
 
 Objetivo de aceptación: con 10,000 items sintéticos por Tenant, una búsqueda

@@ -22,7 +22,7 @@ function id(reference: CatalogReference): string { return reference.categoryId ?
 function date(value?: string): string { return value ? new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Sin dato previo'; }
 
 export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfToken: string }>): React.JSX.Element {
-  const [references, setReferences] = useState<CatalogReferences>({ categories: [], brands: [] });
+  const [references, setReferences] = useState<CatalogReferences>({ categories: [], brands: [], categoryBrandApplicability: [] });
   const [referenceKind, setReferenceKind] = useState<ReferenceKind>('category');
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null); const [notice, setNotice] = useState<string | null>(null);

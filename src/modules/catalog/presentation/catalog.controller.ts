@@ -39,7 +39,7 @@ export class CatalogController {
     try {
       const includeReferenceCost = query.includeReferenceCost === 'true';
       return await this.operations.search(evidence(headers), {
-        query: query.query ?? '', categoryId: query.categoryId ?? null, brandId: query.brandId ?? null,
+        query: query.query ?? '', kind: query.kind ?? null, categoryId: query.categoryId ?? null, brandId: query.brandId ?? null,
         page: query.page ? Number(query.page) : 1, pageSize: query.pageSize ? Number(query.pageSize) : 25,
       }, includeReferenceCost);
     } catch (error: unknown) { return translate(error); }

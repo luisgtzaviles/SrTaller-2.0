@@ -92,7 +92,11 @@ export class CatalogService {
     const references = await this.repository.listReferences(scope);
     const category = ({ categoryId, name, status, reviewStatus, applicableKinds, version }: CatalogCategoryRecord) => Object.freeze({ categoryId, name, status, reviewStatus, applicableKinds, version });
     const brand = ({ brandId, name, status, reviewStatus, applicableKinds, version }: CatalogBrandRecord) => Object.freeze({ brandId, name, status, reviewStatus, applicableKinds, version });
-    return Object.freeze({ categories: Object.freeze(references.categories.map(category)), brands: Object.freeze(references.brands.map(brand)) });
+    return Object.freeze({
+      categories: Object.freeze(references.categories.map(category)),
+      brands: Object.freeze(references.brands.map(brand)),
+      categoryBrandApplicability: Object.freeze(references.categoryBrandApplicability.map(({ categoryId, brandId, kind }) => Object.freeze({ categoryId, brandId, kind }))),
+    });
   }
   getItem(scope: CatalogScope, itemId: unknown) { return this.repository.getItem(scope, identifier(itemId, 'itemId')); }
 
@@ -253,13 +257,16 @@ export class CatalogService {
   }
 
   search(scope: CatalogScope, value: unknown, includeReferenceCost: boolean) {
-    const input = object(value, ['query', 'categoryId', 'brandId', 'page', 'pageSize']);
+    const input = object(value, ['query', 'kind', 'categoryId', 'brandId', 'page', 'pageSize']);
     if (input.query !== undefined && typeof input.query !== 'string') throw new CatalogInputError('query');
     const rawQuery = typeof input.query === 'string' ? input.query : '';
     if (rawQuery.length > 120 || /[\u0000-\u001f\u007f]/u.test(rawQuery)) throw new CatalogInputError('query');
     const query = normalizeCatalogText(rawQuery).replace(/[%_]/gu, ' ').replace(/\s+/gu, ' ').trim();
+    const kind = input.kind === null || input.kind === undefined || input.kind === '' ? null : parseCatalogItemKind(input.kind);
+    if (kind === 'SUPPLY') throw new CatalogInputError('kind');
     return this.repository.search(scope, {
       query,
+      kind,
       categoryId: input.categoryId ? identifier(input.categoryId, 'categoryId') : null,
       brandId: input.brandId ? identifier(input.brandId, 'brandId') : null,
       page: input.page === undefined ? 1 : integer(input.page, 'page', 1),
