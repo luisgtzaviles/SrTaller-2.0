@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Identidad, sesión, autorización ordinaria y autorización reforzada conceptuales aceptadas; mecanismos y aplicación pendientes.
-- **Naturaleza:** ADR-004/010/011/012/013 son autoritativos para contexto, identidad, sesión, capacidades, alcance, sensibilidad, reautenticación y segundo aprobador; los mecanismos técnicos siguen pendientes.
+- **Estado:** Identidad, sesiones concurrentes, autorización ordinaria y autorización reforzada conceptuales aceptadas; PBI-043 todavía no materializa la concurrencia.
+- **Naturaleza:** ADR-004/010/011/012/013/014 son autoritativos para contexto, identidad, sesión, capacidades, alcance, sensibilidad, reautenticación y segundo aprobador; ADR-014 sustituye sólo la exclusividad station-wide de ADR-011.
 - **Alcance:** Usuario de tenant, identidad de plataforma/correlación futura, roles, permisos, estaciones y sesiones.
 - **Fuera de alcance:** Seleccionar proveedor, algoritmos criptográficos, formatos de token o políticas numéricas definitivas.
 
@@ -40,7 +40,7 @@ El diagrama es conceptual: no prescribe tablas, cardinalidades definitivas ni qu
 | Capacidad | Facultad concreta para solicitar una operación protegida dentro de un alcance | Módulo, pantalla o elemento de navegación |
 | Estación operativa | Equipo vinculado a una sucursal cuyo tenant se deriva de ella | Identidad de la persona |
 | Sesión de dispositivo | Evidencia vigente de vinculación del equipo | Sesión de usuario u operación |
-| Sesión de usuario | Periodo aceptado en que un usuario autenticado es actor activo dentro del contexto resuelto | Identidad, sucursal efectiva o permiso |
+| Sesión de usuario | Periodo aceptado en que un usuario autenticado es el actor de los requests que presentan esa Session dentro del contexto resuelto | Identidad, sucursal efectiva, permiso o actor global de la Station |
 | Contexto operativo | Tenant–sucursal–estación–usuario resueltos para una operación | Autenticación primaria o autorización |
 | PIN | Credencial operativa que identifica al usuario dentro del tenant ya resuelto | Identidad, selector de tenant/sucursal o permiso de supervisor |
 
@@ -124,11 +124,13 @@ Los flujos ordinarios se rigen por el contexto completo de ADR-010/011. Cualquie
 
 - Vincular una estación establece confianza limitada en una sucursal y deriva su tenant.
 - La sesión de dispositivo puede sobrevivir a cambios de operador, pero debe revocarse de forma independiente.
-- ADR-011 establece que la sesión de usuario representa el periodo de operación de una persona autenticada dentro del tenant ya determinado por la estación.
-- Una estación mantiene como máximo una sesión operativa activa.
-- El contexto operativo combina estación/sucursal persistentes con el usuario activo y cambia de usuario sólo mediante autenticación satisfactoria.
+- ADR-011/014 establecen que la sesión de usuario representa el periodo de operación de una persona autenticada dentro del tenant ya determinado por la estación.
+- Una estación mantiene cero o más sesiones operativas activas independientes.
+- Cada sesión liga Tenant, Branch, Station, StationCredential, User y SessionId; no existe un usuario activo global de la Station.
+- El contexto operativo de cada request combina Station/Branch persistentes con el User de la Session solicitante.
+- Cambiar usuario reemplaza sólo la Session del perfil solicitante después de autenticación satisfactoria; no modifica otras Sessions de la Station.
 - Cerrar, expirar, sustituir o invalidar la sesión de usuario no desvincula la estación.
-- Una sesión inválida no acepta nuevas acciones; la política exacta y latencia de bloqueo/revocación siguen `TBD`.
+- Una sesión inválida no acepta nuevas acciones. Revocación de Station, User o credencial es efectiva para la siguiente operación mediante los epochs vigentes, aunque la fila se materialice después.
 
 Véase [Modelo de sucursal y dispositivo](BRANCH_AND_DEVICE_MODEL.md).
 
@@ -136,7 +138,7 @@ Véase [Modelo de sucursal y dispositivo](BRANCH_AND_DEVICE_MODEL.md).
 
 ### Decisión conceptual aceptada
 
-ADR-011 establece que el PIN es una credencial que identifica al usuario únicamente dentro del tenant de una estación autorizada. El servidor valida el intento y, si el usuario puede operar, establece una sesión nueva como única sesión activa de la estación. Protección y fuerza de autenticación se decidirán mediante un modelo de amenazas.
+ADR-011/014 establecen que el PIN es una credencial que identifica al usuario únicamente dentro del tenant de una estación autorizada. El servidor valida el intento y, si el usuario puede operar, establece una Session nueva independiente o reemplaza sólo la Session solicitante durante switch. PBI-043 materializará la cardinalidad concurrente; el runtime integrado conserva temporalmente la restricción anterior.
 
 Controles conceptuales:
 
@@ -144,7 +146,7 @@ Controles conceptuales:
 - nunca se almacena en texto plano o de forma reversible ni se conserva en interfaces, logs o analítica;
 - intentos fallidos se limitan y auditan sin revelar qué personas existen;
 - la estación debe estar activa y vinculada; no existe sucursal solicitada libremente por el usuario;
-- el contexto de usuario expira por inactividad; cierre remoto y representación técnica permanecen pendientes;
+- el contexto de usuario expira tras 60 minutos de inactividad y tiene lifetime absoluto de 12 horas; administración remota permanece pendiente;
 - cambios de PIN y recuperaciones requieren un flujo distinto y suficientemente autenticado;
 - acciones sensibles exigen el control nivel 2, 3 o 4 resuelto conforme a ADR-013, aunque el PIN haya iniciado la sesión y exista capacidad ordinaria;
 - un empleado que rota de sucursal usa una estación vinculada del mismo tenant y no requiere otra cuenta.
@@ -171,13 +173,13 @@ Una candidata sin política concreta permanece en nivel 4. La rebanada define ni
 
 | Evento | Efecto conceptual esperado | Decisión pendiente |
 |---|---|---|
-| Bloqueo de usuario | Impedir nuevas sesiones mientras la condición aplique | Causas, duración y efecto sobre sesiones existentes |
-| Desactivación de usuario | Impedir nuevas sesiones dentro de su tenant | Flujo administrativo y efecto sobre sesiones existentes |
-| Revocación de usuario | Impedir nuevas sesiones; una sesión invalidada no acepta acciones | Alcance, propagación y latencia |
+| Lockout de PIN | Impedir nuevas autenticaciones durante cooldown; no terminar Sessions autenticadas | Observabilidad operacional futura |
+| Desactivación de usuario | Impedir nuevas sesiones e invalidar efectivamente todas las existentes | Flujo administrativo y materialización física posterior |
+| Revocación de usuario | Impedir nuevas sesiones e invalidar efectivamente todas las existentes | Flujo administrativo y materialización física posterior |
 | Desvinculación de estación | Invalidar sus contextos y denegar operación ordinaria | Manejo de trabajos en curso |
 | Cambio de rol, capacidad o asignación | Aplicar la composición vigente en la siguiente operación protegida conforme a ADR-012 | Estrategia técnica de propagación e invalidación |
-| Revocación de dispositivo | Cerrar sesión de dispositivo y operativas asociadas | Comportamiento offline |
-| Compromiso de credencial | Revocar sesiones relevantes y forzar recuperación segura | Señales y automatización |
+| Revocación de dispositivo | Invalidar todas sus Sessions operativas | Comportamiento offline y materialización física |
+| Compromiso/reemplazo de credencial | Invalidar todas las Sessions dependientes y forzar recuperación segura | Señales y automatización |
 
 La revocación debe ser verificable por la autoridad del servidor; una interfaz cerrada no es evidencia suficiente. ADR-012 exige que la capacidad retirada no autorice la siguiente operación protegida, sin fijar tecnología de propagación.
 
@@ -244,6 +246,8 @@ La auditoría registra usuario, sesión, tenant, sucursal, estación, acción, o
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
 - [ADR-013 — Acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md)
+- [ADR-014 — Sesiones operativas concurrentes](../decisions/proposed/ADR-014-concurrent-operational-sessions.md)
+- [Arquitectura de Concurrent Operational Sessions](CONCURRENT_OPERATIONAL_SESSIONS.md)
 - [Glosario de dominio](../product/DOMAIN_GLOSSARY.md)
 - [Actores y personas](../product/ACTORS_AND_PERSONAS.md)
 
@@ -254,7 +258,7 @@ La auditoría registra usuario, sesión, tenant, sucursal, estación, acción, o
 - ¿Qué composición mínima de roles/capacidades necesita cada rebanada?
 - ¿Qué nivel 1–4 corresponde a cada operación de la primera rebanada?
 - ¿Cómo se recupera el acceso cuando no hay otro administrador del tenant?
-- ¿Qué latencia máxima de revocación es aceptable para cada tipo de sesión?
+- ¿Qué observabilidad y retención necesitará el futuro Device/Session Admin?
 - ¿Qué acciones financieras o administrativas requieren nivel 3 en su política concreta?
 
 ## Próxima revisión

@@ -16,15 +16,11 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 ## Estado del documento
 
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
-**Orden operativo:** PBI-030, PBI-027, PBI-029, PBI-024, PBI-032 y PBI-033
-están `Done` y `Released: NO`; Sprint 01 está `Closed`. SPRINT-02 está
-`Active`; PBI-025 quedó `Done` mediante PR #32 y CI exacto de `main` GREEN.
-PBI-034 está `Done` después del cierre PR #34 y CI exacto GREEN; G3 está
-`PASS`. PBI-026/PBI-028/PBI-038 están `Done`, G4/G5 `PASS`; Current PBI es
-PBI-039, SPRINT-02 tiene WIP `1/1`, Functional Slice Frozen / Owner Accepted y
-Formal UI Verification, Hardening, Full Verification, CI / PR Readiness y PR
-CI en `PASS`; los findings de revisión están remediados y PR #42 está listo
-para re-review independiente, todavía sin merge ni deploy.
+**Orden operativo:** Sprint 01 está `Closed`. En SPRINT-02,
+PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039 están `Done`, G3–G5 `PASS` y
+ninguno está `Released`. PBI-043 es Current PBI `Ready`, WIP `0/1`, con start
+Owner pendiente. PBI-040 permanece congelado fuera de `main` y no se reanuda
+antes de cerrar la remediación Access.
 
 ## Estructura
 
@@ -75,5 +71,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-No existe siguiente candidato seleccionado. No iniciar otro PBI, liberar ni
-desplegar sin nueva autorización Owner.
+PBI-043 es el único PBI seleccionado y `Ready`. No implementar, reanudar
+PBI-040, liberar ni desplegar sin autorización Owner explícita.

@@ -1,44 +1,47 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-039 canonical closure
-Sprint: SPRINT-02 — Operational Authentication & Authorization
-Current PBI: PBI-039 — Done candidate
-Status: Closure documentation PR pending merge and exact-main CI
+Milestone / Functional Goal: Concurrent Operational Sessions — architecture + PBI readiness
+Sprint: SPRINT-02 — Operational Authentication & Authorization remediation
+Current PBI: PBI-043 — Ready; implementation not authorized
+Status: Architecture and readiness prepared for Owner implementation decision
 WIP: 0/1
-Progress: 8 / 10 closure steps complete
-Current: Reconcile canonical closure documentation from integrated and
-post-deploy-validated `main`
-Next: Governed documentation PR, merge, exact-main CI, then stop
-Blocked: None
-Last updated: 2026-09-11 09:18 MST
+Progress: 8 / 8 readiness steps complete
+Current: Owner review of ADR-014 and PBI-043 readiness package
+Next: Explicit Owner implementation authorization or stop
+Blocked: None; no unresolved product/domain decision found
+Last updated: 2026-09-12 MST
 
-## Closure gate
+## Architecture and readiness gate
 
-- [x] Functional Slice — Frozen / Owner Accepted
-- [x] Formal UI Verification — PASS
-- [x] Hardening and Authoritative Full Verification — PASS
-- [x] Independent review findings — remediated and re-reviewed PASS
-- [x] PR #42 merged normally as `6c04e57…`; exact-main CI `34604591354` PASS
-- [x] Preview cache/ETag defect closed through PR #43 / `5ccc525…`; exact-main
-  CI `34614530586` PASS
-- [x] Repairs production-runtime composition defect closed through PR #44 /
-  `0d1c576…`; exact-main CI `34619271236` PASS
-- [x] Preview redeployed and authenticated create/detail/reload/worklist smoke
-  passed with synthetic repair `SR-2026-1000`
-- [~] Reconcile PBI, roadmap, Sprint, Current State and archived checklist in
-  the governed closure PR
-- [ ] Merge closure PR and require exact-main run-1, run-2 and comparison PASS
+- [x] Started from clean, current `main` `40684d7` with exact-main CI
+  `34623060504` PASS
+- [x] Preserved `feature/pbi-040-catalog-pricing-core` frozen and untouched
+- [x] Materialized ASC-001…ASC-008 in ADR-014 and canonical architecture
+- [x] Defined session-local switch, independent login, transaction boundaries,
+  persistence transition, rollback and revocation semantics
+- [x] Preserved PIN, cookies, CSRF, 60-minute idle, 12-hour absolute lifetime,
+  authorization and business attribution contracts
+- [x] Created PBI-043, formal DoR, Critical threat model and COS-01…COS-24
+  verification matrix
+- [x] Reconciled roadmap, Sprint, backlog, dependency map, workflow and branch
+  lifecycle policy
+- [x] Verified documentation and confirmed no product code, migration, endpoint,
+  database constraint or PBI-040 change
+
+## Current Owner gate
+
+- [ ] Owner implementation authorization for PBI-043
+- [ ] New implementation branch from an updated `main`
+- [ ] Implementation, review, CI, Preview validation and Owner Acceptance — all
+  future, separate gates
 
 ## Boundaries
 
-- [x] No Production deploy
-- [x] No Lista de precios, Caja, Evidencias/R2 or next product cycle started
-- [x] No next PBI selected
-- [x] Accepted warning remains explicit: Vite main chunk approximately
-  531.33 kB
+- [x] No functional implementation or migration
+- [x] No PBI-040 modification or resumption
+- [x] No PBI-041/PBI-042 implementation
+- [x] No push, PR, merge, release or deploy
+- [x] No Production or real-data operation
 
-The historical operational checklist is preserved at
+The prior PBI-039 closure checklist remains preserved in
 [`history/PBI-039_ACTIVE_CHECKLIST.md`](history/PBI-039_ACTIVE_CHECKLIST.md).
-This checklist records a `Done candidate`; by repository contract, only the
-authorized merge of this documentation PR plus authoritative exact-main CI
-materializes effective `Done`.

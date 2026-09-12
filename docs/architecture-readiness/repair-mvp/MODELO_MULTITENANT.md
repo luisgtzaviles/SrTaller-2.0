@@ -32,7 +32,7 @@
 | Políticas/catálogos | SaaS global, extensión tenant y ajuste permitido por sucursal | Niveles aceptados; resolución/versionado bloqueante | PB |
 | Folios | Alcance de unicidad y concurrencia | Bloqueante de Recepción | PB |
 | Archivos | Tenant/sucursal, autorización y rutas opacas | Propiedad aceptada; estrategia bloqueante antes de evidencia | PB |
-| Sesiones | Contexto tenant/sucursal/estación y una sesión activa por estación | Semántica aceptada; mecanismo y pruebas bloqueantes | PB |
+| Sesiones | Contexto tenant/sucursal/estación y Sessions independientes por Station conforme ADR-014 | Semántica aceptada; PBI-043 materializa mecanismo/pruebas | PB |
 | Auditoría/consultas | Filtro obligatorio y prueba negativa | Bloqueante antes de producción | RDD |
 | Índices conceptuales | Tenant como prefijo de búsquedas/únicos cuando aplique | Bloqueante al diseñar persistencia | DAR |
 | Trabajos en segundo plano | Contexto explícito y deduplicación | Bloqueante al introducirlos | DAR |

@@ -26,7 +26,7 @@
 | Escenario | Requisito mínimo | Clasificación |
 | --- | --- | --- |
 | Inicio tradicional | Estación vinculada, PIN limitado al tenant y usuario cuyo estado permite iniciar | RDD, ADR-011 |
-| Acceso operativo por PIN | Tenant resuelto por estación y una sola sesión activa por estación | RDD, ADR-011 |
+| Acceso operativo por PIN | Tenant resuelto por Station y actor resuelto por cada Session solicitante; concurrencia permitida | RDD, ADR-011/014 |
 | Estación compartida | Usuario activo visible y cambio de turno explícito sin cambiar sucursal | RDD |
 | Inactividad | Termina la sesión, conserva vinculación y exige autenticación nueva; duración pendiente | RDD, ADR-011 |
 | Múltiples roles/sucursales | Mismo usuario por tenant; estación determina sucursal y ADR-012 une capacidades tenant-wide y asignaciones aplicables a esa sucursal | RDD, ADR-012 |

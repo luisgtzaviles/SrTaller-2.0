@@ -216,6 +216,12 @@ historial/versionado independiente y sólo admite `Área de pendientes → Talle
 No se inventan tablas de clientes, pagos, autorización contextual ni otros
 módulos funcionales.
 
+La frase “una Session activa por Station” describe el schema integrado actual,
+no la arquitectura objetivo. [ADR-014](../decisions/proposed/ADR-014-concurrent-operational-sessions.md)
+la sustituye por `0..N` Sessions independientes; PBI-043 materializará el delta
+cuando exista autorización. Hasta entonces no se altera la migración local ni
+se afirma que el runtime ya soporte concurrencia.
+
 ## Seed sintético V1
 
 ```sh

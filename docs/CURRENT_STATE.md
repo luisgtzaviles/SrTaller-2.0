@@ -2,114 +2,88 @@
 
 ## Estado del documento
 
-- **Estado:** snapshot del cierre candidato de PBI-039 sobre la baseline
-  integrada y validada en Preview.
-- **Baseline Git integrada observada:** `main` y `origin/main` en
-  `0d1c5760ce962d17a8292b841f5de43a8cb453a7`.
-- **CI autoritativa exacta de `main`:** run
-  [`34619271236`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34619271236),
-  `SUCCESS`; run-1, run-2 y comparison verdes.
-- **PBI actual:** `PBI-039` en `Done candidate`; el merge autorizado y CI
-  autoritativa de `main` de este PR documental materializan `Done` efectivo.
-- **WIP:** `0/1`; no existe siguiente PBI seleccionado ni autorizado.
-- **Preview:** desplegado desde el merge exacto `0d1c576…`, saludable y
-  validado con un flujo autenticado New Repair create/detail/reload/worklist.
+- **Estado:** readiness de PBI-043 preparado sobre la última baseline integrada.
+- **Baseline Git verificada:** `main == origin/main` en
+  `40684d7554cdf02551f941e5e3f0beabbe563125` al iniciar el Goal.
+- **CI exacta de baseline:**
+  [`34623060504`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34623060504),
+  `SUCCESS` sobre `40684d7`.
+- **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization,
+  extendido sólo para la remediación Access.
+- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `Ready`; start Owner no
+  autorizado.
+- **WIP:** `0/1`; no existe implementación PBI-043 en curso.
+- **PBI-040:** Owner Review congelado en
+  `feature/pbi-040-catalog-pricing-core`; no integrado ni modificado por este
+  Goal.
+- **Preview:** continúa en la baseline PBI-039 previamente validada; no se
+  desplegó este trabajo documental.
 - **Production:** no desplegada ni autorizada.
-- **Regla:** este documento describe estado; no autoriza iniciar otro PBI,
-  Production, infraestructura o un release adicional.
 
 ## Resumen ejecutivo
 
-PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
-Guided V2, política de campos por Branch, catálogos administrativos y las
-superficies aceptadas de Repair Detail. El Functional Slice fue aceptado por
-Owner; Formal UI Verification, Hardening, Authoritative Full Verification,
-CI / PR Readiness, CI autoritativa y revisión independiente terminaron `PASS`.
+PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
+`40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
+Price List comenzó después en una rama no integrada y permanece congelado.
 
-El cambio principal se integró mediante PR
-[#42](https://github.com/luisgtzaviles/SrTaller-2.0/pull/42), merge
-`6c04e57c8a5d3bf8600cd4a2a3a191958aa0f0c2`, y recibió CI exacta de `main`
-[`34604591354`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34604591354)
-verde. La revisión independiente había encontrado una omisión HIGH de
-`canonicalDeviceTypeId` en la huella idempotente y una contradicción MEDIUM en
-documentación viva; ambos findings se remediaron y reverificaron antes del
-merge.
+Durante su Owner Review se confirmó una fricción preexistente de Access: la
+regla PBI-034 de una Session activa por Station rechaza otro perfil con PIN
+válido. La auditoría ubicó la causa en ADR-011, el unique parcial
+`(tenant_id, station_id) WHERE active`, el guard station-wide y
+`createReplacingActive`.
 
-La validación post-deploy de Preview descubrió dos defectos reales de
-integración, ya cerrados sin reabrir decisiones de producto:
+El Product Owner aprobó ASC-001 a ASC-008. [ADR-014](decisions/proposed/ADR-014-concurrent-operational-sessions.md)
+sustituye sólo la exclusividad y reemplazo station-wide de ADR-011. La nueva
+política permite cero o más Sessions por Station; cada request conserva una
+Session solicitante ligada a Tenant, Branch, Station, StationCredential, User
+y SessionId. Cookies, CSRF, autorización, rate limit, idle 60 minutos y
+absolute 12 horas permanecen.
 
-1. PR [#43](https://github.com/luisgtzaviles/SrTaller-2.0/pull/43), merge
-   `5ccc525a09d29fd6dcabbbfaabff9b811677c985`, corrigió el cache/ETag del
-   entrypoint SPA. CI exacta de `main` `34614530586` terminó verde.
-2. PR [#44](https://github.com/luisgtzaviles/SrTaller-2.0/pull/44), merge
-   `0d1c5760ce962d17a8292b841f5de43a8cb453a7`, recompuso Repairs sobre la
-   conexión compartida gobernada para que el runtime OCI de Preview use los
-   repositorios persistentes. CI exacta de `main` `34619271236` terminó verde.
-
-El único warning de build aceptado es el chunk Vite de aproximadamente
-531.33 kB. No se redujo cobertura, no se ocultaron skips materiales y no se
-inició Lista de precios, Caja, Evidencias/R2 ni otro ciclo.
-
-## Evidencia de cierre PBI-039
-
-| Área | Evidencia vigente |
-|---|---|
-| Functional Slice | Frozen — Owner Accepted |
-| Formal UI Verification | PASS |
-| Hardening | PASS |
-| Full Verification del candidato principal | PASS; campañas y fingerprints conservados en el expediente PBI |
-| Revisión independiente | PASS; registrada como comentario formal por restricción de autoaprobación GitHub |
-| Integración principal | PR #42 -> `6c04e57…` |
-| Cache/ETag Preview | PR #43 -> `5ccc525…`; exact-main CI `34614530586` PASS |
-| Repairs shared runtime | PR #44 -> `0d1c576…`; exact-main CI `34619271236` PASS |
-| Full Verification hotfix runtime | `local-full-verification-20260911154146-5ccc525a09d2`; 12/12 PASS; fingerprint `10fb843932175f6dc0d7c75ce5e3b08404d69858b016d407cb6480ad6cf3f4c4` |
-| PostgreSQL material | PBI-023 17/17 y PBI-039 2/2, cero skips materiales |
-| Preview endpoints | root 200 con `Cache-Control: no-store`; `/livez` 200; `/readyz` 200; API desconocida 404 |
-| Preview UI | sesión Luis/Station reconocida; create/detail/reload/worklist PASS con `SR-2026-1000` y datos sintéticos |
-| Production | No desplegada; no autorizada |
+[PBI-043](backlog/pbis/PBI-043.md) materializará la decisión como un objetivo
+Access independiente. Tiene [DoR PASS](quality/evidence/pbi-043/DEFINITION_OF_READY.md),
+[Threat Model Critical](quality/evidence/pbi-043/THREAT_MODEL.md) y una
+[matriz de 24 pruebas](quality/evidence/pbi-043/TEST_STRATEGY.md). `Ready` no
+autoriza su implementación.
 
 ## Capacidades integradas relevantes
 
-- Trusted Station Context, Users, Roles, capabilities, PIN y Operational
-  Session con autorización contextual server-side.
-- Customer mínimo y New Repair persistentes, Tenant/Branch scoped, con create
-  idempotente y transaccional.
-- New Repair Classic, Personal Form Mode y Guided V2 comparten dominio y
-  comando; Device Access no persiste secretos.
-- Catálogos de Device Types, Risks, Brands, Models y Problem Categories con
-  reconciliación no bloqueante donde corresponde.
-- Repair Worklist/Detail, Operational Header, Recepción, Historial y superficies
-  read-only de Conceptos/Evidencias según el alcance aceptado.
-- Auditoría y timeline atómicos para los writes cubiertos.
+- Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
+  con autorización contextual server-side.
+- Runtime actual todavía limitado a una Session activa por Station hasta que
+  PBI-043 sea implementado, integrado y validado.
+- Customer mínimo, New Repair y Repair Detail PBI-039 integrados y validados.
+- Auditoría de negocio acotada conserva Tenant, Branch, Station, User,
+  SessionId y correlation en los writes cubiertos.
 
-## Límites y deuda conocida
+## Decisión y delta pendientes de materialización
 
-- Basic Operational Evidence con mutación, Price List, Refacciones, Servicios,
-  venta personalizada, Caja, Anticipo, Abonos, Liquidación, Diagnosis avanzada,
-  analytics/AI y promoción de catálogos siguen diferidos y no bloquearon
-  PBI-039.
-- Los secretos de acceso de dispositivos no se persisten; su almacenamiento
-  seguro requiere arquitectura y autorización separadas.
-- El warning Vite de tamaño de chunk queda visible como deuda no bloqueante.
-- Preview contiene datos sintéticos de validación; no es Production.
-- El repositorio público observado continúa sin branch protection/ruleset;
-  autorización humana y evidencia siguen siendo gates obligatorios.
+| Área | Estado |
+|---|---|
+| ADR-014 | Accepted; no implementación |
+| Admission concurrente | Diseñada; pendiente |
+| Switch session-local | Diseñado; pendiente |
+| Drop unique parcial / índices | Diseñados; no existe migration |
+| Revocación efectiva N-session | Contrato definido; pendiente |
+| Cookies/CSRF/PIN/timeout | Sin cambio aprobado |
+| Browser Owner + QA | Caso de aceptación definido; no ejecutado |
+| Device/Session Admin | Fuera de alcance |
+| Global Access lifecycle audit | Fuera de alcance |
 
 ## Roadmap y WIP
 
 | Elemento | Estado vigente |
 |---|---|
-| Sprint activo | SPRINT-02 — Operational Authentication & Authorization |
-| Current PBI | `PBI-039` — Done candidate durante este PR documental |
-| WIP | `0/1` |
-| Next candidate | `NONE` |
-| G6 Customer mínimo | PASS candidate |
-| G7 New Repair / Intake | PASS candidate |
-| Preview | Desplegado y validado en `0d1c576…` |
+| Sprint activo | SPRINT-02 — remediation Access |
+| Current PBI | PBI-043 — Ready, no iniciado |
+| WIP | 0/1 |
+| PBI-040 | congelado; no integrado |
+| G3 Authentication | PASS histórico; policy delta PBI-043 pendiente |
+| Preview | sin cambios de este Goal |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Revisar, integrar y ejecutar CI autoritativa sobre el SHA exacto de `main` de
-este PR documental. Ese resultado materializa PBI-039 `Done`; después, detenerse
-sin seleccionar ni iniciar otro PBI.
+Owner decide si autoriza implementar PBI-043. Si autoriza, debe partir de un
+`main` actualizado en una rama `fix/*` nueva; la rama documental no se
+reutiliza. Merge, CI exacta, Preview y Owner Acceptance conservan gates
+separados. Sólo después se reconcilia PBI-040 desde el nuevo `main`.

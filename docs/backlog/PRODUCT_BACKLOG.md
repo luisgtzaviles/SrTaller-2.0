@@ -2,19 +2,12 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado con el MVP Operating Roadmap aprobado. PBI-001–PBI-023
-conservan su historia; PBI-024–PBI-029 fueron acotados conforme a Identity &
-Context Foundation; PBI-031–PBI-036 materializan los splits aprobados. PBI-030
-tiene cierre completo, Owner Acceptance aprobada y riesgo AT residual LOW
-aceptado; su estado es `Done` sin declarar release. PBI-033 también está
-`Done`; PBI-025, PBI-034 y PBI-026 también están `Done`. SPRINT-02 tiene
-PBI-028 `Done`, G5 `PASS`; PBI-038 también está `Done`, `Released: NO`.
-PBI-039 es Current PBI con WIP `1/1`; su slice funcional está congelado y
-aceptado por Owner, Formal UI Verification, Hardening, Full Verification, CI /
-PR Readiness y PR CI están en `PASS`, y los findings de revisión están
-remediados. PR #42 permanece abierto, no integrado y listo para re-review
-independiente. El checkpoint integrado anterior conserva PBI-037 sin
-convertirlo en WIP paralelo.
+**Estado:** Reconciliado con `main` `40684d7` y CI exacta `34623060504`.
+PBI-039 está `Done`; SPRINT-02 permanece activo exclusivamente para resolver la
+remediación Access descubierta durante QA posterior. PBI-043 está `Ready`, es
+el PBI actual con WIP `0/1` y no tiene autorización de implementación. Los IDs
+PBI-040 a PBI-042 permanecen reservados por el ciclo Price List no integrado;
+PBI-040 está congelado y separado.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
@@ -65,7 +58,11 @@ su clasificación explícita.
 | 36 | [PBI-036](pbis/PBI-036.md) Extended Observability | Operations / Quality | EPIC-001 | Deferred | Alta | Unassigned |
 | 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Integrated slice within PBI-028 | Alta | Product Mode local; no independent lifecycle or canonical delivery claim |
 | 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
-| 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | In progress; review remediation PASS; ready for independent re-review | Alta | SPRINT-02 current; PR #42 CI GREEN; merge/deploy pendientes |
+| 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | Done; Released: NO | Alta | SPRINT-02 completed; PR #45 + exact-main CI `34623060504` |
+| 40 | PBI-040 Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Owner Review congelado; rama no integrada | Alta | ID reservado; fuera del WIP canónico hasta reconciliación |
+| 41 | PBI-041 Price List bulk import/reconciliation | Product / Data import | EPIC-015 | Planned no iniciado | Alta | ID reservado; fuera del Sprint canónico |
+| 42 | PBI-042 Catalog images / Files | Product / Files | EPIC-015 | Deferred | Media | ID reservado; fuera del Sprint canónico |
+| 43 | [PBI-043](pbis/PBI-043.md) Concurrent Operational Sessions — Access Foundation Remediation | Identity / Security / Persistence / Quality | EPIC-003 | Ready; start Owner pendiente | Crítica | SPRINT-02 current; Critical / Large; WIP 0/1 |
 
 ## Interpretación
 
@@ -125,10 +122,18 @@ su clasificación explícita.
   `34158203438` GREEN y Owner Acceptance condicional `APPROVED`. Queda
   cierre PR #36 merge `0b39e3794a97c22d5471c0b6dfa278026f237b03`
   y CI exacto `34161029937` GREEN. Está `Done`, G4 `PASS` y `Released: NO`.
+- PBI-039 está `Done` efectivo después del merge documental PR #45
+  `40684d7554cdf02551f941e5e3f0beabbe563125` y CI exacta de `main`
+  `34623060504` GREEN.
+- PBI-040/PBI-041/PBI-042 conservan IDs únicos aunque todavía vivan en una
+  rama no integrada; no pueden reutilizarse.
+- PBI-043 materializa ADR-014 como remediation independiente. `Ready` no
+  autoriza implementación, merge o deploy.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-No existe siguiente candidato seleccionado. No iniciar otro PBI, liberar ni
-desplegar sin nueva autorización Owner.
+PBI-043 es el PBI actual `Ready`. El siguiente gate es autorización Owner
+explícita de implementación; no liberar, desplegar o reanudar PBI-040 por
+inferencia.

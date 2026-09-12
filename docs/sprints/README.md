@@ -9,11 +9,9 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
 [SPRINT-02](sprint-02/SPRINT_GOAL.md) `Active`.
 **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization;
-PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`; G5 es `PASS`, Current
-PBI es PBI-039 en `Done candidate` y WIP es `0/1`; Functional Slice, Formal UI
-Verification, Hardening, Full Verification, revisión independiente,
-integración, CI exacta de `main` y validación Preview están en `PASS`. El gate
-vigente es el cierre documental; no existe siguiente PBI seleccionado.
+PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039 están `Done`. PBI-043 es el
+Current PBI `Ready`, WIP es `0/1` y su implementación espera autorización
+Owner. PBI-040 permanece congelado y fuera de `main`.
 
 ## Reglas propuestas
 
@@ -54,15 +52,11 @@ Los cinco PBIs están `Done` y ninguno está `Released`.
 ## SPRINT-02
 
 SPRINT-02 ejecuta Operational Authentication & Authorization con WIP=1.
-PBI-025/PBI-034 están `Done`; cierre PR #34 y CI exacto de main dejan G3
-`PASS`. PBI-026 está `Done` y G4 `PASS`; PBI-028 está `Done`, G5 `PASS` tras
-PR #39 y su CI exacta; PBI-038 está `Done` tras PR #40 y CI `34280510716`
-GREEN. PBI-039 está en cierre `Done candidate`. PR #42 fue re-reviewed PASS e
-integrado como `6c04e57…`; PR #43 cerró el cache/ETag de Preview y PR #44
-corrigió la composición runtime de Repairs. La baseline `0d1c576…` pasó CI
-exacta de `main` `34619271236` y validación autenticada de Preview. Este PR
-documental y su CI exacta materializan `Done`; Production y trabajo posterior
-siguen sin autorización.
+PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`; G3–G5 son `PASS`.
+PBI-039 quedó `Done` en `40684d7` con CI exacta `34623060504`. El Sprint se
+extendió para PBI-043, remediación Access gobernada por ASC-001…ASC-008 y
+ADR-014. Su arquitectura/readiness están preparados, pero el start no está
+autorizado. Production y la reanudación de PBI-040 siguen sin autorización.
 
 - [Objetivo](sprint-02/SPRINT_GOAL.md)
 - [Backlog](sprint-02/SPRINT_BACKLOG.md)
@@ -72,5 +66,4 @@ siguen sin autorización.
 
 ## Próxima revisión
 
-Al integrar el cierre documental de PBI-039 o al recibir una nueva selección
-Owner de roadmap.
+Al recibir la decisión Owner de implementación sobre PBI-043.

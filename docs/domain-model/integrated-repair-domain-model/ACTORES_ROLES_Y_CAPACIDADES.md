@@ -59,7 +59,9 @@ ADR-012 acepta el criterio semántico de capacidad por operación y la autorizac
 
 - **HOV/RCA:** SR Taller 1.0 usa PIN de cuatro dígitos y cierre por inactividad para baja fricción y atribución.
 - **DDV/ADR-010/011:** cada acción relevante conserva usuario, sesión, tenant, sucursal, estación, fecha, hora y contexto de origen.
-- **ADR-011:** una sesión operativa aporta contexto temporal sin convertirse en identidad y una estación sólo tiene un usuario activo.
+- **ADR-011/014:** una sesión operativa aporta contexto temporal sin
+  convertirse en identidad; una Station puede tener varias Sessions y cada
+  request conserva un solo actor mediante su SessionId.
 - **ADR-013:** reautenticación confirma al actor; un segundo aprobador debe ser diferente y tener capacidad específica.
 - **PA:** longitud, recuperación, rate limiting, factores, tiempos y aplicación técnica.
 - **RCL:** compartir PIN o usar un nombre textual puede atribuir incorrectamente acciones.
