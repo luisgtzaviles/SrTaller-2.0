@@ -2,17 +2,17 @@
 
 ## Estado del documento
 
-- **Estado:** readiness de PBI-043 preparado sobre la última baseline integrada.
+- **Estado:** implementación PBI-043 autorizada y en curso.
 - **Baseline Git verificada:** `main == origin/main` en
-  `40684d7554cdf02551f941e5e3f0beabbe563125` al iniciar el Goal.
+  `9ed688566430d12fc52b6d48cdffdea3aba8ef62` al iniciar la implementación.
 - **CI exacta de baseline:**
-  [`34623060504`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34623060504),
-  `SUCCESS` sobre `40684d7`.
+  [`34725827409`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34725827409),
+  `SUCCESS` sobre `9ed6885`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization,
   extendido sólo para la remediación Access.
-- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `Ready`; start Owner no
+- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `In progress`; start Owner
   autorizado.
-- **WIP:** `0/1`; no existe implementación PBI-043 en curso.
+- **WIP:** `1/1` en `fix/pbi-043-concurrent-operational-sessions`.
 - **PBI-040:** Owner Review congelado en
   `feature/pbi-040-catalog-pricing-core`; no integrado ni modificado por este
   Goal.
@@ -74,8 +74,8 @@ autoriza su implementación.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint activo | SPRINT-02 — remediation Access |
-| Current PBI | PBI-043 — Ready, no iniciado |
-| WIP | 0/1 |
+| Current PBI | PBI-043 — In progress |
+| WIP | 1/1 |
 | PBI-040 | congelado; no integrado |
 | G3 Authentication | PASS histórico; policy delta PBI-043 pendiente |
 | Preview | sin cambios de este Goal |
@@ -83,7 +83,7 @@ autoriza su implementación.
 
 ## Próxima acción
 
-Owner decide si autoriza implementar PBI-043. Si autoriza, debe partir de un
-`main` actualizado en una rama `fix/*` nueva; la rama documental no se
-reutiliza. Merge, CI exacta, Preview y Owner Acceptance conservan gates
-separados. Sólo después se reconcilia PBI-040 desde el nuevo `main`.
+Implementar y verificar PBI-043 en la única rama `fix/*` creada desde
+`9ed6885`. Merge, CI exacta y Preview conservan evidencia separada. Sólo
+después del cierre se deja el handoff de PBI-040 congelado desde el nuevo
+`main`.

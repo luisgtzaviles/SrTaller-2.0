@@ -2,10 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** Active; extensión Access aprobada para readiness.
-- **PBI actual:** [PBI-043](../../backlog/pbis/PBI-043.md) — `Ready`; start no
-  autorizado.
-- **WIP:** `0/1`.
+- **Estado:** Active; remediación Access en implementación.
+- **PBI actual:** [PBI-043](../../backlog/pbis/PBI-043.md) — `In progress`.
+- **WIP:** `1/1`.
 
 | Orden | PBI | Estado | Dependencia secuencial y gates propios |
 |---:|---|---|---|
@@ -15,7 +14,7 @@
 | 4 | [PBI-028](../../backlog/pbis/PBI-028.md) | Done; Released: NO | Cierre PR #39 + CI `34249869167`; G5 PASS |
 | 5 | [PBI-038](../../backlog/pbis/PBI-038.md) | Done; Released: NO | Cierre PR #40 + CI `34280510716` GREEN |
 | 6 | [PBI-039](../../backlog/pbis/PBI-039.md) | Done; Released: NO | Cierre PR #45 en `40684d7`; CI exacta `34623060504` PASS |
-| 7 | [PBI-043](../../backlog/pbis/PBI-043.md) | Ready; WIP 0/1 | ADR-014 + DoR + threat model + COS-01…24; requiere autorización Owner de start |
+| 7 | [PBI-043](../../backlog/pbis/PBI-043.md) | In progress; WIP 1/1 | ADR-014 + DoR + threat model + COS-01…24; implementación autorizada |
 
 PBI-043 es una remediación Access independiente. No implementa administración
 de sesiones, auditoría global de lifecycle ni cambios a PIN/cookies/timeouts.

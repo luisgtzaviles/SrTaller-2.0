@@ -1,47 +1,40 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: Concurrent Operational Sessions — architecture + PBI readiness
+Milestone / Functional Goal: Concurrent Operational Sessions — implementation through Preview
 Sprint: SPRINT-02 — Operational Authentication & Authorization remediation
-Current PBI: PBI-043 — Ready; implementation not authorized
-Status: Architecture and readiness prepared for Owner implementation decision
-WIP: 0/1
-Progress: 8 / 8 readiness steps complete
-Current: Owner review of ADR-014 and PBI-043 readiness package
-Next: Explicit Owner implementation authorization or stop
+Current PBI: PBI-043 — In progress
+Status: Implementation authorized; Critical gates in progress
+WIP: 1/1
+Progress: 2 / 9 implementation-to-Preview steps complete
+Current: Materialize concurrent admission and session-local lifecycle
+Next: PostgreSQL migration, repository semantics and COS-01…COS-22
 Blocked: None; no unresolved product/domain decision found
 Last updated: 2026-09-12 MST
 
-## Architecture and readiness gate
+## Implementation through Preview
 
-- [x] Started from clean, current `main` `40684d7` with exact-main CI
-  `34623060504` PASS
+- [x] Integrated readiness through PR #46 as `9ed6885`; exact-main CI
+  `34725827409` PASS
 - [x] Preserved `feature/pbi-040-catalog-pricing-core` frozen and untouched
-- [x] Materialized ASC-001…ASC-008 in ADR-014 and canonical architecture
-- [x] Defined session-local switch, independent login, transaction boundaries,
-  persistence transition, rollback and revocation semantics
-- [x] Preserved PIN, cookies, CSRF, 60-minute idle, 12-hour absolute lifetime,
-  authorization and business attribution contracts
-- [x] Created PBI-043, formal DoR, Critical threat model and COS-01…COS-24
-  verification matrix
-- [x] Reconciled roadmap, Sprint, backlog, dependency map, workflow and branch
-  lifecycle policy
-- [x] Verified documentation and confirmed no product code, migration, endpoint,
-  database constraint or PBI-040 change
-
-## Current Owner gate
-
-- [ ] Owner implementation authorization for PBI-043
-- [ ] New implementation branch from an updated `main`
-- [ ] Implementation, review, CI, Preview validation and Owner Acceptance — all
-  future, separate gates
+- [~] Implement migration, independent create, exact switch/logout and internal
+  revocation contracts
+- [ ] Materialize COS-01…COS-22 with PostgreSQL 18.x where required
+- [ ] Pass focused, architecture, typecheck/build, runtime provenance and full
+  verification gates without Critical skips
+- [ ] Prove COS-23/COS-24 with independent Chrome profiles on the same Station
+- [ ] Complete independent Critical-risk review with no open findings
+- [ ] Push one branch, open PR and obtain run-1/run-2/comparison PASS
+- [ ] Merge, validate exact-main CI and deploy/validate the integrated SHA in
+  Preview only
+- [ ] Reconcile PBI/Sprint/current state, preserve evidence and safely clean
+  absorbed PBI-043/readiness branches
 
 ## Boundaries
 
-- [x] No functional implementation or migration
+- [x] PBI-043 implementation only; no Session Admin UI or global Access audit
 - [x] No PBI-040 modification or resumption
 - [x] No PBI-041/PBI-042 implementation
-- [x] No push, PR, merge, release or deploy
-- [x] No Production or real-data operation
+- [x] Preview authorized only after merge; no Production
 
 The prior PBI-039 closure checklist remains preserved in
 [`history/PBI-039_ACTIVE_CHECKLIST.md`](history/PBI-039_ACTIVE_CHECKLIST.md).

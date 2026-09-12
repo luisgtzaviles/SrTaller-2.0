@@ -6,13 +6,12 @@
 - **Estado:** Active; extendido para una remediación Access antes de reanudar
   Price List.
 - **Periodo:** TBD.
-- **PBI actual:** [PBI-043](../../backlog/pbis/PBI-043.md) — `Ready`; inicio no
-  autorizado.
-- **WIP:** `0/1`.
-- **Baseline:** `main`/`origin/main` `40684d7`; CI exacta `34623060504`
+- **PBI actual:** [PBI-043](../../backlog/pbis/PBI-043.md) — `In progress`.
+- **WIP:** `1/1`.
+- **Baseline:** `main`/`origin/main` `9ed6885`; CI exacta `34725827409`
   `SUCCESS`.
-- **Autoridad:** ASC-001 a ASC-008 aprueban arquitectura y readiness. No
-  autorizan implementación, PR, merge, release ni deploy.
+- **Autoridad:** Master Goal Owner del 2026-09-12 autoriza implementación, PR,
+  merge gobernado y Preview; no Production.
 
 ## Objetivo
 
@@ -32,8 +31,8 @@ contrato mediante [ADR-014](../../decisions/proposed/ADR-014-concurrent-operatio
 4. PBI-028 — Minimum Business Audit and Correlation — `Done`; G5 `PASS`.
 5. PBI-038 — Timezone Foundation Integration and Hardening — `Done`.
 6. PBI-039 — Customer Minimum + New Repair — `Done` sobre `40684d7`.
-7. PBI-043 — Concurrent Operational Sessions — `Ready`; siguiente gate:
-   autorización Owner explícita de implementación.
+7. PBI-043 — Concurrent Operational Sessions — `In progress`; gates Critical
+   y evidencia COS-01…COS-24 obligatorios.
 
 PBI-040 permanece congelado fuera de `main`. No ocupa WIP y no se reanuda ni se
 reconcilia hasta cerrar la remediación Access mediante sus propios gates.
@@ -44,7 +43,7 @@ reconcilia hasta cerrar la remediación Access mediante sus propios gates.
 - [x] PBI-043, DoR, threat model Critical y matriz COS-01…COS-24 definidos.
 - [x] Ownership, persistencia, transición, rollback y revocación delimitados.
 - [x] Roadmap, backlog, dependencias, workflow y Sprint reconciliados.
-- [ ] Owner autoriza explícitamente iniciar PBI-043.
+- [x] Owner autorizó explícitamente iniciar PBI-043.
 - [ ] Implementación PBI-043 supera gates locales, revisión, CI exacta y Owner
   Acceptance aplicables.
 - [ ] PBI-040 se reconcilia posteriormente desde el nuevo `main` sin perder su
