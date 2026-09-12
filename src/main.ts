@@ -9,6 +9,10 @@ import { loadRequiredServerSecrets } from './infrastructure/config/external-conf
 import {
   APPLICATION_DATABASE_CONNECTION,
 } from './infrastructure/runtime/index.js';
+import {
+  applyRuntimeProvenanceHeaders,
+  loadRuntimeProvenance,
+} from './infrastructure/runtime/runtime-provenance.js';
 import type {
   ApplicationDatabaseConnection,
 } from './infrastructure/runtime/index.js';
@@ -40,17 +44,27 @@ function sanitizedStartupFailure(error: unknown): Readonly<{
 }
 
 async function bootstrap(): Promise<void> {
+  const environment = process.env;
   // The persistence runtime remains the owner of connection parsing. This
   // foundation establishes that its active credential is external and required
   // before startup can proceed, without exposing it to diagnostics or clients.
-  void loadRequiredServerSecrets(process.env, ['SR_DB_PASSWORD', 'SR_PIN_PEPPER']);
-  const config = loadStartupConfig(process.env);
+  void loadRequiredServerSecrets(environment, ['SR_DB_PASSWORD', 'SR_PIN_PEPPER']);
+  const config = loadStartupConfig(environment);
   let application: NestExpressApplication | null = null;
 
   try {
     application = await NestFactory.create<NestExpressApplication>(AppModule, {
       abortOnError: false,
       logger: ['error', 'warn'],
+    });
+    const runtimeProvenance = loadRuntimeProvenance(environment);
+    application.use((
+      _request: unknown,
+      response: Readonly<{ setHeader(name: string, value: string): void }>,
+      next: () => void,
+    ): void => {
+      applyRuntimeProvenanceHeaders(response, runtimeProvenance);
+      next();
     });
     await configurePreviewStaticFiles(application);
     // Provider lifecycle hooks initialize the application database runtime.

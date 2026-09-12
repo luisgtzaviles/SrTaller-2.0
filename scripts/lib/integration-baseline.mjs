@@ -4,6 +4,7 @@ import { promisify } from 'node:util';
 const execute = promisify(execFile);
 
 export const PBI040_REQUIRED_BASELINE_SHA = '40684d7554cdf02551f941e5e3f0beabbe563125';
+export const PBI039_MATERIALIZED_PREVIEW_SHA = '0d1c5760ce962d17a8292b841f5de43a8cb453a7';
 export const DEFAULT_INTEGRATION_REF = 'origin/main';
 export const PBI039_PROTECTED_SURFACES = Object.freeze({
   'apps/dev-preview-web/src/pages/RepairsPage.tsx': 'e2d877dae9d229d65cb30cf0f0fe4b7bdfb5ee90',
@@ -69,6 +70,22 @@ export function evaluateProtectedSurfaces(actual, expected = PBI039_PROTECTED_SU
   return Object.freeze({ status: 'PASS', protectedSurfaceCount: Object.keys(expected).length });
 }
 
+export function evaluateMaterializedPreviewGenealogy({
+  materializedPreviewSha,
+  integratedBaselineSha,
+  materializedIsAncestor,
+}) {
+  if (!materializedIsAncestor) {
+    throw new Error(
+      `Materialized Preview ${materializedPreviewSha} is not an ancestor of integrated baseline ${integratedBaselineSha}`,
+    );
+  }
+  return Object.freeze({
+    materializedPreviewSha,
+    materializedPreviewIsAncestorOfIntegratedBaseline: true,
+  });
+}
+
 async function inspectProtectedSurfaces(root) {
   const actual = {};
   for (const path of Object.keys(PBI039_PROTECTED_SURFACES)) {
@@ -90,10 +107,21 @@ export async function inspectIntegrationBaseline(
     git(root, ['merge-base', 'HEAD', integrationRef]),
   ]);
   let baselineIsAncestor = true;
+  let materializedIsAncestor = true;
   try {
     await git(root, ['merge-base', '--is-ancestor', baselineSha, 'HEAD']);
   } catch {
     baselineIsAncestor = false;
+  }
+  try {
+    await git(root, [
+      'merge-base',
+      '--is-ancestor',
+      PBI039_MATERIALIZED_PREVIEW_SHA,
+      baselineSha,
+    ]);
+  } catch {
+    materializedIsAncestor = false;
   }
   const ancestry = evaluateIntegrationBaseline({
     baselineSha,
@@ -103,5 +131,10 @@ export async function inspectIntegrationBaseline(
     baselineIsAncestor,
   });
   const protectedSurfaces = await inspectProtectedSurfaces(root);
-  return Object.freeze({ ...ancestry, ...protectedSurfaces });
+  const materialized = evaluateMaterializedPreviewGenealogy({
+    materializedPreviewSha: PBI039_MATERIALIZED_PREVIEW_SHA,
+    integratedBaselineSha: baselineSha,
+    materializedIsAncestor,
+  });
+  return Object.freeze({ ...ancestry, ...materialized, ...protectedSurfaces });
 }

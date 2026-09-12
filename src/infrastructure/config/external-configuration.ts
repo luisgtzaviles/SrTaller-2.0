@@ -14,7 +14,9 @@ export type ExternalConfigurationName =
   | 'NODE_ENV'
   | 'PORT'
   | 'SR_DB_ENVIRONMENT'
-  | 'SR_LOCAL_RUNTIME';
+  | 'SR_LOCAL_RUNTIME'
+  | 'SR_RUNTIME_GIT_SHA'
+  | 'SR_RUNTIME_SOURCE_STATE';
 
 type ConfigurationStatus = 'active' | 'reserved';
 
@@ -32,7 +34,7 @@ export interface ExternalConfigurationDefinition {
     | 'users-bootstrap';
   readonly status: ConfigurationStatus;
   readonly source: 'process-environment';
-  readonly clientExposure: 'forbidden';
+  readonly clientExposure: 'forbidden' | 'bounded-public';
 }
 
 export const externalConfigurationCatalog = Object.freeze([
@@ -75,6 +77,22 @@ export const externalConfigurationCatalog = Object.freeze([
     status: 'active' as const,
     source: 'process-environment' as const,
     clientExposure: 'forbidden' as const,
+  }),
+  Object.freeze({
+    name: 'SR_RUNTIME_GIT_SHA',
+    classification: 'non-secret' as const,
+    consumer: 'technical-shell' as const,
+    status: 'active' as const,
+    source: 'process-environment' as const,
+    clientExposure: 'bounded-public' as const,
+  }),
+  Object.freeze({
+    name: 'SR_RUNTIME_SOURCE_STATE',
+    classification: 'non-secret' as const,
+    consumer: 'technical-shell' as const,
+    status: 'active' as const,
+    source: 'process-environment' as const,
+    clientExposure: 'bounded-public' as const,
   }),
   Object.freeze({
     name: 'SR_DB_PASSWORD',

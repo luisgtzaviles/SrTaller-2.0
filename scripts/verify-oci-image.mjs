@@ -104,7 +104,11 @@ async function request(port, path) {
     body = text;
   }
 
-  return { body, status: response.status };
+  return {
+    body,
+    headers: Object.fromEntries(response.headers.entries()),
+    status: response.status,
+  };
 }
 
 async function removeContainer() {
@@ -185,6 +189,19 @@ try {
   assert(imageEnvironment.HOST === '0.0.0.0', 'HOST default must be 0.0.0.0');
   assert(imageEnvironment.NODE_ENV === 'production', 'NODE_ENV default must be production');
   assert(imageEnvironment.PORT === '3000', 'PORT default must be 3000');
+  const sourceRevision = imageEnvironment.SR_RUNTIME_GIT_SHA;
+  assert(
+    /^[0-9a-f]{40}$/u.test(sourceRevision ?? ''),
+    'Runtime image must declare an exact source revision',
+  );
+  assert(
+    imageEnvironment.SR_RUNTIME_SOURCE_STATE === 'clean',
+    'Runtime image source state must be clean',
+  );
+  assert(
+    image.Config.Labels?.['org.opencontainers.image.revision'] === sourceRevision,
+    'OCI revision label must match runtime source revision',
+  );
   assert(
     !Object.keys(imageEnvironment).some((name) =>
       /(?:DATABASE_URL|PASSWORD|SECRET|TOKEN)/u.test(name),
@@ -283,9 +300,10 @@ try {
   const port = Number(running.NetworkSettings.Ports['3000/tcp'][0].HostPort);
   await waitForReady(port);
 
-  const [root, spa, live, ready, apiUnknown, unknown] = await Promise.all([
+  const [root, spa, provenance, live, ready, apiUnknown, unknown] = await Promise.all([
     request(port, '/'),
     request(port, '/reparaciones'),
+    request(port, '/runtime-provenance.json'),
     request(port, '/livez'),
     request(port, '/readyz'),
     request(port, '/api/unknown'),
@@ -296,10 +314,18 @@ try {
   assert(root.body.includes('<title>SR Taller 2.0 · Preview</title>'), '/ must return the recovered UI');
   assert(spa.status === 200, '/reparaciones must return HTTP 200');
   assert(spa.body === root.body, '/reparaciones must return the SPA entrypoint');
+  assert(provenance.status === 200, '/runtime-provenance.json must return HTTP 200');
+  assert(provenance.headers['cache-control'] === 'no-store', 'Runtime provenance must not be cached');
+  assert(provenance.body?.role === 'frontend', 'Frontend provenance role is missing');
+  assert(provenance.body?.sourceRevision === sourceRevision, 'Frontend source revision must match image');
+  assert(provenance.body?.sourceState === 'clean', 'Frontend source state must be clean');
   assert(live.status === 200, '/livez must return HTTP 200');
   assert(live.body?.status === 'live', '/livez must return the stable live contract');
   assert(ready.status === 200, '/readyz must return HTTP 200 after bootstrap');
   assert(ready.body?.status === 'ready', '/readyz must return the stable ready contract');
+  assert(ready.headers['x-sr-runtime-role'] === 'backend', 'Backend provenance role is missing');
+  assert(ready.headers['x-sr-source-revision'] === sourceRevision, 'Backend source revision must match image');
+  assert(ready.headers['x-sr-source-state'] === 'clean', 'Backend source state must be clean');
   assert(apiUnknown.status === 404, 'Unknown API routes must return HTTP 404');
   assert(unknown.status === 404, 'Unknown routes must return HTTP 404');
 
@@ -373,6 +399,7 @@ try {
         imageId: image.Id,
         imageReference,
         imageSizeBytes: image.Size,
+        sourceRevision,
         mounts: [],
         migration: {
           firstApplied: firstMigrationResult.applied,

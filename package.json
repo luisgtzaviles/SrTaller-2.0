@@ -13,6 +13,7 @@
     "preinstall": "node ./scripts/verify-install-context.mjs",
     "verify:toolchain": "node ./scripts/verify-toolchain.mjs",
     "verify:integration-baseline": "pnpm run verify:toolchain && node ./scripts/verify-integration-baseline.mjs",
+    "verify:runtime-provenance": "pnpm run verify:toolchain && node ./scripts/verify-runtime-provenance.mjs",
     "verify:structure": "node ./scripts/verify-structure.mjs",
     "verify:architecture": "pnpm run verify:toolchain && node ./scripts/check-architecture.mjs --root .",
     "verify:ui": "pnpm run verify:toolchain && node ./scripts/check-ui-foundation.mjs",

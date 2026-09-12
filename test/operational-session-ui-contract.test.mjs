@@ -395,5 +395,7 @@ test('local child processes scrub inherited governed secrets and inject only act
 
   const frontendSpawn = localDevSource.slice(localDevSource.indexOf("const frontend = spawn"));
   assert.doesNotMatch(frontendSpawn, /SR_PIN_PEPPER:|SR_SESSION_SIGNING_KEY:|SR_STATION_BOOTSTRAP_SECRET:|SR_USER_BOOTSTRAP_SECRET:/u);
-  assert.match(frontendSpawn, /env: \{ \.\.\.baseEnvironment, \.\.\.viteEnvironment\(values\) \}/u);
+  assert.match(frontendSpawn, /env: \{ \.\.\.baseEnvironment, \.\.\.viteEnvironment\(values, provenanceEnvironment\) \}/u);
+  assert.match(localDevSource, /inspectWorkingTreeProvenance/u);
+  assert.match(localDevSource, /waitForLiveRuntimeProvenance/u);
 });

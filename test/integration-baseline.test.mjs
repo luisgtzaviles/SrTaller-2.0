@@ -3,7 +3,9 @@ import test from 'node:test';
 
 import {
   evaluateIntegrationBaseline,
+  evaluateMaterializedPreviewGenealogy,
   evaluateProtectedSurfaces,
+  PBI039_MATERIALIZED_PREVIEW_SHA,
   PBI039_PROTECTED_SURFACES,
   PBI040_REQUIRED_BASELINE_SHA,
 } from '../scripts/lib/integration-baseline.mjs';
@@ -21,6 +23,21 @@ test('baseline preflight accepts ancestry plus the current integration head', ()
   });
   assert.equal(result.status, 'PASS');
   assert.equal(result.branchContainsCurrentIntegrationHead, true);
+});
+
+test('materialized Preview is recorded as an ancestor of the integrated PBI-039 baseline', () => {
+  const result = evaluateMaterializedPreviewGenealogy({
+    materializedPreviewSha: PBI039_MATERIALIZED_PREVIEW_SHA,
+    integratedBaselineSha: PBI040_REQUIRED_BASELINE_SHA,
+    materializedIsAncestor: true,
+  });
+  assert.equal(result.materializedPreviewSha, PBI039_MATERIALIZED_PREVIEW_SHA);
+  assert.equal(result.materializedPreviewIsAncestorOfIntegratedBaseline, true);
+  assert.throws(() => evaluateMaterializedPreviewGenealogy({
+    materializedPreviewSha: PBI039_MATERIALIZED_PREVIEW_SHA,
+    integratedBaselineSha: PBI040_REQUIRED_BASELINE_SHA,
+    materializedIsAncestor: false,
+  }), /is not an ancestor/u);
 });
 
 test('protected-surface inventory accepts the exact accepted PBI-039 blobs', () => {

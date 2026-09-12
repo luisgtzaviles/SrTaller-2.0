@@ -45,7 +45,14 @@ export async function configurePreviewStaticFiles(
   const indexSource = await readFile(indexFile, 'utf8');
   const indexEtag = `"${createHash('sha256').update(indexSource).digest('base64url')}"`;
   const catalogEnabled = indexSource.includes('name="srt-ui-catalog" content="enabled"');
-  application.useStaticAssets(publicDirectory, { index: false });
+  application.useStaticAssets(publicDirectory, {
+    index: false,
+    setHeaders: (response, path): void => {
+      if (path.endsWith('/runtime-provenance.json')) {
+        response.setHeader('Cache-Control', 'no-store');
+      }
+    },
+  });
   application.use(
     (
       request: PreviewRequest,

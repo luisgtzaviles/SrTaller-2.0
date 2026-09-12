@@ -286,23 +286,25 @@ export function databaseEnvironment(values, role) {
   });
 }
 
-export function startupEnvironment(values) {
+export function startupEnvironment(values, runtimeProvenance = {}) {
   assertLocalTarget(values);
   return Object.freeze({
     HOST: values.SR_LOCAL_BACKEND_HOST,
     NODE_ENV: 'development',
     PORT: values.SR_LOCAL_BACKEND_PORT,
     SR_LOCAL_RUNTIME: 'true',
+    ...runtimeProvenance,
   });
 }
 
-export function viteEnvironment(values) {
+export function viteEnvironment(values, runtimeProvenance = {}) {
   assertLocalTarget(values);
   return Object.freeze({
     SRT_DEPLOY_ENV: 'local',
     SRT_LOCAL_BACKEND_PORT: values.SR_LOCAL_BACKEND_PORT,
     SRT_LOCAL_VITE_HOST: values.SR_LOCAL_VITE_HOST,
     SRT_LOCAL_VITE_PORT: values.SR_LOCAL_VITE_PORT,
+    ...runtimeProvenance,
   });
 }
 

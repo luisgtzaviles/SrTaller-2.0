@@ -1,12 +1,37 @@
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 const projectDirectory = fileURLToPath(new URL('.', import.meta.url));
+const repositoryDirectory = resolve(projectDirectory, '../..');
+const revisionPattern = /^[0-9a-f]{40}$/u;
+
+function runtimeProvenance(): Readonly<{
+  role: 'frontend';
+  sourceRevision: string;
+  sourceState: 'clean' | 'dirty';
+}> {
+  const configuredRevision = process.env.SR_RUNTIME_GIT_SHA?.trim();
+  const configuredState = process.env.SR_RUNTIME_SOURCE_STATE?.trim();
+  const sourceRevision = configuredRevision ?? execFileSync(
+    'git', ['rev-parse', 'HEAD'], { cwd: repositoryDirectory, encoding: 'utf8' },
+  ).trim();
+  const sourceState = configuredState ?? (execFileSync(
+    'git', ['status', '--porcelain=v1', '--untracked-files=all'],
+    { cwd: repositoryDirectory, encoding: 'utf8' },
+  ).trim() === '' ? 'clean' : 'dirty');
+  if (!revisionPattern.test(sourceRevision) || (sourceState !== 'clean' && sourceState !== 'dirty')) {
+    throw new Error('Frontend runtime provenance is missing or invalid.');
+  }
+  return Object.freeze({ role: 'frontend', sourceRevision, sourceState });
+}
 
 export default defineConfig(({ command }) => {
+  const provenance = runtimeProvenance();
+  const provenanceJson = `${JSON.stringify(provenance)}\n`;
   const requestedEnvironment = process.env.SRT_DEPLOY_ENV;
   const deployEnvironment = requestedEnvironment === 'production' || requestedEnvironment === 'staging'
     || requestedEnvironment === 'preview' || requestedEnvironment === 'local'
@@ -37,6 +62,24 @@ export default defineConfig(({ command }) => {
           handler: () => catalogEnabled
             ? [{ tag: 'meta', attrs: { name: 'srt-ui-catalog', content: 'enabled' }, injectTo: 'head' }]
             : [],
+        },
+      },
+      {
+        name: 'srtaller-runtime-provenance',
+        configureServer(server) {
+          server.middlewares.use('/runtime-provenance.json', (_request, response) => {
+            response.statusCode = 200;
+            response.setHeader('Content-Type', 'application/json; charset=utf-8');
+            response.setHeader('Cache-Control', 'no-store');
+            response.end(provenanceJson);
+          });
+        },
+        generateBundle() {
+          this.emitFile({
+            type: 'asset',
+            fileName: 'runtime-provenance.json',
+            source: provenanceJson,
+          });
         },
       },
     ],
