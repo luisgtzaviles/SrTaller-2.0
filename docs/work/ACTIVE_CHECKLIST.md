@@ -10,7 +10,7 @@
 - **Trabajo actual:** mantener Preview y Local abiertos con el fixture canónico idéntico.
 - **Siguiente bloque:** revisión visual lado a lado por Owner; sin inferir aceptación.
 - **Bloqueos:** ninguno confirmado
-- **Última actualización:** 2026-09-12 14:57 MST
+- **Última actualización:** 2026-09-12 15:10 MST
 
 ## Resultado esperado
 
