@@ -5,12 +5,13 @@
 - **Milestone / meta funcional:** PRICE LIST FOUNDATION
 - **Sprint:** SPRINT-03 — Active
 - **PBI actual:** PBI-040 — Catalog & Pricing Core + Fast Price Lookup
-- **Estado general:** In progress — Owner implementation authorization received
-- **Progreso:** 0 / 6 bloques completados
-- **Trabajo actual:** contratos, datos y seguridad de Catalog/Pricing
-- **Siguiente bloque:** casos de uso/APIs y administración individual
+- **Estado general:** Owner Review — checkpoint funcional preparado
+- **Progreso:** 6 / 6 bloques de implementación completados
+- **Trabajo actual:** revisión funcional Owner de `/listas/precios`
+- **Siguiente bloque:** Owner Acceptance o remediación de feedback; los gates de
+  PR/CI/merge continúan separados
 - **Bloqueos:** ninguno
-- **Última actualización:** 2026-09-11 17:10 MST
+- **Última actualización:** 2026-09-11 18:17 MST
 
 ## Resultado visible esperado
 
@@ -20,12 +21,12 @@ costo sólo viaja con capability y preferencia personal explícita.
 
 ## Checklist
 
-- [~] Revalidar baseline, autoridades, branch y alcance PBI-040.
-- [ ] Materializar módulo, contratos, migraciones, ownership y pruebas de datos.
-- [ ] Implementar autorización, preferencias, casos de uso y APIs.
-- [ ] Implementar alta/edición y Lista de precios en el shell.
-- [ ] Verificar aislamiento, concurrencia, migración, UI, rendimiento y full verify.
-- [ ] Remediar, reconciliar evidencia/PBI/estado y entregar Owner Review.
+- [x] Revalidar baseline, autoridades, branch y alcance PBI-040.
+- [x] Materializar módulo, contratos, migraciones, ownership y pruebas de datos.
+- [x] Implementar autorización, preferencias, casos de uso y APIs.
+- [x] Implementar alta/edición y Lista de precios en el shell.
+- [x] Verificar aislamiento, concurrencia, migración, contratos UI, rendimiento y full verify.
+- [x] Remediar, reconciliar evidencia/PBI/estado y entregar Owner Review.
 
 ## Gates preservados
 
@@ -34,3 +35,5 @@ costo sólo viaja con capability y preferencia personal explícita.
 - No merge, push, deploy, release o Production sin autoridad posterior.
 - No ownership de Inventory, Procurement, Repair, Payments o Cash.
 - No se debilitan assertions, scopes, capabilities ni aislamiento.
+- La matriz visual Chrome real queda para Owner Review: la superficie browser
+  nativa no estuvo disponible y no se fabricó evidencia.

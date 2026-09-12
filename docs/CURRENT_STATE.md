@@ -2,21 +2,27 @@
 
 ## Estado del documento
 
-- **Estado:** snapshot post-cierre PBI-039 y readiness de Lista de precios.
+- **Estado:** snapshot del checkpoint funcional Owner Review de PBI-040.
 - **Baseline Git integrada observada:** `main` y `origin/main` en
   `40684d7554cdf02551f941e5e3f0beabbe563125`.
 - **CI autoritativa exacta de `main`:** run
   [`34623060504`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34623060504),
   `SUCCESS`; run-1, run-2 y comparison verdes.
-- **PBI actual:** `PBI-040` — In progress; Owner autorizó implementación.
+- **PBI actual:** `PBI-040` — Owner Review; no `Done` ni Owner Accepted.
 - **WIP:** `1/1`.
 - **Preview:** desplegado desde el merge exacto `0d1c576…`, saludable y
   validado con un flujo autenticado New Repair create/detail/reload/worklist.
 - **Production:** no desplegada ni autorizada.
-- **Regla:** PBI-040 puede avanzar hasta Owner Review; merge, deploy,
+- **Regla:** PBI-040 llegó a Owner Review; merge, deploy,
   Production y release no están autorizados.
 
 ## Resumen ejecutivo
+
+PBI-040 materializó el primer slice vertical de Catalog/Pricing: identidad
+Tenant-wide, precio base Tenant-wide, override Branch con herencia, costo de
+referencia protegido, moneda Tenant, alta/edición individual y búsqueda rápida
+por nombre/SKU/barcode en `Listas > Lista de precios`. El candidato funcional
+está listo para revisión Owner, no está aceptado ni integrado.
 
 PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
 Guided V2, política de campos por Branch, catálogos administrativos y las
@@ -47,9 +53,24 @@ integración, ya cerrados sin reabrir decisiones de producto:
 PR #45 integró el cierre documental como `40684d7554…`; CI exacta de `main`
 `34623060504` terminó SUCCESS. PBI-039 y SPRINT-02 están cerrados.
 
-El único warning de build aceptado es el chunk Vite de aproximadamente
-531.33 kB. No se redujo cobertura, no se ocultaron skips materiales y no se
-inició implementación de Lista de precios, Caja, Evidencias/R2 ni otro ciclo.
+El único warning de build observado es el chunk Vite mayor a 500 kB. No se
+redujo cobertura, no se ocultaron skips materiales y no se inició PBI-041,
+PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
+
+## Checkpoint funcional PBI-040
+
+| Área | Evidencia vigente |
+|---|---|
+| Branch de trabajo | `feature/pbi-040-catalog-pricing-core` desde `40684d7554…` |
+| Dominio/persistencia | Catalog Tenant-wide, revisiones append-only, constraints e índices Tenant-aware |
+| Pricing | Base Tenant + override Branch revocable; moneda desde Tenancy |
+| Seguridad de costo | omisión server-side sin capability; preferencia personal default oculta |
+| UI | alta/edición y lookup en `/listas/precios`; sólo Lista de precios bajo `Listas` |
+| PostgreSQL | 55 migraciones; aislamiento/concurrencia/búsqueda PASS; cero skips materiales |
+| Rendimiento | 10,000 items; p95 local 6.89–8.89 ms contra presupuesto 750 ms |
+| HTTP local | create/reload, tres búsquedas, costo, override/revocación y preferencia PASS |
+| Formal UI real | pendiente de Owner Review; browser nativo no disponible en la sesión de ingeniería |
+| Estado de entrega | sin push, PR, CI de branch, merge, deploy o release |
 
 ## Evidencia de cierre PBI-039
 
@@ -85,7 +106,7 @@ inició implementación de Lista de precios, Caja, Evidencias/R2 ni otro ciclo.
 
 ## Límites y deuda conocida
 
-- Basic Operational Evidence con mutación, Price List, Refacciones, Servicios,
+- Basic Operational Evidence con mutación, venta personalizada, Caja,
   venta personalizada, Caja, Anticipo, Abonos, Liquidación, Diagnosis avanzada,
   analytics/AI y promoción de catálogos siguen diferidos y no bloquearon
   PBI-039.
@@ -101,17 +122,17 @@ inició implementación de Lista de precios, Caja, Evidencias/R2 ni otro ciclo.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint activo | SPRINT-03 — Price List Foundation; planning/readiness only |
-| Current PBI | `PBI-040` — In progress |
+| Current PBI | `PBI-040` — Owner Review |
 | WIP | `1/1` |
-| Next candidate | `PBI-040` — Catalog & Pricing Core + Fast Price Lookup |
+| Next candidate | ninguno seleccionado; PBI-041 permanece Planned |
 | G6 Customer mínimo | PASS |
 | G7 New Repair / Intake | PASS |
-| G9 Pricing | PBI-040 implementation authorized; functional checkpoint pending |
+| G9 Pricing | PBI-040 functional checkpoint ready for Owner Review |
 | Preview | Desplegado y validado en `0d1c576…` |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Implementar PBI-040 sobre `feature/pbi-040-catalog-pricing-core` hasta Owner
-Review con evidencia proporcional. No iniciar PBI-041, merge, Production,
-release o deploy por inferencia.
+Ejecutar Owner Review de PBI-040 en `/listas/precios`. Según el resultado,
+registrar Owner Acceptance o remediar feedback sin iniciar PBI-041. PR, merge,
+Production, release y deploy conservan autorización independiente.

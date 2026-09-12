@@ -3,9 +3,9 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-03.
-- **Estado:** Active — PBI-040 implementation authorized.
+- **Estado:** Active — PBI-040 en Owner Review.
 - **Periodo:** TBD.
-- **PBI actual:** PBI-040 — In progress.
+- **PBI actual:** PBI-040 — Owner Review.
 - **WIP:** 1/1.
 - **Autoridad:** este Master Goal autoriza architecture/readiness y la apertura
   documental del Sprint. Owner autorizó implementar PBI-040 el 2026-09-11;
@@ -20,7 +20,7 @@ sin mezclar inventario, reparaciones o Caja.
 
 ## Selección
 
-1. PBI-040 — core vertical y búsqueda rápida — `Committed / In progress`.
+1. PBI-040 — core vertical y búsqueda rápida — `Committed / Owner Review`.
 2. PBI-041 — importación/reconciliación de proveedor — `Candidate / Planned`.
 
 PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
