@@ -45,6 +45,15 @@ los valores explícitos se normalizan, preservan y permanecen únicos por Tenant
 Code 128 es una representación futura del código de barras, no una tercera
 identidad. La UI y API de identificadores externos quedan fuera del slice.
 
+La iteración Owner actual converge `Configuración > Catálogos > Reparaciones`
+y `Lista de precios` sobre las mismas primitives de navegación, lifecycle,
+contadores, acciones y estados visuales. La investigación del catálogo Repairs
+vacío en local confirmó una omisión del seed: las tablas autoritativas no tenían
+filas, aunque las reparaciones sintéticas conservaban snapshots de marca/modelo.
+No fue una regresión de PBI-040, autorización, scope, query o migración. El seed
+gobernado ahora materializa 38 registros Tenant-scoped coherentes; New Repair y
+Configuración obtienen los mismos IDs desde el mismo repositorio Repairs.
+
 PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
 Guided V2, política de campos por Branch, catálogos administrativos y las
 superficies aceptadas de Repair Detail. El Functional Slice fue aceptado por
@@ -89,11 +98,13 @@ PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
 | UI | operación en `/listas/precios`; gobierno en `/configuracion/catalogos?module=price-list` |
 | Cascada | Buscar + Tipo + Category + Brand navegables; Category un Tipo; Brand uno o varios; pares comerciales conocidos; reset determinista |
 | Identificadores | SKU y código de barras internos automáticos server-side; Code 128 es sólo representación futura |
+| Integridad Repairs local | 38 fixtures gobernados Tenant-wide; administración y operación comparten tablas/IDs |
+| UI de Catálogos | Repairs y Lista de precios comparten tabs, lifecycle, counters, acciones y estados |
 | PostgreSQL | 56 migraciones; aislamiento/aplicabilidad/reconciliación/concurrencia PASS; cero skips materiales |
 | Rendimiento | 10,000 items; p95 más reciente 6.98 ms contra presupuesto 750 ms |
 | HTTP local | sesión Owner/Station, fixtures por API, costo protegido y override Branch PASS |
 | Full Verification | iteración de identificadores 13/13 stages PASS; 815 tests base; PostgreSQL material sin skips |
-| Formal UI real | Chrome local autenticado, con fixtures sintéticos y abierto en `Nuevo artículo`; Owner Review pendiente |
+| Formal UI real | Chrome local autenticado, con dos ventanas lado a lado de Catálogos Repairs/Lista de precios; Owner Review pendiente |
 | Estado de entrega | sin push, PR, CI de branch, merge, deploy o release |
 
 ## Evidencia de cierre PBI-039

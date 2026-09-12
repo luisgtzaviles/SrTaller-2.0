@@ -49,6 +49,30 @@
   Category conserva Brand sólo si existe el par aplicable. Los filtros
   incompatibles vuelven determinísticamente a Todos/Todas.
 
+### Iteración Owner — convergencia visual e integridad Repairs
+
+- La investigación partió de PostgreSQL local y encontró cero filas en
+  `repair_device_types`, `repair_brands`, `repair_models`, `repair_risks` y
+  `repair_problem_categories`. Las 15 reparaciones sintéticas sí conservaban
+  snapshots de marca/modelo, pero el seed no materializaba las identidades
+  canónicas; ésa era la causa de la superficie vacía.
+- No fue una regresión PBI-040: sus cinco migraciones sólo expanden Tenancy,
+  Access, Users y Catalog/Pricing y no mutan tablas Repairs. La sesión Owner
+  posee `repairs.catalogs.read/manage`; todas las lecturas observadas fueron
+  `200` y Tenant-scoped.
+- New Repair y Configuración no son fuentes paralelas. Sus endpoints
+  operativos/administrativos convergen en el mismo repositorio Kysely y las
+  mismas cinco tablas Repairs. La prueba HTTP autenticada devolvió IDs idénticos
+  para Riesgos `4/4`, Tipos `2/2`, Marcas `12/12` y Categorías `5/5`; Modelos
+  devolvió 15 en administración y los 3 Apple compatibles en operación.
+- El seed local gobernado ahora inserta/upserta 38 fixtures deterministas:
+  2 tipos, 12 marcas, 15 modelos, 4 riesgos y 5 categorías. Son datos
+  exclusivamente sintéticos Tenant-wide, alineados con las reparaciones
+  locales, reversibles con `local:db:reset`; no son defaults productivos.
+- `CatalogSectionTabs`, lifecycle, counters, panel/header/table, badges,
+  acciones, empty states y estados hover/focus/selected viven en las primitives
+  compartidas. Reparaciones y Lista de precios las componen sin duplicar CSS.
+
 ## Seguridad, persistencia y fronteras
 
 - Ocho capabilities gobernadas separan consulta, identidad, precio base,
@@ -108,6 +132,17 @@
   La base ejecutó `815` pruebas (`795 PASS`, `20` skips PostgreSQL no
   materiales) y la etapa PBI-040 aplicó 56 migraciones, cero skips críticos y
   p95 `6.98 ms` sobre 10,000 items contra presupuesto `750 ms`.
+- Validación focalizada de convergencia/integridad: `typecheck` y `41/41`
+  pruebas de fixtures, UI compartida y los cinco catálogos Repairs PASS.
+- Full Verification de convergencia/integridad:
+  `local-full-verification-20260912035619-b903eab1ff73`, `13/13 PASS`, cleanup
+  PASS y huella candidata
+  `76e08075928e12110d08d7bd9e47eb1b47c990b9da6afd7bb5e99126a3291fca`.
+  La base ejecutó `817` pruebas (`797 PASS`, `20` skips PostgreSQL no
+  materiales); las cinco suites PostgreSQL compuestas sumaron `17` pruebas sin
+  skips, y PBI-040 aplicó 56 migraciones con p95 `7.87 ms` sobre 10,000 items
+  contra presupuesto `750 ms`. Permanece sólo el warning aceptado del chunk
+  Vite principal mayor a 500 kB.
 
 ## Prueba funcional HTTP local previa a la iteración
 
@@ -146,13 +181,20 @@ se elimina de forma reversible con el reset local gobernado; no es Production.
 ## UI formal y gates posteriores
 
 La UI compila y sus contratos de navegación, autorización, estados, transporte
-y preferencia pasan; el smoke automatizado también está verde. Chrome quedó
-abierto y autenticado en `http://127.0.0.1:4173/listas/precios`, con el diálogo
-`Nuevo artículo` abierto. El recorrido confirmó los tres fixtures, las etiquetas
-SKU/Código de barras y la ausencia de GTIN/EAN/UPC/Código interno. La inspección
-automatizada nativa no estuvo disponible (`Sky Computer Use native pipe startup
-failed`), por lo que no se inventan screenshots ni se marca la matriz visual
-humana como ejecutada.
+y preferencia pasan; el smoke automatizado también está verde. La iteración de
+identificadores confirmó los tres fixtures, las etiquetas SKU/Código de barras y
+la ausencia de GTIN/EAN/UPC/Código interno.
+
+Para convergencia e integridad se usó Chrome real local autenticado. A 1280 px,
+Reparaciones y Lista de precios mostraron el mismo patrón de tabs, panel,
+encabezado, lifecycle, status y acciones con contenido real. A 768 y 640 px no
+hubo overflow de página; a 640 px se inspeccionaron Light y Dark y se restauró
+Light. Teclado movió foco visible de Categorías a Marcas. New Repair resolvió en
+la UI real `Teléfono`, `Apple`, `iPhone 11/iPhone 13`, `Pantalla` y los cuatro
+riesgos materializados. La automatización nativa no estuvo disponible
+(`Sky Computer Use native pipe startup failed`); el recorrido y las capturas se
+obtuvieron contra el Chrome visible mediante su protocolo local, sin marcarlo
+como aceptación humana.
 
 La revisión Owner previa produjo esta iteración y no constituye aceptación. El
 nuevo Owner Review debe recorrer `/listas/precios` y
@@ -169,8 +211,9 @@ Refacción/Pantallas/Samsung → Servicio, que limpió Category y Brand. La URL
 reflejó cada filtro. El toolbar conserva cuatro columnas a 1280 px y una sola
 columna a 768/640 px; controles nativos `Input`/`Select` aportan foco y
 teclado. Se activó Light/Dark y se restauró Light. Chrome quedó abierto,
-autenticado y restablecido en `/listas/precios` sin filtros. La revisión y
-aceptación humana siguen pendientes.
+autenticado y con dos ventanas lado a lado para comparar Catálogos de
+Reparaciones y Catálogos de Lista de precios. La revisión y aceptación humana siguen
+pendientes.
 
 ## Matriz de iteración Owner A-H
 

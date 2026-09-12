@@ -240,6 +240,15 @@ sintético de Luis permanece en `.env.local` para sobrevivir a la recreación
 del volumen. El seed no crea Sessions activas: se inician mediante el
 login local con contexto de Station verificado y PIN sintético.
 
+El mismo seed materializa los catálogos Repairs que consumen New Repair y su
+administración: 2 tipos, 12 marcas, 15 modelos, 4 riesgos y 5 categorías de
+problema, todos sintéticos, Tenant-scoped y con identidad determinista. Las
+marcas y modelos cubren exactamente los snapshots de las 15 reparaciones
+locales; no son defaults de plataforma ni bootstrap productivo. Los endpoints
+operativos y de Configuración leen estas mismas tablas, por lo que el seed no
+crea una fuente paralela. Repetir `local:db:seed` actualiza el conjunto por sus
+UUID estables y `local:db:reset` lo elimina junto con el resto del entorno local.
+
 ## Reset y parada
 
 ```sh
