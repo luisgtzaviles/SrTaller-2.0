@@ -2,13 +2,13 @@
 
 ## Estado del documento
 
-- **Estado:** Base conceptual aceptada por ADR-010/011; mecanismos pendientes.
-- **Naturaleza:** Las invariantes de contexto, vinculación, usuario activo y sesión son autoritativas; estados detallados de estación, protocolo e interfaz siguen como propuesta.
+- **Estado:** Base conceptual aceptada por ADR-010/011/014; la concurrencia de Session espera materialización PBI-043.
+- **Naturaleza:** Las invariantes de contexto, vinculación y sesión solicitante son autoritativas; estados detallados de estación, protocolo e interfaz siguen como propuesta.
 - **Alcance:** Pertenencia, vinculación, activación, uso, transferencia, revocación y pérdida de dispositivos.
 
 ## Objetivo
 
-Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) gobierna usuario, PIN y sesión; [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) gobierna la autorización ordinaria por capacidad y alcance.
+Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) gobierna usuario, PIN y sesión en lo no sustituido; [ADR-014](../decisions/proposed/ADR-014-concurrent-operational-sessions.md) permite Sessions concurrentes; [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) gobierna la autorización ordinaria por capacidad y alcance.
 
 ## Modelo conceptual
 
@@ -35,8 +35,11 @@ flowchart LR
 - Una estación mantiene una única vinculación vigente con una sucursal activa.
 - El tenant de la estación deriva de esa sucursal.
 - El usuario ordinario pertenece al tenant, no a una sucursal permanente, y puede identificarse desde cualquier estación autorizada de ese tenant.
-- El contexto operativo combina tenant, sucursal, estación, usuario y sesión validados.
-- Una estación mantiene como máximo una sesión operativa activa.
+- El contexto operativo de cada request combina tenant, sucursal, estación,
+  StationCredential, usuario y Session validados.
+- Una estación mantiene cero o más Sessions operativas activas independientes.
+- No existe un usuario activo global de la Station; cada Session solicitante
+  determina un solo actor.
 - Cerrar, expirar, sustituir o invalidar la sesión del usuario no modifica la vinculación de la estación.
 
 Los mecanismos técnicos, la composición de capacidades por rebanada y las excepciones administrativas reforzadas permanecen pendientes.
@@ -105,19 +108,23 @@ La capacidad administrativa se rige por ADR-012 y su clasificación sensible por
 1. El equipo activo solicita únicamente el PIN durante la operación cotidiana, sin pedir tenant, sucursal u otro identificador del usuario.
 2. El empleado introduce su PIN mediante un canal protegido.
 3. El servidor valida estación, vinculación, tenant/sucursal derivados y el PIN únicamente dentro de ese tenant; los límites técnicos de intentos permanecen pendientes.
-4. Si el conjunto es válido, finaliza como sustituida la sesión anterior y establece una nueva como única sesión activa de la estación.
+4. Si el conjunto es válido, un login sin Session previa establece una nueva
+   Session independiente; un switch reemplaza sólo la Session autenticada por
+   el perfil solicitante.
 5. La UI obtiene capacidades efectivas; no deriva permisos del cargo mostrado.
 6. El cambio y su resultado quedan auditados.
 
 Un PIN no permite operar desde una estación no vinculada, no selecciona sucursal y no identifica fuera del tenant derivado. Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
 
-### Cambio de turno
+### Cambio de usuario en un perfil
 
-- Debe existir una acción explícita de cerrar o cambiar operador.
+- Debe existir una acción explícita de cerrar o cambiar operador para la
+  Session del perfil solicitante.
 - Datos temporales del operador anterior se limpian de la interfaz y almacenamiento local.
 - Operaciones en curso deben asociarse al actor que las inició y definir quién puede continuarlas.
 - La caja, venta o reparación abierta no cambia automáticamente de ownership sin regla de negocio.
-- La inactividad expira la sesión y conserva la vinculación; sólo su duración y experiencia concreta permanecen pendientes.
+- La inactividad expira cada Session a los 60 minutos y conserva la
+  vinculación; el lifetime absoluto permanece en 12 horas.
 
 ## Acciones que podrían requerir supervisor
 

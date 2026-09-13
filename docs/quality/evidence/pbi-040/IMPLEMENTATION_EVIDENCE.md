@@ -4,12 +4,34 @@
 
 - **Checkpoint:** funcional listo para `Owner Review`; no equivale a `Done`.
 - **Branch:** `feature/pbi-040-catalog-pricing-core`.
-- **Baseline:** `40684d7554cdf02551f941e5e3f0beabbe563125` con CI de
-  `main` `34623060504` SUCCESS.
+- **Baseline histórica de implementación:**
+  `40684d7554cdf02551f941e5e3f0beabbe563125` con CI de `main`
+  `34623060504` SUCCESS.
+- **Baseline vigente para reanudación:** `main`
+  `5be5cd60acb0865da57aff76740a1330896b1cd1`, CI exacta
+  `34732201476` SUCCESS y PBI-043 `Done`.
 - **Candidato de iteración Owner:** funcionalidad congelada durante la
   reconciliación de runtime provenance; aceptación Owner todavía pendiente.
 - **No autorizado/no realizado:** push, PR, merge, deploy, release o cambio de
   infraestructura.
+
+## Reconciliación con el nuevo `main`
+
+- El head funcional PBI-040 se congeló en
+  `68843baea68a618d0c00748e464b3cd2cffbdab3`; su merge-base con el nuevo
+  `main` es el cierre PBI-039
+  `40684d7554cdf02551f941e5e3f0beabbe563125`.
+- La reconciliación se realiza como merge local, sin rebase ni force-push. Así
+  se preservan los 38 commits propios de Catalog/Pricing y los 12 commits de
+  `main` que incorporan la remediación y cierre de PBI-043.
+- En conflictos, `main` conserva autoridad sobre Access, sesiones concurrentes,
+  PBI-039 y delivery; PBI-040 conserva Catalog/Pricing, sus cinco migraciones y
+  evidencia. DEC-005, el registro de esquema y las pruebas de arquitectura
+  incluyen ambas fronteras y la migración de PBI-043 después de las de
+  Catalog/Pricing.
+- Esta reconciliación no agrega funcionalidad, no inicia PBI-041/PBI-042 y no
+  concede Owner Acceptance. Los resultados actuales de gates y runtime se
+  documentarán al completar la campaña sobre el commit reconciliado.
 
 ## Resultado funcional
 

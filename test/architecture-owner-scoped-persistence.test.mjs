@@ -119,7 +119,10 @@ test('owner-scoped ports and adapters retain exact ownership registration', asyn
   assert.deepEqual(policy.persistence.ports[operationalSessionPortPath], {
     owner: 'access',
     contract: 'OperationalSessionRepositoryPort',
-    allowedScopes: ['OperationalSessionPersistenceScope'],
+    allowedScopes: [
+      'OperationalSessionPersistenceScope',
+      'OperationalSessionTenantScope',
+    ],
     status: 'materialized-owner-port',
   });
   assert.deepEqual(policy.persistence.adapters[operationalSessionAdapterPath], {

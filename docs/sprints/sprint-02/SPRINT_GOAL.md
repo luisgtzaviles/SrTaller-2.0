@@ -3,64 +3,54 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-02.
-- **Estado:** Closed — 2026-09-11.
+- **Estado:** Closed; remediación Access integrada y validada.
 - **Periodo:** TBD.
-- **PBI actual:** ninguno; `PBI-039` está Done.
-- **WIP:** 0/1.
-- **Autoridad de cierre:** PR #45 merge
-  `40684d7554cdf02551f941e5e3f0beabbe563125` y CI exacta de `main`
-  `34623060504` SUCCESS materializaron el cierre efectivo de PBI-039. No existe
-  autorización de release o deploy.
+- **PBI actual:** `NONE`; [PBI-043](../../backlog/pbis/PBI-043.md) está `Done`.
+- **WIP:** `0/1` funcional.
+- **Baseline de cierre:** `main`/`origin/main` `5be5cd6`; CI exacta `34732201476`
+  `SUCCESS`.
+- **Autoridad:** Master Goal Owner del 2026-09-12 autoriza implementación, PR,
+  merge gobernado y Preview; no Production.
 
 ## Objetivo
 
-Convertir contexto e identidad persistentes en un flujo local visible de
-autenticación, sesión, autorización contextual y atribución real de una
-Operational Note, manteniendo límites tenant/Branch/Station y deny-by-default.
+Preservar autenticación, autorización contextual y atribución real mientras se
+elimina la exclusividad station-wide que impide a Users distintos operar en
+perfiles o dispositivos independientes de una misma Station.
 
-## Committed sequence
+La extensión no reabre PBI-034: PBI-043 remedia un supuesto operativo de su
+contrato mediante [ADR-014](../../decisions/proposed/ADR-014-concurrent-operational-sessions.md).
 
-1. PBI-025 — PIN Credential Authentication.
-2. PBI-034 — Operational Session y login/logout visible.
-3. PBI-026 — Contextual Authorization.
-4. PBI-028 — Minimum Business Audit and Correlation.
-5. Operational Note como primera prueba integral con actor real.
-6. PBI-039 — Customer Minimum + New Repair Classic 2.0 / Guided V2, slice
-   aceptado, verificado, re-reviewed e integrado. PR #42 más hotfixes Preview
-   #43/#44 tienen CI exacta de `main` verde; runtime `0d1c576…` validado con
-   create/detail/reload/worklist. Cierre documental `Done candidate`.
+## Secuencia comprometida
 
-Sólo un PBI puede estar en ejecución/cierre. El orden no inicia el siguiente
-PBI antes de cerrar canónicamente el anterior.
+1. PBI-025 — PIN Credential Authentication — `Done`.
+2. PBI-034 — Operational Session — `Done`; contrato histórico parcialmente
+   sustituido por ADR-014.
+3. PBI-026 — Contextual Authorization — `Done`; G4 `PASS`.
+4. PBI-028 — Minimum Business Audit and Correlation — `Done`; G5 `PASS`.
+5. PBI-038 — Timezone Foundation Integration and Hardening — `Done`.
+6. PBI-039 — Customer Minimum + New Repair — `Done` sobre `40684d7`.
+7. PBI-043 — Concurrent Operational Sessions — `Done`; COS-01…24,
+   revisión, CI, merge y Preview PASS.
 
-## Criterios de salida
+PBI-040 permanece congelado fuera de `main`. No ocupa WIP y no se reanuda ni se
+reconcilia hasta cerrar la remediación Access mediante sus propios gates.
 
-- [x] G3 Authentication PASS efectivo; cierre PBI-034 PR #34 + CI exacto GREEN.
-- [x] G4 Authorization PASS efectivo; cierre PBI-026 PR #36 + CI exacto
-  `34161029937` GREEN.
-- [x] G5 Audit PASS — PR #39 merge `2b712fc3a3842f197324e8870011bf170846ddb8`
-  y CI exacta `34249869167` GREEN.
-- [x] Login/logout/User switching visible y persistente en localhost; lógica
-  funcional y walkthrough endurecido final probados con identidades sintéticas.
-- [x] Operational Note usa actor, Station, Session, Tenant, Branch y correlation
-  reales en el candidato local; no “Operador sintético”.
-- [x] PostgreSQL 18.4, arquitectura, Light/Dark, responsive, full verify, OCI,
-  browser proof, focused review y CI de PR #37/PR #38 GREEN.
-- [x] PBI-038 — Timezone Foundation Integration and Hardening: PR #40 merge
-  `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN;
-  `Done`, sin release ni deploy.
-- [x] PBI-039 Customer mínimo + New Repair Classic 2.0 / Guided V2 aceptado,
-  formalmente verificado, integrado y validado en Preview; PR documental #45 y
-  CI exacta `34623060504` materializan `Done`.
-- [x] Preview deploy and post-deploy validation: PASS on `0d1c576…`.
-- [ ] Production release/deploy: NO; not authorized.
+## Criterios de salida de la extensión
 
-## Cierre
-
-El objetivo se cumplió y todos los PBIs comprometidos están Done. Production
-permanece `NO`; esa exclusión no impide cerrar un Sprint de producto ya validado
-en su ambiente autorizado.
+- [x] ASC-001 a ASC-008 materializadas en ADR-014 y arquitectura canónica.
+- [x] PBI-043, DoR, threat model Critical y matriz COS-01…COS-24 definidos.
+- [x] Ownership, persistencia, transición, rollback y revocación delimitados.
+- [x] Roadmap, backlog, dependencias, workflow y Sprint reconciliados.
+- [x] Owner autorizó explícitamente iniciar PBI-043.
+- [x] Implementación PBI-043 supera gates locales, revisión, CI exacta y Owner
+  Acceptance aplicables.
+- [x] PBI-040 se reconcilia posteriormente desde el nuevo `main` sin perder su
+  WIP congelado.
+- [ ] Production release/deploy: NO; no autorizado.
 
 ## Próxima revisión
 
-- **Disparador:** nueva evidencia que contradiga el cierre.
+- **Fecha:** al cambiar una autoridad histórica del Sprint.
+- **Disparador:** nueva evidencia que contradiga su cierre; PBI-040 continúa en
+  SPRINT-03 mediante autoridad separada.

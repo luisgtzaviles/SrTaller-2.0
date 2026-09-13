@@ -5,7 +5,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 ## Estado del documento
 
 **Estado:** Workflow en uso, pendiente de completar autoridades por clase de decisión.
-**Decisiones aceptadas:** diez. ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento; ADR-005 fue aceptado con condiciones el 2026-07-22 por Arquitectura + Ingeniería tras las revisiones de Seguridad, Operaciones y Calidad.
+**Decisiones aceptadas:** once. ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento; ADR-005 fue aceptado con condiciones el 2026-07-22 por Arquitectura + Ingeniería tras las revisiones de Seguridad, Operaciones y Calidad; ADR-014 fue aceptado el 2026-09-12 por el Product Owner mediante ASC-001 a ASC-008.
 **Decisiones propuestas:** tres. ADR-006 a ADR-008 conservan estado `Proposed`.
 
 ## Estados permitidos
@@ -40,6 +40,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 | [ADR-011](proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) | Identidad de usuario, autenticación por PIN y sesión operativa | Accepted — 2026-07-21 |
 | [ADR-012](proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) | Roles de tenant, capacidades y autorización contextual | Accepted — 2026-07-21 |
 | [ADR-013](proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) | Acciones sensibles y autorización reforzada | Accepted — 2026-07-21 |
+| [ADR-014](proposed/ADR-014-concurrent-operational-sessions.md) | Sesiones operativas concurrentes por estación confiable | Accepted — 2026-09-12; supersedes partially ADR-011 |
 
 Las rutas históricas bajo `proposed/` se conservan para mantener una convención estable; el estado dentro de cada documento es autoritativo.
 

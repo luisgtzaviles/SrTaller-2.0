@@ -1,38 +1,32 @@
-# ACTIVE CHECKLIST — LOCAL/PREVIEW REPAIR DETAIL PARITY
+# Active Development Checklist
 
-## Estado operativo
+Milestone / Functional Goal: Resume PBI-040 safely from current main
+Sprint: SPRINT-03 — Price List Foundation
+Current PBI: PBI-040 — Owner Review
+Status: Reconciliation in progress; no new functionality authorized
+WIP: 1/1
+Progress: 1 / 5 reconciliation blocks complete
+Current: Resolve merge conflicts by module ownership
+Next: Run focused and full preservation gates
+Blocked: None
+Last updated: 2026-09-12 MST
 
-- **Milestone / meta funcional:** PBI-039 REPAIR DETAIL BASELINE PRESERVATION
-- **Sprint:** SPRINT-03 — Active
-- **PBI actual:** PBI-040 — Catalog & Pricing Core + Fast Price Lookup
-- **Estado general:** Paridad material PASS; preparación final de pestañas Owner en progreso
-- **Progreso:** 5 / 5 bloques completados
-- **Trabajo actual:** mantener Preview y Local abiertos con el fixture canónico idéntico.
-- **Siguiente bloque:** revisión visual lado a lado por Owner; sin inferir aceptación.
-- **Bloqueos:** ninguno confirmado
-- **Última actualización:** 2026-09-12 15:10 MST
+## Reconciliation to Owner Review
 
-## Resultado esperado
+- [x] Verify clean `main`, PBI-043 closure, branch cleanup, frozen PBI-040 HEAD
+  and exact genealogy
+- [~] Merge current `main` into PBI-040 without rewriting or discarding WIP
+- [ ] Prove PBI-039, PBI-040 and PBI-043 contracts with material PostgreSQL
+- [ ] Prove exact local runtime and concurrent Owner/QA Sessions
+- [ ] Leave Chrome on `/listas/precios`, reconcile evidence and finish clean
 
-Demostrar paridad funcional de Repair Detail entre `preview.srtaller.dev` y
-`127.0.0.1:4173` con el mismo fixture sintético gobernado, añadir una protección
-permanente de read model, estructura y provenance, y dejar ambas superficies
-abiertas para revisión Owner lado a lado.
+## Boundaries
 
-## Checklist
+- [x] Reconciliation only; no new Price List feature
+- [x] No PBI-041/PBI-042 implementation
+- [x] No push, PR, merge to `main`, Preview deploy or Production
+- [x] PBI-039/PBI-043 remain authoritative and are not reopened
 
-- [x] Reconciliar autoridades, branch, runtime y estado del goal.
-- [x] Capturar y comparar read models y DOM efectivos; clasificar cada diferencia.
-- [x] Materializar un fixture sintético determinista equivalente en ambos runtimes.
-- [x] Corregir la capa causal y añadir el guard permanente de paridad.
-- [x] Ejecutar gates, reconciliar evidencia y dejar dos pestañas listas para Owner.
-
-## Gates preservados
-
-- WIP 1/1; PBI-041 y PBI-042 no se inician.
-- PBI-040 permanece sin Owner Acceptance y no se declara `Done`.
-- No se modifica Price List ni se cambia visualmente Repair Detail para ocultar
-  una divergencia que pertenezca a datos, fixture, build o runtime.
-- No push, PR, merge, deploy ni release.
-- La prueba final usa la misma estructura de datos; no compara dos reparaciones
-  operativamente distintas como si fueran equivalentes.
+The completed PBI-043 checklist remains preserved by Git history and its
+closure evidence. The prior PBI-039 checklist remains in
+[`history/PBI-039_ACTIVE_CHECKLIST.md`](history/PBI-039_ACTIVE_CHECKLIST.md).

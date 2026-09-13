@@ -96,9 +96,9 @@ export class CreateOperationalSessionUseCase {
       !credentialCurrent
     ) deny();
     const tokens = this.tokens.issue();
-    let session: Awaited<ReturnType<OperationalSessionRepositoryPort['createReplacingActive']>>;
+    let session: Awaited<ReturnType<OperationalSessionRepositoryPort['createForProfile']>>;
     try {
-      session = await this.repository.createReplacingActive(context, {
+      session = await this.repository.createForProfile(context, {
         sessionId: this.createId(),
         userId: proof.userId,
         userVersion: proof.userVersion,

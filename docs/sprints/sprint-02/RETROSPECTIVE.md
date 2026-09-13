@@ -1,19 +1,21 @@
 # SPRINT-02 — Retrospectiva
 
-- **Estado:** Closed.
-- **Fecha:** 2026-09-11.
+- **Estado:** Complete; Sprint Closed.
+- **Fecha:** 2026-09-12.
 
-## Aprendizajes y acciones
+La fricción Owner demostró que una restricción técnicamente consistente puede
+ser operativamente incorrecta. La corrección preservó atribución por Session y
+convirtió la prueba multi-perfil real en gate material. La revisión
+independiente también obligó a reemplazar timers por locks PostgreSQL
+observables y a endurecer la telemetría Chrome antes de aceptar evidencia.
 
-- Mantener separados freeze funcional, verificación UI, full verify, CI,
-  integración, Preview y cierre evitó declarar Done antes de tiempo.
-- Validar la request real del Preview y correlacionarla con runtime fue
-  necesario; contenedor saludable no probó el recorrido New Repair.
-- Los documentos preventivos `Done candidate` deben reconciliarse con el SHA y
-  CI exactos antes de abrir otro ciclo.
-- Para el nuevo dominio se conserva WIP=1 y se exige architecture/readiness
-  antes de cualquier materialización.
+El despliegue confirmó que runtime y migraciones son gates separados: el nuevo
+container falló cerrado ante esquema pendiente, el anterior siguió sano y una
+migración one-shot exacta/idempotente permitió promover sin ocultar el error.
+PBI-040 permanece congelado para reconciliación posterior, evitando mezclar
+Access con Price List.
 
 ## Próxima revisión
 
-- **Disparador:** futura revisión del proceso o incidente que invalide una acción.
+- **Fecha:** al cambiar una autoridad histórica del Sprint.
+- **Disparador:** nueva evidencia que contradiga el resultado.

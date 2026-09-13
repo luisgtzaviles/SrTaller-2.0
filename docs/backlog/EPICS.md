@@ -2,8 +2,9 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado; EPIC-015 tiene PBI-040 en Owner Review después de su
-iteración funcional. Ningún epic autoriza aceptación o integración por sí solo.
+**Estado:** Reconciliado; EPIC-015 tiene PBI-040 en Owner Review después de
+reconciliarse con `main` actual. Ningún epic autoriza aceptación o integración
+por sí solo.
 **Criterio común:** sólo se descompone cuando el problema, actores, límites y dependencias son suficientemente conocidos.
 
 ## EPIC-000 — Product Discovery and Architecture
@@ -25,7 +26,7 @@ iteración funcional. Ningún epic autoriza aceptación o integración por sí s
 - **Dependencias:** EPIC-000 y ADRs técnicos aceptados.
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
-- **Estado:** PBI-023 `Closed`; Sprint 01 y SPRINT-02 cerrados; PBI-039 Done.
+- **Estado:** PBI-023 `Closed`; Sprint 01 y SPRINT-02 `Closed`; PBI-043 `Done`.
   SPRINT-03 está activo para EPIC-015, con PBI-040 en Owner Review y WIP `1/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
@@ -35,7 +36,8 @@ iteración funcional. Ningún epic autoriza aceptación o integración por sí s
   PBI-031–PBI-036 separan PIN, sesión, autorización, auditoría y observabilidad.
   [PBI-030](pbis/PBI-030.md) tiene cierre `Done`; PBI-027/PBI-029/PBI-024/
   PBI-032/PBI-033/PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`;
-  PBI-038 cerró el seguimiento de timezone aprobado con riesgo Medium.
+  PBI-038 cerró el seguimiento de timezone aprobado con riesgo Medium;
+  PBI-043 está `Done` y validado en Preview.
 
 ## EPIC-002 — Tenant and Platform Administration
 
@@ -56,8 +58,11 @@ iteración funcional. Ningún epic autoriza aceptación o integración por sí s
 - **Dependencias:** EPIC-000, Tenant Management y políticas de seguridad.
 - **Riesgos:** escalamiento de privilegios, reglas inmanejables y recuperación de cuenta débil.
 - **Exclusiones:** algoritmos criptográficos finales antes de threat modeling.
-- **Estado:** User Directory, Roles/Capabilities/Assignments, PIN, Session,
-  Authorization y Audit están Done; G2–G5 PASS. PBI-039 también está Done.
+- **Estado:** User Directory y Roles/Capabilities/Assignments `Done`; G2
+  `PASS`. El alcance funcional PIN y su remediación están integrados;
+  PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`, G4/G5 `PASS`. PBI-039
+  es el Current PBI transversal, con slice funcional local congelado y
+  aceptado por Owner; no abre un segundo PBI de identidad y el WIP es `1/1`.
 - **Puede descomponerse cuando:** actores, matriz de acciones sensibles y lifecycle de acceso estén aprobados.
 
 ## EPIC-004 — Branch and Device Management
@@ -80,8 +85,11 @@ iteración funcional. Ningún epic autoriza aceptación o integración por sí s
 - **Dependencias:** EPIC-001, multitenancy, sucursales y política de datos.
 - **Riesgos:** duplicados, exposición de PII y ownership ambiguo entre sucursales.
 - **Exclusiones:** CRM avanzado e identidad de cliente final no validada.
-- **Estado:** Customer Minimum de PBI-039 está Done, integrado y validado;
-  `Released: NO`. CRM avanzado permanece diferido.
+- **Estado:** Customer Minimum de PBI-039 está materializado en PR #42,
+  congelado y aceptado por Owner; UI Verification, Hardening, Full
+  Verification y PR CI están en `PASS`, y los findings de review están
+  remediados. No está integrado, `Done` ni `Released`; CRM avanzado permanece
+  diferido.
 - **Puede descomponerse cuando:** campos mínimos, deduplicación, privacidad y alcance por sucursal estén acordados.
 
 ## EPIC-006 — Repair Operations
@@ -92,9 +100,11 @@ iteración funcional. Ningún epic autoriza aceptación o integración por sí s
 - **Dependencias:** Customers, Branches, Identity, Inventory, Payments y Files.
 - **Riesgos:** workflow demasiado rígido, estados ambiguos y cambios sin auditoría.
 - **Exclusiones:** automatizar procesos no confirmados para todos los talleres.
-- **Estado:** Nueva Reparación y las superficies de Repair Detail de PBI-039
-  están Done, integradas y validadas; `Released: NO`. Diagnóstico, ejecución y
-  entrega permanecen en ciclos futuros.
+- **Estado:** Nueva Reparación y las superficies de Repair Detail incluidas en
+  PBI-039 están materializadas en PR #42, congeladas y aceptadas por Owner; UI
+  Verification, Hardening, Full Verification y PR CI están en `PASS`, y los
+  findings de review están remediados. No están integradas, `Done` ni
+  `Released`; diagnóstico, ejecución y entrega permanecen en ciclos futuros.
 - **Puede descomponerse cuando:** lifecycle, excepciones, autoridades y datos mínimos se validen con usuarios.
 
 ## EPIC-007 — Inventory
@@ -201,8 +211,8 @@ iteración funcional. Ningún epic autoriza aceptación o integración por sí s
   historia y apply masivo ambiguo/parcial.
 - **Exclusiones:** Inventory, Procurement, Repair Concepts, Quote/Sales,
   Payments/Caja, Pedidos, Solicitudes, multi-currency/FX e impuestos.
-- **Estado:** Architecture accepted; PBI-040 Owner iteration/Owner Review y
-  aceptación pendiente; PBI-041 Planned; PBI-042 Planned/Unassigned.
+- **Estado:** Architecture accepted; PBI-040 Owner Review y aceptación
+  pendiente; PBI-041 Planned; PBI-042 Planned/Unassigned.
 - **Descomposición:** [PBI-040](pbis/PBI-040.md),
   [PBI-041](pbis/PBI-041.md) y [PBI-042](pbis/PBI-042.md).
 - **Contrato:** [Price List Architecture](../architecture/PRICE_LIST_ARCHITECTURE.md).

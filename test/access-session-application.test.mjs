@@ -58,27 +58,26 @@ function fixture(now = '2026-09-07T12:00:00.000Z') {
   const repository = {
     credentialCurrent: true,
     closeConflicts: 0,
-    async createReplacingActive(trusted, input) {
+    async createForProfile(trusted, input) {
       if (createFailure) throw createFailure;
-      const active = rows.find((candidate) =>
-        candidate.tenantId === trusted.tenantId &&
-        candidate.stationId === trusted.stationId &&
-        candidate.status === 'active');
-      if ((active?.sessionId ?? null) !== input.expectedSessionId) {
-        throw new OperationalSessionAdmissionError();
-      }
+      const replaced = input.expectedSessionId === null
+        ? null
+        : rows.find((candidate) =>
+          candidate.tenantId === trusted.tenantId &&
+          candidate.branchId === trusted.branchId &&
+          candidate.stationId === trusted.stationId &&
+          candidate.stationCredentialId === trusted.stationCredentialId &&
+          candidate.sessionId === input.expectedSessionId &&
+          candidate.status === 'active');
+      if (input.expectedSessionId !== null && !replaced) {
+          throw new OperationalSessionAdmissionError();
+        }
       creates += 1;
       const occurredAt = input.occurredAt;
-      for (const existing of rows) {
-        if (
-          existing.tenantId === trusted.tenantId &&
-          existing.stationId === trusted.stationId &&
-          existing.status === 'active'
-        ) {
-          existing.status = 'replaced';
-          existing.endedAt = occurredAt;
-          existing.version += 1;
-        }
+      if (replaced) {
+        replaced.status = 'replaced';
+        replaced.endedAt = occurredAt;
+        replaced.version += 1;
       }
       const row = {
         sessionId: input.sessionId,
@@ -105,6 +104,31 @@ function fixture(now = '2026-09-07T12:00:00.000Z') {
       };
       rows.push(row);
       return { ...row };
+    },
+    async invalidateOne(trusted, input) {
+      const row = rows.find((candidate) =>
+        candidate.tenantId === trusted.tenantId &&
+        candidate.sessionId === input.sessionId &&
+        candidate.status === 'active' &&
+        candidate.version === input.expectedVersion);
+      if (!row) return false;
+      row.status = 'invalidated';
+      row.endedAt = input.occurredAt;
+      row.version += 1;
+      return true;
+    },
+    async invalidateByUser(trusted, input) {
+      return invalidateMatching(rows, trusted, input.occurredAt, (row) =>
+        row.userId === input.userId);
+    },
+    async invalidateByStation(trusted, input) {
+      return invalidateMatching(rows, trusted, input.occurredAt, (row) =>
+        row.stationId === input.stationId);
+    },
+    async invalidateByCredentialVersion(trusted, input) {
+      return invalidateMatching(rows, trusted, input.occurredAt, (row) =>
+        row.userId === input.userId &&
+        row.credentialVersion === input.credentialVersion);
     },
     async findByBearerVerifier(trusted, bearerVerifier) {
       const row = rows.find((candidate) =>
@@ -191,7 +215,12 @@ function fixture(now = '2026-09-07T12:00:00.000Z') {
     now() { return new Date(this.value); },
   };
   let nextId = 0;
-  const ids = [sessionId, '00000000-0000-4000-8000-000000000802'];
+  const ids = [
+    sessionId,
+    '00000000-0000-4000-8000-000000000802',
+    '00000000-0000-4000-8000-000000000803',
+    '00000000-0000-4000-8000-000000000804',
+  ];
   const create = new CreateOperationalSessionUseCase(
     repository,
     users,
@@ -236,6 +265,18 @@ function fixture(now = '2026-09-07T12:00:00.000Z') {
     get row() { return [...rows].reverse()[0] ?? null; },
     get creates() { return creates; },
   };
+}
+
+function invalidateMatching(rows, scope, occurredAt, predicate) {
+  let count = 0;
+  for (const row of rows) {
+    if (row.tenantId !== scope.tenantId || row.status !== 'active' || !predicate(row)) continue;
+    row.status = 'invalidated';
+    row.endedAt = occurredAt;
+    row.version += 1;
+    count += 1;
+  }
+  return count;
 }
 
 function proof(input = {}) {
@@ -350,6 +391,46 @@ test('failed switching preserves the prior Session and successful switching repl
   );
   assert.equal(state.creates, 2);
   assert.equal((await state.resolve.execute(context, cookieInput(second))).userId, secondUserId);
+});
+
+test('independent profiles remain active and logout or switch mutates only the requesting Session', async () => {
+  const state = fixture();
+  state.setApplicable([userId, secondUserId]);
+  const owner = await state.create.execute(context, proof());
+  const qa = await state.create.execute(
+    context,
+    proof({ userId: secondUserId, displayName: 'Ana Operadora' }),
+  );
+  assert.notEqual(owner.session.sessionId, qa.session.sessionId);
+  assert.deepEqual(state.rows.map(({ status }) => status), ['active', 'active']);
+
+  await state.end.execute(context, cookieInput(qa, { csrfHeader: qa.tokens.csrf }));
+  assert.deepEqual(state.rows.map(({ status }) => status), ['active', 'logged_out']);
+  assert.equal((await state.resolve.execute(context, cookieInput(owner))).userId, userId);
+
+  state.clock.value = new Date('2026-09-07T12:00:01.000Z');
+  const qaAgain = await state.create.execute(
+    context,
+    proof({
+      userId: secondUserId,
+      displayName: 'Ana Operadora',
+      authenticatedAt: '2026-09-07T12:00:01.000Z',
+    }),
+  );
+  state.clock.value = new Date('2026-09-07T12:00:02.000Z');
+  const switched = await state.create.execute(
+    context,
+    proof({ authenticatedAt: '2026-09-07T12:00:02.000Z' }),
+    qaAgain.session.sessionId,
+  );
+  assert.deepEqual(state.rows.map(({ status }) => status), [
+    'active',
+    'logged_out',
+    'replaced',
+    'active',
+  ]);
+  assert.equal((await state.resolve.execute(context, cookieInput(owner))).userId, userId);
+  assert.equal((await state.resolve.execute(context, cookieInput(switched))).userId, userId);
 });
 
 for (const scenario of [

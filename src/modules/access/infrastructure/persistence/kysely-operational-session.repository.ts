@@ -98,115 +98,105 @@ export class KyselyOperationalSessionRepository
     );
   }
 
-  async createReplacingActive(context: TrustedStationContext, input: Parameters<OperationalSessionRepositoryPort['createReplacingActive']>[1]) {
+  async createForProfile(
+    context: TrustedStationContext,
+    input: Parameters<OperationalSessionRepositoryPort['createForProfile']>[1],
+  ) {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         return await this.#inTransaction(async (database, transactionContext) => {
-        const occurredAt = new Date(input.occurredAt);
-        const idleCutoff = new Date(occurredAt.getTime() - OPERATIONAL_SESSION_IDLE_MS);
-        const trustedStation = await this.stations
-          .validateTrustedStationAdmission(
-            context,
-            {
-              branchRevision: context.branchAdmissionRevision,
-              stationRevision: context.stationAdmissionRevision,
-              bindingRevision: context.stationBindingAdmissionRevision,
-              credentialRevision: context.stationCredentialAdmissionRevision,
-            },
-            transactionContext,
+          const occurredAt = new Date(input.occurredAt);
+          const idleCutoff = new Date(
+            occurredAt.getTime() - OPERATIONAL_SESSION_IDLE_MS,
           );
-        const trustedUser = trustedStation
-          ? await this.users.validateAuthenticationUserAdmission(
+          const trustedStation = await this.stations
+            .validateTrustedStationAdmission(
+              context,
+              {
+                branchRevision: context.branchAdmissionRevision,
+                stationRevision: context.stationAdmissionRevision,
+                bindingRevision: context.stationBindingAdmissionRevision,
+                credentialRevision: context.stationCredentialAdmissionRevision,
+              },
+              transactionContext,
+            );
+          const trustedUser = trustedStation
+            ? await this.users.validateAuthenticationUserAdmission(
               { tenantId: context.tenantId },
               input.userId,
               input.userVersion,
               input.userAdmissionRevision,
               transactionContext,
-            )
-          : null;
-        if (!trustedStation || !trustedUser) {
-          throw new OperationalSessionAdmissionError();
-        }
-        await database.insertInto('access_operational_session_station_guards')
-          .values({ tenant_id: context.tenantId, station_id: context.stationId, created_at: occurredAt, updated_at: occurredAt })
-          .onConflict((conflict) => conflict.columns(['tenant_id', 'station_id']).doNothing())
-          .execute();
-        await database.selectFrom('access_operational_session_station_guards')
-          .select('station_id')
-          .where('tenant_id', '=', context.tenantId)
-          .where('station_id', '=', context.stationId)
-          .forUpdate()
-          .executeTakeFirstOrThrow();
-        // Browser cookies can disappear before a persisted active row is
-        // resolved (expiry, eviction, or user cleanup). Reap only rows whose
-        // contractual idle/absolute deadline is already due while holding the
-        // Station admission lock, then evaluate the optimistic replacement.
-        await database.updateTable('access_operational_sessions')
-          .set((expression) => ({
-            status: 'expired',
-            ended_at: expression.fn('greatest', [
-              'issued_at',
-              expression.val(occurredAt),
-            ]),
-            version: expression('version', '+', 1),
-          }))
-          .where('tenant_id', '=', context.tenantId)
-          .where('station_id', '=', context.stationId)
-          .where('status', '=', 'active')
-          .where((expression) => expression.or([
-            expression('expires_at', '<=', occurredAt),
-            expression('last_activity_at', '<=', idleCutoff),
-          ]))
-          .execute();
-        const active = await database.selectFrom('access_operational_sessions')
-          .select('session_id')
-          .where('tenant_id', '=', context.tenantId)
-          .where('station_id', '=', context.stationId)
-          .where('status', '=', 'active')
-          .executeTakeFirst();
-        if ((active?.session_id ?? null) !== input.expectedSessionId) {
-          throw new OperationalSessionAdmissionError();
-        }
-        await database.updateTable('access_operational_sessions')
-          .set((expression) => ({
-            status: 'replaced',
-            ended_at: expression.fn('greatest', [
-              'issued_at',
-              expression.val(occurredAt),
-            ]),
-            version: expression('version', '+', 1),
-          }))
-          .where('tenant_id', '=', context.tenantId)
-          .where('station_id', '=', context.stationId)
-          .where('status', '=', 'active')
-          .execute();
-        const row = await database.insertInto('access_operational_sessions')
-          .values({
-            tenant_id: context.tenantId,
-            session_id: input.sessionId,
-            branch_id: context.branchId,
-            station_id: context.stationId,
-            station_credential_id: context.stationCredentialId,
-            branch_admission_revision: trustedStation.branchRevision,
-            station_admission_revision: trustedStation.stationRevision,
-            station_binding_admission_revision: trustedStation.bindingRevision,
-            station_credential_admission_revision: trustedStation.credentialRevision,
-            user_id: input.userId,
-            user_version: input.userVersion,
-            user_admission_revision: trustedUser.admissionRevision,
-            credential_version: input.credentialVersion,
-            token_verifier: input.bearerVerifier,
-            csrf_verifier: input.csrfVerifier,
-            status: 'active',
-            version: 0,
-            issued_at: occurredAt,
-            last_activity_at: occurredAt,
-            expires_at: new Date(input.expiresAt),
-            ended_at: null,
-          })
-          .returningAll()
-          .executeTakeFirstOrThrow();
-        return map(row);
+              )
+            : null;
+          if (!trustedStation || !trustedUser) {
+            throw new OperationalSessionAdmissionError();
+          }
+
+          if (input.expectedSessionId !== null) {
+            const replaced = await database
+              .selectFrom('access_operational_sessions')
+              .select(['session_id', 'version'])
+              .where('tenant_id', '=', context.tenantId)
+              .where('branch_id', '=', context.branchId)
+              .where('station_id', '=', context.stationId)
+              .where('station_credential_id', '=', context.stationCredentialId)
+              .where('session_id', '=', input.expectedSessionId)
+              .where('status', '=', 'active')
+              .where('expires_at', '>', occurredAt)
+              .where('last_activity_at', '>', idleCutoff)
+              .forUpdate()
+              .executeTakeFirst();
+            if (!replaced) throw new OperationalSessionAdmissionError();
+
+            const result = await database
+              .updateTable('access_operational_sessions')
+              .set((expression) => ({
+                status: 'replaced',
+                ended_at: expression.fn('greatest', [
+                  'issued_at',
+                  expression.val(occurredAt),
+                ]),
+                version: expression('version', '+', 1),
+              }))
+              .where('tenant_id', '=', context.tenantId)
+              .where('session_id', '=', replaced.session_id)
+              .where('status', '=', 'active')
+              .where('version', '=', replaced.version)
+              .executeTakeFirst();
+            if (Number(result.numUpdatedRows) !== 1) {
+              throw new OperationalSessionAdmissionError();
+            }
+          }
+
+          const row = await database
+            .insertInto('access_operational_sessions')
+            .values({
+              tenant_id: context.tenantId,
+              session_id: input.sessionId,
+              branch_id: context.branchId,
+              station_id: context.stationId,
+              station_credential_id: context.stationCredentialId,
+              branch_admission_revision: trustedStation.branchRevision,
+              station_admission_revision: trustedStation.stationRevision,
+              station_binding_admission_revision: trustedStation.bindingRevision,
+              station_credential_admission_revision: trustedStation.credentialRevision,
+              user_id: input.userId,
+              user_version: input.userVersion,
+              user_admission_revision: trustedUser.admissionRevision,
+              credential_version: input.credentialVersion,
+              token_verifier: input.bearerVerifier,
+              csrf_verifier: input.csrfVerifier,
+              status: 'active',
+              version: 0,
+              issued_at: occurredAt,
+              last_activity_at: occurredAt,
+              expires_at: new Date(input.expiresAt),
+              ended_at: null,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow();
+          return map(row);
         });
       } catch (error: unknown) {
         const code = typeof error === 'object' && error !== null && 'code' in error
@@ -384,14 +374,7 @@ export class KyselyOperationalSessionRepository
     context: TrustedStationContext,
     input: Parameters<OperationalSessionRepositoryPort['closeAuthenticated']>[1],
   ) {
-    return this.#inTransaction(async (database) => {
-      const guard = await database.selectFrom('access_operational_session_station_guards')
-        .select('station_id')
-        .where('tenant_id', '=', context.tenantId)
-        .where('station_id', '=', context.stationId)
-        .forUpdate()
-        .executeTakeFirst();
-      if (!guard) return false;
+    return useDatabasePersistenceExecutor(this.connection, 'access', async (database) => {
       const result = await database.updateTable('access_operational_sessions')
         .set((expression) => ({
           status: input.status,
@@ -410,6 +393,96 @@ export class KyselyOperationalSessionRepository
         .where('status', '=', 'active')
         .executeTakeFirst();
       return Number(result.numUpdatedRows) === 1;
+    });
+  }
+
+  async invalidateOne(
+    scope: Parameters<OperationalSessionRepositoryPort['invalidateOne']>[0],
+    input: Parameters<OperationalSessionRepositoryPort['invalidateOne']>[1],
+  ) {
+    return useDatabasePersistenceExecutor(this.connection, 'access', async (database) => {
+      const result = await database.updateTable('access_operational_sessions')
+        .set((expression) => ({
+          status: 'invalidated',
+          ended_at: expression.fn('greatest', [
+            'issued_at',
+            expression.val(new Date(input.occurredAt)),
+          ]),
+          version: expression('version', '+', 1),
+        }))
+        .where('tenant_id', '=', scope.tenantId)
+        .where('session_id', '=', input.sessionId)
+        .where('status', '=', 'active')
+        .where('version', '=', input.expectedVersion)
+        .executeTakeFirst();
+      return Number(result.numUpdatedRows) === 1;
+    });
+  }
+
+  async invalidateByUser(
+    scope: Parameters<OperationalSessionRepositoryPort['invalidateByUser']>[0],
+    input: Parameters<OperationalSessionRepositoryPort['invalidateByUser']>[1],
+  ) {
+    return useDatabasePersistenceExecutor(this.connection, 'access', async (database) => {
+      const result = await database.updateTable('access_operational_sessions')
+        .set((expression) => ({
+          status: 'invalidated',
+          ended_at: expression.fn('greatest', [
+            'issued_at',
+            expression.val(new Date(input.occurredAt)),
+          ]),
+          version: expression('version', '+', 1),
+        }))
+        .where('tenant_id', '=', scope.tenantId)
+        .where('user_id', '=', input.userId)
+        .where('status', '=', 'active')
+        .executeTakeFirst();
+      return Number(result.numUpdatedRows);
+    });
+  }
+
+  async invalidateByStation(
+    scope: Parameters<OperationalSessionRepositoryPort['invalidateByStation']>[0],
+    input: Parameters<OperationalSessionRepositoryPort['invalidateByStation']>[1],
+  ) {
+    return useDatabasePersistenceExecutor(this.connection, 'access', async (database) => {
+      const result = await database.updateTable('access_operational_sessions')
+        .set((expression) => ({
+          status: 'invalidated',
+          ended_at: expression.fn('greatest', [
+            'issued_at',
+            expression.val(new Date(input.occurredAt)),
+          ]),
+          version: expression('version', '+', 1),
+        }))
+        .where('tenant_id', '=', scope.tenantId)
+        .where('station_id', '=', input.stationId)
+        .where('status', '=', 'active')
+        .executeTakeFirst();
+      return Number(result.numUpdatedRows);
+    });
+  }
+
+  async invalidateByCredentialVersion(
+    scope: Parameters<OperationalSessionRepositoryPort['invalidateByCredentialVersion']>[0],
+    input: Parameters<OperationalSessionRepositoryPort['invalidateByCredentialVersion']>[1],
+  ) {
+    return useDatabasePersistenceExecutor(this.connection, 'access', async (database) => {
+      const result = await database.updateTable('access_operational_sessions')
+        .set((expression) => ({
+          status: 'invalidated',
+          ended_at: expression.fn('greatest', [
+            'issued_at',
+            expression.val(new Date(input.occurredAt)),
+          ]),
+          version: expression('version', '+', 1),
+        }))
+        .where('tenant_id', '=', scope.tenantId)
+        .where('user_id', '=', input.userId)
+        .where('credential_version', '=', input.credentialVersion)
+        .where('status', '=', 'active')
+        .executeTakeFirst();
+      return Number(result.numUpdatedRows);
     });
   }
 

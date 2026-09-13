@@ -231,6 +231,24 @@ historial/versionado independiente y sólo admite `Área de pendientes → Talle
 No se inventan tablas de clientes, pagos, autorización contextual ni otros
 módulos funcionales.
 
+La migración PBI-043 sustituye la exclusividad histórica por `0..N` Sessions
+independientes por Station conforme a
+[ADR-014](../decisions/proposed/ADR-014-concurrent-operational-sessions.md).
+Login independiente no reemplaza otras Sessions; switch y logout actúan sobre
+la Session exacta del perfil.
+
+La prueba local visible y reproducible usa dos perfiles temporales reales de
+Google Chrome, la misma Station sintética y cookie jars separados. Lee el PIN
+Owner sólo desde `.env.local`, crea un PIN QA efímero y no imprime secretos:
+
+```sh
+pnpm run verify:pbi043:chrome
+```
+
+El comando es un gate manual macOS y requiere `local:dev` activo. Deja las dos
+ventanas visibles para inspección; sus perfiles viven en un directorio temporal
+reportado por el comando y no se usan fuera de desarrollo local.
+
 ## Seed sintético V1
 
 ```sh

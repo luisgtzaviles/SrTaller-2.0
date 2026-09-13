@@ -16,10 +16,10 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 ## Estado del documento
 
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
-**Orden operativo:** Sprint 01 y SPRINT-02 están `Closed`; PBI-039 está `Done`
-por PR #45 y CI exacta `34623060504`. SPRINT-03 está `Active`; PBI-040 ocupa el
-WIP `1/1` y está en Owner Review después de la iteración solicitada, PBI-041
-continúa `Planned` y PBI-042 `Planned/Unassigned`.
+**Orden operativo:** Sprint 01 y SPRINT-02 están `Closed`; PBI-043 está `Done`
+por PR #47/#48, CI exacta y Preview PASS. SPRINT-03 está `Active`; PBI-040
+ocupa WIP `1/1` y continúa Owner Review después de reconciliarse con `main`
+actual. PBI-041 sigue `Planned` y PBI-042 `Planned/Unassigned`.
 
 ## Estructura
 
@@ -70,5 +70,5 @@ para revisión de autorización; `Ready` no autoriza inicio.
 
 ## Próxima revisión
 
-No existe siguiente candidato seleccionado. No iniciar otro PBI, liberar ni
-desplegar sin nueva autorización Owner.
+El gate vigente es Owner Review/Acceptance de PBI-040. No iniciar PBI-041,
+pushear, integrar, liberar o desplegar sin autoridad explícita.

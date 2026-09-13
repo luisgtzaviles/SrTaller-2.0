@@ -3,13 +3,15 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-03.
-- **Estado:** Active — PBI-040 en Owner Review.
+- **Estado:** Active — PBI-040 reconciliado y en Owner Review.
 - **Periodo:** TBD.
 - **PBI actual:** PBI-040 — Owner Review.
 - **WIP:** 1/1.
 - **Autoridad:** este Master Goal autoriza architecture/readiness y la apertura
   documental del Sprint. Owner autorizó implementar PBI-040 el 2026-09-11;
-  merge/deploy/release conservan gates propios.
+  el Master Goal de reanudación del 2026-09-12 autoriza reconciliar con el
+  nuevo `main` y volver a Owner Review. Push/merge/deploy/release conservan
+  gates propios.
 
 ## Objetivo
 

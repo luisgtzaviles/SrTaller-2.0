@@ -2,207 +2,106 @@
 
 ## Estado del documento
 
-- **Estado:** snapshot de runtime provenance y reconciliación visual PBI-039
-  dentro de PBI-040.
-- **Baseline Git integrada observada:** `main` y `origin/main` en
-  `40684d7554cdf02551f941e5e3f0beabbe563125`.
-- **CI autoritativa exacta de `main`:** run
-  [`34623060504`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34623060504),
-  `SUCCESS`; run-1, run-2 y comparison verdes.
-- **PBI actual:** `PBI-040` — Owner Review; no `Done` ni Owner Accepted.
-- **WIP:** `1/1`.
-- **Preview:** desplegado desde el merge exacto `0d1c576…`, saludable y
-  validado con un flujo autenticado New Repair create/detail/reload/worklist.
+- **Estado:** PBI-043 `Done`; PBI-040 reconciliado con la nueva baseline y en
+  preparación de Owner Review local.
+- **Baseline Git verificada:** `main == origin/main` en
+  `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
+  PBI-040.
+- **CI exacta de baseline:**
+  [`34732201476`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34732201476),
+  `SUCCESS` sobre `5be5cd6` con run-1, run-2 y comparison PASS.
+- **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
+- **PBI actual:** [PBI-040](backlog/pbis/PBI-040.md) — `Owner Review`;
+  aceptación pendiente.
+- **WIP:** `1/1` en `feature/pbi-040-catalog-pricing-core`.
+- **PBI-040:** el WIP congelado `68843ba` fue preservado y reconciliado por
+  merge explícito con `main` `5be5cd6`; no se añadió funcionalidad.
+- **Preview:** `aab27d9` desplegado y validado; concurrencia de Sessions PASS.
 - **Production:** no desplegada ni autorizada.
-- **Regla:** PBI-040 detuvo trabajo de producto, reconcilió Preview/local y
-  vuelve a Owner Review sólo con provenance material; aceptación sigue
-  pendiente; merge, deploy,
-  Production y release no están autorizados.
 
 ## Resumen ejecutivo
 
-PBI-040 materializó el primer slice vertical de Catalog/Pricing: identidad
-Tenant-wide, precio base Tenant-wide, override Branch con herencia, costo de
-referencia protegido, moneda Tenant, alta/edición individual y búsqueda rápida
-por nombre/SKU/barcode en `Listas > Lista de precios`. El candidato funcional
-está listo para una nueva revisión Owner, no está aceptado ni integrado.
+PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
+`40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
+Price List comenzó después en una rama no integrada. Ese WIP permaneció
+congelado durante PBI-043 y ahora se reanuda exclusivamente para continuar su
+Owner Review.
 
-La revisión humana inicial pidió reconciliar operación rápida con gobierno
-central. La iteración `c97c05d` incorporó Category/Brand como comboboxes
-escribibles con aplicabilidad por Tipo, creación explícita Por revisar y
-reconciliación en `Configuración > Catálogos > Lista de precios`. También separó
-SKU y código de barras internos automáticos server-side. Cambiar Tipo limpia e
-informa selecciones incompatibles; costo y pricing mantienen sus fronteras.
+Durante su Owner Review se confirmó una fricción preexistente de Access: la
+regla PBI-034 de una Session activa por Station rechaza otro perfil con PIN
+válido. La auditoría ubicó la causa en ADR-011, el unique parcial
+`(tenant_id, station_id) WHERE active`, el guard station-wide y
+`createReplacingActive`.
 
-La iteración Owner más reciente conserva en `/listas/precios` la cascada
-navegable `Buscar | Tipo | Categoría | Marca`: Tipo limita categorías y
-Tipo + Categoría limita marcas a compatibilidades comerciales conocidas de
-artículos activos vendibles. Los cambios preservan sólo filtros compatibles;
-la búsqueda continúa server-side, Tenant/Branch-scoped y sin entregar costo
-sin capability. Insumo permanece fuera de la oferta comercial.
+El Product Owner aprobó ASC-001 a ASC-008. [ADR-014](decisions/proposed/ADR-014-concurrent-operational-sessions.md)
+sustituye sólo la exclusividad y reemplazo station-wide de ADR-011. La nueva
+política permite cero o más Sessions por Station; cada request conserva una
+Session solicitante ligada a Tenant, Branch, Station, StationCredential, User
+y SessionId. Cookies, CSRF, autorización, rate limit, idle 60 minutos y
+absolute 12 horas permanecen.
 
-La misma iteración simplifica el contrato de identidad comercial: sólo SKU y
-Código de barras internos. Ambos se generan server-side si se dejan vacíos;
-los valores explícitos se normalizan, preservan y permanecen únicos por Tenant.
-Code 128 es una representación futura del código de barras, no una tercera
-identidad. La UI y API de identificadores externos quedan fuera del slice.
+[PBI-043](backlog/pbis/PBI-043.md) materializa la decisión como un objetivo
+Access independiente. Tiene [DoR PASS](quality/evidence/pbi-043/DEFINITION_OF_READY.md),
+[Threat Model Critical](quality/evidence/pbi-043/THREAT_MODEL.md) y una
+[matriz de 24 pruebas](quality/evidence/pbi-043/TEST_STRATEGY.md) ejecutada
+localmente. El candidato permite N Sessions por Station y conserva switch/
+logout por Session exacta. Una primera revisión Critical detectó debilidad en
+los oráculos de concurrencia y sobredeclaración de evidencia; el candidato fue
+remediado con locks PostgreSQL observables, revocación N-session, cruces
+lockout/CSRF/atribución materiales y un runner Chrome endurecido. La revisión
+independiente final de `65cf2da` cerró PASS sin hallazgos Critical/High/Medium;
+`verify:full` de 12 etapas y PostgreSQL owner-scoped 2× MATCH también pasaron.
+PR #47 integró el candidato `65cf2da` como `aab27d9`; CI candidata
+`34729684465` y exact-main `34730090448` pasaron ambas piernas y comparación.
+El mismo SHA quedó desplegado en Preview con health PASS y prueba real de dos
+perfiles/Users sobre una Station compartida. Logout, relogin y switch del
+perfil QA no afectaron la Session Owner. El fixture User sintético quedó
+inactivo, las Sessions QA revocadas y sólo la Session Owner previa permaneció
+activa. Production no cambió.
 
-La iteración Owner anterior convergió `Configuración > Catálogos > Reparaciones`
-y `Lista de precios` sobre las mismas primitives de navegación, lifecycle,
-contadores, acciones y estados visuales. La investigación del catálogo Repairs
-vacío en local confirmó una omisión del seed: las tablas autoritativas no tenían
-filas, aunque las reparaciones sintéticas conservaban snapshots de marca/modelo.
-No fue una regresión de PBI-040, autorización, scope, query o migración. El seed
-gobernado define 38 registros Tenant-scoped; New Repair y Configuración obtienen
-los mismos IDs desde el mismo repositorio Repairs. Las Repairs históricas
-locales conservan sólo snapshots y cero vínculos canónicos: no se enlazaron por
-nombre. La UI ahora llama **Uso canónico** al contador exacto.
-
-La auditoría de preservación probó que la rama nació de `40684d7554…`, contiene
-los merges #42/#43/#44/#45 y no está detrás de `origin/main`. Worklist, New
-Repair, Repair Detail, CSS, API/read model, controller, repository y contratos
-aceptados conservan los blobs exactos del baseline. Las diferencias restantes
-se clasificaron sólo A (integración necesaria), B (refactor visual neutro) o C
-(tests/fixtures), con D/E en cero. `verify:full` sobre `453eeb0` terminó 13/13
-PASS y Stage 0 verificó ancestry más 16 superficies protegidas.
-
-La auditoría runtime posterior identificó el Preview desplegado mediante
-checkout, imagen y assets: el SHA exacto es `0d1c5760ce962d17a8292b841f5de43a8cb453a7`
-y un rebuild limpio produjo HTML/JS/CSS byte-identical. El proceso Vite local
-era anterior al ciclo PBI-039 y no publicaba SHA, mientras el backend había sido
-reconstruido después. Con el mismo read model controlado, ambos runtimes
-mostraron la misma estructura de Repair Detail; la divergencia visible provenía
-de densidad de datos distinta, no de una pérdida del componente. El launcher
-local ahora exige igualdad entre `git HEAD/status`, manifest frontend y headers
-backend. El próximo build OCI autorizado deberá grabar la misma revisión en
-label, frontend y backend; Preview no fue redesplegado.
-
-La verificación material posterior capturó primero los GET y DOM efectivos:
-Preview `SR-2026-1000` era un registro escaso y Local `SR-2026-003` uno denso.
-La divergencia fue A/D (datos/fixture), no B/C (backend/frontend). El seed local
-ahora materializa el fixture canónico sintético `SR-2026-039`; los assets reales
-de Preview y el runtime local renderizan exactamente su mismo payload con
-Header, Recepción, Historial, Conceptos y Evidencias equivalentes. El guard
-permanente protege fixture, read model, estructura DOM, assets Preview y
-provenance sin cambiar Repair Detail.
-
-PBI-039 entregó Customer Minimum, New Repair Classic 2.0, Personal Form Mode,
-Guided V2, política de campos por Branch, catálogos administrativos y las
-superficies aceptadas de Repair Detail. El Functional Slice fue aceptado por
-Owner; Formal UI Verification, Hardening, Authoritative Full Verification,
-CI / PR Readiness, CI autoritativa y revisión independiente terminaron `PASS`.
-
-El cambio principal se integró mediante PR
-[#42](https://github.com/luisgtzaviles/SrTaller-2.0/pull/42), merge
-`6c04e57c8a5d3bf8600cd4a2a3a191958aa0f0c2`, y recibió CI exacta de `main`
-[`34604591354`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34604591354)
-verde. La revisión independiente había encontrado una omisión HIGH de
-`canonicalDeviceTypeId` en la huella idempotente y una contradicción MEDIUM en
-documentación viva; ambos findings se remediaron y reverificaron antes del
-merge.
-
-La validación post-deploy de Preview descubrió dos defectos reales de
-integración, ya cerrados sin reabrir decisiones de producto:
-
-1. PR [#43](https://github.com/luisgtzaviles/SrTaller-2.0/pull/43), merge
-   `5ccc525a09d29fd6dcabbbfaabff9b811677c985`, corrigió el cache/ETag del
-   entrypoint SPA. CI exacta de `main` `34614530586` terminó verde.
-2. PR [#44](https://github.com/luisgtzaviles/SrTaller-2.0/pull/44), merge
-   `0d1c5760ce962d17a8292b841f5de43a8cb453a7`, recompuso Repairs sobre la
-   conexión compartida gobernada para que el runtime OCI de Preview use los
-   repositorios persistentes. CI exacta de `main` `34619271236` terminó verde.
-
-PR #45 integró el cierre documental como `40684d7554…`; CI exacta de `main`
-`34623060504` terminó SUCCESS. PBI-039 y SPRINT-02 están cerrados.
-
-El único warning de build observado es el chunk Vite mayor a 500 kB. No se
-redujo cobertura, no se ocultaron skips materiales y no se inició PBI-041,
-PBI-042, Caja, Inventory, Repair Concepts ni otro downstream.
-
-## Checkpoint funcional PBI-040
-
-| Área | Evidencia vigente |
-|---|---|
-| Branch de trabajo | `feature/pbi-040-catalog-pricing-core` desde `40684d7554…` |
-| Dominio/persistencia | Catalog Tenant-wide, revisiones append-only, constraints e índices Tenant-aware |
-| Pricing | Base Tenant + override Branch revocable; moneda desde Tenancy |
-| Seguridad de costo | omisión server-side sin capability; preferencia personal default oculta |
-| UI | operación en `/listas/precios`; gobierno en `/configuracion/catalogos?module=price-list` |
-| Cascada | Buscar + Tipo + Category + Brand navegables; Category un Tipo; Brand uno o varios; pares comerciales conocidos; reset determinista |
-| Identificadores | SKU y código de barras internos automáticos server-side; Code 128 es sólo representación futura |
-| Integridad Repairs local | 38 definiciones sintéticas Tenant-wide; Repairs legacy sin canonical IDs; sin matching por texto |
-| UI de Catálogos | Repairs y Lista de precios comparten tabs, lifecycle, counters, acciones y estados |
-| PostgreSQL | 56 migraciones; aislamiento/aplicabilidad/reconciliación/concurrencia PASS; cero skips materiales |
-| Rendimiento | 10,000 items; p95 más reciente 6.98 ms contra presupuesto 750 ms |
-| HTTP local | sesión Owner/Station, fixtures por API, costo protegido y override Branch PASS |
-| Full Verification | runtime provenance 13/13 stages PASS; 828 tests base; PBI-039 2/2 y PostgreSQL material sin skips críticos |
-| Formal UI real | Chrome local autenticado, con dos ventanas lado a lado de Catálogos Repairs/Lista de precios; Owner Review pendiente |
-| Baseline guard | ancestry/merge-base/SHA + 20 blobs; fixture/read model/DOM parity; genealogía material `0d1c576…` → `40684d7…` |
-| Runtime provenance | manifest frontend + headers backend + launcher fail-closed; SHA exacto consultable con `verify:runtime-provenance` |
-| Estado de entrega | Owner Review; sin push, PR, CI de branch, merge, deploy o release |
-
-## Evidencia de cierre PBI-039
-
-| Área | Evidencia vigente |
-|---|---|
-| Functional Slice | Frozen — Owner Accepted |
-| Formal UI Verification | PASS |
-| Hardening | PASS |
-| Full Verification del candidato principal | PASS; campañas y fingerprints conservados en el expediente PBI |
-| Revisión independiente | PASS; registrada como comentario formal por restricción de autoaprobación GitHub |
-| Integración principal | PR #42 -> `6c04e57…` |
-| Cache/ETag Preview | PR #43 -> `5ccc525…`; exact-main CI `34614530586` PASS |
-| Repairs shared runtime | PR #44 -> `0d1c576…`; exact-main CI `34619271236` PASS |
-| Full Verification hotfix runtime | `local-full-verification-20260911154146-5ccc525a09d2`; 12/12 PASS; fingerprint `10fb843932175f6dc0d7c75ce5e3b08404d69858b016d407cb6480ad6cf3f4c4` |
-| PostgreSQL material | PBI-023 17/17 y PBI-039 2/2, cero skips materiales |
-| Preview endpoints | root 200 con `Cache-Control: no-store`; `/livez` 200; `/readyz` 200; API desconocida 404 |
-| Preview UI | sesión Luis/Station reconocida; create/detail/reload/worklist PASS con `SR-2026-1000` y datos sintéticos |
-| Production | No desplegada; no autorizada |
+El cierre PR #48 quedó integrado como `5be5cd6` y la CI exacta
+`34732201476` pasó run-1, run-2 y comparison. Conforme al workflow, PBI-043
+es `Done` y SPRINT-02 está `Closed`. La rama PBI-040 conserva como padre su
+HEAD congelado `68843ba` y como nuevo padre integrado `5be5cd6`; los conflictos
+se resolvieron por ownership, manteniendo Access/PBI-039/main autoritativos y
+Catalog/Pricing desde el WIP.
 
 ## Capacidades integradas relevantes
 
-- Trusted Station Context, Users, Roles, capabilities, PIN y Operational
-  Session con autorización contextual server-side.
-- Customer mínimo y New Repair persistentes, Tenant/Branch scoped, con create
-  idempotente y transaccional.
-- New Repair Classic, Personal Form Mode y Guided V2 comparten dominio y
-  comando; Device Access no persiste secretos.
-- Catálogos de Device Types, Risks, Brands, Models y Problem Categories con
-  reconciliación no bloqueante donde corresponde.
-- Repair Worklist/Detail, Operational Header, Recepción, Historial y superficies
-  read-only de Conceptos/Evidencias según el alcance aceptado.
-- Auditoría y timeline atómicos para los writes cubiertos.
+- Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
+  con autorización contextual server-side.
+- PBI-043 permite Sessions concurrentes por Station en `main` y Preview.
+- Customer mínimo, New Repair y Repair Detail PBI-039 integrados y validados.
+- Auditoría de negocio acotada conserva Tenant, Branch, Station, User,
+  SessionId y correlation en los writes cubiertos.
 
-## Límites y deuda conocida
+## Estado del delta PBI-043
 
-- Basic Operational Evidence con mutación, venta personalizada, Caja,
-  venta personalizada, Caja, Anticipo, Abonos, Liquidación, Diagnosis avanzada,
-  analytics/AI y promoción de catálogos siguen diferidos y no bloquearon
-  PBI-039.
-- Los secretos de acceso de dispositivos no se persisten; su almacenamiento
-  seguro requiere arquitectura y autorización separadas.
-- El warning Vite de tamaño de chunk queda visible como deuda no bloqueante.
-- Preview contiene datos sintéticos de validación; no es Production.
-- El repositorio público observado continúa sin branch protection/ruleset;
-  autorización humana y evidencia siguen siendo gates obligatorios.
+| Área | Estado |
+|---|---|
+| ADR-014 | Accepted y materializada en `main`/Preview |
+| Admission concurrente | PASS Application/HTTP/PostgreSQL/Chrome/Preview |
+| Switch session-local | PASS; reemplazo exacto local y Preview |
+| Drop unique parcial / índices | migración fresh/existing/down/reapply PASS; sin índice StationCredential injustificado |
+| Revocación efectiva N-session | contratos internos y PostgreSQL PASS |
+| Cookies/CSRF/PIN/timeout | Sin cambio aprobado |
+| Browser Owner + QA | PASS local y Preview; misma Station, perfiles y Users distintos; DOM/Console/Network gated |
+| Device/Session Admin | Fuera de alcance |
+| Global Access lifecycle audit | Fuera de alcance |
 
 ## Roadmap y WIP
 
 | Elemento | Estado vigente |
 |---|---|
-| Sprint activo | SPRINT-03 — Price List Foundation; PBI-040 en Owner Review |
-| Current PBI | `PBI-040` — Owner iteration / Owner Review |
-| WIP | `1/1` |
-| Next candidate | ninguno seleccionado; PBI-041 permanece Planned |
-| G6 Customer mínimo | PASS |
-| G7 New Repair / Intake | PASS |
-| G9 Pricing | PBI-040 runtime provenance PASS; ready for Owner Review; not accepted |
-| Preview | Desplegado y validado en `0d1c576…` |
+| Sprint | SPRINT-03 — Active |
+| Current PBI | PBI-040 — Owner Review |
+| WIP | 1/1 |
+| PBI-040 | reconciliado localmente; aceptación pendiente |
+| G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
+| Preview | `aab27d9` PASS |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Ejecutar de nuevo Owner Review de PBI-040 en `/listas/precios` y en el módulo
-Lista de precios de Configuración > Catálogos. Según el resultado,
-registrar Owner Acceptance o remediar feedback sin iniciar PBI-041. PR, merge,
-Production, release y deploy conservan autorización independiente.
+Continuar Owner Review local de PBI-040 desde la rama reconciliada. No inferir
+Owner Acceptance, push, PR, merge, deploy ni inicio de PBI-041/PBI-042.

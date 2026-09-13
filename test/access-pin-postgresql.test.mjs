@@ -64,6 +64,21 @@ const { createKyselyAccessRepository } = enabled
       '../dist/modules/access/infrastructure/persistence/kysely-access.repository.js'
     )
   : {};
+const { KyselyOperationalSessionRepository } = enabled
+  ? await import(
+      '../dist/modules/access/infrastructure/persistence/kysely-operational-session.repository.js'
+    )
+  : {};
+const { NodeSessionToken } = enabled
+  ? await import(
+      '../dist/modules/access/infrastructure/security/node-session-token.js'
+    )
+  : {};
+const { ResolveOperationalSessionUseCase } = enabled
+  ? await import(
+      '../dist/modules/access/application/use-cases/operational-session.use-cases.js'
+    )
+  : {};
 const { PinCredentialPersistenceError } = enabled
   ? await import(
       '../dist/modules/access/application/ports/pin-credential-repository.port.js'
@@ -166,6 +181,8 @@ const legacyReplacementRequest = '94100000-0000-4000-8000-000000000025';
 const roleId = '95000000-0000-4000-8000-000000000025';
 const assignmentA = '96000000-0000-4000-8000-000000000025';
 const assignmentA2 = '97000000-0000-4000-8000-000000000025';
+const lockAssignment = '98000000-0000-4000-8000-000000000025';
+const lockSession = '99000000-0000-4000-8000-000000000025';
 const stationCredentialIdA = 'a0000000-0000-4000-8000-000000000025';
 const stationCredentialIdA2 = 'a1000000-0000-4000-8000-000000000025';
 const stationCredentialIdB = 'a2000000-0000-4000-8000-000000000025';
@@ -1081,6 +1098,57 @@ test(
       assert.equal(proofB.tenantId, tenantB);
       assert.equal(proofB.branchId, branchB);
 
+      await admin.query(
+        `insert into access_role_assignments (
+           tenant_id, assignment_id, user_id, role_id, assignment_scope,
+           branch_id, status, version, assigned_at, revoked_at
+         ) values ($1, $2, $3, $4, 'BRANCH_RESTRICTED', $5, 'active', 0, now(), null)`,
+        [tenantA, lockAssignment, lockUser, roleId, branchA],
+      );
+      const lockSessionMaterial = new NodeSessionToken().issue();
+      const lockAuthorities = (
+        await admin.query(
+          `select u.version as user_version,
+                  u.admission_revision as user_admission_revision,
+                  pc.credential_version
+             from users u
+             inner join access_pin_credentials pc
+               on pc.tenant_id = u.tenant_id and pc.user_id = u.user_id
+            where u.tenant_id = $1 and u.user_id = $2`,
+          [tenantA, lockUser],
+        )
+      ).rows[0];
+      const lockSessionRepository = new KyselyOperationalSessionRepository(
+        connection,
+        new KyselyStationCredentialVerifier(connection),
+        createKyselyAuthenticationUserReader(connection),
+      );
+      await lockSessionRepository.createForProfile(contextA, {
+        sessionId: lockSession,
+        userId: lockUser,
+        userVersion: lockAuthorities.user_version,
+        userAdmissionRevision: lockAuthorities.user_admission_revision,
+        credentialVersion: lockAuthorities.credential_version,
+        bearerVerifier: lockSessionMaterial.bearerVerifier,
+        csrfVerifier: lockSessionMaterial.csrfVerifier,
+        expectedSessionId: null,
+        occurredAt: '2026-09-07T02:59:00.000Z',
+        expiresAt: '2026-09-07T14:59:00.000Z',
+      });
+      const resolveLockSession = new ResolveOperationalSessionUseCase(
+        lockSessionRepository,
+        createKyselyAuthenticationUserReader(connection),
+        new ListApplicableUsersUseCase(createKyselyAccessRepository(connection)),
+        new NodeSessionToken(),
+        () => new Date(now.value),
+      );
+      const resolveExistingLockSession = () => resolveLockSession.execute(contextA, {
+        bearer: lockSessionMaterial.bearer,
+        csrfCookie: lockSessionMaterial.csrf,
+        touch: false,
+      });
+      assert.equal((await resolveExistingLockSession()).sessionId, lockSession);
+
       now.value = new Date('2026-09-07T03:00:00.000Z');
       const lockResults = await Promise.allSettled(
         Array.from({ length: 5 }, () =>
@@ -1108,6 +1176,17 @@ test(
       assert.equal(
         locked.rows[0].locked_until.toISOString(),
         '2026-09-07T03:05:00.000Z',
+      );
+      assert.equal((await resolveExistingLockSession()).sessionId, lockSession);
+      assert.equal(
+        (
+          await admin.query(
+            `select status from access_operational_sessions
+              where tenant_id = $1 and session_id = $2`,
+            [tenantA, lockSession],
+          )
+        ).rows[0].status,
+        'active',
       );
 
       now.value = new Date('2026-09-07T03:01:01.000Z');
@@ -1143,6 +1222,7 @@ test(
         pin: lockPin,
       });
       assert.equal(unlocked.userId, lockUser);
+      assert.equal((await resolveExistingLockSession()).sessionId, lockSession);
       assert.deepEqual(
         (
           await admin.query(

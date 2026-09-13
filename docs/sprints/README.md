@@ -5,10 +5,12 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 ## Estado del documento
 
 **Estado:** SPRINT-00, SPRINT-01 y SPRINT-02 `Closed`.
-**Sprints documentados:** los tres anteriores y SPRINT-03 `Active`.
+**Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed`,
+[SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
+[SPRINT-02](sprint-02/SPRINT_GOAL.md) `Closed` y
+[SPRINT-03](sprint-03/SPRINT_GOAL.md) `Active`.
 **Sprint activo:** SPRINT-03 — Price List Foundation. PBI-040 está en Owner
-Review después de su iteración funcional; PBI-041 sigue `Planned`; WIP `1/1`.
-El gate vigente es Owner Review/Acceptance de PBI-040.
+Review sobre la baseline reconciliada; PBI-041 sigue `Planned`; WIP `1/1`.
 
 ## Reglas propuestas
 
@@ -49,15 +51,11 @@ Los cinco PBIs están `Done` y ninguno está `Released`.
 ## SPRINT-02
 
 SPRINT-02 ejecutó Operational Authentication & Authorization con WIP=1.
-PBI-025/PBI-034 están `Done`; cierre PR #34 y CI exacto de main dejan G3
-`PASS`. PBI-026 está `Done` y G4 `PASS`; PBI-028 está `Done`, G5 `PASS` tras
-PR #39 y su CI exacta; PBI-038 está `Done` tras PR #40 y CI `34280510716`
-GREEN. PBI-039 está `Done`. PR #42 fue re-reviewed PASS e
-integrado como `6c04e57…`; PR #43 cerró el cache/ETag de Preview y PR #44
-corrigió la composición runtime de Repairs. La baseline `0d1c576…` pasó CI
-exacta de `main` `34619271236` y validación autenticada de Preview. PR #45
-integró el cierre como `40684d7…`; CI exacta `34623060504` terminó SUCCESS.
-Production sigue sin autorización.
+PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`; G3–G5 son `PASS`.
+PBI-039 quedó `Done` en `40684d7` con CI exacta `34623060504`. El Sprint se
+extendió para PBI-043, remediación Access gobernada por ASC-001…ASC-008 y
+ADR-014. PR #47/#48, CI candidata/exact-main y Preview quedaron PASS; PBI-043
+está `Done` y el Sprint `Closed`. Production sigue sin autorización.
 
 - [Objetivo](sprint-02/SPRINT_GOAL.md)
 - [Backlog](sprint-02/SPRINT_BACKLOG.md)

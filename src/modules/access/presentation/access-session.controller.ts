@@ -362,8 +362,8 @@ export class AccessSessionController {
       let bearerCookie: string | null = null;
       if (request.expectedSessionId === null) {
         // Initial authentication is deliberately independent from stale or
-        // malformed authoritative cookies. PostgreSQL still admits it only
-        // when the Station has no active Session.
+        // malformed authoritative cookies. It creates a new Session for this
+        // browser profile without replacing another profile on the Station.
         csrfCookie = readOperationalSessionLoginCsrfCookie(scalar(headers, 'cookie'));
       } else {
         const cookies = readOperationalSessionCookies(scalar(headers, 'cookie'));
@@ -396,7 +396,7 @@ export class AccessSessionController {
         pin: request.pin,
       });
       // The capability snapshot is advisory UI data. Resolve it before the
-      // authoritative Session replacement so a projection failure cannot
+      // authoritative Session create/switch so a projection failure cannot
       // strand the Station with a Session whose credentials were never
       // delivered to the browser. Every protected request still re-evaluates
       // capabilities after resolving the active Session.

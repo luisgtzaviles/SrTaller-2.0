@@ -376,10 +376,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260911182000_users_add_price_list_cost_preference.ts',
     'src/infrastructure/database/migrations/20260911183000_catalog_create_pricing_core.ts',
     'src/infrastructure/database/migrations/20260911200000_catalog_add_reference_governance.ts',
+    'src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'tenancy', 'access', 'users', 'catalog', 'catalog'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'access'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -413,6 +414,7 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260911181000_access_add_catalog_capabilities.ts',
       'src/infrastructure/database/migrations/20260911182000_users_add_price_list_cost_preference.ts',
       'src/infrastructure/database/migrations/20260911200000_catalog_add_reference_governance.ts',
+      'src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);

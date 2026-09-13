@@ -43,6 +43,7 @@
     "start": "pnpm run verify:toolchain && node --enable-source-maps dist/main.js",
     "smoke:start": "pnpm run verify:toolchain && node ./scripts/smoke-start.mjs",
     "smoke:ui": "pnpm run verify:toolchain && node ./scripts/smoke-ui.mjs",
+    "verify:pbi043:chrome": "pnpm run verify:toolchain && node ./scripts/verify-pbi043-chrome.mjs",
     "diagnose:local": "pnpm run verify:toolchain && node ./scripts/local-diagnostics.mjs",
     "dev": "pnpm run verify:toolchain && node ./scripts/dev.mjs",
     "verify": "pnpm run verify:toolchain && pnpm run clean && pnpm run typecheck && pnpm run build && pnpm run test && pnpm run verify:structure && pnpm run verify:architecture && pnpm run verify:external-configuration && pnpm run verify:ui && pnpm run verify:ui:production",

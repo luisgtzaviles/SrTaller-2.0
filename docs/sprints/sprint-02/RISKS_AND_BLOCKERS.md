@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Closed; todos los PBIs Done; WIP 0/1. PBI-039 cerró por PR #45
-  merge `40684d7…` y CI exacta `34623060504` SUCCESS.
+- **Estado:** Closed; todos los PBIs comprometidos `Done`, WIP 0/1 y sin
+  bloqueos abiertos.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
@@ -23,13 +23,21 @@
 | Orquestación local incompleta | High test infrastructure | `verify:full` fail-fast combina base, PostgreSQL, Preview, smoke, cleanup y evidencia | Cerrado; Full Verification PASS |
 | CI omite dos tests PostgreSQL PBI-039 | High delivery | Customer phone y User preferences en ambos legs y comparison | Cerrado; run `34564110272` PASS |
 | Create Repair omite identidad canónica del tipo en idempotencia | High persistence | incluir `canonicalDeviceTypeId`; replay exacto, incompatibilidad y concurrencia PostgreSQL; full reverify + CI exacta | Remediado; Full Verification de riesgo alto y run `34567516069` attempt 3 PASS |
-| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Cerrado; PR #45 + CI exacta y reconciliación posterior |
+| Documentación viva contradice gate PBI-039 | Medium governance | reconciliar Roadmap, workflow, Sprint, PBI, checklist y current state | Cerrado; cierre canónico reconciliado |
 | Entrypoint SPA obsoleto tras deploy | High runtime | `no-store`, ETag por contenido y recuperación de navegador con asset actual | Cerrado en PR #43; Preview validado |
 | Repairs sin repositorios en imagen Production-mode | High runtime | conexión compartida `APPLICATION_DATABASE_CONNECTION` y contrato de composición | Cerrado en PR #44; Full Verification, exact-main CI y create/detail/reload PASS |
+| Login de un perfil reemplaza la Session de otro perfil de la misma Station | Critical Access | ADR-014 elimina exclusividad station-wide; admission independiente y switch sólo sobre la Session solicitante | Cerrado; COS-01…24, PR #47, CI y Preview PASS |
+| Carrera entre login independiente y switch | Critical concurrency | transacciones separadas; admission no serializa por Station global; switch usa bearer/CSRF + expected Session/version | Cerrado; PostgreSQL material/races y revisión Critical PASS |
+| Revocación deja sesiones concurrentes autorizables | Critical authorization | revisión/epoch efectiva inmediatamente; materialización posterior permitida sólo si ningún request vuelve a autorizar | Cerrado; User/Station/credential N-session y no-resurrection PASS |
+| Lockout PIN termina sesiones válidas | High availability/security | cooldown sólo bloquea autenticaciones nuevas; sesiones ya autorizadas continúan según lifecycle | Cerrado; lockout concurrente con Session preexistente PASS |
+| PBI-040 se reanuda sobre Access obsoleto | High integration | mantener rama Price List congelada; cerrar PBI-043 y reconciliar desde nuevo `main` antes de continuar | Control operativo vigente |
 
-Un Critical nuevo no previsto, criptografía custom, secreto remoto o cambio
-destructivo obliga a detenerse. El Critical conocido de PBI-025 no se rebaja.
+Un Critical nuevo no previsto por el threat model PBI-043, criptografía custom,
+secreto remoto o cambio destructivo obliga a detenerse. Los riesgos Critical de
+PIN y Session no se rebajan.
 
 ## Próxima revisión
 
-- **Disparador:** nuevo riesgo material o evidencia que contradiga el cierre.
+- **Fecha:** ante un cambio de ASC-001…ASC-008, ADR-014 o evidencia operativa
+  nueva sobre los riesgos residuales aprobados.
+- **Disparador:** nuevo riesgo material; no existe bloqueo vigente.
