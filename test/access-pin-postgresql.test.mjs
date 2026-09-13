@@ -116,7 +116,7 @@ const tables = [
   'catalog_branch_price_revisions', 'catalog_base_price_revisions',
   'catalog_barcode_sequences', 'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
   'catalog_brand_pending_kind_applicability', 'catalog_brand_pending_values', 'catalog_category_pending_values',
-  'catalog_brand_kind_applicability', 'catalog_category_kind_applicability', 'catalog_brands', 'catalog_categories',
+  'catalog_brand_kind_applicability', 'catalog_category_kind_applicability', 'catalog_brands', 'catalog_categories', 'catalog_reference_identity_locks',
   'repair_operational_note_request_guards',
   'repair_business_audit_events',
   'access_operational_sessions',

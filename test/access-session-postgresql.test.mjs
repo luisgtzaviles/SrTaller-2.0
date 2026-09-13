@@ -65,6 +65,7 @@ const allTables = [
   'catalog_category_kind_applicability',
   'catalog_brands',
   'catalog_categories',
+  'catalog_reference_identity_locks',
   'user_preferences',
   'repair_problem_category_deletion_events',
   'repair_problem_classification_events',
@@ -1217,6 +1218,14 @@ test('PostgreSQL 18.4 enforces concurrent Operational Sessions, exact lifecycle,
       [tenantA, stationA],
     )).rows[0].count;
     assert.ok(activeBeforeRollback >= 2);
+    const catalogIdentityMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      catalogIdentityMigration?.name,
+      '20260913130000_catalog_enforce_reference_identity',
+    );
+    await runner.migrateDown(authorization(catalogIdentityMigration));
     const repairsSafeDeleteMigration = [...(await runner.getMigrationStatus()).migrations]
       .reverse()
       .find(({ state }) => state === 'applied');
