@@ -38,14 +38,16 @@ import type {
   ChangeCatalogOverrideInput,
   DeleteCatalogReferenceInput,
   CatalogReferenceDeletionRecord,
+  CatalogReferenceMergeRecord,
   CreateCatalogItemInput,
   CreateCatalogReferenceInput,
   ResolveCatalogReferenceInput,
+  MergeCatalogReferenceInput,
   UpdateCatalogReferenceInput,
   UpdateCatalogItemInput,
 } from '../../application/ports/catalog-repository.port.js';
 
-type CatalogTables = 'catalog_reference_identity_locks' | 'catalog_reference_deletion_events' | 'catalog_categories' | 'catalog_brands' | 'catalog_category_pending_values' | 'catalog_brand_pending_values' | 'catalog_brand_pending_kind_applicability' | 'catalog_items' |
+type CatalogTables = 'catalog_reference_identity_locks' | 'catalog_reference_deletion_events' | 'catalog_reference_merge_events' | 'catalog_categories' | 'catalog_brands' | 'catalog_category_pending_values' | 'catalog_brand_pending_values' | 'catalog_brand_pending_kind_applicability' | 'catalog_items' |
   'catalog_item_identifiers' | 'catalog_sku_sequences' | 'catalog_barcode_sequences' |
   'catalog_category_kind_applicability' | 'catalog_brand_kind_applicability' | 'catalog_base_price_revisions' |
   'catalog_branch_price_revisions' | 'catalog_reference_cost_revisions' |
@@ -163,6 +165,19 @@ async function lockReferenceIdentity(
     .where('tenant_id', '=', tenantId).where('identity_key', '=', identity).forUpdate().executeTakeFirstOrThrow();
 }
 
+async function lockReferenceResource(
+  executor: CatalogExecutor,
+  tenantId: string,
+  referenceKind: 'category' | 'brand',
+  referenceId: string,
+): Promise<void> {
+  const identity = `${tenantId}:resource:${referenceKind}:${referenceId}`;
+  await executor.insertInto('catalog_reference_identity_locks').values({ tenant_id: tenantId, identity_key: identity, created_at: new Date() })
+    .onConflict((conflict) => conflict.columns(['tenant_id', 'identity_key']).doNothing()).execute();
+  await executor.selectFrom('catalog_reference_identity_locks').select('identity_key')
+    .where('tenant_id', '=', tenantId).where('identity_key', '=', identity).forUpdate().executeTakeFirstOrThrow();
+}
+
 async function commandReplay<T>(executor: CatalogExecutor, context: CatalogMutationContext, operation: string, clientRequestId: string, requestFingerprint: Uint8Array): Promise<T | null> {
   const prior = await executor.selectFrom('catalog_commands').select(['request_fingerprint', 'result_payload'])
     .where('tenant_id', '=', context.tenantId).where('operation', '=', operation)
@@ -223,9 +238,9 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
     const scope = validateScope(scopeValue);
     try {
       return await this.execute(async (executor) => {
-        const [categories, brands, pendingCategories, pendingBrands, categoryKinds, brandKinds, pendingBrandKinds, usages, pendingCategoryUsages, pendingBrandUsages, creationEvents, categoryBrandApplicability, resolvedCategoryReferences, resolvedBrandReferences] = await Promise.all([
-          executor.selectFrom('catalog_categories').selectAll().where('tenant_id', '=', scope.tenantId).orderBy('normalized_name').orderBy('category_id').execute(),
-          executor.selectFrom('catalog_brands').selectAll().where('tenant_id', '=', scope.tenantId).orderBy('normalized_name').orderBy('brand_id').execute(),
+        const [categories, brands, pendingCategories, pendingBrands, categoryKinds, brandKinds, pendingBrandKinds, usages, pendingCategoryUsages, pendingBrandUsages, creationEvents, categoryBrandApplicability, resolvedCategoryReferences, resolvedBrandReferences, mergedCategoryReferences, mergedBrandReferences] = await Promise.all([
+          executor.selectFrom('catalog_categories').selectAll().where('tenant_id', '=', scope.tenantId).where('merged_into_id', 'is', null).orderBy('normalized_name').orderBy('category_id').execute(),
+          executor.selectFrom('catalog_brands').selectAll().where('tenant_id', '=', scope.tenantId).where('merged_into_id', 'is', null).orderBy('normalized_name').orderBy('brand_id').execute(),
           executor.selectFrom('catalog_category_pending_values').leftJoin('catalog_categories', (join) => join.onRef('catalog_categories.tenant_id', '=', 'catalog_category_pending_values.tenant_id').onRef('catalog_categories.category_id', '=', 'catalog_category_pending_values.canonical_category_id')).selectAll('catalog_category_pending_values').select('catalog_categories.display_name as canonical_name').where('catalog_category_pending_values.tenant_id', '=', scope.tenantId).where('catalog_category_pending_values.resolution_status', '=', 'PENDING').orderBy('catalog_category_pending_values.last_seen_at', 'desc').execute(),
           executor.selectFrom('catalog_brand_pending_values').leftJoin('catalog_brands', (join) => join.onRef('catalog_brands.tenant_id', '=', 'catalog_brand_pending_values.tenant_id').onRef('catalog_brands.brand_id', '=', 'catalog_brand_pending_values.canonical_brand_id')).selectAll('catalog_brand_pending_values').select('catalog_brands.display_name as canonical_name').where('catalog_brand_pending_values.tenant_id', '=', scope.tenantId).where('catalog_brand_pending_values.resolution_status', '=', 'PENDING').orderBy('catalog_brand_pending_values.last_seen_at', 'desc').execute(),
           executor.selectFrom('catalog_category_kind_applicability').select(['category_id', 'kind']).where('tenant_id', '=', scope.tenantId).orderBy('kind').execute(),
@@ -238,6 +253,8 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
           executor.selectFrom('catalog_items').select(['category_id', 'brand_id', 'kind']).distinct().where('tenant_id', '=', scope.tenantId).where('status', '=', 'ACTIVE').where('sellable', '=', true).where('category_id', 'is not', null).where('brand_id', 'is not', null).orderBy('category_id').orderBy('brand_id').orderBy('kind').execute(),
           executor.selectFrom('catalog_category_pending_values').select('canonical_category_id').where('tenant_id', '=', scope.tenantId).where('canonical_category_id', 'is not', null).execute(),
           executor.selectFrom('catalog_brand_pending_values').select('canonical_brand_id').where('tenant_id', '=', scope.tenantId).where('canonical_brand_id', 'is not', null).execute(),
+          executor.selectFrom('catalog_categories').select('merged_into_id').where('tenant_id', '=', scope.tenantId).where('merged_into_id', 'is not', null).execute(),
+          executor.selectFrom('catalog_brands').select('merged_into_id').where('tenant_id', '=', scope.tenantId).where('merged_into_id', 'is not', null).execute(),
         ]);
         const categoryKindMap = new Map<string, CatalogItemKind[]>();
         for (const row of categoryKinds) categoryKindMap.set(row.category_id, [...(categoryKindMap.get(row.category_id) ?? []), row.kind]);
@@ -252,6 +269,8 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
         const creators = new Map(creationEvents.map((row) => [row.resource_id, row.actor_display_name]));
         const resolvedCategoryIds = new Set(resolvedCategoryReferences.flatMap((row) => row.canonical_category_id ? [row.canonical_category_id] : []));
         const resolvedBrandIds = new Set(resolvedBrandReferences.flatMap((row) => row.canonical_brand_id ? [row.canonical_brand_id] : []));
+        for (const row of mergedCategoryReferences) if (row.merged_into_id) resolvedCategoryIds.add(row.merged_into_id);
+        for (const row of mergedBrandReferences) if (row.merged_into_id) resolvedBrandIds.add(row.merged_into_id);
         return Object.freeze({
           categories: Object.freeze(categories.map((row) => Object.freeze({ categoryId: row.category_id, name: row.display_name, status: row.status, applicableKinds: Object.freeze(categoryKindMap.get(row.category_id) ?? []), usageCount: categoryUsage.get(row.category_id) ?? 0, deletable: (categoryUsage.get(row.category_id) ?? 0) === 0 && !resolvedCategoryIds.has(row.category_id), version: row.version, createdBy: creators.get(row.category_id) ?? null, createdAt: row.created_at.toISOString(), createdInBranchId: row.created_in_branch_id }))),
           brands: Object.freeze(brands.map((row) => Object.freeze({ brandId: row.brand_id, name: row.display_name, status: row.status, applicableKinds: Object.freeze(brandKindMap.get(row.brand_id) ?? []), usageCount: brandUsage.get(row.brand_id) ?? 0, deletable: (brandUsage.get(row.brand_id) ?? 0) === 0 && !resolvedBrandIds.has(row.brand_id), version: row.version, createdBy: creators.get(row.brand_id) ?? null, createdAt: row.created_at.toISOString(), createdInBranchId: row.created_in_branch_id }))),
@@ -282,8 +301,8 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
       const idColumn = kind === 'category' ? 'category_id' : 'brand_id';
       await lockReferenceIdentity(executor, context.tenantId, kind, input.normalizedName, kind === 'category' ? input.applicableKinds[0] : undefined);
       const canonicalMatch = kind === 'category'
-        ? await executor.selectFrom('catalog_categories').select(['category_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('kind', '=', input.applicableKinds[0]!).where('normalized_name', '=', input.normalizedName).executeTakeFirst()
-        : await executor.selectFrom('catalog_brands').select(['brand_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.normalizedName).executeTakeFirst();
+        ? await executor.selectFrom('catalog_categories').select(['category_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('kind', '=', input.applicableKinds[0]!).where('normalized_name', '=', input.normalizedName).where('merged_into_id', 'is', null).executeTakeFirst()
+        : await executor.selectFrom('catalog_brands').select(['brand_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.normalizedName).where('merged_into_id', 'is', null).executeTakeFirst();
       if (canonicalMatch) throw new CatalogReferenceAlreadyExistsError(kind, canonicalMatch.display_name);
       const pendingMatch = kind === 'category'
         ? await executor.selectFrom('catalog_category_pending_values').select('pending_category_value_id').where('tenant_id', '=', context.tenantId).where('kind', '=', input.applicableKinds[0]!).where('normalized_key', '=', input.normalizedName).where('resolution_status', '=', 'PENDING').executeTakeFirst()
@@ -331,9 +350,10 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
       outcome = await this.transaction<CatalogReferenceDeletionRecord | Readonly<{ error: Error }>>(async (executor, tx) => {
       const replay = await commandReplay<CatalogReferenceDeletionRecord>(executor, context, operation, input.clientRequestId, fp);
       if (replay) return Object.freeze(replay);
+      await lockReferenceResource(executor, context.tenantId, kind, input.referenceId);
       const current = kind === 'category'
-        ? await executor.selectFrom('catalog_categories').select(['display_name', 'status', 'version']).where('tenant_id', '=', context.tenantId).where('category_id', '=', input.referenceId).forUpdate().executeTakeFirst()
-        : await executor.selectFrom('catalog_brands').select(['display_name', 'status', 'version']).where('tenant_id', '=', context.tenantId).where('brand_id', '=', input.referenceId).forUpdate().executeTakeFirst();
+        ? await executor.selectFrom('catalog_categories').select(['display_name', 'status', 'version']).where('tenant_id', '=', context.tenantId).where('category_id', '=', input.referenceId).where('merged_into_id', 'is', null).forUpdate().executeTakeFirst()
+        : await executor.selectFrom('catalog_brands').select(['display_name', 'status', 'version']).where('tenant_id', '=', context.tenantId).where('brand_id', '=', input.referenceId).where('merged_into_id', 'is', null).forUpdate().executeTakeFirst();
       const recordAttempt = (result: 'succeeded' | 'rejected', reason: 'not_found' | 'version_conflict' | 'reference_in_use' | 'authorization_changed' | null) => executor.insertInto('catalog_reference_deletion_events').values({
         event_id: randomUUID(), tenant_id: context.tenantId, reference_kind: kind === 'category' ? 'CATEGORY' : 'BRAND', reference_id: input.referenceId,
         catalog_scope: 'tenant', previous_label: current?.display_name ?? null, previous_status: current?.status ?? null,
@@ -390,14 +410,15 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
       if (replay) return Object.freeze(replay);
       const table = kind === 'category' ? 'catalog_categories' : 'catalog_brands';
       const idColumn = kind === 'category' ? 'category_id' : 'brand_id';
-      const current = await executor.selectFrom(table).selectAll().where('tenant_id', '=', context.tenantId).where(idColumn, '=', input.referenceId).forUpdate().executeTakeFirst() as unknown as { version: number; normalized_name: string; kind?: CatalogItemKind; created_at: Date; created_in_branch_id: string | null } | undefined;
-      if (!current) throw new CatalogNotFoundError();
-      if (current.version !== input.expectedVersion) throw new CatalogConflictError();
       const nextKind = kind === 'category' ? input.applicableKinds[0]! : undefined;
       await lockReferenceIdentity(executor, context.tenantId, kind, input.normalizedName, nextKind);
+      await lockReferenceResource(executor, context.tenantId, kind, input.referenceId);
+      const current = await executor.selectFrom(table).selectAll().where('tenant_id', '=', context.tenantId).where(idColumn, '=', input.referenceId).where('merged_into_id', 'is', null).forUpdate().executeTakeFirst() as unknown as { version: number; normalized_name: string; kind?: CatalogItemKind; created_at: Date; created_in_branch_id: string | null } | undefined;
+      if (!current) throw new CatalogNotFoundError();
+      if (current.version !== input.expectedVersion) throw new CatalogConflictError();
       const duplicate = kind === 'category'
-        ? await executor.selectFrom('catalog_categories').select(['category_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('kind', '=', nextKind!).where('normalized_name', '=', input.normalizedName).where('category_id', '!=', input.referenceId).executeTakeFirst()
-        : await executor.selectFrom('catalog_brands').select(['brand_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.normalizedName).where('brand_id', '!=', input.referenceId).executeTakeFirst();
+        ? await executor.selectFrom('catalog_categories').select(['category_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('kind', '=', nextKind!).where('normalized_name', '=', input.normalizedName).where('merged_into_id', 'is', null).where('category_id', '!=', input.referenceId).executeTakeFirst()
+        : await executor.selectFrom('catalog_brands').select(['brand_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.normalizedName).where('merged_into_id', 'is', null).where('brand_id', '!=', input.referenceId).executeTakeFirst();
       if (duplicate) throw new CatalogReferenceAlreadyExistsError(kind, duplicate.display_name);
       const identityChanged = current.normalized_name !== input.normalizedName || (kind === 'category' && current.kind !== nextKind);
       if (identityChanged) {
@@ -424,6 +445,96 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
     }, 'read committed');
   }
 
+  mergeCategories(context: CatalogMutationContext, input: MergeCatalogReferenceInput): Promise<CatalogReferenceMergeRecord> {
+    return this.mergeReferences('category', context, input);
+  }
+
+  mergeBrands(context: CatalogMutationContext, input: MergeCatalogReferenceInput): Promise<CatalogReferenceMergeRecord> {
+    return this.mergeReferences('brand', context, input);
+  }
+
+  private async mergeReferences(kind: 'category' | 'brand', context: CatalogMutationContext, input: MergeCatalogReferenceInput): Promise<CatalogReferenceMergeRecord> {
+    validateScope(context);
+    const operation = `catalog.${kind}.merge`;
+    const orderedInput = [...input.references].sort((left, right) => left.referenceId.localeCompare(right.referenceId));
+    const selectedIds = orderedInput.map(({ referenceId }) => referenceId);
+    const sourceIds = selectedIds.filter((referenceId) => referenceId !== input.survivorReferenceId);
+    const fp = fingerprint({ references: orderedInput, survivorReferenceId: input.survivorReferenceId, finalName: input.finalName });
+    return this.transaction(async (executor, tx) => {
+      const replay = await commandReplay<CatalogReferenceMergeRecord>(executor, context, operation, input.clientRequestId, fp);
+      if (replay) return Object.freeze(replay);
+      const expectedCategoryKind = kind === 'category'
+        ? (await executor.selectFrom('catalog_categories').select('kind').where('tenant_id', '=', context.tenantId).where('category_id', '=', input.survivorReferenceId).where('merged_into_id', 'is', null).executeTakeFirst())?.kind
+        : undefined;
+      if (kind === 'category' && !expectedCategoryKind) throw new CatalogNotFoundError();
+      await lockReferenceIdentity(executor, context.tenantId, kind, input.finalNormalizedName, expectedCategoryKind);
+      for (const referenceId of selectedIds) await lockReferenceResource(executor, context.tenantId, kind, referenceId);
+      const rows = kind === 'category'
+        ? await executor.selectFrom('catalog_categories').selectAll().where('tenant_id', '=', context.tenantId).where('category_id', 'in', selectedIds).orderBy('category_id').forUpdate().execute()
+        : await executor.selectFrom('catalog_brands').selectAll().where('tenant_id', '=', context.tenantId).where('brand_id', 'in', selectedIds).orderBy('brand_id').forUpdate().execute();
+      if (rows.length !== selectedIds.length) throw new CatalogNotFoundError();
+      const rowById = new Map(rows.map((row) => [kind === 'category' ? (row as { category_id: string }).category_id : (row as { brand_id: string }).brand_id, row]));
+      for (const expected of orderedInput) {
+        const row = rowById.get(expected.referenceId) as { version: number; status: 'ACTIVE' | 'INACTIVE'; merged_into_id: string | null } | undefined;
+        if (!row) throw new CatalogNotFoundError();
+        if (row.version !== expected.expectedVersion || row.status !== 'ACTIVE' || row.merged_into_id !== null) throw new CatalogConflictError();
+      }
+      const categoryKind = kind === 'category' ? (rows[0] as { kind: CatalogItemKind }).kind : null;
+      if (kind === 'category' && rows.some((row) => (row as { kind: CatalogItemKind }).kind !== categoryKind)) throw new CatalogConflictError();
+      if (kind === 'category' && categoryKind !== expectedCategoryKind) throw new CatalogConflictError();
+
+      const duplicate = kind === 'category'
+        ? await executor.selectFrom('catalog_categories').select(['category_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('kind', '=', categoryKind!).where('normalized_name', '=', input.finalNormalizedName).where('merged_into_id', 'is', null).where('category_id', 'not in', selectedIds).executeTakeFirst()
+        : await executor.selectFrom('catalog_brands').select(['brand_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.finalNormalizedName).where('merged_into_id', 'is', null).where('brand_id', 'not in', selectedIds).executeTakeFirst();
+      if (duplicate) throw new CatalogReferenceAlreadyExistsError(kind, duplicate.display_name);
+
+      const applicabilityTable = kind === 'category' ? 'catalog_category_kind_applicability' : 'catalog_brand_kind_applicability';
+      const idColumn = kind === 'category' ? 'category_id' : 'brand_id';
+      const applicabilityRows = await executor.selectFrom(applicabilityTable).select([idColumn, 'kind']).where('tenant_id', '=', context.tenantId).where(idColumn, 'in', selectedIds).orderBy(idColumn).orderBy('kind').execute() as unknown as readonly { category_id?: string; brand_id?: string; kind: CatalogItemKind }[];
+      const applicabilityBefore = selectedIds.map((referenceId) => Object.freeze({ referenceId, applicableKinds: Object.freeze(applicabilityRows.filter((row) => (row.category_id ?? row.brand_id) === referenceId).map((row) => row.kind)) }));
+      const applicabilityAfter = Object.freeze([...new Set(applicabilityRows.map((row) => row.kind))].sort());
+      if (kind === 'category' && (applicabilityAfter.length !== 1 || applicabilityAfter[0] !== categoryKind)) throw new CatalogConflictError();
+      if (!await guardsCurrent(context, tx)) throw new CatalogAuthorizationChangedError();
+
+      if (kind === 'category') {
+        await executor.updateTable('catalog_categories').set((eb) => ({ status: 'INACTIVE', merged_into_id: input.survivorReferenceId, merged_by_actor_id: context.actorUserId, merged_at: input.occurredAt, version: eb('version', '+', 1), updated_at: input.occurredAt })).where('tenant_id', '=', context.tenantId).where('category_id', 'in', sourceIds).execute();
+      } else {
+        await executor.updateTable('catalog_brands').set((eb) => ({ status: 'INACTIVE', merged_into_id: input.survivorReferenceId, merged_by_actor_id: context.actorUserId, merged_at: input.occurredAt, version: eb('version', '+', 1), updated_at: input.occurredAt })).where('tenant_id', '=', context.tenantId).where('brand_id', 'in', sourceIds).execute();
+        await executor.insertInto('catalog_brand_kind_applicability').values(applicabilityAfter.map((applicableKind) => ({ tenant_id: context.tenantId, brand_id: input.survivorReferenceId, kind: applicableKind }))).onConflict((conflict) => conflict.columns(['tenant_id', 'brand_id', 'kind']).doNothing()).execute();
+      }
+
+      const reassignedItems = await executor.updateTable('catalog_items').set((eb) => ({ [kind === 'category' ? 'category_id' : 'brand_id']: input.survivorReferenceId, version: eb('version', '+', 1), updated_at: input.occurredAt } as never)).where('tenant_id', '=', context.tenantId).where(kind === 'category' ? 'category_id' : 'brand_id', 'in', sourceIds).executeTakeFirst();
+      const pendingTable = kind === 'category' ? 'catalog_category_pending_values' : 'catalog_brand_pending_values';
+      const canonicalColumn = kind === 'category' ? 'canonical_category_id' : 'canonical_brand_id';
+      const reassignedPending = await executor.updateTable(pendingTable).set((eb) => ({ [canonicalColumn]: input.survivorReferenceId, version: eb('version', '+', 1) } as never)).where('tenant_id', '=', context.tenantId).where(canonicalColumn, 'in', sourceIds).executeTakeFirst();
+
+      const survivorRow = rowById.get(input.survivorReferenceId) as { version: number; created_at: Date; created_in_branch_id: string | null };
+      const nextVersion = survivorRow.version + 1;
+      if (kind === 'category') await executor.updateTable('catalog_categories').set({ display_name: input.finalName, normalized_name: input.finalNormalizedName, status: 'ACTIVE', version: nextVersion, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('category_id', '=', input.survivorReferenceId).execute();
+      else await executor.updateTable('catalog_brands').set({ display_name: input.finalName, normalized_name: input.finalNormalizedName, status: 'ACTIVE', version: nextVersion, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('brand_id', '=', input.survivorReferenceId).execute();
+
+      if (!await guardsCurrent(context, tx)) throw new CatalogAuthorizationChangedError();
+      const reassignedItemCount = Number(reassignedItems.numUpdatedRows);
+      const reassignedReconciliationCount = Number(reassignedPending.numUpdatedRows);
+      const survivorUsage = await executor.selectFrom('catalog_items').select(({ fn }) => fn.countAll<string>().as('count')).where('tenant_id', '=', context.tenantId).where(kind === 'category' ? 'category_id' : 'brand_id', '=', input.survivorReferenceId).executeTakeFirstOrThrow();
+      const previousNames = Object.freeze(selectedIds.map((referenceId) => Object.freeze({ referenceId, name: (rowById.get(referenceId) as { display_name: string }).display_name })));
+      const survivor = Object.freeze(kind === 'category'
+        ? { categoryId: input.survivorReferenceId, name: input.finalName, status: 'ACTIVE' as const, applicableKinds: applicabilityAfter, usageCount: Number(survivorUsage.count), deletable: false, version: nextVersion, createdBy: null, createdAt: survivorRow.created_at.toISOString(), createdInBranchId: survivorRow.created_in_branch_id }
+        : { brandId: input.survivorReferenceId, name: input.finalName, status: 'ACTIVE' as const, applicableKinds: applicabilityAfter, usageCount: Number(survivorUsage.count), deletable: false, version: nextVersion, createdBy: null, createdAt: survivorRow.created_at.toISOString(), createdInBranchId: survivorRow.created_in_branch_id });
+      const result = Object.freeze({ kind, survivor, sourceReferenceIds: Object.freeze(sourceIds), previousNames, reassignedItemCount, reassignedReconciliationCount, applicabilityBefore: Object.freeze(applicabilityBefore), applicabilityAfter, version: nextVersion, mergedAt: input.occurredAt.toISOString() });
+      await executor.insertInto('catalog_reference_merge_events').values({
+        merge_id: randomUUID(), tenant_id: context.tenantId, reference_kind: kind === 'category' ? 'CATEGORY' : 'BRAND', survivor_reference_id: input.survivorReferenceId,
+        source_reference_ids: { values: sourceIds }, previous_names: { values: previousNames }, final_name: input.finalName,
+        reassigned_item_count: reassignedItemCount, reassigned_reconciliation_count: reassignedReconciliationCount,
+        applicability_before: { values: applicabilityBefore }, applicability_after: { values: applicabilityAfter },
+        station_id: context.stationId, session_id: context.sessionId, actor_user_id: context.actorUserId, actor_display_name: context.actorDisplayName,
+        capability: context.capability, correlation_id: input.correlationId, client_request_id: input.clientRequestId, occurred_at: input.occurredAt,
+      }).execute();
+      await recordCommand(executor, context, input, operation, fp, input.survivorReferenceId, survivorRow.version, result, { sourceReferenceIds: sourceIds, previousNames, finalName: input.finalName, reassignedItemCount, reassignedReconciliationCount, applicabilityBefore, applicabilityAfter });
+      return result;
+    });
+  }
+
   resolveCategory(context: CatalogMutationContext, input: ResolveCatalogReferenceInput) {
     return this.resolveReference('category', context, input) as Promise<CatalogPendingCategoryRecord>;
   }
@@ -446,6 +557,7 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
       const canonicalPendingColumn = kind === 'category' ? 'canonical_category_id' : 'canonical_brand_id';
       const itemPendingColumn = kind === 'category' ? 'pending_category_value_id' : 'pending_brand_value_id';
       const itemCanonicalColumn = kind === 'category' ? 'category_id' : 'brand_id';
+      if (input.targetId) await lockReferenceResource(executor, context.tenantId, kind, input.targetId);
       const source = await executor.selectFrom(pendingTable).selectAll().where('tenant_id', '=', context.tenantId).where(pendingIdColumn, '=', input.pendingReferenceId).forUpdate().executeTakeFirst() as unknown as {
         raw_label_example: string; normalized_key: string; kind?: CatalogItemKind; resolution_status: 'PENDING' | 'RESOLVED'; canonical_category_id?: string | null; canonical_brand_id?: string | null;
         version: number; first_seen_at: Date; last_seen_at: Date; captured_by_actor_display_name: string; captured_in_branch_id: string;
@@ -462,8 +574,8 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
         if (sourceKinds.some((value) => !suppliedKinds.has(value))) throw new CatalogConflictError();
         await lockReferenceIdentity(executor, context.tenantId, kind, input.newNormalizedName, kind === 'category' ? sourceKinds[0] : undefined);
         const exactCanonical = kind === 'category'
-          ? await executor.selectFrom('catalog_categories').select(['category_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('kind', '=', sourceKinds[0]!).where('normalized_name', '=', input.newNormalizedName).executeTakeFirst()
-          : await executor.selectFrom('catalog_brands').select(['brand_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.newNormalizedName).executeTakeFirst();
+          ? await executor.selectFrom('catalog_categories').select(['category_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('kind', '=', sourceKinds[0]!).where('normalized_name', '=', input.newNormalizedName).where('merged_into_id', 'is', null).executeTakeFirst()
+          : await executor.selectFrom('catalog_brands').select(['brand_id', 'display_name']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.newNormalizedName).where('merged_into_id', 'is', null).executeTakeFirst();
         if (exactCanonical) throw new CatalogReferenceAlreadyExistsError(kind, exactCanonical.display_name);
         targetId = input.newReferenceId;
         await executor.insertInto(canonicalTable).values({ tenant_id: context.tenantId, [canonicalIdColumn]: targetId, ...(kind === 'category' ? { kind: sourceKinds[0] } : {}), display_name: input.newName, normalized_name: input.newNormalizedName, status: 'ACTIVE', created_by_actor_id: context.actorUserId, created_in_branch_id: context.branchId, created_in_station_id: context.stationId, created_in_session_id: context.sessionId, version: 1, created_at: input.occurredAt, updated_at: input.occurredAt } as never).execute();
@@ -471,7 +583,7 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
         await executor.insertInto(applicabilityTable).values(input.applicableKinds.map((value) => ({ tenant_id: context.tenantId, [canonicalIdColumn]: targetId, kind: value })) as never).execute();
       } else {
         if (!targetId) throw new CatalogConflictError();
-        const target = await executor.selectFrom(canonicalTable).select(['display_name', 'status', 'version']).where('tenant_id', '=', context.tenantId).where(canonicalIdColumn, '=', targetId).where('status', '=', 'ACTIVE').forUpdate().executeTakeFirst() as { display_name: string; status: 'ACTIVE' | 'INACTIVE'; version: number } | undefined;
+        const target = await executor.selectFrom(canonicalTable).select(['display_name', 'status', 'version']).where('tenant_id', '=', context.tenantId).where(canonicalIdColumn, '=', targetId).where('status', '=', 'ACTIVE').where('merged_into_id', 'is', null).forUpdate().executeTakeFirst() as { display_name: string; status: 'ACTIVE' | 'INACTIVE'; version: number } | undefined;
         if (!target) throw new CatalogNotFoundError();
         targetName = target.display_name;
         const applicabilityTable = kind === 'category' ? 'catalog_category_kind_applicability' : 'catalog_brand_kind_applicability';
@@ -496,6 +608,80 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
     });
   }
 
+  private async resolveItemReferences(
+    executor: CatalogExecutor,
+    context: CatalogMutationContext,
+    input: Readonly<{
+      kind: CatalogItemKind; categoryId: string | null; brandId: string | null;
+      capturedCategory: CreateCatalogItemInput['capturedCategory']; capturedBrand: CreateCatalogItemInput['capturedBrand'];
+      occurredAt: Date;
+    }>,
+  ): Promise<Readonly<{ categoryId: string | null; brandId: string | null; pendingCategoryValueId: string | null; pendingBrandValueId: string | null; expandedBrand: boolean }>> {
+    let categoryId = input.categoryId;
+    let pendingCategoryValueId: string | null = null;
+    if (categoryId) await lockReferenceResource(executor, context.tenantId, 'category', categoryId);
+    if (input.capturedCategory) {
+      await lockReferenceIdentity(executor, context.tenantId, 'category', input.capturedCategory.normalizedKey, input.kind);
+      let canonical = await executor.selectFrom('catalog_categories').select(['category_id', 'status']).where('tenant_id', '=', context.tenantId).where('kind', '=', input.kind).where('normalized_name', '=', input.capturedCategory.normalizedKey).where('merged_into_id', 'is', null).executeTakeFirst();
+      if (canonical) {
+        await lockReferenceResource(executor, context.tenantId, 'category', canonical.category_id);
+        canonical = await executor.selectFrom('catalog_categories').select(['category_id', 'status']).where('tenant_id', '=', context.tenantId).where('category_id', '=', canonical.category_id).where('merged_into_id', 'is', null).forUpdate().executeTakeFirst();
+      }
+      if (canonical?.status === 'INACTIVE') throw new CatalogReferenceInactiveError('category');
+      if (canonical) categoryId = canonical.category_id;
+      else {
+        const existing = await executor.selectFrom('catalog_category_pending_values').select(['pending_category_value_id', 'canonical_category_id', 'resolution_status']).where('tenant_id', '=', context.tenantId).where('kind', '=', input.kind).where('normalized_key', '=', input.capturedCategory.normalizedKey).forUpdate().executeTakeFirst();
+        if (existing?.resolution_status === 'RESOLVED' && existing.canonical_category_id) {
+          const resolved = await executor.selectFrom('catalog_categories').select(['category_id', 'merged_into_id']).where('tenant_id', '=', context.tenantId).where('category_id', '=', existing.canonical_category_id).executeTakeFirst();
+          categoryId = resolved?.merged_into_id ?? resolved?.category_id ?? null;
+        } else if (existing) {
+          pendingCategoryValueId = existing.pending_category_value_id;
+          await executor.updateTable('catalog_category_pending_values').set({ last_seen_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('pending_category_value_id', '=', pendingCategoryValueId).execute();
+        } else {
+          pendingCategoryValueId = input.capturedCategory.pendingReferenceId;
+          await executor.insertInto('catalog_category_pending_values').values({ tenant_id: context.tenantId, pending_category_value_id: pendingCategoryValueId, raw_label_example: input.capturedCategory.rawLabel, normalized_key: input.capturedCategory.normalizedKey, kind: input.kind, resolution_status: 'PENDING', canonical_category_id: null, version: 1, first_seen_at: input.occurredAt, last_seen_at: input.occurredAt, captured_by_actor_id: context.actorUserId, captured_by_actor_display_name: context.actorDisplayName, captured_in_branch_id: context.branchId, captured_in_station_id: context.stationId, captured_in_session_id: context.sessionId, resolved_by_actor_id: null, resolved_at: null }).execute();
+        }
+      }
+    }
+
+    let brandId = input.brandId;
+    let pendingBrandValueId: string | null = null;
+    let expandedBrand = false;
+    if (brandId) await lockReferenceResource(executor, context.tenantId, 'brand', brandId);
+    if (input.capturedBrand) {
+      await lockReferenceIdentity(executor, context.tenantId, 'brand', input.capturedBrand.normalizedKey);
+      let canonical = await executor.selectFrom('catalog_brands').select(['brand_id', 'status', 'version']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.capturedBrand.normalizedKey).where('merged_into_id', 'is', null).executeTakeFirst();
+      if (canonical) {
+        await lockReferenceResource(executor, context.tenantId, 'brand', canonical.brand_id);
+        canonical = await executor.selectFrom('catalog_brands').select(['brand_id', 'status', 'version']).where('tenant_id', '=', context.tenantId).where('brand_id', '=', canonical.brand_id).where('merged_into_id', 'is', null).forUpdate().executeTakeFirst();
+      }
+      if (canonical?.status === 'INACTIVE') throw new CatalogReferenceInactiveError('brand');
+      if (canonical) {
+        brandId = canonical.brand_id;
+        const existingKind = await executor.selectFrom('catalog_brand_kind_applicability').select('kind').where('tenant_id', '=', context.tenantId).where('brand_id', '=', brandId).where('kind', '=', input.kind).executeTakeFirst();
+        if (!existingKind) {
+          await executor.insertInto('catalog_brand_kind_applicability').values({ tenant_id: context.tenantId, brand_id: brandId, kind: input.kind }).execute();
+          await executor.updateTable('catalog_brands').set({ version: canonical.version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('brand_id', '=', brandId).execute();
+          expandedBrand = true;
+        }
+      } else {
+        const existing = await executor.selectFrom('catalog_brand_pending_values').select(['pending_brand_value_id', 'canonical_brand_id', 'resolution_status']).where('tenant_id', '=', context.tenantId).where('normalized_key', '=', input.capturedBrand.normalizedKey).forUpdate().executeTakeFirst();
+        if (existing?.resolution_status === 'RESOLVED' && existing.canonical_brand_id) {
+          const resolved = await executor.selectFrom('catalog_brands').select(['brand_id', 'merged_into_id', 'version']).where('tenant_id', '=', context.tenantId).where('brand_id', '=', existing.canonical_brand_id).executeTakeFirst();
+          brandId = resolved?.merged_into_id ?? resolved?.brand_id ?? null;
+        } else if (existing) {
+          pendingBrandValueId = existing.pending_brand_value_id;
+          await executor.updateTable('catalog_brand_pending_values').set({ last_seen_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('pending_brand_value_id', '=', pendingBrandValueId).execute();
+        } else {
+          pendingBrandValueId = input.capturedBrand.pendingReferenceId;
+          await executor.insertInto('catalog_brand_pending_values').values({ tenant_id: context.tenantId, pending_brand_value_id: pendingBrandValueId, raw_label_example: input.capturedBrand.rawLabel, normalized_key: input.capturedBrand.normalizedKey, resolution_status: 'PENDING', canonical_brand_id: null, version: 1, first_seen_at: input.occurredAt, last_seen_at: input.occurredAt, captured_by_actor_id: context.actorUserId, captured_by_actor_display_name: context.actorDisplayName, captured_in_branch_id: context.branchId, captured_in_station_id: context.stationId, captured_in_session_id: context.sessionId, resolved_by_actor_id: null, resolved_at: null }).execute();
+        }
+      }
+      if (pendingBrandValueId) await executor.insertInto('catalog_brand_pending_kind_applicability').values({ tenant_id: context.tenantId, pending_brand_value_id: pendingBrandValueId, kind: input.kind }).onConflict((conflict) => conflict.columns(['tenant_id', 'pending_brand_value_id', 'kind']).doNothing()).execute();
+    }
+    return Object.freeze({ categoryId, brandId, pendingCategoryValueId, pendingBrandValueId, expandedBrand });
+  }
+
   async createItem(context: CatalogMutationContext, input: CreateCatalogItemInput): Promise<CatalogItemRecord> {
     validateScope(context);
     const operation = 'catalog.item.create';
@@ -503,63 +689,19 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
     return this.transaction(async (executor, tx) => {
       const replay = await commandReplay<CatalogItemRecord>(executor, context, operation, input.clientRequestId, fp);
       if (replay) return Object.freeze(replay);
-      let categoryId = input.categoryId;
-      let pendingCategoryValueId: string | null = null;
-      if (input.capturedCategory) {
-        await lockReferenceIdentity(executor, context.tenantId, 'category', input.capturedCategory.normalizedKey, input.kind);
-        const canonical = await executor.selectFrom('catalog_categories').select(['category_id', 'status']).where('tenant_id', '=', context.tenantId).where('kind', '=', input.kind).where('normalized_name', '=', input.capturedCategory.normalizedKey).forUpdate().executeTakeFirst();
-        if (canonical?.status === 'INACTIVE') throw new CatalogReferenceInactiveError('category');
-        if (canonical) {
-          categoryId = canonical.category_id;
-        } else {
-          const existing = await executor.selectFrom('catalog_category_pending_values').select(['pending_category_value_id', 'canonical_category_id', 'resolution_status']).where('tenant_id', '=', context.tenantId).where('kind', '=', input.kind).where('normalized_key', '=', input.capturedCategory.normalizedKey).forUpdate().executeTakeFirst();
-          if (existing?.resolution_status === 'RESOLVED' && existing.canonical_category_id) categoryId = existing.canonical_category_id;
-          else if (existing) {
-            pendingCategoryValueId = existing.pending_category_value_id;
-            await executor.updateTable('catalog_category_pending_values').set({ last_seen_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('pending_category_value_id', '=', pendingCategoryValueId).execute();
-          } else {
-            pendingCategoryValueId = input.capturedCategory.pendingReferenceId;
-            await executor.insertInto('catalog_category_pending_values').values({ tenant_id: context.tenantId, pending_category_value_id: pendingCategoryValueId, raw_label_example: input.capturedCategory.rawLabel, normalized_key: input.capturedCategory.normalizedKey, kind: input.kind, resolution_status: 'PENDING', canonical_category_id: null, version: 1, first_seen_at: input.occurredAt, last_seen_at: input.occurredAt, captured_by_actor_id: context.actorUserId, captured_by_actor_display_name: context.actorDisplayName, captured_in_branch_id: context.branchId, captured_in_station_id: context.stationId, captured_in_session_id: context.sessionId, resolved_by_actor_id: null, resolved_at: null }).execute();
-          }
-        }
-      }
-      let brandId = input.brandId;
-      let pendingBrandValueId: string | null = null;
-      let expandedBrand: Readonly<{ brandId: string; oldVersion: number }> | null = null;
-      if (input.capturedBrand) {
-        await lockReferenceIdentity(executor, context.tenantId, 'brand', input.capturedBrand.normalizedKey);
-        const canonical = await executor.selectFrom('catalog_brands').select(['brand_id', 'status', 'version']).where('tenant_id', '=', context.tenantId).where('normalized_name', '=', input.capturedBrand.normalizedKey).forUpdate().executeTakeFirst();
-        if (canonical?.status === 'INACTIVE') throw new CatalogReferenceInactiveError('brand');
-        if (canonical) {
-          brandId = canonical.brand_id;
-          const existingKind = await executor.selectFrom('catalog_brand_kind_applicability').select('kind').where('tenant_id', '=', context.tenantId).where('brand_id', '=', brandId).where('kind', '=', input.kind).executeTakeFirst();
-          if (!existingKind) expandedBrand = { brandId, oldVersion: canonical.version };
-        } else {
-          const existing = await executor.selectFrom('catalog_brand_pending_values').select(['pending_brand_value_id', 'canonical_brand_id', 'resolution_status']).where('tenant_id', '=', context.tenantId).where('normalized_key', '=', input.capturedBrand.normalizedKey).forUpdate().executeTakeFirst();
-          if (existing?.resolution_status === 'RESOLVED' && existing.canonical_brand_id) brandId = existing.canonical_brand_id;
-          else if (existing) {
-            pendingBrandValueId = existing.pending_brand_value_id;
-            await executor.updateTable('catalog_brand_pending_values').set({ last_seen_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('pending_brand_value_id', '=', pendingBrandValueId).execute();
-          } else {
-            pendingBrandValueId = input.capturedBrand.pendingReferenceId;
-            await executor.insertInto('catalog_brand_pending_values').values({ tenant_id: context.tenantId, pending_brand_value_id: pendingBrandValueId, raw_label_example: input.capturedBrand.rawLabel, normalized_key: input.capturedBrand.normalizedKey, resolution_status: 'PENDING', canonical_brand_id: null, version: 1, first_seen_at: input.occurredAt, last_seen_at: input.occurredAt, captured_by_actor_id: context.actorUserId, captured_by_actor_display_name: context.actorDisplayName, captured_in_branch_id: context.branchId, captured_in_station_id: context.stationId, captured_in_session_id: context.sessionId, resolved_by_actor_id: null, resolved_at: null }).execute();
-          }
-        }
-        if (pendingBrandValueId) await executor.insertInto('catalog_brand_pending_kind_applicability').values({ tenant_id: context.tenantId, pending_brand_value_id: pendingBrandValueId, kind: input.kind }).onConflict((conflict) => conflict.columns(['tenant_id', 'pending_brand_value_id', 'kind']).doNothing()).execute();
-      }
-      if (expandedBrand) {
-        await executor.insertInto('catalog_brand_kind_applicability').values({ tenant_id: context.tenantId, brand_id: expandedBrand.brandId, kind: input.kind }).execute();
-        await executor.updateTable('catalog_brands').set({ version: expandedBrand.oldVersion + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('brand_id', '=', expandedBrand.brandId).execute();
-      }
+      const resolved = await this.resolveItemReferences(executor, context, input);
+      const { categoryId, brandId, pendingCategoryValueId, pendingBrandValueId, expandedBrand } = resolved;
       const categoryRecord = categoryId ? await executor.selectFrom('catalog_categories')
         .innerJoin('catalog_category_kind_applicability', (join) => join.onRef('catalog_category_kind_applicability.tenant_id', '=', 'catalog_categories.tenant_id').onRef('catalog_category_kind_applicability.category_id', '=', 'catalog_categories.category_id'))
         .select('catalog_categories.category_id').where('catalog_categories.tenant_id', '=', context.tenantId)
         .where('catalog_categories.category_id', '=', categoryId).where('catalog_categories.status', '=', 'ACTIVE')
+        .where('catalog_categories.merged_into_id', 'is', null)
         .where('catalog_category_kind_applicability.kind', '=', input.kind).forShare().executeTakeFirst() : pendingCategoryValueId ? { category_id: null } : null;
       const brandRecord = brandId ? await executor.selectFrom('catalog_brands')
         .innerJoin('catalog_brand_kind_applicability', (join) => join.onRef('catalog_brand_kind_applicability.tenant_id', '=', 'catalog_brands.tenant_id').onRef('catalog_brand_kind_applicability.brand_id', '=', 'catalog_brands.brand_id'))
         .select('catalog_brands.brand_id').where('catalog_brands.tenant_id', '=', context.tenantId)
         .where('catalog_brands.brand_id', '=', brandId).where('catalog_brands.status', '=', 'ACTIVE')
+        .where('catalog_brands.merged_into_id', 'is', null)
         .where('catalog_brand_kind_applicability.kind', '=', input.kind).forShare().executeTakeFirst() : { brand_id: null };
       if (!categoryRecord || !brandRecord) throw new CatalogNotFoundError();
       if (!await guardsCurrent(context, tx)) throw new CatalogAuthorizationChangedError();
@@ -629,13 +771,14 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
   async updateItem(context: CatalogMutationContext, input: UpdateCatalogItemInput): Promise<CatalogItemRecord> {
     validateScope(context);
     const operation = 'catalog.item.update';
-    const fp = fingerprint({ itemId: input.itemId, title: input.title, description: input.description, categoryId: input.categoryId, brandId: input.brandId, status: input.status, expectedVersion: input.expectedVersion });
+    const fp = fingerprint({ itemId: input.itemId, title: input.title, description: input.description, categoryId: input.categoryId, capturedCategory: input.capturedCategory?.rawLabel ?? null, brandId: input.brandId, capturedBrand: input.capturedBrand?.rawLabel ?? null, status: input.status, expectedVersion: input.expectedVersion });
     return this.mutateItem(context, input, operation, fp, async (executor, current, nextVersion) => {
-      const categoryRecord = await executor.selectFrom('catalog_categories').innerJoin('catalog_category_kind_applicability', (join) => join.onRef('catalog_category_kind_applicability.tenant_id', '=', 'catalog_categories.tenant_id').onRef('catalog_category_kind_applicability.category_id', '=', 'catalog_categories.category_id')).select('catalog_categories.category_id').where('catalog_categories.tenant_id', '=', context.tenantId).where('catalog_categories.category_id', '=', input.categoryId).where('catalog_categories.status', '=', 'ACTIVE').where('catalog_category_kind_applicability.kind', '=', current.kind).executeTakeFirst();
-      const brandRecord = input.brandId ? await executor.selectFrom('catalog_brands').innerJoin('catalog_brand_kind_applicability', (join) => join.onRef('catalog_brand_kind_applicability.tenant_id', '=', 'catalog_brands.tenant_id').onRef('catalog_brand_kind_applicability.brand_id', '=', 'catalog_brands.brand_id')).select('catalog_brands.brand_id').where('catalog_brands.tenant_id', '=', context.tenantId).where('catalog_brands.brand_id', '=', input.brandId).where('catalog_brands.status', '=', 'ACTIVE').where('catalog_brand_kind_applicability.kind', '=', current.kind).executeTakeFirst() : { brand_id: null };
+      const resolved = await this.resolveItemReferences(executor, context, { ...input, kind: current.kind });
+      const categoryRecord = resolved.categoryId ? await executor.selectFrom('catalog_categories').innerJoin('catalog_category_kind_applicability', (join) => join.onRef('catalog_category_kind_applicability.tenant_id', '=', 'catalog_categories.tenant_id').onRef('catalog_category_kind_applicability.category_id', '=', 'catalog_categories.category_id')).select('catalog_categories.category_id').where('catalog_categories.tenant_id', '=', context.tenantId).where('catalog_categories.category_id', '=', resolved.categoryId).where('catalog_categories.status', '=', 'ACTIVE').where('catalog_categories.merged_into_id', 'is', null).where('catalog_category_kind_applicability.kind', '=', current.kind).executeTakeFirst() : resolved.pendingCategoryValueId ? { category_id: null } : null;
+      const brandRecord = resolved.brandId ? await executor.selectFrom('catalog_brands').innerJoin('catalog_brand_kind_applicability', (join) => join.onRef('catalog_brand_kind_applicability.tenant_id', '=', 'catalog_brands.tenant_id').onRef('catalog_brand_kind_applicability.brand_id', '=', 'catalog_brands.brand_id')).select('catalog_brands.brand_id').where('catalog_brands.tenant_id', '=', context.tenantId).where('catalog_brands.brand_id', '=', resolved.brandId).where('catalog_brands.status', '=', 'ACTIVE').where('catalog_brands.merged_into_id', 'is', null).where('catalog_brand_kind_applicability.kind', '=', current.kind).executeTakeFirst() : { brand_id: null };
       if (!categoryRecord || !brandRecord) throw new CatalogNotFoundError();
-      await executor.updateTable('catalog_items').set({ title: input.title, normalized_title: input.normalizedTitle, description: input.description, category_id: input.categoryId, brand_id: input.brandId, status: input.status, version: nextVersion, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('item_id', '=', input.itemId).execute();
-      return { title: input.title, status: input.status, categoryId: input.categoryId, brandId: input.brandId, previousStatus: current.status };
+      await executor.updateTable('catalog_items').set({ title: input.title, normalized_title: input.normalizedTitle, description: input.description, category_id: resolved.categoryId, brand_id: resolved.brandId, pending_category_value_id: resolved.pendingCategoryValueId, pending_brand_value_id: resolved.pendingBrandValueId, status: input.status, version: nextVersion, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('item_id', '=', input.itemId).execute();
+      return { title: input.title, status: input.status, categoryId: resolved.categoryId, pendingCategoryValueId: resolved.pendingCategoryValueId, brandId: resolved.brandId, pendingBrandValueId: resolved.pendingBrandValueId, previousStatus: current.status, capturedCategory: input.capturedCategory?.rawLabel ?? null, capturedBrand: input.capturedBrand?.rawLabel ?? null, expandedBrandApplicability: resolved.expandedBrand ? [current.kind] : [] };
     });
   }
 

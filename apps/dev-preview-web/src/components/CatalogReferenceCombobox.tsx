@@ -64,7 +64,7 @@ export function CatalogReferenceCombobox({
       expansion: false,
     })),
     ...(exactExpansion ? [{ id: `${id}-expand-${exactExpansion.categoryId ?? exactExpansion.brandId}`, key: `expand-${exactExpansion.categoryId ?? exactExpansion.brandId}`, primary: exactExpansion.name, secondary: expansionLabel ?? 'La referencia existente se habilitará para este Tipo al crear el artículo', icon: capturedValue && normalizeCatalogReferenceText(capturedValue) === normalized ? <Check size={16} /> : undefined, selected: capturedValue.length > 0, reference: exactExpansion, expansion: true }] : []),
-    ...(createVisible ? [{ id: `${id}-create`, key: `${id}-create`, primary: `Usar “${query.trim()}”`, secondary: 'Se capturará como valor Por revisar al crear el artículo', icon: <Plus size={16} />, selected: false, reference: null, expansion: false }] : []),
+    ...(createVisible ? [{ id: `${id}-create`, key: `${id}-create`, primary: `Usar “${query.trim()}”`, secondary: 'Se capturará como valor Por revisar al guardar el artículo', icon: <Plus size={16} />, selected: false, reference: null, expansion: false }] : []),
   ];
   const safeActiveIndex = Math.min(activeIndex, Math.max(0, options.length - 1));
   const listboxId = `${id}-options`;

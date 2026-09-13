@@ -198,6 +198,37 @@ responde un conflicto tipado si apareció una referencia concurrente. Los
 eventos de eliminación conservan el snapshot previo y no dependen de que la
 fila canónica siga existiendo.
 
+Una referencia canónica puede descubrirse posteriormente como duplicada de
+otra. Esa decisión usa `Canonical Merge`, no `Edit`, `Resolve` ni hard delete:
+
+- `Edit` conserva la identidad y modifica sus atributos;
+- `Resolve` asigna identidad canónica a una captura todavía pendiente;
+- `Canonical Merge` consolida dos o más identidades previamente aceptadas en
+  una superviviente explícita.
+
+Category sólo permite merge dentro del mismo Tenant y Tipo. Brand permite merge
+dentro del Tenant y el resultado conserva la unión de Tipos aplicables. En una
+única transacción el servidor bloquea las referencias y sus recursos
+dependientes, revalida versión, lifecycle, Tenant y compatibilidad, reasigna
+artículos y destinos de pendientes resueltos, materializa la identidad
+superviviente y registra el evento append-only. Un fallo revierte todo el
+comando; las carreras con alta, edición, eliminación, reconciliación u otro
+merge se serializan o terminan en conflicto tipado.
+
+La fuente queda marcada con `mergedIntoId`, actor y timestamp. Deja de aparecer
+en listas, filtros y selecciones ordinarias, pero no se borra ni se convierte en
+una referencia `unused` eliminable. El evento de merge conserva Tenant, fuentes,
+superviviente, nombres anteriores, relaciones reasignadas, aplicabilidad antes y
+después y metadata de actor/correlation. Los counts se recalculan sobre las
+relaciones reasignadas y el survivor tampoco es hard-deletable mientras sea
+destino de esa historia.
+
+Nuevo artículo y Editar artículo usan el mismo combobox y el mismo resolvedor
+server-side de Category/Brand. En ambos flujos una coincidencia exacta reutiliza
+canon, Brand puede ampliar aplicabilidad de forma auditada y un valor realmente
+nuevo crea una captura pendiente con uso, actor y first/last seen; nunca crea
+canon silenciosamente.
+
 ### 5.1 Patrón transversal de reconciliación
 
 Repairs y Catalog comparten este lenguaje de producto:

@@ -219,7 +219,7 @@ test('tenant-wide catalog administration rejects branch-only authority and compo
   assert.equal(tenantWideCommits, 1);
 });
 
-test('commercial reference governance is fixed and inline capture stays inside item creation', async () => {
+test('commercial reference governance is fixed and inline capture stays inside item create/edit', async () => {
   const observed = [];
   const authorized = Object.freeze({
     ...mutationContext(), userId: mutationContext().actorUserId, userDisplayName: mutationContext().actorDisplayName,
@@ -234,13 +234,40 @@ test('commercial reference governance is fixed and inline capture stays inside i
   const service = {
     async listReferences(scope) { return { scope }; },
     async createItem(_context, input) { return { input }; },
+    async mergeCategories(_context, input) { return { input }; },
   };
   const operations = new CatalogProtectedOperations(contextual, tenantWide, service);
   assert.deepEqual(await operations.listAdministrationReferences({}), { scope: { tenantId, branchId } });
   assert.deepEqual(await operations.createItem({}, { categoryCapturedValue: 'Termos' }), { input: { categoryCapturedValue: 'Termos' } });
+  assert.deepEqual(await operations.mergeCategories({}, { references: ['a', 'b'] }), { input: { references: ['a', 'b'] } });
   assert.deepEqual(observed, [
     { capability: 'catalog.manage', kind: 'read' },
     { capability: 'catalog.manage', kind: 'state-change' },
     { capability: 'catalog.prices.manage', kind: 'state-change' },
+    { capability: 'catalog.manage', kind: 'state-change' },
   ]);
+});
+
+test('canonical merge commands are bounded, versioned, tenant-authorized and distinct from edit', async () => {
+  let received;
+  const repository = {
+    async mergeCategories(context, input) { received = { context, input }; return { kind: 'category', version: 2 }; },
+  };
+  const service = new CatalogService(repository, async () => 'MXN');
+  const result = await service.mergeCategories(mutationContext(), {
+    references: [
+      { referenceId: categoryId, expectedVersion: 1 },
+      { referenceId: '30000000-0000-4000-8000-000000000041', expectedVersion: 3 },
+    ],
+    survivorReferenceId: categoryId,
+    finalName: 'Pantallas',
+    clientRequestId: requestId,
+  });
+  assert.equal(result.version, 2);
+  assert.equal(received.context.tenantId, tenantId);
+  assert.equal(received.input.finalNormalizedName, 'pantallas');
+  assert.equal(received.input.references[1].expectedVersion, 3);
+  await assert.rejects(service.mergeCategories(mutationContext(), { references: [], survivorReferenceId: categoryId, finalName: 'x', clientRequestId: requestId }), CatalogInputError);
+  await assert.rejects(service.mergeCategories(mutationContext(), { references: [{ referenceId: categoryId, expectedVersion: 1 }, { referenceId: categoryId, expectedVersion: 1 }], survivorReferenceId: categoryId, finalName: 'x', clientRequestId: requestId }), CatalogInputError);
+  await assert.rejects(service.mergeCategories(mutationContext(), { references: [{ referenceId: categoryId, expectedVersion: 1 }, { referenceId: '30000000-0000-4000-8000-000000000041', expectedVersion: 1 }], survivorReferenceId: '30000000-0000-4000-8000-000000000042', finalName: 'x', clientRequestId: requestId }), CatalogInputError);
 });

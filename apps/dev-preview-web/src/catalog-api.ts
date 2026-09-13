@@ -30,6 +30,10 @@ export type CatalogReferences = Readonly<{
   pendingBrands: readonly CatalogPendingBrand[];
   categoryBrandApplicability: readonly CatalogCategoryBrandApplicability[];
 }>;
+export type CatalogReferenceMergeResult = Readonly<{
+  kind: 'category' | 'brand'; survivor: CatalogReference; sourceReferenceIds: readonly string[];
+  reassignedItemCount: number; reassignedReconciliationCount: number; mergedAt: string;
+}>;
 export type PriceListPage = Readonly<{ items: readonly PriceListItem[]; totalCount: number }>;
 
 /** Mirrors Catalog's exact identity normalization; it is intentionally not fuzzy. */
@@ -73,6 +77,8 @@ export function updateCatalogCategory(categoryId: string, input: unknown, csrfTo
 export function updateCatalogBrand(brandId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/brands/${encodeURIComponent(brandId)}`, 'PATCH', input, csrfToken); }
 export function deleteCatalogCategory(categoryId: string, expectedVersion: number, csrfToken: string) { return mutate(`/api/catalog/categories/${encodeURIComponent(categoryId)}`, 'DELETE', { expectedVersion, clientRequestId: crypto.randomUUID() }, csrfToken); }
 export function deleteCatalogBrand(brandId: string, expectedVersion: number, csrfToken: string) { return mutate(`/api/catalog/brands/${encodeURIComponent(brandId)}`, 'DELETE', { expectedVersion, clientRequestId: crypto.randomUUID() }, csrfToken); }
+export function mergeCatalogCategories(input: unknown, csrfToken: string) { return mutate<CatalogReferenceMergeResult>('/api/catalog/categories/merge', 'POST', input, csrfToken); }
+export function mergeCatalogBrands(input: unknown, csrfToken: string) { return mutate<CatalogReferenceMergeResult>('/api/catalog/brands/merge', 'POST', input, csrfToken); }
 export function resolveCatalogCategory(pendingCategoryValueId: string, input: unknown, csrfToken: string) { return mutate<CatalogPendingCategory>(`/api/catalog/categories/pending/${encodeURIComponent(pendingCategoryValueId)}/resolve`, 'POST', input, csrfToken); }
 export function resolveCatalogBrand(pendingBrandValueId: string, input: unknown, csrfToken: string) { return mutate<CatalogPendingBrand>(`/api/catalog/brands/pending/${encodeURIComponent(pendingBrandValueId)}/resolve`, 'POST', input, csrfToken); }
 export function createCatalogItem(input: unknown, csrfToken: string) { return mutate<CatalogItem>('/api/catalog/items', 'POST', input, csrfToken); }

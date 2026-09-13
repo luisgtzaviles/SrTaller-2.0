@@ -1218,6 +1218,14 @@ test('PostgreSQL 18.4 enforces concurrent Operational Sessions, exact lifecycle,
       [tenantA, stationA],
     )).rows[0].count;
     assert.ok(activeBeforeRollback >= 2);
+    const catalogMergeMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      catalogMergeMigration?.name,
+      '20260913140000_catalog_add_canonical_reference_merge',
+    );
+    await runner.migrateDown(authorization(catalogMergeMigration));
     const catalogIdentityMigration = [...(await runner.getMigrationStatus()).migrations]
       .reverse()
       .find(({ state }) => state === 'applied');

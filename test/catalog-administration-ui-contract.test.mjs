@@ -58,6 +58,9 @@ test('shared primitives own lifecycle, reconciliation, read-only, usage, and row
   assert.match(source, /export function CatalogSafeDeleteDialog/u);
   assert.match(source, /nunca ha sido utilizado/u);
   assert.match(source, /Eliminar definitivamente/u);
+  assert.match(source, /export function CatalogMergeDialog/u);
+  assert.match(source, /reassignmentCount/u);
+  assert.match(source, /Las identidades fuente quedarán retiradas/u);
 });
 
 test('reconciliation stays domain-owned while safe-delete actions share one contract', async () => {

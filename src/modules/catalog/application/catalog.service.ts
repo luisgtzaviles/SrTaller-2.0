@@ -16,6 +16,7 @@ import type {
   CatalogMutationContext,
   CatalogPendingBrandRecord,
   CatalogPendingCategoryRecord,
+  CatalogReferenceMergeRecord,
   CatalogRepositoryPort,
   CatalogScope,
 } from './ports/catalog-repository.port.js';
@@ -138,6 +139,31 @@ export class CatalogService {
     return this.deleteReference('brand', context, referenceId, value);
   }
 
+  async mergeCategories(context: CatalogMutationContext, value: unknown): Promise<CatalogReferenceMergeRecord> {
+    return this.mergeReferences('category', context, value);
+  }
+
+  async mergeBrands(context: CatalogMutationContext, value: unknown): Promise<CatalogReferenceMergeRecord> {
+    return this.mergeReferences('brand', context, value);
+  }
+
+  private mergeReferences(kind: 'category' | 'brand', context: CatalogMutationContext, value: unknown): Promise<CatalogReferenceMergeRecord> {
+    const input = object(value, ['references', 'survivorReferenceId', 'finalName', 'clientRequestId']);
+    if (!Array.isArray(input.references) || input.references.length < 2 || input.references.length > 50) throw new CatalogInputError('references');
+    const references = input.references.map((candidate) => {
+      const parsed = object(candidate, ['referenceId', 'expectedVersion']);
+      return Object.freeze({ referenceId: identifier(parsed.referenceId, `${kind}Id`), expectedVersion: integer(parsed.expectedVersion, 'expectedVersion', 1) });
+    });
+    if (new Set(references.map(({ referenceId }) => referenceId)).size !== references.length) throw new CatalogInputError('references');
+    const survivorReferenceId = identifier(input.survivorReferenceId, `survivor${kind === 'category' ? 'Category' : 'Brand'}Id`);
+    if (!references.some(({ referenceId }) => referenceId === survivorReferenceId)) throw new CatalogInputError('survivorReferenceId');
+    const finalName = text(input.finalName, 'finalName', 120) as string;
+    const mutation = { clientRequestId: identifier(input.clientRequestId, 'clientRequestId'), correlationId: randomUUID(), occurredAt: new Date() };
+    return kind === 'category'
+      ? this.repository.mergeCategories(context, { references, survivorReferenceId, finalName, finalNormalizedName: normalizeCatalogText(finalName), ...mutation })
+      : this.repository.mergeBrands(context, { references, survivorReferenceId, finalName, finalNormalizedName: normalizeCatalogText(finalName), ...mutation });
+  }
+
   private deleteReference(kind: 'category' | 'brand', context: CatalogMutationContext, referenceId: unknown, value: unknown) {
     const input = object(value, ['expectedVersion', 'clientRequestId']);
     const parsed = { referenceId: identifier(referenceId, `${kind}Id`), ...commonMutation(input, 1) };
@@ -228,16 +254,23 @@ export class CatalogService {
 
   updateItem(context: CatalogMutationContext, itemId: unknown, value: unknown) {
     const input = object(value, [
-      'title', 'description', 'categoryId', 'brandId', 'status',
+      'title', 'description', 'categoryId', 'categoryCapturedValue', 'brandId', 'brandCapturedValue', 'status',
       'expectedVersion', 'clientRequestId',
     ]);
     const title = text(input.title, 'title', 200) as string;
     const status: CatalogLifecycle = input.status === 'ACTIVE' || input.status === 'INACTIVE' ? input.status : (() => { throw new CatalogInputError('status'); })();
+    const categoryId = input.categoryId === null || input.categoryId === undefined || input.categoryId === '' ? null : identifier(input.categoryId, 'categoryId');
+    const categoryCapturedValue = text(input.categoryCapturedValue, 'categoryCapturedValue', 120, true);
+    if ((categoryId === null) === (categoryCapturedValue === null)) throw new CatalogInputError('category');
+    const brandId = input.brandId === null || input.brandId === undefined || input.brandId === '' ? null : identifier(input.brandId, 'brandId');
+    const brandCapturedValue = text(input.brandCapturedValue, 'brandCapturedValue', 120, true);
+    if (brandId !== null && brandCapturedValue !== null) throw new CatalogInputError('brand');
     return this.repository.updateItem(context, {
       itemId: identifier(itemId, 'itemId'), title, normalizedTitle: normalizeCatalogText(title),
       description: text(input.description, 'description', 2000, true, true),
-      categoryId: identifier(input.categoryId, 'categoryId'),
-      brandId: input.brandId === null || input.brandId === undefined || input.brandId === '' ? null : identifier(input.brandId, 'brandId'),
+      categoryId, brandId,
+      capturedCategory: categoryCapturedValue ? { pendingReferenceId: randomUUID(), rawLabel: categoryCapturedValue, normalizedKey: normalizeCatalogText(categoryCapturedValue) } : null,
+      capturedBrand: brandCapturedValue ? { pendingReferenceId: randomUUID(), rawLabel: brandCapturedValue, normalizedKey: normalizeCatalogText(brandCapturedValue) } : null,
       status,
       ...commonMutation(input, 1),
     });

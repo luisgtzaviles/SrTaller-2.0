@@ -148,15 +148,15 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
 
   const captureCategory = (name: string): void => {
     setFormCategoryId(capturedSelection(name));
-    setNotice({ tone: 'warning', message: `Categoría “${name}” se guardará como valor capturado Por revisar al crear el artículo.` });
+    setNotice({ tone: 'warning', message: `Categoría “${name}” se guardará como valor capturado Por revisar al guardar el artículo.` });
   };
   const captureBrand = (name: string): void => {
     setFormBrandId(capturedSelection(name));
-    setNotice({ tone: 'warning', message: `Marca “${name}” se guardará como valor capturado Por revisar al crear el artículo.` });
+    setNotice({ tone: 'warning', message: `Marca “${name}” se guardará como valor capturado Por revisar al guardar el artículo.` });
   };
   const expandBrand = (name: string): void => {
     setFormBrandId(capturedSelection(name));
-    setNotice({ tone: 'warning', message: `Se reutilizará la marca “${name}” y se habilitará para ${kindLabels[kind]} al crear el artículo.` });
+    setNotice({ tone: 'warning', message: `Se reutilizará la marca “${name}” y se habilitará para ${kindLabels[kind]} al guardar el artículo.` });
   };
   const changeKind = (next: CatalogItemKind): void => {
     const categoryCompatible = activeCategories.find((value) => value.categoryId === formCategoryId)?.applicableKinds.includes(next) ?? false;
@@ -180,9 +180,8 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   };
   const saveIdentity = async (): Promise<void> => {
     if (!selected || !title.trim() || !formCategoryId) return;
-    if (captured(formCategoryId) || captured(formBrandId)) { setNotice({ tone: 'warning', message: 'Resuelve primero los valores Por revisar desde Configuración → Catálogos.' }); return; }
     setSaving(true);
-    try { const updated = await updateCatalogItem(selected.itemId, { title, description: description || null, categoryId: formCategoryId, brandId: formBrandId || null, status: formStatus, expectedVersion: selected.version, clientRequestId: nextRequestId() }, csrfToken); setSelected(updated); await commandDone('Datos del artículo actualizados.'); }
+    try { const categoryCapturedValue = captured(formCategoryId); const brandCapturedValue = captured(formBrandId); const updated = await updateCatalogItem(selected.itemId, { title, description: description || null, categoryId: categoryCapturedValue ? null : formCategoryId, categoryCapturedValue, brandId: brandCapturedValue ? null : formBrandId || null, brandCapturedValue, status: formStatus, expectedVersion: selected.version, clientRequestId: nextRequestId() }, csrfToken); setSelected(updated); await commandDone('Datos del artículo actualizados.'); }
     catch { setNotice({ tone: 'danger', message: 'No se guardó: relee el artículo si otra persona lo modificó.' }); }
     finally { setSaving(false); }
   };
@@ -224,8 +223,8 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
             {dialog === 'create' ? <Field id="catalog-kind" label="Tipo" required><Select id="catalog-kind" value={kind} onChange={(event) => changeKind(event.target.value as CatalogItemKind)}><option value="PART">Refacción</option><option value="PRODUCT">Producto</option><option value="SERVICE">Servicio</option><option value="SUPPLY">Insumo (no aparece en Lista)</option></Select></Field> : null}
             <Field id="catalog-title" label="Título" required fullWidth><Input id="catalog-title" value={title} maxLength={200} onChange={(event) => setTitle(event.target.value)} /></Field>
             <Field id="catalog-description" label="Descripción" fullWidth><Textarea id="catalog-description" value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} /></Field>
-            <Field id="catalog-category" label="Categoría" required hint="Si no existe, el texto se captura Por revisar; todavía no crea una categoría canónica."><CatalogReferenceCombobox key={`catalog-category-${kind}`} id="catalog-category" label="Categorías aplicables" emptyLabel="Buscar categoría…" value={formCategoryId} references={applicableCategories} canCreate={canManage && dialog === 'create'} onChange={setFormCategoryId} onCapture={captureCategory} /></Field>
-            <Field id="catalog-brand" label="Marca" hint="Opcional; una marca existente se reutiliza y puede habilitarse para este Tipo."><CatalogReferenceCombobox key={`catalog-brand-${kind}`} id="catalog-brand" label="Marcas aplicables" emptyLabel="Sin marca / buscar…" value={formBrandId} references={applicableBrands} expansionReferences={activeBrands.filter((reference) => !reference.applicableKinds.includes(kind))} expansionLabel={`Ya existe; se habilitará para ${kindLabels[kind]} al crear el artículo`} canCreate={canManage && dialog === 'create'} onChange={setFormBrandId} onCapture={captureBrand} onExpand={expandBrand} /></Field>
+            <Field id="catalog-category" label="Categoría" required hint="Si no existe, el texto se captura Por revisar; todavía no crea una categoría canónica."><CatalogReferenceCombobox key={`catalog-category-${kind}`} id="catalog-category" label="Categorías aplicables" emptyLabel="Buscar categoría…" value={formCategoryId} references={applicableCategories} canCreate={canManage} onChange={setFormCategoryId} onCapture={captureCategory} /></Field>
+            <Field id="catalog-brand" label="Marca" hint="Opcional; una marca existente se reutiliza y puede habilitarse para este Tipo."><CatalogReferenceCombobox key={`catalog-brand-${kind}`} id="catalog-brand" label="Marcas aplicables" emptyLabel="Sin marca / buscar…" value={formBrandId} references={applicableBrands} expansionReferences={activeBrands.filter((reference) => !reference.applicableKinds.includes(kind))} expansionLabel={`Ya existe; se habilitará para ${kindLabels[kind]} al guardar el artículo`} canCreate={canManage} onChange={setFormBrandId} onCapture={captureBrand} onExpand={expandBrand} /></Field>
             {dialog === 'manage' ? <Field id="catalog-status" label="Estado"><Select id="catalog-status" value={formStatus} onChange={(event) => setFormStatus(event.target.value as 'ACTIVE' | 'INACTIVE')}><option value="ACTIVE">Activo</option><option value="INACTIVE">Inactivo</option></Select></Field> : null}
             {dialog === 'create' ? <><Field id="catalog-sku" label="SKU" hint="Automático si lo dejas vacío."><Input id="catalog-sku" value={formSku} onChange={(event) => setFormSku(event.target.value)} autoComplete="off" /></Field><Field id="catalog-barcode" label="Código de barras" hint="Automático si lo dejas vacío."><Input id="catalog-barcode" value={formBarcode} onChange={(event) => setFormBarcode(event.target.value)} autoComplete="off" /></Field></> : null}
           </section>

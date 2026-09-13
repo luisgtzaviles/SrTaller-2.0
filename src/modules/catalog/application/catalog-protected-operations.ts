@@ -103,6 +103,12 @@ export class CatalogProtectedOperations {
   deleteBrand(evidence: ProtectedRequestEvidence, brandId: unknown, input: unknown) {
     return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.deleteBrand(mutationContext(contexts), brandId, input));
   }
+  mergeCategories(evidence: ProtectedRequestEvidence, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.mergeCategories(mutationContext(contexts), input));
+  }
+  mergeBrands(evidence: ProtectedRequestEvidence, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.mergeBrands(mutationContext(contexts), input));
+  }
   resolveCategory(evidence: ProtectedRequestEvidence, pendingCategoryValueId: unknown, input: unknown) {
     return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.resolveCategory(mutationContext(contexts), pendingCategoryValueId, input));
   }

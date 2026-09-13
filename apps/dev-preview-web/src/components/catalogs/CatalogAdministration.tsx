@@ -1,4 +1,4 @@
-import { BookOpen, LockKeyhole, Pencil, RotateCcw, Trash2 } from 'lucide-react';
+import { BookOpen, GitMerge, LockKeyhole, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 import { Button } from '../ui/controls.js';
@@ -165,6 +165,13 @@ export function CatalogFeedback({ error, success, successTitle = 'Catálogo actu
 
 export function CatalogTable({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
   return <div className={styles.tableShell}><table>{children}</table></div>;
+}
+
+export function CatalogMergeDialog({ open, title, description, busy, canConfirm, reassignmentCount, onClose, onConfirm, children }: Readonly<{
+  open: boolean; title: string; description: string; busy: boolean; canConfirm: boolean;
+  reassignmentCount: number; onClose(): void; onConfirm(): void; children: React.ReactNode;
+}>): React.JSX.Element {
+  return <Dialog open={open} title={title} description={description} onClose={() => !busy && onClose()} footer={<><Button disabled={busy} onClick={onClose}>Cancelar</Button><Button tone="primary" disabled={busy || !canConfirm} onClick={onConfirm}><GitMerge size={16} aria-hidden="true" />Fusionar</Button></>}><div className={styles.mergeDialogBody}>{children}<p className={styles.confirmCopy}>Se reasignarán {reassignmentCount} {reassignmentCount === 1 ? 'relación de artículo' : 'relaciones de artículos'}. Las identidades fuente quedarán retiradas y el evento de fusión conservará su trazabilidad.</p></div></Dialog>;
 }
 
 export function CatalogLoadingState({ label = 'Cargando catálogo…' }: Readonly<{ label?: string }>): React.JSX.Element {

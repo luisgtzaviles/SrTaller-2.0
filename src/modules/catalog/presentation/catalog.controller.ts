@@ -98,6 +98,16 @@ export class CatalogController {
     try { return await this.operations.deleteBrand(evidence(headers), brandId, body); }
     catch (error: unknown) { return translate(error); }
   }
+  @Post('categories/merge') @Header('Cache-Control', 'private, no-store')
+  async mergeCategories(@Body() body: unknown, @Headers() headers: RequestHeaders) {
+    try { return await this.operations.mergeCategories(evidence(headers), body); }
+    catch (error: unknown) { return translate(error); }
+  }
+  @Post('brands/merge') @Header('Cache-Control', 'private, no-store')
+  async mergeBrands(@Body() body: unknown, @Headers() headers: RequestHeaders) {
+    try { return await this.operations.mergeBrands(evidence(headers), body); }
+    catch (error: unknown) { return translate(error); }
+  }
   @Post('categories/pending/:pendingCategoryValueId/resolve') @Header('Cache-Control', 'private, no-store')
   async resolveCategory(@Param('pendingCategoryValueId') pendingCategoryValueId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
     try { return await this.operations.resolveCategory(evidence(headers), pendingCategoryValueId, body); }

@@ -88,6 +88,9 @@ export interface CatalogCategoryTable {
   readonly display_name: MutableColumn<string>;
   readonly normalized_name: MutableColumn<string>;
   readonly status: MutableColumn<CatalogLifecycle>;
+  readonly merged_into_id: MutableColumn<string | null>;
+  readonly merged_by_actor_id: MutableColumn<string | null>;
+  readonly merged_at: MutableColumn<Date | null>;
   readonly created_by_actor_id: ImmutableColumn<string | null>;
   readonly created_in_branch_id: ImmutableColumn<string | null>;
   readonly created_in_station_id: ImmutableColumn<string | null>;
@@ -103,6 +106,9 @@ export interface CatalogBrandTable {
   readonly display_name: MutableColumn<string>;
   readonly normalized_name: MutableColumn<string>;
   readonly status: MutableColumn<CatalogLifecycle>;
+  readonly merged_into_id: MutableColumn<string | null>;
+  readonly merged_by_actor_id: MutableColumn<string | null>;
+  readonly merged_at: MutableColumn<Date | null>;
   readonly created_by_actor_id: ImmutableColumn<string | null>;
   readonly created_in_branch_id: ImmutableColumn<string | null>;
   readonly created_in_station_id: ImmutableColumn<string | null>;
@@ -914,6 +920,28 @@ export interface CatalogReferenceDeletionEventTable {
   readonly occurred_at: ImmutableColumn<Date>;
 }
 
+export interface CatalogReferenceMergeEventTable {
+  readonly merge_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly reference_kind: ImmutableColumn<'CATEGORY' | 'BRAND'>;
+  readonly survivor_reference_id: ImmutableColumn<string>;
+  readonly source_reference_ids: ImmutableColumn<unknown>;
+  readonly previous_names: ImmutableColumn<unknown>;
+  readonly final_name: ImmutableColumn<string>;
+  readonly reassigned_item_count: ImmutableColumn<number>;
+  readonly reassigned_reconciliation_count: ImmutableColumn<number>;
+  readonly applicability_before: ImmutableColumn<unknown>;
+  readonly applicability_after: ImmutableColumn<unknown>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
 export interface RepairCatalogReferenceDeletionEventTable {
   readonly event_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -1206,6 +1234,7 @@ export interface DatabaseSchema {
   readonly catalog_commands: CatalogCommandTable;
   readonly catalog_audit_events: CatalogAuditEventTable;
   readonly catalog_reference_deletion_events: CatalogReferenceDeletionEventTable;
+  readonly catalog_reference_merge_events: CatalogReferenceMergeEventTable;
   readonly catalog_reference_identity_locks: CatalogReferenceIdentityLockTable;
   readonly customers: CustomerTable;
   readonly customer_contact_phones: CustomerContactPhoneTable;

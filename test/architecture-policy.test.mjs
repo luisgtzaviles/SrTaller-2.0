@@ -381,10 +381,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts',
     'src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts',
     'src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts',
+    'src/infrastructure/database/migrations/20260913140000_catalog_add_canonical_reference_merge.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'repairs', 'catalog'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [

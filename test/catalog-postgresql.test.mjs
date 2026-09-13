@@ -467,6 +467,177 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     assert.equal((await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).categories.find(({ categoryId }) => categoryId === concurrentCategory.categoryId)?.deletable, false);
     assert.equal((await admin.query('select count(*)::int as count from catalog_items where tenant_id = $1 and item_id = $2', [tenantA, concurrentItemId])).rows[0].count, 1);
 
+    const mergeCategoryA = await category(service, ctxA1, 'Pantallas merge', 'PRODUCT');
+    const mergeCategoryB = await category(service, ctxA1, 'Pantallas QA merge', 'PRODUCT');
+    const mergeItemA = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Merge producto A', categoryId: mergeCategoryA.categoryId, basePriceAmountMinor: 10100 });
+    const mergeItemB = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Merge producto B', categoryId: mergeCategoryB.categoryId, basePriceAmountMinor: 20200 });
+    const categoryMergeRequest = {
+      references: [
+        { referenceId: mergeCategoryA.categoryId, expectedVersion: mergeCategoryA.version },
+        { referenceId: mergeCategoryB.categoryId, expectedVersion: mergeCategoryB.version },
+      ],
+      survivorReferenceId: mergeCategoryA.categoryId,
+      finalName: 'Pantallas consolidadas',
+      clientRequestId: randomUUID(),
+    };
+    const categoryMerge = await service.mergeCategories(ctxA1, categoryMergeRequest);
+    assert.equal(categoryMerge.survivor.categoryId, mergeCategoryA.categoryId);
+    assert.equal(categoryMerge.survivor.name, 'Pantallas consolidadas');
+    assert.equal(categoryMerge.survivor.usageCount, 2);
+    assert.equal(categoryMerge.reassignedItemCount, 1);
+    assert.deepEqual(categoryMerge.sourceReferenceIds, [mergeCategoryB.categoryId]);
+    assert.deepEqual(await service.mergeCategories(ctxA1, categoryMergeRequest), categoryMerge);
+    const mergedCategoryReferences = await service.listReferences({ tenantId: tenantA, branchId: branchA1 });
+    assert.equal(mergedCategoryReferences.categories.some(({ categoryId }) => categoryId === mergeCategoryB.categoryId), false);
+    assert.equal(mergedCategoryReferences.categories.find(({ categoryId }) => categoryId === mergeCategoryA.categoryId)?.usageCount, 2);
+    assert.equal((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, mergeItemB.itemId)).category.categoryId, mergeCategoryA.categoryId);
+    const categorySourceState = (await admin.query('select status, merged_into_id from catalog_categories where tenant_id = $1 and category_id = $2', [tenantA, mergeCategoryB.categoryId])).rows[0];
+    assert.deepEqual(categorySourceState, { status: 'INACTIVE', merged_into_id: mergeCategoryA.categoryId });
+    assert.equal((await admin.query('select amount_minor::int amount_minor from catalog_base_price_revisions where tenant_id = $1 and item_id = $2', [tenantA, mergeItemB.itemId])).rows[0].amount_minor, 20200);
+
+    const incompatibleCategory = await category(service, ctxA1, 'Merge incompatible', 'SERVICE');
+    await assert.rejects(service.mergeCategories(ctxA1, {
+      references: [
+        { referenceId: mergeCategoryA.categoryId, expectedVersion: categoryMerge.version },
+        { referenceId: incompatibleCategory.categoryId, expectedVersion: incompatibleCategory.version },
+      ], survivorReferenceId: mergeCategoryA.categoryId, finalName: 'No permitido', clientRequestId: randomUUID(),
+    }), CatalogConflictError);
+    await assert.rejects(service.mergeCategories(ctxB1, {
+      references: [
+        { referenceId: mergeCategoryA.categoryId, expectedVersion: categoryMerge.version },
+        { referenceId: incompatibleCategory.categoryId, expectedVersion: incompatibleCategory.version },
+      ], survivorReferenceId: mergeCategoryA.categoryId, finalName: 'Cross tenant', clientRequestId: randomUUID(),
+    }), CatalogNotFoundError);
+    const collidingCategory = await category(service, ctxA1, 'Nombre ocupado merge', 'PRODUCT');
+    const otherMergeCategory = await category(service, ctxA1, 'Otro merge', 'PRODUCT');
+    await assert.rejects(service.mergeCategories(ctxA1, {
+      references: [
+        { referenceId: mergeCategoryA.categoryId, expectedVersion: categoryMerge.version },
+        { referenceId: otherMergeCategory.categoryId, expectedVersion: otherMergeCategory.version },
+      ], survivorReferenceId: mergeCategoryA.categoryId, finalName: collidingCategory.name, clientRequestId: randomUUID(),
+    }), CatalogReferenceAlreadyExistsError);
+
+    const mergeBrandA = await brand(service, ctxA1, 'Apple merge QA', ['PART']);
+    const mergeBrandB = await brand(service, ctxA1, 'Apple merge final', ['PRODUCT', 'SERVICE']);
+    const mergeBrandPartItem = await item(service, ctxA1, { title: 'Brand merge part', categoryId: categoryA.categoryId, brandId: mergeBrandA.brandId, basePriceAmountMinor: 30300 });
+    const mergeBrandProductItem = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Brand merge product', categoryId: productCategory.categoryId, brandId: mergeBrandB.brandId, basePriceAmountMinor: 40400 });
+    const brandMerge = await service.mergeBrands(ctxA1, {
+      references: [
+        { referenceId: mergeBrandA.brandId, expectedVersion: mergeBrandA.version },
+        { referenceId: mergeBrandB.brandId, expectedVersion: mergeBrandB.version },
+      ], survivorReferenceId: mergeBrandB.brandId, finalName: 'Apple unificada', clientRequestId: randomUUID(),
+    });
+    assert.deepEqual(brandMerge.applicabilityAfter, ['PART', 'PRODUCT', 'SERVICE']);
+    assert.equal(brandMerge.survivor.usageCount, 2);
+    assert.equal((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, mergeBrandPartItem.itemId)).brand.brandId, mergeBrandB.brandId);
+    assert.equal((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, mergeBrandProductItem.itemId)).brand.brandId, mergeBrandB.brandId);
+
+    const inlineEditItem = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Edición inline pendiente', categoryId: productCategory.categoryId, brandId: brandA.brandId, basePriceAmountMinor: 50500 });
+    const editedPending = await service.updateItem(ctxA1, inlineEditItem.itemId, {
+      title: inlineEditItem.title, description: inlineEditItem.description,
+      categoryId: null, categoryCapturedValue: 'Categoría editada QA',
+      brandId: null, brandCapturedValue: 'Marca editada QA', status: 'ACTIVE',
+      expectedVersion: inlineEditItem.version, clientRequestId: randomUUID(),
+    });
+    assert.equal(editedPending.category.reconciliationStatus, 'PENDING');
+    assert.equal(editedPending.brand.reconciliationStatus, 'PENDING');
+    const editPendingReferences = await service.listReferences({ tenantId: tenantA, branchId: branchA1 });
+    const editedPendingCategory = editPendingReferences.pendingCategories.find(({ rawLabel }) => rawLabel === 'Categoría editada QA');
+    const editedPendingBrand = editPendingReferences.pendingBrands.find(({ rawLabel }) => rawLabel === 'Marca editada QA');
+    assert.equal(editedPendingCategory.usageCount, 1);
+    assert.equal(editedPendingBrand.usageCount, 1);
+    assert.equal(editedPendingCategory.capturedBy, 'Owner QA');
+    assert.ok(new Date(editedPendingCategory.lastSeenAt) >= new Date(editedPendingCategory.firstSeenAt));
+
+    const exactEditItem = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Edición exacta', categoryId: productCategory.categoryId, brandId: null, basePriceAmountMinor: 60600 });
+    const exactEdited = await service.updateItem(ctxA1, exactEditItem.itemId, {
+      title: exactEditItem.title, description: null, categoryId: null, categoryCapturedValue: ' FÚNDAS ',
+      brandId: null, brandCapturedValue: ' APPLE ', status: 'ACTIVE', expectedVersion: exactEditItem.version, clientRequestId: randomUUID(),
+    });
+    assert.equal(exactEdited.category.categoryId, productCategory.categoryId);
+    assert.equal(exactEdited.category.pendingCategoryValueId, null);
+    assert.equal(exactEdited.brand.brandId, brandA.brandId);
+    const editExpandedBrand = await brand(service, ctxA1, 'Brand edit expansion', ['SERVICE']);
+    const expansionEditItem = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Edit expansion', categoryId: productCategory.categoryId, basePriceAmountMinor: 70700 });
+    const expansionEdited = await service.updateItem(ctxA1, expansionEditItem.itemId, {
+      title: expansionEditItem.title, description: null, categoryId: productCategory.categoryId,
+      brandId: null, brandCapturedValue: ' brand edit expansion ', status: 'ACTIVE', expectedVersion: expansionEditItem.version, clientRequestId: randomUUID(),
+    });
+    assert.equal(expansionEdited.brand.brandId, editExpandedBrand.brandId);
+    assert.equal((await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).brands.find(({ brandId }) => brandId === editExpandedBrand.brandId)?.applicableKinds.includes('PRODUCT'), true);
+
+    const rollbackCategoryA = await category(service, ctxA1, 'Rollback merge A', 'PRODUCT');
+    const rollbackCategoryB = await category(service, ctxA1, 'Rollback merge B', 'PRODUCT');
+    const deniedContext = Object.freeze({ ...ctxA1, commitGuards: Object.freeze([{ async confirmCurrent() { return false; }, async confirmTemporalCurrent() { return true; } }]) });
+    await assert.rejects(service.mergeCategories(deniedContext, {
+      references: [{ referenceId: rollbackCategoryA.categoryId, expectedVersion: 1 }, { referenceId: rollbackCategoryB.categoryId, expectedVersion: 1 }],
+      survivorReferenceId: rollbackCategoryA.categoryId, finalName: 'No commit', clientRequestId: randomUUID(),
+    }), (error) => error?.name === 'CatalogAuthorizationChangedError');
+    assert.equal((await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).categories.filter(({ categoryId }) => [rollbackCategoryA.categoryId, rollbackCategoryB.categoryId].includes(categoryId)).length, 2);
+
+    const concurrentMergeA = await category(service, ctxA1, 'Concurrent merge A', 'PRODUCT');
+    const concurrentMergeB = await category(service, ctxA1, 'Concurrent merge B', 'PRODUCT');
+    const concurrentMergeC = await category(service, ctxA1, 'Concurrent merge C', 'PRODUCT');
+    const concurrentMerges = await Promise.allSettled([
+      service.mergeCategories(ctxA1, { references: [{ referenceId: concurrentMergeA.categoryId, expectedVersion: 1 }, { referenceId: concurrentMergeB.categoryId, expectedVersion: 1 }], survivorReferenceId: concurrentMergeA.categoryId, finalName: 'Concurrent survivor', clientRequestId: randomUUID() }),
+      peerService.mergeCategories(ctxA1, { references: [{ referenceId: concurrentMergeA.categoryId, expectedVersion: 1 }, { referenceId: concurrentMergeC.categoryId, expectedVersion: 1 }], survivorReferenceId: concurrentMergeA.categoryId, finalName: 'Concurrent survivor', clientRequestId: randomUUID() }),
+    ]);
+    assert.equal(concurrentMerges.filter(({ status }) => status === 'fulfilled').length, 1);
+    assert.equal(concurrentMerges.filter(({ status }) => status === 'rejected').length, 1);
+
+    const raceCreateSurvivor = await category(service, ctxA1, 'Race create survivor', 'PRODUCT');
+    const raceCreateSource = await category(service, ctxA1, 'Race create source', 'PRODUCT');
+    const createMergeRace = await Promise.allSettled([
+      service.mergeCategories(ctxA1, { references: [{ referenceId: raceCreateSurvivor.categoryId, expectedVersion: 1 }, { referenceId: raceCreateSource.categoryId, expectedVersion: 1 }], survivorReferenceId: raceCreateSurvivor.categoryId, finalName: 'Race create final', clientRequestId: randomUUID() }),
+      item(peerService, ctxA1, { kind: 'PRODUCT', title: 'Concurrent create during merge', categoryId: raceCreateSource.categoryId, basePriceAmountMinor: 80800 }),
+    ]);
+    assert.equal(createMergeRace.some(({ status }) => status === 'fulfilled'), true);
+    const raceCreateState = (await admin.query('select merged_into_id from catalog_categories where tenant_id=$1 and category_id=$2', [tenantA, raceCreateSource.categoryId])).rows[0];
+    const raceCreateUsage = (await admin.query('select count(*)::int count from catalog_items where tenant_id=$1 and category_id=$2', [tenantA, raceCreateSource.categoryId])).rows[0].count;
+    assert.equal(raceCreateState.merged_into_id === null ? raceCreateUsage <= 1 : raceCreateUsage === 0, true, JSON.stringify({ raceCreateState, raceCreateUsage, outcomes: createMergeRace.map(({ status, reason }) => ({ status, reason: reason?.name })) }));
+
+    const raceEditSurvivor = await category(service, ctxA1, 'Race edit survivor', 'PRODUCT');
+    const raceEditSource = await category(service, ctxA1, 'Race edit source', 'PRODUCT');
+    const raceEditItem = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Concurrent edit during merge', categoryId: raceEditSource.categoryId, basePriceAmountMinor: 90900 });
+    const editMergeRace = await Promise.allSettled([
+      service.mergeCategories(ctxA1, { references: [{ referenceId: raceEditSurvivor.categoryId, expectedVersion: 1 }, { referenceId: raceEditSource.categoryId, expectedVersion: 1 }], survivorReferenceId: raceEditSurvivor.categoryId, finalName: 'Race edit final', clientRequestId: randomUUID() }),
+      peerService.updateItem(ctxA1, raceEditItem.itemId, { title: raceEditItem.title, description: null, categoryId: productCategory.categoryId, brandId: null, status: 'ACTIVE', expectedVersion: raceEditItem.version, clientRequestId: randomUUID() }),
+    ]);
+    assert.equal(editMergeRace.some(({ status }) => status === 'fulfilled'), true);
+    assert.notEqual((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, raceEditItem.itemId)).category.categoryId, raceEditSource.categoryId);
+
+    const raceDeleteSurvivor = await category(service, ctxA1, 'Race delete survivor', 'PRODUCT');
+    const raceDeleteSource = await category(service, ctxA1, 'Race delete source', 'PRODUCT');
+    const deleteMergeRace = await Promise.allSettled([
+      service.mergeCategories(ctxA1, { references: [{ referenceId: raceDeleteSurvivor.categoryId, expectedVersion: 1 }, { referenceId: raceDeleteSource.categoryId, expectedVersion: 1 }], survivorReferenceId: raceDeleteSurvivor.categoryId, finalName: 'Race delete final', clientRequestId: randomUUID() }),
+      peerService.deleteCategory(ctxA1, raceDeleteSource.categoryId, { expectedVersion: 1, clientRequestId: randomUUID() }),
+    ]);
+    assert.equal(deleteMergeRace.filter(({ status }) => status === 'fulfilled').length, 1);
+    const raceDeleteSourceRows = (await admin.query('select count(*)::int count from catalog_categories where tenant_id=$1 and category_id=$2', [tenantA, raceDeleteSource.categoryId])).rows[0].count;
+    const raceDeleteSourceVisible = (await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).categories.some(({ categoryId }) => categoryId === raceDeleteSource.categoryId);
+    assert.equal(raceDeleteSourceRows === 0 || !raceDeleteSourceVisible, true);
+
+    const raceReconcileSurvivor = await category(service, ctxA1, 'Race reconcile survivor', 'PRODUCT');
+    const raceReconcileSource = await category(service, ctxA1, 'Race reconcile source', 'PRODUCT');
+    const racePendingItem = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Concurrent reconciliation during merge', categoryId: null, categoryCapturedValue: 'Race reconciliation pending', basePriceAmountMinor: 100100 });
+    const racePending = (await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).pendingCategories.find(({ rawLabel }) => rawLabel === 'Race reconciliation pending');
+    const reconcileMergeRace = await Promise.allSettled([
+      service.mergeCategories(ctxA1, { references: [{ referenceId: raceReconcileSurvivor.categoryId, expectedVersion: 1 }, { referenceId: raceReconcileSource.categoryId, expectedVersion: 1 }], survivorReferenceId: raceReconcileSurvivor.categoryId, finalName: 'Race reconcile final', clientRequestId: randomUUID() }),
+      peerService.resolveCategory(ctxA1, racePending.pendingCategoryValueId, { canonicalCategoryId: raceReconcileSource.categoryId, expectedVersion: racePending.version, clientRequestId: randomUUID() }),
+    ]);
+    assert.equal(reconcileMergeRace.some(({ status }) => status === 'fulfilled'), true);
+    const reconciledRaceItem = await service.getItem({ tenantId: tenantA, branchId: branchA1 }, racePendingItem.itemId);
+    const raceReconcileSourceState = (await admin.query('select merged_into_id from catalog_categories where tenant_id=$1 and category_id=$2', [tenantA, raceReconcileSource.categoryId])).rows[0];
+    if (raceReconcileSourceState.merged_into_id !== null) assert.notEqual(reconciledRaceItem.category.categoryId, raceReconcileSource.categoryId);
+    const racePendingState = (await admin.query('select resolution_status, canonical_category_id from catalog_category_pending_values where tenant_id=$1 and pending_category_value_id=$2', [tenantA, racePending.pendingCategoryValueId])).rows[0];
+    assert.equal(raceReconcileSourceState.merged_into_id === null || racePendingState.canonical_category_id === null || racePendingState.canonical_category_id === raceReconcileSurvivor.categoryId, true);
+
+    const mergeEvidence = await admin.query('select reference_kind, survivor_reference_id, source_reference_ids, previous_names, reassigned_item_count, applicability_after, actor_user_id, correlation_id from catalog_reference_merge_events where tenant_id = $1 order by occurred_at', [tenantA]);
+    assert.equal(mergeEvidence.rows.some(({ reference_kind }) => reference_kind === 'CATEGORY'), true);
+    assert.equal(mergeEvidence.rows.some(({ reference_kind, applicability_after }) => reference_kind === 'BRAND' && applicability_after.values.includes('PART') && applicability_after.values.includes('PRODUCT')), true);
+    assert.equal(mergeEvidence.rows.every(({ actor_user_id, correlation_id }) => actor_user_id === actorUserId && typeof correlation_id === 'string'), true);
+    await assert.rejects(admin.query("update catalog_reference_merge_events set final_name = 'mutated' where tenant_id = $1", [tenantA]), (error) => error?.code === '23514');
+
     const deleteEvidence = await admin.query(`select reference_kind, result, rejection_reason from catalog_reference_deletion_events where tenant_id = $1 order by occurred_at, event_id`, [tenantA]);
     assert.equal(deleteEvidence.rows.some(({ reference_kind, result }) => reference_kind === 'CATEGORY' && result === 'succeeded'), true);
     assert.equal(deleteEvidence.rows.some(({ reference_kind, result, rejection_reason }) => reference_kind === 'BRAND' && result === 'rejected' && rejection_reason === 'reference_in_use'), true);

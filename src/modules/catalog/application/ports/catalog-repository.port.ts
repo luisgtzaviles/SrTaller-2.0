@@ -100,6 +100,18 @@ export type CatalogReferenceDeletionRecord = Readonly<{
   referenceId: string; kind: 'category' | 'brand'; previousLabel: string;
   version: number; deletedAt: string;
 }>;
+export type MergeCatalogReferenceInput = Readonly<{
+  references: readonly Readonly<{ referenceId: string; expectedVersion: number }>[];
+  survivorReferenceId: string; finalName: string; finalNormalizedName: string;
+  clientRequestId: string; correlationId: string; occurredAt: Date;
+}>;
+export type CatalogReferenceMergeRecord = Readonly<{
+  kind: 'category' | 'brand'; survivor: CatalogCategoryRecord | CatalogBrandRecord;
+  sourceReferenceIds: readonly string[]; previousNames: readonly Readonly<{ referenceId: string; name: string }>[];
+  reassignedItemCount: number; reassignedReconciliationCount: number;
+  applicabilityBefore: readonly Readonly<{ referenceId: string; applicableKinds: readonly CatalogItemKind[] }>[];
+  applicabilityAfter: readonly CatalogItemKind[]; version: number; mergedAt: string;
+}>;
 export type CapturedCatalogReferenceInput = Readonly<{
   pendingReferenceId: string; rawLabel: string; normalizedKey: string;
 }>;
@@ -115,7 +127,10 @@ export type CreateCatalogItemInput = Readonly<{
 }>;
 export type UpdateCatalogItemInput = Readonly<{
   itemId: string; title: string; normalizedTitle: string; description: string | null;
-  categoryId: string; brandId: string | null; status: CatalogLifecycle;
+  categoryId: string | null; brandId: string | null;
+  capturedCategory: CapturedCatalogReferenceInput | null;
+  capturedBrand: CapturedCatalogReferenceInput | null;
+  status: CatalogLifecycle;
   expectedVersion: number; clientRequestId: string; correlationId: string; occurredAt: Date;
 }>;
 export type ChangeCatalogMoneyInput = Readonly<{
@@ -141,6 +156,8 @@ export interface CatalogRepositoryPort {
   updateBrand(context: CatalogMutationContext, input: UpdateCatalogReferenceInput): Promise<CatalogBrandRecord>;
   deleteCategory(context: CatalogMutationContext, input: DeleteCatalogReferenceInput): Promise<CatalogReferenceDeletionRecord>;
   deleteBrand(context: CatalogMutationContext, input: DeleteCatalogReferenceInput): Promise<CatalogReferenceDeletionRecord>;
+  mergeCategories(context: CatalogMutationContext, input: MergeCatalogReferenceInput): Promise<CatalogReferenceMergeRecord>;
+  mergeBrands(context: CatalogMutationContext, input: MergeCatalogReferenceInput): Promise<CatalogReferenceMergeRecord>;
   resolveCategory(context: CatalogMutationContext, input: ResolveCatalogReferenceInput): Promise<CatalogPendingCategoryRecord>;
   resolveBrand(context: CatalogMutationContext, input: ResolveCatalogReferenceInput): Promise<CatalogPendingBrandRecord>;
   createItem(context: CatalogMutationContext, input: CreateCatalogItemInput): Promise<CatalogItemRecord>;

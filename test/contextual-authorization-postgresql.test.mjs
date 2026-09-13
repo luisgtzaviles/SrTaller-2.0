@@ -85,7 +85,7 @@ const migrationRoot = fileURLToPath(
 );
 
 const tables = [
-  'catalog_reference_deletion_events', 'repair_catalog_reference_deletion_events',
+  'catalog_reference_merge_events', 'catalog_reference_deletion_events', 'repair_catalog_reference_deletion_events',
   'catalog_audit_events', 'catalog_commands', 'catalog_reference_cost_revisions',
   'catalog_branch_price_revisions', 'catalog_base_price_revisions',
   'catalog_barcode_sequences', 'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
