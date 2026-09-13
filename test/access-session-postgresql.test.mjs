@@ -57,6 +57,9 @@ const allTables = [
   'catalog_sku_sequences',
   'catalog_item_identifiers',
   'catalog_items',
+  'catalog_brand_pending_kind_applicability',
+  'catalog_brand_pending_values',
+  'catalog_category_pending_values',
   'catalog_brand_kind_applicability',
   'catalog_category_kind_applicability',
   'catalog_brands',
@@ -1211,6 +1214,14 @@ test('PostgreSQL 18.4 enforces concurrent Operational Sessions, exact lifecycle,
       [tenantA, stationA],
     )).rows[0].count;
     assert.ok(activeBeforeRollback >= 2);
+    const catalogMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      catalogMigration?.name,
+      '20260912210000_catalog_unify_pending_reference_reconciliation',
+    );
+    await runner.migrateDown(authorization(catalogMigration));
     const latestMigration = [...(await runner.getMigrationStatus()).migrations]
       .reverse()
       .find(({ state }) => state === 'applied');
