@@ -83,6 +83,14 @@ modos, duplicados, compatibilidad, reload, auditoría y Tenant isolation. Chrome
 local queda preparado con colas sintéticas comparables de Repairs/Tipo,
 Catalog/Category y Catalog/Brand. Aceptación Owner sigue pendiente.
 
+El candidato funcional `4ef0fc9` pasó `verify:full` en sus 13 etapas: suite
+base sin fallas, PostgreSQL compuesto 17/17, PBI-039 material 2/2, PBI-040 con
+58 migraciones y búsqueda sobre 10,000 artículos en p95 6.82 ms, runtime
+Preview-like, smokes compilados y cleanup PASS. El gate también confirmó que
+las suites PostgreSQL owner-scoped aíslan las tres tablas nuevas y que el
+rollback protegido de PBI-043 continúa probándose después de retirar de forma
+gobernada la migración posterior de Catalog.
+
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session

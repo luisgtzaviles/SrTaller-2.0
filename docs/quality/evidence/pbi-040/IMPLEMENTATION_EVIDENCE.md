@@ -396,8 +396,20 @@ Evidencia material ejecutada sobre el candidato:
   huérfanas confirmadas en ambas colas;
 - reload y sesión Owner preservados; tres pestañas quedaron preparadas en
   Category pendiente, Brand pendiente y Repairs/Tipo pendiente.
+- `verify:full` final sobre el candidato funcional `4ef0fc9`: `13/13` etapas
+  PASS, PostgreSQL compuesto `17/17`, PBI-039 `2/2`, PBI-040 con 58 migraciones
+  y p95 `6.82 ms` sobre 10,000 artículos, smokes y cleanup PASS; fingerprint
+  de candidato `d5b883e750e5953812ce9ed46bfd00bf975798dad33f7c77d8c002157e51aed6`.
+- El primer intento del gate detectó una suposición obsoleta de aislamiento en
+  siete suites owner-scoped: sus teardowns no incluían las tres tablas nuevas y
+  el contrato Access asumía que PBI-043 seguía siendo la última migración. Se
+  corrigió el inventario de limpieza y el test ahora retira primero la migración
+  posterior de Catalog antes de comprobar, sin rebajar assertions, que el
+  rollback concurrente de Access permanece protegido.
 
 Los commits locales lógicos son `72c0921` (modelo, persistencia, UI, fixtures y
-contratos), `b20dea9` (rotulado de uso por bounded context) y `1bd6c81`
-(limpieza de feedback al cancelar). No hubo push, PR, merge ni deploy. Esta
-evidencia no constituye Owner Acceptance.
+contratos), `b20dea9` (rotulado de uso por bounded context), `1bd6c81`
+(limpieza de feedback al cancelar), `8b21cb6` (evidencia), `bc9fcab` (contrato
+de rotulado contextual) y `4ef0fc9` (aislamiento PostgreSQL y rollback
+encadenado). No hubo push, PR, merge ni deploy. Esta evidencia no constituye
+Owner Acceptance.
