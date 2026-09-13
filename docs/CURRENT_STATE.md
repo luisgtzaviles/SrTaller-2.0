@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-043 `Done`; PBI-040 reconciliado con la nueva baseline y listo
-  para reanudar Owner Review local.
+- **Estado:** PBI-043 `Done`; PBI-040 mantiene `Owner Review` y su iteración de
+  reconciliación unificada está preparada localmente para revisión humana.
 - **Baseline Git verificada:** `main == origin/main` en
   `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
   PBI-040.
@@ -74,6 +74,15 @@ Repair Detail parity y la prueba Chrome de dos perfiles concurrentes también
 pasaron. La sesión personal Owner quedó preparada en `/listas/precios` con los
 cuatro fixtures sintéticos previos. Esto no constituye Owner Acceptance.
 
+La iteración Owner posterior eliminó el segundo workflow de referencias de
+Price List. Category y Brand ahora separan captura pendiente de canon y usan la
+misma intención de Repairs: `Resolver → Asociar existente | Crear canónica`,
+con ownership, IDs, capabilities y persistencia separados por bounded context.
+La migración 58 preservó el WIP previo; las pruebas materiales cubren ambos
+modos, duplicados, compatibilidad, reload, auditoría y Tenant isolation. Chrome
+local queda preparado con colas sintéticas comparables de Repairs/Tipo,
+Catalog/Category y Catalog/Brand. Aceptación Owner sigue pendiente.
+
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
@@ -104,12 +113,13 @@ cuatro fixtures sintéticos previos. Esto no constituye Owner Acceptance.
 | Sprint | SPRINT-03 — Active |
 | Current PBI | PBI-040 — Owner Review |
 | WIP | 1/1 |
-| PBI-040 | reconciliado localmente; aceptación pendiente |
+| PBI-040 | reconciliación unificada lista para Owner Review; aceptación pendiente |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Preview | `aab27d9` PASS |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Continuar Owner Review local de PBI-040 desde la rama reconciliada. No inferir
-Owner Acceptance, push, PR, merge, deploy ni inicio de PBI-041/PBI-042.
+Revisar lado a lado las tres colas pendientes preparadas en Chrome y decidir la
+aceptación Owner de PBI-040. No inferir aceptación, push, PR, merge, deploy ni
+inicio de PBI-041/PBI-042.

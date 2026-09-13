@@ -357,3 +357,47 @@ pendientes.
 - PBI-042 no fue iniciado: no hay imagen, Files o R2.
 - No se construyeron Inventory, Caja, Repair Concepts, compras, pedidos,
   solicitudes, reportes, impuestos, descuentos o multi-currency/FX.
+
+## Iteración Owner — reconciliación unificada
+
+El workflow provisional `PENDING dentro del canon → Aprobar/Fusionar` fue
+retirado. La migración productiva número 58 separa
+`catalog_category_pending_values` y `catalog_brand_pending_values` de las
+tablas canónicas, conserva el WIP local anterior y agrega aplicabilidad
+multi-Tipo para Brand pendiente. Un `CatalogItem` puede conservar la referencia
+capturada mientras está pendiente; al resolver adopta la identidad canónica sin
+perder el vínculo histórico.
+
+La superficie administrativa reutiliza las primitives de Repairs para Canónicas
+/ Por revisar, tabla, contador, lifecycle, feedback y diálogo. `Resolver`
+presenta sólo Asociar existente o Crear canónica. Las candidatas existentes
+deben estar activas y cubrir todos los Tipos observados; al crear, los Tipos ya
+usados son obligatorios. Las referencias pendientes nunca aparecen como filtros
+normales de `/listas/precios`.
+
+El seed local gobernado y reversible materializa:
+
+- Repairs: `Smart Watch`, Tipo pendiente, un uso y primera/última observación;
+- Catalog Category: `Fundas premium`, Producto, un artículo;
+- Catalog Brand: `Aple`, Refacción + Producto, dos artículos;
+- tres artículos deterministas con SKU/barcode, precios base, costo protegido y
+  un override de Branch. El WIP local anterior también se migró como pendientes
+  trazables, sin presentarlo como dato Owner real.
+
+Evidencia material ejecutada sobre el candidato:
+
+- suite base: 836 pruebas, 816 PASS, 20 skips PostgreSQL gobernados, 0 fallas;
+- PBI-040 PostgreSQL: PASS con 58 migraciones, ambos modos de resolución para
+  Category/Brand, duplicado y near-duplicate, reload, usos, compatibilidad,
+  Tenant isolation y p95 `7.51 ms` / presupuesto `750 ms`;
+- Chrome real: 1280, 768 y 640 sin overflow; Light/Dark; foco atrapado,
+  navegación por Tab/Arrow y cancelación por Escape;
+- cancelación de Nuevo artículo después de capturar Category y Brand: cero filas
+  huérfanas confirmadas en ambas colas;
+- reload y sesión Owner preservados; tres pestañas quedaron preparadas en
+  Category pendiente, Brand pendiente y Repairs/Tipo pendiente.
+
+Los commits locales lógicos son `72c0921` (modelo, persistencia, UI, fixtures y
+contratos), `b20dea9` (rotulado de uso por bounded context) y `1bd6c81`
+(limpieza de feedback al cancelar). No hubo push, PR, merge ni deploy. Esta
+evidencia no constituye Owner Acceptance.

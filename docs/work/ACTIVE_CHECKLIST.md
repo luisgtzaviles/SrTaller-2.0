@@ -3,21 +3,21 @@
 Milestone / Functional Goal: PBI-040 Owner iteration — unified catalog reconciliation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Review
-Status: In progress; Owner Acceptance remains pending
+Status: Ready for Owner Review; Owner Acceptance remains pending
 WIP: 1/1
-Progress: 3 / 5 implementation blocks complete
-Current: Materialize governed local fixtures and verify the migrated runtime
-Next: Complete responsive/keyboard/Light-Dark QA and prepare Chrome
+Progress: 5 / 5 implementation blocks complete
+Current: Owner can compare the three pending-reference surfaces in Chrome
+Next: Owner review and explicit acceptance decision
 Blocked: None
-Last updated: 2026-09-12 MST
+Last updated: 2026-09-13 MST
 
 ## Unified catalog reconciliation
 
 - [x] Reconcile current authority, branch state, Repairs pattern and Price List divergence
 - [x] Implement captured Category/Brand references, canonical resolution and traceability
 - [x] Reuse the Repairs canonical/pending administration pattern in Price List
-- [~] Add governed fixtures and validate both resolution modes and regressions
-- [ ] Run governed gates and leave Chrome prepared for Owner Review
+- [x] Add governed fixtures and validate both resolution modes and regressions
+- [x] Run governed gates and leave Chrome prepared for Owner Review
 
 ## Required outcome
 
