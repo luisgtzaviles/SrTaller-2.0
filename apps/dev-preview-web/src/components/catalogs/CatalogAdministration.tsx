@@ -190,12 +190,12 @@ export function CatalogStatusBadge({ status }: Readonly<{ status: 'active' | 'in
   return <span className={status === 'active' ? styles.activeBadge : styles.inactiveBadge}>{status === 'active' ? 'Activo' : 'Inactivo'}</span>;
 }
 
-export function CatalogUsage({ count }: Readonly<{ count: number }>): React.JSX.Element {
-  return <>{count} {count === 1 ? 'reparación' : 'reparaciones'}</>;
+export function CatalogUsage({ count, singular = 'reparación', plural = 'reparaciones' }: Readonly<{ count: number; singular?: string; plural?: string }>): React.JSX.Element {
+  return <>{count} {count === 1 ? singular : plural}</>;
 }
 
-export function CatalogCanonicalUsageHeader(): React.JSX.Element {
-  return <abbr title="Reparaciones vinculadas por identidad canónica. No cuenta coincidencias del texto histórico.">Uso canónico</abbr>;
+export function CatalogCanonicalUsageHeader({ description = 'Reparaciones vinculadas por identidad canónica. No cuenta coincidencias del texto histórico.' }: Readonly<{ description?: string }>): React.JSX.Element {
+  return <abbr title={description}>Uso canónico</abbr>;
 }
 
 export function formatCatalogResultCount(count: number): string {
