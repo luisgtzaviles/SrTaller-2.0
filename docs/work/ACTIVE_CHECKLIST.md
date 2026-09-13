@@ -1,34 +1,34 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-040 Owner iteration — catalog Type filter + unified safe delete
+Milestone / Functional Goal: PBI-040 Owner iteration — prevent duplicate pending references
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Review
-Status: Ready for Owner Review; Owner Acceptance remains pending
+Status: Verification in progress; Owner Acceptance remains pending
 WIP: 1/1
-Progress: 5 / 5 implementation blocks complete
-Current: Owner Review of Type filtering and safe-delete lifecycle
-Next: Owner decides acceptance; no later gate is inferred
+Progress: 4 / 5 implementation blocks complete
+Current: Run final governed gates and prepare Chrome
+Next: Reconcile final evidence and stop at Owner Review
 Blocked: None
 Last updated: 2026-09-13 MST
 
-## Catalog governance iteration
+## Duplicate reference prevention iteration
 
-- [x] Audit authorities, real references and current lifecycle contracts by catalog
-- [x] Add the governed Type filter to canonical and pending Price List references
-- [x] Implement shared lifecycle actions and owner-specific transactional safe delete
-- [x] Add synthetic fixtures and material/concurrent regression coverage
-- [x] Run governed gates and leave Chrome prepared for Owner Review
+- [x] Audit normalization, autocomplete and pending persistence authority
+- [x] Reuse exact compatible canonical Category/Brand before pending persistence
+- [x] Prevent duplicate pending/canonical races and remediate existing synthetic duplicates
+- [x] Add material regression, isolation, reload and UX coverage
+- [~] Run governed gates and leave Chrome prepared for Owner Review
 
 ## Required outcome
 
-- Category and Brand administration derive Type filtering from the same
-  applicability used by Nuevo artículo, including pending references.
-- A canonical reference can be deleted only after the owner revalidates that no
-  business or structural reference requires integrity; concurrent use wins.
-- Used active references deactivate, used inactive references reactivate, and
-  pending captures continue to resolve through reconciliation.
-- Repairs and Price List keep separate bounded-context ownership while sharing
-  lifecycle derivation, confirmation, conflict feedback and visual primitives.
+- Exact normalized Category input reuses the Tenant + Type canonical identity
+  and never creates a duplicate pending capture.
+- Exact normalized Brand input reuses the Tenant-wide canonical identity and
+  follows the governed applicability contract without creating another identity.
+- Pending creation remains a server-side authority under concurrency; historical
+  synthetic duplicates reconcile to the existing canon without losing capture
+  provenance.
+- Near matches remain human reconciliation; no fuzzy matching is introduced.
 
 ## Boundaries
 

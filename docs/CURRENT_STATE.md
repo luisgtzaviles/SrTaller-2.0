@@ -103,6 +103,15 @@ PASS: 837 pruebas base sin fallas, PostgreSQL compuesto 17/17, PBI-039 2/2,
 PBI-040 1/1 con 60 migraciones y p95 7.18 ms, runtime Preview-like, smokes y
 cleanup PASS. Esto no constituye Owner Acceptance.
 
+La siguiente corrección de Owner evita que una captura exacta llegue tarde a
+Reconciliación. Category usa identidad Tenant+Tipo+nombre normalizado y Brand
+Tenant+nombre normalizado; el alta busca canon antes de pending, reutiliza la
+referencia activa y amplía de forma auditada la aplicabilidad de Brand. Locks
+Tenant-scoped y uniques cubren writers concurrentes. El duplicado sintético
+histórico `Pantallas`/Refacción se asoció mediante el flujo gobernado al canon
+existente, conservando raw label, uso, actor y tiempos. Owner Acceptance sigue
+pendiente.
+
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
@@ -133,13 +142,14 @@ cleanup PASS. Esto no constituye Owner Acceptance.
 | Sprint | SPRINT-03 — Active |
 | Current PBI | PBI-040 — Owner Review |
 | WIP | 1/1 |
-| PBI-040 | Type filter + safe delete listos para Owner Review; aceptación pendiente |
+| PBI-040 | prevención de referencias duplicadas preparada localmente para Owner Review; aceptación pendiente |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Preview | `aab27d9` PASS |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Revisar en Chrome el filtro por Tipo y las acciones Eliminar/Desactivar/Reactivar
-de los catálogos gobernados. No inferir aceptación, push, PR, merge, deploy ni
+Revisar en Chrome que Nuevo artículo reutiliza coincidencias exactas, conserva
+near matches y propone ampliar Brand sin crear otra identidad; revisar también
+la reconciliación histórica. No inferir aceptación, push, PR, merge, deploy ni
 inicio de PBI-041/PBI-042.
