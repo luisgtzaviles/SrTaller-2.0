@@ -530,7 +530,7 @@ test(
       );
       const tokens = new NodeSessionToken();
       const tokenMaterial = tokens.issue();
-      await sessionRepository.createReplacingActive(stationContextA, {
+      await sessionRepository.createForProfile(stationContextA, {
         sessionId: sessionA,
         userId: userA,
         userVersion: 0,

@@ -316,7 +316,7 @@ export type AccessOperationalSessionStatus =
   | 'logged_out'
   | 'replaced';
 
-/** Access-owned lock row used to serialize the active Session for a Station. */
+/** Legacy Access-owned guard retained for rollback compatibility. */
 export interface AccessOperationalSessionStationGuardTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly station_id: ImmutableColumn<string>;

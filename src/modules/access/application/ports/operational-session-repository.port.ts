@@ -11,6 +11,10 @@ export interface OperationalSessionPersistenceScope {
   readonly stationCredentialId: string;
 }
 
+export interface OperationalSessionTenantScope {
+  readonly tenantId: string;
+}
+
 export class OperationalSessionAdmissionError extends Error {
   constructor() {
     super('Operational Session admission predicates changed.');
@@ -20,7 +24,7 @@ export class OperationalSessionAdmissionError extends Error {
 
 export interface OperationalSessionRepositoryPort
   extends OperationalAuthorizationCommitGuardPort {
-  createReplacingActive(
+  createForProfile(
     scope: OperationalSessionPersistenceScope,
     input: Readonly<{
       sessionId: string;
@@ -35,6 +39,34 @@ export interface OperationalSessionRepositoryPort
       expiresAt: string;
     }>,
   ): Promise<OperationalSessionRecord>;
+
+  invalidateOne(
+    scope: OperationalSessionTenantScope,
+    input: Readonly<{
+      sessionId: string;
+      expectedVersion: number;
+      occurredAt: string;
+    }>,
+  ): Promise<boolean>;
+
+  invalidateByUser(
+    scope: OperationalSessionTenantScope,
+    input: Readonly<{ userId: string; occurredAt: string }>,
+  ): Promise<number>;
+
+  invalidateByStation(
+    scope: OperationalSessionTenantScope,
+    input: Readonly<{ stationId: string; occurredAt: string }>,
+  ): Promise<number>;
+
+  invalidateByCredentialVersion(
+    scope: OperationalSessionTenantScope,
+    input: Readonly<{
+      userId: string;
+      credentialVersion: number;
+      occurredAt: string;
+    }>,
+  ): Promise<number>;
 
   findByBearerVerifier(
     scope: OperationalSessionPersistenceScope,
