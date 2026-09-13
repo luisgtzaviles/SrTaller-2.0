@@ -2,8 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-043 `Done`; PBI-040 mantiene `Owner Review` y su iteración de
-  gobierno de catálogos está preparada localmente; aceptación pendiente.
+- **Estado:** PBI-043 `Done`; PBI-040 mantiene `Owner Review` y ejecuta la
+  iteración de canonical merge + paridad de referencias en edición; aceptación
+  pendiente.
 - **Baseline Git verificada:** `main == origin/main` en
   `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
   PBI-040.
@@ -120,6 +121,26 @@ el segundo que el rollback material de Access debía retirar primero la nueva
 migración posterior de Catalog; ambos contratos se actualizaron de forma
 exacta, sin eliminar assertions ni modificar semántica de Access.
 
+La iteración Owner actual distingue Edit, Pending Reconciliation y Canonical
+Merge. Category permite consolidación sólo en Tenant+Tipo; Brand consolida en
+Tenant y conserva la unión de aplicabilidad. El comando es transaccional,
+reasigna artículos y destinos pendientes gobernados, preserva las fuentes como
+merged y registra un evento append-only con actor/correlation. La UI ofrece
+selección múltiple, survivor, nombre final, usage y confirmación. Editar artículo
+comparte ahora el mismo combobox y resolvedor server-side de creación para
+reutilización exacta, expansión Brand y nuevas capturas pendientes.
+
+La auditoría de Device Types, Repairs Brands, Models, Problem Categories y Risks
+confirmó que la interacción puede ser compartida, pero no su semántica: scope
+Platform/Tenant, historia de recepción y colisiones Brand/Model requieren
+decisiones fuera de PBI-040. No se añadió merge a Repairs ni se abrió otro PBI.
+Owner Acceptance, gates de PR/CI/merge y deploy siguen pendientes.
+
+El candidato funcional local es `d846a6a`. La suite focalizada de dominio/UI/
+arquitectura pasó 46/46; el runner PostgreSQL owner-scoped pasó 8/8 con cleanup
+PASS. La campaña `verify:full` final permanece como gate activo y no se anticipa
+su resultado.
+
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
@@ -150,14 +171,13 @@ exacta, sin eliminar assertions ni modificar semántica de Access.
 | Sprint | SPRINT-03 — Active |
 | Current PBI | PBI-040 — Owner Review |
 | WIP | 1/1 |
-| PBI-040 | prevención de referencias duplicadas preparada localmente para Owner Review; aceptación pendiente |
+| PBI-040 | canonical merge y paridad inline de edición en validación local; aceptación pendiente |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Preview | `aab27d9` PASS |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Revisar en Chrome que Nuevo artículo reutiliza coincidencias exactas, conserva
-near matches y propone ampliar Brand sin crear otra identidad; revisar también
-la reconciliación histórica. No inferir aceptación, push, PR, merge, deploy ni
-inicio de PBI-041/PBI-042.
+Revisar en Chrome selección/merge de Categories compatibles, unión de Brands y
+edición de item con referencia existente o pendiente. No inferir aceptación,
+push, PR, merge, deploy ni inicio de PBI-041/PBI-042.

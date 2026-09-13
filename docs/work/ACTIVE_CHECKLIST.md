@@ -1,34 +1,33 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-040 Owner iteration — prevent duplicate pending references
+Milestone / Functional Goal: PBI-040 Owner iteration — canonical merge + edit reference parity
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Review
-Status: Ready for Owner Review; Owner Acceptance remains pending
+Status: In progress; Owner Acceptance remains pending
 WIP: 1/1
-Progress: 5 / 5 implementation blocks complete
-Current: Checkpoint prepared for Owner Review
-Next: Owner reviews exact reuse, near match and Brand applicability behavior
+Progress: 3 / 5 implementation blocks complete
+Current: Run governed regression and migration gates
+Next: Validate browser/runtime and reconcile final evidence
 Blocked: None
 Last updated: 2026-09-13 MST
 
-## Duplicate reference prevention iteration
+## Canonical merge + edit reference parity iteration
 
-- [x] Audit normalization, autocomplete and pending persistence authority
-- [x] Reuse exact compatible canonical Category/Brand before pending persistence
-- [x] Prevent duplicate pending/canonical races and remediate existing synthetic duplicates
-- [x] Add material regression, isolation, reload and UX coverage
-- [x] Run governed gates and leave Chrome prepared for Owner Review
+- [x] Audit Catalog/Repairs dependencies, merge invariants and shared primitives
+- [x] Implement transactional Catalog Category/Brand merge with history
+- [x] Give item editing the same inline reference behavior as creation
+- [~] Cover concurrency, isolation, lifecycle, filters and responsive UX
+- [ ] Run governed gates, reconcile evidence and prepare Chrome
 
 ## Required outcome
 
-- Exact normalized Category input reuses the Tenant + Type canonical identity
-  and never creates a duplicate pending capture.
-- Exact normalized Brand input reuses the Tenant-wide canonical identity and
-  follows the governed applicability contract without creating another identity.
-- Pending creation remains a server-side authority under concurrency; historical
-  synthetic duplicates reconcile to the existing canon without losing capture
-  provenance.
-- Near matches remain human reconciliation; no fuzzy matching is introduced.
+- Two or more compatible Catalog canonical references merge explicitly into a
+  selected survivor without losing item links, pending history or audit.
+- Category merge remains same Tenant + same Type; Brand merge unions valid
+  applicability. Merged sources never reappear as ordinary or deletable canon.
+- Edit item reuses the creation combobox/contract for existing, exact, expansion
+  and new pending Category/Brand references.
+- Repairs catalogs are audited before any reuse; no domain semantics are inferred.
 
 ## Boundaries
 
