@@ -1,8 +1,9 @@
-import { BookOpen, LockKeyhole } from 'lucide-react';
+import { BookOpen, LockKeyhole, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 import { Button } from '../ui/controls.js';
 import { Alert } from '../ui/feedback.js';
+import { Dialog } from '../ui/overlays.js';
 import styles from './catalog-administration.module.css';
 
 export type CatalogLifecycle = 'active' | 'inactive' | 'all';
@@ -211,6 +212,40 @@ export type CatalogRowAction = Readonly<{
   id?: string | undefined;
   disabled?: boolean | undefined;
 }>;
+
+export function deriveCatalogLifecycleActions(input: Readonly<{
+  idPrefix: string;
+  status: 'active' | 'inactive';
+  deletable: boolean;
+  busy: boolean;
+  onEdit(): void;
+  onDelete(): void;
+  onDeactivate(): void;
+  onReactivate(): void;
+}>): readonly CatalogRowAction[] {
+  const edit = { key: 'edit', id: `edit-${input.idPrefix}`, label: 'Editar', icon: Pencil, disabled: input.busy, onClick: input.onEdit } as const;
+  if (input.deletable) return Object.freeze([edit, { key: 'delete', label: 'Eliminar', icon: Trash2, tone: 'danger' as const, disabled: input.busy, onClick: input.onDelete }]);
+  if (input.status === 'inactive') return Object.freeze([edit, { key: 'reactivate', label: 'Reactivar', icon: RotateCcw, disabled: input.busy, onClick: input.onReactivate }]);
+  return Object.freeze([edit, { key: 'deactivate', label: 'Desactivar', disabled: input.busy, onClick: input.onDeactivate }]);
+}
+
+export function catalogSafeDeleteFailure(error: unknown): string {
+  const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;
+  if (code === 'CATALOG_REFERENCE_IN_USE' || code === 'REPAIR_PROBLEM_CATEGORY_DELETE_NOT_ALLOWED') return 'La referencia recibió un uso mientras confirmabas. No se eliminó; la lista ya muestra su estado vigente.';
+  return 'No fue posible eliminar la referencia. La lista se actualizó para reflejar dependencias o una versión nueva.';
+}
+
+export function CatalogSafeDeleteDialog({ open, label, entityLabel, busy, restoreFocusSelector, onClose, onConfirm }: Readonly<{
+  open: boolean;
+  label: string;
+  entityLabel: string;
+  busy: boolean;
+  restoreFocusSelector: string | undefined;
+  onClose(): void;
+  onConfirm(): void;
+}>): React.JSX.Element {
+  return <Dialog open={open} title={`Eliminar “${label}”?`} description={`Eliminar ${entityLabel}`} restoreFocusSelector={restoreFocusSelector} onClose={() => !busy && onClose()} footer={<><Button disabled={busy} onClick={onClose}>Cancelar</Button><Button tone="danger" disabled={busy} onClick={onConfirm}>{busy ? 'Eliminando…' : 'Eliminar definitivamente'}</Button></>}><p className={styles.confirmCopy}>Este registro nunca ha sido utilizado y se eliminará definitivamente.</p></Dialog>;
+}
 
 export function CatalogRowActions({ actions, emptyLabel }: Readonly<{
   actions: readonly CatalogRowAction[];

@@ -740,7 +740,9 @@
       "src/infrastructure/database/migrations/20260911183000_catalog_create_pricing_core.ts",
       "src/infrastructure/database/migrations/20260911200000_catalog_add_reference_governance.ts",
       "src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts",
-      "src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts"
+      "src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts",
+      "src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts",
+      "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1246,6 +1248,20 @@
           "references": ["tenants"],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_reference_deletion_events"],
+          "references": ["tenants"],
+          "functions": ["reject_catalog_reference_deletion_event_mutation"],
+          "triggers": ["catalog_reference_deletion_events_reject_delete", "catalog_reference_deletion_events_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts": {
+          "owner": "repairs",
+          "tables": ["repair_brand_catalog_events", "repair_brands", "repair_catalog_reference_deletion_events", "repair_device_type_catalog_events", "repair_device_types", "repair_model_catalog_events", "repair_models", "repair_risk_catalog_events", "repair_risks"],
+          "references": ["tenants"],
+          "functions": ["reject_repair_catalog_reference_deletion_event_mutation"],
+          "triggers": ["repair_catalog_reference_deletion_events_reject_delete", "repair_catalog_reference_deletion_events_reject_update"]
         }
       }
     },
@@ -1295,6 +1311,7 @@
           "CatalogReferenceCostRevisionTable",
           "CatalogCommandTable",
           "CatalogAuditEventTable",
+          "CatalogReferenceDeletionEventTable",
           "UserProvisioningBootstrapTable",
           "UserLifecycleCommandTable",
           "UserProfileUpdateCommandTable",
@@ -1400,6 +1417,7 @@
             "RepairProblemPendingValueTable",
             "RepairProblemCategoryCatalogEventTable",
             "RepairProblemCategoryDeletionEventTable",
+            "RepairCatalogReferenceDeletionEventTable",
             "RepairProblemClassificationTable",
             "RepairProblemClassificationEventTable",
             "RepairNewRepairPolicyHeadTable",
@@ -1502,6 +1520,8 @@
           "src/infrastructure/database/migrations/20260911200000_catalog_add_reference_governance.ts",
           "src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts",
           "src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts",
+          "src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts",
+          "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1865,6 +1885,7 @@
       "catalog_reference_cost_revisions": { "owner": "catalog", "kind": "table" },
       "catalog_commands": { "owner": "catalog", "kind": "table" },
       "catalog_audit_events": { "owner": "catalog", "kind": "table" },
+      "catalog_reference_deletion_events": { "owner": "catalog", "kind": "table" },
       "branches": {
         "owner": "stations",
         "kind": "table"
@@ -1970,6 +1991,10 @@
         "kind": "table"
       },
       "repair_problem_category_deletion_events": {
+        "owner": "repairs",
+        "kind": "table"
+      },
+      "repair_catalog_reference_deletion_events": {
         "owner": "repairs",
         "kind": "table"
       },

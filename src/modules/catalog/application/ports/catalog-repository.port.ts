@@ -19,11 +19,13 @@ export interface CatalogMutationContext {
 export type CatalogCategoryRecord = Readonly<{
   categoryId: string; name: string; status: CatalogLifecycle;
   applicableKinds: readonly CatalogItemKind[]; usageCount: number; version: number;
+  deletable: boolean;
   createdBy: string | null; createdAt: string; createdInBranchId: string | null;
 }>;
 export type CatalogBrandRecord = Readonly<{
   brandId: string; name: string; status: CatalogLifecycle;
   applicableKinds: readonly CatalogItemKind[]; usageCount: number; version: number;
+  deletable: boolean;
   createdBy: string | null; createdAt: string; createdInBranchId: string | null;
 }>;
 export type CatalogPendingCategoryRecord = Readonly<{
@@ -90,6 +92,14 @@ export type ResolveCatalogReferenceInput = Readonly<{
   applicableKinds: readonly CatalogItemKind[] | null;
   expectedVersion: number; clientRequestId: string; correlationId: string; occurredAt: Date;
 }>;
+export type DeleteCatalogReferenceInput = Readonly<{
+  referenceId: string; expectedVersion: number; clientRequestId: string;
+  correlationId: string; occurredAt: Date;
+}>;
+export type CatalogReferenceDeletionRecord = Readonly<{
+  referenceId: string; kind: 'category' | 'brand'; previousLabel: string;
+  version: number; deletedAt: string;
+}>;
 export type CapturedCatalogReferenceInput = Readonly<{
   pendingReferenceId: string; rawLabel: string; normalizedKey: string;
 }>;
@@ -129,6 +139,8 @@ export interface CatalogRepositoryPort {
   createBrand(context: CatalogMutationContext, input: CreateCatalogReferenceInput): Promise<CatalogBrandRecord>;
   updateCategory(context: CatalogMutationContext, input: UpdateCatalogReferenceInput): Promise<CatalogCategoryRecord>;
   updateBrand(context: CatalogMutationContext, input: UpdateCatalogReferenceInput): Promise<CatalogBrandRecord>;
+  deleteCategory(context: CatalogMutationContext, input: DeleteCatalogReferenceInput): Promise<CatalogReferenceDeletionRecord>;
+  deleteBrand(context: CatalogMutationContext, input: DeleteCatalogReferenceInput): Promise<CatalogReferenceDeletionRecord>;
   resolveCategory(context: CatalogMutationContext, input: ResolveCatalogReferenceInput): Promise<CatalogPendingCategoryRecord>;
   resolveBrand(context: CatalogMutationContext, input: ResolveCatalogReferenceInput): Promise<CatalogPendingBrandRecord>;
   createItem(context: CatalogMutationContext, input: CreateCatalogItemInput): Promise<CatalogItemRecord>;

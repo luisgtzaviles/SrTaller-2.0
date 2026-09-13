@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** PBI-043 `Done`; PBI-040 mantiene `Owner Review` y su iteración de
-  reconciliación unificada está preparada localmente para revisión humana.
+  gobierno de catálogos está preparada localmente; aceptación pendiente.
 - **Baseline Git verificada:** `main == origin/main` en
   `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
   PBI-040.
@@ -91,6 +91,17 @@ las suites PostgreSQL owner-scoped aíslan las tres tablas nuevas y que el
 rollback protegido de PBI-043 continúa probándose después de retirar de forma
 gobernada la migración posterior de Catalog.
 
+La iteración Owner vigente añade el contexto de Tipo a Category y Brand
+canónicas/pendientes usando la misma aplicabilidad de Nuevo artículo. También
+unifica el lifecycle administrativo: referencias realmente libres pueden
+eliminarse; las usadas se desactivan/reactivan y cada bounded context conserva
+la autoridad de consultar sus dependencias. Catalog y Repairs revalidan el
+delete dentro de transacción, responden conflicto tipado ante uso concurrente y
+preservan los eventos históricos sin cascada. `verify:full` cerró 13/13 etapas
+PASS: 837 pruebas base sin fallas, PostgreSQL compuesto 17/17, PBI-039 2/2,
+PBI-040 1/1 con 60 migraciones y p95 5.80 ms, runtime Preview-like, smokes y
+cleanup PASS. Esto no constituye Owner Acceptance.
+
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
@@ -121,13 +132,13 @@ gobernada la migración posterior de Catalog.
 | Sprint | SPRINT-03 — Active |
 | Current PBI | PBI-040 — Owner Review |
 | WIP | 1/1 |
-| PBI-040 | reconciliación unificada lista para Owner Review; aceptación pendiente |
+| PBI-040 | Type filter + safe delete listos para Owner Review; aceptación pendiente |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Preview | `aab27d9` PASS |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Revisar lado a lado las tres colas pendientes preparadas en Chrome y decidir la
-aceptación Owner de PBI-040. No inferir aceptación, push, PR, merge, deploy ni
+Revisar en Chrome el filtro por Tipo y las acciones Eliminar/Desactivar/Reactivar
+de los catálogos gobernados. No inferir aceptación, push, PR, merge, deploy ni
 inicio de PBI-041/PBI-042.

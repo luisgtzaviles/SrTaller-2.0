@@ -72,8 +72,12 @@ que el modelo evolucione sin usar el tipo como contrato eterno.
 
 Los artículos tienen lifecycle `ACTIVE` / `INACTIVE`. Inactivar los retira de
 búsquedas operativas y nuevas selecciones; no borra revisiones, identificadores
-ni snapshots. No existe hard delete ordinario y los identificadores retirados no
-se reutilizan.
+ni snapshots. Los artículos y sus identificadores no tienen hard delete
+ordinario y los identificadores retirados no se reutilizan. Una referencia
+canónica administrativa sí puede eliminarse físicamente cuando su owner
+revalida, dentro de una transacción, que no existe uso canónico ni dependencia
+estructural que requiera integridad. La historia de negocio nunca se elimina en
+cascada.
 
 ## 3. Alcance Tenant/Branch y precio efectivo
 
@@ -152,6 +156,26 @@ transaccional a la identidad canónica y conservan intactos el valor capturado y
 su trazabilidad. No existe una identidad provisional en `catalog_categories` o
 `catalog_brands`, ni acciones distintas de “aprobar” o “fusionar” para expresar
 la misma decisión.
+
+La administración expone un contexto de Tipo con default `Todos` para Category
+y Brand, tanto en canónicas como en pendientes. Category coincide por su único
+Tipo; Brand coincide cuando su conjunto de aplicabilidad incluye el Tipo. La
+proyección consume el mismo contrato de aplicabilidad que Nuevo artículo y no
+mantiene una matriz paralela de combinaciones.
+
+El lifecycle administrativo usa una regla común, con consulta de dependencias
+propia de cada bounded context:
+
+- referencia activa sin uso ni dependencia: `Editar | Eliminar`;
+- referencia activa usada: `Editar | Desactivar`;
+- referencia inactiva usada: `Editar | Reactivar`;
+- captura pendiente: `Resolver`.
+
+La elegibilidad del read model sólo orienta la UI. El backend bloquea la
+referencia, vuelve a consultar uso canónico y dependencias estructurales y
+responde un conflicto tipado si apareció una referencia concurrente. Los
+eventos de eliminación conservan el snapshot previo y no dependen de que la
+fila canónica siga existiendo.
 
 ### 5.1 Patrón transversal de reconciliación
 

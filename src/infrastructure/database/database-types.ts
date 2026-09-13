@@ -886,6 +886,49 @@ export interface RepairProblemCategoryDeletionEventTable {
   readonly occurred_at: ImmutableColumn<Date>;
 }
 
+export interface CatalogReferenceDeletionEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly reference_kind: ImmutableColumn<'CATEGORY' | 'BRAND'>;
+  readonly reference_id: ImmutableColumn<string>;
+  readonly catalog_scope: ImmutableColumn<'platform' | 'tenant'>;
+  readonly previous_label: ImmutableColumn<string | null>;
+  readonly previous_status: ImmutableColumn<'ACTIVE' | 'INACTIVE' | null>;
+  readonly reference_version: ImmutableColumn<number | null>;
+  readonly expected_version: ImmutableColumn<number>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<string>;
+  readonly result: ImmutableColumn<'succeeded' | 'rejected'>;
+  readonly rejection_reason: ImmutableColumn<'not_found' | 'version_conflict' | 'reference_in_use' | 'authorization_changed' | null>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface RepairCatalogReferenceDeletionEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly reference_kind: ImmutableColumn<'RISK' | 'DEVICE_TYPE' | 'BRAND' | 'MODEL'>;
+  readonly reference_id: ImmutableColumn<string>;
+  readonly catalog_scope: ImmutableColumn<'platform' | 'tenant'>;
+  readonly previous_label: ImmutableColumn<string | null>;
+  readonly previous_status: ImmutableColumn<'active' | 'inactive' | null>;
+  readonly previous_record: ImmutableColumn<Readonly<Record<string, unknown>> | null>;
+  readonly reference_version: ImmutableColumn<number | null>;
+  readonly expected_version: ImmutableColumn<number>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'repairs.catalogs.manage'>;
+  readonly result: ImmutableColumn<'succeeded' | 'rejected'>;
+  readonly rejection_reason: ImmutableColumn<'not_found' | 'platform_owned' | 'version_conflict' | 'reference_in_use' | 'authorization_changed' | null>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
 export interface RepairProblemPendingValueTable {
   readonly pending_problem_value_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -1155,6 +1198,7 @@ export interface DatabaseSchema {
   readonly catalog_reference_cost_revisions: CatalogReferenceCostRevisionTable;
   readonly catalog_commands: CatalogCommandTable;
   readonly catalog_audit_events: CatalogAuditEventTable;
+  readonly catalog_reference_deletion_events: CatalogReferenceDeletionEventTable;
   readonly customers: CustomerTable;
   readonly customer_contact_phones: CustomerContactPhoneTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;
@@ -1193,6 +1237,7 @@ export interface DatabaseSchema {
   readonly repair_problem_pending_values: RepairProblemPendingValueTable;
   readonly repair_problem_category_catalog_events: RepairProblemCategoryCatalogEventTable;
   readonly repair_problem_category_deletion_events: RepairProblemCategoryDeletionEventTable;
+  readonly repair_catalog_reference_deletion_events: RepairCatalogReferenceDeletionEventTable;
   readonly repair_problem_classifications: RepairProblemClassificationTable;
   readonly repair_problem_classification_events: RepairProblemClassificationEventTable;
   readonly repair_new_repair_policy_heads: RepairNewRepairPolicyHeadTable;

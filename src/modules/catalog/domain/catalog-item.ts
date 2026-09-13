@@ -67,6 +67,11 @@ export class CatalogConflictError extends Error {
   constructor() { super('Catalog command conflicts with current state.'); this.name = 'CatalogConflictError'; }
 }
 
+export class CatalogReferenceInUseError extends Error {
+  readonly code = 'CATALOG_REFERENCE_IN_USE';
+  constructor() { super('Catalog reference has canonical or reconciliation dependencies.'); this.name = 'CatalogReferenceInUseError'; }
+}
+
 export class CatalogAuthorizationChangedError extends Error {
   readonly code = 'CATALOG_AUTHORIZATION_CHANGED';
   constructor() { super('Catalog authorization changed before commit.'); this.name = 'CatalogAuthorizationChangedError'; }

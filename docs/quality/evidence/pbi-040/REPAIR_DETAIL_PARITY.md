@@ -95,6 +95,13 @@ La protección queda distribuida en cuatro capas:
 4. hashes de los cuatro archivos del guard dentro del inventario de superficies
    protegidas PBI-039.
 
+La iteración de safe delete amplió cuatro superficies compartidas de Repairs
+sin tocar sus rutas, proyección ni UI de Repair Detail. El inventario exacto se
+rebaselina a esos blobs sólo después de mantener intactos los componentes y
+contratos dedicados, ejecutar la suite material PBI-039 y volver a demostrar el
+fixture/DOM de paridad. El guard continúa fallando ante cualquier drift posterior
+en las 20 superficies; la ampliación adyacente no se convierte en una exclusión.
+
 Así, una rama falla antes de Owner Review si pierde campos del header, cambia la
 arquitectura de Recepción, elimina la recepción del Historial, pierde Conceptos
 o Evidencias, sirve procesos stale, altera los assets aceptados de Preview o

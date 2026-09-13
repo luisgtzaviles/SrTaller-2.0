@@ -7,7 +7,7 @@ import {
 import { ContextualAuthorizationError } from '../../access/index.js';
 import type { ProtectedRequestEvidence } from '../../access/index.js';
 import { CatalogProtectedOperations, CatalogOperationAccessDeniedError } from '../application/catalog-protected-operations.js';
-import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogInputError, CatalogNotFoundError, CatalogUnavailableError } from '../domain/catalog-item.js';
+import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogInputError, CatalogNotFoundError, CatalogReferenceInUseError, CatalogUnavailableError } from '../domain/catalog-item.js';
 
 type RequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
 function header(headers: RequestHeaders, name: string): string | undefined {
@@ -25,6 +25,7 @@ function translate(error: unknown): never {
   if (error instanceof CatalogOperationAccessDeniedError || error instanceof CatalogAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
   if (error instanceof CatalogInputError) throw new BadRequestException({ code: error.code, parameter: error.parameter });
   if (error instanceof CatalogNotFoundError) throw new NotFoundException({ code: error.code });
+  if (error instanceof CatalogReferenceInUseError) throw new ConflictException({ code: error.code });
   if (error instanceof CatalogConflictError) throw new ConflictException({ code: error.code });
   if (error instanceof CatalogUnavailableError) throw new ServiceUnavailableException({ code: error.code });
   throw error;
@@ -84,6 +85,16 @@ export class CatalogController {
   @Patch('brands/:brandId') @Header('Cache-Control', 'private, no-store')
   async updateBrand(@Param('brandId') brandId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
     try { return await this.operations.updateBrand(evidence(headers), brandId, body); }
+    catch (error: unknown) { return translate(error); }
+  }
+  @Delete('categories/:categoryId') @Header('Cache-Control', 'private, no-store')
+  async deleteCategory(@Param('categoryId') categoryId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
+    try { return await this.operations.deleteCategory(evidence(headers), categoryId, body); }
+    catch (error: unknown) { return translate(error); }
+  }
+  @Delete('brands/:brandId') @Header('Cache-Control', 'private, no-store')
+  async deleteBrand(@Param('brandId') brandId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
+    try { return await this.operations.deleteBrand(evidence(headers), brandId, body); }
     catch (error: unknown) { return translate(error); }
   }
   @Post('categories/pending/:pendingCategoryValueId/resolve') @Header('Cache-Control', 'private, no-store')

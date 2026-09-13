@@ -1,32 +1,34 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-040 Owner iteration — unified catalog reconciliation
+Milestone / Functional Goal: PBI-040 Owner iteration — catalog Type filter + unified safe delete
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Review
 Status: Ready for Owner Review; Owner Acceptance remains pending
 WIP: 1/1
 Progress: 5 / 5 implementation blocks complete
-Current: Owner can compare the three pending-reference surfaces in Chrome
-Next: Owner review and explicit acceptance decision
+Current: Owner Review of Type filtering and safe-delete lifecycle
+Next: Owner decides acceptance; no later gate is inferred
 Blocked: None
 Last updated: 2026-09-13 MST
 
-## Unified catalog reconciliation
+## Catalog governance iteration
 
-- [x] Reconcile current authority, branch state, Repairs pattern and Price List divergence
-- [x] Implement captured Category/Brand references, canonical resolution and traceability
-- [x] Reuse the Repairs canonical/pending administration pattern in Price List
-- [x] Add governed fixtures and validate both resolution modes and regressions
+- [x] Audit authorities, real references and current lifecycle contracts by catalog
+- [x] Add the governed Type filter to canonical and pending Price List references
+- [x] Implement shared lifecycle actions and owner-specific transactional safe delete
+- [x] Add synthetic fixtures and material/concurrent regression coverage
 - [x] Run governed gates and leave Chrome prepared for Owner Review
 
 ## Required outcome
 
-- Inline Category/Brand values remain captured pending references until resolved.
-- Resolution associates an existing compatible canonical or creates a new canonical.
-- Raw value, applicability, usage, timestamps, actor and resolution remain traceable.
-- Only active canonical references feed commercial filters.
-- Repairs and Price List keep separate bounded-context ownership while sharing the
-  same reconciliation language and interaction primitives.
+- Category and Brand administration derive Type filtering from the same
+  applicability used by Nuevo artículo, including pending references.
+- A canonical reference can be deleted only after the owner revalidates that no
+  business or structural reference requires integrity; concurrent use wins.
+- Used active references deactivate, used inactive references reactivate, and
+  pending captures continue to resolve through reconciliation.
+- Repairs and Price List keep separate bounded-context ownership while sharing
+  lifecycle derivation, confirmation, conflict feedback and visual primitives.
 
 ## Boundaries
 

@@ -1,7 +1,7 @@
-import { Pencil, Plus, RotateCcw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { changeRepairModelStatus, createRepairModel, getAdminRepairBrands, getAdminRepairModels, getPendingRepairModels, PreviewApiError, renameRepairModel, resolvePendingRepairModel } from '../api.js';
+import { changeRepairModelStatus, createRepairModel, deleteRepairModel, getAdminRepairBrands, getAdminRepairModels, getPendingRepairModels, PreviewApiError, renameRepairModel, resolvePendingRepairModel } from '../api.js';
 import type { AdminRepairBrand, AdminRepairModel, PendingRepairModel } from '../api.js';
 import { normalizeInputLookupKey, normalizeRelatedRepairCatalogInput } from '../../../../src/modules/repairs/domain/new-repair-input-normalization.js';
 import {
@@ -15,12 +15,15 @@ import {
   CatalogPanel,
   CatalogReconciliationSummary,
   CatalogRowActions,
+  CatalogSafeDeleteDialog,
   CatalogScopeBadge,
   CatalogStatusBadge,
   CatalogTable,
   CatalogToolbar,
   CatalogUsage,
   catalogAdministrationStyles as styles,
+  catalogSafeDeleteFailure,
+  deriveCatalogLifecycleActions,
   formatCatalogResultCount,
 } from './catalogs/CatalogAdministration.js';
 import type { CatalogLifecycle, CatalogRowAction, CatalogSurface } from './catalogs/CatalogAdministration.js';
@@ -51,6 +54,7 @@ export function RepairModelCatalogPanel({ canManage, csrfToken }: Readonly<{ can
   const [label, setLabel] = useState('');
   const [editorBrandId, setEditorBrandId] = useState('');
   const [transition, setTransition] = useState<AdminRepairModel | null>(null);
+  const [deletion, setDeletion] = useState<AdminRepairModel | null>(null);
   const [resolver, setResolver] = useState<PendingRepairModel | null>(null);
   const [resolutionMode, setResolutionMode] = useState<'existing' | 'new'>('existing');
   const [resolutionModelId, setResolutionModelId] = useState('');
@@ -102,6 +106,16 @@ export function RepairModelCatalogPanel({ canManage, csrfToken }: Readonly<{ can
     } catch (cause: unknown) { setError(message(cause)); setTransition(null); load(undefined, true); } finally { setBusy(false); }
   }
 
+  async function remove(): Promise<void> {
+    if (!deletion || !canManage) return;
+    setBusy(true); setError(null);
+    try {
+      await deleteRepairModel(deletion.modelId, deletion.version, csrfToken);
+      setNotice('Modelo sin referencias eliminado definitivamente.');
+      setDeletion(null); load();
+    } catch (cause: unknown) { setDeletion(null); setError(catalogSafeDeleteFailure(cause)); load(undefined, true); } finally { setBusy(false); }
+  }
+
   function openResolver(item: PendingRepairModel): void {
     setResolver(item); setResolutionMode('existing'); setResolutionModelId(''); setResolutionQuery(''); setResolutionLabel(item.rawModelLabel); setError(null);
   }
@@ -121,10 +135,7 @@ export function RepairModelCatalogPanel({ canManage, csrfToken }: Readonly<{ can
 
   function actions(model: AdminRepairModel): readonly CatalogRowAction[] {
     if (model.scope === 'platform' || !canManage) return [];
-    return [
-      { key: 'edit', id: `edit-model-${model.modelId}`, label: 'Editar', icon: Pencil, onClick: () => { setLabel(model.label); setEditor(model); } },
-      { key: 'lifecycle', label: model.status === 'active' ? 'Desactivar' : 'Reactivar', icon: model.status === 'inactive' ? RotateCcw : undefined, onClick: () => setTransition(model) },
-    ];
+    return deriveCatalogLifecycleActions({ idPrefix: `model-${model.modelId}`, status: model.status, deletable: model.deletable, busy, onEdit: () => { setLabel(model.label); setEditor(model); }, onDelete: () => setDeletion(model), onDeactivate: () => setTransition(model), onReactivate: () => setTransition(model) });
   }
 
   const brandFilter = <Field id="model-brand-filter" label="Marca" className={styles.contextualSelect}><Select id="model-brand-filter" value={brandId} onChange={(event) => setBrandId(event.target.value)}><option value="">Todas las marcas</option>{brands.map((brand) => <option key={brand.brandId} value={brand.brandId}>{brand.label}{brand.status === 'inactive' ? ' · Inactiva' : ''}</option>)}</Select></Field>;
@@ -148,7 +159,8 @@ export function RepairModelCatalogPanel({ canManage, csrfToken }: Readonly<{ can
     </CatalogPanel>
 
     <Dialog open={editor !== null} title={editor === 'new' ? 'Agregar modelo' : 'Editar modelo'} description="La marca del modelo no puede cambiar después de crearlo." onClose={() => !busy && setEditor(null)} footer={false}><form className={styles.editorForm} onSubmit={(event) => { void save(event); }}>{editor === 'new' ? <Field id="repair-model-brand" label="Marca canónica" required><Select id="repair-model-brand" required value={editorBrandId} onChange={(event) => setEditorBrandId(event.target.value)}><option value="">Selecciona una marca</option>{activeBrands.map((brand) => <option key={brand.brandId} value={brand.brandId}>{brand.label} · {brand.scope === 'platform' ? 'Plataforma' : 'Organización'}</option>)}</Select></Field> : editor ? <dl><div><dt>Marca</dt><dd>{editor.brandLabel}</dd></div></dl> : null}<Field id="repair-model-label" label="Nombre del modelo" required><Input id="repair-model-label" value={label} minLength={2} maxLength={160} required autoComplete="off" onChange={(event) => setLabel(event.target.value)} onBlur={() => setLabel(normalizeRelatedRepairCatalogInput('model', label))} /></Field><div className={styles.dialogActions}><Button disabled={busy} onClick={() => setEditor(null)}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || label.trim().length < 2 || (editor === 'new' && !editorBrandId)}>Guardar</Button></div></form></Dialog>
-    <Dialog open={transition !== null} title={transition?.status === 'active' ? 'Desactivar modelo' : 'Reactivar modelo'} description={transition ? `${transition.brandLabel} · ${transition.label}` : ''} onClose={() => !busy && setTransition(null)} footer={<><Button disabled={busy} onClick={() => setTransition(null)}>Cancelar</Button><Button tone={transition?.status === 'active' ? 'danger' : 'primary'} disabled={busy} onClick={() => { void confirmTransition(); }}>{transition?.status === 'active' ? 'Desactivar' : 'Reactivar'}</Button></>}><p className={styles.confirmCopy}>Sólo cambia su disponibilidad en nuevas sugerencias. Las reparaciones existentes conservan su referencia.</p></Dialog>
+    <Dialog open={transition !== null} title={transition?.status === 'active' ? 'Desactivar modelo' : 'Reactivar modelo'} description={transition ? `${transition.brandLabel} · ${transition.label}` : ''} onClose={() => !busy && setTransition(null)} footer={<><Button disabled={busy} onClick={() => setTransition(null)}>Cancelar</Button><Button tone={transition?.status === 'active' ? 'secondary' : 'primary'} disabled={busy} onClick={() => { void confirmTransition(); }}>{transition?.status === 'active' ? 'Desactivar' : 'Reactivar'}</Button></>}><p className={styles.confirmCopy}>Sólo cambia su disponibilidad en nuevas sugerencias. Las reparaciones existentes conservan su referencia.</p></Dialog>
+    <CatalogSafeDeleteDialog open={deletion !== null} label={deletion ? `${deletion.brandLabel} · ${deletion.label}` : ''} entityLabel="modelo" busy={busy} restoreFocusSelector={deletion ? `#edit-model-${deletion.modelId}` : undefined} onClose={() => setDeletion(null)} onConfirm={() => { void remove(); }} />
     <Dialog open={resolver !== null} title="Resolver modelo pendiente" description={resolver ? `${resolver.brandLabel ?? resolver.rawBrandLabel ?? 'Marca pendiente'} · ${resolver.rawModelLabel} · ${usage(resolver.usageCount)}` : ''} onClose={() => !busy && setResolver(null)} footer={false}><form className={styles.editorForm} onSubmit={(event) => { void resolve(event); }}><div className={styles.resolutionModes} role="group" aria-label="Tipo de resolución"><label><input type="radio" checked={resolutionMode === 'existing'} onChange={() => { setResolutionMode('existing'); setResolutionModelId(''); setResolutionQuery(''); }} />Asociar a modelo existente</label><label><input type="radio" checked={resolutionMode === 'new'} onChange={() => { setResolutionMode('new'); setResolutionModelId(''); }} />Crear modelo de Organización</label></div>{resolutionMode === 'existing' ? <Field id="resolved-model-search" label="Modelo de la misma marca" required><div className={styles.resolutionSearch}><Input id="resolved-model-search" value={resolutionQuery} autoComplete="off" placeholder="Buscar modelo…" onChange={(event) => { setResolutionQuery(event.target.value); setResolutionModelId(''); }} />{resolutionCandidates.length > 0 ? <div className={styles.resolutionOptions} role="listbox">{resolutionCandidates.map((model) => <button key={model.modelId} type="button" role="option" aria-selected={resolutionModelId === model.modelId} onClick={() => { setResolutionModelId(model.modelId); setResolutionQuery(model.label); }}><strong>{model.label}</strong><small>{model.brandLabel}</small></button>)}</div> : <small className={styles.resolutionEmpty}>No hay coincidencias activas dentro de esta marca.</small>}</div></Field> : <Field id="resolved-model-label" label="Nombre canónico del modelo" required><Input id="resolved-model-label" value={resolutionLabel} minLength={2} maxLength={160} required onChange={(event) => setResolutionLabel(event.target.value)} onBlur={() => setResolutionLabel(normalizeRelatedRepairCatalogInput('model', resolutionLabel))} /></Field>}<p className={styles.confirmCopy}>Las reparaciones relacionadas mostrarán el modelo canónico; el texto capturado seguirá intacto.</p><div className={styles.dialogActions}><Button disabled={busy} onClick={() => setResolver(null)}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || !resolver?.brandId || (resolutionMode === 'existing' ? !resolutionModelId : resolutionLabel.trim().length < 2)}>Resolver</Button></div></form></Dialog>
   </>;
 }

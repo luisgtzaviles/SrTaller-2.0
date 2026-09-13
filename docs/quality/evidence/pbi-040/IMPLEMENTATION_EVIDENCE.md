@@ -413,3 +413,62 @@ contratos), `b20dea9` (rotulado de uso por bounded context), `1bd6c81`
 de rotulado contextual) y `4ef0fc9` (aislamiento PostgreSQL y rollback
 encadenado). No hubo push, PR, merge ni deploy. Esta evidencia no constituye
 Owner Acceptance.
+
+## Iteración Owner — contexto de Tipo y eliminación segura
+
+Configuración > Catálogos > Lista de precios incorpora el filtro
+`Todos | Refacción | Servicio | Producto | Insumo` en Category y Brand,
+incluidas sus colas Por revisar. Category compara su único Tipo; Brand conserva
+su identidad Tenant-wide y coincide cuando su aplicabilidad multi-Tipo contiene
+el filtro. La UI consume `kind`/`applicableKinds` del mismo read model usado por
+Nuevo artículo; no existe una segunda matriz hardcoded.
+
+La primitive compartida de Catalog Administration deriva las acciones de
+lifecycle y presenta un solo patrón de confirmación, conflicto y feedback. Las
+consultas permanecen separadas por owner. Catalog considera items y pendientes
+ya resueltas; Repairs considera Repair/Intake, relaciones Risk, Model, y las
+dependencias estructurales Brand → Model y canon → pending resuelto según la
+entidad. El contador visible sigue declarando uso canónico y no hace string
+matching sobre capturas.
+
+Dos migraciones owner-scoped agregan eventos append-only de eliminación con el
+snapshot previo. La operación toma lock sobre la referencia, reconsulta dentro
+de `READ COMMITTED`, elimina sólo con cero dependencias y traduce una FK tardía
+a conflicto tipado. La prueba concurrente inserta uso mientras el delete espera:
+el uso gana, ambos registros permanecen y no hay pérdida de datos. Los eventos
+de Repairs ya no dependen mediante FK de una referencia eliminable, por lo que
+la historia sobrevive al hard delete y el down migration puede restaurar el
+canon desde su snapshot antes de recomponer constraints.
+
+Evidencia material de la iteración:
+
+- schema/policy/manifest focalizado: 22/22 PASS con 60 migraciones;
+- PostgreSQL PBI-040: PASS, incluida carrera use-vs-delete, aislamiento Tenant,
+  idempotencia, stale version y audit append-only; benchmark p95 `9.10 ms`
+  contra presupuesto `750 ms`;
+- PostgreSQL owner-scoped: 8/8 PASS y cleanup PASS sobre PostgreSQL 18.4;
+- typecheck, build y `verify:architecture`: PASS; Vite conserva sólo el warning
+  conocido del chunk principal de 573.41 kB;
+- Chrome local autenticado: default Todos, filtros Refacción/Servicio/Producto/
+  Insumo, pendientes por Tipo, Brand Apple multi-Tipo, referencia usada con
+  Desactivar y fixture sin uso con Eliminar + confirmación explícita;
+- 1280, 768 y 640 px conservaron el filtro y las acciones sin overflow;
+  Light/Dark, foco por teclado y reload quedaron verificados y se restauró
+  Light con viewport normal;
+- fixture local adicional `Marca temporal QA`, Refacción, cero artículos, se
+  conserva para que Owner pueda inspeccionar la acción Eliminar sin afectar
+  datos reales;
+- `verify:full` final: 13/13 etapas PASS; suite base 837 pruebas, 817 PASS y
+  20 skips PostgreSQL gobernados; PostgreSQL compuesto 17/17, PBI-039 2/2,
+  PBI-040 1/1 con 60 migraciones y p95 `5.80 ms`; runtime Preview-like,
+  compiled smokes y cleanup PASS; fingerprint
+  `af050222e13ffcadf59b58a51e38b71498c8c5274d77a81f118170f56a03e2cc`.
+
+El primer intento de `verify:full` falló cerrado porque cuatro superficies
+compartidas protegidas por PBI-039 habían incorporado las rutas adyacentes de
+safe delete. Se confirmó por diff que no cambiaron la proyección, endpoints ni
+UI de Repair Detail; después se rebaselinaron sus blobs exactos y el gate volvió
+a probar las 20 superficies, los contratos estructurales y PostgreSQL PBI-039.
+No se eliminó ni se exceptuó el guard.
+
+Owner Acceptance, push, PR, merge y deploy continúan pendientes/no autorizados.

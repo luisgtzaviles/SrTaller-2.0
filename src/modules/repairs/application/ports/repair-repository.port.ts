@@ -35,7 +35,7 @@ export interface RepairProblemCategoryRecord {
   readonly status: RepairProblemCategoryStatus;
   readonly version: number;
   readonly usageCount: number;
-  readonly deletable: boolean;
+  readonly deletable?: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -137,6 +137,7 @@ export interface RepairModelRecord {
   readonly status: RepairModelStatus;
   readonly version: number;
   readonly usageCount: number;
+  readonly deletable?: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -200,6 +201,7 @@ export interface RepairBrandRecord {
   readonly status: RepairBrandStatus;
   readonly version: number;
   readonly usageCount: number;
+  readonly deletable: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -270,7 +272,7 @@ export class RepairBrandPendingNotFoundError extends Error { constructor() { sup
 export class RepairBrandConcurrencyConflictError extends Error { constructor() { super('Repair brand version is stale.'); this.name = 'RepairBrandConcurrencyConflictError'; } }
 export class RepairBrandAuthorizationChangedError extends Error { constructor() { super('Repair brand authorization changed before confirmation.'); this.name = 'RepairBrandAuthorizationChangedError'; } }
 
-export interface RepairDeviceTypeRecord { readonly deviceTypeId: string; readonly code: string | null; readonly canonicalLabel: string; readonly normalizedKey: string; readonly scope: RepairDeviceTypeScope; readonly status: RepairDeviceTypeStatus; readonly version: number; readonly usageCount: number; readonly createdAt: string; readonly updatedAt: string; }
+export interface RepairDeviceTypeRecord { readonly deviceTypeId: string; readonly code: string | null; readonly canonicalLabel: string; readonly normalizedKey: string; readonly scope: RepairDeviceTypeScope; readonly status: RepairDeviceTypeStatus; readonly version: number; readonly usageCount: number; readonly deletable?: boolean; readonly createdAt: string; readonly updatedAt: string; }
 export interface RepairDeviceTypePendingRecord { readonly pendingDeviceTypeValueId: string; readonly rawLabel: string; readonly normalizedKey: string; readonly resolutionStatus: 'pending' | 'resolved'; readonly canonicalDeviceTypeId: string | null; readonly canonicalLabel: string | null; readonly version: number; readonly usageCount: number; readonly firstSeenAt: string; readonly lastSeenAt: string; }
 export interface RepairDeviceTypeCatalogContext {
   readonly tenantId: string;
@@ -303,6 +305,7 @@ export interface RepairRiskRecord {
   readonly status: RepairRiskStatus;
   readonly version: number;
   readonly usageCount: number;
+  readonly deletable?: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -358,6 +361,23 @@ export class RepairRiskConcurrencyConflictError extends Error {
 }
 export class RepairRiskAuthorizationChangedError extends Error {
   constructor() { super('Repair risk authorization changed before confirmation.'); this.name = 'RepairRiskAuthorizationChangedError'; }
+}
+
+export type RepairCatalogReferenceKind = 'RISK' | 'DEVICE_TYPE' | 'BRAND' | 'MODEL';
+export interface DeleteRepairCatalogReferenceRecord {
+  readonly referenceId: string; readonly kind: RepairCatalogReferenceKind;
+  readonly eventId: string; readonly correlationId: string;
+  readonly expectedVersion: number; readonly occurredAt: Date;
+}
+export interface RepairCatalogReferenceDeletionRecord {
+  readonly referenceId: string; readonly kind: RepairCatalogReferenceKind;
+  readonly previousLabel: string; readonly scope: 'tenant'; readonly version: number; readonly deletedAt: string;
+}
+export class RepairCatalogReferenceDeleteNotAllowedError extends Error {
+  constructor(readonly kind: RepairCatalogReferenceKind, readonly reason: 'platform_owned' | 'reference_in_use') {
+    super('Repair catalog reference cannot be physically deleted.');
+    this.name = 'RepairCatalogReferenceDeleteNotAllowedError';
+  }
 }
 
 export interface RepairWorklistRecord {
@@ -920,6 +940,7 @@ export interface RepairRepositoryPort {
   listPendingDeviceTypes(scope: RepairPersistenceScope): Promise<readonly RepairDeviceTypePendingRecord[]>;
   createDeviceType(scope: RepairDeviceTypeCatalogContext, input: CreateRepairDeviceTypeRecord): Promise<RepairDeviceTypeRecord>;
   changeDeviceType(scope: RepairDeviceTypeCatalogContext, input: ChangeRepairDeviceTypeRecord): Promise<RepairDeviceTypeRecord>;
+  deleteDeviceType(scope: RepairDeviceTypeCatalogContext, input: DeleteRepairCatalogReferenceRecord): Promise<RepairCatalogReferenceDeletionRecord>;
   resolvePendingDeviceType(scope: RepairDeviceTypeCatalogContext, input: ResolveRepairDeviceTypePendingRecord): Promise<RepairDeviceTypePendingRecord>;
   listEffectiveActiveProblemCategories(scope: RepairPersistenceScope): Promise<readonly RepairProblemCategoryRecord[]>;
   listAdminProblemCategories(scope: RepairPersistenceScope): Promise<readonly RepairProblemCategoryRecord[]>;
@@ -934,15 +955,18 @@ export interface RepairRepositoryPort {
   listPendingBrands(scope: RepairPersistenceScope): Promise<readonly RepairBrandPendingRecord[]>;
   createBrand(scope: RepairBrandCatalogContext, input: CreateRepairBrandRecord): Promise<RepairBrandRecord>;
   changeBrand(scope: RepairBrandCatalogContext, input: ChangeRepairBrandRecord): Promise<RepairBrandRecord>;
+  deleteBrand(scope: RepairBrandCatalogContext, input: DeleteRepairCatalogReferenceRecord): Promise<RepairCatalogReferenceDeletionRecord>;
   resolvePendingBrand(scope: RepairBrandCatalogContext, input: ResolveRepairBrandPendingRecord): Promise<RepairBrandPendingRecord>;
   listEffectiveActiveModels(scope: RepairPersistenceScope, canonicalBrandId: string, query?: string): Promise<readonly RepairModelRecord[]>;
   listAdminModels(scope: RepairPersistenceScope, canonicalBrandId: string | null): Promise<readonly RepairModelRecord[]>;
   listPendingModels(scope: RepairPersistenceScope, canonicalBrandId: string | null): Promise<readonly RepairModelPendingRecord[]>;
   createModel(scope: RepairModelCatalogContext, input: CreateRepairModelRecord): Promise<RepairModelRecord>;
   changeModel(scope: RepairModelCatalogContext, input: ChangeRepairModelRecord): Promise<RepairModelRecord>;
+  deleteModel(scope: RepairModelCatalogContext, input: DeleteRepairCatalogReferenceRecord): Promise<RepairCatalogReferenceDeletionRecord>;
   resolvePendingModel(scope: RepairModelCatalogContext, input: ResolveRepairModelPendingRecord): Promise<RepairModelPendingRecord>;
   listEffectiveActiveRisks(scope: RepairPersistenceScope): Promise<readonly RepairRiskRecord[]>;
   listAdminRisks(scope: RepairPersistenceScope): Promise<readonly RepairRiskRecord[]>;
+  deleteRisk(scope: RepairRiskCatalogContext, input: DeleteRepairCatalogReferenceRecord): Promise<RepairCatalogReferenceDeletionRecord>;
   createRisk(scope: RepairRiskCatalogContext, input: CreateRepairRiskRecord): Promise<RepairRiskRecord>;
   changeRisk(scope: RepairRiskCatalogContext, input: ChangeRepairRiskRecord): Promise<RepairRiskRecord>;
   readNewRepairPolicy(scope: RepairPersistenceScope): Promise<NewRepairPolicyRecord | null>;

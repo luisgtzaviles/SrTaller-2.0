@@ -135,6 +135,8 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260911200000_catalog_add_reference_governance.ts',
       '20260912180000_access_enable_concurrent_operational_sessions.ts',
       '20260912210000_catalog_unify_pending_reference_reconciliation.ts',
+      '20260913120000_catalog_add_reference_safe_delete.ts',
+      '20260913121000_repairs_add_reference_safe_delete.ts',
     ],
   );
 });

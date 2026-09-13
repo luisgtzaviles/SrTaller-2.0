@@ -97,6 +97,12 @@ export class CatalogProtectedOperations {
   updateBrand(evidence: ProtectedRequestEvidence, brandId: unknown, input: unknown) {
     return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.updateBrand(mutationContext(contexts), brandId, input));
   }
+  deleteCategory(evidence: ProtectedRequestEvidence, categoryId: unknown, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.deleteCategory(mutationContext(contexts), categoryId, input));
+  }
+  deleteBrand(evidence: ProtectedRequestEvidence, brandId: unknown, input: unknown) {
+    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.deleteBrand(mutationContext(contexts), brandId, input));
+  }
   resolveCategory(evidence: ProtectedRequestEvidence, pendingCategoryValueId: unknown, input: unknown) {
     return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.resolveCategory(mutationContext(contexts), pendingCategoryValueId, input));
   }

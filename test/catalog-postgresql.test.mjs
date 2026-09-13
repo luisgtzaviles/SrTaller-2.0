@@ -15,7 +15,7 @@ const { KyselyCatalogRepository } = enabled
 const { CatalogService } = enabled
   ? await import('../dist/modules/catalog/application/catalog.service.js')
   : {};
-const { CatalogConflictError, CatalogNotFoundError } = enabled
+const { CatalogConflictError, CatalogNotFoundError, CatalogReferenceInUseError } = enabled
   ? await import('../dist/modules/catalog/domain/catalog-item.js')
   : {};
 
@@ -93,6 +93,23 @@ async function item(service, ctx, input) {
     referenceCostSourceLabel: input.referenceCostSourceLabel,
     ...input,
   }));
+}
+
+async function waitForCatalogDeleteLock(admin) {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const result = await admin.query(
+      `select 1
+       from pg_stat_activity
+       where application_name = 'srtaller-pbi040-catalog-postgresql'
+         and wait_event_type = 'Lock'
+         and query ilike '%catalog_categories%'
+       limit 1`,
+    );
+    if (result.rowCount === 1) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.fail('the controlled catalog delete never reached its reference lock');
 }
 
 test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and fast lookup', { skip: !enabled, timeout: 60_000 }, async () => {
@@ -321,6 +338,69 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
       admin.query('update catalog_base_price_revisions set amount_minor = 1 where tenant_id = $1 and item_id = $2', [tenantA, serviceItem.itemId]),
       (error) => error?.code === '23514',
     );
+
+    const disposableCategory = await category(service, ctxA1, 'Categoría temporal', 'PRODUCT');
+    const disposableBrand = await brand(service, ctxA1, 'Marca temporal', ['PRODUCT']);
+    const referencesBeforeDelete = await service.listReferences({ tenantId: tenantA, branchId: branchA1 });
+    assert.equal(referencesBeforeDelete.categories.find(({ categoryId }) => categoryId === disposableCategory.categoryId)?.deletable, true);
+    assert.equal(referencesBeforeDelete.brands.find(({ brandId }) => brandId === disposableBrand.brandId)?.deletable, true);
+    const categoryDeleteRequest = { expectedVersion: disposableCategory.version, clientRequestId: randomUUID() };
+    const deletedCategory = await service.deleteCategory(ctxA1, disposableCategory.categoryId, categoryDeleteRequest);
+    const deletedBrand = await service.deleteBrand(ctxA1, disposableBrand.brandId, { expectedVersion: disposableBrand.version, clientRequestId: randomUUID() });
+    assert.deepEqual([deletedCategory.kind, deletedBrand.kind], ['category', 'brand']);
+    assert.equal((await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).categories.some(({ categoryId }) => categoryId === disposableCategory.categoryId), false);
+    assert.deepEqual(await service.deleteCategory(ctxA1, disposableCategory.categoryId, categoryDeleteRequest), deletedCategory);
+
+    const usedReferences = await service.listReferences({ tenantId: tenantA, branchId: branchA1 });
+    assert.equal(usedReferences.categories.find(({ categoryId }) => categoryId === categoryA.categoryId)?.deletable, false);
+    assert.equal(usedReferences.brands.find(({ brandId }) => brandId === brandA.brandId)?.deletable, false);
+    await assert.rejects(service.deleteCategory(ctxA1, categoryA.categoryId, { expectedVersion: categoryA.version, clientRequestId: randomUUID() }), CatalogReferenceInUseError);
+    await assert.rejects(service.deleteBrand(ctxA1, brandA.brandId, { expectedVersion: brandA.version, clientRequestId: randomUUID() }), CatalogReferenceInUseError);
+    await assert.rejects(service.deleteCategory(ctxB1, categoryA.categoryId, { expectedVersion: categoryA.version, clientRequestId: randomUUID() }), CatalogNotFoundError);
+
+    const staleCategory = await category(service, ctxA1, 'Categoría stale', 'SERVICE');
+    await assert.rejects(service.deleteCategory(ctxA1, staleCategory.categoryId, { expectedVersion: staleCategory.version + 1, clientRequestId: randomUUID() }), CatalogConflictError);
+    await service.deleteCategory(ctxA1, staleCategory.categoryId, { expectedVersion: staleCategory.version, clientRequestId: randomUUID() });
+
+    const concurrentCategory = await category(service, ctxA1, 'Categoría concurrente', 'PRODUCT');
+    const concurrentItemId = randomUUID();
+    const referencingWriter = await admin.connect();
+    try {
+      await referencingWriter.query('begin');
+      await referencingWriter.query(
+        `insert into catalog_items (
+           tenant_id, item_id, kind, title, normalized_title, description,
+           category_id, brand_id, pending_category_value_id, pending_brand_value_id,
+           status, sellable, stockable, purchasable, applicable_to_repair,
+           version, created_at, updated_at
+         ) values (
+           $1, $2, 'PRODUCT', 'Uso concurrente', 'uso concurrente', null,
+           $3, null, null, null,
+           'ACTIVE', true, true, true, false,
+           1, now(), now()
+         )`,
+        [tenantA, concurrentItemId, concurrentCategory.categoryId],
+      );
+      const concurrentDelete = service.deleteCategory(ctxA1, concurrentCategory.categoryId, {
+        expectedVersion: concurrentCategory.version,
+        clientRequestId: randomUUID(),
+      });
+      await waitForCatalogDeleteLock(admin);
+      await referencingWriter.query('commit');
+      await assert.rejects(concurrentDelete, CatalogReferenceInUseError);
+    } catch (error) {
+      await referencingWriter.query('rollback').catch(() => undefined);
+      throw error;
+    } finally {
+      referencingWriter.release();
+    }
+    assert.equal((await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).categories.find(({ categoryId }) => categoryId === concurrentCategory.categoryId)?.deletable, false);
+    assert.equal((await admin.query('select count(*)::int as count from catalog_items where tenant_id = $1 and item_id = $2', [tenantA, concurrentItemId])).rows[0].count, 1);
+
+    const deleteEvidence = await admin.query(`select reference_kind, result, rejection_reason from catalog_reference_deletion_events where tenant_id = $1 order by occurred_at, event_id`, [tenantA]);
+    assert.equal(deleteEvidence.rows.some(({ reference_kind, result }) => reference_kind === 'CATEGORY' && result === 'succeeded'), true);
+    assert.equal(deleteEvidence.rows.some(({ reference_kind, result, rejection_reason }) => reference_kind === 'BRAND' && result === 'rejected' && rejection_reason === 'reference_in_use'), true);
+    await assert.rejects(admin.query(`update catalog_reference_deletion_events set previous_label = 'mutated' where tenant_id = $1`, [tenantA]), (error) => error?.code === '23514');
 
     await admin.query(
       `with inserted as (

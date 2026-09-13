@@ -48,6 +48,7 @@ const { createTrustedStationContext } = enabled
 const migrationRoot = fileURLToPath(new URL('../dist/infrastructure/database/migrations/', import.meta.url));
 const sessionTables = ['access_operational_sessions', 'access_operational_session_station_guards'];
 const allTables = [
+  'catalog_reference_deletion_events', 'repair_catalog_reference_deletion_events',
   'catalog_audit_events',
   'catalog_commands',
   'catalog_reference_cost_revisions',
@@ -221,6 +222,8 @@ function authorization(item) {
 }
 
 async function reset(admin) {
+  await admin.query('drop function if exists reject_catalog_reference_deletion_event_mutation() cascade');
+  await admin.query('drop function if exists reject_repair_catalog_reference_deletion_event_mutation() cascade');
   await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
@@ -1214,6 +1217,22 @@ test('PostgreSQL 18.4 enforces concurrent Operational Sessions, exact lifecycle,
       [tenantA, stationA],
     )).rows[0].count;
     assert.ok(activeBeforeRollback >= 2);
+    const repairsSafeDeleteMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      repairsSafeDeleteMigration?.name,
+      '20260913121000_repairs_add_reference_safe_delete',
+    );
+    await runner.migrateDown(authorization(repairsSafeDeleteMigration));
+    const catalogSafeDeleteMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      catalogSafeDeleteMigration?.name,
+      '20260913120000_catalog_add_reference_safe_delete',
+    );
+    await runner.migrateDown(authorization(catalogSafeDeleteMigration));
     const catalogMigration = [...(await runner.getMigrationStatus()).migrations]
       .reverse()
       .find(({ state }) => state === 'applied');

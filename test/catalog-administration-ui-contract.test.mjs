@@ -4,12 +4,13 @@ import test from 'node:test';
 
 const panelPaths = Object.freeze({
   risks: 'apps/dev-preview-web/src/components/RepairRiskCatalogPanel.tsx',
+  deviceTypes: 'apps/dev-preview-web/src/components/RepairDeviceTypeCatalogPanel.tsx',
   brands: 'apps/dev-preview-web/src/components/RepairBrandCatalogPanel.tsx',
   models: 'apps/dev-preview-web/src/components/RepairModelCatalogPanel.tsx',
   categories: 'apps/dev-preview-web/src/components/RepairProblemCategoryCatalogPanel.tsx',
 });
 
-test('the four domain panels compose the same catalog administration primitives', async () => {
+test('the five Repairs domain panels compose the same catalog administration primitives', async () => {
   const entries = await Promise.all(Object.entries(panelPaths).map(async ([name, path]) => [name, await readFile(path, 'utf8')]));
   for (const [name, source] of entries) {
     for (const primitive of [
@@ -22,6 +23,7 @@ test('the four domain panels compose the same catalog administration primitives'
       'CatalogStatusBadge',
       'CatalogUsage',
       'CatalogRowActions',
+      'CatalogSafeDeleteDialog',
     ]) assert.match(source, new RegExp(`<${primitive}\\b`, 'u'), `${name} must render ${primitive}`);
     assert.doesNotMatch(source, /GenericCatalog/u);
   }
@@ -49,19 +51,28 @@ test('shared primitives own lifecycle, reconciliation, read-only, usage, and row
   assert.match(source, /No cuenta coincidencias del texto histórico/u);
   assert.match(source, /className=\{styles\.sectionTabs\}/u);
   assert.match(source, /aria-current=\{value === option\.value \? 'page'/u);
+  assert.match(source, /export function deriveCatalogLifecycleActions/u);
+  assert.match(source, /if \(input\.deletable\) return Object\.freeze\(\[edit, \{ key: 'delete'/u);
+  assert.match(source, /if \(input\.status === 'inactive'\) return Object\.freeze\(\[edit, \{ key: 'reactivate'/u);
+  assert.match(source, /key: 'deactivate', label: 'Desactivar'/u);
+  assert.match(source, /export function CatalogSafeDeleteDialog/u);
+  assert.match(source, /nunca ha sido utilizado/u);
+  assert.match(source, /Eliminar definitivamente/u);
 });
 
-test('reconciliation and domain exceptions stay owned by the correct panels', async () => {
-  const [risks, brands, models, categories] = await Promise.all(Object.values(panelPaths).map((path) => readFile(path, 'utf8')));
+test('reconciliation stays domain-owned while safe-delete actions share one contract', async () => {
+  const [risks, deviceTypes, brands, models, categories] = await Promise.all(Object.values(panelPaths).map((path) => readFile(path, 'utf8')));
   assert.doesNotMatch(risks, /CatalogReconciliationSummary/u);
-  assert.doesNotMatch(risks, /Eliminar|Trash2|delete/u);
-  for (const source of [brands, models, categories]) assert.match(source, /<CatalogReconciliationSummary\b/u);
+  for (const source of [deviceTypes, brands, models, categories]) assert.match(source, /<CatalogReconciliationSummary\b/u);
+  for (const source of [risks, deviceTypes, brands, models, categories]) {
+    assert.match(source, /deriveCatalogLifecycleActions/u);
+    assert.match(source, /<CatalogSafeDeleteDialog\b/u);
+  }
   assert.match(models, /contextualFilter=\{brandFilter\}/u);
   assert.match(models, /<Select id="model-brand-filter"/u);
   assert.match(models, /Todas las marcas/u);
   assert.match(models, /La marca del modelo no puede cambiar después de crearlo/u);
-  assert.match(categories, /if \(item\.deletable\) result\.push/u);
-  assert.match(categories, /Eliminar definitivamente/u);
+  assert.match(categories, /deletable: item\.deletable/u);
 });
 
 test('URL selection mounts one domain panel without changing domain ownership', async () => {
@@ -92,4 +103,19 @@ test('Repairs and Price List use one shared visual language for catalog sections
   assert.match(sharedStyles, /\.sectionTabs button:focus-visible/u);
   assert.match(sharedStyles, /\.sectionTabs button\[aria-current='page'\]/u);
   assert.doesNotMatch(pageStyles, /\.catalogTabs/u);
+});
+
+test('Price List governance filters canonical and pending references by server applicability', async () => {
+  const source = await readFile('apps/dev-preview-web/src/components/CatalogPriceListReferencesPanel.tsx', 'utf8');
+  assert.match(source, /const \[typeFilter, setTypeFilter\] = useState<CatalogItemKind \| 'all'>\('all'\)/u);
+  assert.match(source, /<option value="all">Todos<\/option>/u);
+  for (const [kind, label] of [['PART', 'Refacción'], ['SERVICE', 'Servicio'], ['PRODUCT', 'Producto'], ['SUPPLY', 'Insumo']]) {
+    assert.match(source, new RegExp(`${kind}: '${label}'`, 'u'));
+  }
+  assert.match(source, /allItems\.filter\(\(item\) => item\.applicableKinds\.includes\(typeFilter\)\)/u);
+  assert.match(source, /allPending\.filter\(\(item\) => pendingKinds\(item\)\.includes\(typeFilter\)\)/u);
+  assert.match(source, /type=\{referenceKind === 'category' \? 'radio' : 'checkbox'\}/u);
+  assert.match(source, /deriveCatalogLifecycleActions/u);
+  assert.match(source, /catalogSafeDeleteFailure/u);
+  assert.match(source, /<CatalogSafeDeleteDialog\b/u);
 });

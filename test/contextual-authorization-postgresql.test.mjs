@@ -85,6 +85,7 @@ const migrationRoot = fileURLToPath(
 );
 
 const tables = [
+  'catalog_reference_deletion_events', 'repair_catalog_reference_deletion_events',
   'catalog_audit_events', 'catalog_commands', 'catalog_reference_cost_revisions',
   'catalog_branch_price_revisions', 'catalog_base_price_revisions',
   'catalog_barcode_sequences', 'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
@@ -250,6 +251,8 @@ function source() {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists reject_catalog_reference_deletion_event_mutation() cascade');
+  await admin.query('drop function if exists reject_repair_catalog_reference_deletion_event_mutation() cascade');
   await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query(
     'drop function if exists test_reject_pbi028_audit_insert() cascade',

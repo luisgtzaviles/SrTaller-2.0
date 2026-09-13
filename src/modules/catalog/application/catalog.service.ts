@@ -130,6 +130,20 @@ export class CatalogService {
     return this.updateReference('brand', context, referenceId, value) as Promise<CatalogBrandRecord>;
   }
 
+  deleteCategory(context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    return this.deleteReference('category', context, referenceId, value);
+  }
+
+  deleteBrand(context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    return this.deleteReference('brand', context, referenceId, value);
+  }
+
+  private deleteReference(kind: 'category' | 'brand', context: CatalogMutationContext, referenceId: unknown, value: unknown) {
+    const input = object(value, ['expectedVersion', 'clientRequestId']);
+    const parsed = { referenceId: identifier(referenceId, `${kind}Id`), ...commonMutation(input, 1) };
+    return kind === 'category' ? this.repository.deleteCategory(context, parsed) : this.repository.deleteBrand(context, parsed);
+  }
+
   private updateReference(kind: 'category' | 'brand', context: CatalogMutationContext, referenceId: unknown, value: unknown) {
     const input = object(value, ['name', 'status', 'applicableKinds', 'expectedVersion', 'clientRequestId']);
     const name = text(input.name, 'name', 120) as string;

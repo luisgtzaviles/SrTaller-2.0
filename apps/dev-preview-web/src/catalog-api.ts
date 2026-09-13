@@ -4,7 +4,7 @@ export type CatalogItemKind = 'PART' | 'PRODUCT' | 'SERVICE' | 'SUPPLY';
 export type CatalogReference = Readonly<{
   categoryId?: string; brandId?: string; name: string; status: 'ACTIVE' | 'INACTIVE';
   applicableKinds: readonly CatalogItemKind[];
-  usageCount?: number; version: number; createdBy?: string | null; createdAt?: string;
+  usageCount?: number; deletable: boolean; version: number; createdBy?: string | null; createdAt?: string;
   createdInBranchId?: string | null;
 }>;
 export type CatalogPendingCategory = Readonly<{ pendingCategoryValueId: string; rawLabel: string; normalizedKey: string; kind: CatalogItemKind; resolutionStatus: 'PENDING' | 'RESOLVED'; canonicalCategoryId: string | null; canonicalName: string | null; version: number; usageCount: number; firstSeenAt: string; lastSeenAt: string; capturedBy: string | null; capturedInBranchId: string }>;
@@ -36,7 +36,9 @@ const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
 async function json<T>(response: Response): Promise<T> {
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT, { detail: { background: response.status === 403 } }));
-    throw new PreviewApiError(response.status);
+    let payload: { code?: string; message?: string } = {};
+    try { payload = await response.json() as { code?: string; message?: string }; } catch { /* response has no safe JSON body */ }
+    throw new PreviewApiError(response.status, payload.message, payload.code ?? null);
   }
   try { return await response.json() as T; }
   catch { throw new PreviewApiError(0); }
@@ -63,6 +65,8 @@ export function createCatalogCategory(name: string, applicableKinds: readonly Ca
 export function createCatalogBrand(name: string, applicableKinds: readonly CatalogItemKind[], csrfToken: string) { return mutate<CatalogReference>('/api/catalog/brands', 'POST', { name, applicableKinds, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
 export function updateCatalogCategory(categoryId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/categories/${encodeURIComponent(categoryId)}`, 'PATCH', input, csrfToken); }
 export function updateCatalogBrand(brandId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/brands/${encodeURIComponent(brandId)}`, 'PATCH', input, csrfToken); }
+export function deleteCatalogCategory(categoryId: string, expectedVersion: number, csrfToken: string) { return mutate(`/api/catalog/categories/${encodeURIComponent(categoryId)}`, 'DELETE', { expectedVersion, clientRequestId: crypto.randomUUID() }, csrfToken); }
+export function deleteCatalogBrand(brandId: string, expectedVersion: number, csrfToken: string) { return mutate(`/api/catalog/brands/${encodeURIComponent(brandId)}`, 'DELETE', { expectedVersion, clientRequestId: crypto.randomUUID() }, csrfToken); }
 export function resolveCatalogCategory(pendingCategoryValueId: string, input: unknown, csrfToken: string) { return mutate<CatalogPendingCategory>(`/api/catalog/categories/pending/${encodeURIComponent(pendingCategoryValueId)}/resolve`, 'POST', input, csrfToken); }
 export function resolveCatalogBrand(pendingBrandValueId: string, input: unknown, csrfToken: string) { return mutate<CatalogPendingBrand>(`/api/catalog/brands/pending/${encodeURIComponent(pendingBrandValueId)}/resolve`, 'POST', input, csrfToken); }
 export function createCatalogItem(input: unknown, csrfToken: string) { return mutate<CatalogItem>('/api/catalog/items', 'POST', input, csrfToken); }

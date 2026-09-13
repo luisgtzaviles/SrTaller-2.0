@@ -1,19 +1,20 @@
-import { Pencil, Plus, RotateCcw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
-  createCatalogBrand, createCatalogCategory, listCatalogAdministrationReferences,
+  createCatalogBrand, createCatalogCategory, deleteCatalogBrand, deleteCatalogCategory, listCatalogAdministrationReferences,
   resolveCatalogBrand, resolveCatalogCategory, updateCatalogBrand, updateCatalogCategory,
 } from '../catalog-api.js';
 import type { CatalogItemKind, CatalogPendingBrand, CatalogPendingCategory, CatalogReference, CatalogReferences } from '../catalog-api.js';
 import {
   CatalogCanonicalUsageHeader, CatalogEmptyRow, CatalogEntityName, CatalogFeedback,
   CatalogHeader, CatalogLifecycleFilter, CatalogLoadingState, CatalogPanel,
-  CatalogReconciliationSummary, CatalogRowActions, CatalogSectionTabs, CatalogStatusBadge, CatalogTable,
-  CatalogToolbar, CatalogUsage, catalogAdministrationStyles as styles, formatCatalogResultCount,
+  CatalogReconciliationSummary, CatalogRowActions, CatalogSafeDeleteDialog, CatalogSectionTabs, CatalogStatusBadge, CatalogTable,
+  CatalogToolbar, CatalogUsage, catalogAdministrationStyles as styles, catalogSafeDeleteFailure, formatCatalogResultCount,
+  deriveCatalogLifecycleActions,
 } from './catalogs/CatalogAdministration.js';
 import type { CatalogLifecycle, CatalogSurface } from './catalogs/CatalogAdministration.js';
-import { Button, Field, Input } from './ui/controls.js';
+import { Button, Field, Input, Select } from './ui/controls.js';
 import { Dialog } from './ui/overlays.js';
 
 const kindLabels: Readonly<Record<CatalogItemKind, string>> = Object.freeze({ PART: 'Refacción', PRODUCT: 'Producto', SERVICE: 'Servicio', SUPPLY: 'Insumo' });
@@ -31,11 +32,13 @@ function usage(value: number): string { return `${value} ${value === 1 ? 'uso' :
 export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfToken: string }>): React.JSX.Element {
   const [references, setReferences] = useState<CatalogReferences>({ categories: [], brands: [], pendingCategories: [], pendingBrands: [], categoryBrandApplicability: [] });
   const [referenceKind, setReferenceKind] = useState<ReferenceKind>('category');
+  const [typeFilter, setTypeFilter] = useState<CatalogItemKind | 'all'>('all');
   const [surface, setSurface] = useState<CatalogSurface>('canonical');
   const [status, setStatus] = useState<CatalogLifecycle>('active');
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null); const [notice, setNotice] = useState<string | null>(null);
   const [editor, setEditor] = useState<CatalogReference | 'new' | null>(null);
+  const [deletion, setDeletion] = useState<CatalogReference | null>(null);
   const [name, setName] = useState(''); const [kinds, setKinds] = useState<readonly CatalogItemKind[]>(['PART']);
   const [resolver, setResolver] = useState<PendingReference | null>(null);
   const [resolutionMode, setResolutionMode] = useState<'existing' | 'new'>('existing');
@@ -50,8 +53,10 @@ export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfTo
   }, []);
   useEffect(() => { const controller = new AbortController(); void load(controller.signal); return () => controller.abort(); }, [load]);
 
-  const items = referenceKind === 'category' ? references.categories : references.brands;
-  const pending = referenceKind === 'category' ? references.pendingCategories : references.pendingBrands;
+  const allItems = referenceKind === 'category' ? references.categories : references.brands;
+  const allPending = referenceKind === 'category' ? references.pendingCategories : references.pendingBrands;
+  const items = typeFilter === 'all' ? allItems : allItems.filter((item) => item.applicableKinds.includes(typeFilter));
+  const pending = typeFilter === 'all' ? allPending : allPending.filter((item) => pendingKinds(item).includes(typeFilter));
   const activeCount = items.filter((item) => item.status === 'ACTIVE').length;
   const visible = status === 'all' ? items : items.filter((item) => item.status === status.toUpperCase());
   const requiredKinds = resolver ? pendingKinds(resolver) : [];
@@ -80,6 +85,22 @@ export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfTo
     catch { setError('No fue posible cambiar el estado; revisa uso, aplicabilidad o una versión nueva.'); await load(undefined, true); }
     finally { setBusy(false); }
   }
+  async function remove(): Promise<void> {
+    if (!deletion) return;
+    setBusy(true); setError(null);
+    try {
+      if (referenceKind === 'category') await deleteCatalogCategory(id(deletion), deletion.version, csrfToken);
+      else await deleteCatalogBrand(id(deletion), deletion.version, csrfToken);
+      setNotice(`“${deletion.name}” se eliminó definitivamente porque no tenía referencias.`); setDeletion(null); await load();
+    } catch (cause) {
+      setDeletion(null);
+      setError(catalogSafeDeleteFailure(cause));
+      await load(undefined, true);
+    } finally { setBusy(false); }
+  }
+  function actions(reference: CatalogReference) {
+    return deriveCatalogLifecycleActions({ idPrefix: `commercial-${id(reference)}`, status: reference.status.toLowerCase() as 'active' | 'inactive', deletable: reference.deletable, busy, onEdit: () => openEditor(reference), onDelete: () => setDeletion(reference), onDeactivate: () => { void transition(reference); }, onReactivate: () => { void transition(reference); } });
+  }
   async function resolve(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault(); if (!resolver || (resolutionMode === 'existing' ? !resolutionId : resolutionName.trim().length < 1)) return; setBusy(true); setError(null);
     try {
@@ -97,11 +118,12 @@ export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfTo
     <CatalogPanel labelledBy="commercial-reference-title">
       <CatalogHeader id="commercial-reference-title" title={referenceKind === 'category' ? 'Categorías comerciales' : 'Marcas comerciales'} description={referenceKind === 'category' ? 'Cada categoría canónica pertenece a un Tipo; los valores libres se reconcilian después.' : 'Una marca canónica puede aplicar a varios Tipos; los valores libres se reconcilian después.'} metadata={<CatalogReconciliationSummary canonicalCount={items.length} pendingCount={pending.length} value={surface} onChange={setSurface} />} canManage action={surface === 'canonical' ? <Button tone="primary" size="compact" onClick={() => openEditor('new')}><Plus size={16} aria-hidden="true" />Agregar {referenceKind === 'category' ? 'categoría' : 'marca'}</Button> : undefined} />
       <CatalogFeedback error={error} success={notice} />
-      <CatalogToolbar lifecycleFilter={surface === 'canonical' ? <CatalogLifecycleFilter value={status} activeCount={activeCount} inactiveCount={items.length - activeCount} onChange={setStatus} label={`Filtrar ${referenceKind === 'category' ? 'categorías' : 'marcas'} por estado`} /> : undefined} result={surface === 'canonical' ? formatCatalogResultCount(visible.length) : `${pending.length} por revisar`} />
-      {loading ? <CatalogLoadingState label={surface === 'canonical' ? 'Cargando referencias canónicas…' : 'Cargando valores por revisar…'} /> : surface === 'canonical' ? <CatalogTable><thead><tr><th>Referencia</th><th>Aplicable a</th><th>Estado</th><th data-mobile-hidden="true"><CatalogCanonicalUsageHeader description="Artículos vinculados por identidad canónica. No cuenta coincidencias del texto capturado." /></th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead><tbody>{visible.length === 0 ? <CatalogEmptyRow colSpan={5}>No hay referencias {status === 'active' ? 'activas' : status === 'inactive' ? 'inactivas' : 'en el catálogo'}.</CatalogEmptyRow> : visible.map((reference) => <tr key={id(reference)} data-status={reference.status.toLowerCase()}><td><CatalogEntityName label={reference.name} secondary={`v${reference.version}`} /></td><td>{reference.applicableKinds.map((kind) => kindLabels[kind]).join(', ')}</td><td><CatalogStatusBadge status={reference.status.toLowerCase() as 'active' | 'inactive'} /></td><td data-mobile-hidden="true"><CatalogUsage count={reference.usageCount ?? 0} singular="artículo" plural="artículos" /></td><td><CatalogRowActions emptyLabel="Sin acciones" actions={[{ key: 'edit', label: 'Editar', icon: Pencil, disabled: busy, onClick: () => openEditor(reference) }, { key: 'status', label: reference.status === 'ACTIVE' ? 'Desactivar' : 'Reactivar', icon: reference.status === 'INACTIVE' ? RotateCcw : undefined, disabled: busy, onClick: () => { void transition(reference); } }]} /></td></tr>)}</tbody></CatalogTable> : <CatalogTable><thead><tr><th>Valor capturado</th><th>Tipo aplicable</th><th data-mobile-hidden="true">Uso</th><th data-mobile-hidden="true">Primera / última vez</th><th data-mobile-hidden="true">Capturado por</th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead><tbody>{pending.length === 0 ? <CatalogEmptyRow colSpan={6}>No hay valores por revisar.</CatalogEmptyRow> : pending.map((item) => <tr key={pendingId(item)}><td><CatalogEntityName label={item.rawLabel} secondary={`Pendiente · v${item.version}`} /></td><td>{pendingKinds(item).map((kind) => kindLabels[kind]).join(', ')}</td><td data-mobile-hidden="true"><CatalogUsage count={item.usageCount} singular="artículo" plural="artículos" /></td><td data-mobile-hidden="true"><small>{date(item.firstSeenAt)}<br />{date(item.lastSeenAt)}</small></td><td data-mobile-hidden="true"><small>{item.capturedBy ?? 'Actor no disponible'}<br />Branch {item.capturedInBranchId.slice(0, 8)}</small></td><td><CatalogRowActions actions={[{ key: 'resolve', label: 'Resolver', tone: 'primary', disabled: busy, onClick: () => openResolver(item) }]} emptyLabel="Sin acciones" /></td></tr>)}</tbody></CatalogTable>}
+      <CatalogToolbar contextualFilter={<Field id="commercial-reference-type" label="Tipo"><Select id="commercial-reference-type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as CatalogItemKind | 'all')}><option value="all">Todos</option>{allKinds.map((kind) => <option key={kind} value={kind}>{kindLabels[kind]}</option>)}</Select></Field>} lifecycleFilter={surface === 'canonical' ? <CatalogLifecycleFilter value={status} activeCount={activeCount} inactiveCount={items.length - activeCount} onChange={setStatus} label={`Filtrar ${referenceKind === 'category' ? 'categorías' : 'marcas'} por estado`} /> : undefined} result={surface === 'canonical' ? formatCatalogResultCount(visible.length) : `${pending.length} por revisar`} />
+      {loading ? <CatalogLoadingState label={surface === 'canonical' ? 'Cargando referencias canónicas…' : 'Cargando valores por revisar…'} /> : surface === 'canonical' ? <CatalogTable><thead><tr><th>Referencia</th><th>Aplicable a</th><th>Estado</th><th data-mobile-hidden="true"><CatalogCanonicalUsageHeader description="Artículos vinculados por identidad canónica. No cuenta coincidencias del texto capturado." /></th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead><tbody>{visible.length === 0 ? <CatalogEmptyRow colSpan={5}>No hay referencias {status === 'active' ? 'activas' : status === 'inactive' ? 'inactivas' : 'en el catálogo'}.</CatalogEmptyRow> : visible.map((reference) => <tr key={id(reference)} data-status={reference.status.toLowerCase()}><td><CatalogEntityName label={reference.name} secondary={`v${reference.version}`} /></td><td>{reference.applicableKinds.map((kind) => kindLabels[kind]).join(', ')}</td><td><CatalogStatusBadge status={reference.status.toLowerCase() as 'active' | 'inactive'} /></td><td data-mobile-hidden="true"><CatalogUsage count={reference.usageCount ?? 0} singular="artículo" plural="artículos" /></td><td><CatalogRowActions emptyLabel="Sin acciones" actions={actions(reference)} /></td></tr>)}</tbody></CatalogTable> : <CatalogTable><thead><tr><th>Valor capturado</th><th>Tipo aplicable</th><th data-mobile-hidden="true">Uso</th><th data-mobile-hidden="true">Primera / última vez</th><th data-mobile-hidden="true">Capturado por</th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead><tbody>{pending.length === 0 ? <CatalogEmptyRow colSpan={6}>No hay valores por revisar.</CatalogEmptyRow> : pending.map((item) => <tr key={pendingId(item)}><td><CatalogEntityName label={item.rawLabel} secondary={`Pendiente · v${item.version}`} /></td><td>{pendingKinds(item).map((kind) => kindLabels[kind]).join(', ')}</td><td data-mobile-hidden="true"><CatalogUsage count={item.usageCount} singular="artículo" plural="artículos" /></td><td data-mobile-hidden="true"><small>{date(item.firstSeenAt)}<br />{date(item.lastSeenAt)}</small></td><td data-mobile-hidden="true"><small>{item.capturedBy ?? 'Actor no disponible'}<br />Branch {item.capturedInBranchId.slice(0, 8)}</small></td><td><CatalogRowActions actions={[{ key: 'resolve', label: 'Resolver', tone: 'primary', disabled: busy, onClick: () => openResolver(item) }]} emptyLabel="Sin acciones" /></td></tr>)}</tbody></CatalogTable>}
     </CatalogPanel>
 
     <Dialog open={editor !== null} title={editor === 'new' ? `Agregar ${referenceKind === 'category' ? 'categoría' : 'marca'}` : 'Editar referencia'} description="Gobierno Tenant-wide del catálogo comercial." onClose={() => !busy && setEditor(null)} footer={false}><form className={styles.editorForm} onSubmit={(event) => { void save(event); }}><Field id="commercial-reference-name" label="Nombre" required><Input id="commercial-reference-name" value={name} maxLength={120} onChange={(event) => setName(event.target.value)} /></Field><fieldset className={styles.resolutionModes}><legend>Aplicable a</legend>{allKinds.map((kind) => <label key={kind}><input type={referenceKind === 'category' ? 'radio' : 'checkbox'} name="commercial-kind" checked={kinds.includes(kind)} onChange={() => toggleKind(kind)} />{kindLabels[kind]}</label>)}</fieldset><div className={styles.dialogActions}><Button disabled={busy} onClick={() => setEditor(null)}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || !name.trim() || kinds.length < 1}>Guardar</Button></div></form></Dialog>
     <Dialog open={resolver !== null} title={`Resolver ${referenceKind === 'category' ? 'categoría' : 'marca'} pendiente`} description={resolver ? `Valor capturado: ${resolver.rawLabel} · ${usage(resolver.usageCount)}` : ''} onClose={() => !busy && setResolver(null)} footer={false}><form className={styles.editorForm} onSubmit={(event) => { void resolve(event); }}><div className={styles.resolutionModes} role="group" aria-label="Tipo de resolución"><label><input type="radio" checked={resolutionMode === 'existing'} onChange={() => { setResolutionMode('existing'); setResolutionId(''); setResolutionQuery(''); }} />Asociar a referencia existente</label><label><input type="radio" checked={resolutionMode === 'new'} onChange={() => { setResolutionMode('new'); setResolutionId(''); }} />Crear referencia canónica</label></div>{resolutionMode === 'existing' ? <Field id="commercial-resolution-search" label="Buscar referencia canónica compatible" required><div className={styles.resolutionSearch}><Input id="commercial-resolution-search" value={resolutionQuery} autoComplete="off" placeholder="Buscar…" role="combobox" aria-autocomplete="list" aria-expanded={candidates.length > 0} aria-controls="commercial-resolution-options" onChange={(event) => { setResolutionQuery(event.target.value); setResolutionId(''); }} />{candidates.length > 0 ? <div id="commercial-resolution-options" className={styles.resolutionOptions} role="listbox">{candidates.map((candidate) => <button key={id(candidate)} type="button" role="option" aria-selected={resolutionId === id(candidate)} onClick={() => { setResolutionId(id(candidate)); setResolutionQuery(candidate.name); }}><strong>{candidate.name}</strong><small>{candidate.applicableKinds.map((kind) => kindLabels[kind]).join(', ')}</small></button>)}</div> : resolutionQuery.trim() ? <small className={styles.resolutionEmpty}>No hay coincidencias canónicas activas y compatibles.</small> : null}</div></Field> : <><Field id="commercial-resolution-name" label="Nombre canónico" required><Input id="commercial-resolution-name" value={resolutionName} maxLength={120} onChange={(event) => setResolutionName(event.target.value)} /></Field><fieldset className={styles.resolutionModes}><legend>Aplicable a</legend>{allKinds.map((kind) => <label key={kind}><input type={referenceKind === 'category' ? 'radio' : 'checkbox'} checked={resolutionKinds.includes(kind)} disabled={requiredKinds.includes(kind)} onChange={() => toggleResolutionKind(kind)} />{kindLabels[kind]}{requiredKinds.includes(kind) ? ' · requerido por uso' : ''}</label>)}</fieldset></>}<p className={styles.confirmCopy}>Los artículos relacionados usarán la identidad canónica; el valor capturado y su trazabilidad permanecen intactos.</p><div className={styles.dialogActions}><Button disabled={busy} onClick={() => setResolver(null)}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || (resolutionMode === 'existing' ? !resolutionId : !resolutionName.trim() || resolutionKinds.length < 1)}>Resolver</Button></div></form></Dialog>
+    <CatalogSafeDeleteDialog open={deletion !== null} label={deletion?.name ?? ''} entityLabel={referenceKind === 'category' ? 'categoría comercial' : 'marca comercial'} busy={busy} restoreFocusSelector={deletion ? `#edit-commercial-${id(deletion)}` : undefined} onClose={() => setDeletion(null)} onConfirm={() => { void remove(); }} />
   </>;
 }

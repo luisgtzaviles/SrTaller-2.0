@@ -66,6 +66,7 @@ export class RepairModelCatalogService {
   }
   deactivate(context: RepairModelCatalogContext, value: unknown): Promise<RepairModelRecord> { return this.changeStatus(context, value, 'inactive', 'repair_model.deactivated'); }
   reactivate(context: RepairModelCatalogContext, value: unknown): Promise<RepairModelRecord> { return this.changeStatus(context, value, 'active', 'repair_model.reactivated'); }
+  delete(context: RepairModelCatalogContext, value: unknown) { const input = exactObject(value, ['modelId', 'expectedVersion']); const [eventId, correlationId] = ids(this.createId, 2); return this.repository.deleteModel(context, { referenceId: id(input.modelId, 'modelId'), kind: 'MODEL', eventId: eventId!, correlationId: correlationId!, expectedVersion: version(input.expectedVersion), occurredAt: this.now() }); }
   resolve(context: RepairModelCatalogContext, value: unknown): Promise<RepairModelPendingRecord> {
     const input = exactObject(value, ['pendingModelValueId', 'canonicalModelId', 'canonicalLabel', 'expectedVersion']);
     const hasExisting = input.canonicalModelId !== undefined && input.canonicalModelId !== null;

@@ -1,7 +1,7 @@
-import { Pencil, Plus, RotateCcw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
-import { changeRepairBrandStatus, createRepairBrand, getAdminRepairBrands, getPendingRepairBrands, PreviewApiError, renameRepairBrand, resolvePendingRepairBrand } from '../api.js';
+import { changeRepairBrandStatus, createRepairBrand, deleteRepairBrand, getAdminRepairBrands, getPendingRepairBrands, PreviewApiError, renameRepairBrand, resolvePendingRepairBrand } from '../api.js';
 import type { AdminRepairBrand, PendingRepairBrand } from '../api.js';
 import { normalizeInputLookupKey, normalizeRelatedRepairCatalogInput } from '../../../../src/modules/repairs/domain/new-repair-input-normalization.js';
 import {
@@ -15,13 +15,16 @@ import {
   CatalogPanel,
   CatalogReconciliationSummary,
   CatalogRowActions,
+  CatalogSafeDeleteDialog,
   CatalogScopeBadge,
   CatalogStatusBadge,
   CatalogTable,
   CatalogToolbar,
   CatalogUsage,
   catalogAdministrationStyles as styles,
+  catalogSafeDeleteFailure,
   formatCatalogResultCount,
+  deriveCatalogLifecycleActions,
 } from './catalogs/CatalogAdministration.js';
 import type { CatalogLifecycle, CatalogRowAction, CatalogSurface } from './catalogs/CatalogAdministration.js';
 import { Button, Field, Input } from './ui/controls.js';
@@ -48,6 +51,7 @@ export function RepairBrandCatalogPanel({ canManage, csrfToken }: Readonly<{ can
   const [editor, setEditor] = useState<AdminRepairBrand | 'new' | null>(null);
   const [label, setLabel] = useState('');
   const [transition, setTransition] = useState<AdminRepairBrand | null>(null);
+  const [deletion, setDeletion] = useState<AdminRepairBrand | null>(null);
   const [resolver, setResolver] = useState<PendingRepairBrand | null>(null);
   const [resolutionMode, setResolutionMode] = useState<'existing' | 'new'>('existing');
   const [resolutionBrandId, setResolutionBrandId] = useState('');
@@ -95,6 +99,7 @@ export function RepairBrandCatalogPanel({ canManage, csrfToken }: Readonly<{ can
       setTransition(null); load();
     } catch (cause: unknown) { setError(message(cause)); setTransition(null); load(undefined, true); } finally { setBusy(false); }
   }
+  async function remove(): Promise<void> { if (!deletion || !canManage) return; setBusy(true); setError(null); try { await deleteRepairBrand(deletion.brandId, deletion.version, csrfToken); setNotice('Marca sin referencias eliminada definitivamente.'); setDeletion(null); load(); } catch (cause) { setDeletion(null); setError(catalogSafeDeleteFailure(cause)); load(undefined, true); } finally { setBusy(false); } }
 
   function openResolver(item: PendingRepairBrand): void {
     setResolver(item); setResolutionMode('existing'); setResolutionBrandId(''); setResolutionQuery(''); setResolutionLabel(item.rawLabel); setError(null);
@@ -117,10 +122,7 @@ export function RepairBrandCatalogPanel({ canManage, csrfToken }: Readonly<{ can
 
   function actions(brand: AdminRepairBrand): readonly CatalogRowAction[] {
     if (brand.scope === 'platform' || !canManage) return [];
-    return [
-      { key: 'edit', id: `edit-brand-${brand.brandId}`, label: 'Editar', icon: Pencil, onClick: () => { setLabel(brand.label); setEditor(brand); setNotice(null); } },
-      { key: 'lifecycle', label: brand.status === 'active' ? 'Desactivar' : 'Reactivar', icon: brand.status === 'inactive' ? RotateCcw : undefined, onClick: () => setTransition(brand) },
-    ];
+    return deriveCatalogLifecycleActions({ idPrefix: `brand-${brand.brandId}`, status: brand.status, deletable: brand.deletable, busy, onEdit: () => { setLabel(brand.label); setEditor(brand); setNotice(null); }, onDelete: () => setDeletion(brand), onDeactivate: () => setTransition(brand), onReactivate: () => setTransition(brand) });
   }
 
   return <>
@@ -142,7 +144,8 @@ export function RepairBrandCatalogPanel({ canManage, csrfToken }: Readonly<{ can
     </CatalogPanel>
 
     <Dialog open={editor !== null} title={editor === 'new' ? 'Agregar marca' : 'Editar marca'} description="La etiqueta canónica se usa en sugerencias; los snapshots históricos no se reescriben." onClose={() => !busy && setEditor(null)} footer={false}><form className={styles.editorForm} onSubmit={(event) => { void save(event); }}><Field id="repair-brand-label" label="Nombre de la marca" required><Input id="repair-brand-label" value={label} minLength={2} maxLength={160} required autoComplete="off" onChange={(event) => setLabel(event.target.value)} onBlur={() => setLabel(normalizeRelatedRepairCatalogInput('brand', label))} /></Field><dl><div><dt>Alcance</dt><dd>Organización</dd></div></dl><div className={styles.dialogActions}><Button disabled={busy} onClick={() => setEditor(null)}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || label.trim().length < 2}>Guardar</Button></div></form></Dialog>
-    <Dialog open={transition !== null} title={transition?.status === 'active' ? 'Desactivar marca' : 'Reactivar marca'} description={transition?.label ?? ''} onClose={() => !busy && setTransition(null)} footer={<><Button disabled={busy} onClick={() => setTransition(null)}>Cancelar</Button><Button tone={transition?.status === 'active' ? 'danger' : 'primary'} disabled={busy} onClick={() => { void confirmTransition(); }}>{transition?.status === 'active' ? 'Desactivar' : 'Reactivar'}</Button></>}><p className={styles.confirmCopy}>La referencia histórica seguirá disponible. Sólo cambia su disponibilidad como sugerencia.</p></Dialog>
+    <Dialog open={transition !== null} title={transition?.status === 'active' ? 'Desactivar marca' : 'Reactivar marca'} description={transition?.label ?? ''} onClose={() => !busy && setTransition(null)} footer={<><Button disabled={busy} onClick={() => setTransition(null)}>Cancelar</Button><Button tone={transition?.status === 'active' ? 'secondary' : 'primary'} disabled={busy} onClick={() => { void confirmTransition(); }}>{transition?.status === 'active' ? 'Desactivar' : 'Reactivar'}</Button></>}><p className={styles.confirmCopy}>La referencia histórica seguirá disponible. Sólo cambia su disponibilidad como sugerencia.</p></Dialog>
     <Dialog open={resolver !== null} title="Resolver marca pendiente" description={`Valor capturado: ${resolver?.rawLabel ?? ''} · Usado: ${resolver ? usage(resolver.usageCount) : ''}`} onClose={() => !busy && setResolver(null)} footer={false}><form className={styles.editorForm} onSubmit={(event) => { void resolve(event); }}><div className={styles.resolutionModes} role="group" aria-label="Tipo de resolución"><label><input type="radio" checked={resolutionMode === 'existing'} onChange={() => { setResolutionMode('existing'); setResolutionBrandId(''); setResolutionQuery(''); }} />Asociar a marca existente</label><label><input type="radio" checked={resolutionMode === 'new'} onChange={() => { setResolutionMode('new'); setResolutionBrandId(''); }} />Crear como nueva marca de Organización</label></div>{resolutionMode === 'existing' ? <Field id="resolved-brand-search" label="Buscar marca canónica" required><div className={styles.resolutionSearch}><Input id="resolved-brand-search" value={resolutionQuery} autoComplete="off" placeholder="Buscar Apple…" role="combobox" aria-autocomplete="list" aria-expanded={resolutionCandidates.length > 0} aria-controls="resolved-brand-options" onChange={(event) => { setResolutionQuery(event.target.value); setResolutionBrandId(''); }} />{resolutionCandidates.length > 0 ? <div id="resolved-brand-options" className={styles.resolutionOptions} role="listbox" aria-label="Marcas canónicas disponibles">{resolutionCandidates.map((brand) => <button key={brand.brandId} type="button" role="option" aria-selected={resolutionBrandId === brand.brandId} onClick={() => { setResolutionBrandId(brand.brandId); setResolutionQuery(brand.label); }}><strong>{brand.label}</strong><small>{brand.scope === 'platform' ? 'Plataforma' : 'Organización'}</small></button>)}</div> : resolutionQuery.trim() && !resolutionBrandId ? <small className={styles.resolutionEmpty}>No hay coincidencias canónicas activas.</small> : null}</div></Field> : <Field id="resolved-brand-label" label="Nombre de la marca" required><Input id="resolved-brand-label" value={resolutionLabel} minLength={2} maxLength={160} required onChange={(event) => setResolutionLabel(event.target.value)} onBlur={() => setResolutionLabel(normalizeRelatedRepairCatalogInput('brand', resolutionLabel))} /></Field>}<p className={styles.confirmCopy}>Las reparaciones relacionadas usarán esta identidad para reportes. El texto capturado en cada reparación permanecerá intacto.</p><div className={styles.dialogActions}><Button disabled={busy} onClick={() => setResolver(null)}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || (resolutionMode === 'existing' ? !resolutionBrandId : resolutionLabel.trim().length < 2)}>Resolver</Button></div></form></Dialog>
+    <CatalogSafeDeleteDialog open={deletion !== null} label={deletion?.label ?? ''} entityLabel="marca de Reparaciones" busy={busy} restoreFocusSelector={deletion ? `#edit-brand-${deletion.brandId}` : undefined} onClose={() => setDeletion(null)} onConfirm={() => { void remove(); }} />
   </>;
 }

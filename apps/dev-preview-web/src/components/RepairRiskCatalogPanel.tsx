@@ -1,9 +1,10 @@
-import { Pencil, Plus, RotateCcw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
   changeRepairRiskStatus,
   createRepairRisk,
+  deleteRepairRisk,
   getAdminRepairRisks,
   PreviewApiError,
   renameRepairRisk,
@@ -20,13 +21,16 @@ import {
   CatalogLoadingState,
   CatalogPanel,
   CatalogRowActions,
+  CatalogSafeDeleteDialog,
   CatalogScopeBadge,
   CatalogStatusBadge,
   CatalogTable,
   CatalogToolbar,
   CatalogUsage,
   catalogAdministrationStyles as styles,
+  catalogSafeDeleteFailure,
   formatCatalogResultCount,
+  deriveCatalogLifecycleActions,
 } from './catalogs/CatalogAdministration.js';
 import type { CatalogLifecycle, CatalogRowAction } from './catalogs/CatalogAdministration.js';
 import { Button, Field, Input } from './ui/controls.js';
@@ -57,6 +61,7 @@ export function RepairRiskCatalogPanel({ canManage, csrfToken }: Readonly<{
   const [editor, setEditor] = useState<AdminRepairRisk | 'new' | null>(null);
   const [label, setLabel] = useState('');
   const [transition, setTransition] = useState<AdminRepairRisk | null>(null);
+  const [deletion, setDeletion] = useState<AdminRepairRisk | null>(null);
   const activeCount = risks.filter((risk) => risk.status === 'active').length;
   const inactiveCount = risks.length - activeCount;
   const visible = status === 'all' ? risks : risks.filter((risk) => risk.status === status);
@@ -113,13 +118,17 @@ export function RepairRiskCatalogPanel({ canManage, csrfToken }: Readonly<{
       setError(mutationMessage(cause)); setTransition(null); load(undefined, true);
     } finally { setBusy(false); }
   };
+  const remove = async (): Promise<void> => {
+    if (!deletion || !canManage) return;
+    setBusy(true); setError(null);
+    try { await deleteRepairRisk(deletion.riskId, deletion.version, csrfToken); setNotice({ title: 'Riesgo eliminado.', message: 'El registro sin referencias se eliminó definitivamente.' }); setDeletion(null); load(); }
+    catch (cause) { setDeletion(null); setError(catalogSafeDeleteFailure(cause)); load(undefined, true); }
+    finally { setBusy(false); }
+  };
 
   function actions(risk: AdminRepairRisk): readonly CatalogRowAction[] {
     if (risk.scope === 'platform' || !canManage) return [];
-    return [
-      { key: 'edit', id: `edit-risk-${risk.riskId}`, label: 'Editar', icon: Pencil, onClick: () => openEdit(risk) },
-      { key: 'lifecycle', label: risk.status === 'active' ? 'Desactivar' : 'Reactivar', icon: risk.status === 'inactive' ? RotateCcw : undefined, onClick: () => { setNotice(null); setTransition(risk); } },
-    ];
+    return deriveCatalogLifecycleActions({ idPrefix: `risk-${risk.riskId}`, status: risk.status, deletable: risk.deletable, busy, onEdit: () => openEdit(risk), onDelete: () => setDeletion(risk), onDeactivate: () => { setNotice(null); setTransition(risk); }, onReactivate: () => { setNotice(null); setTransition(risk); } });
   }
 
   return <>
@@ -146,8 +155,9 @@ export function RepairRiskCatalogPanel({ canManage, csrfToken }: Readonly<{
         <div className={styles.dialogActions}><Button disabled={busy} onClick={() => { setEditor(null); setDialogError(null); }}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || label.trim().length < 2}>{busy ? 'Guardando…' : 'Guardar'}</Button></div>
       </form>
     </Dialog>
-    <Dialog open={transition !== null} title={transition?.status === 'active' ? 'Desactivar riesgo' : 'Reactivar riesgo'} description={transition?.label ?? 'Cambio de disponibilidad'} onClose={() => !busy && setTransition(null)} footer={<><Button disabled={busy} onClick={() => setTransition(null)}>Cancelar</Button><Button tone={transition?.status === 'active' ? 'danger' : 'primary'} disabled={busy} onClick={() => { void confirmTransition(); }}>{transition?.status === 'active' ? 'Desactivar' : 'Reactivar'}</Button></>}>
+    <Dialog open={transition !== null} title={transition?.status === 'active' ? 'Desactivar riesgo' : 'Reactivar riesgo'} description={transition?.label ?? 'Cambio de disponibilidad'} onClose={() => !busy && setTransition(null)} footer={<><Button disabled={busy} onClick={() => setTransition(null)}>Cancelar</Button><Button tone={transition?.status === 'active' ? 'secondary' : 'primary'} disabled={busy} onClick={() => { void confirmTransition(); }}>{transition?.status === 'active' ? 'Desactivar' : 'Reactivar'}</Button></>}>
       <p className={styles.confirmCopy}>{transition?.status === 'active' ? 'Este riesgo dejará de estar disponible para nuevas reparaciones. Las reparaciones existentes conservarán su información.' : 'Este riesgo volverá a estar disponible para nuevas reparaciones de todas las sucursales de la organización.'}</p>
     </Dialog>
+    <CatalogSafeDeleteDialog open={deletion !== null} label={deletion?.label ?? ''} entityLabel="riesgo" busy={busy} restoreFocusSelector={deletion ? `#edit-risk-${deletion.riskId}` : undefined} onClose={() => setDeletion(null)} onConfirm={() => { void remove(); }} />
   </>;
 }
