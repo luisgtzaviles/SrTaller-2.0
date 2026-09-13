@@ -11,8 +11,8 @@
   `SUCCESS` sobre `9ed6885`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization,
   extendido sólo para la remediación Access.
-- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `In review`; revisión,
-  CI, merge y Preview pendientes.
+- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `In review`; revisión
+  independiente local PASS, CI, merge y Preview pendientes.
 - **WIP:** `1/1` en `fix/pbi-043-concurrent-operational-sessions`.
 - **PBI-040:** Owner Review congelado en
   `feature/pbi-040-catalog-pricing-core`; no integrado ni modificado por este
@@ -48,8 +48,10 @@ localmente. El candidato permite N Sessions por Station y conserva switch/
 logout por Session exacta. Una primera revisión Critical detectó debilidad en
 los oráculos de concurrencia y sobredeclaración de evidencia; el candidato fue
 remediado con locks PostgreSQL observables, revocación N-session, cruces
-lockout/CSRF/atribución materiales y un runner Chrome endurecido. La re-revisión
-del SHA final sigue pendiente; todavía no está integrado ni desplegado.
+lockout/CSRF/atribución materiales y un runner Chrome endurecido. La revisión
+independiente final de `fcf1eba` cerró PASS sin hallazgos Critical/High/Medium;
+`verify:full` de 12 etapas y PostgreSQL owner-scoped 2× MATCH también pasaron.
+El cambio todavía no está integrado ni desplegado.
 
 ## Capacidades integradas relevantes
 
@@ -71,7 +73,7 @@ del SHA final sigue pendiente; todavía no está integrado ni desplegado.
 | Drop unique parcial / índices | migración fresh/existing/down/reapply PASS; sin índice StationCredential injustificado |
 | Revocación efectiva N-session | contratos internos y PostgreSQL PASS |
 | Cookies/CSRF/PIN/timeout | Sin cambio aprobado |
-| Browser Owner + QA | PASS local; misma Station, perfiles y Users distintos |
+| Browser Owner + QA | PASS local; misma Station, perfiles y Users distintos; DOM/Console/Network gated |
 | Device/Session Admin | Fuera de alcance |
 | Global Access lifecycle audit | Fuera de alcance |
 
@@ -89,6 +91,6 @@ del SHA final sigue pendiente; todavía no está integrado ni desplegado.
 
 ## Próxima acción
 
-Completar `verify:full`, revisión independiente y CI del candidato PBI-043.
-Sólo con merge, exact-main y Preview validados se prepara su cierre documental;
+Publicar el candidato PBI-043 y obtener run-1, run-2 y comparison de CI. Sólo
+con merge, exact-main y Preview validados se prepara su cierre documental;
 PBI-040 permanece congelado y se reconciliará después desde el nuevo `main`.

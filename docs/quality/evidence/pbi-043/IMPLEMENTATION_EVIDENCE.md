@@ -66,7 +66,8 @@ La re-revisión de `b76e75b` cerró seis hallazgos y conservó uno Medium: el ga
 Chrome no rechazaba aún errores HTTP 4xx. Se remedió con reset explícito tras
 bootstrap, allowlist cerrada de `404 /favicon.ico`, error HTTP sanitizado y
 fallo ante cualquier otra respuesta 4xx/5xx o error de Console/Network. La
-revisión final debe confirmar esta corrección sobre el SHA nuevo.
+revisión final sobre `fcf1eba` confirmó esta corrección y cerró sin hallazgos
+Critical/High/Medium.
 
 ## PostgreSQL material
 
@@ -99,8 +100,8 @@ filas intactas.
 | Runtime local | `/livez` PASS; `/readyz` PASS; 52 migraciones y cero pendientes |
 | Baseline Repairs | New Repair y Worklist cargaron con fixtures sintéticos gobernados |
 | Price List | no forma parte de `main`; rama PBI-040 preservada sin modificación |
-| `verify:full` | pendiente sobre el SHA candidato final |
-| Independent Critical review | pendiente |
+| `verify:full` | PASS sobre `fcf1eba`; 12/12 stages, fingerprint `47ab0073cfe67115842bb4cffc77dd4b1fb599c8aff07cba0f10cc30716a5c65` |
+| Independent Critical review | PASS sobre `fcf1eba`; cero hallazgos Critical/High/Medium abiertos |
 | PR/CI/merge | pendiente |
 | Preview | pendiente; Production prohibida |
 
@@ -123,8 +124,11 @@ seed oficial. No se copió ni modificó código de PBI-040.
 
 ## Evidencia de integración pendiente
 
-Se completará con PR, SHA final, run-1, run-2, comparison, revisión
-independiente, merge SHA, exact-main CI y provenance/health/smokes de Preview.
+La evidencia local candidata queda vinculada a `fcf1eba`: `verify:full` PASS,
+PostgreSQL owner-scoped 2× MATCH con hash material
+`a4d67c930d024ec3946ca051d3eb335d51765eda4b6ced8774bc77f50b50a298`
+y revisión independiente PASS. Se completará con PR, SHA final, run-1, run-2,
+comparison, merge SHA, exact-main CI y provenance/health/smokes de Preview.
 
 ## Próxima revisión
 
