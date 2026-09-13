@@ -49,11 +49,16 @@
   búsqueda por tokens de nombre y coincidencia exacta de SKU/barcode, filtros y
   precio efectivo quedaron disponibles sin construir importación ni Files.
 - Categoría y Marca son comboboxes escribibles, accesibles y filtrados por Tipo.
-  Una creación explícita por Enter/click nace Por revisar, queda seleccionada y
-  no descarta el draft; blur no crea datos.
+  Una captura explícita por Enter/click queda seleccionada en el draft y sólo se
+  persiste atómicamente con el artículo como referencia pendiente; blur y
+  cancelar no crean datos ni canon.
 - Configuración > Catálogos incorpora el módulo Lista de precios para gobernar
   aplicabilidad, lifecycle y reconciliación. Category pertenece a un Tipo;
   CommercialBrand conserva identidad Tenant-wide y puede aplicar a varios.
+- La reconciliación usa una única acción `Resolver`: asociar a un canon activo y
+  compatible o crear canon. En ambos casos los artículos adoptan el ID canónico
+  sin perder la captura, primera/última observación, actor, Branch, uso ni
+  resultado de resolución.
 - SKU y código de barras internos se resuelven server-side cuando quedan vacíos.
   Code 128 se conserva como representación futura, no como identificador.
 

@@ -23,6 +23,7 @@ import {
   localRepairLocationMovementRows,
   localSeedRows,
   localUserRows,
+  LOCAL_OWNER_USER_ID,
   LOCAL_STATION_CREDENTIAL_ID,
   LOCAL_STATION_ID,
   localStationBootstrapCredentialHash,
@@ -52,6 +53,26 @@ const pool = new Pool({
 
 const rows = localSeedRows();
 const repairCatalogs = localRepairCatalogRows();
+const catalogReviewFixture = Object.freeze({
+  actorId: LOCAL_OWNER_USER_ID,
+  actorDisplayName: 'Owner local sintético',
+  sessionId: '00000000-0000-4000-8000-000000039001',
+  categoryIds: Object.freeze({
+    part: '00000000-0000-4000-8000-000000031001',
+    product: '00000000-0000-4000-8000-000000031002',
+    pending: '00000000-0000-4000-8000-000000033001',
+  }),
+  brandIds: Object.freeze({
+    apple: '00000000-0000-4000-8000-000000032001',
+    pending: '00000000-0000-4000-8000-000000034001',
+  }),
+  itemIds: Object.freeze([
+    '00000000-0000-4000-8000-000000035001',
+    '00000000-0000-4000-8000-000000035002',
+    '00000000-0000-4000-8000-000000035003',
+  ]),
+  repairPendingDeviceTypeId: '00000000-0000-4000-8000-000000029001',
+});
 const pinCredentials = await localPinCredentialRows({
   ...values,
   SR_LOCAL_PIN_JORGE: process.env.SR_LOCAL_PIN_JORGE ?? values.SR_LOCAL_PIN_JORGE,
@@ -246,6 +267,177 @@ try {
      VALUES ($1::uuid, $2, $3::uuid, $4::uuid, null, $5::timestamptz)
      ON CONFLICT (credential_id) DO UPDATE SET credential_hash = EXCLUDED.credential_hash, revoked_at = null`,
     [LOCAL_STATION_CREDENTIAL_ID, localStationBootstrapCredentialHash(values), rows.tenant.tenantId, LOCAL_STATION_ID, rows.tenant.createdAt],
+  );
+  await client.query(
+    `INSERT INTO catalog_categories (
+       tenant_id, category_id, display_name, normalized_name, status,
+       created_by_actor_id, created_in_branch_id, created_in_station_id,
+       created_in_session_id, version, created_at, updated_at
+     ) VALUES
+       ($1::uuid, $2::uuid, 'Pantallas', 'pantallas', 'ACTIVE', $3::uuid, $4::uuid, $5::uuid, $6::uuid, 1, $7::timestamptz, $7::timestamptz),
+       ($1::uuid, $8::uuid, 'Fundas', 'fundas', 'ACTIVE', $3::uuid, $4::uuid, $5::uuid, $6::uuid, 1, $7::timestamptz, $7::timestamptz)
+     ON CONFLICT (tenant_id, category_id) DO UPDATE SET
+       display_name = EXCLUDED.display_name, normalized_name = EXCLUDED.normalized_name,
+       status = EXCLUDED.status, updated_at = EXCLUDED.updated_at`,
+    [rows.tenant.tenantId, catalogReviewFixture.categoryIds.part, catalogReviewFixture.actorId,
+      rows.branches[0].branchId, LOCAL_STATION_ID, catalogReviewFixture.sessionId,
+      rows.tenant.createdAt, catalogReviewFixture.categoryIds.product],
+  );
+  await client.query(
+    `INSERT INTO catalog_category_kind_applicability (tenant_id, category_id, kind)
+     VALUES ($1::uuid, $2::uuid, 'PART'), ($1::uuid, $3::uuid, 'PRODUCT')
+     ON CONFLICT (tenant_id, category_id, kind) DO NOTHING`,
+    [rows.tenant.tenantId, catalogReviewFixture.categoryIds.part, catalogReviewFixture.categoryIds.product],
+  );
+  await client.query(
+    `INSERT INTO catalog_brands (
+       tenant_id, brand_id, display_name, normalized_name, status,
+       created_by_actor_id, created_in_branch_id, created_in_station_id,
+       created_in_session_id, version, created_at, updated_at
+     ) VALUES ($1::uuid, $2::uuid, 'Apple', 'apple', 'ACTIVE', $3::uuid, $4::uuid, $5::uuid, $6::uuid, 1, $7::timestamptz, $7::timestamptz)
+     ON CONFLICT (tenant_id, brand_id) DO UPDATE SET
+       display_name = EXCLUDED.display_name, normalized_name = EXCLUDED.normalized_name,
+       status = EXCLUDED.status, updated_at = EXCLUDED.updated_at`,
+    [rows.tenant.tenantId, catalogReviewFixture.brandIds.apple, catalogReviewFixture.actorId,
+      rows.branches[0].branchId, LOCAL_STATION_ID, catalogReviewFixture.sessionId, rows.tenant.createdAt],
+  );
+  await client.query(
+    `INSERT INTO catalog_brand_kind_applicability (tenant_id, brand_id, kind)
+     VALUES ($1::uuid, $2::uuid, 'PART'), ($1::uuid, $2::uuid, 'PRODUCT')
+     ON CONFLICT (tenant_id, brand_id, kind) DO NOTHING`,
+    [rows.tenant.tenantId, catalogReviewFixture.brandIds.apple],
+  );
+  await client.query(
+    `INSERT INTO catalog_category_pending_values (
+       tenant_id, pending_category_value_id, raw_label_example, normalized_key, kind,
+       resolution_status, canonical_category_id, version, first_seen_at, last_seen_at,
+       captured_by_actor_id, captured_by_actor_display_name, captured_in_branch_id,
+       captured_in_station_id, captured_in_session_id, resolved_by_actor_id, resolved_at
+     ) VALUES ($1::uuid, $2::uuid, 'Fundas premium', 'fundas premium', 'PRODUCT',
+       'PENDING', null, 1, $3::timestamptz, $4::timestamptz, $5::uuid, $6,
+       $7::uuid, $8::uuid, $9::uuid, null, null)
+     ON CONFLICT (tenant_id, pending_category_value_id) DO NOTHING`,
+    [rows.tenant.tenantId, catalogReviewFixture.categoryIds.pending,
+      '2026-08-20T16:00:00.000Z', '2026-08-22T18:30:00.000Z', catalogReviewFixture.actorId,
+      catalogReviewFixture.actorDisplayName, rows.branches[0].branchId, LOCAL_STATION_ID,
+      catalogReviewFixture.sessionId],
+  );
+  await client.query(
+    `INSERT INTO catalog_brand_pending_values (
+       tenant_id, pending_brand_value_id, raw_label_example, normalized_key,
+       resolution_status, canonical_brand_id, version, first_seen_at, last_seen_at,
+       captured_by_actor_id, captured_by_actor_display_name, captured_in_branch_id,
+       captured_in_station_id, captured_in_session_id, resolved_by_actor_id, resolved_at
+     ) VALUES ($1::uuid, $2::uuid, 'Aple', 'aple', 'PENDING', null, 1,
+       $3::timestamptz, $4::timestamptz, $5::uuid, $6, $7::uuid, $8::uuid, $9::uuid, null, null)
+     ON CONFLICT (tenant_id, pending_brand_value_id) DO NOTHING`,
+    [rows.tenant.tenantId, catalogReviewFixture.brandIds.pending,
+      '2026-08-21T15:00:00.000Z', '2026-08-23T19:00:00.000Z', catalogReviewFixture.actorId,
+      catalogReviewFixture.actorDisplayName, rows.branches[0].branchId, LOCAL_STATION_ID,
+      catalogReviewFixture.sessionId],
+  );
+  await client.query(
+    `INSERT INTO catalog_brand_pending_kind_applicability (tenant_id, pending_brand_value_id, kind)
+     VALUES ($1::uuid, $2::uuid, 'PART'), ($1::uuid, $2::uuid, 'PRODUCT')
+     ON CONFLICT (tenant_id, pending_brand_value_id, kind) DO NOTHING`,
+    [rows.tenant.tenantId, catalogReviewFixture.brandIds.pending],
+  );
+  const catalogItems = Object.freeze([
+    [catalogReviewFixture.itemIds[0], 'PART', 'Pantalla iPhone 11 OLED', 'pantalla iphone 11 oled', catalogReviewFixture.categoryIds.part, catalogReviewFixture.brandIds.apple, null, null, true, true, true, true],
+    [catalogReviewFixture.itemIds[1], 'PRODUCT', 'Funda iPhone 16 rosa', 'funda iphone 16 rosa', null, null, catalogReviewFixture.categoryIds.pending, catalogReviewFixture.brandIds.pending, true, true, true, false],
+    [catalogReviewFixture.itemIds[2], 'PART', 'Mica iPhone 15 transparente', 'mica iphone 15 transparente', catalogReviewFixture.categoryIds.part, null, null, catalogReviewFixture.brandIds.pending, true, true, true, true],
+  ]);
+  for (const item of catalogItems) {
+    await client.query(
+      `INSERT INTO catalog_items (
+         tenant_id, item_id, kind, title, normalized_title, description,
+         category_id, brand_id, pending_category_value_id, pending_brand_value_id,
+         status, sellable, stockable, purchasable, applicable_to_repair,
+         version, created_at, updated_at
+       ) VALUES ($1::uuid, $2::uuid, $3, $4, $5, null, $6::uuid, $7::uuid,
+         $8::uuid, $9::uuid, 'ACTIVE', $10, $11, $12, $13, 1, $14::timestamptz, $14::timestamptz)
+       ON CONFLICT (tenant_id, item_id) DO UPDATE SET
+         title = EXCLUDED.title, normalized_title = EXCLUDED.normalized_title,
+         status = EXCLUDED.status, updated_at = EXCLUDED.updated_at`,
+      [rows.tenant.tenantId, ...item, rows.tenant.createdAt],
+    );
+  }
+  const catalogIdentifiers = Object.freeze([
+    ['00000000-0000-4000-8000-000000036001', catalogReviewFixture.itemIds[0], 'SKU', 'REF-000042'],
+    ['00000000-0000-4000-8000-000000036002', catalogReviewFixture.itemIds[0], 'BARCODE', 'SR00000042'],
+    ['00000000-0000-4000-8000-000000036003', catalogReviewFixture.itemIds[1], 'SKU', 'PRO-000043'],
+    ['00000000-0000-4000-8000-000000036004', catalogReviewFixture.itemIds[1], 'BARCODE', 'SR00000043'],
+    ['00000000-0000-4000-8000-000000036005', catalogReviewFixture.itemIds[2], 'SKU', 'REF-000044'],
+    ['00000000-0000-4000-8000-000000036006', catalogReviewFixture.itemIds[2], 'BARCODE', 'SR00000044'],
+  ]);
+  for (const identifier of catalogIdentifiers) {
+    await client.query(
+      `INSERT INTO catalog_item_identifiers (
+         tenant_id, identifier_id, item_id, scheme, normalized_value, display_value, created_at
+       ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, $5, $6::timestamptz)
+       ON CONFLICT (tenant_id, identifier_id) DO NOTHING`,
+      [rows.tenant.tenantId, ...identifier, rows.tenant.createdAt],
+    );
+  }
+  for (const [index, item] of catalogItems.entries()) {
+    await client.query(
+      `INSERT INTO catalog_base_price_revisions (
+         tenant_id, revision_id, item_id, amount_minor, currency, item_version,
+         reason, actor_user_id, correlation_id, effective_from
+       ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4, 'MXN', 1, 'Fixture sintético Owner Review',
+         $5::uuid, $6::uuid, $7::timestamptz)
+       ON CONFLICT (tenant_id, revision_id) DO NOTHING`,
+      [rows.tenant.tenantId, `00000000-0000-4000-8000-${String(37001 + index).padStart(12, '0')}`,
+        item[0], [139900, 29900, 24900][index], catalogReviewFixture.actorId,
+        `00000000-0000-4000-8000-${String(38001 + index).padStart(12, '0')}`, rows.tenant.createdAt],
+    );
+  }
+  await client.query(
+    `INSERT INTO catalog_reference_cost_revisions (
+       tenant_id, revision_id, item_id, amount_minor, currency, source_type,
+       source_label, observed_at, item_version, reason, actor_user_id,
+       correlation_id, effective_from
+     ) VALUES ($1::uuid, $2::uuid, $3::uuid, 48000, 'MXN', 'MANUAL',
+       'Fixture sintético Owner Review', $4::timestamptz, 1, null, $5::uuid,
+       $6::uuid, $4::timestamptz)
+     ON CONFLICT (tenant_id, revision_id) DO NOTHING`,
+    [rows.tenant.tenantId, '00000000-0000-4000-8000-000000037101',
+      catalogReviewFixture.itemIds[0], rows.tenant.createdAt, catalogReviewFixture.actorId,
+      '00000000-0000-4000-8000-000000038101'],
+  );
+  await client.query(
+    `INSERT INTO catalog_branch_price_revisions (
+       tenant_id, branch_id, revision_id, item_id, action, amount_minor, currency,
+       item_version, reason, actor_user_id, correlation_id, effective_from
+     ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, 'SET', 149900, 'MXN', 1,
+       'Fixture sintético de override', $5::uuid, $6::uuid, $7::timestamptz)
+     ON CONFLICT (tenant_id, branch_id, revision_id) DO NOTHING`,
+    [rows.tenant.tenantId, rows.branches[0].branchId,
+      '00000000-0000-4000-8000-000000037201', catalogReviewFixture.itemIds[0],
+      catalogReviewFixture.actorId, '00000000-0000-4000-8000-000000038201', rows.tenant.createdAt],
+  );
+  await client.query(
+    `INSERT INTO catalog_sku_sequences (tenant_id, kind, next_value)
+     VALUES ($1::uuid, 'PART', 100), ($1::uuid, 'PRODUCT', 100), ($1::uuid, 'SERVICE', 100), ($1::uuid, 'SUPPLY', 100)
+     ON CONFLICT (tenant_id, kind) DO UPDATE SET next_value = greatest(catalog_sku_sequences.next_value, EXCLUDED.next_value)`,
+    [rows.tenant.tenantId],
+  );
+  await client.query(
+    `INSERT INTO catalog_barcode_sequences (tenant_id, next_value)
+     VALUES ($1::uuid, 100)
+     ON CONFLICT (tenant_id) DO UPDATE SET next_value = greatest(catalog_barcode_sequences.next_value, EXCLUDED.next_value)`,
+    [rows.tenant.tenantId],
+  );
+  await client.query(
+    `INSERT INTO repair_device_type_pending_values (
+       pending_device_type_value_id, tenant_id, raw_label_example, normalized_key,
+       resolution_status, canonical_device_type_id, version, first_seen_at,
+       last_seen_at, resolved_by_actor_id, resolved_at
+     ) VALUES ($1::uuid, $2::uuid, 'Smart Watch', 'smart watch', 'pending', null, 1,
+       $3::timestamptz, $4::timestamptz, null, null)
+     ON CONFLICT (pending_device_type_value_id) DO NOTHING`,
+    [catalogReviewFixture.repairPendingDeviceTypeId, rows.tenant.tenantId,
+      '2026-08-18T15:00:00.000Z', '2026-08-22T17:00:00.000Z'],
   );
   for (const item of repairCatalogs.deviceTypes) {
     await client.query(
@@ -472,6 +664,17 @@ try {
       ],
     );
   }
+  await client.query(
+    `UPDATE repair_intakes intake
+     SET device_type = 'Smart Watch', pending_device_type_value_id = $1::uuid
+     FROM repair_device_type_pending_values pending
+     WHERE pending.pending_device_type_value_id = $1::uuid
+       AND pending.resolution_status = 'pending'
+       AND intake.tenant_id = $2::uuid AND intake.repair_id = $3::uuid
+       AND intake.canonical_device_type_id is null`,
+    [catalogReviewFixture.repairPendingDeviceTypeId, rows.tenant.tenantId,
+      '00000000-0000-4000-8000-000000001015'],
+  );
   for (const problem of localRepairProblemClassificationRows()) {
     await client.query(
       `INSERT INTO repair_problem_classifications (
@@ -606,6 +809,10 @@ process.stdout.write(`${JSON.stringify({
   pinCredentialCount: pinCredentials.length,
   repairCount: localRepairRows().length,
   repairCatalogFixtureDefinitionCount: Object.values(repairCatalogs).reduce((total, items) => total + items.length, 0),
+  repairPendingDeviceTypeFixtureCount: 1,
+  catalogCanonicalFixtureCount: 3,
+  catalogPendingReferenceFixtureCount: 2,
+  catalogItemFixtureCount: catalogReviewFixture.itemIds.length,
   repairCanonicalLinksCreated: 0,
   repairIntakeCount: localRepairIntakeRows().length,
   repairProblemClassificationCount: localRepairProblemClassificationRows().length,

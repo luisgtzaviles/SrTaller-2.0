@@ -128,30 +128,66 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     const serviceCategory = await category(service, ctxA1, 'Mantenimiento', 'SERVICE');
     const supplyCategory = await category(service, ctxA1, 'Consumibles', 'SUPPLY');
     const productCategory = await category(service, ctxA1, 'Fundas', 'PRODUCT');
-    const pendingCategory = await service.createCategory(ctxA1, command({ name: 'Termos', applicableKinds: ['PRODUCT'] }), 'PENDING');
-    const pendingBrand = await service.createBrand(ctxA1, command({ name: 'Marca Owner QA', applicableKinds: ['PRODUCT'] }), 'PENDING');
-    assert.equal(pendingCategory.reviewStatus, 'PENDING');
-    assert.deepEqual(pendingCategory.applicableKinds, ['PRODUCT']);
-    assert.equal(pendingBrand.reviewStatus, 'PENDING');
-    await assert.rejects(
-      item(service, ctxA1, { kind: 'PART', title: 'Combinación inválida', categoryId: pendingCategory.categoryId, brandId: pendingBrand.brandId }),
-      CatalogNotFoundError,
-    );
     const explicitIdentifiers = await item(service, ctxA1, {
-      kind: 'PRODUCT', title: 'Termo Owner QA', categoryId: pendingCategory.categoryId, brandId: pendingBrand.brandId,
+      kind: 'PRODUCT', title: 'Termo Owner QA', categoryId: null, categoryCapturedValue: 'Termoz', brandId: null, brandCapturedValue: 'Marca Owner QA',
       sku: 'PRO-TERMO-QA', barcode: 'SRTERMOQA', basePriceAmountMinor: 49900,
     });
+    assert.equal(explicitIdentifiers.category.reconciliationStatus, 'PENDING');
+    assert.equal(explicitIdentifiers.category.name, 'Termoz');
+    assert.equal(explicitIdentifiers.brand.reconciliationStatus, 'PENDING');
     assert.equal(explicitIdentifiers.identifiers.some(({ scheme, value }) => scheme === 'SKU' && value === 'PRO-TERMO-QA'), true);
     assert.equal(explicitIdentifiers.identifiers.some(({ scheme, value }) => scheme === 'BARCODE' && value === 'SRTERMOQA'), true);
-    const approvedPendingBrand = await service.resolveBrand(ctxA1, pendingBrand.brandId, {
-      resolution: 'APPROVE', targetId: null, expectedVersion: pendingBrand.version, clientRequestId: randomUUID(),
+    const firstPending = await service.listReferences({ tenantId: tenantA, branchId: branchA1 });
+    const pendingCategory = firstPending.pendingCategories.find(({ rawLabel }) => rawLabel === 'Termoz');
+    const pendingBrand = firstPending.pendingBrands.find(({ rawLabel }) => rawLabel === 'Marca Owner QA');
+    assert.equal(pendingCategory.usageCount, 1);
+    assert.equal(pendingCategory.kind, 'PRODUCT');
+    assert.deepEqual(pendingBrand.applicableKinds, ['PRODUCT']);
+    assert.equal(pendingBrand.capturedBy, 'Owner QA');
+    await assert.rejects(service.resolveCategory(ctxB1, pendingCategory.pendingCategoryValueId, {
+      canonicalCategoryId: categoryB.categoryId, expectedVersion: pendingCategory.version, clientRequestId: randomUUID(),
+    }), CatalogNotFoundError);
+    await assert.rejects(service.resolveCategory(ctxA1, pendingCategory.pendingCategoryValueId, {
+      canonicalCategoryId: serviceCategory.categoryId, expectedVersion: pendingCategory.version, clientRequestId: randomUUID(),
+    }), CatalogConflictError);
+    const resolvedPendingCategory = await service.resolveCategory(ctxA1, pendingCategory.pendingCategoryValueId, {
+      canonicalCategoryId: productCategory.categoryId, expectedVersion: pendingCategory.version, clientRequestId: randomUUID(),
     });
-    assert.equal(approvedPendingBrand.reviewStatus, 'APPROVED');
-    const mergedPendingCategory = await service.resolveCategory(ctxA1, pendingCategory.categoryId, {
-      resolution: 'MERGE', targetId: productCategory.categoryId, expectedVersion: pendingCategory.version, clientRequestId: randomUUID(),
+    assert.equal(resolvedPendingCategory.resolutionStatus, 'RESOLVED');
+    const resolvedPendingBrand = await service.resolveBrand(ctxA1, pendingBrand.pendingBrandValueId, {
+      canonicalBrandId: brandA.brandId, expectedVersion: pendingBrand.version, clientRequestId: randomUUID(),
     });
-    assert.equal(mergedPendingCategory.reviewStatus, 'MERGED');
-    assert.equal((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, explicitIdentifiers.itemId)).category.categoryId, productCategory.categoryId);
+    assert.equal(resolvedPendingBrand.resolutionStatus, 'RESOLVED');
+    const resolvedExistingItem = await service.getItem({ tenantId: tenantA, branchId: branchA1 }, explicitIdentifiers.itemId);
+    assert.equal(resolvedExistingItem.category.categoryId, productCategory.categoryId);
+    assert.equal(resolvedExistingItem.category.pendingCategoryValueId, pendingCategory.pendingCategoryValueId);
+    assert.equal(resolvedExistingItem.brand.brandId, brandA.brandId);
+    assert.equal(resolvedExistingItem.brand.pendingBrandValueId, pendingBrand.pendingBrandValueId);
+
+    const newCanonicalItem = await item(service, ctxA1, {
+      kind: 'PRODUCT', title: 'Accesorio capturado', categoryId: null, categoryCapturedValue: 'Accesorio Premium', brandId: null, brandCapturedValue: 'Casa QA', basePriceAmountMinor: 25000,
+    });
+    const secondPending = await service.listReferences({ tenantId: tenantA, branchId: branchA1 });
+    const newCategoryPending = secondPending.pendingCategories.find(({ rawLabel }) => rawLabel === 'Accesorio Premium');
+    const newBrandPending = secondPending.pendingBrands.find(({ rawLabel }) => rawLabel === 'Casa QA');
+    const createdCategoryResolution = await service.resolveCategory(ctxA1, newCategoryPending.pendingCategoryValueId, {
+      canonicalName: 'Accesorios premium', applicableKinds: ['PRODUCT'], expectedVersion: newCategoryPending.version, clientRequestId: randomUUID(),
+    });
+    const createdBrandResolution = await service.resolveBrand(ctxA1, newBrandPending.pendingBrandValueId, {
+      canonicalName: 'Casa QA', applicableKinds: ['PART', 'PRODUCT'], expectedVersion: newBrandPending.version, clientRequestId: randomUUID(),
+    });
+    assert.equal(createdCategoryResolution.canonicalName, 'Accesorios premium');
+    assert.deepEqual(createdBrandResolution.applicableKinds, ['PRODUCT']);
+    const resolvedNewItem = await service.getItem({ tenantId: tenantA, branchId: branchA1 }, newCanonicalItem.itemId);
+    assert.equal(resolvedNewItem.category.name, 'Accesorios premium');
+    assert.equal(resolvedNewItem.brand.name, 'Casa QA');
+
+    const duplicateCandidate = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Duplicado próximo', categoryId: null, categoryCapturedValue: 'fúndas', basePriceAmountMinor: 10000 });
+    const duplicatePending = (await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).pendingCategories.find(({ rawLabel }) => rawLabel === 'fúndas');
+    await assert.rejects(service.resolveCategory(ctxA1, duplicatePending.pendingCategoryValueId, {
+      canonicalName: ' FUNDAS ', applicableKinds: ['PRODUCT'], expectedVersion: duplicatePending.version, clientRequestId: randomUUID(),
+    }), CatalogConflictError);
+    assert.equal((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, duplicateCandidate.itemId)).category.reconciliationStatus, 'PENDING');
 
     const partA = await item(service, ctxA1, {
       categoryId: categoryA.categoryId, brandId: brandA.brandId,
@@ -290,12 +326,12 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
       `with inserted as (
          insert into catalog_items (
            tenant_id, item_id, kind, title, normalized_title, description,
-           category_id, brand_id, status, sellable, stockable, purchasable,
+           category_id, brand_id, pending_category_value_id, pending_brand_value_id, status, sellable, stockable, purchasable,
            applicable_to_repair, version, created_at, updated_at
          )
          select $1, gen_random_uuid(), 'PRODUCT', 'Benchmark item ' || value,
                 'benchmark item ' || lpad(value::text, 5, '0'), null,
-                $2, null, 'ACTIVE', true, true, true, false, 1, now(), now()
+                $2, null, null, null, 'ACTIVE', true, true, true, false, 1, now(), now()
          from generate_series(1, 10000) as values(value)
          returning tenant_id, item_id
        )

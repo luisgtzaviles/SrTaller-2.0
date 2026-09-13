@@ -138,13 +138,36 @@ del equipo pueden verse iguales sin ser la misma autoridad. Una futura relación
 explícita puede mapear ambos IDs mediante contratos; no hay sync por nombre ni
 promoción automática.
 
-Categorías y marcas creadas explícitamente desde el combobox operativo nacen
-`PENDING`/Por revisar, se pueden usar sin bloquear el alta y conservan actor,
-Branch, Station, Session y fecha. Configuración > Catálogos > Lista de precios
-es la superficie central para aprobar, editar, retirar o fusionar esos valores.
-La fusión reasigna los artículos de forma transaccional, conserva la identidad
-origen como `MERGED` inactiva y audita destino y cantidad afectada. Un blur nunca
-crea referencias.
+Un valor nuevo capturado explícitamente desde el combobox operativo no nace como
+categoría o marca canónica. El alta del artículo conserva el texto normalizado en
+una referencia pendiente propia de `catalog`, junto con Tipo aplicable, actor,
+Branch, Station, Session, primera/última observación y cantidad de usos. Un blur
+o cancelar el formulario nunca persisten una referencia.
+
+Configuración > Catálogos > Lista de precios es la superficie de reconciliación.
+`Resolver` ofrece exactamente dos resultados: asociar a una referencia canónica
+activa y compatible, o crear una referencia canónica con nombre, aplicabilidad y
+lifecycle gobernados. Ambos resultados reasignan los artículos de forma
+transaccional a la identidad canónica y conservan intactos el valor capturado y
+su trazabilidad. No existe una identidad provisional en `catalog_categories` o
+`catalog_brands`, ni acciones distintas de “aprobar” o “fusionar” para expresar
+la misma decisión.
+
+### 5.1 Patrón transversal de reconciliación
+
+Repairs y Catalog comparten este lenguaje de producto:
+
+```text
+Referencia capturada → Reconciliación pendiente → Referencia canónica
+```
+
+Compartir el patrón y las primitives de interacción no une los bounded contexts.
+Cada módulo conserva sus tablas, IDs, normalización, reglas de compatibilidad,
+eventos y capabilities. La resolución nunca reescribe la captura histórica: deja
+registrados texto original, primera/última observación, actor, uso, resultado y
+destino canónico. Las búsquedas y filtros operativos enumeran únicamente
+referencias canónicas activas; un artículo pendiente sigue siendo visible sin
+convertir su captura en una opción de filtro.
 
 La imagen es metadata opcional del artículo, nunca identificador ni criterio de
 matching. `Files` será owner del objeto binario y `catalog` de la asociación de

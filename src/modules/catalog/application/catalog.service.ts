@@ -14,6 +14,8 @@ import type {
   CatalogBrandRecord,
   CatalogCategoryRecord,
   CatalogMutationContext,
+  CatalogPendingBrandRecord,
+  CatalogPendingCategoryRecord,
   CatalogRepositoryPort,
   CatalogScope,
 } from './ports/catalog-repository.port.js';
@@ -86,8 +88,8 @@ export class CatalogService {
   listReferences(scope: CatalogScope) { return this.repository.listReferences(scope); }
   async listOperationalReferences(scope: CatalogScope) {
     const references = await this.repository.listReferences(scope);
-    const category = ({ categoryId, name, status, reviewStatus, applicableKinds, version }: CatalogCategoryRecord) => Object.freeze({ categoryId, name, status, reviewStatus, applicableKinds, version });
-    const brand = ({ brandId, name, status, reviewStatus, applicableKinds, version }: CatalogBrandRecord) => Object.freeze({ brandId, name, status, reviewStatus, applicableKinds, version });
+    const category = ({ categoryId, name, status, applicableKinds, version }: CatalogCategoryRecord) => Object.freeze({ categoryId, name, status, applicableKinds, version });
+    const brand = ({ brandId, name, status, applicableKinds, version }: CatalogBrandRecord) => Object.freeze({ brandId, name, status, applicableKinds, version });
     return Object.freeze({
       categories: Object.freeze(references.categories.map(category)),
       brands: Object.freeze(references.brands.map(brand)),
@@ -96,26 +98,26 @@ export class CatalogService {
   }
   getItem(scope: CatalogScope, itemId: unknown) { return this.repository.getItem(scope, identifier(itemId, 'itemId')); }
 
-  async createCategory(context: CatalogMutationContext, value: unknown, reviewStatus: 'APPROVED' | 'PENDING' = 'APPROVED') {
+  async createCategory(context: CatalogMutationContext, value: unknown) {
     const input = object(value, ['name', 'applicableKinds', 'expectedVersion', 'clientRequestId']);
     const name = text(input.name, 'name', 120) as string;
     const mutation = commonMutation(input, 0);
     if (mutation.expectedVersion !== 0) throw new CatalogInputError('expectedVersion');
     return this.repository.createCategory(context, {
       referenceId: randomUUID(), name, normalizedName: normalizeCatalogText(name),
-      applicableKinds: applicableKinds(input.applicableKinds, 'applicableKinds', true), reviewStatus,
+      applicableKinds: applicableKinds(input.applicableKinds, 'applicableKinds', true),
       ...mutation, expectedVersion: 0,
     });
   }
 
-  async createBrand(context: CatalogMutationContext, value: unknown, reviewStatus: 'APPROVED' | 'PENDING' = 'APPROVED') {
+  async createBrand(context: CatalogMutationContext, value: unknown) {
     const input = object(value, ['name', 'applicableKinds', 'expectedVersion', 'clientRequestId']);
     const name = text(input.name, 'name', 120) as string;
     const mutation = commonMutation(input, 0);
     if (mutation.expectedVersion !== 0) throw new CatalogInputError('expectedVersion');
     return this.repository.createBrand(context, {
       referenceId: randomUUID(), name, normalizedName: normalizeCatalogText(name),
-      applicableKinds: applicableKinds(input.applicableKinds, 'applicableKinds', false), reviewStatus,
+      applicableKinds: applicableKinds(input.applicableKinds, 'applicableKinds', false),
       ...mutation, expectedVersion: 0,
     });
   }
@@ -140,25 +142,36 @@ export class CatalogService {
     return kind === 'category' ? this.repository.updateCategory(context, parsed) : this.repository.updateBrand(context, parsed);
   }
 
-  resolveCategory(context: CatalogMutationContext, referenceId: unknown, value: unknown) {
-    return this.resolveReference('category', context, referenceId, value) as Promise<CatalogCategoryRecord>;
+  resolveCategory(context: CatalogMutationContext, pendingReferenceId: unknown, value: unknown) {
+    return this.resolveReference('category', context, pendingReferenceId, value) as Promise<CatalogPendingCategoryRecord>;
   }
 
-  resolveBrand(context: CatalogMutationContext, referenceId: unknown, value: unknown) {
-    return this.resolveReference('brand', context, referenceId, value) as Promise<CatalogBrandRecord>;
+  resolveBrand(context: CatalogMutationContext, pendingReferenceId: unknown, value: unknown) {
+    return this.resolveReference('brand', context, pendingReferenceId, value) as Promise<CatalogPendingBrandRecord>;
   }
 
-  private resolveReference(kind: 'category' | 'brand', context: CatalogMutationContext, referenceId: unknown, value: unknown) {
-    const input = object(value, ['resolution', 'targetId', 'expectedVersion', 'clientRequestId']);
-    if (input.resolution !== 'APPROVE' && input.resolution !== 'MERGE') throw new CatalogInputError('resolution');
-    const targetId = input.resolution === 'MERGE' ? identifier(input.targetId, 'targetId') : null;
-    const parsed = { referenceId: identifier(referenceId, `${kind}Id`), resolution: input.resolution, targetId, ...commonMutation(input, 1) } as const;
+  private resolveReference(kind: 'category' | 'brand', context: CatalogMutationContext, pendingReferenceId: unknown, value: unknown) {
+    const targetKey = kind === 'category' ? 'canonicalCategoryId' : 'canonicalBrandId';
+    const input = object(value, [targetKey, 'canonicalName', 'applicableKinds', 'expectedVersion', 'clientRequestId']);
+    const hasExisting = input[targetKey] !== undefined && input[targetKey] !== null && input[targetKey] !== '';
+    const hasNew = input.canonicalName !== undefined && input.canonicalName !== null && input.canonicalName !== '';
+    if (hasExisting === hasNew) throw new CatalogInputError('resolution');
+    const newName = hasNew ? text(input.canonicalName, 'canonicalName', 120) as string : null;
+    const parsed = {
+      pendingReferenceId: identifier(pendingReferenceId, kind === 'category' ? 'pendingCategoryValueId' : 'pendingBrandValueId'),
+      targetId: hasExisting ? identifier(input[targetKey], targetKey) : null,
+      newReferenceId: hasNew ? randomUUID() : null,
+      newName,
+      newNormalizedName: newName ? normalizeCatalogText(newName) : null,
+      applicableKinds: hasNew ? applicableKinds(input.applicableKinds, 'applicableKinds', kind === 'category') : null,
+      ...commonMutation(input, 1),
+    } as const;
     return kind === 'category' ? this.repository.resolveCategory(context, parsed) : this.repository.resolveBrand(context, parsed);
   }
 
   async createItem(context: CatalogMutationContext, value: unknown) {
     const input = object(value, [
-      'kind', 'title', 'description', 'categoryId', 'brandId', 'sku', 'barcode',
+      'kind', 'title', 'description', 'categoryId', 'categoryCapturedValue', 'brandId', 'brandCapturedValue', 'sku', 'barcode',
       'basePriceAmountMinor', 'referenceCostAmountMinor',
       'referenceCostSourceType', 'referenceCostSourceLabel',
       'expectedVersion', 'clientRequestId',
@@ -170,6 +183,12 @@ export class CatalogService {
     const currency = await this.currency(context.tenantId);
     const mutation = commonMutation(input, 0);
     if (mutation.expectedVersion !== 0) throw new CatalogInputError('expectedVersion');
+    const categoryId = input.categoryId === null || input.categoryId === undefined || input.categoryId === '' ? null : identifier(input.categoryId, 'categoryId');
+    const categoryCapturedValue = text(input.categoryCapturedValue, 'categoryCapturedValue', 120, true);
+    if ((categoryId === null) === (categoryCapturedValue === null)) throw new CatalogInputError('category');
+    const brandId = input.brandId === null || input.brandId === undefined || input.brandId === '' ? null : identifier(input.brandId, 'brandId');
+    const brandCapturedValue = text(input.brandCapturedValue, 'brandCapturedValue', 120, true);
+    if (brandId !== null && brandCapturedValue !== null) throw new CatalogInputError('brand');
     const referenceCostAmount = input.referenceCostAmountMinor === null || input.referenceCostAmountMinor === undefined
       ? null : parseMinorAmount(input.referenceCostAmountMinor, 'referenceCostAmountMinor');
     const referenceCost = referenceCostAmount === null ? null : Object.freeze({
@@ -181,8 +200,9 @@ export class CatalogService {
     return this.repository.createItem(context, {
       itemId: randomUUID(), kind, title, normalizedTitle: normalizeCatalogText(title),
       description: text(input.description, 'description', 2000, true, true),
-      categoryId: identifier(input.categoryId, 'categoryId'),
-      brandId: input.brandId === null || input.brandId === undefined || input.brandId === '' ? null : identifier(input.brandId, 'brandId'),
+      categoryId, brandId,
+      capturedCategory: categoryCapturedValue ? { pendingReferenceId: randomUUID(), rawLabel: categoryCapturedValue, normalizedKey: normalizeCatalogText(categoryCapturedValue) } : null,
+      capturedBrand: brandCapturedValue ? { pendingReferenceId: randomUUID(), rawLabel: brandCapturedValue, normalizedKey: normalizeCatalogText(brandCapturedValue) } : null,
       sku, barcode: barcodeValue,
       basePrice: { revisionId: randomUUID(), amountMinor: parseMinorAmount(input.basePriceAmountMinor, 'basePriceAmountMinor') },
       referenceCost,

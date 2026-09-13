@@ -24,14 +24,18 @@ test('price list is capability-gated and is the only initial Listas destination'
 
 test('Owner iteration centralizes governance and keeps operation reconciliable', () => {
   assert.match(catalogsPage, /Lista de precios/u);
-  assert.match(commercialCatalogs, /POR REVISAR/u);
-  assert.match(commercialCatalogs, /Aprobar/u);
-  assert.match(commercialCatalogs, /Fusionar/u);
+  assert.match(commercialCatalogs, /CatalogReconciliationSummary/u);
+  assert.match(commercialCatalogs, /Valor capturado/u);
+  assert.match(commercialCatalogs, /Asociar a referencia existente/u);
+  assert.match(commercialCatalogs, /Crear referencia canónica/u);
+  assert.doesNotMatch(commercialCatalogs, /Aprobar|Fusionar/u);
   assert.match(commercialCatalogs, /applicableKinds/u);
   assert.match(page, /CatalogReferenceCombobox/u);
   assert.match(combobox, /autocompleteInputProps/u);
   assert.match(combobox, /event\.key === 'Enter'[\s\S]*choose\(safeActiveIndex\)/u);
-  assert.match(combobox, /Crear “\$\{query\.trim\(\)\}”/u);
+  assert.match(combobox, /Usar “\$\{query\.trim\(\)\}”/u);
+  assert.match(combobox, /valor Por revisar al crear el artículo/u);
+  assert.doesNotMatch(combobox, /createCatalogCategory|createCatalogBrand/u);
   assert.match(combobox, /onSelect=\{\(index\) => \{ void choose\(index\); \}\}/u);
   assert.doesNotMatch(page, />Catálogos comerciales</u);
   assert.match(page, /Limpiamos Categoría o Marca porque no aplican al nuevo Tipo/u);

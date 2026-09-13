@@ -79,7 +79,6 @@ export interface UserPreferencesTable {
 
 export type CatalogItemKind = 'PART' | 'PRODUCT' | 'SERVICE' | 'SUPPLY';
 export type CatalogLifecycle = 'ACTIVE' | 'INACTIVE';
-export type CatalogReferenceReviewStatus = 'APPROVED' | 'PENDING' | 'MERGED';
 export type CatalogIdentifierScheme = 'SKU' | 'BARCODE';
 
 export interface CatalogCategoryTable {
@@ -88,14 +87,10 @@ export interface CatalogCategoryTable {
   readonly display_name: MutableColumn<string>;
   readonly normalized_name: MutableColumn<string>;
   readonly status: MutableColumn<CatalogLifecycle>;
-  readonly review_status: DefaultedMutableColumn<CatalogReferenceReviewStatus>;
-  readonly merged_into_id: MutableColumn<string | null>;
   readonly created_by_actor_id: ImmutableColumn<string | null>;
   readonly created_in_branch_id: ImmutableColumn<string | null>;
   readonly created_in_station_id: ImmutableColumn<string | null>;
   readonly created_in_session_id: ImmutableColumn<string | null>;
-  readonly reviewed_by_actor_id: MutableColumn<string | null>;
-  readonly reviewed_at: MutableColumn<Date | null>;
   readonly version: MutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
@@ -107,14 +102,10 @@ export interface CatalogBrandTable {
   readonly display_name: MutableColumn<string>;
   readonly normalized_name: MutableColumn<string>;
   readonly status: MutableColumn<CatalogLifecycle>;
-  readonly review_status: DefaultedMutableColumn<CatalogReferenceReviewStatus>;
-  readonly merged_into_id: MutableColumn<string | null>;
   readonly created_by_actor_id: ImmutableColumn<string | null>;
   readonly created_in_branch_id: ImmutableColumn<string | null>;
   readonly created_in_station_id: ImmutableColumn<string | null>;
   readonly created_in_session_id: ImmutableColumn<string | null>;
-  readonly reviewed_by_actor_id: MutableColumn<string | null>;
-  readonly reviewed_at: MutableColumn<Date | null>;
   readonly version: MutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
@@ -127,8 +118,10 @@ export interface CatalogItemTable {
   readonly title: MutableColumn<string>;
   readonly normalized_title: MutableColumn<string>;
   readonly description: MutableColumn<string | null>;
-  readonly category_id: MutableColumn<string>;
+  readonly category_id: MutableColumn<string | null>;
   readonly brand_id: MutableColumn<string | null>;
+  readonly pending_category_value_id: MutableColumn<string | null>;
+  readonly pending_brand_value_id: MutableColumn<string | null>;
   readonly status: MutableColumn<CatalogLifecycle>;
   readonly sellable: MutableColumn<boolean>;
   readonly stockable: MutableColumn<boolean>;
@@ -137,6 +130,51 @@ export interface CatalogItemTable {
   readonly version: MutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
+}
+
+export interface CatalogCategoryPendingValueTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly pending_category_value_id: ImmutableColumn<string>;
+  readonly raw_label_example: ImmutableColumn<string>;
+  readonly normalized_key: ImmutableColumn<string>;
+  readonly kind: ImmutableColumn<CatalogItemKind>;
+  readonly resolution_status: MutableColumn<'PENDING' | 'RESOLVED'>;
+  readonly canonical_category_id: MutableColumn<string | null>;
+  readonly version: MutableColumn<number>;
+  readonly first_seen_at: ImmutableColumn<Date>;
+  readonly last_seen_at: MutableColumn<Date>;
+  readonly captured_by_actor_id: ImmutableColumn<string>;
+  readonly captured_by_actor_display_name: ImmutableColumn<string>;
+  readonly captured_in_branch_id: ImmutableColumn<string>;
+  readonly captured_in_station_id: ImmutableColumn<string>;
+  readonly captured_in_session_id: ImmutableColumn<string>;
+  readonly resolved_by_actor_id: MutableColumn<string | null>;
+  readonly resolved_at: MutableColumn<Date | null>;
+}
+
+export interface CatalogBrandPendingValueTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly pending_brand_value_id: ImmutableColumn<string>;
+  readonly raw_label_example: ImmutableColumn<string>;
+  readonly normalized_key: ImmutableColumn<string>;
+  readonly resolution_status: MutableColumn<'PENDING' | 'RESOLVED'>;
+  readonly canonical_brand_id: MutableColumn<string | null>;
+  readonly version: MutableColumn<number>;
+  readonly first_seen_at: ImmutableColumn<Date>;
+  readonly last_seen_at: MutableColumn<Date>;
+  readonly captured_by_actor_id: ImmutableColumn<string>;
+  readonly captured_by_actor_display_name: ImmutableColumn<string>;
+  readonly captured_in_branch_id: ImmutableColumn<string>;
+  readonly captured_in_station_id: ImmutableColumn<string>;
+  readonly captured_in_session_id: ImmutableColumn<string>;
+  readonly resolved_by_actor_id: MutableColumn<string | null>;
+  readonly resolved_at: MutableColumn<Date | null>;
+}
+
+export interface CatalogBrandPendingKindApplicabilityTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly pending_brand_value_id: ImmutableColumn<string>;
+  readonly kind: ImmutableColumn<CatalogItemKind>;
 }
 
 export interface CatalogItemIdentifierTable {
@@ -1103,6 +1141,9 @@ export interface DatabaseSchema {
   readonly user_preferences: UserPreferencesTable;
   readonly catalog_categories: CatalogCategoryTable;
   readonly catalog_brands: CatalogBrandTable;
+  readonly catalog_category_pending_values: CatalogCategoryPendingValueTable;
+  readonly catalog_brand_pending_values: CatalogBrandPendingValueTable;
+  readonly catalog_brand_pending_kind_applicability: CatalogBrandPendingKindApplicabilityTable;
   readonly catalog_items: CatalogItemTable;
   readonly catalog_item_identifiers: CatalogItemIdentifierTable;
   readonly catalog_sku_sequences: CatalogSkuSequenceTable;

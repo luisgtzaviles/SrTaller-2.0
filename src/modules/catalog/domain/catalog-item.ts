@@ -1,7 +1,6 @@
 export const catalogItemKinds = ['PART', 'PRODUCT', 'SERVICE', 'SUPPLY'] as const;
 export type CatalogItemKind = (typeof catalogItemKinds)[number];
 export type CatalogLifecycle = 'ACTIVE' | 'INACTIVE';
-export type CatalogReferenceReviewStatus = 'APPROVED' | 'PENDING' | 'MERGED';
 /** The barcode value is internal; Code 128 is only a future rendering. */
 export type CatalogIdentifierScheme = 'SKU' | 'BARCODE';
 

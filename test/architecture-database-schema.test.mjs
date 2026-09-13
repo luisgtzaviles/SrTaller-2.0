@@ -18,6 +18,12 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     catalog_sku_sequences: { owner: 'catalog', kind: 'table' },
     catalog_category_kind_applicability: { owner: 'catalog', kind: 'table' },
     catalog_brand_kind_applicability: { owner: 'catalog', kind: 'table' },
+    catalog_category_pending_values: { owner: 'catalog', kind: 'table' },
+    catalog_brand_pending_values: { owner: 'catalog', kind: 'table' },
+    catalog_brand_pending_kind_applicability: {
+      owner: 'catalog',
+      kind: 'table',
+    },
     catalog_barcode_sequences: { owner: 'catalog', kind: 'table' },
     catalog_base_price_revisions: { owner: 'catalog', kind: 'table' },
     catalog_branch_price_revisions: { owner: 'catalog', kind: 'table' },
@@ -188,6 +194,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260911183000_catalog_create_pricing_core.ts',
       '20260911200000_catalog_add_reference_governance.ts',
       '20260912180000_access_enable_concurrent_operational_sessions.ts',
+      '20260912210000_catalog_unify_pending_reference_reconciliation.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

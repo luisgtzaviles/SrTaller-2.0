@@ -18,7 +18,7 @@ export function CatalogReferenceCombobox({
   disabled = false,
   canCreate,
   onChange,
-  onCreate,
+  onCapture,
 }: Readonly<{
   id: string;
   label: string;
@@ -28,16 +28,16 @@ export function CatalogReferenceCombobox({
   disabled?: boolean;
   canCreate: boolean;
   onChange(id: string): void;
-  onCreate(name: string): Promise<CatalogReference>;
+  onCapture(name: string): void;
 }>): React.JSX.Element {
+  const capturedValue = value.startsWith('captured:') ? value.slice('captured:'.length) : '';
   const selected = references.find((reference) => (reference.categoryId ?? reference.brandId) === value);
-  const [query, setQuery] = useState(selected?.name ?? '');
+  const [query, setQuery] = useState(selected?.name ?? capturedValue);
   const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [creating, setCreating] = useState(false);
   const normalized = key(query);
 
-  useEffect(() => { setQuery(selected?.name ?? ''); }, [selected?.name]);
+  useEffect(() => { setQuery(selected?.name ?? capturedValue); }, [selected?.name, capturedValue]);
 
   const matches = useMemo(() => references.filter((reference) => !normalized || key(reference.name).includes(normalized)).slice(0, 10), [normalized, references]);
   const exact = references.some((reference) => key(reference.name) === normalized);
@@ -47,30 +47,24 @@ export function CatalogReferenceCombobox({
       id: `${id}-option-${reference.categoryId ?? reference.brandId}`,
       key: reference.categoryId ?? reference.brandId ?? reference.name,
       primary: reference.name,
-      secondary: reference.reviewStatus === 'PENDING' ? 'Disponible durante la operación' : undefined,
-      badge: reference.reviewStatus === 'PENDING' ? 'Por revisar' : undefined,
       icon: (reference.categoryId ?? reference.brandId) === value ? <Check size={16} /> : undefined,
       selected: (reference.categoryId ?? reference.brandId) === value,
       reference,
     })),
-    ...(createVisible ? [{ id: `${id}-create`, key: `${id}-create`, primary: `Crear “${query.trim()}”`, secondary: 'Se guardará como Por revisar', icon: <Plus size={16} />, selected: false, reference: null }] : []),
+    ...(createVisible ? [{ id: `${id}-create`, key: `${id}-create`, primary: `Usar “${query.trim()}”`, secondary: 'Se capturará como valor Por revisar al crear el artículo', icon: <Plus size={16} />, selected: false, reference: null }] : []),
   ];
   const safeActiveIndex = Math.min(activeIndex, Math.max(0, options.length - 1));
   const listboxId = `${id}-options`;
 
   async function choose(index: number): Promise<void> {
     const option = options[index];
-    if (!option || creating) return;
+    if (!option) return;
     if (option.reference) {
       onChange(option.reference.categoryId ?? option.reference.brandId ?? '');
       setQuery(option.reference.name); setFocused(false); return;
     }
-    setCreating(true);
-    try {
-      const created = await onCreate(query.trim());
-      onChange(created.categoryId ?? created.brandId ?? '');
-      setQuery(created.name); setFocused(false);
-    } finally { setCreating(false); }
+    onCapture(query.trim());
+    setQuery(query.trim()); setFocused(false);
   }
 
   return (
@@ -90,7 +84,7 @@ export function CatalogReferenceCombobox({
       <Input
         id={id}
         value={query}
-        disabled={disabled || creating}
+        disabled={disabled}
         placeholder={disabled ? 'Selecciona primero un Tipo' : emptyLabel}
         {...autocompleteInputProps(listboxId, focused && options.length > 0, options[safeActiveIndex]?.id)}
         onFocus={() => setFocused(true)}

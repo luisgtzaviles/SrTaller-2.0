@@ -3,8 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import {
-  changeCatalogBasePrice, changeCatalogReferenceCost, createCatalogBrand,
-  createCatalogCategory, createCatalogItem, getCatalogItem, listCatalogReferences,
+  changeCatalogBasePrice, changeCatalogReferenceCost,
+  createCatalogItem, getCatalogItem, listCatalogReferences,
   revokeCatalogBranchPrice, searchPriceList, setCatalogBranchPrice, updateCatalogItem,
 } from '../catalog-api.js';
 import type { CatalogItem, CatalogItemKind, CatalogReferences, PriceListItem, PriceListPage } from '../catalog-api.js';
@@ -38,6 +38,8 @@ function minor(value: string): number | null {
 }
 function sku(item: CatalogItem): string { return item.identifiers.find(({ scheme }) => scheme === 'SKU')?.value ?? 'Sin SKU'; }
 function barcode(item: CatalogItem): string { return item.identifiers.find(({ scheme }) => scheme === 'BARCODE')?.value ?? 'Sin código'; }
+function captured(value: string): string | null { return value.startsWith('captured:') ? value.slice('captured:'.length) : null; }
+function capturedSelection(value: string): string { return `captured:${value}`; }
 
 function PriceCard({ value, canManage, onManage }: Readonly<{ value: PriceListItem; canManage: boolean; onManage(itemId: string): void }>) {
   return (
@@ -46,7 +48,7 @@ function PriceCard({ value, canManage, onManage }: Readonly<{ value: PriceListIt
         <span className={styles.kindIcon} aria-hidden="true">{value.item.kind === 'SERVICE' ? <CircleDollarSign size={21} /> : <Boxes size={21} />}</span>
         <div>
           <h2>{value.item.title}</h2>
-          <p>{kindLabels[value.item.kind]} · {value.item.category.name}{value.item.brand ? ` · ${value.item.brand.name}` : ''}</p>
+          <p>{kindLabels[value.item.kind]} · {value.item.category.name}{value.item.category.reconciliationStatus === 'PENDING' ? ' (Por revisar)' : ''}{value.item.brand ? ` · ${value.item.brand.name}${value.item.brand.reconciliationStatus === 'PENDING' ? ' (Por revisar)' : ''}` : ''}</p>
           <div className={styles.identifiers}><span><Tag size={14} aria-hidden="true" />SKU {sku(value.item)}</span><span><Barcode size={14} aria-hidden="true" />Código de barras {barcode(value.item)}</span></div>
         </div>
       </div>
@@ -136,7 +138,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const openCreate = (): void => { resetForm(); setDialog('create'); setNotice(null); };
   const openManage = async (itemId: string): Promise<void> => {
     setSaving(true); setNotice(null);
-    try { const item = await getCatalogItem(itemId); setSelected(item); setKind(item.kind); setTitle(item.title); setDescription(item.description ?? ''); setFormCategoryId(item.category.categoryId ?? ''); setFormBrandId(item.brand?.brandId ?? ''); setFormStatus(item.status); setDialog('manage'); }
+    try { const item = await getCatalogItem(itemId); setSelected(item); setKind(item.kind); setTitle(item.title); setDescription(item.description ?? ''); setFormCategoryId(item.category.categoryId ?? capturedSelection(item.category.name)); setFormBrandId(item.brand?.brandId ?? (item.brand ? capturedSelection(item.brand.name) : '')); setFormStatus(item.status); setDialog('manage'); }
     catch { setNotice({ tone: 'danger', message: 'No fue posible cargar el artículo.' }); }
     finally { setSaving(false); }
   };
@@ -144,13 +146,13 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const nextRequestId = (): string => requestId.current ??= crypto.randomUUID();
   const commandDone = async (message: string): Promise<void> => { requestId.current = null; await refreshReferences(); await refresh(); setNotice({ tone: 'success', message }); };
 
-  const addCategory = async (name: string) => {
-    try { const created = await createCatalogCategory(name, [kind], csrfToken, true); await refreshReferences(); setNotice({ tone: 'warning', message: `Categoría “${created.name}” creada como Por revisar. Puedes continuar con el artículo.` }); return created; }
-    catch (error) { setNotice({ tone: 'danger', message: 'No fue posible crear la categoría. Revisa si ya existe una equivalente.' }); throw error; }
+  const captureCategory = (name: string): void => {
+    setFormCategoryId(capturedSelection(name));
+    setNotice({ tone: 'warning', message: `Categoría “${name}” se guardará como valor capturado Por revisar al crear el artículo.` });
   };
-  const addBrand = async (name: string) => {
-    try { const created = await createCatalogBrand(name, [kind], csrfToken, true); await refreshReferences(); setNotice({ tone: 'warning', message: `Marca “${created.name}” creada como Por revisar. Puedes continuar con el artículo.` }); return created; }
-    catch (error) { setNotice({ tone: 'danger', message: 'No fue posible crear la marca. Revisa si ya existe una equivalente.' }); throw error; }
+  const captureBrand = (name: string): void => {
+    setFormBrandId(capturedSelection(name));
+    setNotice({ tone: 'warning', message: `Marca “${name}” se guardará como valor capturado Por revisar al crear el artículo.` });
   };
   const changeKind = (next: CatalogItemKind): void => {
     const categoryCompatible = activeCategories.find((value) => value.categoryId === formCategoryId)?.applicableKinds.includes(next) ?? false;
@@ -165,14 +167,17 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
     if (!title.trim() || !formCategoryId || price === null || (referenceCost && cost === null)) { setNotice({ tone: 'danger', message: 'Completa título, categoría y precio con hasta dos decimales.' }); return; }
     setSaving(true);
     try {
-      const created = await createCatalogItem({ kind, title, description: description || null, categoryId: formCategoryId, brandId: formBrandId || null, sku: formSku || null, barcode: formBarcode || null, basePriceAmountMinor: price, referenceCostAmountMinor: cost, referenceCostSourceType: 'MANUAL', expectedVersion: 0, clientRequestId: nextRequestId() }, csrfToken);
+      const categoryCapturedValue = captured(formCategoryId); const brandCapturedValue = captured(formBrandId);
+      const created = await createCatalogItem({ kind, title, description: description || null, categoryId: categoryCapturedValue ? null : formCategoryId, categoryCapturedValue, brandId: brandCapturedValue ? null : formBrandId || null, brandCapturedValue, sku: formSku || null, barcode: formBarcode || null, basePriceAmountMinor: price, referenceCostAmountMinor: cost, referenceCostSourceType: 'MANUAL', expectedVersion: 0, clientRequestId: nextRequestId() }, csrfToken);
       const createdSku = created.identifiers.find((value) => value.scheme === 'SKU')?.value; const createdBarcode = created.identifiers.find((value) => value.scheme === 'BARCODE')?.value;
       await commandDone(`${kind === 'SUPPLY' ? 'Insumo creado en catálogo; no forma parte de la Lista de precios comercial.' : 'Artículo creado y disponible en la lista.'} SKU ${createdSku ?? '—'} · Código de barras ${createdBarcode ?? '—'}`); setDialog(null); resetForm();
     } catch { setNotice({ tone: 'danger', message: 'No fue posible crear. Revisa SKU/código, permisos y datos.' }); }
     finally { setSaving(false); }
   };
   const saveIdentity = async (): Promise<void> => {
-    if (!selected || !title.trim() || !formCategoryId) return; setSaving(true);
+    if (!selected || !title.trim() || !formCategoryId) return;
+    if (captured(formCategoryId) || captured(formBrandId)) { setNotice({ tone: 'warning', message: 'Resuelve primero los valores Por revisar desde Configuración → Catálogos.' }); return; }
+    setSaving(true);
     try { const updated = await updateCatalogItem(selected.itemId, { title, description: description || null, categoryId: formCategoryId, brandId: formBrandId || null, status: formStatus, expectedVersion: selected.version, clientRequestId: nextRequestId() }, csrfToken); setSelected(updated); await commandDone('Datos del artículo actualizados.'); }
     catch { setNotice({ tone: 'danger', message: 'No se guardó: relee el artículo si otra persona lo modificó.' }); }
     finally { setSaving(false); }
@@ -215,8 +220,8 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
             {dialog === 'create' ? <Field id="catalog-kind" label="Tipo" required><Select id="catalog-kind" value={kind} onChange={(event) => changeKind(event.target.value as CatalogItemKind)}><option value="PART">Refacción</option><option value="PRODUCT">Producto</option><option value="SERVICE">Servicio</option><option value="SUPPLY">Insumo (no aparece en Lista)</option></Select></Field> : null}
             <Field id="catalog-title" label="Título" required fullWidth><Input id="catalog-title" value={title} maxLength={200} onChange={(event) => setTitle(event.target.value)} /></Field>
             <Field id="catalog-description" label="Descripción" fullWidth><Textarea id="catalog-description" value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} /></Field>
-            <Field id="catalog-category" label="Categoría" required hint="Busca o crea explícitamente un valor Por revisar."><CatalogReferenceCombobox id="catalog-category" label="Categorías aplicables" emptyLabel="Buscar categoría…" value={formCategoryId} references={applicableCategories} canCreate={canManage} onChange={setFormCategoryId} onCreate={addCategory} /></Field>
-            <Field id="catalog-brand" label="Marca" hint="Opcional; deja vacío para Sin marca."><CatalogReferenceCombobox id="catalog-brand" label="Marcas aplicables" emptyLabel="Sin marca / buscar…" value={formBrandId} references={applicableBrands} canCreate={canManage} onChange={setFormBrandId} onCreate={addBrand} /></Field>
+            <Field id="catalog-category" label="Categoría" required hint="Si no existe, el texto se captura Por revisar; todavía no crea una categoría canónica."><CatalogReferenceCombobox id="catalog-category" label="Categorías aplicables" emptyLabel="Buscar categoría…" value={formCategoryId} references={applicableCategories} canCreate={canManage && dialog === 'create'} onChange={setFormCategoryId} onCapture={captureCategory} /></Field>
+            <Field id="catalog-brand" label="Marca" hint="Opcional; un valor nuevo se captura Por revisar."><CatalogReferenceCombobox id="catalog-brand" label="Marcas aplicables" emptyLabel="Sin marca / buscar…" value={formBrandId} references={applicableBrands} canCreate={canManage && dialog === 'create'} onChange={setFormBrandId} onCapture={captureBrand} /></Field>
             {dialog === 'manage' ? <Field id="catalog-status" label="Estado"><Select id="catalog-status" value={formStatus} onChange={(event) => setFormStatus(event.target.value as 'ACTIVE' | 'INACTIVE')}><option value="ACTIVE">Activo</option><option value="INACTIVE">Inactivo</option></Select></Field> : null}
             {dialog === 'create' ? <><Field id="catalog-sku" label="SKU" hint="Automático si lo dejas vacío."><Input id="catalog-sku" value={formSku} onChange={(event) => setFormSku(event.target.value)} autoComplete="off" /></Field><Field id="catalog-barcode" label="Código de barras" hint="Automático si lo dejas vacío."><Input id="catalog-barcode" value={formBarcode} onChange={(event) => setFormBarcode(event.target.value)} autoComplete="off" /></Field></> : null}
           </section>

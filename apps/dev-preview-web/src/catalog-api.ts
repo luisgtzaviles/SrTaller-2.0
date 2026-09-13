@@ -3,14 +3,17 @@ import { PreviewApiError } from './api.js';
 export type CatalogItemKind = 'PART' | 'PRODUCT' | 'SERVICE' | 'SUPPLY';
 export type CatalogReference = Readonly<{
   categoryId?: string; brandId?: string; name: string; status: 'ACTIVE' | 'INACTIVE';
-  reviewStatus: 'APPROVED' | 'PENDING' | 'MERGED'; applicableKinds: readonly CatalogItemKind[];
+  applicableKinds: readonly CatalogItemKind[];
   usageCount?: number; version: number; createdBy?: string | null; createdAt?: string;
-  createdInBranchId?: string | null; mergedIntoId?: string | null;
+  createdInBranchId?: string | null;
 }>;
+export type CatalogPendingCategory = Readonly<{ pendingCategoryValueId: string; rawLabel: string; normalizedKey: string; kind: CatalogItemKind; resolutionStatus: 'PENDING' | 'RESOLVED'; canonicalCategoryId: string | null; canonicalName: string | null; version: number; usageCount: number; firstSeenAt: string; lastSeenAt: string; capturedBy: string | null; capturedInBranchId: string }>;
+export type CatalogPendingBrand = Readonly<{ pendingBrandValueId: string; rawLabel: string; normalizedKey: string; applicableKinds: readonly CatalogItemKind[]; resolutionStatus: 'PENDING' | 'RESOLVED'; canonicalBrandId: string | null; canonicalName: string | null; version: number; usageCount: number; firstSeenAt: string; lastSeenAt: string; capturedBy: string | null; capturedInBranchId: string }>;
 export type CatalogCategoryBrandApplicability = Readonly<{ categoryId: string; brandId: string; kind: CatalogItemKind }>;
 export type CatalogItem = Readonly<{
   itemId: string; kind: CatalogItemKind; title: string; description: string | null;
-  category: CatalogReference; brand: CatalogReference | null; status: 'ACTIVE' | 'INACTIVE';
+  category: Readonly<{ categoryId: string | null; pendingCategoryValueId: string | null; name: string; reconciliationStatus: 'CANONICAL' | 'PENDING' }>;
+  brand: Readonly<{ brandId: string | null; pendingBrandValueId: string | null; name: string; reconciliationStatus: 'CANONICAL' | 'PENDING' }> | null; status: 'ACTIVE' | 'INACTIVE';
   identifiers: readonly Readonly<{ identifierId: string; scheme: string; value: string }>[];
   capabilities: Readonly<{ sellable: boolean; stockable: boolean; purchasable: boolean; applicableToRepair: boolean }>;
   version: number; createdAt: string; updatedAt: string;
@@ -23,6 +26,8 @@ export type PriceListItem = Readonly<{
 export type CatalogReferences = Readonly<{
   categories: readonly CatalogReference[];
   brands: readonly CatalogReference[];
+  pendingCategories: readonly CatalogPendingCategory[];
+  pendingBrands: readonly CatalogPendingBrand[];
   categoryBrandApplicability: readonly CatalogCategoryBrandApplicability[];
 }>;
 export type PriceListPage = Readonly<{ items: readonly PriceListItem[]; totalCount: number }>;
@@ -54,12 +59,12 @@ export function searchPriceList(input: Readonly<{ query: string; kind: Exclude<C
   return get<PriceListPage>(`/api/catalog/price-list?${query.toString()}`, signal);
 }
 export function getCatalogItem(itemId: string, signal?: AbortSignal) { return get<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}`, signal); }
-export function createCatalogCategory(name: string, applicableKinds: readonly CatalogItemKind[], csrfToken: string, pending = false) { return mutate<CatalogReference>(`/api/catalog/categories${pending ? '/pending' : ''}`, 'POST', { name, applicableKinds, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
-export function createCatalogBrand(name: string, applicableKinds: readonly CatalogItemKind[], csrfToken: string, pending = false) { return mutate<CatalogReference>(`/api/catalog/brands${pending ? '/pending' : ''}`, 'POST', { name, applicableKinds, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
+export function createCatalogCategory(name: string, applicableKinds: readonly CatalogItemKind[], csrfToken: string) { return mutate<CatalogReference>('/api/catalog/categories', 'POST', { name, applicableKinds, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
+export function createCatalogBrand(name: string, applicableKinds: readonly CatalogItemKind[], csrfToken: string) { return mutate<CatalogReference>('/api/catalog/brands', 'POST', { name, applicableKinds, expectedVersion: 0, clientRequestId: crypto.randomUUID() }, csrfToken); }
 export function updateCatalogCategory(categoryId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/categories/${encodeURIComponent(categoryId)}`, 'PATCH', input, csrfToken); }
 export function updateCatalogBrand(brandId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/brands/${encodeURIComponent(brandId)}`, 'PATCH', input, csrfToken); }
-export function resolveCatalogCategory(categoryId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/categories/${encodeURIComponent(categoryId)}/resolve`, 'POST', input, csrfToken); }
-export function resolveCatalogBrand(brandId: string, input: unknown, csrfToken: string) { return mutate<CatalogReference>(`/api/catalog/brands/${encodeURIComponent(brandId)}/resolve`, 'POST', input, csrfToken); }
+export function resolveCatalogCategory(pendingCategoryValueId: string, input: unknown, csrfToken: string) { return mutate<CatalogPendingCategory>(`/api/catalog/categories/pending/${encodeURIComponent(pendingCategoryValueId)}/resolve`, 'POST', input, csrfToken); }
+export function resolveCatalogBrand(pendingBrandValueId: string, input: unknown, csrfToken: string) { return mutate<CatalogPendingBrand>(`/api/catalog/brands/pending/${encodeURIComponent(pendingBrandValueId)}/resolve`, 'POST', input, csrfToken); }
 export function createCatalogItem(input: unknown, csrfToken: string) { return mutate<CatalogItem>('/api/catalog/items', 'POST', input, csrfToken); }
 export function updateCatalogItem(itemId: string, input: unknown, csrfToken: string) { return mutate<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}`, 'PATCH', input, csrfToken); }
 export function changeCatalogBasePrice(itemId: string, input: unknown, csrfToken: string) { return mutate<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}/base-price`, 'POST', input, csrfToken); }

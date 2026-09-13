@@ -76,16 +76,6 @@ export class CatalogController {
     try { return await this.operations.createBrand(evidence(headers), body); }
     catch (error: unknown) { return translate(error); }
   }
-  @Post('categories/pending') @Header('Cache-Control', 'private, no-store')
-  async createPendingCategory(@Body() body: unknown, @Headers() headers: RequestHeaders) {
-    try { return await this.operations.createPendingCategory(evidence(headers), body); }
-    catch (error: unknown) { return translate(error); }
-  }
-  @Post('brands/pending') @Header('Cache-Control', 'private, no-store')
-  async createPendingBrand(@Body() body: unknown, @Headers() headers: RequestHeaders) {
-    try { return await this.operations.createPendingBrand(evidence(headers), body); }
-    catch (error: unknown) { return translate(error); }
-  }
   @Patch('categories/:categoryId') @Header('Cache-Control', 'private, no-store')
   async updateCategory(@Param('categoryId') categoryId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
     try { return await this.operations.updateCategory(evidence(headers), categoryId, body); }
@@ -96,14 +86,14 @@ export class CatalogController {
     try { return await this.operations.updateBrand(evidence(headers), brandId, body); }
     catch (error: unknown) { return translate(error); }
   }
-  @Post('categories/:categoryId/resolve') @Header('Cache-Control', 'private, no-store')
-  async resolveCategory(@Param('categoryId') categoryId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
-    try { return await this.operations.resolveCategory(evidence(headers), categoryId, body); }
+  @Post('categories/pending/:pendingCategoryValueId/resolve') @Header('Cache-Control', 'private, no-store')
+  async resolveCategory(@Param('pendingCategoryValueId') pendingCategoryValueId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
+    try { return await this.operations.resolveCategory(evidence(headers), pendingCategoryValueId, body); }
     catch (error: unknown) { return translate(error); }
   }
-  @Post('brands/:brandId/resolve') @Header('Cache-Control', 'private, no-store')
-  async resolveBrand(@Param('brandId') brandId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
-    try { return await this.operations.resolveBrand(evidence(headers), brandId, body); }
+  @Post('brands/pending/:pendingBrandValueId/resolve') @Header('Cache-Control', 'private, no-store')
+  async resolveBrand(@Param('pendingBrandValueId') pendingBrandValueId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
+    try { return await this.operations.resolveBrand(evidence(headers), pendingBrandValueId, body); }
     catch (error: unknown) { return translate(error); }
   }
   @Post('items') @Header('Cache-Control', 'private, no-store')
