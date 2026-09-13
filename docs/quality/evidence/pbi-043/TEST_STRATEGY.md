@@ -2,7 +2,7 @@
 
 ## Estado
 
-- **Estado:** obligatorio para implementación; todavía no ejecutado.
+- **Estado:** COS-01…COS-24 ejecutados localmente; CI/Preview pendientes.
 - **Riesgo:** Critical.
 - **Motor material:** PostgreSQL 18.x real.
 - **Autoridad:** ADR-014, DEC-051 y threat model PBI-043.

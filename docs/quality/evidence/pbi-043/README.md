@@ -1,14 +1,15 @@
-# PBI-043 — Readiness Evidence
+# PBI-043 — Evidence Index
 
 ## Estado
 
 - **PBI:** [Concurrent Operational Sessions — Access Foundation Remediation](../../../backlog/pbis/PBI-043.md).
-- **Estado:** `Ready`; implementación no autorizada.
+- **Estado:** implementación autorizada; candidato funcional local verificado.
 - **Riesgo / tamaño:** Critical / Large.
 - **ADR:** [ADR-014 Accepted](../../../decisions/proposed/ADR-014-concurrent-operational-sessions.md).
 - **DoR:** [PASS — READY](./DEFINITION_OF_READY.md).
 - **Threat model:** [completo](./THREAT_MODEL.md).
 - **Test strategy:** [24 casos obligatorios](./TEST_STRATEGY.md).
+- **Implementation evidence:** [candidato y ejecución local](./IMPLEMENTATION_EVIDENCE.md).
 
 ## Baseline documental
 
@@ -18,11 +19,11 @@
 - Rama de planning: `ops/pbi-043-concurrent-sessions-readiness`.
 - Rama PBI-040: preservada y no modificada.
 
-## Límites
+## Límites de la baseline de readiness
 
-Esta carpeta contiene readiness, no evidencia de implementación. No existen
-commit funcional, migración, ejecución PostgreSQL, prueba browser concurrente,
-PR, merge, deploy, Owner Acceptance ni `Done` para PBI-043.
+La evidencia readiness permanece histórica. La implementación, PostgreSQL y
+prueba browser se registran separadamente; PR, merge, Preview y `Done` todavía
+no se afirman.
 
 ## Verificación documental
 
@@ -38,6 +39,5 @@ PR, merge, deploy, Owner Acceptance ni `Done` para PBI-043.
 | PBI-040 branch | PASS — sigue en `68843ba`, congelada y sin modificación |
 | Runtime provenance | N/A — no se levantó ni presentó un runtime para este Goal documental |
 
-El build se ejecutó sólo para satisfacer el verificador estructural; no crea
-evidencia funcional PBI-043. La prueba browser concurrente es un gate futuro de
-implementación, no una afirmación de este readiness.
+El build de esta sección se ejecutó sólo para readiness. Para evidencia
+funcional vigente consultar `IMPLEMENTATION_EVIDENCE.md`.

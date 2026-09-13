@@ -6,7 +6,7 @@
 - **Estado:** Active; extendido para una remediación Access antes de reanudar
   Price List.
 - **Periodo:** TBD.
-- **PBI actual:** [PBI-043](../../backlog/pbis/PBI-043.md) — `In progress`.
+- **PBI actual:** [PBI-043](../../backlog/pbis/PBI-043.md) — `In review`.
 - **WIP:** `1/1`.
 - **Baseline:** `main`/`origin/main` `9ed6885`; CI exacta `34725827409`
   `SUCCESS`.
@@ -31,8 +31,8 @@ contrato mediante [ADR-014](../../decisions/proposed/ADR-014-concurrent-operatio
 4. PBI-028 — Minimum Business Audit and Correlation — `Done`; G5 `PASS`.
 5. PBI-038 — Timezone Foundation Integration and Hardening — `Done`.
 6. PBI-039 — Customer Minimum + New Repair — `Done` sobre `40684d7`.
-7. PBI-043 — Concurrent Operational Sessions — `In progress`; gates Critical
-   y evidencia COS-01…COS-24 obligatorios.
+7. PBI-043 — Concurrent Operational Sessions — `In review`; COS-01…COS-24
+   PASS local, con revisión/CI/Preview pendientes.
 
 PBI-040 permanece congelado fuera de `main`. No ocupa WIP y no se reanuda ni se
 reconcilia hasta cerrar la remediación Access mediante sus propios gates.

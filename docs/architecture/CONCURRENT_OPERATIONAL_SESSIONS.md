@@ -2,15 +2,15 @@
 
 ## Estado
 
-- **Estado:** arquitectura aceptada; implementación no autorizada.
+- **Estado:** arquitectura aceptada; candidato PBI-043 materializado localmente.
 - **Autoridad:** ASC-001 a ASC-008 y
   [ADR-014](../decisions/proposed/ADR-014-concurrent-operational-sessions.md).
-- **PBI de materialización:** [PBI-043](../backlog/pbis/PBI-043.md), `Ready`.
+- **PBI de materialización:** [PBI-043](../backlog/pbis/PBI-043.md), `In review`.
 - **Riesgo:** Critical, sin downgrade.
 - **Baseline de diseño:** `main`/`origin/main`
   `40684d7554cdf02551f941e5e3f0beabbe563125`.
-- **Fuera de alcance:** código, migración ejecutable, endpoints administrativos,
-  Device/Session Admin, audit global, PBI-040, push, PR, merge y deploy.
+- **Fuera de alcance:** endpoints administrativos, Device/Session Admin, audit
+  global, PBI-040 y Production.
 
 ## Resultado
 
@@ -125,7 +125,7 @@ No se introduce idempotencia de login ni retry ciego ante outcome desconocido.
 Cada login independiente genera una Session distinta. La coordinación browser
 existente espera el `Set-Cookie` de una mutación admitida.
 
-## Persistencia y migración futura
+## Persistencia y migración PBI-043
 
 ### Estado conservado
 
@@ -138,7 +138,7 @@ existente espera el `Set-Cookie` de una mutación admitida.
 - issued/last activity/expiry/ended timestamps.
 - idle 60 minutos y absolute 12 horas.
 
-### Delta mínimo
+### Delta materializado en el candidato
 
 ```text
 DROP partial UNIQUE (tenant_id, station_id) WHERE status = 'active'

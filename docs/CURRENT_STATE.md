@@ -2,7 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** implementación PBI-043 autorizada y en curso.
+- **Estado:** candidato PBI-043 completo y verificado localmente; integración en
+  curso.
 - **Baseline Git verificada:** `main == origin/main` en
   `9ed688566430d12fc52b6d48cdffdea3aba8ef62` al iniciar la implementación.
 - **CI exacta de baseline:**
@@ -10,8 +11,8 @@
   `SUCCESS` sobre `9ed6885`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization,
   extendido sólo para la remediación Access.
-- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `In progress`; start Owner
-  autorizado.
+- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `In review`; revisión,
+  CI, merge y Preview pendientes.
 - **WIP:** `1/1` en `fix/pbi-043-concurrent-operational-sessions`.
 - **PBI-040:** Owner Review congelado en
   `feature/pbi-040-catalog-pricing-core`; no integrado ni modificado por este
@@ -39,33 +40,34 @@ Session solicitante ligada a Tenant, Branch, Station, StationCredential, User
 y SessionId. Cookies, CSRF, autorización, rate limit, idle 60 minutos y
 absolute 12 horas permanecen.
 
-[PBI-043](backlog/pbis/PBI-043.md) materializará la decisión como un objetivo
+[PBI-043](backlog/pbis/PBI-043.md) materializa la decisión como un objetivo
 Access independiente. Tiene [DoR PASS](quality/evidence/pbi-043/DEFINITION_OF_READY.md),
 [Threat Model Critical](quality/evidence/pbi-043/THREAT_MODEL.md) y una
-[matriz de 24 pruebas](quality/evidence/pbi-043/TEST_STRATEGY.md). `Ready` no
-autoriza su implementación.
+[matriz de 24 pruebas](quality/evidence/pbi-043/TEST_STRATEGY.md) ejecutada
+localmente. El candidato permite N Sessions por Station y conserva switch/
+logout por Session exacta; todavía no está integrado ni desplegado.
 
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
   con autorización contextual server-side.
-- Runtime actual todavía limitado a una Session activa por Station hasta que
-  PBI-043 sea implementado, integrado y validado.
+- El candidato local PBI-043 permite Sessions concurrentes por Station; `main`
+  y Preview conservan la exclusividad histórica hasta la integración.
 - Customer mínimo, New Repair y Repair Detail PBI-039 integrados y validados.
 - Auditoría de negocio acotada conserva Tenant, Branch, Station, User,
   SessionId y correlation en los writes cubiertos.
 
-## Decisión y delta pendientes de materialización
+## Estado del delta PBI-043
 
 | Área | Estado |
 |---|---|
-| ADR-014 | Accepted; no implementación |
-| Admission concurrente | Diseñada; pendiente |
-| Switch session-local | Diseñado; pendiente |
-| Drop unique parcial / índices | Diseñados; no existe migration |
-| Revocación efectiva N-session | Contrato definido; pendiente |
+| ADR-014 | Accepted; materializada en candidato |
+| Admission concurrente | PASS local Application/HTTP/PostgreSQL/Chrome |
+| Switch session-local | PASS local; reemplazo exacto |
+| Drop unique parcial / índices | migración fresh/existing/down/reapply PASS |
+| Revocación efectiva N-session | contratos internos y PostgreSQL PASS |
 | Cookies/CSRF/PIN/timeout | Sin cambio aprobado |
-| Browser Owner + QA | Caso de aceptación definido; no ejecutado |
+| Browser Owner + QA | PASS local; misma Station, perfiles y Users distintos |
 | Device/Session Admin | Fuera de alcance |
 | Global Access lifecycle audit | Fuera de alcance |
 
@@ -74,7 +76,7 @@ autoriza su implementación.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint activo | SPRINT-02 — remediation Access |
-| Current PBI | PBI-043 — In progress |
+| Current PBI | PBI-043 — In review |
 | WIP | 1/1 |
 | PBI-040 | congelado; no integrado |
 | G3 Authentication | PASS histórico; policy delta PBI-043 pendiente |
@@ -83,7 +85,6 @@ autoriza su implementación.
 
 ## Próxima acción
 
-Implementar y verificar PBI-043 en la única rama `fix/*` creada desde
-`9ed6885`. Merge, CI exacta y Preview conservan evidencia separada. Sólo
-después del cierre se deja el handoff de PBI-040 congelado desde el nuevo
-`main`.
+Completar `verify:full`, revisión independiente y CI del candidato PBI-043.
+Sólo con merge, exact-main y Preview validados se prepara su cierre documental;
+PBI-040 permanece congelado y se reconciliará después desde el nuevo `main`.
