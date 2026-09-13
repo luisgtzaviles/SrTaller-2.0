@@ -458,11 +458,11 @@ Evidencia material de la iteración:
 - fixture local adicional `Marca temporal QA`, Refacción, cero artículos, se
   conserva para que Owner pueda inspeccionar la acción Eliminar sin afectar
   datos reales;
-- `verify:full` final: 13/13 etapas PASS; suite base 837 pruebas, 817 PASS y
+- `verify:full` final sobre `c8410bf`: 13/13 etapas PASS; suite base 837 pruebas, 817 PASS y
   20 skips PostgreSQL gobernados; PostgreSQL compuesto 17/17, PBI-039 2/2,
-  PBI-040 1/1 con 60 migraciones y p95 `5.80 ms`; runtime Preview-like,
+  PBI-040 1/1 con 60 migraciones y p95 `7.18 ms`; runtime Preview-like,
   compiled smokes y cleanup PASS; fingerprint
-  `af050222e13ffcadf59b58a51e38b71498c8c5274d77a81f118170f56a03e2cc`.
+  `a6206444b7904a1e9bf8e9bdbbef2c3195ca0ed00adabdacafca137d612523a7`.
 
 El primer intento de `verify:full` falló cerrado porque cuatro superficies
 compartidas protegidas por PBI-039 habían incorporado las rutas adyacentes de

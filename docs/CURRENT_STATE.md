@@ -97,9 +97,10 @@ unifica el lifecycle administrativo: referencias realmente libres pueden
 eliminarse; las usadas se desactivan/reactivan y cada bounded context conserva
 la autoridad de consultar sus dependencias. Catalog y Repairs revalidan el
 delete dentro de transacción, responden conflicto tipado ante uso concurrente y
-preservan los eventos históricos sin cascada. `verify:full` cerró 13/13 etapas
+preservan los eventos históricos sin cascada. El candidato local `c8410bf`
+cerró `verify:full` 13/13 etapas
 PASS: 837 pruebas base sin fallas, PostgreSQL compuesto 17/17, PBI-039 2/2,
-PBI-040 1/1 con 60 migraciones y p95 5.80 ms, runtime Preview-like, smokes y
+PBI-040 1/1 con 60 migraciones y p95 7.18 ms, runtime Preview-like, smokes y
 cleanup PASS. Esto no constituye Owner Acceptance.
 
 ## Capacidades integradas relevantes
