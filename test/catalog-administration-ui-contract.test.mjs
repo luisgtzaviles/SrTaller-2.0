@@ -38,7 +38,8 @@ test('shared primitives own lifecycle, reconciliation, read-only, usage, and row
   assert.match(source, /pendingCount > 0/u);
   assert.match(source, /onChange\('pending'\)/u);
   assert.match(source, /Sólo lectura/u);
-  assert.match(source, /count === 1 \? 'reparación' : 'reparaciones'/u);
+  assert.match(source, /singular = 'reparación', plural = 'reparaciones'/u);
+  assert.match(source, /count === 1 \? singular : plural/u);
   assert.match(source, /count === 1 \? 'resultado' : 'resultados'/u);
   assert.match(source, /canonicalCount === 1 \? 'canónica' : 'canónicas'/u);
   assert.match(source, /actions\.length === 0/u);
@@ -85,6 +86,8 @@ test('Repairs and Price List use one shared visual language for catalog sections
   assert.match(priceList, /CatalogLifecycleFilter/u);
   assert.match(priceList, /CatalogStatusBadge/u);
   assert.match(priceList, /CatalogRowActions/u);
+  assert.match(priceList, /singular="artículo" plural="artículos"/u);
+  assert.match(priceList, /Artículos vinculados por identidad canónica/u);
   assert.match(sharedStyles, /\.sectionTabs button:hover:not\(:disabled\)/u);
   assert.match(sharedStyles, /\.sectionTabs button:focus-visible/u);
   assert.match(sharedStyles, /\.sectionTabs button\[aria-current='page'\]/u);
