@@ -35,6 +35,18 @@ test('Owner iteration centralizes governance and keeps operation reconciliable',
   assert.match(combobox, /event\.key === 'Enter'[\s\S]*choose\(safeActiveIndex\)/u);
   assert.match(combobox, /Usar “\$\{query\.trim\(\)\}”/u);
   assert.match(combobox, /valor Por revisar al crear el artículo/u);
+  assert.match(api, /export function normalizeCatalogReferenceText/u);
+  assert.match(combobox, /const exactCompatible = references\.find/u);
+  assert.match(combobox, /value !== exactCompatibleId\) onChange\(exactCompatibleId\)/u);
+  assert.match(combobox, /const exactExpansion = expansionReferences\.find/u);
+  assert.match(combobox, /\(onExpand \?\? onCapture\)\(exactExpansion\.name\)/u);
+  assert.match(combobox, /!exact/u);
+  assert.match(page, /Se reutilizará la marca/u);
+  assert.match(page, /key=\{`catalog-category-\$\{kind\}`\}/u);
+  assert.match(commercialCatalogs, /exactCanonicalMatch/u);
+  assert.match(commercialCatalogs, /disabled=\{exactCanonicalMatch !== null\}/u);
+  assert.match(commercialCatalogs, /Ya existe la/u);
+  assert.match(commercialCatalogs, /Asóciala a esa referencia/u);
   assert.doesNotMatch(combobox, /createCatalogCategory|createCatalogBrand/u);
   assert.match(page, /setDialog\('create'\); setNotice\(null\)/u);
   assert.match(page, /setDialog\(null\); setNotice\(null\); requestId\.current = null/u);

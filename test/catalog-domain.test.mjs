@@ -22,6 +22,8 @@ const requestId = '50000000-0000-4000-8000-000000000040';
 
 test('catalog normalization does not turn similar commercial names into identity', () => {
   assert.equal(normalizeCatalogText('  Pantalla  ÍPhone  11 OLED '), 'pantalla iphone 11 oled');
+  assert.equal(normalizeCatalogText('  PANTALLAS   '), normalizeCatalogText('pantallas'));
+  assert.notEqual(normalizeCatalogText('Pantalla'), normalizeCatalogText('Pantallas'));
   assert.notEqual(normalizeCatalogText('Pantalla iPhone 11 OLED'), normalizeCatalogText('Pantalla iPhone 11 LCD'));
   assert.equal(normalizedSku(' ref.ip11-oled '), 'REF.IP11-OLED');
   assert.equal(normalizeCatalogIdentifier('BARCODE', ' sr00000042 '), 'SR00000042');

@@ -15,7 +15,7 @@ const { KyselyCatalogRepository } = enabled
 const { CatalogService } = enabled
   ? await import('../dist/modules/catalog/application/catalog.service.js')
   : {};
-const { CatalogConflictError, CatalogNotFoundError, CatalogReferenceInUseError } = enabled
+const { CatalogConflictError, CatalogNotFoundError, CatalogReferenceAlreadyExistsError, CatalogReferenceInUseError } = enabled
   ? await import('../dist/modules/catalog/domain/catalog-item.js')
   : {};
 
@@ -116,8 +116,14 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
   assert.equal(process.version, 'v24.18.0');
   const admin = adminPool();
   const connection = createDatabaseConnection(config());
+  const peerConnection = createDatabaseConnection(config());
   const repository = new KyselyCatalogRepository(connection);
+  const peerRepository = new KyselyCatalogRepository(peerConnection);
   const service = new CatalogService(repository, async (tenantId) => {
+    const result = await admin.query('select operating_currency from tenants where tenant_id = $1', [tenantId]);
+    return result.rows[0]?.operating_currency ?? null;
+  });
+  const peerService = new CatalogService(peerRepository, async (tenantId) => {
     const result = await admin.query('select operating_currency from tenants where tenant_id = $1', [tenantId]);
     return result.rows[0]?.operating_currency ?? null;
   });
@@ -199,12 +205,76 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     assert.equal(resolvedNewItem.category.name, 'Accesorios premium');
     assert.equal(resolvedNewItem.brand.name, 'Casa QA');
 
-    const duplicateCandidate = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Duplicado próximo', categoryId: null, categoryCapturedValue: 'fúndas', basePriceAmountMinor: 10000 });
-    const duplicatePending = (await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).pendingCategories.find(({ rawLabel }) => rawLabel === 'fúndas');
-    await assert.rejects(service.resolveCategory(ctxA1, duplicatePending.pendingCategoryValueId, {
-      canonicalName: ' FUNDAS ', applicableKinds: ['PRODUCT'], expectedVersion: duplicatePending.version, clientRequestId: randomUUID(),
-    }), CatalogConflictError);
-    assert.equal((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, duplicateCandidate.itemId)).category.reconciliationStatus, 'PENDING');
+    for (const [index, capturedCategory] of ['Fundas', 'fundas', '  FUNDAS  ', 'fúndas'].entries()) {
+      const reused = await item(service, ctxA1, { kind: 'PRODUCT', title: `Coincidencia exacta ${index}`, categoryId: null, categoryCapturedValue: capturedCategory, basePriceAmountMinor: 10000 });
+      assert.equal(reused.category.categoryId, productCategory.categoryId);
+      assert.equal(reused.category.pendingCategoryValueId, null);
+      assert.equal(reused.category.reconciliationStatus, 'CANONICAL');
+    }
+    const noDuplicatePending = await service.listReferences({ tenantId: tenantA, branchId: branchA1 });
+    assert.equal(noDuplicatePending.pendingCategories.some(({ normalizedKey, kind }) => normalizedKey === 'fundas' && kind === 'PRODUCT'), false);
+    const singularCandidate = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Coincidencia no difusa', categoryId: null, categoryCapturedValue: 'Funda', basePriceAmountMinor: 10000 });
+    assert.equal(singularCandidate.category.reconciliationStatus, 'PENDING');
+    const renameCandidate = await category(service, ctxA1, 'Estuches', 'PRODUCT');
+    await assert.rejects(service.updateCategory(ctxA1, renameCandidate.categoryId, command({ name: ' FÚNDA ', status: 'ACTIVE', applicableKinds: ['PRODUCT'], expectedVersion: renameCandidate.version })), CatalogConflictError);
+    const sameNameOtherKind = await category(service, ctxA1, 'Fundas', 'SERVICE');
+    assert.deepEqual(sameNameOtherKind.applicableKinds, ['SERVICE']);
+    await assert.rejects(category(service, ctxA1, ' FUNDAS ', 'PRODUCT'), CatalogReferenceAlreadyExistsError);
+
+    const reusedBrandItem = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Marca exacta reutilizada', categoryId: productCategory.categoryId, brandId: null, brandCapturedValue: '  ÁPPLE ', basePriceAmountMinor: 10000 });
+    assert.equal(reusedBrandItem.brand.brandId, brandA.brandId);
+    assert.equal(reusedBrandItem.brand.pendingBrandValueId, null);
+    const serviceOnlyBrand = await brand(service, ctxA1, 'Marca multi tipo', ['SERVICE']);
+    const expandedBrandItem = await item(service, ctxA1, { kind: 'PRODUCT', title: 'Marca reutilizada', categoryId: productCategory.categoryId, brandId: null, brandCapturedValue: '  MARCA   MULTI TIPO ', basePriceAmountMinor: 10000 });
+    assert.equal(expandedBrandItem.brand.brandId, serviceOnlyBrand.brandId);
+    assert.equal(expandedBrandItem.brand.pendingBrandValueId, null);
+    const expandedBrand = (await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).brands.find(({ brandId }) => brandId === serviceOnlyBrand.brandId);
+    assert.deepEqual(expandedBrand.applicableKinds, ['PRODUCT', 'SERVICE']);
+    const expansionAudit = await admin.query("select change_summary from catalog_audit_events where tenant_id = $1 and resource_id = $2 and action = 'catalog.item.create'", [tenantA, expandedBrandItem.itemId]);
+    assert.deepEqual(expansionAudit.rows[0].change_summary.expandedBrandApplicability, ['PRODUCT']);
+
+    const concurrentCaptured = await Promise.all([
+      item(service, ctxA1, { kind: 'PRODUCT', title: 'Captura concurrente A', categoryId: null, categoryCapturedValue: 'Conectores especiales', basePriceAmountMinor: 10000 }),
+      item(peerService, ctxA1, { kind: 'PRODUCT', title: 'Captura concurrente B', categoryId: null, categoryCapturedValue: ' conectores   ESPECIALES ', basePriceAmountMinor: 10000 }),
+    ]);
+    assert.equal(concurrentCaptured.every((created) => created.category.reconciliationStatus === 'PENDING'), true);
+    assert.equal(new Set(concurrentCaptured.map((created) => created.category.pendingCategoryValueId)).size, 1);
+    assert.equal((await admin.query("select count(*)::int as count from catalog_category_pending_values where tenant_id = $1 and kind = 'PRODUCT' and normalized_key = 'conectores especiales'", [tenantA])).rows[0].count, 1);
+    const concurrentCanonical = await Promise.allSettled([
+      category(service, ctxA1, 'Cables concurrentes', 'PRODUCT'),
+      category(peerService, ctxA1, ' cables   CONCURRENTES ', 'PRODUCT'),
+    ]);
+    assert.equal(concurrentCanonical.filter(({ status }) => status === 'fulfilled').length, 1);
+    assert.equal(concurrentCanonical.filter(({ status, reason }) => status === 'rejected' && reason instanceof CatalogReferenceAlreadyExistsError).length, 1);
+    assert.equal((await admin.query("select count(*)::int as count from catalog_categories where tenant_id = $1 and kind = 'PRODUCT' and normalized_name = 'cables concurrentes'", [tenantA])).rows[0].count, 1);
+
+    const tenantBExact = await item(service, ctxB1, { kind: 'PART', title: 'Aislamiento Tenant B', categoryId: null, categoryCapturedValue: ' PANTALLA ', basePriceAmountMinor: 10000 });
+    assert.equal(tenantBExact.category.categoryId, categoryB.categoryId);
+    assert.notEqual(tenantBExact.category.categoryId, categoryA.categoryId);
+
+    const historicalPendingId = randomUUID();
+    const historicalItemId = randomUUID();
+    await admin.query(`insert into catalog_category_pending_values (
+      tenant_id, pending_category_value_id, raw_label_example, normalized_key, kind, resolution_status,
+      canonical_category_id, version, first_seen_at, last_seen_at, captured_by_actor_id,
+      captured_by_actor_display_name, captured_in_branch_id, captured_in_station_id, captured_in_session_id,
+      resolved_by_actor_id, resolved_at
+    ) values ($1, $2, ' PANTALLA ', 'pantalla', 'PART', 'PENDING', null, 1, now() - interval '2 days', now() - interval '1 day', $3, 'Fixture histórico', $4, $5, $6, null, null)`, [tenantA, historicalPendingId, actorUserId, branchA1, stationId, sessionId]);
+    await admin.query(`insert into catalog_items (
+      tenant_id, item_id, kind, title, normalized_title, description, category_id, brand_id,
+      pending_category_value_id, pending_brand_value_id, status, sellable, stockable, purchasable,
+      applicable_to_repair, version, created_at, updated_at
+    ) values ($1, $2, 'PART', 'Fixture duplicado histórico', 'fixture duplicado historico', null, null, null, $3, null, 'ACTIVE', true, true, true, true, 1, now(), now())`, [tenantA, historicalItemId, historicalPendingId]);
+    const historicalPending = (await service.listReferences({ tenantId: tenantA, branchId: branchA1 })).pendingCategories.find(({ pendingCategoryValueId }) => pendingCategoryValueId === historicalPendingId);
+    assert.equal(historicalPending.rawLabel, ' PANTALLA ');
+    await assert.rejects(service.resolveCategory(ctxA1, historicalPendingId, { canonicalName: '  PANTALLA ', applicableKinds: ['PART'], expectedVersion: 1, clientRequestId: randomUUID() }), CatalogReferenceAlreadyExistsError);
+    const historicalResolution = await service.resolveCategory(ctxA1, historicalPendingId, { canonicalCategoryId: categoryA.categoryId, expectedVersion: 1, clientRequestId: randomUUID() });
+    assert.equal(historicalResolution.canonicalCategoryId, categoryA.categoryId);
+    const historicalRow = (await admin.query('select raw_label_example, captured_by_actor_display_name, first_seen_at, resolved_at from catalog_category_pending_values where tenant_id = $1 and pending_category_value_id = $2', [tenantA, historicalPendingId])).rows[0];
+    assert.equal(historicalRow.raw_label_example, ' PANTALLA ');
+    assert.equal(historicalRow.captured_by_actor_display_name, 'Fixture histórico');
+    assert.ok(historicalRow.first_seen_at < historicalRow.resolved_at);
+    assert.equal((await service.getItem({ tenantId: tenantA, branchId: branchA1 }, historicalItemId)).category.categoryId, categoryA.categoryId);
 
     const partA = await item(service, ctxA1, {
       categoryId: categoryA.categoryId, brandId: brandA.brandId,
@@ -290,7 +360,7 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
       CatalogConflictError,
     );
 
-    const duplicateInputs = [0, 1].map((index) => item(service, ctxA1, {
+    const duplicateInputs = [service, peerService].map((writer, index) => item(writer, ctxA1, {
       kind: 'PRODUCT', title: `Funda duplicada ${index}`, categoryId: productCategory.categoryId,
       sku: 'PRO-DUPLICATE', basePriceAmountMinor: 29900,
     }));
@@ -442,6 +512,7 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     process.stdout.write(`PBI-040 catalog search benchmark: 10000 items, p95=${p95.toFixed(2)}ms, budget=750ms\n`);
   } finally {
     await connection.close().catch(() => undefined);
+    await peerConnection.close().catch(() => undefined);
     await admin.end();
   }
 });

@@ -380,10 +380,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts',
     'src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts',
     'src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts',
+    'src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'repairs'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'repairs', 'catalog'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -419,6 +420,7 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260911200000_catalog_add_reference_governance.ts',
       'src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts',
       'src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts',
+      'src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);

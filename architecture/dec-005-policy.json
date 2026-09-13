@@ -742,7 +742,8 @@
       "src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts",
       "src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts",
       "src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts",
-      "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts"
+      "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts",
+      "src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1262,6 +1263,13 @@
           "references": ["tenants"],
           "functions": ["reject_repair_catalog_reference_deletion_event_mutation"],
           "triggers": ["repair_catalog_reference_deletion_events_reject_delete", "repair_catalog_reference_deletion_events_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_categories", "catalog_category_kind_applicability", "catalog_reference_identity_locks"],
+          "references": ["tenants"],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1312,6 +1320,7 @@
           "CatalogCommandTable",
           "CatalogAuditEventTable",
           "CatalogReferenceDeletionEventTable",
+          "CatalogReferenceIdentityLockTable",
           "UserProvisioningBootstrapTable",
           "UserLifecycleCommandTable",
           "UserProfileUpdateCommandTable",
@@ -1522,6 +1531,7 @@
           "src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts",
           "src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts",
           "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts",
+          "src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1870,6 +1880,7 @@
     },
     "databaseObjects": {
       "catalog_categories": { "owner": "catalog", "kind": "table" },
+      "catalog_reference_identity_locks": { "owner": "catalog", "kind": "table" },
       "catalog_brands": { "owner": "catalog", "kind": "table" },
       "catalog_items": { "owner": "catalog", "kind": "table" },
       "catalog_item_identifiers": { "owner": "catalog", "kind": "table" },

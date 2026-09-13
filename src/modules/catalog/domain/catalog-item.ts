@@ -63,8 +63,27 @@ export class CatalogNotFoundError extends Error {
 }
 
 export class CatalogConflictError extends Error {
-  readonly code = 'CATALOG_CONFLICT';
+  readonly code: string = 'CATALOG_CONFLICT';
   constructor() { super('Catalog command conflicts with current state.'); this.name = 'CatalogConflictError'; }
+}
+
+export class CatalogReferenceAlreadyExistsError extends CatalogConflictError {
+  override readonly code = 'CATALOG_REFERENCE_ALREADY_EXISTS';
+  constructor(
+    readonly referenceKind: 'category' | 'brand',
+    readonly displayName: string,
+  ) {
+    super();
+    this.name = 'CatalogReferenceAlreadyExistsError';
+  }
+}
+
+export class CatalogReferenceInactiveError extends CatalogConflictError {
+  override readonly code = 'CATALOG_REFERENCE_INACTIVE';
+  constructor(readonly referenceKind: 'category' | 'brand') {
+    super();
+    this.name = 'CatalogReferenceInactiveError';
+  }
 }
 
 export class CatalogReferenceInUseError extends Error {

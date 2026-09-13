@@ -32,6 +32,12 @@ export type CatalogReferences = Readonly<{
 }>;
 export type PriceListPage = Readonly<{ items: readonly PriceListItem[]; totalCount: number }>;
 
+/** Mirrors Catalog's exact identity normalization; it is intentionally not fuzzy. */
+export function normalizeCatalogReferenceText(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/gu, '').toLocaleLowerCase('es-MX')
+    .replace(/\s+/gu, ' ').trim();
+}
+
 const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
 async function json<T>(response: Response): Promise<T> {
   if (!response.ok) {

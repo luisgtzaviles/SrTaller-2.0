@@ -84,6 +84,7 @@ export type CatalogIdentifierScheme = 'SKU' | 'BARCODE';
 export interface CatalogCategoryTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly category_id: ImmutableColumn<string>;
+  readonly kind: MutableColumn<CatalogItemKind>;
   readonly display_name: MutableColumn<string>;
   readonly normalized_name: MutableColumn<string>;
   readonly status: MutableColumn<CatalogLifecycle>;
@@ -203,6 +204,12 @@ export interface CatalogBrandKindApplicabilityTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly brand_id: ImmutableColumn<string>;
   readonly kind: ImmutableColumn<CatalogItemKind>;
+}
+
+export interface CatalogReferenceIdentityLockTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly identity_key: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
 }
 
 export interface CatalogBarcodeSequenceTable {
@@ -1199,6 +1206,7 @@ export interface DatabaseSchema {
   readonly catalog_commands: CatalogCommandTable;
   readonly catalog_audit_events: CatalogAuditEventTable;
   readonly catalog_reference_deletion_events: CatalogReferenceDeletionEventTable;
+  readonly catalog_reference_identity_locks: CatalogReferenceIdentityLockTable;
   readonly customers: CustomerTable;
   readonly customer_contact_phones: CustomerContactPhoneTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;

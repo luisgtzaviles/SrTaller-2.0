@@ -163,6 +163,27 @@ Tipo; Brand coincide cuando su conjunto de aplicabilidad incluye el Tipo. La
 proyección consume el mismo contrato de aplicabilidad que Nuevo artículo y no
 mantiene una matriz paralela de combinaciones.
 
+La identidad de Category es `Tenant + Type + normalizedName`; por ello el mismo
+nombre puede existir en Tipos distintos, pero nunca dos veces dentro del mismo
+Tipo. Brand conserva identidad `Tenant + normalizedName` y aplicabilidad
+multi-Tipo. La normalización exacta común hace trim, case folding español,
+colapsa espacios y elimina marcas diacríticas mediante NFD. No aplica stemming,
+singular/plural ni fuzzy matching: `Pantalla` y `Pantallas` siguen siendo
+decisiones humanas distintas.
+
+Antes de persistir una captura pendiente, el servidor serializa la identidad y
+busca primero el canon activo del mismo Tenant/contexto. Una coincidencia exacta
+de Category se reutiliza; una Brand exacta se reutiliza y, si falta el Tipo, se
+amplía su aplicabilidad dentro de la misma transacción y audit del alta. Un lock
+de identidad Tenant-scoped coordina carreras entre alta canónica, captura y
+edición; los uniques físicos conservan Category por Tenant+Type y Brand por
+Tenant. Los conflictos son tipados y nunca revelan coincidencias de otro Tenant.
+
+Una captura histórica que ya duplique al canon no se borra: Reconciliación la
+preselecciona y asocia al canon compatible, conserva texto, actor, Branch,
+Station, Session, primera/última observación y usos, y registra destino/resultado
+en audit. Crear otro canon queda deshabilitado en UI y rechazado server-side.
+
 El lifecycle administrativo usa una regla común, con consulta de dependencias
 propia de cada bounded context:
 

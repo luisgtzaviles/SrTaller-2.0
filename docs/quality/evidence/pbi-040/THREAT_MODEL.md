@@ -48,6 +48,7 @@ currency, source y sensitivity enviados por cliente nunca son autoridad.
 | PL-T16 | módulo accede tablas ajenas | High | public contracts, DEC-005/049 checker y review | architecture check + import/persistence matrix |
 | PL-T17 | monto decimal pierde precisión | High | minor units/decimal parser; moneda ISO; no float | límites, 0, máximos, decimales inválidos |
 | PL-T18 | CSRF/replay repite write | High | CSRF/origin vigente + clientRequestId/outcome | replay exacto/incompatible y cross-session |
+| PL-T19 | carrera o normalización crea canon/pending equivalente | High | identidad Tenant-scoped serializada, uniques, canonical-first y conflicto tipado | Category/Brand exactas, dos writers, Tipos y Tenants distintos |
 
 ## Abuso por actor
 
