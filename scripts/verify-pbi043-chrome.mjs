@@ -3,6 +3,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 
 import {
   ensureLocalEnvironment,
@@ -11,8 +12,6 @@ import {
 
 const origin = 'http://127.0.0.1:4173';
 const chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const ownerPort = 19_243;
-const qaPort = 19_244;
 
 if (process.platform !== 'darwin') {
   throw new Error('PBI-043 visible Chrome proof is available only on local macOS.');
@@ -31,6 +30,14 @@ class CdpClient {
   constructor(url) {
     this.nextId = 1;
     this.pending = new Map();
+    this.telemetry = {
+      consoleErrors: 0,
+      runtimeExceptions: 0,
+      failedRequests: 0,
+      serverErrors: 0,
+      navigationAborts: 0,
+      networkConsoleEntries: 0,
+    };
     this.socket = new WebSocket(url);
   }
 
@@ -41,7 +48,39 @@ class CdpClient {
     });
     this.socket.addEventListener('message', (event) => {
       const message = JSON.parse(String(event.data));
-      if (!message.id) return;
+      if (!message.id) {
+        if (message.method === 'Runtime.exceptionThrown') {
+          this.telemetry.consoleErrors += 1;
+        }
+        if (message.method === 'Runtime.consoleAPICalled' && message.params?.type === 'error') {
+          this.telemetry.consoleErrors += 1;
+        }
+        if (message.method === 'Log.entryAdded' && message.params?.entry?.level === 'error') {
+          if (message.params.entry.source === 'network') {
+            this.telemetry.networkConsoleEntries += 1;
+          } else {
+            this.telemetry.consoleErrors += 1;
+          }
+        }
+        if (message.method === 'Runtime.exceptionThrown') {
+          this.telemetry.runtimeExceptions += 1;
+        }
+        if (message.method === 'Network.loadingFailed') {
+          if (
+            message.params?.canceled ||
+            message.params?.errorText === 'net::ERR_ABORTED'
+          ) {
+            this.telemetry.navigationAborts += 1;
+          } else {
+            this.telemetry.failedRequests += 1;
+          }
+        }
+        if (
+          message.method === 'Network.responseReceived' &&
+          message.params?.response?.status >= 500
+        ) this.telemetry.serverErrors += 1;
+        return;
+      }
       const pending = this.pending.get(message.id);
       if (!pending) return;
       this.pending.delete(message.id);
@@ -64,7 +103,22 @@ class CdpClient {
   }
 }
 
-async function waitForPage(port) {
+async function reservePort() {
+  const server = createServer();
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
+  if (typeof address === 'string' || address === null) {
+    server.close();
+    throw new Error('Could not reserve a Chrome debugging port.');
+  }
+  await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  return address.port;
+}
+
+async function waitForPage(port, marker) {
   const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
     try {
@@ -72,7 +126,10 @@ async function waitForPage(port) {
         (response) => response.json(),
       );
       const page = targets.find(
-        (target) => target.type === 'page' && target.url.startsWith(origin),
+        (target) =>
+          target.type === 'page' &&
+          target.url.startsWith(origin) &&
+          target.url.includes(marker),
       );
       if (page?.webSocketDebuggerUrl) return page;
     } catch {
@@ -182,14 +239,39 @@ async function replaceQaPin(owner, qaPin) {
   return result.status;
 }
 
-async function reload(client) {
-  await client.send('Page.reload', { ignoreCache: true });
-  await new Promise((resolve) => setTimeout(resolve, 800));
+async function waitForDomRoute(client, path, expectedHeading) {
+  const deadline = Date.now() + 10_000;
+  while (Date.now() < deadline) {
+    const state = await evaluate(client, `(() => {
+      const headings = [...document.querySelectorAll('h1, h2')]
+        .map((element) => element.textContent?.trim() ?? '');
+      const body = document.body?.innerText ?? '';
+      return {
+        ready: document.readyState,
+        pathname: location.pathname,
+        heading: headings.includes(${JSON.stringify(expectedHeading)}),
+        authenticated: !body.includes('Ingresa tu PIN'),
+      };
+    })()`);
+    if (
+      state.ready === 'complete' &&
+      state.pathname === path &&
+      state.heading &&
+      state.authenticated
+    ) return state;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error(`Authenticated DOM route did not settle: ${path}`);
 }
 
-async function navigate(client, path, title) {
+async function reload(client, path, expectedHeading) {
+  await client.send('Page.reload', { ignoreCache: true });
+  await waitForDomRoute(client, path, expectedHeading);
+}
+
+async function navigate(client, path, title, expectedHeading) {
   await client.send('Page.navigate', { url: `${origin}${path}` });
-  await new Promise((resolve) => setTimeout(resolve, 800));
+  await waitForDomRoute(client, path, expectedHeading);
   await evaluate(
     client,
     `document.title = ${JSON.stringify(title)}; document.title`,
@@ -204,32 +286,59 @@ async function screenshot(client, path) {
   await writeFile(path, Buffer.from(result.data, 'base64'));
 }
 
-function launch(profileDirectory, port, windowPosition) {
+function launch(profileDirectory, port, windowPosition, marker) {
   const child = spawn(chrome, [
     `--user-data-dir=${profileDirectory}`,
     `--remote-debugging-port=${port}`,
     '--no-first-run',
     '--no-default-browser-check',
+    '--enable-automation',
     `--window-position=${windowPosition}`,
     '--window-size=960,900',
     '--new-window',
-    `${origin}/reparaciones`,
+    `${origin}/reparaciones?${marker}`,
   ], { detached: true, stdio: 'ignore' });
   child.unref();
+  return child;
 }
 
 const root = await mkdtemp(join(tmpdir(), 'srtaller-pbi043-chrome-'));
 const ownerDirectory = join(root, 'owner');
 const qaDirectory = join(root, 'qa');
-launch(ownerDirectory, ownerPort, '0,30');
-launch(qaDirectory, qaPort, '980,30');
+const [ownerPort, qaPort] = await Promise.all([reservePort(), reservePort()]);
+if (ownerPort === qaPort) throw new Error('Chrome debugging ports must be distinct.');
+const marker = `pbi043=${randomUUID()}`;
+const ownerProcess = launch(ownerDirectory, ownerPort, '0,30', marker);
+const qaProcess = launch(qaDirectory, qaPort, '980,30', marker);
 
-const ownerTarget = await waitForPage(ownerPort);
-const qaTarget = await waitForPage(qaPort);
+const ownerTarget = await waitForPage(ownerPort, marker);
+const qaTarget = await waitForPage(qaPort, marker);
 const owner = await new CdpClient(ownerTarget.webSocketDebuggerUrl).open();
 const qa = await new CdpClient(qaTarget.webSocketDebuggerUrl).open();
+let proofPassed = false;
 
 try {
+  await Promise.all([
+    owner.send('Page.enable'),
+    owner.send('Runtime.enable'),
+    owner.send('Network.enable'),
+    owner.send('Log.enable'),
+    qa.send('Page.enable'),
+    qa.send('Runtime.enable'),
+    qa.send('Network.enable'),
+    qa.send('Log.enable'),
+  ]);
+  const [ownerCommandLine, qaCommandLine] = await Promise.all([
+    owner.send('Browser.getBrowserCommandLine'),
+    qa.send('Browser.getBrowserCommandLine'),
+  ]);
+  if (
+    !ownerCommandLine.arguments.includes(`--user-data-dir=${ownerDirectory}`) ||
+    !qaCommandLine.arguments.includes(`--user-data-dir=${qaDirectory}`) ||
+    !ownerCommandLine.arguments.includes(`--remote-debugging-port=${ownerPort}`) ||
+    !qaCommandLine.arguments.includes(`--remote-debugging-port=${qaPort}`)
+  ) throw new Error('CDP targets do not belong to the launched isolated profiles.');
+
   await Promise.all([
     owner.send('Page.navigate', { url: `${origin}/reparaciones` }),
     qa.send('Page.navigate', { url: `${origin}/reparaciones` }),
@@ -263,7 +372,10 @@ try {
     ownerLogin.session.userId === qaLogin.session.userId
   ) throw new Error('Owner and QA did not establish independent Sessions.');
 
-  await Promise.all([reload(owner), reload(qa)]);
+  await Promise.all([
+    reload(owner, '/reparaciones', 'Reparaciones'),
+    reload(qa, '/reparaciones', 'Reparaciones'),
+  ]);
   const [ownerReloaded, qaReloaded] = await Promise.all([
     snapshot(owner),
     snapshot(qa),
@@ -304,15 +416,39 @@ try {
   ) throw new Error('Final Owner/QA independence was not preserved.');
 
   await Promise.all([
-    navigate(owner, '/reparaciones/nueva', 'PBI-043 OWNER — sesión activa'),
-    navigate(qa, '/reparaciones', 'PBI-043 QA — sesión activa'),
+    navigate(
+      owner,
+      '/reparaciones/nueva',
+      'PBI-043 OWNER — sesión activa',
+      'Nueva reparación',
+    ),
+    navigate(qa, '/reparaciones', 'PBI-043 QA — sesión activa', 'Reparaciones'),
   ]);
   await Promise.all([
     screenshot(owner, join(root, 'owner.png')),
     screenshot(qa, join(root, 'qa.png')),
   ]);
 
-  process.stdout.write(`${JSON.stringify({
+  const telemetry = {
+    consoleErrors: owner.telemetry.consoleErrors + qa.telemetry.consoleErrors,
+    runtimeExceptions:
+      owner.telemetry.runtimeExceptions + qa.telemetry.runtimeExceptions,
+    failedRequests: owner.telemetry.failedRequests + qa.telemetry.failedRequests,
+    serverErrors: owner.telemetry.serverErrors + qa.telemetry.serverErrors,
+    navigationAborts:
+      owner.telemetry.navigationAborts + qa.telemetry.navigationAborts,
+    networkConsoleEntries:
+      owner.telemetry.networkConsoleEntries + qa.telemetry.networkConsoleEntries,
+  };
+  if (
+    telemetry.consoleErrors !== 0 ||
+    telemetry.runtimeExceptions !== 0 ||
+    telemetry.failedRequests !== 0 ||
+    telemetry.serverErrors !== 0
+  ) {
+    throw new Error(`Chrome telemetry contains failures: ${JSON.stringify(telemetry)}`);
+  }
+  const evidence = {
     status: 'PASS',
     origin,
     stationShared: true,
@@ -324,10 +460,31 @@ try {
     qaSwitchPreservedOwner: true,
     finalOwnerRoute: '/reparaciones/nueva',
     finalQaRoute: '/reparaciones',
+    authenticatedDomRoutesVerified: true,
+    telemetry,
+    capturedRequestPayloads: false,
     screenshots: [join(root, 'owner.png'), join(root, 'qa.png')],
     profileDirectories: [ownerDirectory, qaDirectory],
-  }, null, 2)}\n`);
+    processIds: [ownerProcess.pid, qaProcess.pid],
+    debuggingPorts: [ownerPort, qaPort],
+  };
+  const serializedEvidence = JSON.stringify(evidence, null, 2);
+  if (
+    serializedEvidence.includes(ownerPin) ||
+    serializedEvidence.includes(qaPin)
+  ) throw new Error('Chrome evidence contains a PIN secret.');
+  process.stdout.write(`${serializedEvidence}\n`);
+  proofPassed = true;
 } finally {
   owner.close();
   qa.close();
+  if (!proofPassed) {
+    for (const child of [ownerProcess, qaProcess]) {
+      try {
+        process.kill(-child.pid, 'SIGTERM');
+      } catch {
+        // The failed Chrome process is already gone.
+      }
+    }
+  }
 }

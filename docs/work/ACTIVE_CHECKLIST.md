@@ -6,7 +6,7 @@ Current PBI: PBI-043 — In review
 Status: Local functional proof complete; formal integration in progress
 WIP: 1/1
 Progress: 6 / 9 implementation-to-Preview steps complete
-Current: Run final full verification and independent Critical review
+Current: Verify the remediated Critical evidence on one exact candidate SHA
 Next: Push the single implementation branch and obtain authoritative CI
 Blocked: None; no unresolved product/domain decision found
 Last updated: 2026-09-12 MST
@@ -20,8 +20,10 @@ Last updated: 2026-09-12 MST
   revocation contracts
 - [x] Materialize COS-01…COS-22 with PostgreSQL 18.x where required
 - [~] Pass focused, architecture, typecheck/build, runtime provenance and full
-  verification gates without Critical skips; only `verify:full` remains
+  verification gates without Critical skips; remedial candidate rerun remains
 - [x] Prove COS-23/COS-24 with independent Chrome profiles on the same Station
+- [x] Remediate the first independent review: deterministic PostgreSQL locks,
+  N-session revocation, material lockout/CSRF/attribution and hardened Chrome
 - [ ] Complete independent Critical-risk review with no open findings
 - [ ] Push one branch, open PR and obtain run-1/run-2/comparison PASS
 - [ ] Merge, validate exact-main CI and deploy/validate the integrated SHA in

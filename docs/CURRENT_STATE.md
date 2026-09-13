@@ -45,7 +45,11 @@ Access independiente. Tiene [DoR PASS](quality/evidence/pbi-043/DEFINITION_OF_RE
 [Threat Model Critical](quality/evidence/pbi-043/THREAT_MODEL.md) y una
 [matriz de 24 pruebas](quality/evidence/pbi-043/TEST_STRATEGY.md) ejecutada
 localmente. El candidato permite N Sessions por Station y conserva switch/
-logout por Session exacta; todavía no está integrado ni desplegado.
+logout por Session exacta. Una primera revisión Critical detectó debilidad en
+los oráculos de concurrencia y sobredeclaración de evidencia; el candidato fue
+remediado con locks PostgreSQL observables, revocación N-session, cruces
+lockout/CSRF/atribución materiales y un runner Chrome endurecido. La re-revisión
+del SHA final sigue pendiente; todavía no está integrado ni desplegado.
 
 ## Capacidades integradas relevantes
 
@@ -64,7 +68,7 @@ logout por Session exacta; todavía no está integrado ni desplegado.
 | ADR-014 | Accepted; materializada en candidato |
 | Admission concurrente | PASS local Application/HTTP/PostgreSQL/Chrome |
 | Switch session-local | PASS local; reemplazo exacto |
-| Drop unique parcial / índices | migración fresh/existing/down/reapply PASS |
+| Drop unique parcial / índices | migración fresh/existing/down/reapply PASS; sin índice StationCredential injustificado |
 | Revocación efectiva N-session | contratos internos y PostgreSQL PASS |
 | Cookies/CSRF/PIN/timeout | Sin cambio aprobado |
 | Browser Owner + QA | PASS local; misma Station, perfiles y Users distintos |

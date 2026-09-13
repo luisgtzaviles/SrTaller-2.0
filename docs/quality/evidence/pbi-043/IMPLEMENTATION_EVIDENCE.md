@@ -22,8 +22,9 @@
   o las Sessions afectadas por User, Station y versión de PIN credential; no se
   añadió endpoint ni UI administrativa.
 - La migración elimina el unique parcial station-wide, conserva PK/verifier y
-  agrega índices parciales activos por Station, User, PIN credential y
-  StationCredential.
+  agrega índices parciales activos por Station, User y PIN credential. No se
+  agregó un índice por StationCredential porque no existe una operación
+  productiva que lo justifique.
 - El `down` aborta si alguna Station tiene más de una Session activa; no elige
   ni cierra una ganadora.
 - Cookies, CSRF, PIN lockout/rate limit, idle 60 minutos, absolute 12 horas,
@@ -33,10 +34,11 @@
 
 | IDs | Evidencia | Resultado local |
 |---|---|---|
-| COS-01, 03–05, 13–15 | contratos Application/HTTP con dos cookie jars y Sessions exactas | PASS |
-| COS-02, 06–11, 16–17, 19 | PostgreSQL material: concurrencia, scope, races, revocación y expiración | PASS |
+| COS-01, 03–05, 14–15 | contratos Application/HTTP con dos cookie jars y Sessions exactas | PASS |
+| COS-02, 06–11, 16–17, 19 | PostgreSQL material: concurrencia con locks observados, scope, races, revocación N-session y expiración | PASS |
 | COS-12 | PostgreSQL material PIN: contador/cooldown concurrente sin expulsar Session existente | PASS |
-| COS-18 | autorización contextual y nota operativa conservan SessionId solicitante | PASS |
+| COS-13 | cruce real CSRF de Session A + bearer de Session B: denegado y B permanece activa | PASS |
+| COS-18 | dos notas concurrentes desde Sessions de una Station conservan sus SessionId solicitantes | PASS |
 | COS-20–22 | fresh, existing, down guard, reconciliación explícita y reapply | PASS |
 | COS-23–24 | dos perfiles Google Chrome visibles, misma Station y Users distintos | PASS |
 
@@ -44,7 +46,18 @@ La prueba Chrome ejecutó en orden: login Owner, login QA, reload de ambos,
 logout QA, comprobación Owner, relogin QA, switch QA, comprobación Owner y
 retorno QA a un User distinto. Al final existían dos perfiles visibles y
 autenticados en la misma Station: Owner en `/reparaciones/nueva` y QA en
-`/reparaciones`. No se registraron PIN, bearer, CSRF, cookies ni verificadores.
+`/reparaciones`. El runner usa puertos dinámicos, confirma que cada target CDP
+pertenece al perfil recién lanzado, valida ruta/heading/estado autenticado del
+DOM e inspecciona Console/Network. No persiste request headers/bodies ni
+registra PIN, bearer, CSRF, cookies o verificadores.
+
+La primera revisión independiente sobre `ae5e9bf` rechazó la evidencia por
+barreras no deterministas y cobertura sobredeclarada. La remediación sustituyó
+timers por locks PostgreSQL observables, extendió Station/User/PIN revoke a
+múltiples Sessions, combinó lockout con resolución de una Session existente,
+añadió el cruce CSRF material y probó atribución concurrente. La nueva revisión
+debe ejecutarse sobre el SHA candidato final; el hallazgo inicial no se trata
+como PASS.
 
 ## PostgreSQL material
 
@@ -59,10 +72,11 @@ digest, UTC y UTF-8, con base y container nuevos por archivo:
 | Hash material | `a4d67c930d024ec3946ca051d3eb335d51765eda4b6ced8774bc77f50b50a298` |
 | Cleanup | PASS; cero containers gobernados residuales |
 
-La suite Access material verifica dos commits independientes simultáneos,
-switch/logout con un ganador exacto, User/Station/credential revocation,
-restore sin resurrection, aislamiento Tenant/Branch, expiraciones y rollback
-guardado con filas intactas.
+La suite Access material verifica dos commits independientes bloqueados
+simultáneamente antes de liberarlos, switch/logout con un ganador exacto,
+User/Station/credential revocation de todas las Sessions afectadas, restore sin
+resurrection, aislamiento Tenant/Branch, expiraciones y rollback guardado con
+filas intactas.
 
 ## Gates locales
 

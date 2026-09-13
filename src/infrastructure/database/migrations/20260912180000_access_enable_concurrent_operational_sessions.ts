@@ -28,13 +28,6 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .execute();
 
   await database.schema
-    .createIndex('access_operational_sessions_active_station_credential_idx')
-    .on('access_operational_sessions')
-    .columns(['tenant_id', 'station_credential_id'])
-    .where(active)
-    .execute();
-
-  await database.schema
     .dropIndex('access_operational_sessions_one_active_station_uq')
     .execute();
 }
@@ -62,9 +55,6 @@ export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
     .where(active)
     .execute();
 
-  await database.schema
-    .dropIndex('access_operational_sessions_active_station_credential_idx')
-    .execute();
   await database.schema
     .dropIndex('access_operational_sessions_active_pin_credential_idx')
     .execute();

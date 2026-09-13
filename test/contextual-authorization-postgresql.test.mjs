@@ -166,6 +166,7 @@ const roleB = '91000000-0000-4000-8000-000000000026';
 const assignmentA = 'a0000000-0000-4000-8000-000000000026';
 const assignmentB = 'a1000000-0000-4000-8000-000000000026';
 const sessionA = 'b0000000-0000-4000-8000-000000000026';
+const sessionAConcurrent = 'b1000000-0000-4000-8000-000000000026';
 const repairA = 'c0000000-0000-4000-8000-000000000026';
 const repairA2 = 'c1000000-0000-4000-8000-000000000026';
 const repairB = 'c2000000-0000-4000-8000-000000000026';
@@ -180,6 +181,8 @@ const expiredCommitRequest = 'd7000000-0000-4000-8000-000000000026';
 const lockExpiredCommitRequest = 'd8000000-0000-4000-8000-000000000026';
 const authorityLinearizationRequest = 'd9000000-0000-4000-8000-000000000026';
 const snapshotRevocationRequest = 'da000000-0000-4000-8000-000000000026';
+const attributionRequestA = 'db000000-0000-4000-8000-000000000026';
+const attributionRequestB = 'dc000000-0000-4000-8000-000000000026';
 const stationSecretA = 'A'.repeat(43);
 const stationSecretB = 'B'.repeat(43);
 const authorizationNow = new Date();
@@ -530,6 +533,7 @@ test(
       );
       const tokens = new NodeSessionToken();
       const tokenMaterial = tokens.issue();
+      const concurrentTokenMaterial = tokens.issue();
       await sessionRepository.createForProfile(stationContextA, {
         sessionId: sessionA,
         userId: userA,
@@ -538,6 +542,18 @@ test(
         credentialVersion: 1,
         bearerVerifier: tokenMaterial.bearerVerifier,
         csrfVerifier: tokenMaterial.csrfVerifier,
+        expectedSessionId: null,
+        occurredAt: new Date(authorizationNow.getTime() - 1_000).toISOString(),
+        expiresAt: new Date(authorizationNow.getTime() + 12 * 60 * 60 * 1_000 - 1_000).toISOString(),
+      });
+      await sessionRepository.createForProfile(stationContextA, {
+        sessionId: sessionAConcurrent,
+        userId: userA,
+        userVersion: 0,
+        userAdmissionRevision: 0,
+        credentialVersion: 1,
+        bearerVerifier: concurrentTokenMaterial.bearerVerifier,
+        csrfVerifier: concurrentTokenMaterial.csrfVerifier,
         expectedSessionId: null,
         occurredAt: new Date(authorizationNow.getTime() - 1_000).toISOString(),
         expiresAt: new Date(authorizationNow.getTime() + 12 * 60 * 60 * 1_000 - 1_000).toISOString(),
@@ -619,6 +635,14 @@ test(
         `sr_session_csrf=${tokenMaterial.csrf}`,
       ].join('; ');
       const evidence = requestEvidence(cookieHeader, tokenMaterial.csrf);
+      const concurrentSessionEvidence = requestEvidence(
+        [
+          stationCookieA,
+          `sr_session=${concurrentTokenMaterial.bearer}`,
+          `sr_session_csrf=${concurrentTokenMaterial.csrf}`,
+        ].join('; '),
+        concurrentTokenMaterial.csrf,
+      );
 
       const worklist = await repairs.listRepairs(evidence, {
         period: 'all',
@@ -752,6 +776,31 @@ test(
       ]) {
         assert.ok(!serializedAudit.includes(sensitiveValue));
       }
+
+      await Promise.all([
+        repairs.addRepairOperationalNote(
+          evidence,
+          noteInput(repairA, attributionRequestA, 'Atribución concurrente A.'),
+        ),
+        concurrentRepairs.addRepairOperationalNote(
+          concurrentSessionEvidence,
+          noteInput(repairA, attributionRequestB, 'Atribución concurrente B.'),
+        ),
+      ]);
+      const concurrentAttribution = (
+        await admin.query(
+          `select client_request_id, session_id
+             from repair_business_audit_events
+            where tenant_id = $1
+              and client_request_id = any($2::uuid[])
+            order by client_request_id`,
+          [tenantA, [attributionRequestA, attributionRequestB]],
+        )
+      ).rows;
+      assert.deepEqual(concurrentAttribution, [
+        { client_request_id: attributionRequestA, session_id: sessionA },
+        { client_request_id: attributionRequestB, session_id: sessionAConcurrent },
+      ]);
 
       const noteRetry = await repairs.addRepairOperationalNote(
         evidence,
