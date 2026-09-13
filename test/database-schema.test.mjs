@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 60);
+  assert.equal(first.manifest.migrations.length, 61);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -401,6 +401,12 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260913121000_repairs_add_reference_safe_delete',
         order: 59,
         owner: 'repairs',
+      },
+      {
+        fileName: '20260913130000_catalog_enforce_reference_identity.js',
+        migrationName: '20260913130000_catalog_enforce_reference_identity',
+        order: 60,
+        owner: 'catalog',
       },
     ],
   );
