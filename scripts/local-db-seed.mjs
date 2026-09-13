@@ -270,15 +270,15 @@ try {
   );
   await client.query(
     `INSERT INTO catalog_categories (
-       tenant_id, category_id, display_name, normalized_name, status,
+       tenant_id, category_id, display_name, normalized_name, kind, status,
        created_by_actor_id, created_in_branch_id, created_in_station_id,
        created_in_session_id, version, created_at, updated_at
      ) VALUES
-       ($1::uuid, $2::uuid, 'Pantallas', 'pantallas', 'ACTIVE', $3::uuid, $4::uuid, $5::uuid, $6::uuid, 1, $7::timestamptz, $7::timestamptz),
-       ($1::uuid, $8::uuid, 'Fundas', 'fundas', 'ACTIVE', $3::uuid, $4::uuid, $5::uuid, $6::uuid, 1, $7::timestamptz, $7::timestamptz)
+       ($1::uuid, $2::uuid, 'Pantallas', 'pantallas', 'PART', 'ACTIVE', $3::uuid, $4::uuid, $5::uuid, $6::uuid, 1, $7::timestamptz, $7::timestamptz),
+       ($1::uuid, $8::uuid, 'Fundas', 'fundas', 'PRODUCT', 'ACTIVE', $3::uuid, $4::uuid, $5::uuid, $6::uuid, 1, $7::timestamptz, $7::timestamptz)
      ON CONFLICT (tenant_id, category_id) DO UPDATE SET
        display_name = EXCLUDED.display_name, normalized_name = EXCLUDED.normalized_name,
-       status = EXCLUDED.status, updated_at = EXCLUDED.updated_at`,
+       kind = EXCLUDED.kind, status = EXCLUDED.status, updated_at = EXCLUDED.updated_at`,
     [rows.tenant.tenantId, catalogReviewFixture.categoryIds.part, catalogReviewFixture.actorId,
       rows.branches[0].branchId, LOCAL_STATION_ID, catalogReviewFixture.sessionId,
       rows.tenant.createdAt, catalogReviewFixture.categoryIds.product],

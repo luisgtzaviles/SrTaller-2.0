@@ -117,6 +117,7 @@ test('Price List governance filters canonical and pending references by server a
   }
   assert.match(source, /allItems\.filter\(\(item\) => item\.applicableKinds\.includes\(typeFilter\)\)/u);
   assert.match(source, /allPending\.filter\(\(item\) => pendingKinds\(item\)\.includes\(typeFilter\)\)/u);
+  assert.match(source, /selected\[0\]\?\.applicableKinds\[0\] \?\? null/u);
   assert.match(source, /type=\{referenceKind === 'category' \? 'radio' : 'checkbox'\}/u);
   assert.match(source, /deriveCatalogLifecycleActions/u);
   assert.match(source, /catalogSafeDeleteFailure/u);

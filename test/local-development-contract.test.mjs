@@ -128,6 +128,10 @@ test('seed contract is deterministic and contains only existing schema entities'
   assert.equal(first.branches.length, 2);
   assert.deepEqual(Object.keys(first.tenant).sort(), ['createdAt', 'tenantId']);
   assert.deepEqual(Object.keys(first.branches[0]).sort(), ['active', 'branchId', 'createdAt', 'tenantId', 'timeZone']);
+  assert.match(
+    localSeedSource,
+    /catalog_categories \([\s\S]*normalized_name, kind, status,[\s\S]*'PART', 'ACTIVE'[\s\S]*'PRODUCT', 'ACTIVE'/u,
+  );
 });
 
 test('synthetic User fixtures are deterministic, bounded, and secret-free', () => {

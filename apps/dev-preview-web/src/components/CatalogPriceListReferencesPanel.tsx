@@ -68,7 +68,7 @@ export function CatalogPriceListReferencesPanel({ csrfToken }: Readonly<{ csrfTo
   const activeCount = items.filter((item) => item.status === 'ACTIVE').length;
   const visible = status === 'all' ? items : items.filter((item) => item.status === status.toUpperCase());
   const selected = items.filter((item) => selectedIds.includes(id(item)));
-  const selectedCategoryKind = referenceKind === 'category' ? selected[0]?.applicableKinds[0] : null;
+  const selectedCategoryKind = referenceKind === 'category' ? selected[0]?.applicableKinds[0] ?? null : null;
   const selectionCompatible = selected.length >= 2 && (referenceKind === 'brand' || selected.every((item) => item.applicableKinds.length === 1 && item.applicableKinds[0] === selectedCategoryKind));
   const survivor = selected.find((item) => id(item) === survivorId) ?? null;
   const reassignmentCount = selected.filter((item) => id(item) !== survivorId).reduce((total, item) => total + (item.usageCount ?? 0), 0);
