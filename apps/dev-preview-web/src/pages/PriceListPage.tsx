@@ -142,7 +142,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
     catch { setNotice({ tone: 'danger', message: 'No fue posible cargar el artículo.' }); }
     finally { setSaving(false); }
   };
-  const close = (): void => { if (!saving) { setDialog(null); requestId.current = null; } };
+  const close = (): void => { if (!saving) { setDialog(null); setNotice(null); requestId.current = null; } };
   const nextRequestId = (): string => requestId.current ??= crypto.randomUUID();
   const commandDone = async (message: string): Promise<void> => { requestId.current = null; await refreshReferences(); await refresh(); setNotice({ tone: 'success', message }); };
 

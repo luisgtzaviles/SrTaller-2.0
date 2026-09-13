@@ -36,6 +36,8 @@ test('Owner iteration centralizes governance and keeps operation reconciliable',
   assert.match(combobox, /Usar “\$\{query\.trim\(\)\}”/u);
   assert.match(combobox, /valor Por revisar al crear el artículo/u);
   assert.doesNotMatch(combobox, /createCatalogCategory|createCatalogBrand/u);
+  assert.match(page, /setDialog\('create'\); setNotice\(null\)/u);
+  assert.match(page, /setDialog\(null\); setNotice\(null\); requestId\.current = null/u);
   assert.match(combobox, /onSelect=\{\(index\) => \{ void choose\(index\); \}\}/u);
   assert.doesNotMatch(page, />Catálogos comerciales</u);
   assert.match(page, /Limpiamos Categoría o Marca porque no aplican al nuevo Tipo/u);
