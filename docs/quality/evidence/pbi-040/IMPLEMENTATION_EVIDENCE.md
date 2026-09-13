@@ -218,6 +218,37 @@ Repair Detail ni se escribió en Preview. Evidencia completa:
   `sha256:e35c585e2b4919397e42304100c5f65f065013e439ec054ec7c9748a3101e377`:
   label, manifest frontend y headers backend declararon la misma revisión;
   56 migraciones y cleanup PASS.
+- Reconciliación con el nuevo `main` sobre merge local `28320b39fcb4`:
+  `verify:full` `13/13` etapas PASS, cleanup PASS y fingerprint
+  `a8a59c78719c78dece2d4dc6a39847cf4aac23c82af0939b97045848fbe8f82e`.
+  La base ejecutó 836 pruebas (`816 PASS`, 20 skips PostgreSQL gobernados,
+  cero fallas); el stage material compuesto ejecutó `17/17`; PBI-039 fue
+  `2/2`; PBI-040 aplicó 57 migraciones y registró p95 `7.19 ms` sobre 10,000
+  items contra presupuesto `750 ms`. Build, arquitectura, configuración, UI,
+  runtime Preview-like, smokes y cleanup pasaron. Permanece sólo el warning
+  aceptado del chunk Vite principal mayor a 500 kB.
+
+## Runtime de reanudación y concurrencia
+
+- La base preservada del Owner Review contenía las 56 migraciones PBI-040 y
+  cuatro artículos. Se promovió reversiblemente al nombre local canónico y la
+  base que ya tenía PBI-043 quedó preservada como
+  `srtaller_pbi043_preserved_20260912`; no se destruyó ningún volumen ni
+  fixture. La migración concurrente se aplicó como número 57.
+- `verify:runtime-provenance` confirmó
+  `28320b39fcb42287444c7131a8405c9340677025` y estado `clean` por igual en
+  worktree, frontend y backend.
+- `verify:repair-detail-parity` pasó con el fixture `SR-2026-039`: mismo
+  read model, cuatro eventos, dos evidencias, nueve encabezados funcionales,
+  ancho 1102 px y cero overflow entre Preview aceptado y Local reconciliado.
+- La prueba Chrome PBI-043 pasó con perfiles Owner/QA independientes sobre la
+  misma Station: Users y SessionIds distintos, ambos sobrevivieron reload;
+  logout, relogin y switch de QA no afectaron Owner. Cero errores de consola,
+  runtime, red o servidor; sólo favicon 404 permitido.
+- La pestaña personal del Owner se autenticó de nuevo sin apropiación por el
+  perfil QA y quedó visible en `/listas/precios`: cuatro resultados, defaults
+  Todos/Todas/Todas, costo oculto y acceso a Nuevo artículo. La revisión humana
+  y Owner Acceptance continúan pendientes.
 
 ## Prueba funcional HTTP local previa a la iteración
 

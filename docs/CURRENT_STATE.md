@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-043 `Done`; PBI-040 reconciliado con la nueva baseline y en
-  preparación de Owner Review local.
+- **Estado:** PBI-043 `Done`; PBI-040 reconciliado con la nueva baseline y listo
+  para reanudar Owner Review local.
 - **Baseline Git verificada:** `main == origin/main` en
   `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
   PBI-040.
@@ -15,7 +15,7 @@
   aceptación pendiente.
 - **WIP:** `1/1` en `feature/pbi-040-catalog-pricing-core`.
 - **PBI-040:** el WIP congelado `68843ba` fue preservado y reconciliado por
-  merge explícito con `main` `5be5cd6`; no se añadió funcionalidad.
+  merge explícito `28320b3` con `main` `5be5cd6`; no se añadió funcionalidad.
 - **Preview:** `aab27d9` desplegado y validado; concurrencia de Sessions PASS.
 - **Production:** no desplegada ni autorizada.
 
@@ -65,6 +65,14 @@ es `Done` y SPRINT-02 está `Closed`. La rama PBI-040 conserva como padre su
 HEAD congelado `68843ba` y como nuevo padre integrado `5be5cd6`; los conflictos
 se resolvieron por ownership, manteniendo Access/PBI-039/main autoritativos y
 Catalog/Pricing desde el WIP.
+
+La reconciliación pasó `verify:full` en sus 13 etapas sobre `28320b3`:
+836 pruebas base sin fallas, PostgreSQL compuesto 17/17, PBI-039 material 2/2,
+PBI-040 material con 57 migraciones y benchmark p95 7.19 ms, smokes y cleanup
+PASS. El runtime local declaró el mismo SHA limpio en frontend/backend/worktree;
+Repair Detail parity y la prueba Chrome de dos perfiles concurrentes también
+pasaron. La sesión personal Owner quedó preparada en `/listas/precios` con los
+cuatro fixtures sintéticos previos. Esto no constituye Owner Acceptance.
 
 ## Capacidades integradas relevantes
 
