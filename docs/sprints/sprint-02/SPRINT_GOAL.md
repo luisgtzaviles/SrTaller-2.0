@@ -3,12 +3,11 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-02.
-- **Estado:** Active; extendido para una remediación Access antes de reanudar
-  Price List.
+- **Estado:** Closed candidate; remediación Access integrada y validada.
 - **Periodo:** TBD.
-- **PBI actual:** [PBI-043](../../backlog/pbis/PBI-043.md) — `In review`.
-- **WIP:** `1/1`.
-- **Baseline:** `main`/`origin/main` `9ed6885`; CI exacta `34725827409`
+- **PBI actual:** `NONE`; [PBI-043](../../backlog/pbis/PBI-043.md) es `Done candidate`.
+- **WIP:** `0/1` funcional.
+- **Baseline:** `main`/`origin/main` `aab27d9`; CI exacta `34730090448`
   `SUCCESS`.
 - **Autoridad:** Master Goal Owner del 2026-09-12 autoriza implementación, PR,
   merge gobernado y Preview; no Production.
@@ -31,8 +30,8 @@ contrato mediante [ADR-014](../../decisions/proposed/ADR-014-concurrent-operatio
 4. PBI-028 — Minimum Business Audit and Correlation — `Done`; G5 `PASS`.
 5. PBI-038 — Timezone Foundation Integration and Hardening — `Done`.
 6. PBI-039 — Customer Minimum + New Repair — `Done` sobre `40684d7`.
-7. PBI-043 — Concurrent Operational Sessions — `In review`; COS-01…COS-24
-   PASS local, con revisión/CI/Preview pendientes.
+7. PBI-043 — Concurrent Operational Sessions — `Done candidate`; COS-01…24,
+   revisión, CI, merge y Preview PASS.
 
 PBI-040 permanece congelado fuera de `main`. No ocupa WIP y no se reanuda ni se
 reconcilia hasta cerrar la remediación Access mediante sus propios gates.
@@ -44,7 +43,7 @@ reconcilia hasta cerrar la remediación Access mediante sus propios gates.
 - [x] Ownership, persistencia, transición, rollback y revocación delimitados.
 - [x] Roadmap, backlog, dependencias, workflow y Sprint reconciliados.
 - [x] Owner autorizó explícitamente iniciar PBI-043.
-- [ ] Implementación PBI-043 supera gates locales, revisión, CI exacta y Owner
+- [x] Implementación PBI-043 supera gates locales, revisión, CI exacta y Owner
   Acceptance aplicables.
 - [ ] PBI-040 se reconcilia posteriormente desde el nuevo `main` sin perder su
   WIP congelado.
@@ -52,6 +51,6 @@ reconcilia hasta cerrar la remediación Access mediante sus propios gates.
 
 ## Próxima revisión
 
-- **Fecha:** cuando el Owner decida sobre la autorización de implementación.
-- **Disparador:** autorización explícita o una decisión nueva fuera de
-  ASC-001…ASC-008.
+- **Fecha:** al integrar el cierre documental.
+- **Disparador:** CI exacta de `main` verde sobre el merge del cierre; PBI-040
+  sólo podrá reconciliarse después mediante autoridad separada.

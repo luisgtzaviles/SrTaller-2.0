@@ -7,11 +7,10 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 **Estado:** Sprint 00 `Closed`.
 **Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed`,
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
-[SPRINT-02](sprint-02/SPRINT_GOAL.md) `Active`.
-**Sprint activo:** SPRINT-02 — Operational Authentication & Authorization;
-PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039 están `Done`. PBI-043 es el
-Current PBI `Ready`, WIP es `0/1` y su implementación espera autorización
-Owner. PBI-040 permanece congelado y fuera de `main`.
+[SPRINT-02](sprint-02/SPRINT_GOAL.md) `Closed candidate`.
+**Sprint activo:** ninguno; SPRINT-02 está en cierre documental. Todos sus PBIs
+están integrados; PBI-043 es `Done candidate`, no existe Current PBI y el WIP
+funcional es `0/1`. PBI-040 permanece congelado y fuera de `main`.
 
 ## Reglas propuestas
 
@@ -51,12 +50,13 @@ Los cinco PBIs están `Done` y ninguno está `Released`.
 
 ## SPRINT-02
 
-SPRINT-02 ejecuta Operational Authentication & Authorization con WIP=1.
+SPRINT-02 ejecutó Operational Authentication & Authorization con WIP=1.
 PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`; G3–G5 son `PASS`.
 PBI-039 quedó `Done` en `40684d7` con CI exacta `34623060504`. El Sprint se
 extendió para PBI-043, remediación Access gobernada por ASC-001…ASC-008 y
-ADR-014. Su arquitectura/readiness están preparados, pero el start no está
-autorizado. Production y la reanudación de PBI-040 siguen sin autorización.
+ADR-014. PR #47, CI candidata/exact-main y Preview quedaron PASS; el PBI y el
+Sprint son candidatos de cierre. Production y la reanudación de PBI-040
+siguen sin autorización.
 
 - [Objetivo](sprint-02/SPRINT_GOAL.md)
 - [Backlog](sprint-02/SPRINT_BACKLOG.md)
@@ -66,4 +66,4 @@ autorizado. Production y la reanudación de PBI-040 siguen sin autorización.
 
 ## Próxima revisión
 
-Al recibir la decisión Owner de implementación sobre PBI-043.
+Al integrar el cierre PBI-043 y obtener CI exacta de `main`.
