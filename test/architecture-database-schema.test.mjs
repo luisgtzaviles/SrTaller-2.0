@@ -169,6 +169,7 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260909100000_repairs_add_problem_category_safe_delete.ts',
       '20260909220000_users_create_preferences.ts',
       '20260910230000_repairs_create_device_type_catalog.ts',
+      '20260912180000_access_enable_concurrent_operational_sessions.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

@@ -2,17 +2,18 @@
 
 ## Estado del documento
 
-- **Estado:** readiness de PBI-043 preparado sobre la última baseline integrada.
+- **Estado:** candidato PBI-043 completo y verificado localmente; integración en
+  curso.
 - **Baseline Git verificada:** `main == origin/main` en
-  `40684d7554cdf02551f941e5e3f0beabbe563125` al iniciar el Goal.
+  `9ed688566430d12fc52b6d48cdffdea3aba8ef62` al iniciar la implementación.
 - **CI exacta de baseline:**
-  [`34623060504`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34623060504),
-  `SUCCESS` sobre `40684d7`.
+  [`34725827409`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34725827409),
+  `SUCCESS` sobre `9ed6885`.
 - **Sprint activo:** SPRINT-02 — Operational Authentication & Authorization,
   extendido sólo para la remediación Access.
-- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `Ready`; start Owner no
-  autorizado.
-- **WIP:** `0/1`; no existe implementación PBI-043 en curso.
+- **PBI actual:** [PBI-043](backlog/pbis/PBI-043.md) — `In review`; revisión
+  independiente local PASS, CI, merge y Preview pendientes.
+- **WIP:** `1/1` en `fix/pbi-043-concurrent-operational-sessions`.
 - **PBI-040:** Owner Review congelado en
   `feature/pbi-040-catalog-pricing-core`; no integrado ni modificado por este
   Goal.
@@ -39,33 +40,40 @@ Session solicitante ligada a Tenant, Branch, Station, StationCredential, User
 y SessionId. Cookies, CSRF, autorización, rate limit, idle 60 minutos y
 absolute 12 horas permanecen.
 
-[PBI-043](backlog/pbis/PBI-043.md) materializará la decisión como un objetivo
+[PBI-043](backlog/pbis/PBI-043.md) materializa la decisión como un objetivo
 Access independiente. Tiene [DoR PASS](quality/evidence/pbi-043/DEFINITION_OF_READY.md),
 [Threat Model Critical](quality/evidence/pbi-043/THREAT_MODEL.md) y una
-[matriz de 24 pruebas](quality/evidence/pbi-043/TEST_STRATEGY.md). `Ready` no
-autoriza su implementación.
+[matriz de 24 pruebas](quality/evidence/pbi-043/TEST_STRATEGY.md) ejecutada
+localmente. El candidato permite N Sessions por Station y conserva switch/
+logout por Session exacta. Una primera revisión Critical detectó debilidad en
+los oráculos de concurrencia y sobredeclaración de evidencia; el candidato fue
+remediado con locks PostgreSQL observables, revocación N-session, cruces
+lockout/CSRF/atribución materiales y un runner Chrome endurecido. La revisión
+independiente final de `fcf1eba` cerró PASS sin hallazgos Critical/High/Medium;
+`verify:full` de 12 etapas y PostgreSQL owner-scoped 2× MATCH también pasaron.
+El cambio todavía no está integrado ni desplegado.
 
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
   con autorización contextual server-side.
-- Runtime actual todavía limitado a una Session activa por Station hasta que
-  PBI-043 sea implementado, integrado y validado.
+- El candidato local PBI-043 permite Sessions concurrentes por Station; `main`
+  y Preview conservan la exclusividad histórica hasta la integración.
 - Customer mínimo, New Repair y Repair Detail PBI-039 integrados y validados.
 - Auditoría de negocio acotada conserva Tenant, Branch, Station, User,
   SessionId y correlation en los writes cubiertos.
 
-## Decisión y delta pendientes de materialización
+## Estado del delta PBI-043
 
 | Área | Estado |
 |---|---|
-| ADR-014 | Accepted; no implementación |
-| Admission concurrente | Diseñada; pendiente |
-| Switch session-local | Diseñado; pendiente |
-| Drop unique parcial / índices | Diseñados; no existe migration |
-| Revocación efectiva N-session | Contrato definido; pendiente |
+| ADR-014 | Accepted; materializada en candidato |
+| Admission concurrente | PASS local Application/HTTP/PostgreSQL/Chrome |
+| Switch session-local | PASS local; reemplazo exacto |
+| Drop unique parcial / índices | migración fresh/existing/down/reapply PASS; sin índice StationCredential injustificado |
+| Revocación efectiva N-session | contratos internos y PostgreSQL PASS |
 | Cookies/CSRF/PIN/timeout | Sin cambio aprobado |
-| Browser Owner + QA | Caso de aceptación definido; no ejecutado |
+| Browser Owner + QA | PASS local; misma Station, perfiles y Users distintos; DOM/Console/Network gated |
 | Device/Session Admin | Fuera de alcance |
 | Global Access lifecycle audit | Fuera de alcance |
 
@@ -74,8 +82,8 @@ autoriza su implementación.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint activo | SPRINT-02 — remediation Access |
-| Current PBI | PBI-043 — Ready, no iniciado |
-| WIP | 0/1 |
+| Current PBI | PBI-043 — In review |
+| WIP | 1/1 |
 | PBI-040 | congelado; no integrado |
 | G3 Authentication | PASS histórico; policy delta PBI-043 pendiente |
 | Preview | sin cambios de este Goal |
@@ -83,7 +91,6 @@ autoriza su implementación.
 
 ## Próxima acción
 
-Owner decide si autoriza implementar PBI-043. Si autoriza, debe partir de un
-`main` actualizado en una rama `fix/*` nueva; la rama documental no se
-reutiliza. Merge, CI exacta, Preview y Owner Acceptance conservan gates
-separados. Sólo después se reconcilia PBI-040 desde el nuevo `main`.
+Publicar el candidato PBI-043 y obtener run-1, run-2 y comparison de CI. Sólo
+con merge, exact-main y Preview validados se prepara su cierre documental;
+PBI-040 permanece congelado y se reconciliará después desde el nuevo `main`.

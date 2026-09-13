@@ -367,6 +367,7 @@ export async function collectEvidenceManifest({
     'src/infrastructure/database/migrations/20260906182000_access_create_role_assignments.ts',
     'src/infrastructure/database/migrations/20260907010000_access_create_pin_credentials.ts',
     'src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts',
+    'src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts',
     'supply-chain-policy.json',
     'test/database-schema-postgresql.test.mjs',
     'test/local-development-contract.test.mjs',

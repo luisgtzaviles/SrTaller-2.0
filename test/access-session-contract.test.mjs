@@ -36,10 +36,14 @@ const stationAdmission = Object.freeze({
 });
 const context = createTrustedStationContext({ tenantId, branchId, stationId, stationCredentialId, ...stationAdmission });
 
-const [sessionDomainSource, sessionRepositorySource] = await Promise.all([
+const [sessionDomainSource, sessionRepositorySource, sessionConcurrencyMigrationSource] = await Promise.all([
   readFile('src/modules/access/domain/operational-session.ts', 'utf8'),
   readFile(
     'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts',
+    'utf8',
+  ),
+  readFile(
+    'src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts',
     'utf8',
   ),
 ]);
@@ -196,7 +200,7 @@ test('state-changing Session requests require exact same-origin browser metadata
   assert.equal(requestIsSameOrigin({ origin: 'https://app.example', host: 'app.example', forwardedProto: 'http', fetchSite: 'same-origin' }), false);
 });
 
-test('owner migrations enforce monotonic admission epochs and Access migration stays owner-scoped', async () => {
+test('owner migrations preserve admission epochs and enable indexed concurrent Sessions with guarded rollback', async () => {
   const [source, stations, users] = await Promise.all([
     readFile('src/infrastructure/database/migrations/20260907120000_access_create_operational_sessions.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260907110000_stations_add_admission_revisions.ts', 'utf8'),
@@ -217,6 +221,46 @@ test('owner migrations enforce monotonic admission epochs and Access migration s
   assert.match(stations, /stations_advance_admission_revision/u);
   assert.match(users, /users_advance_admission_revision/u);
   assert.doesNotMatch(source, /SR_SESSION_SIGNING_KEY|plaintext|raw_token/iu);
+  assert.match(
+    sessionConcurrencyMigrationSource,
+    /dropIndex\('access_operational_sessions_one_active_station_uq'\)/u,
+  );
+  assert.match(
+    sessionConcurrencyMigrationSource,
+    /access_operational_sessions_active_station_idx/u,
+  );
+  assert.match(
+    sessionConcurrencyMigrationSource,
+    /access_operational_sessions_active_user_idx/u,
+  );
+  assert.match(
+    sessionConcurrencyMigrationSource,
+    /access_operational_sessions_active_pin_credential_idx/u,
+  );
+  assert.match(sessionConcurrencyMigrationSource, /having count\(\*\) > 1/u);
+  assert.match(
+    sessionConcurrencyMigrationSource,
+    /rollback requires explicit session reconciliation/u,
+  );
+  assert.doesNotMatch(
+    sessionConcurrencyMigrationSource,
+    /deleteFrom|status:\s*'(?:replaced|logged_out|invalidated)'/u,
+  );
+});
+
+test('independent create has no Station-wide lock and switch updates only the expected Session', () => {
+  const create = sessionRepositorySource.slice(
+    sessionRepositorySource.indexOf('async createForProfile'),
+    sessionRepositorySource.indexOf('async findByBearerVerifier'),
+  );
+  assert.match(create, /if \(input\.expectedSessionId !== null\)/u);
+  assert.match(create, /\.where\('session_id', '=', input\.expectedSessionId\)/u);
+  assert.match(create, /\.forUpdate\(\)/u);
+  assert.doesNotMatch(create, /access_operational_session_station_guards/u);
+  assert.doesNotMatch(
+    create,
+    /\.where\('station_id', '=', context\.stationId\)[\s\S]*?\.where\('status', '=', 'active'\)[\s\S]*?\.execute\(\)/u,
+  );
 });
 
 test('protected request bursts coalesce Session activity writes without skipping admission validation', () => {
@@ -351,6 +395,81 @@ test('POST rejects origin, media type, and CSRF before auth; failed switch prese
   assert.equal(setCookies.length, 2);
   assert.match(setCookies[0], /^sr_session=.*; HttpOnly; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
   assert.match(setCookies[1], /^sr_session_csrf=.*; SameSite=Strict; Path=\/; Secure; Max-Age=43200$/u);
+});
+
+test('two HTTP cookie jars on one Station remain independent when one logs out', async () => {
+  const tokens = new NodeSessionToken();
+  const sessions = new Map();
+  const users = [userId, '00000000-0000-4000-8000-000000000502'];
+  let authenticationIndex = 0;
+  let sessionIndex = 0;
+  const runtime = runtimeDouble({
+    tokens,
+    authenticatePinOnly: {
+      async execute() {
+        return Object.freeze({ userId: users[authenticationIndex++] });
+      },
+    },
+    createSession: {
+      async execute(_context, proof, expectedSessionId) {
+        assert.equal(expectedSessionId, null);
+        const material = tokens.issue();
+        const session = sessionRecord({
+          sessionId: `00000000-0000-4000-8000-00000000081${sessionIndex++}`,
+          userId: proof.userId,
+          displayName: proof.userId === userId ? 'Jorge Operador' : 'Ana Operadora',
+          version: 0,
+        });
+        sessions.set(material.bearer, { session, active: true });
+        return { tokens: material, session };
+      },
+    },
+    resolveSession: {
+      async execute(_context, input) {
+        const stored = sessions.get(input.bearer);
+        if (!stored?.active) throw new OperationalSessionError();
+        return stored.session;
+      },
+    },
+    endSession: {
+      async execute(_context, input) {
+        const stored = sessions.get(input.bearer);
+        if (!stored?.active || input.csrfCookie !== input.csrfHeader) {
+          throw new OperationalSessionError();
+        }
+        stored.active = false;
+      },
+    },
+  });
+  const controller = new AccessSessionController(runtime, localTransportPolicy);
+  const createJar = async () => {
+    const challengeResponse = responseDouble();
+    const challenge = await controller.get({}, challengeResponse);
+    const response = responseDouble();
+    const snapshot = await controller.create(
+      { pin: '1234', expectedSessionId: null },
+      sameOriginHeaders(
+        `sr_session_login_csrf=${challenge.csrfToken}`,
+        challenge.csrfToken,
+      ),
+      response,
+    );
+    const cookie = response.headers.get('set-cookie')
+      .map((value) => value.split(';', 1)[0])
+      .join('; ');
+    return { cookie, snapshot };
+  };
+
+  const owner = await createJar();
+  const qa = await createJar();
+  assert.notEqual(owner.snapshot.session.sessionId, qa.snapshot.session.sessionId);
+  assert.notEqual(owner.snapshot.session.userId, qa.snapshot.session.userId);
+
+  const qaResponse = responseDouble();
+  await controller.end(sameOriginHeaders(qa.cookie, qa.snapshot.csrfToken), qaResponse);
+  const ownerAfter = await controller.get({ cookie: owner.cookie }, responseDouble());
+  assert.equal(ownerAfter.session.sessionId, owner.snapshot.session.sessionId);
+  assert.equal(ownerAfter.session.userId, userId);
 });
 
 test('canonical PIN-only POST never accepts a client User ID and creates the Session', async () => {

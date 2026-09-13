@@ -2,7 +2,7 @@
 
 ## Estado
 
-- **Estado:** obligatorio para implementación; todavía no ejecutado.
+- **Estado:** COS-01…COS-24 ejecutados localmente; CI/Preview pendientes.
 - **Riesgo:** Critical.
 - **Motor material:** PostgreSQL 18.x real.
 - **Autoridad:** ADR-014, DEC-051 y threat model PBI-043.
@@ -23,12 +23,12 @@
 | COS-10 | switch/logout race | PostgreSQL con barrera | un ganador sobre X, sin Session parcial ni efecto en B |
 | COS-11 | revoke/login race | PostgreSQL con barrera | login no confirma con revision stale; si confirma antes, siguiente acción falla |
 | COS-12 | PIN lockout concurrente | PostgreSQL | contador/cooldown exactos; Sessions existentes siguen válidas |
-| COS-13 | CSRF A contra bearer B | HTTP contract | denegación genérica, cero mutación/cookie autoritativa |
+| COS-13 | CSRF A contra bearer B | PostgreSQL + HTTP contract | denegación genérica, cero mutación/cookie autoritativa |
 | COS-14 | Tenant isolation | PostgreSQL + HTTP | bearer/ID de Tenant A no observa o muta B |
 | COS-15 | Branch derivation | PostgreSQL + HTTP | Branch sólo de StationCredential vigente |
 | COS-16 | idle expiration 60m | Unit boundary + PostgreSQL | igualdad con frontera expira sólo esa Session |
 | COS-17 | absolute expiration 12h | Unit boundary + PostgreSQL | touch no extiende absolute lifetime |
-| COS-18 | business attribution | Application + PostgreSQL | hecho cubierto conserva Tenant/Branch/Station/User/SessionId correctos |
+| COS-18 | business attribution | Application + PostgreSQL concurrente | dos Sessions de la misma Station conservan su SessionId solicitante correcto |
 | COS-19 | restore User/Station | PostgreSQL | epochs impiden revivir Sessions anteriores |
 | COS-20 | migración fresh | PostgreSQL migration | schema/índices destino exactos; runner/journal PASS |
 | COS-21 | migración existing | PostgreSQL migration | Session previa permanece válida sin backfill/rotación |
@@ -53,10 +53,12 @@
 
 ## Oráculos de concurrencia
 
-Las pruebas materiales usan clientes PostgreSQL independientes y barreras
-deterministas. No usan sleeps como único mecanismo ni aceptan “uno o dos” como
-resultado. Cada carrera declara outcomes permitidos y comprueba filas,
-versiones y estados después del commit.
+Las pruebas materiales usan clientes PostgreSQL independientes y barreras de
+tabla/fila observadas mediante `pg_stat_activity.wait_event_type = 'Lock'`.
+No usan sleeps como único mecanismo ni aceptan “uno o dos” como resultado.
+Cada carrera demuestra que los contendientes alcanzaron el lock antes de
+liberarlo, declara outcomes permitidos y comprueba filas, versiones y estados
+después del commit.
 
 ## Migración y rollback
 
@@ -76,7 +78,12 @@ Se verifican al menos:
 - Dos perfiles reales, no sólo dos tabs.
 - Misma origin y misma Station sintética reconocida.
 - SessionIds observables sólo como IDs no secretos en snapshots permitidos.
-- Network/console sin PIN, bearer o CSRF capturados en evidencia.
+- Network/console inspeccionados por CDP sin persistir headers, bodies, PIN,
+  bearer, CSRF ni cookies. La telemetría pre-Station se descarta después del
+  bootstrap gobernado; durante el flujo se retienen sólo status/ruta sin query
+  y únicamente se tolera el `404 /favicon.ico` conocido. Cualquier otro 4xx/5xx,
+  excepción o fallo real rechaza el proof; los aborts de recursos causados por
+  navegaciones controladas se clasifican separadamente.
 - Owner permanece autenticado mientras QA inicia, recarga, cambia User y hace
   logout en su propio perfil.
 - Repetir con Users distintos.

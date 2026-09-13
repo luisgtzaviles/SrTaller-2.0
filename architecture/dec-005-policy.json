@@ -616,7 +616,8 @@
       "src/infrastructure/database/migrations/20260908131000_repairs_add_problem_capture_reconciliation.ts",
       "src/infrastructure/database/migrations/20260909100000_repairs_add_problem_category_safe_delete.ts",
       "src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts",
-      "src/infrastructure/database/migrations/20260910230000_repairs_create_device_type_catalog.ts"
+      "src/infrastructure/database/migrations/20260910230000_repairs_create_device_type_catalog.ts",
+      "src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -930,6 +931,14 @@
             "repair_device_type_catalog_events_reject_update",
             "repair_device_type_catalog_events_reject_delete"
           ]
+        },
+        "src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts": {
+          "owner": "access",
+          "tables": [
+            "access_operational_sessions"
+          ],
+          "functions": [],
+          "triggers": []
         },
         "src/infrastructure/database/migrations/20260908124000_repairs_create_model_catalog.ts": {
           "owner": "repairs",
@@ -1305,6 +1314,7 @@
           "src/infrastructure/database/migrations/20260909100000_repairs_add_problem_category_safe_delete.ts",
           "src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts",
           "src/infrastructure/database/migrations/20260910230000_repairs_create_device_type_catalog.ts",
+          "src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1541,7 +1551,7 @@
       "src/modules/access/application/ports/operational-session-repository.port.ts": {
         "owner": "access",
         "contract": "OperationalSessionRepositoryPort",
-        "allowedScopes": ["OperationalSessionPersistenceScope"],
+        "allowedScopes": ["OperationalSessionPersistenceScope", "OperationalSessionTenantScope"],
         "status": "materialized-owner-port"
       }
     },
@@ -1568,7 +1578,8 @@
       "PinCredentialTenantScope": ["tenantId"],
       "PinCredentialStationScope": ["tenantId", "branchId", "stationId"],
       "AuthenticationUserPersistenceScope": ["tenantId"],
-      "OperationalSessionPersistenceScope": ["tenantId", "branchId", "stationId", "stationCredentialId"]
+      "OperationalSessionPersistenceScope": ["tenantId", "branchId", "stationId", "stationCredentialId"],
+      "OperationalSessionTenantScope": ["tenantId"]
     },
     "adapters": {
       "src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts": {
