@@ -2,13 +2,15 @@
 
 ## Estado
 
-- **Estado:** arquitectura aceptada; candidato PBI-043 materializado localmente.
+- **Estado:** arquitectura aceptada y materializada en `main`/Preview; cierre
+  PBI-043 documental en curso.
 - **Autoridad:** ASC-001 a ASC-008 y
   [ADR-014](../decisions/proposed/ADR-014-concurrent-operational-sessions.md).
-- **PBI de materialización:** [PBI-043](../backlog/pbis/PBI-043.md), `In review`.
+- **PBI de materialización:** [PBI-043](../backlog/pbis/PBI-043.md),
+  `Done candidate`.
 - **Riesgo:** Critical, sin downgrade.
 - **Baseline de diseño:** `main`/`origin/main`
-  `40684d7554cdf02551f941e5e3f0beabbe563125`.
+  `aab27d98db94d850c580f0cac594c1a62c00cc51`.
 - **Fuera de alcance:** endpoints administrativos, Device/Session Admin, audit
   global, PBI-040 y Production.
 

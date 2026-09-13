@@ -11,18 +11,16 @@ producto y condiciones pendientes antes de la siguiente iteración.
 
 **Estado:** Sprint 00 y Sprint 01 `Closed`; PBI-030, PBI-027, PBI-029,
 PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos. SPRINT-02 está
-`Active`.
+`Closed candidate`.
 **Fase:** Operational Authentication & Authorization, con PBI-025/PBI-034/
-PBI-026/PBI-028/PBI-038/PBI-039 `Done` y G3–G5 `PASS`; Current PBI es
-[PBI-043](backlog/pbis/PBI-043.md) `Ready`, WIP `0/1`, con arquitectura y DoR
-preparadas y start Owner pendiente. PBI-040 permanece congelado fuera de
-`main`.
+PBI-026/PBI-028/PBI-038/PBI-039 `Done` y G3–G5 `PASS`; no existe Current PBI.
+[PBI-043](backlog/pbis/PBI-043.md) es `Done candidate`, WIP funcional `0/1`,
+con PR #47, CI y Preview PASS. PBI-040 permanece congelado fuera de `main`.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
-**Baseline integrada con CI registrada:** PBI-039 quedó `Done` mediante el
-cierre PR #45 en `40684d7554cdf02551f941e5e3f0beabbe563125`; CI exacta
-`34623060504` GREEN. PBI-043 está seleccionado `Ready`, no iniciado y no
-`Released`.
+**Baseline integrada con CI registrada:** PBI-043 quedó integrado por PR #47
+en `aab27d98db94d850c580f0cac594c1a62c00cc51`; CI exacta `34730090448` y
+Preview PASS. Es `Done candidate` durante el cierre; no está `Released`.
 Véase [Current Repository State](CURRENT_STATE.md).
 
 ## Revisión dirigida de Sprint 00

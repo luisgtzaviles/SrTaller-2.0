@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline Git local:** `main`/`origin/main` observados en
-  `40684d7554cdf02551f941e5e3f0beabbe563125`; CI exacta `34623060504`
+  `aab27d98db94d850c580f0cac594c1a62c00cc51`; CI exacta `34730090448`
   GREEN verificada.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
@@ -19,12 +19,12 @@ flowchart TD
     P29 --> P24[PBI-024 Trusted Station Runtime Context<br/>Done]
     P24 --> P32[PBI-032 User Directory<br/>Done]
     P32 --> P33[PBI-033 Roles / Assignments / Capability Catalog<br/>Done]
-    P33 --> S2[SPRINT-02 Operational Authentication<br/>Active / WIP=1/1]
+    P33 --> S2[SPRINT-02 Operational Authentication<br/>Closed candidate / WIP=0/1]
     S2 --> P25[PBI-025 PIN Credential<br/>Done]
     P24 --> P25
     P29 --> P25
     P25 --> P34[PBI-034 Operational Session<br/>Done]
-    P34 -. session foundation .-> P43[PBI-043 Concurrent Sessions<br/>Ready / start not authorized]
+    P34 -. session foundation .-> P43[PBI-043 Concurrent Sessions<br/>Done candidate / Preview PASS]
     P34 --> P26[PBI-026 Contextual Authorization<br/>Done / G4 PASS]
     P33 --> P26
     P26 --> P28[PBI-028 Minimum Business Audit<br/>Done / G5 PASS]
@@ -75,8 +75,8 @@ flowchart TD
 - PBI-030: `Done`; `Released: NO`.
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- Sprint 02: `Active`; PBI-039 está `Done`; PBI-043 es Current PBI `Ready`,
-  WIP=`0/1` y espera autorización Owner de implementación.
+- Sprint 02: `Closed candidate`; PBI-039 está `Done`; PBI-043 está
+  `Done candidate`, no existe Current PBI y WIP=`0/1` funcional.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y
@@ -106,8 +106,8 @@ flowchart TD
 - PBI-038: `Done`; PR #40 merge
   `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716`
   GREEN; `Released: NO`.
-- PBI-043: `Ready`; ADR-014, DoR, threat model y estrategia de 24 pruebas
-  definidos; implementación, PR, merge y deploy no autorizados.
+- PBI-043: `Done candidate`; ADR-014, 24 pruebas, revisión Critical, PR #47,
+  CI candidata/exact-main y Preview PASS; `Released: NO`.
 
 ## Stage 2
 
@@ -117,6 +117,6 @@ diferidos.
 
 ## Próxima revisión
 
-El siguiente gate es autorización Owner explícita para iniciar PBI-043 desde
-un `main` actualizado. PBI-040 permanece congelado y después deberá
-reconciliarse desde el nuevo `main`.
+El siguiente gate es integrar el cierre documental y obtener CI exacta de
+`main`. PBI-040 permanece congelado y después deberá reconciliarse desde el
+nuevo `main` sin quedar iniciado automáticamente.

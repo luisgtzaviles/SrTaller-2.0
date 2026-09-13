@@ -2,10 +2,9 @@
 
 ## Estado del documento
 
-**Estado:** Índice reconciliado con `main` `40684d7`. PBI-039 está `Done`
-efectivo tras PR #45 y CI exacta `34623060504`. SPRINT-02 permanece `Active`
-para la remediación de Operational Authentication: PBI-043 está `Ready`, es el
-PBI actual y espera autorización Owner de implementación; WIP `0/1`. Los IDs
+**Estado:** Índice reconciliado con `main` `aab27d9` y CI exacta
+`34730090448`. SPRINT-02 está `Closed candidate`: PBI-043 es `Done candidate`,
+no existe PBI actual y el WIP funcional es `0/1`. Los IDs
 PBI-040 a PBI-042 están reservados por el ciclo Price List no integrado;
 PBI-040 y su rama permanecen congelados y no se modifican aquí.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
@@ -58,12 +57,12 @@ conservan TBD.
 | PBI-040 | Catalog & Pricing Core + Fast Price Lookup | Reservado; Owner Review congelado en rama no integrada |
 | PBI-041 | Price List bulk import/reconciliation | Reservado; Planned no iniciado |
 | PBI-042 | Catalog images / Files | Reservado; Deferred |
-| [PBI-043](PBI-043.md) | Concurrent Operational Sessions — Access Foundation Remediation | Ready; implementación Owner no autorizada |
+| [PBI-043](PBI-043.md) | Concurrent Operational Sessions — Access Foundation Remediation | Done candidate; PR #47, CI y Preview PASS; Released: NO |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-PBI-043 es el único PBI actual canónico y permanece `Ready`, no `In progress`.
-Su siguiente gate es autorización Owner explícita de implementación. PBI-040
-se reconciliará desde el nuevo `main` sólo después del cierre de PBI-043.
+No existe PBI actual canónico. El siguiente gate es integrar el cierre PBI-043
+y obtener CI exacta. PBI-040 se reconciliará desde el nuevo `main` sólo
+después, mediante autoridad separada.

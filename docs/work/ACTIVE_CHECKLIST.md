@@ -2,12 +2,12 @@
 
 Milestone / Functional Goal: Concurrent Operational Sessions — implementation through Preview
 Sprint: SPRINT-02 — Operational Authentication & Authorization remediation
-Current PBI: PBI-043 — In review
-Status: Local Critical gates complete; formal integration next
-WIP: 1/1
-Progress: 7 / 9 implementation-to-Preview steps complete
-Current: Push the single implementation branch and obtain authoritative CI
-Next: Merge only after required checks, then deploy and validate Preview
+Current PBI: NONE — PBI-043 Done candidate
+Status: Functional implementation and Preview PASS; documentary closure active
+WIP: 0/1 functional
+Progress: 11 / 12 implementation-to-closure steps complete
+Current: Integrate this documentary closure and obtain exact-main CI
+Next: Clean absorbed PBI-043 branches; leave PBI-040 frozen for separate reconciliation
 Blocked: None; no unresolved product/domain decision found
 Last updated: 2026-09-12 MST
 
@@ -25,10 +25,11 @@ Last updated: 2026-09-12 MST
 - [x] Remediate the first independent review: deterministic PostgreSQL locks,
   N-session revocation, material lockout/CSRF/attribution and hardened Chrome
 - [x] Complete independent Critical-risk review with no open findings
-- [ ] Push one branch, open PR and obtain run-1/run-2/comparison PASS
-- [ ] Merge, validate exact-main CI and deploy/validate the integrated SHA in
+- [x] Push one branch, open PR #47 and obtain run-1/run-2/comparison PASS
+- [x] Merge, validate exact-main CI and deploy/validate the integrated SHA in
   Preview only
-- [ ] Reconcile PBI/Sprint/current state, preserve evidence and safely clean
+- [x] Reconcile PBI/Sprint/current state and preserve exact evidence
+- [ ] Merge closure PR, validate exact-main CI and safely clean
   absorbed PBI-043/readiness branches
 
 ## Boundaries

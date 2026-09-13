@@ -2,13 +2,13 @@
 
 ## Estado
 
-- **Estado:** candidato funcional verificado localmente; integración formal en
-  curso.
+- **Estado:** candidato integrado, CI autoritativa y Preview PASS; cierre
+  documental en curso.
 - **Riesgo:** Critical.
 - **Rama:** `fix/pbi-043-concurrent-operational-sessions`.
-- **Baseline integrada:** `9ed688566430d12fc52b6d48cdffdea3aba8ef62`.
-- **Datos:** exclusivamente fixtures sintéticos locales y bases PostgreSQL
-  efímeras.
+- **Baseline integrada:** `aab27d98db94d850c580f0cac594c1a62c00cc51`.
+- **Datos:** fixtures sintéticos locales/bases PostgreSQL efímeras y un User
+  QA sintético de Preview, desactivado al terminar la prueba.
 - **Production:** no desplegada ni autorizada.
 
 ## Resultado implementado
@@ -100,10 +100,10 @@ filas intactas.
 | Runtime local | `/livez` PASS; `/readyz` PASS; 52 migraciones y cero pendientes |
 | Baseline Repairs | New Repair y Worklist cargaron con fixtures sintéticos gobernados |
 | Price List | no forma parte de `main`; rama PBI-040 preservada sin modificación |
-| `verify:full` | PASS sobre `fcf1eba`; 12/12 stages, fingerprint `47ab0073cfe67115842bb4cffc77dd4b1fb599c8aff07cba0f10cc30716a5c65` |
-| Independent Critical review | PASS sobre `fcf1eba`; cero hallazgos Critical/High/Medium abiertos |
-| PR/CI/merge | pendiente |
-| Preview | pendiente; Production prohibida |
+| `verify:full` | PASS sobre `65cf2da`; 12/12 stages, fingerprint `79a26f64c11090ba6c9ceb9d0887cd36dfa3a7f2410e7ec20be2fcbe03e1be20` |
+| Independent Critical review | PASS sobre `65cf2da`; cero hallazgos Critical/High/Medium abiertos |
+| PR/CI/merge | PR #47; CI `34729684465` PASS; merge `aab27d9`; exact-main CI `34730090448` PASS |
+| Preview | PASS sobre `aab27d9`; Production prohibida |
 
 ## Procedencia y aislamiento local
 
@@ -120,16 +120,44 @@ seed oficial. No se copió ni modificó código de PBI-040.
 - Los puertos de invalidación son internos; no amplían autoridad HTTP.
 - Rollback después de admitir N Sessions requiere reconciliación explícita y
   debe preferir roll-forward.
-- La evidencia local no sustituye CI autoritativa, merge, exact-main ni Preview.
+- Los límites ASC-004/005/008 permanecen explícitos aun con CI, merge y
+  Preview completos.
 
-## Evidencia de integración pendiente
+## Evidencia de integración y Preview
 
-La evidencia local candidata queda vinculada a `fcf1eba`: `verify:full` PASS,
-PostgreSQL owner-scoped 2× MATCH con hash material
-`a4d67c930d024ec3946ca051d3eb335d51765eda4b6ced8774bc77f50b50a298`
-y revisión independiente PASS. Se completará con PR, SHA final, run-1, run-2,
-comparison, merge SHA, exact-main CI y provenance/health/smokes de Preview.
+- Candidato final: `65cf2da6be00f1ea66a68b623ffe245910c30170`.
+- PR funcional: [#47](https://github.com/luisgtzaviles/SrTaller-2.0/pull/47),
+  mergeado el 2026-09-12 como
+  `aab27d98db94d850c580f0cac594c1a62c00cc51`.
+- CI candidata `34729684465`: run-1, run-2 y comparison PASS.
+- CI exacta de `main` `34730090448`: run-1, run-2 y comparison PASS sobre
+  `aab27d98db94d850c580f0cac594c1a62c00cc51`.
+- Preview fue desplegado manualmente desde `main`; el container sano usa la
+  imagen `sha256:edc538bd5a8abb5a80e20481b71bddb98d35f37c39a97300407314e8fe676ad5`.
+- El primer arranque nuevo falló cerrado con
+  `DATABASE_RUNTIME_SCHEMA_NOT_READY`; el container previo sano siguió
+  sirviendo. Se verificó que la migración del artifact remoto coincidía byte a
+  byte con la local, se ejecutó una migración one-shot gobernada y se confirmó
+  idempotencia: primera corrida `applied=1`, segunda `applied=0`, ambas
+  `pending=0` y manifest
+  `0ce8f0411467e5b6f24c9ea4a5453622fc290e8cec75516176a7684358cb1dcb`.
+- Provenance compilada: 399 archivos y digest
+  `fe60db07047d5abd816cf919de65473dbd4f3c86d7c009d45698af0cd9e54b12`
+  tanto en `dist` exact-main como en `/app/dist` del container remoto.
+- Health remoto: `/` 200, `/livez` 200, `/readyz` 200 y `/api/unknown` 404.
+- El esquema remoto contiene los índices activos por Station, User y PIN
+  credential; el unique histórico station-wide ya no existe.
+- La prueba alojada con dos perfiles aislados confirmó misma Station, Users y
+  Sessions distintas, reload de ambos, logout/relogin/switch de QA sin afectar
+  al Owner y cero errores de Console, runtime, red o servidor.
+- Para la segunda identidad se creó `Codex QA Preview` mediante la API del
+  producto con datos sintéticos. Al terminar quedó inactiva, sus Sessions
+  revocadas y los perfiles temporales eliminados; sólo la Session Owner previa
+  permaneció activa.
+- La ausencia de Price List en `main` se preservó como baseline: PBI-040 sigue
+  congelado en `68843baea68a618d0c00748e464b3cd2cffbdab3` y no fue tocado.
 
 ## Próxima revisión
 
-Antes de merge y nuevamente después de validar el SHA integrado en Preview.
+Ante cambios posteriores a ADR-014, admission, switch/logout, revocación,
+cookies/CSRF o migraciones de `access_operational_sessions`.
