@@ -79,7 +79,11 @@ Se verifican al menos:
 - Misma origin y misma Station sintética reconocida.
 - SessionIds observables sólo como IDs no secretos en snapshots permitidos.
 - Network/console inspeccionados por CDP sin persistir headers, bodies, PIN,
-  bearer, CSRF ni cookies; excepciones, fallos reales y respuestas 5xx son cero.
+  bearer, CSRF ni cookies. La telemetría pre-Station se descarta después del
+  bootstrap gobernado; durante el flujo se retienen sólo status/ruta sin query
+  y únicamente se tolera el `404 /favicon.ico` conocido. Cualquier otro 4xx/5xx,
+  excepción o fallo real rechaza el proof; los aborts de recursos causados por
+  navegaciones controladas se clasifican separadamente.
 - Owner permanece autenticado mientras QA inicia, recarga, cambia User y hace
   logout en su propio perfil.
 - Repetir con Users distintos.

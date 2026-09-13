@@ -49,7 +49,10 @@ autenticados en la misma Station: Owner en `/reparaciones/nueva` y QA en
 `/reparaciones`. El runner usa puertos dinámicos, confirma que cada target CDP
 pertenece al perfil recién lanzado, valida ruta/heading/estado autenticado del
 DOM e inspecciona Console/Network. No persiste request headers/bodies ni
-registra PIN, bearer, CSRF, cookies o verificadores.
+registra PIN, bearer, CSRF, cookies o verificadores. Después del bootstrap se
+reinicia la telemetría; sólo se tolera el `404 /favicon.ico` conocido. Cualquier
+otro 4xx/5xx queda reducido a status/ruta sanitizados y hace fallar el proof.
+Los aborts por navegación se clasifican separadamente de fallos de red reales.
 
 La primera revisión independiente sobre `ae5e9bf` rechazó la evidencia por
 barreras no deterministas y cobertura sobredeclarada. La remediación sustituyó
@@ -58,6 +61,12 @@ múltiples Sessions, combinó lockout con resolución de una Session existente,
 añadió el cruce CSRF material y probó atribución concurrente. La nueva revisión
 debe ejecutarse sobre el SHA candidato final; el hallazgo inicial no se trata
 como PASS.
+
+La re-revisión de `b76e75b` cerró seis hallazgos y conservó uno Medium: el gate
+Chrome no rechazaba aún errores HTTP 4xx. Se remedió con reset explícito tras
+bootstrap, allowlist cerrada de `404 /favicon.ico`, error HTTP sanitizado y
+fallo ante cualquier otra respuesta 4xx/5xx o error de Console/Network. La
+revisión final debe confirmar esta corrección sobre el SHA nuevo.
 
 ## PostgreSQL material
 

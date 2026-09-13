@@ -36,7 +36,8 @@ class CdpClient {
       failedRequests: 0,
       serverErrors: 0,
       navigationAborts: 0,
-      networkConsoleEntries: 0,
+      networkConsoleEntries: [],
+      httpErrors: [],
     };
     this.socket = new WebSocket(url);
   }
@@ -57,7 +58,13 @@ class CdpClient {
         }
         if (message.method === 'Log.entryAdded' && message.params?.entry?.level === 'error') {
           if (message.params.entry.source === 'network') {
-            this.telemetry.networkConsoleEntries += 1;
+            let pathname = '[missing]';
+            try {
+              pathname = new URL(message.params.entry.url).pathname;
+            } catch {
+              // The fail-closed record intentionally excludes raw log text.
+            }
+            this.telemetry.networkConsoleEntries.push({ pathname });
           } else {
             this.telemetry.consoleErrors += 1;
           }
@@ -77,8 +84,22 @@ class CdpClient {
         }
         if (
           message.method === 'Network.responseReceived' &&
-          message.params?.response?.status >= 500
-        ) this.telemetry.serverErrors += 1;
+          message.params?.response?.status >= 400
+        ) {
+          const response = message.params.response;
+          let pathname = '[unparseable]';
+          try {
+            pathname = new URL(response.url).pathname;
+          } catch {
+            // The fail-closed record intentionally excludes the raw URL.
+          }
+          this.telemetry.httpErrors.push({
+            pathname,
+            status: response.status,
+            type: message.params.type ?? 'Unknown',
+          });
+          if (response.status >= 500) this.telemetry.serverErrors += 1;
+        }
         return;
       }
       const pending = this.pending.get(message.id);
@@ -100,6 +121,18 @@ class CdpClient {
 
   close() {
     this.socket.close();
+  }
+
+  resetTelemetry() {
+    this.telemetry = {
+      consoleErrors: 0,
+      runtimeExceptions: 0,
+      failedRequests: 0,
+      serverErrors: 0,
+      navigationAborts: 0,
+      networkConsoleEntries: [],
+      httpErrors: [],
+    };
   }
 }
 
@@ -311,13 +344,15 @@ const marker = `pbi043=${randomUUID()}`;
 const ownerProcess = launch(ownerDirectory, ownerPort, '0,30', marker);
 const qaProcess = launch(qaDirectory, qaPort, '980,30', marker);
 
-const ownerTarget = await waitForPage(ownerPort, marker);
-const qaTarget = await waitForPage(qaPort, marker);
-const owner = await new CdpClient(ownerTarget.webSocketDebuggerUrl).open();
-const qa = await new CdpClient(qaTarget.webSocketDebuggerUrl).open();
+let owner;
+let qa;
 let proofPassed = false;
 
 try {
+  const ownerTarget = await waitForPage(ownerPort, marker);
+  const qaTarget = await waitForPage(qaPort, marker);
+  owner = await new CdpClient(ownerTarget.webSocketDebuggerUrl).open();
+  qa = await new CdpClient(qaTarget.webSocketDebuggerUrl).open();
   await Promise.all([
     owner.send('Page.enable'),
     owner.send('Runtime.enable'),
@@ -352,6 +387,9 @@ try {
     throw new Error(`Unexpected Chrome page context: ${JSON.stringify(pageContexts)}`);
   }
   await Promise.all([bootstrap(owner), bootstrap(qa)]);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  owner.resetTelemetry();
+  qa.resetTelemetry();
   const ownerLogin = await login(owner, ownerPin);
 
   let qaPin;
@@ -437,14 +475,26 @@ try {
     serverErrors: owner.telemetry.serverErrors + qa.telemetry.serverErrors,
     navigationAborts:
       owner.telemetry.navigationAborts + qa.telemetry.navigationAborts,
-    networkConsoleEntries:
-      owner.telemetry.networkConsoleEntries + qa.telemetry.networkConsoleEntries,
+    networkConsoleEntries: [
+      ...owner.telemetry.networkConsoleEntries,
+      ...qa.telemetry.networkConsoleEntries,
+    ],
+    httpErrors: [...owner.telemetry.httpErrors, ...qa.telemetry.httpErrors],
   };
+  const unexpectedHttpErrors = telemetry.httpErrors.filter(
+    ({ pathname, status, type }) =>
+      !(pathname === '/favicon.ico' && status === 404 && type === 'Other'),
+  );
+  const unexpectedNetworkConsoleEntries = telemetry.networkConsoleEntries.filter(
+    ({ pathname }) => pathname !== '/favicon.ico',
+  );
   if (
     telemetry.consoleErrors !== 0 ||
     telemetry.runtimeExceptions !== 0 ||
     telemetry.failedRequests !== 0 ||
-    telemetry.serverErrors !== 0
+    telemetry.serverErrors !== 0 ||
+    unexpectedHttpErrors.length !== 0 ||
+    unexpectedNetworkConsoleEntries.length !== 0
   ) {
     throw new Error(`Chrome telemetry contains failures: ${JSON.stringify(telemetry)}`);
   }
@@ -476,8 +526,8 @@ try {
   process.stdout.write(`${serializedEvidence}\n`);
   proofPassed = true;
 } finally {
-  owner.close();
-  qa.close();
+  owner?.close();
+  qa?.close();
   if (!proofPassed) {
     for (const child of [ownerProcess, qaProcess]) {
       try {
