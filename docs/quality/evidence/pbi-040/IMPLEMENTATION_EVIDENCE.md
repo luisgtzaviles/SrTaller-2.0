@@ -472,3 +472,72 @@ a probar las 20 superficies, los contratos estructurales y PostgreSQL PBI-039.
 No se eliminó ni se exceptuó el guard.
 
 Owner Acceptance, push, PR, merge y deploy continúan pendientes/no autorizados.
+
+## Iteración Owner — prevención de referencias pending duplicadas
+
+La causa era una validación tardía: el alta inline consultaba/reutilizaba la
+cola pending, pero no buscaba primero el canon exacto, y Category seguía teniendo
+un unique físico sólo por Tenant aunque su identidad de producto ya incluía
+Tipo. El autocomplete podía ocultar además una Brand exacta cuando faltaba el
+Tipo vigente en su aplicabilidad.
+
+El candidato corrige las tres capas sin introducir fuzzy matching:
+
+- normalización común: trim, case folding `es-MX`, espacios colapsados y NFD sin
+  diacríticos; `Pantalla` y `Pantallas` permanecen distintas;
+- Category: identidad y unique `Tenant + Type + normalizedName`; Brand:
+  `Tenant + normalizedName` con aplicabilidad multi-Tipo;
+- alta inline canonical-first: una referencia activa exacta se reutiliza sin
+  crear pending; Brand agrega el Tipo faltante en la misma transacción y el
+  cambio queda en el audit del artículo;
+- una tabla de locks de identidad Tenant-scoped serializa alta canónica,
+  captura y renombre; constraints, idempotencia y conflicto tipado permanecen
+  como defensa server-side;
+- el modal histórico preselecciona el canon exacto, deshabilita Crear canónica
+  y traduce el conflicto exacto a feedback accionable sin búsqueda cross-Tenant.
+
+Datos sintéticos locales auditados: existía una pending `Pantallas`, Refacción,
+con un artículo. Se resolvió desde Configuración mediante `Asociar a referencia
+existente` contra el canon `Pantallas`; la fila quedó `RESOLVED`, conservó raw
+label, normalización, Tipo, actor, primera/última observación, uso y timestamps,
+y añadió el evento de resolución con destino canónico. No hubo delete ni una
+nueva referencia canónica. La pending legítima `Fundas premium` permanece para
+la revisión humana.
+
+Cobertura material:
+
+- variantes `Fundas`, `fundas`, espacios/case y `fúndas` reutilizan Category
+  Producto; `Funda` continúa pending y el mismo nombre en Servicio es válido;
+- Apple capturada reutiliza la Brand Tenant; una Brand existente de otro Tipo
+  se reutiliza, amplía aplicabilidad y registra audit;
+- dos writers simultáneos dejan un solo canon y dos capturas simultáneas
+  comparten una sola pending; renombrar hacia una pending exacta se rechaza;
+- el mismo texto en otro Tenant resuelve únicamente contra su canon; el error
+  HTTP tipado no contiene IDs ni datos cross-Tenant;
+- reload/read model conserva linkage y una pending histórica duplicada puede
+  asociarse sin perder provenance.
+
+Chrome local autenticado confirmó coincidencia exacta acento/case/espacios sin
+opción Crear, near match con opción Por revisar, reset limpio al cambiar Tipo y
+Brand exacta fuera del Tipo con mensaje de reutilización/ampliación. Escape
+cerró el autocomplete. A 1280, 768 y 640 px el documento no tuvo overflow y el
+modal mantuvo Category, Brand y acciones; Light y Dark se inspeccionaron y el
+viewport se restauró al tamaño normal.
+
+Gates finales sobre `f4ace4a`:
+
+- typecheck, contratos focalizados, `verify:architecture` y build: PASS;
+- PostgreSQL PBI-040: 61 migraciones, cero skips críticos, carrera canónica y
+  pending, aislamiento y p95 `9.00 ms` / presupuesto `750 ms`;
+- PostgreSQL owner-scoped: 8/8 PASS, incluida la reversión explícita de la
+  migración Catalog posterior antes de probar el rollback protegido de Access;
+- `verify:full`: 13/13 etapas PASS; suite base 837 pruebas, 817 PASS y 20 skips
+  PostgreSQL gobernados; composite 17/17; PBI-039 2/2; Preview-like, compiled
+  backend/UI smokes y cleanup PASS; fingerprint
+  `a1848d59aa42d680bad393b613e646d946eec5b4756fa14cc9267df6bb882b1c`.
+
+El primer full gate falló por el conteo obsoleto 60→61 del manifest. El segundo
+expuso el orden owner-scoped de rollback posterior. Ambos fallaron cerrado y se
+remediaron registrando exactamente la migración y su orden; no se eliminaron
+assertions, skips ni controles. Commits locales: `6a1204c`, `530d51c`,
+`c7d9453` y `f4ace4a`. No hubo push, PR, merge, deploy ni Owner Acceptance.

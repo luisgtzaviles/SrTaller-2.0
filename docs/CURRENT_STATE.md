@@ -112,6 +112,14 @@ histórico `Pantallas`/Refacción se asoció mediante el flujo gobernado al cano
 existente, conservando raw label, uso, actor y tiempos. Owner Acceptance sigue
 pendiente.
 
+El candidato limpio `f4ace4a` pasó `verify:full` 13/13: suite base 817 PASS,
+PostgreSQL compuesto 17/17, PBI-039 2/2, PBI-040 1/1 con 61 migraciones y p95
+9.00 ms sobre 10,000 artículos, runtime Preview-like, smokes y cleanup PASS. El
+primer intento detectó que el manifest general aún declaraba 60 migraciones y
+el segundo que el rollback material de Access debía retirar primero la nueva
+migración posterior de Catalog; ambos contratos se actualizaron de forma
+exacta, sin eliminar assertions ni modificar semántica de Access.
+
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session

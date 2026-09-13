@@ -3,11 +3,11 @@
 Milestone / Functional Goal: PBI-040 Owner iteration — prevent duplicate pending references
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Review
-Status: Verification in progress; Owner Acceptance remains pending
+Status: Ready for Owner Review; Owner Acceptance remains pending
 WIP: 1/1
-Progress: 4 / 5 implementation blocks complete
-Current: Run final governed gates and prepare Chrome
-Next: Reconcile final evidence and stop at Owner Review
+Progress: 5 / 5 implementation blocks complete
+Current: Checkpoint prepared for Owner Review
+Next: Owner reviews exact reuse, near match and Brand applicability behavior
 Blocked: None
 Last updated: 2026-09-13 MST
 
@@ -17,7 +17,7 @@ Last updated: 2026-09-13 MST
 - [x] Reuse exact compatible canonical Category/Brand before pending persistence
 - [x] Prevent duplicate pending/canonical races and remediate existing synthetic duplicates
 - [x] Add material regression, isolation, reload and UX coverage
-- [~] Run governed gates and leave Chrome prepared for Owner Review
+- [x] Run governed gates and leave Chrome prepared for Owner Review
 
 ## Required outcome
 
