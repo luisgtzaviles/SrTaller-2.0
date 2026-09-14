@@ -64,7 +64,7 @@ const migrationName =
 const branchTimezoneMigrationName =
   '20260904120000_stations_add_branch_timezone';
 const tenantCurrencyMigrationName =
-  '20260911180000_tenancy_add_operating_currency';
+  '20260912190000_tenancy_add_operating_currency';
 const createdAt = '2026-07-25T20:00:00.000Z';
 const timeZone = 'America/Hermosillo';
 
