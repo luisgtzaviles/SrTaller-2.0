@@ -335,6 +335,14 @@ test('dist inspection rejects absolute source map paths', async () => {
 test('dist inspection accepts controlled preview static assets', async () => {
   const root = await createDistFixture({ previewAssets: true });
   try {
+    await writeFile(
+      resolve(root, 'dist/public/runtime-provenance.json'),
+      `${JSON.stringify({
+        role: 'frontend',
+        sourceRevision: '0123456789abcdef0123456789abcdef01234567',
+        sourceState: 'clean',
+      })}\n`,
+    );
     const inspected = await inspectDist({ projectRoot: root });
     assert.deepEqual(
       inspected.files.map(({ path }) => path),
@@ -344,7 +352,24 @@ test('dist inspection accepts controlled preview static assets', async () => {
         'dist/public/assets/index.css',
         'dist/public/assets/index.js',
         'dist/public/index.html',
+        'dist/public/runtime-provenance.json',
       ],
+    );
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test('dist inspection rejects ungoverned preview JSON artifacts', async () => {
+  const root = await createDistFixture({ previewAssets: true });
+  try {
+    await writeFile(
+      resolve(root, 'dist/public/unexpected.json'),
+      '{"status":"unexpected"}\n',
+    );
+    await assert.rejects(
+      inspectDist({ projectRoot: root }),
+      /Unexpected dist artifact/u,
     );
   } finally {
     await rm(root, { force: true, recursive: true });
