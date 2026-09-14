@@ -139,7 +139,7 @@ export async function listChangedPaths({
   assertRevision(head, 'head');
   const { stdout } = await execute(
     'git',
-    ['diff', '--name-only', '-z', '--no-ext-diff', base, head, '--'],
+    ['diff', '--name-only', '-z', '--no-renames', '--no-ext-diff', base, head, '--'],
     { cwd: projectRoot, encoding: 'buffer', maxBuffer: 20 * 1024 * 1024 },
   );
   return uniqueSorted(stdout.toString('utf8').split('\0').filter(Boolean));

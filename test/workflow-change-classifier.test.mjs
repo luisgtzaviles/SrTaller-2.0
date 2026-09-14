@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 
 import {
   classifyWorkflowChanges,
+  inspectWorkflowChanges,
   isUnequivocallyNonExecutableDocumentation,
 } from '../scripts/lib/workflow-change-classifier.mjs';
 import {
@@ -166,6 +167,88 @@ test('DOCS_ONLY verifies an exact allowed Git delta end to end', async () => {
     assert.equal(result.verdict, 'PASS');
     assert.equal(result.classification.enforcedPipeline, 'DOCS_ONLY');
     assert.equal(result.links.checked, 1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('renaming an executable surface into the DOCS_ONLY allowlist fails closed', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'srtaller-docs-rename-'));
+  const git = (...argumentsList) => execute('git', argumentsList, { cwd: root });
+  try {
+    await git('init', '--quiet');
+    await git('config', 'user.name', 'SR Taller Test');
+    await git('config', 'user.email', 'test@srtaller.invalid');
+    await mkdir(join(root, 'scripts'), { recursive: true });
+    await mkdir(join(root, 'docs/work'), { recursive: true });
+    await writeFile(join(root, 'scripts/probe.mjs'), 'export const probe = true;\n');
+    await git('add', '.');
+    await git('commit', '--quiet', '-m', 'baseline');
+    const { stdout: baseOutput } = await git('rev-parse', 'HEAD');
+    await git('mv', 'scripts/probe.mjs', 'docs/work/probe.md');
+    await git('commit', '--quiet', '-m', 'attempt docs escape');
+    const { stdout: headOutput } = await git('rev-parse', 'HEAD');
+    const result = await inspectWorkflowChanges({
+      base: baseOutput.trim(),
+      head: headOutput.trim(),
+      projectRoot: root,
+    });
+    assert.deepEqual(result.changedPaths, [
+      'docs/work/probe.md',
+      'scripts/probe.mjs',
+    ]);
+    assert.equal(result.enforcedPipeline, 'FULL');
+    assert.equal(result.gatesOmittedByShadowClassifier, false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('DOCS_ONLY rejects deletion when an unchanged Markdown file links to it', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'srtaller-docs-delete-'));
+  const write = async (path, content) => {
+    const absolute = join(root, path);
+    await mkdir(join(absolute, '..'), { recursive: true });
+    await writeFile(absolute, content);
+  };
+  const git = (...argumentsList) => execute('git', argumentsList, { cwd: root });
+  try {
+    await git('init', '--quiet');
+    await git('config', 'user.name', 'SR Taller Test');
+    await git('config', 'user.email', 'test@srtaller.invalid');
+    await write('docs/CURRENT_STATE.md', '- **PBI actual:** `NONE`.\n');
+    await write('docs/product/MVP_OPERATING_ROADMAP.md', [
+      '- **Sprint activo:** SPRINT-03 — Test.',
+      '- **PBI actual:** `NONE`.',
+      '',
+    ].join('\n'));
+    await write('docs/work/ACTIVE_CHECKLIST.md', [
+      '# Checklist',
+      '',
+      'Current PBI: NONE',
+      '',
+      '[Target][target-document]',
+      '',
+      '[target-document]: target.md',
+      '',
+    ].join('\n'));
+    await write('docs/work/target.md', '# Target\n');
+    await write('docs/sprints/sprint-03/SPRINT_GOAL.md', '- **PBI actual:** NONE.\n');
+    await write('docs/sprints/sprint-03/SPRINT_BACKLOG.md', '- **PBI actual:** NONE.\n');
+    await git('add', '.');
+    await git('commit', '--quiet', '-m', 'baseline');
+    const { stdout: baseOutput } = await git('rev-parse', 'HEAD');
+    await git('rm', 'docs/work/target.md');
+    await git('commit', '--quiet', '-m', 'delete linked docs');
+    const { stdout: headOutput } = await git('rev-parse', 'HEAD');
+    await assert.rejects(
+      verifyDocsOnlyChange({
+        base: baseOutput.trim(),
+        head: headOutput.trim(),
+        projectRoot: root,
+      }),
+      /inbound link/u,
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

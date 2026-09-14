@@ -14,7 +14,7 @@ import {
 } from './pbi039-postgresql-ci-evidence.mjs';
 import {
   comparableWorkflowMetrics,
-  validateWorkflowMetrics,
+  validateAuthoritativeWorkflowMetrics,
 } from './workflow-metrics.mjs';
 
 const execFileAsync = promisify(execFile);
@@ -197,10 +197,7 @@ export function validateEvidenceManifest(manifest) {
   if (manifest.schemaVersion === 4) {
     validatePostgresqlCiManifest(manifest.postgresql);
     validatePbi039PostgresqlCiManifest(manifest.pbi039Postgresql);
-    validateWorkflowMetrics(manifest.metrics);
-    if (manifest.metrics.stages.some(({ result }) => result !== 'PASS')) {
-      throw new Error('PASS evidence manifest cannot contain failed workflow stages');
-    }
+    validateAuthoritativeWorkflowMetrics(manifest.metrics);
   } else if (manifest.schemaVersion === 3) {
     validatePostgresqlCiManifest(manifest.postgresql);
     validatePbi039PostgresqlCiManifest(manifest.pbi039Postgresql);
@@ -426,7 +423,7 @@ export async function collectEvidenceManifest({
     throw new Error('PBI-039 PostgreSQL evidence requires PBI-023 PostgreSQL evidence');
   }
   const metrics = metricsInput
-    ? validateWorkflowMetrics(
+    ? validateAuthoritativeWorkflowMetrics(
         JSON.parse(await readFile(resolve(metricsInput), 'utf8')),
       )
     : undefined;

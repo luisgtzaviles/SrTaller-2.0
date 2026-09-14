@@ -3,6 +3,17 @@ import { readFile, writeFile } from 'node:fs/promises';
 const stagePattern = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u;
 const findingPattern = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/u;
 
+export const authoritativeWorkflowStageNames = Object.freeze([
+  'install',
+  'base-verify',
+  'compiled-smoke-migration',
+  'postgresql-composite',
+  'pbi039-postgresql',
+  'postgresql-cleanup',
+  'compiled-backend-smoke',
+  'compiled-ui-smoke',
+]);
+
 export function validateWorkflowMetrics(value) {
   const rootKeys = Object.keys(value ?? {}).sort();
   if (
@@ -87,4 +98,18 @@ export function comparableWorkflowMetrics(metrics) {
       Object.freeze({ name, result, finding }),
     )),
   });
+}
+
+export function validateAuthoritativeWorkflowMetrics(value) {
+  const metrics = validateWorkflowMetrics(value);
+  const names = metrics.stages.map(({ name }) => name);
+  if (
+    JSON.stringify(names) !== JSON.stringify(authoritativeWorkflowStageNames) ||
+    metrics.stages.some(({ result }) => result !== 'PASS')
+  ) {
+    throw new Error(
+      'Authoritative workflow metrics must contain the exact ordered full stage inventory',
+    );
+  }
+  return metrics;
 }

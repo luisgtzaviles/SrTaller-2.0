@@ -98,6 +98,34 @@ test('workflow selects DOCS_ONLY fail closed and executes one atomic base gate p
   assert.doesNotMatch(docsOnlyJob, /verify-structure\.mjs|pnpm install/u);
   assert.match(workflow, /if: needs\.classify-change\.outputs\.docs_only != 'true'/u);
   assert.match(workflow, /name: Run atomic canonical base verification/u);
+  assert.match(
+    workflow,
+    /name: Checkout exact commit[\s\S]*fetch-depth: 0[\s\S]*persist-credentials: false/u,
+  );
+  assert.match(
+    workflow,
+    /candidate_sha: \$\{\{ steps\.classify\.outputs\.candidate_sha \}\}/u,
+  );
+  assert.match(
+    workflow,
+    /ref: \$\{\{ needs\.classify-change\.outputs\.candidate_sha \}\}/u,
+  );
+  assert.match(
+    workflow,
+    /git rev-parse HEAD\)" = "\$\{\{ needs\.classify-change\.outputs\.candidate_sha \}\}"/u,
+  );
+  assert.equal(
+    workflow.match(/--head-sha "\$\{\{ needs\.classify-change\.outputs\.candidate_sha \}\}"/gu)?.length,
+    2,
+  );
+  assert.match(
+    runner,
+    /argument\('--head-sha'\) \?\?[\s\S]*process\.env\.GITHUB_SHA/u,
+  );
+  assert.match(
+    pbi039Runner,
+    /argument\('--head-sha'\) \?\?[\s\S]*process\.env\.GITHUB_SHA/u,
+  );
   assert.match(workflow, /-- pnpm run verify/u);
   assert.doesNotMatch(workflow, /name: Verify architecture/u);
   assert.doesNotMatch(workflow, /name: Typecheck/u);

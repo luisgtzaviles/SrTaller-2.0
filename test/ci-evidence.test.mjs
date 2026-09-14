@@ -20,6 +20,7 @@ import {
   finalizePbi039PostgresqlCiManifest,
   pbi039PostgresqlSuites,
 } from '../scripts/lib/pbi039-postgresql-ci-evidence.mjs';
+import { authoritativeWorkflowStageNames } from '../scripts/lib/workflow-metrics.mjs';
 
 async function createDistFixture({
   absoluteSource = false,
@@ -117,16 +118,16 @@ function workflowMetrics(durationMs = 1_000) {
   return {
     schemaVersion: 1,
     contract: 'WF-005/WORKFLOW-METRICS',
-    stages: [
+    stages: authoritativeWorkflowStageNames.map((name, index) => (
       {
-        name: 'base-verify',
+        name,
         result: 'PASS',
         finding: null,
-        startedAt: '2026-09-14T12:00:00.000Z',
-        finishedAt: '2026-09-14T12:00:01.000Z',
-        durationMs,
-      },
-    ],
+        startedAt: new Date(Date.UTC(2026, 8, 14, 12, 0, index)).toISOString(),
+        finishedAt: new Date(Date.UTC(2026, 8, 14, 12, 0, index, 1)).toISOString(),
+        durationMs: durationMs + index,
+      }
+    )),
   };
 }
 
@@ -552,7 +553,10 @@ test('schemaVersion 4 records timings without making duration part of VC-024 equ
 
   const differentStage = structuredClone(right);
   differentStage.metrics.stages[0].name = 'base-verify-alternate';
-  assert.equal(compareEvidenceManifests(left, differentStage).equivalent, false);
+  assert.throws(
+    () => compareEvidenceManifests(left, differentStage),
+    /exact ordered full stage inventory/u,
+  );
 
   const missing = structuredClone(left);
   delete missing.metrics;

@@ -14,7 +14,9 @@ import {
 } from '../scripts/lib/migration-state-snapshot.mjs';
 import {
   appendWorkflowMetric,
+  authoritativeWorkflowStageNames,
   comparableWorkflowMetrics,
+  validateAuthoritativeWorkflowMetrics,
   validateWorkflowMetrics,
 } from '../scripts/lib/workflow-metrics.mjs';
 import {
@@ -179,6 +181,41 @@ test('workflow metrics preserve timings but compare only deterministic results',
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test('authoritative evidence requires the exact ordered full stage inventory', () => {
+  const stages = authoritativeWorkflowStageNames.map((name, index) => ({
+    name,
+    result: 'PASS',
+    finding: null,
+    startedAt: `2026-09-14T12:00:${String(index).padStart(2, '0')}.000Z`,
+    finishedAt: `2026-09-14T12:00:${String(index + 1).padStart(2, '0')}.000Z`,
+    durationMs: 1_000,
+  }));
+  const metrics = {
+    schemaVersion: 1,
+    contract: 'WF-005/WORKFLOW-METRICS',
+    stages,
+  };
+  assert.doesNotThrow(() => validateAuthoritativeWorkflowMetrics(metrics));
+  assert.throws(
+    () => validateAuthoritativeWorkflowMetrics({ ...metrics, stages: stages.slice(0, -1) }),
+    /exact ordered full stage inventory/u,
+  );
+  assert.throws(
+    () => validateAuthoritativeWorkflowMetrics({
+      ...metrics,
+      stages: [stages[1], stages[0], ...stages.slice(2)],
+    }),
+    /exact ordered full stage inventory/u,
+  );
+  assert.throws(
+    () => validateAuthoritativeWorkflowMetrics({
+      ...metrics,
+      stages: [...stages, { ...stages[0], name: 'unexpected-stage' }],
+    }),
+    /exact ordered full stage inventory/u,
+  );
 });
 
 test('workflow stage wrapper records a sanitized spawn failure', async () => {

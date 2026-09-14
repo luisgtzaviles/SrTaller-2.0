@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { access, lstat, readFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve, sep } from 'node:path';
 import { promisify } from 'node:util';
 
 import { inspectWorkflowChanges } from './workflow-change-classifier.mjs';
@@ -23,7 +23,13 @@ function sha256(value) {
 export function markdownRelativeLinks(content) {
   const links = [];
   const pattern = /!?\[[^\]]*\]\((?<target><[^>]+>|[^)\s]+)(?:\s+"[^"]*")?\)/gu;
-  for (const match of content.matchAll(pattern)) {
+  const definitions = /^\s{0,3}\[(?<label>[^\]]+)\]:\s*(?<target><[^>]+>|\S+)/gmu;
+  for (const match of [
+    ...content.matchAll(pattern),
+    ...[...content.matchAll(definitions)].filter(
+      (candidate) => !candidate.groups?.label?.startsWith('^'),
+    ),
+  ]) {
     const raw = match.groups?.target ?? '';
     const target = raw.startsWith('<') && raw.endsWith('>')
       ? raw.slice(1, -1)
@@ -75,6 +81,45 @@ async function git(projectRoot, argumentsList) {
     encoding: 'utf8',
     maxBuffer: 20 * 1024 * 1024,
   });
+}
+
+function portablePath(path) {
+  return path.split(sep).join('/');
+}
+
+async function assertNoInboundLinksToDeletedMarkdown({
+  base,
+  head,
+  projectRoot,
+}) {
+  const [{ stdout: deletedOutput }, { stdout: trackedOutput }] = await Promise.all([
+    git(projectRoot, [
+      'diff', '--diff-filter=D', '--name-only', '-z', '--no-renames',
+      '--no-ext-diff', base, head, '--',
+    ]),
+    git(projectRoot, ['ls-files', '-z', '--', '*.md']),
+  ]);
+  const deleted = new Set(deletedOutput.split('\0').filter(Boolean));
+  if (deleted.size === 0) return Object.freeze([]);
+
+  const checked = [];
+  for (const sourcePath of trackedOutput.split('\0').filter(Boolean)) {
+    const absoluteSource = resolve(projectRoot, sourcePath);
+    const content = await readFile(absoluteSource, 'utf8');
+    for (const link of markdownRelativeLinks(content)) {
+      const targetPath = portablePath(relative(
+        projectRoot,
+        resolve(dirname(absoluteSource), link),
+      ));
+      if (deleted.has(targetPath)) {
+        throw new Error(
+          `DOCS_ONLY deleted Markdown has an inbound link: ${sourcePath} -> ${link}`,
+        );
+      }
+      checked.push(`${sourcePath}:${link}`);
+    }
+  }
+  return Object.freeze(checked);
 }
 
 function requiredMatch(content, pattern, label) {
@@ -181,6 +226,11 @@ export async function verifyDocsOnlyChange({
       checkedLinks.push(`${path}:${link}`);
     }
   }
+  const inboundLinksChecked = await assertNoInboundLinksToDeletedMarkdown({
+    base,
+    head,
+    projectRoot,
+  });
   const { stdout: tree } = await git(projectRoot, ['rev-parse', `${head}^{tree}`]);
   const policyConsistency = await verifyDocumentationPolicyConsistency(projectRoot);
   return Object.freeze({
@@ -191,7 +241,10 @@ export async function verifyDocsOnlyChange({
     tree: tree.trim(),
     classification,
     whitespace: 'PASS',
-    links: Object.freeze({ checked: checkedLinks.length, status: 'PASS' }),
+    links: Object.freeze({
+      checked: checkedLinks.length + inboundLinksChecked.length,
+      status: 'PASS',
+    }),
     policyConsistency,
     secrets: secretScan,
     evidenceSha256: sha256(JSON.stringify({
@@ -199,7 +252,7 @@ export async function verifyDocsOnlyChange({
       head,
       tree: tree.trim(),
       changedPathsSha256: classification.changedPathsSha256,
-      links: checkedLinks.sort(),
+      links: [...checkedLinks, ...inboundLinksChecked].sort(),
     })),
     verdict: 'PASS',
   });
