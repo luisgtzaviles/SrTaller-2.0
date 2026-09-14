@@ -24,8 +24,10 @@ no aplicadas y PR #51 corrigió el allowlist SPA de las rutas ya aceptadas. El
 `main` funcional final `09e14c8` pasó CI exacta `34809054770` y fue desplegado
 en Preview. `/`, `/livez`, `/readyz`, provenance, rutas directas, autenticación,
 Lista de precios, alta/edición, filtros, costos, override Branch, Catalog
-Administration, pending reconciliation, safe lifecycle, canonical merge y
-Repair Detail quedaron materialmente verificados. El Administrador tiene sólo
+Administration, pending reconciliation, safe-delete eligibility,
+deactivate/reactivate, canonical merge y Repair Detail quedaron verificados en
+Preview. El hard delete permanece probado materialmente por el gate local/CI.
+El Administrador tiene sólo
 las seis capacidades PBI-040 autorizadas; las dos de importación PBI-041 están
 desactivadas. Production no cambió.
 

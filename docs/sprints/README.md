@@ -9,9 +9,9 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
 [SPRINT-02](sprint-02/SPRINT_GOAL.md) `Closed` y
 [SPRINT-03](sprint-03/SPRINT_GOAL.md) `Active`.
-**Sprint activo:** SPRINT-03 — Price List Foundation. PBI-040 está en Owner
-Review sobre la baseline reconciliada; PBI-041 está Candidate/Ready sin
-selección ni autorización; WIP `1/1`.
+**Sprint activo:** SPRINT-03 — Price List Foundation. PBI-040 es `Done
+candidate`; no existe Current PBI. PBI-041 está Candidate/Ready sin selección
+ni autorización; WIP `0/1`.
 
 ## Reglas propuestas
 

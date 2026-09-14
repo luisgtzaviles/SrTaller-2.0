@@ -953,9 +953,9 @@ histórica de este discovery.
 ## 24. Propuesta de slices/PBIs de implementación
 
 Esta sección conserva la descomposición propuesta durante discovery. Las
-decisiones posteriores crearon EPIC-015; PBI-040 continúa Owner Review,
-PBI-041 es Ready/no autorizado y PBI-042 Planned/Unassigned. Esas fuentes
-posteriores prevalecen.
+decisiones posteriores crearon EPIC-015; PBI-040 es `Done candidate`, PBI-041
+es Ready/no autorizado y PBI-042 Planned/Unassigned. Esas fuentes posteriores
+prevalecen.
 
 ### Slice 0 — Contrato Owner y readiness
 

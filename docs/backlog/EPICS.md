@@ -60,9 +60,9 @@ autoriza aceptación o integración por sí solo.
 - **Exclusiones:** algoritmos criptográficos finales antes de threat modeling.
 - **Estado:** User Directory y Roles/Capabilities/Assignments `Done`; G2
   `PASS`. El alcance funcional PIN y su remediación están integrados;
-  PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`, G4/G5 `PASS`. PBI-039
-  es el Current PBI transversal, con slice funcional local congelado y
-  aceptado por Owner; no abre un segundo PBI de identidad y el WIP es `1/1`.
+  PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039/PBI-043 están `Done`,
+  G4/G5 `PASS`. No existe Current PBI transversal y WIP es `0/1`; PBI-041
+  Ready no abre un segundo PBI de identidad ni de producto.
 - **Puede descomponerse cuando:** actores, matriz de acciones sensibles y lifecycle de acceso estén aprobados.
 
 ## EPIC-004 — Branch and Device Management

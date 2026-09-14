@@ -762,7 +762,7 @@ Preview was manually deployed from exact integrated `main`
   `Pantallas Preview QA` and `Apple Preview QA`. Pending queues returned to
   zero with actor/usage preserved.
 - A second unused Category exposed `Eliminar`, while the used Category exposed
-  only safe lifecycle actions. It was merged into `Pantallas Preview QA`; the
+  only `Desactivar`. It was merged into `Pantallas Preview QA`; the
   source stopped appearing as an ordinary row, survivor version/usage advanced,
   and the zero-use source remained traceable. The survivor was then
   deactivated, observed under Inactivos and reactivated, preserving one linked
