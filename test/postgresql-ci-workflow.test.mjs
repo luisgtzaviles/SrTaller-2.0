@@ -107,6 +107,15 @@ test('workflow selects DOCS_ONLY fail closed and executes one atomic base gate p
   assert.doesNotMatch(workflow, /name: Run smoke unit contract/u);
   assert.match(workflow, /VERIFIED_TREE_ATTESTATION\.json/u);
   assert.match(workflow, /WORKFLOW_METRICS\.json/u);
+  assert.match(
+    workflow,
+    /SR_WORKFLOW_METRICS_FILE: WORKFLOW_METRICS-\$\{\{ matrix\.execution \}\}\.json/u,
+  );
+  assert.doesNotMatch(
+    workflow,
+    /^\s{6}[A-Z][A-Z0-9_]*:\s*\$\{\{\s*runner\./mu,
+    'job-level env cannot use the runner context before a runner exists',
+  );
 });
 
 test('PostgreSQL runner pins the governed digest and exact suite inventory', () => {

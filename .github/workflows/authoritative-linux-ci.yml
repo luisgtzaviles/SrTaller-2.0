@@ -151,7 +151,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
-      SR_WORKFLOW_METRICS_PATH: ${{ runner.temp }}/WORKFLOW_METRICS-${{ matrix.execution }}.json
+      SR_WORKFLOW_METRICS_FILE: WORKFLOW_METRICS-${{ matrix.execution }}.json
     services:
       compiled-smoke-postgresql:
         image: postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf
@@ -207,21 +207,21 @@ jobs:
       - name: Install from frozen lockfile
         run: >-
           node scripts/run-workflow-stage.mjs
-          --metrics "${SR_WORKFLOW_METRICS_PATH}"
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
           --stage install
           -- pnpm install --frozen-lockfile
 
       - name: Run atomic canonical base verification
         run: >-
           node scripts/run-workflow-stage.mjs
-          --metrics "${SR_WORKFLOW_METRICS_PATH}"
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
           --stage base-verify
           -- pnpm run verify
 
       - name: Prepare compiled smoke PostgreSQL schema
         run: >-
           node scripts/run-workflow-stage.mjs
-          --metrics "${SR_WORKFLOW_METRICS_PATH}"
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
           --stage compiled-smoke-migration
           -- pnpm run db:migrate
         env:
@@ -253,7 +253,7 @@ jobs:
           postgresql_dir="${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}"
           mkdir -p "${postgresql_dir}"
           node scripts/run-workflow-stage.mjs \
-            --metrics "${SR_WORKFLOW_METRICS_PATH}" \
+            --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" \
             --stage postgresql-composite \
             -- node scripts/run-postgresql-ci.mjs \
               --output "${postgresql_dir}/POSTGRESQL_MANIFEST.json"
@@ -267,7 +267,7 @@ jobs:
           postgresql_dir="${RUNNER_TEMP}/pbi039-postgresql-${SR_PG_CI_EXECUTION_LABEL}"
           mkdir -p "${postgresql_dir}"
           node scripts/run-workflow-stage.mjs \
-            --metrics "${SR_WORKFLOW_METRICS_PATH}" \
+            --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" \
             --stage pbi039-postgresql \
             -- node scripts/test-pbi039-postgresql.mjs \
               --runs 1 \
@@ -279,14 +279,14 @@ jobs:
           SR_PG_CI_EXECUTION_LABEL: ${{ matrix.execution }}
         run: >-
           node scripts/run-workflow-stage.mjs
-          --metrics "${SR_WORKFLOW_METRICS_PATH}"
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
           --stage postgresql-cleanup
           -- node scripts/cleanup-postgresql-ci.mjs
 
       - name: Run compiled artifact smoke
         run: >-
           node scripts/run-workflow-stage.mjs
-          --metrics "${SR_WORKFLOW_METRICS_PATH}"
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
           --stage compiled-backend-smoke
           -- pnpm run smoke:start
         env:
@@ -312,7 +312,7 @@ jobs:
       - name: Run compiled UI route smoke
         run: >-
           node scripts/run-workflow-stage.mjs
-          --metrics "${SR_WORKFLOW_METRICS_PATH}"
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
           --stage compiled-ui-smoke
           -- pnpm run smoke:ui
         env:
@@ -354,14 +354,14 @@ jobs:
           node scripts/collect-ci-evidence.mjs \
             --output "${evidence_dir}/EVIDENCE_MANIFEST.json" \
             --dist-output "${evidence_dir}/DIST_MANIFEST.json" \
-            --metrics-input "${SR_WORKFLOW_METRICS_PATH}" \
+            --metrics-input "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" \
             --postgresql-input \
               "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
             --pbi039-postgresql-input \
               "${RUNNER_TEMP}/pbi039-postgresql-${VC024_EXECUTION_LABEL}/PBI039_POSTGRESQL_MANIFEST.json"
           node scripts/create-verified-tree-attestation.mjs \
             --output "${evidence_dir}/VERIFIED_TREE_ATTESTATION.json"
-          cp "${SR_WORKFLOW_METRICS_PATH}" "${evidence_dir}/WORKFLOW_METRICS.json"
+          cp "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" "${evidence_dir}/WORKFLOW_METRICS.json"
           cp \
             "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
             "${evidence_dir}/POSTGRESQL_MANIFEST.json"
