@@ -2,7 +2,8 @@
 
 ## Checkpoint y autoridad
 
-- **Checkpoint:** funcional listo para `Owner Review`; no equivale a `Done`.
+- **Checkpoint:** `Owner Accepted — Functional Freeze — Ready for Final
+  Verification`; todavía no equivale a `Done`.
 - **Branch:** `feature/pbi-040-catalog-pricing-core`.
 - **Baseline histórica de implementación:**
   `40684d7554cdf02551f941e5e3f0beabbe563125` con CI de `main`
@@ -10,10 +11,12 @@
 - **Baseline vigente para reanudación:** `main`
   `5be5cd60acb0865da57aff76740a1330896b1cd1`, CI exacta
   `34732201476` SUCCESS y PBI-043 `Done`.
-- **Candidato de iteración Owner:** funcionalidad congelada durante la
-  reconciliación de runtime provenance; aceptación Owner todavía pendiente.
-- **No autorizado/no realizado:** push, PR, merge, deploy, release o cambio de
-  infraestructura.
+- **Owner Acceptance:** explícita el 2026-09-13 para el alcance funcional de
+  PBI-040. Bulk Composer/import permanece en PBI-041 y no forma parte de esta
+  aceptación.
+- **Autoridad de cierre:** el Master Goal de 2026-09-13 autoriza verificación,
+  remediación acotada, push, PR, CI exact-head, merge, exact-main, deployment y
+  validación de Preview y limpieza de la branch. Production no está autorizada.
 
 ## Reconciliación con el nuevo `main`
 
@@ -590,6 +593,8 @@ local no incluía `Category.kind`. El primer full gate de esta iteración tambi�
 detectó que el teardown owner-scoped no conocía la nueva tabla de eventos. Los
 tres casos fallaron cerrado; no se retiraron assertions ni controles.
 
-Commits locales: `d846a6a` (merge, edición, persistencia, UI y contratos),
-`229fafb` (estado canónico de Owner Review) y `0720813` (selección/seed para
-runtime). No hubo push, PR, merge a `main`, deploy ni Owner Acceptance.
+Commits locales de aquella iteración: `d846a6a` (merge, edición, persistencia,
+UI y contratos), `229fafb` (estado canónico de Owner Review) y `0720813`
+(selección/seed para runtime). En ese checkpoint no hubo push, PR, merge a
+`main`, deploy ni Owner Acceptance; la aceptación posterior del 2026-09-13 se
+registra al inicio de este documento.

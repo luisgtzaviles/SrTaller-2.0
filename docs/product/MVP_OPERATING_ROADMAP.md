@@ -3,22 +3,21 @@
 ## Estado del documento
 
 - **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 activo con
-  PBI-040 reconciliado y en Owner Review.
+  PBI-040 Owner Accepted en Functional Freeze y Final Verification.
 - **Baseline Git observada:** `main` y `origin/main` local en
   `5be5cd60acb0865da57aff76740a1330896b1cd1`; CI exacta de `main`
   `34732201476`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Pricing Catalog.
-- **Checkpoint alcanzado:** Functional Slice Owner Accepted, Formal UI
-  Verification, Hardening, Full Verification, re-review, integración, CI
-  exacta de `main` y validación post-deploy de Preview en `PASS`.
+- **Checkpoint alcanzado:** Functional Slice Owner Accepted; candidato en
+  Functional Freeze listo para Formal UI Verification.
 - **Sprint activo:** SPRINT-03 — Price List Foundation.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** `PBI-040` — Owner Review; aceptación pendiente.
+- **PBI actual:** `PBI-040` — Owner Accepted; Ready for Final Verification.
 - **Siguiente PBI candidato:** PBI-041 Ready, no seleccionado ni autorizado.
-- **Blocking gate:** Owner Review/Acceptance de PBI-040; push, integración,
-  deploy y Production conservan autoridad separada.
+- **Blocking gate:** Formal UI Verification, hardening, full verification y
+  revisión independiente antes de publicar/integrar. Production no autorizada.
 - **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
@@ -99,11 +98,11 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Stage | MVP |
 | Phase | Pricing Catalog |
 | Sprint | SPRINT-03 |
-| Sprint status | Active — PBI-040 Owner Review; WIP=1/1 |
-| Current PBI | PBI-040 — Owner Review |
+| Sprint status | Active — PBI-040 Final Verification; WIP=1/1 |
+| Current PBI | PBI-040 — Owner Accepted; Functional Freeze |
 | Next PBI candidate | PBI-041 Ready; not selected or authorized |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
-| Blocking gate | Owner Review / Owner Acceptance for PBI-040 |
+| Blocking gate | Formal UI Verification, full verification and independent review |
 
 ## Fases aprobadas
 
@@ -223,7 +222,7 @@ PBI-039 está `Done`: PR #45 mergeó el cierre como `40684d7` y CI exacta
 `34623060504` quedó GREEN. PBI-043 integró PR #47 como `aab27d9`; CI candidata
 `34729684465`, exact-main `34730090448` y Preview quedaron PASS. El cierre PR
 #48 `5be5cd6` y CI `34732201476` lo dejan `Done`. SPRINT-03 está `Active`,
-WIP `1/1`; PBI-040 continúa Owner Review sobre la baseline reconciliada y
+WIP `1/1`; PBI-040 está Owner Accepted y en Final Verification sobre la baseline reconciliada;
 PBI-041 alcanzó Ready documentalmente como Candidate, sin selección ni
 autorización de implementación.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
@@ -258,8 +257,8 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** feedback o Owner Acceptance de PBI-040, o cambio de su
-  baseline/arquitectura.
-- **Resultado esperado si pasa:** PBI-040 continúa su propio workflow sin
-  inferir inicio de PBI-041, release o deploy.
+- **Disparador:** resultado de Final Verification, revisión independiente,
+  integración o Preview de PBI-040, o cambio de su baseline/arquitectura.
+- **Resultado esperado si pasa:** PBI-040 completa su cierre autorizado sin
+  inferir inicio de PBI-041 ni autorización de Production.
 - **Después:** no iniciar otro PBI automáticamente.

@@ -1,46 +1,44 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 Bulk Catalog Composer architecture + readiness
+Milestone / Functional Goal: PBI-040 final closure
 Sprint: SPRINT-03 — Price List Foundation
-Current PBI: PBI-040 — Owner Review
-Status: PBI-041 architecture/readiness PASS; implementation remains unauthorized
-WIP: 1/1 — PBI-041 is Candidate/Ready, not selected or started
-Progress: 6 / 6 readiness blocks complete
-Current: Ready for Owner review of architecture/readiness
-Next: Owner reviews readiness and separately completes PBI-040 acceptance/closure
+Current PBI: PBI-040 — Owner Accepted; Functional Freeze
+Status: Final Verification in progress
+WIP: 1/1 — PBI-041 remains Ready, not selected or started
+Progress: 2 / 8 closure blocks complete
+Current: Formal UI Verification of the frozen candidate
+Next: High-risk review and authoritative full verification
 Blocked: None
 Last updated: 2026-09-13 MST
 
-## PBI-041 architecture and readiness
+## Closure blocks
 
-- [x] Reconcile mandatory authorities and preserve PBI-040 Owner Review/WIP
-- [x] Promote Owner decisions OD-BI-001..010 into canonical decision/architecture docs
-- [x] Separate SupplierSource/Version/Listing/Resolution/Memory from CatalogUpdateBatch
-- [x] Define ownership, identity, lifecycles, matching, retention and performance budgets
-- [x] Refine PBI-041 and create Persistence Design, Threat Model, Test Strategy and DoR
-- [x] Verify links, states, structure, diff hygiene and zero product/migration changes
+- [x] Reconcile branch, baseline, PBI-043 ancestry and PBI-041 documentation-only boundary
+- [x] Record explicit Owner Acceptance and Functional Freeze
+- [~] Execute formal real-browser UI verification and remediate permitted findings
+- [ ] Run authoritative governed full verification without critical skips
+- [ ] Complete independent high-risk review with no open Critical/High/Medium findings
+- [ ] Publish PR and obtain exact-head CI run-1/run-2/comparison PASS
+- [ ] Merge, verify exact main and deploy/validate Preview without touching Production
+- [ ] Reconcile closure authorities, archive checklist and remove absorbed branch
 
-## Ready outcome
+## Functional freeze
 
-- PBI-041 is **Initial Bulk Catalog Composer + Versioned Supplier Intake**.
-- Composer is primary; CSV/XLSX/API remain adapters to the same future engine.
-- CatalogItem remains permanent SR Taller identity; SupplierListing is external evidence.
-- Exact historical mappings may be preselected only when unique/consistent and
-  remain visible in preview until batch confirmation.
-- Raw evidence expires after 90 days; the approved structured subset, mappings,
-  Catalog diffs and audit remain permanent with cost protection.
-- Advanced Supplier Reconciliation remains a deferred outcome without PBI ID,
-  selection or readiness.
+- PBI-040 may receive only corrections, hardening, accessibility, regression,
+  security, consistency, performance, review findings and closure evidence.
+- PBI-041 is documentation/readiness only: no Composer, SupplierSource,
+  SupplierCatalogVersion, SupplierListing, batch engine, migration, endpoint,
+  UI or job implementation.
+- Production, Inventory, Procurement, Caja, Repair Concepts and all subsequent
+  PBIs remain outside this goal.
 
-## Boundaries
+## Owner decision
 
-- [x] Documentation/governance only; no product code, migration, endpoint, UI, job or DB change
-- [x] PBI-040 remains Owner Review; Owner Acceptance/Done not inferred
-- [x] PBI-041 is Ready but not selected, implemented or accepted
-- [x] PBI-042 and Advanced Supplier Reconciliation are not started
-- [x] No Inventory, Procurement, Caja, Repair Concepts or downstream implementation
-- [x] No push, PR, merge, Preview deploy or Production change
+Owner Acceptance was explicitly granted on 2026-09-13 for the material
+PBI-040 surface, including individual create/edit, Catalog governance,
+identifiers, pricing/cost protection, pending reconciliation, safe lifecycle and
+canonical merge. This acceptance does not make the PBI Done before the remaining
+technical, integration and Preview gates pass.
 
-The completed PBI-043 checklist remains preserved by Git history and its
-closure evidence. The prior PBI-039 checklist remains in
-[`history/PBI-039_ACTIVE_CHECKLIST.md`](history/PBI-039_ACTIVE_CHECKLIST.md).
+The completed PBI-043 and PBI-039 checklists remain preserved in Git history and
+`docs/work/history/`.

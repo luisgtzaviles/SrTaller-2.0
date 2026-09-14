@@ -2,13 +2,13 @@
 
 ## Estado
 
-- **Estado:** Active — PBI-040 Owner Review.
-- **Bloqueos:** ninguno; autorización Owner recibida 2026-09-11.
+- **Estado:** Active — PBI-040 Owner Accepted; Final Verification.
+- **Bloqueos:** ninguno; cierre técnico/merge/Preview autorizado 2026-09-13.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
-| fuga Tenant/Branch | Critical | contexto confiable, constraints y pruebas cruzadas | control verificado; revisión Owner pendiente |
-| costo expuesto | High | capability y field omission server-side | control verificado; revisión Owner pendiente |
+| fuga Tenant/Branch | Critical | contexto confiable, constraints y pruebas cruzadas | control verificado; revalidación final pendiente |
+| costo expuesto | High | capability y field omission server-side | control verificado; revalidación final pendiente |
 | identidad duplicada | High | ID opaco, SKU/barcode Tenant, concurrencia | control verificado |
 | historial de precio perdido | High | revisiones append-only + snapshots futuros | control verificado |
 | Composer ambiguo/partial | High | PBI-041 separado; unresolved cero, preview/confirmación y apply atómico | arquitectura/DoR Ready; no materializado |
@@ -16,4 +16,4 @@
 
 ## Próxima revisión
 
-En Owner Review y en cada gate posterior de riesgo alto.
+En cada gate de cierre de riesgo alto y después de Preview.

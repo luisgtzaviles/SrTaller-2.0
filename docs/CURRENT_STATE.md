@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-043 `Done`; PBI-040 mantiene `Owner Review`. PBI-041 alcanzó
-  `Ready — implementation not authorized` después de promover `OD-BI-001..010`;
-  aceptación de PBI-040 permanece pendiente.
+- **Estado:** PBI-043 `Done`; PBI-040 está `Owner Accepted`, en Functional
+  Freeze y listo para Final Verification. PBI-041 permanece
+  `Ready — implementation not authorized`.
 - **Baseline Git verificada:** `main == origin/main` en
   `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
   PBI-040.
@@ -12,8 +12,8 @@
   [`34732201476`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34732201476),
   `SUCCESS` sobre `5be5cd6` con run-1, run-2 y comparison PASS.
 - **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
-- **PBI actual:** [PBI-040](backlog/pbis/PBI-040.md) — `Owner Review`;
-  aceptación pendiente.
+- **PBI actual:** [PBI-040](backlog/pbis/PBI-040.md) — `Owner Accepted — Ready
+  for Final Verification`.
 - **WIP:** `1/1` en `feature/pbi-040-catalog-pricing-core`.
 - **PBI-040:** el WIP congelado `68843ba` fue preservado y reconciliado por
   merge explícito `28320b3` con `main` `5be5cd6`; no se añadió funcionalidad.
@@ -189,9 +189,9 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint | SPRINT-03 — Active |
-| Current PBI | PBI-040 — Owner Review |
+| Current PBI | PBI-040 — Owner Accepted; Final Verification |
 | WIP | 1/1 |
-| PBI-040 | canonical merge y paridad inline de edición en validación local; aceptación pendiente |
+| PBI-040 | Functional Freeze; cierre técnico, integración y Preview autorizados con gates |
 | PBI-041 | Ready documentalmente; Candidate no seleccionado, no iniciado ni autorizado |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Preview | `aab27d9` PASS |
@@ -199,6 +199,6 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 ## Próxima acción
 
-Completar Owner Review/Acceptance de PBI-040. Sólo después, y mediante autoridad
-explícita, seleccionar/autorizar PBI-041 desde el `main` vigente. No inferir
-aceptación, inicio, push, PR, merge o deploy.
+Completar Final Verification, revisión independiente, integración y validación
+Preview de PBI-040 conforme al Master Goal de cierre. PBI-041 permanece Ready,
+no seleccionado ni autorizado; no iniciar otro PBI ni desplegar Production.
