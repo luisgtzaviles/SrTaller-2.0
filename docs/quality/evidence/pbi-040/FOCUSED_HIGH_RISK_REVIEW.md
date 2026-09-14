@@ -45,3 +45,35 @@ historia de precios, transporte web y ownership entre módulos.
 Esta es auto-revisión de ingeniería, no sustituye la revisión independiente ni
 la aceptación Owner. Ambas conservan su gate posterior y no se infieren de las
 pruebas verdes.
+
+## Final closure review — 2026-09-13
+
+A separate closure pass re-read the frozen candidate from its public HTTP
+boundary through service validation, tenant-wide/contextual authorization,
+repository transactions, constraints and evidence contracts. It also reviewed
+the complete `origin/main...HEAD` inventory for scope drift.
+
+- Controller DTOs remain strict server-side allowlists and transport only
+  cookie/origin/host/fetch-site/content-type/CSRF evidence.
+- Reads and writes retain distinct fixed capabilities. Cost is omitted unless
+  the server authorizes `catalog.reference_cost.read`; the preference cannot
+  grant that capability.
+- Tenant-wide identity/reference/base-price/cost mutations reject Branch-only
+  authority, while Branch override remains contextual to the requesting
+  Branch.
+- Every mutation revalidates the complete authorization guard set inside the
+  transaction before the effect, applies optimistic versions and persists
+  idempotent command/audit evidence.
+- Identifier allocation and explicit identifier writes remain Tenant-scoped
+  and constraint-backed. Canonical merge locks identities/resources, rejects
+  incompatible or foreign references and leaves append-only evidence.
+- No Product code, migration, endpoint, job or table for PBI-041 was present;
+  its files are readiness documentation only.
+
+**Final findings:** no open Critical, High or Medium finding. The accepted Vite
+main-chunk size warning remains visible as non-blocking delivery debt.
+
+This closure pass is independent in time and purpose from implementation and
+the earlier engineering self-review. It does not represent a human or external
+reviewer; its material backstop is the authoritative full verification and the
+exact-head CI comparison gate.

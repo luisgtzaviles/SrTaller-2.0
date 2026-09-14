@@ -610,3 +610,20 @@ five Repairs catalogs, New Repair and the canonical PBI-039 Repair Detail.
 The clean final page load reported no console warning or error. Detailed
 observations and the remaining reversible local fixture are recorded in
 [`FORMAL_UI_VERIFICATION.md`](FORMAL_UI_VERIFICATION.md).
+
+## Authoritative local closure gate
+
+Full Verification `local-full-verification-20260914024748-33d83e3ef7cc` on
+`33d83e3ef7cc68ea8fd1ae6f6b7e6286962a96c4` completed `13/13` stages PASS
+with cleanup PASS and candidate fingerprint
+`527636399c33ef71072430b1f1a0af8b5080081609844c351ed50ffad0602937`.
+
+- base suite: 838 tests, 818 PASS, 20 governed PostgreSQL skips, zero failures;
+- material composite PostgreSQL: 17/17 PASS, zero critical skips;
+- PBI-039 PostgreSQL: 2/2 PASS, 62 migrations, zero critical skips;
+- PBI-040 PostgreSQL: 1/1 PASS, 62 migrations, zero critical skips;
+- 10,000-item Price List benchmark: p95 `7.12 ms` / budget `750 ms`;
+- Preview-like runtime, compiled backend, compiled UI and cleanup: PASS.
+
+The only warning was the already visible and accepted Vite main chunk over
+500 kB. No gate, assertion, skip policy or threshold was weakened.
