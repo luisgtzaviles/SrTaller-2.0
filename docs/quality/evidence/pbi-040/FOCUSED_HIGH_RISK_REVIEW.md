@@ -73,6 +73,15 @@ the complete `origin/main...HEAD` inventory for scope drift.
 **Final findings:** no open Critical, High or Medium finding. The accepted Vite
 main-chunk size warning remains visible as non-blocking delivery debt.
 
+The first PR-head CI run (`34800704258`) then found one delivery-gate defect:
+the evidence collector rejected the exact frontend runtime-provenance JSON
+emitted by the governed Vite build. Product, PostgreSQL, architecture, tests,
+smokes and repository immutability had passed in both executions before the
+collector failed. The remediation allowlists only
+`dist/public/runtime-provenance.json`; a new negative contract proves any other
+Preview JSON remains rejected. Focused evidence tests passed `17/17` and the
+authoritative local full gate was repeated before publishing a new head.
+
 This closure pass is independent in time and purpose from implementation and
 the earlier engineering self-review. It does not represent a human or external
 reviewer; its material backstop is the authoritative full verification and the

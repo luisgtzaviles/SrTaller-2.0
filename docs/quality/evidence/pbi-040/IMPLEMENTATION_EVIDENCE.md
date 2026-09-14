@@ -627,3 +627,18 @@ with cleanup PASS and candidate fingerprint
 
 The only warning was the already visible and accepted Vite main chunk over
 500 kB. No gate, assertion, skip policy or threshold was weakened.
+
+PR #49 CI run `34800704258` failed closed after all product gates in both
+executions passed: `collect-ci-evidence` classified the newly governed
+`dist/public/runtime-provenance.json` as an unexpected artifact. Commit
+`dd3cf105fea5cea4e70c77069669307e9ea809d3` admits only that exact asset and
+adds a negative contract rejecting any other JSON under `dist/public`.
+
+After remediation, focused evidence tests passed `17/17`. Full Verification
+`local-full-verification-20260914030557-dd3cf105fea5` repeated all `13/13`
+stages with cleanup PASS and candidate fingerprint
+`dd8369df8c3772ab074b0b919d20ed6c6baa1edf4683e361708b5044c9e5186c`:
+839 base tests (`819` PASS, 20 governed PostgreSQL skips, zero failures),
+material PostgreSQL `17/17`, PBI-039 `2/2`, PBI-040 `1/1`, 62 migrations,
+zero critical skips and p95 `6.37 ms` for 10,000 items. The same accepted Vite
+chunk warning remains visible.
