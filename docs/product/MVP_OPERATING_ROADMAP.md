@@ -4,9 +4,9 @@
 
 - **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 activo con
   PBI-040 `Done` y ningún PBI actual.
-- **Baseline Git observada:** `main` y `origin/main` en
-  `a0604941a5707c87f2601c467e89743fc2883e90`; CI exacta de `main`
-  `34814070839`, `SUCCESS`.
+- **Baseline Git observada:** Workflow Phase 1 integrado en `main` por
+  `859825025cf1f9fa94a8b0ced5b91b95760e36a8`; CI exacta de `main`
+  `34893081175`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Pricing Catalog.
@@ -156,6 +156,10 @@ iniciado y PBI-042 no está iniciado.
 El cierre documental PBI-040 PR #52 se integró después como `a060494`; su
 exact-main CI `34814070839` quedó GREEN. PBI-040 es `Done`, `Released: NO`, sin
 seleccionar ni iniciar PBI-041.
+
+Workflow Phase 1 se integró después por PR #53 como `8598250`. Su exact-main
+full CI `34893081175` quedó GREEN sin activar Option B ni reducir exact-main.
+Esto no selecciona ni inicia PBI-041.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización

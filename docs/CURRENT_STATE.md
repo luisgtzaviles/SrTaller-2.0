@@ -5,10 +5,11 @@
 - **Estado:** PBI-040 `Done`, `Released: NO`. PBI-041 permanece
   `Ready — implementation not authorized`.
 - **Baseline Git verificada:** `main == origin/main` en
-  `a0604941a5707c87f2601c467e89743fc2883e90`.
+  `859825025cf1f9fa94a8b0ced5b91b95760e36a8` antes de la reconciliación
+  documental de cierre.
 - **CI exacta de baseline:**
-  [`34814070839`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34814070839),
-  `SUCCESS` sobre `a060494` con run-1, run-2 y comparison PASS.
+  [`34893081175`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34893081175),
+  `SUCCESS` sobre `8598250` con run-1, run-2 y comparison PASS.
 - **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
 - **PBI actual:** `NONE`.
 - **WIP:** `0/1`; PBI-041 no está seleccionado ni iniciado.
@@ -35,6 +36,15 @@ El cierre documental PR #52 quedó integrado como `a060494` y su exact-main CI
 `34814070839` pasó run-1, run-2 y comparison. Esto materializó `Done` para
 PBI-040; `Released` permanece `NO`. No existe PBI actual y PBI-041 sigue Ready,
 no seleccionado, no autorizado y no iniciado.
+
+Workflow Phase 1 quedó Owner Accepted e integrado por PR #53. El candidato
+exacto `a0eb1f6` pasó full local, CI `34892262371` con dos legs y comparison, y
+revisión independiente sin findings abiertos. El merge `8598250` pasó el full
+exact-main obligatorio `34893081175`; la attestation permaneció shadow-only.
+La primera medición verde bajó de la baseline 12.6 min wall / 24.6 job-minutes
+a 6.98 / 11.80, sin perder architecture, typecheck, build, broad tests,
+PostgreSQL material, evidence, determinism comparison ni cleanup. No hubo
+producto, PBI-041, Preview, Production o deploy.
 
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
@@ -210,11 +220,11 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
 | PBI-041 | Ready documentalmente; Candidate no seleccionado, no iniciado ni autorizado |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
-| Preview | `09e14c8` PASS |
+| Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
+| Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Materializar y revisar WF-001–WF-010 como cambio separado de governance. PBI-041
-permanece Ready, no seleccionado ni autorizado; no iniciar otro PBI ni desplegar
-Production.
+Esperar selección/autorización Owner. PBI-041 permanece Ready, no seleccionado
+ni autorizado; no iniciar otro PBI ni desplegar Production.

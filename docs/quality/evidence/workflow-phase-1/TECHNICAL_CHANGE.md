@@ -2,15 +2,15 @@
 
 ## Estado y autoridad
 
-- **Estado:** Implementation complete — local full outcome is maintained in
-  [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md); PR/CI/review/merge
-  remain separate.
+- **Estado:** Done — merged by PR #53; PR CI, independent review and exact-main
+  full CI PASS. Outcomes are maintained in
+  [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md).
 - **Autoridad:** WF-001–WF-010 en
   [Development Workflow Efficiency Decisions](../../../delivery/DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md).
 - **Tipo:** Governance / CI / developer tooling.
 - **Riesgo:** Alto; cambia el mecanismo que produce evidencia bloqueante.
 - **Owner:** Product Owner.
-- **Commit/PR:** TBD.
+- **Commit/PR:** candidate `a0eb1f6`; PR #53; merge `8598250`.
 
 ## Objetivo observable
 
@@ -76,9 +76,11 @@ métricas y mecanismos shadow de riesgo/tree identity.
 | Development Preflight real | PASS — no destructivo; 62/62 journal y fixtures disponibles |
 | Preview migration pre-merge | Advisory `UNKNOWN`; snapshot `NOT_CAPTURED`, compatibility no afirmada |
 | Full verification | Resultado autoritativo en Implementation Evidence |
-| CI | Not run |
-| Independent review | Pending |
-| Merge / deploy | Not authorized |
+| PR CI | `34892262371` PASS; run-1/run-2/comparison |
+| Independent review | PASS; 0 findings open |
+| Merge | PR #53 → `8598250` |
+| Exact-main full CI | `34893081175` PASS; no attestation reduction |
+| Deploy | Not performed or authorized |
 
 ## Riesgos
 
