@@ -3,12 +3,12 @@
 Milestone / Functional Goal: Development Workflow Efficiency — Phase 1
 Sprint: SPRINT-03 — governance work outside product WIP
 Current PBI: NONE
-Status: WF-001–WF-010 materialized and verified locally; ready for Owner review
+Status: Owner Accepted; governed integration in progress
 WIP: 0/1 product PBIs — PBI-041 remains Ready, not selected or started
 Progress: 10 / 10 materialization blocks
-Current: Owner review of the governance/CI candidate
-Next: PR, CI and independent review only after separate authorization
-Blocked: None for the local checkpoint; integration gates have not been run
+Current: Publish exact candidate and execute authoritative PR CI
+Next: Independent review, authorized merge and exact-main full CI
+Blocked: None
 Last updated: 2026-09-14 MST
 
 ## Goal
@@ -50,11 +50,14 @@ remain shadow-only and cannot omit gates during the pilot.
 ## Owner decisions
 
 - WF-001–WF-010: APPROVED on 2026-09-14.
+- Workflow Phase 1: OWNER ACCEPTED; push, PR, CI, independent review, merge and
+  absorbed-branch cleanup authorized on 2026-09-14.
 - Observability targets: normal closure under 45 minutes and DOCS_ONLY under
   10 minutes; neither is an SLA or authorization to skip gates.
 
 ## Handoff boundary
 
 This checklist tracks a governance/engineering change, not a product PBI.
-Completion produces a reviewable local candidate. Push, PR, merge, Preview and
-Production remain separate actions unless explicitly authorized.
+Integration must preserve CI_INFRASTRUCTURE / HIGH RISK treatment, two
+independent Linux legs, exact comparison, independent review and full
+exact-main. Preview and Production remain unauthorized.
