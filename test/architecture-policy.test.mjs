@@ -371,12 +371,12 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260908131000_repairs_add_problem_capture_reconciliation.ts',
     'src/infrastructure/database/migrations/20260909100000_repairs_add_problem_category_safe_delete.ts',
     'src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts',
-    'src/infrastructure/database/migrations/20260911180000_tenancy_add_operating_currency.ts',
-    'src/infrastructure/database/migrations/20260911181000_access_add_catalog_capabilities.ts',
-    'src/infrastructure/database/migrations/20260911182000_users_add_price_list_cost_preference.ts',
-    'src/infrastructure/database/migrations/20260911183000_catalog_create_pricing_core.ts',
-    'src/infrastructure/database/migrations/20260911200000_catalog_add_reference_governance.ts',
     'src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts',
+    'src/infrastructure/database/migrations/20260912190000_tenancy_add_operating_currency.ts',
+    'src/infrastructure/database/migrations/20260912191000_access_add_catalog_capabilities.ts',
+    'src/infrastructure/database/migrations/20260912192000_users_add_price_list_cost_preference.ts',
+    'src/infrastructure/database/migrations/20260912193000_catalog_create_pricing_core.ts',
+    'src/infrastructure/database/migrations/20260912200000_catalog_add_reference_governance.ts',
     'src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts',
     'src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts',
     'src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts',
@@ -385,7 +385,7 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -415,10 +415,10 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260908130000_access_add_repairs_classify_capability.ts',
       'src/infrastructure/database/migrations/20260908131000_repairs_add_problem_capture_reconciliation.ts',
       'src/infrastructure/database/migrations/20260909220000_users_create_preferences.ts',
-      'src/infrastructure/database/migrations/20260911180000_tenancy_add_operating_currency.ts',
-      'src/infrastructure/database/migrations/20260911181000_access_add_catalog_capabilities.ts',
-      'src/infrastructure/database/migrations/20260911182000_users_add_price_list_cost_preference.ts',
-      'src/infrastructure/database/migrations/20260911200000_catalog_add_reference_governance.ts',
+      'src/infrastructure/database/migrations/20260912190000_tenancy_add_operating_currency.ts',
+      'src/infrastructure/database/migrations/20260912191000_access_add_catalog_capabilities.ts',
+      'src/infrastructure/database/migrations/20260912192000_users_add_price_list_cost_preference.ts',
+      'src/infrastructure/database/migrations/20260912200000_catalog_add_reference_governance.ts',
       'src/infrastructure/database/migrations/20260912180000_access_enable_concurrent_operational_sessions.ts',
       'src/infrastructure/database/migrations/20260912210000_catalog_unify_pending_reference_reconciliation.ts',
       'src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts',

@@ -3,11 +3,11 @@
 Milestone / Functional Goal: PBI-040 final closure
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Accepted; Functional Freeze
-Status: Final Verification in progress
+Status: Preview migration-order remediation in progress
 WIP: 1/1 — PBI-041 remains Ready, not selected or started
-Progress: 5 / 8 closure blocks complete
-Current: Publish the verified candidate and obtain exact-head CI
-Next: Merge only after exact-head CI and the final review remain green
+Progress: 7 / 9 closure blocks complete
+Current: Validate and publish the fail-closed migration-order remediation found in Preview
+Next: Merge the remediation, reverify exact main, then migrate and validate Preview
 Blocked: None
 Last updated: 2026-09-13 MST
 
@@ -18,9 +18,10 @@ Last updated: 2026-09-13 MST
 - [x] Execute formal real-browser UI verification and remediate permitted findings
 - [x] Run authoritative governed full verification without critical skips
 - [x] Complete independent high-risk review with no open Critical/High/Medium findings
-- [~] Publish PR and obtain exact-head CI run-1/run-2/comparison PASS
-- [ ] Merge, verify exact main and deploy/validate Preview without touching Production
-- [ ] Reconcile closure authorities, archive checklist and remove absorbed branch
+- [x] Publish PR and obtain exact-head CI run-1/run-2/comparison PASS
+- [x] Merge the accepted feature candidate and verify its exact-main CI
+- [~] Remediate the Preview-only migration chronology conflict, then deploy and validate Preview without touching Production
+- [ ] Reconcile closure authorities, archive checklist and remove absorbed branches
 
 ## Functional freeze
 

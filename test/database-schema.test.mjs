@@ -347,42 +347,42 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         owner: 'repairs',
       },
       {
-        fileName: '20260911180000_tenancy_add_operating_currency.js',
-        migrationName: '20260911180000_tenancy_add_operating_currency',
-        order: 51,
-        owner: 'tenancy',
-      },
-      {
-        fileName: '20260911181000_access_add_catalog_capabilities.js',
-        migrationName: '20260911181000_access_add_catalog_capabilities',
-        order: 52,
-        owner: 'access',
-      },
-      {
-        fileName: '20260911182000_users_add_price_list_cost_preference.js',
-        migrationName: '20260911182000_users_add_price_list_cost_preference',
-        order: 53,
-        owner: 'users',
-      },
-      {
-        fileName: '20260911183000_catalog_create_pricing_core.js',
-        migrationName: '20260911183000_catalog_create_pricing_core',
-        order: 54,
-        owner: 'catalog',
-      },
-      {
-        fileName: '20260911200000_catalog_add_reference_governance.js',
-        migrationName: '20260911200000_catalog_add_reference_governance',
-        order: 55,
-        owner: 'catalog',
-      },
-      {
         fileName:
           '20260912180000_access_enable_concurrent_operational_sessions.js',
         migrationName:
           '20260912180000_access_enable_concurrent_operational_sessions',
-        order: 56,
+        order: 51,
         owner: 'access',
+      },
+      {
+        fileName: '20260912190000_tenancy_add_operating_currency.js',
+        migrationName: '20260912190000_tenancy_add_operating_currency',
+        order: 52,
+        owner: 'tenancy',
+      },
+      {
+        fileName: '20260912191000_access_add_catalog_capabilities.js',
+        migrationName: '20260912191000_access_add_catalog_capabilities',
+        order: 53,
+        owner: 'access',
+      },
+      {
+        fileName: '20260912192000_users_add_price_list_cost_preference.js',
+        migrationName: '20260912192000_users_add_price_list_cost_preference',
+        order: 54,
+        owner: 'users',
+      },
+      {
+        fileName: '20260912193000_catalog_create_pricing_core.js',
+        migrationName: '20260912193000_catalog_create_pricing_core',
+        order: 55,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260912200000_catalog_add_reference_governance.js',
+        migrationName: '20260912200000_catalog_add_reference_governance',
+        order: 56,
+        owner: 'catalog',
       },
       {
         fileName: '20260912210000_catalog_unify_pending_reference_reconciliation.js',

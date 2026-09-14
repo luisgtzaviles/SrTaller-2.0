@@ -1258,6 +1258,21 @@ test('PostgreSQL 18.4 enforces concurrent Operational Sessions, exact lifecycle,
       '20260912210000_catalog_unify_pending_reference_reconciliation',
     );
     await runner.migrateDown(authorization(catalogMigration));
+    for (const expectedFoundationMigration of [
+      '20260912200000_catalog_add_reference_governance',
+      '20260912193000_catalog_create_pricing_core',
+      '20260912192000_users_add_price_list_cost_preference',
+      '20260912191000_access_add_catalog_capabilities',
+      '20260912190000_tenancy_add_operating_currency',
+    ]) {
+      const foundationMigration = [
+        ...(await runner.getMigrationStatus()).migrations,
+      ]
+        .reverse()
+        .find(({ state }) => state === 'applied');
+      assert.equal(foundationMigration?.name, expectedFoundationMigration);
+      await runner.migrateDown(authorization(foundationMigration));
+    }
     const latestMigration = [...(await runner.getMigrationStatus()).migrations]
       .reverse()
       .find(({ state }) => state === 'applied');

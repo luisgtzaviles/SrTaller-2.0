@@ -2939,7 +2939,7 @@ export async function checkArchitecture({
       // in production mode and in their dedicated contracts, not retrofitted
       // into that immutable synthetic baseline.
       persistence.allowedMigrations = persistence.allowedMigrations.filter(
-        (path) => path !== 'src/infrastructure/database/migrations/20260911180000_tenancy_add_operating_currency.ts',
+        (path) => path !== 'src/infrastructure/database/migrations/20260912190000_tenancy_add_operating_currency.ts',
       );
     }
     if (persistence.migrationOwnership?.registrations) {

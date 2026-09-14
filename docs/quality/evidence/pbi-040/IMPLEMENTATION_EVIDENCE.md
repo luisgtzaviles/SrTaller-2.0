@@ -628,6 +628,38 @@ with cleanup PASS and candidate fingerprint
 The only warning was the already visible and accepted Vite main chunk over
 500 kB. No gate, assertion, skip policy or threshold was weakened.
 
+## Preview migration chronology remediation
+
+The first governed Preview migration attempt after merge failed closed before
+changing the HTTP runtime. Diagnostic status identified
+`DATABASE_MIGRATION_DRIFT_DETECTED`: Preview already contained the applied
+PBI-043 migration `20260912180000_access_enable_concurrent_operational_sessions`,
+while the first five still-pending PBI-040 migrations retained earlier
+timestamps from the feature branch's original chronology.
+
+Because none of those five PBI-040 migrations had been materialized in Preview,
+the safe remediation renames only their pending migration identities into the
+available ordered interval immediately after PBI-043 and before the later
+PBI-040 reconciliation migration. Their SQL, ownership and dependency order are
+unchanged. The executable DEC-005 registry and exact migration-manifest
+contracts were updated to preserve fail-closed chronology; no drift bypass or
+manual schema mutation was introduced.
+
+The first local full-verification run after the rename failed closed in the
+PBI-043 rollback-safety test because that test still expected the PBI-043
+migration to be immediately preceded by the earlier baseline. Its remediation
+now reverses the five later Catalog foundation migrations explicitly before
+asserting the protected PBI-043 down path. The focused owner-scoped suite then
+passed `8/8` with zero skips.
+
+The complete governed rerun passed all `13/13` stages with cleanup PASS:
+839 base tests (`819` PASS and 20 governed PostgreSQL skips), material
+PostgreSQL `17/17`, PBI-039 `2/2`, PBI-040 `1/1`, 62 migrations, zero critical
+skips, Preview-like and compiled runtime smokes, and a 10,000-item Price List
+p95 of `6.03 ms` against the `750 ms` budget. Candidate fingerprint:
+`2998507474df58edbb86d4f24fc9da930bf700f9af0f49535f5a109c16d43216`.
+The accepted Vite chunk-size warning remains visible.
+
 PR #49 CI run `34800704258` failed closed after all product gates in both
 executions passed: `collect-ci-evidence` classified the newly governed
 `dist/public/runtime-provenance.json` as an unexpected artifact. Commit
