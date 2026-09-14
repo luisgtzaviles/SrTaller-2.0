@@ -3,12 +3,12 @@
 Milestone / Functional Goal: Development Workflow Efficiency — Phase 1
 Sprint: SPRINT-03 — governance work outside product WIP
 Current PBI: NONE
-Status: WF-001–WF-010 materialized locally; full verification pending
+Status: WF-001–WF-010 materialized and verified locally; ready for Owner review
 WIP: 0/1 product PBIs — PBI-041 remains Ready, not selected or started
-Progress: 9 / 10 materialization blocks
-Current: Execute final full verification and reconcile evidence
-Next: Owner review of the governance/CI candidate
-Blocked: None
+Progress: 10 / 10 materialization blocks
+Current: Owner review of the governance/CI candidate
+Next: PR, CI and independent review only after separate authorization
+Blocked: None for the local checkpoint; integration gates have not been run
 Last updated: 2026-09-14 MST
 
 ## Goal
@@ -29,7 +29,7 @@ remain shadow-only and cannot omit gates during the pilot.
 - [x] Implement governed Preview migration-state snapshot and 24-hour freshness.
 - [x] Instrument timings and findings without secrets or business data.
 - [x] Implement general risk classifier and verified-tree attestation in shadow mode.
-- [~] Add negative coverage, execute proportional/full gates and reconcile evidence.
+- [x] Add negative coverage, execute proportional/full gates and reconcile evidence.
 
 ## Guardrails
 
