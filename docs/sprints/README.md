@@ -66,8 +66,9 @@ está `Done` y el Sprint `Closed`. Production sigue sin autorización.
 
 ## SPRINT-03
 
-SPRINT-03 ejecuta Price List Foundation. PBI-040 está en Owner Review y no
-aceptado; PBI-041 permanece Candidate/Ready sin iniciar. PBI-042 no pertenece al
+SPRINT-03 ejecuta Price List Foundation. PBI-040 es `Done candidate` después de
+Owner Acceptance, integración y Preview PASS; no existe Current PBI. PBI-041
+permanece Candidate/Ready sin seleccionar ni iniciar. PBI-042 no pertenece al
 compromiso inicial.
 
 - [Objetivo](sprint-03/SPRINT_GOAL.md)

@@ -2,9 +2,10 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado con `main` `5be5cd6` y CI exacta `34732201476`.
-PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está `Active`; PBI-040
-fue reconciliado con la nueva baseline y continúa `Owner Review`, WIP `1/1`.
+**Estado:** Reconciliado con `main` funcional `09e14c8` y CI exacta
+`34809054770`. PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está
+`Active`; PBI-040 es `Done candidate` después de Owner Acceptance, merge y
+Preview PASS. No existe PBI actual y WIP es `0/1`.
 PBI-041 alcanzó `Ready — implementation not authorized` como Candidate; PBI-042
 permanece `Planned/Unassigned`.
 **Prioridad:** propuesta, no aprobación final.
@@ -13,7 +14,7 @@ permanece `Planned/Unassigned`.
 y PBI-026 `Large` mediante T-shirt sizing; PBI-028 también es `Large`; las
 demás permanecen TBD salvo PBI-041 `XL — agreed` para su outcome inicial.
 **Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 y
-SPRINT-02 están cerrados; SPRINT-03 está activo con PBI-040 en Owner Review.
+SPRINT-02 están cerrados; SPRINT-03 está activo sin PBI seleccionado.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
 |---:|---|---|---|---|---|---|
@@ -56,7 +57,7 @@ SPRINT-02 están cerrados; SPRINT-03 está activo con PBI-040 en Owner Review.
 | 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Integrated slice within PBI-028 | Alta | Product Mode local; no independent lifecycle or canonical delivery claim |
 | 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
 | 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | Done; Released: NO | Alta | SPRINT-02 completed; PR #45 + exact-main CI `34623060504` |
-| 40 | [PBI-040](pbis/PBI-040.md) Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Owner Review; acceptance pending | Alta | SPRINT-03 Committed; current; WIP 1/1 |
+| 40 | [PBI-040](pbis/PBI-040.md) Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Done candidate; Released: NO | Alta | SPRINT-03 completed item; PR #49/#50/#51, exact-main CI and Preview PASS |
 | 41 | [PBI-041](pbis/PBI-041.md) Initial Bulk Catalog Composer + Versioned Supplier Intake | Product / Persistence / Data / Jobs / Authorization / UI | EPIC-015 | Ready — implementation not authorized | Alta | SPRINT-03 Candidate/Ready; not selected |
 | 42 | [PBI-042](pbis/PBI-042.md) Catalog Item Images | Product / Files / Security / UI | EPIC-015 | Planned / Deferred | Media | Unassigned Candidate |
 | 43 | [PBI-043](pbis/PBI-043.md) Concurrent Operational Sessions — Access Foundation Remediation | Identity / Security / Persistence / Quality | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed; PR #47/#48, CI/Preview PASS |
@@ -123,8 +124,9 @@ SPRINT-02 están cerrados; SPRINT-03 está activo con PBI-040 en Owner Review.
   `40684d7554cdf02551f941e5e3f0beabbe563125` y CI exacta de `main`
   `34623060504` GREEN.
 - PBI-040/PBI-041/PBI-042 conservan IDs únicos y documentos propios; no pueden
-  reutilizarse. Sólo PBI-040 está activo. Advanced Supplier Reconciliation es
-  un outcome diferido sin ID, selección ni readiness.
+  reutilizarse. No existe PBI activo. PBI-041 permanece Ready, no seleccionado
+  ni iniciado. Advanced Supplier Reconciliation es un outcome diferido sin ID,
+  selección ni readiness.
 - PBI-043 materializa ADR-014 como remediation independiente y está `Done`
   efectivo por PR #47/#48 y CI exacta `34732201476`; `Released: NO`.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
@@ -132,5 +134,6 @@ SPRINT-02 están cerrados; SPRINT-03 está activo con PBI-040 en Owner Review.
 
 ## Próxima revisión
 
-PBI-040 continúa en Owner Review sobre la baseline reconciliada. No iniciar
-PBI-041/PBI-042, liberar, pushear, integrar o desplegar por inferencia.
+Materializar el `Done` de PBI-040 mediante el merge autorizado del cierre
+documental y su CI exacta de `main`. Después no iniciar PBI-041/PBI-042,
+liberar o desplegar por inferencia.

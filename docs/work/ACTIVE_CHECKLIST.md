@@ -1,45 +1,37 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-040 final closure
+Milestone / Functional Goal: Pricing Catalog — transition after PBI-040
 Sprint: SPRINT-03 — Price List Foundation
-Current PBI: PBI-040 — Owner Accepted; Functional Freeze
-Status: Preview SPA routing remediation in progress
-WIP: 1/1 — PBI-041 remains Ready, not selected or started
-Progress: 7 / 9 closure blocks complete
-Current: Remediate the production SPA allowlist that returned 404 for PBI-040 routes in Preview
-Next: Verify and merge the routing correction, redeploy exact main, then complete Preview validation
+Current PBI: NONE
+Status: PBI-040 Done candidate; documentary closure PR and exact-main CI pending
+WIP: 0/1 — PBI-041 remains Ready, not selected or started
+Progress: 0 / 0 active implementation blocks
+Current: Complete the governed documentary closure of PBI-040
+Next: Await an explicit Owner selection and implementation authorization; do not start PBI-041
 Blocked: None
 Last updated: 2026-09-13 MST
 
-## Closure blocks
+## Current checkpoint
 
-- [x] Reconcile branch, baseline, PBI-043 ancestry and PBI-041 documentation-only boundary
-- [x] Record explicit Owner Acceptance and Functional Freeze
-- [x] Execute formal real-browser UI verification and remediate permitted findings
-- [x] Run authoritative governed full verification without critical skips
-- [x] Complete independent high-risk review with no open Critical/High/Medium findings
-- [x] Publish PR and obtain exact-head CI run-1/run-2/comparison PASS
-- [x] Merge the accepted feature candidate and verify its exact-main CI
-- [~] Remediate Preview migration chronology and bounded SPA routing, then validate Preview without touching Production
-- [ ] Reconcile closure authorities, archive checklist and remove absorbed branches
+- [x] PBI-040 Owner Acceptance recorded.
+- [x] PBI-040 implementation, remediations, exact-main CI and Preview validation completed.
+- [x] Historical PBI-040 checklist archived.
+- [ ] Documentary closure PR merged and exact-main CI GREEN.
 
-## Functional freeze
+## Execution boundary
 
-- PBI-040 may receive only corrections, hardening, accessibility, regression,
-  security, consistency, performance, review findings and closure evidence.
-- PBI-041 is documentation/readiness only: no Composer, SupplierSource,
+- No PBI is selected or in progress.
+- PBI-041 is `Ready — implementation not authorized`; readiness does not
+  select it, create its feature branch or start its implementation.
+- No Bulk Catalog Composer, SupplierSource,
   SupplierCatalogVersion, SupplierListing, batch engine, migration, endpoint,
-  UI or job implementation.
-- Production, Inventory, Procurement, Caja, Repair Concepts and all subsequent
-  PBIs remain outside this goal.
+  UI or job may begin without a separate Owner authorization.
+- Production, PBI-042, Inventory, Procurement, Caja, Repair Concepts, Pedidos
+  and Solicitudes de clientes remain outside the current authority.
 
-## Owner decision
+## Closure semantics
 
-Owner Acceptance was explicitly granted on 2026-09-13 for the material
-PBI-040 surface, including individual create/edit, Catalog governance,
-identifiers, pricing/cost protection, pending reconciliation, safe lifecycle and
-canonical merge. This acceptance does not make the PBI Done before the remaining
-technical, integration and Preview gates pass.
-
-The completed PBI-043 and PBI-039 checklists remain preserved in Git history and
-`docs/work/history/`.
+PBI-040 is a `Done candidate` on this branch. The authorized merge of the
+documentary closure PR and the GREEN exact-main CI on its merge SHA make that
+state effective according to the canonical workflow. Until another PBI is
+explicitly selected, `Current PBI` remains `NONE` and WIP remains `0/1`.

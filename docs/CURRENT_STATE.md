@@ -2,25 +2,37 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-043 `Done`; PBI-040 está `Owner Accepted`, en Functional
-  Freeze y listo para Final Verification. PBI-041 permanece
-  `Ready — implementation not authorized`.
-- **Baseline Git verificada:** `main == origin/main` en
-  `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
-  PBI-040.
+- **Estado:** PBI-040 `Done candidate` después de Owner Acceptance, integración
+  y Preview PASS. PBI-041 permanece `Ready — implementation not authorized`.
+- **Baseline Git verificada:** `main == origin/main` funcional en
+  `09e14c89892f5770977c5028a899714b7a30d6d5`.
 - **CI exacta de baseline:**
-  [`34732201476`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34732201476),
-  `SUCCESS` sobre `5be5cd6` con run-1, run-2 y comparison PASS.
+  [`34809054770`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34809054770),
+  `SUCCESS` sobre `09e14c8` con run-1, run-2 y comparison PASS.
 - **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
-- **PBI actual:** [PBI-040](backlog/pbis/PBI-040.md) — `Owner Accepted — Ready
-  for Final Verification`.
-- **WIP:** `1/1` en `feature/pbi-040-catalog-pricing-core`.
-- **PBI-040:** el WIP congelado `68843ba` fue preservado y reconciliado por
-  merge explícito `28320b3` con `main` `5be5cd6`; no se añadió funcionalidad.
-- **Preview:** `aab27d9` desplegado y validado; concurrencia de Sessions PASS.
+- **PBI actual:** `NONE`.
+- **WIP:** `0/1`; PBI-041 no está seleccionado ni iniciado.
+- **PBI-040:** PR #49/#50/#51 integradas; Preview validado sobre `09e14c8`.
+- **Preview:** `09e14c8` desplegado, clean, health y PBI-040 autenticado PASS.
 - **Production:** no desplegada ni autorizada.
 
 ## Resumen ejecutivo
+
+PBI-040 quedó Owner Accepted el 2026-09-13. PR #49 integró Catalog/Pricing;
+PR #50 corrigió de forma gobernada la cronología de cinco migraciones todavía
+no aplicadas y PR #51 corrigió el allowlist SPA de las rutas ya aceptadas. El
+`main` funcional final `09e14c8` pasó CI exacta `34809054770` y fue desplegado
+en Preview. `/`, `/livez`, `/readyz`, provenance, rutas directas, autenticación,
+Lista de precios, alta/edición, filtros, costos, override Branch, Catalog
+Administration, pending reconciliation, safe lifecycle, canonical merge y
+Repair Detail quedaron materialmente verificados. El Administrador tiene sólo
+las seis capacidades PBI-040 autorizadas; las dos de importación PBI-041 están
+desactivadas. Production no cambió.
+
+Este estado es `Done candidate` hasta que el PR documental de cierre se fusione
+y su exact-main CI quede GREEN. Ese hecho materializa `Done` por el workflow;
+`Released` permanece `NO`. No existe PBI actual y PBI-041 sigue Ready, no
+seleccionado, no autorizado y no iniciado.
 
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
@@ -167,6 +179,8 @@ el mismo combobox. Esto no constituye Owner Acceptance.
   con autorización contextual server-side.
 - PBI-043 permite Sessions concurrentes por Station en `main` y Preview.
 - Customer mínimo, New Repair y Repair Detail PBI-039 integrados y validados.
+- Catalog/Pricing PBI-040 integrado y validado en Preview; importación masiva
+  permanece fuera del runtime.
 - Auditoría de negocio acotada conserva Tenant, Branch, Station, User,
   SessionId y correlation en los writes cubiertos.
 
@@ -189,16 +203,16 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint | SPRINT-03 — Active |
-| Current PBI | PBI-040 — Owner Accepted; Final Verification |
-| WIP | 1/1 |
-| PBI-040 | Functional Freeze; cierre técnico, integración y Preview autorizados con gates |
+| Current PBI | NONE |
+| WIP | 0/1 |
+| PBI-040 | Done candidate; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
 | PBI-041 | Ready documentalmente; Candidate no seleccionado, no iniciado ni autorizado |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
-| Preview | `aab27d9` PASS |
+| Preview | `09e14c8` PASS |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Completar Final Verification, revisión independiente, integración y validación
-Preview de PBI-040 conforme al Master Goal de cierre. PBI-041 permanece Ready,
-no seleccionado ni autorizado; no iniciar otro PBI ni desplegar Production.
+Fusionar el cierre documental y requerir CI exacta GREEN sobre su merge SHA.
+Después PBI-040 será `Done` efectivo. PBI-041 permanece Ready, no seleccionado
+ni autorizado; no iniciar otro PBI ni desplegar Production.

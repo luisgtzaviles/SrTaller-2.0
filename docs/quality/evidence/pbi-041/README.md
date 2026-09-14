@@ -11,5 +11,6 @@ design/readiness evidence only; it contains no implementation or acceptance.
 - [Price List Architecture](../../../architecture/PRICE_LIST_ARCHITECTURE.md)
 - [Bulk Composer Discovery](../../../domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
 
-PBI-040 remains the current WIP in Owner Review. Advanced Supplier
-Reconciliation remains a deferred outcome without PBI ID or readiness.
+PBI-040 is a `Done candidate`; there is no current WIP. PBI-041 remains Ready,
+not selected and not started. Advanced Supplier Reconciliation remains a
+deferred outcome without PBI ID or readiness.

@@ -2,15 +2,16 @@
 
 ## Checkpoint y autoridad
 
-- **Checkpoint:** `Owner Accepted — Functional Freeze — Ready for Final
-  Verification`; todavía no equivale a `Done`.
-- **Branch:** `feature/pbi-040-catalog-pricing-core`.
+- **Checkpoint:** `Done candidate` después de Owner Acceptance, integración,
+  exact-main CI y Preview PASS; el cierre documental materializa `Done`.
+- **Branch de cierre:** `ops/pbi-040-roadmap-advance`; la rama funcional ya fue
+  integrada por PR #49.
 - **Baseline histórica de implementación:**
   `40684d7554cdf02551f941e5e3f0beabbe563125` con CI de `main`
   `34623060504` SUCCESS.
-- **Baseline vigente para reanudación:** `main`
-  `5be5cd60acb0865da57aff76740a1330896b1cd1`, CI exacta
-  `34732201476` SUCCESS y PBI-043 `Done`.
+- **Baseline funcional integrada:** `main`
+  `09e14c89892f5770977c5028a899714b7a30d6d5`, CI exacta
+  `34809054770` SUCCESS y Preview PASS.
 - **Owner Acceptance:** explícita el 2026-09-13 para el alcance funcional de
   PBI-040. Bulk Composer/import permanece en PBI-041 y no forma parte de esta
   aceptación.
@@ -707,3 +708,90 @@ zero critical skips and p95 `7.06 ms` for 10,000 items. The compiled UI smoke
 proved `/listas/precios` and `/configuracion/catalogos?module=price-list` both
 return the identical no-store SPA entrypoint, while `/api/unknown` and an
 unknown page remain 404. The accepted Vite chunk warning remains visible.
+
+## Final integration chain
+
+- Feature PR [#49](https://github.com/luisgtzaviles/SrTaller-2.0/pull/49)
+  integrated exact head `b035a61719a13e28bc9d3835549b9cb7067883ed` as
+  `91bbfabe55069c4c0f94d54d8a8fe1b4541bb357`. Candidate CI
+  `34801674770` and exact-main CI `34802433615` passed run-1, run-2 and
+  comparison.
+- Migration chronology PR [#50](https://github.com/luisgtzaviles/SrTaller-2.0/pull/50)
+  integrated `40bbed50e56f4cb07e4cbe01867bb13f50f86f8f` as
+  `a3cd61198a466aef8bef1ddc1c46c9b883d1cf35`. Candidate CI
+  `34805632530` and exact-main CI `34806294225` passed both legs and comparison.
+- Bounded SPA routing PR [#51](https://github.com/luisgtzaviles/SrTaller-2.0/pull/51)
+  integrated exact head `68316b014965760a0c476d2e1ebd2c49fc8c2ca7` as
+  `09e14c89892f5770977c5028a899714b7a30d6d5`. Full Verification on the
+  exact head passed `13/13`: 841 base tests, 821 PASS, 20 governed PostgreSQL
+  skips, composite `17/17`, PBI-039 `2/2`, PBI-040 `1/1`, 62 migrations,
+  zero critical skips, p95 `6.35 ms`, compiled route smoke and cleanup PASS.
+  Candidate fingerprint:
+  `585763011d518ebd0c34dc60e9deb55789d4f6a68aad8f5777489b8f55f3b758`.
+  PR CI `34808427617` and exact-main CI `34809054770` passed run-1, run-2 and
+  comparison. Independent review reported no Critical/High/Medium finding.
+
+## Authenticated Preview closure validation
+
+Preview was manually deployed from exact integrated `main`
+`09e14c89892f5770977c5028a899714b7a30d6d5`; Production was not touched.
+
+- `/` returns `200` with `Cache-Control: no-store` and backend headers for the
+  exact clean SHA; `/livez` and `/readyz` return `200`; frontend provenance
+  reports the same clean SHA.
+- Direct `/listas/precios` and
+  `/configuracion/catalogos?module=price-list` navigation/reload return the
+  SPA; `/api/unknown` and an unknown route remain `404`.
+- The existing Administrator role was granted exactly the approved PBI-040
+  capabilities: `price_list.read`, `catalog.manage`,
+  `catalog.prices.manage`, `catalog.branch_prices.manage`,
+  `catalog.reference_cost.read` and `catalog.reference_cost.manage`.
+  `catalog.import.prepare` and `catalog.import.publish` remain disabled.
+- Role revision invalidated the requesting session as designed; reauthentication
+  restored only the requesting browser session. PBI-043's previously accepted
+  Preview Owner+QA concurrency proof remains applicable, and the exact-main CI
+  re-executed its preservation contracts. No Access code changed in PR #50/#51.
+- A governed synthetic item was created with both identifiers blank and received
+  server-side SKU `REF-000001` and barcode `SR00000001`. Reload and exact search
+  by each identifier recovered it; edit preserved both identifiers.
+- Effective price was `$1,399.00` Base Tenant; a `$1,499.00` Branch override
+  was applied and revoked, restoring the base price. Authorized reference cost
+  `$480.00` appeared only with the personal preference enabled and disappeared
+  when disabled.
+- The item moved from pending Category/Brand captures to canonical
+  `Pantallas Preview QA` and `Apple Preview QA`. Pending queues returned to
+  zero with actor/usage preserved.
+- A second unused Category exposed `Eliminar`, while the used Category exposed
+  only safe lifecycle actions. It was merged into `Pantallas Preview QA`; the
+  source stopped appearing as an ordinary row, survivor version/usage advanced,
+  and the zero-use source remained traceable. The survivor was then
+  deactivated, observed under Inactivos and reactivated, preserving one linked
+  article.
+- Price List offered only the applicable Category/Brand after selecting
+  Refacción. Refacción + Category + Brand + name search returned the item;
+  Producto produced a legitimate zero-results state. `Insumo` remained absent
+  from the commercial Type filter.
+- The accepted PBI-039 Repair `SR-2026-1000` retained header, Recepción,
+  Historial, Conceptos placeholder and Evidencias. The shell was authenticated,
+  Station recognized and no material visible runtime/network failure occurred.
+
+The reversible Preview fixtures intentionally retained for audit are the item
+`Pantalla Preview QA 20260914 editada`, Category `Pantallas Preview QA` and
+Brand `Apple Preview QA`. The temporary alternate Category is a merged source,
+not an ordinary active canon. These are synthetic Preview data, not Owner or
+Production records.
+
+## PBI-041 material boundary
+
+PBI-041 remains `Ready — implementation not authorized`. The repository has
+future capability identifiers and readiness documents, but no Bulk Catalog
+Composer, `SupplierSource`, `SupplierCatalogVersion`, `SupplierListing`,
+`CatalogUpdateBatch`, table, migration, endpoint, job or batch runtime. Both
+import capabilities remain disabled for the Preview Administrator role.
+
+## Closure status
+
+PBI-040 is a `Done candidate`: Owner Acceptance, functional integration,
+exact-main CI and Preview validation are complete. The documentary closure PR
+plus GREEN exact-main CI materialize `Done` under the canonical workflow.
+`Released` remains `NO`; Production was not authorized.

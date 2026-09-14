@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado; EPIC-015 tiene PBI-040 en Owner Review y PBI-041
+**Estado:** Reconciliado; EPIC-015 tiene PBI-040 `Done candidate` y PBI-041
 Candidate/Ready sin selección ni autorización de implementación. Ningún epic
 autoriza aceptación o integración por sí solo.
 **Criterio común:** sólo se descompone cuando el problema, actores, límites y dependencias son suficientemente conocidos.
@@ -27,7 +27,7 @@ autoriza aceptación o integración por sí solo.
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
 - **Estado:** PBI-023 `Closed`; Sprint 01 y SPRINT-02 `Closed`; PBI-043 `Done`.
-  SPRINT-03 está activo para EPIC-015, con PBI-040 en Owner Review y WIP `1/1`.
+  SPRINT-03 está activo para EPIC-015, sin Current PBI y WIP `0/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
@@ -211,8 +211,8 @@ autoriza aceptación o integración por sí solo.
   historia y apply masivo ambiguo/parcial.
 - **Exclusiones:** Inventory, Procurement, Repair Concepts, Quote/Sales,
   Payments/Caja, Pedidos, Solicitudes, multi-currency/FX e impuestos.
-- **Estado:** Architecture accepted; PBI-040 Owner Review y aceptación
-  pendiente; PBI-041 Ready documentalmente, no seleccionado ni iniciado;
+- **Estado:** Architecture accepted; PBI-040 `Done candidate`, Owner Accepted,
+  integrado y Preview PASS; PBI-041 Ready documentalmente, no seleccionado ni iniciado;
   PBI-042 Planned/Unassigned. Advanced Supplier Reconciliation permanece
   diferido sin PBI ID/readiness.
 - **Descomposición:** [PBI-040](pbis/PBI-040.md),
