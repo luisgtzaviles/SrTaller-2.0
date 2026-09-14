@@ -5,12 +5,12 @@
 - **Estado:** Discovery completo; decisiones Owner `OD-BI-001..010` cerradas y
   promovidas a arquitectura/readiness.
 - **Fecha de corte:** 2026-09-13.
-- **Contexto:** PBI-040 permanece en `Owner Review`; este documento no concede
-  Owner Acceptance ni cambia su estado.
+- **Contexto:** PBI-040 es `Done candidate`; este documento no concedió su
+  Owner Acceptance ni inició PBI-041.
 - **Naturaleza:** auditoría y diseño de dominio. No materializa migraciones,
   endpoints, UI, jobs ni importaciones.
 - **Siguiente PBI:** PBI-041 es `Ready — implementation not authorized`; no es
-  el PBI actual mientras PBI-040 permanezca en Owner Review.
+  el PBI actual y no existe selección operacional vigente.
 - **Autoridad vigente:** decisiones `PLD-001` a `PLD-008` y `PLD-018`,
   [Arquitectura de Catálogo y Lista de precios](../architecture/PRICE_LIST_ARCHITECTURE.md),
   DEC-005, DEC-049 y ADR-004/012/013.
@@ -1278,8 +1278,8 @@ La readiness se considera satisfecha únicamente por el expediente canónico
 [PBI-041 Definition of Ready](../quality/evidence/pbi-041/DEFINITION_OF_READY.md),
 que demuestra lo siguiente:
 
-- los contratos equivalentes de PBI-040 están materializados en la rama actual,
-  aunque su Owner Acceptance/closure continúe pendiente y siga siendo el WIP;
+- los contratos de PBI-040 están materializados en `main`; su cierre satisface
+  la dependencia técnica pero no selecciona ni inicia PBI-041;
 - OD-BI-001..010 están resueltas y promovidas sin contradicción;
 - arquitectura y backlog reemplacen “template/upload first” por “Composer first
   + adapters futuros” sin crear dos engines;
@@ -1303,7 +1303,7 @@ que demuestra lo siguiente:
 - la matriz pruebe que Supplier Listing nunca se vuelve identidad de Inventory,
   Caja o Repairs;
 - estimación `XL` esté acordada para el outcome inicial. La selección e
-  implementación requieren autoridad Owner posterior; PBI-040 Owner Review no
+  implementación requieren autoridad Owner posterior; el cierre de PBI-040 no
   las inicia automáticamente.
 
 ## Fuentes y trazabilidad

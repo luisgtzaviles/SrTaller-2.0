@@ -579,7 +579,8 @@ Se elige **Epic + PBIs verticales**, no un PBI único: core y bulk import tienen
 riesgos, pruebas y checkpoints Owner distintos. Tampoco se fragmenta en PBIs de
 tablas/backend/UI porque eso dejaría capas sin resultado operativo.
 
-1. **PBI-040 — Catalog & Pricing Core + Fast Price Lookup** — `Owner Review`.
+1. **PBI-040 — Catalog & Pricing Core + Fast Price Lookup** — `Done candidate`;
+   Owner Accepted, integrado y Preview PASS; `Released: NO`.
    Alta/edición individual sin imagen, identidad, clasificación, SKU/barcode,
    moneda Tenant, base/override/costo, capacidades, preferencia personal,
    historial, navegación `Listas` y búsqueda rápida.
@@ -614,7 +615,7 @@ tablas/backend/UI porque eso dejaría capas sin resultado operativo.
 9. **Diferido:** imágenes, perfiles, FX/impuestos, auto-sync, inventario,
    compras, conceptos, Caja y futuros `Listas`.
 10. **Readiness:** PBI-041 está Ready documentalmente, no seleccionado ni
-    autorizado; PBI-040 continúa siendo el WIP en Owner Review.
+    autorizado; PBI-040 es `Done candidate` y no existe Current PBI.
 
 ## Criterios de reconsideración
 

@@ -3,8 +3,8 @@
 ## Estado del documento
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
-- **Baseline Git local:** `main`/`origin/main` observados en
-  `5be5cd60acb0865da57aff76740a1330896b1cd1`; CI exacta `34732201476`
+- **Baseline Git local:** `main`/`origin/main` funcional observados en
+  `09e14c89892f5770977c5028a899714b7a30d6d5`; CI exacta `34809054770`
   GREEN verificada.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.
@@ -36,8 +36,8 @@ flowchart TD
     RETRO --> P39[PBI-039 Customer Minimum + New Repair<br/>Functional Slice Frozen / Owner Accepted]
     P39 --> POLISH[Formal UI Verification<br/>PASS / PBI-039 Done]
     POLISH --> P43
-    P43 --> S3[SPRINT-03 Price List Foundation<br/>Active / WIP=1/1]
-    S3 --> P40[PBI-040 Catalog + Pricing Core<br/>Owner Review]
+    P43 --> S3[SPRINT-03 Price List Foundation<br/>Active / WIP=0/1]
+    S3 --> P40[PBI-040 Catalog + Pricing Core<br/>Done candidate]
     P40 --> P41[PBI-041 Composer + Supplier Intake<br/>Ready / not selected]
     P40 --> QUOTE[Quote / Authorization]
     QUOTE --> MONEY[Payments / Cash]
@@ -73,9 +73,9 @@ flowchart TD
   ADR-014 y está `Done`.
 - PBI-040 depende de contexto/identidad/access/audit/persistencia/UI ya
   disponibles y materializa `catalog` sólo con el slice vertical completo.
-- PBI-041 depende de PBI-040; su arquitectura/DoR están Ready, pero selección e
-  implementación esperan Owner Acceptance/closure de PBI-040 y autorización
-  explícita. Bulk no bloquea el primer valor visible.
+- PBI-041 depende de PBI-040; esa dependencia material está satisfecha, pero su
+  selección e implementación esperan autorización Owner explícita. Bulk no
+  bloquea el primer valor visible.
 - Inventory, Procurement, Repair Concepts, Caja, Pedidos y Solicitudes no son
   dependencias de PBI-040 ni reciben ownership por consumir contratos futuros.
 
@@ -85,9 +85,8 @@ flowchart TD
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - Sprint 02: `Closed`; PBI-039/PBI-043 están `Done`; WIP=`0/1`.
-- Sprint 03: `Active`; PBI-040 Owner Review, PBI-041 Candidate/Ready no
-  seleccionado, WIP=`1/1`;
-  falta Owner Acceptance.
+- Sprint 03: `Active`; PBI-040 `Done candidate`, PBI-041 Candidate/Ready no
+  seleccionado, WIP=`0/1`; no existe Current PBI.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y

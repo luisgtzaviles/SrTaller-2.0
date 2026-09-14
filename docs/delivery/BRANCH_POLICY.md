@@ -56,8 +56,10 @@
 La rama `feature/pbi-040-catalog-pricing-core` fue una excepción de transición:
 su WIP Price List permaneció congelado durante PBI-043. Después del cierre de
 PBI-043 se reconcilió por merge explícito con `main` `5be5cd6`, preservando el
-HEAD histórico `68843ba` como padre y sin reescribir el historial. Continúa
-siendo la única rama de PBI-040 y no está autorizada para push/merge/deploy.
+HEAD histórico `68843ba` como padre y sin reescribir el historial. PR #49 la
+integró; PR #50/#51 integraron remediaciones acotadas. Preview validó el `main`
+funcional `09e14c8`, por lo que las tres ramas absorbidas deben eliminarse al
+completar el cierre documental y su exact-main CI. Ninguna se reutiliza.
 
 Git branches y deployment environments son ejes distintos. Dokploy representa
 ambientes; no se crean ramas permanentes `preview`, `staging` o `production`.

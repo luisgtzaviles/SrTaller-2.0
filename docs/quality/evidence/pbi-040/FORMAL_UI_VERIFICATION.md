@@ -96,3 +96,18 @@ Tenant/Branch isolation, append-only history, concurrency and database
 constraints remain material verification gates and are not inferred from this
 UI run. Preview validation is also a later post-merge gate; no Preview or
 Production state was changed during this campaign.
+
+## Post-merge Preview verification
+
+After PR #49/#50/#51 and exact-main CI `34809054770`, Preview was deployed and
+reported exact clean revision `09e14c89892f5770977c5028a899714b7a30d6d5`.
+An authenticated Owner browser revalidated name/SKU/barcode search, cascading
+Type/Category/Brand filters, legitimate zero results, cost hidden/shown,
+individual create/edit/reload, base/Branch pricing, pending reconciliation,
+canonical merge, safe delete eligibility, deactivate/reactivate and Repair
+Detail preservation. No Production environment was changed.
+
+Preview retained one governed synthetic article plus its canonical Category and
+Brand as documented in `IMPLEMENTATION_EVIDENCE.md`. The alternate zero-use
+Category was merged into the survivor and no longer appears as an ordinary
+canonical row. PBI-041 import capabilities remained disabled.

@@ -2,18 +2,18 @@
 
 ## Estado
 
-- **Sprint:** Active — PBI-040 Owner Accepted y en Final Verification.
-- **WIP:** 1/1.
-- **PBI actual:** PBI-040 Owner Accepted — Functional Freeze.
+- **Sprint:** Active — PBI-040 Done candidate; transición sin PBI actual.
+- **WIP:** 0/1.
+- **PBI actual:** NONE.
 
 | Orden | PBI | Clasificación | Estado | Gate |
 |---:|---|---|---|---|
-| 1 | [PBI-040](../../backlog/pbis/PBI-040.md) | Committed | Owner Accepted; Functional Freeze | Final Verification, review, merge y Preview |
-| 2 | [PBI-041](../../backlog/pbis/PBI-041.md) | Candidate / Ready | Ready — implementation not authorized | PBI-040 Owner Accepted/closed + selección/autorización propias |
+| 1 | [PBI-040](../../backlog/pbis/PBI-040.md) | Committed | Done candidate; Released: NO | Cierre documental + exact-main CI |
+| 2 | [PBI-041](../../backlog/pbis/PBI-041.md) | Candidate / Ready | Ready — implementation not authorized | Selección/autorización Owner propias |
 
 PBI-042 permanece fuera de Sprint. La readiness documental de PBI-041 no lo
-incorpora al commitment: no se inicia mientras WIP=1 ni sin autoridad Owner.
+incorpora al commitment: no se inicia sin selección y autoridad Owner.
 
 ## Próxima revisión
 
-Al alcanzar Owner Review de PBI-040 o cambiar su estado/autoridad.
+Al fusionar el cierre documental de PBI-040 o recibir una selección Owner nueva.
