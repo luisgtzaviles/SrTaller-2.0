@@ -46,7 +46,7 @@ PostgreSQL material, evidence, determinism comparison ni cleanup. No hubo
 producto, PBI-041, Preview, Production o deploy.
 
 PBI-041 fue seleccionado después como único WIP y autorizado sólo hasta Owner
-Review local. El candidato ejecutable `b49a52f` materializa Source/Version/
+Review local. El candidato funcional `c394126` (core `b49a52f`) materializa Source/Version/
 Listing, draft durable, matching exacto y memoria corregible, Batch/decisiones,
 publicación PostgreSQL atómica e idempotente, retención raw y los modos Alta
 completa/Actualización compacta del Composer. La suite focalizada quedó verde:
@@ -228,7 +228,7 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Current PBI | PBI-041 — Owner Review ready; Acceptance pending |
 | WIP | 1/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Candidato local `b49a52f`; Owner Review ready; Acceptance pending |
+| PBI-041 | Candidato local `c394126`; Owner Review ready; Acceptance pending |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |

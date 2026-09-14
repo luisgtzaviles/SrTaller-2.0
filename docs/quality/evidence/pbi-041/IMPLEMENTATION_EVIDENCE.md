@@ -4,7 +4,8 @@
 
 - **Estado:** local Owner Review ready; Owner Acceptance pending.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
-- **Candidato ejecutable:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
+- **Candidato funcional:** `c3941268a64d25df9719b28c6bbd88aa5c313ac7`.
+- **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
 - **Fecha:** 2026-09-14 MST.
 - **Delivery:** sin push, PR, merge, Preview, Production ni deploy.
@@ -96,8 +97,9 @@ principal mayor a 500 kB; no hubo error de compilación ni cambio de gate.
 
 ## Performance y límites
 
-Veinte repeticiones completas sobre el candidato ejecutable terminaron 20/20
-PASS. El p95 por nearest-rank fue:
+Veinte repeticiones completas sobre el core `b49a52f` terminaron 20/20 PASS. El
+fix final `c394126` sólo contiene CSS y conserva exactamente el backend medido.
+El p95 por nearest-rank fue:
 
 | Caso | Resultado | Budget |
 |---|---:|---:|
@@ -146,6 +148,9 @@ El clasificador WF-006 evaluó el delta base→candidato como
   suficiente; el resultado final fue 1.9 s sin retirar assertions.
 - DEC-005 detectó la segunda migración no registrada. Se actualizó su política y
   la suite completa de arquitectura focalizada volvió a PASS.
+- La inspección Owner final detectó overflow horizontal en Reconciliación a
+  1280 px. El fix CSS `c394126` contiene texto largo, conserva visibles las
+  acciones y volvió a pasar build y 11/11 contratos UI/bulk focalizados.
 
 ## Frontera de aceptación
 

@@ -237,7 +237,7 @@ integrado por PR #49, remediado por PR #50/#51 y validado en Preview sobre
 `09e14c8`; CI exacta `34809054770` quedó GREEN. El cierre PR #52 se integró
 como `a060494` y exact-main `34814070839` quedó GREEN: PBI-040 está `Done` y
 `Released: NO`. SPRINT-03 permanece `Active`, WIP `1/1`, con PBI-041 como
-Current PBI. Su candidato local `b49a52f` está listo para Owner Review;
+Current PBI. Su candidato local `c394126` está listo para Owner Review;
 Acceptance e integración siguen pendientes.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
