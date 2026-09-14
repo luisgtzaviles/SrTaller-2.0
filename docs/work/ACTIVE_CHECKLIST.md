@@ -3,11 +3,11 @@
 Milestone / Functional Goal: PBI-040 final closure
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Accepted; Functional Freeze
-Status: Preview migration-order remediation in progress
+Status: Preview SPA routing remediation in progress
 WIP: 1/1 — PBI-041 remains Ready, not selected or started
 Progress: 7 / 9 closure blocks complete
-Current: Validate and publish the fail-closed migration-order remediation found in Preview
-Next: Merge the remediation, reverify exact main, then migrate and validate Preview
+Current: Remediate the production SPA allowlist that returned 404 for PBI-040 routes in Preview
+Next: Verify and merge the routing correction, redeploy exact main, then complete Preview validation
 Blocked: None
 Last updated: 2026-09-13 MST
 
@@ -20,7 +20,7 @@ Last updated: 2026-09-13 MST
 - [x] Complete independent high-risk review with no open Critical/High/Medium findings
 - [x] Publish PR and obtain exact-head CI run-1/run-2/comparison PASS
 - [x] Merge the accepted feature candidate and verify its exact-main CI
-- [~] Remediate the Preview-only migration chronology conflict, then deploy and validate Preview without touching Production
+- [~] Remediate Preview migration chronology and bounded SPA routing, then validate Preview without touching Production
 - [ ] Reconcile closure authorities, archive checklist and remove absorbed branches
 
 ## Functional freeze

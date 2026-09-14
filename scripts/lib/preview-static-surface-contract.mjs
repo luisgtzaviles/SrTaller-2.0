@@ -1,7 +1,7 @@
 export const authorizedPreviewStaticSurfacePath = 'src/preview-static.ts';
 
 const requiredFragments = Object.freeze([
-  "const previewSpaExactPaths = new Set([\n  '/',\n  '/reparaciones',\n  '/reparaciones/nueva',\n]);",
+  "const previewSpaExactPaths = new Set([\n  '/',\n  '/reparaciones',\n  '/reparaciones/nueva',\n  '/listas/precios',\n  '/configuracion',\n  '/configuracion/sucursal',\n  '/configuracion/roles',\n  '/configuracion/usuarios',\n  '/configuracion/catalogos/nueva-reparacion',\n  '/configuracion/catalogos',\n]);",
   'const previewRepairDetailPath = /^\\/reparaciones\\/[^/]+$/u;',
   "const previewCatalogPath = '/__internal/ui-catalog';",
   '|| (catalogEnabled && path === previewCatalogPath);',

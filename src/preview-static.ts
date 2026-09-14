@@ -22,6 +22,13 @@ const previewSpaExactPaths = new Set([
   '/',
   '/reparaciones',
   '/reparaciones/nueva',
+  '/listas/precios',
+  '/configuracion',
+  '/configuracion/sucursal',
+  '/configuracion/roles',
+  '/configuracion/usuarios',
+  '/configuracion/catalogos/nueva-reparacion',
+  '/configuracion/catalogos',
 ]);
 const previewRepairDetailPath = /^\/reparaciones\/[^/]+$/u;
 const previewCatalogPath = '/__internal/ui-catalog';

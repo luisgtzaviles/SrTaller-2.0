@@ -22,6 +22,14 @@ for (const [name, mutation] of [
     authorizedSource.replace("'/reparaciones/nueva',", "'/reparaciones/nueva',\n  '/admin',"),
   ],
   [
+    'missing Price List route',
+    authorizedSource.replace("  '/listas/precios',\n", ''),
+  ],
+  [
+    'missing Catalog Administration route',
+    authorizedSource.replace("  '/configuracion/catalogos',\n", ''),
+  ],
+  [
     'broadened detail matcher',
     authorizedSource.replace(
       'const previewRepairDetailPath = /^\\/reparaciones\\/[^/]+$/u;',
