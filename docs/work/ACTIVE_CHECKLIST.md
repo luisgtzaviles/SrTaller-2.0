@@ -5,9 +5,9 @@ Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Accepted; Functional Freeze
 Status: Final Verification in progress
 WIP: 1/1 — PBI-041 remains Ready, not selected or started
-Progress: 2 / 8 closure blocks complete
-Current: Formal UI Verification of the frozen candidate
-Next: High-risk review and authoritative full verification
+Progress: 3 / 8 closure blocks complete
+Current: High-risk review and authoritative full verification
+Next: Publish the verified candidate and obtain exact-head CI
 Blocked: None
 Last updated: 2026-09-13 MST
 
@@ -15,8 +15,8 @@ Last updated: 2026-09-13 MST
 
 - [x] Reconcile branch, baseline, PBI-043 ancestry and PBI-041 documentation-only boundary
 - [x] Record explicit Owner Acceptance and Functional Freeze
-- [~] Execute formal real-browser UI verification and remediate permitted findings
-- [ ] Run authoritative governed full verification without critical skips
+- [x] Execute formal real-browser UI verification and remediate permitted findings
+- [~] Run authoritative governed full verification without critical skips
 - [ ] Complete independent high-risk review with no open Critical/High/Medium findings
 - [ ] Publish PR and obtain exact-head CI run-1/run-2/comparison PASS
 - [ ] Merge, verify exact main and deploy/validate Preview without touching Production

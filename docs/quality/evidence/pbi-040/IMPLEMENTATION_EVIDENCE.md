@@ -598,3 +598,15 @@ UI y contratos), `229fafb` (estado canónico de Owner Review) y `0720813`
 (selección/seed para runtime). En ese checkpoint no hubo push, PR, merge a
 `main`, deploy ni Owner Acceptance; la aceptación posterior del 2026-09-13 se
 registra al inicio de este documento.
+
+## Formal UI Verification after Owner Acceptance
+
+The frozen candidate received a real-Chrome campaign on 2026-09-13 covering
+cascading filters, identifier search/generation/reload, create/edit, pending
+reference resolution, compatible canonical merge, safe delete, lifecycle,
+base/override inheritance, authorized cost preference, loading/error/empty
+states, responsive layouts, keyboard/focus behavior, shared Catalog UI, the
+five Repairs catalogs, New Repair and the canonical PBI-039 Repair Detail.
+The clean final page load reported no console warning or error. Detailed
+observations and the remaining reversible local fixture are recorded in
+[`FORMAL_UI_VERIFICATION.md`](FORMAL_UI_VERIFICATION.md).
