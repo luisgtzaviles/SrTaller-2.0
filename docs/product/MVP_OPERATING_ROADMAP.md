@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 activo con
-  PBI-040 `Done` y ningún PBI actual.
+  PBI-040 `Done` y PBI-041 listo para Owner Review local.
 - **Baseline Git observada:** Workflow Phase 1 integrado en `main` por
   `859825025cf1f9fa94a8b0ced5b91b95760e36a8`; CI exacta de `main`
   `34893081175`, `SUCCESS`.
@@ -14,11 +14,10 @@
   cierre documental exact-main PASS; `Done`, `Released: NO`.
 - **Sprint activo:** SPRINT-03 — Price List Foundation.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** `NONE`.
-- **Siguiente PBI candidato:** PBI-041 Ready, no seleccionado ni autorizado.
-- **Blocking gate:** ninguno para PBI-040. PBI-041 no está seleccionado ni
-  autorizado; Production no autorizada.
-- **WIP operacional:** `0/1`.
+- **PBI actual:** `PBI-041`.
+- **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
+- **Blocking gate:** Owner Review de PBI-041; Production no autorizada.
+- **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
 
@@ -98,12 +97,12 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Stage | MVP |
 | Phase | Pricing Catalog |
 | Sprint | SPRINT-03 |
-| Sprint status | Active — PBI-040 Done; WIP=0/1 |
-| Current PBI | NONE |
-| Next PBI candidate | PBI-041 Ready; not selected or authorized |
+| Sprint status | Active — PBI-041 Owner Review ready; WIP=1/1 |
+| Current PBI | PBI-041 |
+| Next PBI candidate | NONE; PBI-042 remains out of scope |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
 | PBI-040 status | Done — closure PR #52 / `a060494`; exact-main CI `34814070839` GREEN; Released NO |
-| Blocking gate | None for PBI-040; PBI-041 not selected or authorized |
+| Blocking gate | PBI-041 Owner decision; Acceptance pending |
 
 ## Fases aprobadas
 
@@ -150,8 +149,9 @@ Station; ASC-001–008 y ADR-014 seleccionan PBI-043 como remediación separada.
 PBI-043 cerró mediante PR #47/#48 y CI exacta `34732201476`. PBI-040 fue
 reconciliado desde ese nuevo `main`, aceptado por el Owner e integrado mediante
 PR #49/#50/#51. El SHA funcional `09e14c8`, su CI exacta `34809054770` y
-Preview están PASS. PBI-041 está Ready documentalmente pero no seleccionado ni
-iniciado y PBI-042 no está iniciado.
+Preview están PASS. En ese corte PBI-041 estaba Ready documentalmente pero aún
+no seleccionado; la autorización Owner posterior lo llevó al checkpoint local
+descrito en el estado vigente. PBI-042 no está iniciado.
 
 El cierre documental PBI-040 PR #52 se integró después como `a060494`; su
 exact-main CI `34814070839` quedó GREEN. PBI-040 es `Done`, `Released: NO`, sin
@@ -159,7 +159,8 @@ seleccionar ni iniciar PBI-041.
 
 Workflow Phase 1 se integró después por PR #53 como `8598250`. Su exact-main
 full CI `34893081175` quedó GREEN sin activar Option B ni reducir exact-main.
-Esto no selecciona ni inicia PBI-041.
+Ese merge de infraestructura no seleccionó PBI-041; su selección ocurrió
+después mediante autoridad Owner separada.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización
@@ -235,9 +236,9 @@ PBI-039 está `Done`: PR #45 mergeó el cierre como `40684d7` y CI exacta
 integrado por PR #49, remediado por PR #50/#51 y validado en Preview sobre
 `09e14c8`; CI exacta `34809054770` quedó GREEN. El cierre PR #52 se integró
 como `a060494` y exact-main `34814070839` quedó GREEN: PBI-040 está `Done` y
-`Released: NO`. SPRINT-03 permanece `Active`, WIP `0/1`, sin Current PBI.
-PBI-041 alcanzó Ready documentalmente como Candidate, sin selección ni
-autorización de implementación.
+`Released: NO`. SPRINT-03 permanece `Active`, WIP `1/1`, con PBI-041 como
+Current PBI. Su candidato local `b49a52f` está listo para Owner Review;
+Acceptance e integración siguen pendientes.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.
@@ -270,8 +271,7 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** selección explícita de PBI-041 o decisión de cierre de
-  SPRINT-03.
-- **Estado conservado:** PBI-040 `Done`, `Released: NO`, sin inferir inicio de
-  PBI-041 ni autorización de Production.
+- **Disparador:** decisión Owner sobre el checkpoint local de PBI-041.
+- **Estado conservado:** PBI-040 `Done`, `Released: NO`; PBI-041 sin Acceptance
+  ni autoridad de integración; Production no autorizada.
 - **Después:** no iniciar otro PBI automáticamente.

@@ -2,17 +2,16 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-040 `Done`, `Released: NO`. PBI-041 permanece
-  `Ready — implementation not authorized`.
+- **Estado:** PBI-041 `Owner Review ready`; Owner Acceptance pendiente.
+  PBI-040 permanece `Done`, `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
-  `859825025cf1f9fa94a8b0ced5b91b95760e36a8` antes de la reconciliación
-  documental de cierre.
-- **CI exacta de baseline:**
+  `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
+- **Última CI ejecutable exact-main registrada:**
   [`34893081175`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34893081175),
   `SUCCESS` sobre `8598250` con run-1, run-2 y comparison PASS.
 - **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
-- **PBI actual:** `NONE`.
-- **WIP:** `0/1`; PBI-041 no está seleccionado ni iniciado.
+- **PBI actual:** `PBI-041`.
+- **WIP:** `1/1`; Bulk Catalog Composer y versioned supplier intake.
 - **PBI-040:** PR #49/#50/#51 y cierre PR #52 integrados; `Done`.
 - **Preview:** `09e14c8` desplegado, clean, health y PBI-040 autenticado PASS.
 - **Production:** no desplegada ni autorizada.
@@ -34,8 +33,8 @@ desactivadas. Production no cambió.
 
 El cierre documental PR #52 quedó integrado como `a060494` y su exact-main CI
 `34814070839` pasó run-1, run-2 y comparison. Esto materializó `Done` para
-PBI-040; `Released` permanece `NO`. No existe PBI actual y PBI-041 sigue Ready,
-no seleccionado, no autorizado y no iniciado.
+PBI-040; `Released` permanece `NO`. Ése fue el corte previo a la posterior
+selección explícita de PBI-041.
 
 Workflow Phase 1 quedó Owner Accepted e integrado por PR #53. El candidato
 exacto `a0eb1f6` pasó full local, CI `34892262371` con dos legs y comparison, y
@@ -45,6 +44,18 @@ La primera medición verde bajó de la baseline 12.6 min wall / 24.6 job-minutes
 a 6.98 / 11.80, sin perder architecture, typecheck, build, broad tests,
 PostgreSQL material, evidence, determinism comparison ni cleanup. No hubo
 producto, PBI-041, Preview, Production o deploy.
+
+PBI-041 fue seleccionado después como único WIP y autorizado sólo hasta Owner
+Review local. El candidato ejecutable `b49a52f` materializa Source/Version/
+Listing, draft durable, matching exacto y memoria corregible, Batch/decisiones,
+publicación PostgreSQL atómica e idempotente, retención raw y los modos Alta
+completa/Actualización compacta del Composer. La suite focalizada quedó verde:
+build PASS, 91/91 contratos, PostgreSQL material 1/1 y 64 migraciones; 10,000
+filas quedaron dentro de budgets y 50,000 se rechazaron sin persistencia. En
+Chrome local se observaron 1280/768/640, light/dark, teclado, paste rectangular,
+virtualización, reload y comparación V1/V2. El clasificador shadow declaró
+`CROSS_MODULE_HIGH_RISK` y no omitió gates. No se ejecutó `verify:full`, conforme
+a la autoridad previa a Acceptance; no hubo push, PR, merge ni deploy.
 
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
@@ -171,11 +182,10 @@ similarity no publica automáticamente; preview no escribe producto y Branch
 overrides permanecen intactos. `OD-BI-001..010` están aprobadas y promovidas.
 El [documento de auditoría y diseño](domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
 separa SupplierSource/Version/Listing/Resolution/Memory de
-CatalogUpdateBatch/RowDecision. Arquitectura, persistence design, Threat Model,
-Test Strategy y Definition of Ready dejan PBI-041 `Ready — implementation not
-authorized`. Advanced Supplier Reconciliation queda diferido sin PBI ID,
-selección ni readiness. No se implementó producto, migración, endpoint, UI,
-job o cambio de base.
+CatalogUpdateBatch/RowDecision. Arquitectura, persistence design, Threat Model
+y Test Strategy dejaron PBI-041 Ready en aquel corte. La selección e
+implementación local posteriores quedan descritas arriba. Advanced Supplier
+Reconciliation sigue diferido sin PBI ID, selección ni readiness.
 
 El candidato funcional final es `0720813`. `verify:full` pasó 13/13 etapas:
 suite base 838 pruebas, 818 PASS y 20 skips PostgreSQL gobernados; composite
@@ -215,10 +225,10 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint | SPRINT-03 — Active |
-| Current PBI | NONE |
-| WIP | 0/1 |
+| Current PBI | PBI-041 — Owner Review ready; Acceptance pending |
+| WIP | 1/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Ready documentalmente; Candidate no seleccionado, no iniciado ni autorizado |
+| PBI-041 | Candidato local `b49a52f`; Owner Review ready; Acceptance pending |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |
@@ -226,5 +236,6 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 ## Próxima acción
 
-Esperar selección/autorización Owner. PBI-041 permanece Ready, no seleccionado
-ni autorizado; no iniciar otro PBI ni desplegar Production.
+Owner revisa el Composer local, Version 1/Version 2 y el Catalog resultante.
+Esperar decisión; no iniciar PBI-042 ni gates de integración, publicación,
+fusión o deploy sin autoridad explícita.

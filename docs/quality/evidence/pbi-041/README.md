@@ -1,8 +1,10 @@
-# PBI-041 — Readiness Evidence Index
+# PBI-041 — Evidence Index
 
-PBI-041 is `Ready — implementation not authorized`. This directory contains
-design/readiness evidence only; it contains no implementation or acceptance.
+PBI-041 is `Owner Review ready — Owner Acceptance pending`. This directory
+contains readiness and local implementation evidence. It does not grant
+acceptance, integration, deployment or release authority.
 
+- [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)
 - [Test Strategy](TEST_STRATEGY.md)
@@ -11,6 +13,6 @@ design/readiness evidence only; it contains no implementation or acceptance.
 - [Price List Architecture](../../../architecture/PRICE_LIST_ARCHITECTURE.md)
 - [Bulk Composer Discovery](../../../domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
 
-PBI-040 is a `Done candidate`; there is no current WIP. PBI-041 remains Ready,
-not selected and not started. Advanced Supplier Reconciliation remains a
-deferred outcome without PBI ID or readiness.
+PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
+Owner Review. Advanced Supplier Reconciliation remains a deferred outcome
+without PBI ID, selection or readiness.
