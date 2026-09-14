@@ -12,7 +12,7 @@
 | identidad duplicada | High | ID opaco, SKU/barcode Tenant, concurrencia | control verificado |
 | historial de precio perdido | High | revisiones append-only + snapshots futuros | control verificado |
 | Composer ambiguo/partial | High | PBI-041 separado; unresolved cero, preview/confirmación y apply atómico | arquitectura/DoR Ready; no materializado |
-| WIP paralelo | Medium | PBI-040 único WIP; PBI-041 Ready pero no seleccionado/autorizado | controlado |
+| WIP paralelo | Medium | no existe WIP activo; PBI-041 Ready pero no seleccionado/autorizado | controlado |
 
 ## Próxima revisión
 
