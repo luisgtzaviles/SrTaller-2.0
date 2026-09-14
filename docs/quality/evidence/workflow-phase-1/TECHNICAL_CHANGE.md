@@ -2,10 +2,11 @@
 
 ## Estado y autoridad
 
-- **Estado:** Implementation complete — local integration verification in
-  progress; PR/CI/review/merge pending.
+- **Estado:** Implementation complete — local full outcome is maintained in
+  [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md); PR/CI/review/merge
+  remain separate.
 - **Autoridad:** WF-001–WF-010 en
-  [Development Workflow Efficiency Decisions](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md).
+  [Development Workflow Efficiency Decisions](../../../delivery/DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md).
 - **Tipo:** Governance / CI / developer tooling.
 - **Riesgo:** Alto; cambia el mecanismo que produce evidencia bloqueante.
 - **Owner:** Product Owner.
@@ -71,10 +72,10 @@ métricas y mecanismos shadow de riesgo/tree identity.
 | Auditoría medida | PASS — `f565a94` |
 | Decisiones Owner | WF-001–WF-010 accepted |
 | Implementación | Complete on local branch |
-| Evidencia local | [Implementation Evidence](../quality/evidence/workflow-phase-1/IMPLEMENTATION_EVIDENCE.md) |
+| Evidencia local | [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md) |
 | Development Preflight real | PASS — no destructivo; 62/62 journal y fixtures disponibles |
 | Preview migration pre-merge | Advisory `UNKNOWN`; snapshot `NOT_CAPTURED`, compatibility no afirmada |
-| Full verification | Primera campaña 13/13 PASS; final policy reconciliation campaign pending |
+| Full verification | Resultado autoritativo en Implementation Evidence |
 | CI | Not run |
 | Independent review | Pending |
 | Merge / deploy | Not authorized |
@@ -92,7 +93,7 @@ Cada riesgo falla cerrado y tiene una prueba negativa obligatoria.
 ## Operación del migration snapshot
 
 El archivo inicial
-[`preview-migration-state.snapshot.json`](../operations/preview-migration-state.snapshot.json)
+[`preview-migration-state.snapshot.json`](../../../operations/preview-migration-state.snapshot.json)
 declara `NOT_CAPTURED`. No se rellena desde memoria, source local o una lista
 inventada. Un operador con autoridad obtiene un export read-only del journal
 real con `environment: preview`, `source: authorized-real-journal-read` y
