@@ -87,7 +87,8 @@ test('Guided derives policy-aware steps and never exposes captured access secret
 });
 
 test('preference transport exposes the exact allowlisted payload only', () => {
-  assert.match(api, /Object\.keys\(value\)\.length !== 1/u);
+  assert.match(api, /Object\.keys\(value\)\.length !== 2/u);
+  assert.match(api, /priceListShowReferenceCost/u);
   assert.match(api, /JSON\.stringify\(input\)/u);
   assert.doesNotMatch(api, /tenantId|userId|branchId|policyVersion/u);
 });

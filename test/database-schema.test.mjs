@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 52);
+  assert.equal(first.manifest.migrations.length, 62);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -347,12 +347,72 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         owner: 'repairs',
       },
       {
+        fileName: '20260911180000_tenancy_add_operating_currency.js',
+        migrationName: '20260911180000_tenancy_add_operating_currency',
+        order: 51,
+        owner: 'tenancy',
+      },
+      {
+        fileName: '20260911181000_access_add_catalog_capabilities.js',
+        migrationName: '20260911181000_access_add_catalog_capabilities',
+        order: 52,
+        owner: 'access',
+      },
+      {
+        fileName: '20260911182000_users_add_price_list_cost_preference.js',
+        migrationName: '20260911182000_users_add_price_list_cost_preference',
+        order: 53,
+        owner: 'users',
+      },
+      {
+        fileName: '20260911183000_catalog_create_pricing_core.js',
+        migrationName: '20260911183000_catalog_create_pricing_core',
+        order: 54,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260911200000_catalog_add_reference_governance.js',
+        migrationName: '20260911200000_catalog_add_reference_governance',
+        order: 55,
+        owner: 'catalog',
+      },
+      {
         fileName:
           '20260912180000_access_enable_concurrent_operational_sessions.js',
         migrationName:
           '20260912180000_access_enable_concurrent_operational_sessions',
-        order: 51,
+        order: 56,
         owner: 'access',
+      },
+      {
+        fileName: '20260912210000_catalog_unify_pending_reference_reconciliation.js',
+        migrationName: '20260912210000_catalog_unify_pending_reference_reconciliation',
+        order: 57,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260913120000_catalog_add_reference_safe_delete.js',
+        migrationName: '20260913120000_catalog_add_reference_safe_delete',
+        order: 58,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260913121000_repairs_add_reference_safe_delete.js',
+        migrationName: '20260913121000_repairs_add_reference_safe_delete',
+        order: 59,
+        owner: 'repairs',
+      },
+      {
+        fileName: '20260913130000_catalog_enforce_reference_identity.js',
+        migrationName: '20260913130000_catalog_enforce_reference_identity',
+        order: 60,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260913140000_catalog_add_canonical_reference_merge.js',
+        migrationName: '20260913140000_catalog_add_canonical_reference_merge',
+        order: 61,
+        owner: 'catalog',
       },
     ],
   );

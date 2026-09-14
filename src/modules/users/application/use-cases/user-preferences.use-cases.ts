@@ -4,6 +4,7 @@ import type {
   NewRepairFormMode,
   UserPreferencesMutationGuard,
   UserPreferencesRecord,
+  UserPreferencesPatch,
   UserPreferencesRepositoryPort,
   UserPreferencesScope,
 } from '../ports/user-preferences-repository.port.js';
@@ -48,19 +49,22 @@ function scope(value: unknown): UserPreferencesScope {
   }
 }
 
-function requestedMode(value: unknown): NewRepairFormMode {
-  const input = exactObject(value, ['newRepairFormMode']);
-  if (
-    input.newRepairFormMode !== 'classic' &&
-    input.newRepairFormMode !== 'guided_v2'
-  ) {
-    throw new UserPreferencesInputError('newRepairFormMode');
-  }
-  return input.newRepairFormMode;
+function requestedPatch(value: unknown): UserPreferencesPatch {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new UserPreferencesInputError('payload');
+  const input = value as Readonly<Record<string, unknown>>;
+  const keys = Object.keys(input);
+  if (keys.length < 1 || keys.some((key) => key !== 'newRepairFormMode' && key !== 'priceListShowReferenceCost')) throw new UserPreferencesInputError('payload');
+  if ('newRepairFormMode' in input && input.newRepairFormMode !== 'classic' && input.newRepairFormMode !== 'guided_v2') throw new UserPreferencesInputError('newRepairFormMode');
+  if ('priceListShowReferenceCost' in input && typeof input.priceListShowReferenceCost !== 'boolean') throw new UserPreferencesInputError('payload');
+  return Object.freeze({
+    ...(input.newRepairFormMode ? { newRepairFormMode: input.newRepairFormMode as NewRepairFormMode } : {}),
+    ...('priceListShowReferenceCost' in input ? { priceListShowReferenceCost: input.priceListShowReferenceCost as boolean } : {}),
+  });
 }
 
 const defaultPreferences: UserPreferencesRecord = Object.freeze({
   newRepairFormMode: 'classic',
+  priceListShowReferenceCost: false,
   updatedAt: null,
 });
 
@@ -85,7 +89,7 @@ export class UpdateUserPreferencesUseCase {
   ): Promise<UserPreferencesRecord> {
     return this.repository.upsert(
       scope(scopeValue),
-      requestedMode(input),
+      requestedPatch(input),
       this.now(),
       guard,
     );

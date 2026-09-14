@@ -41,6 +41,11 @@ const accessTables = [
   'access_pin_eligibility_tenant_guards',
 ];
 const tables = [
+  'catalog_audit_events', 'catalog_commands', 'catalog_reference_cost_revisions',
+  'catalog_branch_price_revisions', 'catalog_base_price_revisions',
+  'catalog_barcode_sequences', 'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
+  'catalog_brand_pending_kind_applicability', 'catalog_brand_pending_values', 'catalog_category_pending_values',
+  'catalog_brand_kind_applicability', 'catalog_category_kind_applicability', 'catalog_brands', 'catalog_categories', 'catalog_reference_identity_locks',
   'repair_operational_note_request_guards',
   'repair_business_audit_events',
   'access_operational_sessions',
@@ -207,6 +212,7 @@ function revocation(overrides = {}) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
@@ -250,8 +256,8 @@ async function rejectsWithCode(promise, code) {
 
 async function seedAuthorities(admin) {
   await admin.query(
-    `insert into tenants (tenant_id, created_at)
-     values ($1, now()), ($2, now())`,
+    `insert into tenants (tenant_id, operating_currency, created_at)
+     values ($1, 'MXN', now()), ($2, 'MXN', now())`,
     [tenantA, tenantB],
   );
   await admin.query(
@@ -372,6 +378,14 @@ test(
         [
           'access_matrix.manage',
           'access_matrix.read',
+          'catalog.branch_prices.manage',
+          'catalog.import.prepare',
+          'catalog.import.publish',
+          'catalog.manage',
+          'catalog.prices.manage',
+          'catalog.reference_cost.manage',
+          'catalog.reference_cost.read',
+          'price_list.read',
           'repairs.add_note',
           'repairs.catalogs.manage',
           'repairs.catalogs.read',
@@ -394,6 +408,14 @@ test(
           'repairs.configuration.read',
           'repairs.correct_intake',
           'repairs.create',
+          'catalog.branch_prices.manage',
+          'catalog.import.prepare',
+          'catalog.import.publish',
+          'catalog.manage',
+          'catalog.prices.manage',
+          'catalog.reference_cost.manage',
+          'catalog.reference_cost.read',
+          'price_list.read',
         ].includes(capability_code)).map(({ capability_code, created_at }) => ({
           capabilityCode: capability_code,
           createdAt: created_at.toISOString(),
@@ -881,6 +903,14 @@ test(
         [
           'access_matrix.manage',
           'access_matrix.read',
+          'catalog.branch_prices.manage',
+          'catalog.import.prepare',
+          'catalog.import.publish',
+          'catalog.manage',
+          'catalog.prices.manage',
+          'catalog.reference_cost.manage',
+          'catalog.reference_cost.read',
+          'price_list.read',
           'repairs.add_note',
           'repairs.catalogs.manage',
           'repairs.catalogs.read',

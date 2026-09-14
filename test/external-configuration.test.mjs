@@ -61,7 +61,15 @@ test('catalog distinguishes active non-secret configuration from server-only sec
       { name: 'PORT', classification: 'non-secret' },
       { name: 'SR_DB_ENVIRONMENT', classification: 'non-secret' },
       { name: 'SR_LOCAL_RUNTIME', classification: 'non-secret' },
+      { name: 'SR_RUNTIME_GIT_SHA', classification: 'non-secret' },
+      { name: 'SR_RUNTIME_SOURCE_STATE', classification: 'non-secret' },
     ],
+  );
+  assert.deepEqual(
+    externalConfigurationCatalog
+      .filter(({ clientExposure }) => clientExposure === 'bounded-public')
+      .map(({ name }) => name),
+    ['SR_RUNTIME_GIT_SHA', 'SR_RUNTIME_SOURCE_STATE'],
   );
   assert.ok(externalConfigurationCatalog.every(Object.isFrozen));
 });
@@ -133,7 +141,7 @@ test('application startup requires the active database secret before opening the
   const source = await (await import('node:fs/promises')).readFile('src/main.ts', 'utf8');
   assert.match(
     source,
-    /loadRequiredServerSecrets\(process\.env, \['SR_DB_PASSWORD', 'SR_PIN_PEPPER'\]\)/u,
+    /const environment = process\.env;[\s\S]*loadRequiredServerSecrets\(environment, \['SR_DB_PASSWORD', 'SR_PIN_PEPPER'\]\)/u,
   );
   assert.ok(source.indexOf('await application.init();') < source.indexOf('await database.verify();'));
   assert.ok(source.indexOf('await database.verify();') < source.indexOf('await application.listen('));

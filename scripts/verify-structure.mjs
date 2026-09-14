@@ -46,6 +46,7 @@ const buildConfig = await readJson('tsconfig.build.json');
 const failures = [];
 const requiredScripts = [
   'verify:toolchain',
+  'verify:runtime-provenance',
   'clean',
   'typecheck',
   'build',
@@ -175,6 +176,7 @@ if (!(await exists('dist/main.js'))) {
   for (const outputFile of outputFiles) {
     const previewAsset =
       outputFile === 'dist/public/index.html' ||
+      outputFile === 'dist/public/runtime-provenance.json' ||
       /^dist\/public\/assets\/[A-Za-z0-9_-]+\.(?:css|js)$/u.test(outputFile);
     if (!previewAsset && !['.js', '.map'].includes(extname(outputFile))) {
       failures.push(`Unexpected build artifact: ${outputFile}`);
@@ -183,6 +185,9 @@ if (!(await exists('dist/main.js'))) {
 
   if (!outputFiles.includes('dist/public/index.html')) {
     failures.push('Compiled preview entrypoint dist/public/index.html is missing');
+  }
+  if (!outputFiles.includes('dist/public/runtime-provenance.json')) {
+    failures.push('Compiled runtime provenance manifest is missing');
   }
   if (!outputFiles.some((file) => /^dist\/public\/assets\/.+\.css$/u.test(file))) {
     failures.push('Compiled preview CSS asset is missing');

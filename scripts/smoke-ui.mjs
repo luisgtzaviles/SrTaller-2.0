@@ -5,6 +5,11 @@ import { once } from 'node:events';
 import { createServer } from 'node:net';
 import { resolve } from 'node:path';
 
+import {
+  inspectWorkingTreeProvenance,
+  runtimeProvenanceEnvironment,
+} from './lib/runtime-provenance.mjs';
+
 async function reservePort() {
   const server = createServer();
   server.listen(0, '127.0.0.1');
@@ -40,6 +45,7 @@ async function stop(child) {
 
 const port = await reservePort();
 const baseUrl = `http://127.0.0.1:${port}`;
+const expectedProvenance = await inspectWorkingTreeProvenance();
 const child = spawn(
   process.execPath,
   ['--enable-source-maps', resolve(process.cwd(), 'dist/main.js')],
@@ -49,6 +55,7 @@ const child = spawn(
       HOST: '127.0.0.1',
       NODE_ENV: 'production',
       PORT: String(port),
+      ...runtimeProvenanceEnvironment(expectedProvenance),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   },
@@ -61,10 +68,11 @@ child.stderr.on('data', (chunk) => {
 
 try {
   await waitForReady(baseUrl);
-  const [root, spa, catalog, live, ready, apiUnknown, routeUnknown] = await Promise.all([
+  const [root, spa, catalog, provenance, live, ready, apiUnknown, routeUnknown] = await Promise.all([
     fetch(`${baseUrl}/`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/reparaciones`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/__internal/ui-catalog`, { headers: { Accept: 'text/html' } }),
+    fetch(`${baseUrl}/runtime-provenance.json`, { cache: 'no-store' }),
     fetch(`${baseUrl}/livez`),
     fetch(`${baseUrl}/readyz`),
     fetch(`${baseUrl}/api/unknown`),
@@ -90,8 +98,14 @@ try {
   assert.equal(catalog.headers.get('cache-control'), 'no-store');
   assert.equal(catalog.headers.get('etag'), root.headers.get('etag'));
   assert.equal(catalog.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
+  assert.equal(provenance.status, 200);
+  assert.equal(provenance.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(await provenance.json(), { role: 'frontend', ...expectedProvenance });
   assert.deepEqual(await live.json(), { status: 'live' });
   assert.deepEqual(await ready.json(), { status: 'ready' });
+  assert.equal(ready.headers.get('x-sr-runtime-role'), 'backend');
+  assert.equal(ready.headers.get('x-sr-source-revision'), expectedProvenance.sourceRevision);
+  assert.equal(ready.headers.get('x-sr-source-state'), expectedProvenance.sourceState);
   assert.equal(apiUnknown.status, 404);
   assert.equal(routeUnknown.status, 404);
   assert.ok(assetPath, 'Compiled frontend JavaScript asset is missing from index.html');

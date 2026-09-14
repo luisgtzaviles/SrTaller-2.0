@@ -18,7 +18,9 @@ import {
   localAccessRoleAssignmentRows,
   localAccessRoleCapabilityRows,
   localAccessRoleRows,
+  localRepairCatalogRows,
   localRepairIntakeRows,
+  localRepairRows,
   localRepairTimelineRows,
   localSeedRows,
   localUserRows,
@@ -29,9 +31,10 @@ import {
   localPinCredentialRows,
 } from '../scripts/lib/local-pin-fixtures.mjs';
 
-const [localDevelopmentSource, localEnvironmentExample] = await Promise.all([
+const [localDevelopmentSource, localEnvironmentExample, localSeedSource] = await Promise.all([
   readFile('scripts/lib/local-development.mjs', 'utf8'),
   readFile('.env.local.example', 'utf8'),
+  readFile('scripts/local-db-seed.mjs', 'utf8'),
 ]);
 
 function validLocalValues() {
@@ -125,6 +128,10 @@ test('seed contract is deterministic and contains only existing schema entities'
   assert.equal(first.branches.length, 2);
   assert.deepEqual(Object.keys(first.tenant).sort(), ['createdAt', 'tenantId']);
   assert.deepEqual(Object.keys(first.branches[0]).sort(), ['active', 'branchId', 'createdAt', 'tenantId', 'timeZone']);
+  assert.match(
+    localSeedSource,
+    /catalog_categories \([\s\S]*normalized_name, kind, status,[\s\S]*'PART', 'ACTIVE'[\s\S]*'PRODUCT', 'ACTIVE'/u,
+  );
 });
 
 test('synthetic User fixtures are deterministic, bounded, and secret-free', () => {
@@ -179,6 +186,14 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
       'repairs.configuration.read',
       'repairs.configuration.manage',
       'repairs.read',
+      'price_list.read',
+      'catalog.manage',
+      'catalog.prices.manage',
+      'catalog.branch_prices.manage',
+      'catalog.reference_cost.read',
+      'catalog.reference_cost.manage',
+      'catalog.import.prepare',
+      'catalog.import.publish',
       'users.read',
       'users.manage',
     ],
@@ -188,7 +203,7 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
     'Atención al cliente',
     'Técnico',
   ]);
-  assert.equal(grants.length, 18);
+  assert.equal(grants.length, 27);
   assert.deepEqual(assignments.map(({ assignmentScope }) => assignmentScope), [
     'TENANT_WIDE',
     'TENANT_WIDE',
@@ -216,6 +231,29 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
     JSON.stringify({ capabilities, roles, grants, assignments }),
     /pin|password|credential|secret|hash|salt|pepper/iu,
   );
+});
+
+test('synthetic Repairs catalog labels are deterministic without inventing historical canonical links', () => {
+  const catalogs = localRepairCatalogRows();
+  assert.deepEqual(catalogs, localRepairCatalogRows());
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(catalogs).map(([key, rows]) => [key, rows.length])),
+    { deviceTypes: 2, brands: 12, models: 15, risks: 4, problemCategories: 5 },
+  );
+  const allRows = Object.values(catalogs).flat();
+  assert.ok(allRows.every((row) => row.scope === 'tenant' && row.tenantId === LOCAL_TENANT_ID && row.status === 'active'));
+  assert.ok(allRows.every((row) => Object.isFrozen(row)));
+  assert.ok(Object.values(catalogs).every((rows) => Object.isFrozen(rows)));
+  const repairLabels = new Set(localRepairRows().flatMap((repair) => [repair.deviceBrand, repair.deviceModel, repair.reportedIssue]));
+  assert.ok(catalogs.brands.every((brand) => repairLabels.has(brand.canonicalLabel)));
+  assert.ok(catalogs.models.every((model) => repairLabels.has(model.canonicalLabel)));
+  assert.ok(catalogs.models.every((model) => catalogs.brands.some((brand) => brand.brandId === model.canonicalBrandId)));
+  assert.ok(catalogs.risks.some((risk) => risk.canonicalLabel === 'Batería inflada'));
+  assert.ok(catalogs.problemCategories.some((category) => category.canonicalLabel === 'Pantalla'));
+  assert.ok(localRepairIntakeRows().every((intake) => !Object.keys(intake).some((key) => key.startsWith('canonical'))));
+  assert.match(localSeedSource, /repairCanonicalLinksCreated: 0/u);
+  assert.equal((localSeedSource.match(/ON CONFLICT \((?:device_type_id|brand_id|model_id|risk_id|category_id)\) DO NOTHING/gu) ?? []).length, 5);
+  assert.doesNotMatch(JSON.stringify(catalogs), /pin|password|credential|secret|hash|salt|pepper/iu);
 });
 
 test('local PIN fixtures use the governed profile and persist no plaintext PIN', async () => {
@@ -296,7 +334,7 @@ test('demo PINs are scrubbed while the ignored local Owner PIN survives volume r
 test('repair intake seed is deterministic, varied, and excludes sensitive intake data', () => {
   const first = localRepairIntakeRows();
   assert.deepEqual(first, localRepairIntakeRows());
-  assert.equal(first.length, 15);
+  assert.equal(first.length, 16);
   assert.ok(first.some((row) => row.receivedById === null && row.documentedRiskSummary === null));
   assert.ok(first.some((row) => (row.customerNarrative?.length ?? 0) > 200));
   assert.ok(first.some((row) => row.documentedRiskSummary !== null));
@@ -307,14 +345,14 @@ test('repair intake seed is deterministic, varied, and excludes sensitive intake
 test('repair timeline seed is deterministic, typed, and covers rich, single, and empty scenarios', () => {
   const rows = localRepairTimelineRows();
   assert.deepEqual(rows, localRepairTimelineRows());
-  assert.equal(rows.length, 16);
+  assert.equal(rows.length, 20);
   assert.deepEqual(new Set(rows.map((row) => row.entryType)), new Set(['note', 'system_event']));
   assert.ok(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001003').length >= 6);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001002').length, 3);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001012').length, 2);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001005').length, 1);
   assert.equal(rows.filter((row) => row.repairId === '00000000-0000-4000-8000-000000001008').length, 0);
-  assert.equal(rows.filter((row) => row.source === 'local.location').length, 7);
+  assert.equal(rows.filter((row) => row.source === 'local.location').length, 8);
   assert.ok(rows.filter((row) => row.source === 'local.location').every((row) => row.title === 'Equipo movido' && row.body === 'Área de pendientes → Taller'));
   assert.ok(new Set(rows.filter((row) => row.actorId).map((row) => row.actorId)).size >= 3);
   assert.ok(rows.some((row) => (row.body?.length ?? 0) > 250));

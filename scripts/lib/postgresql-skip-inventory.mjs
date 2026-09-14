@@ -14,6 +14,7 @@ export const expectedPostgresqlSkipInventory = Object.freeze([
   Object.freeze({ file: 'test/access-pin-postgresql.test.mjs', tests: 1, materialStage: 'postgresql-composite' }),
   Object.freeze({ file: 'test/access-session-postgresql.test.mjs', tests: 1, materialStage: 'postgresql-composite' }),
   Object.freeze({ file: 'test/contextual-authorization-postgresql.test.mjs', tests: 1, materialStage: 'postgresql-composite' }),
+  Object.freeze({ file: 'test/catalog-postgresql.test.mjs', tests: 1, materialStage: 'pbi040-postgresql' }),
   Object.freeze({ file: 'test/customer-phone-postgresql.test.mjs', tests: 1, materialStage: 'pbi039-postgresql' }),
   Object.freeze({ file: 'test/user-preferences-postgresql.test.mjs', tests: 1, materialStage: 'pbi039-postgresql' }),
 ]);
@@ -48,6 +49,9 @@ export async function inspectPostgresqlSkipInventory(root = process.cwd()) {
         .reduce((total, item) => total + item.tests, 0),
       pbi039Postgresql: expectedPostgresqlSkipInventory
         .filter(({ materialStage }) => materialStage === 'pbi039-postgresql')
+        .reduce((total, item) => total + item.tests, 0),
+      pbi040Postgresql: expectedPostgresqlSkipInventory
+        .filter(({ materialStage }) => materialStage === 'pbi040-postgresql')
         .reduce((total, item) => total + item.tests, 0),
     }),
   });

@@ -70,11 +70,20 @@ Responsabilidades actuales:
 2. Se crea un commit en una rama autorizada, se integra en `main` y se publica
    en `origin`.
 3. Dokploy clona `main` mediante la deploy key dedicada de sólo lectura.
-4. El deployment manual construye el `Dockerfile` y actualiza `srtaller-app`.
+4. El deployment manual construye el `Dockerfile` pasando el SHA exacto del
+   checkout como build argument `SR_BUILD_GIT_SHA` y actualiza `srtaller-app`.
 5. Se exige servicio `running (healthy)`, logs sin crash loop y respuestas
    `200` en `/`, `200` en `/livez`, `200` en `/readyz` y `404` en
    `/api/unknown`.
 6. Se registra el commit fuente y el resultado.
+
+El Dockerfile falla si `SR_BUILD_GIT_SHA` no es un SHA hexadecimal completo.
+La imagen lo conserva como label OCI `org.opencontainers.image.revision`, el
+frontend como `/runtime-provenance.json` sin caché y el backend en headers de
+`/readyz`. La verificación de imagen exige igualdad entre las tres superficies.
+La revisión no contiene secretos, branch, paths o datos. Este contrato aplica
+al siguiente deployment autorizado; no autoriza reconfigurar ni redesplegar el
+Preview histórico actual.
 
 El autodeploy permanece deshabilitado. La fuente `Git` genérica actual requiere
 configurar además un webhook del repositorio; activar sólo el switch de Dokploy

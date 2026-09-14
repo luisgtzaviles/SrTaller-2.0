@@ -165,12 +165,14 @@ test('persistence capability is internal and has only exact adapter consumers', 
       'src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts',
       'src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts',
       operationalSessionAdapterPath,
+      'src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts',
     ],
     status: 'materialized-owner-internal-capability',
   });
   assert.match(source, /Owner extends 'tenancy'/u);
   assert.match(source, /Owner extends 'database'/u);
   assert.match(source, /Owner extends 'access'/u);
+  assert.match(source, /Owner extends 'catalog'/u);
   assert.match(source, /kysely_migration: DatabaseMigrationJournalTable/u);
   assert.match(source, /Pick<DatabaseSchema, 'tenants'>/u);
   assert.match(

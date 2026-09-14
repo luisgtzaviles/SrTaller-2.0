@@ -115,6 +115,21 @@ abajo. Ambos comandos de backend rehidratan de forma idempotente los fixtures
 sintéticos de evidencia local antes de arrancar HTTP; no sustituyen el seed ni
 crean metadata en PostgreSQL.
 
+El launcher obtiene `HEAD` y el estado `clean|dirty` una sola vez antes de
+arrancar. Vite lo publica en `/runtime-provenance.json`; Nest lo publica en los
+headers `X-SR-Source-Revision` y `X-SR-Source-State` de `/readyz`. `local:dev`
+espera ambos y termina si no describen exactamente el mismo worktree. Para
+contestar de forma ejecutable qué source está viendo el runtime:
+
+```sh
+./scripts/pnpm-governed run verify:runtime-provenance
+```
+
+El JSON público contiene sólo rol, SHA Git exacto y estado del source. No
+contiene branch, cwd, configuración, datos ni secretos. Después de un commit o
+cambio en el worktree hay que reiniciar `local:dev`; el verificador detecta el
+proceso anterior en vez de aceptar una pestaña aparentemente actual.
+
 ## Uso diario
 
 ```sh
@@ -257,6 +272,20 @@ importes o pagos. Los PIN de los otros usuarios son efímeros; sólo el PIN
 sintético de Luis permanece en `.env.local` para sobrevivir a la recreación
 del volumen. El seed no crea Sessions activas: se inician mediante el
 login local con contexto de Station verificado y PIN sintético.
+
+El mismo seed materializa los catálogos Repairs que consumen New Repair y su
+administración: 2 tipos, 12 marcas, 15 modelos, 4 riesgos y 5 categorías de
+problema, todos sintéticos, Tenant-scoped y con identidad determinista. Las
+etiquetas de marcas y modelos cubren los snapshots de las 15 reparaciones
+históricas locales, pero esas filas legacy conservan sus IDs canónicos nulos:
+una coincidencia textual no constituye reconciliación ni incrementa el uso
+canónico. Sólo una captura nueva que seleccione catálogo o una reconciliación
+humana explícita crea el vínculo. No son defaults de plataforma ni bootstrap
+productivo. Los endpoints operativos y de Configuración leen estas mismas
+tablas, por lo que el seed no crea una fuente paralela. Repetir
+`local:db:seed` agrega cualquier fixture ausente por su UUID estable sin
+sobrescribir una fila ya existente, y
+`local:db:reset` lo elimina junto con el resto del entorno local.
 
 ## Reset y parada
 

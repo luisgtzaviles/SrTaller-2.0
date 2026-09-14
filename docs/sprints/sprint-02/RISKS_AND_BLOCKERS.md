@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** Closed candidate; todos los PBIs comprometidos integrados;
-  PBI-043 `Done candidate`, WIP funcional 0/1 y sin bloqueos abiertos.
+- **Estado:** Closed; todos los PBIs comprometidos `Done`, WIP 0/1 y sin
+  bloqueos abiertos.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|

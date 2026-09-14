@@ -22,9 +22,9 @@ y el [alcance](../product/PRODUCT_SCOPE.md).
 La baseline actual contiene Trusted Station Context, Users, roles/capabilities,
 PIN, Operational Session, autorización contextual, atribución de negocio y el
 Repair Workstream PBI-039 y Concurrent Operational Sessions PBI-043. Este
-último está integrado en `aab27d9` con CI exacta `34730090448` y Preview PASS;
-es `Done candidate` durante su cierre documental. No existe Current PBI y el
-WIP funcional es `0/1`. PBI-040 permanece congelado fuera de `main`.
+último está `Done` después de PR #47/#48, CI exacta `34732201476` y Preview
+PASS. SPRINT-03 está activo; PBI-040 es el Current PBI, Owner Accepted y en
+Final Verification, WIP `1/1`, sobre una rama reconciliada con `main` `5be5cd6`.
 
 ## Jerarquía de autoridad documental
 
@@ -102,11 +102,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI for current integrated baseline | Green: exact-main run `34730090448` on `aab27d98db94d850c580f0cac594c1a62c00cc51` |
-| Program / phase | MVP Operating Roadmap / Operational Authentication & Authorization |
-| Sprint | SPRINT-02 `Closed candidate`; WIP `0/1` functional |
-| Current / next PBI | Current: NONE; PBI-043 Done candidate; PBI-040 frozen outside `main` |
-| Current blocking gate | Documentary closure merge/exact-main CI; Production remains unauthorized |
+| Authoritative CI for current integrated baseline | Green: exact-main run `34732201476` on `5be5cd60acb0865da57aff76740a1330896b1cd1` |
+| Program / phase | MVP Operating Roadmap / Pricing Catalog |
+| Sprint | SPRINT-03 `Active`; WIP `1/1` |
+| Current / next PBI | Current: PBI-040 `Owner Accepted / Final Verification`; PBI-041 Ready, not selected or authorized |
+| Current blocking gate | Formal UI Verification, full verification and independent review; Production unauthorized |
 | GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
@@ -227,8 +227,10 @@ ejecuta `fetch --prune`, tras confirmar que no guardan trabajo exclusivo.
 
 Un WIP no integrado que deba esperar una remediación precedente se conserva
 congelado, sin recibir cambios, y después se reconcilia desde el nuevo `main`.
-Este es el tratamiento vigente para PBI-040 mientras PBI-043 completa su
-cierre documental. El detalle normativo está en [BRANCH_POLICY.md](./BRANCH_POLICY.md).
+PBI-040 siguió este tratamiento durante PBI-043 y ahora está reconciliado con
+el nuevo `main`; continúa en su misma rama, Owner Accepted y en Functional
+Freeze. Su Master Goal de cierre autoriza push/merge/Preview sólo al pasar los
+gates explícitos. El detalle normativo está en [BRANCH_POLICY.md](./BRANCH_POLICY.md).
 
 La protección técnica de `main` no está configurada en el repositorio público
 observado: la API reporta `Branch not protected` y no existen rulesets. Por

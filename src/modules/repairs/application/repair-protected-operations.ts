@@ -19,6 +19,7 @@ import type {
   RepairProblemCategoryCatalogContext,
   RepairClassificationContext,
 } from './ports/repair-repository.port.js';
+export { RepairCatalogReferenceDeleteNotAllowedError } from './ports/repair-repository.port.js';
 import {
   AddRepairOperationalNoteUseCase,
 } from './use-cases/add-repair-operational-note.use-case.js';
@@ -368,6 +369,7 @@ export class RepairProtectedOperations {
   renameRepairDeviceType(evidence: ProtectedRequestEvidence, input: unknown) { return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) => new RepairDeviceTypeCatalogService(this.repository).rename(repairDeviceTypeCatalogContext(context), input)); }
   deactivateRepairDeviceType(evidence: ProtectedRequestEvidence, input: unknown) { return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) => new RepairDeviceTypeCatalogService(this.repository).deactivate(repairDeviceTypeCatalogContext(context), input)); }
   reactivateRepairDeviceType(evidence: ProtectedRequestEvidence, input: unknown) { return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) => new RepairDeviceTypeCatalogService(this.repository).reactivate(repairDeviceTypeCatalogContext(context), input)); }
+  deleteRepairDeviceType(evidence: ProtectedRequestEvidence, input: unknown) { return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) => new RepairDeviceTypeCatalogService(this.repository).delete(repairDeviceTypeCatalogContext(context), input)); }
   resolvePendingRepairDeviceType(evidence: ProtectedRequestEvidence, input: unknown) { return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) => new RepairDeviceTypeCatalogService(this.repository).resolve(repairDeviceTypeCatalogContext(context), input)); }
 
   listAdminRepairBrands(evidence: ProtectedRequestEvidence) {
@@ -399,6 +401,7 @@ export class RepairProtectedOperations {
     return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) =>
       new RepairBrandCatalogService(this.repository).reactivate(repairBrandCatalogContext(context), input));
   }
+  deleteRepairBrand(evidence: ProtectedRequestEvidence, input: unknown) { return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) => new RepairBrandCatalogService(this.repository).delete(repairBrandCatalogContext(context), input)); }
 
   resolvePendingRepairBrand(evidence: ProtectedRequestEvidence, input: unknown) {
     return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) =>
@@ -439,6 +442,7 @@ export class RepairProtectedOperations {
     return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) =>
       new RepairModelCatalogService(this.repository).reactivate(repairModelCatalogContext(context), input));
   }
+  deleteRepairModel(evidence: ProtectedRequestEvidence, input: unknown) { return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) => new RepairModelCatalogService(this.repository).delete(repairModelCatalogContext(context), input)); }
 
   resolvePendingRepairModel(evidence: ProtectedRequestEvidence, input: unknown) {
     return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) =>
@@ -469,6 +473,7 @@ export class RepairProtectedOperations {
     return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) =>
       new RepairRiskCatalogService(this.repository).reactivate(repairRiskCatalogContext(context), input));
   }
+  deleteRepairRisk(evidence: ProtectedRequestEvidence, input: unknown) { return this.authorization.execute(evidence, repairsCatalogsManageRequirement, (context) => new RepairRiskCatalogService(this.repository).delete(repairRiskCatalogContext(context), input)); }
 
   readAdminNewRepairPolicy(evidence: ProtectedRequestEvidence) {
     return this.authorization.execute(evidence, repairsConfigurationReadRequirement, (context) =>

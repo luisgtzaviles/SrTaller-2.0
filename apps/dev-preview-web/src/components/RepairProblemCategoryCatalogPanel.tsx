@@ -1,4 +1,4 @@
-import { Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { changeProblemCategoryStatus, createProblemCategory, deleteProblemCategory, getAdminProblemCategories, getPendingProblems, PreviewApiError, renameProblemCategory, resolvePendingProblem } from '../api.js';
@@ -6,6 +6,7 @@ import type { PendingRepairProblem, RepairProblemCategory } from '../api.js';
 import { normalizeRelatedRepairCatalogInput } from '../../../../src/modules/repairs/domain/new-repair-input-normalization.js';
 import {
   CatalogEmptyRow,
+  CatalogCanonicalUsageHeader,
   CatalogEntityName,
   CatalogFeedback,
   CatalogHeader,
@@ -14,12 +15,15 @@ import {
   CatalogPanel,
   CatalogReconciliationSummary,
   CatalogRowActions,
+  CatalogSafeDeleteDialog,
   CatalogScopeBadge,
   CatalogStatusBadge,
   CatalogTable,
   CatalogToolbar,
   CatalogUsage,
   catalogAdministrationStyles as styles,
+  catalogSafeDeleteFailure,
+  deriveCatalogLifecycleActions,
   formatCatalogResultCount,
 } from './catalogs/CatalogAdministration.js';
 import type { CatalogLifecycle, CatalogRowAction, CatalogSurface } from './catalogs/CatalogAdministration.js';
@@ -99,7 +103,7 @@ export function RepairProblemCategoryCatalogPanel({ canManage, csrfToken }: Read
       await deleteProblemCategory(deletion.categoryId, deletion.version, csrfToken);
       setNotice(`“${deletion.label}” se eliminó definitivamente porque nunca tuvo uso operacional.`);
       setDeletion(null); load();
-    } catch (cause) { setError(message(cause)); setDeletion(null); load(); } finally { setBusy(false); }
+    } catch (cause) { setError(catalogSafeDeleteFailure(cause)); setDeletion(null); load(); } finally { setBusy(false); }
   };
 
   const openResolution = (item: PendingRepairProblem) => {
@@ -118,12 +122,7 @@ export function RepairProblemCategoryCatalogPanel({ canManage, csrfToken }: Read
 
   function actions(item: RepairProblemCategory): readonly CatalogRowAction[] {
     if (item.scope === 'platform' || !canManage) return [];
-    const result: CatalogRowAction[] = [
-      { key: 'edit', id: `edit-category-${item.categoryId}`, label: 'Editar', icon: Pencil, onClick: () => { setLabel(item.label); setEditor(item); } },
-    ];
-    if (item.status === 'inactive' || !item.deletable) result.push({ key: 'lifecycle', label: item.status === 'active' ? 'Desactivar' : 'Reactivar', icon: item.status === 'inactive' ? RotateCcw : undefined, onClick: () => setTransition(item) });
-    if (item.deletable) result.push({ key: 'delete', label: 'Eliminar', icon: Trash2, tone: 'danger', onClick: () => setDeletion(item) });
-    return result;
+    return deriveCatalogLifecycleActions({ idPrefix: `category-${item.categoryId}`, status: item.status, deletable: item.deletable, busy, onEdit: () => { setLabel(item.label); setEditor(item); }, onDelete: () => setDeletion(item), onDeactivate: () => setTransition(item), onReactivate: () => setTransition(item) });
   }
 
   return <>
@@ -132,7 +131,7 @@ export function RepairProblemCategoryCatalogPanel({ canManage, csrfToken }: Read
       <CatalogFeedback error={error} success={notice} successTitle="Cambio guardado" />
       <CatalogToolbar lifecycleFilter={surface === 'canonical' ? <CatalogLifecycleFilter value={status} activeCount={activeCount} inactiveCount={items.length - activeCount} onChange={setStatus} label="Filtrar categorías por estado" /> : undefined} result={surface === 'canonical' ? formatCatalogResultCount(visible.length) : `${pendingItems.length} por revisar`} />
       {loading ? <CatalogLoadingState /> : surface === 'canonical' ? <CatalogTable>
-        <thead><tr><th>Categoría</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true">Uso</th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
+        <thead><tr><th>Categoría</th><th data-mobile-hidden="true">Alcance</th><th>Estado</th><th data-mobile-hidden="true"><CatalogCanonicalUsageHeader /></th><th><span className={styles.srOnly}>Acciones</span></th></tr></thead>
         <tbody>{visible.length === 0 ? <CatalogEmptyRow colSpan={5}>No hay categorías {status === 'active' ? 'activas' : status === 'inactive' ? 'inactivas' : 'en el catálogo'}.</CatalogEmptyRow> : visible.map((item) => <tr key={item.categoryId} data-status={item.status}>
           <td><CatalogEntityName label={item.label} secondary={`v${item.version}`} /></td><td data-mobile-hidden="true"><CatalogScopeBadge scope={item.scope} /></td><td><CatalogStatusBadge status={item.status} /></td><td data-mobile-hidden="true"><CatalogUsage count={item.usageCount} /></td><td><CatalogRowActions actions={actions(item)} emptyLabel={item.scope === 'platform' ? 'Sólo lectura' : 'Sin permisos de edición'} /></td>
         </tr>)}</tbody>
@@ -145,8 +144,8 @@ export function RepairProblemCategoryCatalogPanel({ canManage, csrfToken }: Read
     </CatalogPanel>
 
     <Dialog open={editor !== null} title={editor === 'new' ? 'Agregar categoría' : 'Editar categoría'} description="Identidad canónica para clasificación y reportes." restoreFocusSelector={editor === 'new' ? '#add-problem-category' : editor ? `#edit-category-${editor.categoryId}` : undefined} onClose={() => !busy && setEditor(null)} footer={false}><form className={styles.editorForm} onSubmit={(event) => { void save(event); }}><Field id="problem-category-label" label="Nombre de la categoría" required hint="Los duplicados normalizados se rechazan."><Input id="problem-category-label" value={label} minLength={2} maxLength={160} onChange={(event) => setLabel(event.target.value)} onBlur={() => setLabel(normalizeRelatedRepairCatalogInput('problemCategory', label))} /></Field><dl><div><dt>Alcance</dt><dd>Organización</dd></div></dl><div className={styles.dialogActions}><Button onClick={() => setEditor(null)}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || label.trim().length < 2}>Guardar</Button></div></form></Dialog>
-    <Dialog open={transition !== null} title={transition?.status === 'active' ? 'Desactivar categoría' : 'Reactivar categoría'} description={transition?.label ?? ''} onClose={() => !busy && setTransition(null)} footer={<><Button onClick={() => setTransition(null)}>Cancelar</Button><Button tone={transition?.status === 'active' ? 'danger' : 'primary'} onClick={() => { void changeStatus(); }}>{transition?.status === 'active' ? 'Desactivar' : 'Reactivar'}</Button></>}><p className={styles.confirmCopy}>{transition?.status === 'active' ? 'Dejará de estar disponible para nuevas capturas; las asociaciones actuales conservarán su visualización.' : 'Volverá a estar disponible para recepción y clasificación.'}</p></Dialog>
-    <Dialog open={deletion !== null} title="¿Eliminar esta categoría?" description={deletion?.label ?? ''} onClose={() => !busy && setDeletion(null)} footer={<><Button onClick={() => setDeletion(null)}>Cancelar</Button><Button tone="danger" disabled={busy} onClick={() => { void remove(); }}>Eliminar definitivamente</Button></>}><p className={styles.confirmCopy}>Nunca ha sido utilizada por una reparación.<br />Esta acción eliminará definitivamente el registro.</p></Dialog>
+    <Dialog open={transition !== null} title={transition?.status === 'active' ? 'Desactivar categoría' : 'Reactivar categoría'} description={transition?.label ?? ''} onClose={() => !busy && setTransition(null)} footer={<><Button onClick={() => setTransition(null)}>Cancelar</Button><Button tone={transition?.status === 'active' ? 'secondary' : 'primary'} onClick={() => { void changeStatus(); }}>{transition?.status === 'active' ? 'Desactivar' : 'Reactivar'}</Button></>}><p className={styles.confirmCopy}>{transition?.status === 'active' ? 'Dejará de estar disponible para nuevas capturas; las asociaciones actuales conservarán su visualización.' : 'Volverá a estar disponible para recepción y clasificación.'}</p></Dialog>
+    <CatalogSafeDeleteDialog open={deletion !== null} label={deletion?.label ?? ''} entityLabel="categoría de problema" busy={busy} restoreFocusSelector={deletion ? `#edit-category-${deletion.categoryId}` : undefined} onClose={() => setDeletion(null)} onConfirm={() => { void remove(); }} />
     <Dialog open={resolution !== null} title="Resolver valor capturado" description={resolution?.rawLabel ?? ''} onClose={() => !busy && setResolution(null)} footer={false}><form className={styles.editorForm} onSubmit={(event) => { void resolve(event); }}><div className={styles.resolutionModes} role="group" aria-label="Tipo de resolución"><label><input type="radio" name="resolutionMode" checked={resolutionMode === 'existing'} onChange={() => setResolutionMode('existing')} />Categoría existente</label><label><input type="radio" name="resolutionMode" checked={resolutionMode === 'new'} onChange={() => setResolutionMode('new')} />Crear categoría de Organización</label></div>{resolutionMode === 'existing' ? <Field id="problem-resolution-category" label="Categoría" required><Select id="problem-resolution-category" value={resolutionCategoryId} required onChange={(event) => setResolutionCategoryId(event.target.value)}><option value="">Seleccionar</option>{items.filter((item) => item.status === 'active').map((item) => <option key={item.categoryId} value={item.categoryId}>{item.label}</option>)}</Select></Field> : <Field id="problem-resolution-label" label="Nueva categoría" required><Input id="problem-resolution-label" value={resolutionLabel} minLength={2} maxLength={160} onChange={(event) => setResolutionLabel(event.target.value)} onBlur={() => setResolutionLabel(normalizeRelatedRepairCatalogInput('problemCategory', resolutionLabel))} /></Field>}<p className={styles.confirmCopy}>La identidad de reporte cambia a la categoría elegida. El texto capturado permanece como snapshot de auditoría.</p><div className={styles.dialogActions}><Button onClick={() => setResolution(null)}>Cancelar</Button><Button type="submit" tone="primary" disabled={busy || (resolutionMode === 'existing' ? !resolutionCategoryId : resolutionLabel.trim().length < 2)}>Resolver</Button></div></form></Dialog>
   </>;
 }

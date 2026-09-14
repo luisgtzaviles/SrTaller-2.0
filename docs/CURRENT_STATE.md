@@ -2,21 +2,21 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-043 integrado y validado en Preview; cierre documental en
-  curso.
+- **Estado:** PBI-043 `Done`; PBI-040 está `Owner Accepted`, en Functional
+  Freeze y listo para Final Verification. PBI-041 permanece
+  `Ready — implementation not authorized`.
 - **Baseline Git verificada:** `main == origin/main` en
-  `aab27d98db94d850c580f0cac594c1a62c00cc51`.
+  `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
+  PBI-040.
 - **CI exacta de baseline:**
-  [`34730090448`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34730090448),
-  `SUCCESS` sobre `aab27d9` con run-1, run-2 y comparison PASS.
-- **Sprint:** SPRINT-02 — `Closed candidate`; su cierre efectivo depende de
-  integrar este PR documental y obtener CI exacta verde.
-- **PBI actual:** `NONE`; [PBI-043](backlog/pbis/PBI-043.md) es
-  `Done candidate` bajo la misma condición documental.
-- **WIP:** `0/1` funcional; sólo cierre documental activo.
-- **PBI-040:** Owner Review congelado en
-  `feature/pbi-040-catalog-pricing-core`; no integrado ni modificado por este
-  Goal.
+  [`34732201476`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34732201476),
+  `SUCCESS` sobre `5be5cd6` con run-1, run-2 y comparison PASS.
+- **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
+- **PBI actual:** [PBI-040](backlog/pbis/PBI-040.md) — `Owner Accepted — Ready
+  for Final Verification`.
+- **WIP:** `1/1` en `feature/pbi-040-catalog-pricing-core`.
+- **PBI-040:** el WIP congelado `68843ba` fue preservado y reconciliado por
+  merge explícito `28320b3` con `main` `5be5cd6`; no se añadió funcionalidad.
 - **Preview:** `aab27d9` desplegado y validado; concurrencia de Sessions PASS.
 - **Production:** no desplegada ni autorizada.
 
@@ -24,7 +24,9 @@
 
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
-Price List comenzó después en una rama no integrada y permanece congelado.
+Price List comenzó después en una rama no integrada. Ese WIP permaneció
+congelado durante PBI-043 y ahora se reanuda exclusivamente para continuar su
+Owner Review.
 
 Durante su Owner Review se confirmó una fricción preexistente de Access: la
 regla PBI-034 de una Session activa por Station rechaza otro perfil con PIN
@@ -58,6 +60,107 @@ perfil QA no afectaron la Session Owner. El fixture User sintético quedó
 inactivo, las Sessions QA revocadas y sólo la Session Owner previa permaneció
 activa. Production no cambió.
 
+El cierre PR #48 quedó integrado como `5be5cd6` y la CI exacta
+`34732201476` pasó run-1, run-2 y comparison. Conforme al workflow, PBI-043
+es `Done` y SPRINT-02 está `Closed`. La rama PBI-040 conserva como padre su
+HEAD congelado `68843ba` y como nuevo padre integrado `5be5cd6`; los conflictos
+se resolvieron por ownership, manteniendo Access/PBI-039/main autoritativos y
+Catalog/Pricing desde el WIP.
+
+La reconciliación pasó `verify:full` en sus 13 etapas sobre `28320b3`:
+836 pruebas base sin fallas, PostgreSQL compuesto 17/17, PBI-039 material 2/2,
+PBI-040 material con 57 migraciones y benchmark p95 7.19 ms, smokes y cleanup
+PASS. El runtime local declaró el mismo SHA limpio en frontend/backend/worktree;
+Repair Detail parity y la prueba Chrome de dos perfiles concurrentes también
+pasaron. La sesión personal Owner quedó preparada en `/listas/precios` con los
+cuatro fixtures sintéticos previos. Esto no constituye Owner Acceptance.
+
+La iteración Owner posterior eliminó el segundo workflow de referencias de
+Price List. Category y Brand ahora separan captura pendiente de canon y usan la
+misma intención de Repairs: `Resolver → Asociar existente | Crear canónica`,
+con ownership, IDs, capabilities y persistencia separados por bounded context.
+La migración 58 preservó el WIP previo; las pruebas materiales cubren ambos
+modos, duplicados, compatibilidad, reload, auditoría y Tenant isolation. Chrome
+local queda preparado con colas sintéticas comparables de Repairs/Tipo,
+Catalog/Category y Catalog/Brand. Aceptación Owner sigue pendiente.
+
+El candidato funcional `4ef0fc9` pasó `verify:full` en sus 13 etapas: suite
+base sin fallas, PostgreSQL compuesto 17/17, PBI-039 material 2/2, PBI-040 con
+58 migraciones y búsqueda sobre 10,000 artículos en p95 6.82 ms, runtime
+Preview-like, smokes compilados y cleanup PASS. El gate también confirmó que
+las suites PostgreSQL owner-scoped aíslan las tres tablas nuevas y que el
+rollback protegido de PBI-043 continúa probándose después de retirar de forma
+gobernada la migración posterior de Catalog.
+
+La iteración Owner vigente añade el contexto de Tipo a Category y Brand
+canónicas/pendientes usando la misma aplicabilidad de Nuevo artículo. También
+unifica el lifecycle administrativo: referencias realmente libres pueden
+eliminarse; las usadas se desactivan/reactivan y cada bounded context conserva
+la autoridad de consultar sus dependencias. Catalog y Repairs revalidan el
+delete dentro de transacción, responden conflicto tipado ante uso concurrente y
+preservan los eventos históricos sin cascada. El candidato local `c8410bf`
+cerró `verify:full` 13/13 etapas
+PASS: 837 pruebas base sin fallas, PostgreSQL compuesto 17/17, PBI-039 2/2,
+PBI-040 1/1 con 60 migraciones y p95 7.18 ms, runtime Preview-like, smokes y
+cleanup PASS. Esto no constituye Owner Acceptance.
+
+La siguiente corrección de Owner evita que una captura exacta llegue tarde a
+Reconciliación. Category usa identidad Tenant+Tipo+nombre normalizado y Brand
+Tenant+nombre normalizado; el alta busca canon antes de pending, reutiliza la
+referencia activa y amplía de forma auditada la aplicabilidad de Brand. Locks
+Tenant-scoped y uniques cubren writers concurrentes. El duplicado sintético
+histórico `Pantallas`/Refacción se asoció mediante el flujo gobernado al canon
+existente, conservando raw label, uso, actor y tiempos. Owner Acceptance sigue
+pendiente.
+
+El candidato limpio `f4ace4a` pasó `verify:full` 13/13: suite base 817 PASS,
+PostgreSQL compuesto 17/17, PBI-039 2/2, PBI-040 1/1 con 61 migraciones y p95
+9.00 ms sobre 10,000 artículos, runtime Preview-like, smokes y cleanup PASS. El
+primer intento detectó que el manifest general aún declaraba 60 migraciones y
+el segundo que el rollback material de Access debía retirar primero la nueva
+migración posterior de Catalog; ambos contratos se actualizaron de forma
+exacta, sin eliminar assertions ni modificar semántica de Access.
+
+La iteración Owner actual distingue Edit, Pending Reconciliation y Canonical
+Merge. Category permite consolidación sólo en Tenant+Tipo; Brand consolida en
+Tenant y conserva la unión de aplicabilidad. El comando es transaccional,
+reasigna artículos y destinos pendientes gobernados, preserva las fuentes como
+merged y registra un evento append-only con actor/correlation. La UI ofrece
+selección múltiple, survivor, nombre final, usage y confirmación. Editar artículo
+comparte ahora el mismo combobox y resolvedor server-side de creación para
+reutilización exacta, expansión Brand y nuevas capturas pendientes.
+
+La auditoría de Device Types, Repairs Brands, Models, Problem Categories y Risks
+confirmó que la interacción puede ser compartida, pero no su semántica: scope
+Platform/Tenant, historia de recepción y colisiones Brand/Model requieren
+decisiones fuera de PBI-040. No se añadió merge a Repairs ni se abrió otro PBI.
+Owner Acceptance, gates de PR/CI/merge y deploy siguen pendientes.
+
+El discovery posterior de carga masiva auditó V1, ENL y los contratos actuales
+de Catalog. La dirección Owner es un Bulk Catalog Composer tabular para
+copiar/pegar desde Sheets, con un solo Batch Engine al que CSV/XLSX/API podrán
+conectarse después. La evidencia adicional de proveedores informales reformuló
+`OD-BI-001`: supplier code es opcional y la continuidad vive en SupplierSource,
+versiones/listings inmutables y mappings persistentes hacia CatalogItem. Supplier
+Listing nunca gobierna el título ni se vuelve identidad downstream. Matching por
+similarity no publica automáticamente; preview no escribe producto y Branch
+overrides permanecen intactos. `OD-BI-001..010` están aprobadas y promovidas.
+El [documento de auditoría y diseño](domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
+separa SupplierSource/Version/Listing/Resolution/Memory de
+CatalogUpdateBatch/RowDecision. Arquitectura, persistence design, Threat Model,
+Test Strategy y Definition of Ready dejan PBI-041 `Ready — implementation not
+authorized`. Advanced Supplier Reconciliation queda diferido sin PBI ID,
+selección ni readiness. No se implementó producto, migración, endpoint, UI,
+job o cambio de base.
+
+El candidato funcional final es `0720813`. `verify:full` pasó 13/13 etapas:
+suite base 838 pruebas, 818 PASS y 20 skips PostgreSQL gobernados; composite
+17/17, PBI-039 2/2 y PBI-040 1/1 con 62 migraciones y p95 5.50 ms sobre 10,000
+items; runtime Preview-like, smokes y cleanup PASS. Chrome local confirmó el
+merge reversible `Fundas + Fundas QA`, selección compatible, foco/Escape,
+Light/Dark y 1280/768/640. La edición mostró canon exacto y captura pending con
+el mismo combobox. Esto no constituye Owner Acceptance.
+
 ## Capacidades integradas relevantes
 
 - Trusted Station Context, Users, Roles/capabilities, PIN y Operational Session
@@ -85,17 +188,17 @@ activa. Production no cambió.
 
 | Elemento | Estado vigente |
 |---|---|
-| Sprint | SPRINT-02 — Closed candidate |
-| Current PBI | NONE; PBI-043 Done candidate |
-| WIP | 0/1 funcional |
-| PBI-040 | congelado; no integrado |
+| Sprint | SPRINT-03 — Active |
+| Current PBI | PBI-040 — Owner Accepted; Final Verification |
+| WIP | 1/1 |
+| PBI-040 | Functional Freeze; cierre técnico, integración y Preview autorizados con gates |
+| PBI-041 | Ready documentalmente; Candidate no seleccionado, no iniciado ni autorizado |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Preview | `aab27d9` PASS |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Integrar este cierre documental y obtener CI exacta sobre su merge. Entonces
-PBI-043 y SPRINT-02 quedan `Done`/`Closed` efectivos sin otro PR. PBI-040
-permanece congelado: podrá reconciliarse después como candidato, pero no queda
-iniciado ni autorizado por este cierre.
+Completar Final Verification, revisión independiente, integración y validación
+Preview de PBI-040 conforme al Master Goal de cierre. PBI-041 permanece Ready,
+no seleccionado ni autorizado; no iniciar otro PBI ni desplegar Production.

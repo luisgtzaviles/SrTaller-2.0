@@ -126,6 +126,12 @@ export class RepairRiskCatalogService {
     return this.changeStatus(context, value, 'active', 'repair_risk.reactivated');
   }
 
+  delete(context: RepairRiskCatalogContext, value: unknown) {
+    const input = exactObject(value, ['riskId', 'expectedVersion']);
+    const [, eventId, correlationId] = generatedIds(this.createId);
+    return this.repository.deleteRisk(context, { referenceId: riskId(input.riskId), kind: 'RISK', eventId, correlationId, expectedVersion: expectedVersion(input.expectedVersion), occurredAt: this.now() });
+  }
+
   private changeStatus(
     context: RepairRiskCatalogContext,
     value: unknown,

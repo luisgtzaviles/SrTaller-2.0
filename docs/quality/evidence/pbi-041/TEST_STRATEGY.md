@@ -1,0 +1,149 @@
+# PBI-041 — Test Strategy
+
+## Estado
+
+- **Resultado:** strategy complete for readiness; no tests executed for an
+  implementation that does not yet exist.
+- **Fecha:** 2026-09-13.
+- **Riesgo:** Alto; DEC-051 requires risk-proportional unit, contract,
+  PostgreSQL, HTTP, browser, security and CI evidence.
+
+## Deterministic fixture family
+
+`supplier-informal-v1` will contain 1,500 synthetic rows, intentionally without
+supplier codes for most rows. It covers PART/PRODUCT/SERVICE, exact and near
+titles, duplicate rows, pending Category/Brand, explicit price/cost, blanks and
+zero. New items must receive server-generated SKU/barcode.
+
+`supplier-informal-v2` retains a controlled subset exactly and changes other
+titles, costs and prices; adds/removes rows; adds optional supplier codes; and
+contains corrected/inconsistent mapping history. It yields known, changed, new,
+ambiguous and disappeared groups without requiring advanced pattern logic.
+
+Fixtures contain no Owner/supplier real data. A future anonymized shape may be
+used locally but is not committed unless separately approved.
+
+## Test matrix
+
+| ID | Scenario / expected invariant | Unit | Contract | PG | HTTP | Browser | CI |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| BI-Q01 | V1 1,500 rows without codes ingests; supplier code stays null | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q02 | new Catalog creates use server SKU/barcode and remain searchable | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q03 | V2 exact historical mappings preselect only when unique/consistent | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q04 | corrected mapping appends resolution and changes memory projection | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q05 | inconsistent historical target becomes ambiguous | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q06 | optional/duplicate supplier code does not fabricate or last-row-win | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q07 | pending Category/Brand consolidates through PBI-040 governance | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q08 | Owner confirms batch; no per-row click for exact preselection |  | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q09 | supplier title change never renames Catalog automatically | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q10 | cost/price real change appends one revision each | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q11 | same amount is NO_CHANGE; zero is explicit; blank is no change | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q12 | Branch override remains unchanged/effective after base update | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q13 | disappeared Listing makes no lifecycle/price/cost write | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q14 | duplicate in Version marks all involved rows conflict | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q15 | conflicting identifiers/mappings block whole batch | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q16 | two Owners: optimistic stale preserves first/current decisions | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q17 | stale CatalogItem before publish rolls back all included rows | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q18 | capability revoked before publish causes deny + zero writes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q19 | same publish retry returns same outcome; incompatible replay conflicts | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q20 | raw expires at 90d; structured/history/revisions survive cleanup | ✓ | ✓ | ✓ |  |  | ✓ |
+| BI-Q21 | cost absent from denied responses/DOM/report/version history | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q22 | two Tenants isolated across every query/FK/count/report/publish | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q23 | 10k meets all budgets before advertised support | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q24 | 50k characterized; product rejects >10k with zero partial staging | ✓ | ✓ | ✓ | ✓ | ✓ | scheduled/manual evidence |
+| BI-Q25 | paste cell/column/rectangle, edit, add/remove, undo and reload draft | ✓ | ✓ |  | ✓ | ✓ | ✓ |
+| BI-Q26 | Tab/Shift+Tab/arrows/Enter/selection/focus/announcements |  |  |  |  | ✓ | ✓ |
+| BI-Q27 | 1280/768/640 and light/dark preserve usable virtualized grid |  |  |  |  | ✓ | Owner/CI evidence |
+| BI-Q28 | malicious/oversized clipboard and each rows/columns/cells/cell/bytes cap render/reject safely | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q29 | atomic injected failure/deadlock/timeout has known/idempotent outcome | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q30 | Source/Version/Listing immutable and no destructive cascade | ✓ | ✓ | ✓ |  |  | ✓ |
+
+## Layer responsibilities
+
+### Unit
+
+- normalization preserves clean casing and exact raw title;
+- signature/fingerprint algorithm versioning and deterministic hashes;
+- matching precedence, contradictions and exact-history eligibility;
+- field intent matrix, blank/zero/money parsing and diff/no-op;
+- lifecycle transition policies, pending vs unresolved and report counts;
+- retention clock/chunk selection and cost redaction policies.
+
+### Contract
+
+- framework-free Catalog ports and exhaustive result variants;
+- DTOs omit cost, never return hidden null/metadata, and preserve error taxonomy;
+- idempotency same/incompatible payload; stale/conflict/non-revealing results;
+- Version/Batch relationship is not 1:1; Procurement/Inventory/Repairs only see
+  Catalog item contracts, never SupplierListing identity.
+
+### PostgreSQL 18.4
+
+- fresh/upgrade migration design, compound FKs/uniques/checks/index plans;
+- immutable snapshot mutation guard and append-only resolution history;
+- transaction same connection, injected rollback, serialization/deadlock;
+- two Owners, row lock order, idempotency outcomes and no partial writes;
+- two Tenants + two Branches, exact queries/counts/pagination and no cascades;
+- cleanup with controlled clock/failure/retry and permanent evidence survival.
+
+### HTTP/security
+
+- trusted context, capabilities by field, CSRF/origin and rate/size limits;
+- alien IDs, forged state/method/expectedVersion and anti-enumeration;
+- cost visibility across Composer, preview, history and report;
+- publish retry/outcome unknown and capability/session revocation at commit.
+
+### Browser/Owner surface
+
+- Chrome real, not a DOM-only unit substitute;
+- paste/edit/navigation/selection/focus/undo/durable reload;
+- virtual scrolling and stable row identity at 1,500 and 10,000;
+- error/empty/loading/reconnecting/stale/denied/success states;
+- screen widths 1280/768/640, light/dark, keyboard-only and announcements;
+- Version 1 → publish → Version 2 comparison Owner checkpoint.
+
+### CI and evidence
+
+- governed Node 24.18.0/pnpm 11.15.1 via repository scripts;
+- `verify`, architecture, PostgreSQL, focused High-risk/security, smoke and
+  browser suites on exact candidate SHA;
+- critical mutation fixtures: remove Tenant predicate, cost redaction,
+  expectedVersion, transaction wrapper, history-consistency guard and cleanup
+  allowlist; tests must fail;
+- exact-main CI after authorized merge remains separate from candidate PASS;
+- no flaky critical test, retry-to-green, supplier data, secrets or invented
+  performance evidence.
+
+## Performance protocol
+
+Use deterministic 1k, 1.5k and 10k data shapes. Warm-up is reported separately;
+p95 uses at least 20 measured iterations for read/analyze and 10 isolated runs
+for destructive/publish fixtures. Record CPU/RAM/browser/PG version, dataset
+hash, indexes/EXPLAIN, candidate SHA and raw timings.
+
+Budgets are those in Price List Architecture: paste ≤1/3 s, analysis ≤5/30 s,
+first preview ≤1.5/2 s, publish HTTP ≤8/30 s, DB transaction ≤5/15 s,
+additional heap ≤100/250 MiB and cleanup ≤10/60 s for 1k/10k. Main-thread task
+maximum is 200 ms. Any 10k miss means support is not announced and the PBI does
+not pass its promised target without Owner-reviewed scope/budget change.
+
+50k runs outside the product cap in a controlled characterization harness and
+records resources/bottleneck; the production-like HTTP path must reject it
+before row persistence. It is not a capacity claim.
+
+## Owner checkpoint evidence
+
+Capture route, exact SHA, runtime provenance, fixture hashes and visible counts
+for both versions. Owner verifies mappings, explicit changes, pending/unresolved,
+atomic apply, stable item IDs, generated identifiers, correct price/cost history,
+override preservation, report, reload and responsive/keyboard behavior. Backend
+PASS alone cannot close Owner Review.
+
+## Exit criteria
+
+- BI-Q01..Q30 applicable gates green without downgraded assertions;
+- required 1,500-row Owner flow and 10k candidate budgets evidenced;
+- 50k characterization/rejection evidenced;
+- zero Blocker/Critical/High open after focused review;
+- exact candidate Git/worktree/runtime evidence and no sensitive fixture data;
+- implementation remains unaccepted until Owner explicitly approves it.

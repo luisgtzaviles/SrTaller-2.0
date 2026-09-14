@@ -1,12 +1,51 @@
-import { BookOpen, LockKeyhole } from 'lucide-react';
+import { BookOpen, GitMerge, LockKeyhole, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 import { Button } from '../ui/controls.js';
 import { Alert } from '../ui/feedback.js';
+import { Dialog } from '../ui/overlays.js';
 import styles from './catalog-administration.module.css';
 
 export type CatalogLifecycle = 'active' | 'inactive' | 'all';
 export type CatalogSurface = 'canonical' | 'pending';
+
+export type CatalogSectionOption<Value extends string> = Readonly<{
+  value: Value;
+  label: string;
+  count?: number;
+  badge?: string;
+  disabled?: boolean;
+}>;
+
+export function CatalogSectionTabs<Value extends string>({
+  value,
+  options,
+  label,
+  onChange,
+}: Readonly<{
+  value: Value;
+  options: readonly CatalogSectionOption<Value>[];
+  label: string;
+  onChange(value: Value): void;
+}>): React.JSX.Element {
+  return (
+    <nav className={styles.sectionTabs} aria-label={label}>
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-current={value === option.value ? 'page' : undefined}
+          disabled={option.disabled}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+          {option.count === undefined ? null : <span>{option.count}</span>}
+          {option.badge ? <small>{option.badge}</small> : null}
+        </button>
+      ))}
+    </nav>
+  );
+}
 
 export function CatalogPanel({ labelledBy, children }: Readonly<{
   labelledBy: string;
@@ -128,6 +167,13 @@ export function CatalogTable({ children }: Readonly<{ children: React.ReactNode 
   return <div className={styles.tableShell}><table>{children}</table></div>;
 }
 
+export function CatalogMergeDialog({ open, title, description, busy, canConfirm, reassignmentCount, onClose, onConfirm, children }: Readonly<{
+  open: boolean; title: string; description: string; busy: boolean; canConfirm: boolean;
+  reassignmentCount: number; onClose(): void; onConfirm(): void; children: React.ReactNode;
+}>): React.JSX.Element {
+  return <Dialog open={open} title={title} description={description} onClose={() => !busy && onClose()} footer={<><Button disabled={busy} onClick={onClose}>Cancelar</Button><Button tone="primary" disabled={busy || !canConfirm} onClick={onConfirm}><GitMerge size={16} aria-hidden="true" />Fusionar</Button></>}><div className={styles.mergeDialogBody}>{children}<p className={styles.confirmCopy}>Se reasignarán {reassignmentCount} {reassignmentCount === 1 ? 'relación de artículo' : 'relaciones de artículos'}. Las identidades fuente quedarán retiradas y el evento de fusión conservará su trazabilidad.</p></div></Dialog>;
+}
+
 export function CatalogLoadingState({ label = 'Cargando catálogo…' }: Readonly<{ label?: string }>): React.JSX.Element {
   return <p className={styles.state} role="status">{label}</p>;
 }
@@ -152,8 +198,12 @@ export function CatalogStatusBadge({ status }: Readonly<{ status: 'active' | 'in
   return <span className={status === 'active' ? styles.activeBadge : styles.inactiveBadge}>{status === 'active' ? 'Activo' : 'Inactivo'}</span>;
 }
 
-export function CatalogUsage({ count }: Readonly<{ count: number }>): React.JSX.Element {
-  return <>{count} {count === 1 ? 'reparación' : 'reparaciones'}</>;
+export function CatalogUsage({ count, singular = 'reparación', plural = 'reparaciones' }: Readonly<{ count: number; singular?: string; plural?: string }>): React.JSX.Element {
+  return <>{count} {count === 1 ? singular : plural}</>;
+}
+
+export function CatalogCanonicalUsageHeader({ description = 'Reparaciones vinculadas por identidad canónica. No cuenta coincidencias del texto histórico.' }: Readonly<{ description?: string }>): React.JSX.Element {
+  return <abbr title={description}>Uso canónico</abbr>;
 }
 
 export function formatCatalogResultCount(count: number): string {
@@ -169,6 +219,40 @@ export type CatalogRowAction = Readonly<{
   id?: string | undefined;
   disabled?: boolean | undefined;
 }>;
+
+export function deriveCatalogLifecycleActions(input: Readonly<{
+  idPrefix: string;
+  status: 'active' | 'inactive';
+  deletable: boolean;
+  busy: boolean;
+  onEdit(): void;
+  onDelete(): void;
+  onDeactivate(): void;
+  onReactivate(): void;
+}>): readonly CatalogRowAction[] {
+  const edit = { key: 'edit', id: `edit-${input.idPrefix}`, label: 'Editar', icon: Pencil, disabled: input.busy, onClick: input.onEdit } as const;
+  if (input.deletable) return Object.freeze([edit, { key: 'delete', label: 'Eliminar', icon: Trash2, tone: 'danger' as const, disabled: input.busy, onClick: input.onDelete }]);
+  if (input.status === 'inactive') return Object.freeze([edit, { key: 'reactivate', label: 'Reactivar', icon: RotateCcw, disabled: input.busy, onClick: input.onReactivate }]);
+  return Object.freeze([edit, { key: 'deactivate', label: 'Desactivar', disabled: input.busy, onClick: input.onDeactivate }]);
+}
+
+export function catalogSafeDeleteFailure(error: unknown): string {
+  const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;
+  if (code === 'CATALOG_REFERENCE_IN_USE' || code === 'REPAIR_PROBLEM_CATEGORY_DELETE_NOT_ALLOWED') return 'La referencia recibió un uso mientras confirmabas. No se eliminó; la lista ya muestra su estado vigente.';
+  return 'No fue posible eliminar la referencia. La lista se actualizó para reflejar dependencias o una versión nueva.';
+}
+
+export function CatalogSafeDeleteDialog({ open, label, entityLabel, busy, restoreFocusSelector, onClose, onConfirm }: Readonly<{
+  open: boolean;
+  label: string;
+  entityLabel: string;
+  busy: boolean;
+  restoreFocusSelector: string | undefined;
+  onClose(): void;
+  onConfirm(): void;
+}>): React.JSX.Element {
+  return <Dialog open={open} title={`Eliminar “${label}”?`} description={`Eliminar ${entityLabel}`} restoreFocusSelector={restoreFocusSelector} onClose={() => !busy && onClose()} footer={<><Button disabled={busy} onClick={onClose}>Cancelar</Button><Button tone="danger" disabled={busy} onClick={onConfirm}>{busy ? 'Eliminando…' : 'Eliminar definitivamente'}</Button></>}><p className={styles.confirmCopy}>Este registro nunca ha sido utilizado y se eliminará definitivamente.</p></Dialog>;
+}
 
 export function CatalogRowActions({ actions, emptyLabel }: Readonly<{
   actions: readonly CatalogRowAction[];

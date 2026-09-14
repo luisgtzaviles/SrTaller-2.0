@@ -11,6 +11,7 @@ import {
   verifyCandidateWhitespace,
 } from './lib/candidate-fingerprint.mjs';
 import { createFullVerificationSmokeHarness, fullVerificationSmokeLabel } from './lib/full-verification-smoke.mjs';
+import { inspectIntegrationBaseline } from './lib/integration-baseline.mjs';
 import {
   assertExternalEvidenceDirectory,
   fullVerificationStages,
@@ -48,6 +49,7 @@ async function docker(argumentsList) {
 const governedFilters = Object.freeze([
   `label=com.srtaller.pbi023.execution=${executionLabel}`,
   'label=com.srtaller.pbi039.hardening=postgresql',
+  'label=com.srtaller.pbi040.catalog=postgresql',
   'label=com.srtaller.preview-runtime=postgresql',
   `label=${fullVerificationSmokeLabel}`,
 ]);
@@ -116,10 +118,12 @@ function parseJsonOutput(stdout, label) {
 
 async function dryInventory() {
   const fingerprint = assertCandidatePreflight(await createCandidateFingerprint(repositoryRoot));
+  const integrationBaseline = await inspectIntegrationBaseline(repositoryRoot);
   const skipInventory = await inspectPostgresqlSkipInventory(repositoryRoot);
   const requiredScripts = [
     'scripts/run-postgresql-ci.mjs',
     'scripts/test-pbi039-postgresql.mjs',
+    'scripts/test-pbi040-postgresql.mjs',
     'scripts/test-preview-database-runtime-postgresql.mjs',
     'scripts/smoke-start.mjs',
     'scripts/smoke-ui.mjs',
@@ -140,6 +144,7 @@ async function dryInventory() {
     status: 'READY',
     campaignExecuted: false,
     candidateFingerprint: fingerprint.candidateSha256,
+    integrationBaseline,
     docker: dockerVersion.trim(),
     postgresImage: imageState,
     evidenceLocation: 'external operating-system temporary directory',
@@ -167,7 +172,10 @@ if (process.argv.includes('--dry-run')) {
 
   const operations = {
     candidateFingerprint: () => createCandidateFingerprint(repositoryRoot),
-    candidatePreflight: async (fingerprint) => assertCandidatePreflight(fingerprint),
+    candidatePreflight: async (fingerprint) => {
+      assertCandidatePreflight(fingerprint);
+      return inspectIntegrationBaseline(repositoryRoot);
+    },
     resourcePreflight: assertResourcePreflight,
     toolchain: async () => {
       await runStreamingCommand('pnpm', ['run', 'verify:toolchain']);
@@ -250,6 +258,25 @@ if (process.argv.includes('--dry-run')) {
         tests,
         skips: skipped,
         cleanup: evidence.cleanup.status,
+      });
+    },
+    pbi040Postgresql: async () => {
+      const result = await runStreamingCommand(
+        process.execPath,
+        ['scripts/test-pbi040-postgresql.mjs'],
+        { timeoutMs: 5 * 60_000 },
+      );
+      if (
+        !result.stdout.includes('PBI-040 PostgreSQL PASS:') ||
+        !result.stdout.includes('zero critical skips') ||
+        !result.stdout.includes('disposable container removed')
+      ) {
+        throw new Error('PBI-040 PostgreSQL evidence is incomplete');
+      }
+      return Object.freeze({
+        tests: skipInventory.material.pbi040Postgresql,
+        skips: 0,
+        cleanup: 'PASS',
       });
     },
     previewRuntime: async () => {

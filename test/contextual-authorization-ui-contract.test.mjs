@@ -45,6 +45,14 @@ test('authenticated capability snapshots accept only a canonical finite set', ()
     'repairs.catalogs.manage',
     'repairs.configuration.read',
     'repairs.configuration.manage',
+    'price_list.read',
+    'catalog.manage',
+    'catalog.prices.manage',
+    'catalog.branch_prices.manage',
+    'catalog.reference_cost.read',
+    'catalog.reference_cost.manage',
+    'catalog.import.prepare',
+    'catalog.import.publish',
   ]);
 
   const parsed = parseSessionCapabilities(['repairs.read', 'repairs.add_note'], true);
@@ -103,7 +111,7 @@ test('Repairs routes and navigation remain capability-gated before protected pag
   assert.match(accessDeniedSource, /servidor vuelve a verificar cada solicitud/u);
 
   assert.match(shellSource, /requiredCapability: 'repairs\.read'/u);
-  assert.match(shellSource, /navigation\.filter\(\(\{ requiredCapability \}\)/u);
+  assert.match(shellSource, /items\.filter\(\(\{ requiredCapability \}\)/u);
   assert.match(shellSource, /hasOperationalCapability\(capabilities, requiredCapability\)/u);
   assert.doesNotMatch(dashboardSource, /\/reparaciones\/nueva|Nueva reparación/u);
   assert.doesNotMatch(dashboardSource, /PBI-024 no integrado/u);

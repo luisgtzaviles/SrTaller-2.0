@@ -48,6 +48,24 @@ const { createTrustedStationContext } = enabled
 const migrationRoot = fileURLToPath(new URL('../dist/infrastructure/database/migrations/', import.meta.url));
 const sessionTables = ['access_operational_sessions', 'access_operational_session_station_guards'];
 const allTables = [
+  'catalog_reference_deletion_events', 'repair_catalog_reference_deletion_events',
+  'catalog_audit_events',
+  'catalog_commands',
+  'catalog_reference_cost_revisions',
+  'catalog_branch_price_revisions',
+  'catalog_base_price_revisions',
+  'catalog_barcode_sequences',
+  'catalog_sku_sequences',
+  'catalog_item_identifiers',
+  'catalog_items',
+  'catalog_brand_pending_kind_applicability',
+  'catalog_brand_pending_values',
+  'catalog_category_pending_values',
+  'catalog_brand_kind_applicability',
+  'catalog_category_kind_applicability',
+  'catalog_brands',
+  'catalog_categories',
+  'catalog_reference_identity_locks',
   'user_preferences',
   'repair_problem_category_deletion_events',
   'repair_problem_classification_events',
@@ -205,6 +223,9 @@ function authorization(item) {
 }
 
 async function reset(admin) {
+  await admin.query('drop function if exists reject_catalog_reference_deletion_event_mutation() cascade');
+  await admin.query('drop function if exists reject_repair_catalog_reference_deletion_event_mutation() cascade');
+  await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists stations_advance_admission_revision() cascade');
   await admin.query('drop function if exists users_advance_admission_revision() cascade');
@@ -1197,6 +1218,46 @@ test('PostgreSQL 18.4 enforces concurrent Operational Sessions, exact lifecycle,
       [tenantA, stationA],
     )).rows[0].count;
     assert.ok(activeBeforeRollback >= 2);
+    const catalogMergeMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      catalogMergeMigration?.name,
+      '20260913140000_catalog_add_canonical_reference_merge',
+    );
+    await runner.migrateDown(authorization(catalogMergeMigration));
+    const catalogIdentityMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      catalogIdentityMigration?.name,
+      '20260913130000_catalog_enforce_reference_identity',
+    );
+    await runner.migrateDown(authorization(catalogIdentityMigration));
+    const repairsSafeDeleteMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      repairsSafeDeleteMigration?.name,
+      '20260913121000_repairs_add_reference_safe_delete',
+    );
+    await runner.migrateDown(authorization(repairsSafeDeleteMigration));
+    const catalogSafeDeleteMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      catalogSafeDeleteMigration?.name,
+      '20260913120000_catalog_add_reference_safe_delete',
+    );
+    await runner.migrateDown(authorization(catalogSafeDeleteMigration));
+    const catalogMigration = [...(await runner.getMigrationStatus()).migrations]
+      .reverse()
+      .find(({ state }) => state === 'applied');
+    assert.equal(
+      catalogMigration?.name,
+      '20260912210000_catalog_unify_pending_reference_reconciliation',
+    );
+    await runner.migrateDown(authorization(catalogMigration));
     const latestMigration = [...(await runner.getMigrationStatus()).migrations]
       .reverse()
       .find(({ state }) => state === 'applied');

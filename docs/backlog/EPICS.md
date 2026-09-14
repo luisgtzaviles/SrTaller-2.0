@@ -2,7 +2,9 @@
 
 ## Estado del documento
 
-**Estado:** Borrador. Ningún epic representa compromiso de fecha, versión o implementación.
+**Estado:** Reconciliado; EPIC-015 tiene PBI-040 en Owner Review y PBI-041
+Candidate/Ready sin selección ni autorización de implementación. Ningún epic
+autoriza aceptación o integración por sí solo.
 **Criterio común:** sólo se descompone cuando el problema, actores, límites y dependencias son suficientemente conocidos.
 
 ## EPIC-000 — Product Discovery and Architecture
@@ -24,9 +26,8 @@
 - **Dependencias:** EPIC-000 y ADRs técnicos aceptados.
 - **Riesgos:** crear plataforma interna antes de validar necesidades o fijar tooling prematuramente.
 - **Exclusiones:** funcionalidades de taller y microservicios.
-- **Estado:** PBI-023 `Closed`; Identity & Context Foundation cerrada en
-  Sprint 01. SPRINT-02 está `Closed candidate`; sus PBIs están integrados y
-  PBI-043 tiene CI/Preview PASS. No existe Current PBI; WIP funcional `0/1`.
+- **Estado:** PBI-023 `Closed`; Sprint 01 y SPRINT-02 `Closed`; PBI-043 `Done`.
+  SPRINT-03 está activo para EPIC-015, con PBI-040 en Owner Review y WIP `1/1`.
 - **Puede descomponerse cuando:** arquitectura, stack, ambientes y quality gates estén aprobados.
 - **Actualización:** [PBI-021](pbis/PBI-021.md) y
   [PBI-022](pbis/PBI-022.md) están `Done`. [PBI-023](pbis/PBI-023.md) está
@@ -35,8 +36,8 @@
   PBI-031–PBI-036 separan PIN, sesión, autorización, auditoría y observabilidad.
   [PBI-030](pbis/PBI-030.md) tiene cierre `Done`; PBI-027/PBI-029/PBI-024/
   PBI-032/PBI-033/PBI-025/PBI-034/PBI-026/PBI-028/PBI-038 están `Done`;
-  PBI-038 cerró el seguimiento de timezone aprobado con riesgo Medium y
-  PBI-043 es `Done candidate` durante su cierre documental.
+  PBI-038 cerró el seguimiento de timezone aprobado con riesgo Medium;
+  PBI-043 está `Done` y validado en Preview.
 
 ## EPIC-002 — Tenant and Platform Administration
 
@@ -193,6 +194,30 @@
 - **Exclusiones:** migración automática completa asumida desde el inicio y copia de código legacy.
 - **Estado:** Later / Discovery required.
 - **Puede descomponerse cuando:** alcance, calidad, obligaciones, cohortes y criterios de aceptación se conozcan.
+
+## EPIC-015 — Catalog and Pricing
+
+- **Objetivo:** mantener identidad comercial Tenant-wide y resolver el precio
+  efectivo de cada Branch para consulta rápida y consumo futuro mediante
+  snapshots.
+- **Valor:** permite responder cuánto cuesta en segundos y actualizar listas de
+  proveedor sin mezclar catálogo, existencia, compras, Repair o Caja.
+- **Capacidades:** alta individual, clasificación, identificadores, precio base,
+  override Branch, costo de referencia restringido, historial, búsqueda y
+  Composer masivo con Supplier Catalog Versions/reconciliación.
+- **Dependencias:** tenancy/currency, estación/sesión, users/preferences, access,
+  audit, persistencia y UI foundation ya materializadas.
+- **Riesgos:** duplicados, fuga Tenant/Branch, exposición de costo, pérdida de
+  historia y apply masivo ambiguo/parcial.
+- **Exclusiones:** Inventory, Procurement, Repair Concepts, Quote/Sales,
+  Payments/Caja, Pedidos, Solicitudes, multi-currency/FX e impuestos.
+- **Estado:** Architecture accepted; PBI-040 Owner Review y aceptación
+  pendiente; PBI-041 Ready documentalmente, no seleccionado ni iniciado;
+  PBI-042 Planned/Unassigned. Advanced Supplier Reconciliation permanece
+  diferido sin PBI ID/readiness.
+- **Descomposición:** [PBI-040](pbis/PBI-040.md),
+  [PBI-041](pbis/PBI-041.md) y [PBI-042](pbis/PBI-042.md).
+- **Contrato:** [Price List Architecture](../architecture/PRICE_LIST_ARCHITECTURE.md).
 
 ## Preguntas abiertas
 

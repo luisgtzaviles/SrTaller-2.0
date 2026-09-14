@@ -11,6 +11,28 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   );
   assert.equal(policy.persistence.status, 'tenant-schema-materialized');
   assert.deepEqual(policy.persistence.databaseObjects, {
+    catalog_categories: { owner: 'catalog', kind: 'table' },
+    catalog_brands: { owner: 'catalog', kind: 'table' },
+    catalog_items: { owner: 'catalog', kind: 'table' },
+    catalog_item_identifiers: { owner: 'catalog', kind: 'table' },
+    catalog_sku_sequences: { owner: 'catalog', kind: 'table' },
+    catalog_category_kind_applicability: { owner: 'catalog', kind: 'table' },
+    catalog_brand_kind_applicability: { owner: 'catalog', kind: 'table' },
+    catalog_category_pending_values: { owner: 'catalog', kind: 'table' },
+    catalog_brand_pending_values: { owner: 'catalog', kind: 'table' },
+    catalog_brand_pending_kind_applicability: {
+      owner: 'catalog',
+      kind: 'table',
+    },
+    catalog_barcode_sequences: { owner: 'catalog', kind: 'table' },
+    catalog_base_price_revisions: { owner: 'catalog', kind: 'table' },
+    catalog_branch_price_revisions: { owner: 'catalog', kind: 'table' },
+    catalog_reference_cost_revisions: { owner: 'catalog', kind: 'table' },
+    catalog_commands: { owner: 'catalog', kind: 'table' },
+    catalog_audit_events: { owner: 'catalog', kind: 'table' },
+    catalog_reference_deletion_events: { owner: 'catalog', kind: 'table' },
+    catalog_reference_identity_locks: { owner: 'catalog', kind: 'table' },
+    catalog_reference_merge_events: { owner: 'catalog', kind: 'table' },
     branches: { owner: 'stations', kind: 'table' },
     stations: { owner: 'stations', kind: 'table' },
     station_bindings: { owner: 'stations', kind: 'table' },
@@ -38,6 +60,7 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     repair_problem_pending_values: { owner: 'repairs', kind: 'table' },
     repair_problem_category_catalog_events: { owner: 'repairs', kind: 'table' },
     repair_problem_category_deletion_events: { owner: 'repairs', kind: 'table' },
+    repair_catalog_reference_deletion_events: { owner: 'repairs', kind: 'table' },
     repair_problem_classifications: { owner: 'repairs', kind: 'table' },
     repair_problem_classification_events: { owner: 'repairs', kind: 'table' },
     repair_new_repair_policy_heads: { owner: 'repairs', kind: 'table' },
@@ -114,7 +137,7 @@ test('initial schema registry has exact owners, keys and physical scope', async 
   );
 });
 
-test('initial productive migration root contains exactly one governed file', async () => {
+test('productive migration root remains exact and governed', async () => {
   assert.deepEqual(
     await readdir('src/infrastructure/database/migrations'),
     [
@@ -169,7 +192,17 @@ test('initial productive migration root contains exactly one governed file', asy
       '20260909100000_repairs_add_problem_category_safe_delete.ts',
       '20260909220000_users_create_preferences.ts',
       '20260910230000_repairs_create_device_type_catalog.ts',
+      '20260911180000_tenancy_add_operating_currency.ts',
+      '20260911181000_access_add_catalog_capabilities.ts',
+      '20260911182000_users_add_price_list_cost_preference.ts',
+      '20260911183000_catalog_create_pricing_core.ts',
+      '20260911200000_catalog_add_reference_governance.ts',
       '20260912180000_access_enable_concurrent_operational_sessions.ts',
+      '20260912210000_catalog_unify_pending_reference_reconciliation.ts',
+      '20260913120000_catalog_add_reference_safe_delete.ts',
+      '20260913121000_repairs_add_reference_safe_delete.ts',
+      '20260913130000_catalog_enforce_reference_identity.ts',
+      '20260913140000_catalog_add_canonical_reference_merge.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

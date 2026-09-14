@@ -38,8 +38,8 @@ function evidence(headers: RequestHeaders): ProtectedRequestEvidence {
   });
 }
 
-function response(value: Readonly<{ newRepairFormMode: string }>) {
-  return { newRepairFormMode: value.newRepairFormMode };
+function response(value: Readonly<{ newRepairFormMode: string; priceListShowReferenceCost: boolean }>) {
+  return { newRepairFormMode: value.newRepairFormMode, priceListShowReferenceCost: value.priceListShowReferenceCost };
 }
 
 function translateError(error: unknown): never {

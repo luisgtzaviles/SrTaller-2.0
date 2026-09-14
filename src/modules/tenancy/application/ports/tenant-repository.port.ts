@@ -10,11 +10,13 @@ export interface TenantPersistenceScope {
 
 export interface TenantRecord {
   readonly tenantId: TenantId;
+  readonly operatingCurrency: string;
   readonly createdAt: string;
 }
 
 export interface CreateTenantRecord {
   readonly tenantId: TenantId;
+  readonly operatingCurrency: string;
   readonly createdAt: string;
 }
 
@@ -102,4 +104,5 @@ export interface TenantRepositoryPort {
     scope: TenantPersistenceScope,
   ): Promise<TenantRecord | null>;
   existsTenant(scope: TenantPersistenceScope): Promise<boolean>;
+  readOperatingCurrency(scope: TenantPersistenceScope): Promise<string | null>;
 }

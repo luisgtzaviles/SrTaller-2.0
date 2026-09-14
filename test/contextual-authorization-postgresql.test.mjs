@@ -85,6 +85,12 @@ const migrationRoot = fileURLToPath(
 );
 
 const tables = [
+  'catalog_reference_merge_events', 'catalog_reference_deletion_events', 'repair_catalog_reference_deletion_events',
+  'catalog_audit_events', 'catalog_commands', 'catalog_reference_cost_revisions',
+  'catalog_branch_price_revisions', 'catalog_base_price_revisions',
+  'catalog_barcode_sequences', 'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
+  'catalog_brand_pending_kind_applicability', 'catalog_brand_pending_values', 'catalog_category_pending_values',
+  'catalog_brand_kind_applicability', 'catalog_category_kind_applicability', 'catalog_brands', 'catalog_categories', 'catalog_reference_identity_locks',
   'user_preferences',
   'repair_problem_category_deletion_events',
   'repair_problem_classification_events',
@@ -245,6 +251,9 @@ function source() {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists reject_catalog_reference_deletion_event_mutation() cascade');
+  await admin.query('drop function if exists reject_repair_catalog_reference_deletion_event_mutation() cascade');
+  await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query(
     'drop function if exists test_reject_pbi028_audit_insert() cascade',
   );
@@ -283,8 +292,8 @@ async function assertNoObjects(admin) {
 
 async function seedMaterialContext(admin) {
   await admin.query(
-    `insert into tenants (tenant_id, created_at)
-     values ($1, now()), ($2, now())`,
+    `insert into tenants (tenant_id, operating_currency, created_at)
+     values ($1, 'MXN', now()), ($2, 'MXN', now())`,
     [tenantA, tenantB],
   );
   await admin.query(

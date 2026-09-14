@@ -202,6 +202,14 @@ export const capabilityLabel: Readonly<Record<string, string>> = Object.freeze({
   'users.manage': 'Administrar usuarios',
   'access_matrix.read': 'Ver roles y permisos',
   'access_matrix.manage': 'Administrar roles y permisos',
+  'price_list.read': 'Consultar Lista de precios',
+  'catalog.manage': 'Administrar artículos y clasificación comercial',
+  'catalog.prices.manage': 'Administrar precios base',
+  'catalog.branch_prices.manage': 'Administrar precios de la sucursal',
+  'catalog.reference_cost.read': 'Ver costos de referencia',
+  'catalog.reference_cost.manage': 'Administrar costos de referencia',
+  'catalog.import.prepare': 'Preparar importaciones de catálogo',
+  'catalog.import.publish': 'Publicar importaciones de catálogo',
 });
 
 export function humanCapabilityLabel(capabilityCode: string): string {

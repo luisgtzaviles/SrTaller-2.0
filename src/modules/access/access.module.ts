@@ -34,8 +34,9 @@ import type {
   UserProductRuntime,
 } from '../users/index.js';
 
-import { CONTEXTUAL_AUTHORIZATION_EXECUTOR } from './index.js';
+import { CONTEXTUAL_AUTHORIZATION_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
 import type { ContextualAuthorizationExecutor } from './index.js';
+import type { TenantWideAuthorizationExecutor } from './index.js';
 import {
   AUTHENTICATED_SELF_EXECUTOR,
 } from './application/authenticated-self-executor.js';
@@ -79,6 +80,7 @@ import {
 } from './presentation/access-administration.controller.js';
 import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
+import { TenantWideAuthorizationExecutorService } from './presentation/tenant-wide-authorization.executor.js';
 import { AuthenticatedSelfExecutorService } from './presentation/authenticated-self.executor.js';
 import { AccessAdministrationOperations } from './application/access-administration-operations.js';
 import { AccessSelfPreferencesOperations } from './application/access-self-preferences.operations.js';
@@ -211,6 +213,12 @@ type RegisteredAccessUseCases =
         new ContextualAuthorizationExecutorService(runtime),
     },
     {
+      provide: TENANT_WIDE_AUTHORIZATION_EXECUTOR,
+      inject: [CONTEXTUAL_AUTHORIZATION_EXECUTOR, ACCESS_SESSION_RUNTIME],
+      useFactory: (contextual: ContextualAuthorizationExecutor, runtime: AccessSessionRuntime): TenantWideAuthorizationExecutor =>
+        new TenantWideAuthorizationExecutorService(contextual, runtime, new KyselyAdministrationAuthorizationCommitGuard()),
+    },
+    {
       provide: AUTHENTICATED_SELF_EXECUTOR,
       inject: [ACCESS_SESSION_RUNTIME],
       useFactory: (runtime: AccessSessionRuntime): AuthenticatedSelfExecutor =>
@@ -253,7 +261,7 @@ type RegisteredAccessUseCases =
       ),
     },
   ],
-  exports: [CONTEXTUAL_AUTHORIZATION_EXECUTOR],
+  exports: [CONTEXTUAL_AUTHORIZATION_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR],
 })
 export class AccessModule {
   declare private readonly persistenceAdapter: RegisteredAccessPersistenceAdapter;

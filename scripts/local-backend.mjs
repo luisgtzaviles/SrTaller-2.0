@@ -8,8 +8,15 @@ import {
 } from './lib/local-development.mjs';
 import { materializeLocalEvidenceFixtures } from './lib/local-evidence-fixtures.mjs';
 import { localDbUp } from './local-db.mjs';
+import {
+  inspectWorkingTreeProvenance,
+  runtimeProvenanceEnvironment,
+} from './lib/runtime-provenance.mjs';
 
 const values = await ensureLocalEnvironment();
+const provenanceEnvironment = runtimeProvenanceEnvironment(
+  await inspectWorkingTreeProvenance(),
+);
 await localDbUp();
 await materializeLocalEvidenceFixtures();
 const baseEnvironment = cleanChildEnvironment();
@@ -22,7 +29,7 @@ for (const key of [
 const child = spawn('pnpm', ['run', 'dev'], {
   env: {
     ...baseEnvironment,
-    ...startupEnvironment(values),
+    ...startupEnvironment(values, provenanceEnvironment),
     ...databaseEnvironment(values, 'application'),
     SR_PIN_PEPPER: values.SR_PIN_PEPPER,
     SR_STATION_BOOTSTRAP_SECRET: values.SR_STATION_BOOTSTRAP_SECRET,

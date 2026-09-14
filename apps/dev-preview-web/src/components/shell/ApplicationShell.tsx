@@ -8,6 +8,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   RefreshCw,
+  ReceiptText,
   Settings,
   Sun,
   UserCircle,
@@ -28,17 +29,26 @@ import styles from './application-shell.module.css';
 
 const SIDEBAR_STORAGE_KEY = 'srtaller.sidebar.collapsed';
 
-const navigation: readonly Readonly<{
+type NavigationItem = Readonly<{
   to: string;
   label: string;
   icon: LucideIcon;
   end?: boolean;
   requiredCapability?: OperationalCapability;
-}>[] = [
+}>;
+
+const operationNavigation: readonly NavigationItem[] = [
   { to: '/', label: 'Inicio', icon: Home, end: true },
   { to: '/reparaciones', label: 'Reparaciones', icon: Wrench, requiredCapability: 'repairs.read' },
-  { to: '/configuracion', label: 'Configuración', icon: Settings },
 ];
+
+const listNavigation: readonly NavigationItem[] = Object.freeze([
+  { to: '/listas/precios', label: 'Lista de precios', icon: ReceiptText, requiredCapability: 'price_list.read' as const },
+]);
+
+const systemNavigation: readonly NavigationItem[] = Object.freeze([
+  { to: '/configuracion', label: 'Configuración', icon: Settings },
+]);
 
 function readCollapsedPreference(): boolean {
   try {
@@ -57,8 +67,13 @@ function Navigation({ capabilities, collapsed, onNavigate }: Readonly<{
 }>): React.JSX.Element {
   return (
     <nav aria-label="Navegación principal" className={styles.navigation}>
-      <span className={styles.navigationGroup}>Operación</span>
-      {navigation.filter(({ requiredCapability }) => (
+      {[
+        { group: 'Operación', items: operationNavigation },
+        { group: 'Listas', items: listNavigation },
+        { group: 'Sistema', items: systemNavigation },
+      ].map(({ group, items }) => <div className={styles.navigationSection} key={group}>
+      <span className={styles.navigationGroup}>{group}</span>
+      {items.filter(({ requiredCapability }) => (
         !requiredCapability || hasOperationalCapability(capabilities, requiredCapability)
       )).map(({ to, label, icon: Icon, end }) => (
         <NavLink
@@ -74,6 +89,7 @@ function Navigation({ capabilities, collapsed, onNavigate }: Readonly<{
           <span className={styles.navLabel}>{label}</span>
         </NavLink>
       ))}
+      </div>)}
     </nav>
   );
 }

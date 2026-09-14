@@ -31,6 +31,8 @@ function roleStatusView(status: ProductRole['status']): Readonly<{
 
 const CAPABILITY_GROUPS = Object.freeze([
   Object.freeze({ key: 'operation', title: 'Operación del taller', description: 'Acceso al trabajo diario de reparaciones.', prefix: 'repairs.' }),
+  Object.freeze({ key: 'price-list', title: 'Catálogo y precios', description: 'Consulta y administración de la oferta comercial.', prefix: 'catalog.' }),
+  Object.freeze({ key: 'price-list-read', title: 'Lista de precios', description: 'Consulta rápida de precios efectivos.', prefix: 'price_list.' }),
   Object.freeze({ key: 'users', title: 'Equipo', description: 'Consulta y administración de usuarios.', prefix: 'users.' }),
   Object.freeze({ key: 'roles', title: 'Roles y permisos', description: 'Consulta y administración de perfiles de acceso.', prefix: 'access_matrix.' }),
 ]);

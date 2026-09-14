@@ -460,6 +460,7 @@ export interface AdminRepairRisk extends OperationalRepairRisk {
   readonly status: 'active' | 'inactive';
   readonly version: number;
   readonly usageCount: number;
+  readonly deletable: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -509,7 +510,7 @@ export interface OperationalRepairBrand {
   readonly scope: 'platform' | 'tenant';
 }
 export interface OperationalRepairDeviceType { readonly deviceTypeId: string; readonly label: string; readonly scope: 'platform' | 'tenant'; }
-export interface AdminRepairDeviceType extends OperationalRepairDeviceType { readonly code: string | null; readonly status: 'active' | 'inactive'; readonly version: number; readonly usageCount: number; readonly createdAt: string; readonly updatedAt: string; }
+export interface AdminRepairDeviceType extends OperationalRepairDeviceType { readonly code: string | null; readonly status: 'active' | 'inactive'; readonly version: number; readonly usageCount: number; readonly deletable: boolean; readonly createdAt: string; readonly updatedAt: string; }
 export interface PendingRepairDeviceType { readonly pendingDeviceTypeValueId: string; readonly rawLabel: string; readonly status: 'pending' | 'resolved'; readonly canonicalDeviceTypeId: string | null; readonly canonicalLabel: string | null; readonly version: number; readonly usageCount: number; readonly firstSeenAt: string; readonly lastSeenAt: string; }
 export interface OperationalRepairDeviceTypesResponse { readonly items: readonly OperationalRepairDeviceType[]; }
 export interface AdminRepairDeviceTypesResponse { readonly items: readonly AdminRepairDeviceType[]; }
@@ -519,6 +520,7 @@ export interface AdminRepairBrand extends OperationalRepairBrand {
   readonly status: 'active' | 'inactive';
   readonly version: number;
   readonly usageCount: number;
+  readonly deletable: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -550,6 +552,7 @@ export interface AdminRepairModel extends OperationalRepairModel {
   readonly status: 'active' | 'inactive';
   readonly version: number;
   readonly usageCount: number;
+  readonly deletable: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -644,6 +647,7 @@ export function getPendingRepairDeviceTypes(signal?: AbortSignal): Promise<Pendi
 export function createRepairDeviceType(canonicalLabel: string, csrfToken: string): Promise<{ readonly item: AdminRepairDeviceType }> { return api('/api/repairs/configuration/catalogs/device-types', { method: 'POST', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ canonicalLabel }) }); }
 export function renameRepairDeviceType(deviceTypeId: string, canonicalLabel: string, expectedVersion: number, csrfToken: string): Promise<{ readonly item: AdminRepairDeviceType }> { return api(`/api/repairs/configuration/catalogs/device-types/${encodeURIComponent(deviceTypeId)}`, { method: 'PUT', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ canonicalLabel, expectedVersion }) }); }
 export function changeRepairDeviceTypeStatus(deviceTypeId: string, status: 'active' | 'inactive', expectedVersion: number, csrfToken: string): Promise<{ readonly item: AdminRepairDeviceType }> { return api(`/api/repairs/configuration/catalogs/device-types/${encodeURIComponent(deviceTypeId)}/${status === 'active' ? 'reactivate' : 'deactivate'}`, { method: 'POST', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ expectedVersion }) }); }
+export function deleteRepairDeviceType(deviceTypeId: string, expectedVersion: number, csrfToken: string) { return api(`/api/repairs/configuration/catalogs/device-types/${encodeURIComponent(deviceTypeId)}`, { method: 'DELETE', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ expectedVersion }) }); }
 export function resolvePendingRepairDeviceType(pendingDeviceTypeValueId: string, resolution: Readonly<{ canonicalDeviceTypeId?: string; canonicalLabel?: string; expectedVersion: number }>, csrfToken: string): Promise<{ readonly item: PendingRepairDeviceType }> { return api(`/api/repairs/configuration/catalogs/device-types/pending/${encodeURIComponent(pendingDeviceTypeValueId)}/resolve`, { method: 'POST', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify(resolution) }); }
 
 export function getAdminRepairBrands(signal?: AbortSignal): Promise<AdminRepairBrandsResponse> {
@@ -666,6 +670,7 @@ export function changeRepairBrandStatus(brandId: string, status: 'active' | 'ina
   const action = status === 'active' ? 'reactivate' : 'deactivate';
   return api<RepairBrandMutationResponse>(`/api/repairs/configuration/catalogs/brands/${encodeURIComponent(brandId)}/${action}`, { method: 'POST', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ expectedVersion }) });
 }
+export function deleteRepairBrand(brandId: string, expectedVersion: number, csrfToken: string) { return api(`/api/repairs/configuration/catalogs/brands/${encodeURIComponent(brandId)}`, { method: 'DELETE', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ expectedVersion }) }); }
 
 export function resolvePendingRepairBrand(pendingBrandValueId: string, resolution: Readonly<{ canonicalBrandId?: string; canonicalLabel?: string; expectedVersion: number }>, csrfToken: string): Promise<{ readonly item: PendingRepairBrand }> {
   return api<{ readonly item: PendingRepairBrand }>(`/api/repairs/configuration/catalogs/brands/pending/${encodeURIComponent(pendingBrandValueId)}/resolve`, { method: 'POST', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify(resolution) });
@@ -692,6 +697,7 @@ export function changeRepairModelStatus(modelId: string, status: 'active' | 'ina
   const action = status === 'active' ? 'reactivate' : 'deactivate';
   return api<RepairModelMutationResponse>(`/api/repairs/configuration/catalogs/models/${encodeURIComponent(modelId)}/${action}`, { method: 'POST', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ expectedVersion }) });
 }
+export function deleteRepairModel(modelId: string, expectedVersion: number, csrfToken: string) { return api(`/api/repairs/configuration/catalogs/models/${encodeURIComponent(modelId)}`, { method: 'DELETE', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ expectedVersion }) }); }
 export function resolvePendingRepairModel(pendingModelValueId: string, resolution: Readonly<{ canonicalModelId?: string; canonicalLabel?: string; expectedVersion: number }>, csrfToken: string): Promise<{ readonly item: PendingRepairModel }> {
   return api<{ readonly item: PendingRepairModel }>(`/api/repairs/configuration/catalogs/models/pending/${encodeURIComponent(pendingModelValueId)}/resolve`, { method: 'POST', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify(resolution) });
 }
@@ -724,6 +730,7 @@ export function changeRepairRiskStatus(riskId: string, status: 'active' | 'inact
     body: JSON.stringify({ expectedVersion }),
   });
 }
+export function deleteRepairRisk(riskId: string, expectedVersion: number, csrfToken: string) { return api(`/api/repairs/configuration/catalogs/risks/${encodeURIComponent(riskId)}`, { method: 'DELETE', headers: { [CSRF_HEADER]: csrfToken }, body: JSON.stringify({ expectedVersion }) }); }
 
 export function getOperationalProblemCategories(signal?: AbortSignal): Promise<RepairProblemCategoriesResponse> { return api<RepairProblemCategoriesResponse>('/api/repairs/problem-categories', { signal: signal ?? null }); }
 export function getIntakeProblemCategories(signal?: AbortSignal): Promise<RepairProblemCategoriesResponse> { return api<RepairProblemCategoriesResponse>('/api/repairs/new-repair/problem-categories', { signal: signal ?? null }); }

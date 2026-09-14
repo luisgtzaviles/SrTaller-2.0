@@ -85,6 +85,7 @@ export class RepairBrandCatalogService {
 
   deactivate(context: RepairBrandCatalogContext, value: unknown): Promise<RepairBrandRecord> { return this.changeStatus(context, value, 'inactive', 'repair_brand.deactivated'); }
   reactivate(context: RepairBrandCatalogContext, value: unknown): Promise<RepairBrandRecord> { return this.changeStatus(context, value, 'active', 'repair_brand.reactivated'); }
+  delete(context: RepairBrandCatalogContext, value: unknown) { const input = exactObject(value, ['brandId', 'expectedVersion']); const [eventId, correlationId] = ids(this.createId, 2); return this.repository.deleteBrand(context, { referenceId: id(input.brandId, 'brandId'), kind: 'BRAND', eventId: eventId!, correlationId: correlationId!, expectedVersion: version(input.expectedVersion), occurredAt: this.now() }); }
 
   resolve(context: RepairBrandCatalogContext, value: unknown): Promise<RepairBrandPendingRecord> {
     const input = exactObject(value, ['pendingBrandValueId', 'canonicalBrandId', 'canonicalLabel', 'expectedVersion']);

@@ -118,7 +118,7 @@ test('tenant scope fails closed before the persistence capability is used', asyn
   await assert.rejects(
     repository.createTenant(
       { tenantId: tenantA },
-      { tenantId: tenantB, createdAt },
+      { tenantId: tenantB, operatingCurrency: 'MXN', createdAt },
     ),
     expectsTenantCode('PERSISTENCE_TENANT_SCOPE_REQUIRED'),
   );
@@ -150,6 +150,7 @@ test('adapters map immutable records and invoke only their registered owner', as
     fakeConnection(
       insertExecutor({
         tenant_id: tenantA,
+        operating_currency: 'MXN',
         created_at: new Date(createdAt),
       }),
       tenantOwners,
@@ -157,9 +158,9 @@ test('adapters map immutable records and invoke only their registered owner', as
   );
   const tenant = await tenantRepository.createTenant(
     { tenantId: tenantA },
-    { tenantId: tenantA, createdAt },
+    { tenantId: tenantA, operatingCurrency: 'MXN', createdAt },
   );
-  assert.deepEqual(tenant, { tenantId: tenantA, createdAt });
+  assert.deepEqual(tenant, { tenantId: tenantA, operatingCurrency: 'MXN', createdAt });
   assert.ok(Object.isFrozen(tenant));
   assert.deepEqual(tenantOwners, ['tenancy']);
 
@@ -203,7 +204,7 @@ test('driver failures map to stable sanitized owner errors', async () => {
     await assert.rejects(
       tenantRepository.createTenant(
         { tenantId: tenantA },
-        { tenantId: tenantA, createdAt },
+        { tenantId: tenantA, operatingCurrency: 'MXN', createdAt },
       ),
       (error) => {
         assert.ok(expectsTenantCode('TENANT_PERSISTENCE_FAILED')(error));

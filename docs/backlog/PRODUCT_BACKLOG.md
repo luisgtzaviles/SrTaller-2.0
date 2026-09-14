@@ -2,22 +2,18 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado con `main` `aab27d9` y CI exacta `34730090448`.
-PBI-043 está `Done candidate` después de PR #47, CI doble/comparison, merge,
-exact-main y Preview PASS; SPRINT-02 está `Closed candidate` mientras se
-integra este cierre documental. No existe PBI funcional actual y el WIP es
-`0/1`. Los IDs
-PBI-040 a PBI-042 permanecen reservados por el ciclo Price List no integrado;
-PBI-040 está congelado y separado.
+**Estado:** Reconciliado con `main` `5be5cd6` y CI exacta `34732201476`.
+PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está `Active`; PBI-040
+fue reconciliado con la nueva baseline y continúa `Owner Review`, WIP `1/1`.
+PBI-041 alcanzó `Ready — implementation not authorized` como Candidate; PBI-042
+permanece `Planned/Unassigned`.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
 y PBI-026 `Large` mediante T-shirt sizing; PBI-028 también es `Large`; las
-demás permanecen TBD.
-**Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 está
-cerrado para Identity & Context Foundation; SPRINT-02 está en cierre para
-Operational Authentication & Authorization y los ítems restantes conservan
-su clasificación explícita.
+demás permanecen TBD salvo PBI-041 `XL — agreed` para su outcome inicial.
+**Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 y
+SPRINT-02 están cerrados; SPRINT-03 está activo con PBI-040 en Owner Review.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
 |---:|---|---|---|---|---|---|
@@ -60,10 +56,10 @@ su clasificación explícita.
 | 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Integrated slice within PBI-028 | Alta | Product Mode local; no independent lifecycle or canonical delivery claim |
 | 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
 | 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | Done; Released: NO | Alta | SPRINT-02 completed; PR #45 + exact-main CI `34623060504` |
-| 40 | PBI-040 Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Owner Review congelado; rama no integrada | Alta | ID reservado; fuera del WIP canónico hasta reconciliación |
-| 41 | PBI-041 Price List bulk import/reconciliation | Product / Data import | EPIC-015 | Planned no iniciado | Alta | ID reservado; fuera del Sprint canónico |
-| 42 | PBI-042 Catalog images / Files | Product / Files | EPIC-015 | Deferred | Media | ID reservado; fuera del Sprint canónico |
-| 43 | [PBI-043](pbis/PBI-043.md) Concurrent Operational Sessions — Access Foundation Remediation | Identity / Security / Persistence / Quality | EPIC-003 | Done candidate; Released: NO | Crítica | SPRINT-02 closure; PR #47 / `aab27d9`; CI/Preview PASS |
+| 40 | [PBI-040](pbis/PBI-040.md) Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Owner Review; acceptance pending | Alta | SPRINT-03 Committed; current; WIP 1/1 |
+| 41 | [PBI-041](pbis/PBI-041.md) Initial Bulk Catalog Composer + Versioned Supplier Intake | Product / Persistence / Data / Jobs / Authorization / UI | EPIC-015 | Ready — implementation not authorized | Alta | SPRINT-03 Candidate/Ready; not selected |
+| 42 | [PBI-042](pbis/PBI-042.md) Catalog Item Images | Product / Files / Security / UI | EPIC-015 | Planned / Deferred | Media | Unassigned Candidate |
+| 43 | [PBI-043](pbis/PBI-043.md) Concurrent Operational Sessions — Access Foundation Remediation | Identity / Security / Persistence / Quality | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed; PR #47/#48, CI/Preview PASS |
 
 ## Interpretación
 
@@ -126,15 +122,15 @@ su clasificación explícita.
 - PBI-039 está `Done` efectivo después del merge documental PR #45
   `40684d7554cdf02551f941e5e3f0beabbe563125` y CI exacta de `main`
   `34623060504` GREEN.
-- PBI-040/PBI-041/PBI-042 conservan IDs únicos aunque todavía vivan en una
-  rama no integrada; no pueden reutilizarse.
-- PBI-043 materializa ADR-014 como remediation independiente; queda `Done`
-  efectivo al integrar este cierre y pasar su CI exacta. `Released: NO`.
+- PBI-040/PBI-041/PBI-042 conservan IDs únicos y documentos propios; no pueden
+  reutilizarse. Sólo PBI-040 está activo. Advanced Supplier Reconciliation es
+  un outcome diferido sin ID, selección ni readiness.
+- PBI-043 materializa ADR-014 como remediation independiente y está `Done`
+  efectivo por PR #47/#48 y CI exacta `34732201476`; `Released: NO`.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
 - El orden final requiere aprobación del Product Owner conforme al [modelo de priorización](PRIORITIZATION_MODEL.md).
 
 ## Próxima revisión
 
-El siguiente gate es integrar este cierre documental y obtener CI exacta de
-`main`. PBI-040 permanece congelado y sólo podrá reconciliarse/reanudarse con
-autoridad propia; no liberar ni desplegar a Production por inferencia.
+PBI-040 continúa en Owner Review sobre la baseline reconciliada. No iniciar
+PBI-041/PBI-042, liberar, pushear, integrar o desplegar por inferencia.

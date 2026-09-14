@@ -29,6 +29,7 @@ test('missing personal preferences resolve to Classic without creating a row', a
   });
   assert.deepEqual(await useCase.execute({ tenantId, userId }), {
     newRepairFormMode: 'classic',
+    priceListShowReferenceCost: false,
     updatedAt: null,
   });
   assert.equal(reads, 1);
@@ -40,27 +41,35 @@ test('preference updates accept the exact Classic and Guided contracts and pass 
   let captured;
   const useCase = new UpdateUserPreferencesUseCase({
     async read() { return null; },
-    async upsert(scope, mode, at, receivedGuard) {
-      captured = { scope, mode, at, receivedGuard };
-      return { newRepairFormMode: mode, updatedAt: at.toISOString() };
+    async upsert(scope, patch, at, receivedGuard) {
+      captured = { scope, patch, at, receivedGuard };
+      return {
+        newRepairFormMode: patch.newRepairFormMode ?? 'classic',
+        priceListShowReferenceCost: patch.priceListShowReferenceCost ?? false,
+        updatedAt: at.toISOString(),
+      };
     },
   }, () => occurredAt);
 
   assert.deepEqual(
     await useCase.execute({ tenantId, userId }, { newRepairFormMode: 'classic' }, guard),
-    { newRepairFormMode: 'classic', updatedAt: occurredAt.toISOString() },
+    { newRepairFormMode: 'classic', priceListShowReferenceCost: false, updatedAt: occurredAt.toISOString() },
   );
   assert.deepEqual(captured, {
     scope: { tenantId, userId },
-    mode: 'classic',
+    patch: { newRepairFormMode: 'classic' },
     at: occurredAt,
     receivedGuard: guard,
   });
   assert.deepEqual(
     await useCase.execute({ tenantId, userId }, { newRepairFormMode: 'guided_v2' }, guard),
-    { newRepairFormMode: 'guided_v2', updatedAt: occurredAt.toISOString() },
+    { newRepairFormMode: 'guided_v2', priceListShowReferenceCost: false, updatedAt: occurredAt.toISOString() },
   );
-  for (const input of [{}, { newRepairFormMode: 'classic', extra: true }, { newRepairFormMode: 'other' }]) {
+  assert.deepEqual(
+    await useCase.execute({ tenantId, userId }, { priceListShowReferenceCost: true }, guard),
+    { newRepairFormMode: 'classic', priceListShowReferenceCost: true, updatedAt: occurredAt.toISOString() },
+  );
+  for (const input of [{}, { newRepairFormMode: 'classic', extra: true }, { newRepairFormMode: 'other' }, { priceListShowReferenceCost: 'yes' }]) {
     assert.throws(
       () => useCase.execute({ tenantId, userId }, input),
       UserPreferencesInputError,
@@ -147,10 +156,10 @@ test('Access self preference operations ignore client scope and use only authent
     },
   };
   const preferences = {
-    async get(scope) { readScope = scope; return { newRepairFormMode: 'classic' }; },
+    async get(scope) { readScope = scope; return { newRepairFormMode: 'classic', priceListShowReferenceCost: false }; },
     async update(scope, input, guard) {
       updateCall = { scope, input, guard };
-      return { newRepairFormMode: 'classic' };
+      return { newRepairFormMode: 'classic', priceListShowReferenceCost: false };
     },
   };
   const operations = new AccessSelfPreferencesOperations(authorization, preferences);
@@ -166,17 +175,17 @@ test('self preference HTTP response is allowlisted and authentication denial is 
   let updateBody;
   const controller = new UserPreferencesController({
     async get() {
-      return { newRepairFormMode: 'classic', updatedAt: '2026-09-09T22:00:00.000Z' };
+      return { newRepairFormMode: 'classic', priceListShowReferenceCost: false, updatedAt: '2026-09-09T22:00:00.000Z' };
     },
     async update(_evidence, body) {
       updateBody = body;
-      return { newRepairFormMode: 'classic', updatedAt: '2026-09-09T22:00:00.000Z' };
+      return { newRepairFormMode: 'classic', priceListShowReferenceCost: false, updatedAt: '2026-09-09T22:00:00.000Z' };
     },
   });
-  assert.deepEqual(await controller.get({}), { newRepairFormMode: 'classic' });
+  assert.deepEqual(await controller.get({}), { newRepairFormMode: 'classic', priceListShowReferenceCost: false });
   assert.deepEqual(
     await controller.update({ newRepairFormMode: 'classic' }, {}),
-    { newRepairFormMode: 'classic' },
+    { newRepairFormMode: 'classic', priceListShowReferenceCost: false },
   );
   assert.deepEqual(updateBody, { newRepairFormMode: 'classic' });
 

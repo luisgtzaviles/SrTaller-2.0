@@ -51,6 +51,7 @@ export function SettingsPage({ operationalCapabilities, administrationCapabiliti
   const canManageNewRepairConfiguration = hasOperationalCapability(administrationCapabilities, 'repairs.configuration.manage');
   const canReadRepairCatalogs = hasOperationalCapability(administrationCapabilities, 'repairs.catalogs.read');
   const canManageRepairCatalogs = hasOperationalCapability(administrationCapabilities, 'repairs.catalogs.manage');
+  const canManageCommercialCatalogs = hasOperationalCapability(administrationCapabilities, 'catalog.manage');
   const canCreateRepairs = hasOperationalCapability(operationalCapabilities, 'repairs.create');
 
   const applyInput = (value: string): void => {
@@ -78,7 +79,7 @@ export function SettingsPage({ operationalCapabilities, administrationCapabiliti
           <h2 id="administration-title">Equipo y permisos</h2>
           <p>Consulta las identidades operativas y los permisos disponibles para el equipo.</p>
         </header>
-        {canReadUsers || canReadRoles || canManageBranch || canReadNewRepairConfiguration || canReadRepairCatalogs || canCreateRepairs ? (
+        {canReadUsers || canReadRoles || canManageBranch || canReadNewRepairConfiguration || canReadRepairCatalogs || canManageCommercialCatalogs || canCreateRepairs ? (
           <div className={styles.administrationGrid}>
             {canReadUsers ? (
               <article className={styles.administrationCard}>
@@ -101,11 +102,11 @@ export function SettingsPage({ operationalCapabilities, administrationCapabiliti
                 <ButtonLink to="/configuracion/sucursal" tone="secondary">Configurar sucursal</ButtonLink>
               </article>
             ) : null}
-            {canReadRepairCatalogs || canReadNewRepairConfiguration ? (
+            {canReadRepairCatalogs || canReadNewRepairConfiguration || canManageCommercialCatalogs ? (
               <article className={styles.administrationCard}>
                 <span className={styles.cardIcon} aria-hidden="true"><SlidersHorizontal size={20} /></span>
-                <div><h3>Catálogos por módulo</h3><p>Riesgos operativos y política de campos de Nueva Reparación.</p></div>
-                <ButtonLink to={canReadRepairCatalogs ? '/configuracion/catalogos' : '/configuracion/catalogos/nueva-reparacion'} tone="secondary">{canManageRepairCatalogs || canManageNewRepairConfiguration ? 'Configurar Reparaciones' : 'Consultar Reparaciones'}</ButtonLink>
+                <div><h3>Catálogos por módulo</h3><p>Gobierno de catálogos de Reparaciones y Lista de precios.</p></div>
+                <ButtonLink to={canReadRepairCatalogs ? '/configuracion/catalogos' : canManageCommercialCatalogs ? '/configuracion/catalogos?module=price-list' : '/configuracion/catalogos/nueva-reparacion'} tone="secondary">{canManageRepairCatalogs || canManageNewRepairConfiguration || canManageCommercialCatalogs ? 'Configurar catálogos' : 'Consultar Reparaciones'}</ButtonLink>
               </article>
             ) : null}
             {canCreateRepairs && !canReadRepairCatalogs && !canReadNewRepairConfiguration ? (

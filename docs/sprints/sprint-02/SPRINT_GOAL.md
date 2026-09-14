@@ -3,11 +3,11 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-02.
-- **Estado:** Closed candidate; remediación Access integrada y validada.
+- **Estado:** Closed; remediación Access integrada y validada.
 - **Periodo:** TBD.
-- **PBI actual:** `NONE`; [PBI-043](../../backlog/pbis/PBI-043.md) es `Done candidate`.
+- **PBI actual:** `NONE`; [PBI-043](../../backlog/pbis/PBI-043.md) está `Done`.
 - **WIP:** `0/1` funcional.
-- **Baseline:** `main`/`origin/main` `aab27d9`; CI exacta `34730090448`
+- **Baseline de cierre:** `main`/`origin/main` `5be5cd6`; CI exacta `34732201476`
   `SUCCESS`.
 - **Autoridad:** Master Goal Owner del 2026-09-12 autoriza implementación, PR,
   merge gobernado y Preview; no Production.
@@ -30,7 +30,7 @@ contrato mediante [ADR-014](../../decisions/proposed/ADR-014-concurrent-operatio
 4. PBI-028 — Minimum Business Audit and Correlation — `Done`; G5 `PASS`.
 5. PBI-038 — Timezone Foundation Integration and Hardening — `Done`.
 6. PBI-039 — Customer Minimum + New Repair — `Done` sobre `40684d7`.
-7. PBI-043 — Concurrent Operational Sessions — `Done candidate`; COS-01…24,
+7. PBI-043 — Concurrent Operational Sessions — `Done`; COS-01…24,
    revisión, CI, merge y Preview PASS.
 
 PBI-040 permanece congelado fuera de `main`. No ocupa WIP y no se reanuda ni se
@@ -45,12 +45,12 @@ reconcilia hasta cerrar la remediación Access mediante sus propios gates.
 - [x] Owner autorizó explícitamente iniciar PBI-043.
 - [x] Implementación PBI-043 supera gates locales, revisión, CI exacta y Owner
   Acceptance aplicables.
-- [ ] PBI-040 se reconcilia posteriormente desde el nuevo `main` sin perder su
+- [x] PBI-040 se reconcilia posteriormente desde el nuevo `main` sin perder su
   WIP congelado.
 - [ ] Production release/deploy: NO; no autorizado.
 
 ## Próxima revisión
 
-- **Fecha:** al integrar el cierre documental.
-- **Disparador:** CI exacta de `main` verde sobre el merge del cierre; PBI-040
-  sólo podrá reconciliarse después mediante autoridad separada.
+- **Fecha:** al cambiar una autoridad histórica del Sprint.
+- **Disparador:** nueva evidencia que contradiga su cierre; PBI-040 continúa en
+  SPRINT-03 mediante autoridad separada.

@@ -22,6 +22,7 @@ import type {
   ChangeRepairRiskRecord,
   ChangeRepairProblemCategoryRecord,
   DeleteRepairProblemCategoryRecord,
+  DeleteRepairCatalogReferenceRecord,
   ChangeRepairProblemClassificationRecord,
   CreateRepairBrandRecord,
   CreateRepairDeviceTypeRecord,
@@ -57,6 +58,7 @@ import type {
   RepairProblemCategoryCatalogContext,
   RepairProblemCategoryRecord,
   RepairProblemCategoryDeletionRecord,
+  RepairCatalogReferenceDeletionRecord,
   RepairProblemClassificationRecord,
   RepairProblemPendingRecord,
   RepairClassificationContext,
@@ -77,7 +79,7 @@ import type {
   StartRepairDiagnosisRecord,
   UnassignRepairTechnicianRecord,
 } from '../../application/ports/repair-repository.port.js';
-import { NewRepairPolicyAuthorizationChangedError, NewRepairPolicyConcurrencyConflictError, RepairBrandAuthorizationChangedError, RepairBrandConcurrencyConflictError, RepairBrandDuplicateError, RepairBrandNotFoundError, RepairBrandPendingNotFoundError, RepairCreateAuthorizationChangedError, RepairCreateBrandUnavailableError, RepairCreateIdempotencyConflictError, RepairCreateModelUnavailableError, RepairCreateProblemCategoryUnavailableError, RepairCreateRiskUnavailableError, RepairEquipmentCorrectionAuthorizationChangedError, RepairEquipmentCorrectionBrandUnavailableError, RepairEquipmentCorrectionConcurrencyConflictError, RepairEquipmentCorrectionIdempotencyConflictError, RepairEquipmentCorrectionModelUnavailableError, RepairEquipmentCorrectionNotFoundError, RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairModelAuthorizationChangedError, RepairModelConcurrencyConflictError, RepairModelDuplicateError, RepairModelNotFoundError, RepairModelPendingNotFoundError, RepairOperationalNoteAuditIntegrityError, RepairOperationalNoteAuthorizationChangedError, RepairOperationalNoteIdempotencyConflictError, RepairRiskAuthorizationChangedError, RepairRiskConcurrencyConflictError, RepairRiskDuplicateError, RepairRiskNotFoundError, RepairProblemCategoryAuthorizationChangedError, RepairProblemCategoryConcurrencyConflictError, RepairProblemCategoryDeleteNotAllowedError, RepairProblemCategoryDuplicateError, RepairProblemCategoryNotFoundError, RepairProblemPendingNotFoundError, RepairProblemClassificationAuthorizationChangedError, RepairProblemClassificationConflictError, RepairProblemClassificationNotFoundError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
+import { NewRepairPolicyAuthorizationChangedError, NewRepairPolicyConcurrencyConflictError, RepairBrandAuthorizationChangedError, RepairBrandConcurrencyConflictError, RepairBrandDuplicateError, RepairBrandNotFoundError, RepairBrandPendingNotFoundError, RepairCatalogReferenceDeleteNotAllowedError, RepairCreateAuthorizationChangedError, RepairCreateBrandUnavailableError, RepairCreateIdempotencyConflictError, RepairCreateModelUnavailableError, RepairCreateProblemCategoryUnavailableError, RepairCreateRiskUnavailableError, RepairEquipmentCorrectionAuthorizationChangedError, RepairEquipmentCorrectionBrandUnavailableError, RepairEquipmentCorrectionConcurrencyConflictError, RepairEquipmentCorrectionIdempotencyConflictError, RepairEquipmentCorrectionModelUnavailableError, RepairEquipmentCorrectionNotFoundError, RepairLocationConcurrencyConflictError, RepairLocationConfigurationError, RepairLocationCustodyConflictError, RepairLocationIdempotencyConflictError, RepairLocationStateConflictError, RepairModelAuthorizationChangedError, RepairModelConcurrencyConflictError, RepairModelDuplicateError, RepairModelNotFoundError, RepairModelPendingNotFoundError, RepairOperationalNoteAuditIntegrityError, RepairOperationalNoteAuthorizationChangedError, RepairOperationalNoteIdempotencyConflictError, RepairRiskAuthorizationChangedError, RepairRiskConcurrencyConflictError, RepairRiskDuplicateError, RepairRiskNotFoundError, RepairProblemCategoryAuthorizationChangedError, RepairProblemCategoryConcurrencyConflictError, RepairProblemCategoryDeleteNotAllowedError, RepairProblemCategoryDuplicateError, RepairProblemCategoryNotFoundError, RepairProblemPendingNotFoundError, RepairProblemClassificationAuthorizationChangedError, RepairProblemClassificationConflictError, RepairProblemClassificationNotFoundError, RepairTechnicianConcurrencyConflictError, RepairTechnicianEligibilityError, RepairTechnicianIdempotencyConflictError, RepairTechnicianStateConflictError, RepairWorkflowConcurrencyConflictError, RepairWorkflowCustodyConflictError, RepairWorkflowIdempotencyConflictError, RepairWorkflowStateConflictError } from '../../application/ports/repair-repository.port.js';
 import { RepairCreateDeviceTypeUnavailableError, RepairDeviceTypeAuthorizationChangedError, RepairDeviceTypeConcurrencyConflictError, RepairDeviceTypeDuplicateError, RepairDeviceTypeNotFoundError, RepairDeviceTypePendingNotFoundError } from '../../application/ports/repair-repository.port.js';
 import { normalizeRepairDeviceTypeKey } from '../../application/repair-device-type-catalog.service.js';
 import { resolveRepairDeviceTypeReadModel } from '../../application/repair-device-type-read-model.js';
@@ -91,7 +93,7 @@ import {
   repairStatusCodes,
 } from '../../domain/repair-status.js';
 
-type RepairTables = 'repair_device_types' | 'repair_device_type_pending_values' | 'repair_device_type_catalog_events' | 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_equipment_corrections' | 'repair_brands' | 'repair_brand_pending_values' | 'repair_brand_catalog_events' | 'repair_models' | 'repair_model_pending_values' | 'repair_model_catalog_events' | 'repair_risks' | 'repair_intervention_risks' | 'repair_risk_catalog_events' | 'repair_problem_categories' | 'repair_problem_pending_values' | 'repair_problem_category_catalog_events' | 'repair_problem_category_deletion_events' | 'repair_problem_classifications' | 'repair_problem_classification_events' | 'repair_operational_note_request_guards' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements' | 'repair_create_commands' | 'repair_folio_sequences' | 'repair_new_repair_policy_heads' | 'repair_new_repair_policy_versions';
+type RepairTables = 'repair_catalog_reference_deletion_events' | 'repair_device_types' | 'repair_device_type_pending_values' | 'repair_device_type_catalog_events' | 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_equipment_corrections' | 'repair_brands' | 'repair_brand_pending_values' | 'repair_brand_catalog_events' | 'repair_models' | 'repair_model_pending_values' | 'repair_model_catalog_events' | 'repair_risks' | 'repair_intervention_risks' | 'repair_risk_catalog_events' | 'repair_problem_categories' | 'repair_problem_pending_values' | 'repair_problem_category_catalog_events' | 'repair_problem_category_deletion_events' | 'repair_problem_classifications' | 'repair_problem_classification_events' | 'repair_operational_note_request_guards' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements' | 'repair_create_commands' | 'repair_folio_sequences' | 'repair_new_repair_policy_heads' | 'repair_new_repair_policy_versions';
 type RepairExecutor = Kysely<Pick<DatabaseSchema, RepairTables>>;
 type ExecuteRepairOperation<Result> = InternalDatabasePersistenceOperation<'repairs', Result>;
 type ExecuteRepairTransaction<Result> = (
@@ -106,6 +108,10 @@ const repairEvidenceLimit = 20;
 const operationalNoteTimelineSource = 'repairs.operational_note';
 const repairReceivedTimelineSource = 'repairs.received';
 const repairEquipmentCorrectionTimelineSource = 'repairs.equipment_correction';
+
+function databaseDriverCode(error: unknown): string {
+  return typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string' ? error.code : '';
+}
 const repairProblemClassificationTimelineSource = 'repairs.problem_classification';
 
 function validateScope(scope: RepairPersistenceScope): RepairPersistenceScope {
@@ -281,13 +287,14 @@ type RepairBrandProjection = Readonly<{
   created_at: Date;
   updated_at: Date;
   usage_count: string | number | bigint;
+  references_present?: boolean | number;
 }>;
 
 function mapRepairBrand(row: RepairBrandProjection): RepairBrandRecord {
   return Object.freeze({
     brandId: row.brand_id, code: row.code, canonicalLabel: row.canonical_label,
     normalizedKey: row.normalized_key, scope: row.scope, status: row.status,
-    version: row.version, usageCount: Number(row.usage_count),
+    version: row.version, usageCount: Number(row.usage_count), deletable: row.scope === 'tenant' && (row.references_present === false || row.references_present === 0),
     createdAt: row.created_at.toISOString(), updatedAt: row.updated_at.toISOString(),
   });
 }
@@ -315,8 +322,8 @@ function mapRepairBrandPending(row: RepairBrandPendingProjection): RepairBrandPe
   });
 }
 
-type RepairDeviceTypeProjection = Readonly<{ device_type_id: string; code: string | null; canonical_label: string; normalized_key: string; scope: 'platform' | 'tenant'; status: 'active' | 'inactive'; version: number; created_at: Date; updated_at: Date; usage_count: string | number | bigint }>;
-function mapRepairDeviceType(row: RepairDeviceTypeProjection): RepairDeviceTypeRecord { return Object.freeze({ deviceTypeId: row.device_type_id, code: row.code, canonicalLabel: row.canonical_label, normalizedKey: row.normalized_key, scope: row.scope, status: row.status, version: row.version, usageCount: Number(row.usage_count), createdAt: row.created_at.toISOString(), updatedAt: row.updated_at.toISOString() }); }
+type RepairDeviceTypeProjection = Readonly<{ device_type_id: string; code: string | null; canonical_label: string; normalized_key: string; scope: 'platform' | 'tenant'; status: 'active' | 'inactive'; version: number; created_at: Date; updated_at: Date; usage_count: string | number | bigint; references_present?: boolean | number }>;
+function mapRepairDeviceType(row: RepairDeviceTypeProjection): RepairDeviceTypeRecord { return Object.freeze({ deviceTypeId: row.device_type_id, code: row.code, canonicalLabel: row.canonical_label, normalizedKey: row.normalized_key, scope: row.scope, status: row.status, version: row.version, usageCount: Number(row.usage_count), deletable: row.scope === 'tenant' && (row.references_present === false || row.references_present === 0), createdAt: row.created_at.toISOString(), updatedAt: row.updated_at.toISOString() }); }
 type RepairDeviceTypePendingProjection = Readonly<{ pending_device_type_value_id: string; raw_label_example: string; normalized_key: string; resolution_status: 'pending' | 'resolved'; canonical_device_type_id: string | null; canonical_label: string | null; version: number; first_seen_at: Date; last_seen_at: Date; usage_count: string | number | bigint }>;
 function mapRepairDeviceTypePending(row: RepairDeviceTypePendingProjection): RepairDeviceTypePendingRecord { return Object.freeze({ pendingDeviceTypeValueId: row.pending_device_type_value_id, rawLabel: row.raw_label_example, normalizedKey: row.normalized_key, resolutionStatus: row.resolution_status, canonicalDeviceTypeId: row.canonical_device_type_id, canonicalLabel: row.canonical_label, version: row.version, usageCount: Number(row.usage_count), firstSeenAt: row.first_seen_at.toISOString(), lastSeenAt: row.last_seen_at.toISOString() }); }
 
@@ -333,6 +340,7 @@ type RepairModelProjection = Readonly<{
   created_at: Date;
   updated_at: Date;
   usage_count: string | number | bigint;
+  references_present?: boolean | number;
 }>;
 
 function mapRepairModel(row: RepairModelProjection): RepairModelRecord {
@@ -346,7 +354,7 @@ function mapRepairModel(row: RepairModelProjection): RepairModelRecord {
     scope: row.scope,
     status: row.status,
     version: row.version,
-    usageCount: Number(row.usage_count),
+    usageCount: Number(row.usage_count), deletable: row.scope === 'tenant' && (row.references_present === false || row.references_present === 0),
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   });
@@ -403,6 +411,7 @@ type RepairRiskProjection = Readonly<{
   created_at: Date;
   updated_at: Date;
   usage_count: string | number | bigint;
+  references_present?: boolean | number;
 }>;
 
 function mapRepairRisk(row: RepairRiskProjection): RepairRiskRecord {
@@ -414,7 +423,7 @@ function mapRepairRisk(row: RepairRiskProjection): RepairRiskRecord {
     scope: row.scope,
     status: row.status,
     version: row.version,
-    usageCount: Number(row.usage_count),
+    usageCount: Number(row.usage_count), deletable: row.scope === 'tenant' && (row.references_present === false || row.references_present === 0),
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   });
@@ -679,6 +688,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
   constructor(
     readonly execute: <Result>(operation: ExecuteRepairOperation<Result>) => Promise<Result>,
     readonly executeTransaction: <Result>(operation: ExecuteRepairTransaction<Result>) => Promise<Result>,
+    readonly executeReferenceDeleteTransaction: <Result>(operation: ExecuteRepairTransaction<Result>) => Promise<Result>,
     readonly now: () => Date,
   ) {}
 
@@ -771,7 +781,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
     });
   }
   async listAdminDeviceTypes(scope: RepairPersistenceScope): Promise<readonly RepairDeviceTypeRecord[]> {
-    const validatedScope = validateScope(scope); return this.execute(async (executor) => { const rows = await executor.selectFrom('repair_device_types').leftJoin('repair_intakes', (join) => join.onRef('repair_intakes.canonical_device_type_id', '=', 'repair_device_types.device_type_id').on('repair_intakes.tenant_id', '=', validatedScope.tenantId)).select(['repair_device_types.device_type_id', 'repair_device_types.code', 'repair_device_types.canonical_label', 'repair_device_types.normalized_key', 'repair_device_types.scope', 'repair_device_types.status', 'repair_device_types.version', 'repair_device_types.created_at', 'repair_device_types.updated_at']).select(({ fn }) => fn.count('repair_intakes.repair_id').distinct().as('usage_count')).where((eb) => eb.or([eb('repair_device_types.scope', '=', 'platform'), eb.and([eb('repair_device_types.scope', '=', 'tenant'), eb('repair_device_types.tenant_id', '=', validatedScope.tenantId)])])).groupBy(['repair_device_types.device_type_id', 'repair_device_types.code', 'repair_device_types.canonical_label', 'repair_device_types.normalized_key', 'repair_device_types.scope', 'repair_device_types.status', 'repair_device_types.version', 'repair_device_types.created_at', 'repair_device_types.updated_at']).orderBy('repair_device_types.status', 'asc').orderBy('repair_device_types.canonical_label', 'asc').execute(); return Object.freeze(rows.map(mapRepairDeviceType)); });
+    const validatedScope = validateScope(scope); return this.execute(async (executor) => { const rows = await executor.selectFrom('repair_device_types').leftJoin('repair_intakes', (join) => join.onRef('repair_intakes.canonical_device_type_id', '=', 'repair_device_types.device_type_id').on('repair_intakes.tenant_id', '=', validatedScope.tenantId)).select(['repair_device_types.device_type_id', 'repair_device_types.code', 'repair_device_types.canonical_label', 'repair_device_types.normalized_key', 'repair_device_types.scope', 'repair_device_types.status', 'repair_device_types.version', 'repair_device_types.created_at', 'repair_device_types.updated_at']).select(({ fn }) => fn.count('repair_intakes.repair_id').distinct().as('usage_count')).select((eb) => eb.or([eb.exists(eb.selectFrom('repair_intakes as canonical_use').select('canonical_use.repair_id').whereRef('canonical_use.canonical_device_type_id', '=', 'repair_device_types.device_type_id')), eb.exists(eb.selectFrom('repair_device_type_pending_values as reconciliation_use').select('reconciliation_use.pending_device_type_value_id').whereRef('reconciliation_use.canonical_device_type_id', '=', 'repair_device_types.device_type_id'))]).as('references_present')).where((eb) => eb.or([eb('repair_device_types.scope', '=', 'platform'), eb.and([eb('repair_device_types.scope', '=', 'tenant'), eb('repair_device_types.tenant_id', '=', validatedScope.tenantId)])])).groupBy(['repair_device_types.device_type_id', 'repair_device_types.code', 'repair_device_types.canonical_label', 'repair_device_types.normalized_key', 'repair_device_types.scope', 'repair_device_types.status', 'repair_device_types.version', 'repair_device_types.created_at', 'repair_device_types.updated_at']).orderBy('repair_device_types.status', 'asc').orderBy('repair_device_types.canonical_label', 'asc').execute(); return Object.freeze(rows.map(mapRepairDeviceType)); });
   }
   async listPendingDeviceTypes(scope: RepairPersistenceScope): Promise<readonly RepairDeviceTypePendingRecord[]> {
     const validatedScope = validateScope(scope); return this.execute(async (executor) => { const rows = await executor.selectFrom('repair_device_type_pending_values').leftJoin('repair_device_types', 'repair_device_types.device_type_id', 'repair_device_type_pending_values.canonical_device_type_id').leftJoin('repair_intakes', (join) => join.onRef('repair_intakes.pending_device_type_value_id', '=', 'repair_device_type_pending_values.pending_device_type_value_id').on('repair_intakes.tenant_id', '=', validatedScope.tenantId)).select(['repair_device_type_pending_values.pending_device_type_value_id', 'repair_device_type_pending_values.raw_label_example', 'repair_device_type_pending_values.normalized_key', 'repair_device_type_pending_values.resolution_status', 'repair_device_type_pending_values.canonical_device_type_id', 'repair_device_types.canonical_label', 'repair_device_type_pending_values.version', 'repair_device_type_pending_values.first_seen_at', 'repair_device_type_pending_values.last_seen_at']).select(({ fn }) => fn.count('repair_intakes.repair_id').distinct().as('usage_count')).where('repair_device_type_pending_values.tenant_id', '=', validatedScope.tenantId).where('repair_device_type_pending_values.resolution_status', '=', 'pending').groupBy(['repair_device_type_pending_values.pending_device_type_value_id', 'repair_device_types.canonical_label']).having(({ fn }) => fn.count('repair_intakes.repair_id').distinct(), '>', 0).orderBy('repair_device_type_pending_values.last_seen_at', 'desc').execute(); return Object.freeze(rows.map(mapRepairDeviceTypePending)); });
@@ -832,6 +842,12 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .leftJoin('repair_intakes', (join) => join.onRef('repair_intakes.canonical_brand_id', '=', 'repair_brands.brand_id').on('repair_intakes.tenant_id', '=', validatedScope.tenantId))
         .select(['repair_brands.brand_id', 'repair_brands.code', 'repair_brands.canonical_label', 'repair_brands.normalized_key', 'repair_brands.scope', 'repair_brands.status', 'repair_brands.version', 'repair_brands.created_at', 'repair_brands.updated_at'])
         .select(({ fn }) => fn.count('repair_intakes.repair_id').distinct().as('usage_count'))
+        .select((eb) => eb.or([
+          eb.exists(eb.selectFrom('repair_intakes as canonical_use').select('canonical_use.repair_id').whereRef('canonical_use.canonical_brand_id', '=', 'repair_brands.brand_id')),
+          eb.exists(eb.selectFrom('repair_brand_pending_values as reconciliation_use').select('reconciliation_use.pending_brand_value_id').whereRef('reconciliation_use.canonical_brand_id', '=', 'repair_brands.brand_id')),
+          eb.exists(eb.selectFrom('repair_models as dependent_model').select('dependent_model.model_id').whereRef('dependent_model.canonical_brand_id', '=', 'repair_brands.brand_id')),
+          eb.exists(eb.selectFrom('repair_model_pending_values as dependent_pending_model').select('dependent_pending_model.pending_model_value_id').whereRef('dependent_pending_model.canonical_brand_id', '=', 'repair_brands.brand_id')),
+        ]).as('references_present'))
         .where((expression) => expression.or([
           expression('repair_brands.scope', '=', 'platform'),
           expression.and([expression('repair_brands.scope', '=', 'tenant'), expression('repair_brands.tenant_id', '=', validatedScope.tenantId)]),
@@ -870,7 +886,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       if (!await scope.commitGuard.confirmCurrent(transactionContext) || !await scope.commitGuard.confirmTemporalCurrent(transactionContext)) return { error: new RepairBrandAuthorizationChangedError() };
       await executor.insertInto('repair_brands').values({ brand_id: input.brandId, scope: 'tenant', tenant_id: validatedScope.tenantId, code: null, canonical_label: input.canonicalLabel, normalized_key: input.normalizedKey, status: 'active', version: 1, created_by_actor_id: scope.actorUserId, updated_by_actor_id: scope.actorUserId, created_at: input.occurredAt, updated_at: input.occurredAt }).execute();
       await executor.insertInto('repair_brand_catalog_events').values({ event_id: input.eventId, tenant_id: validatedScope.tenantId, brand_id: input.brandId, pending_brand_value_id: null, station_id: scope.stationId, session_id: scope.sessionId, actor_user_id: scope.actorUserId, actor_display_name: scope.actorDisplayName, capability: scope.capability, action: 'repair_brand.created', old_version: null, new_version: 1, old_label: null, new_label: input.canonicalLabel, old_status: null, new_status: 'active', old_canonical_brand_id: null, new_canonical_brand_id: input.brandId, result: 'succeeded', correlation_id: input.correlationId, occurred_at: input.occurredAt }).execute();
-      return { brandId: input.brandId, code: null, canonicalLabel: input.canonicalLabel, normalizedKey: input.normalizedKey, scope: 'tenant', status: 'active', version: 1, usageCount: 0, createdAt: input.occurredAt.toISOString(), updatedAt: input.occurredAt.toISOString() };
+      return { brandId: input.brandId, code: null, canonicalLabel: input.canonicalLabel, normalizedKey: input.normalizedKey, scope: 'tenant', status: 'active', version: 1, usageCount: 0, deletable: true, createdAt: input.occurredAt.toISOString(), updatedAt: input.occurredAt.toISOString() };
     });
     if ('error' in outcome) throw outcome.error;
     return Object.freeze(outcome);
@@ -896,7 +912,9 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       await executor.updateTable('repair_brands').set({ canonical_label: canonicalLabel, normalized_key: normalizedKey, status, version: nextVersion, updated_by_actor_id: scope.actorUserId, updated_at: input.occurredAt }).where('brand_id', '=', input.brandId).where('tenant_id', '=', validatedScope.tenantId).execute();
       await executor.insertInto('repair_brand_catalog_events').values({ event_id: input.eventId, tenant_id: validatedScope.tenantId, brand_id: input.brandId, pending_brand_value_id: null, station_id: scope.stationId, session_id: scope.sessionId, actor_user_id: scope.actorUserId, actor_display_name: scope.actorDisplayName, capability: scope.capability, action: input.action, old_version: current.version, new_version: nextVersion, old_label: current.canonical_label, new_label: canonicalLabel, old_status: current.status, new_status: status, old_canonical_brand_id: input.brandId, new_canonical_brand_id: input.brandId, result: 'succeeded', correlation_id: input.correlationId, occurred_at: input.occurredAt }).execute();
       const usage = await executor.selectFrom('repair_intakes').select(({ fn }) => fn.countAll().as('count')).where('tenant_id', '=', validatedScope.tenantId).where('canonical_brand_id', '=', input.brandId).executeTakeFirstOrThrow();
-      return { brandId: input.brandId, code: current.code, canonicalLabel, normalizedKey, scope: 'tenant', status, version: nextVersion, usageCount: Number(usage.count), createdAt: current.created_at.toISOString(), updatedAt: input.occurredAt.toISOString() };
+      const dependent = await executor.selectFrom('repair_models').select('model_id').where('canonical_brand_id', '=', input.brandId).executeTakeFirst();
+      const reconciliation = await executor.selectFrom('repair_brand_pending_values').select('pending_brand_value_id').where('canonical_brand_id', '=', input.brandId).executeTakeFirst();
+      return { brandId: input.brandId, code: current.code, canonicalLabel, normalizedKey, scope: 'tenant', status, version: nextVersion, usageCount: Number(usage.count), deletable: Number(usage.count) === 0 && !dependent && !reconciliation, createdAt: current.created_at.toISOString(), updatedAt: input.occurredAt.toISOString() };
     });
     if ('error' in outcome) throw outcome.error;
     return Object.freeze(outcome);
@@ -951,6 +969,10 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .leftJoin('repair_model_pending_values', (join) => join.onRef('repair_model_pending_values.canonical_model_id', '=', 'repair_models.model_id').on('repair_model_pending_values.tenant_id', '=', validatedScope.tenantId).on('repair_model_pending_values.resolution_status', '=', 'resolved'))
         .select(['repair_models.model_id', 'repair_models.canonical_brand_id', 'repair_brands.canonical_label as canonical_brand_label', 'repair_models.code', 'repair_models.canonical_label', 'repair_models.normalized_key', 'repair_models.scope', 'repair_models.status', 'repair_models.version', 'repair_models.created_at', 'repair_models.updated_at'])
         .select(({ fn }) => fn.count('repair_intakes.repair_id').distinct().as('usage_count'))
+        .select((eb) => eb.or([
+          eb.exists(eb.selectFrom('repair_intakes as canonical_use').select('canonical_use.repair_id').whereRef('canonical_use.canonical_model_id', '=', 'repair_models.model_id')),
+          eb.exists(eb.selectFrom('repair_model_pending_values as reconciliation_use').select('reconciliation_use.pending_model_value_id').whereRef('reconciliation_use.canonical_model_id', '=', 'repair_models.model_id')),
+        ]).as('references_present'))
         .where('repair_models.canonical_brand_id', '=', canonicalBrandId)
         .where('repair_models.status', '=', 'active')
         .where('repair_brands.status', '=', 'active')
@@ -974,6 +996,10 @@ class KyselyRepairRepository implements RepairRepositoryPort {
         .leftJoin('repair_intakes', (join) => join.onRef('repair_intakes.canonical_model_id', '=', 'repair_models.model_id').on('repair_intakes.tenant_id', '=', validatedScope.tenantId))
         .select(['repair_models.model_id', 'repair_models.canonical_brand_id', 'repair_brands.canonical_label as canonical_brand_label', 'repair_models.code', 'repair_models.canonical_label', 'repair_models.normalized_key', 'repair_models.scope', 'repair_models.status', 'repair_models.version', 'repair_models.created_at', 'repair_models.updated_at'])
         .select(({ fn }) => fn.count('repair_intakes.repair_id').distinct().as('usage_count'))
+        .select((eb) => eb.or([
+          eb.exists(eb.selectFrom('repair_intakes as canonical_use').select('canonical_use.repair_id').whereRef('canonical_use.canonical_model_id', '=', 'repair_models.model_id')),
+          eb.exists(eb.selectFrom('repair_model_pending_values as reconciliation_use').select('reconciliation_use.pending_model_value_id').whereRef('reconciliation_use.canonical_model_id', '=', 'repair_models.model_id')),
+        ]).as('references_present'))
         .where((expression) => expression.or([expression('repair_models.scope', '=', 'platform'), expression.and([expression('repair_models.scope', '=', 'tenant'), expression('repair_models.tenant_id', '=', validatedScope.tenantId)])]))
         .where((expression) => expression.or([expression('repair_brands.scope', '=', 'platform'), expression.and([expression('repair_brands.scope', '=', 'tenant'), expression('repair_brands.tenant_id', '=', validatedScope.tenantId)])]));
       if (canonicalBrandId) statement = statement.where('repair_models.canonical_brand_id', '=', canonicalBrandId);
@@ -1014,7 +1040,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       if (!await scope.commitGuard.confirmCurrent(transactionContext) || !await scope.commitGuard.confirmTemporalCurrent(transactionContext)) return { error: new RepairModelAuthorizationChangedError() };
       await executor.insertInto('repair_models').values({ model_id: input.modelId, canonical_brand_id: input.canonicalBrandId, scope: 'tenant', tenant_id: validatedScope.tenantId, code: null, canonical_label: input.canonicalLabel, normalized_key: input.normalizedKey, status: 'active', version: 1, created_by_actor_id: scope.actorUserId, updated_by_actor_id: scope.actorUserId, created_at: input.occurredAt, updated_at: input.occurredAt }).execute();
       await executor.insertInto('repair_model_catalog_events').values({ event_id: input.eventId, tenant_id: validatedScope.tenantId, model_id: input.modelId, canonical_brand_id: input.canonicalBrandId, pending_model_value_id: null, station_id: scope.stationId, session_id: scope.sessionId, actor_user_id: scope.actorUserId, actor_display_name: scope.actorDisplayName, capability: scope.capability, action: 'repair_model.created', old_version: null, new_version: 1, old_label: null, new_label: input.canonicalLabel, old_status: null, new_status: 'active', old_canonical_model_id: null, new_canonical_model_id: input.modelId, result: 'succeeded', correlation_id: input.correlationId, occurred_at: input.occurredAt }).execute();
-      return { modelId: input.modelId, canonicalBrandId: input.canonicalBrandId, brandLabel: brand.canonical_label, code: null, canonicalLabel: input.canonicalLabel, normalizedKey: input.normalizedKey, scope: 'tenant', status: 'active', version: 1, usageCount: 0, createdAt: input.occurredAt.toISOString(), updatedAt: input.occurredAt.toISOString() };
+      return { modelId: input.modelId, canonicalBrandId: input.canonicalBrandId, brandLabel: brand.canonical_label, code: null, canonicalLabel: input.canonicalLabel, normalizedKey: input.normalizedKey, scope: 'tenant', status: 'active', version: 1, usageCount: 0, deletable: true, createdAt: input.occurredAt.toISOString(), updatedAt: input.occurredAt.toISOString() };
     });
     if ('error' in outcome) throw outcome.error;
     return Object.freeze(outcome);
@@ -1038,7 +1064,8 @@ class KyselyRepairRepository implements RepairRepositoryPort {
       await executor.updateTable('repair_models').set({ canonical_label: canonicalLabel, normalized_key: normalizedKey, status, version: nextVersion, updated_by_actor_id: scope.actorUserId, updated_at: input.occurredAt }).where('model_id', '=', input.modelId).where('tenant_id', '=', validatedScope.tenantId).execute();
       await executor.insertInto('repair_model_catalog_events').values({ event_id: input.eventId, tenant_id: validatedScope.tenantId, model_id: input.modelId, canonical_brand_id: current.canonical_brand_id, pending_model_value_id: null, station_id: scope.stationId, session_id: scope.sessionId, actor_user_id: scope.actorUserId, actor_display_name: scope.actorDisplayName, capability: scope.capability, action: input.action, old_version: current.version, new_version: nextVersion, old_label: current.canonical_label, new_label: canonicalLabel, old_status: current.status, new_status: status, old_canonical_model_id: input.modelId, new_canonical_model_id: input.modelId, result: 'succeeded', correlation_id: input.correlationId, occurred_at: input.occurredAt }).execute();
       const usage = await executor.selectFrom('repair_intakes').select(({ fn }) => fn.countAll().as('count')).where('tenant_id', '=', validatedScope.tenantId).where('canonical_model_id', '=', input.modelId).executeTakeFirstOrThrow();
-      return { modelId: input.modelId, canonicalBrandId: current.canonical_brand_id, brandLabel: current.brand_label, code: current.code, canonicalLabel, normalizedKey, scope: 'tenant', status, version: nextVersion, usageCount: Number(usage.count), createdAt: current.created_at.toISOString(), updatedAt: input.occurredAt.toISOString() };
+      const reconciliation = await executor.selectFrom('repair_model_pending_values').select('pending_model_value_id').where('canonical_model_id', '=', input.modelId).executeTakeFirst();
+      return { modelId: input.modelId, canonicalBrandId: current.canonical_brand_id, brandLabel: current.brand_label, code: current.code, canonicalLabel, normalizedKey, scope: 'tenant', status, version: nextVersion, usageCount: Number(usage.count), deletable: Number(usage.count) === 0 && !reconciliation, createdAt: current.created_at.toISOString(), updatedAt: input.occurredAt.toISOString() };
     });
     if ('error' in outcome) throw outcome.error;
     return Object.freeze(outcome);
@@ -1185,7 +1212,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
 
   async deleteProblemCategory(scope: RepairProblemCategoryCatalogContext, input: DeleteRepairProblemCategoryRecord): Promise<RepairProblemCategoryDeletionRecord> {
     const validatedScope = validateScope(scope);
-    const outcome = await this.executeTransaction<RepairProblemCategoryDeletionRecord | { error: Error }>(async (executor, transactionContext) => {
+    const outcome = await this.executeReferenceDeleteTransaction<RepairProblemCategoryDeletionRecord | { error: Error }>(async (executor, transactionContext) => {
       const current = await executor.selectFrom('repair_problem_categories').selectAll()
         .where('category_id', '=', input.categoryId)
         .where((expression) => expression.or([
@@ -1322,6 +1349,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           'repair_risks.version', 'repair_risks.created_at', 'repair_risks.updated_at',
         ])
         .select(({ fn }) => fn.count('repairs.repair_id').as('usage_count'))
+        .select((eb) => eb.exists(eb.selectFrom('repair_intervention_risks as canonical_use').select('canonical_use.repair_id').whereRef('canonical_use.risk_id', '=', 'repair_risks.risk_id')).as('references_present'))
         .where('repair_risks.status', '=', 'active')
         .where((expression) => expression.or([
           expression('repair_risks.scope', '=', 'platform'),
@@ -1356,6 +1384,7 @@ class KyselyRepairRepository implements RepairRepositoryPort {
           'repair_risks.version', 'repair_risks.created_at', 'repair_risks.updated_at',
         ])
         .select(({ fn }) => fn.count('repairs.repair_id').as('usage_count'))
+        .select((eb) => eb.exists(eb.selectFrom('repair_intervention_risks as canonical_use').select('canonical_use.repair_id').whereRef('canonical_use.risk_id', '=', 'repair_risks.risk_id')).as('references_present'))
         .where((expression) => expression.or([
           expression('repair_risks.scope', '=', 'platform'),
           expression.and([
@@ -1526,6 +1555,94 @@ class KyselyRepairRepository implements RepairRepositoryPort {
     });
     if ('error' in outcome) throw outcome.error;
     return outcome;
+  }
+
+  deleteRisk(scope: RepairRiskCatalogContext, input: DeleteRepairCatalogReferenceRecord): Promise<RepairCatalogReferenceDeletionRecord> { return this.deleteRepairCatalogReference(scope, input); }
+  deleteDeviceType(scope: RepairDeviceTypeCatalogContext, input: DeleteRepairCatalogReferenceRecord): Promise<RepairCatalogReferenceDeletionRecord> { return this.deleteRepairCatalogReference(scope, input); }
+  deleteBrand(scope: RepairBrandCatalogContext, input: DeleteRepairCatalogReferenceRecord): Promise<RepairCatalogReferenceDeletionRecord> { return this.deleteRepairCatalogReference(scope, input); }
+  deleteModel(scope: RepairModelCatalogContext, input: DeleteRepairCatalogReferenceRecord): Promise<RepairCatalogReferenceDeletionRecord> { return this.deleteRepairCatalogReference(scope, input); }
+
+  private async deleteRepairCatalogReference(
+    scope: RepairRiskCatalogContext | RepairDeviceTypeCatalogContext | RepairBrandCatalogContext | RepairModelCatalogContext,
+    input: DeleteRepairCatalogReferenceRecord,
+  ): Promise<RepairCatalogReferenceDeletionRecord> {
+    const validatedScope = validateScope(scope);
+    const notFound = () => input.kind === 'RISK' ? new RepairRiskNotFoundError() : input.kind === 'DEVICE_TYPE' ? new RepairDeviceTypeNotFoundError() : input.kind === 'BRAND' ? new RepairBrandNotFoundError() : new RepairModelNotFoundError();
+    const versionConflict = () => input.kind === 'RISK' ? new RepairRiskConcurrencyConflictError() : input.kind === 'DEVICE_TYPE' ? new RepairDeviceTypeConcurrencyConflictError() : input.kind === 'BRAND' ? new RepairBrandConcurrencyConflictError() : new RepairModelConcurrencyConflictError();
+    const authorizationChanged = () => input.kind === 'RISK' ? new RepairRiskAuthorizationChangedError() : input.kind === 'DEVICE_TYPE' ? new RepairDeviceTypeAuthorizationChangedError() : input.kind === 'BRAND' ? new RepairBrandAuthorizationChangedError() : new RepairModelAuthorizationChangedError();
+    let lateReferenceConflict: Readonly<{ scope: 'platform' | 'tenant'; label: string; status: 'active' | 'inactive'; version: number; previousRecord: Readonly<Record<string, unknown>> }> | null = null;
+    let outcome: RepairCatalogReferenceDeletionRecord | Readonly<{ error: Error }>;
+    try {
+      outcome = await this.executeReferenceDeleteTransaction<RepairCatalogReferenceDeletionRecord | Readonly<{ error: Error }>>(async (executor, transactionContext) => {
+      const currentRow = input.kind === 'RISK'
+        ? await executor.selectFrom('repair_risks').selectAll().where('risk_id', '=', input.referenceId).where((eb) => eb.or([eb('scope', '=', 'platform'), eb.and([eb('scope', '=', 'tenant'), eb('tenant_id', '=', validatedScope.tenantId)])])).forUpdate().executeTakeFirst()
+        : input.kind === 'DEVICE_TYPE'
+          ? await executor.selectFrom('repair_device_types').selectAll().where('device_type_id', '=', input.referenceId).where((eb) => eb.or([eb('scope', '=', 'platform'), eb.and([eb('scope', '=', 'tenant'), eb('tenant_id', '=', validatedScope.tenantId)])])).forUpdate().executeTakeFirst()
+          : input.kind === 'BRAND'
+            ? await executor.selectFrom('repair_brands').selectAll().where('brand_id', '=', input.referenceId).where((eb) => eb.or([eb('scope', '=', 'platform'), eb.and([eb('scope', '=', 'tenant'), eb('tenant_id', '=', validatedScope.tenantId)])])).forUpdate().executeTakeFirst()
+            : await executor.selectFrom('repair_models').selectAll().where('model_id', '=', input.referenceId).where((eb) => eb.or([eb('scope', '=', 'platform'), eb.and([eb('scope', '=', 'tenant'), eb('tenant_id', '=', validatedScope.tenantId)])])).forUpdate().executeTakeFirst();
+      const current = currentRow ? {
+        reference_id: input.referenceId,
+        scope: currentRow.scope,
+        canonical_label: currentRow.canonical_label,
+        status: currentRow.status,
+        version: currentRow.version,
+        previous_record: currentRow as unknown as Readonly<Record<string, unknown>>,
+      } : undefined;
+      const recordAttempt = (result: 'succeeded' | 'rejected', rejectionReason: 'not_found' | 'platform_owned' | 'version_conflict' | 'reference_in_use' | 'authorization_changed' | null) => executor.insertInto('repair_catalog_reference_deletion_events').values({
+        event_id: input.eventId, tenant_id: validatedScope.tenantId, reference_kind: input.kind,
+        reference_id: input.referenceId, catalog_scope: current?.scope ?? 'tenant', previous_label: current?.canonical_label ?? null,
+        previous_status: current?.status ?? null, previous_record: current?.previous_record ?? null, reference_version: current?.version ?? null, expected_version: input.expectedVersion,
+        station_id: scope.stationId, session_id: scope.sessionId, actor_user_id: scope.actorUserId, actor_display_name: scope.actorDisplayName,
+        capability: scope.capability, result, rejection_reason: rejectionReason, correlation_id: input.correlationId, occurred_at: input.occurredAt,
+      }).execute();
+      if (!current) { await recordAttempt('rejected', 'not_found'); return { error: notFound() }; }
+      if (current.scope === 'platform') { await recordAttempt('rejected', 'platform_owned'); return { error: new RepairCatalogReferenceDeleteNotAllowedError(input.kind, 'platform_owned') }; }
+      if (current.version !== input.expectedVersion) { await recordAttempt('rejected', 'version_conflict'); return { error: versionConflict() }; }
+      const reference = input.kind === 'RISK'
+        ? await executor.selectFrom('repair_intervention_risks').select('repair_id').where('risk_id', '=', input.referenceId).executeTakeFirst()
+        : input.kind === 'DEVICE_TYPE'
+          ? await executor.selectFrom('repair_intakes').select('repair_id').where('canonical_device_type_id', '=', input.referenceId).executeTakeFirst()
+            ?? await executor.selectFrom('repair_device_type_pending_values').select('pending_device_type_value_id as repair_id').where('canonical_device_type_id', '=', input.referenceId).executeTakeFirst()
+          : input.kind === 'MODEL'
+            ? await executor.selectFrom('repair_intakes').select('repair_id').where('canonical_model_id', '=', input.referenceId).executeTakeFirst()
+              ?? await executor.selectFrom('repair_model_pending_values').select('pending_model_value_id as repair_id').where('canonical_model_id', '=', input.referenceId).executeTakeFirst()
+            : await executor.selectFrom('repair_intakes').select('repair_id').where('canonical_brand_id', '=', input.referenceId).executeTakeFirst()
+              ?? await executor.selectFrom('repair_brand_pending_values').select('pending_brand_value_id as repair_id').where('canonical_brand_id', '=', input.referenceId).executeTakeFirst()
+              ?? await executor.selectFrom('repair_models').select('model_id as repair_id').where('canonical_brand_id', '=', input.referenceId).executeTakeFirst()
+              ?? await executor.selectFrom('repair_model_pending_values').select('pending_model_value_id as repair_id').where('canonical_brand_id', '=', input.referenceId).executeTakeFirst();
+      if (reference) { await recordAttempt('rejected', 'reference_in_use'); return { error: new RepairCatalogReferenceDeleteNotAllowedError(input.kind, 'reference_in_use') }; }
+      if (!await scope.commitGuard.confirmCurrent(transactionContext) || !await scope.commitGuard.confirmTemporalCurrent(transactionContext)) { await recordAttempt('rejected', 'authorization_changed'); return { error: authorizationChanged() }; }
+      try {
+        if (input.kind === 'RISK') await executor.deleteFrom('repair_risks').where('risk_id', '=', input.referenceId).where('tenant_id', '=', validatedScope.tenantId).executeTakeFirstOrThrow();
+        else if (input.kind === 'DEVICE_TYPE') await executor.deleteFrom('repair_device_types').where('device_type_id', '=', input.referenceId).where('tenant_id', '=', validatedScope.tenantId).executeTakeFirstOrThrow();
+        else if (input.kind === 'BRAND') await executor.deleteFrom('repair_brands').where('brand_id', '=', input.referenceId).where('tenant_id', '=', validatedScope.tenantId).executeTakeFirstOrThrow();
+        else await executor.deleteFrom('repair_models').where('model_id', '=', input.referenceId).where('tenant_id', '=', validatedScope.tenantId).executeTakeFirstOrThrow();
+      } catch (error: unknown) {
+        if (databaseDriverCode(error) === '23503') {
+          lateReferenceConflict = { scope: current.scope, label: current.canonical_label, status: current.status, version: current.version, previousRecord: current.previous_record };
+          throw new RepairCatalogReferenceDeleteNotAllowedError(input.kind, 'reference_in_use');
+        }
+        throw error;
+      }
+      await recordAttempt('succeeded', null);
+      return { referenceId: input.referenceId, kind: input.kind, previousLabel: current.canonical_label, scope: 'tenant', version: current.version, deletedAt: input.occurredAt.toISOString() };
+      });
+    } catch (error: unknown) {
+      const snapshot = lateReferenceConflict as Readonly<{ scope: 'platform' | 'tenant'; label: string; status: 'active' | 'inactive'; version: number; previousRecord: Readonly<Record<string, unknown>> }> | null;
+      if (snapshot) {
+        await this.execute((executor) => executor.insertInto('repair_catalog_reference_deletion_events').values({
+          event_id: input.eventId, tenant_id: validatedScope.tenantId, reference_kind: input.kind, reference_id: input.referenceId,
+          catalog_scope: snapshot.scope, previous_label: snapshot.label, previous_status: snapshot.status, previous_record: snapshot.previousRecord,
+          reference_version: snapshot.version, expected_version: input.expectedVersion, station_id: scope.stationId, session_id: scope.sessionId,
+          actor_user_id: scope.actorUserId, actor_display_name: scope.actorDisplayName, capability: scope.capability,
+          result: 'rejected', rejection_reason: 'reference_in_use', correlation_id: input.correlationId, occurred_at: input.occurredAt,
+        }).execute());
+      }
+      throw error;
+    }
+    if ('error' in outcome) throw outcome.error;
+    return Object.freeze(outcome);
   }
 
   async readNewRepairPolicy(scope: RepairPersistenceScope): Promise<NewRepairPolicyRecord | null> {
@@ -3118,6 +3235,12 @@ export function createKyselyRepairRepository(
   return new KyselyRepairRepository(
     (operation) => useDatabasePersistenceExecutor(connection, 'repairs', operation),
     (operation) => runInTransaction(connection as unknown as DatabaseConnection, { isolationLevel: 'serializable' }, async (context) =>
+      useTransactionalDatabasePersistenceExecutor(
+        context,
+        'repairs',
+        (executor) => operation(executor, context),
+      )),
+    (operation) => runInTransaction(connection as unknown as DatabaseConnection, { isolationLevel: 'read committed' }, async (context) =>
       useTransactionalDatabasePersistenceExecutor(
         context,
         'repairs',

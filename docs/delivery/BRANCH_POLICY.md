@@ -53,10 +53,11 @@
    las ramas local y remota ya absorbidas y se ejecuta `fetch --prune`, siempre
    después de confirmar que no contienen trabajo exclusivo.
 
-La rama `feature/pbi-040-catalog-pricing-core` es actualmente una excepción de
-transición explícita: contiene WIP Price List no integrado, permanece congelada
-y no debe eliminarse ni reutilizarse para PBI-043. La implementación futura de
-PBI-043 deberá usar una rama `fix/*` nueva creada desde el `main` vigente.
+La rama `feature/pbi-040-catalog-pricing-core` fue una excepción de transición:
+su WIP Price List permaneció congelado durante PBI-043. Después del cierre de
+PBI-043 se reconcilió por merge explícito con `main` `5be5cd6`, preservando el
+HEAD histórico `68843ba` como padre y sin reescribir el historial. Continúa
+siendo la única rama de PBI-040 y no está autorizada para push/merge/deploy.
 
 Git branches y deployment environments son ejes distintos. Dokploy representa
 ambientes; no se crean ramas permanentes `preview`, `staging` o `production`.

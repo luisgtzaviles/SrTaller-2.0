@@ -4,7 +4,9 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Lenguaje común preliminar; no define tablas, clases, contratos de API ni reglas finales.
-- **Aprobación:** ADR-004/010/011/012/013 son autoritativos para los términos marcados; el resto está pendiente del propietario del producto y especialistas del dominio.
+- **Aprobación:** ADR-004/010/011/012/013 y las decisiones PLD/OD-BI son
+  autoritativos para los términos marcados; el resto está pendiente del
+  propietario del producto y especialistas del dominio.
 - **Convención:** “Pendiente de validación” indica que la definición o sus límites podrían cambiar.
 
 ## Reglas de uso
@@ -41,6 +43,24 @@
 | **Equipo del cliente** | Dispositivo electrónico que el cliente entrega o relaciona con un servicio de reparación. | **Pendiente de validación:** identificación, propiedad, condición de recepción, accesorios y datos sensibles. No es una estación operativa. |
 | **Reparación** | Caso de negocio que agrupa la solicitud, diagnóstico, trabajo, autorizaciones, partes, estados y resultado sobre un equipo del cliente. | **Pendiente de validación:** inicio y cierre, relación con orden de trabajo, múltiples trabajos, garantías y reaperturas. |
 | **Orden de trabajo** | Instrucción o registro operativo del trabajo que debe realizarse o se realizó, posiblemente dentro de una reparación. | **Pendiente de validación:** si es sinónimo de reparación o una entidad separada, su cardinalidad y ciclo de vida. |
+| **Artículo de catálogo** | Identidad comercial estable y Tenant-wide de una Refacción, Producto, Servicio o Insumo; no se copia por sucursal. | **Aceptado para EPIC-015.** No equivale a existencia, oferta de proveedor ni línea histórica aplicada. |
+| **Refacción** | Artículo físico pensado para reparación; puede ser vendible, stockable, comprable y aplicable a Repair según capabilities. | **Aceptado para EPIC-015.** El tipo no prueba existencia ni consumo. |
+| **Producto** | Bien destinado a reventa, sea o no electrónico o relacionado con teléfonos. | **Aceptado para EPIC-015.** Un bien interno vendido al público se modela como Producto. |
+| **Servicio** | Trabajo cobrable que puede ser interno, estimar consumibles o tener costo directo tercerizado. | **Aceptado para EPIC-015.** Puede carecer de costo y no es stockable. |
+| **Insumo** | Artículo de consumo interno que puede interesar a Inventory pero no aparece en Lista de precios. | **Aceptado para EPIC-015.** Si se vende al público se modela como Producto. |
+| **Precio base** | Precio final de referencia publicado por el Tenant en su moneda operativa. | **Aceptado para EPIC-015.** No incluye política fiscal/FX ni sustituye un snapshot aplicado. |
+| **Override de precio** | Revisión de precio para un artículo y Branch que sustituye la base mientras está activa; revocarla restaura herencia. | **Aceptado para EPIC-015.** No crea otra identidad ni copia la base. |
+| **Precio efectivo** | Resultado de resolver override activo de Branch y, en su ausencia, precio base Tenant, con moneda/procedencia/revisión. | **Aceptado para EPIC-015.** `NOT_PRICED` es resultado explícito. |
+| **Costo de referencia** | Dato interno, opcional y versionado usado para pricing/margen, con fuente y momento. | **Aceptado para EPIC-015.** No es costo promedio, valuación, última compra ni autoridad contable. |
+| **SKU interno** | Identificador humano estable y único dentro del Tenant; puede aportarse o generarse server-side. | **Aceptado para EPIC-015.** No es ID de URL, barcode ni código de proveedor. |
+| **Código de barras interno** | Identificador escaneable interno, único por Tenant y representable posteriormente como Code 128. | **Aceptado para EPIC-015.** No es GTIN/EAN/UPC, ID de URL ni código de proveedor. |
+| **SupplierSource** | Identidad Tenant-scoped mínima de una fuente externa de listas. | **Aceptado para EPIC-015.** No es el Supplier maestro de Procurement y no posee contactos, compras o pagos. |
+| **SupplierCatalogVersion** | Fotografía versionada de una ronda recibida/compuesta para un SupplierSource. | **Aceptado para EPIC-015.** Es inmutable después de INGESTED; una corrección crea otra versión enlazada. |
+| **SupplierListing** | Observación estructurada de una fila dentro de una SupplierCatalogVersion. | **Aceptado para EPIC-015.** No es CatalogItem ni alias; el código del proveedor es opcional. |
+| **SupplierListingResolution** | Decisión append-only que vincula, excluye o corrige la interpretación de un SupplierListing. | **Aceptado para EPIC-015.** Corregir conserva la decisión anterior. |
+| **SupplierReconciliationMemory** | Proyección reconstruible de mappings históricos confirmados por Source y firma exacta. | **Aceptado para EPIC-015.** Sólo preselecciona cuando es única/consistente; no publica ni crea alias. |
+| **CatalogUpdateBatch** | Intención durable y auditable que convierte observaciones/propuestas en decisiones create/update/no-change/exclude antes de aplicar Catalog. | **Aceptado para EPIC-015.** Es distinto de SupplierCatalogVersion y publica atómicamente tras preview/confirmación. |
+| **SupplierObservedCost** | Costo/moneda observado en una SupplierListing y conservado como evidencia protegida. | **Aceptado para EPIC-015.** Puede proponerse como Reference Cost; no es costo de compra ni valuación. |
 | **Inventario** | Capacidad para conocer y controlar artículos, partes o insumos y sus existencias dentro de alcances definidos. | **Pendiente de validación:** catálogo, unidad, propiedad tenant/sucursal, ubicaciones, reservas, lotes, series y valuación. |
 | **Movimiento** | Cambio trazable que afecta cantidad, ubicación, reserva o estado de un elemento de inventario. | **Pendiente de validación:** tipos, signos, aprobación, reversión, costo y relación con reparación, venta o ajuste. |
 | **Venta** | Operación comercial del taller mediante la cual se entregan productos o servicios a cambio de una contraprestación. | **Pendiente de validación:** alcance frente a reparación, documentos, impuestos, devoluciones y momento de reconocimiento. |

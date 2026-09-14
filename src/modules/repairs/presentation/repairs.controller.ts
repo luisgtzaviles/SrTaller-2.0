@@ -25,6 +25,7 @@ import { ContextualAuthorizationError } from '../../access/index.js';
 import type { ProtectedRequestEvidence } from '../../access/index.js';
 
 import {
+  RepairCatalogReferenceDeleteNotAllowedError,
   RepairOperationAccessDeniedError,
   RepairProtectedOperations,
 } from '../application/repair-protected-operations.js';
@@ -101,7 +102,6 @@ import {
   RepairProblemClassificationInputError,
   RepairProblemClassificationNotFoundError,
 } from '../application/change-repair-problem-classification.service.js';
-
 type RepairQuery = Readonly<Record<string, string | string[] | undefined>>;
 type RepairRequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
 
@@ -345,6 +345,7 @@ function adminRiskResponse(items: Awaited<ReturnType<RepairProtectedOperations['
       status: risk.status,
       version: risk.version,
       usageCount: risk.usageCount,
+      deletable: risk.deletable ?? false,
       createdAt: risk.createdAt,
       updatedAt: risk.updatedAt,
     })),
@@ -386,7 +387,7 @@ function pendingBrandMutationInput(pendingBrandValueId: string, request: unknown
 function deviceTypeMutationInput(deviceTypeId: string, request: unknown): unknown { if (typeof request !== 'object' || request === null || Array.isArray(request)) return request; return { ...(request as Readonly<Record<string, unknown>>), deviceTypeId }; }
 function pendingDeviceTypeMutationInput(pendingDeviceTypeValueId: string, request: unknown): unknown { if (typeof request !== 'object' || request === null || Array.isArray(request)) return request; return { ...(request as Readonly<Record<string, unknown>>), pendingDeviceTypeValueId }; }
 function operationalDeviceTypeResponse(items: Awaited<ReturnType<RepairProtectedOperations['listOperationalRepairDeviceTypes']>>) { return { items: items.map((item) => ({ deviceTypeId: item.deviceTypeId, label: item.canonicalLabel, scope: item.scope })) }; }
-function adminDeviceTypeResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminRepairDeviceTypes']>>) { return { items: items.map((item) => ({ deviceTypeId: item.deviceTypeId, code: item.code, label: item.canonicalLabel, scope: item.scope, status: item.status, version: item.version, usageCount: item.usageCount, createdAt: item.createdAt, updatedAt: item.updatedAt })) }; }
+function adminDeviceTypeResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminRepairDeviceTypes']>>) { return { items: items.map((item) => ({ deviceTypeId: item.deviceTypeId, code: item.code, label: item.canonicalLabel, scope: item.scope, status: item.status, version: item.version, usageCount: item.usageCount, deletable: item.deletable ?? false, createdAt: item.createdAt, updatedAt: item.updatedAt })) }; }
 function pendingDeviceTypeResponse(items: Awaited<ReturnType<RepairProtectedOperations['listPendingRepairDeviceTypes']>>) { return { items: items.map((item) => ({ pendingDeviceTypeValueId: item.pendingDeviceTypeValueId, rawLabel: item.rawLabel, status: item.resolutionStatus, canonicalDeviceTypeId: item.canonicalDeviceTypeId, canonicalLabel: item.canonicalLabel, version: item.version, usageCount: item.usageCount, firstSeenAt: item.firstSeenAt, lastSeenAt: item.lastSeenAt })) }; }
 
 function modelMutationInput(modelId: string, request: unknown): unknown {
@@ -404,7 +405,7 @@ function operationalBrandResponse(items: Awaited<ReturnType<RepairProtectedOpera
 }
 
 function adminBrandResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminRepairBrands']>>) {
-  return { items: items.map((brand) => ({ brandId: brand.brandId, code: brand.code, label: brand.canonicalLabel, scope: brand.scope, status: brand.status, version: brand.version, usageCount: brand.usageCount, createdAt: brand.createdAt, updatedAt: brand.updatedAt })) };
+  return { items: items.map((brand) => ({ brandId: brand.brandId, code: brand.code, label: brand.canonicalLabel, scope: brand.scope, status: brand.status, version: brand.version, usageCount: brand.usageCount, deletable: brand.deletable ?? false, createdAt: brand.createdAt, updatedAt: brand.updatedAt })) };
 }
 
 function pendingBrandResponse(items: Awaited<ReturnType<RepairProtectedOperations['listPendingRepairBrands']>>) {
@@ -416,7 +417,7 @@ function operationalModelResponse(items: Awaited<ReturnType<RepairProtectedOpera
 }
 
 function adminModelResponse(items: Awaited<ReturnType<RepairProtectedOperations['listAdminRepairModels']>>) {
-  return { items: items.map((model) => ({ modelId: model.modelId, brandId: model.canonicalBrandId, brandLabel: model.brandLabel, code: model.code, label: model.canonicalLabel, scope: model.scope, status: model.status, version: model.version, usageCount: model.usageCount, createdAt: model.createdAt, updatedAt: model.updatedAt })) };
+  return { items: items.map((model) => ({ modelId: model.modelId, brandId: model.canonicalBrandId, brandLabel: model.brandLabel, code: model.code, label: model.canonicalLabel, scope: model.scope, status: model.status, version: model.version, usageCount: model.usageCount, deletable: model.deletable ?? false, createdAt: model.createdAt, updatedAt: model.updatedAt })) };
 }
 
 function pendingModelResponse(items: Awaited<ReturnType<RepairProtectedOperations['listPendingRepairModels']>>) {
@@ -572,6 +573,9 @@ export class RepairsController {
   @Post('configuration/catalogs/device-types/:deviceTypeId/reactivate')
   @Header('Cache-Control', 'private, no-store')
   async reactivateRepairDeviceType(@Headers() headers: RepairRequestHeaders, @Param('deviceTypeId') deviceTypeId: string, @Body() request: unknown) { try { return { item: adminDeviceTypeResponse([await this.operations.reactivateRepairDeviceType(repairProtectedRequestEvidence(headers), deviceTypeMutationInput(deviceTypeId, request))]).items[0] }; } catch (error: unknown) { this.translateDeviceTypeMutationError(error); } }
+  @Delete('configuration/catalogs/device-types/:deviceTypeId')
+  @Header('Cache-Control', 'private, no-store')
+  async deleteRepairDeviceType(@Headers() headers: RepairRequestHeaders, @Param('deviceTypeId') deviceTypeId: string, @Body() request: unknown) { try { return { item: await this.operations.deleteRepairDeviceType(repairProtectedRequestEvidence(headers), deviceTypeMutationInput(deviceTypeId, request)) }; } catch (error: unknown) { this.translateDeviceTypeMutationError(error); } }
   @Post('configuration/catalogs/device-types/pending/:pendingDeviceTypeValueId/resolve')
   @Header('Cache-Control', 'private, no-store')
   async resolvePendingRepairDeviceType(@Headers() headers: RepairRequestHeaders, @Param('pendingDeviceTypeValueId') pendingDeviceTypeValueId: string, @Body() request: unknown) { try { return { item: pendingDeviceTypeResponse([await this.operations.resolvePendingRepairDeviceType(repairProtectedRequestEvidence(headers), pendingDeviceTypeMutationInput(pendingDeviceTypeValueId, request))]).items[0] }; } catch (error: unknown) { this.translateDeviceTypeMutationError(error); } }
@@ -628,6 +632,9 @@ export class RepairsController {
     try { return { item: adminBrandResponse([await this.operations.reactivateRepairBrand(repairProtectedRequestEvidence(headers), brandMutationInput(brandId, request))]).items[0] }; }
     catch (error: unknown) { this.translateBrandMutationError(error); }
   }
+  @Delete('configuration/catalogs/brands/:brandId')
+  @Header('Cache-Control', 'private, no-store')
+  async deleteRepairBrand(@Headers() headers: RepairRequestHeaders, @Param('brandId') brandId: string, @Body() request: unknown) { try { return { item: await this.operations.deleteRepairBrand(repairProtectedRequestEvidence(headers), brandMutationInput(brandId, request)) }; } catch (error: unknown) { this.translateBrandMutationError(error); } }
 
   @Post('configuration/catalogs/brands/pending/:pendingBrandValueId/resolve')
   @Header('Cache-Control', 'private, no-store')
@@ -677,6 +684,9 @@ export class RepairsController {
     try { return { item: adminModelResponse([await this.operations.reactivateRepairModel(repairProtectedRequestEvidence(headers), modelMutationInput(modelId, request))]).items[0] }; }
     catch (error: unknown) { this.translateModelMutationError(error); }
   }
+  @Delete('configuration/catalogs/models/:modelId')
+  @Header('Cache-Control', 'private, no-store')
+  async deleteRepairModel(@Headers() headers: RepairRequestHeaders, @Param('modelId') modelId: string, @Body() request: unknown) { try { return { item: await this.operations.deleteRepairModel(repairProtectedRequestEvidence(headers), modelMutationInput(modelId, request)) }; } catch (error: unknown) { this.translateModelMutationError(error); } }
 
   @Post('configuration/catalogs/models/pending/:pendingModelValueId/resolve')
   @Header('Cache-Control', 'private, no-store')
@@ -735,6 +745,9 @@ export class RepairsController {
       this.translateRiskMutationError(error);
     }
   }
+  @Delete('configuration/catalogs/risks/:riskId')
+  @Header('Cache-Control', 'private, no-store')
+  async deleteRepairRisk(@Headers() headers: RepairRequestHeaders, @Param('riskId') riskId: string, @Body() request: unknown) { try { return { item: await this.operations.deleteRepairRisk(repairProtectedRequestEvidence(headers), riskMutationInput(riskId, request)) }; } catch (error: unknown) { this.translateRiskMutationError(error); } }
 
   @Get('configuration/catalogs/problem-categories')
   @Header('Cache-Control', 'private, no-store')
@@ -915,6 +928,7 @@ export class RepairsController {
     if (error instanceof RepairRiskInputError) throw new BadRequestException({ code: 'REPAIR_RISK_INVALID', parameter: error.parameter });
     if (error instanceof RepairRiskDuplicateError) throw new ConflictException({ code: 'REPAIR_RISK_DUPLICATE' });
     if (error instanceof RepairRiskConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_RISK_VERSION_CONFLICT' });
+    if (error instanceof RepairCatalogReferenceDeleteNotAllowedError) throw new ConflictException({ code: 'CATALOG_REFERENCE_IN_USE', reason: error.reason, referenceKind: error.kind });
     if (error instanceof RepairRiskNotFoundError) throw new NotFoundException({ code: 'REPAIR_RISK_NOT_FOUND' });
     if (error instanceof RepairRiskAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
     if (error instanceof Error && error.name.includes('Database')) throw new ServiceUnavailableException({ code: 'REPAIRS_DATABASE_UNAVAILABLE' });
@@ -949,6 +963,7 @@ export class RepairsController {
     if (error instanceof RepairBrandInputError) throw new BadRequestException({ code: 'REPAIR_BRAND_INVALID', parameter: error.parameter });
     if (error instanceof RepairBrandDuplicateError) throw new ConflictException({ code: 'REPAIR_BRAND_DUPLICATE' });
     if (error instanceof RepairBrandConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_BRAND_VERSION_CONFLICT' });
+    if (error instanceof RepairCatalogReferenceDeleteNotAllowedError) throw new ConflictException({ code: 'CATALOG_REFERENCE_IN_USE', reason: error.reason, referenceKind: error.kind });
     if (error instanceof RepairBrandNotFoundError) throw new NotFoundException({ code: 'REPAIR_BRAND_NOT_FOUND' });
     if (error instanceof RepairBrandPendingNotFoundError) throw new NotFoundException({ code: 'REPAIR_BRAND_PENDING_NOT_FOUND' });
     if (error instanceof RepairBrandAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
@@ -961,6 +976,7 @@ export class RepairsController {
     if (error instanceof RepairDeviceTypeInputError) throw new BadRequestException({ code: 'REPAIR_DEVICE_TYPE_INVALID', parameter: error.parameter });
     if (error instanceof RepairDeviceTypeDuplicateError) throw new ConflictException({ code: 'REPAIR_DEVICE_TYPE_DUPLICATE' });
     if (error instanceof RepairDeviceTypeConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_DEVICE_TYPE_VERSION_CONFLICT' });
+    if (error instanceof RepairCatalogReferenceDeleteNotAllowedError) throw new ConflictException({ code: 'CATALOG_REFERENCE_IN_USE', reason: error.reason, referenceKind: error.kind });
     if (error instanceof RepairDeviceTypeNotFoundError) throw new NotFoundException({ code: 'REPAIR_DEVICE_TYPE_NOT_FOUND' });
     if (error instanceof RepairDeviceTypePendingNotFoundError) throw new NotFoundException({ code: 'REPAIR_DEVICE_TYPE_PENDING_NOT_FOUND' });
     if (error instanceof RepairDeviceTypeAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
@@ -973,6 +989,7 @@ export class RepairsController {
     if (error instanceof RepairModelInputError) throw new BadRequestException({ code: 'REPAIR_MODEL_INVALID', parameter: error.parameter });
     if (error instanceof RepairModelDuplicateError) throw new ConflictException({ code: 'REPAIR_MODEL_DUPLICATE' });
     if (error instanceof RepairModelConcurrencyConflictError) throw new ConflictException({ code: 'REPAIR_MODEL_VERSION_CONFLICT' });
+    if (error instanceof RepairCatalogReferenceDeleteNotAllowedError) throw new ConflictException({ code: 'CATALOG_REFERENCE_IN_USE', reason: error.reason, referenceKind: error.kind });
     if (error instanceof RepairModelNotFoundError) throw new NotFoundException({ code: 'REPAIR_MODEL_NOT_FOUND' });
     if (error instanceof RepairModelPendingNotFoundError) throw new NotFoundException({ code: 'REPAIR_MODEL_PENDING_NOT_FOUND' });
     if (error instanceof RepairModelAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });

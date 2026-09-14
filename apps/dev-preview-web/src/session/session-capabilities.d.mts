@@ -12,6 +12,14 @@ export const OPERATIONAL_CAPABILITY_CATALOG: readonly [
   'repairs.catalogs.manage',
   'repairs.configuration.read',
   'repairs.configuration.manage',
+  'price_list.read',
+  'catalog.manage',
+  'catalog.prices.manage',
+  'catalog.branch_prices.manage',
+  'catalog.reference_cost.read',
+  'catalog.reference_cost.manage',
+  'catalog.import.prepare',
+  'catalog.import.publish',
 ];
 
 export type OperationalCapability = typeof OPERATIONAL_CAPABILITY_CATALOG[number];

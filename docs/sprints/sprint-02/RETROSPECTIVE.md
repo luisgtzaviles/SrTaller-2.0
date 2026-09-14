@@ -1,6 +1,6 @@
 # SPRINT-02 — Retrospectiva
 
-- **Estado:** Complete candidate; Sprint Closed candidate.
+- **Estado:** Complete; Sprint Closed.
 - **Fecha:** 2026-09-12.
 
 La fricción Owner demostró que una restricción técnicamente consistente puede
@@ -17,6 +17,5 @@ Access con Price List.
 
 ## Próxima revisión
 
-- **Fecha:** al integrar este cierre documental.
-- **Disparador:** CI exacta verde sobre su merge; no iniciar otro PBI por ese
-  solo hecho.
+- **Fecha:** al cambiar una autoridad histórica del Sprint.
+- **Disparador:** nueva evidencia que contradiga el resultado.

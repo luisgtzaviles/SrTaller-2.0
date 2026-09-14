@@ -65,7 +65,10 @@ export async function inspectDist({
     const extension = extname(path);
     const previewAsset = path.startsWith('dist/public/') &&
       ['.css', '.html', '.js', '.map'].includes(extension);
-    if (!previewAsset && !['.js', '.map'].includes(extension)) {
+    const runtimeProvenanceAsset = path ===
+      'dist/public/runtime-provenance.json';
+    if (!previewAsset && !runtimeProvenanceAsset &&
+      !['.js', '.map'].includes(extension)) {
       throw new Error(`Unexpected dist artifact: ${path}`);
     }
 

@@ -70,17 +70,16 @@ test('only executable entrypoints read process.env and configuration is not read
     [
       'src/db-migrate.ts',
       'src/main.ts',
-      'src/main.ts',
       'src/infrastructure/runtime/runtime-environment.reader.ts',
     ],
   );
   assert.match(
     await readFile('src/main.ts', 'utf8'),
-    /loadStartupConfig\(process\.env\)/u,
+    /const environment = process\.env;[\s\S]*loadStartupConfig\(environment\)/u,
   );
   assert.match(
     await readFile('src/main.ts', 'utf8'),
-    /loadRequiredServerSecrets\(process\.env, \['SR_DB_PASSWORD', 'SR_PIN_PEPPER'\]\)/u,
+    /loadRequiredServerSecrets\(environment, \['SR_DB_PASSWORD', 'SR_PIN_PEPPER'\]\)/u,
   );
   assert.match(
     await readFile('src/db-migrate.ts', 'utf8'),

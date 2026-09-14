@@ -81,6 +81,11 @@ export const CONTEXTUAL_AUTHORIZATION_EXECUTOR: unique symbol = Symbol(
   'srtaller.access.contextual-authorization-executor',
 );
 
+export interface TenantWideAuthorizationExecutor extends ContextualAuthorizationExecutor {}
+export const TENANT_WIDE_AUTHORIZATION_EXECUTOR: unique symbol = Symbol(
+  'srtaller.access.tenant-wide-authorization-executor',
+);
+
 /** Compile-time marker for the public access module boundary. */
 export interface AccessModuleContract {
   readonly module: 'access';

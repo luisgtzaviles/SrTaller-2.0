@@ -12,6 +12,7 @@ import type {
   NewRepairFormMode,
   UserPreferencesMutationGuard,
   UserPreferencesRecord,
+  UserPreferencesPatch,
   UserPreferencesRepositoryPort,
   UserPreferencesScope,
 } from '../../application/ports/user-preferences-repository.port.js';
@@ -38,10 +39,12 @@ function persistenceError(error: unknown): UserPreferencesPersistenceError {
 
 function record(row: Readonly<{
   new_repair_form_mode: NewRepairFormMode;
+  price_list_show_reference_cost: boolean;
   updated_at: Date;
 }>): UserPreferencesRecord {
   return Object.freeze({
     newRepairFormMode: row.new_repair_form_mode,
+    priceListShowReferenceCost: row.price_list_show_reference_cost,
     updatedAt: row.updated_at.toISOString(),
   });
 }
@@ -60,7 +63,7 @@ implements UserPreferencesRepositoryPort {
         async (database: UserPreferencesExecutor) => {
           const row = await database
             .selectFrom('user_preferences')
-            .select(['new_repair_form_mode', 'updated_at'])
+            .select(['new_repair_form_mode', 'price_list_show_reference_cost', 'updated_at'])
             .where('tenant_id', '=', scope.tenantId)
             .where('user_id', '=', scope.userId)
             .executeTakeFirst();
@@ -74,7 +77,7 @@ implements UserPreferencesRepositoryPort {
 
   async upsert(
     scope: UserPreferencesScope,
-    mode: NewRepairFormMode,
+    patch: UserPreferencesPatch,
     occurredAt: Date,
     guard?: UserPreferencesMutationGuard,
   ): Promise<UserPreferencesRecord> {
@@ -96,21 +99,29 @@ implements UserPreferencesRepositoryPort {
                   'USER_PREFERENCES_AUTHENTICATION_CHANGED',
                 );
               }
+              const current = await database.selectFrom('user_preferences')
+                .select(['new_repair_form_mode', 'price_list_show_reference_cost'])
+                .where('tenant_id', '=', scope.tenantId).where('user_id', '=', scope.userId)
+                .forUpdate().executeTakeFirst();
+              const mode = patch.newRepairFormMode ?? current?.new_repair_form_mode ?? 'classic';
+              const showCost = patch.priceListShowReferenceCost ?? current?.price_list_show_reference_cost ?? false;
               const row = await database
                 .insertInto('user_preferences')
                 .values({
                   tenant_id: scope.tenantId,
                   user_id: scope.userId,
                   new_repair_form_mode: mode,
+                  price_list_show_reference_cost: showCost,
                   updated_at: occurredAt,
                 })
                 .onConflict((conflict) =>
                   conflict.columns(['tenant_id', 'user_id']).doUpdateSet({
                     new_repair_form_mode: mode,
+                    price_list_show_reference_cost: showCost,
                     updated_at: occurredAt,
                   }),
                 )
-                .returning(['new_repair_form_mode', 'updated_at'])
+                .returning(['new_repair_form_mode', 'price_list_show_reference_cost', 'updated_at'])
                 .executeTakeFirstOrThrow();
               if (guard && !await guard.confirmCurrent(transactionContext)) {
                 throw new UserPreferencesPersistenceError(

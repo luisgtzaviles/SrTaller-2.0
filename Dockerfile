@@ -1,15 +1,22 @@
 # syntax=docker/dockerfile:1.7
 
 ARG NODE_IMAGE="node:24.18.0-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d"
+ARG SR_BUILD_GIT_SHA
 
 FROM ${NODE_IMAGE} AS build
 
 ARG SOURCE_DATE_EPOCH=0
+ARG SR_BUILD_GIT_SHA
 ENV COREPACK_HOME=/opt/corepack
 ENV PATH="${COREPACK_HOME}:${PATH}"
+ENV SR_RUNTIME_GIT_SHA="${SR_BUILD_GIT_SHA}"
+ENV SR_RUNTIME_SOURCE_STATE=clean
 WORKDIR /workspace
 
-RUN mkdir -p "${COREPACK_HOME}" \
+RUN test -n "${SR_BUILD_GIT_SHA}" \
+  && test "$(printf '%s' "${SR_BUILD_GIT_SHA}" | tr -d '0-9a-f')" = "" \
+  && test "${#SR_BUILD_GIT_SHA}" = "40" \
+  && mkdir -p "${COREPACK_HOME}" \
   && corepack enable --install-directory "${COREPACK_HOME}" \
   && corepack prepare pnpm@11.15.1 --activate \
   && test "$(node --version)" = "v24.18.0" \
@@ -32,9 +39,13 @@ RUN pnpm run build \
 FROM ${NODE_IMAGE} AS runtime
 
 ARG SOURCE_DATE_EPOCH=0
+ARG SR_BUILD_GIT_SHA
 ENV HOST=0.0.0.0
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV SR_RUNTIME_GIT_SHA="${SR_BUILD_GIT_SHA}"
+ENV SR_RUNTIME_SOURCE_STATE=clean
+LABEL org.opencontainers.image.revision="${SR_BUILD_GIT_SHA}"
 WORKDIR /app
 
 RUN --mount=type=bind,from=build,source=/workspace,target=/build,ro \

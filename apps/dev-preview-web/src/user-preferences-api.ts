@@ -4,6 +4,7 @@ export type NewRepairFormMode = 'classic' | 'guided_v2';
 
 export type UserPreferences = Readonly<{
   newRepairFormMode: NewRepairFormMode;
+  priceListShowReferenceCost: boolean;
 }>;
 
 const PATH = '/api/users/me/preferences';
@@ -14,11 +15,12 @@ function parse(value: unknown): UserPreferences {
     typeof value !== 'object' ||
     value === null ||
     Array.isArray(value) ||
-    Object.keys(value).length !== 1 ||
+    Object.keys(value).length !== 2 ||
     !('newRepairFormMode' in value) ||
-    (value.newRepairFormMode !== 'classic' && value.newRepairFormMode !== 'guided_v2')
+    (value.newRepairFormMode !== 'classic' && value.newRepairFormMode !== 'guided_v2') ||
+    !('priceListShowReferenceCost' in value) || typeof value.priceListShowReferenceCost !== 'boolean'
   ) throw new PreviewApiError(0);
-  return Object.freeze({ newRepairFormMode: value.newRepairFormMode });
+  return Object.freeze({ newRepairFormMode: value.newRepairFormMode, priceListShowReferenceCost: value.priceListShowReferenceCost });
 }
 
 async function response(result: Response): Promise<UserPreferences> {
@@ -49,7 +51,7 @@ export async function getUserPreferences(signal?: AbortSignal): Promise<UserPref
 }
 
 export async function updateUserPreferences(
-  input: UserPreferences,
+  input: Partial<UserPreferences>,
   csrfToken: string,
   signal?: AbortSignal,
 ): Promise<UserPreferences> {

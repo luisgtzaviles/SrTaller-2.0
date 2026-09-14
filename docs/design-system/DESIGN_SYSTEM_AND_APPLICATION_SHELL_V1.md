@@ -208,12 +208,15 @@ La IA aprobada no concede visibilidad inmediata:
 
 | Grupo | Capacidades candidatas |
 |---|---|
-| Operación | Inicio, Reparaciones, Lista de precios |
+| Operación | Inicio, Reparaciones |
+| Listas | Lista de precios |
 | Caja | Caja, Cortes |
 | Configuración | General, Catálogos, Roles, Usuarios |
 
 Una capacidad sólo aparece si está implementada, autorizada y realmente
-disponible en runtime. No se muestran módulos futuros como placeholders o “en
+disponible en runtime. `Listas` aparece inicialmente sólo cuando Lista de
+precios esté disponible. Pedidos y Solicitudes de clientes no aparecen hasta
+tener contrato y funcionalidad propios; no se muestran como placeholders o “en
 mantenimiento”. Nueva reparación es una acción contextual de Reparaciones, no
 un módulo principal.
 

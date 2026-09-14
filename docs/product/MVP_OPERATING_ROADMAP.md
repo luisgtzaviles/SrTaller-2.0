@@ -2,25 +2,23 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; PBI-043 y SPRINT-02 en cierre documental
-  después de integración y Preview PASS.
+- **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 activo con
+  PBI-040 Owner Accepted en Functional Freeze y Final Verification.
 - **Baseline Git observada:** `main` y `origin/main` local en
-  `aab27d98db94d850c580f0cac594c1a62c00cc51`; CI exacta de `main`
-  `34730090448`, `SUCCESS`.
+  `5be5cd60acb0865da57aff76740a1330896b1cd1`; CI exacta de `main`
+  `34732201476`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
-- **Fase:** Operational Authentication & Authorization.
-- **Checkpoint alcanzado:** Functional Slice Owner Accepted, Formal UI
-  Verification, Hardening, Full Verification, re-review, integración, CI
-  exacta de `main` y validación post-deploy de Preview en `PASS`.
-- **Sprint:** SPRINT-02 — `Closed candidate`.
+- **Fase:** Pricing Catalog.
+- **Checkpoint alcanzado:** Functional Slice Owner Accepted; candidato en
+  Functional Freeze listo para Formal UI Verification.
+- **Sprint activo:** SPRINT-03 — Price List Foundation.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** `NONE`; PBI-043 es `Done candidate`.
-- **Siguiente PBI candidato:** PBI-040 congelado, pendiente de reconciliación y
-  autoridad separada; no iniciado.
-- **Blocking gate:** merge y CI exacta de este cierre documental; Production
-  conserva autoridad separada.
-- **WIP operacional:** `0/1`.
+- **PBI actual:** `PBI-040` — Owner Accepted; Ready for Final Verification.
+- **Siguiente PBI candidato:** PBI-041 Ready, no seleccionado ni autorizado.
+- **Blocking gate:** Formal UI Verification, hardening, full verification y
+  revisión independiente antes de publicar/integrar. Production no autorizada.
+- **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
 
@@ -98,13 +96,13 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
-| Phase | Operational Authentication & Authorization |
-| Sprint | SPRINT-02 |
-| Sprint status | Closed candidate — documentary closure; WIP=0/1 |
-| Current PBI | NONE; PBI-043 Done candidate |
-| Next PBI candidate | PBI-040 frozen; reconciliation/start not authorized |
+| Phase | Pricing Catalog |
+| Sprint | SPRINT-03 |
+| Sprint status | Active — PBI-040 Final Verification; WIP=1/1 |
+| Current PBI | PBI-040 — Owner Accepted; Functional Freeze |
+| Next PBI candidate | PBI-041 Ready; not selected or authorized |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
-| Blocking gate | Merge and exact-main CI for documentary closure |
+| Blocking gate | Formal UI Verification, full verification and independent review |
 
 ## Fases aprobadas
 
@@ -140,7 +138,7 @@ adelantarse sin iniciar implementación:
 8. [PBI-026](../backlog/pbis/PBI-026.md) — Contextual Authorization.
 9. [PBI-028](../backlog/pbis/PBI-028.md) — Minimum Business Audit and Correlation.
 10. [PBI-043](../backlog/pbis/PBI-043.md) — Concurrent Operational Sessions
-    remediation, `Done candidate`, Preview PASS.
+    remediation, `Done`, Preview PASS.
 11. Operational Note como primera prueba integral con actor real.
 12. Retrofit progresivo al resto de los writes de Repairs.
 
@@ -148,8 +146,10 @@ PBI-039 recorrió G6 Customer mínimo y G7 New Repair/Intake juntos, fue aceptad
 integrado, validado en Preview y cerrado por PR #45 / `40684d7` con CI exacta
 `34623060504` GREEN. QA posterior detectó la fricción de una Session por
 Station; ASC-001–008 y ADR-014 seleccionan PBI-043 como remediación separada.
-PBI-040 permanece congelado hasta reconciliarse desde el nuevo `main` después
-de PBI-043.
+PBI-043 cerró mediante PR #47/#48 y CI exacta `34732201476`. PBI-040 fue
+reconciliado desde ese nuevo `main` sin reescribir su HEAD congelado y continúa
+Owner Review; PBI-041 está Ready documentalmente pero no iniciado y PBI-042 no
+está iniciado.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización
@@ -215,14 +215,16 @@ merge funcional, Owner Acceptance, cierre PR #27 y CI exacto post-cierre
 focused high-risk review PASS, merge funcional PR #28, Owner Acceptance y
 cierre PR #29 con CI exacto post-cierre `34084930812` GREEN. G2 está `PASS`.
 
-SPRINT-02 está `Closed candidate`; PBI-026 está `Done`, G4 `PASS`; PBI-028 está `Done`,
+SPRINT-02 está `Closed`; PBI-026 está `Done`, G4 `PASS`; PBI-028 está `Done`,
 G5 es `PASS`; PBI-038 está `Done` después de PR #40 merge
 `5973f355a5e9dfc7ae562a688ded04e7eba8bc34` y CI exacta `34280510716` GREEN.
 PBI-039 está `Done`: PR #45 mergeó el cierre como `40684d7` y CI exacta
 `34623060504` quedó GREEN. PBI-043 integró PR #47 como `aab27d9`; CI candidata
-`34729684465`, exact-main `34730090448` y Preview quedaron PASS. Es
-`Done candidate`, no existe PBI funcional actual y PBI-040 permanece
-congelado.
+`34729684465`, exact-main `34730090448` y Preview quedaron PASS. El cierre PR
+#48 `5be5cd6` y CI `34732201476` lo dejan `Done`. SPRINT-03 está `Active`,
+WIP `1/1`; PBI-040 está Owner Accepted y en Final Verification sobre la baseline reconciliada;
+PBI-041 alcanzó Ready documentalmente como Candidate, sin selección ni
+autorización de implementación.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.
@@ -255,8 +257,8 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** merge y CI exacta del cierre documental o cambio posterior de
-  la baseline/arquitectura.
-- **Resultado esperado si pasa:** PBI-043 queda `Done` y SPRINT-02 `Closed`;
-  PBI-040 sigue sin iniciar hasta su reconciliación y autoridad propias.
+- **Disparador:** resultado de Final Verification, revisión independiente,
+  integración o Preview de PBI-040, o cambio de su baseline/arquitectura.
+- **Resultado esperado si pasa:** PBI-040 completa su cierre autorizado sin
+  inferir inicio de PBI-041 ni autorización de Production.
 - **Después:** no iniciar otro PBI automáticamente.

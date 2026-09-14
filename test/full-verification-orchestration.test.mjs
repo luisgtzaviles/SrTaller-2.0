@@ -44,13 +44,14 @@ function campaignFixture({ failAt = null, finalFingerprint = fingerprint() } = {
       fingerprintCalls += 1;
       return fingerprintCalls === 1 ? fingerprint() : finalFingerprint;
     },
-    candidatePreflight: operation('candidate-preflight'),
+    candidatePreflight: operation('candidate-preflight', Object.freeze({ status: 'PASS', baselineSha: 'baseline' })),
     resourcePreflight: operation('resource-preflight'),
     toolchain: operation('toolchain', Object.freeze({ node: '24.18.0', pnpm: '11.15.1' })),
     integrity: operation('integrity'),
     baseVerify: operation('base-verify'),
     postgresqlComposite: operation('postgresql-composite'),
     pbi039Postgresql: operation('pbi039-postgresql'),
+    pbi040Postgresql: operation('pbi040-postgresql'),
     previewRuntime: operation('preview-runtime'),
     smokeProvision: operation('smoke-provision', smoke),
     cleanup: async (activeSmoke) => {
@@ -86,6 +87,7 @@ test('verify:full stage contract preserves the authoritative order', () => {
       'base-verify',
       'postgresql-composite',
       'pbi039-postgresql',
+      'pbi040-postgresql',
       'preview-runtime',
       'smoke-provision',
       'smoke-start',
@@ -107,10 +109,12 @@ test('campaign invokes verify before material PostgreSQL and writes PASS evidenc
   });
   assert.ok(fixture.calls.indexOf('base-verify') < fixture.calls.indexOf('postgresql-composite'));
   assert.ok(fixture.calls.indexOf('postgresql-composite') < fixture.calls.indexOf('pbi039-postgresql'));
+  assert.ok(fixture.calls.indexOf('pbi039-postgresql') < fixture.calls.indexOf('pbi040-postgresql'));
   assert.ok(fixture.calls.indexOf('smoke-provision') < fixture.calls.indexOf('smoke-start'));
   assert.ok(fixture.calls.indexOf('smoke-start') < fixture.calls.indexOf('smoke-ui'));
   assert.ok(fixture.calls.indexOf('cleanup') < fixture.calls.indexOf('fingerprint-after'));
   assert.equal(evidence.verdict, 'PASS');
+  assert.equal(evidence.integrationBaseline.status, 'PASS');
   assert.equal(fixture.readEvidence().warnings[0].disposition, 'ACCEPTED WARNING');
   assert.match(renderFullVerificationSummary(evidence), /Stage 3 Base verify gate/u);
   assert.match(renderFullVerificationSummary(evidence), /Verdict: PASS/u);
@@ -188,13 +192,14 @@ test('candidate mutation turns an otherwise green campaign into failure evidence
   assert.equal(fixture.readEvidence().candidateFingerprintAfter.candidateSha256, 'candidate-b');
 });
 
-test('PostgreSQL skip inventory maps 17 composite and 2 PBI-039 material tests', async () => {
+test('PostgreSQL skip inventory maps 17 composite, 2 PBI-039 and 1 PBI-040 material tests', async () => {
   const inventory = await inspectPostgresqlSkipInventory();
-  assert.equal(inventory.total, 19);
+  assert.equal(inventory.total, 20);
   assert.equal(inventory.material.postgresqlComposite, 17);
   assert.equal(inventory.material.pbi039Postgresql, 2);
+  assert.equal(inventory.material.pbi040Postgresql, 1);
   assert.equal(inventory.files.length, expectedPostgresqlSkipInventory.length);
-  assert.deepEqual(assertBaseSkipSummary('ℹ skipped 19\n', inventory).skipped, 19);
-  assert.throws(() => assertBaseSkipSummary('ℹ skipped 18\n', inventory), /expected 19/u);
-  assert.throws(() => assertBaseSkipSummary('ℹ skipped 19\nℹ skipped 19\n', inventory), /one authoritative/u);
+  assert.deepEqual(assertBaseSkipSummary('ℹ skipped 20\n', inventory).skipped, 20);
+  assert.throws(() => assertBaseSkipSummary('ℹ skipped 19\n', inventory), /expected 20/u);
+  assert.throws(() => assertBaseSkipSummary('ℹ skipped 20\nℹ skipped 20\n', inventory), /one authoritative/u);
 });

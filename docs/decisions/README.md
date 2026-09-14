@@ -58,6 +58,13 @@ Estas decisiones no alteran el conteo de ADRs:
 | [DEC-051](dec-051-testing-ci-strategy/DECISION_PROPOSAL.md) | Estrategia de pruebas, CI y gates ejecutables | Accepted — 2026-07-24 — DEC051-C01/C07/C09 `Satisfied`; restantes `Pending` |
 | [DEC-063](dec-063-definition-of-done/DECISION_PROPOSAL.md) | Definition of Done por tipo de trabajo y riesgo | Accepted with conditions — 2026-07-24 — DEC063-C01/C03/C04 `Satisfied`; restantes `Pending` |
 
+## Decisiones de dominio promovidas
+
+| Registro | Tema | Estado |
+|---|---|---|
+| [PLD-001–008 y PLD-018](../domain/DOMAIN_DECISION_LOG.md) | Tipos, visibilidad, costo, scope, moneda, matching, publish e IA de Lista de precios | Accepted by Product Owner — 2026-09-11 |
+| [Price List Architecture](../architecture/PRICE_LIST_ARCHITECTURE.md) | Frontera modular, ownership, contratos, seguridad e importación | Accepted for PBI readiness — 2026-09-11; no autoriza implementación |
+
 ## ADRs propuestos
 
 | ADR | Tema | Estado |

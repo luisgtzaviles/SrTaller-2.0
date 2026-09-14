@@ -3,6 +3,7 @@ import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { LOCAL_EVIDENCE_FIXTURES } from './local-evidence-fixtures.mjs';
+import { PBI039_REPAIR_DETAIL_PARITY_FIXTURE } from './pbi039-repair-detail-parity-fixture.mjs';
 
 export const LOCAL_ENVIRONMENT = 'local';
 export const LOCAL_IMAGE = 'postgres:18.4';
@@ -286,23 +287,25 @@ export function databaseEnvironment(values, role) {
   });
 }
 
-export function startupEnvironment(values) {
+export function startupEnvironment(values, runtimeProvenance = {}) {
   assertLocalTarget(values);
   return Object.freeze({
     HOST: values.SR_LOCAL_BACKEND_HOST,
     NODE_ENV: 'development',
     PORT: values.SR_LOCAL_BACKEND_PORT,
     SR_LOCAL_RUNTIME: 'true',
+    ...runtimeProvenance,
   });
 }
 
-export function viteEnvironment(values) {
+export function viteEnvironment(values, runtimeProvenance = {}) {
   assertLocalTarget(values);
   return Object.freeze({
     SRT_DEPLOY_ENV: 'local',
     SRT_LOCAL_BACKEND_PORT: values.SR_LOCAL_BACKEND_PORT,
     SRT_LOCAL_VITE_HOST: values.SR_LOCAL_VITE_HOST,
     SRT_LOCAL_VITE_PORT: values.SR_LOCAL_VITE_PORT,
+    ...runtimeProvenance,
   });
 }
 
@@ -360,6 +363,14 @@ export function localAccessCapabilityRows() {
     'repairs.configuration.read',
     'repairs.configuration.manage',
     'repairs.read',
+    'price_list.read',
+    'catalog.manage',
+    'catalog.prices.manage',
+    'catalog.branch_prices.manage',
+    'catalog.reference_cost.read',
+    'catalog.reference_cost.manage',
+    'catalog.import.prepare',
+    'catalog.import.publish',
     'users.read',
     'users.manage',
   ].map((capabilityCode) => Object.freeze({
@@ -403,11 +414,20 @@ export function localAccessRoleCapabilityRows() {
     [roleIds.administrator, 'repairs.configuration.read'],
     [roleIds.administrator, 'repairs.configuration.manage'],
     [roleIds.administrator, 'repairs.read'],
+    [roleIds.administrator, 'price_list.read'],
+    [roleIds.administrator, 'catalog.manage'],
+    [roleIds.administrator, 'catalog.prices.manage'],
+    [roleIds.administrator, 'catalog.branch_prices.manage'],
+    [roleIds.administrator, 'catalog.reference_cost.read'],
+    [roleIds.administrator, 'catalog.reference_cost.manage'],
+    [roleIds.administrator, 'catalog.import.prepare'],
+    [roleIds.administrator, 'catalog.import.publish'],
     [roleIds.administrator, 'users.read'],
     [roleIds.administrator, 'users.manage'],
     [roleIds.customerService, 'repairs.add_note'],
     [roleIds.customerService, 'repairs.create'],
     [roleIds.customerService, 'repairs.read'],
+    [roleIds.customerService, 'price_list.read'],
     [roleIds.technician, 'repairs.add_note'],
     [roleIds.technician, 'repairs.read'],
   ];
@@ -488,7 +508,7 @@ export function localRepairRows() {
     ['00000000-0000-4000-8000-000000001014', 'SR-2026-014', '2026-07-20T13:00:00.000Z', 'Nora Sintética', '6621000014', 'Sony', 'Xperia 10', 'Pantalla rota', technicians.ana, 'Ana Técnica', 'unsuccessful', 'active'],
     ['00000000-0000-4000-8000-000000001015', 'SR-2026-015', '2026-06-28T10:45:00.000Z', 'Oscar Ejemplo', '6621000015', 'Asus', 'Zenfone 9', 'No carga', technicians.bruno, 'Bruno Técnico', 'delivered', 'ended'],
   ];
-  return Object.freeze(rows.map(([repairId, folio, receivedAt, customerName, customerPhone, deviceBrand, deviceModel, reportedIssue, technicianId, technicianDisplayName, repairStatus, custodyStatus]) => Object.freeze({
+  const mapped = rows.map(([repairId, folio, receivedAt, customerName, customerPhone, deviceBrand, deviceModel, reportedIssue, technicianId, technicianDisplayName, repairStatus, custodyStatus]) => Object.freeze({
     repairId,
     tenantId,
     branchId,
@@ -504,7 +524,89 @@ export function localRepairRows() {
     repairStatus,
     custodyStatus,
     createdAt: receivedAt,
-  })));
+  }));
+  return Object.freeze([...mapped, PBI039_REPAIR_DETAIL_PARITY_FIXTURE.repair]);
+}
+
+export function localRepairCatalogRows() {
+  const common = Object.freeze({
+    scope: 'tenant',
+    tenantId: LOCAL_TENANT_ID,
+    code: null,
+    status: 'active',
+    version: 1,
+    createdByActorId: LOCAL_OWNER_USER_ID,
+    updatedByActorId: LOCAL_OWNER_USER_ID,
+    createdAt: LOCAL_SEED_TIMESTAMP,
+    updatedAt: LOCAL_SEED_TIMESTAMP,
+  });
+  const brandIds = Object.freeze({
+    apple: '00000000-0000-4000-8000-000000020201',
+    samsung: '00000000-0000-4000-8000-000000020202',
+    motorola: '00000000-0000-4000-8000-000000020203',
+    xiaomi: '00000000-0000-4000-8000-000000020204',
+    huawei: '00000000-0000-4000-8000-000000020205',
+    oppo: '00000000-0000-4000-8000-000000020206',
+    nokia: '00000000-0000-4000-8000-000000020207',
+    google: '00000000-0000-4000-8000-000000020208',
+    realme: '00000000-0000-4000-8000-000000020209',
+    oneplus: '00000000-0000-4000-8000-000000020210',
+    sony: '00000000-0000-4000-8000-000000020211',
+    asus: '00000000-0000-4000-8000-000000020212',
+  });
+  const rows = {
+    deviceTypes: [
+      ['00000000-0000-4000-8000-000000020101', 'Teléfono', 'telefono'],
+      ['00000000-0000-4000-8000-000000020102', 'Tableta', 'tableta'],
+    ].map(([deviceTypeId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, deviceTypeId, canonicalLabel, normalizedKey })),
+    brands: [
+      [brandIds.apple, 'Apple', 'apple'],
+      [brandIds.samsung, 'Samsung', 'samsung'],
+      [brandIds.motorola, 'Motorola', 'motorola'],
+      [brandIds.xiaomi, 'Xiaomi', 'xiaomi'],
+      [brandIds.huawei, 'Huawei', 'huawei'],
+      [brandIds.oppo, 'OPPO', 'oppo'],
+      [brandIds.nokia, 'Nokia', 'nokia'],
+      [brandIds.google, 'Google', 'google'],
+      [brandIds.realme, 'Realme', 'realme'],
+      [brandIds.oneplus, 'OnePlus', 'oneplus'],
+      [brandIds.sony, 'Sony', 'sony'],
+      [brandIds.asus, 'Asus', 'asus'],
+    ].map(([brandId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, brandId, canonicalLabel, normalizedKey })),
+    models: [
+      ['00000000-0000-4000-8000-000000020301', brandIds.apple, 'iPhone 11', 'iphone 11'],
+      ['00000000-0000-4000-8000-000000020302', brandIds.apple, 'iPhone 13', 'iphone 13'],
+      ['00000000-0000-4000-8000-000000020303', brandIds.samsung, 'Galaxy S22', 'galaxy s22'],
+      ['00000000-0000-4000-8000-000000020304', brandIds.samsung, 'A54', 'a54'],
+      ['00000000-0000-4000-8000-000000020305', brandIds.motorola, 'Edge 40', 'edge 40'],
+      ['00000000-0000-4000-8000-000000020306', brandIds.xiaomi, 'Redmi Note 12', 'redmi note 12'],
+      ['00000000-0000-4000-8000-000000020307', brandIds.huawei, 'P30 Lite', 'p30 lite'],
+      ['00000000-0000-4000-8000-000000020308', brandIds.oppo, 'Reno 8', 'reno 8'],
+      ['00000000-0000-4000-8000-000000020309', brandIds.nokia, 'G50', 'g50'],
+      ['00000000-0000-4000-8000-000000020310', brandIds.google, 'Pixel 7', 'pixel 7'],
+      ['00000000-0000-4000-8000-000000020311', brandIds.realme, 'C55', 'c55'],
+      ['00000000-0000-4000-8000-000000020312', brandIds.oneplus, 'Nord 2', 'nord 2'],
+      ['00000000-0000-4000-8000-000000020313', brandIds.sony, 'Xperia 10', 'xperia 10'],
+      ['00000000-0000-4000-8000-000000020314', brandIds.asus, 'Zenfone 9', 'zenfone 9'],
+      ['00000000-0000-4000-8000-000000020315', brandIds.apple, 'iPad 9', 'ipad 9'],
+    ].map(([modelId, canonicalBrandId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, modelId, canonicalBrandId, canonicalLabel, normalizedKey })),
+    risks: [
+      ['00000000-0000-4000-8000-000000020401', 'Batería inflada', 'bateria inflada'],
+      ['00000000-0000-4000-8000-000000020402', 'Cristal o pantalla quebrada', 'cristal o pantalla quebrada'],
+      ['00000000-0000-4000-8000-000000020403', 'Humedad o contacto con líquido', 'humedad o contacto con liquido'],
+      ['00000000-0000-4000-8000-000000020404', 'Equipo abierto previamente', 'equipo abierto previamente'],
+    ].map(([riskId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, riskId, canonicalLabel, normalizedKey })),
+    problemCategories: [
+      ['00000000-0000-4000-8000-000000020501', 'Pantalla', 'pantalla'],
+      ['00000000-0000-4000-8000-000000020502', 'Encendido', 'encendido'],
+      ['00000000-0000-4000-8000-000000020503', 'Centro de carga', 'centro de carga'],
+      ['00000000-0000-4000-8000-000000020504', 'Batería', 'bateria'],
+      ['00000000-0000-4000-8000-000000020505', 'Audio', 'audio'],
+    ].map(([categoryId, canonicalLabel, normalizedKey]) => Object.freeze({ ...common, categoryId, canonicalLabel, normalizedKey })),
+  };
+  return Object.freeze(Object.fromEntries(
+    Object.entries(rows).map(([key, values]) => [key, Object.freeze(values)]),
+  ));
 }
 
 export function localRepairTechnicianRows() {
@@ -572,7 +674,7 @@ export function localRepairLocationMovementRows() {
   const pending = locations.find(({ code }) => code === 'pending_area');
   const workshop = locations.find(({ code }) => code === 'workshop');
   if (!pending || !workshop) throw new Error('Local repair location catalog is incomplete.');
-  const workshopRepairs = new Set(['002', '003', '005', '006', '007', '012', '013']);
+  const workshopRepairs = new Set(['002', '003', '005', '006', '007', '012', '013', '039']);
   const actorId = '00000000-0000-4000-8000-000000000301';
   const rows = [];
   for (const repair of localRepairRows()) {
@@ -678,7 +780,7 @@ export function localRepairIntakeRows() {
     ['00000000-0000-4000-8000-000000001014', 'Negro', receivers.mar, 'Mar Recepción', 'La pantalla se fracturó por una caída.', 'Cristal frontal fracturado en múltiples zonas.', 'Se informó que el cristal puede desprender fragmentos durante la manipulación.'],
     ['00000000-0000-4000-8000-000000001015', 'Azul', receivers.sol, 'Sol Recepción', 'No reconoce cargadores compatibles.', 'Puerto con desgaste visible; pantalla íntegra.', null],
   ];
-  return Object.freeze(rows.map(([repairId, deviceColor, receivedById, receivedByDisplayName, customerNarrative, physicalConditionSummary, documentedRiskSummary]) => Object.freeze({
+  const mapped = rows.map(([repairId, deviceColor, receivedById, receivedByDisplayName, customerNarrative, physicalConditionSummary, documentedRiskSummary]) => Object.freeze({
     repairId,
     tenantId,
     branchId,
@@ -688,8 +790,32 @@ export function localRepairIntakeRows() {
     customerNarrative,
     physicalConditionSummary,
     documentedRiskSummary,
+    deviceType: null,
+    deviceIdentifier: null,
+    deviceIdentifierUnavailable: false,
+    distinctiveSigns: null,
+    simIncluded: null,
+    memoryCardIncluded: null,
+    otherAccessories: null,
+    warrantyReviewRequested: false,
+    previousRepairId: null,
+    deliveredByName: null,
+    estimatedDeliveryAt: null,
+    receivedPowerState: null,
+    deviceAccessType: null,
+    initialBudgetAmountMinor: null,
+    newRepairPolicyVersion: 0,
     createdAt: LOCAL_SEED_TIMESTAMP,
-  })));
+  }));
+  return Object.freeze([...mapped, PBI039_REPAIR_DETAIL_PARITY_FIXTURE.intake]);
+}
+
+export function localRepairProblemClassificationRows() {
+  return PBI039_REPAIR_DETAIL_PARITY_FIXTURE.problemClassifications;
+}
+
+export function localRepairInterventionRiskRows() {
+  return PBI039_REPAIR_DETAIL_PARITY_FIXTURE.interventionRisks;
 }
 
 export function localRepairTimelineRows() {
@@ -732,7 +858,7 @@ export function localRepairTimelineRows() {
         movement.clientRequestId,
       ];
     });
-  return Object.freeze([...rows, ...locationRows].map(([entryId, repairId, entryType, actorId, actorDisplayName, title, body, source, occurredAt, clientRequestId = null]) => Object.freeze({
+  const mapped = [...rows, ...locationRows].map(([entryId, repairId, entryType, actorId, actorDisplayName, title, body, source, occurredAt, clientRequestId = null]) => Object.freeze({
     entryId,
     tenantId,
     branchId,
@@ -746,7 +872,15 @@ export function localRepairTimelineRows() {
     clientRequestId,
     occurredAt,
     createdAt: occurredAt,
-  })));
+  }));
+  const parityRows = PBI039_REPAIR_DETAIL_PARITY_FIXTURE.timeline.map((entry) => Object.freeze({
+    ...entry,
+    tenantId,
+    branchId,
+    repairId: PBI039_REPAIR_DETAIL_PARITY_FIXTURE.repairId,
+    createdAt: entry.occurredAt,
+  }));
+  return Object.freeze([...mapped, ...parityRows]);
 }
 
 export function localRepairEvidenceRows() {
@@ -764,7 +898,7 @@ export function localRepairEvidenceRows() {
     'Ilustración sintética de marcas visibles en la carcasa.',
     'Ilustración sintética general del equipo recibido.',
   ];
-  const rows = LOCAL_EVIDENCE_FIXTURES.map((fixture, index) => Object.freeze({
+  const rows = LOCAL_EVIDENCE_FIXTURES.slice(0, 6).map((fixture, index) => Object.freeze({
     attachmentId: fixture.id,
     tenantId,
     branchId,
@@ -800,5 +934,18 @@ export function localRepairEvidenceRows() {
     uploadedById: uploaderId,
     uploadedByDisplayName: 'Sol Recepción',
   }));
+  rows.push(...PBI039_REPAIR_DETAIL_PARITY_FIXTURE.evidence.map((evidence) => Object.freeze({
+    ...evidence,
+    tenantId,
+    branchId,
+    repairId: PBI039_REPAIR_DETAIL_PARITY_FIXTURE.repairId,
+    kind: 'photo',
+    mimeType: 'image/png',
+    sizeBytes: LOCAL_EVIDENCE_FIXTURES.find((fixture) => fixture.storageKey === evidence.storageKey)?.sizeBytes,
+    width: 640,
+    height: 420,
+    uploadedById: uploaderId,
+    uploadedByDisplayName: 'Sol Recepción',
+  })));
   return Object.freeze(rows);
 }

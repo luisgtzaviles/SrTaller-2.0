@@ -1,9 +1,9 @@
 # SPRINT-02 — Review
 
-- **Estado:** PASS candidate; Sprint Closed candidate.
+- **Estado:** PASS; Sprint Closed.
 - **Fecha:** 2026-09-12.
 - **Resultado:** todos los PBIs comprometidos, G3–G5 y la remediación Access
-  tienen evidencia integrada; resta merge/CI exacta de este cierre documental.
+  tienen evidencia integrada; cierre PR #48 y CI exacta `34732201476` PASS.
 
 La review final exige G3–G5, checkpoint visible, PostgreSQL/CI GREEN y Owner
 Acceptance de cada PBI. No equivale a release o deploy.
@@ -23,6 +23,5 @@ quedó PASS local/CI/Preview. PBI-040 permanece congelado.
 
 ## Próxima revisión
 
-- **Fecha:** al integrar este cierre documental.
-- **Disparador:** CI exacta verde sobre su merge; entonces Review y Sprint
-  quedan cerrados efectivos sin otro PR.
+- **Fecha:** al cambiar una autoridad histórica del Sprint.
+- **Disparador:** nueva evidencia que contradiga el resultado.

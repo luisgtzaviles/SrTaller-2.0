@@ -2,10 +2,10 @@
 
 ## Estado documental
 
-- **Estado:** Draft / Discovery
-- **Autoridad:** No aprobado
+- **Estado:** Draft / Discovery general; Catalog/Pricing relationships accepted
+  only as stated in PRICE_LIST_ARCHITECTURE.
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-09-13
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Context map preliminar
@@ -21,6 +21,11 @@ flowchart LR
     IAM --> Repair
     Repair --> Diagnosis[Technical Diagnosis]
     Diagnosis --> Quote[Quoting and Authorization]
+    Tenant --> Catalog[Catalog and Pricing]
+    Branch --> Catalog
+    SupplierEvidence[External supplier evidence] --> Catalog
+    Catalog --> Quote
+    Catalog --> Inventory
     Quote --> Repair
     Repair --> Inventory[Inventory]
     Quote --> Payments[Payments]
@@ -49,6 +54,11 @@ flowchart LR
 | Branch Operations | Repair/Inventory/Delivery | sucursal de origen, operación y ubicación | TransferRequested TBD | en apertura/transferencia | inmediata en pertenencia; workflow coordinado | branch_id uniforme sin significado | Published Language propuesto |
 | Repair Operations | Technical Diagnosis | orden, dispositivo, falla, alcance | EVENT-005–010 | antes de evaluar | inmediata en inicio | diagnóstico se vuelve nota interna | límite por intención y resultado |
 | Technical Diagnosis | Quoting | conclusión, hallazgos y alternativas | EVENT-011/012 | antes de cotizar cuando aplique | puede ser eventual | Quoting interpreta detalle técnico | Published Language propuesto |
+| Tenant/Branch | Catalog and Pricing | moneda Tenant y Branch confiable | configuración/ciclo futuro mínimo | en resolución de precio | inmediata | catálogo acepta scope del cliente | contratos públicos de contexto |
+| External supplier evidence | Catalog and Pricing | texto/costo/código opcional observado por versión | ninguno autoritativo de dominio | al componer una versión | evidencia inmutable; reconciliación humana | proveedor externo define identidad o clasificación | Anti-Corruption Layer: SupplierListing→resolution→CatalogItem |
+| Catalog and Pricing | Quote/Repair/Sales | item y precio efectivo/revision | revisión publicada futura | al seleccionar | resolver vigente; consumidor guarda snapshot | operación apunta a precio vivo | resolver + snapshot propio |
+| Catalog and Pricing | Inventory/Procurement | identidad/clasificación/identificadores | item lifecycle futuro | al referenciar | contrato explícito | compartir catálogo/tablas/costo | CatalogItemReader; owners separados |
+| Procurement futuro | Catalog and Pricing | relación Supplier propio→SupplierSource mínimo | contrato futuro | al integrar compras | sin escritura cruzada | SupplierSource adquiere contactos/compras/costo contable | mapping por contrato; ownership separado |
 | Quoting | Repair Operations | versión, decisión y alcance autorizado | EVENT-014–020 | antes de trabajo sujeto a autorización | inmediata para iniciar | llamadas recíprocas | eventos de decisión + referencia |
 | Repair Operations | Inventory | necesidad, reserva y consumo | EVENT-024–026 | durante planificación/trabajo | reserva/consumo inmediatos en Inventory; vista eventual en Repair | cada lado cambia al otro | orquestación por intención, no ownership compartido |
 | Quoting | Payments | obligación aprobada o cobrable | EVENT-016/017 | antes de aplicar pago | inmediata dentro de Payments; sincronización explícita | pago incrustado en cotización | referencia a obligación publicada |

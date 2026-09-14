@@ -2,13 +2,13 @@
 
 ## Estado del documento
 
-**Estado:** Índice reconciliado con `main` `aab27d9` y CI exacta
-`34730090448`. SPRINT-02 está `Closed candidate`: PBI-043 es `Done candidate`,
-no existe PBI actual y el WIP funcional es `0/1`. Los IDs
-PBI-040 a PBI-042 están reservados por el ciclo Price List no integrado;
-PBI-040 y su rama permanecen congelados y no se modifican aquí.
+**Estado:** Índice reconciliado con `main` `5be5cd6` y CI exacta
+`34732201476`. SPRINT-02 está `Closed` y PBI-043 `Done`. SPRINT-03 está
+`Active`: PBI-040 continúa Owner Review sobre la baseline reconciliada,
+PBI-041 Ready/Not authorized y PBI-042 Planned/Unassigned. WIP `1/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
-PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt sizing; los demás casos
+PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt
+sizing; PBI-041 tiene `XL — agreed` para el outcome inicial; los demás casos
 conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
 00. PBI-021–PBI-030 están `Unassigned`.
@@ -54,15 +54,14 @@ conservan TBD.
 | [PBI-037](PBI-037.md) | Users & Roles Administration Product Iteration | Integrated slice within PBI-028; no independent lifecycle |
 | [PBI-038](PBI-038.md) | Timezone Foundation Integration and Hardening | Done; Released: NO; PR #40 and exact-main CI GREEN |
 | [PBI-039](PBI-039.md) | Customer Minimum + New Repair Classic 2.0 | Done; PR #45 + exact-main CI `34623060504`; Released: NO |
-| PBI-040 | Catalog & Pricing Core + Fast Price Lookup | Reservado; Owner Review congelado en rama no integrada |
-| PBI-041 | Price List bulk import/reconciliation | Reservado; Planned no iniciado |
-| PBI-042 | Catalog images / Files | Reservado; Deferred |
-| [PBI-043](PBI-043.md) | Concurrent Operational Sessions — Access Foundation Remediation | Done candidate; PR #47, CI y Preview PASS; Released: NO |
+| [PBI-040](PBI-040.md) | Catalog & Pricing Core + Fast Price Lookup | Owner Review; acceptance pending |
+| [PBI-041](PBI-041.md) | Initial Bulk Catalog Composer + Versioned Supplier Intake | Ready — implementation not authorized; SPRINT-03 Candidate/Ready |
+| [PBI-042](PBI-042.md) | Catalog Item Images | Planned / Unassigned |
+| [PBI-043](PBI-043.md) | Concurrent Operational Sessions — Access Foundation Remediation | Done; PR #47/#48, CI y Preview PASS; Released: NO |
 
 La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUCT_BACKLOG.md); no duplicar allí el contenido completo de cada PBI.
 
 ## Próxima revisión
 
-No existe PBI actual canónico. El siguiente gate es integrar el cierre PBI-043
-y obtener CI exacta. PBI-040 se reconciliará desde el nuevo `main` sólo
-después, mediante autoridad separada.
+PBI-040 ocupa el WIP y su siguiente gate es Owner Review/Acceptance. No iniciar
+PBI-041/PBI-042 ni autorizar push, integración o deploy por inferencia.

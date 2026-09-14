@@ -1,43 +1,44 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: Concurrent Operational Sessions — implementation through Preview
-Sprint: SPRINT-02 — Operational Authentication & Authorization remediation
-Current PBI: NONE — PBI-043 Done candidate
-Status: Functional implementation and Preview PASS; documentary closure active
-WIP: 0/1 functional
-Progress: 11 / 12 implementation-to-closure steps complete
-Current: Integrate this documentary closure and obtain exact-main CI
-Next: Clean absorbed PBI-043 branches; leave PBI-040 frozen for separate reconciliation
-Blocked: None; no unresolved product/domain decision found
-Last updated: 2026-09-12 MST
+Milestone / Functional Goal: PBI-040 final closure
+Sprint: SPRINT-03 — Price List Foundation
+Current PBI: PBI-040 — Owner Accepted; Functional Freeze
+Status: Final Verification in progress
+WIP: 1/1 — PBI-041 remains Ready, not selected or started
+Progress: 5 / 8 closure blocks complete
+Current: Publish the verified candidate and obtain exact-head CI
+Next: Merge only after exact-head CI and the final review remain green
+Blocked: None
+Last updated: 2026-09-13 MST
 
-## Implementation through Preview
+## Closure blocks
 
-- [x] Integrated readiness through PR #46 as `9ed6885`; exact-main CI
-  `34725827409` PASS
-- [x] Preserved `feature/pbi-040-catalog-pricing-core` frozen and untouched
-- [x] Implement migration, independent create, exact switch/logout and internal
-  revocation contracts
-- [x] Materialize COS-01…COS-22 with PostgreSQL 18.x where required
-- [x] Pass focused, architecture, typecheck/build, runtime provenance and full
-  verification gates without Critical skips
-- [x] Prove COS-23/COS-24 with independent Chrome profiles on the same Station
-- [x] Remediate the first independent review: deterministic PostgreSQL locks,
-  N-session revocation, material lockout/CSRF/attribution and hardened Chrome
-- [x] Complete independent Critical-risk review with no open findings
-- [x] Push one branch, open PR #47 and obtain run-1/run-2/comparison PASS
-- [x] Merge, validate exact-main CI and deploy/validate the integrated SHA in
-  Preview only
-- [x] Reconcile PBI/Sprint/current state and preserve exact evidence
-- [ ] Merge closure PR, validate exact-main CI and safely clean
-  absorbed PBI-043/readiness branches
+- [x] Reconcile branch, baseline, PBI-043 ancestry and PBI-041 documentation-only boundary
+- [x] Record explicit Owner Acceptance and Functional Freeze
+- [x] Execute formal real-browser UI verification and remediate permitted findings
+- [x] Run authoritative governed full verification without critical skips
+- [x] Complete independent high-risk review with no open Critical/High/Medium findings
+- [~] Publish PR and obtain exact-head CI run-1/run-2/comparison PASS
+- [ ] Merge, verify exact main and deploy/validate Preview without touching Production
+- [ ] Reconcile closure authorities, archive checklist and remove absorbed branch
 
-## Boundaries
+## Functional freeze
 
-- [x] PBI-043 implementation only; no Session Admin UI or global Access audit
-- [x] No PBI-040 modification or resumption
-- [x] No PBI-041/PBI-042 implementation
-- [x] Preview authorized only after merge; no Production
+- PBI-040 may receive only corrections, hardening, accessibility, regression,
+  security, consistency, performance, review findings and closure evidence.
+- PBI-041 is documentation/readiness only: no Composer, SupplierSource,
+  SupplierCatalogVersion, SupplierListing, batch engine, migration, endpoint,
+  UI or job implementation.
+- Production, Inventory, Procurement, Caja, Repair Concepts and all subsequent
+  PBIs remain outside this goal.
 
-The prior PBI-039 closure checklist remains preserved in
-[`history/PBI-039_ACTIVE_CHECKLIST.md`](history/PBI-039_ACTIVE_CHECKLIST.md).
+## Owner decision
+
+Owner Acceptance was explicitly granted on 2026-09-13 for the material
+PBI-040 surface, including individual create/edit, Catalog governance,
+identifiers, pricing/cost protection, pending reconciliation, safe lifecycle and
+canonical merge. This acceptance does not make the PBI Done before the remaining
+technical, integration and Preview gates pass.
+
+The completed PBI-043 and PBI-039 checklists remain preserved in Git history and
+`docs/work/history/`.

@@ -35,6 +35,12 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const tables = [
+  'catalog_reference_deletion_events', 'repair_catalog_reference_deletion_events',
+  'catalog_audit_events', 'catalog_commands', 'catalog_reference_cost_revisions',
+  'catalog_branch_price_revisions', 'catalog_base_price_revisions',
+  'catalog_barcode_sequences', 'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
+  'catalog_brand_pending_kind_applicability', 'catalog_brand_pending_values', 'catalog_category_pending_values',
+  'catalog_brand_kind_applicability', 'catalog_category_kind_applicability', 'catalog_brands', 'catalog_categories', 'catalog_reference_identity_locks',
   'repair_problem_category_deletion_events',
   'repair_problem_classification_events',
   'repair_problem_classifications',
@@ -190,6 +196,7 @@ function authorization(item) {
 }
 
 async function resetDatabase(admin) {
+  await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query('drop function if exists access_assert_unambiguous_pin_eligibility() cascade');
   await admin.query('drop function if exists repairs_reject_business_audit_event_mutation() cascade');
   await admin.query('drop function if exists repairs_reject_brand_catalog_event_mutation() cascade');
@@ -221,7 +228,7 @@ async function assertNoObjects(admin) {
 async function seed(admin) {
   const createdAt = '2026-08-21T12:00:00.000Z';
   await admin.query(
-    `insert into tenants (tenant_id, created_at) values ($1, $3), ($2, $3)`,
+    `insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', $3), ($2, 'MXN', $3)`,
     [tenantA, tenantB, createdAt],
   );
   await admin.query(
@@ -1733,6 +1740,59 @@ test(
         clientRequestId: '90000000-0000-4000-8000-000000000004',
         body: 'x'.repeat(4000),
       }));
+
+      const unusedRisk = await repository.createRisk(riskContext, { riskId: '4a000000-0000-4000-8000-000000000001', eventId: '4a100000-0000-4000-8000-000000000001', correlationId: '4a200000-0000-4000-8000-000000000001', canonicalLabel: 'Riesgo descartable', normalizedKey: 'riesgo descartable', occurredAt: new Date('2026-08-21T19:50:00.000Z') });
+      const unusedDeviceType = await repository.createDeviceType(deviceTypeContext, { deviceTypeId: '4a000000-0000-4000-8000-000000000002', eventId: '4a100000-0000-4000-8000-000000000002', correlationId: '4a200000-0000-4000-8000-000000000002', canonicalLabel: 'Tipo descartable', normalizedKey: 'tipo descartable', occurredAt: new Date('2026-08-21T19:50:01.000Z') });
+      const unusedBrand = await repository.createBrand(brandContext, { brandId: '4a000000-0000-4000-8000-000000000003', eventId: '4a100000-0000-4000-8000-000000000003', correlationId: '4a200000-0000-4000-8000-000000000003', canonicalLabel: 'Marca descartable', normalizedKey: 'marca descartable', occurredAt: new Date('2026-08-21T19:50:02.000Z') });
+      const unusedModel = await repository.createModel(brandContext, { modelId: '4a000000-0000-4000-8000-000000000004', canonicalBrandId: appleBrand.brandId, eventId: '4a100000-0000-4000-8000-000000000004', correlationId: '4a200000-0000-4000-8000-000000000004', canonicalLabel: 'Modelo descartable', normalizedKey: 'modelo descartable', occurredAt: new Date('2026-08-21T19:50:03.000Z') });
+      assert.equal((await repository.listAdminRisks(scopeA)).find(({ riskId }) => riskId === unusedRisk.riskId)?.deletable, true);
+      assert.equal((await repository.listAdminDeviceTypes(scopeA)).find(({ deviceTypeId }) => deviceTypeId === unusedDeviceType.deviceTypeId)?.deletable, true);
+      assert.equal((await repository.listAdminBrands(scopeA)).find(({ brandId }) => brandId === unusedBrand.brandId)?.deletable, true);
+      assert.equal((await repository.listAdminModels(scopeA, appleBrand.brandId)).find(({ modelId }) => modelId === unusedModel.modelId)?.deletable, true);
+      const deletionInputs = [
+        ['RISK', unusedRisk.riskId, '4a100000-0000-4000-8000-000000000011', '4a200000-0000-4000-8000-000000000011'],
+        ['DEVICE_TYPE', unusedDeviceType.deviceTypeId, '4a100000-0000-4000-8000-000000000012', '4a200000-0000-4000-8000-000000000012'],
+        ['BRAND', unusedBrand.brandId, '4a100000-0000-4000-8000-000000000013', '4a200000-0000-4000-8000-000000000013'],
+        ['MODEL', unusedModel.modelId, '4a100000-0000-4000-8000-000000000014', '4a200000-0000-4000-8000-000000000014'],
+      ];
+      for (const [kind, referenceId, eventId, correlationId] of deletionInputs) {
+        const result = kind === 'RISK'
+          ? await repository.deleteRisk(riskContext, { kind, referenceId, eventId, correlationId, expectedVersion: 1, occurredAt: new Date('2026-08-21T19:51:00.000Z') })
+          : kind === 'DEVICE_TYPE'
+            ? await repository.deleteDeviceType(deviceTypeContext, { kind, referenceId, eventId, correlationId, expectedVersion: 1, occurredAt: new Date('2026-08-21T19:51:01.000Z') })
+            : kind === 'BRAND'
+              ? await repository.deleteBrand(brandContext, { kind, referenceId, eventId, correlationId, expectedVersion: 1, occurredAt: new Date('2026-08-21T19:51:02.000Z') })
+              : await repository.deleteModel(brandContext, { kind, referenceId, eventId, correlationId, expectedVersion: 1, occurredAt: new Date('2026-08-21T19:51:03.000Z') });
+        assert.equal(result.referenceId, referenceId);
+      }
+      assert.equal((await repository.listAdminRisks(scopeA)).some(({ riskId }) => riskId === unusedRisk.riskId), false);
+      assert.equal((await repository.listAdminDeviceTypes(scopeA)).some(({ deviceTypeId }) => deviceTypeId === unusedDeviceType.deviceTypeId), false);
+      assert.equal((await repository.listAdminBrands(scopeA)).some(({ brandId }) => brandId === unusedBrand.brandId), false);
+      assert.equal((await repository.listAdminModels(scopeA, appleBrand.brandId)).some(({ modelId }) => modelId === unusedModel.modelId), false);
+      assert.deepEqual((await admin.query(`select reference_kind, result from repair_catalog_reference_deletion_events where reference_id = any($1::uuid[]) order by reference_kind`, [deletionInputs.map(([, referenceId]) => referenceId)])).rows, [
+        { reference_kind: 'BRAND', result: 'succeeded' }, { reference_kind: 'DEVICE_TYPE', result: 'succeeded' }, { reference_kind: 'MODEL', result: 'succeeded' }, { reference_kind: 'RISK', result: 'succeeded' },
+      ]);
+      assert.equal((await admin.query(`select count(*)::int as count from repair_risk_catalog_events where risk_id = $1`, [unusedRisk.riskId])).rows[0].count, 1);
+      assert.equal((await admin.query(`select count(*)::int as count from repair_device_type_catalog_events where device_type_id = $1`, [unusedDeviceType.deviceTypeId])).rows[0].count, 1);
+      assert.equal((await admin.query(`select count(*)::int as count from repair_brand_catalog_events where brand_id = $1`, [unusedBrand.brandId])).rows[0].count, 1);
+      assert.equal((await admin.query(`select count(*)::int as count from repair_model_catalog_events where model_id = $1`, [unusedModel.modelId])).rows[0].count, 1);
+      await assert.rejects(admin.query(`delete from repair_catalog_reference_deletion_events where reference_id = $1`, [unusedRisk.riskId]), (error) => error?.code === '23514');
+
+      const usedDeviceType = await repository.createDeviceType(deviceTypeContext, { deviceTypeId: '4b000000-0000-4000-8000-000000000002', eventId: '4b100000-0000-4000-8000-000000000002', correlationId: '4b200000-0000-4000-8000-000000000002', canonicalLabel: 'Tipo con reparación', normalizedKey: 'tipo con reparacion', occurredAt: new Date('2026-08-21T19:51:59.000Z') });
+      const usedModel = await repository.createModel(brandContext, { modelId: '4b000000-0000-4000-8000-000000000001', canonicalBrandId: appleBrand.brandId, eventId: '4b100000-0000-4000-8000-000000000001', correlationId: '4b200000-0000-4000-8000-000000000001', canonicalLabel: 'Modelo con reparación', normalizedKey: 'modelo con reparacion', occurredAt: new Date('2026-08-21T19:52:00.000Z') });
+      const usedReferenceRepair = await repository.createRepair(createContext, repairCreateRecord([], '141', { deviceType: usedDeviceType.canonicalLabel, canonicalDeviceTypeId: usedDeviceType.deviceTypeId, pendingDeviceTypeValueId: null, deviceBrand: 'Apple', canonicalBrandId: appleBrand.brandId, pendingBrandValueId: null, deviceModel: usedModel.canonicalLabel, canonicalModelId: usedModel.modelId, pendingModelValueId: null, reportedIssue: 'Modelo gobernado' }), customerResolverA);
+      assert.equal((await repository.listAdminModels(scopeA, appleBrand.brandId)).find(({ modelId }) => modelId === usedModel.modelId)?.deletable, false);
+      const blockedDeletions = [
+        ['risk', () => repository.deleteRisk(riskContext, { kind: 'RISK', referenceId: tenantRisk.riskId, eventId: '4b100000-0000-4000-8000-000000000011', correlationId: '4b200000-0000-4000-8000-000000000011', expectedVersion: reactivatedRisk.version, occurredAt: new Date('2026-08-21T19:53:00.000Z') })],
+        ['device type', () => repository.deleteDeviceType(deviceTypeContext, { kind: 'DEVICE_TYPE', referenceId: usedDeviceType.deviceTypeId, eventId: '4b100000-0000-4000-8000-000000000012', correlationId: '4b200000-0000-4000-8000-000000000012', expectedVersion: usedDeviceType.version, occurredAt: new Date('2026-08-21T19:53:01.000Z') })],
+        ['brand', () => repository.deleteBrand(brandContext, { kind: 'BRAND', referenceId: appleBrand.brandId, eventId: '4b100000-0000-4000-8000-000000000013', correlationId: '4b200000-0000-4000-8000-000000000013', expectedVersion: reactivatedApple.version, occurredAt: new Date('2026-08-21T19:53:02.000Z') })],
+        ['model', () => repository.deleteModel(brandContext, { kind: 'MODEL', referenceId: usedModel.modelId, eventId: '4b100000-0000-4000-8000-000000000014', correlationId: '4b200000-0000-4000-8000-000000000014', expectedVersion: usedModel.version, occurredAt: new Date('2026-08-21T19:53:03.000Z') })],
+      ];
+      for (const [label, deletion] of blockedDeletions) await assert.rejects(deletion(), (error) => error?.name === 'RepairCatalogReferenceDeleteNotAllowedError' && error.reason === 'reference_in_use', `${label} with references must not be hard-deleted`);
+      await assert.rejects(repository.deleteDeviceType(deviceTypeContext, { kind: 'DEVICE_TYPE', referenceId: '47300000-0000-4000-8000-000000000002', eventId: '4b100000-0000-4000-8000-000000000015', correlationId: '4b200000-0000-4000-8000-000000000015', expectedVersion: 1, occurredAt: new Date('2026-08-21T19:53:04.000Z') }), (error) => error?.name === 'RepairCatalogReferenceDeleteNotAllowedError' && error.reason === 'platform_owned');
+      await assert.rejects(repository.deleteRisk(riskContext, { kind: 'RISK', referenceId: tenantBRisk.riskId, eventId: '4b100000-0000-4000-8000-000000000016', correlationId: '4b200000-0000-4000-8000-000000000016', expectedVersion: tenantBRisk.version, occurredAt: new Date('2026-08-21T19:53:05.000Z') }), (error) => error?.name === 'RepairRiskNotFoundError');
+      assert.equal((await admin.query(`select count(*)::int as count from repair_catalog_reference_deletion_events where result = 'rejected' and rejection_reason = 'reference_in_use' and tenant_id = $1`, [tenantA])).rows[0].count, 4);
+
       const neverUsedCategory = await repository.createProblemCategory(riskContext, { categoryId: '4c000000-0000-4000-8000-000000000001', eventId: '4c100000-0000-4000-8000-000000000001', correlationId: '4c200000-0000-4000-8000-000000000001', canonicalLabel: 'QA nunca usada', normalizedKey: 'qa nunca usada', occurredAt: new Date('2026-08-21T19:55:00.000Z') });
       assert.equal(neverUsedCategory.usageCount, 0);
       assert.equal(neverUsedCategory.deletable, true);
@@ -1809,7 +1869,7 @@ test(
       ]);
       assert.equal(createdRiskDetail.documentedRiskSummary, 'Cliente informado antes de intervenir.');
       assert.equal((await repository.listAdminRisks(scopeA)).find(({ riskId }) => riskId === tenantRisk.riskId)?.usageCount, 2);
-      const problemProofRepairIds = [multiProblemRepair.repairId, pendingProblemRepair.repairId, aliasRepair.repairId, nonFuzzyRepair.repairId];
+      const problemProofRepairIds = [usedReferenceRepair.repairId, multiProblemRepair.repairId, pendingProblemRepair.repairId, aliasRepair.repairId, nonFuzzyRepair.repairId];
       await admin.query('delete from repair_problem_classifications where repair_id = any($1::uuid[])', [problemProofRepairIds]);
       await admin.query('delete from repair_create_commands where repair_id = any($1::uuid[])', [problemProofRepairIds]);
       await admin.query('alter table repair_business_audit_events disable trigger repair_business_audit_events_reject_delete');

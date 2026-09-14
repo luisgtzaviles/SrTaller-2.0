@@ -128,8 +128,19 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260909100000_repairs_add_problem_category_safe_delete.ts',
       '20260909220000_users_create_preferences.ts',
       '20260910230000_repairs_create_device_type_catalog.ts',
+      '20260911180000_tenancy_add_operating_currency.ts',
+      '20260911181000_access_add_catalog_capabilities.ts',
+      '20260911182000_users_add_price_list_cost_preference.ts',
+      '20260911183000_catalog_create_pricing_core.ts',
+      '20260911200000_catalog_add_reference_governance.ts',
       '20260912180000_access_enable_concurrent_operational_sessions.ts',
-  ]);
+      '20260912210000_catalog_unify_pending_reference_reconciliation.ts',
+      '20260913120000_catalog_add_reference_safe_delete.ts',
+      '20260913121000_repairs_add_reference_safe_delete.ts',
+      '20260913130000_catalog_enforce_reference_identity.ts',
+      '20260913140000_catalog_add_canonical_reference_merge.ts',
+    ],
+  );
 });
 
 test('startup, AppModule and product modules do not consume migration facilities', async () => {
