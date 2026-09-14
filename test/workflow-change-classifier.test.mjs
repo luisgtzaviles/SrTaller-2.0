@@ -12,6 +12,7 @@ import {
 } from '../scripts/lib/workflow-change-classifier.mjs';
 import {
   assertDocsOnlyFileState,
+  assertMarkdownStructure,
   assertNoSecretsInAddedLines,
   markdownRelativeLinks,
   verifyDocsOnlyChange,
@@ -112,6 +113,11 @@ test('DOCS_ONLY rejects symlinks and executable Markdown', () => {
     isSymbolicLink: () => false,
     mode: 0o100755,
   }, 'docs/work/executable.md'), /executable file mode/u);
+  assert.doesNotThrow(() => assertMarkdownStructure('# Title\n', 'docs/work/note.md'));
+  assert.throws(
+    () => assertMarkdownStructure('title only\n', 'docs/work/note.md'),
+    /Markdown structure/u,
+  );
 });
 
 test('DOCS_ONLY policy consistency follows the current Sprint and PBI pointers', async () => {

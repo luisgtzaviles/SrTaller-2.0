@@ -63,6 +63,12 @@ export function assertDocsOnlyFileState(fileState, path) {
   }
 }
 
+export function assertMarkdownStructure(content, path) {
+  if (typeof content !== 'string' || !content.startsWith('# ') || content.trim() === '') {
+    throw new Error(`DOCS_ONLY Markdown structure is invalid: ${path}`);
+  }
+}
+
 async function git(projectRoot, argumentsList) {
   return execute('git', argumentsList, {
     cwd: projectRoot,
@@ -160,6 +166,7 @@ export async function verifyDocsOnlyChange({
       const fileState = await lstat(absolutePath);
       assertDocsOnlyFileState(fileState, path);
       content = await readFile(absolutePath, 'utf8');
+      assertMarkdownStructure(content, path);
     } catch (error) {
       if (error?.code === 'ENOENT') continue;
       throw error;

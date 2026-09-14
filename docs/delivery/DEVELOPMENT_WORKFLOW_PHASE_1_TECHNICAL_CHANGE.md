@@ -2,7 +2,8 @@
 
 ## Estado y autoridad
 
-- **Estado:** In progress.
+- **Estado:** Implementation complete — local integration verification in
+  progress; PR/CI/review/merge pending.
 - **Autoridad:** WF-001–WF-010 en
   [Development Workflow Efficiency Decisions](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md).
 - **Tipo:** Governance / CI / developer tooling.
@@ -69,12 +70,11 @@ métricas y mecanismos shadow de riesgo/tree identity.
 | --- | --- |
 | Auditoría medida | PASS — `f565a94` |
 | Decisiones Owner | WF-001–WF-010 accepted |
-| Implementación | In progress |
-| Tests focalizados | PASS — 43/43 |
+| Implementación | Complete on local branch |
+| Evidencia local | [Implementation Evidence](../quality/evidence/workflow-phase-1/IMPLEMENTATION_EVIDENCE.md) |
 | Development Preflight real | PASS — no destructivo; 62/62 journal y fixtures disponibles |
 | Preview migration pre-merge | Advisory `UNKNOWN`; snapshot `NOT_CAPTURED`, compatibility no afirmada |
-| Base `verify` | PASS — 858 tests, 838 PASS y 20 skips PostgreSQL gobernados |
-| Full verification | Pending |
+| Full verification | Primera campaña 13/13 PASS; final policy reconciliation campaign pending |
 | CI | Not run |
 | Independent review | Pending |
 | Merge / deploy | Not authorized |
