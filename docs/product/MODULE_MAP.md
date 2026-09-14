@@ -169,12 +169,15 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
   vacíos separados.
 - **Datos propios:** CatalogItem, tipo/capabilities, CommercialCategory,
   CommercialBrand, ItemIdentifier, revisiones de precio/costo/override,
-  ImportSource/Batch/RowDecision y SupplierItemReference de reconciliación.
+  SupplierSource mínimo, SupplierCatalogVersion/Listing/Resolution,
+  SupplierReconciliationMemory y CatalogUpdateBatch/RowDecision.
 - **Dependencias permitidas:** Tenancy para moneda; Branch/Station/Session para
   scope confiable; Users para preferencia personal; Access/Audit mediante
   contratos existentes. Publica readers/resolvers/snapshots mínimos.
-- **No posee:** existencia/valuación, Supplier/compra, Repair Concept,
-  venta/quote, pago/Caja, pedidos, solicitudes ni reportes.
+- **No posee:** Supplier maestro/contactos/compras/recepción/cuentas por pagar,
+  existencia/valuación, Repair Concept, venta/quote, pago/Caja, pedidos,
+  solicitudes ni reportes. Procurement futuro podrá relacionar su Supplier con
+  SupplierSource sólo mediante contrato.
 - **Contrato:** [Arquitectura de Lista de precios](../architecture/PRICE_LIST_ARCHITECTURE.md).
 
 ## Inventory

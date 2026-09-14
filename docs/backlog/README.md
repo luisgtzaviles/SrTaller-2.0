@@ -19,7 +19,8 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 **Orden operativo:** Sprint 01 y SPRINT-02 están `Closed`; PBI-043 está `Done`
 por PR #47/#48, CI exacta y Preview PASS. SPRINT-03 está `Active`; PBI-040
 ocupa WIP `1/1` y continúa Owner Review después de reconciliarse con `main`
-actual. PBI-041 sigue `Planned` y PBI-042 `Planned/Unassigned`.
+actual. PBI-041 está `Ready — implementation not authorized`, Candidate y no
+seleccionado; PBI-042 sigue `Planned/Unassigned`.
 
 ## Estructura
 

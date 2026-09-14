@@ -105,7 +105,7 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 | Authoritative CI for current integrated baseline | Green: exact-main run `34732201476` on `5be5cd60acb0865da57aff76740a1330896b1cd1` |
 | Program / phase | MVP Operating Roadmap / Pricing Catalog |
 | Sprint | SPRINT-03 `Active`; WIP `1/1` |
-| Current / next PBI | Current: PBI-040 `Owner Review`; PBI-041 Planned and not selected |
+| Current / next PBI | Current: PBI-040 `Owner Review`; PBI-041 Ready, not selected or authorized |
 | Current blocking gate | Owner Review/Acceptance; push, merge, deploy and Production remain unauthorized |
 | GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |

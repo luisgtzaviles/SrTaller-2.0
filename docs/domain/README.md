@@ -6,7 +6,7 @@
 - **Autoridad:** la sección general no está aprobada; para Lista de precios
   prevalecen su decision log y arquitectura aceptada.
 - **Propietario de decisión:** Product Owner
-- **Última revisión:** TBD
+- **Última revisión:** 2026-09-13 para Price List/Bulk Composer
 - **Próxima revisión:** Después de la entrevista de dominio
 
 ## Propósito
@@ -66,7 +66,9 @@ esa aprobación no se extiende al resto del directorio.
 - [Modelo de dinero](MONEY_MODEL.md)
 - [Dominio de inventario](INVENTORY_DOMAIN.md)
 - [Discovery de Lista de precios](PRICE_LIST_DOMAIN_DISCOVERY.md)
+- [Bulk Catalog Composer y catálogo de proveedor versionado](PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
 - [Arquitectura aceptada de Lista de precios](../architecture/PRICE_LIST_ARCHITECTURE.md)
+- [Readiness de PBI-041](../quality/evidence/pbi-041/README.md)
 - [Valores candidatos](VALUE_OBJECT_CANDIDATES.md)
 
 ### Diseño estratégico candidato

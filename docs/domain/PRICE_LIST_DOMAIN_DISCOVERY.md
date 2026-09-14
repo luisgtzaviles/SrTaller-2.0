@@ -935,8 +935,8 @@ histórica de este discovery.
 | PLD-004 | ¿Qué significa costo inicial? | Reference Cost opcional con procedencia, no valoración | Resuelta Owner |
 | PLD-005 | ¿Base + Branch o perfiles compartidos desde inicio? | base Tenant + override Branch; perfiles después | Resuelta Owner |
 | PLD-006 | ¿Moneda e impuestos? | Tenant operating currency; Avicell MXN; sin FX/impuestos iniciales | Resuelta Owner |
-| PLD-007 | ¿Matching masivo permitido? | sólo ID/SKU/barcode/supplier code; fuzzy manual | Resuelta Owner |
-| PLD-008 | ¿Aplicación con errores? | publish sólo con pending decisions = 0; exclusión explícita | Resuelta Owner |
+| PLD-007 | ¿Matching masivo permitido? | ID/SKU/barcode, supplier code opcional o history exacta; fuzzy manual | Resuelta Owner; refinada por OD-BI-001/009 |
+| PLD-008 | ¿Aplicación con errores? | unresolved/conflict/invalid/stale = 0; pending referencia deliberada y exclusión explícita permitidas | Resuelta Owner; refinada por OD-BI-004 |
 | PLD-009 | ¿SKU automático por default? | sí si falta, server-side, Tenant-wide | Resuelta técnica |
 | PLD-010 | ¿Código de barras automático? | si falta, server-side; barcode interno único y Code 128 sólo representación | Sustituida por decisión Owner de iteración PBI-040 |
 | PLD-011 | ¿Categoría plana? | sí, Tenant-scoped, lifecycle | Resuelta técnica |
@@ -952,9 +952,10 @@ histórica de este discovery.
 
 ## 24. Propuesta de slices/PBIs de implementación
 
-Esta sección conserva la descomposición propuesta durante discovery. La
-decisión posterior creó EPIC-015 con PBI-040 Ready, PBI-041 Planned y PBI-042
-Planned/Unassigned; esa fuente posterior prevalece.
+Esta sección conserva la descomposición propuesta durante discovery. Las
+decisiones posteriores crearon EPIC-015; PBI-040 continúa Owner Review,
+PBI-041 es Ready/no autorizado y PBI-042 Planned/Unassigned. Esas fuentes
+posteriores prevalecen.
 
 ### Slice 0 — Contrato Owner y readiness
 
@@ -990,15 +991,18 @@ Planned/Unassigned; esa fuente posterior prevalece.
 
 ### Slice 5 — Bulk import foundation
 
-- CSV/XLSX, template versionada, mapping, staging, validación, preview/diff,
-  idempotencia, publish y reporte.
-- Primero catálogo/precio base; ajuste Branch sólo si PLD-005 lo exige.
+- **Propuesta histórica sustituida:** CSV/XLSX/template como entrada inicial.
+- **Contrato vigente:** Composer durable con paste, Source/Version/Listing,
+  mapping, preview/diff, idempotencia, apply atómico y reporte; CSV/XLSX son
+  adapters futuros del mismo engine.
+- Sólo Catalog/precio base/Reference Cost; Branch overrides intactos.
 
 ### Slice 6 — Supplier update/reconciliation
 
-- Supplier y supplier item reference.
-- Comparación entre rondas, conflictos, costos con procedencia y actualización
-  no destructiva.
+- **Contrato vigente:** SupplierSource mínimo, no Supplier maestro; comparación
+  básica entre versiones, mapping persistente y actualización no destructiva.
+- Reconciliación sistemática/tags/grupos queda como outcome avanzado diferido
+  sin PBI ID/readiness.
 
 ### Slices futuros, fuera del ciclo inmediato
 

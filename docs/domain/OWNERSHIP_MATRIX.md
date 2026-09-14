@@ -3,11 +3,11 @@
 ## Metadatos
 
 - **Estado:** Initial hypothesis general; Price List rows marked Accepted are
-  authoritative under the 2026-09-11 Master Goal.
+  authoritative under the 2026-09-11 PLD and 2026-09-13 OD-BI Owner decisions.
 - **Propósito:** Identificar posibles fuentes de verdad y conflictos de autoridad sin establecer ownership definitivo.
 - **Alcance:** Información organizacional, operativa, financiera, de inventario, comunicación, auditoría y suscripción.
 - **Audiencia:** Product Owner, responsables operativos, administración, finanzas, inventario, soporte y arquitectura.
-- **Última actualización:** 2026-09-11
+- **Última actualización:** 2026-09-13
 
 ## Cómo leer la matriz
 
@@ -81,8 +81,10 @@ La columna de consistencia describe una necesidad candidata. `Inmediata local` n
 | OWN-044 | precio base | Catalog / Pricing interno | administrador/import publicado | `catalog.prices.manage` / import publisher | Price List, futuros Quote/Repair/Sales/Reporting | Tenant | revisión append-only; resolución inmediata | PRICE_LIST_ARCHITECTURE | PLD-005/006 | Accepted |
 | OWN-045 | override de precio | Catalog / Pricing interno | administrador autorizado | `catalog.branch_prices.manage` | Price List y futuros resolvers | Tenant + Branch | revisión append-only; revocar hereda | PRICE_LIST_ARCHITECTURE | PLD-005 | Accepted |
 | OWN-046 | categoría y marca comercial | Catalog | administrador/import reconciliado | `catalog.manage` | Price List y futuros consumidores | Tenant | lifecycle; sin sync por nombre | PRICE_LIST_ARCHITECTURE | PLD-001/012 | Accepted |
-| OWN-047 | identificadores SKU/barcode/GTIN | Catalog | administrador/generador/import reconciliado | `catalog.manage` | búsqueda y futuros consumidores | Tenant + scheme | unicidad inmediata; no reutilización | PRICE_LIST_ARCHITECTURE | PLD-007/009/010 | Accepted |
-| OWN-048 | batch/import row/source reference | Catalog | usuario/importador | prepare/publish capabilities | administración y Audit; Reporting futuro reducido | Tenant; target base/Branch | state machine/version/idempotencia | PRICE_LIST_ARCHITECTURE | PLD-007/008 | Accepted |
+| OWN-047 | identificadores SKU/barcode internos | Catalog | administrador/generador/Composer reconciliado | `catalog.manage` | búsqueda y futuros consumidores | Tenant + scheme | unicidad inmediata; no reutilización | PRICE_LIST_ARCHITECTURE | PLD-007/009/010 | Accepted |
+| OWN-048 | SupplierSource/Version/Listing/Resolution/Memory | Catalog | Owner + evidencia externa | prepare; publish sólo para aplicar Catalog | administración/Audit; Procurement futuro sólo por contrato | Tenant; Source/Version | snapshot inmutable, history append-only, memory reconstruible | PRICE_LIST_ARCHITECTURE | OD-BI-001/006/008/009 | Accepted |
+| OWN-049 | CatalogUpdateBatch/RowDecision | Catalog | Owner/Composer | prepare/publish + capabilities por campo | administración y Audit; Reporting futuro reducido | Tenant; target base únicamente | lifecycle/version/idempotencia; apply atómico | PRICE_LIST_ARCHITECTURE | PLD-008, OD-BI-002/004/005 | Accepted |
+| OWN-050 | SupplierObservedCost | Catalog como evidencia de SupplierListing | fuente externa capturada por Owner | prepare + cost read/manage; publish optativo a ReferenceCost | Pricing autorizado; Procurement futuro no lo hereda como costo de compra | Tenant + Version/Listing | permanente estructurado y protegido | PRICE_LIST_ARCHITECTURE | OD-BI-008 | Accepted; distinct from purchase cost |
 
 ## Conflictos de ownership
 

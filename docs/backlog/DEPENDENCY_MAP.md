@@ -38,7 +38,7 @@ flowchart TD
     POLISH --> P43
     P43 --> S3[SPRINT-03 Price List Foundation<br/>Active / WIP=1/1]
     S3 --> P40[PBI-040 Catalog + Pricing Core<br/>Owner Review]
-    P40 --> P41[PBI-041 Supplier Import<br/>Planned]
+    P40 --> P41[PBI-041 Composer + Supplier Intake<br/>Ready / not selected]
     P40 --> QUOTE[Quote / Authorization]
     QUOTE --> MONEY[Payments / Cash]
     MONEY --> DELIVERY[Resolution / QC / Delivery / Custody End]
@@ -73,7 +73,9 @@ flowchart TD
   ADR-014 y está `Done`.
 - PBI-040 depende de contexto/identidad/access/audit/persistencia/UI ya
   disponibles y materializa `catalog` sólo con el slice vertical completo.
-- PBI-041 depende de PBI-040; bulk import no bloquea el primer valor visible.
+- PBI-041 depende de PBI-040; su arquitectura/DoR están Ready, pero selección e
+  implementación esperan Owner Acceptance/closure de PBI-040 y autorización
+  explícita. Bulk no bloquea el primer valor visible.
 - Inventory, Procurement, Repair Concepts, Caja, Pedidos y Solicitudes no son
   dependencias de PBI-040 ni reciben ownership por consumir contratos futuros.
 
@@ -83,7 +85,8 @@ flowchart TD
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - Sprint 02: `Closed`; PBI-039/PBI-043 están `Done`; WIP=`0/1`.
-- Sprint 03: `Active`; PBI-040 Owner Review, PBI-041 Planned, WIP=`1/1`;
+- Sprint 03: `Active`; PBI-040 Owner Review, PBI-041 Candidate/Ready no
+  seleccionado, WIP=`1/1`;
   falta Owner Acceptance.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security

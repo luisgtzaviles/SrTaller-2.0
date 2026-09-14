@@ -16,7 +16,7 @@
 - **Sprint activo:** SPRINT-03 — Price List Foundation.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `PBI-040` — Owner Review; aceptación pendiente.
-- **Siguiente PBI candidato:** ninguno; PBI-041 permanece Planned.
+- **Siguiente PBI candidato:** PBI-041 Ready, no seleccionado ni autorizado.
 - **Blocking gate:** Owner Review/Acceptance de PBI-040; push, integración,
   deploy y Production conservan autoridad separada.
 - **WIP operacional:** `1/1`.
@@ -101,7 +101,7 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Sprint | SPRINT-03 |
 | Sprint status | Active — PBI-040 Owner Review; WIP=1/1 |
 | Current PBI | PBI-040 — Owner Review |
-| Next PBI candidate | None; PBI-041 remains Planned |
+| Next PBI candidate | PBI-041 Ready; not selected or authorized |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
 | Blocking gate | Owner Review / Owner Acceptance for PBI-040 |
 
@@ -149,7 +149,8 @@ integrado, validado en Preview y cerrado por PR #45 / `40684d7` con CI exacta
 Station; ASC-001–008 y ADR-014 seleccionan PBI-043 como remediación separada.
 PBI-043 cerró mediante PR #47/#48 y CI exacta `34732201476`. PBI-040 fue
 reconciliado desde ese nuevo `main` sin reescribir su HEAD congelado y continúa
-Owner Review; PBI-041/PBI-042 no están iniciados.
+Owner Review; PBI-041 está Ready documentalmente pero no iniciado y PBI-042 no
+está iniciado.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización
@@ -223,7 +224,8 @@ PBI-039 está `Done`: PR #45 mergeó el cierre como `40684d7` y CI exacta
 `34729684465`, exact-main `34730090448` y Preview quedaron PASS. El cierre PR
 #48 `5be5cd6` y CI `34732201476` lo dejan `Done`. SPRINT-03 está `Active`,
 WIP `1/1`; PBI-040 continúa Owner Review sobre la baseline reconciliada y
-PBI-041 permanece Planned.
+PBI-041 alcanzó Ready documentalmente como Candidate, sin selección ni
+autorización de implementación.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.

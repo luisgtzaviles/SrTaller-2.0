@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-043 `Done`; PBI-040 mantiene `Owner Review` y ejecuta la
-  iteración de canonical merge + paridad de referencias en edición; aceptación
-  pendiente.
+- **Estado:** PBI-043 `Done`; PBI-040 mantiene `Owner Review`. PBI-041 alcanzó
+  `Ready — implementation not authorized` después de promover `OD-BI-001..010`;
+  aceptación de PBI-040 permanece pendiente.
 - **Baseline Git verificada:** `main == origin/main` en
   `5be5cd60acb0865da57aff76740a1330896b1cd1` como padre integrado de la rama
   PBI-040.
@@ -136,6 +136,23 @@ Platform/Tenant, historia de recepción y colisiones Brand/Model requieren
 decisiones fuera de PBI-040. No se añadió merge a Repairs ni se abrió otro PBI.
 Owner Acceptance, gates de PR/CI/merge y deploy siguen pendientes.
 
+El discovery posterior de carga masiva auditó V1, ENL y los contratos actuales
+de Catalog. La dirección Owner es un Bulk Catalog Composer tabular para
+copiar/pegar desde Sheets, con un solo Batch Engine al que CSV/XLSX/API podrán
+conectarse después. La evidencia adicional de proveedores informales reformuló
+`OD-BI-001`: supplier code es opcional y la continuidad vive en SupplierSource,
+versiones/listings inmutables y mappings persistentes hacia CatalogItem. Supplier
+Listing nunca gobierna el título ni se vuelve identidad downstream. Matching por
+similarity no publica automáticamente; preview no escribe producto y Branch
+overrides permanecen intactos. `OD-BI-001..010` están aprobadas y promovidas.
+El [documento de auditoría y diseño](domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
+separa SupplierSource/Version/Listing/Resolution/Memory de
+CatalogUpdateBatch/RowDecision. Arquitectura, persistence design, Threat Model,
+Test Strategy y Definition of Ready dejan PBI-041 `Ready — implementation not
+authorized`. Advanced Supplier Reconciliation queda diferido sin PBI ID,
+selección ni readiness. No se implementó producto, migración, endpoint, UI,
+job o cambio de base.
+
 El candidato funcional final es `0720813`. `verify:full` pasó 13/13 etapas:
 suite base 838 pruebas, 818 PASS y 20 skips PostgreSQL gobernados; composite
 17/17, PBI-039 2/2 y PBI-040 1/1 con 62 migraciones y p95 5.50 ms sobre 10,000
@@ -175,12 +192,13 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Current PBI | PBI-040 — Owner Review |
 | WIP | 1/1 |
 | PBI-040 | canonical merge y paridad inline de edición en validación local; aceptación pendiente |
+| PBI-041 | Ready documentalmente; Candidate no seleccionado, no iniciado ni autorizado |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Preview | `aab27d9` PASS |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Revisar en Chrome selección/merge de Categories compatibles, unión de Brands y
-edición de item con referencia existente o pendiente. No inferir aceptación,
-push, PR, merge, deploy ni inicio de PBI-041/PBI-042.
+Completar Owner Review/Acceptance de PBI-040. Sólo después, y mediante autoridad
+explícita, seleccionar/autorizar PBI-041 desde el `main` vigente. No inferir
+aceptación, inicio, push, PR, merge o deploy.

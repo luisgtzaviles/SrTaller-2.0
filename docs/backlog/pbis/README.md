@@ -5,9 +5,10 @@
 **Estado:** Índice reconciliado con `main` `5be5cd6` y CI exacta
 `34732201476`. SPRINT-02 está `Closed` y PBI-043 `Done`. SPRINT-03 está
 `Active`: PBI-040 continúa Owner Review sobre la baseline reconciliada,
-PBI-041 Planned y PBI-042 Planned/Unassigned. WIP `1/1`.
+PBI-041 Ready/Not authorized y PBI-042 Planned/Unassigned. WIP `1/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
-PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt sizing; los demás casos
+PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt
+sizing; PBI-041 tiene `XL — agreed` para el outcome inicial; los demás casos
 conservan TBD.
 **Sprint:** PBI-001–PBI-020 permanecen en su clasificación histórica de Sprint
 00. PBI-021–PBI-030 están `Unassigned`.
@@ -54,7 +55,7 @@ conservan TBD.
 | [PBI-038](PBI-038.md) | Timezone Foundation Integration and Hardening | Done; Released: NO; PR #40 and exact-main CI GREEN |
 | [PBI-039](PBI-039.md) | Customer Minimum + New Repair Classic 2.0 | Done; PR #45 + exact-main CI `34623060504`; Released: NO |
 | [PBI-040](PBI-040.md) | Catalog & Pricing Core + Fast Price Lookup | Owner Review; acceptance pending |
-| [PBI-041](PBI-041.md) | Supplier Price Import & Reconciliation | Planned; SPRINT-03 Candidate |
+| [PBI-041](PBI-041.md) | Initial Bulk Catalog Composer + Versioned Supplier Intake | Ready — implementation not authorized; SPRINT-03 Candidate/Ready |
 | [PBI-042](PBI-042.md) | Catalog Item Images | Planned / Unassigned |
 | [PBI-043](PBI-043.md) | Concurrent Operational Sessions — Access Foundation Remediation | Done; PR #47/#48, CI y Preview PASS; Released: NO |
 

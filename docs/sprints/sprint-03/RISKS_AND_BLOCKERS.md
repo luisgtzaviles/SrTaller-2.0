@@ -11,8 +11,8 @@
 | costo expuesto | High | capability y field omission server-side | control verificado; revisión Owner pendiente |
 | identidad duplicada | High | ID opaco, SKU/barcode Tenant, concurrencia | control verificado |
 | historial de precio perdido | High | revisiones append-only + snapshots futuros | control verificado |
-| import ambiguo/partial | High | PBI-041 separado, decisiones cero, publish transaccional | no materializado |
-| WIP paralelo | Medium | PBI-040 único siguiente; PBI-041 Planned | controlado |
+| Composer ambiguo/partial | High | PBI-041 separado; unresolved cero, preview/confirmación y apply atómico | arquitectura/DoR Ready; no materializado |
+| WIP paralelo | Medium | PBI-040 único WIP; PBI-041 Ready pero no seleccionado/autorizado | controlado |
 
 ## Próxima revisión
 

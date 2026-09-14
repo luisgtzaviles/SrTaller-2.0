@@ -12,10 +12,11 @@ producto y condiciones pendientes antes de la siguiente iteración.
 **Estado:** Sprint 00 y Sprint 01 `Closed`; PBI-030, PBI-027, PBI-029,
 PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos. SPRINT-02 está
 `Closed` y SPRINT-03 `Active`.
-**Fase:** Operational Authentication & Authorization, con PBI-025/PBI-034/
-PBI-026/PBI-028/PBI-038/PBI-039/PBI-043 `Done` y G3–G5 `PASS`. Current PBI es
+**Fase:** Pricing Catalog; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039/
+PBI-043 están `Done` y G3–G5 `PASS`. Current PBI es
 [PBI-040](backlog/pbis/PBI-040.md), Owner Review sobre la rama reconciliada;
-WIP `1/1`. PBI-041/PBI-042 no están iniciados.
+WIP `1/1`. PBI-041 está Ready documentalmente pero no seleccionado/iniciado;
+PBI-042 no está iniciado.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Baseline integrada con CI registrada:** PBI-043 cerró por PR #47/#48 en

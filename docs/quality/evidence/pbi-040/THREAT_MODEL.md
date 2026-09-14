@@ -7,8 +7,9 @@
 - **Fecha:** 2026-09-11.
 - **Alcance:** Catalog/Pricing core, individual management, Branch effective
   price, reference-cost visibility and fast lookup.
-- **Exclusión:** bulk files/parsing/publish belong to PBI-041 and require its
-  own threat-model refinement.
+- **Exclusión:** Composer, Supplier intake y bulk publish pertenecen a PBI-041
+  y tienen su [Threat Model propio](../pbi-041/THREAT_MODEL.md). Adapters de
+  archivo permanecen diferidos.
 
 ## Activos y trust boundaries
 

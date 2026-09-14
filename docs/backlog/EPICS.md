@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado; EPIC-015 tiene PBI-040 en Owner Review después de
-reconciliarse con `main` actual. Ningún epic autoriza aceptación o integración
-por sí solo.
+**Estado:** Reconciliado; EPIC-015 tiene PBI-040 en Owner Review y PBI-041
+Candidate/Ready sin selección ni autorización de implementación. Ningún epic
+autoriza aceptación o integración por sí solo.
 **Criterio común:** sólo se descompone cuando el problema, actores, límites y dependencias son suficientemente conocidos.
 
 ## EPIC-000 — Product Discovery and Architecture
@@ -203,8 +203,8 @@ por sí solo.
 - **Valor:** permite responder cuánto cuesta en segundos y actualizar listas de
   proveedor sin mezclar catálogo, existencia, compras, Repair o Caja.
 - **Capacidades:** alta individual, clasificación, identificadores, precio base,
-  override Branch, costo de referencia restringido, historial, búsqueda e
-  importación/reconciliación masiva.
+  override Branch, costo de referencia restringido, historial, búsqueda y
+  Composer masivo con Supplier Catalog Versions/reconciliación.
 - **Dependencias:** tenancy/currency, estación/sesión, users/preferences, access,
   audit, persistencia y UI foundation ya materializadas.
 - **Riesgos:** duplicados, fuga Tenant/Branch, exposición de costo, pérdida de
@@ -212,7 +212,9 @@ por sí solo.
 - **Exclusiones:** Inventory, Procurement, Repair Concepts, Quote/Sales,
   Payments/Caja, Pedidos, Solicitudes, multi-currency/FX e impuestos.
 - **Estado:** Architecture accepted; PBI-040 Owner Review y aceptación
-  pendiente; PBI-041 Planned; PBI-042 Planned/Unassigned.
+  pendiente; PBI-041 Ready documentalmente, no seleccionado ni iniciado;
+  PBI-042 Planned/Unassigned. Advanced Supplier Reconciliation permanece
+  diferido sin PBI ID/readiness.
 - **Descomposición:** [PBI-040](pbis/PBI-040.md),
   [PBI-041](pbis/PBI-041.md) y [PBI-042](pbis/PBI-042.md).
 - **Contrato:** [Price List Architecture](../architecture/PRICE_LIST_ARCHITECTURE.md).

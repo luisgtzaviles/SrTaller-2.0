@@ -23,7 +23,8 @@ sin mezclar inventario, reparaciones o Caja.
 ## Selección
 
 1. PBI-040 — core vertical y búsqueda rápida — `Committed / Owner Review`.
-2. PBI-041 — importación/reconciliación de proveedor — `Candidate / Planned`.
+2. PBI-041 — Initial Bulk Catalog Composer + Versioned Supplier Intake —
+   `Candidate / Ready / implementation not authorized`.
 
 PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
 
@@ -32,9 +33,12 @@ PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
 - [ ] PBI-040 Done, Owner Accepted y no Released salvo autorización separada.
 - [ ] Alta individual y consulta por Branch demostradas con aislamiento y costo
   protegido.
-- [ ] PBI-041 sólo entra al compromiso si obtiene DoR y autorización propias.
-- [ ] Si PBI-041 se autoriza, 1,000 filas se reconcilian/publican con reporte y
-  cero decisión pendiente.
+- [x] PBI-041 obtiene DoR arquitectónica propia; permanece fuera del compromiso.
+- [ ] PBI-041 sólo entra al compromiso con Owner Acceptance/closure de PBI-040,
+  selección y autorización de implementación propias.
+- [ ] Si PBI-041 se autoriza, dos versiones (~1,500 filas sintéticas) prueban
+  mapping histórico, reconciliación, publicación atómica y reporte sin
+  unresolved/conflict/stale.
 - [ ] Ningún ownership de Inventory, Procurement, Repair, Caja, Pedidos o
   Solicitudes se materializa.
 

@@ -1,40 +1,45 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-040 Owner iteration — canonical merge + edit reference parity
+Milestone / Functional Goal: PBI-041 Bulk Catalog Composer architecture + readiness
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Review
-Status: Ready for Owner Review; Owner Acceptance remains pending
-WIP: 1/1
-Progress: 5 / 5 implementation blocks complete
-Current: Owner Review of canonical merge and edit reference parity
-Next: Owner decision; no subsequent gate or PBI starts automatically
+Status: PBI-041 architecture/readiness PASS; implementation remains unauthorized
+WIP: 1/1 — PBI-041 is Candidate/Ready, not selected or started
+Progress: 6 / 6 readiness blocks complete
+Current: Ready for Owner review of architecture/readiness
+Next: Owner reviews readiness and separately completes PBI-040 acceptance/closure
 Blocked: None
 Last updated: 2026-09-13 MST
 
-## Canonical merge + edit reference parity iteration
+## PBI-041 architecture and readiness
 
-- [x] Audit Catalog/Repairs dependencies, merge invariants and shared primitives
-- [x] Implement transactional Catalog Category/Brand merge with history
-- [x] Give item editing the same inline reference behavior as creation
-- [x] Cover concurrency, isolation, lifecycle, filters and responsive UX
-- [x] Run governed gates, reconcile evidence and prepare Chrome
+- [x] Reconcile mandatory authorities and preserve PBI-040 Owner Review/WIP
+- [x] Promote Owner decisions OD-BI-001..010 into canonical decision/architecture docs
+- [x] Separate SupplierSource/Version/Listing/Resolution/Memory from CatalogUpdateBatch
+- [x] Define ownership, identity, lifecycles, matching, retention and performance budgets
+- [x] Refine PBI-041 and create Persistence Design, Threat Model, Test Strategy and DoR
+- [x] Verify links, states, structure, diff hygiene and zero product/migration changes
 
-## Required outcome
+## Ready outcome
 
-- Two or more compatible Catalog canonical references merge explicitly into a
-  selected survivor without losing item links, pending history or audit.
-- Category merge remains same Tenant + same Type; Brand merge unions valid
-  applicability. Merged sources never reappear as ordinary or deletable canon.
-- Edit item reuses the creation combobox/contract for existing, exact, expansion
-  and new pending Category/Brand references.
-- Repairs catalogs are audited before any reuse; no domain semantics are inferred.
+- PBI-041 is **Initial Bulk Catalog Composer + Versioned Supplier Intake**.
+- Composer is primary; CSV/XLSX/API remain adapters to the same future engine.
+- CatalogItem remains permanent SR Taller identity; SupplierListing is external evidence.
+- Exact historical mappings may be preselected only when unique/consistent and
+  remain visible in preview until batch confirmation.
+- Raw evidence expires after 90 days; the approved structured subset, mappings,
+  Catalog diffs and audit remain permanent with cost protection.
+- Advanced Supplier Reconciliation remains a deferred outcome without PBI ID,
+  selection or readiness.
 
 ## Boundaries
 
-- [x] PBI-040 only; Owner Acceptance is not inferred
-- [x] No PBI-041/PBI-042, import, Inventory, Caja or downstream implementation
-- [x] No push, PR, merge to `main`, Preview deploy or Production
-- [x] PBI-039/PBI-043 remain authoritative and are not reopened
+- [x] Documentation/governance only; no product code, migration, endpoint, UI, job or DB change
+- [x] PBI-040 remains Owner Review; Owner Acceptance/Done not inferred
+- [x] PBI-041 is Ready but not selected, implemented or accepted
+- [x] PBI-042 and Advanced Supplier Reconciliation are not started
+- [x] No Inventory, Procurement, Caja, Repair Concepts or downstream implementation
+- [x] No push, PR, merge, Preview deploy or Production change
 
 The completed PBI-043 checklist remains preserved by Git history and its
 closure evidence. The prior PBI-039 checklist remains in

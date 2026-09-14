@@ -4,7 +4,9 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Lenguaje común preliminar; no define tablas, clases, contratos de API ni reglas finales.
-- **Aprobación:** ADR-004/010/011/012/013 son autoritativos para los términos marcados; el resto está pendiente del propietario del producto y especialistas del dominio.
+- **Aprobación:** ADR-004/010/011/012/013 y las decisiones PLD/OD-BI son
+  autoritativos para los términos marcados; el resto está pendiente del
+  propietario del producto y especialistas del dominio.
 - **Convención:** “Pendiente de validación” indica que la definición o sus límites podrían cambiar.
 
 ## Reglas de uso
@@ -51,9 +53,14 @@
 | **Precio efectivo** | Resultado de resolver override activo de Branch y, en su ausencia, precio base Tenant, con moneda/procedencia/revisión. | **Aceptado para EPIC-015.** `NOT_PRICED` es resultado explícito. |
 | **Costo de referencia** | Dato interno, opcional y versionado usado para pricing/margen, con fuente y momento. | **Aceptado para EPIC-015.** No es costo promedio, valuación, última compra ni autoridad contable. |
 | **SKU interno** | Identificador humano estable y único dentro del Tenant; puede aportarse o generarse server-side. | **Aceptado para EPIC-015.** No es ID de URL, barcode ni código de proveedor. |
-| **GTIN / barcode interno** | Identificadores escaneables tipados; GTIN valida su estándar y el interno usa namespace propio. | **Aceptado para EPIC-015.** Preservan ceros y no conceden autorización. |
-| **Fuente de importación** | Namespace Tenant-scoped de una lista/origen para reconciliar códigos externos. | **Aceptado para EPIC-015.** No es el Supplier maestro de Procurement. |
-| **Batch de importación** | Intención versionada y auditable que transforma un archivo en decisiones de create/update/no-change/exclude antes de publicar. | **Aceptado para EPIC-015.** No puede publicar con decisiones pendientes ni saltar errores silenciosamente. |
+| **Código de barras interno** | Identificador escaneable interno, único por Tenant y representable posteriormente como Code 128. | **Aceptado para EPIC-015.** No es GTIN/EAN/UPC, ID de URL ni código de proveedor. |
+| **SupplierSource** | Identidad Tenant-scoped mínima de una fuente externa de listas. | **Aceptado para EPIC-015.** No es el Supplier maestro de Procurement y no posee contactos, compras o pagos. |
+| **SupplierCatalogVersion** | Fotografía versionada de una ronda recibida/compuesta para un SupplierSource. | **Aceptado para EPIC-015.** Es inmutable después de INGESTED; una corrección crea otra versión enlazada. |
+| **SupplierListing** | Observación estructurada de una fila dentro de una SupplierCatalogVersion. | **Aceptado para EPIC-015.** No es CatalogItem ni alias; el código del proveedor es opcional. |
+| **SupplierListingResolution** | Decisión append-only que vincula, excluye o corrige la interpretación de un SupplierListing. | **Aceptado para EPIC-015.** Corregir conserva la decisión anterior. |
+| **SupplierReconciliationMemory** | Proyección reconstruible de mappings históricos confirmados por Source y firma exacta. | **Aceptado para EPIC-015.** Sólo preselecciona cuando es única/consistente; no publica ni crea alias. |
+| **CatalogUpdateBatch** | Intención durable y auditable que convierte observaciones/propuestas en decisiones create/update/no-change/exclude antes de aplicar Catalog. | **Aceptado para EPIC-015.** Es distinto de SupplierCatalogVersion y publica atómicamente tras preview/confirmación. |
+| **SupplierObservedCost** | Costo/moneda observado en una SupplierListing y conservado como evidencia protegida. | **Aceptado para EPIC-015.** Puede proponerse como Reference Cost; no es costo de compra ni valuación. |
 | **Inventario** | Capacidad para conocer y controlar artículos, partes o insumos y sus existencias dentro de alcances definidos. | **Pendiente de validación:** catálogo, unidad, propiedad tenant/sucursal, ubicaciones, reservas, lotes, series y valuación. |
 | **Movimiento** | Cambio trazable que afecta cantidad, ubicación, reserva o estado de un elemento de inventario. | **Pendiente de validación:** tipos, signos, aprobación, reversión, costo y relación con reparación, venta o ajuste. |
 | **Venta** | Operación comercial del taller mediante la cual se entregan productos o servicios a cambio de una contraprestación. | **Pendiente de validación:** alcance frente a reparación, documentos, impuestos, devoluciones y momento de reconocimiento. |

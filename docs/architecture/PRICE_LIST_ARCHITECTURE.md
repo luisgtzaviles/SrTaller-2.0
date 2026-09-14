@@ -2,7 +2,8 @@
 
 ## Estado y autoridad
 
-- **Estado:** Accepted for implementation readiness — 2026-09-11.
+- **Estado:** Accepted; PBI-040 baseline 2026-09-11 y bulk architecture/
+  readiness reconciliados 2026-09-13.
 - **Autoridad de producto:** decisiones Owner `PLD-001` a `PLD-008` y
   `PLD-018`, aprobadas en `MASTER GOAL — PRICE LIST ARCHITECTURE + PBI
   READINESS`.
@@ -12,6 +13,9 @@
 - **Alcance:** frontera lógica y contratos de entrega. No materializa módulos,
   tablas, migraciones, endpoints, UI, jobs ni integraciones.
 - **Discovery de origen:** [Price List Domain Discovery](../domain/PRICE_LIST_DOMAIN_DISCOVERY.md).
+- **Bulk discovery y decisiones:**
+  [Price List Bulk Composer](../domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md),
+  con `OD-BI-001..010` aprobadas el 2026-09-13.
 
 ## Resultado ejecutivo
 
@@ -46,10 +50,13 @@ agregado, inventario ni libro de Caja.
 | `BasePriceRevision` | Tenant + item + moneda + vigencia | `catalog` / Pricing | append-only; un valor efectivo a la vez |
 | `BranchPriceOverrideRevision` | Tenant + Branch + item + vigencia | `catalog` / Pricing | sustituye la base; revocar restaura herencia |
 | `ReferenceCostRevision` | Tenant + item + moneda + fuente | `catalog` / Pricing | opcional, interno y no contable |
-| `ImportBatch` | Tenant + target + archivo/hash + actor | `catalog` | state machine versionada e idempotente |
-| `ImportRowDecision` | batch + número de fila | `catalog` | toda fila termina aplicada, sin cambio o excluida |
-| `ImportSource` | Tenant + nombre de fuente | `catalog` | namespace de reconciliación; no es un Supplier maestro |
-| `SupplierItemReference` | ImportSource + código + item | `catalog` | clave determinista; Procurement podrá mapearla después |
+| `SupplierSource` | ID opaco, Tenant | `catalog` | fuente externa mínima; no es Supplier de Procurement |
+| `SupplierCatalogVersion` | Tenant + source + version ID | `catalog` | fotografía inmutable después de `INGESTED`; corrección crea otra versión |
+| `SupplierListing` | Tenant + version + listing ID | `catalog` | observación externa, no identidad comercial |
+| `SupplierListingResolution` | Tenant + listing + secuencia | `catalog` | historia append-only de mapping/corrección humana |
+| `SupplierReconciliationMemory` | Tenant + source + firma versionada | `catalog` | proyección reconstruible; exactitud no crea alias canónico |
+| `CatalogUpdateBatch` | Tenant + batch ID | `catalog` | intención de mutar Catalog separada de la evidencia del proveedor |
+| `CatalogUpdateRowDecision` | Tenant + batch + row ID | `catalog` | decisión/diff/version esperada por fila |
 
 Un Supplier legal/comercial, compras, existencias, pagos, movimientos de Caja,
 Repair Concepts, pedidos y solicitudes de clientes no pertenecen a `catalog`.
@@ -274,9 +281,10 @@ tercer identificador ni cambia el valor de dominio. Un valor exacto identifica
 como máximo un item dentro del Tenant. No hay GTIN, EAN, UPC ni código de
 fabricante en PBI-040.
 
-Un futuro código de proveedor pertenece a `SupplierItemReference` de PBI-041,
-no a SKU ni barcode. Los IDs de URL siguen siendo opacos: SKU/barcode no
-habilitan enumeración ni autorización.
+Un código de proveedor, cuando existe, pertenece a la observación/versionado de
+`SupplierListing` y puede ser señal de reconciliación. Es opcional y nunca se
+promueve a SKU, barcode, alias canónico ni ID de URL. Los IDs de URL siguen
+siendo opacos: SKU/barcode no habilitan enumeración ni autorización.
 
 ## 7. Costo de referencia y menor privilegio
 
@@ -369,77 +377,180 @@ documento.
 
 ## 10. Importación, reconciliación y actualización de proveedor
 
-### Alcance del primer ciclo (PBI-041)
+### 10.1 Entrada canónica: Composer first
 
-- CSV UTF-8 y XLSX de una sola hoja; plantilla descargable.
-- Mapping guardable por `ImportSource`, con confirmación manual de encabezados.
-- Decimal y separador detectados como sugerencia y confirmados antes de parsear;
-  importes se convierten a minor units sin `float`.
-- Moneda declarada obligatoria e igual a la del Tenant.
-- En update, columna ausente/no mapeada y celda vacía significan **sin cambio**;
-  en create, vacío sólo es válido para opcionales.
-- `0` numérico significa cero explícito. Precio negativo es inválido; precio
-  cero es válido y se muestra como tal.
-- `[BORRAR]` es el token reservado, visible en preview, para limpiar únicamente
-  descripción, marca o costo opcional; no puede borrar título, tipo, categoría,
-  SKU, código de barras, moneda ni precio.
-- Límite configurable y prueba obligatoria de 1,000 filas. Archivos superiores
-  al límite se rechazan completos antes de staging.
+PBI-041 usa una cuadrícula durable dentro de SR Taller. El Owner pega desde
+Google Sheets una celda, columna o bloque rectangular, edita y revisa. CSV,
+XLSX y APIs de proveedor son **adaptadores futuros del mismo engine**: no forman
+parte del primer outcome y nunca tendrán una ruta de matching/publicación
+paralela.
 
-### Matching determinista
+Contrato mínimo del Composer:
 
-Orden de claves: `itemId`, SKU interno, código de barras interno,
-`ImportSource + supplierItemCode`. Una clave única encuentra un item; varias
-claves de la misma fila que apunten a items distintos producen `CONFLICT`.
-Nombre, marca, categoría y fuzzy sólo generan candidatos para resolución humana.
+- paste como texto plano; una celda, columna o bloque rectangular;
+- edición directa, selección, agregar/quitar filas de draft y undo pre-publish;
+- `Tab`, `Shift+Tab`, flechas y `Enter`, con foco visible y anuncios accesibles;
+- grid virtualizado, errores por celda y estado por fila;
+- alta completa, actualización compacta y nueva Supplier Catalog Version sobre
+  el mismo batch engine;
+- draft versionado y recuperable; el browser no es la única copia;
+- sin fórmulas, macros, merged cells, worksheets ni formatting engine.
 
-Duplicados dentro del archivo se detectan antes de preview. Dos filas con la
-misma clave quedan `CONFLICT` y ninguna gana por orden. Una clave ya usada por
-otro item, un match múltiple, una Branch ajena o una versión stale también son
-conflicto explícito.
+`Fill down` no forma parte del outcome inicial porque no existe una aprobación
+Owner específica; paste rectangular cubre el llenado múltiple sin introducir
+otra semántica de transformación. Puede evaluarse después sin cambiar el engine.
 
-### Estado y publicación
+El request se rechaza antes de staging cuando excede cualquiera de estos hard
+caps iniciales: 10,000 filas, 32 columnas, 200,000 celdas no vacías, 4,096
+caracteres Unicode por celda o 10 MiB UTF-8 de clipboard. Los límites de cada
+campo de dominio pueden ser menores y se validan por separado. No hay truncado.
 
-```text
-UPLOADED -> MAPPED -> RECONCILING -> READY -> PUBLISHING -> PUBLISHED
-                              \-> CANCELLED
-PUBLISHING --failure/stale--> RECONCILING
-```
+En update, columna ausente y celda vacía significan **sin cambio**. En create,
+vacío sólo es válido para opcionales. `0` numérico es valor explícito y nunca
+ausencia. El primer slice no ofrece revocación masiva de costo. Los importes se
+convierten a minor units sin `float`, conservan moneda ISO y deben coincidir con
+la moneda operativa del Tenant. El casing limpio se preserva; no se fuerza
+Title Case.
 
-Cada fila termina en `CREATE`, `UPDATE`, `NO_CHANGE` o `EXCLUDED`. `ERROR`,
-`AMBIGUOUS`, `CONFLICT` y `STALE` son pendientes que deben corregirse,
-vincularse o excluirse. Sólo `pendingDecisionCount = 0` permite publicar.
-
-Preview muestra before/after por campo, match/procedencia, warnings y conteos.
-Cada intención incluida lleva `expectedVersion`. Justo antes de publicar se
-revalida scope, claves, lifecycle y versión. PBI-041 publica todas las filas
-incluidas en una sola transacción acotada; un conflicto o falla no deja apply
-parcial. Las exclusiones son deliberadas, no errores silenciosos.
-
-`clientRequestId` hace idempotentes create-batch y publish dentro de Tenant +
-operación. Repetir el mismo publish devuelve el mismo resultado; volver a subir
-el mismo hash crea otro batch sólo mediante una intención nueva confirmada. El
-reporte conserva archivo/hash, mapping, actor, target, decisiones, correcciones,
-links, exclusiones, before/after, versions, timestamps, correlation y resultado.
-
-Flujo real soportado:
+### 10.2 Evidencia externa e identidad interna
 
 ```text
-proveedor -> Owner limpia/calcula en Sheets -> exporta -> elige ImportSource
--> mapea -> preview -> resuelve 100% -> publica -> descarga reporte
+SupplierSource
+  -> SupplierCatalogVersion
+    -> SupplierListing
+      -> SupplierListingResolution
+        -> CatalogItem
+
+SupplierListingResolution history
+  -> SupplierReconciliationMemory (read model reconstruible)
+
+SupplierListing(s)
+  -> CatalogUpdateBatch
+    -> CatalogUpdateRowDecision
+      -> revisiones/identidades Catalog publicadas
 ```
 
-Si un artículo desaparece de la nueva lista, no se inactiva ni se borra por
-ausencia. Tal acción requiere una columna/intención explícita y queda fuera del
-primer import. Automatización programada, APIs de proveedor, perfiles de precio,
-multihoja, rollback masivo y fuzzy asistido quedan posteriores.
+`CatalogItem.itemId` es la identidad comercial permanente. `SupplierListing` es
+una observación externa versionada: Inventory, Repairs, Caja y Procurement nunca
+la usan como identidad principal. Una versión conserva source, label/revision,
+content hash, schema version, signature algorithm version y correction lineage.
+Después de `INGESTED` su contenido es inmutable; una corrección crea otra versión
+con `correctsVersionId`. La relación Version→Batch no es obligatoriamente 1:1.
+
+Una fila ausente en la versión siguiente sólo queda `DISAPPEARED` en la
+comparación de proveedor. No inactiva CatalogItem, no revoca precio/costo ni
+modifica Branch overrides.
+
+### 10.3 Matching y memoria de reconciliación
+
+Señales fuertes, en orden compatible con las presentes: `itemId` confiable,
+SKU interno, barcode interno, `supplierItemCode` opcional y mapping histórico
+de observación exacta. Dos señales que resuelven a items distintos producen
+`CONFLICT`; duplicados en la misma versión nunca usan last-row-wins.
+
+Un mapping histórico sólo puede quedar **preseleccionado** cuando coincide el
+mismo Tenant, SupplierSource y firma exacta compatible; toda la historia apunta
+de forma única/consistente al mismo CatalogItem activo; y no existe contradicción
+de identifier, Tipo o lifecycle. Se ve en preview y sólo se aplica al confirmar
+el batch. No requiere click por fila. Una corrección agrega
+`SupplierListingResolution`, conserva la anterior y actualiza la proyección de
+memoria con target, evidence count, first/last seen y conflicto histórico.
+
+Título/estructura probable, similitud, pattern nuevo o tag nuevo sólo producen
+reconciliación humana. No hay fuzzy write, actualización automática por título
+ni alias canónico derivado de observations. Detección sistemática
+`Display→Pantalla`, clasificación avanzada de tags y aceptación grupal
+pertenecen al outcome diferido **Advanced Supplier Reconciliation**, sin PBI ID,
+selección ni readiness.
+
+### 10.4 Actualización gobernada
+
+| Campo de Catalog existente | Semántica bulk inicial |
+|---|---|
+| Tipo | inmutable; contradicción bloquea |
+| SKU / barcode | match-only; no se cambia por bulk |
+| título | el título del proveedor no renombra Catalog automáticamente |
+| descripción | diff visible y opt-in explícito |
+| categoría / marca | diff compatible y explícito; puede crear pending gobernada |
+| precio base | nueva revisión sólo ante cambio real |
+| costo de referencia | nueva revisión `IMPORTED` sólo ante cambio real y con permisos |
+| lifecycle | no gestionado por bulk inicial |
+| Branch override | siempre intacto |
+
+`SupplierObservedCost`, `ReferenceCostRevision` y el futuro
+`ProcurementPurchaseCost` son conceptos distintos. PBI-041 puede ingerir y
+comparar el primero y publicar el valor seleccionado como el segundo. Nunca
+crea costo de compra. Precio/costo pueden proponerse en un match confiable;
+descripción/clasificación exigen opt-in.
+
+Una pending Category/Brand seleccionada deliberadamente puede acompañar el
+publish porque conserva el governance de PBI-040. Una decisión de fila todavía
+`UNRESOLVED`, `AMBIGUOUS`, `CONFLICT`, `INVALID` o `STALE` bloquea.
+
+### 10.5 Lifecycles y atomicidad
+
+```text
+SupplierCatalogVersion
+DRAFT -> INGESTING -> INGESTED
+DRAFT/INGESTING -> CANCELLED | FAILED
+INGESTED --nueva corrección--> SUPERSEDED (derivado por lineage)
+
+CatalogUpdateBatch
+DRAFT -> ANALYZING -> RECONCILING -> READY -> COMMITTING -> COMPLETED
+DRAFT/ANALYZING/RECONCILING/READY -> CANCELLED
+ANALYZING/COMMITTING -> FAILED
+COMMITTING --stale--> RECONCILING
+```
+
+Nada anterior a `COMMITTING` escribe estado de producto Catalog. Cada decisión
+termina `CREATE`, `UPDATE`, `NO_CHANGE` o `EXCLUDED`; exclusión es deliberada.
+Preview muestra observation, propuesta, motivo de match, before/after,
+`expectedVersion`, pendientes, conflicts, overrides preservados y conteos.
+
+Publish es all-or-nothing para las filas incluidas. Parse/análisis ocurren fuera
+de la transacción. Dentro de una sola conexión/transacción se revalidan Tenant,
+Session, capacidades de cada campo, identifiers, referencias/aplicabilidad,
+lifecycle y expectedVersions. Cualquier fila stale/inválida revierte todas las
+mutaciones. `clientRequestId` protege creación/ingesta/publish; un retry devuelve
+el outcome previo y no genera otra identidad o revisión.
+
+### 10.6 Retención, consultas y presupuesto operativo
+
+Durante 90 días se conserva el payload completo de clipboard/adaptador, celdas
+no mapeadas, artefactos temporales y diagnóstico detallado. Permanentemente se
+conservan source/version metadata, título exacto, código de proveedor opcional,
+costo/moneda observados, hints/tags relevantes, firma + versión de algoritmo,
+resoluciones/mappings, diffs/revision IDs y audit/correlation. El cleanup borra
+sólo raw temporal vencido, en chunks idempotentes, sin cascada a versión,
+listing estructurado, mapping, batch, revisiones o CatalogItem. Todo costo queda
+omitido server-side sin `catalog.reference_cost.read`.
+
+Presupuestos del perfil de referencia, medidos p95 y con datos sintéticos:
+
+| Superficie | 1,000 filas material | 10,000 target candidato | Regla |
+|---|---:|---:|---|
+| paste hasta grid interactiva | ≤ 1.0 s | ≤ 3.0 s | ninguna tarea de main thread > 200 ms |
+| análisis completo | ≤ 5 s | ≤ 30 s | set-based, sin N+1 |
+| primera página de preview | ≤ 1.5 s | ≤ 2.0 s | filtros/página posteriores ≤ 750 ms |
+| publish HTTP total | ≤ 8 s | ≤ 30 s | resultado explícito, sin timeout ambiguo |
+| transacción DB de publish | ≤ 5 s | ≤ 15 s | locks en orden estable |
+| heap adicional del browser | ≤ 100 MiB | ≤ 250 MiB | sin conservar DOM por fila fuera de viewport |
+| cleanup de raw vencido | ≤ 10 s | ≤ 60 s | chunks ≤ 1,000; lock individual ≤ 1 s |
+
+La prueba de 1,500 filas es obligatoria para Owner checkpoint. El producto sólo
+puede anunciar soporte hasta 10,000 si todos sus presupuestos pasan en la
+baseline de referencia. 50,000 es caracterización no bloqueante del engine; la
+UI/API inicial rechaza >10,000 completa y explícitamente, sin truncar ni
+persistir parcialmente. Si se requiere particionar apply, cambia el producto y
+necesita arquitectura posterior.
 
 ## 11. Concurrencia, idempotencia, auditoría y seguridad
 
 - Todo write mutable usa `expectedVersion`; stale produce `409` y obliga a
   releer, nunca last-write-wins.
-- Constraints Tenant-aware respaldan SKU, barcode y supplier code; los
-  conflictos se traducen sin filtrar nombres/IDs ajenos.
+- Constraints Tenant-aware respaldan SKU/barcode e integridad Source/Version/
+  Listing; supplier code opcional se indexa y sus duplicados se clasifican sin
+  ocultar evidencia.
 - Precio/costo/override son revisiones append-only. Una corrección agrega una
   revisión y motivo; no reescribe historia.
 - Cada comando reintentable usa idempotency key y conserva outcome suficiente.
@@ -447,7 +558,8 @@ multihoja, rollback masivo y fuzzy asistido quedan posteriores.
   aplica, correlation, acción, target opaco, before/after mínimo y resultado.
 - Logs no contienen el archivo completo, costos masivos ni datos de otro Tenant.
 - Search, export e import prueban aislamiento, no sólo CRUD por ID.
-- Import parsing sucede fuera de la transacción; publish revalida dentro de ella.
+- Composer parsing/análisis sucede fuera de la transacción; publish revalida
+  dentro de ella.
 - Los errores por scope usan el contrato no revelador de DEC-044.
 
 ## 12. Escenarios de validación
@@ -458,7 +570,7 @@ multihoja, rollback masivo y fuzzy asistido quedan posteriores.
 | B. Servicio base 350, Branch 399 | `SERVICE`, no stockable; base MXN 350, override 399 con fuente visible; costo ausente/estimado/tercerizado opcional |
 | C. Termo no telefónico | `PRODUCT`, marca/categoría comerciales; ninguna dependencia de Repairs |
 | D. Alcohol interno | `SUPPLY`, puede existir como identidad para futuro Inventory; Price List lo excluye porque no es sellable |
-| E. 1,000 filas | cada fila queda create/update/no-change/excluded; pendientes cero antes de publish; un stale evita apply parcial; reporte completo |
+| E. dos versiones / 1,500 filas | la primera crea/mapea sin códigos obligatorios; la segunda preselecciona historia exacta, separa changed/new/ambiguous/disappeared; un stale evita apply parcial; reporte completo |
 | F. Muchas Branches | un item Tenant, una base, overrides escasos; revocar hereda; perfil futuro se inserta sin migrar item ni snapshots |
 
 ## 13. Entrega por PBIs
@@ -467,38 +579,42 @@ Se elige **Epic + PBIs verticales**, no un PBI único: core y bulk import tienen
 riesgos, pruebas y checkpoints Owner distintos. Tampoco se fragmenta en PBIs de
 tablas/backend/UI porque eso dejaría capas sin resultado operativo.
 
-1. **PBI-040 — Catalog & Pricing Core + Fast Price Lookup** — `Ready`, primero.
+1. **PBI-040 — Catalog & Pricing Core + Fast Price Lookup** — `Owner Review`.
    Alta/edición individual sin imagen, identidad, clasificación, SKU/barcode,
    moneda Tenant, base/override/costo, capacidades, preferencia personal,
    historial, navegación `Listas` y búsqueda rápida.
-2. **PBI-041 — Supplier Price Import & Reconciliation** — `Planned`.
-   CSV/XLSX, template/mapping, staging, matching determinista, resolución,
-   preview, publish idempotente y reporte.
+2. **PBI-041 — Initial Bulk Catalog Composer + Versioned Supplier Intake** —
+   `Ready — implementation not authorized`. Composer, source/version/listing,
+   memoria exacta, reconciliación manual, preview, apply atómico y reporte.
 3. **PBI-042 — Catalog Item Images** — `Planned / fuera del compromiso inicial`.
    Se activa cuando Files tenga contrato y storage autorizados.
-4. **Price profiles, Inventory, Procurement, Repair Concepts, Sales/Caja,
+4. **Advanced Supplier Reconciliation** — outcome diferido sin PBI ID:
+   cambios sistemáticos, tags y resolución grupal; no seleccionado ni Ready.
+5. **Price profiles, Inventory, Procurement, Repair Concepts, Sales/Caja,
    Pedidos y Solicitudes** — futuros; no reciben PBI ni estructura ahora.
 
 ## 14. Diez respuestas de readiness
 
 1. **Módulo:** uno, `catalog`, con Catalog/Pricing internos.
 2. **Owns:** item, tipo/capabilities, categoría/marca comercial,
-   identificadores, revisiones base/override/reference cost, import source/batch.
+   identificadores, revisiones base/override/reference cost, SupplierSource/
+   Version/Listing/Resolution/Memory y CatalogUpdateBatch/RowDecision.
 3. **No owns:** stock, Supplier, compra, costo contable, Repair Concept,
    venta/pago/Caja, pedido, solicitud ni reporte.
 4. **Scopes:** identidad/base/configuración Tenant; override Branch; contexto
    siempre confiable.
 5. **Precio efectivo:** Branch override activo, si no base Tenant; `NOT_PRICED`
    si falta; siempre con moneda y procedencia.
-6. **Bulk:** ningún auto-match por nombre; 100% de filas resueltas; publish
-   transaccional, versionado, idempotente y auditable.
+6. **Bulk:** Composer first; mapping histórico exacto puede preseleccionarse;
+   ningún write por nombre/similarity; publish transaccional, versionado,
+   idempotente y auditable con exclusiones/pending deliberadas.
 7. **Capabilities:** las ocho de la sección 7; costo nunca viaja sin permiso.
 8. **Primer slice:** PBI-040 produce alta individual + búsqueda usable en la
    Branch y cierra la base segura antes del import.
 9. **Diferido:** imágenes, perfiles, FX/impuestos, auto-sync, inventario,
    compras, conceptos, Caja y futuros `Listas`.
-10. **Primer PBI Ready:** PBI-040; no está autorizado para implementación hasta
-    una orden Owner posterior.
+10. **Readiness:** PBI-041 está Ready documentalmente, no seleccionado ni
+    autorizado; PBI-040 continúa siendo el WIP en Owner Review.
 
 ## Criterios de reconsideración
 
