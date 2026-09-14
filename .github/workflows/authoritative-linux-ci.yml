@@ -17,10 +17,149 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  classify-change:
+    name: Governed change classification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      base_sha: ${{ steps.classify.outputs.base_sha }}
+      candidate_sha: ${{ steps.classify.outputs.candidate_sha }}
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+      enforced_pipeline: ${{ steps.classify.outputs.enforced_pipeline }}
+      risk: ${{ steps.classify.outputs.risk }}
+
+    steps:
+      - name: Checkout exact history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Node.js 24.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Classify exact delta fail closed
+        id: classify
+        shell: bash
+        run: |
+          set -euo pipefail
+          force_full=""
+          head="${GITHUB_SHA}"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            base="${{ github.event.before }}"
+          else
+            base="$(git rev-parse HEAD^)"
+            force_full="workflow-dispatch"
+          fi
+          if [[ ! "${base}" =~ ^[0-9a-f]{40}$ ]] || [[ "${base}" =~ ^0+$ ]]; then
+            base="$(git rev-list --max-parents=0 HEAD)"
+            force_full="unavailable-base"
+          fi
+          if ! git diff --quiet "${base}" "${head}" -- \
+            .github/workflows/authoritative-linux-ci.yml \
+            scripts/classify-workflow-change.mjs \
+            scripts/verify-docs-only.mjs \
+            scripts/lib/workflow-change-classifier.mjs \
+            scripts/lib/docs-only-verification.mjs; then
+            force_full="classification-policy-change"
+          fi
+          args=(
+            --base "${base}"
+            --head "${head}"
+            --output "${RUNNER_TEMP}/WORKFLOW_CHANGE_RISK.json"
+            --github-output "${GITHUB_OUTPUT}"
+          )
+          if [[ -n "${force_full}" ]]; then
+            args+=(--force-full-reason "${force_full}")
+          fi
+          node scripts/classify-workflow-change.mjs "${args[@]}"
+          echo "base_sha=${base}" >> "${GITHUB_OUTPUT}"
+          echo "candidate_sha=${head}" >> "${GITHUB_OUTPUT}"
+          node scripts/verify-preview-migration-state.mjs \
+            --phase pre-merge \
+            --output "${RUNNER_TEMP}/PREVIEW_MIGRATION_PREFLIGHT.json"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload classification and migration preflight evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-change-risk
+          path: |
+            ${{ runner.temp }}/WORKFLOW_CHANGE_RISK.json
+            ${{ runner.temp }}/PREVIEW_MIGRATION_PREFLIGHT.json
+          if-no-files-found: error
+          retention-days: 30
+
+  docs-only-gate:
+    name: DOCS_ONLY fail-closed
+    needs:
+      - classify-change
+    if: needs.classify-change.outputs.docs_only == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ needs.classify-change.outputs.candidate_sha }}
+
+      - name: Set up Node.js 24.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Activate exact pnpm with Corepack
+        shell: bash
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@11.15.1 --activate
+          test "$(node --version)" = "v24.18.0"
+          test "$(pnpm --version)" = "11.15.1"
+
+      - name: Verify DOCS_ONLY contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-workflow-stage.mjs \
+            --metrics "${RUNNER_TEMP}/DOCS_ONLY_METRICS.json" \
+            --stage docs-only-contract \
+            -- node scripts/verify-docs-only.mjs \
+              --base "${{ needs.classify-change.outputs.base_sha }}" \
+              --head "${{ needs.classify-change.outputs.candidate_sha }}" \
+              --output "${RUNNER_TEMP}/DOCS_ONLY_EVIDENCE.json"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload DOCS_ONLY evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-only-evidence
+          path: |
+            ${{ runner.temp }}/DOCS_ONLY_EVIDENCE.json
+            ${{ runner.temp }}/DOCS_ONLY_METRICS.json
+          if-no-files-found: error
+          retention-days: 30
+
   authoritative-gate:
     name: VC-024 ${{ matrix.execution }}
+    needs:
+      - classify-change
+    if: needs.classify-change.outputs.docs_only != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+    env:
+      SR_WORKFLOW_METRICS_FILE: WORKFLOW_METRICS-${{ matrix.execution }}.json
     services:
       compiled-smoke-postgresql:
         image: postgres@sha256:d93de42662696f278fb34354b06fdaa90ad7ca3106d6f72fbd01d16da006d2cf
@@ -47,7 +186,9 @@ jobs:
       - name: Checkout exact commit
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
+          ref: ${{ needs.classify-change.outputs.candidate_sha }}
 
       - name: Set up Node.js 24.18.0
         uses: actions/setup-node@v4
@@ -70,23 +211,29 @@ jobs:
           test "$(uname -s)" = "Linux"
           test "$(uname -m)" = "x86_64"
           ldd --version | head -n 1 | grep -Ei 'glibc|GNU libc'
-          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test "$(git rev-parse HEAD)" = "${{ needs.classify-change.outputs.candidate_sha }}"
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
 
       - name: Install from frozen lockfile
-        run: pnpm install --frozen-lockfile
+        run: >-
+          node scripts/run-workflow-stage.mjs
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
+          --stage install
+          -- pnpm install --frozen-lockfile
 
-      - name: Verify architecture
-        run: pnpm run architecture
-
-      - name: Typecheck
-        run: pnpm run typecheck
-
-      - name: Build clean artifact
-        run: pnpm run build
+      - name: Run atomic canonical base verification
+        run: >-
+          node scripts/run-workflow-stage.mjs
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
+          --stage base-verify
+          -- pnpm run verify
 
       - name: Prepare compiled smoke PostgreSQL schema
-        run: pnpm run db:migrate
+        run: >-
+          node scripts/run-workflow-stage.mjs
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
+          --stage compiled-smoke-migration
+          -- pnpm run db:migrate
         env:
           SR_DB_ENVIRONMENT: development
           SR_DB_HOST: 127.0.0.1
@@ -115,8 +262,12 @@ jobs:
           set -euo pipefail
           postgresql_dir="${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}"
           mkdir -p "${postgresql_dir}"
-          node scripts/run-postgresql-ci.mjs \
-            --output "${postgresql_dir}/POSTGRESQL_MANIFEST.json"
+          node scripts/run-workflow-stage.mjs \
+            --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" \
+            --stage postgresql-composite \
+            -- node scripts/run-postgresql-ci.mjs \
+              --output "${postgresql_dir}/POSTGRESQL_MANIFEST.json" \
+              --head-sha "${{ needs.classify-change.outputs.candidate_sha }}"
 
       - name: Run PBI-039 PostgreSQL 18.4 contracts
         env:
@@ -126,34 +277,30 @@ jobs:
           set -euo pipefail
           postgresql_dir="${RUNNER_TEMP}/pbi039-postgresql-${SR_PG_CI_EXECUTION_LABEL}"
           mkdir -p "${postgresql_dir}"
-          node scripts/test-pbi039-postgresql.mjs \
-            --runs 1 \
-            --output "${postgresql_dir}/PBI039_POSTGRESQL_MANIFEST.json"
+          node scripts/run-workflow-stage.mjs \
+            --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" \
+            --stage pbi039-postgresql \
+            -- node scripts/test-pbi039-postgresql.mjs \
+              --runs 1 \
+              --output "${postgresql_dir}/PBI039_POSTGRESQL_MANIFEST.json" \
+              --head-sha "${{ needs.classify-change.outputs.candidate_sha }}"
 
       - name: Cleanup PostgreSQL persistence suites
         if: always()
         env:
           SR_PG_CI_EXECUTION_LABEL: ${{ matrix.execution }}
-        run: node scripts/cleanup-postgresql-ci.mjs
-
-      - name: Run full test suite
-        run: pnpm test
-
-      - name: Run dedicated architecture suite
-        run: pnpm run test:architecture
-
-      - name: Run canonical verification gate
-        run: pnpm run verify
-
-      - name: Run smoke unit contract
-        shell: bash
         run: >-
-          node --test
-          --test-name-pattern='smoke readiness'
-          test/architecture-policy.test.mjs
+          node scripts/run-workflow-stage.mjs
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
+          --stage postgresql-cleanup
+          -- node scripts/cleanup-postgresql-ci.mjs
 
       - name: Run compiled artifact smoke
-        run: pnpm run smoke:start
+        run: >-
+          node scripts/run-workflow-stage.mjs
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
+          --stage compiled-backend-smoke
+          -- pnpm run smoke:start
         env:
           SR_DB_ENVIRONMENT: development
           SR_DB_HOST: 127.0.0.1
@@ -175,7 +322,11 @@ jobs:
           SR_PIN_PEPPER: NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ
 
       - name: Run compiled UI route smoke
-        run: pnpm run smoke:ui
+        run: >-
+          node scripts/run-workflow-stage.mjs
+          --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}"
+          --stage compiled-ui-smoke
+          -- pnpm run smoke:ui
         env:
           SR_DB_ENVIRONMENT: development
           SR_DB_HOST: 127.0.0.1
@@ -203,7 +354,7 @@ jobs:
           git diff --check
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
 
-      - name: Collect sanitized VC-024 evidence
+      - name: Collect sanitized VC-024 evidence and shadow attestation
         env:
           VC024_EXECUTION_LABEL: ${{ matrix.execution }}
           VC024_INITIAL_CLEAN: "true"
@@ -215,10 +366,14 @@ jobs:
           node scripts/collect-ci-evidence.mjs \
             --output "${evidence_dir}/EVIDENCE_MANIFEST.json" \
             --dist-output "${evidence_dir}/DIST_MANIFEST.json" \
+            --metrics-input "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" \
             --postgresql-input \
               "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
             --pbi039-postgresql-input \
               "${RUNNER_TEMP}/pbi039-postgresql-${VC024_EXECUTION_LABEL}/PBI039_POSTGRESQL_MANIFEST.json"
+          node scripts/create-verified-tree-attestation.mjs \
+            --output "${evidence_dir}/VERIFIED_TREE_ATTESTATION.json"
+          cp "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" "${evidence_dir}/WORKFLOW_METRICS.json"
           cp \
             "${RUNNER_TEMP}/pbi023-postgresql-${VC024_EXECUTION_LABEL}/POSTGRESQL_MANIFEST.json" \
             "${evidence_dir}/POSTGRESQL_MANIFEST.json"
@@ -234,10 +389,24 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Upload failure metrics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-failure-metrics-${{ matrix.execution }}
+          path: ${{ runner.temp }}/WORKFLOW_METRICS-${{ matrix.execution }}.json
+          if-no-files-found: warn
+          retention-days: 30
+
   compare-authoritative-gates:
     name: VC-024 comparison
     needs:
+      - classify-change
       - authoritative-gate
+    if: >-
+      always() &&
+      needs.classify-change.outputs.docs_only != 'true' &&
+      needs.authoritative-gate.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
 
@@ -246,6 +415,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          ref: ${{ needs.classify-change.outputs.candidate_sha }}
 
       - name: Set up comparison Node.js 24.18.0
         uses: actions/setup-node@v4
@@ -264,7 +434,7 @@ jobs:
           name: vc024-run-2
           path: ${{ runner.temp }}/vc024-inputs/run-2
 
-      - name: Compare semantic results and artifact hashes
+      - name: Compare semantic results, artifact hashes and shadow attestation
         shell: bash
         run: |
           set -euo pipefail
@@ -274,9 +444,14 @@ jobs:
             --left "${RUNNER_TEMP}/vc024-inputs/run-1/EVIDENCE_MANIFEST.json" \
             --right "${RUNNER_TEMP}/vc024-inputs/run-2/EVIDENCE_MANIFEST.json" \
             --output "${output_dir}/COMPARISON.json"
+          node scripts/compare-verified-tree-attestations.mjs \
+            --left "${RUNNER_TEMP}/vc024-inputs/run-1/VERIFIED_TREE_ATTESTATION.json" \
+            --right "${RUNNER_TEMP}/vc024-inputs/run-2/VERIFIED_TREE_ATTESTATION.json" \
+            --output "${output_dir}/VERIFIED_TREE_COMPARISON.json"
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
 
       - name: Upload comparison evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: vc024-comparison

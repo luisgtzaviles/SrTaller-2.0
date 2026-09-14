@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-03.
-- **Estado:** Active — PBI-040 Done candidate; sin PBI actual.
+- **Estado:** Active — PBI-040 Done; sin PBI actual.
 - **Periodo:** TBD.
 - **PBI actual:** NONE.
 - **WIP:** 0/1.
@@ -23,7 +23,7 @@ sin mezclar inventario, reparaciones o Caja.
 
 ## Selección
 
-1. PBI-040 — core vertical y búsqueda rápida — `Committed / Done candidate / Released: NO`.
+1. PBI-040 — core vertical y búsqueda rápida — `Committed / Done / Released: NO`.
 2. PBI-041 — Initial Bulk Catalog Composer + Versioned Supplier Intake —
    `Candidate / Ready / implementation not authorized`.
 
@@ -31,7 +31,7 @@ PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
 
 ## Criterios de salida
 
-- [x] PBI-040 Done candidate, Owner Accepted y no Released.
+- [x] PBI-040 Done, Owner Accepted y no Released.
 - [x] Alta individual y consulta por Branch demostradas con aislamiento y costo
   protegido.
 - [x] PBI-041 obtiene DoR arquitectónica propia; permanece fuera del compromiso.
@@ -45,5 +45,4 @@ PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
 
 ## Próxima revisión
 
-Al fusionar el cierre documental de PBI-040, seleccionar explícitamente otro
-PBI o decidir el cierre de SPRINT-03.
+Al seleccionar explícitamente otro PBI o decidir el cierre de SPRINT-03.

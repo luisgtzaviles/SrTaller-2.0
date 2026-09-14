@@ -42,8 +42,8 @@ const workflowRunId = required(
 const attempt =
   process.env.GITHUB_RUN_ATTEMPT ?? argument('--attempt') ?? '1';
 const headSha =
-  process.env.GITHUB_SHA ??
   argument('--head-sha') ??
+  process.env.GITHUB_SHA ??
   '0000000000000000000000000000000000000000';
 
 if (!/^(?:run-[12]|local-run-[12])$/u.test(executionLabel)) {

@@ -22,10 +22,13 @@ y el [alcance](../product/PRODUCT_SCOPE.md).
 La baseline actual contiene Trusted Station Context, Users, roles/capabilities,
 PIN, Operational Session, autorización contextual, atribución de negocio,
 Repair Workstream PBI-039, Concurrent Operational Sessions PBI-043 y el
-Catalog/Pricing core PBI-040. Este último es `Done candidate` después de Owner
-Acceptance, PR #49/#50/#51, CI exacta `34809054770` y Preview PASS sobre
-`09e14c8`. SPRINT-03 está activo sin Current PBI y WIP `0/1`; PBI-041 está
-Ready pero no seleccionado ni autorizado.
+Catalog/Pricing core PBI-040. Owner Acceptance, PR #49/#50/#51 y Preview PASS
+quedaron seguidos por el cierre documental PR #52, integrado como `a060494`
+con exact-main CI `34814070839` PASS. PBI-040 es `Done`, `Released: NO`.
+SPRINT-03 está activo sin Current PBI y WIP `0/1`; PBI-041 está Ready pero no
+seleccionado ni autorizado. La
+[optimización conservadora aprobada](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md)
+se materializa como un cambio separado de governance; no selecciona PBI-041.
 
 ## Jerarquía de autoridad documental
 
@@ -33,6 +36,7 @@ Ready pero no seleccionado ni autorizado.
 |---|---|
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | Entrada obligatoria y lecturas mínimas antes de cambiar el proyecto. |
 | Este documento | Workflow end-to-end y clasificación `CURRENT` / `PLANNED` / `REQUIRED BEFORE PRODUCTION`. |
+| [Workflow Efficiency Decisions](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md) | WF-001–WF-010: Fase 1, DOCS_ONLY, preflights, shadow classifier y attestation. |
 | [MVP Operating Roadmap](../product/MVP_OPERATING_ROADMAP.md) | Fases aprobadas, Sprint/PBI actual, secuencia y gates del MVP. |
 | [BRANCH_POLICY.md](./BRANCH_POLICY.md) | Contrato de `main`, ramas temporales e integración. |
 | [DEPLOYMENT_STRATEGY.md](../architecture/DEPLOYMENT_STRATEGY.md) | Arquitectura OCI, runtime, routing y promoción. |
@@ -95,6 +99,18 @@ Preview, no modifica Dokploy y no sustituye el CI autoritativo.
 Nada de esta lista autoriza por inferencia Production, datos reales, una
 migración destructiva ni una expansión material de alcance.
 
+Antes del loop de desarrollo se ejecuta el preflight unificado y no
+destructivo:
+
+```sh
+./scripts/pnpm-governed run preflight:development
+```
+
+El preflight observa Git, toolchain, procesos/puertos, provenance, manifest y
+journal local y disponibilidad de fixtures. No inicia ni detiene procesos y no
+migra, siembra o resetea la base. Un reset sigue necesitando autorización
+explícita.
+
 ## Current state snapshot
 
 Actualizar esta sección cuando cambie cualquiera de estos hechos.
@@ -103,11 +119,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI for current integrated baseline | Green: exact-main run `34809054770` on `09e14c89892f5770977c5028a899714b7a30d6d5` |
+| Authoritative CI for current integrated baseline | Green: exact-main run `34814070839` on `a0604941a5707c87f2601c467e89743fc2883e90` |
 | Program / phase | MVP Operating Roadmap / Pricing Catalog |
 | Sprint | SPRINT-03 `Active`; WIP `0/1` |
 | Current / next PBI | Current: NONE; PBI-041 Ready, not selected or authorized |
-| Current blocking gate | PBI-040 documentary closure merge + exact-main CI; Production unauthorized |
+| Current blocking gate | None for PBI-040; PBI-041 not selected or authorized; Production unauthorized |
 | GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
@@ -208,6 +224,35 @@ el paso siguiente.
 `Done` y `Released` permanecen separados. Un deploy sólo aparece dentro del
 golden path de un PBI cuando su alcance o un release posterior lo autoriza.
 
+## Phase 1 verification selection — CURRENT
+
+Durante una iteración se usan el preflight y las pruebas focalizadas del delta.
+Al congelar un candidato ejecutable se corre una vez el full local aplicable.
+El pipeline Linux completo conserva run-1, run-2 y comparison exacta, pero
+cada leg ejecuta el gate base y cada suite material una sola vez.
+
+`DOCS_ONLY` es la única selección reducida activa. Sólo acepta Markdown regular,
+no ejecutable y no symlink bajo la allowlist versionada de estado, roadmap,
+backlog, Sprint, checklist, review y evidencia narrativa. Un delta mixto,
+desconocido o que toque tests, workflow, scripts, configuración, assets/runtime,
+policies o evidencia ejecutable selecciona full. El gate especializado valida
+diff, links, consistencia documental, patrones de secretos y fingerprint.
+
+El clasificador general registra riesgo en `SHADOW` durante al menos los
+siguientes tres PBIs implementados y hasta cubrir los perfiles aprobados. No
+omite gates. La verified-tree attestation también es shadow-only; no reduce
+exact-main durante el piloto. Sólo `DOCS_ONLY` usa el gate especializado
+independiente; un hotfix de migración siempre conserva full exact-main. Los
+comandos y el contrato completo están en
+[WF-001–WF-010](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md).
+El avance y los falsos negativos del piloto se registran en
+[Workflow Shadow Pilot](WORKFLOW_SHADOW_PILOT.md).
+
+El snapshot de migration state de Preview dura 24 horas. Pre-merge es advisory
+si falta o está stale y bloquea sólo un conflicto conocido/material. Antes de
+deploy, el journal real de Preview es autoritativo y la comprobación es
+bloqueante. Un snapshot stale nunca permite afirmar compatibilidad.
+
 ## Contrato de `main` y ramas
 
 `main` es la única baseline integrada y válida del desarrollo actual. Si un
@@ -229,9 +274,9 @@ ejecuta `fetch --prune`, tras confirmar que no guardan trabajo exclusivo.
 Un WIP no integrado que deba esperar una remediación precedente se conserva
 congelado, sin recibir cambios, y después se reconcilia desde el nuevo `main`.
 PBI-040 siguió este tratamiento durante PBI-043, fue reconciliado, integrado y
-validado en Preview. Su rama y las ramas de remediación quedan absorbidas y se
-eliminan después del cierre documental/exact-main CI. PBI-041 permanece Ready
-sin selección ni autorización. El detalle normativo está en
+validado en Preview. Su cierre documental/exact-main CI también pasó y las
+ramas absorbidas se limpiaron conforme al inventario gobernado. PBI-041
+permanece Ready sin selección ni autorización. El detalle normativo está en
 [BRANCH_POLICY.md](./BRANCH_POLICY.md).
 
 La protección técnica de `main` no está configurada en el repositorio público

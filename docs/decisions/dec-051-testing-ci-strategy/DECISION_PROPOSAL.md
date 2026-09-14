@@ -40,6 +40,16 @@ commits o PR funcionales, y conserva bloqueado el primer merge funcional hasta
 que C02 quede `Satisfied` o DEC-051 sea modificada mediante una decisión formal
 separada.
 
+**Actualización de materialización 2026-09-14:** el Product Owner aprobó
+[WF-001 a WF-010](../../delivery/DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md).
+La Fase 1 conserva el modelo por riesgo de esta decisión y optimiza su
+ejecución: gates focalizados durante iteración, un full autoritativo en freeze,
+dos legs Linux independientes sin stages base duplicados y un gate
+`DOCS_ONLY` de allowlist estrecha y fail-closed. El clasificador general y la
+verified-tree attestation permanecen en shadow mode; no reducen gates ni
+exact-main durante el piloto. Esta actualización no modifica DEC051-C02 ni
+afirma protección externa de `main`.
+
 ## 4. Fecha
 
 2026-07-24.
@@ -346,7 +356,7 @@ E2E no sustituye unitarias, contratos, arquitectura ni pruebas negativas.
 | `pnpm run typecheck` | Siempre | Usa TypeScript local y no emite |
 | `pnpm run build` | Siempre | Parte de salida limpia |
 | `pnpm test` | Siempre | Suite rápida vigente; debe propagar exit code |
-| `pnpm run test:architecture` | Siempre como evidencia explícita de arquitectura | Aunque hoy también sea alcanzable por la suite general, conserva salida dedicada |
+| `pnpm run test:architecture` | Diagnóstico focalizado cuando cambia el checker o su contrato | El pipeline full no lo repite si `verify` ya ejecutó la misma suite en ese leg |
 | `pnpm run verify` | Gate local canónico antes de someter cambios | No se debe sustituir por una lista parcial |
 | `pnpm run smoke:start` | Cambios ejecutables y toda validación previa a merge | Se ejecuta después de build sobre `dist/` |
 
@@ -356,6 +366,12 @@ E2E no sustituye unitarias, contratos, arquitectura ni pruebas negativas.
 build, pruebas, estructura y arquitectura. La materialización futura podrá
 extender la orquestación sólo mediante cambio autorizado, sin cambiar el
 significado de los comandos estables de DEC-004.
+
+Durante iteraciones Owner se ejecutan primero preflight y suites focalizadas.
+En el freeze funcional se ejecuta un `verify:full` autoritativo sobre el
+candidato exacto. Un ajuste posterior invalida los gates afectados y vuelve a
+escalar a full cuando toca migraciones, autorización, CI/evidencia, runtime,
+varios módulos o una superficie desconocida.
 
 El perfil local queda:
 
@@ -401,7 +417,8 @@ duraciones, PID o puertos efímeros sean idénticos.
 
 | Trigger | Ejecución mínima |
 | --- | --- |
-| Todo PR | Etapas rápidas, arquitectura, build, unitarias/contrato y smoke |
+| DOCS_ONLY inequívoco | Gate especializado de integridad, links, policy consistency, secretos y fingerprint; cualquier duda escala a full |
+| Todo PR no DOCS_ONLY | Etapas rápidas, arquitectura, build, unitarias/contrato y smoke |
 | Cambio de riesgo medio/alto | Todo PR más suites por riesgo |
 | Cambio a persistencia/contexto/acceso | PostgreSQL real y negativas multitenant obligatorias |
 | Merge o commit candidato en `main` | Repetición del conjunto requerido sobre el commit integrado |
@@ -410,6 +427,12 @@ duraciones, PID o puertos efímeros sean idénticos.
 
 Una suite movida a nightly no puede ser la única evidencia de un riesgo alto
 introducido por el PR. La suite crítica focalizada sigue bloqueando ese PR.
+
+Durante el piloto WF-006, la clasificación general sólo registra qué habría
+seleccionado y no omite gates. El pipeline completo conserva dos legs Linux
+independientes y comparison exacta, pero cada leg ejecuta una sola vez cada
+stage material. La atestación de tree WF-007 es informativa: exact-main sigue
+siendo full y los hotfixes de migración lo conservan aun con tree equivalente.
 
 ### 17.3 Proveedor
 
@@ -1028,3 +1051,10 @@ permanece indisponible, el
 autoriza sólo refinar PBI-024, completar sus gates y someterlo a revisión
 formal. Una decisión posterior deberá autorizar o rechazar su implementación;
 el tratamiento no cambia C02 ni autoriza integración funcional.
+
+**Actualización 2026-09-14:** someter la materialización técnica de WF-001 a
+WF-010 a sus pruebas negativas, full local, revisión y workflow de integración
+vigente. Medir los siguientes tres PBIs implementados en shadow mode y extender
+el piloto hasta cubrir UI/application, persistence/migration y
+authorization/security o riesgo transversal. No activar reducción de
+exact-main sin una decisión Owner posterior basada en esa evidencia.

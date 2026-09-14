@@ -40,8 +40,8 @@ const workflowRunId =
   argument('--workflow-run-id') ??
   'pbi039-local';
 const headSha =
-  process.env.GITHUB_SHA ??
   argument('--head-sha') ??
+  process.env.GITHUB_SHA ??
   '0000000000000000000000000000000000000000';
 
 if (process.version !== 'v24.18.0') {

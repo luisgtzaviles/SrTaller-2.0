@@ -2,17 +2,17 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-040 `Done candidate` después de Owner Acceptance, integración
-  y Preview PASS. PBI-041 permanece `Ready — implementation not authorized`.
-- **Baseline Git verificada:** `main == origin/main` funcional en
-  `09e14c89892f5770977c5028a899714b7a30d6d5`.
+- **Estado:** PBI-040 `Done`, `Released: NO`. PBI-041 permanece
+  `Ready — implementation not authorized`.
+- **Baseline Git verificada:** `main == origin/main` en
+  `a0604941a5707c87f2601c467e89743fc2883e90`.
 - **CI exacta de baseline:**
-  [`34809054770`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34809054770),
-  `SUCCESS` sobre `09e14c8` con run-1, run-2 y comparison PASS.
+  [`34814070839`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34814070839),
+  `SUCCESS` sobre `a060494` con run-1, run-2 y comparison PASS.
 - **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
 - **PBI actual:** `NONE`.
 - **WIP:** `0/1`; PBI-041 no está seleccionado ni iniciado.
-- **PBI-040:** PR #49/#50/#51 integradas; Preview validado sobre `09e14c8`.
+- **PBI-040:** PR #49/#50/#51 y cierre PR #52 integrados; `Done`.
 - **Preview:** `09e14c8` desplegado, clean, health y PBI-040 autenticado PASS.
 - **Production:** no desplegada ni autorizada.
 
@@ -31,10 +31,10 @@ El Administrador tiene sólo
 las seis capacidades PBI-040 autorizadas; las dos de importación PBI-041 están
 desactivadas. Production no cambió.
 
-Este estado es `Done candidate` hasta que el PR documental de cierre se fusione
-y su exact-main CI quede GREEN. Ese hecho materializa `Done` por el workflow;
-`Released` permanece `NO`. No existe PBI actual y PBI-041 sigue Ready, no
-seleccionado, no autorizado y no iniciado.
+El cierre documental PR #52 quedó integrado como `a060494` y su exact-main CI
+`34814070839` pasó run-1, run-2 y comparison. Esto materializó `Done` para
+PBI-040; `Released` permanece `NO`. No existe PBI actual y PBI-041 sigue Ready,
+no seleccionado, no autorizado y no iniciado.
 
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
@@ -207,7 +207,7 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Sprint | SPRINT-03 — Active |
 | Current PBI | NONE |
 | WIP | 0/1 |
-| PBI-040 | Done candidate; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
+| PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
 | PBI-041 | Ready documentalmente; Candidate no seleccionado, no iniciado ni autorizado |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Preview | `09e14c8` PASS |
@@ -215,6 +215,6 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 ## Próxima acción
 
-Fusionar el cierre documental y requerir CI exacta GREEN sobre su merge SHA.
-Después PBI-040 será `Done` efectivo. PBI-041 permanece Ready, no seleccionado
-ni autorizado; no iniciar otro PBI ni desplegar Production.
+Materializar y revisar WF-001–WF-010 como cambio separado de governance. PBI-041
+permanece Ready, no seleccionado ni autorizado; no iniciar otro PBI ni desplegar
+Production.

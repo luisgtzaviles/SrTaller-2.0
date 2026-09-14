@@ -12,6 +12,10 @@ import {
   comparablePbi039PostgresqlCiManifest,
   validatePbi039PostgresqlCiManifest,
 } from './pbi039-postgresql-ci-evidence.mjs';
+import {
+  comparableWorkflowMetrics,
+  validateAuthoritativeWorkflowMetrics,
+} from './workflow-metrics.mjs';
 
 const execFileAsync = promisify(execFile);
 const forbiddenPathPatterns = [
@@ -124,7 +128,8 @@ export function validateEvidenceManifest(manifest) {
   if (
     manifest.schemaVersion !== 1 &&
     manifest.schemaVersion !== 2 &&
-    manifest.schemaVersion !== 3
+    manifest.schemaVersion !== 3 &&
+    manifest.schemaVersion !== 4
   ) {
     throw new Error('Unsupported evidence manifest schemaVersion');
   }
@@ -189,7 +194,11 @@ export function validateEvidenceManifest(manifest) {
   if (manifest.verdict !== 'PASS') {
     throw new Error('Evidence manifest verdict must be PASS');
   }
-  if (manifest.schemaVersion === 3) {
+  if (manifest.schemaVersion === 4) {
+    validatePostgresqlCiManifest(manifest.postgresql);
+    validatePbi039PostgresqlCiManifest(manifest.pbi039Postgresql);
+    validateAuthoritativeWorkflowMetrics(manifest.metrics);
+  } else if (manifest.schemaVersion === 3) {
     validatePostgresqlCiManifest(manifest.postgresql);
     validatePbi039PostgresqlCiManifest(manifest.pbi039Postgresql);
   } else if (manifest.schemaVersion === 2) {
@@ -206,6 +215,7 @@ export function validateEvidenceManifest(manifest) {
   }
   if (
     manifest.schemaVersion !== 3 &&
+    manifest.schemaVersion !== 4 &&
     manifest.pbi039Postgresql !== undefined
   ) {
     throw new Error(
@@ -252,6 +262,9 @@ function comparableManifest(manifest) {
       ...comparablePbi039PostgresqlCiManifest(manifest.pbi039Postgresql),
       comparableSha256: manifest.pbi039Postgresql.comparableSha256,
     };
+  }
+  if (manifest.metrics) {
+    comparable.metrics = comparableWorkflowMetrics(manifest.metrics);
   }
   return comparable;
 }
@@ -315,6 +328,7 @@ async function detectGlibc() {
 export async function collectEvidenceManifest({
   executionLabel,
   initialClean,
+  metricsInput,
   pbi039PostgresqlInput,
   postgresqlInput,
   projectRoot = process.cwd(),
@@ -353,6 +367,11 @@ export async function collectEvidenceManifest({
     'scripts/lib/postgresql-test-output.mjs',
     'scripts/lib/local-development.mjs',
     'scripts/lib/local-pin-fixtures.mjs',
+    'scripts/lib/migration-state-snapshot.mjs',
+    'scripts/lib/verified-tree-attestation.mjs',
+    'scripts/lib/workflow-change-classifier.mjs',
+    'scripts/lib/workflow-metrics.mjs',
+    'scripts/run-workflow-stage.mjs',
     'scripts/local-db-seed.mjs',
     'scripts/run-postgresql-ci.mjs',
     'scripts/test-pbi039-postgresql.mjs',
@@ -403,9 +422,17 @@ export async function collectEvidenceManifest({
   if (pbi039Postgresql && !postgresql) {
     throw new Error('PBI-039 PostgreSQL evidence requires PBI-023 PostgreSQL evidence');
   }
+  const metrics = metricsInput
+    ? validateAuthoritativeWorkflowMetrics(
+        JSON.parse(await readFile(resolve(metricsInput), 'utf8')),
+      )
+    : undefined;
+  if (metrics && (!postgresql || !pbi039Postgresql)) {
+    throw new Error('Workflow metrics require both PostgreSQL evidence contracts');
+  }
 
   const manifest = {
-    schemaVersion: pbi039Postgresql ? 3 : postgresql ? 2 : 1,
+    schemaVersion: metrics ? 4 : pbi039Postgresql ? 3 : postgresql ? 2 : 1,
     contract: 'DEC-004/VC-024',
     commit: await commandOutput('git', ['rev-parse', 'HEAD']),
     execution: {
@@ -429,25 +456,20 @@ export async function collectEvidenceManifest({
     inputs,
     commands: [
       { name: 'install', command: 'pnpm install --frozen-lockfile', exitCode: 0 },
-      { name: 'architecture', command: 'pnpm run architecture', exitCode: 0 },
-      { name: 'typecheck', command: 'pnpm run typecheck', exitCode: 0 },
-      { name: 'build', command: 'pnpm run build', exitCode: 0 },
-      { name: 'test', command: 'pnpm test', exitCode: 0 },
-      {
-        name: 'test:architecture',
-        command: 'pnpm run test:architecture',
-        exitCode: 0,
-      },
       { name: 'verify', command: 'pnpm run verify', exitCode: 0 },
       {
-        name: 'smoke:unit',
-        command:
-          "node --test --test-name-pattern='smoke readiness' test/architecture-policy.test.mjs",
+        name: 'db:migrate',
+        command: 'pnpm run db:migrate',
         exitCode: 0,
       },
       {
         name: 'smoke:compiled',
         command: 'pnpm run smoke:start',
+        exitCode: 0,
+      },
+      {
+        name: 'smoke:ui',
+        command: 'pnpm run smoke:ui',
         exitCode: 0,
       },
       {
@@ -465,17 +487,18 @@ export async function collectEvidenceManifest({
     verdict: 'PASS',
     ...(postgresql ? { postgresql } : {}),
     ...(pbi039Postgresql ? { pbi039Postgresql } : {}),
+    ...(metrics ? { metrics } : {}),
   };
 
   if (postgresql) {
-    manifest.commands.splice(7, 0, {
+    manifest.commands.splice(3, 0, {
       name: 'test:postgresql',
       command: 'node scripts/run-postgresql-ci.mjs',
       exitCode: 0,
     });
   }
   if (pbi039Postgresql) {
-    manifest.commands.splice(8, 0, {
+    manifest.commands.splice(4, 0, {
       name: 'test:pbi039:postgresql',
       command: 'node scripts/test-pbi039-postgresql.mjs',
       exitCode: 0,

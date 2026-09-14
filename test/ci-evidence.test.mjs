@@ -20,6 +20,7 @@ import {
   finalizePbi039PostgresqlCiManifest,
   pbi039PostgresqlSuites,
 } from '../scripts/lib/pbi039-postgresql-ci-evidence.mjs';
+import { authoritativeWorkflowStageNames } from '../scripts/lib/workflow-metrics.mjs';
 
 async function createDistFixture({
   absoluteSource = false,
@@ -110,6 +111,23 @@ function manifest(label) {
       initialClean: true,
     },
     verdict: 'PASS',
+  };
+}
+
+function workflowMetrics(durationMs = 1_000) {
+  return {
+    schemaVersion: 1,
+    contract: 'WF-005/WORKFLOW-METRICS',
+    stages: authoritativeWorkflowStageNames.map((name, index) => (
+      {
+        name,
+        result: 'PASS',
+        finding: null,
+        startedAt: new Date(Date.UTC(2026, 8, 14, 12, 0, index)).toISOString(),
+        finishedAt: new Date(Date.UTC(2026, 8, 14, 12, 0, index, 1)).toISOString(),
+        durationMs: durationMs + index,
+      }
+    )),
   };
 }
 
@@ -516,6 +534,35 @@ test('schemaVersion 3 fails closed when PBI-039 evidence is absent or unbound', 
   assert.throws(
     () => validateEvidenceManifest(unbound),
     /not bound to the VC-024 execution/u,
+  );
+});
+
+test('schemaVersion 4 records timings without making duration part of VC-024 equivalence', () => {
+  const left = manifest('run-1');
+  left.schemaVersion = 4;
+  left.postgresql = postgresqlManifest('run-1');
+  left.pbi039Postgresql = pbi039PostgresqlManifest('run-1');
+  left.metrics = workflowMetrics(1_000);
+  const right = manifest('run-2');
+  right.schemaVersion = 4;
+  right.postgresql = postgresqlManifest('run-2');
+  right.pbi039Postgresql = pbi039PostgresqlManifest('run-2');
+  right.metrics = workflowMetrics(2_000);
+  const comparison = compareEvidenceManifests(left, right);
+  assert.equal(comparison.equivalent, true);
+
+  const differentStage = structuredClone(right);
+  differentStage.metrics.stages[0].name = 'base-verify-alternate';
+  assert.throws(
+    () => compareEvidenceManifests(left, differentStage),
+    /exact ordered full stage inventory/u,
+  );
+
+  const missing = structuredClone(left);
+  delete missing.metrics;
+  assert.throws(
+    () => validateEvidenceManifest(missing),
+    /Workflow metrics contract/u,
   );
 });
 
