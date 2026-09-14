@@ -119,6 +119,23 @@ propio merge, puede expresar `Done candidate`. El PBI queda `Done` efectivo
 cuando ese PR recibe merge autorizado y CI autoritativo GREEN sobre su SHA de
 merge; no se requiere un PR adicional sólo para cambiar ese wording preventivo.
 
+### Selección de gates durante el piloto WF-001–WF-010
+
+Las pruebas focalizadas aportan feedback durante Owner iteration; el candidato
+ejecutable congelado conserva un full local autoritativo. `DOCS_ONLY` puede usar
+su gate especializado únicamente cuando el clasificador fail-closed demuestra
+que todo el delta es documentación inequívocamente no ejecutable. Ante un path
+desconocido, delta mixto, symlink, modo ejecutable o cambio de test, workflow,
+policy, script, configuración, asset/runtime o evidencia ejecutable, se exige
+el pipeline completo.
+
+El clasificador general y la verified-tree attestation sólo generan evidencia
+shadow durante el piloto. No pueden reducir exact-main; únicamente `DOCS_ONLY`
+usa su gate reducido autorizado por separado. Un hotfix de migración conserva
+full exact-main incluso con tree equivalente. Los objetivos de menos
+de 45 minutos para cierre normal y menos de 10 para DOCS_ONLY son métricas, no
+waivers ni criterios de aceptación.
+
 ## Evidencia de cierre
 
 | Campo | Valor |

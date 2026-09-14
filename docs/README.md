@@ -13,14 +13,15 @@ producto y condiciones pendientes antes de la siguiente iteración.
 PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos. SPRINT-02 está
 `Closed` y SPRINT-03 `Active`.
 **Fase:** Pricing Catalog; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039/
-PBI-043 están `Done` y G3–G5 `PASS`. PBI-040 es `Done candidate`; no existe
+PBI-043 están `Done` y G3–G5 `PASS`. PBI-040 es `Done`; no existe
 Current PBI y WIP es `0/1`. PBI-041 está Ready documentalmente pero no seleccionado/iniciado;
 PBI-042 no está iniciado.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Baseline integrada con CI registrada:** PBI-040 fue integrado/remediado por
 PR #49/#50/#51 en `09e14c89892f5770977c5028a899714b7a30d6d5`; CI exacta
-`34809054770` y Preview PASS. Es `Done candidate`, no `Released`.
+`34809054770` y Preview PASS. Su cierre PR #52 se integró como `a060494` con
+exact-main CI `34814070839` PASS. Es `Done`, no `Released`.
 Véase [Current Repository State](CURRENT_STATE.md).
 
 ## Revisión dirigida de Sprint 00

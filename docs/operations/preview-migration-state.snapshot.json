@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "contract": "WF-004/PREVIEW-MIGRATION-STATE",
+  "status": "NOT_CAPTURED",
+  "environment": "preview",
+  "freshnessHours": 24,
+  "compatibility": "NOT_ASSERTED",
+  "reason": "A fresh authorized real Preview journal export has not been captured for this branch."
+}

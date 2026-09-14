@@ -38,11 +38,23 @@ Linux; el launcher es la entrada determinista para desarrollo y Codex local.
 
 ## Gates de verificación local
 
-`verify` permanece como gate base canónico y rápido. `verify:full` es la campaña
-local de alto riesgo para PBI-039: primero ejecuta `verify` y después materializa
-PostgreSQL composite, los dos tests PostgreSQL PBI-039, runtime Preview-like y
-smoke compilado backend/UI sobre una base PostgreSQL 18.4 exclusiva. También
-verifica la identidad dirty del candidato, contabiliza skips, limpia recursos y
+Antes de iterar, el preflight unificado inspecciona sin mutar branch/SHA,
+toolchain, procesos/puertos, provenance, manifest y journal local y fixtures:
+
+```sh
+./scripts/pnpm-governed run preflight:development
+```
+
+El resultado distingue un runtime ausente de uno stale. No inicia ni termina
+procesos, no aplica migraciones, no ejecuta seed y no resetea la base. Un reset
+continúa requiriendo autoridad explícita.
+
+`verify` permanece como gate base canónico y rápido. Durante Owner iterations
+se combina con contratos y suites focalizadas. `verify:full` se reserva para el
+functional freeze y cambios de riesgo alto: primero ejecuta `verify` y después
+materializa PostgreSQL composite, las suites owner-scoped, runtime Preview-like
+y smoke compilado backend/UI sobre una base PostgreSQL 18.4 exclusiva. También
+verifica la identidad del candidato, contabiliza skips, limpia recursos y
 escribe evidencia JSON fuera del repositorio.
 
 ```sh

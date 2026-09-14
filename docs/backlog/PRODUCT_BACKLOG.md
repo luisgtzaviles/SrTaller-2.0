@@ -2,10 +2,9 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado con `main` funcional `09e14c8` y CI exacta
-`34809054770`. PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está
-`Active`; PBI-040 es `Done candidate` después de Owner Acceptance, merge y
-Preview PASS. No existe PBI actual y WIP es `0/1`.
+**Estado:** Reconciliado con `main` `a060494` y CI exacta `34814070839`.
+PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está `Active`; PBI-040 es
+`Done`, `Released: NO`. No existe PBI actual y WIP es `0/1`.
 PBI-041 alcanzó `Ready — implementation not authorized` como Candidate; PBI-042
 permanece `Planned/Unassigned`.
 **Prioridad:** propuesta, no aprobación final.
@@ -57,7 +56,7 @@ SPRINT-02 están cerrados; SPRINT-03 está activo sin PBI seleccionado.
 | 37 | [PBI-037](pbis/PBI-037.md) Users & Roles Administration Product Iteration | Product / Administration | EPIC-003 | Integrated slice within PBI-028 | Alta | Product Mode local; no independent lifecycle or canonical delivery claim |
 | 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
 | 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | Done; Released: NO | Alta | SPRINT-02 completed; PR #45 + exact-main CI `34623060504` |
-| 40 | [PBI-040](pbis/PBI-040.md) Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Done candidate; Released: NO | Alta | SPRINT-03 completed item; PR #49/#50/#51, exact-main CI and Preview PASS |
+| 40 | [PBI-040](pbis/PBI-040.md) Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Done; Released: NO | Alta | SPRINT-03 completed item; closure PR #52 / exact-main `34814070839` PASS |
 | 41 | [PBI-041](pbis/PBI-041.md) Initial Bulk Catalog Composer + Versioned Supplier Intake | Product / Persistence / Data / Jobs / Authorization / UI | EPIC-015 | Ready — implementation not authorized | Alta | SPRINT-03 Candidate/Ready; not selected |
 | 42 | [PBI-042](pbis/PBI-042.md) Catalog Item Images | Product / Files / Security / UI | EPIC-015 | Planned / Deferred | Media | Unassigned Candidate |
 | 43 | [PBI-043](pbis/PBI-043.md) Concurrent Operational Sessions — Access Foundation Remediation | Identity / Security / Persistence / Quality | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed; PR #47/#48, CI/Preview PASS |

@@ -2,8 +2,8 @@
 
 ## Estado
 
-- **Estado:** Active — PBI-040 Done candidate; sin PBI actual.
-- **Bloqueos:** ninguno para el cierre documental.
+- **Estado:** Active — PBI-040 Done; sin PBI actual.
+- **Bloqueos:** ninguno para PBI-040.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|

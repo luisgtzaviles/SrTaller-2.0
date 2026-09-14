@@ -21,7 +21,9 @@
     "schemaVersion": {
       "enum": [
         1,
-        2
+        2,
+        3,
+        4
       ]
     },
     "contract": {
@@ -189,6 +191,78 @@
       "type": "object",
       "additionalProperties": true
     },
+    "pbi039Postgresql": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "contract",
+        "stages"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "contract": {
+          "const": "WF-005/WORKFLOW-METRICS"
+        },
+        "stages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "result",
+              "finding",
+              "startedAt",
+              "finishedAt",
+              "durationMs"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              },
+              "result": {
+                "enum": [
+                  "PASS",
+                  "FAIL"
+                ]
+              },
+              "finding": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$"
+                  }
+                ]
+              },
+              "startedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finishedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "durationMs": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
     "verdict": {
       "enum": [
         "PASS",
@@ -209,6 +283,38 @@
       "then": {
         "required": [
           "postgresql"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schemaVersion": {
+            "enum": [
+              3,
+              4
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "postgresql",
+          "pbi039Postgresql"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schemaVersion": {
+            "const": 4
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "metrics"
         ]
       }
     }

@@ -64,15 +64,15 @@ test('compiled smoke uses an isolated migrated PostgreSQL service without relaxi
   );
   assert.match(
     workflow,
-    /name: Prepare compiled smoke PostgreSQL schema[\s\S]*run: pnpm run db:migrate[\s\S]*SR_DB_ROLE: migration[\s\S]*SR_DB_MIGRATIONS_ENABLED: "true"/u,
+    /name: Prepare compiled smoke PostgreSQL schema[\s\S]*-- pnpm run db:migrate[\s\S]*SR_DB_ROLE: migration[\s\S]*SR_DB_MIGRATIONS_ENABLED: "true"/u,
   );
   assert.match(
     workflow,
-    /name: Run compiled artifact smoke[\s\S]*run: pnpm run smoke:start[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+    /name: Run compiled artifact smoke[\s\S]*-- pnpm run smoke:start[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
   );
   assert.match(
     workflow,
-    /name: Run compiled UI route smoke[\s\S]*run: pnpm run smoke:ui[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+    /name: Run compiled UI route smoke[\s\S]*-- pnpm run smoke:ui[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
   );
   assert.ok(
     workflow.indexOf('name: Prepare compiled smoke PostgreSQL schema') <
@@ -83,6 +83,30 @@ test('compiled smoke uses an isolated migrated PostgreSQL service without relaxi
       workflow.indexOf('name: Run compiled UI route smoke'),
   );
   assert.doesNotMatch(workflow, /DATABASE_URL|PGPASSWORD|PGHOST/u);
+});
+
+test('workflow selects DOCS_ONLY fail closed and executes one atomic base gate per leg', () => {
+  assert.match(workflow, /name: Governed change classification/u);
+  assert.match(workflow, /force_full="classification-policy-change"/u);
+  assert.match(workflow, /verify-preview-migration-state\.mjs[\s\S]*--phase pre-merge/u);
+  assert.match(workflow, /name: DOCS_ONLY fail-closed/u);
+  assert.match(workflow, /scripts\/verify-docs-only\.mjs/u);
+  const docsOnlyJob = workflow.slice(
+    workflow.indexOf('  docs-only-gate:'),
+    workflow.indexOf('  authoritative-gate:'),
+  );
+  assert.doesNotMatch(docsOnlyJob, /verify-structure\.mjs|pnpm install/u);
+  assert.match(workflow, /if: needs\.classify-change\.outputs\.docs_only != 'true'/u);
+  assert.match(workflow, /name: Run atomic canonical base verification/u);
+  assert.match(workflow, /-- pnpm run verify/u);
+  assert.doesNotMatch(workflow, /name: Verify architecture/u);
+  assert.doesNotMatch(workflow, /name: Typecheck/u);
+  assert.doesNotMatch(workflow, /name: Build clean artifact/u);
+  assert.doesNotMatch(workflow, /name: Run full test suite/u);
+  assert.doesNotMatch(workflow, /name: Run dedicated architecture suite/u);
+  assert.doesNotMatch(workflow, /name: Run smoke unit contract/u);
+  assert.match(workflow, /VERIFIED_TREE_ATTESTATION\.json/u);
+  assert.match(workflow, /WORKFLOW_METRICS\.json/u);
 });
 
 test('PostgreSQL runner pins the governed digest and exact suite inventory', () => {

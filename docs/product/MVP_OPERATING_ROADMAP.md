@@ -3,21 +3,21 @@
 ## Estado del documento
 
 - **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 activo con
-  PBI-040 `Done candidate` y ningún PBI actual.
-- **Baseline Git observada:** `main` y `origin/main` funcional en
-  `09e14c89892f5770977c5028a899714b7a30d6d5`; CI exacta de `main`
-  `34809054770`, `SUCCESS`.
+  PBI-040 `Done` y ningún PBI actual.
+- **Baseline Git observada:** `main` y `origin/main` en
+  `a0604941a5707c87f2601c467e89743fc2883e90`; CI exacta de `main`
+  `34814070839`, `SUCCESS`.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Pricing Catalog.
-- **Checkpoint alcanzado:** PBI-040 Owner Accepted, integrado y Preview PASS;
-  cierre documental candidato.
+- **Checkpoint alcanzado:** PBI-040 Owner Accepted, integrado, Preview PASS y
+  cierre documental exact-main PASS; `Done`, `Released: NO`.
 - **Sprint activo:** SPRINT-03 — Price List Foundation.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** PBI-041 Ready, no seleccionado ni autorizado.
-- **Blocking gate:** merge del cierre documental y CI exacta de `main`.
-  Production no autorizada.
+- **Blocking gate:** ninguno para PBI-040. PBI-041 no está seleccionado ni
+  autorizado; Production no autorizada.
 - **WIP operacional:** `0/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
@@ -98,11 +98,12 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Stage | MVP |
 | Phase | Pricing Catalog |
 | Sprint | SPRINT-03 |
-| Sprint status | Active — transición después de PBI-040; WIP=0/1 |
+| Sprint status | Active — PBI-040 Done; WIP=0/1 |
 | Current PBI | NONE |
 | Next PBI candidate | PBI-041 Ready; not selected or authorized |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
-| Blocking gate | Documentary closure merge and exact-main CI |
+| PBI-040 status | Done — closure PR #52 / `a060494`; exact-main CI `34814070839` GREEN; Released NO |
+| Blocking gate | None for PBI-040; PBI-041 not selected or authorized |
 
 ## Fases aprobadas
 
@@ -151,6 +152,10 @@ reconciliado desde ese nuevo `main`, aceptado por el Owner e integrado mediante
 PR #49/#50/#51. El SHA funcional `09e14c8`, su CI exacta `34809054770` y
 Preview están PASS. PBI-041 está Ready documentalmente pero no seleccionado ni
 iniciado y PBI-042 no está iniciado.
+
+El cierre documental PBI-040 PR #52 se integró después como `a060494`; su
+exact-main CI `34814070839` quedó GREEN. PBI-040 es `Done`, `Released: NO`, sin
+seleccionar ni iniciar PBI-041.
 
 [PBI-031](../backlog/pbis/PBI-031.md) conserva la administración completa de
 Station binding y [PBI-035](../backlog/pbis/PBI-035.md) la autorización
@@ -224,9 +229,11 @@ PBI-039 está `Done`: PR #45 mergeó el cierre como `40684d7` y CI exacta
 `34729684465`, exact-main `34730090448` y Preview quedaron PASS. El cierre PR
 #48 `5be5cd6` y CI `34732201476` lo dejan `Done`. PBI-040 fue Owner Accepted,
 integrado por PR #49, remediado por PR #50/#51 y validado en Preview sobre
-`09e14c8`; CI exacta `34809054770` quedó GREEN. SPRINT-03 permanece `Active`,
-WIP `0/1`, sin Current PBI. PBI-041 alcanzó Ready documentalmente como
-Candidate, sin selección ni autorización de implementación.
+`09e14c8`; CI exacta `34809054770` quedó GREEN. El cierre PR #52 se integró
+como `a060494` y exact-main `34814070839` quedó GREEN: PBI-040 está `Done` y
+`Released: NO`. SPRINT-03 permanece `Active`, WIP `0/1`, sin Current PBI.
+PBI-041 alcanzó Ready documentalmente como Candidate, sin selección ni
+autorización de implementación.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.
@@ -259,8 +266,8 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** merge/CI del cierre documental, selección explícita de PBI-041
-  o decisión de cierre de SPRINT-03.
-- **Resultado esperado si pasa:** PBI-040 queda `Done`, `Released: NO`, sin
-  inferir inicio de PBI-041 ni autorización de Production.
+- **Disparador:** selección explícita de PBI-041 o decisión de cierre de
+  SPRINT-03.
+- **Estado conservado:** PBI-040 `Done`, `Released: NO`, sin inferir inicio de
+  PBI-041 ni autorización de Production.
 - **Después:** no iniciar otro PBI automáticamente.

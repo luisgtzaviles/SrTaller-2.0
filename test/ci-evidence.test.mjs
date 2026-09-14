@@ -113,6 +113,23 @@ function manifest(label) {
   };
 }
 
+function workflowMetrics(durationMs = 1_000) {
+  return {
+    schemaVersion: 1,
+    contract: 'WF-005/WORKFLOW-METRICS',
+    stages: [
+      {
+        name: 'base-verify',
+        result: 'PASS',
+        finding: null,
+        startedAt: '2026-09-14T12:00:00.000Z',
+        finishedAt: '2026-09-14T12:00:01.000Z',
+        durationMs,
+      },
+    ],
+  };
+}
+
 function postgresqlManifest(label) {
   return finalizePostgresqlCiManifest({
     schemaVersion: 1,
@@ -516,6 +533,32 @@ test('schemaVersion 3 fails closed when PBI-039 evidence is absent or unbound', 
   assert.throws(
     () => validateEvidenceManifest(unbound),
     /not bound to the VC-024 execution/u,
+  );
+});
+
+test('schemaVersion 4 records timings without making duration part of VC-024 equivalence', () => {
+  const left = manifest('run-1');
+  left.schemaVersion = 4;
+  left.postgresql = postgresqlManifest('run-1');
+  left.pbi039Postgresql = pbi039PostgresqlManifest('run-1');
+  left.metrics = workflowMetrics(1_000);
+  const right = manifest('run-2');
+  right.schemaVersion = 4;
+  right.postgresql = postgresqlManifest('run-2');
+  right.pbi039Postgresql = pbi039PostgresqlManifest('run-2');
+  right.metrics = workflowMetrics(2_000);
+  const comparison = compareEvidenceManifests(left, right);
+  assert.equal(comparison.equivalent, true);
+
+  const differentStage = structuredClone(right);
+  differentStage.metrics.stages[0].name = 'base-verify-alternate';
+  assert.equal(compareEvidenceManifests(left, differentStage).equivalent, false);
+
+  const missing = structuredClone(left);
+  delete missing.metrics;
+  assert.throws(
+    () => validateEvidenceManifest(missing),
+    /Workflow metrics contract/u,
   );
 });
 

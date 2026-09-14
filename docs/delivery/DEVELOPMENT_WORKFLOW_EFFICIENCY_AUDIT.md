@@ -1,6 +1,6 @@
 # Development Workflow Efficiency Audit
 
-**Estado:** Audit complete — ready for Owner decisions
+**Estado:** Audit complete — Owner decisions recorded
 
 **Fecha de corte:** 2026-09-14
 
@@ -836,26 +836,14 @@ Riesgos residuales de la propuesta:
 Mitigaciones: fail-closed, shadow mode, snapshots con freshness, fingerprints
 compuestos, pruebas negativas del clasificador y escape hatch full explícito.
 
-## 22. Owner decisions required
+## 22. Owner decisions
 
-1. ¿Autorizar Fase 1 / Option A como siguiente cambio de governance separado?
-2. ¿Autorizar diseño de un gate `DOCS_ONLY` con allowlist fail-closed?
-3. ¿Autorizar un preflight unificado local y su contrato de no destrucción sin
-   permiso explícito?
-4. ¿Autorizar el snapshot gobernado de migration state de Preview y definir su
-   freshness máxima?
-5. ¿Autorizar instrumentación de tiempos/findings y su ubicación canónica?
-6. ¿Autorizar shadow mode del clasificador durante 2–3 PBIs? Si sí, ¿qué perfiles
-   de PBI deben cubrirse antes de evaluar activación?
-7. ¿Autorizar una arquitectura de verified-tree attestation para reducir
-   exact-main cuando el fingerprint sea idéntico?
-8. ¿Debe un hotfix de migración conservar full exact-main aun con tree atestado?
-   Recomendación: sí, al menos durante el piloto.
-9. ¿Debe Preview migration snapshot ser requisito pre-merge o pre-deploy?
-   Recomendación: pre-merge advisory/fail on known conflict y pre-deploy
-   autoritativo contra journal real.
-10. ¿Aceptar como objetivos de observabilidad —no como SLA que rebaje gates—
-    `<45 min` para cierre normal y `<10 min` para docs-only?
+El Product Owner aprobó WF-001 a WF-010 el 2026-09-14. Su contrato exacto y
+límites de materialización se promovieron a
+[Development Workflow Efficiency Decisions](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md).
 
-Hasta que estas decisiones se promuevan a autoridades canónicas, el workflow
-vigente permanece íntegramente aplicable.
+La aprobación autoriza Fase 1, DOCS_ONLY fail-closed, Development Preflight,
+migration-state snapshot, métricas y los mecanismos generales de clasificación
+y tree attestation únicamente en shadow mode. Ninguno de esos dos mecanismos
+reduce exact-main durante el piloto; sólo DOCS_ONLY usa el gate especializado
+autorizado por separado. Migration hotfix conserva full exact-main.
