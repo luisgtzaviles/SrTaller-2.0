@@ -541,3 +541,55 @@ expuso el orden owner-scoped de rollback posterior. Ambos fallaron cerrado y se
 remediaron registrando exactamente la migración y su orden; no se eliminaron
 assertions, skips ni controles. Commits locales: `6a1204c`, `530d51c`,
 `c7d9453` y `f4ace4a`. No hubo push, PR, merge, deploy ni Owner Acceptance.
+
+## Iteración Owner — canonical merge y paridad inline en edición
+
+Category y Brand incorporan un comando explícito de canonical merge, separado
+de rename y de la resolución de capturas pendientes. Category exige Tenant y
+Tipo comunes; Brand conserva la unión de aplicabilidad. El comando bloquea las
+identidades y recursos relacionados, revalida versión/lifecycle/scope, reasigna
+items y destinos pending resueltos y escribe un evento append-only antes de
+marcar las fuentes como merged. No hay hard delete, cascada histórica ni estado
+parcial.
+
+La administración permite seleccionar dos o más referencias compatibles y
+presenta survivor, nombre final, usage individual, relaciones por reasignar y
+la advertencia de trazabilidad. Las fuentes merged no reaparecen en canon,
+filtros o safe delete; el survivor acumula los counts. Crear y Editar item usan
+el mismo `CatalogReferenceCombobox` y el mismo resolvedor server-side para
+canon exacto, ampliación de Brand o nueva captura pending.
+
+La auditoría de Repairs cubrió Device Types, Brands, Models, Problem Categories
+y Risks. El patrón visual es reutilizable, pero scope Platform/Tenant, historia
+de recepción y colisiones Brand/Model requieren decisiones propias; no se
+implementó merge de Repairs en PBI-040.
+
+Evidencia material sobre `0720813`:
+
+- `verify:full` 13/13 PASS; suite base 838 pruebas, 818 PASS, 20 skips
+  PostgreSQL gobernados y cero fallas;
+- PostgreSQL composite 17/17, PBI-039 2/2 y PBI-040 1/1 con 62 migraciones,
+  cero skips críticos y benchmark p95 `5.50 ms` / presupuesto `750 ms`;
+- runtime Preview-like, backend/UI compilados y cleanup PASS; fingerprint
+  `0d3f63069e348c8cb5387c4f7fffc0b91b2e92b824f211189bf24c39554dc0c7`;
+- pruebas materiales cubren 4+1 items, source→survivor, unión de Brand,
+  cross-Type/cross-Tenant, idempotencia, audit append-only, rollback y carreras
+  con merge, create/edit/delete/reconciliation;
+- Chrome local autenticado confirmó Station y Session Owner, selección
+  compatible, bloqueo cross-Type, modal/foco/Escape, Light/Dark y 1280/768/640
+  sin overflow de página;
+- merge reversible local `Fundas + Fundas QA → Fundas` confirmó source ausente,
+  survivor con dos items y evento con actor/correlation; `Pantallas (4) +
+  Pantallas QA (1)` quedó sin ejecutar y preparado para revisión Owner;
+- Editar `Pantalla Samsung A15` mostró `Apple` como canon exacto y un nombre
+  nuevo como captura `Por revisar al guardar`, sin persistir durante la captura.
+
+La prueba real encontró dos regresiones y ambas se remediaron con cobertura:
+la selección inicial interpretaba `undefined` como Tipo incompatible y el seed
+local no incluía `Category.kind`. El primer full gate de esta iteración también
+detectó que el teardown owner-scoped no conocía la nueva tabla de eventos. Los
+tres casos fallaron cerrado; no se retiraron assertions ni controles.
+
+Commits locales: `d846a6a` (merge, edición, persistencia, UI y contratos),
+`229fafb` (estado canónico de Owner Review) y `0720813` (selección/seed para
+runtime). No hubo push, PR, merge a `main`, deploy ni Owner Acceptance.

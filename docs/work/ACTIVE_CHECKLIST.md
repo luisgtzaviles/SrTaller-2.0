@@ -3,11 +3,11 @@
 Milestone / Functional Goal: PBI-040 Owner iteration — canonical merge + edit reference parity
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-040 — Owner Review
-Status: In progress; Owner Acceptance remains pending
+Status: Ready for Owner Review; Owner Acceptance remains pending
 WIP: 1/1
-Progress: 3 / 5 implementation blocks complete
-Current: Run governed regression and migration gates
-Next: Validate browser/runtime and reconcile final evidence
+Progress: 5 / 5 implementation blocks complete
+Current: Owner Review of canonical merge and edit reference parity
+Next: Owner decision; no subsequent gate or PBI starts automatically
 Blocked: None
 Last updated: 2026-09-13 MST
 
@@ -16,8 +16,8 @@ Last updated: 2026-09-13 MST
 - [x] Audit Catalog/Repairs dependencies, merge invariants and shared primitives
 - [x] Implement transactional Catalog Category/Brand merge with history
 - [x] Give item editing the same inline reference behavior as creation
-- [~] Cover concurrency, isolation, lifecycle, filters and responsive UX
-- [ ] Run governed gates, reconcile evidence and prepare Chrome
+- [x] Cover concurrency, isolation, lifecycle, filters and responsive UX
+- [x] Run governed gates, reconcile evidence and prepare Chrome
 
 ## Required outcome
 

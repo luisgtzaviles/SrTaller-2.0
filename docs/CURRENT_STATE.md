@@ -136,10 +136,13 @@ Platform/Tenant, historia de recepción y colisiones Brand/Model requieren
 decisiones fuera de PBI-040. No se añadió merge a Repairs ni se abrió otro PBI.
 Owner Acceptance, gates de PR/CI/merge y deploy siguen pendientes.
 
-El candidato funcional local es `d846a6a`. La suite focalizada de dominio/UI/
-arquitectura pasó 46/46; el runner PostgreSQL owner-scoped pasó 8/8 con cleanup
-PASS. La campaña `verify:full` final permanece como gate activo y no se anticipa
-su resultado.
+El candidato funcional final es `0720813`. `verify:full` pasó 13/13 etapas:
+suite base 838 pruebas, 818 PASS y 20 skips PostgreSQL gobernados; composite
+17/17, PBI-039 2/2 y PBI-040 1/1 con 62 migraciones y p95 5.50 ms sobre 10,000
+items; runtime Preview-like, smokes y cleanup PASS. Chrome local confirmó el
+merge reversible `Fundas + Fundas QA`, selección compatible, foco/Escape,
+Light/Dark y 1280/768/640. La edición mostró canon exacto y captura pending con
+el mismo combobox. Esto no constituye Owner Acceptance.
 
 ## Capacidades integradas relevantes
 
