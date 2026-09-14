@@ -148,4 +148,29 @@ export class CatalogController {
     try { return await this.operations.changeBranchOverride(evidence(headers), itemId, body, true); }
     catch (error: unknown) { return translate(error); }
   }
+
+  @Get('supplier-sources') @Header('Cache-Control', 'private, no-store')
+  async supplierSources(@Headers() headers: RequestHeaders) { try { return await this.operations.listSupplierSources(evidence(headers)); } catch (error) { return translate(error); } }
+  @Post('supplier-sources') @Header('Cache-Control', 'private, no-store')
+  async createSupplierSource(@Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.createSupplierSource(evidence(headers), body); } catch (error) { return translate(error); } }
+  @Get('supplier-versions') @Header('Cache-Control', 'private, no-store')
+  async supplierVersions(@Query('sourceId') sourceId: string | undefined, @Headers() headers: RequestHeaders) { try { return await this.operations.listSupplierVersions(evidence(headers), sourceId); } catch (error) { return translate(error); } }
+  @Post('supplier-versions') @Header('Cache-Control', 'private, no-store')
+  async createSupplierVersion(@Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.createSupplierDraft(evidence(headers), body); } catch (error) { return translate(error); } }
+  @Get('supplier-versions/:versionId') @Header('Cache-Control', 'private, no-store')
+  async supplierVersion(@Param('versionId') versionId: string, @Query('includeReferenceCost') include: string | undefined, @Headers() headers: RequestHeaders) { try { return await this.operations.getSupplierVersion(evidence(headers), versionId, include === 'true'); } catch (error) { return translate(error); } }
+  @Put('supplier-versions/:versionId/draft') @Header('Cache-Control', 'private, no-store')
+  async replaceSupplierDraft(@Param('versionId') versionId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.replaceSupplierDraft(evidence(headers), versionId, body); } catch (error) { return translate(error); } }
+  @Post('supplier-versions/:versionId/analyze') @Header('Cache-Control', 'private, no-store')
+  async analyzeSupplierVersion(@Param('versionId') versionId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.analyzeSupplierVersion(evidence(headers), versionId, body); } catch (error) { return translate(error); } }
+  @Put('supplier-versions/:versionId/rows/:rowDecisionId') @Header('Cache-Control', 'private, no-store')
+  async decideSupplierRow(@Param('versionId') versionId: string, @Param('rowDecisionId') rowDecisionId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.decideSupplierRow(evidence(headers), versionId, rowDecisionId, body); } catch (error) { return translate(error); } }
+  @Put('supplier-versions/:versionId/rows') @Header('Cache-Control', 'private, no-store')
+  async decideSupplierRows(@Param('versionId') versionId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.decideSupplierRows(evidence(headers), versionId, body); } catch (error) { return translate(error); } }
+  @Post('supplier-versions/:versionId/publish') @Header('Cache-Control', 'private, no-store')
+  async publishSupplierVersion(@Param('versionId') versionId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.publishSupplierVersion(evidence(headers), versionId, body); } catch (error) { return translate(error); } }
+  @Get('supplier-versions/:leftVersionId/compare/:rightVersionId') @Header('Cache-Control', 'private, no-store')
+  async compareSupplierVersions(@Param('leftVersionId') left: string, @Param('rightVersionId') right: string, @Headers() headers: RequestHeaders) { try { return await this.operations.compareSupplierVersions(evidence(headers), left, right); } catch (error) { return translate(error); } }
+  @Post('supplier-raw/purge') @Header('Cache-Control', 'private, no-store')
+  async purgeSupplierRaw(@Headers() headers: RequestHeaders) { try { return Object.freeze({ purged: await this.operations.purgeSupplierRaw(evidence(headers)) }); } catch (error) { return translate(error); } }
 }

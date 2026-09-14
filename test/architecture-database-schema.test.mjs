@@ -33,6 +33,14 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     catalog_reference_deletion_events: { owner: 'catalog', kind: 'table' },
     catalog_reference_identity_locks: { owner: 'catalog', kind: 'table' },
     catalog_reference_merge_events: { owner: 'catalog', kind: 'table' },
+    catalog_supplier_sources: { owner: 'catalog', kind: 'table' },
+    catalog_supplier_catalog_versions: { owner: 'catalog', kind: 'table' },
+    catalog_supplier_version_raw_payloads: { owner: 'catalog', kind: 'table' },
+    catalog_supplier_listings: { owner: 'catalog', kind: 'table' },
+    catalog_update_batches: { owner: 'catalog', kind: 'table' },
+    catalog_update_row_decisions: { owner: 'catalog', kind: 'table' },
+    catalog_supplier_listing_resolutions: { owner: 'catalog', kind: 'table' },
+    catalog_supplier_reconciliation_memory: { owner: 'catalog', kind: 'table' },
     branches: { owner: 'stations', kind: 'table' },
     stations: { owner: 'stations', kind: 'table' },
     station_bindings: { owner: 'stations', kind: 'table' },
@@ -203,6 +211,8 @@ test('productive migration root remains exact and governed', async () => {
       '20260913121000_repairs_add_reference_safe_delete.ts',
       '20260913130000_catalog_enforce_reference_identity.ts',
       '20260913140000_catalog_add_canonical_reference_merge.ts',
+      '20260914150000_catalog_create_bulk_composer.ts',
+      '20260914151000_catalog_strengthen_supplier_history.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

@@ -1,4 +1,4 @@
-import { Barcode, Boxes, CircleDollarSign, Plus, Search, Tag } from 'lucide-react';
+import { Barcode, Boxes, CircleDollarSign, Plus, Search, Tag, Upload } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -9,7 +9,7 @@ import {
 } from '../catalog-api.js';
 import type { CatalogItem, CatalogItemKind, CatalogReferences, PriceListItem, PriceListPage } from '../catalog-api.js';
 import { CatalogReferenceCombobox } from '../components/CatalogReferenceCombobox.js';
-import { Button, Field, Input, Select, Textarea } from '../components/ui/controls.js';
+import { Button, ButtonLink, Field, Input, Select, Textarea } from '../components/ui/controls.js';
 import { Alert, EmptyState, ErrorState, Skeleton, Spinner } from '../components/ui/feedback.js';
 import { PageHeader } from '../components/ui/navigation.js';
 import { Dialog } from '../components/ui/overlays.js';
@@ -68,6 +68,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const canManageBranchPrice = hasOperationalCapability(capabilities, 'catalog.branch_prices.manage');
   const canReadCost = hasOperationalCapability(capabilities, 'catalog.reference_cost.read');
   const canManageCost = hasOperationalCapability(administrationCapabilities, 'catalog.reference_cost.manage');
+  const canPrepareImport = hasOperationalCapability(administrationCapabilities, 'catalog.import.prepare');
   const preferences = useUserPreferences();
   const [references, setReferences] = useState<CatalogReferences | null>(null);
   const [page, setPage] = useState<PriceListPage | null>(null);
@@ -202,7 +203,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
 
   return (
     <div className={styles.page}>
-      <PageHeader eyebrow="Listas" title="Lista de precios" description="Referencia rápida del precio efectivo en esta sucursal." primaryAction={canManage && canManagePrice ? <Button tone="primary" onClick={openCreate}><Plus size={18} aria-hidden="true" />Nuevo artículo</Button> : undefined} />
+      <PageHeader eyebrow="Listas" title="Lista de precios" description="Referencia rápida del precio efectivo en esta sucursal." primaryAction={<div className={styles.headerActions}>{canPrepareImport ? <ButtonLink to="/listas/precios/carga-masiva"><Upload size={18} aria-hidden="true" />Carga masiva</ButtonLink> : null}{canManage && canManagePrice ? <Button tone="primary" onClick={openCreate}><Plus size={18} aria-hidden="true" />Nuevo artículo</Button> : null}</div>} />
       {notice ? <Alert tone={notice.tone} title={notice.tone === 'success' ? 'Listo' : 'Atención'}>{notice.message}</Alert> : null}
       <section className={styles.toolbar} aria-label="Buscar y filtrar lista de precios">
         <label className={styles.filterField}><span>Buscar</span><span className={styles.search}><Search size={20} aria-hidden="true" /><Input value={query} onChange={(event) => updateListFilter('q', event.target.value)} placeholder="Buscar por nombre, SKU o código…" autoComplete="off" /></span></label>

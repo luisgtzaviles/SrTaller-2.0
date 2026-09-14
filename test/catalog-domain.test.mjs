@@ -149,6 +149,41 @@ test('protected operations require fixed server capabilities and never let the c
   ]);
 });
 
+test('bulk composer composes prepare, cost and publish authority without leaking cost reads', async () => {
+  const observed = [];
+  const authorized = Object.freeze({
+    ...mutationContext(), userId: mutationContext().actorUserId, userDisplayName: mutationContext().actorDisplayName,
+    commitGuard: Object.freeze({ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }),
+  });
+  const executor = {
+    async execute(_evidence, requirement, operation) {
+      observed.push(requirement);
+      return operation(Object.freeze({ ...authorized, capability: requirement.capability }));
+    },
+  };
+  const bulk = {
+    async createDraft(_context, input) { return { input }; },
+    async analyze(_context, _versionId, input) { return { input }; },
+    async publish(_context, _versionId, input, mayWriteCost) { return { input, mayWriteCost }; },
+  };
+  const operations = new CatalogProtectedOperations(executor, executor, {}, bulk);
+
+  await operations.createSupplierDraft({}, { includeReferenceCost: true, rows: [{ referenceCostMinor: 48000 }] });
+  assert.deepEqual(observed.splice(0).map((value) => value.capability), [
+    'catalog.import.prepare', 'catalog.reference_cost.read', 'catalog.reference_cost.manage',
+  ]);
+
+  await operations.analyzeSupplierVersion({}, '30000000-0000-4000-8000-000000000041', { expectedVersion: 1, includeReferenceCost: true });
+  assert.deepEqual(observed.splice(0).map((value) => value.capability), [
+    'catalog.import.prepare', 'catalog.reference_cost.read',
+  ]);
+
+  await operations.publishSupplierVersion({}, '30000000-0000-4000-8000-000000000041', { expectedVersion: 2, writeReferenceCost: true });
+  assert.deepEqual(observed.splice(0).map((value) => value.capability), [
+    'catalog.import.publish', 'catalog.manage', 'catalog.prices.manage', 'catalog.reference_cost.manage', 'catalog.reference_cost.read',
+  ]);
+});
+
 test('tenant-wide catalog administration rejects branch-only authority and composes both commit guards', async () => {
   let assignmentScope = 'BRANCH_RESTRICTED';
   let contextualCommits = 0;

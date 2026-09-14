@@ -96,7 +96,7 @@ test('price lookup composes URL-aware cascading commercial filters without offer
   assert.match(page, /kind: filterKind, categoryId, brandId/u);
 });
 
-test('price list covers commercial states without claiming Inventory or bulk import', () => {
+test('price list covers commercial states and links the separately authorized bulk composer', () => {
   assert.match(page, /Refacción/u);
   assert.match(page, /Producto/u);
   assert.match(page, /Servicio/u);
@@ -106,7 +106,9 @@ test('price list covers commercial states without claiming Inventory or bulk imp
   assert.match(page, /Sin precio/u);
   assert.match(page, /Artículo creado y disponible en la lista/u);
   assert.match(page, /Insumo creado en catálogo; no forma parte/u);
-  assert.doesNotMatch(page, /Inventario|Carga masiva|Importar proveedor/u);
+  assert.match(page, /catalog\.import\.prepare/u);
+  assert.match(page, /Carga masiva/u);
+  assert.doesNotMatch(page, /Inventario|Importar proveedor/u);
 });
 
 test('catalog browser transport keeps credentials, CSRF and no-store on the governed API', () => {

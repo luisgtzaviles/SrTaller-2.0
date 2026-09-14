@@ -6,7 +6,7 @@ import {
   useDatabasePersistenceExecutor,
   useTransactionalDatabasePersistenceExecutor,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
-import type { InternalDatabasePersistenceConnection } from '../../../../infrastructure/database/database-persistence-capability.js';
+import type { InternalDatabasePersistenceConnection, InternalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type { DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
 import { parseTenantId } from '../../../tenancy/index.js';
@@ -52,7 +52,7 @@ type CatalogTables = 'catalog_reference_identity_locks' | 'catalog_reference_del
   'catalog_category_kind_applicability' | 'catalog_brand_kind_applicability' | 'catalog_base_price_revisions' |
   'catalog_branch_price_revisions' | 'catalog_reference_cost_revisions' |
   'catalog_commands' | 'catalog_audit_events';
-type CatalogExecutor = Kysely<Pick<DatabaseSchema, CatalogTables>>;
+type CatalogExecutor = InternalDatabasePersistenceExecutor<'catalog'>;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 
 function validateScope(scope: CatalogScope): CatalogScope {

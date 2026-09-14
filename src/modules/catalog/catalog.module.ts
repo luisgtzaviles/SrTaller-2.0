@@ -12,7 +12,9 @@ import { TENANT_SETTINGS_RUNTIME } from '../tenancy/index.js';
 import type { TenantSettingsRuntime } from '../tenancy/index.js';
 import { CatalogService } from './application/catalog.service.js';
 import { CatalogProtectedOperations } from './application/catalog-protected-operations.js';
+import { BulkCatalogService } from './application/bulk-catalog.service.js';
 import { createKyselyCatalogRepository } from './infrastructure/persistence/kysely-catalog.repository.js';
+import { createKyselyBulkCatalogRepository } from './infrastructure/persistence/kysely-bulk-catalog.repository.js';
 import { CatalogController } from './presentation/catalog.controller.js';
 
 @Module({
@@ -24,7 +26,8 @@ import { CatalogController } from './presentation/catalog.controller.js';
     useFactory: (authorization: ContextualAuthorizationExecutor, tenantWideAuthorization: TenantWideAuthorizationExecutor, database: ApplicationDatabaseConnection, tenants: TenantSettingsRuntime) => {
       const repository = createKyselyCatalogRepository(database as never);
       const service = new CatalogService(repository, async (tenantId) => tenants.readOperatingCurrency({ tenantId: tenantId as never }));
-      return new CatalogProtectedOperations(authorization, tenantWideAuthorization, service);
+      const bulk = new BulkCatalogService(createKyselyBulkCatalogRepository(database as never), async (tenantId) => tenants.readOperatingCurrency({ tenantId: tenantId as never }));
+      return new CatalogProtectedOperations(authorization, tenantWideAuthorization, service, bulk);
     },
   }],
 })

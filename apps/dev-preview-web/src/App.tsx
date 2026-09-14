@@ -16,6 +16,7 @@ import { UsersPage } from './pages/UsersPage.js';
 import { NewRepairConfigurationPage } from './pages/NewRepairConfigurationPage.js';
 import { RepairCatalogsPage } from './pages/RepairCatalogsPage.js';
 import { PriceListPage } from './pages/PriceListPage.js';
+import { BulkCatalogComposerPage } from './pages/BulkCatalogComposerPage.js';
 import { SessionProvider } from './session/SessionProvider.js';
 import { hasOperationalCapability } from './session/session-capabilities.mjs';
 import type { OperationalCapability } from './session/session-api.js';
@@ -88,6 +89,7 @@ export function App(): React.JSX.Element {
               <Route path="/reparaciones/nueva" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.create"><CapabilityBoundary capabilities={capabilities} capability="repairs.read"><><RepairsPage capabilities={capabilities} timeZone={timeZone} /><NewRepairEntryPage csrfToken={csrfToken} timeZone={timeZone} /></></CapabilityBoundary></CapabilityBoundary>} />
               <Route path="/reparaciones/:id" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairDetailPage capabilities={capabilities} csrfToken={csrfToken} sessionId={session.sessionId} timeZone={timeZone} /></CapabilityBoundary>} />
               <Route path="/listas/precios" element={<CapabilityBoundary capabilities={capabilities} capability="price_list.read"><PriceListPage capabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
+              <Route path="/listas/precios/carga-masiva" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="catalog.import.prepare"><BulkCatalogComposerPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/configuracion" element={<SettingsPage operationalCapabilities={capabilities} administrationCapabilities={administrationCapabilities} />} />
               <Route path="/configuracion/sucursal" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="access_matrix.manage"><BranchSettingsPage csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/configuracion/roles" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="access_matrix.read"><RolesPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />

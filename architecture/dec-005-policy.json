@@ -744,7 +744,9 @@
       "src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts",
       "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts",
       "src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts",
-      "src/infrastructure/database/migrations/20260913140000_catalog_add_canonical_reference_merge.ts"
+      "src/infrastructure/database/migrations/20260913140000_catalog_add_canonical_reference_merge.ts",
+      "src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts",
+      "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1278,6 +1280,18 @@
           "references": ["tenants"],
           "functions": ["catalog_reject_append_only_mutation"],
           "triggers": ["catalog_reference_merge_events_reject_delete", "catalog_reference_merge_events_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_catalog_versions", "catalog_supplier_listing_resolutions", "catalog_supplier_listings", "catalog_supplier_reconciliation_memory", "catalog_supplier_sources", "catalog_supplier_version_raw_payloads", "catalog_update_batches", "catalog_update_row_decisions"],
+          "functions": ["catalog_guard_supplier_listing_mutation", "catalog_reject_append_only_mutation", "catalog_reject_ingested_supplier_version_mutation"],
+          "triggers": ["catalog_supplier_listing_resolutions_reject_delete", "catalog_supplier_listing_resolutions_reject_update", "catalog_supplier_listings_guard_delete", "catalog_supplier_listings_guard_update", "catalog_supplier_versions_reject_delete", "catalog_supplier_versions_reject_ingested_update"]
+        },
+        "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_catalog_versions", "catalog_supplier_reconciliation_memory"],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1330,6 +1344,16 @@
           "CatalogReferenceDeletionEventTable",
           "CatalogReferenceMergeEventTable",
           "CatalogReferenceIdentityLockTable",
+          "CatalogSupplierSourceTable",
+          "CatalogSupplierCatalogVersionTable",
+          "CatalogSupplierVersionRawPayloadTable",
+          "CatalogSupplierListingTable",
+          "CatalogUpdateBatchTable",
+          "CatalogUpdateRowClassification",
+          "CatalogUpdateRowDecisionTable",
+          "CatalogSupplierListingResolutionTable",
+          "CatalogSupplierMemoryScheme",
+          "CatalogSupplierReconciliationMemoryTable",
           "UserProvisioningBootstrapTable",
           "UserLifecycleCommandTable",
           "UserProfileUpdateCommandTable",
@@ -1542,6 +1566,8 @@
           "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts",
           "src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts",
           "src/infrastructure/database/migrations/20260913140000_catalog_add_canonical_reference_merge.ts",
+          "src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts",
+          "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1827,6 +1853,12 @@
         "composition": "src/modules/catalog/catalog.module.ts",
         "status": "materialized-owner-adapter"
       },
+      "src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts": {
+        "owner": "catalog",
+        "port": "src/modules/catalog/application/ports/bulk-catalog-repository.port.ts",
+        "composition": "src/modules/catalog/catalog.module.ts",
+        "status": "materialized-owner-adapter"
+      },
       "src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts": {
         "owner": "customers",
         "port": "src/modules/customers/application/ports/customer-intake-runtime.port.ts",
@@ -1908,6 +1940,14 @@
       "catalog_audit_events": { "owner": "catalog", "kind": "table" },
       "catalog_reference_deletion_events": { "owner": "catalog", "kind": "table" },
       "catalog_reference_merge_events": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_sources": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_catalog_versions": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_version_raw_payloads": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_listings": { "owner": "catalog", "kind": "table" },
+      "catalog_update_batches": { "owner": "catalog", "kind": "table" },
+      "catalog_update_row_decisions": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_listing_resolutions": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_reconciliation_memory": { "owner": "catalog", "kind": "table" },
       "branches": {
         "owner": "stations",
         "kind": "table"
@@ -2484,10 +2524,14 @@
     "src/modules/catalog/index.ts",
     "src/modules/catalog/catalog.module.ts",
     "src/modules/catalog/domain/catalog-item.ts",
+    "src/modules/catalog/domain/bulk-catalog.ts",
     "src/modules/catalog/application/catalog.service.ts",
+    "src/modules/catalog/application/bulk-catalog.service.ts",
     "src/modules/catalog/application/catalog-protected-operations.ts",
     "src/modules/catalog/application/ports/catalog-repository.port.ts",
+    "src/modules/catalog/application/ports/bulk-catalog-repository.port.ts",
     "src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts",
+    "src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts",
     "src/modules/catalog/presentation/catalog.controller.ts",
     "src/modules/tenancy/index.ts",
     "src/modules/tenancy/application/ports/tenant-repository.port.ts",

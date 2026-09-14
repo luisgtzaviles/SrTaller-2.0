@@ -136,6 +136,7 @@ const administrationCapabilityCodes = new Set<CapabilityCode>([
   'repairs.configuration.manage',
   'catalog.manage',
   'catalog.prices.manage',
+  'catalog.reference_cost.read',
   'catalog.reference_cost.manage',
   'catalog.import.prepare',
   'catalog.import.publish',

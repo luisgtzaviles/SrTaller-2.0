@@ -57,6 +57,9 @@ async function bootstrap(): Promise<void> {
       abortOnError: false,
       logger: ['error', 'warn'],
     });
+    // PBI-041 accepts bounded, server-validated spreadsheet payloads. The
+    // parser limit remains finite and the domain rejects more than 50k rows.
+    application.useBodyParser('json', { limit: '20mb' });
     const runtimeProvenance = loadRuntimeProvenance(environment);
     application.use((
       _request: unknown,
