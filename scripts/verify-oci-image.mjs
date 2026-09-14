@@ -300,9 +300,11 @@ try {
   const port = Number(running.NetworkSettings.Ports['3000/tcp'][0].HostPort);
   await waitForReady(port);
 
-  const [root, spa, provenance, live, ready, apiUnknown, unknown] = await Promise.all([
+  const [root, spa, priceList, catalogAdministration, provenance, live, ready, apiUnknown, unknown] = await Promise.all([
     request(port, '/'),
     request(port, '/reparaciones'),
+    request(port, '/listas/precios'),
+    request(port, '/configuracion/catalogos?module=price-list'),
     request(port, '/runtime-provenance.json'),
     request(port, '/livez'),
     request(port, '/readyz'),
@@ -314,6 +316,10 @@ try {
   assert(root.body.includes('<title>SR Taller 2.0 · Preview</title>'), '/ must return the recovered UI');
   assert(spa.status === 200, '/reparaciones must return HTTP 200');
   assert(spa.body === root.body, '/reparaciones must return the SPA entrypoint');
+  assert(priceList.status === 200, '/listas/precios must return HTTP 200');
+  assert(priceList.body === root.body, '/listas/precios must return the SPA entrypoint');
+  assert(catalogAdministration.status === 200, '/configuracion/catalogos must return HTTP 200');
+  assert(catalogAdministration.body === root.body, '/configuracion/catalogos must return the SPA entrypoint');
   assert(provenance.status === 200, '/runtime-provenance.json must return HTTP 200');
   assert(provenance.headers['cache-control'] === 'no-store', 'Runtime provenance must not be cached');
   assert(provenance.body?.role === 'frontend', 'Frontend provenance role is missing');

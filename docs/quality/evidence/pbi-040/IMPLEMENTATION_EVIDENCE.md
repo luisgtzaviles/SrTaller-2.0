@@ -674,3 +674,36 @@ stages with cleanup PASS and candidate fingerprint
 material PostgreSQL `17/17`, PBI-039 `2/2`, PBI-040 `1/1`, 62 migrations,
 zero critical skips and p95 `6.37 ms` for 10,000 items. The same accepted Vite
 chunk warning remains visible.
+
+## Preview bounded SPA routing remediation
+
+The integrated migration-order remediation was deployed from exact `main`
+`a3cd61198a466aef8bef1ddc1c46c9b883d1cf35`. The governed migrator exited
+zero with `applied: 10` and `pending: 0`; the application posture was then
+restored to role `application`, migrations disabled, and `dist/main.js`.
+Health and runtime provenance passed on the same clean SHA.
+
+The first real-browser navigation then found a separate production-serving
+regression: `/listas/precios` returned HTTP 404 because the bounded SPA
+allowlist still contained only the pre-PBI-040 routes. The React route existed,
+but direct navigation and reload could not receive the SPA entrypoint. This is
+a deployment integration defect inside the accepted PBI-040 surface, not a
+new capability.
+
+The correction keeps the static fallback fail-closed and adds only the exact
+routes already declared by `App.tsx`, including Lista de precios and Catalog
+Administration. Unknown and API routes remain 404. Source-contract mutations,
+compiled UI smoke and OCI image verification now assert both PBI-040 routes so
+future Preview candidates cannot pass while direct navigation or reload is
+broken.
+
+Full Verification
+`local-full-verification-20260914045541-a3cd61198a46` completed all `13/13`
+stages with cleanup PASS and candidate fingerprint
+`df764b35825646c5fb1609b0282ab786bab238f3c2cd0ef02f245491b3b813de`:
+841 base tests (`821` PASS, 20 governed PostgreSQL skips, zero failures),
+material PostgreSQL `17/17`, PBI-039 `2/2`, PBI-040 `1/1`, 62 migrations,
+zero critical skips and p95 `7.06 ms` for 10,000 items. The compiled UI smoke
+proved `/listas/precios` and `/configuracion/catalogos?module=price-list` both
+return the identical no-store SPA entrypoint, while `/api/unknown` and an
+unknown page remain 404. The accepted Vite chunk warning remains visible.
