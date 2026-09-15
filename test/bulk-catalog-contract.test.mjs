@@ -48,12 +48,14 @@ test('supplier observed title remains separate from the editable Catalog title p
 });
 
 test('bulk contracts preserve separate prepare, publish, retirement, cost and Branch boundaries', async () => {
-  const [protectedOperations, repository, migration, reactivationMigration, retirementMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
+  const [protectedOperations, repository, migration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts', 'utf8'),
+    readFile('src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts', 'utf8'),
+    readFile('src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-catalog-retirement.repository.ts', 'utf8'),
     readFile('src/modules/access/presentation/sensitive-action-level2.executor.ts', 'utf8'),
     readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8'),
@@ -69,6 +71,8 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(protectedOperations, /catalog\.import\.publish/u);
   assert.match(protectedOperations, /catalog\.items\.bulk_retire/u);
   assert.match(protectedOperations, /catalog\.items\.bulk-retire/u);
+  assert.match(protectedOperations, /catalog\.suppliers-delete/u);
+  assert.match(protectedOperations, /deleteSupplierSource/u);
   assert.match(protectedOperations, /writeReferenceCost/u);
   assert.match(protectedOperations, /containsReferenceCost/u);
   assert.match(protectedOperations, /requestsReferenceCost/u);
@@ -85,6 +89,11 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(repository, /lifecycle: \{ before: 'INACTIVE', after: 'ACTIVE' \}/u);
   assert.match(retirementMigration, /sensitivity_level smallint not null/u);
   assert.match(retirementMigration, /catalog_retirement_events_reject_update/u);
+  assert.match(supplierHistoryMigration, /next_version_sequence/u);
+  assert.match(supplierHistoryMigration, /catalog_supplier_versions_sequence_uq/u);
+  assert.match(supplierHistoryMigration, /catalog_supplier_source_deletion_events/u);
+  assert.match(supplierHistoryMigration, /old\.lifecycle = 'INGESTED'/u);
+  assert.match(supplierCapabilityMigration, /catalog\.suppliers\.delete/u);
   assert.match(retirementRepository, /isolationLevel: 'serializable'/u);
   assert.match(retirementRepository, /resolution', '=', 'CREATED'/u);
   assert.doesNotMatch(retirementRepository, /deleteFrom\('catalog_items'\)/u);
@@ -112,6 +121,12 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.doesNotMatch(ui, /Proveedor:\s*\{row\.supplierObservedTitle/u);
   assert.match(ui, /Retirar artículos creados por este lote/u);
   assert.match(ui, /No es una reversión del lote/u);
+  assert.match(ui, /Nuevo proveedor/u);
+  assert.match(ui, /El número se asignará al guardar/u);
+  assert.match(ui, /Confirmar eliminación definitiva/u);
+  assert.match(ui, /Eliminar definitivamente/u);
+  assert.match(ui, /deleteArmed/u);
+  assert.match(ui, /formatVersionDate\(value\.createdAt, timeZone\)/u);
   assert.match(priceListUi, /Vaciar lista de precios/u);
   assert.match(priceListUi, /identidad, mappings e historia permanecen/u);
   assert.match(ui, /validateComposerDraft/u);
@@ -121,8 +136,10 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /Error siguiente/u);
   assert.match(model, /scope: 'BATCH'/u);
   assert.match(model, /scope: 'CELL'/u);
-  assert.match(model, /CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS/u);
-  assert.match(repository, /catalog_supplier_versions_revision_uq/u);
+  assert.doesNotMatch(model, /sourceRevision/u);
+  assert.match(repository, /next_version_sequence/u);
+  assert.match(repository, /CatalogSupplierDeleteNotAllowedError/u);
+  assert.doesNotMatch(repository, /deleteFrom\('catalog_items'\)/u);
   assert.match(shell, /location\.pathname !== '\/listas\/precios\/carga-masiva'/u);
   assert.match(feedback, /export function Toast/u);
   assert.match(navigation, /export function BackLink/u);

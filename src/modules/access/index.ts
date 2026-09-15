@@ -86,7 +86,7 @@ export const TENANT_WIDE_AUTHORIZATION_EXECUTOR: unique symbol = Symbol(
   'srtaller.access.tenant-wide-authorization-executor',
 );
 
-export type SensitiveActionLevel2Code = 'catalog.items.bulk-retire';
+export type SensitiveActionLevel2Code = 'catalog.items.bulk-retire' | 'catalog.suppliers-delete';
 
 export class SensitiveActionReauthenticationError extends Error {
   readonly code = 'REAUTHENTICATION_DENIED';

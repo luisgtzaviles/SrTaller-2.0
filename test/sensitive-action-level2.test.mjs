@@ -68,3 +68,16 @@ test('ADR-013 level 2 rejects a valid PIN proof belonging to a different user', 
   );
   assert.equal(isPinAuthenticationProof(authenticationProof), false);
 });
+
+test('ADR-013 level 2 maps supplier deletion to its dedicated assignable capability', async () => {
+  const authenticationProof = proof();
+  const state = fixture(authenticationProof);
+  const result = await state.executor.execute(evidence, 'catalog.suppliers-delete', { pin: syntheticPin }, async (context) => {
+    assert.equal(context.sensitiveAction, 'catalog.suppliers-delete');
+    assert.equal(context.sensitivityLevel, 2);
+    return 'deleted';
+  });
+  assert.equal(result, 'deleted');
+  assert.deepEqual(state.requirement, { capability: 'catalog.suppliers.delete', kind: 'state-change' });
+  assert.equal(isPinAuthenticationProof(authenticationProof), false);
+});

@@ -21,6 +21,7 @@ export const OPERATIONAL_CAPABILITY_CATALOG: readonly [
   'catalog.import.prepare',
   'catalog.import.publish',
   'catalog.items.bulk_retire',
+  'catalog.suppliers.delete',
 ];
 
 export type OperationalCapability = typeof OPERATIONAL_CAPABILITY_CATALOG[number];

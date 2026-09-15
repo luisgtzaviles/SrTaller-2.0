@@ -372,6 +372,7 @@ export function localAccessCapabilityRows() {
     'catalog.import.prepare',
     'catalog.import.publish',
     'catalog.items.bulk_retire',
+    'catalog.suppliers.delete',
     'users.read',
     'users.manage',
   ].map((capabilityCode) => Object.freeze({
@@ -424,6 +425,7 @@ export function localAccessRoleCapabilityRows() {
     [roleIds.administrator, 'catalog.import.prepare'],
     [roleIds.administrator, 'catalog.import.publish'],
     [roleIds.administrator, 'catalog.items.bulk_retire'],
+    [roleIds.administrator, 'catalog.suppliers.delete'],
     [roleIds.administrator, 'users.read'],
     [roleIds.administrator, 'users.manage'],
     [roleIds.customerService, 'repairs.add_note'],

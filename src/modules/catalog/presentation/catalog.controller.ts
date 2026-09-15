@@ -154,6 +154,8 @@ export class CatalogController {
   async supplierSources(@Headers() headers: RequestHeaders) { try { return await this.operations.listSupplierSources(evidence(headers)); } catch (error) { return translate(error); } }
   @Post('supplier-sources') @Header('Cache-Control', 'private, no-store')
   async createSupplierSource(@Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.createSupplierSource(evidence(headers), body); } catch (error) { return translate(error); } }
+  @Delete('supplier-sources/:sourceId') @Header('Cache-Control', 'private, no-store')
+  async deleteSupplierSource(@Param('sourceId') sourceId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.deleteSupplierSource(evidence(headers), sourceId, body); } catch (error) { return translate(error); } }
   @Get('supplier-versions') @Header('Cache-Control', 'private, no-store')
   async supplierVersions(@Query('sourceId') sourceId: string | undefined, @Headers() headers: RequestHeaders) { try { return await this.operations.listSupplierVersions(evidence(headers), sourceId); } catch (error) { return translate(error); } }
   @Post('supplier-versions') @Header('Cache-Control', 'private, no-store')

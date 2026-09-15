@@ -760,7 +760,9 @@
       "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts",
       "src/infrastructure/database/migrations/20260914152000_access_add_catalog_bulk_retire_capability.ts",
       "src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts",
-      "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts"
+      "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts",
+      "src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts",
+      "src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1325,6 +1327,20 @@
           "tables": ["catalog_update_batches", "catalog_update_row_decisions"],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_catalog_versions", "catalog_supplier_source_deletion_events", "catalog_supplier_sources"],
+          "references": ["tenants"],
+          "functions": ["catalog_reject_append_only_mutation", "catalog_reject_ingested_supplier_version_mutation"],
+          "triggers": ["catalog_supplier_source_deletion_events_reject_delete", "catalog_supplier_source_deletion_events_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts": {
+          "owner": "access",
+          "tables": ["access_capabilities", "access_role_capabilities"],
+          "references": [],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1387,6 +1403,7 @@
           "CatalogSupplierListingResolutionTable",
           "CatalogSupplierMemoryScheme",
           "CatalogSupplierReconciliationMemoryTable",
+          "CatalogSupplierSourceDeletionEventTable",
           "CatalogRetirementPlanTable",
           "CatalogRetirementEventTable",
           "UserProvisioningBootstrapTable",
@@ -1606,6 +1623,8 @@
           "src/infrastructure/database/migrations/20260914152000_access_add_catalog_bulk_retire_capability.ts",
           "src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts",
           "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts",
+          "src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts",
+          "src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1986,6 +2005,7 @@
       "catalog_update_row_decisions": { "owner": "catalog", "kind": "table" },
       "catalog_supplier_listing_resolutions": { "owner": "catalog", "kind": "table" },
       "catalog_supplier_reconciliation_memory": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_source_deletion_events": { "owner": "catalog", "kind": "table" },
       "catalog_retirement_plans": { "owner": "catalog", "kind": "table" },
       "catalog_retirement_events": { "owner": "catalog", "kind": "table" },
       "branches": {

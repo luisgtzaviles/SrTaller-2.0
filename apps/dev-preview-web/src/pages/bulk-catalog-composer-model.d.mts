@@ -1,7 +1,7 @@
 export type ComposerColumn = 'kind' | 'title' | 'description' | 'category' | 'brand' | 'supplierItemCode' | 'sku' | 'barcode' | 'price' | 'cost';
 export type ComposerRow = Record<ComposerColumn, string> & { supplierObservedTitle: string };
 export type ComposerSelection = Readonly<{ firstRow: number; lastRow: number; firstColumn: number; lastColumn: number }>;
-export type ValidationIssue = Readonly<{ scope: 'BATCH' | 'CELL' | 'GLOBAL'; rowId?: string; rowIndex?: number; columnKey?: ComposerColumn; controlKey?: 'source' | 'sourceRevision' | 'mode'; code: string; message: string }>;
+export type ValidationIssue = Readonly<{ scope: 'BATCH' | 'CELL' | 'GLOBAL'; rowId?: string; rowIndex?: number; columnKey?: ComposerColumn; controlKey?: 'source' | 'mode'; code: string; message: string }>;
 
 export const FULL_COLUMNS: readonly ComposerColumn[];
 export const ESSENTIAL_COLUMNS: readonly ComposerColumn[];
@@ -19,7 +19,7 @@ export function nextGridCell(key: string, row: number, column: number, rowCount:
 export function fillRows<Row extends Record<ComposerColumn, string>>(rows: readonly Row[], columns: readonly ComposerColumn[], source: ComposerSelection, target: Readonly<{ row: number; column: number }>): Row[];
 export function estimateColumnWidth(label: string, values: readonly string[], min?: number, max?: number): number;
 export function sortValidationIssues(issues: readonly ValidationIssue[]): ValidationIssue[];
-export function validateComposerDraft(input: Readonly<{ selectedSource: string; sourceRevision: string; mode: 'FULL' | 'COMPACT'; rows: readonly Record<string, string>[] }>): ValidationIssue[];
+export function validateComposerDraft(input: Readonly<{ selectedSource: string; mode: 'FULL' | 'COMPACT'; rows: readonly Record<string, string>[] }>): ValidationIssue[];
 export function validationIssueFromApi(error: Readonly<{ status?: number; code?: string | null; parameter?: string | null }>): ValidationIssue;
 export function nextValidationIssueIndex(current: number, direction: -1 | 1, count: number): number;
 export function ownerSupplierClipboard(): string;

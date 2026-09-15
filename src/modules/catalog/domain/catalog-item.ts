@@ -86,6 +86,14 @@ export class CatalogSupplierVersionAlreadyExistsError extends CatalogConflictErr
   }
 }
 
+export class CatalogSupplierDeleteNotAllowedError extends CatalogConflictError {
+  override readonly code = 'CATALOG_SUPPLIER_DELETE_NOT_ALLOWED';
+  constructor(readonly reason: 'PUBLISHED_HISTORY' | 'DEPENDENT_HISTORY' | 'SOURCE_CHANGED') {
+    super();
+    this.name = 'CatalogSupplierDeleteNotAllowedError';
+  }
+}
+
 export class CatalogReferenceInactiveError extends CatalogConflictError {
   override readonly code = 'CATALOG_REFERENCE_INACTIVE';
   constructor(readonly referenceKind: 'category' | 'brand') {

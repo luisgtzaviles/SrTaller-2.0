@@ -1,7 +1,7 @@
 import { ArchiveX, Check, ChevronDown, ChevronUp, ClipboardPaste, Columns3, Database, GitCompare, PanelLeftClose, PanelLeftOpen, Plus, RotateCcw, Save, Send, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { analyzeSupplierVersion, compareSupplierVersions, createCatalogRetirementPlan, createSupplierDraft, createSupplierSource, decideSupplierRow, decideSupplierRows, executeCatalogRetirementPlan, getSupplierVersion, listCatalogReferences, listSupplierSources, listSupplierVersions, normalizeCatalogReferenceText, publishSupplierVersion, replaceSupplierDraft } from '../catalog-api.js';
+import { analyzeSupplierVersion, compareSupplierVersions, createCatalogRetirementPlan, createSupplierDraft, createSupplierSource, decideSupplierRow, decideSupplierRows, deleteSupplierSource, executeCatalogRetirementPlan, getSupplierVersion, listCatalogReferences, listSupplierSources, listSupplierVersions, normalizeCatalogReferenceText, publishSupplierVersion, replaceSupplierDraft } from '../catalog-api.js';
 import type { BulkCatalogClassification, BulkCatalogMode, CatalogItemKind, CatalogReferences, CatalogRetirementPlan, SupplierSource, SupplierVersion, SupplierVersionComparison, SupplierVersionSummary } from '../catalog-api.js';
 import { PreviewApiError } from '../api.js';
 import { Button, Input, Select } from '../components/ui/controls.js';
@@ -30,6 +30,8 @@ const fromRecord = (version: SupplierVersion): UiRow[] => version.rows.map(({ pr
 const signature = async (mode: BulkCatalogMode): Promise<string> => { const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode((mode === 'FULL' ? columns : compactColumns).join('\t'))); return [...new Uint8Array(bytes)].map((value) => value.toString(16).padStart(2, '0')).join(''); };
 const proposal = (row: UiRow) => ({ kind: row.kind || null, supplierObservedTitle: row.supplierObservedTitle || row.title || null, title: row.title.trim() || null, description: row.description.trim() || null, category: row.category.trim() || null, brand: row.brand.trim() || null, supplierItemCode: row.supplierItemCode.trim() || null, sku: row.sku.trim() || null, barcode: row.barcode.trim() || null, basePriceMinor: toMinor(row.price), referenceCostMinor: toMinor(row.cost) });
 const failureCode = (error: unknown): string => error instanceof PreviewApiError && error.code ? ` (${error.code})` : '';
+const versionStatus = (value: SupplierVersionSummary): string => value.lifecycle === 'DRAFT' ? 'Borrador' : value.batch.lifecycle === 'APPLIED' ? 'Aplicada' : 'En revisión';
+const formatVersionDate = (value: string, timeZone: string): string => new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone }).format(new Date(value));
 const analysisMessage = (code: string): string => code === 'HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION' ? 'La memoria histórica apunta a un artículo retirado. Reactívalo explícitamente en Lista de precios y vuelve a analizar; no se creará un duplicado.' : code;
 const warningMessage = (code: string): string => code === 'HISTORICAL_INACTIVE_MATCH_REQUIRES_REACTIVATION_CONFIRMATION' ? 'El análisis encontró una coincidencia histórica única con un artículo Inactivo: Reactivar conserva su identidad.' : code === 'HISTORICAL_MATCH_REQUIRES_CONFIRMATION' ? 'Coincidencia histórica única; requiere confirmación explícita.' : code;
 
@@ -43,12 +45,13 @@ function demo(version: 1 | 2): UiRow[] {
   });
 }
 
-export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ capabilities: readonly OperationalCapability[]; csrfToken: string }>): React.JSX.Element {
+export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: Readonly<{ capabilities: readonly OperationalCapability[]; csrfToken: string; timeZone: string }>): React.JSX.Element {
   const canPublish = hasOperationalCapability(capabilities, 'catalog.import.publish') && hasOperationalCapability(capabilities, 'catalog.manage') && hasOperationalCapability(capabilities, 'catalog.prices.manage');
   const canReadCost = hasOperationalCapability(capabilities, 'catalog.reference_cost.read'); const canWriteCost = hasOperationalCapability(capabilities, 'catalog.reference_cost.manage');
   const canBulkRetire = hasOperationalCapability(capabilities, 'catalog.items.bulk_retire');
-  const [sources, setSources] = useState<readonly SupplierSource[]>([]); const [versions, setVersions] = useState<readonly SupplierVersionSummary[]>([]); const [selectedSource, setSelectedSource] = useState(''); const [newSourceName, setNewSourceName] = useState('Proveedor Demo');
-  const [sourceRevision, setSourceRevision] = useState('Versión 1'); const [mode, setMode] = useState<BulkCatalogMode>('FULL'); const [rows, setRows] = useState<UiRow[]>([blank()]); const [current, setCurrent] = useState<SupplierVersion | null>(null); const [compare, setCompare] = useState<SupplierVersionComparison | null>(null); const [compareId, setCompareId] = useState('');
+  const canDeleteSupplier = hasOperationalCapability(capabilities, 'catalog.suppliers.delete');
+  const [sources, setSources] = useState<readonly SupplierSource[]>([]); const [versions, setVersions] = useState<readonly SupplierVersionSummary[]>([]); const [selectedSource, setSelectedSource] = useState(''); const [newSourceName, setNewSourceName] = useState('');
+  const [description, setDescription] = useState(''); const [mode, setMode] = useState<BulkCatalogMode>('FULL'); const [rows, setRows] = useState<UiRow[]>([blank()]); const [current, setCurrent] = useState<SupplierVersion | null>(null); const [compare, setCompare] = useState<SupplierVersionComparison | null>(null); const [compareId, setCompareId] = useState('');
   const [references, setReferences] = useState<CatalogReferences>({ categories: [], brands: [], pendingCategories: [], pendingBrands: [], categoryBrandApplicability: [] });
   const [batchDefaults, setBatchDefaults] = useState<BatchDefaults>(() => {
     try {
@@ -63,7 +66,8 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
   });
   const [mappingTargets, setMappingTargets] = useState<Record<string, string>>({});
   const [retirementPlan, setRetirementPlan] = useState<CatalogRetirementPlan | null>(null); const [retirementPin, setRetirementPin] = useState('');
-  const [busy, setBusy] = useState(false); const [dirty, setDirty] = useState(false); const [notice, setNotice] = useState<{ tone: 'danger' | 'warning'; message: string } | null>(null); const [toast, setToast] = useState<{ id: number; message: string } | null>(null); const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]); const [validationAttempted, setValidationAttempted] = useState(false); const [issueIndex, setIssueIndex] = useState(0); const [pendingIssueFocus, setPendingIssueFocus] = useState<ValidationIssue | null>(null); const [sourcesOpen, setSourcesOpen] = useState(true); const [contextOpen, setContextOpen] = useState(true); const [scrollTop, setScrollTop] = useState(0); const [active, setActive] = useState({ row: 0, column: 0 }); const [selection, setSelection] = useState<ComposerSelection | null>(null); const undoRows = useRef<UiRow[] | null>(null); const editOriginal = useRef<{ row: number; column: Column; value: string } | null>(null); const publishRequest = useRef(crypto.randomUUID()); const viewportRef = useRef<HTMLDivElement | null>(null); const headerScrollRef = useRef<HTMLDivElement | null>(null); const sourceRef = useRef<HTMLSelectElement | null>(null); const sourceRevisionRef = useRef<HTMLInputElement | null>(null); const toastTimer = useRef<number | null>(null);
+  const [newSourceOpen, setNewSourceOpen] = useState(false); const [deleteSourceTarget, setDeleteSourceTarget] = useState<SupplierSource | null>(null); const [deleteStage, setDeleteStage] = useState<1 | 2>(1); const [deletePin, setDeletePin] = useState(''); const [deleteArmed, setDeleteArmed] = useState(false);
+  const [busy, setBusy] = useState(false); const [dirty, setDirty] = useState(false); const [notice, setNotice] = useState<{ tone: 'danger' | 'warning'; message: string } | null>(null); const [toast, setToast] = useState<{ id: number; message: string } | null>(null); const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]); const [validationAttempted, setValidationAttempted] = useState(false); const [issueIndex, setIssueIndex] = useState(0); const [pendingIssueFocus, setPendingIssueFocus] = useState<ValidationIssue | null>(null); const [sourcesOpen, setSourcesOpen] = useState(true); const [contextOpen, setContextOpen] = useState(true); const [scrollTop, setScrollTop] = useState(0); const [active, setActive] = useState({ row: 0, column: 0 }); const [selection, setSelection] = useState<ComposerSelection | null>(null); const undoRows = useRef<UiRow[] | null>(null); const editOriginal = useRef<{ row: number; column: Column; value: string } | null>(null); const publishRequest = useRef(crypto.randomUUID()); const draftCreateRequest = useRef(crypto.randomUUID()); const deleteInFlight = useRef(false); const viewportRef = useRef<HTMLDivElement | null>(null); const headerScrollRef = useRef<HTMLDivElement | null>(null); const sourceRef = useRef<HTMLSelectElement | null>(null); const toastTimer = useRef<number | null>(null);
   const activeColumns = mode === 'COMPACT' ? compactColumns : viewPreset === 'ESSENTIAL' ? essentialColumns : columns;
   const schemaColumns = mode === 'FULL' ? columns : compactColumns;
   const gridTemplateColumns = `52px ${activeColumns.map((column) => `${columnWidths[column]}px`).join(' ')}`;
@@ -74,6 +78,11 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
   useEffect(() => { const protect = (event: BeforeUnloadEvent): void => { if (dirty) event.preventDefault(); }; window.addEventListener('beforeunload', protect); return () => window.removeEventListener('beforeunload', protect); }, [dirty]);
   useEffect(() => { sessionStorage.setItem('srtaller:bulk-composer:column-widths:v1', JSON.stringify(columnWidths)); }, [columnWidths]);
   useEffect(() => { sessionStorage.setItem('srtaller:bulk-composer:batch-context:v1', JSON.stringify(batchDefaults)); }, [batchDefaults]);
+  useEffect(() => {
+    if (deleteStage !== 2) { setDeleteArmed(false); return undefined; }
+    const timer = window.setTimeout(() => setDeleteArmed(true), 650);
+    return () => window.clearTimeout(timer);
+  }, [deleteStage]);
   useEffect(() => () => { if (toastTimer.current !== null) window.clearTimeout(toastTimer.current); }, []);
   const showToast = useCallback((message: string): void => { if (toastTimer.current !== null) window.clearTimeout(toastTimer.current); setToast({ id: Date.now(), message }); toastTimer.current = window.setTimeout(() => setToast(null), 3_500); }, []);
   const rawPayload = useMemo(() => rows.map((row) => schemaColumns.map((column) => column === 'title' ? row.supplierObservedTitle || row.title : row[column]).join('\t')).join('\n'), [rows, schemaColumns]);
@@ -87,15 +96,15 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
     return true;
   }, [findBrand, findCategory, references.categoryBrandApplicability]);
   const collectIssues = useCallback((): ValidationIssue[] => sortValidationIssues([
-    ...validateComposerDraft({ selectedSource, sourceRevision, mode, rows }),
+    ...validateComposerDraft({ selectedSource, mode, rows }),
     ...rows.flatMap((row, rowIndex): ValidationIssue[] => isCompatible(row) ? [] : [{ scope: 'CELL', rowIndex, columnKey: row.brand ? 'brand' : 'category', code: 'INCOMPATIBLE_REFERENCE', message: 'Esta combinación de Tipo, Categoría y Marca no es compatible.' }]),
     ...serverIssues,
-  ]), [isCompatible, mode, rows, selectedSource, serverIssues, sourceRevision]);
+  ]), [isCompatible, mode, rows, selectedSource, serverIssues]);
   const issues = validationAttempted || serverIssues.length > 0 ? collectIssues() : [];
   const normalizedIssueIndex = Math.min(issueIndex, Math.max(0, issues.length - 1));
   const currentIssue = issues[normalizedIssueIndex];
   const cellIssue = (rowIndex: number, column: Column): ValidationIssue | undefined => issues.find((issue) => issue.scope === 'CELL' && issue.rowIndex === rowIndex && issue.columnKey === column);
-  const batchIssue = (controlKey: 'source' | 'sourceRevision' | 'mode'): ValidationIssue | undefined => issues.find((issue) => issue.scope === 'BATCH' && issue.controlKey === controlKey);
+  const batchIssue = (controlKey: 'source' | 'mode'): ValidationIssue | undefined => issues.find((issue) => issue.scope === 'BATCH' && issue.controlKey === controlKey);
   const clearServerIssue = (predicate: (issue: ValidationIssue) => boolean): void => setServerIssues((existing) => existing.filter((issue) => !predicate(issue)));
   const rememberUndo = (existing: readonly UiRow[]): void => { undoRows.current = existing.map((row) => ({ ...row })); };
   const updateCell = (rowIndex: number, column: Column, value: string): void => { clearServerIssue((issue) => issue.scope === 'CELL' && issue.rowIndex === rowIndex && issue.columnKey === column); setDirty(true); setRows((existing) => { const currentRow = existing[rowIndex]; if (!currentRow) return existing; const candidate = { ...currentRow, [column]: value } as UiRow; if (column === 'title' && !currentRow.supplierObservedTitle) candidate.supplierObservedTitle = value; if (['kind', 'category', 'brand'].includes(column) && !isCompatible(candidate)) { setNotice({ tone: 'warning', message: 'Ese cambio no es compatible con Tipo, Categoría y Marca. Ajusta el contexto antes de continuar.' }); return existing; } rememberUndo(existing); return existing.map((row, index) => index === rowIndex ? candidate : row); }); };
@@ -126,7 +135,6 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
   const focusIssue = (issue: ValidationIssue): void => {
     if (issue.scope === 'BATCH') {
       if (issue.controlKey === 'source') { setSourcesOpen(true); window.setTimeout(() => sourceRef.current?.focus(), 40); }
-      if (issue.controlKey === 'sourceRevision') window.setTimeout(() => sourceRevisionRef.current?.focus(), 40);
       return;
     }
     if (issue.scope !== 'CELL' || issue.rowIndex === undefined || !issue.columnKey) return;
@@ -154,12 +162,12 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
   const applyDefaultsToEmptyCells = (): void => { setRows((existing) => { rememberUndo(existing); const next = existing.map((row) => applyBatchDefaults(row, batchDefaults)); if (next.some((row) => !isCompatible(row))) { setNotice({ tone: 'warning', message: 'El contexto no es compatible con una o más filas; no se aplicó.' }); return existing; } setDirty(true); showToast('El contexto se aplicó sólo a celdas vacías.'); return next; }); };
   const prepareOwnerCase = (): void => {
     const ownerDefaults: BatchDefaults = { kind: 'PART', category: 'Pantallas', brand: 'Apple' }; const matrix = parseClipboardMatrix(ownerSupplierClipboard());
-    setBatchDefaults(ownerDefaults); setViewPreset('ESSENTIAL'); setCurrent(null); setSourceRevision('Caso Owner · 36 pantallas'); setMode('FULL');
+    setBatchDefaults(ownerDefaults); setViewPreset('ESSENTIAL'); setCurrent(null); setDescription('Caso Owner · 36 pantallas'); setMode('FULL'); draftCreateRequest.current = crypto.randomUUID();
     setRows(matrix.map(([observedTitle = '', cost = '', price = '']) => ({ ...applyBatchDefaults(blank(), ownerDefaults), supplierObservedTitle: observedTitle, title: normalizeSupplierTitle(observedTitle), cost, price })));
     setActive({ row: 0, column: 0 }); setSelection({ firstRow: 0, lastRow: matrix.length - 1, firstColumn: 0, lastColumn: 2 }); setDirty(true); setValidationAttempted(false); setServerIssues([]); showToast('Caso Owner preparado: 36 filas × 3 columnas; nada se ha guardado.');
   };
   const prepareDemo = (version: 1 | 2): void => {
-    setRows(demo(version)); setSourceRevision(`Versión ${version}`); setViewPreset('ALL'); setDirty(true);
+    setRows(demo(version)); setDescription(`Demostración sintética ${version}`); setViewPreset('ALL'); setDirty(true); draftCreateRequest.current = crypto.randomUUID();
     setValidationAttempted(false); setServerIssues([]); setNotice(null); setIssueIndex(0);
   };
   const performFill = (source: ComposerSelection, target: { row: number; column: number }): void => { setRows((existing) => { const next = fillRows(existing, activeColumns, source, target); if (next.some((row) => !isCompatible(row))) { setNotice({ tone: 'warning', message: 'El relleno produciría una combinación incompatible y fue cancelado.' }); return existing; } rememberUndo(existing); setDirty(true); showToast('Relleno copiado. Puedes deshacerlo antes de guardar.'); return next; }); };
@@ -171,19 +179,20 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
   };
   const beginResize = (event: React.PointerEvent<HTMLButtonElement>, column: Column): void => { event.preventDefault(); event.stopPropagation(); const start = event.clientX; const initial = columnWidths[column]; const move = (pointerEvent: PointerEvent): void => setColumnWidths((value) => ({ ...value, [column]: Math.max(COLUMN_MIN_WIDTH, Math.min(COLUMN_MAX_WIDTH, initial + pointerEvent.clientX - start)) })); const up = (): void => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); }; window.addEventListener('pointermove', move); window.addEventListener('pointerup', up, { once: true }); };
   const autoFit = (column: Column): void => { const values = rows.slice(0, 500).map((row) => column === 'title' ? row.title : row[column]); setColumnWidths((existing) => ({ ...existing, [column]: estimateColumnWidth(labels[column], values) })); showToast(`${labels[column]} ajustada automáticamente.`); };
-  const buildPayload = async () => ({ sourceId: selectedSource, sourceRevision, mode, columnSignature: await signature(mode), rawPayload, rows: rows.map(proposal) });
-  const addSource = async (): Promise<void> => { setBusy(true); try { const created = await createSupplierSource(newSourceName, csrfToken); await refresh(); setSelectedSource(created.sourceId); clearServerIssue((issue) => issue.controlKey === 'source'); showToast('Fuente de proveedor creada.'); } catch { setNotice({ tone: 'danger', message: 'No se creó la fuente; revisa nombre o duplicados.' }); } finally { setBusy(false); } };
+  const buildPayload = async () => ({ sourceId: selectedSource, description: description.trim() || null, mode, columnSignature: await signature(mode), rawPayload, rows: rows.map(proposal) });
+  const beginNewVersion = (sourceId = selectedSource): void => { if (dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres descartarlos e iniciar otra carga?')) return; setSelectedSource(sourceId); setCurrent(null); setDescription(''); setRows([blank()]); setCompare(null); setCompareId(''); setDirty(false); setValidationAttempted(false); setServerIssues([]); setNotice(null); undoRows.current = null; draftCreateRequest.current = crypto.randomUUID(); };
+  const addSource = async (): Promise<void> => { if (!newSourceName.trim()) return; setBusy(true); try { const created = await createSupplierSource(newSourceName, csrfToken); await refresh(); beginNewVersion(created.sourceId); setNewSourceName(''); setNewSourceOpen(false); clearServerIssue((issue) => issue.controlKey === 'source'); showToast('Proveedor creado. Inicia una nueva carga cuando tengas datos.'); } catch { setNotice({ tone: 'danger', message: 'No se creó el proveedor; revisa nombre o duplicados.' }); } finally { setBusy(false); } };
   const save = async (): Promise<void> => {
     setNotice(null); setServerIssues([]); setValidationAttempted(true); setIssueIndex(0);
     const clientIssues = sortValidationIssues([
-      ...validateComposerDraft({ selectedSource, sourceRevision, mode, rows }),
+      ...validateComposerDraft({ selectedSource, mode, rows }),
       ...rows.flatMap((row, rowIndex): ValidationIssue[] => isCompatible(row) ? [] : [{ scope: 'CELL', rowIndex, columnKey: row.brand ? 'brand' : 'category', code: 'INCOMPATIBLE_REFERENCE', message: 'Esta combinación de Tipo, Categoría y Marca no es compatible.' }]),
     ]);
     if (clientIssues[0]) { setPendingIssueFocus(clientIssues[0]); return; }
     setBusy(true);
     try {
       const payload = { ...(await buildPayload()), includeReferenceCost: canReadCost };
-      const saved = current?.lifecycle === 'DRAFT' ? await replaceSupplierDraft(current.versionId, { ...payload, expectedVersion: current.version }, csrfToken) : await createSupplierDraft(payload, csrfToken);
+      const saved = current?.lifecycle === 'DRAFT' ? await replaceSupplierDraft(current.versionId, { ...payload, expectedVersion: current.version }, csrfToken) : await createSupplierDraft({ ...payload, clientRequestId: draftCreateRequest.current }, csrfToken);
       setCurrent(saved); setRows(fromRecord(saved)); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; await refresh(); showToast('Borrador guardado. Puedes continuar después.');
     } catch (error) {
       const issue = validationIssueFromApi(error instanceof PreviewApiError ? { status: error.status, code: error.code, parameter: error.parameter } : { status: 0 });
@@ -192,13 +201,30 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
     } finally { setBusy(false); }
   };
   const analyze = async (): Promise<void> => { if (!current) return; setBusy(true); try { const value = await analyzeSupplierVersion(current.versionId, current.version, canReadCost, csrfToken); setCurrent(value); setRows(fromRecord(value)); await refresh(); showToast('Análisis terminado sin escribir en Lista de precios.'); } catch { setNotice({ tone: 'danger', message: 'No fue posible analizar el snapshot.' }); } finally { setBusy(false); } };
-  const load = async (id: string): Promise<void> => { if (dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres descartarlos y abrir otra versión?')) return; setBusy(true); try { const value = await getSupplierVersion(id, canReadCost); setCurrent(value); setMode(value.mode); setSelectedSource(value.sourceId); setSourceRevision(value.sourceRevision); setRows(fromRecord(value)); setDirty(false); setValidationAttempted(false); setServerIssues([]); setSourcesOpen(false); undoRows.current = null; setNotice(null); publishRequest.current = crypto.randomUUID(); } finally { setBusy(false); } };
+  const load = async (id: string): Promise<void> => { if (dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres descartarlos y abrir otra versión?')) return; setBusy(true); try { const value = await getSupplierVersion(id, canReadCost); setCurrent(value); setMode(value.mode); setSelectedSource(value.sourceId); setDescription(value.description ?? ''); setRows(fromRecord(value)); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; setNotice(null); publishRequest.current = crypto.randomUUID(); draftCreateRequest.current = crypto.randomUUID(); } finally { setBusy(false); } };
   const resolve = async (rowDecisionId: string, expectedRowVersion: number, nextDecision: 'APPLY' | 'EXCLUDE', targetItemId: string | null = null): Promise<void> => { if (!current) return; setBusy(true); try { const value = await decideSupplierRow(current.versionId, rowDecisionId, { expectedRowVersion, decision: nextDecision, targetItemId, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(targetItemId ? 'Mapping corregido e incluido explícitamente.' : nextDecision === 'APPLY' ? 'Fila incluida explícitamente.' : 'Fila excluida del lote.'); } catch { setNotice({ tone: 'danger', message: 'La fila requiere un artículo canónico válido, resolver el duplicado o releer la versión.' }); } finally { setBusy(false); } };
   const resolveGroup = async (classifications: readonly BulkCatalogClassification[], nextDecision: 'APPLY' | 'EXCLUDE'): Promise<void> => { if (!current) return; setBusy(true); try { const value = await decideSupplierRows(current.versionId, { expectedBatchVersion: current.batch.version, classifications, decision: nextDecision, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(nextDecision === 'APPLY' ? 'Filas compatibles confirmadas.' : 'Filas con conflicto excluidas.'); } catch { setNotice({ tone: 'danger', message: 'El lote cambió o contiene una combinación que requiere revisión individual.' }); } finally { setBusy(false); } };
   const publish = async (): Promise<void> => { if (!current || !canPublish) return; setBusy(true); try { const value = await publishSupplierVersion(current.versionId, current.version, canReadCost && canWriteCost, csrfToken, publishRequest.current); setCurrent(value); await refresh(); showToast('Lote aplicado atómicamente a Catalog.'); } catch (error) { setNotice({ tone: 'danger', message: `No se publicó. El lote se revalidó y no hubo escrituras parciales.${failureCode(error)}` }); } finally { setBusy(false); } };
   const planCreatedBatchRetirement = async (): Promise<void> => { if (!current || current.batch.lifecycle !== 'APPLIED') return; setBusy(true); try { setRetirementPlan(await createCatalogRetirementPlan({ scope: 'BATCH_CREATED', sourceVersionId: current.versionId }, csrfToken)); setRetirementPin(''); } catch { setNotice({ tone: 'danger', message: 'No fue posible preparar el plan de artículos creados por este lote.' }); } finally { setBusy(false); } };
   const retireCreatedBatchItems = async (): Promise<void> => { if (!retirementPlan || retirementPin.length !== 4) return; setBusy(true); try { const result = await executeCatalogRetirementPlan(retirementPlan.planId, { confirmation: 'RETIRE_BATCH_CREATED_ITEMS', pin: retirementPin, clientRequestId: crypto.randomUUID() }, csrfToken); setRetirementPlan(null); setRetirementPin(''); await refresh(); showToast(`${result.retiredCount.toLocaleString('es-MX')} artículos CREATED retirados; MATCHED/UPDATED permanecen intactos.`); } catch (error) { setNotice({ tone: 'danger', message: error instanceof PreviewApiError && error.code === 'REAUTHENTICATION_DENIED' ? 'El PIN no corresponde al usuario de esta sesión o está temporalmente bloqueado.' : 'El plan cambió, expiró o perdió autoridad. Prepara uno nuevo.' }); } finally { setBusy(false); } };
   const compareVersions = async (): Promise<void> => { if (!current || !compareId) return; setBusy(true); try { setCompare(await compareSupplierVersions(compareId, current.versionId)); } finally { setBusy(false); } };
+  const closeSupplierDelete = (force = false): void => { if (busy && !force) return; setDeleteSourceTarget(null); setDeleteStage(1); setDeletePin(''); setDeleteArmed(false); };
+  const removeSupplier = async (): Promise<void> => {
+    if (!deleteSourceTarget || !deleteArmed || deletePin.length !== 4 || deleteInFlight.current) return;
+    deleteInFlight.current = true;
+    setBusy(true);
+    try {
+      const deleted = await deleteSupplierSource(deleteSourceTarget.sourceId, { expectedVersion: deleteSourceTarget.version, confirmation: 'DELETE_SUPPLIER_SOURCE', pin: deletePin, clientRequestId: crypto.randomUUID() }, csrfToken);
+      const deletedSelected = selectedSource === deleted.sourceId;
+      closeSupplierDelete(true);
+      if (deletedSelected) beginNewVersion('');
+      await refresh();
+      showToast(`${deleted.sourceName} y ${deleted.deletedVersionCount.toLocaleString('es-MX')} versiones de borrador se eliminaron definitivamente.`);
+    } catch (error) {
+      setNotice({ tone: 'danger', message: error instanceof PreviewApiError && error.code === 'REAUTHENTICATION_DENIED' ? 'El PIN no corresponde al usuario de esta sesión o está temporalmente bloqueado.' : error instanceof PreviewApiError && error.code === 'CATALOG_SUPPLIER_DELETE_NOT_ALLOWED' ? 'El proveedor ya tiene historia publicada o dependencias y debe conservarse.' : 'No se eliminó el proveedor. Relee su estado e intenta nuevamente.' });
+      closeSupplierDelete(true);
+    } finally { deleteInFlight.current = false; setBusy(false); }
+  };
   const categoryOptions = references.categories.filter((value) => value.status === 'ACTIVE' && (!batchDefaults.kind || value.applicableKinds.includes(batchDefaults.kind)));
   const selectedCategory = batchDefaults.category ? findCategory(batchDefaults.category) : undefined;
   const governedBrandIds = selectedCategory && batchDefaults.kind ? references.categoryBrandApplicability.filter((value) => value.categoryId === selectedCategory.categoryId && value.kind === batchDefaults.kind).map((value) => value.brandId) : [];
@@ -207,24 +233,30 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
   const changeDefaultCategory = (category: string): void => { let next: BatchDefaults = { ...batchDefaults, category }; if (next.brand && !isCompatible({ ...blank(), ...next })) next = { ...next, brand: '' }; setBatchDefaults(next); };
   const counts = current?.batch.counts; const unresolved = current?.rows.filter((row) => row.decision === 'UNRESOLVED').length ?? 0;
   const currentIssueLabel = currentIssue ? currentIssue.scope === 'CELL' && currentIssue.rowIndex !== undefined && currentIssue.columnKey ? `Fila ${currentIssue.rowIndex + 1} · ${labels[currentIssue.columnKey]}` : currentIssue.scope === 'BATCH' ? 'Contexto del lote' : 'Guardado' : '';
-  const sourceIssue = batchIssue('source'); const revisionIssue = batchIssue('sourceRevision');
+  const sourceIssue = batchIssue('source');
 
   return <div className={styles.page}>
     <div className={styles.heading}><BackLink to="/listas/precios" onClick={(event) => { if (dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres salir del Composer?')) event.preventDefault(); }}>Lista de precios</BackLink><PageHeader eyebrow="Listas · Carga masiva" title="Bulk Catalog Composer" description="Pega y corrige una versión de proveedor; nada toca Catalog hasta aplicar el lote." /></div>
     {notice ? <Alert tone={notice.tone} title="Atención">{notice.message}</Alert> : null}
     {toast ? <Toast key={toast.id}>{toast.message}</Toast> : null}
     <div className={`${styles.layout} ${!sourcesOpen ? styles.layoutCollapsed : ''}`}>
-      <aside className={`${styles.sidebar} ${!sourcesOpen ? styles.sidebarCollapsed : ''}`}>
-        <div className={styles.sidebarHeading}><h2><Database size={18} aria-hidden="true" />{sourcesOpen ? 'Fuentes y versiones' : <span className={styles.srOnly}>Fuentes y versiones</span>}</h2><button type="button" className={styles.collapseToggle} aria-expanded={sourcesOpen} aria-label={sourcesOpen ? 'Compactar fuentes y versiones' : 'Abrir fuentes y versiones'} onClick={() => setSourcesOpen((value) => !value)}>{sourcesOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}</button></div>
-        {sourcesOpen ? <>
-        <div className={styles.inline}><Input aria-label="Nueva fuente" value={newSourceName} onChange={(event) => setNewSourceName(event.target.value)} /><Button size="compact" onClick={() => void addSource()} disabled={busy}>Crear</Button></div>
-        <label>Fuente<Select ref={sourceRef} aria-invalid={Boolean(sourceIssue)} aria-describedby={sourceIssue ? 'bulk-source-error' : undefined} value={selectedSource} onChange={(event) => { setSelectedSource(event.target.value); clearServerIssue((issue) => issue.controlKey === 'source' || issue.controlKey === 'sourceRevision'); }}><option value="">Selecciona…</option>{sources.map((value) => <option key={value.sourceId} value={value.sourceId}>{value.name}</option>)}</Select>{sourceIssue ? <small id="bulk-source-error" className={styles.fieldError}>{sourceIssue.message}</small> : null}</label>
-        <div className={styles.history}>{versions.map((value) => <button key={value.versionId} className={current?.versionId === value.versionId ? styles.selectedVersion : ''} onClick={() => void load(value.versionId)}><strong>{value.sourceName}</strong><span>{value.sourceRevision} · {value.rowCount} filas</span><small>{value.lifecycle} / {value.batch.lifecycle}{value.supersedesVersionId ? ' · continuación' : ''}</small></button>)}</div>
-        </> : <span className={styles.sidebarRail} title={sources.find((value) => value.sourceId === selectedSource)?.name ?? 'Sin fuente'}>{sources.find((value) => value.sourceId === selectedSource)?.name.slice(0, 2).toLocaleUpperCase('es-MX') ?? '—'}</span>}
-      </aside>
+      {sourcesOpen ? <aside className={styles.sidebar}>
+        <div className={styles.sidebarHeading}><h2><Database size={18} aria-hidden="true" />Fuentes y versiones</h2><button type="button" className={styles.collapseToggle} aria-expanded="true" aria-label="Ocultar fuentes y versiones" onClick={() => setSourcesOpen(false)}><PanelLeftClose size={18} /></button></div>
+        <Button size="compact" onClick={() => setNewSourceOpen(true)}><Plus size={16} />Nuevo proveedor</Button>
+        <label>Proveedor activo<Select ref={sourceRef} aria-invalid={Boolean(sourceIssue)} aria-describedby={sourceIssue ? 'bulk-source-error' : undefined} value={selectedSource} onChange={(event) => { beginNewVersion(event.target.value); clearServerIssue((issue) => issue.controlKey === 'source'); }}><option value="">Selecciona…</option>{sources.map((value) => <option key={value.sourceId} value={value.sourceId}>{value.name}</option>)}</Select></label>
+        {sourceIssue ? <small id="bulk-source-error" className={styles.fieldError}>{sourceIssue.message}</small> : null}
+        <div className={styles.history}>{sources.map((source) => {
+          const sourceVersions = versions.filter((value) => value.sourceId === source.sourceId).sort((left, right) => right.sequenceNumber - left.sequenceNumber);
+          return <section key={source.sourceId} className={`${styles.sourceGroup} ${selectedSource === source.sourceId ? styles.selectedSource : ''}`}>
+            <header><button type="button" onClick={() => { beginNewVersion(source.sourceId); clearServerIssue((issue) => issue.controlKey === 'source'); }}><strong>{source.name}</strong><span>{source.versionCount} {source.versionCount === 1 ? 'versión' : 'versiones'}</span></button><div className={styles.sourceActions}><Button size="compact" tone="quiet" aria-label={`Nueva carga para ${source.name}`} onClick={() => beginNewVersion(source.sourceId)}><Plus size={15} /></Button>{canDeleteSupplier ? <Button size="compact" tone="quiet" aria-label={`Eliminar proveedor ${source.name}`} title={source.deletionEligibility.allowed ? 'Eliminar proveedor' : 'Se conserva porque tiene historia publicada o dependencias'} disabled={!source.deletionEligibility.allowed} onClick={() => { setDeleteSourceTarget(source); setDeleteStage(1); setDeletePin(''); }}><Trash2 size={15} /></Button> : null}</div></header>
+            <div className={styles.versionList}>{sourceVersions.map((value) => <button type="button" key={value.versionId} className={current?.versionId === value.versionId ? styles.selectedVersion : ''} aria-current={current?.versionId === value.versionId ? 'true' : undefined} onClick={() => void load(value.versionId)}><span><strong>v{value.sequenceNumber}</strong><small>{versionStatus(value)}</small></span><span>{formatVersionDate(value.createdAt, timeZone)} · {value.rowCount.toLocaleString('es-MX')} filas</span>{value.description ? <small>{value.description}</small> : null}</button>)}</div>
+          </section>;
+        })}</div>
+      </aside> : null}
       <main className={styles.composer}>
         <section className={styles.setup}>
-          <label>Versión del proveedor<Input ref={sourceRevisionRef} aria-invalid={Boolean(revisionIssue)} aria-describedby={revisionIssue ? 'bulk-revision-error' : undefined} value={sourceRevision} disabled={current?.lifecycle === 'INGESTED'} onChange={(event) => { setSourceRevision(event.target.value); clearServerIssue((issue) => issue.controlKey === 'sourceRevision'); setDirty(true); }} />{revisionIssue ? <small id="bulk-revision-error" className={styles.fieldError}>{revisionIssue.message}</small> : null}</label>
+          <div className={styles.versionIdentity}>{!sourcesOpen ? <button type="button" className={styles.collapseToggle} aria-expanded="false" aria-label="Abrir fuentes y versiones" onClick={() => setSourcesOpen(true)}><PanelLeftOpen size={18} /></button> : null}<div><strong>{current ? `${current.sourceName} · v${current.sequenceNumber}` : `${sources.find((value) => value.sourceId === selectedSource)?.name ?? 'Selecciona un proveedor'} · nueva carga`}</strong><small>{current ? versionStatus(current) : 'El número se asignará al guardar'}</small></div></div>
+          <label>Descripción opcional<Input value={description} maxLength={500} disabled={current?.lifecycle === 'INGESTED'} placeholder="Ej. Lista septiembre, sucursal o referencia" onChange={(event) => { setDescription(event.target.value); setDirty(true); }} /></label>
           <fieldset disabled={Boolean(current)}><legend>Modo</legend><label><input type="radio" checked={mode === 'FULL'} onChange={() => { setMode('FULL'); setDirty(true); }} />Alta y actualización</label><label><input type="radio" checked={mode === 'COMPACT'} onChange={() => { setMode('COMPACT'); setDirty(true); }} />Actualización compacta</label></fieldset>
           {!current ? <div className={styles.demo}><Button size="compact" onClick={prepareOwnerCase}><ClipboardPaste size={16} />Caso Owner · 36</Button><Button size="compact" onClick={() => prepareDemo(1)}><ClipboardPaste size={16} />Demo V1 · 1500</Button><Button size="compact" onClick={() => prepareDemo(2)}><ClipboardPaste size={16} />Demo V2 · 1500</Button></div> : null}
         </section>
@@ -283,10 +315,29 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken }: Readonly<{ 
             </div> : null}
           </article>)}
         </section> : null}
-        {current ? <section className={styles.comparison}><h2><GitCompare size={18} />Comparar versiones</h2><Select value={compareId} onChange={(event) => setCompareId(event.target.value)}><option value="">Versión anterior…</option>{versions.filter((value) => value.versionId !== current.versionId && value.sourceId === current.sourceId).map((value) => <option key={value.versionId} value={value.versionId}>{value.sourceRevision}</option>)}</Select><Button size="compact" onClick={() => void compareVersions()} disabled={!compareId}>Comparar</Button>{compare ? <p>Mapeadas {compare.mapped} · Cambiadas {compare.changed} · Nuevas {compare.added} · Desaparecidas {compare.disappeared} · Ambiguas {compare.ambiguous}</p> : null}</section> : null}
+        {current ? <section className={styles.comparison}><h2><GitCompare size={18} />Comparar versiones</h2><Select value={compareId} onChange={(event) => setCompareId(event.target.value)}><option value="">Versión anterior…</option>{versions.filter((value) => value.versionId !== current.versionId && value.sourceId === current.sourceId).map((value) => <option key={value.versionId} value={value.versionId}>v{value.sequenceNumber}{value.description ? ` · ${value.description}` : ''}</option>)}</Select><Button size="compact" onClick={() => void compareVersions()} disabled={!compareId}>Comparar</Button>{compare ? <p>Mapeadas {compare.mapped} · Cambiadas {compare.changed} · Nuevas {compare.added} · Desaparecidas {compare.disappeared} · Ambiguas {compare.ambiguous}</p> : null}</section> : null}
         {!current && rows.length === 1 ? <EmptyState title="Pega tu lista para comenzar" description="Google Sheets: copia un rectángulo y pégalo en la primera celda. Nada toca Catalog hasta Aplicar lote." /> : null}
       </main>
     </div>
+    <Dialog open={newSourceOpen} title="Nuevo proveedor" description="Crea la fuente; la primera versión sólo se crea cuando guardes una carga." onClose={() => { if (!busy) setNewSourceOpen(false); }} footer={false}>
+      <div className={styles.supplierDialog}>
+        <label>Nombre del proveedor<Input autoFocus maxLength={160} value={newSourceName} onChange={(event) => setNewSourceName(event.target.value)} /></label>
+        <footer><Button disabled={busy} onClick={() => setNewSourceOpen(false)}>Cancelar</Button><Button tone="primary" disabled={busy || !newSourceName.trim()} onClick={() => void addSource()}>{busy ? 'Creando…' : 'Crear proveedor'}</Button></footer>
+      </div>
+    </Dialog>
+    <Dialog open={deleteSourceTarget !== null} title={deleteStage === 1 ? 'Eliminar proveedor' : 'Confirmar eliminación definitiva'} description="Acción sensible nivel 2" onClose={() => closeSupplierDelete()} footer={false}>
+      <div className={styles.supplierDialog} onKeyDownCapture={(event) => { if (deleteStage === 1 && event.key === 'Enter') event.preventDefault(); }}>
+        {deleteStage === 1 ? <>
+          <Alert tone="warning" title="Eliminación permanente">Se eliminará permanentemente {deleteSourceTarget?.name} y sus {deleteSourceTarget?.versionCount.toLocaleString('es-MX') ?? 0} versiones de borrador. Esta acción no se puede deshacer.</Alert>
+          <p>Los proveedores con versiones aplicadas, memoria de reconciliación o cualquier evidencia dependiente están bloqueados por el servidor.</p>
+          <footer><Button disabled={busy} onClick={() => closeSupplierDelete()}>Cancelar</Button><Button tone="danger" disabled={busy} onClick={() => setDeleteStage(2)}>Continuar</Button></footer>
+        </> : <>
+          <Alert tone="warning" title="¿Confirmas la eliminación definitiva?">Esta segunda confirmación eliminará la fuente y sus borradores. CatalogItem no se elimina.</Alert>
+          <label>Confirma tu PIN<Input autoFocus type="password" inputMode="numeric" autoComplete="off" maxLength={4} value={deletePin} onChange={(event) => setDeletePin(event.target.value.replace(/\D/gu, '').slice(0, 4))} /><small>Debe corresponder al mismo usuario de la sesión activa.</small></label>
+          <footer><Button disabled={busy} onClick={() => closeSupplierDelete()}>Cancelar</Button><Button tone="danger" disabled={busy || !deleteArmed || deletePin.length !== 4} onClick={() => void removeSupplier()}>{busy ? 'Eliminando…' : 'Eliminar definitivamente'}</Button></footer>
+        </>}
+      </div>
+    </Dialog>
     <Dialog open={retirementPlan !== null} title="Retirar artículos creados por este lote" description="Compensación acotada · acción sensible nivel 2" onClose={() => { if (!busy) { setRetirementPlan(null); setRetirementPin(''); } }} footer={false}>
       <div className={styles.retirementDialog}>
         <Alert tone="warning" title="No es una reversión del lote">Sólo se inactivan artículos demostrablemente CREATED por este lote. MATCHED/UPDATED, precios previos y toda la historia permanecen.</Alert>

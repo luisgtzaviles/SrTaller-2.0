@@ -311,6 +311,7 @@ Capacidades iniciales:
 | `catalog.import.prepare` | cargar, mapear y resolver un batch sin publicar |
 | `catalog.import.publish` | publicar un batch listo |
 | `catalog.items.bulk_retire` | preparar y ejecutar retiro masivo de CatalogItems; no concede hard delete ni reversión de updates |
+| `catalog.suppliers.delete` | eliminar una SupplierSource sólo cuando toda su historia sea borrador seguro; no concede delete de CatalogItem ni de evidencia publicada |
 
 La API de búsqueda omite el campo de costo salvo que el request pida
 `includeReferenceCost=true` y el servidor confirme
@@ -333,6 +334,13 @@ PIN del mismo actor, plan/preview server-side, confirmación exacta, ejecución
 Tenant-scoped transaccional, audit append-only y revalidación de contexto,
 sesión, capability y conjunto de items al ejecutar. El control es de un solo
 uso y nunca eleva privilegios ni reutiliza `catalog.manage` como sustituto.
+
+Eliminar una `SupplierSource` segura también es nivel 2 de ADR-013. Exige la
+capability asignable `catalog.suppliers.delete`, reautenticación del mismo
+actor, dos confirmaciones explícitas y revalidación transaccional. La acción se
+bloquea si existe una Version `INGESTED`, Resolution, ReconciliationMemory o
+evidencia de retiro. No existe fallback a `catalog.manage` o
+`catalog.import.prepare`.
 
 ## 8. Contratos públicos y consumidores
 
@@ -450,6 +458,13 @@ content hash, schema version, signature algorithm version y correction lineage.
 Después de `INGESTED` su contenido es inmutable; una corrección crea otra versión
 con `correctsVersionId`. La relación Version→Batch no es obligatoriamente 1:1.
 
+Cada Source posee una secuencia monotónica Tenant+Source. El servidor asigna
+`v1`, `v2`, ... al guardar una nueva carga; el cliente no elige ni deriva el
+número desde fecha, filename o descripción. Un lock de la Source serializa
+creaciones concurrentes, los números consumidos no se reutilizan y varias
+versiones del mismo día son válidas. La descripción es metadata opcional de
+historia: nunca participa en identidad, matching u orden.
+
 Una fila ausente en la versión siguiente sólo queda `DISAPPEARED` en la
 comparación de proveedor. No inactiva CatalogItem, no revoca precio/costo ni
 modifica Branch overrides.
@@ -560,7 +575,33 @@ batch autoritativo. `MATCHED` y `UPDATED` no se revierten. No se llama
 `Revertir lote`: la reversión exacta de updates queda fuera hasta contar con
 before-images autoritativos y un modelo append-only de efectos/publicación.
 
-### 10.7 Retención, consultas y presupuesto operativo
+### 10.7 Eliminación gobernada de SupplierSource
+
+`SupplierSource` agrupa historia de intake; por eso no se elimina sólo porque
+el usuario ya no quiera verla. El servidor clasifica todas sus relaciones:
+
+| Relación | Semántica al eliminar una Source segura |
+|---|---|
+| Versions `DRAFT`, raw temporal, Listings y RowDecisions de draft | se eliminan dentro de la misma transacción |
+| UpdateBatch de draft sin efecto publicado | se elimina con su draft |
+| Version `INGESTED` | bloquea |
+| SupplierListingResolution | bloquea |
+| SupplierReconciliationMemory | bloquea |
+| RetirementPlan / RetirementEvent ligados al batch | bloquean |
+| CatalogItem, identifiers, price/cost revisions, Catalog audit y downstream | nunca se eliminan ni se modifican |
+
+Antes del efecto se vuelve a comprobar `expectedVersion`, Tenant, Session,
+Station, User, capability y la ausencia de dependencias. Un evento append-only
+desacoplado de la Source conserva actor, sesión, reautenticación, request,
+correlation, nombre y conteos de lo eliminado. Las FKs y la ausencia de
+`CASCADE` son guardas; no sustituyen la decisión de dominio.
+
+La auditoría inicial detectó deuda fuera de esta acción: los hard deletes de
+Category/Brand de Catalog usan `catalog.manage` y los de referencias de Repairs
+usan `repairs.catalogs.manage`. Permanecen sin cambio en PBI-041; requieren
+capabilities explícitas en trabajo posterior con autoridad de esos módulos.
+
+### 10.8 Retención, consultas y presupuesto operativo
 
 Durante 90 días se conserva el payload completo de clipboard/adaptador, celdas
 no mapeadas, artefactos temporales y diagnóstico detallado. Permanentemente se

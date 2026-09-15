@@ -144,7 +144,29 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260914152000_access_add_catalog_bulk_retire_capability.ts',
       '20260914153000_catalog_create_retirement_plans.ts',
       '20260914154000_catalog_add_historical_reactivation.ts',
+      '20260914155000_catalog_govern_supplier_history.ts',
+      '20260914155100_access_add_supplier_delete_capability.ts',
     ],
+  );
+
+  const supplierHistoryMigration = await readFile(
+    `${productMigrationRoot}/20260914155000_catalog_govern_supplier_history.ts`,
+    'utf8',
+  );
+  const guardedBackfill = supplierHistoryMigration.indexOf(
+    "and old.sequence_number is null",
+  );
+  const sequenceBackfill = supplierHistoryMigration.indexOf(
+    'update catalog_supplier_catalog_versions version',
+  );
+  const finalImmutableFunction = supplierHistoryMigration.lastIndexOf(
+    "if old.lifecycle = 'INGESTED' then",
+  );
+  assert.ok(guardedBackfill > 0 && guardedBackfill < sequenceBackfill);
+  assert.ok(finalImmutableFunction > sequenceBackfill);
+  assert.match(
+    supplierHistoryMigration,
+    /\(to_jsonb\(new\) - 'sequence_number'\) = \(to_jsonb\(old\) - 'sequence_number'\)/u,
   );
 });
 

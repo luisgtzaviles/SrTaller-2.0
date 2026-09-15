@@ -305,6 +305,7 @@ export interface CatalogSupplierSourceTable {
   readonly normalized_name: ImmutableColumn<string>;
   readonly status: MutableColumn<'ACTIVE' | 'INACTIVE'>;
   readonly version: MutableColumn<number>;
+  readonly next_version_sequence: MutableColumn<number>;
   readonly created_by_actor_id: ImmutableColumn<string>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
@@ -315,7 +316,11 @@ export interface CatalogSupplierCatalogVersionTable {
   readonly version_id: ImmutableColumn<string>;
   readonly source_id: ImmutableColumn<string>;
   readonly supersedes_version_id: ImmutableColumn<string | null>;
+  readonly sequence_number: ImmutableColumn<number>;
   readonly source_revision: ImmutableColumn<string>;
+  readonly description: MutableColumn<string | null>;
+  readonly create_client_request_id: ImmutableColumn<string | null>;
+  readonly create_request_sha256: ImmutableColumn<string | null>;
   readonly composer_mode: ImmutableColumn<'FULL' | 'COMPACT'>;
   readonly column_signature: MutableColumn<string>;
   readonly lifecycle: MutableColumn<'DRAFT' | 'INGESTED'>;
@@ -326,6 +331,28 @@ export interface CatalogSupplierCatalogVersionTable {
   readonly created_by_actor_id: ImmutableColumn<string>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
+}
+
+export interface CatalogSupplierSourceDeletionEventTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly deletion_id: ImmutableColumn<string>;
+  readonly source_id: ImmutableColumn<string>;
+  readonly source_name: ImmutableColumn<string>;
+  readonly normalized_name: ImmutableColumn<string>;
+  readonly source_version: ImmutableColumn<number>;
+  readonly deleted_version_count: ImmutableColumn<number>;
+  readonly deleted_listing_count: ImmutableColumn<number>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<string>;
+  readonly sensitivity_level: ImmutableColumn<number>;
+  readonly reauthenticated_at: ImmutableColumn<Date>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly request_sha256: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
 }
 
 export interface CatalogSupplierVersionRawPayloadTable {
@@ -571,6 +598,7 @@ export type AccessCapabilityCode =
   | 'catalog.import.prepare'
   | 'catalog.import.publish'
   | 'catalog.items.bulk_retire'
+  | 'catalog.suppliers.delete'
   | 'users.read'
   | 'users.manage';
 
@@ -1418,6 +1446,7 @@ export interface DatabaseSchema {
   readonly catalog_update_row_decisions: CatalogUpdateRowDecisionTable;
   readonly catalog_supplier_listing_resolutions: CatalogSupplierListingResolutionTable;
   readonly catalog_supplier_reconciliation_memory: CatalogSupplierReconciliationMemoryTable;
+  readonly catalog_supplier_source_deletion_events: CatalogSupplierSourceDeletionEventTable;
   readonly catalog_retirement_plans: CatalogRetirementPlanTable;
   readonly catalog_retirement_events: CatalogRetirementEventTable;
   readonly customers: CustomerTable;

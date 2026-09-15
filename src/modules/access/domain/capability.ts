@@ -21,6 +21,7 @@ export const ACCESS_CAPABILITY_CATALOG = Object.freeze([
   'catalog.import.prepare',
   'catalog.import.publish',
   'catalog.items.bulk_retire',
+  'catalog.suppliers.delete',
 ] as const);
 
 export type CapabilityCode = (typeof ACCESS_CAPABILITY_CATALOG)[number];

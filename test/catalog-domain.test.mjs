@@ -184,6 +184,25 @@ test('bulk composer composes prepare, cost and publish authority without leaking
   ]);
 });
 
+test('supplier hard delete cannot bypass the dedicated sensitive-action executor', async () => {
+  let bulkCalls = 0;
+  const sensitive = {
+    async execute(_evidence, action) {
+      assert.equal(action, 'catalog.suppliers-delete');
+      throw new ContextualAuthorizationError('ACCESS_DENIED');
+    },
+  };
+  const bulk = {
+    async deleteSource() { bulkCalls += 1; return 'must-not-run'; },
+  };
+  const operations = new CatalogProtectedOperations({}, {}, sensitive, {}, bulk, {});
+  await assert.rejects(
+    operations.deleteSupplierSource({}, '30000000-0000-4000-8000-000000000041', { pin: '7392' }),
+    (error) => error instanceof ContextualAuthorizationError && error.code === 'ACCESS_DENIED',
+  );
+  assert.equal(bulkCalls, 0);
+});
+
 test('tenant-wide catalog administration rejects branch-only authority and composes both commit guards', async () => {
   let assignmentScope = 'BRANCH_RESTRICTED';
   let contextualCommits = 0;

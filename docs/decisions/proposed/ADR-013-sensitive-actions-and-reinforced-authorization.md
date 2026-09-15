@@ -155,6 +155,20 @@ Una operación no es sensible sólo por aparecer en una pantalla administrativa.
 
 Los umbrales concretos se deciden en la política funcional de la rebanada.
 
+### Regla transversal para hard delete
+
+Todo hard delete de una entidad de dominio requiere una capability explícita,
+asignable a roles y específica para esa clase de eliminación. Una capability
+amplia de administración o edición no autoriza implícitamente el borrado
+definitivo. El servidor debe exigir la capability exacta, clasificar la
+sensibilidad de la operación y revalidar dependencias y autoridad al ejecutar.
+
+La introducción de esta regla no convierte retroactivamente implementaciones
+anteriores en conformes. Los hard deletes existentes que dependan de
+capabilities amplias quedan como deuda identificada y deben migrarse en el PBI
+que tenga autoridad sobre su módulo; no pueden usarse como precedente para una
+nueva eliminación.
+
 ## Capacidad ordinaria y control reforzado
 
 1. Toda acción sensible exige primero la capacidad ordinaria correspondiente.

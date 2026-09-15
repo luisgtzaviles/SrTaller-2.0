@@ -67,6 +67,10 @@ por cliente tampoco son autoridad.
 | BI-T30 | Tenant A infiere o ejecuta el plan de B | Crítico | PK/predicates Tenant-scoped y 404 uniforme | plan alien no se lee, consume ni audita en el Tenant incorrecto |
 | BI-T31 | reactivación débil o ambigua revive la identidad equivocada | Crítico | sólo mapping histórico exacto, único, consistente, mismo Tenant y Tipo compatible; sin fuzzy write | dos candidatos, contradicción y Tenant ajeno siguen AMBIGUOUS/CONFLICT |
 | BI-T32 | reactivación parcial crea identidad o revisiones duplicadas | Crítico | target INACTIVE + expectedVersion, transacción serializable, idempotency journal y Resolution MATCHED | stale/concurrencia/retry conservan mismo ID y cero efectos parciales/duplicados |
+| BI-T33 | dos cargas concurrentes reciben el mismo número de versión | Alto | lock de Source + contador server-side + unique Tenant/Source/sequence | requests concurrentes producen `vN` y `vN+1` |
+| BI-T34 | hard delete de Source borra o desconecta evidencia publicada | Crítico | elegibilidad server-side; INGESTED/Resolution/Memory/retirement bloquean; sin CASCADE | Source histórica rechazada y CatalogItems intactos |
+| BI-T35 | capacidad administrativa amplia sustituye autoridad de delete | Crítico | `catalog.suppliers.delete` exacta, asignable y sin fallback | UI oculta + backend deniega sin capability |
+| BI-T36 | Enter/doble click salta intención o duplica delete | Alto | dos confirmaciones, primer Enter neutralizado, guard sincrónico e idempotencia | un solo evento/resultado |
 
 ## Abuse and denial rules
 

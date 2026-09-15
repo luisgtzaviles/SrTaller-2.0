@@ -15,6 +15,7 @@ import type { AccessSessionRuntime } from './access-session.controller.js';
 
 const policy = Object.freeze({
   'catalog.items.bulk-retire': 'catalog.items.bulk_retire',
+  'catalog.suppliers-delete': 'catalog.suppliers.delete',
 } as const);
 
 /**

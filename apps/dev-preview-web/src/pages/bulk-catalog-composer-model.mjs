@@ -177,12 +177,11 @@ export function sortValidationIssues(issues) {
   });
 }
 
-/** @param {{selectedSource: string, sourceRevision: string, mode: 'FULL' | 'COMPACT', rows: readonly Record<string, string>[]}} input */
+/** @param {{selectedSource: string, mode: 'FULL' | 'COMPACT', rows: readonly Record<string, string>[]}} input */
 export function validateComposerDraft(input) {
   /** @type {ValidationIssue[]} */
   const issues = [];
   if (!input.selectedSource.trim()) issues.push({ scope: 'BATCH', controlKey: 'source', code: 'REQUIRED', message: 'Selecciona o crea una fuente.' });
-  if (!input.sourceRevision.trim()) issues.push({ scope: 'BATCH', controlKey: 'sourceRevision', code: 'REQUIRED', message: 'Escribe la versión del proveedor.' });
   input.rows.forEach((row, rowIndex) => {
     if (input.mode === 'FULL') {
       for (const columnKey of ['kind', 'title', 'category']) {
@@ -210,17 +209,14 @@ const apiColumnMap = Object.freeze({
 
 /** @param {{status?: number, code?: string | null, parameter?: string | null}} error */
 export function validationIssueFromApi(error) {
-  if (error.code === 'CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS') {
-    return { scope: 'BATCH', controlKey: 'sourceRevision', code: error.code, message: 'Ya existe esta versión para la fuente seleccionada. Usa otro nombre de versión o abre el borrador existente.' };
-  }
   if (error.code === 'CATALOG_INPUT_INVALID' && error.parameter) {
     const rowMatch = /^rows\.(\d+)\.([A-Za-z]+)$/u.exec(error.parameter);
     if (rowMatch) {
       const rawKey = rowMatch[2]; const columnKey = apiColumnMap[rawKey] ?? 'title';
       return { scope: 'CELL', rowIndex: Number(rowMatch[1]), columnKey, code: error.code, message: validationMessages[rawKey] ?? validationMessages[columnKey] ?? `Revisa ${columnKey}.` };
     }
-    const controlKey = ['sourceId', 'sourceRevision', 'mode'].includes(error.parameter) ? (error.parameter === 'sourceId' ? 'source' : error.parameter) : undefined;
-    if (controlKey) return { scope: 'BATCH', controlKey, code: error.code, message: controlKey === 'source' ? 'Selecciona una fuente válida.' : controlKey === 'sourceRevision' ? 'Revisa la versión del proveedor.' : 'Revisa el modo de carga.' };
+    const controlKey = ['sourceId', 'mode'].includes(error.parameter) ? (error.parameter === 'sourceId' ? 'source' : error.parameter) : undefined;
+    if (controlKey) return { scope: 'BATCH', controlKey, code: error.code, message: controlKey === 'source' ? 'Selecciona un proveedor válido.' : 'Revisa el modo de carga.' };
   }
   return { scope: 'GLOBAL', code: error.code ?? 'UNEXPECTED', message: error.status === 0 ? 'No fue posible contactar al servidor. El borrador no se guardó.' : 'No se guardó el borrador. No hubo escrituras parciales; intenta nuevamente o relee la versión.' };
 }

@@ -168,6 +168,10 @@ export class CatalogProtectedOperations {
   publishSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { const writeCost = typeof input === 'object' && input !== null && (input as { writeReferenceCost?: unknown }).writeReferenceCost === true; const requirements = writeCost ? [importPublish, catalogManage, pricesManage, costManage, costRead] : [importPublish, catalogManage, pricesManage]; return this.executeTenantWideMany(evidence, requirements, (contexts) => this.bulk.publish(mutationContext(contexts), versionId, input, writeCost)); }
   compareSupplierVersions(evidence: ProtectedRequestEvidence, leftVersionId: unknown, rightVersionId: unknown) { return this.tenantWideAuthorization.execute(evidence, importPrepareRead, (context) => this.bulk.compare(scope(context), leftVersionId, rightVersionId)); }
   purgeSupplierRaw(evidence: ProtectedRequestEvidence) { return this.executeTenantWideMany(evidence, [importPrepareWrite], (contexts) => this.bulk.purgeExpiredRaw(mutationContext(contexts))); }
+  deleteSupplierSource(evidence: ProtectedRequestEvidence, sourceId: unknown, input: unknown) {
+    const pin = typeof input === 'object' && input !== null && !Array.isArray(input) ? (input as { pin?: unknown }).pin : undefined;
+    return this.sensitiveLevel2.execute(evidence, 'catalog.suppliers-delete', { pin }, (context) => this.bulk.deleteSource(mutationContext([context]), sourceId, input, context.reauthenticatedAt));
+  }
   createRetirementPlan(evidence: ProtectedRequestEvidence, input: unknown) { return this.executeTenantWideMany(evidence, [bulkRetire], (contexts) => this.retirement.createPlan(mutationContext(contexts), input)); }
   executeRetirementPlan(evidence: ProtectedRequestEvidence, input: unknown) {
     const pin = typeof input === 'object' && input !== null && !Array.isArray(input) ? (input as { pin?: unknown }).pin : undefined;

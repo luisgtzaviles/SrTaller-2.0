@@ -39,8 +39,9 @@ confirmarlos en migration review sin cambiar semántica.
 |---|---|
 | `tenant_id`, `supplier_source_id` | PK/identity compuesta; UUID opaco |
 | `display_name`, `normalized_name` | casing visible preservado; exact duplicate Tenant-scoped rechazado |
-| `status` | `ACTIVE`/`INACTIVE`; no hard delete con versiones |
-| `version` | optimistic concurrency |
+| `status` | `ACTIVE`/`INACTIVE`; historia publicada siempre bloquea hard delete |
+| `version` | optimistic concurrency; también protege la elegibilidad de delete |
+| `next_version_sequence` | contador positivo, monotónico y bloqueado por Source; no reutiliza números |
 | actor/correlation/timestamps | creación y última mutación gobernada |
 
 Unique parcial/lógico: `(tenant_id, normalized_name)` para identidad vigente.
@@ -52,7 +53,9 @@ No contiene contactos, términos, cuentas, pagos, compras ni recepción.
 |---|---|
 | `tenant_id`, `supplier_catalog_version_id` | PK compuesta |
 | `supplier_source_id` | FK compuesta a Source del mismo Tenant |
-| `label`, `revision` | ronda declarada y revisión; unique por Source |
+| `sequence_number` | secuencia server-side única por Tenant+Source; identidad visible `vN` |
+| `description` | metadata opcional; no participa en identidad ni matching |
+| `create_client_request_id`, `create_request_sha256` | idempotencia de creación; replay incompatible falla cerrado |
 | `status` | `DRAFT/INGESTING/INGESTED/CANCELLED/FAILED` |
 | `corrects_version_id` | self-FK mismo Tenant+Source; acíclica, distinta de sí misma |
 | `content_hash` | hash del contenido canónico; no sustituye label/revision |
@@ -61,7 +64,8 @@ No contiene contactos, términos, cuentas, pagos, compras ni recepción.
 | `version` | optimistic concurrency sólo pre-INGESTED |
 | actor/context/correlation/timestamps | received/ingested y procedencia |
 
-Unique: `(tenant_id, supplier_source_id, label, revision)` y
+Unique: `(tenant_id, supplier_source_id, sequence_number)`, request de creación
+Tenant-scoped, `(tenant_id, supplier_source_id, label, revision)` legado y
 `(tenant_id, supplier_catalog_version_id, supplier_source_id)` para FKs
 scope-safe. Un trigger o repository+test de mutation guard impide alterar
 contenido/metadata de negocio después de `INGESTED`; la corrección se expresa en
@@ -165,11 +169,26 @@ capability exacta, nivel 2, instante de reautenticación, hash y conteos,
 resultado `SUCCEEDED/REJECTED`, motivo seguro, correlation y request id. Los
 triggers impiden update/delete. Los eventos no son un mecanismo de rollback.
 
+### `catalog_supplier_source_deletion_events`
+
+Evidencia append-only desacoplada de la Source eliminada. Conserva Tenant,
+source ID/nombre/versión, conteos de Versions/Listings borrados, actor, Station,
+Session, capability exacta `catalog.suppliers.delete`, reautenticación nivel 2,
+request hash, correlation y timestamp. No tiene FK a Source y sí conserva FK al
+Tenant; sus triggers rechazan update/delete.
+
+La eliminación sólo acepta una Source cuyas versiones sean todas `DRAFT` y que
+no tenga Resolution, ReconciliationMemory, RetirementPlan o RetirementEvent.
+En una transacción se eliminan RowDecisions, Listings, UpdateBatches, raw,
+Versions y Source, y se agrega el evento. Cualquier Version `INGESTED` o
+dependencia bloquea. Ningún `CatalogItem`, identifier, revisión o audit de
+Catalog participa en el conjunto.
+
 ## Index strategy
 
 - `(tenant_id, supplier_source_id, status)` y nombre normalizado de Source;
-- Version por `(tenant_id, source_id, label, revision)`, content hash e
-  `corrects_version_id`;
+- Version por `(tenant_id, source_id, sequence_number)`, request id, content
+  hash y `corrects_version_id`;
 - Listing por `(tenant_id, version_id, ordinal)`, fingerprint, signature y
   supplier code nullable;
 - Resolution por listing/sequence, target y source/signature projection;
@@ -179,6 +198,9 @@ triggers impiden update/delete. Los eventos no son un mecanismo de rollback.
 - raw payload por `expires_at` con `purged_at IS NULL` para cleanup.
 - RetirementPlan por Tenant/status/expiry y batch; RetirementEvent por
   Tenant/plan/ocurrencia y client request.
+- Source por Tenant y `next_version_sequence`; Version por
+  `(tenant_id, source_id, sequence_number)` y request id de creación.
+- SupplierSourceDeletionEvent por Tenant/source/ocurrencia y client request.
 
 Preview/compare usa queries set-based y paginadas; no carga 10,000 rows al DOM ni
 hace N+1 contra Catalog/Resolution. Los planes y p95 forman evidencia futura.
