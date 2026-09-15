@@ -78,6 +78,14 @@ export class CatalogReferenceAlreadyExistsError extends CatalogConflictError {
   }
 }
 
+export class CatalogSupplierVersionAlreadyExistsError extends CatalogConflictError {
+  override readonly code = 'CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS';
+  constructor() {
+    super();
+    this.name = 'CatalogSupplierVersionAlreadyExistsError';
+  }
+}
+
 export class CatalogReferenceInactiveError extends CatalogConflictError {
   override readonly code = 'CATALOG_REFERENCE_INACTIVE';
   constructor(readonly referenceKind: 'category' | 'brand') {

@@ -53,9 +53,9 @@ const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
 async function json<T>(response: Response): Promise<T> {
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT, { detail: { background: response.status === 403 } }));
-    let payload: { code?: string; message?: string } = {};
-    try { payload = await response.json() as { code?: string; message?: string }; } catch { /* response has no safe JSON body */ }
-    throw new PreviewApiError(response.status, payload.message, payload.code ?? null);
+    let payload: { code?: string; message?: string; parameter?: string } = {};
+    try { payload = await response.json() as { code?: string; message?: string; parameter?: string }; } catch { /* response has no safe JSON body */ }
+    throw new PreviewApiError(response.status, payload.message, payload.code ?? null, payload.parameter ?? null);
   }
   try { return await response.json() as T; }
   catch { throw new PreviewApiError(0); }

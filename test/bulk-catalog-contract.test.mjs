@@ -48,12 +48,16 @@ test('supplier observed title remains separate from the editable Catalog title p
 });
 
 test('bulk contracts preserve separate prepare, publish, cost and Branch boundaries', async () => {
-  const [protectedOperations, repository, migration, ui, css] = await Promise.all([
+  const [protectedOperations, repository, migration, ui, css, model, shell, feedback, navigation] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts', 'utf8'),
     readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8'),
     readFile('apps/dev-preview-web/src/pages/bulk-catalog-composer-page.module.css', 'utf8'),
+    readFile('apps/dev-preview-web/src/pages/bulk-catalog-composer-model.mjs', 'utf8'),
+    readFile('apps/dev-preview-web/src/components/shell/ApplicationShell.tsx', 'utf8'),
+    readFile('apps/dev-preview-web/src/components/ui/feedback.tsx', 'utf8'),
+    readFile('apps/dev-preview-web/src/components/ui/navigation.tsx', 'utf8'),
   ]);
   assert.match(protectedOperations, /catalog\.import\.prepare/u);
   assert.match(protectedOperations, /catalog\.import\.publish/u);
@@ -75,6 +79,20 @@ test('bulk contracts preserve separate prepare, publish, cost and Branch boundar
   assert.match(ui, /rows\.slice\(first, first \+ 22\)/u);
   assert.match(ui, /translateY/u);
   assert.match(ui, /Contexto del lote/u);
-  assert.match(ui, /Esenciales: Título · Costo · Precio/u);
+  assert.match(ui, /aria-label="Columnas de trabajo"/u);
   assert.match(ui, /supplierObservedTitle/u);
+  assert.match(ui, /validateComposerDraft/u);
+  assert.match(ui, /focusIssue/u);
+  assert.match(ui, /data-cell-key/u);
+  assert.match(ui, /aria-invalid/u);
+  assert.match(ui, /Error siguiente/u);
+  assert.match(model, /scope: 'BATCH'/u);
+  assert.match(model, /scope: 'CELL'/u);
+  assert.match(model, /CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS/u);
+  assert.match(repository, /catalog_supplier_versions_revision_uq/u);
+  assert.match(shell, /location\.pathname !== '\/listas\/precios\/carga-masiva'/u);
+  assert.match(feedback, /export function Toast/u);
+  assert.match(navigation, /export function BackLink/u);
+  assert.match(css, /\.issueNavigator/u);
+  assert.match(css, /\.invalidCell/u);
 });

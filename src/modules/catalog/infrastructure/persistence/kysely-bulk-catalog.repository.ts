@@ -5,7 +5,7 @@ import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExec
 import type { InternalDatabasePersistenceConnection, InternalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type { DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
-import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogInputError, CatalogNotFoundError, CatalogUnavailableError, catalogKindCapabilities, catalogKindSkuPrefix } from '../../domain/catalog-item.js';
+import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogInputError, CatalogNotFoundError, CatalogSupplierVersionAlreadyExistsError, CatalogUnavailableError, catalogKindCapabilities, catalogKindSkuPrefix } from '../../domain/catalog-item.js';
 import type { CatalogItemKind } from '../../domain/catalog-item.js';
 import { normalizeIdentifier, normalizeReference, retentionDate, sha256 } from '../../domain/bulk-catalog.js';
 import type { BulkCatalogClassification, BulkCatalogDecision, BulkCatalogRowInput } from '../../domain/bulk-catalog.js';
@@ -19,6 +19,8 @@ const emptyCounts = (): Record<BulkCatalogClassification, number> => ({ NEW: 0, 
 function translate(error: unknown): Error {
   if (error instanceof CatalogInputError || error instanceof CatalogNotFoundError || error instanceof CatalogConflictError || error instanceof CatalogAuthorizationChangedError) return error;
   const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
+  const constraint = typeof error === 'object' && error && 'constraint' in error ? String(error.constraint) : '';
+  if (code === '23505' && constraint === 'catalog_supplier_versions_revision_uq') return new CatalogSupplierVersionAlreadyExistsError();
   if (['23505', '23503', '23514', 'DATABASE_TRANSACTION_SERIALIZATION_FAILURE', 'DATABASE_TRANSACTION_DEADLOCK'].includes(code)) return new CatalogConflictError();
   if (['22P02', '22001', '23502'].includes(code)) return new CatalogInputError('persistence');
   return new CatalogUnavailableError();

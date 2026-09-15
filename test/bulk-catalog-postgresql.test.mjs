@@ -9,7 +9,7 @@ const enabled = process.env.SR_PBI041_PG_TEST === '1';
 const { createDatabaseConnection } = enabled ? await import('../dist/infrastructure/database/database-connection.js') : {};
 const { KyselyBulkCatalogRepository } = enabled ? await import('../dist/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.js') : {};
 const { BulkCatalogService } = enabled ? await import('../dist/modules/catalog/application/bulk-catalog.service.js') : {};
-const { CatalogConflictError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
+const { CatalogConflictError, CatalogSupplierVersionAlreadyExistsError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
 
 const tenantA = 'a1410000-0000-4000-8000-000000000041';
 const tenantB = 'b1410000-0000-4000-8000-000000000041';
@@ -53,6 +53,10 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const source = await service.createSource(ctxA, { name: 'Proveedor PostgreSQL' });
     const rows = [{ ...fullRow(1), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }, fullRow(2), fullRow(3), fullRow(5)];
     const draft = await service.createDraft(ctxA, { sourceId: source.sourceId, sourceRevision: 'V1', mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-v1', rows });
+    await assert.rejects(
+      service.createDraft(ctxA, { sourceId: source.sourceId, sourceRevision: 'V1', mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-duplicate', rows }),
+      CatalogSupplierVersionAlreadyExistsError,
+    );
     assert.equal(draft.rows.every((row) => row.proposal.referenceCostMinor === null), true);
     const costVisibleDraft = await service.getVersion({ tenantId: tenantA, branchId: branchA }, draft.versionId, true);
     assert.equal(costVisibleDraft.rows.some((row) => row.proposal.referenceCostMinor !== null), true);

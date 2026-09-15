@@ -1,29 +1,50 @@
-.page { display: grid; gap: var(--space-4); }
-.layout { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: var(--space-4); align-items: start; }
-.sidebar, .composer > section, .actions, .rowActions { border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
-.sidebar { position: sticky; top: var(--space-3); display: grid; gap: var(--space-3); padding: var(--space-4); }
-.sidebar h2, .comparison h2, .decisionTitle h2, .batchContext h2 { display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: 1rem; }
+.page { display: grid; gap: var(--space-3); }
+.heading { display: grid; gap: var(--space-1); }
+.heading header { gap: var(--space-2); }
+.heading header span { margin-top: var(--space-1); }
+.heading header h1 { font-size: clamp(1.5rem, 3vw, 2rem); }
+.heading header p { margin-top: var(--space-1); font-size: .8125rem; }
+.layout { display: grid; grid-template-columns: minmax(190px, 230px) minmax(0, 1fr); gap: var(--space-3); align-items: start; transition: grid-template-columns var(--duration-fast) var(--ease-standard); }
+.layoutCollapsed { grid-template-columns: 48px minmax(0, 1fr); }
+.sidebar, .composer > section, .rowActions { border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
+.sidebar { position: sticky; top: var(--space-2); display: grid; min-width: 0; gap: var(--space-2); padding: var(--space-3); }
+.sidebarCollapsed { justify-items: center; padding: var(--space-2); }
+.sidebarHeading { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.sidebar h2, .comparison h2, .decisionTitle h2, .batchContext h2 { display: flex; min-width: 0; align-items: center; gap: var(--space-2); margin: 0; font-size: .9375rem; }
+.collapseToggle { display: grid; width: 32px; height: 32px; flex: none; place-items: center; padding: 0; border: 0; border-radius: var(--radius-md); color: var(--color-text-muted); background: transparent; cursor: pointer; }
+.collapseToggle:hover { color: var(--color-text); background: var(--color-surface-muted); }
+.collapseToggle:focus-visible { outline: var(--focus-ring-width) solid var(--color-brand-focus); outline-offset: var(--focus-ring-offset); }
+.sidebarRail { display: grid; width: 30px; height: 30px; place-items: center; border-radius: var(--radius-md); color: var(--color-brand-action); background: var(--color-brand-subtle); font-size: .6875rem; font-weight: var(--font-weight-bold); }
 .sidebar label, .setup label, .batchContext label { display: grid; gap: var(--space-1); color: var(--color-text-muted); font-size: .75rem; font-weight: var(--font-weight-semibold); }
-.inline, .demo, .actions, .rowActions, .comparison, .decisionTitle { display: flex; gap: var(--space-2); align-items: center; }
-.history { display: grid; gap: var(--space-1); max-height: 420px; overflow: auto; }
+.fieldError { color: var(--color-danger); font-size: .6875rem; line-height: 1.35; }
+.inline, .demo, .rowActions, .comparison, .decisionTitle { display: flex; gap: var(--space-2); align-items: center; }
+.history { display: grid; gap: var(--space-1); max-height: min(54vh, 480px); overflow: auto; }
 .history button { display: grid; gap: 2px; padding: var(--space-2); border: 1px solid transparent; border-radius: var(--radius-md); color: var(--color-text); background: transparent; text-align: left; cursor: pointer; }
 .history button:hover, .history button:focus-visible, .history .selectedVersion { border-color: var(--color-brand-action); background: var(--color-brand-subtle); outline: none; }
-.history span, .history small { color: var(--color-text-muted); font-size: .72rem; }
-.composer { min-width: 0; display: grid; gap: var(--space-3); }
-.setup { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto; gap: var(--space-4); padding: var(--space-3); }
-.setup fieldset { display: flex; flex-wrap: wrap; gap: var(--space-3); border: 0; }
+.history span, .history small { color: var(--color-text-muted); font-size: .6875rem; }
+.composer { min-width: 0; display: grid; gap: var(--space-2); }
+.setup { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto; align-items: end; gap: var(--space-3); padding: var(--space-2) var(--space-3); }
+.setup fieldset { display: flex; margin: 0; padding: 0; flex-wrap: wrap; gap: var(--space-2); border: 0; }
 .setup fieldset label { display: flex; align-items: center; }
-.batchContext { display: grid; gap: var(--space-3); padding: var(--space-3); }
-.contextHeading, .viewControls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.contextHeading p { margin: 2px 0 0; color: var(--color-text-muted); font-size: .78rem; }
-.contextFields { display: grid; grid-template-columns: repeat(3, minmax(150px, 1fr)); gap: var(--space-3); }
-.batchContext > small { color: var(--color-text-muted); }
-.viewControls { padding: var(--space-3); }
-.viewControls > div { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-.viewControls span { color: var(--color-text-muted); font-size: .76rem; }
-.presetButtons { justify-content: flex-end; }
-.actions, .rowActions { justify-content: flex-end; flex-wrap: wrap; padding: var(--space-3); }
-.actions > span { margin-right: auto; color: var(--color-text-muted); font-size: .78rem; }
+.setup fieldset legend { padding: 0; color: var(--color-text-muted); font-size: .6875rem; font-weight: var(--font-weight-semibold); }
+.demo { justify-content: flex-end; flex-wrap: wrap; }
+.batchContext { display: grid; gap: var(--space-2); padding: var(--space-2) var(--space-3); }
+.contextHeading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.contextHeading p { margin: 1px 0 0; color: var(--color-text-muted); font-size: .72rem; }
+.contextFields { display: grid; grid-template-columns: repeat(3, minmax(150px, 1fr)); gap: var(--space-2); }
+.batchContext > small { color: var(--color-text-muted); font-size: .6875rem; }
+.workspaceToolbar { position: sticky; z-index: 8; top: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); box-shadow: var(--shadow-sm); }
+.workspaceMeta, .toolbarControls, .presetButtons { display: flex; min-width: 0; align-items: center; gap: var(--space-2); }
+.workspaceMeta span, .toolbarControls > span { color: var(--color-text-muted); font-size: .72rem; }
+.toolbarControls { justify-content: flex-end; flex-wrap: wrap; }
+.issueNavigator { grid-column: 1 / -1; display: grid; grid-template-columns: 32px minmax(0, 1fr) 32px; align-items: stretch; overflow: hidden; border: 1px solid var(--color-danger); border-radius: var(--radius-md); color: var(--color-danger); background: var(--color-danger-subtle); }
+.issueNavigator > button { min-height: 34px; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; }
+.issueNavigator > button:hover { background: color-mix(in srgb, var(--color-danger) 10%, transparent); }
+.issueNavigator > button:focus-visible { outline: var(--focus-ring-width) solid var(--color-brand-focus); outline-offset: calc(-1 * var(--focus-ring-offset)); }
+.issueTarget { display: flex; min-width: 0; align-items: baseline; justify-content: flex-start; gap: var(--space-2); text-align: left; }
+.issueTarget strong { flex: none; font-size: .72rem; }
+.issueTarget span { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
+.rowActions { justify-content: flex-end; flex-wrap: wrap; padding: var(--space-2); }
 .gridRegion { overflow: hidden; }
 .gridHeader, .gridRow { display: grid; align-items: stretch; }
 .headerScroll { overflow: hidden; padding-right: 12px; border-bottom: 1px solid var(--color-border); background: var(--color-surface-muted); }
@@ -31,7 +52,7 @@
 .columnResizer { position: absolute; z-index: 3; inset-block: 0; right: -5px; width: 10px; padding: 0; border: 0; background: transparent; cursor: col-resize; touch-action: none; }
 .columnResizer::after { content: ''; position: absolute; inset-block: 7px; left: 4px; width: 1px; background: var(--color-border); }
 .columnResizer:hover::after, .columnResizer:focus-visible::after { width: 2px; background: var(--color-brand-action); }
-.viewport { height: 430px; overflow: auto; }
+.viewport { height: clamp(400px, 58vh, 680px); overflow: auto; overscroll-behavior: contain; }
 .canvas { position: relative; }
 .gridRow { height: 62px; border-bottom: 1px solid var(--color-border-subtle); }
 .gridRow > span { padding: var(--space-2); color: var(--color-text-subtle); font-family: var(--font-family-mono); font-size: .7rem; text-align: right; }
@@ -40,6 +61,9 @@
 .cell input:hover, .cell select:hover { border-color: var(--color-border); }
 .cell.activeCell, .cell:focus-within { z-index: 2; box-shadow: inset 0 0 0 2px var(--color-brand-action); outline: none; }
 .cell.selectedRange { background: var(--color-brand-subtle); box-shadow: inset 0 0 0 1px var(--color-brand-action); }
+.cell.invalidCell { background: var(--color-danger-subtle); box-shadow: inset 0 0 0 1px var(--color-danger); }
+.cell.invalidCell:focus-within { box-shadow: inset 0 0 0 2px var(--color-danger); }
+.cellErrorMarker { position: absolute; z-index: 4; top: 4px; right: 4px; display: grid; width: 16px; height: 16px; place-items: center; border-radius: var(--radius-full); color: var(--color-danger-subtle); background: var(--color-danger); font-size: .625rem; font-weight: var(--font-weight-bold); pointer-events: none; }
 .observedTitle { position: absolute; right: var(--space-2); bottom: 3px; left: var(--space-2); overflow: hidden; color: var(--color-text-subtle); font-size: .62rem; font-weight: var(--font-weight-regular); text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
 .cell:has(.observedTitle) input { padding-bottom: 19px; }
 .fillHandle { position: absolute; z-index: 5; right: -4px; bottom: -4px; width: 10px; height: 10px; padding: 0; border: 2px solid var(--color-surface-raised); border-radius: 2px; background: var(--color-brand-action); cursor: crosshair; touch-action: none; }
@@ -54,6 +78,6 @@
 .decisions article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-2); border-top: 1px solid var(--color-border); }
 .decisions article > div { min-width: 0; display: grid; gap: 2px; overflow-wrap: anywhere; }.decisions article > div:last-child { display: flex; flex-wrap: nowrap; align-items: center; }.decisions article span, .decisions article small { color: var(--color-text-muted); font-size: .73rem; }
 .comparison { flex-wrap: wrap; padding: var(--space-3); }.comparison p { flex-basis: 100%; margin: 0; color: var(--color-text-muted); font-size: .8rem; }
-@media (max-width: 1280px) { .layout { grid-template-columns: 1fr; }.sidebar { position: static; } }
-@media (max-width: 768px) { .setup, .contextFields { grid-template-columns: 1fr; }.summary { grid-template-columns: repeat(2, 1fr); }.presetButtons { justify-content: flex-start; } }
-@media (max-width: 640px) { .sidebar, .composer > section, .actions, .rowActions { border-radius: var(--radius-md); }.decisions article { grid-template-columns: 1fr; }.decisions article > div:last-child { flex-wrap: wrap; } }
+@media (max-width: 900px) { .layout, .layoutCollapsed { grid-template-columns: 1fr; }.sidebar { position: static; }.sidebarCollapsed { display: flex; justify-content: space-between; }.sidebarRail { display: none; }.workspaceToolbar { position: static; } }
+@media (max-width: 768px) { .setup, .contextFields { grid-template-columns: 1fr; }.setup { align-items: stretch; }.summary { grid-template-columns: repeat(2, 1fr); }.workspaceToolbar { grid-template-columns: 1fr; }.toolbarControls { justify-content: flex-start; }.issueNavigator { grid-column: 1; } }
+@media (max-width: 640px) { .page { gap: var(--space-2); }.heading header p { display: none; }.sidebar, .composer > section, .rowActions { border-radius: var(--radius-md); }.workspaceMeta span { display: none; }.toolbarControls { display: grid; grid-template-columns: 1fr 1fr; }.toolbarControls > button { width: 100%; }.presetButtons { grid-column: 1 / -1; }.issueTarget { display: grid; gap: 1px; }.issueTarget span { font-size: .6875rem; }.viewport { height: 52vh; min-height: 360px; }.decisions article { grid-template-columns: 1fr; }.decisions article > div:last-child { flex-wrap: wrap; } }

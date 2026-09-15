@@ -7,10 +7,13 @@ import {
   estimateColumnWidth,
   fillRows,
   nextGridCell,
+  nextValidationIssueIndex,
   normalizeSupplierTitle,
   ownerSupplierClipboard,
   parseClipboardMatrix,
   parseMoneyToMinor,
+  validateComposerDraft,
+  validationIssueFromApi,
 } from '../apps/dev-preview-web/src/pages/bulk-catalog-composer-model.mjs';
 
 const blankRow = () => ({ kind: '', title: '', description: '', category: '', brand: '', supplierItemCode: '', sku: '', barcode: '', price: '', cost: '', supplierObservedTitle: '' });
@@ -81,6 +84,33 @@ test('column auto-fit is bounded and trailing-row trimming remains linear at 10k
   const started = performance.now();
   assert.equal(parseClipboardMatrix(clipboard).length, 10_000);
   assert.ok(performance.now() - started < 1_000);
+});
+
+test('save validation is exhaustive, deterministic and points to batch controls before row cells', () => {
+  const rows = [blankRow(), { ...blankRow(), kind: 'PART', title: 'Pantalla', category: 'Pantallas', price: 'abc', cost: '1,2' }];
+  const issues = validateComposerDraft({ selectedSource: '', sourceRevision: '', mode: 'FULL', rows });
+  assert.deepEqual(issues.slice(0, 2).map(({ scope, controlKey }) => [scope, controlKey]), [['BATCH', 'source'], ['BATCH', 'sourceRevision']]);
+  assert.deepEqual(issues.filter(({ rowIndex }) => rowIndex === 0).map(({ columnKey }) => columnKey), ['kind', 'title', 'category', 'price']);
+  assert.deepEqual(issues.filter(({ rowIndex }) => rowIndex === 1).map(({ columnKey }) => columnKey), ['price', 'cost']);
+});
+
+test('compact validation requires one governed identifier and retains blank money semantics', () => {
+  const invalid = validateComposerDraft({ selectedSource: 'source', sourceRevision: 'v2', mode: 'COMPACT', rows: [blankRow()] });
+  assert.deepEqual(invalid.map(({ columnKey, code }) => [columnKey, code]), [['supplierItemCode', 'IDENTIFIER_REQUIRED']]);
+  assert.equal(validateComposerDraft({ selectedSource: 'source', sourceRevision: 'v2', mode: 'COMPACT', rows: [{ ...blankRow(), sku: 'REF-1' }] }).length, 0);
+});
+
+test('backend validation becomes actionable while unknown conflicts remain global', () => {
+  assert.deepEqual(validationIssueFromApi({ status: 409, code: 'CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS' }), {
+    scope: 'BATCH', controlKey: 'sourceRevision', code: 'CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS',
+    message: 'Ya existe esta versión para la fuente seleccionada. Usa otro nombre de versión o abre el borrador existente.',
+  });
+  assert.deepEqual(validationIssueFromApi({ status: 400, code: 'CATALOG_INPUT_INVALID', parameter: 'rows.826.basePriceMinor' }), {
+    scope: 'CELL', rowIndex: 826, columnKey: 'price', code: 'CATALOG_INPUT_INVALID', message: 'Captura un precio base válido.',
+  });
+  assert.equal(validationIssueFromApi({ status: 409, code: 'CATALOG_CONFLICT' }).scope, 'GLOBAL');
+  assert.equal(nextValidationIssueIndex(0, -1, 3), 2);
+  assert.equal(nextValidationIssueIndex(2, 1, 3), 0);
 });
 
 test('supplier paste transformation stays bounded at 1,500 and 10,000 rows', (context) => {

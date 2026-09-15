@@ -150,6 +150,86 @@ export function estimateColumnWidth(label, values, min = COLUMN_MIN_WIDTH, max =
   return Math.max(min, Math.min(max, Math.ceil(relevant * 7.4 + 36)));
 }
 
+const validationColumnOrder = new Map(FULL_COLUMNS.map((column, index) => [column, index]));
+const validationMessages = Object.freeze({
+  kind: 'Selecciona un tipo.',
+  title: 'El título es obligatorio.',
+  category: 'La categoría es obligatoria.',
+  price: 'Captura un precio base válido.',
+  cost: 'Captura un costo de referencia válido o déjalo vacío.',
+  identifier: 'Captura Código proveedor, SKU o Código de barras.',
+});
+
+/**
+ * @typedef {'BATCH' | 'CELL' | 'GLOBAL'} ValidationIssueScope
+ * @typedef {{scope: ValidationIssueScope, rowId?: string, rowIndex?: number, columnKey?: string, controlKey?: string, code: string, message: string}} ValidationIssue
+ */
+
+/** @param {readonly ValidationIssue[]} issues */
+export function sortValidationIssues(issues) {
+  const scopeOrder = { BATCH: 0, CELL: 1, GLOBAL: 2 };
+  return [...issues].sort((left, right) => {
+    const byScope = scopeOrder[left.scope] - scopeOrder[right.scope];
+    if (byScope !== 0) return byScope;
+    const byRow = (left.rowIndex ?? -1) - (right.rowIndex ?? -1);
+    if (byRow !== 0) return byRow;
+    return (validationColumnOrder.get(left.columnKey) ?? 999) - (validationColumnOrder.get(right.columnKey) ?? 999);
+  });
+}
+
+/** @param {{selectedSource: string, sourceRevision: string, mode: 'FULL' | 'COMPACT', rows: readonly Record<string, string>[]}} input */
+export function validateComposerDraft(input) {
+  /** @type {ValidationIssue[]} */
+  const issues = [];
+  if (!input.selectedSource.trim()) issues.push({ scope: 'BATCH', controlKey: 'source', code: 'REQUIRED', message: 'Selecciona o crea una fuente.' });
+  if (!input.sourceRevision.trim()) issues.push({ scope: 'BATCH', controlKey: 'sourceRevision', code: 'REQUIRED', message: 'Escribe la versión del proveedor.' });
+  input.rows.forEach((row, rowIndex) => {
+    if (input.mode === 'FULL') {
+      for (const columnKey of ['kind', 'title', 'category']) {
+        if (!String(row[columnKey] ?? '').trim()) issues.push({ scope: 'CELL', rowIndex, columnKey, code: 'REQUIRED', message: validationMessages[columnKey] });
+      }
+      const price = parseMoneyToMinor(row.price);
+      if (price === null || Number.isNaN(price)) issues.push({ scope: 'CELL', rowIndex, columnKey: 'price', code: price === null ? 'REQUIRED' : 'INVALID_MONEY', message: validationMessages.price });
+    } else if (![row.supplierItemCode, row.sku, row.barcode].some((value) => String(value ?? '').trim())) {
+      issues.push({ scope: 'CELL', rowIndex, columnKey: 'supplierItemCode', code: 'IDENTIFIER_REQUIRED', message: validationMessages.identifier });
+    }
+    const cost = parseMoneyToMinor(row.cost);
+    if (Number.isNaN(cost)) issues.push({ scope: 'CELL', rowIndex, columnKey: 'cost', code: 'INVALID_MONEY', message: validationMessages.cost });
+    if (input.mode === 'COMPACT') {
+      const price = parseMoneyToMinor(row.price);
+      if (Number.isNaN(price)) issues.push({ scope: 'CELL', rowIndex, columnKey: 'price', code: 'INVALID_MONEY', message: validationMessages.price });
+    }
+  });
+  return sortValidationIssues(issues);
+}
+
+const apiColumnMap = Object.freeze({
+  kind: 'kind', supplierObservedTitle: 'title', title: 'title', description: 'description', category: 'category', brand: 'brand',
+  supplierItemCode: 'supplierItemCode', sku: 'sku', barcode: 'barcode', basePriceMinor: 'price', referenceCostMinor: 'cost', identifier: 'supplierItemCode', required: 'title',
+});
+
+/** @param {{status?: number, code?: string | null, parameter?: string | null}} error */
+export function validationIssueFromApi(error) {
+  if (error.code === 'CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS') {
+    return { scope: 'BATCH', controlKey: 'sourceRevision', code: error.code, message: 'Ya existe esta versión para la fuente seleccionada. Usa otro nombre de versión o abre el borrador existente.' };
+  }
+  if (error.code === 'CATALOG_INPUT_INVALID' && error.parameter) {
+    const rowMatch = /^rows\.(\d+)\.([A-Za-z]+)$/u.exec(error.parameter);
+    if (rowMatch) {
+      const rawKey = rowMatch[2]; const columnKey = apiColumnMap[rawKey] ?? 'title';
+      return { scope: 'CELL', rowIndex: Number(rowMatch[1]), columnKey, code: error.code, message: validationMessages[rawKey] ?? validationMessages[columnKey] ?? `Revisa ${columnKey}.` };
+    }
+    const controlKey = ['sourceId', 'sourceRevision', 'mode'].includes(error.parameter) ? (error.parameter === 'sourceId' ? 'source' : error.parameter) : undefined;
+    if (controlKey) return { scope: 'BATCH', controlKey, code: error.code, message: controlKey === 'source' ? 'Selecciona una fuente válida.' : controlKey === 'sourceRevision' ? 'Revisa la versión del proveedor.' : 'Revisa el modo de carga.' };
+  }
+  return { scope: 'GLOBAL', code: error.code ?? 'UNEXPECTED', message: error.status === 0 ? 'No fue posible contactar al servidor. El borrador no se guardó.' : 'No se guardó el borrador. No hubo escrituras parciales; intenta nuevamente o relee la versión.' };
+}
+
+export function nextValidationIssueIndex(current, direction, count) {
+  if (count < 1) return 0;
+  return (current + direction + count) % count;
+}
+
 const ownerRows = [
   ['PANTALLA IPHONE 11 CALIDAD RJ >>', '450', '1199'],
   ['PANTALLA IPHONE 11 ORIGINAL >>I', '520', '1399'],
