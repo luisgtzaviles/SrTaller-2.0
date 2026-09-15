@@ -4,7 +4,7 @@ import type { CatalogMutationContext, CatalogScope } from './catalog-repository.
 
 export type SupplierSourceRecord = Readonly<{ sourceId: string; name: string; status: 'ACTIVE' | 'INACTIVE'; version: number }>;
 export type BulkCatalogRowRecord = Readonly<{
-  rowDecisionId: string; rowNumber: number; proposal: BulkCatalogRowInput;
+  rowDecisionId: string; rowNumber: number; supplierObservedTitle: string | null; proposal: BulkCatalogRowInput;
   classification: BulkCatalogClassification; decision: BulkCatalogDecision;
   targetItemId: string | null; targetTitle: string | null; expectedItemVersion: number | null;
   before: Readonly<{ kind: CatalogItemKind; title: string; description: string | null; category: string | null; brand: string | null; basePriceMinor: number | null; referenceCostMinor: number | null }> | null;

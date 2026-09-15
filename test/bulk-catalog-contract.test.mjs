@@ -41,6 +41,12 @@ test('identifier and reference normalization are exact and deterministic, not fu
   assert.notEqual(domain.normalizeReference('Pantalla OLED'), domain.normalizeReference('Pantalla OELD'));
 });
 
+test('supplier observed title remains separate from the editable Catalog title proposal', () => {
+  const [row] = domain.parseBulkRows([{ ...fullRow(), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }], 'FULL');
+  assert.equal(row.supplierObservedTitle, 'PANTALLA IPHONE 11 OLED GX >>I');
+  assert.equal(row.title, 'Pantalla iPhone 11 OLED GX >>I');
+});
+
 test('bulk contracts preserve separate prepare, publish, cost and Branch boundaries', async () => {
   const [protectedOperations, repository, migration, ui, css] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
@@ -68,4 +74,7 @@ test('bulk contracts preserve separate prepare, publish, cost and Branch boundar
   assert.match(ui, /SUPPLY/u);
   assert.match(ui, /rows\.slice\(first, first \+ 22\)/u);
   assert.match(ui, /translateY/u);
+  assert.match(ui, /Contexto del lote/u);
+  assert.match(ui, /Esenciales: Título · Costo · Precio/u);
+  assert.match(ui, /supplierObservedTitle/u);
 });

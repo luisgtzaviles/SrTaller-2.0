@@ -15,6 +15,7 @@ export type BulkCatalogDecision = 'UNRESOLVED' | 'APPLY' | 'EXCLUDE';
 
 export type BulkCatalogRowInput = Readonly<{
   kind: CatalogItemKind | null;
+  supplierObservedTitle: string | null;
   title: string | null;
   description: string | null;
   category: string | null;
@@ -38,6 +39,11 @@ export function requiredText(value: unknown, parameter: string, max: number): st
 export function optionalText(value: unknown, parameter: string, max: number): string | null {
   if (value === null || value === undefined || value === '') return null;
   return requiredText(value, parameter, max);
+}
+export function optionalObservedText(value: unknown, parameter: string, max: number): string | null {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value !== 'string' || !value.trim() || value.length > max) throw new CatalogInputError(parameter);
+  return value;
 }
 export function requiredUuid(value: unknown, parameter: string): string {
   if (typeof value !== 'string' || !uuid.test(value)) throw new CatalogInputError(parameter);
@@ -73,6 +79,7 @@ export function parseBulkRows(value: unknown, mode: BulkCatalogMode): readonly B
     const barcode = normalizeIdentifier('BARCODE', optionalText(row.barcode, `rows.${index}.barcode`, 64));
     const parsed = Object.freeze({
       kind: catalogKind(row.kind, mode === 'COMPACT'),
+      supplierObservedTitle: optionalObservedText(row.supplierObservedTitle ?? row.title, `rows.${index}.supplierObservedTitle`, 240),
       title: optionalText(row.title, `rows.${index}.title`, 240),
       description: optionalText(row.description, `rows.${index}.description`, 4_000),
       category: optionalText(row.category, `rows.${index}.category`, 160),

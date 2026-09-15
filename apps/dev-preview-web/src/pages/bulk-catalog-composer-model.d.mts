@@ -1,0 +1,20 @@
+export type ComposerColumn = 'kind' | 'title' | 'description' | 'category' | 'brand' | 'supplierItemCode' | 'sku' | 'barcode' | 'price' | 'cost';
+export type ComposerRow = Record<ComposerColumn, string> & { supplierObservedTitle: string };
+export type ComposerSelection = Readonly<{ firstRow: number; lastRow: number; firstColumn: number; lastColumn: number }>;
+
+export const FULL_COLUMNS: readonly ComposerColumn[];
+export const ESSENTIAL_COLUMNS: readonly ComposerColumn[];
+export const COMPACT_COLUMNS: readonly ComposerColumn[];
+export const DEFAULT_COLUMN_WIDTHS: Readonly<Record<ComposerColumn, number>>;
+export const COLUMN_MIN_WIDTH: number;
+export const COLUMN_MAX_WIDTH: number;
+export function isClipboardRowEmpty(row: readonly unknown[]): boolean;
+export function trimTrailingEmptyRows(matrix: readonly (readonly unknown[])[]): unknown[][];
+export function parseClipboardMatrix(text: string): string[][];
+export function normalizeSupplierTitle(value: string): string;
+export function parseMoneyToMinor(value: string): number | null;
+export function applyBatchDefaults<Row extends { kind: string; category: string; brand: string }>(row: Row, defaults: Readonly<{ kind: string; category: string; brand: string }>): Row;
+export function nextGridCell(key: string, row: number, column: number, rowCount: number, columnCount: number, shiftKey?: boolean): Readonly<{ row: number; column: number }>;
+export function fillRows<Row extends Record<ComposerColumn, string>>(rows: readonly Row[], columns: readonly ComposerColumn[], source: ComposerSelection, target: Readonly<{ row: number; column: number }>): Row[];
+export function estimateColumnWidth(label: string, values: readonly string[], min?: number, max?: number): number;
+export function ownerSupplierClipboard(): string;

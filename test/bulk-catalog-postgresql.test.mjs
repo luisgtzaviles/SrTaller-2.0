@@ -51,11 +51,15 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now()), ($3, $4, 'America/Phoenix', true, now()), ($5, $6, 'America/Hermosillo', true, now())`, [tenantA, branchA, tenantB, branchB, tenantC, branchC]);
 
     const source = await service.createSource(ctxA, { name: 'Proveedor PostgreSQL' });
-    const rows = [fullRow(1), fullRow(2), fullRow(3), fullRow(5)];
+    const rows = [{ ...fullRow(1), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }, fullRow(2), fullRow(3), fullRow(5)];
     const draft = await service.createDraft(ctxA, { sourceId: source.sourceId, sourceRevision: 'V1', mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-v1', rows });
     assert.equal(draft.rows.every((row) => row.proposal.referenceCostMinor === null), true);
     const costVisibleDraft = await service.getVersion({ tenantId: tenantA, branchId: branchA }, draft.versionId, true);
     assert.equal(costVisibleDraft.rows.some((row) => row.proposal.referenceCostMinor !== null), true);
+    assert.equal(costVisibleDraft.rows[0].supplierObservedTitle, 'PANTALLA IPHONE 11 OLED GX >>I');
+    assert.equal(costVisibleDraft.rows[0].proposal.title, 'Pantalla iPhone 11 OLED GX >>I');
+    const observedTitle = await admin.query(`select supplier_title, source_observation->>'title' as observed_title from catalog_supplier_listings where tenant_id = $1 and version_id = $2 and row_number = 1`, [tenantA, draft.versionId]);
+    assert.deepEqual(observedTitle.rows[0], { supplier_title: 'PANTALLA IPHONE 11 OLED GX >>I', observed_title: 'PANTALLA IPHONE 11 OLED GX >>I' });
     assert.equal(draft.lifecycle, 'DRAFT');
     assert.equal((await service.getVersion({ tenantId: tenantB, branchId: branchB }, draft.versionId, true).catch(() => null)), null);
 
