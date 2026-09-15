@@ -57,14 +57,19 @@ virtualización, reload y comparación V1/V2. El clasificador shadow declaró
 `CROSS_MODULE_HIGH_RISK` y no omitió gates. No se ejecutó `verify:full`, conforme
 a la autoridad previa a Acceptance; no hubo push, PR, merge ni deploy.
 
-La iteración Owner `OD-RESET-001..005` resolvió el hallazgo posterior sin hard
+La iteración Owner `OD-RESET-001..005`, materializada en el candidato funcional
+`44e605953676456eff519b5b3fca02d952eb5c38`, resolvió el hallazgo posterior sin hard
 delete ni falsa reversión. El lifecycle existente `ACTIVE/INACTIVE` soporta
 retiro; `catalog.items.bulk_retire` y el ejecutor ADR-013 nivel 2 exigen PIN del
 mismo actor, plan server-side, confirmación exacta y revalidación transaccional.
 El retiro global preserva identidad/historia y el retiro por lote deriva sólo
 targets `CREATED`; MATCHED/UPDATED permanecen. PostgreSQL desechable demuestra
-Historical Tenant con cero activos y memoria intacta, y Virgin Tenant con las
-36 pantallas AG realmente `NEW`. El candidato continúa sólo en revisión local:
+Historical Tenant con 1,539 items retirados, cero activos y memoria intacta, y
+Virgin Tenant con las 36 pantallas AG realmente `NEW`. Un re-intake histórico
+de esas 36 filas produjo 0 `NEW` / 36 `CONFLICT`, demostrando que la historia
+impide duplicarlas. Build, 71 contratos focalizados, la campaña base de 885
+pruebas y PostgreSQL material con 66 migraciones están verdes. El candidato
+continúa sólo en revisión local:
 sin `verify:full`, push, PR, merge, Preview ni deploy.
 
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como

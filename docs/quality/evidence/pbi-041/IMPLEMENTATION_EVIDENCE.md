@@ -5,8 +5,7 @@
 - **Estado:** safe Catalog retirement iteration lista para Owner Review;
   Owner Acceptance pendiente.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
-- **Candidato funcional:** working candidate; SHA se registra al congelar esta
-  iteración.
+- **Candidato funcional:** `44e605953676456eff519b5b3fca02d952eb5c38`.
 - **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
 - **Fecha:** 2026-09-14 MST.
@@ -179,6 +178,60 @@ reautenticación; Catalog conserva plan, lifecycle, retiro y audit. El cliente
 no elige Tenant, actor, targets ni clasificación sensible.
 
 ## Verificación focalizada
+
+### Cierre de la iteración `OD-RESET-001..005`
+
+Sobre `44e605953676456eff519b5b3fca02d952eb5c38`, sin ejecutar
+`verify:full`, se obtuvo:
+
+- build TypeScript/Vite: PASS; conserva únicamente la advertencia conocida de
+  tamaño del chunk principal;
+- 71/71 contratos focalizados de retirement, Level 2, API/UI, autorización,
+  arquitectura, schema y migraciones: PASS;
+- suite PostgreSQL material PBI-041: PASS con 66 migraciones y cleanup del
+  contenedor desechable;
+- suite base completa de la iteración: 885 pruebas, 864 PASS, 0 FAIL y 21 SKIP;
+- suite PostgreSQL PBI-040 de no regresión: PASS; búsqueda sobre 10,000 items
+  con p95 de 6.01 ms;
+- benchmark PBI-041 de 10,000 filas: ingesta 6,084.2 ms, análisis 430.3 ms,
+  preview 66.2 ms, publish 24,470.1 ms y 34.1 MiB de heap, dentro de los
+  budgets vigentes.
+
+El Development Preflight final detectó correctamente que el journal local
+tenía 64 migraciones frente a las 66 del candidato. Las dos expansiones se
+aplicaron mediante el mecanismo gobernado y no destructivo; el seed sintético
+fue reconciliado sin imprimir PINs y el runtime quedó en frontend/backend del
+mismo candidato.
+
+La prueba Owner sobre el Tenant histórico se hizo por las superficies reales:
+
+1. `Retirar artículos creados por este lote` planificó 1,500 targets
+   autoritativamente `CREATED`, reautenticó al mismo actor y retiró exactamente
+   esos 1,500; `MATCHED/UPDATED` permanecieron.
+2. `Vaciar lista de precios` volvió a planificar el conjunto actual, reautenticó
+   y retiró los 39 items activos restantes. La lista activa mostró el empty
+   state con cero resultados.
+3. La lectura PostgreSQL posterior conservó 1,539 items inactivos, 1,539 SKU,
+   1,539 barcodes, 1,539 revisiones de precio base, 1,401 revisiones de costo,
+   un override Branch, 4,609 Listings, 1,836 Resolutions, 1,836 entradas de
+   ReconciliationMemory, siete batches, dos planes ejecutados y 1,539 eventos
+   de retiro. No se ejecutó `DELETE` ni se perdió identidad o historia.
+4. Una nueva versión AG de las mismas 36 pantallas produjo 0 `NEW` y 36
+   `CONFLICT`: cada fila explicó que la memoria histórica apunta a un artículo
+   retirado y exige reactivación explícita. La cuadrícula mostró `Original:`.
+
+El escenario Virgin se ejecutó en un Tenant sintético aislado dentro del
+contenedor desechable: la primera versión B1 de 36 filas fue 36 `NEW`. Una B2
+posterior probó 1 UPDATE, 35 UNCHANGED y 1 NEW; su acción acotada retiró sólo el
+único item demostrado `CREATED` por B2 y conservó los 36 `MATCHED`. Esto prueba
+materialmente que `ACTIVE CATALOG EMPTY` y `NO HISTORICAL CATALOG MEMORY` son
+estados distintos.
+
+El clasificador shadow declaró `CROSS_MODULE_HIGH_RISK`, observó
+`APPLICATION_LOGIC`, `AUTHORIZATION_SECURITY`, `CI_INFRASTRUCTURE`,
+`DATABASE_SCHEMA`, `DOCS_ONLY`, `MIGRATION` y `UI_ONLY`, seleccionó conceptualmente
+pipeline completo y conservó `fullExactMainRequired=true`. No omitió ni alteró
+ningún gate.
 
 Sobre el candidato ejecutable se ejecutaron:
 
