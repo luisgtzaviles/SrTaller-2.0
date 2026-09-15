@@ -1,4 +1,4 @@
-import { ArchiveX, Check, ChevronDown, ChevronUp, ClipboardPaste, Columns3, Database, GitCompare, PanelLeftClose, PanelLeftOpen, Plus, RotateCcw, Save, Send, Trash2 } from 'lucide-react';
+import { ArchiveX, Check, ChevronDown, ChevronUp, Columns3, Database, GitCompare, PanelLeftClose, PanelLeftOpen, Plus, RotateCcw, Save, Send, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { analyzeSupplierVersion, compareSupplierVersions, createCatalogRetirementPlan, createSupplierDraft, createSupplierSource, decideSupplierRow, decideSupplierRows, deleteSupplierSource, executeCatalogRetirementPlan, getSupplierVersion, listCatalogReferences, listSupplierSources, listSupplierVersions, normalizeCatalogReferenceText, publishSupplierVersion, replaceSupplierDraft } from '../catalog-api.js';
@@ -10,7 +10,7 @@ import { BackLink, PageHeader } from '../components/ui/navigation.js';
 import { Dialog } from '../components/ui/overlays.js';
 import { hasOperationalCapability } from '../session/session-capabilities.mjs';
 import type { OperationalCapability } from '../session/session-api.js';
-import { applyBatchDefaults, COLUMN_MAX_WIDTH, COLUMN_MIN_WIDTH, COMPACT_COLUMNS, DEFAULT_COLUMN_WIDTHS, ESSENTIAL_COLUMNS, estimateColumnWidth, fillRows, FULL_COLUMNS, nextGridCell, nextValidationIssueIndex, normalizeSupplierTitle, ownerSupplierClipboard, parseClipboardMatrix, parseMoneyToMinor, sortValidationIssues, validateComposerDraft, validationIssueFromApi } from './bulk-catalog-composer-model.mjs';
+import { applyBatchDefaults, COLUMN_MAX_WIDTH, COLUMN_MIN_WIDTH, COMPACT_COLUMNS, DEFAULT_COLUMN_WIDTHS, ESSENTIAL_COLUMNS, estimateColumnWidth, fillRows, FULL_COLUMNS, nextGridCell, nextValidationIssueIndex, normalizeSupplierTitle, parseClipboardMatrix, parseMoneyToMinor, sortValidationIssues, validateComposerDraft, validationIssueFromApi } from './bulk-catalog-composer-model.mjs';
 import type { ComposerColumn, ComposerSelection, ValidationIssue } from './bulk-catalog-composer-model.mjs';
 import { applyBulkCatalogCanvas, applyBulkCatalogGrid, applyBulkCatalogOffset } from './bulk-catalog-grid-layout.js';
 import styles from './bulk-catalog-composer-page.module.css';
@@ -34,16 +34,6 @@ const versionStatus = (value: SupplierVersionSummary): string => value.lifecycle
 const formatVersionDate = (value: string, timeZone: string): string => new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone }).format(new Date(value));
 const analysisMessage = (code: string): string => code === 'HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION' ? 'La memoria histórica apunta a un artículo retirado. Reactívalo explícitamente en Lista de precios y vuelve a analizar; no se creará un duplicado.' : code;
 const warningMessage = (code: string): string => code === 'HISTORICAL_INACTIVE_MATCH_REQUIRES_REACTIVATION_CONFIRMATION' ? 'El análisis encontró una coincidencia histórica única con un artículo Inactivo: Reactivar conserva su identidad.' : code === 'HISTORICAL_MATCH_REQUIRES_CONFIRMATION' ? 'Coincidencia histórica única; requiere confirmación explícita.' : code;
-
-function demo(version: 1 | 2): UiRow[] {
-  return Array.from({ length: 1_500 }, (_, index) => {
-    const ordinal = index + 1; const kind: CatalogItemKind = ordinal % 13 === 0 ? 'SUPPLY' : ordinal % 5 === 0 ? 'SERVICE' : ordinal % 3 === 0 ? 'PRODUCT' : 'PART';
-    const changed = version === 2 && ordinal % 6 === 0; const replacement = version === 2 && ordinal >= 1_499; const renamedObservation = version === 2 && ordinal % 30 === 0;
-    const baseTitle = `${kind === 'PART' ? 'Pantalla' : kind === 'PRODUCT' ? 'Accesorio' : kind === 'SERVICE' ? 'Servicio técnico' : 'Insumo'} Demo ${ordinal}`;
-    const title = replacement ? `Artículo agregado V2 ${ordinal}` : renamedObservation ? `${baseTitle} · etiqueta proveedor V2` : baseTitle;
-    return { kind, supplierObservedTitle: title, title, description: `Observación sintética`, category: kind === 'PART' ? (ordinal % 41 === 0 ? 'Pantallas por revisar' : 'Pantallas') : kind === 'PRODUCT' ? 'Accesorios' : kind === 'SERVICE' ? 'Mantenimiento' : 'Consumibles', brand: kind === 'SERVICE' ? '' : ordinal % 7 === 0 ? 'Samsung' : 'Apple', supplierItemCode: replacement ? `PROV-NUEVO-${ordinal}` : version === 2 && ordinal === 10 ? 'PROV-000005' : ordinal % 5 === 0 ? `PROV-${String(ordinal).padStart(6, '0')}` : '', sku: '', barcode: '', price: String(299 + ordinal + (changed ? 25 : 0)), cost: ordinal % 11 === 0 ? '' : String(120 + ordinal + (changed ? 10 : 0)) };
-  });
-}
 
 export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: Readonly<{ capabilities: readonly OperationalCapability[]; csrfToken: string; timeZone: string }>): React.JSX.Element {
   const canPublish = hasOperationalCapability(capabilities, 'catalog.import.publish') && hasOperationalCapability(capabilities, 'catalog.manage') && hasOperationalCapability(capabilities, 'catalog.prices.manage');
@@ -160,16 +150,6 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     event.preventDefault(); const next = nextGridCell(event.key, rowIndex, columnIndex, rows.length, activeColumns.length, event.shiftKey); focusCell(next.row, next.column);
   };
   const applyDefaultsToEmptyCells = (): void => { setRows((existing) => { rememberUndo(existing); const next = existing.map((row) => applyBatchDefaults(row, batchDefaults)); if (next.some((row) => !isCompatible(row))) { setNotice({ tone: 'warning', message: 'El contexto no es compatible con una o más filas; no se aplicó.' }); return existing; } setDirty(true); showToast('El contexto se aplicó sólo a celdas vacías.'); return next; }); };
-  const prepareOwnerCase = (): void => {
-    const ownerDefaults: BatchDefaults = { kind: 'PART', category: 'Pantallas', brand: 'Apple' }; const matrix = parseClipboardMatrix(ownerSupplierClipboard());
-    setBatchDefaults(ownerDefaults); setViewPreset('ESSENTIAL'); setCurrent(null); setDescription('Caso Owner · 36 pantallas'); setMode('FULL'); draftCreateRequest.current = crypto.randomUUID();
-    setRows(matrix.map(([observedTitle = '', cost = '', price = '']) => ({ ...applyBatchDefaults(blank(), ownerDefaults), supplierObservedTitle: observedTitle, title: normalizeSupplierTitle(observedTitle), cost, price })));
-    setActive({ row: 0, column: 0 }); setSelection({ firstRow: 0, lastRow: matrix.length - 1, firstColumn: 0, lastColumn: 2 }); setDirty(true); setValidationAttempted(false); setServerIssues([]); showToast('Caso Owner preparado: 36 filas × 3 columnas; nada se ha guardado.');
-  };
-  const prepareDemo = (version: 1 | 2): void => {
-    setRows(demo(version)); setDescription(`Demostración sintética ${version}`); setViewPreset('ALL'); setDirty(true); draftCreateRequest.current = crypto.randomUUID();
-    setValidationAttempted(false); setServerIssues([]); setNotice(null); setIssueIndex(0);
-  };
   const performFill = (source: ComposerSelection, target: { row: number; column: number }): void => { setRows((existing) => { const next = fillRows(existing, activeColumns, source, target); if (next.some((row) => !isCompatible(row))) { setNotice({ tone: 'warning', message: 'El relleno produciría una combinación incompatible y fue cancelado.' }); return existing; } rememberUndo(existing); setDirty(true); showToast('Relleno copiado. Puedes deshacerlo antes de guardar.'); return next; }); };
   const beginFill = (event: React.PointerEvent<HTMLButtonElement>): void => {
     event.preventDefault(); const source = selection && active.row >= selection.firstRow && active.row <= selection.lastRow && active.column >= selection.firstColumn && active.column <= selection.lastColumn ? selection : { firstRow: active.row, lastRow: active.row, firstColumn: active.column, lastColumn: active.column }; let target = { row: source.lastRow, column: source.lastColumn };
@@ -258,7 +238,6 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
           <div className={styles.versionIdentity}>{!sourcesOpen ? <button type="button" className={styles.collapseToggle} aria-expanded="false" aria-label="Abrir fuentes y versiones" onClick={() => setSourcesOpen(true)}><PanelLeftOpen size={18} /></button> : null}<div><strong>{current ? `${current.sourceName} · v${current.sequenceNumber}` : `${sources.find((value) => value.sourceId === selectedSource)?.name ?? 'Selecciona un proveedor'} · nueva carga`}</strong><small>{current ? versionStatus(current) : 'El número se asignará al guardar'}</small></div></div>
           <label>Descripción opcional<Input value={description} maxLength={500} disabled={current?.lifecycle === 'INGESTED'} placeholder="Ej. Lista septiembre, sucursal o referencia" onChange={(event) => { setDescription(event.target.value); setDirty(true); }} /></label>
           <fieldset disabled={Boolean(current)}><legend>Modo</legend><label><input type="radio" checked={mode === 'FULL'} onChange={() => { setMode('FULL'); setDirty(true); }} />Alta y actualización</label><label><input type="radio" checked={mode === 'COMPACT'} onChange={() => { setMode('COMPACT'); setDirty(true); }} />Actualización compacta</label></fieldset>
-          {!current ? <div className={styles.demo}><Button size="compact" onClick={prepareOwnerCase}><ClipboardPaste size={16} />Caso Owner · 36</Button><Button size="compact" onClick={() => prepareDemo(1)}><ClipboardPaste size={16} />Demo V1 · 1500</Button><Button size="compact" onClick={() => prepareDemo(2)}><ClipboardPaste size={16} />Demo V2 · 1500</Button></div> : null}
         </section>
         {mode === 'FULL' && (current?.lifecycle === 'DRAFT' || !current) ? <section className={styles.batchContext}>
           <div className={styles.contextHeading}><div><h2>Contexto del lote</h2>{contextOpen ? <p>Defaults opcionales; cada fila puede sobrescribirlos.</p> : <p>{batchDefaults.kind || 'Sin tipo'} · {batchDefaults.category || 'Sin categoría'} · {batchDefaults.brand || 'Sin marca'}</p>}</div><div className={styles.inline}>{contextOpen ? <Button size="compact" onClick={applyDefaultsToEmptyCells}>Aplicar sólo a vacíos</Button> : null}<Button size="compact" tone="quiet" aria-expanded={contextOpen} onClick={() => setContextOpen((value) => !value)}>{contextOpen ? <><ChevronUp size={16} />Compactar</> : <><ChevronDown size={16} />Editar contexto</>}</Button></div></div>
@@ -328,11 +307,11 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     <Dialog open={deleteSourceTarget !== null} title={deleteStage === 1 ? 'Eliminar proveedor' : 'Confirmar eliminación definitiva'} description="Acción sensible nivel 2" onClose={() => closeSupplierDelete()} footer={false}>
       <div className={styles.supplierDialog} onKeyDownCapture={(event) => { if (deleteStage === 1 && event.key === 'Enter') event.preventDefault(); }}>
         {deleteStage === 1 ? <>
-          <Alert tone="warning" title="Eliminación permanente">Se eliminará permanentemente {deleteSourceTarget?.name} y sus {deleteSourceTarget?.versionCount.toLocaleString('es-MX') ?? 0} versiones de borrador. Esta acción no se puede deshacer.</Alert>
+          <Alert tone="warning" title="Eliminación permanente">Se eliminará permanentemente “{deleteSourceTarget?.name}” y sus {deleteSourceTarget?.versionCount.toLocaleString('es-MX') ?? 0} versiones. Esta acción no se puede deshacer.</Alert>
           <p>Los proveedores con versiones aplicadas, memoria de reconciliación o cualquier evidencia dependiente están bloqueados por el servidor.</p>
           <footer><Button disabled={busy} onClick={() => closeSupplierDelete()}>Cancelar</Button><Button tone="danger" disabled={busy} onClick={() => setDeleteStage(2)}>Continuar</Button></footer>
         </> : <>
-          <Alert tone="warning" title="¿Confirmas la eliminación definitiva?">Esta segunda confirmación eliminará la fuente y sus borradores. CatalogItem no se elimina.</Alert>
+          <Alert tone="warning" title={`¿Confirmas que deseas eliminar “${deleteSourceTarget?.name ?? ''}” y sus ${deleteSourceTarget?.versionCount.toLocaleString('es-MX') ?? 0} versiones?`}>CatalogItem no se elimina.</Alert>
           <label>Confirma tu PIN<Input autoFocus type="password" inputMode="numeric" autoComplete="off" maxLength={4} value={deletePin} onChange={(event) => setDeletePin(event.target.value.replace(/\D/gu, '').slice(0, 4))} /><small>Debe corresponder al mismo usuario de la sesión activa.</small></label>
           <footer><Button disabled={busy} onClick={() => closeSupplierDelete()}>Cancelar</Button><Button tone="danger" disabled={busy || !deleteArmed || deletePin.length !== 4} onClick={() => void removeSupplier()}>{busy ? 'Eliminando…' : 'Eliminar definitivamente'}</Button></footer>
         </>}

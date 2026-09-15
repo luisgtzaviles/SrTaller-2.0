@@ -11,6 +11,7 @@ import {
   normalizeSupplierTitle,
   ownerSupplierClipboard,
   parseClipboardMatrix,
+  syntheticSupplierDemoRows,
   parseMoneyToMinor,
   validateComposerDraft,
   validationIssueFromApi,
@@ -23,6 +24,19 @@ test('Google Sheets terminal empty rows are trimmed without removing internal bl
   assert.deepEqual(parseClipboardMatrix('A\t1\r\n\t\r\nB\t2\r\n \t \r\n\t'), [['A', '1'], ['', ''], ['B', '2']]);
   const with999Rows = `${Array.from({ length: 36 }, (_, index) => `Fila ${index + 1}`).join('\n')}${'\n'.repeat(963)}`;
   assert.equal(parseClipboardMatrix(with999Rows).length, 36);
+});
+
+test('QA supplier fixtures remain internal and deterministic without operational UI controls', () => {
+  const owner = parseClipboardMatrix(ownerSupplierClipboard());
+  const version1 = syntheticSupplierDemoRows(1);
+  const version2 = syntheticSupplierDemoRows(2);
+  assert.equal(owner.length, 36);
+  assert.equal(version1.length, 1_500);
+  assert.equal(version2.length, 1_500);
+  assert.equal(version1[0].title, version2[0].title);
+  assert.notEqual(version1[5].price, version2[5].price);
+  assert.match(version2[1_498].title, /Artículo agregado V2/u);
+  assert.throws(() => syntheticSupplierDemoRows(3), /must be 1 or 2/u);
 });
 
 test('Owner supplier fixture is an exact 36 by 3 rectangular paste', () => {

@@ -127,7 +127,14 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /No es una reversión del lote/u);
   assert.match(ui, /Nuevo proveedor/u);
   assert.match(ui, /El número se asignará al guardar/u);
+  assert.doesNotMatch(ui, /Caso Owner · 36/u);
+  assert.doesNotMatch(ui, /Demo V1 · 1500/u);
+  assert.doesNotMatch(ui, /Demo V2 · 1500/u);
+  assert.match(model, /ownerSupplierClipboard/u);
+  assert.match(model, /syntheticSupplierDemoRows/u);
   assert.match(ui, /Confirmar eliminación definitiva/u);
+  assert.match(ui, /Se eliminará permanentemente “\{deleteSourceTarget\?\.name\}” y sus/u);
+  assert.match(ui, /¿Confirmas que deseas eliminar “\$\{deleteSourceTarget\?\.name/u);
   assert.match(ui, /Eliminar definitivamente/u);
   assert.match(ui, /deleteArmed/u);
   assert.match(ui, /formatVersionDate\(value\.createdAt, timeZone\)/u);

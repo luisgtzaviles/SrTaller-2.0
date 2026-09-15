@@ -268,3 +268,17 @@ const ownerRows = [
 export function ownerSupplierClipboard() {
   return ownerRows.map((row) => row.join('\t')).join('\n');
 }
+
+export function syntheticSupplierDemoRows(version) {
+  if (version !== 1 && version !== 2) throw new TypeError('Synthetic supplier demo version must be 1 or 2.');
+  return Array.from({ length: 1_500 }, (_, index) => {
+    const ordinal = index + 1;
+    const kind = ordinal % 13 === 0 ? 'SUPPLY' : ordinal % 5 === 0 ? 'SERVICE' : ordinal % 3 === 0 ? 'PRODUCT' : 'PART';
+    const changed = version === 2 && ordinal % 6 === 0;
+    const replacement = version === 2 && ordinal >= 1_499;
+    const renamedObservation = version === 2 && ordinal % 30 === 0;
+    const baseTitle = `${kind === 'PART' ? 'Pantalla' : kind === 'PRODUCT' ? 'Accesorio' : kind === 'SERVICE' ? 'Servicio técnico' : 'Insumo'} Demo ${ordinal}`;
+    const title = replacement ? `Artículo agregado V2 ${ordinal}` : renamedObservation ? `${baseTitle} · etiqueta proveedor V2` : baseTitle;
+    return { kind, supplierObservedTitle: title, title, description: 'Observación sintética', category: kind === 'PART' ? (ordinal % 41 === 0 ? 'Pantallas por revisar' : 'Pantallas') : kind === 'PRODUCT' ? 'Accesorios' : kind === 'SERVICE' ? 'Mantenimiento' : 'Consumibles', brand: kind === 'SERVICE' ? '' : ordinal % 7 === 0 ? 'Samsung' : 'Apple', supplierItemCode: replacement ? `PROV-NUEVO-${ordinal}` : version === 2 && ordinal === 10 ? 'PROV-000005' : ordinal % 5 === 0 ? `PROV-${String(ordinal).padStart(6, '0')}` : '', sku: '', barcode: '', price: String(299 + ordinal + (changed ? 25 : 0)), cost: ordinal % 11 === 0 ? '' : String(120 + ordinal + (changed ? 10 : 0)) };
+  });
+}
