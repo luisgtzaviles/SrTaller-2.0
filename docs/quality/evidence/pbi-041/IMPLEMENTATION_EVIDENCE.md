@@ -2,7 +2,7 @@
 
 ## Checkpoint
 
-- **Estado:** historical Catalog reactivation lista para Owner Review;
+- **Estado:** Supplier history, automatic versioning y governed delete en verificación para Owner Review;
   Owner Acceptance pendiente.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
 - **Candidato de reactivación:** `f4bc803fe3b086405024f6199b65114feb1feebe`.
@@ -13,6 +13,57 @@
 - **Delivery:** sin push, PR, merge, Preview, Production ni deploy.
 - **Gate deliberadamente no ejecutado:** `verify:full`, reservado por autoridad
   Owner para después de Owner Acceptance.
+
+## Supplier history, automatic versioning and governed delete
+
+La auditoría previa recorrió Source, Version, raw, Listing, RowDecision,
+Resolution, ReconciliationMemory, retirement y revisiones de Catalog. El
+resultado es fail-closed: una Version `INGESTED`, Resolution, Memory,
+RetirementPlan o RetirementEvent bloquea el hard delete de la Source. Sólo una
+Source sin historia publicada y con Versions exclusivamente `DRAFT` puede
+eliminarse. El conjunto explícito contiene RowDecisions, Listings, draft
+Batches, raw, Versions y Source; nunca contiene `CatalogItem`, identifiers,
+revisiones de precio/costo ni audit de Catalog.
+
+El candidato agrega secuencia monotónica por Tenant+Source. Un lock de Source
+asigna `vN` al guardar, el unique físico evita duplicados y el request id hace
+idempotente el retry. La descripción opcional y la fecha son metadata, no
+identidad ni matching. La migración backfill ordena la historia existente por
+`created_at + version_id` sin reescribir sus snapshots.
+
+La eliminación usa `catalog.suppliers.delete`, sin fallback a
+`catalog.manage`. El ejecutor ADR-013 nivel 2 reautentica al mismo actor y el
+repository revalida versión, contexto, capability y dependencias dentro de una
+transacción. La UI presenta dos confirmaciones; neutraliza Enter en la primera,
+arma la segunda con retardo y usa un guard sincrónico más request id para que un
+doble click produzca un solo efecto. Un evento append-only desacoplado conserva
+actor, Session, Station, reautenticación, correlation y conteos.
+
+El audit transversal encontró dos inconsistencias anteriores, no corregidas en
+este alcance: Category/Brand de Catalog dependen de `catalog.manage` y las
+referencias de Repairs de `repairs.catalogs.manage` para hard delete. Quedan
+registradas como deuda; no son precedente para SupplierSource.
+
+### Verificación focalizada de la iteración
+
+- Contratos de dominio, Access, arquitectura, schema, migraciones, UI y entorno
+  local: 80 PASS, 0 FAIL, 0 SKIP.
+- PostgreSQL material: 1 PASS con 69 migraciones y cleanup del contenedor
+  desechable. El benchmark de 10,000 filas registró ingest 4,169.5 ms,
+  análisis 388.3 ms, preview 38.5 ms, publish 2,201.0 ms y 118.5 MiB.
+- Dos conexiones independientes guardando simultáneamente contra la misma
+  Source recibieron secuencias monotónicas distintas; retries idempotentes y
+  versiones del mismo día permanecieron válidos.
+- Safe delete, bloqueo por historia, Tenant isolation y ausencia de capability
+  se probaron en backend sin eliminar CatalogItem ni evidencia publicada.
+
+La primera migración in-place sobre el Tenant histórico local reveló una
+incompatibilidad que el caso fresh no ejercitaba: el trigger de inmutabilidad
+de Version `INGESTED` rechazaba el backfill de `sequence_number`. La migración
+se endureció con una ventana autosellada: sólo admite llenar
+`sequence_number` desde `NULL` cuando el resto completo de la fila es idéntico;
+después reemplaza la función por la guarda final. El upgrade local preservó el
+volumen y avanzó de 67 a 69 migraciones sin reset.
 
 ## Safe Catalog retirement decision and materialization
 
@@ -113,7 +164,7 @@ reusable del Design System. El Composer no repite el banner de ambiente del
 shell. Confirmaciones y acciones reversibles usan Toast; los errores que exigen
 decisión permanecen visibles.
 
-## Reproducción exacta del fallo Owner
+## Reproducción histórica del fallo Owner ya sustituido
 
 Antes de modificar la experiencia se reprodujo el guardado observado:
 
@@ -127,10 +178,12 @@ Antes de modificar la experiencia se reprodujo el guardado observado:
   source_revision)`; el repositorio convertía toda violación `23505` en el
   conflicto genérico y la UI descartaba ese contexto.
 
-Clasificación: error de **lote** en `Versión del proveedor`. El contrato final
-publica `CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS`, enfoca ese control y explica
-que debe elegirse otra revisión o abrirse el draft existente. No se expusieron
-tokens, credenciales ni datos Owner reales.
+Clasificación en aquel corte: error de **lote** en `Versión del proveedor`. La
+iteración actual elimina ese input manual: el servidor asigna `vN` y la
+descripción opcional no participa en el unique. La corrección intermedia que
+publicaba `CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS` quedó sustituida por esta
+secuencia automática; el fallo manual ya no es alcanzable desde la UI. No se
+expusieron tokens, credenciales ni datos Owner reales.
 
 ## Fixtures sintéticos gobernados
 

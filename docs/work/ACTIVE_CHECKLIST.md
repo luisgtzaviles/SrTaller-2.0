@@ -1,45 +1,40 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Historical Reactivation Semantics
+Milestone / Functional Goal: PBI-041 — Supplier history, automatic versioning and governed delete
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Historical reactivation ready for Owner Review — Acceptance pending
+Status: Owner Review preparation — runtime and browser validation in progress
 WIP: 1/1
-Progress: 6 / 6 blocks completed
-Current: Owner may review the applied AG result and active price list side by side
-Next: Owner decision only; integration gates remain unauthorized
-Blocked: None; Acceptance and integration remain unauthorized
-Last updated: 2026-09-14 MST
+Progress: 5 / 7 blocks completed
+Current: Run the exact candidate locally and verify the governed Supplier/Version experience in Chrome
+Next: Reconcile browser evidence, commit the review state and leave Chrome open
+Blocked: None; Owner Acceptance and integration remain unauthorized
+Last updated: 2026-09-15 MST
 
-## Current checkpoint — historical reactivation
+## Current checkpoint — Supplier history and governed delete
 
-- [x] Preserve and audit the existing 36-conflict AG fixture, itemIds, mappings and revisions.
-- [x] Promote `REACTIVATE` semantics in PBI-041 architecture and evidence contracts.
-- [x] Implement deterministic analysis, atomic publication and comprehensible UI.
-- [x] Add positive, negative, concurrency, rollback and idempotency coverage.
-- [x] Run focused/domain/PostgreSQL/build/typecheck/preflight/provenance gates.
-- [x] Apply the material AG batch and prepare both final Chrome surfaces.
+- [x] Audit Source, Version, Listing, mapping, memory, Batch, revision and delete relations.
+- [x] Promote automatic monotonic `vN`, Source deletion rules and explicit capability to canonical documentation.
+- [x] Implement server-side version allocation, idempotency and migration-safe historical backfill.
+- [x] Implement Supplier → Versions hierarchy, collapsible workspace and double-confirmed deletion UX.
+- [x] Pass 80 focused contracts and PostgreSQL material with 69 migrations, including concurrency, isolation and safe-delete cases.
+- [~] Validate 1280/768/640, light/dark, keyboard, sidebar states and destructive confirmations in Chrome.
+- [ ] Reconcile final evidence, commits, exact-HEAD provenance and Owner handoff.
 
-## Owner Review evidence
+## Material findings and evidence
 
-- Historical Tenant: 1,539 active items retired in two governed operations;
-  active list at zero while identifiers, revisions, mappings, batches and
-  reconciliation memory remain.
-- Historical re-intake: `AG / Versión 1.2` reanalizó como 0 New / 36 Reactiva,
-  sin UUID manual, y se aplicó sobre los mismos 36 itemId/SKU/barcode.
-- El Tenant conserva 1,539 identidades: 36 activas y 1,503 inactivas; se
-  anexaron exactamente 36 revisiones de precio, costo, Resolution MATCHED y
-  audit events de reactivación.
-- Virgin Tenant: isolated PostgreSQL fixture proves a true first intake of 36
-  New rows without deleting or altering the historical Tenant.
-- Build/typecheck, 33 contratos focalizados y PostgreSQL material con 67
-  migraciones son PASS. `verify:full` permanece deliberadamente sin ejecutar.
+- The governed local database was migrated in place from 67 to 69 migrations; no reset or volume replacement occurred.
+- The first historical upgrade exposed an immutable-version trigger blocking sequence backfill. The migration now permits only a one-time `sequence_number` fill when every other row value is unchanged, then restores the final immutable guard.
+- Focused contracts: 80 PASS, 0 FAIL, 0 SKIP.
+- PostgreSQL material: 1 PASS with 69 migrations; concurrent saves received distinct monotonic versions and the disposable test container was removed.
+- Existing AG and Demo Sources contain published history and remain ineligible for hard delete.
+- The Administrator local fixture received only `catalog.suppliers.delete`; the general seed was not run because doing so required changing existing local PIN fixtures.
 
 ## Guardrails
 
 - No PBI-042 or Advanced Supplier Reconciliation.
 - No Inventory, Procurement, Caja, Repair Concepts, CSV/XLSX adapter or supplier API.
 - No authoritative `verify:full` before Owner Acceptance.
-- No hard delete, CASCADE, trigger bypass or false applied-batch reversal.
+- No hard delete of CatalogItem, published Supplier history, mappings, memory or revisions.
 - Classifier and verified-tree remain shadow-only; no gates are omitted.
-- No push, PR, merge, deploy, Production or inferred Owner Acceptance.
+- No DB reset, push, PR, merge, Preview, Production or deploy.
