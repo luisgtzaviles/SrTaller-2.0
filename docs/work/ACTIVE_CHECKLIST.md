@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Supplier history, automatic versioning and governed delete
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Owner Review preparation — runtime and browser validation in progress
+Status: Ready for Owner Review — Acceptance pending
 WIP: 1/1
-Progress: 5 / 7 blocks completed
-Current: Run the exact candidate locally and verify the governed Supplier/Version experience in Chrome
-Next: Reconcile browser evidence, commit the review state and leave Chrome open
-Blocked: None; Owner Acceptance and integration remain unauthorized
+Progress: 7 / 7 blocks completed
+Current: Owner may review Supplier history, automatic versions and governed deletion locally
+Next: Owner decision only; `verify:full` and integration remain unauthorized
+Blocked: None; Owner Acceptance remains pending
 Last updated: 2026-09-15 MST
 
 ## Current checkpoint — Supplier history and governed delete
@@ -18,17 +18,20 @@ Last updated: 2026-09-15 MST
 - [x] Implement server-side version allocation, idempotency and migration-safe historical backfill.
 - [x] Implement Supplier → Versions hierarchy, collapsible workspace and double-confirmed deletion UX.
 - [x] Pass 80 focused contracts and PostgreSQL material with 69 migrations, including concurrency, isolation and safe-delete cases.
-- [~] Validate 1280/768/640, light/dark, keyboard, sidebar states and destructive confirmations in Chrome.
-- [ ] Reconcile final evidence, commits, exact-HEAD provenance and Owner handoff.
+- [x] Validate 1280/768/640, light/dark, keyboard, sidebar states and destructive confirmations in Chrome.
+- [x] Reconcile evidence, logical commits, exact-HEAD provenance and Owner handoff.
 
-## Material findings and evidence
+## Owner Review fixture and evidence
 
-- The governed local database was migrated in place from 67 to 69 migrations; no reset or volume replacement occurred.
-- The first historical upgrade exposed an immutable-version trigger blocking sequence backfill. The migration now permits only a one-time `sequence_number` fill when every other row value is unchanged, then restores the final immutable guard.
-- Focused contracts: 80 PASS, 0 FAIL, 0 SKIP.
-- PostgreSQL material: 1 PASS with 69 migrations; concurrent saves received distinct monotonic versions and the disposable test container was removed.
-- Existing AG and Demo Sources contain published history and remain ineligible for hard delete.
-- The Administrator local fixture received only `catalog.suppliers.delete`; the general seed was not run because doing so required changing existing local PIN fixtures.
+- `AG`: 8 Versions with published history; hard delete is blocked.
+- `Proveedor Demo`: 3 Versions with published history; hard delete is blocked.
+- `Proveedor QA eliminable 15 sep`: 2 same-day `DRAFT` Versions (`v1`, `v2`) with distinct descriptions; eligible for the governed delete flow.
+- Creating the QA Source first showed `0 versiones`; selecting it did not create a Version.
+- First confirmation explains the permanent effect and ignores Enter. The second requires same-actor PIN and arms the destructive button only after the delay.
+- The browser deletion was intentionally cancelled so the Owner can inspect the fixture; PostgreSQL material proves the successful effect, duplicate-submit safety, no-capability rejection and dependent-history block.
+- Local database migrated in place from 67 to 69 migrations; no reset or volume replacement occurred.
+- Focused contracts: 80 PASS. Final UI/bulk regression subset: 18 PASS. PostgreSQL: 1 PASS. Typecheck/build: PASS.
+- Chrome: 1280 light, 768 dark and 640 light; no document/action overflow, panel expands/collapses by keyboard and console has zero errors/warnings.
 
 ## Guardrails
 

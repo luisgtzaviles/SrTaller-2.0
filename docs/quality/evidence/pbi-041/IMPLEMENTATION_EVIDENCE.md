@@ -2,7 +2,7 @@
 
 ## Checkpoint
 
-- **Estado:** Supplier history, automatic versioning y governed delete en verificación para Owner Review;
+- **Estado:** Supplier history, automatic versioning y governed delete listos para Owner Review;
   Owner Acceptance pendiente.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
 - **Candidato de reactivación:** `f4bc803fe3b086405024f6199b65114feb1feebe`.
@@ -502,6 +502,16 @@ filas registró ingest 4,766.7 ms, análisis 394.1 ms, preview 43.8 ms, publish
 | guardado válido + reload | PASS; Toast de borrador guardado, reload, reapertura desde historial y recuperación de 36 filas + `PART/Pantallas/Apple` |
 | conflicto de revisión duplicada | PASS; error batch persistente junto a versión y foco en el control |
 | consola de la iteración final | 0 errores, 0 warnings |
+| jerarquía Supplier → Versions | PASS; AG 8, Demo 3 y QA 2; versiones newest-first con estado, fecha, filas y descripción |
+| creación explícita de Source | PASS; `Proveedor QA eliminable 15 sep` nació con 0 Versions y la selección no persistió una carga vacía |
+| versionado automático mismo día | PASS; dos guardados recibieron `v1` y `v2`, ambos 15 sep 2026, sin input manual ni colisión |
+| descripción + reload | PASS; reload conservó ambas Versions y reabrir `v2` recuperó `QA segunda versión del día` |
+| historial colapsado | PASS; el panel desapareció, el grid ganó ancho y quedó un solo control `Abrir fuentes y versiones` accesible por teclado |
+| protección de Source histórica | PASS; AG y Proveedor Demo muestran delete deshabilitado por historia publicada/dependencias |
+| doble confirmación Supplier delete | PASS; Enter no avanzó la primera, la segunda exigió PIN y el botón destructivo sólo se armó tras el retardo |
+| efecto destructivo browser | NOT EXECUTED; se canceló para conservar el fixture Owner; PostgreSQL material cubre ejecución, doble envío y bloqueo |
+| overflow 1280/768/640 | PASS; documento y acciones sin overflow; sólo la grid conserva su scroll horizontal gobernado |
+| consola Supplier/version iteration | 0 errores, 0 warnings |
 
 ## Workflow shadow
 
@@ -532,10 +542,21 @@ El clasificador WF-006 evaluó el delta base→candidato como
   conocida. Se especializó la traducción PostgreSQL y su código de API; la UI
   ahora conserva los fallos globales en banner y lleva los errores de lote o
   celda al punto exacto de corrección.
+- El upgrade in-place del Tenant histórico encontró que el trigger de Version
+  `INGESTED` también bloqueaba el backfill de secuencia. La migración ahora abre
+  únicamente la transición `NULL → sequence_number` cuando todo el resto de la
+  fila permanece idéntico y reinstala después la guarda final. El mismo volumen
+  avanzó de 67 a 69 migraciones sin reset.
+- La matriz Chrome de esta iteración detectó que el setup imponía 45–69 px de
+  ancho extra a 1280. `min-width: 0` en los tracks y un setup `auto-fit`
+  eliminaron el overflow externo; 18/18 contratos UI/bulk, typecheck y build
+  volvieron a PASS.
 
 ## Frontera de aceptación
 
 Este documento demuestra un candidato local revisable. No demuestra Owner
 Acceptance, PR CI, independent review, merge, exact-main, Preview ni release.
 El siguiente acto permitido es exclusivamente la revisión Owner de los fixtures
-y superficies locales descritos arriba.
+y superficies locales descritos arriba. La Source sintética
+`Proveedor QA eliminable 15 sep` conserva dos Versions `DRAFT` para inspeccionar
+historia, descripción y las dos confirmaciones sin afectar Catalog.

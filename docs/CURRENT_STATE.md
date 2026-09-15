@@ -85,6 +85,24 @@ material PASS con 67 migraciones, rollback atómico, concurrencia e idempotencia
 `verify:full`, push, PR, merge, Preview, Production y Owner Acceptance siguen
 sin ejecutarse ni inferirse.
 
+La iteración vigente de PBI-041 separa `Lista` de `Fuentes y versiones`, asigna
+`vN` monotónico server-side por Tenant+Source y exige
+`catalog.suppliers.delete` con ADR-013 nivel 2 para el único hard delete nuevo.
+Sólo una Source exclusivamente `DRAFT` y sin Resolution, Memory ni evidencia de
+retiro es elegible; CatalogItem e historia publicada nunca se eliminan. El
+upgrade local preservó el Tenant histórico y avanzó de 67 a 69 migraciones; una
+incompatibilidad real del backfill con el trigger inmutable fue corregida con
+una ventana autosellada que sólo llena `sequence_number` sin cambiar ningún
+otro valor. Pasaron 80/80 contratos, PostgreSQL 1/1, typecheck y build.
+
+Chrome local verificó 1280/768/640, light/dark, teclado, panel abierto/cerrado,
+alta explícita con cero Versions, `v1`/`v2` el mismo día, descripción, reload,
+protección de Sources publicadas y las dos confirmaciones del delete. El efecto
+destructivo final se canceló para conservar `Proveedor QA eliminable 15 sep`
+con dos borradores revisables; la ejecución y los negativos permanecen cubiertos
+por PostgreSQL/backend. No se ejecutó `verify:full`, push, PR, merge, Preview,
+Production ni deploy; Owner Acceptance sigue pendiente.
+
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
 Price List comenzó después en una rama no integrada. Ese WIP permaneció
