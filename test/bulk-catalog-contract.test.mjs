@@ -107,6 +107,10 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /SUPPLY/u);
   assert.match(ui, /rows\.slice\(first, first \+ 22\)/u);
   assert.match(css, /translateY/u);
+  assert.match(css, /\.page \{ min-width: 0;/u);
+  assert.match(css, /\.layout \{ min-width: 0;/u);
+  assert.match(css, /\.composer > section, \.rowActions \{ min-width: 0;/u);
+  assert.match(css, /repeat\(auto-fit, minmax\(180px, 1fr\)\)/u);
   assert.match(gridLayout, /--bulk-grid-offset/u);
   assert.match(ui, /Contexto del lote/u);
   assert.match(ui, /aria-label="Columnas de trabajo"/u);
