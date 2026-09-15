@@ -4,7 +4,7 @@
 
 - **Estado:** local Owner Review ready; Owner Acceptance pending.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
-- **Candidato funcional:** `6936ab2757cb86b1620f54872627e8c3c39e215b`.
+- **Candidato funcional:** `8b934080071e1650b53c220d3fa42f8930e6479a`.
 - **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
 - **Fecha:** 2026-09-14 MST.
@@ -28,10 +28,18 @@ análisis, reconciliación agrupada, preview, comparación entre versiones y
 publicación confirmada. La grid virtualiza el DOM; los límites se rechazan sin
 truncamiento ni persistencia parcial.
 
+La iteración Owner de ergonomía añade una vista esencial `Título | Costo |
+Precio`, contexto de lote para Tipo/Category/Brand, copy-fill con undo,
+redimensionamiento manual y auto-fit. El título observado se conserva exacto en
+`SupplierListing`; la propuesta editable normaliza presentación sin convertir
+ese texto en identidad. El costo recibido sigue siendo evidencia de proveedor y
+sólo propone `ReferenceCostRevision`: no se convierte en costo de compra.
+
 ## Fixtures sintéticos gobernados
 
 | Fixture | Estado | Propósito |
 |---|---|---|
+| AG / Owner real paste 36 | `DRAFT` | 36 pantallas sintéticas, pegado 3 columnas, contexto `Refacción / Pantallas / Apple` y recuperación por reload; no escribe Catalog |
 | Proveedor Demo / Versión 1 | `APPLIED` | 1,500 observaciones sintéticas, publicación inicial y memoria histórica |
 | Proveedor Demo / Versión 2 | `RECONCILING` | 1,500 observaciones equivalentes con cambios controlados y comparación |
 
@@ -95,6 +103,16 @@ Sobre el candidato ejecutable se ejecutaron:
 El build conserva una advertencia no bloqueante de Vite por tamaño del chunk
 principal mayor a 500 kB; no hubo error de compilación ni cambio de gate.
 
+Sobre la iteración Owner `8b934080071e` se ejecutaron, sin `verify:full`:
+
+- 21/21 contratos de paste, trimming terminal, títulos, costos, defaults,
+  teclado, fill, auto-fit, Catalog y UI;
+- 42/42 contratos de dominio, autorización contextual y DEC-005;
+- build TypeScript/Vite: PASS;
+- suite PostgreSQL PBI-041: PASS con 64 migraciones, aislamiento desechable y
+  cleanup; la separación entre título observado/propuesto quedó verificada en
+  respuesta, listing y `source_observation`.
+
 ## Performance y límites
 
 Veinte repeticiones completas sobre el core `b49a52f` terminaron 20/20 PASS. El
@@ -119,6 +137,11 @@ En Chrome real, un paste de 10,000 filas mantuvo 22 filas DOM virtualizadas,
 181–215 ms de tiempo observado, tarea principal CDP de 198.094 ms y aumento de
 heap de 2.73 MiB.
 
+La transformación de clipboard medida en la iteración Owner obtuvo p95 de
+2.0 ms para 1,500 filas y 16.2 ms para 10,000. La campaña PostgreSQL de 10,000
+filas registró ingest 4,766.7 ms, análisis 394.1 ms, preview 43.8 ms, publish
+2,460.7 ms y 126.7 MiB de heap, dentro de los budgets vigentes.
+
 ## Matriz browser observada
 
 | Observación | Resultado |
@@ -129,7 +152,13 @@ heap de 2.73 MiB.
 | teclado: Tab, Shift+Tab, flechas y Enter | PASS |
 | paste rectangular, selección y anuncio accesible | PASS |
 | reload de Source/Version/draft | PASS |
-| consola | 0 errores, 0 warnings inesperados |
+| caso Owner 36 × 3 + 963 filas terminales vacías | PASS; quedaron exactamente 36 filas |
+| Batch Context y override por fila | PASS; cambiar el default no reescribió filas capturadas |
+| fill handle + undo + Escape | PASS; relleno 450 y restauración 520/490 observados |
+| resize manual + doble clic auto-fit | PASS |
+| light/dark en viewport normal | PASS |
+| consola final | 0 errores, 0 warnings |
+| red final | 0 respuestas HTTP >=400; una Fetch cancelada por reload intencional |
 
 ## Workflow shadow
 
@@ -152,6 +181,10 @@ El clasificador WF-006 evaluó el delta base→candidato como
   1280 px. Los fixes CSS `c394126` y `6936ab2` contienen texto largo, apilan el
   workspace cuando el ancho útil lo requiere, conservan visibles ambas acciones
   y volvieron a pasar build y 11/11 contratos UI/bulk focalizados.
+- La primera prueba de recuperación conservó las 36 filas pero perdió el
+  contexto del lote por una carrera entre efectos de `sessionStorage`; se movió
+  la lectura al inicializador de estado y la recarga posterior conservó
+  `Refacción / Pantallas / Apple`.
 
 ## Frontera de aceptación
 
