@@ -4,7 +4,7 @@
 
 - **Estado:** local Owner Review ready; Owner Acceptance pending.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
-- **Candidato funcional:** `8b934080071e1650b53c220d3fa42f8930e6479a`.
+- **Candidato funcional:** `a2098ddb57f97168043667e8959f6dd010320683`.
 - **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
 - **Fecha:** 2026-09-14 MST.
@@ -34,6 +34,32 @@ redimensionamiento manual y auto-fit. El título observado se conserva exacto en
 `SupplierListing`; la propuesta editable normaliza presentación sin convertir
 ese texto en identidad. El costo recibido sigue siendo evidencia de proveedor y
 sólo propone `ReferenceCostRevision`: no se convierte en costo de compra.
+
+La iteración de workspace y validación concentra el trabajo en la grid: fuentes
+y contexto pueden compactarse, columnas y acciones viven en una toolbar única,
+el header permanece alineado durante scroll y `← Lista de precios` usa el patrón
+reusable del Design System. El Composer no repite el banner de ambiente del
+shell. Confirmaciones y acciones reversibles usan Toast; los errores que exigen
+decisión permanecen visibles.
+
+## Reproducción exacta del fallo Owner
+
+Antes de modificar la experiencia se reprodujo el guardado observado:
+
+- UI: `No se guardó. Revisa campos requeridos, importes y revisión única.`;
+- request: `POST /api/catalog/supplier-versions`, Source `AG`, revisión
+  `Versión 1`, modo `FULL`, 36 filas;
+- response: HTTP `409`, body `{"code":"CATALOG_CONFLICT"}`;
+- correlation: `004f9c66-c261-4c16-8170-99c38efde7e3`;
+- fuente: constraint PostgreSQL
+  `catalog_supplier_versions_revision_uq (tenant_id, source_id,
+  source_revision)`; el repositorio convertía toda violación `23505` en el
+  conflicto genérico y la UI descartaba ese contexto.
+
+Clasificación: error de **lote** en `Versión del proveedor`. El contrato final
+publica `CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS`, enfoca ese control y explica
+que debe elegirse otra revisión o abrirse el draft existente. No se expusieron
+tokens, credenciales ni datos Owner reales.
 
 ## Fixtures sintéticos gobernados
 
@@ -113,6 +139,22 @@ Sobre la iteración Owner `8b934080071e` se ejecutaron, sin `verify:full`:
   cleanup; la separación entre título observado/propuesto quedó verificada en
   respuesta, listing y `source_observation`.
 
+Sobre la iteración de workspace/validación `a2098ddb57f9` se ejecutaron, sin
+`verify:full`:
+
+- 18/18 contratos focalizados de Composer y bulk: PASS;
+- 16/16 contratos compartidos de catálogo, autorización contextual y Design
+  System: PASS;
+- typecheck TypeScript/web: PASS;
+- build TypeScript/Vite: PASS; conserva sólo la advertencia conocida del chunk
+  principal mayor a 500 kB;
+- suite PostgreSQL material PBI-041: PASS, incluida la traducción exacta del
+  constraint de revisión duplicada y cleanup gobernado.
+- la reconciliación documental fue clasificada fail-closed como
+  `CROSS_MODULE_HIGH_RISK` porque toca la autoridad del Design System. Por esa
+  razón `verify:docs-only` la rechazó correctamente; no se ejecutó
+  `verify:full`, que permanece expresamente reservado hasta Owner Acceptance.
+
 ## Performance y límites
 
 Veinte repeticiones completas sobre el core `b49a52f` terminaron 20/20 PASS. El
@@ -159,6 +201,17 @@ filas registró ingest 4,766.7 ms, análisis 394.1 ms, preview 43.8 ms, publish
 | light/dark en viewport normal | PASS |
 | consola final | 0 errores, 0 warnings |
 | red final | 0 respuestas HTTP >=400; una Fetch cancelada por reload intencional |
+| workspace compacto 1280 light | PASS; grid dominante, fuentes y contexto compactados |
+| workspace compacto 768 dark | PASS; toolbar, navegación y grid visibles |
+| workspace compacto 640 light/dark | PASS; controles apilados y scroll horizontal gobernado |
+| guardar con 3 errores | PASS; 1/3 enfocó `Título fila 1`, sin request ni escritura parcial |
+| anterior/siguiente | PASS; 2/3 enfocó costo fila 2 y 3/3 enfocó precio fila 36 |
+| fila virtualizada fuera de vista | PASS; fila 36 se materializó, desplazó y enfocó; contrato puro cubre `rows.826.basePriceMinor` como fila 827 |
+| corrección de error | PASS; al corregir título, el contador cambió inmediatamente de 3 a 2 |
+| copy-fill + undo con Toast | PASS; 450 se extendió por drag, Toast no movió layout, undo restauró `1,2`/490 y anunció la reversión |
+| guardado válido + reload | PASS; Toast de borrador guardado, reload, reapertura desde historial y recuperación de 36 filas + `PART/Pantallas/Apple` |
+| conflicto de revisión duplicada | PASS; error batch persistente junto a versión y foco en el control |
+| consola de la iteración final | 0 errores, 0 warnings |
 
 ## Workflow shadow
 
@@ -185,6 +238,10 @@ El clasificador WF-006 evaluó el delta base→candidato como
   contexto del lote por una carrera entre efectos de `sessionStorage`; se movió
   la lectura al inicializador de estado y la recarga posterior conservó
   `Refacción / Pantallas / Apple`.
+- El error genérico al guardar una revisión ya existente ocultaba una constraint
+  conocida. Se especializó la traducción PostgreSQL y su código de API; la UI
+  ahora conserva los fallos globales en banner y lleva los errores de lote o
+  celda al punto exacto de corrección.
 
 ## Frontera de aceptación
 
