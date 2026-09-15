@@ -2,7 +2,8 @@
 
 ## Checkpoint
 
-- **Estado:** local Owner Review ready; Owner Acceptance pending.
+- **Estado:** blocked for Owner decision on Catalog reset and applied-batch
+  reversibility; Owner Acceptance pending.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
 - **Candidato funcional:** `a2098ddb57f97168043667e8959f6dd010320683`.
 - **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
@@ -11,6 +12,45 @@
 - **Delivery:** sin push, PR, merge, Preview, Production ni deploy.
 - **Gate deliberadamente no ejecutado:** `verify:full`, reservado por autoridad
   Owner para después de Owner Acceptance.
+
+## Catalog reset / applied-batch reversibility audit
+
+El Development Preflight pasó sobre
+`2db8e3dc6eda44f6a5c2a78fa2323488edf1ae22`. El runtime local inicialmente era
+stale; se reinició con el mecanismo gobernado y
+`verify:runtime-provenance` confirmó frontend/backend exactos al mismo HEAD y
+working tree limpio.
+
+El schema PostgreSQL local gobernado contiene 1,539 `CatalogItem`. Los 1,539
+tienen identificadores y revisión de precio; 1,401 tienen costo, 1 tiene
+override de Branch, 1,499 aparecen como targets de RowDecision, 1,536 tienen
+SupplierListingResolution y 1,536 tienen ReconciliationMemory. No existe un
+artículo sin relaciones actuales.
+
+Las relaciones actuales hacia `CatalogItem` son:
+
+- `catalog_item_identifiers` — FK `RESTRICT`, update/delete prohibidos por
+  trigger append-only;
+- `catalog_base_price_revisions` — FK `RESTRICT`, append-only;
+- `catalog_branch_price_revisions` — FK `RESTRICT`, append-only;
+- `catalog_reference_cost_revisions` — FK `RESTRICT`, append-only;
+- `catalog_update_row_decisions.target_item_id` — FK sin cascade;
+- `catalog_supplier_listing_resolutions.item_id` — FK sin cascade y resolución
+  append-only;
+- `catalog_supplier_reconciliation_memory.item_id` — FK sin cascade.
+
+La publicación permite distinguir `CREATED` de `MATCHED` en Resolution, pero
+no permite eliminar ni siquiera un creado preservando las FK y la historia. La
+reversión completa tampoco es demostrable: precio/costo sí dejan revisiones,
+pero description/Category/Brand se actualizan in-place y el before-image no se
+persiste como autoridad restaurable. Dictamen: `NOT SAFELY REVERSIBLE`.
+
+La operación propuesta es además sensible por afectación masiva, irreversibilidad
+y destrucción de evidencia. `catalog.manage` es la capability ordinaria más
+cercana, pero ninguna autoridad aprobada clasifica esta acción ni define el
+control reforzado exigido por ADR-013; por tanto permanece nivel 4. No se
+implementó producto, migración, CASCADE, bypass, fixture destructivo ni prueba
+que simule un PASS.
 
 ## Superficie revisable por Owner
 
