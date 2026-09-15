@@ -7,7 +7,7 @@ export type BulkCatalogRowRecord = Readonly<{
   rowDecisionId: string; rowNumber: number; supplierObservedTitle: string | null; proposal: BulkCatalogRowInput;
   classification: BulkCatalogClassification; decision: BulkCatalogDecision;
   targetItemId: string | null; targetTitle: string | null; expectedItemVersion: number | null;
-  before: Readonly<{ kind: CatalogItemKind; title: string; description: string | null; category: string | null; brand: string | null; basePriceMinor: number | null; referenceCostMinor: number | null }> | null;
+  before: Readonly<{ kind: CatalogItemKind; title: string; description: string | null; category: string | null; brand: string | null; status: 'ACTIVE' | 'INACTIVE'; basePriceMinor: number | null; referenceCostMinor: number | null }> | null;
   preselectedByMemory: boolean; errors: readonly string[]; warnings: readonly string[]; version: number;
 }>;
 export type SupplierVersionRecord = Readonly<{

@@ -8,7 +8,7 @@ type ObjectValue = Record<string, unknown>;
 function object(value: unknown): ObjectValue { if (!value || typeof value !== 'object' || Array.isArray(value)) throw new CatalogInputError('body'); return value as ObjectValue; }
 function mode(value: unknown): BulkCatalogMode { if (value !== 'FULL' && value !== 'COMPACT') throw new CatalogInputError('mode'); return value; }
 function decision(value: unknown): BulkCatalogDecision { if (value !== 'UNRESOLVED' && value !== 'APPLY' && value !== 'EXCLUDE') throw new CatalogInputError('decision'); return value; }
-const classifications = new Set<BulkCatalogClassification>(['NEW', 'UPDATE', 'UNCHANGED', 'PENDING_REFERENCE', 'AMBIGUOUS', 'CONFLICT', 'INVALID']);
+const classifications = new Set<BulkCatalogClassification>(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE', 'AMBIGUOUS', 'CONFLICT', 'INVALID']);
 function raw(value: unknown): string {
   if (typeof value !== 'string' || Buffer.byteLength(value, 'utf8') > 10 * 1024 * 1024) throw new CatalogInputError('rawPayload');
   const lines = value.replace(/\r/gu, '').split('\n'); let nonEmptyCells = 0;

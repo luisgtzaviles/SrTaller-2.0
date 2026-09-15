@@ -217,6 +217,7 @@ test('productive migration root remains exact and governed', async () => {
       '20260914151000_catalog_strengthen_supplier_history.ts',
       '20260914152000_access_add_catalog_bulk_retire_capability.ts',
       '20260914153000_catalog_create_retirement_plans.ts',
+      '20260914154000_catalog_add_historical_reactivation.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

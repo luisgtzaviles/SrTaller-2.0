@@ -211,6 +211,14 @@ mediante contrato y no escribe estas tablas.
 5. Crear items/revisiones/audit/outcomes con IDs reservados.
 6. Marcar batch `COMPLETED` y commit en la misma conexión.
 
+Una RowDecision `REACTIVATE` sólo es válida si el mapping histórico exacto y
+Tenant-scoped converge en un único `CatalogItem` compatible que sigue
+`INACTIVE` en su `expectedVersion`. El mismo update conserva `itemId`, SKU y
+barcode, cambia a `ACTIVE`, incrementa la versión y agrega únicamente las
+revisiones de precio/costo cuyo importe cambió. El Resolution sigue siendo
+`MATCHED` y el audit registra `INACTIVE→ACTIVE`. No se crea una segunda identidad
+ni una variante `REACTIVATE_AND_UPDATE`.
+
 Unique/FK/check/deadlock/serialization/timeout se traducen al contrato DEC-044.
 Un stale vuelve a reconciliation; una falla técnica no deja writes de producto.
 No se reintenta un commit outcome desconocido sin consultar idempotency outcome.
@@ -249,11 +257,14 @@ audit y Catalog permanecen.
 2. `20260914153000_catalog_create_retirement_plans` agrega únicamente planes y
    eventos; el lifecycle `ACTIVE/INACTIVE` de `CatalogItem` ya existía y no
    requirió alteración.
-3. No hay backfill de CatalogItem ni conversión de WIP PBI-040.
-4. Crear roles/grants y queries owner del módulo; app antigua ignora tablas.
-5. Ejecutar fresh/up, previous→up, constraints, rollback transaction y cleanup
+3. `20260914154000_catalog_add_historical_reactivation` amplía sólo el CHECK
+   existente de RowDecision para admitir `REACTIVATE`; no agrega tablas,
+   columnas, identidad ni backfill de CatalogItem.
+4. No hay backfill de CatalogItem ni conversión de WIP PBI-040.
+5. Crear roles/grants y queries owner del módulo; app antigua ignora tablas.
+6. Ejecutar fresh/up, previous→up, constraints, rollback transaction y cleanup
    tests en PostgreSQL 18.4.
-6. Habilitar sólo después de gates, CI y Owner checkpoint aplicables.
+7. Habilitar sólo después de gates, CI y Owner checkpoint aplicables.
 
 ## Rollback constraints
 

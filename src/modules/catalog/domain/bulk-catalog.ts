@@ -10,7 +10,7 @@ export const BULK_CATALOG_CHARACTERIZATION_ROWS = 50_000;
 export const BULK_CATALOG_RAW_RETENTION_DAYS = 90;
 
 export type BulkCatalogMode = 'FULL' | 'COMPACT';
-export type BulkCatalogClassification = 'NEW' | 'UPDATE' | 'UNCHANGED' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
+export type BulkCatalogClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
 export type BulkCatalogDecision = 'UNRESOLVED' | 'APPLY' | 'EXCLUDE';
 
 export type BulkCatalogRowInput = Readonly<{

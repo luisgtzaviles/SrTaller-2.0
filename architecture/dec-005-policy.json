@@ -759,7 +759,8 @@
       "src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts",
       "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts",
       "src/infrastructure/database/migrations/20260914152000_access_add_catalog_bulk_retire_capability.ts",
-      "src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts"
+      "src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts",
+      "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1318,6 +1319,12 @@
           "tables": ["catalog_retirement_events", "catalog_retirement_plans"],
           "functions": ["catalog_reject_append_only_mutation"],
           "triggers": ["catalog_retirement_events_reject_delete", "catalog_retirement_events_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_update_batches", "catalog_update_row_decisions"],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1598,6 +1605,7 @@
           "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts",
           "src/infrastructure/database/migrations/20260914152000_access_add_catalog_bulk_retire_capability.ts",
           "src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts",
+          "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",

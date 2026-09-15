@@ -374,7 +374,7 @@ export interface CatalogUpdateBatchTable {
   readonly updated_at: MutableColumn<Date>;
 }
 
-export type CatalogUpdateRowClassification = 'NEW' | 'UPDATE' | 'UNCHANGED' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
+export type CatalogUpdateRowClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
 export interface CatalogUpdateRowDecisionTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly row_decision_id: ImmutableColumn<string>;

@@ -463,15 +463,19 @@ de observación exacta. Dos señales que resuelven a items distintos producen
 
 Un mapping histórico sólo puede quedar **preseleccionado** cuando coincide el
 mismo Tenant, SupplierSource y firma exacta compatible; toda la historia apunta
-de forma única/consistente al mismo CatalogItem activo; y no existe contradicción
-de identifier, Tipo o lifecycle. Se ve en preview y sólo se aplica al confirmar
-el batch. No requiere click por fila. Una corrección agrega
+de forma única/consistente al mismo CatalogItem; y no existe contradicción de
+identifier o Tipo. Se ve en preview y sólo se aplica al confirmar el batch. No
+requiere click por fila. Una corrección agrega
 `SupplierListingResolution`, conserva la anterior y actualiza la proyección de
 memoria con target, evidence count, first/last seen y conflicto histórico.
 
-Si la misma memoria apunta de forma exacta a un `CatalogItem` retirado, la fila
-no vuelve a clasificarse `NEW`: conserva el `targetItemId` histórico y queda
-`CONFLICT` con necesidad explícita de reactivación. Así `ACTIVE CATALOG EMPTY`
+Si esa memoria exacta, única y consistente apunta a un `CatalogItem` retirado,
+la fila conserva el `targetItemId` y se clasifica `REACTIVATE`: el mismo publish
+atómico cambia `INACTIVE→ACTIVE` y aplica cualquier diff permitido de metadata,
+precio o costo. No existe `REACTIVATE_AND_UPDATE`; `REACTIVATE` incluye el diff
+completo. Identidad, SKU, barcode, Listings, mappings y revisiones previas se
+conservan. Una candidatura ambigua, inconsistente, incompatible o ajena sigue
+`AMBIGUOUS`/`CONFLICT` y nunca se convierte en write. Así `ACTIVE CATALOG EMPTY`
 no se confunde con `NO HISTORICAL CATALOG MEMORY`.
 
 Título/estructura probable, similitud, pattern nuevo o tag nuevo sólo producen
@@ -492,7 +496,7 @@ selección ni readiness.
 | categoría / marca | diff compatible y explícito; puede crear pending gobernada |
 | precio base | nueva revisión sólo ante cambio real |
 | costo de referencia | nueva revisión `IMPORTED` sólo ante cambio real y con permisos |
-| lifecycle | no gestionado por bulk inicial |
+| lifecycle | sólo `INACTIVE→ACTIVE` mediante `REACTIVATE` histórico único; ningún otro cambio bulk |
 | Branch override | siempre intacto |
 
 `SupplierObservedCost`, `ReferenceCostRevision` y el futuro
@@ -525,7 +529,7 @@ PENDING -> STALE | EXPIRED
 ```
 
 Nada anterior a `COMMITTING` escribe estado de producto Catalog. Cada decisión
-termina `CREATE`, `UPDATE`, `NO_CHANGE` o `EXCLUDED`; exclusión es deliberada.
+termina `CREATE`, `UPDATE`, `REACTIVATE`, `NO_CHANGE` o `EXCLUDED`; exclusión es deliberada.
 Preview muestra observation, propuesta, motivo de match, before/after,
 `expectedVersion`, pendientes, conflicts, overrides preservados y conteos.
 
@@ -614,7 +618,7 @@ necesita arquitectura posterior.
 | D. Alcohol interno | `SUPPLY`, puede existir como identidad para futuro Inventory; Price List lo excluye porque no es sellable |
 | E. dos versiones / 1,500 filas | la primera crea/mapea sin códigos obligatorios; la segunda preselecciona historia exacta, separa changed/new/ambiguous/disappeared; un stale evita apply parcial; reporte completo |
 | F. Muchas Branches | un item Tenant, una base, overrides escasos; revocar hereda; perfil futuro se inserta sin migrar item ni snapshots |
-| G. Historical Tenant | retirar el catálogo deja cero activos y conserva listings/resolutions/memory; una nueva versión reconoce la identidad retirada y exige reactivación, nunca `NEW` |
+| G. Historical Tenant | retirar el catálogo deja cero activos y conserva listings/resolutions/memory; una nueva versión exacta clasifica `REACTIVATE`, conserva identidad y publica el diff, nunca `NEW` |
 | H. Virgin Tenant | fixture sintético aislado sin item/listing/resolution/memory previo; las 36 pantallas AG son `NEW` cuando Category/Brand aplicables ya están gobernadas |
 
 ## 13. Entrega por PBIs

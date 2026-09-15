@@ -64,12 +64,18 @@ aislados y reversibles en PostgreSQL desechable.
 | BI-Q30 | Source/Version/Listing immutable and no destructive cascade | ✓ | ✓ | ✓ |  |  | ✓ |
 | BI-Q31 | plan global authoritative cuenta sólo items activos y expira en 5 min | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q32 | retiro global deja 0 activos y preserva ID/SKU/barcode/revisiones/history/memory | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| BI-Q33 | item histórico retirado queda conflict/reactivate, nunca NEW | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q33 | mapping histórico único + INACTIVE queda REACTIVATE, nunca NEW; preserva itemId/SKU/barcode | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q34 | same-actor PIN Level 2 es one-shot; PIN de otro usuario falla | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q35 | plan alien/stale/context-changed/capability-revoked falla sin retiro parcial | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q36 | lote mixto retira sólo Resolution CREATED; MATCHED/UPDATED siguen activos | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q37 | Virgin Tenant aislado clasifica las 36 pantallas AG como NEW | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q38 | UI dice `Original:` y nunca llama reversión al retiro acotado | ✓ | ✓ |  | ✓ | ✓ | ✓ |
+| BI-Q39 | REACTIVATE con cambios agrega precio/costo en el mismo publish atómico | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q40 | target histórico ACTIVE produce UPDATE o UNCHANGED según diff | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q41 | dos candidatos, mapping incompatible o Tenant ajeno quedan bloqueados | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q42 | stale/concurrent/retry de reactivación deja cero parciales y cero duplicados | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q43 | versión INGESTED no aplicada se reanaliza sin mutar Supplier evidence | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q44 | caso material AG: 36 INACTIVE → 36 REACTIVATE → 36 ACTIVE con IDs exactos | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Layer responsibilities
 

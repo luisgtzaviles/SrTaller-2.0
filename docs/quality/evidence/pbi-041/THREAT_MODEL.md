@@ -62,9 +62,11 @@ por cliente tampoco son autoridad.
 | BI-T25 | `catalog.manage` se usa como autoridad masiva implícita | Crítico | capability exacta `catalog.items.bulk_retire`, sin fallback | permiso ordinario solo no muestra ni ejecuta retiro |
 | BI-T26 | otro usuario confirma con su PIN la acción del actor | Crítico | reautenticación PIN del mismo actor, proof consumido una vez | PIN ajeno rechaza y no cambia la Session ni Catalog |
 | BI-T27 | plan manipulado/stale/expirado ejecuta otro conjunto | Crítico | conjunto derivado server-side, hash de item+version, TTL 5 min y revalidación serializable | cambio de versión/contexto/tiempo produce rechazo y cero retiros |
-| BI-T28 | `Vaciar` destruye historia o reutiliza identidad | Crítico | sólo `ACTIVE→INACTIVE`; FKs/append-only intactos; inactive match no es NEW | cero activos con IDs/SKU/barcode/listings/resolutions/memory intactos |
+| BI-T28 | `Vaciar` destruye historia o reutiliza identidad | Crítico | sólo `ACTIVE→INACTIVE`; FKs/append-only intactos; inactive match exacto es REACTIVATE, nunca NEW | cero activos con IDs/SKU/barcode/listings/resolutions/memory intactos |
 | BI-T29 | retiro por batch afecta MATCHED/UPDATED | Crítico | targets sólo por Resolution `CREATED` del batch aplicado | lote mixto retira CREATED y deja MATCHED/UPDATED activos |
 | BI-T30 | Tenant A infiere o ejecuta el plan de B | Crítico | PK/predicates Tenant-scoped y 404 uniforme | plan alien no se lee, consume ni audita en el Tenant incorrecto |
+| BI-T31 | reactivación débil o ambigua revive la identidad equivocada | Crítico | sólo mapping histórico exacto, único, consistente, mismo Tenant y Tipo compatible; sin fuzzy write | dos candidatos, contradicción y Tenant ajeno siguen AMBIGUOUS/CONFLICT |
+| BI-T32 | reactivación parcial crea identidad o revisiones duplicadas | Crítico | target INACTIVE + expectedVersion, transacción serializable, idempotency journal y Resolution MATCHED | stale/concurrencia/retry conservan mismo ID y cero efectos parciales/duplicados |
 
 ## Abuse and denial rules
 
@@ -106,7 +108,8 @@ sensible no clasificada permanece nivel 4/fail-closed.
 
 ## Riesgo residual antes de Owner Acceptance
 
-La prueba local no sustituye revisión Owner, CI autoritativa ni Preview. La
-reactivación masiva y la reversión exacta de updates no existen; cada item
-retirado sólo puede reactivarse mediante el lifecycle individual vigente. 50k
-sigue siendo caracterización, no capacidad de producto.
+La prueba local no sustituye revisión Owner, CI autoritativa ni Preview.
+`REACTIVATE` sólo cubre una fila cuya memoria histórica demuestra un único
+CatalogItem `INACTIVE`; no constituye una reactivación masiva administrativa ni
+habilita matching aproximado. La reversión exacta de updates sigue fuera de
+alcance. 50k continúa siendo caracterización, no capacidad de producto.

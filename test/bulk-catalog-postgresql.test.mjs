@@ -169,15 +169,61 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
       (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1) as resolutions,
       (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1) as mappings`, [tenantA]);
     assert.deepEqual(historyAfterRetirement.rows[0], historyBeforeRetirement.rows[0]);
-    const retiredHistory = await service.createDraft(ctxA, { sourceId: source.sourceId, sourceRevision: 'V5 retired historical identity', mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-retired-history', rows: [rows[1]] });
+    const reactivationRow = { ...rows[1], basePriceMinor: rows[1].basePriceMinor + 500, referenceCostMinor: rows[1].referenceCostMinor + 500 };
+    const retiredHistory = await service.createDraft(ctxA, { sourceId: source.sourceId, sourceRevision: 'V5 retired historical identity', mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-retired-history', rows: [reactivationRow] });
     const retiredHistoryAnalyzed = await service.analyze(ctxA, retiredHistory.versionId, { expectedVersion: retiredHistory.version });
     assert.equal(retiredHistoryAnalyzed.batch.counts.NEW, 0);
-    assert.equal(retiredHistoryAnalyzed.batch.counts.CONFLICT, 1);
-    assert.equal(retiredHistoryAnalyzed.rows[0].errors.includes('HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION'), true);
+    assert.equal(retiredHistoryAnalyzed.batch.counts.REACTIVATE, 1);
+    assert.equal(retiredHistoryAnalyzed.batch.counts.CONFLICT, 0);
+    assert.equal(retiredHistoryAnalyzed.rows[0].classification, 'REACTIVATE');
+    assert.equal(retiredHistoryAnalyzed.rows[0].before.status, 'INACTIVE');
+    assert.equal(retiredHistoryAnalyzed.rows[0].errors.length, 0);
     assert.ok(retiredHistoryAnalyzed.rows[0].targetItemId);
+    assert.equal((await service.getVersion({ tenantId: tenantB, branchId: branchB }, retiredHistory.versionId, true).catch(() => null)), null);
+    const reactivationTargetId = retiredHistoryAnalyzed.rows[0].targetItemId;
+    const reactivationBefore = await admin.query(`select i.item_id, i.status, i.version,
+      max(ci.display_value) filter (where ci.scheme = 'SKU') as sku,
+      max(ci.display_value) filter (where ci.scheme = 'BARCODE') as barcode,
+      (select count(*)::int from catalog_base_price_revisions p where p.tenant_id = i.tenant_id and p.item_id = i.item_id) as price_revisions,
+      (select count(*)::int from catalog_reference_cost_revisions c where c.tenant_id = i.tenant_id and c.item_id = i.item_id) as cost_revisions
+      from catalog_items i join catalog_item_identifiers ci using (tenant_id, item_id)
+      where i.tenant_id = $1 and i.item_id = $2 group by i.tenant_id, i.item_id`, [tenantA, reactivationTargetId]);
+    const retiredHistoryReady = await service.decideMany(ctxA, retiredHistory.versionId, { expectedBatchVersion: retiredHistoryAnalyzed.batch.version, classifications: ['REACTIVATE'], decision: 'APPLY' });
+    const reactivationRequestId = randomUUID();
+    const reactivationApplied = await service.publish(ctxA, retiredHistory.versionId, { expectedVersion: retiredHistoryReady.version, clientRequestId: reactivationRequestId }, true);
+    assert.equal(reactivationApplied.batch.lifecycle, 'APPLIED');
+    const reactivationAfter = await admin.query(`select i.item_id, i.status, i.version,
+      max(ci.display_value) filter (where ci.scheme = 'SKU') as sku,
+      max(ci.display_value) filter (where ci.scheme = 'BARCODE') as barcode,
+      (select count(*)::int from catalog_base_price_revisions p where p.tenant_id = i.tenant_id and p.item_id = i.item_id) as price_revisions,
+      (select count(*)::int from catalog_reference_cost_revisions c where c.tenant_id = i.tenant_id and c.item_id = i.item_id) as cost_revisions,
+      (select count(*)::int from catalog_supplier_listing_resolutions r where r.tenant_id = i.tenant_id and r.version_id = $3 and r.item_id = i.item_id and r.resolution = 'MATCHED') as matched,
+      (select count(*)::int from catalog_audit_events a where a.tenant_id = i.tenant_id and a.resource_id = i.item_id and a.change_summary->>'classification' = 'REACTIVATE') as reactivation_audits
+      from catalog_items i join catalog_item_identifiers ci using (tenant_id, item_id)
+      where i.tenant_id = $1 and i.item_id = $2 group by i.tenant_id, i.item_id`, [tenantA, reactivationTargetId, retiredHistory.versionId]);
+    assert.deepEqual({ ...reactivationAfter.rows[0], version: Number(reactivationAfter.rows[0].version) }, {
+      ...reactivationBefore.rows[0], status: 'ACTIVE', version: Number(reactivationBefore.rows[0].version) + 1,
+      price_revisions: reactivationBefore.rows[0].price_revisions + 1,
+      cost_revisions: reactivationBefore.rows[0].cost_revisions + 1,
+      matched: 1, reactivation_audits: 1,
+    });
+    await service.publish(ctxA, retiredHistory.versionId, { expectedVersion: retiredHistoryReady.version, clientRequestId: reactivationRequestId }, true);
+    const noDuplicateRevisions = await admin.query(`select
+      (select count(*)::int from catalog_base_price_revisions where tenant_id = $1 and item_id = $2) as price_revisions,
+      (select count(*)::int from catalog_reference_cost_revisions where tenant_id = $1 and item_id = $2) as cost_revisions,
+      (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1 and version_id = $3 and item_id = $2) as resolutions`, [tenantA, reactivationTargetId, retiredHistory.versionId]);
+    assert.deepEqual(noDuplicateRevisions.rows[0], { price_revisions: reactivationBefore.rows[0].price_revisions + 1, cost_revisions: reactivationBefore.rows[0].cost_revisions + 1, resolutions: 1 });
+    await assert.rejects(service.analyze(ctxA, retiredHistory.versionId, { expectedVersion: reactivationApplied.version }), CatalogConflictError);
+    const alreadyActive = await service.createDraft(ctxA, { sourceId: source.sourceId, sourceRevision: 'V6 active historical identity', mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-active-history', rows: [reactivationRow] });
+    const alreadyActiveAnalyzed = await service.analyze(ctxA, alreadyActive.versionId, { expectedVersion: alreadyActive.version });
+    assert.equal(alreadyActiveAnalyzed.batch.counts.UNCHANGED, 1);
+    const incompatible = await service.createDraft(ctxA, { sourceId: source.sourceId, sourceRevision: 'V7 incompatible historical identity', mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-incompatible-history', rows: [{ ...reactivationRow, kind: 'SERVICE' }] });
+    const incompatibleAnalyzed = await service.analyze(ctxA, incompatible.versionId, { expectedVersion: incompatible.version });
+    assert.equal(incompatibleAnalyzed.batch.counts.CONFLICT, 1);
+    assert.equal(incompatibleAnalyzed.rows[0].errors.includes('TYPE_CONTRADICTION'), true);
 
     const batchSource = await service.createSource(ctxB, { name: 'Proveedor Batch Created' });
-    const batchRows = Array.from({ length: 36 }, (_, index) => ({ ...fullRow(index + 20), kind: 'PART', title: `Pantalla AG ${index + 1}`, category: 'Pantallas', brand: 'Apple', supplierItemCode: `AG-${String(index + 1).padStart(4, '0')}` }));
+    const batchRows = Array.from({ length: 36 }, (_, index) => ({ ...fullRow(index + 20), kind: 'PART', title: `Pantalla AG ${index + 1}`, category: 'Pantallas', brand: 'Apple', supplierItemCode: `AG-${String(index + 1).padStart(4, '0')}`, referenceCostMinor: 50_000 + index }));
     const batchDraft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, sourceRevision: 'B1', mode: 'FULL', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-created', rows: batchRows });
     const batchAnalyzed = await service.analyze(ctxB, batchDraft.versionId, { expectedVersion: batchDraft.version });
     assert.equal(batchAnalyzed.batch.counts.NEW, 36);
@@ -207,8 +253,70 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
       (select retired_count from catalog_retirement_events where tenant_id = $1 and plan_id = $3 and result = 'SUCCEEDED') as retired_by_batch`, [tenantB, nextBatchDraft.versionId, batchPlan.planId]);
     assert.deepEqual(batchEvidence.rows[0], { active: 36, inactive: 1, created_rows: 1, matched_rows: 36, retired_by_batch: 1 });
 
+    const historicalIdentities = await admin.query(`select i.item_id,
+      max(ci.display_value) filter (where ci.scheme = 'SKU') as sku,
+      max(ci.display_value) filter (where ci.scheme = 'BARCODE') as barcode
+      from catalog_items i join catalog_item_identifiers ci using (tenant_id, item_id)
+      where i.tenant_id = $1 and i.status = 'ACTIVE'
+      group by i.item_id order by i.item_id`, [tenantB]);
+    assert.equal(historicalIdentities.rowCount, 36);
+    const retireHistorical = await retirement.createPlan({ ...ctxB, capability: 'catalog.items.bulk_retire' }, { scope: 'ACTIVE_CATALOG' });
+    await retirement.executePlan({ ...ctxB, capability: 'catalog.items.bulk_retire' }, { planId: retireHistorical.planId, confirmation: 'RETIRE_ACTIVE_CATALOG', clientRequestId: randomUUID() }, new Date().toISOString());
+    const beforeReactivation = await admin.query(`select
+      count(*) filter (where status = 'ACTIVE')::int as active,
+      count(*) filter (where status = 'INACTIVE')::int as inactive,
+      (select count(*)::int from catalog_items where tenant_id = $1) as items,
+      (select count(*)::int from catalog_base_price_revisions where tenant_id = $1) as price_revisions,
+      (select count(*)::int from catalog_reference_cost_revisions where tenant_id = $1) as cost_revisions,
+      (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1) as mappings
+      from catalog_items where tenant_id = $1`, [tenantB]);
+    assert.deepEqual(beforeReactivation.rows[0], { active: 0, inactive: 37, items: 37, price_revisions: 38, cost_revisions: 37, mappings: 37 });
+    const reactivationRows = batchRows.map((row, index) => ({ ...row, basePriceMinor: row.basePriceMinor + (index === 0 ? 2_000 : 1_000), referenceCostMinor: row.referenceCostMinor + 1_000 }));
+    const reactivation36Draft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, sourceRevision: 'B3 historical reactivation', mode: 'FULL', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-reactivation', rows: reactivationRows });
+    const reactivation36Analyzed = await service.analyze(ctxB, reactivation36Draft.versionId, { expectedVersion: reactivation36Draft.version });
+    assert.deepEqual(reactivation36Analyzed.batch.counts, { NEW: 0, UPDATE: 0, REACTIVATE: 36, UNCHANGED: 0, PENDING_REFERENCE: 0, AMBIGUOUS: 0, CONFLICT: 0, INVALID: 0 });
+    assert.equal(reactivation36Analyzed.rows.every((row) => row.before.status === 'INACTIVE' && row.decision === 'UNRESOLVED' && row.targetItemId), true);
+    const reactivation36Ready = await service.decideMany(ctxB, reactivation36Draft.versionId, { expectedBatchVersion: reactivation36Analyzed.batch.version, classifications: ['REACTIVATE'], decision: 'APPLY' });
+    await admin.query(`update catalog_items set version = version + 1 where tenant_id = $1 and item_id = $2`, [tenantB, reactivation36Analyzed.rows[0].targetItemId]);
+    await assert.rejects(service.publish(ctxB, reactivation36Draft.versionId, { expectedVersion: reactivation36Ready.version, clientRequestId: randomUUID() }, true), CatalogConflictError);
+    const failedAtomicPublish = await admin.query(`select
+      count(*) filter (where status = 'ACTIVE')::int as active,
+      (select count(*)::int from catalog_base_price_revisions where tenant_id = $1) as price_revisions,
+      (select count(*)::int from catalog_reference_cost_revisions where tenant_id = $1) as cost_revisions
+      from catalog_items where tenant_id = $1`, [tenantB]);
+    assert.deepEqual(failedAtomicPublish.rows[0], { active: 0, price_revisions: 38, cost_revisions: 37 });
+    const reanalyzed36 = await service.analyze(ctxB, reactivation36Draft.versionId, { expectedVersion: reactivation36Ready.version });
+    assert.equal(reanalyzed36.batch.counts.REACTIVATE, 36);
+    const reready36 = await service.decideMany(ctxB, reactivation36Draft.versionId, { expectedBatchVersion: reanalyzed36.batch.version, classifications: ['REACTIVATE'], decision: 'APPLY' });
+    const concurrentRequestId = randomUUID();
+    const concurrentPublish = await Promise.allSettled([
+      service.publish(ctxB, reactivation36Draft.versionId, { expectedVersion: reready36.version, clientRequestId: concurrentRequestId }, true),
+      service.publish(ctxB, reactivation36Draft.versionId, { expectedVersion: reready36.version, clientRequestId: concurrentRequestId }, true),
+    ]);
+    assert.equal(concurrentPublish.some((result) => result.status === 'fulfilled'), true);
+    assert.equal(concurrentPublish.every((result) => result.status === 'fulfilled' || ['CATALOG_CONFLICT', 'CATALOG_UNAVAILABLE'].includes(result.reason?.code)), true);
+    await service.publish(ctxB, reactivation36Draft.versionId, { expectedVersion: reready36.version, clientRequestId: concurrentRequestId }, true);
+    const afterReactivation = await admin.query(`select
+      count(*) filter (where status = 'ACTIVE')::int as active,
+      count(*) filter (where status = 'INACTIVE')::int as inactive,
+      (select count(*)::int from catalog_items where tenant_id = $1) as items,
+      (select count(*)::int from catalog_base_price_revisions where tenant_id = $1) as price_revisions,
+      (select count(*)::int from catalog_reference_cost_revisions where tenant_id = $1) as cost_revisions,
+      (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1) as mappings,
+      (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1 and version_id = $2 and resolution = 'MATCHED') as matched,
+      (select count(*)::int from catalog_audit_events where tenant_id = $1 and change_summary->>'classification' = 'REACTIVATE') as reactivation_audits
+      from catalog_items where tenant_id = $1`, [tenantB, reactivation36Draft.versionId]);
+    assert.deepEqual(afterReactivation.rows[0], { active: 36, inactive: 1, items: 37, price_revisions: 74, cost_revisions: 73, mappings: 37, matched: 36, reactivation_audits: 36 });
+    const identitiesAfter = await admin.query(`select i.item_id,
+      max(ci.display_value) filter (where ci.scheme = 'SKU') as sku,
+      max(ci.display_value) filter (where ci.scheme = 'BARCODE') as barcode
+      from catalog_items i join catalog_item_identifiers ci using (tenant_id, item_id)
+      where i.tenant_id = $1 and i.status = 'ACTIVE'
+      group by i.item_id order by i.item_id`, [tenantB]);
+    assert.deepEqual(identitiesAfter.rows, historicalIdentities.rows);
+
     await admin.query(`update catalog_supplier_version_raw_payloads set retained_until = now() - interval '1 day' where tenant_id = $1`, [tenantA]);
-    assert.equal(await service.purgeExpiredRaw(ctxA), 5);
+    assert.equal(await service.purgeExpiredRaw(ctxA), 7);
     const raw = await admin.query(`select count(*) filter (where payload_text is not null)::int as retained from catalog_supplier_version_raw_payloads where tenant_id = $1`, [tenantA]);
     assert.equal(raw.rows[0].retained, 0);
     assert.equal((await service.listSources({ tenantId: tenantB, branchId: branchB })).length, 1);

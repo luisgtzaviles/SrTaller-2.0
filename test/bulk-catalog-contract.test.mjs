@@ -48,10 +48,11 @@ test('supplier observed title remains separate from the editable Catalog title p
 });
 
 test('bulk contracts preserve separate prepare, publish, retirement, cost and Branch boundaries', async () => {
-  const [protectedOperations, repository, migration, retirementMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
+  const [protectedOperations, repository, migration, reactivationMigration, retirementMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts', 'utf8'),
+    readFile('src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-catalog-retirement.repository.ts', 'utf8'),
     readFile('src/modules/access/presentation/sensitive-action-level2.executor.ts', 'utf8'),
@@ -77,6 +78,11 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(repository, /source_type: 'IMPORTED'/u);
   assert.match(migration, /retained_until/u);
   assert.match(migration, /catalog_supplier_listing_resolutions_reject_update/u);
+  assert.match(reactivationMigration, /'REACTIVATE'/u);
+  assert.match(repository, /classification = target\.status === 'INACTIVE' \? 'REACTIVATE'/u);
+  assert.match(repository, /expectedStatus = row\.classification === 'REACTIVATE' \? 'INACTIVE' : 'ACTIVE'/u);
+  assert.match(repository, /status: 'ACTIVE' as const/u);
+  assert.match(repository, /lifecycle: \{ before: 'INACTIVE', after: 'ACTIVE' \}/u);
   assert.match(retirementMigration, /sensitivity_level smallint not null/u);
   assert.match(retirementMigration, /catalog_retirement_events_reject_update/u);
   assert.match(retirementRepository, /isolationLevel: 'serializable'/u);
@@ -97,6 +103,12 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /aria-label="Columnas de trabajo"/u);
   assert.match(ui, /supplierObservedTitle/u);
   assert.match(ui, /Original:/u);
+  assert.match(ui, /REACTIVATE: 'Reactiva'/u);
+  assert.match(ui, /estado \{row\.before\.status === 'INACTIVE' \? 'Inactivo' : 'Activo'\}/u);
+  assert.match(ui, /'Reanalizar versión'/u);
+  assert.match(ui, /current\.batch\.lifecycle === 'APPLIED' \? 'Resultado aplicado' : 'Reconciliación'/u);
+  assert.match(ui, /current\.batch\.lifecycle !== 'APPLIED' \? <div className=\{styles\.groupActions\}/u);
+  assert.match(ui, /current\.batch\.lifecycle !== 'APPLIED' \? <div>\s*<Button size="compact" onClick=\{\(\) => void resolve/u);
   assert.doesNotMatch(ui, /Proveedor:\s*\{row\.supplierObservedTitle/u);
   assert.match(ui, /Retirar artículos creados por este lote/u);
   assert.match(ui, /No es una reversión del lote/u);
