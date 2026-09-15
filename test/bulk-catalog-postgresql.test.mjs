@@ -8,8 +8,10 @@ import { Pool } from 'pg';
 const enabled = process.env.SR_PBI041_PG_TEST === '1';
 const { createDatabaseConnection } = enabled ? await import('../dist/infrastructure/database/database-connection.js') : {};
 const { KyselyBulkCatalogRepository } = enabled ? await import('../dist/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.js') : {};
+const { KyselyCatalogRetirementRepository } = enabled ? await import('../dist/modules/catalog/infrastructure/persistence/kysely-catalog-retirement.repository.js') : {};
 const { BulkCatalogService } = enabled ? await import('../dist/modules/catalog/application/bulk-catalog.service.js') : {};
-const { CatalogConflictError, CatalogSupplierVersionAlreadyExistsError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
+const { CatalogRetirementService } = enabled ? await import('../dist/modules/catalog/application/catalog-retirement.service.js') : {};
+const { CatalogConflictError, CatalogNotFoundError, CatalogSupplierVersionAlreadyExistsError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
 
 const tenantA = 'a1410000-0000-4000-8000-000000000041';
 const tenantB = 'b1410000-0000-4000-8000-000000000041';
@@ -17,6 +19,8 @@ const branchA = 'a2410000-0000-4000-8000-000000000041';
 const branchB = 'b2410000-0000-4000-8000-000000000041';
 const tenantC = 'c1410000-0000-4000-8000-000000000041';
 const branchC = 'c2410000-0000-4000-8000-000000000041';
+const virginCategoryId = 'b3410000-0000-4000-8000-000000000041';
+const virginBrandId = 'b4410000-0000-4000-8000-000000000041';
 
 function config() {
   return Object.freeze({
@@ -45,10 +49,17 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
   const connection = createDatabaseConnection(config());
   const repository = new KyselyBulkCatalogRepository(connection);
   const service = new BulkCatalogService(repository, async (tenantId) => tenantId === tenantA || tenantId === tenantC ? 'MXN' : tenantId === tenantB ? 'USD' : null);
+  const retirement = new CatalogRetirementService(new KyselyCatalogRetirementRepository(connection));
   const ctxA = context(tenantA, branchA); const ctxB = context(tenantB, branchB); const ctxC = context(tenantC, branchC);
   try {
     await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'USD', now()), ($3, 'MXN', now())`, [tenantA, tenantB, tenantC]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now()), ($3, $4, 'America/Phoenix', true, now()), ($5, $6, 'America/Hermosillo', true, now())`, [tenantA, branchA, tenantB, branchB, tenantC, branchC]);
+    await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at)
+      values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantB, virginCategoryId]);
+    await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at)
+      values ($1, $2, 'Apple', 'apple', 'ACTIVE', 1, now(), now())`, [tenantB, virginBrandId]);
+    await admin.query(`insert into catalog_category_kind_applicability (tenant_id, category_id, kind) values ($1, $2, 'PART')`, [tenantB, virginCategoryId]);
+    await admin.query(`insert into catalog_brand_kind_applicability (tenant_id, brand_id, kind) values ($1, $2, 'PART')`, [tenantB, virginBrandId]);
 
     const source = await service.createSource(ctxA, { name: 'Proveedor PostgreSQL' });
     const rows = [{ ...fullRow(1), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }, fullRow(2), fullRow(3), fullRow(5)];
@@ -118,12 +129,89 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(inconsistentAnalyzed.rows[0].errors.includes('AMBIGUOUS_HISTORY'), true);
     assert.equal(inconsistentAnalyzed.rows[0].preselectedByMemory, false);
 
+    const historyBeforeRetirement = await admin.query(`select
+      (select count(*)::int from catalog_supplier_listings where tenant_id = $1) as listings,
+      (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1) as resolutions,
+      (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1) as mappings`, [tenantA]);
+    const contextChangedPlan = await retirement.createPlan({ ...ctxA, capability: 'catalog.items.bulk_retire' }, { scope: 'ACTIVE_CATALOG' });
+    await assert.rejects(
+      retirement.executePlan({ ...ctxA, sessionId: randomUUID(), capability: 'catalog.items.bulk_retire' }, { planId: contextChangedPlan.planId, confirmation: 'RETIRE_ACTIVE_CATALOG', clientRequestId: randomUUID() }, new Date().toISOString()),
+      CatalogConflictError,
+    );
+    const contextChangedEvidence = await admin.query(`select
+      (select status from catalog_retirement_plans where tenant_id = $1 and plan_id = $2) as plan_status,
+      (select rejection_reason from catalog_retirement_events where tenant_id = $1 and plan_id = $2 and result = 'REJECTED') as rejection_reason`, [tenantA, contextChangedPlan.planId]);
+    assert.deepEqual(contextChangedEvidence.rows[0], { plan_status: 'STALE', rejection_reason: 'PLAN_CONTEXT_CHANGED' });
+    const stalePlan = await retirement.createPlan({ ...ctxA, capability: 'catalog.items.bulk_retire' }, { scope: 'ACTIVE_CATALOG' });
+    await assert.rejects(
+      retirement.executePlan({ ...ctxB, capability: 'catalog.items.bulk_retire' }, { planId: stalePlan.planId, confirmation: 'RETIRE_ACTIVE_CATALOG', clientRequestId: randomUUID() }, new Date().toISOString()),
+      CatalogNotFoundError,
+    );
+    await admin.query(`update catalog_items set version = version + 1 where tenant_id = $1 and item_id = (
+      select item_id from catalog_items where tenant_id = $1 and status = 'ACTIVE' order by item_id limit 1
+    )`, [tenantA]);
+    await assert.rejects(
+      retirement.executePlan({ ...ctxA, capability: 'catalog.items.bulk_retire' }, { planId: stalePlan.planId, confirmation: 'RETIRE_ACTIVE_CATALOG', clientRequestId: randomUUID() }, new Date().toISOString()),
+      CatalogConflictError,
+    );
+    const rejectedPlanEvidence = await admin.query(`select
+      (select status from catalog_retirement_plans where tenant_id = $1 and plan_id = $2) as plan_status,
+      (select rejection_reason from catalog_retirement_events where tenant_id = $1 and plan_id = $2 and result = 'REJECTED') as rejection_reason,
+      (select count(*)::int from catalog_items where tenant_id = $1 and status = 'ACTIVE') as active_items`, [tenantA, stalePlan.planId]);
+    assert.deepEqual(rejectedPlanEvidence.rows[0], { plan_status: 'STALE', rejection_reason: 'PLAN_STALE', active_items: 4 });
+    const globalPlan = await retirement.createPlan({ ...ctxA, capability: 'catalog.items.bulk_retire' }, { scope: 'ACTIVE_CATALOG' });
+    assert.equal(globalPlan.activeCount, 4);
+    const globalRetired = await retirement.executePlan({ ...ctxA, capability: 'catalog.items.bulk_retire' }, { planId: globalPlan.planId, confirmation: 'RETIRE_ACTIVE_CATALOG', clientRequestId: randomUUID() }, new Date().toISOString());
+    assert.equal(globalRetired.activeCatalogCount, 0);
+    assert.equal(globalRetired.retiredCount, 4);
+    const historyAfterRetirement = await admin.query(`select
+      (select count(*)::int from catalog_supplier_listings where tenant_id = $1) as listings,
+      (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1) as resolutions,
+      (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1) as mappings`, [tenantA]);
+    assert.deepEqual(historyAfterRetirement.rows[0], historyBeforeRetirement.rows[0]);
+    const retiredHistory = await service.createDraft(ctxA, { sourceId: source.sourceId, sourceRevision: 'V5 retired historical identity', mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-retired-history', rows: [rows[1]] });
+    const retiredHistoryAnalyzed = await service.analyze(ctxA, retiredHistory.versionId, { expectedVersion: retiredHistory.version });
+    assert.equal(retiredHistoryAnalyzed.batch.counts.NEW, 0);
+    assert.equal(retiredHistoryAnalyzed.batch.counts.CONFLICT, 1);
+    assert.equal(retiredHistoryAnalyzed.rows[0].errors.includes('HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION'), true);
+    assert.ok(retiredHistoryAnalyzed.rows[0].targetItemId);
+
+    const batchSource = await service.createSource(ctxB, { name: 'Proveedor Batch Created' });
+    const batchRows = Array.from({ length: 36 }, (_, index) => ({ ...fullRow(index + 20), kind: 'PART', title: `Pantalla AG ${index + 1}`, category: 'Pantallas', brand: 'Apple', supplierItemCode: `AG-${String(index + 1).padStart(4, '0')}` }));
+    const batchDraft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, sourceRevision: 'B1', mode: 'FULL', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-created', rows: batchRows });
+    const batchAnalyzed = await service.analyze(ctxB, batchDraft.versionId, { expectedVersion: batchDraft.version });
+    assert.equal(batchAnalyzed.batch.counts.NEW, 36);
+    assert.equal(batchAnalyzed.batch.lifecycle, 'READY');
+    await service.publish(ctxB, batchDraft.versionId, { expectedVersion: batchAnalyzed.version, clientRequestId: randomUUID() }, true);
+    const nextBatchRows = [
+      ...batchRows.map((row, index) => ({ ...row, basePriceMinor: index === 0 ? row.basePriceMinor + 1_000 : row.basePriceMinor })),
+      { ...fullRow(200), kind: 'PART', title: 'Pantalla AG 37', category: 'Pantallas', brand: 'Apple', supplierItemCode: 'AG-0037' },
+    ];
+    const nextBatchDraft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, sourceRevision: 'B2', mode: 'FULL', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-mixed', rows: nextBatchRows });
+    const nextBatchAnalyzed = await service.analyze(ctxB, nextBatchDraft.versionId, { expectedVersion: nextBatchDraft.version });
+    assert.equal(nextBatchAnalyzed.batch.counts.UPDATE, 1);
+    assert.equal(nextBatchAnalyzed.batch.counts.UNCHANGED, 35);
+    assert.equal(nextBatchAnalyzed.batch.counts.NEW, 1);
+    const nextBatchReady = await service.decideMany(ctxB, nextBatchDraft.versionId, { expectedBatchVersion: nextBatchAnalyzed.batch.version, classifications: ['UPDATE', 'UNCHANGED'], decision: 'APPLY' });
+    await service.publish(ctxB, nextBatchDraft.versionId, { expectedVersion: nextBatchReady.version, clientRequestId: randomUUID() }, true);
+    const batchPlan = await retirement.createPlan({ ...ctxB, capability: 'catalog.items.bulk_retire' }, { scope: 'BATCH_CREATED', sourceVersionId: nextBatchDraft.versionId });
+    assert.equal(batchPlan.activeCount, 1);
+    const batchRetired = await retirement.executePlan({ ...ctxB, capability: 'catalog.items.bulk_retire' }, { planId: batchPlan.planId, confirmation: 'RETIRE_BATCH_CREATED_ITEMS', clientRequestId: randomUUID() }, new Date().toISOString());
+    assert.equal(batchRetired.retiredCount, 1);
+    assert.equal(batchRetired.activeCatalogCount, 36);
+    const batchEvidence = await admin.query(`select
+      (select count(*)::int from catalog_items where tenant_id = $1 and status = 'ACTIVE') as active,
+      (select count(*)::int from catalog_items where tenant_id = $1 and status = 'INACTIVE') as inactive,
+      (select count(distinct listing_id)::int from catalog_supplier_listing_resolutions where tenant_id = $1 and version_id = $2 and resolution = 'CREATED') as created_rows,
+      (select count(distinct listing_id)::int from catalog_supplier_listing_resolutions where tenant_id = $1 and version_id = $2 and resolution = 'MATCHED') as matched_rows,
+      (select retired_count from catalog_retirement_events where tenant_id = $1 and plan_id = $3 and result = 'SUCCEEDED') as retired_by_batch`, [tenantB, nextBatchDraft.versionId, batchPlan.planId]);
+    assert.deepEqual(batchEvidence.rows[0], { active: 36, inactive: 1, created_rows: 1, matched_rows: 36, retired_by_batch: 1 });
+
     await admin.query(`update catalog_supplier_version_raw_payloads set retained_until = now() - interval '1 day' where tenant_id = $1`, [tenantA]);
-    assert.equal(await service.purgeExpiredRaw(ctxA), 4);
+    assert.equal(await service.purgeExpiredRaw(ctxA), 5);
     const raw = await admin.query(`select count(*) filter (where payload_text is not null)::int as retained from catalog_supplier_version_raw_payloads where tenant_id = $1`, [tenantA]);
     assert.equal(raw.rows[0].retained, 0);
-    assert.deepEqual(await service.listSources({ tenantId: tenantB, branchId: branchB }), []);
-    assert.equal(await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantB]).then((result) => result.rows[0].count), 0);
+    assert.equal((await service.listSources({ tenantId: tenantB, branchId: branchB })).length, 1);
 
     const benchmarkRows = Array.from({ length: 10_000 }, (_, index) => ({ kind: 'PART', title: `Benchmark ${index + 1}`, description: null, category: 'Benchmark', brand: null, supplierItemCode: `BENCH-${String(index + 1).padStart(5, '0')}`, sku: null, barcode: null, basePriceMinor: 100_00 + index, referenceCostMinor: null }));
     const benchmarkSource = await service.createSource(ctxC, { name: 'Proveedor Benchmark' });

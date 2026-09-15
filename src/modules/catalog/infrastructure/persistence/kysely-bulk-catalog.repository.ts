@@ -153,7 +153,8 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
         const historicalRows = historyKeys.map((key) => memoryMap.get(key)).filter((value) => value !== undefined);
         const candidates = [...new Map(historicalRows.map((value) => [value.item_id, value])).values()];
         if (historicalRows.some((value) => value.consistency_state === 'CONFLICTED') || candidates.length > 1 || (target && candidates.some((candidate) => candidate.item_id !== target!.item_id))) errors.push('AMBIGUOUS_HISTORY');
-        else if (candidates.length === 1) { const item = identifiers.find((value) => value.item_id === candidates[0]!.item_id); if (item && item.status === 'ACTIVE' && (!p.kind || item.kind === p.kind)) { if (!target) target = item; if (target.item_id === item.item_id) { remembered = true; warnings.push('HISTORICAL_MATCH_REQUIRES_CONFIRMATION'); } } }
+        else if (candidates.length === 1) { const item = identifiers.find((value) => value.item_id === candidates[0]!.item_id); if (item && (!p.kind || item.kind === p.kind)) { if (!target) target = item; if (target.item_id === item.item_id) { if (item.status === 'INACTIVE') errors.push('HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION'); else { remembered = true; warnings.push('HISTORICAL_MATCH_REQUIRES_CONFIRMATION'); } } } }
+        if (target?.status === 'INACTIVE' && !errors.includes('HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION')) errors.push('HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION');
         if (target && p.kind && target.kind !== p.kind) errors.push('TYPE_CONTRADICTION');
         let classification: BulkCatalogClassification; let decision: BulkCatalogDecision = 'UNRESOLVED';
         if (errors.length) classification = errors.includes('AMBIGUOUS_HISTORY') ? 'AMBIGUOUS' : 'CONFLICT';
@@ -235,7 +236,7 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
         if (row.decision === 'EXCLUDE') { resolutionWrites.push({ tenant_id: context.tenantId, resolution_id: randomUUID(), source_id: version.source_id, version_id: version.version_id, listing_id: listing.listing_id, batch_id: batch.batch_id, item_id: null, resolution: 'EXCLUDED', identifier_scheme: null, normalized_identifier: null, column_signature: version.column_signature, actor_user_id: context.actorUserId, correlation_id: randomUUID(), occurred_at: input.occurredAt }); continue; }
         let itemId = row.target_item_id; let itemVersion: number;
         if (itemId) {
-          const item = targetItemsById.get(itemId); if (!item || item.version !== row.expected_item_version || (p.kind && item.kind !== p.kind)) throw new CatalogConflictError();
+          const item = targetItemsById.get(itemId); if (!item || item.status !== 'ACTIVE' || item.version !== row.expected_item_version || (p.kind && item.kind !== p.kind)) throw new CatalogConflictError();
           if (row.classification === 'UNCHANGED') itemVersion = item.version;
           else {
             itemVersion = item.version + 1;

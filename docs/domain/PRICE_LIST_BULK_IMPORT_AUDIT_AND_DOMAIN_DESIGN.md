@@ -968,8 +968,12 @@ recibido. Si estaba equivocada o incompleta, una corrección nueva la marca
 vigente deja de proponer el target anterior; el evento original permanece para
 explicar lo sucedido.
 
-La reversión masiva automática queda fuera del primer PBI. El reporte sí debe
-dar evidencia suficiente para una corrección gobernada.
+La reversión exacta de updates continúa fuera del primer PBI. Conforme a
+`OD-RESET-001..005`, PBI-041 sí incorpora dos compensaciones append-only
+acotadas: retiro masivo de todos los `CatalogItem` activos del Tenant y retiro
+exclusivo de items demostrablemente `CREATED` por un batch. Ninguna destruye
+Supplier history, identifiers, revisiones, mappings o memoria; `MATCHED` y
+`UPDATED` permanecen intactos.
 
 ## 18. Semántica Tenant / Branch
 
@@ -1212,6 +1216,23 @@ preserva un límite de outcome. C deja capas sin experiencia operable.
 
 **Resolución Owner:** B. El segundo outcome queda documentado como `Advanced
 Supplier Reconciliation`, sin PBI ID, selección ni readiness.
+
+### OD-RESET-001..005 — Retiro seguro — Approved
+
+El Owner aprobó retiro/inactivación, nunca hard delete, para `Vaciar lista de
+precios`; capability sensible específica y reautenticación nivel 2; y una única
+compensación de batch llamada `Retirar artículos creados por este lote`.
+Supplier history, mappings, memoria, batches, identificadores y revisiones se
+preservan. `MATCHED`/`UPDATED` no se revierten y no se destruye historia para
+simular un first intake.
+
+La validación separa dos estados: un Historical Tenant puede tener cero items
+activos y memoria completa; un Virgin Tenant sintético no tiene Item, Listing,
+Resolution ni ReconciliationMemory previos. Por ello una identidad histórica
+retirada produce conflicto/reactivación, mientras las 36 filas AG realmente
+nuevas del fixture virgen se clasifican `NEW` cuando sus referencias aplicables
+ya están gobernadas. En UI, `Original:` nombra el valor observado por el
+proveedor; la identidad Supplier Source se muestra aparte.
 
 ## 24. Recomendación final
 

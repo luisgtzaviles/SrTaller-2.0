@@ -427,6 +427,50 @@ export interface CatalogSupplierReconciliationMemoryTable {
   readonly version: MutableColumn<number>;
 }
 
+export interface CatalogRetirementPlanTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly plan_id: ImmutableColumn<string>;
+  readonly scope: ImmutableColumn<'ACTIVE_CATALOG' | 'BATCH_CREATED'>;
+  readonly batch_id: ImmutableColumn<string | null>;
+  readonly item_set_sha256: ImmutableColumn<string>;
+  readonly active_count: ImmutableColumn<number>;
+  readonly already_inactive_count: ImmutableColumn<number>;
+  readonly created_by_actor_id: ImmutableColumn<string>;
+  readonly created_in_branch_id: ImmutableColumn<string>;
+  readonly created_in_station_id: ImmutableColumn<string>;
+  readonly created_in_session_id: ImmutableColumn<string>;
+  readonly status: MutableColumn<'PENDING' | 'EXECUTED' | 'STALE' | 'EXPIRED'>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly execution_client_request_id: MutableColumn<string | null>;
+  readonly retired_count: MutableColumn<number | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly executed_at: MutableColumn<Date | null>;
+}
+
+export interface CatalogRetirementEventTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly event_id: ImmutableColumn<string>;
+  readonly plan_id: ImmutableColumn<string>;
+  readonly scope: ImmutableColumn<'ACTIVE_CATALOG' | 'BATCH_CREATED'>;
+  readonly batch_id: ImmutableColumn<string | null>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'catalog.items.bulk_retire'>;
+  readonly sensitivity_level: ImmutableColumn<2>;
+  readonly reauthenticated_at: ImmutableColumn<Date>;
+  readonly item_set_sha256: ImmutableColumn<string>;
+  readonly planned_count: ImmutableColumn<number>;
+  readonly retired_count: ImmutableColumn<number>;
+  readonly result: ImmutableColumn<'SUCCEEDED' | 'REJECTED'>;
+  readonly rejection_reason: ImmutableColumn<'PLAN_STALE' | 'PLAN_EXPIRED' | 'PLAN_CONTEXT_CHANGED' | 'AUTHORIZATION_CHANGED' | null>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
 /** Customer identity is Branch-scoped; Repairs own their historical snapshots. */
 export interface CustomerTable {
   readonly customer_id: ImmutableColumn<string>;
@@ -526,6 +570,7 @@ export type AccessCapabilityCode =
   | 'catalog.reference_cost.manage'
   | 'catalog.import.prepare'
   | 'catalog.import.publish'
+  | 'catalog.items.bulk_retire'
   | 'users.read'
   | 'users.manage';
 
@@ -1373,6 +1418,8 @@ export interface DatabaseSchema {
   readonly catalog_update_row_decisions: CatalogUpdateRowDecisionTable;
   readonly catalog_supplier_listing_resolutions: CatalogSupplierListingResolutionTable;
   readonly catalog_supplier_reconciliation_memory: CatalogSupplierReconciliationMemoryTable;
+  readonly catalog_retirement_plans: CatalogRetirementPlanTable;
+  readonly catalog_retirement_events: CatalogRetirementEventTable;
   readonly customers: CustomerTable;
   readonly customer_contact_phones: CustomerContactPhoneTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;

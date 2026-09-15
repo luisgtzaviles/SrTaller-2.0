@@ -210,6 +210,7 @@ export const capabilityLabel: Readonly<Record<string, string>> = Object.freeze({
   'catalog.reference_cost.manage': 'Administrar costos de referencia',
   'catalog.import.prepare': 'Preparar importaciones de catálogo',
   'catalog.import.publish': 'Publicar importaciones de catálogo',
+  'catalog.items.bulk_retire': 'Retirar artículos de catálogo masivamente',
 });
 
 export function humanCapabilityLabel(capabilityCode: string): string {

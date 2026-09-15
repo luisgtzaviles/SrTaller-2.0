@@ -102,7 +102,7 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Next PBI candidate | NONE; PBI-042 remains out of scope |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
 | PBI-040 status | Done — closure PR #52 / `a060494`; exact-main CI `34814070839` GREEN; Released NO |
-| Blocking gate | PBI-041 Owner decision; Acceptance pending |
+| Blocking gate | PBI-041 Owner Review; Acceptance pending |
 
 ## Fases aprobadas
 

@@ -140,6 +140,7 @@ const administrationCapabilityCodes = new Set<CapabilityCode>([
   'catalog.reference_cost.manage',
   'catalog.import.prepare',
   'catalog.import.publish',
+  'catalog.items.bulk_retire',
 ]);
 
 async function resolveTenantWideAdministrationCapabilities(

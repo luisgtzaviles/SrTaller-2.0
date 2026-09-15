@@ -2,8 +2,9 @@
 
 ## Estado y autoridad
 
-- **Estado:** Accepted; PBI-040 baseline 2026-09-11 y bulk architecture/
-  readiness reconciliados 2026-09-13.
+- **Estado:** Accepted; PBI-040 baseline 2026-09-11, bulk architecture/
+  readiness 2026-09-13 y retiro seguro `OD-RESET-001..005` reconciliado
+  2026-09-14.
 - **Autoridad de producto:** decisiones Owner `PLD-001` a `PLD-008` y
   `PLD-018`, aprobadas en `MASTER GOAL — PRICE LIST ARCHITECTURE + PBI
   READINESS`.
@@ -16,6 +17,8 @@
 - **Bulk discovery y decisiones:**
   [Price List Bulk Composer](../domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md),
   con `OD-BI-001..010` aprobadas el 2026-09-13.
+- **Retiro seguro:** decisiones Owner `OD-RESET-001..005`, aprobadas el
+  2026-09-14 durante Owner Review de PBI-041.
 
 ## Resultado ejecutivo
 
@@ -57,6 +60,8 @@ agregado, inventario ni libro de Caja.
 | `SupplierReconciliationMemory` | Tenant + source + firma versionada | `catalog` | proyección reconstruible; exactitud no crea alias canónico |
 | `CatalogUpdateBatch` | Tenant + batch ID | `catalog` | intención de mutar Catalog separada de la evidencia del proveedor |
 | `CatalogUpdateRowDecision` | Tenant + batch + row ID | `catalog` | decisión/diff/version esperada por fila |
+| `CatalogRetirementPlan` | Tenant + plan ID | `catalog` | fotografía server-side temporal del conjunto activo y su hash; ligada a actor/Branch/Station/Session |
+| `CatalogRetirementEvent` | Tenant + event ID | `catalog` | evidencia append-only de ejecución o rechazo, con sensibilidad y reautenticación |
 
 Un Supplier legal/comercial, compras, existencias, pagos, movimientos de Caja,
 Repair Concepts, pedidos y solicitudes de clientes no pertenecen a `catalog`.
@@ -305,6 +310,7 @@ Capacidades iniciales:
 | `catalog.reference_cost.manage` | registrar/corregir costo de referencia |
 | `catalog.import.prepare` | cargar, mapear y resolver un batch sin publicar |
 | `catalog.import.publish` | publicar un batch listo |
+| `catalog.items.bulk_retire` | preparar y ejecutar retiro masivo de CatalogItems; no concede hard delete ni reversión de updates |
 
 La API de búsqueda omite el campo de costo salvo que el request pida
 `includeReferenceCost=true` y el servidor confirme
@@ -320,6 +326,13 @@ el primer ciclo: es reversible mediante revisiones, no altera snapshots ya
 aplicados y exige la capability separada `catalog.import.publish`, confirmación
 del diff e idempotencia. Se reconsidera nivel 2 si aparecen thresholds,
 descuentos extraordinarios, auto-publicación externa o impacto irreversible.
+
+El retiro masivo es una acción distinta y queda clasificado explícitamente
+como **nivel 2 de ADR-013**. Exige `catalog.items.bulk_retire`, reautenticación
+PIN del mismo actor, plan/preview server-side, confirmación exacta, ejecución
+Tenant-scoped transaccional, audit append-only y revalidación de contexto,
+sesión, capability y conjunto de items al ejecutar. El control es de un solo
+uso y nunca eleva privilegios ni reutiliza `catalog.manage` como sustituto.
 
 ## 8. Contratos públicos y consumidores
 
@@ -456,6 +469,11 @@ el batch. No requiere click por fila. Una corrección agrega
 `SupplierListingResolution`, conserva la anterior y actualiza la proyección de
 memoria con target, evidence count, first/last seen y conflicto histórico.
 
+Si la misma memoria apunta de forma exacta a un `CatalogItem` retirado, la fila
+no vuelve a clasificarse `NEW`: conserva el `targetItemId` histórico y queda
+`CONFLICT` con necesidad explícita de reactivación. Así `ACTIVE CATALOG EMPTY`
+no se confunde con `NO HISTORICAL CATALOG MEMORY`.
+
 Título/estructura probable, similitud, pattern nuevo o tag nuevo sólo producen
 reconciliación humana. No hay fuzzy write, actualización automática por título
 ni alias canónico derivado de observations. Detección sistemática
@@ -500,6 +518,10 @@ DRAFT -> ANALYZING -> RECONCILING -> READY -> COMMITTING -> COMPLETED
 DRAFT/ANALYZING/RECONCILING/READY -> CANCELLED
 ANALYZING/COMMITTING -> FAILED
 COMMITTING --stale--> RECONCILING
+
+CatalogRetirementPlan
+PENDING -> EXECUTED
+PENDING -> STALE | EXPIRED
 ```
 
 Nada anterior a `COMMITTING` escribe estado de producto Catalog. Cada decisión
@@ -514,7 +536,27 @@ lifecycle y expectedVersions. Cualquier fila stale/inválida revierte todas las
 mutaciones. `clientRequestId` protege creación/ingesta/publish; un retry devuelve
 el outcome previo y no genera otra identidad o revisión.
 
-### 10.6 Retención, consultas y presupuesto operativo
+### 10.6 Retiro seguro y compensación acotada
+
+`Vaciar lista de precios` inactiva todos los `CatalogItem` activos del Tenant.
+No elimina filas. Conserva itemId, SKU, barcode, revisiones, Sources, Versions,
+Listings, Resolutions, ReconciliationMemory, Batches, mappings y auditoría. La
+lista activa normal puede quedar en cero, pero la identidad y la memoria siguen
+recuperables mediante reactivación explícita.
+
+El plan dura cinco minutos y registra el hash del conjunto `itemId + version`,
+conteos y contexto creador. La ejecución bloquea los targets en orden estable,
+recalcula el conjunto y falla cerrada si cambió plan, actor, Branch, Station,
+Session, capability, lifecycle o versión. El efecto y su audit se confirman en
+una transacción serializable.
+
+Para un batch aplicado sólo existe `Retirar artículos creados por este lote`.
+Los targets se derivan de `SupplierListingResolution.resolution = CREATED` del
+batch autoritativo. `MATCHED` y `UPDATED` no se revierten. No se llama
+`Revertir lote`: la reversión exacta de updates queda fuera hasta contar con
+before-images autoritativos y un modelo append-only de efectos/publicación.
+
+### 10.7 Retención, consultas y presupuesto operativo
 
 Durante 90 días se conserva el payload completo de clipboard/adaptador, celdas
 no mapeadas, artefactos temporales y diagnóstico detallado. Permanentemente se
@@ -572,6 +614,8 @@ necesita arquitectura posterior.
 | D. Alcohol interno | `SUPPLY`, puede existir como identidad para futuro Inventory; Price List lo excluye porque no es sellable |
 | E. dos versiones / 1,500 filas | la primera crea/mapea sin códigos obligatorios; la segunda preselecciona historia exacta, separa changed/new/ambiguous/disappeared; un stale evita apply parcial; reporte completo |
 | F. Muchas Branches | un item Tenant, una base, overrides escasos; revocar hereda; perfil futuro se inserta sin migrar item ni snapshots |
+| G. Historical Tenant | retirar el catálogo deja cero activos y conserva listings/resolutions/memory; una nueva versión reconoce la identidad retirada y exige reactivación, nunca `NEW` |
+| H. Virgin Tenant | fixture sintético aislado sin item/listing/resolution/memory previo; las 36 pantallas AG son `NEW` cuando Category/Brand aplicables ya están gobernadas |
 
 ## 13. Entrega por PBIs
 
@@ -585,8 +629,9 @@ tablas/backend/UI porque eso dejaría capas sin resultado operativo.
    moneda Tenant, base/override/costo, capacidades, preferencia personal,
    historial, navegación `Listas` y búsqueda rápida.
 2. **PBI-041 — Initial Bulk Catalog Composer + Versioned Supplier Intake** —
-   `Ready — implementation not authorized`. Composer, source/version/listing,
-   memoria exacta, reconciliación manual, preview, apply atómico y reporte.
+   `Implementation / Owner Review`. Composer, source/version/listing, memoria
+   exacta, reconciliación manual, preview, apply atómico, retiro seguro y
+   compensación acotada de items `CREATED`.
 3. **PBI-042 — Catalog Item Images** — `Planned / fuera del compromiso inicial`.
    Se activa cuando Files tenga contrato y storage autorizados.
 4. **Advanced Supplier Reconciliation** — outcome diferido sin PBI ID:

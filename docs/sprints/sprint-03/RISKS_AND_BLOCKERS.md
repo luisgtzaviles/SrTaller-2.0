@@ -12,6 +12,8 @@
 | identidad duplicada | High | ID opaco, SKU/barcode Tenant, concurrencia | control verificado |
 | historial de precio perdido | High | revisiones append-only + snapshots futuros | control verificado |
 | Composer ambiguo/partial | High | unresolved cero, preview/confirmación y apply atómico | control focalizado y PostgreSQL PASS; Owner Review pendiente |
+| retiro masivo indebido | Critical | capability dedicada, Level 2, plan/hash server-side, revalidación y audit | control focalizado y PostgreSQL PASS; Owner Review pendiente |
+| pérdida de memoria histórica | Critical | `ACTIVE→INACTIVE`, sin delete; Historical/Virgin separados | control PostgreSQL PASS |
 | WIP paralelo | Medium | PBI-041 es el único WIP; PBI-042 permanece fuera | controlado |
 
 ## Próxima revisión

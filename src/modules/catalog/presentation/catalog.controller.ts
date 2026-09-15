@@ -4,7 +4,7 @@ import {
   ServiceUnavailableException, UnauthorizedException,
 } from '@nestjs/common';
 
-import { ContextualAuthorizationError } from '../../access/index.js';
+import { ContextualAuthorizationError, SensitiveActionReauthenticationError } from '../../access/index.js';
 import type { ProtectedRequestEvidence } from '../../access/index.js';
 import { CatalogProtectedOperations, CatalogOperationAccessDeniedError } from '../application/catalog-protected-operations.js';
 import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogInputError, CatalogNotFoundError, CatalogReferenceAlreadyExistsError, CatalogReferenceInUseError, CatalogUnavailableError } from '../domain/catalog-item.js';
@@ -22,6 +22,7 @@ function translate(error: unknown): never {
     if (error.code === 'AUTHENTICATION_REQUIRED') throw new UnauthorizedException({ code: 'AUTHENTICATION_REQUIRED' });
     throw new ForbiddenException({ code: 'ACCESS_DENIED' });
   }
+  if (error instanceof SensitiveActionReauthenticationError) throw new ForbiddenException({ code: error.code });
   if (error instanceof CatalogOperationAccessDeniedError || error instanceof CatalogAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
   if (error instanceof CatalogInputError) throw new BadRequestException({ code: error.code, parameter: error.parameter });
   if (error instanceof CatalogNotFoundError) throw new NotFoundException({ code: error.code });
@@ -173,4 +174,13 @@ export class CatalogController {
   async compareSupplierVersions(@Param('leftVersionId') left: string, @Param('rightVersionId') right: string, @Headers() headers: RequestHeaders) { try { return await this.operations.compareSupplierVersions(evidence(headers), left, right); } catch (error) { return translate(error); } }
   @Post('supplier-raw/purge') @Header('Cache-Control', 'private, no-store')
   async purgeSupplierRaw(@Headers() headers: RequestHeaders) { try { return Object.freeze({ purged: await this.operations.purgeSupplierRaw(evidence(headers)) }); } catch (error) { return translate(error); } }
+  @Post('retirement-plans') @Header('Cache-Control', 'private, no-store')
+  async createRetirementPlan(@Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.createRetirementPlan(evidence(headers), body); } catch (error) { return translate(error); } }
+  @Post('retirement-plans/:planId/execute') @Header('Cache-Control', 'private, no-store')
+  async executeRetirementPlan(@Param('planId') planId: string, @Body() body: unknown, @Headers() headers: RequestHeaders) {
+    try {
+      const input = typeof body === 'object' && body !== null && !Array.isArray(body) ? { ...body, planId } : body;
+      return await this.operations.executeRetirementPlan(evidence(headers), input);
+    } catch (error) { return translate(error); }
+  }
 }

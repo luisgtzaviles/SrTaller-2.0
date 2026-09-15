@@ -47,13 +47,18 @@ test('supplier observed title remains separate from the editable Catalog title p
   assert.equal(row.title, 'Pantalla iPhone 11 OLED GX >>I');
 });
 
-test('bulk contracts preserve separate prepare, publish, cost and Branch boundaries', async () => {
-  const [protectedOperations, repository, migration, ui, css, model, shell, feedback, navigation] = await Promise.all([
+test('bulk contracts preserve separate prepare, publish, retirement, cost and Branch boundaries', async () => {
+  const [protectedOperations, repository, migration, retirementMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts', 'utf8'),
+    readFile('src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts', 'utf8'),
+    readFile('src/modules/catalog/infrastructure/persistence/kysely-catalog-retirement.repository.ts', 'utf8'),
+    readFile('src/modules/access/presentation/sensitive-action-level2.executor.ts', 'utf8'),
     readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8'),
+    readFile('apps/dev-preview-web/src/pages/PriceListPage.tsx', 'utf8'),
     readFile('apps/dev-preview-web/src/pages/bulk-catalog-composer-page.module.css', 'utf8'),
+    readFile('apps/dev-preview-web/src/pages/bulk-catalog-grid-layout.ts', 'utf8'),
     readFile('apps/dev-preview-web/src/pages/bulk-catalog-composer-model.mjs', 'utf8'),
     readFile('apps/dev-preview-web/src/components/shell/ApplicationShell.tsx', 'utf8'),
     readFile('apps/dev-preview-web/src/components/ui/feedback.tsx', 'utf8'),
@@ -61,6 +66,8 @@ test('bulk contracts preserve separate prepare, publish, cost and Branch boundar
   ]);
   assert.match(protectedOperations, /catalog\.import\.prepare/u);
   assert.match(protectedOperations, /catalog\.import\.publish/u);
+  assert.match(protectedOperations, /catalog\.items\.bulk_retire/u);
+  assert.match(protectedOperations, /catalog\.items\.bulk-retire/u);
   assert.match(protectedOperations, /writeReferenceCost/u);
   assert.match(protectedOperations, /containsReferenceCost/u);
   assert.match(protectedOperations, /requestsReferenceCost/u);
@@ -70,6 +77,13 @@ test('bulk contracts preserve separate prepare, publish, cost and Branch boundar
   assert.match(repository, /source_type: 'IMPORTED'/u);
   assert.match(migration, /retained_until/u);
   assert.match(migration, /catalog_supplier_listing_resolutions_reject_update/u);
+  assert.match(retirementMigration, /sensitivity_level smallint not null/u);
+  assert.match(retirementMigration, /catalog_retirement_events_reject_update/u);
+  assert.match(retirementRepository, /isolationLevel: 'serializable'/u);
+  assert.match(retirementRepository, /resolution', '=', 'CREATED'/u);
+  assert.doesNotMatch(retirementRepository, /deleteFrom\('catalog_items'\)/u);
+  assert.match(sensitiveAction, /proof\.userId === context\.userId/u);
+  assert.match(sensitiveAction, /consumePinAuthenticationProof/u);
   assert.match(ui, /Nada toca Catalog hasta Aplicar lote/u);
   assert.match(ui, /Hay cambios sin guardar/u);
   assert.match(ui, /Actual:/u);
@@ -77,10 +91,17 @@ test('bulk contracts preserve separate prepare, publish, cost and Branch boundar
   assert.match(ui, /Corregir mapping/u);
   assert.match(ui, /SUPPLY/u);
   assert.match(ui, /rows\.slice\(first, first \+ 22\)/u);
-  assert.match(ui, /translateY/u);
+  assert.match(css, /translateY/u);
+  assert.match(gridLayout, /--bulk-grid-offset/u);
   assert.match(ui, /Contexto del lote/u);
   assert.match(ui, /aria-label="Columnas de trabajo"/u);
   assert.match(ui, /supplierObservedTitle/u);
+  assert.match(ui, /Original:/u);
+  assert.doesNotMatch(ui, /Proveedor:\s*\{row\.supplierObservedTitle/u);
+  assert.match(ui, /Retirar artículos creados por este lote/u);
+  assert.match(ui, /No es una reversión del lote/u);
+  assert.match(priceListUi, /Vaciar lista de precios/u);
+  assert.match(priceListUi, /identidad, mappings e historia permanecen/u);
   assert.match(ui, /validateComposerDraft/u);
   assert.match(ui, /focusIssue/u);
   assert.match(ui, /data-cell-key/u);

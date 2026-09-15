@@ -42,6 +42,8 @@ export type SupplierSource = Readonly<{ sourceId: string; name: string; status: 
 export type SupplierVersion = Readonly<{ versionId: string; sourceId: string; sourceName: string; sourceRevision: string; mode: BulkCatalogMode; supersedesVersionId: string | null; columnSignature: string; lifecycle: 'DRAFT' | 'INGESTED'; version: number; rowCount: number; createdAt: string; ingestedAt: string | null; batch: Readonly<{ batchId: string; lifecycle: 'DRAFT' | 'ANALYZING' | 'RECONCILING' | 'READY' | 'APPLIED'; version: number; counts: Record<BulkCatalogClassification, number>; publishedAt: string | null }>; rows: readonly Readonly<{ rowDecisionId: string; rowNumber: number; supplierObservedTitle: string | null; proposal: BulkCatalogRowInput; classification: BulkCatalogClassification; decision: 'UNRESOLVED' | 'APPLY' | 'EXCLUDE'; targetItemId: string | null; targetTitle: string | null; expectedItemVersion: number | null; before: Readonly<{ kind: CatalogItemKind; title: string; description: string | null; category: string | null; brand: string | null; basePriceMinor: number | null; referenceCostMinor: number | null }> | null; preselectedByMemory: boolean; errors: readonly string[]; warnings: readonly string[]; version: number }>[] }>;
 export type SupplierVersionSummary = Omit<SupplierVersion, 'rows'>;
 export type SupplierVersionComparison = Readonly<{ leftVersionId: string; rightVersionId: string; mapped: number; changed: number; added: number; disappeared: number; ambiguous: number }>;
+export type CatalogRetirementPlan = Readonly<{ planId: string; scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; batchId: string | null; sourceVersionId: string | null; activeCount: number; alreadyInactiveCount: number; expiresAt: string; status: 'PENDING' | 'EXECUTED' | 'STALE' | 'EXPIRED'; retiredCount: number | null }>;
+export type CatalogRetirementExecution = Readonly<{ planId: string; scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; retiredCount: number; activeCatalogCount: number; executedAt: string }>;
 
 /** Mirrors Catalog's exact identity normalization; it is intentionally not fuzzy. */
 export function normalizeCatalogReferenceText(value: string): string {
@@ -52,9 +54,9 @@ export function normalizeCatalogReferenceText(value: string): string {
 const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
 async function json<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT, { detail: { background: response.status === 403 } }));
     let payload: { code?: string; message?: string; parameter?: string } = {};
     try { payload = await response.json() as { code?: string; message?: string; parameter?: string }; } catch { /* response has no safe JSON body */ }
+    if (payload.code === 'AUTHENTICATION_REQUIRED' || payload.code === 'ACCESS_DENIED') window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT, { detail: { background: response.status === 403 } }));
     throw new PreviewApiError(response.status, payload.message, payload.code ?? null, payload.parameter ?? null);
   }
   try { return await response.json() as T; }
@@ -105,3 +107,5 @@ export function decideSupplierRow(versionId: string, rowDecisionId: string, inpu
 export function decideSupplierRows(versionId: string, input: unknown, csrfToken: string) { return mutate<SupplierVersion>(`/api/catalog/supplier-versions/${encodeURIComponent(versionId)}/rows`, 'PUT', input, csrfToken); }
 export function publishSupplierVersion(versionId: string, expectedVersion: number, writeReferenceCost: boolean, csrfToken: string, clientRequestId = crypto.randomUUID()) { return mutate<SupplierVersion>(`/api/catalog/supplier-versions/${encodeURIComponent(versionId)}/publish`, 'POST', { expectedVersion, writeReferenceCost, clientRequestId }, csrfToken); }
 export function compareSupplierVersions(leftVersionId: string, rightVersionId: string, signal?: AbortSignal) { return get<SupplierVersionComparison>(`/api/catalog/supplier-versions/${encodeURIComponent(leftVersionId)}/compare/${encodeURIComponent(rightVersionId)}`, signal); }
+export function createCatalogRetirementPlan(input: Readonly<{ scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; sourceVersionId?: string }>, csrfToken: string) { return mutate<CatalogRetirementPlan>('/api/catalog/retirement-plans', 'POST', input, csrfToken); }
+export function executeCatalogRetirementPlan(planId: string, input: Readonly<{ confirmation: 'RETIRE_ACTIVE_CATALOG' | 'RETIRE_BATCH_CREATED_ITEMS'; pin: string; clientRequestId: string }>, csrfToken: string) { return mutate<CatalogRetirementExecution>(`/api/catalog/retirement-plans/${encodeURIComponent(planId)}/execute`, 'POST', input, csrfToken); }

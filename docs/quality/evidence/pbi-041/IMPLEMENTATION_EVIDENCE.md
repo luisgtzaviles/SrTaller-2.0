@@ -2,10 +2,11 @@
 
 ## Checkpoint
 
-- **Estado:** blocked for Owner decision on Catalog reset and applied-batch
-  reversibility; Owner Acceptance pending.
+- **Estado:** safe Catalog retirement iteration lista para Owner Review;
+  Owner Acceptance pendiente.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
-- **Candidato funcional:** `a2098ddb57f97168043667e8959f6dd010320683`.
+- **Candidato funcional:** working candidate; SHA se registra al congelar esta
+  iteración.
 - **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
 - **Fecha:** 2026-09-14 MST.
@@ -13,7 +14,7 @@
 - **Gate deliberadamente no ejecutado:** `verify:full`, reservado por autoridad
   Owner para después de Owner Acceptance.
 
-## Catalog reset / applied-batch reversibility audit
+## Safe Catalog retirement decision and materialization
 
 El Development Preflight pasó sobre
 `2db8e3dc6eda44f6a5c2a78fa2323488edf1ae22`. El runtime local inicialmente era
@@ -21,7 +22,8 @@ stale; se reinició con el mecanismo gobernado y
 `verify:runtime-provenance` confirmó frontend/backend exactos al mismo HEAD y
 working tree limpio.
 
-El schema PostgreSQL local gobernado contiene 1,539 `CatalogItem`. Los 1,539
+El audit previo observó que el schema local gobernado contenía 1,539
+`CatalogItem`. Los 1,539
 tienen identificadores y revisión de precio; 1,401 tienen costo, 1 tiene
 override de Branch, 1,499 aparecen como targets de RowDecision, 1,536 tienen
 SupplierListingResolution y 1,536 tienen ReconciliationMemory. No existe un
@@ -40,17 +42,23 @@ Las relaciones actuales hacia `CatalogItem` son:
 - `catalog_supplier_reconciliation_memory.item_id` — FK sin cascade.
 
 La publicación permite distinguir `CREATED` de `MATCHED` en Resolution, pero
-no permite eliminar ni siquiera un creado preservando las FK y la historia. La
-reversión completa tampoco es demostrable: precio/costo sí dejan revisiones,
-pero description/Category/Brand se actualizan in-place y el before-image no se
-persiste como autoridad restaurable. Dictamen: `NOT SAFELY REVERSIBLE`.
+no permite hard delete sin romper historia. Tampoco existe una reversión exacta
+de updates porque description/Category/Brand carecen de before-images
+autoritativos. Ese dictamen sigue vigente y delimita la solución aprobada.
 
-La operación propuesta es además sensible por afectación masiva, irreversibilidad
-y destrucción de evidencia. `catalog.manage` es la capability ordinaria más
-cercana, pero ninguna autoridad aprobada clasifica esta acción ni define el
-control reforzado exigido por ADR-013; por tanto permanece nivel 4. No se
-implementó producto, migración, CASCADE, bypass, fixture destructivo ni prueba
-que simule un PASS.
+`OD-RESET-001..005` resolvió la decisión: `Vaciar lista de precios` es retiro
+`ACTIVE→INACTIVE`, no delete; el batch sólo puede retirar identidades que su
+Resolution demuestra `CREATED`; MATCHED/UPDATED no se revierten. La operación
+es ADR-013 nivel 2 con capability dedicada `catalog.items.bulk_retire`, PIN del
+mismo actor, plan server-side de cinco minutos, confirmación exacta y
+revalidación serializable del contexto, authority y hash `itemId+version`.
+
+El lifecycle de `CatalogItem` ya representaba el retiro, por lo que no se creó
+una migración de lifecycle. Las dos expansiones necesarias agregan la capability
+Access y las tablas Tenant-scoped `catalog_retirement_plans` y
+`catalog_retirement_events`; la segunda es append-only. La ejecución agrega
+audit por item, nunca usa `DELETE/CASCADE`, y un plan stale/alien/context-changed
+falla con cero retiros.
 
 ## Superficie revisable por Owner
 
@@ -108,6 +116,8 @@ tokens, credenciales ni datos Owner reales.
 | AG / Owner real paste 36 | `DRAFT` | 36 pantallas sintéticas, pegado 3 columnas, contexto `Refacción / Pantallas / Apple` y recuperación por reload; no escribe Catalog |
 | Proveedor Demo / Versión 1 | `APPLIED` | 1,500 observaciones sintéticas, publicación inicial y memoria histórica |
 | Proveedor Demo / Versión 2 | `RECONCILING` | 1,500 observaciones equivalentes con cambios controlados y comparación |
+| Historical Tenant desechable | `ACTIVE CATALOG EMPTY` | cuatro items retirados, cero activos y Listings/Resolutions/Memory intactos; una V5 reconoce el item retirado como conflicto/reactivación, no `NEW` |
+| Virgin Tenant desechable | `NO HISTORICAL CATALOG MEMORY` | primera B1 de 36 pantallas AG queda 36 `NEW`; una B2 mixta prueba un UPDATE, 35 UNCHANGED y un NEW |
 
 La comparación visible de Version 2 contra Version 1 produce:
 
@@ -120,6 +130,10 @@ La comparación visible de Version 2 contra Version 1 produce:
 Los datos son exclusivamente locales y sintéticos. El estado fue creado por el
 mecanismo normal de Source/Version/Listing/Batch, no mediante escritura manual
 para aparentar un resultado.
+
+Historical y Virgin no comparten Tenant. La prueba PostgreSQL crea y elimina
+su contenedor completo, por lo que demuestra el primer intake sin borrar la
+historia del Tenant habitual.
 
 ## Contratos materializados
 
@@ -141,6 +155,12 @@ para aparentar un resultado.
   Branch overrides no son mutados.
 - Raw vence a 90 días y el purge idempotente conserva metadata, listings
   estructurados, mappings, batches, revisiones y audit.
+- `ACTIVE→INACTIVE` conserva identidad e historia. Un target histórico inactivo
+  bloquea como `HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION`, no se duplica.
+- El plan global obtiene el conjunto desde Catalog; el plan por batch sólo
+  considera Resolution `CREATED`. Ambos quedan ligados al contexto creador.
+- El ejecutor Level 2 consume una prueba PIN de un solo uso del mismo actor y
+  Catalog vuelve a validar plan, conjunto y commit guards dentro de transacción.
 
 ## Seguridad y ownership
 
@@ -153,6 +173,10 @@ User, Session y correlation se derivan del contexto confiable.
 PBI-041 no adquiere ownership de Inventory, Procurement, Caja, Repair Concepts,
 Pedidos, Solicitudes de clientes, Files ni Branch Pricing. Tampoco introduce
 CSV/XLSX, supplier API o Advanced Supplier Reconciliation.
+
+La capability masiva no se deriva de `catalog.manage`. Access conserva la
+reautenticación; Catalog conserva plan, lifecycle, retiro y audit. El cliente
+no elige Tenant, actor, targets ni clasificación sensible.
 
 ## Verificación focalizada
 

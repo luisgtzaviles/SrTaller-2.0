@@ -20,6 +20,7 @@ export const ACCESS_CAPABILITY_CATALOG = Object.freeze([
   'catalog.reference_cost.manage',
   'catalog.import.prepare',
   'catalog.import.publish',
+  'catalog.items.bulk_retire',
 ] as const);
 
 export type CapabilityCode = (typeof ACCESS_CAPABILITY_CATALOG)[number];

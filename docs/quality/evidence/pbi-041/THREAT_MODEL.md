@@ -2,13 +2,14 @@
 
 ## Estado
 
-- **Resultado:** PASS for Definition of Ready — controls specified, not
-  implemented or verified.
-- **Fecha:** 2026-09-13.
+- **Resultado:** controles de readiness más extensión `OD-RESET-001..005`
+  materializados en candidato local; Owner Review pendiente.
+- **Fecha:** 2026-09-14.
 - **Riesgo:** Alto por bulk mutation, persistencia, costos, multitenancy,
   concurrencia e idempotencia.
 - **Alcance:** Composer clipboard, Supplier Version/Listing/Resolution,
-  reconciliation memory, atomic Catalog apply, report and raw retention.
+  reconciliation memory, atomic Catalog apply, report, raw retention y retiro
+  seguro de catálogo/lote.
 - **Diferido:** amenazas CSV/XLSX de ZIP bomb, MIME, fórmulas, macros y links se
   modelan cuando exista ese adapter.
 
@@ -24,6 +25,7 @@
 | batch/idempotency | replay/partial success | request/red vs transaction outcome |
 | grid/browser | resource exhaustion | paste no confiable vs main thread/memory |
 | audit/report | datos sensibles/log injection | business evidence vs telemetry/export |
+| retirement plan/effect | retiro masivo indebido o falsa reversión | Level 2 Access vs transacción Catalog |
 
 Clipboard y texto del proveedor son totalmente no confiables. Source ID,
 Tenant, Branch, actor, capability, mapping method, signature y target enviados
@@ -57,6 +59,12 @@ por cliente tampoco son autoridad.
 | BI-T22 | branch override overwritten by base update | Alto | `TENANT_BASE` only; override tables absent from write set | base changes, effective override unchanged |
 | BI-T23 | user tampers classification/match method | Alto | server recomputes matching/diff/state transitions | forged READY/MAPPED/expectedVersion denied |
 | BI-T24 | report enumerates other Tenant or hidden cost | Alto | Tenant-scoped report query, authorization at read, redacted permanent fields | cross-tenant/report cost negative tests |
+| BI-T25 | `catalog.manage` se usa como autoridad masiva implícita | Crítico | capability exacta `catalog.items.bulk_retire`, sin fallback | permiso ordinario solo no muestra ni ejecuta retiro |
+| BI-T26 | otro usuario confirma con su PIN la acción del actor | Crítico | reautenticación PIN del mismo actor, proof consumido una vez | PIN ajeno rechaza y no cambia la Session ni Catalog |
+| BI-T27 | plan manipulado/stale/expirado ejecuta otro conjunto | Crítico | conjunto derivado server-side, hash de item+version, TTL 5 min y revalidación serializable | cambio de versión/contexto/tiempo produce rechazo y cero retiros |
+| BI-T28 | `Vaciar` destruye historia o reutiliza identidad | Crítico | sólo `ACTIVE→INACTIVE`; FKs/append-only intactos; inactive match no es NEW | cero activos con IDs/SKU/barcode/listings/resolutions/memory intactos |
+| BI-T29 | retiro por batch afecta MATCHED/UPDATED | Crítico | targets sólo por Resolution `CREATED` del batch aplicado | lote mixto retira CREATED y deja MATCHED/UPDATED activos |
+| BI-T30 | Tenant A infiere o ejecuta el plan de B | Crítico | PK/predicates Tenant-scoped y 404 uniforme | plan alien no se lee, consume ni audita en el Tenant incorrecto |
 
 ## Abuse and denial rules
 
@@ -70,19 +78,25 @@ por cliente tampoco son autoridad.
 - A 50k paste is rejected before durable row creation in the initial product;
   characterization runs in a controlled test harness.
 - Errors for alien/missing resources do not expose which condition occurred.
+- Un plan no es autorización: ejecución vuelve a exigir contexto, capability,
+  prueba Level 2, confirmación y conjunto vigentes.
+- `ACTIVE CATALOG EMPTY` nunca se interpreta como ausencia de memoria histórica.
 
 ## ADR-013 classification
 
 Publish remains level 1 under the approved architecture because it requires a
 specific capability, explicit diff confirmation, append-only revisions,
 idempotency, audit and an all-or-nothing reversible product change. It must be
-reclassified before any automatic supplier sync, threshold-based auto-publish,
-irreversible bulk lifecycle action or material financial authority. Unknown
-sensitive actions remain level 4/fail-closed.
+reclassified before any automatic supplier sync, threshold-based auto-publish
+or material financial authority. Conforme a `OD-RESET-002`, el retiro masivo es
+nivel 2: capability dedicada más reautenticación del mismo actor, plan
+server-side, confirmación exacta, revalidación y auditoría transaccionales. La
+reversión de MATCHED/UPDATED continúa fuera de alcance; cualquier acción
+sensible no clasificada permanece nivel 4/fail-closed.
 
 ## Security exit gate for implementation
 
-- BI-T01..T24 applicable tests green, including PostgreSQL real;
+- BI-T01..T30 applicable tests green, including PostgreSQL real;
 - zero open Blocker/Critical/High in focused High-risk review;
 - server-side cost omission proven in HTTP/network/DOM/report/history;
 - two-Tenant and Branch-preservation matrix complete;
@@ -90,8 +104,9 @@ sensitive actions remain level 4/fail-closed.
 - architecture/persistence ownership checks pass;
 - evidence contains only synthetic data and no raw supplier payload/secrets.
 
-## Residual risk before implementation
+## Riesgo residual antes de Owner Acceptance
 
-No residual risk is accepted in advance. Ready means controls are specified;
-implementation must prove them. 10k is a target candidate until benchmark; 50k
-is characterization, not product capacity.
+La prueba local no sustituye revisión Owner, CI autoritativa ni Preview. La
+reactivación masiva y la reversión exacta de updates no existen; cada item
+retirado sólo puede reactivarse mediante el lifecycle individual vigente. 50k
+sigue siendo caracterización, no capacidad de producto.

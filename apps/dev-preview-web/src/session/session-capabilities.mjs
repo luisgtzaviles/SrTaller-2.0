@@ -20,6 +20,7 @@ export const OPERATIONAL_CAPABILITY_CATALOG = Object.freeze([
   'catalog.reference_cost.manage',
   'catalog.import.prepare',
   'catalog.import.publish',
+  'catalog.items.bulk_retire',
 ]);
 
 const capabilityPosition = new Map(

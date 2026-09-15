@@ -107,7 +107,7 @@ export function isPinAuthenticationProof(
   );
 }
 
-/** A successful PIN proof may authorize at most one Session creation attempt. */
+/** A successful PIN proof may authorize at most one bounded follow-up operation. */
 export function consumePinAuthenticationProof(
   value: unknown,
 ): value is PinAuthenticationProof {

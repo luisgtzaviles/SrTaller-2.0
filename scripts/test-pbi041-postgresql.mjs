@@ -23,7 +23,7 @@ try {
   const preflight = new Pool({ host: '127.0.0.1', port: Number(port), database, user, password, ssl: false });
   try { const loopbackDeadline = Date.now() + 10_000; while (true) { try { await preflight.query('select 1'); break; } catch (error) { if (Date.now() >= loopbackDeadline) throw error; await new Promise((resolve) => setTimeout(resolve, 200)); } } } finally { await preflight.end().catch(() => undefined); }
   const migration = await execute(process.execPath, ['--enable-source-maps', 'dist/db-migrate.js'], { encoding: 'utf8', env: { ...process.env, ...environment }, maxBuffer: 20 * 1024 * 1024, timeout: 90_000 });
-  const migrationResult = JSON.parse(migration.stdout.trim()); if (migrationResult.pending !== 0 || migrationResult.applied < 64) throw new Error('PBI-041 migration set is incomplete');
+  const migrationResult = JSON.parse(migration.stdout.trim()); if (migrationResult.pending !== 0 || migrationResult.applied < 66) throw new Error('PBI-041 migration set is incomplete');
   const result = await execute(process.execPath, ['--no-maglev', '--test', '--test-concurrency=1', 'test/bulk-catalog-postgresql.test.mjs'], { encoding: 'utf8', env: { ...process.env, SR_PBI041_PG_TEST: '1', SR_PBI041_PG_HOST: '127.0.0.1', SR_PBI041_PG_PORT: port, SR_PBI041_PG_NAME: database, SR_PBI041_PG_USER: user, SR_PBI041_PG_PASSWORD: password }, maxBuffer: 20 * 1024 * 1024, timeout: 90_000 });
   successOutput = `${result.stdout}PBI-041 PostgreSQL PASS: ${migrationResult.applied} migrations, disposable container removed\n`;
 } finally { await cleanup(); }

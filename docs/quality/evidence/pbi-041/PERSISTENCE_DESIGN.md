@@ -2,13 +2,14 @@
 
 ## Estado
 
-- **Resultado:** design complete for readiness; no migration created.
-- **Fecha:** 2026-09-13.
+- **Resultado:** diseño materializado en el candidato local; Owner Review
+  pendiente.
+- **Fecha:** 2026-09-14.
 - **Owner lógico:** módulo `catalog`, conforme DEC-005 y DEC-049.
 - **Motor objetivo:** PostgreSQL 18.4, Kysely sobre `pg`, shared schema con
   discriminación Tenant conforme ADR-004.
 - **Alcance:** diseño de tablas, constraints, indexes, transacciones, retención
-  y rollout/rollback para PBI-041. No cambia la base actual.
+  retiro seguro y rollout/rollback para PBI-041.
 
 ## Principios
 
@@ -24,6 +25,8 @@
    partial success.
 7. Raw temporal puede expirar; historia estructurada y Catalog no se eliminan
    por cascada.
+8. Retirar un `CatalogItem` cambia `ACTIVE` a `INACTIVE`; no elimina identidad,
+   identificadores ni historia.
 
 ## Modelo relacional propuesto
 
@@ -146,6 +149,22 @@ debe estar `CREATE/UPDATE/NO_CHANGE`; `EXCLUDED` queda fuera de commit.
 revisiones nuevas se reservan en intención persistida para que retry no cambie
 identidad.
 
+### `catalog_retirement_plans`
+
+Plan autoritativo Tenant-scoped, efímero y de un solo uso. Conserva `plan_id`,
+scope `ACTIVE_CATALOG/BATCH_CREATED`, batch opcional, hash canónico del conjunto
+activo y sus versiones, conteos, actor/Branch/Station/Session creadoras,
+expiración y estado `PENDING/EXECUTED/STALE/EXPIRED`. Para batch, los targets se
+derivan exclusivamente de resolutions `CREATED`; ningún ID libre del cliente
+forma el conjunto. El plan dura cinco minutos y no concede autorización.
+
+### `catalog_retirement_events`
+
+Evidencia append-only del intento sensible: plan/scope/batch, contexto completo,
+capability exacta, nivel 2, instante de reautenticación, hash y conteos,
+resultado `SUCCEEDED/REJECTED`, motivo seguro, correlation y request id. Los
+triggers impiden update/delete. Los eventos no son un mecanismo de rollback.
+
 ## Index strategy
 
 - `(tenant_id, supplier_source_id, status)` y nombre normalizado de Source;
@@ -158,6 +177,8 @@ identidad.
 - Batch por Tenant/status/updated, Version y idempotency keys;
 - RowDecision por batch/classification/decision/ordinal y target item;
 - raw payload por `expires_at` con `purged_at IS NULL` para cleanup.
+- RetirementPlan por Tenant/status/expiry y batch; RetirementEvent por
+  Tenant/plan/ocurrencia y client request.
 
 Preview/compare usa queries set-based y paginadas; no carga 10,000 rows al DOM ni
 hace N+1 contra Catalog/Resolution. Los planes y p95 forman evidencia futura.
@@ -173,6 +194,8 @@ hace N+1 contra Catalog/Resolution. Los planes y p95 forman evidencia futura.
 | `CatalogUpdatePreviewReader` | paginado before/after/match/status, redacted por capability |
 | `SupplierVersionComparator` | persisted/mapped/disappeared/new/changed/ambiguous set-based |
 | `ExpiredRawPayloadPurger` | claim/delete bounded, idempotente, conteos/errores auditables |
+| `CatalogRetirementPlanner` | conjunto/hash/conteos server-side para catálogo activo o CREATED por batch |
+| `CatalogRetirementExecutor` | revalidación serializable, retiro y evidencia append-only |
 
 Sólo contratos públicos del módulo pueden ser consumidos; no se exportan
 Kysely, tablas o repositories. Procurement futuro mapea su Supplier a Source
@@ -192,6 +215,23 @@ Unique/FK/check/deadlock/serialization/timeout se traducen al contrato DEC-044.
 Un stale vuelve a reconciliation; una falla técnica no deja writes de producto.
 No se reintenta un commit outcome desconocido sin consultar idempotency outcome.
 
+## Atomic retirement transaction
+
+1. Resolver la capability dedicada y reautenticar al mismo actor mediante
+   Access antes de entrar a Catalog.
+2. Bloquear plan y candidatos en orden estable dentro de una transacción
+   `SERIALIZABLE`.
+3. Revalidar Tenant, actor, Branch, Station, Session, expiración, confirmación,
+   capability/temporal guards y hash `itemId+version`.
+4. Actualizar sólo targets todavía `ACTIVE` a `INACTIVE`, incrementando su
+   versión; nunca ejecutar `DELETE`.
+5. Agregar audit por item y un RetirementEvent agregado; marcar el plan
+   `EXECUTED` en la misma transacción.
+
+Una diferencia de contexto, conjunto, lifecycle, versión o autoridad produce
+`STALE/EXPIRED/REJECTED` y cero retiros. Un retry idéntico devuelve el mismo
+outcome; otro request no reutiliza el plan.
+
 ## Retention cleanup
 
 Un job/command gobernado de Catalog —a materializar sólo al implementar
@@ -202,12 +242,15 @@ payload temporal. Debe ser reentrante, tolerar caída y terminar en ≤10 s para
 reloj controlado y demuestra que Listing estructurado, resolutions, batch,
 audit y Catalog permanecen.
 
-## Rollout de migraciones propuesto
+## Rollout de migraciones materializado
 
-1. Migraciones de expansión sólo aditivas: enums/checks/tables/FKs/indexes.
-2. No backfill de CatalogItem ni conversión de WIP PBI-040.
-3. Crear roles/grants y queries owner del módulo; app antigua ignora tablas.
-4. Materializar código detrás del nuevo flujo no anunciado.
+1. `20260914152000_access_add_catalog_bulk_retire_capability` agrega la
+   capability explícita sin convertir `catalog.manage` en super-capability.
+2. `20260914153000_catalog_create_retirement_plans` agrega únicamente planes y
+   eventos; el lifecycle `ACTIVE/INACTIVE` de `CatalogItem` ya existía y no
+   requirió alteración.
+3. No hay backfill de CatalogItem ni conversión de WIP PBI-040.
+4. Crear roles/grants y queries owner del módulo; app antigua ignora tablas.
 5. Ejecutar fresh/up, previous→up, constraints, rollback transaction y cleanup
    tests en PostgreSQL 18.4.
 6. Habilitar sólo después de gates, CI y Owner checkpoint aplicables.

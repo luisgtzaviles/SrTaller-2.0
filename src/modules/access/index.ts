@@ -86,6 +86,32 @@ export const TENANT_WIDE_AUTHORIZATION_EXECUTOR: unique symbol = Symbol(
   'srtaller.access.tenant-wide-authorization-executor',
 );
 
+export type SensitiveActionLevel2Code = 'catalog.items.bulk-retire';
+
+export class SensitiveActionReauthenticationError extends Error {
+  readonly code = 'REAUTHENTICATION_DENIED';
+  constructor() { super('Sensitive action reauthentication was denied.'); this.name = 'SensitiveActionReauthenticationError'; }
+}
+
+export interface ReauthenticatedOperationalContext extends AuthorizedOperationalContext {
+  readonly sensitiveAction: SensitiveActionLevel2Code;
+  readonly sensitivityLevel: 2;
+  readonly reauthenticatedAt: string;
+}
+
+export interface SensitiveActionLevel2Executor {
+  execute<Result>(
+    evidence: ProtectedRequestEvidence,
+    action: SensitiveActionLevel2Code,
+    reauthentication: Readonly<{ pin: unknown }>,
+    operation: (context: ReauthenticatedOperationalContext) => Promise<Result>,
+  ): Promise<Result>;
+}
+
+export const SENSITIVE_ACTION_LEVEL2_EXECUTOR: unique symbol = Symbol(
+  'srtaller.access.sensitive-action-level2-executor',
+);
+
 /** Compile-time marker for the public access module boundary. */
 export interface AccessModuleContract {
   readonly module: 'access';

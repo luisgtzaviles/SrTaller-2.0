@@ -3,10 +3,12 @@ import type {
   ContextualAuthorizationExecutor,
   ProtectedOperationRequirement,
   ProtectedRequestEvidence,
+  SensitiveActionLevel2Executor,
 } from '../../access/index.js';
 import type { TenantWideAuthorizationExecutor } from '../../access/index.js';
 import type { CatalogService } from './catalog.service.js';
 import type { BulkCatalogService } from './bulk-catalog.service.js';
+import type { CatalogRetirementService } from './catalog-retirement.service.js';
 import type { CatalogMutationContext, CatalogScope } from './ports/catalog-repository.port.js';
 
 const requirement = (capability: ProtectedOperationRequirement['capability'], kind: ProtectedOperationRequirement['kind']) => Object.freeze({ capability, kind });
@@ -20,6 +22,7 @@ const costManage = requirement('catalog.reference_cost.manage', 'state-change');
 const importPrepareRead = requirement('catalog.import.prepare', 'read');
 const importPrepareWrite = requirement('catalog.import.prepare', 'state-change');
 const importPublish = requirement('catalog.import.publish', 'state-change');
+const bulkRetire = requirement('catalog.items.bulk_retire', 'state-change');
 
 function sameContext(contexts: readonly AuthorizedOperationalContext[]): boolean {
   const first = contexts[0];
@@ -65,7 +68,7 @@ export class CatalogOperationAccessDeniedError extends Error {
 }
 
 export class CatalogProtectedOperations {
-  constructor(private readonly authorization: ContextualAuthorizationExecutor, private readonly tenantWideAuthorization: TenantWideAuthorizationExecutor, private readonly service: CatalogService, private readonly bulk: BulkCatalogService) {}
+  constructor(private readonly authorization: ContextualAuthorizationExecutor, private readonly tenantWideAuthorization: TenantWideAuthorizationExecutor, private readonly sensitiveLevel2: SensitiveActionLevel2Executor, private readonly service: CatalogService, private readonly bulk: BulkCatalogService, private readonly retirement: CatalogRetirementService) {}
 
   private executeMany<Result>(evidence: ProtectedRequestEvidence, requirements: readonly ProtectedOperationRequirement[], operation: (contexts: readonly AuthorizedOperationalContext[]) => Promise<Result>): Promise<Result> {
     const contexts: AuthorizedOperationalContext[] = [];
@@ -165,4 +168,9 @@ export class CatalogProtectedOperations {
   publishSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { const writeCost = typeof input === 'object' && input !== null && (input as { writeReferenceCost?: unknown }).writeReferenceCost === true; const requirements = writeCost ? [importPublish, catalogManage, pricesManage, costManage, costRead] : [importPublish, catalogManage, pricesManage]; return this.executeTenantWideMany(evidence, requirements, (contexts) => this.bulk.publish(mutationContext(contexts), versionId, input, writeCost)); }
   compareSupplierVersions(evidence: ProtectedRequestEvidence, leftVersionId: unknown, rightVersionId: unknown) { return this.tenantWideAuthorization.execute(evidence, importPrepareRead, (context) => this.bulk.compare(scope(context), leftVersionId, rightVersionId)); }
   purgeSupplierRaw(evidence: ProtectedRequestEvidence) { return this.executeTenantWideMany(evidence, [importPrepareWrite], (contexts) => this.bulk.purgeExpiredRaw(mutationContext(contexts))); }
+  createRetirementPlan(evidence: ProtectedRequestEvidence, input: unknown) { return this.executeTenantWideMany(evidence, [bulkRetire], (contexts) => this.retirement.createPlan(mutationContext(contexts), input)); }
+  executeRetirementPlan(evidence: ProtectedRequestEvidence, input: unknown) {
+    const pin = typeof input === 'object' && input !== null && !Array.isArray(input) ? (input as { pin?: unknown }).pin : undefined;
+    return this.sensitiveLevel2.execute(evidence, 'catalog.items.bulk-retire', { pin }, (context) => this.retirement.executePlan(mutationContext([context]), input, context.reauthenticatedAt));
+  }
 }

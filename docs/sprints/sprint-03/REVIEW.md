@@ -13,6 +13,7 @@ quedaron PASS. El cierre documental PR #52 y su exact-main también pasaron.
 Production no cambió.
 
 SPRINT-03 permanece Active. PBI-041 fue seleccionado después como único WIP y
-su candidato local `6936ab2` está preparado para revisión Owner con versiones
-sintéticas V1/V2. No existe Owner Acceptance, integración, deploy ni selección
-de PBI-042.
+su candidato local está preparado para revisión Owner con versiones sintéticas
+V1/V2 y la iteración `OD-RESET-001..005`: retiro global Level 2, retiro sólo de
+items CREATED por batch y escenarios Historical/Virgin separados. No existe
+Owner Acceptance, integración, deploy ni selección de PBI-042.

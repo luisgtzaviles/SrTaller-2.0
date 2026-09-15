@@ -6,6 +6,7 @@ const SOURCE_ROOT = `${FRONTEND_ROOT}/src`;
 const TOKEN_FILE = `${SOURCE_ROOT}/styles/tokens.css`;
 const BASE_FILE = `${SOURCE_ROOT}/styles/base.css`;
 const LEGACY_FILE = `${SOURCE_ROOT}/styles.css`;
+const BULK_GRID_LAYOUT_FILE = `${SOURCE_ROOT}/pages/bulk-catalog-grid-layout.ts`;
 const ALLOWED_BREAKPOINTS = new Set(['640', '768', '1024', '1280']);
 const BRAND_ROLE_TOKENS = Object.freeze([
   'base', 'on-base', 'action', 'action-hover', 'action-active', 'subtle', 'muted', 'surface',
@@ -117,7 +118,7 @@ function inspectTypeScript(path, source, problems) {
   if (source.includes("from './styles.css'") || source.includes("from \"./styles.css\"")) {
     problems.push(`${path}: legacy styles import is forbidden`);
   }
-  if (source.includes('.style.setProperty') && path !== `${SOURCE_ROOT}/foundation/theme.tsx`) {
+  if (source.includes('.style.setProperty') && ![`${SOURCE_ROOT}/foundation/theme.tsx`, BULK_GRID_LAYOUT_FILE].includes(path)) {
     problems.push(`${path}: dynamic root accent is the only style mutation exception`);
   }
   if (/\.style\.(?!setProperty\b)/gu.test(source)) problems.push(`${path}: direct style mutation is forbidden`);
@@ -135,6 +136,7 @@ export async function validateUiFoundation(root = process.cwd()) {
   const mainSource = await readFile(resolve(root, `${SOURCE_ROOT}/main.tsx`), 'utf8');
   const tokenSource = await readFile(resolve(root, TOKEN_FILE), 'utf8');
   const themeSource = await readFile(resolve(root, `${SOURCE_ROOT}/foundation/theme.tsx`), 'utf8');
+  const bulkGridLayoutSource = await readFile(resolve(root, BULK_GRID_LAYOUT_FILE), 'utf8');
   if (!mainSource.includes("import './styles/base.css';")) problems.push('main.tsx must import the single global base entry');
   if (!mainSource.includes('<ThemeProvider>')) problems.push('main.tsx must install ThemeProvider before rendering the app');
   for (const role of BRAND_ROLE_TOKENS) {
@@ -145,6 +147,10 @@ export async function validateUiFoundation(root = process.cwd()) {
   for (const role of BRAND_CHROME_TOKENS) {
     const token = `--color-brand-${role}`;
     if (!tokenSource.includes(`${token}:`)) problems.push(`${TOKEN_FILE}: missing semantic brand chrome token ${token}`);
+  }
+  const bulkGridProperties = [...bulkGridLayoutSource.matchAll(/\.style\.setProperty\('([^']+)'/gu)].map((match) => match[1]);
+  if (bulkGridProperties.length !== 5 || bulkGridProperties.some((property) => !['--bulk-grid-columns', '--bulk-grid-width', '--bulk-grid-height', '--bulk-grid-offset'].includes(property))) {
+    problems.push(`${BULK_GRID_LAYOUT_FILE}: dynamic layout may set only the governed bulk grid custom properties`);
   }
 
   let baseImportCount = 0;

@@ -132,7 +132,7 @@ test('protected operations require fixed server capabilities and never let the c
     async getItem() { return { version: 1 }; },
     async createItem() { return { version: 1 }; },
   };
-  const operations = new CatalogProtectedOperations(contextual, tenantWide, service);
+  const operations = new CatalogProtectedOperations(contextual, tenantWide, {}, service, {}, {});
 
   assert.deepEqual(await operations.search({}, {}, false), { includeCost: false });
   assert.deepEqual(observed.splice(0), [['branch', { capability: 'price_list.read', kind: 'read' }]]);
@@ -166,7 +166,7 @@ test('bulk composer composes prepare, cost and publish authority without leaking
     async analyze(_context, _versionId, input) { return { input }; },
     async publish(_context, _versionId, input, mayWriteCost) { return { input, mayWriteCost }; },
   };
-  const operations = new CatalogProtectedOperations(executor, executor, {}, bulk);
+  const operations = new CatalogProtectedOperations(executor, executor, {}, {}, bulk, {});
 
   await operations.createSupplierDraft({}, { includeReferenceCost: true, rows: [{ referenceCostMinor: 48000 }] });
   assert.deepEqual(observed.splice(0).map((value) => value.capability), [
@@ -271,7 +271,7 @@ test('commercial reference governance is fixed and inline capture stays inside i
     async createItem(_context, input) { return { input }; },
     async mergeCategories(_context, input) { return { input }; },
   };
-  const operations = new CatalogProtectedOperations(contextual, tenantWide, service);
+  const operations = new CatalogProtectedOperations(contextual, tenantWide, {}, service, {}, {});
   assert.deepEqual(await operations.listAdministrationReferences({}), { scope: { tenantId, branchId } });
   assert.deepEqual(await operations.createItem({}, { categoryCapturedValue: 'Termos' }), { input: { categoryCapturedValue: 'Termos' } });
   assert.deepEqual(await operations.mergeCategories({}, { references: ['a', 'b'] }), { input: { references: ['a', 'b'] } });

@@ -57,6 +57,16 @@ virtualización, reload y comparación V1/V2. El clasificador shadow declaró
 `CROSS_MODULE_HIGH_RISK` y no omitió gates. No se ejecutó `verify:full`, conforme
 a la autoridad previa a Acceptance; no hubo push, PR, merge ni deploy.
 
+La iteración Owner `OD-RESET-001..005` resolvió el hallazgo posterior sin hard
+delete ni falsa reversión. El lifecycle existente `ACTIVE/INACTIVE` soporta
+retiro; `catalog.items.bulk_retire` y el ejecutor ADR-013 nivel 2 exigen PIN del
+mismo actor, plan server-side, confirmación exacta y revalidación transaccional.
+El retiro global preserva identidad/historia y el retiro por lote deriva sólo
+targets `CREATED`; MATCHED/UPDATED permanecen. PostgreSQL desechable demuestra
+Historical Tenant con cero activos y memoria intacta, y Virgin Tenant con las
+36 pantallas AG realmente `NEW`. El candidato continúa sólo en revisión local:
+sin `verify:full`, push, PR, merge, Preview ni deploy.
+
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
 Price List comenzó después en una rama no integrada. Ese WIP permaneció
@@ -228,7 +238,7 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Current PBI | PBI-041 — Owner Review ready; Acceptance pending |
 | WIP | 1/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Candidato local `6936ab2`; Owner Review ready; Acceptance pending |
+| PBI-041 | Working candidate con retiro seguro Level 2; Owner Review ready; Acceptance pending |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |
@@ -236,6 +246,7 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 ## Próxima acción
 
-Owner revisa el Composer local, Version 1/Version 2 y el Catalog resultante.
-Esperar decisión; no iniciar PBI-042 ni gates de integración, publicación,
+Owner revisa Historical/Virgin, retiro global, retiro CREATED por batch y el
+Composer local. Esperar decisión; no iniciar PBI-042 ni gates de integración,
+publicación,
 fusión o deploy sin autoridad explícita.

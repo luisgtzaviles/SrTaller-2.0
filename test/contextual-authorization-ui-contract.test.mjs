@@ -53,6 +53,7 @@ test('authenticated capability snapshots accept only a canonical finite set', ()
     'catalog.reference_cost.manage',
     'catalog.import.prepare',
     'catalog.import.publish',
+    'catalog.items.bulk_retire',
   ]);
 
   const parsed = parseSessionCapabilities(['repairs.read', 'repairs.add_note'], true);

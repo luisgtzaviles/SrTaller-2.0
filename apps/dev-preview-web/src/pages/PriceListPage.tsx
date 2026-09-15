@@ -1,13 +1,14 @@
-import { Barcode, Boxes, CircleDollarSign, Plus, Search, Tag, Upload } from 'lucide-react';
+import { ArchiveX, Barcode, Boxes, CircleDollarSign, Plus, Search, Tag, Upload } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import {
   changeCatalogBasePrice, changeCatalogReferenceCost,
-  createCatalogItem, getCatalogItem, listCatalogReferences,
+  createCatalogItem, createCatalogRetirementPlan, executeCatalogRetirementPlan, getCatalogItem, listCatalogReferences,
   revokeCatalogBranchPrice, searchPriceList, setCatalogBranchPrice, updateCatalogItem,
 } from '../catalog-api.js';
-import type { CatalogItem, CatalogItemKind, CatalogReferences, PriceListItem, PriceListPage } from '../catalog-api.js';
+import type { CatalogItem, CatalogItemKind, CatalogReferences, CatalogRetirementPlan, PriceListItem, PriceListPage } from '../catalog-api.js';
+import { PreviewApiError } from '../api.js';
 import { CatalogReferenceCombobox } from '../components/CatalogReferenceCombobox.js';
 import { Button, ButtonLink, Field, Input, Select, Textarea } from '../components/ui/controls.js';
 import { Alert, EmptyState, ErrorState, Skeleton, Spinner } from '../components/ui/feedback.js';
@@ -69,6 +70,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const canReadCost = hasOperationalCapability(capabilities, 'catalog.reference_cost.read');
   const canManageCost = hasOperationalCapability(administrationCapabilities, 'catalog.reference_cost.manage');
   const canPrepareImport = hasOperationalCapability(administrationCapabilities, 'catalog.import.prepare');
+  const canBulkRetire = hasOperationalCapability(administrationCapabilities, 'catalog.items.bulk_retire');
   const preferences = useUserPreferences();
   const [references, setReferences] = useState<CatalogReferences | null>(null);
   const [page, setPage] = useState<PriceListPage | null>(null);
@@ -84,6 +86,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const [formSku, setFormSku] = useState(''); const [formBarcode, setFormBarcode] = useState('');
   const [basePrice, setBasePrice] = useState(''); const [referenceCost, setReferenceCost] = useState(''); const [overridePrice, setOverridePrice] = useState('');
   const requestId = useRef<string | null>(null);
+  const [retirementPlan, setRetirementPlan] = useState<CatalogRetirementPlan | null>(null); const [retirementPin, setRetirementPin] = useState(''); const [retirementBusy, setRetirementBusy] = useState(false);
 
   const includeCost = canReadCost && preferences.priceListShowReferenceCost;
   const refreshReferences = useCallback(async () => { const value = await listCatalogReferences(); setReferences(value); return value; }, []);
@@ -200,10 +203,27 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
     } catch { setNotice({ tone: 'danger', message: 'No se aplicó el cambio. Revisa permisos, versión y estado actual.' }); }
     finally { setSaving(false); }
   };
+  const planActiveCatalogRetirement = async (): Promise<void> => {
+    setRetirementBusy(true); setNotice(null);
+    try { setRetirementPlan(await createCatalogRetirementPlan({ scope: 'ACTIVE_CATALOG' }, csrfToken)); setRetirementPin(''); }
+    catch { setNotice({ tone: 'danger', message: 'No fue posible preparar el plan autoritativo de retiro.' }); }
+    finally { setRetirementBusy(false); }
+  };
+  const retireActiveCatalog = async (): Promise<void> => {
+    if (!retirementPlan || retirementPin.length !== 4) return;
+    setRetirementBusy(true);
+    try {
+      const result = await executeCatalogRetirementPlan(retirementPlan.planId, { confirmation: 'RETIRE_ACTIVE_CATALOG', pin: retirementPin, clientRequestId: crypto.randomUUID() }, csrfToken);
+      setRetirementPlan(null); setRetirementPin(''); await refresh();
+      setNotice({ tone: 'success', message: `${result.retiredCount.toLocaleString('es-MX')} artículos retirados. La lista activa quedó en ${result.activeCatalogCount.toLocaleString('es-MX')}; identidad, mappings e historia permanecen.` });
+    } catch (error) {
+      setNotice({ tone: 'danger', message: error instanceof PreviewApiError && error.code === 'REAUTHENTICATION_DENIED' ? 'El PIN no corresponde al usuario de esta sesión o está temporalmente bloqueado.' : 'El plan cambió, expiró o perdió autoridad. Prepara uno nuevo.' });
+    } finally { setRetirementBusy(false); }
+  };
 
   return (
     <div className={styles.page}>
-      <PageHeader eyebrow="Listas" title="Lista de precios" description="Referencia rápida del precio efectivo en esta sucursal." primaryAction={<div className={styles.headerActions}>{canPrepareImport ? <ButtonLink to="/listas/precios/carga-masiva"><Upload size={18} aria-hidden="true" />Carga masiva</ButtonLink> : null}{canManage && canManagePrice ? <Button tone="primary" onClick={openCreate}><Plus size={18} aria-hidden="true" />Nuevo artículo</Button> : null}</div>} />
+      <PageHeader eyebrow="Listas" title="Lista de precios" description="Referencia rápida del precio efectivo en esta sucursal." primaryAction={<div className={styles.headerActions}>{canBulkRetire ? <Button tone="danger" disabled={retirementBusy} onClick={() => void planActiveCatalogRetirement()}><ArchiveX size={18} aria-hidden="true" />Vaciar lista de precios</Button> : null}{canPrepareImport ? <ButtonLink to="/listas/precios/carga-masiva"><Upload size={18} aria-hidden="true" />Carga masiva</ButtonLink> : null}{canManage && canManagePrice ? <Button tone="primary" onClick={openCreate}><Plus size={18} aria-hidden="true" />Nuevo artículo</Button> : null}</div>} />
       {notice ? <Alert tone={notice.tone} title={notice.tone === 'success' ? 'Listo' : 'Atención'}>{notice.message}</Alert> : null}
       <section className={styles.toolbar} aria-label="Buscar y filtrar lista de precios">
         <label className={styles.filterField}><span>Buscar</span><span className={styles.search}><Search size={20} aria-hidden="true" /><Input value={query} onChange={(event) => updateListFilter('q', event.target.value)} placeholder="Buscar por nombre, SKU o código…" autoComplete="off" /></span></label>
@@ -232,6 +252,14 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
           {dialog === 'create' ? <section className={styles.moneyGrid}><Field id="catalog-base-price" label="Precio base" required><Input id="catalog-base-price" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} inputMode="decimal" placeholder="1399.00" /></Field>{canManageCost ? <Field id="catalog-cost" label="Costo de referencia"><Input id="catalog-cost" value={referenceCost} onChange={(event) => setReferenceCost(event.target.value)} inputMode="decimal" placeholder="480.00" /></Field> : null}</section> : null}
           {dialog === 'manage' && selected ? <section className={styles.moneyActions}><h3>Precios y costo</h3>{canManagePrice ? <div><Input aria-label="Nuevo precio base" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} placeholder="Precio base" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('base')}>Cambiar base</Button></div> : null}{canManageBranchPrice ? <div><Input aria-label="Override de esta sucursal" value={overridePrice} onChange={(event) => setOverridePrice(event.target.value)} placeholder="Override Branch" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('override')}>Aplicar override</Button><Button tone="quiet" disabled={saving} onClick={() => void moneyCommand('revoke')}>Revocar override</Button></div> : null}{canManageCost ? <div><Input aria-label="Nuevo costo de referencia" value={referenceCost} onChange={(event) => setReferenceCost(event.target.value)} placeholder="Costo de referencia" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('cost')}>Cambiar costo</Button></div> : null}</section> : null}
           <footer className={styles.dialogFooter}><Button onClick={close} disabled={saving}>Cerrar</Button>{dialog === 'create' ? <Button tone="primary" disabled={saving} onClick={() => void submitCreate()}>{saving ? <Spinner label="Guardando" /> : null}Crear artículo</Button> : <Button tone="primary" disabled={saving} onClick={() => void saveIdentity()}>{saving ? <Spinner label="Guardando" /> : null}Guardar datos</Button>}</footer>
+        </div>
+      </Dialog>
+      <Dialog open={retirementPlan !== null} title="Vaciar lista de precios" description="Retiro masivo Tenant-wide · acción sensible nivel 2" onClose={() => { if (!retirementBusy) { setRetirementPlan(null); setRetirementPin(''); } }} footer={false}>
+        <div className={styles.dialogBody}>
+          <Alert tone="warning" title="La historia no se borra">Los artículos se marcarán inactivos. Se conservan itemId, SKU, código de barras, revisiones, Supplier Listings, mappings, memoria y lotes.</Alert>
+          <dl className={styles.retirementSummary}><div><dt>Artículos activos a retirar</dt><dd>{retirementPlan?.activeCount.toLocaleString('es-MX') ?? 0}</dd></div><div><dt>Ya inactivos</dt><dd>{retirementPlan?.alreadyInactiveCount.toLocaleString('es-MX') ?? 0}</dd></div></dl>
+          <Field id="catalog-retirement-pin" label="Confirma tu PIN" required hint="Debe ser el PIN del mismo usuario que mantiene esta sesión."><Input id="catalog-retirement-pin" type="password" inputMode="numeric" autoComplete="off" maxLength={4} value={retirementPin} onChange={(event) => setRetirementPin(event.target.value.replace(/\D/gu, '').slice(0, 4))} /></Field>
+          <footer className={styles.dialogFooter}><Button disabled={retirementBusy} onClick={() => { setRetirementPlan(null); setRetirementPin(''); }}>Cancelar</Button><Button tone="danger" disabled={retirementBusy || retirementPin.length !== 4} onClick={() => void retireActiveCatalog()}>{retirementBusy ? 'Retirando…' : `Retirar ${retirementPlan?.activeCount.toLocaleString('es-MX') ?? 0} artículos`}</Button></footer>
         </div>
       </Dialog>
     </div>

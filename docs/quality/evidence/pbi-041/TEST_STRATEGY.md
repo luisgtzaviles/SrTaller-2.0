@@ -2,9 +2,9 @@
 
 ## Estado
 
-- **Resultado:** strategy complete for readiness; no tests executed for an
-  implementation that does not yet exist.
-- **Fecha:** 2026-09-13.
+- **Resultado:** estrategia extendida con `OD-RESET-001..005`; cobertura
+  focalizada ejecutada sobre el candidato local.
+- **Fecha:** 2026-09-14.
 - **Riesgo:** Alto; DEC-051 requires risk-proportional unit, contract,
   PostgreSQL, HTTP, browser, security and CI evidence.
 
@@ -22,6 +22,11 @@ ambiguous and disappeared groups without requiring advanced pattern logic.
 
 Fixtures contain no Owner/supplier real data. A future anonymized shape may be
 used locally but is not committed unless separately approved.
+
+La extensión de retiro usa dos fixtures separados: Historical Tenant conserva
+historia y mappings aunque llegue a cero activos; Virgin Tenant comienza sin
+Supplier history y prueba las 36 pantallas AG como `NEW`. Ambos son sintéticos,
+aislados y reversibles en PostgreSQL desechable.
 
 ## Test matrix
 
@@ -57,6 +62,14 @@ used locally but is not committed unless separately approved.
 | BI-Q28 | malicious/oversized clipboard and each rows/columns/cells/cell/bytes cap render/reject safely | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q29 | atomic injected failure/deadlock/timeout has known/idempotent outcome | ✓ | ✓ | ✓ | ✓ |  | ✓ |
 | BI-Q30 | Source/Version/Listing immutable and no destructive cascade | ✓ | ✓ | ✓ |  |  | ✓ |
+| BI-Q31 | plan global authoritative cuenta sólo items activos y expira en 5 min | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q32 | retiro global deja 0 activos y preserva ID/SKU/barcode/revisiones/history/memory | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q33 | item histórico retirado queda conflict/reactivate, nunca NEW | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q34 | same-actor PIN Level 2 es one-shot; PIN de otro usuario falla | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q35 | plan alien/stale/context-changed/capability-revoked falla sin retiro parcial | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q36 | lote mixto retira sólo Resolution CREATED; MATCHED/UPDATED siguen activos | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q37 | Virgin Tenant aislado clasifica las 36 pantallas AG como NEW | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q38 | UI dice `Original:` y nunca llama reversión al retiro acotado | ✓ | ✓ |  | ✓ | ✓ | ✓ |
 
 ## Layer responsibilities
 
@@ -68,6 +81,7 @@ used locally but is not committed unless separately approved.
 - field intent matrix, blank/zero/money parsing and diff/no-op;
 - lifecycle transition policies, pending vs unresolved and report counts;
 - retention clock/chunk selection and cost redaction policies.
+- plan TTL/confirmation, same-actor proof y conjuntos/hash deterministas.
 
 ### Contract
 
@@ -76,6 +90,8 @@ used locally but is not committed unless separately approved.
 - idempotency same/incompatible payload; stale/conflict/non-revealing results;
 - Version/Batch relationship is not 1:1; Procurement/Inventory/Repairs only see
   Catalog item contracts, never SupplierListing identity.
+- retiro global y por batch tienen commands/resultados explícitos y nunca
+  exponen hard delete o una falsa reversión.
 
 ### PostgreSQL 18.4
 
@@ -85,6 +101,8 @@ used locally but is not committed unless separately approved.
 - two Owners, row lock order, idempotency outcomes and no partial writes;
 - two Tenants + two Branches, exact queries/counts/pagination and no cascades;
 - cleanup with controlled clock/failure/retry and permanent evidence survival.
+- planes/eventos Level 2, locking estable, stale hash, zero partial retirement,
+  Historical/Virgin isolation y CREATED-only batch scope.
 
 ### HTTP/security
 
@@ -92,6 +110,8 @@ used locally but is not committed unless separately approved.
 - alien IDs, forged state/method/expectedVersion and anti-enumeration;
 - cost visibility across Composer, preview, history and report;
 - publish retry/outcome unknown and capability/session revocation at commit.
+- PIN ajeno, replay de proof, plan stale/alien/expired, confirmación incorrecta
+  y capability masiva ausente.
 
 ### Browser/Owner surface
 
@@ -101,6 +121,8 @@ used locally but is not committed unless separately approved.
 - error/empty/loading/reconnecting/stale/denied/success states;
 - screen widths 1280/768/640, light/dark, keyboard-only and announcements;
 - Version 1 → publish → Version 2 comparison Owner checkpoint.
+- diálogos de retiro global/CREATED por batch, reautenticación y estados
+  Historical/Virgin sin lenguaje de hard delete o rollback.
 
 ### CI and evidence
 
@@ -141,7 +163,7 @@ PASS alone cannot close Owner Review.
 
 ## Exit criteria
 
-- BI-Q01..Q30 applicable gates green without downgraded assertions;
+- BI-Q01..Q38 applicable gates green without downgraded assertions;
 - required 1,500-row Owner flow and 10k candidate budgets evidenced;
 - 50k characterization/rejection evidenced;
 - zero Blocker/Critical/High open after focused review;

@@ -114,6 +114,7 @@ test('Access capability catalog is finite, action-specific and composed determin
     'catalog.reference_cost.manage',
     'catalog.import.prepare',
     'catalog.import.publish',
+    'catalog.items.bulk_retire',
   ]);
   assert.deepEqual(
     composeEffectiveCapabilities([
