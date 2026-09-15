@@ -103,6 +103,19 @@ con dos borradores revisables; la ejecución y los negativos permanecen cubierto
 por PostgreSQL/backend. No se ejecutó `verify:full`, push, PR, merge, Preview,
 Production ni deploy; Owner Acceptance sigue pendiente.
 
+La iteración local más reciente retiró la contaminación sintética persistente
+`Proveedor Demo` sin cambiar el hard delete productivo. Una auditoría exacta
+demostró que su Source, 3 Versions, 4,500 Listings, 1,800 mappings, 1,800
+Memory y 1,500 CatalogItems eran fixtures deterministas aislados, sin una sola
+referencia AG u operativa. Un cleanup LOCAL fail-closed los eliminó en una
+transacción serializable y preservó toda relación compartida. PostgreSQL quedó
+con AG, sus 8 Versions y 39 CatalogItems: 36 activos vinculados a AG y 3 seed
+inactivos no Demo; 0 orphans y 0 triggers deshabilitados. API y reload real de
+Chrome muestran sólo AG, y Lista de precios devuelve 36 activos. Los gates
+focalizados de cleanup/Composer, arquitectura, typecheck, build y PostgreSQL
+PBI-041 están verdes. `verify:full`, push, PR, merge, Preview, Production,
+deploy y Owner Acceptance permanecen sin ejecutar ni inferir.
+
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
 Price List comenzó después en una rama no integrada. Ese WIP permaneció

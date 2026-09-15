@@ -1,37 +1,34 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Supplier history, automatic versioning and governed delete
+Milestone / Functional Goal: PBI-041 — Synthetic Demo fixture cleanup
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Ready for Owner Review — Acceptance pending
+Status: Ready for Owner Review — Demo removed from LOCAL; Acceptance pending
 WIP: 1/1
-Progress: 7 / 7 blocks completed
-Current: Owner may review Supplier history, automatic versions and governed deletion locally
+Progress: 5 / 5 blocks completed
+Current: Owner may verify that LOCAL contains AG and no persistent Proveedor Demo
 Next: Owner decision only; `verify:full` and integration remain unauthorized
 Blocked: None; Owner Acceptance remains pending
 Last updated: 2026-09-15 MST
 
-## Current checkpoint — Supplier history and governed delete
+## Current checkpoint — Synthetic Demo fixture cleanup
 
-- [x] Audit Source, Version, Listing, mapping, memory, Batch, revision and delete relations.
-- [x] Promote automatic monotonic `vN`, Source deletion rules and explicit capability to canonical documentation.
-- [x] Implement server-side version allocation, idempotency and migration-safe historical backfill.
-- [x] Implement Supplier → Versions hierarchy, collapsible workspace and double-confirmed deletion UX.
-- [x] Pass 80 focused contracts and PostgreSQL material with 69 migrations, including concurrency, isolation and safe-delete cases.
-- [x] Validate 1280/768/640, light/dark, keyboard, sidebar states and destructive confirmations in Chrome.
-- [x] Reconcile evidence, logical commits, exact-HEAD provenance and Owner handoff.
+- [x] Remove `Caso Owner · 36`, `Demo V1 · 1500` and `Demo V2 · 1500` from the operational UI while retaining deterministic internal QA coverage.
+- [x] Prove that Source `1dbec1cf-eb2e-4f96-b3f0-caab42316855`, its three Versions and 1,500 CatalogItems form an isolated synthetic genealogy.
+- [x] Execute one fail-closed, serializable LOCAL cleanup without changing productive Supplier delete guards.
+- [x] Verify PostgreSQL, FK/orphans, API, Lista de precios and Composer reload: AG remains, Demo is absent and 36 active items survive.
+- [x] Pass focused Composer/cleanup contracts, architecture, typecheck, build and PBI-041 PostgreSQL material.
 
-## Owner Review fixture and evidence
+## Owner Review state
 
 - `AG`: 8 Versions with published history; hard delete is blocked.
-- `Proveedor Demo`: 3 Versions with published history; hard delete is blocked.
-- `Proveedor QA eliminable 15 sep`: 2 same-day `DRAFT` Versions (`v1`, `v2`) with distinct descriptions; eligible for the governed delete flow.
-- Creating the QA Source first showed `0 versiones`; selecting it did not create a Version.
-- First confirmation explains the permanent effect and ignores Enter. The second requires same-actor PIN and arms the destructive button only after the delay.
-- The browser deletion was intentionally cancelled so the Owner can inspect the fixture; PostgreSQL material proves the successful effect, duplicate-submit safety, no-capability rejection and dependent-history block.
+- `Proveedor Demo`: absent after governed LOCAL fixture cleanup; 3 Versions, 4,500 Listings and 1,500 exclusive synthetic items were removed together.
+- `CatalogItem`: 39 remain; 36 active AG items and 3 inactive non-Demo seed items.
+- `SKU`/barcode: 39 of each remain; AG keeps its 36 exact item identities and reconciliation memory.
+- Composer reload and authenticated API return only AG; Lista de precios returns 36 active commercial items.
+- Productive Supplier deletion remains unchanged: published/dependent history is still blocked and the cleanup has no HTTP endpoint or capability bypass.
 - Local database migrated in place from 67 to 69 migrations; no reset or volume replacement occurred.
-- Focused contracts: 80 PASS. Final UI/bulk regression subset: 18 PASS. PostgreSQL: 1 PASS. Typecheck/build: PASS.
-- Chrome: 1280 light, 768 dark and 640 light; no document/action overflow, panel expands/collapses by keyboard and console has zero errors/warnings.
+- Cleanup/Composer contracts: 23 PASS. Architecture, typecheck and build: PASS. PBI-041 PostgreSQL material: 1 PASS with 69 migrations.
 
 ## Guardrails
 

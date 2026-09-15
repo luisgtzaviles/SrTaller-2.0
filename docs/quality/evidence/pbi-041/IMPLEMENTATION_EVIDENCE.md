@@ -2,14 +2,15 @@
 
 ## Checkpoint
 
-- **Estado:** Supplier history, automatic versioning y governed delete listos para Owner Review;
+- **Estado:** synthetic Demo fixture cleanup PASS en LOCAL; Owner Review listo;
   Owner Acceptance pendiente.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
 - **Candidato de reactivación:** `f4bc803fe3b086405024f6199b65114feb1feebe`.
 - **Candidato de retiro anterior:** `44e605953676456eff519b5b3fca02d952eb5c38`.
 - **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
+- **Cleanup local gobernado:** `a4aef9a`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
-- **Fecha:** 2026-09-14 MST.
+- **Fecha:** 2026-09-15 MST.
 - **Delivery:** sin push, PR, merge, Preview, Production ni deploy.
 - **Gate deliberadamente no ejecutado:** `verify:full`, reservado por autoridad
   Owner para después de Owner Acceptance.
@@ -551,6 +552,93 @@ El clasificador WF-006 evaluó el delta base→candidato como
   ancho extra a 1280. `min-width: 0` en los tracks y un setup `auto-fit`
   eliminaron el overflow externo; 18/18 contratos UI/bulk, typecheck y build
   volvieron a PASS.
+
+## Synthetic Demo fixture cleanup
+
+El Owner autorizó retirar por completo de LOCAL el fixture persistente
+`Proveedor Demo`, pero sólo después de demostrar su genealogía aislada. La
+auditoría se hizo antes de cualquier delete y resolvió la identidad exacta como
+`1dbec1cf-eb2e-4f96-b3f0-caab42316855` dentro del Tenant sintético local.
+
+### Inventario pre-delete
+
+| Entidad | Total actual | Exclusivo Demo | Compartido / otro | Acción propuesta |
+|---|---:|---:|---:|---|
+| SupplierSource | 2 | 1 | 1 | eliminar sólo Demo |
+| SupplierCatalogVersion | 11 | 3 | 8 | eliminar las tres Version de Demo |
+| SupplierRawPayload | 11 | 3 | 8 | eliminar los tres payloads Demo |
+| SupplierListing | 4,753 | 4,500 | 253 | eliminar Listings Demo |
+| UpdateBatch | 11 | 3 | 8 | eliminar Batches Demo |
+| RowDecision | 4,753 | 4,500 | 253 | eliminar decisiones Demo |
+| Resolution / Mapping | 1,908 | 1,800 | 108 | eliminar mappings Demo |
+| ReconciliationMemory | 1,836 | 1,800 | 36 | eliminar memoria Demo |
+| RetirementPlan | 4 | 1 | 3 | eliminar evidencia exclusiva Demo |
+| RetirementEvent | 3 | 1 | 2 | eliminar evidencia exclusiva Demo |
+| CatalogItem | 1,539 | 1,500 | 39 | eliminar sólo items exclusivos Demo |
+| ItemIdentifier | 3,078 | 3,000 | 78 | eliminar SKU/barcode de esos items |
+| BasePriceRevision | 1,611 | 1,500 | 111 | eliminar revisiones exclusivas Demo |
+| ReferenceCostRevision | 1,473 | 1,364 | 109 | eliminar revisiones exclusivas Demo |
+| BranchPriceRevision | 1 | 0 | 1 | preservar |
+| CatalogAuditEvent | 3,147 | 3,000 | 147 | eliminar eventos exclusivos Demo |
+
+La exclusividad no se infirió por volumen. Los 1,500 `CatalogItem` coincidieron
+uno a uno en `kind`, título y descripción `Observación sintética` con el
+generador determinista interno; las 4,500 Listings coincidieron con sus tres
+ejecuciones V1/V2. Los 1,800 Resolution `CREATED` apuntaban exactamente a esos
+1,500 IDs; 1,200 aparecían una vez y 300 dos veces. Todos estaban `INACTIVE`,
+fueron creados en el mismo instante de fixture y sus únicos audit events eran
+1,500 publish + 1,500 retire del batch sintético.
+
+No hubo un solo Resolution, Memory o RowDecision de AG hacia esos IDs. Las 36
+identidades AG quedaron fuera del conjunto y no apareció FK operativa de
+Repairs, Caja, Inventory u otro bounded context hacia los targets. Category y
+Brand compartidas, secuencias del Tenant y todas las relaciones no Demo se
+clasificaron como preservadas. `catalog_commands` no referenciaba ninguno de
+los 1,500 items.
+
+### Mecanismo y resultado
+
+`pnpm local:cleanup:synthetic-supplier` es un mecanismo explícito de
+remediación local. En modo normal sólo audita; para ejecutar exige `--execute`,
+el UUID y nombre exactos. Además comprueba `.env.local`, host/puerto/base/users
+locales, contenedor Docker gobernado, labels `local/postgres`, bind loopback y
+volumen exacto. La transacción `SERIALIZABLE` bloquea las tablas materiales,
+repite toda la auditoría y compara conteos exactos antes de escribir.
+
+El primer intento encontró correctamente los triggers append-only y revirtió
+sin cambios. El mecanismo final usa exclusivamente el admin local para
+deshabilitar temporalmente los triggers `USER` de las nueve tablas de historia
+dentro de la misma transacción; las FK internas permanecen activas. Rehabilita
+y verifica cada trigger antes del commit. No usa `session_replication_role`, no
+expone endpoint, no cambia capabilities y no toca el guard productivo de
+`PUBLISHED_HISTORY`/`DEPENDENT_HISTORY`.
+
+La ejecución eliminó exactamente: 1 Source, 3 Versions, 3 raw payloads, 4,500
+Listings, 3 Batches, 4,500 RowDecisions, 1,800 Resolutions, 1,800 Memory, 1
+RetirementPlan, 1 RetirementEvent, 1,500 CatalogItems, 3,000 identifiers, 1,500
+precios, 1,364 costos y 3,000 audit events. Eliminó cero BranchPriceRevision.
+El cálculo final fue material: `1,539 - 1,500 = 39` CatalogItems.
+
+### QA post-cleanup
+
+- PostgreSQL: Demo Source/Versions/items `0`; AG `1` Source, `8` Versions,
+  `253` Listings, `108` Resolutions y `36` Memory.
+- Catálogo: `39` items, `36 ACTIVE` y `3 INACTIVE`; `39` SKU y `39` barcodes.
+  Los `36` items AG siguen activos y los otros `3` son seed no Demo.
+- Integridad: `0` orphan rows en identifiers, precios, costos, Listings,
+  Resolution y Memory; `0` product triggers deshabilitados.
+- API autenticada: `GET /api/catalog/supplier-sources` `200`, sólo AG con
+  `versionCount=8`; Versions para el UUID Demo `200 []`; Price List `200` con
+  `totalCount=36` y sólo items activos.
+- Chrome reload: Composer muestra AG seleccionado y ocho versiones; Demo no
+  aparece. Lista de precios contiene únicamente el catálogo activo sobreviviente.
+- Root cause: los antiguos controles operativos `Caso Owner · 36`,
+  `Demo V1 · 1500` y `Demo V2 · 1500` permitían persistir el harness grande en
+  la base Owner. El commit previo `4f3e647` retiró esos controles; los
+  generadores continúan sólo para tests deterministas y PostgreSQL desechable.
+- Gates focalizados: 23/23 cleanup/Composer contracts, architecture,
+  typecheck, build y PBI-041 PostgreSQL 1/1 con 69 migraciones PASS. No se
+  ejecutó `verify:full`.
 
 ## Frontera de aceptación
 
