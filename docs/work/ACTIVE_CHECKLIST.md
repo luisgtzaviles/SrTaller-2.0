@@ -1,36 +1,39 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Catalog Reset + Applied Batch Reversibility
+Milestone / Functional Goal: PBI-041 — Historical Reactivation Semantics
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Ready for Owner Review — Owner Acceptance pending
+Status: Historical reactivation ready for Owner Review — Acceptance pending
 WIP: 1/1
 Progress: 6 / 6 blocks completed
-Current: Owner Review of the governed Historical/Virgin evidence and local UI
-Next: Owner decides Acceptance; no integration gate is authorized yet
-Blocked: None for Owner Review; Acceptance and integration remain unauthorized
+Current: Owner may review the applied AG result and active price list side by side
+Next: Owner decision only; integration gates remain unauthorized
+Blocked: None; Acceptance and integration remain unauthorized
 Last updated: 2026-09-14 MST
 
-## Current checkpoint
+## Current checkpoint — historical reactivation
 
-- [x] Run Development Preflight and restore exact local runtime provenance.
-- [x] Audit current CatalogItem relations, append-only guards, capabilities and applied-batch evidence.
-- [x] Promote Owner decisions for lifecycle semantics and ADR-013 classification.
-- [x] Correct the grid label from `Proveedor:` to `Original:`.
-- [x] Implement the approved retirement boundaries and focused coverage.
-- [x] Prepare the governed local runtime and Chrome scenario.
+- [x] Preserve and audit the existing 36-conflict AG fixture, itemIds, mappings and revisions.
+- [x] Promote `REACTIVATE` semantics in PBI-041 architecture and evidence contracts.
+- [x] Implement deterministic analysis, atomic publication and comprehensible UI.
+- [x] Add positive, negative, concurrency, rollback and idempotency coverage.
+- [x] Run focused/domain/PostgreSQL/build/typecheck/preflight/provenance gates.
+- [x] Apply the material AG batch and prepare both final Chrome surfaces.
 
 ## Owner Review evidence
 
 - Historical Tenant: 1,539 active items retired in two governed operations;
   active list at zero while identifiers, revisions, mappings, batches and
   reconciliation memory remain.
-- Historical re-intake: the same 36 AG rows are 0 New / 36 Conflict and require
-  explicit reactivation; `Original:` is visible.
+- Historical re-intake: `AG / Versión 1.2` reanalizó como 0 New / 36 Reactiva,
+  sin UUID manual, y se aplicó sobre los mismos 36 itemId/SKU/barcode.
+- El Tenant conserva 1,539 identidades: 36 activas y 1,503 inactivas; se
+  anexaron exactamente 36 revisiones de precio, costo, Resolution MATCHED y
+  audit events de reactivación.
 - Virgin Tenant: isolated PostgreSQL fixture proves a true first intake of 36
   New rows without deleting or altering the historical Tenant.
-- Build, 71 focused contracts, the 885-test base campaign and PostgreSQL
-  material are green. `verify:full` remains deliberately unexecuted.
+- Build/typecheck, 33 contratos focalizados y PostgreSQL material con 67
+  migraciones son PASS. `verify:full` permanece deliberadamente sin ejecutar.
 
 ## Guardrails
 

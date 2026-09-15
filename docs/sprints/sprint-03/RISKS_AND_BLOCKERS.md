@@ -2,7 +2,7 @@
 
 ## Estado
 
-- **Estado:** Active — PBI-040 Done; PBI-041 Owner Review ready.
+- **Estado:** Active — PBI-040 Done; PBI-041 historical reactivation Owner Review ready.
 - **Bloqueos:** ninguno para el checkpoint local PBI-041.
 
 | Riesgo | Clasificación | Control | Estado |
@@ -14,6 +14,7 @@
 | Composer ambiguo/partial | High | unresolved cero, preview/confirmación y apply atómico | control focalizado y PostgreSQL PASS; Owner Review pendiente |
 | retiro masivo indebido | Critical | capability dedicada, Level 2, plan/hash server-side, revalidación y audit | control focalizado y PostgreSQL PASS; Owner Review pendiente |
 | pérdida de memoria histórica | Critical | `ACTIVE→INACTIVE`, sin delete; Historical/Virgin separados | control PostgreSQL PASS |
+| reactivación de identidad equivocada o duplicada | Critical | mapping histórico exacto/único/consistente, expectedVersion, transacción e idempotencia | 36/36 material + negativos PostgreSQL PASS; Owner Review pendiente |
 | WIP paralelo | Medium | PBI-041 es el único WIP; PBI-042 permanece fuera | controlado |
 
 ## Próxima revisión

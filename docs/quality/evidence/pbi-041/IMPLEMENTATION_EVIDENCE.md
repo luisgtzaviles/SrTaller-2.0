@@ -2,10 +2,11 @@
 
 ## Checkpoint
 
-- **Estado:** safe Catalog retirement iteration lista para Owner Review;
+- **Estado:** historical Catalog reactivation lista para Owner Review;
   Owner Acceptance pendiente.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
-- **Candidato funcional:** `44e605953676456eff519b5b3fca02d952eb5c38`.
+- **Candidato de reactivación:** `f4bc803fe3b086405024f6199b65114feb1feebe`.
+- **Candidato de retiro anterior:** `44e605953676456eff519b5b3fca02d952eb5c38`.
 - **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
 - **Fecha:** 2026-09-14 MST.
@@ -58,6 +59,29 @@ Access y las tablas Tenant-scoped `catalog_retirement_plans` y
 `catalog_retirement_events`; la segunda es append-only. La ejecución agrega
 audit por item, nunca usa `DELETE/CASCADE`, y un plan stale/alien/context-changed
 falla con cero retiros.
+
+## Historical Catalog reactivation decision and materialization
+
+El guard anterior clasificaba como `CONFLICT` todo target histórico inactivo.
+La auditoría confirmó que ese comportamiento fue deliberadamente fail-safe,
+pero también que el modelo ya conserva una cadena autoritativa suficiente:
+Source + señal exacta del Listing + ReconciliationMemory consistente + único
+`itemId` del mismo Tenant y Tipo. La corrección conserva el guard para memoria
+ambigua, contradictoria, corrupta, incompatible o ajena, y sólo introduce
+`REACTIVATE` cuando toda esa prueba converge.
+
+`REACTIVATE` no es una segunda identidad ni una forma de fuzzy matching. El
+publish exige que el target siga `INACTIVE` en su `expectedVersion`, cambia el
+mismo item a `ACTIVE`, agrega sólo las revisiones de precio/costo que realmente
+cambiaron, registra Resolution `MATCHED` y audit por fila, y conserva
+identificadores, listings y memoria. Todo ocurre en la misma transacción; no
+existe `REACTIVATE_AND_UPDATE`.
+
+El schema de `CatalogItem` no necesitó cambios. La migración mínima
+`20260914154000_catalog_add_historical_reactivation` amplía únicamente el CHECK
+cerrado de `CatalogUpdateRowDecision.classification`. Su `down` convierte de
+forma conservadora las decisiones aún clasificadas `REACTIVATE` a `CONFLICT`
+antes de restaurar el conjunto previo.
 
 ## Superficie revisable por Owner
 
@@ -113,6 +137,7 @@ tokens, credenciales ni datos Owner reales.
 | Fixture | Estado | Propósito |
 |---|---|---|
 | AG / Owner real paste 36 | `DRAFT` | 36 pantallas sintéticas, pegado 3 columnas, contexto `Refacción / Pantallas / Apple` y recuperación por reload; no escribe Catalog |
+| AG / Versión 1.2 | `APPLIED` | las mismas 36 identidades históricas, con costo/precio nuevos: reanálisis 36 `REACTIVATE`, publicación sobre los mismos items y cero altas |
 | Proveedor Demo / Versión 1 | `APPLIED` | 1,500 observaciones sintéticas, publicación inicial y memoria histórica |
 | Proveedor Demo / Versión 2 | `RECONCILING` | 1,500 observaciones equivalentes con cambios controlados y comparación |
 | Historical Tenant desechable | `ACTIVE CATALOG EMPTY` | cuatro items retirados, cero activos y Listings/Resolutions/Memory intactos; una V5 reconoce el item retirado como conflicto/reactivación, no `NEW` |
@@ -154,8 +179,13 @@ historia del Tenant habitual.
   Branch overrides no son mutados.
 - Raw vence a 90 días y el purge idempotente conserva metadata, listings
   estructurados, mappings, batches, revisiones y audit.
-- `ACTIVE→INACTIVE` conserva identidad e historia. Un target histórico inactivo
-  bloquea como `HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION`, no se duplica.
+- `ACTIVE→INACTIVE` conserva identidad e historia. Un mapping histórico exacto,
+  único, consistente y compatible hacia ese target se clasifica `REACTIVATE`;
+  un target sin esa prueba continúa bloqueado como
+  `HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION` y nunca se duplica.
+- Una versión/batch ya `APPLIED` no puede reanalizarse ni republicarse con otra
+  clave; el retry con la misma identidad idempotente devuelve el mismo outcome
+  sin agregar revisiones, resolutions ni audit.
 - El plan global obtiene el conjunto desde Catalog; el plan por batch sólo
   considera Resolution `CREATED`. Ambos quedan ligados al contexto creador.
 - El ejecutor Level 2 consume una prueba PIN de un solo uso del mismo actor y
@@ -219,6 +249,96 @@ La prueba Owner sobre el Tenant histórico se hizo por las superficies reales:
 4. Una nueva versión AG de las mismas 36 pantallas produjo 0 `NEW` y 36
    `CONFLICT`: cada fila explicó que la memoria histórica apunta a un artículo
    retirado y exige reactivación explícita. La cuadrícula mostró `Original:`.
+
+### Iteración Historical Catalog reactivation
+
+Sobre `f4bc803fe3b086405024f6199b65114feb1feebe`, sin corrección manual de
+mappings, reset de DB ni `verify:full`:
+
+- 33/33 contratos focalizados de bulk, domain/application, UI, arquitectura,
+  schema y manifest de migraciones: PASS;
+- typecheck backend/web y build TypeScript/Vite: PASS; sólo permanece la
+  advertencia conocida de tamaño del chunk principal;
+- PostgreSQL material PBI-041: PASS con 67 migraciones y cleanup del contenedor
+  desechable. El caso de 36 filas cubrió stale expectedVersion, rollback sin
+  parciales, reanálisis, dos publicaciones concurrentes, retry idempotente,
+  identidad exacta y 36 audit events;
+- benchmark incluido: ingesta 10,000 `5,402.7 ms`, análisis `406.8 ms`, primera
+  preview `39.3 ms`, publish `20,573.8 ms`, heap adicional `70.4 MiB`, dentro
+  de los budgets vigentes.
+
+El fixture local preservado `AG / Versión 1.2` es
+`d08616af-33d4-44b8-a636-ecaacf4c72ba`; su batch es
+`aeb87845-b9ec-4370-a12e-901e3dad0b2b`. Antes del reanálisis tenía 36
+`CONFLICT`, 36 targets `INACTIVE` y propuestas de precio/costo distintas. El
+reanálisis produjo exactamente 0 `NEW`, 0 `UPDATE`, 36 `REACTIVATE`, 0
+`UNCHANGED`, 0 `PENDING_REFERENCE`, 0 `AMBIGUOUS`, 0 `CONFLICT` y 0 `INVALID`.
+La UI mostró estado actual Inactivo, propuesta Reactivar y el diff monetario,
+sin campo de UUID manual.
+
+La confirmación explícita y el publish dejaron el batch `APPLIED`. El agregado
+material cambió de 0 activos / 1,539 inactivos a 36 activos / 1,503 inactivos,
+con 1,539 items antes y después. SKU y barcode permanecieron 1,539/1,539;
+Listings permanecieron 4,681; ReconciliationMemory permaneció 1,836. Se
+agregaron exactamente 36 PriceRevisions (1,539→1,575), 36 CostRevisions
+(1,401→1,437), 36 Resolutions `MATCHED` (1,836→1,872) y 36 audit events
+`catalog.bulk.publish.row` con clasificación `REACTIVATE` y lifecycle
+`INACTIVE→ACTIVE` (3,075→3,111).
+
+Los IDs preservados antes/después son:
+
+| Fila | `itemId` antes = después | SKU | Barcode |
+|---:|---|---|---|
+| 1 | `7e0de2f0-9f58-455d-b4d2-a749386f36d9` | `REF-000839` | `SR00001600` |
+| 2 | `a8a49950-6d64-4f2e-b634-cad49ffbd13b` | `REF-000840` | `SR00001601` |
+| 3 | `36b1c923-908e-4e0d-9e09-0c50e11533e6` | `REF-000841` | `SR00001602` |
+| 4 | `e566c30d-4895-4ac9-9f7c-8aa4f1724e62` | `REF-000842` | `SR00001603` |
+| 5 | `0223c4b4-3a68-4b88-a679-8a85aaff817e` | `REF-000843` | `SR00001604` |
+| 6 | `e32e34ec-0411-47bb-a2cc-a612fc78d513` | `REF-000844` | `SR00001605` |
+| 7 | `3ea605ae-6944-448a-bcfc-c23cc780d6ca` | `REF-000845` | `SR00001606` |
+| 8 | `fff7da89-34a7-4669-80f2-566b536317bb` | `REF-000846` | `SR00001607` |
+| 9 | `2cc6d7bf-4ff5-4310-9139-0eead8770b15` | `REF-000847` | `SR00001608` |
+| 10 | `379facb4-28b3-4d08-8034-c41595fa1b88` | `REF-000848` | `SR00001609` |
+| 11 | `9a617954-a1b5-4de3-917d-8cf2c0d75c92` | `REF-000849` | `SR00001610` |
+| 12 | `a85c0b51-c1f4-4138-84d5-e1debed7f01e` | `REF-000850` | `SR00001611` |
+| 13 | `6d86a99a-9894-456a-b868-3711c893bc3d` | `REF-000851` | `SR00001612` |
+| 14 | `5a7f9e65-b4b1-4091-8941-aebe83a2d53a` | `REF-000852` | `SR00001613` |
+| 15 | `0d724c90-10b5-4fb0-9f92-c1c7f91679d3` | `REF-000853` | `SR00001614` |
+| 16 | `79706fcb-2ea1-4938-912f-4981a3ee75ff` | `REF-000854` | `SR00001615` |
+| 17 | `49ca8640-066c-459e-b7bd-8ac695290e04` | `REF-000855` | `SR00001616` |
+| 18 | `1b65b297-3649-4a22-85a8-e239f1a2f9f0` | `REF-000856` | `SR00001617` |
+| 19 | `e4c05fd2-c83e-4fff-aeaa-66414c61a97e` | `REF-000857` | `SR00001618` |
+| 20 | `29703aeb-76dc-4b79-9aee-362fa6d0e33e` | `REF-000858` | `SR00001619` |
+| 21 | `1fc737af-bdf3-446b-8eef-cfe3a46f8bbb` | `REF-000859` | `SR00001620` |
+| 22 | `6fa9faec-8bd4-4e23-a644-ab716d9806b5` | `REF-000860` | `SR00001621` |
+| 23 | `454df71b-a6d5-4b89-a180-ff3a357732c4` | `REF-000861` | `SR00001622` |
+| 24 | `7c7e9819-6186-4134-b31b-e42976458d12` | `REF-000862` | `SR00001623` |
+| 25 | `55c032a9-df8e-4784-86b7-1bfcdeca5ee2` | `REF-000863` | `SR00001624` |
+| 26 | `edb39899-7e2e-4fa9-bd70-26238028d921` | `REF-000864` | `SR00001625` |
+| 27 | `88dd95fe-22c0-458c-8dcc-7de0ef621a9d` | `REF-000865` | `SR00001626` |
+| 28 | `4b669821-7f5c-4e6c-b8d8-07c4130e5c10` | `REF-000866` | `SR00001627` |
+| 29 | `a37c542b-23f1-43c1-8d1d-2427714d3dbd` | `REF-000867` | `SR00001628` |
+| 30 | `0c13f646-67e9-45a0-9cb6-c7d9a950eb4f` | `REF-000868` | `SR00001629` |
+| 31 | `54c9635e-c05b-4f16-9bfa-e80d8997891c` | `REF-000869` | `SR00001630` |
+| 32 | `340ec4c1-8808-46ca-ab3c-12525a5f3a74` | `REF-000870` | `SR00001631` |
+| 33 | `fc8d014a-9542-4f2b-9ce5-29374a5d60ef` | `REF-000871` | `SR00001632` |
+| 34 | `e6804dcd-20eb-4dc4-aca2-a1c5d91d00a7` | `REF-000872` | `SR00001633` |
+| 35 | `7f0b27b9-bd53-414c-b25c-8423f1d3c2e4` | `REF-000873` | `SR00001634` |
+| 36 | `f76312a3-cf09-4c46-9262-2813debd13b9` | `REF-000874` | `SR00001635` |
+
+Cada uno terminó `ACTIVE`, versión 3, con dos revisiones históricas de precio y
+dos de costo; la revisión vigente coincide con la propuesta de la versión 1.2.
+La validación agregada obtuvo `36/36` items distintos, activos, con ambos
+identificadores, precio exacto, costo exacto y un audit de reactivación por
+item. No se creó ningún `CatalogItem`.
+
+La suite negativa conserva `UPDATE` para activo con cambio, `UNCHANGED` para
+activo sin cambio, y `AMBIGUOUS/CONFLICT` para múltiples candidatos, memoria o
+Tipo incompatible y targets no autorizados por Tenant. También demuestra que
+un stale write revierte las 36 filas, que concurrencia no duplica y que el retry
+con el mismo request id no añade revisiones. Reanalizar una versión cuyo batch
+ya está `APPLIED` falla cerrado; la UI final no ofrece controles de reanálisis o
+reconciliación mutables sobre ese resultado.
 
 El escenario Virgin se ejecutó en un Tenant sintético aislado dentro del
 contenedor desechable: la primera versión B1 de 36 filas fue 36 `NEW`. Una B2

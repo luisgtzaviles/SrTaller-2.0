@@ -1,8 +1,9 @@
 # PBI-041 — Evidence Index
 
-PBI-041 is `Owner Review ready — Owner Acceptance pending`. This directory
-contains readiness and local implementation evidence. It does not grant
-acceptance, integration, deployment or release authority.
+PBI-041 historical Catalog reactivation is `Owner Review ready — Owner
+Acceptance pending`. This directory contains readiness and local implementation
+evidence. It does not grant acceptance, integration, deployment or release
+authority.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)

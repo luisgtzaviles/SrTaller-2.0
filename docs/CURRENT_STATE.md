@@ -72,6 +72,19 @@ pruebas y PostgreSQL material con 66 migraciones están verdes. El candidato
 continúa sólo en revisión local:
 sin `verify:full`, push, PR, merge, Preview ni deploy.
 
+La iteración Owner posterior corrigió la semántica final de ese caso en
+`f4bc803fe3b086405024f6199b65114feb1feebe`: una memoria exacta, única,
+consistente, Tenant-scoped y compatible hacia un item `INACTIVE` ahora produce
+`REACTIVATE`, no `NEW`, UUID manual ni conflicto por el lifecycle. La versión
+local preservada `AG / Versión 1.2` pasó de 36 conflictos a 36 reactivaciones y
+se publicó sobre los mismos 36 itemId/SKU/barcode. El Tenant quedó con 36
+activos y 1,503 inactivos, sin cambiar sus 1,539 identidades; se anexaron 36
+revisiones de precio, 36 de costo, 36 Resolution `MATCHED` y 36 audit events.
+Los contratos focalizados quedaron 33/33, typecheck/build PASS y PostgreSQL
+material PASS con 67 migraciones, rollback atómico, concurrencia e idempotencia.
+`verify:full`, push, PR, merge, Preview, Production y Owner Acceptance siguen
+sin ejecutarse ni inferirse.
+
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
 Price List comenzó después en una rama no integrada. Ese WIP permaneció
