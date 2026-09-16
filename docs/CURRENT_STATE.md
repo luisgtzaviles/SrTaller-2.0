@@ -275,6 +275,14 @@ y Test Strategy dejaron PBI-041 Ready en aquel corte. La selección e
 implementación local posteriores quedan descritas arriba. Advanced Supplier
 Reconciliation sigue diferido sin PBI ID, selección ni readiness.
 
+La iteración local vigente de PBI-041 agrega la declaración independiente de
+cobertura `PARTIAL|COMPLETE` para cada SupplierCatalogVersion. El default y
+backfill son `PARTIAL`; sólo una lista COMPLETE puede presentar “no observado”
+contra una COMPLETE anterior del mismo SupplierSource. Esa observación nunca
+retira ni altera CatalogItem, identidad, revisiones, Resolution o memoria.
+La migración local aditiva llegó a 72 migraciones y sus gates focalizados
+pasaron; Owner Review y Owner Acceptance permanecen pendientes.
+
 El candidato funcional final es `0720813`. `verify:full` pasó 13/13 etapas:
 suite base 838 pruebas, 818 PASS y 20 skips PostgreSQL gobernados; composite
 17/17, PBI-039 2/2 y PBI-040 1/1 con 62 migraciones y p95 5.50 ms sobre 10,000

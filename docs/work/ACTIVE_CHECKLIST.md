@@ -1,24 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Candidate contrast vs durable identity conflict
+Milestone / Functional Goal: PBI-041 — Supplier version completeness semantics
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: New-item identity remediation ready for Owner Review
+Status: PARTIAL/COMPLETE implementation materially validated; Owner Review pending
 WIP: 1/1
-Progress: 6 / 6 remediation blocks completed
-Current: Owner Review of AG v17, with row 37 classified `NEW` and no batch applied
-Next: Owner may accept or reject the v17 new-item result and the prepared v11 KEEP/ADOPT choices; no Acceptance inferred
-Blocked: None; AG v17 and v11 review fixtures must remain unapplied
+Progress: 5 / 7 functional blocks completed
+Current: local Composer walkthrough and runtime provenance
+Next: focused final review, logical local commits and Owner Review handoff
+Blocked: None; historic AG fixtures remain preserved and are never reclassified retrospectively
 Last updated: 2026-09-16 MST
 
-## Current checkpoint — New item identity classification
+## Current checkpoint — Supplier version completeness
 
-- [x] Audit AG v17 row 37 and identify textual candidate contrast as the only route to its false conflict.
-- [x] Separate bounded candidate contrasts from durable identity conflicts; no fuzzy identity write was added.
-- [x] Preserve strong conflicts for contradictory identifiers and corrected durable mappings.
-- [x] Add focused contracts for protected token differences and PostgreSQL material for strong conflicts.
-- [x] Reanalyze AG v17 through localhost without applying its batch.
-- [x] Leave Chrome on AG v17 with `36 UNCHANGED`, `1 NEW`, `0 CONFLICT`.
+- [x] Audit v18/v19 and establish that absence never mutates CatalogItem.
+- [x] Add independent `PARTIAL` / `COMPLETE` version coverage contract with conservative historical default.
+- [x] Expose Owner-facing scope choice in new/draft Composer workspace.
+- [x] Make comparison absence-aware by current coverage and same-source complete baselines.
+- [x] Apply migration and prove historical versions read `PARTIAL`.
+- [x] Prove COMPLETE absence is informational while Catalog identity/history remain intact.
+- [~] Complete Chrome Owner Review walkthrough and focused gates.
 
 ## Audit evidence
 

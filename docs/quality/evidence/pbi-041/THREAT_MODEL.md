@@ -133,3 +133,12 @@ CatalogItem `INACTIVE`; no constituye una reactivación masiva administrativa ni
 habilita matching aproximado. Los candidates no aceptados no escriben memoria;
 una elección sólo aprende al publicar satisfactoriamente. La reversión exacta de updates sigue fuera de
 alcance. 50k continúa siendo caracterización, no capacidad de producto.
+
+## SV completeness controls
+
+| Riesgo | Control |
+|---|---|
+| una carga parcial se interpreta como disponibilidad | default `PARTIAL`; compare devuelve `PARTIAL_CURRENT` sin conteo de ausencia |
+| otro proveedor o Tenant determina una ausencia | compare exige mismo Tenant/Source y el UI sólo ofrece baseline COMPLETE aplicable |
+| una ausencia retira CatalogItem | Apply procesa sólo Listings presentes; retiro permanece `catalog.items.bulk_retire` gobernado |
+| historia ingested se reinterpreta | columna declarada antes de análisis y trigger de inmutabilidad después de `INGESTED` |

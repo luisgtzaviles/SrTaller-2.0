@@ -833,3 +833,19 @@ duplican resultados y una observación no publicada/excluida no participa.
 Chrome queda preparado en AG v11 para tomar las dos decisiones provisionales.
 No se ejecutó Apply Batch. Esta evidencia no demuestra Owner Acceptance, PR,
 CI autoritativa, merge, Preview, Production ni deploy.
+
+## Supplier version completeness — local material evidence
+
+La migración local aditiva avanzó el schema a 72 migraciones. El default seguro
+clasificó las versiones históricas como `PARTIAL`; no se resembró ni alteró AG.
+El Composer permite elegir “Actualización parcial” o “Lista completa del
+proveedor”, conserva la declaración en draft/reload/analyze/apply y la bloquea
+desde `INGESTED`.
+
+La suite PostgreSQL creó una baseline COMPLETE de cuatro Listings y una nueva
+COMPLETE que omite uno. La comparación devolvió `EVALUATED / 1 no observado`;
+después de Apply el CatalogItem omitido preservó itemId, `ACTIVE`, versión,
+identifiers, revisiones y ReconciliationMemory, con cero Resolution nueva. Una
+tercera carga `PARTIAL` devolvió `PARTIAL_CURRENT / null`, sin señal de
+ausencia. `typecheck`, build, contrato UI y PostgreSQL focalizado pasaron con
+Node 24.18.0 y pnpm 11.15.1. Owner Acceptance sigue pendiente.

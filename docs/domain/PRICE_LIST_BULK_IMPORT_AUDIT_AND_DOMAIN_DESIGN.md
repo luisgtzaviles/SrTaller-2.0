@@ -1337,3 +1337,13 @@ que demuestra lo siguiente:
 PRICE LIST BULK COMPOSER
 
 VERSIONED SUPPLIER CATALOG DESIGN COMPLETE — OWNER DECISIONS PROMOTED
+
+## Addendum PBI-041 — supplier version completeness
+
+SV-001..SV-010 separan explícitamente la cobertura recibida de los requisitos
+de captura: cada nueva `SupplierCatalogVersion` declara `PARTIAL` o `COMPLETE`,
+con `PARTIAL` como default seguro. La ausencia en `PARTIAL` no es información.
+En `COMPLETE`, “no observado” sólo compara el mismo Tenant/SupplierSource con
+una `COMPLETE` anterior; nunca redefine identidad, disponibilidad o lifecycle
+de `CatalogItem`. Streaks, recomendaciones, procurement e inactivación
+automática siguen fuera de PBI-041.

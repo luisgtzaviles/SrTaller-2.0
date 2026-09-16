@@ -196,3 +196,18 @@ PASS alone cannot close Owner Review.
 - zero Blocker/Critical/High open after focused review;
 - exact candidate Git/worktree/runtime evidence and no sensitive fixture data;
 - implementation remains unaccepted until Owner explicitly approves it.
+
+## SV completeness focused matrix
+
+| ID | Predicate material | Cobertura |
+|---|---|---|
+| SV-Q01 | nueva Version omite el campo y persiste `PARTIAL` | PostgreSQL |
+| SV-Q02 | `COMPLETE` frente a `COMPLETE` del mismo Source reporta sólo no observados | PostgreSQL |
+| SV-Q03 | `PARTIAL` no calcula ausencia ni expone conteo | PostgreSQL / UI contract |
+| SV-Q04 | una omisión COMPLETE aplicada conserva status, itemId, identifiers, revisiones y memory | PostgreSQL |
+| SV-Q05 | completeness no cambia después de `INGESTED` | PostgreSQL |
+| SV-Q06 | UI conserva selección y copy Owner; no presenta “Desaparecidas” | UI contract / Chrome |
+
+La matriz ejecutada usa una lista COMPLETE de cuatro filas y otra COMPLETE de
+tres: reporta un no observado, publica sólo las tres presentes y verifica cero
+Resolution para el item omitido. No sustituye Owner Review.

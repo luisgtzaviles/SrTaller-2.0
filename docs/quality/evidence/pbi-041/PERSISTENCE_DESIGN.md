@@ -351,3 +351,18 @@ decisiones antiguas quedan null. Publish falla cerrado si una fila con target y
 título distinto carece de decisión. El rename, Resolution, Memory, revisiones y
 audit event comparten una transacción; expected item version impide
 last-write-wins entre versiones concurrentes.
+
+## Supplier version completeness migration
+
+La migración `20260916180000_catalog_add_supplier_version_completeness` agrega
+`completeness varchar(16) NOT NULL DEFAULT 'PARTIAL'` con check
+`PARTIAL|COMPLETE` a `catalog_supplier_catalog_versions`. No reinterpreta la
+historia: todas las versiones existentes, incluidas AG v18/v19, quedan
+`PARTIAL`. El trigger existente de Version `INGESTED` mantiene inmutable el
+campo después de análisis; sólo un `DRAFT` puede cambiar su declaración.
+
+No existe tabla de disponibilidad ni persistencia de ausencias. La comparación
+calcula “no observado” en lectura sólo para current `COMPLETE` contra baseline
+`COMPLETE` del mismo Tenant/Source. Apply itera únicamente Listings presentes,
+por lo que una omisión no puede desactivar ni alterar un CatalogItem, sus
+identificadores, revisiones, Resolution o ReconciliationMemory.

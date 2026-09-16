@@ -761,3 +761,18 @@ la lista activa y reactivación conserva historia e identidad.
 
 No queda una decisión Owner bloqueante para la implementación acotada de
 PBI-040; sólo falta su autorización explícita de inicio.
+
+## PBI-041 — Cobertura de versión de proveedor
+
+`SupplierCatalogVersion.completeness` es independiente de `composer_mode`:
+`FULL`/`COMPACT` describe la captura y `PARTIAL`/`COMPLETE` declara cobertura
+de la lista. El default y el backfill histórico son conservadoramente
+`PARTIAL`; ni el número de filas ni el modo permiten inferir `COMPLETE`.
+
+Una carga `PARTIAL` no produce ni presenta ausencias. Una `COMPLETE` puede
+mostrar “no observado en esta versión completa” exclusivamente frente a una
+versión `COMPLETE` anterior del mismo Tenant y `SupplierSource`. Es evidencia
+de observación, no disponibilidad ni estado de catálogo: Apply jamás cambia
+`CatalogItem.status`, borra identidad, identifiers, revisiones, Resolution o
+memoria por una fila no observada. La cobertura sólo puede cambiar mientras la
+Version sea `DRAFT`; `INGESTED` conserva su significado histórico.
