@@ -1,25 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Supplier version completeness semantics
+Milestone / Functional Goal: PBI-041 — COMPLETE baseline material QA and automatic absence visibility
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: supplier completeness ready for Owner Review
+Status: material QA proven; focused documentation and final local checks pending
 WIP: 1/1
-Progress: 7 / 7 functional blocks completed
-Current: Owner Review of PARTIAL/COMPLETE semantics
-Next: Owner may accept or reject this PBI-041 checkpoint; no acceptance is inferred
-Blocked: None; historic AG fixtures remain preserved and are never reclassified retrospectively
+Progress: 5 / 7 functional blocks completed
+Current: reconcile evidence and run final focused checks
+Next: leave B in review and prepare the Owner-visible local checkpoint
+Blocked: None; AG history remains immutable and the preexisting .DS_Store is preserved
 Last updated: 2026-09-16 MST
 
-## Current checkpoint — Supplier version completeness
+## Current checkpoint — automatic COMPLETE absence visibility
 
-- [x] Audit v18/v19 and establish that absence never mutates CatalogItem.
-- [x] Add independent `PARTIAL` / `COMPLETE` version coverage contract with conservative historical default.
-- [x] Expose Owner-facing scope choice in new/draft Composer workspace.
-- [x] Make comparison absence-aware by current coverage and same-source complete baselines.
-- [x] Apply migration and prove historical versions read `PARTIAL`.
-- [x] Prove COMPLETE absence is informational while Catalog identity/history remain intact.
-- [x] Complete Chrome Owner Review walkthrough and focused gates.
+- [x] Create and audit AG v24 COMPLETE baseline with the known 37-item set.
+- [x] Apply only clean v24 and capture zero-unexpected-mutation evidence.
+- [x] Create and analyze AG v25 COMPLETE with exactly three intentional omissions; it remains READY and unapplied.
+- [x] Prove 34 observed / 3 not observed and preserve all omitted CatalogItems active.
+- [x] Materialize automatic latest previous APPLIED COMPLETE baseline behavior.
+- [x] Prove no-baseline and PARTIAL states remain explicit and safe in focused PostgreSQL coverage.
+- [ ] Complete focused tests, Chrome QA, documentation and local commits.
 
 ## Audit evidence
 

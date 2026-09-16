@@ -21,9 +21,14 @@ export type SupplierVersionRecord = Readonly<{
   createdAt: string; ingestedAt: string | null; batch: Readonly<{
     batchId: string; lifecycle: 'DRAFT' | 'ANALYZING' | 'RECONCILING' | 'READY' | 'APPLIED'; version: number;
     counts: Readonly<Record<BulkCatalogClassification, number>>; publishedAt: string | null;
-  }>; rows: readonly BulkCatalogRowRecord[];
+  }>;
+  absenceBaseline: Readonly<{
+    status: 'NOT_APPLICABLE' | 'NO_BASELINE' | 'EVALUATED';
+    versionId: string | null; sequenceNumber: number | null; observed: number | null; notObserved: number | null;
+  }>;
+  rows: readonly BulkCatalogRowRecord[];
 }>;
-export type SupplierVersionSummary = Omit<SupplierVersionRecord, 'rows'>;
+export type SupplierVersionSummary = Omit<SupplierVersionRecord, 'rows' | 'absenceBaseline'>;
 export type SupplierVersionComparison = Readonly<{ leftVersionId: string; rightVersionId: string; mapped: number; changed: number; added: number; ambiguous: number; absenceStatus: 'PARTIAL_CURRENT' | 'NO_PREVIOUS_COMPLETE' | 'EVALUATED'; notObserved: number | null }>;
 export type SupplierSourceDeletionRecord = Readonly<{ sourceId: string; sourceName: string; deletedVersionCount: number; deletedListingCount: number; deletedAt: string }>;
 

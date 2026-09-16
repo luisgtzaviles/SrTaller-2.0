@@ -46,7 +46,28 @@ function supplierMemoryKeys(proposal: BulkCatalogRowInput): readonly string[] {
     : [`SIGNATURE:${signature}`]);
 }
 
-async function readVersion(executor: BulkExecutor, tenantId: string, versionId: string, includeReferenceCost: boolean): Promise<SupplierVersionRecord | null> {
+type SupplierListingKeyRow = Readonly<{ normalized_supplier_item_code: string | null; normalized_signature: string }>;
+const supplierListingKey = (row: SupplierListingKeyRow): string => row.normalized_supplier_item_code ? `C:${row.normalized_supplier_item_code}` : `S:${row.normalized_signature}`;
+
+async function readAutomaticAbsenceBaseline(executor: BulkExecutor, tenantId: string, current: Readonly<{ version_id: string; source_id: string; sequence_number: number; completeness: SupplierCatalogCompleteness }>) {
+  if (current.completeness !== 'COMPLETE') return Object.freeze({ status: 'NOT_APPLICABLE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null });
+  const baseline = await executor.selectFrom('catalog_supplier_catalog_versions as v')
+    .innerJoin('catalog_update_batches as b', (join) => join.onRef('b.tenant_id', '=', 'v.tenant_id').onRef('b.version_id', '=', 'v.version_id'))
+    .select(['v.version_id', 'v.sequence_number'])
+    .where('v.tenant_id', '=', tenantId).where('v.source_id', '=', current.source_id).where('v.sequence_number', '<', current.sequence_number)
+    .where('v.completeness', '=', 'COMPLETE').where('b.lifecycle', '=', 'APPLIED')
+    .orderBy('v.sequence_number', 'desc').limit(1).executeTakeFirst();
+  if (!baseline) return Object.freeze({ status: 'NO_BASELINE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null });
+  const listings = async (versionId: string) => executor.selectFrom('catalog_supplier_listings')
+    .select(['normalized_supplier_item_code', 'normalized_signature']).where('tenant_id', '=', tenantId).where('version_id', '=', versionId).execute();
+  const [previous, currentListings] = await Promise.all([listings(baseline.version_id), listings(current.version_id)]);
+  const previousKeys = new Set(previous.map(supplierListingKey)); const currentKeys = new Set(currentListings.map(supplierListingKey));
+  let observed = 0; for (const key of currentKeys) if (previousKeys.has(key)) observed += 1;
+  let notObserved = 0; for (const key of previousKeys) if (!currentKeys.has(key)) notObserved += 1;
+  return Object.freeze({ status: 'EVALUATED' as const, versionId: baseline.version_id, sequenceNumber: baseline.sequence_number, observed, notObserved });
+}
+
+async function readVersion(executor: BulkExecutor, tenantId: string, versionId: string, includeReferenceCost: boolean, includeAbsenceBaseline = true): Promise<SupplierVersionRecord | null> {
   const row = await executor.selectFrom('catalog_supplier_catalog_versions as v').innerJoin('catalog_supplier_sources as s', (join) => join.onRef('s.tenant_id', '=', 'v.tenant_id').onRef('s.source_id', '=', 'v.source_id')).innerJoin('catalog_update_batches as b', (join) => join.onRef('b.tenant_id', '=', 'v.tenant_id').onRef('b.version_id', '=', 'v.version_id')).select(['v.version_id', 'v.source_id', 'v.supersedes_version_id', 's.display_name as source_name', 'v.sequence_number', 'v.source_revision', 'v.description', 'v.composer_mode', 'v.completeness', 'v.column_signature', 'v.lifecycle', 'v.lock_version', 'v.row_count', 'v.created_at', 'v.ingested_at', 'b.batch_id', 'b.lifecycle as batch_lifecycle', 'b.lock_version as batch_version', 'b.counts', 'b.published_at']).where('v.tenant_id', '=', tenantId).where('v.version_id', '=', versionId).executeTakeFirst();
   if (!row) return null;
   const decisionRows = await executor.selectFrom('catalog_update_row_decisions as d')
@@ -69,7 +90,10 @@ async function readVersion(executor: BulkExecutor, tenantId: string, versionId: 
     return Object.freeze({ rowDecisionId: value.row_decision_id, rowNumber: value.row_number, supplierObservedTitle: value.supplier_title, proposal: includeReferenceCost ? proposal : Object.freeze({ ...proposal, referenceCostMinor: null }), classification: value.classification, decision: value.decision, titleDecision: value.title_decision, targetItemId: value.target_item_id, targetTitle: value.target_title, expectedItemVersion: value.expected_item_version, before, preselectedByMemory: value.preselected_by_memory, matchOrigin: value.match_origin, matchAlgorithmVersion: value.match_algorithm_version, candidates: Object.freeze(value.candidate_matches as BulkCatalogCandidateMatch[]), errors: Object.freeze(value.errors as string[]), warnings: Object.freeze(value.warnings as string[]), version: value.lock_version });
   });
   const counts = { ...emptyCounts(), ...(row.counts as Partial<Record<BulkCatalogClassification, number>>) };
-  return Object.freeze({ versionId: row.version_id, sourceId: row.source_id, sourceName: row.source_name, sequenceNumber: row.sequence_number, sourceRevision: row.source_revision, description: row.description, mode: row.composer_mode, completeness: row.completeness, supersedesVersionId: row.supersedes_version_id, columnSignature: row.column_signature, lifecycle: row.lifecycle, version: row.lock_version, rowCount: row.row_count, createdAt: row.created_at.toISOString(), ingestedAt: row.ingested_at?.toISOString() ?? null, batch: Object.freeze({ batchId: row.batch_id, lifecycle: row.batch_lifecycle, version: row.batch_version, counts: Object.freeze(counts), publishedAt: row.published_at?.toISOString() ?? null }), rows: Object.freeze(rows) });
+  const absenceBaseline = includeAbsenceBaseline
+    ? await readAutomaticAbsenceBaseline(executor, tenantId, row)
+    : Object.freeze({ status: 'NOT_APPLICABLE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null });
+  return Object.freeze({ versionId: row.version_id, sourceId: row.source_id, sourceName: row.source_name, sequenceNumber: row.sequence_number, sourceRevision: row.source_revision, description: row.description, mode: row.composer_mode, completeness: row.completeness, supersedesVersionId: row.supersedes_version_id, columnSignature: row.column_signature, lifecycle: row.lifecycle, version: row.lock_version, rowCount: row.row_count, createdAt: row.created_at.toISOString(), ingestedAt: row.ingested_at?.toISOString() ?? null, batch: Object.freeze({ batchId: row.batch_id, lifecycle: row.batch_lifecycle, version: row.batch_version, counts: Object.freeze(counts), publishedAt: row.published_at?.toISOString() ?? null }), absenceBaseline, rows: Object.freeze(rows) });
 }
 
 async function replaceRows(executor: BulkExecutor, tenantId: string, versionId: string, batchId: string, rows: readonly BulkCatalogRowInput[], now: Date): Promise<void> {
@@ -139,7 +163,7 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
   }
   async listVersions(scope: CatalogScope, sourceId?: string) { return this.execute(async (db) => {
     let query = db.selectFrom('catalog_supplier_catalog_versions').select('version_id').where('tenant_id', '=', scope.tenantId); if (sourceId) query = query.where('source_id', '=', sourceId); const ids = await query.orderBy('created_at', 'desc').execute();
-    const values: SupplierVersionSummary[] = []; for (const { version_id } of ids) { const found = await readVersion(db, scope.tenantId, version_id, false); if (found) { const { rows: _rows, ...summary } = found; values.push(summary); } } return Object.freeze(values);
+    const values: SupplierVersionSummary[] = []; for (const { version_id } of ids) { const found = await readVersion(db, scope.tenantId, version_id, false, false); if (found) { const { rows: _rows, absenceBaseline: _absenceBaseline, ...summary } = found; values.push(summary); } } return Object.freeze(values);
   }); }
   getVersion(scope: CatalogScope, versionId: string, includeReferenceCost: boolean) { return this.execute((db) => readVersion(db, scope.tenantId, versionId, includeReferenceCost)); }
   async createDraft(context: CatalogMutationContext, input: Readonly<{ versionId: string; batchId: string; sourceId: string; description: string | null; clientRequestId: string; requestSha256: string; mode: 'FULL' | 'COMPACT'; completeness: SupplierCatalogCompleteness; columnSignature: string; rawPayload: string; rows: readonly BulkCatalogRowInput[]; includeReferenceCost: boolean; occurredAt: Date }>) {
