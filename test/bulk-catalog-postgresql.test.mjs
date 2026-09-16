@@ -92,7 +92,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const safeSource = await service.createSource(ctxA, { name: 'Proveedor Borrador Eliminable' });
     const safeDraft = await service.createDraft(ctxA, { sourceId: safeSource.sourceId, description: 'Sólo borrador sintético', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'e'.repeat(64), rawPayload: 'safe-draft', rows: [fullRow(901)] });
     assert.equal(safeDraft.completeness, 'PARTIAL');
-    assert.deepEqual(safeDraft.absenceBaseline, { status: 'NOT_APPLICABLE', versionId: null, sequenceNumber: null, observed: null, notObserved: null });
+    assert.deepEqual(safeDraft.absenceBaseline, { status: 'NOT_APPLICABLE', versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: [] });
     const safeSnapshot = (await service.listSources({ tenantId: tenantA, branchId: branchA })).find(({ sourceId }) => sourceId === safeSource.sourceId);
     assert.equal(safeSnapshot?.deletionEligibility.allowed, true);
     await assert.rejects(service.deleteSource(ctxB, safeSource.sourceId, { expectedVersion: safeSnapshot.version, confirmation: 'DELETE_SUPPLIER_SOURCE', clientRequestId: randomUUID() }, new Date().toISOString()), CatalogNotFoundError);
@@ -120,7 +120,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(analyzed.lifecycle, 'INGESTED');
     assert.equal(analyzed.batch.counts.PENDING_REFERENCE, 4);
     assert.equal(analyzed.batch.lifecycle, 'RECONCILING');
-    assert.deepEqual(analyzed.absenceBaseline, { status: 'NO_BASELINE', versionId: null, sequenceNumber: null, observed: null, notObserved: null });
+    assert.deepEqual(analyzed.absenceBaseline, { status: 'NO_BASELINE', versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: [] });
     const publishedSourceSnapshot = (await service.listSources({ tenantId: tenantA, branchId: branchA })).find(({ sourceId }) => sourceId === source.sourceId);
     assert.equal(publishedSourceSnapshot?.deletionEligibility.reason, 'PUBLISHED_HISTORY');
     await assert.rejects(service.deleteSource(ctxA, source.sourceId, { expectedVersion: publishedSourceSnapshot.version, confirmation: 'DELETE_SUPPLIER_SOURCE', clientRequestId: randomUUID() }, new Date().toISOString()), CatalogSupplierDeleteNotAllowedError);
@@ -153,6 +153,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(v2Analyzed.batch.counts.UNCHANGED, 3);
     assert.equal(v2Analyzed.rows.every((row) => row.preselectedByMemory && row.matchOrigin === 'TRUSTED_HISTORY' && row.decision === 'APPLY'), true);
     assert.equal(v2Analyzed.batch.lifecycle, 'READY');
+    assert.deepEqual(v2Analyzed.absenceBaseline, { status: 'EVALUATED', versionId: draft.versionId, sequenceNumber: draft.sequenceNumber, observed: 4, notObserved: 0, notObservedItems: [] });
     const comparison = await service.compare({ tenantId: tenantA, branchId: branchA }, draft.versionId, v2.versionId);
     assert.deepEqual({ mapped: comparison.mapped, changed: comparison.changed, added: comparison.added, ambiguous: comparison.ambiguous, absenceStatus: comparison.absenceStatus, notObserved: comparison.notObserved }, { mapped: 4, changed: 1, added: 0, ambiguous: 0, absenceStatus: 'EVALUATED', notObserved: 0 });
 
@@ -160,7 +161,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     await service.publish(ctxA, v2.versionId, { expectedVersion: v2Ready.version, clientRequestId: randomUUID() }, true);
     const completeOmission = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Lista completa sin un artículo observado', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-complete-omission', rows: v2Rows.slice(0, 3) });
     const completeOmissionAnalyzed = await service.analyze(ctxA, completeOmission.versionId, { expectedVersion: completeOmission.version });
-    assert.deepEqual(completeOmissionAnalyzed.absenceBaseline, { status: 'EVALUATED', versionId: v2.versionId, sequenceNumber: v2.sequenceNumber, observed: 3, notObserved: 1 });
+    assert.deepEqual(completeOmissionAnalyzed.absenceBaseline, { status: 'EVALUATED', versionId: v2.versionId, sequenceNumber: v2.sequenceNumber, observed: 3, notObserved: 1, notObservedItems: [{ title: 'Artículo proveedor 5', status: 'ACTIVE' }] });
     const omissionComparison = await service.compare({ tenantId: tenantA, branchId: branchA }, v2.versionId, completeOmission.versionId);
     assert.deepEqual({ absenceStatus: omissionComparison.absenceStatus, notObserved: omissionComparison.notObserved }, { absenceStatus: 'EVALUATED', notObserved: 1 });
     await assert.rejects(service.replaceDraft(ctxA, completeOmission.versionId, { expectedVersion: completeOmissionAnalyzed.version, mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'cannot-reinterpret-ingested-history', rows: v2Rows.slice(0, 3) }), CatalogConflictError);
@@ -186,6 +187,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const partialComparison = await service.compare({ tenantId: tenantA, branchId: branchA }, completeOmission.versionId, partialSubset.versionId);
     assert.deepEqual({ absenceStatus: partialComparison.absenceStatus, notObserved: partialComparison.notObserved }, { absenceStatus: 'PARTIAL_CURRENT', notObserved: null });
     assert.equal(partialSubsetAnalyzed.completeness, 'PARTIAL');
+    assert.deepEqual(partialSubsetAnalyzed.absenceBaseline, { status: 'NOT_APPLICABLE', versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: [] });
     const alternatePart = await admin.query(`select item_id from catalog_supplier_reconciliation_memory where tenant_id = $1 and source_id = $2 and identifier_scheme = 'SUPPLIER_CODE' and normalized_identifier = 'sup-00005'`, [tenantA, source.sourceId]);
     const correction = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Corrección', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-correction', rows: [rows[0]] });
     assert.equal(correction.supersedesVersionId, partialSubset.versionId);

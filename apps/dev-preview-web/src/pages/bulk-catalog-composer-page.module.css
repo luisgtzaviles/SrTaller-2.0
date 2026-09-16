@@ -96,6 +96,16 @@
 .decisions article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-2); border-top: 1px solid var(--color-border); }
 .decisions article > div { min-width: 0; display: grid; gap: 2px; overflow-wrap: anywhere; }.decisions article > div:last-child { display: flex; flex-wrap: nowrap; align-items: center; }.decisions article span, .decisions article small { color: var(--color-text-muted); font-size: .73rem; }
 .comparison { flex-wrap: wrap; padding: var(--space-3); }.comparison p { flex-basis: 100%; margin: 0; color: var(--color-text-muted); font-size: .8rem; }
+.coverage { display: grid; gap: var(--space-2); padding: var(--space-3); }
+.coverageHeader { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.coverageHeader h2 { display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: .9375rem; }
+.coverageHeader > span, .coverage p { margin: 0; color: var(--color-text-muted); font-size: .78rem; }
+.coverageHeader > span { padding: 2px var(--space-2); border-radius: var(--radius-full); background: var(--color-surface-muted); font-weight: var(--font-weight-semibold); }
+.coverageCounts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+.coverageCounts div { display: grid; gap: 2px; padding: var(--space-2); border-radius: var(--radius-md); background: var(--color-surface-muted); }
+.coverageCounts strong { font-size: 1.15rem; }.coverageCounts span, .notObservedItems span { color: var(--color-text-muted); font-size: .72rem; }
+.notObservedItems { display: grid; gap: var(--space-1); padding: 0; margin: 0; list-style: none; }
+.notObservedItems li { display: grid; gap: 2px; padding: var(--space-2); border-top: 1px solid var(--color-border); }
 .retirementDialog { display: grid; gap: var(--space-4); padding: var(--space-4); }
 .retirementSummary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin: 0; }
 .retirementSummary div { display: grid; gap: var(--space-1); padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface-muted); }
@@ -118,5 +128,5 @@
 .selectedTitleChoice { border-color: var(--color-brand-action) !important; background: var(--color-brand-subtle); }
 .titleChoiceDialog > footer { display: flex; justify-content: flex-end; gap: var(--space-2); padding-top: var(--space-3); border-top: 1px solid var(--color-border); }
 @media (max-width: 1024px) { .layout, .layoutCollapsed { grid-template-columns: 1fr; }.sidebar { position: static; }.workspaceToolbar { position: static; }.setup { grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr); } }
-@media (max-width: 768px) { .setup, .contextFields { grid-template-columns: 1fr; }.setup { align-items: stretch; }.summary { grid-template-columns: repeat(2, 1fr); }.workspaceToolbar { grid-template-columns: 1fr; }.toolbarControls { justify-content: flex-start; }.issueNavigator { grid-column: 1; } }
+@media (max-width: 768px) { .setup, .contextFields { grid-template-columns: 1fr; }.setup { align-items: stretch; }.summary, .coverageCounts { grid-template-columns: repeat(2, 1fr); }.workspaceToolbar { grid-template-columns: 1fr; }.toolbarControls { justify-content: flex-start; }.issueNavigator { grid-column: 1; } }
 @media (max-width: 640px) { .page { gap: var(--space-2); }.heading header p { display: none; }.sidebar, .composer > section, .rowActions { border-radius: var(--radius-md); }.workspaceMeta span { display: none; }.toolbarControls { display: grid; grid-template-columns: 1fr 1fr; }.toolbarControls > button { width: 100%; }.presetButtons { grid-column: 1 / -1; }.issueTarget { display: grid; gap: 1px; }.issueTarget span { font-size: .6875rem; }.viewport { height: 52vh; min-height: 360px; }.decisions article { grid-template-columns: 1fr; }.decisions article > div:last-child { flex-wrap: wrap; } }

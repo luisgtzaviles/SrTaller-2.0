@@ -162,8 +162,17 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /Nada toca Catalog hasta Aplicar lote/u);
   assert.match(ui, /Alcance de la carga/u);
   assert.match(ui, /Actualización parcial/u);
-  assert.match(ui, /Lista completa del proveedor/u);
+  assert.match(ui, /Lista completa/u);
   assert.match(ui, /No observados/u);
+  assert.match(ui, /Cobertura del proveedor/u);
+  assert.match(ui, /Comparación histórica/u);
+  assert.match(ui, /No existe una lista completa anterior aplicada para evaluar ausencias/u);
+  assert.match(ui, /Los artículos que no fueron incluidos no se evaluaron/u);
+  assert.match(ui, /Ver \$\{current\.absenceBaseline\.notObservedItems\.length/u);
+  assert.match(ui, /aria-expanded=\{notObservedOpen\}/u);
+  assert.match(ui, /aria-controls=\{notObservedPanelId\}/u);
+  assert.ok(ui.indexOf('styles.summary') < ui.indexOf('styles.coverage'));
+  assert.ok(ui.indexOf('styles.coverage') < ui.indexOf('styles.decisions'));
   assert.doesNotMatch(ui, /Desaparecidas/u);
   assert.match(ui, /Hay cambios sin guardar/u);
   assert.match(ui, /Actual:/u);
@@ -181,6 +190,8 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(css, /\.layout \{ min-width: 0;/u);
   assert.match(css, /\.composer > section, \.rowActions \{ min-width: 0;/u);
   assert.match(css, /repeat\(auto-fit, minmax\(180px, 1fr\)\)/u);
+  assert.match(css, /\.coverageCounts/u);
+  assert.match(css, /\.notObservedItems/u);
   assert.match(gridLayout, /--bulk-grid-offset/u);
   assert.match(ui, /Contexto del lote/u);
   assert.match(ui, /aria-label="Columnas de trabajo"/u);

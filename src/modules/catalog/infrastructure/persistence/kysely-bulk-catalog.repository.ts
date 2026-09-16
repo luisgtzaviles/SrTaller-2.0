@@ -47,24 +47,33 @@ function supplierMemoryKeys(proposal: BulkCatalogRowInput): readonly string[] {
 }
 
 type SupplierListingKeyRow = Readonly<{ normalized_supplier_item_code: string | null; normalized_signature: string }>;
+type SupplierListingBaselineRow = SupplierListingKeyRow & Readonly<{ supplier_title: string | null; canonical_title: string | null; item_status: 'ACTIVE' | 'INACTIVE' | null }>;
 const supplierListingKey = (row: SupplierListingKeyRow): string => row.normalized_supplier_item_code ? `C:${row.normalized_supplier_item_code}` : `S:${row.normalized_signature}`;
 
 async function readAutomaticAbsenceBaseline(executor: BulkExecutor, tenantId: string, current: Readonly<{ version_id: string; source_id: string; sequence_number: number; completeness: SupplierCatalogCompleteness }>) {
-  if (current.completeness !== 'COMPLETE') return Object.freeze({ status: 'NOT_APPLICABLE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null });
+  if (current.completeness !== 'COMPLETE') return Object.freeze({ status: 'NOT_APPLICABLE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: Object.freeze([]) });
   const baseline = await executor.selectFrom('catalog_supplier_catalog_versions as v')
     .innerJoin('catalog_update_batches as b', (join) => join.onRef('b.tenant_id', '=', 'v.tenant_id').onRef('b.version_id', '=', 'v.version_id'))
     .select(['v.version_id', 'v.sequence_number'])
     .where('v.tenant_id', '=', tenantId).where('v.source_id', '=', current.source_id).where('v.sequence_number', '<', current.sequence_number)
     .where('v.completeness', '=', 'COMPLETE').where('b.lifecycle', '=', 'APPLIED')
     .orderBy('v.sequence_number', 'desc').limit(1).executeTakeFirst();
-  if (!baseline) return Object.freeze({ status: 'NO_BASELINE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null });
-  const listings = async (versionId: string) => executor.selectFrom('catalog_supplier_listings')
-    .select(['normalized_supplier_item_code', 'normalized_signature']).where('tenant_id', '=', tenantId).where('version_id', '=', versionId).execute();
-  const [previous, currentListings] = await Promise.all([listings(baseline.version_id), listings(current.version_id)]);
-  const previousKeys = new Set(previous.map(supplierListingKey)); const currentKeys = new Set(currentListings.map(supplierListingKey));
+  if (!baseline) return Object.freeze({ status: 'NO_BASELINE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: Object.freeze([]) });
+  const baselineListings = executor.selectFrom('catalog_supplier_listings as l')
+    .leftJoin('catalog_supplier_listing_resolutions as r', (join) => join.onRef('r.tenant_id', '=', 'l.tenant_id').onRef('r.listing_id', '=', 'l.listing_id'))
+    .leftJoin('catalog_items as i', (join) => join.onRef('i.tenant_id', '=', 'r.tenant_id').onRef('i.item_id', '=', 'r.item_id'))
+    .select(['l.normalized_supplier_item_code', 'l.normalized_signature', 'l.supplier_title', 'i.title as canonical_title', 'i.status as item_status'])
+    .where('l.tenant_id', '=', tenantId).where('l.version_id', '=', baseline.version_id).execute();
+  const currentListings = executor.selectFrom('catalog_supplier_listings')
+    .select(['normalized_supplier_item_code', 'normalized_signature']).where('tenant_id', '=', tenantId).where('version_id', '=', current.version_id).execute();
+  const [previous, currentRows] = await Promise.all([baselineListings, currentListings]);
+  const previousByKey = new Map(previous.map((row) => [supplierListingKey(row), row as SupplierListingBaselineRow])); const previousKeys = new Set(previousByKey.keys()); const currentKeys = new Set(currentRows.map(supplierListingKey));
   let observed = 0; for (const key of currentKeys) if (previousKeys.has(key)) observed += 1;
-  let notObserved = 0; for (const key of previousKeys) if (!currentKeys.has(key)) notObserved += 1;
-  return Object.freeze({ status: 'EVALUATED' as const, versionId: baseline.version_id, sequenceNumber: baseline.sequence_number, observed, notObserved });
+  const notObservedItems = Object.freeze([...previousByKey.entries()]
+    .filter(([key]) => !currentKeys.has(key))
+    .map(([, row]) => Object.freeze({ title: row.canonical_title ?? row.supplier_title ?? 'Artículo sin título', status: row.item_status }))
+    .sort((left, right) => left.title.localeCompare(right.title, 'es-MX')));
+  return Object.freeze({ status: 'EVALUATED' as const, versionId: baseline.version_id, sequenceNumber: baseline.sequence_number, observed, notObserved: notObservedItems.length, notObservedItems });
 }
 
 async function readVersion(executor: BulkExecutor, tenantId: string, versionId: string, includeReferenceCost: boolean, includeAbsenceBaseline = true): Promise<SupplierVersionRecord | null> {
@@ -92,7 +101,7 @@ async function readVersion(executor: BulkExecutor, tenantId: string, versionId: 
   const counts = { ...emptyCounts(), ...(row.counts as Partial<Record<BulkCatalogClassification, number>>) };
   const absenceBaseline = includeAbsenceBaseline
     ? await readAutomaticAbsenceBaseline(executor, tenantId, row)
-    : Object.freeze({ status: 'NOT_APPLICABLE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null });
+    : Object.freeze({ status: 'NOT_APPLICABLE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: Object.freeze([]) });
   return Object.freeze({ versionId: row.version_id, sourceId: row.source_id, sourceName: row.source_name, sequenceNumber: row.sequence_number, sourceRevision: row.source_revision, description: row.description, mode: row.composer_mode, completeness: row.completeness, supersedesVersionId: row.supersedes_version_id, columnSignature: row.column_signature, lifecycle: row.lifecycle, version: row.lock_version, rowCount: row.row_count, createdAt: row.created_at.toISOString(), ingestedAt: row.ingested_at?.toISOString() ?? null, batch: Object.freeze({ batchId: row.batch_id, lifecycle: row.batch_lifecycle, version: row.batch_version, counts: Object.freeze(counts), publishedAt: row.published_at?.toISOString() ?? null }), absenceBaseline, rows: Object.freeze(rows) });
 }
 

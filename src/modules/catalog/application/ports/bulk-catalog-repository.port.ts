@@ -25,6 +25,7 @@ export type SupplierVersionRecord = Readonly<{
   absenceBaseline: Readonly<{
     status: 'NOT_APPLICABLE' | 'NO_BASELINE' | 'EVALUATED';
     versionId: string | null; sequenceNumber: number | null; observed: number | null; notObserved: number | null;
+    notObservedItems: readonly Readonly<{ title: string; status: 'ACTIVE' | 'INACTIVE' | null }>[];
   }>;
   rows: readonly BulkCatalogRowRecord[];
 }>;
