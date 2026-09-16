@@ -476,11 +476,14 @@ SKU interno, barcode interno, `supplierItemCode` opcional y mapping histórico
 de observación exacta. Dos señales que resuelven a items distintos producen
 `CONFLICT`; duplicados en la misma versión nunca usan last-row-wins.
 
-Un mapping histórico sólo puede quedar **preseleccionado** cuando coincide el
-mismo Tenant, SupplierSource y firma exacta compatible; toda la historia apunta
-de forma única/consistente al mismo CatalogItem; y no existe contradicción de
-identifier o Tipo. Se ve en preview y sólo se aplica al confirmar el batch. No
-requiere click por fila. Una corrección agrega
+Un mapping histórico es `TRUSTED_HISTORICAL_MATCH` cuando coincide el mismo
+Tenant, SupplierSource y firma exacta compatible; proviene de Resolution
+publicada; toda la historia apunta de forma única/consistente al mismo
+CatalogItem; el target continúa vigente; Category/Brand son compatibles; y no
+existe contradicción de identifier o Tipo. Resuelve identidad para
+`UNCHANGED`, `UPDATE` o `REACTIVATE` sin otro click de reconciliación, permanece
+visible en preview y nunca auto-publica: `Aplicar lote` continúa explícito. Una
+corrección agrega
 `SupplierListingResolution`, conserva la anterior y actualiza la proyección de
 memoria con target, evidence count, first/last seen y conflicto histórico.
 
@@ -493,9 +496,13 @@ conservan. Una candidatura ambigua, inconsistente, incompatible o ajena sigue
 `AMBIGUOUS`/`CONFLICT` y nunca se convierte en write. Así `ACTIVE CATALOG EMPTY`
 no se confunde con `NO HISTORICAL CATALOG MEMORY`.
 
-Título/estructura probable, similitud, pattern nuevo o tag nuevo sólo producen
-reconciliación humana. No hay fuzzy write, actualización automática por título
-ni alias canónico derivado de observations. Detección sistemática
+Después de agotar señales fuertes exactas, `CANDIDATE_MATCH` puede consultar
+historia del mismo SupplierSource mediante un índice acotado de rasgos, filtrar,
+rankear y explicar candidatos. Su resultado siempre requiere elección humana y
+nunca crea mapping, alias, rename, precio, costo o publish. Título/estructura
+probable, similitud, pattern nuevo o tag nuevo sólo producen esa reconciliación
+humana. No hay fuzzy write, actualización automática por título ni alias
+canónico derivado de observations. Detección sistemática
 `Display→Pantalla`, clasificación avanzada de tags y aceptación grupal
 pertenecen al outcome diferido **Advanced Supplier Reconciliation**, sin PBI ID,
 selección ni readiness.

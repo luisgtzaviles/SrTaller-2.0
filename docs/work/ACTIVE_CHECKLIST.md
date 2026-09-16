@@ -1,40 +1,41 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Synthetic Demo fixture cleanup
+Milestone / Functional Goal: PBI-041 — Trusted history + bounded candidate matching
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Ready for Owner Review — Demo removed from LOCAL; Acceptance pending
+Status: Owner decisions approved — bounded implementation in progress
 WIP: 1/1
-Progress: 5 / 5 blocks completed
-Current: Owner may verify that LOCAL contains AG and no persistent Proveedor Demo
-Next: Owner decision only; `verify:full` and integration remain unauthorized
-Blocked: None; Owner Acceptance remains pending
+Progress: 1 / 7 implementation blocks completed
+Current: Schema and matching contracts
+Next: Trusted exact auto-resolution, bounded candidates and exception-first UI
+Blocked: None; AG v11 must remain unapplied
 Last updated: 2026-09-15 MST
 
-## Current checkpoint — Synthetic Demo fixture cleanup
+## Current checkpoint — Trusted history + bounded candidate matching
 
-- [x] Remove `Caso Owner · 36`, `Demo V1 · 1500` and `Demo V2 · 1500` from the operational UI while retaining deterministic internal QA coverage.
-- [x] Prove that Source `1dbec1cf-eb2e-4f96-b3f0-caab42316855`, its three Versions and 1,500 CatalogItems form an isolated synthetic genealogy.
-- [x] Execute one fail-closed, serializable LOCAL cleanup without changing productive Supplier delete guards.
-- [x] Verify PostgreSQL, FK/orphans, API, Lista de precios and Composer reload: AG remains, Demo is absent and 36 active items survive.
-- [x] Pass focused Composer/cleanup contracts, architecture, typecheck, build and PBI-041 PostgreSQL material.
+- [x] Record Owner decisions `CM-001..CM-009` and preserve the AG v11 baseline.
+- [~] Add the minimum Tenant-safe persistence and matching contracts.
+- [ ] Implement trusted exact auto-resolution and publish-only learning.
+- [ ] Implement bounded read-only candidates and Owner decisions.
+- [ ] Implement exception-first UI with inspectable resolved rows.
+- [ ] Pass focused contracts, PostgreSQL, performance, typecheck/build and browser QA.
+- [ ] Reanalyze AG v11 to `34 resolved / 2 attention` without applying it.
 
-## Owner Review state
+## Audit evidence
 
-- `AG`: 8 Versions with published history; hard delete is blocked.
-- `Proveedor Demo`: absent after governed LOCAL fixture cleanup; 3 Versions, 4,500 Listings and 1,500 exclusive synthetic items were removed together.
-- `CatalogItem`: 39 remain; 36 active AG items and 3 inactive non-Demo seed items.
-- `SKU`/barcode: 39 of each remain; AG keeps its 36 exact item identities and reconciliation memory.
-- Composer reload and authenticated API return only AG; Lista de precios returns 36 active commercial items.
-- Productive Supplier deletion remains unchanged: published/dependent history is still blocked and the cleanup has no HTTP endpoint or capability bypass.
-- Local database migrated in place from 67 to 69 migrations; no reset or volume replacement occurred.
-- Cleanup/Composer contracts: 23 PASS. Architecture, typecheck and build: PASS. PBI-041 PostgreSQL material: 1 PASS with 69 migrations.
+- `AG / v11`: Version `INGESTED`, Batch `RECONCILING`, unpublished.
+- Stable outcome: `2 NEW/APPLY`, `34 UNCHANGED/UNRESOLVED`, every other classification `0`.
+- The 34 exact rows have one consistent Source-scoped signature mapping and no correction; policy, not missing evidence, keeps them pending.
+- `(liquidacion)` and `DISPLAY` create new title-bearing signatures; without supplier code/SKU/barcode and without candidate matching they become `NEW`.
+- Recommended boundary: trusted exact identity may auto-resolve but never auto-publish; non-exact matching remains read-only and human-confirmed.
+- Canonical output: `docs/domain/PRICE_LIST_CANDIDATE_MATCHING_AND_TRUSTED_HISTORY_AUDIT.md`.
 
 ## Guardrails
 
-- No PBI-042 or Advanced Supplier Reconciliation.
+- No PBI-042 or reusable group transformations from Advanced Supplier Reconciliation.
 - No Inventory, Procurement, Caja, Repair Concepts, CSV/XLSX adapter or supplier API.
 - No authoritative `verify:full` before Owner Acceptance.
 - No hard delete of CatalogItem, published Supplier history, mappings, memory or revisions.
 - Classifier and verified-tree remain shadow-only; no gates are omitted.
-- No DB reset, push, PR, merge, Preview, Production or deploy.
+- No automatic batch apply, DB reset, push, PR, merge, Preview, Production or
+  deploy. AG v11 may be reanalyzed only after the focused gates are green.
