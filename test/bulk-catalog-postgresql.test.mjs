@@ -67,7 +67,12 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     await admin.query(`insert into catalog_brand_kind_applicability (tenant_id, brand_id, kind) values ($1, $2, 'PART')`, [tenantB, virginBrandId]);
 
     const source = await service.createSource(ctxA, { name: 'Proveedor PostgreSQL' });
-    const rows = [{ ...fullRow(1), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }, fullRow(2), fullRow(3), fullRow(5)];
+    const rows = [
+      { ...fullRow(1), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I', sku: 'STRONG-001', barcode: 'STRONG-BAR-001' },
+      { ...fullRow(2), sku: 'STRONG-002', barcode: 'STRONG-BAR-002' },
+      fullRow(3),
+      fullRow(5),
+    ];
     const createV1Request = randomUUID();
     const v1Input = { sourceId: source.sourceId, description: 'Primera lista', clientRequestId: createV1Request, mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-v1', rows };
     const draft = await service.createDraft(ctxA, v1Input);
@@ -159,8 +164,8 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.deepEqual(memoryAfterCorrection.rows[0], { consistency_state: 'CONFLICTED', correction_count: 1 });
     const inconsistent = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Historia inconsistente', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-inconsistent', rows: [rows[0]] });
     const inconsistentAnalyzed = await service.analyze(ctxA, inconsistent.versionId, { expectedVersion: inconsistent.version });
-    assert.equal(inconsistentAnalyzed.batch.counts.AMBIGUOUS, 1);
-    assert.equal(inconsistentAnalyzed.rows[0].errors.includes('AMBIGUOUS_HISTORY'), true);
+    assert.equal(inconsistentAnalyzed.batch.counts.CONFLICT, 1);
+    assert.equal(inconsistentAnalyzed.rows[0].errors.includes('CORRECTED_MAPPING_CONFLICT'), true);
     assert.equal(inconsistentAnalyzed.rows[0].preselectedByMemory, false);
 
     const historyBeforeRetirement = await admin.query(`select
@@ -257,6 +262,11 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const incompatibleAnalyzed = await service.analyze(ctxA, incompatible.versionId, { expectedVersion: incompatible.version });
     assert.equal(incompatibleAnalyzed.batch.counts.CONFLICT, 1);
     assert.equal(incompatibleAnalyzed.rows[0].errors.includes('TYPE_CONTRADICTION'), true);
+
+    const identifierConflict = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Identificadores incompatibles', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-identifier-conflict', rows: [{ ...rows[0], barcode: rows[1].barcode }] });
+    const identifierConflictAnalyzed = await service.analyze(ctxA, identifierConflict.versionId, { expectedVersion: identifierConflict.version });
+    assert.equal(identifierConflictAnalyzed.batch.counts.CONFLICT, 1);
+    assert.equal(identifierConflictAnalyzed.rows[0].errors.includes('IDENTIFIERS_POINT_TO_DIFFERENT_ITEMS'), true);
 
     const batchSource = await service.createSource(ctxB, { name: 'Proveedor Batch Created' });
     const batchRows = Array.from({ length: 36 }, (_, index) => ({ ...fullRow(index + 20), kind: 'PART', title: `Pantalla AG ${index + 1}`, category: 'Pantallas', brand: 'Apple', supplierItemCode: `AG-${String(index + 1).padStart(4, '0')}`, referenceCostMinor: 50_000 + index }));
@@ -359,7 +369,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.deepEqual(identitiesAfter.rows, historicalIdentities.rows);
 
     await admin.query(`update catalog_supplier_version_raw_payloads set retained_until = now() - interval '1 day' where tenant_id = $1`, [tenantA]);
-    assert.equal(await service.purgeExpiredRaw(ctxA), 9);
+    assert.equal(await service.purgeExpiredRaw(ctxA), 10);
     const raw = await admin.query(`select count(*) filter (where payload_text is not null)::int as retained from catalog_supplier_version_raw_payloads where tenant_id = $1`, [tenantA]);
     assert.equal(raw.rows[0].retained, 0);
     assert.equal((await service.listSources({ tenantId: tenantB, branchId: branchB })).length, 1);

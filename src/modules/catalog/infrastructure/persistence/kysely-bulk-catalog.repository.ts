@@ -193,7 +193,8 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
         if (matched.length > 1) errors.push('IDENTIFIERS_POINT_TO_DIFFERENT_ITEMS');
         const historicalRows = historyKeys.map((key) => memoryMap.get(key)).filter((value) => value !== undefined);
         const historicalTargets = [...new Map(historicalRows.map((value) => [value.item_id, value])).values()];
-        if (historicalRows.some((value) => value.consistency_state === 'CONFLICTED') || historicalTargets.length > 1 || (target && historicalTargets.some((candidate) => candidate.item_id !== target!.item_id))) errors.push('AMBIGUOUS_HISTORY');
+        if (historicalRows.some((value) => value.consistency_state === 'CONFLICTED')) errors.push('CORRECTED_MAPPING_CONFLICT');
+        else if (historicalTargets.length > 1 || (target && historicalTargets.some((candidate) => candidate.item_id !== target!.item_id))) errors.push('AMBIGUOUS_HISTORY');
         else if (historicalTargets.length === 1) {
           const memory = historicalTargets[0]!; const item = itemMap.get(memory.item_id);
           if (!item) errors.push('HISTORICAL_TARGET_NOT_AVAILABLE');
@@ -219,7 +220,6 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
             const candidateResult = matchSupplierHistoryCandidates(p, categoryIdentity, brandIdentity, candidateIndex); candidateMatches = candidateResult.candidates;
             if (candidateMatches.length > 1) { classification = 'AMBIGUOUS'; warnings.push('MULTIPLE_BOUNDED_CANDIDATES'); matchOrigin = 'CANDIDATE'; }
             else if (candidateMatches.length === 1) { classification = 'CANDIDATE'; warnings.push('CANDIDATE_MATCH_REQUIRES_OWNER_DECISION'); matchOrigin = 'CANDIDATE'; }
-            else if (candidateResult.contradictory) { classification = 'CONFLICT'; errors.push('CANDIDATE_IDENTITY_CONTRADICTION'); }
             else { classification = 'NEW'; decision = 'APPLY'; }
           } else classification = 'PENDING_REFERENCE';
         } else {

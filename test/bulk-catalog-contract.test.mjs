@@ -63,25 +63,26 @@ test('bounded supplier candidates explain AG changes without deciding identity',
   assert.equal(display.candidates[0].differences.includes('OBSERVED_ONLY:display'), true);
 });
 
-test('bounded candidates fail closed for identity-bearing and structural differences', () => {
-  const base = { itemId: '33333333-3333-4333-8333-333333333333', title: 'Pantalla iPhone 11 Pro OLED Original 128GB Negra', observedTitle: 'Pantalla iPhone 11 Pro OLED Original 128GB Negra', kind: 'PART', categoryIdentity: 'C:pantallas', brandIdentity: 'C:apple', status: 'ACTIVE', version: 1 };
-  const index = matching.buildSupplierHistoryTokenIndex([base]);
+test('candidate contrasts preserve protected tokens without promoting text to identity conflict', () => {
+  const base = { itemId: '33333333-3333-4333-8333-333333333333', title: 'Pantalla iPhone 15 Original', observedTitle: 'Pantalla iPhone 15 Original', kind: 'PART', categoryIdentity: 'C:pantallas', brandIdentity: 'C:apple', status: 'ACTIVE', version: 1 };
+  const older = { ...base, itemId: '44444444-4444-4444-8444-444444444444', title: 'Pantalla iPhone 14 Original', observedTitle: 'Pantalla iPhone 14 Original' };
+  const index = matching.buildSupplierHistoryTokenIndex([base, older]);
   const row = (title, kind = 'PART') => ({ kind, supplierObservedTitle: title, title, description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 1, referenceCostMinor: null });
-  for (const title of [
-    'Pantalla iPhone 11 OLED Original 128GB Negra',
-    'Pantalla iPhone 11 Pro Plus OLED Original 128GB Negra',
-    'Pantalla iPhone 11 Pro Max OLED Original 128GB Negra',
-    'Pantalla iPhone 11 Pro INCELL Original 128GB Negra',
-    'Pantalla iPhone 11 Pro OLED Calidad 128GB Negra',
-    'Pantalla iPhone 11 Pro OLED Original 256GB Negra',
-    'Pantalla iPhone 11 Pro OLED Original 128GB Azul',
-    'Pantalla iPhone 12 Pro OLED Original 128GB Negra',
-  ]) {
-    const result = matching.matchSupplierHistoryCandidates(row(title), 'C:pantallas', 'C:apple', index); assert.equal(result.candidates.length, 0, title); assert.equal(result.contradictory, true, title);
-  }
-  assert.equal(matching.matchSupplierHistoryCandidates(row(base.title, 'PRODUCT'), 'C:pantallas', 'C:apple', index).contradictory, true);
-  assert.equal(matching.matchSupplierHistoryCandidates(row(base.title), 'C:fundas', 'C:apple', index).contradictory, true);
-  assert.equal(matching.matchSupplierHistoryCandidates(row(base.title), 'C:pantallas', 'C:samsung', index).contradictory, true);
+  const genuinelyNew = matching.matchSupplierHistoryCandidates(row('Pantalla iPhone 16 Original'), 'C:pantallas', 'C:apple', index);
+  assert.equal(genuinelyNew.candidates.length, 0);
+  assert.deepEqual(genuinelyNew.contrasts.map((contrast) => contrast.itemId), [base.itemId, older.itemId]);
+  assert.equal(genuinelyNew.contrasts.every((contrast) => contrast.contrasts.includes('IDENTITY_TOKEN:16')), true);
+  assert.equal(genuinelyNew.contrasts.every((contrast) => contrast.differences.includes('OBSERVED_ONLY:16')), true);
+
+  const highSimilarity = matching.matchSupplierHistoryCandidates(row('Pantalla iPhone 16 Pro Original'), 'C:pantallas', 'C:apple', matching.buildSupplierHistoryTokenIndex([{ ...base, title: 'Pantalla iPhone 16 Original', observedTitle: 'Pantalla iPhone 16 Original' }]));
+  assert.equal(highSimilarity.candidates.length, 0);
+  assert.equal(highSimilarity.contrasts.length, 1);
+  assert.equal(highSimilarity.contrasts[0].contrasts.includes('IDENTITY_TOKEN:pro'), true);
+  assert.equal(highSimilarity.contrasts[0].differences.includes('OBSERVED_ONLY:pro'), true);
+
+  const structural = matching.matchSupplierHistoryCandidates(row(base.title, 'PRODUCT'), 'C:pantallas', 'C:apple', index);
+  assert.equal(structural.candidates.length, 0);
+  assert.equal(structural.contrasts.some((contrast) => contrast.contrasts.includes('TYPE')), true);
 });
 
 test('candidate pool and top set stay bounded at 1,500 rows', () => {

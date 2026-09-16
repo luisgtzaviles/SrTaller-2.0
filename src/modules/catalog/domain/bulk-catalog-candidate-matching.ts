@@ -17,9 +17,18 @@ export type SupplierHistoryCandidate = Readonly<{
   version: number;
 }>;
 
+export type SupplierHistoryCandidateContrast = Readonly<{
+  itemId: string;
+  title: string;
+  score: number;
+  evidence: readonly string[];
+  differences: readonly string[];
+  contrasts: readonly string[];
+}>;
+
 type MatchResult = Readonly<{
   candidates: readonly BulkCatalogCandidateMatch[];
-  contradictory: boolean;
+  contrasts: readonly SupplierHistoryCandidateContrast[];
 }>;
 
 const protectedWords = new Set([
@@ -68,7 +77,7 @@ export function matchSupplierHistoryCandidates(
   index: ReadonlyMap<string, readonly SupplierHistoryCandidate[]>,
 ): MatchResult {
   const observedTokens = tokens(proposal.supplierObservedTitle ?? proposal.title);
-  if (observedTokens.length < 2 || !proposal.kind) return Object.freeze({ candidates: Object.freeze([]), contradictory: false });
+  if (observedTokens.length < 2 || !proposal.kind) return Object.freeze({ candidates: Object.freeze([]), contrasts: Object.freeze([]) });
   const pool = new Map<string, SupplierHistoryCandidate[]>();
   const boundedBuckets = [...new Set(observedTokens)].map((token) => index.get(token) ?? []).filter((bucket) => bucket.length > 0).sort((left, right) => left.length - right.length).slice(0, 4);
   for (const bucket of boundedBuckets) for (const candidate of bucket) {
@@ -77,9 +86,10 @@ export function matchSupplierHistoryCandidates(
   }
   const observedIdentity = identityTokens(observedTokens);
   const accepted: BulkCatalogCandidateMatch[] = [];
-  let contradictory = false;
+  const contrasts: SupplierHistoryCandidateContrast[] = [];
   for (const observations of pool.values()) {
     let best: BulkCatalogCandidateMatch | null = null;
+    let bestContrast: SupplierHistoryCandidateContrast | null = null;
     for (const candidate of observations) {
       const candidateTokens = tokens(candidate.observedTitle);
       const observedSet = new Set(observedTokens); const candidateSet = new Set(candidateTokens);
@@ -95,18 +105,24 @@ export function matchSupplierHistoryCandidates(
         ...(candidate.categoryIdentity !== categoryIdentity ? ['CATEGORY'] : []),
         ...(candidate.brandIdentity !== brandIdentity ? ['BRAND'] : []),
       ];
-      const contradictions = [...structuralContradictions, ...protectedDifferences.map((value) => `IDENTITY_TOKEN:${value}`)];
-      if (contradictions.length > 0) { contradictory = true; continue; }
       const evidence = [`SAME_SUPPLIER_SOURCE`, `SHARED_TOKENS:${common.join('|')}`, `STRUCTURE:${structuralIdentity(candidate.kind, candidate.categoryIdentity, candidate.brandIdentity)}`];
       const differences = [
         ...uniqueDifferences(observedTokens, candidateTokens).map((value) => `OBSERVED_ONLY:${value}`),
         ...uniqueDifferences(candidateTokens, observedTokens).map((value) => `HISTORY_ONLY:${value}`),
       ];
+      const contrastReasons = [...structuralContradictions, ...protectedDifferences.map((value) => `IDENTITY_TOKEN:${value}`)];
+      if (structuralContradictions.length > 0 || protectedDifferences.length > 0) {
+        const contrast = Object.freeze({ itemId: candidate.itemId, title: candidate.title, score: Number(score.toFixed(4)), evidence: Object.freeze(evidence), differences: Object.freeze(differences), contrasts: Object.freeze(contrastReasons) });
+        if (!bestContrast || contrast.score > bestContrast.score) bestContrast = contrast;
+        continue;
+      }
       const match = Object.freeze({ itemId: candidate.itemId, title: candidate.title, status: candidate.status, expectedItemVersion: candidate.version, score: Number(score.toFixed(4)), evidence: Object.freeze(evidence), differences: Object.freeze(differences), contradictions: Object.freeze([]) });
       if (!best || match.score > best.score) best = match;
     }
     if (best) accepted.push(best);
+    else if (bestContrast) contrasts.push(bestContrast);
   }
   accepted.sort((left, right) => right.score - left.score || left.itemId.localeCompare(right.itemId));
-  return Object.freeze({ candidates: Object.freeze(accepted.slice(0, BULK_CATALOG_MAX_CANDIDATES)), contradictory });
+  contrasts.sort((left, right) => right.score - left.score || left.itemId.localeCompare(right.itemId));
+  return Object.freeze({ candidates: Object.freeze(accepted.slice(0, BULK_CATALOG_MAX_CANDIDATES)), contrasts: Object.freeze(contrasts.slice(0, BULK_CATALOG_MAX_CANDIDATES)) });
 }
