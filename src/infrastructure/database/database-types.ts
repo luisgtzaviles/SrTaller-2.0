@@ -376,6 +376,7 @@ export interface CatalogSupplierListingTable {
   readonly supplier_sku: ImmutableColumn<string | null>;
   readonly supplier_barcode: ImmutableColumn<string | null>;
   readonly supplier_title: ImmutableColumn<string | null>;
+  readonly supplier_title_search: DefaultedImmutableColumn<string>;
   readonly supplier_description: ImmutableColumn<string | null>;
   readonly category_label: ImmutableColumn<string | null>;
   readonly brand_label: ImmutableColumn<string | null>;
@@ -411,6 +412,7 @@ export interface CatalogUpdateRowDecisionTable {
   readonly proposal: MutableColumn<unknown>;
   readonly classification: MutableColumn<CatalogUpdateRowClassification>;
   readonly decision: MutableColumn<'UNRESOLVED' | 'APPLY' | 'EXCLUDE'>;
+  readonly title_decision: DefaultedMutableColumn<'KEEP_CURRENT' | 'ADOPT_OBSERVED' | null>;
   readonly target_item_id: MutableColumn<string | null>;
   readonly expected_item_version: MutableColumn<number | null>;
   readonly preselected_by_memory: MutableColumn<boolean>;

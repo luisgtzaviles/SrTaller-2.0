@@ -870,8 +870,16 @@ export class KyselyCatalogRepository implements CatalogRepositoryPort {
           if (exactItemId) {
             query = query.where('catalog_items.item_id', '=', exactItemId); count = count.where('catalog_items.item_id', '=', exactItemId);
           } else {
-            query = query.where((eb) => eb.and(tokens.map((token) => eb('catalog_items.normalized_title', 'like', `%${token}%`))));
-            count = count.where((eb) => eb.and(tokens.map((token) => eb('catalog_items.normalized_title', 'like', `%${token}%`))));
+            const historicalItemIds = executor.selectFrom('catalog_supplier_listing_resolutions as historical_resolution')
+              .innerJoin('catalog_supplier_listings as historical_listing', (join) => join.onRef('historical_listing.tenant_id', '=', 'historical_resolution.tenant_id').onRef('historical_listing.listing_id', '=', 'historical_resolution.listing_id'))
+              .innerJoin('catalog_update_batches as historical_batch', (join) => join.onRef('historical_batch.tenant_id', '=', 'historical_resolution.tenant_id').onRef('historical_batch.batch_id', '=', 'historical_resolution.batch_id'))
+              .select('historical_resolution.item_id')
+              .where('historical_resolution.tenant_id', '=', scope.tenantId)
+              .where('historical_resolution.item_id', 'is not', null)
+              .where('historical_batch.lifecycle', '=', 'APPLIED')
+              .where((eb) => eb('historical_listing.supplier_title_search', '@@', eb.fn<string>('plainto_tsquery', [eb.val('simple'), eb.val(input.query)])));
+            query = query.where((eb) => eb.or([eb.and(tokens.map((token) => eb('catalog_items.normalized_title', 'like', `%${token}%`))), eb('catalog_items.item_id', 'in', historicalItemIds)]));
+            count = count.where((eb) => eb.or([eb.and(tokens.map((token) => eb('catalog_items.normalized_title', 'like', `%${token}%`))), eb('catalog_items.item_id', 'in', historicalItemIds)]));
           }
         }
         const [rows, total] = await Promise.all([

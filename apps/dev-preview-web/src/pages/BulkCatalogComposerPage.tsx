@@ -2,7 +2,7 @@ import { ArchiveX, Check, ChevronDown, ChevronUp, Columns3, Database, GitCompare
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { analyzeSupplierVersion, compareSupplierVersions, createCatalogRetirementPlan, createSupplierDraft, createSupplierSource, decideSupplierRow, decideSupplierRows, deleteSupplierSource, executeCatalogRetirementPlan, getSupplierVersion, listCatalogReferences, listSupplierSources, listSupplierVersions, normalizeCatalogReferenceText, publishSupplierVersion, replaceSupplierDraft } from '../catalog-api.js';
-import type { BulkCatalogClassification, BulkCatalogMode, CatalogItemKind, CatalogReferences, CatalogRetirementPlan, SupplierSource, SupplierVersion, SupplierVersionComparison, SupplierVersionSummary } from '../catalog-api.js';
+import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogMode, BulkCatalogTitleDecision, CatalogItemKind, CatalogReferences, CatalogRetirementPlan, SupplierSource, SupplierVersion, SupplierVersionComparison, SupplierVersionSummary } from '../catalog-api.js';
 import { PreviewApiError } from '../api.js';
 import { Button, Input, Select } from '../components/ui/controls.js';
 import { Alert, EmptyState, Spinner, Toast } from '../components/ui/feedback.js';
@@ -18,6 +18,8 @@ import styles from './bulk-catalog-composer-page.module.css';
 type UiRow = { kind: CatalogItemKind | ''; supplierObservedTitle: string; title: string; description: string; category: string; brand: string; supplierItemCode: string; sku: string; barcode: string; price: string; cost: string };
 type Column = ComposerColumn;
 type BatchDefaults = { kind: CatalogItemKind | ''; category: string; brand: string };
+type SupplierVersionRow = SupplierVersion['rows'][number];
+type TitleChoiceTarget = Readonly<{ rowDecisionId: string; expectedRowVersion: number; targetItemId: string; currentTitle: string; receivedTitle: string }>;
 const columns = FULL_COLUMNS;
 const compactColumns = COMPACT_COLUMNS;
 const essentialColumns = ESSENTIAL_COLUMNS;
@@ -57,6 +59,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   });
   const [mappingTargets, setMappingTargets] = useState<Record<string, string>>({});
   const [retirementPlan, setRetirementPlan] = useState<CatalogRetirementPlan | null>(null); const [retirementPin, setRetirementPin] = useState('');
+  const [titleChoiceTarget, setTitleChoiceTarget] = useState<TitleChoiceTarget | null>(null); const [titleChoice, setTitleChoice] = useState<BulkCatalogTitleDecision>('KEEP_CURRENT');
   const [newSourceOpen, setNewSourceOpen] = useState(false); const [deleteSourceTarget, setDeleteSourceTarget] = useState<SupplierSource | null>(null); const [deleteStage, setDeleteStage] = useState<1 | 2>(1); const [deletePin, setDeletePin] = useState(''); const [deleteArmed, setDeleteArmed] = useState(false);
   const [busy, setBusy] = useState(false); const [dirty, setDirty] = useState(false); const [notice, setNotice] = useState<{ tone: 'danger' | 'warning'; message: string } | null>(null); const [toast, setToast] = useState<{ id: number; message: string } | null>(null); const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]); const [validationAttempted, setValidationAttempted] = useState(false); const [issueIndex, setIssueIndex] = useState(0); const [pendingIssueFocus, setPendingIssueFocus] = useState<ValidationIssue | null>(null); const [sourcesOpen, setSourcesOpen] = useState(true); const [contextOpen, setContextOpen] = useState(true); const [scrollTop, setScrollTop] = useState(0); const [active, setActive] = useState({ row: 0, column: 0 }); const [selection, setSelection] = useState<ComposerSelection | null>(null); const undoRows = useRef<UiRow[] | null>(null); const editOriginal = useRef<{ row: number; column: Column; value: string } | null>(null); const publishRequest = useRef(crypto.randomUUID()); const draftCreateRequest = useRef(crypto.randomUUID()); const deleteInFlight = useRef(false); const viewportRef = useRef<HTMLDivElement | null>(null); const headerScrollRef = useRef<HTMLDivElement | null>(null); const sourceRef = useRef<HTMLSelectElement | null>(null); const toastTimer = useRef<number | null>(null);
   const activeColumns = mode === 'COMPACT' ? compactColumns : viewPreset === 'ESSENTIAL' ? essentialColumns : columns;
@@ -183,7 +186,17 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   };
   const analyze = async (): Promise<void> => { if (!current) return; setBusy(true); try { const value = await analyzeSupplierVersion(current.versionId, current.version, canReadCost, csrfToken); setCurrent(value); setRows(fromRecord(value)); setReconciliationView(value.rows.some((row) => row.decision === 'UNRESOLVED') ? 'ATTENTION' : 'RESOLVED'); await refresh(); showToast('Análisis terminado sin escribir en Lista de precios.'); } catch { setNotice({ tone: 'danger', message: 'No fue posible analizar el snapshot.' }); } finally { setBusy(false); } };
   const load = async (id: string): Promise<void> => { if (dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres descartarlos y abrir otra versión?')) return; setBusy(true); try { const value = await getSupplierVersion(id, canReadCost); setCurrent(value); setMode(value.mode); setSelectedSource(value.sourceId); setDescription(value.description ?? ''); setRows(fromRecord(value)); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; setNotice(null); publishRequest.current = crypto.randomUUID(); draftCreateRequest.current = crypto.randomUUID(); } finally { setBusy(false); } };
-  const resolve = async (rowDecisionId: string, expectedRowVersion: number, nextDecision: 'APPLY' | 'EXCLUDE', targetItemId: string | null = null): Promise<void> => { if (!current) return; setBusy(true); try { const value = await decideSupplierRow(current.versionId, rowDecisionId, { expectedRowVersion, decision: nextDecision, targetItemId, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(targetItemId ? 'Mapping corregido e incluido explícitamente.' : nextDecision === 'APPLY' ? 'Fila incluida explícitamente.' : 'Fila excluida del lote.'); } catch { setNotice({ tone: 'danger', message: 'La fila requiere un artículo canónico válido, resolver el duplicado o releer la versión.' }); } finally { setBusy(false); } };
+  const resolve = async (rowDecisionId: string, expectedRowVersion: number, nextDecision: 'APPLY' | 'EXCLUDE', targetItemId: string | null = null, selectedTitleDecision: BulkCatalogTitleDecision | null = null): Promise<boolean> => { if (!current) return false; setBusy(true); try { const value = await decideSupplierRow(current.versionId, rowDecisionId, { expectedRowVersion, decision: nextDecision, targetItemId, titleDecision: selectedTitleDecision, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(targetItemId ? 'Identidad y nombre quedaron preparados para Apply; Catalog todavía no cambió.' : nextDecision === 'APPLY' ? 'Fila incluida explícitamente.' : 'Fila excluida del lote.'); return true; } catch { setNotice({ tone: 'danger', message: 'La fila requiere un artículo canónico válido, una decisión de nombre o releer la versión.' }); return false; } finally { setBusy(false); } };
+  const chooseCandidateTitle = (row: SupplierVersionRow, candidate: Pick<BulkCatalogCandidateMatch, 'itemId' | 'title'>): void => {
+    if (!row.proposal.title || row.proposal.title === candidate.title) { void resolve(row.rowDecisionId, row.version, 'APPLY', candidate.itemId); return; }
+    setTitleChoice('KEEP_CURRENT');
+    setTitleChoiceTarget({ rowDecisionId: row.rowDecisionId, expectedRowVersion: row.version, targetItemId: candidate.itemId, currentTitle: candidate.title, receivedTitle: row.proposal.title });
+  };
+  const confirmTitleChoice = async (): Promise<void> => {
+    if (!titleChoiceTarget) return;
+    const succeeded = await resolve(titleChoiceTarget.rowDecisionId, titleChoiceTarget.expectedRowVersion, 'APPLY', titleChoiceTarget.targetItemId, titleChoice);
+    if (succeeded) setTitleChoiceTarget(null);
+  };
   const resolveGroup = async (classifications: readonly BulkCatalogClassification[], nextDecision: 'APPLY' | 'EXCLUDE'): Promise<void> => { if (!current) return; setBusy(true); try { const value = await decideSupplierRows(current.versionId, { expectedBatchVersion: current.batch.version, classifications, decision: nextDecision, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(nextDecision === 'APPLY' ? 'Filas compatibles confirmadas.' : 'Filas con conflicto excluidas.'); } catch { setNotice({ tone: 'danger', message: 'El lote cambió o contiene una combinación que requiere revisión individual.' }); } finally { setBusy(false); } };
   const publish = async (): Promise<void> => { if (!current || !canPublish) return; setBusy(true); try { const value = await publishSupplierVersion(current.versionId, current.version, canReadCost && canWriteCost, csrfToken, publishRequest.current); setCurrent(value); await refresh(); showToast('Lote aplicado atómicamente a Catalog.'); } catch (error) { setNotice({ tone: 'danger', message: `No se publicó. El lote se revalidó y no hubo escrituras parciales.${failureCode(error)}` }); } finally { setBusy(false); } };
   const planCreatedBatchRetirement = async (): Promise<void> => { if (!current || current.batch.lifecycle !== 'APPLIED') return; setBusy(true); try { setRetirementPlan(await createCatalogRetirementPlan({ scope: 'BATCH_CREATED', sourceVersionId: current.versionId }, csrfToken)); setRetirementPin(''); } catch { setNotice({ tone: 'danger', message: 'No fue posible preparar el plan de artículos creados por este lote.' }); } finally { setBusy(false); } };
@@ -286,6 +299,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
               <span>{row.proposal.title ?? row.proposal.supplierItemCode ?? row.proposal.sku ?? row.proposal.barcode ?? 'Sin identidad'}{row.targetTitle ? ` → ${row.targetTitle}` : ''}</span>
               {row.before ? <small>Actual: {row.before.kind} · {row.before.category ?? 'sin categoría'} · {row.before.brand ?? 'sin marca'} · estado {row.before.status === 'INACTIVE' ? 'Inactivo' : 'Activo'} · precio {row.before.basePriceMinor === null ? 'ausente' : fromMinor(row.before.basePriceMinor)}{canReadCost ? ` · costo ${row.before.referenceCostMinor === null ? 'ausente' : fromMinor(row.before.referenceCostMinor)}` : ''}</small> : <small>Actual: artículo nuevo; todavía no existe en Catalog.</small>}
               <small>Propuesta: {row.proposal.kind ?? 'tipo sin cambio'} · {row.proposal.category ?? 'categoría sin cambio'} · {row.proposal.brand ?? 'marca sin cambio'} · estado {row.classification === 'REACTIVATE' ? 'Reactivar' : 'sin cambio'} · precio {row.proposal.basePriceMinor === null ? 'sin cambio' : fromMinor(row.proposal.basePriceMinor)}{canReadCost ? ` · costo ${row.proposal.referenceCostMinor === null ? 'sin cambio' : fromMinor(row.proposal.referenceCostMinor)}` : ''}</small>
+              {row.titleDecision ? <small className={styles.titleDecisionSummary}>Nombre al aplicar: {row.titleDecision === 'ADOPT_OBSERVED' ? `usar “${row.proposal.title ?? ''}”` : `mantener “${row.targetTitle ?? row.before?.title ?? ''}”`}</small> : null}
               {row.warnings.map((warning) => <small key={warning}>{warningMessage(warning)}</small>)}
               {row.errors.map((error) => <small key={error}>{analysisMessage(error)}</small>)}
               {row.candidates.map((candidate) => <section key={candidate.itemId} className={styles.candidateCard}>
@@ -293,7 +307,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
                 <small>Evidencia: {candidate.evidence.join(' · ')}</small>
                 <small>Diferencias: {candidate.differences.length ? candidate.differences.join(' · ') : 'ninguna'}</small>
                 {candidate.contradictions.length ? <small>Contradicciones: {candidate.contradictions.join(' · ')}</small> : null}
-                {current.batch.lifecycle !== 'APPLIED' ? <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY', candidate.itemId)}>Mismo artículo</Button> : null}
+                {current.batch.lifecycle !== 'APPLIED' ? <Button size="compact" tone="primary" onClick={() => chooseCandidateTitle(row, candidate)}>Mismo artículo</Button> : null}
               </section>)}
               {['CONFLICT', 'INVALID'].includes(row.classification) ? <label>
                 Artículo canónico para corregir mapping
@@ -302,6 +316,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
             </div>
             {current.batch.lifecycle !== 'APPLIED' ? <div>
               <Button size="compact" onClick={() => void resolve(row.rowDecisionId, row.version, 'EXCLUDE')}>Excluir</Button>
+              {row.targetItemId && row.targetTitle && row.proposal.title && row.targetTitle !== row.proposal.title && row.classification !== 'CANDIDATE' && row.classification !== 'AMBIGUOUS' ? <Button size="compact" onClick={() => chooseCandidateTitle(row, { itemId: row.targetItemId!, title: row.targetTitle! })}>{row.titleDecision ? 'Cambiar nombre elegido' : 'Elegir nombre'}</Button> : null}
               {row.classification === 'CANDIDATE' ? <Button size="compact" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Artículo nuevo</Button> : null}
               {['CONFLICT', 'INVALID'].includes(row.classification)
                 ? <Button size="compact" tone="primary" disabled={!mappingTargets[row.rowDecisionId]?.trim()} onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY', mappingTargets[row.rowDecisionId]!.trim())}>Corregir mapping</Button>
@@ -338,6 +353,23 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
         <dl className={styles.retirementSummary}><div><dt>CREATED activos a retirar</dt><dd>{retirementPlan?.activeCount.toLocaleString('es-MX') ?? 0}</dd></div><div><dt>CREATED ya retirados</dt><dd>{retirementPlan?.alreadyInactiveCount.toLocaleString('es-MX') ?? 0}</dd></div></dl>
         <label className={styles.reauthenticationField}>Confirma tu PIN<Input type="password" inputMode="numeric" autoComplete="off" maxLength={4} value={retirementPin} onChange={(event) => setRetirementPin(event.target.value.replace(/\D/gu, '').slice(0, 4))} /><small>Debe corresponder al mismo usuario de la sesión activa.</small></label>
         <footer className={styles.retirementActions}><Button disabled={busy} onClick={() => { setRetirementPlan(null); setRetirementPin(''); }}>Cancelar</Button><Button tone="danger" disabled={busy || retirementPin.length !== 4} onClick={() => void retireCreatedBatchItems()}>{busy ? 'Retirando…' : `Retirar ${retirementPlan?.activeCount.toLocaleString('es-MX') ?? 0} artículos`}</Button></footer>
+      </div>
+    </Dialog>
+    <Dialog open={titleChoiceTarget !== null} title="¿Qué nombre quieres conservar?" description="La identidad del artículo no cambia" onClose={() => { if (!busy) setTitleChoiceTarget(null); }} footer={false}>
+      <div className={styles.titleChoiceDialog}>
+        <fieldset>
+          <legend>Elige el título canónico que se aplicará junto con el lote</legend>
+          <label className={titleChoice === 'KEEP_CURRENT' ? styles.selectedTitleChoice : ''}>
+            <input autoFocus type="radio" name="catalog-title-choice" value="KEEP_CURRENT" checked={titleChoice === 'KEEP_CURRENT'} onChange={() => setTitleChoice('KEEP_CURRENT')} />
+            <span><strong>Mantener nombre actual</strong><small>{titleChoiceTarget?.currentTitle}</small></span>
+          </label>
+          <label className={titleChoice === 'ADOPT_OBSERVED' ? styles.selectedTitleChoice : ''}>
+            <input type="radio" name="catalog-title-choice" value="ADOPT_OBSERVED" checked={titleChoice === 'ADOPT_OBSERVED'} onChange={() => setTitleChoice('ADOPT_OBSERVED')} />
+            <span><strong>Usar nombre recibido</strong><small>{titleChoiceTarget?.receivedTitle}</small></span>
+          </label>
+        </fieldset>
+        <p>El otro nombre permanecerá en el historial del proveedor y podrá usarse para reconocer y buscar este artículo.</p>
+        <footer><Button disabled={busy} onClick={() => setTitleChoiceTarget(null)}>Cancelar</Button><Button tone="primary" disabled={busy} onClick={() => void confirmTitleChoice()}>{busy ? 'Guardando…' : 'Confirmar decisión'}</Button></footer>
       </div>
     </Dialog>
   </div>;

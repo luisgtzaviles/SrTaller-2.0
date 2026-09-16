@@ -1,5 +1,5 @@
 import type { CatalogItemKind } from '../../domain/catalog-item.js';
-import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogDecision, BulkCatalogMatchOrigin, BulkCatalogMode, BulkCatalogRowInput } from '../../domain/bulk-catalog.js';
+import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogDecision, BulkCatalogMatchOrigin, BulkCatalogMode, BulkCatalogRowInput, BulkCatalogTitleDecision } from '../../domain/bulk-catalog.js';
 import type { CatalogMutationContext, CatalogScope } from './catalog-repository.port.js';
 
 export type SupplierSourceRecord = Readonly<{
@@ -9,6 +9,7 @@ export type SupplierSourceRecord = Readonly<{
 export type BulkCatalogRowRecord = Readonly<{
   rowDecisionId: string; rowNumber: number; supplierObservedTitle: string | null; proposal: BulkCatalogRowInput;
   classification: BulkCatalogClassification; decision: BulkCatalogDecision;
+  titleDecision: BulkCatalogTitleDecision | null;
   targetItemId: string | null; targetTitle: string | null; expectedItemVersion: number | null;
   before: Readonly<{ kind: CatalogItemKind; title: string; description: string | null; category: string | null; brand: string | null; status: 'ACTIVE' | 'INACTIVE'; basePriceMinor: number | null; referenceCostMinor: number | null }> | null;
   preselectedByMemory: boolean; matchOrigin: BulkCatalogMatchOrigin; matchAlgorithmVersion: number;
@@ -34,7 +35,7 @@ export interface BulkCatalogRepositoryPort {
   createDraft(context: CatalogMutationContext, input: Readonly<{ versionId: string; batchId: string; sourceId: string; description: string | null; clientRequestId: string; requestSha256: string; mode: BulkCatalogMode; columnSignature: string; rawPayload: string; rows: readonly BulkCatalogRowInput[]; includeReferenceCost: boolean; occurredAt: Date }>): Promise<SupplierVersionRecord>;
   replaceDraft(context: CatalogMutationContext, input: Readonly<{ versionId: string; expectedVersion: number; description: string | null; columnSignature: string; rawPayload: string; rows: readonly BulkCatalogRowInput[]; includeReferenceCost: boolean; occurredAt: Date }>): Promise<SupplierVersionRecord>;
   analyze(context: CatalogMutationContext, input: Readonly<{ versionId: string; expectedVersion: number; includeReferenceCost: boolean; occurredAt: Date }>): Promise<SupplierVersionRecord>;
-  decide(context: CatalogMutationContext, input: Readonly<{ versionId: string; rowDecisionId: string; expectedRowVersion: number; decision: BulkCatalogDecision; targetItemId: string | null; includeReferenceCost: boolean; occurredAt: Date }>): Promise<SupplierVersionRecord>;
+  decide(context: CatalogMutationContext, input: Readonly<{ versionId: string; rowDecisionId: string; expectedRowVersion: number; decision: BulkCatalogDecision; targetItemId: string | null; titleDecision: BulkCatalogTitleDecision | null; includeReferenceCost: boolean; occurredAt: Date }>): Promise<SupplierVersionRecord>;
   decideMany(context: CatalogMutationContext, input: Readonly<{ versionId: string; expectedBatchVersion: number; classifications: readonly BulkCatalogClassification[]; decision: Exclude<BulkCatalogDecision, 'UNRESOLVED'>; includeReferenceCost: boolean; occurredAt: Date }>): Promise<SupplierVersionRecord>;
   publish(context: CatalogMutationContext, input: Readonly<{ versionId: string; expectedVersion: number; clientRequestId: string; requestSha256: string; currency: string; mayWriteCost: boolean; occurredAt: Date }>): Promise<SupplierVersionRecord>;
   compare(scope: CatalogScope, leftVersionId: string, rightVersionId: string): Promise<SupplierVersionComparison>;

@@ -763,7 +763,8 @@
       "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts",
       "src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts",
       "src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts",
-      "src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts"
+      "src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts",
+      "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1349,6 +1350,13 @@
           "references": [],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_listings", "catalog_update_row_decisions"],
+          "references": [],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1634,6 +1642,7 @@
           "src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts",
           "src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts",
           "src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts",
+          "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",

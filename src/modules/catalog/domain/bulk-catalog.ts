@@ -12,6 +12,7 @@ export const BULK_CATALOG_RAW_RETENTION_DAYS = 90;
 export type BulkCatalogMode = 'FULL' | 'COMPACT';
 export type BulkCatalogClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'CANDIDATE' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
 export type BulkCatalogDecision = 'UNRESOLVED' | 'APPLY' | 'EXCLUDE';
+export type BulkCatalogTitleDecision = 'KEEP_CURRENT' | 'ADOPT_OBSERVED';
 export type BulkCatalogMatchOrigin = 'NONE' | 'INTERNAL_IDENTIFIER' | 'TRUSTED_HISTORY' | 'CANDIDATE' | 'OWNER_SELECTED';
 
 export type BulkCatalogCandidateMatch = Readonly<{

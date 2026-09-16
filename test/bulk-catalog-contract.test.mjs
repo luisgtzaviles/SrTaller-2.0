@@ -92,10 +92,12 @@ test('candidate pool and top set stay bounded at 1,500 rows', () => {
 });
 
 test('bulk contracts preserve separate prepare, publish, retirement, cost and Branch boundaries', async () => {
-  const [protectedOperations, repository, migration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
+  const [protectedOperations, repository, catalogRepository, migration, titleHistoryMigration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts', 'utf8'),
+    readFile('src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts', 'utf8'),
+    readFile('src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts', 'utf8'),
@@ -124,6 +126,16 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.doesNotMatch(repository, /catalog_branch_price_revisions/u);
   assert.match(repository, /input\.includeReferenceCost/u);
   assert.match(repository, /source_type: 'IMPORTED'/u);
+  assert.match(repository, /title_decision/u);
+  assert.match(repository, /canonicalTitle: \{ before: priorItem\.title, after: p\.title \}/u);
+  assert.match(repository, /supplierCatalogVersionId: version\.version_id/u);
+  assert.match(catalogRepository, /historical_listing\.supplier_title_search', '@@'/u);
+  assert.match(catalogRepository, /historical_resolution\.tenant_id', '=', scope\.tenantId/u);
+  assert.match(catalogRepository, /historical_batch\.lifecycle', '=', 'APPLIED'/u);
+  assert.match(titleHistoryMigration, /title_decision/u);
+  assert.match(titleHistoryMigration, /generated always as/u);
+  assert.match(titleHistoryMigration, /using gin/u);
+  assert.match(titleHistoryMigration, /catalog_supplier_resolutions_item_history_idx/u);
   assert.match(migration, /retained_until/u);
   assert.match(migration, /catalog_supplier_listing_resolutions_reject_update/u);
   assert.match(reactivationMigration, /'REACTIVATE'/u);
@@ -148,6 +160,11 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /Actual:/u);
   assert.match(ui, /Propuesta:/u);
   assert.match(ui, /Corregir mapping/u);
+  assert.match(ui, /¿Qué nombre quieres conservar\?/u);
+  assert.match(ui, /Mantener nombre actual/u);
+  assert.match(ui, /Usar nombre recibido/u);
+  assert.match(ui, /El otro nombre permanecerá en el historial del proveedor/u);
+  assert.match(ui, /useState<BulkCatalogTitleDecision>\('KEEP_CURRENT'\)/u);
   assert.match(ui, /SUPPLY/u);
   assert.match(ui, /rows\.slice\(first, first \+ 22\)/u);
   assert.match(css, /translateY/u);
