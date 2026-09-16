@@ -177,6 +177,8 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /setGridExpanded\(value\.lifecycle === 'DRAFT'\);/u);
   assert.match(ui, /aria-expanded=\{gridExpanded\} aria-controls="bulk-catalog-grid"/u);
   assert.match(ui, /id="bulk-catalog-grid"[\s\S]*hidden=\{!gridExpanded\}/u);
+  assert.doesNotMatch(ui.slice(ui.indexOf('const save'), ui.indexOf('const analyze')), /setGridExpanded/u);
+  assert.doesNotMatch(ui.slice(ui.indexOf('const resolve'), ui.indexOf('const chooseCandidateTitle')), /setGridExpanded/u);
   assert.ok(ui.indexOf('styles.summary') < ui.indexOf('styles.coverage'));
   assert.ok(ui.indexOf('styles.coverage') < ui.indexOf('styles.decisions'));
   assert.doesNotMatch(ui, /Desaparecidas/u);
