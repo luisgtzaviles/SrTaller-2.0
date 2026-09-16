@@ -908,6 +908,12 @@ retiró del viewport y `Ver 3 no observados` siguió funcionando sin expandir la
 grid. Las tres ausencias continuaron activas. La Comparación histórica y los
 botones de Apply conservaron su superficie independiente.
 
+La navegación de error se verificó sin persistir: en `AG v3` se vació sólo en
+memoria el título de la fila 1, se ocultó la grid y se pulsó Guardar borrador.
+La validación cliente rechazó el dato antes de request/escritura, reabrió la
+grid y dejó foco visible en `Título fila 1`, con `aria-invalid` y el mensaje
+`El título es obligatorio.`.
+
 Gates focalizados: typecheck PASS; Composer contract PASS 9/9; selección
 Composer/domain/catalog UI/architecture PASS 48/48; build PASS; PostgreSQL
 PBI-041 PASS 1/1 con 72 migraciones (benchmark 10k: ingest 4,515.2 ms,
