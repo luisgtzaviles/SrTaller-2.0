@@ -2,13 +2,16 @@
 
 ## Checkpoint
 
-- **Estado:** synthetic Demo fixture cleanup PASS en LOCAL; Owner Review listo;
-  Owner Acceptance pendiente.
+- **Estado:** trusted history + bounded candidate matching PASS en LOCAL; AG
+  v11 lista para Owner Review; Owner Acceptance pendiente.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
 - **Candidato de reactivación:** `f4bc803fe3b086405024f6199b65114feb1feebe`.
 - **Candidato de retiro anterior:** `44e605953676456eff519b5b3fca02d952eb5c38`.
 - **Implementación core:** `b49a52faaf94184dcb7829bb255b8553b1e58c02`.
 - **Cleanup local gobernado:** `a4aef9a`.
+- **Decisiones CM:** `b9e1be5`.
+- **Implementación trusted/candidate:**
+  `f2554cf29f2211d73a688512b6f89de16ce8e108`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
 - **Fecha:** 2026-09-15 MST.
 - **Delivery:** sin push, PR, merge, Preview, Production ni deploy.
@@ -648,3 +651,80 @@ El siguiente acto permitido es exclusivamente la revisión Owner de los fixtures
 y superficies locales descritos arriba. La Source sintética
 `Proveedor QA eliminable 15 sep` conserva dos Versions `DRAFT` para inspeccionar
 historia, descripción y las dos confirmaciones sin afectar Catalog.
+
+## Trusted history + bounded candidate matching
+
+Las decisiones `CM-001..CM-009` se materializaron sin activar Advanced Supplier
+Reconciliation. La identidad exacta sólo se considera confiable cuando la
+Memory del mismo Tenant, Source y column signature enlaza a la última
+Resolution, esa Resolution proviene de un Batch `APPLIED`, el estado sigue
+`CONSISTENT`, `correction_count = 0`, el algoritmo es conocido y el target
+continúa único y compatible con Tipo/Category/Brand. El resultado resuelve la
+fila como `APPLY`, pero no aplica el batch.
+
+Cuando no existe esa identidad exacta, el engine construye una vez un índice de
+la historia publicada del mismo Source, limita el pool a 200 y devuelve como
+máximo tres candidates. El score Jaccard sólo filtra y ordena; no llena
+`target_item_id`. Los tokens de modelo/número, `Pro/Plus/Max`, tecnología
+`OLED/INCELL`, calidad `Original/Calidad`, color, capacidad y tamaño se preservan
+como señales de contradicción. La selección Owner se revalida contra el conjunto
+persistido; un UUID arbitrario o de otro Tenant falla cerrado.
+
+La migración `20260915120000_catalog_add_bounded_candidate_matching` agrega la
+clasificación `CANDIDATE` y los campos `match_origin`,
+`match_algorithm_version` y `candidate_matches` con cap físico de tres. No hace
+backfill semántico, no reanaliza Supplier Versions y no escribe memoria. Una
+elección humana sólo se vuelve Resolution/Memory reutilizable dentro del publish
+exitoso y transaccional.
+
+La UI abre en `Requieren atención`, separa `Resueltas` y `Todas`, y presenta por
+candidate evidencia compartida, diferencias y score identificado explícitamente
+como de presentación. Las acciones son `Mismo artículo`, `Artículo nuevo` y
+`Excluir`; las 34 filas trusted siguen inspeccionables.
+
+### AG v11 — reanalysis controlada, sin Apply
+
+| Evidencia | Antes | Después |
+|---|---:|---:|
+| Batch lifecycle | `RECONCILING` | `RECONCILING` |
+| Batch lock version | 2 | 3 |
+| análisis | `9285fc78…ad3df1` | `8cb51267…e47a9` |
+| `NEW/APPLY` | 2 | 0 |
+| `UNCHANGED/UNRESOLVED` | 34 | 0 |
+| `UNCHANGED/APPLY/TRUSTED_HISTORY` | 0 | 34 |
+| `CANDIDATE/UNRESOLVED` | 0 | 2 |
+| CatalogItems | 39 | 39 |
+| Resolutions | 108 | 108 |
+| ReconciliationMemory | 36 | 36 |
+| `published_at` | null | null |
+
+El content hash de la Version permaneció
+`58d7203d6b48ffe8c94f98e13b4c4bc563a3d5de50a395975d73820032ec6b13`.
+La fila 1 sugirió `Pantalla iPhone 11 Calidad RJ >>` con score de presentación
+83 % y diferencia `OBSERVED_ONLY:liquidacion`; la fila 2 sugirió
+`Pantalla iPhone 11 Original >>I` con 67 % y diferencias
+`OBSERVED_ONLY:display / HISTORY_ONLY:pantalla`. Cada una tuvo un solo candidato,
+`target_item_id = null` y ninguna decisión fue tomada. Chrome quedó abierto en
+AG v11; no se ejecutó `Aplicar lote`.
+
+### Gates focalizados
+
+- typecheck gobernado: PASS;
+- build gobernado: PASS; sólo warning informativo de tamaño Vite;
+- contratos candidate/Composer: 22 PASS, 0 FAIL;
+- PostgreSQL material PBI-041: 1 PASS, 0 FAIL, 70 migraciones; incluido
+  provenance trusted, candidate tamper, publish-only learning y Tenant
+  isolation; benchmark 10k: ingest 6,630.5 ms, análisis 499.0 ms, preview
+  52.1 ms, publish 2,350.1 ms y 103.1 MiB de heap;
+- migration architecture/database: 12 PASS, 0 FAIL;
+- caracterización in-memory final: p95 4.1 ms para 1,500 filas y 12.5 ms para
+  10,000; 50k se caracterizó en 41.9 ms y fue rechazado antes de persistir; el candidate lookup usa
+  carga/indexación acotada, pool 200, top K 3 y sin N+1;
+- runtime provenance: frontend/backend servidos desde
+  `f2554cf29f2211d73a688512b6f89de16ce8e108`;
+- `verify:full`: NOT RUN por prohibición explícita previa a Owner Acceptance.
+
+La única anomalía de preflight es un ref Git local preexistente roto para
+`origin/main`; no afectó runtime, tests ni la rama candidata y no se modificó
+durante esta iteración. El archivo no versionado
+`apps/dev-preview-web/src/.DS_Store` pertenece al Owner y permanece intacto.

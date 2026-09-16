@@ -111,10 +111,13 @@ normalized_signature`. Conserva target candidato, `evidence_count`,
 `first_seen_at`, `last_seen_at`, última resolución y flags `CONSISTENT`,
 `CORRECTED`, `CONFLICTING`.
 
-La proyección sólo preselecciona cuando toda evidencia vigente resuelve a un
-único CatalogItem compatible. Si se materializa por performance, cada fila
-conserva `projection_version` y puede reconstruirse desde Resolution history;
-no se expone como alias Catalog ni se consulta fuera de `catalog`.
+La proyección puede resolver identidad cuando toda evidencia vigente converge
+en un único CatalogItem compatible y su última Resolution proviene de un Batch
+`APPLIED`, con key exacta del mismo Source, algoritmo conocido, estado
+`CONSISTENT` y `correction_count = 0`. La decisión de fila queda `APPLY`, pero
+el batch nunca se publica automáticamente. Si se materializa por performance,
+cada fila conserva versión y puede reconstruirse desde Resolution history; no
+se expone como alias Catalog ni se consulta fuera de `catalog`.
 
 ### `catalog_supplier_version_raw_payloads`
 
@@ -145,11 +148,15 @@ es terminal; repetir publish devuelve su mismo outcome.
 Contiene `tenant_id`, batch, row ID/ordinal, Listing nullable, classification,
 decision, selected target/item ID, proposed new item ID, `expected_item_version`,
 selected field intents, before/after bounded, pending Category/Brand refs,
-generated revision IDs, reason, warnings/errors y row version.
+generated revision IDs, reason, warnings/errors y row version. La migración
+`20260915120000_catalog_add_bounded_candidate_matching` agrega `CANDIDATE` al
+CHECK cerrado y persiste `match_origin`, `match_algorithm_version` y hasta tres
+`candidate_matches` explicables por fila. Sus defaults conservadores son
+`NONE`, algoritmo `1` y arreglo vacío; no reanaliza historia ni crea mappings.
 
 Unique `(tenant_id, batch_id, row_ordinal)` y compound FKs. Una fila incluida
 debe estar `CREATE/UPDATE/NO_CHANGE`; `EXCLUDED` queda fuera de commit.
-`UNRESOLVED/AMBIGUOUS/CONFLICT/INVALID/STALE` bloquea el batch. IDs de items y
+`CANDIDATE/UNRESOLVED/AMBIGUOUS/CONFLICT/INVALID/STALE` bloquea el batch. IDs de items y
 revisiones nuevas se reservan en intención persistida para que retry no cambie
 identidad.
 
@@ -193,6 +200,8 @@ Catalog participa en el conjunto.
   supplier code nullable;
 - Resolution por listing/sequence, target y source/signature projection;
 - Memory por exact key y por target; nunca consulta title con fuzzy write;
+- candidatos por historia publicada del mismo Source, con pool máximo 200,
+  índice invertido de tokens construido una vez por análisis y top K máximo 3;
 - Batch por Tenant/status/updated, Version y idempotency keys;
 - RowDecision por batch/classification/decision/ordinal y target item;
 - raw payload por `expires_at` con `purged_at IS NULL` para cleanup.
@@ -230,6 +239,8 @@ mediante contrato y no escribe estas tablas.
 3. Bulk-load CatalogItems/identifiers/references del mismo Tenant.
 4. Revalidar expectedVersion, lifecycle, Type/applicability, contradictions y
    pending decisions.
+   Un target elegido desde `CANDIDATE` debe seguir perteneciendo al conjunto
+   persistido; un UUID arbitrario o de otro Tenant falla cerrado.
 5. Crear items/revisiones/audit/outcomes con IDs reservados.
 6. Marcar batch `COMPLETED` y commit en la misma conexión.
 

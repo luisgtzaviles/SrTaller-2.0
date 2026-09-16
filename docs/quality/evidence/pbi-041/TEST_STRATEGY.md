@@ -3,7 +3,7 @@
 ## Estado
 
 - **Resultado:** estrategia extendida con `OD-RESET-001..005`; cobertura
-  focalizada ejecutada sobre el candidato local.
+  focalizada extendida con `CM-001..009` y ejecutada sobre el candidato local.
 - **Fecha:** 2026-09-14.
 - **Riesgo:** Alto; DEC-051 requires risk-proportional unit, contract,
   PostgreSQL, HTTP, browser, security and CI evidence.
@@ -76,6 +76,14 @@ aislados y reversibles en PostgreSQL desechable.
 | BI-Q42 | stale/concurrent/retry de reactivación deja cero parciales y cero duplicados | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q43 | versión INGESTED no aplicada se reanaliza sin mutar Supplier evidence | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q44 | caso material AG: 36 INACTIVE → 36 REACTIVATE → 36 ACTIVE con IDs exactos | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q45 | exact history sólo auto-resuelve con Batch APPLIED, key exacta, target único, cero correcciones y compatibilidad | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q46 | miss exacto produce candidate read-only; score nunca decide ni llena target | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q47 | Pro/Plus/Max, OLED/INCELL, Original/Calidad, color, capacidad, tamaño y números incompatibles no colapsan identidad | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q48 | selección sólo acepta candidato persistido; UUID arbitrario/cross-Tenant falla sin efectos | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q49 | decisión candidate no aprende antes de publish; publish exitoso crea Resolution/Memory exacta y la siguiente versión se vuelve trusted | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q50 | 1,500 historias se cargan/indexan una vez; pool 200, top K 3 y tiempos bounded sin N+1 | ✓ | ✓ | ✓ |  |  | ✓ |
+| BI-Q51 | UX abre en Requieren atención, separa resueltas e identifica evidencia/diferencias sin ocultar trusted rows | ✓ | ✓ |  | ✓ | ✓ | ✓ |
+| BI-Q52 | AG v11 reanalysis produce 34 trusted APPLY + 2 CANDIDATE UNRESOLVED y cero publish/memory/item writes | ✓ | ✓ | ✓ | ✓ | ✓ | Owner evidence |
 
 ## Layer responsibilities
 
@@ -84,6 +92,8 @@ aislados y reversibles en PostgreSQL desechable.
 - normalization preserves clean casing and exact raw title;
 - signature/fingerprint algorithm versioning and deterministic hashes;
 - matching precedence, contradictions and exact-history eligibility;
+- token index, bounded candidate ranking and protected identity terms; scores
+  are presentation only and never authority;
 - field intent matrix, blank/zero/money parsing and diff/no-op;
 - lifecycle transition policies, pending vs unresolved and report counts;
 - retention clock/chunk selection and cost redaction policies.
@@ -103,6 +113,8 @@ aislados y reversibles en PostgreSQL desechable.
 
 - fresh/upgrade migration design, compound FKs/uniques/checks/index plans;
 - immutable snapshot mutation guard and append-only resolution history;
+- trusted provenance join to the applied batch, candidate persistence cap,
+  candidate-target tamper rejection and publish-only learning;
 - transaction same connection, injected rollback, serialization/deadlock;
 - two Owners, row lock order, idempotency outcomes and no partial writes;
 - two Tenants + two Branches, exact queries/counts/pagination and no cascades;
@@ -169,7 +181,7 @@ PASS alone cannot close Owner Review.
 
 ## Exit criteria
 
-- BI-Q01..Q38 applicable gates green without downgraded assertions;
+- BI-Q01..Q52 applicable gates green without downgraded assertions;
 - required 1,500-row Owner flow and 10k candidate budgets evidenced;
 - 50k characterization/rejection evidenced;
 - zero Blocker/Critical/High open after focused review;

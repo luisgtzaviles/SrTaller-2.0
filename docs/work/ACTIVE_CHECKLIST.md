@@ -3,30 +3,35 @@
 Milestone / Functional Goal: PBI-041 — Trusted history + bounded candidate matching
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Owner decisions approved — bounded implementation in progress
+Status: Trusted history + bounded candidates ready for Owner Review
 WIP: 1/1
-Progress: 1 / 7 implementation blocks completed
-Current: Schema and matching contracts
-Next: Trusted exact auto-resolution, bounded candidates and exception-first UI
+Progress: 7 / 7 implementation blocks completed
+Current: Owner Review of AG v11 exceptions
+Next: Owner decision; no Acceptance inferred and no Apply Batch performed
 Blocked: None; AG v11 must remain unapplied
 Last updated: 2026-09-15 MST
 
 ## Current checkpoint — Trusted history + bounded candidate matching
 
 - [x] Record Owner decisions `CM-001..CM-009` and preserve the AG v11 baseline.
-- [~] Add the minimum Tenant-safe persistence and matching contracts.
-- [ ] Implement trusted exact auto-resolution and publish-only learning.
-- [ ] Implement bounded read-only candidates and Owner decisions.
-- [ ] Implement exception-first UI with inspectable resolved rows.
-- [ ] Pass focused contracts, PostgreSQL, performance, typecheck/build and browser QA.
-- [ ] Reanalyze AG v11 to `34 resolved / 2 attention` without applying it.
+- [x] Add the minimum Tenant-safe persistence and matching contracts.
+- [x] Implement trusted exact auto-resolution and publish-only learning.
+- [x] Implement bounded read-only candidates and Owner decisions.
+- [x] Implement exception-first UI with inspectable resolved rows.
+- [x] Pass focused contracts, PostgreSQL, performance, typecheck/build and browser QA.
+- [x] Reanalyze AG v11 to `34 resolved / 2 attention` without applying it.
 
 ## Audit evidence
 
 - `AG / v11`: Version `INGESTED`, Batch `RECONCILING`, unpublished.
-- Stable outcome: `2 NEW/APPLY`, `34 UNCHANGED/UNRESOLVED`, every other classification `0`.
-- The 34 exact rows have one consistent Source-scoped signature mapping and no correction; policy, not missing evidence, keeps them pending.
-- `(liquidacion)` and `DISPLAY` create new title-bearing signatures; without supplier code/SKU/barcode and without candidate matching they become `NEW`.
+- Baseline preserved before reanalysis: `2 NEW/APPLY`, `34 UNCHANGED/UNRESOLVED`.
+- Result after governed reanalysis: `34 UNCHANGED/APPLY/TRUSTED_HISTORY` and
+  `2 CANDIDATE/UNRESOLVED`, batch still `RECONCILING` and unpublished.
+- Row 1 proposes the historical screen with `liquidacion` as observed-only;
+  row 2 proposes `Pantalla` for the `Display` observation. Both retain null
+  target until the Owner chooses.
+- CatalogItems `39`, Resolutions `108` and ReconciliationMemory `36` remained
+  unchanged; no learning or publication occurred.
 - Recommended boundary: trusted exact identity may auto-resolve but never auto-publish; non-exact matching remains read-only and human-confirmed.
 - Canonical output: `docs/domain/PRICE_LIST_CANDIDATE_MATCHING_AND_TRUSTED_HISTORY_AUDIT.md`.
 

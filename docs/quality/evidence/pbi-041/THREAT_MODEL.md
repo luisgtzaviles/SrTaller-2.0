@@ -3,7 +3,7 @@
 ## Estado
 
 - **Resultado:** controles de readiness más extensión `OD-RESET-001..005`
-  materializados en candidato local; Owner Review pendiente.
+  y `CM-001..009` materializados en candidato local; Owner Review pendiente.
 - **Fecha:** 2026-09-14.
 - **Riesgo:** Alto por bulk mutation, persistencia, costos, multitenancy,
   concurrencia e idempotencia.
@@ -71,6 +71,11 @@ por cliente tampoco son autoridad.
 | BI-T34 | hard delete de Source borra o desconecta evidencia publicada | Crítico | elegibilidad server-side; INGESTED/Resolution/Memory/retirement bloquean; sin CASCADE | Source histórica rechazada y CatalogItems intactos |
 | BI-T35 | capacidad administrativa amplia sustituye autoridad de delete | Crítico | `catalog.suppliers.delete` exacta, asignable y sin fallback | UI oculta + backend deniega sin capability |
 | BI-T36 | Enter/doble click salta intención o duplica delete | Alto | dos confirmaciones, primer Enter neutralizado, guard sincrónico e idempotencia | un solo evento/resultado |
+| BI-T37 | Memory consistente pero no publicada auto-resuelve identidad | Crítico | trust exige última Resolution, Batch `APPLIED`, exact key, target único, cero correcciones, algoritmo conocido y compatibilidad actual | draft/reanalysis/corrección nunca auto-resuelven |
+| BI-T38 | score aproximado se convierte en autoridad de mapping | Crítico | score sólo filtra/ordena; `CANDIDATE` conserva target null y exige decisión Owner | threshold alto y candidato único siguen `UNRESOLVED` |
+| BI-T39 | candidato manipulado apunta a UUID no presentado o de otro Tenant | Crítico | selección revalidada contra candidatos persistidos y Tenant confiable | target forjado/alien rechazado sin memory ni Catalog writes |
+| BI-T40 | candidate scan produce N+1 o búsqueda no acotada | Alto | historia mismo Source bulk-loaded una vez, pool máximo 200, top K 3 e índice invertido | fixture 1,500 mantiene tiempo acotado y cardinalidad estable |
+| BI-T41 | reanalysis enseña memoria o publica Catalog sin confirmación | Crítico | aprendizaje sólo dentro de publish exitoso; reanalysis sólo reemplaza decisiones del Batch | counts de Catalog/Resolution/Memory permanecen idénticos |
 
 ## Abuse and denial rules
 
@@ -87,6 +92,8 @@ por cliente tampoco son autoridad.
 - Un plan no es autorización: ejecución vuelve a exigir contexto, capability,
   prueba Level 2, confirmación y conjunto vigentes.
 - `ACTIVE CATALOG EMPTY` nunca se interpreta como ausencia de memoria histórica.
+- Un candidate es evidencia para el Owner, no identidad. Ni score, cercanía ni
+  candidato único permiten auto-resolve o auto-publish.
 
 ## ADR-013 classification
 
@@ -113,7 +120,8 @@ sensible no clasificada permanece nivel 4/fail-closed.
 ## Riesgo residual antes de Owner Acceptance
 
 La prueba local no sustituye revisión Owner, CI autoritativa ni Preview.
-`REACTIVATE` sólo cubre una fila cuya memoria histórica demuestra un único
+`REACTIVATE` sólo cubre una fila cuya memoria histórica publicada demuestra un único
 CatalogItem `INACTIVE`; no constituye una reactivación masiva administrativa ni
-habilita matching aproximado. La reversión exacta de updates sigue fuera de
+habilita matching aproximado. Los candidates no aceptados no escriben memoria;
+una elección sólo aprende al publicar satisfactoriamente. La reversión exacta de updates sigue fuera de
 alcance. 50k continúa siendo caracterización, no capacidad de producto.

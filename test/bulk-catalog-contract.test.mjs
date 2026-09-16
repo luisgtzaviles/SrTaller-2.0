@@ -67,7 +67,16 @@ test('bounded candidates fail closed for identity-bearing and structural differe
   const base = { itemId: '33333333-3333-4333-8333-333333333333', title: 'Pantalla iPhone 11 Pro OLED Original 128GB Negra', observedTitle: 'Pantalla iPhone 11 Pro OLED Original 128GB Negra', kind: 'PART', categoryIdentity: 'C:pantallas', brandIdentity: 'C:apple', status: 'ACTIVE', version: 1 };
   const index = matching.buildSupplierHistoryTokenIndex([base]);
   const row = (title, kind = 'PART') => ({ kind, supplierObservedTitle: title, title, description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 1, referenceCostMinor: null });
-  for (const title of ['Pantalla iPhone 11 OLED Original 128GB Negra', 'Pantalla iPhone 11 Pro INCELL Original 128GB Negra', 'Pantalla iPhone 11 Pro OLED Calidad 128GB Negra', 'Pantalla iPhone 11 Pro OLED Original 256GB Negra', 'Pantalla iPhone 11 Pro OLED Original 128GB Azul']) {
+  for (const title of [
+    'Pantalla iPhone 11 OLED Original 128GB Negra',
+    'Pantalla iPhone 11 Pro Plus OLED Original 128GB Negra',
+    'Pantalla iPhone 11 Pro Max OLED Original 128GB Negra',
+    'Pantalla iPhone 11 Pro INCELL Original 128GB Negra',
+    'Pantalla iPhone 11 Pro OLED Calidad 128GB Negra',
+    'Pantalla iPhone 11 Pro OLED Original 256GB Negra',
+    'Pantalla iPhone 11 Pro OLED Original 128GB Azul',
+    'Pantalla iPhone 12 Pro OLED Original 128GB Negra',
+  ]) {
     const result = matching.matchSupplierHistoryCandidates(row(title), 'C:pantallas', 'C:apple', index); assert.equal(result.candidates.length, 0, title); assert.equal(result.contradictory, true, title);
   }
   assert.equal(matching.matchSupplierHistoryCandidates(row(base.title, 'PRODUCT'), 'C:pantallas', 'C:apple', index).contradictory, true);
