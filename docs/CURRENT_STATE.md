@@ -116,6 +116,26 @@ focalizados de cleanup/Composer, arquitectura, typecheck, build y PostgreSQL
 PBI-041 están verdes. `verify:full`, push, PR, merge, Preview, Production,
 deploy y Owner Acceptance permanecen sin ejecutar ni inferir.
 
+La iteración Owner vigente separa ahora identidad estable, título canónico
+actual y títulos observados por proveedor. La auditoría confirmó que
+SupplierListing + Resolution publicada ya conservan la historia item-specific
+y que CatalogAuditEvent puede reconstruir un rename; no se creó una tabla de
+aliases. `Mismo artículo` exige una segunda decisión KEEP/ADOPT cuando el título
+difiere, con KEEP como default, y nada cambia en Catalog antes de Apply. El
+rename, Resolution, Memory y audit son atómicos y usan expected item version.
+Price List incorpora búsqueda histórica indexada, Tenant-scoped y deduplicada
+sin alterar filtros, conteo o paginación.
+
+Materialmente, AG v13 ya estaba `APPLIED` desde
+`2026-09-16 06:32:29.493+00`; conservó los itemId y títulos canónicos previos.
+No fue republicada ni modificada en esta iteración. AG v12 sigue `READY` y v11
+`RECONCILING`, ambas sin publicar; Chrome usa una de esas superficies para que
+el Owner revise KEEP para `(liquidacion)` y ADOPT para `Display` sin ejecutar
+Apply. Gates focalizados de contracts, PostgreSQL, search, Tenant isolation,
+concurrency, idempotency, architecture, typecheck, build y performance están
+verdes. `verify:full`, push, PR, merge, Preview, Production, deploy y Owner
+Acceptance permanecen sin ejecutar ni inferir.
+
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
 Price List comenzó después en una rama no integrada. Ese WIP permaneció
@@ -287,7 +307,7 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Current PBI | PBI-041 — Owner Review ready; Acceptance pending |
 | WIP | 1/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Working candidate con retiro seguro Level 2; Owner Review ready; Acceptance pending |
+| PBI-041 | Canonical title + Supplier observed title history; Owner Review ready; Acceptance pending |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |

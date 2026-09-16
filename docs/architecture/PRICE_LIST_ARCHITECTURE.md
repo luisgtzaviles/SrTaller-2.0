@@ -731,5 +731,33 @@ módulo vacío.
 - definir semántica de Pedidos y Solicitudes de clientes con ejemplos reales;
 - autorizar PBI-041, PBI-042, Production o cualquier consumidor futuro.
 
+## Identidad estable, título canónico e historia observada
+
+La iteración Owner PBI-041 del 2026-09-16 fija una frontera adicional:
+
+```text
+CatalogItem.itemId                 identidad estable
+CatalogItem.title                  título canónico vigente y mutable
+SupplierListing.supplier_title     observación exacta e inmutable
+SupplierListingResolution.item_id  vínculo publicado entre observación e identidad
+```
+
+`Mismo artículo` decide identidad; no decide por sí mismo un rename. Si el
+título propuesto difiere, la fila persiste `KEEP_CURRENT` o `ADOPT_OBSERVED`.
+El default es mantener el actual. `ADOPT_OBSERVED` actualiza title y
+`normalized_title` sólo dentro del Apply transaccional, incrementa la versión
+del mismo item y deja old/new title, actor, Batch, Source, Supplier Version,
+Listing, timestamp, correlation y client request reconstruibles en
+`CatalogAuditEvent`.
+
+La búsqueda histórica no crea una tabla de aliases. Price List agrega al match
+canónico los `itemId` provenientes de Resolutions cuyo Batch está `APPLIED` y
+cuyo Supplier Listing coincide mediante su vector `simple` indexado. El
+subquery está limitado por Tenant, devuelve identidades, y los filtros,
+paginación y orden siguen aplicándose una sola vez sobre `CatalogItem`; por eso
+múltiples observaciones o Sources no duplican la fila. Category/Brand merge no
+rompe el vínculo porque éste depende de `itemId`; retiro sólo oculta el item de
+la lista activa y reactivación conserva historia e identidad.
+
 No queda una decisión Owner bloqueante para la implementación acotada de
 PBI-040; sólo falta su autorización explícita de inicio.

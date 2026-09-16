@@ -732,3 +732,78 @@ La única anomalía de preflight es un ref Git local preexistente roto para
 `origin/main`; no afectó runtime, tests ni la rama candidata y no se modificó
 durante esta iteración. El archivo no versionado
 `apps/dev-preview-web/src/.DS_Store` pertenece al Owner y permanece intacto.
+
+## Canonical title + Supplier observed title history
+
+### Estado anterior y hallazgo material
+
+La auditoría del 2026-09-16 encontró tres hechos distintos: `CatalogItem.title`
+era la única fuente de búsqueda por nombre; las Listings ya conservaban el
+título exacto del proveedor y las Resolutions publicadas ya permitían
+reconstruir su `itemId`; `CatalogAuditEvent` ya era suficiente para conservar
+un rename, siempre que recibiera old/new y provenance. No se justificó crear
+una segunda tabla de alias o historia.
+
+AG v13 ya estaba `APPLIED`, con `published_at=2026-09-16 06:32:29.493+00`,
+antes de este cambio. Sus dos observaciones quedaron mapeadas a los mismos
+itemId, pero los títulos canónicos continuaron como `Pantalla iPhone 11 Calidad
+RJ >>` y `Pantalla iPhone 11 Original >>I`. v12 permaneció `READY` y v11
+`RECONCILING`, ambas sin publicar. Ninguna versión AG se aplicó durante esta
+iteración.
+
+### Modelo y persistencia
+
+- `CatalogItem.itemId` continúa como identidad estable para consumidores.
+- `CatalogItem.title` es el título canónico vigente y mutable.
+- `SupplierListing.supplier_title` es observación exacta e inmutable;
+  `SupplierListingResolution` la vincula al item sólo tras publish exitoso.
+- `title_decision` persiste `KEEP_CURRENT | ADOPT_OBSERVED` en la decisión de
+  fila; el default seguro de UI es KEEP.
+- un vector generado `supplier_title_search` y su GIN soportan búsqueda
+  histórica; el índice parcial de Resolution acelera la proyección por item.
+- no existe backfill semántico ni alias global: Listings existentes generan su
+  vector automáticamente y decisiones previas quedan null.
+
+### Atomicidad, concurrencia y audit
+
+Elegir identidad/nombre no cambia Catalog. Apply vuelve a leer el item y exige
+expected version, decisión de título válida y lifecycle compatible. Rename,
+reactivación, revisiones, Resolution, Memory y `catalog.bulk.publish.row`
+comparten una transacción. El evento registra item, título anterior/nuevo,
+actor, Batch, Source, Version, Listing, timestamp, correlation y
+clientRequestId. Un segundo lote concurrente queda stale; no hay
+last-write-wins. Replay devuelve el resultado previo y no duplica rename/audit.
+
+### Search histórico
+
+Price List combina el match canónico con un subquery que devuelve itemId desde
+Listings vinculadas por Resolution a Batches `APPLIED`. Los predicates Tenant
+se aplican dentro y fuera; filtros Type/Category/Brand, orden, count y
+paginación siguen sobre `CatalogItem`. Por eso varios títulos o Suppliers no
+duplican resultados y una observación no publicada/excluida no participa.
+
+### Casos cubiertos
+
+- KEEP: canonical sin cambio, mismo itemId y `liquidacion` localizable.
+- ADOPT: mismo itemId, canonical `Display…`, old/new auditables y `display` /
+  `pantalla` localizan una sola fila.
+- NEW no ofrece rename de otro item; EXCLUDE no aprende.
+- fallo/stale deja cero rename, Resolution, Memory y audit parcial.
+- REACTIVATE + ADOPT conserva identidad y transacción única.
+- dos Suppliers pueden aportar títulos al mismo item sin equivalencia global.
+- observaciones y resultados quedan aislados por Tenant.
+
+### Gates focalizados
+
+- contracts/domain/UI: PASS;
+- PostgreSQL material, Tenant isolation, concurrency, idempotency y search:
+  PASS sobre 71 migraciones;
+- typecheck, build y architecture: PASS;
+- benchmark 10k final: ingest 5,106.9 ms, analyze 446.0 ms, preview 43.8 ms,
+  publish 17,845.3 ms, historical search 140.1 ms y heap 95.1 MiB; dentro de
+  budgets del target 10k;
+- `verify:full`: NOT RUN por prohibición explícita previa a Owner Acceptance.
+
+Chrome queda preparado en AG v11 para tomar las dos decisiones provisionales.
+No se ejecutó Apply Batch. Esta evidencia no demuestra Owner Acceptance, PR,
+CI autoritativa, merge, Preview, Production ni deploy.

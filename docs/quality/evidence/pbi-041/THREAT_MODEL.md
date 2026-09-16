@@ -2,9 +2,10 @@
 
 ## Estado
 
-- **Resultado:** controles de readiness más extensión `OD-RESET-001..005`
-  y `CM-001..009` materializados en candidato local; Owner Review pendiente.
-- **Fecha:** 2026-09-14.
+- **Resultado:** controles de readiness más extensiones `OD-RESET-001..005`,
+  `CM-001..009` y canonical title/Supplier observed title materializados en
+  candidato local; Owner Review pendiente.
+- **Fecha:** 2026-09-16.
 - **Riesgo:** Alto por bulk mutation, persistencia, costos, multitenancy,
   concurrencia e idempotencia.
 - **Alcance:** Composer clipboard, Supplier Version/Listing/Resolution,
@@ -76,6 +77,11 @@ por cliente tampoco son autoridad.
 | BI-T39 | candidato manipulado apunta a UUID no presentado o de otro Tenant | Crítico | selección revalidada contra candidatos persistidos y Tenant confiable | target forjado/alien rechazado sin memory ni Catalog writes |
 | BI-T40 | candidate scan produce N+1 o búsqueda no acotada | Alto | historia mismo Source bulk-loaded una vez, pool máximo 200, top K 3 e índice invertido | fixture 1,500 mantiene tiempo acotado y cardinalidad estable |
 | BI-T41 | reanalysis enseña memoria o publica Catalog sin confirmación | Crítico | aprendizaje sólo dentro de publish exitoso; reanalysis sólo reemplaza decisiones del Batch | counts de Catalog/Resolution/Memory permanecen idénticos |
+| BI-T42 | `Mismo artículo` renombra implícitamente el CatalogItem | Crítico | decisión de identidad separada de `KEEP_CURRENT`/`ADOPT_OBSERVED`; default KEEP; persistencia provisional | resolver candidate sin segunda decisión no escribe title y falla cerrado si falta al publicar |
+| BI-T43 | Apply fallido deja rename, Resolution o Memory parcial | Crítico | rename, revisiones, Resolution, Memory y audit comparten la misma transacción | fallo inyectado y stale expectedVersion dejan title/history/counts intactos |
+| BI-T44 | búsqueda histórica duplica items, rompe filtros/página o hace full scan/N+1 | Alto | GIN `tsvector`, subquery Tenant/APPLIED que sólo devuelve itemId y filtros/paginación exteriores sobre CatalogItem | múltiples títulos/Sources devuelven un item; filtros/count/EXPLAIN y 10k dentro de presupuesto |
+| BI-T45 | un título observado de Tenant A afecta búsqueda de Tenant B | Crítico | Tenant predicate en Resolution, Listing y Batch; resultado se vuelve a resolver sobre el scope confiable | mismo término en dos Tenants no cruza IDs, conteos ni metadata |
+| BI-T46 | dos versiones renombran el mismo item por last-write-wins | Crítico | expected item version revalidada dentro del Apply transaccional; conflicto tipado | primera versión publica; la segunda stale falla sin rename, Resolution, Memory ni audit parcial |
 
 ## Abuse and denial rules
 
@@ -94,6 +100,8 @@ por cliente tampoco son autoridad.
 - `ACTIVE CATALOG EMPTY` nunca se interpreta como ausencia de memoria histórica.
 - Un candidate es evidencia para el Owner, no identidad. Ni score, cercanía ni
   candidato único permiten auto-resolve o auto-publish.
+- Un título observado es evidencia item-specific, no alias global. Sólo una
+  Resolution publicada permite usarlo para localizar ese `itemId`.
 
 ## ADR-013 classification
 
@@ -109,7 +117,7 @@ sensible no clasificada permanece nivel 4/fail-closed.
 
 ## Security exit gate for implementation
 
-- BI-T01..T30 applicable tests green, including PostgreSQL real;
+- BI-T01..T46 applicable tests green, including PostgreSQL real;
 - zero open Blocker/Critical/High in focused High-risk review;
 - server-side cost omission proven in HTTP/network/DOM/report/history;
 - two-Tenant and Branch-preservation matrix complete;

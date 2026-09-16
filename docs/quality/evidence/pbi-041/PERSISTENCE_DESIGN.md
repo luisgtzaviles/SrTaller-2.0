@@ -328,3 +328,26 @@ audit y Catalog permanecen.
 Ninguna bloqueante para readiness. Nombres físicos/índices exactos pueden
 ajustarse durante implementación sólo si conservan este contrato y pasan review;
 no habilitan ampliar alcance ni degradar invariantes.
+
+## Canonical title + Supplier observed title history
+
+La auditoría confirmó que no hace falta otra tabla de historia. El subset
+permanente ya conserva `SupplierListing.supplier_title` exacto y
+`SupplierListingResolution` enlaza cada observación publicada al `itemId`.
+`CatalogAuditEvent` ya es append-only y registra el rename canónico.
+
+La migración
+`20260915130000_catalog_add_supplier_observed_title_history` añade únicamente:
+
+- `catalog_update_row_decisions.title_decision`, nullable y restringido a
+  `KEEP_CURRENT | ADOPT_OBSERVED`;
+- `catalog_supplier_listings.supplier_title_search`, `tsvector` generado con
+  configuración `simple` a partir del título exacto;
+- GIN sobre el vector y un índice parcial Tenant/item sobre Resolution para el
+  lookup histórico.
+
+No hay backfill semántico: el vector se deriva de las Listings existentes y las
+decisiones antiguas quedan null. Publish falla cerrado si una fila con target y
+título distinto carece de decisión. El rename, Resolution, Memory, revisiones y
+audit event comparten una transacción; expected item version impide
+last-write-wins entre versiones concurrentes.

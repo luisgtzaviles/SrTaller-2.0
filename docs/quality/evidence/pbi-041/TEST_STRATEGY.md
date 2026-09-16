@@ -2,9 +2,10 @@
 
 ## Estado
 
-- **Resultado:** estrategia extendida con `OD-RESET-001..005`; cobertura
-  focalizada extendida con `CM-001..009` y ejecutada sobre el candidato local.
-- **Fecha:** 2026-09-14.
+- **Resultado:** estrategia extendida con `OD-RESET-001..005`, `CM-001..009`
+  y canonical title/Supplier observed title; cobertura focalizada ejecutada
+  sobre el candidato local.
+- **Fecha:** 2026-09-16.
 - **Riesgo:** Alto; DEC-051 requires risk-proportional unit, contract,
   PostgreSQL, HTTP, browser, security and CI evidence.
 
@@ -84,6 +85,14 @@ aislados y reversibles en PostgreSQL desechable.
 | BI-Q50 | 1,500 historias se cargan/indexan una vez; pool 200, top K 3 y tiempos bounded sin N+1 | ✓ | ✓ | ✓ |  |  | ✓ |
 | BI-Q51 | UX abre en Requieren atención, separa resueltas e identifica evidencia/diferencias sin ocultar trusted rows | ✓ | ✓ |  | ✓ | ✓ | ✓ |
 | BI-Q52 | AG v11 reanalysis produce 34 trusted APPLY + 2 CANDIDATE UNRESOLVED y cero publish/memory/item writes | ✓ | ✓ | ✓ | ✓ | ✓ | Owner evidence |
+| BI-Q53 | same item + KEEP conserva itemId/title y publica observed title searchable | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q54 | same item + ADOPT conserva itemId, cambia title atómicamente y audita old/new + provenance | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q55 | antes de Apply, decidir KEEP/ADOPT no cambia CatalogItem ni crea Resolution/Memory | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q56 | exclude/failure/replay no aprende, no renombra y no duplica audit events | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q57 | search canonical/historical deduplica item, conserva filtros/count/page y aísla Tenant | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q58 | dos versiones con ADOPT sobre el mismo item hacen fail-closed por expected version | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q59 | REACTIVATE + ADOPT conserva identidad y aplica lifecycle/rename en una transacción | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q60 | dos SupplierSources pueden aportar títulos buscables al mismo item sin alias global | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Layer responsibilities
 
@@ -181,7 +190,7 @@ PASS alone cannot close Owner Review.
 
 ## Exit criteria
 
-- BI-Q01..Q52 applicable gates green without downgraded assertions;
+- BI-Q01..Q60 applicable gates green without downgraded assertions;
 - required 1,500-row Owner flow and 10k candidate budgets evidenced;
 - 50k characterization/rejection evidenced;
 - zero Blocker/Critical/High open after focused review;
