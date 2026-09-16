@@ -714,8 +714,12 @@ AG v11; no se ejecutó `Aplicar lote`.
 - contratos candidate/Composer: 22 PASS, 0 FAIL;
 - PostgreSQL material PBI-041: 1 PASS, 0 FAIL, 70 migraciones; incluido
   provenance trusted, candidate tamper, publish-only learning y Tenant
-  isolation; benchmark 10k: ingest 6,630.5 ms, análisis 499.0 ms, preview
-  52.1 ms, publish 2,350.1 ms y 103.1 MiB de heap;
+  isolation. La campaña final ampliada probó además exact replay no publicado
+  (`NEW/NONE`), dos candidates razonables como `AMBIGUOUS`, memoria sin cambio
+  después de decisiones provisionales y `(oferta)` como candidate nuevo, no
+  herencia de `(liquidacion)`. Benchmark 10k final: ingest 5,350.7 ms, análisis
+  488.2 ms, preview 53.0 ms, publish 20,560.0 ms y 85.7 MiB de heap; todos
+  dentro de los budgets de 30 s/250 MiB, con variación de publish registrada;
 - migration architecture/database: 12 PASS, 0 FAIL;
 - caracterización in-memory final: p95 4.1 ms para 1,500 filas y 12.5 ms para
   10,000; 50k se caracterizó en 41.9 ms y fue rechazado antes de persistir; el candidate lookup usa

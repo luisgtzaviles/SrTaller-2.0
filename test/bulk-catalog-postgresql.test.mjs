@@ -358,10 +358,23 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const candidateRows = [
       { kind: 'PART', supplierObservedTitle: 'Pantalla iPhone 11 Calidad RJ >>', title: 'Pantalla iPhone 11 Calidad RJ >>', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 139_900, referenceCostMinor: 48_000 },
       { kind: 'PART', supplierObservedTitle: 'Pantalla iPhone 11 Original >>I', title: 'Pantalla iPhone 11 Original >>I', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 149_900, referenceCostMinor: 58_000 },
+      { kind: 'PART', supplierObservedTitle: 'Pantalla iPhone 11 GX', title: 'Pantalla iPhone 11 GX', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 129_900, referenceCostMinor: 45_000 },
+      { kind: 'PART', supplierObservedTitle: 'Pantalla iPhone 11 ZY', title: 'Pantalla iPhone 11 ZY', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 129_900, referenceCostMinor: 45_000 },
     ];
     const candidateV1 = await service.createDraft(ctxB, { sourceId: candidateSource.sourceId, description: 'Candidate anchors', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'f'.repeat(64), rawPayload: 'candidate-v1', rows: candidateRows });
     const candidateV1Analyzed = await service.analyze(ctxB, candidateV1.versionId, { expectedVersion: candidateV1.version });
+    const unpublishedReplay = await service.createDraft(ctxB, { sourceId: candidateSource.sourceId, description: 'Unpublished exact replay', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'f'.repeat(64), rawPayload: 'candidate-unpublished', rows: [candidateRows[0]] });
+    const unpublishedReplayAnalyzed = await service.analyze(ctxB, unpublishedReplay.versionId, { expectedVersion: unpublishedReplay.version });
+    assert.equal(unpublishedReplayAnalyzed.batch.counts.NEW, 1);
+    assert.equal(unpublishedReplayAnalyzed.rows[0].matchOrigin, 'NONE');
+    assert.equal(unpublishedReplayAnalyzed.rows[0].preselectedByMemory, false);
     await service.publish(ctxB, candidateV1.versionId, { expectedVersion: candidateV1Analyzed.version, clientRequestId: randomUUID() }, true);
+    const ambiguousCandidateVersion = await service.createDraft(ctxB, { sourceId: candidateSource.sourceId, description: 'Multiple reasonable candidates', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'f'.repeat(64), rawPayload: 'candidate-ambiguous', rows: [{ ...candidateRows[2], supplierObservedTitle: 'Pantalla iPhone 11', title: 'Pantalla iPhone 11' }] });
+    const ambiguousCandidateAnalyzed = await service.analyze(ctxB, ambiguousCandidateVersion.versionId, { expectedVersion: ambiguousCandidateVersion.version });
+    assert.equal(ambiguousCandidateAnalyzed.batch.counts.AMBIGUOUS, 1);
+    assert.equal(ambiguousCandidateAnalyzed.rows[0].candidates.length, 2);
+    assert.equal(ambiguousCandidateAnalyzed.rows[0].targetItemId, null);
+    assert.equal(ambiguousCandidateAnalyzed.rows[0].warnings.includes('MULTIPLE_BOUNDED_CANDIDATES'), true);
     const modifiedCandidateRows = [
       { ...candidateRows[0], supplierObservedTitle: 'Pantalla iPhone 11 Calidad RJ >> (liquidacion)', title: 'Pantalla iPhone 11 Calidad RJ >> (liquidacion)' },
       { ...candidateRows[1], supplierObservedTitle: 'Display iPhone 11 Original >>I', title: 'Display iPhone 11 Original >>I' },
@@ -373,18 +386,26 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(candidateV2Analyzed.rows.every((row) => row.matchOrigin === 'CANDIDATE' && row.decision === 'UNRESOLVED' && row.targetItemId === null && row.candidates.length === 1), true);
     await assert.rejects(service.decide(ctxB, candidateV2.versionId, candidateV2Analyzed.rows[0].rowDecisionId, { expectedRowVersion: candidateV2Analyzed.rows[0].version, decision: 'APPLY', targetItemId: randomUUID() }), CatalogConflictError);
     const memoryBeforeCandidatePublish = await admin.query(`select count(*)::int as count from catalog_supplier_reconciliation_memory where tenant_id = $1 and source_id = $2`, [tenantB, candidateSource.sourceId]);
-    assert.equal(memoryBeforeCandidatePublish.rows[0].count, 2);
+    assert.equal(memoryBeforeCandidatePublish.rows[0].count, 4);
     let candidateResolved = candidateV2Analyzed;
     for (const originalRow of candidateV2Analyzed.rows) {
       const currentRow = candidateResolved.rows.find(({ rowDecisionId }) => rowDecisionId === originalRow.rowDecisionId);
       candidateResolved = await service.decide(ctxB, candidateV2.versionId, originalRow.rowDecisionId, { expectedRowVersion: currentRow.version, decision: 'APPLY', targetItemId: originalRow.candidates[0].itemId });
     }
     assert.equal(candidateResolved.batch.lifecycle, 'READY');
+    const memoryAfterCandidateDecision = await admin.query(`select count(*)::int as count from catalog_supplier_reconciliation_memory where tenant_id = $1 and source_id = $2`, [tenantB, candidateSource.sourceId]);
+    assert.equal(memoryAfterCandidateDecision.rows[0].count, 4);
     await service.publish(ctxB, candidateV2.versionId, { expectedVersion: candidateResolved.version, clientRequestId: randomUUID() }, true);
     const candidateV3 = await service.createDraft(ctxB, { sourceId: candidateSource.sourceId, description: 'Exact candidate repetition', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'f'.repeat(64), rawPayload: 'candidate-v3', rows: modifiedCandidateRows });
     const candidateV3Analyzed = await service.analyze(ctxB, candidateV3.versionId, { expectedVersion: candidateV3.version });
     assert.equal(candidateV3Analyzed.batch.counts.UNCHANGED, 2);
     assert.equal(candidateV3Analyzed.rows.every((row) => row.matchOrigin === 'TRUSTED_HISTORY' && row.preselectedByMemory && row.decision === 'APPLY'), true);
+    const offerVersion = await service.createDraft(ctxB, { sourceId: candidateSource.sourceId, description: 'Different observation is not inherited', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'f'.repeat(64), rawPayload: 'candidate-offer', rows: [{ ...candidateRows[0], supplierObservedTitle: 'Pantalla iPhone 11 Calidad RJ >> (oferta)', title: 'Pantalla iPhone 11 Calidad RJ >> (oferta)' }] });
+    const offerAnalyzed = await service.analyze(ctxB, offerVersion.versionId, { expectedVersion: offerVersion.version });
+    assert.equal(offerAnalyzed.batch.counts.CANDIDATE, 1);
+    assert.equal(offerAnalyzed.rows[0].matchOrigin, 'CANDIDATE');
+    assert.equal(offerAnalyzed.rows[0].targetItemId, null);
+    assert.equal(offerAnalyzed.rows[0].preselectedByMemory, false);
     assert.equal((await service.getVersion({ tenantId: tenantA, branchId: branchA }, candidateV3.versionId, true).catch(() => null)), null);
 
     const benchmarkRows = Array.from({ length: 10_000 }, (_, index) => ({ kind: 'PART', title: `Benchmark ${index + 1}`, description: null, category: 'Benchmark', brand: null, supplierItemCode: `BENCH-${String(index + 1).padStart(5, '0')}`, sku: null, barcode: null, basePriceMinor: 100_00 + index, referenceCostMinor: null }));
