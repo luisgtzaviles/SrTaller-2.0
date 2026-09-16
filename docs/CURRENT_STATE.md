@@ -57,6 +57,15 @@ virtualización, reload y comparación V1/V2. El clasificador shadow declaró
 `CROSS_MODULE_HIGH_RISK` y no omitió gates. No se ejecutó `verify:full`, conforme
 a la autoridad previa a Acceptance; no hubo push, PR, merge ni deploy.
 
+La remediación local más reciente de PBI-041 separó candidate contrast de
+identity conflict durable. AG v17 conserva 37 filas `FULL` sin publicar: tras
+reanálisis normal en localhost, sus 36 filas trusted permanecen `UNCHANGED` y
+`Pantalla iPhone 16 Original` quedó `NEW/APPLY`, sin target ni memoria,
+reemplazando el falso conflicto previo derivado sólo de `16` frente a `14/15`.
+Los conflictos de identifiers incompatibles y mapping durable corregido siguen
+fallando cerrado. No se aplicó el batch, no hubo push, PR, merge, Preview,
+Production ni deploy; Owner Review continúa pendiente.
+
 La iteración Owner `OD-RESET-001..005`, materializada en el candidato funcional
 `44e605953676456eff519b5b3fca02d952eb5c38`, resolvió el hallazgo posterior sin hard
 delete ni falsa reversión. El lifecycle existente `ACTIVE/INACTIVE` soporta

@@ -3,7 +3,8 @@
 ## Checkpoint
 
 - **Estado:** trusted history + bounded candidate matching PASS en LOCAL; AG
-  v11 lista para Owner Review; Owner Acceptance pendiente.
+  v11 y la remediación de identidad nueva AG v17 listas para Owner Review;
+  Owner Acceptance pendiente.
 - **Baseline:** `100eb9abc8b8b3b01da5dcc312777b59bf01a615` (`main == origin/main` al iniciar).
 - **Candidato de reactivación:** `f4bc803fe3b086405024f6199b65114feb1feebe`.
 - **Candidato de retiro anterior:** `44e605953676456eff519b5b3fca02d952eb5c38`.
@@ -13,7 +14,7 @@
 - **Implementación trusted/candidate:**
   `f2554cf29f2211d73a688512b6f89de16ce8e108`.
 - **Rama:** `feature/pbi-041-bulk-catalog-composer`.
-- **Fecha:** 2026-09-15 MST.
+- **Fecha:** 2026-09-16 MST.
 - **Delivery:** sin push, PR, merge, Preview, Production ni deploy.
 - **Gate deliberadamente no ejecutado:** `verify:full`, reservado por autoridad
   Owner para después de Owner Acceptance.
@@ -224,8 +225,9 @@ historia del Tenant habitual.
 - El draft usa versión optimista y sobrevive reload.
 - Matching automático se limita a SKU, barcode, supplier code o firma histórica
   exacta, única y consistente. Título/similitud nunca escriben Catalog.
-- La corrección de mapping conserva historia; una contradicción posterior se
-  clasifica `AMBIGUOUS`.
+- La corrección de mapping conserva historia; una corrección durable marcada
+  como incompatible se clasifica `CONFLICT`, mientras múltiples historias
+  independientes permanecen `AMBIGUOUS`.
 - `CatalogUpdateBatch` y sus decisiones son independientes de la versión de
   proveedor.
 - Publish revalida sesión, capabilities, Tenant, expected version, decisiones y
@@ -667,7 +669,8 @@ la historia publicada del mismo Source, limita el pool a 200 y devuelve como
 máximo tres candidates. El score Jaccard sólo filtra y ordena; no llena
 `target_item_id`. Los tokens de modelo/número, `Pro/Plus/Max`, tecnología
 `OLED/INCELL`, calidad `Original/Calidad`, color, capacidad y tamaño se preservan
-como señales de contradicción. La selección Owner se revalida contra el conjunto
+como contrastes de candidate. Pueden filtrar una propuesta, pero no son por sí
+solos identidad durable ni `CONFLICT`. La selección Owner se revalida contra el conjunto
 persistido; un UUID arbitrario o de otro Tenant falla cerrado.
 
 La migración `20260915120000_catalog_add_bounded_candidate_matching` agrega la
@@ -706,6 +709,29 @@ La fila 1 sugirió `Pantalla iPhone 11 Calidad RJ >>` con score de presentación
 `OBSERVED_ONLY:display / HISTORY_ONLY:pantalla`. Cada una tuvo un solo candidato,
 `target_item_id = null` y ninguna decisión fue tomada. Chrome quedó abierto en
 AG v11; no se ejecutó `Aplicar lote`.
+
+### AG v17 — genuinely new item, reanalysis controlada sin Apply
+
+Antes de la remediación, la fila 37 `Pantalla iPhone 16 Original` estaba
+`CONFLICT/UNRESOLVED` por `CANDIDATE_IDENTITY_CONTRADICTION`: sólo había dos
+observaciones históricas plausibles (`iPhone 14` e `iPhone 15`, ambas score
+0.60), sin identifier ni memoria trusted. La causa fue convertir el contraste
+de token protegido `16` contra `14/15` en conflicto durable.
+
+Después, el matcher devuelve esos contrastes bounded sin convertirlos en
+candidate persistido o target. El reanálisis se hizo mediante el botón local
+`Reanalizar versión`, no por escritura SQL: `36 UNCHANGED`, `1 NEW/APPLY`, `0
+CONFLICT`, batch `READY`, `published_at = null`. La fila 37 no muestra
+UUID de mapping, no tiene `target_item_id`, Resolution ni Memory; `Aplicar
+lote` no se ejecutó. Chrome queda abierto en `/listas/precios/carga-masiva`
+con AG v17 seleccionado.
+
+Los conflictos fuertes siguen materiales: SKU y barcode dirigidos a items
+distintos producen `IDENTIFIERS_POINT_TO_DIFFERENT_ITEMS/CONFLICT`; memoria
+corregida e incompatible produce `CORRECTED_MAPPING_CONFLICT/CONFLICT`.
+`AMBIGUOUS_HISTORY` permanece para historias independientes múltiples. El
+input UUID de UI queda acotado a esos conflictos durables; reemplazarlo por un
+selector Catalog reutilizable se registra como deuda UX, fuera de este fix.
 
 ### Gates focalizados
 

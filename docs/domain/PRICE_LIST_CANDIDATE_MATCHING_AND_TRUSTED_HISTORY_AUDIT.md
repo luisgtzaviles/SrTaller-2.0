@@ -213,6 +213,13 @@ CandidateMatch {
 }
 ```
 
+Un contraste textual descartado por policy se conserva separadamente como
+evidencia bounded (`evidence`, `differences`, `contrasts`), pero no es un
+`CandidateMatch` persistible ni una autoridad para `CONFLICT`. La diferencia
+`iPhone 16` frente a `iPhone 14/15` sigue siendo importante para filtrar o
+explicar la propuesta; sólo identifiers, memoria durable, tipo/referencia o
+invariantes incompatibles pueden escalarla a conflicto.
+
 Pipeline propuesto:
 
 1. formar un pool Tenant-scoped; priorizar items vistos por la misma Source;
@@ -351,7 +358,7 @@ Estados internos/UI:
 | `AUTO_RESOLVED` | identidad exacta trusted; no requiere decisión de reconciliación |
 | `CANDIDATE` | uno o más targets explicables; requiere Owner |
 | `AMBIGUOUS` | múltiples targets razonables; ninguno preseleccionado |
-| `CONFLICT` | señales fuertes o invariantes se contradicen |
+| `CONFLICT` | señales fuertes o invariantes durables se contradicen |
 | `INVALID` | el listing no satisface el contrato de datos |
 
 `AUTO_RESOLVED` describe la decisión de identidad, no la publicación.
@@ -360,9 +367,9 @@ Estados internos/UI:
 
 | Caso | Resultado fail-closed |
 |---|---|
-| iPhone 11 vs 11 Pro; 14 vs 14 Plus | Candidate separado o Conflict si una señal fuerte apunta distinto |
-| OLED vs INCELL; Original vs Calidad | nunca equivalencia textual automática; Candidate/Conflict |
-| color, capacidad, tamaño o modelo distinto | Candidate separado o Conflict según evidencia fuerte |
+| iPhone 11 vs 11 Pro; 14 vs 14 Plus | Candidate separado o contraste descartado; `CONFLICT` sólo si una señal fuerte apunta distinto |
+| OLED vs INCELL; Original vs Calidad | nunca equivalencia textual automática; candidate o contraste, nunca conflicto por texto solo |
+| color, capacidad, tamaño o modelo distinto | Candidate separado o contraste descartado; conflicto sólo según evidencia durable |
 | proveedor reutiliza exactamente un título para otro producto | memoria corregida pasa `CONFLICTED`; no auto-resolve |
 | mismo texto histórico apunta a dos itemId | `AMBIGUOUS` |
 | Category/Brand cambia | resolver canon/merge; incompatible queda `CONFLICT` |
@@ -376,6 +383,21 @@ Estados internos/UI:
 | dos versiones concurrentes | locks/versiones; la segunda reanaliza ante stale |
 | reanálisis después de decisión | fingerprint nuevo invalida candidate snapshot/decisión stale |
 | replay de decisión | mismo request+hash devuelve resultado; hash distinto conflictúa |
+
+### Remediación local AG v17 — 2026-09-16
+
+La fila `Pantalla iPhone 16 Original` no tenía supplier code, SKU, barcode,
+Resolution, ReconciliationMemory ni CatalogItem exacto. La historia publicada
+de la misma Source aportaba `Pantalla iPhone 14 Original` y `Pantalla iPhone 15
+Original` con score 0.60 y contraste numérico protegido. El matcher conserva
+ese contraste y descarta esos candidates débiles, pero el análisis ya no lo
+promueve a `CONFLICT`. Reanálisis normal local: `36 UNCHANGED`, `1 NEW`, `0
+CONFLICT`; el batch queda `READY` y sin publicar.
+
+El campo de UUID para corregir mapping sigue apareciendo exclusivamente en
+conflictos fuertes reales. Reemplazarlo por selector Catalog es deuda UX
+delimitada para una iteración posterior: no existe un selector reutilizable
+verificado dentro de este alcance y no se introdujo uno ad hoc.
 
 El cambio debe extender BI-T09, BI-T10, BI-T19 y BI-T31: un threshold alto no
 convierte similitud en señal fuerte; candidate tampering se recomputa

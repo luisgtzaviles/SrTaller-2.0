@@ -37,7 +37,7 @@ aislados y reversibles en PostgreSQL desechable.
 | BI-Q02 | new Catalog creates use server SKU/barcode and remain searchable | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q03 | V2 exact historical mappings preselect only when unique/consistent | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q04 | corrected mapping appends resolution and changes memory projection | ✓ | ✓ | ✓ | ✓ |  | ✓ |
-| BI-Q05 | inconsistent historical target becomes ambiguous | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q05 | corrected durable mapping remains a hard `CONFLICT`; multiple independent durable histories remain `AMBIGUOUS` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q06 | optional/duplicate supplier code does not fabricate or last-row-win | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q07 | pending Category/Brand consolidates through PBI-040 governance | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q08 | Owner confirms batch; no per-row click for exact preselection |  | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -79,7 +79,7 @@ aislados y reversibles en PostgreSQL desechable.
 | BI-Q44 | caso material AG: 36 INACTIVE → 36 REACTIVATE → 36 ACTIVE con IDs exactos | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q45 | exact history sólo auto-resuelve con Batch APPLIED, key exacta, target único, cero correcciones y compatibilidad | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q46 | miss exacto produce candidate read-only; score nunca decide ni llena target | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| BI-Q47 | Pro/Plus/Max, OLED/INCELL, Original/Calidad, color, capacidad, tamaño y números incompatibles no colapsan identidad | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q47 | Pro/Plus/Max, OLED/INCELL, Original/Calidad, color, capacidad, tamaño y números incompatibles permanecen contrastes explicables; no auto-resuelven ni elevan texto solo a `CONFLICT` | ✓ | ✓ | ✓ | ✓ |  | ✓ |
 | BI-Q48 | selección sólo acepta candidato persistido; UUID arbitrario/cross-Tenant falla sin efectos | ✓ | ✓ | ✓ | ✓ |  | ✓ |
 | BI-Q49 | decisión candidate no aprende antes de publish; publish exitoso crea Resolution/Memory exacta y la siguiente versión se vuelve trusted | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q50 | 1,500 historias se cargan/indexan una vez; pool 200, top K 3 y tiempos bounded sin N+1 | ✓ | ✓ | ✓ |  |  | ✓ |
