@@ -3,11 +3,11 @@
 Milestone / Functional Goal: PBI-041 — Supplier version completeness semantics
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: PARTIAL/COMPLETE implementation materially validated; Owner Review pending
+Status: supplier completeness ready for Owner Review
 WIP: 1/1
-Progress: 5 / 7 functional blocks completed
-Current: local Composer walkthrough and runtime provenance
-Next: focused final review, logical local commits and Owner Review handoff
+Progress: 7 / 7 functional blocks completed
+Current: Owner Review of PARTIAL/COMPLETE semantics
+Next: Owner may accept or reject this PBI-041 checkpoint; no acceptance is inferred
 Blocked: None; historic AG fixtures remain preserved and are never reclassified retrospectively
 Last updated: 2026-09-16 MST
 
@@ -19,7 +19,7 @@ Last updated: 2026-09-16 MST
 - [x] Make comparison absence-aware by current coverage and same-source complete baselines.
 - [x] Apply migration and prove historical versions read `PARTIAL`.
 - [x] Prove COMPLETE absence is informational while Catalog identity/history remain intact.
-- [~] Complete Chrome Owner Review walkthrough and focused gates.
+- [x] Complete Chrome Owner Review walkthrough and focused gates.
 
 ## Audit evidence
 

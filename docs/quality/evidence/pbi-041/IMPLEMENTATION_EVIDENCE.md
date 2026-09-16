@@ -849,3 +849,9 @@ identifiers, revisiones y ReconciliationMemory, con cero Resolution nueva. Una
 tercera carga `PARTIAL` devolvió `PARTIAL_CURRENT / null`, sin señal de
 ausencia. `typecheck`, build, contrato UI y PostgreSQL focalizado pasaron con
 Node 24.18.0 y pnpm 11.15.1. Owner Acceptance sigue pendiente.
+
+Chrome local sobre el HEAD runtime actualizado mostró ambos radios y el copy
+Owner; la selección de `Lista completa del proveedor` cambia el control sin
+guardar ni aplicar. Al abrir AG v19, que migró como `PARTIAL`, la superficie
+de comparación dice que los artículos ausentes no se evalúan. Se recargó el
+Composer para descartar la selección visual sin crear una nueva versión AG.
