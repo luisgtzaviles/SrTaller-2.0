@@ -882,3 +882,34 @@ observados en `AG v28`. `AG / v30` (`PARTIAL`, `READY`, 34) mostró
 `Actualización parcial`, `34 artículos procesados` y que los artículos no
 incluidos no se evaluaron, sin contador ni panel de no observados. Los mismos
 fixtures permanecieron sin Apply.
+
+## Post-analysis result-first workspace
+
+`gridExpanded` es estado efímero de React y el contenedor estable
+`#bulk-catalog-grid` permanece montado con `hidden` cuando se colapsa. No hay
+escritura PostgreSQL, migración ni cambio de Source, Version, Batch, decisión,
+cobertura, reconciliación o `CatalogItem` al Mostrar/Ocultar lista.
+
+Una nueva carga y una Version `DRAFT` abren edit-first con grid visible; guardar
+el borrador no modifica esa preferencia. Tras Analyze/Reanalyze exitoso, y al
+abrir cualquier Version `INGESTED` —incluidos `READY`, `RECONCILING` y
+`APPLIED`— la grid abre result-first, colapsada. El botón real alterna
+`Mostrar lista`/`Ocultar lista`, conserva `aria-expanded` y
+`aria-controls="bulk-catalog-grid"`; un error de celda restablece la grid antes
+del scroll/focus existente. Candidate y decisiones de reconciliación no alteran
+la visibilidad de la grid.
+
+Chrome local, sin Save, Analyze ni Apply, verificó `AG v3` (`DRAFT`, 36 filas)
+con grid editable visible; `AG v31` (`PARTIAL`, `READY`, 34) colapsado con
+`34 artículos procesados`; y `AG v29` (`COMPLETE`, `READY`, 34) colapsado con
+`34 filas recibidas / 34 observados / 3 no observados` antes de
+Reconciliación. En v29, Mostrar lista materializó las filas, Ocultar lista las
+retiró del viewport y `Ver 3 no observados` siguió funcionando sin expandir la
+grid. Las tres ausencias continuaron activas. La Comparación histórica y los
+botones de Apply conservaron su superficie independiente.
+
+Gates focalizados: typecheck PASS; Composer contract PASS 9/9; selección
+Composer/domain/catalog UI/architecture PASS 48/48; build PASS; PostgreSQL
+PBI-041 PASS 1/1 con 72 migraciones (benchmark 10k: ingest 4,515.2 ms,
+analyze 417.2 ms, preview 38.3 ms, publish 15,498.8 ms, historical search
+82.2 ms, heap 22.3 MiB). `verify:full` no se ejecutó por alcance explícito.

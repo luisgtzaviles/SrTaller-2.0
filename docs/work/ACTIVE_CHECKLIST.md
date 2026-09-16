@@ -1,6 +1,6 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Supplier coverage UX, exception-first visibility
+Milestone / Functional Goal: PBI-041 — Post-analysis result-first workspace
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
 Status: local Owner Review ready; acceptance pending
@@ -11,15 +11,15 @@ Next: Owner Review only; no new PBI or integration action is authorized
 Blocked: None; AG history remains immutable and the preexisting .DS_Store is preserved
 Last updated: 2026-09-16 MST
 
-## Current checkpoint — Supplier coverage UX
+## Current checkpoint — Post-analysis result-first workspace
 
-- [x] Preserve `AG v28` as the local 37-item `COMPLETE` / `APPLIED` baseline.
-- [x] Reuse `AG v29` (`COMPLETE`, 34 rows, `READY`) to prove 34 observed / 3 not observed without Apply.
-- [x] Keep all three omitted CatalogItems active; no absence mutates Catalog, history or lifecycle.
-- [x] Make supplier coverage visible immediately after the change summary and before Reconciliación.
-- [x] Provide an accessible, information-only list of canonical title, current status and observed baseline for the three omissions.
-- [x] Keep COMPLETE-without-baseline distinct from zero omissions, and PARTIAL as absence not evaluated.
-- [x] Prove local Chrome behavior on `AG v29` and `AG v30`, focused contracts, PostgreSQL, typecheck and build.
+- [x] Keep grid visibility as transient presentation state; no persistence or migration.
+- [x] Open a new load and `DRAFT` edit-first, with the spreadsheet grid visible.
+- [x] Keep grid state unchanged on Guardar borrador.
+- [x] Collapse after successful Analyze/Reanalyze and when opening `INGESTED` history.
+- [x] Provide accessible Mostrar/Ocultar lista without unmounting grid data or spreadsheet behavior.
+- [x] Expand and focus a cell error; keep candidates, coverage, no-observed and comparison independent.
+- [x] Prove `AG v3` Draft, `AG v31` Partial and `AG v29` Complete locally; focused checks and PostgreSQL PASS.
 
 ## Audit evidence
 
