@@ -855,3 +855,30 @@ Owner; la selección de `Lista completa del proveedor` cambia el control sin
 guardar ni aplicar. Al abrir AG v19, que migró como `PARTIAL`, la superficie
 de comparación dice que los artículos ausentes no se evalúan. Se recargó el
 Composer para descartar la selección visual sin crear una nueva versión AG.
+
+## Supplier coverage UX — exception-first local evidence
+
+La cobertura automática ahora se lee sin persistencia adicional: el baseline
+permanece la última Version `COMPLETE` `APPLIED` del mismo Tenant/Source y sus
+Listings/Resolutions publicados aportan título canónico y estado actual de
+cualquier artículo no observado. No existe migración, Apply, retiro ni mutación
+de `CatalogItem` en esta lectura.
+
+Después del resumen de cambios y antes de Reconciliación, el Composer presenta
+una superficie independiente de cobertura. `COMPLETE` con baseline muestra
+filas recibidas, observados y no observados; `COMPLETE` sin baseline no muestra
+un cero ficticio; `PARTIAL` muestra artículos procesados y que las ausencias no
+se evaluaron. La comparación histórica se conserva debajo de Reconciliación
+como herramienta secundaria. La inspección expandible usa un botón real con
+`aria-expanded` y `aria-controls`; lista sólo información (título canónico,
+estado actual y baseline), sin acciones de retiro.
+
+Chrome local verificó sin Apply sobre `AG / v29` (`COMPLETE`, `READY`, 34
+filas) frente a `AG / v28` (`COMPLETE`, `APPLIED`, 37): `34 observados`, `3 no
+observados`, visibles antes de Reconciliación y sin usar Comparación histórica.
+`Ver 3 no observados` mostró `Pantalla iPhone 15 Pro Max Original`, `Pantalla
+iPhone 15 Pro Original` y `Pantalla iPhone 16 Original`, los tres `Activo` y
+observados en `AG v28`. `AG / v30` (`PARTIAL`, `READY`, 34) mostró
+`Actualización parcial`, `34 artículos procesados` y que los artículos no
+incluidos no se evaluaron, sin contador ni panel de no observados. Los mismos
+fixtures permanecieron sin Apply.

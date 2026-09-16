@@ -207,6 +207,9 @@ PASS alone cannot close Owner Review.
 | SV-Q04 | una omisión COMPLETE aplicada conserva status, itemId, identifiers, revisiones y memory | PostgreSQL |
 | SV-Q05 | completeness no cambia después de `INGESTED` | PostgreSQL |
 | SV-Q06 | UI conserva selección y copy Owner; no presenta “Desaparecidas” | UI contract / Chrome |
+| SV-Q07 | COMPLETE con baseline expone conteos y títulos/estado de no observados sin comparación manual | PostgreSQL / UI contract / Chrome |
+| SV-Q08 | COMPLETE sin baseline no equivale a cero; PARTIAL no expone conteo ni panel de ausencia | PostgreSQL / UI contract |
+| SV-Q09 | expansión de no observados conserva botón, `aria-expanded` y `aria-controls`; no ofrece retiro | UI contract / Chrome |
 
 La matriz ejecutada usa una lista COMPLETE de cuatro filas y otra COMPLETE de
 tres: reporta un no observado, publica sólo las tres presentes y verifica cero

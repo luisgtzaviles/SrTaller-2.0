@@ -1,25 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — COMPLETE baseline material QA and automatic absence visibility
+Milestone / Functional Goal: PBI-041 — Supplier coverage UX, exception-first visibility
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: material QA proven; focused documentation and final local checks pending
+Status: local Owner Review ready; acceptance pending
 WIP: 1/1
-Progress: 5 / 7 functional blocks completed
-Current: reconcile evidence and run final focused checks
-Next: leave B in review and prepare the Owner-visible local checkpoint
+Progress: 7 / 7 functional blocks completed
+Current: preserve the local checkpoint for Owner Review
+Next: Owner Review only; no new PBI or integration action is authorized
 Blocked: None; AG history remains immutable and the preexisting .DS_Store is preserved
 Last updated: 2026-09-16 MST
 
-## Current checkpoint — automatic COMPLETE absence visibility
+## Current checkpoint — Supplier coverage UX
 
-- [x] Create and audit AG v24 COMPLETE baseline with the known 37-item set.
-- [x] Apply only clean v24 and capture zero-unexpected-mutation evidence.
-- [x] Create and analyze AG v25 COMPLETE with exactly three intentional omissions; it remains READY and unapplied.
-- [x] Prove 34 observed / 3 not observed and preserve all omitted CatalogItems active.
-- [x] Materialize automatic latest previous APPLIED COMPLETE baseline behavior.
-- [x] Prove no-baseline and PARTIAL states remain explicit and safe in focused PostgreSQL coverage.
-- [ ] Complete focused tests, Chrome QA, documentation and local commits.
+- [x] Preserve `AG v28` as the local 37-item `COMPLETE` / `APPLIED` baseline.
+- [x] Reuse `AG v29` (`COMPLETE`, 34 rows, `READY`) to prove 34 observed / 3 not observed without Apply.
+- [x] Keep all three omitted CatalogItems active; no absence mutates Catalog, history or lifecycle.
+- [x] Make supplier coverage visible immediately after the change summary and before Reconciliación.
+- [x] Provide an accessible, information-only list of canonical title, current status and observed baseline for the three omissions.
+- [x] Keep COMPLETE-without-baseline distinct from zero omissions, and PARTIAL as absence not evaluated.
+- [x] Prove local Chrome behavior on `AG v29` and `AG v30`, focused contracts, PostgreSQL, typecheck and build.
 
 ## Audit evidence
 
