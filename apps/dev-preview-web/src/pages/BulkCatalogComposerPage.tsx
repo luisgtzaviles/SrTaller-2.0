@@ -36,6 +36,7 @@ const versionStatus = (value: SupplierVersionSummary): string => value.lifecycle
 const formatVersionDate = (value: string, timeZone: string): string => new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone }).format(new Date(value));
 const analysisMessage = (code: string): string => code === 'HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION' ? 'La memoria histórica apunta a un artículo retirado. Reactívalo explícitamente en Lista de precios y vuelve a analizar; no se creará un duplicado.' : code;
 const warningMessage = (code: string): string => code === 'TRUSTED_HISTORICAL_MATCH_AUTO_REACTIVATES' ? 'Historia exacta, publicada y confiable: la identidad quedó resuelta para reactivación.' : code === 'TRUSTED_HISTORICAL_MATCH_AUTO_RESOLVED' ? 'Historia exacta, publicada y confiable: identidad resuelta automáticamente.' : code === 'CANDIDATE_MATCH_REQUIRES_OWNER_DECISION' ? 'La historia publicada encontró un candidato; la similitud no decide identidad.' : code === 'MULTIPLE_BOUNDED_CANDIDATES' ? 'Hay varios candidatos razonables. Elige explícitamente o excluye la fila.' : code;
+const rowErrors = (value: unknown): readonly string[] => Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
 
 export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: Readonly<{ capabilities: readonly OperationalCapability[]; csrfToken: string; timeZone: string }>): React.JSX.Element {
   const canPublish = hasOperationalCapability(capabilities, 'catalog.import.publish') && hasOperationalCapability(capabilities, 'catalog.manage') && hasOperationalCapability(capabilities, 'catalog.prices.manage');
@@ -309,7 +310,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
               <small>Propuesta: {row.proposal.kind ?? 'tipo sin cambio'} · {row.proposal.category ?? 'categoría sin cambio'} · {row.proposal.brand ?? 'marca sin cambio'} · estado {row.classification === 'REACTIVATE' ? 'Reactivar' : 'sin cambio'} · precio {row.proposal.basePriceMinor === null ? 'sin cambio' : fromMinor(row.proposal.basePriceMinor)}{canReadCost ? ` · costo ${row.proposal.referenceCostMinor === null ? 'sin cambio' : fromMinor(row.proposal.referenceCostMinor)}` : ''}</small>
               {row.titleDecision ? <small className={styles.titleDecisionSummary}>Nombre al aplicar: {row.titleDecision === 'ADOPT_OBSERVED' ? `usar “${row.proposal.title ?? ''}”` : `mantener “${row.targetTitle ?? row.before?.title ?? ''}”`}</small> : null}
               {row.warnings.map((warning) => <small key={warning}>{warningMessage(warning)}</small>)}
-              {row.errors.map((error) => <small key={error}>{analysisMessage(error)}</small>)}
+              {rowErrors(row.errors).map((error) => <small key={error}>{analysisMessage(error)}</small>)}
               {row.candidates.map((candidate) => <section key={candidate.itemId} className={styles.candidateCard}>
                 <strong>{candidate.title}</strong><span>{candidate.status === 'INACTIVE' ? 'Inactivo' : 'Activo'} · score de presentación {Math.round(candidate.score * 100)}%</span>
                 <small>Evidencia: {candidate.evidence.join(' · ')}</small>

@@ -80,6 +80,11 @@ export function normalizeIdentifier(scheme: CatalogIdentifierScheme, value: stri
 export function normalizeReference(value: string | null): string | null {
   return value === null ? null : value.normalize('NFD').replace(/[\u0300-\u036f]/gu, '').toLocaleLowerCase('es-MX').replace(/\s+/gu, ' ').trim();
 }
+/** Row-decision errors cross a JSONB boundary but always read as string arrays. */
+export function normalizeRowErrors(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) return Object.freeze([]);
+  return Object.freeze(value.filter((entry): entry is string => typeof entry === 'string'));
+}
 function money(value: unknown, parameter: string): number | null {
   if (value === null || value === undefined || value === '') return null;
   if (!Number.isSafeInteger(value) || Number(value) < 0) throw new CatalogInputError(parameter);

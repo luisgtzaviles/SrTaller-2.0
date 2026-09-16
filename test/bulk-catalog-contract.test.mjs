@@ -42,6 +42,14 @@ test('identifier and reference normalization are exact and deterministic, not fu
   assert.notEqual(domain.normalizeReference('Pantalla OLED'), domain.normalizeReference('Pantalla OELD'));
 });
 
+test('row-decision errors always normalize to a string array across JSON boundaries', () => {
+  assert.deepEqual(domain.normalizeRowErrors(['PENDING_ANALYSIS', 1, null]), ['PENDING_ANALYSIS']);
+  assert.deepEqual(domain.normalizeRowErrors([]), []);
+  assert.deepEqual(domain.normalizeRowErrors({}), []);
+  assert.deepEqual(domain.normalizeRowErrors(null), []);
+  assert.deepEqual(domain.normalizeRowErrors('PENDING_ANALYSIS'), []);
+});
+
 test('supplier observed title remains separate from the editable Catalog title proposal', () => {
   const [row] = domain.parseBulkRows([{ ...fullRow(), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }], 'FULL');
   assert.equal(row.supplierObservedTitle, 'PANTALLA IPHONE 11 OLED GX >>I');
@@ -127,6 +135,9 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(protectedOperations, /costManage, costRead/u);
   assert.doesNotMatch(repository, /catalog_branch_price_revisions/u);
   assert.match(repository, /input\.includeReferenceCost/u);
+  assert.match(repository, /const serializeRowErrors = \(value: unknown\): string => JSON\.stringify\(normalizeRowErrors\(value\)\)/u);
+  assert.match(repository, /errors: normalizeRowErrors\(value\.errors\)/u);
+  assert.match(repository, /errors: serializeRowErrors\(input\.targetItemId \|\| classification === 'NEW' \? \[\] : row\.errors\)/u);
   assert.match(repository, /source_type: 'IMPORTED'/u);
   assert.match(repository, /title_decision/u);
   assert.match(repository, /canonicalTitle: \{ before: priorItem\.title, after: p\.title \}/u);
@@ -160,6 +171,9 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(sensitiveAction, /proof\.userId === context\.userId/u);
   assert.match(sensitiveAction, /consumePinAuthenticationProof/u);
   assert.match(ui, /Nada toca Catalog hasta Aplicar lote/u);
+  assert.match(ui, /const rowErrors = \(value: unknown\): readonly string\[\] => Array\.isArray\(value\)/u);
+  assert.match(ui, /rowErrors\(row\.errors\)\.map/u);
+  assert.doesNotMatch(ui, /\{row\.errors\.map/u);
   assert.match(ui, /Alcance de la carga/u);
   assert.match(ui, /Actualización parcial/u);
   assert.match(ui, /Lista completa/u);

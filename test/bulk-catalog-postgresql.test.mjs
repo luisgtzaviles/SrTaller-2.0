@@ -157,7 +157,36 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const comparison = await service.compare({ tenantId: tenantA, branchId: branchA }, draft.versionId, v2.versionId);
     assert.deepEqual({ mapped: comparison.mapped, changed: comparison.changed, added: comparison.added, ambiguous: comparison.ambiguous, absenceStatus: comparison.absenceStatus, notObserved: comparison.notObserved }, { mapped: 4, changed: 1, added: 0, ambiguous: 0, absenceStatus: 'EVALUATED', notObserved: 0 });
 
-    const v2Ready = v2Analyzed;
+    const decisionRow = v2Analyzed.rows.find((row) => row.targetItemId !== null);
+    assert.ok(decisionRow?.targetItemId);
+    const targetBeforeDecision = await admin.query(`select item_id, title, status, version from catalog_items where tenant_id = $1 and item_id = $2`, [tenantA, decisionRow.targetItemId]);
+    const excluded = await service.decide(ctxA, v2.versionId, decisionRow.rowDecisionId, { expectedRowVersion: decisionRow.version, decision: 'EXCLUDE', targetItemId: null, titleDecision: null });
+    const excludedRow = excluded.rows.find((row) => row.rowDecisionId === decisionRow.rowDecisionId);
+    assert.equal(excludedRow?.decision, 'EXCLUDE');
+    assert.deepEqual(excludedRow?.errors, []);
+    const excludedStored = await admin.query(`select decision, errors, jsonb_typeof(errors) as errors_type from catalog_update_row_decisions where tenant_id = $1 and row_decision_id = $2`, [tenantA, decisionRow.rowDecisionId]);
+    assert.deepEqual(excludedStored.rows[0], { decision: 'EXCLUDE', errors: [], errors_type: 'array' });
+    assert.equal(excluded.batch.publishedAt, null);
+    assert.deepEqual((await admin.query(`select item_id, title, status, version from catalog_items where tenant_id = $1 and item_id = $2`, [tenantA, decisionRow.targetItemId])).rows, targetBeforeDecision.rows);
+
+    const included = await service.decide(ctxA, v2.versionId, decisionRow.rowDecisionId, { expectedRowVersion: excludedRow.version, decision: 'APPLY', targetItemId: null, titleDecision: null });
+    const includedRow = included.rows.find((row) => row.rowDecisionId === decisionRow.rowDecisionId);
+    assert.equal(includedRow?.decision, 'APPLY');
+    assert.deepEqual(includedRow?.errors, []);
+    const includedStored = await admin.query(`select decision, errors, jsonb_typeof(errors) as errors_type from catalog_update_row_decisions where tenant_id = $1 and row_decision_id = $2`, [tenantA, decisionRow.rowDecisionId]);
+    assert.deepEqual(includedStored.rows[0], { decision: 'APPLY', errors: [], errors_type: 'array' });
+    assert.equal(included.batch.publishedAt, null);
+    assert.deepEqual((await admin.query(`select item_id, title, status, version from catalog_items where tenant_id = $1 and item_id = $2`, [tenantA, decisionRow.targetItemId])).rows, targetBeforeDecision.rows);
+
+    await admin.query(`update catalog_update_row_decisions set errors = '{}'::jsonb where tenant_id = $1 and row_decision_id = $2`, [tenantA, decisionRow.rowDecisionId]);
+    const malformedRead = await service.getVersion({ tenantId: tenantA, branchId: branchA }, v2.versionId, true);
+    assert.deepEqual(malformedRead.rows.find((row) => row.rowDecisionId === decisionRow.rowDecisionId)?.errors, []);
+    const normalizedAgain = await service.decide(ctxA, v2.versionId, decisionRow.rowDecisionId, { expectedRowVersion: includedRow.version, decision: 'APPLY', targetItemId: null, titleDecision: null });
+    const normalizedStored = await admin.query(`select errors, jsonb_typeof(errors) as errors_type from catalog_update_row_decisions where tenant_id = $1 and row_decision_id = $2`, [tenantA, decisionRow.rowDecisionId]);
+    assert.deepEqual(normalizedStored.rows[0], { errors: [], errors_type: 'array' });
+    assert.equal(normalizedAgain.batch.publishedAt, null);
+
+    const v2Ready = normalizedAgain;
     await service.publish(ctxA, v2.versionId, { expectedVersion: v2Ready.version, clientRequestId: randomUUID() }, true);
     const completeOmission = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Lista completa sin un artículo observado', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-complete-omission', rows: v2Rows.slice(0, 3) });
     const completeOmissionAnalyzed = await service.analyze(ctxA, completeOmission.versionId, { expectedVersion: completeOmission.version });
