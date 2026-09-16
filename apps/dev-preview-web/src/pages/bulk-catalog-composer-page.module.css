@@ -86,6 +86,8 @@
 .decisions { min-width: 0; display: grid; gap: var(--space-2); padding: var(--space-3); }
 .decisionTitle { justify-content: space-between; }.decisionTitle span { color: var(--color-warning); font-size: .78rem; }
 .groupActions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block: var(--space-3); }
+.allResolved { display: grid; gap: 2px; padding: var(--space-3); border: 1px solid var(--color-success); border-radius: var(--radius-md); background: var(--color-success-subtle); }
+.allResolved strong { color: var(--color-success); }.allResolved span { font-weight: var(--font-weight-semibold); }.allResolved small, .excludedState { color: var(--color-text-muted); }
 .reconciliationTabs { display: flex; flex-wrap: wrap; gap: var(--space-1); border-bottom: 1px solid var(--color-border); }
 .reconciliationTabs button { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2); border: 0; border-bottom: 2px solid transparent; color: var(--color-text-muted); background: transparent; cursor: pointer; }
 .reconciliationTabs button:hover, .reconciliationTabs button:focus-visible { color: var(--color-text); background: var(--color-surface-muted); outline: none; }
