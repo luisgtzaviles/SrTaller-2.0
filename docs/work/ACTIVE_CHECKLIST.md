@@ -1,17 +1,29 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Post-analysis result-first workspace
+Milestone / Functional Goal: PBI-041 — Row decision JSON shape hardening
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
 Status: local Owner Review ready; acceptance pending
 WIP: 1/1
-Progress: 7 / 7 functional blocks completed
-Current: preserve the local checkpoint for Owner Review
+Progress: 6 / 6 functional blocks completed
+Current: preserve the local hardening checkpoint for Owner Review
 Next: Owner Review only; no new PBI or integration action is authorized
-Blocked: None; AG history remains immutable and the preexisting .DS_Store is preserved
+Blocked: None; AG v35 stays unpublished and the preexisting .DS_Store is preserved
 Last updated: 2026-09-16 MST
 
-## Current checkpoint — Post-analysis result-first workspace
+## Current checkpoint — Row decision JSON shape hardening
+
+- [x] Inventory all `RowDecision.errors` writes; `decide()` was the sole
+  ambiguous JSONB serialization path.
+- [x] Normalize every read to the canonical `readonly string[]` contract.
+- [x] Serialize errors explicitly as JSON for create, analyze and decide paths.
+- [x] Defend Composer rendering against malformed historical response data.
+- [x] Prove exclusion/inclusion and historical malformed-row normalization in
+  the isolated PostgreSQL material suite.
+- [x] Prove AG v35 local visual reload and reconciliation tabs without crash;
+  no Apply/Publish.
+
+## Previous checkpoint — Post-analysis result-first workspace
 
 - [x] Keep grid visibility as transient presentation state; no persistence or migration.
 - [x] Open a new load and `DRAFT` edit-first, with the spreadsheet grid visible.

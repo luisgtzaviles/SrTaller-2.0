@@ -919,3 +919,27 @@ Composer/domain/catalog UI/architecture PASS 48/48; build PASS; PostgreSQL
 PBI-041 PASS 1/1 con 72 migraciones (benchmark 10k: ingest 4,515.2 ms,
 analyze 417.2 ms, preview 38.3 ms, publish 15,498.8 ms, historical search
 82.2 ms, heap 22.3 MiB). `verify:full` no se ejecutó por alcance explícito.
+
+## Row decision JSON shape hardening — local material evidence
+
+La causa del white screen fue aislada a `RowDecision.errors`: `decide()` enviaba
+un array JavaScript directamente al JSONB, que PostgreSQL recibía como objeto
+vacío. La remediación incorpora `normalizeRowErrors(value)` como contrato único:
+los arrays conservan sólo strings y `null`, objetos u otras formas históricas
+se leen como `[]`. Todas las escrituras de errors usan `JSON.stringify` de esa
+forma canónica; no hubo migración ni backfill.
+
+La regresión de contrato cubre array, objeto, null y scalar. La suite material
+PostgreSQL verificó `EXCLUDE` y después `APPLY` sobre la misma decisión con
+`jsonb_typeof(errors) = 'array'` y `errors = []`, sin publicar el batch ni
+mutar el CatalogItem objetivo. Tras inyectar controladamente un `{}` histórico
+en el contenedor efímero de la suite, la lectura devolvió `[]` y una nueva
+decisión restauró el JSONB canónico. PASS: 1/1, 72 migraciones, contenedor
+descartable eliminado.
+
+Chrome local, autenticado como Luis, abrió `AG v35` (`READY`, 34 filas,
+sin publicar), seleccionó Resueltas, excluyó e incluyó nuevamente la fila 1 y
+recargó. Las vistas Requieren atención, Resueltas y Todas siguieron operables
+sin white screen. La fila quedó incluida; no se ejecutó Apply ni Publish. Los
+checks focalizados fueron typecheck, build, contrato bulk y PostgreSQL PBI-041;
+`verify:full`, CI, push, PR, merge y deploy no se ejecutaron.
