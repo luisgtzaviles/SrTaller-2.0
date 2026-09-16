@@ -1,17 +1,34 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Row decision JSON shape hardening
+Milestone / Functional Goal: PBI-041 — Exception-first reconciliation UX
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
 Status: local Owner Review ready; acceptance pending
 WIP: 1/1
-Progress: 6 / 6 functional blocks completed
-Current: preserve the local hardening checkpoint for Owner Review
+Progress: 7 / 7 functional blocks completed
+Current: preserve the local exception-first checkpoint for Owner Review
 Next: Owner Review only; no new PBI or integration action is authorized
 Blocked: None; AG v35 stays unpublished and the preexisting .DS_Store is preserved
 Last updated: 2026-09-16 MST
 
-## Current checkpoint — Row decision JSON shape hardening
+## Current checkpoint — Exception-first reconciliation UX
+
+- [x] Open Requieren atención by default and show a compact `Todo resuelto`
+  state when no decision is pending; resolved rows remain audit-only tabs.
+- [x] Show bulk actions only when unresolved rows match their operation, with
+  accurate result-oriented counts.
+- [x] Remove redundant Include from APPLY rows; make Exclude secondary and
+  show only `Volver a incluir` for EXCLUDE rows.
+- [x] Keep title choice contextual as `Cambiar nombre`; retain existing
+  KEEP_CURRENT / ADOPT_OBSERVED semantics.
+- [x] Hide technical diagnostics from the normal Owner surface while retaining
+  human explanations where they add operational value.
+- [x] Prove AG v35 (34 resolved / 0 attention), AG v10 (35 attention), and
+  exclude → include without white screen or Apply/Publish.
+- [x] Pass typecheck, production build, Composer contract, PostgreSQL PBI-041,
+  architecture, responsive light/dark QA and diff validation.
+
+## Previous checkpoint — Row decision JSON shape hardening
 
 - [x] Inventory all `RowDecision.errors` writes; `decide()` was the sole
   ambiguous JSONB serialization path.

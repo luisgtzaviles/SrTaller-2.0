@@ -943,3 +943,35 @@ recargó. Las vistas Requieren atención, Resueltas y Todas siguieron operables
 sin white screen. La fila quedó incluida; no se ejecutó Apply ni Publish. Los
 checks focalizados fueron typecheck, build, contrato bulk y PostgreSQL PBI-041;
 `verify:full`, CI, push, PR, merge y deploy no se ejecutaron.
+
+## Exception-first reconciliation UX — local material evidence
+
+La reconciliación ahora prioriza la excepción sobre la repetición de decisiones
+ya resueltas. Al abrir o reanalizar una versión se selecciona `Requieren
+atención`; si el contador es cero se muestra `Todo resuelto`, el total listo
+para Apply y el aviso de que no es necesario inspeccionar cada fila. Las filas
+resueltas permanecen disponibles en `Resueltas` y `Todas` como auditoría, no
+como trabajo pendiente.
+
+`AG / v35` permaneció `READY`, con 34 filas `APPLY`, 0 pendientes y sin
+publicar. Chrome local mostró el estado compacto, ningún botón masivo inútil y
+`Aplicar lote` como acción final explícita. En `Resueltas`, las filas APPLY no
+mostraron `Incluir`; la decisión de nombre apareció únicamente en las filas
+con diferencia observada/canónica como `Cambiar nombre`, y los diagnósticos
+técnicos no se expusieron.
+
+La regresión material de fila ejecutó sobre v35: fila 1 `APPLY` → `Excluir del
+lote` → `EXCLUDE`, con toast y `Excluida del lote`/`Volver a incluir`; después
+`Volver a incluir` → `APPLY`, sin reload ni white screen. No se pulsó
+`Aplicar lote` ni se modificó `CatalogItem`, Resolution, Memory, audit o
+historia publicada. `AG / v10` abrió directamente `Requieren atención` con 35
+pendientes y la acción masiva contextual `Aceptar 35 sugerencias`, confirmando
+la prioridad de trabajo real.
+
+La revisión visual verificó layout a 1280, 768 y 640 px, y tema claro/oscuro;
+los tabs y acciones visibles conservaron controles semánticos de teclado. El
+viewport y tema se restauraron a la preferencia local antes de cerrar. Gates:
+typecheck PASS, build PASS (sólo advertencia informativa existente de tamaño
+Vite), contrato Composer 10/10 PASS, PostgreSQL PBI-041 1/1 PASS sobre 72
+migraciones, architecture PASS y `git diff --check` PASS. `verify:full`, CI,
+push, PR, merge y deploy no se ejecutaron.
