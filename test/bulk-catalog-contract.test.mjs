@@ -171,6 +171,12 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /Ver \$\{current\.absenceBaseline\.notObservedItems\.length/u);
   assert.match(ui, /aria-expanded=\{notObservedOpen\}/u);
   assert.match(ui, /aria-controls=\{notObservedPanelId\}/u);
+  assert.match(ui, /const \[gridExpanded, setGridExpanded\] = useState\(true\)/u);
+  assert.match(ui, /setGridExpanded\(true\);\n    const targetColumns/u);
+  assert.match(ui, /setGridExpanded\(false\); setNotObservedOpen\(false\);/u);
+  assert.match(ui, /setGridExpanded\(value\.lifecycle === 'DRAFT'\);/u);
+  assert.match(ui, /aria-expanded=\{gridExpanded\} aria-controls="bulk-catalog-grid"/u);
+  assert.match(ui, /id="bulk-catalog-grid"[\s\S]*hidden=\{!gridExpanded\}/u);
   assert.ok(ui.indexOf('styles.summary') < ui.indexOf('styles.coverage'));
   assert.ok(ui.indexOf('styles.coverage') < ui.indexOf('styles.decisions'));
   assert.doesNotMatch(ui, /Desaparecidas/u);
