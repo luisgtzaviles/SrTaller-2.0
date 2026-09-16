@@ -74,12 +74,12 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
       fullRow(5),
     ];
     const createV1Request = randomUUID();
-    const v1Input = { sourceId: source.sourceId, description: 'Primera lista', clientRequestId: createV1Request, mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-v1', rows };
+    const v1Input = { sourceId: source.sourceId, description: 'Primera lista', clientRequestId: createV1Request, mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-v1', rows };
     const draft = await service.createDraft(ctxA, v1Input);
     const replay = await service.createDraft(ctxA, v1Input);
     assert.equal(replay.versionId, draft.versionId);
     await assert.rejects(service.createDraft(ctxA, { ...v1Input, rawPayload: 'synthetic-conflicting-retry' }), CatalogConflictError);
-    assert.deepEqual([draft.sequenceNumber, draft.sourceRevision, draft.description], [1, 'v1', 'Primera lista']);
+    assert.deepEqual([draft.sequenceNumber, draft.sourceRevision, draft.description, draft.completeness], [1, 'v1', 'Primera lista', 'COMPLETE']);
 
     const sequencingSource = await service.createSource(ctxA, { name: 'Proveedor Secuencial' });
     const [concurrentLeft, concurrentRight] = await Promise.all([
@@ -91,6 +91,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
 
     const safeSource = await service.createSource(ctxA, { name: 'Proveedor Borrador Eliminable' });
     const safeDraft = await service.createDraft(ctxA, { sourceId: safeSource.sourceId, description: 'Sólo borrador sintético', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'e'.repeat(64), rawPayload: 'safe-draft', rows: [fullRow(901)] });
+    assert.equal(safeDraft.completeness, 'PARTIAL');
     const safeSnapshot = (await service.listSources({ tenantId: tenantA, branchId: branchA })).find(({ sourceId }) => sourceId === safeSource.sourceId);
     assert.equal(safeSnapshot?.deletionEligibility.allowed, true);
     await assert.rejects(service.deleteSource(ctxB, safeSource.sourceId, { expectedVersion: safeSnapshot.version, confirmation: 'DELETE_SUPPLIER_SOURCE', clientRequestId: randomUUID() }, new Date().toISOString()), CatalogNotFoundError);
@@ -142,7 +143,8 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const redacted = await service.getVersion({ tenantId: tenantA, branchId: branchA }, draft.versionId, false);
     assert.equal(redacted.rows.every((row) => row.proposal.referenceCostMinor === null), true);
 
-    const v2 = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Segunda lista', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-v2', rows: rows.map((row, index) => ({ ...row, basePriceMinor: index === 0 ? row.basePriceMinor + 100 : row.basePriceMinor })) });
+    const v2Rows = rows.map((row, index) => ({ ...row, basePriceMinor: index === 0 ? row.basePriceMinor + 100 : row.basePriceMinor }));
+    const v2 = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Segunda lista', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-v2', rows: v2Rows });
     assert.equal(v2.supersedesVersionId, draft.versionId);
     const v2Analyzed = await service.analyze(ctxA, v2.versionId, { expectedVersion: v2.version });
     assert.equal(v2Analyzed.batch.counts.UPDATE, 1);
@@ -150,13 +152,40 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(v2Analyzed.rows.every((row) => row.preselectedByMemory && row.matchOrigin === 'TRUSTED_HISTORY' && row.decision === 'APPLY'), true);
     assert.equal(v2Analyzed.batch.lifecycle, 'READY');
     const comparison = await service.compare({ tenantId: tenantA, branchId: branchA }, draft.versionId, v2.versionId);
-    assert.deepEqual({ mapped: comparison.mapped, changed: comparison.changed, added: comparison.added, disappeared: comparison.disappeared, ambiguous: comparison.ambiguous }, { mapped: 4, changed: 1, added: 0, disappeared: 0, ambiguous: 0 });
+    assert.deepEqual({ mapped: comparison.mapped, changed: comparison.changed, added: comparison.added, ambiguous: comparison.ambiguous, absenceStatus: comparison.absenceStatus, notObserved: comparison.notObserved }, { mapped: 4, changed: 1, added: 0, ambiguous: 0, absenceStatus: 'EVALUATED', notObserved: 0 });
 
     const v2Ready = v2Analyzed;
     await service.publish(ctxA, v2.versionId, { expectedVersion: v2Ready.version, clientRequestId: randomUUID() }, true);
+    const completeOmission = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Lista completa sin un artículo observado', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-complete-omission', rows: v2Rows.slice(0, 3) });
+    const completeOmissionAnalyzed = await service.analyze(ctxA, completeOmission.versionId, { expectedVersion: completeOmission.version });
+    const omissionComparison = await service.compare({ tenantId: tenantA, branchId: branchA }, v2.versionId, completeOmission.versionId);
+    assert.deepEqual({ absenceStatus: omissionComparison.absenceStatus, notObserved: omissionComparison.notObserved }, { absenceStatus: 'EVALUATED', notObserved: 1 });
+    await assert.rejects(service.replaceDraft(ctxA, completeOmission.versionId, { expectedVersion: completeOmissionAnalyzed.version, mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'cannot-reinterpret-ingested-history', rows: v2Rows.slice(0, 3) }), CatalogConflictError);
+    const omittedBefore = await admin.query(`select i.item_id, i.status, i.version,
+      (select count(*)::int from catalog_item_identifiers ci where ci.tenant_id = i.tenant_id and ci.item_id = i.item_id) as identifiers,
+      (select count(*)::int from catalog_base_price_revisions p where p.tenant_id = i.tenant_id and p.item_id = i.item_id) as price_revisions,
+      (select count(*)::int from catalog_reference_cost_revisions c where c.tenant_id = i.tenant_id and c.item_id = i.item_id) as cost_revisions,
+      (select count(*)::int from catalog_supplier_reconciliation_memory m where m.tenant_id = i.tenant_id and m.item_id = i.item_id) as mappings
+      from catalog_items i join catalog_supplier_reconciliation_memory m on m.tenant_id = i.tenant_id and m.item_id = i.item_id
+      where m.tenant_id = $1 and m.source_id = $2 and m.identifier_scheme = 'SUPPLIER_CODE' and m.normalized_identifier = 'sup-00005'`, [tenantA, source.sourceId]);
+    await service.publish(ctxA, completeOmission.versionId, { expectedVersion: completeOmissionAnalyzed.version, clientRequestId: randomUUID() }, true);
+    const omittedAfter = await admin.query(`select i.item_id, i.status, i.version,
+      (select count(*)::int from catalog_item_identifiers ci where ci.tenant_id = i.tenant_id and ci.item_id = i.item_id) as identifiers,
+      (select count(*)::int from catalog_base_price_revisions p where p.tenant_id = i.tenant_id and p.item_id = i.item_id) as price_revisions,
+      (select count(*)::int from catalog_reference_cost_revisions c where c.tenant_id = i.tenant_id and c.item_id = i.item_id) as cost_revisions,
+      (select count(*)::int from catalog_supplier_reconciliation_memory m where m.tenant_id = i.tenant_id and m.item_id = i.item_id) as mappings
+      from catalog_items i join catalog_supplier_reconciliation_memory m on m.tenant_id = i.tenant_id and m.item_id = i.item_id
+      where m.tenant_id = $1 and m.source_id = $2 and m.identifier_scheme = 'SUPPLIER_CODE' and m.normalized_identifier = 'sup-00005'`, [tenantA, source.sourceId]);
+    assert.deepEqual(omittedAfter.rows, omittedBefore.rows);
+    assert.equal(Number((await admin.query(`select count(*)::int as count from catalog_supplier_listing_resolutions where tenant_id = $1 and version_id = $2 and item_id = $3`, [tenantA, completeOmission.versionId, omittedBefore.rows[0].item_id])).rows[0].count), 0);
+    const partialSubset = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Actualización parcial sin señal de ausencia', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-partial-subset', rows: v2Rows.slice(0, 1) });
+    const partialSubsetAnalyzed = await service.analyze(ctxA, partialSubset.versionId, { expectedVersion: partialSubset.version });
+    const partialComparison = await service.compare({ tenantId: tenantA, branchId: branchA }, completeOmission.versionId, partialSubset.versionId);
+    assert.deepEqual({ absenceStatus: partialComparison.absenceStatus, notObserved: partialComparison.notObserved }, { absenceStatus: 'PARTIAL_CURRENT', notObserved: null });
+    assert.equal(partialSubsetAnalyzed.completeness, 'PARTIAL');
     const alternatePart = await admin.query(`select item_id from catalog_supplier_reconciliation_memory where tenant_id = $1 and source_id = $2 and identifier_scheme = 'SUPPLIER_CODE' and normalized_identifier = 'sup-00005'`, [tenantA, source.sourceId]);
     const correction = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Corrección', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-correction', rows: [rows[0]] });
-    assert.equal(correction.supersedesVersionId, v2.versionId);
+    assert.equal(correction.supersedesVersionId, partialSubset.versionId);
     const correctionAnalyzed = await service.analyze(ctxA, correction.versionId, { expectedVersion: correction.version });
     const corrected = await service.decide(ctxA, correction.versionId, correctionAnalyzed.rows[0].rowDecisionId, { expectedRowVersion: correctionAnalyzed.rows[0].version, decision: 'APPLY', targetItemId: alternatePart.rows[0].item_id, titleDecision: 'KEEP_CURRENT' });
     await service.publish(ctxA, correction.versionId, { expectedVersion: corrected.version, clientRequestId: randomUUID() }, true);
@@ -369,7 +398,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.deepEqual(identitiesAfter.rows, historicalIdentities.rows);
 
     await admin.query(`update catalog_supplier_version_raw_payloads set retained_until = now() - interval '1 day' where tenant_id = $1`, [tenantA]);
-    assert.equal(await service.purgeExpiredRaw(ctxA), 10);
+    assert.equal(await service.purgeExpiredRaw(ctxA), 12);
     const raw = await admin.query(`select count(*) filter (where payload_text is not null)::int as retained from catalog_supplier_version_raw_payloads where tenant_id = $1`, [tenantA]);
     assert.equal(raw.rows[0].retained, 0);
     assert.equal((await service.listSources({ tenantId: tenantB, branchId: branchB })).length, 1);

@@ -397,10 +397,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts',
     'src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts',
     'src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts',
+    'src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -443,6 +444,7 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts',
       'src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts',
       'src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts',
+      'src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);

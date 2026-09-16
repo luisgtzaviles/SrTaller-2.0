@@ -10,6 +10,8 @@ export const BULK_CATALOG_CHARACTERIZATION_ROWS = 50_000;
 export const BULK_CATALOG_RAW_RETENTION_DAYS = 90;
 
 export type BulkCatalogMode = 'FULL' | 'COMPACT';
+/** Supplier coverage is distinct from the required capture fields in BulkCatalogMode. */
+export type SupplierCatalogCompleteness = 'PARTIAL' | 'COMPLETE';
 export type BulkCatalogClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'CANDIDATE' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
 export type BulkCatalogDecision = 'UNRESOLVED' | 'APPLY' | 'EXCLUDE';
 export type BulkCatalogTitleDecision = 'KEEP_CURRENT' | 'ADOPT_OBSERVED';

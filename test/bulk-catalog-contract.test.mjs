@@ -93,11 +93,12 @@ test('candidate pool and top set stay bounded at 1,500 rows', () => {
 });
 
 test('bulk contracts preserve separate prepare, publish, retirement, cost and Branch boundaries', async () => {
-  const [protectedOperations, repository, catalogRepository, migration, titleHistoryMigration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
+  const [protectedOperations, repository, catalogRepository, migration, completenessMigration, titleHistoryMigration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts', 'utf8'),
+    readFile('src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts', 'utf8'),
     readFile('src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts', 'utf8'),
@@ -138,6 +139,8 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(titleHistoryMigration, /using gin/u);
   assert.match(titleHistoryMigration, /catalog_supplier_resolutions_item_history_idx/u);
   assert.match(migration, /retained_until/u);
+  assert.match(completenessMigration, /completeness varchar\(16\) not null default 'PARTIAL'/u);
+  assert.match(completenessMigration, /check \(completeness in \('PARTIAL', 'COMPLETE'\)\)/u);
   assert.match(migration, /catalog_supplier_listing_resolutions_reject_update/u);
   assert.match(reactivationMigration, /'REACTIVATE'/u);
   assert.match(repository, /classification = target\.status === 'INACTIVE' \? 'REACTIVATE'/u);
@@ -157,6 +160,11 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(sensitiveAction, /proof\.userId === context\.userId/u);
   assert.match(sensitiveAction, /consumePinAuthenticationProof/u);
   assert.match(ui, /Nada toca Catalog hasta Aplicar lote/u);
+  assert.match(ui, /Alcance de la carga/u);
+  assert.match(ui, /Actualización parcial/u);
+  assert.match(ui, /Lista completa del proveedor/u);
+  assert.match(ui, /No observados/u);
+  assert.doesNotMatch(ui, /Desaparecidas/u);
   assert.match(ui, /Hay cambios sin guardar/u);
   assert.match(ui, /Actual:/u);
   assert.match(ui, /Propuesta:/u);
@@ -211,6 +219,9 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(model, /scope: 'CELL'/u);
   assert.doesNotMatch(model, /sourceRevision/u);
   assert.match(repository, /next_version_sequence/u);
+  assert.match(repository, /PARTIAL_CURRENT/u);
+  assert.match(repository, /NO_PREVIOUS_COMPLETE/u);
+  assert.match(repository, /EVALUATED/u);
   assert.match(repository, /CatalogSupplierDeleteNotAllowedError/u);
   assert.doesNotMatch(repository, /deleteFrom\('catalog_items'\)/u);
   assert.match(shell, /location\.pathname !== '\/listas\/precios\/carga-masiva'/u);

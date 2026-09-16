@@ -148,6 +148,7 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260914155100_access_add_supplier_delete_capability.ts',
       '20260915120000_catalog_add_bounded_candidate_matching.ts',
       '20260915130000_catalog_add_supplier_observed_title_history.ts',
+      '20260916180000_catalog_add_supplier_version_completeness.ts',
     ],
   );
 
