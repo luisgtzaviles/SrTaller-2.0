@@ -1,5 +1,5 @@
 import type { CatalogItemKind } from '../../domain/catalog-item.js';
-import type { BulkCatalogClassification, BulkCatalogDecision, BulkCatalogMode, BulkCatalogRowInput } from '../../domain/bulk-catalog.js';
+import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogDecision, BulkCatalogMatchOrigin, BulkCatalogMode, BulkCatalogRowInput } from '../../domain/bulk-catalog.js';
 import type { CatalogMutationContext, CatalogScope } from './catalog-repository.port.js';
 
 export type SupplierSourceRecord = Readonly<{
@@ -11,7 +11,8 @@ export type BulkCatalogRowRecord = Readonly<{
   classification: BulkCatalogClassification; decision: BulkCatalogDecision;
   targetItemId: string | null; targetTitle: string | null; expectedItemVersion: number | null;
   before: Readonly<{ kind: CatalogItemKind; title: string; description: string | null; category: string | null; brand: string | null; status: 'ACTIVE' | 'INACTIVE'; basePriceMinor: number | null; referenceCostMinor: number | null }> | null;
-  preselectedByMemory: boolean; errors: readonly string[]; warnings: readonly string[]; version: number;
+  preselectedByMemory: boolean; matchOrigin: BulkCatalogMatchOrigin; matchAlgorithmVersion: number;
+  candidates: readonly BulkCatalogCandidateMatch[]; errors: readonly string[]; warnings: readonly string[]; version: number;
 }>;
 export type SupplierVersionRecord = Readonly<{
   versionId: string; sourceId: string; sourceName: string; sequenceNumber: number; sourceRevision: string; description: string | null; mode: BulkCatalogMode;

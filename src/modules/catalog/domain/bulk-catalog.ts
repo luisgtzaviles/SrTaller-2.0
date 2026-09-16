@@ -10,8 +10,20 @@ export const BULK_CATALOG_CHARACTERIZATION_ROWS = 50_000;
 export const BULK_CATALOG_RAW_RETENTION_DAYS = 90;
 
 export type BulkCatalogMode = 'FULL' | 'COMPACT';
-export type BulkCatalogClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
+export type BulkCatalogClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'CANDIDATE' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
 export type BulkCatalogDecision = 'UNRESOLVED' | 'APPLY' | 'EXCLUDE';
+export type BulkCatalogMatchOrigin = 'NONE' | 'INTERNAL_IDENTIFIER' | 'TRUSTED_HISTORY' | 'CANDIDATE' | 'OWNER_SELECTED';
+
+export type BulkCatalogCandidateMatch = Readonly<{
+  itemId: string;
+  title: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  expectedItemVersion: number;
+  score: number;
+  evidence: readonly string[];
+  differences: readonly string[];
+  contradictions: readonly string[];
+}>;
 
 export type BulkCatalogRowInput = Readonly<{
   kind: CatalogItemKind | null;

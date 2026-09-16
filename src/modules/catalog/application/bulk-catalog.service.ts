@@ -16,7 +16,7 @@ function optionalText(value: unknown, parameter: string, maximum: number): strin
   if (normalized.length > maximum) throw new CatalogInputError(parameter);
   return normalized;
 }
-const classifications = new Set<BulkCatalogClassification>(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE', 'AMBIGUOUS', 'CONFLICT', 'INVALID']);
+const classifications = new Set<BulkCatalogClassification>(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'CANDIDATE', 'PENDING_REFERENCE', 'AMBIGUOUS', 'CONFLICT', 'INVALID']);
 function raw(value: unknown): string {
   if (typeof value !== 'string' || Buffer.byteLength(value, 'utf8') > 10 * 1024 * 1024) throw new CatalogInputError('rawPayload');
   const lines = value.replace(/\r/gu, '').split('\n'); let nonEmptyCells = 0;

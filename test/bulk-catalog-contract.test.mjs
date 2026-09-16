@@ -4,6 +4,7 @@ import { performance } from 'node:perf_hooks';
 import test from 'node:test';
 
 const domain = await import('../dist/modules/catalog/domain/bulk-catalog.js');
+const matching = await import('../dist/modules/catalog/domain/bulk-catalog-candidate-matching.js');
 const fullRow = (index = 1) => ({ kind: 'PART', title: `Pantalla ${index}`, description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: `REF-${index}`, barcode: `SR${String(index).padStart(4, '0')}`, basePriceMinor: 139900, referenceCostMinor: 48000 });
 
 test('bulk rows support the required 1k and target 10k envelope with explicit zero and blank cost', () => {
@@ -45,6 +46,40 @@ test('supplier observed title remains separate from the editable Catalog title p
   const [row] = domain.parseBulkRows([{ ...fullRow(), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }], 'FULL');
   assert.equal(row.supplierObservedTitle, 'PANTALLA IPHONE 11 OLED GX >>I');
   assert.equal(row.title, 'Pantalla iPhone 11 OLED GX >>I');
+});
+
+test('bounded supplier candidates explain AG changes without deciding identity', () => {
+  const history = [
+    { itemId: '11111111-1111-4111-8111-111111111111', title: 'Pantalla iPhone 11 Calidad RJ >>', observedTitle: 'Pantalla iPhone 11 Calidad RJ >>', kind: 'PART', categoryIdentity: 'C:pantallas', brandIdentity: 'C:apple', status: 'ACTIVE', version: 4 },
+    { itemId: '22222222-2222-4222-8222-222222222222', title: 'Pantalla iPhone 11 Original >>I', observedTitle: 'Pantalla iPhone 11 Original >>I', kind: 'PART', categoryIdentity: 'C:pantallas', brandIdentity: 'C:apple', status: 'ACTIVE', version: 4 },
+  ];
+  const index = matching.buildSupplierHistoryTokenIndex(history);
+  const row = (title) => ({ kind: 'PART', supplierObservedTitle: title, title, description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 1, referenceCostMinor: null });
+  const liquidation = matching.matchSupplierHistoryCandidates(row('Pantalla iPhone 11 Calidad RJ >> (liquidacion)'), 'C:pantallas', 'C:apple', index);
+  const display = matching.matchSupplierHistoryCandidates(row('Display iPhone 11 Original >>I'), 'C:pantallas', 'C:apple', index);
+  assert.deepEqual(liquidation.candidates.map(({ itemId }) => itemId), [history[0].itemId]);
+  assert.deepEqual(display.candidates.map(({ itemId }) => itemId), [history[1].itemId]);
+  assert.equal(liquidation.candidates[0].differences.includes('OBSERVED_ONLY:liquidacion'), true);
+  assert.equal(display.candidates[0].differences.includes('OBSERVED_ONLY:display'), true);
+});
+
+test('bounded candidates fail closed for identity-bearing and structural differences', () => {
+  const base = { itemId: '33333333-3333-4333-8333-333333333333', title: 'Pantalla iPhone 11 Pro OLED Original 128GB Negra', observedTitle: 'Pantalla iPhone 11 Pro OLED Original 128GB Negra', kind: 'PART', categoryIdentity: 'C:pantallas', brandIdentity: 'C:apple', status: 'ACTIVE', version: 1 };
+  const index = matching.buildSupplierHistoryTokenIndex([base]);
+  const row = (title, kind = 'PART') => ({ kind, supplierObservedTitle: title, title, description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 1, referenceCostMinor: null });
+  for (const title of ['Pantalla iPhone 11 OLED Original 128GB Negra', 'Pantalla iPhone 11 Pro INCELL Original 128GB Negra', 'Pantalla iPhone 11 Pro OLED Calidad 128GB Negra', 'Pantalla iPhone 11 Pro OLED Original 256GB Negra', 'Pantalla iPhone 11 Pro OLED Original 128GB Azul']) {
+    const result = matching.matchSupplierHistoryCandidates(row(title), 'C:pantallas', 'C:apple', index); assert.equal(result.candidates.length, 0, title); assert.equal(result.contradictory, true, title);
+  }
+  assert.equal(matching.matchSupplierHistoryCandidates(row(base.title, 'PRODUCT'), 'C:pantallas', 'C:apple', index).contradictory, true);
+  assert.equal(matching.matchSupplierHistoryCandidates(row(base.title), 'C:fundas', 'C:apple', index).contradictory, true);
+  assert.equal(matching.matchSupplierHistoryCandidates(row(base.title), 'C:pantallas', 'C:samsung', index).contradictory, true);
+});
+
+test('candidate pool and top set stay bounded at 1,500 rows', () => {
+  const history = Array.from({ length: 1_500 }, (_, index) => ({ itemId: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`, title: `Pantalla iPhone Modelo ${index} Original`, observedTitle: `Pantalla iPhone Modelo ${index} Original`, kind: 'PART', categoryIdentity: 'C:pantallas', brandIdentity: 'C:marca', status: 'ACTIVE', version: 1 }));
+  const index = matching.buildSupplierHistoryTokenIndex(history); const started = performance.now();
+  const result = matching.matchSupplierHistoryCandidates({ kind: 'PART', supplierObservedTitle: 'Display iPhone Modelo 1499 Original', title: 'Display iPhone Modelo 1499 Original', description: null, category: 'Pantallas', brand: 'Marca', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 1, referenceCostMinor: null }, 'C:pantallas', 'C:marca', index);
+  assert.equal(result.candidates.length, 1); assert.equal(result.candidates[0].itemId, history[1499].itemId); assert.ok(result.candidates.length <= matching.BULK_CATALOG_MAX_CANDIDATES); assert.ok(performance.now() - started < 250);
 });
 
 test('bulk contracts preserve separate prepare, publish, retirement, cost and Branch boundaries', async () => {

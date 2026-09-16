@@ -139,11 +139,12 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const v2Analyzed = await service.analyze(ctxA, v2.versionId, { expectedVersion: v2.version });
     assert.equal(v2Analyzed.batch.counts.UPDATE, 1);
     assert.equal(v2Analyzed.batch.counts.UNCHANGED, 3);
-    assert.equal(v2Analyzed.rows.every((row) => row.preselectedByMemory && row.decision === 'UNRESOLVED'), true);
+    assert.equal(v2Analyzed.rows.every((row) => row.preselectedByMemory && row.matchOrigin === 'TRUSTED_HISTORY' && row.decision === 'APPLY'), true);
+    assert.equal(v2Analyzed.batch.lifecycle, 'READY');
     const comparison = await service.compare({ tenantId: tenantA, branchId: branchA }, draft.versionId, v2.versionId);
     assert.deepEqual({ mapped: comparison.mapped, changed: comparison.changed, added: comparison.added, disappeared: comparison.disappeared, ambiguous: comparison.ambiguous }, { mapped: 4, changed: 1, added: 0, disappeared: 0, ambiguous: 0 });
 
-    const v2Ready = await service.decideMany(ctxA, v2.versionId, { expectedBatchVersion: v2Analyzed.batch.version, classifications: ['UPDATE', 'UNCHANGED'], decision: 'APPLY' });
+    const v2Ready = v2Analyzed;
     await service.publish(ctxA, v2.versionId, { expectedVersion: v2Ready.version, clientRequestId: randomUUID() }, true);
     const alternatePart = await admin.query(`select item_id from catalog_supplier_reconciliation_memory where tenant_id = $1 and source_id = $2 and identifier_scheme = 'SUPPLIER_CODE' and normalized_identifier = 'sup-00005'`, [tenantA, source.sourceId]);
     const correction = await service.createDraft(ctxA, { sourceId: source.sourceId, description: 'Corrección', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-correction', rows: [rows[0]] });
@@ -218,7 +219,9 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
       (select count(*)::int from catalog_reference_cost_revisions c where c.tenant_id = i.tenant_id and c.item_id = i.item_id) as cost_revisions
       from catalog_items i join catalog_item_identifiers ci using (tenant_id, item_id)
       where i.tenant_id = $1 and i.item_id = $2 group by i.tenant_id, i.item_id`, [tenantA, reactivationTargetId]);
-    const retiredHistoryReady = await service.decideMany(ctxA, retiredHistory.versionId, { expectedBatchVersion: retiredHistoryAnalyzed.batch.version, classifications: ['REACTIVATE'], decision: 'APPLY' });
+    assert.equal(retiredHistoryAnalyzed.rows[0].matchOrigin, 'TRUSTED_HISTORY');
+    assert.equal(retiredHistoryAnalyzed.rows[0].decision, 'APPLY');
+    const retiredHistoryReady = retiredHistoryAnalyzed;
     const reactivationRequestId = randomUUID();
     const reactivationApplied = await service.publish(ctxA, retiredHistory.versionId, { expectedVersion: retiredHistoryReady.version, clientRequestId: reactivationRequestId }, true);
     assert.equal(reactivationApplied.batch.lifecycle, 'APPLIED');
@@ -268,7 +271,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(nextBatchAnalyzed.batch.counts.UPDATE, 1);
     assert.equal(nextBatchAnalyzed.batch.counts.UNCHANGED, 35);
     assert.equal(nextBatchAnalyzed.batch.counts.NEW, 1);
-    const nextBatchReady = await service.decideMany(ctxB, nextBatchDraft.versionId, { expectedBatchVersion: nextBatchAnalyzed.batch.version, classifications: ['UPDATE', 'UNCHANGED'], decision: 'APPLY' });
+    const nextBatchReady = nextBatchAnalyzed;
     await service.publish(ctxB, nextBatchDraft.versionId, { expectedVersion: nextBatchReady.version, clientRequestId: randomUUID() }, true);
     const batchPlan = await retirement.createPlan({ ...ctxB, capability: 'catalog.items.bulk_retire' }, { scope: 'BATCH_CREATED', sourceVersionId: nextBatchDraft.versionId });
     assert.equal(batchPlan.activeCount, 1);
@@ -304,9 +307,9 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const reactivationRows = batchRows.map((row, index) => ({ ...row, basePriceMinor: row.basePriceMinor + (index === 0 ? 2_000 : 1_000), referenceCostMinor: row.referenceCostMinor + 1_000 }));
     const reactivation36Draft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, description: 'Reactivación histórica', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-reactivation', rows: reactivationRows });
     const reactivation36Analyzed = await service.analyze(ctxB, reactivation36Draft.versionId, { expectedVersion: reactivation36Draft.version });
-    assert.deepEqual(reactivation36Analyzed.batch.counts, { NEW: 0, UPDATE: 0, REACTIVATE: 36, UNCHANGED: 0, PENDING_REFERENCE: 0, AMBIGUOUS: 0, CONFLICT: 0, INVALID: 0 });
-    assert.equal(reactivation36Analyzed.rows.every((row) => row.before.status === 'INACTIVE' && row.decision === 'UNRESOLVED' && row.targetItemId), true);
-    const reactivation36Ready = await service.decideMany(ctxB, reactivation36Draft.versionId, { expectedBatchVersion: reactivation36Analyzed.batch.version, classifications: ['REACTIVATE'], decision: 'APPLY' });
+    assert.deepEqual(reactivation36Analyzed.batch.counts, { NEW: 0, UPDATE: 0, REACTIVATE: 36, UNCHANGED: 0, CANDIDATE: 0, PENDING_REFERENCE: 0, AMBIGUOUS: 0, CONFLICT: 0, INVALID: 0 });
+    assert.equal(reactivation36Analyzed.rows.every((row) => row.before.status === 'INACTIVE' && row.decision === 'APPLY' && row.matchOrigin === 'TRUSTED_HISTORY' && row.targetItemId), true);
+    const reactivation36Ready = reactivation36Analyzed;
     await admin.query(`update catalog_items set version = version + 1 where tenant_id = $1 and item_id = $2`, [tenantB, reactivation36Analyzed.rows[0].targetItemId]);
     await assert.rejects(service.publish(ctxB, reactivation36Draft.versionId, { expectedVersion: reactivation36Ready.version, clientRequestId: randomUUID() }, true), CatalogConflictError);
     const failedAtomicPublish = await admin.query(`select
@@ -317,7 +320,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.deepEqual(failedAtomicPublish.rows[0], { active: 0, price_revisions: 38, cost_revisions: 37 });
     const reanalyzed36 = await service.analyze(ctxB, reactivation36Draft.versionId, { expectedVersion: reactivation36Ready.version });
     assert.equal(reanalyzed36.batch.counts.REACTIVATE, 36);
-    const reready36 = await service.decideMany(ctxB, reactivation36Draft.versionId, { expectedBatchVersion: reanalyzed36.batch.version, classifications: ['REACTIVATE'], decision: 'APPLY' });
+    const reready36 = reanalyzed36;
     const concurrentRequestId = randomUUID();
     const concurrentPublish = await Promise.allSettled([
       service.publish(ctxB, reactivation36Draft.versionId, { expectedVersion: reready36.version, clientRequestId: concurrentRequestId }, true),
@@ -350,6 +353,39 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const raw = await admin.query(`select count(*) filter (where payload_text is not null)::int as retained from catalog_supplier_version_raw_payloads where tenant_id = $1`, [tenantA]);
     assert.equal(raw.rows[0].retained, 0);
     assert.equal((await service.listSources({ tenantId: tenantB, branchId: branchB })).length, 1);
+
+    const candidateSource = await service.createSource(ctxB, { name: 'Proveedor Candidate QA' });
+    const candidateRows = [
+      { kind: 'PART', supplierObservedTitle: 'Pantalla iPhone 11 Calidad RJ >>', title: 'Pantalla iPhone 11 Calidad RJ >>', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 139_900, referenceCostMinor: 48_000 },
+      { kind: 'PART', supplierObservedTitle: 'Pantalla iPhone 11 Original >>I', title: 'Pantalla iPhone 11 Original >>I', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: null, barcode: null, basePriceMinor: 149_900, referenceCostMinor: 58_000 },
+    ];
+    const candidateV1 = await service.createDraft(ctxB, { sourceId: candidateSource.sourceId, description: 'Candidate anchors', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'f'.repeat(64), rawPayload: 'candidate-v1', rows: candidateRows });
+    const candidateV1Analyzed = await service.analyze(ctxB, candidateV1.versionId, { expectedVersion: candidateV1.version });
+    await service.publish(ctxB, candidateV1.versionId, { expectedVersion: candidateV1Analyzed.version, clientRequestId: randomUUID() }, true);
+    const modifiedCandidateRows = [
+      { ...candidateRows[0], supplierObservedTitle: 'Pantalla iPhone 11 Calidad RJ >> (liquidacion)', title: 'Pantalla iPhone 11 Calidad RJ >> (liquidacion)' },
+      { ...candidateRows[1], supplierObservedTitle: 'Display iPhone 11 Original >>I', title: 'Display iPhone 11 Original >>I' },
+    ];
+    const candidateV2 = await service.createDraft(ctxB, { sourceId: candidateSource.sourceId, description: 'Candidate observations', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'f'.repeat(64), rawPayload: 'candidate-v2', rows: modifiedCandidateRows });
+    const candidateV2Analyzed = await service.analyze(ctxB, candidateV2.versionId, { expectedVersion: candidateV2.version });
+    assert.equal(candidateV2Analyzed.batch.counts.CANDIDATE, 2);
+    assert.equal(candidateV2Analyzed.batch.lifecycle, 'RECONCILING');
+    assert.equal(candidateV2Analyzed.rows.every((row) => row.matchOrigin === 'CANDIDATE' && row.decision === 'UNRESOLVED' && row.targetItemId === null && row.candidates.length === 1), true);
+    await assert.rejects(service.decide(ctxB, candidateV2.versionId, candidateV2Analyzed.rows[0].rowDecisionId, { expectedRowVersion: candidateV2Analyzed.rows[0].version, decision: 'APPLY', targetItemId: randomUUID() }), CatalogConflictError);
+    const memoryBeforeCandidatePublish = await admin.query(`select count(*)::int as count from catalog_supplier_reconciliation_memory where tenant_id = $1 and source_id = $2`, [tenantB, candidateSource.sourceId]);
+    assert.equal(memoryBeforeCandidatePublish.rows[0].count, 2);
+    let candidateResolved = candidateV2Analyzed;
+    for (const originalRow of candidateV2Analyzed.rows) {
+      const currentRow = candidateResolved.rows.find(({ rowDecisionId }) => rowDecisionId === originalRow.rowDecisionId);
+      candidateResolved = await service.decide(ctxB, candidateV2.versionId, originalRow.rowDecisionId, { expectedRowVersion: currentRow.version, decision: 'APPLY', targetItemId: originalRow.candidates[0].itemId });
+    }
+    assert.equal(candidateResolved.batch.lifecycle, 'READY');
+    await service.publish(ctxB, candidateV2.versionId, { expectedVersion: candidateResolved.version, clientRequestId: randomUUID() }, true);
+    const candidateV3 = await service.createDraft(ctxB, { sourceId: candidateSource.sourceId, description: 'Exact candidate repetition', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'f'.repeat(64), rawPayload: 'candidate-v3', rows: modifiedCandidateRows });
+    const candidateV3Analyzed = await service.analyze(ctxB, candidateV3.versionId, { expectedVersion: candidateV3.version });
+    assert.equal(candidateV3Analyzed.batch.counts.UNCHANGED, 2);
+    assert.equal(candidateV3Analyzed.rows.every((row) => row.matchOrigin === 'TRUSTED_HISTORY' && row.preselectedByMemory && row.decision === 'APPLY'), true);
+    assert.equal((await service.getVersion({ tenantId: tenantA, branchId: branchA }, candidateV3.versionId, true).catch(() => null)), null);
 
     const benchmarkRows = Array.from({ length: 10_000 }, (_, index) => ({ kind: 'PART', title: `Benchmark ${index + 1}`, description: null, category: 'Benchmark', brand: null, supplierItemCode: `BENCH-${String(index + 1).padStart(5, '0')}`, sku: null, barcode: null, basePriceMinor: 100_00 + index, referenceCostMinor: null }));
     const benchmarkSource = await service.createSource(ctxC, { name: 'Proveedor Benchmark' });

@@ -23,7 +23,7 @@ const compactColumns = COMPACT_COLUMNS;
 const essentialColumns = ESSENTIAL_COLUMNS;
 const blank = (): UiRow => ({ kind: '', supplierObservedTitle: '', title: '', description: '', category: '', brand: '', supplierItemCode: '', sku: '', barcode: '', price: '', cost: '' });
 const labels: Record<Column, string> = { kind: 'Tipo', title: 'Título', description: 'Descripción', category: 'Categoría', brand: 'Marca', supplierItemCode: 'Código proveedor', sku: 'SKU interno', barcode: 'Código de barras interno', price: 'Precio base', cost: 'Costo de referencia' };
-const statusLabels = { NEW: 'Nuevo', UPDATE: 'Actualiza', REACTIVATE: 'Reactiva', UNCHANGED: 'Sin cambio', PENDING_REFERENCE: 'Referencia pendiente', AMBIGUOUS: 'Ambiguo', CONFLICT: 'Conflicto', INVALID: 'Inválido' } as const;
+const statusLabels = { NEW: 'Nuevo', UPDATE: 'Actualiza', REACTIVATE: 'Reactiva', UNCHANGED: 'Sin cambio', CANDIDATE: 'Candidato', PENDING_REFERENCE: 'Referencia pendiente', AMBIGUOUS: 'Ambiguo', CONFLICT: 'Conflicto', INVALID: 'Inválido' } as const;
 const toMinor = (value: string): number | null => parseMoneyToMinor(value);
 const fromMinor = (value: number | null): string => value === null ? '' : (value / 100).toFixed(2);
 const fromRecord = (version: SupplierVersion): UiRow[] => version.rows.map(({ proposal, supplierObservedTitle }) => ({ kind: proposal.kind ?? '', supplierObservedTitle: supplierObservedTitle ?? proposal.supplierObservedTitle ?? proposal.title ?? '', title: proposal.title ?? '', description: proposal.description ?? '', category: proposal.category ?? '', brand: proposal.brand ?? '', supplierItemCode: proposal.supplierItemCode ?? '', sku: proposal.sku ?? '', barcode: proposal.barcode ?? '', price: fromMinor(proposal.basePriceMinor), cost: fromMinor(proposal.referenceCostMinor) }));
@@ -33,7 +33,7 @@ const failureCode = (error: unknown): string => error instanceof PreviewApiError
 const versionStatus = (value: SupplierVersionSummary): string => value.lifecycle === 'DRAFT' ? 'Borrador' : value.batch.lifecycle === 'APPLIED' ? 'Aplicada' : 'En revisión';
 const formatVersionDate = (value: string, timeZone: string): string => new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone }).format(new Date(value));
 const analysisMessage = (code: string): string => code === 'HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION' ? 'La memoria histórica apunta a un artículo retirado. Reactívalo explícitamente en Lista de precios y vuelve a analizar; no se creará un duplicado.' : code;
-const warningMessage = (code: string): string => code === 'HISTORICAL_INACTIVE_MATCH_REQUIRES_REACTIVATION_CONFIRMATION' ? 'El análisis encontró una coincidencia histórica única con un artículo Inactivo: Reactivar conserva su identidad.' : code === 'HISTORICAL_MATCH_REQUIRES_CONFIRMATION' ? 'Coincidencia histórica única; requiere confirmación explícita.' : code;
+const warningMessage = (code: string): string => code === 'TRUSTED_HISTORICAL_MATCH_AUTO_REACTIVATES' ? 'Historia exacta, publicada y confiable: la identidad quedó resuelta para reactivación.' : code === 'TRUSTED_HISTORICAL_MATCH_AUTO_RESOLVED' ? 'Historia exacta, publicada y confiable: identidad resuelta automáticamente.' : code === 'CANDIDATE_MATCH_REQUIRES_OWNER_DECISION' ? 'La historia publicada encontró un candidato; la similitud no decide identidad.' : code === 'MULTIPLE_BOUNDED_CANDIDATES' ? 'Hay varios candidatos razonables. Elige explícitamente o excluye la fila.' : code;
 
 export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: Readonly<{ capabilities: readonly OperationalCapability[]; csrfToken: string; timeZone: string }>): React.JSX.Element {
   const canPublish = hasOperationalCapability(capabilities, 'catalog.import.publish') && hasOperationalCapability(capabilities, 'catalog.manage') && hasOperationalCapability(capabilities, 'catalog.prices.manage');
@@ -50,6 +50,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     } catch { return { kind: '', category: '', brand: '' }; }
   });
   const [viewPreset, setViewPreset] = useState<'ESSENTIAL' | 'ALL'>('ESSENTIAL');
+  const [reconciliationView, setReconciliationView] = useState<'ATTENTION' | 'RESOLVED' | 'ALL'>('ATTENTION');
   const [columnWidths, setColumnWidths] = useState<Record<Column, number>>(() => {
     try { return { ...DEFAULT_COLUMN_WIDTHS, ...JSON.parse(sessionStorage.getItem('srtaller:bulk-composer:column-widths:v1') ?? '{}') as Partial<Record<Column, number>> }; }
     catch { return { ...DEFAULT_COLUMN_WIDTHS }; }
@@ -180,7 +181,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
       else { setServerIssues([issue]); setIssueIndex(0); setPendingIssueFocus(issue); }
     } finally { setBusy(false); }
   };
-  const analyze = async (): Promise<void> => { if (!current) return; setBusy(true); try { const value = await analyzeSupplierVersion(current.versionId, current.version, canReadCost, csrfToken); setCurrent(value); setRows(fromRecord(value)); await refresh(); showToast('Análisis terminado sin escribir en Lista de precios.'); } catch { setNotice({ tone: 'danger', message: 'No fue posible analizar el snapshot.' }); } finally { setBusy(false); } };
+  const analyze = async (): Promise<void> => { if (!current) return; setBusy(true); try { const value = await analyzeSupplierVersion(current.versionId, current.version, canReadCost, csrfToken); setCurrent(value); setRows(fromRecord(value)); setReconciliationView(value.rows.some((row) => row.decision === 'UNRESOLVED') ? 'ATTENTION' : 'RESOLVED'); await refresh(); showToast('Análisis terminado sin escribir en Lista de precios.'); } catch { setNotice({ tone: 'danger', message: 'No fue posible analizar el snapshot.' }); } finally { setBusy(false); } };
   const load = async (id: string): Promise<void> => { if (dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres descartarlos y abrir otra versión?')) return; setBusy(true); try { const value = await getSupplierVersion(id, canReadCost); setCurrent(value); setMode(value.mode); setSelectedSource(value.sourceId); setDescription(value.description ?? ''); setRows(fromRecord(value)); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; setNotice(null); publishRequest.current = crypto.randomUUID(); draftCreateRequest.current = crypto.randomUUID(); } finally { setBusy(false); } };
   const resolve = async (rowDecisionId: string, expectedRowVersion: number, nextDecision: 'APPLY' | 'EXCLUDE', targetItemId: string | null = null): Promise<void> => { if (!current) return; setBusy(true); try { const value = await decideSupplierRow(current.versionId, rowDecisionId, { expectedRowVersion, decision: nextDecision, targetItemId, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(targetItemId ? 'Mapping corregido e incluido explícitamente.' : nextDecision === 'APPLY' ? 'Fila incluida explícitamente.' : 'Fila excluida del lote.'); } catch { setNotice({ tone: 'danger', message: 'La fila requiere un artículo canónico válido, resolver el duplicado o releer la versión.' }); } finally { setBusy(false); } };
   const resolveGroup = async (classifications: readonly BulkCatalogClassification[], nextDecision: 'APPLY' | 'EXCLUDE'): Promise<void> => { if (!current) return; setBusy(true); try { const value = await decideSupplierRows(current.versionId, { expectedBatchVersion: current.batch.version, classifications, decision: nextDecision, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(nextDecision === 'APPLY' ? 'Filas compatibles confirmadas.' : 'Filas con conflicto excluidas.'); } catch { setNotice({ tone: 'danger', message: 'El lote cambió o contiene una combinación que requiere revisión individual.' }); } finally { setBusy(false); } };
@@ -211,7 +212,8 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const brandOptions = references.brands.filter((value) => value.status === 'ACTIVE' && (!batchDefaults.kind || value.applicableKinds.includes(batchDefaults.kind)) && (governedBrandIds.length === 0 || governedBrandIds.includes(value.brandId!)));
   const changeDefaultKind = (kind: CatalogItemKind | ''): void => { let next: BatchDefaults = { ...batchDefaults, kind }; const probe = { ...blank(), ...next }; if (next.category && !isCompatible(probe)) next = { ...next, category: '', brand: '' }; else if (next.brand && !isCompatible({ ...probe, category: next.category })) next = { ...next, brand: '' }; setBatchDefaults(next); showToast('El contexto cambió; las filas existentes no se modificaron.'); };
   const changeDefaultCategory = (category: string): void => { let next: BatchDefaults = { ...batchDefaults, category }; if (next.brand && !isCompatible({ ...blank(), ...next })) next = { ...next, brand: '' }; setBatchDefaults(next); };
-  const counts = current?.batch.counts; const unresolved = current?.rows.filter((row) => row.decision === 'UNRESOLVED').length ?? 0;
+  const counts = current?.batch.counts; const unresolved = current?.rows.filter((row) => row.decision === 'UNRESOLVED').length ?? 0; const resolved = (current?.rows.length ?? 0) - unresolved;
+  const reviewRows = current?.rows.filter((row) => reconciliationView === 'ALL' || (reconciliationView === 'ATTENTION' ? row.decision === 'UNRESOLVED' : row.decision !== 'UNRESOLVED')) ?? [];
   const currentIssueLabel = currentIssue ? currentIssue.scope === 'CELL' && currentIssue.rowIndex !== undefined && currentIssue.columnKey ? `Fila ${currentIssue.rowIndex + 1} · ${labels[currentIssue.columnKey]}` : currentIssue.scope === 'BATCH' ? 'Contexto del lote' : 'Guardado' : '';
   const sourceIssue = batchIssue('source');
 
@@ -271,9 +273,14 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
         <span className={styles.srOnly} aria-live="polite">{selection ? `Selección: filas ${selection.firstRow + 1} a ${selection.lastRow + 1}, columnas ${selection.firstColumn + 1} a ${selection.lastColumn + 1}.` : ''}</span>
         {counts ? <section className={styles.summary}>{Object.entries(counts).map(([key, value]) => <div key={key}><strong>{value}</strong><span>{statusLabels[key as keyof typeof statusLabels]}</span></div>)}</section> : null}
         {current?.lifecycle === 'INGESTED' ? <section className={styles.decisions}>
-          <div className={styles.decisionTitle}><h2>{current.batch.lifecycle === 'APPLIED' ? 'Resultado aplicado' : 'Reconciliación'}</h2><span>{current.batch.lifecycle === 'APPLIED' ? 'Lote aplicado' : `${unresolved} pendientes de decisión`}</span></div>
+          <div className={styles.decisionTitle}><h2>{current.batch.lifecycle === 'APPLIED' ? 'Resultado aplicado' : 'Reconciliación'}</h2><span>{current.batch.lifecycle === 'APPLIED' ? 'Lote aplicado' : `${resolved} resueltas · ${unresolved} requieren tu atención`}</span></div>
+          <div className={styles.reconciliationTabs} role="tablist" aria-label="Vistas de reconciliación">
+            <button type="button" role="tab" aria-selected={reconciliationView === 'ATTENTION'} onClick={() => setReconciliationView('ATTENTION')}>Requieren atención <strong>{unresolved}</strong></button>
+            <button type="button" role="tab" aria-selected={reconciliationView === 'RESOLVED'} onClick={() => setReconciliationView('RESOLVED')}>Resueltas <strong>{resolved}</strong></button>
+            <button type="button" role="tab" aria-selected={reconciliationView === 'ALL'} onClick={() => setReconciliationView('ALL')}>Todas <strong>{current.rows.length}</strong></button>
+          </div>
           {current.batch.lifecycle !== 'APPLIED' ? <div className={styles.groupActions}><Button size="compact" tone="primary" onClick={() => void resolveGroup(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'], 'APPLY')} disabled={busy}>Confirmar compatibles y sugerencias</Button><Button size="compact" onClick={() => void resolveGroup(['AMBIGUOUS', 'CONFLICT', 'INVALID'], 'EXCLUDE')} disabled={busy}>Excluir bloqueadas</Button></div> : null}
-          {current.rows.filter((row) => row.classification !== 'UNCHANGED' || row.preselectedByMemory).slice(0, 100).map((row) => <article key={row.rowDecisionId}>
+          {reviewRows.slice(0, 100).map((row) => <article key={row.rowDecisionId}>
             <div>
               <strong>Fila {row.rowNumber} · {statusLabels[row.classification]}</strong>
               <span>{row.proposal.title ?? row.proposal.supplierItemCode ?? row.proposal.sku ?? row.proposal.barcode ?? 'Sin identidad'}{row.targetTitle ? ` → ${row.targetTitle}` : ''}</span>
@@ -281,16 +288,24 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
               <small>Propuesta: {row.proposal.kind ?? 'tipo sin cambio'} · {row.proposal.category ?? 'categoría sin cambio'} · {row.proposal.brand ?? 'marca sin cambio'} · estado {row.classification === 'REACTIVATE' ? 'Reactivar' : 'sin cambio'} · precio {row.proposal.basePriceMinor === null ? 'sin cambio' : fromMinor(row.proposal.basePriceMinor)}{canReadCost ? ` · costo ${row.proposal.referenceCostMinor === null ? 'sin cambio' : fromMinor(row.proposal.referenceCostMinor)}` : ''}</small>
               {row.warnings.map((warning) => <small key={warning}>{warningMessage(warning)}</small>)}
               {row.errors.map((error) => <small key={error}>{analysisMessage(error)}</small>)}
-              {['AMBIGUOUS', 'CONFLICT', 'INVALID'].includes(row.classification) ? <label>
+              {row.candidates.map((candidate) => <section key={candidate.itemId} className={styles.candidateCard}>
+                <strong>{candidate.title}</strong><span>{candidate.status === 'INACTIVE' ? 'Inactivo' : 'Activo'} · score de presentación {Math.round(candidate.score * 100)}%</span>
+                <small>Evidencia: {candidate.evidence.join(' · ')}</small>
+                <small>Diferencias: {candidate.differences.length ? candidate.differences.join(' · ') : 'ninguna'}</small>
+                {candidate.contradictions.length ? <small>Contradicciones: {candidate.contradictions.join(' · ')}</small> : null}
+                {current.batch.lifecycle !== 'APPLIED' ? <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY', candidate.itemId)}>Mismo artículo</Button> : null}
+              </section>)}
+              {['CONFLICT', 'INVALID'].includes(row.classification) ? <label>
                 Artículo canónico para corregir mapping
                 <Input aria-label={`Artículo canónico fila ${row.rowNumber}`} placeholder="UUID del artículo existente" value={mappingTargets[row.rowDecisionId] ?? ''} onChange={(event) => setMappingTargets((value) => ({ ...value, [row.rowDecisionId]: event.target.value }))} />
               </label> : null}
             </div>
             {current.batch.lifecycle !== 'APPLIED' ? <div>
               <Button size="compact" onClick={() => void resolve(row.rowDecisionId, row.version, 'EXCLUDE')}>Excluir</Button>
-              {['AMBIGUOUS', 'CONFLICT', 'INVALID'].includes(row.classification)
+              {row.classification === 'CANDIDATE' ? <Button size="compact" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Artículo nuevo</Button> : null}
+              {['CONFLICT', 'INVALID'].includes(row.classification)
                 ? <Button size="compact" tone="primary" disabled={!mappingTargets[row.rowDecisionId]?.trim()} onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY', mappingTargets[row.rowDecisionId]!.trim())}>Corregir mapping</Button>
-                : <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Incluir</Button>}
+                : row.classification !== 'CANDIDATE' && row.classification !== 'AMBIGUOUS' ? <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Incluir</Button> : null}
             </div> : null}
           </article>)}
         </section> : null}

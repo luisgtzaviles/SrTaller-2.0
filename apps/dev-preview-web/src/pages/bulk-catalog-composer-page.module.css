@@ -80,12 +80,18 @@
 .fillHandle { position: absolute; z-index: 5; right: -4px; bottom: -4px; width: 10px; height: 10px; padding: 0; border: 2px solid var(--color-surface-raised); border-radius: var(--radius-sm); background: var(--color-brand-action); cursor: crosshair; touch-action: none; }
 .fillHandle:focus-visible { width: 14px; height: 14px; outline: 2px solid var(--color-text); outline-offset: 2px; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.summary { display: grid; grid-template-columns: repeat(7, minmax(90px, 1fr)); gap: var(--space-2); padding: var(--space-3); }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: var(--space-2); padding: var(--space-3); }
 .summary div { display: grid; gap: 2px; padding: var(--space-2); border-radius: var(--radius-md); background: var(--color-surface-muted); }
 .summary strong { font-size: 1.15rem; }.summary span { color: var(--color-text-muted); font-size: .7rem; }
 .decisions { min-width: 0; display: grid; gap: var(--space-2); padding: var(--space-3); }
 .decisionTitle { justify-content: space-between; }.decisionTitle span { color: var(--color-warning); font-size: .78rem; }
 .groupActions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block: var(--space-3); }
+.reconciliationTabs { display: flex; flex-wrap: wrap; gap: var(--space-1); border-bottom: 1px solid var(--color-border); }
+.reconciliationTabs button { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2); border: 0; border-bottom: 2px solid transparent; color: var(--color-text-muted); background: transparent; cursor: pointer; }
+.reconciliationTabs button:hover, .reconciliationTabs button:focus-visible { color: var(--color-text); background: var(--color-surface-muted); outline: none; }
+.reconciliationTabs button[aria-selected='true'] { border-bottom-color: var(--color-brand-action); color: var(--color-text); }
+.candidateCard { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px var(--space-2); margin-top: var(--space-2); padding: var(--space-2); border: 1px solid var(--color-brand-action); border-radius: var(--radius-md); background: var(--color-brand-subtle); }
+.candidateCard small { grid-column: 1; }.candidateCard button { grid-column: 2; grid-row: 1 / span 4; }
 .decisions article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-2); border-top: 1px solid var(--color-border); }
 .decisions article > div { min-width: 0; display: grid; gap: 2px; overflow-wrap: anywhere; }.decisions article > div:last-child { display: flex; flex-wrap: nowrap; align-items: center; }.decisions article span, .decisions article small { color: var(--color-text-muted); font-size: .73rem; }
 .comparison { flex-wrap: wrap; padding: var(--space-3); }.comparison p { flex-basis: 100%; margin: 0; color: var(--color-text-muted); font-size: .8rem; }

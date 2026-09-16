@@ -401,7 +401,7 @@ export interface CatalogUpdateBatchTable {
   readonly updated_at: MutableColumn<Date>;
 }
 
-export type CatalogUpdateRowClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
+export type CatalogUpdateRowClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'CANDIDATE' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
 export interface CatalogUpdateRowDecisionTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly row_decision_id: ImmutableColumn<string>;
@@ -414,6 +414,9 @@ export interface CatalogUpdateRowDecisionTable {
   readonly target_item_id: MutableColumn<string | null>;
   readonly expected_item_version: MutableColumn<number | null>;
   readonly preselected_by_memory: MutableColumn<boolean>;
+  readonly match_origin: MutableColumn<'NONE' | 'INTERNAL_IDENTIFIER' | 'TRUSTED_HISTORY' | 'CANDIDATE' | 'OWNER_SELECTED'>;
+  readonly match_algorithm_version: MutableColumn<number>;
+  readonly candidate_matches: MutableColumn<unknown>;
   readonly errors: MutableColumn<unknown>;
   readonly warnings: MutableColumn<unknown>;
   readonly lock_version: MutableColumn<number>;
