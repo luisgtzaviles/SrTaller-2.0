@@ -30,7 +30,10 @@
 .versionList > button:hover, .versionList > button:focus-visible, .versionList > .selectedVersion { border-color: var(--color-brand-action); background: var(--color-brand-subtle); outline: none; }
 .versionList span, .versionList small { overflow: hidden; color: var(--color-text-muted); font-size: .6875rem; text-overflow: ellipsis; white-space: nowrap; }
 .composer { position: relative; min-width: 0; display: grid; gap: var(--space-2); }
-.sourceRestoreControl { position: absolute; z-index: 2; top: var(--space-2); left: 0; border: 1px solid var(--color-border); border-left: 0; border-radius: 0 var(--radius-md) var(--radius-md) 0; background: var(--color-surface-raised); }
+.sourceRestoreControl { position: absolute; z-index: 2; top: var(--space-4); left: 0; width: 30px; height: 32px; border: 1px solid var(--color-border); border-left: 0; border-radius: 0 var(--radius-md) var(--radius-md) 0; color: var(--color-text-muted); background: var(--color-surface-subtle); }
+.sourceRestoreControl:hover { color: var(--color-text); background: var(--color-neutral-status-subtle); }
+.sourceRestoreControl:has(+ .emptyWorkspace) { top: 50%; transform: translateY(-50%); }
+.sourceRestoreControl:has(+ .emptyWorkspace)::before { content: ''; position: absolute; top: calc(-1 * var(--space-2)); bottom: calc(-1 * var(--space-2)); left: 0; border-left: 1px solid var(--color-border); }
 .sourceRestoreControl + .setup, .sourceRestoreControl + .emptyWorkspace { padding-left: calc(var(--space-3) + 32px); }
 .emptyWorkspace { display: flex; min-height: 10rem; align-items: center; gap: var(--space-3); padding: var(--space-4); border: 0 !important; background: transparent !important; }
 .emptyWorkspace > svg { flex: none; color: var(--color-text-muted); }.emptyWorkspace > div { display: grid; gap: var(--space-1); }.emptyWorkspace h2 { margin: 0; font-size: 1rem; }.emptyWorkspace p { max-width: 38rem; margin: 0; color: var(--color-text-muted); font-size: .8125rem; line-height: 1.45; }

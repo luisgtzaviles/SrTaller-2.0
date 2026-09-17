@@ -1153,3 +1153,13 @@ preservada al ocultar/restaurar y Nueva carga preparada para AG sin primer
 equivalente tras el desmontaje intencional, por lo que Space vuelve a alternar
 sin perder teclado. No se introdujeron credenciales ni se hicieron escrituras
 de negocio; `verify:full`, CI, push, PR, merge y deploy no se ejecutaron.
+
+Micro-polish Owner posterior: sólo CSS del control cerrado. La manija de
+30 × 32 px queda alineada con el contenido del workspace neutro y usa un
+tramo corto de borde como anclaje; con carga pendiente o Version histórica se
+une al borde de la primera tarjeta. El estado en reposo usa superficie, borde
+y chevron neutros; el contorno de foco aparece con teclado. En Chrome local,
+el estado neutro pasó escritorio/768/640 en claro y oscuro; la carga AG
+pendiente pasó 768 claro y 640 oscuro; `AG v53` pasó 640 oscuro y escritorio
+claro. Click, Space, Enter, Tab y Shift+Tab conservaron foco y recuperación;
+ocultar/restaurar conservó AG pendiente y `v53`. No se guardó ni publicó lote.

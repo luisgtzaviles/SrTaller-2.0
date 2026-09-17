@@ -286,6 +286,13 @@ workspace pendiente tras ocultar/restaurar, `AG v53` preservada tras
 ocultar/restaurar, desktop, 768 px, 640 px y temas claro/oscuro sin crear ni
 modificar Sources, Versions o Catalog; no se introdujeron credenciales.
 
+El micro-polish posterior del Owner conserva el estado abierto y desplaza sólo
+la manija cerrada: se centra junto al mensaje del workspace vacío y se apoya
+en el borde de la primera tarjeta cuando existe carga o Version. Un tramo de
+borde corto hace legible su pertenencia al workspace vacío, sin rail ni ancho
+reservado. Fondo, borde, chevron y hover usan tokens neutros; el contorno de
+marca aparece únicamente con `:focus-visible`.
+
 ## 15. Diferido explícitamente
 
 La posible sugerencia de defaults por `SupplierSource` permanece fuera de

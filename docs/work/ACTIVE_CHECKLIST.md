@@ -3,10 +3,10 @@
 Milestone / Functional Goal: PBI-041 — Operator flow optimization UX-001C Sources Panel Collapse Affordance Polish
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: UX-001C collapsed restore-control refinement, checks and local Chrome walkthrough complete; ready for Owner Review
+Status: UX-001C restore tab micro-polish complete locally; ready for Owner Review
 WIP: 1/1
-Progress: 35 / 35 current implementation blocks completed
-Current: stop at the local UX-001C collapsed restore-control checkpoint for Owner Review.
+Progress: 39 / 39 current implementation blocks completed
+Current: stop at the reviewed local UX-001C restore tab checkpoint.
 Next: Owner accepts or rejects the visual refinement; no follow-on work starts automatically.
 Blocked: None. v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
@@ -59,6 +59,13 @@ Last updated: 2026-09-17 MST
 - [x] Preserve focus transfer, keyboard behavior, selected Version and pending supplier with no reload or request.
 - [x] Verify neutral, new-load and historical Version workspaces at desktop/768/640 in light/dark.
 - [x] Reconcile PBI-041, UX-001 evidence and checklist with the final local proof.
+
+## Current checkpoint — UX-001C restore tab micro-polish
+
+- [x] Align the closed tab with workspace content and keep a subtle neutral resting state.
+- [x] Preserve the approved open control, keyboard focus and all Composer state.
+- [x] Review neutral, pending-load and historical Version workspaces on desktop, 768 and 640 px in light/dark.
+- [x] Run focused gates and reconcile the local evidence for Owner Review.
 
 ## Current checkpoint — Existing CatalogItem reactivation pre-Apply QA
 
