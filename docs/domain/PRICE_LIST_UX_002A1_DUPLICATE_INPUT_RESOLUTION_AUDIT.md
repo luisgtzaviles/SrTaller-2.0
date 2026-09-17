@@ -222,9 +222,11 @@ matching or a migration.
 - **Identity conflict:** UUID mapping remains available only when the duplicate
   value reason is absent. A known duplicate never displays the UUID control.
 
-The existing physical listings and raw payload are retained. Existing coverage
-maps already use the same supplier key, so a same-identity group counts as one
-effective supplier observation while received row count remains physical. No
-change was made to PARTIAL/COMPLETE authority, baseline selection, Memory,
-Resolution, retirement or migrations. AG `v60` remains untouched historical
-evidence of the pre-UX-002A.2 behavior.
+The existing physical listings and raw payload are retained. Coverage now also
+uses that key when a COMPLETE list has no prior applied baseline, so a
+same-identity group counts as one effective supplier observation while received
+row count remains physical. A completed contradictory choice remains stable on
+reanalyze: its chosen row is recomputed normally and its superseded sibling
+remains excluded. No change was made to PARTIAL/COMPLETE authority, baseline
+selection, Memory, Resolution, retirement or migrations. AG `v60` remains
+untouched historical evidence of the pre-UX-002A.2 behavior.

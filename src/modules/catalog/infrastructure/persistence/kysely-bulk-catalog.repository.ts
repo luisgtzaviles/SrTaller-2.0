@@ -89,8 +89,11 @@ async function readAutomaticAbsenceBaseline(executor: BulkExecutor, tenantId: st
     .where('v.completeness', '=', 'COMPLETE').where('b.lifecycle', '=', 'APPLIED')
     .orderBy('v.sequence_number', 'desc').limit(1).executeTakeFirst();
   if (!baseline) {
-    const currentCount = await executor.selectFrom('catalog_supplier_listings').select((eb) => eb.fn.countAll<number>().as('count')).where('tenant_id', '=', tenantId).where('version_id', '=', current.version_id).executeTakeFirstOrThrow();
-    return noCoverage('NO_BASELINE', Number(currentCount.count));
+    const currentListings = await executor.selectFrom('catalog_supplier_listings')
+      .select(['normalized_supplier_item_code', 'normalized_signature'])
+      .where('tenant_id', '=', tenantId).where('version_id', '=', current.version_id).execute();
+    /** Coverage is about effective supplier observations, never physical pasted rows. */
+    return noCoverage('NO_BASELINE', new Set(currentListings.map((listing) => supplierListingKey(listing))).size);
   }
   const baselineListings = executor.selectFrom('catalog_supplier_listings as l')
     .leftJoin('catalog_supplier_listing_resolutions as r', (join) => join.onRef('r.tenant_id', '=', 'l.tenant_id').onRef('r.listing_id', '=', 'l.listing_id'))
@@ -247,12 +250,16 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
         members.push(row);
         membersBySupplierIdentity.set(key, members);
       }
-      const duplicateGroupByRowDecisionId = new Map<string, Readonly<{ exact: boolean; representativeRowDecisionId: string }>>();
+      const duplicateGroupByRowDecisionId = new Map<string, Readonly<{ exact: boolean; resolved: boolean; representativeRowDecisionId: string }>>();
       for (const members of membersBySupplierIdentity.values()) {
         if (members.length < 2) continue;
         const exact = new Set(members.map((member) => sha256(member.proposal))).size === 1;
-        const representativeRowDecisionId = members.reduce((first, member) => member.row_number < first.row_number ? member : first).row_decision_id;
-        for (const member of members) duplicateGroupByRowDecisionId.set(member.row_decision_id, Object.freeze({ exact, representativeRowDecisionId }));
+        const superseded = members.filter((member) => member.decision === 'EXCLUDE' && normalizeRowErrors(member.warnings).includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED'));
+        const remaining = members.filter((member) => !superseded.includes(member));
+        /** A prior owner selection remains valid through reanalysis unless input changes. */
+        const resolved = !exact && superseded.length === members.length - 1 && remaining.length === 1;
+        const representativeRowDecisionId = (resolved ? remaining[0]! : members.reduce((first, member) => member.row_number < first.row_number ? member : first)).row_decision_id;
+        for (const member of members) duplicateGroupByRowDecisionId.set(member.row_decision_id, Object.freeze({ exact, resolved, representativeRowDecisionId }));
       }
       const categories = await db.selectFrom('catalog_categories').select(['category_id', 'kind', 'normalized_name', 'status']).where('tenant_id', '=', context.tenantId).where('merged_into_id', 'is', null).execute(); const brands = await db.selectFrom('catalog_brands').select(['brand_id', 'normalized_name', 'status']).where('tenant_id', '=', context.tenantId).where('merged_into_id', 'is', null).execute();
       const pendingCategories = await db.selectFrom('catalog_category_pending_values').select(['pending_category_value_id', 'kind', 'normalized_key']).where('tenant_id', '=', context.tenantId).where('resolution_status', '=', 'PENDING').execute();
@@ -280,8 +287,8 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       for (const row of rows) {
         const p = row.proposal as BulkCatalogRowInput; const identifierKeys = [p.sku ? `SKU:${p.sku}` : null, p.barcode ? `BARCODE:${p.barcode}` : null].filter((value): value is string => Boolean(value)); const historyKeys = supplierMemoryKeys(p); const errors: string[] = []; const warnings: string[] = [];
         const duplicateGroup = duplicateGroupByRowDecisionId.get(row.row_decision_id);
-        const exactDuplicateLoser = duplicateGroup?.exact === true && duplicateGroup.representativeRowDecisionId !== row.row_decision_id;
-        if (duplicateGroup?.exact === false) errors.push('DUPLICATE_VALUE_CONTRADICTION');
+        const duplicateLoser = Boolean(duplicateGroup && duplicateGroup.representativeRowDecisionId !== row.row_decision_id && (duplicateGroup.exact || duplicateGroup.resolved));
+        if (duplicateGroup?.exact === false && !duplicateGroup.resolved) errors.push('DUPLICATE_VALUE_CONTRADICTION');
         else if (!duplicateGroup && [...identifierKeys, ...historyKeys].some((key) => duplicate.has(key))) errors.push('DUPLICATE_OBSERVATION_IN_VERSION');
         const categoryKey = normalizeReference(p.category); const brandKey = normalizeReference(p.brand);
         const proposedCategory = categoryKey ? categories.find((value) => value.kind === p.kind && value.normalized_name === categoryKey && value.status === 'ACTIVE') : null;
@@ -328,12 +335,12 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
           if ((p.category && !proposedCategory && !proposedPendingCategory) || (p.brand && !proposedBrand && !proposedPendingBrand)) { classification = 'PENDING_REFERENCE'; decision = 'UNRESOLVED'; warnings.push('REFERENCE_REQUIRES_GOVERNANCE'); }
           else { const changed = (p.description !== null && p.description !== target.description) || (Boolean(proposedCategory) && (proposedCategory!.category_id !== target.category_id || target.pending_category_value_id !== null)) || (Boolean(proposedPendingCategory) && proposedPendingCategory!.pending_category_value_id !== target.pending_category_value_id) || (Boolean(proposedBrand) && (proposedBrand!.brand_id !== target.brand_id || target.pending_brand_value_id !== null)) || (Boolean(proposedPendingBrand) && proposedPendingBrand!.pending_brand_value_id !== target.pending_brand_value_id) || (p.basePriceMinor !== null && p.basePriceMinor !== currentPrices.get(target.item_id)) || (p.referenceCostMinor !== null && p.referenceCostMinor !== currentCosts.get(target.item_id)); classification = target.status === 'INACTIVE' ? 'REACTIVATE' : changed ? 'UPDATE' : 'UNCHANGED'; decision = 'APPLY'; }
         }
-        if (exactDuplicateLoser) {
+        if (duplicateLoser) {
           classification = 'UNCHANGED'; decision = 'EXCLUDE'; target = null; trusted = false; matchOrigin = 'NONE'; candidateMatches = Object.freeze([]);
-          errors.length = 0; warnings.push('DUPLICATE_EXACT_CONSOLIDATED');
+          errors.length = 0; warnings.push(duplicateGroup!.exact ? 'DUPLICATE_EXACT_CONSOLIDATED' : 'DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED');
         }
         counts[classification] += 1; if (decision === 'UNRESOLVED') unresolvedCount += 1;
-        const titleDecision: BulkCatalogTitleDecision | null = exactDuplicateLoser ? null : target && p.title !== null && p.title !== target.title ? 'KEEP_CURRENT' : null;
+        const titleDecision: BulkCatalogTitleDecision | null = duplicateLoser ? null : target && p.title !== null && p.title !== target.title ? 'KEEP_CURRENT' : null;
         analyzedWrites.push({ tenant_id: row.tenant_id, row_decision_id: row.row_decision_id, batch_id: row.batch_id, listing_id: row.listing_id, row_number: row.row_number, proposal: row.proposal, classification, decision, title_decision: titleDecision, target_item_id: target?.item_id ?? null, expected_item_version: target?.version ?? null, preselected_by_memory: trusted, match_origin: matchOrigin, match_algorithm_version: BULK_CATALOG_MATCH_ALGORITHM_VERSION, candidate_matches: JSON.stringify(candidateMatches), errors: serializeRowErrors(errors), warnings: JSON.stringify(warnings), lock_version: row.lock_version + 1, updated_at: input.occurredAt });
       }
       for (let offset = 0; offset < analyzedWrites.length; offset += 500) await db.insertInto('catalog_update_row_decisions').values(analyzedWrites.slice(offset, offset + 500)).onConflict((conflict) => conflict.columns(['tenant_id', 'row_decision_id']).doUpdateSet((eb) => ({ classification: eb.ref('excluded.classification'), decision: eb.ref('excluded.decision'), title_decision: eb.ref('excluded.title_decision'), target_item_id: eb.ref('excluded.target_item_id'), expected_item_version: eb.ref('excluded.expected_item_version'), preselected_by_memory: eb.ref('excluded.preselected_by_memory'), match_origin: eb.ref('excluded.match_origin'), match_algorithm_version: eb.ref('excluded.match_algorithm_version'), candidate_matches: eb.ref('excluded.candidate_matches'), errors: eb.ref('excluded.errors'), warnings: eb.ref('excluded.warnings'), lock_version: eb.ref('excluded.lock_version'), updated_at: input.occurredAt }))).execute();

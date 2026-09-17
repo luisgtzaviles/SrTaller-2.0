@@ -74,5 +74,5 @@ one traceable excluded physical row. DUP-3 contradictory values remain blocked
 until an Owner selects a physical row; the known-identity UI compares values
 and does not request a Catalog UUID. Focused contract and disposable PostgreSQL
 material coverage prove no generic exact conflict, explicit contradiction,
-Apply blocking and one surviving target after selection. AG `v60` was not
-mutated. UX-002B remains unstarted.
+Apply blocking, one surviving target after selection and stable reanalysis. AG
+`v60` was not mutated. UX-002B remains unstarted.

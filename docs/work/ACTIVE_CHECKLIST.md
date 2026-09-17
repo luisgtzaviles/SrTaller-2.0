@@ -17,7 +17,7 @@ Last updated: 2026-09-17 MST
 - [x] Keep physical rows/provenance and form one effective observation from the existing supplier identity key without a migration.
 - [x] Consolidate exact copies deterministically by lowest row number and show a non-blocking Owner notice.
 - [x] Present contradictory values as an Owner row choice; hide UUID mapping when identity is already known.
-- [x] Exclude unchosen physical rows traceably before Apply so only one target mutation can survive.
+- [x] Exclude unchosen physical rows traceably before Apply so only one target mutation can survive, including after reanalysis.
 - [x] Preserve true identity mapping, PARTIAL/COMPLETE, baseline, coverage key, Memory and Resolution contracts.
 - [x] Add focused contract/PostgreSQL coverage and reconcile PBI/evidence/docs; UX-002B remains not started.
 

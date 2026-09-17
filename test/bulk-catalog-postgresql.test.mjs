@@ -494,12 +494,13 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const duplicateSeedAnalyzed = await service.analyze(ctxA, duplicateSeed.versionId, { expectedVersion: duplicateSeed.version });
     const duplicateSeedReady = await service.decideMany(ctxA, duplicateSeed.versionId, { expectedBatchVersion: duplicateSeedAnalyzed.batch.version, classifications: ['PENDING_REFERENCE'], decision: 'APPLY' });
     await service.publish(ctxA, duplicateSeed.versionId, { expectedVersion: duplicateSeedReady.version, clientRequestId: randomUUID() }, true);
-    const exactDuplicate = await service.createDraft(ctxA, { sourceId: duplicateSource.sourceId, description: 'Duplicado exacto', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'duplicate-exact', rows: [duplicateSeedRow, duplicateSeedRow] });
+    const exactDuplicate = await service.createDraft(ctxA, { sourceId: duplicateSource.sourceId, description: 'Duplicado exacto', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'a'.repeat(64), rawPayload: 'duplicate-exact', rows: [duplicateSeedRow, duplicateSeedRow] });
     const exactDuplicateAnalyzed = await service.analyze(ctxA, exactDuplicate.versionId, { expectedVersion: exactDuplicate.version });
     assert.equal(exactDuplicateAnalyzed.batch.lifecycle, 'READY');
     assert.equal(exactDuplicateAnalyzed.batch.counts.CONFLICT, 0);
     assert.equal(exactDuplicateAnalyzed.rows.filter((row) => row.decision === 'APPLY').length, 1);
     assert.equal(exactDuplicateAnalyzed.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_EXACT_CONSOLIDATED')).length, 1);
+    assert.deepEqual({ status: exactDuplicateAnalyzed.absenceBaseline.status, currentCount: exactDuplicateAnalyzed.absenceBaseline.currentCount }, { status: 'NO_BASELINE', currentCount: 1 });
     const contradictoryRows = [{ ...duplicateSeedRow, basePriceMinor: 119900, referenceCostMinor: 45000 }, { ...duplicateSeedRow, basePriceMinor: 120000, referenceCostMinor: 46000 }];
     const contradictoryDuplicate = await service.createDraft(ctxA, { sourceId: duplicateSource.sourceId, description: 'Duplicado contradictorio', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'duplicate-contradictory', rows: contradictoryRows });
     const contradictoryAnalyzed = await service.analyze(ctxA, contradictoryDuplicate.versionId, { expectedVersion: contradictoryDuplicate.version });
@@ -513,6 +514,11 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(contradictoryReady.rows.filter((row) => row.decision === 'APPLY' && row.targetItemId === duplicateWinner.targetItemId).length, 1);
     assert.equal(contradictoryReady.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 1);
     assert.equal(contradictoryReady.rows.every((row) => !row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')), true);
+    const contradictoryReanalyzed = await service.analyze(ctxA, contradictoryDuplicate.versionId, { expectedVersion: contradictoryReady.version });
+    assert.equal(contradictoryReanalyzed.batch.lifecycle, 'READY');
+    assert.equal(contradictoryReanalyzed.rows.filter((row) => row.decision === 'APPLY' && row.targetItemId === duplicateWinner.targetItemId).length, 1);
+    assert.equal(contradictoryReanalyzed.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 1);
+    assert.equal(contradictoryReanalyzed.rows.every((row) => !row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')), true);
     assert.equal((await service.listSources({ tenantId: tenantB, branchId: branchB })).length, 1);
 
     const candidateSource = await service.createSource(ctxB, { name: 'Proveedor Candidate QA' });
