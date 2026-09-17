@@ -60,12 +60,18 @@ test('workspace entry has one primary new-load CTA and a recoverable sources pan
   assert.match(ui, /className=\{styles\.emptyWorkspace\}[\s\S]*?Selecciona una versión para revisarla/u);
   const emptyWorkspace = ui.slice(ui.indexOf('className={styles.emptyWorkspace}'), ui.indexOf('</section>}', ui.indexOf('className={styles.emptyWorkspace}')));
   assert.doesNotMatch(emptyWorkspace, /Nueva carga/u);
-  assert.match(ui, /id="composer-sources-panel-toggle"[\s\S]*?aria-expanded=\{sourcesOpen\}[\s\S]*?aria-controls="composer-sources-panel"/u);
-  assert.match(ui, /aria-label=\{sourcesOpen \? 'Ocultar fuentes y versiones' : 'Mostrar fuentes y versiones'\}/u);
-  assert.match(ui, /onClick=\{\(\) => setSourcesOpen\(\(value\) => !value\)\}/u);
-  assert.match(ui, /\{sourcesOpen \? <aside id="composer-sources-panel"/u);
-  assert.match(css, /\.layoutCollapsed \{ grid-template-columns: 32px minmax\(0, 1fr\); \}/u);
-  assert.match(css, /\.sourcePanelControl \{ position: sticky;/u);
+  const sourcesPanel = ui.slice(ui.indexOf('<aside id="composer-sources-panel"'), ui.indexOf('</aside>'));
+  assert.match(sourcesPanel, /className=\{styles\.sidebarHeading\}[\s\S]*?Fuentes y versiones[\s\S]*?aria-label="Ocultar fuentes y versiones"/u);
+  assert.match(ui, /\{sourcesOpen \? <aside id="composer-sources-panel"[\s\S]*?aria-label="Ocultar fuentes y versiones"/u);
+  assert.match(ui, /\{sourcesOpen \? <aside[\s\S]*?: <div className=\{styles\.sourceRestoreRail\}>[\s\S]*?aria-label="Mostrar fuentes y versiones"/u);
+  assert.match(ui, /aria-controls="composer-sources-panel"/u);
+  assert.match(ui, /const sourcesToggleRef = useRef<HTMLButtonElement \| null>\(null\); const pendingSourcesToggleFocus = useRef\(false\);/u);
+  assert.match(ui, /sourcesToggleRef\.current\?\.focus\(\);[\s\S]*?\}, \[sourcesOpen\]\);/u);
+  assert.match(ui, /onClick=\{\(\) => changeSourcesVisibility\(false\)\}/u);
+  assert.match(ui, /onClick=\{\(\) => changeSourcesVisibility\(true\)\}/u);
+  assert.match(css, /\.layoutCollapsed \{ grid-template-columns: 36px minmax\(0, 1fr\); gap: 0; \}/u);
+  assert.match(css, /\.sourceRestoreRail \{ position: sticky;/u);
+  assert.doesNotMatch(css, /\.sourcePanelControl/u);
 });
 
 test('contextual supplier creation returns to the pending new-load flow while persisted versions remain immutable', async () => {
