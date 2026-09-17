@@ -5,12 +5,13 @@ import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExec
 import type { InternalDatabasePersistenceConnection, InternalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type { DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
-import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogInputError, CatalogNotFoundError, CatalogSupplierDeleteNotAllowedError, CatalogSupplierVersionAlreadyExistsError, CatalogUnavailableError, catalogKindCapabilities, catalogKindSkuPrefix } from '../../domain/catalog-item.js';
+import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogSupplierDeleteNotAllowedError, CatalogSupplierVersionAlreadyExistsError, CatalogUnavailableError, catalogKindCapabilities, catalogKindSkuPrefix } from '../../domain/catalog-item.js';
 import type { CatalogItemKind } from '../../domain/catalog-item.js';
 import { normalizeIdentifier, normalizeReference, normalizeRowErrors, retentionDate, sha256 } from '../../domain/bulk-catalog.js';
 import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogDecision, BulkCatalogMatchOrigin, BulkCatalogRowInput, BulkCatalogTitleDecision, SupplierCatalogCompleteness } from '../../domain/bulk-catalog.js';
 import { BULK_CATALOG_MATCH_ALGORITHM_VERSION, buildSupplierHistoryTokenIndex, matchSupplierHistoryCandidates } from '../../domain/bulk-catalog-candidate-matching.js';
 import type { SupplierHistoryCandidate } from '../../domain/bulk-catalog-candidate-matching.js';
+import { assessCompleteBaselinePlausibility } from '../../domain/supplier-coverage.js';
 import type { BulkCatalogRepositoryPort, SupplierSourceDeletionRecord, SupplierSourceRecord, SupplierVersionComparison, SupplierVersionRecord, SupplierVersionSummary } from '../../application/ports/bulk-catalog-repository.port.js';
 import type { CatalogMutationContext, CatalogScope } from '../../application/ports/catalog-repository.port.js';
 
@@ -48,33 +49,54 @@ function supplierMemoryKeys(proposal: BulkCatalogRowInput): readonly string[] {
 }
 
 type SupplierListingKeyRow = Readonly<{ normalized_supplier_item_code: string | null; normalized_signature: string }>;
-type SupplierListingBaselineRow = SupplierListingKeyRow & Readonly<{ supplier_title: string | null; canonical_title: string | null; item_status: 'ACTIVE' | 'INACTIVE' | null }>;
+type SupplierCoverageListingRow = SupplierListingKeyRow & Readonly<{ supplier_title: string | null; canonical_title: string | null; item_status: 'ACTIVE' | 'INACTIVE' | null; item_id: string | null }>;
 const supplierListingKey = (row: SupplierListingKeyRow): string => row.normalized_supplier_item_code ? `C:${row.normalized_supplier_item_code}` : `S:${row.normalized_signature}`;
 
-async function readAutomaticAbsenceBaseline(executor: BulkExecutor, tenantId: string, current: Readonly<{ version_id: string; source_id: string; sequence_number: number; completeness: SupplierCatalogCompleteness }>) {
-  if (current.completeness !== 'COMPLETE') return Object.freeze({ status: 'NOT_APPLICABLE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: Object.freeze([]) });
+const coverageItem = (row: SupplierCoverageListingRow, baselineObservedTitle: string | null = null) => Object.freeze({ itemId: row.item_id, canonicalTitle: row.canonical_title, observedTitle: row.supplier_title, baselineObservedTitle, status: row.item_status });
+const noCoverage = (status: 'NOT_APPLICABLE' | 'NO_BASELINE', currentCount: number) => Object.freeze({
+  status, versionId: null, sequenceNumber: null, observed: null, notObserved: null,
+  baselineCount: null, currentCount, continuedCount: null, notObservedCount: null, additionalCount: null,
+  continuedItems: Object.freeze([]), notObservedItems: Object.freeze([]), additionalItems: Object.freeze([]),
+  plausibility: assessCompleteBaselinePlausibility({ baselineCount: null, currentCount, continuedCount: null, notObservedCount: null, additionalCount: null }),
+});
+
+async function readAutomaticAbsenceBaseline(executor: BulkExecutor, tenantId: string, current: Readonly<{ version_id: string; source_id: string; sequence_number: number; row_count: number; completeness: SupplierCatalogCompleteness }>) {
+  if (current.completeness !== 'COMPLETE') return noCoverage('NOT_APPLICABLE', current.row_count);
   const baseline = await executor.selectFrom('catalog_supplier_catalog_versions as v')
     .innerJoin('catalog_update_batches as b', (join) => join.onRef('b.tenant_id', '=', 'v.tenant_id').onRef('b.version_id', '=', 'v.version_id'))
     .select(['v.version_id', 'v.sequence_number'])
     .where('v.tenant_id', '=', tenantId).where('v.source_id', '=', current.source_id).where('v.sequence_number', '<', current.sequence_number)
     .where('v.completeness', '=', 'COMPLETE').where('b.lifecycle', '=', 'APPLIED')
     .orderBy('v.sequence_number', 'desc').limit(1).executeTakeFirst();
-  if (!baseline) return Object.freeze({ status: 'NO_BASELINE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: Object.freeze([]) });
+  if (!baseline) {
+    const currentCount = await executor.selectFrom('catalog_supplier_listings').select((eb) => eb.fn.countAll<number>().as('count')).where('tenant_id', '=', tenantId).where('version_id', '=', current.version_id).executeTakeFirstOrThrow();
+    return noCoverage('NO_BASELINE', Number(currentCount.count));
+  }
   const baselineListings = executor.selectFrom('catalog_supplier_listings as l')
     .leftJoin('catalog_supplier_listing_resolutions as r', (join) => join.onRef('r.tenant_id', '=', 'l.tenant_id').onRef('r.listing_id', '=', 'l.listing_id'))
     .leftJoin('catalog_items as i', (join) => join.onRef('i.tenant_id', '=', 'r.tenant_id').onRef('i.item_id', '=', 'r.item_id'))
-    .select(['l.normalized_supplier_item_code', 'l.normalized_signature', 'l.supplier_title', 'i.title as canonical_title', 'i.status as item_status'])
+    .select(['l.normalized_supplier_item_code', 'l.normalized_signature', 'l.supplier_title', 'i.title as canonical_title', 'i.status as item_status', 'r.item_id'])
     .where('l.tenant_id', '=', tenantId).where('l.version_id', '=', baseline.version_id).execute();
-  const currentListings = executor.selectFrom('catalog_supplier_listings')
-    .select(['normalized_supplier_item_code', 'normalized_signature']).where('tenant_id', '=', tenantId).where('version_id', '=', current.version_id).execute();
+  const currentListings = executor.selectFrom('catalog_supplier_listings as l')
+    .leftJoin('catalog_update_batches as b', (join) => join.onRef('b.tenant_id', '=', 'l.tenant_id').onRef('b.version_id', '=', 'l.version_id'))
+    .leftJoin('catalog_update_row_decisions as d', (join) => join.onRef('d.tenant_id', '=', 'l.tenant_id').onRef('d.batch_id', '=', 'b.batch_id').onRef('d.listing_id', '=', 'l.listing_id'))
+    .leftJoin('catalog_items as i', (join) => join.onRef('i.tenant_id', '=', 'd.tenant_id').onRef('i.item_id', '=', 'd.target_item_id'))
+    .select(['l.normalized_supplier_item_code', 'l.normalized_signature', 'l.supplier_title', 'i.title as canonical_title', 'i.status as item_status', 'd.target_item_id as item_id'])
+    .where('l.tenant_id', '=', tenantId).where('l.version_id', '=', current.version_id).execute();
   const [previous, currentRows] = await Promise.all([baselineListings, currentListings]);
-  const previousByKey = new Map(previous.map((row) => [supplierListingKey(row), row as SupplierListingBaselineRow])); const previousKeys = new Set(previousByKey.keys()); const currentKeys = new Set(currentRows.map(supplierListingKey));
-  let observed = 0; for (const key of currentKeys) if (previousKeys.has(key)) observed += 1;
+  const previousByKey = new Map(previous.map((row) => [supplierListingKey(row), row as SupplierCoverageListingRow]));
+  const currentByKey = new Map(currentRows.map((row) => [supplierListingKey(row), row as SupplierCoverageListingRow]));
+  const continuedItems = Object.freeze([...currentByKey.entries()].flatMap(([key, row]) => {
+    const previousRow = previousByKey.get(key); return previousRow ? [coverageItem(row, previousRow.supplier_title)] : [];
+  }).sort((left, right) => (left.canonicalTitle ?? left.observedTitle ?? '').localeCompare(right.canonicalTitle ?? right.observedTitle ?? '', 'es-MX')));
   const notObservedItems = Object.freeze([...previousByKey.entries()]
-    .filter(([key]) => !currentKeys.has(key))
-    .map(([, row]) => Object.freeze({ title: row.canonical_title ?? row.supplier_title ?? 'Artículo sin título', status: row.item_status }))
-    .sort((left, right) => left.title.localeCompare(right.title, 'es-MX')));
-  return Object.freeze({ status: 'EVALUATED' as const, versionId: baseline.version_id, sequenceNumber: baseline.sequence_number, observed, notObserved: notObservedItems.length, notObservedItems });
+    .filter(([key]) => !currentByKey.has(key)).map(([, row]) => coverageItem(row))
+    .sort((left, right) => (left.canonicalTitle ?? left.observedTitle ?? '').localeCompare(right.canonicalTitle ?? right.observedTitle ?? '', 'es-MX')));
+  const additionalItems = Object.freeze([...currentByKey.entries()]
+    .filter(([key]) => !previousByKey.has(key)).map(([, row]) => coverageItem(row))
+    .sort((left, right) => (left.canonicalTitle ?? left.observedTitle ?? '').localeCompare(right.canonicalTitle ?? right.observedTitle ?? '', 'es-MX')));
+  const plausibility = assessCompleteBaselinePlausibility({ baselineCount: previousByKey.size, currentCount: currentByKey.size, continuedCount: continuedItems.length, notObservedCount: notObservedItems.length, additionalCount: additionalItems.length });
+  return Object.freeze({ status: 'EVALUATED' as const, versionId: baseline.version_id, sequenceNumber: baseline.sequence_number, observed: continuedItems.length, notObserved: notObservedItems.length, baselineCount: previousByKey.size, currentCount: currentByKey.size, continuedCount: continuedItems.length, notObservedCount: notObservedItems.length, additionalCount: additionalItems.length, continuedItems, notObservedItems, additionalItems, plausibility });
 }
 
 async function readVersion(executor: BulkExecutor, tenantId: string, versionId: string, includeReferenceCost: boolean, includeAbsenceBaseline = true): Promise<SupplierVersionRecord | null> {
@@ -102,7 +124,7 @@ async function readVersion(executor: BulkExecutor, tenantId: string, versionId: 
   const counts = { ...emptyCounts(), ...(row.counts as Partial<Record<BulkCatalogClassification, number>>) };
   const absenceBaseline = includeAbsenceBaseline
     ? await readAutomaticAbsenceBaseline(executor, tenantId, row)
-    : Object.freeze({ status: 'NOT_APPLICABLE' as const, versionId: null, sequenceNumber: null, observed: null, notObserved: null, notObservedItems: Object.freeze([]) });
+    : noCoverage('NOT_APPLICABLE', row.row_count);
   return Object.freeze({ versionId: row.version_id, sourceId: row.source_id, sourceName: row.source_name, sequenceNumber: row.sequence_number, sourceRevision: row.source_revision, description: row.description, mode: row.composer_mode, completeness: row.completeness, supersedesVersionId: row.supersedes_version_id, columnSignature: row.column_signature, lifecycle: row.lifecycle, version: row.lock_version, rowCount: row.row_count, createdAt: row.created_at.toISOString(), ingestedAt: row.ingested_at?.toISOString() ?? null, batch: Object.freeze({ batchId: row.batch_id, lifecycle: row.batch_lifecycle, version: row.batch_version, counts: Object.freeze(counts), publishedAt: row.published_at?.toISOString() ?? null }), absenceBaseline, rows: Object.freeze(rows) });
 }
 
@@ -318,9 +340,9 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       return (await readVersion(db, context.tenantId, input.versionId, input.includeReferenceCost))!;
     });
   }
-  async publish(context: CatalogMutationContext, input: Readonly<{ versionId: string; expectedVersion: number; clientRequestId: string; requestSha256: string; currency: string; mayWriteCost: boolean; occurredAt: Date }>) {
+  async publish(context: CatalogMutationContext, input: Readonly<{ versionId: string; expectedVersion: number; clientRequestId: string; requestSha256: string; currency: string; mayWriteCost: boolean; coverageReviewAcknowledged: boolean; occurredAt: Date }>) {
     return this.transaction(async (db, tx) => {
-      const version = await db.selectFrom('catalog_supplier_catalog_versions').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).forUpdate().executeTakeFirst(); if (!version) throw new CatalogNotFoundError(); const batch = await db.selectFrom('catalog_update_batches').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).forUpdate().executeTakeFirstOrThrow(); if (batch.lifecycle === 'APPLIED') { if (batch.publish_client_request_id !== input.clientRequestId || batch.publish_request_sha256 !== input.requestSha256) throw new CatalogConflictError(); return (await readVersion(db, context.tenantId, input.versionId, input.mayWriteCost))!; } if (version.lock_version !== input.expectedVersion || batch.lifecycle !== 'READY') throw new CatalogConflictError(); const rows = await db.selectFrom('catalog_update_row_decisions').selectAll().where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).orderBy('row_number').forUpdate().execute(); if (rows.some((row) => row.decision === 'UNRESOLVED')) throw new CatalogConflictError();
+      const version = await db.selectFrom('catalog_supplier_catalog_versions').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).forUpdate().executeTakeFirst(); if (!version) throw new CatalogNotFoundError(); const batch = await db.selectFrom('catalog_update_batches').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).forUpdate().executeTakeFirstOrThrow(); if (batch.lifecycle === 'APPLIED') { if (batch.publish_client_request_id !== input.clientRequestId || batch.publish_request_sha256 !== input.requestSha256) throw new CatalogConflictError(); return (await readVersion(db, context.tenantId, input.versionId, input.mayWriteCost))!; } if (version.lock_version !== input.expectedVersion || batch.lifecycle !== 'READY') throw new CatalogConflictError(); const coverage = await readAutomaticAbsenceBaseline(db, context.tenantId, version); if (coverage.plausibility.status === 'REVIEW_REQUIRED' && !input.coverageReviewAcknowledged) throw new CatalogCoverageReviewRequiredError({ baselineCount: coverage.plausibility.baselineCount!, currentCount: coverage.plausibility.currentCount, notObservedCount: coverage.plausibility.notObservedCount!, baselineVersionId: coverage.versionId! }); const rows = await db.selectFrom('catalog_update_row_decisions').selectAll().where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).orderBy('row_number').forUpdate().execute(); if (rows.some((row) => row.decision === 'UNRESOLVED')) throw new CatalogConflictError();
       if (!await guardsCurrent(context, tx)) throw new CatalogAuthorizationChangedError();
       const priceRows = await db.selectFrom('catalog_base_price_revisions').select(['item_id', 'amount_minor']).where('tenant_id', '=', context.tenantId).orderBy('effective_from', 'desc').orderBy('revision_id', 'desc').execute();
       const costRows = await db.selectFrom('catalog_reference_cost_revisions').select(['item_id', 'amount_minor']).where('tenant_id', '=', context.tenantId).orderBy('effective_from', 'desc').orderBy('revision_id', 'desc').execute();
@@ -386,7 +408,7 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
         const itemKind = p.kind ?? targetItemsById.get(itemId)?.kind; if (!itemKind) throw new CatalogConflictError();
         for (const key of supplierMemoryKeys(p)) { const separator = key.indexOf(':'); const scheme = key.slice(0, separator) as 'SUPPLIER_CODE' | 'SIGNATURE'; const normalized = key.slice(separator + 1); const resolutionId = randomUUID(); const priorMemory = existingMemory.get(key); const corrected = priorMemory !== undefined && priorMemory.item_id !== itemId; const consistencyState = priorMemory?.consistency_state === 'CONFLICTED' || corrected ? 'CONFLICTED' as const : 'CONSISTENT' as const; const correctionCount = (priorMemory?.correction_count ?? 0) + (corrected ? 1 : 0); resolutionWrites.push({ tenant_id: context.tenantId, resolution_id: resolutionId, source_id: version.source_id, version_id: version.version_id, listing_id: listing.listing_id, batch_id: batch.batch_id, item_id: itemId, resolution: row.target_item_id ? 'MATCHED' : 'CREATED', identifier_scheme: scheme, normalized_identifier: normalized, column_signature: version.column_signature, actor_user_id: context.actorUserId, correlation_id: randomUUID(), occurred_at: input.occurredAt }); memoryWrites.set(key, { tenant_id: context.tenantId, source_id: version.source_id, identifier_scheme: scheme, normalized_identifier: normalized, column_signature: version.column_signature, item_id: itemId, item_kind: itemKind, last_resolution_id: resolutionId, first_confirmed_at: priorMemory?.first_confirmed_at ?? input.occurredAt, last_confirmed_at: input.occurredAt, consistency_state: consistencyState, correction_count: correctionCount, version: (priorMemory?.version ?? 0) + 1 }); }
         const priorItem = targetItemsById.get(itemId);
-        auditWrites.push({ tenant_id: context.tenantId, audit_id: randomUUID(), branch_id: null, station_id: context.stationId, session_id: context.sessionId, actor_user_id: context.actorUserId, actor_display_name: context.actorDisplayName, capability: 'catalog.import.publish', action: 'catalog.bulk.publish.row', resource_id: itemId, old_version: row.expected_item_version, new_version: itemVersion, change_summary: { batchId: batch.batch_id, sourceId: version.source_id, supplierCatalogVersionId: version.version_id, supplierListingId: listing.listing_id, rowNumber: row.row_number, classification: row.classification, titleDecision: row.title_decision, ...(priorItem && row.title_decision === 'ADOPT_OBSERVED' && p.title && p.title !== priorItem.title ? { canonicalTitle: { before: priorItem.title, after: p.title } } : {}), ...(row.classification === 'REACTIVATE' ? { lifecycle: { before: 'INACTIVE', after: 'ACTIVE' } } : {}) }, result: 'SUCCEEDED', correlation_id: randomUUID(), client_request_id: input.clientRequestId, occurred_at: input.occurredAt });
+        auditWrites.push({ tenant_id: context.tenantId, audit_id: randomUUID(), branch_id: null, station_id: context.stationId, session_id: context.sessionId, actor_user_id: context.actorUserId, actor_display_name: context.actorDisplayName, capability: 'catalog.import.publish', action: 'catalog.bulk.publish.row', resource_id: itemId, old_version: row.expected_item_version, new_version: itemVersion, change_summary: { batchId: batch.batch_id, sourceId: version.source_id, supplierCatalogVersionId: version.version_id, supplierListingId: listing.listing_id, rowNumber: row.row_number, classification: row.classification, titleDecision: row.title_decision, coverageReviewRequired: coverage.plausibility.status === 'REVIEW_REQUIRED', coverageReviewAcknowledged: coverage.plausibility.status === 'REVIEW_REQUIRED' ? input.coverageReviewAcknowledged : false, baselineVersionId: coverage.versionId, baselineCount: coverage.plausibility.baselineCount, currentCount: coverage.plausibility.currentCount, ...(priorItem && row.title_decision === 'ADOPT_OBSERVED' && p.title && p.title !== priorItem.title ? { canonicalTitle: { before: priorItem.title, after: p.title } } : {}), ...(row.classification === 'REACTIVATE' ? { lifecycle: { before: 'INACTIVE', after: 'ACTIVE' } } : {}) }, result: 'SUCCEEDED', correlation_id: randomUUID(), client_request_id: input.clientRequestId, occurred_at: input.occurredAt });
       }
       for (let offset = 0; offset < itemWrites.length; offset += 500) await db.insertInto('catalog_items').values(itemWrites.slice(offset, offset + 500)).execute();
       for (let offset = 0; offset < identifierWrites.length; offset += 500) await db.insertInto('catalog_item_identifiers').values(identifierWrites.slice(offset, offset + 500)).execute();

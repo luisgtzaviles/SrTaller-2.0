@@ -7,7 +7,7 @@ import {
 import { ContextualAuthorizationError, SensitiveActionReauthenticationError } from '../../access/index.js';
 import type { ProtectedRequestEvidence } from '../../access/index.js';
 import { CatalogProtectedOperations, CatalogOperationAccessDeniedError } from '../application/catalog-protected-operations.js';
-import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogInputError, CatalogNotFoundError, CatalogReferenceAlreadyExistsError, CatalogReferenceInUseError, CatalogUnavailableError } from '../domain/catalog-item.js';
+import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogReferenceAlreadyExistsError, CatalogReferenceInUseError, CatalogUnavailableError } from '../domain/catalog-item.js';
 
 type RequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
 function header(headers: RequestHeaders, name: string): string | undefined {
@@ -28,6 +28,7 @@ function translate(error: unknown): never {
   if (error instanceof CatalogNotFoundError) throw new NotFoundException({ code: error.code });
   if (error instanceof CatalogReferenceInUseError) throw new ConflictException({ code: error.code });
   if (error instanceof CatalogReferenceAlreadyExistsError) throw new ConflictException({ code: error.code, referenceKind: error.referenceKind, displayName: error.displayName });
+  if (error instanceof CatalogCoverageReviewRequiredError) throw new ConflictException({ code: error.code, coverage: error.coverage });
   if (error instanceof CatalogConflictError) throw new ConflictException({ code: error.code });
   if (error instanceof CatalogUnavailableError) throw new ServiceUnavailableException({ code: error.code });
   throw error;

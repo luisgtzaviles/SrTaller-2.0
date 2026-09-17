@@ -5,6 +5,7 @@ import test from 'node:test';
 
 const domain = await import('../dist/modules/catalog/domain/bulk-catalog.js');
 const matching = await import('../dist/modules/catalog/domain/bulk-catalog-candidate-matching.js');
+const coverage = await import('../dist/modules/catalog/domain/supplier-coverage.js');
 const fullRow = (index = 1) => ({ kind: 'PART', title: `Pantalla ${index}`, description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: `REF-${index}`, barcode: `SR${String(index).padStart(4, '0')}`, basePriceMinor: 139900, referenceCostMinor: 48000 });
 
 test('bulk rows support the required 1k and target 10k envelope with explicit zero and blank cost', () => {
@@ -56,6 +57,15 @@ test('supplier observed title remains separate from the editable Catalog title p
   assert.equal(row.title, 'Pantalla iPhone 11 OLED GX >>I');
 });
 
+test('complete baseline plausibility only requires acknowledgement for a material coverage collapse', () => {
+  const assess = (baselineCount, currentCount) => coverage.assessCompleteBaselinePlausibility({ baselineCount, currentCount, continuedCount: Math.min(baselineCount, currentCount), notObservedCount: Math.max(0, baselineCount - currentCount), additionalCount: Math.max(0, currentCount - baselineCount) });
+  assert.equal(assess(100, 95).status, 'NORMAL');
+  assert.equal(assess(37, 34).status, 'NORMAL');
+  assert.equal(assess(34, 38).status, 'NORMAL');
+  assert.equal(assess(1, 38).status, 'NORMAL');
+  assert.deepEqual(assess(100, 5), { status: 'REVIEW_REQUIRED', reason: 'LARGE_COVERAGE_DROP', baselineCount: 100, currentCount: 5, continuedCount: 5, notObservedCount: 95, additionalCount: 0, absoluteDrop: 95, reductionPercent: 95 });
+});
+
 test('bounded supplier candidates explain AG changes without deciding identity', () => {
   const history = [
     { itemId: '11111111-1111-4111-8111-111111111111', title: 'Pantalla iPhone 11 Calidad RJ >>', observedTitle: 'Pantalla iPhone 11 Calidad RJ >>', kind: 'PART', categoryIdentity: 'C:pantallas', brandIdentity: 'C:apple', status: 'ACTIVE', version: 4 },
@@ -101,7 +111,7 @@ test('candidate pool and top set stay bounded at 1,500 rows', () => {
 });
 
 test('bulk contracts preserve separate prepare, publish, retirement, cost and Branch boundaries', async () => {
-  const [protectedOperations, repository, catalogRepository, migration, completenessMigration, titleHistoryMigration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation, bulkService, catalogApi] = await Promise.all([
+  const [protectedOperations, repository, catalogRepository, migration, completenessMigration, titleHistoryMigration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation, bulkService, catalogApi, coveragePolicy] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts', 'utf8'),
@@ -124,6 +134,7 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
     readFile('apps/dev-preview-web/src/components/ui/navigation.tsx', 'utf8'),
     readFile('src/modules/catalog/application/bulk-catalog.service.ts', 'utf8'),
     readFile('apps/dev-preview-web/src/catalog-api.ts', 'utf8'),
+    readFile('src/modules/catalog/domain/supplier-coverage.ts', 'utf8'),
   ]);
   assert.match(protectedOperations, /catalog\.import\.prepare/u);
   assert.match(protectedOperations, /catalog\.import\.publish/u);
@@ -158,6 +169,16 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.doesNotMatch(bulkService, /value === undefined\) return 'PARTIAL'/u);
   assert.match(catalogApi, /export type SupplierVersionDraftInput/u);
   assert.match(catalogApi, /function requireSupplierVersionCompleteness/u);
+  assert.match(catalogApi, /continuedItems/u);
+  assert.match(catalogApi, /additionalItems/u);
+  assert.match(catalogApi, /coverageReviewAcknowledged/u);
+  assert.match(coveragePolicy, /COMPLETE_BASELINE_PLAUSIBILITY_MINIMUM_BASELINE_COUNT = 20/u);
+  assert.match(coveragePolicy, /COMPLETE_BASELINE_PLAUSIBILITY_MAX_CURRENT_RATIO = 0\.25/u);
+  assert.match(coveragePolicy, /LARGE_COVERAGE_DROP/u);
+  assert.match(repository, /readAutomaticAbsenceBaseline/u);
+  assert.match(repository, /CatalogCoverageReviewRequiredError/u);
+  assert.match(repository, /coverageReviewAcknowledged/u);
+  assert.match(repository, /coverageReviewRequired/u);
   assert.match(migration, /catalog_supplier_listing_resolutions_reject_update/u);
   assert.match(reactivationMigration, /'REACTIVATE'/u);
   assert.match(repository, /classification = target\.status === 'INACTIVE' \? 'REACTIVATE'/u);
@@ -201,17 +222,25 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /Alcance de la carga/u);
   assert.match(ui, /Actualización parcial/u);
   assert.match(ui, /Lista completa/u);
-  assert.match(ui, /No observados/u);
+  assert.match(ui, /continúan desde la lista anterior/u);
+  assert.match(ui, /ya no aparecen en esta lista completa/u);
+  assert.match(ui, /adicionales respecto a la lista anterior/u);
   assert.match(ui, /Cobertura del proveedor/u);
   assert.match(ui, /Comparación histórica/u);
-  assert.match(ui, /No existe una lista completa anterior aplicada para evaluar ausencias/u);
+  assert.match(ui, /No existe una lista completa anterior aplicada para evaluar cobertura/u);
   assert.match(ui, /Los artículos que no fueron incluidos no se evaluaron/u);
   assert.match(ui, /Ver \$\{current\.absenceBaseline\.notObservedItems\.length/u);
+  assert.match(ui, /Ver \$\{current\.absenceBaseline\.continuedItems\.length/u);
+  assert.match(ui, /Ver \$\{current\.absenceBaseline\.additionalItems\.length/u);
   assert.match(ui, /aria-expanded=\{notObservedOpen\}/u);
   assert.match(ui, /aria-controls=\{notObservedPanelId\}/u);
+  assert.match(ui, /aria-expanded=\{continuedOpen\}/u);
+  assert.match(ui, /aria-controls=\{continuedPanelId\}/u);
+  assert.match(ui, /aria-expanded=\{additionalOpen\}/u);
+  assert.match(ui, /aria-controls=\{additionalPanelId\}/u);
   assert.match(ui, /const \[gridExpanded, setGridExpanded\] = useState\(true\)/u);
   assert.match(ui, /setGridExpanded\(true\);\n    const targetColumns/u);
-  assert.match(ui, /setGridExpanded\(false\); setNotObservedOpen\(false\);/u);
+  assert.match(ui, /setGridExpanded\(false\); resetCoverageDetails\(\);/u);
   assert.match(ui, /setGridExpanded\(value\.lifecycle === 'DRAFT'\);/u);
   assert.match(ui, /aria-expanded=\{gridExpanded\} aria-controls="bulk-catalog-grid"/u);
   assert.match(ui, /id="bulk-catalog-grid"[\s\S]*hidden=\{!gridExpanded\}/u);
@@ -220,6 +249,7 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.ok(ui.indexOf('styles.summary') < ui.indexOf('styles.coverage'));
   assert.ok(ui.indexOf('styles.coverage') < ui.indexOf('styles.decisions'));
   assert.doesNotMatch(ui, /Desaparecidas/u);
+  assert.doesNotMatch(ui.slice(ui.indexOf('Cobertura del proveedor'), ui.indexOf('Reconciliación')), /Nuevos/u);
   assert.match(ui, /Hay cambios sin guardar/u);
   assert.match(ui, /Actual:/u);
   assert.match(ui, /Propuesta:/u);
@@ -238,6 +268,7 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(css, /repeat\(auto-fit, minmax\(180px, 1fr\)\)/u);
   assert.match(css, /\.coverageCounts/u);
   assert.match(css, /\.notObservedItems/u);
+  assert.match(css, /\.coverageActions/u);
   assert.match(gridLayout, /--bulk-grid-offset/u);
   assert.match(ui, /Contexto del lote/u);
   assert.match(ui, /aria-label="Columnas de trabajo"/u);

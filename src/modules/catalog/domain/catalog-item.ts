@@ -67,6 +67,14 @@ export class CatalogConflictError extends Error {
   constructor() { super('Catalog command conflicts with current state.'); this.name = 'CatalogConflictError'; }
 }
 
+export class CatalogCoverageReviewRequiredError extends CatalogConflictError {
+  override readonly code = 'CATALOG_COVERAGE_REVIEW_REQUIRED';
+  constructor(readonly coverage: Readonly<{ baselineCount: number; currentCount: number; notObservedCount: number; baselineVersionId: string }>) {
+    super();
+    this.name = 'CatalogCoverageReviewRequiredError';
+  }
+}
+
 export class CatalogReferenceAlreadyExistsError extends CatalogConflictError {
   override readonly code = 'CATALOG_REFERENCE_ALREADY_EXISTS';
   constructor(

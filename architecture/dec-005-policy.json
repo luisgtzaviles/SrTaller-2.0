@@ -2614,6 +2614,7 @@
     "src/modules/catalog/domain/catalog-item.ts",
     "src/modules/catalog/domain/bulk-catalog.ts",
     "src/modules/catalog/domain/bulk-catalog-candidate-matching.ts",
+    "src/modules/catalog/domain/supplier-coverage.ts",
     "src/modules/catalog/application/catalog.service.ts",
     "src/modules/catalog/application/bulk-catalog.service.ts",
     "src/modules/catalog/application/catalog-retirement.service.ts",
