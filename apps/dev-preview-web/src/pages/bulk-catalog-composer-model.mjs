@@ -251,6 +251,33 @@ export function nextValidationIssueIndex(current, direction, count) {
 }
 
 /**
+ * Creates presentation-only decision units for the authoritative duplicate
+ * contradiction reason. Callers supply the existing identity key; this helper
+ * never tries to infer identity from title similarity.
+ *
+ * @template T
+ * @param {readonly T[]} rows
+ * @param {(row: T) => string} keyForRow
+ * @param {(row: T) => readonly string[]} errorsForRow
+ * @param {(row: T) => readonly string[]} warningsForRow
+ */
+export function groupDuplicateResolutionRows(rows, keyForRow, errorsForRow, warningsForRow) {
+  const evidence = rows.filter((row) => errorsForRow(row).includes('DUPLICATE_VALUE_CONTRADICTION') || warningsForRow(row).includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED'));
+  const keys = new Set(evidence.map(keyForRow));
+  const groups = new Map();
+  for (const row of rows) {
+    const key = keyForRow(row);
+    if (!keys.has(key)) continue;
+    groups.set(key, [...(groups.get(key) ?? []), row]);
+  }
+  return [...groups.entries()].map(([key, members]) => ({
+    key,
+    members: [...members].sort((left, right) => left.rowNumber - right.rowNumber),
+    unresolved: members.some((member) => errorsForRow(member).includes('DUPLICATE_VALUE_CONTRADICTION')),
+  })).filter((group) => group.members.length > 1);
+}
+
+/**
  * Compose the existing durable draft and analysis boundaries without making a
  * second analysis attempt when persistence did not complete. `snapshot` is an
  * already-authoritative, unchanged DRAFT; otherwise `persist` must return the

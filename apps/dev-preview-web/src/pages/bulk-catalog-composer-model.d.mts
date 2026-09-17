@@ -24,6 +24,7 @@ export function hasMeaningfulComposerWork(input: Readonly<{ dirty: boolean; desc
 export function filterSupplierSources<Source extends Readonly<{ name: string }>>(sources: readonly Source[], query: string): readonly Source[];
 export function validationIssueFromApi(error: Readonly<{ status?: number; code?: string | null; parameter?: string | null }>): ValidationIssue;
 export function nextValidationIssueIndex(current: number, direction: -1 | 1, count: number): number;
+export function groupDuplicateResolutionRows<Row extends Readonly<{ rowNumber: number }>>(rows: readonly Row[], keyForRow: (row: Row) => string, errorsForRow: (row: Row) => readonly string[], warningsForRow: (row: Row) => readonly string[]): readonly Readonly<{ key: string; members: readonly Row[]; unresolved: boolean }> [];
 export type ReviewListOutcome<Version> =
   | Readonly<{ stage: 'SAVE_FAILED'; snapshot: null; cause: unknown }>
   | Readonly<{ stage: 'ANALYZE_FAILED'; snapshot: Version; cause: unknown }>

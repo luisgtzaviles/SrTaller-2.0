@@ -1,13 +1,13 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002A.2 Duplicate input resolution
+Milestone / Functional Goal: PBI-041 — UX-002A.3 Duplicate resolution card
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: local DUP-1/DUP-3 implementation complete; ready for Owner Review
+Status: grouped duplicate-resolution presentation implemented locally; ready for Owner Review
 WIP: 1/1
-Progress: 58 / 58 current implementation blocks completed
-Current: stop at the UX-002A.2 Owner Review checkpoint; AG v60 remains untouched.
-Next: Owner accepts or changes DUP-1/DUP-3; UX-002B does not start automatically.
+Progress: 63 / 63 current implementation blocks completed
+Current: stop at the UX-002A.3 Owner Review checkpoint; AG v60 remains untouched.
+Next: Owner accepts or changes the duplicate-resolution card; UX-002B does not start automatically.
 Blocked: None. AG v60 remains read-only and unreanalyzed; v52 remains intentionally unpublished, v53 historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
 
@@ -20,6 +20,14 @@ Last updated: 2026-09-17 MST
 - [x] Exclude unchosen physical rows traceably before Apply so only one target mutation can survive, including after reanalysis.
 - [x] Preserve true identity mapping, PARTIAL/COMPLETE, baseline, coverage key, Memory and Resolution contracts.
 - [x] Add focused contract/PostgreSQL coverage and reconcile PBI/evidence/docs; UX-002B remains not started.
+
+## Current checkpoint — UX-002A.3 Duplicate resolution card
+
+- [x] Render each authoritative contradictory duplicate group as one Owner decision, without changing matching or persistence.
+- [x] Compare only materially different row values and keep raw per-row details behind an accessible disclosure.
+- [x] Keep adjacent `Usar fila N` choices primary; remove generic row cards and row-level exclusion from this decision surface.
+- [x] Represent a resolved group compactly in Resueltas/Todas and count it as one attention unit.
+- [x] Preserve exact-duplicate notice and true identity-conflict UUID mapping flow; UX-002B remains not started.
 
 ## Current checkpoint — UX-002A.1 Duplicate input resolution audit
 

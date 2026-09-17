@@ -230,3 +230,12 @@ reanalyze: its chosen row is recomputed normally and its superseded sibling
 remains excluded. No change was made to PARTIAL/COMPLETE authority, baseline
 selection, Memory, Resolution, retirement or migrations. AG `v60` remains
 untouched historical evidence of the pre-UX-002A.2 behavior.
+
+## UX-002A.3 presentation trace
+
+The duplicate-value contradiction now renders as one presentation-only decision
+card per authoritative group. This does not introduce a new group persistence
+model: the UI uses the existing contradiction/superseded evidence and existing
+supplier identity key. The card exposes only differing values first, preserves
+raw details behind an accessible disclosure, and leaves true identity conflicts
+on their existing mapping path. Domain and database semantics remain unchanged.

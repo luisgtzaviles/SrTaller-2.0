@@ -76,3 +76,10 @@ and does not request a Catalog UUID. Focused contract and disposable PostgreSQL
 material coverage prove no generic exact conflict, explicit contradiction,
 Apply blocking, one surviving target after selection and stable reanalysis. AG
 `v60` was not mutated. UX-002B remains unstarted.
+
+## UX-002A.3 Duplicate resolution card — local Owner Review candidate
+
+The contradictory duplicate UI now groups physical members as one Owner-facing
+decision, counts it as one attention unit, foregrounds only differences, and
+keeps details accessible. Focused contracts cover grouping, resolved state and
+the retained mapping path; no backend or PostgreSQL semantics changed.

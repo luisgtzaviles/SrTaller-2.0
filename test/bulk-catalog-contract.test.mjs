@@ -6,6 +6,7 @@ import test from 'node:test';
 const domain = await import('../dist/modules/catalog/domain/bulk-catalog.js');
 const matching = await import('../dist/modules/catalog/domain/bulk-catalog-candidate-matching.js');
 const coverage = await import('../dist/modules/catalog/domain/supplier-coverage.js');
+const composerModel = await import('../apps/dev-preview-web/src/pages/bulk-catalog-composer-model.mjs');
 const fullRow = (index = 1) => ({ kind: 'PART', title: `Pantalla ${index}`, description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: null, sku: `REF-${index}`, barcode: `SR${String(index).padStart(4, '0')}`, basePriceMinor: 139900, referenceCostMinor: 48000 });
 
 test('bulk rows support the required 1k and target 10k envelope with explicit zero and blank cost', () => {
@@ -49,6 +50,18 @@ test('row-decision errors always normalize to a string array across JSON boundar
   assert.deepEqual(domain.normalizeRowErrors({}), []);
   assert.deepEqual(domain.normalizeRowErrors(null), []);
   assert.deepEqual(domain.normalizeRowErrors('PENDING_ANALYSIS'), []);
+});
+
+test('duplicate resolution groups authoritative contradictions into one owner decision without title inference', () => {
+  const rows = [
+    { rowNumber: 1, key: 'SUPPLIER_CODE:RJ-11', errors: ['DUPLICATE_VALUE_CONTRADICTION'], warnings: [] },
+    { rowNumber: 2, key: 'SUPPLIER_CODE:RJ-11', errors: ['DUPLICATE_VALUE_CONTRADICTION'], warnings: [] },
+    { rowNumber: 3, key: 'SUPPLIER_CODE:OTRO', errors: [], warnings: [] },
+  ];
+  const grouped = composerModel.groupDuplicateResolutionRows(rows, (row) => row.key, (row) => row.errors, (row) => row.warnings);
+  assert.deepEqual(grouped.map((group) => ({ key: group.key, rows: group.members.map((row) => row.rowNumber), unresolved: group.unresolved })), [{ key: 'SUPPLIER_CODE:RJ-11', rows: [1, 2], unresolved: true }]);
+  const resolved = composerModel.groupDuplicateResolutionRows(rows.map((row) => row.rowNumber === 2 ? { ...row, errors: [], warnings: ['DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED'] } : { ...row, errors: [] }), (row) => row.key, (row) => row.errors, (row) => row.warnings);
+  assert.equal(resolved[0].unresolved, false);
 });
 
 test('supplier observed title remains separate from the editable Catalog title proposal', () => {
@@ -295,6 +308,13 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /Reanalizar versión/u);
   assert.match(ui, /DUPLICATE_VALUE_CONTRADICTION/u);
   assert.match(ui, /Artículo repetido con datos diferentes/u);
+  assert.match(ui, /groupDuplicateResolutionRows/u);
+  assert.match(ui, /duplicateResolutionCard/u);
+  assert.match(ui, /Encontramos este artículo/u);
+  assert.match(ui, /Usar fila \{member\.rowNumber\}/u);
+  assert.match(ui, /Ver detalles/u);
+  assert.match(ui, /Duplicado resuelto/u);
+  assert.match(ui, /unresolvedDecisionUnits/u);
   assert.match(ui, /DUPLICATE_EXACT_CONSOLIDATED/u);
   assert.match(ui, /!row\.errors\.includes\('DUPLICATE_VALUE_CONTRADICTION'\)/u);
   assert.match(ui, /current\.batch\.lifecycle === 'APPLIED' \? 'Resultado aplicado' : 'Reconciliación'/u);
