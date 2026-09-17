@@ -1,15 +1,29 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Operator flow optimization UX-001C Sources Panel Collapse Affordance Polish
+Milestone / Functional Goal: PBI-041 — UX-002A Review List orchestration
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: UX-001C restore tab micro-polish complete locally; ready for Owner Review
+Status: local UX-002A Review List orchestration complete; ready for Owner Review
 WIP: 1/1
-Progress: 39 / 39 current implementation blocks completed
-Current: stop at the reviewed local UX-001C restore tab checkpoint.
-Next: Owner accepts or rejects the visual refinement; no follow-on work starts automatically.
+Progress: 48 / 48 current implementation blocks completed
+Current: stop at the local UX-002A Owner Review checkpoint.
+Next: Owner accepts or rejects this orchestration slice; no follow-on UX-002 slice starts automatically.
 Blocked: None. v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
+
+## Current checkpoint — UX-002 happy-path friction audit
+
+- [x] Inspect the current branch, runtime provenance, local health, 71 PostgreSQL migrations and AG v49-v53 read-only material evidence.
+- [x] Trace PARTIAL/COMPLETE, durable draft creation, analysis, publication, coverage, defaults and capture modes from UI through persistence.
+- [x] Record the factual audit, automation boundaries and concrete Owner decisions without changing product behavior.
+
+## Current checkpoint — UX-002A Review List orchestration
+
+- [x] Reconfirm the current UI/API/service/repository trace, local health, 71 migrations and Owner fixture preservation.
+- [x] Replace the new/draft happy-path sequence with one Review list orchestration while retaining secondary draft recovery.
+- [x] Add focused causal-order, partial-failure, double-activation and result-first regressions.
+- [x] Validate local new-load/draft/reanalyze paths without Apply or existing-fixture mutation.
+- [x] Reconcile PBI-041, UX-002, evidence and checklist for Owner Review.
 
 ## Current checkpoint — Operator flow optimization UX-001
 
