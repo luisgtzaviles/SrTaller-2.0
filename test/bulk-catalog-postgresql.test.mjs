@@ -383,7 +383,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
 
     const batchSource = await service.createSource(ctxB, { name: 'Proveedor Batch Created' });
     const batchRows = Array.from({ length: 36 }, (_, index) => ({ ...fullRow(index + 20), kind: 'PART', title: `Pantalla AG ${index + 1}`, category: 'Pantallas', brand: 'Apple', supplierItemCode: `AG-${String(index + 1).padStart(4, '0')}`, referenceCostMinor: 50_000 + index }));
-    const batchDraft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, description: 'Primer lote', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-created', rows: batchRows });
+    const batchDraft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, description: 'Primer lote', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-created', rows: batchRows });
     const batchAnalyzed = await service.analyze(ctxB, batchDraft.versionId, { expectedVersion: batchDraft.version });
     assert.equal(batchAnalyzed.batch.counts.NEW, 36);
     assert.equal(batchAnalyzed.batch.lifecycle, 'READY');
@@ -392,13 +392,15 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
       ...batchRows.map((row, index) => ({ ...row, basePriceMinor: index === 0 ? row.basePriceMinor + 1_000 : row.basePriceMinor })),
       { ...fullRow(200), kind: 'PART', title: 'Pantalla AG 37', category: 'Pantallas', brand: 'Apple', supplierItemCode: 'AG-0037' },
     ];
-    const nextBatchDraft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, description: 'Segundo lote', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-mixed', rows: nextBatchRows });
+    const nextBatchDraft = await service.createDraft(ctxB, { sourceId: batchSource.sourceId, description: 'Segundo lote', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'c'.repeat(64), rawPayload: 'synthetic-batch-mixed', rows: nextBatchRows });
     const nextBatchAnalyzed = await service.analyze(ctxB, nextBatchDraft.versionId, { expectedVersion: nextBatchDraft.version });
     assert.equal(nextBatchAnalyzed.batch.counts.UPDATE, 1);
     assert.equal(nextBatchAnalyzed.batch.counts.UNCHANGED, 35);
     assert.equal(nextBatchAnalyzed.batch.counts.NEW, 1);
+    assert.deepEqual(nextBatchAnalyzed.absenceBaseline.additionalItems.map((item) => ({ title: item.observedTitle, coverageRelation: item.coverageRelation, catalogRelation: item.catalogRelation, catalogStatus: item.catalogStatus, catalogClassification: item.catalogClassification, catalogResolution: item.catalogResolution })), [{ title: 'Pantalla AG 37', coverageRelation: 'ADDITIONAL', catalogRelation: 'NEW', catalogStatus: null, catalogClassification: 'NEW', catalogResolution: null }]);
     const nextBatchReady = nextBatchAnalyzed;
-    await service.publish(ctxB, nextBatchDraft.versionId, { expectedVersion: nextBatchReady.version, clientRequestId: randomUUID() }, true);
+    const nextBatchApplied = await service.publish(ctxB, nextBatchDraft.versionId, { expectedVersion: nextBatchReady.version, clientRequestId: randomUUID() }, true);
+    assert.deepEqual(nextBatchApplied.absenceBaseline.additionalItems.map((item) => ({ title: item.canonicalTitle, coverageRelation: item.coverageRelation, catalogRelation: item.catalogRelation, catalogStatus: item.catalogStatus, catalogClassification: item.catalogClassification, catalogResolution: item.catalogResolution })), [{ title: 'Pantalla AG 37', coverageRelation: 'ADDITIONAL', catalogRelation: 'NEW', catalogStatus: 'ACTIVE', catalogClassification: 'NEW', catalogResolution: 'CREATED' }]);
     const batchPlan = await retirement.createPlan({ ...ctxB, capability: 'catalog.items.bulk_retire' }, { scope: 'BATCH_CREATED', sourceVersionId: nextBatchDraft.versionId });
     assert.equal(batchPlan.activeCount, 1);
     const batchRetired = await retirement.executePlan({ ...ctxB, capability: 'catalog.items.bulk_retire' }, { planId: batchPlan.planId, confirmation: 'RETIRE_BATCH_CREATED_ITEMS', clientRequestId: randomUUID() }, new Date().toISOString());

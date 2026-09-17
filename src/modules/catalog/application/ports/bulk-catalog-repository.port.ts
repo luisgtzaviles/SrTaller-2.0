@@ -12,7 +12,13 @@ export type SupplierCoverageItem = Readonly<{
   canonicalTitle: string | null;
   observedTitle: string | null;
   baselineObservedTitle: string | null;
-  status: 'ACTIVE' | 'INACTIVE' | null;
+  coverageRelation: 'CONTINUED' | 'NOT_OBSERVED' | 'ADDITIONAL';
+  catalogRelation: 'NEW' | 'EXISTING' | 'UNKNOWN';
+  catalogStatus: 'ACTIVE' | 'INACTIVE' | null;
+  /** Reconciliation classification before Apply, retained after Apply for explainable lifecycle copy. */
+  catalogClassification: BulkCatalogClassification | null;
+  /** Immutable published provenance when the SupplierListing has already been applied. */
+  catalogResolution: 'MATCHED' | 'CREATED' | 'EXCLUDED' | 'CONFLICT' | null;
 }>;
 export type { SupplierCoveragePlausibility } from '../../domain/supplier-coverage.js';
 export type BulkCatalogRowRecord = Readonly<{

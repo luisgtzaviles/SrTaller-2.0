@@ -49,10 +49,30 @@ function supplierMemoryKeys(proposal: BulkCatalogRowInput): readonly string[] {
 }
 
 type SupplierListingKeyRow = Readonly<{ normalized_supplier_item_code: string | null; normalized_signature: string }>;
-type SupplierCoverageListingRow = SupplierListingKeyRow & Readonly<{ supplier_title: string | null; canonical_title: string | null; item_status: 'ACTIVE' | 'INACTIVE' | null; item_id: string | null }>;
+type SupplierCoverageListingRow = SupplierListingKeyRow & Readonly<{
+  supplier_title: string | null;
+  decision_item_id?: string | null; decision_canonical_title?: string | null; decision_item_status?: 'ACTIVE' | 'INACTIVE' | null;
+  resolved_item_id?: string | null; resolved_canonical_title?: string | null; resolved_item_status?: 'ACTIVE' | 'INACTIVE' | null;
+  decision_classification?: BulkCatalogClassification | null; resolution?: 'MATCHED' | 'CREATED' | 'EXCLUDED' | 'CONFLICT' | null;
+}>;
 const supplierListingKey = (row: SupplierListingKeyRow): string => row.normalized_supplier_item_code ? `C:${row.normalized_supplier_item_code}` : `S:${row.normalized_signature}`;
 
-const coverageItem = (row: SupplierCoverageListingRow, baselineObservedTitle: string | null = null) => Object.freeze({ itemId: row.item_id, canonicalTitle: row.canonical_title, observedTitle: row.supplier_title, baselineObservedTitle, status: row.item_status });
+const coverageItem = (row: SupplierCoverageListingRow, coverageRelation: 'CONTINUED' | 'NOT_OBSERVED' | 'ADDITIONAL', baselineObservedTitle: string | null = null) => {
+  const itemId = row.resolved_item_id ?? row.decision_item_id ?? null;
+  const canonicalTitle = row.resolved_canonical_title ?? row.decision_canonical_title ?? null;
+  const catalogStatus = row.resolved_item_status ?? row.decision_item_status ?? null;
+  return Object.freeze({
+  itemId,
+  canonicalTitle,
+  observedTitle: row.supplier_title,
+  baselineObservedTitle,
+  coverageRelation,
+  catalogRelation: row.resolution === 'CREATED' || row.decision_classification === 'NEW' ? 'NEW' as const : itemId ? 'EXISTING' as const : 'UNKNOWN' as const,
+  catalogStatus,
+  catalogClassification: row.decision_classification ?? null,
+  catalogResolution: row.resolution ?? null,
+  });
+};
 const noCoverage = (status: 'NOT_APPLICABLE' | 'NO_BASELINE', currentCount: number) => Object.freeze({
   status, versionId: null, sequenceNumber: null, observed: null, notObserved: null,
   baselineCount: null, currentCount, continuedCount: null, notObservedCount: null, additionalCount: null,
@@ -75,25 +95,31 @@ async function readAutomaticAbsenceBaseline(executor: BulkExecutor, tenantId: st
   const baselineListings = executor.selectFrom('catalog_supplier_listings as l')
     .leftJoin('catalog_supplier_listing_resolutions as r', (join) => join.onRef('r.tenant_id', '=', 'l.tenant_id').onRef('r.listing_id', '=', 'l.listing_id'))
     .leftJoin('catalog_items as i', (join) => join.onRef('i.tenant_id', '=', 'r.tenant_id').onRef('i.item_id', '=', 'r.item_id'))
-    .select(['l.normalized_supplier_item_code', 'l.normalized_signature', 'l.supplier_title', 'i.title as canonical_title', 'i.status as item_status', 'r.item_id'])
+    .select(['l.normalized_supplier_item_code', 'l.normalized_signature', 'l.supplier_title', 'i.title as resolved_canonical_title', 'i.status as resolved_item_status', 'r.item_id as resolved_item_id', 'r.resolution'])
     .where('l.tenant_id', '=', tenantId).where('l.version_id', '=', baseline.version_id).execute();
   const currentListings = executor.selectFrom('catalog_supplier_listings as l')
     .leftJoin('catalog_update_batches as b', (join) => join.onRef('b.tenant_id', '=', 'l.tenant_id').onRef('b.version_id', '=', 'l.version_id'))
     .leftJoin('catalog_update_row_decisions as d', (join) => join.onRef('d.tenant_id', '=', 'l.tenant_id').onRef('d.batch_id', '=', 'b.batch_id').onRef('d.listing_id', '=', 'l.listing_id'))
-    .leftJoin('catalog_items as i', (join) => join.onRef('i.tenant_id', '=', 'd.tenant_id').onRef('i.item_id', '=', 'd.target_item_id'))
-    .select(['l.normalized_supplier_item_code', 'l.normalized_signature', 'l.supplier_title', 'i.title as canonical_title', 'i.status as item_status', 'd.target_item_id as item_id'])
+    .leftJoin('catalog_supplier_listing_resolutions as r', (join) => join.onRef('r.tenant_id', '=', 'l.tenant_id').onRef('r.listing_id', '=', 'l.listing_id'))
+    .leftJoin('catalog_items as decision_item', (join) => join.onRef('decision_item.tenant_id', '=', 'd.tenant_id').onRef('decision_item.item_id', '=', 'd.target_item_id'))
+    .leftJoin('catalog_items as resolved_item', (join) => join.onRef('resolved_item.tenant_id', '=', 'r.tenant_id').onRef('resolved_item.item_id', '=', 'r.item_id'))
+    .select([
+      'l.normalized_supplier_item_code', 'l.normalized_signature', 'l.supplier_title', 'd.classification as decision_classification', 'r.resolution',
+      'd.target_item_id as decision_item_id', 'decision_item.title as decision_canonical_title', 'decision_item.status as decision_item_status',
+      'r.item_id as resolved_item_id', 'resolved_item.title as resolved_canonical_title', 'resolved_item.status as resolved_item_status',
+    ])
     .where('l.tenant_id', '=', tenantId).where('l.version_id', '=', current.version_id).execute();
   const [previous, currentRows] = await Promise.all([baselineListings, currentListings]);
   const previousByKey = new Map(previous.map((row) => [supplierListingKey(row), row as SupplierCoverageListingRow]));
   const currentByKey = new Map(currentRows.map((row) => [supplierListingKey(row), row as SupplierCoverageListingRow]));
   const continuedItems = Object.freeze([...currentByKey.entries()].flatMap(([key, row]) => {
-    const previousRow = previousByKey.get(key); return previousRow ? [coverageItem(row, previousRow.supplier_title)] : [];
+    const previousRow = previousByKey.get(key); return previousRow ? [coverageItem(row, 'CONTINUED', previousRow.supplier_title)] : [];
   }).sort((left, right) => (left.canonicalTitle ?? left.observedTitle ?? '').localeCompare(right.canonicalTitle ?? right.observedTitle ?? '', 'es-MX')));
   const notObservedItems = Object.freeze([...previousByKey.entries()]
-    .filter(([key]) => !currentByKey.has(key)).map(([, row]) => coverageItem(row))
+    .filter(([key]) => !currentByKey.has(key)).map(([, row]) => coverageItem(row, 'NOT_OBSERVED'))
     .sort((left, right) => (left.canonicalTitle ?? left.observedTitle ?? '').localeCompare(right.canonicalTitle ?? right.observedTitle ?? '', 'es-MX')));
   const additionalItems = Object.freeze([...currentByKey.entries()]
-    .filter(([key]) => !previousByKey.has(key)).map(([, row]) => coverageItem(row))
+    .filter(([key]) => !previousByKey.has(key)).map(([, row]) => coverageItem(row, 'ADDITIONAL'))
     .sort((left, right) => (left.canonicalTitle ?? left.observedTitle ?? '').localeCompare(right.canonicalTitle ?? right.observedTitle ?? '', 'es-MX')));
   const plausibility = assessCompleteBaselinePlausibility({ baselineCount: previousByKey.size, currentCount: currentByKey.size, continuedCount: continuedItems.length, notObservedCount: notObservedItems.length, additionalCount: additionalItems.length });
   return Object.freeze({ status: 'EVALUATED' as const, versionId: baseline.version_id, sequenceNumber: baseline.sequence_number, observed: continuedItems.length, notObserved: notObservedItems.length, baselineCount: previousByKey.size, currentCount: currentByKey.size, continuedCount: continuedItems.length, notObservedCount: notObservedItems.length, additionalCount: additionalItems.length, continuedItems, notObservedItems, additionalItems, plausibility });
