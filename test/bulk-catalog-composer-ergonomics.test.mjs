@@ -9,6 +9,7 @@ import {
   nextGridCell,
   nextValidationIssueIndex,
   normalizeSupplierTitle,
+  orchestrateReviewList,
   ownerSupplierClipboard,
   parseClipboardMatrix,
   syntheticSupplierDemoRows,
@@ -121,6 +122,38 @@ test('backend validation becomes actionable while unknown conflicts remain globa
   assert.equal(validationIssueFromApi({ status: 409, code: 'CATALOG_CONFLICT' }).scope, 'GLOBAL');
   assert.equal(nextValidationIssueIndex(0, -1, 3), 2);
   assert.equal(nextValidationIssueIndex(2, 1, 3), 0);
+});
+
+test('Review list persists exactly one authoritative snapshot before analysis and preserves it on partial failure', async () => {
+  const draft = Object.freeze({ versionId: 'draft-v1', version: 3 });
+  const calls = [];
+  const complete = await orchestrateReviewList({
+    snapshot: null,
+    persist: async () => { calls.push('save'); return draft; },
+    analyze: async (snapshot) => { calls.push(`analyze:${snapshot.versionId}:${snapshot.version}`); return { ...snapshot, analyzed: true }; },
+  });
+  assert.deepEqual(calls, ['save', 'analyze:draft-v1:3']);
+  assert.equal(complete.stage, 'ANALYZED');
+  assert.equal(complete.snapshot, draft);
+
+  calls.length = 0;
+  const saveFailure = await orchestrateReviewList({
+    snapshot: null,
+    persist: async () => { calls.push('save'); throw new Error('network'); },
+    analyze: async () => { calls.push('analyze'); return draft; },
+  });
+  assert.deepEqual(calls, ['save']);
+  assert.equal(saveFailure.stage, 'SAVE_FAILED');
+
+  calls.length = 0;
+  const analyzeFailure = await orchestrateReviewList({
+    snapshot: draft,
+    persist: async () => { calls.push('save'); return draft; },
+    analyze: async (snapshot) => { calls.push(`analyze:${snapshot.version}`); throw new Error('unavailable'); },
+  });
+  assert.deepEqual(calls, ['analyze:3']);
+  assert.equal(analyzeFailure.stage, 'ANALYZE_FAILED');
+  assert.equal(analyzeFailure.snapshot, draft);
 });
 
 test('supplier paste transformation stays bounded at 1,500 and 10,000 rows', (context) => {

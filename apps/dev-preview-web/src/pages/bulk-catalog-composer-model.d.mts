@@ -24,4 +24,13 @@ export function hasMeaningfulComposerWork(input: Readonly<{ dirty: boolean; desc
 export function filterSupplierSources<Source extends Readonly<{ name: string }>>(sources: readonly Source[], query: string): readonly Source[];
 export function validationIssueFromApi(error: Readonly<{ status?: number; code?: string | null; parameter?: string | null }>): ValidationIssue;
 export function nextValidationIssueIndex(current: number, direction: -1 | 1, count: number): number;
+export type ReviewListOutcome<Version> =
+  | Readonly<{ stage: 'SAVE_FAILED'; snapshot: null; cause: unknown }>
+  | Readonly<{ stage: 'ANALYZE_FAILED'; snapshot: Version; cause: unknown }>
+  | Readonly<{ stage: 'ANALYZED'; snapshot: Version; result: Version; cause: null }>;
+export function orchestrateReviewList<Version>(input: Readonly<{
+  snapshot: Version | null;
+  persist: () => Promise<Version | null>;
+  analyze: (snapshot: Version) => Promise<Version>;
+}>): Promise<ReviewListOutcome<Version>>;
 export function ownerSupplierClipboard(): string;

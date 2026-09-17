@@ -63,7 +63,7 @@ test('workspace entry has one primary new-load CTA and a recoverable sources pan
   const sourcesPanel = ui.slice(ui.indexOf('<aside id="composer-sources-panel"'), ui.indexOf('</aside>'));
   assert.match(sourcesPanel, /className=\{styles\.sidebarHeading\}[\s\S]*?Fuentes y versiones[\s\S]*?aria-label="Ocultar fuentes y versiones"/u);
   assert.match(ui, /\{sourcesOpen \? <aside id="composer-sources-panel"[\s\S]*?aria-label="Ocultar fuentes y versiones"/u);
-  assert.match(ui, /<main className=\{styles\.composer\}>[\s\S]*?\{!sourcesOpen \? <button[\s\S]*?aria-label="Mostrar fuentes y versiones"/u);
+  assert.match(ui, /<main className=\{styles\.composer\} aria-busy=\{busy\}>[\s\S]*?\{!sourcesOpen \? <button[\s\S]*?aria-label="Mostrar fuentes y versiones"/u);
   assert.match(ui, /aria-controls="composer-sources-panel"/u);
   assert.match(ui, /const sourcesToggleRef = useRef<HTMLButtonElement \| null>\(null\); const pendingSourcesToggleFocus = useRef\(false\);/u);
   assert.match(ui, /sourcesToggleRef\.current\?\.focus\(\);[\s\S]*?\}, \[sourcesOpen\]\);/u);
@@ -91,4 +91,17 @@ test('contextual supplier creation returns to the pending new-load flow while pe
   assert.doesNotMatch(service, /replaceDraft[\s\S]*?sourceId: requiredUuid/u);
   assert.match(repository, /updateTable\('catalog_supplier_catalog_versions'\)\.set\(\{ description: input\.description, completeness: input\.completeness/u);
   assert.doesNotMatch(repository, /updateTable\('catalog_supplier_catalog_versions'\)\.set\(\{[^}]*source_id/u);
+});
+
+test('Review list keeps draft recovery secondary and preserves result-first/reanalyze behavior', async () => {
+  const source = await readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8');
+  assert.match(source, /const reviewInFlight = useRef\(false\)/u);
+  assert.match(source, /if \(busy \|\| reviewInFlight\.current\) return;/u);
+  assert.match(source, /orchestrateReviewList\(\{[\s\S]*?persist: persistDraft,[\s\S]*?analyze: async \(snapshot\)/u);
+  assert.match(source, /La lista quedó guardada, pero no pudo analizarse\./u);
+  assert.match(source, /tone="primary" onClick=\{\(\) => void reviewList\(\)\}[\s\S]*?Revisar lista/u);
+  assert.match(source, /tone="quiet" onClick=\{\(\) => void save\(\)\}[\s\S]*?Guardar borrador/u);
+  assert.match(source, /current\?\.lifecycle === 'INGESTED'[\s\S]*?Reanalizar versión/u);
+  assert.match(source, /setGridExpanded\(false\); resetCoverageDetails\(\); setReconciliationView\('ATTENTION'\)/u);
+  assert.match(source, /aria-busy=\{busy\}/u);
 });

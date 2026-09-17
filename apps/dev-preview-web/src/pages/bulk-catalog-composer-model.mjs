@@ -250,6 +250,29 @@ export function nextValidationIssueIndex(current, direction, count) {
   return (current + direction + count) % count;
 }
 
+/**
+ * Compose the existing durable draft and analysis boundaries without making a
+ * second analysis attempt when persistence did not complete. `snapshot` is an
+ * already-authoritative, unchanged DRAFT; otherwise `persist` must return the
+ * authoritative server response that `analyze` receives.
+ */
+export async function orchestrateReviewList({ snapshot, persist, analyze }) {
+  let authoritativeSnapshot = snapshot;
+  if (!authoritativeSnapshot) {
+    try {
+      authoritativeSnapshot = await persist();
+    } catch (cause) {
+      return { stage: 'SAVE_FAILED', snapshot: null, cause };
+    }
+    if (!authoritativeSnapshot) return { stage: 'SAVE_FAILED', snapshot: null, cause: null };
+  }
+  try {
+    return { stage: 'ANALYZED', snapshot: authoritativeSnapshot, result: await analyze(authoritativeSnapshot), cause: null };
+  } catch (cause) {
+    return { stage: 'ANALYZE_FAILED', snapshot: authoritativeSnapshot, cause };
+  }
+}
+
 const ownerRows = [
   ['PANTALLA IPHONE 11 CALIDAD RJ >>', '450', '1199'],
   ['PANTALLA IPHONE 11 ORIGINAL >>I', '520', '1399'],
