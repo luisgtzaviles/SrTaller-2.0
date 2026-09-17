@@ -279,9 +279,10 @@ No cambia `sourcesOpen` ni ninguna selección, carga o contrato de dominio:
 Las regresiones focalizadas cubren ambos nombres accesibles, la asociación del
 control abierto con el panel, la disponibilidad del rail cerrado, el CTA único
 y el contrato de foco existente. El walkthrough Chrome local autenticado
-confirmó estado neutro, `AG v53` preservada tras ocultar/restaurar, desktop,
-768 px, 640 px y temas claro/oscuro sin crear ni modificar Sources, Versions o
-Catalog; no se introdujeron credenciales.
+confirmó estado neutro, la selección explícita de AG para una nueva carga y su
+workspace pendiente tras ocultar/restaurar, `AG v53` preservada tras
+ocultar/restaurar, desktop, 768 px, 640 px y temas claro/oscuro sin crear ni
+modificar Sources, Versions o Catalog; no se introdujeron credenciales.
 
 ## 15. Diferido explícitamente
 

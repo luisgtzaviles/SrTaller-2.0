@@ -1147,8 +1147,8 @@ Los checks locales registran typecheck, build, DEC-005 y 33 contratos
 focalizados Composer/gate/focus-trap PASS. No hubo cambios de backend,
 persistencia, PostgreSQL, Source, Version ni Catalog. El walkthrough Chrome
 local autenticado confirmó los dos estados en workspace neutro, `AG v53`
-preservada al ocultar/restaurar, desktop/768/640 y tema claro/oscuro. El foco
-transfiere al control equivalente tras el desmontaje intencional, por lo que
-Space vuelve a alternar sin perder teclado. No se introdujeron credenciales ni
-se hicieron escrituras de negocio; `verify:full`, CI, push, PR, merge y deploy
-no se ejecutaron.
+preservada al ocultar/restaurar y Nueva carga preparada para AG sin primer
+`POST`, desktop/768/640 y tema claro/oscuro. El foco transfiere al control
+equivalente tras el desmontaje intencional, por lo que Space vuelve a alternar
+sin perder teclado. No se introdujeron credenciales ni se hicieron escrituras
+de negocio; `verify:full`, CI, push, PR, merge y deploy no se ejecutaron.
