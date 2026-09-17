@@ -226,3 +226,13 @@ Resolution para el item omitido. No sustituye Owner Review.
 | BA-Q05 | `PARTIAL` no calcula coverage ni plausibilidad | PostgreSQL / UI contract |
 | BA-Q06 | no observación no altera lifecycle, itemId, identifiers, revisiones, Resolution ni Memory | PostgreSQL |
 | BA-Q07 | v44 muestra 38/1/0/37, expande detalle de continuación/adicionales y se conserva aplicada tras reload | Chrome local |
+
+## Operational coverage and applied-result UX matrix
+
+| ID | Predicate material | Cobertura |
+|---|---|---|
+| UXP-Q01 | COMPLETE prioriza adicionales/no observados; continuaciones siguen bajo demanda y cero no expone CTA | UI contract / Chrome |
+| UXP-Q02 | adicional `NEW` pre-Apply usa copy honesto; `Resolution CREATED` post-Apply proyecta item ACTIVE y provenance | PostgreSQL / UI contract / Chrome |
+| UXP-Q03 | resultado APPLIED conserva prioridad y retiro `CREATED`-only permanece secundario con capability sin cambio | UI contract / Chrome / PostgreSQL existente |
+| UXP-Q04 | comparación inicia colapsada, abre por Enter/Espacio y conserva `aria-expanded`/`aria-controls` | UI contract / Chrome |
+| UXP-Q05 | 1280/768/640 y claro/oscuro no generan overflow ni pared de botones | Chrome |

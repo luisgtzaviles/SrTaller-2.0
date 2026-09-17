@@ -1047,3 +1047,40 @@ PostgreSQL PBI-041 PASS 1/1 con 72 migraciones y contenedor desechable
 eliminado; DEC-005 architecture PASS; `git diff --check` pendiente del corte
 documental final. No se ejecutaron `verify:full`, CI, push, PR, merge ni
 deploy.
+
+## Operational UX polish for coverage and applied result
+
+`UXP-001..005` se materializaron localmente sin migración, sin cambiar
+matching, historia confiable, baseline, completeness, Apply ni retiro. La
+causa de `Sin estado actual disponible` fue `STALE_PROJECTION`: la cobertura
+leía únicamente `CatalogUpdateRowDecision.target_item_id`; para `NEW` ese campo
+debe seguir nulo incluso después de publicar. La Resolution append-only ya
+contenía item y resultado material, pero no participaba en la proyección.
+
+La proyección ahora combina decisión pre-Apply y Resolution post-Apply sin
+duplicar dominio: relación coverage/Catalog, classification, lifecycle y
+Resolution. Un adicional `NEW` pre-Apply dice `Se creará como artículo nuevo al
+aplicar`; un `CREATED` post-Apply dice `Activo · Creado por AG v45`.
+
+Chrome local autenticado como Luis abrió y recargó `AG / v45` (`COMPLETE`,
+`APPLIED`, 39 filas) frente a `AG / v44`: 38 continúan, 0 ya no aparecen y 1
+adicional. La cobertura muestra primero `Cambio detectado · 1 adicional`, sin
+CTA para el cero; las 38 continuaciones quedan bajo demanda. Al expandir,
+`Pantalla iPhone 16 Pro Max Original` mostró `Activo · Creado por AG v45`; la
+búsqueda local `16 pro` conservó el item. La base local confirma ACTIVE,
+$16,500 y costo de referencia $7,500.
+
+El resultado aplicado queda después de cobertura con `Lote aplicado`, 39 filas
+procesadas y `1 nuevo · 38 sin cambio`. El retiro conserva capability y flujo
+Level 2, pero vive en `Acciones del lote` como botón quiet secundario. La
+Comparación histórica inicia colapsada; Enter y Espacio alternaron el
+disclosure con `aria-expanded`/`aria-controls`, y el selector no aparece al
+estar cerrado. Chrome verificó 1280, 768 y 640 px sin overflow horizontal,
+y claro/oscuro con foco conservado.
+
+Gates focalizados: typecheck PASS; build PASS (advertencia informativa existente
+de chunk Vite); Composer contract 11/11 PASS; PostgreSQL PBI-041 1/1 PASS con
+72 migraciones. La regresión PostgreSQL usa Tenant desechable COMPLETE: antes
+de Apply el adicional es `NEW` sin target y después el mismo item se proyecta
+`CREATED`, ACTIVE y con título canónico. `verify:full`, CI, push, PR, merge y
+deploy no se ejecutaron.

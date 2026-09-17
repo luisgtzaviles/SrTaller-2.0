@@ -1,15 +1,27 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Complete baseline plausibility + coverage explainability
+Milestone / Functional Goal: PBI-041 — Operational UX polish for coverage + post-apply result
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Owner Review ready — local functional proof complete
+Status: Owner Review ready — operational UX proof complete
 WIP: 1/1
-Progress: 8 / 8 current functional blocks completed
-Current: preserve the local checkpoint for Owner Review
+Progress: 9 / 9 current functional blocks completed
+Current: preserve AG v45 local checkpoint for Owner Review
 Next: Owner review/acceptance only; no integration gate without new Owner authority
-Blocked: None; v44 is applied as the local final baseline and the preexisting .DS_Store remains preserved
+Blocked: None; v45 is applied as the local final version (v44 remains its coverage baseline) and the preexisting .DS_Store remains preserved
 Last updated: 2026-09-16 MST
+
+## Current checkpoint — Operational UX polish for coverage + post-apply result
+
+- [x] Classify the missing additional-item state as `STALE_PROJECTION`; preserve the null pre-Apply `NEW` target.
+- [x] Project post-Apply item/status/provenance from immutable Resolution without changing matching, baseline or Apply semantics.
+- [x] Prioritize additional and not-observed coverage; retain continued rows as accessible audit detail and omit zero-count CTAs.
+- [x] Keep terminology distinct: Supplier Coverage uses continuations, absence and additions; Catalog reconciliation retains `Nuevo`.
+- [x] Keep APPLIED result primary; move `CREATED`-only retirement into secondary batch actions without changing capability or Level 2 controls.
+- [x] Make historical comparison collapsed by default with keyboard-accessible disclosure semantics.
+- [x] Prove AG v45 reload: 39 rows, 38 continued, 0 not observed, 1 additional, ACTIVE created detail and Price List search.
+- [x] Prove disposable PostgreSQL pre-Apply `NEW` and post-Apply `CREATED` coverage projection.
+- [x] Pass focused typecheck, build, contracts, PostgreSQL, architecture, docs validation and diff checks; await Owner Review only.
 
 ## Current checkpoint — Complete baseline plausibility + coverage explainability
 
