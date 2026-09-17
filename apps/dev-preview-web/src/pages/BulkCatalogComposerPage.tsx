@@ -54,6 +54,10 @@ const warningMessage = (code: string): string | null => ({
   REFERENCE_REQUIRES_GOVERNANCE: 'La categoría o marca recibida requiere revisión antes de aplicar.',
 }[code] ?? null);
 const rowErrors = (value: unknown): readonly string[] => Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
+const appliedResultSummary = (counts: SupplierVersion['batch']['counts'], excluded: number): string => [
+  ...(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED'] as const).flatMap((classification) => counts[classification] > 0 ? [`${counts[classification].toLocaleString('es-MX')} ${statusLabels[classification].toLocaleLowerCase('es-MX')}`] : []),
+  ...(excluded > 0 ? [`${excluded.toLocaleString('es-MX')} excluida${excluded === 1 ? '' : 's'}`] : []),
+].join(' · ');
 
 export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: Readonly<{ capabilities: readonly OperationalCapability[]; csrfToken: string; timeZone: string }>): React.JSX.Element {
   const canPublish = hasOperationalCapability(capabilities, 'catalog.import.publish') && hasOperationalCapability(capabilities, 'catalog.manage') && hasOperationalCapability(capabilities, 'catalog.prices.manage');
@@ -244,7 +248,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const brandOptions = references.brands.filter((value) => value.status === 'ACTIVE' && (!batchDefaults.kind || value.applicableKinds.includes(batchDefaults.kind)) && (governedBrandIds.length === 0 || governedBrandIds.includes(value.brandId!)));
   const changeDefaultKind = (kind: CatalogItemKind | ''): void => { let next: BatchDefaults = { ...batchDefaults, kind }; const probe = { ...blank(), ...next }; if (next.category && !isCompatible(probe)) next = { ...next, category: '', brand: '' }; else if (next.brand && !isCompatible({ ...probe, category: next.category })) next = { ...next, brand: '' }; setBatchDefaults(next); showToast('El contexto cambió; las filas existentes no se modificaron.'); };
   const changeDefaultCategory = (category: string): void => { let next: BatchDefaults = { ...batchDefaults, category }; if (next.brand && !isCompatible({ ...blank(), ...next })) next = { ...next, brand: '' }; setBatchDefaults(next); };
-  const counts = current?.batch.counts; const unresolved = current?.rows.filter((row) => row.decision === 'UNRESOLVED').length ?? 0; const resolved = (current?.rows.length ?? 0) - unresolved;
+  const counts = current?.batch.counts; const unresolved = current?.rows.filter((row) => row.decision === 'UNRESOLVED').length ?? 0; const resolved = (current?.rows.length ?? 0) - unresolved; const excluded = current?.rows.filter((row) => row.decision === 'EXCLUDE').length ?? 0;
   const compatibleSuggestionCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && ['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'].includes(row.classification)).length ?? 0;
   const blockedRowCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && ['AMBIGUOUS', 'CONFLICT', 'INVALID'].includes(row.classification)).length ?? 0;
   const reviewRows = current?.rows.filter((row) => reconciliationView === 'ALL' || (reconciliationView === 'ATTENTION' ? row.decision === 'UNRESOLVED' : row.decision !== 'UNRESOLVED')) ?? [];
@@ -320,7 +324,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
             <button type="button" role="tab" aria-selected={reconciliationView === 'RESOLVED'} onClick={() => setReconciliationView('RESOLVED')}>Resueltas <strong>{resolved}</strong></button>
             <button type="button" role="tab" aria-selected={reconciliationView === 'ALL'} onClick={() => setReconciliationView('ALL')}>Todas <strong>{current.rows.length}</strong></button>
           </div>
-          {unresolved === 0 && reconciliationView === 'ATTENTION' ? <div className={styles.allResolved} role="status"><strong>Todo resuelto</strong><span>{resolved.toLocaleString('es-MX')} filas están listas para aplicar.</span><small>No necesitas revisar cada fila. Resueltas y Todas permanecen disponibles para auditoría.</small></div> : null}
+          {current.batch.lifecycle === 'APPLIED' ? <div className={styles.allResolved} role="status"><strong>Lote aplicado</strong><span>{current.rows.length.toLocaleString('es-MX')} filas fueron procesadas correctamente.</span><small>{appliedResultSummary(current.batch.counts, excluded)}</small></div> : unresolved === 0 && reconciliationView === 'ATTENTION' ? <div className={styles.allResolved} role="status"><strong>Todo resuelto</strong><span>{resolved.toLocaleString('es-MX')} filas están listas para aplicar.</span><small>No necesitas revisar cada fila. Resueltas y Todas permanecen disponibles para auditoría.</small></div> : null}
           {current.batch.lifecycle !== 'APPLIED' && (compatibleSuggestionCount > 0 || blockedRowCount > 0) ? <div className={styles.groupActions}>{compatibleSuggestionCount > 0 ? <Button size="compact" tone="primary" onClick={() => void resolveGroup(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'], 'APPLY')} disabled={busy}>Aceptar {compatibleSuggestionCount.toLocaleString('es-MX')} {compatibleSuggestionCount === 1 ? 'sugerencia' : 'sugerencias'}</Button> : null}{blockedRowCount > 0 ? <Button size="compact" onClick={() => void resolveGroup(['AMBIGUOUS', 'CONFLICT', 'INVALID'], 'EXCLUDE')} disabled={busy}>Excluir {blockedRowCount.toLocaleString('es-MX')} {blockedRowCount === 1 ? 'bloqueada' : 'bloqueadas'}</Button> : null}</div> : null}
           {reviewRows.slice(0, 100).map((row) => <article key={row.rowDecisionId}>
             <div>

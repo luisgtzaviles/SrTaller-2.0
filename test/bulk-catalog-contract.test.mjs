@@ -101,7 +101,7 @@ test('candidate pool and top set stay bounded at 1,500 rows', () => {
 });
 
 test('bulk contracts preserve separate prepare, publish, retirement, cost and Branch boundaries', async () => {
-  const [protectedOperations, repository, catalogRepository, migration, completenessMigration, titleHistoryMigration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation] = await Promise.all([
+  const [protectedOperations, repository, catalogRepository, migration, completenessMigration, titleHistoryMigration, reactivationMigration, retirementMigration, supplierHistoryMigration, supplierCapabilityMigration, retirementRepository, sensitiveAction, ui, priceListUi, css, gridLayout, model, shell, feedback, navigation, bulkService, catalogApi] = await Promise.all([
     readFile('src/modules/catalog/application/catalog-protected-operations.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts', 'utf8'),
     readFile('src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts', 'utf8'),
@@ -122,6 +122,8 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
     readFile('apps/dev-preview-web/src/components/shell/ApplicationShell.tsx', 'utf8'),
     readFile('apps/dev-preview-web/src/components/ui/feedback.tsx', 'utf8'),
     readFile('apps/dev-preview-web/src/components/ui/navigation.tsx', 'utf8'),
+    readFile('src/modules/catalog/application/bulk-catalog.service.ts', 'utf8'),
+    readFile('apps/dev-preview-web/src/catalog-api.ts', 'utf8'),
   ]);
   assert.match(protectedOperations, /catalog\.import\.prepare/u);
   assert.match(protectedOperations, /catalog\.import\.publish/u);
@@ -152,6 +154,10 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(migration, /retained_until/u);
   assert.match(completenessMigration, /completeness varchar\(16\) not null default 'PARTIAL'/u);
   assert.match(completenessMigration, /check \(completeness in \('PARTIAL', 'COMPLETE'\)\)/u);
+  assert.match(bulkService, /function completeness\(value: unknown\): SupplierCatalogCompleteness \{ if \(value !== 'PARTIAL' && value !== 'COMPLETE'\) throw new CatalogInputError\('completeness'\); return value; \}/u);
+  assert.doesNotMatch(bulkService, /value === undefined\) return 'PARTIAL'/u);
+  assert.match(catalogApi, /export type SupplierVersionDraftInput/u);
+  assert.match(catalogApi, /function requireSupplierVersionCompleteness/u);
   assert.match(migration, /catalog_supplier_listing_resolutions_reject_update/u);
   assert.match(reactivationMigration, /'REACTIVATE'/u);
   assert.match(repository, /classification = target\.status === 'INACTIVE' \? 'REACTIVATE'/u);
@@ -177,6 +183,8 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /setReconciliationView\('ATTENTION'\)/u);
   assert.match(ui, /unresolved === 0 && reconciliationView === 'ATTENTION'/u);
   assert.match(ui, /Todo resuelto/u);
+  assert.match(ui, /const appliedResultSummary/u);
+  assert.match(ui, /current\.batch\.lifecycle === 'APPLIED' \? <div className=\{styles\.allResolved\} role="status"><strong>Lote aplicado<\/strong><span>\{current\.rows\.length\.toLocaleString\('es-MX'\)\} filas fueron procesadas correctamente\.<\/span>/u);
   assert.match(ui, /No necesitas revisar cada fila/u);
   assert.match(ui, /compatibleSuggestionCount > 0 \|\| blockedRowCount > 0/u);
   assert.match(ui, /Aceptar \{compatibleSuggestionCount\.toLocaleString\('es-MX'\)\}/u);
