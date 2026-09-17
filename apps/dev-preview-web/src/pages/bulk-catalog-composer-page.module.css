@@ -9,7 +9,7 @@
 .sidebar, .composer > section, .rowActions { min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .sidebar { position: sticky; top: var(--space-2); display: grid; min-width: 0; gap: var(--space-2); padding: var(--space-3); }
 .sidebarHeading { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: var(--space-2); }
-.sidebar h2, .comparison h2, .decisionTitle h2, .batchContext h2 { display: flex; min-width: 0; align-items: center; gap: var(--space-2); margin: 0; font-size: .9375rem; }
+.sidebar h2, .comparison h2, .decisionTitle h2, .batchContext h2, .batchSecondaryActions h2 { display: flex; min-width: 0; align-items: center; gap: var(--space-2); margin: 0; font-size: .9375rem; }
 .collapseToggle { display: grid; width: 32px; height: 32px; flex: none; place-items: center; padding: 0; border: 0; border-radius: var(--radius-md); color: var(--color-text-muted); background: transparent; cursor: pointer; }
 .collapseToggle:hover { color: var(--color-text); background: var(--color-surface-muted); }
 .collapseToggle:focus-visible { outline: var(--focus-ring-width) solid var(--color-brand-focus); outline-offset: var(--focus-ring-offset); }
@@ -97,18 +97,20 @@
 .titleDecisionSummary { color: var(--color-brand-action) !important; font-weight: var(--font-weight-semibold); }
 .decisions article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-2); border-top: 1px solid var(--color-border); }
 .decisions article > div { min-width: 0; display: grid; gap: 2px; overflow-wrap: anywhere; }.decisions article > div:last-child { display: flex; flex-wrap: nowrap; align-items: center; }.decisions article span, .decisions article small { color: var(--color-text-muted); font-size: .73rem; }
-.comparison { flex-wrap: wrap; padding: var(--space-3); }.comparison p { flex-basis: 100%; margin: 0; color: var(--color-text-muted); font-size: .8rem; }
+.comparison { display: grid; gap: var(--space-2); padding: var(--space-3); }.comparison h2 button { font-size: inherit; }.comparisonPanel { display: grid; gap: var(--space-2); }.comparisonPanel > div { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }.comparisonPanel select { min-width: min(100%, 240px); }.comparison p { margin: 0; color: var(--color-text-muted); font-size: .8rem; }
 .coverage { display: grid; gap: var(--space-2); padding: var(--space-3); }
 .coverageHeader { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .coverageHeader h2 { display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: .9375rem; }
 .coverageHeader > span, .coverage p { margin: 0; color: var(--color-text-muted); font-size: .78rem; }
 .coverageHeader > span { padding: 2px var(--space-2); border-radius: var(--radius-full); background: var(--color-surface-muted); font-weight: var(--font-weight-semibold); }
-.coverageCounts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+.coverageCounts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
 .coverageCounts div { display: grid; gap: 2px; padding: var(--space-2); border-radius: var(--radius-md); background: var(--color-surface-muted); }
 .coverageCounts strong { font-size: 1.15rem; }.coverageCounts span, .notObservedItems span { color: var(--color-text-muted); font-size: .72rem; }
+.coverageAttention { border: 1px solid var(--color-brand-action); background: var(--color-brand-subtle) !important; }.coverageAuditMetric { color: var(--color-text-muted); }
 .coverageActions { display: grid; gap: var(--space-2); align-items: start; }
-.notObservedItems { display: grid; gap: var(--space-1); padding: 0; margin: 0; list-style: none; }
-.notObservedItems li { display: grid; gap: 2px; padding: var(--space-2); border-top: 1px solid var(--color-border); }
+.coverageChange { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-muted); }.coverageChange > div { display: grid; gap: 2px; }.coverageChange span, .coverageAuditAction { color: var(--color-text-muted); font-size: .72rem; }
+.coverageItems { display: grid; gap: var(--space-1); max-height: min(20rem, 42vh); padding: 0; margin: 0; overflow-y: auto; list-style: none; border-top: 1px solid var(--color-border); }.coverageItems li { display: grid; gap: 2px; padding: var(--space-2); border-bottom: 1px solid var(--color-border); }.coverageItems span { color: var(--color-text-muted); font-size: .72rem; }
+.batchSecondaryActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-3); }.batchSecondaryActions > div { display: grid; gap: 2px; }.batchSecondaryActions p { margin: 0; color: var(--color-text-muted); font-size: .75rem; }
 .retirementDialog { display: grid; gap: var(--space-4); padding: var(--space-4); }
 .retirementSummary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin: 0; }
 .retirementSummary div { display: grid; gap: var(--space-1); padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface-muted); }
