@@ -13,7 +13,7 @@ const { KyselyCatalogRetirementRepository } = enabled ? await import('../dist/mo
 const { BulkCatalogService } = enabled ? await import('../dist/modules/catalog/application/bulk-catalog.service.js') : {};
 const { CatalogService } = enabled ? await import('../dist/modules/catalog/application/catalog.service.js') : {};
 const { CatalogRetirementService } = enabled ? await import('../dist/modules/catalog/application/catalog-retirement.service.js') : {};
-const { CatalogConflictError, CatalogNotFoundError, CatalogSupplierDeleteNotAllowedError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
+const { CatalogConflictError, CatalogInputError, CatalogNotFoundError, CatalogSupplierDeleteNotAllowedError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
 
 const tenantA = 'a1410000-0000-4000-8000-000000000041';
 const tenantB = 'b1410000-0000-4000-8000-000000000041';
@@ -45,15 +45,27 @@ function fullRow(index, price = 100_00 + index) {
   return { kind: index % 4 === 0 ? 'SUPPLY' : index % 3 === 0 ? 'SERVICE' : index % 2 === 0 ? 'PRODUCT' : 'PART', title: `Artículo proveedor ${index}`, description: null, category: `Categoría ${index % 5}`, brand: index % 3 === 0 ? null : `Marca ${index % 4}`, supplierItemCode: `SUP-${String(index).padStart(5, '0')}`, sku: null, barcode: null, basePriceMinor: price, referenceCostMinor: index % 2 === 0 ? 50_00 + index : null };
 }
 
+function withExplicitPartialCompleteness(service) {
+  return new Proxy(service, {
+    get(target, property) {
+      const value = Reflect.get(target, property, target);
+      if (typeof value !== 'function') return value;
+      if (property === 'createDraft') return (context, input) => target.createDraft(context, { completeness: 'PARTIAL', ...input });
+      return value.bind(target);
+    },
+  });
+}
+
 test('PBI-041 persists immutable supplier versions and publishes one tenant-wide atomic batch', { skip: !enabled, timeout: 90_000 }, async () => {
   assert.equal(process.version, 'v24.18.0');
   const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
   const connection = createDatabaseConnection(config());
   const concurrentConnection = createDatabaseConnection(config());
   const repository = new KyselyBulkCatalogRepository(connection);
-  const service = new BulkCatalogService(repository, async (tenantId) => tenantId === tenantA || tenantId === tenantC ? 'MXN' : tenantId === tenantB ? 'USD' : null);
+  const rawService = new BulkCatalogService(repository, async (tenantId) => tenantId === tenantA || tenantId === tenantC ? 'MXN' : tenantId === tenantB ? 'USD' : null);
+  const service = withExplicitPartialCompleteness(rawService);
   const catalog = new CatalogService(new KyselyCatalogRepository(connection), async (tenantId) => tenantId === tenantA || tenantId === tenantC ? 'MXN' : tenantId === tenantB ? 'USD' : null);
-  const concurrentService = new BulkCatalogService(new KyselyBulkCatalogRepository(concurrentConnection), async (tenantId) => tenantId === tenantA || tenantId === tenantC ? 'MXN' : tenantId === tenantB ? 'USD' : null);
+  const concurrentService = withExplicitPartialCompleteness(new BulkCatalogService(new KyselyBulkCatalogRepository(concurrentConnection), async (tenantId) => tenantId === tenantA || tenantId === tenantC ? 'MXN' : tenantId === tenantB ? 'USD' : null));
   const retirement = new CatalogRetirementService(new KyselyCatalogRetirementRepository(connection));
   const ctxA = context(tenantA, branchA); const ctxB = context(tenantB, branchB); const ctxC = context(tenantC, branchC);
   try {
@@ -75,11 +87,16 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     ];
     const createV1Request = randomUUID();
     const v1Input = { sourceId: source.sourceId, description: 'Primera lista', clientRequestId: createV1Request, mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'a'.repeat(64), rawPayload: 'synthetic-v1', rows };
+    const missingCompleteness = { ...v1Input }; delete missingCompleteness.completeness;
+    assert.throws(() => rawService.createDraft(ctxA, missingCompleteness), (error) => error instanceof CatalogInputError && error.parameter === 'completeness');
+    assert.throws(() => rawService.createDraft(ctxA, { ...v1Input, clientRequestId: randomUUID(), completeness: 'INVALID' }), (error) => error instanceof CatalogInputError && error.parameter === 'completeness');
     const draft = await service.createDraft(ctxA, v1Input);
     const replay = await service.createDraft(ctxA, v1Input);
     assert.equal(replay.versionId, draft.versionId);
     await assert.rejects(service.createDraft(ctxA, { ...v1Input, rawPayload: 'synthetic-conflicting-retry' }), CatalogConflictError);
     assert.deepEqual([draft.sequenceNumber, draft.sourceRevision, draft.description, draft.completeness], [1, 'v1', 'Primera lista', 'COMPLETE']);
+    assert.throws(() => rawService.replaceDraft(ctxA, draft.versionId, { expectedVersion: draft.version, mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'missing-completeness', rows }), (error) => error instanceof CatalogInputError && error.parameter === 'completeness');
+    assert.throws(() => rawService.replaceDraft(ctxA, draft.versionId, { expectedVersion: draft.version, mode: 'FULL', completeness: null, columnSignature: 'a'.repeat(64), rawPayload: 'invalid-completeness', rows }), (error) => error instanceof CatalogInputError && error.parameter === 'completeness');
 
     const sequencingSource = await service.createSource(ctxA, { name: 'Proveedor Secuencial' });
     const [concurrentLeft, concurrentRight] = await Promise.all([
@@ -116,6 +133,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal((await service.getVersion({ tenantId: tenantB, branchId: branchB }, draft.versionId, true).catch(() => null)), null);
 
     const analyzed = await service.analyze(ctxA, draft.versionId, { expectedVersion: draft.version });
+    assert.equal(analyzed.completeness, 'COMPLETE');
     assert.equal(analyzed.rows.every((row) => row.proposal.referenceCostMinor === null), true);
     assert.equal(analyzed.lifecycle, 'INGESTED');
     assert.equal(analyzed.batch.counts.PENDING_REFERENCE, 4);
@@ -132,8 +150,10 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const clientRequestId = randomUUID();
     const applied = await service.publish(ctxA, draft.versionId, { expectedVersion: ready.version, clientRequestId }, true);
     assert.equal(applied.batch.lifecycle, 'APPLIED');
+    assert.equal(applied.completeness, 'COMPLETE');
     const retry = await service.publish(ctxA, draft.versionId, { expectedVersion: ready.version, clientRequestId }, true);
     assert.equal(retry.batch.publishedAt, applied.batch.publishedAt);
+    assert.equal((await service.getVersion({ tenantId: tenantA, branchId: branchA }, draft.versionId, true)).completeness, 'COMPLETE');
     await assert.rejects(service.publish(ctxA, draft.versionId, { expectedVersion: ready.version + 1, clientRequestId }, true), CatalogConflictError);
 
     const state = await admin.query(`select

@@ -7,7 +7,7 @@ import type { CatalogMutationContext, CatalogScope } from './ports/catalog-repos
 type ObjectValue = Record<string, unknown>;
 function object(value: unknown): ObjectValue { if (!value || typeof value !== 'object' || Array.isArray(value)) throw new CatalogInputError('body'); return value as ObjectValue; }
 function mode(value: unknown): BulkCatalogMode { if (value !== 'FULL' && value !== 'COMPACT') throw new CatalogInputError('mode'); return value; }
-function completeness(value: unknown): SupplierCatalogCompleteness { if (value === undefined) return 'PARTIAL'; if (value !== 'PARTIAL' && value !== 'COMPLETE') throw new CatalogInputError('completeness'); return value; }
+function completeness(value: unknown): SupplierCatalogCompleteness { if (value !== 'PARTIAL' && value !== 'COMPLETE') throw new CatalogInputError('completeness'); return value; }
 function decision(value: unknown): BulkCatalogDecision { if (value !== 'UNRESOLVED' && value !== 'APPLY' && value !== 'EXCLUDE') throw new CatalogInputError('decision'); return value; }
 function titleDecision(value: unknown): BulkCatalogTitleDecision | null {
   if (value === undefined || value === null || value === '') return null;
