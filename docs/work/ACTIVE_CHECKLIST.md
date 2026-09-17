@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Operator flow optimization UX-001C Sources Panel Collapse Affordance Polish
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: UX-001C implementation, focused checks and local Chrome walkthrough complete; ready for Owner Review
+Status: UX-001C collapsed restore-control refinement, checks and local Chrome walkthrough complete; ready for Owner Review
 WIP: 1/1
-Progress: 28 / 28 current implementation blocks completed
-Current: stop at the completed local UX-001C checkpoint for Owner Review.
-Next: Owner accepts or rejects the visual correction; no follow-on work starts automatically.
-Blocked: None for UX-001C. v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
+Progress: 35 / 35 current implementation blocks completed
+Current: stop at the local UX-001C collapsed restore-control checkpoint for Owner Review.
+Next: Owner accepts or rejects the visual refinement; no follow-on work starts automatically.
+Blocked: None. v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
 
 ## Current checkpoint — Operator flow optimization UX-001
@@ -46,11 +46,19 @@ Last updated: 2026-09-17 MST
 - [x] Record Owner acceptance of UX-001C-D01..D07 and preserve UX-001/UX-001B state logic.
 - [x] Audit the rejected UX-001B affordance: its persistent square sits between Sources and workspace instead of belonging to Sources navigation.
 - [x] Move the open-state collapse affordance into the Sources header with tertiary visual treatment and directional semantics.
-- [x] Render the closed-state restore mechanism only as a narrow, structural left rail attached to the workspace.
+- [x] Render the initial closed-state restore mechanism; superseded by the final compact tab below.
 - [x] Preserve `sourcesOpen`, selected Version, pending supplier and workspace content through hide/restore with no reload.
 - [x] Extend focused Composer/gate/focus regression coverage for open header semantics and closed rail availability.
 - [x] Validate Chrome desktop/768/640 and light/dark with an existing trusted local Station session; no credentials or business writes were used.
 - [x] Reconcile UX-001 documentation, PBI-041 and implementation evidence with UX-001C result.
+
+## Current checkpoint — UX-001C collapsed restore-control polish
+
+- [x] Record Owner rejection limited to the collapsed full-height rail; preserve the accepted open Sources header.
+- [x] Remove the grid column/rail and attach a compact restore tab to the Composer workspace edge.
+- [x] Preserve focus transfer, keyboard behavior, selected Version and pending supplier with no reload or request.
+- [x] Verify neutral, new-load and historical Version workspaces at desktop/768/640 in light/dark.
+- [x] Reconcile PBI-041, UX-001 evidence and checklist with the final local proof.
 
 ## Current checkpoint — Existing CatalogItem reactivation pre-Apply QA
 

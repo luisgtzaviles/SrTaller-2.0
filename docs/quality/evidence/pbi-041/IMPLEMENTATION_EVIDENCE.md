@@ -1137,8 +1137,9 @@ Owner Review si el runtime local no mantiene esa sesión.
 
 UX-001C reemplaza el cuadrado visualmente independiente de UX-001B sin tocar
 el flujo: el control abierto es un botón terciario dentro del encabezado de
-`Fuentes y versiones`; el cerrado es un botón nativo en un rail estructural de
-36 px (32 px a 640 px) unido al borde izquierdo del workspace. Ambos conservan
+`Fuentes y versiones`; el cerrado es un botón nativo compacto, posicionado en
+el borde izquierdo del workspace. La grilla cerrada es de una sola columna: no
+queda rail estructural, columna vacía ni FAB. Ambos conservan
 sus nombres accesibles explícitos, `aria-expanded`, foco visible y teclado. El
 estado `sourcesOpen`, Source/Version seleccionada y proveedor pendiente sigue
 siendo presentación local sin fetch ni mutación.

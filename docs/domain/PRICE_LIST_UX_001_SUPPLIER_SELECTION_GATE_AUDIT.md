@@ -264,12 +264,13 @@ No cambia `sourcesOpen` ni ninguna selección, carga o contrato de dominio:
 - con Sources abierto, el botón nativo terciario vive en el encabezado de
   `Fuentes y versiones`, tiene el nombre accesible `Ocultar fuentes y
   versiones` e indica el cierre hacia la izquierda;
-- con Sources cerrado, el contenido del panel no se renderiza y un rail
-  estructural estrecho permanece unido al borde izquierdo del workspace. Su
-  botón nativo conserva el nombre `Mostrar fuentes y versiones` e indica la
-  expansión hacia la derecha;
-- el rail usa tokens de superficie, borde y foco existentes, sin color fijo ni
-  CTA adicional; a 640 px se reduce a 32 px sin reservar un gutter amplio;
+- con Sources cerrado, el contenido del panel no se renderiza, la grilla pasa
+  a una sola columna y no queda rail ni columna vacía. Un botón compacto,
+  integrado al borde izquierdo del workspace, conserva el nombre `Mostrar
+  fuentes y versiones` e indica la expansión hacia la derecha;
+- el botón usa tokens de superficie, borde y foco existentes, sin color fijo,
+  CTA adicional ni FAB. Su posición es local al workspace, por lo que no
+  reserva gutter ni altura estructural a 640 px;
 - ocultar/restaurar sigue siendo estado de presentación React: no provoca
   fetch, no cambia Source/Version, no pierde proveedor pendiente ni recrea el
   workspace. El CTA único `Nueva carga` continúa dentro de Sources. Como los
@@ -277,7 +278,8 @@ No cambia `sourcesOpen` ni ninguna selección, carga o contrato de dominio:
   transfiere al nuevo control sólo después de ese cambio de presentación.
 
 Las regresiones focalizadas cubren ambos nombres accesibles, la asociación del
-control abierto con el panel, la disponibilidad del rail cerrado, el CTA único
+control abierto con el panel, la disponibilidad del botón compacto cerrado sin
+rail, el CTA único
 y el contrato de foco existente. El walkthrough Chrome local autenticado
 confirmó estado neutro, la selección explícita de AG para una nueva carga y su
 workspace pendiente tras ocultar/restaurar, `AG v53` preservada tras
