@@ -202,6 +202,30 @@ export function validateComposerDraft(input) {
   return sortValidationIssues(issues);
 }
 
+export function hasMeaningfulComposerWork(input) {
+  if (!input.dirty) return false;
+  if (input.description.trim() || input.mode !== 'FULL' || input.completeness !== 'PARTIAL') return true;
+  return input.rows.some((row) => [
+    row.kind,
+    row.supplierObservedTitle,
+    row.title,
+    row.description,
+    row.category,
+    row.brand,
+    row.supplierItemCode,
+    row.sku,
+    row.barcode,
+    row.price,
+    row.cost,
+  ].some((value) => String(value ?? '').trim().length > 0));
+}
+
+export function filterSupplierSources(sources, query) {
+  const normalized = query.trim().toLocaleLowerCase('es-MX');
+  if (!normalized) return sources;
+  return sources.filter((source) => source.name.toLocaleLowerCase('es-MX').includes(normalized));
+}
+
 const apiColumnMap = Object.freeze({
   kind: 'kind', supplierObservedTitle: 'title', title: 'title', description: 'description', category: 'category', brand: 'brand',
   supplierItemCode: 'supplierItemCode', sku: 'sku', barcode: 'barcode', basePriceMinor: 'price', referenceCostMinor: 'cost', identifier: 'supplierItemCode', required: 'title',

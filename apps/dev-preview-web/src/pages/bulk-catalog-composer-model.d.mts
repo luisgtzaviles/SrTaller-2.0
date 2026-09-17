@@ -20,6 +20,8 @@ export function fillRows<Row extends Record<ComposerColumn, string>>(rows: reado
 export function estimateColumnWidth(label: string, values: readonly string[], min?: number, max?: number): number;
 export function sortValidationIssues(issues: readonly ValidationIssue[]): ValidationIssue[];
 export function validateComposerDraft(input: Readonly<{ selectedSource: string; mode: 'FULL' | 'COMPACT'; rows: readonly Record<string, string>[] }>): ValidationIssue[];
+export function hasMeaningfulComposerWork(input: Readonly<{ dirty: boolean; description: string; mode: 'FULL' | 'COMPACT'; completeness: 'PARTIAL' | 'COMPLETE'; rows: readonly Record<string, unknown>[] }>): boolean;
+export function filterSupplierSources<Source extends Readonly<{ name: string }>>(sources: readonly Source[], query: string): readonly Source[];
 export function validationIssueFromApi(error: Readonly<{ status?: number; code?: string | null; parameter?: string | null }>): ValidationIssue;
 export function nextValidationIssueIndex(current: number, direction: -1 | 1, count: number): number;
 export function ownerSupplierClipboard(): string;
