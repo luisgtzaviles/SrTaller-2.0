@@ -50,6 +50,24 @@ test('gate has no silent supplier confirmation, permits one-click choice, and re
   assert.match(source, />Cambiar<\/Button>/u);
 });
 
+test('workspace entry has one primary new-load CTA and a recoverable sources panel', async () => {
+  const [ui, css] = await Promise.all([
+    readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8'),
+    readFile('apps/dev-preview-web/src/pages/bulk-catalog-composer-page.module.css', 'utf8'),
+  ]);
+  assert.match(ui, /id="supplier-gate-new-load"[\s\S]*?>[\s\S]*?Nueva carga/u);
+  assert.doesNotMatch(ui, /supplier-gate-main-new-load/u);
+  assert.match(ui, /className=\{styles\.emptyWorkspace\}[\s\S]*?Selecciona una versión para revisarla/u);
+  const emptyWorkspace = ui.slice(ui.indexOf('className={styles.emptyWorkspace}'), ui.indexOf('</section>}', ui.indexOf('className={styles.emptyWorkspace}')));
+  assert.doesNotMatch(emptyWorkspace, /Nueva carga/u);
+  assert.match(ui, /id="composer-sources-panel-toggle"[\s\S]*?aria-expanded=\{sourcesOpen\}[\s\S]*?aria-controls="composer-sources-panel"/u);
+  assert.match(ui, /aria-label=\{sourcesOpen \? 'Ocultar fuentes y versiones' : 'Mostrar fuentes y versiones'\}/u);
+  assert.match(ui, /onClick=\{\(\) => setSourcesOpen\(\(value\) => !value\)\}/u);
+  assert.match(ui, /\{sourcesOpen \? <aside id="composer-sources-panel"/u);
+  assert.match(css, /\.layoutCollapsed \{ grid-template-columns: 32px minmax\(0, 1fr\); \}/u);
+  assert.match(css, /\.sourcePanelControl \{ position: sticky;/u);
+});
+
 test('contextual supplier creation returns to the pending new-load flow while persisted versions remain immutable', async () => {
   const [ui, service, repository] = await Promise.all([
     readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8'),
