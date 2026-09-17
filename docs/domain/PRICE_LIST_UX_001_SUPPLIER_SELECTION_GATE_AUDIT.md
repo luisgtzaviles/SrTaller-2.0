@@ -4,8 +4,8 @@
 
 ## Estado y límite
 
-- **Estado:** UX-001 implementado localmente; UX-001B implementado y pendiente
-  de walkthrough Chrome autenticado para Owner Review.
+- **Estado:** UX-001, UX-001B y UX-001C implementados y recorridos localmente;
+  listos para Owner Review.
 - **Ámbito:** el comienzo de una nueva carga en Bulk Catalog Composer.
 - **Límite:** la implementación no modifica el contrato de `SupplierSource`,
   `SupplierCatalogVersion`, reconciliación, Apply ni la autoridad del backend.
@@ -255,7 +255,35 @@ focalizadas. No toca defaults de Supplier, capture mode, completeness,
 matching, coverage, reconciliación, Apply, retiro, memoria, audit, endpoints o
 migraciones.
 
-## 14. Diferido explícitamente
+## 14. UX-001C — Sources Panel Collapse Affordance Polish
+
+UX-001C sustituye únicamente la presentación del control UX-001B que el Owner
+rechazó por parecer un botón cuadrado flotante entre navegación y workspace.
+No cambia `sourcesOpen` ni ninguna selección, carga o contrato de dominio:
+
+- con Sources abierto, el botón nativo terciario vive en el encabezado de
+  `Fuentes y versiones`, tiene el nombre accesible `Ocultar fuentes y
+  versiones` e indica el cierre hacia la izquierda;
+- con Sources cerrado, el contenido del panel no se renderiza y un rail
+  estructural estrecho permanece unido al borde izquierdo del workspace. Su
+  botón nativo conserva el nombre `Mostrar fuentes y versiones` e indica la
+  expansión hacia la derecha;
+- el rail usa tokens de superficie, borde y foco existentes, sin color fijo ni
+  CTA adicional; a 640 px se reduce a 32 px sin reservar un gutter amplio;
+- ocultar/restaurar sigue siendo estado de presentación React: no provoca
+  fetch, no cambia Source/Version, no pierde proveedor pendiente ni recrea el
+  workspace. El CTA único `Nueva carga` continúa dentro de Sources. Como los
+  botones son equivalentes pero se desmontan entre estados, el foco se
+  transfiere al nuevo control sólo después de ese cambio de presentación.
+
+Las regresiones focalizadas cubren ambos nombres accesibles, la asociación del
+control abierto con el panel, la disponibilidad del rail cerrado, el CTA único
+y el contrato de foco existente. El walkthrough Chrome local autenticado
+confirmó estado neutro, `AG v53` preservada tras ocultar/restaurar, desktop,
+768 px, 640 px y temas claro/oscuro sin crear ni modificar Sources, Versions o
+Catalog; no se introdujeron credenciales.
+
+## 15. Diferido explícitamente
 
 La posible sugerencia de defaults por `SupplierSource` permanece fuera de
 UX-001. Cualquier sugerencia futura debe ser visible, nunca automática, y

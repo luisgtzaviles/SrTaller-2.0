@@ -1,14 +1,14 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Operator flow optimization UX-001B Workspace Entry + Recoverable Sources Panel
+Milestone / Functional Goal: PBI-041 — Operator flow optimization UX-001C Sources Panel Collapse Affordance Polish
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: UX-001B implementation complete; authenticated Chrome QA blocked
+Status: UX-001C implementation, focused checks and local Chrome walkthrough complete; ready for Owner Review
 WIP: 1/1
-Progress: 21 / 22 current implementation blocks completed
-Current: await a valid local Station/operational session to perform the authorized Chrome walkthrough without creating or modifying a Source, Version or Catalog record.
-Next: Chrome desktop/768/640 light/dark QA, then reconcile the final visual result for Owner Review.
-Blocked: The local backend/frontend health checks pass, but a fresh Chrome tab cannot recover a Trusted Station context; no PIN or credential use is authorized by the current request. v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
+Progress: 28 / 28 current implementation blocks completed
+Current: stop at the completed local UX-001C checkpoint for Owner Review.
+Next: Owner accepts or rejects the visual correction; no follow-on work starts automatically.
+Blocked: None for UX-001C. v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
 
 ## Current checkpoint — Operator flow optimization UX-001
@@ -38,8 +38,19 @@ Last updated: 2026-09-17 MST
 - [x] Move the Sources show/hide control into the persistent Composer shell and preserve focus safely when the panel is hidden.
 - [x] Preserve hidden-panel presentation state across empty, pending-load and Version workspaces without auto-reopening it.
 - [x] Add focused UX-001B regressions for entry, empty state, panel restore and keyboard behavior.
-- [!] Validate Chrome desktop/768/640 and light/dark without Source, Version, Catalog or persistence writes — blocked by missing recoverable Trusted Station context in fresh Chrome; no credential use authorized.
+- [x] Validate Chrome desktop/768/640 and light/dark without Source, Version, Catalog or persistence writes; current UX-001C local walkthrough completed with a valid existing Station session and no credentials entered.
 - [x] Reconcile UX-001 documentation, PBI-041 and implementation evidence with the implementation and current QA blocker.
+
+## Current checkpoint — Operator flow optimization UX-001C
+
+- [x] Record Owner acceptance of UX-001C-D01..D07 and preserve UX-001/UX-001B state logic.
+- [x] Audit the rejected UX-001B affordance: its persistent square sits between Sources and workspace instead of belonging to Sources navigation.
+- [x] Move the open-state collapse affordance into the Sources header with tertiary visual treatment and directional semantics.
+- [x] Render the closed-state restore mechanism only as a narrow, structural left rail attached to the workspace.
+- [x] Preserve `sourcesOpen`, selected Version, pending supplier and workspace content through hide/restore with no reload.
+- [x] Extend focused Composer/gate/focus regression coverage for open header semantics and closed rail availability.
+- [x] Validate Chrome desktop/768/640 and light/dark with an existing trusted local Station session; no credentials or business writes were used.
+- [x] Reconcile UX-001 documentation, PBI-041 and implementation evidence with UX-001C result.
 
 ## Current checkpoint — Existing CatalogItem reactivation pre-Apply QA
 

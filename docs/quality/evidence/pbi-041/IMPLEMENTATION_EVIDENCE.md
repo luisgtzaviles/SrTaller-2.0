@@ -1132,3 +1132,23 @@ se cambió backend, persistencia ni PostgreSQL. Typecheck, build, DEC-005 y
 contratos Composer/focus trap se registran para el corte local; Chrome completo
 requiere una sesión autenticada con estación válida y se conserva como paso de
 Owner Review si el runtime local no mantiene esa sesión.
+
+## UX-001C — Sources Panel Collapse Affordance Polish
+
+UX-001C reemplaza el cuadrado visualmente independiente de UX-001B sin tocar
+el flujo: el control abierto es un botón terciario dentro del encabezado de
+`Fuentes y versiones`; el cerrado es un botón nativo en un rail estructural de
+36 px (32 px a 640 px) unido al borde izquierdo del workspace. Ambos conservan
+sus nombres accesibles explícitos, `aria-expanded`, foco visible y teclado. El
+estado `sourcesOpen`, Source/Version seleccionada y proveedor pendiente sigue
+siendo presentación local sin fetch ni mutación.
+
+Los checks locales registran typecheck, build, DEC-005 y 33 contratos
+focalizados Composer/gate/focus-trap PASS. No hubo cambios de backend,
+persistencia, PostgreSQL, Source, Version ni Catalog. El walkthrough Chrome
+local autenticado confirmó los dos estados en workspace neutro, `AG v53`
+preservada al ocultar/restaurar, desktop/768/640 y tema claro/oscuro. El foco
+transfiere al control equivalente tras el desmontaje intencional, por lo que
+Space vuelve a alternar sin perder teclado. No se introdujeron credenciales ni
+se hicieron escrituras de negocio; `verify:full`, CI, push, PR, merge y deploy
+no se ejecutaron.
