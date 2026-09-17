@@ -63,14 +63,16 @@ test('workspace entry has one primary new-load CTA and a recoverable sources pan
   const sourcesPanel = ui.slice(ui.indexOf('<aside id="composer-sources-panel"'), ui.indexOf('</aside>'));
   assert.match(sourcesPanel, /className=\{styles\.sidebarHeading\}[\s\S]*?Fuentes y versiones[\s\S]*?aria-label="Ocultar fuentes y versiones"/u);
   assert.match(ui, /\{sourcesOpen \? <aside id="composer-sources-panel"[\s\S]*?aria-label="Ocultar fuentes y versiones"/u);
-  assert.match(ui, /\{sourcesOpen \? <aside[\s\S]*?: <div className=\{styles\.sourceRestoreRail\}>[\s\S]*?aria-label="Mostrar fuentes y versiones"/u);
+  assert.match(ui, /<main className=\{styles\.composer\}>[\s\S]*?\{!sourcesOpen \? <button[\s\S]*?aria-label="Mostrar fuentes y versiones"/u);
   assert.match(ui, /aria-controls="composer-sources-panel"/u);
   assert.match(ui, /const sourcesToggleRef = useRef<HTMLButtonElement \| null>\(null\); const pendingSourcesToggleFocus = useRef\(false\);/u);
   assert.match(ui, /sourcesToggleRef\.current\?\.focus\(\);[\s\S]*?\}, \[sourcesOpen\]\);/u);
   assert.match(ui, /onClick=\{\(\) => changeSourcesVisibility\(false\)\}/u);
   assert.match(ui, /onClick=\{\(\) => changeSourcesVisibility\(true\)\}/u);
-  assert.match(css, /\.layoutCollapsed \{ grid-template-columns: 36px minmax\(0, 1fr\); gap: 0; \}/u);
-  assert.match(css, /\.sourceRestoreRail \{ position: sticky;/u);
+  assert.match(css, /\.layoutCollapsed \{ grid-template-columns: minmax\(0, 1fr\); gap: 0; \}/u);
+  assert.match(css, /\.composer \{ position: relative;/u);
+  assert.match(css, /\.sourceRestoreControl \{ position: absolute;[\s\S]*?left: 0;[\s\S]*?border-left: 0;/u);
+  assert.doesNotMatch(css, /\.sourceRestoreRail/u);
   assert.doesNotMatch(css, /\.sourcePanelControl/u);
 });
 

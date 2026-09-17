@@ -312,8 +312,9 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
             <div className={styles.versionList}>{sourceVersions.map((value) => <button type="button" key={value.versionId} className={current?.versionId === value.versionId ? styles.selectedVersion : ''} aria-current={current?.versionId === value.versionId ? 'true' : undefined} onClick={() => void load(value.versionId)}><span><strong>v{value.sequenceNumber}</strong><small>{versionStatus(value)}</small></span><span>{formatVersionDate(value.createdAt, timeZone)} · {value.rowCount.toLocaleString('es-MX')} filas</span>{value.description ? <small>{value.description}</small> : null}</button>)}</div>
           </section>;
         })}</div>
-      </aside> : <div className={styles.sourceRestoreRail}><button ref={sourcesToggleRef} id="composer-sources-panel-toggle" type="button" className={styles.collapseToggle} aria-expanded="false" aria-controls="composer-sources-panel" aria-label="Mostrar fuentes y versiones" title="Mostrar fuentes y versiones" onClick={() => changeSourcesVisibility(true)}><ChevronRight size={18} /></button></div>}
+      </aside> : null}
       <main className={styles.composer}>
+        {!sourcesOpen ? <button ref={sourcesToggleRef} id="composer-sources-panel-toggle" type="button" className={`${styles.collapseToggle} ${styles.sourceRestoreControl}`} aria-expanded="false" aria-controls="composer-sources-panel" aria-label="Mostrar fuentes y versiones" title="Mostrar fuentes y versiones" onClick={() => changeSourcesVisibility(true)}><ChevronRight size={18} /></button> : null}
         {workspaceAvailable ? <>
         <section className={styles.setup}>
           <div className={styles.versionIdentity}><div><strong>{current ? `${current.sourceName} · v${current.sequenceNumber}` : pendingSupplier?.name ?? 'Sin seleccionar'}</strong><small>{current ? versionStatus(current) : 'Proveedor de esta carga · El número se asignará al guardar'}</small></div>{!current && pendingSupplier ? <Button id="supplier-gate-change-pending" size="compact" tone="quiet" onClick={() => openSupplierGate('supplier-gate-change-pending')}>Cambiar</Button> : null}</div>
