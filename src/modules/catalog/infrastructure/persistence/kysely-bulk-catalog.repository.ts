@@ -238,6 +238,22 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       const itemMap = new Map(identifiers.map((value) => [value.item_id, value]));
       const idMap = new Map(identifiers.map((value) => [`${value.scheme}:${value.normalized_value}`, value])); const duplicate = new Set<string>(); const seen = new Map<string, number>();
       for (const row of rows) { const p = row.proposal as BulkCatalogRowInput; for (const key of [p.sku ? `SKU:${p.sku}` : null, p.barcode ? `BARCODE:${p.barcode}` : null, ...supplierMemoryKeys(p)]) if (key) { if (seen.has(key)) duplicate.add(key); else seen.set(key, row.row_number); } }
+      /** A physical duplicate is kept as evidence, but only one row can become an effective observation. */
+      const membersBySupplierIdentity = new Map<string, typeof rows>();
+      for (const row of rows) {
+        const key = supplierMemoryKeys(row.proposal as BulkCatalogRowInput)[0];
+        if (!key) continue;
+        const members = membersBySupplierIdentity.get(key) ?? [];
+        members.push(row);
+        membersBySupplierIdentity.set(key, members);
+      }
+      const duplicateGroupByRowDecisionId = new Map<string, Readonly<{ exact: boolean; representativeRowDecisionId: string }>>();
+      for (const members of membersBySupplierIdentity.values()) {
+        if (members.length < 2) continue;
+        const exact = new Set(members.map((member) => sha256(member.proposal))).size === 1;
+        const representativeRowDecisionId = members.reduce((first, member) => member.row_number < first.row_number ? member : first).row_decision_id;
+        for (const member of members) duplicateGroupByRowDecisionId.set(member.row_decision_id, Object.freeze({ exact, representativeRowDecisionId }));
+      }
       const categories = await db.selectFrom('catalog_categories').select(['category_id', 'kind', 'normalized_name', 'status']).where('tenant_id', '=', context.tenantId).where('merged_into_id', 'is', null).execute(); const brands = await db.selectFrom('catalog_brands').select(['brand_id', 'normalized_name', 'status']).where('tenant_id', '=', context.tenantId).where('merged_into_id', 'is', null).execute();
       const pendingCategories = await db.selectFrom('catalog_category_pending_values').select(['pending_category_value_id', 'kind', 'normalized_key']).where('tenant_id', '=', context.tenantId).where('resolution_status', '=', 'PENDING').execute();
       const pendingBrands = await db.selectFrom('catalog_brand_pending_values').select(['pending_brand_value_id', 'normalized_key']).where('tenant_id', '=', context.tenantId).where('resolution_status', '=', 'PENDING').execute();
@@ -263,7 +279,10 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       const analyzedWrites: Array<Insertable<DatabaseSchema['catalog_update_row_decisions']>> = [];
       for (const row of rows) {
         const p = row.proposal as BulkCatalogRowInput; const identifierKeys = [p.sku ? `SKU:${p.sku}` : null, p.barcode ? `BARCODE:${p.barcode}` : null].filter((value): value is string => Boolean(value)); const historyKeys = supplierMemoryKeys(p); const errors: string[] = []; const warnings: string[] = [];
-        if ([...identifierKeys, ...historyKeys].some((key) => duplicate.has(key))) errors.push('DUPLICATE_OBSERVATION_IN_VERSION');
+        const duplicateGroup = duplicateGroupByRowDecisionId.get(row.row_decision_id);
+        const exactDuplicateLoser = duplicateGroup?.exact === true && duplicateGroup.representativeRowDecisionId !== row.row_decision_id;
+        if (duplicateGroup?.exact === false) errors.push('DUPLICATE_VALUE_CONTRADICTION');
+        else if (!duplicateGroup && [...identifierKeys, ...historyKeys].some((key) => duplicate.has(key))) errors.push('DUPLICATE_OBSERVATION_IN_VERSION');
         const categoryKey = normalizeReference(p.category); const brandKey = normalizeReference(p.brand);
         const proposedCategory = categoryKey ? categories.find((value) => value.kind === p.kind && value.normalized_name === categoryKey && value.status === 'ACTIVE') : null;
         const proposedPendingCategory = categoryKey ? pendingCategories.find((value) => value.kind === p.kind && value.normalized_key === categoryKey) : null;
@@ -309,8 +328,12 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
           if ((p.category && !proposedCategory && !proposedPendingCategory) || (p.brand && !proposedBrand && !proposedPendingBrand)) { classification = 'PENDING_REFERENCE'; decision = 'UNRESOLVED'; warnings.push('REFERENCE_REQUIRES_GOVERNANCE'); }
           else { const changed = (p.description !== null && p.description !== target.description) || (Boolean(proposedCategory) && (proposedCategory!.category_id !== target.category_id || target.pending_category_value_id !== null)) || (Boolean(proposedPendingCategory) && proposedPendingCategory!.pending_category_value_id !== target.pending_category_value_id) || (Boolean(proposedBrand) && (proposedBrand!.brand_id !== target.brand_id || target.pending_brand_value_id !== null)) || (Boolean(proposedPendingBrand) && proposedPendingBrand!.pending_brand_value_id !== target.pending_brand_value_id) || (p.basePriceMinor !== null && p.basePriceMinor !== currentPrices.get(target.item_id)) || (p.referenceCostMinor !== null && p.referenceCostMinor !== currentCosts.get(target.item_id)); classification = target.status === 'INACTIVE' ? 'REACTIVATE' : changed ? 'UPDATE' : 'UNCHANGED'; decision = 'APPLY'; }
         }
+        if (exactDuplicateLoser) {
+          classification = 'UNCHANGED'; decision = 'EXCLUDE'; target = null; trusted = false; matchOrigin = 'NONE'; candidateMatches = Object.freeze([]);
+          errors.length = 0; warnings.push('DUPLICATE_EXACT_CONSOLIDATED');
+        }
         counts[classification] += 1; if (decision === 'UNRESOLVED') unresolvedCount += 1;
-        const titleDecision: BulkCatalogTitleDecision | null = target && p.title !== null && p.title !== target.title ? 'KEEP_CURRENT' : null;
+        const titleDecision: BulkCatalogTitleDecision | null = exactDuplicateLoser ? null : target && p.title !== null && p.title !== target.title ? 'KEEP_CURRENT' : null;
         analyzedWrites.push({ tenant_id: row.tenant_id, row_decision_id: row.row_decision_id, batch_id: row.batch_id, listing_id: row.listing_id, row_number: row.row_number, proposal: row.proposal, classification, decision, title_decision: titleDecision, target_item_id: target?.item_id ?? null, expected_item_version: target?.version ?? null, preselected_by_memory: trusted, match_origin: matchOrigin, match_algorithm_version: BULK_CATALOG_MATCH_ALGORITHM_VERSION, candidate_matches: JSON.stringify(candidateMatches), errors: serializeRowErrors(errors), warnings: JSON.stringify(warnings), lock_version: row.lock_version + 1, updated_at: input.occurredAt });
       }
       for (let offset = 0; offset < analyzedWrites.length; offset += 500) await db.insertInto('catalog_update_row_decisions').values(analyzedWrites.slice(offset, offset + 500)).onConflict((conflict) => conflict.columns(['tenant_id', 'row_decision_id']).doUpdateSet((eb) => ({ classification: eb.ref('excluded.classification'), decision: eb.ref('excluded.decision'), title_decision: eb.ref('excluded.title_decision'), target_item_id: eb.ref('excluded.target_item_id'), expected_item_version: eb.ref('excluded.expected_item_version'), preselected_by_memory: eb.ref('excluded.preselected_by_memory'), match_origin: eb.ref('excluded.match_origin'), match_algorithm_version: eb.ref('excluded.match_algorithm_version'), candidate_matches: eb.ref('excluded.candidate_matches'), errors: eb.ref('excluded.errors'), warnings: eb.ref('excluded.warnings'), lock_version: eb.ref('excluded.lock_version'), updated_at: input.occurredAt }))).execute();
@@ -324,7 +347,18 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       const version = await db.selectFrom('catalog_supplier_catalog_versions').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).executeTakeFirst(); if (!version) throw new CatalogNotFoundError(); if (version.lifecycle !== 'INGESTED') throw new CatalogConflictError();
       const batch = await db.selectFrom('catalog_update_batches').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).forUpdate().executeTakeFirstOrThrow();
       const row = await db.selectFrom('catalog_update_row_decisions').selectAll().where('tenant_id', '=', context.tenantId).where('row_decision_id', '=', input.rowDecisionId).where('batch_id', '=', batch.batch_id).forUpdate().executeTakeFirst(); if (!row) throw new CatalogNotFoundError(); if (row.lock_version !== input.expectedRowVersion) throw new CatalogConflictError();
+      const duplicateValueContradiction = normalizeRowErrors(row.errors).includes('DUPLICATE_VALUE_CONTRADICTION');
       let classification = row.classification; let expected = row.expected_item_version; let targetItemId = input.targetItemId ?? row.target_item_id; let selectedTitleDecision: BulkCatalogTitleDecision | null = row.title_decision;
+      if (duplicateValueContradiction && input.decision === 'APPLY' && row.target_item_id && input.targetItemId === row.target_item_id) {
+        const rowKey = supplierMemoryKeys(row.proposal as BulkCatalogRowInput)[0];
+        const group = (await db.selectFrom('catalog_update_row_decisions').selectAll().where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).forUpdate().execute())
+          .filter((candidate) => supplierMemoryKeys(candidate.proposal as BulkCatalogRowInput)[0] === rowKey && normalizeRowErrors(candidate.errors).includes('DUPLICATE_VALUE_CONTRADICTION'));
+        if (group.length < 2) throw new CatalogConflictError();
+        for (const sibling of group) {
+          if (sibling.row_decision_id === row.row_decision_id) continue;
+          await db.updateTable('catalog_update_row_decisions').set({ classification: 'UNCHANGED', decision: 'EXCLUDE', title_decision: null, target_item_id: null, expected_item_version: null, preselected_by_memory: false, match_origin: 'NONE', errors: serializeRowErrors([]), warnings: JSON.stringify(['DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED']), lock_version: sibling.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('row_decision_id', '=', sibling.row_decision_id).execute();
+        }
+      }
       if (input.targetItemId) {
         if (input.decision !== 'APPLY') throw new CatalogConflictError();
         const persistedCandidates = row.candidate_matches as BulkCatalogCandidateMatch[];

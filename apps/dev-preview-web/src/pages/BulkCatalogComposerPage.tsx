@@ -37,6 +37,7 @@ const versionStatus = (value: SupplierVersionSummary): string => value.lifecycle
 const formatVersionDate = (value: string, timeZone: string): string => new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone }).format(new Date(value));
 const analysisMessage = (code: string): string | null => ({
   DUPLICATE_OBSERVATION_IN_VERSION: 'Esta observación se repite dentro de la lista del proveedor.',
+  DUPLICATE_VALUE_CONTRADICTION: 'Artículo repetido con datos diferentes.',
   IDENTIFIERS_POINT_TO_DIFFERENT_ITEMS: 'Los identificadores recibidos apuntan a artículos distintos.',
   CORRECTED_MAPPING_CONFLICT: 'Un mapping histórico fue corregido y requiere una nueva decisión.',
   AMBIGUOUS_HISTORY: 'La historia del proveedor apunta a más de un artículo.',
@@ -48,6 +49,8 @@ const analysisMessage = (code: string): string | null => ({
   COMPACT_ROW_TARGET_NOT_FOUND: 'No se encontró un artículo para esta actualización compacta.',
 }[code] ?? null);
 const warningMessage = (code: string): string | null => ({
+  DUPLICATE_EXACT_CONSOLIDATED: 'Fila duplicada consolidada; esta copia queda como evidencia y no se aplicará dos veces.',
+  DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED: 'Fila no elegida para esta observación repetida; queda excluida de forma trazable.',
   TRUSTED_HISTORICAL_MATCH_AUTO_REACTIVATES: 'Identidad reconocida por historial confiable; el artículo se reactivará al aplicar.',
   TRUSTED_HISTORICAL_MATCH_AUTO_RESOLVED: 'Identidad reconocida por historial confiable.',
   CANDIDATE_MATCH_REQUIRES_OWNER_DECISION: 'Hay un candidato razonable; elige si es el mismo artículo o crea uno nuevo.',
@@ -55,6 +58,10 @@ const warningMessage = (code: string): string | null => ({
   REFERENCE_REQUIRES_GOVERNANCE: 'La categoría o marca recibida requiere revisión antes de aplicar.',
 }[code] ?? null);
 const rowErrors = (value: unknown): readonly string[] => Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
+const duplicateObservationKey = (row: SupplierVersion['rows'][number]): string => {
+  if (row.proposal.supplierItemCode) return `C:${normalizeCatalogReferenceText(row.proposal.supplierItemCode)}`;
+  return `S:${[row.proposal.kind, row.supplierObservedTitle ?? row.proposal.supplierObservedTitle ?? row.proposal.title, row.proposal.description, row.proposal.category, row.proposal.brand].map((value) => value ? normalizeCatalogReferenceText(value) : '').join('|')}`;
+};
 const appliedResultSummary = (counts: SupplierVersion['batch']['counts'], excluded: number): string => [
   ...(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED'] as const).flatMap((classification) => counts[classification] > 0 ? [`${counts[classification].toLocaleString('es-MX')} ${statusLabels[classification].toLocaleLowerCase('es-MX')}`] : []),
   ...(excluded > 0 ? [`${excluded.toLocaleString('es-MX')} excluida${excluded === 1 ? '' : 's'}`] : []),
@@ -300,6 +307,10 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const compatibleSuggestionCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && ['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'].includes(row.classification)).length ?? 0;
   const blockedRowCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && ['AMBIGUOUS', 'CONFLICT', 'INVALID'].includes(row.classification)).length ?? 0;
   const reviewRows = current?.rows.filter((row) => reconciliationView === 'ALL' || (reconciliationView === 'ATTENTION' ? row.decision === 'UNRESOLVED' : row.decision !== 'UNRESOLVED')) ?? [];
+  const exactDuplicateCount = current?.rows.filter((row) => row.warnings.includes('DUPLICATE_EXACT_CONSOLIDATED')).length ?? 0;
+  const duplicateContradictionGroups = current ? [...current.rows.filter((row) => row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')).reduce((groups, row) => {
+    const key = duplicateObservationKey(row); groups.set(key, [...(groups.get(key) ?? []), row]); return groups;
+  }, new Map<string, readonly SupplierVersion['rows'][number][]>()).values()] : [];
   const comparisonCandidates = current ? versions.filter((value) => value.sourceId === current.sourceId && value.sequenceNumber < current.sequenceNumber) : [];
   const currentIssueLabel = currentIssue ? currentIssue.scope === 'CELL' && currentIssue.rowIndex !== undefined && currentIssue.columnKey ? `Fila ${currentIssue.rowIndex + 1} · ${labels[currentIssue.columnKey]}` : currentIssue.scope === 'BATCH' ? 'Contexto del lote' : 'Guardado' : '';
   const continuedPanelId = current ? `continued-${current.versionId}` : undefined;
@@ -409,9 +420,10 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
             <button type="button" role="tab" aria-selected={reconciliationView === 'RESOLVED'} onClick={() => setReconciliationView('RESOLVED')}>Resueltas <strong>{resolved}</strong></button>
             <button type="button" role="tab" aria-selected={reconciliationView === 'ALL'} onClick={() => setReconciliationView('ALL')}>Todas <strong>{current.rows.length}</strong></button>
           </div>
+          {exactDuplicateCount > 0 ? <div className={styles.allResolved} role="status"><strong>{exactDuplicateCount.toLocaleString('es-MX')} fila{exactDuplicateCount === 1 ? '' : 's'} duplicada{exactDuplicateCount === 1 ? '' : 's'} fue{exactDuplicateCount === 1 ? '' : 'ron'} consolidada{exactDuplicateCount === 1 ? '' : 's'}.</strong><span>Las filas recibidas se conservan como evidencia; sólo una observación efectiva continúa hacia Catalog.</span></div> : null}
           {current.batch.lifecycle === 'APPLIED' ? <div className={styles.allResolved} role="status"><strong>Lote aplicado</strong><span>{current.rows.length.toLocaleString('es-MX')} filas fueron procesadas correctamente.</span><small>{appliedResultSummary(current.batch.counts, excluded)}</small></div> : unresolved === 0 && reconciliationView === 'ATTENTION' ? <div className={styles.allResolved} role="status"><strong>Todo resuelto</strong><span>{resolved.toLocaleString('es-MX')} filas están listas para aplicar.</span><small>No necesitas revisar cada fila. Resueltas y Todas permanecen disponibles para auditoría.</small></div> : null}
           {current.batch.lifecycle !== 'APPLIED' && (compatibleSuggestionCount > 0 || blockedRowCount > 0) ? <div className={styles.groupActions}>{compatibleSuggestionCount > 0 ? <Button size="compact" tone="primary" onClick={() => void resolveGroup(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'], 'APPLY')} disabled={busy}>Aceptar {compatibleSuggestionCount.toLocaleString('es-MX')} {compatibleSuggestionCount === 1 ? 'sugerencia' : 'sugerencias'}</Button> : null}{blockedRowCount > 0 ? <Button size="compact" onClick={() => void resolveGroup(['AMBIGUOUS', 'CONFLICT', 'INVALID'], 'EXCLUDE')} disabled={busy}>Excluir {blockedRowCount.toLocaleString('es-MX')} {blockedRowCount === 1 ? 'bloqueada' : 'bloqueadas'}</Button> : null}</div> : null}
-          {reviewRows.slice(0, 100).map((row) => <article key={row.rowDecisionId}>
+          {reviewRows.slice(0, 100).map((row) => { const duplicateGroup = duplicateContradictionGroups.find((group) => group.some((member) => member.rowDecisionId === row.rowDecisionId)); const duplicateGroupLead = duplicateGroup?.[0]?.rowDecisionId === row.rowDecisionId; const knownDuplicateIdentity = Boolean(duplicateGroup?.every((member) => member.targetItemId && member.targetItemId === duplicateGroup[0]?.targetItemId)); return <article key={row.rowDecisionId}>
             <div>
               <strong>Fila {row.rowNumber} · {statusLabels[row.classification]}</strong>
               <span>{row.proposal.title ?? row.proposal.supplierItemCode ?? row.proposal.sku ?? row.proposal.barcode ?? 'Sin identidad'}{row.targetTitle ? ` → ${row.targetTitle}` : ''}</span>
@@ -420,6 +432,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
               {row.decision !== 'EXCLUDE' && row.titleDecision ? <small className={styles.titleDecisionSummary}>Nombre al aplicar: {row.titleDecision === 'ADOPT_OBSERVED' ? `usar “${row.proposal.title ?? ''}”` : `mantener “${row.targetTitle ?? row.before?.title ?? ''}”`}</small> : null}
               {row.warnings.map(warningMessage).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}
               {rowErrors(row.errors).map(analysisMessage).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}
+              {duplicateGroupLead ? <section className={styles.candidateCard}><strong>Artículo repetido con datos diferentes</strong><span>{row.targetTitle ?? row.proposal.title ?? row.supplierObservedTitle ?? 'Identidad de proveedor reconocida'}</span><small>Elige una fila completa; no se combinarán campos ni se solicitará UUID.</small>{duplicateGroup.map((member) => <div key={member.rowDecisionId}><strong>Fila {member.rowNumber}</strong><small>Precio {member.proposal.basePriceMinor === null ? 'sin cambio' : fromMinor(member.proposal.basePriceMinor)}{canReadCost ? ` · Costo ${member.proposal.referenceCostMinor === null ? 'sin cambio' : fromMinor(member.proposal.referenceCostMinor)}` : ''}</small>{current.batch.lifecycle !== 'APPLIED' && knownDuplicateIdentity && member.targetItemId ? <Button size="compact" tone="primary" disabled={busy} onClick={() => void resolve(member.rowDecisionId, member.version, 'APPLY', member.targetItemId)}>Usar fila {member.rowNumber}</Button> : null}</div>)}</section> : null}
               {row.candidates.map((candidate) => <section key={candidate.itemId} className={styles.candidateCard}>
                 <strong>{candidate.title}</strong><span>{candidate.status === 'INACTIVE' ? 'Inactivo' : 'Activo'} · score de presentación {Math.round(candidate.score * 100)}%</span>
                 <small>Evidencia: {candidate.evidence.join(' · ')}</small>
@@ -427,15 +440,15 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
                 {candidate.contradictions.length ? <small>Contradicciones: {candidate.contradictions.join(' · ')}</small> : null}
                 {current.batch.lifecycle !== 'APPLIED' ? <Button size="compact" tone="primary" onClick={() => chooseCandidateTitle(row, candidate)}>Mismo artículo</Button> : null}
               </section>)}
-              {['CONFLICT', 'INVALID'].includes(row.classification) ? <label>
+              {['CONFLICT', 'INVALID'].includes(row.classification) && !row.errors.includes('DUPLICATE_VALUE_CONTRADICTION') ? <label>
                 Artículo canónico para corregir mapping
                 <Input aria-label={`Artículo canónico fila ${row.rowNumber}`} placeholder="UUID del artículo existente" value={mappingTargets[row.rowDecisionId] ?? ''} onChange={(event) => setMappingTargets((value) => ({ ...value, [row.rowDecisionId]: event.target.value }))} />
               </label> : null}
             </div>
             {current.batch.lifecycle !== 'APPLIED' ? <div>{row.decision === 'EXCLUDE' ? <><small className={styles.excludedState}>Excluida del lote</small><Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Volver a incluir</Button></> : <>{row.decision === 'APPLY' ? <>{row.targetItemId && row.targetTitle && row.proposal.title && row.targetTitle !== row.proposal.title && row.classification !== 'CANDIDATE' && row.classification !== 'AMBIGUOUS' ? <Button size="compact" onClick={() => chooseCandidateTitle(row, { itemId: row.targetItemId!, title: row.targetTitle! })}>Cambiar nombre</Button> : null}<Button size="compact" tone="quiet" onClick={() => void resolve(row.rowDecisionId, row.version, 'EXCLUDE')}>Excluir del lote</Button></> : <>{row.classification === 'CANDIDATE' ? <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Artículo nuevo</Button> : null}{['CONFLICT', 'INVALID'].includes(row.classification)
-              ? <Button size="compact" tone="primary" disabled={!mappingTargets[row.rowDecisionId]?.trim()} onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY', mappingTargets[row.rowDecisionId]!.trim())}>Corregir mapping</Button>
+              ? !row.errors.includes('DUPLICATE_VALUE_CONTRADICTION') ? <Button size="compact" tone="primary" disabled={!mappingTargets[row.rowDecisionId]?.trim()} onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY', mappingTargets[row.rowDecisionId]!.trim())}>Corregir mapping</Button> : null
               : row.classification !== 'CANDIDATE' && row.classification !== 'AMBIGUOUS' ? <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Incluir</Button> : null}<Button size="compact" tone="quiet" onClick={() => void resolve(row.rowDecisionId, row.version, 'EXCLUDE')}>Excluir del lote</Button></>}</>}</div> : null}
-          </article>)}
+          </article>; })}
         </section> : null}
         {current?.batch.lifecycle === 'APPLIED' && canBulkRetire ? <section className={styles.batchSecondaryActions} aria-labelledby="batch-secondary-actions-title"><div><h2 id="batch-secondary-actions-title">Acciones del lote</h2><p>Herramientas secundarias para el resultado ya aplicado.</p></div><Button size="compact" tone="quiet" onClick={() => void planCreatedBatchRetirement()} disabled={busy}><ArchiveX size={17} />Retirar artículos creados por este lote</Button></section> : null}
         {current ? <section className={styles.comparison}><h2><Button size="compact" tone="quiet" aria-expanded={comparisonOpen} aria-controls={comparisonPanelId} onClick={() => setComparisonOpen((value) => !value)}><GitCompare size={18} />Comparación histórica</Button></h2>{comparisonOpen ? <div id={comparisonPanelId} className={styles.comparisonPanel}><p>Compara manualmente esta versión con otra anterior.</p><div><Select value={compareId} onChange={(event) => setCompareId(event.target.value)}><option value="">Versión anterior…</option>{comparisonCandidates.map((value) => <option key={value.versionId} value={value.versionId}>v{value.sequenceNumber}{value.description ? ` · ${value.description}` : ''}</option>)}</Select><Button size="compact" onClick={() => void compareVersions()} disabled={!compareId}>Comparar</Button></div>{compare ? <p>Mapeadas {compare.mapped} · Cambiadas {compare.changed} · Nuevas {compare.added} · {compare.absenceStatus === 'EVALUATED' ? `No observados ${compare.notObserved ?? 0} · ` : 'Ausencias no evaluadas · '}Ambiguas {compare.ambiguous}</p> : null}</div> : null}</section> : null}

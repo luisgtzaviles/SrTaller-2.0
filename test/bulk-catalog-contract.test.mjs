@@ -292,7 +292,11 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /Original:/u);
   assert.match(ui, /REACTIVATE: 'Reactiva'/u);
   assert.match(ui, /estado \{row\.before\.status === 'INACTIVE' \? 'Inactivo' : 'Activo'\}/u);
-  assert.match(ui, /'Reanalizar versión'/u);
+  assert.match(ui, /Reanalizar versión/u);
+  assert.match(ui, /DUPLICATE_VALUE_CONTRADICTION/u);
+  assert.match(ui, /Artículo repetido con datos diferentes/u);
+  assert.match(ui, /DUPLICATE_EXACT_CONSOLIDATED/u);
+  assert.match(ui, /!row\.errors\.includes\('DUPLICATE_VALUE_CONTRADICTION'\)/u);
   assert.match(ui, /current\.batch\.lifecycle === 'APPLIED' \? 'Resultado aplicado' : 'Reconciliación'/u);
   assert.match(ui, /current\.batch\.lifecycle !== 'APPLIED' && \(compatibleSuggestionCount > 0 \|\| blockedRowCount > 0\) \? <div className=\{styles\.groupActions\}/u);
   assert.match(ui, /current\.batch\.lifecycle !== 'APPLIED' \? <div>\{row\.decision === 'EXCLUDE'/u);
