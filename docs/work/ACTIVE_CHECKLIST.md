@@ -1,15 +1,33 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002A Review List orchestration
+Milestone / Functional Goal: PBI-041 — UX-002A.2 Duplicate input resolution
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: local UX-002A Review List orchestration complete; ready for Owner Review
+Status: local DUP-1/DUP-3 implementation complete; ready for Owner Review
 WIP: 1/1
-Progress: 48 / 48 current implementation blocks completed
-Current: stop at the local UX-002A Owner Review checkpoint.
-Next: Owner accepts or rejects this orchestration slice; no follow-on UX-002 slice starts automatically.
-Blocked: None. v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
+Progress: 58 / 58 current implementation blocks completed
+Current: stop at the UX-002A.2 Owner Review checkpoint; AG v60 remains untouched.
+Next: Owner accepts or changes DUP-1/DUP-3; UX-002B does not start automatically.
+Blocked: None. AG v60 remains read-only and unreanalyzed; v52 remains intentionally unpublished, v53 historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
+
+## Current checkpoint — UX-002A.2 Duplicate input resolution
+
+- [x] Preserve AG v60 and implement only DUP-1 exact and DUP-3 contradictory same-snapshot behavior.
+- [x] Keep physical rows/provenance and form one effective observation from the existing supplier identity key without a migration.
+- [x] Consolidate exact copies deterministically by lowest row number and show a non-blocking Owner notice.
+- [x] Present contradictory values as an Owner row choice; hide UUID mapping when identity is already known.
+- [x] Exclude unchosen physical rows traceably before Apply so only one target mutation can survive.
+- [x] Preserve true identity mapping, PARTIAL/COMPLETE, baseline, coverage key, Memory and Resolution contracts.
+- [x] Add focused contract/PostgreSQL coverage and reconcile PBI/evidence/docs; UX-002B remains not started.
+
+## Current checkpoint — UX-002A.1 Duplicate input resolution audit
+
+- [x] Preserve AG v60 and complete a read-only preflight: branch, local health, PostgreSQL 18.4, 72 migrations and no runtime/data mutation.
+- [x] Trace duplicate key calculation from paste/grid, durable SupplierListing and RowDecision through Analyze, trusted history, DTO and generic conflict UI.
+- [x] Demonstrate that v60 has one trusted historical target for both rows but a material price/cost contradiction and no Apply-side writes.
+- [x] Separate identity conflict from same-snapshot value contradiction; cover DUP-1 through DUP-6, physical/effective coverage and FULL/COMPACT limits.
+- [x] Record UX V1 direction and decisions DUP-001 through DUP-008 in the domain audit, PBI and evidence index without implementing behavior.
 
 ## Current checkpoint — UX-002 happy-path friction audit
 

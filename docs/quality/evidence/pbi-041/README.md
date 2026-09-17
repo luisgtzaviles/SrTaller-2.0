@@ -15,6 +15,7 @@ authority.
 - [Bulk Composer Discovery](../../../domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
 - [UX-001 Supplier Selection Gate Audit](../../../domain/PRICE_LIST_UX_001_SUPPLIER_SELECTION_GATE_AUDIT.md)
 - [UX-002 Happy-Path Friction Audit](../../../domain/PRICE_LIST_UX_002_HAPPY_PATH_FRICTION_AUDIT.md)
+- [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
 Owner Review. Advanced Supplier Reconciliation remains a deferred outcome
@@ -54,3 +55,24 @@ was not applied. No AG `v50`–`v57` version or Catalog record was modified.
 PostgreSQL PBI-041 material checks (72 migrations), and DEC-005 architecture
 policy all passed. No full verification, remote action, push, PR, merge, or
 deployment was performed.
+
+## UX-002A.1 Duplicate input resolution — audit only
+
+AG `v60` is preserved as `PARTIAL/INGESTED/RECONCILING` with two physical
+observations that share a trusted historical CatalogItem but disagree on
+price/cost. Read-only inspection confirmed two `CONFLICT/UNRESOLVED` rows,
+zero Resolution/audit writes for v60 and unchanged trusted Memory. The audit
+separates value contradiction from identity conflict and records Owner choices
+without implementing a remedy, changing AG v60, reanalyzing, applying, or
+writing Catalog data. See the
+[UX-002A.1 audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md).
+
+## UX-002A.2 Duplicate input resolution — local Owner Review candidate
+
+DUP-1 exact duplicates now leave one deterministic effective observation and
+one traceable excluded physical row. DUP-3 contradictory values remain blocked
+until an Owner selects a physical row; the known-identity UI compares values
+and does not request a Catalog UUID. Focused contract and disposable PostgreSQL
+material coverage prove no generic exact conflict, explicit contradiction,
+Apply blocking and one surviving target after selection. AG `v60` was not
+mutated. UX-002B remains unstarted.

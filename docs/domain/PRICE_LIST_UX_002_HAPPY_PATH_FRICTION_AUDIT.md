@@ -289,13 +289,22 @@ PARTIAL/COMPLETE semantics, capture mode, context/default behavior, identity,
 backend contracts, migrations, or Apply/publication semantics. UX2-001 and
 UX2-004 through UX2-007 remain pending Owner decisions.
 
-## 14. Explicit non-goals
+## 15. Explicit non-goals
 
 - No product, UI, API, domain, persistence, test, migration, or runtime change.
 - No Version creation, Analyze, Apply, retirement/reactivation, fixture change,
   PostgreSQL write, push, PR, merge, deployment, CI, or `verify:full`.
 - No change to absence safety, baseline selection, trusted history, candidate
   governance, Source ownership, or Catalog authority.
+
+## 16. Follow-up audit — duplicate input semantics
+
+UX-002A.1 traces the separate case of duplicate observations inside a single
+snapshot. It documents why AG `v60` has a known historical identity but a
+material price/cost contradiction, and why UUID mapping is not a valid remedy
+for that situation. It records decisions only; no Composer, persistence or
+Catalog behavior changed. See
+[Duplicate Input Resolution Audit](PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md).
 
 ## Conclusion
 
