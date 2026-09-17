@@ -776,3 +776,15 @@ de observación, no disponibilidad ni estado de catálogo: Apply jamás cambia
 `CatalogItem.status`, borra identidad, identifiers, revisiones, Resolution o
 memoria por una fila no observada. La cobertura sólo puede cambiar mientras la
 Version sea `DRAFT`; `INGESTED` conserva su significado histórico.
+
+La baseline es automática: para una `COMPLETE` se selecciona la Version
+`COMPLETE/APPLIED` anterior más reciente del mismo Tenant y `SupplierSource`;
+no existe promoción manual. La lectura explica simétricamente las filas que
+continúan, las no observadas y las adicionales respecto a esa baseline. Una
+lista completa puede crecer sin alerta. Si la baseline tiene al menos 20 filas
+y la actual conserva 25% o menos, el servidor exige que el actor confirme
+explícitamente la cobertura antes de Apply. Es una advertencia de plausibilidad
+determinista, no una denegación permanente: la confirmación forma parte del
+request idempotente y del audit. Ningún cálculo de cobertura puede crear,
+retirar, renombrar o alterar por ausencia un `CatalogItem`, identifiers,
+revisiones, Resolution o ReconciliationMemory.

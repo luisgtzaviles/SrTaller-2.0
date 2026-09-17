@@ -1,15 +1,26 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Completeness contract + applied result state
+Milestone / Functional Goal: PBI-041 — Complete baseline plausibility + coverage explainability
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: local hardening and material QA complete; Owner Review pending
+Status: Owner Review ready — local functional proof complete
 WIP: 1/1
-Progress: 7 / 7 functional blocks completed
-Current: reconcile evidence and leave the local proof available for Owner Review
-Next: Owner Review only; do not start another PBI or integration action
-Blocked: None; v41 is immutable historical evidence and the preexisting .DS_Store is preserved
+Progress: 8 / 8 current functional blocks completed
+Current: preserve the local checkpoint for Owner Review
+Next: Owner review/acceptance only; no integration gate without new Owner authority
+Blocked: None; v44 is applied as the local final baseline and the preexisting .DS_Store remains preserved
 Last updated: 2026-09-16 MST
+
+## Current checkpoint — Complete baseline plausibility + coverage explainability
+
+- [x] Extend coverage with continued, not-observed and additional detail without changing supplier-listing identity.
+- [x] Keep automatic same-Tenant/same-Source latest `COMPLETE/APPLIED` baseline selection.
+- [x] Classify a materially smaller complete list as `REVIEW_REQUIRED` through a deterministic backend policy.
+- [x] Require an explicit Apply acknowledgment for an anomalous complete list; preserve idempotency.
+- [x] Preserve absence as observational: no retirement, deletion, rename, identifier, revision, Resolution or Memory write by absence.
+- [x] Render human coverage copy and accessible expandable continued/additional details.
+- [x] Prove normal, anomalous, partial, Tenant and SupplierSource scenarios with focused contracts and PostgreSQL.
+- [x] Record accepted BA-001..004 and focused local proof; stop at Owner Review.
 
 ## Current checkpoint — Completeness contract + applied result state
 

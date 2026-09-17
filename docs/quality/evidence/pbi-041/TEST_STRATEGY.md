@@ -214,3 +214,15 @@ PASS alone cannot close Owner Review.
 La matriz ejecutada usa una lista COMPLETE de cuatro filas y otra COMPLETE de
 tres: reporta un no observado, publica sólo las tres presentes y verifica cero
 Resolution para el item omitido. No sustituye Owner Review.
+
+## Complete baseline plausibility and coverage explainability matrix
+
+| ID | Predicate material | Cobertura |
+|---|---|---|
+| BA-Q01 | baseline automática = la `COMPLETE/APPLIED` anterior más reciente del mismo Tenant y SupplierSource | PostgreSQL / local v42→v44 |
+| BA-Q02 | coverage explica filas continuadas, no observadas y adicionales; adicional nunca es `NEW` | PostgreSQL / UI contract / Chrome |
+| BA-Q03 | 100→95, 37→34, 34→38 y 1→38 son normales; 100→5 exige review | domain contract / PostgreSQL |
+| BA-Q04 | Apply de caída material falla sin acknowledgment y publica una sola vez con acknowledgment | PostgreSQL / audit |
+| BA-Q05 | `PARTIAL` no calcula coverage ni plausibilidad | PostgreSQL / UI contract |
+| BA-Q06 | no observación no altera lifecycle, itemId, identifiers, revisiones, Resolution ni Memory | PostgreSQL |
+| BA-Q07 | v44 muestra 38/1/0/37, expande detalle de continuación/adicionales y se conserva aplicada tras reload | Chrome local |

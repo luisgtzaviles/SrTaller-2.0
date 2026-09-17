@@ -1012,3 +1012,38 @@ v41 (`fa43b69c-65db-4269-9e8d-03fd77136880`, Batch
 Checks focalizados: typecheck y build PASS; contrato Composer PASS 10/10;
 PostgreSQL PBI-041 PASS 1/1 con 72 migraciones y limpieza del contenedor
 desechable. `verify:full`, CI, push, PR, merge y deploy no se ejecutaron.
+
+## Complete baseline plausibility and coverage explainability
+
+Las reglas BA-001..BA-004 están materializadas sin migración: la baseline se
+deriva exclusivamente de la Version `COMPLETE/APPLIED` anterior más reciente
+del mismo Tenant/SupplierSource. La respuesta separa `continued`,
+`notObserved` y `additional`; ninguno es una decisión de identidad ni una
+acción sobre Catalog.
+
+La política backend de plausibilidad es determinista: cuando baseline es de al
+menos 20 filas y la COMPLETE actual conserva 25% o menos, Publish devuelve
+`CATALOG_COVERAGE_REVIEW_REQUIRED` hasta que el actor envía el acknowledgment
+explícito. El acknowledgment cambia el fingerprint idempotente y queda en el
+audit. En el PostgreSQL desechable, 100→5 devolvió 5 continuadas, 95 no
+observadas, 0 adicionales y bloqueó Apply sin acknowledgment; el Apply
+confirmado dejó intactos el item ausente, status, versión, identifiers y
+ReconciliationMemory. Los casos 100→95, 37→34, 34→38 y 1→38 permanecieron
+normales; `PARTIAL` no evalúa cobertura.
+
+Chrome local autenticado como Luis abrió `AG / v44` (`COMPLETE`, 38 filas)
+contra `AG / v42` (`COMPLETE/APPLIED`): la superficie mostró 38 recibidas, 1
+continuada, 0 no observadas y 37 adicionales, sin aviso. Los detalles
+expandibles enseñaron la continuación y las 37 adicionales con título canónico
+y texto observado contextual. Apply normal produjo el toast atómico y el
+resultado `38 sin cambio`; tras reload, v44 volvió a abrir como `Aplicada` con
+los mismos conteos. La consulta local confirmó v42 `COMPLETE/APPLIED` (1), v43
+`PARTIAL/DRAFT` (1), v44 `COMPLETE/APPLIED` (38), y v44 como la baseline
+automática final. No hubo retiro, delete, rename, identifier/revision,
+Resolution ni Memory inducidos por ausencia.
+
+Gates focalizados: typecheck PASS; build PASS; Composer contract PASS 11/11;
+PostgreSQL PBI-041 PASS 1/1 con 72 migraciones y contenedor desechable
+eliminado; DEC-005 architecture PASS; `git diff --check` pendiente del corte
+documental final. No se ejecutaron `verify:full`, CI, push, PR, merge ni
+deploy.
