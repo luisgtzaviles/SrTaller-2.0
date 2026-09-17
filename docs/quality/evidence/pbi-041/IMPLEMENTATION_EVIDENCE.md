@@ -1084,3 +1084,34 @@ de chunk Vite); Composer contract 11/11 PASS; PostgreSQL PBI-041 1/1 PASS con
 de Apply el adicional es `NEW` sin target y después el mismo item se proyecta
 `CREATED`, ACTIVE y con título canónico. `verify:full`, CI, push, PR, merge y
 deploy no se ejecutaron.
+
+## UX-001 — Supplier Selection Gate
+
+La implementación local separa `browseSourceId` del proveedor pendiente de
+una carga nueva. Entrar al Composer, explorar una Source o abrir una Version
+no crea ni prepara una carga. `Nueva carga` abre un `Dialog` accesible sin
+proveedor decidido, con búsqueda local no sensible a mayúsculas; elegir una
+fila abre directamente el workspace pendiente. Antes del primer guardado puede
+cambiarse de proveedor y sólo el primer `POST` conserva la frontera durable
+existente: el servidor valida Source, asigna `vN` y `source_id` no es editable
+por el `PUT` de draft.
+
+QA material local del 2026-09-17, sin escribir datos:
+
+1. Se abrió `AG / v53` como evidencia histórica y se invocó `Nueva carga`;
+   cancelar restauró foco al CTA y dejó la Version visible.
+2. El diálogo presentó búsqueda, Source disponible, Cancelar y creación
+   contextual. Tab/Shift+Tab permanecen atrapados, Escape cierra y restaura el
+   foco del initiator mediante el `Dialog` existente.
+3. Buscar `ag` y activar AG con teclado abrió la nueva carga con `AG` visible
+   como proveedor pendiente y `Cambiar` antes de guardar. Escape desde
+   `Cambiar` restituyó ese mismo control.
+4. No se guardó draft, no se creó Source, no se analizó ni aplicó. `v52` y
+   `v53` no cambiaron; no hubo escritura de Catalog, Version, Coverage,
+   reconciliación ni PostgreSQL.
+
+Cobertura focalizada: el test de modelo/UI protege la ausencia de herencia,
+elección de un click, búsqueda, guardia de trabajo material, retorno de
+creación contextual y la inmutabilidad del backend. `typecheck`, build,
+arquitectura y contratos Composer focalizados se ejecutan para este corte;
+`verify:full`, CI, push, PR, merge y deploy quedan fuera de la autorización.

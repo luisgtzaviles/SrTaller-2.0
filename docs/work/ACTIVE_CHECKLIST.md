@@ -1,15 +1,75 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Operational UX polish for coverage + post-apply result
+Milestone / Functional Goal: PBI-041 — Operator flow optimization UX-001 Supplier Selection Gate
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Owner Review ready — operational UX proof complete
+Status: Local Owner Review ready
 WIP: 1/1
-Progress: 9 / 9 current functional blocks completed
-Current: preserve AG v45 local checkpoint for Owner Review
-Next: Owner review/acceptance only; no integration gate without new Owner authority
-Blocked: None; v45 is applied as the local final version (v44 remains its coverage baseline) and the preexisting .DS_Store remains preserved
-Last updated: 2026-09-16 MST
+Progress: 14 / 14 current implementation blocks completed
+Current: Owner reviews the Supplier Selection Gate in localhost; no Version or Catalog change is pending from UX-001 QA.
+Next: await an explicit Owner decision; do not start integration, a PR, merge, deploy, or another PBI.
+Blocked: None; v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
+Last updated: 2026-09-17 MST
+
+## Current checkpoint — Operator flow optimization UX-001
+
+- [x] Audit how Composer enters, selects Sources, browses history and starts a new load without creating or modifying a Source/Version.
+- [x] Trace `sourceId` from React state through first draft persistence, tenant-scoped backend validation and immutable Version ownership.
+- [x] Model the states from automatic entry selection through unpersisted capture, Draft, reconciliation, Ready and Applied history.
+- [x] Reproduce and classify the AG-history → supplier-B-list silent attribution scenario as a High operational risk.
+- [x] Separate browse from capture and propose an explicit, one-action Supplier Selection Gate for a new load.
+- [x] Record the initial UX-001 decisions, alternatives, accessibility/mobile constraints and unsaved-work protection.
+- [x] Review AG v52 as a context/defaults observation only; do not infer or persist supplier defaults.
+- [x] Publish the documentation-only audit and link it from PBI-041/evidence; no code, API, database, runtime or catalog data changed.
+- [x] Record Owner acceptance of UX-001-D01..D10 and retain deferred supplier defaults outside this slice.
+- [x] Separate browsing Source state from pending new-load Supplier ownership; Composer entry and historical browsing do not open the gate.
+- [x] Replace inherited new-load entry points with an accessible, one-click supplier gate with local case-insensitive search.
+- [x] Keep standalone supplier creation and add contextual creation that returns directly to the pending new-load workspace.
+- [x] Make pending ownership visible, permit a pre-save change only, and preserve persisted Version ownership as immutable.
+- [x] Add focused regressions for no inheritance, gate flow, search, contextual creation, meaningful-work guard and post-save boundary.
+- [x] Validate typecheck, focused Composer/focus-trap regressions, production build, DEC-005 architecture and `git diff --check` without touching v52/v53.
+- [x] Reconcile implementation evidence, PBI-041 and UX-001 audit with final QA result.
+
+## Current checkpoint — Existing CatalogItem reactivation pre-Apply QA
+
+- [x] Select a safe active CatalogItem with trusted AG history, stable SKU/barcode and no non-catalog operational references.
+- [x] Retire exactly that synthetic local item through the normal Lista de precios administration UI; identity, identifiers and history remain preserved.
+- [x] Preserve AG v52 in `FULL` / `PARTIAL`, `READY`, unpublished state as negative evidence: its omitted source brand yields `1 NEW` / `0 REACTIVATE` and no target.
+- [x] Create and analyze AG v53 through the normal Composer flow with the complete historical observation: `PART`, `Pantallas`, `Apple`, exact title and unchanged price/cost.
+- [x] Prove AG v53 is `INGESTED` / `READY`, unpublished and resolves exactly `1 REACTIVATE` / `APPLY` to CatalogItem `0223c4b4-3a68-4b88-a679-8a85aaff817e` through trusted historical identity.
+- [x] Prove pre-Apply safety: target remains INACTIVE/version 5; CatalogItem count remains 45; SKU/barcode, revisions, supplier history and reconciliation memory remain unchanged; v53 has zero Resolution and zero Catalog audit writes.
+- [x] Review UX: the resolved row says the recognized inactive item “se reactivará al aplicar”; it appears under Resueltas with zero attention and needs no redundant identity decision.
+- [x] Record the later operator-flow observation only: a missing brand default changes the authoritative supplier signature; inherited/remembered capture context or a non-blocking historical-context warning could prevent this input omission. No matching or UX change was implemented.
+- [x] Snapshot and apply only AG v53 through the normal Composer flow: `READY` / unpublished became `APPLIED` with a publication instant exactly once.
+- [x] Prove post-Apply lifecycle and safety: the same UUID moved `INACTIVE` v5 → `ACTIVE` v6; CatalogItem total remained 45 and ACTIVE count changed 41 → 42 with unchanged SKU, barcode, canonical title and price/cost revision counts.
+- [x] Prove provenance: v53 produced one `MATCHED` Supplier Resolution for the trusted signature while its RowDecision and Catalog audit record the `REACTIVATE` effect; reconciliation memory remained consistent for the same item.
+- [x] Reload v53 and prove its historical Owner result (`Resultado aplicado`, `Lote aplicado`, `1 reactiva`, no Apply button); Lista de precios returns exactly one active matching item with expected price/cost and no duplicate.
+- [x] Reconfirm AG v52 is still `READY`, unpublished and `1 NEW`; no unrelated Catalog resource or second Apply resulted from v53.
+
+## Current checkpoint — Small COMPLETE-list reinforced confirmation QA
+
+- [x] Confirm material state read-only: AG v50 is COMPLETE/APPLIED with 39 rows; AG v51 is COMPLETE/READY with 4 rows and no publication instant.
+- [x] Prove Coverage against v50: 4 received, 3 continued, 36 not observed and 1 additional; all four row decisions are resolved (3 UPDATE, 1 UNCHANGED).
+- [x] Prove the additional listing is historical supplier coverage, not a new CatalogItem: its trusted consistent signature resolves to the existing active iPhone 11 Calidad RJ CatalogItem.
+- [x] Confirm backend plausibility policy: baseline at least 20 rows and current list at most 25%; v51 is 4/39 (89.74% reduction), so acknowledgment is required.
+- [x] Prove no-acknowledgment Apply is rejected as `CATALOG_COVERAGE_REVIEW_REQUIRED` before publication; focused PBI-041 PostgreSQL material test PASS.
+- [x] Open and cancel the Owner confirmation UI without publication; it states the 39/4/36 consequence, absence safety and future baseline effect.
+- [x] Prove post-cancel safety: v51 remains READY with null publication, zero Resolution/audit rows; Catalog remains 45 total / 42 ACTIVE and all 36 not-observed items remain ACTIVE.
+- [x] Confirm AG v50 remains the latest COMPLETE/APPLIED baseline; no v51 Apply replay, migration, reset, product change or integration action.
+
+## Current checkpoint — Combined real-world supplier update, post-Apply QA
+
+- [x] Confirm AG v49 is the material automatic baseline: COMPLETE/APPLIED, 40 rows; do not alter v48 or v49.
+- [x] Create AG v50 as COMPLETE/READY with 39 rows: three omissions, two new items and three price/cost updates.
+- [x] Prove Coverage against v49: 39 received, 37 continued, 3 not observed and 2 additional.
+- [x] Prove Reconciliation: 2 NEW, 3 UPDATE, 34 UNCHANGED and zero unresolved/candidate/pending/ambiguous/conflict/invalid rows.
+- [x] Prove omissions remain ACTIVE and observational only; no RowDecision, retirement, Resolution, Catalog revision or Memory learning comes from absence.
+- [x] Prove new items remain absent from Catalog pre-Apply and use the honest pre-Apply copy.
+- [x] Apply AG v50 exactly once through the normal product UI; it is COMPLETE/APPLIED with 39 processed rows and a non-null publication instant.
+- [x] Prove post-Apply material effects: two active CatalogItems created, the three intended price/cost updates materialized, and no mutation of the three not-observed active items.
+- [x] Reload v50 and prove its historical result: `2 nuevo · 3 actualiza · 34 sin cambio`, Coverage remains against AG v49, and Apply is unavailable.
+- [x] Prove both new items and all changed/unchanged safety cases through Lista de precios; latest COMPLETE/APPLIED baseline selection now resolves to AG v50.
+- [x] Stop after post-Apply proof; do not replay Apply, create v51, retire items or begin an integration gate without new Owner authority.
 
 ## Current checkpoint — Operational UX polish for coverage + post-apply result
 
