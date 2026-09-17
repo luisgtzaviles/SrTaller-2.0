@@ -975,3 +975,40 @@ typecheck PASS, build PASS (sólo advertencia informativa existente de tamaño
 Vite), contrato Composer 10/10 PASS, PostgreSQL PBI-041 1/1 PASS sobre 72
 migraciones, architecture PASS y `git diff --check` PASS. `verify:full`, CI,
 push, PR, merge y deploy no se ejecutaron.
+
+## Completeness contract hardening and applied result state
+
+El contrato de Create y Replace ahora exige el enum cerrado `PARTIAL` o
+`COMPLETE`; ausencia, `null` y cualquier otro valor se rechazan como
+`CatalogInputError(completeness)`. El default controlado del Composer sigue
+siendo `PARTIAL`, pero Create, Replace, Analyze, decisiones y Publish sólo
+aceptan o devuelven una versión con completeness explícito. El adaptador local
+trata una respuesta sin ese campo como DTO inválido; no inventa un fallback.
+
+La UI separa el copy de estado: `Todo resuelto` es exclusivamente pre-Apply;
+una Version `APPLIED` presenta `Lote aplicado`, el número real de filas
+procesadas y las categorías no-cero del Batch. No se guarda body de payload,
+no cambia matching, cobertura, ausencia, history, atomicidad ni la semántica
+de títulos.
+
+Material local del 2026-09-16, autenticado como Luis y sin modificar v41:
+
+1. `AG / v42` se creó por Composer con `Lista completa`, se guardó, recargó,
+   reabrió y conservó `COMPLETE`.
+2. Analyze mostró `Lista completa`, 1 observada y 33 no observadas respecto a
+   AG v32; el copy confirmó que las no observadas permanecen activas.
+3. Apply produjo un Batch `APPLIED` con una categoría real: `1 sin cambio`.
+   Tras reload, la UI mostró `Resultado aplicado` y `Lote aplicado — 1 filas
+   fueron procesadas correctamente. 1 sin cambio`; nunca el texto pre-Apply
+   `listas para aplicar`.
+4. `AG / v43` se creó como control `PARTIAL`, quedó `DRAFT` y no fue
+   analizada ni publicada. Su propósito es demostrar que la selección
+   explícita no se convierte silenciosamente a `COMPLETE`.
+
+v41 (`fa43b69c-65db-4269-9e8d-03fd77136880`, Batch
+`d798a612-c258-46b4-a86b-409cb7b4741c`) permaneció evidencia histórica:
+`PARTIAL`, `APPLIED`, 38 Listings, 1 `CREATED` y 37 `MATCHED`.
+
+Checks focalizados: typecheck y build PASS; contrato Composer PASS 10/10;
+PostgreSQL PBI-041 PASS 1/1 con 72 migraciones y limpieza del contenedor
+desechable. `verify:full`, CI, push, PR, merge y deploy no se ejecutaron.

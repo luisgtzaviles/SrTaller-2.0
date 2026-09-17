@@ -1,15 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Exception-first reconciliation UX
+Milestone / Functional Goal: PBI-041 — Completeness contract + applied result state
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: local Owner Review ready; acceptance pending
+Status: local hardening and material QA complete; Owner Review pending
 WIP: 1/1
 Progress: 7 / 7 functional blocks completed
-Current: preserve the local exception-first checkpoint for Owner Review
-Next: Owner Review only; no new PBI or integration action is authorized
-Blocked: None; AG v35 stays unpublished and the preexisting .DS_Store is preserved
+Current: reconcile evidence and leave the local proof available for Owner Review
+Next: Owner Review only; do not start another PBI or integration action
+Blocked: None; v41 is immutable historical evidence and the preexisting .DS_Store is preserved
 Last updated: 2026-09-16 MST
+
+## Current checkpoint — Completeness contract + applied result state
+
+- [x] Require explicit `PARTIAL` or `COMPLETE` at Create and Replace boundaries.
+- [x] Preserve completeness through Analyze, Apply, API reload and coverage selection.
+- [x] Render READY/resolved as ready to apply and APPLIED as a historical result.
+- [x] Add focused regression coverage for missing/invalid completeness and applied copy.
+- [x] Materially prove AG v42 COMPLETE through Save → Analyze → Apply → reload.
+- [x] Materially prove AG v43 PARTIAL remains a non-published draft.
+- [x] Reconfirm AG v41 remains unchanged as pre-hardening historical evidence.
 
 ## Current checkpoint — Exception-first reconciliation UX
 
@@ -74,6 +84,10 @@ Last updated: 2026-09-16 MST
   decisión nullable y dos índices explícitos; no existe alias global.
 - Canonical outputs: Price List Architecture, PBI-041, Domain Decision Log,
   Glossary, Persistence, Threat Model, Test Strategy e Implementation Evidence.
+- AG v42 is material `COMPLETE/APPLIED` evidence: 1 `UNCHANGED` row, coverage
+  1 observed / 33 not observed and the historical `Lote aplicado` result; v43
+  remains `PARTIAL/DRAFT`, without Apply. v41 remains `PARTIAL/APPLIED` with
+  38 rows, 1 `CREATED` and 37 `MATCHED`.
 
 ## Guardrails
 
