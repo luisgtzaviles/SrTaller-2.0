@@ -1,14 +1,14 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Operator flow optimization UX-001 Supplier Selection Gate
+Milestone / Functional Goal: PBI-041 — Operator flow optimization UX-001B Workspace Entry + Recoverable Sources Panel
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review ready
+Status: UX-001B implementation complete; authenticated Chrome QA blocked
 WIP: 1/1
-Progress: 14 / 14 current implementation blocks completed
-Current: Owner reviews the Supplier Selection Gate in localhost; no Version or Catalog change is pending from UX-001 QA.
-Next: await an explicit Owner decision; do not start integration, a PR, merge, deploy, or another PBI.
-Blocked: None; v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
+Progress: 21 / 22 current implementation blocks completed
+Current: await a valid local Station/operational session to perform the authorized Chrome walkthrough without creating or modifying a Source, Version or Catalog record.
+Next: Chrome desktop/768/640 light/dark QA, then reconcile the final visual result for Owner Review.
+Blocked: The local backend/frontend health checks pass, but a fresh Chrome tab cannot recover a Trusted Station context; no PIN or credential use is authorized by the current request. v52 remains intentionally unpublished as negative evidence, v53 remains historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
 
 ## Current checkpoint — Operator flow optimization UX-001
@@ -29,6 +29,17 @@ Last updated: 2026-09-17 MST
 - [x] Add focused regressions for no inheritance, gate flow, search, contextual creation, meaningful-work guard and post-save boundary.
 - [x] Validate typecheck, focused Composer/focus-trap regressions, production build, DEC-005 architecture and `git diff --check` without touching v52/v53.
 - [x] Reconcile implementation evidence, PBI-041 and UX-001 audit with final QA result.
+
+## Current checkpoint — Operator flow optimization UX-001B
+
+- [x] Record Owner acceptance of UX-001B-D01..D07 without changing SupplierSource, Version ownership or domain workflow.
+- [x] Audit the existing initial state: browsing can be selected without materializing a Version; the right CTA duplicates the navigation CTA.
+- [x] Keep a single primary `Nueva carga` entry in Sources navigation and render an intentional empty workspace until a Version or pending Source is selected.
+- [x] Move the Sources show/hide control into the persistent Composer shell and preserve focus safely when the panel is hidden.
+- [x] Preserve hidden-panel presentation state across empty, pending-load and Version workspaces without auto-reopening it.
+- [x] Add focused UX-001B regressions for entry, empty state, panel restore and keyboard behavior.
+- [!] Validate Chrome desktop/768/640 and light/dark without Source, Version, Catalog or persistence writes — blocked by missing recoverable Trusted Station context in fresh Chrome; no credential use authorized.
+- [x] Reconcile UX-001 documentation, PBI-041 and implementation evidence with the implementation and current QA blocker.
 
 ## Current checkpoint — Existing CatalogItem reactivation pre-Apply QA
 

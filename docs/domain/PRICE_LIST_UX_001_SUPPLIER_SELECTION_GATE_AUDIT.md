@@ -4,7 +4,8 @@
 
 ## Estado y límite
 
-- **Estado:** implementado localmente; listo para revisión del Owner.
+- **Estado:** UX-001 implementado localmente; UX-001B implementado y pendiente
+  de walkthrough Chrome autenticado para Owner Review.
 - **Ámbito:** el comienzo de una nueva carga en Bulk Catalog Composer.
 - **Límite:** la implementación no modifica el contrato de `SupplierSource`,
   `SupplierCatalogVersion`, reconciliación, Apply ni la autoridad del backend.
@@ -231,7 +232,30 @@ opt-in; no debe ocultar una diferencia ni aplicarse automáticamente en UX-001.
 - La QA local no creó Sources ni Versiones, no guardó borradores, no analizó ni
   aplicó: `v52` y `v53` permanecieron sólo como evidencia histórica.
 
-## 13. Diferido explícitamente
+## 13. UX-001B — Workspace Entry + Recoverable Sources Panel
+
+El Owner aceptó `UX-001B-D01..D07` como refinamiento de la misma superficie:
+
+- existe un único CTA primario `Nueva carga`, dentro de `Fuentes y versiones`;
+  el workspace vacío no duplica ese inicio;
+- browse no materializa una Version ni el editor: el workspace derecho sólo se
+  activa por una Version explícita o una Source explícitamente elegida en el
+  gate UX-001;
+- sin selección se muestra un estado neutro que explica cómo revisar una
+  Version o iniciar una carga, sin simular carga ni competir con navegación;
+- el control Mostrar/Ocultar `Fuentes y versiones` vive en el shell del
+  Composer, fuera del panel que controla, permanece disponible en todos los
+  estados y conserva `aria-expanded`, nombre accesible, tooltip y foco visible;
+- ocultar el panel no cambia la selección ni lo reabre automáticamente. La
+  preferencia sigue siendo estado de presentación de la página, no se persiste
+  ni modifica SupplierSource, Version, ownership o dominio.
+
+La corrección es exclusivamente de composición React/CSS y regresiones
+focalizadas. No toca defaults de Supplier, capture mode, completeness,
+matching, coverage, reconciliación, Apply, retiro, memoria, audit, endpoints o
+migraciones.
+
+## 14. Diferido explícitamente
 
 La posible sugerencia de defaults por `SupplierSource` permanece fuera de
 UX-001. Cualquier sugerencia futura debe ser visible, nunca automática, y

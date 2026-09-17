@@ -1115,3 +1115,20 @@ elección de un click, búsqueda, guardia de trabajo material, retorno de
 creación contextual y la inmutabilidad del backend. `typecheck`, build,
 arquitectura y contratos Composer focalizados se ejecutan para este corte;
 `verify:full`, CI, push, PR, merge y deploy quedan fuera de la autorización.
+
+## UX-001B — Workspace Entry + Recoverable Sources Panel
+
+UX-001B conserva el gate UX-001 y reduce el Composer a dos responsabilidades:
+el panel izquierdo navega Sources/Versions y el workspace derecho representa
+una selección real. Sólo el CTA primario `Nueva carga` de la navegación abre
+el gate; sin una Version o Source pendiente, el workspace muestra explicación
+neutra y ningún CTA duplicado. El shell siempre conserva un botón nativo para
+ocultar/mostrar `Fuentes y versiones`; su `aria-expanded`, nombre contextual,
+tooltip y foco sobreviven a ocultar el panel porque el botón no se desmonta.
+
+La cobertura focalizada protege CTA único, estado vacío sin acción duplicada,
+gate UX-001, panel colapsable/restaurable y el contrato de foco existente. No
+se cambió backend, persistencia ni PostgreSQL. Typecheck, build, DEC-005 y
+contratos Composer/focus trap se registran para el corte local; Chrome completo
+requiere una sesión autenticada con estación válida y se conserva como paso de
+Owner Review si el runtime local no mantiene esa sesión.
