@@ -1,15 +1,34 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002A.3 Duplicate resolution card
+Milestone / Functional Goal: PBI-041 — UX-002B.1 Two-panel New Load modal
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: grouped duplicate-resolution presentation implemented locally; ready for Owner Review
+Status: two-panel New Load refinement implemented locally; focused checks pass; authenticated Chrome proof pending
 WIP: 1/1
-Progress: 63 / 63 current implementation blocks completed
-Current: stop at the UX-002A.3 Owner Review checkpoint; AG v60 remains untouched.
-Next: Owner accepts or changes the duplicate-resolution card; UX-002B does not start automatically.
-Blocked: None. AG v60 remains read-only and unreanalyzed; v52 remains intentionally unpublished, v53 historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
+Progress: 4 / 6 UX-002B.1 blocks completed; visual browser proof and Owner Review remain.
+Current: prepare the authenticated local walkthrough for the two-panel New Load dialog without changing established load semantics.
+Next: once an authorized local session exists, complete isolated Chrome QA at desktop/768/640, light/dark and keyboard paths; then stop for Owner Review.
+Blocked: Chrome is at the local PIN login after runtime recovery; no credential is currently authorized for transmission. A separate preexisting PBI-041 PostgreSQL material test exceeded only the 10k publication budget twice (30.75 s, 30.39 s; limit 30 s), without a threshold or product change. AG v60 remains read-only and unreanalyzed; v52 remains intentionally unpublished, v53 historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
+
+## Current checkpoint — UX-002B Load intent gate
+
+- [x] Extend the existing New Load gate so supplier and load intent begin unselected and Continue needs both choices.
+- [x] Use Owner language for the two intents, retain the existing `PARTIAL` / `COMPLETE` contract internally, and preserve contextual supplier creation.
+- [x] Replace the persistent completeness radios with compact supplier-and-intent context; permit a safe pre-save change that preserves rows when the supplier is unchanged.
+- [x] Add focused gate/Composer contracts and preserve the existing UX-002A duplicate regression coverage.
+- [!] PostgreSQL PBI-041 material suite exceeded the existing 10k publication budget twice (30.75 s, 30.39 s; 30 s limit); no product semantics or test threshold changed.
+- [ ] Complete isolated Chrome QA for PARTIAL, COMPLETE, safe pre-save change and history browsing after a local session is authorized.
+- [x] Reconcile PBI-041, UX-002 audit and implementation evidence with the static-check evidence; browser acceptance remains pending and UX-002C does not start.
+
+## Current checkpoint — UX-002B.1 Two-panel New Load modal
+
+- [x] Keep the explicit supplier-plus-intent gate, its server authority and its pre-save Change/create semantics intact.
+- [x] Split the dialog into supplier and load-intent panels, retain one global Cancel/Continue footer and preserve the existing focus-trapped Dialog.
+- [x] Add responsive two-column-to-one-column styles using existing design tokens; no domain, API, database or migration change.
+- [x] Add focused structural regression coverage; typecheck, contract tests, production build and architecture policy pass.
+- [~] Complete authenticated Chrome QA: fresh blank gate, selected intent styles, contextual create return, pre-save Change, history preservation, keyboard/focus, desktop/768/640 and light/dark.
+- [ ] Stop for Owner Review; do not treat the refinement as accepted before the material walkthrough.
 
 ## Current checkpoint — UX-002A.2 Duplicate input resolution
 
@@ -27,7 +46,16 @@ Last updated: 2026-09-17 MST
 - [x] Compare only materially different row values and keep raw per-row details behind an accessible disclosure.
 - [x] Keep adjacent `Usar fila N` choices primary; remove generic row cards and row-level exclusion from this decision surface.
 - [x] Represent a resolved group compactly in Resueltas/Todas and count it as one attention unit.
-- [x] Preserve exact-duplicate notice and true identity-conflict UUID mapping flow; UX-002B remains not started.
+- [x] Preserve exact-duplicate notice and true identity-conflict UUID mapping flow; later UX-002B work does not alter it.
+
+## Current checkpoint — UX-002A.3A duplicate grouping runtime gap
+
+- [x] Audit the persisted conflicting duplicate rows, repository DTO and browser result; isolate the frontend callback adaptation as the sole gap.
+- [x] Pass `row.errors` and `row.warnings` explicitly to the existing grouping helper, without changing domain, API or persistence behavior.
+- [x] Add DTO-shape and disposable PostgreSQL regressions for persistence → analyzed DTO → presentation grouping.
+- [x] Pass focused contract tests, typecheck, production build, architecture and PBI-041 PostgreSQL material validation.
+- [~] Create a fresh isolated local QA version and prove one Owner duplicate-resolution card in Chrome; pending authorized local session.
+- [x] Reconcile the PBI/evidence documentation with static evidence; browser proof remains pending and no follow-on work starts automatically.
 
 ## Current checkpoint — UX-002A.1 Duplicate input resolution audit
 

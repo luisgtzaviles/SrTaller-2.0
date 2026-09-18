@@ -297,7 +297,32 @@ UX2-004 through UX2-007 remain pending Owner decisions.
 - No change to absence safety, baseline selection, trusted history, candidate
   governance, Source ownership, or Catalog authority.
 
-## 16. Follow-up audit — duplicate input semantics
+## 16. UX-002B.1 implementation record — two-panel New Load modal
+
+The New Load gate has been refined as a layout-only interaction surface. Its
+wide dialog separates the two independent decisions without creating a second
+workflow: the left panel contains supplier search, selection and contextual
+supplier creation; the right panel presents the existing `PARTIAL` and
+`COMPLETE` choices with their owner-facing descriptions. The footer remains
+global, so Cancel and disabled-until-complete Continue are read as dialog
+actions rather than panel actions.
+
+A fresh gate deliberately starts with no supplier and no intent. The existing
+predicate remains the authority for enabling Continue. A pre-save Change opens
+the same gate with both current choices preserved; contextual source creation
+returns with the created source selected and the intent deliberately blank.
+The implementation keeps the existing dialog focus trap, keyboard semantics,
+server authority and the durable `PARTIAL` / `COMPLETE` values. It changes no
+domain, API, persistence, migration, matching, coverage, Analyze or Apply
+behavior.
+
+Focused static contracts cover the two panels, headings, shared footer,
+explicit radios and the responsive collapse. Typecheck, production build and
+the architecture policy pass locally. Authenticated Chrome QA across desktop,
+768, 640, themes and keyboard navigation is still pending; this record is not
+Owner acceptance.
+
+## 17. Follow-up audit — duplicate input semantics
 
 UX-002A.1 traces the separate case of duplicate observations inside a single
 snapshot. It documents why AG `v60` has a known historical identity but a

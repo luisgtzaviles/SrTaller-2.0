@@ -1163,3 +1163,29 @@ el estado neutro pasó escritorio/768/640 en claro y oscuro; la carga AG
 pendiente pasó 768 claro y 640 oscuro; `AG v53` pasó 640 oscuro y escritorio
 claro. Click, Space, Enter, Tab y Shift+Tab conservaron foco y recuperación;
 ocultar/restaurar conservó AG pendiente y `v53`. No se guardó ni publicó lote.
+
+## UX-002B.1 — Two-panel New Load modal
+
+La compuerta existente de `Nueva carga` conserva su autoridad funcional y se
+presenta ahora en un `Dialog` ancho de dos paneles. El panel izquierdo contiene
+búsqueda, selección explícita de proveedor y `Crear nuevo proveedor`; el
+derecho contiene las tarjetas de intención existentes, `Sólo algunos artículos`
+(`PARTIAL`) y `La lista completa del proveedor` (`COMPLETE`). Cancelar y
+Continuar viven en el footer global. Una carga nueva abre sin proveedor ni
+intención seleccionados y Continuar conserva la misma guarda que exige ambos.
+
+El flujo `Cambiar` anterior al primer guardado conserva proveedor e intención;
+la creación contextual vuelve con el proveedor creado seleccionado y la
+intención vacía, sin inferencia. Se reutilizan el Dialog, focus trap, Escape,
+Tab/Shift+Tab, restauración de foco y los límites responsivos existentes. No
+hay cambios de dominio, backend, API, persistencia, migración, PostgreSQL,
+matching, coverage, Analyze, Apply, Catalog ni datos locales.
+
+Los contratos focalizados de Composer protegen estructura de dos paneles,
+encabezados, footer global, radios explícitos y el colapso a una columna. En
+los commits locales `794a3ba` y `e766a99` pasan typecheck, esos contratos,
+build y arquitectura. Falta el walkthrough Chrome autenticado de escritorio,
+768, 640, claro/oscuro y teclado; por ello esta evidencia no declara Owner
+Review completado ni aceptación. El fallo preexistente del presupuesto de
+publicación PostgreSQL de 10k filas permanece registrado sin cambiar umbral ni
+comportamiento.
