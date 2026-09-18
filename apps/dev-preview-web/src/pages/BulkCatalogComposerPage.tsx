@@ -327,7 +327,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const changeDefaultCategory = (category: string): void => { let next: BatchDefaults = { ...batchDefaults, category }; if (next.brand && !isCompatible({ ...blank(), ...next })) next = { ...next, brand: '' }; setBatchDefaults(next); };
   const counts = current?.batch.counts; const unresolved = current?.rows.filter((row) => row.decision === 'UNRESOLVED').length ?? 0; const resolved = (current?.rows.length ?? 0) - unresolved; const excluded = current?.rows.filter((row) => row.decision === 'EXCLUDE').length ?? 0;
   const compatibleSuggestionCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && ['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'].includes(row.classification)).length ?? 0;
-  const duplicateResolutionGroups = current ? groupDuplicateResolutionRows(current.rows, duplicateObservationKey, rowErrors, (row) => row.warnings) : [];
+  const duplicateResolutionGroups = current ? groupDuplicateResolutionRows(current.rows, duplicateObservationKey, (row) => rowErrors(row.errors), (row) => rowErrors(row.warnings)) : [];
   const duplicateMemberIds = new Set(duplicateResolutionGroups.flatMap((group) => group.members.map((member) => member.rowDecisionId)));
   const unresolvedDuplicateGroups = duplicateResolutionGroups.filter((group) => group.unresolved); const resolvedDuplicateGroups = duplicateResolutionGroups.filter((group) => !group.unresolved);
   const visibleDuplicateResolutionGroups = reconciliationView === 'ATTENTION' ? unresolvedDuplicateGroups : reconciliationView === 'RESOLVED' ? resolvedDuplicateGroups : duplicateResolutionGroups;
