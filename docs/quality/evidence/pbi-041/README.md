@@ -67,6 +67,17 @@ remain outside this checkpoint. The decisions and compatibility mapping are in
 the
 [UX-004 audit](../../../domain/PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md).
 
+## UX-004.2 Price List + item authority integration
+
+UX-004.2 connects the materialized granular registry to Price List. Ordinary
+`price_list.read` remains list/detail read only; it does not serialize cost or
+grant create, update, individual lifecycle or bulk retirement. Creation,
+metadata, lifecycle, prices, cost and Branch overrides each compose their own
+current capability. Direct new-item and item-detail routes reproduce these
+boundaries, while the server remains authoritative. Bulk read/prepare UX is
+explicitly deferred to UX-004.3. See [implementation evidence](IMPLEMENTATION_EVIDENCE.md)
+and the [UX-004 audit](../../../domain/PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md).
+
 UX-003.4 now enforces `REQUIRED` from the effective resulting value rather
 than raw supplier cells. Analyze records typed attention; Apply rereads the
 current policy to reject a stale or direct bypass. Explicit incoming data or a

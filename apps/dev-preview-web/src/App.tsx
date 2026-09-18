@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import type { Location } from 'react-router-dom';
 
 import { ApplicationShell } from './components/shell/ApplicationShell.js';
@@ -66,6 +66,19 @@ function CatalogFieldPolicyBoundary({ capabilities, children }: Readonly<{ capab
     : <AccessDeniedPage />;
 }
 
+function NewCatalogItemBoundary({ capabilities, administrationCapabilities, children }: Readonly<{ capabilities: readonly OperationalCapability[]; administrationCapabilities: readonly OperationalCapability[]; children: React.ReactNode }>): React.JSX.Element {
+  return hasOperationalCapability(capabilities, 'price_list.read') &&
+    hasOperationalCapability(administrationCapabilities, 'catalog.items.create') &&
+    hasOperationalCapability(administrationCapabilities, 'catalog.prices.manage')
+    ? <>{children}</>
+    : <AccessDeniedPage />;
+}
+
+function CatalogItemDetailRoute({ capabilities, administrationCapabilities, csrfToken }: Readonly<{ capabilities: readonly OperationalCapability[]; administrationCapabilities: readonly OperationalCapability[]; csrfToken: string }>): React.JSX.Element {
+  const { itemId } = useParams();
+  return <CapabilityBoundary capabilities={capabilities} capability="price_list.read"><PriceListPage key={`catalog-item-${itemId ?? 'missing'}`} capabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} initialItemId={itemId} /></CapabilityBoundary>;
+}
+
 export function App(): React.JSX.Element {
   const location = useLocation();
   const routeState = location.state as Readonly<{
@@ -95,6 +108,8 @@ export function App(): React.JSX.Element {
               <Route path="/reparaciones" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairsPage capabilities={capabilities} timeZone={timeZone} /></CapabilityBoundary>} />
               <Route path="/reparaciones/nueva" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.create"><CapabilityBoundary capabilities={capabilities} capability="repairs.read"><><RepairsPage capabilities={capabilities} timeZone={timeZone} /><NewRepairEntryPage csrfToken={csrfToken} timeZone={timeZone} /></></CapabilityBoundary></CapabilityBoundary>} />
               <Route path="/reparaciones/:id" element={<CapabilityBoundary capabilities={capabilities} capability="repairs.read"><RepairDetailPage capabilities={capabilities} csrfToken={csrfToken} sessionId={session.sessionId} timeZone={timeZone} /></CapabilityBoundary>} />
+              <Route path="/listas/precios/nuevo" element={<NewCatalogItemBoundary capabilities={capabilities} administrationCapabilities={administrationCapabilities}><PriceListPage key="catalog-item-create" capabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} initialCreate /></NewCatalogItemBoundary>} />
+              <Route path="/listas/precios/articulos/:itemId" element={<CatalogItemDetailRoute capabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} />} />
               <Route path="/listas/precios" element={<CapabilityBoundary capabilities={capabilities} capability="price_list.read"><PriceListPage capabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/listas/precios/carga-masiva" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="catalog.import.prepare"><BulkCatalogComposerPage capabilities={administrationCapabilities} csrfToken={csrfToken} timeZone={timeZone} /></CapabilityBoundary>} />
               <Route path="/configuracion" element={<SettingsPage operationalCapabilities={capabilities} administrationCapabilities={administrationCapabilities} />} />

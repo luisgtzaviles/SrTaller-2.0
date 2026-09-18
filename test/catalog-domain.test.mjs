@@ -142,7 +142,7 @@ test('protected operations require fixed server capabilities and never let the c
     ['branch', { capability: 'catalog.reference_cost.read', kind: 'read' }],
   ]);
   assert.deepEqual(await operations.getItem({}, '30000000-0000-4000-8000-000000000040'), { version: 1 });
-  assert.deepEqual(observed.splice(0), [['tenant', { capability: 'catalog.manage', kind: 'read' }]]);
+  assert.deepEqual(observed.splice(0), [['branch', { capability: 'price_list.read', kind: 'read' }]]);
   await operations.createItem({}, { referenceCostAmountMinor: 48000 });
   assert.deepEqual(observed.splice(0).map((entry) => entry[1].capability), [
     'catalog.items.create', 'catalog.prices.manage', 'catalog.reference_cost.manage',
@@ -213,6 +213,45 @@ test('read-only price-list authority cannot mutate items or satisfy composed pri
   await assert.rejects(operations.updateItem({}, itemId, { status: 'INACTIVE' }), /no approved authority/u);
   assert.equal(writes, 0);
   assert.ok(observed.every((capability) => capability !== 'catalog.import.publish'));
+});
+
+test('ordinary price-list readers can inspect safe item detail but cannot acquire mutation authority', async () => {
+  const observed = [];
+  let writes = 0;
+  const reader = capabilityExecutor(new Set(['price_list.read']), observed);
+  const service = {
+    async getItem() { return { itemId, title: 'Detalle seguro', version: 1, status: 'ACTIVE' }; },
+    async createItem() { writes += 1; },
+    async updateItem() { writes += 1; },
+  };
+  const operations = new CatalogProtectedOperations(reader, reader, {}, service, {}, {});
+
+  assert.deepEqual(await operations.getItem({}, itemId), { itemId, title: 'Detalle seguro', version: 1, status: 'ACTIVE' });
+  assert.deepEqual(observed.splice(0), ['price_list.read']);
+  await assert.rejects(operations.createItem({}, { basePriceAmountMinor: 100 }), /no approved authority/u);
+  await assert.rejects(operations.updateItem({}, itemId, { status: 'ACTIVE' }), /no approved authority/u);
+  await assert.rejects(operations.changeBasePrice({}, itemId, { amountMinor: 100 }), ContextualAuthorizationError);
+  await assert.rejects(operations.changeReferenceCost({}, itemId, { amountMinor: 100 }), ContextualAuthorizationError);
+  assert.equal(writes, 0);
+});
+
+test('item update, lifecycle and bulk retirement stay independently protected', async () => {
+  const observed = [];
+  const service = {
+    async getItem() { return { status: 'ACTIVE', version: 1 }; },
+    async updateItem(_context, _itemId, input) { return { status: input.status }; },
+  };
+  const updateOnly = capabilityExecutor(new Set(['catalog.items.update']), observed);
+  const updateOperations = new CatalogProtectedOperations(updateOnly, updateOnly, {}, service, {}, {});
+  await updateOperations.updateItem({}, itemId, { status: 'ACTIVE' });
+  await assert.rejects(updateOperations.updateItem({}, itemId, { status: 'INACTIVE' }), /no approved authority/u);
+  await assert.rejects(updateOperations.createRetirementPlan({}, { scope: 'ACTIVE_CATALOG' }), ContextualAuthorizationError);
+
+  const lifecycle = capabilityExecutor(new Set(['catalog.items.deactivate']), observed);
+  const lifecycleOperations = new CatalogProtectedOperations(lifecycle, lifecycle, {}, service, {}, {});
+  await lifecycleOperations.updateItem({}, itemId, { status: 'INACTIVE' });
+  await assert.rejects(lifecycleOperations.updateItem({}, itemId, { status: 'ACTIVE' }), /no approved authority/u);
+  await assert.rejects(lifecycleOperations.createRetirementPlan({}, { scope: 'ACTIVE_CATALOG' }), ContextualAuthorizationError);
 });
 
 test('bulk history read is independent from prepare while prepare remains compatible with required history', async () => {

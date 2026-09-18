@@ -1,15 +1,28 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-004.1 Catalog Authorization Registry + Compatibility Foundation
+Milestone / Functional Goal: PBI-041 — UX-004.2 Price List + Item Authority Integration
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — granular Catalog authority and safe legacy compatibility materialized; no Catalog or SupplierVersion data changed.
+Status: Local Owner Review — Price List reading and every item-sensitive action are now independently authorized and materially checked.
 WIP: 1/1
-Progress: 9 / 9 UX-004.1 foundation blocks completed.
-Current: Owner review of the new registry, capability-derived migration backfill and transitional server checks.
-Next: await an explicit Owner decision; do not redesign Price List/Composer UX, push, open a PR, merge, deploy or start another UX slice.
+Progress: 9 / 10 UX-004.2 blocks completed; UX-004.1 foundation remains preserved.
+Current: Owner review of the Price List + item authority matrix and local evidence.
+Next: await an explicit Owner decision. Do not redesign Composer, push, open a PR, merge, deploy or start another UX slice.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
+
+## Current checkpoint — UX-004.2 Price List + Item Authority Integration
+
+- [x] Preserve UX-004.1 registry/backfill and move Price List controls to the explicit successor capabilities, never role names.
+- [x] Keep `price_list.read` as ordinary list/search/filter/price access and remove the broad `catalog.manage` requirement from the safe item-detail read operation.
+- [x] Keep reference-cost display absent without `catalog.reference_cost.read`; do not serialize a placeholder or hidden value.
+- [x] Compose New Article visibility and direct route with `price_list.read`, `catalog.items.create` and mandatory `catalog.prices.manage`; optional cost remains independently protected.
+- [x] Split metadata edit, individual lifecycle, price, Branch override, reference-cost write and bulk retirement controls by their individual capabilities.
+- [x] Preserve `catalog.items.bulk_retire` plus ADR-013 level-2 PIN/plan/context/audit controls for Vaciar lista.
+- [x] Add focused UI/route and protected-operation regressions for ordinary read, safe detail, direct mutation denials and lifecycle/bulk separation.
+- [x] Run local PostgreSQL authorization material, browser/responsive/accessibility proof and UX-003 cost-policy regression without modifying Owner Catalog data.
+- [x] Reconcile PBI-041, UX-004, architecture and evidence with the exact local proof.
+- [ ] Stop at Local Owner Review; no push, PR, merge, deploy or unrelated Bulk authorization redesign.
 
 ## Current checkpoint — UX-004.1 Catalog Authorization Registry + Compatibility Foundation
 

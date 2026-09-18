@@ -189,7 +189,10 @@ export class CatalogProtectedOperations {
   }
 
   getItem(evidence: ProtectedRequestEvidence, itemId: unknown) {
-    return this.tenantWideAuthorization.execute(evidence, catalogRead, (context) => this.service.getItem(scope(context), itemId));
+    // The item projection contains ordinary commercial identity only.  It is
+    // therefore safe for a Price List reader; sensitive price/cost operations
+    // continue to be protected independently below.
+    return this.authorization.execute(evidence, priceListRead, (context) => this.service.getItem(scope(context), itemId));
   }
 
   createCategory(evidence: ProtectedRequestEvidence, input: unknown) {

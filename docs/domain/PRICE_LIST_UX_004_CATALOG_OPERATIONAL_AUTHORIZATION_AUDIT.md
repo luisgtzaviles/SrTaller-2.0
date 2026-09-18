@@ -1,7 +1,7 @@
 # UX-004 — Catalog Operational Authorization Audit
 
 **PBI:** PBI-041
-**Estado:** UX-004.1 materializado localmente — Owner Review pendiente; UX-004.2..004.4 no implementados.
+**Estado:** UX-004.1 materializado y UX-004.2 en proof local; UX-004.3..004.4 no implementados.
 **Fecha:** 2026-09-17
 **Alcance:** Sólo roles, capabilities y autorización de operaciones de Lista de
 precios / Catalog. No cambia producto, API, persistencia ni datos.
@@ -109,6 +109,24 @@ sí puede invocar demasiadas operaciones legítimamente autorizadas. Category y
 Brand tienen además delete físico protegido sólo por esa capability amplia; la
 arquitectura lo registra como deuda previa y ADR-013 exige una capability
 explícita para hard delete. No se debe resolver ampliando los roles ordinarios.
+
+### Estado material de UX-004.2
+
+`price_list.read` autoriza lista, filtros, precio efectivo y un detalle de
+ítem comercial seguro; el endpoint de detalle no requiere ya
+`catalog.manage` ni proyecta costo. El control **Mostrar costos de referencia**
+sigue existiendo sólo con `catalog.reference_cost.read`, y el servidor omite el
+campo por completo cuando no recibe esa autoridad.
+
+La UI usa la unión efectiva de capabilities de sesión, no el nombre de un rol:
+crear requiere `catalog.items.create` + `catalog.prices.manage`; metadata usa
+`catalog.items.update`; activar/desactivar individual usa
+`catalog.items.deactivate`; precio, costo y Branch override conservan sus
+capabilities financieras; y **Vaciar lista** queda sólo en
+`catalog.items.bulk_retire` con ADR-013 nivel 2. Las rutas directas de alta y
+detalle reproducen estas fronteras y el backend vuelve a denegar cada bypass.
+`catalog.manage` permanece sólo como fallback temporal servidor de item y
+para Category/Brand; UX-004.3 no fue modificada.
 
 ## Target mínimo V1 recomendado
 

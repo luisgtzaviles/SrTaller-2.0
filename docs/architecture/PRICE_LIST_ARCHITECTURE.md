@@ -356,6 +356,17 @@ price ni configuración. El servidor conserva el fallback de `catalog.manage`
 para las operaciones individuales mientras Category/Brand siga bajo esa
 authority; `catalog.import.read` no permite preparar un batch.
 
+UX-004.2 conecta ese registry con Lista de precios sin colapsar lectura y
+mutación: `price_list.read` permite lista, filtros, precio efectivo y detalle
+comercial seguro; no recibe costo de referencia. El endpoint de detalle no
+exige `catalog.manage` y no serializa costo. La creación exige
+`catalog.items.create` más `catalog.prices.manage` por el precio base
+obligatorio, y añade `catalog.reference_cost.manage` sólo cuando escribe un
+costo. Metadata, lifecycle individual, precio, costo, override de Branch y
+retiro masivo quedan sujetos a sus capabilities respectivas; el retiro masivo
+conserva íntegramente ADR-013 nivel 2. La UI usa capabilities de sesión y no
+nombres de rol; el servidor sigue siendo la autoridad final.
+
 Crear/editar individualmente es nivel 1 de ADR-013 con capability específica,
 versionado y auditoría. Publicar un batch también queda clasificado nivel 1 en
 el primer ciclo: es reversible mediante revisiones, no altera snapshots ya

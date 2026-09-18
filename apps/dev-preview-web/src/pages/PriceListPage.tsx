@@ -56,21 +56,26 @@ function PriceCard({ value, canManage, onManage }: Readonly<{ value: PriceListIt
       <div className={styles.cardPrice}>
         {value.price ? <><strong>{money(value.price.amountMinor, value.price.currency)}</strong><span>{value.price.source === 'BRANCH_OVERRIDE' ? 'Override Branch' : 'Base Tenant'}</span></> : <><strong className={styles.notPriced}>Sin precio</strong><span>Requiere precio base</span></>}
         {value.referenceCost ? <small>Costo ref. {money(value.referenceCost.amountMinor, value.referenceCost.currency)}</small> : null}
-        {canManage ? <Button size="compact" onClick={() => onManage(value.item.itemId)}>Administrar</Button> : null}
+        <Button size="compact" onClick={() => onManage(value.item.itemId)}>{canManage ? 'Administrar' : 'Ver detalle'}</Button>
       </div>
     </article>
   );
 }
 
-export function PriceListPage({ capabilities, administrationCapabilities, csrfToken }: Readonly<{ capabilities: readonly OperationalCapability[]; administrationCapabilities: readonly OperationalCapability[]; csrfToken: string }>): React.JSX.Element {
+export function PriceListPage({ capabilities, administrationCapabilities, csrfToken, initialCreate = false, initialItemId }: Readonly<{ capabilities: readonly OperationalCapability[]; administrationCapabilities: readonly OperationalCapability[]; csrfToken: string; initialCreate?: boolean; initialItemId?: string | undefined }>): React.JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams();
-  const canManage = hasOperationalCapability(administrationCapabilities, 'catalog.manage');
+  const canManageReferences = hasOperationalCapability(administrationCapabilities, 'catalog.manage');
+  const canCreateItem = hasOperationalCapability(administrationCapabilities, 'catalog.items.create');
+  const canUpdateItem = hasOperationalCapability(administrationCapabilities, 'catalog.items.update');
+  const canDeactivateItem = hasOperationalCapability(administrationCapabilities, 'catalog.items.deactivate');
   const canManagePrice = hasOperationalCapability(administrationCapabilities, 'catalog.prices.manage');
   const canManageBranchPrice = hasOperationalCapability(capabilities, 'catalog.branch_prices.manage');
   const canReadCost = hasOperationalCapability(capabilities, 'catalog.reference_cost.read');
   const canManageCost = hasOperationalCapability(administrationCapabilities, 'catalog.reference_cost.manage');
   const canPrepareImport = hasOperationalCapability(administrationCapabilities, 'catalog.import.prepare');
   const canBulkRetire = hasOperationalCapability(administrationCapabilities, 'catalog.items.bulk_retire');
+  const canCreate = canCreateItem && canManagePrice;
+  const canManageItem = canUpdateItem || canDeactivateItem;
   const preferences = useUserPreferences();
   const [references, setReferences] = useState<CatalogReferences | null>(null);
   const [page, setPage] = useState<PriceListPage | null>(null);
@@ -87,6 +92,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
   const [basePrice, setBasePrice] = useState(''); const [referenceCost, setReferenceCost] = useState(''); const [overridePrice, setOverridePrice] = useState('');
   const requestId = useRef<string | null>(null);
   const [retirementPlan, setRetirementPlan] = useState<CatalogRetirementPlan | null>(null); const [retirementPin, setRetirementPin] = useState(''); const [retirementBusy, setRetirementBusy] = useState(false);
+  const openedInitialRoute = useRef<string | null>(null);
 
   const includeCost = canReadCost && preferences.priceListShowReferenceCost;
   const refreshReferences = useCallback(async () => { const value = await listCatalogReferences(); setReferences(value); return value; }, []);
@@ -146,6 +152,13 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
     catch { setNotice({ tone: 'danger', message: 'No fue posible cargar el artículo.' }); }
     finally { setSaving(false); }
   };
+  useEffect(() => {
+    const initialRoute = initialCreate ? 'create' : initialItemId ?? null;
+    if (initialRoute === null || openedInitialRoute.current === initialRoute) return;
+    openedInitialRoute.current = initialRoute;
+    if (initialCreate) { openCreate(); return; }
+    void openManage(initialRoute);
+  }, [initialCreate, initialItemId]);
   const close = (): void => { if (!saving) { setDialog(null); setNotice(null); requestId.current = null; } };
   const nextRequestId = (): string => requestId.current ??= crypto.randomUUID();
   const commandDone = async (message: string): Promise<void> => { requestId.current = null; await refreshReferences(); await refresh(); setNotice({ tone: 'success', message }); };
@@ -223,7 +236,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
 
   return (
     <div className={styles.page}>
-      <PageHeader eyebrow="Listas" title="Lista de precios" description="Referencia rápida del precio efectivo en esta sucursal." primaryAction={<div className={styles.headerActions}>{canBulkRetire ? <Button tone="danger" disabled={retirementBusy} onClick={() => void planActiveCatalogRetirement()}><ArchiveX size={18} aria-hidden="true" />Vaciar lista de precios</Button> : null}{canPrepareImport ? <ButtonLink to="/listas/precios/carga-masiva"><Upload size={18} aria-hidden="true" />Carga masiva</ButtonLink> : null}{canManage && canManagePrice ? <Button tone="primary" onClick={openCreate}><Plus size={18} aria-hidden="true" />Nuevo artículo</Button> : null}</div>} />
+      <PageHeader eyebrow="Listas" title="Lista de precios" description="Referencia rápida del precio efectivo en esta sucursal." primaryAction={<div className={styles.headerActions}>{canBulkRetire ? <Button tone="danger" disabled={retirementBusy} onClick={() => void planActiveCatalogRetirement()}><ArchiveX size={18} aria-hidden="true" />Vaciar lista de precios</Button> : null}{canPrepareImport ? <ButtonLink to="/listas/precios/carga-masiva"><Upload size={18} aria-hidden="true" />Carga masiva</ButtonLink> : null}{canCreate ? <Button tone="primary" onClick={openCreate}><Plus size={18} aria-hidden="true" />Nuevo artículo</Button> : null}</div>} />
       {notice ? <Alert tone={notice.tone} title={notice.tone === 'success' ? 'Listo' : 'Atención'}>{notice.message}</Alert> : null}
       <section className={styles.toolbar} aria-label="Buscar y filtrar lista de precios">
         <label className={styles.filterField}><span>Buscar</span><span className={styles.search}><Search size={20} aria-hidden="true" /><Input value={query} onChange={(event) => updateListFilter('q', event.target.value)} placeholder="Buscar por nombre, SKU o código…" autoComplete="off" /></span></label>
@@ -234,7 +247,7 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
       </section>
       {loadError ? <ErrorState title="No pudimos cargar la lista" description="Conservamos el contexto seguro. Intenta de nuevo." />
         : loading ? <Skeleton rows={5} />
-          : page?.items.length ? <><div className={styles.results} aria-live="polite">{page.items.map((item) => <PriceCard key={item.item.itemId} value={item} canManage={canManage} onManage={(id) => void openManage(id)} />)}</div><footer className={styles.pagination}><span>{page.totalCount} resultados</span><div><Button size="compact" disabled={pageNumber === 1} onClick={() => setPageNumber((current) => current - 1)}>Anterior</Button><span>Página {pageNumber}</span><Button size="compact" disabled={pageNumber * 25 >= page.totalCount} onClick={() => setPageNumber((current) => current + 1)}>Siguiente</Button></div></footer></>
+          : page?.items.length ? <><div className={styles.results} aria-live="polite">{page.items.map((item) => <PriceCard key={item.item.itemId} value={item} canManage={canManageItem} onManage={(id) => void openManage(id)} />)}</div><footer className={styles.pagination}><span>{page.totalCount} resultados</span><div><Button size="compact" disabled={pageNumber === 1} onClick={() => setPageNumber((current) => current - 1)}>Anterior</Button><span>Página {pageNumber}</span><Button size="compact" disabled={pageNumber * 25 >= page.totalCount} onClick={() => setPageNumber((current) => current + 1)}>Siguiente</Button></div></footer></>
           : <EmptyState title="No hay artículos para mostrar" description={query || filterKind || categoryId || brandId ? 'Prueba otra búsqueda o limpia los filtros.' : 'Crea una refacción, producto o servicio para comenzar.'} />}
 
       <Dialog open={dialog !== null} size="wide" title={dialog === 'create' ? 'Nuevo artículo' : `Administrar ${selected?.title ?? 'artículo'}`} description={dialog === 'create' ? 'Identidad comercial Tenant-wide y precio base.' : 'Los cambios de importe crean revisiones; el override sólo afecta esta sucursal.'} onClose={close} footer={false}>
@@ -242,16 +255,16 @@ export function PriceListPage({ capabilities, administrationCapabilities, csrfTo
           {notice ? <Alert tone={notice.tone}>{notice.message}</Alert> : null}
           <section className={styles.formGrid} aria-label="Identidad del artículo">
             {dialog === 'create' ? <Field id="catalog-kind" label="Tipo" required><Select id="catalog-kind" value={kind} onChange={(event) => changeKind(event.target.value as CatalogItemKind)}><option value="PART">Refacción</option><option value="PRODUCT">Producto</option><option value="SERVICE">Servicio</option><option value="SUPPLY">Insumo (no aparece en Lista)</option></Select></Field> : null}
-            <Field id="catalog-title" label="Título" required fullWidth><Input id="catalog-title" value={title} maxLength={200} onChange={(event) => setTitle(event.target.value)} /></Field>
-            <Field id="catalog-description" label="Descripción" fullWidth><Textarea id="catalog-description" value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} /></Field>
-            <Field id="catalog-category" label="Categoría" required hint="Si no existe, el texto se captura Por revisar; todavía no crea una categoría canónica."><CatalogReferenceCombobox key={`catalog-category-${kind}`} id="catalog-category" label="Categorías aplicables" emptyLabel="Buscar categoría…" value={formCategoryId} references={applicableCategories} canCreate={canManage} onChange={setFormCategoryId} onCapture={captureCategory} /></Field>
-            <Field id="catalog-brand" label="Marca" hint="Opcional; una marca existente se reutiliza y puede habilitarse para este Tipo."><CatalogReferenceCombobox key={`catalog-brand-${kind}`} id="catalog-brand" label="Marcas aplicables" emptyLabel="Sin marca / buscar…" value={formBrandId} references={applicableBrands} expansionReferences={activeBrands.filter((reference) => !reference.applicableKinds.includes(kind))} expansionLabel={`Ya existe; se habilitará para ${kindLabels[kind]} al guardar el artículo`} canCreate={canManage} onChange={setFormBrandId} onCapture={captureBrand} onExpand={expandBrand} /></Field>
-            {dialog === 'manage' ? <Field id="catalog-status" label="Estado"><Select id="catalog-status" value={formStatus} onChange={(event) => setFormStatus(event.target.value as 'ACTIVE' | 'INACTIVE')}><option value="ACTIVE">Activo</option><option value="INACTIVE">Inactivo</option></Select></Field> : null}
+            <Field id="catalog-title" label="Título" required fullWidth><Input id="catalog-title" value={title} maxLength={200} disabled={dialog === 'manage' && !canUpdateItem} onChange={(event) => setTitle(event.target.value)} /></Field>
+            <Field id="catalog-description" label="Descripción" fullWidth><Textarea id="catalog-description" value={description} maxLength={2000} disabled={dialog === 'manage' && !canUpdateItem} onChange={(event) => setDescription(event.target.value)} /></Field>
+            <Field id="catalog-category" label="Categoría" required hint="Si no existe, el texto se captura Por revisar; todavía no crea una categoría canónica."><CatalogReferenceCombobox key={`catalog-category-${kind}`} id="catalog-category" label="Categorías aplicables" emptyLabel="Buscar categoría…" value={formCategoryId} references={applicableCategories} disabled={dialog === 'manage' && !canUpdateItem} canCreate={dialog === 'create' ? canCreateItem : canUpdateItem || canManageReferences} onChange={setFormCategoryId} onCapture={captureCategory} /></Field>
+            <Field id="catalog-brand" label="Marca" hint="Opcional; una marca existente se reutiliza y puede habilitarse para este Tipo."><CatalogReferenceCombobox key={`catalog-brand-${kind}`} id="catalog-brand" label="Marcas aplicables" emptyLabel="Sin marca / buscar…" value={formBrandId} references={applicableBrands} expansionReferences={activeBrands.filter((reference) => !reference.applicableKinds.includes(kind))} expansionLabel={`Ya existe; se habilitará para ${kindLabels[kind]} al guardar el artículo`} disabled={dialog === 'manage' && !canUpdateItem} canCreate={dialog === 'create' ? canCreateItem : canUpdateItem || canManageReferences} onChange={setFormBrandId} onCapture={captureBrand} onExpand={expandBrand} /></Field>
+            {dialog === 'manage' ? <Field id="catalog-status" label="Estado"><Select id="catalog-status" value={formStatus} disabled={!canDeactivateItem} onChange={(event) => setFormStatus(event.target.value as 'ACTIVE' | 'INACTIVE')}><option value="ACTIVE">Activo</option><option value="INACTIVE">Inactivo</option></Select></Field> : null}
             {dialog === 'create' ? <><Field id="catalog-sku" label="SKU" hint="Automático si lo dejas vacío."><Input id="catalog-sku" value={formSku} onChange={(event) => setFormSku(event.target.value)} autoComplete="off" /></Field><Field id="catalog-barcode" label="Código de barras" hint="Automático si lo dejas vacío."><Input id="catalog-barcode" value={formBarcode} onChange={(event) => setFormBarcode(event.target.value)} autoComplete="off" /></Field></> : null}
           </section>
           {dialog === 'create' ? <section className={styles.moneyGrid}><Field id="catalog-base-price" label="Precio base" required><Input id="catalog-base-price" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} inputMode="decimal" placeholder="1399.00" /></Field>{canManageCost ? <Field id="catalog-cost" label="Costo de referencia"><Input id="catalog-cost" value={referenceCost} onChange={(event) => setReferenceCost(event.target.value)} inputMode="decimal" placeholder="480.00" /></Field> : null}</section> : null}
           {dialog === 'manage' && selected ? <section className={styles.moneyActions}><h3>Precios y costo</h3>{canManagePrice ? <div><Input aria-label="Nuevo precio base" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} placeholder="Precio base" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('base')}>Cambiar base</Button></div> : null}{canManageBranchPrice ? <div><Input aria-label="Override de esta sucursal" value={overridePrice} onChange={(event) => setOverridePrice(event.target.value)} placeholder="Override Branch" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('override')}>Aplicar override</Button><Button tone="quiet" disabled={saving} onClick={() => void moneyCommand('revoke')}>Revocar override</Button></div> : null}{canManageCost ? <div><Input aria-label="Nuevo costo de referencia" value={referenceCost} onChange={(event) => setReferenceCost(event.target.value)} placeholder="Costo de referencia" inputMode="decimal" /><Button disabled={saving} onClick={() => void moneyCommand('cost')}>Cambiar costo</Button></div> : null}</section> : null}
-          <footer className={styles.dialogFooter}><Button onClick={close} disabled={saving}>Cerrar</Button>{dialog === 'create' ? <Button tone="primary" disabled={saving} onClick={() => void submitCreate()}>{saving ? <Spinner label="Guardando" /> : null}Crear artículo</Button> : <Button tone="primary" disabled={saving} onClick={() => void saveIdentity()}>{saving ? <Spinner label="Guardando" /> : null}Guardar datos</Button>}</footer>
+          <footer className={styles.dialogFooter}><Button onClick={close} disabled={saving}>Cerrar</Button>{dialog === 'create' ? <Button tone="primary" disabled={saving} onClick={() => void submitCreate()}>{saving ? <Spinner label="Guardando" /> : null}Crear artículo</Button> : canManageItem ? <Button tone="primary" disabled={saving} onClick={() => void saveIdentity()}>{saving ? <Spinner label="Guardando" /> : null}{canUpdateItem ? 'Guardar datos' : 'Guardar estado'}</Button> : null}</footer>
         </div>
       </Dialog>
       <Dialog open={retirementPlan !== null} title="Vaciar lista de precios" description="Retiro masivo Tenant-wide · acción sensible nivel 2" onClose={() => { if (!retirementBusy) { setRetirementPlan(null); setRetirementPin(''); } }} footer={false}>

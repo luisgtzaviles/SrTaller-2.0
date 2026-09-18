@@ -25,6 +25,38 @@ migration, verifies role-neutral backfill and a second run with zero pending
 work. No CatalogItem, SupplierCatalogVersion, draft, analysis, Apply, CI,
 push, PR, merge or deploy action occurs in this checkpoint.
 
+## UX-004.2 — Price List + Item authority integration
+
+`price_list.read` remains the ordinary operational boundary: it permits the
+Price List, search, Type/Category/Brand filters, effective selling price and a
+safe commercial item detail. `GET /api/catalog/items/:itemId` now uses that
+read authority rather than broad `catalog.manage`; its `CatalogItem` projection
+contains no reference-cost value. Cost stays absent from list responses unless
+the request and server authorization both include `catalog.reference_cost.read`.
+
+The browser surface consumes the effective capability snapshots, never a role
+name. It exposes **Nuevo artículo** and `/listas/precios/nuevo` only with
+`price_list.read` + `catalog.items.create` + mandatory
+`catalog.prices.manage`; optional cost input still requires cost manage.
+Metadata controls use `catalog.items.update`, the individual status selector
+uses `catalog.items.deactivate`, and price, Branch override and cost controls
+retain their existing separate capabilities. Read-only detail has no save or
+mutation control; unauthorized editable controls are disabled/absent rather
+than keyboard-reachable. **Vaciar lista** remains exclusively
+`catalog.items.bulk_retire` and still routes through the level-2 plan,
+confirmation, same-user PIN, context revalidation, audit and transaction.
+
+Focused protected-operation tests prove safe detail/read, read-only direct
+mutation denials, composed create effects, metadata/lifecycle separation and
+bulk-retire separation. UI contracts cover the capability matrix, direct
+create/detail routes, cost toggle and lack of role-name branching. A disposable
+PostgreSQL PBI-041 run passed with 75 migrations and removed its container;
+no Owner Catalog/SupplierVersion data was modified. Local Chrome confirmed the
+authorized manager surface, direct new-item dialog route, safe failing detail
+route without a white screen, desktop/768/640 layouts, both themes and
+Tab/Shift+Tab dialog traversal. No create, update, lifecycle, retirement or
+Bulk operation was submitted during this QA.
+
 ## UX-003.4 — Required effective value enforcement
 
 Analyze/Reconciliation y Apply son ahora los límites servidor de policy: el
