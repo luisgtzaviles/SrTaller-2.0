@@ -25,7 +25,8 @@ test('price list is capability-gated and is the only initial Listas destination'
 test('Owner iteration centralizes governance and keeps operation reconciliable', () => {
   assert.match(catalogsPage, /Lista de precios/u);
   assert.match(commercialCatalogs, /CatalogReconciliationSummary/u);
-  assert.match(commercialCatalogs, /Valor observado/u);
+  assert.match(commercialCatalogs, /Marca propuesta/u);
+  assert.match(commercialCatalogs, /Observado: \$\{item\.rawLabel\}/u);
   assert.match(commercialCatalogs, /Asignar a Brand existente/u);
   assert.match(commercialCatalogs, /Promover a nueva Brand/u);
   assert.doesNotMatch(commercialCatalogs, /Aprobar/u);
@@ -57,6 +58,8 @@ test('Owner iteration centralizes governance and keeps operation reconciliable',
   assert.match(commercialCatalogs, /Asóciala a esa referencia/u);
   assert.match(commercialCatalogs, /observedInSources/u);
   assert.match(commercialCatalogs, /catalog\.configuration\.manage/u);
+  assert.match(commercialCatalogs, /normalizeBrandDisplay/u);
+  assert.match(commercialCatalogs, /setResolutionName\(pendingDisplayName\(value\)\)/u);
   assert.doesNotMatch(combobox, /createCatalogCategory|createCatalogBrand/u);
   assert.match(page, /setDialog\('create'\); setNotice\(null\)/u);
   assert.match(page, /setDialog\(null\); setNotice\(null\); requestId\.current = null/u);

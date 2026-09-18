@@ -66,12 +66,17 @@ test('Brand capture prefers canonical references and safely normalizes only unif
   const canonical = ['Apple', 'Samsung', 'LG', 'iFixit'];
   assert.equal(normalizeBrandValue('  APPLE  ', canonical), 'Apple');
   assert.equal(normalizeBrandValue('SAMSUNG', canonical), 'Samsung');
+  assert.equal(normalizeBrandValue(' samsung ', canonical), 'Samsung');
   assert.equal(normalizeBrandValue('XIAOMI', canonical), 'Xiaomi');
   assert.equal(normalizeBrandValue('motorola', canonical), 'Motorola');
+  assert.equal(normalizeBrandValue('HUAWEI', canonical), 'Huawei');
+  assert.equal(normalizeBrandValue('ONEPLUS', canonical), 'Oneplus');
+  assert.equal(normalizeBrandValue('ZTE', canonical), 'ZTE');
   assert.equal(normalizeBrandValue('JBL', canonical), 'JBL');
   assert.equal(normalizeBrandValue('LG', canonical), 'LG');
   assert.equal(normalizeBrandValue('iFixit', canonical), 'iFixit');
   assert.equal(normalizeBrandValue('Moto', canonical), 'Moto');
+  assert.equal(normalizeBrandValue('SAMSUGN', canonical), 'Samsugn');
 });
 
 test('MXN costs distinguish blank, zero and formatted amounts', () => {
