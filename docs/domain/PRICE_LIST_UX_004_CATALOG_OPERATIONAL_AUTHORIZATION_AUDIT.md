@@ -1,7 +1,7 @@
 # UX-004 — Catalog Operational Authorization Audit
 
 **PBI:** PBI-041
-**Estado:** UX-004.1..004.3 materializados localmente; UX-004.4 permanece pendiente.
+**Estado:** UX-004.1..004.4 materializados localmente; Owner Acceptance pendiente.
 **Fecha:** 2026-09-17
 **Alcance:** Sólo roles, capabilities y autorización de operaciones de Lista de
 precios / Catalog. No cambia producto, API, persistencia ni datos.
@@ -145,6 +145,25 @@ El publisher requiere lectura explícita para abrir el lote; el fallback
 prepare→read sólo preserva roles heredados. No hay ownership lock: el proof
 PostgreSQL desechable deja A en READY, B publica y el audit de Apply identifica
 a B. Supplier delete continúa nivel 2 y bulk-retire no cambia.
+
+### Estado material de UX-004.4
+
+La matriz de proof usa roles y usuarios sintéticos sólo dentro de PostgreSQL
+desechable: Atención conserva únicamente `price_list.read`; Encargado reúne
+item/precio y preparación; Publisher recibe lectura, publicación y los efectos
+de Apply necesarios, pero no preparación; Cost Viewer añade exclusivamente la
+lectura de costo. Una asignación doble confirma la unión sin permisos directos.
+Resolver la misma identidad fuera de su Branch o Tenant devuelve vacío; quitar
+una capability del rol se refleja en la próxima resolución de servidor.
+
+Los contratos directos cubren las denegaciones de operaciones sin la capacidad
+exacta y la UI deriva sus affordances de la misma proyección de sesión. El
+editor de Roles agrupa Catalog bajo un nombre humano y todas las capabilities
+vigentes, incluido `catalog.suppliers.delete`, tienen etiqueta legible. Chrome
+revisó esa superficie con sesión administrativa existente, sin guardar cambios
+ni transmitir PIN. El handoff A→B y el audit de publicación siguen cubiertos
+por UX-004.3. No se asignó ningún default role y no se modificaron datos
+operativos del Owner.
 
 ## Target mínimo V1 recomendado
 

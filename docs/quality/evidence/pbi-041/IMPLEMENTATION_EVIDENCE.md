@@ -1469,3 +1469,28 @@ runner also executes a separate 10k publish performance characterization;
 on this host it measured 34.9s against its 30s budget, so no broader PBI-041
 PostgreSQL-green claim is made for this slice. No push, PR, merge, CI or deploy
 occurred.
+
+## UX-004.4 — Role matrix and end-to-end authorization proof
+
+The Access model remains capability-only: no protected Catalog code branches on
+role name and Users have no direct permissions. The Role editor groups Catalog
+under **Catálogo y precios** and renders human labels for every current Catalog
+capability; this proof corrected the missing label for
+`catalog.suppliers.delete` without changing authority.
+
+Focused role-matrix contracts cover Atención (`price_list.read` only),
+Encargado (item/price/prepare but no publish), Publisher (read/publish/effects
+but no prepare), Cost Viewer (read plus redacted-cost access) and a multi-role
+union. They exercise direct protected operations, so hiding a control cannot
+become a bypass. The UI contracts assert the same capability predicates for
+Price List and Composer.
+
+The disposable PBI-041 PostgreSQL run passed with 75 migrations. It seeded
+only test Tenant/Branch/users/roles, proved exact union resolution, no result
+for another Branch or Tenant, and that deleting `catalog.import.prepare` from
+the Encargado role is visible on the next resolution. UX-004.3 retains the
+separate A-prepares/B-publishes audit proof. Chrome used the existing local
+administrator only to inspect Roles: desktop, 768 px and 640 px in light/dark
+had no horizontal overflow; the edit dialog exposed grouped labels and
+Tab/Shift+Tab traversed Close → Name normally. No role was saved, no PIN was
+entered and no Owner Catalog, SupplierVersion or audit record was changed.

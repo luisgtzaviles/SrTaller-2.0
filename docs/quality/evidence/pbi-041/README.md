@@ -88,6 +88,17 @@ PostgreSQL handoff evidence preserves the publisher as audit actor. No
 mandatory preparer/publisher separation, Owner-batch Apply, remote action or
 deployment occurred.
 
+## UX-004.4 Role matrix and authorization proof
+
+Disposable PostgreSQL proves role-derived capability union, Branch/Tenant
+isolation and immediate role-capability removal for Attention, Encargado,
+Publisher and Cost Viewer fixtures. Direct protected-operation contracts prove
+ordinary read, reference-cost read, preparation and publication remain
+independent. Chrome reviewed the existing human-labelled Role editor at
+desktop/768/640 in both themes and keyboard navigation without saving a role or
+touching Owner Catalog data. The result is local Owner Acceptance ready; no
+PIN, push, PR, merge or deploy occurred.
+
 UX-003.4 now enforces `REQUIRED` from the effective resulting value rather
 than raw supplier cells. Analyze records typed attention; Apply rereads the
 current policy to reject a stale or direct bypass. Explicit incoming data or a

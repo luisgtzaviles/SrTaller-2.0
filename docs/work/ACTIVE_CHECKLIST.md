@@ -1,17 +1,30 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-004.3 Bulk Read / Prepare / Apply Separation
+Milestone / Functional Goal: PBI-041 — UX-004.4 Role Matrix + End-to-End Authorization Proof
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — Bulk history, preparation and publication are independently authorized and materially checked; the unrelated PBI-041 10k performance budget remains separately flagged.
+Status: Local Owner Acceptance ready — role capability matrix and authorization proof complete.
 WIP: 1/1
-Progress: 10 / 10 UX-004.3 blocks completed; UX-004.1/UX-004.2 foundations remain preserved.
-Current: Owner review of the Bulk read/prepare/publish matrix and handoff evidence.
-Next: await an explicit Owner decision. Do not redesign unrelated Composer workflow, push, open a PR, merge, deploy or start another UX slice.
-Blocked: The isolated UX-004.3 PostgreSQL handoff passes. The broader PBI-041 PostgreSQL runner also executes a 10k publish benchmark that exceeded its 30s budget in this host (34.9s); no performance remediation was authorized in this slice. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 10 / 10 UX-004.4 blocks completed; UX-004.1/UX-004.2/UX-004.3 foundations remain preserved.
+Current: Owner Acceptance review of the catalog capability matrix and authorization evidence.
+Next: await explicit Owner Acceptance. Do not change role defaults, push, open a PR, merge, deploy or start another PBI.
+Blocked: No product blocker identified. The broader PBI-041 PostgreSQL runner also executes a separate 10k publish benchmark that exceeded its 30s budget in this host (34.9s); do not remediate that performance concern in UX-004.4. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
 
-## Current checkpoint — UX-004.3 Bulk Read / Prepare / Apply Separation
+## Current checkpoint — UX-004.4 Role Matrix + End-to-End Authorization Proof
+
+- [x] Audit the human role-editor labels/grouping, capability registry and remaining legacy `catalog.manage` uses; add the missing human label for Supplier delete only.
+- [x] Add role-matrix automated tests for ordinary read, cost, item actions, bulk read/prepare/publish and configuration boundaries.
+- [x] Prove multiple-role union and capability removal at the next protected operation.
+- [x] Prove direct server allow/deny and route/UI parity without role-name conditions.
+- [x] Prove cross-tenant isolation and trusted Branch behavior in disposable PostgreSQL fixtures.
+- [x] Preserve the UX-004.3 prepare-to-publish handoff and publisher actor audit proof.
+- [x] Verify ADR-013 capability-only denial without the required level-2 proof.
+- [x] Run focused access, catalog, UI and UX-003/UX-004 regressions.
+- [x] Complete permitted local Chrome role-editor responsive/theme/keyboard review without Owner-data mutations.
+- [x] Reconcile PBI/evidence/checklist and stop for Owner Review; no push, PR, merge or deploy.
+
+## Previous checkpoint — UX-004.3 Bulk Read / Prepare / Apply Separation
 
 - [x] Audit every Bulk endpoint: history reads, source/draft creation, replacement, analyze, row decisions, publication and draft purge.
 - [x] Open Composer history to `catalog.import.read` while retaining the temporary prepare-to-read compatibility for legacy roles.

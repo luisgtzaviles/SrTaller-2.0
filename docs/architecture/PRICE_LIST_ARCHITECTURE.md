@@ -379,6 +379,14 @@ habilitada por capability, no obligatoria: un mismo usuario puede tener las
 tres capacidades. Un rol publisher recibe `catalog.import.read` explícitamente;
 la compatibilidad temporal prepare→read se mantiene para roles heredados.
 
+UX-004.4 prueba la composición sin codificar perfiles: cada decisión obtiene
+la unión actual de Roles aplicables a Tenant y Branch, y una mutación de rol se
+observa en la siguiente operación protegida. Atención puede limitarse a
+`price_list.read`; costo, preparación, publicación y efectos de item/precio
+siguen siendo grants independientes. La UI consume esa proyección sólo para
+presentación y el servidor vuelve a autorizar rutas y efectos directos. No hay
+permisos directos de User ni decisiones por nombre de rol.
+
 Crear/editar individualmente es nivel 1 de ADR-013 con capability específica,
 versionado y auditoría. Publicar un batch también queda clasificado nivel 1 en
 el primer ciclo: es reversible mediante revisiones, no altera snapshots ya
