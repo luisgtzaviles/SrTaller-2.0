@@ -269,6 +269,18 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /¿Qué contiene esta carga?/u);
   assert.match(model, /Sólo algunos artículos/u);
   assert.match(model, /La lista completa del proveedor/u);
+  assert.match(ui, /<Dialog open=\{supplierGateOpen\} size="wide"/u);
+  assert.match(ui, /supplierGateSupplierPanel/u);
+  assert.match(ui, /supplierGateIntentPanel/u);
+  assert.match(ui, /new-load-supplier-title/u);
+  assert.match(ui, /new-load-intent-title/u);
+  assert.match(ui, /createSupplierInGate/u);
+  assert.match(ui, /footer=\{<div className=\{styles\.supplierGateActions\}>/u);
+  assert.match(ui, /<fieldset className=\{styles\.loadIntentChoices\}>/u);
+  assert.match(ui, /<label key=\{intent\.value\} className=\{supplierGateCompleteness === intent\.value/u);
+  assert.match(css, /\.supplierGate \{ display: grid; grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/u);
+  assert.match(css, /\.supplierGateIntentPanel \{ border-left: 1px solid var\(--color-border\);/u);
+  assert.match(css, /@media \(max-width: 768px\) \{ \.supplierGate \{ grid-template-columns: 1fr;/u);
   assert.match(ui, /canContinueNewLoadGate\(\{ supplierId: supplierGateSupplierId, completeness: supplierGateCompleteness \}\)/u);
   assert.match(ui, /setSupplierGateSupplierId\(created\.sourceId\); setSupplierGateCompleteness\(null\);/u);
   assert.match(ui, /openSupplierGate\('supplier-gate-change-pending', true\)/u);
