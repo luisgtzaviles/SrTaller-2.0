@@ -1541,3 +1541,20 @@ same controls with correct disabled states, while applied historical `AG v59`
 displayed none. Tab/Shift+Tab and light/dark remained normal. No Save, Analyze
 or Apply action occurred; no Catalog, supplier, policy, resolution or memory
 write occurred.
+
+### Gridlines / Cuadrícula extension
+
+`Cuadrícula` is a visible, compact `aria-pressed` control in the left-hand
+view group. It persists only for the active browser session through
+`srtaller:bulk-composer:gridlines:v1`; toggling it does not invoke draft dirty,
+undo, Save, Analyze or Apply code. It is rendered independently of prepare
+authority, while the existing edit-action guard remains unchanged.
+
+When enabled, CSS applies theme-neutral inline borders to actual header and row
+children plus real row boundaries. The 2 px active/focus inset and selected
+range treatment remain above those borders. Chrome confirmed the 1 px real cell
+boundary appears ON and returns to 0 px OFF, while the active blue 2 px inset
+remains distinct. Keyboard Space, Essential/All switching, sidebar
+collapse/restore, a blank one-row load, populated draft, resize (Título +24 px),
+historical applied `AG v59`, session reload, light/dark and 1280/768/640 all
+passed without page overflow. No persistent product operation was invoked.

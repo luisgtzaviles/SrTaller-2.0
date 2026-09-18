@@ -257,3 +257,10 @@ toolbar immediately before the primary review action. Their editable-lifecycle
 and disabled predicates are unchanged; no persistence or product flow changed.
 The local 1280/768/640, theme and keyboard proof is recorded in the
 [implementation evidence](IMPLEMENTATION_EVIDENCE.md).
+
+### Gridlines / Cuadrícula extension
+
+The optional spreadsheet-style gridlines are an accessible, session-local view
+preference. They use real cell borders, remain available for historical
+read-only presentation, and do not make a draft dirty or trigger persistence.
+The local proof is recorded in the [implementation evidence](IMPLEMENTATION_EVIDENCE.md).
