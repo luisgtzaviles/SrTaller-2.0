@@ -18,6 +18,8 @@ export const ACCESS_CAPABILITY_CATALOG = Object.freeze([
   'catalog.branch_prices.manage',
   'catalog.reference_cost.read',
   'catalog.reference_cost.manage',
+  'catalog.configuration.read',
+  'catalog.configuration.manage',
   'catalog.import.prepare',
   'catalog.import.publish',
   'catalog.items.bulk_retire',

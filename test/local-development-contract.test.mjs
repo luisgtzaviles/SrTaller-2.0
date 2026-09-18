@@ -192,6 +192,8 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
       'catalog.branch_prices.manage',
       'catalog.reference_cost.read',
       'catalog.reference_cost.manage',
+      'catalog.configuration.read',
+      'catalog.configuration.manage',
       'catalog.import.prepare',
       'catalog.import.publish',
       'catalog.items.bulk_retire',
@@ -205,7 +207,7 @@ test('synthetic Access fixtures are deterministic, scoped, and secret-free', () 
     'Atención al cliente',
     'Técnico',
   ]);
-  assert.equal(grants.length, 29);
+  assert.equal(grants.length, 31);
   assert.deepEqual(assignments.map(({ assignmentScope }) => assignmentScope), [
     'TENANT_WIDE',
     'TENANT_WIDE',

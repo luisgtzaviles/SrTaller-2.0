@@ -7,6 +7,7 @@ import {
 import { ContextualAuthorizationError, SensitiveActionReauthenticationError } from '../../access/index.js';
 import type { ProtectedRequestEvidence } from '../../access/index.js';
 import { CatalogProtectedOperations, CatalogOperationAccessDeniedError } from '../application/catalog-protected-operations.js';
+import { CatalogFieldPolicyAuthorizationChangedError, CatalogFieldPolicyConcurrencyConflictError, CatalogFieldPolicyInputError } from '../application/catalog-field-policy.service.js';
 import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogReferenceAlreadyExistsError, CatalogReferenceInUseError, CatalogUnavailableError } from '../domain/catalog-item.js';
 
 type RequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
@@ -24,6 +25,9 @@ function translate(error: unknown): never {
   }
   if (error instanceof SensitiveActionReauthenticationError) throw new ForbiddenException({ code: error.code });
   if (error instanceof CatalogOperationAccessDeniedError || error instanceof CatalogAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+  if (error instanceof CatalogFieldPolicyAuthorizationChangedError) throw new ForbiddenException({ code: 'ACCESS_DENIED' });
+  if (error instanceof CatalogFieldPolicyInputError) throw new BadRequestException({ code: 'CATALOG_FIELD_POLICY_INVALID', parameter: error.parameter });
+  if (error instanceof CatalogFieldPolicyConcurrencyConflictError) throw new ConflictException({ code: 'CATALOG_FIELD_POLICY_VERSION_STALE' });
   if (error instanceof CatalogInputError) throw new BadRequestException({ code: error.code, parameter: error.parameter });
   if (error instanceof CatalogNotFoundError) throw new NotFoundException({ code: error.code });
   if (error instanceof CatalogReferenceInUseError) throw new ConflictException({ code: error.code });
@@ -60,6 +64,13 @@ export class CatalogController {
     try { return await this.operations.listAdministrationReferences(evidence(headers)); }
     catch (error: unknown) { return translate(error); }
   }
+
+  @Get('configuration/field-policy') @Header('Cache-Control', 'private, no-store')
+  async fieldPolicy(@Headers() headers: RequestHeaders) { try { return await this.operations.getFieldPolicy(evidence(headers)); } catch (error) { return translate(error); } }
+  @Put('configuration/field-policy') @Header('Cache-Control', 'private, no-store')
+  async updateFieldPolicy(@Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.updateFieldPolicy(evidence(headers), body); } catch (error) { return translate(error); } }
+  @Post('configuration/field-policy/restore-product-defaults') @Header('Cache-Control', 'private, no-store')
+  async restoreFieldPolicy(@Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.resetFieldPolicy(evidence(headers), body); } catch (error) { return translate(error); } }
 
   @Get('items/:itemId') @Header('Cache-Control', 'private, no-store')
   async item(@Param('itemId') itemId: string, @Headers() headers: RequestHeaders) {

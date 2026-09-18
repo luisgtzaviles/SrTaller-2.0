@@ -44,6 +44,8 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     catalog_supplier_source_deletion_events: { owner: 'catalog', kind: 'table' },
     catalog_retirement_plans: { owner: 'catalog', kind: 'table' },
     catalog_retirement_events: { owner: 'catalog', kind: 'table' },
+    catalog_field_policy_heads: { owner: 'catalog', kind: 'table' },
+    catalog_field_policy_versions: { owner: 'catalog', kind: 'table' },
     branches: { owner: 'stations', kind: 'table' },
     stations: { owner: 'stations', kind: 'table' },
     station_bindings: { owner: 'stations', kind: 'table' },
@@ -224,6 +226,8 @@ test('productive migration root remains exact and governed', async () => {
       '20260915120000_catalog_add_bounded_candidate_matching.ts',
       '20260915130000_catalog_add_supplier_observed_title_history.ts',
       '20260916180000_catalog_add_supplier_version_completeness.ts',
+      '20260917190000_catalog_create_field_policies.ts',
+      '20260917190100_access_add_catalog_configuration_capabilities.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

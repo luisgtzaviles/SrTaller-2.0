@@ -14,9 +14,11 @@ import { CatalogService } from './application/catalog.service.js';
 import { CatalogProtectedOperations } from './application/catalog-protected-operations.js';
 import { BulkCatalogService } from './application/bulk-catalog.service.js';
 import { CatalogRetirementService } from './application/catalog-retirement.service.js';
+import { CatalogFieldPolicyService } from './application/catalog-field-policy.service.js';
 import { createKyselyCatalogRepository } from './infrastructure/persistence/kysely-catalog.repository.js';
 import { createKyselyBulkCatalogRepository } from './infrastructure/persistence/kysely-bulk-catalog.repository.js';
 import { createKyselyCatalogRetirementRepository } from './infrastructure/persistence/kysely-catalog-retirement.repository.js';
+import { createKyselyCatalogFieldPolicyRepository } from './infrastructure/persistence/kysely-catalog-field-policy.repository.js';
 import { CatalogController } from './presentation/catalog.controller.js';
 
 @Module({
@@ -30,7 +32,8 @@ import { CatalogController } from './presentation/catalog.controller.js';
       const service = new CatalogService(repository, async (tenantId) => tenants.readOperatingCurrency({ tenantId: tenantId as never }));
       const bulk = new BulkCatalogService(createKyselyBulkCatalogRepository(database as never), async (tenantId) => tenants.readOperatingCurrency({ tenantId: tenantId as never }));
       const retirement = new CatalogRetirementService(createKyselyCatalogRetirementRepository(database as never));
-      return new CatalogProtectedOperations(authorization, tenantWideAuthorization, sensitiveLevel2, service, bulk, retirement);
+      const fieldPolicy = new CatalogFieldPolicyService(createKyselyCatalogFieldPolicyRepository(database as never));
+      return new CatalogProtectedOperations(authorization, tenantWideAuthorization, sensitiveLevel2, service, bulk, retirement, fieldPolicy);
     },
   }],
 })

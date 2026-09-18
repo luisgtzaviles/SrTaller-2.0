@@ -14,6 +14,9 @@ const { KyselyCatalogRetirementRepository } = enabled ? await import('../dist/mo
 const { BulkCatalogService } = enabled ? await import('../dist/modules/catalog/application/bulk-catalog.service.js') : {};
 const { CatalogService } = enabled ? await import('../dist/modules/catalog/application/catalog.service.js') : {};
 const { CatalogRetirementService } = enabled ? await import('../dist/modules/catalog/application/catalog-retirement.service.js') : {};
+const { CatalogFieldPolicyService } = enabled ? await import('../dist/modules/catalog/application/catalog-field-policy.service.js') : {};
+const { KyselyCatalogFieldPolicyRepository } = enabled ? await import('../dist/modules/catalog/infrastructure/persistence/kysely-catalog-field-policy.repository.js') : {};
+const { CatalogFieldPolicyConcurrencyConflictError } = enabled ? await import('../dist/modules/catalog/application/ports/catalog-field-policy-repository.port.js') : {};
 const { CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogSupplierDeleteNotAllowedError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
 
 const tenantA = 'a1410000-0000-4000-8000-000000000041';
@@ -697,4 +700,27 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     await connection.close().catch(() => undefined);
     await admin.end().catch(() => undefined);
   }
+});
+
+test('UX-003.1 persists tenant-isolated catalog field policies with append-only versions', { skip: !enabled, timeout: 30_000 }, async () => {
+  const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
+  const connection = createDatabaseConnection(config());
+  const policyTenantA = 'd1410000-0000-4000-8000-000000000041'; const policyTenantB = 'e1410000-0000-4000-8000-000000000041';
+  const policy = new CatalogFieldPolicyService(new KyselyCatalogFieldPolicyRepository(connection), () => new Date('2026-09-17T19:00:00.000Z'), () => randomUUID());
+  const policyContext = (tenantId) => Object.freeze({ tenantId, branchId: randomUUID(), stationId: randomUUID(), sessionId: randomUUID(), actorUserId: randomUUID(), actorDisplayName: 'Policy QA', capability: 'catalog.configuration.manage', commitGuards: Object.freeze([{ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }]) });
+  try {
+    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'MXN', now())`, [policyTenantA, policyTenantB]);
+    const fallback = await policy.effective({ tenantId: policyTenantA });
+    assert.deepEqual([fallback.source, fallback.policyVersion, fallback.fieldLevels.brand], ['product-default', 0, 'OPTIONAL']);
+    const changed = { ...fallback.fieldLevels, brand: 'REQUIRED', referenceCost: 'ESSENTIAL' };
+    const written = await policy.update(policyContext(policyTenantA), { expectedVersion: 0, fieldLevels: changed });
+    assert.deepEqual([written.source, written.policyVersion, written.fieldLevels.brand, written.fieldLevels.referenceCost], ['tenant', 1, 'REQUIRED', 'ESSENTIAL']);
+    assert.deepEqual([(await policy.effective({ tenantId: policyTenantB })).source, (await policy.effective({ tenantId: policyTenantB })).fieldLevels.brand], ['product-default', 'OPTIONAL']);
+    await assert.rejects(policy.update(policyContext(policyTenantA), { expectedVersion: 0, fieldLevels: changed }), CatalogFieldPolicyConcurrencyConflictError);
+    const restored = await policy.reset(policyContext(policyTenantA), { expectedVersion: 1 });
+    assert.deepEqual([restored.policyVersion, restored.fieldLevels.brand, restored.fieldLevels.referenceCost], [2, 'OPTIONAL', 'OPTIONAL']);
+    const versions = await admin.query(`select policy_version, previous_version, capability, action, field_levels from catalog_field_policy_versions where tenant_id = $1 order by policy_version`, [policyTenantA]);
+    assert.deepEqual(versions.rows.map((row) => [row.policy_version, row.previous_version, row.capability, row.action, row.field_levels.brand]), [[1, 0, 'catalog.configuration.manage', 'catalog_field_policy.updated', 'REQUIRED'], [2, 1, 'catalog.configuration.manage', 'catalog_field_policy.reset', 'OPTIONAL']]);
+    await assert.rejects(admin.query(`update catalog_field_policy_versions set action = 'catalog_field_policy.updated' where tenant_id = $1 and policy_version = 1`, [policyTenantA]));
+  } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
 });

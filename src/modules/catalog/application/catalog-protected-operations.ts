@@ -10,6 +10,8 @@ import type { CatalogService } from './catalog.service.js';
 import type { BulkCatalogService } from './bulk-catalog.service.js';
 import type { CatalogRetirementService } from './catalog-retirement.service.js';
 import type { CatalogMutationContext, CatalogScope } from './ports/catalog-repository.port.js';
+import type { CatalogFieldPolicyConfigurationContext } from './ports/catalog-field-policy-repository.port.js';
+import type { CatalogFieldPolicyService } from './catalog-field-policy.service.js';
 
 const requirement = (capability: ProtectedOperationRequirement['capability'], kind: ProtectedOperationRequirement['kind']) => Object.freeze({ capability, kind });
 const priceListRead = requirement('price_list.read', 'read');
@@ -23,6 +25,8 @@ const importPrepareRead = requirement('catalog.import.prepare', 'read');
 const importPrepareWrite = requirement('catalog.import.prepare', 'state-change');
 const importPublish = requirement('catalog.import.publish', 'state-change');
 const bulkRetire = requirement('catalog.items.bulk_retire', 'state-change');
+const catalogConfigurationRead = requirement('catalog.configuration.read', 'read');
+const catalogConfigurationManage = requirement('catalog.configuration.manage', 'state-change');
 
 function sameContext(contexts: readonly AuthorizedOperationalContext[]): boolean {
   const first = contexts[0];
@@ -62,13 +66,18 @@ function mutationContext(contexts: readonly AuthorizedOperationalContext[]): Cat
     commitGuards: Object.freeze(contexts.map((context) => context.commitGuard)),
   });
 }
+function fieldPolicyContext(contexts: readonly AuthorizedOperationalContext[]): CatalogFieldPolicyConfigurationContext {
+  if (!sameContext(contexts) || contexts.length === 0) throw new CatalogOperationAccessDeniedError();
+  const first = contexts[0]!;
+  return Object.freeze({ tenantId: first.tenantId, branchId: first.branchId, stationId: first.stationId, sessionId: first.sessionId, actorUserId: first.userId, actorDisplayName: first.userDisplayName, capability: 'catalog.configuration.manage', commitGuards: Object.freeze(contexts.map((context) => context.commitGuard)) });
+}
 
 export class CatalogOperationAccessDeniedError extends Error {
   constructor() { super('Catalog operation has no approved authority.'); this.name = 'CatalogOperationAccessDeniedError'; }
 }
 
 export class CatalogProtectedOperations {
-  constructor(private readonly authorization: ContextualAuthorizationExecutor, private readonly tenantWideAuthorization: TenantWideAuthorizationExecutor, private readonly sensitiveLevel2: SensitiveActionLevel2Executor, private readonly service: CatalogService, private readonly bulk: BulkCatalogService, private readonly retirement: CatalogRetirementService) {}
+  constructor(private readonly authorization: ContextualAuthorizationExecutor, private readonly tenantWideAuthorization: TenantWideAuthorizationExecutor, private readonly sensitiveLevel2: SensitiveActionLevel2Executor, private readonly service: CatalogService, private readonly bulk: BulkCatalogService, private readonly retirement: CatalogRetirementService, private readonly fieldPolicy: CatalogFieldPolicyService) {}
 
   private executeMany<Result>(evidence: ProtectedRequestEvidence, requirements: readonly ProtectedOperationRequirement[], operation: (contexts: readonly AuthorizedOperationalContext[]) => Promise<Result>): Promise<Result> {
     const contexts: AuthorizedOperationalContext[] = [];
@@ -97,6 +106,9 @@ export class CatalogProtectedOperations {
   listAdministrationReferences(evidence: ProtectedRequestEvidence) {
     return this.tenantWideAuthorization.execute(evidence, catalogRead, (context) => this.service.listReferences(scope(context)));
   }
+  getFieldPolicy(evidence: ProtectedRequestEvidence) { return this.executeTenantWideMany(evidence, [catalogConfigurationRead, costRead], (contexts) => this.fieldPolicy.effective({ tenantId: contexts[0]!.tenantId })); }
+  updateFieldPolicy(evidence: ProtectedRequestEvidence, input: unknown) { return this.executeTenantWideMany(evidence, [catalogConfigurationManage, costManage], (contexts) => this.fieldPolicy.update(fieldPolicyContext(contexts), input)); }
+  resetFieldPolicy(evidence: ProtectedRequestEvidence, input: unknown) { return this.executeTenantWideMany(evidence, [catalogConfigurationManage, costManage], (contexts) => this.fieldPolicy.reset(fieldPolicyContext(contexts), input)); }
 
   search(evidence: ProtectedRequestEvidence, input: unknown, includeReferenceCost: boolean) {
     const requirements = includeReferenceCost ? [priceListRead, costRead] : [priceListRead];

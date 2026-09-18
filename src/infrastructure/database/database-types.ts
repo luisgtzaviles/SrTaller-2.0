@@ -506,6 +506,25 @@ export interface CatalogRetirementEventTable {
   readonly occurred_at: ImmutableColumn<Date>;
 }
 
+export interface CatalogFieldPolicyHeadTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly schema_version: MutableColumn<number>;
+  readonly current_version: MutableColumn<number>;
+  readonly field_levels: MutableColumn<Record<string, string>>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+export interface CatalogFieldPolicyVersionTable {
+  readonly tenant_id: ImmutableColumn<string>; readonly policy_version: ImmutableColumn<number>;
+  readonly schema_version: ImmutableColumn<number>; readonly previous_version: ImmutableColumn<number>;
+  readonly field_levels: ImmutableColumn<Record<string, string>>;
+  readonly actor_user_id: ImmutableColumn<string>; readonly actor_display_name: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>; readonly session_id: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'catalog.configuration.manage'>;
+  readonly action: ImmutableColumn<'catalog_field_policy.updated' | 'catalog_field_policy.reset'>;
+  readonly result: ImmutableColumn<'succeeded'>; readonly correlation_id: ImmutableColumn<string>; readonly occurred_at: ImmutableColumn<Date>;
+}
+
 /** Customer identity is Branch-scoped; Repairs own their historical snapshots. */
 export interface CustomerTable {
   readonly customer_id: ImmutableColumn<string>;
@@ -603,6 +622,8 @@ export type AccessCapabilityCode =
   | 'catalog.branch_prices.manage'
   | 'catalog.reference_cost.read'
   | 'catalog.reference_cost.manage'
+  | 'catalog.configuration.read'
+  | 'catalog.configuration.manage'
   | 'catalog.import.prepare'
   | 'catalog.import.publish'
   | 'catalog.items.bulk_retire'
@@ -1457,6 +1478,8 @@ export interface DatabaseSchema {
   readonly catalog_supplier_source_deletion_events: CatalogSupplierSourceDeletionEventTable;
   readonly catalog_retirement_plans: CatalogRetirementPlanTable;
   readonly catalog_retirement_events: CatalogRetirementEventTable;
+  readonly catalog_field_policy_heads: CatalogFieldPolicyHeadTable;
+  readonly catalog_field_policy_versions: CatalogFieldPolicyVersionTable;
   readonly customers: CustomerTable;
   readonly customer_contact_phones: CustomerContactPhoneTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;
