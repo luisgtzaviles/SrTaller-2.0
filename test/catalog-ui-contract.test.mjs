@@ -25,9 +25,9 @@ test('price list is capability-gated and is the only initial Listas destination'
 test('Owner iteration centralizes governance and keeps operation reconciliable', () => {
   assert.match(catalogsPage, /Lista de precios/u);
   assert.match(commercialCatalogs, /CatalogReconciliationSummary/u);
-  assert.match(commercialCatalogs, /Valor capturado/u);
-  assert.match(commercialCatalogs, /Asociar a referencia existente/u);
-  assert.match(commercialCatalogs, /Crear referencia canónica/u);
+  assert.match(commercialCatalogs, /Valor observado/u);
+  assert.match(commercialCatalogs, /Asignar a Brand existente/u);
+  assert.match(commercialCatalogs, /Promover a nueva Brand/u);
   assert.doesNotMatch(commercialCatalogs, /Aprobar/u);
   assert.match(commercialCatalogs, /Fusionar seleccionados/u);
   assert.match(commercialCatalogs, /Referencia superviviente/u);
@@ -55,6 +55,8 @@ test('Owner iteration centralizes governance and keeps operation reconciliable',
   assert.match(commercialCatalogs, /disabled=\{exactCanonicalMatch !== null\}/u);
   assert.match(commercialCatalogs, /Ya existe la/u);
   assert.match(commercialCatalogs, /Asóciala a esa referencia/u);
+  assert.match(commercialCatalogs, /observedInSources/u);
+  assert.match(commercialCatalogs, /catalog\.configuration\.manage/u);
   assert.doesNotMatch(combobox, /createCatalogCategory|createCatalogBrand/u);
   assert.match(page, /setDialog\('create'\); setNotice\(null\)/u);
   assert.match(page, /setDialog\(null\); setNotice\(null\); requestId\.current = null/u);

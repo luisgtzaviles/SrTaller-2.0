@@ -507,15 +507,18 @@ test('commercial reference governance is fixed and inline capture stays inside i
   };
   const service = {
     async listReferences(scope) { return { scope }; },
+    async resolveBrand(_context, referenceId, input) { return { referenceId, input }; },
     async createItem(_context, input) { return { input }; },
     async mergeCategories(_context, input) { return { input }; },
   };
   const operations = new CatalogProtectedOperations(contextual, tenantWide, {}, service, {}, {});
   assert.deepEqual(await operations.listAdministrationReferences({}), { scope: { tenantId, branchId } });
+  assert.deepEqual(await operations.resolveBrand({}, 'pending-brand', { canonicalBrandId: 'brand', expectedVersion: 1 }), { referenceId: 'pending-brand', input: { canonicalBrandId: 'brand', expectedVersion: 1 } });
   assert.deepEqual(await operations.createItem({}, { categoryCapturedValue: 'Termos' }), { input: { categoryCapturedValue: 'Termos' } });
   assert.deepEqual(await operations.mergeCategories({}, { references: ['a', 'b'] }), { input: { references: ['a', 'b'] } });
   assert.deepEqual(observed, [
-    { capability: 'catalog.manage', kind: 'read' },
+    { capability: 'catalog.configuration.read', kind: 'read' },
+    { capability: 'catalog.configuration.manage', kind: 'state-change' },
     { capability: 'catalog.items.create', kind: 'state-change' },
     { capability: 'catalog.prices.manage', kind: 'state-change' },
     { capability: 'catalog.manage', kind: 'state-change' },

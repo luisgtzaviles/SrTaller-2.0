@@ -174,7 +174,7 @@ export class CatalogProtectedOperations {
   }
 
   listAdministrationReferences(evidence: ProtectedRequestEvidence) {
-    return this.tenantWideAuthorization.execute(evidence, catalogRead, (context) => this.service.listReferences(scope(context)));
+    return this.executeTenantWideEither(evidence, [catalogConfigurationRead, catalogRead], (context) => this.service.listReferences(scope(context)));
   }
   getFieldPolicy(evidence: ProtectedRequestEvidence) { return this.executeTenantWideMany(evidence, [catalogConfigurationRead, costRead], (contexts) => this.fieldPolicy.effective({ tenantId: contexts[0]!.tenantId })); }
   async getBulkFieldPolicy(evidence: ProtectedRequestEvidence): Promise<CatalogOperationalFieldPolicyProjection> {
@@ -234,7 +234,7 @@ export class CatalogProtectedOperations {
     return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.resolveCategory(mutationContext(contexts), pendingCategoryValueId, input));
   }
   resolveBrand(evidence: ProtectedRequestEvidence, pendingBrandValueId: unknown, input: unknown) {
-    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.resolveBrand(mutationContext(contexts), pendingBrandValueId, input));
+    return this.executeTenantWideMany(evidence, [catalogConfigurationManage], (contexts) => this.service.resolveBrand(mutationContext(contexts), pendingBrandValueId, input));
   }
   createItem(evidence: ProtectedRequestEvidence, input: unknown) {
     const hasCost = typeof input === 'object' && input !== null && 'referenceCostAmountMinor' in input && (input as { referenceCostAmountMinor?: unknown }).referenceCostAmountMinor !== null && (input as { referenceCostAmountMinor?: unknown }).referenceCostAmountMinor !== undefined;

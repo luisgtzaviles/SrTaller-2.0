@@ -57,7 +57,7 @@ function NewRepairConfigurationBoundary({
 }
 
 function CatalogConfigurationBoundary({ capabilities, children }: Readonly<{ capabilities: readonly OperationalCapability[]; children: React.ReactNode }>): React.JSX.Element {
-  return hasOperationalCapability(capabilities, 'repairs.catalogs.read') || hasOperationalCapability(capabilities, 'catalog.manage') ? <>{children}</> : <AccessDeniedPage />;
+  return hasOperationalCapability(capabilities, 'repairs.catalogs.read') || hasOperationalCapability(capabilities, 'catalog.manage') || hasOperationalCapability(capabilities, 'catalog.configuration.read') ? <>{children}</> : <AccessDeniedPage />;
 }
 
 function CatalogFieldPolicyBoundary({ capabilities, children }: Readonly<{ capabilities: readonly OperationalCapability[]; children: React.ReactNode }>): React.JSX.Element {
