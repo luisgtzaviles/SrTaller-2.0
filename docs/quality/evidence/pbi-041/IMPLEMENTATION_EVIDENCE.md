@@ -1464,4 +1464,8 @@ records B, not A, as `catalog.bulk.publish.row` actor. No mandatory separation
 of duties is introduced. Current browser proof as the already-authenticated
 full user passed desktop, 768 and 640 with no page overflow; no Owner batch was
 applied. Typecheck, build, focused authorization/UI contracts and PBI-041
-PostgreSQL material pass. No push, PR, merge, CI or deploy occurred.
+PostgreSQL material handoff passes in isolation. The wider `test:pbi041:postgresql`
+runner also executes a separate 10k publish performance characterization;
+on this host it measured 34.9s against its 30s budget, so no broader PBI-041
+PostgreSQL-green claim is made for this slice. No push, PR, merge, CI or deploy
+occurred.

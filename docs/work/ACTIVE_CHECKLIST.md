@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — UX-004.3 Bulk Read / Prepare / Apply Separation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — Bulk history, preparation and publication are independently authorized and materially checked.
+Status: Local Owner Review — Bulk history, preparation and publication are independently authorized and materially checked; the unrelated PBI-041 10k performance budget remains separately flagged.
 WIP: 1/1
 Progress: 10 / 10 UX-004.3 blocks completed; UX-004.1/UX-004.2 foundations remain preserved.
 Current: Owner review of the Bulk read/prepare/publish matrix and handoff evidence.
 Next: await an explicit Owner decision. Do not redesign unrelated Composer workflow, push, open a PR, merge, deploy or start another UX slice.
-Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
+Blocked: The isolated UX-004.3 PostgreSQL handoff passes. The broader PBI-041 PostgreSQL runner also executes a 10k publish benchmark that exceeded its 30s budget in this host (34.9s); no performance remediation was authorized in this slice. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
 
 ## Current checkpoint — UX-004.3 Bulk Read / Prepare / Apply Separation
