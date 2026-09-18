@@ -323,6 +323,51 @@ test('bulk direct API guards keep read, prepare, and publish independently enfor
   assert.deepEqual(await publisher.publishSupplierVersion({}, 'ready', {}), { lifecycle: 'APPLIED', input: {} });
 });
 
+test('role-matrix capability unions grant only the catalog operations assigned by roles', async () => {
+  const bulk = {
+    async listSources() { return ['source']; },
+    async createDraft() { return { versionId: 'draft' }; },
+    async getVersion() { return { versionId: 'ready', rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] }; },
+    async publish() { return { lifecycle: 'APPLIED' }; },
+  };
+  const itemService = {
+    async search(_scope, _input, includeCost) { return { includeCost }; },
+    async createItem() { return { itemId, version: 1 }; },
+  };
+  const profiles = Object.freeze({
+    attention: new Set(['price_list.read']),
+    encargado: new Set(['price_list.read', 'catalog.items.create', 'catalog.items.update', 'catalog.items.deactivate', 'catalog.prices.manage', 'catalog.import.read', 'catalog.import.prepare']),
+    publisher: new Set(['price_list.read', 'catalog.import.read', 'catalog.import.publish', 'catalog.items.create', 'catalog.prices.manage']),
+    costViewer: new Set(['price_list.read', 'catalog.reference_cost.read']),
+  });
+
+  const attention = new CatalogProtectedOperations(capabilityExecutor(profiles.attention), capabilityExecutor(profiles.attention), {}, itemService, bulk, {});
+  assert.deepEqual(await attention.search({}, {}, false), { includeCost: false });
+  await assert.rejects(attention.search({}, {}, true), ContextualAuthorizationError);
+  await assert.rejects(attention.createItem({}, {}), /no approved authority/u);
+  await assert.rejects(attention.createSupplierDraft({}, {}), ContextualAuthorizationError);
+
+  const encargado = new CatalogProtectedOperations(capabilityExecutor(profiles.encargado), capabilityExecutor(profiles.encargado), {}, itemService, bulk, {});
+  assert.deepEqual(await encargado.createItem({}, {}), { itemId, version: 1 });
+  assert.deepEqual(await encargado.createSupplierDraft({}, {}), { versionId: 'draft' });
+  await assert.rejects(encargado.publishSupplierVersion({}, 'ready', {}), CatalogOperationAccessDeniedError);
+
+  const publisher = new CatalogProtectedOperations(capabilityExecutor(profiles.publisher), capabilityExecutor(profiles.publisher), {}, itemService, bulk, {});
+  assert.deepEqual(await publisher.listSupplierSources({}), ['source']);
+  await assert.rejects(publisher.createSupplierDraft({}, {}), ContextualAuthorizationError);
+  assert.deepEqual(await publisher.publishSupplierVersion({}, 'ready', {}), { lifecycle: 'APPLIED' });
+
+  const costViewer = new CatalogProtectedOperations(capabilityExecutor(profiles.costViewer), capabilityExecutor(profiles.costViewer), {}, itemService, bulk, {});
+  assert.deepEqual(await costViewer.search({}, {}, true), { includeCost: true });
+  await assert.rejects(costViewer.createItem({}, {}), /no approved authority/u);
+
+  const effectiveMultiRole = new Set([...profiles.attention, ...profiles.costViewer]);
+  assert.deepEqual([...effectiveMultiRole].sort(), ['catalog.reference_cost.read', 'price_list.read']);
+  const multiRole = new CatalogProtectedOperations(capabilityExecutor(effectiveMultiRole), capabilityExecutor(effectiveMultiRole), {}, itemService, bulk, {});
+  assert.deepEqual(await multiRole.search({}, {}, true), { includeCost: true });
+  await assert.rejects(multiRole.createSupplierDraft({}, {}), ContextualAuthorizationError);
+});
+
 test('bulk composer composes prepare, cost and publish authority without leaking cost reads', async () => {
   const observed = [];
   const authorized = Object.freeze({

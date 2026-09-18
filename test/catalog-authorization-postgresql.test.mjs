@@ -19,6 +19,9 @@ const {
 const { createMigrationRunner } = enabled
   ? await import('../dist/infrastructure/database/migration-runner.js')
   : {};
+const { createKyselyAccessRepository } = enabled
+  ? await import('../dist/modules/access/infrastructure/persistence/kysely-access.repository.js')
+  : {};
 
 const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
@@ -31,6 +34,20 @@ const roleIds = Object.freeze({
   priceListReader: randomUUID(),
   unrelated: randomUUID(),
 });
+const matrixRoleIds = Object.freeze({
+  attention: randomUUID(),
+  manager: randomUUID(),
+  publisher: randomUUID(),
+  costViewer: randomUUID(),
+});
+const matrixUserIds = Object.freeze({
+  attention: randomUUID(),
+  manager: randomUUID(),
+  publisher: randomUUID(),
+  multiRole: randomUUID(),
+});
+const matrixBranchId = randomUUID();
+const otherBranchId = randomUUID();
 
 function config() {
   return Object.freeze({
@@ -89,8 +106,22 @@ async function roleCapabilities(admin, roleId) {
   return result.rows.map(({ capability_code }) => capability_code);
 }
 
+async function assignMatrixRole(admin, userId, roleId) {
+  await admin.query(
+    `insert into access_role_assignments (
+       tenant_id, assignment_id, user_id, role_id, assignment_scope,
+       branch_id, status, version, assigned_at
+     ) values ($1, $2, $3, $4, 'BRANCH_RESTRICTED', $5, 'active', 0, now())`,
+    [tenantId, randomUUID(), userId, roleId, matrixBranchId],
+  );
+}
+
+async function resolvedCapabilities(repository, userId, branchId = matrixBranchId) {
+  return [...await repository.resolveEffectiveCapabilities({ tenantId, branchId, userId })].sort();
+}
+
 test(
-  'granular catalog capability migration backfills only matching legacy capability grants',
+  'granular catalog capability migration preserves compatibility and materializes the role matrix',
   { skip: !enabled, timeout: 90_000 },
   async () => {
     assert.equal(process.version, 'v24.18.0');
@@ -178,6 +209,97 @@ test(
         ]],
       );
       assert.equal(sensitiveCount.rows[0].count, 0);
+
+      await admin.query(
+        `insert into branches (tenant_id, branch_id, active, created_at)
+         values ($1, $2, true, now()), ($1, $3, true, now())`,
+        [tenantId, matrixBranchId, otherBranchId],
+      );
+      await admin.query(
+        `insert into users (
+           tenant_id, user_id, display_name, operational_identifier, status,
+           version, created_at, updated_at
+         ) values
+           ($1, $2, 'Atención QA', 'attention-qa', 'active', 0, now(), now()),
+           ($1, $3, 'Encargado QA', 'manager-qa', 'active', 0, now(), now()),
+           ($1, $4, 'Publisher QA', 'publisher-qa', 'active', 0, now(), now()),
+           ($1, $5, 'Costo QA', 'cost-qa', 'active', 0, now(), now())`,
+        [tenantId, matrixUserIds.attention, matrixUserIds.manager, matrixUserIds.publisher, matrixUserIds.multiRole],
+      );
+      await admin.query(
+        `insert into access_roles (
+           tenant_id, role_id, role_key, display_name, status, version, created_at, updated_at
+         ) values
+           ($1, $2, 'attention_qa', 'Atención QA', 'active', 0, now(), now()),
+           ($1, $3, 'manager_qa', 'Encargado QA', 'active', 0, now(), now()),
+           ($1, $4, 'publisher_qa', 'Publisher QA', 'active', 0, now(), now()),
+           ($1, $5, 'cost_viewer_qa', 'Costo QA', 'active', 0, now(), now())`,
+        [tenantId, matrixRoleIds.attention, matrixRoleIds.manager, matrixRoleIds.publisher, matrixRoleIds.costViewer],
+      );
+      await admin.query(
+        `insert into access_role_capabilities (tenant_id, role_id, capability_code, created_at)
+         values
+           ($1, $2, 'price_list.read', now()),
+           ($1, $3, 'price_list.read', now()),
+           ($1, $3, 'catalog.items.create', now()),
+           ($1, $3, 'catalog.items.update', now()),
+           ($1, $3, 'catalog.items.deactivate', now()),
+           ($1, $3, 'catalog.prices.manage', now()),
+           ($1, $3, 'catalog.import.read', now()),
+           ($1, $3, 'catalog.import.prepare', now()),
+           ($1, $4, 'price_list.read', now()),
+           ($1, $4, 'catalog.import.read', now()),
+           ($1, $4, 'catalog.import.publish', now()),
+           ($1, $4, 'catalog.items.create', now()),
+           ($1, $4, 'catalog.prices.manage', now()),
+           ($1, $5, 'price_list.read', now()),
+           ($1, $5, 'catalog.reference_cost.read', now())`,
+        [
+          tenantId,
+          matrixRoleIds.attention,
+          matrixRoleIds.manager,
+          matrixRoleIds.publisher,
+          matrixRoleIds.costViewer,
+        ],
+      );
+      await assignMatrixRole(admin, matrixUserIds.attention, matrixRoleIds.attention);
+      await assignMatrixRole(admin, matrixUserIds.manager, matrixRoleIds.manager);
+      await assignMatrixRole(admin, matrixUserIds.publisher, matrixRoleIds.publisher);
+      await assignMatrixRole(admin, matrixUserIds.multiRole, matrixRoleIds.attention);
+      await assignMatrixRole(admin, matrixUserIds.multiRole, matrixRoleIds.costViewer);
+
+      const accessRepository = createKyselyAccessRepository(connection);
+      assert.deepEqual(await resolvedCapabilities(accessRepository, matrixUserIds.attention), ['price_list.read']);
+      assert.deepEqual(await resolvedCapabilities(accessRepository, matrixUserIds.manager), [
+        'catalog.import.prepare', 'catalog.import.read', 'catalog.items.create',
+        'catalog.items.deactivate', 'catalog.items.update', 'catalog.prices.manage',
+        'price_list.read',
+      ]);
+      assert.deepEqual(await resolvedCapabilities(accessRepository, matrixUserIds.publisher), [
+        'catalog.import.publish', 'catalog.import.read', 'catalog.items.create',
+        'catalog.prices.manage', 'price_list.read',
+      ]);
+      assert.deepEqual(await resolvedCapabilities(accessRepository, matrixUserIds.multiRole), [
+        'catalog.reference_cost.read', 'price_list.read',
+      ]);
+      assert.deepEqual(await resolvedCapabilities(accessRepository, matrixUserIds.manager, otherBranchId), []);
+      assert.deepEqual(
+        [...await accessRepository.resolveEffectiveCapabilities({
+          tenantId: randomUUID(), branchId: matrixBranchId, userId: matrixUserIds.manager,
+        })],
+        [],
+      );
+
+      await admin.query(
+        `delete from access_role_capabilities
+          where tenant_id = $1 and role_id = $2 and capability_code = 'catalog.import.prepare'`,
+        [tenantId, matrixRoleIds.manager],
+      );
+      assert.equal(
+        (await resolvedCapabilities(accessRepository, matrixUserIds.manager)).includes('catalog.import.prepare'),
+        false,
+        'the next protected-operation capability resolution must observe role changes',
+      );
       assert.deepEqual((await runner.migrateToLatest()).results, []);
     } finally {
       await runner.destroy().catch(() => undefined);

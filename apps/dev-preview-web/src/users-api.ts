@@ -217,6 +217,7 @@ export const capabilityLabel: Readonly<Record<string, string>> = Object.freeze({
   'catalog.import.prepare': 'Preparar importaciones de catálogo',
   'catalog.import.publish': 'Publicar importaciones de catálogo',
   'catalog.items.bulk_retire': 'Retirar artículos de catálogo masivamente',
+  'catalog.suppliers.delete': 'Eliminar proveedores sin historial publicado',
 });
 
 export function humanCapabilityLabel(capabilityCode: string): string {
