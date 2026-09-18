@@ -1,5 +1,5 @@
 export type ComposerColumn = 'kind' | 'title' | 'description' | 'category' | 'brand' | 'supplierItemCode' | 'sku' | 'barcode' | 'price' | 'cost';
-export type ComposerRow = Record<ComposerColumn, string> & { supplierObservedTitle: string };
+export type ComposerRow = Record<ComposerColumn, string> & { supplierObservedTitle: string; supplierObservedBrand?: string };
 export type ComposerSelection = Readonly<{ firstRow: number; lastRow: number; firstColumn: number; lastColumn: number }>;
 export type ValidationIssue = Readonly<{ scope: 'BATCH' | 'CELL' | 'GLOBAL'; rowId?: string; rowIndex?: number; columnKey?: ComposerColumn; controlKey?: 'source' | 'mode'; code: string; message: string }>;
 
@@ -16,9 +16,11 @@ export function isClipboardRowEmpty(row: readonly unknown[]): boolean;
 export function trimTrailingEmptyRows(matrix: readonly (readonly unknown[])[]): unknown[][];
 export function parseClipboardMatrix(text: string): string[][];
 export function normalizeSupplierTitle(value: string): string;
+export function normalizeBrandValue(value: string, canonicalBrands?: readonly string[]): string;
 export function parseMoneyToMinor(value: string): number | null;
-export function applyBatchDefaults<Row extends { kind: string; category: string; brand: string }>(row: Row, defaults: Readonly<{ kind: string; category: string; brand: string }>): Row;
-export function applyBatchDefaultsToEmptyRows<Row extends { kind: string; category: string; brand: string }>(rows: readonly Row[], defaults: Readonly<{ kind: string; category: string; brand: string }>): Readonly<{ rows: Row[]; changedCount: number }>;
+export function applyBatchDefaults<Row extends { kind: string; category: string; brand: string }>(row: Row, defaults: Readonly<{ kind: string; category: string; brand: string }>, normalizeBrand?: (value: string) => string): Row;
+export function applyBatchDefaultsToEmptyRows<Row extends { kind: string; category: string; brand: string }>(rows: readonly Row[], defaults: Readonly<{ kind: string; category: string; brand: string }>, normalizeBrand?: (value: string) => string): Readonly<{ rows: Row[]; changedCount: number }>;
+export function removeDraftRow<Row>(rows: readonly Row[], rowIndex: number): Readonly<{ rows: readonly Row[]; removed: Row | null; nextRowIndex: number }>;
 export function nextGridCell(key: string, row: number, column: number, rowCount: number, columnCount: number, shiftKey?: boolean): Readonly<{ row: number; column: number }>;
 export function fillRows<Row extends Record<ComposerColumn, string>>(rows: readonly Row[], columns: readonly ComposerColumn[], source: ComposerSelection, target: Readonly<{ row: number; column: number }>): Row[];
 export function estimateColumnWidth(label: string, values: readonly string[], min?: number, max?: number): number;

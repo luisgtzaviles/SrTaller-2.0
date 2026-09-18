@@ -154,6 +154,28 @@ export function normalizeSupplierTitle(value) {
   return String(value ?? '').normalize('NFKC').trim().replace(/\s+/gu, ' ').split(' ').map(normalizeWord).join(' ');
 }
 
+/**
+ * Keeps Brand presentation deterministic without turning capture into fuzzy
+ * identity matching. An active canonical reference always wins; otherwise only
+ * clearly uniform, human-readable casing is adjusted. Short uppercase tokens
+ * remain intact because they commonly represent acronyms (for example, JBL).
+ */
+export function normalizeBrandValue(value, canonicalBrands = []) {
+  const normalized = String(value ?? '').normalize('NFKC').trim().replace(/\s+/gu, ' ');
+  if (!normalized) return '';
+  const key = normalized.normalize('NFD').replace(/[\u0300-\u036f]/gu, '').toLocaleLowerCase('es-MX');
+  const canonical = canonicalBrands.find((name) => String(name ?? '').normalize('NFKC').trim().replace(/\s+/gu, ' ').normalize('NFD').replace(/[\u0300-\u036f]/gu, '').toLocaleLowerCase('es-MX') === key);
+  if (canonical) return String(canonical).normalize('NFKC').trim().replace(/\s+/gu, ' ');
+  if (!/^[\p{L}\p{M}][\p{L}\p{M}'’-]*(?:[ -][\p{L}\p{M}][\p{L}\p{M}'’-]*)*$/u.test(normalized)) return normalized;
+  const letters = normalized.replace(/[^\p{L}\p{M}]/gu, '');
+  if (!letters) return normalized;
+  const allUpper = letters === letters.toLocaleUpperCase('es-MX');
+  const allLower = letters === letters.toLocaleLowerCase('es-MX');
+  if (!allUpper && !allLower) return normalized;
+  if (allUpper && !/[ -]/u.test(normalized) && letters.length <= 3) return normalized;
+  return normalized.split(/([ -])/u).map((part) => part === ' ' || part === '-' ? part : `${part.slice(0, 1).toLocaleUpperCase('es-MX')}${part.slice(1).toLocaleLowerCase('es-MX')}`).join('');
+}
+
 export function parseMoneyToMinor(value) {
   const trimmed = String(value ?? '').trim();
   if (!trimmed) return null;
@@ -168,23 +190,34 @@ export function parseMoneyToMinor(value) {
   return Number.isSafeInteger(minor) ? minor : Number.NaN;
 }
 
-export function applyBatchDefaults(row, defaults) {
+export function applyBatchDefaults(row, defaults, normalizeBrand = normalizeBrandValue) {
   return {
     ...row,
     kind: row.kind || defaults.kind || '',
     category: row.category.trim() || defaults.category.trim(),
-    brand: row.brand.trim() || defaults.brand.trim(),
+    brand: row.brand.trim() || normalizeBrand(defaults.brand),
   };
 }
 
-export function applyBatchDefaultsToEmptyRows(rows, defaults) {
+export function applyBatchDefaultsToEmptyRows(rows, defaults, normalizeBrand = normalizeBrandValue) {
   let changedCount = 0;
   const nextRows = rows.map((row) => {
-    const next = applyBatchDefaults(row, defaults);
+    const next = applyBatchDefaults(row, defaults, normalizeBrand);
     if (next.kind !== row.kind || next.category !== row.category || next.brand !== row.brand) changedCount += 1;
     return next;
   });
   return Object.freeze({ rows: nextRows, changedCount });
+}
+
+/** Removes one physical draft observation while retaining the one-row grid invariant. */
+export function removeDraftRow(rows, rowIndex) {
+  if (rows.length <= 1) return Object.freeze({ rows: [...rows], removed: null, nextRowIndex: 0 });
+  const index = Math.max(0, Math.min(rows.length - 1, Number.isInteger(rowIndex) ? rowIndex : 0));
+  return Object.freeze({
+    rows: Object.freeze(rows.filter((_, candidate) => candidate !== index)),
+    removed: rows[index] ?? null,
+    nextRowIndex: Math.min(index, rows.length - 2),
+  });
 }
 
 export function nextGridCell(key, row, column, rowCount, columnCount, shiftKey = false) {

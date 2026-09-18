@@ -82,7 +82,11 @@
 .canvas { position: relative; width: var(--bulk-grid-width); height: var(--bulk-grid-height); }
 .visibleRows { transform: translateY(var(--bulk-grid-offset)); }
 .gridRow { height: 62px; border-bottom: 1px solid var(--color-border-subtle); }
-.gridRow > span { padding: var(--space-2); color: var(--color-text-subtle); font-family: var(--font-family-mono); font-size: .7rem; text-align: right; }
+.rowHeader { position: relative; display: grid; min-width: 0; place-items: center end; padding: var(--space-2); color: var(--color-text-subtle); font-family: var(--font-family-mono); font-size: .7rem; text-align: right; }
+.rowRemove { position: absolute; top: 50%; right: var(--space-1); display: grid; width: 28px; height: 28px; place-items: center; padding: 0; border: 1px solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-text-muted); background: var(--color-surface-raised); cursor: pointer; transform: translateY(-50%); }
+.rowHeader:has(.rowRemove) > span { opacity: 0; }
+.rowRemove:hover { color: var(--color-danger); border-color: var(--color-danger); background: var(--color-danger-subtle); }
+.rowRemove:focus-visible { outline: var(--focus-ring-width) solid var(--color-brand-focus); outline-offset: var(--focus-ring-offset); }
 .cell { position: relative; min-width: 0; height: 62px; background: transparent; }
 .gridlines .gridHeader > *, .gridlines .gridRow > * { border-inline-end: 1px solid var(--color-border); }
 .gridlines .gridHeader > :first-child, .gridlines .gridRow > :first-child { border-inline-start: 1px solid var(--color-border); }
