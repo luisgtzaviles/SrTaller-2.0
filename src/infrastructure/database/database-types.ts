@@ -321,7 +321,8 @@ export interface CatalogSupplierCatalogVersionTable {
   readonly description: MutableColumn<string | null>;
   readonly create_client_request_id: ImmutableColumn<string | null>;
   readonly create_request_sha256: ImmutableColumn<string | null>;
-  readonly composer_mode: ImmutableColumn<'FULL' | 'COMPACT'>;
+  /** Mutable only while its Supplier Version remains DRAFT; immutable after Analyze. */
+  readonly composer_mode: MutableColumn<'FULL' | 'COMPACT'>;
   /** Immutable once the supplier version leaves DRAFT. Historical rows default conservatively. */
   readonly completeness: MutableColumn<'PARTIAL' | 'COMPLETE'>;
   readonly column_signature: MutableColumn<string>;
