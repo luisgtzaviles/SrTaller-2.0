@@ -4,6 +4,7 @@ import { CatalogFieldPolicyInputError, CatalogFieldPolicyService } from '../dist
 import { CatalogFieldPolicyConcurrencyConflictError } from '../dist/modules/catalog/application/ports/catalog-field-policy-repository.port.js';
 import { catalogFieldPolicyRegistry, productDefaultCatalogFieldPolicyLevels, validateCatalogFieldPolicyLevels } from '../dist/modules/catalog/domain/catalog-field-policy.js';
 import { CatalogProtectedOperations } from '../dist/modules/catalog/application/catalog-protected-operations.js';
+import { ContextualAuthorizationError } from '../dist/modules/access/index.js';
 
 const tenantA = 'a0000000-0000-4000-8000-000000000041';
 const tenantB = 'b0000000-0000-4000-8000-000000000041';
@@ -45,4 +46,35 @@ test('catalog field policy API authority composes configuration and sensitive-co
   assert.deepEqual(calls[1][1].capability, 'catalog.configuration.manage');
   assert.equal(calls[1][1].tenantId, tenantA);
   assert.equal('tenantId' in calls[1][2], false);
+});
+
+test('operational Composer policy read needs import access, not configuration access, and redacts reference cost without its read authority', async () => {
+  const requirements = [];
+  const authorized = Object.freeze({ tenantId: tenantA, branchId: 'c2000000-0000-4000-8000-000000000041', stationId: 'd2000000-0000-4000-8000-000000000041', sessionId: 'e2000000-0000-4000-8000-000000000041', userId: 'f2000000-0000-4000-8000-000000000041', userDisplayName: 'Composer User', capability: 'catalog.import.prepare', commitGuard: Object.freeze({ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }) });
+  const policy = {
+    async effective(scope) { assert.equal(scope.tenantId, tenantA); return { policyVersion: 3, source: 'tenant', fieldLevels: { ...productDefaultCatalogFieldPolicyLevels(), brand: 'ESSENTIAL', referenceCost: 'REQUIRED' }, registry: catalogFieldPolicyRegistry }; },
+  };
+  const noCost = {
+    async execute(_evidence, requirement, operation) {
+      requirements.push(requirement);
+      if (requirement.capability === 'catalog.reference_cost.read') throw new ContextualAuthorizationError('ACCESS_DENIED');
+      return await operation({ ...authorized, capability: requirement.capability });
+    },
+  };
+  const operations = new CatalogProtectedOperations({}, noCost, {}, {}, {}, {}, policy);
+  const redacted = await operations.getBulkFieldPolicy({});
+  assert.deepEqual(requirements.map(({ capability }) => capability), ['catalog.import.prepare', 'catalog.reference_cost.read']);
+  assert.equal(redacted.fields.some((field) => field.key === 'referenceCost'), false);
+  assert.equal(redacted.fields.find((field) => field.key === 'brand')?.level, 'ESSENTIAL');
+  assert.equal(redacted.fields.some((field) => field.key === 'title' && field.domainFixed), true);
+  assert.equal(requirements.some(({ capability }) => capability === 'catalog.configuration.read'), false);
+});
+
+test('operational Composer policy includes reference cost only after server-side cost authorization', async () => {
+  const authorized = Object.freeze({ tenantId: tenantA, branchId: 'c3000000-0000-4000-8000-000000000041', stationId: 'd3000000-0000-4000-8000-000000000041', sessionId: 'e3000000-0000-4000-8000-000000000041', userId: 'f3000000-0000-4000-8000-000000000041', userDisplayName: 'Composer Cost User', capability: 'catalog.import.prepare', commitGuard: Object.freeze({ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }) });
+  const tenantWide = { async execute(_evidence, requirement, operation) { return await operation({ ...authorized, capability: requirement.capability }); } };
+  const policy = { async effective() { return { policyVersion: 3, source: 'tenant', fieldLevels: { ...productDefaultCatalogFieldPolicyLevels(), referenceCost: 'ESSENTIAL' }, registry: catalogFieldPolicyRegistry }; } };
+  const operations = new CatalogProtectedOperations({}, tenantWide, {}, {}, {}, {}, policy);
+  const result = await operations.getBulkFieldPolicy({});
+  assert.deepEqual(result.fields.find((field) => field.key === 'referenceCost'), { key: 'referenceCost', label: 'Costo de referencia', level: 'ESSENTIAL', domainFixed: false, referenceCostSensitive: true });
 });
