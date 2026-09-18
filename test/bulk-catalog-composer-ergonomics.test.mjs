@@ -11,12 +11,14 @@ import {
   fillRows,
   nextGridCell,
   nextValidationIssueIndex,
+  normalizeBrandValue,
   normalizeSupplierTitle,
   orchestrateReviewList,
   ownerSupplierClipboard,
   parseClipboardMatrix,
   syntheticSupplierDemoRows,
   parseMoneyToMinor,
+  removeDraftRow,
   validateComposerDraft,
   validationIssueFromApi,
 } from '../apps/dev-preview-web/src/pages/bulk-catalog-composer-model.mjs';
@@ -59,6 +61,18 @@ test('supplier title stays available while proposal casing protects technology t
   assert.equal(observed, 'PANTALLA IPHONE 11 PRO OLED 5.8" GX >>I');
 });
 
+test('Brand capture prefers canonical references and safely normalizes only uniform human-readable casing', () => {
+  const canonical = ['Apple', 'Samsung', 'LG', 'iFixit'];
+  assert.equal(normalizeBrandValue('  APPLE  ', canonical), 'Apple');
+  assert.equal(normalizeBrandValue('SAMSUNG', canonical), 'Samsung');
+  assert.equal(normalizeBrandValue('XIAOMI', canonical), 'Xiaomi');
+  assert.equal(normalizeBrandValue('motorola', canonical), 'Motorola');
+  assert.equal(normalizeBrandValue('JBL', canonical), 'JBL');
+  assert.equal(normalizeBrandValue('LG', canonical), 'LG');
+  assert.equal(normalizeBrandValue('iFixit', canonical), 'iFixit');
+  assert.equal(normalizeBrandValue('Moto', canonical), 'Moto');
+});
+
 test('MXN costs distinguish blank, zero and formatted amounts', () => {
   assert.equal(parseMoneyToMinor(''), null);
   assert.equal(parseMoneyToMinor('0'), 0);
@@ -84,6 +98,30 @@ test('missing-data helper supports partial context and reports no-op without mut
   const noOp = applyBatchDefaultsToEmptyRows(partial.rows, { kind: 'PART', category: '', brand: 'Apple' });
   assert.equal(noOp.changedCount, 0);
   assert.deepEqual(noOp.rows, partial.rows);
+});
+
+test('missing-data completion uses the same Brand canonicalization boundary as capture', () => {
+  const canonicalize = (value) => normalizeBrandValue(value, ['Apple', 'Samsung', 'LG']);
+  const result = applyBatchDefaultsToEmptyRows([blankRow()], { kind: 'PART', category: '', brand: '  APPLE ' }, canonicalize);
+  assert.deepEqual(result.rows.map((row) => [row.kind, row.brand]), [['PART', 'Apple']]);
+  assert.equal(applyBatchDefaults(blankRow(), { kind: '', category: '', brand: 'samsung' }, canonicalize).brand, 'Samsung');
+});
+
+test('draft row removal preserves neighboring rows and provenance, keeps one row, and selects the logical successor', () => {
+  const rows = [
+    { ...blankRow(), supplierObservedTitle: 'PROVEEDOR A', supplierObservedBrand: 'APPLE', title: 'A', brand: 'Apple' },
+    { ...blankRow(), supplierObservedTitle: 'PROVEEDOR B', supplierObservedBrand: 'SAMSUNG', title: 'B', brand: 'Samsung' },
+    { ...blankRow(), supplierObservedTitle: 'PROVEEDOR C', supplierObservedBrand: 'XIAOMI', title: 'C', brand: 'Xiaomi' },
+  ];
+  const removal = removeDraftRow(rows, 1);
+  assert.equal(removal.removed, rows[1]);
+  assert.deepEqual(removal.rows.map((row) => [row.title, row.supplierObservedTitle, row.supplierObservedBrand]), [['A', 'PROVEEDOR A', 'APPLE'], ['C', 'PROVEEDOR C', 'XIAOMI']]);
+  assert.equal(removal.nextRowIndex, 1);
+  const last = removeDraftRow(rows, 2);
+  assert.equal(last.nextRowIndex, 1);
+  const single = removeDraftRow([rows[0]], 0);
+  assert.equal(single.removed, null);
+  assert.equal(single.rows.length, 1);
 });
 
 test('spreadsheet navigation covers arrows, Tab, Shift+Tab and Enter', () => {
@@ -188,7 +226,7 @@ test('grid edit actions live once in the primary toolbar immediately before Revi
   const toolbarStart = page.indexOf('<section className={styles.workspaceToolbar}>');
   const toolbarEnd = page.indexOf('{currentIssue ? ', toolbarStart);
   const toolbar = page.slice(toolbarStart, toolbarEnd);
-  assert.match(page, /const editableGridActionsVisible = \(mode === 'COMPACT' \|\| fullPolicyReady\) && \(current\?\.lifecycle === 'DRAFT' \|\| !current\);/u);
+  assert.match(page, /const editableGridActionsVisible = canPrepareBulk && \(mode === 'COMPACT' \|\| fullPolicyReady\) && \(current\?\.lifecycle === 'DRAFT' \|\| !current\);/u);
   assert.match(toolbar, /className=\{styles\.gridEditActions\} role="group" aria-label="Acciones de edición de la lista"/u);
   assert.equal((page.match(/>Deshacer<\/Button>/gu) ?? []).length, 1);
   assert.equal((page.match(/>Agregar fila<\/Button>/gu) ?? []).length, 1);
@@ -201,7 +239,14 @@ test('grid edit actions live once in the primary toolbar immediately before Revi
   assert.match(toolbar, /disabled=\{rows\.length >= 10_000\}/u);
   assert.match(toolbar, /disabled=\{rows\.length === 1\}/u);
   assert.match(toolbar, /tone="primary" onClick=\{\(\) => void reviewList\(\)\}/u);
-  assert.doesNotMatch(page, /styles\.rowActions/u);
+  assert.equal((page.match(/onClick=\{removeActiveDraftRow\}/gu) ?? []).length, 2);
+  assert.match(page, /aria-label=\{`Quitar fila \$\{rowIndex \+ 1\}`\}/u);
+  assert.match(page, /const removeActiveDraftRow = \(\): void =>/u);
+  assert.match(page, /removeDraftRow\(rows, active\.row\)/u);
+  assert.match(page, /supplierObservedBrand \|\| row\.brand/u);
+  assert.match(page, /setCurrent\(saved\); setPendingNewLoadSupplierId\(null\); setRows\(rows\);/u);
+  assert.match(page, /onBlur=\{column === 'brand' \? \(\) => commitBrand\(rowIndex\) : undefined\}/u);
+  assert.match(css, /\.rowRemove \{ position: absolute;/u);
   assert.match(css, /\.gridEditActions \{ display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/u);
   assert.match(css, /\.gridEditActions > button:last-child \{ grid-column: 1 \/ -1; \}/u);
 });
