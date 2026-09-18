@@ -22,6 +22,11 @@ export function sortValidationIssues(issues: readonly ValidationIssue[]): Valida
 export function validateComposerDraft(input: Readonly<{ selectedSource: string; mode: 'FULL' | 'COMPACT'; rows: readonly Record<string, string>[] }>): ValidationIssue[];
 export function hasMeaningfulComposerWork(input: Readonly<{ dirty: boolean; description: string; mode: 'FULL' | 'COMPACT'; completeness: 'PARTIAL' | 'COMPLETE'; rows: readonly Record<string, unknown>[] }>): boolean;
 export function filterSupplierSources<Source extends Readonly<{ name: string }>>(sources: readonly Source[], query: string): readonly Source[];
+export type NewLoadIntent = 'PARTIAL' | 'COMPLETE';
+export type NewLoadGateState = Readonly<{ supplierId: string | null; completeness: NewLoadIntent | null }>;
+export const NEW_LOAD_INTENTS: readonly Readonly<{ value: NewLoadIntent; label: string; description: string }>[];
+export function createNewLoadGateState(): NewLoadGateState;
+export function canContinueNewLoadGate(state: NewLoadGateState): boolean;
 export function validationIssueFromApi(error: Readonly<{ status?: number; code?: string | null; parameter?: string | null }>): ValidationIssue;
 export function nextValidationIssueIndex(current: number, direction: -1 | 1, count: number): number;
 export function groupDuplicateResolutionRows<Row extends Readonly<{ rowNumber: number }>>(rows: readonly Row[], keyForRow: (row: Row) => string, errorsForRow: (row: Row) => readonly string[], warningsForRow: (row: Row) => readonly string[]): readonly Readonly<{ key: string; members: readonly Row[]; unresolved: boolean }> [];

@@ -226,6 +226,21 @@ export function filterSupplierSources(sources, query) {
   return sources.filter((source) => source.name.toLocaleLowerCase('es-MX').includes(normalized));
 }
 
+export const NEW_LOAD_INTENTS = Object.freeze([
+  Object.freeze({ value: 'PARTIAL', label: 'Sólo algunos artículos', description: 'Agrega o actualiza únicamente lo incluido. Lo que no aparezca no se toma como ausencia.' }),
+  Object.freeze({ value: 'COMPLETE', label: 'La lista completa del proveedor', description: 'Representa todo lo que ofrece actualmente el proveedor. SR Taller comparará qué continúa, qué se agregó y qué dejó de aparecer.' }),
+]);
+
+export function createNewLoadGateState() {
+  return Object.freeze({ supplierId: null, completeness: null });
+}
+
+export function canContinueNewLoadGate(state) {
+  return typeof state.supplierId === 'string'
+    && state.supplierId.trim().length > 0
+    && (state.completeness === 'PARTIAL' || state.completeness === 'COMPLETE');
+}
+
 const apiColumnMap = Object.freeze({
   kind: 'kind', supplierObservedTitle: 'title', title: 'title', description: 'description', category: 'category', brand: 'brand',
   supplierItemCode: 'supplierItemCode', sku: 'sku', barcode: 'barcode', basePriceMinor: 'price', referenceCostMinor: 'cost', identifier: 'supplierItemCode', required: 'title',
