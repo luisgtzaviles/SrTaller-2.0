@@ -907,3 +907,51 @@ test('UX-003.4 enforces required values from the resulting Catalog state and rec
     assert.equal(Number((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantId])).rows[0].count), catalogBefore);
   } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
 });
+
+test('UX-005.6 rejects zero effective base prices at Analyze and independently at Apply', { skip: !enabled, timeout: 30_000 }, async () => {
+  const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
+  const connection = createDatabaseConnection(config());
+  const tenantId = 'f1410000-0000-4000-8000-000000000056'; const branchId = 'f2410000-0000-4000-8000-000000000056'; const ctx = context(tenantId, branchId);
+  const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
+  const policy = new CatalogFieldPolicyService(new KyselyCatalogFieldPolicyRepository(connection), () => new Date('2026-09-18T20:00:00.000Z'), () => randomUUID());
+  const policyContext = Object.freeze({ ...ctx, capability: 'catalog.configuration.manage' });
+  try {
+    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    const source = await service.createSource(ctx, { name: 'UX-005.6 integrity fixture' });
+    const zeroRow = { kind: 'PART', supplierObservedTitle: 'Precio cero', title: 'Precio cero', description: null, category: 'Pantallas', brand: 'Samsung', supplierItemCode: 'UX0056-ZERO', sku: null, barcode: null, basePriceMinor: 0, referenceCostMinor: 0 };
+    const zeroDraft = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'zero must block', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: '0'.repeat(64), rawPayload: 'zero', rows: [zeroRow] });
+    const analyzed = await service.analyze(ctx, zeroDraft.versionId, { expectedVersion: zeroDraft.version });
+    assert.deepEqual([analyzed.rows[0].classification, analyzed.rows[0].decision, analyzed.rows[0].errors], ['NEW', 'UNRESOLVED', ['MISSING_REQUIRED_EFFECTIVE_VALUE:basePrice']]);
+    assert.equal((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantId])).rows[0].count, 0);
+
+    /** Simulate a stale/corrupt review state: publish must still reject it
+     * before it can create a CatalogItem or any reference/memory side effect. */
+    await admin.query(`update catalog_update_row_decisions set decision = 'APPLY' where tenant_id = $1 and batch_id = $2`, [tenantId, analyzed.batch.batchId]);
+    await admin.query(`update catalog_update_batches set lifecycle = 'READY' where tenant_id = $1 and batch_id = $2`, [tenantId, analyzed.batch.batchId]);
+    await assert.rejects(service.publish(ctx, zeroDraft.versionId, { expectedVersion: analyzed.version, clientRequestId: randomUUID() }, false), (error) => error instanceof CatalogRequiredEffectiveValueError && error.missingFields.includes('basePrice'));
+    assert.equal((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantId])).rows[0].count, 0);
+
+    const categoryId = randomUUID(); const brandId = randomUUID();
+    await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantId, categoryId]);
+    await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'Samsung', 'samsung', 'ACTIVE', 1, now(), now())`, [tenantId, brandId]);
+    await admin.query(`insert into catalog_category_kind_applicability (tenant_id, category_id, kind) values ($1, $2, 'PART')`, [tenantId, categoryId]);
+    await admin.query(`insert into catalog_brand_kind_applicability (tenant_id, brand_id, kind) values ($1, $2, 'PART')`, [tenantId, brandId]);
+    const optionalCost = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'zero cost remains optional', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'f'.repeat(64), rawPayload: 'optional-cost', rows: [{ ...zeroRow, title: 'Costo cero opcional', supplierObservedTitle: 'Costo cero opcional', supplierItemCode: 'UX0056-OPTIONAL', basePriceMinor: 120_00 }] });
+    const optionalAnalyzed = await service.analyze(ctx, optionalCost.versionId, { expectedVersion: optionalCost.version });
+    assert.deepEqual([optionalAnalyzed.rows[0].classification, optionalAnalyzed.rows[0].decision, optionalAnalyzed.rows[0].errors], ['NEW', 'APPLY', []]);
+
+    const requiredCostPolicy = { ...(await policy.effective({ tenantId })).fieldLevels, referenceCost: 'REQUIRED' };
+    await policy.update(policyContext, { expectedVersion: 0, fieldLevels: requiredCostPolicy });
+    const requiredCost = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'zero cost must block when required', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'c'.repeat(64), rawPayload: 'required-cost', rows: [{ ...zeroRow, title: 'Costo cero obligatorio', supplierObservedTitle: 'Costo cero obligatorio', supplierItemCode: 'UX0056-REQUIRED-COST', basePriceMinor: 130_00 }] });
+    const requiredCostAnalyzed = await service.analyze(ctx, requiredCost.versionId, { expectedVersion: requiredCost.version });
+    assert.deepEqual([requiredCostAnalyzed.rows[0].classification, requiredCostAnalyzed.rows[0].decision, requiredCostAnalyzed.rows[0].errors], ['NEW', 'UNRESOLVED', ['MISSING_REQUIRED_EFFECTIVE_VALUE:referenceCost']]);
+
+    const excludedZero = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'explicitly excluded zero row', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'd'.repeat(64), rawPayload: 'excluded-zero', rows: [{ ...zeroRow, title: 'Precio cero excluido', supplierObservedTitle: 'Precio cero excluido', supplierItemCode: 'UX0056-EXCLUDED' }] });
+    const excludedAnalyzed = await service.analyze(ctx, excludedZero.versionId, { expectedVersion: excludedZero.version });
+    const excludedReviewed = await service.decide(ctx, excludedZero.versionId, excludedAnalyzed.rows[0].rowDecisionId, { expectedRowVersion: excludedAnalyzed.rows[0].version, decision: 'EXCLUDE', targetItemId: null, titleDecision: null, includeReferenceCost: false });
+    assert.equal(excludedReviewed.batch.lifecycle, 'READY');
+    await service.publish(ctx, excludedZero.versionId, { expectedVersion: excludedReviewed.version, clientRequestId: randomUUID() }, false);
+    assert.equal((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantId])).rows[0].count, 0);
+  } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
+});

@@ -35,6 +35,19 @@ test('required policy validates the effective Catalog value and never supplier h
   assert.equal(domain.missingRequiredEffectiveValueReason('brand'), 'MISSING_REQUIRED_EFFECTIVE_VALUE:brand');
 });
 
+test('required money uses a meaningful effective amount, never an explicit or retained zero', () => {
+  const required = { kind: 'REQUIRED', title: 'REQUIRED', description: 'OPTIONAL', category: 'REQUIRED', brand: 'OPTIONAL', supplierItemCode: 'OPTIONAL', sku: 'OPTIONAL', barcode: 'OPTIONAL', referenceCost: 'REQUIRED', basePrice: 'REQUIRED' };
+  const optionalCost = { ...required, referenceCost: 'OPTIONAL' };
+  const known = { kind: 'PART', title: 'Pantalla conocida', description: null, categoryPresent: true, brandPresent: false, basePriceMinor: 120_00, referenceCostMinor: 60_00 };
+  const row = { kind: 'PART', supplierObservedTitle: 'Pantalla nueva', title: 'Pantalla nueva', description: null, category: 'Pantallas', brand: null, supplierItemCode: 'UX0056-001', sku: null, barcode: null, basePriceMinor: 120_00, referenceCostMinor: 60_00 };
+  assert.deepEqual(domain.missingRequiredEffectiveFields(required, row, null), []);
+  assert.deepEqual(domain.missingRequiredEffectiveFields(required, { ...row, basePriceMinor: 0 }, null), ['basePrice']);
+  assert.deepEqual(domain.missingRequiredEffectiveFields(required, { ...row, basePriceMinor: null, referenceCostMinor: null }, known), []);
+  assert.deepEqual(domain.missingRequiredEffectiveFields(required, { ...row, basePriceMinor: 0, referenceCostMinor: null }, known), ['basePrice']);
+  assert.deepEqual(domain.missingRequiredEffectiveFields(required, { ...row, referenceCostMinor: 0 }, null), ['referenceCost']);
+  assert.deepEqual(domain.missingRequiredEffectiveFields(optionalCost, { ...row, referenceCostMinor: 0 }, null), []);
+});
+
 test('50k characterization rejects before persistence without truncation', () => {
   const rows = Array.from({ length: 50_000 }, (_, index) => fullRow(index + 1));
   const heapBefore = process.memoryUsage().heapUsed; const started = performance.now();

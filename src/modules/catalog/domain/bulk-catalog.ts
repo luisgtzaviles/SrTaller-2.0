@@ -71,6 +71,20 @@ export function missingRequiredEffectiveFields(
   proposal: BulkCatalogRowInput,
   target: BulkCatalogEffectiveTarget | null,
 ): readonly CatalogFieldPolicyKey[] {
+  /**
+   * A numeric value can be present without being a usable commercial value.
+   * Base price is a fixed domain requirement for a new active Bulk item, and
+   * zero never satisfies that requirement.  Reference cost keeps its policy
+   * semantics: zero is allowed unless the Tenant explicitly makes it
+   * REQUIRED, in which case it must also be a meaningful positive amount.
+   *
+   * An explicit incoming zero intentionally does not fall back to a prior
+   * value.  That keeps an update from silently discarding the supplier's
+   * supplied value while presenting an older price as if it were retained.
+   */
+  const positiveEffectiveAmount = (incoming: number | null, existing: number | null | undefined): boolean => incoming !== null
+    ? incoming > 0
+    : (existing ?? 0) > 0;
   const present: Readonly<Record<CatalogFieldPolicyKey, boolean>> = Object.freeze({
     kind: proposal.kind !== null || target !== null,
     title: proposal.title !== null || Boolean(target?.title),
@@ -80,8 +94,8 @@ export function missingRequiredEffectiveFields(
     supplierItemCode: proposal.supplierItemCode !== null,
     sku: proposal.sku !== null,
     barcode: proposal.barcode !== null,
-    referenceCost: proposal.referenceCostMinor !== null || target?.referenceCostMinor !== null,
-    basePrice: proposal.basePriceMinor !== null || target?.basePriceMinor !== null,
+    referenceCost: positiveEffectiveAmount(proposal.referenceCostMinor, target?.referenceCostMinor),
+    basePrice: positiveEffectiveAmount(proposal.basePriceMinor, target?.basePriceMinor),
   });
   return Object.freeze((Object.keys(levels) as CatalogFieldPolicyKey[])
     .filter((field) => levels[field] === 'REQUIRED' && !present[field]));

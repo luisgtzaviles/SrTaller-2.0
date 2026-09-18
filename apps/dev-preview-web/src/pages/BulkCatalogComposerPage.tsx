@@ -49,7 +49,9 @@ const correctionValue = (row: SupplierVersionRow, column: Column): string => {
 };
 const analysisMessage = (code: string, canReadCost: boolean): string | null => {
   const requiredField = requiredEffectiveField(code);
-  if (requiredField) return requiredField === 'cost' && !canReadCost ? 'Falta un dato obligatorio protegido; requiere un usuario autorizado.' : `Falta ${labels[requiredField]}.`;
+  if (requiredField === 'price') return 'Precio base debe ser mayor que 0.';
+  if (requiredField === 'cost') return canReadCost ? 'Costo de referencia debe ser mayor que 0.' : 'Falta un dato obligatorio protegido; requiere un usuario autorizado.';
+  if (requiredField) return `Falta ${labels[requiredField]}.`;
   return ({
   DUPLICATE_OBSERVATION_IN_VERSION: 'Esta observación se repite dentro de la lista del proveedor.',
   DUPLICATE_VALUE_CONTRADICTION: 'Artículo repetido con datos diferentes.',
@@ -496,7 +498,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const completeRequiredValues = (): void => {
     const issues = requiredAttentionRows.flatMap((row) => {
       const rowIndex = current?.rows.findIndex((candidate) => candidate.rowDecisionId === row.rowDecisionId) ?? -1;
-      return rowIndex < 0 ? [] : missingRequiredFields(row).map((columnKey): ValidationIssue => ({ scope: 'CELL', rowIndex, columnKey, code: 'MISSING_REQUIRED_EFFECTIVE_VALUE', message: `${labels[columnKey]} es obligatorio para el valor final.` }));
+      return rowIndex < 0 ? [] : missingRequiredFields(row).map((columnKey): ValidationIssue => ({ scope: 'CELL', rowIndex, columnKey, code: 'MISSING_REQUIRED_EFFECTIVE_VALUE', message: columnKey === 'price' ? 'Precio base debe ser mayor que 0.' : columnKey === 'cost' ? 'Costo de referencia debe ser mayor que 0.' : `${labels[columnKey]} es obligatorio para el valor final.` }));
     });
     setServerIssues(issues); setValidationAttempted(true); setIssueIndex(0); setGridExpanded(true); setViewPreset('ALL'); if (issues[0]) setPendingIssueFocus(issues[0]);
   };

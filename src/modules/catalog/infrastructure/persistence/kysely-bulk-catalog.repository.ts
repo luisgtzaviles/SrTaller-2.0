@@ -417,10 +417,16 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
   }
   async decide(context: CatalogMutationContext, input: Readonly<{ versionId: string; rowDecisionId: string; expectedRowVersion: number; decision: BulkCatalogDecision; targetItemId: string | null; titleDecision: BulkCatalogTitleDecision | null; includeReferenceCost: boolean; occurredAt: Date }>) {
     return this.transaction(async (db, tx) => {
-      const version = await db.selectFrom('catalog_supplier_catalog_versions').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).executeTakeFirst(); if (!version) throw new CatalogNotFoundError(); if (version.lifecycle !== 'INGESTED') throw new CatalogConflictError();
+      const version = await db.selectFrom('catalog_supplier_catalog_versions').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).executeTakeFirst(); if (!version) throw new CatalogNotFoundError(); if (!['DRAFT', 'INGESTED'].includes(version.lifecycle)) throw new CatalogConflictError();
       const batch = await db.selectFrom('catalog_update_batches').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).forUpdate().executeTakeFirstOrThrow(); if (isStaleByCorrection(batch.counts)) throw new CatalogConflictError();
       const row = await db.selectFrom('catalog_update_row_decisions').selectAll().where('tenant_id', '=', context.tenantId).where('row_decision_id', '=', input.rowDecisionId).where('batch_id', '=', batch.batch_id).forUpdate().executeTakeFirst(); if (!row) throw new CatalogNotFoundError(); if (row.lock_version !== input.expectedRowVersion) throw new CatalogConflictError();
-      const duplicateValueContradiction = normalizeRowErrors(row.errors).includes('DUPLICATE_VALUE_CONTRADICTION');
+      const rowErrors = normalizeRowErrors(row.errors);
+      /** Analyze keeps a draft in DRAFT when every unresolved row only lacks a
+       * required effective value.  The operator may still explicitly exclude
+       * such a row; no APPLY or identity decision is allowed until it becomes
+       * a normal ingested review. */
+      if (version.lifecycle === 'DRAFT' && (input.decision !== 'EXCLUDE' || !rowErrors.some(isRequiredEffectiveValueReason) || !rowErrors.every(isRequiredEffectiveValueReason))) throw new CatalogConflictError();
+      const duplicateValueContradiction = rowErrors.includes('DUPLICATE_VALUE_CONTRADICTION');
       let classification = row.classification; let expected = row.expected_item_version; let targetItemId = input.targetItemId ?? row.target_item_id; let selectedTitleDecision: BulkCatalogTitleDecision | null = row.title_decision;
       let selectedEffectiveTarget: BulkCatalogEffectiveTarget | null = null;
       if (duplicateValueContradiction) {
