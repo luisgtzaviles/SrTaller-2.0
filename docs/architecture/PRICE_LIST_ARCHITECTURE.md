@@ -326,12 +326,16 @@ Capacidades iniciales:
 | Capability | Permite |
 |---|---|
 | `price_list.read` | consultar artículos vendibles y precio efectivo |
-| `catalog.manage` | alta/edición/lifecycle/clasificación/identificadores |
+| `catalog.manage` | Category/Brand y compatibilidad transitoria de item; no reemplaza los sucesores explícitos |
+| `catalog.items.create` | crear CatalogItem; requiere además `catalog.prices.manage` y costo cuando corresponda |
+| `catalog.items.update` | corregir atributos no financieros de un CatalogItem |
+| `catalog.items.deactivate` | desactivar/reactivar un CatalogItem individual; no concede retiro masivo ni hard delete |
 | `catalog.prices.manage` | cambiar precio base |
 | `catalog.branch_prices.manage` | crear/revocar override de Branch autorizada |
 | `catalog.reference_cost.read` | recibir costo de referencia |
 | `catalog.reference_cost.manage` | registrar/corregir costo de referencia |
-| `catalog.import.prepare` | cargar, mapear y resolver un batch sin publicar |
+| `catalog.import.read` | consultar fuentes, versiones, diff, coverage y resultados de carga |
+| `catalog.import.prepare` | cargar, mapear y resolver un batch sin publicar; temporalmente también habilita lectura heredada |
 | `catalog.import.publish` | publicar un batch listo |
 | `catalog.items.bulk_retire` | preparar y ejecutar retiro masivo de CatalogItems; no concede hard delete ni reversión de updates |
 | `catalog.suppliers.delete` | eliminar una SupplierSource sólo cuando toda su historia sea borrador seguro; no concede delete de CatalogItem ni de evidencia publicada |
@@ -343,6 +347,14 @@ como `null`, metadata, error diferencial, export o sugerencia. Para un usuario
 autorizado, la preferencia `priceListShowReferenceCost` pertenece a `users`, es
 personal, inicia `false` y sólo controla si el cliente solicita/muestra el dato;
 no concede permisos.
+
+La transición UX-004.1 conserva roles existentes por **capability**, nunca por
+nombre: `catalog.manage` recibe los tres sucesores de item y
+`catalog.import.prepare` recibe `catalog.import.read`. No se otorgan por esta
+migración publish, retiro masivo, borrado de proveedor, precio, costo, Branch
+price ni configuración. El servidor conserva el fallback de `catalog.manage`
+para las operaciones individuales mientras Category/Brand siga bajo esa
+authority; `catalog.import.read` no permite preparar un batch.
 
 Crear/editar individualmente es nivel 1 de ADR-013 con capability específica,
 versionado y auditoría. Publicar un batch también queda clasificado nivel 1 en

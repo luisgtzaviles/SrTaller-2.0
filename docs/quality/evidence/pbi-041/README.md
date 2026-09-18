@@ -55,14 +55,16 @@ versiones ni ejecutar Save/Analyze/Apply.
 See the
 [UX-003 audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md).
 
-## UX-004 Catalog operational authorization audit
+## UX-004 Catalog operational authorization foundation
 
-UX-004 is a documentation-only audit of the operational authorization boundary.
-It verifies server-side contextual guards for the current List Price, Catalog,
-cost, bulk and sensitive operations, then records the smallest proposed split
-between ordinary price-list access and higher-risk work. It does not change a
-role, user, session, API, migration, CatalogItem or SupplierCatalogVersion.
-The proposed next decisions and compatibility mapping are in the
+UX-004 first audited the authorization boundary, then UX-004.1 materialized
+four bounded capabilities, the session allowlist, a capability-derived
+backfill and server-side transitional guards. The migration grants only item
+successors to existing `catalog.manage` roles and history read to existing
+prepare roles; it grants no sensitive authority and has no CatalogItem or
+SupplierCatalogVersion effect. Price-list UI redesign and a new role matrix
+remain outside this checkpoint. The decisions and compatibility mapping are in
+the
 [UX-004 audit](../../../domain/PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md).
 
 UX-003.4 now enforces `REQUIRED` from the effective resulting value rather

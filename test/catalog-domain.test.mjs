@@ -145,8 +145,101 @@ test('protected operations require fixed server capabilities and never let the c
   assert.deepEqual(observed.splice(0), [['tenant', { capability: 'catalog.manage', kind: 'read' }]]);
   await operations.createItem({}, { referenceCostAmountMinor: 48000 });
   assert.deepEqual(observed.splice(0).map((entry) => entry[1].capability), [
-    'catalog.manage', 'catalog.prices.manage', 'catalog.reference_cost.manage',
+    'catalog.items.create', 'catalog.prices.manage', 'catalog.reference_cost.manage',
   ]);
+});
+
+function capabilityExecutor(granted, observed = []) {
+  return {
+    async execute(_evidence, requirement, operation) {
+      observed.push(requirement.capability);
+      if (!granted.has(requirement.capability)) throw new ContextualAuthorizationError('ACCESS_DENIED');
+      return await operation(Object.freeze({
+        ...mutationContext(), userId: mutationContext().actorUserId,
+        userDisplayName: mutationContext().actorDisplayName,
+        capability: requirement.capability,
+        commitGuard: Object.freeze({ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }),
+      }));
+    },
+  };
+}
+
+test('granular item capabilities allow their exact operation, preserve the temporary legacy fallback, and retain composed effects', async () => {
+  const observed = [];
+  const writes = [];
+  const explicit = capabilityExecutor(new Set([
+    'catalog.items.create', 'catalog.items.update', 'catalog.items.deactivate',
+    'catalog.prices.manage', 'catalog.reference_cost.manage',
+  ]), observed);
+  const service = {
+    async createItem(_context, input) { writes.push(['create', input]); return { itemId, version: 1 }; },
+    async getItem() { return { status: 'ACTIVE' }; },
+    async updateItem(_context, _itemId, input) { writes.push(['update', input.status]); return { itemId, version: 2 }; },
+  };
+  const operations = new CatalogProtectedOperations(explicit, explicit, {}, service, {}, {});
+
+  await operations.createItem({}, { referenceCostAmountMinor: 48000 });
+  assert.deepEqual(observed.splice(0), [
+    'catalog.items.create', 'catalog.prices.manage', 'catalog.reference_cost.manage',
+  ]);
+  await operations.updateItem({}, itemId, { status: 'ACTIVE' });
+  assert.deepEqual(observed.splice(0), ['catalog.items.update', 'catalog.items.update']);
+  await operations.updateItem({}, itemId, { status: 'INACTIVE' });
+  assert.deepEqual(observed.splice(0), [
+    'catalog.items.update', 'catalog.items.deactivate',
+  ]);
+  assert.deepEqual(writes.map(([kind]) => kind), ['create', 'update', 'update']);
+
+  const legacyObserved = [];
+  const legacy = capabilityExecutor(new Set(['catalog.manage', 'catalog.prices.manage']), legacyObserved);
+  const legacyOperations = new CatalogProtectedOperations(legacy, legacy, {}, service, {}, {});
+  await legacyOperations.createItem({}, {});
+  await legacyOperations.updateItem({}, itemId, { status: 'ACTIVE' });
+  assert.ok(legacyObserved.includes('catalog.manage'));
+});
+
+test('read-only price-list authority cannot mutate items or satisfy composed price and cost effects', async () => {
+  const observed = [];
+  let writes = 0;
+  const readOnly = capabilityExecutor(new Set(['price_list.read']), observed);
+  const service = {
+    async createItem() { writes += 1; },
+    async getItem() { return { status: 'ACTIVE' }; },
+    async updateItem() { writes += 1; },
+  };
+  const operations = new CatalogProtectedOperations(readOnly, readOnly, {}, service, {}, {});
+  await assert.rejects(operations.createItem({}, {}), /no approved authority/u);
+  await assert.rejects(operations.updateItem({}, itemId, { status: 'ACTIVE' }), /no approved authority/u);
+  await assert.rejects(operations.updateItem({}, itemId, { status: 'INACTIVE' }), /no approved authority/u);
+  assert.equal(writes, 0);
+  assert.ok(observed.every((capability) => capability !== 'catalog.import.publish'));
+});
+
+test('bulk history read is independent from prepare while prepare remains compatible with required history', async () => {
+  const observed = [];
+  const history = capabilityExecutor(new Set(['catalog.import.read']), observed);
+  const bulk = {
+    async listSources() { return ['source']; },
+    async listVersions() { return ['version']; },
+    async getVersion() { return { versionId: 'version' }; },
+    async compare() { return { comparison: true }; },
+    async createDraft() { return { versionId: 'draft' }; },
+  };
+  const reader = new CatalogProtectedOperations(history, history, {}, {}, bulk, {});
+  assert.deepEqual(await reader.listSupplierSources({}), ['source']);
+  assert.deepEqual(await reader.listSupplierVersions({}), ['version']);
+  assert.deepEqual(await reader.getSupplierVersion({}, 'version', false), { versionId: 'version' });
+  assert.deepEqual(await reader.compareSupplierVersions({}, 'left', 'right'), { comparison: true });
+  await assert.rejects(reader.createSupplierDraft({}, {}), ContextualAuthorizationError);
+  assert.ok(observed.includes('catalog.import.read'));
+
+  const prepareObserved = [];
+  const preparer = capabilityExecutor(new Set(['catalog.import.prepare']), prepareObserved);
+  const prepareOperations = new CatalogProtectedOperations(preparer, preparer, {}, {}, bulk, {});
+  assert.deepEqual(await prepareOperations.listSupplierSources({}), ['source']);
+  assert.deepEqual(await prepareOperations.createSupplierDraft({}, {}), { versionId: 'draft' });
+  assert.deepEqual(prepareObserved.slice(0, 2), ['catalog.import.read', 'catalog.import.prepare']);
+  await assert.rejects(prepareOperations.publishSupplierVersion({}, 'version', {}), ContextualAuthorizationError);
 });
 
 test('bulk composer composes prepare, cost and publish authority without leaking cost reads', async () => {
@@ -296,7 +389,7 @@ test('commercial reference governance is fixed and inline capture stays inside i
   assert.deepEqual(await operations.mergeCategories({}, { references: ['a', 'b'] }), { input: { references: ['a', 'b'] } });
   assert.deepEqual(observed, [
     { capability: 'catalog.manage', kind: 'read' },
-    { capability: 'catalog.manage', kind: 'state-change' },
+    { capability: 'catalog.items.create', kind: 'state-change' },
     { capability: 'catalog.prices.manage', kind: 'state-change' },
     { capability: 'catalog.manage', kind: 'state-change' },
   ]);

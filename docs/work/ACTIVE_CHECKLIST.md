@@ -1,25 +1,26 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-004 Catalog Operational Authorization Audit
+Milestone / Functional Goal: PBI-041 — UX-004.1 Catalog Authorization Registry + Compatibility Foundation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Owner Decision Ready — operational authorization boundaries audited; no roles, capabilities, product behavior or data changed.
+Status: Local Owner Review — granular Catalog authority and safe legacy compatibility materialized; no Catalog or SupplierVersion data changed.
 WIP: 1/1
-Progress: 7 / 7 UX-004 audit blocks completed.
-Current: Owner review of the UX-004 authorization matrix and its proposed implementation slices.
-Next: await an explicit Owner decision; do not change roles, capabilities, product, migrations, push, open a PR, merge, deploy or start another UX slice.
+Progress: 9 / 9 UX-004.1 foundation blocks completed.
+Current: Owner review of the new registry, capability-derived migration backfill and transitional server checks.
+Next: await an explicit Owner decision; do not redesign Price List/Composer UX, push, open a PR, merge, deploy or start another UX slice.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-004 Catalog Operational Authorization Audit
+## Current checkpoint — UX-004.1 Catalog Authorization Registry + Compatibility Foundation
 
-- [x] Reconfirm the current PBI, capability registry, contextual authorization and session projection without changing runtime or data.
-- [x] Trace ordinary price-list read, reference-cost read/write, item, price, Branch override, bulk, source, configuration and retirement operations to server guards.
-- [x] Confirm direct client access cannot bypass protected operations; identify only authorization-granularity gaps.
-- [x] Separate ordinary list access from cost, item writes, bulk prepare/apply, clear, source delete and policy governance in an Owner-readable matrix.
-- [x] Record UX4-001 through UX4-018, compatibility/backfill rules and the minimal V1 capability target without assigning any role.
-- [x] Preserve ADR-013 level-2 controls and register Category/Brand hard-delete breadth as existing debt, outside this audit's implementation scope.
-- [x] Reconcile PBI-041, UX-003 cross-reference and evidence index; stop for Owner decision with zero DB writes and no remote action.
+- [x] Preserve the UX-004 authorization audit and materialize only `catalog.items.create`, `.update`, `.deactivate` and `catalog.import.read`.
+- [x] Add a reversible capability-derived migration: legacy `catalog.manage` receives only item successors; legacy `catalog.import.prepare` receives only import read.
+- [x] Keep `price_list.read`, unrelated roles and every sensitive capability unchanged by the backfill; no role-name rule exists.
+- [x] Extend the bounded session registry/projection and human Role labels without exposing a client authority path.
+- [x] Enforce explicit item capabilities or documented temporary `catalog.manage` fallback; preserve price/cost composition and Category/Brand authority.
+- [x] Separate bulk history reads (`catalog.import.read` or temporary prepare fallback) from preparation (`catalog.import.prepare` only).
+- [x] Prove server allow/deny, legacy compatibility, no sensitive expansion, local seed compatibility and migration idempotence with focused tests and disposable PostgreSQL.
+- [x] Reconcile PBI-041, UX-004, architecture and evidence; stop at Owner Review with no Catalog/SupplierVersion mutation and no remote action.
 
 ## Current checkpoint — UX-003.4 Required Effective Value Enforcement
 

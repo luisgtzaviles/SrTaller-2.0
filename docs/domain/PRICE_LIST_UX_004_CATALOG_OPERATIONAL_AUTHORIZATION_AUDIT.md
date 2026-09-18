@@ -1,7 +1,7 @@
 # UX-004 — Catalog Operational Authorization Audit
 
 **PBI:** PBI-041
-**Estado:** Auditoría completa — decisión Owner pendiente; no implementado.
+**Estado:** UX-004.1 materializado localmente — Owner Review pendiente; UX-004.2..004.4 no implementados.
 **Fecha:** 2026-09-17
 **Alcance:** Sólo roles, capabilities y autorización de operaciones de Lista de
 precios / Catalog. No cambia producto, API, persistencia ni datos.
@@ -21,7 +21,8 @@ es una elevación por cliente —el servidor sigue denegando las rutas sin la
 capability—, pero impide conceder lectura ordinaria sin otorgar preparación.
 
 La recomendación V1 es conservar las capabilities sensibles ya separadas,
-agregar cinco capabilities acotadas y migrar roles de manera compatible. No se
+agregar cuatro capabilities acotadas y migrar roles de manera compatible. UX-004.1
+materializa exactamente ese registro y la compatibilidad mínima. No se
 recomienda una capability por campo ni cambiar automáticamente los roles que
 hoy sólo leen la lista.
 
@@ -43,14 +44,18 @@ por un nombre como “Administrador”.
 | Capability vigente | Autoridad actual comprobada | Observación |
 | --- | --- | --- |
 | `price_list.read` | Buscar artículos y referencias operativas; el costo sólo se solicita con permiso adicional. | Es la lectura ordinaria existente; no crea ni modifica. |
-| `catalog.manage` | Obtener detalle administrativo, alta/edición/lifecycle de item y Category/Brand. | Demasiado amplio para delegación cotidiana. |
+| `catalog.manage` | Category/Brand y fallback temporal de alta/edición/lifecycle individual. | Se conserva mientras migren rutas; no es autoridad nueva. |
+| `catalog.items.create` | Crear CatalogItem, compuesta con precio/costo cuando el efecto lo requiere. | Nuevo; backfill sólo desde `catalog.manage`. |
+| `catalog.items.update` | Corregir atributos no financieros sin lifecycle. | Nuevo; backfill sólo desde `catalog.manage`. |
+| `catalog.items.deactivate` | Desactivar/reactivar un item individual. | Nuevo; no concede retiro masivo ni hard delete. |
 | `catalog.prices.manage` | Cambiar precio base; crear item exige además esta capability. | Separación financiera ya útil. |
 | `catalog.branch_prices.manage` | Crear/revocar override de precio de la Branch confiable. | Contextual a Branch. |
 | `catalog.reference_cost.read` | Recibir/visualizar costo cuando el request lo pide. | El servidor omite el campo si falta. |
 | `catalog.reference_cost.manage` | Registrar/corregir costo; altas/imports con costo exigen este permiso. | Lectura y escritura siguen separados. |
 | `catalog.configuration.read` | Leer policy de campos; actualmente se compone con lectura de costo. | Configuración Tenant-wide. |
 | `catalog.configuration.manage` | Guardar/restaurar policy; se compone con gestión de costo. | Versionada y auditada. |
-| `catalog.import.prepare` | Ver fuentes/versiones/diffs y crear, editar, analizar, decidir y purgar borradores. | Mezcla lectura y preparación. |
+| `catalog.import.read` | Ver fuentes/versiones/diffs y resultados. | Nuevo; backfill sólo desde prepare. |
+| `catalog.import.prepare` | Crear, editar, analizar, decidir y purgar borradores. | Conserva fallback operativo de lectura durante transición. |
 | `catalog.import.publish` | Aplicar/publicar un lote listo, junto con permisos de item/precio/costo aplicables. | Operación nivel 1 actual. |
 | `catalog.items.bulk_retire` | Planear y ejecutar retiro masivo / “Vaciar lista”. | Nivel 2, PIN, preview y revalidación. |
 | `catalog.suppliers.delete` | Eliminar una fuente sólo si su historia es borrador seguro. | Nivel 2, PIN, doble confirmación y revalidación. |
@@ -78,6 +83,17 @@ Tenant, Branch, User y Session confiables.
 | Eliminar fuente segura | `catalog.suppliers.delete` | Sí; servidor bloquea historia no segura. | Nivel 2 ADR-013. | Ya es independiente; conservar. |
 | Category/Brand create/update/delete/merge | `catalog.manage` | Sí, pero capability amplia. | Hard delete de referencias es deuda reconocida. | Alto: no extender este permiso a roles ordinarios. |
 | Policy de campos | `catalog.configuration.read/manage` + costo aplicable | Sí; Tenant-wide, append-only audit. | Nivel 1 actual. | Mantener compuesta; decisión de sensibilidad posterior. |
+
+### Estado material de UX-004.1
+
+La migración `20260917190200_access_add_granular_catalog_capabilities` añade
+el registry y deriva sólo los grants aprobados por capability previa. La
+allowlist/proyección de sesión acepta los cuatro códigos, las etiquetas de
+Roles son humanas y los endpoints de item e historial usan guardas explícitas
+con compatibilidad temporal. La migración PostgreSQL desechable prueba reversión,
+reaplicación, aislamiento de `price_list.read`/roles ajenos, ausencia de grants
+sensibles y una segunda ejecución sin trabajo pendiente. No se cambió UX,
+matriz de roles, CatalogItem ni SupplierCatalogVersion.
 
 ### Protección contra bypass directo
 
@@ -160,11 +176,11 @@ el backend seguirá siendo autoritativo durante esa transición.
 | UX4-017 | ¿Cómo se preservan roles actuales? Registry migrate/backfill por capabilities, no nombres. | No backfill rompe acceso; broad grant crea privilege escalation. | Dual mapping temporal y refresh/invalidation de sesión. | UX-004.1, migración. |
 | UX4-018 | ¿Qué prueba cierra la futura implementación? Deny server-side + role matrix + session refresh + audit. | Sólo ocultar UI no prueba seguridad. | Contract, PostgreSQL y Chrome con requests directos denegados. | UX-004.4, QA. |
 
-## Slices de implementación propuestos (no autorizados todavía)
+## Slices de implementación
 
-1. **UX-004.1 — Registry and compatibility foundation.** Añadir registry,
-   migración de capability/role mapping, allowlist de sesión y tests de unión
-   de roles. Mantener equivalencia explícita para roles existentes.
+1. **UX-004.1 — Registry and compatibility foundation.** **Materializado
+   localmente.** Registry, migración capability→capability, allowlist de sesión,
+   tests de unión de roles y compatibilidad explícita para roles existentes.
 2. **UX-004.2 — Price-list item authority.** Separar read detail, create,
    update y deactivate en operaciones protegidas y UI; conservar guardas
    server-side y auditoría contextual.

@@ -228,6 +228,7 @@ test('productive migration root remains exact and governed', async () => {
       '20260916180000_catalog_add_supplier_version_completeness.ts',
       '20260917190000_catalog_create_field_policies.ts',
       '20260917190100_access_add_catalog_configuration_capabilities.ts',
+      '20260917190200_access_add_granular_catalog_capabilities.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

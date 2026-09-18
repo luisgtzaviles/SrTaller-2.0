@@ -18,12 +18,16 @@ const requirement = (capability: ProtectedOperationRequirement['capability'], ki
 const priceListRead = requirement('price_list.read', 'read');
 const catalogRead = requirement('catalog.manage', 'read');
 const catalogManage = requirement('catalog.manage', 'state-change');
+const catalogItemCreate = requirement('catalog.items.create', 'state-change');
+const catalogItemUpdate = requirement('catalog.items.update', 'state-change');
+const catalogItemDeactivate = requirement('catalog.items.deactivate', 'state-change');
 const pricesManage = requirement('catalog.prices.manage', 'state-change');
 const branchPricesManage = requirement('catalog.branch_prices.manage', 'state-change');
 const costRead = requirement('catalog.reference_cost.read', 'read');
 const costManage = requirement('catalog.reference_cost.manage', 'state-change');
 const importPrepareRead = requirement('catalog.import.prepare', 'read');
 const importPrepareWrite = requirement('catalog.import.prepare', 'state-change');
+const importRead = requirement('catalog.import.read', 'read');
 const importPublish = requirement('catalog.import.publish', 'state-change');
 const bulkRetire = requirement('catalog.items.bulk_retire', 'state-change');
 const catalogConfigurationRead = requirement('catalog.configuration.read', 'read');
@@ -59,6 +63,12 @@ function containsReferenceCost(input: unknown): boolean {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return false;
   const rows = (input as { rows?: unknown }).rows;
   return Array.isArray(rows) && rows.some((row) => typeof row === 'object' && row !== null && !Array.isArray(row) && (row as { referenceCostMinor?: unknown }).referenceCostMinor !== null && (row as { referenceCostMinor?: unknown }).referenceCostMinor !== undefined && (row as { referenceCostMinor?: unknown }).referenceCostMinor !== '');
+}
+
+function requestedItemStatus(input: unknown): 'ACTIVE' | 'INACTIVE' | null {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return null;
+  const status = (input as { status?: unknown }).status;
+  return status === 'ACTIVE' || status === 'INACTIVE' ? status : null;
 }
 
 function prepareRequirements(input: unknown): readonly ProtectedOperationRequirement[] {
@@ -128,6 +138,26 @@ export class CatalogProtectedOperations {
     return visit(0);
   }
 
+  private executeTenantWideEither<Result>(evidence: ProtectedRequestEvidence, requirements: readonly ProtectedOperationRequirement[], operation: (context: AuthorizedOperationalContext) => Promise<Result>): Promise<Result> {
+    const visit = (index: number): Promise<Result> => {
+      const current = requirements[index];
+      if (!current) return Promise.reject(new CatalogOperationAccessDeniedError());
+      return this.tenantWideAuthorization.execute(evidence, current, operation).catch((error: unknown) => {
+        if (error instanceof ContextualAuthorizationError && error.code === 'ACCESS_DENIED') return visit(index + 1);
+        throw error;
+      });
+    };
+    return visit(0);
+  }
+
+  private executeTenantWideWithLegacyItemCompatibility<Result>(evidence: ProtectedRequestEvidence, capability: ProtectedOperationRequirement, operation: (context: AuthorizedOperationalContext) => Promise<Result>): Promise<Result> {
+    return this.executeTenantWideEither(evidence, [capability, catalogManage], operation);
+  }
+
+  private executeTenantWideBulkRead<Result>(evidence: ProtectedRequestEvidence, operation: (context: AuthorizedOperationalContext) => Promise<Result>): Promise<Result> {
+    return this.executeTenantWideEither(evidence, [importRead, importPrepareRead], operation);
+  }
+
   listReferences(evidence: ProtectedRequestEvidence) {
     return this.authorization.execute(evidence, priceListRead, (context) => this.service.listOperationalReferences(scope(context)));
   }
@@ -194,10 +224,15 @@ export class CatalogProtectedOperations {
   }
   createItem(evidence: ProtectedRequestEvidence, input: unknown) {
     const hasCost = typeof input === 'object' && input !== null && 'referenceCostAmountMinor' in input && (input as { referenceCostAmountMinor?: unknown }).referenceCostAmountMinor !== null && (input as { referenceCostAmountMinor?: unknown }).referenceCostAmountMinor !== undefined;
-    return this.executeTenantWideMany(evidence, hasCost ? [catalogManage, pricesManage, costManage] : [catalogManage, pricesManage], (contexts) => this.service.createItem(mutationContext(contexts), input));
+    return this.executeTenantWideWithLegacyItemCompatibility(evidence, catalogItemCreate, (itemContext) => this.executeTenantWideMany(evidence, hasCost ? [pricesManage, costManage] : [pricesManage], (effectContexts) => this.service.createItem(mutationContext([itemContext, ...effectContexts]), input)));
   }
-  updateItem(evidence: ProtectedRequestEvidence, itemId: unknown, input: unknown) {
-    return this.executeTenantWideMany(evidence, [catalogManage], (contexts) => this.service.updateItem(mutationContext(contexts), itemId, input));
+  async updateItem(evidence: ProtectedRequestEvidence, itemId: unknown, input: unknown) {
+    return await this.executeTenantWideEither(evidence, [catalogItemUpdate, catalogItemDeactivate, catalogManage], async (inspectionContext) => {
+      const existing = await this.service.getItem(scope(inspectionContext), itemId);
+      const lifecycleChange = existing !== null && requestedItemStatus(input) !== null && existing.status !== requestedItemStatus(input);
+      const required = lifecycleChange ? catalogItemDeactivate : catalogItemUpdate;
+      return await this.executeTenantWideWithLegacyItemCompatibility(evidence, required, (mutationContextValue) => this.service.updateItem(mutationContext([mutationContextValue]), itemId, input));
+    });
   }
   changeBasePrice(evidence: ProtectedRequestEvidence, itemId: unknown, input: unknown) {
     return this.executeTenantWideMany(evidence, [pricesManage], (contexts) => this.service.changeBasePrice(mutationContext(contexts), itemId, input));
@@ -208,17 +243,17 @@ export class CatalogProtectedOperations {
   changeBranchOverride(evidence: ProtectedRequestEvidence, itemId: unknown, input: unknown, revoke: boolean) {
     return this.executeMany(evidence, [branchPricesManage], (contexts) => this.service.changeBranchOverride(mutationContext(contexts), itemId, input, revoke));
   }
-  listSupplierSources(evidence: ProtectedRequestEvidence) { return this.tenantWideAuthorization.execute(evidence, importPrepareRead, (context) => this.bulk.listSources(scope(context))); }
+  listSupplierSources(evidence: ProtectedRequestEvidence) { return this.executeTenantWideBulkRead(evidence, (context) => this.bulk.listSources(scope(context))); }
   createSupplierSource(evidence: ProtectedRequestEvidence, input: unknown) { return this.executeTenantWideMany(evidence, [importPrepareWrite], (contexts) => this.bulk.createSource(mutationContext(contexts), input)); }
-  listSupplierVersions(evidence: ProtectedRequestEvidence, sourceId?: unknown) { return this.tenantWideAuthorization.execute(evidence, importPrepareRead, (context) => this.bulk.listVersions(scope(context), sourceId)); }
-  getSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, includeReferenceCost: boolean) { return this.executeTenantWideMany(evidence, includeReferenceCost ? [importPrepareRead, costRead] : [importPrepareRead], (contexts) => this.bulk.getVersion(scope(contexts[0]!), versionId, includeReferenceCost)); }
+  listSupplierVersions(evidence: ProtectedRequestEvidence, sourceId?: unknown) { return this.executeTenantWideBulkRead(evidence, (context) => this.bulk.listVersions(scope(context), sourceId)); }
+  getSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, includeReferenceCost: boolean) { return this.executeTenantWideBulkRead(evidence, (readContext) => this.executeTenantWideMany(evidence, includeReferenceCost ? [costRead] : [], (contexts) => this.bulk.getVersion(scope(contexts[0] ?? readContext), versionId, includeReferenceCost))); }
   createSupplierDraft(evidence: ProtectedRequestEvidence, input: unknown) { return this.executeTenantWideMany(evidence, prepareRequirements(input), (contexts) => this.bulk.createDraft(mutationContext(contexts), input)); }
   replaceSupplierDraft(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { return this.executeTenantWideMany(evidence, prepareRequirements(input), (contexts) => this.bulk.replaceDraft(mutationContext(contexts), versionId, input)); }
   analyzeSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { return this.executeTenantWideMany(evidence, requestsReferenceCost(input) ? [importPrepareWrite, costRead] : [importPrepareWrite], (contexts) => this.bulk.analyze(mutationContext(contexts), versionId, input)); }
   decideSupplierRow(evidence: ProtectedRequestEvidence, versionId: unknown, rowDecisionId: unknown, input: unknown) { return this.executeTenantWideMany(evidence, requestsReferenceCost(input) ? [importPrepareWrite, costRead] : [importPrepareWrite], (contexts) => this.bulk.decide(mutationContext(contexts), versionId, rowDecisionId, input)); }
   decideSupplierRows(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { return this.executeTenantWideMany(evidence, requestsReferenceCost(input) ? [importPrepareWrite, costRead] : [importPrepareWrite], (contexts) => this.bulk.decideMany(mutationContext(contexts), versionId, input)); }
   publishSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { const writeCost = typeof input === 'object' && input !== null && (input as { writeReferenceCost?: unknown }).writeReferenceCost === true; const requirements = writeCost ? [importPublish, catalogManage, pricesManage, costManage, costRead] : [importPublish, catalogManage, pricesManage]; return this.executeTenantWideMany(evidence, requirements, (contexts) => this.bulk.publish(mutationContext(contexts), versionId, input, writeCost)); }
-  compareSupplierVersions(evidence: ProtectedRequestEvidence, leftVersionId: unknown, rightVersionId: unknown) { return this.tenantWideAuthorization.execute(evidence, importPrepareRead, (context) => this.bulk.compare(scope(context), leftVersionId, rightVersionId)); }
+  compareSupplierVersions(evidence: ProtectedRequestEvidence, leftVersionId: unknown, rightVersionId: unknown) { return this.executeTenantWideBulkRead(evidence, (context) => this.bulk.compare(scope(context), leftVersionId, rightVersionId)); }
   purgeSupplierRaw(evidence: ProtectedRequestEvidence) { return this.executeTenantWideMany(evidence, [importPrepareWrite], (contexts) => this.bulk.purgeExpiredRaw(mutationContext(contexts))); }
   deleteSupplierSource(evidence: ProtectedRequestEvidence, sourceId: unknown, input: unknown) {
     const pin = typeof input === 'object' && input !== null && !Array.isArray(input) ? (input as { pin?: unknown }).pin : undefined;

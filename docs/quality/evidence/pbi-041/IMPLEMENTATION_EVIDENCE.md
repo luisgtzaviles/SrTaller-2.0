@@ -1,5 +1,30 @@
 # PBI-041 — Implementation Evidence
 
+## UX-004.1 — Catalog authorization registry and compatibility foundation
+
+The finite Access registry and authenticated session projection now include
+`catalog.items.create`, `catalog.items.update`, `catalog.items.deactivate` and
+`catalog.import.read`. The reversible access migration derives grants solely
+from existing mappings: `catalog.manage` yields the three item successors and
+`catalog.import.prepare` yields history read. It does not derive publish,
+bulk-retire, supplier-delete, price, cost, Branch-price or configuration
+authority; `price_list.read` and unrelated roles remain unchanged.
+
+`CatalogProtectedOperations` authorizes item creation, non-lifecycle update and
+individual deactivate/reactivate by explicit successor or documented temporary
+legacy `catalog.manage` fallback. Creation still composes price and, when
+written, reference-cost authority. Bulk history reads accept the new read
+capability or legacy prepare during transition, while every draft/Analyze
+operation still requires prepare. The trusted Station/Session/Tenant execution
+path remains server-side and role names never influence it.
+
+Focused contracts prove explicit allow, direct deny, legacy compatibility,
+composed effects, no sensitive escalation, session parsing and deterministic
+local seed projections. Disposable PostgreSQL reverses and reapplies the exact
+migration, verifies role-neutral backfill and a second run with zero pending
+work. No CatalogItem, SupplierCatalogVersion, draft, analysis, Apply, CI,
+push, PR, merge or deploy action occurs in this checkpoint.
+
 ## UX-003.4 — Required effective value enforcement
 
 Analyze/Reconciliation y Apply son ahora los límites servidor de policy: el

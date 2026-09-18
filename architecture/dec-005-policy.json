@@ -767,7 +767,8 @@
       "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts",
       "src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts",
       "src/infrastructure/database/migrations/20260917190000_catalog_create_field_policies.ts",
-      "src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts"
+      "src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts",
+      "src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1376,6 +1377,13 @@
           "triggers": ["catalog_field_policy_versions_reject_delete", "catalog_field_policy_versions_reject_update"]
         },
         "src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts": {
+          "owner": "access",
+          "tables": ["access_capabilities", "access_role_capabilities"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts": {
           "owner": "access",
           "tables": ["access_capabilities", "access_role_capabilities"],
           "references": [],

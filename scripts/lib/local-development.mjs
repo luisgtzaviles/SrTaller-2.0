@@ -365,12 +365,16 @@ export function localAccessCapabilityRows() {
     'repairs.read',
     'price_list.read',
     'catalog.manage',
+    'catalog.items.create',
+    'catalog.items.update',
+    'catalog.items.deactivate',
     'catalog.prices.manage',
     'catalog.branch_prices.manage',
     'catalog.reference_cost.read',
     'catalog.reference_cost.manage',
     'catalog.configuration.read',
     'catalog.configuration.manage',
+    'catalog.import.read',
     'catalog.import.prepare',
     'catalog.import.publish',
     'catalog.items.bulk_retire',
@@ -439,7 +443,18 @@ export function localAccessRoleCapabilityRows() {
     [roleIds.technician, 'repairs.add_note'],
     [roleIds.technician, 'repairs.read'],
   ];
-  return Object.freeze(rows.map(([roleId, capabilityCode]) => Object.freeze({
+  const legacySuccessors = Object.freeze({
+    'catalog.manage': Object.freeze([
+      'catalog.items.create',
+      'catalog.items.update',
+      'catalog.items.deactivate',
+    ]),
+    'catalog.import.prepare': Object.freeze(['catalog.import.read']),
+  });
+  const compatibilityRows = rows.flatMap(([roleId, capabilityCode]) =>
+    (legacySuccessors[capabilityCode] ?? []).map((successor) => [roleId, successor]),
+  );
+  return Object.freeze([...rows, ...compatibilityRows].map(([roleId, capabilityCode]) => Object.freeze({
     tenantId: LOCAL_TENANT_ID,
     roleId,
     capabilityCode,
