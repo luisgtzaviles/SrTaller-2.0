@@ -1,17 +1,28 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-003.2 Catalog Field Policy Configuration UI
+Milestone / Functional Goal: PBI-041 — UX-003.3 Policy-Driven Essentials
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: UX-003.2 functional and responsive local proof complete; ready for Owner Review. Composer consumption remains intentionally disabled.
+Status: UX-003.3 implemented and materially proven locally. The Composer consumes the effective Tenant policy for presentation only; required-value enforcement remains out of scope.
 WIP: 1/1
-Progress: 8 / 8 UX-003.2 blocks completed.
-Current: stopped at UX-003.2 Owner Review; policy is authoritative Tenant configuration only and Composer behavior remains unchanged.
-Next: Owner Review only. Any Composer consumption or enforcement requires separate explicit scope.
-Blocked: None for UX-003.2. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 8 / 8 UX-003.3 blocks completed.
+Current: local Owner Review of policy-driven Essentials.
+Next: await Owner direction; do not start policy enforcement, another UX slice or integration work automatically.
+Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-003.2 Catalog Field Policy Configuration UI
+## Current checkpoint — UX-003.3 Policy-Driven Essentials
+
+- [x] Audit the hard-coded Composer field presets, authoritative effective-policy API, and current reference-cost authorization.
+- [x] Load only safe effective-policy metadata for Composer users without granting configuration access.
+- [x] Derive Esenciales from REQUIRED/ESSENTIAL policy levels in registry order and retain Todas as every authorized field.
+- [x] Mark REQUIRED headers accessibly without introducing required-value enforcement.
+- [x] Preserve FULL/COMPACT, save/review, duplicate and missing-data behavior with loading and recoverable-error states.
+- [x] Add focused policy derivation, cost-redaction, lifecycle and Composer regression coverage.
+- [x] Complete local Chrome proof across policy changes, 768 px/640 px, themes and keyboard behavior without CatalogItem or SupplierCatalogVersion mutation.
+- [x] Record evidence, documentation and focused checks; stop at Owner Review with no remote action.
+
+## Previous checkpoint — UX-003.2 Catalog Field Policy Configuration UI
 
 - [x] Add Configuración → Lista de precios → Campos de carga masiva using the authoritative tenant policy API only.
 - [x] Render registry-defined fixed minima and editable Marca, Descripción and Costo de referencia with one accessible level selector.

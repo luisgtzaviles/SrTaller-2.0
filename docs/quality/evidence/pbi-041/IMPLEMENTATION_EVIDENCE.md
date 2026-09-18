@@ -61,6 +61,28 @@ de controles. Se ajustó sólo la tarjeta de estado para presentar fuente y
 contexto en líneas separadas; policy final, historia, `CatalogItem` (`45`) y
 `SupplierCatalogVersion` (`77`) permanecieron sin cambios.
 
+## UX-003.3 — Policy-driven Essentials
+
+El Composer obtiene la policy mediante una lectura operacional segura:
+`catalog.import.prepare` habilita el consumo sin conceder Configuración y el
+backend elimina Costo de referencia antes de responder cuando falta
+`catalog.reference_cost.read`. La UI deriva tanto `Esenciales` como `Todas`
+del registry y de los niveles retornados; los cuatro mínimos fijos siguen
+anunciados como obligatorios, sin añadir enforcement de valores ni alterar
+FULL/COMPACT, Draft, Review, Analyze o Apply.
+
+El proof Chrome local cambió temporalmente Descripción a Esencial y Marca a
+Opcional, abrió una carga parcial efímera y verificó `Esenciales (6)` con
+Descripción, sin Marca; `Todas` conservó ambos campos autorizados. Se restauró
+la policy aprobada en `v6`: Descripción Opcional, Marca Esencial y Costo de
+referencia Esencial. A 768 px y 640 px, claro y oscuro no mostraron overflow
+horizontal; Tab desde Título llegó a Categoría y Shift+Tab regresó a Título.
+No se guardó una carga ni se ejecutó Analyze/Apply. PostgreSQL verificó 45
+CatalogItems y 77 SupplierCatalogVersions sin cambio, y la prueba material
+PBI-041 pasó: 74 migraciones, 2/2 tests. Typecheck, build, 29 regresiones
+focalizadas, DEC-005 y `git diff --check` pasaron. No hubo CI, push, PR, merge
+ni deploy.
+
 ## Supplier history, automatic versioning and governed delete
 
 La auditoría previa recorrió Source, Version, raw, Listing, RowDecision,

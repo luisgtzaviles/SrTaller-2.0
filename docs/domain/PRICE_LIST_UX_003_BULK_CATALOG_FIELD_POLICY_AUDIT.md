@@ -2,12 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** UX-003.1 authority y UX-003.2 configuration surface materialized locally; responsive Owner proof complete. Composer consumption/enforcement remains intentionally disabled.
-- **Alcance:** PBI-041, política de datos de Catalog consumida inicialmente por Bulk Catalog Composer. No cambia el comportamiento actual.
+- **Estado:** UX-003.1 authority y UX-003.2 configuration surface materialized locally; UX-003.3 operational Composer consumption materialized for local Owner Review. Required-value enforcement remains intentionally disabled.
+- **Alcance:** PBI-041, política de datos de Catalog consumida por Bulk Catalog Composer exclusivamente para presentación. No cambia Draft, Review, Analyze, Apply ni reglas de valor efectivo.
 - **Método:** trazabilidad estática de Composer, API, dominio, autorización, persistencia y la configuración existente de Nueva reparación; preflight local read-only.
 - **Preflight:** rama feature/pbi-041-bulk-catalog-composer, HEAD bb9595a30f12587347c46e77c560d762d6620b6d, localhost/backend health 200; PostgreSQL local con 72 migraciones y TimeZone = Etc/UTC.
-- **Mutaciones:** DB writes 0; no se crearon Drafts, Listings, decisiones ni CatalogItems. El artefacto Owner preexistente apps/dev-preview-web/src/.DS_Store permanece sin seguimiento.
-- **Próxima revisión:** decidir UX3-001..017; una autorización posterior debe seleccionar explícitamente el alcance antes de diseñar API, persistencia o migración.
+- **Mutaciones:** UX-003.3 usó sólo los Save de policy autorizados para el proof; la head terminó en `v6` con Descripción Opcional, Marca Esencial y Costo Esencial. No se crearon Drafts, Listings, decisiones, SupplierCatalogVersions ni CatalogItems. El artefacto Owner preexistente apps/dev-preview-web/src/.DS_Store permanece sin seguimiento.
+- **Próxima revisión:** Owner Review de UX-003.3; enforcement, policy snapshot y cambios de Analyze/Apply siguen fuera de alcance.
 
 ## Hallazgo ejecutivo
 
@@ -203,3 +203,29 @@ dirty/discard, controles nativos y Tab/Shift+Tab en ambos temas. Se corrigió
 únicamente la presentación responsive de la tarjeta de estado para separar
 visualmente fuente y contexto; no hubo overflow horizontal, clipping ni
 superposición y no se emitió ninguna escritura durante esa comprobación.
+
+## UX-003.3 — Policy-driven Essentials
+
+La implementación consume `GET /api/catalog/bulk/field-policy`, una proyección
+operacional distinta de la ruta de Configuración. El backend deriva Tenant del
+contexto confiable, exige `catalog.import.prepare` y consulta
+`catalog.reference_cost.read` de forma independiente. Si esa segunda
+autorización falta, filtra Costo de referencia antes de serializar la respuesta;
+ocultar la columna no es la protección primaria.
+
+El frontend no conserva una lista Tenant de Esenciales: adapta las claves del
+registry a las columnas existentes y deriva `REQUIRED ∪ ESSENTIAL`, en orden
+de registry. `Todas` usa el conjunto completo ya autorizado. Tipo, Título,
+Categoría y Precio base siguen visibles y anunciados como obligatorios;
+Descripción, Marca y Costo responden al nivel efectivo. No se agregó
+enforcement de valores, no se reinterpretaron modos FULL/COMPACT y no se
+modificaron Save, Review, Analyze, Apply, CatalogItem ni SupplierCatalogVersion.
+
+El proof local cambió Descripción a Esencial y Marca a Opcional, recargó el
+Composer y verificó seis Esenciales con Descripción incluida y Marca excluida;
+en Todas ambas aparecieron. La restauración explícita dejó la policy final en
+`v6` con Descripción Opcional, Marca Esencial y Costo Esencial. Chrome pasó
+768 px y 640 px en ambos temas sin overflow horizontal; Tab y Shift+Tab
+conservaron el foco de celda. Los contratos focalizados, typecheck, build,
+DEC-005 y PostgreSQL material PBI-041 (74 migraciones) pasaron. Esto es
+evidencia local para Owner Review, no aceptación ni integración.

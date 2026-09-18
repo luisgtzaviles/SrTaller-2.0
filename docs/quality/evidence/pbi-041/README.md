@@ -38,13 +38,14 @@ ownership, authorization, persistence and the Nueva reparación configuration
 pattern. It recommends a Tenant-owned effective-value policy separate from
 Composer presentation, so COMPACT identified updates do not fail merely because
 a supplier omits a value already known safely by Catalog. The audit records
-`UX3-001..017`. UX-003.1 materializa sólo la autoridad Tenant-wide versionada;
-UX-003.2 agrega la superficie de configuración que la consume. Composer
-consumption/enforcement sigue explícitamente deshabilitado: no se modifican
-FULL/COMPACT, Review, Analyze, Apply, SupplierSource, Version ni CatalogItem.
-El proof responsive local de UX-003.2 pasó a `768 px` y `640 px` en ambos
-temas; la tarjeta de estado separa fuente y contexto y no hay overflow
-horizontal, clipping ni superposición.
+`UX3-001..017`. UX-003.1 materializa la autoridad Tenant-wide versionada y
+UX-003.2 su configuración. UX-003.3 hace que Composer consuma únicamente la
+proyección operacional autorizada: `Esenciales` deriva REQUIRED/ESSENTIAL y
+`Todas` conserva los campos autorizados; Costo se redacta server-side sin su
+capability. Enforcement, FULL/COMPACT, Review, Analyze, Apply, SupplierSource,
+Version y CatalogItem no cambian. El proof Chrome de UX-003.3 pasó a `768 px`
+y `640 px` en ambos temas, sin overflow y con teclado; la policy final quedó
+en `v6` con Descripción Opcional, Marca Esencial y Costo Esencial.
 See the
 [UX-003 audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md).
 
