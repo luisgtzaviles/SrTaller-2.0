@@ -1632,3 +1632,20 @@ atomic Apply capture, and idempotent re-Apply. Chrome local QA of an isolated
 unapplied version showed three `NEW`, one `PENDING_REFERENCE` and the duplicate
 conflict group. Avicell v2 was not reanalyzed or mutated. Typecheck, build and
 focused contracts passed; no `verify:full`, CI, push, PR, merge or deploy ran.
+
+## UX-005.2 — Avicell large-list reanalysis and exception walkthrough
+
+After the Owner's explicit reanalyze, the local Avicell v2 evidence reads 744
+physical rows, `739 NEW`, `1 PENDING_REFERENCE`, `4 CONFLICT`, 742 effective
+units, 739 resolved and three attention units. The two duplicate pairs retain
+their distinct price/cost values and no winner was inferred. Row 618 retains
+the malformed Category `V2314 COPIA`; it was neither included nor excluded.
+
+Chrome inspected the count tabs, duplicate details, row 618, resolved Xiaomi /
+Alcatel pending-brand examples, the Apple canonical control group and the
+read-only source grid. No Apply, Reanalyze, bulk suggestion or RowDecision
+action ran. PostgreSQL before/after confirms `RECONCILING`, null publication,
+45 CatalogItems, and zero Avicell Resolution/Memory. The evidence recommends
+UX-005.3 for exception-to-source correction navigation and flags the generic
+bulk accept control as unsafe for row 618. See the
+[full proof](../../../domain/PRICE_LIST_UX_0052_AVICELL_LARGE_LIST_REANALYSIS_PROOF.md).

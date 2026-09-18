@@ -1,17 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005.1 New Item Classification with Pending Reference Capture
+Milestone / Functional Goal: PBI-041 — UX-005.2 Avicell Large-List Reanalysis + Exception Walkthrough Proof
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — UX-005.1 is materialized for future analysis; Avicell v2 remains preserved as historical evidence.
+Status: Local Owner Review — UX-005.2 evidence is complete; Avicell v2 remains safely pre-Apply.
 WIP: 1/1
-Progress: 6 / 6 UX-005.1 blocks completed; prior UX-005 audit and UX-004.7 work remain preserved.
-Current: Owner Review — future FULL rows can be NEW with safely capturable pending references, without changing Avicell v2.
-Next: Await Owner review. Do not push, open a PR, merge, deploy or start another PBI.
-Blocked: No product blocker identified. Preserve Avicell v2, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 5 / 5 UX-005.2 proof blocks completed; prior UX-005.1 work remains preserved.
+Current: Owner Review — 615 false pending rows are removed; three genuine exceptions remain before Apply.
+Next: Await Owner direction for the two duplicate business choices, the malformed Category correction, or a separately authorized UX-005.3.
+Blocked: Three legitimate pre-Apply decisions: two duplicate winner choices and Category correction for row 618. Do not choose or accept them without business data. Preserve Avicell v2, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
 
-## Current checkpoint — UX-005.1 New Item Classification with Pending Reference Capture
+## Current checkpoint — UX-005.2 Avicell Large-List Reanalysis + Exception Walkthrough Proof
+
+- [x] Read the authoritative v2 lifecycle, counts, baseline, Catalog, Resolution and Memory state without writes.
+- [x] Prove 744 physical observations, 742 effective units, 739 resolved and exactly three genuine attention units.
+- [x] Complete Chrome inspection of counts, tabs, both duplicate groups, row 618, details and the read-only source grid without Apply.
+- [x] Document the unsafe bulk-accept semantics and the exception-to-source correction friction.
+- [x] Run focused QA/documentation checks, commit evidence locally and stop for Owner Review.
+
+## Previous checkpoint — UX-005.1 New Item Classification with Pending Reference Capture
 
 - [x] Preserve Avicell v2 as historical pre-fix evidence; do not reanalyze or mutate it.
 - [x] Classify clean no-target FULL rows as `NEW` when Category/Brand are canonical, pending or safely capturable.

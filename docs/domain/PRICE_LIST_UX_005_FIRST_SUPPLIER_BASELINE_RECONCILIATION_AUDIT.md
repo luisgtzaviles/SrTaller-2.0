@@ -318,3 +318,13 @@ La prueba PostgreSQL desechable cubre cuatro `NEW` seguros, una referencia
 malformada, required faltante, duplicate conflict, cero escrituras durante
 Analyze y captura/registro sólo tras Apply. El walkthrough Chrome aislado
 confirmó tres `NEW`, un `PENDING_REFERENCE` y un grupo de conflicto, sin Apply.
+
+## UX-005.2 — Prueba material Avicell v2
+
+El Owner reanalizó explícitamente Avicell v2 después de UX-005.1. La evidencia
+resultante, conservada en la
+[prueba UX-005.2](PRICE_LIST_UX_0052_AVICELL_LARGE_LIST_REANALYSIS_PROOF.md),
+confirma `739 NEW / 1 PENDING_REFERENCE / 4 CONFLICT` sobre 744 filas físicas:
+615 observaciones dejan de ser atención sin que Analyze las persista. Sólo dos
+contradicciones duplicadas y la Category malformada de la fila 618 permanecen
+como tres unidades de revisión. El walkthrough no ejecutó Apply ni decisiones.
