@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — UX-003.2 Catalog Field Policy Configuration UI
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: configuration surface materialized locally; authenticated update/reload/restore walkthrough pending direct local credential authorization
+Status: local UX-003.2 walkthrough complete; ready for Owner Review. Composer consumption remains intentionally disabled.
 WIP: 1/1
-Progress: 6 / 8 UX-003.2 blocks completed.
-Current: configuration UI, capability route guard and focused tests are materialized; Composer behavior remains unchanged.
-Next: with direct local credential authorization, complete the authenticated Save → reload → discard → restore and responsive/theme walkthrough, then record PostgreSQL head/version evidence.
-Blocked: Authenticated browser proof is pending direct authorization to enter a local synthetic/admin credential. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 8 / 8 UX-003.2 blocks completed.
+Current: stopped at Owner Review after authenticated Save → reload → discard → restore and append-only policy-history proof; Composer behavior remains unchanged.
+Next: Owner review of the configuration surface. Any Composer consumption or enforcement requires separate explicit scope.
+Blocked: None for this checkpoint. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
 ## Current checkpoint — UX-003.2 Catalog Field Policy Configuration UI
@@ -19,8 +19,8 @@ Last updated: 2026-09-17 MST
 - [x] Gate navigation/route/editing by composed configuration plus reference-cost capabilities; keep backend as authority.
 - [x] Add focused UI/API/authorization regression coverage and pass typecheck, build and architecture checks.
 - [x] Confirm the local Administrator role now has the two new catalog-configuration capabilities through the existing Roles surface; the change invalidated the current session as designed.
-- [ ] Complete authenticated local Save/reload/discard/restore, responsive, theme and keyboard QA without Composer consumption.
-- [ ] Record PostgreSQL head/version history after the UI operations and finalize Owner Review evidence.
+- [x] Complete authenticated local Save/reload/discard/restore, theme and native-control keyboard QA without Composer consumption.
+- [x] Record PostgreSQL head/version history after the UI operations and finalize Owner Review evidence.
 
 ## Previous checkpoint — UX-003.1 Tenant Catalog Field Policy Foundation
 

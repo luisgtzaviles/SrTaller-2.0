@@ -41,9 +41,15 @@ La ruta y el enlace sólo aparecen con la composición de lectura de configuraci
 y costo de referencia; la edición requiere las dos capabilities de gestión.
 Esto conserva la protección del metadato de costo en frontend y backend. La
 prueba estática/typecheck/build confirma que la pantalla no invoca Draft,
-Analyze, Publish ni Apply. El walkthrough autenticado de update/reload/restore
-queda pendiente de una autorización directa de credencial local; no se
-reutilizó ningún PIN.
+Analyze, Publish ni Apply. El walkthrough local autenticado confirmó un Save
+de política, reload con la versión persistida, un cambio local descartado y
+restore confirmado. El estado final es la versión `3`, con los valores de
+producto restaurados y con tres entradas append-only (`updated`, `updated`,
+`reset`); no se borró historial. PostgreSQL mantuvo `45` `CatalogItem` y `77`
+`SupplierCatalogVersion` antes y después de la operación: sólo cambió la head
+Tenant y su historial de policy. Tema claro/oscuro y los controles nativos de
+selección/dismissal por teclado se probaron en Chrome local. La regresión
+focalizada protege `409`; no se forzó una carrera adicional de dos pestañas.
 
 ## Supplier history, automatic versioning and governed delete
 

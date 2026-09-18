@@ -191,3 +191,8 @@ La superficie no consume la policy en el Composer: no modifica FULL/COMPACT,
 Esenciales, Review, Analyze, Apply, `SupplierCatalogVersion` ni `CatalogItem`.
 El acceso local de prueba requiere que el rol administrador tenga asignadas las
 nuevas capabilities, igual que cualquier otro permiso del catálogo.
+
+Proof local posterior: Save → reload preservó la versión autoritativa; un
+cambio no guardado volvió al estado persistido con Descartar; Restore creó una
+nueva versión append-only con los defaults de producto. La policy permanece
+sin consumidor en Composer.
