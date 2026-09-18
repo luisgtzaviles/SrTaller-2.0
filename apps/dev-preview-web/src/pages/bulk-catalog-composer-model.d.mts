@@ -15,6 +15,7 @@ export function parseClipboardMatrix(text: string): string[][];
 export function normalizeSupplierTitle(value: string): string;
 export function parseMoneyToMinor(value: string): number | null;
 export function applyBatchDefaults<Row extends { kind: string; category: string; brand: string }>(row: Row, defaults: Readonly<{ kind: string; category: string; brand: string }>): Row;
+export function applyBatchDefaultsToEmptyRows<Row extends { kind: string; category: string; brand: string }>(rows: readonly Row[], defaults: Readonly<{ kind: string; category: string; brand: string }>): Readonly<{ rows: Row[]; changedCount: number }>;
 export function nextGridCell(key: string, row: number, column: number, rowCount: number, columnCount: number, shiftKey?: boolean): Readonly<{ row: number; column: number }>;
 export function fillRows<Row extends Record<ComposerColumn, string>>(rows: readonly Row[], columns: readonly ComposerColumn[], source: ComposerSelection, target: Readonly<{ row: number; column: number }>): Row[];
 export function estimateColumnWidth(label: string, values: readonly string[], min?: number, max?: number): number;

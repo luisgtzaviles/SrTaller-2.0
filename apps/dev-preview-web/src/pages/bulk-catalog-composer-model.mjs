@@ -102,6 +102,16 @@ export function applyBatchDefaults(row, defaults) {
   };
 }
 
+export function applyBatchDefaultsToEmptyRows(rows, defaults) {
+  let changedCount = 0;
+  const nextRows = rows.map((row) => {
+    const next = applyBatchDefaults(row, defaults);
+    if (next.kind !== row.kind || next.category !== row.category || next.brand !== row.brand) changedCount += 1;
+    return next;
+  });
+  return Object.freeze({ rows: nextRows, changedCount });
+}
+
 export function nextGridCell(key, row, column, rowCount, columnCount, shiftKey = false) {
   if (rowCount < 1 || columnCount < 1) return { row: 0, column: 0 };
   let linear = row * columnCount + column;
