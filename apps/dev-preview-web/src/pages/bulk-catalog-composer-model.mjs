@@ -1,3 +1,7 @@
+import { normalizeBrandDisplay as normalizeBrandValue } from '../catalog-brand-display.mjs';
+
+export { normalizeBrandValue };
+
 export const FULL_COLUMNS = Object.freeze([
   'kind',
   'title',
@@ -170,27 +174,6 @@ export function normalizeSupplierTitle(value) {
   return String(value ?? '').normalize('NFKC').trim().replace(/\s+/gu, ' ').split(' ').map(normalizeWord).join(' ');
 }
 
-/**
- * Keeps Brand presentation deterministic without turning capture into fuzzy
- * identity matching. An active canonical reference always wins; otherwise only
- * clearly uniform, human-readable casing is adjusted. Short uppercase tokens
- * remain intact because they commonly represent acronyms (for example, JBL).
- */
-export function normalizeBrandValue(value, canonicalBrands = []) {
-  const normalized = String(value ?? '').normalize('NFKC').trim().replace(/\s+/gu, ' ');
-  if (!normalized) return '';
-  const key = normalized.normalize('NFD').replace(/[\u0300-\u036f]/gu, '').toLocaleLowerCase('es-MX');
-  const canonical = canonicalBrands.find((name) => String(name ?? '').normalize('NFKC').trim().replace(/\s+/gu, ' ').normalize('NFD').replace(/[\u0300-\u036f]/gu, '').toLocaleLowerCase('es-MX') === key);
-  if (canonical) return String(canonical).normalize('NFKC').trim().replace(/\s+/gu, ' ');
-  if (!/^[\p{L}\p{M}][\p{L}\p{M}'’-]*(?:[ -][\p{L}\p{M}][\p{L}\p{M}'’-]*)*$/u.test(normalized)) return normalized;
-  const letters = normalized.replace(/[^\p{L}\p{M}]/gu, '');
-  if (!letters) return normalized;
-  const allUpper = letters === letters.toLocaleUpperCase('es-MX');
-  const allLower = letters === letters.toLocaleLowerCase('es-MX');
-  if (!allUpper && !allLower) return normalized;
-  if (allUpper && !/[ -]/u.test(normalized) && letters.length <= 3) return normalized;
-  return normalized.split(/([ -])/u).map((part) => part === ' ' || part === '-' ? part : `${part.slice(0, 1).toLocaleUpperCase('es-MX')}${part.slice(1).toLocaleLowerCase('es-MX')}`).join('');
-}
 
 export function parseMoneyToMinor(value) {
   const trimmed = String(value ?? '').trim();
