@@ -31,15 +31,18 @@ an empty, collapsed `Completar datos faltantes` disclosure for editable FULL
 loads. Its action is explicit, empty-only and never overwrites supplied data;
 it has no Source/history preference, Save, Analyze or Catalog side effect.
 
-## UX-003 Bulk Catalog Field Policy — audit only
+## UX-003 Bulk Catalog Field Policy
 
 UX-003 traces the current fixed FULL/COMPACT contracts, field inventory, Tenant
 ownership, authorization, persistence and the Nueva reparación configuration
 pattern. It recommends a Tenant-owned effective-value policy separate from
 Composer presentation, so COMPACT identified updates do not fail merely because
 a supplier omits a value already known safely by Catalog. The audit records
-`UX3-001..017`; none is accepted or implemented. It made zero DB writes and no
-product, API, migration, SupplierSource, fixture or Catalog change. See the
+`UX3-001..017`. UX-003.1 materializa sólo la autoridad Tenant-wide versionada;
+UX-003.2 agrega la superficie de configuración que la consume. Composer
+consumption/enforcement sigue explícitamente deshabilitado: no se modifican
+FULL/COMPACT, Review, Analyze, Apply, SupplierSource, Version ni CatalogItem.
+See the
 [UX-003 audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md).
 
 ## UX-001 Supplier Selection Gate — local Owner Review

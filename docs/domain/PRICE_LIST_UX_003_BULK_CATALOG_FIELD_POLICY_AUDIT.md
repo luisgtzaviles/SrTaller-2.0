@@ -166,3 +166,28 @@ La autorización posterior materializó sólo la autoridad de configuración:
 No se modificó FULL/COMPACT, el grid, Draft/Analyze/Apply, el alta manual de
 Catalog ni `SupplierCatalogVersion`. La validación de valores efectivos y las
 señales visuales son consumo futuro explícitamente pendiente.
+
+## UX-003.2 — Tenant configuration surface
+
+La iteración posterior consume esa API autoritativa únicamente desde
+`Configuración → Lista de precios → Campos de carga masiva`:
+
+- carga el registry y la policy efectiva desde el servidor, muestra versión y
+  fuente (`Predeterminada por SR Taller` o configuración personalizada) y no
+  replica reglas de campo en el cliente;
+- expone los mínimos de dominio como campos `FIJO` inmutables y los tres
+  campos configurables actuales —Marca, Descripción y Costo de referencia— con
+  un único selector de nivel `Obligatorio` / `Esencial` / `Opcional`;
+- conserva edición local, dirty state, descarte y Save explícito con
+  `expectedVersion`; un `409` requiere recargar, nunca sobrescribe;
+- usa el restore versionado/auditado, distinguido de descartar cambios, sin
+  borrar historia;
+- compone la visibilidad de ruta/navegación con
+  `catalog.configuration.read` y `catalog.reference_cost.read`; gestión exige
+  las dos capabilities `*.manage`, por lo que no se filtra ni administra
+  metadata sensible de costo sin esa autoridad.
+
+La superficie no consume la policy en el Composer: no modifica FULL/COMPACT,
+Esenciales, Review, Analyze, Apply, `SupplierCatalogVersion` ni `CatalogItem`.
+El acceso local de prueba requiere que el rol administrador tenga asignadas las
+nuevas capabilities, igual que cualquier otro permiso del catálogo.

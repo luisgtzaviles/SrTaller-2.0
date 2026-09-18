@@ -28,6 +28,23 @@ lectura/gestión requiere además el permiso sensible de costo de referencia. La
 pruebas focalizadas cubren defaults, campos fijos, claves desconocidas, stale
 writes, restore e aislamiento Tenant; Analyze/Apply no fueron modificados.
 
+## UX-003.2 — Catalog field policy configuration UI
+
+La pantalla local `Configuración → Lista de precios → Campos de carga masiva`
+integra GET/PUT/restore de UX-003.1 con tipos de cliente, estado local
+descartable, Save explícito, `expectedVersion`, manejo de conflicto `409`,
+estado de carga/error y restore confirmado. La presentación viene del registry
+del servidor: los campos mínimos se leen como `FIJO`, y Marca, Descripción y
+Costo de referencia presentan el selector único de tres niveles.
+
+La ruta y el enlace sólo aparecen con la composición de lectura de configuración
+y costo de referencia; la edición requiere las dos capabilities de gestión.
+Esto conserva la protección del metadato de costo en frontend y backend. La
+prueba estática/typecheck/build confirma que la pantalla no invoca Draft,
+Analyze, Publish ni Apply. El walkthrough autenticado de update/reload/restore
+queda pendiente de una autorización directa de credencial local; no se
+reutilizó ningún PIN.
+
 ## Supplier history, automatic versioning and governed delete
 
 La auditoría previa recorrió Source, Version, raw, Listing, RowDecision,

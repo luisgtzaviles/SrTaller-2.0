@@ -1,17 +1,28 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-003.1 Tenant Catalog Field Policy Foundation
+Milestone / Functional Goal: PBI-041 — UX-003.2 Catalog Field Policy Configuration UI
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: foundation materialized locally; Composer consumption intentionally pending Owner review
+Status: configuration surface materialized locally; authenticated update/reload/restore walkthrough pending direct local credential authorization
 WIP: 1/1
-Progress: 8 / 8 UX-003.1 blocks completed.
-Current: stopped at the local authority foundation for Owner review; the current Composer behavior remains unchanged.
-Next: Owner decides whether to authorize a separate Composer consumer/enforcement slice. Do not enable settings UI, policy enforcement, snapshots, profiles, suggestions or identity/matching changes without new authority.
-Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 6 / 8 UX-003.2 blocks completed.
+Current: configuration UI, capability route guard and focused tests are materialized; Composer behavior remains unchanged.
+Next: with direct local credential authorization, complete the authenticated Save → reload → discard → restore and responsive/theme walkthrough, then record PostgreSQL head/version evidence.
+Blocked: Authenticated browser proof is pending direct authorization to enter a local synthetic/admin credential. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-003.1 Tenant Catalog Field Policy Foundation
+## Current checkpoint — UX-003.2 Catalog Field Policy Configuration UI
+
+- [x] Add Configuración → Lista de precios → Campos de carga masiva using the authoritative tenant policy API only.
+- [x] Render registry-defined fixed minima and editable Marca, Descripción and Costo de referencia with one accessible level selector.
+- [x] Implement explicit local draft, dirty, discard, Save with `expectedVersion`, stale-conflict reload and confirmed audited restore.
+- [x] Gate navigation/route/editing by composed configuration plus reference-cost capabilities; keep backend as authority.
+- [x] Add focused UI/API/authorization regression coverage and pass typecheck, build and architecture checks.
+- [x] Confirm the local Administrator role now has the two new catalog-configuration capabilities through the existing Roles surface; the change invalidated the current session as designed.
+- [ ] Complete authenticated local Save/reload/discard/restore, responsive, theme and keyboard QA without Composer consumption.
+- [ ] Record PostgreSQL head/version history after the UI operations and finalize Owner Review evidence.
+
+## Previous checkpoint — UX-003.1 Tenant Catalog Field Policy Foundation
 
 - [x] Preserve the UX-003 field-policy decisions and implement only the finite registry, Tenant owner, product-default fallback and domain-fixed FULL minima.
 - [x] Add Tenant-scoped head/version persistence with append-only actor/session/station/correlation audit, `expectedVersion` and explicit restore-to-product-defaults semantics.
