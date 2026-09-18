@@ -1,5 +1,26 @@
 # PBI-041 — Implementation Evidence
 
+## UX-005.6 — Published data integrity and pending Brand governance
+
+The shared required-effective-value contract now treats a monetary value as
+meaningful only when it is strictly positive. A new `FULL` item with explicit
+base price zero remains unresolved at Analyze and Apply repeats the check
+inside its publication transaction. Reference cost is only blocked by zero when
+the tenant field policy is `REQUIRED`; optional and essential cost keep their
+prior non-blocking semantics. The Composer maps the typed reasons to concrete
+Spanish copy.
+
+Pending Brands remain provenance-bearing observations until a governed
+tenant-wide resolution. The existing atomic reference resolver now allows a
+Brand-only exact normalized canonical reuse, logs whether it created or reused
+the canonical identity, and never applies fuzzy matching. The shared Price List
+governance panel exposes observed source names and grants promotion/assignment
+only to `catalog.configuration.manage`; read uses
+`catalog.configuration.read`. Disposable PostgreSQL covers the zero-price
+Analyze/Apply defense, required/optional cost, excluded zero row, exact Samsung
+promotion, exact Apple reuse, no fuzzy Samsugn resolution, audit and canonical
+filter after promotion. No Owner AviCell data was changed.
+
 ## UX-004.1 — Catalog authorization registry and compatibility foundation
 
 The finite Access registry and authenticated session projection now include

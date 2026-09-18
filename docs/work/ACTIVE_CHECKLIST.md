@@ -1,17 +1,27 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005.5 AviCell Large-List Post-Apply Integrity Verification
+Milestone / Functional Goal: PBI-041 — UX-005.6 Published Data Integrity + Pending Reference Governance
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Read-only local integrity verification complete — PBI-041 closure is blocked pending Owner decisions; AviCell v3 will not be mutated again without new authority.
+Status: Functional implementation authorized — forward guards and pending-Brand governance; AviCell v3 remains read-only pending a separate Owner remediation decision.
 WIP: 1/1
-Progress: 6 / 6 UX-005.5 verification blocks complete; prior UX-005.1–UX-005.4 evidence remains preserved.
-Current: Stop for Owner decision on the two post-Apply findings; no data mutation is authorized.
-Next: Owner must decide whether to remediate the applied zero-value row and whether new Brands must be canonically resolved after Apply before PBI-041 closure can resume.
-Blocked: `DATA_INTEGRITY_BLOCKER` — row 411 (`PANTALLA SAMSUGN A37 ORIGINAL`) was published with base price and reference cost zero. `DOMAIN_ACCOUNTING_DEFECT` — 618 v3 CatalogItems use pending Brand references rather than canonical Brands. No Apply, reanalysis, repair or other Owner-data mutation is authorized. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 5 / 7 UX-005.6 implementation blocks complete; prior UX-005.1–UX-005.5 evidence remains preserved.
+Current: Execute final isolated PostgreSQL, authorization and browser proofs; AviCell v3 remains read-only.
+Next: Complete responsive/read-only governance proof, reconcile evidence and create local-only logical commits.
+Blocked: No implementation blocker known. Owner AviCell data remains protected: row 411 is not edited/deactivated and its 618 pending Brand groups are not promoted. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
 
-## Current checkpoint — UX-005.5 AviCell Large-List Post-Apply Integrity Verification
+## Current checkpoint — UX-005.6 Published Data Integrity + Pending Reference Governance
+
+- [x] Audit current zero-value and required-effective-value semantics, pending Brand persistence, filtering, authority and lifecycle.
+- [x] Add the forward base-price-greater-than-zero invariant to Analyze/Review and independent Apply defense.
+- [x] Make required reference-cost zero semantics explicit and policy-aware without treating optional/essential zero uniformly as invalid.
+- [x] Implement tenant-wide normalized pending Brand governance: grouped read, promote new canonical Brand and explicit assignment to an existing Brand.
+- [x] Preserve supplier history/provenance and relink only affected CatalogItems atomically; add audit, authorization and tenant-isolation coverage.
+- [~] Prove isolated UI/filter/responsive/keyboard flow and read-only AviCell group counts; no AviCell governance or row-411 mutation.
+- [~] Run specified gates, reconcile evidence/checklist and create only local logical commits for Owner Review.
+
+## Previous checkpoint — UX-005.5 AviCell Large-List Post-Apply Integrity Verification
 
 - [x] Record preflight, local health, 75 migrations and authoritative AviCell/Tenant/Branch/version identifiers without writes.
 - [x] Reconcile 744 physical observations to 742 effective outcomes, explicit duplicate winners and corrected successor row 618.

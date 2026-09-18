@@ -273,6 +273,23 @@ Inputs ambiguos, desplazados o malformados, required faltantes, candidates,
 duplicados y filas `COMPACT` sin target no obtienen este camino y permanecen
 atención explícita; no hay fuzzy matching ni creación canónica automática.
 
+### 5.0.1 Publicación comercial y gobernanza posterior
+
+Para un `CatalogItem` nuevo y activo de una carga `FULL`, el precio base
+efectivo debe ser estrictamente mayor que cero. Un cero recibido es un valor
+explícito, nunca un sustituto de omisión ni una señal para retener un precio
+anterior. Analyze y Apply comparten la verificación del valor efectivo. Costo
+de referencia sólo exige importe positivo cuando la policy Tenant lo declara
+`REQUIRED`; `OPTIONAL` y `ESSENTIAL` no bloquean por cero/ausencia.
+
+Una Brand pendiente publicada conserva su observación raw y provenance hasta
+una resolución administrativa explícita. `catalog.configuration.manage` puede
+resolver el grupo Tenant-wide de una clave normalizada hacia una Brand existente
+o una nueva. La coincidencia exacta reutiliza canon; no hay fuzzy merge. La
+transacción religa los CatalogItems del grupo, conserva la FK pending como
+historia, no reescribe Supplier Listings y deja audit append-only. Véase
+[UX-005.6](../domain/PRICE_LIST_UX_0056_PUBLISHED_DATA_INTEGRITY_AND_PENDING_REFERENCE_GOVERNANCE.md).
+
 ### 5.1 Patrón transversal de reconciliación
 
 Repairs y Catalog comparten este lenguaje de producto:

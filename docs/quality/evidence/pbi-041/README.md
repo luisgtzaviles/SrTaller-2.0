@@ -23,6 +23,7 @@ authority.
 - [UX-005.3 Exception-to-Source Correction Navigation](../../../domain/PRICE_LIST_UX_0053_EXCEPTION_TO_SOURCE_CORRECTION_NAVIGATION.md)
 - [UX-005.4 Duplicate Winner Controls Preservation](../../../domain/PRICE_LIST_UX_0054_DUPLICATE_WINNER_CONTROLS_PRESERVATION.md)
 - [UX-005.5 AviCell Post-Apply Integrity Verification](../../../domain/PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md)
+- [UX-005.6 Published Data Integrity and Pending Reference Governance](../../../domain/PRICE_LIST_UX_0056_PUBLISHED_DATA_INTEGRITY_AND_PENDING_REFERENCE_GOVERNANCE.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
@@ -70,6 +71,17 @@ Resolution/Memory records and 742 publication audit events. It also records
 two closure blockers without repair: row 411 published with price/cost zero,
 and new Brand values remain pending rather than canonical. See the
 [full verification](../../../domain/PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md).
+
+## UX-005.6 — Published data integrity and pending Brand governance
+
+The forward rule now rejects a zero effective base price at Analyze and repeats
+the rejection in Apply. Reference cost remains optional/essential unless the
+Tenant policy makes it required. Pending Brand governance is Tenant-wide and
+uses configuration read/manage authority: exact canonical reuse is allowed,
+fuzzy promotion is not, and a resolution relinks its item group atomically
+without rewriting Supplier history. AviCell v3 and its row 411 remain read-only
+until a separate Owner data decision. See
+[UX-005.6](../../../domain/PRICE_LIST_UX_0056_PUBLISHED_DATA_INTEGRITY_AND_PENDING_REFERENCE_GOVERNANCE.md).
 
 ## UX-002E / UX-002E.1 missing-data context
 
