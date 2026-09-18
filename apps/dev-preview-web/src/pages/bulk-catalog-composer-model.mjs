@@ -59,6 +59,33 @@ export const DEFAULT_COLUMN_WIDTHS = Object.freeze({
 export const COLUMN_MIN_WIDTH = 112;
 export const COLUMN_MAX_WIDTH = 420;
 
+/**
+ * Keeps presentation-only grid widths within the integer-pixel contract used by
+ * the layout adapter. Pointer coordinates may be fractional on HiDPI displays,
+ * and persisted browser state is untrusted input on the next Composer mount.
+ */
+export function normalizeColumnWidth(value, fallback) {
+  const fallbackWidth = Math.round(Math.max(COLUMN_MIN_WIDTH, Math.min(COLUMN_MAX_WIDTH, fallback)));
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallbackWidth;
+  return Math.round(Math.max(COLUMN_MIN_WIDTH, Math.min(COLUMN_MAX_WIDTH, value)));
+}
+
+/** Restores only canonical field widths and drops stale, malformed browser values. */
+export function normalizeColumnWidths(value) {
+  const candidate = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  return Object.freeze(Object.fromEntries(Object.entries(DEFAULT_COLUMN_WIDTHS).map(([column, fallback]) => [
+    column,
+    normalizeColumnWidth(candidate[column], fallback),
+  ])));
+}
+
+/** Updates one stable canonical field key without rebuilding or reordering the grid schema. */
+export function resizeColumnWidth(widths, column, value) {
+  if (!Object.hasOwn(DEFAULT_COLUMN_WIDTHS, column)) return widths;
+  const nextWidth = normalizeColumnWidth(value, DEFAULT_COLUMN_WIDTHS[column]);
+  return widths[column] === nextWidth ? widths : Object.freeze({ ...widths, [column]: nextWidth });
+}
+
 const technologyCasing = new Map([
   ['iphone', 'iPhone'],
   ['ipad', 'iPad'],

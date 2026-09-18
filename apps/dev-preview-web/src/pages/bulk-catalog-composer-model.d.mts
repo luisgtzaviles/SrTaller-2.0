@@ -9,6 +9,9 @@ export function derivePolicyDrivenColumns(fields: readonly Readonly<{ key: strin
 export const DEFAULT_COLUMN_WIDTHS: Readonly<Record<ComposerColumn, number>>;
 export const COLUMN_MIN_WIDTH: number;
 export const COLUMN_MAX_WIDTH: number;
+export function normalizeColumnWidth(value: unknown, fallback: number): number;
+export function normalizeColumnWidths(value: unknown): Readonly<Record<ComposerColumn, number>>;
+export function resizeColumnWidth(widths: Readonly<Record<ComposerColumn, number>>, column: ComposerColumn, value: unknown): Readonly<Record<ComposerColumn, number>>;
 export function isClipboardRowEmpty(row: readonly unknown[]): boolean;
 export function trimTrailingEmptyRows(matrix: readonly (readonly unknown[])[]): unknown[][];
 export function parseClipboardMatrix(text: string): string[][];
