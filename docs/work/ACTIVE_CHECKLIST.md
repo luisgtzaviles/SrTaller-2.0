@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — UX-002B.1 Two-panel New Load modal
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: two-panel New Load refinement implemented locally; focused checks pass; authenticated Chrome proof pending
+Status: two-panel New Load refinement proven locally; ready for Owner Review
 WIP: 1/1
-Progress: 4 / 6 UX-002B.1 blocks completed; visual browser proof and Owner Review remain.
-Current: prepare the authenticated local walkthrough for the two-panel New Load dialog without changing established load semantics.
-Next: once an authorized local session exists, complete isolated Chrome QA at desktop/768/640, light/dark and keyboard paths; then stop for Owner Review.
-Blocked: Chrome is at the local PIN login after runtime recovery; no credential is currently authorized for transmission. A separate preexisting PBI-041 PostgreSQL material test exceeded only the 10k publication budget twice (30.75 s, 30.39 s; limit 30 s), without a threshold or product change. AG v60 remains read-only and unreanalyzed; v52 remains intentionally unpublished, v53 historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
+Progress: 6 / 6 UX-002B.1 blocks completed; stop at Owner Review.
+Current: stop for Owner Review of the two-panel New Load modal.
+Next: Owner accepts or changes UX-002B.1; no follow-on work starts automatically.
+Blocked: None for UX-002B.1. A separate preexisting PBI-041 PostgreSQL material test exceeded only the 10k publication budget twice (30.75 s, 30.39 s; limit 30 s), without a threshold or product change. AG v60 remains read-only and unreanalyzed; v52 remains intentionally unpublished, v53 historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
 
 ## Current checkpoint — UX-002B Load intent gate
@@ -27,8 +27,8 @@ Last updated: 2026-09-17 MST
 - [x] Split the dialog into supplier and load-intent panels, retain one global Cancel/Continue footer and preserve the existing focus-trapped Dialog.
 - [x] Add responsive two-column-to-one-column styles using existing design tokens; no domain, API, database or migration change.
 - [x] Add focused structural regression coverage; typecheck, contract tests, production build and architecture policy pass.
-- [~] Complete authenticated Chrome QA: fresh blank gate, selected intent styles, contextual create return, pre-save Change, history preservation, keyboard/focus, desktop/768/640 and light/dark.
-- [ ] Stop for Owner Review; do not treat the refinement as accepted before the material walkthrough.
+- [x] Complete authenticated Chrome QA: fresh blank gate, selected intent styles, contextual create return, pre-save Change, history preservation, keyboard/focus, desktop/768/640 and light/dark.
+- [x] Stop for Owner Review; do not treat the refinement as accepted before the material walkthrough.
 
 ## Current checkpoint — UX-002A.2 Duplicate input resolution
 

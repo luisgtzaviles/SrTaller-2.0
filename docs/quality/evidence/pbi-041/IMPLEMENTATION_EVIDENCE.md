@@ -1184,8 +1184,13 @@ matching, coverage, Analyze, Apply, Catalog ni datos locales.
 Los contratos focalizados de Composer protegen estructura de dos paneles,
 encabezados, footer global, radios explícitos y el colapso a una columna. En
 los commits locales `794a3ba` y `e766a99` pasan typecheck, esos contratos,
-build y arquitectura. Falta el walkthrough Chrome autenticado de escritorio,
-768, 640, claro/oscuro y teclado; por ello esta evidencia no declara Owner
-Review completado ni aceptación. El fallo preexistente del presupuesto de
-publicación PostgreSQL de 10k filas permanece registrado sin cambiar umbral ni
-comportamiento.
+build y arquitectura. El walkthrough Chrome autenticado como Luis abrió la
+compuerta nueva vacía (Continuar bloqueado), seleccionó AG y cada intención,
+y comprobó que Continuar sólo se habilita con ambos valores. `Cambiar` conservó
+AG + `COMPLETE`; `Crear nuevo proveedor` abrió y canceló sin escritura y volvió
+a la compuerta; Escape restauró el foco y Tab/Shift+Tab se mantuvieron dentro
+del Dialog. La presentación pasó escritorio claro, 768 claro, 640 claro y 640
+oscuro sin overflow horizontal. No se guardó draft, creó Source/Version,
+analizó ni aplicó lote. Esta evidencia queda lista para Owner Review, no para
+aceptación. El fallo preexistente del presupuesto de publicación PostgreSQL de
+10k filas permanece registrado sin cambiar umbral ni comportamiento.

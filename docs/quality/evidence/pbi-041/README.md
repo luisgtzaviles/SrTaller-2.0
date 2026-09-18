@@ -84,7 +84,7 @@ decision, counts it as one attention unit, foregrounds only differences, and
 keeps details accessible. Focused contracts cover grouping, resolved state and
 the retained mapping path; no backend or PostgreSQL semantics changed.
 
-## UX-002B.1 Two-panel New Load modal — local implementation pending Chrome QA
+## UX-002B.1 Two-panel New Load modal — ready for Owner Review
 
 The existing New Load gate is now a wide two-panel dialog: the supplier picker
 and contextual supplier creation are on the left, while the existing explicit
@@ -94,7 +94,10 @@ disabled until both are selected. The existing pre-save Change and contextual
 creation flows retain their deliberate semantics.
 
 Focused contracts, typecheck, production build and architecture validation pass
-at `794a3ba` / `e766a99`. No domain, API, database, migration, matching,
-coverage, Analyze, Apply or Catalog behavior changed. Authenticated Chrome QA
-and the previous PostgreSQL material performance gate remain outstanding; this
-is not Owner acceptance, integration or deployment evidence.
+at `794a3ba` / `e766a99`. Authenticated Chrome QA passed fresh blank state,
+both choice paths, pre-save Change, contextual-create cancel, dialog keyboard
+behavior and desktop/768/640 responsive light/dark presentation. No domain,
+API, database, migration, matching, coverage, Analyze, Apply or Catalog
+behavior changed, and no data was saved during QA. The separate preexisting
+PBI-041 PostgreSQL performance budget remains outstanding; this is not Owner
+acceptance, integration or deployment evidence.

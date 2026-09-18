@@ -318,9 +318,11 @@ behavior.
 
 Focused static contracts cover the two panels, headings, shared footer,
 explicit radios and the responsive collapse. Typecheck, production build and
-the architecture policy pass locally. Authenticated Chrome QA across desktop,
-768, 640, themes and keyboard navigation is still pending; this record is not
-Owner acceptance.
+the architecture policy pass locally. Authenticated Chrome QA passed for fresh
+blank state, both explicit choices, pre-save Change, contextual-create cancel,
+Escape, Tab/Shift+Tab and visible desktop/768/640 light plus 640 dark states.
+No draft, Source, Version, analysis, Apply or Catalog write occurred. This
+record is ready for Owner Review, not Owner acceptance.
 
 ## 17. Follow-up audit — duplicate input semantics
 
