@@ -275,3 +275,12 @@ effective Brand. Draft-only removal is available both from the toolbar and an
 active-row contextual control; Undo restores the local row snapshot. The
 evidence distinguishes this pre-Analyze physical removal from the retained
 post-Analyze **Excluir del lote** decision flow.
+
+## UX-005 First Supplier Baseline Reconciliation Audit
+
+The read-only Avicell v2 audit distinguishes `NO_BASELINE` Coverage from row
+classification. Its documented 124/616 split is caused by canonical Brand
+availability, not missing Supplier history or a missing CatalogItem target;
+four separate physical observations form two duplicate-conflict units. No
+Avicell, Catalog, Resolution, Memory, policy or audit record was changed. See
+the [domain audit](../../../domain/PRICE_LIST_UX_005_FIRST_SUPPLIER_BASELINE_RECONCILIATION_AUDIT.md).

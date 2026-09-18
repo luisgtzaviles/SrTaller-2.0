@@ -1,15 +1,23 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-004.7 Capture Cleanup Ergonomics
+Milestone / Functional Goal: PBI-041 — UX-005 First Supplier Baseline Reconciliation Audit
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review ready — UX-004.7 capture cleanup ergonomics is implemented and materially proven in localhost.
+Status: Owner decision ready — UX-005 audit is complete; Avicell v2 remains preserved and no remediation is implemented.
 WIP: 1/1
-Progress: 7 / 7 UX-004.7 blocks completed; UX-004.6 toolbar and gridlines remain preserved.
-Current: Owner Review — Brand capture normalization and reversible draft-row cleanup are ready for review in localhost.
-Next: Await Owner direction. Do not push, open a PR, merge, deploy or start another PBI.
+Progress: 5 / 5 UX-005 audit blocks completed; UX-004.7 capture cleanup remains preserved.
+Current: Owner Review — audit evidence explains Avicell first-supplier reconciliation without changing its data.
+Next: Await Owner decision on the proposed UX-005.1 remediation. Do not push, open a PR, merge, deploy or start another PBI.
 Blocked: No product blocker identified. The broader PBI-041 PostgreSQL runner also executes a separate 10k publish benchmark that exceeded its 30s budget in this host (34.9s); do not remediate that performance concern in UX-004.4. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
+
+## Current checkpoint — UX-005 First Supplier Baseline Reconciliation Audit
+
+- [x] Preserve and snapshot Avicell Source, v1/v2, Batch, Catalog, Resolution, Memory, policy and baseline state with read-only PostgreSQL queries.
+- [x] Compare 10 NEW and 20 REFERENCE_PENDING observations; quantify the 124/616 split, required data, targets, history, candidates and duplicate groups.
+- [x] Reconcile classifier precedence, first-Supplier/FULL/COMPLETE semantics, the bulk-suggestion command and the physical/effective count model.
+- [x] Record UX5-001..012, rank alternatives and propose only a narrow unimplemented remediation.
+- [x] Run documentation checks, verify no data mutation, create a local documentation commit and stop for Owner decision.
 
 ## Current checkpoint — UX-004.7 Capture Cleanup Ergonomics
 

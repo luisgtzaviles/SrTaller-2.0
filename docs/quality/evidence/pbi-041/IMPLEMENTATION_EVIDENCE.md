@@ -1599,3 +1599,20 @@ navigation. No Save, Analyze, Apply, SupplierVersion, Catalog, Resolution or
 Memory mutation occurred. Focused Composer, column-resize and contract tests,
 TypeScript checking and production build passed; no PostgreSQL validation was
 needed because no backend or persistence schema changed.
+
+## UX-005 — First Supplier Baseline Reconciliation Audit
+
+The Owner-preserved Avicell `v2` was read only: `INGESTED`, `FULL`, `COMPLETE`,
+744 physical rows, `RECONCILING`, unpublished, 124 `NEW`, 616
+`PENDING_REFERENCE` and 4 `CONFLICT`. No command was sent to Analyze, decide,
+Apply or alter the tenant policy. Database snapshots before/after retain zero
+Avicell Resolution, Memory and Catalog audit writes.
+
+The diagnostic confirms `NO_BASELINE` is Coverage-only. The exact classifier
+requires an active canonical Category and Brand before an unmatched FULL row can
+become `NEW`; only Apple is canonical locally. Thus 615 rows are pending only
+for an uncanonical Brand and one also has malformed Category capture. The
+documented audit records how the 616-suggestion action only changes Batch
+decisions before a future publish, why its 4 conflict observations collapse to
+two units, and the proposed-but-not-implemented UX-005.1 boundary. See the
+[domain audit](../../../domain/PRICE_LIST_UX_005_FIRST_SUPPLIER_BASELINE_RECONCILIATION_AUDIT.md).
