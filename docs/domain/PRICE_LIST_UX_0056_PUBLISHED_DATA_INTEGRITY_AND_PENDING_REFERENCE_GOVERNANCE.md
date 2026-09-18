@@ -17,6 +17,17 @@ Una `Brand` pendiente representa una observación de proveedor aún no promovida
 
 La lectura de la gobernanza requiere `catalog.configuration.read`; la mutación requiere `catalog.configuration.manage`. La lista de precios ya muestra un item pendiente en búsqueda, pero antes de promoción no hay Brand canónica que pueda figurar como filtro. Tras promoción, el filtro normal de Brand usa la identidad canónica sin opciones duplicadas.
 
+### UX-005.6A — presentación de Brand pendiente
+
+La UI no usa el casing raw como etiqueta primaria: separa explícitamente raw,
+clave normalizada, nombre de presentación/propuesta y Brand canónica. El nombre
+de presentación se deriva sin persistencia; una coincidencia canónica exacta
+gana, el casing uniforme se vuelve legible, los acrónimos compactos se
+conservan y el casing mixto significativo permanece intacto. La resolución
+sigue siendo explícita y no se introduce matching fuzzy, API, migration ni
+escritura de Owner. Véase
+[UX-005.6A](PRICE_LIST_UX_0056A_PENDING_BRAND_DISPLAY_CANONICALIZATION.md).
+
 ## AviCell preservado y remediación pendiente
 
 La inspección de AviCell v3 es de sólo lectura. La fila 411 `PANTALLA SAMSUGN A37 ORIGINAL` continúa ACTIVE con precio y costo cero; no se editó ni se desactivó. La corrección futura debe ser una operación normal de edición con importe conocido o una desactivación gobernada si no es vendible. Tampoco se promovieron sus grupos pendientes. La evidencia material usa un Tenant PostgreSQL desechable.

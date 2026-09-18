@@ -290,6 +290,15 @@ transacción religa los CatalogItems del grupo, conserva la FK pending como
 historia, no reescribe Supplier Listings y deja audit append-only. Véase
 [UX-005.6](../domain/PRICE_LIST_UX_0056_PUBLISHED_DATA_INTEGRITY_AND_PENDING_REFERENCE_GOVERNANCE.md).
 
+La presentación de una Brand pendiente no es otra identidad durable. La
+proyección conserva separados `rawLabel`, `normalizedKey`, nombre de
+presentación/propuesta y Brand canónica. El nombre legible se deriva del raw y
+del canon activo de identidad exacta: el canon gana, casing uniforme se ajusta
+conservadoramente, acrónimos compactos y casing mixto permanecen. No hay
+diccionario comercial, fuzzy matching, persistencia duplicada ni mutación antes
+de la resolución autorizada. Véase
+[UX-005.6A](../domain/PRICE_LIST_UX_0056A_PENDING_BRAND_DISPLAY_CANONICALIZATION.md).
+
 ### 5.1 Patrón transversal de reconciliación
 
 Repairs y Catalog comparten este lenguaje de producto:

@@ -1,5 +1,28 @@
 # PBI-041 — Implementation Evidence
 
+## UX-005.6A — Pending Brand display canonicalization
+
+`normalizeBrandDisplay` is the shared conservative presentation rule used by
+capture and pending Brand governance. It leaves the Supplier raw observation
+and normalized identity unchanged, selects the exact active canonical spelling
+when present, title-cases only uniform human-readable casing, preserves compact
+uppercase acronyms and meaningful mixed case, and never performs fuzzy
+inference. The pending table presents the derived proposal while retaining
+`Observado: <raw> · clave <normalized>` metadata; a new-canonical resolver
+starts from the same derived proposal but requires the existing explicit
+`catalog.configuration.manage` mutation.
+
+No migration, API contract, PostgreSQL, CatalogItem, pending group, Memory or
+Resolution record changes in this slice. The AviCell proof is read-only: 16
+pending Brand groups representing 618 items remain pending, unpromoted and
+unassigned. Focused model/UI/authorization contracts cover exact canonical
+reuse, acronym and mixed-case preservation, no fuzzy `SAMSUGN → Samsung`,
+provenance, grouping and promotion default. Chrome local verified the pending
+surface at desktop, 768 px and 640 px in light/dark, including native keyboard
+traversal and Escape/focus restoration from the promotion dialog; page-level
+horizontal overflow was absent. The live table has 17 total pending rows only
+because a separate local synthetic `Aple` group remains outside AviCell.
+
 ## UX-005.6 — Published data integrity and pending Brand governance
 
 The shared required-effective-value contract now treats a monetary value as

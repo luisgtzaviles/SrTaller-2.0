@@ -1,17 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005.6 Published Data Integrity + Pending Reference Governance
+Milestone / Functional Goal: PBI-041 — UX-005.6A Pending Brand Display Canonicalization
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Functional implementation authorized — forward guards and pending-Brand governance; AviCell v3 remains read-only pending a separate Owner remediation decision.
+Status: Functional implementation authorized — display-only Brand canonicalization; AviCell v3 remains read-only pending a separate Owner remediation decision.
 WIP: 1/1
-Progress: 7 / 7 UX-005.6 implementation blocks complete; prior UX-005.1–UX-005.5 evidence remains preserved.
-Current: Local Owner Review of the forward integrity rule and pending-Brand governance.
-Next: Await an explicit Owner decision for AviCell row 411 and any material pending-Brand promotion; do not integrate or start another PBI.
+Progress: 5 / 5 UX-005.6A implementation blocks complete; UX-005.6 remains preserved.
+Current: Local Owner Review — pending Brand display canonicalization is materialized with raw provenance intact.
+Next: Await Owner Review; do not promote/assign AviCell groups, integrate, or start another PBI.
 Blocked: No implementation blocker known. Owner AviCell data remains protected: row 411 is not edited/deactivated and its 618 pending Brand groups are not promoted. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
 
-## Current checkpoint — UX-005.6 Published Data Integrity + Pending Reference Governance
+## Current checkpoint — UX-005.6A Pending Brand Display Canonicalization
+
+- [x] Audit UX-004.7 Brand casing, pending-reference grouping, canonical lookup and promotion path.
+- [x] Reuse one deterministic display helper for governance labels and promotion proposal defaults.
+- [x] Preserve raw provenance, normalized grouping and authorization without migration, Catalog, Memory or Resolution writes.
+- [x] Complete read-only AviCell proof: 16 pending groups / 618 items, responsive themes and keyboard.
+- [x] Run focused gates, reconcile evidence/checklist and create only local logical commits for Owner Review.
+
+## Previous checkpoint — UX-005.6 Published Data Integrity + Pending Reference Governance
 
 - [x] Audit current zero-value and required-effective-value semantics, pending Brand persistence, filtering, authority and lifecycle.
 - [x] Add the forward base-price-greater-than-zero invariant to Analyze/Review and independent Apply defense.
