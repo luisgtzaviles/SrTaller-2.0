@@ -124,6 +124,16 @@ test('draft row removal preserves neighboring rows and provenance, keeps one row
   assert.equal(single.rows.length, 1);
 });
 
+test('draft row removal remains deterministic for a 10k-row capture without disturbing neighboring provenance', () => {
+  const rows = Array.from({ length: 10_000 }, (_, index) => ({ ...blankRow(), supplierObservedTitle: `PROVEEDOR ${index}`, supplierObservedBrand: index === 5_000 ? 'SAMSUNG' : '', title: `Artículo ${index}`, brand: index === 5_000 ? 'Samsung' : '' }));
+  const removal = removeDraftRow(rows, 5_000);
+  assert.equal(removal.rows.length, 9_999);
+  assert.equal(removal.removed.supplierObservedBrand, 'SAMSUNG');
+  assert.equal(removal.rows[4_999].supplierObservedTitle, 'PROVEEDOR 4999');
+  assert.equal(removal.rows[5_000].supplierObservedTitle, 'PROVEEDOR 5001');
+  assert.equal(removal.nextRowIndex, 5_000);
+});
+
 test('spreadsheet navigation covers arrows, Tab, Shift+Tab and Enter', () => {
   assert.deepEqual(nextGridCell('ArrowRight', 1, 1, 4, 3), { row: 1, column: 2 });
   assert.deepEqual(nextGridCell('ArrowLeft', 1, 0, 4, 3), { row: 0, column: 2 });
