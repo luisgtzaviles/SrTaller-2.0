@@ -122,3 +122,17 @@ fresh AG `v65` row 1 and AG `v66` row 2 fixtures: each changed `1 attention`
 to `0`, showed the compact resolved state after reload, and was not applied.
 The New Load supplier-and-intent gate also remained explicit. No push, PR,
 merge, deployment or remote action occurred.
+
+## UX-002C Primary review action + secondary draft save — ready for Owner Review
+
+The capture toolbar now gives `Revisar lista` the primary happy-path position;
+`Guardar para después` is a quiet, dirty-state-only draft escape path. Review
+continues to persist before Analyze, while Save for later writes only a
+recoverable editable draft. Isolated QA UX-002A Local `v3` was reviewed without
+Apply and `v4` persisted/reloaded as a draft. No Catalog, reconciliation,
+memory, publication, migration or remote state changed before Apply.
+
+Focused model/UI contracts, typecheck, production build, architecture policy
+and the PBI-041 disposable PostgreSQL material suite pass locally. Chrome
+passed desktop, 768 and 640 light plus 640 dark. This is Owner Review evidence,
+not acceptance, PR, merge or deployment evidence.

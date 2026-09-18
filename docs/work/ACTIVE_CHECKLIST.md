@@ -1,15 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002A.4 Duplicate winner decision remediation
+Milestone / Functional Goal: PBI-041 — UX-002C Primary review action + secondary draft save
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: duplicate-winner selection fixed and proven locally; ready for Owner Review
+Status: local functional proof complete; Review is the normal path and draft save is an optional escape path
 WIP: 1/1
-Progress: 7 / 7 UX-002A.4 blocks completed; stop at Owner Review.
-Current: stop for Owner Review of the repaired pre-Apply duplicate-winner flow.
-Next: Owner accepts or changes UX-002A.4; no integration or follow-on PBI starts automatically.
-Blocked: None for UX-002A.4. AG v64 remains unreconciled and unpublished as failure evidence; AG v65/v66 are isolated, resolved and unpublished local fixtures; the preexisting .DS_Store remains preserved.
+Progress: 7 / 7 UX-002C blocks completed.
+Current: stopped for Owner Review with local v3 analyzed and v4 saved/recoverable; neither was applied.
+Next: Owner Review only. Do not start integration, another UX slice or PBI without new authority.
+Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
+
+## Current checkpoint — UX-002C Primary review action + secondary draft save
+
+- [x] Separate view controls from the capture workflow without changing Save → Analyze orchestration.
+- [x] Make `Revisar lista` the sole prominent capture action and expose `Guardar para después` as quiet, discoverable and state-aware.
+- [x] Preserve manual draft-only persistence, editable recovery, and no pre-Apply Catalog/Resolution/Memory/publication writes.
+- [x] Cover capture, saved, analyzed and applied action states plus UX-002B and duplicate regressions.
+- [x] Prove isolated Chrome happy path, draft recovery and responsive light/dark layouts without Apply.
+- [x] Run authorized focal checks and reconcile PBI/audit/evidence/checklist.
+- [x] Stop at Owner Review; no push, PR, merge or deploy.
 
 ## Current checkpoint — UX-002A.4 Duplicate winner decision failure
 

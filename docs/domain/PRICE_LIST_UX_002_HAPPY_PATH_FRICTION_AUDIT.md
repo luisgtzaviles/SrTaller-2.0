@@ -333,6 +333,25 @@ for that situation. It records decisions only; no Composer, persistence or
 Catalog behavior changed. See
 [Duplicate Input Resolution Audit](PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md).
 
+## 18. UX-002C implementation record — primary Review, optional draft save
+
+The approved capture hierarchy is explicit: **Revisar lista** is the ordinary
+operator action after paste/edit. It keeps the existing durable Save → Analyze
+orchestration rather than making persistence implicit. A save failure prevents
+Analyze; an Analyze failure leaves the saved snapshot available for recovery.
+
+**Guardar para después** is the quiet, optional escape path. It is exposed only
+when meaningful editable work is dirty, performs draft persistence only, and
+then hides again until another edit. It neither analyzes nor writes Catalog,
+reconciliation, memory or publication state. Capture controls disappear after
+Analyze so result workflows continue to use their existing reanalyze/apply
+actions.
+
+The local proof used an isolated source and two non-applied versions: one
+reached reviewed results through the primary action; the other stayed a
+recoverable draft across reload. Responsive Chrome checks covered desktop,
+768 and 640 light, plus 640 dark. This is local Owner Review evidence only.
+
 ## Conclusion
 
 UX-002 supports a result-first review flow, not silent automation. The system

@@ -1220,3 +1220,23 @@ presupuesto. Chrome local creó exclusivamente AG `v65` y `v66` parciales, no
 aplicadas: fila 1 y fila 2 respectivamente cambiaron una atención a cero,
 sobrevivieron reload y mostraron la resolución compacta. El gate UX-002B siguió
 exigiendo proveedor e intención antes de Continuar.
+
+## UX-002C — Primary Review action and secondary draft save
+
+Capture now models its action state separately from view controls. The pure
+state predicate keeps `Revisar lista` visible in new/draft capture, but exposes
+`Guardar para después` only for meaningful dirty work. This is presentation
+authority only: Review retains the existing Save → Analyze transaction order;
+manual Save retains its existing draft-only persistence.
+
+Regression coverage verifies blank, dirty-new, clean-draft, dirty-draft and
+analyzed states, alongside the existing causal-order/failure coverage and the
+UX-002B supplier-intent gate. The Chrome proof used QA UX-002A Local `v3` to
+save, edit and review one isolated row (one resolved, zero attention, no
+Apply), then `v4` to save, reload and recover an editable draft. At 640 the
+primary action remains full-width while the quiet save remains reachable only
+after an edit; desktop/768/640 light and 640 dark passed.
+
+No API, database, migration, matching, coverage, duplicate semantics, Catalog,
+resolution, memory or Apply behavior changed. The implementation is a local
+Owner Review candidate only; there was no push, PR, merge, CI or deployment.
