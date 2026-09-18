@@ -206,6 +206,28 @@ test('grid edit actions live once in the primary toolbar immediately before Revi
   assert.match(css, /\.gridEditActions > button:last-child \{ grid-column: 1 \/ -1; \}/u);
 });
 
+test('gridlines are an independent, accessible session presentation preference', async () => {
+  const [page, css] = await Promise.all([
+    readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8'),
+    readFile('apps/dev-preview-web/src/pages/bulk-catalog-composer-page.module.css', 'utf8'),
+  ]);
+  const toolbarStart = page.indexOf('<section className={styles.workspaceToolbar}>');
+  const toolbarEnd = page.indexOf('{currentIssue ? ', toolbarStart);
+  const toolbar = page.slice(toolbarStart, toolbarEnd);
+  assert.match(page, /const GRIDLINES_STORAGE_KEY = 'srtaller:bulk-composer:gridlines:v1';/u);
+  assert.match(page, /const \[gridlinesVisible, setGridlinesVisible\] = useState\(readGridlinesPreference\);/u);
+  assert.match(page, /sessionStorage\.setItem\(GRIDLINES_STORAGE_KEY, String\(gridlinesVisible\)\)/u);
+  assert.match(toolbar, /aria-pressed=\{gridlinesVisible\} aria-controls="bulk-catalog-grid" onClick=\{\(\) => setGridlinesVisible\(\(value\) => !value\)\}>Cuadrícula<\/Button>/u);
+  assert.ok(toolbar.indexOf('Ocultar lista') < toolbar.indexOf('Cuadrícula'));
+  assert.ok(toolbar.indexOf('Cuadrícula') < toolbar.indexOf('styles.workflowControls'));
+  assert.doesNotMatch(toolbar.slice(toolbar.indexOf('Cuadrícula') - 180, toolbar.indexOf('Cuadrícula') + 240), /setDirty|save\(\)|analyze\(\)|publish\(/u);
+  assert.match(page, /className=\{`\$\{styles\.gridRegion\} \$\{gridlinesVisible \? styles\.gridlines : ''\}`\}/u);
+  assert.match(css, /\.gridlines \.gridHeader > \*, \.gridlines \.gridRow > \* \{ border-inline-end: 1px solid var\(--color-border\); \}/u);
+  assert.match(css, /\.gridlines \.gridHeader > :first-child, \.gridlines \.gridRow > :first-child \{ border-inline-start: 1px solid var\(--color-border\); \}/u);
+  assert.match(css, /\.gridlines \.gridRow \{ border-bottom-color: var\(--color-border\); \}/u);
+  assert.match(css, /\.cell\.activeCell, \.cell:focus-within \{ z-index: 2; box-shadow: inset 0 0 0 2px var\(--color-brand-action\);/u);
+});
+
 test('supplier paste transformation stays bounded at 1,500 and 10,000 rows', (context) => {
   for (const rowCount of [1_500, 10_000]) {
     const clipboard = Array.from({ length: rowCount }, (_, index) => `PANTALLA IPHONE ${index} OLED GX\t${index}\t${index + 1}`).join('\n');
