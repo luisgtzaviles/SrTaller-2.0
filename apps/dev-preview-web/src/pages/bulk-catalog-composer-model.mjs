@@ -62,6 +62,22 @@ export function supplierHistoryForBrowseSource(versions, sourceId) {
     .sort((left, right) => right.sequenceNumber - left.sequenceNumber));
 }
 
+/**
+ * Plans exception navigation from an immutable reconciliation row identity,
+ * never from its human-facing row number. `allColumns` is the server-filtered
+ * schema, so an unavailable protected field is intentionally not targeted.
+ */
+export function planSourceRowNavigation(rows, rowDecisionId, requestedColumn, visibleColumns, allColumns) {
+  const rowIndex = rows.findIndex((row) => row?.rowDecisionId === rowDecisionId);
+  if (rowIndex < 0) return Object.freeze({ rowIndex: -1, columnKey: null, requiresAllColumns: false });
+  const authorizedColumn = requestedColumn && allColumns.includes(requestedColumn) ? requestedColumn : null;
+  return Object.freeze({
+    rowIndex,
+    columnKey: authorizedColumn,
+    requiresAllColumns: Boolean(authorizedColumn && !visibleColumns.includes(authorizedColumn)),
+  });
+}
+
 export const DEFAULT_COLUMN_WIDTHS = Object.freeze({
   kind: 150,
   title: 310,

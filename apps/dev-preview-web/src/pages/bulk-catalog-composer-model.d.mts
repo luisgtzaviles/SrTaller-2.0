@@ -31,6 +31,7 @@ export function captureActionState(input: Readonly<{ lifecycle: 'DRAFT' | 'INGES
 export function filterSupplierSources<Source extends Readonly<{ name: string }>>(sources: readonly Source[], query: string): readonly Source[];
 export function reconcileBrowseSourceId<Source extends Readonly<{ sourceId: string }>>(sourceId: string, sources: readonly Source[], initialized: boolean): string;
 export function supplierHistoryForBrowseSource<Version extends Readonly<{ sourceId: string; sequenceNumber: number }>>(versions: readonly Version[], sourceId: string): readonly Version[];
+export function planSourceRowNavigation<Row extends Readonly<{ rowDecisionId: string }>>(rows: readonly Row[], rowDecisionId: string, requestedColumn: ComposerColumn | null, visibleColumns: readonly ComposerColumn[], allColumns: readonly ComposerColumn[]): Readonly<{ rowIndex: number; columnKey: ComposerColumn | null; requiresAllColumns: boolean }>;
 export type NewLoadIntent = 'PARTIAL' | 'COMPLETE';
 export type NewLoadGateState = Readonly<{ supplierId: string | null; completeness: NewLoadIntent | null }>;
 export const NEW_LOAD_INTENTS: readonly Readonly<{ value: NewLoadIntent; label: string; description: string }>[];

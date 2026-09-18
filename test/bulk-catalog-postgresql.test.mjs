@@ -791,6 +791,39 @@ test('PBI-041 material handoff preserves the publisher as the Apply audit actor'
   } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
 });
 
+test('UX-005.3 correction drafts preserve an analyzed source snapshot and reject stale predecessor Apply', { skip: !enabled, timeout: 30_000 }, async () => {
+  const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
+  const connection = createDatabaseConnection(config());
+  const tenantId = randomUUID(); const branchId = randomUUID(); const ctx = context(tenantId, branchId);
+  const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
+  try {
+    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    const categoryId = randomUUID(); const correctedCategoryId = randomUUID(); const brandId = randomUUID();
+    await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now()), ($1, $3, 'PART', 'Pantallas corregidas', 'pantallas corregidas', 'ACTIVE', 1, now(), now())`, [tenantId, categoryId, correctedCategoryId]);
+    await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'Apple', 'apple', 'ACTIVE', 1, now(), now())`, [tenantId, brandId]);
+    await admin.query(`insert into catalog_category_kind_applicability (tenant_id, category_id, kind) values ($1, $2, 'PART'), ($1, $3, 'PART')`, [tenantId, categoryId, correctedCategoryId]);
+    await admin.query(`insert into catalog_brand_kind_applicability (tenant_id, brand_id, kind) values ($1, $2, 'PART')`, [tenantId, brandId]);
+    const source = await service.createSource(ctx, { name: 'UX-005.3 correction source' });
+    const originalRow = { kind: 'PART', title: 'Pantalla corrección original', supplierObservedTitle: 'Pantalla corrección original', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: 'UX0053-001', sku: null, barcode: null, basePriceMinor: 120_000, referenceCostMinor: null };
+    const original = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'Original ready review', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'original', rows: [originalRow] });
+    const ready = await service.analyze(ctx, original.versionId, { expectedVersion: original.version });
+    assert.equal(ready.batch.lifecycle, 'READY');
+    const correction = await service.createDraft(ctx, { sourceId: source.sourceId, supersedesVersionId: original.versionId, description: 'Corrección de categoría', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'corrected', rows: [{ ...originalRow, category: 'Pantallas corregidas' }] });
+    assert.equal(correction.supersedesVersionId, original.versionId);
+    const staleOriginal = await service.getVersion({ tenantId, branchId }, original.versionId, false);
+    assert.equal(staleOriginal.batch.lifecycle, 'RECONCILING');
+    assert.equal(staleOriginal.batch.staleByCorrection, true);
+    assert.equal(staleOriginal.batch.correctionVersionId, correction.versionId);
+    await assert.rejects(service.publish(ctx, original.versionId, { expectedVersion: ready.version, clientRequestId: randomUUID() }, false), CatalogConflictError);
+    await assert.rejects(service.analyze(ctx, original.versionId, { expectedVersion: staleOriginal.version }), CatalogConflictError);
+    const reanalyzed = await service.analyze(ctx, correction.versionId, { expectedVersion: correction.version });
+    assert.equal(reanalyzed.batch.lifecycle, 'READY');
+    assert.equal(reanalyzed.rows[0].proposal.category, 'Pantallas corregidas');
+    assert.equal((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantId])).rows[0].count, 0);
+  } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
+});
+
 test('UX-003.1 persists tenant-isolated catalog field policies with append-only versions', { skip: !enabled, timeout: 30_000 }, async () => {
   const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
   const connection = createDatabaseConnection(config());

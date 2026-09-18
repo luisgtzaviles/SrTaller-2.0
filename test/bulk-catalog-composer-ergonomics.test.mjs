@@ -16,6 +16,7 @@ import {
   orchestrateReviewList,
   ownerSupplierClipboard,
   parseClipboardMatrix,
+  planSourceRowNavigation,
   syntheticSupplierDemoRows,
   parseMoneyToMinor,
   removeDraftRow,
@@ -144,6 +145,17 @@ test('spreadsheet navigation covers arrows, Tab, Shift+Tab and Enter', () => {
   assert.deepEqual(nextGridCell('Enter', 1, 1, 4, 3), { row: 2, column: 1 });
 });
 
+test('exception navigation uses immutable physical row identity and only reveals authorized columns', () => {
+  const rows = Array.from({ length: 744 }, (_, index) => ({ rowDecisionId: `row-${index + 1}`, rowNumber: index + 1 }));
+  const category = planSourceRowNavigation(rows, 'row-618', 'category', ['kind', 'title', 'brand'], ['kind', 'title', 'category', 'brand', 'price']);
+  assert.deepEqual(category, { rowIndex: 617, columnKey: 'category', requiresAllColumns: true });
+  const duplicate = planSourceRowNavigation(rows, 'row-468', null, ['kind', 'title', 'brand'], ['kind', 'title', 'category', 'brand', 'price']);
+  assert.deepEqual(duplicate, { rowIndex: 467, columnKey: null, requiresAllColumns: false });
+  const protectedCost = planSourceRowNavigation(rows, 'row-618', 'cost', ['kind', 'title'], ['kind', 'title', 'category', 'brand', 'price']);
+  assert.deepEqual(protectedCost, { rowIndex: 617, columnKey: null, requiresAllColumns: false });
+  assert.deepEqual(planSourceRowNavigation(rows, 'missing-row', 'category', ['kind'], ['kind', 'category']), { rowIndex: -1, columnKey: null, requiresAllColumns: false });
+});
+
 test('copy fill repeats a single cell or rectangular source and leaves source intact', () => {
   const rows = Array.from({ length: 5 }, blankRow);
   rows[0].kind = 'PART';
@@ -254,7 +266,8 @@ test('grid edit actions live once in the primary toolbar immediately before Revi
   assert.match(page, /const removeActiveDraftRow = \(\): void =>/u);
   assert.match(page, /removeDraftRow\(rows, active\.row\)/u);
   assert.match(page, /supplierObservedBrand \|\| row\.brand/u);
-  assert.match(page, /setCurrent\(saved\); setPendingNewLoadSupplierId\(null\); setRows\(rows\);/u);
+  assert.match(page, /setCurrent\(saved\); setPendingNewLoadSupplierId\(null\); setCorrectionSupersedesVersionId\(null\); setRows\(rows\);/u);
+  assert.match(page, /correctionSupersedesVersionId \? \{ supersedesVersionId: correctionSupersedesVersionId \} : \{\}/u);
   assert.match(page, /onBlur=\{column === 'brand' \? \(\) => commitBrand\(rowIndex\) : undefined\}/u);
   assert.match(css, /\.rowRemove \{ position: absolute;/u);
   assert.match(css, /\.gridEditActions \{ display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/u);

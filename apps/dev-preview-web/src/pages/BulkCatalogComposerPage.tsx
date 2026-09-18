@@ -1,5 +1,5 @@
 import { ArchiveX, Check, ChevronDown, ChevronLeft, ChevronRight, Columns3, Database, GitCompare, Plus, RotateCcw, Save, Send, Trash2 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { analyzeSupplierVersion, compareSupplierVersions, createCatalogRetirementPlan, createSupplierDraft, createSupplierSource, decideSupplierRow, decideSupplierRows, deleteSupplierSource, executeCatalogRetirementPlan, getBulkCatalogFieldPolicy, getSupplierVersion, listCatalogReferences, listSupplierSources, listSupplierVersions, normalizeCatalogReferenceText, publishSupplierVersion, replaceSupplierDraft } from '../catalog-api.js';
 import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogMode, BulkCatalogTitleDecision, CatalogItemKind, CatalogOperationalFieldPolicyResponse, CatalogReferences, CatalogRetirementPlan, SupplierCatalogCompleteness, SupplierSource, SupplierVersion, SupplierVersionComparison, SupplierVersionSummary } from '../catalog-api.js';
@@ -10,7 +10,7 @@ import { BackLink, PageHeader } from '../components/ui/navigation.js';
 import { Dialog } from '../components/ui/overlays.js';
 import { hasOperationalCapability } from '../session/session-capabilities.mjs';
 import type { OperationalCapability } from '../session/session-api.js';
-import { applyBatchDefaults, applyBatchDefaultsToEmptyRows, canContinueNewLoadGate, captureActionState, COMPACT_COLUMNS, derivePolicyDrivenColumns, estimateColumnWidth, fillRows, filterSupplierSources, FULL_COLUMNS, groupDuplicateResolutionRows, hasMeaningfulComposerWork, NEW_LOAD_INTENTS, nextGridCell, nextValidationIssueIndex, normalizeBrandValue, normalizeColumnWidths, normalizeSupplierTitle, orchestrateReviewList, parseClipboardMatrix, parseMoneyToMinor, reconcileBrowseSourceId, removeDraftRow, resizeColumnWidth, sortValidationIssues, supplierHistoryForBrowseSource, validateComposerDraft, validationIssueFromApi } from './bulk-catalog-composer-model.mjs';
+import { applyBatchDefaults, applyBatchDefaultsToEmptyRows, canContinueNewLoadGate, captureActionState, COMPACT_COLUMNS, derivePolicyDrivenColumns, estimateColumnWidth, fillRows, filterSupplierSources, FULL_COLUMNS, groupDuplicateResolutionRows, hasMeaningfulComposerWork, NEW_LOAD_INTENTS, nextGridCell, nextValidationIssueIndex, normalizeBrandValue, normalizeColumnWidths, normalizeSupplierTitle, orchestrateReviewList, parseClipboardMatrix, parseMoneyToMinor, planSourceRowNavigation, reconcileBrowseSourceId, removeDraftRow, resizeColumnWidth, sortValidationIssues, supplierHistoryForBrowseSource, validateComposerDraft, validationIssueFromApi } from './bulk-catalog-composer-model.mjs';
 import type { ComposerColumn, ComposerSelection, ValidationIssue } from './bulk-catalog-composer-model.mjs';
 import { applyBulkCatalogCanvas, applyBulkCatalogGrid, applyBulkCatalogOffset } from './bulk-catalog-grid-layout.js';
 import styles from './bulk-catalog-composer-page.module.css';
@@ -19,6 +19,7 @@ type UiRow = { kind: CatalogItemKind | ''; supplierObservedTitle: string; suppli
 type Column = ComposerColumn;
 type BatchDefaults = { kind: CatalogItemKind | ''; category: string; brand: string };
 type UndoSnapshot = Readonly<{ rows: UiRow[]; active: { row: number; column: number }; selection: ComposerSelection | null }>;
+type GridFocusTarget = Readonly<{ rowIndex: number; columnKey: Column | null }>;
 type SupplierVersionRow = SupplierVersion['rows'][number];
 type TitleChoiceTarget = Readonly<{ rowDecisionId: string; expectedRowVersion: number; targetItemId: string; currentTitle: string; receivedTitle: string }>;
 type ReviewProgress = 'SAVING' | 'ANALYZING';
@@ -40,6 +41,11 @@ const requiredEffectiveField = (code: string): Column | null => {
   const key = code.startsWith('MISSING_REQUIRED_EFFECTIVE_VALUE:') ? code.slice('MISSING_REQUIRED_EFFECTIVE_VALUE:'.length) : '';
   const columnsByPolicyField: Readonly<Record<string, Column>> = { kind: 'kind', title: 'title', description: 'description', category: 'category', brand: 'brand', supplierItemCode: 'supplierItemCode', sku: 'sku', barcode: 'barcode', referenceCost: 'cost', basePrice: 'price' };
   return columnsByPolicyField[key] ?? null;
+};
+const correctionValue = (row: SupplierVersionRow, column: Column): string => {
+  if (column === 'price') return row.proposal.basePriceMinor === null ? '' : fromMinor(row.proposal.basePriceMinor);
+  if (column === 'cost') return row.proposal.referenceCostMinor === null ? '' : fromMinor(row.proposal.referenceCostMinor);
+  return row.proposal[column] ?? '';
 };
 const analysisMessage = (code: string, canReadCost: boolean): string | null => {
   const requiredField = requiredEffectiveField(code);
@@ -121,8 +127,10 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const [retirementPlan, setRetirementPlan] = useState<CatalogRetirementPlan | null>(null); const [retirementPin, setRetirementPin] = useState('');
   const [titleChoiceTarget, setTitleChoiceTarget] = useState<TitleChoiceTarget | null>(null); const [titleChoice, setTitleChoice] = useState<BulkCatalogTitleDecision>('KEEP_CURRENT');
   const [newSourceOpen, setNewSourceOpen] = useState(false); const [newSourceOrigin, setNewSourceOrigin] = useState<'ADMINISTRATION' | 'GATE' | null>(null); const [supplierGateOpen, setSupplierGateOpen] = useState(false); const [supplierSearch, setSupplierSearch] = useState(''); const [supplierGateSupplierId, setSupplierGateSupplierId] = useState<string | null>(null); const [supplierGateCompleteness, setSupplierGateCompleteness] = useState<SupplierCatalogCompleteness | null>(null); const [supplierGateRestoreTarget, setSupplierGateRestoreTarget] = useState('supplier-gate-new-load'); const [deleteSourceTarget, setDeleteSourceTarget] = useState<SupplierSource | null>(null); const [deleteStage, setDeleteStage] = useState<1 | 2>(1); const [deletePin, setDeletePin] = useState(''); const [deleteArmed, setDeleteArmed] = useState(false);
-  const [busy, setBusy] = useState(false); const [reviewProgress, setReviewProgress] = useState<ReviewProgress | null>(null); const [dirty, setDirty] = useState(false); const [notice, setNotice] = useState<{ tone: 'danger' | 'warning'; message: string } | null>(null); const [toast, setToast] = useState<{ id: number; message: string } | null>(null); const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]); const [validationAttempted, setValidationAttempted] = useState(false); const [issueIndex, setIssueIndex] = useState(0); const [pendingIssueFocus, setPendingIssueFocus] = useState<ValidationIssue | null>(null); const [sourcesOpen, setSourcesOpen] = useState(true); const [contextOpen, setContextOpen] = useState(false); const [gridExpanded, setGridExpanded] = useState(true); const [continuedOpen, setContinuedOpen] = useState(false); const [notObservedOpen, setNotObservedOpen] = useState(false); const [additionalOpen, setAdditionalOpen] = useState(false); const [comparisonOpen, setComparisonOpen] = useState(false); const [coverageReviewOpen, setCoverageReviewOpen] = useState(false); const [scrollTop, setScrollTop] = useState(0); const [active, setActive] = useState({ row: 0, column: 0 }); const [selection, setSelection] = useState<ComposerSelection | null>(null); const undoRows = useRef<UndoSnapshot | null>(null); const editOriginal = useRef<{ row: number; column: Column; value: string } | null>(null); const publishRequest = useRef(crypto.randomUUID()); const draftCreateRequest = useRef(crypto.randomUUID()); const reviewInFlight = useRef(false); const deleteInFlight = useRef(false); const viewportRef = useRef<HTMLDivElement | null>(null); const headerScrollRef = useRef<HTMLDivElement | null>(null); const toastTimer = useRef<number | null>(null); const sourcesToggleRef = useRef<HTMLButtonElement | null>(null); const pendingSourcesToggleFocus = useRef(false);
+  const [busy, setBusy] = useState(false); const [reviewProgress, setReviewProgress] = useState<ReviewProgress | null>(null); const [dirty, setDirty] = useState(false); const [notice, setNotice] = useState<{ tone: 'danger' | 'warning'; message: string } | null>(null); const [toast, setToast] = useState<{ id: number; message: string } | null>(null); const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]); const [validationAttempted, setValidationAttempted] = useState(false); const [issueIndex, setIssueIndex] = useState(0); const [pendingIssueFocus, setPendingIssueFocus] = useState<ValidationIssue | null>(null); const [pendingGridFocus, setPendingGridFocus] = useState<GridFocusTarget | null>(null); const [sourcesOpen, setSourcesOpen] = useState(true); const [contextOpen, setContextOpen] = useState(false); const [gridExpanded, setGridExpanded] = useState(true); const [continuedOpen, setContinuedOpen] = useState(false); const [notObservedOpen, setNotObservedOpen] = useState(false); const [additionalOpen, setAdditionalOpen] = useState(false); const [comparisonOpen, setComparisonOpen] = useState(false); const [coverageReviewOpen, setCoverageReviewOpen] = useState(false); const [scrollTop, setScrollTop] = useState(0); const [active, setActive] = useState({ row: 0, column: 0 }); const [selection, setSelection] = useState<ComposerSelection | null>(null); const undoRows = useRef<UndoSnapshot | null>(null); const editOriginal = useRef<{ row: number; column: Column; value: string } | null>(null); const publishRequest = useRef(crypto.randomUUID()); const draftCreateRequest = useRef(crypto.randomUUID()); const reviewInFlight = useRef(false); const deleteInFlight = useRef(false); const viewportRef = useRef<HTMLDivElement | null>(null); const headerScrollRef = useRef<HTMLDivElement | null>(null); const toastTimer = useRef<number | null>(null); const sourcesToggleRef = useRef<HTMLButtonElement | null>(null); const pendingSourcesToggleFocus = useRef(false);
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState(false);
+  /** A source correction is local until the operator explicitly saves/reviews it. */
+  const [correctionSupersedesVersionId, setCorrectionSupersedesVersionId] = useState<string | null>(null);
   const browseSourceInitialized = useRef(false);
   const policyColumns = useMemo(() => fieldPolicy ? derivePolicyDrivenColumns(fieldPolicy.fields) : { all: [], essential: [], required: [] }, [fieldPolicy]);
   const activeColumns = useMemo(() => !canPrepareBulk ? (mode === 'COMPACT' ? compactColumns : columns.filter((column) => column !== 'cost' || canReadCost)) : mode === 'COMPACT' ? compactColumns : viewPreset === 'ESSENTIAL' ? policyColumns.essential : policyColumns.all, [canPrepareBulk, canReadCost, mode, policyColumns, viewPreset]);
@@ -130,7 +138,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const fullPolicyReady = !canPrepareBulk || fieldPolicy !== null;
   const editableGridActionsVisible = canPrepareBulk && (mode === 'COMPACT' || fullPolicyReady) && (current?.lifecycle === 'DRAFT' || !current);
   const canPublishCurrent = useMemo(() => {
-    if (!canPublish || !current || current.batch.lifecycle !== 'READY') return false;
+    if (!canPublish || !current || current.batch.lifecycle !== 'READY' || current.batch.staleByCorrection) return false;
     const actionable = current.rows.filter((row) => row.decision === 'APPLY');
     return (!actionable.some((row) => row.classification === 'NEW') || hasOperationalCapability(capabilities, 'catalog.items.create')) &&
       (!actionable.some((row) => row.classification === 'UPDATE' || row.titleDecision === 'ADOPT_OBSERVED') || hasOperationalCapability(capabilities, 'catalog.items.update')) &&
@@ -142,6 +150,30 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const gridTemplateColumns = useMemo(() => `52px ${activeColumns.map((column) => `${columnWidths[column]}px`).join(' ')}`, [activeColumns, columnWidths]);
   const gridWidth = useMemo(() => 52 + activeColumns.reduce((total, column) => total + columnWidths[column], 0), [activeColumns, columnWidths]);
   const rowHeight = 62; const first = Math.max(0, Math.floor(scrollTop / rowHeight) - 5); const visible = rows.slice(first, first + 22);
+  useLayoutEffect(() => {
+    if (!pendingGridFocus || !gridExpanded || activeColumns.length === 0) return;
+    const requestedColumn = pendingGridFocus.columnKey;
+    if (requestedColumn && !activeColumns.includes(requestedColumn) && mode === 'FULL' && policyColumns.all.includes(requestedColumn) && viewPreset !== 'ALL') {
+      setViewPreset('ALL');
+      return;
+    }
+    const rowIndex = Math.min(Math.max(0, pendingGridFocus.rowIndex), Math.max(0, rows.length - 1));
+    const columnIndex = requestedColumn && activeColumns.includes(requestedColumn) ? activeColumns.indexOf(requestedColumn) : Math.min(active.column, activeColumns.length - 1);
+    const targetTop = Math.max(0, (rowIndex - 5) * rowHeight);
+    const targetLeft = requestedColumn && activeColumns.includes(requestedColumn) ? Math.max(0, 52 + activeColumns.slice(0, columnIndex).reduce((total, key) => total + columnWidths[key], 0) - 24) : viewportRef.current?.scrollLeft ?? 0;
+    setActive({ row: rowIndex, column: columnIndex });
+    if (Math.abs(scrollTop - targetTop) > 1) {
+      viewportRef.current?.scrollTo({ top: targetTop, left: targetLeft });
+      setScrollTop(targetTop);
+      return;
+    }
+    const focusTarget = requestedColumn && activeColumns.includes(requestedColumn)
+      ? document.querySelector<HTMLElement>(`[data-cell-key="${rowIndex}:${requestedColumn}"]`)
+      : document.querySelector<HTMLElement>(`[data-cell="${rowIndex}:${columnIndex}"]`);
+    if (!focusTarget) return;
+    focusTarget.focus();
+    setPendingGridFocus(null);
+  }, [active.column, activeColumns, columnWidths, gridExpanded, mode, pendingGridFocus, policyColumns.all, rows.length, scrollTop, viewPreset]);
   const refreshFieldPolicy = useCallback(async (): Promise<void> => {
     setFieldPolicyError(null);
     try { setFieldPolicy(await getBulkCatalogFieldPolicy()); }
@@ -186,6 +218,17 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const rawPayload = useMemo(() => rows.map((row) => schemaColumns.map((column) => column === 'title' ? row.supplierObservedTitle || row.title : column === 'brand' ? row.supplierObservedBrand || row.brand : row[column]).join('\t')).join('\n'), [rows, schemaColumns]);
   const findCategory = useCallback((name: string) => references.categories.find((value) => value.status === 'ACTIVE' && normalizeCatalogReferenceText(value.name) === normalizeCatalogReferenceText(name)), [references.categories]);
   const findBrand = useCallback((name: string) => references.brands.find((value) => value.status === 'ACTIVE' && normalizeCatalogReferenceText(value.name) === normalizeCatalogReferenceText(name)), [references.brands]);
+  const correctionFieldForRow = useCallback((row: SupplierVersionRow): Column | null => {
+    const required = row.errors.map(requiredEffectiveField).find((field): field is Column => field !== null);
+    if (required === 'cost' && !canReadCost) return null;
+    if (required) return required;
+    if (!row.warnings.includes('REFERENCE_REQUIRES_GOVERNANCE')) return null;
+    const category = row.proposal.category;
+    if (category && !findCategory(category)) return 'category';
+    const brand = row.proposal.brand;
+    if (brand && !findBrand(brand)) return 'brand';
+    return null;
+  }, [canReadCost, findBrand, findCategory]);
   const isCompatible = useCallback((row: UiRow): boolean => {
     if (!row.kind) return true;
     const category = row.category ? findCategory(row.category) : undefined; if (category && !category.applicableKinds.includes(row.kind)) return false;
@@ -229,7 +272,11 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     setActive({ row: rowIndex, column: columnIndex }); setSelection({ firstRow: rowIndex, lastRow: rowIndex + matrix.length - 1, firstColumn: columnIndex, lastColumn });
     showToast(`${matrix.length} filas pegadas; se ignoraron sólo filas vacías terminales.`);
   };
-  const focusCell = (row: number, column: number): void => { setActive({ row, column }); if (row < first + 2 || row > first + 18) viewportRef.current?.scrollTo({ top: Math.max(0, (row - 5) * rowHeight), left: viewportRef.current.scrollLeft }); requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-cell="${row}:${column}"]`)?.focus())); };
+  const focusCell = (row: number, column: number): void => {
+    setGridExpanded(true);
+    setSelection(null);
+    setPendingGridFocus({ rowIndex: row, columnKey: activeColumns[column] ?? null });
+  };
   const undo = (): void => { if (!undoRows.current) return; const prior = undoRows.current; undoRows.current = { rows: rows.map((row) => ({ ...row })), active: { ...active }, selection: selection ? { ...selection } : null }; setRows(prior.rows); setSelection(prior.selection); setDirty(true); focusCell(prior.active.row, prior.active.column); showToast('Se deshizo la última operación de datos.'); };
   const removeActiveDraftRow = (): void => {
     if (rows.length <= 1) return;
@@ -249,18 +296,14 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     }
     if (issue.scope !== 'CELL' || issue.rowIndex === undefined || !issue.columnKey) return;
     setGridExpanded(true);
-    const targetColumns = mode === 'COMPACT' ? compactColumns : policyColumns.all;
-    if (!activeColumns.includes(issue.columnKey)) setViewPreset('ALL');
-    const column = targetColumns.indexOf(issue.columnKey);
-    setActive({ row: issue.rowIndex, column });
-    const left = 52 + targetColumns.slice(0, column).reduce((total, key) => total + columnWidths[key], 0);
-    viewportRef.current?.scrollTo({ top: Math.max(0, (issue.rowIndex - 4) * rowHeight), left: Math.max(0, left - 24) });
-    window.setTimeout(() => document.querySelector<HTMLElement>(`[data-cell-key="${issue.rowIndex}:${issue.columnKey}"]`)?.focus(), 40);
+    setSelection(null);
+    setPendingGridFocus({ rowIndex: issue.rowIndex, columnKey: issue.columnKey });
   };
   useEffect(() => {
     if (!pendingIssueFocus) return undefined;
-    const timer = window.setTimeout(() => { focusIssue(pendingIssueFocus); setPendingIssueFocus(null); }, 40);
-    return () => window.clearTimeout(timer);
+    focusIssue(pendingIssueFocus);
+    setPendingIssueFocus(null);
+    return undefined;
   }, [pendingIssueFocus]);
   const moveIssue = (direction: -1 | 1): void => { const next = nextValidationIssueIndex(normalizedIssueIndex, direction, issues.length); setIssueIndex(next); const issue = issues[next]; if (issue) focusIssue(issue); };
   const navigate = (event: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, rowIndex: number, columnIndex: number): void => {
@@ -292,10 +335,37 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const hasMeaningfulWork = hasMeaningfulComposerWork({ dirty, description, mode, completeness, rows });
   const { reviewVisible: captureActionsVisible, saveForLaterVisible: canSaveForLater } = captureActionState({ lifecycle: current?.lifecycle ?? null, dirty, hasMeaningfulWork });
   const buildPayload = async () => ({ sourceId: draftSourceId, description: description.trim() || null, mode, completeness, columnSignature: await signature(mode), rawPayload, rows: rows.map(proposal) });
+  const navigateToSourceRow = (row: SupplierVersionRow, columnKey: Column | null = correctionFieldForRow(row)): void => {
+    const plan = planSourceRowNavigation(current?.rows ?? [], row.rowDecisionId, columnKey, activeColumns, mode === 'COMPACT' ? compactColumns : policyColumns.all);
+    if (plan.rowIndex < 0) return;
+    setGridExpanded(true);
+    setSelection(null);
+    if (plan.requiresAllColumns) setViewPreset('ALL');
+    setPendingGridFocus({ rowIndex: plan.rowIndex, columnKey: plan.columnKey });
+  };
+  const startCorrection = (row: SupplierVersionRow): void => {
+    if (!current || current.lifecycle !== 'INGESTED' || !canPrepareBulk || current.batch.lifecycle === 'APPLIED') {
+      navigateToSourceRow(row);
+      return;
+    }
+    const parent = current;
+    navigateToSourceRow(row);
+    setCurrent(null);
+    setPendingNewLoadSupplierId(parent.sourceId);
+    setCorrectionSupersedesVersionId(parent.versionId);
+    setDescription(`Corrección de ${parent.sourceName} v${parent.sequenceNumber}`);
+    setMode(parent.mode);
+    setCompleteness(parent.completeness);
+    setDirty(true);
+    setValidationAttempted(false);
+    setServerIssues([]);
+    undoRows.current = null;
+    showToast(`Corrección local preparada desde ${parent.sourceName} v${parent.sequenceNumber}. Corrige la fila ${row.rowNumber} y guarda o revisa la lista para crear la nueva versión.`);
+  };
   const resetCoverageDetails = (): void => { setContinuedOpen(false); setNotObservedOpen(false); setAdditionalOpen(false); setComparisonOpen(false); setCoverageReviewOpen(false); };
   const resetMissingDataContext = (): void => { setBatchDefaults({ kind: '', category: '', brand: '' }); setContextOpen(false); };
-  const resetNewLoad = (sourceId: string, selectedCompleteness: SupplierCatalogCompleteness): void => { setPendingNewLoadSupplierId(sourceId); setCurrent(null); setDescription(''); setMode('FULL'); setCompleteness(selectedCompleteness); setRows([blank()]); resetMissingDataContext(); setCompare(null); setCompareId(''); setGridExpanded(true); resetCoverageDetails(); setDirty(false); setValidationAttempted(false); setServerIssues([]); setNotice(null); undoRows.current = null; draftCreateRequest.current = crypto.randomUUID(); };
-  const clearNewLoad = (): void => { setPendingNewLoadSupplierId(null); setCurrent(null); setDescription(''); setMode('FULL'); setCompleteness('PARTIAL'); setRows([blank()]); resetMissingDataContext(); setCompare(null); setCompareId(''); setGridExpanded(true); resetCoverageDetails(); setDirty(false); setValidationAttempted(false); setServerIssues([]); setNotice(null); undoRows.current = null; };
+  const resetNewLoad = (sourceId: string, selectedCompleteness: SupplierCatalogCompleteness): void => { setPendingNewLoadSupplierId(sourceId); setCurrent(null); setCorrectionSupersedesVersionId(null); setDescription(''); setMode('FULL'); setCompleteness(selectedCompleteness); setRows([blank()]); resetMissingDataContext(); setCompare(null); setCompareId(''); setGridExpanded(true); resetCoverageDetails(); setDirty(false); setValidationAttempted(false); setServerIssues([]); setNotice(null); undoRows.current = null; draftCreateRequest.current = crypto.randomUUID(); };
+  const clearNewLoad = (): void => { setPendingNewLoadSupplierId(null); setCurrent(null); setCorrectionSupersedesVersionId(null); setDescription(''); setMode('FULL'); setCompleteness('PARTIAL'); setRows([blank()]); resetMissingDataContext(); setCompare(null); setCompareId(''); setGridExpanded(true); resetCoverageDetails(); setDirty(false); setValidationAttempted(false); setServerIssues([]); setNotice(null); undoRows.current = null; };
   const discardMeaningfulWork = (message: string): boolean => !hasMeaningfulWork || window.confirm(message);
   const openSupplierGate = (restoreTarget: string, preservePreparation = false): void => {
     setSupplierGateRestoreTarget(restoreTarget); setSupplierSearch('');
@@ -332,11 +402,11 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     if (clientIssues[0]) { setPendingIssueFocus(clientIssues[0]); return null; }
     try {
       const payload = { ...(await buildPayload()), includeReferenceCost: canReadCost };
-      const saved = current?.lifecycle === 'DRAFT' ? await replaceSupplierDraft(current.versionId, { ...payload, expectedVersion: current.version }, csrfToken) : await createSupplierDraft({ ...payload, clientRequestId: draftCreateRequest.current }, csrfToken);
+      const saved = current?.lifecycle === 'DRAFT' ? await replaceSupplierDraft(current.versionId, { ...payload, expectedVersion: current.version }, csrfToken) : await createSupplierDraft({ ...payload, ...(correctionSupersedesVersionId ? { supersedesVersionId: correctionSupersedesVersionId } : {}), clientRequestId: draftCreateRequest.current }, csrfToken);
       // The server response deliberately omits retained raw payload. Keep the
       // capture rows locally after a DRAFT save so a second save cannot replace
       // supplier spelling with its effective canonical presentation.
-      setCurrent(saved); setPendingNewLoadSupplierId(null); setRows(rows); resetCoverageDetails(); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; await refresh().catch(() => undefined); return saved;
+      setCurrent(saved); setPendingNewLoadSupplierId(null); setCorrectionSupersedesVersionId(null); setRows(rows); resetCoverageDetails(); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; await refresh().catch(() => undefined); return saved;
     } catch (error) {
       const issue = validationIssueFromApi(error instanceof PreviewApiError ? { status: error.status, code: error.code, parameter: error.parameter } : { status: 0 });
       if (issue.scope === 'GLOBAL') setNotice({ tone: 'danger', message: issue.message });
@@ -369,7 +439,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
       setReviewProgress(null); setBusy(false); reviewInFlight.current = false;
     }
   };
-  const load = async (id: string): Promise<void> => { if (!discardMeaningfulWork('Hay cambios sin guardar. ¿Quieres descartarlos y abrir otra versión?')) return; setBusy(true); try { const value = await getSupplierVersion(id, canReadCost); if (canPrepareBulk) await refreshFieldPolicy(); setCurrent(value); setMode(value.mode); setCompleteness(value.completeness); setBrowseSourceId(value.sourceId); setPendingNewLoadSupplierId(null); setDescription(value.description ?? ''); setRows(fromRecord(value)); resetMissingDataContext(); setCompare(null); setCompareId(''); setGridExpanded(value.lifecycle === 'DRAFT'); resetCoverageDetails(); setReconciliationView('ATTENTION'); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; setNotice(null); publishRequest.current = crypto.randomUUID(); draftCreateRequest.current = crypto.randomUUID(); } finally { setBusy(false); } };
+  const load = async (id: string): Promise<void> => { if (!discardMeaningfulWork('Hay cambios sin guardar. ¿Quieres descartarlos y abrir otra versión?')) return; setBusy(true); try { const value = await getSupplierVersion(id, canReadCost); if (canPrepareBulk) await refreshFieldPolicy(); setCurrent(value); setMode(value.mode); setCompleteness(value.completeness); setBrowseSourceId(value.sourceId); setPendingNewLoadSupplierId(null); setCorrectionSupersedesVersionId(null); setDescription(value.description ?? ''); setRows(fromRecord(value)); resetMissingDataContext(); setCompare(null); setCompareId(''); setGridExpanded(value.lifecycle === 'DRAFT'); resetCoverageDetails(); setReconciliationView('ATTENTION'); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; setNotice(null); publishRequest.current = crypto.randomUUID(); draftCreateRequest.current = crypto.randomUUID(); } finally { setBusy(false); } };
   const resolve = async (rowDecisionId: string, expectedRowVersion: number, nextDecision: 'APPLY' | 'EXCLUDE', targetItemId: string | null = null, selectedTitleDecision: BulkCatalogTitleDecision | null = null): Promise<boolean> => { if (!current) return false; setBusy(true); try { const value = await decideSupplierRow(current.versionId, rowDecisionId, { expectedRowVersion, decision: nextDecision, targetItemId, titleDecision: selectedTitleDecision, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(targetItemId ? 'Identidad y nombre quedaron preparados para Apply; Catalog todavía no cambió.' : nextDecision === 'APPLY' ? 'Fila incluida explícitamente.' : 'Fila excluida del lote.'); return true; } catch (error) { setNotice({ tone: 'danger', message: error instanceof PreviewApiError && error.code === 'CATALOG_CONFLICT' ? 'La versión cambió mientras la revisabas. Se recargará para que confirmes de nuevo.' : 'La fila requiere un artículo canónico válido, una decisión de nombre o releer la versión.' }); return false; } finally { setBusy(false); } };
   const chooseDuplicateRow = async (row: SupplierVersionRow): Promise<void> => {
     if (!row.targetItemId) return;
@@ -431,7 +501,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     });
     setServerIssues(issues); setValidationAttempted(true); setIssueIndex(0); setGridExpanded(true); setViewPreset('ALL'); if (issues[0]) setPendingIssueFocus(issues[0]);
   };
-  const compatibleSuggestionCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && missingRequiredFields(row).length === 0 && ['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'].includes(row.classification)).length ?? 0;
+  const compatibleSuggestionCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && missingRequiredFields(row).length === 0 && ['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED'].includes(row.classification)).length ?? 0;
   const duplicateResolutionGroups = current ? groupDuplicateResolutionRows(current.rows, duplicateObservationKey, (row) => rowErrors(row.errors), (row) => rowErrors(row.warnings)) : [];
   const duplicateMemberIds = new Set(duplicateResolutionGroups.flatMap((group) => group.members.map((member) => member.rowDecisionId)));
   const unresolvedDuplicateGroups = duplicateResolutionGroups.filter((group) => group.unresolved); const resolvedDuplicateGroups = duplicateResolutionGroups.filter((group) => !group.unresolved);
@@ -467,7 +537,8 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   if (!canPrepareBulk) {
     return <div className={styles.page}>
       <div className={styles.heading}><BackLink to="/listas/precios">Lista de precios</BackLink><PageHeader eyebrow="Listas · Carga masiva" title="Bulk Catalog Composer" description="Consulta fuentes, versiones y resultados de carga." /></div>
-      {notice ? <Alert tone={notice.tone} title="Atención">{notice.message}</Alert> : null}
+          {notice ? <Alert tone={notice.tone} title="Atención">{notice.message}</Alert> : null}
+          {current?.batch.staleByCorrection ? <Alert tone="warning" title="Esta revisión fue reemplazada por una corrección">La versión original se conserva como evidencia. Continúa la corrección desde la nueva versión antes de revisar o aplicar cambios.</Alert> : null}
       {toast ? <Toast key={toast.id}>{toast.message}</Toast> : null}
       <div className={styles.layout}>
         <aside className={styles.sidebar} aria-label="Fuentes y versiones">
@@ -484,7 +555,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
             <section className={styles.setup}><div className={styles.versionIdentity}><div><strong>{current.sourceName} · {loadIntentLabel(current.completeness)}</strong><small>{versionStatus(current)} · Solo lectura</small></div></div></section>
             <section className={styles.summary} aria-label="Resultado de la versión">{Object.entries(current.batch.counts).map(([key, value]) => <div key={key}><strong>{value}</strong><span>{statusLabels[key as keyof typeof statusLabels]}</span></div>)}</section>
             <section className={styles.coverage} aria-labelledby="supplier-coverage-title"><div className={styles.coverageHeader}><h2 id="supplier-coverage-title"><GitCompare size={18} />Cobertura del proveedor</h2><span>{current.completeness === 'COMPLETE' ? 'Lista completa' : 'Actualización parcial'}</span></div><p>{current.absenceBaseline.status === 'EVALUATED' ? `${current.absenceBaseline.currentCount.toLocaleString('es-MX')} recibidas · ${current.absenceBaseline.continuedCount?.toLocaleString('es-MX') ?? 0} continúan · ${current.absenceBaseline.additionalCount?.toLocaleString('es-MX') ?? 0} adicionales · ${current.absenceBaseline.notObservedCount?.toLocaleString('es-MX') ?? 0} ya no observadas.` : 'La cobertura de esta versión puede inspeccionarse sin modificarla.'}</p></section>
-            <section className={styles.decisions} aria-labelledby="readonly-reconciliation-title"><div className={styles.decisionTitle}><h2 id="readonly-reconciliation-title">{current.batch.lifecycle === 'APPLIED' ? 'Resultado aplicado' : 'Reconciliación'}</h2><span>Solo lectura</span></div>{current.rows.slice(0, 100).map((row) => <article key={row.rowDecisionId}><div><strong>Fila {row.rowNumber} · {statusLabels[row.classification]}</strong><span>{row.proposal.title ?? row.proposal.supplierItemCode ?? row.proposal.sku ?? row.proposal.barcode ?? 'Sin identidad'}{row.targetTitle ? ` → ${row.targetTitle}` : ''}</span>{row.warnings.map(warningMessage).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}{rowErrors(row.errors).map((code) => analysisMessage(code, canReadCost)).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}</div></article>)}</section>
+            <section className={styles.decisions} aria-labelledby="readonly-reconciliation-title"><div className={styles.decisionTitle}><h2 id="readonly-reconciliation-title">{current.batch.lifecycle === 'APPLIED' ? 'Resultado aplicado' : 'Reconciliación'}</h2><span>Solo lectura</span></div>{current.rows.slice(0, 100).map((row) => <article key={row.rowDecisionId}><div><strong>Fila {row.rowNumber} · {statusLabels[row.classification]}</strong><span>{row.proposal.title ?? row.proposal.supplierItemCode ?? row.proposal.sku ?? row.proposal.barcode ?? 'Sin identidad'}{row.targetTitle ? ` → ${row.targetTitle}` : ''}</span>{row.warnings.map(warningMessage).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}{rowErrors(row.errors).map((code) => analysisMessage(code, canReadCost)).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}</div><div><Button size="compact" tone="quiet" aria-label={`Ir a fila ${row.rowNumber}`} onClick={() => navigateToSourceRow(row)}>Ir a fila</Button></div></article>)}</section>
             {canPublishCurrent ? <section className={styles.batchSecondaryActions}><div><h2>Publicación</h2><p>Este lote está listo. Aplicar sigue validando todas las autoridades de efecto en el servidor.</p></div><Button size="compact" tone="primary" onClick={() => current.absenceBaseline.plausibility.status === 'REVIEW_REQUIRED' ? setCoverageReviewOpen(true) : void publish()} disabled={busy}><Send size={17} />Aplicar lote</Button></section> : null}
           </>}
         </main>
@@ -496,6 +567,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   return <div className={styles.page}>
     <div className={styles.heading}><BackLink to="/listas/precios" onClick={(event) => { if (hasMeaningfulWork && !window.confirm('Hay cambios sin guardar. ¿Quieres salir del Composer?')) event.preventDefault(); }}>Lista de precios</BackLink><PageHeader eyebrow="Listas · Carga masiva" title="Bulk Catalog Composer" description="Pega y corrige una versión de proveedor; nada toca Catalog hasta aplicar el lote." /></div>
     {notice ? <Alert tone={notice.tone} title="Atención">{notice.message}</Alert> : null}
+    {current?.batch.staleByCorrection ? <Alert tone="warning" title="Esta revisión fue reemplazada por una corrección">La versión original se conserva como evidencia. Continúa la corrección desde la nueva versión antes de revisar o aplicar cambios.</Alert> : null}
     {toast ? <Toast key={toast.id}>{toast.message}</Toast> : null}
     <div className={`${styles.layout} ${!sourcesOpen ? styles.layoutCollapsed : ''}`}>
       {sourcesOpen ? <aside id="composer-sources-panel" className={styles.sidebar}>
@@ -530,7 +602,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
         </section> : null}
         <section className={styles.workspaceToolbar}>
           <div className={styles.workspaceMeta}><Columns3 size={18} aria-hidden="true" /><strong>{rows.length.toLocaleString('es-MX')} {current?.lifecycle === 'INGESTED' ? 'filas recibidas' : 'filas'}</strong><span>{gridExpanded ? 'Celda, columna o rectángulo' : 'Lista oculta; resultados a continuación'}</span></div>
-          <div className={styles.toolbarControls}><div className={styles.viewControls}>{gridExpanded ? mode === 'FULL' ? fullPolicyReady ? <div className={styles.presetButtons} role="group" aria-label="Columnas de trabajo"><Button size="compact" tone={viewPreset === 'ESSENTIAL' ? 'primary' : 'quiet'} onClick={() => setViewPreset('ESSENTIAL')}>Esenciales ({policyColumns.essential.length})</Button><Button size="compact" tone={viewPreset === 'ALL' ? 'primary' : 'quiet'} onClick={() => setViewPreset('ALL')}>Todas</Button></div> : <span>Política de campos pendiente</span> : <span>Actualización compacta</span> : null}<Button size="compact" tone="quiet" aria-expanded={gridExpanded} aria-controls="bulk-catalog-grid" onClick={() => setGridExpanded((value) => !value)}>{gridExpanded ? 'Ocultar lista' : 'Mostrar lista'}</Button><Button size="compact" tone={gridlinesVisible ? 'secondary' : 'quiet'} aria-pressed={gridlinesVisible} aria-controls="bulk-catalog-grid" onClick={() => setGridlinesVisible((value) => !value)}>Cuadrícula</Button></div><div className={styles.workflowControls}>{editableGridActionsVisible ? <div className={styles.gridEditActions} role="group" aria-label="Acciones de edición de la lista"><Button size="compact" tone="quiet" disabled={!undoRows.current} onClick={undo}><RotateCcw size={16} />Deshacer</Button><Button size="compact" disabled={rows.length >= 10_000} onClick={() => { setDirty(true); setRows((value) => { rememberUndo(value); return [...value, applyBatchDefaults(blank(), batchDefaults, normalizeBrand)]; }); }}><Plus size={16} />Agregar fila</Button><Button size="compact" tone="quiet" disabled={rows.length === 1} onClick={removeActiveDraftRow}><Trash2 size={16} />Quitar fila activa</Button></div> : null}{captureActionsVisible ? <><Button size="compact" tone="primary" onClick={() => void reviewList()} disabled={busy}><Check size={17} />{reviewProgress === 'SAVING' ? 'Guardando lista…' : reviewProgress === 'ANALYZING' ? 'Analizando…' : 'Revisar lista'}</Button>{canSaveForLater ? <Button size="compact" tone="quiet" onClick={() => void save()} disabled={busy}><Save size={17} />Guardar para después</Button> : null}</> : null}{current?.lifecycle === 'INGESTED' && current.batch.lifecycle !== 'APPLIED' ? <Button size="compact" tone="primary" onClick={() => void analyze()} disabled={busy}><Check size={17} />Reanalizar versión</Button> : null}{canPublishCurrent ? <Button size="compact" tone="primary" onClick={() => current?.absenceBaseline.plausibility.status === 'REVIEW_REQUIRED' ? setCoverageReviewOpen(true) : void publish()} disabled={busy}><Send size={17} />Aplicar lote</Button> : null}</div></div>
+          <div className={styles.toolbarControls}><div className={styles.viewControls}>{gridExpanded ? mode === 'FULL' ? fullPolicyReady ? <div className={styles.presetButtons} role="group" aria-label="Columnas de trabajo"><Button size="compact" tone={viewPreset === 'ESSENTIAL' ? 'primary' : 'quiet'} onClick={() => setViewPreset('ESSENTIAL')}>Esenciales ({policyColumns.essential.length})</Button><Button size="compact" tone={viewPreset === 'ALL' ? 'primary' : 'quiet'} onClick={() => setViewPreset('ALL')}>Todas</Button></div> : <span>Política de campos pendiente</span> : <span>Actualización compacta</span> : null}<Button size="compact" tone="quiet" aria-expanded={gridExpanded} aria-controls="bulk-catalog-grid" onClick={() => setGridExpanded((value) => !value)}>{gridExpanded ? 'Ocultar lista' : 'Mostrar lista'}</Button><Button size="compact" tone={gridlinesVisible ? 'secondary' : 'quiet'} aria-pressed={gridlinesVisible} aria-controls="bulk-catalog-grid" onClick={() => setGridlinesVisible((value) => !value)}>Cuadrícula</Button></div><div className={styles.workflowControls}>{editableGridActionsVisible ? <div className={styles.gridEditActions} role="group" aria-label="Acciones de edición de la lista"><Button size="compact" tone="quiet" disabled={!undoRows.current} onClick={undo}><RotateCcw size={16} />Deshacer</Button><Button size="compact" disabled={rows.length >= 10_000} onClick={() => { setDirty(true); setRows((value) => { rememberUndo(value); return [...value, applyBatchDefaults(blank(), batchDefaults, normalizeBrand)]; }); }}><Plus size={16} />Agregar fila</Button><Button size="compact" tone="quiet" disabled={rows.length === 1} onClick={removeActiveDraftRow}><Trash2 size={16} />Quitar fila activa</Button></div> : null}{captureActionsVisible ? <><Button size="compact" tone="primary" onClick={() => void reviewList()} disabled={busy}><Check size={17} />{reviewProgress === 'SAVING' ? 'Guardando lista…' : reviewProgress === 'ANALYZING' ? 'Analizando…' : 'Revisar lista'}</Button>{canSaveForLater ? <Button size="compact" tone="quiet" onClick={() => void save()} disabled={busy}><Save size={17} />Guardar para después</Button> : null}</> : null}{current?.lifecycle === 'INGESTED' && current.batch.lifecycle !== 'APPLIED' && !current.batch.staleByCorrection ? <Button size="compact" tone="primary" onClick={() => void analyze()} disabled={busy}><Check size={17} />Reanalizar versión</Button> : null}{canPublishCurrent ? <Button size="compact" tone="primary" onClick={() => current?.absenceBaseline.plausibility.status === 'REVIEW_REQUIRED' ? setCoverageReviewOpen(true) : void publish()} disabled={busy}><Send size={17} />Aplicar lote</Button> : null}</div></div>
           {currentIssue ? <div className={styles.issueNavigator} role="status" aria-live="polite"><button type="button" onClick={() => moveIssue(-1)} aria-label="Error anterior">‹</button><button type="button" className={styles.issueTarget} onClick={() => focusIssue(currentIssue)}><strong>{normalizedIssueIndex + 1} de {issues.length} · {currentIssueLabel}</strong><span>{currentIssue.message}</span></button><button type="button" onClick={() => moveIssue(1)} aria-label="Error siguiente">›</button></div> : null}
         </section>
         {busy ? <Spinner label={reviewProgress === 'SAVING' ? 'Guardando lista…' : reviewProgress === 'ANALYZING' ? 'Analizando…' : 'Procesando versión'} /> : null}
@@ -588,11 +660,12 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
           </div>
           {exactDuplicateCount > 0 ? <div className={styles.allResolved} role="status"><strong>{exactDuplicateCount.toLocaleString('es-MX')} fila{exactDuplicateCount === 1 ? '' : 's'} duplicada{exactDuplicateCount === 1 ? '' : 's'} fue{exactDuplicateCount === 1 ? '' : 'ron'} consolidada{exactDuplicateCount === 1 ? '' : 's'}.</strong><span>Las filas recibidas se conservan como evidencia; sólo una observación efectiva continúa hacia Catalog.</span></div> : null}
           {current.batch.lifecycle === 'APPLIED' ? <div className={styles.allResolved} role="status"><strong>Lote aplicado</strong><span>{current.rows.length.toLocaleString('es-MX')} filas fueron procesadas correctamente.</span><small>{appliedResultSummary(current.batch.counts, excluded)}</small></div> : unresolved === 0 && reconciliationView === 'ATTENTION' ? <div className={styles.allResolved} role="status"><strong>Todo resuelto</strong><span>{resolved.toLocaleString('es-MX')} filas están listas para aplicar.</span><small>No necesitas revisar cada fila. Resueltas y Todas permanecen disponibles para auditoría.</small></div> : null}
-          {current.batch.lifecycle !== 'APPLIED' && (compatibleSuggestionCount > 0 || blockedRowCount > 0) ? <div className={styles.groupActions}>{compatibleSuggestionCount > 0 ? <Button size="compact" tone="primary" onClick={() => void resolveGroup(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'], 'APPLY')} disabled={busy}>Aceptar {compatibleSuggestionCount.toLocaleString('es-MX')} {compatibleSuggestionCount === 1 ? 'sugerencia' : 'sugerencias'}</Button> : null}{blockedRowCount > 0 ? <Button size="compact" onClick={() => void resolveGroup(['AMBIGUOUS', 'CONFLICT', 'INVALID'], 'EXCLUDE')} disabled={busy}>Excluir {blockedRowCount.toLocaleString('es-MX')} {blockedRowCount === 1 ? 'bloqueada' : 'bloqueadas'}</Button> : null}</div> : null}
+          {current.batch.lifecycle !== 'APPLIED' && (compatibleSuggestionCount > 0 || blockedRowCount > 0) ? <div className={styles.groupActions}>{compatibleSuggestionCount > 0 ? <Button size="compact" tone="primary" onClick={() => void resolveGroup(['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED'], 'APPLY')} disabled={busy}>Aceptar {compatibleSuggestionCount.toLocaleString('es-MX')} {compatibleSuggestionCount === 1 ? 'sugerencia' : 'sugerencias'}</Button> : null}{blockedRowCount > 0 ? <Button size="compact" onClick={() => void resolveGroup(['AMBIGUOUS', 'CONFLICT', 'INVALID'], 'EXCLUDE')} disabled={busy}>Excluir {blockedRowCount.toLocaleString('es-MX')} {blockedRowCount === 1 ? 'bloqueada' : 'bloqueadas'}</Button> : null}</div> : null}
           {visibleDuplicateResolutionGroups.map((group) => { const comparison = duplicateComparisonFields(group.members, canReadCost); const leader = group.members[0]!; const knownDuplicateIdentity = Boolean(group.members.every((member) => member.targetItemId && member.targetItemId === leader.targetItemId)); const detailsId = `duplicate-details-${leader.rowDecisionId}`; const detailsOpen = Boolean(duplicateDetailsOpen[group.key]); return <section key={group.key} className={`${styles.duplicateResolutionCard} ${group.unresolved ? styles.duplicateResolutionPending : styles.duplicateResolutionResolved}`}>
             {group.unresolved ? <><div className={styles.duplicateResolutionHeading}><div><strong>Artículo repetido con datos diferentes</strong><span>{leader.targetTitle ?? leader.proposal.title ?? leader.supplierObservedTitle ?? 'Artículo reconocido'}</span><small>Encontramos este artículo {group.members.length === 2 ? '2 veces' : `${group.members.length} veces`} en la misma lista. Elige cuál fila quieres usar.</small></div></div>
               {comparison.length > 0 ? <div className={styles.duplicateComparison} style={{ gridTemplateColumns: `minmax(6rem, auto) repeat(${group.members.length}, minmax(0, 1fr))` }}><span /><>{group.members.map((member) => <strong key={member.rowDecisionId}>Fila {member.rowNumber}</strong>)}</>{comparison.map((field) => <><span key={`${field.field}-label`}>{field.label}</span>{field.values.map((value, index) => <strong key={`${field.field}-${group.members[index]!.rowDecisionId}`}>{value}</strong>)}</>)}</div> : null}
               {current.batch.lifecycle !== 'APPLIED' && knownDuplicateIdentity ? <div className={styles.duplicateChoices}>{group.members.map((member) => <Button key={member.rowDecisionId} size="compact" tone="primary" disabled={busy} onClick={() => void chooseDuplicateRow(member)}>Usar fila {member.rowNumber}</Button>)}</div> : null}
+              <div className={styles.duplicateChoices} aria-label="Inspeccionar filas duplicadas">{group.members.map((member) => <Button key={`navigate-${member.rowDecisionId}`} size="compact" tone="quiet" onClick={() => navigateToSourceRow(member, null)}>Ir a fila {member.rowNumber}</Button>)}</div>
               <Button size="compact" tone="quiet" aria-expanded={detailsOpen} aria-controls={detailsId} onClick={() => setDuplicateDetailsOpen((value) => ({ ...value, [group.key]: !detailsOpen }))}>Ver detalles</Button>
               {detailsOpen ? <div id={detailsId} className={styles.duplicateDetails}>{group.members.map((member) => <div key={member.rowDecisionId}><strong>Fila {member.rowNumber}</strong><span>Título original: {member.supplierObservedTitle ?? member.proposal.title ?? 'sin título'}</span><span>Tipo: {member.proposal.kind ?? 'sin cambio'} · Categoría: {member.proposal.category ?? 'sin cambio'} · Marca: {member.proposal.brand ?? 'sin cambio'}</span><span>Costo: {formatDuplicateValue('cost', member, canReadCost) ?? 'no disponible'} · Precio: {formatDuplicateValue('price', member, canReadCost) ?? 'sin cambio'}</span></div>)}</div> : null}
             </> : <><strong>Duplicado resuelto</strong><span>Se usará la fila {group.members.find((member) => member.decision !== 'EXCLUDE')?.rowNumber ?? leader.rowNumber}. Las demás se ignorarán en este lote.</span><Button size="compact" tone="quiet" aria-expanded={detailsOpen} aria-controls={detailsId} onClick={() => setDuplicateDetailsOpen((value) => ({ ...value, [group.key]: !detailsOpen }))}>Ver detalles</Button>{detailsOpen ? <div id={detailsId} className={styles.duplicateDetails}>{group.members.map((member) => <div key={member.rowDecisionId}><strong>Fila {member.rowNumber}</strong><span>{member.decision === 'EXCLUDE' ? 'Ignorada en este lote' : 'Fila elegida para este lote'}</span></div>)}</div> : null}</>}
@@ -601,6 +674,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
             <div>
               <strong>Fila {row.rowNumber} · {statusLabels[row.classification]}</strong>
               <span>{row.proposal.title ?? row.proposal.supplierItemCode ?? row.proposal.sku ?? row.proposal.barcode ?? 'Sin identidad'}{row.targetTitle ? ` → ${row.targetTitle}` : ''}</span>
+              {row.classification === 'PENDING_REFERENCE' && correctionFieldForRow(row) ? <small className={styles.correctionPrompt}>{labels[correctionFieldForRow(row)!]} requiere revisión. Recibimos: {correctionValue(row, correctionFieldForRow(row)! ) || 'sin valor'}.</small> : null}
               {row.before ? <small>Actual: {row.before.kind} · {row.before.category ?? 'sin categoría'} · {row.before.brand ?? 'sin marca'} · estado {row.before.status === 'INACTIVE' ? 'Inactivo' : 'Activo'} · precio {row.before.basePriceMinor === null ? 'ausente' : fromMinor(row.before.basePriceMinor)}{canReadCost ? ` · costo ${row.before.referenceCostMinor === null ? 'ausente' : fromMinor(row.before.referenceCostMinor)}` : ''}</small> : <small>Actual: artículo nuevo; todavía no existe en Catalog.</small>}
               <small>Propuesta: {row.proposal.kind ?? 'tipo sin cambio'} · {row.proposal.category ?? 'categoría sin cambio'} · {row.proposal.brand ?? 'marca sin cambio'} · estado {row.classification === 'REACTIVATE' ? 'Reactivar' : 'sin cambio'} · precio {row.proposal.basePriceMinor === null ? 'sin cambio' : fromMinor(row.proposal.basePriceMinor)}{canReadCost ? ` · costo ${row.proposal.referenceCostMinor === null ? 'sin cambio' : fromMinor(row.proposal.referenceCostMinor)}` : ''}</small>
               {row.decision !== 'EXCLUDE' && row.titleDecision ? <small className={styles.titleDecisionSummary}>Nombre al aplicar: {row.titleDecision === 'ADOPT_OBSERVED' ? `usar “${row.proposal.title ?? ''}”` : `mantener “${row.targetTitle ?? row.before?.title ?? ''}”`}</small> : null}
@@ -618,7 +692,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
                 <Input aria-label={`Artículo canónico fila ${row.rowNumber}`} placeholder="UUID del artículo existente" value={mappingTargets[row.rowDecisionId] ?? ''} onChange={(event) => setMappingTargets((value) => ({ ...value, [row.rowDecisionId]: event.target.value }))} />
               </label> : null}
             </div>
-            {current.batch.lifecycle !== 'APPLIED' ? <div>{row.decision === 'EXCLUDE' ? <><small className={styles.excludedState}>Excluida del lote</small><Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Volver a incluir</Button></> : <>{row.decision === 'APPLY' ? <>{row.targetItemId && row.targetTitle && row.proposal.title && row.targetTitle !== row.proposal.title && row.classification !== 'CANDIDATE' && row.classification !== 'AMBIGUOUS' ? <Button size="compact" onClick={() => chooseCandidateTitle(row, { itemId: row.targetItemId!, title: row.targetTitle! })}>Cambiar nombre</Button> : null}<Button size="compact" tone="quiet" onClick={() => void resolve(row.rowDecisionId, row.version, 'EXCLUDE')}>Excluir del lote</Button></> : <>{row.classification === 'CANDIDATE' ? <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Artículo nuevo</Button> : null}{['CONFLICT', 'INVALID'].includes(row.classification)
+            {current.batch.lifecycle !== 'APPLIED' ? <div>{canPrepareBulk && correctionFieldForRow(row) && row.decision === 'UNRESOLVED' ? <Button size="compact" tone="primary" disabled={busy} aria-label={`Corregir fila ${row.rowNumber}`} onClick={() => void startCorrection(row)}>Corregir fila</Button> : <Button size="compact" tone="quiet" aria-label={`Ir a fila ${row.rowNumber}`} onClick={() => navigateToSourceRow(row)}>Ir a fila</Button>}{row.decision === 'EXCLUDE' ? <><small className={styles.excludedState}>Excluida del lote</small><Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Volver a incluir</Button></> : <>{row.decision === 'APPLY' ? <>{row.targetItemId && row.targetTitle && row.proposal.title && row.targetTitle !== row.proposal.title && row.classification !== 'CANDIDATE' && row.classification !== 'AMBIGUOUS' ? <Button size="compact" onClick={() => chooseCandidateTitle(row, { itemId: row.targetItemId!, title: row.targetTitle! })}>Cambiar nombre</Button> : null}<Button size="compact" tone="quiet" onClick={() => void resolve(row.rowDecisionId, row.version, 'EXCLUDE')}>Excluir del lote</Button></> : <>{row.classification === 'CANDIDATE' ? <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Artículo nuevo</Button> : null}{['CONFLICT', 'INVALID'].includes(row.classification)
               ? !row.errors.includes('DUPLICATE_VALUE_CONTRADICTION') ? <Button size="compact" tone="primary" disabled={!mappingTargets[row.rowDecisionId]?.trim()} onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY', mappingTargets[row.rowDecisionId]!.trim())}>Corregir mapping</Button> : null
               : row.classification !== 'CANDIDATE' && row.classification !== 'AMBIGUOUS' ? <Button size="compact" tone="primary" onClick={() => void resolve(row.rowDecisionId, row.version, 'APPLY')}>Incluir</Button> : null}<Button size="compact" tone="quiet" onClick={() => void resolve(row.rowDecisionId, row.version, 'EXCLUDE')}>Excluir del lote</Button></>}</>}</div> : null}
           </article>)}
