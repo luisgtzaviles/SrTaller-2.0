@@ -54,6 +54,25 @@ export type SupplierVersionDraftInput = Readonly<{
 export type SupplierVersionComparison = Readonly<{ leftVersionId: string; rightVersionId: string; mapped: number; changed: number; added: number; ambiguous: number; absenceStatus: 'PARTIAL_CURRENT' | 'NO_PREVIOUS_COMPLETE' | 'EVALUATED'; notObserved: number | null }>;
 export type CatalogRetirementPlan = Readonly<{ planId: string; scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; batchId: string | null; sourceVersionId: string | null; activeCount: number; alreadyInactiveCount: number; expiresAt: string; status: 'PENDING' | 'EXECUTED' | 'STALE' | 'EXPIRED'; retiredCount: number | null }>;
 export type CatalogRetirementExecution = Readonly<{ planId: string; scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; retiredCount: number; activeCatalogCount: number; executedAt: string }>;
+export type CatalogFieldPolicyLevel = 'REQUIRED' | 'ESSENTIAL' | 'OPTIONAL';
+export type CatalogFieldPolicyKey = 'kind' | 'title' | 'description' | 'category' | 'brand' | 'supplierItemCode' | 'sku' | 'barcode' | 'referenceCost' | 'basePrice';
+export type CatalogFieldPolicyRegistryEntry = Readonly<{
+  key: CatalogFieldPolicyKey;
+  label: string;
+  allowedLevels: readonly CatalogFieldPolicyLevel[];
+  domainFixed: boolean;
+  defaultLevel: CatalogFieldPolicyLevel;
+  capturePresentation: 'essential' | 'optional';
+  referenceCostSensitive: boolean;
+}>;
+export type CatalogFieldPolicyResponse = Readonly<{
+  schemaVersion: number;
+  policyVersion: number;
+  fieldLevels: Readonly<Record<CatalogFieldPolicyKey, CatalogFieldPolicyLevel>>;
+  updatedAt: string | null;
+  source: 'product-default' | 'tenant';
+  registry: readonly CatalogFieldPolicyRegistryEntry[];
+}>;
 
 /** Mirrors Catalog's exact identity normalization; it is intentionally not fuzzy. */
 export function normalizeCatalogReferenceText(value: string): string {
@@ -124,3 +143,6 @@ export function publishSupplierVersion(versionId: string, expectedVersion: numbe
 export function compareSupplierVersions(leftVersionId: string, rightVersionId: string, signal?: AbortSignal) { return get<SupplierVersionComparison>(`/api/catalog/supplier-versions/${encodeURIComponent(leftVersionId)}/compare/${encodeURIComponent(rightVersionId)}`, signal); }
 export function createCatalogRetirementPlan(input: Readonly<{ scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; sourceVersionId?: string }>, csrfToken: string) { return mutate<CatalogRetirementPlan>('/api/catalog/retirement-plans', 'POST', input, csrfToken); }
 export function executeCatalogRetirementPlan(planId: string, input: Readonly<{ confirmation: 'RETIRE_ACTIVE_CATALOG' | 'RETIRE_BATCH_CREATED_ITEMS'; pin: string; clientRequestId: string }>, csrfToken: string) { return mutate<CatalogRetirementExecution>(`/api/catalog/retirement-plans/${encodeURIComponent(planId)}/execute`, 'POST', input, csrfToken); }
+export function getCatalogFieldPolicy(signal?: AbortSignal) { return get<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy', signal); }
+export function updateCatalogFieldPolicy(input: Readonly<{ expectedVersion: number; fieldLevels: CatalogFieldPolicyResponse['fieldLevels'] }>, csrfToken: string) { return mutate<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy', 'PUT', input, csrfToken); }
+export function restoreCatalogFieldPolicyDefaults(expectedVersion: number, csrfToken: string) { return mutate<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy/restore-product-defaults', 'POST', { expectedVersion }, csrfToken); }

@@ -15,6 +15,7 @@ import { RolesPage } from './pages/RolesPage.js';
 import { UsersPage } from './pages/UsersPage.js';
 import { NewRepairConfigurationPage } from './pages/NewRepairConfigurationPage.js';
 import { RepairCatalogsPage } from './pages/RepairCatalogsPage.js';
+import { CatalogFieldPolicyConfigurationPage } from './pages/CatalogFieldPolicyConfigurationPage.js';
 import { PriceListPage } from './pages/PriceListPage.js';
 import { BulkCatalogComposerPage } from './pages/BulkCatalogComposerPage.js';
 import { SessionProvider } from './session/SessionProvider.js';
@@ -59,6 +60,12 @@ function CatalogConfigurationBoundary({ capabilities, children }: Readonly<{ cap
   return hasOperationalCapability(capabilities, 'repairs.catalogs.read') || hasOperationalCapability(capabilities, 'catalog.manage') ? <>{children}</> : <AccessDeniedPage />;
 }
 
+function CatalogFieldPolicyBoundary({ capabilities, children }: Readonly<{ capabilities: readonly OperationalCapability[]; children: React.ReactNode }>): React.JSX.Element {
+  return hasOperationalCapability(capabilities, 'catalog.configuration.read') && hasOperationalCapability(capabilities, 'catalog.reference_cost.read')
+    ? <>{children}</>
+    : <AccessDeniedPage />;
+}
+
 export function App(): React.JSX.Element {
   const location = useLocation();
   const routeState = location.state as Readonly<{
@@ -96,6 +103,7 @@ export function App(): React.JSX.Element {
               <Route path="/configuracion/usuarios" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="users.read"><UsersPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/configuracion/catalogos/nueva-reparacion" element={<NewRepairConfigurationBoundary operationalCapabilities={capabilities} administrationCapabilities={administrationCapabilities}><NewRepairConfigurationPage operationalCapabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} /></NewRepairConfigurationBoundary>} />
               <Route path="/configuracion/catalogos" element={<CatalogConfigurationBoundary capabilities={administrationCapabilities}><RepairCatalogsPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CatalogConfigurationBoundary>} />
+              <Route path="/configuracion/catalogos/lista-de-precios/campos-de-carga" element={<CatalogFieldPolicyBoundary capabilities={administrationCapabilities}><CatalogFieldPolicyConfigurationPage canManage={hasOperationalCapability(administrationCapabilities, 'catalog.configuration.manage') && hasOperationalCapability(administrationCapabilities, 'catalog.reference_cost.manage')} csrfToken={csrfToken} /></CatalogFieldPolicyBoundary>} />
               {UiCatalogPage ? <Route path="/__internal/ui-catalog" element={<UiCatalogPage />} /> : null}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -52,6 +52,8 @@ export function SettingsPage({ operationalCapabilities, administrationCapabiliti
   const canReadRepairCatalogs = hasOperationalCapability(administrationCapabilities, 'repairs.catalogs.read');
   const canManageRepairCatalogs = hasOperationalCapability(administrationCapabilities, 'repairs.catalogs.manage');
   const canManageCommercialCatalogs = hasOperationalCapability(administrationCapabilities, 'catalog.manage');
+  const canReadCatalogFieldPolicy = hasOperationalCapability(administrationCapabilities, 'catalog.configuration.read') && hasOperationalCapability(administrationCapabilities, 'catalog.reference_cost.read');
+  const canManageCatalogFieldPolicy = hasOperationalCapability(administrationCapabilities, 'catalog.configuration.manage') && hasOperationalCapability(administrationCapabilities, 'catalog.reference_cost.manage');
   const canCreateRepairs = hasOperationalCapability(operationalCapabilities, 'repairs.create');
 
   const applyInput = (value: string): void => {
@@ -107,6 +109,13 @@ export function SettingsPage({ operationalCapabilities, administrationCapabiliti
                 <span className={styles.cardIcon} aria-hidden="true"><SlidersHorizontal size={20} /></span>
                 <div><h3>Catálogos por módulo</h3><p>Gobierno de catálogos de Reparaciones y Lista de precios.</p></div>
                 <ButtonLink to={canReadRepairCatalogs ? '/configuracion/catalogos' : canManageCommercialCatalogs ? '/configuracion/catalogos?module=price-list' : '/configuracion/catalogos/nueva-reparacion'} tone="secondary">{canManageRepairCatalogs || canManageNewRepairConfiguration || canManageCommercialCatalogs ? 'Configurar catálogos' : 'Consultar Reparaciones'}</ButtonLink>
+              </article>
+            ) : null}
+            {canReadCatalogFieldPolicy ? (
+              <article className={styles.administrationCard}>
+                <span className={styles.cardIcon} aria-hidden="true"><SlidersHorizontal size={20} /></span>
+                <div><h3>Lista de precios</h3><p>Política tenant-wide de campos para las cargas masivas.</p></div>
+                <ButtonLink to="/configuracion/catalogos/lista-de-precios/campos-de-carga" tone="secondary">{canManageCatalogFieldPolicy ? 'Configurar campos' : 'Consultar campos'}</ButtonLink>
               </article>
             ) : null}
             {canCreateRepairs && !canReadRepairCatalogs && !canReadNewRepairConfiguration ? (
