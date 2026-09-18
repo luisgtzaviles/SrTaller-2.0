@@ -79,6 +79,17 @@ function prepareRequirements(input: unknown): readonly ProtectedOperationRequire
   return Object.freeze(requirements);
 }
 
+function publishEffectRequirements(version: Awaited<ReturnType<BulkCatalogService['getVersion']>>, writeCost: boolean): readonly ProtectedOperationRequirement[] {
+  const actionable = version.rows.filter((row) => row.decision === 'APPLY');
+  const requirements: ProtectedOperationRequirement[] = [importPublish];
+  if (actionable.some((row) => row.classification === 'NEW')) requirements.push(catalogItemCreate);
+  if (actionable.some((row) => row.classification === 'UPDATE' || row.titleDecision === 'ADOPT_OBSERVED')) requirements.push(catalogItemUpdate);
+  if (actionable.some((row) => row.classification === 'REACTIVATE')) requirements.push(catalogItemDeactivate);
+  if (actionable.some((row) => row.proposal.basePriceMinor !== null && row.proposal.basePriceMinor !== undefined)) requirements.push(pricesManage);
+  if (writeCost && actionable.some((row) => row.proposal.referenceCostMinor !== null && row.proposal.referenceCostMinor !== undefined)) requirements.push(costManage, costRead);
+  return Object.freeze(requirements);
+}
+
 function mutationContext(contexts: readonly AuthorizedOperationalContext[]): CatalogMutationContext {
   if (!sameContext(contexts) || contexts.length === 0) throw new CatalogOperationAccessDeniedError();
   const first = contexts[0]!;
@@ -255,7 +266,18 @@ export class CatalogProtectedOperations {
   analyzeSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { return this.executeTenantWideMany(evidence, requestsReferenceCost(input) ? [importPrepareWrite, costRead] : [importPrepareWrite], (contexts) => this.bulk.analyze(mutationContext(contexts), versionId, input)); }
   decideSupplierRow(evidence: ProtectedRequestEvidence, versionId: unknown, rowDecisionId: unknown, input: unknown) { return this.executeTenantWideMany(evidence, requestsReferenceCost(input) ? [importPrepareWrite, costRead] : [importPrepareWrite], (contexts) => this.bulk.decide(mutationContext(contexts), versionId, rowDecisionId, input)); }
   decideSupplierRows(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { return this.executeTenantWideMany(evidence, requestsReferenceCost(input) ? [importPrepareWrite, costRead] : [importPrepareWrite], (contexts) => this.bulk.decideMany(mutationContext(contexts), versionId, input)); }
-  publishSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) { const writeCost = typeof input === 'object' && input !== null && (input as { writeReferenceCost?: unknown }).writeReferenceCost === true; const requirements = writeCost ? [importPublish, catalogManage, pricesManage, costManage, costRead] : [importPublish, catalogManage, pricesManage]; return this.executeTenantWideMany(evidence, requirements, (contexts) => this.bulk.publish(mutationContext(contexts), versionId, input, writeCost)); }
+  async publishSupplierVersion(evidence: ProtectedRequestEvidence, versionId: unknown, input: unknown) {
+    const writeCost = typeof input === 'object' && input !== null && (input as { writeReferenceCost?: unknown }).writeReferenceCost === true;
+    // A publisher must be able to inspect the authoritative READY batch. The
+    // temporary prepare -> read compatibility remains only for legacy roles.
+    return await this.executeTenantWideBulkRead(evidence, async (readContext) => {
+      return await this.executeTenantWideMany(evidence, writeCost ? [costRead] : [], async (costContexts) => {
+        const version = await this.bulk.getVersion(scope(costContexts[0] ?? readContext), versionId, writeCost);
+        const requirements = publishEffectRequirements(version, writeCost);
+        return await this.executeTenantWideMany(evidence, requirements, (contexts) => this.bulk.publish(mutationContext(contexts), versionId, input, writeCost));
+      });
+    });
+  }
   compareSupplierVersions(evidence: ProtectedRequestEvidence, leftVersionId: unknown, rightVersionId: unknown) { return this.executeTenantWideBulkRead(evidence, (context) => this.bulk.compare(scope(context), leftVersionId, rightVersionId)); }
   purgeSupplierRaw(evidence: ProtectedRequestEvidence) { return this.executeTenantWideMany(evidence, [importPrepareWrite], (contexts) => this.bulk.purgeExpiredRaw(mutationContext(contexts))); }
   deleteSupplierSource(evidence: ProtectedRequestEvidence, sourceId: unknown, input: unknown) {

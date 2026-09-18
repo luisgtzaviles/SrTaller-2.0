@@ -66,6 +66,14 @@ function CatalogFieldPolicyBoundary({ capabilities, children }: Readonly<{ capab
     : <AccessDeniedPage />;
 }
 
+function BulkComposerBoundary({ capabilities, children }: Readonly<{ capabilities: readonly OperationalCapability[]; children: React.ReactNode }>): React.JSX.Element {
+  // Preparing a batch has retained read compatibility during the transition,
+  // while a history-only role gets this surface through import.read.
+  return hasOperationalCapability(capabilities, 'catalog.import.read') || hasOperationalCapability(capabilities, 'catalog.import.prepare')
+    ? <>{children}</>
+    : <AccessDeniedPage />;
+}
+
 function NewCatalogItemBoundary({ capabilities, administrationCapabilities, children }: Readonly<{ capabilities: readonly OperationalCapability[]; administrationCapabilities: readonly OperationalCapability[]; children: React.ReactNode }>): React.JSX.Element {
   return hasOperationalCapability(capabilities, 'price_list.read') &&
     hasOperationalCapability(administrationCapabilities, 'catalog.items.create') &&
@@ -111,7 +119,7 @@ export function App(): React.JSX.Element {
               <Route path="/listas/precios/nuevo" element={<NewCatalogItemBoundary capabilities={capabilities} administrationCapabilities={administrationCapabilities}><PriceListPage key="catalog-item-create" capabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} initialCreate /></NewCatalogItemBoundary>} />
               <Route path="/listas/precios/articulos/:itemId" element={<CatalogItemDetailRoute capabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} />} />
               <Route path="/listas/precios" element={<CapabilityBoundary capabilities={capabilities} capability="price_list.read"><PriceListPage capabilities={capabilities} administrationCapabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />
-              <Route path="/listas/precios/carga-masiva" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="catalog.import.prepare"><BulkCatalogComposerPage capabilities={administrationCapabilities} csrfToken={csrfToken} timeZone={timeZone} /></CapabilityBoundary>} />
+              <Route path="/listas/precios/carga-masiva" element={<BulkComposerBoundary capabilities={administrationCapabilities}><BulkCatalogComposerPage capabilities={administrationCapabilities} csrfToken={csrfToken} timeZone={timeZone} /></BulkComposerBoundary>} />
               <Route path="/configuracion" element={<SettingsPage operationalCapabilities={capabilities} administrationCapabilities={administrationCapabilities} />} />
               <Route path="/configuracion/sucursal" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="access_matrix.manage"><BranchSettingsPage csrfToken={csrfToken} /></CapabilityBoundary>} />
               <Route path="/configuracion/roles" element={<CapabilityBoundary capabilities={administrationCapabilities} capability="access_matrix.read"><RolesPage capabilities={administrationCapabilities} csrfToken={csrfToken} /></CapabilityBoundary>} />

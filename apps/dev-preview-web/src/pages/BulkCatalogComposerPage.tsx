@@ -92,6 +92,8 @@ const appliedResultSummary = (counts: SupplierVersion['batch']['counts'], exclud
 const loadIntentLabel = (value: SupplierCatalogCompleteness): string => value === 'COMPLETE' ? 'Lista completa del proveedor' : 'Sólo algunos artículos';
 
 export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: Readonly<{ capabilities: readonly OperationalCapability[]; csrfToken: string; timeZone: string }>): React.JSX.Element {
+  const canReadBulk = hasOperationalCapability(capabilities, 'catalog.import.read') || hasOperationalCapability(capabilities, 'catalog.import.prepare');
+  const canPrepareBulk = hasOperationalCapability(capabilities, 'catalog.import.prepare');
   const canPublish = hasOperationalCapability(capabilities, 'catalog.import.publish') && hasOperationalCapability(capabilities, 'catalog.manage') && hasOperationalCapability(capabilities, 'catalog.prices.manage');
   const canReadCost = hasOperationalCapability(capabilities, 'catalog.reference_cost.read'); const canWriteCost = hasOperationalCapability(capabilities, 'catalog.reference_cost.manage');
   const canBulkRetire = hasOperationalCapability(capabilities, 'catalog.items.bulk_retire');
@@ -115,9 +117,9 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const [busy, setBusy] = useState(false); const [reviewProgress, setReviewProgress] = useState<ReviewProgress | null>(null); const [dirty, setDirty] = useState(false); const [notice, setNotice] = useState<{ tone: 'danger' | 'warning'; message: string } | null>(null); const [toast, setToast] = useState<{ id: number; message: string } | null>(null); const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]); const [validationAttempted, setValidationAttempted] = useState(false); const [issueIndex, setIssueIndex] = useState(0); const [pendingIssueFocus, setPendingIssueFocus] = useState<ValidationIssue | null>(null); const [sourcesOpen, setSourcesOpen] = useState(true); const [contextOpen, setContextOpen] = useState(false); const [gridExpanded, setGridExpanded] = useState(true); const [continuedOpen, setContinuedOpen] = useState(false); const [notObservedOpen, setNotObservedOpen] = useState(false); const [additionalOpen, setAdditionalOpen] = useState(false); const [comparisonOpen, setComparisonOpen] = useState(false); const [coverageReviewOpen, setCoverageReviewOpen] = useState(false); const [scrollTop, setScrollTop] = useState(0); const [active, setActive] = useState({ row: 0, column: 0 }); const [selection, setSelection] = useState<ComposerSelection | null>(null); const undoRows = useRef<UiRow[] | null>(null); const editOriginal = useRef<{ row: number; column: Column; value: string } | null>(null); const publishRequest = useRef(crypto.randomUUID()); const draftCreateRequest = useRef(crypto.randomUUID()); const reviewInFlight = useRef(false); const deleteInFlight = useRef(false); const viewportRef = useRef<HTMLDivElement | null>(null); const headerScrollRef = useRef<HTMLDivElement | null>(null); const toastTimer = useRef<number | null>(null); const sourcesToggleRef = useRef<HTMLButtonElement | null>(null); const pendingSourcesToggleFocus = useRef(false);
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState(false);
   const policyColumns = useMemo(() => fieldPolicy ? derivePolicyDrivenColumns(fieldPolicy.fields) : { all: [], essential: [], required: [] }, [fieldPolicy]);
-  const activeColumns = useMemo(() => mode === 'COMPACT' ? compactColumns : viewPreset === 'ESSENTIAL' ? policyColumns.essential : policyColumns.all, [mode, policyColumns, viewPreset]);
+  const activeColumns = useMemo(() => !canPrepareBulk ? (mode === 'COMPACT' ? compactColumns : columns.filter((column) => column !== 'cost' || canReadCost)) : mode === 'COMPACT' ? compactColumns : viewPreset === 'ESSENTIAL' ? policyColumns.essential : policyColumns.all, [canPrepareBulk, canReadCost, mode, policyColumns, viewPreset]);
   const requiredColumns = useMemo(() => new Set(policyColumns.required), [policyColumns]);
-  const fullPolicyReady = fieldPolicy !== null;
+  const fullPolicyReady = !canPrepareBulk || fieldPolicy !== null;
   const schemaColumns = mode === 'FULL' ? columns : compactColumns;
   const gridTemplateColumns = useMemo(() => `52px ${activeColumns.map((column) => `${columnWidths[column]}px`).join(' ')}`, [activeColumns, columnWidths]);
   const gridWidth = useMemo(() => 52 + activeColumns.reduce((total, column) => total + columnWidths[column], 0), [activeColumns, columnWidths]);
@@ -127,7 +129,15 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     try { setFieldPolicy(await getBulkCatalogFieldPolicy()); }
     catch { setFieldPolicy(null); setFieldPolicyError('No fue posible cargar la política efectiva de campos. Reintenta antes de editar una carga completa.'); }
   }, []);
-  const refresh = useCallback(async () => { const [nextSources, nextVersions, nextReferences] = await Promise.all([listSupplierSources(), listSupplierVersions(), listCatalogReferences()]); setSources(nextSources); setVersions(nextVersions); setReferences(nextReferences); if (!browseSourceId && nextSources[0]) setBrowseSourceId(nextSources[0].sourceId); await refreshFieldPolicy(); }, [browseSourceId, refreshFieldPolicy]);
+  const refresh = useCallback(async () => {
+    const [nextSources, nextVersions] = await Promise.all([listSupplierSources(), listSupplierVersions()]);
+    setSources(nextSources); setVersions(nextVersions);
+    if (!browseSourceId && nextSources[0]) setBrowseSourceId(nextSources[0].sourceId);
+    if (!canPrepareBulk) return;
+    const nextReferences = await listCatalogReferences();
+    setReferences(nextReferences);
+    await refreshFieldPolicy();
+  }, [browseSourceId, canPrepareBulk, refreshFieldPolicy]);
   useEffect(() => { void refresh().catch(() => setNotice({ tone: 'danger', message: 'No fue posible cargar los catálogos de proveedor.' })); }, [refresh]);
   useEffect(() => { const protect = (event: BeforeUnloadEvent): void => { if (dirty) event.preventDefault(); }; window.addEventListener('beforeunload', protect); return () => window.removeEventListener('beforeunload', protect); }, [dirty]);
   useEffect(() => { sessionStorage.setItem('srtaller:bulk-composer:column-widths:v1', JSON.stringify(columnWidths)); }, [columnWidths]);
@@ -254,6 +264,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     setSupplierGateOpen(true);
   };
   const continueNewLoad = (): boolean => {
+    if (!canPrepareBulk) return false;
     const preparation = { supplierId: supplierGateSupplierId, completeness: supplierGateCompleteness };
     if (!canContinueNewLoadGate(preparation) || !preparation.supplierId || !preparation.completeness) return false;
     const keepsLocalRows = !current && pendingNewLoadSupplierId === preparation.supplierId;
@@ -273,8 +284,9 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   };
   const openNewSource = (origin: 'ADMINISTRATION' | 'GATE'): void => { setNewSourceOrigin(origin); setNewSourceName(''); setSupplierGateOpen(false); setNewSourceOpen(true); };
   const closeNewSource = (): void => { if (busy) return; const returnToGate = newSourceOrigin === 'GATE'; setNewSourceOpen(false); setNewSourceOrigin(null); if (returnToGate) setSupplierGateOpen(true); };
-  const addSource = async (): Promise<void> => { if (!newSourceName.trim()) return; setBusy(true); try { const created = await createSupplierSource(newSourceName, csrfToken); await refresh(); setNewSourceName(''); setNewSourceOpen(false); clearServerIssue((issue) => issue.controlKey === 'source'); if (newSourceOrigin === 'GATE') { setNewSourceOrigin(null); setSupplierGateSupplierId(created.sourceId); setSupplierGateCompleteness(null); setSupplierGateOpen(true); } else { setNewSourceOrigin(null); showToast('Proveedor creado. El trabajo actual se conserva.'); } } catch { setNotice({ tone: 'danger', message: 'No se creó el proveedor; revisa nombre o duplicados.' }); } finally { setBusy(false); } };
+  const addSource = async (): Promise<void> => { if (!canPrepareBulk || !newSourceName.trim()) return; setBusy(true); try { const created = await createSupplierSource(newSourceName, csrfToken); await refresh(); setNewSourceName(''); setNewSourceOpen(false); clearServerIssue((issue) => issue.controlKey === 'source'); if (newSourceOrigin === 'GATE') { setNewSourceOrigin(null); setSupplierGateSupplierId(created.sourceId); setSupplierGateCompleteness(null); setSupplierGateOpen(true); } else { setNewSourceOrigin(null); showToast('Proveedor creado. El trabajo actual se conserva.'); } } catch { setNotice({ tone: 'danger', message: 'No se creó el proveedor; revisa nombre o duplicados.' }); } finally { setBusy(false); } };
   const persistDraft = async (): Promise<SupplierVersion | null> => {
+    if (!canPrepareBulk) return null;
     setNotice(null); setServerIssues([]); setValidationAttempted(true); setIssueIndex(0);
     const clientIssues = sortValidationIssues([
       ...validateComposerDraft({ selectedSource: draftSourceId, mode, rows }),
@@ -317,7 +329,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
       setReviewProgress(null); setBusy(false); reviewInFlight.current = false;
     }
   };
-  const load = async (id: string): Promise<void> => { if (!discardMeaningfulWork('Hay cambios sin guardar. ¿Quieres descartarlos y abrir otra versión?')) return; setBusy(true); try { const [value] = await Promise.all([getSupplierVersion(id, canReadCost), refreshFieldPolicy()]); setCurrent(value); setMode(value.mode); setCompleteness(value.completeness); setBrowseSourceId(value.sourceId); setPendingNewLoadSupplierId(null); setDescription(value.description ?? ''); setRows(fromRecord(value)); resetMissingDataContext(); setCompare(null); setCompareId(''); setGridExpanded(value.lifecycle === 'DRAFT'); resetCoverageDetails(); setReconciliationView('ATTENTION'); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; setNotice(null); publishRequest.current = crypto.randomUUID(); draftCreateRequest.current = crypto.randomUUID(); } finally { setBusy(false); } };
+  const load = async (id: string): Promise<void> => { if (!discardMeaningfulWork('Hay cambios sin guardar. ¿Quieres descartarlos y abrir otra versión?')) return; setBusy(true); try { const value = await getSupplierVersion(id, canReadCost); if (canPrepareBulk) await refreshFieldPolicy(); setCurrent(value); setMode(value.mode); setCompleteness(value.completeness); setBrowseSourceId(value.sourceId); setPendingNewLoadSupplierId(null); setDescription(value.description ?? ''); setRows(fromRecord(value)); resetMissingDataContext(); setCompare(null); setCompareId(''); setGridExpanded(value.lifecycle === 'DRAFT'); resetCoverageDetails(); setReconciliationView('ATTENTION'); setDirty(false); setValidationAttempted(false); setServerIssues([]); undoRows.current = null; setNotice(null); publishRequest.current = crypto.randomUUID(); draftCreateRequest.current = crypto.randomUUID(); } finally { setBusy(false); } };
   const resolve = async (rowDecisionId: string, expectedRowVersion: number, nextDecision: 'APPLY' | 'EXCLUDE', targetItemId: string | null = null, selectedTitleDecision: BulkCatalogTitleDecision | null = null): Promise<boolean> => { if (!current) return false; setBusy(true); try { const value = await decideSupplierRow(current.versionId, rowDecisionId, { expectedRowVersion, decision: nextDecision, targetItemId, titleDecision: selectedTitleDecision, includeReferenceCost: canReadCost }, csrfToken); setCurrent(value); showToast(targetItemId ? 'Identidad y nombre quedaron preparados para Apply; Catalog todavía no cambió.' : nextDecision === 'APPLY' ? 'Fila incluida explícitamente.' : 'Fila excluida del lote.'); return true; } catch (error) { setNotice({ tone: 'danger', message: error instanceof PreviewApiError && error.code === 'CATALOG_CONFLICT' ? 'La versión cambió mientras la revisabas. Se recargará para que confirmes de nuevo.' : 'La fila requiere un artículo canónico válido, una decisión de nombre o releer la versión.' }); return false; } finally { setBusy(false); } };
   const chooseDuplicateRow = async (row: SupplierVersionRow): Promise<void> => {
     if (!row.targetItemId) return;
@@ -408,6 +420,38 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const pendingSupplier = pendingNewLoadSupplierId ? sources.find((source) => source.sourceId === pendingNewLoadSupplierId) ?? null : null;
   const visibleSupplierSources = filterSupplierSources(sources, supplierSearch);
   const workspaceAvailable = Boolean(current || pendingSupplier);
+
+  if (!canPrepareBulk) {
+    return <div className={styles.page}>
+      <div className={styles.heading}><BackLink to="/listas/precios">Lista de precios</BackLink><PageHeader eyebrow="Listas · Carga masiva" title="Bulk Catalog Composer" description="Consulta fuentes, versiones y resultados de carga." /></div>
+      {notice ? <Alert tone={notice.tone} title="Atención">{notice.message}</Alert> : null}
+      {toast ? <Toast key={toast.id}>{toast.message}</Toast> : null}
+      <div className={styles.layout}>
+        <aside className={styles.sidebar} aria-label="Fuentes y versiones">
+          <div className={styles.sidebarHeading}><h2><Database size={18} aria-hidden="true" />Fuentes y versiones</h2></div>
+          <p><small>{canReadBulk ? 'Solo lectura' : 'Acceso no disponible'}</small></p>
+          <label>Explorar proveedor<Select value={browseSourceId} onChange={(event) => browseSource(event.target.value)}><option value="">Selecciona…</option>{sources.map((value) => <option key={value.sourceId} value={value.sourceId}>{value.name}</option>)}</Select></label>
+          <div className={styles.history}>{sources.map((source) => {
+            const sourceVersions = versions.filter((value) => value.sourceId === source.sourceId).sort((left, right) => right.sequenceNumber - left.sequenceNumber);
+            return <section key={source.sourceId} className={`${styles.sourceGroup} ${browseSourceId === source.sourceId ? styles.selectedSource : ''}`}>
+              <header><button type="button" onClick={() => browseSource(source.sourceId)}><strong>{source.name}</strong><span>{source.versionCount} {source.versionCount === 1 ? 'versión' : 'versiones'}</span></button></header>
+              <div className={styles.versionList}>{sourceVersions.map((value) => <button type="button" key={value.versionId} className={current?.versionId === value.versionId ? styles.selectedVersion : ''} aria-current={current?.versionId === value.versionId ? 'true' : undefined} onClick={() => void load(value.versionId)}><span><strong>v{value.sequenceNumber}</strong><small>{versionStatus(value)}</small></span><span>{formatVersionDate(value.createdAt, timeZone)} · {value.rowCount.toLocaleString('es-MX')} filas</span>{value.description ? <small>{value.description}</small> : null}</button>)}</div>
+            </section>;
+          })}</div>
+        </aside>
+        <main className={styles.composer} aria-busy={busy}>
+          {!current ? <section className={styles.emptyWorkspace} aria-labelledby="bulk-empty-workspace-title"><Columns3 size={20} aria-hidden="true" /><div><h2 id="bulk-empty-workspace-title">Selecciona una versión para revisarla</h2><p>Las cargas y sus resultados permanecen disponibles para consulta.</p></div></section> : <>
+            <section className={styles.setup}><div className={styles.versionIdentity}><div><strong>{current.sourceName} · {loadIntentLabel(current.completeness)}</strong><small>{versionStatus(current)} · Solo lectura</small></div></div></section>
+            <section className={styles.summary} aria-label="Resultado de la versión">{Object.entries(current.batch.counts).map(([key, value]) => <div key={key}><strong>{value}</strong><span>{statusLabels[key as keyof typeof statusLabels]}</span></div>)}</section>
+            <section className={styles.coverage} aria-labelledby="supplier-coverage-title"><div className={styles.coverageHeader}><h2 id="supplier-coverage-title"><GitCompare size={18} />Cobertura del proveedor</h2><span>{current.completeness === 'COMPLETE' ? 'Lista completa' : 'Actualización parcial'}</span></div><p>{current.absenceBaseline.status === 'EVALUATED' ? `${current.absenceBaseline.currentCount.toLocaleString('es-MX')} recibidas · ${current.absenceBaseline.continuedCount?.toLocaleString('es-MX') ?? 0} continúan · ${current.absenceBaseline.additionalCount?.toLocaleString('es-MX') ?? 0} adicionales · ${current.absenceBaseline.notObservedCount?.toLocaleString('es-MX') ?? 0} ya no observadas.` : 'La cobertura de esta versión puede inspeccionarse sin modificarla.'}</p></section>
+            <section className={styles.decisions} aria-labelledby="readonly-reconciliation-title"><div className={styles.decisionTitle}><h2 id="readonly-reconciliation-title">{current.batch.lifecycle === 'APPLIED' ? 'Resultado aplicado' : 'Reconciliación'}</h2><span>Solo lectura</span></div>{current.rows.slice(0, 100).map((row) => <article key={row.rowDecisionId}><div><strong>Fila {row.rowNumber} · {statusLabels[row.classification]}</strong><span>{row.proposal.title ?? row.proposal.supplierItemCode ?? row.proposal.sku ?? row.proposal.barcode ?? 'Sin identidad'}{row.targetTitle ? ` → ${row.targetTitle}` : ''}</span>{row.warnings.map(warningMessage).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}{rowErrors(row.errors).map((code) => analysisMessage(code, canReadCost)).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}</div></article>)}</section>
+            {current.batch.lifecycle === 'READY' && canPublish ? <section className={styles.batchSecondaryActions}><div><h2>Publicación</h2><p>Este lote está listo. Aplicar sigue validando todas las autoridades de efecto en el servidor.</p></div><Button size="compact" tone="primary" onClick={() => current.absenceBaseline.plausibility.status === 'REVIEW_REQUIRED' ? setCoverageReviewOpen(true) : void publish()} disabled={busy}><Send size={17} />Aplicar lote</Button></section> : null}
+          </>}
+        </main>
+      </div>
+      <Dialog open={coverageReviewOpen} title="Confirma la lista completa" description="La cobertura actual es mucho menor que la referencia anterior" onClose={() => { if (!busy) setCoverageReviewOpen(false); }} footer={false}><div className={styles.retirementDialog}><Alert tone="warning" title="Esta lista completa es mucho más pequeña que la referencia anterior">Referencia anterior: {current?.absenceBaseline.plausibility.baselineCount?.toLocaleString('es-MX') ?? 0} artículos. Lista actual: {current?.absenceBaseline.plausibility.currentCount.toLocaleString('es-MX') ?? 0}.</Alert><footer className={styles.retirementActions}><Button disabled={busy} onClick={() => setCoverageReviewOpen(false)}>Cancelar</Button><Button tone="primary" disabled={busy} onClick={() => void publish(true)}>{busy ? 'Aplicando…' : 'Confirmar y aplicar'}</Button></footer></div></Dialog>
+    </div>;
+  }
 
   return <div className={styles.page}>
     <div className={styles.heading}><BackLink to="/listas/precios" onClick={(event) => { if (hasMeaningfulWork && !window.confirm('Hay cambios sin guardar. ¿Quieres salir del Composer?')) event.preventDefault(); }}>Lista de precios</BackLink><PageHeader eyebrow="Listas · Carga masiva" title="Bulk Catalog Composer" description="Pega y corrige una versión de proveedor; nada toca Catalog hasta aplicar el lote." /></div>
