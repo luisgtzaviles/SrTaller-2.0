@@ -135,4 +135,7 @@ fuerza `READY`.
 UX-005.1 eliminó 615 falsas excepciones de referencia sin suprimir la revisión
 de datos: sólo permanecen dos decisiones comerciales por duplicado y una
 Category realmente malformada. Avicell v2 está correctamente detenido antes de
-Apply y requiere decisiones de negocio/corrección explícitas.
+Apply y requiere decisiones de negocio/corrección explícitas. La sucesora
+explícita v3 se publicó después por decisión Owner; sus resultados y hallazgos
+post-Apply se registran sin reescribir este proof histórico en
+[UX-005.5](PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md).

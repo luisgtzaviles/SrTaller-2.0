@@ -1690,3 +1690,22 @@ order passed. Navigation of row 468 wrote nothing; AviCell v3 retains zero
 Resolution/Memory/publication/Catalog effects. `test:pbi041:postgresql` passed
 with 75 migrations; typecheck, build and the 39 focused Composer contracts
 passed. No CI, push, PR, merge, Apply or deploy occurred.
+
+## UX-005.5 — AviCell v3 post-Apply integrity verification
+
+Read-only PostgreSQL and Chrome evidence confirms the actual publication of
+AviCell v3: Batch `APPLIED`, `FULL / COMPLETE`, published at
+`2026-09-18T19:26:15.110Z` by Luis. The physical/effective accounting is exact:
+744 listings, 742 `NEW / APPLY / CREATED` items, two `UNCHANGED / EXCLUDE`
+duplicate siblings, 742 Resolution records, 742 `CONSISTENT` Memory records
+and 742 succeeded `catalog.bulk.publish.row` audit events. The two explicit
+winners retain their selected price/cost and row 618 used canonical
+`Pantallas`; `V2314 COPIA` was not materialized.
+
+This evidence deliberately records, rather than repairs, two material closure
+findings: row 411 created an item with zero base price and reference cost, and
+618 of the v3 items point to pending Brand values rather than canonical Brand
+records. Apple remains the sole reused canonical Brand control. PostgreSQL
+PBI-041 contracts pass (7 tests / 75 migrations) and 16 focused model,
+coverage, duplicate and authorization contracts pass. See
+[UX-005.5](../../../domain/PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md).

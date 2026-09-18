@@ -80,3 +80,8 @@ hubo migración, CI, push, PR, merge ni deploy.
 UX-005.3 sigue siendo complementaria: **Ir a fila N** permite inspección o una
 corrección sucesora explícita; no reemplaza **Usar fila N**. AviCell v3 no se
 modificó porque el Owner no eligió los valores de negocio correctos.
+
+Ese límite describe solamente la prueba UX-005.4. La publicación posterior de
+v3 y su inspección de integridad read-only, sin reinterpretar esta evidencia,
+se registran en
+[UX-005.5](PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md).

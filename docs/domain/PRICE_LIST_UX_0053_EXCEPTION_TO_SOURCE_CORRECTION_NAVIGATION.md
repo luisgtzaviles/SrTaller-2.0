@@ -57,3 +57,7 @@ UX-005.4 restaura el control de decisión de duplicados como una acción distint
 **Ir a fila N** continúa siendo navegación sin escritura y no puede elegir una
 fila; **Usar fila N** conserva la decisión humana atómica. Ver
 [Duplicate Winner Controls Preservation](PRICE_LIST_UX_0054_DUPLICATE_WINNER_CONTROLS_PRESERVATION.md).
+
+La sucesora v3 se publicó posteriormente con decisiones explícitas. El estado
+post-Apply, incluido el linaje preservado de fila 618, queda documentado en
+[UX-005.5](PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md).

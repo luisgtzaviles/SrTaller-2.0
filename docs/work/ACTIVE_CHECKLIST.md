@@ -1,17 +1,26 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005.4 Duplicate Winner Controls Preservation
+Milestone / Functional Goal: PBI-041 — UX-005.5 AviCell Large-List Post-Apply Integrity Verification
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — duplicate winner controls restored; AviCell v3 remains deliberately unresolved pending Owner business decisions.
+Status: Read-only local integrity verification complete — PBI-041 closure is blocked pending Owner decisions; AviCell v3 will not be mutated again without new authority.
 WIP: 1/1
-Progress: 6 / 6 UX-005.4 implementation blocks complete; prior UX-005.1–UX-005.3 evidence remains preserved.
-Current: UX-005.4 is ready for Owner Review with the isolated QA winner decision persisted and AviCell v3 retained as read-only evidence.
-Next: Owner Review only. Do not choose either AviCell v3 winner or Apply its batch without a new explicit business decision.
-Blocked: No remediation blocker. AviCell v3 intentionally retains two unresolved duplicate business choices. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 6 / 6 UX-005.5 verification blocks complete; prior UX-005.1–UX-005.4 evidence remains preserved.
+Current: Stop for Owner decision on the two post-Apply findings; no data mutation is authorized.
+Next: Owner must decide whether to remediate the applied zero-value row and whether new Brands must be canonically resolved after Apply before PBI-041 closure can resume.
+Blocked: `DATA_INTEGRITY_BLOCKER` — row 411 (`PANTALLA SAMSUGN A37 ORIGINAL`) was published with base price and reference cost zero. `DOMAIN_ACCOUNTING_DEFECT` — 618 v3 CatalogItems use pending Brand references rather than canonical Brands. No Apply, reanalysis, repair or other Owner-data mutation is authorized. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
 
-## Current checkpoint — UX-005.4 Duplicate Winner Controls Preservation
+## Current checkpoint — UX-005.5 AviCell Large-List Post-Apply Integrity Verification
+
+- [x] Record preflight, local health, 75 migrations and authoritative AviCell/Tenant/Branch/version identifiers without writes.
+- [x] Reconcile 744 physical observations to 742 effective outcomes, explicit duplicate winners and corrected successor row 618.
+- [x] Verify attributable Catalog/reference effects, provenance, Resolutions, Memory and audit; record pending-Brand and zero-value findings without repair.
+- [x] Verify COMPLETE baseline, Tenant/Branch scope, lifecycle/idempotency and post-Apply Chrome UI without clicking any mutating control.
+- [x] Run documentation links, consistency, secret scan and diff checks.
+- [~] Record evidence and checklist in one documentation-only local commit; stop for Owner Review.
+
+## Previous checkpoint — UX-005.4 Duplicate Winner Controls Preservation
 
 - [x] Inspect AviCell v3 read-only: 744 physical rows, 742 effective units, 740 resolved units and two unresolved duplicate groups (468/469, 611/612); no Owner-data mutation.
 - [x] Classify root cause: the UI only offered the old winner action for a shared existing Catalog target, and the decision path rejected the shared no-target NEW case.

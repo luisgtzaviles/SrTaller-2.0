@@ -22,6 +22,7 @@ authority.
 - [UX-005.2 Avicell Large-List Reanalysis Proof](../../../domain/PRICE_LIST_UX_0052_AVICELL_LARGE_LIST_REANALYSIS_PROOF.md)
 - [UX-005.3 Exception-to-Source Correction Navigation](../../../domain/PRICE_LIST_UX_0053_EXCEPTION_TO_SOURCE_CORRECTION_NAVIGATION.md)
 - [UX-005.4 Duplicate Winner Controls Preservation](../../../domain/PRICE_LIST_UX_0054_DUPLICATE_WINNER_CONTROLS_PRESERVATION.md)
+- [UX-005.5 AviCell Post-Apply Integrity Verification](../../../domain/PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
@@ -59,6 +60,16 @@ navigation. The isolated PostgreSQL proof verifies one selected prospective
 `NEW / APPLY`, sibling `EXCLUDE`, reload/reanalysis persistence and no UUID;
 the existing target-known proof retains required `titleDecision`. AviCell v3
 remains unmodified with its two Owner business choices pending.
+
+## UX-005.5 — AviCell post-Apply integrity verification
+
+The post-Apply, read-only verification confirms AviCell v3 as the first
+`COMPLETE / APPLIED` baseline: 744 physical observations reconcile to 742
+created CatalogItems, two explicit duplicate sibling exclusions, 742
+Resolution/Memory records and 742 publication audit events. It also records
+two closure blockers without repair: row 411 published with price/cost zero,
+and new Brand values remain pending rather than canonical. See the
+[full verification](../../../domain/PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md).
 
 ## UX-002E / UX-002E.1 missing-data context
 

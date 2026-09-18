@@ -340,3 +340,13 @@ server-side el reanálisis, decisiones y Apply del Batch que reemplaza, mientras
 conserva el snapshot precedente como evidencia. No hay corrección automática de
 `V2314 COPIA` ni cambio de AviCell v2 durante el proof. Ver
 [UX-005.3](PRICE_LIST_UX_0053_EXCEPTION_TO_SOURCE_CORRECTION_NAVIGATION.md).
+
+## UX-005.5 — Verificación post-Apply de AviCell v3
+
+El estado histórico anterior a publicación sigue siendo evidencia válida de
+v2. La inspección posterior, igualmente read-only, confirma que v3 es el
+primer baseline `COMPLETE / APPLIED` de AviCell y reconcilia exactamente 744
+observaciones con 742 outcomes efectivos. No obstante, no autoriza cierre:
+una observación de precio/costo cero llegó a Catalog y las Brand nuevas fueron
+capturadas como pending, no como canónicas. Ver
+[UX-005.5](PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md).
