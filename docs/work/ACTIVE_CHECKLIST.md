@@ -1,15 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-003.4 Required Effective Value Enforcement
+Milestone / Functional Goal: PBI-041 — UX-004 Catalog Operational Authorization Audit
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — required-effective-value enforcement is materialized and QA proven; no Catalog mutation occurs before Apply.
+Status: Owner Decision Ready — operational authorization boundaries audited; no roles, capabilities, product behavior or data changed.
 WIP: 1/1
-Progress: 8 / 8 UX-003.4 blocks completed.
-Current: Owner review of the local UX-003.4 checkpoint.
-Next: await a new Owner decision; do not push, open a PR, merge, deploy or start another UX slice.
+Progress: 7 / 7 UX-004 audit blocks completed.
+Current: Owner review of the UX-004 authorization matrix and its proposed implementation slices.
+Next: await an explicit Owner decision; do not change roles, capabilities, product, migrations, push, open a PR, merge, deploy or start another UX slice.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
+
+## Current checkpoint — UX-004 Catalog Operational Authorization Audit
+
+- [x] Reconfirm the current PBI, capability registry, contextual authorization and session projection without changing runtime or data.
+- [x] Trace ordinary price-list read, reference-cost read/write, item, price, Branch override, bulk, source, configuration and retirement operations to server guards.
+- [x] Confirm direct client access cannot bypass protected operations; identify only authorization-granularity gaps.
+- [x] Separate ordinary list access from cost, item writes, bulk prepare/apply, clear, source delete and policy governance in an Owner-readable matrix.
+- [x] Record UX4-001 through UX4-018, compatibility/backfill rules and the minimal V1 capability target without assigning any role.
+- [x] Preserve ADR-013 level-2 controls and register Category/Brand hard-delete breadth as existing debt, outside this audit's implementation scope.
+- [x] Reconcile PBI-041, UX-003 cross-reference and evidence index; stop for Owner decision with zero DB writes and no remote action.
 
 ## Current checkpoint — UX-003.4 Required Effective Value Enforcement
 

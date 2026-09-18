@@ -17,6 +17,7 @@ authority.
 - [UX-002 Happy-Path Friction Audit](../../../domain/PRICE_LIST_UX_002_HAPPY_PATH_FRICTION_AUDIT.md)
 - [UX-002E Batch Context Defaults Friction Audit](../../../domain/PRICE_LIST_UX_002E_BATCH_CONTEXT_DEFAULTS_FRICTION_AUDIT.md)
 - [UX-003 Bulk Catalog Field Policy Audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md)
+- [UX-004 Catalog Operational Authorization Audit](../../../domain/PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
@@ -53,6 +54,16 @@ repetidos en escritorio, `768 px` y `640 px`, claro/oscuro, sin mutar Catalog,
 versiones ni ejecutar Save/Analyze/Apply.
 See the
 [UX-003 audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md).
+
+## UX-004 Catalog operational authorization audit
+
+UX-004 is a documentation-only audit of the operational authorization boundary.
+It verifies server-side contextual guards for the current List Price, Catalog,
+cost, bulk and sensitive operations, then records the smallest proposed split
+between ordinary price-list access and higher-risk work. It does not change a
+role, user, session, API, migration, CatalogItem or SupplierCatalogVersion.
+The proposed next decisions and compatibility mapping are in the
+[UX-004 audit](../../../domain/PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md).
 
 UX-003.4 now enforces `REQUIRED` from the effective resulting value rather
 than raw supplier cells. Analyze records typed attention; Apply rereads the

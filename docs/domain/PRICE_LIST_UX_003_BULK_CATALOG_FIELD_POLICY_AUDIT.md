@@ -1,5 +1,9 @@
 # UX-003 — Bulk Catalog Field Policy Audit
 
+> Follow-up boundary: [UX-004 Catalog Operational Authorization Audit](PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md)
+> records the separate Role → capability decision surface. It does not change
+> the effective-field policy, its cost redaction or Composer behavior.
+
 ## Estado del documento
 
 - **Estado:** UX-003.1 authority, UX-003.2 configuration, UX-003.3 Composer consumption y UX-003.4 required-effective enforcement materialized locally for Owner Review.
