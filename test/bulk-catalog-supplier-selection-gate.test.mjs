@@ -90,7 +90,7 @@ test('contextual supplier creation returns to the pending new-load flow while pe
   assert.doesNotMatch(ui, /setBrowseSourceId\(created\.sourceId\); clearNewLoad\(\)/u);
   assert.match(service, /createDraft[\s\S]*?const sourceId = requiredUuid\(body\.sourceId, 'sourceId'\)/u);
   assert.doesNotMatch(service, /replaceDraft[\s\S]*?sourceId: requiredUuid/u);
-  assert.match(repository, /updateTable\('catalog_supplier_catalog_versions'\)\.set\(\{ description: input\.description, completeness: input\.completeness/u);
+  assert.match(repository, /updateTable\('catalog_supplier_catalog_versions'\)\.set\(\{ composer_mode: input\.mode, description: input\.description, completeness: input\.completeness/u);
   assert.doesNotMatch(repository, /updateTable\('catalog_supplier_catalog_versions'\)\.set\(\{[^}]*source_id/u);
 });
 
@@ -109,4 +109,16 @@ test('Review list keeps draft recovery secondary and preserves result-first/rean
   assert.match(source, /current\?\.lifecycle === 'INGESTED'[\s\S]*?Reanalizar versión/u);
   assert.match(source, /setGridExpanded\(false\); resetCoverageDetails\(\); setReconciliationView\('ATTENTION'\)/u);
   assert.match(source, /aria-busy=\{busy\}/u);
+});
+
+test('capture mode is an advanced restricted-update option, not a primary radio choice', async () => {
+  const source = await readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8');
+  assert.match(source, /setMode\('FULL'\)/u);
+  assert.match(source, /Opciones avanzadas/u);
+  assert.match(source, /Solo actualizar artículos identificados/u);
+  assert.match(source, /No permite crear artículos nuevos\./u);
+  assert.match(source, /aria-expanded=\{advancedOptionsOpen\} aria-controls="capture-mode-advanced-options"/u);
+  assert.match(source, /aria-describedby="capture-mode-advanced-description"/u);
+  assert.match(source, /event\.target\.checked \? 'COMPACT' : 'FULL'/u);
+  assert.doesNotMatch(source, /<legend>Modo de captura<\/legend>/u);
 });

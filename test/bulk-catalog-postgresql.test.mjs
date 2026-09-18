@@ -91,11 +91,16 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const missingCompleteness = { ...v1Input }; delete missingCompleteness.completeness;
     assert.throws(() => rawService.createDraft(ctxA, missingCompleteness), (error) => error instanceof CatalogInputError && error.parameter === 'completeness');
     assert.throws(() => rawService.createDraft(ctxA, { ...v1Input, clientRequestId: randomUUID(), completeness: 'INVALID' }), (error) => error instanceof CatalogInputError && error.parameter === 'completeness');
-    const draft = await service.createDraft(ctxA, v1Input);
+    let draft = await service.createDraft(ctxA, v1Input);
     const replay = await service.createDraft(ctxA, v1Input);
     assert.equal(replay.versionId, draft.versionId);
     await assert.rejects(service.createDraft(ctxA, { ...v1Input, rawPayload: 'synthetic-conflicting-retry' }), CatalogConflictError);
     assert.deepEqual([draft.sequenceNumber, draft.sourceRevision, draft.description, draft.completeness], [1, 'v1', 'Primera lista', 'COMPLETE']);
+    const compactDraft = await service.replaceDraft(ctxA, draft.versionId, { expectedVersion: draft.version, mode: 'COMPACT', completeness: 'COMPLETE', columnSignature: 'c'.repeat(64), rawPayload: 'compact-draft', rows });
+    assert.equal(compactDraft.mode, 'COMPACT');
+    const restoredFullDraft = await service.replaceDraft(ctxA, compactDraft.versionId, { expectedVersion: compactDraft.version, mode: 'FULL', completeness: 'COMPLETE', columnSignature: 'a'.repeat(64), rawPayload: 'full-draft', rows });
+    assert.equal((await service.getVersion({ tenantId: tenantA, branchId: branchA }, restoredFullDraft.versionId, true)).mode, 'FULL');
+    draft = restoredFullDraft;
     assert.throws(() => rawService.replaceDraft(ctxA, draft.versionId, { expectedVersion: draft.version, mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'missing-completeness', rows }), (error) => error instanceof CatalogInputError && error.parameter === 'completeness');
     assert.throws(() => rawService.replaceDraft(ctxA, draft.versionId, { expectedVersion: draft.version, mode: 'FULL', completeness: null, columnSignature: 'a'.repeat(64), rawPayload: 'invalid-completeness', rows }), (error) => error instanceof CatalogInputError && error.parameter === 'completeness');
 
@@ -123,6 +128,13 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal((await service.deleteSource(ctxA, safeSource.sourceId, deletionInput, new Date().toISOString())).deletedAt, deleted.deletedAt);
     assert.equal(Number((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantA])).rows[0].count), catalogItemsBeforeDelete);
     assert.equal(Number((await admin.query(`select count(*)::int as count from catalog_supplier_source_deletion_events where tenant_id = $1 and source_id = $2`, [tenantA, safeSource.sourceId])).rows[0].count), 1);
+    const compactSource = await service.createSource(ctxA, { name: 'Proveedor modo restringido' });
+    const compactOnlyDraft = await service.createDraft(ctxA, { sourceId: compactSource.sourceId, description: 'Modo restringido', clientRequestId: randomUUID(), mode: 'COMPACT', columnSignature: 'f'.repeat(64), rawPayload: 'compact-only', rows: [fullRow(902)] });
+    assert.equal((await service.getVersion({ tenantId: tenantA, branchId: branchA }, compactOnlyDraft.versionId, true)).mode, 'COMPACT');
+    const compactOnlyAnalyzed = await service.analyze(ctxA, compactOnlyDraft.versionId, { expectedVersion: compactOnlyDraft.version });
+    assert.deepEqual([compactOnlyAnalyzed.mode, compactOnlyAnalyzed.lifecycle, compactOnlyAnalyzed.batch.counts.INVALID], ['COMPACT', 'INGESTED', 1]);
+    assert.equal(compactOnlyAnalyzed.rows[0].classification, 'INVALID');
+    await assert.rejects(service.replaceDraft(ctxA, compactOnlyDraft.versionId, { expectedVersion: compactOnlyAnalyzed.version, mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'must-not-reinterpret', rows: [fullRow(902)] }), CatalogConflictError);
     assert.equal(draft.rows.every((row) => row.proposal.referenceCostMinor === null), true);
     const costVisibleDraft = await service.getVersion({ tenantId: tenantA, branchId: branchA }, draft.versionId, true);
     assert.equal(costVisibleDraft.rows.some((row) => row.proposal.referenceCostMinor !== null), true);
@@ -485,7 +497,8 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.deepEqual(identitiesAfter.rows, historicalIdentities.rows);
 
     await admin.query(`update catalog_supplier_version_raw_payloads set retained_until = now() - interval '1 day' where tenant_id = $1`, [tenantA]);
-    assert.equal(await service.purgeExpiredRaw(ctxA), 14);
+    const rawBeforePurge = await admin.query(`select count(*)::int as count from catalog_supplier_version_raw_payloads where tenant_id = $1 and payload_text is not null`, [tenantA]);
+    assert.equal(await service.purgeExpiredRaw(ctxA), rawBeforePurge.rows[0].count);
     const raw = await admin.query(`select count(*) filter (where payload_text is not null)::int as retained from catalog_supplier_version_raw_payloads where tenant_id = $1`, [tenantA]);
     assert.equal(raw.rows[0].retained, 0);
 
