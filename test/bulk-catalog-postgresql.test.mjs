@@ -577,6 +577,27 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const tripleReady = await service.decide(ctxA, tripleDuplicate.versionId, thirdWinner.rowDecisionId, { expectedRowVersion: thirdWinner.version, decision: 'APPLY', targetItemId: thirdWinner.targetItemId, titleDecision: thirdWinner.titleDecision });
     assert.equal(tripleReady.rows.filter((row) => row.decision === 'APPLY' && row.targetItemId === thirdWinner.targetItemId).length, 1);
     assert.equal(tripleReady.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 2);
+
+    // A first-seen supplier identity has no Catalog UUID yet. The Owner may still
+    // choose one contradictory physical observation as the single NEW row.
+    const prospectiveDuplicateRow = { ...duplicateSeedRow, supplierItemCode: 'SUP-NEW-DUPLICATE', supplierObservedTitle: 'Pantalla duplicados prospectiva', title: 'Pantalla duplicados prospectiva' };
+    const prospectiveDuplicate = await service.createDraft(ctxA, { sourceId: duplicateSource.sourceId, description: 'Duplicado contradictorio sin CatalogItem', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'duplicate-prospective', rows: [{ ...prospectiveDuplicateRow, basePriceMinor: 119900, referenceCostMinor: 45000 }, { ...prospectiveDuplicateRow, basePriceMinor: 120000, referenceCostMinor: 46000 }] });
+    const prospectiveAnalyzed = await service.analyze(ctxA, prospectiveDuplicate.versionId, { expectedVersion: prospectiveDuplicate.version });
+    assert.equal(prospectiveAnalyzed.batch.lifecycle, 'RECONCILING');
+    assert.equal(prospectiveAnalyzed.rows.every((row) => row.targetItemId === null && row.titleDecision === null && row.decision === 'UNRESOLVED' && row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')), true);
+    await assert.rejects(service.publish(ctxA, prospectiveDuplicate.versionId, { expectedVersion: prospectiveAnalyzed.version, clientRequestId: randomUUID() }, true), CatalogConflictError);
+    await assert.rejects(service.decide(ctxA, prospectiveDuplicate.versionId, prospectiveAnalyzed.rows[0].rowDecisionId, { expectedRowVersion: prospectiveAnalyzed.rows[0].version, decision: 'APPLY', targetItemId: randomUUID(), titleDecision: null }), CatalogConflictError);
+    const prospectiveReady = await service.decide(ctxA, prospectiveDuplicate.versionId, prospectiveAnalyzed.rows[0].rowDecisionId, { expectedRowVersion: prospectiveAnalyzed.rows[0].version, decision: 'APPLY', targetItemId: null, titleDecision: null });
+    assert.equal(prospectiveReady.batch.lifecycle, 'READY');
+    assert.equal(prospectiveReady.rows.filter((row) => row.classification === 'NEW' && row.decision === 'APPLY' && row.targetItemId === null).length, 1);
+    assert.equal(prospectiveReady.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 1);
+    assert.equal(prospectiveReady.rows.every((row) => !row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')), true);
+    const prospectiveReloaded = await service.getVersion({ tenantId: tenantA, branchId: branchA }, prospectiveDuplicate.versionId, true);
+    assert.deepEqual(prospectiveReloaded.rows.map((row) => [row.classification, row.decision, row.targetItemId, row.titleDecision]), prospectiveReady.rows.map((row) => [row.classification, row.decision, row.targetItemId, row.titleDecision]));
+    const prospectiveReanalyzed = await service.analyze(ctxA, prospectiveDuplicate.versionId, { expectedVersion: prospectiveReady.version });
+    assert.equal(prospectiveReanalyzed.batch.lifecycle, 'READY');
+    assert.equal(prospectiveReanalyzed.rows.filter((row) => row.classification === 'NEW' && row.decision === 'APPLY' && row.targetItemId === null).length, 1);
+    assert.equal(prospectiveReanalyzed.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 1);
     assert.equal((await service.listSources({ tenantId: tenantB, branchId: branchB })).length, 1);
 
     const candidateSource = await service.createSource(ctxB, { name: 'Proveedor Candidate QA' });

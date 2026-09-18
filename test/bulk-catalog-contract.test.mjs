@@ -95,6 +95,14 @@ test('duplicate resolution groups the SupplierVersion row DTO shape', () => {
   );
 });
 
+test('duplicate winner eligibility permits one explicit existing or prospective identity, never a mixed group', () => {
+  const base = { decision: 'UNRESOLVED', errors: ['DUPLICATE_VALUE_CONTRADICTION'], titleDecision: null };
+  assert.equal(composerModel.canChooseDuplicateWinner([{ ...base, targetItemId: 'item-1' }, { ...base, targetItemId: 'item-1' }]), true);
+  assert.equal(composerModel.canChooseDuplicateWinner([{ ...base, targetItemId: null }, { ...base, targetItemId: null }]), true);
+  assert.equal(composerModel.canChooseDuplicateWinner([{ ...base, targetItemId: 'item-1' }, { ...base, targetItemId: null }]), false);
+  assert.equal(composerModel.canChooseDuplicateWinner([{ ...base, targetItemId: null }, { ...base, targetItemId: null, titleDecision: 'KEEP_CURRENT' }]), false);
+});
+
 test('new-load gate requires an explicit supplier and load intent', () => {
   assert.deepEqual(composerModel.createNewLoadGateState(), { supplierId: null, completeness: null });
   assert.equal(composerModel.canContinueNewLoadGate({ supplierId: null, completeness: null }), false);
@@ -346,7 +354,8 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /aria-expanded=\{additionalOpen\}/u);
   assert.match(ui, /aria-controls=\{additionalPanelId\}/u);
   assert.match(ui, /const \[gridExpanded, setGridExpanded\] = useState\(true\)/u);
-  assert.match(ui, /setGridExpanded\(true\);\n    const targetColumns/u);
+  assert.match(ui, /const plan = planSourceRowNavigation\(current\?\.rows \?\? \[\], row\.rowDecisionId, columnKey, activeColumns, mode === 'COMPACT' \? compactColumns : policyColumns\.all\);/u);
+  assert.match(ui, /if \(plan\.requiresAllColumns\) setViewPreset\('ALL'\);/u);
   assert.match(ui, /setGridExpanded\(false\); resetCoverageDetails\(\);/u);
   assert.match(ui, /setGridExpanded\(value\.lifecycle === 'DRAFT'\);/u);
   assert.match(ui, /aria-expanded=\{gridExpanded\} aria-controls="bulk-catalog-grid"/u);
@@ -393,6 +402,9 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /duplicateResolutionCard/u);
   assert.match(ui, /Encontramos este artículo/u);
   assert.match(ui, /Usar fila \{member\.rowNumber\}/u);
+  assert.match(ui, /canPrepareBulk && canChooseDuplicateWinner\(group\.members\)/u);
+  assert.match(ui, /aria-label=\{`Usar fila \$\{member\.rowNumber\}`\}/u);
+  assert.match(ui, /aria-label=\{`Ir a fila \$\{member\.rowNumber\}`\}/u);
   assert.match(ui, /resolve\(row\.rowDecisionId, row\.version, 'APPLY', row\.targetItemId, row\.titleDecision\)/u);
   assert.match(ui, /Ver detalles/u);
   assert.match(ui, /Duplicado resuelto/u);
@@ -401,7 +413,7 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /!row\.errors\.includes\('DUPLICATE_VALUE_CONTRADICTION'\)/u);
   assert.match(ui, /current\.batch\.lifecycle === 'APPLIED' \? 'Resultado aplicado' : 'Reconciliación'/u);
   assert.match(ui, /current\.batch\.lifecycle !== 'APPLIED' && \(compatibleSuggestionCount > 0 \|\| blockedRowCount > 0\) \? <div className=\{styles\.groupActions\}/u);
-  assert.match(ui, /current\.batch\.lifecycle !== 'APPLIED' \? <div>\{row\.decision === 'EXCLUDE'/u);
+  assert.match(ui, /current\.batch\.lifecycle !== 'APPLIED' \? <div>\{canPrepareBulk && correctionFieldForRow\(row\) && row\.decision === 'UNRESOLVED'/u);
   assert.doesNotMatch(ui, /Proveedor:\s*\{row\.supplierObservedTitle/u);
   assert.match(ui, /Retirar artículos creados por este lote/u);
   assert.match(ui, /No es una reversión del lote/u);
