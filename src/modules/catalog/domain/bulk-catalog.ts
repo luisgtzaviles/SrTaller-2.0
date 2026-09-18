@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import { CatalogInputError, normalizeCatalogIdentifier } from './catalog-item.js';
 import type { CatalogIdentifierScheme, CatalogItemKind } from './catalog-item.js';
+import type { CatalogFieldPolicyKey, CatalogFieldPolicyLevelsByKey } from './catalog-field-policy.js';
 
 export const BULK_CATALOG_REQUIRED_LIMIT = 1_000;
 export const BULK_CATALOG_TARGET_LIMIT = 10_000;
@@ -41,6 +42,50 @@ export type BulkCatalogRowInput = Readonly<{
   basePriceMinor: number | null;
   referenceCostMinor: number | null;
 }>;
+
+/**
+ * The authoritative state preserved by a safely resolved CatalogItem. Values
+ * are deliberately presence-only: validation must not return protected values
+ * (notably reference cost) to a caller that cannot read them.
+ */
+export type BulkCatalogEffectiveTarget = Readonly<{
+  kind: CatalogItemKind;
+  title: string;
+  description: string | null;
+  categoryPresent: boolean;
+  brandPresent: boolean;
+  basePriceMinor: number | null;
+  referenceCostMinor: number | null;
+}>;
+
+export const missingRequiredEffectiveValueReason = (field: CatalogFieldPolicyKey): string => `MISSING_REQUIRED_EFFECTIVE_VALUE:${field}`;
+
+/**
+ * Required means the resulting Catalog value exists. A source row may provide
+ * it explicitly; a safe resolved target may provide it only when the current
+ * mutation preserves that canonical value. Supplier history is never input to
+ * this calculation.
+ */
+export function missingRequiredEffectiveFields(
+  levels: CatalogFieldPolicyLevelsByKey,
+  proposal: BulkCatalogRowInput,
+  target: BulkCatalogEffectiveTarget | null,
+): readonly CatalogFieldPolicyKey[] {
+  const present: Readonly<Record<CatalogFieldPolicyKey, boolean>> = Object.freeze({
+    kind: proposal.kind !== null || target !== null,
+    title: proposal.title !== null || Boolean(target?.title),
+    description: proposal.description !== null || target?.description !== null,
+    category: proposal.category !== null || Boolean(target?.categoryPresent),
+    brand: proposal.brand !== null || Boolean(target?.brandPresent),
+    supplierItemCode: proposal.supplierItemCode !== null,
+    sku: proposal.sku !== null,
+    barcode: proposal.barcode !== null,
+    referenceCost: proposal.referenceCostMinor !== null || target?.referenceCostMinor !== null,
+    basePrice: proposal.basePriceMinor !== null || target?.basePriceMinor !== null,
+  });
+  return Object.freeze((Object.keys(levels) as CatalogFieldPolicyKey[])
+    .filter((field) => levels[field] === 'REQUIRED' && !present[field]));
+}
 
 const kinds = new Set<CatalogItemKind>(['PART', 'PRODUCT', 'SERVICE', 'SUPPLY']);
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
@@ -98,7 +143,7 @@ export function parseBulkRows(value: unknown, mode: BulkCatalogMode): readonly B
     const sku = normalizeIdentifier('SKU', optionalText(row.sku, `rows.${index}.sku`, 64));
     const barcode = normalizeIdentifier('BARCODE', optionalText(row.barcode, `rows.${index}.barcode`, 64));
     const parsed = Object.freeze({
-      kind: catalogKind(row.kind, mode === 'COMPACT'),
+      kind: catalogKind(row.kind, true),
       supplierObservedTitle: optionalObservedText(row.supplierObservedTitle ?? row.title, `rows.${index}.supplierObservedTitle`, 240),
       title: optionalText(row.title, `rows.${index}.title`, 240),
       description: optionalText(row.description, `rows.${index}.description`, 4_000),
@@ -110,7 +155,8 @@ export function parseBulkRows(value: unknown, mode: BulkCatalogMode): readonly B
       referenceCostMinor: money(row.referenceCostMinor, `rows.${index}.referenceCostMinor`),
     });
     if (!sku && !barcode && !parsed.supplierItemCode && mode === 'COMPACT') throw new CatalogInputError(`rows.${index}.identifier`);
-    if (mode === 'FULL' && (!parsed.kind || !parsed.title || !parsed.category || parsed.basePriceMinor === null)) throw new CatalogInputError(`rows.${index}.required`);
+    /** FULL domain requirements are checked from the effective value during
+     * Analyze, after a safe target can be known. COMPACT still needs identity. */
     return parsed;
   }));
 }

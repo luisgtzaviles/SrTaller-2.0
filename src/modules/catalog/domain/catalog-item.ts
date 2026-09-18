@@ -67,6 +67,16 @@ export class CatalogConflictError extends Error {
   constructor() { super('Catalog command conflicts with current state.'); this.name = 'CatalogConflictError'; }
 }
 
+/** The current tenant policy cannot be satisfied by the resulting Catalog
+ * value.  It intentionally carries field keys only, never protected values. */
+export class CatalogRequiredEffectiveValueError extends CatalogConflictError {
+  override readonly code = 'CATALOG_REQUIRED_EFFECTIVE_VALUE_MISSING';
+  constructor(readonly affectedRows: number, readonly missingFields: readonly string[]) {
+    super();
+    this.name = 'CatalogRequiredEffectiveValueError';
+  }
+}
+
 export class CatalogCoverageReviewRequiredError extends CatalogConflictError {
   override readonly code = 'CATALOG_COVERAGE_REVIEW_REQUIRED';
   constructor(readonly coverage: Readonly<{ baselineCount: number; currentCount: number; notObservedCount: number; baselineVersionId: string }>) {

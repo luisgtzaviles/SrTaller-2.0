@@ -5,10 +5,12 @@ import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExec
 import type { InternalDatabasePersistenceConnection, InternalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type { DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
-import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogSupplierDeleteNotAllowedError, CatalogSupplierVersionAlreadyExistsError, CatalogUnavailableError, catalogKindCapabilities, catalogKindSkuPrefix } from '../../domain/catalog-item.js';
+import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogRequiredEffectiveValueError, CatalogSupplierDeleteNotAllowedError, CatalogSupplierVersionAlreadyExistsError, CatalogUnavailableError, catalogKindCapabilities, catalogKindSkuPrefix } from '../../domain/catalog-item.js';
 import type { CatalogItemKind } from '../../domain/catalog-item.js';
-import { normalizeIdentifier, normalizeReference, normalizeRowErrors, retentionDate, sha256 } from '../../domain/bulk-catalog.js';
-import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogDecision, BulkCatalogMatchOrigin, BulkCatalogRowInput, BulkCatalogTitleDecision, SupplierCatalogCompleteness } from '../../domain/bulk-catalog.js';
+import { missingRequiredEffectiveFields, missingRequiredEffectiveValueReason, normalizeIdentifier, normalizeReference, normalizeRowErrors, retentionDate, sha256 } from '../../domain/bulk-catalog.js';
+import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogDecision, BulkCatalogEffectiveTarget, BulkCatalogMatchOrigin, BulkCatalogRowInput, BulkCatalogTitleDecision, SupplierCatalogCompleteness } from '../../domain/bulk-catalog.js';
+import { productDefaultCatalogFieldPolicyLevels, validateCatalogFieldPolicyLevels } from '../../domain/catalog-field-policy.js';
+import type { CatalogFieldPolicyLevelsByKey } from '../../domain/catalog-field-policy.js';
 import { BULK_CATALOG_MATCH_ALGORITHM_VERSION, buildSupplierHistoryTokenIndex, matchSupplierHistoryCandidates } from '../../domain/bulk-catalog-candidate-matching.js';
 import type { SupplierHistoryCandidate } from '../../domain/bulk-catalog-candidate-matching.js';
 import { assessCompleteBaselinePlausibility } from '../../domain/supplier-coverage.js';
@@ -19,6 +21,24 @@ type BulkTables = 'catalog_supplier_sources' | 'catalog_supplier_catalog_version
 type BulkExecutor = InternalDatabasePersistenceExecutor<'catalog'>;
 const emptyCounts = (): Record<BulkCatalogClassification, number> => ({ NEW: 0, UPDATE: 0, REACTIVATE: 0, UNCHANGED: 0, CANDIDATE: 0, PENDING_REFERENCE: 0, AMBIGUOUS: 0, CONFLICT: 0, INVALID: 0 });
 const serializeRowErrors = (value: unknown): string => JSON.stringify(normalizeRowErrors(value));
+const isRequiredEffectiveValueReason = (value: string): boolean => value.startsWith('MISSING_REQUIRED_EFFECTIVE_VALUE:');
+
+async function readEffectiveFieldPolicy(db: BulkExecutor, tenantId: string): Promise<CatalogFieldPolicyLevelsByKey> {
+  const head = await db.selectFrom('catalog_field_policy_heads').select('field_levels').where('tenant_id', '=', tenantId).executeTakeFirst();
+  return validateCatalogFieldPolicyLevels(head?.field_levels ?? productDefaultCatalogFieldPolicyLevels());
+}
+
+function effectiveTarget(item: Readonly<{ kind: CatalogItemKind; title: string; description: string | null; category_id: string | null; pending_category_value_id: string | null; brand_id: string | null; pending_brand_value_id: string | null }>, currentPrices: ReadonlyMap<string, number>, currentCosts: ReadonlyMap<string, number>, itemId: string): BulkCatalogEffectiveTarget {
+  return Object.freeze({
+    kind: item.kind,
+    title: item.title,
+    description: item.description,
+    categoryPresent: item.category_id !== null || item.pending_category_value_id !== null,
+    brandPresent: item.brand_id !== null || item.pending_brand_value_id !== null,
+    basePriceMinor: currentPrices.get(itemId) ?? null,
+    referenceCostMinor: currentCosts.get(itemId) ?? null,
+  });
+}
 
 function translate(error: unknown): Error {
   if (error instanceof CatalogInputError || error instanceof CatalogNotFoundError || error instanceof CatalogConflictError || error instanceof CatalogAuthorizationChangedError) return error;
@@ -282,6 +302,7 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       const costRows = await db.selectFrom('catalog_reference_cost_revisions').select(['item_id', 'amount_minor']).where('tenant_id', '=', context.tenantId).orderBy('effective_from', 'desc').orderBy('revision_id', 'desc').execute();
       const currentPrices = new Map<string, number>(); for (const value of priceRows) if (!currentPrices.has(value.item_id)) currentPrices.set(value.item_id, Number(value.amount_minor));
       const currentCosts = new Map<string, number>(); for (const value of costRows) if (!currentCosts.has(value.item_id)) currentCosts.set(value.item_id, Number(value.amount_minor));
+      const effectivePolicy = await readEffectiveFieldPolicy(db, context.tenantId);
       const counts = emptyCounts(); let unresolvedCount = 0;
       const analyzedWrites: Array<Insertable<DatabaseSchema['catalog_update_row_decisions']>> = [];
       for (const row of rows) {
@@ -324,7 +345,15 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
         else if (!target && current.composer_mode === 'COMPACT') { classification = 'INVALID'; errors.push('COMPACT_ROW_TARGET_NOT_FOUND'); }
         else if (!target) {
           const categoryKnown = Boolean(proposedCategory); const brandKnown = !p.brand || Boolean(proposedBrand);
-          if (categoryKnown && brandKnown) {
+          /** Tenant policy determines whether a value is required; an unknown
+           * optional Brand must not turn an otherwise valid new item into a
+           * reference-resolution gate. */
+          if (p.kind === null || p.title === null || p.category === null) {
+            /** There is no identity/reference conflict to resolve yet. Treat it
+             * as a prospective NEW row so the effective-required reason is
+             * precise rather than hiding it behind a reference pseudo-error. */
+            classification = 'NEW'; decision = 'APPLY';
+          } else if (categoryKnown && brandKnown) {
             const candidateResult = matchSupplierHistoryCandidates(p, categoryIdentity, brandIdentity, candidateIndex); candidateMatches = candidateResult.candidates;
             if (candidateMatches.length > 1) { classification = 'AMBIGUOUS'; warnings.push('MULTIPLE_BOUNDED_CANDIDATES'); matchOrigin = 'CANDIDATE'; }
             else if (candidateMatches.length === 1) { classification = 'CANDIDATE'; warnings.push('CANDIDATE_MATCH_REQUIRES_OWNER_DECISION'); matchOrigin = 'CANDIDATE'; }
@@ -339,13 +368,30 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
           classification = 'UNCHANGED'; decision = 'EXCLUDE'; target = null; trusted = false; matchOrigin = 'NONE'; candidateMatches = Object.freeze([]);
           errors.length = 0; warnings.push(duplicateGroup!.exact ? 'DUPLICATE_EXACT_CONSOLIDATED' : 'DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED');
         }
+        /** Evaluate only effective rows. Excluded duplicates are evidence, not
+         * Catalog mutations. Identity/reference ambiguity keeps its existing
+         * precedence and is resolved before policy enforcement. */
+        if (!duplicateLoser && errors.length === 0 && (target !== null || classification === 'NEW')) {
+          const missing = missingRequiredEffectiveFields(effectivePolicy, p, target ? effectiveTarget(target, currentPrices, currentCosts, target.item_id) : null);
+          if (missing.length > 0) {
+            errors.push(...missing.map(missingRequiredEffectiveValueReason));
+            decision = 'UNRESOLVED';
+          }
+        }
         counts[classification] += 1; if (decision === 'UNRESOLVED') unresolvedCount += 1;
         const titleDecision: BulkCatalogTitleDecision | null = duplicateLoser ? null : target && p.title !== null && p.title !== target.title ? 'KEEP_CURRENT' : null;
         analyzedWrites.push({ tenant_id: row.tenant_id, row_decision_id: row.row_decision_id, batch_id: row.batch_id, listing_id: row.listing_id, row_number: row.row_number, proposal: row.proposal, classification, decision, title_decision: titleDecision, target_item_id: target?.item_id ?? null, expected_item_version: target?.version ?? null, preselected_by_memory: trusted, match_origin: matchOrigin, match_algorithm_version: BULK_CATALOG_MATCH_ALGORITHM_VERSION, candidate_matches: JSON.stringify(candidateMatches), errors: serializeRowErrors(errors), warnings: JSON.stringify(warnings), lock_version: row.lock_version + 1, updated_at: input.occurredAt });
       }
       for (let offset = 0; offset < analyzedWrites.length; offset += 500) await db.insertInto('catalog_update_row_decisions').values(analyzedWrites.slice(offset, offset + 500)).onConflict((conflict) => conflict.columns(['tenant_id', 'row_decision_id']).doUpdateSet((eb) => ({ classification: eb.ref('excluded.classification'), decision: eb.ref('excluded.decision'), title_decision: eb.ref('excluded.title_decision'), target_item_id: eb.ref('excluded.target_item_id'), expected_item_version: eb.ref('excluded.expected_item_version'), preselected_by_memory: eb.ref('excluded.preselected_by_memory'), match_origin: eb.ref('excluded.match_origin'), match_algorithm_version: eb.ref('excluded.match_algorithm_version'), candidate_matches: eb.ref('excluded.candidate_matches'), errors: eb.ref('excluded.errors'), warnings: eb.ref('excluded.warnings'), lock_version: eb.ref('excluded.lock_version'), updated_at: input.occurredAt }))).execute();
       const content = sha256(rows.map((row) => row.proposal));
-      if (current.lifecycle === 'DRAFT') await db.updateTable('catalog_supplier_catalog_versions').set({ lifecycle: 'INGESTED', content_sha256: content, ingested_at: input.occurredAt, lock_version: current.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).execute();
+      /** A Draft with only missing effective values remains editable so the
+       * established UX-002E helper can repair it without inventing a lifecycle.
+       * Any identity/reference decision retains the existing INGESTED review
+       * path and its explicit resolution controls. */
+      const analyzedErrors = (row: Insertable<DatabaseSchema['catalog_update_row_decisions']>): readonly string[] => normalizeRowErrors(typeof row.errors === 'string' ? JSON.parse(row.errors) : row.errors);
+      const onlyRequiredValueAttention = analyzedWrites.some((row) => analyzedErrors(row).some(isRequiredEffectiveValueReason))
+        && analyzedWrites.every((row) => row.decision !== 'UNRESOLVED' || analyzedErrors(row).every(isRequiredEffectiveValueReason));
+      if (current.lifecycle === 'DRAFT' && !onlyRequiredValueAttention) await db.updateTable('catalog_supplier_catalog_versions').set({ lifecycle: 'INGESTED', content_sha256: content, ingested_at: input.occurredAt, lock_version: current.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).execute();
       await db.updateTable('catalog_update_batches').set({ lifecycle: unresolvedCount === 0 ? 'READY' : 'RECONCILING', counts, analysis_sha256: sha256({ content, counts }), lock_version: batch.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).execute(); if (!await guardsCurrent(context, tx)) throw new CatalogAuthorizationChangedError(); return (await readVersion(db, context.tenantId, input.versionId, input.includeReferenceCost))!;
     });
   }
@@ -356,6 +402,7 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       const row = await db.selectFrom('catalog_update_row_decisions').selectAll().where('tenant_id', '=', context.tenantId).where('row_decision_id', '=', input.rowDecisionId).where('batch_id', '=', batch.batch_id).forUpdate().executeTakeFirst(); if (!row) throw new CatalogNotFoundError(); if (row.lock_version !== input.expectedRowVersion) throw new CatalogConflictError();
       const duplicateValueContradiction = normalizeRowErrors(row.errors).includes('DUPLICATE_VALUE_CONTRADICTION');
       let classification = row.classification; let expected = row.expected_item_version; let targetItemId = input.targetItemId ?? row.target_item_id; let selectedTitleDecision: BulkCatalogTitleDecision | null = row.title_decision;
+      let selectedEffectiveTarget: BulkCatalogEffectiveTarget | null = null;
       if (duplicateValueContradiction) {
         if (input.decision !== 'APPLY' || !row.target_item_id || input.targetItemId !== row.target_item_id || (input.titleDecision !== null && input.titleDecision !== row.title_decision)) throw new CatalogConflictError();
         const rowKey = supplierMemoryKeys(row.proposal as BulkCatalogRowInput)[0];
@@ -378,6 +425,15 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
           db.selectFrom('catalog_base_price_revisions').select('amount_minor').where('tenant_id', '=', context.tenantId).where('item_id', '=', input.targetItemId).orderBy('effective_from', 'desc').orderBy('revision_id', 'desc').executeTakeFirst(),
           db.selectFrom('catalog_reference_cost_revisions').select('amount_minor').where('tenant_id', '=', context.tenantId).where('item_id', '=', input.targetItemId).orderBy('effective_from', 'desc').orderBy('revision_id', 'desc').executeTakeFirst(),
         ]);
+        selectedEffectiveTarget = Object.freeze({
+          kind: item.kind,
+          title: item.title,
+          description: item.description,
+          categoryPresent: Boolean(item.category_name ?? item.pending_category_name),
+          brandPresent: Boolean(item.brand_name ?? item.pending_brand_name),
+          basePriceMinor: price ? Number(price.amount_minor) : null,
+          referenceCostMinor: cost ? Number(cost.amount_minor) : null,
+        });
         const titleDiffers = proposal.title !== null && proposal.title !== item.title;
         if (titleDiffers && input.titleDecision === null) throw new CatalogInputError('titleDecision');
         if (!titleDiffers && input.titleDecision === 'ADOPT_OBSERVED') throw new CatalogInputError('titleDecision');
@@ -386,7 +442,17 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
         classification = item.status === 'INACTIVE' ? 'REACTIVATE' : changed ? 'UPDATE' : 'UNCHANGED'; expected = item.version;
       } else if (input.decision === 'APPLY' && row.classification === 'CANDIDATE') { classification = 'NEW'; targetItemId = null; expected = null; selectedTitleDecision = null; }
       if (input.decision === 'APPLY' && ['AMBIGUOUS', 'CONFLICT', 'INVALID'].includes(classification) && !input.targetItemId) throw new CatalogConflictError();
-      await db.updateTable('catalog_update_row_decisions').set({ classification, decision: input.decision, title_decision: input.decision === 'APPLY' ? selectedTitleDecision : null, target_item_id: targetItemId, expected_item_version: expected, preselected_by_memory: false, match_origin: input.decision === 'APPLY' ? 'OWNER_SELECTED' : row.match_origin, errors: serializeRowErrors(input.targetItemId || classification === 'NEW' ? [] : row.errors), lock_version: row.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('row_decision_id', '=', input.rowDecisionId).execute();
+      /** A manual identity decision is a new effective target. Re-evaluate it
+       * under the current Tenant policy instead of allowing the decision to
+       * turn an unresolved policy failure into an apparently ready mutation. */
+      const missingRequired = input.decision === 'EXCLUDE'
+        ? Object.freeze([])
+        : missingRequiredEffectiveFields(await readEffectiveFieldPolicy(db, context.tenantId), row.proposal as BulkCatalogRowInput, selectedEffectiveTarget);
+      const persistedDecision: BulkCatalogDecision = missingRequired.length > 0 ? 'UNRESOLVED' : input.decision;
+      const persistedErrors = missingRequired.length > 0
+        ? serializeRowErrors(missingRequired.map(missingRequiredEffectiveValueReason))
+        : serializeRowErrors(input.targetItemId || classification === 'NEW' ? [] : row.errors);
+      await db.updateTable('catalog_update_row_decisions').set({ classification, decision: persistedDecision, title_decision: persistedDecision === 'APPLY' ? selectedTitleDecision : null, target_item_id: targetItemId, expected_item_version: expected, preselected_by_memory: false, match_origin: input.decision === 'APPLY' ? 'OWNER_SELECTED' : row.match_origin, errors: persistedErrors, lock_version: row.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('row_decision_id', '=', input.rowDecisionId).execute();
       const classified = await db.selectFrom('catalog_update_row_decisions').select(['classification', 'decision']).where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).execute(); const counts = emptyCounts(); for (const value of classified) counts[value.classification] += 1;
       const unresolvedCount = classified.filter((value) => value.decision === 'UNRESOLVED').length;
       await db.updateTable('catalog_update_batches').set({ lifecycle: unresolvedCount === 0 ? 'READY' : 'RECONCILING', counts, lock_version: batch.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).execute();
@@ -401,6 +467,14 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       const batch = await db.selectFrom('catalog_update_batches').selectAll().where('tenant_id', '=', context.tenantId).where('version_id', '=', input.versionId).forUpdate().executeTakeFirstOrThrow();
       if (batch.lock_version !== input.expectedBatchVersion || batch.lifecycle === 'APPLIED') throw new CatalogConflictError();
       if (input.decision === 'APPLY' && input.classifications.some((value) => ['CANDIDATE', 'AMBIGUOUS', 'CONFLICT', 'INVALID'].includes(value))) throw new CatalogConflictError();
+      if (input.decision === 'APPLY') {
+        const requiredAttention = await db.selectFrom('catalog_update_row_decisions').select(['row_number', 'errors']).where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).where('classification', 'in', input.classifications).where('decision', '=', 'UNRESOLVED').execute();
+        const failures = requiredAttention.filter((row) => normalizeRowErrors(row.errors).some(isRequiredEffectiveValueReason));
+        if (failures.length > 0) {
+          const fields = failures.flatMap((row) => normalizeRowErrors(row.errors).filter(isRequiredEffectiveValueReason).map((reason) => reason.slice('MISSING_REQUIRED_EFFECTIVE_VALUE:'.length)));
+          throw new CatalogRequiredEffectiveValueError(failures.length, Object.freeze([...new Set(fields)]));
+        }
+      }
       await db.updateTable('catalog_update_row_decisions').set({ decision: input.decision, preselected_by_memory: false, lock_version: (eb) => eb('lock_version', '+', 1), updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).where('classification', 'in', input.classifications).where('decision', '=', 'UNRESOLVED').execute();
       const unresolved = await db.selectFrom('catalog_update_row_decisions').select(({ fn }) => fn.countAll<string>().as('count')).where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).where('decision', '=', 'UNRESOLVED').executeTakeFirstOrThrow();
       await db.updateTable('catalog_update_batches').set({ lifecycle: Number(unresolved.count) === 0 ? 'READY' : 'RECONCILING', lock_version: batch.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).execute();
@@ -421,6 +495,20 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       const targetItemIds = [...new Set(rows.map((row) => row.target_item_id).filter((value): value is string => Boolean(value)))];
       const targetItems = targetItemIds.length === 0 ? [] : await db.selectFrom('catalog_items').selectAll().where('tenant_id', '=', context.tenantId).where('item_id', 'in', targetItemIds).forUpdate().execute();
       const targetItemsById = new Map(targetItems.map((item) => [item.item_id, item]));
+      /** Apply is a separate authorization boundary. Re-read the current
+       * Tenant policy inside the write transaction so an old READY analysis or
+       * a direct request cannot bypass a policy tightened after Analyze. */
+      const effectivePolicy = await readEffectiveFieldPolicy(db, context.tenantId);
+      const requiredFailures = rows.flatMap((row) => {
+        if (row.decision === 'EXCLUDE') return [];
+        const proposal = row.proposal as BulkCatalogRowInput;
+        const target = row.target_item_id ? targetItemsById.get(row.target_item_id) : undefined;
+        const missing = missingRequiredEffectiveFields(effectivePolicy, proposal, target ? effectiveTarget(target, currentPrices, currentCosts, target.item_id) : null);
+        return missing.length === 0 ? [] : [Object.freeze({ rowNumber: row.row_number, fields: missing })];
+      });
+      if (requiredFailures.length > 0) {
+        throw new CatalogRequiredEffectiveValueError(requiredFailures.length, Object.freeze([...new Set(requiredFailures.flatMap((failure) => failure.fields))]));
+      }
       const generatedSkus = new Map<CatalogItemKind, string[]>();
       for (const kind of ['PART', 'PRODUCT', 'SERVICE', 'SUPPLY'] as const) generatedSkus.set(kind, await allocateSkus(db, context.tenantId, kind, newRows.filter((row) => row.kind === kind && !row.sku).length));
       const generatedBarcodes = await allocateBarcodes(db, context.tenantId, newRows.filter((row) => !row.barcode).length);
