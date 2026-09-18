@@ -328,3 +328,15 @@ confirma `739 NEW / 1 PENDING_REFERENCE / 4 CONFLICT` sobre 744 filas físicas:
 615 observaciones dejan de ser atención sin que Analyze las persista. Sólo dos
 contradicciones duplicadas y la Category malformada de la fila 618 permanecen
 como tres unidades de revisión. El walkthrough no ejecutó Apply ni decisiones.
+
+## UX-005.3 — Navegación de excepción a fuente
+
+UX-005.3 elimina la fricción de fuente sin reinterpretar el resultado de
+UX-005.2. Las decisiones usan identidad de fila física; los pares de conflicto
+siguen requiriendo una elección humana y la fila 618 abre Categoría con su
+valor recibido. El operador puede preparar una corrección local, pero no existe
+escritura durable hasta Guardar/Revisar lista. La sucesora explícita bloquea
+server-side el reanálisis, decisiones y Apply del Batch que reemplaza, mientras
+conserva el snapshot precedente como evidencia. No hay corrección automática de
+`V2314 COPIA` ni cambio de AviCell v2 durante el proof. Ver
+[UX-005.3](PRICE_LIST_UX_0053_EXCEPTION_TO_SOURCE_CORRECTION_NAVIGATION.md).

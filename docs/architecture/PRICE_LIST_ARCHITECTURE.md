@@ -490,6 +490,9 @@ Contrato mínimo del Composer:
 - alta completa, actualización compacta y nueva Supplier Catalog Version sobre
   el mismo batch engine;
 - draft versionado y recuperable; el browser no es la única copia;
+- una corrección de una revisión `INGESTED` prepara una copia local y sólo crea
+  una sucesora explícita al Guardar/Revisar; la predecesora permanece evidencia
+  pero queda bloqueada server-side para Analyze, decisiones y Apply;
 - sin fórmulas, macros, merged cells, worksheets ni formatting engine.
 
 `Fill down` no forma parte del outcome inicial porque no existe una aprobación

@@ -20,6 +20,7 @@ authority.
 - [UX-004 Catalog Operational Authorization Audit](../../../domain/PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md)
 - [UX-005 First Supplier Baseline Reconciliation Audit](../../../domain/PRICE_LIST_UX_005_FIRST_SUPPLIER_BASELINE_RECONCILIATION_AUDIT.md)
 - [UX-005.2 Avicell Large-List Reanalysis Proof](../../../domain/PRICE_LIST_UX_0052_AVICELL_LARGE_LIST_REANALYSIS_PROOF.md)
+- [UX-005.3 Exception-to-Source Correction Navigation](../../../domain/PRICE_LIST_UX_0053_EXCEPTION_TO_SOURCE_CORRECTION_NAVIGATION.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
@@ -41,6 +42,14 @@ UX-005.1: 739 `NEW`, one genuine pending Category and two effective duplicate
 contradictions. It preserves Avicell v2 in `RECONCILING` with no publication,
 Catalog, Resolution or Memory mutation, and records the concrete exception
 correction/navigation and bulk-accept UX findings.
+
+## UX-005.3 — Exception-to-source correction navigation
+
+The local proof navigates duplicate and pending-reference exceptions by their
+physical row identities. A correction starts only in browser memory; an
+explicit save/review creates the linked successor version. The predecessor
+remains evidence but is server-side stale for Analyze, decisions and Apply.
+No AviCell value, version or Catalog effect was written during the walkthrough.
 
 ## UX-002E / UX-002E.1 missing-data context
 

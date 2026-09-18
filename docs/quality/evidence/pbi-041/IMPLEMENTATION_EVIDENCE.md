@@ -1649,3 +1649,19 @@ action ran. PostgreSQL before/after confirms `RECONCILING`, null publication,
 UX-005.3 for exception-to-source correction navigation and flags the generic
 bulk accept control as unsafe for row 618. See the
 [full proof](../../../domain/PRICE_LIST_UX_0052_AVICELL_LARGE_LIST_REANALYSIS_PROOF.md).
+
+## UX-005.3 — Exception-to-source correction navigation
+
+The Composer now plans exception navigation from immutable `rowDecisionId`
+identity, expands the source grid and focuses only an authorized field. Chrome
+showed Avicell v2 duplicate rows 468/469 and the pending Category at row 618.
+`Corregir fila 618` prepared an unsaved local correction with Category focused;
+the malformed supplied value stayed visible and unchanged. No AviCell version,
+RowDecision, CatalogItem, Resolution or Memory record was written.
+
+An explicit later save/review can create a linked successor Draft. PostgreSQL
+regression coverage proves the parent snapshot stays immutable, reports stale
+correction metadata and rejects direct predecessor Analyze and Apply. The
+successor reanalyzes normally with a human-provided corrected value. No schema
+migration, CI, push, PR, merge or deploy occurred. See
+[UX-005.3](../../../domain/PRICE_LIST_UX_0053_EXCEPTION_TO_SOURCE_CORRECTION_NAVIGATION.md).

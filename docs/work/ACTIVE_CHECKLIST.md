@@ -1,17 +1,26 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005.2 Avicell Large-List Reanalysis + Exception Walkthrough Proof
+Milestone / Functional Goal: PBI-041 — UX-005.3 Exception-to-Source Correction Navigation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — UX-005.2 evidence is complete; Avicell v2 remains safely pre-Apply.
+Status: Local Owner Review — UX-005.3 materialized; no Apply or remote action.
 WIP: 1/1
-Progress: 5 / 5 UX-005.2 proof blocks completed; prior UX-005.1 work remains preserved.
-Current: Owner Review — 615 false pending rows are removed; three genuine exceptions remain before Apply.
-Next: Await Owner direction for the two duplicate business choices, the malformed Category correction, or a separately authorized UX-005.3.
-Blocked: Three legitimate pre-Apply decisions: two duplicate winner choices and Category correction for row 618. Do not choose or accept them without business data. Preserve Avicell v2, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 6 / 6 UX-005.3 implementation blocks complete; prior UX-005.1/UX-005.2 evidence remains preserved.
+Current: UX-005.3 is ready for Owner Review: exception navigation, local correction preparation and stale-predecessor protection are materialized.
+Next: Owner review only. Do not apply AviCell, start another slice, push, create a PR, merge or deploy without separate authority.
+Blocked: The broader disposable PostgreSQL PBI-041 suite exceeded its pre-existing 10k publish performance budget twice (32.7s / 34.2s; limit 30s). The dedicated UX-005.3 PostgreSQL case passed in both runs; no UX-005.3 functional failure was observed. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
 
-## Current checkpoint — UX-005.2 Avicell Large-List Reanalysis + Exception Walkthrough Proof
+## Current checkpoint — UX-005.3 Exception-to-Source Correction Navigation
+
+- [x] Audit physical-row identity, policy-driven field visibility, capabilities and the immutable analyzed-version lifecycle.
+- [x] Add capability-aware navigation that reveals the grid, locates the physical row and focuses an authorized relevant field.
+- [x] Start correction locally through the existing successor-Draft/Version model without mutating an analyzed snapshot; reject stale predecessor Analyze, decisions and Apply server-side once persisted.
+- [x] Add focused navigation, authorization, duplicate and stale-analysis regressions.
+- [x] Complete Chrome proof: Avicell v2 navigation only; correction stays local and unsaved because no business Category was supplied.
+- [x] Reconcile evidence/checklist and run proportionate gates; stop for Owner Review with local commits only.
+
+## Previous checkpoint — UX-005.2 Avicell Large-List Reanalysis + Exception Walkthrough Proof
 
 - [x] Read the authoritative v2 lifecycle, counts, baseline, Catalog, Resolution and Memory state without writes.
 - [x] Prove 744 physical observations, 742 effective units, 739 resolved and exactly three genuine attention units.
