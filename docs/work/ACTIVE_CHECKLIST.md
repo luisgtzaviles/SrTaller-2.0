@@ -1,15 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-004.6 Composer Grid Action Toolbar + Gridlines
+Milestone / Functional Goal: PBI-041 — UX-004.7 Capture Cleanup Ergonomics
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review ready — optional gridlines are presentation-only and the original toolbar behavior remains intact.
+Status: Local Owner Review ready — UX-004.7 capture cleanup ergonomics is implemented and materially proven in localhost.
 WIP: 1/1
-Progress: 6 / 6 UX-004.6 gridline-extension blocks completed; original toolbar consolidation remains preserved.
-Current: Owner Review of the primary toolbar and optional spreadsheet gridlines.
+Progress: 7 / 7 UX-004.7 blocks completed; UX-004.6 toolbar and gridlines remain preserved.
+Current: Owner Review — Brand capture normalization and reversible draft-row cleanup are ready for review in localhost.
 Next: Await Owner direction. Do not push, open a PR, merge, deploy or start another PBI.
 Blocked: No product blocker identified. The broader PBI-041 PostgreSQL runner also executes a separate 10k publish benchmark that exceeded its 30s budget in this host (34.9s); do not remediate that performance concern in UX-004.4. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
+
+## Current checkpoint — UX-004.7 Capture Cleanup Ergonomics
+
+- [x] Audit existing Title provenance, Brand/reference normalization, draft lifecycle and current row-removal invariant.
+- [x] Normalize Brand consistently at paste, manual commit and missing-data completion, preferring an existing canonical reference.
+- [x] Preserve raw supplier Brand representation in the persisted raw capture payload without changing catalog identity semantics.
+- [x] Add one contextual active-row removal affordance that invokes the same draft-only command as `Quitar fila activa`.
+- [x] Restore removed row position, values, provenance and valid focus/selection through Undo; preserve the one-row invariant.
+- [x] Add focused Brand, removal, lifecycle, authorization, required-field, gridline and resize regressions.
+- [x] Complete Chrome material proof, proportionate checks and evidence reconciliation; stop for Owner Review with local commits only.
 
 ## Current checkpoint — UX-004.6 Composer Grid Action Toolbar Consolidation
 

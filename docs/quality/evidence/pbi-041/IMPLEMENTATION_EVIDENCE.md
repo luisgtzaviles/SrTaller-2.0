@@ -1558,3 +1558,44 @@ remains distinct. Keyboard Space, Essential/All switching, sidebar
 collapse/restore, a blank one-row load, populated draft, resize (Título +24 px),
 historical applied `AG v59`, session reload, light/dark and 1280/768/640 all
 passed without page overflow. No persistent product operation was invoked.
+
+## UX-004.7 — Capture Cleanup Ergonomics
+
+### Brand canonicalization and raw supplier provenance
+
+`normalizeBrandValue` is separate from title presentation normalization. It
+first resolves a case/whitespace-equivalent active Brand reference and uses its
+stored spelling. With no reference it compacts whitespace, title-cases only
+uniform alphabetic names, preserves short uppercase acronym-like tokens, and
+leaves intentional mixed casing untouched. It does not infer a different Brand
+identity. The Composer applies the same function for paste, `Marca` blur and
+`Completar datos faltantes`; paste stores `supplierObservedBrand` separately so
+the durable raw supplier payload contains the original spelling while the
+proposal carries the canonical effective value. A DRAFT-save response does not
+replace the local capture rows, so repeated saves in the same editing session
+cannot rewrite that retained raw spelling.
+
+Focused model coverage proves `APPLE → Apple`, `SAMSUNG → Samsung`,
+`XIAOMI → Xiaomi`, lowercase ordinary names, canonical-reference precedence,
+acronym/mixed-casing preservation and empty-only defaults. The Chrome local
+draft showed `Apple` / `Samsung` alongside `Original: APPLE` /
+`Original: SAMSUNG`; it was never saved, analyzed or applied.
+
+### Reversible pre-Analyze draft removal
+
+`removeDraftRow` is the single model operation behind toolbar **Quitar fila
+activa** and the neutral active-row header action (`Quitar fila N`). It retains
+one clean physical row, removes only the active row even when a selection spans
+multiple rows, preserves neighboring rows and re-focuses the logical successor
+or prior row. The Undo snapshot includes row data, observed title/Brand
+provenance, active cell and selection. The action is gated by
+`catalog.import.prepare` and editable local/DRAFT lifecycle; historical and
+INGESTED views do not expose it and keep **Excluir del lote** unchanged.
+
+Chrome local verified contextual remove → Undo and toolbar remove → Undo against
+an unsaved two-row AG draft, including exact observed Brand restoration, active
+focus, 768/640 no page overflow, light/dark, gridlines toggling and keyboard
+navigation. No Save, Analyze, Apply, SupplierVersion, Catalog, Resolution or
+Memory mutation occurred. Focused Composer, column-resize and contract tests,
+TypeScript checking and production build passed; no PostgreSQL validation was
+needed because no backend or persistence schema changed.

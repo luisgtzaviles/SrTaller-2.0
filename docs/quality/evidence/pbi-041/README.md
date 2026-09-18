@@ -264,3 +264,14 @@ The optional spreadsheet-style gridlines are an accessible, session-local view
 preference. They use real cell borders, remain available for historical
 read-only presentation, and do not make a draft dirty or trigger persistence.
 The local proof is recorded in the [implementation evidence](IMPLEMENTATION_EVIDENCE.md).
+
+## UX-004.7 Capture Cleanup Ergonomics
+
+Brand capture now prefers an existing active canonical reference and otherwise
+normalizes only safe whitespace/uniform casing at paste, manual commit and
+missing-data completion. The raw supplier spelling remains available in the
+captured raw payload and is shown as `Original` whenever it differs from the
+effective Brand. Draft-only removal is available both from the toolbar and an
+active-row contextual control; Undo restores the local row snapshot. The
+evidence distinguishes this pre-Analyze physical removal from the retained
+post-Analyze **Excluir del lote** decision flow.
