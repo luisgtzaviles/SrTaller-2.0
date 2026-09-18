@@ -43,6 +43,25 @@ export function derivePolicyDrivenColumns(fields) {
   return Object.freeze({ all: Object.freeze(all), essential: Object.freeze(essential), required: Object.freeze(required) });
 }
 
+/**
+ * Keeps browsing a supplier independent from the supplier selected for a new
+ * load. A previously chosen source is never silently replaced by another
+ * source after the initial list has loaded.
+ */
+export function reconcileBrowseSourceId(sourceId, sources, initialized) {
+  if (sourceId && sources.some((source) => source.sourceId === sourceId)) return sourceId;
+  if (sources.length === 0 || initialized) return '';
+  return sources[0]?.sourceId ?? '';
+}
+
+/** Returns only the version history belonging to the explicitly browsed source. */
+export function supplierHistoryForBrowseSource(versions, sourceId) {
+  if (!sourceId) return Object.freeze([]);
+  return Object.freeze(versions
+    .filter((version) => version.sourceId === sourceId)
+    .sort((left, right) => right.sequenceNumber - left.sequenceNumber));
+}
+
 export const DEFAULT_COLUMN_WIDTHS = Object.freeze({
   kind: 150,
   title: 310,

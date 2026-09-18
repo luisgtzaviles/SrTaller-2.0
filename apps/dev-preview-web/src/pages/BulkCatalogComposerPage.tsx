@@ -10,7 +10,7 @@ import { BackLink, PageHeader } from '../components/ui/navigation.js';
 import { Dialog } from '../components/ui/overlays.js';
 import { hasOperationalCapability } from '../session/session-capabilities.mjs';
 import type { OperationalCapability } from '../session/session-api.js';
-import { applyBatchDefaults, applyBatchDefaultsToEmptyRows, canContinueNewLoadGate, captureActionState, COMPACT_COLUMNS, derivePolicyDrivenColumns, estimateColumnWidth, fillRows, filterSupplierSources, FULL_COLUMNS, groupDuplicateResolutionRows, hasMeaningfulComposerWork, NEW_LOAD_INTENTS, nextGridCell, nextValidationIssueIndex, normalizeColumnWidths, normalizeSupplierTitle, orchestrateReviewList, parseClipboardMatrix, parseMoneyToMinor, resizeColumnWidth, sortValidationIssues, validateComposerDraft, validationIssueFromApi } from './bulk-catalog-composer-model.mjs';
+import { applyBatchDefaults, applyBatchDefaultsToEmptyRows, canContinueNewLoadGate, captureActionState, COMPACT_COLUMNS, derivePolicyDrivenColumns, estimateColumnWidth, fillRows, filterSupplierSources, FULL_COLUMNS, groupDuplicateResolutionRows, hasMeaningfulComposerWork, NEW_LOAD_INTENTS, nextGridCell, nextValidationIssueIndex, normalizeColumnWidths, normalizeSupplierTitle, orchestrateReviewList, parseClipboardMatrix, parseMoneyToMinor, reconcileBrowseSourceId, resizeColumnWidth, sortValidationIssues, supplierHistoryForBrowseSource, validateComposerDraft, validationIssueFromApi } from './bulk-catalog-composer-model.mjs';
 import type { ComposerColumn, ComposerSelection, ValidationIssue } from './bulk-catalog-composer-model.mjs';
 import { applyBulkCatalogCanvas, applyBulkCatalogGrid, applyBulkCatalogOffset } from './bulk-catalog-grid-layout.js';
 import styles from './bulk-catalog-composer-page.module.css';
@@ -116,6 +116,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const [newSourceOpen, setNewSourceOpen] = useState(false); const [newSourceOrigin, setNewSourceOrigin] = useState<'ADMINISTRATION' | 'GATE' | null>(null); const [supplierGateOpen, setSupplierGateOpen] = useState(false); const [supplierSearch, setSupplierSearch] = useState(''); const [supplierGateSupplierId, setSupplierGateSupplierId] = useState<string | null>(null); const [supplierGateCompleteness, setSupplierGateCompleteness] = useState<SupplierCatalogCompleteness | null>(null); const [supplierGateRestoreTarget, setSupplierGateRestoreTarget] = useState('supplier-gate-new-load'); const [deleteSourceTarget, setDeleteSourceTarget] = useState<SupplierSource | null>(null); const [deleteStage, setDeleteStage] = useState<1 | 2>(1); const [deletePin, setDeletePin] = useState(''); const [deleteArmed, setDeleteArmed] = useState(false);
   const [busy, setBusy] = useState(false); const [reviewProgress, setReviewProgress] = useState<ReviewProgress | null>(null); const [dirty, setDirty] = useState(false); const [notice, setNotice] = useState<{ tone: 'danger' | 'warning'; message: string } | null>(null); const [toast, setToast] = useState<{ id: number; message: string } | null>(null); const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]); const [validationAttempted, setValidationAttempted] = useState(false); const [issueIndex, setIssueIndex] = useState(0); const [pendingIssueFocus, setPendingIssueFocus] = useState<ValidationIssue | null>(null); const [sourcesOpen, setSourcesOpen] = useState(true); const [contextOpen, setContextOpen] = useState(false); const [gridExpanded, setGridExpanded] = useState(true); const [continuedOpen, setContinuedOpen] = useState(false); const [notObservedOpen, setNotObservedOpen] = useState(false); const [additionalOpen, setAdditionalOpen] = useState(false); const [comparisonOpen, setComparisonOpen] = useState(false); const [coverageReviewOpen, setCoverageReviewOpen] = useState(false); const [scrollTop, setScrollTop] = useState(0); const [active, setActive] = useState({ row: 0, column: 0 }); const [selection, setSelection] = useState<ComposerSelection | null>(null); const undoRows = useRef<UiRow[] | null>(null); const editOriginal = useRef<{ row: number; column: Column; value: string } | null>(null); const publishRequest = useRef(crypto.randomUUID()); const draftCreateRequest = useRef(crypto.randomUUID()); const reviewInFlight = useRef(false); const deleteInFlight = useRef(false); const viewportRef = useRef<HTMLDivElement | null>(null); const headerScrollRef = useRef<HTMLDivElement | null>(null); const toastTimer = useRef<number | null>(null); const sourcesToggleRef = useRef<HTMLButtonElement | null>(null); const pendingSourcesToggleFocus = useRef(false);
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState(false);
+  const browseSourceInitialized = useRef(false);
   const policyColumns = useMemo(() => fieldPolicy ? derivePolicyDrivenColumns(fieldPolicy.fields) : { all: [], essential: [], required: [] }, [fieldPolicy]);
   const activeColumns = useMemo(() => !canPrepareBulk ? (mode === 'COMPACT' ? compactColumns : columns.filter((column) => column !== 'cost' || canReadCost)) : mode === 'COMPACT' ? compactColumns : viewPreset === 'ESSENTIAL' ? policyColumns.essential : policyColumns.all, [canPrepareBulk, canReadCost, mode, policyColumns, viewPreset]);
   const requiredColumns = useMemo(() => new Set(policyColumns.required), [policyColumns]);
@@ -141,12 +142,16 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const refresh = useCallback(async () => {
     const [nextSources, nextVersions] = await Promise.all([listSupplierSources(), listSupplierVersions()]);
     setSources(nextSources); setVersions(nextVersions);
-    if (!browseSourceId && nextSources[0]) setBrowseSourceId(nextSources[0].sourceId);
+    const browseWasInitialized = browseSourceInitialized.current;
+    if (nextSources.length > 0) browseSourceInitialized.current = true;
+    setBrowseSourceId((currentSourceId) => {
+      return reconcileBrowseSourceId(currentSourceId, nextSources, browseWasInitialized);
+    });
     if (!canPrepareBulk) return;
     const nextReferences = await listCatalogReferences();
     setReferences(nextReferences);
     await refreshFieldPolicy();
-  }, [browseSourceId, canPrepareBulk, refreshFieldPolicy]);
+  }, [canPrepareBulk, refreshFieldPolicy]);
   useEffect(() => { void refresh().catch(() => setNotice({ tone: 'danger', message: 'No fue posible cargar los catálogos de proveedor.' })); }, [refresh]);
   useEffect(() => { const protect = (event: BeforeUnloadEvent): void => { if (dirty) event.preventDefault(); }; window.addEventListener('beforeunload', protect); return () => window.removeEventListener('beforeunload', protect); }, [dirty]);
   useEffect(() => { sessionStorage.setItem('srtaller:bulk-composer:column-widths:v1', JSON.stringify(columnWidths)); }, [columnWidths]);
@@ -287,10 +292,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     showToast(`Nueva carga preparada para ${sources.find((source) => source.sourceId === preparation.supplierId)?.name ?? 'el proveedor seleccionado'} · ${loadIntentLabel(preparation.completeness)}.`);
     return true;
   };
-  const browseSource = (sourceId: string): void => {
-    if (!discardMeaningfulWork('Hay cambios sin guardar. ¿Quieres descartarlos y explorar otro proveedor?')) return;
-    setBrowseSourceId(sourceId); clearNewLoad();
-  };
+  const browseSource = (sourceId: string): void => { setBrowseSourceId(sourceId); };
   const openNewSource = (origin: 'ADMINISTRATION' | 'GATE'): void => { setNewSourceOrigin(origin); setNewSourceName(''); setSupplierGateOpen(false); setNewSourceOpen(true); };
   const closeNewSource = (): void => { if (busy) return; const returnToGate = newSourceOrigin === 'GATE'; setNewSourceOpen(false); setNewSourceOrigin(null); if (returnToGate) setSupplierGateOpen(true); };
   const addSource = async (): Promise<void> => { if (!canPrepareBulk || !newSourceName.trim()) return; setBusy(true); try { const created = await createSupplierSource(newSourceName, csrfToken); await refresh(); setNewSourceName(''); setNewSourceOpen(false); clearServerIssue((issue) => issue.controlKey === 'source'); if (newSourceOrigin === 'GATE') { setNewSourceOrigin(null); setSupplierGateSupplierId(created.sourceId); setSupplierGateCompleteness(null); setSupplierGateOpen(true); } else { setNewSourceOrigin(null); showToast('Proveedor creado. El trabajo actual se conserva.'); } } catch { setNotice({ tone: 'danger', message: 'No se creó el proveedor; revisa nombre o duplicados.' }); } finally { setBusy(false); } };
@@ -427,6 +429,8 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
     return item.coverageRelation === 'ADDITIONAL' ? 'Pendiente de resolver antes de aplicar' : 'Sin vínculo actual de Catalog';
   };
   const pendingSupplier = pendingNewLoadSupplierId ? sources.find((source) => source.sourceId === pendingNewLoadSupplierId) ?? null : null;
+  const browsedSupplier = sources.find((source) => source.sourceId === browseSourceId) ?? null;
+  const browsedSupplierVersions = useMemo(() => supplierHistoryForBrowseSource(versions, browseSourceId), [browseSourceId, versions]);
   const visibleSupplierSources = filterSupplierSources(sources, supplierSearch);
   const workspaceAvailable = Boolean(current || pendingSupplier);
 
@@ -440,13 +444,10 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
           <div className={styles.sidebarHeading}><h2><Database size={18} aria-hidden="true" />Fuentes y versiones</h2></div>
           <p><small>{canReadBulk ? 'Solo lectura' : 'Acceso no disponible'}</small></p>
           <label>Explorar proveedor<Select value={browseSourceId} onChange={(event) => browseSource(event.target.value)}><option value="">Selecciona…</option>{sources.map((value) => <option key={value.sourceId} value={value.sourceId}>{value.name}</option>)}</Select></label>
-          <div className={styles.history}>{sources.map((source) => {
-            const sourceVersions = versions.filter((value) => value.sourceId === source.sourceId).sort((left, right) => right.sequenceNumber - left.sequenceNumber);
-            return <section key={source.sourceId} className={`${styles.sourceGroup} ${browseSourceId === source.sourceId ? styles.selectedSource : ''}`}>
-              <header><button type="button" onClick={() => browseSource(source.sourceId)}><strong>{source.name}</strong><span>{source.versionCount} {source.versionCount === 1 ? 'versión' : 'versiones'}</span></button></header>
-              <div className={styles.versionList}>{sourceVersions.map((value) => <button type="button" key={value.versionId} className={current?.versionId === value.versionId ? styles.selectedVersion : ''} aria-current={current?.versionId === value.versionId ? 'true' : undefined} onClick={() => void load(value.versionId)}><span><strong>v{value.sequenceNumber}</strong><small>{versionStatus(value)}</small></span><span>{formatVersionDate(value.createdAt, timeZone)} · {value.rowCount.toLocaleString('es-MX')} filas</span>{value.description ? <small>{value.description}</small> : null}</button>)}</div>
-            </section>;
-          })}</div>
+          <div className={styles.history} aria-live="polite" aria-label={browsedSupplier ? `Historial de ${browsedSupplier.name}` : 'Historial de proveedor'}>{browsedSupplier ? <section className={`${styles.sourceGroup} ${styles.selectedSource}`}>
+            <header><strong>{browsedSupplier.name}</strong><span>{browsedSupplierVersions.length} {browsedSupplierVersions.length === 1 ? 'versión' : 'versiones'}</span></header>
+            {browsedSupplierVersions.length > 0 ? <div className={styles.versionList}>{browsedSupplierVersions.map((value) => <button type="button" key={value.versionId} className={current?.versionId === value.versionId ? styles.selectedVersion : ''} aria-current={current?.versionId === value.versionId ? 'true' : undefined} onClick={() => void load(value.versionId)}><span><strong>v{value.sequenceNumber}</strong><small>{versionStatus(value)}</small></span><span>{formatVersionDate(value.createdAt, timeZone)} · {value.rowCount.toLocaleString('es-MX')} filas</span>{value.description ? <small>{value.description}</small> : null}</button>)}</div> : <p>No hay versiones para este proveedor.</p>}
+          </section> : <p>Selecciona un proveedor para consultar sus versiones.</p>}</div>
         </aside>
         <main className={styles.composer} aria-busy={busy}>
           {!current ? <section className={styles.emptyWorkspace} aria-labelledby="bulk-empty-workspace-title"><Columns3 size={20} aria-hidden="true" /><div><h2 id="bulk-empty-workspace-title">Selecciona una versión para revisarla</h2><p>Las cargas y sus resultados permanecen disponibles para consulta.</p></div></section> : <>
@@ -472,13 +473,10 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
         <Button id="supplier-gate-new-load" size="compact" tone="primary" onClick={() => openSupplierGate('supplier-gate-new-load')}><Plus size={16} />Nueva carga</Button>
         <Button size="compact" onClick={() => openNewSource('ADMINISTRATION')}><Plus size={16} />Nuevo proveedor</Button>
         <label>Explorar proveedor<Select value={browseSourceId} onChange={(event) => browseSource(event.target.value)}><option value="">Selecciona…</option>{sources.map((value) => <option key={value.sourceId} value={value.sourceId}>{value.name}</option>)}</Select></label>
-        <div className={styles.history}>{sources.map((source) => {
-          const sourceVersions = versions.filter((value) => value.sourceId === source.sourceId).sort((left, right) => right.sequenceNumber - left.sequenceNumber);
-          return <section key={source.sourceId} className={`${styles.sourceGroup} ${browseSourceId === source.sourceId ? styles.selectedSource : ''}`}>
-            <header><button type="button" onClick={() => browseSource(source.sourceId)}><strong>{source.name}</strong><span>{source.versionCount} {source.versionCount === 1 ? 'versión' : 'versiones'}</span></button><div className={styles.sourceActions}><Button id={`supplier-gate-source-${source.sourceId}`} size="compact" tone="quiet" aria-label={`Nueva carga; seleccionar proveedor`} onClick={() => openSupplierGate(`supplier-gate-source-${source.sourceId}`)}><Plus size={15} /></Button>{canDeleteSupplier ? <Button size="compact" tone="quiet" aria-label={`Eliminar proveedor ${source.name}`} title={source.deletionEligibility.allowed ? 'Eliminar proveedor' : 'Se conserva porque tiene historia publicada o dependencias'} disabled={!source.deletionEligibility.allowed} onClick={() => { setDeleteSourceTarget(source); setDeleteStage(1); setDeletePin(''); }}><Trash2 size={15} /></Button> : null}</div></header>
-            <div className={styles.versionList}>{sourceVersions.map((value) => <button type="button" key={value.versionId} className={current?.versionId === value.versionId ? styles.selectedVersion : ''} aria-current={current?.versionId === value.versionId ? 'true' : undefined} onClick={() => void load(value.versionId)}><span><strong>v{value.sequenceNumber}</strong><small>{versionStatus(value)}</small></span><span>{formatVersionDate(value.createdAt, timeZone)} · {value.rowCount.toLocaleString('es-MX')} filas</span>{value.description ? <small>{value.description}</small> : null}</button>)}</div>
-          </section>;
-        })}</div>
+        <div className={styles.history} aria-live="polite" aria-label={browsedSupplier ? `Historial de ${browsedSupplier.name}` : 'Historial de proveedor'}>{browsedSupplier ? <section className={`${styles.sourceGroup} ${styles.selectedSource}`}>
+          <header><div><strong>{browsedSupplier.name}</strong><span>{browsedSupplierVersions.length} {browsedSupplierVersions.length === 1 ? 'versión' : 'versiones'}</span></div><div className={styles.sourceActions}><Button id={`supplier-gate-source-${browsedSupplier.sourceId}`} size="compact" tone="quiet" aria-label="Nueva carga; seleccionar proveedor" onClick={() => openSupplierGate(`supplier-gate-source-${browsedSupplier.sourceId}`)}><Plus size={15} /></Button>{canDeleteSupplier ? <Button size="compact" tone="quiet" aria-label={`Eliminar proveedor ${browsedSupplier.name}`} title={browsedSupplier.deletionEligibility.allowed ? 'Eliminar proveedor' : 'Se conserva porque tiene historia publicada o dependencias'} disabled={!browsedSupplier.deletionEligibility.allowed} onClick={() => { setDeleteSourceTarget(browsedSupplier); setDeleteStage(1); setDeletePin(''); }}><Trash2 size={15} /></Button> : null}</div></header>
+          {browsedSupplierVersions.length > 0 ? <div className={styles.versionList}>{browsedSupplierVersions.map((value) => <button type="button" key={value.versionId} className={current?.versionId === value.versionId ? styles.selectedVersion : ''} aria-current={current?.versionId === value.versionId ? 'true' : undefined} onClick={() => void load(value.versionId)}><span><strong>v{value.sequenceNumber}</strong><small>{versionStatus(value)}</small></span><span>{formatVersionDate(value.createdAt, timeZone)} · {value.rowCount.toLocaleString('es-MX')} filas</span>{value.description ? <small>{value.description}</small> : null}</button>)}</div> : <p>No hay versiones para este proveedor.</p>}
+        </section> : <p>Selecciona un proveedor para consultar sus versiones.</p>}</div>
       </aside> : null}
       <main className={styles.composer} aria-busy={busy}>
         {!sourcesOpen ? <button ref={sourcesToggleRef} id="composer-sources-panel-toggle" type="button" className={`${styles.collapseToggle} ${styles.sourceRestoreControl}`} aria-expanded="false" aria-controls="composer-sources-panel" aria-label="Mostrar fuentes y versiones" title="Mostrar fuentes y versiones" onClick={() => changeSourcesVisibility(true)}><ChevronRight size={18} /></button> : null}

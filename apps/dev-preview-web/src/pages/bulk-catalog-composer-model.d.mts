@@ -27,6 +27,8 @@ export function validateComposerDraft(input: Readonly<{ selectedSource: string; 
 export function hasMeaningfulComposerWork(input: Readonly<{ dirty: boolean; description: string; mode: 'FULL' | 'COMPACT'; completeness: 'PARTIAL' | 'COMPLETE'; rows: readonly Record<string, unknown>[] }>): boolean;
 export function captureActionState(input: Readonly<{ lifecycle: 'DRAFT' | 'INGESTED' | null; dirty: boolean; hasMeaningfulWork: boolean }>): Readonly<{ reviewVisible: boolean; saveForLaterVisible: boolean }>;
 export function filterSupplierSources<Source extends Readonly<{ name: string }>>(sources: readonly Source[], query: string): readonly Source[];
+export function reconcileBrowseSourceId<Source extends Readonly<{ sourceId: string }>>(sourceId: string, sources: readonly Source[], initialized: boolean): string;
+export function supplierHistoryForBrowseSource<Version extends Readonly<{ sourceId: string; sequenceNumber: number }>>(versions: readonly Version[], sourceId: string): readonly Version[];
 export type NewLoadIntent = 'PARTIAL' | 'COMPLETE';
 export type NewLoadGateState = Readonly<{ supplierId: string | null; completeness: NewLoadIntent | null }>;
 export const NEW_LOAD_INTENTS: readonly Readonly<{ value: NewLoadIntent; label: string; description: string }>[];
