@@ -367,7 +367,7 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(css, /translateY/u);
   assert.match(css, /\.page \{ min-width: 0;/u);
   assert.match(css, /\.layout \{ min-width: 0;/u);
-  assert.match(css, /\.composer > section, \.rowActions \{ min-width: 0;/u);
+  assert.match(css, /\.composer > section \{ min-width: 0;/u);
   assert.match(css, /repeat\(auto-fit, minmax\(180px, 1fr\)\)/u);
   assert.match(css, /\.coverageCounts/u);
   assert.match(css, /\.coverageItems/u);

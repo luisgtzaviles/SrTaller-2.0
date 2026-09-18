@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import test from 'node:test';
 
@@ -177,6 +178,32 @@ test('capture actions keep review primary while draft save is optional and lifec
   assert.deepEqual(captureActionState({ lifecycle: 'DRAFT', dirty: false, hasMeaningfulWork: false }), { reviewVisible: true, saveForLaterVisible: false });
   assert.deepEqual(captureActionState({ lifecycle: 'DRAFT', dirty: true, hasMeaningfulWork: true }), { reviewVisible: true, saveForLaterVisible: true });
   assert.deepEqual(captureActionState({ lifecycle: 'INGESTED', dirty: false, hasMeaningfulWork: false }), { reviewVisible: false, saveForLaterVisible: false });
+});
+
+test('grid edit actions live once in the primary toolbar immediately before Review', async () => {
+  const [page, css] = await Promise.all([
+    readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8'),
+    readFile('apps/dev-preview-web/src/pages/bulk-catalog-composer-page.module.css', 'utf8'),
+  ]);
+  const toolbarStart = page.indexOf('<section className={styles.workspaceToolbar}>');
+  const toolbarEnd = page.indexOf('{currentIssue ? ', toolbarStart);
+  const toolbar = page.slice(toolbarStart, toolbarEnd);
+  assert.match(page, /const editableGridActionsVisible = \(mode === 'COMPACT' \|\| fullPolicyReady\) && \(current\?\.lifecycle === 'DRAFT' \|\| !current\);/u);
+  assert.match(toolbar, /className=\{styles\.gridEditActions\} role="group" aria-label="Acciones de edición de la lista"/u);
+  assert.equal((page.match(/>Deshacer<\/Button>/gu) ?? []).length, 1);
+  assert.equal((page.match(/>Agregar fila<\/Button>/gu) ?? []).length, 1);
+  assert.equal((page.match(/>Quitar fila activa<\/Button>/gu) ?? []).length, 1);
+  assert.equal((page.match(/Revisar lista/g) ?? []).length, 1);
+  assert.ok(toolbar.indexOf('>Deshacer</Button>') < toolbar.indexOf('>Agregar fila</Button>'));
+  assert.ok(toolbar.indexOf('>Agregar fila</Button>') < toolbar.indexOf('>Quitar fila activa</Button>'));
+  assert.ok(toolbar.indexOf('>Quitar fila activa</Button>') < toolbar.indexOf('Revisar lista'));
+  assert.match(toolbar, /disabled=\{!undoRows\.current\} onClick=\{undo\}/u);
+  assert.match(toolbar, /disabled=\{rows\.length >= 10_000\}/u);
+  assert.match(toolbar, /disabled=\{rows\.length === 1\}/u);
+  assert.match(toolbar, /tone="primary" onClick=\{\(\) => void reviewList\(\)\}/u);
+  assert.doesNotMatch(page, /styles\.rowActions/u);
+  assert.match(css, /\.gridEditActions \{ display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/u);
+  assert.match(css, /\.gridEditActions > button:last-child \{ grid-column: 1 \/ -1; \}/u);
 });
 
 test('supplier paste transformation stays bounded at 1,500 and 10,000 rows', (context) => {

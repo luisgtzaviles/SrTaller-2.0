@@ -71,6 +71,6 @@ test('Composer normalizes persisted widths and routes pointer and keyboard resiz
   assert.match(page, /normalizeColumnWidths\(JSON\.parse\(sessionStorage\.getItem\('srtaller:bulk-composer:column-widths:v1'\)/u);
   assert.match(page, /resizeColumnWidth\(value, column, initial \+ pointerEvent\.clientX - start\)/u);
   assert.match(page, /resizeColumnWidth\(value, column, value\[column\] \+ \(event\.key === 'ArrowRight' \? 12 : -12\)\)/u);
-  assert.match(page, /useMemo\(\(\) => mode === 'COMPACT'/u);
+  assert.match(page, /const schemaColumns = mode === 'FULL' \? columns : compactColumns;/u);
   assert.doesNotMatch(page, /initial \+ pointerEvent\.clientX - start\) \}[^\n]*Math\.max/u);
 });
