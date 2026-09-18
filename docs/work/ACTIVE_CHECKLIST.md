@@ -1,15 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002B.1 Two-panel New Load modal
+Milestone / Functional Goal: PBI-041 — UX-002A.4 Duplicate winner decision remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: two-panel New Load refinement proven locally; ready for Owner Review
+Status: duplicate-winner selection fixed and proven locally; ready for Owner Review
 WIP: 1/1
-Progress: 6 / 6 UX-002B.1 blocks completed; stop at Owner Review.
-Current: stop for Owner Review of the two-panel New Load modal.
-Next: Owner accepts or changes UX-002B.1; no follow-on work starts automatically.
-Blocked: None for UX-002B.1. A separate preexisting PBI-041 PostgreSQL material test exceeded only the 10k publication budget twice (30.75 s, 30.39 s; limit 30 s), without a threshold or product change. AG v60 remains read-only and unreanalyzed; v52 remains intentionally unpublished, v53 historical APPLIED evidence, and the preexisting .DS_Store remains preserved.
+Progress: 7 / 7 UX-002A.4 blocks completed; stop at Owner Review.
+Current: stop for Owner Review of the repaired pre-Apply duplicate-winner flow.
+Next: Owner accepts or changes UX-002A.4; no integration or follow-on PBI starts automatically.
+Blocked: None for UX-002A.4. AG v64 remains unreconciled and unpublished as failure evidence; AG v65/v66 are isolated, resolved and unpublished local fixtures; the preexisting .DS_Store remains preserved.
 Last updated: 2026-09-17 MST
+
+## Current checkpoint — UX-002A.4 Duplicate winner decision failure
+
+- [x] Preserve AG v64 and inspect it read-only: both rows remain `CONFLICT` / `UNRESOLVED`, batch remains `RECONCILING`, and no Catalog, Resolution, Memory or publication mutation occurred after the failed click.
+- [x] Trace the grouped card through the current row-decision API and PostgreSQL transaction: trusted target identity and the group-atomic sibling exclusion already exist.
+- [x] Correct the duplicate winner payload so it carries only the Analyze-persisted title decision required by the existing authoritative target; do not expose or select UUIDs.
+- [x] Add regression coverage for first/second/three-member winner selection, stale and invalid paths, reload/reanalysis, and pre-Apply safety.
+- [x] Prove two fresh isolated Chrome duplicate fixtures (row 1 and row 2), reload persistence, and UX-002B gate regression without Apply.
+- [x] Run the authorized focal checks and reconcile PBI-041/audit/evidence/checklist.
+- [x] Stop at Owner Review; no Apply, push, PR, merge or deploy.
 
 ## Current checkpoint — UX-002B Load intent gate
 
@@ -17,7 +27,7 @@ Last updated: 2026-09-17 MST
 - [x] Use Owner language for the two intents, retain the existing `PARTIAL` / `COMPLETE` contract internally, and preserve contextual supplier creation.
 - [x] Replace the persistent completeness radios with compact supplier-and-intent context; permit a safe pre-save change that preserves rows when the supplier is unchanged.
 - [x] Add focused gate/Composer contracts and preserve the existing UX-002A duplicate regression coverage.
-- [!] PostgreSQL PBI-041 material suite exceeded the existing 10k publication budget twice (30.75 s, 30.39 s; 30 s limit); no product semantics or test threshold changed.
+- [x] The current PBI-041 PostgreSQL material suite passes; a prior local slow run remains historical evidence only and did not change product semantics or the threshold.
 - [ ] Complete isolated Chrome QA for PARTIAL, COMPLETE, safe pre-save change and history browsing after a local session is authorized.
 - [x] Reconcile PBI-041, UX-002 audit and implementation evidence with the static-check evidence; browser acceptance remains pending and UX-002C does not start.
 

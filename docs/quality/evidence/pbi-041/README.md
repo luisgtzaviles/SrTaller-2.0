@@ -98,6 +98,27 @@ at `794a3ba` / `e766a99`. Authenticated Chrome QA passed fresh blank state,
 both choice paths, pre-save Change, contextual-create cancel, dialog keyboard
 behavior and desktop/768/640 responsive light/dark presentation. No domain,
 API, database, migration, matching, coverage, Analyze, Apply or Catalog
-behavior changed, and no data was saved during QA. The separate preexisting
-PBI-041 PostgreSQL performance budget remains outstanding; this is not Owner
+behavior changed, and no data was saved during QA. The current PBI-041
+PostgreSQL material run passes; this remains local Owner Review evidence, not
 acceptance, integration or deployment evidence.
+
+## UX-002A.4 Duplicate winner remediation — ready for Owner Review
+
+AG `v64` was preserved read-only after the Owner-visible failure. Its two
+trusted duplicate rows and `RECONCILING` Batch were unchanged by the failed
+click; Catalog, Resolution, Memory, audit and publication writes remained zero.
+The root cause was an omitted Analyze-persisted `KEEP_CURRENT` title decision
+in the grouped-card request, which hit the repository title-decision guard and
+rolled back atomically. The card now forwards that persisted decision only;
+the backend retains the authoritative target and group-atomic winner/sibling
+transition without UUID mapping or title inference in UI.
+
+Focused Composer contracts, typecheck, production build, DEC-005 architecture
+and the disposable PostgreSQL PBI-041 suite passed (72 migrations). PostgreSQL
+coverage exercises first/second/three-member winners, stale and invalid target
+rejection, exact duplicate preservation, reanalysis/reload and pre-Apply
+absence of Catalog/Resolution/Memory/publication writes. Chrome local passed
+fresh AG `v65` row 1 and AG `v66` row 2 fixtures: each changed `1 attention`
+to `0`, showed the compact resolved state after reload, and was not applied.
+The New Load supplier-and-intent gate also remained explicit. No push, PR,
+merge, deployment or remote action occurred.

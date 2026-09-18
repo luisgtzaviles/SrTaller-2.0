@@ -1192,5 +1192,31 @@ a la compuerta; Escape restauró el foco y Tab/Shift+Tab se mantuvieron dentro
 del Dialog. La presentación pasó escritorio claro, 768 claro, 640 claro y 640
 oscuro sin overflow horizontal. No se guardó draft, creó Source/Version,
 analizó ni aplicó lote. Esta evidencia queda lista para Owner Review, no para
-aceptación. El fallo preexistente del presupuesto de publicación PostgreSQL de
-10k filas permanece registrado sin cambiar umbral ni comportamiento.
+aceptación. La corrida actual del material PostgreSQL PBI-041 pasa sin cambiar
+el umbral ni el comportamiento.
+
+## UX-002A.4 — Duplicate winner decision remediation
+
+El reporte Chrome de AG `v64` reveló una brecha que la cobertura anterior no
+modelaba: el duplicate winner llevaba `targetItemId` histórico, pero el handler
+de la tarjeta no reenviaba su `titleDecision` ya decidido durante Analyze. Al
+diferir el título observado del canónico, el guard
+`titleDiffers && input.titleDecision === null` devolvía `CATALOG_INPUT_INVALID`
+y la transacción se revertía. El corte read-only verificó `v64` sin mutación de
+sus dos filas, Batch, Catalog, Resolution, Memory, audit o publicación.
+
+`chooseDuplicateRow` ahora invoca la misma decisión de fila con el
+`titleDecision` persistido. La infraestructura impide además que ese camino
+acepte target o decisión de título ajenos al grupo de identidad conocida; toma
+locks de grupo y persiste una ganadora `APPLY` y siblings `EXCLUDE` en la misma
+transacción. No se añadió migración, endpoint, identidad heurística ni UUID
+visible. El resultado no escribe Catalog ni aprendizaje durable hasta Apply.
+
+El contrato focalizado protege el payload de la tarjeta. La prueba PostgreSQL
+material cubrió título observado diferente, rollback del payload omitido,
+ganador fila 1/2/3, estado stale, target ajeno, exact duplicate, reanálisis y
+ausencia de side effects; pasó con 72 migraciones y benchmark 10k dentro de
+presupuesto. Chrome local creó exclusivamente AG `v65` y `v66` parciales, no
+aplicadas: fila 1 y fila 2 respectivamente cambiaron una atención a cero,
+sobrevivieron reload y mostraron la resolución compacta. El gate UX-002B siguió
+exigiendo proveedor e intención antes de Continuar.

@@ -239,3 +239,33 @@ model: the UI uses the existing contradiction/superseded evidence and existing
 supplier identity key. The card exposes only differing values first, preserves
 raw details behind an accessible disclosure, and leaves true identity conflicts
 on their existing mapping path. Domain and database semantics remain unchanged.
+
+## UX-002A.4 winner-decision failure and remediation
+
+AG `v64` supplied the decisive counterexample: its grouped card contained two
+trusted-history physical observations and no UUID, but `Usar fila 1` returned
+the generic “requiere un artículo canónico válido, una decisión de nombre o
+releer la versión” message. A read-only cut showed no durable side effect:
+both rows remained `CONFLICT/UNRESOLVED` with their same target, Batch stayed
+`RECONCILING`, and Resolution, Memory, Catalog audit and publication remained
+absent.
+
+The exact path was grouped-card `chooseDuplicateRow` → `resolve` →
+`decideSupplierRow` → controller/protected operation/service → repository
+`decide`. The known target was present; the missing field was the Analyze
+persisted `titleDecision`. For a supplier title that differs from the canonical
+title, the repository correctly guards with
+`titleDiffers && input.titleDecision === null`. The prior card omitted it, so
+the transaction rolled back. This is **WRONG_DECISION_PAYLOAD** (with generic
+handler reuse as a contributing presentation detail), not stale state or lost
+identity.
+
+The remediation forwards only the existing row `titleDecision`; it does not
+derive a title in the browser, expose a UUID or ask the Owner to map Catalog.
+The repository accepts a contradictory known duplicate only for its stored
+target and stored non-null decision, locks the whole duplicate group and makes
+the selected physical row the sole `APPLY` while all siblings become traceable
+`EXCLUDE` rows in one transaction. A stale row still conflicts before mutation.
+Selection remains entirely pre-Apply and reanalysis preserves an unchanged
+choice. AG `v65`/`v66` are isolated local Chrome evidence for first/second row
+selection and reload; neither was applied.
