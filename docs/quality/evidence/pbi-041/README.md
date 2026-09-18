@@ -16,6 +16,7 @@ authority.
 - [UX-001 Supplier Selection Gate Audit](../../../domain/PRICE_LIST_UX_001_SUPPLIER_SELECTION_GATE_AUDIT.md)
 - [UX-002 Happy-Path Friction Audit](../../../domain/PRICE_LIST_UX_002_HAPPY_PATH_FRICTION_AUDIT.md)
 - [UX-002E Batch Context Defaults Friction Audit](../../../domain/PRICE_LIST_UX_002E_BATCH_CONTEXT_DEFAULTS_FRICTION_AUDIT.md)
+- [UX-003 Bulk Catalog Field Policy Audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
@@ -29,6 +30,17 @@ missing Brand. UX-002E.1 implements only the safe presentation consequence:
 an empty, collapsed `Completar datos faltantes` disclosure for editable FULL
 loads. Its action is explicit, empty-only and never overwrites supplied data;
 it has no Source/history preference, Save, Analyze or Catalog side effect.
+
+## UX-003 Bulk Catalog Field Policy — audit only
+
+UX-003 traces the current fixed FULL/COMPACT contracts, field inventory, Tenant
+ownership, authorization, persistence and the Nueva reparación configuration
+pattern. It recommends a Tenant-owned effective-value policy separate from
+Composer presentation, so COMPACT identified updates do not fail merely because
+a supplier omits a value already known safely by Catalog. The audit records
+`UX3-001..017`; none is accepted or implemented. It made zero DB writes and no
+product, API, migration, SupplierSource, fixture or Catalog change. See the
+[UX-003 audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md).
 
 ## UX-001 Supplier Selection Gate — local Owner Review
 

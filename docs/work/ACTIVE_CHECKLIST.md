@@ -1,15 +1,24 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002E.1 Secondary missing-data context
+Milestone / Functional Goal: PBI-041 — UX-003 Bulk Catalog Field Policy Audit
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: implementation and focused proof complete; ready for Owner Review
+Status: audit/design complete; ready for Owner decisions, not implemented
 WIP: 1/1
-Progress: 7 / 7 UX-002E.1 blocks completed.
-Current: stopped for Owner Review; context assistance is explicit, empty-only and ephemeral to the active load.
-Next: Owner Review only. Do not implement profiles, suggestions or identity/matching changes without new authority.
+Progress: 6 / 6 UX-003 audit blocks completed.
+Current: stopped for Owner decision on Tenant field policy; the current Composer behavior remains unchanged.
+Next: Owner decides UX3-001..017. Do not implement settings, policy enforcement, API, migration, capability, profiles, suggestions or identity/matching changes without new authority.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
+
+## Current checkpoint — UX-003 Bulk Catalog Field Policy Audit
+
+- [x] Inspect the actual FULL/COMPACT contracts, fixed/current essential columns, input persistence and Catalog apply boundary without altering product behavior.
+- [x] Inspect Nueva reparación field-policy registry, scope, permissions, versions, dirty/save/reset semantics and server-side enforcement materially.
+- [x] Establish Tenant as the recommended quality-policy owner; distinguish it from Branch attribution, SupplierSource history and User preferences.
+- [x] Record the field inventory and the difference between raw-row requirements and effective Catalog quality, including COMPACT and known/new cases.
+- [x] Document configuration, authorization, defaults, historical items, concurrency, reanalyze, revision and snapshot alternatives as UX3-001..017 Owner decisions.
+- [x] Validate documentation only: local links, consistency, secret scan and git diff --check; DB writes remain zero and no product/API/DB/migration/test behavior changed.
 
 ## Current checkpoint — UX-002E.1 Secondary missing-data context
 
