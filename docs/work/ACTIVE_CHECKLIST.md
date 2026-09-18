@@ -1,15 +1,24 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005.3 Exception-to-Source Correction Navigation
+Milestone / Functional Goal: PBI-041 — UX-005.4 Duplicate Winner Controls Preservation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — UX-005.3 materialized; no Apply or remote action.
+Status: Local Owner Review — duplicate winner controls restored; AviCell v3 remains deliberately unresolved pending Owner business decisions.
 WIP: 1/1
-Progress: 6 / 6 UX-005.3 implementation blocks complete; prior UX-005.1/UX-005.2 evidence remains preserved.
-Current: UX-005.3 is ready for Owner Review: exception navigation, local correction preparation and stale-predecessor protection are materialized.
-Next: Owner review only. Do not apply AviCell, start another slice, push, create a PR, merge or deploy without separate authority.
-Blocked: The broader disposable PostgreSQL PBI-041 suite exceeded its pre-existing 10k publish performance budget twice (32.7s / 34.2s; limit 30s). The dedicated UX-005.3 PostgreSQL case passed in both runs; no UX-005.3 functional failure was observed. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 6 / 6 UX-005.4 implementation blocks complete; prior UX-005.1–UX-005.3 evidence remains preserved.
+Current: UX-005.4 is ready for Owner Review with the isolated QA winner decision persisted and AviCell v3 retained as read-only evidence.
+Next: Owner Review only. Do not choose either AviCell v3 winner or Apply its batch without a new explicit business decision.
+Blocked: No remediation blocker. AviCell v3 intentionally retains two unresolved duplicate business choices. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
+
+## Current checkpoint — UX-005.4 Duplicate Winner Controls Preservation
+
+- [x] Inspect AviCell v3 read-only: 744 physical rows, 742 effective units, 740 resolved units and two unresolved duplicate groups (468/469, 611/612); no Owner-data mutation.
+- [x] Classify root cause: the UI only offered the old winner action for a shared existing Catalog target, and the decision path rejected the shared no-target NEW case.
+- [x] Restore explicit `Usar fila N` plus separate `Ir a fila N` actions with the existing prepare capability boundary.
+- [x] Prove atomic winner APPLY / sibling EXCLUDE, title-decision preservation, reload/reanalysis and no UUID for a no-target duplicate in isolated PostgreSQL and Chrome QA.
+- [x] Complete AviCell v3 navigation-only and responsive Chrome proof without selecting a winner or applying a batch.
+- [x] Reconcile PBI/evidence/checklist and run the authorized proportional gates; keep commits local only.
 
 ## Current checkpoint — UX-005.3 Exception-to-Source Correction Navigation
 

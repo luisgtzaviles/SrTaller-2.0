@@ -1665,3 +1665,28 @@ correction metadata and rejects direct predecessor Analyze and Apply. The
 successor reanalyzes normally with a human-provided corrected value. No schema
 migration, CI, push, PR, merge or deploy occurred. See
 [UX-005.3](../../../domain/PRICE_LIST_UX_0053_EXCEPTION_TO_SOURCE_CORRECTION_NAVIGATION.md).
+
+## UX-005.4 — Duplicate winner controls preservation
+
+The duplicate card now keeps its two orthogonal actions: **Usar fila N** is
+available only to `catalog.import.prepare` and persists the pre-existing atomic
+winner decision; **Ir a fila N** remains a non-mutating UX-005.3 inspection
+path. The frontend permits a coherent group with one shared existing target or
+one shared no-target prospective identity. The repository repeats that boundary
+inside its transaction, rejects mixed/foreign targets and never selects by
+price, cost or row order.
+
+Disposable PostgreSQL passes the target-known title-decision regression and a
+new no-target duplicate case: selected row `NEW / APPLY`, sibling `EXCLUDE`,
+one effective decision, blocked Apply before resolution and persistence across
+reload/reanalysis. Chrome additionally exercised `QA UX-002A Local v5`: a
+two-row prospective duplicate went from one attention unit to one resolved
+unit through **Usar fila 1**, and the result persisted after reload and
+reopening `v5`; Apply was not executed. Chrome inspected AviCell v3 without
+clicking a winner:
+744 physical rows, 742 effective units, 740 resolved and two pending groups
+at `468/469` and `611/612`. Desktop, 768 px, 640 px, light/dark and keyboard
+order passed. Navigation of row 468 wrote nothing; AviCell v3 retains zero
+Resolution/Memory/publication/Catalog effects. `test:pbi041:postgresql` passed
+with 75 migrations; typecheck, build and the 39 focused Composer contracts
+passed. No CI, push, PR, merge, Apply or deploy occurred.

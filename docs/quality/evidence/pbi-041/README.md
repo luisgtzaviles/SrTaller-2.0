@@ -21,6 +21,7 @@ authority.
 - [UX-005 First Supplier Baseline Reconciliation Audit](../../../domain/PRICE_LIST_UX_005_FIRST_SUPPLIER_BASELINE_RECONCILIATION_AUDIT.md)
 - [UX-005.2 Avicell Large-List Reanalysis Proof](../../../domain/PRICE_LIST_UX_0052_AVICELL_LARGE_LIST_REANALYSIS_PROOF.md)
 - [UX-005.3 Exception-to-Source Correction Navigation](../../../domain/PRICE_LIST_UX_0053_EXCEPTION_TO_SOURCE_CORRECTION_NAVIGATION.md)
+- [UX-005.4 Duplicate Winner Controls Preservation](../../../domain/PRICE_LIST_UX_0054_DUPLICATE_WINNER_CONTROLS_PRESERVATION.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
@@ -50,6 +51,14 @@ physical row identities. A correction starts only in browser memory; an
 explicit save/review creates the linked successor version. The predecessor
 remains evidence but is server-side stale for Analyze, decisions and Apply.
 No AviCell value, version or Catalog effect was written during the walkthrough.
+
+## UX-005.4 — Duplicate winner controls preservation
+
+UX-005.4 restores the explicit winner action without removing UX-005.3 source
+navigation. The isolated PostgreSQL proof verifies one selected prospective
+`NEW / APPLY`, sibling `EXCLUDE`, reload/reanalysis persistence and no UUID;
+the existing target-known proof retains required `titleDecision`. AviCell v3
+remains unmodified with its two Owner business choices pending.
 
 ## UX-002E / UX-002E.1 missing-data context
 

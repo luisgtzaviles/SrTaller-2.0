@@ -52,3 +52,8 @@ No se corrige automáticamente `V2314 COPIA`, no se crea una referencia pending
 ni un CatalogItem por navegar. La corrección de negocio sigue requiriendo un
 valor humano explícito y Apply sigue siendo la única operación que puede
 publicar efectos de Catalog.
+
+UX-005.4 restaura el control de decisión de duplicados como una acción distinta:
+**Ir a fila N** continúa siendo navegación sin escritura y no puede elegir una
+fila; **Usar fila N** conserva la decisión humana atómica. Ver
+[Duplicate Winner Controls Preservation](PRICE_LIST_UX_0054_DUPLICATE_WINNER_CONTROLS_PRESERVATION.md).
