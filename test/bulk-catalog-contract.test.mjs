@@ -237,6 +237,12 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(catalogApi, /coverageReviewAcknowledged/u);
   assert.match(ui, /const canReadBulk = hasOperationalCapability\(capabilities, 'catalog\.import\.read'\) \|\| hasOperationalCapability\(capabilities, 'catalog\.import\.prepare'\)/u);
   assert.match(ui, /const canPrepareBulk = hasOperationalCapability\(capabilities, 'catalog\.import\.prepare'\)/u);
+  assert.match(ui, /const canPublish = hasOperationalCapability\(capabilities, 'catalog\.import\.publish'\)/u);
+  assert.match(ui, /const canPublishCurrent = useMemo\(/u);
+  assert.match(ui, /catalog\.items\.create/u);
+  assert.match(ui, /catalog\.items\.update/u);
+  assert.match(ui, /catalog\.items\.deactivate/u);
+  assert.match(ui, /catalog\.prices\.manage/u);
   assert.match(ui, /Solo lectura/u);
   assert.match(ui, /if \(!canPrepareBulk\)/u);
   assert.match(coveragePolicy, /COMPLETE_BASELINE_PLAUSIBILITY_MINIMUM_BASELINE_COUNT = 20/u);

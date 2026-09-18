@@ -713,7 +713,7 @@ test('PBI-041 material handoff preserves the publisher as the Apply audit actor'
     await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
     const source = await service.createSource(preparer, { name: 'Handoff QA supplier' });
-    const draft = await service.createDraft(preparer, { sourceId: source.sourceId, description: 'Prepared by A', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'h'.repeat(64), rawPayload: 'handoff-qa', rows: [fullRow(9_401)] });
+    const draft = await service.createDraft(preparer, { sourceId: source.sourceId, description: 'Prepared by A', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'handoff-qa', rows: [fullRow(9_401)] });
     const analyzed = await service.analyze(preparer, draft.versionId, { expectedVersion: draft.version });
     const ready = await service.decideMany(preparer, draft.versionId, { expectedBatchVersion: analyzed.batch.version, classifications: ['PENDING_REFERENCE'], decision: 'APPLY' });
     assert.equal(ready.batch.lifecycle, 'READY');
