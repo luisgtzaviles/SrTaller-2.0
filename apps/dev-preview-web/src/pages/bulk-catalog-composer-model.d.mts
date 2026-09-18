@@ -4,8 +4,8 @@ export type ComposerSelection = Readonly<{ firstRow: number; lastRow: number; fi
 export type ValidationIssue = Readonly<{ scope: 'BATCH' | 'CELL' | 'GLOBAL'; rowId?: string; rowIndex?: number; columnKey?: ComposerColumn; controlKey?: 'source' | 'mode'; code: string; message: string }>;
 
 export const FULL_COLUMNS: readonly ComposerColumn[];
-export const ESSENTIAL_COLUMNS: readonly ComposerColumn[];
 export const COMPACT_COLUMNS: readonly ComposerColumn[];
+export function derivePolicyDrivenColumns(fields: readonly Readonly<{ key: string; level: 'REQUIRED' | 'ESSENTIAL' | 'OPTIONAL' }>[]): Readonly<{ all: readonly ComposerColumn[]; essential: readonly ComposerColumn[]; required: readonly ComposerColumn[] }>;
 export const DEFAULT_COLUMN_WIDTHS: Readonly<Record<ComposerColumn, number>>;
 export const COLUMN_MIN_WIDTH: number;
 export const COLUMN_MAX_WIDTH: number;

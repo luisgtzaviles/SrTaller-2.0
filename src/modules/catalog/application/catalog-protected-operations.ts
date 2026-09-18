@@ -5,13 +5,14 @@ import type {
   ProtectedRequestEvidence,
   SensitiveActionLevel2Executor,
 } from '../../access/index.js';
+import { ContextualAuthorizationError } from '../../access/index.js';
 import type { TenantWideAuthorizationExecutor } from '../../access/index.js';
 import type { CatalogService } from './catalog.service.js';
 import type { BulkCatalogService } from './bulk-catalog.service.js';
 import type { CatalogRetirementService } from './catalog-retirement.service.js';
 import type { CatalogMutationContext, CatalogScope } from './ports/catalog-repository.port.js';
 import type { CatalogFieldPolicyConfigurationContext } from './ports/catalog-field-policy-repository.port.js';
-import type { CatalogFieldPolicyService } from './catalog-field-policy.service.js';
+import type { CatalogFieldPolicyProjection, CatalogFieldPolicyService } from './catalog-field-policy.service.js';
 
 const requirement = (capability: ProtectedOperationRequirement['capability'], kind: ProtectedOperationRequirement['kind']) => Object.freeze({ capability, kind });
 const priceListRead = requirement('price_list.read', 'read');
@@ -27,6 +28,18 @@ const importPublish = requirement('catalog.import.publish', 'state-change');
 const bulkRetire = requirement('catalog.items.bulk_retire', 'state-change');
 const catalogConfigurationRead = requirement('catalog.configuration.read', 'read');
 const catalogConfigurationManage = requirement('catalog.configuration.manage', 'state-change');
+
+export type CatalogOperationalFieldPolicyProjection = Readonly<{
+  policyVersion: number;
+  source: 'product-default' | 'tenant';
+  fields: readonly Readonly<{
+    key: string;
+    label: string;
+    level: 'REQUIRED' | 'ESSENTIAL' | 'OPTIONAL';
+    domainFixed: boolean;
+    referenceCostSensitive: boolean;
+  }>[];
+}>;
 
 function sameContext(contexts: readonly AuthorizedOperationalContext[]): boolean {
   const first = contexts[0];
@@ -72,6 +85,22 @@ function fieldPolicyContext(contexts: readonly AuthorizedOperationalContext[]): 
   return Object.freeze({ tenantId: first.tenantId, branchId: first.branchId, stationId: first.stationId, sessionId: first.sessionId, actorUserId: first.userId, actorDisplayName: first.userDisplayName, capability: 'catalog.configuration.manage', commitGuards: Object.freeze(contexts.map((context) => context.commitGuard)) });
 }
 
+function operationalFieldPolicy(value: CatalogFieldPolicyProjection, mayReadReferenceCost: boolean): CatalogOperationalFieldPolicyProjection {
+  return Object.freeze({
+    policyVersion: value.policyVersion,
+    source: value.source,
+    fields: Object.freeze(value.registry
+      .filter((field) => mayReadReferenceCost || !field.referenceCostSensitive)
+      .map((field) => Object.freeze({
+        key: field.key,
+        label: field.label,
+        level: value.fieldLevels[field.key],
+        domainFixed: field.domainFixed,
+        referenceCostSensitive: field.referenceCostSensitive,
+      }))),
+  });
+}
+
 export class CatalogOperationAccessDeniedError extends Error {
   constructor() { super('Catalog operation has no approved authority.'); this.name = 'CatalogOperationAccessDeniedError'; }
 }
@@ -107,6 +136,17 @@ export class CatalogProtectedOperations {
     return this.tenantWideAuthorization.execute(evidence, catalogRead, (context) => this.service.listReferences(scope(context)));
   }
   getFieldPolicy(evidence: ProtectedRequestEvidence) { return this.executeTenantWideMany(evidence, [catalogConfigurationRead, costRead], (contexts) => this.fieldPolicy.effective({ tenantId: contexts[0]!.tenantId })); }
+  async getBulkFieldPolicy(evidence: ProtectedRequestEvidence): Promise<CatalogOperationalFieldPolicyProjection> {
+    return await this.tenantWideAuthorization.execute(evidence, importPrepareRead, async (context) => {
+      let mayReadReferenceCost = false;
+      try {
+        await this.tenantWideAuthorization.execute(evidence, costRead, async () => { mayReadReferenceCost = true; });
+      } catch (error: unknown) {
+        if (!(error instanceof ContextualAuthorizationError) || error.code !== 'ACCESS_DENIED') throw error;
+      }
+      return operationalFieldPolicy(await this.fieldPolicy.effective({ tenantId: context.tenantId }), mayReadReferenceCost);
+    });
+  }
   updateFieldPolicy(evidence: ProtectedRequestEvidence, input: unknown) { return this.executeTenantWideMany(evidence, [catalogConfigurationManage, costManage], (contexts) => this.fieldPolicy.update(fieldPolicyContext(contexts), input)); }
   resetFieldPolicy(evidence: ProtectedRequestEvidence, input: unknown) { return this.executeTenantWideMany(evidence, [catalogConfigurationManage, costManage], (contexts) => this.fieldPolicy.reset(fieldPolicyContext(contexts), input)); }
 

@@ -73,6 +73,17 @@ export type CatalogFieldPolicyResponse = Readonly<{
   source: 'product-default' | 'tenant';
   registry: readonly CatalogFieldPolicyRegistryEntry[];
 }>;
+export type CatalogOperationalFieldPolicyResponse = Readonly<{
+  policyVersion: number;
+  source: 'product-default' | 'tenant';
+  fields: readonly Readonly<{
+    key: CatalogFieldPolicyKey;
+    label: string;
+    level: CatalogFieldPolicyLevel;
+    domainFixed: boolean;
+    referenceCostSensitive: boolean;
+  }>[];
+}>;
 
 /** Mirrors Catalog's exact identity normalization; it is intentionally not fuzzy. */
 export function normalizeCatalogReferenceText(value: string): string {
@@ -144,5 +155,6 @@ export function compareSupplierVersions(leftVersionId: string, rightVersionId: s
 export function createCatalogRetirementPlan(input: Readonly<{ scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; sourceVersionId?: string }>, csrfToken: string) { return mutate<CatalogRetirementPlan>('/api/catalog/retirement-plans', 'POST', input, csrfToken); }
 export function executeCatalogRetirementPlan(planId: string, input: Readonly<{ confirmation: 'RETIRE_ACTIVE_CATALOG' | 'RETIRE_BATCH_CREATED_ITEMS'; pin: string; clientRequestId: string }>, csrfToken: string) { return mutate<CatalogRetirementExecution>(`/api/catalog/retirement-plans/${encodeURIComponent(planId)}/execute`, 'POST', input, csrfToken); }
 export function getCatalogFieldPolicy(signal?: AbortSignal) { return get<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy', signal); }
+export function getBulkCatalogFieldPolicy(signal?: AbortSignal) { return get<CatalogOperationalFieldPolicyResponse>('/api/catalog/bulk/field-policy', signal); }
 export function updateCatalogFieldPolicy(input: Readonly<{ expectedVersion: number; fieldLevels: CatalogFieldPolicyResponse['fieldLevels'] }>, csrfToken: string) { return mutate<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy', 'PUT', input, csrfToken); }
 export function restoreCatalogFieldPolicyDefaults(expectedVersion: number, csrfToken: string) { return mutate<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy/restore-product-defaults', 'POST', { expectedVersion }, csrfToken); }

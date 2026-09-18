@@ -11,8 +11,37 @@ export const FULL_COLUMNS = Object.freeze([
   'cost',
 ]);
 
-export const ESSENTIAL_COLUMNS = Object.freeze(['title', 'cost', 'price']);
 export const COMPACT_COLUMNS = Object.freeze(['supplierItemCode', 'sku', 'barcode', 'cost', 'price']);
+
+const policyColumnByKey = Object.freeze({
+  kind: 'kind',
+  title: 'title',
+  description: 'description',
+  category: 'category',
+  brand: 'brand',
+  supplierItemCode: 'supplierItemCode',
+  sku: 'sku',
+  barcode: 'barcode',
+  referenceCost: 'cost',
+  basePrice: 'price',
+});
+
+/** Derives presentation-only Composer columns from the server-filtered effective policy. */
+export function derivePolicyDrivenColumns(fields) {
+  const all = [];
+  const essential = [];
+  const required = [];
+  const seen = new Set();
+  for (const field of fields) {
+    const column = policyColumnByKey[field?.key];
+    if (!column || seen.has(column)) continue;
+    seen.add(column);
+    all.push(column);
+    if (field.level === 'REQUIRED' || field.level === 'ESSENTIAL') essential.push(column);
+    if (field.level === 'REQUIRED') required.push(column);
+  }
+  return Object.freeze({ all: Object.freeze(all), essential: Object.freeze(essential), required: Object.freeze(required) });
+}
 
 export const DEFAULT_COLUMN_WIDTHS = Object.freeze({
   kind: 150,

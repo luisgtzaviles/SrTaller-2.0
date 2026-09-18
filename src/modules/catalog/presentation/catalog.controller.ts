@@ -67,6 +67,8 @@ export class CatalogController {
 
   @Get('configuration/field-policy') @Header('Cache-Control', 'private, no-store')
   async fieldPolicy(@Headers() headers: RequestHeaders) { try { return await this.operations.getFieldPolicy(evidence(headers)); } catch (error) { return translate(error); } }
+  @Get('bulk/field-policy') @Header('Cache-Control', 'private, no-store')
+  async bulkFieldPolicy(@Headers() headers: RequestHeaders) { try { return await this.operations.getBulkFieldPolicy(evidence(headers)); } catch (error) { return translate(error); } }
   @Put('configuration/field-policy') @Header('Cache-Control', 'private, no-store')
   async updateFieldPolicy(@Body() body: unknown, @Headers() headers: RequestHeaders) { try { return await this.operations.updateFieldPolicy(evidence(headers), body); } catch (error) { return translate(error); } }
   @Post('configuration/field-policy/restore-product-defaults') @Header('Cache-Control', 'private, no-store')
