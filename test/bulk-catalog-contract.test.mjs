@@ -25,6 +25,16 @@ test('bulk input fails closed above 10k and never uses title-only compact identi
   assert.throws(() => domain.parseBulkRows([{ sku: 'A', basePriceMinor: -1 }], 'COMPACT'), /Catalog input/u);
 });
 
+test('required policy validates the effective Catalog value and never supplier history or a guessed value', () => {
+  const levels = { kind: 'REQUIRED', title: 'REQUIRED', description: 'OPTIONAL', category: 'REQUIRED', brand: 'REQUIRED', supplierItemCode: 'OPTIONAL', sku: 'OPTIONAL', barcode: 'OPTIONAL', referenceCost: 'ESSENTIAL', basePrice: 'REQUIRED' };
+  const known = { kind: 'PART', title: 'Pantalla iPhone 11', description: null, categoryPresent: true, brandPresent: true, basePriceMinor: 120_00, referenceCostMinor: 60_00 };
+  const compactKnown = { kind: null, supplierObservedTitle: 'Observado', title: null, description: null, category: null, brand: null, supplierItemCode: 'SUP-11', sku: null, barcode: null, basePriceMinor: 140_00, referenceCostMinor: null };
+  assert.deepEqual(domain.missingRequiredEffectiveFields(levels, compactKnown, known), []);
+  assert.deepEqual(domain.missingRequiredEffectiveFields(levels, { ...compactKnown, supplierItemCode: null }, null), ['kind', 'title', 'category', 'brand']);
+  assert.deepEqual(domain.missingRequiredEffectiveFields(levels, { ...compactKnown, brand: 'Apple' }, { ...known, brandPresent: false }), []);
+  assert.equal(domain.missingRequiredEffectiveValueReason('brand'), 'MISSING_REQUIRED_EFFECTIVE_VALUE:brand');
+});
+
 test('50k characterization rejects before persistence without truncation', () => {
   const rows = Array.from({ length: 50_000 }, (_, index) => fullRow(index + 1));
   const heapBefore = process.memoryUsage().heapUsed; const started = performance.now();
@@ -193,7 +203,11 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(repository, /input\.includeReferenceCost/u);
   assert.match(repository, /const serializeRowErrors = \(value: unknown\): string => JSON\.stringify\(normalizeRowErrors\(value\)\)/u);
   assert.match(repository, /errors: normalizeRowErrors\(value\.errors\)/u);
-  assert.match(repository, /errors: serializeRowErrors\(input\.targetItemId \|\| classification === 'NEW' \? \[\] : row\.errors\)/u);
+  assert.match(repository, /const missingRequired = input\.decision === 'EXCLUDE'/u);
+  assert.match(repository, /missingRequiredEffectiveFields\(await readEffectiveFieldPolicy\(db, context\.tenantId\), row\.proposal as BulkCatalogRowInput, selectedEffectiveTarget\)/u);
+  assert.match(repository, /const persistedDecision: BulkCatalogDecision = missingRequired\.length > 0 \? 'UNRESOLVED' : input\.decision/u);
+  assert.match(repository, /const requiredAttention = await db\.selectFrom\('catalog_update_row_decisions'\)/u);
+  assert.match(repository, /throw new CatalogRequiredEffectiveValueError\(failures\.length/u);
   assert.match(repository, /source_type: 'IMPORTED'/u);
   assert.match(repository, /title_decision/u);
   assert.match(repository, /canonicalTitle: \{ before: priorItem\.title, after: p\.title \}/u);

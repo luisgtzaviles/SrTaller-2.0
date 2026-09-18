@@ -17,7 +17,7 @@ const { CatalogRetirementService } = enabled ? await import('../dist/modules/cat
 const { CatalogFieldPolicyService } = enabled ? await import('../dist/modules/catalog/application/catalog-field-policy.service.js') : {};
 const { KyselyCatalogFieldPolicyRepository } = enabled ? await import('../dist/modules/catalog/infrastructure/persistence/kysely-catalog-field-policy.repository.js') : {};
 const { CatalogFieldPolicyConcurrencyConflictError } = enabled ? await import('../dist/modules/catalog/application/ports/catalog-field-policy-repository.port.js') : {};
-const { CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogSupplierDeleteNotAllowedError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
+const { CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogRequiredEffectiveValueError, CatalogSupplierDeleteNotAllowedError } = enabled ? await import('../dist/modules/catalog/domain/catalog-item.js') : {};
 
 const tenantA = 'a1410000-0000-4000-8000-000000000041';
 const tenantB = 'b1410000-0000-4000-8000-000000000041';
@@ -722,5 +722,45 @@ test('UX-003.1 persists tenant-isolated catalog field policies with append-only 
     const versions = await admin.query(`select policy_version, previous_version, capability, action, field_levels from catalog_field_policy_versions where tenant_id = $1 order by policy_version`, [policyTenantA]);
     assert.deepEqual(versions.rows.map((row) => [row.policy_version, row.previous_version, row.capability, row.action, row.field_levels.brand]), [[1, 0, 'catalog.configuration.manage', 'catalog_field_policy.updated', 'REQUIRED'], [2, 1, 'catalog.configuration.manage', 'catalog_field_policy.reset', 'OPTIONAL']]);
     await assert.rejects(admin.query(`update catalog_field_policy_versions set action = 'catalog_field_policy.updated' where tenant_id = $1 and policy_version = 1`, [policyTenantA]));
+  } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
+});
+
+test('UX-003.4 enforces required values from the resulting Catalog state and rechecks policy at Apply', { skip: !enabled, timeout: 30_000 }, async () => {
+  const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
+  const connection = createDatabaseConnection(config());
+  const tenantId = 'f1410000-0000-4000-8000-000000000041'; const branchId = 'f2410000-0000-4000-8000-000000000041';
+  const ctx = context(tenantId, branchId);
+  const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
+  const policy = new CatalogFieldPolicyService(new KyselyCatalogFieldPolicyRepository(connection), () => new Date('2026-09-17T21:00:00.000Z'), () => randomUUID());
+  const policyContext = Object.freeze({ ...ctx, capability: 'catalog.configuration.manage' });
+  const knownRow = { kind: 'PART', supplierObservedTitle: 'Pantalla QA efectiva', title: 'Pantalla QA efectiva', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: 'EFFECTIVE-001', sku: 'EFFECTIVE-001', barcode: 'EFFECTIVE-BAR-001', basePriceMinor: 120_00, referenceCostMinor: null };
+  try {
+    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantId, randomUUID()]);
+    await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'Apple', 'apple', 'ACTIVE', 1, now(), now())`, [tenantId, randomUUID()]);
+    const source = await service.createSource(ctx, { name: 'Proveedor efectiva QA' });
+    const baseline = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'baseline', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'e'.repeat(64), rawPayload: 'effective-baseline', rows: [knownRow] });
+    const baselineAnalyzed = await service.analyze(ctx, baseline.versionId, { expectedVersion: baseline.version });
+    assert.equal(baselineAnalyzed.batch.lifecycle, 'READY');
+    await service.publish(ctx, baseline.versionId, { expectedVersion: baselineAnalyzed.version, clientRequestId: randomUUID() }, false);
+    const catalogBefore = Number((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantId])).rows[0].count);
+
+    const strictBrand = { ...(await policy.effective({ tenantId })).fieldLevels, brand: 'REQUIRED' };
+    await policy.update(policyContext, { expectedVersion: 0, fieldLevels: strictBrand });
+    const compactKnown = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'known keeps brand', clientRequestId: randomUUID(), mode: 'COMPACT', completeness: 'PARTIAL', columnSignature: 'e'.repeat(64), rawPayload: 'effective-known', rows: [{ kind: null, supplierObservedTitle: 'Pantalla QA efectiva', title: null, description: null, category: null, brand: null, supplierItemCode: 'EFFECTIVE-001', sku: null, barcode: null, basePriceMinor: 130_00, referenceCostMinor: null }] });
+    const compactKnownAnalyzed = await service.analyze(ctx, compactKnown.versionId, { expectedVersion: compactKnown.version });
+    assert.deepEqual([compactKnownAnalyzed.batch.lifecycle, compactKnownAnalyzed.rows[0].classification, compactKnownAnalyzed.rows[0].errors], ['READY', 'UPDATE', []]);
+
+    const missingBrand = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'new missing brand', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: '1'.repeat(64), rawPayload: 'effective-missing-brand', rows: [{ ...knownRow, title: 'Artículo nuevo sin marca', supplierObservedTitle: 'Artículo nuevo sin marca', supplierItemCode: 'EFFECTIVE-NEW', sku: 'EFFECTIVE-NEW', barcode: 'EFFECTIVE-NEW-BAR', brand: null }] });
+    const missingBrandAnalyzed = await service.analyze(ctx, missingBrand.versionId, { expectedVersion: missingBrand.version });
+    assert.deepEqual([missingBrandAnalyzed.lifecycle, missingBrandAnalyzed.batch.lifecycle, missingBrandAnalyzed.rows[0].classification, missingBrandAnalyzed.rows[0].decision], ['DRAFT', 'RECONCILING', 'NEW', 'UNRESOLVED']);
+    assert.deepEqual(missingBrandAnalyzed.rows[0].errors, ['MISSING_REQUIRED_EFFECTIVE_VALUE:brand']);
+    assert.equal(Number((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantId])).rows[0].count), catalogBefore);
+
+    const strictDescription = { ...strictBrand, description: 'REQUIRED' };
+    await policy.update(policyContext, { expectedVersion: 1, fieldLevels: strictDescription });
+    await assert.rejects(service.publish(ctx, compactKnown.versionId, { expectedVersion: compactKnownAnalyzed.version, clientRequestId: randomUUID() }, false), (error) => error instanceof CatalogRequiredEffectiveValueError && error.missingFields.includes('description'));
+    assert.equal(Number((await admin.query(`select count(*)::int as count from catalog_items where tenant_id = $1`, [tenantId])).rows[0].count), catalogBefore);
   } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
 });
