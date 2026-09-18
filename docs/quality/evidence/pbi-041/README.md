@@ -42,6 +42,9 @@ a supplier omits a value already known safely by Catalog. The audit records
 UX-003.2 agrega la superficie de configuración que la consume. Composer
 consumption/enforcement sigue explícitamente deshabilitado: no se modifican
 FULL/COMPACT, Review, Analyze, Apply, SupplierSource, Version ni CatalogItem.
+El proof responsive local de UX-003.2 pasó a `768 px` y `640 px` en ambos
+temas; la tarjeta de estado separa fuente y contexto y no hay overflow
+horizontal, clipping ni superposición.
 See the
 [UX-003 audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md).
 

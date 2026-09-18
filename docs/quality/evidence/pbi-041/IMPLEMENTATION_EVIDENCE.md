@@ -51,6 +51,16 @@ Tenant y su historial de policy. Tema claro/oscuro y los controles nativos de
 selección/dismissal por teclado se probaron en Chrome local. La regresión
 focalizada protege `409`; no se forzó una carrera adicional de dos pestañas.
 
+El proof material responsive completó Chrome a `768 px` y `640 px`, en tema
+claro y oscuro. Encabezado, fuente/versión, leyenda Obligatorio/Esencial/
+Opcional, filas `FIJO`, Marca, Descripción, Costo de referencia, controles
+nativos, touch targets y acciones quedaron visibles y operables sin overflow
+horizontal, clipping ni superposición. Un cambio de Descripción produjo dirty
+state y se descartó localmente sin Save. Tab y Shift+Tab conservaron el orden
+de controles. Se ajustó sólo la tarjeta de estado para presentar fuente y
+contexto en líneas separadas; policy final, historia, `CatalogItem` (`45`) y
+`SupplierCatalogVersion` (`77`) permanecieron sin cambios.
+
 ## Supplier history, automatic versioning and governed delete
 
 La auditoría previa recorrió Source, Version, raw, Listing, RowDecision,

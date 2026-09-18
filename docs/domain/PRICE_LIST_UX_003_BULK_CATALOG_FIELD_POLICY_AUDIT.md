@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** UX-003.1 foundation materialized locally; Composer consumption/enforcement remains intentionally disabled.
+- **Estado:** UX-003.1 authority y UX-003.2 configuration surface materialized locally; responsive Owner proof complete. Composer consumption/enforcement remains intentionally disabled.
 - **Alcance:** PBI-041, política de datos de Catalog consumida inicialmente por Bulk Catalog Composer. No cambia el comportamiento actual.
 - **Método:** trazabilidad estática de Composer, API, dominio, autorización, persistencia y la configuración existente de Nueva reparación; preflight local read-only.
 - **Preflight:** rama feature/pbi-041-bulk-catalog-composer, HEAD bb9595a30f12587347c46e77c560d762d6620b6d, localhost/backend health 200; PostgreSQL local con 72 migraciones y TimeZone = Etc/UTC.
@@ -196,3 +196,10 @@ Proof local posterior: Save → reload preservó la versión autoritativa; un
 cambio no guardado volvió al estado persistido con Descartar; Restore creó una
 nueva versión append-only con los defaults de producto. La policy permanece
 sin consumidor en Composer.
+
+El proof material Chrome a `768 px` y `640 px` confirmó título, fuente/versión,
+leyenda de estados, filas fijas y configurables, Costo de referencia autorizado,
+dirty/discard, controles nativos y Tab/Shift+Tab en ambos temas. Se corrigió
+únicamente la presentación responsive de la tarjeta de estado para separar
+visualmente fuente y contexto; no hubo overflow horizontal, clipping ni
+superposición y no se emitió ninguna escritura durante esa comprobación.

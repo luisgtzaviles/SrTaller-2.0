@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — UX-003.2 Catalog Field Policy Configuration UI
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: authenticated UX-003.2 core walkthrough complete; responsive visual QA at 768/640 remains pending. Composer consumption remains intentionally disabled.
+Status: UX-003.2 functional and responsive local proof complete; ready for Owner Review. Composer consumption remains intentionally disabled.
 WIP: 1/1
-Progress: 7 / 8 UX-003.2 blocks completed.
-Current: authenticated Save → reload → discard → restore and append-only policy-history proof are complete; Composer behavior remains unchanged.
-Next: complete material Chrome visual QA at 768/640, then stop for Owner Review. Any Composer consumption or enforcement requires separate explicit scope.
-Blocked: Responsive material proof needs a controlled local viewport. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 8 / 8 UX-003.2 blocks completed.
+Current: stopped at UX-003.2 Owner Review; policy is authoritative Tenant configuration only and Composer behavior remains unchanged.
+Next: Owner Review only. Any Composer consumption or enforcement requires separate explicit scope.
+Blocked: None for UX-003.2. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
 ## Current checkpoint — UX-003.2 Catalog Field Policy Configuration UI
@@ -19,7 +19,7 @@ Last updated: 2026-09-17 MST
 - [x] Gate navigation/route/editing by composed configuration plus reference-cost capabilities; keep backend as authority.
 - [x] Add focused UI/API/authorization regression coverage and pass typecheck, build and architecture checks.
 - [x] Confirm the local Administrator role now has the two new catalog-configuration capabilities through the existing Roles surface; the change invalidated the current session as designed.
-- [~] Complete authenticated local Save/reload/discard/restore, responsive, theme and keyboard QA without Composer consumption. Save/reload/discard/restore, theme and native-control keyboard behavior pass; material 768/640 viewport proof remains.
+- [x] Complete authenticated local Save/reload/discard/restore, responsive, theme and keyboard QA without Composer consumption. Chrome `768 px`/`640 px` pass in light/dark with readable source/version, fixed/configurable rows, native controls, dirty/discard, touch targets and no horizontal overflow, clipping or overlap.
 - [x] Record PostgreSQL head/version history after the UI operations and finalize Owner Review evidence.
 
 ## Previous checkpoint — UX-003.1 Tenant Catalog Field Policy Foundation
