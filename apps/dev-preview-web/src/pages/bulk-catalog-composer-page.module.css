@@ -6,7 +6,7 @@
 .heading header p { margin-top: var(--space-1); font-size: .8125rem; }
 .layout { min-width: 0; display: grid; grid-template-columns: minmax(190px, 230px) minmax(0, 1fr); gap: var(--space-3); align-items: start; transition: grid-template-columns var(--duration-fast) var(--ease-standard); }
 .layoutCollapsed { grid-template-columns: minmax(0, 1fr); gap: 0; }
-.sidebar, .composer > section, .rowActions { min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
+.sidebar, .composer > section { min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .sidebar { position: sticky; top: var(--space-2); display: grid; min-width: 0; gap: var(--space-2); padding: var(--space-3); }
 .sidebarHeading { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .sidebar h2, .comparison h2, .decisionTitle h2, .batchSecondaryActions h2 { display: flex; min-width: 0; align-items: center; gap: var(--space-2); margin: 0; font-size: .9375rem; }
@@ -15,7 +15,7 @@
 .collapseToggle:focus-visible { outline: var(--focus-ring-width) solid var(--color-brand-focus); outline-offset: var(--focus-ring-offset); }
 .sidebar label, .setup label, .batchContext label { display: grid; gap: var(--space-1); color: var(--color-text-muted); font-size: .75rem; font-weight: var(--font-weight-semibold); }
 .fieldError { color: var(--color-danger); font-size: .6875rem; line-height: 1.35; }
-.inline, .rowActions, .comparison, .decisionTitle { display: flex; gap: var(--space-2); align-items: center; }
+.inline, .comparison, .decisionTitle { display: flex; gap: var(--space-2); align-items: center; }
 .history { display: grid; gap: var(--space-1); max-height: min(54vh, 480px); overflow: auto; }
 .sourceGroup { display: grid; gap: var(--space-1); padding: var(--space-1); border: 1px solid transparent; border-radius: var(--radius-md); }
 .selectedSource { border-color: var(--color-border); background: var(--color-surface-muted); }
@@ -59,10 +59,10 @@
 .advancedOptions label { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text); font-weight: var(--font-weight-semibold); }
 .advancedOptions p, .advancedOptions small { margin: 0; }
 .workspaceToolbar { position: sticky; z-index: 8; top: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); box-shadow: var(--shadow-sm); }
-.workspaceMeta, .toolbarControls, .viewControls, .workflowControls, .presetButtons { display: flex; min-width: 0; align-items: center; gap: var(--space-2); }
+.workspaceMeta, .toolbarControls, .viewControls, .workflowControls, .gridEditActions, .presetButtons { display: flex; min-width: 0; align-items: center; gap: var(--space-2); }
 .workspaceMeta span, .toolbarControls > span { color: var(--color-text-muted); font-size: .72rem; }
 .toolbarControls { flex: 1 1 auto; justify-content: space-between; flex-wrap: wrap; }
-.viewControls, .workflowControls { flex-wrap: wrap; }
+.viewControls, .workflowControls, .gridEditActions { flex-wrap: wrap; }
 .workflowControls { margin-left: auto; padding-left: var(--space-2); border-left: 1px solid var(--color-border); }
 .issueNavigator { grid-column: 1 / -1; display: grid; grid-template-columns: 32px minmax(0, 1fr) 32px; align-items: stretch; overflow: hidden; border: 1px solid var(--color-danger); border-radius: var(--radius-md); color: var(--color-danger); background: var(--color-danger-subtle); }
 .issueNavigator > button { min-height: 34px; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; }
@@ -71,7 +71,6 @@
 .issueTarget { display: flex; min-width: 0; align-items: baseline; justify-content: flex-start; gap: var(--space-2); text-align: left; }
 .issueTarget strong { flex: none; font-size: .72rem; }
 .issueTarget span { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
-.rowActions { justify-content: flex-end; flex-wrap: wrap; padding: var(--space-2); }
 .gridRegion { overflow: hidden; }
 .gridHeader, .gridRow { width: var(--bulk-grid-width); display: grid; grid-template-columns: var(--bulk-grid-columns); align-items: stretch; }
 .headerScroll { overflow: hidden; padding-right: 12px; border-bottom: 1px solid var(--color-border); background: var(--color-surface-muted); }
@@ -168,4 +167,4 @@
 @media (max-width: 1024px) { .layout, .layoutCollapsed { grid-template-columns: 1fr; }.sidebar { position: static; }.workspaceToolbar { position: static; }.setup { grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr); } }
 @media (max-width: 768px) { .setup, .contextFields { grid-template-columns: 1fr; }.setup { align-items: stretch; }.summary, .coverageCounts { grid-template-columns: repeat(2, 1fr); }.workspaceToolbar { grid-template-columns: 1fr; }.toolbarControls { justify-content: flex-start; }.issueNavigator { grid-column: 1; } }
 @media (max-width: 768px) { .supplierGate { grid-template-columns: 1fr; }.supplierGateIntentPanel { border-top: 1px solid var(--color-border); border-left: 0; }.supplierGatePanel { padding: var(--space-4); } }
-@media (max-width: 640px) { .page { gap: var(--space-2); }.heading header p { display: none; }.sidebar, .composer > section, .rowActions { border-radius: var(--radius-md); }.emptyWorkspace { min-height: 8rem; padding: var(--space-3); }.workspaceMeta span { display: none; }.toolbarControls { display: grid; grid-template-columns: 1fr; }.viewControls { grid-column: 1; }.workflowControls { display: grid; grid-template-columns: minmax(0, 1fr) auto; margin-left: 0; padding-top: var(--space-2); padding-left: 0; border-top: 1px solid var(--color-border); border-left: 0; }.workflowControls > button:first-child { width: 100%; }.presetButtons { grid-column: 1 / -1; }.issueTarget { display: grid; gap: 1px; }.issueTarget span { font-size: .6875rem; }.viewport { height: 52vh; min-height: 360px; }.decisions article { grid-template-columns: 1fr; }.decisions article > div:last-child { flex-wrap: wrap; }.supplierGatePanel { padding: var(--space-3); }.supplierGateList { max-height: min(18rem, 35vh); }.supplierGateActions { width: 100%; }.supplierGateActions > button { flex: 1 1 0; } }
+@media (max-width: 640px) { .page { gap: var(--space-2); }.heading header p { display: none; }.sidebar, .composer > section { border-radius: var(--radius-md); }.emptyWorkspace { min-height: 8rem; padding: var(--space-3); }.workspaceMeta span { display: none; }.toolbarControls { display: grid; grid-template-columns: 1fr; }.viewControls { grid-column: 1; }.workflowControls { display: grid; grid-template-columns: 1fr; margin-left: 0; padding-top: var(--space-2); padding-left: 0; border-top: 1px solid var(--color-border); border-left: 0; }.gridEditActions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }.gridEditActions > button:last-child { grid-column: 1 / -1; }.workflowControls > button { width: 100%; }.presetButtons { grid-column: 1 / -1; }.issueTarget { display: grid; gap: 1px; }.issueTarget span { font-size: .6875rem; }.viewport { height: 52vh; min-height: 360px; }.decisions article { grid-template-columns: 1fr; }.decisions article > div:last-child { flex-wrap: wrap; }.supplierGatePanel { padding: var(--space-3); }.supplierGateList { max-height: min(18rem, 35vh); }.supplierGateActions { width: 100%; }.supplierGateActions > button { flex: 1 1 0; } }
