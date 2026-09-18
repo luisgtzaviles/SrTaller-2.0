@@ -2,12 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** audit complete; remediation deliberately not implemented.
+- **Estado:** UX-005 audit preserved; UX-005.1 remediation materialized locally and awaits Owner Review.
 - **PBI:** [PBI-041](../backlog/pbis/PBI-041.md).
 - **Alcance:** diagnóstico de `Avicell v2` en localhost, lectura de PostgreSQL
   y trazado de código. No hubo reanálisis, decisiones, Apply, cambios de policy
   ni escrituras.
-- **Próxima revisión:** cuando el Owner decida si autoriza UX-005.1.
+- **Próxima revisión:** Owner Review of UX-005.1; Avicell remains historical pre-fix evidence until an explicit reanalyze action.
 
 ## Pregunta y respuesta corta
 
@@ -290,3 +290,31 @@ capturar esa Brand como pending. La fila 618 y los dos conflictos siguen siendo
 excepciones genuinas. La solución, si se aprueba, debe ser una slice de
 clasificación/copy acotada, no una conversión indiscriminada de las 616 filas
 ni una reparación de Avicell v2.
+
+## UX-005.1 — Clasificación de nuevo artículo con captura pendiente
+
+La remediación autorizada se materializó sólo para análisis futuros. Una fila
+`FULL` sin target, historia, candidato, duplicado ni required efectivo faltante
+se clasifica `NEW`/`APPLY` aunque su Category o Brand no sea todavía canónica,
+si la referencia es capturable con seguridad. El Analyze conserva el valor raw
+del proveedor y publica metadata tipada de captura pendiente; no crea
+Category, Brand, CatalogItem, Resolution ni Memory.
+
+La precedencia se conserva: error, identidad ambigua, candidato, conflicto y
+duplicado vencen a `NEW`; `COMPACT` sin target continúa inválido. Category con
+letras y sin dígitos, y Brand con al menos una letra, son capturables de forma
+conservadora. Referencias malformadas o desplazadas como `V2314 COPIA` siguen
+`PENDING_REFERENCE` con `REFERENCE_REQUIRES_GOVERNANCE`; no existe fuzzy match
+ni adopción automática.
+
+En Apply se reutiliza la ruta de captura ya autorizada: resuelve una referencia
+canónica, una pending existente o inserta la pending dentro de la misma
+transacción que crea el CatalogItem y sus efectos. Conserva actor, Branch,
+Station y Session, la autorización de publicación, expected version, rollback
+e idempotencia. Avicell v2 no se reanalizó ni se modificó: permanece evidencia
+histórica pre-fix.
+
+La prueba PostgreSQL desechable cubre cuatro `NEW` seguros, una referencia
+malformada, required faltante, duplicate conflict, cero escrituras durante
+Analyze y captura/registro sólo tras Apply. El walkthrough Chrome aislado
+confirmó tres `NEW`, un `PENDING_REFERENCE` y un grupo de conflicto, sin Apply.

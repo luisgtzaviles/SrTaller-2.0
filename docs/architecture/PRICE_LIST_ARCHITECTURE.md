@@ -264,6 +264,15 @@ canon, Brand puede ampliar aplicabilidad de forma auditada y un valor realmente
 nuevo crea una captura pendiente con uso, actor y first/last seen; nunca crea
 canon silenciosamente.
 
+El Analyze de una carga `FULL` sin identidad existente puede clasificar una
+fila como `NEW` cuando sus referencias no canónicas sean capturables de forma
+segura. Esa clasificación conserva el valor raw y metadata de captura pending,
+pero no escribe ningún recurso durable. La captura se realiza exclusivamente
+por el Apply autorizado y transaccional, mediante el mismo resolvedor anterior.
+Inputs ambiguos, desplazados o malformados, required faltantes, candidates,
+duplicados y filas `COMPACT` sin target no obtienen este camino y permanecen
+atención explícita; no hay fuzzy matching ni creación canónica automática.
+
 ### 5.1 Patrón transversal de reconciliación
 
 Repairs y Catalog comparten este lenguaje de producto:

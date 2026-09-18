@@ -18,11 +18,20 @@ authority.
 - [UX-002E Batch Context Defaults Friction Audit](../../../domain/PRICE_LIST_UX_002E_BATCH_CONTEXT_DEFAULTS_FRICTION_AUDIT.md)
 - [UX-003 Bulk Catalog Field Policy Audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md)
 - [UX-004 Catalog Operational Authorization Audit](../../../domain/PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md)
+- [UX-005 First Supplier Baseline Reconciliation Audit](../../../domain/PRICE_LIST_UX_005_FIRST_SUPPLIER_BASELINE_RECONCILIATION_AUDIT.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
 Owner Review. Advanced Supplier Reconciliation remains a deferred outcome
 without PBI ID, selection or readiness.
+
+## UX-005.1 — New Item Classification with Pending Reference Capture
+
+The UX-005 audit preserves Avicell as historical evidence. For future `FULL`
+analysis, safely capturable noncanonical Category/Brand values can remain
+`NEW` until the existing authorized Apply path persists a pending reference.
+Unsafe references, missing required values, duplicates, candidates and
+`COMPACT` no-target rows remain attention; Analyze makes no durable writes.
 
 ## UX-002E / UX-002E.1 missing-data context
 

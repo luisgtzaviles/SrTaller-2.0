@@ -1,17 +1,26 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005 First Supplier Baseline Reconciliation Audit
+Milestone / Functional Goal: PBI-041 — UX-005.1 New Item Classification with Pending Reference Capture
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Owner decision ready — UX-005 audit is complete; Avicell v2 remains preserved and no remediation is implemented.
+Status: Local Owner Review — UX-005.1 is materialized for future analysis; Avicell v2 remains preserved as historical evidence.
 WIP: 1/1
-Progress: 5 / 5 UX-005 audit blocks completed; UX-004.7 capture cleanup remains preserved.
-Current: Owner Review — audit evidence explains Avicell first-supplier reconciliation without changing its data.
-Next: Await Owner decision on the proposed UX-005.1 remediation. Do not push, open a PR, merge, deploy or start another PBI.
-Blocked: No product blocker identified. The broader PBI-041 PostgreSQL runner also executes a separate 10k publish benchmark that exceeded its 30s budget in this host (34.9s); do not remediate that performance concern in UX-004.4. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 6 / 6 UX-005.1 blocks completed; prior UX-005 audit and UX-004.7 work remain preserved.
+Current: Owner Review — future FULL rows can be NEW with safely capturable pending references, without changing Avicell v2.
+Next: Await Owner review. Do not push, open a PR, merge, deploy or start another PBI.
+Blocked: No product blocker identified. Preserve Avicell v2, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
 
-## Current checkpoint — UX-005 First Supplier Baseline Reconciliation Audit
+## Current checkpoint — UX-005.1 New Item Classification with Pending Reference Capture
+
+- [x] Preserve Avicell v2 as historical pre-fix evidence; do not reanalyze or mutate it.
+- [x] Classify clean no-target FULL rows as `NEW` when Category/Brand are canonical, pending or safely capturable.
+- [x] Keep malformed references, missing required values, candidates, duplicates and COMPACT no-target rows as attention.
+- [x] Preserve raw provenance and zero durable writes during Analyze; reuse the authorized atomic Apply capture path.
+- [x] Prove PostgreSQL classification, Apply/idempotency and no-Analyze-write invariants with focused tests.
+- [x] Complete isolated Chrome QA, documentation/evidence reconciliation and local-only checks; stop for Owner Review.
+
+## Previous checkpoint — UX-005 First Supplier Baseline Reconciliation Audit
 
 - [x] Preserve and snapshot Avicell Source, v1/v2, Batch, Catalog, Resolution, Memory, policy and baseline state with read-only PostgreSQL queries.
 - [x] Compare 10 NEW and 20 REFERENCE_PENDING observations; quantify the 124/616 split, required data, targets, history, candidates and duplicate groups.

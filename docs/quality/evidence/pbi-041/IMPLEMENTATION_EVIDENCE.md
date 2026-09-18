@@ -1616,3 +1616,19 @@ documented audit records how the 616-suggestion action only changes Batch
 decisions before a future publish, why its 4 conflict observations collapse to
 two units, and the proposed-but-not-implemented UX-005.1 boundary. See the
 [domain audit](../../../domain/PRICE_LIST_UX_005_FIRST_SUPPLIER_BASELINE_RECONCILIATION_AUDIT.md).
+
+## UX-005.1 — New Item Classification with Pending Reference Capture
+
+Future `FULL` rows with no target/history/candidate/duplicate and a complete
+effective required value are now `NEW` when noncanonical Category/Brand input
+is safely capturable. Analyze preserves supplier raw provenance and only emits
+typed pending-capture metadata; it has zero Catalog, reference, Resolution or
+Memory writes. Unsafe/misaligned input such as `V2314 COPIA`, missing required
+data, duplicates, candidates and `COMPACT` without a target remain attention.
+
+Disposable PostgreSQL material passed with 75 migrations: four safe new rows,
+unsafe reference, missing required, duplicate conflict, no Analyze writes,
+atomic Apply capture, and idempotent re-Apply. Chrome local QA of an isolated
+unapplied version showed three `NEW`, one `PENDING_REFERENCE` and the duplicate
+conflict group. Avicell v2 was not reanalyzed or mutated. Typecheck, build and
+focused contracts passed; no `verify:full`, CI, push, PR, merge or deploy ran.
