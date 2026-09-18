@@ -702,6 +702,29 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
   }
 });
 
+test('PBI-041 material handoff preserves the publisher as the Apply audit actor', { skip: !enabled, timeout: 30_000 }, async () => {
+  const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
+  const connection = createDatabaseConnection(config());
+  const tenantId = randomUUID(); const branchId = randomUUID();
+  const preparer = Object.freeze({ ...context(tenantId, branchId), actorDisplayName: 'Preparer A' });
+  const publisher = Object.freeze({ ...context(tenantId, branchId), actorDisplayName: 'Publisher B' });
+  const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
+  try {
+    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    const source = await service.createSource(preparer, { name: 'Handoff QA supplier' });
+    const draft = await service.createDraft(preparer, { sourceId: source.sourceId, description: 'Prepared by A', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'h'.repeat(64), rawPayload: 'handoff-qa', rows: [fullRow(9_401)] });
+    const analyzed = await service.analyze(preparer, draft.versionId, { expectedVersion: draft.version });
+    const ready = await service.decideMany(preparer, draft.versionId, { expectedBatchVersion: analyzed.batch.version, classifications: ['PENDING_REFERENCE'], decision: 'APPLY' });
+    assert.equal(ready.batch.lifecycle, 'READY');
+    const applied = await service.publish(publisher, draft.versionId, { expectedVersion: ready.version, clientRequestId: randomUUID() }, false);
+    assert.equal(applied.batch.lifecycle, 'APPLIED');
+    const audit = await admin.query(`select actor_user_id, actor_display_name, capability from catalog_audit_events where tenant_id = $1 and action = 'catalog.bulk.publish.row' order by occurred_at desc limit 1`, [tenantId]);
+    assert.deepEqual(audit.rows[0], { actor_user_id: publisher.actorUserId, actor_display_name: 'Publisher B', capability: 'catalog.import.publish' });
+    assert.notEqual(audit.rows[0].actor_user_id, preparer.actorUserId);
+  } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
+});
+
 test('UX-003.1 persists tenant-isolated catalog field policies with append-only versions', { skip: !enabled, timeout: 30_000 }, async () => {
   const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
   const connection = createDatabaseConnection(config());

@@ -10,7 +10,7 @@ import {
   parseMinorAmount,
 } from '../dist/modules/catalog/domain/catalog-item.js';
 import { CatalogService } from '../dist/modules/catalog/application/catalog.service.js';
-import { CatalogProtectedOperations } from '../dist/modules/catalog/application/catalog-protected-operations.js';
+import { CatalogOperationAccessDeniedError, CatalogProtectedOperations } from '../dist/modules/catalog/application/catalog-protected-operations.js';
 import { TenantWideAuthorizationExecutorService } from '../dist/modules/access/presentation/tenant-wide-authorization.executor.js';
 import { ContextualAuthorizationError } from '../dist/modules/access/index.js';
 
@@ -260,14 +260,14 @@ test('bulk history read is independent from prepare while prepare remains compat
   const bulk = {
     async listSources() { return ['source']; },
     async listVersions() { return ['version']; },
-    async getVersion() { return { versionId: 'version' }; },
+    async getVersion() { return { versionId: 'version', rows: [] }; },
     async compare() { return { comparison: true }; },
     async createDraft() { return { versionId: 'draft' }; },
   };
   const reader = new CatalogProtectedOperations(history, history, {}, {}, bulk, {});
   assert.deepEqual(await reader.listSupplierSources({}), ['source']);
   assert.deepEqual(await reader.listSupplierVersions({}), ['version']);
-  assert.deepEqual(await reader.getSupplierVersion({}, 'version', false), { versionId: 'version' });
+  assert.deepEqual(await reader.getSupplierVersion({}, 'version', false), { versionId: 'version', rows: [] });
   assert.deepEqual(await reader.compareSupplierVersions({}, 'left', 'right'), { comparison: true });
   await assert.rejects(reader.createSupplierDraft({}, {}), ContextualAuthorizationError);
   assert.ok(observed.includes('catalog.import.read'));
@@ -278,7 +278,49 @@ test('bulk history read is independent from prepare while prepare remains compat
   assert.deepEqual(await prepareOperations.listSupplierSources({}), ['source']);
   assert.deepEqual(await prepareOperations.createSupplierDraft({}, {}), { versionId: 'draft' });
   assert.deepEqual(prepareObserved.slice(0, 2), ['catalog.import.read', 'catalog.import.prepare']);
-  await assert.rejects(prepareOperations.publishSupplierVersion({}, 'version', {}), ContextualAuthorizationError);
+  await assert.rejects(prepareOperations.publishSupplierVersion({}, 'version', {}), CatalogOperationAccessDeniedError);
+});
+
+test('bulk direct API guards keep read, prepare, and publish independently enforceable', async () => {
+  const bulk = {
+    async listSources() { return ['source']; },
+    async listVersions() { return ['version']; },
+    async getVersion() { return { versionId: 'ready', rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] }; },
+    async compare() { return { comparison: true }; },
+    async createSource() { return { sourceId: 'source' }; },
+    async createDraft() { return { versionId: 'draft' }; },
+    async replaceDraft() { return { versionId: 'draft' }; },
+    async analyze() { return { versionId: 'analyzed' }; },
+    async decide() { return { versionId: 'decided' }; },
+    async decideMany() { return { versionId: 'decided' }; },
+    async publish(_context, _versionId, input) { return { lifecycle: 'APPLIED', input }; },
+  };
+  const readerExecutor = capabilityExecutor(new Set(['catalog.import.read']));
+  const reader = new CatalogProtectedOperations(readerExecutor, readerExecutor, {}, {}, bulk, {});
+  assert.deepEqual(await reader.listSupplierSources({}), ['source']);
+  assert.deepEqual(await reader.listSupplierVersions({}), ['version']);
+  assert.deepEqual(await reader.getSupplierVersion({}, 'ready', false), { versionId: 'ready', rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] });
+  assert.deepEqual(await reader.compareSupplierVersions({}, 'older', 'ready'), { comparison: true });
+  await assert.rejects(reader.createSupplierSource({}, {}), ContextualAuthorizationError);
+  await assert.rejects(reader.createSupplierDraft({}, {}), ContextualAuthorizationError);
+  await assert.rejects(reader.replaceSupplierDraft({}, 'draft', {}), ContextualAuthorizationError);
+  await assert.rejects(reader.analyzeSupplierVersion({}, 'draft', {}), ContextualAuthorizationError);
+  await assert.rejects(reader.decideSupplierRow({}, 'draft', 'row', {}), ContextualAuthorizationError);
+  await assert.rejects(reader.publishSupplierVersion({}, 'ready', {}), CatalogOperationAccessDeniedError);
+
+  const preparerExecutor = capabilityExecutor(new Set(['catalog.import.prepare']));
+  const preparer = new CatalogProtectedOperations(preparerExecutor, preparerExecutor, {}, {}, bulk, {});
+  assert.deepEqual(await preparer.createSupplierSource({}, {}), { sourceId: 'source' });
+  assert.deepEqual(await preparer.createSupplierDraft({}, {}), { versionId: 'draft' });
+  assert.deepEqual(await preparer.replaceSupplierDraft({}, 'draft', {}), { versionId: 'draft' });
+  assert.deepEqual(await preparer.analyzeSupplierVersion({}, 'draft', {}), { versionId: 'analyzed' });
+  assert.deepEqual(await preparer.decideSupplierRow({}, 'draft', 'row', {}), { versionId: 'decided' });
+  await assert.rejects(preparer.publishSupplierVersion({}, 'ready', {}), CatalogOperationAccessDeniedError);
+
+  const publisherExecutor = capabilityExecutor(new Set(['catalog.import.read', 'catalog.import.publish', 'catalog.items.create', 'catalog.prices.manage']));
+  const publisher = new CatalogProtectedOperations(publisherExecutor, publisherExecutor, {}, {}, bulk, {});
+  await assert.rejects(publisher.createSupplierDraft({}, {}), ContextualAuthorizationError);
+  assert.deepEqual(await publisher.publishSupplierVersion({}, 'ready', {}), { lifecycle: 'APPLIED', input: {} });
 });
 
 test('bulk composer composes prepare, cost and publish authority without leaking cost reads', async () => {
@@ -296,6 +338,7 @@ test('bulk composer composes prepare, cost and publish authority without leaking
   const bulk = {
     async createDraft(_context, input) { return { input }; },
     async analyze(_context, _versionId, input) { return { input }; },
+    async getVersion() { return { versionId: 'version', rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: 48000 } }] }; },
     async publish(_context, _versionId, input, mayWriteCost) { return { input, mayWriteCost }; },
   };
   const operations = new CatalogProtectedOperations(executor, executor, {}, {}, bulk, {});
@@ -312,7 +355,7 @@ test('bulk composer composes prepare, cost and publish authority without leaking
 
   await operations.publishSupplierVersion({}, '30000000-0000-4000-8000-000000000041', { expectedVersion: 2, writeReferenceCost: true });
   assert.deepEqual(observed.splice(0).map((value) => value.capability), [
-    'catalog.import.publish', 'catalog.manage', 'catalog.prices.manage', 'catalog.reference_cost.manage', 'catalog.reference_cost.read',
+    'catalog.import.read', 'catalog.reference_cost.read', 'catalog.import.publish', 'catalog.items.create', 'catalog.prices.manage', 'catalog.reference_cost.manage', 'catalog.reference_cost.read',
   ]);
 });
 

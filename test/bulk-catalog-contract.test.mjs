@@ -190,6 +190,10 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
     readFile('src/modules/catalog/domain/supplier-coverage.ts', 'utf8'),
   ]);
   assert.match(protectedOperations, /catalog\.import\.prepare/u);
+  assert.match(protectedOperations, /publishEffectRequirements/u);
+  assert.match(protectedOperations, /catalogItemCreate/u);
+  assert.match(protectedOperations, /catalogItemUpdate/u);
+  assert.match(protectedOperations, /catalogItemDeactivate/u);
   assert.match(protectedOperations, /catalog\.import\.publish/u);
   assert.match(protectedOperations, /catalog\.items\.bulk_retire/u);
   assert.match(protectedOperations, /catalog\.items\.bulk-retire/u);
@@ -231,6 +235,10 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(catalogApi, /coverageRelation: 'CONTINUED' \| 'NOT_OBSERVED' \| 'ADDITIONAL'/u);
   assert.match(catalogApi, /catalogResolution: 'MATCHED' \| 'CREATED' \| 'EXCLUDED' \| 'CONFLICT' \| null/u);
   assert.match(catalogApi, /coverageReviewAcknowledged/u);
+  assert.match(ui, /const canReadBulk = hasOperationalCapability\(capabilities, 'catalog\.import\.read'\) \|\| hasOperationalCapability\(capabilities, 'catalog\.import\.prepare'\)/u);
+  assert.match(ui, /const canPrepareBulk = hasOperationalCapability\(capabilities, 'catalog\.import\.prepare'\)/u);
+  assert.match(ui, /Solo lectura/u);
+  assert.match(ui, /if \(!canPrepareBulk\)/u);
   assert.match(coveragePolicy, /COMPLETE_BASELINE_PLAUSIBILITY_MINIMUM_BASELINE_COUNT = 20/u);
   assert.match(coveragePolicy, /COMPLETE_BASELINE_PLAUSIBILITY_MAX_CURRENT_RATIO = 0\.25/u);
   assert.match(coveragePolicy, /LARGE_COVERAGE_DROP/u);
