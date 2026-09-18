@@ -435,6 +435,31 @@ export function groupDuplicateResolutionRows(rows, keyForRow, errorsForRow, warn
 }
 
 /**
+ * A contradictory duplicate can be explicitly reduced to one effective row
+ * only when the server already describes one coherent identity: either the
+ * same existing Catalog item, or no Catalog item at all (a prospective NEW
+ * item). This is a presentation guard only; the repository repeats every
+ * invariant transactionally before it persists the choice.
+ *
+ * @template {{targetItemId?: string | null, titleDecision?: string | null, decision?: string, errors?: readonly string[]}} T
+ * @param {readonly T[]} members
+ */
+export function canChooseDuplicateWinner(members) {
+  if (members.length < 2) return false;
+  const first = members[0];
+  if (!first) return false;
+  const targetItemId = first.targetItemId ?? null;
+  const titleDecision = first.titleDecision ?? null;
+  return members.every((member) =>
+    member.decision === 'UNRESOLVED'
+    && Array.isArray(member.errors)
+    && member.errors.includes('DUPLICATE_VALUE_CONTRADICTION')
+    && (member.targetItemId ?? null) === targetItemId
+    && (member.titleDecision ?? null) === titleDecision,
+  );
+}
+
+/**
  * Compose the existing durable draft and analysis boundaries without making a
  * second analysis attempt when persistence did not complete. `snapshot` is an
  * already-authoritative, unchanged DRAFT; otherwise `persist` must return the

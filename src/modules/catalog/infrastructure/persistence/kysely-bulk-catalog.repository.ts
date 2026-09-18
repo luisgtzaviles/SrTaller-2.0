@@ -424,11 +424,18 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
       let classification = row.classification; let expected = row.expected_item_version; let targetItemId = input.targetItemId ?? row.target_item_id; let selectedTitleDecision: BulkCatalogTitleDecision | null = row.title_decision;
       let selectedEffectiveTarget: BulkCatalogEffectiveTarget | null = null;
       if (duplicateValueContradiction) {
-        if (input.decision !== 'APPLY' || !row.target_item_id || input.targetItemId !== row.target_item_id || (input.titleDecision !== null && input.titleDecision !== row.title_decision)) throw new CatalogConflictError();
+        const choosingExistingTarget = row.target_item_id !== null;
+        if (
+          input.decision !== 'APPLY'
+          || (choosingExistingTarget
+            ? input.targetItemId !== row.target_item_id || (input.titleDecision !== null && input.titleDecision !== row.title_decision)
+            : input.targetItemId !== null || input.titleDecision !== null)
+        ) throw new CatalogConflictError();
         const rowKey = supplierMemoryKeys(row.proposal as BulkCatalogRowInput)[0];
         const group = (await db.selectFrom('catalog_update_row_decisions').selectAll().where('tenant_id', '=', context.tenantId).where('batch_id', '=', batch.batch_id).forUpdate().execute())
           .filter((candidate) => supplierMemoryKeys(candidate.proposal as BulkCatalogRowInput)[0] === rowKey && normalizeRowErrors(candidate.errors).includes('DUPLICATE_VALUE_CONTRADICTION'));
-        if (group.length < 2 || group.some((candidate) => candidate.target_item_id !== row.target_item_id || candidate.decision !== 'UNRESOLVED')) throw new CatalogConflictError();
+        if (group.length < 2 || group.some((candidate) => candidate.target_item_id !== row.target_item_id || candidate.title_decision !== row.title_decision || candidate.decision !== 'UNRESOLVED')) throw new CatalogConflictError();
+        if (!choosingExistingTarget) { classification = 'NEW'; targetItemId = null; expected = null; selectedTitleDecision = null; }
         for (const sibling of group) {
           if (sibling.row_decision_id === row.row_decision_id) continue;
           await db.updateTable('catalog_update_row_decisions').set({ classification: 'UNCHANGED', decision: 'EXCLUDE', title_decision: null, target_item_id: null, expected_item_version: null, preselected_by_memory: false, match_origin: 'NONE', errors: serializeRowErrors([]), warnings: JSON.stringify(['DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED']), lock_version: sibling.lock_version + 1, updated_at: input.occurredAt }).where('tenant_id', '=', context.tenantId).where('row_decision_id', '=', sibling.row_decision_id).execute();

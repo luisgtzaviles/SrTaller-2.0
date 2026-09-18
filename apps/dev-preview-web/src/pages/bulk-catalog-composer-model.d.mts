@@ -40,6 +40,7 @@ export function canContinueNewLoadGate(state: NewLoadGateState): boolean;
 export function validationIssueFromApi(error: Readonly<{ status?: number; code?: string | null; parameter?: string | null }>): ValidationIssue;
 export function nextValidationIssueIndex(current: number, direction: -1 | 1, count: number): number;
 export function groupDuplicateResolutionRows<Row extends Readonly<{ rowNumber: number }>>(rows: readonly Row[], keyForRow: (row: Row) => string, errorsForRow: (row: Row) => readonly string[], warningsForRow: (row: Row) => readonly string[]): readonly Readonly<{ key: string; members: readonly Row[]; unresolved: boolean }> [];
+export function canChooseDuplicateWinner<Row extends Readonly<{ targetItemId?: string | null; titleDecision?: string | null; decision?: string; errors?: readonly string[] }>>(members: readonly Row[]): boolean;
 export type ReviewListOutcome<Version> =
   | Readonly<{ stage: 'SAVE_FAILED'; snapshot: null; cause: unknown }>
   | Readonly<{ stage: 'ANALYZE_FAILED'; snapshot: Version; cause: unknown }>
