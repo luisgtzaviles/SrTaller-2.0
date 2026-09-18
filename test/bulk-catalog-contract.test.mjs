@@ -81,6 +81,19 @@ test('duplicate resolution groups the SupplierVersion row DTO shape', () => {
   );
 });
 
+test('new-load gate requires an explicit supplier and load intent', () => {
+  assert.deepEqual(composerModel.createNewLoadGateState(), { supplierId: null, completeness: null });
+  assert.equal(composerModel.canContinueNewLoadGate({ supplierId: null, completeness: null }), false);
+  assert.equal(composerModel.canContinueNewLoadGate({ supplierId: 'source-ag', completeness: null }), false);
+  assert.equal(composerModel.canContinueNewLoadGate({ supplierId: null, completeness: 'PARTIAL' }), false);
+  assert.equal(composerModel.canContinueNewLoadGate({ supplierId: 'source-ag', completeness: 'PARTIAL' }), true);
+  assert.equal(composerModel.canContinueNewLoadGate({ supplierId: 'source-ag', completeness: 'COMPLETE' }), true);
+  assert.deepEqual(
+    composerModel.NEW_LOAD_INTENTS.map(({ value, label }) => ({ value, label })),
+    [{ value: 'PARTIAL', label: 'Sólo algunos artículos' }, { value: 'COMPLETE', label: 'La lista completa del proveedor' }],
+  );
+});
+
 test('supplier observed title remains separate from the editable Catalog title proposal', () => {
   const [row] = domain.parseBulkRows([{ ...fullRow(), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }], 'FULL');
   assert.equal(row.supplierObservedTitle, 'PANTALLA IPHONE 11 OLED GX >>I');
@@ -253,9 +266,13 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /row\.decision !== 'EXCLUDE' && row\.titleDecision/u);
   assert.match(ui, /\.map\(warningMessage\)\.filter\(\(message\): message is string => message !== null\)/u);
   assert.doesNotMatch(ui, /SUPPLIER_TITLE_DIFF_NOT_APPLIED/iu);
-  assert.match(ui, /Alcance de la carga/u);
-  assert.match(ui, /Actualización parcial/u);
-  assert.match(ui, /Lista completa/u);
+  assert.match(ui, /¿Qué contiene esta carga?/u);
+  assert.match(model, /Sólo algunos artículos/u);
+  assert.match(model, /La lista completa del proveedor/u);
+  assert.match(ui, /canContinueNewLoadGate\(\{ supplierId: supplierGateSupplierId, completeness: supplierGateCompleteness \}\)/u);
+  assert.match(ui, /setSupplierGateSupplierId\(created\.sourceId\); setSupplierGateCompleteness\(null\);/u);
+  assert.match(ui, /openSupplierGate\('supplier-gate-change-pending', true\)/u);
+  assert.doesNotMatch(ui, /<fieldset disabled=\{current\?\.lifecycle === 'INGESTED'\}><legend>Alcance de la carga/u);
   assert.match(ui, /continúan desde la lista anterior/u);
   assert.match(ui, /ya no aparecen en esta lista completa/u);
   assert.match(ui, /adicionales respecto a la lista anterior/u);
