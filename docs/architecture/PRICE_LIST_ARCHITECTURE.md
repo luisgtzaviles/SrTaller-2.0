@@ -20,6 +20,18 @@
 - **Retiro seguro:** decisiones Owner `OD-RESET-001..005`, aprobadas el
   2026-09-14 durante Owner Review de PBI-041.
 
+## Tenant catalog field policy foundation
+
+Catalog quality configuration is Tenant-wide. Its persistent authority is a
+versioned policy head plus append-only versions; a missing Tenant row resolves
+to product defaults. The policy registry is finite and domain-fixed FULL
+minimums (Type, Title, Category and Base Price) cannot be weakened. Read and
+manage access are explicit `catalog.configuration.*` permissions and each is
+composed with the corresponding reference-cost permission because the policy
+includes the sensitive Reference Cost field. This foundation does not alter
+Composer capture, Analyze, Apply or manual Catalog mutations until a later
+authorized consumer adopts it.
+
 ## Resultado ejecutivo
 
 SR Taller tendrá una identidad de artículo compartida por Tenant y un precio

@@ -19,6 +19,15 @@
 - **Gate deliberadamente no ejecutado:** `verify:full`, reservado por autoridad
   Owner para después de Owner Acceptance.
 
+## UX-003.1 — Tenant catalog field policy authority
+
+La autoridad de configuración quedó materializada localmente sin consumo de
+Composer: registry cerrado, fallback de defaults de producto, head Tenant-wide,
+historial append-only, `expectedVersion`, restore explícito y API protegida. La
+lectura/gestión requiere además el permiso sensible de costo de referencia. Las
+pruebas focalizadas cubren defaults, campos fijos, claves desconocidas, stale
+writes, restore e aislamiento Tenant; Analyze/Apply no fueron modificados.
+
 ## Supplier history, automatic versioning and governed delete
 
 La auditoría previa recorrió Source, Version, raw, Listing, RowDecision,

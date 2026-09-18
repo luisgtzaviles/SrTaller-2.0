@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** audit/design complete; requires Owner decisions before any product implementation.
+- **Estado:** UX-003.1 foundation materialized locally; Composer consumption/enforcement remains intentionally disabled.
 - **Alcance:** PBI-041, política de datos de Catalog consumida inicialmente por Bulk Catalog Composer. No cambia el comportamiento actual.
 - **Método:** trazabilidad estática de Composer, API, dominio, autorización, persistencia y la configuración existente de Nueva reparación; preflight local read-only.
 - **Preflight:** rama feature/pbi-041-bulk-catalog-composer, HEAD bb9595a30f12587347c46e77c560d762d6620b6d, localhost/backend health 200; PostgreSQL local con 72 migraciones y TimeZone = Etc/UTC.
@@ -148,4 +148,21 @@ Costo sigue siendo dato sensible y opcional en el contrato vigente. UX3-005 debe
 **BULK CATALOG FIELD POLICY UNDERSTOOD**
 **TENANT DATA-QUALITY BOUNDARY IDENTIFIED**
 **CONFIGURATION MODEL READY FOR OWNER DECISION**
-**NOT IMPLEMENTED**
+## UX-003.1 implementation boundary
+
+La autorización posterior materializó sólo la autoridad de configuración:
+
+- registry cerrado de diez campos, defaults retrocompatibles y la invariante
+  `REQUIRED ⇒ ESSENTIAL` mediante el único enum de nivel;
+- `catalog_field_policy_heads` Tenant-wide y
+  `catalog_field_policy_versions` append-only con actor, estación, sesión,
+  capability, correlation y versión previa;
+- fallback de producto sin fila tenant, `expectedVersion` para Save/Restore y
+  REST interno bajo contexto confiable; el cliente no envía tenant ni branch;
+- capabilities separadas `catalog.configuration.read/manage`, compuestas con
+  `catalog.reference_cost.read/manage` para no filtrar ni administrar una
+  policy que revela Costo sin su permiso sensible.
+
+No se modificó FULL/COMPACT, el grid, Draft/Analyze/Apply, el alta manual de
+Catalog ni `SupplierCatalogVersion`. La validación de valores efectivos y las
+señales visuales son consumo futuro explícitamente pendiente.

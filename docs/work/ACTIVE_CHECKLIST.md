@@ -1,17 +1,26 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-003 Bulk Catalog Field Policy Audit
+Milestone / Functional Goal: PBI-041 — UX-003.1 Tenant Catalog Field Policy Foundation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: audit/design complete; ready for Owner decisions, not implemented
+Status: foundation materialized locally; Composer consumption intentionally pending Owner review
 WIP: 1/1
-Progress: 6 / 6 UX-003 audit blocks completed.
-Current: stopped for Owner decision on Tenant field policy; the current Composer behavior remains unchanged.
-Next: Owner decides UX3-001..017. Do not implement settings, policy enforcement, API, migration, capability, profiles, suggestions or identity/matching changes without new authority.
+Progress: 8 / 8 UX-003.1 blocks completed.
+Current: stopped at the local authority foundation for Owner review; the current Composer behavior remains unchanged.
+Next: Owner decides whether to authorize a separate Composer consumer/enforcement slice. Do not enable settings UI, policy enforcement, snapshots, profiles, suggestions or identity/matching changes without new authority.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-003 Bulk Catalog Field Policy Audit
+## Current checkpoint — UX-003.1 Tenant Catalog Field Policy Foundation
+
+- [x] Preserve the UX-003 field-policy decisions and implement only the finite registry, Tenant owner, product-default fallback and domain-fixed FULL minima.
+- [x] Add Tenant-scoped head/version persistence with append-only actor/session/station/correlation audit, `expectedVersion` and explicit restore-to-product-defaults semantics.
+- [x] Add explicit catalog configuration read/manage capabilities; reference-cost policy access composes with existing sensitive cost capabilities.
+- [x] Expose trusted-context read/write/restore API without accepting Tenant or Branch authority from the client.
+- [x] Run focused domain, authorization, PostgreSQL migration/material and architecture checks.
+- [ ] Owner review: no Composer consumer or enforcement is enabled in this checkpoint.
+
+## Previous checkpoint — UX-003 Bulk Catalog Field Policy Audit
 
 - [x] Inspect the actual FULL/COMPACT contracts, fixed/current essential columns, input persistence and Catalog apply boundary without altering product behavior.
 - [x] Inspect Nueva reparación field-policy registry, scope, permissions, versions, dirty/save/reset semantics and server-side enforcement materially.
