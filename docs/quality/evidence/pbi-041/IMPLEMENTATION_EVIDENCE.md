@@ -1270,5 +1270,7 @@ analyzes. No SupplierSource preference, suggestion, inference, provenance,
 signature, matching, API, database or migration behavior changed. Focused
 model/UI contracts, typecheck, build and architecture checks pass. Local Chrome
 proof observed a fresh collapsed helper and explicitly applied Apple to an
-empty Brand while a sibling Samsung Brand remained unchanged; no Version was
-saved, analyzed or applied.
+empty Brand while a sibling Samsung Brand remained unchanged. It then saved
+isolated `QA UX-002E Local v1`, reloaded and reopened that DRAFT to prove the
+resulting Apple row value persists while the helper itself reopens closed and
+empty. The fixture remains `DRAFT`/unpublished; no Analyze or Apply ran.

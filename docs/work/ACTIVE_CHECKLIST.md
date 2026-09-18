@@ -8,7 +8,7 @@ WIP: 1/1
 Progress: 7 / 7 UX-002E.1 blocks completed.
 Current: stopped for Owner Review; context assistance is explicit, empty-only and ephemeral to the active load.
 Next: Owner Review only. Do not implement profiles, suggestions or identity/matching changes without new authority.
-Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, all prior accepted Composer work, and the preexisting .DS_Store.
+Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
 ## Current checkpoint — UX-002E.1 Secondary missing-data context
@@ -18,7 +18,7 @@ Last updated: 2026-09-17 MST
 - [x] Make `Aplicar a filas incompletas` disabled without values, empty-only, no-op-safe and never overwriting non-empty supplier data.
 - [x] Reset helper values for a fresh load or opened Version; remove session preference carryover without adding persistence.
 - [x] Preserve Save/Review/Analyze/Apply, Supplier gate, COMPACT and duplicate behavior; no API, DB or migration change.
-- [x] Prove model invariants plus local Chrome fresh-collapsed and Apple-to-empty/Samsung-preserved flow without creating a Version.
+- [x] Prove model invariants plus local Chrome fresh-collapsed and Apple-to-empty/Samsung-preserved flow; save/reload isolated QA UX-002E Local v1 without Analyze or Apply.
 - [x] Run typecheck, focused contracts, build, architecture, documentation checks and stop for Owner Review with no push, PR, merge or deploy.
 
 ## Previous checkpoint — UX-002E Batch context defaults friction audit
