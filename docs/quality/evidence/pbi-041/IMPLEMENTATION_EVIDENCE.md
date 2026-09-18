@@ -1443,3 +1443,25 @@ empty Brand while a sibling Samsung Brand remained unchanged. It then saved
 isolated `QA UX-002E Local v1`, reloaded and reopened that DRAFT to prove the
 resulting Apple row value persists while the helper itself reopens closed and
 empty. The fixture remains `DRAFT`/unpublished; no Analyze or Apply ran.
+
+## UX-004.3 — Bulk Read / Prepare / Apply separation
+
+The Bulk route now admits `catalog.import.read` (or inherited prepare-read)
+and renders an evidence-first **Solo lectura** surface with Sources, Versions,
+lifecycle, coverage and reconciliation/result rows. It performs no capture
+policy/reference fetch and exposes no create, save, analyze, decision or
+duplicate-resolution control. Preparation remains behind
+`catalog.import.prepare`; Apply is independently visible only for a READY batch
+when `catalog.import.publish` and the exact current effects pass.
+
+Server publication rereads the authoritative Version and composes the minimum
+effect requirements: item create, update or reactivate, price and reference
+cost only where the batch actually applies them. The direct-operation suite
+proves read denies every preparation mutation and publish, prepare denies
+publish, and read+publish plus effects cannot prepare but can publish.
+Disposable PostgreSQL material leaves User A's READY batch to User B and
+records B, not A, as `catalog.bulk.publish.row` actor. No mandatory separation
+of duties is introduced. Current browser proof as the already-authenticated
+full user passed desktop, 768 and 640 with no page overflow; no Owner batch was
+applied. Typecheck, build, focused authorization/UI contracts and PBI-041
+PostgreSQL material pass. No push, PR, merge, CI or deploy occurred.

@@ -334,9 +334,9 @@ Capacidades iniciales:
 | `catalog.branch_prices.manage` | crear/revocar override de Branch autorizada |
 | `catalog.reference_cost.read` | recibir costo de referencia |
 | `catalog.reference_cost.manage` | registrar/corregir costo de referencia |
-| `catalog.import.read` | consultar fuentes, versiones, diff, coverage y resultados de carga |
-| `catalog.import.prepare` | cargar, mapear y resolver un batch sin publicar; temporalmente también habilita lectura heredada |
-| `catalog.import.publish` | publicar un batch listo |
+| `catalog.import.read` | consultar fuentes, versiones, diff, coverage y resultados de carga sin preparar |
+| `catalog.import.prepare` | crear, editar, analizar y resolver un batch sin publicar; conserva compatibilidad temporal de lectura heredada |
+| `catalog.import.publish` | publicar un batch `READY`, compuesta con las authorities de efecto reales |
 | `catalog.items.bulk_retire` | preparar y ejecutar retiro masivo de CatalogItems; no concede hard delete ni reversión de updates |
 | `catalog.suppliers.delete` | eliminar una SupplierSource sólo cuando toda su historia sea borrador seguro; no concede delete de CatalogItem ni de evidencia publicada |
 
@@ -366,6 +366,18 @@ costo. Metadata, lifecycle individual, precio, costo, override de Branch y
 retiro masivo quedan sujetos a sus capabilities respectivas; el retiro masivo
 conserva íntegramente ADR-013 nivel 2. La UI usa capabilities de sesión y no
 nombres de rol; el servidor sigue siendo la autoridad final.
+
+UX-004.3 separa materialmente Bulk Composer: `catalog.import.read` abre sólo
+historial, versiones, coverage, comparación y resultados; no carga recursos
+de edición ni expone controles de preparación. `catalog.import.prepare` habilita
+crear Source/Draft, editar, analizar, resolver y purgar borradores, pero no
+publica. `catalog.import.publish` permite Apply de un lote `READY` visible al
+publisher, sin exigir que sea quien lo preparó. Apply vuelve a leer el lote
+autoritativo y compone sólo los efectos presentes: create, update, reactivate,
+precio y costo; no convierte publish en super-capability. La segregación queda
+habilitada por capability, no obligatoria: un mismo usuario puede tener las
+tres capacidades. Un rol publisher recibe `catalog.import.read` explícitamente;
+la compatibilidad temporal prepare→read se mantiene para roles heredados.
 
 Crear/editar individualmente es nivel 1 de ADR-013 con capability específica,
 versionado y auditoría. Publicar un batch también queda clasificado nivel 1 en

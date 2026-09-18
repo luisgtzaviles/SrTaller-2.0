@@ -1,15 +1,28 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-004.2 Price List + Item Authority Integration
+Milestone / Functional Goal: PBI-041 — UX-004.3 Bulk Read / Prepare / Apply Separation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review — Price List reading and every item-sensitive action are now independently authorized and materially checked.
+Status: Local Owner Review — Bulk history, preparation and publication are independently authorized and materially checked.
 WIP: 1/1
-Progress: 9 / 10 UX-004.2 blocks completed; UX-004.1 foundation remains preserved.
-Current: Owner review of the Price List + item authority matrix and local evidence.
-Next: await an explicit Owner decision. Do not redesign Composer, push, open a PR, merge, deploy or start another UX slice.
+Progress: 10 / 10 UX-004.3 blocks completed; UX-004.1/UX-004.2 foundations remain preserved.
+Current: Owner review of the Bulk read/prepare/publish matrix and handoff evidence.
+Next: await an explicit Owner decision. Do not redesign unrelated Composer workflow, push, open a PR, merge, deploy or start another UX slice.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
-Last updated: 2026-09-17 MST
+Last updated: 2026-09-18 MST
+
+## Current checkpoint — UX-004.3 Bulk Read / Prepare / Apply Separation
+
+- [x] Audit every Bulk endpoint: history reads, source/draft creation, replacement, analyze, row decisions, publication and draft purge.
+- [x] Open Composer history to `catalog.import.read` while retaining the temporary prepare-to-read compatibility for legacy roles.
+- [x] Render the read-only evidence surface without Nueva carga, Source creation, grid edits, Save, Analyze/Reanalyze or reconciliation mutations.
+- [x] Preserve full preparation for `catalog.import.prepare` without granting publication, source deletion, bulk retirement, cost access or item-effect authority.
+- [x] Gate Apply independently by `catalog.import.publish` and recompose current item/price/cost effects server-side from the authoritative batch.
+- [x] Add direct API/operation regressions for read-only deny, prepare-only deny, publisher effect composition and no preparation bypass.
+- [x] Prove disposable PostgreSQL handoff: User A prepares READY, User B publishes, and Apply audit identifies User B.
+- [x] Preserve Supplier delete level 2, bulk-retire, coverage, policy, duplicate and UX-004.2 behavior.
+- [x] Complete local full-user visual/responsive smoke at desktop, 768 and 640 without applying an Owner batch.
+- [x] Record PBI, authorization audit, architecture and evidence; stop for Owner Review with no remote action.
 
 ## Current checkpoint — UX-004.2 Price List + Item Authority Integration
 

@@ -78,6 +78,16 @@ boundaries, while the server remains authoritative. Bulk read/prepare UX is
 explicitly deferred to UX-004.3. See [implementation evidence](IMPLEMENTATION_EVIDENCE.md)
 and the [UX-004 audit](../../../domain/PRICE_LIST_UX_004_CATALOG_OPERATIONAL_AUTHORIZATION_AUDIT.md).
 
+## UX-004.3 Bulk Read / Prepare / Apply separation
+
+Bulk history is independently available through `catalog.import.read` in a
+read-only Composer surface. Preparation remains `catalog.import.prepare`; a
+READY batch can be applied by a separately authorized `catalog.import.publish`
+user only with the item/price/cost effects it actually needs. The disposable
+PostgreSQL handoff evidence preserves the publisher as audit actor. No
+mandatory preparer/publisher separation, Owner-batch Apply, remote action or
+deployment occurred.
+
 UX-003.4 now enforces `REQUIRED` from the effective resulting value rather
 than raw supplier cells. Analyze records typed attention; Apply rereads the
 current policy to reject a stale or direct bypass. Explicit incoming data or a

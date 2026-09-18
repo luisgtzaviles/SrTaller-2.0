@@ -1,7 +1,7 @@
 # UX-004 — Catalog Operational Authorization Audit
 
 **PBI:** PBI-041
-**Estado:** UX-004.1 materializado y UX-004.2 en proof local; UX-004.3..004.4 no implementados.
+**Estado:** UX-004.1..004.3 materializados localmente; UX-004.4 permanece pendiente.
 **Fecha:** 2026-09-17
 **Alcance:** Sólo roles, capabilities y autorización de operaciones de Lista de
 precios / Catalog. No cambia producto, API, persistencia ni datos.
@@ -126,7 +126,25 @@ capabilities financieras; y **Vaciar lista** queda sólo en
 `catalog.items.bulk_retire` con ADR-013 nivel 2. Las rutas directas de alta y
 detalle reproducen estas fronteras y el backend vuelve a denegar cada bypass.
 `catalog.manage` permanece sólo como fallback temporal servidor de item y
-para Category/Brand; UX-004.3 no fue modificada.
+para Category/Brand.
+
+### Estado material de UX-004.3
+
+Bulk Composer ya admite inspección histórica con `catalog.import.read` sin
+conceder preparación. Esa vista muestra Sources, Versions, lifecycle,
+coverage, comparación y resultados, pero omite Nueva carga, creación de Source,
+edición, Save, Analyze/Reanalyze y decisiones de filas. No solicita referencias
+ni policy de captura, por lo que un lector no recibe accidentalmente recursos
+de preparación. `catalog.import.prepare` conserva el flujo previo a
+publicación, incluido Source/Draft, Analyze, decisiones y purge de borradores;
+no recibe publish.
+
+Apply exige `catalog.import.publish` y vuelve a evaluar el lote READY más las
+capabilities de sus efectos reales: create, update, reactivate, precio y costo.
+El publisher requiere lectura explícita para abrir el lote; el fallback
+prepare→read sólo preserva roles heredados. No hay ownership lock: el proof
+PostgreSQL desechable deja A en READY, B publica y el audit de Apply identifica
+a B. Supplier delete continúa nivel 2 y bulk-retire no cambia.
 
 ## Target mínimo V1 recomendado
 
