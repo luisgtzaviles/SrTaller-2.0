@@ -22,12 +22,13 @@ PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
 Owner Review. Advanced Supplier Reconciliation remains a deferred outcome
 without PBI ID, selection or readiness.
 
-## UX-002E Batch context defaults friction audit
+## UX-002E / UX-002E.1 missing-data context
 
-This read-only audit preserved AG `v52`/`v53` and confirmed that batch context
-is session-only capture state without SupplierSource preference or provenance.
-It records the v52/v53 identity boundary, mixed-list risk and Owner decisions
-for a future explicit-context/suggestion slice; it implements nothing.
+The audit preserved AG `v52`/`v53` and confirmed the identity boundary around
+missing Brand. UX-002E.1 implements only the safe presentation consequence:
+an empty, collapsed `Completar datos faltantes` disclosure for editable FULL
+loads. Its action is explicit, empty-only and never overwrites supplied data;
+it has no Source/history preference, Save, Analyze or Catalog side effect.
 
 ## UX-001 Supplier Selection Gate — local Owner Review
 

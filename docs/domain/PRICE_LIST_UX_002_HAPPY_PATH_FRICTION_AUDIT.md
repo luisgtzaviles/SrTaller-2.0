@@ -368,6 +368,7 @@ review intent and by giving contextual suggestions. It must retain explicit
 semantics for completeness, identity, exceptions, and durable publication.
 
 The subsequent [UX-002E Batch Context Defaults Friction Audit](PRICE_LIST_UX_002E_BATCH_CONTEXT_DEFAULTS_FRICTION_AUDIT.md)
-confirms that Type/Category/Brand defaults are browser-session capture aids,
-not Source preferences. Its recommended next direction is a secondary explicit
-context, not remembered or automatic identity input.
+led to UX-002E.1: Type/Category/Brand are now an empty, collapsed, secondary
+**Completar datos faltantes** helper for the active load. It remains explicit,
+empty-only and non-persistent as a Source preference; it never supplies
+remembered or automatic identity input.

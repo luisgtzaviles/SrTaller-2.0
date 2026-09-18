@@ -1,17 +1,27 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002E Batch context defaults friction audit
+Milestone / Functional Goal: PBI-041 — UX-002E.1 Secondary missing-data context
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: audit/documentation complete; ready for Owner decisions
+Status: implementation and focused proof complete; ready for Owner Review
 WIP: 1/1
-Progress: 6 / 6 UX-002E audit blocks completed.
-Current: stopped for Owner decisions; defaults are local capture aid, not supplier authority.
-Next: Owner decisions UX2E-001..009 only. Do not implement defaults, profiles or matching changes without new authority.
+Progress: 7 / 7 UX-002E.1 blocks completed.
+Current: stopped for Owner Review; context assistance is explicit, empty-only and ephemeral to the active load.
+Next: Owner Review only. Do not implement profiles, suggestions or identity/matching changes without new authority.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-002E Batch context defaults friction audit
+## Current checkpoint — UX-002E.1 Secondary missing-data context
+
+- [x] Replace the primary always-open block with the collapsed `Completar datos faltantes` disclosure for editable FULL loads.
+- [x] Keep Tipo, Categoría and Marca available only on explicit expansion; retain a separate advanced COMPACT safety option.
+- [x] Make `Aplicar a filas incompletas` disabled without values, empty-only, no-op-safe and never overwriting non-empty supplier data.
+- [x] Reset helper values for a fresh load or opened Version; remove session preference carryover without adding persistence.
+- [x] Preserve Save/Review/Analyze/Apply, Supplier gate, COMPACT and duplicate behavior; no API, DB or migration change.
+- [x] Prove model invariants plus local Chrome fresh-collapsed and Apple-to-empty/Samsung-preserved flow without creating a Version.
+- [x] Run typecheck, focused contracts, build, architecture, documentation checks and stop for Owner Review with no push, PR, merge or deploy.
+
+## Previous checkpoint — UX-002E Batch context defaults friction audit
 
 - [x] Trace Tipo, Categoría, Marca and Aplicar sólo a vacíos from UI/session state through Draft, Listing, signature and Analyze.
 - [x] Confirm defaults are session-only and current persistence collapses explicit, manually defaulted and future suggested values.

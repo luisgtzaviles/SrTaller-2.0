@@ -2,21 +2,25 @@
 
 ## Estado del documento
 
-- **Estado:** Audit complete — Owner decisions ready; not implemented.
+- **Estado:** Audit complete; UX-002E.1 implements only the approved secondary
+  explicit helper. Supplier preferences, suggestions and identity work remain
+  unimplemented.
 - **Alcance:** PBI-041, `Contexto del lote` en el Composer FULL.
 - **Método:** trazabilidad estática y consultas PostgreSQL locales de sólo
   lectura; no se modificaron producto, fixtures, Versiones ni Catalog.
-- **Próxima revisión:** decisión Owner sobre `UX2E-001..009` antes de cambiar
-  defaults, perfil de SupplierSource o matching.
+- **Próxima revisión:** Owner Review of UX-002E.1; decisions `UX2E-003..009`
+  remain required before suggestions, SupplierSource profiles or matching work.
 
 ## Hallazgo ejecutivo
 
-El bloque actual es una **ayuda local de captura**, no una configuración
+El bloque auditado era una **ayuda local de captura**, no una configuración
 durable de proveedor ni una declaración de intención del Owner. Sus valores se
-guardan solamente en `sessionStorage` del navegador bajo
-`srtaller:bulk-composer:batch-context:v1`; no existen columnas, tablas, API ni
-metadatos de `SupplierSource` para preferencias de captura. Cuando se aplica un
-valor, el Listing conserva sólo el valor final de la fila. No queda evidencia
+guardaban solamente en `sessionStorage` del navegador bajo
+`srtaller:bulk-composer:batch-context:v1`; no existían columnas, tablas, API ni
+metadatos de `SupplierSource` para preferencias de captura. UX-002E.1 elimina
+esa persistencia de sesión: el helper empieza vacío en cada carga nueva y no se
+recupera al abrir un Draft. Cuando se aplica un valor, el Listing conserva sólo
+el valor final de la fila. No queda evidencia
 de si fue escrito por proveedor, Owner, default o futura sugerencia.
 
 Por eso los defaults no pueden convertirse en automatización silenciosa. Tipo,
@@ -31,6 +35,22 @@ sólo llena vacíos. Cualquier sugerencia futura debe mostrar su procedencia y
 requerir aceptación. El modelo exception-first para recuperar contexto de filas
 conocidas es atractivo, pero requiere una estrategia de identidad por etapas;
 no es seguro con la firma actual.
+
+## Resultado implementado — UX-002E.1
+
+`Completar datos faltantes` es ahora un disclosure secundario y cerrado por
+defecto para una carga FULL editable. Sólo al abrirlo aparecen Tipo, Categoría,
+Marca y la acción **Aplicar a filas incompletas**. La acción se deshabilita sin
+valores seleccionados, no cambia una fila si no encuentra campos vacíos y deja
+visibles los valores resultantes para inspección. Su copy declara que nunca
+modifica datos que ya llegaron en la lista.
+
+La ayuda no aparece en snapshots `INGESTED`/`APPLIED`, no guarda ni analiza por
+sí misma y no crea Source, Version, Resolution, Memory ni Catalog. La carga
+nueva, la exploración de otra Version y el estado inicial limpian Tipo,
+Categoría y Marca; no se lee ni escribe una preferencia por SupplierSource ni
+historial. Se preserva la aplicación empty-only existente y las guards de
+compatibilidad; no hay inferencia ni cambio de signature/matching.
 
 ## Traza del comportamiento actual
 

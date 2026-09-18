@@ -1253,3 +1253,22 @@ is `INVALID` rather than `NEW` for an unmatched identified row. Chrome local
 confirmed the fresh FULL workspace has no radios; the secondary disclosure is
 collapsed initially, exposes its safety copy on demand, and supports Space plus
 Tab/Shift+Tab. No draft was saved or applied.
+
+## UX-002E.1 — Secondary missing-data context
+
+The former always-open context block is now the separate, collapsed
+**Completar datos faltantes** disclosure. It exposes the same Type, Category
+and Brand inputs only on demand and names the only permitted action
+**Aplicar a filas incompletas**. The action is disabled without a selected
+value, fills only blanks, reports a no-op when no applicable blank exists and
+preserves supplied values such as Brand `Samsung` when the helper uses `Apple`.
+
+The helper is ephemeral to the active capture: fresh new loads, clearing a
+load and opening a persisted Version reset its fields and disclosure. It no
+longer reads or writes the prior `sessionStorage` key, and it neither saves nor
+analyzes. No SupplierSource preference, suggestion, inference, provenance,
+signature, matching, API, database or migration behavior changed. Focused
+model/UI contracts, typecheck, build and architecture checks pass. Local Chrome
+proof observed a fresh collapsed helper and explicitly applied Apple to an
+empty Brand while a sibling Samsung Brand remained unchanged; no Version was
+saved, analyzed or applied.
