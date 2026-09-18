@@ -15,11 +15,19 @@ authority.
 - [Bulk Composer Discovery](../../../domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
 - [UX-001 Supplier Selection Gate Audit](../../../domain/PRICE_LIST_UX_001_SUPPLIER_SELECTION_GATE_AUDIT.md)
 - [UX-002 Happy-Path Friction Audit](../../../domain/PRICE_LIST_UX_002_HAPPY_PATH_FRICTION_AUDIT.md)
+- [UX-002E Batch Context Defaults Friction Audit](../../../domain/PRICE_LIST_UX_002E_BATCH_CONTEXT_DEFAULTS_FRICTION_AUDIT.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
 Owner Review. Advanced Supplier Reconciliation remains a deferred outcome
 without PBI ID, selection or readiness.
+
+## UX-002E Batch context defaults friction audit
+
+This read-only audit preserved AG `v52`/`v53` and confirmed that batch context
+is session-only capture state without SupplierSource preference or provenance.
+It records the v52/v53 identity boundary, mixed-list risk and Owner decisions
+for a future explicit-context/suggestion slice; it implements nothing.
 
 ## UX-001 Supplier Selection Gate — local Owner Review
 
