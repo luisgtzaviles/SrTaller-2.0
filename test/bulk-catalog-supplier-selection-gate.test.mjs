@@ -122,3 +122,20 @@ test('capture mode is an advanced restricted-update option, not a primary radio 
   assert.match(source, /event\.target\.checked \? 'COMPACT' : 'FULL'/u);
   assert.doesNotMatch(source, /<legend>Modo de captura<\/legend>/u);
 });
+
+test('missing-data context is a resettable secondary disclosure with explicit empty-only action', async () => {
+  const source = await readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8');
+  assert.match(source, /const \[contextOpen, setContextOpen\] = useState\(false\)/u);
+  assert.match(source, /Completar datos faltantes/u);
+  assert.match(source, /aria-expanded=\{contextOpen\} aria-controls="missing-data-context"/u);
+  assert.match(source, /id="missing-data-context"/u);
+  assert.match(source, /Aplicar a filas incompletas/u);
+  assert.match(source, /Solo se completarán campos vacíos\. Los datos que ya vienen en la lista no se modificarán\./u);
+  assert.match(source, /disabled=\{!batchDefaults\.kind && !batchDefaults\.category\.trim\(\) && !batchDefaults\.brand\.trim\(\)\}/u);
+  assert.match(source, /No hay campos vacíos para completar\./u);
+  assert.match(source, /const resetMissingDataContext = \(\): void => \{ setBatchDefaults\(\{ kind: '', category: '', brand: '' \}\); setContextOpen\(false\); \}/u);
+  assert.match(source, /resetMissingDataContext\(\);/u);
+  assert.doesNotMatch(source, /sessionStorage\.setItem\('srtaller:bulk-composer:batch-context:v1'/u);
+  assert.doesNotMatch(source, /Contexto del lote/u);
+  assert.doesNotMatch(source, /Aplicar sólo a vacíos/u);
+});

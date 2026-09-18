@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import {
   applyBatchDefaults,
+  applyBatchDefaultsToEmptyRows,
   captureActionState,
   estimateColumnWidth,
   fillRows,
@@ -64,11 +65,24 @@ test('MXN costs distinguish blank, zero and formatted amounts', () => {
   assert.equal(Number.isNaN(parseMoneyToMinor('1,2')), true);
 });
 
-test('Batch Context fills only missing row values and preserves manual overrides', () => {
+test('missing-data helper fills only empty row values and preserves supplied values', () => {
   const inherited = applyBatchDefaults(blankRow(), { kind: 'PART', category: 'Pantallas', brand: 'Apple' });
   assert.deepEqual([inherited.kind, inherited.category, inherited.brand], ['PART', 'Pantallas', 'Apple']);
   const overridden = applyBatchDefaults({ ...blankRow(), category: 'Pantallas OLED', brand: 'Samsung' }, { kind: 'PART', category: 'Pantallas', brand: 'Apple' });
   assert.deepEqual([overridden.kind, overridden.category, overridden.brand], ['PART', 'Pantallas OLED', 'Samsung']);
+});
+
+test('missing-data helper supports partial context and reports no-op without mutating rows', () => {
+  const rows = [
+    { ...blankRow(), kind: '', category: 'Pantallas', brand: 'Samsung' },
+    { ...blankRow(), kind: '', category: '', brand: '' },
+  ];
+  const partial = applyBatchDefaultsToEmptyRows(rows, { kind: 'PART', category: '', brand: 'Apple' });
+  assert.equal(partial.changedCount, 2);
+  assert.deepEqual(partial.rows.map((row) => [row.kind, row.category, row.brand]), [['PART', 'Pantallas', 'Samsung'], ['PART', '', 'Apple']]);
+  const noOp = applyBatchDefaultsToEmptyRows(partial.rows, { kind: 'PART', category: '', brand: 'Apple' });
+  assert.equal(noOp.changedCount, 0);
+  assert.deepEqual(noOp.rows, partial.rows);
 });
 
 test('spreadsheet navigation covers arrows, Tab, Shift+Tab and Enter', () => {

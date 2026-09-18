@@ -345,7 +345,9 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(css, /\.coverageItems/u);
   assert.match(css, /\.coverageActions/u);
   assert.match(gridLayout, /--bulk-grid-offset/u);
-  assert.match(ui, /Contexto del lote/u);
+  assert.match(ui, /Completar datos faltantes/u);
+  assert.match(ui, /Aplicar a filas incompletas/u);
+  assert.doesNotMatch(ui, /Aplicar sólo a vacíos/u);
   assert.match(ui, /aria-label="Columnas de trabajo"/u);
   assert.match(ui, /supplierObservedTitle/u);
   assert.match(ui, /Original:/u);
