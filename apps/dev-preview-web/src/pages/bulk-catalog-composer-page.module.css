@@ -100,6 +100,8 @@
 .summary div { display: grid; gap: 2px; padding: var(--space-2); border-radius: var(--radius-md); background: var(--color-surface-muted); }
 .summary strong { font-size: 1.15rem; }.summary span { color: var(--color-text-muted); font-size: .7rem; }
 .decisions { min-width: 0; display: grid; gap: var(--space-2); padding: var(--space-3); }
+.requiredValueAttention { display: grid; gap: var(--space-2); padding: var(--space-3); border: 1px solid color-mix(in srgb, var(--color-warning) 45%, var(--color-border)); background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface)); }
+.requiredValueAttention h2 { margin: 0; font-size: .9375rem; }.requiredValueAttention p { margin: 0; color: var(--color-text-muted); }.requiredValueAttention ul { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0; list-style: none; }.requiredValueAttention li { display: inline-flex; gap: var(--space-1); padding: 2px var(--space-2); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-text-muted); font-size: .78rem; }.requiredValueAttention li strong { color: var(--color-text); }.requiredValueHint { font-size: .78rem; }
 .decisionTitle { justify-content: space-between; }.decisionTitle span { color: var(--color-warning); font-size: .78rem; }
 .groupActions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block: var(--space-3); }
 .allResolved { display: grid; gap: 2px; padding: var(--space-3); border: 1px solid var(--color-success); border-radius: var(--radius-md); background: var(--color-success-subtle); }

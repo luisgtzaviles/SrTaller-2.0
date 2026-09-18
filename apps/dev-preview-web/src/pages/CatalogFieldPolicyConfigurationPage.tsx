@@ -120,7 +120,7 @@ export function CatalogFieldPolicyConfigurationPage({ canManage, csrfToken }: Re
     {!policy || !draft ? <p className={styles.loading} role="status">{busy ? 'Cargando configuración de campos…' : 'No fue posible cargar la configuración.'}</p> : <>
       <section className={styles.settings} aria-labelledby="field-policy-title">
         <header>
-          <div><h2 id="field-policy-title">Política de campos</h2><p>Los cambios se guardan explícitamente y no modifican aún el comportamiento de la carga masiva.</p></div>
+          <div><h2 id="field-policy-title">Política de campos</h2><p>Los cambios se guardan explícitamente y se aplican al revisar y aplicar cargas posteriores.</p></div>
           <span className={dirty ? styles.dirty : styles.saved} role="status" aria-live="polite">{dirty ? 'Cambios sin guardar' : 'Sin cambios pendientes'}</span>
         </header>
         <div className={styles.columnHeaders} aria-hidden="true"><span>Campo</span><span>Política</span><span>Estado</span></div>

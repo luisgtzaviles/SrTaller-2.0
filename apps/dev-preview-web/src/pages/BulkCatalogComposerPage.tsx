@@ -34,7 +34,15 @@ const proposal = (row: UiRow) => ({ kind: row.kind || null, supplierObservedTitl
 const failureCode = (error: unknown): string => error instanceof PreviewApiError && error.code ? ` (${error.code})` : '';
 const versionStatus = (value: SupplierVersionSummary): string => value.lifecycle === 'DRAFT' ? 'Borrador' : value.batch.lifecycle === 'APPLIED' ? 'Aplicada' : 'En revisión';
 const formatVersionDate = (value: string, timeZone: string): string => new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone }).format(new Date(value));
-const analysisMessage = (code: string): string | null => ({
+const requiredEffectiveField = (code: string): Column | null => {
+  const key = code.startsWith('MISSING_REQUIRED_EFFECTIVE_VALUE:') ? code.slice('MISSING_REQUIRED_EFFECTIVE_VALUE:'.length) : '';
+  const columnsByPolicyField: Readonly<Record<string, Column>> = { kind: 'kind', title: 'title', description: 'description', category: 'category', brand: 'brand', supplierItemCode: 'supplierItemCode', sku: 'sku', barcode: 'barcode', referenceCost: 'cost', basePrice: 'price' };
+  return columnsByPolicyField[key] ?? null;
+};
+const analysisMessage = (code: string, canReadCost: boolean): string | null => {
+  const requiredField = requiredEffectiveField(code);
+  if (requiredField) return requiredField === 'cost' && !canReadCost ? 'Falta un dato obligatorio protegido; requiere un usuario autorizado.' : `Falta ${labels[requiredField]}.`;
+  return ({
   DUPLICATE_OBSERVATION_IN_VERSION: 'Esta observación se repite dentro de la lista del proveedor.',
   DUPLICATE_VALUE_CONTRADICTION: 'Artículo repetido con datos diferentes.',
   IDENTIFIERS_POINT_TO_DIFFERENT_ITEMS: 'Los identificadores recibidos apuntan a artículos distintos.',
@@ -46,7 +54,8 @@ const analysisMessage = (code: string): string | null => ({
   UNTRUSTED_HISTORY_REQUIRES_OWNER_DECISION: 'La historia previa requiere una decisión explícita.',
   HISTORICAL_ITEM_RETIRED_REQUIRES_REACTIVATION: 'La memoria histórica apunta a un artículo retirado. Reactívalo explícitamente en Lista de precios y vuelve a analizar; no se creará un duplicado.',
   COMPACT_ROW_TARGET_NOT_FOUND: 'No se encontró un artículo para esta actualización compacta.',
-}[code] ?? null);
+  }[code] ?? null);
+};
 const warningMessage = (code: string): string | null => ({
   DUPLICATE_EXACT_CONSOLIDATED: 'Fila duplicada consolidada; esta copia queda como evidencia y no se aplicará dos veces.',
   DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED: 'Fila no elegida para esta observación repetida; queda excluida de forma trazable.',
@@ -356,7 +365,20 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
   const changeDefaultKind = (kind: CatalogItemKind | ''): void => { let next: BatchDefaults = { ...batchDefaults, kind }; const probe = { ...blank(), ...next }; if (next.category && !isCompatible(probe)) next = { ...next, category: '', brand: '' }; else if (next.brand && !isCompatible({ ...probe, category: next.category })) next = { ...next, brand: '' }; setBatchDefaults(next); showToast('El contexto cambió; las filas existentes no se modificaron.'); };
   const changeDefaultCategory = (category: string): void => { let next: BatchDefaults = { ...batchDefaults, category }; if (next.brand && !isCompatible({ ...blank(), ...next })) next = { ...next, brand: '' }; setBatchDefaults(next); };
   const counts = current?.batch.counts; const unresolved = current?.rows.filter((row) => row.decision === 'UNRESOLVED').length ?? 0; const resolved = (current?.rows.length ?? 0) - unresolved; const excluded = current?.rows.filter((row) => row.decision === 'EXCLUDE').length ?? 0;
-  const compatibleSuggestionCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && ['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'].includes(row.classification)).length ?? 0;
+  const missingRequiredFields = (row: SupplierVersionRow): readonly Column[] => rowErrors(row.errors).flatMap((code) => {
+    const field = requiredEffectiveField(code); return field ? [field] : [];
+  });
+  const requiredAttentionRows = current?.rows.filter((row) => row.decision !== 'EXCLUDE' && missingRequiredFields(row).length > 0) ?? [];
+  const missingRequiredFieldCounts = new Map<Column, number>();
+  for (const row of requiredAttentionRows) for (const field of new Set(missingRequiredFields(row))) missingRequiredFieldCounts.set(field, (missingRequiredFieldCounts.get(field) ?? 0) + 1);
+  const completeRequiredValues = (): void => {
+    const issues = requiredAttentionRows.flatMap((row) => {
+      const rowIndex = current?.rows.findIndex((candidate) => candidate.rowDecisionId === row.rowDecisionId) ?? -1;
+      return rowIndex < 0 ? [] : missingRequiredFields(row).map((columnKey): ValidationIssue => ({ scope: 'CELL', rowIndex, columnKey, code: 'MISSING_REQUIRED_EFFECTIVE_VALUE', message: `${labels[columnKey]} es obligatorio para el valor final.` }));
+    });
+    setServerIssues(issues); setValidationAttempted(true); setIssueIndex(0); setGridExpanded(true); setViewPreset('ALL'); if (issues[0]) setPendingIssueFocus(issues[0]);
+  };
+  const compatibleSuggestionCount = current?.rows.filter((row) => row.decision === 'UNRESOLVED' && missingRequiredFields(row).length === 0 && ['NEW', 'UPDATE', 'REACTIVATE', 'UNCHANGED', 'PENDING_REFERENCE'].includes(row.classification)).length ?? 0;
   const duplicateResolutionGroups = current ? groupDuplicateResolutionRows(current.rows, duplicateObservationKey, (row) => rowErrors(row.errors), (row) => rowErrors(row.warnings)) : [];
   const duplicateMemberIds = new Set(duplicateResolutionGroups.flatMap((group) => group.members.map((member) => member.rowDecisionId)));
   const unresolvedDuplicateGroups = duplicateResolutionGroups.filter((group) => group.unresolved); const resolvedDuplicateGroups = duplicateResolutionGroups.filter((group) => !group.unresolved);
@@ -472,6 +494,11 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
             </div>
           </> : null}
         </section> : null}
+        {current && requiredAttentionRows.length > 0 ? <section className={styles.requiredValueAttention} aria-labelledby="required-effective-values-title">
+          <div><h2 id="required-effective-values-title">Faltan datos obligatorios</h2><p>{requiredAttentionRows.length.toLocaleString('es-MX')} {requiredAttentionRows.length === 1 ? 'fila requiere' : 'filas requieren'} atención antes de aplicar. Se identificaron {missingRequiredFieldCounts.size.toLocaleString('es-MX')} {missingRequiredFieldCounts.size === 1 ? 'campo' : 'campos'} obligatorio{missingRequiredFieldCounts.size === 1 ? '' : 's'}.</p></div>
+          <ul>{[...missingRequiredFieldCounts.entries()].map(([field, count]) => <li key={field}>{field === 'cost' && !canReadCost ? 'Dato protegido' : labels[field]} <strong>{count.toLocaleString('es-MX')}</strong></li>)}</ul>
+          {current.lifecycle === 'DRAFT' && mode === 'FULL' ? <Button size="compact" tone="primary" onClick={completeRequiredValues}>Completar datos faltantes</Button> : <p className={styles.requiredValueHint}>Completa los datos de la lista y vuelve a analizar con la política actual.</p>}
+        </section> : null}
         {current?.lifecycle === 'INGESTED' ? <section className={styles.decisions}>
           <div className={styles.decisionTitle}><h2>{current.batch.lifecycle === 'APPLIED' ? 'Resultado aplicado' : 'Reconciliación'}</h2><span>{current.batch.lifecycle === 'APPLIED' ? 'Lote aplicado' : `${resolvedDecisionUnits} resueltas · ${unresolvedDecisionUnits} requieren tu atención`}</span></div>
           <div className={styles.reconciliationTabs} role="tablist" aria-label="Vistas de reconciliación">
@@ -498,7 +525,7 @@ export function BulkCatalogComposerPage({ capabilities, csrfToken, timeZone }: R
               <small>Propuesta: {row.proposal.kind ?? 'tipo sin cambio'} · {row.proposal.category ?? 'categoría sin cambio'} · {row.proposal.brand ?? 'marca sin cambio'} · estado {row.classification === 'REACTIVATE' ? 'Reactivar' : 'sin cambio'} · precio {row.proposal.basePriceMinor === null ? 'sin cambio' : fromMinor(row.proposal.basePriceMinor)}{canReadCost ? ` · costo ${row.proposal.referenceCostMinor === null ? 'sin cambio' : fromMinor(row.proposal.referenceCostMinor)}` : ''}</small>
               {row.decision !== 'EXCLUDE' && row.titleDecision ? <small className={styles.titleDecisionSummary}>Nombre al aplicar: {row.titleDecision === 'ADOPT_OBSERVED' ? `usar “${row.proposal.title ?? ''}”` : `mantener “${row.targetTitle ?? row.before?.title ?? ''}”`}</small> : null}
               {row.warnings.map(warningMessage).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}
-              {rowErrors(row.errors).map(analysisMessage).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}
+              {rowErrors(row.errors).map((code) => analysisMessage(code, canReadCost)).filter((message): message is string => message !== null).map((message) => <small key={message}>{message}</small>)}
               {row.candidates.map((candidate) => <section key={candidate.itemId} className={styles.candidateCard}>
                 <strong>{candidate.title}</strong><span>{candidate.status === 'INACTIVE' ? 'Inactivo' : 'Activo'} · score de presentación {Math.round(candidate.score * 100)}%</span>
                 <small>Evidencia: {candidate.evidence.join(' · ')}</small>
