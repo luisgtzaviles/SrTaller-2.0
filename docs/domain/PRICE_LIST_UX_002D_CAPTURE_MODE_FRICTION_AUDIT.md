@@ -72,4 +72,14 @@ their existing absence/coverage semantics in both modes.
 prevents switching it. Before future UI/API work, decide whether the backend
 must reject a mismatched draft-mode request explicitly. Not remediated here.
 
-Capture mode semantics are understood. Owner decision ready — not implemented.
+## UX-002D.1 implementation
+
+Owner selected option C. FULL is implicit on a fresh Composer; COMPACT is now
+an explicit advanced restricted-update checkbox. DRAFT replacement persists the
+validated requested mode atomically with its rows and subsequent GET/Analyze
+use that same mode. INGESTED and later Versions cannot switch it in the UI.
+No migration was required; the existing column was made mutable in the typed
+database contract only while the repository DRAFT guard holds. PostgreSQL
+material proof covers FULL → COMPACT → FULL, persisted GET authority, and an
+analyzed COMPACT draft whose unmatched identified row is `INVALID`, never
+`NEW`. Owner Review remains pending.

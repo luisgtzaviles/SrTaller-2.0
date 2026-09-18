@@ -1,17 +1,26 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002D Capture mode friction audit
+Milestone / Functional Goal: PBI-041 — UX-002D.1 Advanced capture-mode option
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: audit/documentation complete; no capture-mode product change implemented
+Status: implementation and focused material proof complete; ready for Owner Review
 WIP: 1/1
-Progress: 5 / 5 UX-002D audit blocks completed.
-Current: stopped for Owner decision on capture-mode policy; UX-002C proof remains preserved.
-Next: Owner decision only. Do not start implementation, integration, another UX slice or PBI without new authority.
+Progress: 6 / 6 UX-002D.1 blocks completed.
+Current: stopped for Owner Review; FULL is implicit and COMPACT is an advanced safety option.
+Next: Owner Review only. Do not start integration, another UX slice or PBI without new authority.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-002D Capture mode friction audit
+## Current checkpoint — UX-002D.1 Advanced capture-mode option
+
+- [x] Remove primary capture-mode radios and keep FULL as the fresh-load default.
+- [x] Add accessible advanced restricted-update option with explicit no-new-items explanation.
+- [x] Persist requested draft mode atomically on replace; DRAFT can change, INGESTED remains disabled.
+- [x] Prove FULL ↔ COMPACT persistence, Analyze-consistent mode and COMPACT no-NEW behavior with disposable PostgreSQL.
+- [x] Preserve UX-002B/UX-002C, duplicates, completeness, defaults and Apply semantics.
+- [x] Complete the no-save Chrome walkthrough and focused checks; stop for Owner Review without push, PR, merge or deploy.
+
+## Previous checkpoint — UX-002D Capture mode friction audit
 
 - [x] Trace FULL/COMPACT from UI through API, domain, persistence, Analyze, Apply and history.
 - [x] Compare validation, NEW/no-target, matching, duplicates, coverage, defaults and lifecycle semantics.

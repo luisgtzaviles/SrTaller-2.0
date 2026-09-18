@@ -1240,3 +1240,16 @@ after an edit; desktop/768/640 light and 640 dark passed.
 No API, database, migration, matching, coverage, duplicate semantics, Catalog,
 resolution, memory or Apply behavior changed. The implementation is a local
 Owner Review candidate only; there was no push, PR, merge, CI or deployment.
+
+## UX-002D.1 — Advanced capture mode and draft replacement authority
+
+The primary Composer now defaults to FULL without radios. Its collapsed,
+keyboard-accessible advanced disclosure offers COMPACT only as the explicit
+restricted-update safety option. The repository persists `composer_mode` from
+the validated replace request in the same DRAFT transaction as rows and raw
+payload; non-DRAFT replacement remains rejected. PostgreSQL material proof
+passed FULL → COMPACT → FULL, GET authority and an analyzed COMPACT draft that
+is `INVALID` rather than `NEW` for an unmatched identified row. Chrome local
+confirmed the fresh FULL workspace has no radios; the secondary disclosure is
+collapsed initially, exposes its safety copy on demand, and supports Space plus
+Tab/Shift+Tab. No draft was saved or applied.

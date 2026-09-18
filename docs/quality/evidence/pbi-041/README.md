@@ -145,3 +145,12 @@ COMPACT requires an identifier and blocks unmatched rows. No product, database
 or fixture mutation occurred. The audit recommends a future default-plus-
 advanced design, subject to Owner decisions; it does not implement it. See the
 [domain audit](../../../domain/PRICE_LIST_UX_002D_CAPTURE_MODE_FRICTION_AUDIT.md).
+
+## UX-002D.1 Advanced capture-mode option — ready for Owner Review
+
+Fresh loads use FULL without a visible mode choice. COMPACT is an accessible
+advanced restricted-update option whose copy states its identifier requirement
+and prohibition on new items. `replaceDraft` persists the requested validated
+mode atomically; disposable PostgreSQL proves FULL → COMPACT → FULL and reload
+authority. No migration, matching, completeness, duplicate, Apply or Catalog
+semantics changed. Local-only Owner Review; no remote action occurred.

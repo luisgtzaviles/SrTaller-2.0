@@ -355,8 +355,12 @@ recoverable draft across reload. Responsive Chrome checks covered desktop,
 ## Conclusion
 
 The subsequent [UX-002D Capture Mode Friction Audit](PRICE_LIST_UX_002D_CAPTURE_MODE_FRICTION_AUDIT.md)
-traces FULL/COMPACT as persisted safety policy rather than Owner load intent;
-its recommendation is pending Owner decision and is not implemented.
+traces FULL/COMPACT as persisted safety policy rather than Owner load intent.
+UX-002D.1 implements the approved consequence: FULL is implicit on every fresh
+load, while the no-new-items COMPACT restriction is an explicit advanced
+option in the Composer. A persisted DRAFT may change mode only through its
+atomic replacement operation; analyzed and applied history retains its stored
+mode and cannot be silently reinterpreted.
 
 UX-002 supports a result-first review flow, not silent automation. The system
 can reduce operator work by composing mechanical save/analyze after a deliberate
