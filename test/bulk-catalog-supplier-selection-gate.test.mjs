@@ -5,6 +5,8 @@ import test from 'node:test';
 import {
   filterSupplierSources,
   hasMeaningfulComposerWork,
+  reconcileBrowseSourceId,
+  supplierHistoryForBrowseSource,
 } from '../apps/dev-preview-web/src/pages/bulk-catalog-composer-model.mjs';
 
 const blankRow = () => ({ kind: '', supplierObservedTitle: '', title: '', description: '', category: '', brand: '', supplierItemCode: '', sku: '', barcode: '', price: '', cost: '' });
@@ -17,6 +19,24 @@ test('supplier search is local, case-insensitive, and does not select a supplier
   assert.deepEqual(filterSupplierSources(sources, ''), sources);
   assert.deepEqual(filterSupplierSources(sources, 'proveedor b').map((source) => source.sourceId), ['b']);
   assert.deepEqual(filterSupplierSources(sources, 'AG').map((source) => source.sourceId), ['ag']);
+});
+
+test('browse selection owns its version history and never falls back after an explicit selection', () => {
+  const sources = Object.freeze([
+    Object.freeze({ sourceId: 'ag', name: 'AG' }),
+    Object.freeze({ sourceId: 'avicell', name: 'Avicell' }),
+  ]);
+  const versions = Object.freeze([
+    Object.freeze({ versionId: 'ag-2', sourceId: 'ag', sequenceNumber: 2 }),
+    Object.freeze({ versionId: 'avicell-1', sourceId: 'avicell', sequenceNumber: 1 }),
+    Object.freeze({ versionId: 'ag-3', sourceId: 'ag', sequenceNumber: 3 }),
+  ]);
+  assert.equal(reconcileBrowseSourceId('', sources, false), 'ag');
+  assert.equal(reconcileBrowseSourceId('avicell', sources, true), 'avicell');
+  assert.equal(reconcileBrowseSourceId('removed-source', sources, true), '');
+  assert.deepEqual(supplierHistoryForBrowseSource(versions, 'avicell').map((version) => version.versionId), ['avicell-1']);
+  assert.deepEqual(supplierHistoryForBrowseSource(versions, 'ag').map((version) => version.versionId), ['ag-3', 'ag-2']);
+  assert.deepEqual(supplierHistoryForBrowseSource(versions, '').map((version) => version.versionId), []);
 });
 
 test('unsaved-work guard is quiet for an empty workspace and reacts only to material local work', () => {
@@ -35,6 +55,12 @@ test('Composer keeps browsing separate from pending new-load supplier ownership'
   assert.match(source, /const continueNewLoad = \(\): boolean/u);
   assert.match(source, /setPendingNewLoadSupplierId\(sourceId\); setCurrent\(null\)/u);
   assert.match(source, /setBrowseSourceId\(value\.sourceId\); setPendingNewLoadSupplierId\(null\)/u);
+  const browseHandler = source.slice(source.indexOf('const browseSource ='), source.indexOf('const openNewSource ='));
+  assert.match(browseHandler, /const browseSource = \(sourceId: string\): void => \{ setBrowseSourceId\(sourceId\); \}/u);
+  assert.doesNotMatch(browseHandler, /clearNewLoad\(\)/u);
+  assert.match(source, /const browsedSupplierVersions = useMemo\(\(\) => supplierHistoryForBrowseSource\(versions, browseSourceId\)/u);
+  assert.match(source, /aria-label=\{browsedSupplier \? `Historial de \$\{browsedSupplier\.name\}` : 'Historial de proveedor'\}/u);
+  assert.match(source, /No hay versiones para este proveedor\./u);
   assert.doesNotMatch(source, /beginNewVersion/u);
 });
 
@@ -45,7 +71,7 @@ test('gate has no silent supplier confirmation, permits one-click choice, and re
   assert.match(source, /onClick=\{\(\) => setSupplierGateSupplierId\(source\.sourceId\)\}/u);
   assert.match(source, /onClick=\{continueNewLoad\}/u);
   assert.match(source, /Nueva carga; seleccionar proveedor/u);
-  assert.match(source, /onClick=\{\(\) => openSupplierGate\(`supplier-gate-source-\$\{source\.sourceId\}`\)\}/u);
+  assert.match(source, /onClick=\{\(\) => openSupplierGate\(`supplier-gate-source-\$\{browsedSupplier\.sourceId\}`\)\}/u);
   assert.match(source, /pendingSupplier\?\.name \?\? 'Sin seleccionar'/u);
   assert.match(source, /Proveedor e intención de esta carga · El número se asignará al guardar/u);
   assert.match(source, />Cambiar<\/Button>/u);
@@ -59,9 +85,10 @@ test('workspace entry has one primary new-load CTA and a recoverable sources pan
   assert.match(ui, /id="supplier-gate-new-load"[\s\S]*?>[\s\S]*?Nueva carga/u);
   assert.doesNotMatch(ui, /supplier-gate-main-new-load/u);
   assert.match(ui, /className=\{styles\.emptyWorkspace\}[\s\S]*?Selecciona una versión para revisarla/u);
-  const emptyWorkspace = ui.slice(ui.indexOf('className={styles.emptyWorkspace}'), ui.indexOf('</section>}', ui.indexOf('className={styles.emptyWorkspace}')));
+  const emptyWorkspace = ui.slice(ui.indexOf('className={styles.emptyWorkspace}'), ui.indexOf('</section> : <>', ui.indexOf('className={styles.emptyWorkspace}')));
   assert.doesNotMatch(emptyWorkspace, /Nueva carga/u);
-  const sourcesPanel = ui.slice(ui.indexOf('<aside id="composer-sources-panel"'), ui.indexOf('</aside>'));
+  const sourcesPanelStart = ui.indexOf('<aside id="composer-sources-panel"');
+  const sourcesPanel = ui.slice(sourcesPanelStart, ui.indexOf('</aside>', sourcesPanelStart));
   assert.match(sourcesPanel, /className=\{styles\.sidebarHeading\}[\s\S]*?Fuentes y versiones[\s\S]*?aria-label="Ocultar fuentes y versiones"/u);
   assert.match(ui, /\{sourcesOpen \? <aside id="composer-sources-panel"[\s\S]*?aria-label="Ocultar fuentes y versiones"/u);
   assert.match(ui, /<main className=\{styles\.composer\} aria-busy=\{busy\}>[\s\S]*?\{!sourcesOpen \? <button[\s\S]*?aria-label="Mostrar fuentes y versiones"/u);
