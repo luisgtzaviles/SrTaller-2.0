@@ -684,9 +684,8 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     const benchmarkDraft = await service.createDraft(ctxC, { sourceId: benchmarkSource.sourceId, description: '10K', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'b'.repeat(64), rawPayload: 'synthetic-10k', rows: benchmarkRows });
     const ingestMs = performance.now() - started; started = performance.now();
     const benchmarkAnalyzed = await service.analyze(ctxC, benchmarkDraft.versionId, { expectedVersion: benchmarkDraft.version });
-    const analyzeMs = performance.now() - started; assert.equal(benchmarkAnalyzed.batch.counts.PENDING_REFERENCE, 10_000); assert.ok(analyzeMs <= 30_000, `10k analysis exceeded budget: ${analyzeMs}ms`);
-    const benchmarkReady = await service.decideMany(ctxC, benchmarkDraft.versionId, { expectedBatchVersion: benchmarkAnalyzed.batch.version, classifications: ['PENDING_REFERENCE'], decision: 'APPLY' });
-    started = performance.now(); const benchmarkApplied = await service.publish(ctxC, benchmarkDraft.versionId, { expectedVersion: benchmarkReady.version, clientRequestId: randomUUID() }, false); const publishMs = performance.now() - started;
+    const analyzeMs = performance.now() - started; assert.equal(benchmarkAnalyzed.batch.counts.NEW, 10_000); assert.equal(benchmarkAnalyzed.batch.lifecycle, 'READY'); assert.ok(analyzeMs <= 30_000, `10k analysis exceeded budget: ${analyzeMs}ms`);
+    started = performance.now(); const benchmarkApplied = await service.publish(ctxC, benchmarkDraft.versionId, { expectedVersion: benchmarkAnalyzed.version, clientRequestId: randomUUID() }, false); const publishMs = performance.now() - started;
     assert.equal(benchmarkApplied.batch.lifecycle, 'APPLIED'); assert.ok(publishMs <= 30_000, `10k publish exceeded HTTP budget: ${publishMs}ms`);
     started = performance.now(); const preview = await service.getVersion({ tenantId: tenantC, branchId: branchC }, benchmarkDraft.versionId, false); const previewMs = performance.now() - started;
     assert.equal(preview.rows.length, 10_000); assert.ok(previewMs <= 2_000, `10k preview read exceeded budget: ${previewMs}ms`);
@@ -700,6 +699,73 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     await connection.close().catch(() => undefined);
     await admin.end().catch(() => undefined);
   }
+});
+
+test('UX-005.1 keeps safely capturable new references out of manual reconciliation until Apply', { skip: !enabled, timeout: 45_000 }, async () => {
+  const admin = new Pool({ host: process.env.SR_PBI041_PG_HOST, port: Number(process.env.SR_PBI041_PG_PORT), database: process.env.SR_PBI041_PG_NAME, user: process.env.SR_PBI041_PG_USER, password: process.env.SR_PBI041_PG_PASSWORD, max: 2 });
+  const connection = createDatabaseConnection(config());
+  const tenantId = randomUUID(); const branchId = randomUUID(); const ctx = context(tenantId, branchId);
+  const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
+  try {
+    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    const categoryId = randomUUID(); const brandId = randomUUID();
+    await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantId, categoryId]);
+    await admin.query(`insert into catalog_category_kind_applicability (tenant_id, category_id, kind) values ($1, $2, 'PART')`, [tenantId, categoryId]);
+    await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'Apple', 'apple', 'ACTIVE', 1, now(), now())`, [tenantId, brandId]);
+    await admin.query(`insert into catalog_brand_kind_applicability (tenant_id, brand_id, kind) values ($1, $2, 'PART')`, [tenantId, brandId]);
+    const source = await service.createSource(ctx, { name: 'UX-005.1 referencia pendiente QA' });
+    const row = (suffix, overrides = {}) => ({ kind: 'PART', supplierObservedTitle: `Pantalla QA ${suffix}`, title: `Pantalla QA ${suffix}`, description: null, category: 'Pantallas', brand: null, supplierItemCode: `UX0051-${suffix}`, sku: null, barcode: null, basePriceMinor: 10_000, referenceCostMinor: null, ...overrides });
+    const rows = [
+      row('CANON', { brand: 'Apple' }),
+      row('BRAND', { brand: 'XIAOMI' }),
+      row('CATEGORY', { category: 'Accesorios' }),
+      row('BOTH', { category: 'Fundas', brand: 'Realme' }),
+      row('MALFORMED', { category: 'V2314 COPIA', brand: 'VIVO' }),
+      row('DUPLICATE', { brand: 'Samsung', supplierItemCode: 'UX0051-DUP', basePriceMinor: 10_001 }),
+      row('DUPLICATE CONTRADICTORIA', { brand: 'Samsung', supplierItemCode: 'UX0051-DUP', basePriceMinor: 10_002 }),
+      row('MISSING CATEGORY', { category: null, brand: 'Xiaomi' }),
+    ];
+    const draft = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'Semántica segura de referencias', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'c'.repeat(64), rawPayload: 'XIAOMI\nV2314 COPIA', rows });
+    const beforeAnalyze = await admin.query(`select (select count(*)::int from catalog_items where tenant_id = $1) as items, (select count(*)::int from catalog_category_pending_values where tenant_id = $1) as pending_categories, (select count(*)::int from catalog_brand_pending_values where tenant_id = $1) as pending_brands, (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1) as resolutions, (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1) as memory`, [tenantId]);
+    const analyzed = await service.analyze(ctx, draft.versionId, { expectedVersion: draft.version });
+    const byCode = new Map(analyzed.rows.map((value) => [value.proposal.supplierItemCode, value]));
+    assert.deepEqual([byCode.get('UX0051-CANON')?.classification, byCode.get('UX0051-BRAND')?.classification, byCode.get('UX0051-CATEGORY')?.classification, byCode.get('UX0051-BOTH')?.classification], ['NEW', 'NEW', 'NEW', 'NEW']);
+    assert.equal(byCode.get('UX0051-BRAND')?.warnings.includes('PENDING_BRAND_CAPTURE_ON_APPLY'), true);
+    assert.equal(byCode.get('UX0051-CATEGORY')?.warnings.includes('PENDING_CATEGORY_CAPTURE_ON_APPLY'), true);
+    assert.equal(byCode.get('UX0051-BOTH')?.warnings.includes('PENDING_CATEGORY_CAPTURE_ON_APPLY'), true);
+    assert.equal(byCode.get('UX0051-BOTH')?.warnings.includes('PENDING_BRAND_CAPTURE_ON_APPLY'), true);
+    assert.equal(byCode.get('UX0051-MALFORMED')?.classification, 'PENDING_REFERENCE');
+    assert.equal(byCode.get('UX0051-MALFORMED')?.warnings.includes('REFERENCE_REQUIRES_GOVERNANCE'), true);
+    assert.equal(byCode.get('UX0051-DUP')?.classification, 'CONFLICT');
+    assert.equal(byCode.get('UX0051-MISSING CATEGORY')?.classification, 'NEW');
+    assert.equal(byCode.get('UX0051-MISSING CATEGORY')?.errors.includes('MISSING_REQUIRED_EFFECTIVE_VALUE:category'), true);
+    assert.equal(analyzed.batch.counts.NEW, 5);
+    assert.equal(analyzed.batch.counts.PENDING_REFERENCE, 1);
+    assert.equal(analyzed.batch.counts.CONFLICT, 2);
+    assert.deepEqual((await admin.query(`select (select count(*)::int from catalog_items where tenant_id = $1) as items, (select count(*)::int from catalog_category_pending_values where tenant_id = $1) as pending_categories, (select count(*)::int from catalog_brand_pending_values where tenant_id = $1) as pending_brands, (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1) as resolutions, (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1) as memory`, [tenantId])).rows, beforeAnalyze.rows);
+    const missing = byCode.get('UX0051-MISSING CATEGORY'); assert.ok(missing);
+    const withoutMissing = await service.decide(ctx, draft.versionId, missing.rowDecisionId, { expectedRowVersion: missing.version, decision: 'EXCLUDE', targetItemId: null, titleDecision: null });
+    const withoutPending = await service.decideMany(ctx, draft.versionId, { expectedBatchVersion: withoutMissing.batch.version, classifications: ['PENDING_REFERENCE', 'CONFLICT'], decision: 'EXCLUDE' });
+    assert.equal(withoutPending.batch.lifecycle, 'READY');
+    const clientRequestId = randomUUID();
+    const applied = await service.publish(ctx, draft.versionId, { expectedVersion: withoutPending.version, clientRequestId }, false);
+    assert.equal(applied.batch.lifecycle, 'APPLIED');
+    const retry = await service.publish(ctx, draft.versionId, { expectedVersion: withoutPending.version, clientRequestId }, false);
+    assert.equal(retry.batch.publishedAt, applied.batch.publishedAt);
+    const postApply = await admin.query(`select
+      (select count(*)::int from catalog_items where tenant_id = $1) as items,
+      (select count(*)::int from catalog_category_pending_values where tenant_id = $1) as pending_categories,
+      (select count(*)::int from catalog_brand_pending_values where tenant_id = $1) as pending_brands,
+      (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1 and resolution = 'CREATED') as created,
+      (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1) as memory,
+      (select source_observation->>'brand' from catalog_supplier_listings where tenant_id = $1 and version_id = $2 and supplier_item_code = 'UX0051-BRAND') as raw_brand`, [tenantId, draft.versionId]);
+    assert.deepEqual(postApply.rows[0], { items: 4, pending_categories: 2, pending_brands: 2, created: 4, memory: 4, raw_brand: 'XIAOMI' });
+    const compactSource = await service.createSource(ctx, { name: 'UX-005.1 COMPACT QA' });
+    const compact = await service.createDraft(ctx, { sourceId: compactSource.sourceId, description: 'Sin target no crea', clientRequestId: randomUUID(), mode: 'COMPACT', completeness: 'PARTIAL', columnSignature: 'd'.repeat(64), rawPayload: 'compact', rows: [row('COMPACT', { brand: 'Xiaomi' })] });
+    const compactAnalyzed = await service.analyze(ctx, compact.versionId, { expectedVersion: compact.version });
+    assert.equal(compactAnalyzed.rows[0].classification, 'INVALID');
+  } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
 });
 
 test('PBI-041 material handoff preserves the publisher as the Apply audit actor', { skip: !enabled, timeout: 30_000 }, async () => {

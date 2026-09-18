@@ -52,6 +52,10 @@ test('identifier and reference normalization are exact and deterministic, not fu
   assert.equal(domain.normalizeIdentifier('SKU', ' ref-001 '), 'REF-001');
   assert.equal(domain.normalizeReference('  Pantállas  OLED '), 'pantallas oled');
   assert.notEqual(domain.normalizeReference('Pantalla OLED'), domain.normalizeReference('Pantalla OELD'));
+  assert.equal(domain.isSafelyCapturableCategoryReference('Accesorios'), true);
+  assert.equal(domain.isSafelyCapturableCategoryReference('V2314 COPIA'), false);
+  assert.equal(domain.isSafelyCapturableBrandReference('iQOO'), true);
+  assert.equal(domain.isSafelyCapturableBrandReference('2314'), false);
 });
 
 test('row-decision errors always normalize to a string array across JSON boundaries', () => {
