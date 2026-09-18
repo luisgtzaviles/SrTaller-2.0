@@ -359,6 +359,7 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /duplicateResolutionCard/u);
   assert.match(ui, /Encontramos este artículo/u);
   assert.match(ui, /Usar fila \{member\.rowNumber\}/u);
+  assert.match(ui, /resolve\(row\.rowDecisionId, row\.version, 'APPLY', row\.targetItemId, row\.titleDecision\)/u);
   assert.match(ui, /Ver detalles/u);
   assert.match(ui, /Duplicado resuelto/u);
   assert.match(ui, /unresolvedDecisionUnits/u);

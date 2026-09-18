@@ -502,7 +502,10 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(exactDuplicateAnalyzed.rows.filter((row) => row.decision === 'APPLY').length, 1);
     assert.equal(exactDuplicateAnalyzed.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_EXACT_CONSOLIDATED')).length, 1);
     assert.deepEqual({ status: exactDuplicateAnalyzed.absenceBaseline.status, currentCount: exactDuplicateAnalyzed.absenceBaseline.currentCount }, { status: 'NO_BASELINE', currentCount: 1 });
-    const contradictoryRows = [{ ...duplicateSeedRow, basePriceMinor: 119900, referenceCostMinor: 45000 }, { ...duplicateSeedRow, basePriceMinor: 120000, referenceCostMinor: 46000 }];
+    // The observed title intentionally differs from the trusted canonical title. This is the
+    // exact payload shape used by the duplicate-winner card: Analyze already chose KEEP_CURRENT.
+    const contradictoryTitleRow = { ...duplicateSeedRow, supplierObservedTitle: 'Pantalla duplicados aislado liquidación', title: 'Pantalla duplicados aislado liquidación' };
+    const contradictoryRows = [{ ...contradictoryTitleRow, basePriceMinor: 119900, referenceCostMinor: 45000 }, { ...contradictoryTitleRow, basePriceMinor: 120000, referenceCostMinor: 46000 }];
     const contradictoryDuplicate = await service.createDraft(ctxA, { sourceId: duplicateSource.sourceId, description: 'Duplicado contradictorio', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'duplicate-contradictory', rows: contradictoryRows });
     const contradictoryAnalyzed = await service.analyze(ctxA, contradictoryDuplicate.versionId, { expectedVersion: contradictoryDuplicate.version });
     assert.equal(contradictoryAnalyzed.batch.lifecycle, 'RECONCILING');
@@ -520,16 +523,44 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     );
     await assert.rejects(service.publish(ctxA, contradictoryDuplicate.versionId, { expectedVersion: contradictoryAnalyzed.version, clientRequestId: randomUUID() }, true), CatalogConflictError);
     const duplicateWinner = contradictoryAnalyzed.rows[1];
-    const contradictoryReady = await service.decide(ctxA, contradictoryDuplicate.versionId, duplicateWinner.rowDecisionId, { expectedRowVersion: duplicateWinner.version, decision: 'APPLY', targetItemId: duplicateWinner.targetItemId });
+    assert.equal(duplicateWinner.titleDecision, 'KEEP_CURRENT');
+    const duplicatePreChoice = await admin.query(`select
+      (select count(*)::int from catalog_items where tenant_id = $1) as items,
+      (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1 and version_id = $2) as resolutions,
+      (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1 and source_id = $3) as memory,
+      (select published_at from catalog_update_batches where tenant_id = $1 and version_id = $2) as published_at`, [tenantA, contradictoryDuplicate.versionId, duplicateSource.sourceId]);
+    await assert.rejects(service.decide(ctxA, contradictoryDuplicate.versionId, duplicateWinner.rowDecisionId, { expectedRowVersion: duplicateWinner.version, decision: 'APPLY', targetItemId: duplicateWinner.targetItemId, titleDecision: null }), (error) => error instanceof CatalogInputError && error.parameter === 'titleDecision');
+    const afterRejectedDuplicateChoice = await service.getVersion({ tenantId: tenantA, branchId: branchA }, contradictoryDuplicate.versionId, true);
+    assert.equal(afterRejectedDuplicateChoice.rows.every((row) => row.decision === 'UNRESOLVED' && row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')), true);
+    const contradictoryReady = await service.decide(ctxA, contradictoryDuplicate.versionId, duplicateWinner.rowDecisionId, { expectedRowVersion: duplicateWinner.version, decision: 'APPLY', targetItemId: duplicateWinner.targetItemId, titleDecision: duplicateWinner.titleDecision });
     assert.equal(contradictoryReady.batch.lifecycle, 'READY');
     assert.equal(contradictoryReady.rows.filter((row) => row.decision === 'APPLY' && row.targetItemId === duplicateWinner.targetItemId).length, 1);
     assert.equal(contradictoryReady.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 1);
     assert.equal(contradictoryReady.rows.every((row) => !row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')), true);
+    assert.deepEqual((await admin.query(`select
+      (select count(*)::int from catalog_items where tenant_id = $1) as items,
+      (select count(*)::int from catalog_supplier_listing_resolutions where tenant_id = $1 and version_id = $2) as resolutions,
+      (select count(*)::int from catalog_supplier_reconciliation_memory where tenant_id = $1 and source_id = $3) as memory,
+      (select published_at from catalog_update_batches where tenant_id = $1 and version_id = $2) as published_at`, [tenantA, contradictoryDuplicate.versionId, duplicateSource.sourceId])).rows[0], duplicatePreChoice.rows[0]);
+    await assert.rejects(service.decide(ctxA, contradictoryDuplicate.versionId, duplicateWinner.rowDecisionId, { expectedRowVersion: duplicateWinner.version, decision: 'APPLY', targetItemId: duplicateWinner.targetItemId, titleDecision: duplicateWinner.titleDecision }), CatalogConflictError);
     const contradictoryReanalyzed = await service.analyze(ctxA, contradictoryDuplicate.versionId, { expectedVersion: contradictoryReady.version });
     assert.equal(contradictoryReanalyzed.batch.lifecycle, 'READY');
     assert.equal(contradictoryReanalyzed.rows.filter((row) => row.decision === 'APPLY' && row.targetItemId === duplicateWinner.targetItemId).length, 1);
     assert.equal(contradictoryReanalyzed.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 1);
     assert.equal(contradictoryReanalyzed.rows.every((row) => !row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')), true);
+    const firstWinnerDuplicate = await service.createDraft(ctxA, { sourceId: duplicateSource.sourceId, description: 'Duplicado contradictorio primera fila', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'duplicate-first-winner', rows: contradictoryRows });
+    const firstWinnerAnalyzed = await service.analyze(ctxA, firstWinnerDuplicate.versionId, { expectedVersion: firstWinnerDuplicate.version });
+    const firstWinner = firstWinnerAnalyzed.rows[0];
+    const firstWinnerReady = await service.decide(ctxA, firstWinnerDuplicate.versionId, firstWinner.rowDecisionId, { expectedRowVersion: firstWinner.version, decision: 'APPLY', targetItemId: firstWinner.targetItemId, titleDecision: firstWinner.titleDecision });
+    assert.equal(firstWinnerReady.rows.filter((row) => row.decision === 'APPLY' && row.rowNumber === 1).length, 1);
+    assert.equal(firstWinnerReady.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 1);
+    await assert.rejects(service.decide(ctxA, firstWinnerDuplicate.versionId, firstWinner.rowDecisionId, { expectedRowVersion: firstWinner.version, decision: 'APPLY', targetItemId: randomUUID(), titleDecision: firstWinner.titleDecision }), CatalogConflictError);
+    const tripleDuplicate = await service.createDraft(ctxA, { sourceId: duplicateSource.sourceId, description: 'Duplicado contradictorio tres filas', clientRequestId: randomUUID(), mode: 'FULL', columnSignature: 'a'.repeat(64), rawPayload: 'duplicate-three-winner', rows: [...contradictoryRows, { ...contradictoryTitleRow, basePriceMinor: 121000, referenceCostMinor: 47000 }] });
+    const tripleAnalyzed = await service.analyze(ctxA, tripleDuplicate.versionId, { expectedVersion: tripleDuplicate.version });
+    const thirdWinner = tripleAnalyzed.rows[2];
+    const tripleReady = await service.decide(ctxA, tripleDuplicate.versionId, thirdWinner.rowDecisionId, { expectedRowVersion: thirdWinner.version, decision: 'APPLY', targetItemId: thirdWinner.targetItemId, titleDecision: thirdWinner.titleDecision });
+    assert.equal(tripleReady.rows.filter((row) => row.decision === 'APPLY' && row.targetItemId === thirdWinner.targetItemId).length, 1);
+    assert.equal(tripleReady.rows.filter((row) => row.decision === 'EXCLUDE' && row.warnings.includes('DUPLICATE_VALUE_CONTRADICTION_SUPERSEDED')).length, 2);
     assert.equal((await service.listSources({ tenantId: tenantB, branchId: branchB })).length, 1);
 
     const candidateSource = await service.createSource(ctxB, { name: 'Proveedor Candidate QA' });
