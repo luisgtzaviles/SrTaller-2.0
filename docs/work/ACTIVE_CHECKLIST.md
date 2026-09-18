@@ -17,8 +17,8 @@ Last updated: 2026-09-18 MST
 - [x] Reconcile 744 physical observations to 742 effective outcomes, explicit duplicate winners and corrected successor row 618.
 - [x] Verify attributable Catalog/reference effects, provenance, Resolutions, Memory and audit; record pending-Brand and zero-value findings without repair.
 - [x] Verify COMPLETE baseline, Tenant/Branch scope, lifecycle/idempotency and post-Apply Chrome UI without clicking any mutating control.
-- [x] Run documentation links, consistency, secret scan and diff checks.
-- [~] Record evidence and checklist in one documentation-only local commit; stop for Owner Review.
+- [x] Run documentation links, consistency, secret scan and diff checks. The strict docs-only helper classifies `docs/domain/**` as `FULL`; no `verify:full` ran because it is outside this authorization.
+- [x] Record evidence and checklist in local documentation commit `cd6d273`; stop for Owner decision on the recorded blockers.
 
 ## Previous checkpoint — UX-005.4 Duplicate Winner Controls Preservation
 
