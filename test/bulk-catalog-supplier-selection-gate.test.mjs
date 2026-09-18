@@ -31,8 +31,8 @@ test('Composer keeps browsing separate from pending new-load supplier ownership'
   const source = await readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8');
   assert.match(source, /const \[browseSourceId, setBrowseSourceId\] = useState\(''\)/u);
   assert.match(source, /const \[pendingNewLoadSupplierId, setPendingNewLoadSupplierId\] = useState<string \| null>\(null\)/u);
-  assert.match(source, /const openSupplierGate = \(restoreTarget: string\): void/u);
-  assert.match(source, /const startNewLoad = \(sourceId: string\): boolean/u);
+  assert.match(source, /const openSupplierGate = \(restoreTarget: string, preservePreparation = false\): void/u);
+  assert.match(source, /const continueNewLoad = \(\): boolean/u);
   assert.match(source, /setPendingNewLoadSupplierId\(sourceId\); setCurrent\(null\)/u);
   assert.match(source, /setBrowseSourceId\(value\.sourceId\); setPendingNewLoadSupplierId\(null\)/u);
   assert.doesNotMatch(source, /beginNewVersion/u);
@@ -40,13 +40,14 @@ test('Composer keeps browsing separate from pending new-load supplier ownership'
 
 test('gate has no silent supplier confirmation, permits one-click choice, and restores focus on cancel', async () => {
   const source = await readFile('apps/dev-preview-web/src/pages/BulkCatalogComposerPage.tsx', 'utf8');
-  assert.match(source, /<Dialog open=\{supplierGateOpen\} title="Nueva carga" description="¿De qué proveedor es esta lista\?" restoreFocusSelector=\{`#\$\{supplierGateRestoreTarget\}`\}/u);
+  assert.match(source, /<Dialog open=\{supplierGateOpen\} size="wide" title="Nueva carga" description="Elige el proveedor y qué contiene esta carga antes de pegar datos\." restoreFocusSelector=\{`#\$\{supplierGateRestoreTarget\}`\}/u);
   assert.match(source, /placeholder="Buscar proveedor\.\.\."/u);
-  assert.match(source, /onClick=\{\(\) => startNewLoad\(source\.sourceId\)\}/u);
+  assert.match(source, /onClick=\{\(\) => setSupplierGateSupplierId\(source\.sourceId\)\}/u);
+  assert.match(source, /onClick=\{continueNewLoad\}/u);
   assert.match(source, /Nueva carga; seleccionar proveedor/u);
   assert.match(source, /onClick=\{\(\) => openSupplierGate\(`supplier-gate-source-\$\{source\.sourceId\}`\)\}/u);
   assert.match(source, /pendingSupplier\?\.name \?\? 'Sin seleccionar'/u);
-  assert.match(source, /Proveedor de esta carga · El número se asignará al guardar/u);
+  assert.match(source, /Proveedor e intención de esta carga · El número se asignará al guardar/u);
   assert.match(source, />Cambiar<\/Button>/u);
 });
 
@@ -84,7 +85,7 @@ test('contextual supplier creation returns to the pending new-load flow while pe
   ]);
   assert.match(ui, /openNewSource\('GATE'\)/u);
   assert.match(ui, /newSourceOrigin === 'GATE'/u);
-  assert.match(ui, /if \(!startNewLoad\(created\.sourceId\)\) setSupplierGateOpen\(true\)/u);
+  assert.match(ui, /setSupplierGateSupplierId\(created\.sourceId\); setSupplierGateCompleteness\(null\); setSupplierGateOpen\(true\)/u);
   assert.match(ui, /showToast\('Proveedor creado\. El trabajo actual se conserva\.'\)/u);
   assert.doesNotMatch(ui, /setBrowseSourceId\(created\.sourceId\); clearNewLoad\(\)/u);
   assert.match(service, /createDraft[\s\S]*?const sourceId = requiredUuid\(body\.sourceId, 'sourceId'\)/u);
@@ -100,7 +101,11 @@ test('Review list keeps draft recovery secondary and preserves result-first/rean
   assert.match(source, /orchestrateReviewList\(\{[\s\S]*?persist: persistDraft,[\s\S]*?analyze: async \(snapshot\)/u);
   assert.match(source, /La lista quedó guardada, pero no pudo analizarse\./u);
   assert.match(source, /tone="primary" onClick=\{\(\) => void reviewList\(\)\}[\s\S]*?Revisar lista/u);
-  assert.match(source, /tone="quiet" onClick=\{\(\) => void save\(\)\}[\s\S]*?Guardar borrador/u);
+  assert.match(source, /captureActionState\(\{ lifecycle: current\?\.lifecycle \?\? null, dirty, hasMeaningfulWork \}\)/u);
+  assert.match(source, /className=\{styles\.viewControls\}[\s\S]*?className=\{styles\.workflowControls\}/u);
+  assert.match(source, /tone="quiet" onClick=\{\(\) => void save\(\)\}[\s\S]*?Guardar para después/u);
+  assert.doesNotMatch(source, /Guardar borrador/u);
+  assert.match(source, /captureActionsVisible \? <>[\s\S]*?Revisar lista[\s\S]*?canSaveForLater \? <Button/u);
   assert.match(source, /current\?\.lifecycle === 'INGESTED'[\s\S]*?Reanalizar versión/u);
   assert.match(source, /setGridExpanded\(false\); resetCoverageDetails\(\); setReconciliationView\('ATTENTION'\)/u);
   assert.match(source, /aria-busy=\{busy\}/u);

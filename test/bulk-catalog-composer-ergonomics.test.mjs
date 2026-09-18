@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import {
   applyBatchDefaults,
+  captureActionState,
   estimateColumnWidth,
   fillRows,
   nextGridCell,
@@ -154,6 +155,14 @@ test('Review list persists exactly one authoritative snapshot before analysis an
   assert.deepEqual(calls, ['analyze:3']);
   assert.equal(analyzeFailure.stage, 'ANALYZE_FAILED');
   assert.equal(analyzeFailure.snapshot, draft);
+});
+
+test('capture actions keep review primary while draft save is optional and lifecycle-aware', () => {
+  assert.deepEqual(captureActionState({ lifecycle: null, dirty: false, hasMeaningfulWork: false }), { reviewVisible: true, saveForLaterVisible: false });
+  assert.deepEqual(captureActionState({ lifecycle: null, dirty: true, hasMeaningfulWork: true }), { reviewVisible: true, saveForLaterVisible: true });
+  assert.deepEqual(captureActionState({ lifecycle: 'DRAFT', dirty: false, hasMeaningfulWork: false }), { reviewVisible: true, saveForLaterVisible: false });
+  assert.deepEqual(captureActionState({ lifecycle: 'DRAFT', dirty: true, hasMeaningfulWork: true }), { reviewVisible: true, saveForLaterVisible: true });
+  assert.deepEqual(captureActionState({ lifecycle: 'INGESTED', dirty: false, hasMeaningfulWork: false }), { reviewVisible: false, saveForLaterVisible: false });
 });
 
 test('supplier paste transformation stays bounded at 1,500 and 10,000 rows', (context) => {
