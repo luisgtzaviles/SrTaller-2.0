@@ -249,3 +249,11 @@ AG after explicit selection and leaves a pending new-load supplier independent.
 The New Load gate remains explicit. See
 [implementation evidence](IMPLEMENTATION_EVIDENCE.md) and the
 [UX-001 supplier-selection boundary](../../../domain/PRICE_LIST_UX_001_SUPPLIER_SELECTION_GATE_AUDIT.md).
+
+## UX-004.6 Composer grid action toolbar consolidation
+
+The three transient grid-edit actions are now grouped once in the workspace
+toolbar immediately before the primary review action. Their editable-lifecycle
+and disabled predicates are unchanged; no persistence or product flow changed.
+The local 1280/768/640, theme and keyboard proof is recorded in the
+[implementation evidence](IMPLEMENTATION_EVIDENCE.md).

@@ -1,15 +1,24 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-004.5 Supplier History Selection Consistency
+Milestone / Functional Goal: PBI-041 — UX-004.6 Composer Grid Action Toolbar Consolidation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Review ready — supplier history follows the explicitly explored source and pending-load ownership remains independent.
+Status: Local Owner Review ready — grid editing actions are consolidated with the review workflow; no data action was invoked.
 WIP: 1/1
-Progress: 6 / 6 UX-004.5 blocks completed; UX-004.1/UX-004.2/UX-004.3/UX-004.4 foundations remain preserved.
-Current: Owner Review of source-scoped history, independent pending-load authority and local evidence.
-Next: await explicit Owner direction. Do not push, open a PR, merge, deploy or start another PBI.
+Progress: 6 / 6 UX-004.6 blocks completed; UX-004.1 through UX-004.5 foundations remain preserved.
+Current: Owner Review of the consolidated Composer grid toolbar.
+Next: Await Owner direction. Do not push, open a PR, merge, deploy or start another PBI.
 Blocked: No product blocker identified. The broader PBI-041 PostgreSQL runner also executes a separate 10k publish benchmark that exceeded its 30s budget in this host (34.9s); do not remediate that performance concern in UX-004.4. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
+
+## Current checkpoint — UX-004.6 Composer Grid Action Toolbar Consolidation
+
+- [x] Confirm current toolbar/action predicates and the separate redundant row-action container.
+- [x] Consolidate Undo, Add row and Remove active row into the workflow toolbar immediately before Review.
+- [x] Preserve read-only, prepare and lifecycle visibility plus current disabled/focus semantics.
+- [x] Prove column resize and policy-driven Essentials regressions remain intact.
+- [x] Complete Chrome desktop/1280/768/640, light/dark and keyboard proof without Save, Analyze or Apply.
+- [x] Reconcile PBI/evidence/checklist and stop for Owner Review; no push, PR, merge or deploy.
 
 ## Current checkpoint — UX-004.5 Supplier History Selection Consistency
 

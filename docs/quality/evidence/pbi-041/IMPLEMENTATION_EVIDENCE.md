@@ -1519,3 +1519,25 @@ Chrome verified AG's 71-version history, Avicell's zero-version empty state,
 rapid AG ↔ Avicell ↔ AG switching, panel collapse/restore, an empty New Load
 gate, desktop/768/640 no-overflow, light/dark and Tab/Shift+Tab. No Save,
 Analyze or Apply action was invoked and no operational data was written.
+
+## UX-004.6 — Composer grid action toolbar consolidation
+
+The editable grid has one workflow toolbar only. `Deshacer`, `Agregar fila`
+and `Quitar fila activa` are grouped immediately before the primary `Revisar
+lista` action; the former redundant row-action container was removed. The
+controls retain their existing handlers and predicates: undo needs its local
+snapshot, adding remains capped at 10,000 rows, and removal needs more than
+one row. Their render guard is limited to a local or `DRAFT` editable grid, so
+historical/read-only evidence does not expose editing actions.
+
+Focused Composer, policy-essentials, column-resize, supplier-gate and UI
+contract tests passed (57/57). The resize regression assertion was updated to
+the actual schema-selection invariant after confirming its prior `useMemo`
+expectation did not match the pre-existing source. Chrome local exercised
+Agregar → Quitar → Deshacer without saving, and confirmed no page overflow or
+control overlap at 1280, 768 and 640. At 640 the first two edit actions share a
+row and Remove/Review use full width. Existing draft `AG v43` displayed the
+same controls with correct disabled states, while applied historical `AG v59`
+displayed none. Tab/Shift+Tab and light/dark remained normal. No Save, Analyze
+or Apply action occurred; no Catalog, supplier, policy, resolution or memory
+write occurred.
