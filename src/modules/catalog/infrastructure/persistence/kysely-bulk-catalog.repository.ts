@@ -7,7 +7,7 @@ import { runInTransaction } from '../../../../infrastructure/database/transactio
 import type { DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
 import { CatalogAuthorizationChangedError, CatalogConflictError, CatalogCoverageReviewRequiredError, CatalogInputError, CatalogNotFoundError, CatalogRequiredEffectiveValueError, CatalogSupplierDeleteNotAllowedError, CatalogSupplierVersionAlreadyExistsError, CatalogUnavailableError, catalogKindCapabilities, catalogKindSkuPrefix } from '../../domain/catalog-item.js';
 import type { CatalogItemKind } from '../../domain/catalog-item.js';
-import { missingRequiredEffectiveFields, missingRequiredEffectiveValueReason, normalizeIdentifier, normalizeReference, normalizeRowErrors, retentionDate, sha256 } from '../../domain/bulk-catalog.js';
+import { isSafelyCapturableBrandReference, isSafelyCapturableCategoryReference, missingRequiredEffectiveFields, missingRequiredEffectiveValueReason, normalizeIdentifier, normalizeReference, normalizeRowErrors, retentionDate, sha256 } from '../../domain/bulk-catalog.js';
 import type { BulkCatalogCandidateMatch, BulkCatalogClassification, BulkCatalogDecision, BulkCatalogEffectiveTarget, BulkCatalogMatchOrigin, BulkCatalogRowInput, BulkCatalogTitleDecision, SupplierCatalogCompleteness } from '../../domain/bulk-catalog.js';
 import { productDefaultCatalogFieldPolicyLevels, validateCatalogFieldPolicyLevels } from '../../domain/catalog-field-policy.js';
 import type { CatalogFieldPolicyLevelsByKey } from '../../domain/catalog-field-policy.js';
@@ -344,7 +344,15 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
         if (errors.length) classification = errors.includes('AMBIGUOUS_HISTORY') ? 'AMBIGUOUS' : 'CONFLICT';
         else if (!target && current.composer_mode === 'COMPACT') { classification = 'INVALID'; errors.push('COMPACT_ROW_TARGET_NOT_FOUND'); }
         else if (!target) {
-          const categoryKnown = Boolean(proposedCategory); const brandKnown = !p.brand || Boolean(proposedBrand);
+          /**
+           * FULL may create a clean new item with references that Apply can
+           * capture deterministically.  Existing canonical/pending references
+           * are reused; new safe values remain in the immutable proposal and
+           * are materialized only by the authoritative Apply transaction.
+           * Unsafe reference-shaped input stays a human-resolution gate.
+           */
+          const categoryCapturable = Boolean(proposedCategory || proposedPendingCategory) || isSafelyCapturableCategoryReference(p.category);
+          const brandCapturable = !p.brand || Boolean(proposedBrand || proposedPendingBrand) || isSafelyCapturableBrandReference(p.brand);
           /** Tenant policy determines whether a value is required; an unknown
            * optional Brand must not turn an otherwise valid new item into a
            * reference-resolution gate. */
@@ -353,12 +361,16 @@ export class KyselyBulkCatalogRepository implements BulkCatalogRepositoryPort {
              * as a prospective NEW row so the effective-required reason is
              * precise rather than hiding it behind a reference pseudo-error. */
             classification = 'NEW'; decision = 'APPLY';
-          } else if (categoryKnown && brandKnown) {
+          } else if (categoryCapturable && brandCapturable) {
             const candidateResult = matchSupplierHistoryCandidates(p, categoryIdentity, brandIdentity, candidateIndex); candidateMatches = candidateResult.candidates;
             if (candidateMatches.length > 1) { classification = 'AMBIGUOUS'; warnings.push('MULTIPLE_BOUNDED_CANDIDATES'); matchOrigin = 'CANDIDATE'; }
             else if (candidateMatches.length === 1) { classification = 'CANDIDATE'; warnings.push('CANDIDATE_MATCH_REQUIRES_OWNER_DECISION'); matchOrigin = 'CANDIDATE'; }
-            else { classification = 'NEW'; decision = 'APPLY'; }
-          } else classification = 'PENDING_REFERENCE';
+            else {
+              classification = 'NEW'; decision = 'APPLY';
+              if (!proposedCategory && p.category) warnings.push('PENDING_CATEGORY_CAPTURE_ON_APPLY');
+              if (!proposedBrand && p.brand) warnings.push('PENDING_BRAND_CAPTURE_ON_APPLY');
+            }
+          } else { classification = 'PENDING_REFERENCE'; warnings.push('REFERENCE_REQUIRES_GOVERNANCE'); }
         } else {
           if (p.title !== null && p.title !== target.title) warnings.push('SUPPLIER_TITLE_DIFF_NOT_APPLIED');
           if ((p.category && !proposedCategory && !proposedPendingCategory) || (p.brand && !proposedBrand && !proposedPendingBrand)) { classification = 'PENDING_REFERENCE'; decision = 'UNRESOLVED'; warnings.push('REFERENCE_REQUIRES_GOVERNANCE'); }

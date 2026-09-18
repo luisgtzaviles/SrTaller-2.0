@@ -125,6 +125,26 @@ export function normalizeIdentifier(scheme: CatalogIdentifierScheme, value: stri
 export function normalizeReference(value: string | null): string | null {
   return value === null ? null : value.normalize('NFD').replace(/[\u0300-\u036f]/gu, '').toLocaleLowerCase('es-MX').replace(/\s+/gu, ' ').trim();
 }
+
+/**
+ * A new Category is captured as a pending reference only when the supplied
+ * value still looks like a category label.  A product/model-like value (for
+ * example a shifted spreadsheet cell such as "V2314 COPIA") is not safe to
+ * turn into durable reference data without review.  This is deliberately
+ * narrow: it does not try to infer, correct, or fuzzy-map a Category.
+ */
+export function isSafelyCapturableCategoryReference(value: string | null): boolean {
+  const normalized = normalizeReference(value);
+  return normalized !== null && /\p{L}/u.test(normalized) && !/\d/u.test(normalized);
+}
+
+/** Brand names may intentionally contain digits (for example iQOO); parsing
+ * already enforces the bounded, non-empty supplier text.  We only require a
+ * letter here so a code-shaped value cannot become a reference by accident. */
+export function isSafelyCapturableBrandReference(value: string | null): boolean {
+  const normalized = normalizeReference(value);
+  return normalized !== null && /\p{L}/u.test(normalized);
+}
 /** Row-decision errors cross a JSONB boundary but always read as string arrays. */
 export function normalizeRowErrors(value: unknown): readonly string[] {
   if (!Array.isArray(value)) return Object.freeze([]);
