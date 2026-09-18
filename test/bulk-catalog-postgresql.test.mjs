@@ -6,6 +6,7 @@ import test from 'node:test';
 import { Pool } from 'pg';
 
 const enabled = process.env.SR_PBI041_PG_TEST === '1';
+const frontendComposerModel = enabled ? await import('../apps/dev-preview-web/src/pages/bulk-catalog-composer-model.mjs') : null;
 const { createDatabaseConnection } = enabled ? await import('../dist/infrastructure/database/database-connection.js') : {};
 const { KyselyBulkCatalogRepository } = enabled ? await import('../dist/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.js') : {};
 const { KyselyCatalogRepository } = enabled ? await import('../dist/modules/catalog/infrastructure/persistence/kysely-catalog.repository.js') : {};
@@ -507,6 +508,16 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
     assert.equal(contradictoryAnalyzed.batch.lifecycle, 'RECONCILING');
     assert.equal(contradictoryAnalyzed.rows.every((row) => row.errors.includes('DUPLICATE_VALUE_CONTRADICTION')), true);
     assert.equal(new Set(contradictoryAnalyzed.rows.map((row) => row.targetItemId)).size, 1);
+    const duplicateGroupsFromPersistedDto = frontendComposerModel.groupDuplicateResolutionRows(
+      contradictoryAnalyzed.rows,
+      (row) => `C:${row.proposal.supplierItemCode.toLowerCase()}`,
+      (row) => (Array.isArray(row.errors) ? row.errors.filter((value) => typeof value === 'string') : []),
+      (row) => (Array.isArray(row.warnings) ? row.warnings.filter((value) => typeof value === 'string') : []),
+    );
+    assert.deepEqual(
+      duplicateGroupsFromPersistedDto.map((group) => ({ key: group.key, rows: group.members.map((row) => row.rowNumber) })),
+      [{ key: 'C:sup-09901', rows: [1, 2] }],
+    );
     await assert.rejects(service.publish(ctxA, contradictoryDuplicate.versionId, { expectedVersion: contradictoryAnalyzed.version, clientRequestId: randomUUID() }, true), CatalogConflictError);
     const duplicateWinner = contradictoryAnalyzed.rows[1];
     const contradictoryReady = await service.decide(ctxA, contradictoryDuplicate.versionId, duplicateWinner.rowDecisionId, { expectedRowVersion: duplicateWinner.version, decision: 'APPLY', targetItemId: duplicateWinner.targetItemId });

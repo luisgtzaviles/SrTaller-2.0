@@ -64,6 +64,23 @@ test('duplicate resolution groups authoritative contradictions into one owner de
   assert.equal(resolved[0].unresolved, false);
 });
 
+test('duplicate resolution groups the SupplierVersion row DTO shape', () => {
+  const supplierVersionRows = [
+    { rowNumber: 14, targetItemId: 'item-iphone-11', errors: ['DUPLICATE_VALUE_CONTRADICTION'], warnings: [], proposal: { supplierItemCode: 'QA-UX-002A3-ID-1', supplierSku: 'REF-000839' } },
+    { rowNumber: 15, targetItemId: 'item-iphone-11', errors: ['DUPLICATE_VALUE_CONTRADICTION'], warnings: [], proposal: { supplierItemCode: 'QA-UX-002A3-ID-1', supplierSku: 'REF-000839' } },
+  ];
+  const groups = composerModel.groupDuplicateResolutionRows(
+    supplierVersionRows,
+    (row) => `C:${row.proposal.supplierItemCode.toLowerCase()}`,
+    (row) => (Array.isArray(row.errors) ? row.errors.filter((value) => typeof value === 'string') : []),
+    (row) => (Array.isArray(row.warnings) ? row.warnings.filter((value) => typeof value === 'string') : []),
+  );
+  assert.deepEqual(
+    groups.map((group) => ({ key: group.key, rows: group.members.map((row) => row.rowNumber) })),
+    [{ key: 'C:qa-ux-002a3-id-1', rows: [14, 15] }],
+  );
+});
+
 test('supplier observed title remains separate from the editable Catalog title proposal', () => {
   const [row] = domain.parseBulkRows([{ ...fullRow(), supplierObservedTitle: 'PANTALLA IPHONE 11 OLED GX >>I', title: 'Pantalla iPhone 11 OLED GX >>I' }], 'FULL');
   assert.equal(row.supplierObservedTitle, 'PANTALLA IPHONE 11 OLED GX >>I');
@@ -309,6 +326,7 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(ui, /DUPLICATE_VALUE_CONTRADICTION/u);
   assert.match(ui, /Artículo repetido con datos diferentes/u);
   assert.match(ui, /groupDuplicateResolutionRows/u);
+  assert.match(ui, /groupDuplicateResolutionRows\(current\.rows, duplicateObservationKey, \(row\) => rowErrors\(row\.errors\), \(row\) => rowErrors\(row\.warnings\)\)/u);
   assert.match(ui, /duplicateResolutionCard/u);
   assert.match(ui, /Encontramos este artículo/u);
   assert.match(ui, /Usar fila \{member\.rowNumber\}/u);
