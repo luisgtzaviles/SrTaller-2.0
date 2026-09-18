@@ -21,6 +21,7 @@ export function estimateColumnWidth(label: string, values: readonly string[], mi
 export function sortValidationIssues(issues: readonly ValidationIssue[]): ValidationIssue[];
 export function validateComposerDraft(input: Readonly<{ selectedSource: string; mode: 'FULL' | 'COMPACT'; rows: readonly Record<string, string>[] }>): ValidationIssue[];
 export function hasMeaningfulComposerWork(input: Readonly<{ dirty: boolean; description: string; mode: 'FULL' | 'COMPACT'; completeness: 'PARTIAL' | 'COMPLETE'; rows: readonly Record<string, unknown>[] }>): boolean;
+export function captureActionState(input: Readonly<{ lifecycle: 'DRAFT' | 'INGESTED' | null; dirty: boolean; hasMeaningfulWork: boolean }>): Readonly<{ reviewVisible: boolean; saveForLaterVisible: boolean }>;
 export function filterSupplierSources<Source extends Readonly<{ name: string }>>(sources: readonly Source[], query: string): readonly Source[];
 export type NewLoadIntent = 'PARTIAL' | 'COMPLETE';
 export type NewLoadGateState = Readonly<{ supplierId: string | null; completeness: NewLoadIntent | null }>;

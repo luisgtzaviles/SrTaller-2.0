@@ -220,6 +220,14 @@ export function hasMeaningfulComposerWork(input) {
   ].some((value) => String(value ?? '').trim().length > 0));
 }
 
+export function captureActionState({ lifecycle, dirty, hasMeaningfulWork }) {
+  const reviewVisible = lifecycle === null || lifecycle === 'DRAFT';
+  return Object.freeze({
+    reviewVisible,
+    saveForLaterVisible: reviewVisible && (lifecycle === 'DRAFT' ? dirty : hasMeaningfulWork),
+  });
+}
+
 export function filterSupplierSources(sources, query) {
   const normalized = query.trim().toLocaleLowerCase('es-MX');
   if (!normalized) return sources;
