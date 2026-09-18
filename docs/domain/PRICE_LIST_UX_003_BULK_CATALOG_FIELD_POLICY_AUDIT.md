@@ -2,12 +2,12 @@
 
 ## Estado del documento
 
-- **Estado:** UX-003.1 authority y UX-003.2 configuration surface materialized locally; UX-003.3 operational Composer consumption materialized for local Owner Review. Required-value enforcement remains intentionally disabled.
-- **Alcance:** PBI-041, política de datos de Catalog consumida por Bulk Catalog Composer exclusivamente para presentación. No cambia Draft, Review, Analyze, Apply ni reglas de valor efectivo.
+- **Estado:** UX-003.1 authority, UX-003.2 configuration, UX-003.3 Composer consumption y UX-003.4 required-effective enforcement materialized locally for Owner Review.
+- **Alcance:** PBI-041, policy Tenant-wide consumida por Bulk Catalog Composer para presentación y para impedir Apply de valores efectivos incompletos. No amplia Catalog manual ni crea policy por Branch/Supplier.
 - **Método:** trazabilidad estática de Composer, API, dominio, autorización, persistencia y la configuración existente de Nueva reparación; preflight local read-only.
 - **Preflight:** rama feature/pbi-041-bulk-catalog-composer, HEAD bb9595a30f12587347c46e77c560d762d6620b6d, localhost/backend health 200; PostgreSQL local con 72 migraciones y TimeZone = Etc/UTC.
-- **Mutaciones:** UX-003.3 usó sólo los Save de policy autorizados para el proof; la head terminó en `v6` con Descripción Opcional, Marca Esencial y Costo Esencial. No se crearon Drafts, Listings, decisiones, SupplierCatalogVersions ni CatalogItems. El artefacto Owner preexistente apps/dev-preview-web/src/.DS_Store permanece sin seguimiento.
-- **Próxima revisión:** Owner Review de UX-003.3; enforcement, policy snapshot y cambios de Analyze/Apply siguen fuera de alcance.
+- **Mutaciones:** UX-003.4 utilizó una versión QA local no aplicada para comprobar Analyze/Reanalyze; no hubo mutación de Catalog, Resolution ni memory antes de Apply. La policy final se restauró a `v8`: Descripción Opcional, Marca Esencial y Costo Esencial. El artefacto Owner preexistente apps/dev-preview-web/src/.DS_Store permanece sin seguimiento.
+- **Próxima revisión:** Owner Review de UX-003.4; no hay snapshot de policy y no se autoriza integración, deploy ni ampliación Catalog-wide.
 
 ## Hallazgo ejecutivo
 
@@ -229,3 +229,28 @@ en Todas ambas aparecieron. La restauración explícita dejó la policy final en
 conservaron el foco de celda. Los contratos focalizados, typecheck, build,
 DEC-005 y PostgreSQL material PBI-041 (74 migraciones) pasaron. Esto es
 evidencia local para Owner Review, no aceptación ni integración.
+
+## UX-003.4 — Required effective value enforcement
+
+`REQUIRED` no obliga a repetir una celda en cada observación. Tras resolver
+identidad/reconciliación, Analyze valida el resultado efectivo contra los
+mínimos de dominio y la policy Tenant vigente. Sólo un valor explícito o un
+valor existente preservado de un `CatalogItem` seguro cuenta; no hay inferencia
+desde SupplierSource, títulos, memoria ni candidatos ambiguos. La atención se
+persiste como `MISSING_REQUIRED_EFFECTIVE_VALUE:<field>`, separada de la
+identidad. Duplicados descartados y filas excluidas no participan.
+
+La UI muestra `Faltan datos obligatorios`, cuenta filas/campos por separado y
+abre el helper explícito UX-002E.1 sin completar datos automáticamente. La
+resolución manual vuelve a evaluar su target y Apply relee policy dentro de la
+transacción. Por eso una policy endurecida tras Analyze o una llamada directa
+no pueden publicar un Catalog incompleto. El mensaje sobre costo nunca expone
+el valor protegido y sus capabilities siguen separadas. `ESSENTIAL` y
+`OPTIONAL` no generan bloqueo.
+
+PostgreSQL aislado pasó NEW sin Marca bloqueado, known/COMPACT que conserva
+Marca y Apply rechazado tras endurecer Descripción. Chrome verificó el resumen,
+el foco a Marca, corrección explícita y reanálisis sin Apply. La policy quedó
+restaurada en `v8`: Descripción Opcional, Marca Esencial y Costo Esencial.
+Composer pasó 768/640 px, claro/oscuro y teclado sin overflow. Es un checkpoint
+local de Owner Review.

@@ -54,6 +54,14 @@ versiones ni ejecutar Save/Analyze/Apply.
 See the
 [UX-003 audit](../../../domain/PRICE_LIST_UX_003_BULK_CATALOG_FIELD_POLICY_AUDIT.md).
 
+UX-003.4 now enforces `REQUIRED` from the effective resulting value rather
+than raw supplier cells. Analyze records typed attention; Apply rereads the
+current policy to reject a stale or direct bypass. Explicit incoming data or a
+safely resolved preserved CatalogItem can satisfy a requirement; no history,
+SupplierSource default or title inference can. The QA version was not applied
+and the final local policy is `v8`: Descripción Opcional, Marca Esencial and
+Costo Esencial.
+
 ## UX-001 Supplier Selection Gate — local Owner Review
 
 UX-001 is implemented locally under the accepted D01..D10 decisions. The

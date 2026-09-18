@@ -1,5 +1,26 @@
 # PBI-041 — Implementation Evidence
 
+## UX-003.4 — Required effective value enforcement
+
+Analyze/Reconciliation y Apply son ahora los límites servidor de policy: el
+primero persiste atención `MISSING_REQUIRED_EFFECTIVE_VALUE:<field>` sobre el
+valor efectivo y el segundo relee la policy Tenant dentro de la transacción.
+Un valor entrante explícito o un CatalogItem ya resuelto y preservado puede
+satisfacer `REQUIRED`; NEW no tiene fallback. `ESSENTIAL` y `OPTIONAL`, filas
+excluidas y duplicados descartados no bloquean. La decisión manual de identidad
+revalida el target elegido. Los errores de costo sólo comunican el campo, no su
+valor protegido.
+
+PostgreSQL aislado comprobó NEW sin Marca bloqueado sin mutar Catalog, COMPACT
+con Marca existente listo y un Apply de análisis previamente READY rechazado
+después de endurecer Descripción. Terminó con 74 migraciones y su contenedor
+desechable fue removido. Chrome local creó sólo `QA UX-003.4 Local v1`, no
+aplicada: el resumen mostró una fila/Marca, `Completar datos faltantes` enfocó
+Marca y el reanálisis posterior a llenar Apple dejó la fila lista. La policy
+final se restauró a `v8`: Descripción Opcional, Marca Esencial y Costo Esencial.
+La pantalla pasó 768/640 px, claro/oscuro, Tab/Shift+Tab y sin overflow. No
+hubo Resolution/memory por la atención, CI, push, PR, merge ni deploy.
+
 ## Checkpoint
 
 - **Estado:** trusted history + bounded candidate matching PASS en LOCAL; AG

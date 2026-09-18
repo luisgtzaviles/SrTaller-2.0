@@ -32,6 +32,17 @@ includes the sensitive Reference Cost field. This foundation does not alter
 Composer capture, Analyze, Apply or manual Catalog mutations until a later
 authorized consumer adopts it.
 
+The Bulk Catalog Composer consumer validates `REQUIRED` against the effective
+resulting value: incoming explicit data or a safely resolved, preserved
+`CatalogItem` value may satisfy it; SupplierSource defaults, observation
+history, title parsing and ambiguous identity never may. Analyze records typed
+reconciliation attention before applicability. Apply rereads the current
+Tenant policy inside its transaction, protecting against a stale analysis or a
+direct request. Policy revisions are deliberately not snapshot on a Supplier
+CatalogVersion; the current policy is authoritative at Reanalyze and Apply.
+`ESSENTIAL` and `OPTIONAL` do not block, and an excluded row is not an
+effective mutation.
+
 ## Resultado ejecutivo
 
 SR Taller tendrá una identidad de artículo compartida por Tenant y un precio

@@ -1,17 +1,28 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-003.3A Composer Column Resize Freeze Regression
+Milestone / Functional Goal: PBI-041 — UX-003.4 Required Effective Value Enforcement
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: UX-003.3A remediated and materially proven locally. Policy-driven presentation remains read-only; required-value enforcement remains out of scope.
+Status: Local Owner Review — required-effective-value enforcement is materialized and QA proven; no Catalog mutation occurs before Apply.
 WIP: 1/1
-Progress: 7 / 7 UX-003.3A blocks completed.
-Current: local Owner Review of the stable Composer column-resize remediation.
-Next: await Owner direction; do not start policy enforcement, another UX slice or integration work automatically.
+Progress: 8 / 8 UX-003.4 blocks completed.
+Current: Owner review of the local UX-003.4 checkpoint.
+Next: await a new Owner decision; do not push, open a PR, merge, deploy or start another UX slice.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-003.3A Composer Column Resize Freeze Regression
+## Current checkpoint — UX-003.4 Required Effective Value Enforcement
+
+- [x] Confirm current branch, health, policy foundation, reconciliation lifecycle and Apply architecture.
+- [x] Evaluate domain-required plus Tenant-required fields from the effective resulting value, not raw cells alone.
+- [x] Persist dedicated required-value attention through Analyze/Reconciliation without Catalog, Resolution or Memory writes.
+- [x] Revalidate current policy inside Apply so a stale or direct request cannot bypass it.
+- [x] Surface aggregate and row-level Owner guidance, preserving UX-002E.1 remediation and reference-cost confidentiality.
+- [x] Prove NEW, known, UPDATE, UNCHANGED, REACTIVATE, COMPACT, excluded and duplicate cases.
+- [x] Complete isolated PostgreSQL and Chrome material QA; restore the approved policy state (`v8`: Descripción Opcional, Marca Esencial, Costo Esencial).
+- [x] Record evidence, run proportional checks and stop at Owner Review without remote action.
+
+## Previous checkpoint — UX-003.3A Composer Column Resize Freeze Regression
 
 - [x] Reproduce and isolate the white-screen path: fractional pointer width entered the integer-only grid template and threw during ref attach.
 - [x] Normalize persisted and newly calculated widths to bounded integral pixels by canonical field key.
