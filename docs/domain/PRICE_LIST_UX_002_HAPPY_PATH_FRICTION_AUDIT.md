@@ -354,6 +354,10 @@ recoverable draft across reload. Responsive Chrome checks covered desktop,
 
 ## Conclusion
 
+The subsequent [UX-002D Capture Mode Friction Audit](PRICE_LIST_UX_002D_CAPTURE_MODE_FRICTION_AUDIT.md)
+traces FULL/COMPACT as persisted safety policy rather than Owner load intent;
+its recommendation is pending Owner decision and is not implemented.
+
 UX-002 supports a result-first review flow, not silent automation. The system
 can reduce operator work by composing mechanical save/analyze after a deliberate
 review intent and by giving contextual suggestions. It must retain explicit

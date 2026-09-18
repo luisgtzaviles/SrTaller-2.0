@@ -136,3 +136,12 @@ Focused model/UI contracts, typecheck, production build, architecture policy
 and the PBI-041 disposable PostgreSQL material suite pass locally. Chrome
 passed desktop, 768 and 640 light plus 640 dark. This is Owner Review evidence,
 not acceptance, PR, merge or deployment evidence.
+
+## UX-002D Capture mode friction audit — Owner decision ready
+
+Read-only evidence traces persisted FULL/COMPACT semantics and distinguishes
+their one material difference: FULL may create sufficiently described new rows;
+COMPACT requires an identifier and blocks unmatched rows. No product, database
+or fixture mutation occurred. The audit recommends a future default-plus-
+advanced design, subject to Owner decisions; it does not implement it. See the
+[domain audit](../../../domain/PRICE_LIST_UX_002D_CAPTURE_MODE_FRICTION_AUDIT.md).

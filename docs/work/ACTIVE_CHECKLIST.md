@@ -1,17 +1,25 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-002C Primary review action + secondary draft save
+Milestone / Functional Goal: PBI-041 — UX-002D Capture mode friction audit
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: local functional proof complete; Review is the normal path and draft save is an optional escape path
+Status: audit/documentation complete; no capture-mode product change implemented
 WIP: 1/1
-Progress: 7 / 7 UX-002C blocks completed.
-Current: stopped for Owner Review with local v3 analyzed and v4 saved/recoverable; neither was applied.
-Next: Owner Review only. Do not start integration, another UX slice or PBI without new authority.
+Progress: 5 / 5 UX-002D audit blocks completed.
+Current: stopped for Owner decision on capture-mode policy; UX-002C proof remains preserved.
+Next: Owner decision only. Do not start implementation, integration, another UX slice or PBI without new authority.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-002C Primary review action + secondary draft save
+## Current checkpoint — UX-002D Capture mode friction audit
+
+- [x] Trace FULL/COMPACT from UI through API, domain, persistence, Analyze, Apply and history.
+- [x] Compare validation, NEW/no-target, matching, duplicates, coverage, defaults and lifecycle semantics.
+- [x] Evaluate mixed-row lists, derivation limits and safety controls without changing behavior.
+- [x] Record Owner decisions pending and a non-implemented target recommendation.
+- [x] Validate documentation and stop with no product/runtime/data mutation.
+
+## Previous checkpoint — UX-002C Primary review action + secondary draft save
 
 - [x] Separate view controls from the capture workflow without changing Save → Analyze orchestration.
 - [x] Make `Revisar lista` the sole prominent capture action and expose `Guardar para después` as quiet, discoverable and state-aware.
