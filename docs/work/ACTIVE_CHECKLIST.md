@@ -1,17 +1,27 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-003.3 Policy-Driven Essentials
+Milestone / Functional Goal: PBI-041 — UX-003.3A Composer Column Resize Freeze Regression
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: UX-003.3 implemented and materially proven locally. The Composer consumes the effective Tenant policy for presentation only; required-value enforcement remains out of scope.
+Status: UX-003.3A remediated and materially proven locally. Policy-driven presentation remains read-only; required-value enforcement remains out of scope.
 WIP: 1/1
-Progress: 8 / 8 UX-003.3 blocks completed.
-Current: local Owner Review of policy-driven Essentials.
+Progress: 7 / 7 UX-003.3A blocks completed.
+Current: local Owner Review of the stable Composer column-resize remediation.
 Next: await Owner direction; do not start policy enforcement, another UX slice or integration work automatically.
 Blocked: None. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-17 MST
 
-## Current checkpoint — UX-003.3 Policy-Driven Essentials
+## Current checkpoint — UX-003.3A Composer Column Resize Freeze Regression
+
+- [x] Reproduce and isolate the white-screen path: fractional pointer width entered the integer-only grid template and threw during ref attach.
+- [x] Normalize persisted and newly calculated widths to bounded integral pixels by canonical field key.
+- [x] Preserve width identity when policy visibility switches between Esenciales and Todas, including fields temporarily hidden by policy.
+- [x] Cover fractional hydration, malformed stale state, bounds, keyboard/pointer updates, no-op state and policy visibility regressions.
+- [x] Prove an existing populated grid remains responsive through repeated resize, sidebar open/collapsed, desktop, 768 px, 640 px, light/dark and keyboard paths.
+- [x] Preserve Catalog, Supplier versions, policy, Save/Analyze/Apply and all backend/DB semantics; no data action was invoked.
+- [x] Pass focused tests, typecheck, build, architecture and diff checks; record evidence and stop for Owner Review with no remote action.
+
+## Previous checkpoint — UX-003.3 Policy-Driven Essentials
 
 - [x] Audit the hard-coded Composer field presets, authoritative effective-policy API, and current reference-cost authorization.
 - [x] Load only safe effective-policy metadata for Composer users without granting configuration access.

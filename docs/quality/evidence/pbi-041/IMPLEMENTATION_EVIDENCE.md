@@ -83,6 +83,33 @@ PBI-041 pasó: 74 migraciones, 2/2 tests. Typecheck, build, 29 regresiones
 focalizadas, DEC-005 y `git diff --check` pasaron. No hubo CI, push, PR, merge
 ni deploy.
 
+## UX-003.3A — Composer column resize freeze regression
+
+La regresión se reprodujo con una anchura de `Título` fraccional persistida por
+el arrastre del navegador. El template resultante no cumplía el contrato de
+`bulk-catalog-grid-layout`: éste sólo admite píxeles enteros y lanzó
+`RangeError` durante el attach del ref. Al no existir un error boundary de
+raíz, React desmontó el Composer y mostró una pantalla blanca. No era un fallo
+de identidad de columnas introducido por UX-003.3; la proyección por policy
+hizo visible la necesidad de que el estado de dimensiones también fuera
+canónico y seguro.
+
+`normalizeColumnWidths` y `resizeColumnWidth` son ahora la única vía para
+hidratar y actualizar anchos. Redondean a píxeles enteros, acotan entre los
+límites existentes, rechazan `NaN`/infinito/valores inválidos y mantienen sólo
+las claves canónicas. La vista visible se deriva por policy sin perder el ancho
+de campos que se ocultan temporalmente. La regresión cubre hidratación
+fraccional, claves obsoletas, límites, no-op, cambio
+`Esenciales`/`Todas` y la ruta estructural de pointer/teclado.
+
+Chrome local confirmó una carga existente poblada, arrastre físico repetido,
+redimensionamiento por teclado, barra lateral abierta y colapsada, escritorio,
+`768 px`, `640 px`, claro y oscuro sin excepción ni overflow de página. No se
+accionó Guardar, Revisar, Analyze o Apply; `CatalogItem`,
+`SupplierCatalogVersion`, policy y datos de proveedor permanecieron intactos.
+Typecheck, build, arquitectura y 56 pruebas focalizadas pasaron. No hubo CI,
+push, PR, merge ni deploy.
+
 ## Supplier history, automatic versioning and governed delete
 
 La auditoría previa recorrió Source, Version, raw, Listing, RowDecision,
