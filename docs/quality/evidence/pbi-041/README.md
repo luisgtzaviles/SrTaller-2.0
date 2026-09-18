@@ -240,3 +240,12 @@ and prohibition on new items. `replaceDraft` persists the requested validated
 mode atomically; disposable PostgreSQL proves FULL → COMPACT → FULL and reload
 authority. No migration, matching, completeness, duplicate, Apply or Catalog
 semantics changed. Local-only Owner Review; no remote action occurred.
+
+## UX-004.5 Supplier history selection consistency
+
+The local Composer history now follows only the selected **Explorar
+proveedor** source. It retains a real zero-version state, does not fall back to
+AG after explicit selection and leaves a pending new-load supplier independent.
+The New Load gate remains explicit. See
+[implementation evidence](IMPLEMENTATION_EVIDENCE.md) and the
+[UX-001 supplier-selection boundary](../../../domain/PRICE_LIST_UX_001_SUPPLIER_SELECTION_GATE_AUDIT.md).

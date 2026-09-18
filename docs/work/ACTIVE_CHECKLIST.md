@@ -1,15 +1,24 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-004.4 Role Matrix + End-to-End Authorization Proof
+Milestone / Functional Goal: PBI-041 — UX-004.5 Supplier History Selection Consistency
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Local Owner Acceptance ready — role capability matrix and authorization proof complete.
+Status: Local Owner Review ready — supplier history follows the explicitly explored source and pending-load ownership remains independent.
 WIP: 1/1
-Progress: 10 / 10 UX-004.4 blocks completed; UX-004.1/UX-004.2/UX-004.3 foundations remain preserved.
-Current: Owner Acceptance review of the catalog capability matrix and authorization evidence.
-Next: await explicit Owner Acceptance. Do not change role defaults, push, open a PR, merge, deploy or start another PBI.
+Progress: 6 / 6 UX-004.5 blocks completed; UX-004.1/UX-004.2/UX-004.3/UX-004.4 foundations remain preserved.
+Current: Owner Review of source-scoped history, independent pending-load authority and local evidence.
+Next: await explicit Owner direction. Do not push, open a PR, merge, deploy or start another PBI.
 Blocked: No product blocker identified. The broader PBI-041 PostgreSQL runner also executes a separate 10k publish benchmark that exceeded its 30s budget in this host (34.9s); do not remediate that performance concern in UX-004.4. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4, QA UX-002E Local v1 DRAFT, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-18 MST
+
+## Current checkpoint — UX-004.5 Supplier History Selection Consistency
+
+- [x] Confirm the root cause: the Composer rendered every supplier history despite the browse selector.
+- [x] Make the browsed source the sole authority for the history list and prevent a browse change from resetting the draft source.
+- [x] Cover explicit selection, zero-version state, no fallback, race-safe refresh and browse/load separation with focused regressions.
+- [x] Complete safe local Chrome proof for AG, Avicell, panel restore, responsive/theme and keyboard behavior without Save, Analyze or Apply.
+- [x] Confirm no server, catalog, source, version, policy, resolution or memory write occurred.
+- [x] Reconcile PBI/evidence/UX-001 cross-reference/checklist and stop for Owner Review; no push, PR, merge or deploy.
 
 ## Current checkpoint — UX-004.4 Role Matrix + End-to-End Authorization Proof
 

@@ -128,6 +128,10 @@ payload del primer guardado; tras guardar, la Version se convierte en la
 autoridad visible. El backend existente sigue asignando `vN` y rechazando
 cualquier cambio posterior de `source_id`.
 
+UX-004.5 preserva esa separación también durante la exploración histórica: la
+fuente explorada controla sólo el historial visible y no descarta, rellena ni
+reemplaza el proveedor pendiente de una carga nueva.
+
 ## 6. Alternativas de superficie
 
 | Alternativa | Ventaja | Riesgo/coste | Recomendación |

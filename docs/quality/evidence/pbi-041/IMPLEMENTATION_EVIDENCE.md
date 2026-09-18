@@ -1494,3 +1494,28 @@ administrator only to inspect Roles: desktop, 768 px and 640 px in light/dark
 had no horizontal overflow; the edit dialog exposed grouped labels and
 Tab/Shift+Tab traversed Close → Name normally. No role was saved, no PIN was
 entered and no Owner Catalog, SupplierVersion or audit record was changed.
+
+## UX-004.5 — Supplier history selection consistency
+
+The Composer now derives its visible history exclusively from the explicitly
+browsed supplier. The selected source controls the heading, count and rows; an
+intentional zero-version source renders an empty state instead of stale AG rows
+or a fallback source. Initial loading may choose the first available source,
+but an explicit selection remains stable through subsequent refreshes. The
+selection no longer recreates `refresh`, so changing AG ↔ Avicell cannot allow
+an asynchronous history response to replace the newer selection.
+
+Browsing remains presentation-only. It no longer invokes the unsaved-work
+discard path or `clearNewLoad`, so a pending new-load supplier remains an
+independent authority. The existing New Load gate still starts with neither a
+supplier nor an intent selected; a browsed source does not prefill it. Version
+opening retains its existing work-loss guard. No endpoint, persistence,
+authorization, Tenant/Branch boundary, SupplierSource, SupplierCatalogVersion,
+Catalog, policy, analysis, resolution, memory or Apply semantics changed.
+
+Focused regression coverage proves source-scoped sorted history, explicit
+selection stability, zero-state handling and browse/draft separation. Local
+Chrome verified AG's 71-version history, Avicell's zero-version empty state,
+rapid AG ↔ Avicell ↔ AG switching, panel collapse/restore, an empty New Load
+gate, desktop/768/640 no-overflow, light/dark and Tab/Shift+Tab. No Save,
+Analyze or Apply action was invoked and no operational data was written.
