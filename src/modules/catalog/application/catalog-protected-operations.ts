@@ -90,6 +90,11 @@ function publishEffectRequirements(version: Awaited<ReturnType<BulkCatalogServic
   return Object.freeze(requirements);
 }
 
+function bindPublishSnapshot(input: unknown, expectedBatchVersion: number): unknown {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return input;
+  return Object.freeze({ ...input, expectedBatchVersion });
+}
+
 function mutationContext(contexts: readonly AuthorizedOperationalContext[]): CatalogMutationContext {
   if (!sameContext(contexts) || contexts.length === 0) throw new CatalogOperationAccessDeniedError();
   const first = contexts[0]!;
@@ -274,7 +279,8 @@ export class CatalogProtectedOperations {
       return await this.executeTenantWideMany(evidence, writeCost ? [costRead] : [], async (costContexts) => {
         const version = await this.bulk.getVersion(scope(costContexts[0] ?? readContext), versionId, writeCost);
         const requirements = publishEffectRequirements(version, writeCost);
-        return await this.executeTenantWideMany(evidence, requirements, (contexts) => this.bulk.publish(mutationContext(contexts), versionId, input, writeCost));
+        const boundInput = bindPublishSnapshot(input, version.batch.version);
+        return await this.executeTenantWideMany(evidence, requirements, (contexts) => this.bulk.publish(mutationContext(contexts), versionId, boundInput, writeCost));
       });
     });
   }
