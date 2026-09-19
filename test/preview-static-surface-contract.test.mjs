@@ -26,8 +26,19 @@ for (const [name, mutation] of [
     authorizedSource.replace("  '/listas/precios',\n", ''),
   ],
   [
+    'missing Bulk Catalog Composer route',
+    authorizedSource.replace("  '/listas/precios/carga-masiva',\n", ''),
+  ],
+  [
     'missing Catalog Administration route',
     authorizedSource.replace("  '/configuracion/catalogos',\n", ''),
+  ],
+  [
+    'missing Catalog Field Policy route',
+    authorizedSource.replace(
+      "  '/configuracion/catalogos/lista-de-precios/campos-de-carga',\n",
+      '',
+    ),
   ],
   [
     'broadened detail matcher',
