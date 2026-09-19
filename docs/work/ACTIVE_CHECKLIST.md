@@ -5,9 +5,9 @@ Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
 Status: REMEDIATION IN PROGRESS after Preview exposed 404 on direct navigation/reload for two PBI-041 SPA routes. Product, API, data and Production are unchanged.
 WIP: 1/1
-Progress: 2 / 6 Preview remediation blocks complete.
-Current: Execute the full candidate verification required for an executable hotfix.
-Next: Freeze the corrective candidate, then run the governed PR/CI/review cycle.
+Progress: 3 / 6 Preview remediation blocks complete.
+Current: Promote the frozen corrective candidate through PR, exact-HEAD CI and independent review.
+Next: Integrate after every governed gate passes, then redeploy and prove Preview.
 Blocked: NONE. Owner data, AviCell, Production and the preexisting .DS_Store remain protected.
 Last updated: 2026-09-19 MST
 
@@ -18,8 +18,8 @@ Last updated: 2026-09-19 MST
   Policy because both exact paths are absent from the bounded SPA allowlist.
 - [x] Add only the two PBI-041 paths to the static surface contract and protect
   them in focused, smoke and OCI checks.
-- [~] Pass focused tests, typecheck, build, architecture and diff checks.
-- [ ] Freeze a corrective candidate and complete the governed PR, CI and exact
+- [x] Pass focused tests, typecheck, build, architecture and diff checks.
+- [~] Freeze a corrective candidate and complete the governed PR, CI and exact
   HEAD review cycle without reusing stale evidence.
 - [ ] Integrate only with the applicable Owner authority and exact-main CI
   GREEN.

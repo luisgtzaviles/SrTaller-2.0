@@ -41,7 +41,10 @@ was hidden and no Owner data was used or changed.
 
 ## Pending governed evidence
 
-- one full integration verification on the frozen corrective candidate;
+- full integration verification: PASS on execution HEAD
+  `d04264f9626eb134354540c72e5ebb75ecc77db3`; Stages `0..13`, PostgreSQL
+  composite `17/17`, PBI-041 `10/10`, 75 migrations, second run `0 pending`,
+  compiled UI smoke and cleanup/fingerprint all PASS;
 - authoritative candidate CI and independent review on the exact HEAD;
 - authorized merge and exact-main CI;
 - corrected Preview deployment and direct navigation/reload proof.
