@@ -5,6 +5,7 @@ import { promisify } from 'node:util';
 import {
   assertPostgresqlTestSummary,
   createPostgresqlChildFailureMarker,
+  createPostgresqlHarnessFailureMarker,
   ownerScopedPostgresqlTestFiles,
 } from './lib/postgresql-test-output.mjs';
 
@@ -18,7 +19,27 @@ const requestedRuns =
   process.argv[2] === '--runs'
     ? Number.parseInt(process.argv[3] ?? '', 10)
     : 1;
-const activeContainers = new Set();
+const activeContainers = new Map();
+
+const dockerOperationByCommand = Object.freeze({
+  exec: 'owner-scoped-adapters-docker-exec',
+  inspect: 'owner-scoped-adapters-docker-inspect',
+  ps: 'owner-scoped-adapters-docker-list',
+  pull: 'owner-scoped-adapters-docker-pull',
+  rm: 'owner-scoped-adapters-docker-remove',
+  run: 'owner-scoped-adapters-docker-run',
+});
+
+class OwnerScopedPostgresqlHarnessError extends Error {
+  constructor(operation, testFile, cause) {
+    super(`Owner-scoped PostgreSQL harness operation failed: ${operation}`);
+    this.marker = createPostgresqlHarnessFailureMarker(
+      operation,
+      testFile,
+      cause,
+    );
+  }
+}
 
 if (process.version !== 'v24.18.0') {
   throw new Error('Node.js 24.18.0 is required for adapter verification');
@@ -33,29 +54,40 @@ if (
   );
 }
 
-async function docker(argumentsList, options = {}) {
+async function docker(argumentsList, testFile, options = {}) {
   try {
     return await execute('docker', argumentsList, {
       encoding: 'utf8',
       maxBuffer: 10 * 1024 * 1024,
       ...options,
     });
-  } catch {
-    throw new Error(
-      `Docker adapter test operation failed: ${argumentsList[0] ?? 'unknown'}`,
+  } catch (error) {
+    const operation = dockerOperationByCommand[argumentsList[0]];
+    if (operation === undefined) {
+      throw new Error(
+        'Owner-scoped PostgreSQL used an ungoverned Docker operation',
+      );
+    }
+    throw new OwnerScopedPostgresqlHarnessError(
+      operation,
+      testFile,
+      error,
     );
   }
 }
 
-async function waitForHealthy(container) {
+async function waitForHealthy(container, testFile) {
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
-    const { stdout } = await docker([
-      'inspect',
-      '--format',
-      '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}',
-      container,
-    ]);
+    const { stdout } = await docker(
+      [
+        'inspect',
+        '--format',
+        '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}',
+        container,
+      ],
+      testFile,
+    );
     const state = stdout.trim();
     if (state === 'healthy') {
       return;
@@ -68,31 +100,34 @@ async function waitForHealthy(container) {
   throw new Error('ephemeral PostgreSQL health check timed out');
 }
 
-async function assertContainerAbsent(container) {
-  const { stdout } = await docker([
-    'ps',
-    '--all',
-    '--filter',
-    `name=^/${container}$`,
-    '--format',
-    '{{.Names}}',
-  ]);
+async function assertContainerAbsent(container, testFile) {
+  const { stdout } = await docker(
+    [
+      'ps',
+      '--all',
+      '--filter',
+      `name=^/${container}$`,
+      '--format',
+      '{{.Names}}',
+    ],
+    testFile,
+  );
   if (stdout.trim() !== '') {
     throw new Error('ephemeral PostgreSQL cleanup left a container');
   }
 }
 
-async function cleanupContainer(container) {
+async function cleanupContainer(container, testFile) {
   if (!activeContainers.has(container)) return;
-  await docker(['rm', '--force', container]);
+  await docker(['rm', '--force', container], testFile);
   activeContainers.delete(container);
-  await assertContainerAbsent(container);
+  await assertContainerAbsent(container, testFile);
 }
 
 async function cleanupAfterSignal(signal) {
   try {
-    for (const container of [...activeContainers]) {
-      await cleanupContainer(container);
+    for (const [container, testFile] of activeContainers) {
+      await cleanupContainer(container, testFile);
     }
   } finally {
     process.exit(signal === 'SIGINT' ? 130 : 143);
@@ -111,7 +146,7 @@ async function runFileOnce(file) {
   let started = false;
 
   try {
-    await docker(['pull', image]);
+    await docker(['pull', image], file);
     const { stdout: runOutput } = await docker([
       'run',
       '--detach',
@@ -140,20 +175,20 @@ async function runFileOnce(file) {
       '--health-retries',
       '30',
       image,
-    ]);
+    ], file);
     if (runOutput.trim() === '') {
       throw new Error('Docker did not return an ephemeral container ID');
     }
     started = true;
-    activeContainers.add(container);
-    await waitForHealthy(container);
+    activeContainers.set(container, file);
+    await waitForHealthy(container, file);
 
     const { stdout: versionOutput } = await docker([
       'exec',
       container,
       'postgres',
       '--version',
-    ]);
+    ], file);
     if (!/postgres \(PostgreSQL\) 18\.4\b/u.test(versionOutput)) {
       throw new Error('ephemeral PostgreSQL version differs from 18.4');
     }
@@ -170,7 +205,7 @@ async function runFileOnce(file) {
       database,
       '--command',
       'show server_encoding',
-    ]);
+    ], file);
     if (encodingOutput.trim() !== 'UTF8') {
       throw new Error('ephemeral PostgreSQL encoding differs from UTF8');
     }
@@ -186,7 +221,7 @@ async function runFileOnce(file) {
       database,
       '--command',
       'show TimeZone',
-    ]);
+    ], file);
     if (timezoneOutput.trim() !== 'UTC') {
       throw new Error('ephemeral PostgreSQL timezone differs from UTC');
     }
@@ -202,20 +237,20 @@ async function runFileOnce(file) {
       database,
       '--command',
       'select datcollate from pg_database where datname = current_database()',
-    ]);
+    ], file);
     const { stdout: clientVersionOutput } = await docker([
       'exec',
       container,
       'psql',
       '--version',
-    ]);
+    ], file);
 
     const { stdout: portOutput } = await docker([
       'inspect',
       '--format',
       '{{(index (index .NetworkSettings.Ports "5432/tcp") 0).HostPort}}',
       container,
-    ]);
+    ], file);
     const port = portOutput.trim();
     if (!/^\d{1,5}$/u.test(port)) {
       throw new Error('Docker did not assign a loopback test port');
@@ -268,7 +303,7 @@ async function runFileOnce(file) {
       user,
       '--dbname',
       database,
-    ]);
+    ], file);
     if (
       /\bCREATE TABLE\b/iu.test(schemaOutput) ||
       /tenants|branches|kysely_migration/iu.test(schemaOutput)
@@ -345,9 +380,9 @@ async function runFileOnce(file) {
     });
   } finally {
     if (started) {
-      await cleanupContainer(container);
+      await cleanupContainer(container, file);
     }
-    await assertContainerAbsent(container);
+    await assertContainerAbsent(container, file);
   }
 }
 
@@ -383,32 +418,43 @@ async function runOnce() {
   });
 }
 
-const results = [];
-for (let index = 0; index < requestedRuns; index += 1) {
-  results.push(await runOnce());
+async function main() {
+  const results = [];
+  for (let index = 0; index < requestedRuns; index += 1) {
+    results.push(await runOnce());
+  }
+
+  const material = JSON.stringify(results[0]);
+  if (results.some((result) => JSON.stringify(result) !== material)) {
+    throw new Error('PostgreSQL adapter verification runs differ materially');
+  }
+  const materialSha256 = createHash('sha256')
+    .update(material)
+    .digest('hex');
+  process.stdout.write(
+    `${JSON.stringify(
+      {
+        cleanup: 'PASS',
+        imageDigest,
+        materialComparison: 'MATCH',
+        materialSha256,
+        node: '24.18.0',
+        postgres: '18.4',
+        runs: requestedRuns,
+        status: 'PASS',
+        suite: results[0],
+      },
+      null,
+      2,
+    )}\n`,
+  );
 }
 
-const material = JSON.stringify(results[0]);
-if (results.some((result) => JSON.stringify(result) !== material)) {
-  throw new Error('PostgreSQL adapter verification runs differ materially');
+try {
+  await main();
+} catch (error) {
+  if (error instanceof OwnerScopedPostgresqlHarnessError) {
+    process.stderr.write(`${error.marker}\n`);
+  }
+  throw error;
 }
-const materialSha256 = createHash('sha256')
-  .update(material)
-  .digest('hex');
-process.stdout.write(
-  `${JSON.stringify(
-    {
-      cleanup: 'PASS',
-      imageDigest,
-      materialComparison: 'MATCH',
-      materialSha256,
-      node: '24.18.0',
-      postgres: '18.4',
-      runs: requestedRuns,
-      status: 'PASS',
-      suite: results[0],
-    },
-    null,
-    2,
-  )}\n`,
-);

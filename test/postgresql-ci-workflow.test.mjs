@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import {
+  chmod,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
 import {
   criticalPostgresqlSuites,
@@ -9,10 +19,14 @@ import {
 import {
   assertPostgresqlTestSummary,
   createPostgresqlChildFailureMarker,
+  createPostgresqlHarnessFailureMarker,
   formatPostgresqlChildFailureDiagnostic,
+  formatPostgresqlHarnessFailureDiagnostic,
+  ownerScopedPostgresqlHarnessOperations,
   ownerScopedPostgresqlTestFiles,
   pbi039PostgresqlTestFiles,
   parsePostgresqlChildFailureMarker,
+  parsePostgresqlHarnessFailureMarker,
 } from '../scripts/lib/postgresql-test-output.mjs';
 
 const workflow = await readFile(
@@ -32,6 +46,7 @@ const cleanupRunner = await readFile(
   'scripts/cleanup-postgresql-ci.mjs',
   'utf8',
 );
+const execute = promisify(execFile);
 
 test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', () => {
   assert.match(workflow, /execution:\s*\n\s+- run-1\s*\n\s+- run-2/u);
@@ -295,6 +310,154 @@ test('PostgreSQL child diagnostics reject forged or ambiguous markers', () => {
     ),
     null,
   );
+});
+
+test('owner-scoped harness diagnostics preserve only governed failure identity', () => {
+  assert.deepEqual(ownerScopedPostgresqlHarnessOperations, [
+    'owner-scoped-adapters-docker-exec',
+    'owner-scoped-adapters-docker-inspect',
+    'owner-scoped-adapters-docker-list',
+    'owner-scoped-adapters-docker-pull',
+    'owner-scoped-adapters-docker-remove',
+    'owner-scoped-adapters-docker-run',
+  ]);
+  const secret = 'synthetic_harness_secret_that_must_not_escape';
+  const marker = createPostgresqlHarnessFailureMarker(
+    'owner-scoped-adapters-docker-pull',
+    'test/owner-scoped-persistence-postgresql.test.mjs',
+    {
+      code: 1,
+      cmd: `docker pull --password=${secret}`,
+      killed: false,
+      message: `registry failure ${secret}`,
+      signal: null,
+      stderr: `password=${secret}`,
+      stdout: secret,
+    },
+  );
+  assert.doesNotMatch(marker, new RegExp(secret, 'u'));
+
+  const payload = parsePostgresqlHarnessFailureMarker(
+    `${marker}\nignored outer stack ${secret}`,
+  );
+  assert.deepEqual(payload, {
+    schemaVersion: 1,
+    operation: 'owner-scoped-adapters-docker-pull',
+    testFile: 'test/owner-scoped-persistence-postgresql.test.mjs',
+    exitCode: 1,
+    signal: null,
+    timeout: false,
+  });
+  const diagnostic = formatPostgresqlHarnessFailureDiagnostic(payload);
+  assert.equal(
+    diagnostic,
+    'operation=owner-scoped-adapters-docker-pull; ' +
+      'testFile=test/owner-scoped-persistence-postgresql.test.mjs; ' +
+      'exitCode=1; signal=none; timeout=no',
+  );
+  assert.doesNotMatch(diagnostic, new RegExp(secret, 'u'));
+  assert.match(ownerScopedRunner, /createPostgresqlHarnessFailureMarker/u);
+  assert.match(ownerScopedRunner, /OwnerScopedPostgresqlHarnessError/u);
+  assert.match(runner, /parsePostgresqlHarnessFailureMarker/u);
+  assert.match(runner, /formatPostgresqlHarnessFailureDiagnostic/u);
+});
+
+test('owner-scoped harness diagnostics reject forged or ambiguous markers', () => {
+  const marker = createPostgresqlHarnessFailureMarker(
+    'owner-scoped-adapters-docker-run',
+    'test/access-session-postgresql.test.mjs',
+    {
+      code: null,
+      killed: true,
+      signal: 'SIGTERM',
+    },
+  );
+  assert.deepEqual(parsePostgresqlHarnessFailureMarker(marker), {
+    schemaVersion: 1,
+    operation: 'owner-scoped-adapters-docker-run',
+    testFile: 'test/access-session-postgresql.test.mjs',
+    exitCode: null,
+    signal: 'SIGTERM',
+    timeout: true,
+  });
+  assert.equal(
+    parsePostgresqlHarnessFailureMarker(
+      marker.replace(
+        'owner-scoped-adapters-docker-run',
+        'owner-scoped-adapters-shell',
+      ),
+    ),
+    null,
+  );
+  assert.equal(
+    parsePostgresqlHarnessFailureMarker(
+      marker.replace(
+        'test/access-session-postgresql.test.mjs',
+        'test/secret.test.mjs',
+      ),
+    ),
+    null,
+  );
+  assert.equal(
+    parsePostgresqlHarnessFailureMarker(`${marker}\n${marker}`),
+    null,
+  );
+});
+
+test('owner-scoped runner reports Docker bootstrap failure without raw stderr', async () => {
+  const directory = await mkdtemp(
+    join(tmpdir(), 'srtaller-owner-scoped-diagnostic-'),
+  );
+  const dockerPath = join(directory, 'docker');
+  const secret = 'synthetic_docker_stderr_that_must_not_escape';
+  await writeFile(
+    dockerPath,
+    `#!/bin/sh\n` +
+      `if [ "$1" = "pull" ]; then\n` +
+      `  echo "${secret}" >&2\n` +
+      `  exit 71\n` +
+      `fi\n` +
+      `if [ "$1" = "ps" ]; then exit 0; fi\n` +
+      `exit 72\n`,
+  );
+  await chmod(dockerPath, 0o755);
+
+  try {
+    await assert.rejects(
+      execute(
+        process.execPath,
+        [
+          'scripts/test-owner-scoped-persistence-postgresql.mjs',
+          '--runs',
+          '1',
+        ],
+        {
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            PATH: `${directory}:${process.env.PATH ?? ''}`,
+          },
+        },
+      ),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.doesNotMatch(error.stderr, new RegExp(secret, 'u'));
+        const payload = parsePostgresqlHarnessFailureMarker(error.stderr);
+        assert.deepEqual(payload, {
+          schemaVersion: 1,
+          operation: 'owner-scoped-adapters-docker-pull',
+          testFile:
+            'test/owner-scoped-persistence-postgresql.test.mjs',
+          exitCode: 71,
+          signal: null,
+          timeout: false,
+        });
+        return true;
+      },
+    );
+  } finally {
+    await rm(directory, { force: true, recursive: true });
+  }
 });
 
 test('critical test summary accepts zero skips and fails closed on any skip', () => {
