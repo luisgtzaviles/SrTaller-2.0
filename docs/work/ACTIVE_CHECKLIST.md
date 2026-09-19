@@ -1,17 +1,32 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Final Closure & Readiness Audit
+Milestone / Functional Goal: PBI-041 — Verification Gate Remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Final audit completed — NOT READY; required verification-gate blockers remain.
+Status: Original gate blockers remediated; NOT READY because `verify` exposed two new PBI-041 blockers outside authorized scope.
 WIP: 1/1
-Progress: 5 / 7 audit blocks complete; two required verification gates are blocked.
-Current: Evidence recorded for the formal-readiness gate failures; no remediation is authorized in this audit.
-Next: Owner decision on the two gate remediations; do not start Formal Verification, integration, or another PBI.
-Blocked: `verify:full` preflight rejects PBI-041's intentional `apps/dev-preview-web/src/api.ts` change under the stale PBI-039 protected-surface guard; `verify` fails because the migration allowlist omits the three PBI-041 policy/capability migrations. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 4 / 7 remediation blocks complete; `verify`, `verify:full` and readiness remain blocked.
+Current: Authorized protected-surface and migration-contract remediations are committed locally and evidenced.
+Next: Owner decision on the PostgreSQL skip-inventory and Composer visual-foundation blockers; do not start Formal Verification, integration, or another PBI.
+Blocked: `verify` fails because its PostgreSQL skip inventory expects 21 material tests but the current tree has 29, and because Composer has one inline style, one noncanonical compound radius and one forbidden `!important`. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
 
-## Current checkpoint — Final Closure & Readiness Audit
+## Current checkpoint — FV Gate Remediation
+
+- [x] Reproduce the original `verify` migration-contract failure and
+  `verify:full` Stage 0 protected-surface failure before editing.
+- [x] Authorize only the exact `apps/dev-preview-web/src/api.ts` blob change,
+  retain the 20-path guard and reject drift, unknown paths and wildcards.
+- [x] Register the exact PBI-041 migrations across strict 75-migration
+  contracts; retain unknown, duplicate, order and ownership rejection.
+- [x] Prove focused gates and PostgreSQL 18.4: 75 applied, second run 0
+  pending, 10/10 material tests and disposable cleanup.
+- [!] Make base `verify` pass; blocked by PostgreSQL skip-inventory and
+  Composer visual-foundation failures outside this authorization.
+- [ ] Run `verify:full` once after base `verify` passes.
+- [ ] Run the short Closure Readiness Recheck only after both gates pass.
+
+## Previous checkpoint — Final Closure & Readiness Audit
 
 - [x] Reconcile branch lineage, PBI contract, UX slices, canonical state and
   local Owner-data evidence without mutating product data.

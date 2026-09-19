@@ -103,6 +103,22 @@ Ambos requieren una remediación gobernada separada. No son deuda aceptada ni se
 pueden rebautizar como tal para continuar. La auditoría no cambia el guard, la
 allowlist, código funcional ni migraciones.
 
+### Remediación posterior autorizada
+
+La remediación FV-GATE-REMEDIATION posterior conserva este dictamen histórico.
+`B-041-FV-001` y `B-041-FV-002` quedaron **RESOLVED** mediante una autorización
+path+hash exacta para `PreviewApiError.parameter` y la alineación estricta de
+los contratos con las 75 migraciones gobernadas. Los checks focalizados y
+PostgreSQL desechable pasaron, incluida una segunda ejecución con 0 pendientes.
+
+El `verify` posterior reveló dos blockers distintos que no estaban autorizados
+para corrección en ese slice: el inventario de tests PostgreSQL de la campaña
+full está stale (`B-041-FV-003`) y Composer infringe tres reglas del visual
+foundation checker (`B-041-FV-004`). Por ello no se ejecutó un nuevo
+`verify:full` ni el readiness recheck, y el estado continúa **NOT READY —
+BLOCKERS REMAIN**. Ver
+[FV_GATE_REMEDIATION.md](FV_GATE_REMEDIATION.md).
+
 ## Paquete para Formal Verification posterior
 
 Tras remediar ambos bloqueos y congelar un HEAD nuevo, Formal Verification debe

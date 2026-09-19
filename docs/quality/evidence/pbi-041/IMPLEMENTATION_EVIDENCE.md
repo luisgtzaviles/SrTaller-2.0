@@ -1,5 +1,21 @@
 # PBI-041 — Implementation Evidence
 
+## FV Gate Remediation — 2026-09-19
+
+La remediación gobernada resolvió los dos blockers del Final Closure Audit sin
+cambiar producto ni datos Owner: el guard conserva el baseline PBI-039 y añade
+una autorización PBI-041 de path+hash exactos sólo para
+`PreviewApiError.parameter`; los contratos de migración reconocen explícita y
+ordenadamente las 75 migraciones actuales. Guard 8/8, contratos de migración
+41/41 y PostgreSQL 10/10 pasaron; la segunda migración quedó en 0 pendientes.
+
+El `verify` posterior no pasó: encontró un inventario stale de tests
+PostgreSQL y tres infracciones existentes del visual foundation checker en
+Composer. Ambos son nuevos blockers PBI-041 fuera del slice autorizado. No se
+ejecutó el `verify:full` posterior ni el readiness recheck. PBI-041 permanece
+**NOT READY — BLOCKERS REMAIN**. Detalle en
+[FV_GATE_REMEDIATION.md](FV_GATE_REMEDIATION.md).
+
 ## Final Closure & Readiness Audit — 2026-09-19
 
 El audit de cierre verificó en modo no mutante la integridad material de
