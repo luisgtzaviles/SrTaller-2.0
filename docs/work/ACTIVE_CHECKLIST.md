@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Verification Gate Remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: FV-GATE-REMEDIATION-3 complete within scope; `B-041-FV-005` resolved, but the related runner exposed `B-041-FV-006` in Access-session.
+Status: FV-GATE-REMEDIATION-4 complete within scope; `B-041-FV-006` resolved, but the owner-scoped cleanup guard exposed `B-041-FV-007`.
 WIP: 1/1
-Progress: 7 / 8 remediation blocks complete; full verification and readiness remain blocked by the newly classified prerequisite failure.
-Current: Stop after recording the Access-session fixture drift; do not patch it without a separate authorization.
-Next: Owner decision on `B-041-FV-006` in `test/access-session-postgresql.test.mjs`.
-Blocked: `B-041-FV-006` expects `20260913140000_catalog_add_canonical_reference_merge` as latest migration, but the governed 75-migration manifest ends at `20260917190200_access_add_granular_catalog_capabilities`. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 7 / 8 remediation blocks complete; full verification and readiness remain blocked by the newly classified cleanup failure.
+Current: Stop after recording the Contextual Authorization cleanup drift; do not patch it without a separate authorization.
+Next: Owner decision on `B-041-FV-007` in `test/contextual-authorization-postgresql.test.mjs`.
+Blocked: `B-041-FV-007` leaves 13 PBI-041 tables outside its manual teardown list; the owner-scoped runner fails its post-test retained-object guard. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
 
 ## Current checkpoint — FV Gate Remediation
@@ -30,8 +30,13 @@ Last updated: 2026-09-19 MST
 - [!] Re-run related Access-role PostgreSQL/capability/session checks: the
   owner-scoped runner passed Access-role and then exposed `B-041-FV-006` in
   Access-session; base `verify` and `verify:full` were not reached.
+- [x] Reconcile the Access-session rollback fixture with the governed migration
+  manifest; the exact PostgreSQL 18.4 test passes without production changes.
+- [!] Run owner-scoped PostgreSQL, related Access tests, base `verify` and one
+  `verify:full`: the composite passed Access-role/Access-session and then
+  exposed `B-041-FV-007` in Contextual Authorization cleanup.
 - [!] Run the short Closure Readiness Recheck only after both gates pass:
-  blocked by `B-041-FV-006`.
+  blocked by `B-041-FV-007`.
 
 ## Previous checkpoint — Final Closure & Readiness Audit
 

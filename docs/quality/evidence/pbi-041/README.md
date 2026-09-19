@@ -43,7 +43,13 @@ passes. The subsequent owner-scoped run exposed `B-041-FV-006`: the
 Access-session rollback fixture still assumes a 2026-09-13 latest migration
 instead of the current 75-migration manifest ending on 2026-09-17. That new
 blocker is classified but intentionally not remediated outside FV-3 scope;
-`verify` and `verify:full` were not rerun. Advanced Supplier
+`verify` and `verify:full` were not rerun. FV-GATE-REMEDIATION-4 resolved that
+Access-session drift through the authoritative migration manifest, and its
+exact material test passes. The owner-scoped composite then exposed
+`B-041-FV-007`: Contextual Authorization's manual teardown omits 13 current
+PBI-041 tables, which the post-test cleanup guard detects. That blocker is
+classified but intentionally not remediated outside FV-4 scope; later gates
+were not run. Advanced Supplier
 Reconciliation remains a deferred outcome without PBI ID, selection or
 readiness.
 

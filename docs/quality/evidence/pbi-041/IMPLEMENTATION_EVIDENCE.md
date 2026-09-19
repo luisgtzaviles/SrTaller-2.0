@@ -1,5 +1,24 @@
 # PBI-041 — Implementation Evidence
 
+## FV Gate Remediation 4 — 2026-09-19
+
+`B-041-FV-006` fue un **TEST FIXTURE DRIFT** en el rollback material de
+Access-session. El fixture suponía que una migración Catalog de 2026-09-13 era
+la última aplicada y enumeraba sólo diez migraciones posteriores a Concurrent
+Operational Sessions. El commit `0108f46` deriva esa secuencia completa desde
+`inspection.manifest.migrations`, comprueba el latest aplicado en cada paso y
+mantiene explícita la migración Session cuya reversión se protege. No cambia
+producción, migraciones, schema ni autorización.
+
+El test exacto pasó 1/1 en PostgreSQL 18.4. El composite owner-scoped pasó
+Access-role y Access-session, pero el chequeo de cleanup encontró 13 tablas
+PBI-041 retenidas tras `contextual-authorization-postgresql`. El fixture de ese
+archivo mantiene una lista manual anterior a Supplier/Bulk/Field Policy; se
+registra `B-041-FV-007 — TEST FIXTURE CLEANUP DRIFT` sin corregirlo fuera de
+FV-4. Los tests relacionados posteriores, `verify` y `verify:full` no se
+ejecutaron. Owner data y AviCell quedaron sin cambios. Estado: **NOT READY —
+BLOCKERS REMAIN**.
+
 ## FV Gate Remediation 3 — 2026-09-19
 
 `B-041-FV-005` fue un **TEST FIXTURE DRIFT** en

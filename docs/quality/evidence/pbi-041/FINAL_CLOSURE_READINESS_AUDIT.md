@@ -152,6 +152,21 @@ vigentes terminan en `20260917190200`. La reproducción aislada confirma otro
 `verify` ni `verify:full` después de ese fallo de prerequisito. El dictamen
 permanece **NOT READY — BLOCKERS REMAIN** sin alterar el histórico anterior.
 
+### Cuarta remediación y cleanup blocker
+
+FV-GATE-REMEDIATION-4 resolvió `B-041-FV-006` como drift del fixture
+Access-session. El rollback preparatorio ahora deriva cada migración posterior
+a Concurrent Operational Sessions desde el manifest gobernado, valida el orden
+exacto al retirarlas y conserva sin cambios la prueba de rollback rechazado con
+sesiones múltiples. El test material exacto pasa 1/1 en PostgreSQL 18.4.
+
+El composite owner-scoped posterior pasó Access-role y Access-session, pero el
+control de cleanup detectó 13 tablas PBI-041 retenidas por el fixture manual de
+`test/contextual-authorization-postgresql.test.mjs`. Se registra
+`B-041-FV-007` como **TEST FIXTURE CLEANUP DRIFT** fuera del scope exclusivo de
+FV-4. No se ejecutaron `verify` ni `verify:full` tras ese prerequisito fallido.
+El dictamen continúa **NOT READY — BLOCKERS REMAIN**.
+
 ## Paquete para Formal Verification posterior
 
 Tras remediar ambos bloqueos y congelar un HEAD nuevo, Formal Verification debe

@@ -183,3 +183,45 @@ Dictamen FV-3: **BLOCKED — NEW BLOCKER CLASSIFIED**. La remediación autorizad
 de Access-role está completa, pero PBI-041 continúa **NOT READY — BLOCKERS
 REMAIN** hasta una autorización separada para `B-041-FV-006` y la posterior
 ejecución ordenada de ambos gates.
+
+## FV-GATE-REMEDIATION-4
+
+`B-041-FV-006` se reprodujo antes de editar en PostgreSQL 18.4 desechable: el
+fixture Access-session esperaba literalmente
+`20260913140000_catalog_add_canonical_reference_merge` como última migración,
+pero el manifest gobernado de 75 migraciones terminaba en
+`20260917190200_access_add_granular_catalog_capabilities`. El bloque no
+validaba semántica de Catalog; retiraba todas las migraciones posteriores a
+`20260912180000_access_enable_concurrent_operational_sessions` para probar que
+su rollback falla con múltiples sesiones activas y funciona después de
+invalidarlas.
+
+Clasificación: **TEST FIXTURE DRIFT**. El commit `0108f46` reemplaza la lista
+literal incompleta por la secuencia exacta de `inspection.manifest.migrations`,
+la recorre en orden inverso y compara cada latest migration aplicada antes de
+`migrateDown`. La migración de sesiones concurrentes continúa identificada de
+forma explícita como frontera bajo prueba. Esto reconoce las 75 migraciones
+gobernadas sin relajar orden, unicidad, manifest ni rollback; no cambia
+producción, schema, migraciones, Session, roles o capabilities.
+
+El test exacto pasó **1/1** (`8,535.8 ms`). El composite owner-scoped superó
+Access-role y Access-session, pero falló después de ejecutar
+`test/contextual-authorization-postgresql.test.mjs`: su cleanup manual dejó 13
+tablas PBI-041 (`catalog_field_policy_*`, retirement, Supplier
+Source/Version/Listing/Resolution/Memory/raw payload, update Batch/decisions y
+source deletion events). El runner detectó esos objetos mediante el `pg_dump`
+posterior y eliminó el contenedor.
+
+Se registra `B-041-FV-007` como **TEST FIXTURE CLEANUP DRIFT** nuevo y separado.
+Corregir Contextual Authorization está fuera del scope exclusivo Access-session
+de FV-4. Por fallar el composite previo, no se ejecutaron los tests relacionados
+posteriores, `verify` ni `verify:full`; no se modificó el benchmark.
+
+| ID | Clasificación | Estado |
+| --- | --- | --- |
+| `B-041-FV-006` | Fixture PostgreSQL Access-session | **RESOLVED** en prueba exacta; commit `0108f46` |
+| `B-041-FV-007` | Cleanup PostgreSQL Contextual Authorization | **OPEN** — 13 tablas PBI-041 no están en el fixture manual de teardown |
+
+Dictamen FV-4: **BLOCKED — NEW BLOCKER CLASSIFIED**. Datos Owner, AviCell,
+producto, schema y migraciones permanecieron sin cambios; no hubo push, PR,
+merge ni deploy.
