@@ -1,5 +1,18 @@
 # PBI-041 — Implementation Evidence
 
+## Independent Formal Re-Verification after FV2-041-001 — PASS
+
+El candidato local remediado pasó una nueva verificación formal independiente:
+29/29 criterios, `REVIEW-041-001/002` y `FV2-041-001` resueltos, arquitectura,
+autorización, Tenant isolation y Owner data read-only sin drift. La única
+campaña `verify:full` pasó Stages 0–13, owner-scoped 8/8, composite 17/17,
+PBI-041 10/10, 75 migraciones, segunda corrida 0 pending, cleanup y fingerprint
+PASS. Benchmark publish 10k: `28,723.2 ms / 30,000 ms`.
+
+Implementación verificada: `68350af`; ejecución formal: `14fedc9`. No hubo
+push, actualización de PR, merge, deploy ni force push. Detalle en
+[Formal Re-Verification FV2](FORMAL_REVERIFICATION_FV2_041_001.md).
+
 ## FV2-041-001 owner-scoped PostgreSQL remediation — 2026-09-19
 
 La falla histórica ocurrió antes del primer material test owner-scoped, en la

@@ -284,3 +284,8 @@ secret-free harness marker without weakening a suite or assertion. Focused and
 base prerequisites pass. This does not change the FAIL above; eligibility now
 depends on the new independent Formal Re-Verification required by
 [`FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md`](FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md).
+
+That subsequent review is now recorded separately as PASS in
+[`FORMAL_REVERIFICATION_FV2_041_001.md`](FORMAL_REVERIFICATION_FV2_041_001.md).
+This document intentionally retains its original FAIL for the earlier
+campaign.

@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Independent Formal Re-Verification
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: FV2-041-001 focused remediation in progress. The material suites pass in isolation and in the Stage 4 composite; the historical failure occurred before the first owner-scoped material test and its exact harness operation was suppressed.
+Status: NEW INDEPENDENT FORMAL RE-VERIFICATION PASS. FV2-041-001 is resolved and the new candidate is frozen locally; no remote action has occurred.
 WIP: 1/1
-Progress: 7 / 8 FV2-041-001 remediation blocks complete; only the new authoritative full campaign and final evidence reconciliation remain.
-Current: Freeze the remediated local candidate and execute the new independent Formal Re-Verification's single verify:full run.
-Next: Reconcile the formal verdict, evidence HEAD and final local candidate without any remote action.
-Blocked: Remote promotion remains paused until the new Formal Re-Verification passes. Owner data, AviCell and the preexisting .DS_Store remain protected.
+Progress: 8 / 8 FV2-041-001 remediation and Formal Re-Verification blocks complete.
+Current: Candidate frozen locally after evidence reconciliation.
+Next: Resume the master governed delivery at push / PR update only under its separate Owner authority.
+Blocked: NONE for local Formal Re-Verification. Owner data, AviCell and the preexisting .DS_Store remain protected; remote actions were not executed.
 Last updated: 2026-09-19 MST
 
 ## Current checkpoint — Formal Re-Verification after REVIEW-041-001
@@ -20,7 +20,7 @@ Last updated: 2026-09-19 MST
 - [x] Pass focused harness, owner-scoped, composite, PBI-041 PostgreSQL and migration/schema checks.
 - [x] Pass typecheck, build, architecture and base verify.
 - [x] Complete a new independent review of all 29 acceptance criteria and Owner-data integrity read-only.
-- [~] Run verify:full exactly once, reconcile evidence and freeze the new local candidate only if every formal predicate passes.
+- [x] Run verify:full exactly once, reconcile evidence and freeze the new local candidate only if every formal predicate passes.
 
 - [x] Prove implementation HEAD `a18d763e7ad0f8c760c8b3c9a9cf3d6f8e7a3555`, pre-FV HEAD `ab2e0738d452a8be1bfc198d27f1102125d0484c` and DOCS_ONLY delta.
 - [x] Independently verify server-derived Batch binding, zero-write stale rejection, refetch capability recomposition and direct-API denial.
@@ -30,7 +30,7 @@ Last updated: 2026-09-19 MST
 - [x] Reconcile AviCell v3 and Owner data read-only with no unexplained drift.
 - [x] Pass base `verify`: 935 PASS / 0 FAIL / 30 governed skips.
 - [x] Execute `verify:full` exactly once with no rerun for green.
-- [!] `FV2-041-001`: Stage 4 owner-scoped PostgreSQL composite failed; mandatory formal predicate not satisfied.
+- [x] Preserve the historical `FV2-041-001` Stage 4 failure, remediate its harness cause and satisfy the mandatory predicate in the new independent campaign.
 - [x] Preserve historical FV and record the independent FAIL without product, Owner-data or remote mutation.
 
 ## Current checkpoint — REVIEW-REMEDIATION-1

@@ -116,9 +116,14 @@ A read-only transaction reconfirmed the existing baseline without writes:
 - non-AviCell `Aple` pending group still `1`;
 - local migration journal `75`.
 
-## Pending formal gate
+## Formal gate result
 
-Focused remediation prerequisites are PASS. This document is not the new
-Formal Re-Verification verdict. The next authorized step is the independent
-29-criterion/security/isolation review followed by exactly one `verify:full`.
-Any failure must stop the cycle without remote promotion.
+The subsequent independent review passed 29/29 acceptance criteria,
+authorization, isolation, architecture and read-only Owner-data integrity. Its
+single `verify:full` campaign passed Stages 0–13, including owner-scoped 8/8,
+composite 17/17 and PBI-041 10/10. Publish 10k measured `28,723.2 ms` against
+the unchanged `30,000 ms` budget. Cleanup and candidate fingerprint passed.
+
+See
+[`FORMAL_REVERIFICATION_FV2_041_001.md`](FORMAL_REVERIFICATION_FV2_041_001.md).
+`FV2-041-001` is resolved; no remote promotion occurred in this cycle.

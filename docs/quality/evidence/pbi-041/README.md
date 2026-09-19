@@ -1,17 +1,17 @@
 # PBI-041 — Evidence Index
 
-PBI-041 `REVIEW-REMEDIATION-1` remains independently verified as resolved. The
-Formal Re-Verification for candidate `a18d763` remains a preserved historical
-**FAIL**. `FV2-041-001` is now remediated locally at the proven harness
-diagnostic boundary and its focused/base prerequisites pass, but a new
-independent Formal Re-Verification and exactly one new `verify:full` remain
-mandatory. Owner Acceptance, remote promotion, integration, deployment and
-release remain pending.
+PBI-041 has a new independent Formal Re-Verification **PASS** after the local
+`FV2-041-001` harness remediation. All 29 acceptance criteria and the single
+new `verify:full` campaign passed, including owner-scoped 8/8 and composite
+17/17. The earlier FAIL remains preserved historical evidence. The new
+candidate is frozen locally; remote promotion, integration, deployment and
+release remain separate and were not executed here.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Independent Formal Verification](FORMAL_VERIFICATION.md)
 - [Independent Formal Re-Verification after REVIEW-041-001](FORMAL_REVERIFICATION_REVIEW_041_001.md)
 - [FV2-041-001 Owner-scoped PostgreSQL Remediation](FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md)
+- [Independent Formal Re-Verification after FV2-041-001](FORMAL_REVERIFICATION_FV2_041_001.md)
 - [Review Remediation 1](REVIEW_REMEDIATION_1.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)

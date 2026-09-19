@@ -240,3 +240,10 @@ assertions. Los gates focalizados/base pasan y Owner data/AviCell siguen
 inalterados. El estado no vuelve a PASS por herencia: se requiere una nueva
 Formal Re-Verification con una única corrida `verify:full`. Véase
 [`FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md`](FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md).
+
+La nueva revisión independiente posterior pasó 29/29 criterios y una única
+campaña `verify:full` completa: Stages 0–13, owner-scoped 8/8, composite 17/17,
+PBI-041 10/10, 75 migraciones, segunda corrida 0 pending, publish 10k
+`28,723.2 ms`, cleanup y fingerprint PASS. No quedan findings formales; el
+candidato queda congelado localmente sin push, PR update, merge ni deploy. Ver
+[`FORMAL_REVERIFICATION_FV2_041_001.md`](FORMAL_REVERIFICATION_FV2_041_001.md).
