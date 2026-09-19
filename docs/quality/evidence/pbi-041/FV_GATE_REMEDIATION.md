@@ -138,3 +138,48 @@ campaña ni se modificó el fallo fuera de alcance.
 Dictamen posterior: **NOT READY — BLOCKERS REMAIN**. No hubo mutación de datos
 Owner, AviCell, Catalog, SupplierVersions, schema o migraciones; tampoco push,
 PR, merge ni deploy.
+
+## FV-GATE-REMEDIATION-3
+
+`B-041-FV-005` se reprodujo antes de editar con PostgreSQL 18.4 desechable,
+Node.js 24.18.0, `--no-maglev`, `--test-concurrency=1` y el mismo contrato de
+entorno de Stage 4. La aserción en
+`test/access-role-postgresql.test.mjs:376` comparaba el catálogo material
+ordenado por `capability_code` contra una lista manual obsoleta: omitía
+`catalog.suppliers.delete` y colocaba `catalog.import.read/publish` y
+`catalog.items.create/bulk_retire` en un orden distinto del SQL. Una segunda
+copia del mismo fixture estaba en el read model `listMatrix`.
+
+Clasificación: **TEST FIXTURE DRIFT**. Las 75 migraciones materializaban el
+catálogo correcto; no hubo defecto de producto, schema, backfill, aislamiento,
+concurrencia u orquestación. La corrección hace que ambas proyecciones
+PostgreSQL se comparen con el catálogo finito de dominio ordenado y conserva
+una regresión explícita para la existencia y fecha de
+`catalog.suppliers.delete`. Las listas exactas por rol siguen demostrando que
+esa capability sensible, publish, bulk retire, costo y configuración no se
+conceden implícitamente. No se añadió lógica por nombre de rol.
+
+El test exacto pasó **1/1** en PostgreSQL 18.4 (`12,175.3 ms`). Al continuar con
+el runner owner-scoped requerido, `access-role` dejó de fallar, pero el runner
+se detuvo en `test/access-session-postgresql.test.mjs`. La reproducción aislada
+falló en `:1224`: esperaba que la migración más reciente fuera
+`20260913140000_catalog_add_canonical_reference_merge`, mientras el estado real
+de 75 migraciones termina en
+`20260917190200_access_add_granular_catalog_capabilities`. Se registra
+`B-041-FV-006` como un **TEST FIXTURE DRIFT** nuevo y separado; corregir
+Access-session está fuera del scope exclusivo de FV-3.
+
+Por fallar el paso PostgreSQL relacionado anterior a los gates, no se ejecutó
+un nuevo `verify` ni la única corrida `verify:full` prevista. Tampoco se tocó
+el test Access-session, producto, migraciones, autorización, datos Owner ni
+AviCell.
+
+| ID | Clasificación | Estado |
+| --- | --- | --- |
+| `B-041-FV-005` | Fixture PostgreSQL Access-role | **RESOLVED** en prueba exacta; commit `209b808` |
+| `B-041-FV-006` | Fixture PostgreSQL Access-session | **OPEN** — expectativa de latest migration detenida en `20260913140000` |
+
+Dictamen FV-3: **BLOCKED — NEW BLOCKER CLASSIFIED**. La remediación autorizada
+de Access-role está completa, pero PBI-041 continúa **NOT READY — BLOCKERS
+REMAIN** hasta una autorización separada para `B-041-FV-006` y la posterior
+ejecución ordenada de ambos gates.

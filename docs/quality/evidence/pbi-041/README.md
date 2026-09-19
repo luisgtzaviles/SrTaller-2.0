@@ -37,7 +37,13 @@ subsequent PostgreSQL inventory and Composer visual-foundation blockers. Base
 `verify` is green. The single authorized `verify:full` then failed in Stage 4
 Material PostgreSQL composite at `test/access-role-postgresql.test.mjs`;
 cleanup and final fingerprint passed. `B-041-FV-005` therefore keeps the PBI
-before Formal Verification and Owner Acceptance. Advanced Supplier
+before Formal Verification and Owner Acceptance. FV-GATE-REMEDIATION-3 then
+resolved `B-041-FV-005` as Access-role fixture drift and the exact material test
+passes. The subsequent owner-scoped run exposed `B-041-FV-006`: the
+Access-session rollback fixture still assumes a 2026-09-13 latest migration
+instead of the current 75-migration manifest ending on 2026-09-17. That new
+blocker is classified but intentionally not remediated outside FV-3 scope;
+`verify` and `verify:full` were not rerun. Advanced Supplier
 Reconciliation remains a deferred outcome without PBI ID, selection or
 readiness.
 

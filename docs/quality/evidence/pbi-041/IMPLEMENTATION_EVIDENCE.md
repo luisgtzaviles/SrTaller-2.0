@@ -1,5 +1,25 @@
 # PBI-041 — Implementation Evidence
 
+## FV Gate Remediation 3 — 2026-09-19
+
+`B-041-FV-005` fue un **TEST FIXTURE DRIFT** en
+`test/access-role-postgresql.test.mjs`, no un defecto de producto. La base
+desechable devolvía el catálogo correcto de 29 capabilities, incluida
+`catalog.suppliers.delete`; dos listas manuales la omitían y ordenaban cuatro
+entradas de forma distinta a `order by capability_code`. El commit `209b808`
+compara ambas proyecciones con el catálogo finito de dominio ordenado y agrega
+una regresión explícita para la capability sensible y su timestamp, sin tocar
+roles, repositorio, servicio, migraciones ni autorización.
+
+El test exacto pasó 1/1 en PostgreSQL 18.4. El runner owner-scoped posterior ya
+no falló en Access-role, pero reveló `B-041-FV-006` en
+`test/access-session-postgresql.test.mjs`: el fixture esperaba como latest
+migration `20260913140000`, aunque el manifest de 75 migraciones termina en
+`20260917190200`. La reproducción aislada confirmó el mismo assertion drift.
+No se corrigió por estar fuera del scope exclusivo de FV-3 y no se continuó a
+`verify`/`verify:full`. Datos Owner y AviCell permanecieron sin cambios. Estado:
+**NOT READY — BLOCKERS REMAIN**.
+
 ## FV Gate Remediation 2 — 2026-09-19
 
 `B-041-FV-003` y `B-041-FV-004` quedaron resueltos localmente. El inventario

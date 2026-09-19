@@ -135,6 +135,23 @@ separado. Se registra `B-041-FV-005` como blocker nuevo; no se reintentó la
 campaña ni se cambió ese gate fuera del alcance autorizado. El dictamen sigue
 siendo **NOT READY — BLOCKERS REMAIN**.
 
+### Tercera remediación y blocker sucesor
+
+FV-GATE-REMEDIATION-3 identificó `B-041-FV-005` como drift determinista del
+fixture Access-role: el catálogo PostgreSQL correcto incluía
+`catalog.suppliers.delete` y estaba ordenado por SQL, mientras dos expectativas
+manuales estaban incompletas y fuera de orden. El test material exacto pasa
+1/1 después de alinearlo con el catálogo finito de dominio, conservando grants
+por rol exactos, aislamiento y ausencia de expansión sensible.
+
+El runner owner-scoped siguiente dejó de fallar en Access-role y reveló
+`B-041-FV-006` en `test/access-session-postgresql.test.mjs`: el rollback
+fixture espera como latest migration `20260913140000`, pero las 75 migraciones
+vigentes terminan en `20260917190200`. La reproducción aislada confirma otro
+**TEST FIXTURE DRIFT**, fuera del alcance exclusivo de FV-3. No se ejecutaron
+`verify` ni `verify:full` después de ese fallo de prerequisito. El dictamen
+permanece **NOT READY — BLOCKERS REMAIN** sin alterar el histórico anterior.
+
 ## Paquete para Formal Verification posterior
 
 Tras remediar ambos bloqueos y congelar un HEAD nuevo, Formal Verification debe

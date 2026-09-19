@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Verification Gate Remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: FV-GATE-REMEDIATION-2 completed within scope; prior blockers resolved, but `verify:full` exposed a new material PostgreSQL blocker.
+Status: FV-GATE-REMEDIATION-3 complete within scope; `B-041-FV-005` resolved, but the related runner exposed `B-041-FV-006` in Access-session.
 WIP: 1/1
-Progress: 6 / 8 remediation blocks complete; full verification and readiness remain blocked.
-Current: Stop after recording the exact Stage 4 failure; do not rerun full verification or alter Access-role persistence outside authorization.
-Next: Owner decision on `B-041-FV-005` (`test/access-role-postgresql.test.mjs` in the owner-scoped composite).
-Blocked: `verify:full` Stage 4 FAIL in the owner-scoped PostgreSQL runner; sanitized evidence identifies `test/access-role-postgresql.test.mjs` but not a narrower cause. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 7 / 8 remediation blocks complete; full verification and readiness remain blocked by the newly classified prerequisite failure.
+Current: Stop after recording the Access-session fixture drift; do not patch it without a separate authorization.
+Next: Owner decision on `B-041-FV-006` in `test/access-session-postgresql.test.mjs`.
+Blocked: `B-041-FV-006` expects `20260913140000_catalog_add_canonical_reference_merge` as latest migration, but the governed 75-migration manifest ends at `20260917190200_access_add_granular_catalog_capabilities`. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
 
 ## Current checkpoint — FV Gate Remediation
@@ -24,10 +24,14 @@ Last updated: 2026-09-19 MST
 - [x] Register all 29 material PostgreSQL tests by exact identity and stage;
   remove Composer inline style, compound radius and `!important` structurally.
 - [x] Make base `verify` pass after material PostgreSQL, typecheck and build.
-- [!] Run `verify:full` once after base `verify` passes: executed exactly once;
-  Stage 4 failed in the owner-scoped Access-role material test.
+- [x] Reproduce `B-041-FV-005` in isolation: the PostgreSQL catalog fixture
+  omitted `catalog.suppliers.delete` and used non-SQL ordering; no product,
+  migration, isolation or authorization defect was found.
+- [!] Re-run related Access-role PostgreSQL/capability/session checks: the
+  owner-scoped runner passed Access-role and then exposed `B-041-FV-006` in
+  Access-session; base `verify` and `verify:full` were not reached.
 - [!] Run the short Closure Readiness Recheck only after both gates pass:
-  blocked because the full campaign is not green.
+  blocked by `B-041-FV-006`.
 
 ## Previous checkpoint — Final Closure & Readiness Audit
 
