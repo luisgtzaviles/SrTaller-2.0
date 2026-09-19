@@ -268,3 +268,19 @@ scope.
 **PBI-041 FORMAL RE-VERIFICATION FAIL. REVIEW-041-001 is independently proven
 remediated, but the current candidate failed its mandatory own full gate and
 is not eligible for remote promotion.**
+
+## Subsequent authorized remediation
+
+This FAIL remains immutable evidence for campaign
+`local-full-verification-20260919094650-ab2e0738d452`. The separately
+authorized `FV2-041-001` cycle subsequently proved that no inner material test
+failed: the exact owner-scoped suite passes `8/8` and the ordered composite
+passes `17/17`. Historical Docker logs place the original exit in the first
+image-pull/bootstrap boundary, before container creation or an inner test.
+
+The primary cause is the harness/orchestration diagnostic gap that discarded
+Docker/setup/cleanup identity. Commit `68350af` adds a strict allowlisted,
+secret-free harness marker without weakening a suite or assertion. Focused and
+base prerequisites pass. This does not change the FAIL above; eligibility now
+depends on the new independent Formal Re-Verification required by
+[`FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md`](FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md).

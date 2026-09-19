@@ -3,15 +3,24 @@
 Milestone / Functional Goal: PBI-041 — Independent Formal Re-Verification
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: FORMAL RE-VERIFICATION FAIL. REVIEW-041-001/002 are resolved, but FV2-041-001 blocks promotion after the only verify:full run failed Stage 4 owner-scoped PostgreSQL.
+Status: FV2-041-001 focused remediation in progress. The material suites pass in isolation and in the Stage 4 composite; the historical failure occurred before the first owner-scoped material test and its exact harness operation was suppressed.
 WIP: 1/1
-Progress: 9 / 10 formal re-verification predicates complete; mandatory full gate failed.
-Current: Record the independent FAIL without implementation or remote action.
-Next: Owner must authorize a separate diagnosis/remediation of FV2-041-001 before any new Formal Verification.
-Blocked: FV2-041-001 — verify:full Stage 4 owner-scoped PostgreSQL composite exited 1 with no retained inner diagnostic. Preserve Owner data, AviCell, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 7 / 8 FV2-041-001 remediation blocks complete; only the new authoritative full campaign and final evidence reconciliation remain.
+Current: Freeze the remediated local candidate and execute the new independent Formal Re-Verification's single verify:full run.
+Next: Reconcile the formal verdict, evidence HEAD and final local candidate without any remote action.
+Blocked: Remote promotion remains paused until the new Formal Re-Verification passes. Owner data, AviCell and the preexisting .DS_Store remain protected.
 Last updated: 2026-09-19 MST
 
 ## Current checkpoint — Formal Re-Verification after REVIEW-041-001
+
+- [x] Reconcile exact branch/HEAD/remote state and preserve the docs-only tail plus untracked Owner `.DS_Store`.
+- [x] Reproduce the exact owner-scoped command: 8/8 material files PASS with fresh PostgreSQL 18.4 containers and cleanup PASS.
+- [x] Run prerequisites and the exact Stage 4 composite: 17/17 PASS; no ordering, shared-state, migration, product or Tenant-isolation defect reproduces.
+- [x] Remediate the proven harness/orchestration diagnostic gap: the historical image-pull/bootstrap failure had no allowlisted identity and the composite discarded its stderr.
+- [x] Pass focused harness, owner-scoped, composite, PBI-041 PostgreSQL and migration/schema checks.
+- [x] Pass typecheck, build, architecture and base verify.
+- [x] Complete a new independent review of all 29 acceptance criteria and Owner-data integrity read-only.
+- [~] Run verify:full exactly once, reconcile evidence and freeze the new local candidate only if every formal predicate passes.
 
 - [x] Prove implementation HEAD `a18d763e7ad0f8c760c8b3c9a9cf3d6f8e7a3555`, pre-FV HEAD `ab2e0738d452a8be1bfc198d27f1102125d0484c` and DOCS_ONLY delta.
 - [x] Independently verify server-derived Batch binding, zero-write stale rejection, refetch capability recomposition and direct-API denial.

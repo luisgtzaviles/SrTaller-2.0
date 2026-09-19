@@ -225,3 +225,18 @@ del intento stale y retry sólo tras refetch/reautorización.
 Esta remediación no reescribe el resultado histórico ni hereda su PASS. Véase
 [`REVIEW_REMEDIATION_1.md`](REVIEW_REMEDIATION_1.md). Owner data y AviCell no
 cambiaron; no hubo migración ni acción remota.
+
+## FV2-041-001 — remediación posterior
+
+El FAIL independiente posterior a `REVIEW-041-001` queda preservado. El ciclo
+autorizado FV2 reprodujo en verde el owner-scoped exacto 8/8 y el composite
+17/17, descartando un defecto material de repositorio, transacción, Tenant
+isolation, fixture, cleanup u ordering. Los logs históricos ubican el corte en
+el primer image-pull/bootstrap, antes del primer contenedor/test owner-scoped.
+
+La remediación `68350af` agrega diagnóstico estructurado y allowlisted para
+fallos del harness Docker; no cambia producto, migraciones, suite, skips ni
+assertions. Los gates focalizados/base pasan y Owner data/AviCell siguen
+inalterados. El estado no vuelve a PASS por herencia: se requiere una nueva
+Formal Re-Verification con una única corrida `verify:full`. Véase
+[`FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md`](FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md).

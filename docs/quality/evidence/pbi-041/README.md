@@ -1,16 +1,17 @@
 # PBI-041 — Evidence Index
 
 PBI-041 `REVIEW-REMEDIATION-1` remains independently verified as resolved. The
-new Formal Re-Verification for candidate `a18d763` is **FAIL** because its only
-`verify:full` execution failed the mandatory Stage 4 owner-scoped PostgreSQL
-composite (`FV2-041-001`). The earlier Formal Verification `PASS` remains
-historical for `690282a` and is superseded for promotion eligibility. Owner
-Acceptance, remote promotion, integration, deployment and release remain
-pending.
+Formal Re-Verification for candidate `a18d763` remains a preserved historical
+**FAIL**. `FV2-041-001` is now remediated locally at the proven harness
+diagnostic boundary and its focused/base prerequisites pass, but a new
+independent Formal Re-Verification and exactly one new `verify:full` remain
+mandatory. Owner Acceptance, remote promotion, integration, deployment and
+release remain pending.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Independent Formal Verification](FORMAL_VERIFICATION.md)
 - [Independent Formal Re-Verification after REVIEW-041-001](FORMAL_REVERIFICATION_REVIEW_041_001.md)
+- [FV2-041-001 Owner-scoped PostgreSQL Remediation](FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md)
 - [Review Remediation 1](REVIEW_REMEDIATION_1.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)

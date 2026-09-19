@@ -1,5 +1,24 @@
 # PBI-041 — Implementation Evidence
 
+## FV2-041-001 owner-scoped PostgreSQL remediation — 2026-09-19
+
+La falla histórica ocurrió antes del primer material test owner-scoped, en la
+frontera inicial image-pull/bootstrap. La suite exacta pasa 8/8 y el composite
+17/17; no se reproduce defecto de producto, fixture, cleanup, ordering,
+transacción o Tenant isolation. La causa primaria es **HARNESS /
+ORCHESTRATION DEFECT**: los fallos Docker/setup/cleanup no emitían identidad
+allowlisted y el composite reducía el resultado al exit genérico.
+
+`68350af` preserva una identidad segura de operación/archivo/exit/signal/
+timeout y rechaza markers forjados o ambiguos sin serializar stderr, command,
+credenciales, DB, container o SQL. No cambian los gates, suites, skips,
+assertions ni producto. Owner-scoped 8/8, composite 17/17, arquitectura
+focalizada 42/42, PBI-041 PostgreSQL 10/10 en el único reintento ambiental
+controlado, 75 migraciones, segunda corrida 0 pending, typecheck/build/
+arquitectura y base `verify` 938/0/30 pasan. Owner data y AviCell permanecen
+sin cambios. La nueva Formal Re-Verification sigue pendiente; detalle en
+[FV2-041-001](FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md).
+
 ## FV Gate Remediation 5 — 2026-09-19
 
 `B-041-FV-007` fue **TEST FIXTURE CLEANUP DRIFT**. La reproducción previa
