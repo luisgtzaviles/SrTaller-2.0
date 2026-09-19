@@ -2,8 +2,8 @@
 
 ## Estado
 
-- **Estado:** Active — PBI-040 Done; sin PBI actual.
-- **Bloqueos:** ninguno para PBI-040.
+- **Estado:** Active — PBI-040 Done; PBI-041 historical reactivation Owner Review ready.
+- **Bloqueos:** ninguno para el checkpoint local PBI-041.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|
@@ -11,10 +11,14 @@
 | costo expuesto | High | capability y field omission server-side | control verificado en full/CI/Preview |
 | identidad duplicada | High | ID opaco, SKU/barcode Tenant, concurrencia | control verificado |
 | historial de precio perdido | High | revisiones append-only + snapshots futuros | control verificado |
-| Composer ambiguo/partial | High | PBI-041 separado; unresolved cero, preview/confirmación y apply atómico | arquitectura/DoR Ready; no materializado |
-| WIP paralelo | Medium | no existe WIP activo; PBI-041 Ready pero no seleccionado/autorizado | controlado |
+| Composer ambiguo/partial | High | unresolved cero, preview/confirmación y apply atómico | control focalizado y PostgreSQL PASS; Owner Review pendiente |
+| retiro masivo indebido | Critical | capability dedicada, Level 2, plan/hash server-side, revalidación y audit | control focalizado y PostgreSQL PASS; Owner Review pendiente |
+| pérdida de memoria histórica | Critical | `ACTIVE→INACTIVE`, sin delete; Historical/Virgin separados | control PostgreSQL PASS |
+| reactivación de identidad equivocada o duplicada | Critical | mapping histórico exacto/único/consistente, expectedVersion, transacción e idempotencia | 36/36 material + negativos PostgreSQL PASS; Owner Review pendiente |
+| WIP paralelo | Medium | PBI-041 es el único WIP; PBI-042 permanece fuera | controlado |
 
 ## Próxima revisión
 
-Al seleccionar PBI-041 o ante una regresión de Catalog/Pricing. Los riesgos de
-Composer permanecen diseño futuro y no están materializados.
+Ante la decisión Owner de PBI-041 o una regresión de Catalog/Pricing. Los
+riesgos de Composer están materializados y cubiertos localmente; no se declaran
+cerrados para integración antes de Acceptance y sus gates posteriores.

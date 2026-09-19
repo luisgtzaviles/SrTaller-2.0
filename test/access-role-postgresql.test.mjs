@@ -24,6 +24,9 @@ const { createKyselyAccessRepository } = enabled
 const { AccessPersistenceError } = enabled
   ? await import('../dist/modules/access/application/ports/access-repository.port.js')
   : {};
+const { ACCESS_CAPABILITY_CATALOG } = enabled
+  ? await import('../dist/modules/access/domain/capability.js')
+  : {};
 const { KyselyAdministrationAuthorizationCommitGuard } = enabled
   ? await import('../dist/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.js')
   : {};
@@ -375,29 +378,19 @@ test(
       );
       assert.deepEqual(
         catalog.rows.map(({ capability_code }) => capability_code),
-        [
-          'access_matrix.manage',
-          'access_matrix.read',
-          'catalog.branch_prices.manage',
-          'catalog.import.prepare',
-          'catalog.import.publish',
-          'catalog.manage',
-          'catalog.prices.manage',
-          'catalog.reference_cost.manage',
-          'catalog.reference_cost.read',
-          'price_list.read',
-          'repairs.add_note',
-          'repairs.catalogs.manage',
-          'repairs.catalogs.read',
-          'repairs.classify',
-          'repairs.configuration.manage',
-          'repairs.configuration.read',
-          'repairs.correct_intake',
-          'repairs.create',
-          'repairs.read',
-          'users.manage',
-          'users.read',
-        ],
+        [...ACCESS_CAPABILITY_CATALOG].sort(),
+      );
+      assert.deepEqual(
+        catalog.rows
+          .filter(({ capability_code }) => capability_code === 'catalog.suppliers.delete')
+          .map(({ capability_code, created_at }) => ({
+            capabilityCode: capability_code,
+            createdAt: created_at.toISOString(),
+          })),
+        [{
+          capabilityCode: 'catalog.suppliers.delete',
+          createdAt: '2026-09-15T16:00:00.000Z',
+        }],
       );
       assert.deepEqual(
         catalog.rows.filter(({ capability_code }) => ![
@@ -409,12 +402,20 @@ test(
           'repairs.correct_intake',
           'repairs.create',
           'catalog.branch_prices.manage',
+          'catalog.configuration.manage',
+          'catalog.configuration.read',
           'catalog.import.prepare',
+          'catalog.import.read',
           'catalog.import.publish',
+          'catalog.items.create',
+          'catalog.items.bulk_retire',
+          'catalog.items.deactivate',
+          'catalog.items.update',
           'catalog.manage',
           'catalog.prices.manage',
           'catalog.reference_cost.manage',
           'catalog.reference_cost.read',
+          'catalog.suppliers.delete',
           'price_list.read',
         ].includes(capability_code)).map(({ capability_code, created_at }) => ({
           capabilityCode: capability_code,
@@ -900,29 +901,7 @@ test(
       const matrixB = await repository.listMatrix({ tenantId: tenantB });
       assert.deepEqual(
         matrixA.capabilities.map(({ capabilityCode }) => capabilityCode),
-        [
-          'access_matrix.manage',
-          'access_matrix.read',
-          'catalog.branch_prices.manage',
-          'catalog.import.prepare',
-          'catalog.import.publish',
-          'catalog.manage',
-          'catalog.prices.manage',
-          'catalog.reference_cost.manage',
-          'catalog.reference_cost.read',
-          'price_list.read',
-          'repairs.add_note',
-          'repairs.catalogs.manage',
-          'repairs.catalogs.read',
-          'repairs.classify',
-          'repairs.configuration.manage',
-          'repairs.configuration.read',
-          'repairs.correct_intake',
-          'repairs.create',
-          'repairs.read',
-          'users.manage',
-          'users.read',
-        ],
+        [...ACCESS_CAPABILITY_CATALOG].sort(),
       );
       assert.deepEqual(
         matrixA.roles.map(({ roleKey, capabilityCodes }) => ({

@@ -16,6 +16,15 @@ export const pbi039PostgresqlTestFiles = Object.freeze([
 
 const childFailureMarker = 'SR_POSTGRESQL_CHILD_FAILURE=';
 const childFailureOperation = 'owner-scoped-adapters-node-test';
+const harnessFailureMarker = 'SR_POSTGRESQL_HARNESS_FAILURE=';
+export const ownerScopedPostgresqlHarnessOperations = Object.freeze([
+  'owner-scoped-adapters-docker-exec',
+  'owner-scoped-adapters-docker-inspect',
+  'owner-scoped-adapters-docker-list',
+  'owner-scoped-adapters-docker-pull',
+  'owner-scoped-adapters-docker-remove',
+  'owner-scoped-adapters-docker-run',
+]);
 const allowedSignals = new Set([
   'SIGABRT',
   'SIGALRM',
@@ -97,6 +106,25 @@ function validFailurePayload(payload) {
   return true;
 }
 
+function validHarnessFailurePayload(payload) {
+  if (
+    payload === null ||
+    typeof payload !== 'object' ||
+    Array.isArray(payload) ||
+    Object.keys(payload).sort().join(',') !==
+      'exitCode,operation,schemaVersion,signal,testFile,timeout' ||
+    payload.schemaVersion !== 1 ||
+    !ownerScopedPostgresqlHarnessOperations.includes(payload.operation) ||
+    !ownerScopedPostgresqlTestFiles.includes(payload.testFile) ||
+    !validExitCode(payload.exitCode) ||
+    !validSignal(payload.signal) ||
+    typeof payload.timeout !== 'boolean'
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export function createPostgresqlChildFailureMarker(error) {
   const stdout =
     error !== null &&
@@ -166,6 +194,73 @@ export function formatPostgresqlChildFailureDiagnostic(payload) {
         ? 'unidentified'
         : payload.failedTests.join(',')
     }`,
+    `exitCode=${payload.exitCode ?? 'unknown'}`,
+    `signal=${payload.signal ?? 'none'}`,
+    `timeout=${payload.timeout ? 'yes' : 'no'}`,
+  ].join('; ');
+}
+
+export function createPostgresqlHarnessFailureMarker(
+  operation,
+  testFile,
+  error,
+) {
+  const payload = {
+    schemaVersion: 1,
+    operation,
+    testFile,
+    exitCode:
+      error !== null &&
+      typeof error === 'object' &&
+      validExitCode(error.code)
+        ? error.code
+        : null,
+    signal:
+      error !== null &&
+      typeof error === 'object' &&
+      validSignal(error.signal)
+        ? error.signal
+        : null,
+    timeout:
+      error !== null &&
+      typeof error === 'object' &&
+      error.killed === true,
+  };
+  if (!validHarnessFailurePayload(payload)) {
+    throw new Error('PostgreSQL harness failure identity is not governed');
+  }
+  return `${harnessFailureMarker}${JSON.stringify(payload)}`;
+}
+
+export function parsePostgresqlHarnessFailureMarker(stderr) {
+  if (typeof stderr !== 'string') {
+    return null;
+  }
+  const markers = stderr
+    .split(/\r?\n/u)
+    .filter((line) => line.startsWith(harnessFailureMarker));
+  if (markers.length !== 1 || markers[0].length > 1_024) {
+    return null;
+  }
+  let payload;
+  try {
+    payload = JSON.parse(markers[0].slice(harnessFailureMarker.length));
+  } catch {
+    return null;
+  }
+  if (!validHarnessFailurePayload(payload)) {
+    return null;
+  }
+  return Object.freeze({ ...payload });
+}
+
+export function formatPostgresqlHarnessFailureDiagnostic(payload) {
+  if (!validHarnessFailurePayload(payload)) {
+    return null;
+  }
+  return [
+    `operation=${payload.operation}`,
+    `testFile=${payload.testFile}`,
     `exitCode=${payload.exitCode ?? 'unknown'}`,
     `signal=${payload.signal ?? 'none'}`,
     `timeout=${payload.timeout ? 'yes' : 'no'}`,

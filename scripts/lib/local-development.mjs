@@ -365,12 +365,20 @@ export function localAccessCapabilityRows() {
     'repairs.read',
     'price_list.read',
     'catalog.manage',
+    'catalog.items.create',
+    'catalog.items.update',
+    'catalog.items.deactivate',
     'catalog.prices.manage',
     'catalog.branch_prices.manage',
     'catalog.reference_cost.read',
     'catalog.reference_cost.manage',
+    'catalog.configuration.read',
+    'catalog.configuration.manage',
+    'catalog.import.read',
     'catalog.import.prepare',
     'catalog.import.publish',
+    'catalog.items.bulk_retire',
+    'catalog.suppliers.delete',
     'users.read',
     'users.manage',
   ].map((capabilityCode) => Object.freeze({
@@ -422,6 +430,10 @@ export function localAccessRoleCapabilityRows() {
     [roleIds.administrator, 'catalog.reference_cost.manage'],
     [roleIds.administrator, 'catalog.import.prepare'],
     [roleIds.administrator, 'catalog.import.publish'],
+    [roleIds.administrator, 'catalog.items.bulk_retire'],
+    [roleIds.administrator, 'catalog.suppliers.delete'],
+    [roleIds.administrator, 'catalog.configuration.read'],
+    [roleIds.administrator, 'catalog.configuration.manage'],
     [roleIds.administrator, 'users.read'],
     [roleIds.administrator, 'users.manage'],
     [roleIds.customerService, 'repairs.add_note'],
@@ -431,7 +443,18 @@ export function localAccessRoleCapabilityRows() {
     [roleIds.technician, 'repairs.add_note'],
     [roleIds.technician, 'repairs.read'],
   ];
-  return Object.freeze(rows.map(([roleId, capabilityCode]) => Object.freeze({
+  const legacySuccessors = Object.freeze({
+    'catalog.manage': Object.freeze([
+      'catalog.items.create',
+      'catalog.items.update',
+      'catalog.items.deactivate',
+    ]),
+    'catalog.import.prepare': Object.freeze(['catalog.import.read']),
+  });
+  const compatibilityRows = rows.flatMap(([roleId, capabilityCode]) =>
+    (legacySuccessors[capabilityCode] ?? []).map((successor) => [roleId, successor]),
+  );
+  return Object.freeze([...rows, ...compatibilityRows].map(([roleId, capabilityCode]) => Object.freeze({
     tenantId: LOCAL_TENANT_ID,
     roleId,
     capabilityCode,

@@ -25,9 +25,10 @@ test('price list is capability-gated and is the only initial Listas destination'
 test('Owner iteration centralizes governance and keeps operation reconciliable', () => {
   assert.match(catalogsPage, /Lista de precios/u);
   assert.match(commercialCatalogs, /CatalogReconciliationSummary/u);
-  assert.match(commercialCatalogs, /Valor capturado/u);
-  assert.match(commercialCatalogs, /Asociar a referencia existente/u);
-  assert.match(commercialCatalogs, /Crear referencia canónica/u);
+  assert.match(commercialCatalogs, /Marca propuesta/u);
+  assert.match(commercialCatalogs, /Observado: \$\{item\.rawLabel\}/u);
+  assert.match(commercialCatalogs, /Asignar a Brand existente/u);
+  assert.match(commercialCatalogs, /Promover a nueva Brand/u);
   assert.doesNotMatch(commercialCatalogs, /Aprobar/u);
   assert.match(commercialCatalogs, /Fusionar seleccionados/u);
   assert.match(commercialCatalogs, /Referencia superviviente/u);
@@ -47,7 +48,7 @@ test('Owner iteration centralizes governance and keeps operation reconciliable',
   assert.match(combobox, /\(onExpand \?\? onCapture\)\(exactExpansion\.name\)/u);
   assert.match(combobox, /!exact/u);
   assert.match(page, /Se reutilizará la marca/u);
-  assert.match(page, /canCreate=\{canManage\}/u);
+  assert.match(page, /canCreate=\{dialog === 'create' \? canCreateItem : canUpdateItem \|\| canManageReferences\}/u);
   assert.match(page, /categoryCapturedValue/u);
   assert.match(page, /brandCapturedValue/u);
   assert.match(page, /key=\{`catalog-category-\$\{kind\}`\}/u);
@@ -55,6 +56,10 @@ test('Owner iteration centralizes governance and keeps operation reconciliable',
   assert.match(commercialCatalogs, /disabled=\{exactCanonicalMatch !== null\}/u);
   assert.match(commercialCatalogs, /Ya existe la/u);
   assert.match(commercialCatalogs, /Asóciala a esa referencia/u);
+  assert.match(commercialCatalogs, /observedInSources/u);
+  assert.match(commercialCatalogs, /catalog\.configuration\.manage/u);
+  assert.match(commercialCatalogs, /normalizeBrandDisplay/u);
+  assert.match(commercialCatalogs, /setResolutionName\(pendingDisplayName\(value\)\)/u);
   assert.doesNotMatch(combobox, /createCatalogCategory|createCatalogBrand/u);
   assert.match(page, /setDialog\('create'\); setNotice\(null\)/u);
   assert.match(page, /setDialog\(null\); setNotice\(null\); requestId\.current = null/u);
@@ -74,6 +79,25 @@ test('price lookup sends no cost request unless capability and personal preferen
   assert.match(api, /if \(input\.includeReferenceCost\) query\.set\('includeReferenceCost', 'true'\)/u);
   assert.match(preferences, /useState\(false\)/u);
   assert.match(page, /value\.referenceCost \? <small>Costo ref\./u);
+});
+
+test('price-list controls are independently capability-gated and direct routes fail closed', () => {
+  assert.match(page, /const canCreateItem = hasOperationalCapability\(administrationCapabilities, 'catalog\.items\.create'\)/u);
+  assert.match(page, /const canUpdateItem = hasOperationalCapability\(administrationCapabilities, 'catalog\.items\.update'\)/u);
+  assert.match(page, /const canDeactivateItem = hasOperationalCapability\(administrationCapabilities, 'catalog\.items\.deactivate'\)/u);
+  assert.match(page, /const canCreate = canCreateItem && canManagePrice/u);
+  assert.match(page, /\{canCreate \? <Button tone="primary" onClick=\{openCreate\}/u);
+  assert.match(page, /disabled=\{dialog === 'manage' && !canUpdateItem\}/u);
+  assert.match(page, /CatalogReferenceCombobox[\s\S]*?disabled=\{dialog === 'manage' && !canUpdateItem\}/u);
+  assert.match(page, /disabled=\{!canDeactivateItem\}/u);
+  assert.match(page, /\{canBulkRetire \? <Button tone="danger"/u);
+  assert.match(page, /\{canReadCost \? <label className=\{styles\.costToggle\}/u);
+  assert.match(page, /canManage=\{canManageItem\}/u);
+  assert.match(app, /path="\/listas\/precios\/nuevo"[\s\S]*?<NewCatalogItemBoundary/u);
+  assert.match(app, /catalog\.items\.create'[\s\S]*?catalog\.prices\.manage/u);
+  assert.match(app, /path="\/listas\/precios\/articulos\/:itemId"[\s\S]*?<CatalogItemDetailRoute/u);
+  assert.match(app, /<CapabilityBoundary capabilities=\{capabilities\} capability="price_list\.read"><PriceListPage[\s\S]*?initialItemId=\{itemId\}/u);
+  assert.doesNotMatch(page, /role ===|roleKey|displayName ===/u);
 });
 
 test('price lookup composes URL-aware cascading commercial filters without offering incompatible pairs', () => {
@@ -96,7 +120,7 @@ test('price lookup composes URL-aware cascading commercial filters without offer
   assert.match(page, /kind: filterKind, categoryId, brandId/u);
 });
 
-test('price list covers commercial states without claiming Inventory or bulk import', () => {
+test('price list covers commercial states and links the separately authorized bulk composer', () => {
   assert.match(page, /Refacción/u);
   assert.match(page, /Producto/u);
   assert.match(page, /Servicio/u);
@@ -106,7 +130,9 @@ test('price list covers commercial states without claiming Inventory or bulk imp
   assert.match(page, /Sin precio/u);
   assert.match(page, /Artículo creado y disponible en la lista/u);
   assert.match(page, /Insumo creado en catálogo; no forma parte/u);
-  assert.doesNotMatch(page, /Inventario|Carga masiva|Importar proveedor/u);
+  assert.match(page, /catalog\.import\.prepare/u);
+  assert.match(page, /Carga masiva/u);
+  assert.doesNotMatch(page, /Inventario|Importar proveedor/u);
 });
 
 test('catalog browser transport keeps credentials, CSRF and no-store on the governed API', () => {

@@ -139,7 +139,40 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260913121000_repairs_add_reference_safe_delete.ts',
       '20260913130000_catalog_enforce_reference_identity.ts',
       '20260913140000_catalog_add_canonical_reference_merge.ts',
+      '20260914150000_catalog_create_bulk_composer.ts',
+      '20260914151000_catalog_strengthen_supplier_history.ts',
+      '20260914152000_access_add_catalog_bulk_retire_capability.ts',
+      '20260914153000_catalog_create_retirement_plans.ts',
+      '20260914154000_catalog_add_historical_reactivation.ts',
+      '20260914155000_catalog_govern_supplier_history.ts',
+      '20260914155100_access_add_supplier_delete_capability.ts',
+      '20260915120000_catalog_add_bounded_candidate_matching.ts',
+      '20260915130000_catalog_add_supplier_observed_title_history.ts',
+      '20260916180000_catalog_add_supplier_version_completeness.ts',
+      '20260917190000_catalog_create_field_policies.ts',
+      '20260917190100_access_add_catalog_configuration_capabilities.ts',
+      '20260917190200_access_add_granular_catalog_capabilities.ts',
     ],
+  );
+
+  const supplierHistoryMigration = await readFile(
+    `${productMigrationRoot}/20260914155000_catalog_govern_supplier_history.ts`,
+    'utf8',
+  );
+  const guardedBackfill = supplierHistoryMigration.indexOf(
+    "and old.sequence_number is null",
+  );
+  const sequenceBackfill = supplierHistoryMigration.indexOf(
+    'update catalog_supplier_catalog_versions version',
+  );
+  const finalImmutableFunction = supplierHistoryMigration.lastIndexOf(
+    "if old.lifecycle = 'INGESTED' then",
+  );
+  assert.ok(guardedBackfill > 0 && guardedBackfill < sequenceBackfill);
+  assert.ok(finalImmutableFunction > sequenceBackfill);
+  assert.match(
+    supplierHistoryMigration,
+    /\(to_jsonb\(new\) - 'sequence_number'\) = \(to_jsonb\(old\) - 'sequence_number'\)/u,
   );
 });
 

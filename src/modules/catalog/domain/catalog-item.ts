@@ -67,6 +67,24 @@ export class CatalogConflictError extends Error {
   constructor() { super('Catalog command conflicts with current state.'); this.name = 'CatalogConflictError'; }
 }
 
+/** The current tenant policy cannot be satisfied by the resulting Catalog
+ * value.  It intentionally carries field keys only, never protected values. */
+export class CatalogRequiredEffectiveValueError extends CatalogConflictError {
+  override readonly code = 'CATALOG_REQUIRED_EFFECTIVE_VALUE_MISSING';
+  constructor(readonly affectedRows: number, readonly missingFields: readonly string[]) {
+    super();
+    this.name = 'CatalogRequiredEffectiveValueError';
+  }
+}
+
+export class CatalogCoverageReviewRequiredError extends CatalogConflictError {
+  override readonly code = 'CATALOG_COVERAGE_REVIEW_REQUIRED';
+  constructor(readonly coverage: Readonly<{ baselineCount: number; currentCount: number; notObservedCount: number; baselineVersionId: string }>) {
+    super();
+    this.name = 'CatalogCoverageReviewRequiredError';
+  }
+}
+
 export class CatalogReferenceAlreadyExistsError extends CatalogConflictError {
   override readonly code = 'CATALOG_REFERENCE_ALREADY_EXISTS';
   constructor(
@@ -75,6 +93,22 @@ export class CatalogReferenceAlreadyExistsError extends CatalogConflictError {
   ) {
     super();
     this.name = 'CatalogReferenceAlreadyExistsError';
+  }
+}
+
+export class CatalogSupplierVersionAlreadyExistsError extends CatalogConflictError {
+  override readonly code = 'CATALOG_SUPPLIER_VERSION_ALREADY_EXISTS';
+  constructor() {
+    super();
+    this.name = 'CatalogSupplierVersionAlreadyExistsError';
+  }
+}
+
+export class CatalogSupplierDeleteNotAllowedError extends CatalogConflictError {
+  override readonly code = 'CATALOG_SUPPLIER_DELETE_NOT_ALLOWED';
+  constructor(readonly reason: 'PUBLISHED_HISTORY' | 'DEPENDENT_HISTORY' | 'SOURCE_CHANGED') {
+    super();
+    this.name = 'CatalogSupplierDeleteNotAllowedError';
   }
 }
 

@@ -84,78 +84,6 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 
-const tables = [
-  'catalog_reference_merge_events', 'catalog_reference_deletion_events', 'repair_catalog_reference_deletion_events',
-  'catalog_audit_events', 'catalog_commands', 'catalog_reference_cost_revisions',
-  'catalog_branch_price_revisions', 'catalog_base_price_revisions',
-  'catalog_barcode_sequences', 'catalog_sku_sequences', 'catalog_item_identifiers', 'catalog_items',
-  'catalog_brand_pending_kind_applicability', 'catalog_brand_pending_values', 'catalog_category_pending_values',
-  'catalog_brand_kind_applicability', 'catalog_category_kind_applicability', 'catalog_brands', 'catalog_categories', 'catalog_reference_identity_locks',
-  'user_preferences',
-  'repair_problem_category_deletion_events',
-  'repair_problem_classification_events',
-  'repair_problem_classifications',
-  'repair_problem_pending_values',
-  'repair_problem_category_catalog_events',
-  'repair_problem_categories',
-  'repair_equipment_corrections',
-  'repair_device_type_catalog_events',
-  'repair_device_type_pending_values',
-  'repair_device_types',
-  'repair_model_catalog_events',
-  'repair_model_pending_values',
-  'repair_models',
-  'repair_brand_catalog_events',
-  'repair_brand_pending_values',
-  'repair_brands',
-  'repair_risk_catalog_events',
-  'repair_intervention_risks',
-  'repair_risks',
-  'repair_new_repair_policy_heads',
-  'repair_new_repair_policy_versions',
-  'repair_create_commands',
-  'repair_folio_sequences',
-  'customer_contact_phones',
-  'customers',
-  'repair_operational_note_request_guards',
-  'repair_business_audit_events',
-  'access_operational_sessions',
-  'access_operational_session_station_guards',
-  'access_pin_attempt_limits',
-  'access_pin_attempt_station_guards',
-  'access_pin_credential_commands',
-  'access_pin_eligibility_tenant_guards',
-  'access_pin_credentials',
-  'access_role_assignment_commands',
-  'access_role_commands',
-  'access_role_assignments',
-  'access_role_capabilities',
-  'access_roles',
-  'access_capabilities',
-  'user_lifecycle_commands',
-  'user_profile_update_commands',
-  'user_create_commands',
-  'user_provisioning_bootstraps',
-  'users',
-  'repair_location_movements',
-  'repair_locations',
-  'repair_attachments',
-  'repair_timeline_entries',
-  'repair_intakes',
-  'repair_technician_assignments',
-  'repair_workflow_transitions',
-  'repair_technician_branches',
-  'repair_technicians',
-  'repairs',
-  'station_credentials',
-  'station_bindings',
-  'stations',
-  'branches',
-  'tenants',
-  'kysely_migration',
-  'kysely_migration_lock',
-];
-
 const tenantA = '10000000-0000-4000-8000-000000000026';
 const tenantB = '20000000-0000-4000-8000-000000000026';
 const branchA = '30000000-0000-4000-8000-000000000026';
@@ -250,44 +178,45 @@ function source() {
   });
 }
 
+async function assertDisposableDatabase(admin) {
+  const result = await admin.query(
+    'select current_database() as database_name, current_user as user_name',
+  );
+  assert.equal(result.rows[0].database_name, process.env.SR_OWNER_SCOPED_PG_NAME);
+  assert.match(
+    result.rows[0].database_name,
+    /^srtaller_adapters_[0-9a-f]{12}$/u,
+    'contextual authorization cleanup requires the governed disposable database',
+  );
+  assert.equal(result.rows[0].user_name, process.env.SR_OWNER_SCOPED_PG_USER);
+}
+
+async function publicTables(admin) {
+  const result = await admin.query(
+    `select tablename
+     from pg_catalog.pg_tables
+     where schemaname = 'public'
+     order by tablename`,
+  );
+  return result.rows.map(({ tablename }) => tablename);
+}
+
 async function resetDatabase(admin) {
-  await admin.query('drop function if exists reject_catalog_reference_deletion_event_mutation() cascade');
-  await admin.query('drop function if exists reject_repair_catalog_reference_deletion_event_mutation() cascade');
-  await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
+  await assertDisposableDatabase(admin);
   await admin.query(
-    'drop function if exists test_reject_pbi028_audit_insert() cascade',
-  );
-  await admin.query(
-    'drop function if exists repairs_reject_business_audit_event_mutation() cascade',
-  );
-  await admin.query(
-    'drop function if exists stations_advance_admission_revision() cascade',
-  );
-  await admin.query(
-    'drop function if exists users_advance_admission_revision() cascade',
-  );
-  await admin.query(
-    'drop function if exists access_validate_operational_session_admission() cascade',
-  );
-  await admin.query(
-    'drop function if exists access_invalidate_operational_sessions_for_context_change() cascade',
-  );
-  await admin.query(
-    'drop function if exists access_advance_pin_credential_version() cascade',
-  );
-  await admin.query(
-    `drop table if exists ${tables.map((name) => `"${name}"`).join(', ')} cascade`,
+    `begin;
+     drop schema public cascade;
+     create schema public authorization current_user;
+     commit;`,
   );
 }
 
 async function assertNoObjects(admin) {
-  const result = await admin.query(
-    `select tablename from pg_catalog.pg_tables
-     where schemaname = 'public' and tablename = any($1::text[])
-     order by tablename`,
-    [tables],
+  assert.deepEqual(
+    await publicTables(admin),
+    [],
+    'contextual authorization retained public tables',
   );
-  assert.deepEqual(result.rows, []);
 }
 
 async function seedMaterialContext(admin) {
@@ -506,6 +435,15 @@ test(
     });
 
     try {
+      await resetDatabase(admin);
+      await assertNoObjects(admin);
+      await admin.query(
+        'create table contextual_authorization_cleanup_probe (probe_id integer primary key)',
+      );
+      await assert.rejects(
+        assertNoObjects(admin),
+        /contextual_authorization_cleanup_probe/u,
+      );
       await resetDatabase(admin);
       await assertNoObjects(admin);
       const applied = await runner.migrateToLatest();

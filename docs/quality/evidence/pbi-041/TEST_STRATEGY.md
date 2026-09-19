@@ -2,9 +2,10 @@
 
 ## Estado
 
-- **Resultado:** strategy complete for readiness; no tests executed for an
-  implementation that does not yet exist.
-- **Fecha:** 2026-09-13.
+- **Resultado:** estrategia extendida con `OD-RESET-001..005`, `CM-001..009`
+  y canonical title/Supplier observed title; cobertura focalizada ejecutada
+  sobre el candidato local.
+- **Fecha:** 2026-09-16.
 - **Riesgo:** Alto; DEC-051 requires risk-proportional unit, contract,
   PostgreSQL, HTTP, browser, security and CI evidence.
 
@@ -23,6 +24,11 @@ ambiguous and disappeared groups without requiring advanced pattern logic.
 Fixtures contain no Owner/supplier real data. A future anonymized shape may be
 used locally but is not committed unless separately approved.
 
+La extensión de retiro usa dos fixtures separados: Historical Tenant conserva
+historia y mappings aunque llegue a cero activos; Virgin Tenant comienza sin
+Supplier history y prueba las 36 pantallas AG como `NEW`. Ambos son sintéticos,
+aislados y reversibles en PostgreSQL desechable.
+
 ## Test matrix
 
 | ID | Scenario / expected invariant | Unit | Contract | PG | HTTP | Browser | CI |
@@ -31,7 +37,7 @@ used locally but is not committed unless separately approved.
 | BI-Q02 | new Catalog creates use server SKU/barcode and remain searchable | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q03 | V2 exact historical mappings preselect only when unique/consistent | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q04 | corrected mapping appends resolution and changes memory projection | ✓ | ✓ | ✓ | ✓ |  | ✓ |
-| BI-Q05 | inconsistent historical target becomes ambiguous | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q05 | corrected durable mapping remains a hard `CONFLICT`; multiple independent durable histories remain `AMBIGUOUS` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q06 | optional/duplicate supplier code does not fabricate or last-row-win | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q07 | pending Category/Brand consolidates through PBI-040 governance | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q08 | Owner confirms batch; no per-row click for exact preselection |  | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -57,6 +63,36 @@ used locally but is not committed unless separately approved.
 | BI-Q28 | malicious/oversized clipboard and each rows/columns/cells/cell/bytes cap render/reject safely | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | BI-Q29 | atomic injected failure/deadlock/timeout has known/idempotent outcome | ✓ | ✓ | ✓ | ✓ |  | ✓ |
 | BI-Q30 | Source/Version/Listing immutable and no destructive cascade | ✓ | ✓ | ✓ |  |  | ✓ |
+| BI-Q31 | plan global authoritative cuenta sólo items activos y expira en 5 min | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q32 | retiro global deja 0 activos y preserva ID/SKU/barcode/revisiones/history/memory | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q33 | mapping histórico único + INACTIVE queda REACTIVATE, nunca NEW; preserva itemId/SKU/barcode | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q34 | same-actor PIN Level 2 es one-shot; PIN de otro usuario falla | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q35 | plan alien/stale/context-changed/capability-revoked falla sin retiro parcial | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q36 | lote mixto retira sólo Resolution CREATED; MATCHED/UPDATED siguen activos | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q37 | Virgin Tenant aislado clasifica las 36 pantallas AG como NEW | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q38 | UI dice `Original:` y nunca llama reversión al retiro acotado | ✓ | ✓ |  | ✓ | ✓ | ✓ |
+| BI-Q39 | REACTIVATE con cambios agrega precio/costo en el mismo publish atómico | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q40 | target histórico ACTIVE produce UPDATE o UNCHANGED según diff | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q41 | dos candidatos, mapping incompatible o Tenant ajeno quedan bloqueados | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q42 | stale/concurrent/retry de reactivación deja cero parciales y cero duplicados | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q43 | versión INGESTED no aplicada se reanaliza sin mutar Supplier evidence | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q44 | caso material AG: 36 INACTIVE → 36 REACTIVATE → 36 ACTIVE con IDs exactos | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q45 | exact history sólo auto-resuelve con Batch APPLIED, key exacta, target único, cero correcciones y compatibilidad | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q46 | miss exacto produce candidate read-only; score nunca decide ni llena target | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q47 | Pro/Plus/Max, OLED/INCELL, Original/Calidad, color, capacidad, tamaño y números incompatibles permanecen contrastes explicables; no auto-resuelven ni elevan texto solo a `CONFLICT` | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q48 | selección sólo acepta candidato persistido; UUID arbitrario/cross-Tenant falla sin efectos | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q49 | decisión candidate no aprende antes de publish; publish exitoso crea Resolution/Memory exacta y la siguiente versión se vuelve trusted | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q50 | 1,500 historias se cargan/indexan una vez; pool 200, top K 3 y tiempos bounded sin N+1 | ✓ | ✓ | ✓ |  |  | ✓ |
+| BI-Q51 | UX abre en Requieren atención, separa resueltas e identifica evidencia/diferencias sin ocultar trusted rows | ✓ | ✓ |  | ✓ | ✓ | ✓ |
+| BI-Q52 | AG v11 reanalysis produce 34 trusted APPLY + 2 CANDIDATE UNRESOLVED y cero publish/memory/item writes | ✓ | ✓ | ✓ | ✓ | ✓ | Owner evidence |
+| BI-Q53 | same item + KEEP conserva itemId/title y publica observed title searchable | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q54 | same item + ADOPT conserva itemId, cambia title atómicamente y audita old/new + provenance | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q55 | antes de Apply, decidir KEEP/ADOPT no cambia CatalogItem ni crea Resolution/Memory | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q56 | exclude/failure/replay no aprende, no renombra y no duplica audit events | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q57 | search canonical/historical deduplica item, conserva filtros/count/page y aísla Tenant | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BI-Q58 | dos versiones con ADOPT sobre el mismo item hacen fail-closed por expected version | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q59 | REACTIVATE + ADOPT conserva identidad y aplica lifecycle/rename en una transacción | ✓ | ✓ | ✓ | ✓ |  | ✓ |
+| BI-Q60 | dos SupplierSources pueden aportar títulos buscables al mismo item sin alias global | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Layer responsibilities
 
@@ -65,9 +101,12 @@ used locally but is not committed unless separately approved.
 - normalization preserves clean casing and exact raw title;
 - signature/fingerprint algorithm versioning and deterministic hashes;
 - matching precedence, contradictions and exact-history eligibility;
+- token index, bounded candidate ranking and protected identity terms; scores
+  are presentation only and never authority;
 - field intent matrix, blank/zero/money parsing and diff/no-op;
 - lifecycle transition policies, pending vs unresolved and report counts;
 - retention clock/chunk selection and cost redaction policies.
+- plan TTL/confirmation, same-actor proof y conjuntos/hash deterministas.
 
 ### Contract
 
@@ -76,15 +115,21 @@ used locally but is not committed unless separately approved.
 - idempotency same/incompatible payload; stale/conflict/non-revealing results;
 - Version/Batch relationship is not 1:1; Procurement/Inventory/Repairs only see
   Catalog item contracts, never SupplierListing identity.
+- retiro global y por batch tienen commands/resultados explícitos y nunca
+  exponen hard delete o una falsa reversión.
 
 ### PostgreSQL 18.4
 
 - fresh/upgrade migration design, compound FKs/uniques/checks/index plans;
 - immutable snapshot mutation guard and append-only resolution history;
+- trusted provenance join to the applied batch, candidate persistence cap,
+  candidate-target tamper rejection and publish-only learning;
 - transaction same connection, injected rollback, serialization/deadlock;
 - two Owners, row lock order, idempotency outcomes and no partial writes;
 - two Tenants + two Branches, exact queries/counts/pagination and no cascades;
 - cleanup with controlled clock/failure/retry and permanent evidence survival.
+- planes/eventos Level 2, locking estable, stale hash, zero partial retirement,
+  Historical/Virgin isolation y CREATED-only batch scope.
 
 ### HTTP/security
 
@@ -92,6 +137,8 @@ used locally but is not committed unless separately approved.
 - alien IDs, forged state/method/expectedVersion and anti-enumeration;
 - cost visibility across Composer, preview, history and report;
 - publish retry/outcome unknown and capability/session revocation at commit.
+- PIN ajeno, replay de proof, plan stale/alien/expired, confirmación incorrecta
+  y capability masiva ausente.
 
 ### Browser/Owner surface
 
@@ -101,6 +148,8 @@ used locally but is not committed unless separately approved.
 - error/empty/loading/reconnecting/stale/denied/success states;
 - screen widths 1280/768/640, light/dark, keyboard-only and announcements;
 - Version 1 → publish → Version 2 comparison Owner checkpoint.
+- diálogos de retiro global/CREATED por batch, reautenticación y estados
+  Historical/Virgin sin lenguaje de hard delete o rollback.
 
 ### CI and evidence
 
@@ -141,9 +190,49 @@ PASS alone cannot close Owner Review.
 
 ## Exit criteria
 
-- BI-Q01..Q30 applicable gates green without downgraded assertions;
+- BI-Q01..Q60 applicable gates green without downgraded assertions;
 - required 1,500-row Owner flow and 10k candidate budgets evidenced;
 - 50k characterization/rejection evidenced;
 - zero Blocker/Critical/High open after focused review;
 - exact candidate Git/worktree/runtime evidence and no sensitive fixture data;
 - implementation remains unaccepted until Owner explicitly approves it.
+
+## SV completeness focused matrix
+
+| ID | Predicate material | Cobertura |
+|---|---|---|
+| SV-Q01 | nueva Version omite el campo y persiste `PARTIAL` | PostgreSQL |
+| SV-Q02 | `COMPLETE` frente a `COMPLETE` del mismo Source reporta sólo no observados | PostgreSQL |
+| SV-Q03 | `PARTIAL` no calcula ausencia ni expone conteo | PostgreSQL / UI contract |
+| SV-Q04 | una omisión COMPLETE aplicada conserva status, itemId, identifiers, revisiones y memory | PostgreSQL |
+| SV-Q05 | completeness no cambia después de `INGESTED` | PostgreSQL |
+| SV-Q06 | UI conserva selección y copy Owner; no presenta “Desaparecidas” | UI contract / Chrome |
+| SV-Q07 | COMPLETE con baseline expone conteos y títulos/estado de no observados sin comparación manual | PostgreSQL / UI contract / Chrome |
+| SV-Q08 | COMPLETE sin baseline no equivale a cero; PARTIAL no expone conteo ni panel de ausencia | PostgreSQL / UI contract |
+| SV-Q09 | expansión de no observados conserva botón, `aria-expanded` y `aria-controls`; no ofrece retiro | UI contract / Chrome |
+
+La matriz ejecutada usa una lista COMPLETE de cuatro filas y otra COMPLETE de
+tres: reporta un no observado, publica sólo las tres presentes y verifica cero
+Resolution para el item omitido. No sustituye Owner Review.
+
+## Complete baseline plausibility and coverage explainability matrix
+
+| ID | Predicate material | Cobertura |
+|---|---|---|
+| BA-Q01 | baseline automática = la `COMPLETE/APPLIED` anterior más reciente del mismo Tenant y SupplierSource | PostgreSQL / local v42→v44 |
+| BA-Q02 | coverage explica filas continuadas, no observadas y adicionales; adicional nunca es `NEW` | PostgreSQL / UI contract / Chrome |
+| BA-Q03 | 100→95, 37→34, 34→38 y 1→38 son normales; 100→5 exige review | domain contract / PostgreSQL |
+| BA-Q04 | Apply de caída material falla sin acknowledgment y publica una sola vez con acknowledgment | PostgreSQL / audit |
+| BA-Q05 | `PARTIAL` no calcula coverage ni plausibilidad | PostgreSQL / UI contract |
+| BA-Q06 | no observación no altera lifecycle, itemId, identifiers, revisiones, Resolution ni Memory | PostgreSQL |
+| BA-Q07 | v44 muestra 38/1/0/37, expande detalle de continuación/adicionales y se conserva aplicada tras reload | Chrome local |
+
+## Operational coverage and applied-result UX matrix
+
+| ID | Predicate material | Cobertura |
+|---|---|---|
+| UXP-Q01 | COMPLETE prioriza adicionales/no observados; continuaciones siguen bajo demanda y cero no expone CTA | UI contract / Chrome |
+| UXP-Q02 | adicional `NEW` pre-Apply usa copy honesto; `Resolution CREATED` post-Apply proyecta item ACTIVE y provenance | PostgreSQL / UI contract / Chrome |
+| UXP-Q03 | resultado APPLIED conserva prioridad y retiro `CREATED`-only permanece secundario con capability sin cambio | UI contract / Chrome / PostgreSQL existente |
+| UXP-Q04 | comparación inicia colapsada, abre por Enter/Espacio y conserva `aria-expanded`/`aria-controls` | UI contract / Chrome |
+| UXP-Q05 | 1280/768/640 y claro/oscuro no generan overflow ni pared de botones | Chrome |

@@ -41,6 +41,7 @@ export type CatalogPendingBrandRecord = Readonly<{
   canonicalBrandId: string | null; canonicalName: string | null;
   version: number; usageCount: number; firstSeenAt: string; lastSeenAt: string;
   capturedBy: string | null; capturedInBranchId: string;
+  observedInSources: readonly string[];
 }>;
 export type CatalogCategoryBrandApplicability = Readonly<{
   categoryId: string; brandId: string; kind: CatalogItemKind;

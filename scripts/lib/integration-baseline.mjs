@@ -29,6 +29,55 @@ export const PBI039_PROTECTED_SURFACES = Object.freeze({
   'test/repair-detail-parity-fixture.test.mjs': 'a29c8e5d65c03c338d7e4cc16315ca200144dc28',
 });
 
+export const PBI041_AUTHORIZED_PROTECTED_SURFACE_CHANGES = Object.freeze([
+  Object.freeze({
+    path: 'apps/dev-preview-web/src/api.ts',
+    previousBlob: '3a7c93f4f1597dbef9bbbfcc916dcd3cb7afe226',
+    authorizedBlob: 'f1e9a33f9a7dc534e223eee37bb1b234feafb35b',
+    owner: 'PBI-041',
+    decision: 'FV-GATE-REMEDIATION',
+    reason: 'Add typed PreviewApiError.parameter metadata for actionable bulk validation.',
+  }),
+]);
+
+const GIT_BLOB_PATTERN = /^[0-9a-f]{40}$/u;
+const WILDCARD_PATTERN = /[*?[\]]/u;
+
+export function applyAuthorizedProtectedSurfaceChanges(
+  baseline,
+  changes = PBI041_AUTHORIZED_PROTECTED_SURFACE_CHANGES,
+) {
+  const current = { ...baseline };
+  const seen = new Set();
+  for (const change of changes) {
+    if (WILDCARD_PATTERN.test(change.path)) {
+      throw new Error(`Protected-surface authorization must use an exact path: ${change.path}`);
+    }
+    if (!Object.hasOwn(baseline, change.path)) {
+      throw new Error(`Protected-surface authorization is outside the governed inventory: ${change.path}`);
+    }
+    if (seen.has(change.path)) {
+      throw new Error(`Duplicate protected-surface authorization: ${change.path}`);
+    }
+    if (baseline[change.path] !== change.previousBlob) {
+      throw new Error(`Protected-surface authorization has a stale previous blob: ${change.path}`);
+    }
+    if (!GIT_BLOB_PATTERN.test(change.authorizedBlob)) {
+      throw new Error(`Protected-surface authorization has an invalid blob: ${change.path}`);
+    }
+    if (!change.owner || !change.decision || !change.reason) {
+      throw new Error(`Protected-surface authorization lacks governance metadata: ${change.path}`);
+    }
+    seen.add(change.path);
+    current[change.path] = change.authorizedBlob;
+  }
+  return Object.freeze(current);
+}
+
+export const CURRENT_PROTECTED_SURFACES = applyAuthorizedProtectedSurfaceChanges(
+  PBI039_PROTECTED_SURFACES,
+);
+
 async function git(root, argumentsList) {
   const { stdout } = await execute('git', argumentsList, {
     cwd: root,
@@ -64,12 +113,12 @@ export function evaluateIntegrationBaseline({
   });
 }
 
-export function evaluateProtectedSurfaces(actual, expected = PBI039_PROTECTED_SURFACES) {
+export function evaluateProtectedSurfaces(actual, expected = CURRENT_PROTECTED_SURFACES) {
   const changed = Object.entries(expected)
     .filter(([path, blob]) => actual[path] !== blob)
     .map(([path, blob]) => Object.freeze({ path, expectedBlob: blob, actualBlob: actual[path] ?? null }));
   if (changed.length > 0) {
-    throw new Error(`Accepted PBI-039 protected surfaces changed: ${changed.map(({ path }) => path).join(', ')}`);
+    throw new Error(`Governed protected surfaces changed: ${changed.map(({ path }) => path).join(', ')}`);
   }
   return Object.freeze({ status: 'PASS', protectedSurfaceCount: Object.keys(expected).length });
 }
@@ -92,7 +141,7 @@ export function evaluateMaterializedPreviewGenealogy({
 
 async function inspectProtectedSurfaces(root) {
   const actual = {};
-  for (const path of Object.keys(PBI039_PROTECTED_SURFACES)) {
+  for (const path of Object.keys(CURRENT_PROTECTED_SURFACES)) {
     actual[path] = await git(root, ['hash-object', '--', path]);
   }
   return evaluateProtectedSurfaces(actual);

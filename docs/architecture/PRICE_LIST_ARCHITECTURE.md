@@ -2,8 +2,9 @@
 
 ## Estado y autoridad
 
-- **Estado:** Accepted; PBI-040 baseline 2026-09-11 y bulk architecture/
-  readiness reconciliados 2026-09-13.
+- **Estado:** Accepted; PBI-040 baseline 2026-09-11, bulk architecture/
+  readiness 2026-09-13 y retiro seguro `OD-RESET-001..005` reconciliado
+  2026-09-14.
 - **Autoridad de producto:** decisiones Owner `PLD-001` a `PLD-008` y
   `PLD-018`, aprobadas en `MASTER GOAL — PRICE LIST ARCHITECTURE + PBI
   READINESS`.
@@ -16,6 +17,31 @@
 - **Bulk discovery y decisiones:**
   [Price List Bulk Composer](../domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md),
   con `OD-BI-001..010` aprobadas el 2026-09-13.
+- **Retiro seguro:** decisiones Owner `OD-RESET-001..005`, aprobadas el
+  2026-09-14 durante Owner Review de PBI-041.
+
+## Tenant catalog field policy foundation
+
+Catalog quality configuration is Tenant-wide. Its persistent authority is a
+versioned policy head plus append-only versions; a missing Tenant row resolves
+to product defaults. The policy registry is finite and domain-fixed FULL
+minimums (Type, Title, Category and Base Price) cannot be weakened. Read and
+manage access are explicit `catalog.configuration.*` permissions and each is
+composed with the corresponding reference-cost permission because the policy
+includes the sensitive Reference Cost field. This foundation does not alter
+Composer capture, Analyze, Apply or manual Catalog mutations until a later
+authorized consumer adopts it.
+
+The Bulk Catalog Composer consumer validates `REQUIRED` against the effective
+resulting value: incoming explicit data or a safely resolved, preserved
+`CatalogItem` value may satisfy it; SupplierSource defaults, observation
+history, title parsing and ambiguous identity never may. Analyze records typed
+reconciliation attention before applicability. Apply rereads the current
+Tenant policy inside its transaction, protecting against a stale analysis or a
+direct request. Policy revisions are deliberately not snapshot on a Supplier
+CatalogVersion; the current policy is authoritative at Reanalyze and Apply.
+`ESSENTIAL` and `OPTIONAL` do not block, and an excluded row is not an
+effective mutation.
 
 ## Resultado ejecutivo
 
@@ -57,6 +83,8 @@ agregado, inventario ni libro de Caja.
 | `SupplierReconciliationMemory` | Tenant + source + firma versionada | `catalog` | proyección reconstruible; exactitud no crea alias canónico |
 | `CatalogUpdateBatch` | Tenant + batch ID | `catalog` | intención de mutar Catalog separada de la evidencia del proveedor |
 | `CatalogUpdateRowDecision` | Tenant + batch + row ID | `catalog` | decisión/diff/version esperada por fila |
+| `CatalogRetirementPlan` | Tenant + plan ID | `catalog` | fotografía server-side temporal del conjunto activo y su hash; ligada a actor/Branch/Station/Session |
+| `CatalogRetirementEvent` | Tenant + event ID | `catalog` | evidencia append-only de ejecución o rechazo, con sensibilidad y reautenticación |
 
 Un Supplier legal/comercial, compras, existencias, pagos, movimientos de Caja,
 Repair Concepts, pedidos y solicitudes de clientes no pertenecen a `catalog`.
@@ -236,6 +264,41 @@ canon, Brand puede ampliar aplicabilidad de forma auditada y un valor realmente
 nuevo crea una captura pendiente con uso, actor y first/last seen; nunca crea
 canon silenciosamente.
 
+El Analyze de una carga `FULL` sin identidad existente puede clasificar una
+fila como `NEW` cuando sus referencias no canónicas sean capturables de forma
+segura. Esa clasificación conserva el valor raw y metadata de captura pending,
+pero no escribe ningún recurso durable. La captura se realiza exclusivamente
+por el Apply autorizado y transaccional, mediante el mismo resolvedor anterior.
+Inputs ambiguos, desplazados o malformados, required faltantes, candidates,
+duplicados y filas `COMPACT` sin target no obtienen este camino y permanecen
+atención explícita; no hay fuzzy matching ni creación canónica automática.
+
+### 5.0.1 Publicación comercial y gobernanza posterior
+
+Para un `CatalogItem` nuevo y activo de una carga `FULL`, el precio base
+efectivo debe ser estrictamente mayor que cero. Un cero recibido es un valor
+explícito, nunca un sustituto de omisión ni una señal para retener un precio
+anterior. Analyze y Apply comparten la verificación del valor efectivo. Costo
+de referencia sólo exige importe positivo cuando la policy Tenant lo declara
+`REQUIRED`; `OPTIONAL` y `ESSENTIAL` no bloquean por cero/ausencia.
+
+Una Brand pendiente publicada conserva su observación raw y provenance hasta
+una resolución administrativa explícita. `catalog.configuration.manage` puede
+resolver el grupo Tenant-wide de una clave normalizada hacia una Brand existente
+o una nueva. La coincidencia exacta reutiliza canon; no hay fuzzy merge. La
+transacción religa los CatalogItems del grupo, conserva la FK pending como
+historia, no reescribe Supplier Listings y deja audit append-only. Véase
+[UX-005.6](../domain/PRICE_LIST_UX_0056_PUBLISHED_DATA_INTEGRITY_AND_PENDING_REFERENCE_GOVERNANCE.md).
+
+La presentación de una Brand pendiente no es otra identidad durable. La
+proyección conserva separados `rawLabel`, `normalizedKey`, nombre de
+presentación/propuesta y Brand canónica. El nombre legible se deriva del raw y
+del canon activo de identidad exacta: el canon gana, casing uniforme se ajusta
+conservadoramente, acrónimos compactos y casing mixto permanecen. No hay
+diccionario comercial, fuzzy matching, persistencia duplicada ni mutación antes
+de la resolución autorizada. Véase
+[UX-005.6A](../domain/PRICE_LIST_UX_0056A_PENDING_BRAND_DISPLAY_CANONICALIZATION.md).
+
 ### 5.1 Patrón transversal de reconciliación
 
 Repairs y Catalog comparten este lenguaje de producto:
@@ -298,13 +361,19 @@ Capacidades iniciales:
 | Capability | Permite |
 |---|---|
 | `price_list.read` | consultar artículos vendibles y precio efectivo |
-| `catalog.manage` | alta/edición/lifecycle/clasificación/identificadores |
+| `catalog.manage` | Category/Brand y compatibilidad transitoria de item; no reemplaza los sucesores explícitos |
+| `catalog.items.create` | crear CatalogItem; requiere además `catalog.prices.manage` y costo cuando corresponda |
+| `catalog.items.update` | corregir atributos no financieros de un CatalogItem |
+| `catalog.items.deactivate` | desactivar/reactivar un CatalogItem individual; no concede retiro masivo ni hard delete |
 | `catalog.prices.manage` | cambiar precio base |
 | `catalog.branch_prices.manage` | crear/revocar override de Branch autorizada |
 | `catalog.reference_cost.read` | recibir costo de referencia |
 | `catalog.reference_cost.manage` | registrar/corregir costo de referencia |
-| `catalog.import.prepare` | cargar, mapear y resolver un batch sin publicar |
-| `catalog.import.publish` | publicar un batch listo |
+| `catalog.import.read` | consultar fuentes, versiones, diff, coverage y resultados de carga sin preparar |
+| `catalog.import.prepare` | crear, editar, analizar y resolver un batch sin publicar; conserva compatibilidad temporal de lectura heredada |
+| `catalog.import.publish` | publicar un batch `READY`, compuesta con las authorities de efecto reales |
+| `catalog.items.bulk_retire` | preparar y ejecutar retiro masivo de CatalogItems; no concede hard delete ni reversión de updates |
+| `catalog.suppliers.delete` | eliminar una SupplierSource sólo cuando toda su historia sea borrador seguro; no concede delete de CatalogItem ni de evidencia publicada |
 
 La API de búsqueda omite el campo de costo salvo que el request pida
 `includeReferenceCost=true` y el servidor confirme
@@ -314,12 +383,65 @@ autorizado, la preferencia `priceListShowReferenceCost` pertenece a `users`, es
 personal, inicia `false` y sólo controla si el cliente solicita/muestra el dato;
 no concede permisos.
 
+La transición UX-004.1 conserva roles existentes por **capability**, nunca por
+nombre: `catalog.manage` recibe los tres sucesores de item y
+`catalog.import.prepare` recibe `catalog.import.read`. No se otorgan por esta
+migración publish, retiro masivo, borrado de proveedor, precio, costo, Branch
+price ni configuración. El servidor conserva el fallback de `catalog.manage`
+para las operaciones individuales mientras Category/Brand siga bajo esa
+authority; `catalog.import.read` no permite preparar un batch.
+
+UX-004.2 conecta ese registry con Lista de precios sin colapsar lectura y
+mutación: `price_list.read` permite lista, filtros, precio efectivo y detalle
+comercial seguro; no recibe costo de referencia. El endpoint de detalle no
+exige `catalog.manage` y no serializa costo. La creación exige
+`catalog.items.create` más `catalog.prices.manage` por el precio base
+obligatorio, y añade `catalog.reference_cost.manage` sólo cuando escribe un
+costo. Metadata, lifecycle individual, precio, costo, override de Branch y
+retiro masivo quedan sujetos a sus capabilities respectivas; el retiro masivo
+conserva íntegramente ADR-013 nivel 2. La UI usa capabilities de sesión y no
+nombres de rol; el servidor sigue siendo la autoridad final.
+
+UX-004.3 separa materialmente Bulk Composer: `catalog.import.read` abre sólo
+historial, versiones, coverage, comparación y resultados; no carga recursos
+de edición ni expone controles de preparación. `catalog.import.prepare` habilita
+crear Source/Draft, editar, analizar, resolver y purgar borradores, pero no
+publica. `catalog.import.publish` permite Apply de un lote `READY` visible al
+publisher, sin exigir que sea quien lo preparó. Apply vuelve a leer el lote
+autoritativo y compone sólo los efectos presentes: create, update, reactivate,
+precio y costo; no convierte publish en super-capability. La segregación queda
+habilitada por capability, no obligatoria: un mismo usuario puede tener las
+tres capacidades. Un rol publisher recibe `catalog.import.read` explícitamente;
+la compatibilidad temporal prepare→read se mantiene para roles heredados.
+
+UX-004.4 prueba la composición sin codificar perfiles: cada decisión obtiene
+la unión actual de Roles aplicables a Tenant y Branch, y una mutación de rol se
+observa en la siguiente operación protegida. Atención puede limitarse a
+`price_list.read`; costo, preparación, publicación y efectos de item/precio
+siguen siendo grants independientes. La UI consume esa proyección sólo para
+presentación y el servidor vuelve a autorizar rutas y efectos directos. No hay
+permisos directos de User ni decisiones por nombre de rol.
+
 Crear/editar individualmente es nivel 1 de ADR-013 con capability específica,
 versionado y auditoría. Publicar un batch también queda clasificado nivel 1 en
 el primer ciclo: es reversible mediante revisiones, no altera snapshots ya
 aplicados y exige la capability separada `catalog.import.publish`, confirmación
 del diff e idempotencia. Se reconsidera nivel 2 si aparecen thresholds,
 descuentos extraordinarios, auto-publicación externa o impacto irreversible.
+
+El retiro masivo es una acción distinta y queda clasificado explícitamente
+como **nivel 2 de ADR-013**. Exige `catalog.items.bulk_retire`, reautenticación
+PIN del mismo actor, plan/preview server-side, confirmación exacta, ejecución
+Tenant-scoped transaccional, audit append-only y revalidación de contexto,
+sesión, capability y conjunto de items al ejecutar. El control es de un solo
+uso y nunca eleva privilegios ni reutiliza `catalog.manage` como sustituto.
+
+Eliminar una `SupplierSource` segura también es nivel 2 de ADR-013. Exige la
+capability asignable `catalog.suppliers.delete`, reautenticación del mismo
+actor, dos confirmaciones explícitas y revalidación transaccional. La acción se
+bloquea si existe una Version `INGESTED`, Resolution, ReconciliationMemory o
+evidencia de retiro. No existe fallback a `catalog.manage` o
+`catalog.import.prepare`.
 
 ## 8. Contratos públicos y consumidores
 
@@ -394,6 +516,9 @@ Contrato mínimo del Composer:
 - alta completa, actualización compacta y nueva Supplier Catalog Version sobre
   el mismo batch engine;
 - draft versionado y recuperable; el browser no es la única copia;
+- una corrección de una revisión `INGESTED` prepara una copia local y sólo crea
+  una sucesora explícita al Guardar/Revisar; la predecesora permanece evidencia
+  pero queda bloqueada server-side para Analyze, decisiones y Apply;
 - sin fórmulas, macros, merged cells, worksheets ni formatting engine.
 
 `Fill down` no forma parte del outcome inicial porque no existe una aprobación
@@ -437,6 +562,13 @@ content hash, schema version, signature algorithm version y correction lineage.
 Después de `INGESTED` su contenido es inmutable; una corrección crea otra versión
 con `correctsVersionId`. La relación Version→Batch no es obligatoriamente 1:1.
 
+Cada Source posee una secuencia monotónica Tenant+Source. El servidor asigna
+`v1`, `v2`, ... al guardar una nueva carga; el cliente no elige ni deriva el
+número desde fecha, filename o descripción. Un lock de la Source serializa
+creaciones concurrentes, los números consumidos no se reutilizan y varias
+versiones del mismo día son válidas. La descripción es metadata opcional de
+historia: nunca participa en identidad, matching u orden.
+
 Una fila ausente en la versión siguiente sólo queda `DISAPPEARED` en la
 comparación de proveedor. No inactiva CatalogItem, no revoca precio/costo ni
 modifica Branch overrides.
@@ -448,17 +580,33 @@ SKU interno, barcode interno, `supplierItemCode` opcional y mapping histórico
 de observación exacta. Dos señales que resuelven a items distintos producen
 `CONFLICT`; duplicados en la misma versión nunca usan last-row-wins.
 
-Un mapping histórico sólo puede quedar **preseleccionado** cuando coincide el
-mismo Tenant, SupplierSource y firma exacta compatible; toda la historia apunta
-de forma única/consistente al mismo CatalogItem activo; y no existe contradicción
-de identifier, Tipo o lifecycle. Se ve en preview y sólo se aplica al confirmar
-el batch. No requiere click por fila. Una corrección agrega
+Un mapping histórico es `TRUSTED_HISTORICAL_MATCH` cuando coincide el mismo
+Tenant, SupplierSource y firma exacta compatible; proviene de Resolution
+publicada; toda la historia apunta de forma única/consistente al mismo
+CatalogItem; el target continúa vigente; Category/Brand son compatibles; y no
+existe contradicción de identifier o Tipo. Resuelve identidad para
+`UNCHANGED`, `UPDATE` o `REACTIVATE` sin otro click de reconciliación, permanece
+visible en preview y nunca auto-publica: `Aplicar lote` continúa explícito. Una
+corrección agrega
 `SupplierListingResolution`, conserva la anterior y actualiza la proyección de
 memoria con target, evidence count, first/last seen y conflicto histórico.
 
-Título/estructura probable, similitud, pattern nuevo o tag nuevo sólo producen
-reconciliación humana. No hay fuzzy write, actualización automática por título
-ni alias canónico derivado de observations. Detección sistemática
+Si esa memoria exacta, única y consistente apunta a un `CatalogItem` retirado,
+la fila conserva el `targetItemId` y se clasifica `REACTIVATE`: el mismo publish
+atómico cambia `INACTIVE→ACTIVE` y aplica cualquier diff permitido de metadata,
+precio o costo. No existe `REACTIVATE_AND_UPDATE`; `REACTIVATE` incluye el diff
+completo. Identidad, SKU, barcode, Listings, mappings y revisiones previas se
+conservan. Una candidatura ambigua, inconsistente, incompatible o ajena sigue
+`AMBIGUOUS`/`CONFLICT` y nunca se convierte en write. Así `ACTIVE CATALOG EMPTY`
+no se confunde con `NO HISTORICAL CATALOG MEMORY`.
+
+Después de agotar señales fuertes exactas, `CANDIDATE_MATCH` puede consultar
+historia del mismo SupplierSource mediante un índice acotado de rasgos, filtrar,
+rankear y explicar candidatos. Su resultado siempre requiere elección humana y
+nunca crea mapping, alias, rename, precio, costo o publish. Título/estructura
+probable, similitud, pattern nuevo o tag nuevo sólo producen esa reconciliación
+humana. No hay fuzzy write, actualización automática por título ni alias
+canónico derivado de observations. Detección sistemática
 `Display→Pantalla`, clasificación avanzada de tags y aceptación grupal
 pertenecen al outcome diferido **Advanced Supplier Reconciliation**, sin PBI ID,
 selección ni readiness.
@@ -474,7 +622,7 @@ selección ni readiness.
 | categoría / marca | diff compatible y explícito; puede crear pending gobernada |
 | precio base | nueva revisión sólo ante cambio real |
 | costo de referencia | nueva revisión `IMPORTED` sólo ante cambio real y con permisos |
-| lifecycle | no gestionado por bulk inicial |
+| lifecycle | sólo `INACTIVE→ACTIVE` mediante `REACTIVATE` histórico único; ningún otro cambio bulk |
 | Branch override | siempre intacto |
 
 `SupplierObservedCost`, `ReferenceCostRevision` y el futuro
@@ -500,10 +648,14 @@ DRAFT -> ANALYZING -> RECONCILING -> READY -> COMMITTING -> COMPLETED
 DRAFT/ANALYZING/RECONCILING/READY -> CANCELLED
 ANALYZING/COMMITTING -> FAILED
 COMMITTING --stale--> RECONCILING
+
+CatalogRetirementPlan
+PENDING -> EXECUTED
+PENDING -> STALE | EXPIRED
 ```
 
 Nada anterior a `COMMITTING` escribe estado de producto Catalog. Cada decisión
-termina `CREATE`, `UPDATE`, `NO_CHANGE` o `EXCLUDED`; exclusión es deliberada.
+termina `CREATE`, `UPDATE`, `REACTIVATE`, `NO_CHANGE` o `EXCLUDED`; exclusión es deliberada.
 Preview muestra observation, propuesta, motivo de match, before/after,
 `expectedVersion`, pendientes, conflicts, overrides preservados y conteos.
 
@@ -514,7 +666,53 @@ lifecycle y expectedVersions. Cualquier fila stale/inválida revierte todas las
 mutaciones. `clientRequestId` protege creación/ingesta/publish; un retry devuelve
 el outcome previo y no genera otra identidad o revisión.
 
-### 10.6 Retención, consultas y presupuesto operativo
+### 10.6 Retiro seguro y compensación acotada
+
+`Vaciar lista de precios` inactiva todos los `CatalogItem` activos del Tenant.
+No elimina filas. Conserva itemId, SKU, barcode, revisiones, Sources, Versions,
+Listings, Resolutions, ReconciliationMemory, Batches, mappings y auditoría. La
+lista activa normal puede quedar en cero, pero la identidad y la memoria siguen
+recuperables mediante reactivación explícita.
+
+El plan dura cinco minutos y registra el hash del conjunto `itemId + version`,
+conteos y contexto creador. La ejecución bloquea los targets en orden estable,
+recalcula el conjunto y falla cerrada si cambió plan, actor, Branch, Station,
+Session, capability, lifecycle o versión. El efecto y su audit se confirman en
+una transacción serializable.
+
+Para un batch aplicado sólo existe `Retirar artículos creados por este lote`.
+Los targets se derivan de `SupplierListingResolution.resolution = CREATED` del
+batch autoritativo. `MATCHED` y `UPDATED` no se revierten. No se llama
+`Revertir lote`: la reversión exacta de updates queda fuera hasta contar con
+before-images autoritativos y un modelo append-only de efectos/publicación.
+
+### 10.7 Eliminación gobernada de SupplierSource
+
+`SupplierSource` agrupa historia de intake; por eso no se elimina sólo porque
+el usuario ya no quiera verla. El servidor clasifica todas sus relaciones:
+
+| Relación | Semántica al eliminar una Source segura |
+|---|---|
+| Versions `DRAFT`, raw temporal, Listings y RowDecisions de draft | se eliminan dentro de la misma transacción |
+| UpdateBatch de draft sin efecto publicado | se elimina con su draft |
+| Version `INGESTED` | bloquea |
+| SupplierListingResolution | bloquea |
+| SupplierReconciliationMemory | bloquea |
+| RetirementPlan / RetirementEvent ligados al batch | bloquean |
+| CatalogItem, identifiers, price/cost revisions, Catalog audit y downstream | nunca se eliminan ni se modifican |
+
+Antes del efecto se vuelve a comprobar `expectedVersion`, Tenant, Session,
+Station, User, capability y la ausencia de dependencias. Un evento append-only
+desacoplado de la Source conserva actor, sesión, reautenticación, request,
+correlation, nombre y conteos de lo eliminado. Las FKs y la ausencia de
+`CASCADE` son guardas; no sustituyen la decisión de dominio.
+
+La auditoría inicial detectó deuda fuera de esta acción: los hard deletes de
+Category/Brand de Catalog usan `catalog.manage` y los de referencias de Repairs
+usan `repairs.catalogs.manage`. Permanecen sin cambio en PBI-041; requieren
+capabilities explícitas en trabajo posterior con autoridad de esos módulos.
+
+### 10.8 Retención, consultas y presupuesto operativo
 
 Durante 90 días se conserva el payload completo de clipboard/adaptador, celdas
 no mapeadas, artefactos temporales y diagnóstico detallado. Permanentemente se
@@ -572,6 +770,8 @@ necesita arquitectura posterior.
 | D. Alcohol interno | `SUPPLY`, puede existir como identidad para futuro Inventory; Price List lo excluye porque no es sellable |
 | E. dos versiones / 1,500 filas | la primera crea/mapea sin códigos obligatorios; la segunda preselecciona historia exacta, separa changed/new/ambiguous/disappeared; un stale evita apply parcial; reporte completo |
 | F. Muchas Branches | un item Tenant, una base, overrides escasos; revocar hereda; perfil futuro se inserta sin migrar item ni snapshots |
+| G. Historical Tenant | retirar el catálogo deja cero activos y conserva listings/resolutions/memory; una nueva versión exacta clasifica `REACTIVATE`, conserva identidad y publica el diff, nunca `NEW` |
+| H. Virgin Tenant | fixture sintético aislado sin item/listing/resolution/memory previo; las 36 pantallas AG son `NEW` cuando Category/Brand aplicables ya están gobernadas |
 
 ## 13. Entrega por PBIs
 
@@ -585,8 +785,9 @@ tablas/backend/UI porque eso dejaría capas sin resultado operativo.
    moneda Tenant, base/override/costo, capacidades, preferencia personal,
    historial, navegación `Listas` y búsqueda rápida.
 2. **PBI-041 — Initial Bulk Catalog Composer + Versioned Supplier Intake** —
-   `Ready — implementation not authorized`. Composer, source/version/listing,
-   memoria exacta, reconciliación manual, preview, apply atómico y reporte.
+   `Implementation / Owner Review`. Composer, source/version/listing, memoria
+   exacta, reconciliación manual, preview, apply atómico, retiro seguro y
+   compensación acotada de items `CREATED`.
 3. **PBI-042 — Catalog Item Images** — `Planned / fuera del compromiso inicial`.
    Se activa cuando Files tenga contrato y storage autorizados.
 4. **Advanced Supplier Reconciliation** — outcome diferido sin PBI ID:
@@ -634,5 +835,60 @@ módulo vacío.
 - definir semántica de Pedidos y Solicitudes de clientes con ejemplos reales;
 - autorizar PBI-041, PBI-042, Production o cualquier consumidor futuro.
 
+## Identidad estable, título canónico e historia observada
+
+La iteración Owner PBI-041 del 2026-09-16 fija una frontera adicional:
+
+```text
+CatalogItem.itemId                 identidad estable
+CatalogItem.title                  título canónico vigente y mutable
+SupplierListing.supplier_title     observación exacta e inmutable
+SupplierListingResolution.item_id  vínculo publicado entre observación e identidad
+```
+
+`Mismo artículo` decide identidad; no decide por sí mismo un rename. Si el
+título propuesto difiere, la fila persiste `KEEP_CURRENT` o `ADOPT_OBSERVED`.
+El default es mantener el actual. `ADOPT_OBSERVED` actualiza title y
+`normalized_title` sólo dentro del Apply transaccional, incrementa la versión
+del mismo item y deja old/new title, actor, Batch, Source, Supplier Version,
+Listing, timestamp, correlation y client request reconstruibles en
+`CatalogAuditEvent`.
+
+La búsqueda histórica no crea una tabla de aliases. Price List agrega al match
+canónico los `itemId` provenientes de Resolutions cuyo Batch está `APPLIED` y
+cuyo Supplier Listing coincide mediante su vector `simple` indexado. El
+subquery está limitado por Tenant, devuelve identidades, y los filtros,
+paginación y orden siguen aplicándose una sola vez sobre `CatalogItem`; por eso
+múltiples observaciones o Sources no duplican la fila. Category/Brand merge no
+rompe el vínculo porque éste depende de `itemId`; retiro sólo oculta el item de
+la lista activa y reactivación conserva historia e identidad.
+
 No queda una decisión Owner bloqueante para la implementación acotada de
 PBI-040; sólo falta su autorización explícita de inicio.
+
+## PBI-041 — Cobertura de versión de proveedor
+
+`SupplierCatalogVersion.completeness` es independiente de `composer_mode`:
+`FULL`/`COMPACT` describe la captura y `PARTIAL`/`COMPLETE` declara cobertura
+de la lista. El default y el backfill histórico son conservadoramente
+`PARTIAL`; ni el número de filas ni el modo permiten inferir `COMPLETE`.
+
+Una carga `PARTIAL` no produce ni presenta ausencias. Una `COMPLETE` puede
+mostrar “no observado en esta versión completa” exclusivamente frente a una
+versión `COMPLETE` anterior del mismo Tenant y `SupplierSource`. Es evidencia
+de observación, no disponibilidad ni estado de catálogo: Apply jamás cambia
+`CatalogItem.status`, borra identidad, identifiers, revisiones, Resolution o
+memoria por una fila no observada. La cobertura sólo puede cambiar mientras la
+Version sea `DRAFT`; `INGESTED` conserva su significado histórico.
+
+La baseline es automática: para una `COMPLETE` se selecciona la Version
+`COMPLETE/APPLIED` anterior más reciente del mismo Tenant y `SupplierSource`;
+no existe promoción manual. La lectura explica simétricamente las filas que
+continúan, las no observadas y las adicionales respecto a esa baseline. Una
+lista completa puede crecer sin alerta. Si la baseline tiene al menos 20 filas
+y la actual conserva 25% o menos, el servidor exige que el actor confirme
+explícitamente la cobertura antes de Apply. Es una advertencia de plausibilidad
+determinista, no una denegación permanente: la confirmación forma parte del
+request idempotente y del audit. Ningún cálculo de cobertura puede crear,
+retirar, renombrar o alterar por ausencia un `CatalogItem`, identifiers,
+revisiones, Resolution o ReconciliationMemory.

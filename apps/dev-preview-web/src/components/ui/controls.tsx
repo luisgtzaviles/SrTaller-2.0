@@ -30,6 +30,7 @@ export function ButtonLink({
   size = 'default',
   className,
   newRepairTrigger = false,
+  onClick,
 }: Readonly<{
   to: string;
   state?: unknown;
@@ -38,8 +39,9 @@ export function ButtonLink({
   size?: ButtonSize;
   className?: string | undefined;
   newRepairTrigger?: boolean;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }>): React.JSX.Element {
-  return <Link to={to} state={state} data-new-repair-trigger={newRepairTrigger || undefined} className={buttonClasses(tone, size, className)}>{children}</Link>;
+  return <Link to={to} state={state} onClick={onClick} data-new-repair-trigger={newRepairTrigger || undefined} className={buttonClasses(tone, size, className)}>{children}</Link>;
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, Readonly<

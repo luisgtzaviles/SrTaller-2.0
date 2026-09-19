@@ -8,6 +8,7 @@ import {
 } from '../scripts/lib/full-verification-orchestrator.mjs';
 import {
   assertBaseSkipSummary,
+  assertPostgresqlSkipInventory,
   expectedPostgresqlSkipInventory,
   inspectPostgresqlSkipInventory,
 } from '../scripts/lib/postgresql-skip-inventory.mjs';
@@ -52,6 +53,7 @@ function campaignFixture({ failAt = null, finalFingerprint = fingerprint() } = {
     postgresqlComposite: operation('postgresql-composite'),
     pbi039Postgresql: operation('pbi039-postgresql'),
     pbi040Postgresql: operation('pbi040-postgresql'),
+    pbi041Postgresql: operation('pbi041-postgresql'),
     previewRuntime: operation('preview-runtime'),
     smokeProvision: operation('smoke-provision', smoke),
     cleanup: async (activeSmoke) => {
@@ -88,6 +90,7 @@ test('verify:full stage contract preserves the authoritative order', () => {
       'postgresql-composite',
       'pbi039-postgresql',
       'pbi040-postgresql',
+      'pbi041-postgresql',
       'preview-runtime',
       'smoke-provision',
       'smoke-start',
@@ -110,6 +113,7 @@ test('campaign invokes verify before material PostgreSQL and writes PASS evidenc
   assert.ok(fixture.calls.indexOf('base-verify') < fixture.calls.indexOf('postgresql-composite'));
   assert.ok(fixture.calls.indexOf('postgresql-composite') < fixture.calls.indexOf('pbi039-postgresql'));
   assert.ok(fixture.calls.indexOf('pbi039-postgresql') < fixture.calls.indexOf('pbi040-postgresql'));
+  assert.ok(fixture.calls.indexOf('pbi040-postgresql') < fixture.calls.indexOf('pbi041-postgresql'));
   assert.ok(fixture.calls.indexOf('smoke-provision') < fixture.calls.indexOf('smoke-start'));
   assert.ok(fixture.calls.indexOf('smoke-start') < fixture.calls.indexOf('smoke-ui'));
   assert.ok(fixture.calls.indexOf('cleanup') < fixture.calls.indexOf('fingerprint-after'));
@@ -192,14 +196,28 @@ test('candidate mutation turns an otherwise green campaign into failure evidence
   assert.equal(fixture.readEvidence().candidateFingerprintAfter.candidateSha256, 'candidate-b');
 });
 
-test('PostgreSQL skip inventory maps 17 composite, 2 PBI-039 and 1 PBI-040 material tests', async () => {
+test('PostgreSQL skip inventory maps all 30 exact material test identities to one authoritative stage', async () => {
   const inventory = await inspectPostgresqlSkipInventory();
-  assert.equal(inventory.total, 20);
+  assert.equal(inventory.total, 30);
   assert.equal(inventory.material.postgresqlComposite, 17);
   assert.equal(inventory.material.pbi039Postgresql, 2);
   assert.equal(inventory.material.pbi040Postgresql, 1);
+  assert.equal(inventory.material.pbi041Postgresql, 10);
   assert.equal(inventory.files.length, expectedPostgresqlSkipInventory.length);
-  assert.deepEqual(assertBaseSkipSummary('ℹ skipped 20\n', inventory).skipped, 20);
-  assert.throws(() => assertBaseSkipSummary('ℹ skipped 19\n', inventory), /expected 20/u);
-  assert.throws(() => assertBaseSkipSummary('ℹ skipped 20\nℹ skipped 20\n', inventory), /one authoritative/u);
+  assert.deepEqual(assertBaseSkipSummary('ℹ skipped 30\n', inventory).skipped, 30);
+  assert.throws(() => assertBaseSkipSummary('ℹ skipped 29\n', inventory), /expected 30/u);
+  assert.throws(() => assertBaseSkipSummary('ℹ skipped 30\nℹ skipped 30\n', inventory), /one authoritative/u);
+});
+
+test('PostgreSQL skip inventory fails closed on removal, unknown tests and duplicate registrations', async () => {
+  const inventory = await inspectPostgresqlSkipInventory();
+  assert.throws(() => assertPostgresqlSkipInventory(inventory.files.slice(1)), /inventory changed/u);
+  assert.throws(
+    () => assertPostgresqlSkipInventory([...inventory.files, { file: 'test/unknown-postgresql.test.mjs', title: 'Unknown material test', guard: 'enabled' }]),
+    /inventory changed/u,
+  );
+  assert.throws(
+    () => assertPostgresqlSkipInventory(inventory.files, [...expectedPostgresqlSkipInventory, expectedPostgresqlSkipInventory[0]]),
+    /duplicate governed test identity/u,
+  );
 });

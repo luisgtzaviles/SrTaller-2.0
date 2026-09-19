@@ -2,13 +2,15 @@
 
 ## Estado
 
-- **Resultado:** PASS for Definition of Ready — controls specified, not
-  implemented or verified.
-- **Fecha:** 2026-09-13.
+- **Resultado:** controles de readiness más extensiones `OD-RESET-001..005`,
+  `CM-001..009` y canonical title/Supplier observed title materializados en
+  candidato local; Owner Review pendiente.
+- **Fecha:** 2026-09-16.
 - **Riesgo:** Alto por bulk mutation, persistencia, costos, multitenancy,
   concurrencia e idempotencia.
 - **Alcance:** Composer clipboard, Supplier Version/Listing/Resolution,
-  reconciliation memory, atomic Catalog apply, report and raw retention.
+  reconciliation memory, atomic Catalog apply, report, raw retention y retiro
+  seguro de catálogo/lote.
 - **Diferido:** amenazas CSV/XLSX de ZIP bomb, MIME, fórmulas, macros y links se
   modelan cuando exista ese adapter.
 
@@ -24,6 +26,7 @@
 | batch/idempotency | replay/partial success | request/red vs transaction outcome |
 | grid/browser | resource exhaustion | paste no confiable vs main thread/memory |
 | audit/report | datos sensibles/log injection | business evidence vs telemetry/export |
+| retirement plan/effect | retiro masivo indebido o falsa reversión | Level 2 Access vs transacción Catalog |
 
 Clipboard y texto del proveedor son totalmente no confiables. Source ID,
 Tenant, Branch, actor, capability, mapping method, signature y target enviados
@@ -57,6 +60,28 @@ por cliente tampoco son autoridad.
 | BI-T22 | branch override overwritten by base update | Alto | `TENANT_BASE` only; override tables absent from write set | base changes, effective override unchanged |
 | BI-T23 | user tampers classification/match method | Alto | server recomputes matching/diff/state transitions | forged READY/MAPPED/expectedVersion denied |
 | BI-T24 | report enumerates other Tenant or hidden cost | Alto | Tenant-scoped report query, authorization at read, redacted permanent fields | cross-tenant/report cost negative tests |
+| BI-T25 | `catalog.manage` se usa como autoridad masiva implícita | Crítico | capability exacta `catalog.items.bulk_retire`, sin fallback | permiso ordinario solo no muestra ni ejecuta retiro |
+| BI-T26 | otro usuario confirma con su PIN la acción del actor | Crítico | reautenticación PIN del mismo actor, proof consumido una vez | PIN ajeno rechaza y no cambia la Session ni Catalog |
+| BI-T27 | plan manipulado/stale/expirado ejecuta otro conjunto | Crítico | conjunto derivado server-side, hash de item+version, TTL 5 min y revalidación serializable | cambio de versión/contexto/tiempo produce rechazo y cero retiros |
+| BI-T28 | `Vaciar` destruye historia o reutiliza identidad | Crítico | sólo `ACTIVE→INACTIVE`; FKs/append-only intactos; inactive match exacto es REACTIVATE, nunca NEW | cero activos con IDs/SKU/barcode/listings/resolutions/memory intactos |
+| BI-T29 | retiro por batch afecta MATCHED/UPDATED | Crítico | targets sólo por Resolution `CREATED` del batch aplicado | lote mixto retira CREATED y deja MATCHED/UPDATED activos |
+| BI-T30 | Tenant A infiere o ejecuta el plan de B | Crítico | PK/predicates Tenant-scoped y 404 uniforme | plan alien no se lee, consume ni audita en el Tenant incorrecto |
+| BI-T31 | reactivación débil o ambigua revive la identidad equivocada | Crítico | sólo mapping histórico exacto, único, consistente, mismo Tenant y Tipo compatible; sin fuzzy write | dos candidatos, contradicción y Tenant ajeno siguen AMBIGUOUS/CONFLICT |
+| BI-T32 | reactivación parcial crea identidad o revisiones duplicadas | Crítico | target INACTIVE + expectedVersion, transacción serializable, idempotency journal y Resolution MATCHED | stale/concurrencia/retry conservan mismo ID y cero efectos parciales/duplicados |
+| BI-T33 | dos cargas concurrentes reciben el mismo número de versión | Alto | lock de Source + contador server-side + unique Tenant/Source/sequence | requests concurrentes producen `vN` y `vN+1` |
+| BI-T34 | hard delete de Source borra o desconecta evidencia publicada | Crítico | elegibilidad server-side; INGESTED/Resolution/Memory/retirement bloquean; sin CASCADE | Source histórica rechazada y CatalogItems intactos |
+| BI-T35 | capacidad administrativa amplia sustituye autoridad de delete | Crítico | `catalog.suppliers.delete` exacta, asignable y sin fallback | UI oculta + backend deniega sin capability |
+| BI-T36 | Enter/doble click salta intención o duplica delete | Alto | dos confirmaciones, primer Enter neutralizado, guard sincrónico e idempotencia | un solo evento/resultado |
+| BI-T37 | Memory consistente pero no publicada auto-resuelve identidad | Crítico | trust exige última Resolution, Batch `APPLIED`, exact key, target único, cero correcciones, algoritmo conocido y compatibilidad actual | draft/reanalysis/corrección nunca auto-resuelven |
+| BI-T38 | score aproximado se convierte en autoridad de mapping | Crítico | score sólo filtra/ordena; `CANDIDATE` conserva target null y exige decisión Owner | threshold alto y candidato único siguen `UNRESOLVED` |
+| BI-T39 | candidato manipulado apunta a UUID no presentado o de otro Tenant | Crítico | selección revalidada contra candidatos persistidos y Tenant confiable | target forjado/alien rechazado sin memory ni Catalog writes |
+| BI-T40 | candidate scan produce N+1 o búsqueda no acotada | Alto | historia mismo Source bulk-loaded una vez, pool máximo 200, top K 3 e índice invertido | fixture 1,500 mantiene tiempo acotado y cardinalidad estable |
+| BI-T41 | reanalysis enseña memoria o publica Catalog sin confirmación | Crítico | aprendizaje sólo dentro de publish exitoso; reanalysis sólo reemplaza decisiones del Batch | counts de Catalog/Resolution/Memory permanecen idénticos |
+| BI-T42 | `Mismo artículo` renombra implícitamente el CatalogItem | Crítico | decisión de identidad separada de `KEEP_CURRENT`/`ADOPT_OBSERVED`; default KEEP; persistencia provisional | resolver candidate sin segunda decisión no escribe title y falla cerrado si falta al publicar |
+| BI-T43 | Apply fallido deja rename, Resolution o Memory parcial | Crítico | rename, revisiones, Resolution, Memory y audit comparten la misma transacción | fallo inyectado y stale expectedVersion dejan title/history/counts intactos |
+| BI-T44 | búsqueda histórica duplica items, rompe filtros/página o hace full scan/N+1 | Alto | GIN `tsvector`, subquery Tenant/APPLIED que sólo devuelve itemId y filtros/paginación exteriores sobre CatalogItem | múltiples títulos/Sources devuelven un item; filtros/count/EXPLAIN y 10k dentro de presupuesto |
+| BI-T45 | un título observado de Tenant A afecta búsqueda de Tenant B | Crítico | Tenant predicate en Resolution, Listing y Batch; resultado se vuelve a resolver sobre el scope confiable | mismo término en dos Tenants no cruza IDs, conteos ni metadata |
+| BI-T46 | dos versiones renombran el mismo item por last-write-wins | Crítico | expected item version revalidada dentro del Apply transaccional; conflicto tipado | primera versión publica; la segunda stale falla sin rename, Resolution, Memory ni audit parcial |
 
 ## Abuse and denial rules
 
@@ -70,19 +95,29 @@ por cliente tampoco son autoridad.
 - A 50k paste is rejected before durable row creation in the initial product;
   characterization runs in a controlled test harness.
 - Errors for alien/missing resources do not expose which condition occurred.
+- Un plan no es autorización: ejecución vuelve a exigir contexto, capability,
+  prueba Level 2, confirmación y conjunto vigentes.
+- `ACTIVE CATALOG EMPTY` nunca se interpreta como ausencia de memoria histórica.
+- Un candidate es evidencia para el Owner, no identidad. Ni score, cercanía ni
+  candidato único permiten auto-resolve o auto-publish.
+- Un título observado es evidencia item-specific, no alias global. Sólo una
+  Resolution publicada permite usarlo para localizar ese `itemId`.
 
 ## ADR-013 classification
 
 Publish remains level 1 under the approved architecture because it requires a
 specific capability, explicit diff confirmation, append-only revisions,
 idempotency, audit and an all-or-nothing reversible product change. It must be
-reclassified before any automatic supplier sync, threshold-based auto-publish,
-irreversible bulk lifecycle action or material financial authority. Unknown
-sensitive actions remain level 4/fail-closed.
+reclassified before any automatic supplier sync, threshold-based auto-publish
+or material financial authority. Conforme a `OD-RESET-002`, el retiro masivo es
+nivel 2: capability dedicada más reautenticación del mismo actor, plan
+server-side, confirmación exacta, revalidación y auditoría transaccionales. La
+reversión de MATCHED/UPDATED continúa fuera de alcance; cualquier acción
+sensible no clasificada permanece nivel 4/fail-closed.
 
 ## Security exit gate for implementation
 
-- BI-T01..T24 applicable tests green, including PostgreSQL real;
+- BI-T01..T46 applicable tests green, including PostgreSQL real;
 - zero open Blocker/Critical/High in focused High-risk review;
 - server-side cost omission proven in HTTP/network/DOM/report/history;
 - two-Tenant and Branch-preservation matrix complete;
@@ -90,8 +125,20 @@ sensitive actions remain level 4/fail-closed.
 - architecture/persistence ownership checks pass;
 - evidence contains only synthetic data and no raw supplier payload/secrets.
 
-## Residual risk before implementation
+## Riesgo residual antes de Owner Acceptance
 
-No residual risk is accepted in advance. Ready means controls are specified;
-implementation must prove them. 10k is a target candidate until benchmark; 50k
-is characterization, not product capacity.
+La prueba local no sustituye revisión Owner, CI autoritativa ni Preview.
+`REACTIVATE` sólo cubre una fila cuya memoria histórica publicada demuestra un único
+CatalogItem `INACTIVE`; no constituye una reactivación masiva administrativa ni
+habilita matching aproximado. Los candidates no aceptados no escriben memoria;
+una elección sólo aprende al publicar satisfactoriamente. La reversión exacta de updates sigue fuera de
+alcance. 50k continúa siendo caracterización, no capacidad de producto.
+
+## SV completeness controls
+
+| Riesgo | Control |
+|---|---|
+| una carga parcial se interpreta como disponibilidad | default `PARTIAL`; compare devuelve `PARTIAL_CURRENT` sin conteo de ausencia |
+| otro proveedor o Tenant determina una ausencia | compare exige mismo Tenant/Source y el UI sólo ofrece baseline COMPLETE aplicable |
+| una ausencia retira CatalogItem | Apply procesa sólo Listings presentes; retiro permanece `catalog.items.bulk_retire` gobernado |
+| historia ingested se reinterpreta | columna declarada antes de análisis y trigger de inmutabilidad después de `INGESTED` |

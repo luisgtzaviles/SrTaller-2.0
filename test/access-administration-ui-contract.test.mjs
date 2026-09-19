@@ -132,3 +132,27 @@ test('role editing reports partial metadata success and reloads authoritative st
   assert.match(rolesSource, /el nombre y la descripción sí se guardaron, pero los permisos no/iu);
   assert.match(usersSource, /No existen permisos directos por usuario/u);
 });
+
+test('role editor presents catalog authority as human grouped permissions, never role-name authority', () => {
+  assert.match(rolesSource, /title: 'Catálogo y precios'/u);
+  assert.match(rolesSource, /prefix: 'catalog\.'/u);
+  assert.match(rolesSource, /humanCapabilityLabel\(capabilityCode\)/u);
+  assert.match(rolesSource, /humanCapabilityLabel\(code\)/u);
+  for (const label of [
+    'Consultar Lista de precios',
+    'Crear artículos',
+    'Editar artículos',
+    'Desactivar/reactivar artículos',
+    'Administrar precios base',
+    'Ver costos de referencia',
+    'Administrar costos de referencia',
+    'Ver historial de cargas masivas',
+    'Preparar importaciones de catálogo',
+    'Publicar importaciones de catálogo',
+    'Retirar artículos de catálogo masivamente',
+    'Eliminar proveedores sin historial publicado',
+  ]) {
+    assert.match(apiSource, new RegExp(`'[^']+': '${label}'`, 'u'));
+  }
+  assert.match(rolesSource, /hasOperationalCapability\(capabilities, 'access_matrix\.manage'\)/u);
+});

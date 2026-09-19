@@ -2,22 +2,35 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-040 `Done`, `Released: NO`. PBI-041 permanece
-  `Ready — implementation not authorized`.
+- **Estado:** PBI-041 Formal Re-Verification **FAIL**: `REVIEW-041-001/002`
+  están resueltos, pero la única corrida propia de `verify:full` falló Stage 4
+  en el composite PostgreSQL owner-scoped (`FV2-041-001`). Promoción y Owner
+  Acceptance permanecen bloqueadas.
+  PBI-040 permanece `Done`, `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
-  `859825025cf1f9fa94a8b0ced5b91b95760e36a8` antes de la reconciliación
-  documental de cierre.
-- **CI exacta de baseline:**
+  `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
+- **Última CI ejecutable exact-main registrada:**
   [`34893081175`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34893081175),
   `SUCCESS` sobre `8598250` con run-1, run-2 y comparison PASS.
 - **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
-- **PBI actual:** `NONE`.
-- **WIP:** `0/1`; PBI-041 no está seleccionado ni iniciado.
+- **PBI actual:** `PBI-041`.
+- **WIP:** `1/1`; Bulk Catalog Composer y versioned supplier intake.
 - **PBI-040:** PR #49/#50/#51 y cierre PR #52 integrados; `Done`.
 - **Preview:** `09e14c8` desplegado, clean, health y PBI-040 autenticado PASS.
 - **Production:** no desplegada ni autorizada.
 
 ## Resumen ejecutivo
+
+El review remoto de PR #55 encontró `REVIEW-041-001`, una ventana de
+concurrencia entre el snapshot usado para autorizar efectos y el Batch
+publicado. La re-verificación independiente confirmó que la remediación local
+vincula Apply al `batch.lock_version`: un `decide` concurrente invalida el
+intento con cero escrituras y obliga a refetch/reautorización. PostgreSQL
+PBI-041 pasa 10/10 con 75 migraciones y base `verify` pasa 935/0/30. Sin
+embargo, la única corrida propia de `verify:full` falló Stage 4 durante
+`owner-scoped-adapters`; cleanup y fingerprint pasaron y no hubo rerun. Owner
+data y AviCell no cambiaron. Véase
+[`FORMAL_REVERIFICATION_REVIEW_041_001.md`](quality/evidence/pbi-041/FORMAL_REVERIFICATION_REVIEW_041_001.md).
 
 PBI-040 quedó Owner Accepted el 2026-09-13. PR #49 integró Catalog/Pricing;
 PR #50 corrigió de forma gobernada la cronología de cinco migraciones todavía
@@ -34,8 +47,8 @@ desactivadas. Production no cambió.
 
 El cierre documental PR #52 quedó integrado como `a060494` y su exact-main CI
 `34814070839` pasó run-1, run-2 y comparison. Esto materializó `Done` para
-PBI-040; `Released` permanece `NO`. No existe PBI actual y PBI-041 sigue Ready,
-no seleccionado, no autorizado y no iniciado.
+PBI-040; `Released` permanece `NO`. Ése fue el corte previo a la posterior
+selección explícita de PBI-041.
 
 Workflow Phase 1 quedó Owner Accepted e integrado por PR #53. El candidato
 exacto `a0eb1f6` pasó full local, CI `34892262371` con dos legs y comparison, y
@@ -45,6 +58,106 @@ La primera medición verde bajó de la baseline 12.6 min wall / 24.6 job-minutes
 a 6.98 / 11.80, sin perder architecture, typecheck, build, broad tests,
 PostgreSQL material, evidence, determinism comparison ni cleanup. No hubo
 producto, PBI-041, Preview, Production o deploy.
+
+PBI-041 fue seleccionado después como único WIP y autorizado sólo hasta Owner
+Review local. El candidato funcional `6936ab2` (core `b49a52f`) materializa Source/Version/
+Listing, draft durable, matching exacto y memoria corregible, Batch/decisiones,
+publicación PostgreSQL atómica e idempotente, retención raw y los modos Alta
+completa/Actualización compacta del Composer. La suite focalizada quedó verde:
+build PASS, 91/91 contratos, PostgreSQL material 1/1 y 64 migraciones; 10,000
+filas quedaron dentro de budgets y 50,000 se rechazaron sin persistencia. En
+Chrome local se observaron 1280/768/640, light/dark, teclado, paste rectangular,
+virtualización, reload y comparación V1/V2. El clasificador shadow declaró
+`CROSS_MODULE_HIGH_RISK` y no omitió gates. No se ejecutó `verify:full`, conforme
+a la autoridad previa a Acceptance; no hubo push, PR, merge ni deploy.
+
+La remediación local más reciente de PBI-041 separó candidate contrast de
+identity conflict durable. AG v17 conserva 37 filas `FULL` sin publicar: tras
+reanálisis normal en localhost, sus 36 filas trusted permanecen `UNCHANGED` y
+`Pantalla iPhone 16 Original` quedó `NEW/APPLY`, sin target ni memoria,
+reemplazando el falso conflicto previo derivado sólo de `16` frente a `14/15`.
+Los conflictos de identifiers incompatibles y mapping durable corregido siguen
+fallando cerrado. No se aplicó el batch, no hubo push, PR, merge, Preview,
+Production ni deploy; Owner Review continúa pendiente.
+
+La iteración Owner `OD-RESET-001..005`, materializada en el candidato funcional
+`44e605953676456eff519b5b3fca02d952eb5c38`, resolvió el hallazgo posterior sin hard
+delete ni falsa reversión. El lifecycle existente `ACTIVE/INACTIVE` soporta
+retiro; `catalog.items.bulk_retire` y el ejecutor ADR-013 nivel 2 exigen PIN del
+mismo actor, plan server-side, confirmación exacta y revalidación transaccional.
+El retiro global preserva identidad/historia y el retiro por lote deriva sólo
+targets `CREATED`; MATCHED/UPDATED permanecen. PostgreSQL desechable demuestra
+Historical Tenant con 1,539 items retirados, cero activos y memoria intacta, y
+Virgin Tenant con las 36 pantallas AG realmente `NEW`. Un re-intake histórico
+de esas 36 filas produjo 0 `NEW` / 36 `CONFLICT`, demostrando que la historia
+impide duplicarlas. Build, 71 contratos focalizados, la campaña base de 885
+pruebas y PostgreSQL material con 66 migraciones están verdes. El candidato
+continúa sólo en revisión local:
+sin `verify:full`, push, PR, merge, Preview ni deploy.
+
+La iteración Owner posterior corrigió la semántica final de ese caso en
+`f4bc803fe3b086405024f6199b65114feb1feebe`: una memoria exacta, única,
+consistente, Tenant-scoped y compatible hacia un item `INACTIVE` ahora produce
+`REACTIVATE`, no `NEW`, UUID manual ni conflicto por el lifecycle. La versión
+local preservada `AG / Versión 1.2` pasó de 36 conflictos a 36 reactivaciones y
+se publicó sobre los mismos 36 itemId/SKU/barcode. El Tenant quedó con 36
+activos y 1,503 inactivos, sin cambiar sus 1,539 identidades; se anexaron 36
+revisiones de precio, 36 de costo, 36 Resolution `MATCHED` y 36 audit events.
+Los contratos focalizados quedaron 33/33, typecheck/build PASS y PostgreSQL
+material PASS con 67 migraciones, rollback atómico, concurrencia e idempotencia.
+`verify:full`, push, PR, merge, Preview, Production y Owner Acceptance siguen
+sin ejecutarse ni inferirse.
+
+La iteración vigente de PBI-041 separa `Lista` de `Fuentes y versiones`, asigna
+`vN` monotónico server-side por Tenant+Source y exige
+`catalog.suppliers.delete` con ADR-013 nivel 2 para el único hard delete nuevo.
+Sólo una Source exclusivamente `DRAFT` y sin Resolution, Memory ni evidencia de
+retiro es elegible; CatalogItem e historia publicada nunca se eliminan. El
+upgrade local preservó el Tenant histórico y avanzó de 67 a 69 migraciones; una
+incompatibilidad real del backfill con el trigger inmutable fue corregida con
+una ventana autosellada que sólo llena `sequence_number` sin cambiar ningún
+otro valor. Pasaron 80/80 contratos, PostgreSQL 1/1, typecheck y build.
+
+Chrome local verificó 1280/768/640, light/dark, teclado, panel abierto/cerrado,
+alta explícita con cero Versions, `v1`/`v2` el mismo día, descripción, reload,
+protección de Sources publicadas y las dos confirmaciones del delete. El efecto
+destructivo final se canceló para conservar `Proveedor QA eliminable 15 sep`
+con dos borradores revisables; la ejecución y los negativos permanecen cubiertos
+por PostgreSQL/backend. No se ejecutó `verify:full`, push, PR, merge, Preview,
+Production ni deploy; Owner Acceptance sigue pendiente.
+
+La iteración local más reciente retiró la contaminación sintética persistente
+`Proveedor Demo` sin cambiar el hard delete productivo. Una auditoría exacta
+demostró que su Source, 3 Versions, 4,500 Listings, 1,800 mappings, 1,800
+Memory y 1,500 CatalogItems eran fixtures deterministas aislados, sin una sola
+referencia AG u operativa. Un cleanup LOCAL fail-closed los eliminó en una
+transacción serializable y preservó toda relación compartida. PostgreSQL quedó
+con AG, sus 8 Versions y 39 CatalogItems: 36 activos vinculados a AG y 3 seed
+inactivos no Demo; 0 orphans y 0 triggers deshabilitados. API y reload real de
+Chrome muestran sólo AG, y Lista de precios devuelve 36 activos. Los gates
+focalizados de cleanup/Composer, arquitectura, typecheck, build y PostgreSQL
+PBI-041 están verdes. `verify:full`, push, PR, merge, Preview, Production,
+deploy y Owner Acceptance permanecen sin ejecutar ni inferir.
+
+La iteración Owner vigente separa ahora identidad estable, título canónico
+actual y títulos observados por proveedor. La auditoría confirmó que
+SupplierListing + Resolution publicada ya conservan la historia item-specific
+y que CatalogAuditEvent puede reconstruir un rename; no se creó una tabla de
+aliases. `Mismo artículo` exige una segunda decisión KEEP/ADOPT cuando el título
+difiere, con KEEP como default, y nada cambia en Catalog antes de Apply. El
+rename, Resolution, Memory y audit son atómicos y usan expected item version.
+Price List incorpora búsqueda histórica indexada, Tenant-scoped y deduplicada
+sin alterar filtros, conteo o paginación.
+
+Materialmente, AG v13 ya estaba `APPLIED` desde
+`2026-09-16 06:32:29.493+00`; conservó los itemId y títulos canónicos previos.
+No fue republicada ni modificada en esta iteración. AG v12 sigue `READY` y v11
+`RECONCILING`, ambas sin publicar; Chrome usa una de esas superficies para que
+el Owner revise KEEP para `(liquidacion)` y ADOPT para `Display` sin ejecutar
+Apply. Gates focalizados de contracts, PostgreSQL, search, Tenant isolation,
+concurrency, idempotency, architecture, typecheck, build y performance están
+verdes. `verify:full`, push, PR, merge, Preview, Production, deploy y Owner
+Acceptance permanecen sin ejecutar ni inferir.
 
 PBI-039 está `Done` efectivo: PR #45 integró el cierre documental como
 `40684d7` y la CI exacta `34623060504` pasó run-1, run-2 y comparison. El ciclo
@@ -171,11 +284,18 @@ similarity no publica automáticamente; preview no escribe producto y Branch
 overrides permanecen intactos. `OD-BI-001..010` están aprobadas y promovidas.
 El [documento de auditoría y diseño](domain/PRICE_LIST_BULK_IMPORT_AUDIT_AND_DOMAIN_DESIGN.md)
 separa SupplierSource/Version/Listing/Resolution/Memory de
-CatalogUpdateBatch/RowDecision. Arquitectura, persistence design, Threat Model,
-Test Strategy y Definition of Ready dejan PBI-041 `Ready — implementation not
-authorized`. Advanced Supplier Reconciliation queda diferido sin PBI ID,
-selección ni readiness. No se implementó producto, migración, endpoint, UI,
-job o cambio de base.
+CatalogUpdateBatch/RowDecision. Arquitectura, persistence design, Threat Model
+y Test Strategy dejaron PBI-041 Ready en aquel corte. La selección e
+implementación local posteriores quedan descritas arriba. Advanced Supplier
+Reconciliation sigue diferido sin PBI ID, selección ni readiness.
+
+La iteración local vigente de PBI-041 agrega la declaración independiente de
+cobertura `PARTIAL|COMPLETE` para cada SupplierCatalogVersion. El default y
+backfill son `PARTIAL`; sólo una lista COMPLETE puede presentar “no observado”
+contra una COMPLETE anterior del mismo SupplierSource. Esa observación nunca
+retira ni altera CatalogItem, identidad, revisiones, Resolution o memoria.
+La migración local aditiva llegó a 72 migraciones y sus gates focalizados
+pasaron; Owner Review y Owner Acceptance permanecen pendientes.
 
 El candidato funcional final es `0720813`. `verify:full` pasó 13/13 etapas:
 suite base 838 pruebas, 818 PASS y 20 skips PostgreSQL gobernados; composite
@@ -215,10 +335,10 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint | SPRINT-03 — Active |
-| Current PBI | NONE |
-| WIP | 0/1 |
+| Current PBI | PBI-041 — REVIEW-REMEDIATION-1 PASS local; nueva FV requerida |
+| WIP | 1/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Ready documentalmente; Candidate no seleccionado, no iniciado ni autorizado |
+| PBI-041 | Security blocker remediado; verificación local PASS; FV anterior stale; Acceptance pending |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |
@@ -226,5 +346,9 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 ## Próxima acción
 
-Esperar selección/autorización Owner. PBI-041 permanece Ready, no seleccionado
-ni autorizado; no iniciar otro PBI ni desplegar Production.
+Completar la verificación local autoritativa de REVIEW-REMEDIATION-1 y entregar
+el nuevo candidato para Formal Verification independiente. Después, el Owner
+revisa Historical/Virgin, retiro global, retiro CREATED por batch y el
+Composer local. Esperar decisión; no iniciar PBI-042 ni gates de integración,
+publicación,
+fusión o deploy sin autoridad explícita.

@@ -1,0 +1,200 @@
+import { createHash, randomUUID } from 'node:crypto';
+
+import { CatalogInputError, normalizeCatalogIdentifier } from './catalog-item.js';
+import type { CatalogIdentifierScheme, CatalogItemKind } from './catalog-item.js';
+import type { CatalogFieldPolicyKey, CatalogFieldPolicyLevelsByKey } from './catalog-field-policy.js';
+
+export const BULK_CATALOG_REQUIRED_LIMIT = 1_000;
+export const BULK_CATALOG_TARGET_LIMIT = 10_000;
+export const BULK_CATALOG_REJECT_LIMIT = 10_000;
+export const BULK_CATALOG_CHARACTERIZATION_ROWS = 50_000;
+export const BULK_CATALOG_RAW_RETENTION_DAYS = 90;
+
+export type BulkCatalogMode = 'FULL' | 'COMPACT';
+/** Supplier coverage is distinct from the required capture fields in BulkCatalogMode. */
+export type SupplierCatalogCompleteness = 'PARTIAL' | 'COMPLETE';
+export type BulkCatalogClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'CANDIDATE' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
+export type BulkCatalogDecision = 'UNRESOLVED' | 'APPLY' | 'EXCLUDE';
+export type BulkCatalogTitleDecision = 'KEEP_CURRENT' | 'ADOPT_OBSERVED';
+export type BulkCatalogMatchOrigin = 'NONE' | 'INTERNAL_IDENTIFIER' | 'TRUSTED_HISTORY' | 'CANDIDATE' | 'OWNER_SELECTED';
+
+export type BulkCatalogCandidateMatch = Readonly<{
+  itemId: string;
+  title: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  expectedItemVersion: number;
+  score: number;
+  evidence: readonly string[];
+  differences: readonly string[];
+  contradictions: readonly string[];
+}>;
+
+export type BulkCatalogRowInput = Readonly<{
+  kind: CatalogItemKind | null;
+  supplierObservedTitle: string | null;
+  title: string | null;
+  description: string | null;
+  category: string | null;
+  brand: string | null;
+  supplierItemCode: string | null;
+  sku: string | null;
+  barcode: string | null;
+  basePriceMinor: number | null;
+  referenceCostMinor: number | null;
+}>;
+
+/**
+ * The authoritative state preserved by a safely resolved CatalogItem. Values
+ * are deliberately presence-only: validation must not return protected values
+ * (notably reference cost) to a caller that cannot read them.
+ */
+export type BulkCatalogEffectiveTarget = Readonly<{
+  kind: CatalogItemKind;
+  title: string;
+  description: string | null;
+  categoryPresent: boolean;
+  brandPresent: boolean;
+  basePriceMinor: number | null;
+  referenceCostMinor: number | null;
+}>;
+
+export const missingRequiredEffectiveValueReason = (field: CatalogFieldPolicyKey): string => `MISSING_REQUIRED_EFFECTIVE_VALUE:${field}`;
+
+/**
+ * Required means the resulting Catalog value exists. A source row may provide
+ * it explicitly; a safe resolved target may provide it only when the current
+ * mutation preserves that canonical value. Supplier history is never input to
+ * this calculation.
+ */
+export function missingRequiredEffectiveFields(
+  levels: CatalogFieldPolicyLevelsByKey,
+  proposal: BulkCatalogRowInput,
+  target: BulkCatalogEffectiveTarget | null,
+): readonly CatalogFieldPolicyKey[] {
+  /**
+   * A numeric value can be present without being a usable commercial value.
+   * Base price is a fixed domain requirement for a new active Bulk item, and
+   * zero never satisfies that requirement.  Reference cost keeps its policy
+   * semantics: zero is allowed unless the Tenant explicitly makes it
+   * REQUIRED, in which case it must also be a meaningful positive amount.
+   *
+   * An explicit incoming zero intentionally does not fall back to a prior
+   * value.  That keeps an update from silently discarding the supplier's
+   * supplied value while presenting an older price as if it were retained.
+   */
+  const positiveEffectiveAmount = (incoming: number | null, existing: number | null | undefined): boolean => incoming !== null
+    ? incoming > 0
+    : (existing ?? 0) > 0;
+  const present: Readonly<Record<CatalogFieldPolicyKey, boolean>> = Object.freeze({
+    kind: proposal.kind !== null || target !== null,
+    title: proposal.title !== null || Boolean(target?.title),
+    description: proposal.description !== null || target?.description !== null,
+    category: proposal.category !== null || Boolean(target?.categoryPresent),
+    brand: proposal.brand !== null || Boolean(target?.brandPresent),
+    supplierItemCode: proposal.supplierItemCode !== null,
+    sku: proposal.sku !== null,
+    barcode: proposal.barcode !== null,
+    referenceCost: positiveEffectiveAmount(proposal.referenceCostMinor, target?.referenceCostMinor),
+    basePrice: positiveEffectiveAmount(proposal.basePriceMinor, target?.basePriceMinor),
+  });
+  return Object.freeze((Object.keys(levels) as CatalogFieldPolicyKey[])
+    .filter((field) => levels[field] === 'REQUIRED' && !present[field]));
+}
+
+const kinds = new Set<CatalogItemKind>(['PART', 'PRODUCT', 'SERVICE', 'SUPPLY']);
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
+
+export function requiredText(value: unknown, parameter: string, max: number): string {
+  if (typeof value !== 'string') throw new CatalogInputError(parameter);
+  const clean = value.replace(/\s+/gu, ' ').trim();
+  if (!clean || clean.length > max) throw new CatalogInputError(parameter);
+  return clean;
+}
+export function optionalText(value: unknown, parameter: string, max: number): string | null {
+  if (value === null || value === undefined || value === '') return null;
+  return requiredText(value, parameter, max);
+}
+export function optionalObservedText(value: unknown, parameter: string, max: number): string | null {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value !== 'string' || !value.trim() || value.length > max) throw new CatalogInputError(parameter);
+  return value;
+}
+export function requiredUuid(value: unknown, parameter: string): string {
+  if (typeof value !== 'string' || !uuid.test(value)) throw new CatalogInputError(parameter);
+  return value;
+}
+export function positiveVersion(value: unknown, parameter = 'expectedVersion'): number {
+  if (!Number.isSafeInteger(value) || Number(value) < 1) throw new CatalogInputError(parameter);
+  return Number(value);
+}
+export function catalogKind(value: unknown, nullable = false): CatalogItemKind | null {
+  if (nullable && (value === null || value === undefined || value === '')) return null;
+  if (typeof value !== 'string' || !kinds.has(value as CatalogItemKind)) throw new CatalogInputError('kind');
+  return value as CatalogItemKind;
+}
+export function normalizeIdentifier(scheme: CatalogIdentifierScheme, value: string | null): string | null {
+  if (value === null) return null;
+  return normalizeCatalogIdentifier(scheme, value.normalize('NFKC'));
+}
+export function normalizeReference(value: string | null): string | null {
+  return value === null ? null : value.normalize('NFD').replace(/[\u0300-\u036f]/gu, '').toLocaleLowerCase('es-MX').replace(/\s+/gu, ' ').trim();
+}
+
+/**
+ * A new Category is captured as a pending reference only when the supplied
+ * value still looks like a category label.  A product/model-like value (for
+ * example a shifted spreadsheet cell such as "V2314 COPIA") is not safe to
+ * turn into durable reference data without review.  This is deliberately
+ * narrow: it does not try to infer, correct, or fuzzy-map a Category.
+ */
+export function isSafelyCapturableCategoryReference(value: string | null): boolean {
+  const normalized = normalizeReference(value);
+  return normalized !== null && /\p{L}/u.test(normalized) && !/\d/u.test(normalized);
+}
+
+/** Brand names may intentionally contain digits (for example iQOO); parsing
+ * already enforces the bounded, non-empty supplier text.  We only require a
+ * letter here so a code-shaped value cannot become a reference by accident. */
+export function isSafelyCapturableBrandReference(value: string | null): boolean {
+  const normalized = normalizeReference(value);
+  return normalized !== null && /\p{L}/u.test(normalized);
+}
+/** Row-decision errors cross a JSONB boundary but always read as string arrays. */
+export function normalizeRowErrors(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) return Object.freeze([]);
+  return Object.freeze(value.filter((entry): entry is string => typeof entry === 'string'));
+}
+function money(value: unknown, parameter: string): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  if (!Number.isSafeInteger(value) || Number(value) < 0) throw new CatalogInputError(parameter);
+  return Number(value);
+}
+export function parseBulkRows(value: unknown, mode: BulkCatalogMode): readonly BulkCatalogRowInput[] {
+  if (!Array.isArray(value) || value.length === 0 || value.length > BULK_CATALOG_REJECT_LIMIT) throw new CatalogInputError('rows');
+  return Object.freeze(value.map((raw, index) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new CatalogInputError(`rows.${index}`);
+    const row = raw as Record<string, unknown>;
+    const sku = normalizeIdentifier('SKU', optionalText(row.sku, `rows.${index}.sku`, 64));
+    const barcode = normalizeIdentifier('BARCODE', optionalText(row.barcode, `rows.${index}.barcode`, 64));
+    const parsed = Object.freeze({
+      kind: catalogKind(row.kind, true),
+      supplierObservedTitle: optionalObservedText(row.supplierObservedTitle ?? row.title, `rows.${index}.supplierObservedTitle`, 240),
+      title: optionalText(row.title, `rows.${index}.title`, 240),
+      description: optionalText(row.description, `rows.${index}.description`, 4_000),
+      category: optionalText(row.category, `rows.${index}.category`, 160),
+      brand: optionalText(row.brand, `rows.${index}.brand`, 160),
+      supplierItemCode: optionalText(row.supplierItemCode, `rows.${index}.supplierItemCode`, 160),
+      sku, barcode,
+      basePriceMinor: money(row.basePriceMinor, `rows.${index}.basePriceMinor`),
+      referenceCostMinor: money(row.referenceCostMinor, `rows.${index}.referenceCostMinor`),
+    });
+    if (!sku && !barcode && !parsed.supplierItemCode && mode === 'COMPACT') throw new CatalogInputError(`rows.${index}.identifier`);
+    /** FULL domain requirements are checked from the effective value during
+     * Analyze, after a safe target can be known. COMPACT still needs identity. */
+    return parsed;
+  }));
+}
+
+export function sha256(value: unknown): string { return createHash('sha256').update(JSON.stringify(value)).digest('hex'); }
+export function newId(): string { return randomUUID(); }
+export function retentionDate(now: Date): Date { const value = new Date(now); value.setUTCDate(value.getUTCDate() + BULK_CATALOG_RAW_RETENTION_DAYS); return value; }

@@ -23,6 +23,11 @@
       "ProtectedOperationKind",
       "ProtectedOperationRequirement",
       "ProtectedRequestEvidence",
+      "ReauthenticatedOperationalContext",
+      "SENSITIVE_ACTION_LEVEL2_EXECUTOR",
+      "SensitiveActionLevel2Code",
+      "SensitiveActionLevel2Executor",
+      "SensitiveActionReauthenticationError",
       "TENANT_WIDE_AUTHORIZATION_EXECUTOR",
       "TenantWideAuthorizationExecutor"
     ],
@@ -226,6 +231,12 @@
           {
             "token": "TENANT_WIDE_AUTHORIZATION_EXECUTOR",
             "contract": "TenantWideAuthorizationExecutor",
+            "consumerImportSpecifier": "../access/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "SENSITIVE_ACTION_LEVEL2_EXECUTOR",
+            "contract": "SensitiveActionLevel2Executor",
             "consumerImportSpecifier": "../access/index.js",
             "producerImportSpecifier": "./index.js"
           }
@@ -744,7 +755,20 @@
       "src/infrastructure/database/migrations/20260913120000_catalog_add_reference_safe_delete.ts",
       "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts",
       "src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts",
-      "src/infrastructure/database/migrations/20260913140000_catalog_add_canonical_reference_merge.ts"
+      "src/infrastructure/database/migrations/20260913140000_catalog_add_canonical_reference_merge.ts",
+      "src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts",
+      "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts",
+      "src/infrastructure/database/migrations/20260914152000_access_add_catalog_bulk_retire_capability.ts",
+      "src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts",
+      "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts",
+      "src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts",
+      "src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts",
+      "src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts",
+      "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts",
+      "src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts",
+      "src/infrastructure/database/migrations/20260917190000_catalog_create_field_policies.ts",
+      "src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts",
+      "src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1278,6 +1302,93 @@
           "references": ["tenants"],
           "functions": ["catalog_reject_append_only_mutation"],
           "triggers": ["catalog_reference_merge_events_reject_delete", "catalog_reference_merge_events_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_catalog_versions", "catalog_supplier_listing_resolutions", "catalog_supplier_listings", "catalog_supplier_reconciliation_memory", "catalog_supplier_sources", "catalog_supplier_version_raw_payloads", "catalog_update_batches", "catalog_update_row_decisions"],
+          "functions": ["catalog_guard_supplier_listing_mutation", "catalog_reject_append_only_mutation", "catalog_reject_ingested_supplier_version_mutation"],
+          "triggers": ["catalog_supplier_listing_resolutions_reject_delete", "catalog_supplier_listing_resolutions_reject_update", "catalog_supplier_listings_guard_delete", "catalog_supplier_listings_guard_update", "catalog_supplier_versions_reject_delete", "catalog_supplier_versions_reject_ingested_update"]
+        },
+        "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_catalog_versions", "catalog_supplier_reconciliation_memory"],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260914152000_access_add_catalog_bulk_retire_capability.ts": {
+          "owner": "access",
+          "tables": ["access_capabilities", "access_role_capabilities"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_retirement_events", "catalog_retirement_plans"],
+          "functions": ["catalog_reject_append_only_mutation"],
+          "triggers": ["catalog_retirement_events_reject_delete", "catalog_retirement_events_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_update_batches", "catalog_update_row_decisions"],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_catalog_versions", "catalog_supplier_source_deletion_events", "catalog_supplier_sources"],
+          "references": ["tenants"],
+          "functions": ["catalog_reject_append_only_mutation", "catalog_reject_ingested_supplier_version_mutation"],
+          "triggers": ["catalog_supplier_source_deletion_events_reject_delete", "catalog_supplier_source_deletion_events_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts": {
+          "owner": "access",
+          "tables": ["access_capabilities", "access_role_capabilities"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_update_batches", "catalog_update_row_decisions"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_listings", "catalog_update_row_decisions"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_supplier_catalog_versions"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260917190000_catalog_create_field_policies.ts": {
+          "owner": "catalog",
+          "tables": ["catalog_field_policy_heads", "catalog_field_policy_versions"],
+          "references": ["tenants"],
+          "functions": ["catalog_reject_append_only_mutation"],
+          "triggers": ["catalog_field_policy_versions_reject_delete", "catalog_field_policy_versions_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts": {
+          "owner": "access",
+          "tables": ["access_capabilities", "access_role_capabilities"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts": {
+          "owner": "access",
+          "tables": ["access_capabilities", "access_role_capabilities"],
+          "references": [],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1330,6 +1441,21 @@
           "CatalogReferenceDeletionEventTable",
           "CatalogReferenceMergeEventTable",
           "CatalogReferenceIdentityLockTable",
+          "CatalogSupplierSourceTable",
+          "CatalogSupplierCatalogVersionTable",
+          "CatalogSupplierVersionRawPayloadTable",
+          "CatalogSupplierListingTable",
+          "CatalogUpdateBatchTable",
+          "CatalogUpdateRowClassification",
+          "CatalogUpdateRowDecisionTable",
+          "CatalogSupplierListingResolutionTable",
+          "CatalogSupplierMemoryScheme",
+          "CatalogSupplierReconciliationMemoryTable",
+          "CatalogSupplierSourceDeletionEventTable",
+          "CatalogRetirementPlanTable",
+          "CatalogRetirementEventTable",
+          "CatalogFieldPolicyHeadTable",
+          "CatalogFieldPolicyVersionTable",
           "UserProvisioningBootstrapTable",
           "UserLifecycleCommandTable",
           "UserProfileUpdateCommandTable",
@@ -1542,6 +1668,16 @@
           "src/infrastructure/database/migrations/20260913121000_repairs_add_reference_safe_delete.ts",
           "src/infrastructure/database/migrations/20260913130000_catalog_enforce_reference_identity.ts",
           "src/infrastructure/database/migrations/20260913140000_catalog_add_canonical_reference_merge.ts",
+          "src/infrastructure/database/migrations/20260914150000_catalog_create_bulk_composer.ts",
+          "src/infrastructure/database/migrations/20260914151000_catalog_strengthen_supplier_history.ts",
+          "src/infrastructure/database/migrations/20260914152000_access_add_catalog_bulk_retire_capability.ts",
+          "src/infrastructure/database/migrations/20260914153000_catalog_create_retirement_plans.ts",
+          "src/infrastructure/database/migrations/20260914154000_catalog_add_historical_reactivation.ts",
+          "src/infrastructure/database/migrations/20260914155000_catalog_govern_supplier_history.ts",
+          "src/infrastructure/database/migrations/20260914155100_access_add_supplier_delete_capability.ts",
+          "src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts",
+          "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts",
+          "src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1731,6 +1867,12 @@
         "allowedScopes": ["CatalogScope", "CatalogMutationContext"],
         "status": "materialized-owner-port"
       },
+      "src/modules/catalog/application/ports/catalog-field-policy-repository.port.ts": {
+        "owner": "catalog",
+        "contract": "CatalogFieldPolicyRepositoryPort",
+        "allowedScopes": ["CatalogFieldPolicyScope", "CatalogFieldPolicyConfigurationContext"],
+        "status": "materialized-owner-port"
+      },
       "src/modules/customers/application/ports/customer-intake-runtime.port.ts": {
         "owner": "customers",
         "contract": "CustomerIntakePersistencePort",
@@ -1795,6 +1937,8 @@
     "scopeTypes": {
       "CatalogScope": ["tenantId", "branchId"],
       "CatalogMutationContext": ["tenantId", "branchId"],
+      "CatalogFieldPolicyScope": ["tenantId"],
+      "CatalogFieldPolicyConfigurationContext": ["tenantId", "branchId"],
       "CustomerPersistenceScope": ["tenantId", "branchId"],
       "RepairCreateContext": ["tenantId", "branchId"],
       "RepairEquipmentCorrectionContext": ["tenantId", "branchId"],
@@ -1824,6 +1968,18 @@
       "src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts": {
         "owner": "catalog",
         "port": "src/modules/catalog/application/ports/catalog-repository.port.ts",
+        "composition": "src/modules/catalog/catalog.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts": {
+        "owner": "catalog",
+        "port": "src/modules/catalog/application/ports/bulk-catalog-repository.port.ts",
+        "composition": "src/modules/catalog/catalog.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/catalog/infrastructure/persistence/kysely-catalog-field-policy.repository.ts": {
+        "owner": "catalog",
+        "port": "src/modules/catalog/application/ports/catalog-field-policy-repository.port.ts",
         "composition": "src/modules/catalog/catalog.module.ts",
         "status": "materialized-owner-adapter"
       },
@@ -1908,6 +2064,19 @@
       "catalog_audit_events": { "owner": "catalog", "kind": "table" },
       "catalog_reference_deletion_events": { "owner": "catalog", "kind": "table" },
       "catalog_reference_merge_events": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_sources": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_catalog_versions": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_version_raw_payloads": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_listings": { "owner": "catalog", "kind": "table" },
+      "catalog_update_batches": { "owner": "catalog", "kind": "table" },
+      "catalog_update_row_decisions": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_listing_resolutions": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_reconciliation_memory": { "owner": "catalog", "kind": "table" },
+      "catalog_supplier_source_deletion_events": { "owner": "catalog", "kind": "table" },
+      "catalog_retirement_plans": { "owner": "catalog", "kind": "table" },
+      "catalog_retirement_events": { "owner": "catalog", "kind": "table" },
+      "catalog_field_policy_heads": { "owner": "catalog", "kind": "table" },
+      "catalog_field_policy_versions": { "owner": "catalog", "kind": "table" },
       "branches": {
         "owner": "stations",
         "kind": "table"
@@ -2430,6 +2599,7 @@
     "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/access/presentation/tenant-wide-authorization.executor.ts",
+    "src/modules/access/presentation/sensitive-action-level2.executor.ts",
     "src/modules/access/presentation/authenticated-self.executor.ts",
     "src/modules/access/presentation/user-preferences.controller.ts",
     "src/modules/stations/index.ts",
@@ -2484,10 +2654,23 @@
     "src/modules/catalog/index.ts",
     "src/modules/catalog/catalog.module.ts",
     "src/modules/catalog/domain/catalog-item.ts",
+    "src/modules/catalog/domain/bulk-catalog.ts",
+    "src/modules/catalog/domain/bulk-catalog-candidate-matching.ts",
+    "src/modules/catalog/domain/supplier-coverage.ts",
+    "src/modules/catalog/domain/catalog-field-policy.ts",
     "src/modules/catalog/application/catalog.service.ts",
+    "src/modules/catalog/application/bulk-catalog.service.ts",
+    "src/modules/catalog/application/catalog-retirement.service.ts",
+    "src/modules/catalog/application/catalog-field-policy.service.ts",
     "src/modules/catalog/application/catalog-protected-operations.ts",
     "src/modules/catalog/application/ports/catalog-repository.port.ts",
+    "src/modules/catalog/application/ports/bulk-catalog-repository.port.ts",
+    "src/modules/catalog/application/ports/catalog-retirement-repository.port.ts",
+    "src/modules/catalog/application/ports/catalog-field-policy-repository.port.ts",
     "src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts",
+    "src/modules/catalog/infrastructure/persistence/kysely-bulk-catalog.repository.ts",
+    "src/modules/catalog/infrastructure/persistence/kysely-catalog-retirement.repository.ts",
+    "src/modules/catalog/infrastructure/persistence/kysely-catalog-field-policy.repository.ts",
     "src/modules/catalog/presentation/catalog.controller.ts",
     "src/modules/tenancy/index.ts",
     "src/modules/tenancy/application/ports/tenant-repository.port.ts",

@@ -50,6 +50,7 @@ const governedFilters = Object.freeze([
   `label=com.srtaller.pbi023.execution=${executionLabel}`,
   'label=com.srtaller.pbi039.hardening=postgresql',
   'label=com.srtaller.pbi040.catalog=postgresql',
+  'label=com.srtaller.pbi041.bulk=postgresql',
   'label=com.srtaller.preview-runtime=postgresql',
   `label=${fullVerificationSmokeLabel}`,
 ]);
@@ -124,6 +125,7 @@ async function dryInventory() {
     'scripts/run-postgresql-ci.mjs',
     'scripts/test-pbi039-postgresql.mjs',
     'scripts/test-pbi040-postgresql.mjs',
+    'scripts/test-pbi041-postgresql.mjs',
     'scripts/test-preview-database-runtime-postgresql.mjs',
     'scripts/smoke-start.mjs',
     'scripts/smoke-ui.mjs',
@@ -278,6 +280,11 @@ if (process.argv.includes('--dry-run')) {
         skips: 0,
         cleanup: 'PASS',
       });
+    },
+    pbi041Postgresql: async () => {
+      const result = await runStreamingCommand(process.execPath, ['scripts/test-pbi041-postgresql.mjs'], { timeoutMs: 5 * 60_000 });
+      if (!result.stdout.includes('PBI-041 PostgreSQL PASS:') || !result.stdout.includes('disposable container removed')) throw new Error('PBI-041 PostgreSQL evidence is incomplete');
+      return Object.freeze({ tests: skipInventory.material.pbi041Postgresql, skips: 0, cleanup: 'PASS' });
     },
     previewRuntime: async () => {
       const result = await runStreamingCommand(

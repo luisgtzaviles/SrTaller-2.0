@@ -96,13 +96,26 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     catalog_audit_events: DatabaseSchema['catalog_audit_events'];
     catalog_reference_deletion_events: DatabaseSchema['catalog_reference_deletion_events'];
     catalog_reference_merge_events: DatabaseSchema['catalog_reference_merge_events'];
+    catalog_supplier_sources: DatabaseSchema['catalog_supplier_sources'];
+    catalog_supplier_catalog_versions: DatabaseSchema['catalog_supplier_catalog_versions'];
+    catalog_supplier_version_raw_payloads: DatabaseSchema['catalog_supplier_version_raw_payloads'];
+    catalog_supplier_listings: DatabaseSchema['catalog_supplier_listings'];
+    catalog_update_batches: DatabaseSchema['catalog_update_batches'];
+    catalog_update_row_decisions: DatabaseSchema['catalog_update_row_decisions'];
+    catalog_supplier_listing_resolutions: DatabaseSchema['catalog_supplier_listing_resolutions'];
+    catalog_supplier_reconciliation_memory: DatabaseSchema['catalog_supplier_reconciliation_memory'];
+    catalog_supplier_source_deletion_events: DatabaseSchema['catalog_supplier_source_deletion_events'];
+    catalog_retirement_plans: DatabaseSchema['catalog_retirement_plans'];
+    catalog_retirement_events: DatabaseSchema['catalog_retirement_events'];
+    catalog_field_policy_heads: DatabaseSchema['catalog_field_policy_heads'];
+    catalog_field_policy_versions: DatabaseSchema['catalog_field_policy_versions'];
   }>;
 
 type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
   Owner extends 'access'
     ? Pick<DatabaseSchema, 'access_capabilities' | 'access_roles' | 'access_role_commands' | 'access_role_capabilities' | 'access_role_assignments' | 'access_role_assignment_commands' | 'access_pin_credentials' | 'access_pin_credential_commands' | 'access_pin_eligibility_tenant_guards' | 'access_pin_attempt_station_guards' | 'access_pin_attempt_limits' | 'access_operational_session_station_guards' | 'access_operational_sessions'>
     : Owner extends 'catalog'
-    ? Pick<DatabaseSchema, 'catalog_categories' | 'catalog_brands' | 'catalog_category_pending_values' | 'catalog_brand_pending_values' | 'catalog_brand_pending_kind_applicability' | 'catalog_items' | 'catalog_item_identifiers' | 'catalog_sku_sequences' | 'catalog_category_kind_applicability' | 'catalog_brand_kind_applicability' | 'catalog_barcode_sequences' | 'catalog_base_price_revisions' | 'catalog_branch_price_revisions' | 'catalog_reference_cost_revisions' | 'catalog_commands' | 'catalog_audit_events' | 'catalog_reference_deletion_events' | 'catalog_reference_merge_events' | 'catalog_reference_identity_locks'>
+    ? Pick<DatabaseSchema, 'catalog_categories' | 'catalog_brands' | 'catalog_category_pending_values' | 'catalog_brand_pending_values' | 'catalog_brand_pending_kind_applicability' | 'catalog_items' | 'catalog_item_identifiers' | 'catalog_sku_sequences' | 'catalog_category_kind_applicability' | 'catalog_brand_kind_applicability' | 'catalog_barcode_sequences' | 'catalog_base_price_revisions' | 'catalog_branch_price_revisions' | 'catalog_reference_cost_revisions' | 'catalog_commands' | 'catalog_audit_events' | 'catalog_reference_deletion_events' | 'catalog_reference_merge_events' | 'catalog_reference_identity_locks' | 'catalog_supplier_sources' | 'catalog_supplier_catalog_versions' | 'catalog_supplier_version_raw_payloads' | 'catalog_supplier_listings' | 'catalog_update_batches' | 'catalog_update_row_decisions' | 'catalog_supplier_listing_resolutions' | 'catalog_supplier_reconciliation_memory' | 'catalog_supplier_source_deletion_events' | 'catalog_retirement_plans' | 'catalog_retirement_events' | 'catalog_field_policy_heads' | 'catalog_field_policy_versions'>
     : Owner extends 'customers'
     ? Pick<DatabaseSchema, 'customers' | 'customer_contact_phones'>
     : Owner extends 'database'

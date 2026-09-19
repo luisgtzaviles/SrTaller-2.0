@@ -135,10 +135,19 @@ const administrationCapabilityCodes = new Set<CapabilityCode>([
   'repairs.configuration.read',
   'repairs.configuration.manage',
   'catalog.manage',
+  'catalog.items.create',
+  'catalog.items.update',
+  'catalog.items.deactivate',
   'catalog.prices.manage',
+  'catalog.reference_cost.read',
   'catalog.reference_cost.manage',
+  'catalog.configuration.read',
+  'catalog.configuration.manage',
+  'catalog.import.read',
   'catalog.import.prepare',
   'catalog.import.publish',
+  'catalog.items.bulk_retire',
+  'catalog.suppliers.delete',
 ]);
 
 async function resolveTenantWideAdministrationCapabilities(

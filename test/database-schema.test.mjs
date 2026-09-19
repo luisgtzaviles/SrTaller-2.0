@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 62);
+  assert.equal(first.manifest.migrations.length, 75);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -413,6 +413,84 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260913140000_catalog_add_canonical_reference_merge',
         order: 61,
         owner: 'catalog',
+      },
+      {
+        fileName: '20260914150000_catalog_create_bulk_composer.js',
+        migrationName: '20260914150000_catalog_create_bulk_composer',
+        order: 62,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260914151000_catalog_strengthen_supplier_history.js',
+        migrationName: '20260914151000_catalog_strengthen_supplier_history',
+        order: 63,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260914152000_access_add_catalog_bulk_retire_capability.js',
+        migrationName: '20260914152000_access_add_catalog_bulk_retire_capability',
+        order: 64,
+        owner: 'access',
+      },
+      {
+        fileName: '20260914153000_catalog_create_retirement_plans.js',
+        migrationName: '20260914153000_catalog_create_retirement_plans',
+        order: 65,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260914154000_catalog_add_historical_reactivation.js',
+        migrationName: '20260914154000_catalog_add_historical_reactivation',
+        order: 66,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260914155000_catalog_govern_supplier_history.js',
+        migrationName: '20260914155000_catalog_govern_supplier_history',
+        order: 67,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260914155100_access_add_supplier_delete_capability.js',
+        migrationName: '20260914155100_access_add_supplier_delete_capability',
+        order: 68,
+        owner: 'access',
+      },
+      {
+        fileName: '20260915120000_catalog_add_bounded_candidate_matching.js',
+        migrationName: '20260915120000_catalog_add_bounded_candidate_matching',
+        order: 69,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260915130000_catalog_add_supplier_observed_title_history.js',
+        migrationName: '20260915130000_catalog_add_supplier_observed_title_history',
+        order: 70,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260916180000_catalog_add_supplier_version_completeness.js',
+        migrationName: '20260916180000_catalog_add_supplier_version_completeness',
+        order: 71,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260917190000_catalog_create_field_policies.js',
+        migrationName: '20260917190000_catalog_create_field_policies',
+        order: 72,
+        owner: 'catalog',
+      },
+      {
+        fileName: '20260917190100_access_add_catalog_configuration_capabilities.js',
+        migrationName: '20260917190100_access_add_catalog_configuration_capabilities',
+        order: 73,
+        owner: 'access',
+      },
+      {
+        fileName: '20260917190200_access_add_granular_catalog_capabilities.js',
+        migrationName: '20260917190200_access_add_granular_catalog_capabilities',
+        order: 74,
+        owner: 'access',
       },
     ],
   );

@@ -199,6 +199,15 @@ shell/header sin repetición. Cuando el contexto operativo esté realmente
 bloqueado se muestra un único blocking banner, no mensajes técnicos repetidos
 por pantalla.
 
+Una superficie hija usa `BackLink` para volver a su colección o workspace
+padre. El patrón presenta flecha, nombre del destino y foco visible; no se
+reimplementa como texto o CSS particular de cada página.
+
+El feedback transitorio y exitoso usa `Toast` con anuncio no intrusivo. Un error
+accionable permanece junto al campo/celda y ofrece navegación cuando hay más de
+uno; un error global o desconocido permanece en `Alert`. El banner de ambiente
+pertenece al shell y no se duplica dentro de una Page.
+
 En móvil se descarta la barra superior de iconos de la Preview actual: la
 dirección V1 es header + drawer.
 

@@ -1218,67 +1218,32 @@ test('PostgreSQL 18.4 enforces concurrent Operational Sessions, exact lifecycle,
       [tenantA, stationA],
     )).rows[0].count;
     assert.ok(activeBeforeRollback >= 2);
-    const catalogMergeMigration = [...(await runner.getMigrationStatus()).migrations]
-      .reverse()
-      .find(({ state }) => state === 'applied');
-    assert.equal(
-      catalogMergeMigration?.name,
-      '20260913140000_catalog_add_canonical_reference_merge',
+    const concurrencyMigrationName =
+      '20260912180000_access_enable_concurrent_operational_sessions';
+    const governedMigrationNames = inspection.manifest.migrations.map(
+      ({ migrationName }) => migrationName,
     );
-    await runner.migrateDown(authorization(catalogMergeMigration));
-    const catalogIdentityMigration = [...(await runner.getMigrationStatus()).migrations]
-      .reverse()
-      .find(({ state }) => state === 'applied');
-    assert.equal(
-      catalogIdentityMigration?.name,
-      '20260913130000_catalog_enforce_reference_identity',
+    const concurrencyMigrationIndex = governedMigrationNames.indexOf(
+      concurrencyMigrationName,
     );
-    await runner.migrateDown(authorization(catalogIdentityMigration));
-    const repairsSafeDeleteMigration = [...(await runner.getMigrationStatus()).migrations]
-      .reverse()
-      .find(({ state }) => state === 'applied');
-    assert.equal(
-      repairsSafeDeleteMigration?.name,
-      '20260913121000_repairs_add_reference_safe_delete',
-    );
-    await runner.migrateDown(authorization(repairsSafeDeleteMigration));
-    const catalogSafeDeleteMigration = [...(await runner.getMigrationStatus()).migrations]
-      .reverse()
-      .find(({ state }) => state === 'applied');
-    assert.equal(
-      catalogSafeDeleteMigration?.name,
-      '20260913120000_catalog_add_reference_safe_delete',
-    );
-    await runner.migrateDown(authorization(catalogSafeDeleteMigration));
-    const catalogMigration = [...(await runner.getMigrationStatus()).migrations]
-      .reverse()
-      .find(({ state }) => state === 'applied');
-    assert.equal(
-      catalogMigration?.name,
-      '20260912210000_catalog_unify_pending_reference_reconciliation',
-    );
-    await runner.migrateDown(authorization(catalogMigration));
-    for (const expectedFoundationMigration of [
-      '20260912200000_catalog_add_reference_governance',
-      '20260912193000_catalog_create_pricing_core',
-      '20260912192000_users_add_price_list_cost_preference',
-      '20260912191000_access_add_catalog_capabilities',
-      '20260912190000_tenancy_add_operating_currency',
-    ]) {
-      const foundationMigration = [
-        ...(await runner.getMigrationStatus()).migrations,
-      ]
+    assert.ok(concurrencyMigrationIndex >= 0);
+    const postConcurrencyMigrationNames = governedMigrationNames
+      .slice(concurrencyMigrationIndex + 1)
+      .reverse();
+    assert.ok(postConcurrencyMigrationNames.length > 0);
+    for (const expectedMigrationName of postConcurrencyMigrationNames) {
+      const migration = [...(await runner.getMigrationStatus()).migrations]
         .reverse()
         .find(({ state }) => state === 'applied');
-      assert.equal(foundationMigration?.name, expectedFoundationMigration);
-      await runner.migrateDown(authorization(foundationMigration));
+      assert.equal(migration?.name, expectedMigrationName);
+      await runner.migrateDown(authorization(migration));
     }
     const latestMigration = [...(await runner.getMigrationStatus()).migrations]
       .reverse()
       .find(({ state }) => state === 'applied');
     assert.equal(
       latestMigration?.name,
-      '20260912180000_access_enable_concurrent_operational_sessions',
+      concurrencyMigrationName,
     );
     await assert.rejects(
       runner.migrateDown(authorization(latestMigration)),

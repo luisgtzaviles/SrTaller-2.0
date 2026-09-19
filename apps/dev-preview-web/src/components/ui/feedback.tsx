@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, CircleAlert, Inbox, LoaderCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CircleAlert, Inbox, LoaderCircle } from 'lucide-react';
 
 import { ButtonLink } from './controls.js';
 import styles from './ui.module.css';
@@ -25,6 +25,10 @@ export function Alert({
 
 export function Spinner({ label = 'Cargando' }: Readonly<{ label?: string }>): React.JSX.Element {
   return <span className={styles.spinner} role="status"><LoaderCircle aria-hidden="true" size={20} /><span className="srt-visually-hidden">{label}</span></span>;
+}
+
+export function Toast({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
+  return <div className={styles.toast} role="status" aria-live="polite"><CheckCircle2 aria-hidden="true" size={18} />{children}</div>;
 }
 
 export function Skeleton({ rows = 4 }: Readonly<{ rows?: number }>): React.JSX.Element {

@@ -248,6 +248,7 @@ export class PreviewApiError extends Error {
     readonly status: number,
     message = 'No fue posible completar la operación de preview.',
     readonly code: string | null = null,
+    readonly parameter: string | null = null,
   ) {
     super(message);
     this.name = 'PreviewApiError';

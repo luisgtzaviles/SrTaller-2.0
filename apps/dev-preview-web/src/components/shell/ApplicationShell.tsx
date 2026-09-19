@@ -200,6 +200,7 @@ export function ApplicationShell({
   const drawerRef = useRef<HTMLElement>(null);
   const operatorTriggerRef = useRef<HTMLElement>(null);
   const location = useLocation();
+  const showEnvironmentBanner = location.pathname !== '/listas/precios/carga-masiva';
   const closeDrawer = useCallback((): void => setDrawerOpen(false), []);
   useFocusTrap(drawerOpen, drawerRef, closeDrawer);
 
@@ -282,17 +283,17 @@ export function ApplicationShell({
         </aside>
 
         <div className={styles.workspace}>
-          <div className={styles.blockingBanner}>
-            <Alert tone="info" title={__SRT_DEPLOY_ENV__ === 'local' ? 'Entorno local de desarrollo' : 'Entorno de preview'}>
+          {showEnvironmentBanner || errorMessage ? <div className={styles.blockingBanner}>
+            {showEnvironmentBanner ? <Alert tone="info" title={__SRT_DEPLOY_ENV__ === 'local' ? 'Entorno local de desarrollo' : 'Entorno de preview'}>
               {__SRT_DEPLOY_ENV__ === 'local'
                 ? 'El contexto confiable y la sesión provienen del servidor local.'
                 : 'El contexto confiable y la sesión provienen del servidor de preview.'}
               {' '}Los registros operativos siguen siendo fixtures sintéticos; esto no corresponde a Production.
-            </Alert>
+            </Alert> : null}
             {errorMessage ? (
               <Alert tone="danger" title="No se completó la acción">{errorMessage}</Alert>
             ) : null}
-          </div>
+          </div> : null}
 
           <main id="main-content" className={styles.mainContent} tabIndex={-1}>{children}</main>
         </div>

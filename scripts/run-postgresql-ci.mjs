@@ -12,7 +12,9 @@ import {
 } from './lib/postgresql-ci-evidence.mjs';
 import {
   formatPostgresqlChildFailureDiagnostic,
+  formatPostgresqlHarnessFailureDiagnostic,
   parsePostgresqlChildFailureMarker,
+  parsePostgresqlHarnessFailureMarker,
 } from './lib/postgresql-test-output.mjs';
 import { sha256File } from './lib/ci-evidence.mjs';
 
@@ -61,17 +63,20 @@ async function command(commandName, argumentsList, options = {}) {
       ...options,
     });
   } catch (error) {
-    const childFailure = parsePostgresqlChildFailureMarker(
+    const stderr =
       error !== null &&
         typeof error === 'object' &&
         typeof error.stderr === 'string'
         ? error.stderr
-        : '',
-    );
+        : '';
+    const childFailure = parsePostgresqlChildFailureMarker(stderr);
+    const harnessFailure = parsePostgresqlHarnessFailureMarker(stderr);
     const diagnostic =
-      childFailure === null
-        ? null
-        : formatPostgresqlChildFailureDiagnostic(childFailure);
+      childFailure !== null && harnessFailure === null
+        ? formatPostgresqlChildFailureDiagnostic(childFailure)
+        : harnessFailure !== null && childFailure === null
+          ? formatPostgresqlHarnessFailureDiagnostic(harnessFailure)
+          : null;
     throw new Error(
       `PostgreSQL CI operation failed: ${
         argumentsList[0] ?? commandName

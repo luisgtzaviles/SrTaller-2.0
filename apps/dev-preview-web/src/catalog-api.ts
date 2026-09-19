@@ -8,7 +8,7 @@ export type CatalogReference = Readonly<{
   createdInBranchId?: string | null;
 }>;
 export type CatalogPendingCategory = Readonly<{ pendingCategoryValueId: string; rawLabel: string; normalizedKey: string; kind: CatalogItemKind; resolutionStatus: 'PENDING' | 'RESOLVED'; canonicalCategoryId: string | null; canonicalName: string | null; version: number; usageCount: number; firstSeenAt: string; lastSeenAt: string; capturedBy: string | null; capturedInBranchId: string }>;
-export type CatalogPendingBrand = Readonly<{ pendingBrandValueId: string; rawLabel: string; normalizedKey: string; applicableKinds: readonly CatalogItemKind[]; resolutionStatus: 'PENDING' | 'RESOLVED'; canonicalBrandId: string | null; canonicalName: string | null; version: number; usageCount: number; firstSeenAt: string; lastSeenAt: string; capturedBy: string | null; capturedInBranchId: string }>;
+export type CatalogPendingBrand = Readonly<{ pendingBrandValueId: string; rawLabel: string; normalizedKey: string; applicableKinds: readonly CatalogItemKind[]; resolutionStatus: 'PENDING' | 'RESOLVED'; canonicalBrandId: string | null; canonicalName: string | null; version: number; usageCount: number; firstSeenAt: string; lastSeenAt: string; capturedBy: string | null; capturedInBranchId: string; observedInSources: readonly string[] }>;
 export type CatalogCategoryBrandApplicability = Readonly<{ categoryId: string; brandId: string; kind: CatalogItemKind }>;
 export type CatalogItem = Readonly<{
   itemId: string; kind: CatalogItemKind; title: string; description: string | null;
@@ -35,6 +35,55 @@ export type CatalogReferenceMergeResult = Readonly<{
   reassignedItemCount: number; reassignedReconciliationCount: number; mergedAt: string;
 }>;
 export type PriceListPage = Readonly<{ items: readonly PriceListItem[]; totalCount: number }>;
+export type BulkCatalogMode = 'FULL' | 'COMPACT';
+export type SupplierCatalogCompleteness = 'PARTIAL' | 'COMPLETE';
+export type BulkCatalogClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'CANDIDATE' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
+export type BulkCatalogTitleDecision = 'KEEP_CURRENT' | 'ADOPT_OBSERVED';
+export type BulkCatalogCandidateMatch = Readonly<{ itemId: string; title: string; status: 'ACTIVE' | 'INACTIVE'; expectedItemVersion: number; score: number; evidence: readonly string[]; differences: readonly string[]; contradictions: readonly string[] }>;
+export type BulkCatalogRowInput = Readonly<{ kind: CatalogItemKind | null; supplierObservedTitle: string | null; title: string | null; description: string | null; category: string | null; brand: string | null; supplierItemCode: string | null; sku: string | null; barcode: string | null; basePriceMinor: number | null; referenceCostMinor: number | null }>;
+export type SupplierSource = Readonly<{ sourceId: string; name: string; status: 'ACTIVE' | 'INACTIVE'; version: number; versionCount: number; deletionEligibility: Readonly<{ allowed: boolean; reason: 'SAFE_DRAFT_ONLY' | 'PUBLISHED_HISTORY' | 'DEPENDENT_HISTORY' }> }>;
+export type SupplierCoverageItem = Readonly<{ itemId: string | null; canonicalTitle: string | null; observedTitle: string | null; baselineObservedTitle: string | null; coverageRelation: 'CONTINUED' | 'NOT_OBSERVED' | 'ADDITIONAL'; catalogRelation: 'NEW' | 'EXISTING' | 'UNKNOWN'; catalogStatus: 'ACTIVE' | 'INACTIVE' | null; catalogClassification: BulkCatalogClassification | null; catalogResolution: 'MATCHED' | 'CREATED' | 'EXCLUDED' | 'CONFLICT' | null }>;
+export type SupplierCoveragePlausibility = Readonly<{ status: 'NORMAL' | 'REVIEW_REQUIRED'; reason: 'LARGE_COVERAGE_DROP' | null; baselineCount: number | null; currentCount: number; continuedCount: number | null; notObservedCount: number | null; additionalCount: number | null; absoluteDrop: number | null; reductionPercent: number | null }>;
+export type SupplierCoverage = Readonly<{ status: 'NOT_APPLICABLE' | 'NO_BASELINE' | 'EVALUATED'; versionId: string | null; sequenceNumber: number | null; observed: number | null; notObserved: number | null; baselineCount: number | null; currentCount: number; continuedCount: number | null; notObservedCount: number | null; additionalCount: number | null; continuedItems: readonly SupplierCoverageItem[]; notObservedItems: readonly SupplierCoverageItem[]; additionalItems: readonly SupplierCoverageItem[]; plausibility: SupplierCoveragePlausibility }>;
+export type SupplierVersion = Readonly<{ versionId: string; sourceId: string; sourceName: string; sequenceNumber: number; sourceRevision: string; description: string | null; mode: BulkCatalogMode; completeness: SupplierCatalogCompleteness; supersedesVersionId: string | null; columnSignature: string; lifecycle: 'DRAFT' | 'INGESTED'; version: number; rowCount: number; createdAt: string; ingestedAt: string | null; batch: Readonly<{ batchId: string; lifecycle: 'DRAFT' | 'ANALYZING' | 'RECONCILING' | 'READY' | 'APPLIED'; version: number; counts: Record<BulkCatalogClassification, number>; publishedAt: string | null; staleByCorrection: boolean; correctionVersionId: string | null }>; absenceBaseline: SupplierCoverage; rows: readonly Readonly<{ rowDecisionId: string; rowNumber: number; supplierObservedTitle: string | null; proposal: BulkCatalogRowInput; classification: BulkCatalogClassification; decision: 'UNRESOLVED' | 'APPLY' | 'EXCLUDE'; titleDecision: BulkCatalogTitleDecision | null; targetItemId: string | null; targetTitle: string | null; expectedItemVersion: number | null; before: Readonly<{ kind: CatalogItemKind; title: string; description: string | null; category: string | null; brand: string | null; status: 'ACTIVE' | 'INACTIVE'; basePriceMinor: number | null; referenceCostMinor: number | null }> | null; preselectedByMemory: boolean; matchOrigin: 'NONE' | 'INTERNAL_IDENTIFIER' | 'TRUSTED_HISTORY' | 'CANDIDATE' | 'OWNER_SELECTED'; matchAlgorithmVersion: number; candidates: readonly BulkCatalogCandidateMatch[]; errors: readonly string[]; warnings: readonly string[]; version: number }>[] }>;
+export type SupplierVersionSummary = Omit<SupplierVersion, 'rows' | 'absenceBaseline'>;
+export type SupplierVersionDraftInput = Readonly<{
+  sourceId: string; description: string | null; mode: BulkCatalogMode; completeness: SupplierCatalogCompleteness;
+  supersedesVersionId?: string; columnSignature: string; rawPayload: string; rows: readonly BulkCatalogRowInput[]; includeReferenceCost: boolean;
+}>;
+export type SupplierVersionComparison = Readonly<{ leftVersionId: string; rightVersionId: string; mapped: number; changed: number; added: number; ambiguous: number; absenceStatus: 'PARTIAL_CURRENT' | 'NO_PREVIOUS_COMPLETE' | 'EVALUATED'; notObserved: number | null }>;
+export type CatalogRetirementPlan = Readonly<{ planId: string; scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; batchId: string | null; sourceVersionId: string | null; activeCount: number; alreadyInactiveCount: number; expiresAt: string; status: 'PENDING' | 'EXECUTED' | 'STALE' | 'EXPIRED'; retiredCount: number | null }>;
+export type CatalogRetirementExecution = Readonly<{ planId: string; scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; retiredCount: number; activeCatalogCount: number; executedAt: string }>;
+export type CatalogFieldPolicyLevel = 'REQUIRED' | 'ESSENTIAL' | 'OPTIONAL';
+export type CatalogFieldPolicyKey = 'kind' | 'title' | 'description' | 'category' | 'brand' | 'supplierItemCode' | 'sku' | 'barcode' | 'referenceCost' | 'basePrice';
+export type CatalogFieldPolicyRegistryEntry = Readonly<{
+  key: CatalogFieldPolicyKey;
+  label: string;
+  allowedLevels: readonly CatalogFieldPolicyLevel[];
+  domainFixed: boolean;
+  defaultLevel: CatalogFieldPolicyLevel;
+  capturePresentation: 'essential' | 'optional';
+  referenceCostSensitive: boolean;
+}>;
+export type CatalogFieldPolicyResponse = Readonly<{
+  schemaVersion: number;
+  policyVersion: number;
+  fieldLevels: Readonly<Record<CatalogFieldPolicyKey, CatalogFieldPolicyLevel>>;
+  updatedAt: string | null;
+  source: 'product-default' | 'tenant';
+  registry: readonly CatalogFieldPolicyRegistryEntry[];
+}>;
+export type CatalogOperationalFieldPolicyResponse = Readonly<{
+  policyVersion: number;
+  source: 'product-default' | 'tenant';
+  fields: readonly Readonly<{
+    key: CatalogFieldPolicyKey;
+    label: string;
+    level: CatalogFieldPolicyLevel;
+    domainFixed: boolean;
+    referenceCostSensitive: boolean;
+  }>[];
+}>;
 
 /** Mirrors Catalog's exact identity normalization; it is intentionally not fuzzy. */
 export function normalizeCatalogReferenceText(value: string): string {
@@ -45,10 +94,10 @@ export function normalizeCatalogReferenceText(value: string): string {
 const SESSION_INVALIDATED_EVENT = 'srtaller:session-invalidated';
 async function json<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT, { detail: { background: response.status === 403 } }));
-    let payload: { code?: string; message?: string } = {};
-    try { payload = await response.json() as { code?: string; message?: string }; } catch { /* response has no safe JSON body */ }
-    throw new PreviewApiError(response.status, payload.message, payload.code ?? null);
+    let payload: { code?: string; message?: string; parameter?: string } = {};
+    try { payload = await response.json() as { code?: string; message?: string; parameter?: string }; } catch { /* response has no safe JSON body */ }
+    if (payload.code === 'AUTHENTICATION_REQUIRED' || payload.code === 'ACCESS_DENIED') window.dispatchEvent(new CustomEvent(SESSION_INVALIDATED_EVENT, { detail: { background: response.status === 403 } }));
+    throw new PreviewApiError(response.status, payload.message, payload.code ?? null, payload.parameter ?? null);
   }
   try { return await response.json() as T; }
   catch { throw new PreviewApiError(0); }
@@ -87,3 +136,25 @@ export function changeCatalogBasePrice(itemId: string, input: unknown, csrfToken
 export function changeCatalogReferenceCost(itemId: string, input: unknown, csrfToken: string) { return mutate<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}/reference-cost`, 'POST', input, csrfToken); }
 export function setCatalogBranchPrice(itemId: string, input: unknown, csrfToken: string) { return mutate<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}/branch-price`, 'PUT', input, csrfToken); }
 export function revokeCatalogBranchPrice(itemId: string, input: unknown, csrfToken: string) { return mutate<CatalogItem>(`/api/catalog/items/${encodeURIComponent(itemId)}/branch-price`, 'DELETE', input, csrfToken); }
+export function listSupplierSources(signal?: AbortSignal) { return get<readonly SupplierSource[]>('/api/catalog/supplier-sources', signal); }
+export function createSupplierSource(name: string, csrfToken: string) { return mutate<SupplierSource>('/api/catalog/supplier-sources', 'POST', { name }, csrfToken); }
+export function deleteSupplierSource(sourceId: string, input: Readonly<{ expectedVersion: number; confirmation: 'DELETE_SUPPLIER_SOURCE'; pin: string; clientRequestId: string }>, csrfToken: string) { return mutate<Readonly<{ sourceId: string; sourceName: string; deletedVersionCount: number; deletedListingCount: number; deletedAt: string }>>(`/api/catalog/supplier-sources/${encodeURIComponent(sourceId)}`, 'DELETE', input, csrfToken); }
+function requireSupplierVersionCompleteness<T extends Readonly<{ completeness: unknown }>>(version: T): T {
+  if (version.completeness === 'PARTIAL' || version.completeness === 'COMPLETE') return version;
+  throw new PreviewApiError(0, 'La respuesta de versión de proveedor no incluye un alcance válido.', 'CATALOG_RESPONSE_INVALID', 'completeness');
+}
+export function listSupplierVersions(sourceId?: string, signal?: AbortSignal) { const query = sourceId ? `?sourceId=${encodeURIComponent(sourceId)}` : ''; return get<readonly SupplierVersionSummary[]>(`/api/catalog/supplier-versions${query}`, signal).then((values) => values.map(requireSupplierVersionCompleteness)); }
+export function getSupplierVersion(versionId: string, includeReferenceCost: boolean, signal?: AbortSignal) { return get<SupplierVersion>(`/api/catalog/supplier-versions/${encodeURIComponent(versionId)}?includeReferenceCost=${includeReferenceCost}`, signal).then(requireSupplierVersionCompleteness); }
+export function createSupplierDraft(input: SupplierVersionDraftInput & Readonly<{ clientRequestId: string }>, csrfToken: string) { return mutate<SupplierVersion>('/api/catalog/supplier-versions', 'POST', input, csrfToken).then(requireSupplierVersionCompleteness); }
+export function replaceSupplierDraft(versionId: string, input: SupplierVersionDraftInput & Readonly<{ expectedVersion: number }>, csrfToken: string) { return mutate<SupplierVersion>(`/api/catalog/supplier-versions/${encodeURIComponent(versionId)}/draft`, 'PUT', input, csrfToken).then(requireSupplierVersionCompleteness); }
+export function analyzeSupplierVersion(versionId: string, expectedVersion: number, includeReferenceCost: boolean, csrfToken: string) { return mutate<SupplierVersion>(`/api/catalog/supplier-versions/${encodeURIComponent(versionId)}/analyze`, 'POST', { expectedVersion, includeReferenceCost }, csrfToken).then(requireSupplierVersionCompleteness); }
+export function decideSupplierRow(versionId: string, rowDecisionId: string, input: unknown, csrfToken: string) { return mutate<SupplierVersion>(`/api/catalog/supplier-versions/${encodeURIComponent(versionId)}/rows/${encodeURIComponent(rowDecisionId)}`, 'PUT', input, csrfToken).then(requireSupplierVersionCompleteness); }
+export function decideSupplierRows(versionId: string, input: unknown, csrfToken: string) { return mutate<SupplierVersion>(`/api/catalog/supplier-versions/${encodeURIComponent(versionId)}/rows`, 'PUT', input, csrfToken).then(requireSupplierVersionCompleteness); }
+export function publishSupplierVersion(versionId: string, expectedVersion: number, writeReferenceCost: boolean, csrfToken: string, coverageReviewAcknowledged = false, clientRequestId = crypto.randomUUID()) { return mutate<SupplierVersion>(`/api/catalog/supplier-versions/${encodeURIComponent(versionId)}/publish`, 'POST', { expectedVersion, writeReferenceCost, coverageReviewAcknowledged, clientRequestId }, csrfToken).then(requireSupplierVersionCompleteness); }
+export function compareSupplierVersions(leftVersionId: string, rightVersionId: string, signal?: AbortSignal) { return get<SupplierVersionComparison>(`/api/catalog/supplier-versions/${encodeURIComponent(leftVersionId)}/compare/${encodeURIComponent(rightVersionId)}`, signal); }
+export function createCatalogRetirementPlan(input: Readonly<{ scope: 'ACTIVE_CATALOG' | 'BATCH_CREATED'; sourceVersionId?: string }>, csrfToken: string) { return mutate<CatalogRetirementPlan>('/api/catalog/retirement-plans', 'POST', input, csrfToken); }
+export function executeCatalogRetirementPlan(planId: string, input: Readonly<{ confirmation: 'RETIRE_ACTIVE_CATALOG' | 'RETIRE_BATCH_CREATED_ITEMS'; pin: string; clientRequestId: string }>, csrfToken: string) { return mutate<CatalogRetirementExecution>(`/api/catalog/retirement-plans/${encodeURIComponent(planId)}/execute`, 'POST', input, csrfToken); }
+export function getCatalogFieldPolicy(signal?: AbortSignal) { return get<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy', signal); }
+export function getBulkCatalogFieldPolicy(signal?: AbortSignal) { return get<CatalogOperationalFieldPolicyResponse>('/api/catalog/bulk/field-policy', signal); }
+export function updateCatalogFieldPolicy(input: Readonly<{ expectedVersion: number; fieldLevels: CatalogFieldPolicyResponse['fieldLevels'] }>, csrfToken: string) { return mutate<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy', 'PUT', input, csrfToken); }
+export function restoreCatalogFieldPolicyDefaults(expectedVersion: number, csrfToken: string) { return mutate<CatalogFieldPolicyResponse>('/api/catalog/configuration/field-policy/restore-product-defaults', 'POST', { expectedVersion }, csrfToken); }

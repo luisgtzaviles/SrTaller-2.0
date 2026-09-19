@@ -2,13 +2,14 @@
 
 ## Estado
 
-- **Resultado:** design complete for readiness; no migration created.
-- **Fecha:** 2026-09-13.
+- **Resultado:** diseño materializado en el candidato local; Owner Review
+  pendiente.
+- **Fecha:** 2026-09-14.
 - **Owner lógico:** módulo `catalog`, conforme DEC-005 y DEC-049.
 - **Motor objetivo:** PostgreSQL 18.4, Kysely sobre `pg`, shared schema con
   discriminación Tenant conforme ADR-004.
 - **Alcance:** diseño de tablas, constraints, indexes, transacciones, retención
-  y rollout/rollback para PBI-041. No cambia la base actual.
+  retiro seguro y rollout/rollback para PBI-041.
 
 ## Principios
 
@@ -24,6 +25,8 @@
    partial success.
 7. Raw temporal puede expirar; historia estructurada y Catalog no se eliminan
    por cascada.
+8. Retirar un `CatalogItem` cambia `ACTIVE` a `INACTIVE`; no elimina identidad,
+   identificadores ni historia.
 
 ## Modelo relacional propuesto
 
@@ -36,8 +39,9 @@ confirmarlos en migration review sin cambiar semántica.
 |---|---|
 | `tenant_id`, `supplier_source_id` | PK/identity compuesta; UUID opaco |
 | `display_name`, `normalized_name` | casing visible preservado; exact duplicate Tenant-scoped rechazado |
-| `status` | `ACTIVE`/`INACTIVE`; no hard delete con versiones |
-| `version` | optimistic concurrency |
+| `status` | `ACTIVE`/`INACTIVE`; historia publicada siempre bloquea hard delete |
+| `version` | optimistic concurrency; también protege la elegibilidad de delete |
+| `next_version_sequence` | contador positivo, monotónico y bloqueado por Source; no reutiliza números |
 | actor/correlation/timestamps | creación y última mutación gobernada |
 
 Unique parcial/lógico: `(tenant_id, normalized_name)` para identidad vigente.
@@ -49,7 +53,9 @@ No contiene contactos, términos, cuentas, pagos, compras ni recepción.
 |---|---|
 | `tenant_id`, `supplier_catalog_version_id` | PK compuesta |
 | `supplier_source_id` | FK compuesta a Source del mismo Tenant |
-| `label`, `revision` | ronda declarada y revisión; unique por Source |
+| `sequence_number` | secuencia server-side única por Tenant+Source; identidad visible `vN` |
+| `description` | metadata opcional; no participa en identidad ni matching |
+| `create_client_request_id`, `create_request_sha256` | idempotencia de creación; replay incompatible falla cerrado |
 | `status` | `DRAFT/INGESTING/INGESTED/CANCELLED/FAILED` |
 | `corrects_version_id` | self-FK mismo Tenant+Source; acíclica, distinta de sí misma |
 | `content_hash` | hash del contenido canónico; no sustituye label/revision |
@@ -58,7 +64,8 @@ No contiene contactos, términos, cuentas, pagos, compras ni recepción.
 | `version` | optimistic concurrency sólo pre-INGESTED |
 | actor/context/correlation/timestamps | received/ingested y procedencia |
 
-Unique: `(tenant_id, supplier_source_id, label, revision)` y
+Unique: `(tenant_id, supplier_source_id, sequence_number)`, request de creación
+Tenant-scoped, `(tenant_id, supplier_source_id, label, revision)` legado y
 `(tenant_id, supplier_catalog_version_id, supplier_source_id)` para FKs
 scope-safe. Un trigger o repository+test de mutation guard impide alterar
 contenido/metadata de negocio después de `INGESTED`; la corrección se expresa en
@@ -104,10 +111,13 @@ normalized_signature`. Conserva target candidato, `evidence_count`,
 `first_seen_at`, `last_seen_at`, última resolución y flags `CONSISTENT`,
 `CORRECTED`, `CONFLICTING`.
 
-La proyección sólo preselecciona cuando toda evidencia vigente resuelve a un
-único CatalogItem compatible. Si se materializa por performance, cada fila
-conserva `projection_version` y puede reconstruirse desde Resolution history;
-no se expone como alias Catalog ni se consulta fuera de `catalog`.
+La proyección puede resolver identidad cuando toda evidencia vigente converge
+en un único CatalogItem compatible y su última Resolution proviene de un Batch
+`APPLIED`, con key exacta del mismo Source, algoritmo conocido, estado
+`CONSISTENT` y `correction_count = 0`. La decisión de fila queda `APPLY`, pero
+el batch nunca se publica automáticamente. Si se materializa por performance,
+cada fila conserva versión y puede reconstruirse desde Resolution history; no
+se expone como alias Catalog ni se consulta fuera de `catalog`.
 
 ### `catalog_supplier_version_raw_payloads`
 
@@ -138,26 +148,68 @@ es terminal; repetir publish devuelve su mismo outcome.
 Contiene `tenant_id`, batch, row ID/ordinal, Listing nullable, classification,
 decision, selected target/item ID, proposed new item ID, `expected_item_version`,
 selected field intents, before/after bounded, pending Category/Brand refs,
-generated revision IDs, reason, warnings/errors y row version.
+generated revision IDs, reason, warnings/errors y row version. La migración
+`20260915120000_catalog_add_bounded_candidate_matching` agrega `CANDIDATE` al
+CHECK cerrado y persiste `match_origin`, `match_algorithm_version` y hasta tres
+`candidate_matches` explicables por fila. Sus defaults conservadores son
+`NONE`, algoritmo `1` y arreglo vacío; no reanaliza historia ni crea mappings.
 
 Unique `(tenant_id, batch_id, row_ordinal)` y compound FKs. Una fila incluida
 debe estar `CREATE/UPDATE/NO_CHANGE`; `EXCLUDED` queda fuera de commit.
-`UNRESOLVED/AMBIGUOUS/CONFLICT/INVALID/STALE` bloquea el batch. IDs de items y
+`CANDIDATE/UNRESOLVED/AMBIGUOUS/CONFLICT/INVALID/STALE` bloquea el batch. IDs de items y
 revisiones nuevas se reservan en intención persistida para que retry no cambie
 identidad.
+
+### `catalog_retirement_plans`
+
+Plan autoritativo Tenant-scoped, efímero y de un solo uso. Conserva `plan_id`,
+scope `ACTIVE_CATALOG/BATCH_CREATED`, batch opcional, hash canónico del conjunto
+activo y sus versiones, conteos, actor/Branch/Station/Session creadoras,
+expiración y estado `PENDING/EXECUTED/STALE/EXPIRED`. Para batch, los targets se
+derivan exclusivamente de resolutions `CREATED`; ningún ID libre del cliente
+forma el conjunto. El plan dura cinco minutos y no concede autorización.
+
+### `catalog_retirement_events`
+
+Evidencia append-only del intento sensible: plan/scope/batch, contexto completo,
+capability exacta, nivel 2, instante de reautenticación, hash y conteos,
+resultado `SUCCEEDED/REJECTED`, motivo seguro, correlation y request id. Los
+triggers impiden update/delete. Los eventos no son un mecanismo de rollback.
+
+### `catalog_supplier_source_deletion_events`
+
+Evidencia append-only desacoplada de la Source eliminada. Conserva Tenant,
+source ID/nombre/versión, conteos de Versions/Listings borrados, actor, Station,
+Session, capability exacta `catalog.suppliers.delete`, reautenticación nivel 2,
+request hash, correlation y timestamp. No tiene FK a Source y sí conserva FK al
+Tenant; sus triggers rechazan update/delete.
+
+La eliminación sólo acepta una Source cuyas versiones sean todas `DRAFT` y que
+no tenga Resolution, ReconciliationMemory, RetirementPlan o RetirementEvent.
+En una transacción se eliminan RowDecisions, Listings, UpdateBatches, raw,
+Versions y Source, y se agrega el evento. Cualquier Version `INGESTED` o
+dependencia bloquea. Ningún `CatalogItem`, identifier, revisión o audit de
+Catalog participa en el conjunto.
 
 ## Index strategy
 
 - `(tenant_id, supplier_source_id, status)` y nombre normalizado de Source;
-- Version por `(tenant_id, source_id, label, revision)`, content hash e
-  `corrects_version_id`;
+- Version por `(tenant_id, source_id, sequence_number)`, request id, content
+  hash y `corrects_version_id`;
 - Listing por `(tenant_id, version_id, ordinal)`, fingerprint, signature y
   supplier code nullable;
 - Resolution por listing/sequence, target y source/signature projection;
 - Memory por exact key y por target; nunca consulta title con fuzzy write;
+- candidatos por historia publicada del mismo Source, con pool máximo 200,
+  índice invertido de tokens construido una vez por análisis y top K máximo 3;
 - Batch por Tenant/status/updated, Version y idempotency keys;
 - RowDecision por batch/classification/decision/ordinal y target item;
 - raw payload por `expires_at` con `purged_at IS NULL` para cleanup.
+- RetirementPlan por Tenant/status/expiry y batch; RetirementEvent por
+  Tenant/plan/ocurrencia y client request.
+- Source por Tenant y `next_version_sequence`; Version por
+  `(tenant_id, source_id, sequence_number)` y request id de creación.
+- SupplierSourceDeletionEvent por Tenant/source/ocurrencia y client request.
 
 Preview/compare usa queries set-based y paginadas; no carga 10,000 rows al DOM ni
 hace N+1 contra Catalog/Resolution. Los planes y p95 forman evidencia futura.
@@ -173,6 +225,8 @@ hace N+1 contra Catalog/Resolution. Los planes y p95 forman evidencia futura.
 | `CatalogUpdatePreviewReader` | paginado before/after/match/status, redacted por capability |
 | `SupplierVersionComparator` | persisted/mapped/disappeared/new/changed/ambiguous set-based |
 | `ExpiredRawPayloadPurger` | claim/delete bounded, idempotente, conteos/errores auditables |
+| `CatalogRetirementPlanner` | conjunto/hash/conteos server-side para catálogo activo o CREATED por batch |
+| `CatalogRetirementExecutor` | revalidación serializable, retiro y evidencia append-only |
 
 Sólo contratos públicos del módulo pueden ser consumidos; no se exportan
 Kysely, tablas o repositories. Procurement futuro mapea su Supplier a Source
@@ -185,12 +239,39 @@ mediante contrato y no escribe estas tablas.
 3. Bulk-load CatalogItems/identifiers/references del mismo Tenant.
 4. Revalidar expectedVersion, lifecycle, Type/applicability, contradictions y
    pending decisions.
+   Un target elegido desde `CANDIDATE` debe seguir perteneciendo al conjunto
+   persistido; un UUID arbitrario o de otro Tenant falla cerrado.
 5. Crear items/revisiones/audit/outcomes con IDs reservados.
 6. Marcar batch `COMPLETED` y commit en la misma conexión.
+
+Una RowDecision `REACTIVATE` sólo es válida si el mapping histórico exacto y
+Tenant-scoped converge en un único `CatalogItem` compatible que sigue
+`INACTIVE` en su `expectedVersion`. El mismo update conserva `itemId`, SKU y
+barcode, cambia a `ACTIVE`, incrementa la versión y agrega únicamente las
+revisiones de precio/costo cuyo importe cambió. El Resolution sigue siendo
+`MATCHED` y el audit registra `INACTIVE→ACTIVE`. No se crea una segunda identidad
+ni una variante `REACTIVATE_AND_UPDATE`.
 
 Unique/FK/check/deadlock/serialization/timeout se traducen al contrato DEC-044.
 Un stale vuelve a reconciliation; una falla técnica no deja writes de producto.
 No se reintenta un commit outcome desconocido sin consultar idempotency outcome.
+
+## Atomic retirement transaction
+
+1. Resolver la capability dedicada y reautenticar al mismo actor mediante
+   Access antes de entrar a Catalog.
+2. Bloquear plan y candidatos en orden estable dentro de una transacción
+   `SERIALIZABLE`.
+3. Revalidar Tenant, actor, Branch, Station, Session, expiración, confirmación,
+   capability/temporal guards y hash `itemId+version`.
+4. Actualizar sólo targets todavía `ACTIVE` a `INACTIVE`, incrementando su
+   versión; nunca ejecutar `DELETE`.
+5. Agregar audit por item y un RetirementEvent agregado; marcar el plan
+   `EXECUTED` en la misma transacción.
+
+Una diferencia de contexto, conjunto, lifecycle, versión o autoridad produce
+`STALE/EXPIRED/REJECTED` y cero retiros. Un retry idéntico devuelve el mismo
+outcome; otro request no reutiliza el plan.
 
 ## Retention cleanup
 
@@ -202,15 +283,21 @@ payload temporal. Debe ser reentrante, tolerar caída y terminar en ≤10 s para
 reloj controlado y demuestra que Listing estructurado, resolutions, batch,
 audit y Catalog permanecen.
 
-## Rollout de migraciones propuesto
+## Rollout de migraciones materializado
 
-1. Migraciones de expansión sólo aditivas: enums/checks/tables/FKs/indexes.
-2. No backfill de CatalogItem ni conversión de WIP PBI-040.
-3. Crear roles/grants y queries owner del módulo; app antigua ignora tablas.
-4. Materializar código detrás del nuevo flujo no anunciado.
-5. Ejecutar fresh/up, previous→up, constraints, rollback transaction y cleanup
+1. `20260914152000_access_add_catalog_bulk_retire_capability` agrega la
+   capability explícita sin convertir `catalog.manage` en super-capability.
+2. `20260914153000_catalog_create_retirement_plans` agrega únicamente planes y
+   eventos; el lifecycle `ACTIVE/INACTIVE` de `CatalogItem` ya existía y no
+   requirió alteración.
+3. `20260914154000_catalog_add_historical_reactivation` amplía sólo el CHECK
+   existente de RowDecision para admitir `REACTIVATE`; no agrega tablas,
+   columnas, identidad ni backfill de CatalogItem.
+4. No hay backfill de CatalogItem ni conversión de WIP PBI-040.
+5. Crear roles/grants y queries owner del módulo; app antigua ignora tablas.
+6. Ejecutar fresh/up, previous→up, constraints, rollback transaction y cleanup
    tests en PostgreSQL 18.4.
-6. Habilitar sólo después de gates, CI y Owner checkpoint aplicables.
+7. Habilitar sólo después de gates, CI y Owner checkpoint aplicables.
 
 ## Rollback constraints
 
@@ -241,3 +328,41 @@ audit y Catalog permanecen.
 Ninguna bloqueante para readiness. Nombres físicos/índices exactos pueden
 ajustarse durante implementación sólo si conservan este contrato y pasan review;
 no habilitan ampliar alcance ni degradar invariantes.
+
+## Canonical title + Supplier observed title history
+
+La auditoría confirmó que no hace falta otra tabla de historia. El subset
+permanente ya conserva `SupplierListing.supplier_title` exacto y
+`SupplierListingResolution` enlaza cada observación publicada al `itemId`.
+`CatalogAuditEvent` ya es append-only y registra el rename canónico.
+
+La migración
+`20260915130000_catalog_add_supplier_observed_title_history` añade únicamente:
+
+- `catalog_update_row_decisions.title_decision`, nullable y restringido a
+  `KEEP_CURRENT | ADOPT_OBSERVED`;
+- `catalog_supplier_listings.supplier_title_search`, `tsvector` generado con
+  configuración `simple` a partir del título exacto;
+- GIN sobre el vector y un índice parcial Tenant/item sobre Resolution para el
+  lookup histórico.
+
+No hay backfill semántico: el vector se deriva de las Listings existentes y las
+decisiones antiguas quedan null. Publish falla cerrado si una fila con target y
+título distinto carece de decisión. El rename, Resolution, Memory, revisiones y
+audit event comparten una transacción; expected item version impide
+last-write-wins entre versiones concurrentes.
+
+## Supplier version completeness migration
+
+La migración `20260916180000_catalog_add_supplier_version_completeness` agrega
+`completeness varchar(16) NOT NULL DEFAULT 'PARTIAL'` con check
+`PARTIAL|COMPLETE` a `catalog_supplier_catalog_versions`. No reinterpreta la
+historia: todas las versiones existentes, incluidas AG v18/v19, quedan
+`PARTIAL`. El trigger existente de Version `INGESTED` mantiene inmutable el
+campo después de análisis; sólo un `DRAFT` puede cambiar su declaración.
+
+No existe tabla de disponibilidad ni persistencia de ausencias. La comparación
+calcula “no observado” en lectura sólo para current `COMPLETE` contra baseline
+`COMPLETE` del mismo Tenant/Source. Apply itera únicamente Listings presentes,
+por lo que una omisión no puede desactivar ni alterar un CatalogItem, sus
+identificadores, revisiones, Resolution o ReconciliationMemory.

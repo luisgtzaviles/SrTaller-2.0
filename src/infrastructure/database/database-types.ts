@@ -298,6 +298,233 @@ export interface CatalogAuditEventTable {
   readonly occurred_at: ImmutableColumn<Date>;
 }
 
+export interface CatalogSupplierSourceTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly source_id: ImmutableColumn<string>;
+  readonly display_name: MutableColumn<string>;
+  readonly normalized_name: ImmutableColumn<string>;
+  readonly status: MutableColumn<'ACTIVE' | 'INACTIVE'>;
+  readonly version: MutableColumn<number>;
+  readonly next_version_sequence: MutableColumn<number>;
+  readonly created_by_actor_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface CatalogSupplierCatalogVersionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly version_id: ImmutableColumn<string>;
+  readonly source_id: ImmutableColumn<string>;
+  readonly supersedes_version_id: ImmutableColumn<string | null>;
+  readonly sequence_number: ImmutableColumn<number>;
+  readonly source_revision: ImmutableColumn<string>;
+  readonly description: MutableColumn<string | null>;
+  readonly create_client_request_id: ImmutableColumn<string | null>;
+  readonly create_request_sha256: ImmutableColumn<string | null>;
+  /** Mutable only while its Supplier Version remains DRAFT; immutable after Analyze. */
+  readonly composer_mode: MutableColumn<'FULL' | 'COMPACT'>;
+  /** Immutable once the supplier version leaves DRAFT. Historical rows default conservatively. */
+  readonly completeness: MutableColumn<'PARTIAL' | 'COMPLETE'>;
+  readonly column_signature: MutableColumn<string>;
+  readonly lifecycle: MutableColumn<'DRAFT' | 'INGESTED'>;
+  readonly lock_version: MutableColumn<number>;
+  readonly row_count: MutableColumn<number>;
+  readonly content_sha256: MutableColumn<string | null>;
+  readonly ingested_at: MutableColumn<Date | null>;
+  readonly created_by_actor_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface CatalogSupplierSourceDeletionEventTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly deletion_id: ImmutableColumn<string>;
+  readonly source_id: ImmutableColumn<string>;
+  readonly source_name: ImmutableColumn<string>;
+  readonly normalized_name: ImmutableColumn<string>;
+  readonly source_version: ImmutableColumn<number>;
+  readonly deleted_version_count: ImmutableColumn<number>;
+  readonly deleted_listing_count: ImmutableColumn<number>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<string>;
+  readonly sensitivity_level: ImmutableColumn<number>;
+  readonly reauthenticated_at: ImmutableColumn<Date>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly request_sha256: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface CatalogSupplierVersionRawPayloadTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly version_id: ImmutableColumn<string>;
+  readonly payload_text: MutableColumn<string | null>;
+  readonly retained_until: ImmutableColumn<Date>;
+  readonly purged_at: MutableColumn<Date | null>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface CatalogSupplierListingTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly listing_id: ImmutableColumn<string>;
+  readonly version_id: ImmutableColumn<string>;
+  readonly row_number: ImmutableColumn<number>;
+  readonly item_kind: ImmutableColumn<CatalogItemKind | null>;
+  readonly supplier_item_code: ImmutableColumn<string | null>;
+  readonly normalized_supplier_item_code: ImmutableColumn<string | null>;
+  readonly normalized_signature: ImmutableColumn<string>;
+  readonly supplier_sku: ImmutableColumn<string | null>;
+  readonly supplier_barcode: ImmutableColumn<string | null>;
+  readonly supplier_title: ImmutableColumn<string | null>;
+  readonly supplier_title_search: DefaultedImmutableColumn<string>;
+  readonly supplier_description: ImmutableColumn<string | null>;
+  readonly category_label: ImmutableColumn<string | null>;
+  readonly brand_label: ImmutableColumn<string | null>;
+  readonly supplier_cost_minor: ImmutableColumn<string | null>;
+  readonly currency: ImmutableColumn<string | null>;
+  readonly source_observation: ImmutableColumn<unknown>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface CatalogUpdateBatchTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly batch_id: ImmutableColumn<string>;
+  readonly version_id: ImmutableColumn<string>;
+  readonly lifecycle: MutableColumn<'DRAFT' | 'ANALYZING' | 'RECONCILING' | 'READY' | 'APPLIED'>;
+  readonly lock_version: MutableColumn<number>;
+  readonly counts: MutableColumn<unknown>;
+  readonly analysis_sha256: MutableColumn<string | null>;
+  readonly publish_client_request_id: MutableColumn<string | null>;
+  readonly publish_request_sha256: MutableColumn<string | null>;
+  readonly published_at: MutableColumn<Date | null>;
+  readonly published_by_actor_id: MutableColumn<string | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export type CatalogUpdateRowClassification = 'NEW' | 'UPDATE' | 'REACTIVATE' | 'UNCHANGED' | 'CANDIDATE' | 'PENDING_REFERENCE' | 'AMBIGUOUS' | 'CONFLICT' | 'INVALID';
+export interface CatalogUpdateRowDecisionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly row_decision_id: ImmutableColumn<string>;
+  readonly batch_id: ImmutableColumn<string>;
+  readonly listing_id: ImmutableColumn<string>;
+  readonly row_number: ImmutableColumn<number>;
+  readonly proposal: MutableColumn<unknown>;
+  readonly classification: MutableColumn<CatalogUpdateRowClassification>;
+  readonly decision: MutableColumn<'UNRESOLVED' | 'APPLY' | 'EXCLUDE'>;
+  readonly title_decision: DefaultedMutableColumn<'KEEP_CURRENT' | 'ADOPT_OBSERVED' | null>;
+  readonly target_item_id: MutableColumn<string | null>;
+  readonly expected_item_version: MutableColumn<number | null>;
+  readonly preselected_by_memory: MutableColumn<boolean>;
+  readonly match_origin: MutableColumn<'NONE' | 'INTERNAL_IDENTIFIER' | 'TRUSTED_HISTORY' | 'CANDIDATE' | 'OWNER_SELECTED'>;
+  readonly match_algorithm_version: MutableColumn<number>;
+  readonly candidate_matches: MutableColumn<unknown>;
+  readonly errors: MutableColumn<unknown>;
+  readonly warnings: MutableColumn<unknown>;
+  readonly lock_version: MutableColumn<number>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface CatalogSupplierListingResolutionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly resolution_id: ImmutableColumn<string>;
+  readonly source_id: ImmutableColumn<string>;
+  readonly version_id: ImmutableColumn<string>;
+  readonly listing_id: ImmutableColumn<string>;
+  readonly batch_id: ImmutableColumn<string>;
+  readonly item_id: ImmutableColumn<string | null>;
+  readonly resolution: ImmutableColumn<'MATCHED' | 'CREATED' | 'EXCLUDED' | 'CONFLICT'>;
+  readonly identifier_scheme: ImmutableColumn<CatalogIdentifierScheme | 'SUPPLIER_CODE' | 'SIGNATURE' | null>;
+  readonly normalized_identifier: ImmutableColumn<string | null>;
+  readonly column_signature: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export type CatalogSupplierMemoryScheme = CatalogIdentifierScheme | 'SUPPLIER_CODE' | 'SIGNATURE';
+export interface CatalogSupplierReconciliationMemoryTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly source_id: ImmutableColumn<string>;
+  readonly identifier_scheme: ImmutableColumn<CatalogSupplierMemoryScheme>;
+  readonly normalized_identifier: ImmutableColumn<string>;
+  readonly column_signature: ImmutableColumn<string>;
+  readonly item_id: MutableColumn<string>;
+  readonly item_kind: ImmutableColumn<CatalogItemKind>;
+  readonly last_resolution_id: MutableColumn<string>;
+  readonly first_confirmed_at: ImmutableColumn<Date>;
+  readonly last_confirmed_at: MutableColumn<Date>;
+  readonly consistency_state: MutableColumn<'CONSISTENT' | 'CONFLICTED'>;
+  readonly correction_count: MutableColumn<number>;
+  readonly version: MutableColumn<number>;
+}
+
+export interface CatalogRetirementPlanTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly plan_id: ImmutableColumn<string>;
+  readonly scope: ImmutableColumn<'ACTIVE_CATALOG' | 'BATCH_CREATED'>;
+  readonly batch_id: ImmutableColumn<string | null>;
+  readonly item_set_sha256: ImmutableColumn<string>;
+  readonly active_count: ImmutableColumn<number>;
+  readonly already_inactive_count: ImmutableColumn<number>;
+  readonly created_by_actor_id: ImmutableColumn<string>;
+  readonly created_in_branch_id: ImmutableColumn<string>;
+  readonly created_in_station_id: ImmutableColumn<string>;
+  readonly created_in_session_id: ImmutableColumn<string>;
+  readonly status: MutableColumn<'PENDING' | 'EXECUTED' | 'STALE' | 'EXPIRED'>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly execution_client_request_id: MutableColumn<string | null>;
+  readonly retired_count: MutableColumn<number | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly executed_at: MutableColumn<Date | null>;
+}
+
+export interface CatalogRetirementEventTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly event_id: ImmutableColumn<string>;
+  readonly plan_id: ImmutableColumn<string>;
+  readonly scope: ImmutableColumn<'ACTIVE_CATALOG' | 'BATCH_CREATED'>;
+  readonly batch_id: ImmutableColumn<string | null>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'catalog.items.bulk_retire'>;
+  readonly sensitivity_level: ImmutableColumn<2>;
+  readonly reauthenticated_at: ImmutableColumn<Date>;
+  readonly item_set_sha256: ImmutableColumn<string>;
+  readonly planned_count: ImmutableColumn<number>;
+  readonly retired_count: ImmutableColumn<number>;
+  readonly result: ImmutableColumn<'SUCCEEDED' | 'REJECTED'>;
+  readonly rejection_reason: ImmutableColumn<'PLAN_STALE' | 'PLAN_EXPIRED' | 'PLAN_CONTEXT_CHANGED' | 'AUTHORIZATION_CHANGED' | null>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface CatalogFieldPolicyHeadTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly schema_version: MutableColumn<number>;
+  readonly current_version: MutableColumn<number>;
+  readonly field_levels: MutableColumn<Record<string, string>>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+export interface CatalogFieldPolicyVersionTable {
+  readonly tenant_id: ImmutableColumn<string>; readonly policy_version: ImmutableColumn<number>;
+  readonly schema_version: ImmutableColumn<number>; readonly previous_version: ImmutableColumn<number>;
+  readonly field_levels: ImmutableColumn<Record<string, string>>;
+  readonly actor_user_id: ImmutableColumn<string>; readonly actor_display_name: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>; readonly session_id: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<'catalog.configuration.manage'>;
+  readonly action: ImmutableColumn<'catalog_field_policy.updated' | 'catalog_field_policy.reset'>;
+  readonly result: ImmutableColumn<'succeeded'>; readonly correlation_id: ImmutableColumn<string>; readonly occurred_at: ImmutableColumn<Date>;
+}
+
 /** Customer identity is Branch-scoped; Repairs own their historical snapshots. */
 export interface CustomerTable {
   readonly customer_id: ImmutableColumn<string>;
@@ -391,12 +618,20 @@ export type AccessCapabilityCode =
   | 'repairs.read'
   | 'price_list.read'
   | 'catalog.manage'
+  | 'catalog.items.create'
+  | 'catalog.items.update'
+  | 'catalog.items.deactivate'
   | 'catalog.prices.manage'
   | 'catalog.branch_prices.manage'
   | 'catalog.reference_cost.read'
   | 'catalog.reference_cost.manage'
+  | 'catalog.configuration.read'
+  | 'catalog.configuration.manage'
+  | 'catalog.import.read'
   | 'catalog.import.prepare'
   | 'catalog.import.publish'
+  | 'catalog.items.bulk_retire'
+  | 'catalog.suppliers.delete'
   | 'users.read'
   | 'users.manage';
 
@@ -1236,6 +1471,19 @@ export interface DatabaseSchema {
   readonly catalog_reference_deletion_events: CatalogReferenceDeletionEventTable;
   readonly catalog_reference_merge_events: CatalogReferenceMergeEventTable;
   readonly catalog_reference_identity_locks: CatalogReferenceIdentityLockTable;
+  readonly catalog_supplier_sources: CatalogSupplierSourceTable;
+  readonly catalog_supplier_catalog_versions: CatalogSupplierCatalogVersionTable;
+  readonly catalog_supplier_version_raw_payloads: CatalogSupplierVersionRawPayloadTable;
+  readonly catalog_supplier_listings: CatalogSupplierListingTable;
+  readonly catalog_update_batches: CatalogUpdateBatchTable;
+  readonly catalog_update_row_decisions: CatalogUpdateRowDecisionTable;
+  readonly catalog_supplier_listing_resolutions: CatalogSupplierListingResolutionTable;
+  readonly catalog_supplier_reconciliation_memory: CatalogSupplierReconciliationMemoryTable;
+  readonly catalog_supplier_source_deletion_events: CatalogSupplierSourceDeletionEventTable;
+  readonly catalog_retirement_plans: CatalogRetirementPlanTable;
+  readonly catalog_retirement_events: CatalogRetirementEventTable;
+  readonly catalog_field_policy_heads: CatalogFieldPolicyHeadTable;
+  readonly catalog_field_policy_versions: CatalogFieldPolicyVersionTable;
   readonly customers: CustomerTable;
   readonly customer_contact_phones: CustomerContactPhoneTable;
   readonly user_provisioning_bootstraps: UserProvisioningBootstrapTable;

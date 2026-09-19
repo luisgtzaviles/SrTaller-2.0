@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { classNames } from './class-names.js';
@@ -22,6 +22,10 @@ export function Breadcrumb({ items }: Readonly<{ items: readonly BreadcrumbItem[
       </ol>
     </nav>
   );
+}
+
+export function BackLink({ to, children, onClick }: Readonly<{ to: string; children: React.ReactNode; onClick?: React.MouseEventHandler<HTMLAnchorElement> }>): React.JSX.Element {
+  return <Link className={styles.backLink} to={to} onClick={onClick}><ArrowLeft aria-hidden="true" size={16} />{children}</Link>;
 }
 
 export function PageHeader({

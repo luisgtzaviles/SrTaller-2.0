@@ -33,8 +33,9 @@ export function RepairCatalogsPage({ capabilities, csrfToken }: Readonly<{
   const canManage = hasOperationalCapability(capabilities, 'repairs.catalogs.manage');
   const canReadRepairs = hasOperationalCapability(capabilities, 'repairs.catalogs.read');
   const canManageCommercial = hasOperationalCapability(capabilities, 'catalog.manage');
+  const canReadCommercialConfiguration = hasOperationalCapability(capabilities, 'catalog.configuration.read');
   const requestedModule = searchParams.get('module');
-  const activeModule = (requestedModule === 'price-list' && canManageCommercial) || !canReadRepairs ? 'price-list' : 'repairs';
+  const activeModule = (requestedModule === 'price-list' && (canManageCommercial || canReadCommercialConfiguration)) || !canReadRepairs ? 'price-list' : 'repairs';
 
   const selectCatalog = (catalog: RepairCatalog): void => {
     const next = new URLSearchParams(searchParams);
@@ -57,7 +58,7 @@ export function RepairCatalogsPage({ capabilities, csrfToken }: Readonly<{
         <div className={styles.modulePicker}>
           <span><SlidersHorizontal size={17} aria-hidden="true" /></span>
           <label htmlFor="catalog-module">Módulo</label>
-          <select id="catalog-module" value={activeModule} onChange={(event) => selectModule(event.target.value as 'repairs' | 'price-list')}><option value="repairs" disabled={!canReadRepairs}>Reparaciones</option><option value="price-list" disabled={!canManageCommercial}>Lista de precios</option></select>
+          <select id="catalog-module" value={activeModule} onChange={(event) => selectModule(event.target.value as 'repairs' | 'price-list')}><option value="repairs" disabled={!canReadRepairs}>Reparaciones</option><option value="price-list" disabled={!canManageCommercial && !canReadCommercialConfiguration}>Lista de precios</option></select>
         </div>
       </div>
 
@@ -77,7 +78,7 @@ export function RepairCatalogsPage({ capabilities, csrfToken }: Readonly<{
       {activeCatalog === 'brands' ? <RepairBrandCatalogPanel canManage={canManage} csrfToken={csrfToken} /> : null}
       {activeCatalog === 'models' ? <RepairModelCatalogPanel canManage={canManage} csrfToken={csrfToken} /> : null}
       {activeCatalog === 'categories' ? <RepairProblemCategoryCatalogPanel canManage={canManage} csrfToken={csrfToken} /> : null}
-      </> : <CatalogPriceListReferencesPanel csrfToken={csrfToken} />}
+      </> : <CatalogPriceListReferencesPanel csrfToken={csrfToken} capabilities={capabilities} />}
     </div>
   );
 }

@@ -5,7 +5,9 @@ import test from 'node:test';
 
 import { Pool } from 'pg';
 
-const enabled = process.env.SR_PBI040_PG_TEST === '1';
+const pbi040Enabled = process.env.SR_PBI040_PG_TEST === '1';
+const pbi041Enabled = process.env.SR_PBI041_CATALOG_PG_TEST === '1';
+const enabled = pbi040Enabled || pbi041Enabled;
 const { createDatabaseConnection } = enabled
   ? await import('../dist/infrastructure/database/database-connection.js')
   : {};
@@ -112,7 +114,7 @@ async function waitForCatalogDeleteLock(admin) {
   assert.fail('the controlled catalog delete never reached its reference lock');
 }
 
-test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and fast lookup', { skip: !enabled, timeout: 60_000 }, async () => {
+if (!pbi041Enabled) test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and fast lookup', { skip: !pbi040Enabled, timeout: 60_000 }, async () => {
   assert.equal(process.version, 'v24.18.0');
   const admin = adminPool();
   const connection = createDatabaseConnection(config());
@@ -686,4 +688,56 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
     await peerConnection.close().catch(() => undefined);
     await admin.end();
   }
+});
+
+if (!pbi040Enabled) test('UX-005.6 promotes one exact pending Brand group atomically without fuzzy matching or duplicate canonicals', { skip: !pbi041Enabled, timeout: 30_000 }, async () => {
+  const admin = adminPool(); const connection = createDatabaseConnection(config());
+  const tenantId = 'a1200000-0000-4000-8000-000000000056'; const branchId = 'a2200000-0000-4000-8000-000000000056'; const ctx = context(tenantId, branchId);
+  const service = new CatalogService(new KyselyCatalogRepository(connection), async () => 'MXN');
+  try {
+    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    const productCategory = await category(service, ctx, 'Fundas UX-005.6', 'PRODUCT');
+    const samsungOne = await item(service, ctx, { kind: 'PRODUCT', title: 'Funda Samsung A', categoryId: productCategory.categoryId, brandCapturedValue: 'SAMSUNG', basePriceAmountMinor: 120_00 });
+    const samsungTwo = await item(service, ctx, { kind: 'PRODUCT', title: 'Funda Samsung B', categoryId: productCategory.categoryId, brandCapturedValue: ' samsung ', basePriceAmountMinor: 130_00 });
+    const before = await service.listReferences({ tenantId, branchId });
+    const pendingSamsung = before.pendingBrands.find(({ normalizedKey }) => normalizedKey === 'samsung');
+    assert.ok(pendingSamsung);
+    assert.equal(pendingSamsung.usageCount, 2);
+    assert.deepEqual(pendingSamsung.applicableKinds, ['PRODUCT']);
+    assert.equal((await admin.query(`select count(*)::int as count from catalog_brand_pending_values where tenant_id=$1 and normalized_key='samsung' and resolution_status='PENDING'`, [tenantId])).rows[0].count, 1);
+    const displayedWhilePending = await service.search({ tenantId, branchId }, { query: 'Funda Samsung', page: 1, pageSize: 25 }, false);
+    assert.equal(displayedWhilePending.totalCount, 2);
+    assert.equal(displayedWhilePending.items.every(({ item }) => item.brand?.reconciliationStatus === 'PENDING'), true);
+
+    const promoted = await service.resolveBrand(ctx, pendingSamsung.pendingBrandValueId, { canonicalName: 'Samsung', applicableKinds: ['PRODUCT'], expectedVersion: pendingSamsung.version, clientRequestId: randomUUID() });
+    assert.equal(promoted.resolutionStatus, 'RESOLVED');
+    assert.equal(promoted.usageCount, 2);
+    const [resolvedOne, resolvedTwo] = await Promise.all([service.getItem({ tenantId, branchId }, samsungOne.itemId), service.getItem({ tenantId, branchId }, samsungTwo.itemId)]);
+    assert.equal(resolvedOne.brand.brandId, promoted.canonicalBrandId);
+    assert.equal(resolvedTwo.brand.brandId, promoted.canonicalBrandId);
+    assert.equal(resolvedOne.brand.pendingBrandValueId, pendingSamsung.pendingBrandValueId);
+    assert.equal(resolvedTwo.brand.pendingBrandValueId, pendingSamsung.pendingBrandValueId);
+    assert.equal((await admin.query(`select count(*)::int as count from catalog_brands where tenant_id=$1 and normalized_name='samsung' and merged_into_id is null`, [tenantId])).rows[0].count, 1);
+    assert.equal((await admin.query(`select count(*)::int as count from catalog_audit_events where tenant_id=$1 and action='catalog.brand_pending.canonical_created' and resource_id=$2 and actor_user_id=$3`, [tenantId, pendingSamsung.pendingBrandValueId, actorUserId])).rows[0].count, 1);
+    const canonicalFilter = await service.search({ tenantId, branchId }, { query: '', brandId: promoted.canonicalBrandId, page: 1, pageSize: 25 }, false);
+    assert.equal(canonicalFilter.totalCount, 2);
+
+    const futureExact = await item(service, ctx, { kind: 'PRODUCT', title: 'Funda Samsung futura', categoryId: productCategory.categoryId, brandCapturedValue: '  SAMSUNG ', basePriceAmountMinor: 140_00 });
+    assert.equal(futureExact.brand.brandId, promoted.canonicalBrandId);
+    assert.equal(futureExact.brand.pendingBrandValueId, null);
+    const typo = await item(service, ctx, { kind: 'PRODUCT', title: 'Funda typo', categoryId: productCategory.categoryId, brandCapturedValue: 'SAMSUGN', basePriceAmountMinor: 150_00 });
+    assert.equal(typo.brand.reconciliationStatus, 'PENDING');
+    assert.notEqual(typo.brand.brandId, promoted.canonicalBrandId);
+
+    const apple = await brand(service, ctx, 'Apple', ['PRODUCT']);
+    const exactPendingId = randomUUID(); const exactItemId = randomUUID();
+    await admin.query(`insert into catalog_brand_pending_values (tenant_id, pending_brand_value_id, raw_label_example, normalized_key, resolution_status, canonical_brand_id, version, first_seen_at, last_seen_at, captured_by_actor_id, captured_by_actor_display_name, captured_in_branch_id, captured_in_station_id, captured_in_session_id, resolved_by_actor_id, resolved_at) values ($1,$2,'APPLE','apple','PENDING',null,1,now(),now(),$3,'Owner QA',$4,$5,$6,null,null)`, [tenantId, exactPendingId, actorUserId, branchId, stationId, sessionId]);
+    await admin.query(`insert into catalog_brand_pending_kind_applicability (tenant_id, pending_brand_value_id, kind) values ($1,$2,'PRODUCT')`, [tenantId, exactPendingId]);
+    await admin.query(`insert into catalog_items (tenant_id,item_id,kind,title,normalized_title,description,category_id,brand_id,pending_category_value_id,pending_brand_value_id,status,sellable,stockable,purchasable,applicable_to_repair,version,created_at,updated_at) values ($1,$2,'PRODUCT','Apple exact fixture','apple exact fixture',null,$3,null,null,$4,'ACTIVE',true,true,true,false,1,now(),now())`, [tenantId, exactItemId, productCategory.categoryId, exactPendingId]);
+    const reused = await service.resolveBrand(ctx, exactPendingId, { canonicalName: 'APPLE', applicableKinds: ['PRODUCT'], expectedVersion: 1, clientRequestId: randomUUID() });
+    assert.equal(reused.canonicalBrandId, apple.brandId);
+    assert.equal((await admin.query(`select count(*)::int as count from catalog_brands where tenant_id=$1 and normalized_name='apple' and merged_into_id is null`, [tenantId])).rows[0].count, 1);
+    assert.equal((await service.getItem({ tenantId, branchId }, exactItemId)).brand.brandId, apple.brandId);
+  } finally { await connection.close().catch(() => undefined); await admin.end().catch(() => undefined); }
 });
