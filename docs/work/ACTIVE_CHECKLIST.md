@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Review Remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: REVIEW-REMEDIATION-1 in progress; remote review blocker REVIEW-041-001 confirmed. Previous Formal Verification is stale for the changing candidate.
+Status: REVIEW-REMEDIATION-1 PASS locally; security blocker remediated and authoritative verification PASS. Previous Formal Verification remains stale for this changed candidate.
 WIP: 1/1
-Progress: 4 / 6 review-remediation blocks complete.
-Current: Run base `verify`, then the single authorized `verify:full` campaign.
-Next: Record authoritative results, reconcile final evidence and create the final local documentation commit.
-Blocked: REVIEW-041-001 blocks promotion until remediation and new independent Formal Verification. Preserve Owner data, AviCell, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 6 / 6 review-remediation blocks complete.
+Current: Stop at the local remediation checkpoint; no remote action.
+Next: A new independent Formal Verification is required for the changed candidate before any governed promotion.
+Blocked: Promotion remains blocked only by the required new independent Formal Verification and later Owner authority. Preserve Owner data, AviCell, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
 
 ## Current checkpoint — REVIEW-REMEDIATION-1
@@ -17,8 +17,8 @@ Last updated: 2026-09-19 MST
 - [x] Bind effect authorization to the existing authoritative `batch.lock_version` and reject stale publication before writes.
 - [x] Prove concurrent `decide` invalidates the stale Apply snapshot and requires capability recomposition on refetch.
 - [x] Pass focused domain, authorization and disposable PostgreSQL material race checks without Owner-data mutation.
-- [ ] Pass typecheck, build, architecture, base `verify` and exactly one `verify:full`; retain the 10k budget.
-- [ ] Reconcile PBI/evidence/FV status, fix REVIEW-041-002 and create logical local commits only.
+- [x] Pass typecheck, build, architecture, base `verify` and exactly one `verify:full`; retain the 10k budget.
+- [x] Reconcile PBI/evidence/FV status, fix REVIEW-041-002 and create logical local commits only.
 
 ## Current checkpoint — Independent Formal Verification
 

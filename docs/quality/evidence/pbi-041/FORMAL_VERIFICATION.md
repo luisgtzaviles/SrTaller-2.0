@@ -8,7 +8,9 @@ subsequently recorded `REVIEW-041-001`, and the authorized local remediation
 changed product code in commits `f5551be` and `1d113e8`.
 
 **Current status: STALE — the changed candidate requires a new independent
-Formal Verification.** The historical verdict is not carried forward. See
+Formal Verification.** REVIEW-REMEDIATION-1 passes local base `verify` and one
+authoritative `verify:full`, but that does not carry this historical verdict
+forward. See
 [`REVIEW_REMEDIATION_1.md`](REVIEW_REMEDIATION_1.md).
 
 ## Historical formal verdict

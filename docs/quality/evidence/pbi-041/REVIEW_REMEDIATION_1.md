@@ -52,7 +52,7 @@ rejected and leaves CatalogItems, price/cost revisions, Resolution, Memory and
 successful publication audit counts byte-for-byte/count-for-count unchanged;
 the Batch remains READY. Refetch plus the current token publishes normally.
 
-## Checks before full verification
+## Verification results
 
 | Check | Result |
 | --- | --- |
@@ -64,12 +64,20 @@ the Batch remains READY. Refetch plus the current token publishes normally.
 | Build | PASS |
 | Architecture | PASS |
 | Migration | NONE |
-| `verify` | PENDING |
-| `verify:full` | PENDING — must execute exactly once after prerequisites |
+| `verify` | PASS — 935 pass / 0 fail / 30 governed PostgreSQL skips |
+| `verify:full` | PASS — single execution; Stages 0..13, cleanup and final fingerprint PASS |
+
+The authoritative full campaign repeated the base gate with the same
+`935/0/30` result, passed the PostgreSQL composite at `17/17`, PBI-039 at
+`2/2`, PBI-040 at `1/1` and PBI-041 at `10/10`. Preview-like migration state,
+compiled backend/UI smokes, cleanup and evidence fingerprint all passed. Its
+PBI-041 10k benchmark recorded ingest `4,976.1 ms`, analyze `447.0 ms`, preview
+`38.7 ms`, publish `2,201.8 ms`, historical search `74.8 ms` and heap delta
+`93.7 MiB`; publish remains below the unchanged `30,000 ms` budget.
 
 ## Formal-verification status
 
 The earlier PASS in [`FORMAL_VERIFICATION.md`](FORMAL_VERIFICATION.md) remains
 historically true only for implementation `690282a`. It does not cover the
-remediation commits above. The new candidate requires a fresh independent
-Formal Verification after local authoritative verification succeeds.
+remediation commits above. Local authoritative verification now passes, but
+the new candidate still requires a fresh independent Formal Verification.

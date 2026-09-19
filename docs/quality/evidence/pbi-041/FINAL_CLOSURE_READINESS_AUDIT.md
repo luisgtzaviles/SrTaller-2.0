@@ -5,10 +5,10 @@
   implementación, mutación de datos Owner, push, PR, merge, deploy ni cambios
   de infraestructura. Las remediaciones de gates posteriores se registran sin
   reescribir ese resultado histórico.
-- **Dictamen actual:** **REVIEW REMEDIATION IN LOCAL VERIFICATION.** El PASS
+- **Dictamen actual:** **REVIEW REMEDIATION LOCALLY VERIFIED.** El PASS
   formal posterior a FV-GATE-REMEDIATION-5 permanece histórico para `690282a`.
   `REVIEW-041-001` cambió la implementación y exige nueva Formal Verification
-  independiente después de completar los gates locales.
+  independiente. Los gates locales base y full ya pasaron.
 
 ## Repositorio y candidate del audit original
 

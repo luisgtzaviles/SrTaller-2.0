@@ -2,9 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-041 `REVIEW-REMEDIATION-1` en verificación local. El PASS
-  formal de `690282a` quedó stale al cambiar la implementación; se requiere
-  nueva Formal Verification independiente. Owner Acceptance pendiente.
+- **Estado:** PBI-041 `REVIEW-REMEDIATION-1` PASS local: blocker de seguridad
+  remediado y verificación autoritativa Stages 0..13 PASS. El PASS formal de
+  `690282a` quedó stale; se requiere nueva Formal Verification independiente.
+  Owner Acceptance pendiente.
   PBI-040 permanece `Done`, `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
   `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
@@ -25,9 +26,10 @@ concurrencia entre el snapshot usado para autorizar efectos y el Batch
 publicado. La remediación local vincula Apply al `batch.lock_version` existente:
 un `decide` concurrente invalida el intento antes de escrituras y obliga a
 refetch/reautorización. PostgreSQL material pasa 10/10 con 75 migraciones y
-cero pendientes en la segunda ejecución; Owner data y AviCell no cambiaron.
-El PASS formal anterior permanece histórico para `690282a`, pero no cubre el
-candidato modificado. Véase
+cero pendientes en la segunda ejecución; base `verify` pasó 935/0/30 y la
+única ejecución de `verify:full` pasó Stages 0..13, cleanup y fingerprint.
+Owner data y AviCell no cambiaron. El PASS formal anterior permanece histórico
+para `690282a`, pero no cubre el candidato modificado. Véase
 [`REVIEW_REMEDIATION_1.md`](quality/evidence/pbi-041/REVIEW_REMEDIATION_1.md).
 
 PBI-040 quedó Owner Accepted el 2026-09-13. PR #49 integró Catalog/Pricing;
@@ -333,10 +335,10 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint | SPRINT-03 — Active |
-| Current PBI | PBI-041 — REVIEW-REMEDIATION-1 en verificación local; nueva FV requerida |
+| Current PBI | PBI-041 — REVIEW-REMEDIATION-1 PASS local; nueva FV requerida |
 | WIP | 1/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Review blocker en remediación local; PASS formal anterior stale; Acceptance pending |
+| PBI-041 | Security blocker remediado; verificación local PASS; FV anterior stale; Acceptance pending |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |

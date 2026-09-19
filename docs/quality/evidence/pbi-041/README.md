@@ -1,10 +1,11 @@
 # PBI-041 — Evidence Index
 
-PBI-041 is in `REVIEW-REMEDIATION-1` local verification. The Independent Formal
-Verification `PASS` remains historical for implementation candidate `690282a`,
-but is stale after the Apply authorization snapshot remediation. The changed
-candidate requires new independent Formal Verification; Owner Acceptance,
-integration, deployment and release remain pending.
+PBI-041 `REVIEW-REMEDIATION-1` passes local authoritative verification. The
+Independent Formal Verification `PASS` remains historical for implementation
+candidate `690282a`, but is stale after the Apply authorization snapshot
+remediation. The changed candidate requires new independent Formal
+Verification; Owner Acceptance, integration, deployment and release remain
+pending.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Independent Formal Verification](FORMAL_VERIFICATION.md)

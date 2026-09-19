@@ -1907,4 +1907,6 @@ incremento del Batch, rechazo stale con cero escrituras y publicación posterior
 sólo con refetch/token actual. PBI-041 material pasa 10/10 con 75 migraciones y
 benchmark publish 10k de `28,690.3 ms`. Véase
 [`REVIEW_REMEDIATION_1.md`](REVIEW_REMEDIATION_1.md). El PASS formal anterior
-queda stale y no se infiere nuevo PASS, Acceptance ni integración.
+queda stale y no se infiere nuevo PASS, Acceptance ni integración. El gate
+base posterior pasó 935/0/30 y la única ejecución autorizada de `verify:full`
+pasó Stages 0..13; su benchmark PBI-041 publicó 10k en `2,201.8 ms`.
