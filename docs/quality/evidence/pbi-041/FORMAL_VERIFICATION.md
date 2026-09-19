@@ -1,6 +1,17 @@
 # PBI-041 — Independent Formal Verification
 
-## Formal verdict
+## Status after PR #55 review
+
+The PASS below is preserved as historical evidence for implementation
+`690282abb73c71f67a4e4d00530b2bc58207d2eb`. Independent review of PR #55
+subsequently recorded `REVIEW-041-001`, and the authorized local remediation
+changed product code in commits `f5551be` and `1d113e8`.
+
+**Current status: STALE — the changed candidate requires a new independent
+Formal Verification.** The historical verdict is not carried forward. See
+[`REVIEW_REMEDIATION_1.md`](REVIEW_REMEDIATION_1.md).
+
+## Historical formal verdict
 
 **PASS** — candidate implementation
 `690282abb73c71f67a4e4d00530b2bc58207d2eb` satisfies the authoritative

@@ -1,15 +1,24 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Independent Formal Verification
+Milestone / Functional Goal: PBI-041 — Review Remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Independent Formal Verification PASS; ready for governed promotion / push + PR. Owner Acceptance pending.
+Status: REVIEW-REMEDIATION-1 in progress; remote review blocker REVIEW-041-001 confirmed. Previous Formal Verification is stale for the changing candidate.
 WIP: 1/1
-Progress: 10 / 10 formal-verification blocks complete; 29 / 29 acceptance criteria pass.
-Current: Stop after the local documentation-only Formal Verification evidence commit; no remote action.
-Next: Owner authorization is required before promotion / push + PR; do not infer Owner Acceptance or integration authority.
-Blocked: None for governed promotion. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 4 / 6 review-remediation blocks complete.
+Current: Run base `verify`, then the single authorized `verify:full` campaign.
+Next: Record authoritative results, reconcile final evidence and create the final local documentation commit.
+Blocked: REVIEW-041-001 blocks promotion until remediation and new independent Formal Verification. Preserve Owner data, AviCell, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
+
+## Current checkpoint — REVIEW-REMEDIATION-1
+
+- [x] Revalidate exact base HEAD `008135663ce78a2c0b6d1a4860a221e60405012f`, branch, remote candidate and preexisting untracked `.DS_Store`.
+- [x] Bind effect authorization to the existing authoritative `batch.lock_version` and reject stale publication before writes.
+- [x] Prove concurrent `decide` invalidates the stale Apply snapshot and requires capability recomposition on refetch.
+- [x] Pass focused domain, authorization and disposable PostgreSQL material race checks without Owner-data mutation.
+- [ ] Pass typecheck, build, architecture, base `verify` and exactly one `verify:full`; retain the 10k budget.
+- [ ] Reconcile PBI/evidence/FV status, fix REVIEW-041-002 and create logical local commits only.
 
 ## Current checkpoint — Independent Formal Verification
 

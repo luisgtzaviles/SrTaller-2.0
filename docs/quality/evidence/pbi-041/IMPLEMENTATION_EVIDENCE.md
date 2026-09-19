@@ -1891,3 +1891,20 @@ records. Apple remains the sole reused canonical Brand control. PostgreSQL
 PBI-041 contracts pass (7 tests / 75 migrations) and 16 focused model,
 coverage, duplicate and authorization contracts pass. See
 [UX-005.5](../../../domain/PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md).
+
+## REVIEW-REMEDIATION-1 — Apply authorization snapshot binding
+
+El review remoto identificó que las capabilities de efecto se derivaban de un
+snapshot server-side sin vincularlo al lock del Batch publicado. La remediación
+reutiliza `batch.lock_version`: el read autoritativo lo inyecta en el comando,
+el puerto lo tipa y la transacción exige coincidencia de Version y Batch antes
+de cualquier efecto. No se movió autorización a persistence ni se añadieron
+roles, capabilities, migraciones o lógica por nombre de rol.
+
+La regresión de aplicación obliga a recomponer `catalog.items.deactivate` tras
+una escalada a `REACTIVATE`. PostgreSQL desechable demuestra el race real, el
+incremento del Batch, rechazo stale con cero escrituras y publicación posterior
+sólo con refetch/token actual. PBI-041 material pasa 10/10 con 75 migraciones y
+benchmark publish 10k de `28,690.3 ms`. Véase
+[`REVIEW_REMEDIATION_1.md`](REVIEW_REMEDIATION_1.md). El PASS formal anterior
+queda stale y no se infiere nuevo PASS, Acceptance ni integración.

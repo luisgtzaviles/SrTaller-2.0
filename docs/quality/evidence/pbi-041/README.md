@@ -1,12 +1,14 @@
 # PBI-041 — Evidence Index
 
-PBI-041 Independent Formal Verification is `PASS` for implementation candidate
-`690282abb73c71f67a4e4d00530b2bc58207d2eb`; governed promotion / push + PR is
-the next eligible state and still requires Owner authority. Owner Acceptance,
+PBI-041 is in `REVIEW-REMEDIATION-1` local verification. The Independent Formal
+Verification `PASS` remains historical for implementation candidate `690282a`,
+but is stale after the Apply authorization snapshot remediation. The changed
+candidate requires new independent Formal Verification; Owner Acceptance,
 integration, deployment and release remain pending.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Independent Formal Verification](FORMAL_VERIFICATION.md)
+- [Review Remediation 1](REVIEW_REMEDIATION_1.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)
 - [Test Strategy](TEST_STRATEGY.md)

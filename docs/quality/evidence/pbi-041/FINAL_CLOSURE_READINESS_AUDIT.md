@@ -5,10 +5,10 @@
   implementación, mutación de datos Owner, push, PR, merge, deploy ni cambios
   de infraestructura. Las remediaciones de gates posteriores se registran sin
   reescribir ese resultado histórico.
-- **Dictamen actual:** **READY FOR INDEPENDENT FORMAL VERIFICATION.** El
-  dictamen bloqueado original y cada fallo sucesor se conservan abajo como
-  evidencia histórica; FV-GATE-REMEDIATION-5 resolvió el último blocker
-  conocido sin cambiar producto ni datos Owner.
+- **Dictamen actual:** **REVIEW REMEDIATION IN LOCAL VERIFICATION.** El PASS
+  formal posterior a FV-GATE-REMEDIATION-5 permanece histórico para `690282a`.
+  `REVIEW-041-001` cambió la implementación y exige nueva Formal Verification
+  independiente después de completar los gates locales.
 
 ## Repositorio y candidate del audit original
 
@@ -212,3 +212,16 @@ siendo pasos separados.
 
 Ninguna. Este audit no crea ni actualiza un PR, no hace push ni modifica GitHub
 o infraestructura.
+
+## Reapertura por review remoto — REVIEW-041-001
+
+El review de PR #55 encontró una ventana entre la composición de capabilities
+de Apply y el estado de Batch realmente publicado. `REVIEW-REMEDIATION-1`
+vincula ahora el snapshot autorizado al `batch.lock_version` existente y hace
+que cualquier `decide` concurrente produzca un conflicto antes de escrituras.
+La prueba material cubre escalamiento `UNCHANGED → REACTIVATE`, cero efectos
+del intento stale y retry sólo tras refetch/reautorización.
+
+Esta remediación no reescribe el resultado histórico ni hereda su PASS. Véase
+[`REVIEW_REMEDIATION_1.md`](REVIEW_REMEDIATION_1.md). Owner data y AviCell no
+cambiaron; no hubo migración ni acción remota.

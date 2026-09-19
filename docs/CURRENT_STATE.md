@@ -2,8 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-041 Independent Formal Verification `PASS`; listo para
-  promoción gobernada / push + PR. Owner Acceptance pendiente.
+- **Estado:** PBI-041 `REVIEW-REMEDIATION-1` en verificación local. El PASS
+  formal de `690282a` quedó stale al cambiar la implementación; se requiere
+  nueva Formal Verification independiente. Owner Acceptance pendiente.
   PBI-040 permanece `Done`, `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
   `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
@@ -19,16 +20,15 @@
 
 ## Resumen ejecutivo
 
-El candidato de implementación PBI-041
-`690282abb73c71f67a4e4d00530b2bc58207d2eb` pasó la verificación formal
-independiente: 29/29 criterios, arquitectura, 75 migraciones, inventario
-PostgreSQL gobernado 29 exacto, base `verify` 934/0/29 y una única ejecución de
-`verify:full` con Stages 0..13 PASS. PostgreSQL pasó 17/17 en el compuesto y
-9/9 para PBI-041; cleanup, fingerprint y el presupuesto 10k pasaron. La
-reconciliación read-only de AviCell/Owner data no encontró discrepancias
-inexplicadas. Véase
-[`FORMAL_VERIFICATION.md`](quality/evidence/pbi-041/FORMAL_VERIFICATION.md).
-No se ejecutó push, PR, merge ni deploy, y no se infiere Owner Acceptance.
+El review remoto de PR #55 encontró `REVIEW-041-001`, una ventana de
+concurrencia entre el snapshot usado para autorizar efectos y el Batch
+publicado. La remediación local vincula Apply al `batch.lock_version` existente:
+un `decide` concurrente invalida el intento antes de escrituras y obliga a
+refetch/reautorización. PostgreSQL material pasa 10/10 con 75 migraciones y
+cero pendientes en la segunda ejecución; Owner data y AviCell no cambiaron.
+El PASS formal anterior permanece histórico para `690282a`, pero no cubre el
+candidato modificado. Véase
+[`REVIEW_REMEDIATION_1.md`](quality/evidence/pbi-041/REVIEW_REMEDIATION_1.md).
 
 PBI-040 quedó Owner Accepted el 2026-09-13. PR #49 integró Catalog/Pricing;
 PR #50 corrigió de forma gobernada la cronología de cinco migraciones todavía
@@ -333,10 +333,10 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 | Elemento | Estado vigente |
 |---|---|
 | Sprint | SPRINT-03 — Active |
-| Current PBI | PBI-041 — Owner Review ready; Acceptance pending |
+| Current PBI | PBI-041 — REVIEW-REMEDIATION-1 en verificación local; nueva FV requerida |
 | WIP | 1/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Canonical title + Supplier observed title history; Owner Review ready; Acceptance pending |
+| PBI-041 | Review blocker en remediación local; PASS formal anterior stale; Acceptance pending |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |
@@ -344,7 +344,9 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 ## Próxima acción
 
-Owner revisa Historical/Virgin, retiro global, retiro CREATED por batch y el
+Completar la verificación local autoritativa de REVIEW-REMEDIATION-1 y entregar
+el nuevo candidato para Formal Verification independiente. Después, el Owner
+revisa Historical/Virgin, retiro global, retiro CREATED por batch y el
 Composer local. Esperar decisión; no iniciar PBI-042 ni gates de integración,
 publicación,
 fusión o deploy sin autoridad explícita.

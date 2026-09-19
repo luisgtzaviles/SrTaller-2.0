@@ -201,8 +201,8 @@ Antes de implementar, el Owner debe aceptar o ajustar `DUP-001`…`DUP-008`, en
 especial la regla de una sola resolución efectiva y la representación de una
 contradicción de valores dentro del snapshot.
 
-**DUPLICATE INPUT SEMANTICS UNDERSTOOD**  
-**IDENTITY CONFLICT SEPARATED FROM VALUE CONTRADICTION**  
+**DUPLICATE INPUT SEMANTICS UNDERSTOOD**
+**IDENTITY CONFLICT SEPARATED FROM VALUE CONTRADICTION**
 **DUP-1/DUP-3 IMPLEMENTATION AUTHORIZED SEPARATELY**
 
 ## UX-002A.2 implementation trace
