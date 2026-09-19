@@ -26,11 +26,14 @@ authority.
 - [UX-005.6 Published Data Integrity and Pending Reference Governance](../../../domain/PRICE_LIST_UX_0056_PUBLISHED_DATA_INTEGRITY_AND_PENDING_REFERENCE_GOVERNANCE.md)
 - [UX-005.6A Pending Brand Display Canonicalization](../../../domain/PRICE_LIST_UX_0056A_PENDING_BRAND_DISPLAY_CANONICALIZATION.md)
 - [UX-005.7 AviCell Owner Data Remediation](../../../domain/PRICE_LIST_UX_0057_AVICELL_OWNER_DATA_REMEDIATION.md)
+- [Final Closure & Readiness Audit](FINAL_CLOSURE_READINESS_AUDIT.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
-PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
-Owner Review. Advanced Supplier Reconciliation remains a deferred outcome
-without PBI ID, selection or readiness.
+PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP. The final
+readiness audit found two required verification-gate blockers, so it remains
+before Formal Verification and Owner Acceptance. Advanced Supplier
+Reconciliation remains a deferred outcome without PBI ID, selection or
+readiness.
 
 ## UX-005.1 — New Item Classification with Pending Reference Capture
 

@@ -1,17 +1,34 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005.7 AviCell Owner Data Remediation
+Milestone / Functional Goal: PBI-041 — Final Closure & Readiness Audit
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Owner-authorized local data remediation complete; final closure audit remains pending.
+Status: Final audit completed — NOT READY; required verification-gate blockers remain.
 WIP: 1/1
-Progress: 6 / 6 UX-005.7 remediation blocks complete; final closure audit not started.
-Current: Local evidence/checks for the executed governed Brand promotions and single-item deactivation.
-Next: Owner Review of UX-005.7; do not start final closure, integration, or another PBI without authority.
-Blocked: No implementation blocker known. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 5 / 7 audit blocks complete; two required verification gates are blocked.
+Current: Evidence recorded for the formal-readiness gate failures; no remediation is authorized in this audit.
+Next: Owner decision on the two gate remediations; do not start Formal Verification, integration, or another PBI.
+Blocked: `verify:full` preflight rejects PBI-041's intentional `apps/dev-preview-web/src/api.ts` change under the stale PBI-039 protected-surface guard; `verify` fails because the migration allowlist omits the three PBI-041 policy/capability migrations. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
 
-## Current checkpoint — UX-005.7 AviCell Owner Data Remediation
+## Current checkpoint — Final Closure & Readiness Audit
+
+- [x] Reconcile branch lineage, PBI contract, UX slices, canonical state and
+  local Owner-data evidence without mutating product data.
+- [x] Verify AviCell v3, row 411, pending Brand remediation, migration status,
+  tenant-scoped counts, audit events and local runtime health read-only.
+- [x] Run the required governed `verify:full` once; capture its Stage 0
+  protected-surface failure and successful cleanup/fingerprint stages.
+- [x] Run proportional independent gates: PostgreSQL PBI-041 10/10, current
+  10k budget pass, DEC-005 architecture PASS and authenticated local UI smoke.
+- [x] Record the final readiness audit, performance classification and the
+  formal-verification package without claiming Acceptance, merge or Done.
+- [!] Remediate the PBI-039 protected-surface guard or obtain a governing
+  exception for the intentional typed `PreviewApiError.parameter` change.
+- [!] Update the migration API contract allowlist for the three governed
+  PBI-041 migrations, then rerun base/full verification on a frozen candidate.
+
+## Previous checkpoint — UX-005.7 AviCell Owner Data Remediation
 
 - [x] Revalidate AviCell v3, the 16 pending Brand groups/618 items, the
   separate non-AviCell group, row 411 and the normal domain authority.
@@ -63,7 +80,7 @@ Last updated: 2026-09-19 MST
 - [x] Complete AviCell v3 navigation-only and responsive Chrome proof without selecting a winner or applying a batch.
 - [x] Reconcile PBI/evidence/checklist and run the authorized proportional gates; keep commits local only.
 
-## Current checkpoint — UX-005.3 Exception-to-Source Correction Navigation
+## Previous checkpoint — UX-005.3 Exception-to-Source Correction Navigation
 
 - [x] Audit physical-row identity, policy-driven field visibility, capabilities and the immutable analyzed-version lifecycle.
 - [x] Add capability-aware navigation that reveals the grid, locates the physical row and focuses an authorized relevant field.
@@ -97,7 +114,7 @@ Last updated: 2026-09-19 MST
 - [x] Record UX5-001..012, rank alternatives and propose only a narrow unimplemented remediation.
 - [x] Run documentation checks, verify no data mutation, create a local documentation commit and stop for Owner decision.
 
-## Current checkpoint — UX-004.7 Capture Cleanup Ergonomics
+## Previous checkpoint — UX-004.7 Capture Cleanup Ergonomics
 
 - [x] Audit existing Title provenance, Brand/reference normalization, draft lifecycle and current row-removal invariant.
 - [x] Normalize Brand consistently at paste, manual commit and missing-data completion, preferring an existing canonical reference.
@@ -107,7 +124,7 @@ Last updated: 2026-09-19 MST
 - [x] Add focused Brand, removal, lifecycle, authorization, required-field, gridline and resize regressions.
 - [x] Complete Chrome material proof, proportionate checks and evidence reconciliation; stop for Owner Review with local commits only.
 
-## Current checkpoint — UX-004.6 Composer Grid Action Toolbar Consolidation
+## Previous checkpoint — UX-004.6 Composer Grid Action Toolbar Consolidation
 
 - [x] Confirm current toolbar/action predicates and the separate redundant row-action container.
 - [x] Consolidate Undo, Add row and Remove active row into the workflow toolbar immediately before Review.
@@ -116,7 +133,7 @@ Last updated: 2026-09-19 MST
 - [x] Complete Chrome desktop/1280/768/640, light/dark and keyboard proof without Save, Analyze or Apply.
 - [x] Reconcile PBI/evidence/checklist and stop for Owner Review; no push, PR, merge or deploy.
 
-## Current checkpoint — UX-004.6 extension: Gridlines / Cuadrícula
+## Previous checkpoint — UX-004.6 extension: Gridlines / Cuadrícula
 
 - [x] Add an accessible Cuadrícula control to the view group, separate from workflow actions.
 - [x] Keep its state presentation-only in session storage, without draft dirty state, undo or server work.
@@ -125,7 +142,7 @@ Last updated: 2026-09-19 MST
 - [x] Run proportional regression/typecheck/build/architecture and documentation gates.
 - [x] Reconcile PBI/evidence/checklist and stop for Owner Review; no push, PR, merge or deploy.
 
-## Current checkpoint — UX-004.5 Supplier History Selection Consistency
+## Previous checkpoint — UX-004.5 Supplier History Selection Consistency
 
 - [x] Confirm the root cause: the Composer rendered every supplier history despite the browse selector.
 - [x] Make the browsed source the sole authority for the history list and prevent a browse change from resetting the draft source.
@@ -134,7 +151,7 @@ Last updated: 2026-09-19 MST
 - [x] Confirm no server, catalog, source, version, policy, resolution or memory write occurred.
 - [x] Reconcile PBI/evidence/UX-001 cross-reference/checklist and stop for Owner Review; no push, PR, merge or deploy.
 
-## Current checkpoint — UX-004.4 Role Matrix + End-to-End Authorization Proof
+## Previous checkpoint — UX-004.4 Role Matrix + End-to-End Authorization Proof
 
 - [x] Audit the human role-editor labels/grouping, capability registry and remaining legacy `catalog.manage` uses; add the missing human label for Supplier delete only.
 - [x] Add role-matrix automated tests for ordinary read, cost, item actions, bulk read/prepare/publish and configuration boundaries.
@@ -160,7 +177,7 @@ Last updated: 2026-09-19 MST
 - [x] Complete local full-user visual/responsive smoke at desktop, 768 and 640 without applying an Owner batch.
 - [x] Record PBI, authorization audit, architecture and evidence; stop for Owner Review with no remote action.
 
-## Current checkpoint — UX-004.2 Price List + Item Authority Integration
+## Previous checkpoint — UX-004.2 Price List + Item Authority Integration
 
 - [x] Preserve UX-004.1 registry/backfill and move Price List controls to the explicit successor capabilities, never role names.
 - [x] Keep `price_list.read` as ordinary list/search/filter/price access and remove the broad `catalog.manage` requirement from the safe item-detail read operation.
@@ -171,9 +188,10 @@ Last updated: 2026-09-19 MST
 - [x] Add focused UI/route and protected-operation regressions for ordinary read, safe detail, direct mutation denials and lifecycle/bulk separation.
 - [x] Run local PostgreSQL authorization material, browser/responsive/accessibility proof and UX-003 cost-policy regression without modifying Owner Catalog data.
 - [x] Reconcile PBI-041, UX-004, architecture and evidence with the exact local proof.
-- [ ] Stop at Local Owner Review; no push, PR, merge, deploy or unrelated Bulk authorization redesign.
+- [x] Historical checkpoint stopped at Owner Review; later authorized PBI-041
+  slices remained in the same WIP and did not perform remote actions.
 
-## Current checkpoint — UX-004.1 Catalog Authorization Registry + Compatibility Foundation
+## Previous checkpoint — UX-004.1 Catalog Authorization Registry + Compatibility Foundation
 
 - [x] Preserve the UX-004 authorization audit and materialize only `catalog.items.create`, `.update`, `.deactivate` and `catalog.import.read`.
 - [x] Add a reversible capability-derived migration: legacy `catalog.manage` receives only item successors; legacy `catalog.import.prepare` receives only import read.
@@ -184,7 +202,7 @@ Last updated: 2026-09-19 MST
 - [x] Prove server allow/deny, legacy compatibility, no sensitive expansion, local seed compatibility and migration idempotence with focused tests and disposable PostgreSQL.
 - [x] Reconcile PBI-041, UX-004, architecture and evidence; stop at Owner Review with no Catalog/SupplierVersion mutation and no remote action.
 
-## Current checkpoint — UX-003.4 Required Effective Value Enforcement
+## Previous checkpoint — UX-003.4 Required Effective Value Enforcement
 
 - [x] Confirm current branch, health, policy foundation, reconciliation lifecycle and Apply architecture.
 - [x] Evaluate domain-required plus Tenant-required fields from the effective resulting value, not raw cells alone.
@@ -234,7 +252,8 @@ Last updated: 2026-09-19 MST
 - [x] Add explicit catalog configuration read/manage capabilities; reference-cost policy access composes with existing sensitive cost capabilities.
 - [x] Expose trusted-context read/write/restore API without accepting Tenant or Branch authority from the client.
 - [x] Run focused domain, authorization, PostgreSQL migration/material and architecture checks.
-- [ ] Owner review: no Composer consumer or enforcement is enabled in this checkpoint.
+- [x] Historical Owner Review boundary preserved; Composer consumption and
+  enforcement were later materialized only by authorized UX-003.3/UX-003.4.
 
 ## Previous checkpoint — UX-003 Bulk Catalog Field Policy Audit
 
@@ -245,7 +264,7 @@ Last updated: 2026-09-19 MST
 - [x] Document configuration, authorization, defaults, historical items, concurrency, reanalyze, revision and snapshot alternatives as UX3-001..017 Owner decisions.
 - [x] Validate documentation only: local links, consistency, secret scan and git diff --check; DB writes remain zero and no product/API/DB/migration/test behavior changed.
 
-## Current checkpoint — UX-002E.1 Secondary missing-data context
+## Previous checkpoint — UX-002E.1 Secondary missing-data context
 
 - [x] Replace the primary always-open block with the collapsed `Completar datos faltantes` disclosure for editable FULL loads.
 - [x] Keep Tipo, Categoría and Marca available only on explicit expansion; retain a separate advanced COMPACT safety option.
@@ -291,7 +310,7 @@ Last updated: 2026-09-19 MST
 - [x] Run authorized focal checks and reconcile PBI/audit/evidence/checklist.
 - [x] Stop at Owner Review; no push, PR, merge or deploy.
 
-## Current checkpoint — UX-002A.4 Duplicate winner decision failure
+## Previous checkpoint — UX-002A.4 Duplicate winner decision failure
 
 - [x] Preserve AG v64 and inspect it read-only: both rows remain `CONFLICT` / `UNRESOLVED`, batch remains `RECONCILING`, and no Catalog, Resolution, Memory or publication mutation occurred after the failed click.
 - [x] Trace the grouped card through the current row-decision API and PostgreSQL transaction: trusted target identity and the group-atomic sibling exclusion already exist.
@@ -301,17 +320,18 @@ Last updated: 2026-09-19 MST
 - [x] Run the authorized focal checks and reconcile PBI-041/audit/evidence/checklist.
 - [x] Stop at Owner Review; no Apply, push, PR, merge or deploy.
 
-## Current checkpoint — UX-002B Load intent gate
+## Previous checkpoint — UX-002B Load intent gate
 
 - [x] Extend the existing New Load gate so supplier and load intent begin unselected and Continue needs both choices.
 - [x] Use Owner language for the two intents, retain the existing `PARTIAL` / `COMPLETE` contract internally, and preserve contextual supplier creation.
 - [x] Replace the persistent completeness radios with compact supplier-and-intent context; permit a safe pre-save change that preserves rows when the supplier is unchanged.
 - [x] Add focused gate/Composer contracts and preserve the existing UX-002A duplicate regression coverage.
 - [x] The current PBI-041 PostgreSQL material suite passes; a prior local slow run remains historical evidence only and did not change product semantics or the threshold.
-- [ ] Complete isolated Chrome QA for PARTIAL, COMPLETE, safe pre-save change and history browsing after a local session is authorized.
+- [x] Superseded by the later UX-002B.1 authenticated Chrome walkthrough and
+  the final Composer smoke; no separate browser fixture remains required.
 - [x] Reconcile PBI-041, UX-002 audit and implementation evidence with the static-check evidence; browser acceptance remains pending and UX-002C does not start.
 
-## Current checkpoint — UX-002B.1 Two-panel New Load modal
+## Previous checkpoint — UX-002B.1 Two-panel New Load modal
 
 - [x] Keep the explicit supplier-plus-intent gate, its server authority and its pre-save Change/create semantics intact.
 - [x] Split the dialog into supplier and load-intent panels, retain one global Cancel/Continue footer and preserve the existing focus-trapped Dialog.
@@ -320,7 +340,7 @@ Last updated: 2026-09-19 MST
 - [x] Complete authenticated Chrome QA: fresh blank gate, selected intent styles, contextual create return, pre-save Change, history preservation, keyboard/focus, desktop/768/640 and light/dark.
 - [x] Stop for Owner Review; do not treat the refinement as accepted before the material walkthrough.
 
-## Current checkpoint — UX-002A.2 Duplicate input resolution
+## Previous checkpoint — UX-002A.2 Duplicate input resolution
 
 - [x] Preserve AG v60 and implement only DUP-1 exact and DUP-3 contradictory same-snapshot behavior.
 - [x] Keep physical rows/provenance and form one effective observation from the existing supplier identity key without a migration.
@@ -330,7 +350,7 @@ Last updated: 2026-09-19 MST
 - [x] Preserve true identity mapping, PARTIAL/COMPLETE, baseline, coverage key, Memory and Resolution contracts.
 - [x] Add focused contract/PostgreSQL coverage and reconcile PBI/evidence/docs; UX-002B remains not started.
 
-## Current checkpoint — UX-002A.3 Duplicate resolution card
+## Previous checkpoint — UX-002A.3 Duplicate resolution card
 
 - [x] Render each authoritative contradictory duplicate group as one Owner decision, without changing matching or persistence.
 - [x] Compare only materially different row values and keep raw per-row details behind an accessible disclosure.
@@ -338,16 +358,17 @@ Last updated: 2026-09-19 MST
 - [x] Represent a resolved group compactly in Resueltas/Todas and count it as one attention unit.
 - [x] Preserve exact-duplicate notice and true identity-conflict UUID mapping flow; later UX-002B work does not alter it.
 
-## Current checkpoint — UX-002A.3A duplicate grouping runtime gap
+## Previous checkpoint — UX-002A.3A duplicate grouping runtime gap
 
 - [x] Audit the persisted conflicting duplicate rows, repository DTO and browser result; isolate the frontend callback adaptation as the sole gap.
 - [x] Pass `row.errors` and `row.warnings` explicitly to the existing grouping helper, without changing domain, API or persistence behavior.
 - [x] Add DTO-shape and disposable PostgreSQL regressions for persistence → analyzed DTO → presentation grouping.
 - [x] Pass focused contract tests, typecheck, production build, architecture and PBI-041 PostgreSQL material validation.
-- [~] Create a fresh isolated local QA version and prove one Owner duplicate-resolution card in Chrome; pending authorized local session.
+- [x] Superseded by the later UX-005.4 fresh isolated Chrome winner proofs for
+  both physical-row choices; no separate runtime-gap fixture remains required.
 - [x] Reconcile the PBI/evidence documentation with static evidence; browser proof remains pending and no follow-on work starts automatically.
 
-## Current checkpoint — UX-002A.1 Duplicate input resolution audit
+## Previous checkpoint — UX-002A.1 Duplicate input resolution audit
 
 - [x] Preserve AG v60 and complete a read-only preflight: branch, local health, PostgreSQL 18.4, 72 migrations and no runtime/data mutation.
 - [x] Trace duplicate key calculation from paste/grid, durable SupplierListing and RowDecision through Analyze, trusted history, DTO and generic conflict UI.
@@ -355,13 +376,13 @@ Last updated: 2026-09-19 MST
 - [x] Separate identity conflict from same-snapshot value contradiction; cover DUP-1 through DUP-6, physical/effective coverage and FULL/COMPACT limits.
 - [x] Record UX V1 direction and decisions DUP-001 through DUP-008 in the domain audit, PBI and evidence index without implementing behavior.
 
-## Current checkpoint — UX-002 happy-path friction audit
+## Previous checkpoint — UX-002 happy-path friction audit
 
 - [x] Inspect the current branch, runtime provenance, local health, 71 PostgreSQL migrations and AG v49-v53 read-only material evidence.
 - [x] Trace PARTIAL/COMPLETE, durable draft creation, analysis, publication, coverage, defaults and capture modes from UI through persistence.
 - [x] Record the factual audit, automation boundaries and concrete Owner decisions without changing product behavior.
 
-## Current checkpoint — UX-002A Review List orchestration
+## Previous checkpoint — UX-002A Review List orchestration
 
 - [x] Reconfirm the current UI/API/service/repository trace, local health, 71 migrations and Owner fixture preservation.
 - [x] Replace the new/draft happy-path sequence with one Review list orchestration while retaining secondary draft recovery.
@@ -369,7 +390,7 @@ Last updated: 2026-09-19 MST
 - [x] Validate local new-load/draft/reanalyze paths without Apply or existing-fixture mutation.
 - [x] Reconcile PBI-041, UX-002, evidence and checklist for Owner Review.
 
-## Current checkpoint — Operator flow optimization UX-001
+## Previous checkpoint — Operator flow optimization UX-001
 
 - [x] Audit how Composer enters, selects Sources, browses history and starts a new load without creating or modifying a Source/Version.
 - [x] Trace `sourceId` from React state through first draft persistence, tenant-scoped backend validation and immutable Version ownership.
@@ -388,7 +409,7 @@ Last updated: 2026-09-19 MST
 - [x] Validate typecheck, focused Composer/focus-trap regressions, production build, DEC-005 architecture and `git diff --check` without touching v52/v53.
 - [x] Reconcile implementation evidence, PBI-041 and UX-001 audit with final QA result.
 
-## Current checkpoint — Operator flow optimization UX-001B
+## Previous checkpoint — Operator flow optimization UX-001B
 
 - [x] Record Owner acceptance of UX-001B-D01..D07 without changing SupplierSource, Version ownership or domain workflow.
 - [x] Audit the existing initial state: browsing can be selected without materializing a Version; the right CTA duplicates the navigation CTA.
@@ -399,7 +420,7 @@ Last updated: 2026-09-19 MST
 - [x] Validate Chrome desktop/768/640 and light/dark without Source, Version, Catalog or persistence writes; current UX-001C local walkthrough completed with a valid existing Station session and no credentials entered.
 - [x] Reconcile UX-001 documentation, PBI-041 and implementation evidence with the implementation and current QA blocker.
 
-## Current checkpoint — Operator flow optimization UX-001C
+## Previous checkpoint — Operator flow optimization UX-001C
 
 - [x] Record Owner acceptance of UX-001C-D01..D07 and preserve UX-001/UX-001B state logic.
 - [x] Audit the rejected UX-001B affordance: its persistent square sits between Sources and workspace instead of belonging to Sources navigation.
@@ -410,7 +431,7 @@ Last updated: 2026-09-19 MST
 - [x] Validate Chrome desktop/768/640 and light/dark with an existing trusted local Station session; no credentials or business writes were used.
 - [x] Reconcile UX-001 documentation, PBI-041 and implementation evidence with UX-001C result.
 
-## Current checkpoint — UX-001C collapsed restore-control polish
+## Previous checkpoint — UX-001C collapsed restore-control polish
 
 - [x] Record Owner rejection limited to the collapsed full-height rail; preserve the accepted open Sources header.
 - [x] Remove the grid column/rail and attach a compact restore tab to the Composer workspace edge.
@@ -418,14 +439,14 @@ Last updated: 2026-09-19 MST
 - [x] Verify neutral, new-load and historical Version workspaces at desktop/768/640 in light/dark.
 - [x] Reconcile PBI-041, UX-001 evidence and checklist with the final local proof.
 
-## Current checkpoint — UX-001C restore tab micro-polish
+## Previous checkpoint — UX-001C restore tab micro-polish
 
 - [x] Align the closed tab with workspace content and keep a subtle neutral resting state.
 - [x] Preserve the approved open control, keyboard focus and all Composer state.
 - [x] Review neutral, pending-load and historical Version workspaces on desktop, 768 and 640 px in light/dark.
 - [x] Run focused gates and reconcile the local evidence for Owner Review.
 
-## Current checkpoint — Existing CatalogItem reactivation pre-Apply QA
+## Previous checkpoint — Existing CatalogItem reactivation pre-Apply QA
 
 - [x] Select a safe active CatalogItem with trusted AG history, stable SKU/barcode and no non-catalog operational references.
 - [x] Retire exactly that synthetic local item through the normal Lista de precios administration UI; identity, identifiers and history remain preserved.
@@ -441,7 +462,7 @@ Last updated: 2026-09-19 MST
 - [x] Reload v53 and prove its historical Owner result (`Resultado aplicado`, `Lote aplicado`, `1 reactiva`, no Apply button); Lista de precios returns exactly one active matching item with expected price/cost and no duplicate.
 - [x] Reconfirm AG v52 is still `READY`, unpublished and `1 NEW`; no unrelated Catalog resource or second Apply resulted from v53.
 
-## Current checkpoint — Small COMPLETE-list reinforced confirmation QA
+## Previous checkpoint — Small COMPLETE-list reinforced confirmation QA
 
 - [x] Confirm material state read-only: AG v50 is COMPLETE/APPLIED with 39 rows; AG v51 is COMPLETE/READY with 4 rows and no publication instant.
 - [x] Prove Coverage against v50: 4 received, 3 continued, 36 not observed and 1 additional; all four row decisions are resolved (3 UPDATE, 1 UNCHANGED).
@@ -452,7 +473,7 @@ Last updated: 2026-09-19 MST
 - [x] Prove post-cancel safety: v51 remains READY with null publication, zero Resolution/audit rows; Catalog remains 45 total / 42 ACTIVE and all 36 not-observed items remain ACTIVE.
 - [x] Confirm AG v50 remains the latest COMPLETE/APPLIED baseline; no v51 Apply replay, migration, reset, product change or integration action.
 
-## Current checkpoint — Combined real-world supplier update, post-Apply QA
+## Previous checkpoint — Combined real-world supplier update, post-Apply QA
 
 - [x] Confirm AG v49 is the material automatic baseline: COMPLETE/APPLIED, 40 rows; do not alter v48 or v49.
 - [x] Create AG v50 as COMPLETE/READY with 39 rows: three omissions, two new items and three price/cost updates.
@@ -466,7 +487,7 @@ Last updated: 2026-09-19 MST
 - [x] Prove both new items and all changed/unchanged safety cases through Lista de precios; latest COMPLETE/APPLIED baseline selection now resolves to AG v50.
 - [x] Stop after post-Apply proof; do not replay Apply, create v51, retire items or begin an integration gate without new Owner authority.
 
-## Current checkpoint — Operational UX polish for coverage + post-apply result
+## Previous checkpoint — Operational UX polish for coverage + post-apply result
 
 - [x] Classify the missing additional-item state as `STALE_PROJECTION`; preserve the null pre-Apply `NEW` target.
 - [x] Project post-Apply item/status/provenance from immutable Resolution without changing matching, baseline or Apply semantics.
@@ -478,7 +499,7 @@ Last updated: 2026-09-19 MST
 - [x] Prove disposable PostgreSQL pre-Apply `NEW` and post-Apply `CREATED` coverage projection.
 - [x] Pass focused typecheck, build, contracts, PostgreSQL, architecture, docs validation and diff checks; await Owner Review only.
 
-## Current checkpoint — Complete baseline plausibility + coverage explainability
+## Previous checkpoint — Complete baseline plausibility + coverage explainability
 
 - [x] Extend coverage with continued, not-observed and additional detail without changing supplier-listing identity.
 - [x] Keep automatic same-Tenant/same-Source latest `COMPLETE/APPLIED` baseline selection.
@@ -489,7 +510,7 @@ Last updated: 2026-09-19 MST
 - [x] Prove normal, anomalous, partial, Tenant and SupplierSource scenarios with focused contracts and PostgreSQL.
 - [x] Record accepted BA-001..004 and focused local proof; stop at Owner Review.
 
-## Current checkpoint — Completeness contract + applied result state
+## Previous checkpoint — Completeness contract + applied result state
 
 - [x] Require explicit `PARTIAL` or `COMPLETE` at Create and Replace boundaries.
 - [x] Preserve completeness through Analyze, Apply, API reload and coverage selection.
@@ -499,7 +520,7 @@ Last updated: 2026-09-19 MST
 - [x] Materially prove AG v43 PARTIAL remains a non-published draft.
 - [x] Reconfirm AG v41 remains unchanged as pre-hardening historical evidence.
 
-## Current checkpoint — Exception-first reconciliation UX
+## Previous checkpoint — Exception-first reconciliation UX
 
 - [x] Open Requieren atención by default and show a compact `Todo resuelto`
   state when no decision is pending; resolved rows remain audit-only tabs.
