@@ -8,6 +8,7 @@ import {
 } from '../scripts/lib/full-verification-orchestrator.mjs';
 import {
   assertBaseSkipSummary,
+  assertPostgresqlSkipInventory,
   expectedPostgresqlSkipInventory,
   inspectPostgresqlSkipInventory,
 } from '../scripts/lib/postgresql-skip-inventory.mjs';
@@ -195,15 +196,28 @@ test('candidate mutation turns an otherwise green campaign into failure evidence
   assert.equal(fixture.readEvidence().candidateFingerprintAfter.candidateSha256, 'candidate-b');
 });
 
-test('PostgreSQL skip inventory maps 17 composite, 2 PBI-039, 1 PBI-040 and 1 PBI-041 material tests', async () => {
+test('PostgreSQL skip inventory maps all 29 exact material test identities to one authoritative stage', async () => {
   const inventory = await inspectPostgresqlSkipInventory();
-  assert.equal(inventory.total, 21);
+  assert.equal(inventory.total, 29);
   assert.equal(inventory.material.postgresqlComposite, 17);
   assert.equal(inventory.material.pbi039Postgresql, 2);
   assert.equal(inventory.material.pbi040Postgresql, 1);
-  assert.equal(inventory.material.pbi041Postgresql, 1);
+  assert.equal(inventory.material.pbi041Postgresql, 9);
   assert.equal(inventory.files.length, expectedPostgresqlSkipInventory.length);
-  assert.deepEqual(assertBaseSkipSummary('ℹ skipped 21\n', inventory).skipped, 21);
-  assert.throws(() => assertBaseSkipSummary('ℹ skipped 20\n', inventory), /expected 21/u);
-  assert.throws(() => assertBaseSkipSummary('ℹ skipped 21\nℹ skipped 21\n', inventory), /one authoritative/u);
+  assert.deepEqual(assertBaseSkipSummary('ℹ skipped 29\n', inventory).skipped, 29);
+  assert.throws(() => assertBaseSkipSummary('ℹ skipped 28\n', inventory), /expected 29/u);
+  assert.throws(() => assertBaseSkipSummary('ℹ skipped 29\nℹ skipped 29\n', inventory), /one authoritative/u);
+});
+
+test('PostgreSQL skip inventory fails closed on removal, unknown tests and duplicate registrations', async () => {
+  const inventory = await inspectPostgresqlSkipInventory();
+  assert.throws(() => assertPostgresqlSkipInventory(inventory.files.slice(1)), /inventory changed/u);
+  assert.throws(
+    () => assertPostgresqlSkipInventory([...inventory.files, { file: 'test/unknown-postgresql.test.mjs', title: 'Unknown material test', guard: 'enabled' }]),
+    /inventory changed/u,
+  );
+  assert.throws(
+    () => assertPostgresqlSkipInventory(inventory.files, [...expectedPostgresqlSkipInventory, expectedPostgresqlSkipInventory[0]]),
+    /duplicate governed test identity/u,
+  );
 });

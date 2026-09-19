@@ -5,6 +5,7 @@ import { promisify } from 'node:util';
 import { Pool } from 'pg';
 
 import { postgresqlImage } from './lib/postgresql-ci-evidence.mjs';
+import { assertPostgresqlTestSummary } from './lib/postgresql-test-output.mjs';
 
 const execute = promisify(execFile);
 const suffix = randomBytes(6).toString('hex');
@@ -122,6 +123,8 @@ try {
     maxBuffer: 20 * 1024 * 1024,
     timeout: 90_000,
   });
+  const testSummary = assertPostgresqlTestSummary(testResult.stdout);
+  assert.equal(testSummary.tests, 1, 'PBI-040 PostgreSQL must execute its one registered material test');
   successOutput = `${testResult.stdout}PBI-040 PostgreSQL PASS: ${migrationResult.applied} migrations, zero critical skips, disposable container removed\n`;
 } finally {
   await cleanup();

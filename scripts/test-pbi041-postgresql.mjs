@@ -5,6 +5,7 @@ import { promisify } from 'node:util';
 import { Pool } from 'pg';
 
 import { postgresqlImage } from './lib/postgresql-ci-evidence.mjs';
+import { assertPostgresqlTestSummary } from './lib/postgresql-test-output.mjs';
 
 const execute = promisify(execFile); const suffix = randomBytes(6).toString('hex');
 const container = `srtaller_pbi041_bulk_${suffix}`; const database = `srtaller_pbi041_bulk_${suffix}`; const user = 'srtaller_pbi041_test'; const password = `synthetic_${randomBytes(18).toString('hex')}`;
@@ -26,7 +27,9 @@ try {
   const migrationResult = JSON.parse(migration.stdout.trim()); if (migrationResult.pending !== 0 || migrationResult.applied !== 75) throw new Error('PBI-041 migration set is incomplete');
   const secondMigration = await execute(process.execPath, ['--enable-source-maps', 'dist/db-migrate.js'], { encoding: 'utf8', env: { ...process.env, ...environment }, maxBuffer: 20 * 1024 * 1024, timeout: 90_000 });
   const secondMigrationResult = JSON.parse(secondMigration.stdout.trim()); if (secondMigrationResult.pending !== 0 || secondMigrationResult.applied !== 0) throw new Error('PBI-041 second migration run is not clean');
-  const result = await execute(process.execPath, ['--no-maglev', '--test', '--test-concurrency=1', 'test/bulk-catalog-postgresql.test.mjs', 'test/catalog-authorization-postgresql.test.mjs', 'test/catalog-postgresql.test.mjs'], { encoding: 'utf8', env: { ...process.env, SR_PBI041_PG_TEST: '1', SR_PBI041_AUTH_PG_TEST: '1', SR_PBI040_PG_TEST: '1', SR_PBI041_PG_HOST: '127.0.0.1', SR_PBI041_PG_PORT: port, SR_PBI041_PG_NAME: database, SR_PBI041_PG_USER: user, SR_PBI041_PG_PASSWORD: password, SR_PBI040_PG_HOST: '127.0.0.1', SR_PBI040_PG_PORT: port, SR_PBI040_PG_NAME: database, SR_PBI040_PG_USER: user, SR_PBI040_PG_PASSWORD: password }, maxBuffer: 20 * 1024 * 1024, timeout: 90_000 });
+  const result = await execute(process.execPath, ['--no-maglev', '--test', '--test-concurrency=1', 'test/bulk-catalog-postgresql.test.mjs', 'test/catalog-authorization-postgresql.test.mjs', 'test/catalog-postgresql.test.mjs'], { encoding: 'utf8', env: { ...process.env, SR_PBI041_PG_TEST: '1', SR_PBI041_AUTH_PG_TEST: '1', SR_PBI041_CATALOG_PG_TEST: '1', SR_PBI041_PG_HOST: '127.0.0.1', SR_PBI041_PG_PORT: port, SR_PBI041_PG_NAME: database, SR_PBI041_PG_USER: user, SR_PBI041_PG_PASSWORD: password, SR_PBI040_PG_HOST: '127.0.0.1', SR_PBI040_PG_PORT: port, SR_PBI040_PG_NAME: database, SR_PBI040_PG_USER: user, SR_PBI040_PG_PASSWORD: password }, maxBuffer: 20 * 1024 * 1024, timeout: 90_000 });
+  const testSummary = assertPostgresqlTestSummary(result.stdout);
+  assert.equal(testSummary.tests, 9, 'PBI-041 PostgreSQL must execute its nine registered material tests');
   successOutput = `${result.stdout}PBI-041 PostgreSQL PASS: ${migrationResult.applied} migrations, second run ${secondMigrationResult.pending} pending, disposable container removed\n`;
 } finally { await cleanup(); }
 process.stdout.write(successOutput);

@@ -5,7 +5,9 @@ import test from 'node:test';
 
 import { Pool } from 'pg';
 
-const enabled = process.env.SR_PBI040_PG_TEST === '1';
+const pbi040Enabled = process.env.SR_PBI040_PG_TEST === '1';
+const pbi041Enabled = process.env.SR_PBI041_CATALOG_PG_TEST === '1';
+const enabled = pbi040Enabled || pbi041Enabled;
 const { createDatabaseConnection } = enabled
   ? await import('../dist/infrastructure/database/database-connection.js')
   : {};
@@ -112,7 +114,7 @@ async function waitForCatalogDeleteLock(admin) {
   assert.fail('the controlled catalog delete never reached its reference lock');
 }
 
-test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and fast lookup', { skip: !enabled, timeout: 60_000 }, async () => {
+if (!pbi041Enabled) test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and fast lookup', { skip: !pbi040Enabled, timeout: 60_000 }, async () => {
   assert.equal(process.version, 'v24.18.0');
   const admin = adminPool();
   const connection = createDatabaseConnection(config());
@@ -688,7 +690,7 @@ test('PostgreSQL enforces PBI-040 tenant identity, branch pricing, history and f
   }
 });
 
-test('UX-005.6 promotes one exact pending Brand group atomically without fuzzy matching or duplicate canonicals', { skip: !enabled, timeout: 30_000 }, async () => {
+if (!pbi040Enabled) test('UX-005.6 promotes one exact pending Brand group atomically without fuzzy matching or duplicate canonicals', { skip: !pbi041Enabled, timeout: 30_000 }, async () => {
   const admin = adminPool(); const connection = createDatabaseConnection(config());
   const tenantId = 'a1200000-0000-4000-8000-000000000056'; const branchId = 'a2200000-0000-4000-8000-000000000056'; const ctx = context(tenantId, branchId);
   const service = new CatalogService(new KyselyCatalogRepository(connection), async () => 'MXN');
