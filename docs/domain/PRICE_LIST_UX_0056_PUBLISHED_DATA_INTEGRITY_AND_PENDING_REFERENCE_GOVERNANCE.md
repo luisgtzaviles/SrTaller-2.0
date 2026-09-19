@@ -28,9 +28,15 @@ sigue siendo explícita y no se introduce matching fuzzy, API, migration ni
 escritura de Owner. Véase
 [UX-005.6A](PRICE_LIST_UX_0056A_PENDING_BRAND_DISPLAY_CANONICALIZATION.md).
 
-## AviCell preservado y remediación pendiente
+## AviCell Owner remediation ejecutada posteriormente
 
-La inspección de AviCell v3 es de sólo lectura. La fila 411 `PANTALLA SAMSUGN A37 ORIGINAL` continúa ACTIVE con precio y costo cero; no se editó ni se desactivó. La corrección futura debe ser una operación normal de edición con importe conocido o una desactivación gobernada si no es vendible. Tampoco se promovieron sus grupos pendientes. La evidencia material usa un Tenant PostgreSQL desechable.
+La implementación de UX-005.6 siguió siendo una barrera hacia adelante; no
+reparó silenciosamente datos ya publicados. Una autorización Owner posterior
+ejecutó UX-005.7 mediante las operaciones gobernadas existentes: los 16 grupos
+Brand AviCell/618 items fueron promovidos y religados, y la fila 411 se
+desactivó individualmente. No se asignó precio/costo desde el valor ambiguo de
+v1 `DRAFT`, no hubo `bulk retire` ni reescritura de Supplier history. Véase
+[UX-005.7](PRICE_LIST_UX_0057_AVICELL_OWNER_DATA_REMEDIATION.md).
 
 ## Prueba material
 

@@ -121,3 +121,19 @@ Category, tenant scope, Resolution, Memory, audit o atomicidad. Sí quedan los
 dos hallazgos anteriores, por lo que el resultado no está listo para el audit
 final de cierre de PBI-041. No hubo Apply adicional, reparación de datos,
 cambio de producto, push, PR, merge ni deploy.
+
+## Remediación Owner posterior — UX-005.7
+
+El resultado `FAIL` anterior describe el corte read-only del 2026-09-18. El
+Owner autorizó después una corrección local y proporcionada por las operaciones
+de dominio existentes. UX-005.7 creó y enlazó las 16 Brands pendientes AviCell
+(618 CatalogItems), dejando cero grupos/ítems AviCell pendientes; `Aple`,
+pendiente sintético no-AviCell, no se tocó.
+
+La fila 411 se cambió únicamente de `ACTIVE` a `INACTIVE` con
+`catalog.items.deactivate`: su precio/costo en cero siguen preservados, no se
+usó el valor ambiguo de v1 `DRAFT`, ni se modificaron título, categoría,
+SupplierVersion, Listing, Resolution o Memory. AviCell v3 sigue
+`COMPLETE/APPLIED` con 744 observaciones y el mismo contenido publicado. La
+evidencia de la mutación, audit y consultas de integridad está en
+[UX-005.7](PRICE_LIST_UX_0057_AVICELL_OWNER_DATA_REMEDIATION.md).

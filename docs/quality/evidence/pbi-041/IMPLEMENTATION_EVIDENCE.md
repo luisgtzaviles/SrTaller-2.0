@@ -1,5 +1,27 @@
 # PBI-041 — Implementation Evidence
 
+## UX-005.7 — AviCell Owner data remediation
+
+Después de la autorización Owner explícita, la UI local de gobernanza resolvió
+las 16 identidades Brand pendientes de AviCell (`618` CatalogItems) como
+Brands canónicas separadas, usando el display conservador de UX-005.6A. El
+servidor registró 16 mutaciones
+`catalog.brand_pending.canonical_created` con `catalog.configuration.manage`,
+actor Luis y conteos atómicos por grupo; la cola AviCell quedó en `0` grupos y
+`0` items pendientes. El grupo sintético no-AviCell `Aple` siguió siendo el
+único pendiente total y no fue parte de la acción.
+
+El `CatalogItem` originado por AviCell v3 fila 411,
+`Pantalla Samsugn A37 Original`, se desactivó mediante su lifecycle individual
+(`catalog.items.deactivate`), auditado como `catalog.item.update`, versión
+`2 → 3`. V2/v3 conservan precio/costo cero y v1 `DRAFT` no era autoridad
+comercial inequívoca, por lo que no hubo inferencia ni revisión financiera. La
+operación no fue un bulk retire ni un Apply. Consultas posteriores confirman
+que AviCell v3 sigue `INGESTED/COMPLETE`, Batch `APPLIED`, 744 listings y el
+mismo hash/publicación; no hubo Category, Branch, Supplier history, precio o
+costo no relacionado modificado. Ver el registro completo en
+[UX-005.7](../../../domain/PRICE_LIST_UX_0057_AVICELL_OWNER_DATA_REMEDIATION.md).
+
 ## UX-005.6A — Pending Brand display canonicalization
 
 `normalizeBrandDisplay` is the shared conservative presentation rule used by
@@ -13,9 +35,9 @@ starts from the same derived proposal but requires the existing explicit
 `catalog.configuration.manage` mutation.
 
 No migration, API contract, PostgreSQL, CatalogItem, pending group, Memory or
-Resolution record changes in this slice. The AviCell proof is read-only: 16
-pending Brand groups representing 618 items remain pending, unpromoted and
-unassigned. Focused model/UI/authorization contracts cover exact canonical
+Resolution record changes occurred in this display-only slice. The AviCell
+proof at that time was read-only: 16 pending Brand groups representing 618
+items remained pending, unpromoted and unassigned. Focused model/UI/authorization contracts cover exact canonical
 reuse, acronym and mixed-case preservation, no fuzzy `SAMSUGN → Samsung`,
 provenance, grouping and promotion default. Chrome local verified the pending
 surface at desktop, 768 px and 640 px in light/dark, including native keyboard
@@ -42,7 +64,8 @@ only to `catalog.configuration.manage`; read uses
 `catalog.configuration.read`. Disposable PostgreSQL covers the zero-price
 Analyze/Apply defense, required/optional cost, excluded zero row, exact Samsung
 promotion, exact Apple reuse, no fuzzy Samsugn resolution, audit and canonical
-filter after promotion. No Owner AviCell data was changed.
+filter after promotion. No Owner AviCell data was changed in that UX-005.6
+implementation slice.
 
 ## UX-004.1 — Catalog authorization registry and compatibility foundation
 

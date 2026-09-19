@@ -1,17 +1,33 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — UX-005.6A Pending Brand Display Canonicalization
+Milestone / Functional Goal: PBI-041 — UX-005.7 AviCell Owner Data Remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Functional implementation authorized — display-only Brand canonicalization; AviCell v3 remains read-only pending a separate Owner remediation decision.
+Status: Owner-authorized local data remediation complete; final closure audit remains pending.
 WIP: 1/1
-Progress: 5 / 5 UX-005.6A implementation blocks complete; UX-005.6 remains preserved.
-Current: Local Owner Review — pending Brand display canonicalization is materialized with raw provenance intact.
-Next: Await Owner Review; do not promote/assign AviCell groups, integrate, or start another PBI.
-Blocked: No implementation blocker known. Owner AviCell data remains protected: row 411 is not edited/deactivated and its 618 pending Brand groups are not promoted. Preserve AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
-Last updated: 2026-09-18 MST
+Progress: 6 / 6 UX-005.7 remediation blocks complete; final closure audit not started.
+Current: Local evidence/checks for the executed governed Brand promotions and single-item deactivation.
+Next: Owner Review of UX-005.7; do not start final closure, integration, or another PBI without authority.
+Blocked: No implementation blocker known. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Last updated: 2026-09-19 MST
 
-## Current checkpoint — UX-005.6A Pending Brand Display Canonicalization
+## Current checkpoint — UX-005.7 AviCell Owner Data Remediation
+
+- [x] Revalidate AviCell v3, the 16 pending Brand groups/618 items, the
+  separate non-AviCell group, row 411 and the normal domain authority.
+- [x] Promote exactly the 16 AviCell Brand groups through Configuración → Lista
+  de precios; create one canonical identity per normalized key and relink the
+  618 affected items atomically.
+- [x] Preserve raw Supplier provenance and leave the synthetic non-AviCell
+  `Aple` group unchanged; no fuzzy mapping or bulk operation.
+- [x] Deactivate only AviCell v3 row-411 CatalogItem through the individual
+  lifecycle; do not infer price/cost from v1 `DRAFT` or alter its title.
+- [x] Prove AviCell v3 remains `COMPLETE/APPLIED` with 744 listings and that
+  audit/authorization/tenant boundaries record the intended mutations.
+- [x] Reconcile PBI, UX-005.5/005.6/005.6A, evidence and this checklist; run
+  proportional local checks and create only a local documentation commit.
+
+## Previous checkpoint — UX-005.6A Pending Brand Display Canonicalization
 
 - [x] Audit UX-004.7 Brand casing, pending-reference grouping, canonical lookup and promotion path.
 - [x] Reuse one deterministic display helper for governance labels and promotion proposal defaults.

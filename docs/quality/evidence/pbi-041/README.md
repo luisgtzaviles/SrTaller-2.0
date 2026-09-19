@@ -25,6 +25,7 @@ authority.
 - [UX-005.5 AviCell Post-Apply Integrity Verification](../../../domain/PRICE_LIST_UX_0055_AVICELL_POST_APPLY_INTEGRITY_VERIFICATION.md)
 - [UX-005.6 Published Data Integrity and Pending Reference Governance](../../../domain/PRICE_LIST_UX_0056_PUBLISHED_DATA_INTEGRITY_AND_PENDING_REFERENCE_GOVERNANCE.md)
 - [UX-005.6A Pending Brand Display Canonicalization](../../../domain/PRICE_LIST_UX_0056A_PENDING_BRAND_DISPLAY_CANONICALIZATION.md)
+- [UX-005.7 AviCell Owner Data Remediation](../../../domain/PRICE_LIST_UX_0057_AVICELL_OWNER_DATA_REMEDIATION.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP and stops at local
@@ -80,8 +81,8 @@ the rejection in Apply. Reference cost remains optional/essential unless the
 Tenant policy makes it required. Pending Brand governance is Tenant-wide and
 uses configuration read/manage authority: exact canonical reuse is allowed,
 fuzzy promotion is not, and a resolution relinks its item group atomically
-without rewriting Supplier history. AviCell v3 and its row 411 remain read-only
-until a separate Owner data decision. See
+without rewriting Supplier history. En ese checkpoint, AviCell v3 y su fila
+411 permanecían read-only hasta una decisión Owner separada. See
 [UX-005.6](../../../domain/PRICE_LIST_UX_0056_PUBLISHED_DATA_INTEGRITY_AND_PENDING_REFERENCE_GOVERNANCE.md).
 
 ## UX-005.6A — Pending Brand display canonicalization
@@ -91,9 +92,18 @@ raw supplier provenance or normalized grouping. Exact canonical spelling wins;
 uniform casing is conservative, short acronyms and meaningful mixed casing are
 preserved, and no fuzzy inference is introduced. The resolver starts a new
 Brand proposal from that display name but remains an explicit authorized
-mutation. The AviCell review is read-only: its 16 pending Brand groups and 618
-items remain pending and untouched. See
+mutation. The AviCell review at that point was read-only: its 16 pending Brand
+groups and 618 items remained untouched. See
 [UX-005.6A](../../../domain/PRICE_LIST_UX_0056A_PENDING_BRAND_DISPLAY_CANONICALIZATION.md).
+
+## UX-005.7 — AviCell Owner data remediation
+
+Con autorización Owner explícita, las 16 Brands pendientes de AviCell se
+promovieron y religaron atómicamente a sus 618 CatalogItems. El grupo sintético
+no-AviCell `Aple` permanece pendiente. La fila 411 se desactivó mediante el
+lifecycle individual, sin inferir precio/costo desde v1 `DRAFT` ni reescribir
+Supplier history. AviCell v3 sigue `COMPLETE/APPLIED` con 744 observaciones.
+Ver [UX-005.7](../../../domain/PRICE_LIST_UX_0057_AVICELL_OWNER_DATA_REMEDIATION.md).
 
 ## UX-002E / UX-002E.1 missing-data context
 

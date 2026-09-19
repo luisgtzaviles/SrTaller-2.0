@@ -59,6 +59,15 @@ promoción, asignación, relink, reescritura histórica ni alteración de la fil
 `Oppo`, `Realme`, `Xiaomi`, `Oneplus`, `Vivo`, `Poco`, `Huawei`, `LG` y
 `Samsung` son evidencia de la regla genérica, no un registro de excepciones.
 
+## Uso posterior de la propuesta display
+
+UX-005.7 usó exactamente esta propuesta de presentación al promover los 16
+grupos AviCell autorizados. La acción normal de resolver siguió siendo
+explícita, tenant-wide y auditada; no convirtió el helper de display en una
+regla de matching ni cambió los labels raw del proveedor. El grupo no-AviCell
+`Aple` se conservó pendiente. Ver
+[UX-005.7](PRICE_LIST_UX_0057_AVICELL_OWNER_DATA_REMEDIATION.md).
+
 ## Evidencia focalizada
 
 Las pruebas cubren raw/provenance, la agrupación `samsung`, canon exacto
