@@ -1,11 +1,12 @@
 # PBI-041 — Evidence Index
 
-PBI-041 historical Catalog reactivation is `Owner Review ready — Owner
-Acceptance pending`. This directory contains readiness and local implementation
-evidence. It does not grant acceptance, integration, deployment or release
-authority.
+PBI-041 Independent Formal Verification is `PASS` for implementation candidate
+`690282abb73c71f67a4e4d00530b2bc58207d2eb`; governed promotion / push + PR is
+the next eligible state and still requires Owner authority. Owner Acceptance,
+integration, deployment and release remain pending.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
+- [Independent Formal Verification](FORMAL_VERIFICATION.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)
 - [Test Strategy](TEST_STRATEGY.md)
@@ -58,9 +59,11 @@ leaves zero tables; the unchanged external guard remains strict, including a
 synthetic unknown-table regression. Owner-scoped PostgreSQL passes 8/8,
 contextual contracts 30/30, base `verify` passes and the single authorized
 `verify:full` passes Stages 0..13. The readiness recheck records
-`B-041-FV-001..007` resolved and no new blocker: **READY FOR INDEPENDENT FORMAL
-VERIFICATION**. Owner Acceptance and every remote/integration state remain
-separate. Advanced Supplier
+`B-041-FV-001..007` resolved and no new blocker. Independent Formal
+Verification then passed 29/29 acceptance criteria, all authoritative gates and
+the read-only Owner-data integrity reconciliation: **READY FOR GOVERNED
+PROMOTION / PUSH + PR**. Owner Acceptance and every remote/integration state
+remain separate. Advanced Supplier
 Reconciliation remains a deferred outcome without PBI ID, selection or
 readiness.
 

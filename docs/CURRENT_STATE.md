@@ -2,7 +2,8 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-041 `Owner Review ready`; Owner Acceptance pendiente.
+- **Estado:** PBI-041 Independent Formal Verification `PASS`; listo para
+  promoción gobernada / push + PR. Owner Acceptance pendiente.
   PBI-040 permanece `Done`, `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
   `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
@@ -17,6 +18,17 @@
 - **Production:** no desplegada ni autorizada.
 
 ## Resumen ejecutivo
+
+El candidato de implementación PBI-041
+`690282abb73c71f67a4e4d00530b2bc58207d2eb` pasó la verificación formal
+independiente: 29/29 criterios, arquitectura, 75 migraciones, inventario
+PostgreSQL gobernado 29 exacto, base `verify` 934/0/29 y una única ejecución de
+`verify:full` con Stages 0..13 PASS. PostgreSQL pasó 17/17 en el compuesto y
+9/9 para PBI-041; cleanup, fingerprint y el presupuesto 10k pasaron. La
+reconciliación read-only de AviCell/Owner data no encontró discrepancias
+inexplicadas. Véase
+[`FORMAL_VERIFICATION.md`](quality/evidence/pbi-041/FORMAL_VERIFICATION.md).
+No se ejecutó push, PR, merge ni deploy, y no se infiere Owner Acceptance.
 
 PBI-040 quedó Owner Accepted el 2026-09-13. PR #49 integró Catalog/Pricing;
 PR #50 corrigió de forma gobernada la cronología de cinco migraciones todavía

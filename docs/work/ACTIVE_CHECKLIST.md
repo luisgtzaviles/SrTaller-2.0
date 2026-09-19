@@ -1,15 +1,39 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Verification Gate Remediation
+Milestone / Functional Goal: PBI-041 — Independent Formal Verification
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: FV-GATE-REMEDIATION-5 PASS; `B-041-FV-001..007` resolved and PBI-041 ready for independent Formal Verification.
+Status: Independent Formal Verification PASS; ready for governed promotion / push + PR. Owner Acceptance pending.
 WIP: 1/1
-Progress: 8 / 8 remediation blocks complete; all known FV blockers are resolved.
-Current: Stop at the FV-5 checkpoint with local commits only; no remote action.
-Next: Independent Formal Verification requires its own governed continuation; do not infer Owner Acceptance or integration authority.
-Blocked: None known for independent Formal Verification. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 10 / 10 formal-verification blocks complete; 29 / 29 acceptance criteria pass.
+Current: Stop after the local documentation-only Formal Verification evidence commit; no remote action.
+Next: Owner authorization is required before promotion / push + PR; do not infer Owner Acceptance or integration authority.
+Blocked: None for governed promotion. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
+
+## Current checkpoint — Independent Formal Verification
+
+- [x] Freeze and verify implementation candidate
+  `690282abb73c71f67a4e4d00530b2bc58207d2eb`; branch/divergence match and
+  tracked working tree is clean.
+- [x] Reconstruct the authoritative objective, scope, exclusions, dependencies
+  and 29 acceptance criteria from PBI-041 and accepted architecture.
+- [x] Independently verify `B-041-FV-001..007`: remediation and regression
+  coverage exist, no gate was weakened and no finding remains open.
+- [x] Pass architecture, 75-migration manifest/schema/rollback and 29-identity
+  PostgreSQL inventory verification.
+- [x] Pass base `verify`: typecheck/build and 934 PASS / 0 FAIL / 29 governed
+  PostgreSQL skips.
+- [x] Execute `verify:full` exactly once: Stages 0..13 PASS, PostgreSQL 17/17,
+  PBI-041 9/9, cleanup and fingerprint PASS.
+- [x] Verify Catalog/Bulk, Field Policy, duplicates, references, authorization,
+  Tenant/Branch and ADR-013 contracts through focused independent coverage.
+- [x] Reconcile AviCell v3 and current Owner data read-only with no unexplained
+  integrity discrepancy and no mutation.
+- [x] Pass local Chrome smoke, responsive critical surfaces, secret scan,
+  Markdown links, consistency and performance budget.
+- [x] Record `FORMAL_VERIFICATION.md` and reconcile status surfaces without
+  claiming Owner Acceptance, PR, merge, `Done`, `Released` or deploy.
 
 ## Current checkpoint — FV Gate Remediation
 
