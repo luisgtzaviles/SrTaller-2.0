@@ -1,5 +1,28 @@
 # PBI-041 — Implementation Evidence
 
+## FV Gate Remediation 5 — 2026-09-19
+
+`B-041-FV-007` fue **TEST FIXTURE CLEANUP DRIFT**. La reproducción previa
+pasó el cuerpo Contextual Authorization 1/1 pero retuvo 13 tablas PBI-041 que
+la misma lista manual omitía tanto al borrar como al verificar. El guard externo
+`pg_dump` las detectó correctamente. El commit `4b7d18a` restringe el reset al
+nombre/User de la base desechable gobernada y reemplaza transaccionalmente su
+schema `public`; la aserción enumera todas las tablas públicas y un probe
+desconocido demuestra detección y cleanup sin allowlist.
+
+Prueba exacta 1/1 con cero tablas retenidas; owner-scoped 8/8, cleanup PASS y
+material MATCH; contratos contextuales 30/30; base `verify` PASS. La única
+corrida autorizada FV-5 de `verify:full` pasó Stages 0..13, compuesto
+PostgreSQL 17/17 y PBI-041 9/9. Benchmark 10k: ingest 4,174.4 ms, analyze
+449.0 ms, preview 40.0 ms, publish 28,920.0 ms, historical search 74.4 ms,
+heap 33.0 MiB. El runner/guard, producto, migrations, schema productivo,
+Owner data y AviCell permanecieron sin cambios.
+
+Readiness: `B-041-FV-001..007` **RESOLVED**, blockers nuevos **NONE**;
+**READY FOR INDEPENDENT FORMAL VERIFICATION**. No implica Owner Acceptance,
+push, PR, merge, Done, Released ni deploy. Detalle en
+[FV_GATE_REMEDIATION.md](FV_GATE_REMEDIATION.md).
+
 ## FV Gate Remediation 4 — 2026-09-19
 
 `B-041-FV-006` fue un **TEST FIXTURE DRIFT** en el rollback material de

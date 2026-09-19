@@ -30,8 +30,9 @@ authority.
 - [Verification Gate Remediation](FV_GATE_REMEDIATION.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
-PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP. The final
-readiness audit found two required verification-gate blockers; their first
+PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP. The following is
+the preserved remediation chronology: the final readiness audit found two
+required verification-gate blockers; their first
 authorized remediation resolved both, and FV-GATE-REMEDIATION-2 resolved the
 subsequent PostgreSQL inventory and Composer visual-foundation blockers. Base
 `verify` is green. The single authorized `verify:full` then failed in Stage 4
@@ -49,7 +50,17 @@ exact material test passes. The owner-scoped composite then exposed
 `B-041-FV-007`: Contextual Authorization's manual teardown omits 13 current
 PBI-041 tables, which the post-test cleanup guard detects. That blocker is
 classified but intentionally not remediated outside FV-4 scope; later gates
-were not run. Advanced Supplier
+were not run in that checkpoint.
+
+FV-GATE-REMEDIATION-5 then resolved `B-041-FV-007` with a schema-aware reset
+restricted to the governed disposable database. The exact test passes 1/1 and
+leaves zero tables; the unchanged external guard remains strict, including a
+synthetic unknown-table regression. Owner-scoped PostgreSQL passes 8/8,
+contextual contracts 30/30, base `verify` passes and the single authorized
+`verify:full` passes Stages 0..13. The readiness recheck records
+`B-041-FV-001..007` resolved and no new blocker: **READY FOR INDEPENDENT FORMAL
+VERIFICATION**. Owner Acceptance and every remote/integration state remain
+separate. Advanced Supplier
 Reconciliation remains a deferred outcome without PBI ID, selection or
 readiness.
 

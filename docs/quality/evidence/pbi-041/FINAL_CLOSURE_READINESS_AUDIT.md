@@ -1,11 +1,16 @@
 # PBI-041 — Final Closure & Readiness Audit
 
 - **Fecha:** 2026-09-19.
-- **Alcance:** audit y verificación local; no hubo implementación, mutación de
-  datos Owner, push, PR, merge, deploy ni cambios de infraestructura.
-- **Dictamen:** **NOT READY — BLOCKERS REMAIN.**
+- **Alcance original:** audit y verificación local; ese checkpoint no tuvo
+  implementación, mutación de datos Owner, push, PR, merge, deploy ni cambios
+  de infraestructura. Las remediaciones de gates posteriores se registran sin
+  reescribir ese resultado histórico.
+- **Dictamen actual:** **READY FOR INDEPENDENT FORMAL VERIFICATION.** El
+  dictamen bloqueado original y cada fallo sucesor se conservan abajo como
+  evidencia histórica; FV-GATE-REMEDIATION-5 resolvió el último blocker
+  conocido sin cambiar producto ni datos Owner.
 
-## Repositorio y candidate
+## Repositorio y candidate del audit original
 
 | Campo | Resultado |
 | --- | --- |
@@ -166,6 +171,30 @@ control de cleanup detectó 13 tablas PBI-041 retenidas por el fixture manual de
 `B-041-FV-007` como **TEST FIXTURE CLEANUP DRIFT** fuera del scope exclusivo de
 FV-4. No se ejecutaron `verify` ni `verify:full` tras ese prerequisito fallido.
 El dictamen continúa **NOT READY — BLOCKERS REMAIN**.
+
+### Quinta remediación y readiness recheck
+
+FV-GATE-REMEDIATION-5 confirmó `B-041-FV-007` como drift exclusivo del fixture:
+el test funcional pasaba, pero su lista manual de teardown y su aserción local
+omitían las mismas 13 tablas PBI-041. El runner externo, sin modificaciones,
+las detectaba mediante `pg_dump`. La remediación reemplaza el schema `public`
+sólo en una base cuyo nombre y User coinciden con el contexto gobernado
+desechable, de modo que nuevas tablas gobernadas no dependen de otra lista
+manual. Un probe desconocido demuestra detección antes del reset y eliminación
+posterior.
+
+El test exacto pasó 1/1 dejando cero tablas; owner-scoped PostgreSQL pasó 8/8
+con cleanup PASS y material MATCH; contratos contextuales pasaron 30/30. Base
+`verify` pasó sin fallos y la única corrida autorizada de `verify:full` pasó
+Stages 0..13, incluido el compuesto PostgreSQL 17/17 y PBI-041 9/9. El
+benchmark 10k registró ingest 4,174.4 ms, analyze 449.0 ms, preview 40.0 ms,
+publish 28,920.0 ms, historical search 74.4 ms y heap 33.0 MiB; el umbral no
+cambió.
+
+Recheck corto: `B-041-FV-001..007` **RESOLVED**, blockers nuevos **NONE**.
+PBI-041 está **READY FOR INDEPENDENT FORMAL VERIFICATION**. Owner Acceptance,
+PR, CI, merge, Done, Released y deploy permanecen separados y no autorizados
+por este resultado. Owner data y AviCell no cambiaron.
 
 ## Paquete para Formal Verification posterior
 

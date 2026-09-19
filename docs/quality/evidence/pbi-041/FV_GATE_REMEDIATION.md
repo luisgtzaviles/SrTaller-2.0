@@ -2,11 +2,12 @@
 
 - **Fecha:** 2026-09-19.
 - **Base:** `ec1c29fc4fe92795e86429f73b37cb15b51e0be7`.
-- **Alcance:** exclusivamente el guard de superficies protegidas y los
-  contratos de migraciones señalados por el Final Closure Audit.
-- **Resultado:** **BLOCKED — los dos blockers originales quedaron resueltos,
-  pero `verify` reveló dos blockers PBI-041 distintos fuera del alcance
-  autorizado.**
+- **Alcance:** registro acumulado de las cinco remediaciones gobernadas de los
+  gates detectados por el Final Closure Audit y sus rechecks sucesivos.
+- **Resultado actual:** **PASS — `B-041-FV-001..007` resueltos, `verify` y la
+  única corrida autorizada de `verify:full` verdes; listo para Formal
+  Verification independiente.** Los resultados bloqueados históricos se
+  conservan en sus secciones originales.
 
 ## Reproducción previa
 
@@ -225,3 +226,57 @@ posteriores, `verify` ni `verify:full`; no se modificó el benchmark.
 Dictamen FV-4: **BLOCKED — NEW BLOCKER CLASSIFIED**. Datos Owner, AviCell,
 producto, schema y migraciones permanecieron sin cambios; no hubo push, PR,
 merge ni deploy.
+
+## FV-GATE-REMEDIATION-5
+
+`B-041-FV-007` se reprodujo antes de editar en PostgreSQL 18.4 desechable. El
+cuerpo funcional de Contextual Authorization pasó **1/1**, pero el teardown
+manual y su `assertNoObjects` consultaban el mismo inventario incompleto; por
+eso ambos ignoraban 13 tablas posteriores y sólo el guard externo basado en
+`pg_dump` las detectaba:
+
+1. `catalog_field_policy_heads` — cabeza de policy Catalog PBI-041.
+2. `catalog_field_policy_versions` — historial append-only de policy Catalog.
+3. `catalog_retirement_events` — evento auditado de retiro masivo.
+4. `catalog_retirement_plans` — plan autorizado de retiro masivo.
+5. `catalog_supplier_catalog_versions` — Version de lista de proveedor.
+6. `catalog_supplier_listing_resolutions` — Resolution publicada.
+7. `catalog_supplier_listings` — observación física de proveedor.
+8. `catalog_supplier_reconciliation_memory` — memoria de reconciliación.
+9. `catalog_supplier_source_deletion_events` — auditoría de borrado de Source.
+10. `catalog_supplier_sources` — identidad de Supplier Source.
+11. `catalog_supplier_version_raw_payloads` — provenance/raw payload de Version.
+12. `catalog_update_batches` — Batch de reconciliación/publicación.
+13. `catalog_update_row_decisions` — decisión efectiva por fila.
+
+Clasificación: **TEST FIXTURE CLEANUP DRIFT**. No eran tablas Access ni un
+defecto de autorización, schema o migración. El commit `4b7d18a` elimina el
+inventario manual y, sólo después de validar el nombre gobernado
+`srtaller_adapters_<12 hex>` y el User configurado, reemplaza
+transaccionalmente el schema `public` de la base desechable. Así las tablas,
+funciones, triggers y extensiones creadas por migraciones quedan cubiertas sin
+recordar una lista nueva en la siguiente migración. La aserción local enumera
+todas las tablas públicas y una regresión crea una tabla desconocida, exige
+que sea reportada y luego demuestra su eliminación.
+
+El guard post-test del runner no cambió: sigue ejecutando `pg_dump`, no contiene
+wildcards, ignores ni bypass, y continúa fallando ante `CREATE TABLE`. Su fallo
+pre-remediación sobre los 13 objetos y el probe sintético del fixture prueban
+que cleanup incompleto permanece visible. El test exacto pasó **1/1** y dejó
+`0` tablas públicas; el composite owner-scoped pasó **8/8**, cleanup PASS y
+material MATCH. Los contratos contextuales pasaron **30/30** y conservaron
+Tenant/Branch scope, trusted Station/Session, role union, evaluación fresca de
+capabilities, deny-by-default y ausencia de branching por nombre de rol.
+
+`verify` pasó con 934 tests ejecutados, 29 skips materiales gobernados y 0
+fallos. La única corrida FV-5 de `verify:full` pasó Stages 0..13, incluidos
+PostgreSQL compuesto **17/17**, PBI-039 **2/2**, PBI-040 **1/1**, PBI-041
+**9/9**, runtime/smokes y cleanup. El benchmark PBI-041 de 10k registró ingest
+`4,174.4 ms`, analyze `449.0 ms`, preview `40.0 ms`, publish `28,920.0 ms`,
+historical search `74.4 ms` y heap `33.0 MiB`, sin cambiar presupuesto ni
+implementación.
+
+Readiness recheck: `B-041-FV-001..007` **RESOLVED**, nuevos blockers **NONE**.
+PBI-041 queda **READY FOR INDEPENDENT FORMAL VERIFICATION**; esto no implica
+Owner Acceptance, PR, merge, Done, Released ni deploy. Datos Owner, AviCell,
+Catalog productivo/local y migraciones permanecieron sin cambios.

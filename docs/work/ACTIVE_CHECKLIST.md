@@ -3,15 +3,31 @@
 Milestone / Functional Goal: PBI-041 — Verification Gate Remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: FV-GATE-REMEDIATION-4 complete within scope; `B-041-FV-006` resolved, but the owner-scoped cleanup guard exposed `B-041-FV-007`.
+Status: FV-GATE-REMEDIATION-5 PASS; `B-041-FV-001..007` resolved and PBI-041 ready for independent Formal Verification.
 WIP: 1/1
-Progress: 7 / 8 remediation blocks complete; full verification and readiness remain blocked by the newly classified cleanup failure.
-Current: Stop after recording the Contextual Authorization cleanup drift; do not patch it without a separate authorization.
-Next: Owner decision on `B-041-FV-007` in `test/contextual-authorization-postgresql.test.mjs`.
-Blocked: `B-041-FV-007` leaves 13 PBI-041 tables outside its manual teardown list; the owner-scoped runner fails its post-test retained-object guard. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 8 / 8 remediation blocks complete; all known FV blockers are resolved.
+Current: Stop at the FV-5 checkpoint with local commits only; no remote action.
+Next: Independent Formal Verification requires its own governed continuation; do not infer Owner Acceptance or integration authority.
+Blocked: None known for independent Formal Verification. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
 
 ## Current checkpoint — FV Gate Remediation
+
+- [x] Reproduce `B-041-FV-007` before editing: the functional Contextual
+  Authorization body passes `1/1`, while PostgreSQL retains exactly 13 public
+  PBI-041 tables omitted from the fixture's manual inventory.
+- [x] Replace the manual teardown inventory with a fail-closed, transactional
+  reset of `public`, restricted to governed disposable database names; the
+  exact test passes `1/1` and leaves zero public tables.
+- [x] Preserve the independent `pg_dump` guard unchanged and add a synthetic
+  unknown-table regression that must be detected before authoritative cleanup.
+- [x] Pass owner-scoped PostgreSQL `8/8` with cleanup PASS and material MATCH;
+  pass contextual authorization contracts `30/30` and base `verify` with zero
+  failures.
+- [x] Run `verify:full` exactly once: Stages 0..13 PASS, PostgreSQL composite
+  17/17, PBI-041 9/9, cleanup PASS and no new blocker.
+- [x] Reconcile the short Closure Readiness Recheck: `B-041-FV-001..007`
+  resolved, new blockers none, ready for independent Formal Verification.
 
 - [x] Reproduce the original `verify` migration-contract failure and
   `verify:full` Stage 0 protected-surface failure before editing.
@@ -32,11 +48,10 @@ Last updated: 2026-09-19 MST
   Access-session; base `verify` and `verify:full` were not reached.
 - [x] Reconcile the Access-session rollback fixture with the governed migration
   manifest; the exact PostgreSQL 18.4 test passes without production changes.
-- [!] Run owner-scoped PostgreSQL, related Access tests, base `verify` and one
-  `verify:full`: the composite passed Access-role/Access-session and then
-  exposed `B-041-FV-007` in Contextual Authorization cleanup.
-- [!] Run the short Closure Readiness Recheck only after both gates pass:
-  blocked by `B-041-FV-007`.
+- [x] Re-run owner-scoped PostgreSQL after Access-session remediation; that
+  historical attempt exposed `B-041-FV-007`, subsequently resolved by FV-5.
+- [x] Run the short Closure Readiness Recheck after both gates passed; retain
+  Owner Acceptance, PR, merge, Done, Released and deploy as separate states.
 
 ## Previous checkpoint — Final Closure & Readiness Audit
 
