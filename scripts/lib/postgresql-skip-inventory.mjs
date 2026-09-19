@@ -31,6 +31,7 @@ export const expectedPostgresqlSkipInventory = Object.freeze([
   materialTest('test/bulk-catalog-postgresql.test.mjs', 'PBI-041 persists immutable supplier versions and publishes one tenant-wide atomic batch', 'pbi041-postgresql'),
   materialTest('test/bulk-catalog-postgresql.test.mjs', 'UX-005.1 keeps safely capturable new references out of manual reconciliation until Apply', 'pbi041-postgresql'),
   materialTest('test/bulk-catalog-postgresql.test.mjs', 'PBI-041 material handoff preserves the publisher as the Apply audit actor', 'pbi041-postgresql'),
+  materialTest('test/bulk-catalog-postgresql.test.mjs', 'PBI-041 rejects a stale authorized Apply snapshot after a concurrent decision escalates the effect', 'pbi041-postgresql'),
   materialTest('test/bulk-catalog-postgresql.test.mjs', 'UX-005.3 correction drafts preserve an analyzed source snapshot and reject stale predecessor Apply', 'pbi041-postgresql'),
   materialTest('test/bulk-catalog-postgresql.test.mjs', 'UX-003.1 persists tenant-isolated catalog field policies with append-only versions', 'pbi041-postgresql'),
   materialTest('test/bulk-catalog-postgresql.test.mjs', 'UX-003.4 enforces required values from the resulting Catalog state and rechecks policy at Apply', 'pbi041-postgresql'),

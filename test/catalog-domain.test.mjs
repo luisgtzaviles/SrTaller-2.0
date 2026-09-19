@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  CatalogConflictError,
   CatalogInputError,
   catalogKindCapabilities,
   normalizeCatalogIdentifier,
@@ -260,14 +261,14 @@ test('bulk history read is independent from prepare while prepare remains compat
   const bulk = {
     async listSources() { return ['source']; },
     async listVersions() { return ['version']; },
-    async getVersion() { return { versionId: 'version', rows: [] }; },
+    async getVersion() { return { versionId: 'version', batch: { version: 1 }, rows: [] }; },
     async compare() { return { comparison: true }; },
     async createDraft() { return { versionId: 'draft' }; },
   };
   const reader = new CatalogProtectedOperations(history, history, {}, {}, bulk, {});
   assert.deepEqual(await reader.listSupplierSources({}), ['source']);
   assert.deepEqual(await reader.listSupplierVersions({}), ['version']);
-  assert.deepEqual(await reader.getSupplierVersion({}, 'version', false), { versionId: 'version', rows: [] });
+  assert.deepEqual(await reader.getSupplierVersion({}, 'version', false), { versionId: 'version', batch: { version: 1 }, rows: [] });
   assert.deepEqual(await reader.compareSupplierVersions({}, 'left', 'right'), { comparison: true });
   await assert.rejects(reader.createSupplierDraft({}, {}), ContextualAuthorizationError);
   assert.ok(observed.includes('catalog.import.read'));
@@ -285,7 +286,7 @@ test('bulk direct API guards keep read, prepare, and publish independently enfor
   const bulk = {
     async listSources() { return ['source']; },
     async listVersions() { return ['version']; },
-    async getVersion() { return { versionId: 'ready', rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] }; },
+    async getVersion() { return { versionId: 'ready', batch: { version: 7 }, rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] }; },
     async compare() { return { comparison: true }; },
     async createSource() { return { sourceId: 'source' }; },
     async createDraft() { return { versionId: 'draft' }; },
@@ -299,7 +300,7 @@ test('bulk direct API guards keep read, prepare, and publish independently enfor
   const reader = new CatalogProtectedOperations(readerExecutor, readerExecutor, {}, {}, bulk, {});
   assert.deepEqual(await reader.listSupplierSources({}), ['source']);
   assert.deepEqual(await reader.listSupplierVersions({}), ['version']);
-  assert.deepEqual(await reader.getSupplierVersion({}, 'ready', false), { versionId: 'ready', rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] });
+  assert.deepEqual(await reader.getSupplierVersion({}, 'ready', false), { versionId: 'ready', batch: { version: 7 }, rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] });
   assert.deepEqual(await reader.compareSupplierVersions({}, 'older', 'ready'), { comparison: true });
   await assert.rejects(reader.createSupplierSource({}, {}), ContextualAuthorizationError);
   await assert.rejects(reader.createSupplierDraft({}, {}), ContextualAuthorizationError);
@@ -320,14 +321,14 @@ test('bulk direct API guards keep read, prepare, and publish independently enfor
   const publisherExecutor = capabilityExecutor(new Set(['catalog.import.read', 'catalog.import.publish', 'catalog.items.create', 'catalog.prices.manage']));
   const publisher = new CatalogProtectedOperations(publisherExecutor, publisherExecutor, {}, {}, bulk, {});
   await assert.rejects(publisher.createSupplierDraft({}, {}), ContextualAuthorizationError);
-  assert.deepEqual(await publisher.publishSupplierVersion({}, 'ready', {}), { lifecycle: 'APPLIED', input: {} });
+  assert.deepEqual(await publisher.publishSupplierVersion({}, 'ready', {}), { lifecycle: 'APPLIED', input: { expectedBatchVersion: 7 } });
 });
 
 test('role-matrix capability unions grant only the catalog operations assigned by roles', async () => {
   const bulk = {
     async listSources() { return ['source']; },
     async createDraft() { return { versionId: 'draft' }; },
-    async getVersion() { return { versionId: 'ready', rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] }; },
+    async getVersion() { return { versionId: 'ready', batch: { version: 8 }, rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: null } }] }; },
     async publish() { return { lifecycle: 'APPLIED' }; },
   };
   const itemService = {
@@ -383,7 +384,7 @@ test('bulk composer composes prepare, cost and publish authority without leaking
   const bulk = {
     async createDraft(_context, input) { return { input }; },
     async analyze(_context, _versionId, input) { return { input }; },
-    async getVersion() { return { versionId: 'version', rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: 48000 } }] }; },
+    async getVersion() { return { versionId: 'version', batch: { version: 11 }, rows: [{ decision: 'APPLY', classification: 'NEW', titleDecision: null, proposal: { basePriceMinor: 100, referenceCostMinor: 48000 } }] }; },
     async publish(_context, _versionId, input, mayWriteCost) { return { input, mayWriteCost }; },
   };
   const operations = new CatalogProtectedOperations(executor, executor, {}, {}, bulk, {});
@@ -402,6 +403,51 @@ test('bulk composer composes prepare, cost and publish authority without leaking
   assert.deepEqual(observed.splice(0).map((value) => value.capability), [
     'catalog.import.read', 'catalog.reference_cost.read', 'catalog.import.publish', 'catalog.items.create', 'catalog.prices.manage', 'catalog.reference_cost.manage', 'catalog.reference_cost.read',
   ]);
+});
+
+test('bulk publish binds effect authorization to the inspected batch snapshot and recomposes authority after a conflict', async () => {
+  let currentBatchVersion = 3;
+  let currentClassification = 'UNCHANGED';
+  const publishInputs = [];
+  const bulk = {
+    async getVersion() {
+      return {
+        versionId: 'ready',
+        batch: { version: currentBatchVersion },
+        rows: [{ decision: 'APPLY', classification: currentClassification, titleDecision: null, proposal: { basePriceMinor: null, referenceCostMinor: null } }],
+      };
+    },
+    async publish(_context, _versionId, input) {
+      publishInputs.push(input);
+      if (input.expectedBatchVersion === 3) {
+        currentBatchVersion = 4;
+        currentClassification = 'REACTIVATE';
+        throw new CatalogConflictError();
+      }
+      return { lifecycle: 'APPLIED' };
+    },
+  };
+  const publishOnlyExecutor = capabilityExecutor(new Set(['catalog.import.read', 'catalog.import.publish']));
+  const publishOnly = new CatalogProtectedOperations(publishOnlyExecutor, publishOnlyExecutor, {}, {}, bulk, {});
+
+  await assert.rejects(
+    publishOnly.publishSupplierVersion({}, 'ready', { expectedVersion: 2, clientRequestId: requestId }),
+    CatalogConflictError,
+  );
+  assert.equal(publishInputs[0].expectedBatchVersion, 3);
+  await assert.rejects(
+    publishOnly.publishSupplierVersion({}, 'ready', { expectedVersion: 2, clientRequestId: requestId }),
+    CatalogOperationAccessDeniedError,
+  );
+  assert.equal(publishInputs.length, 1);
+
+  const reactivationExecutor = capabilityExecutor(new Set(['catalog.import.read', 'catalog.import.publish', 'catalog.items.deactivate']));
+  const authorizedRetry = new CatalogProtectedOperations(reactivationExecutor, reactivationExecutor, {}, {}, bulk, {});
+  assert.deepEqual(
+    await authorizedRetry.publishSupplierVersion({}, 'ready', { expectedVersion: 2, clientRequestId: requestId }),
+    { lifecycle: 'APPLIED' },
+  );
+  assert.equal(publishInputs[1].expectedBatchVersion, 4);
 });
 
 test('supplier hard delete cannot bypass the dedicated sensitive-action executor', async () => {
