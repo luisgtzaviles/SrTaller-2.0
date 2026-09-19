@@ -3,7 +3,8 @@
 ## Estado del documento
 
 - **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 activo con
-  PBI-040 `Done` y PBI-041 listo para Owner Review local.
+  PBI-040 `Done` y PBI-041 integrado pero aún en revisión por una remediación
+  acotada de rutas SPA en Preview.
 - **Baseline Git observada:** Workflow Phase 1 integrado en `main` por
   `859825025cf1f9fa94a8b0ced5b91b95760e36a8`; CI exacta de `main`
   `34893081175`, `SUCCESS`.
@@ -16,7 +17,8 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `PBI-041`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** Owner Review de PBI-041; Production no autorizada.
+- **Blocking gate:** integrar y probar en Preview la remediación de acceso y
+  reload directo de PBI-041; Production no autorizada.
 - **WIP operacional:** `1/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
@@ -97,12 +99,12 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Stage | MVP |
 | Phase | Pricing Catalog |
 | Sprint | SPRINT-03 |
-| Sprint status | Active — PBI-041 Owner Review ready; WIP=1/1 |
+| Sprint status | Active — PBI-041 Preview remediation; WIP=1/1 |
 | Current PBI | PBI-041 |
 | Next PBI candidate | NONE; PBI-042 remains out of scope |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
 | PBI-040 status | Done — closure PR #52 / `a060494`; exact-main CI `34814070839` GREEN; Released NO |
-| Blocking gate | PBI-041 Owner Review; Acceptance pending |
+| Blocking gate | PBI-041 direct-route remediation, exact-main CI and corrected Preview proof |
 
 ## Fases aprobadas
 
