@@ -1,5 +1,26 @@
 # PBI-041 — Implementation Evidence
 
+## FV Gate Remediation 2 — 2026-09-19
+
+`B-041-FV-003` y `B-041-FV-004` quedaron resueltos localmente. El inventario
+PostgreSQL registra 29 pruebas por identidad y stage, rechaza missing, unknown y
+duplicados, y asigna 9 pruebas exclusivas al runner PBI-041. El Composer eliminó
+inline styles mediante una custom property gobernada, adoptó el radius canónico
+y reemplazó todos los `!important` locales con especificidad estructural. No
+cambiaron dominio, autorización, Analyze, Apply, Field Policy ni persistencia.
+
+Resultados: focalizadas 39/39, PostgreSQL PBI-041 9/9, 75 migraciones, segunda
+ejecución 0 pending, typecheck PASS, build PASS y `verify` PASS. El benchmark
+10k focalizado midió ingest 4,923.8 ms, analyze 450.8 ms, preview 40.9 ms,
+publish 2,182.5 ms, search 74.2 ms y heap 23.9 MiB.
+
+El `verify:full` autorizado se ejecutó exactamente una vez sobre `82974d8`:
+Stages 0..3 PASS; Stage 4 FAIL porque el compuesto owner-scoped identificó
+`test/access-role-postgresql.test.mjs` con exit 1; cleanup y fingerprint PASS.
+No se repitió para buscar verde ni se modificó ese fallo fuera de alcance.
+`B-041-FV-005` queda abierto y PBI-041 permanece **NOT READY — BLOCKERS
+REMAIN**. Detalle en [FV_GATE_REMEDIATION.md](FV_GATE_REMEDIATION.md).
+
 ## FV Gate Remediation — 2026-09-19
 
 La remediación gobernada resolvió los dos blockers del Final Closure Audit sin

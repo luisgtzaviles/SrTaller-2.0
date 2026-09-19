@@ -119,6 +119,22 @@ foundation checker (`B-041-FV-004`). Por ello no se ejecutó un nuevo
 BLOCKERS REMAIN**. Ver
 [FV_GATE_REMEDIATION.md](FV_GATE_REMEDIATION.md).
 
+### Segunda remediación y recheck
+
+FV-GATE-REMEDIATION-2 resolvió `B-041-FV-003` y `B-041-FV-004`: el inventario
+gobernado cubre 29 identidades exactas y Composer cumple el visual foundation
+sin suppressions. PostgreSQL PBI-041 pasó 9/9 con 75 migraciones y `verify`
+quedó verde.
+
+La campaña `verify:full` ejecutada una sola vez sobre `82974d8` superó Stages
+0..3, pero falló en Stage 4 Material PostgreSQL composite porque el runner
+owner-scoped reportó `test/access-role-postgresql.test.mjs` con exit 1. Cleanup
+y fingerprint final pasaron. La evidencia disponible es intencionalmente
+sanitizada y no permite atribuir una causa más estrecha sin un diagnóstico
+separado. Se registra `B-041-FV-005` como blocker nuevo; no se reintentó la
+campaña ni se cambió ese gate fuera del alcance autorizado. El dictamen sigue
+siendo **NOT READY — BLOCKERS REMAIN**.
+
 ## Paquete para Formal Verification posterior
 
 Tras remediar ambos bloqueos y congelar un HEAD nuevo, Formal Verification debe

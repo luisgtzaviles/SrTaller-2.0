@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Verification Gate Remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: Original gate blockers remediated; NOT READY because `verify` exposed two new PBI-041 blockers outside authorized scope.
+Status: FV-GATE-REMEDIATION-2 completed within scope; prior blockers resolved, but `verify:full` exposed a new material PostgreSQL blocker.
 WIP: 1/1
-Progress: 4 / 7 remediation blocks complete; `verify`, `verify:full` and readiness remain blocked.
-Current: Authorized protected-surface and migration-contract remediations are committed locally and evidenced.
-Next: Owner decision on the PostgreSQL skip-inventory and Composer visual-foundation blockers; do not start Formal Verification, integration, or another PBI.
-Blocked: `verify` fails because its PostgreSQL skip inventory expects 21 material tests but the current tree has 29, and because Composer has one inline style, one noncanonical compound radius and one forbidden `!important`. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 6 / 8 remediation blocks complete; full verification and readiness remain blocked.
+Current: Stop after recording the exact Stage 4 failure; do not rerun full verification or alter Access-role persistence outside authorization.
+Next: Owner decision on `B-041-FV-005` (`test/access-role-postgresql.test.mjs` in the owner-scoped composite).
+Blocked: `verify:full` Stage 4 FAIL in the owner-scoped PostgreSQL runner; sanitized evidence identifies `test/access-role-postgresql.test.mjs` but not a narrower cause. Preserve AviCell v3, AG v64 failure evidence, AG v65/v66 isolated unpublished fixtures, QA UX-002A Local v3/v4/v5, QA UX-002E Local v1 DRAFT, the isolated UX-005.1 unpublished QA version, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
 
 ## Current checkpoint — FV Gate Remediation
@@ -21,10 +21,13 @@ Last updated: 2026-09-19 MST
   contracts; retain unknown, duplicate, order and ownership rejection.
 - [x] Prove focused gates and PostgreSQL 18.4: 75 applied, second run 0
   pending, 10/10 material tests and disposable cleanup.
-- [!] Make base `verify` pass; blocked by PostgreSQL skip-inventory and
-  Composer visual-foundation failures outside this authorization.
-- [ ] Run `verify:full` once after base `verify` passes.
-- [ ] Run the short Closure Readiness Recheck only after both gates pass.
+- [x] Register all 29 material PostgreSQL tests by exact identity and stage;
+  remove Composer inline style, compound radius and `!important` structurally.
+- [x] Make base `verify` pass after material PostgreSQL, typecheck and build.
+- [!] Run `verify:full` once after base `verify` passes: executed exactly once;
+  Stage 4 failed in the owner-scoped Access-role material test.
+- [!] Run the short Closure Readiness Recheck only after both gates pass:
+  blocked because the full campaign is not green.
 
 ## Previous checkpoint — Final Closure & Readiness Audit
 

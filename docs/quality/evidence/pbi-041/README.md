@@ -31,11 +31,13 @@ authority.
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
 PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP. The final
-readiness audit found two required verification-gate blockers; their authorized
-remediation resolved both, but `verify` then exposed two different PBI-041
-blockers in PostgreSQL skip inventory and Composer visual-foundation
-compliance. It therefore remains before Formal Verification and Owner
-Acceptance. Advanced Supplier
+readiness audit found two required verification-gate blockers; their first
+authorized remediation resolved both, and FV-GATE-REMEDIATION-2 resolved the
+subsequent PostgreSQL inventory and Composer visual-foundation blockers. Base
+`verify` is green. The single authorized `verify:full` then failed in Stage 4
+Material PostgreSQL composite at `test/access-role-postgresql.test.mjs`;
+cleanup and final fingerprint passed. `B-041-FV-005` therefore keeps the PBI
+before Formal Verification and Owner Acceptance. Advanced Supplier
 Reconciliation remains a deferred outcome without PBI ID, selection or
 readiness.
 

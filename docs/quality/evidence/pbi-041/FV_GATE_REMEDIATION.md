@@ -101,3 +101,40 @@ SupplierVersions, Catalog, schema, roles, policy, push, PR, merge ni deploy.
 Los blockers `B-041-FV-001` y `B-041-FV-002` están **RESOLVED**. PBI-041
 permanece **NOT READY — BLOCKERS REMAIN** por `B-041-FV-003` y
 `B-041-FV-004`; todavía no es elegible para Formal Verification independiente.
+
+## FV-GATE-REMEDIATION-2
+
+La segunda autorización resolvió sin relajar gates los dos blockers anteriores:
+
+- `B-041-FV-003` **RESOLVED**. El inventario dejó de contar expresiones por
+  archivo y registra las 29 identidades exactas mediante AST: 17 del compuesto,
+  2 de PBI-039, 1 de PBI-040 y 9 de PBI-041. Los runners PBI-040/PBI-041
+  ejecutan conjuntos disjuntos y validan respectivamente 1/1 y 9/9 sin skips.
+  Quitar una identidad, añadir una no registrada o duplicar una entrada falla
+  cerrado.
+- `B-041-FV-004` **RESOLVED**. Las dos columnas dinámicas de duplicados usan la
+  custom property gobernada `--bulk-grid-duplicate-columns`; el restore control
+  consume `var(--radius-md)` y las reglas que dependían de `!important`
+  resuelven especificidad con clases locales. No se añadió excepción al checker.
+
+Pruebas focalizadas: **39/39 PASS**. PostgreSQL PBI-041: **9/9 PASS**, 75
+migraciones, segunda ejecución con 0 pendientes y cleanup PASS. Typecheck,
+build y `verify` pasaron; el `verify` base registró 934 PASS, 29 skips materiales
+y 0 fallos.
+
+La única ejecución autorizada de `verify:full` llegó a Stage 4 y falló dentro
+del compuesto PostgreSQL: `scripts/test-owner-scoped-persistence-postgresql.mjs`
+reportó `test/access-role-postgresql.test.mjs` con exit 1. La evidencia
+sanitizada no contiene una causa más específica. Stages 0..3, cleanup y
+fingerprint final pasaron; el candidate permaneció estable. No se repitió la
+campaña ni se modificó el fallo fuera de alcance.
+
+| ID | Clasificación | Estado |
+| --- | --- | --- |
+| `B-041-FV-003` | Inventario PostgreSQL | **RESOLVED** |
+| `B-041-FV-004` | Visual foundation Composer | **RESOLVED** |
+| `B-041-FV-005` | PostgreSQL composite / Access roles | **OPEN** — `verify:full` Stage 4 FAIL; requiere diagnóstico/remediación separada |
+
+Dictamen posterior: **NOT READY — BLOCKERS REMAIN**. No hubo mutación de datos
+Owner, AviCell, Catalog, SupplierVersions, schema o migraciones; tampoco push,
+PR, merge ni deploy.
