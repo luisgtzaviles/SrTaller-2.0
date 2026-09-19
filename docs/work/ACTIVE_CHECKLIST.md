@@ -1,15 +1,28 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Review Remediation
+Milestone / Functional Goal: PBI-041 — Independent Formal Re-Verification
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: REVIEW-REMEDIATION-1 PASS locally; security blocker remediated and authoritative verification PASS. Previous Formal Verification remains stale for this changed candidate.
+Status: FORMAL RE-VERIFICATION FAIL. REVIEW-041-001/002 are resolved, but FV2-041-001 blocks promotion after the only verify:full run failed Stage 4 owner-scoped PostgreSQL.
 WIP: 1/1
-Progress: 6 / 6 review-remediation blocks complete.
-Current: Stop at the local remediation checkpoint; no remote action.
-Next: A new independent Formal Verification is required for the changed candidate before any governed promotion.
-Blocked: Promotion remains blocked only by the required new independent Formal Verification and later Owner authority. Preserve Owner data, AviCell, all prior accepted Composer work, and the preexisting .DS_Store.
+Progress: 9 / 10 formal re-verification predicates complete; mandatory full gate failed.
+Current: Record the independent FAIL without implementation or remote action.
+Next: Owner must authorize a separate diagnosis/remediation of FV2-041-001 before any new Formal Verification.
+Blocked: FV2-041-001 — verify:full Stage 4 owner-scoped PostgreSQL composite exited 1 with no retained inner diagnostic. Preserve Owner data, AviCell, all prior accepted Composer work, and the preexisting .DS_Store.
 Last updated: 2026-09-19 MST
+
+## Current checkpoint — Formal Re-Verification after REVIEW-041-001
+
+- [x] Prove implementation HEAD `a18d763e7ad0f8c760c8b3c9a9cf3d6f8e7a3555`, pre-FV HEAD `ab2e0738d452a8be1bfc198d27f1102125d0484c` and DOCS_ONLY delta.
+- [x] Independently verify server-derived Batch binding, zero-write stale rejection, refetch capability recomposition and direct-API denial.
+- [x] Verify all effect-changing decision paths advance the Batch token; preserve transactionality, idempotency, Tenant/Branch and correction-successor rules.
+- [x] Pass 123/123 focused contracts and current 30-identity governed material inventory.
+- [x] Pass PBI-041 PostgreSQL 10/10, 75 migrations, second run 0 pending and focused 10k budget.
+- [x] Reconcile AviCell v3 and Owner data read-only with no unexplained drift.
+- [x] Pass base `verify`: 935 PASS / 0 FAIL / 30 governed skips.
+- [x] Execute `verify:full` exactly once with no rerun for green.
+- [!] `FV2-041-001`: Stage 4 owner-scoped PostgreSQL composite failed; mandatory formal predicate not satisfied.
+- [x] Preserve historical FV and record the independent FAIL without product, Owner-data or remote mutation.
 
 ## Current checkpoint — REVIEW-REMEDIATION-1
 

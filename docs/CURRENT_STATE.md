@@ -2,10 +2,10 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-041 `REVIEW-REMEDIATION-1` PASS local: blocker de seguridad
-  remediado y verificación autoritativa Stages 0..13 PASS. El PASS formal de
-  `690282a` quedó stale; se requiere nueva Formal Verification independiente.
-  Owner Acceptance pendiente.
+- **Estado:** PBI-041 Formal Re-Verification **FAIL**: `REVIEW-041-001/002`
+  están resueltos, pero la única corrida propia de `verify:full` falló Stage 4
+  en el composite PostgreSQL owner-scoped (`FV2-041-001`). Promoción y Owner
+  Acceptance permanecen bloqueadas.
   PBI-040 permanece `Done`, `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
   `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
@@ -23,14 +23,14 @@
 
 El review remoto de PR #55 encontró `REVIEW-041-001`, una ventana de
 concurrencia entre el snapshot usado para autorizar efectos y el Batch
-publicado. La remediación local vincula Apply al `batch.lock_version` existente:
-un `decide` concurrente invalida el intento antes de escrituras y obliga a
-refetch/reautorización. PostgreSQL material pasa 10/10 con 75 migraciones y
-cero pendientes en la segunda ejecución; base `verify` pasó 935/0/30 y la
-única ejecución de `verify:full` pasó Stages 0..13, cleanup y fingerprint.
-Owner data y AviCell no cambiaron. El PASS formal anterior permanece histórico
-para `690282a`, pero no cubre el candidato modificado. Véase
-[`REVIEW_REMEDIATION_1.md`](quality/evidence/pbi-041/REVIEW_REMEDIATION_1.md).
+publicado. La re-verificación independiente confirmó que la remediación local
+vincula Apply al `batch.lock_version`: un `decide` concurrente invalida el
+intento con cero escrituras y obliga a refetch/reautorización. PostgreSQL
+PBI-041 pasa 10/10 con 75 migraciones y base `verify` pasa 935/0/30. Sin
+embargo, la única corrida propia de `verify:full` falló Stage 4 durante
+`owner-scoped-adapters`; cleanup y fingerprint pasaron y no hubo rerun. Owner
+data y AviCell no cambiaron. Véase
+[`FORMAL_REVERIFICATION_REVIEW_041_001.md`](quality/evidence/pbi-041/FORMAL_REVERIFICATION_REVIEW_041_001.md).
 
 PBI-040 quedó Owner Accepted el 2026-09-13. PR #49 integró Catalog/Pricing;
 PR #50 corrigió de forma gobernada la cronología de cinco migraciones todavía

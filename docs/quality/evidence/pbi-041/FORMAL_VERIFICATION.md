@@ -10,8 +10,10 @@ changed product code in commits `f5551be` and `1d113e8`.
 **Current status: STALE — the changed candidate requires a new independent
 Formal Verification.** REVIEW-REMEDIATION-1 passes local base `verify` and one
 authoritative `verify:full`, but that does not carry this historical verdict
-forward. See
-[`REVIEW_REMEDIATION_1.md`](REVIEW_REMEDIATION_1.md).
+forward. The subsequent independent re-verification confirmed the security
+remediation but recorded a mandatory full-gate failure; see
+[`FORMAL_REVERIFICATION_REVIEW_041_001.md`](FORMAL_REVERIFICATION_REVIEW_041_001.md).
+This document remains historical evidence only.
 
 ## Historical formal verdict
 
