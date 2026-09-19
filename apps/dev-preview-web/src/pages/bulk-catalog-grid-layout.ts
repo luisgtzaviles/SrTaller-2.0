@@ -14,6 +14,13 @@ function columns(value: string): string {
   return value;
 }
 
+function duplicateColumns(value: number): string {
+  if (!Number.isSafeInteger(value) || value < 2 || value > 10_000) {
+    throw new RangeError('Bulk catalog duplicate column count is outside its governed range.');
+  }
+  return String(value);
+}
+
 export function applyBulkCatalogGrid(
   element: HTMLElement | null,
   input: Readonly<{ columns: string; width: number }>,
@@ -35,4 +42,9 @@ export function applyBulkCatalogCanvas(
 export function applyBulkCatalogOffset(element: HTMLElement | null, offset: number): void {
   if (!element) return;
   element.style.setProperty('--bulk-grid-offset', pixels(offset));
+}
+
+export function applyBulkCatalogDuplicateColumns(element: HTMLElement | null, memberCount: number): void {
+  if (!element) return;
+  element.style.setProperty('--bulk-grid-duplicate-columns', duplicateColumns(memberCount));
 }

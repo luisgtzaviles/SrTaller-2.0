@@ -149,7 +149,7 @@ export async function validateUiFoundation(root = process.cwd()) {
     if (!tokenSource.includes(`${token}:`)) problems.push(`${TOKEN_FILE}: missing semantic brand chrome token ${token}`);
   }
   const bulkGridProperties = [...bulkGridLayoutSource.matchAll(/\.style\.setProperty\('([^']+)'/gu)].map((match) => match[1]);
-  if (bulkGridProperties.length !== 5 || bulkGridProperties.some((property) => !['--bulk-grid-columns', '--bulk-grid-width', '--bulk-grid-height', '--bulk-grid-offset'].includes(property))) {
+  if (bulkGridProperties.length !== 6 || bulkGridProperties.some((property) => !['--bulk-grid-columns', '--bulk-grid-width', '--bulk-grid-height', '--bulk-grid-offset', '--bulk-grid-duplicate-columns'].includes(property))) {
     problems.push(`${BULK_GRID_LAYOUT_FILE}: dynamic layout may set only the governed bulk grid custom properties`);
   }
 

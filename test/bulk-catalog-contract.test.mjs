@@ -399,6 +399,10 @@ test('bulk contracts preserve separate prepare, publish, retirement, cost and Br
   assert.match(css, /\.coverageItems/u);
   assert.match(css, /\.coverageActions/u);
   assert.match(gridLayout, /--bulk-grid-offset/u);
+  assert.match(gridLayout, /--bulk-grid-duplicate-columns/u);
+  assert.match(ui, /applyBulkCatalogDuplicateColumns\(node, group\.members\.length\)/u);
+  assert.doesNotMatch(ui, /style=\{\{/u);
+  assert.doesNotMatch(css, /!important/u);
   assert.match(ui, /Completar datos faltantes/u);
   assert.match(ui, /Aplicar a filas incompletas/u);
   assert.doesNotMatch(ui, /Aplicar sólo a vacíos/u);
