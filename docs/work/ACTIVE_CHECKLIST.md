@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Canonical closure after Preview PASS
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: NONE
-Status: PREVIEW ACTIVATION REMEDIATED — Preview now serves the exact PR #57 revision with matching frontend/backend provenance, health and schema. Canonical closure verification remains intentionally not started. Released: NO.
+Status: CANONICAL CLOSURE BLOCKED — canonical verification passed, but the Preview PostgreSQL data scope does not contain the required Owner/AviCell integrity snapshot. Released: NO.
 WIP: 0/1
-Progress: 10 / 11 closure blocks complete.
-Current: PR #57 merged ordinarily as `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; exact-main CI `35539833596` passed classification, run-1, run-2 and comparison. Preview's active healthy container `f801cb60c0e7` reports that exact SHA from `/livez`, `/readyz` and frontend runtime provenance.
-Next: Resume canonical closure verification and documentation reconciliation only under the next governed Owner instruction.
-Blocked: No Preview activation blocker. The former mismatch was stale `SR_BUILD_GIT_SHA` build metadata (`39ece042...`) in Preview configuration; it was reconciled to `9b7a83d...` and proven by health, provenance, schema and direct-route reload checks. The preexisting Owner `.DS_Store` remains untracked and protected.
+Progress: 11 / 13 closure blocks complete.
+Current: The one canonical `verify` and one canonical `verify:full` campaign passed against final merged code baseline `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; Preview provenance, health, routes and 75-migration schema pass.
+Next: Owner decision required: either identify the authoritative Preview environment that contains the AviCell Owner-data snapshot, or explicitly change the final integrity gate's required data scope. Do not copy, seed, reset or mutate Preview data by inference.
+Blocked: Final Owner-data integrity snapshot mismatch. Read-only Preview PostgreSQL has 75 distinct migrations but only 1 CatalogItem, 0 SupplierCatalogVersions, 0 AviCell sources and no AviCell v3 / row-411 record, rather than the required AviCell v3 applied evidence. No write or data-loss conclusion was made; the preexisting Owner `.DS_Store` remains untracked and protected.
 Last updated: 2026-09-20 MST
 
 ## Current checkpoint — PBI-041 canonical closure
@@ -42,6 +42,12 @@ Last updated: 2026-09-20 MST
   metadata was reconciled, controlled redeploy completed, and active
   frontend/backend provenance now reports exact clean `9b7a83d`; health,
   75-migration compatibility and direct-route reload pass.
+- [x] Run the single fresh canonical verification campaign: base `verify`
+  passed 940/0/30 and `verify:full` passed Stages 0–13, PostgreSQL material,
+  cleanup and fingerprint; PBI-041 10k publish measured 2,068.5 ms.
+- [!] Reconcile the final Owner-data integrity snapshot: the active Preview
+  database is a materially smaller seed scope, not the expected AviCell v3
+  Owner-data snapshot. Closure publication is stopped pending an Owner decision.
 - [ ] Promote the governed closure PR and require exact-main CI GREEN.
 
 Closure outcome after integration: PBI-041 `Done`, `Released: NO`; SPRINT-03
