@@ -17,9 +17,9 @@ Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
 
 **Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
 **Orden operativo:** Sprint 01 y SPRINT-02 están `Closed`; PBI-043 está `Done`
-por PR #47/#48, CI exacta y Preview PASS. SPRINT-03 está `Closed candidate`;
-PBI-040 es `Done`, PBI-041 `Done candidate`, Current PBI `NONE`, WIP `0/1` y
-Next candidate `NONE`. PBI-042 sigue `Planned/Unassigned`.
+por PR #47/#48, CI exacta y Preview PASS. SPRINT-03 está `Closed`; PBI-040 y
+PBI-041 están `Done`, Current PBI `NONE`, WIP `0/1` y Next candidate `NONE`.
+PBI-042 sigue `Planned/Unassigned`.
 
 ## Estructura
 

@@ -51,6 +51,11 @@ Preview admite datos sintéticos, de desarrollo o desechables. Nunca usa datos
 reales de Production. Su tolerancia a reconstrucción no autoriza borrar datos
 persistentes sin confirmar alcance y autoridad.
 
+Como follow-up de UX/operación, Local y Preview deberán mostrar una identidad
+visible, no sensible y verificable: `LOCAL · <branch> · <short SHA>` y
+`PREVIEW · main · <short SHA>`. Este documento registra el contrato; no implica
+que el runtime actual ya tenga ese banner ni autoriza cambios de UI.
+
 Los datos de Preview pertenecen a Preview y pueden ser un seed mínimo o de QA.
 Los datos de negocio Owner/Production no se copian ni se esperan implícitamente
 en ese ambiente. La verificación de release acredita runtime, schema,

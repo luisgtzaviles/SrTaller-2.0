@@ -20,14 +20,12 @@
    baseline.
 4. Los commits y merges deben conservar trazabilidad del alcance, pruebas y
    autorización aplicable.
-5. Después de cerrar un PBI, el avance de roadmap usa una rama documental
-   `ops/pbi-###-roadmap-advance` creada desde el nuevo `main`. Ese PR registra
-   el cierre candidato, actualiza Sprint/roadmap y selecciona el siguiente PBI
-   sin iniciar su implementación. Su merge autorizado y CI de `main` GREEN
-   sobre el SHA exacto materializan `Done`; no se crea una rama o PR adicional
-   sólo para convertir wording pre-merge `Done candidate`.
-6. Preview puede desplegar automáticamente un nuevo `main` sólo cuando el
-   mecanismo sea claro, observable y no amplíe el alcance a otros ambientes.
+5. Por defecto una funcionalidad aprobada viaja en un solo candidato de
+   integración con pruebas, hardening, evidencia, documentación canónica y
+   `ACTIVE_CHECKLIST.md`. Un PR documental posterior es excepcional y no se
+   usa sólo para convertir wording pre-merge a `Done`.
+6. Preview puede desplegar el nuevo `main` cuando el alcance de runtime lo
+   autoriza, el mecanismo sea claro y observable y no amplíe a otros ambientes.
 7. Staging y Production requieren su propia autorización y no se infieren de un
    despliegue exitoso en Preview.
 
@@ -49,9 +47,9 @@
 5. Un branch de trabajo congelado no se trata como baseline. Si otra
    remediación debe precederlo, se conserva sin modificar y sólo se reconcilia
    desde el nuevo `main` cuando esa remediación cierre.
-6. Después de merge autorizado y validación Preview satisfactoria, se eliminan
-   las ramas local y remota ya absorbidas y se ejecuta `fetch --prune`, siempre
-   después de confirmar que no contienen trabajo exclusivo.
+6. Después de merge autorizado y validación aplicable, se eliminan las ramas
+   local y remota ya absorbidas y se ejecuta `fetch --prune`, siempre después
+   de confirmar que no contienen trabajo exclusivo.
 
 La rama `feature/pbi-040-catalog-pricing-core` fue una excepción de transición:
 su WIP Price List permaneció congelado durante PBI-043. Después del cierre de
@@ -73,10 +71,10 @@ satisfaga o DEC-051 no sea modificada formalmente:
 
 - no se debe afirmar que `main` está protegido técnicamente;
 - checks verdes no equivalen por sí solos a autorización de merge;
-- cualquier integración funcional alcanzada por ese gate necesita autorización
-  explícita y evidencia registrada;
-- cualquier PR documental de avance también requiere autorización Owner
-  explícita de merge;
+- cada integración necesita la autoridad aplicable y evidencia registrada;
+- una delegación Owner explícita de delivery puede cubrir los pasos rutinarios
+  de una feature/PBI autorizada, sin cubrir Production, force push, rewrites,
+  datos Owner destructivos ni ampliación material de alcance;
 - no se fuerza, reescribe ni elude el historial para simular cumplimiento.
 
 ## Ramas después de integrar

@@ -2,8 +2,8 @@
 
 ## Estado
 
-- **Estado:** Closed candidate — PBI-040 Done; PBI-041 Done candidate.
-- **Bloqueos:** ninguno; cierre documental gobernado pendiente de integración.
+- **Estado:** Closed — PBI-040 Done; PBI-041 Done.
+- **Bloqueos:** ninguno de PBI activo.
 
 | Riesgo | Clasificación | Control | Estado |
 |---|---|---|---|

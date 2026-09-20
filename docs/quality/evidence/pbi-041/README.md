@@ -4,9 +4,9 @@ PBI-041 product and Preview-route remediations were integrated by PR #55/#56.
 PR #57 then integrated the publish-determinism remediation as
 `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; exact-main CI `35539833596`
 passed. Active Preview reports that exact clean revision and passes health,
-provenance, direct navigation and reload. PBI-041 is a `Done candidate` pending
-integration of the canonical closure documentation; `Released: NO` and
-Production is unchanged.
+provenance, direct navigation and reload. PR #58 `cb1dca3` passed exact-main
+CI `35544551782`, so PBI-041 is `Done`; `Released: NO` and Production is
+unchanged.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Independent Formal Verification](FORMAL_VERIFICATION.md)
@@ -18,6 +18,7 @@ Production is unchanged.
 - [Post-deploy closure evidence](POST_DEPLOY_CLOSURE.md)
 - [Preview activation and provenance remediation](PREVIEW_ACTIVATION_PROVENANCE_REMEDIATION.md)
 - [Canonical closure data-scope reconciliation](CANONICAL_CLOSURE_DATA_SCOPE_RECONCILIATION.md)
+- [Workflow reconciliation after PBI-041](../../../delivery/WORKFLOW_RECONCILIATION_2026-09.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)
 - [Test Strategy](TEST_STRATEGY.md)

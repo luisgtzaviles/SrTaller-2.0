@@ -25,11 +25,11 @@ Repair Workstream PBI-039, Concurrent Operational Sessions PBI-043 y el
 Catalog/Pricing core PBI-040. Owner Acceptance, PR #49/#50/#51 y Preview PASS
 quedaron seguidos por el cierre documental PR #52, integrado como `a060494`
 con exact-main CI `34814070839` PASS. PBI-040 es `Done`, `Released: NO`.
-PBI-041 está `Done candidate` tras PR #55/#56/#57, exact-main CI y Preview
-PASS; su cierre documental gobernado permanece pendiente. SPRINT-03 está
-`Closed candidate`, Current PBI `NONE` y WIP `0/1`. La
-[optimización conservadora aprobada](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md)
-se materializa como un cambio separado de governance; no selecciona PBI-041.
+PBI-041 está `Done`: PR #58 `cb1dca3` pasó CI exact-main `35544551782` tras
+PR #55/#56/#57, exact-main CI y Preview PASS. SPRINT-03 está `Closed`, Current
+PBI `NONE` y WIP `0/1`. La
+[reconciliación de workflow de 2026-09](WORKFLOW_RECONCILIATION_2026-09.md)
+es governance independiente y no selecciona un PBI de producto.
 
 ## Jerarquía de autoridad documental
 
@@ -64,6 +64,20 @@ El orden de evidencia es:
 
 Si una persona o IA recuerda algo distinto, debe verificar y reconciliar contra
 estas fuentes antes de actuar.
+
+## Autoridad de delivery y review
+
+La autorización Owner de un PBI puede incluir una delegación explícita y
+acotada de delivery: rama temporal, implementación, pruebas, commits, push
+ordinario, PR, CI, remediación legítima, merge ordinario, sincronización de
+`main`, Preview dentro del alcance, evidencia y limpieza de ramas absorbidas.
+No incluye iniciar otro PBI, ampliar negocio/arquitectura, Production, cambios
+destructivos de datos Owner, force push/rewrite, rollback inseguro ni aceptar
+riesgos materiales por silencio.
+
+La revisión independiente es una prueba de proceso basada en alcance, HEAD
+exacto, criterios, findings y evidencia. Una cuenta GitHub concreta puede
+participar pero no es un requisito permanente del modelo.
 
 **SR Taller 2.0 must not depend operationally on a specific AI model or
 agent.** Codex, otra IA, un desarrollador humano o un operador autorizado deben
@@ -120,11 +134,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI for current integrated PBI-041 baseline | Green: exact-main run `35539833596` on `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca` |
+| Authoritative CI for PBI-041 canonical closure | Green: exact-main run `35544551782` on `cb1dca3edc945776face00ea3b2d6213fa0c7b37` |
 | Program / phase | MVP Operating Roadmap / Pricing Catalog |
-| Sprint | SPRINT-03 `Closed candidate`; WIP `0/1` |
+| Sprint | SPRINT-03 `Closed`; WIP `0/1` |
 | Current / next PBI | Current: NONE; next candidate: NONE |
-| Current blocking gate | Canonical closure documentation integration; Production unauthorized |
+| Current blocking gate | No active PBI; Production unauthorized |
 | GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
@@ -193,34 +207,29 @@ Definition of Done y evidencia completas
         ↓
 PBI Done
         ↓
-PR documental de avance
-        ↓
-siguiente PBI seleccionado, no iniciado
+siguiente PBI sólo si Owner lo selecciona, no iniciado
 ```
 
 La validación técnica, el merge, el deployment, la validación de producto y el
 cierre son estados distintos. Un resultado verde no autoriza automáticamente
 el paso siguiente.
 
-### WIP y avance documental
+### WIP y documentación canónica
 
 - Existe como máximo un PBI operativo en ejecución o cierre.
 - El PBI siguiente puede estar ordenado o preparado, pero no se inicia por
   efecto del cierre anterior.
 - El merge funcional conserva el PBI `In review` hasta que el CI del nuevo
   `main`, la Owner Acceptance y la DoD aplicable pasen.
-- Después del cierre se prepara una rama `ops/pbi-###-roadmap-advance` desde el
-  nuevo `main`. Su PR actualiza PBI, backlog, Sprint, Roadmap y Current State y
-  selecciona el siguiente PBI sin autorizarlo.
-- Mientras `DEC051-C02` siga abierta, el PR documental requiere preflight,
-  revisión, CI y autorización Owner explícita de merge.
+- Por defecto la evidencia y documentación canónica afectada viajan dentro del
+  mismo candidato de integración que la funcionalidad. Un PR documental
+  posterior sólo procede para governance independiente, ADR/DEC, corrección
+  histórica o inconsistencia descubierta después.
 - Si falta evidencia, aceptación o siguiente prioridad, el flujo falla cerrado
   y no salta silenciosamente a otro PBI.
-- El PR documental no genera otro PR para cerrarse a sí mismo: su integración
-  y el CI autoritativo GREEN sobre su SHA de merge materializan el estado
-  documental reconciliado. El texto pre-merge `Done candidate` se interpreta
-  como `Done` efectivo al satisfacer esos hechos; no exige otro PR sólo para
-  reescribirlo.
+- Merge ordinario autorizado y CI exact-main GREEN materializan `Done` cuando
+  también se cumplen aceptación, DoD y evidencia. No se crea otro PR sólo para
+  reescribir el wording preventivo.
 
 `Done` y `Released` permanecen separados. Un deploy sólo aparece dentro del
 golden path de un PBI cuando su alcance o un release posterior lo autoriza.

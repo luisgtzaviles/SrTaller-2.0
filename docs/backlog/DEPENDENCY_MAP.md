@@ -36,9 +36,9 @@ flowchart TD
     RETRO --> P39[PBI-039 Customer Minimum + New Repair<br/>Functional Slice Frozen / Owner Accepted]
     P39 --> POLISH[Formal UI Verification<br/>PASS / PBI-039 Done]
     POLISH --> P43
-    P43 --> S3[SPRINT-03 Price List Foundation<br/>Closed candidate / WIP=0/1]
+    P43 --> S3[SPRINT-03 Price List Foundation<br/>Closed / WIP=0/1]
     S3 --> P40[PBI-040 Catalog + Pricing Core<br/>Done]
-    P40 --> P41[PBI-041 Composer + Supplier Intake<br/>Done candidate]
+    P40 --> P41[PBI-041 Composer + Supplier Intake<br/>Done]
     P40 --> QUOTE[Quote / Authorization]
     QUOTE --> MONEY[Payments / Cash]
     MONEY --> DELIVERY[Resolution / QC / Delivery / Custody End]
@@ -74,9 +74,8 @@ flowchart TD
 - PBI-040 depende de contexto/identidad/access/audit/persistencia/UI ya
   disponibles y materializa `catalog` sólo con el slice vertical completo.
 - PBI-041 depende de PBI-040; esa dependencia material está satisfecha. Su
-  implementación, verificación, integración y Preview están completas; el
-  cierre documental permanece gobernado. Bulk no bloquea el primer valor
-  visible.
+  implementación, verificación, integración, Preview y cierre canónico están
+  completos. Bulk no bloquea el primer valor visible.
 - Inventory, Procurement, Repair Concepts, Caja, Pedidos y Solicitudes no son
   dependencias de PBI-040 ni reciben ownership por consumir contratos futuros.
 
@@ -86,8 +85,8 @@ flowchart TD
 - Riesgo AT/cross-browser de PBI-030: `Bajo (LOW) — ACCEPTED RESIDUAL QUALITY RISK`.
 - Sprint 01: `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - Sprint 02: `Closed`; PBI-039/PBI-043 están `Done`; WIP=`0/1`.
-- Sprint 03: `Closed candidate`; PBI-040 `Done`, PBI-041 `Done candidate`,
-  WIP=`0/1`; no existe Current PBI ni Next candidate.
+- Sprint 03: `Closed`; PBI-040 y PBI-041 `Done`, WIP=`0/1`; no existe Current
+  PBI ni Next candidate.
 - PBI-027: `Done`; `Released: NO`.
 - PBI-029: `Done`; threat model/DoR, riesgo `CRITICAL`, focused security
   review, merge, CI de `main`, Owner Acceptance, cierre documental integrado y

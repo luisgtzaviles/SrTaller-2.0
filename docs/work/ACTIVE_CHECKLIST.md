@@ -1,17 +1,35 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Canonical closure after Preview PASS
-Sprint: SPRINT-03 — Price List Foundation
+Milestone / Functional Goal: Workflow reconciliation — post PBI-041
+Sprint: none active; SPRINT-03 — Price List Foundation is Closed
 Current PBI: NONE
-Status: CANONICAL CLOSURE CANDIDATE READY FOR PUSH — data-scope authority and documentation validation pass. Released: NO.
+Status: GOVERNANCE RECONCILIATION IN PROGRESS — PBI-041 Done; Released: NO.
 WIP: 0/1
-Progress: 13 / 14 closure blocks complete.
-Current: Governed closure documentation commit `261ea36` is ready locally.
-Next: Push the closure candidate and continue through its PR/CI workflow. Do not start another PBI.
-Blocked: None. The prior Preview/AviCell mismatch is preserved as history and resolved by Owner decision: Preview is minimal seed; Owner/local is the AviCell integrity authority. The preexisting Owner `.DS_Store` remains untracked and protected.
+Progress: 8 / 9 governance blocks complete.
+Current: Await full authoritative CI for Draft PR #59 on the exact candidate HEAD.
+Next: Complete process-based independent review, then merge only under the standing Owner delivery authority. Do not start another PBI.
+Blocked: None. PBI-041 is Done after PR #58 `cb1dca3` and exact-main CI `35544551782`; Preview remains minimal-seed release authority and Owner/local AviCell integrity authority. The preexisting Owner `.DS_Store` remains untracked and protected.
 Last updated: 2026-09-20 MST
 
-## Current checkpoint — PBI-041 canonical closure
+## Current checkpoint — Workflow reconciliation
+
+- [x] Confirm PR #58 ordinary merge `cb1dca3` and exact-main CI `35544551782`
+  with run-1, run-2 and comparison GREEN.
+- [x] Reconcile PBI-041 `Done`, SPRINT-03 `Closed`, Current PBI `NONE`, WIP
+  `0/1`, Next candidate `NONE` and `Released: NO` against Git/CI.
+- [x] Audit local/remote branch containment and worktrees; no unique PBI-041
+  commits remained.
+- [x] Remove the clean temporary worktree and four absorbed PBI-041 branches;
+  primary checkout is `main == origin/main == cb1dca3`.
+- [x] Reconcile delivery workflow, branch policy, environment identity follow-up
+  and canonical status sources.
+- [x] Run documentation links, consistency, secret scan and diff checks.
+- [x] Freeze governance candidate `1360b3a`; classifier is fail-closed `FULL`
+  because it changes delivery contracts, not product runtime.
+- [x] Push and open Draft PR #59 from `ops/workflow-reconciliation-2026-09`.
+- [ ] Complete authoritative CI/review/merge for this independent governance change.
+
+## Completed checkpoint — PBI-041 canonical closure
 
 - [x] Reproduce and classify the defect: internal navigation works, but direct
   navigation/reload returns 404 for Bulk Catalog Composer and Catalog Field
@@ -49,7 +67,7 @@ Last updated: 2026-09-20 MST
   database is a materially smaller seed scope; the Owner rejected copying or
   seeding it and established Owner/local as the read-only AviCell authority.
   Both Owner-data integrity and Preview release gates pass.
-- [ ] Promote the governed closure PR and require exact-main CI GREEN.
+- [x] Promote PR #58 and pass exact-main CI `35544551782` GREEN.
 
 Closure outcome after integration: PBI-041 `Done`, `Released: NO`; SPRINT-03
 `Closed`; Current PBI `NONE`; WIP `0/1`; Next candidate `NONE`; Production

@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 `Closed
-  candidate` con PBI-040 `Done` y PBI-041 `Done candidate` después de
-  integración, exact-main CI, Preview PASS y reconciliación de data scope.
+- **Estado:** Roadmap aprobado; SPRINT-02 y SPRINT-03 `Closed`, con PBI-040 y
+  PBI-041 `Done` después de integración, exact-main CI, Preview PASS y
+  reconciliación de data scope.
 - **Baseline Git observada:** Workflow Phase 1 integrado en `main` por
   `859825025cf1f9fa94a8b0ced5b91b95760e36a8`; CI exacta de `main`
   `34893081175`, `SUCCESS`.
@@ -13,13 +13,12 @@
 - **Fase:** Pricing Catalog.
 - **Checkpoint alcanzado:** PBI-040 Owner Accepted, integrado, Preview PASS y
   cierre documental exact-main PASS; `Done`, `Released: NO`.
-- **Sprint activo:** SPRINT-03 — Price List Foundation queda `Closed candidate`
-  hasta integrar este cierre; no existe otro Sprint activo.
+- **Sprint activo:** SPRINT-03 — Price List Foundation está `Closed`; no existe
+  otro Sprint activo ni trabajo de Sprint en curso.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** integrar el cierre documental gobernado; Production no
-  autorizada.
+- **Blocking gate:** no existe gate de PBI activo; Production no autorizada.
 - **WIP operacional:** `0/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
@@ -61,15 +60,13 @@ Definition of Done y evidencia completas
   ↓
 PBI Done
   ↓
-PR documental de avance
-  ↓
-Siguiente PBI seleccionado, no iniciado
+Siguiente PBI sólo si Owner lo selecciona, no iniciado
 ```
 
-El avance es automático como obligación documental del workflow, no como
-autorización de merge o de implementación. Mientras `DEC051-C02` permanezca
-abierta, cada PR documental conserva preflight, revisión, CI y autorización
-Owner explícita de merge.
+La evidencia y documentación canónica viajan por defecto dentro del candidato
+de integración. Un PR documental posterior es excepcional y no autoriza merge
+ni implementación. La falta de protección técnica de `main` sigue exigiendo
+revisión, autoridad aplicable y CI exacta.
 
 ## Invariantes
 
@@ -100,12 +97,12 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Stage | MVP |
 | Phase | Pricing Catalog |
 | Sprint | SPRINT-03 |
-| Sprint status | Closed candidate — PBI-040 Done; PBI-041 Done candidate; WIP=0/1 |
+| Sprint status | Closed — PBI-040 Done; PBI-041 Done; WIP=0/1 |
 | Current PBI | NONE |
 | Next PBI candidate | NONE; PBI-042 remains out of scope |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
 | PBI-040 status | Done — closure PR #52 / `a060494`; exact-main CI `34814070839` GREEN; Released NO |
-| Blocking gate | Canonical closure documentation integration; data-scope gates pass under their respective authorities |
+| Blocking gate | Ninguno de PBI; data-scope gates pass bajo sus respectivas autoridades |
 
 ## Fases aprobadas
 
@@ -210,10 +207,11 @@ nuevo `main` una rama `ops/pbi-###-roadmap-advance`. El PR sólo debe:
 - actualizar dependencias/preguntas afectadas;
 - seleccionar el siguiente PBI sin iniciarlo.
 
-El PR documental pasa revisión, CI y merge autorizado. Su integración
-materializa el nuevo estado; no genera otro PR para cerrarse a sí mismo. El
-texto preventivo pre-merge `Done candidate` se vuelve `Done` efectivo cuando
-el merge autorizado y el CI de `main` sobre ese SHA quedan GREEN.
+La documentación canónica afectada viaja por defecto con el candidato de
+integración. Una reconciliación documental posterior sólo aplica para governance
+independiente, ADR/DEC o una inconsistencia histórica; nunca genera otro PR
+sólo para reescribir un estado ya materializado por merge autorizado y CI
+exact-main GREEN.
 
 ## Checkpoint de transición actual
 
@@ -240,9 +238,9 @@ integrado por PR #49, remediado por PR #50/#51 y validado en Preview sobre
 `09e14c8`; CI exacta `34809054770` quedó GREEN. El cierre PR #52 se integró
 como `a060494` y exact-main `34814070839` quedó GREEN: PBI-040 está `Done` y
 `Released: NO`. PBI-041 pasó Formal Re-Verification, PR #55/#56/#57, revisión
-independiente, CI exactas y Preview sobre `9b7a83d`; queda `Done candidate`,
-`Released: NO`. SPRINT-03 queda `Closed candidate`, Current PBI `NONE`, WIP
-`0/1` y Next candidate `NONE` hasta integrar el cierre documental.
+independiente, CI exactas y Preview sobre `9b7a83d`. PR #58 `cb1dca3` y su CI
+exact-main `35544551782` materializaron `Done`; `Released: NO`. SPRINT-03 está
+`Closed`, Current PBI `NONE`, WIP `0/1` y Next candidate `NONE`.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.

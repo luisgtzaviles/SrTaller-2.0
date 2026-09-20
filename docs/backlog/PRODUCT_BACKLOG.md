@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado con `main` `9b7a83d` y CI exacta `35539833596`.
-PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está `Closed candidate`;
-PBI-040 es `Done` y PBI-041 `Done candidate`, ambos `Released: NO`. No existe
+**Estado:** Reconciliado con PBI-041 `Done`: PR #58 `cb1dca3` y CI exacta
+`35544551782` GREEN. PBI-043 y SPRINT-02 están `Done`/`Closed`; SPRINT-03 está
+`Closed`; PBI-040 y PBI-041 están `Done`, ambos `Released: NO`. No existe
 PBI actual, WIP es `0/1`, Next candidate es `NONE` y PBI-042 permanece
 `Planned/Unassigned`.
 **Prioridad:** propuesta, no aprobación final.
@@ -57,7 +57,7 @@ SPRINT-02 están cerrados; SPRINT-03 queda cerrado al integrar este avance.
 | 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
 | 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | Done; Released: NO | Alta | SPRINT-02 completed; PR #45 + exact-main CI `34623060504` |
 | 40 | [PBI-040](pbis/PBI-040.md) Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Done; Released: NO | Alta | SPRINT-03 completed item; closure PR #52 / exact-main `34814070839` PASS |
-| 41 | [PBI-041](pbis/PBI-041.md) Initial Bulk Catalog Composer + Versioned Supplier Intake | Product / Persistence / Data / Jobs / Authorization / UI | EPIC-015 | Done candidate; Released: NO | Alta | SPRINT-03 committed item; closure integration pending |
+| 41 | [PBI-041](pbis/PBI-041.md) Initial Bulk Catalog Composer + Versioned Supplier Intake | Product / Persistence / Data / Jobs / Authorization / UI | EPIC-015 | Done; Released: NO | Alta | SPRINT-03 committed item; exact-main closure PASS |
 | 42 | [PBI-042](pbis/PBI-042.md) Catalog Item Images | Product / Files / Security / UI | EPIC-015 | Planned / Deferred | Media | Unassigned Candidate |
 | 43 | [PBI-043](pbis/PBI-043.md) Concurrent Operational Sessions — Access Foundation Remediation | Identity / Security / Persistence / Quality | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed; PR #47/#48, CI/Preview PASS |
 
@@ -123,7 +123,7 @@ SPRINT-02 están cerrados; SPRINT-03 queda cerrado al integrar este avance.
   `40684d7554cdf02551f941e5e3f0beabbe563125` y CI exacta de `main`
   `34623060504` GREEN.
 - PBI-040/PBI-041/PBI-042 conservan IDs únicos y documentos propios; no pueden
-  reutilizarse. No existe PBI activo. PBI-041 queda `Done candidate`; PBI-042 no
+  reutilizarse. No existe PBI activo. PBI-041 queda `Done`; PBI-042 no
   está seleccionado. Advanced Supplier Reconciliation es un outcome diferido
   sin ID, selección ni readiness.
 - PBI-043 materializa ADR-014 como remediation independiente y está `Done`

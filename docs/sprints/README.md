@@ -9,7 +9,7 @@ candidate`.
 **Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed`,
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
 [SPRINT-02](sprint-02/SPRINT_GOAL.md) `Closed` y
-[SPRINT-03](sprint-03/SPRINT_GOAL.md) `Closed candidate`.
+[SPRINT-03](sprint-03/SPRINT_GOAL.md) `Closed`.
 **Sprint activo:** SPRINT-03 — Price List Foundation permanece como puntero
 documental hasta integrar su cierre. PBI-040 es `Done`, PBI-041 `Done
 candidate`; no existe Current PBI ni Next candidate; WIP `0/1`.
@@ -67,9 +67,9 @@ está `Done` y el Sprint `Closed`. Production sigue sin autorización.
 
 ## SPRINT-03
 
-SPRINT-03 ejecutó Price List Foundation. PBI-040 es `Done` y PBI-041 queda
-`Done candidate` después de verificación, integración, Preview PASS y la
-reconciliación de data scope Owner/local versus Preview. No existe
+SPRINT-03 ejecutó Price List Foundation. PBI-040 y PBI-041 están `Done` después
+de verificación, integración, Preview PASS y la reconciliación de data scope
+Owner/local versus Preview. No existe
 Current PBI ni Next candidate. PBI-042 no perteneció al compromiso.
 
 - [Objetivo](sprint-03/SPRINT_GOAL.md)

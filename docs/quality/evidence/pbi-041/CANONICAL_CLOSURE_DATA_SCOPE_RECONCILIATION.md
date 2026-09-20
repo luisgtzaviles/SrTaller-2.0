@@ -64,7 +64,6 @@ and [post-deploy closure evidence](POST_DEPLOY_CLOSURE.md).
 
 ## Closure consequence
 
-The data-scope blocker is resolved without weakening either gate. PBI-041
-remains `Done candidate` and `Released: NO` until the governed canonical closure
-documentation is integrated with its own exact-main CI. Production remains
-unchanged.
+The data-scope blocker is resolved without weakening either gate. PBI-041 is
+`Done` after PR #58 `cb1dca3` and exact-main CI `35544551782`; `Released: NO`.
+Production remains unchanged.

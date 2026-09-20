@@ -77,5 +77,7 @@ Preview. No Owner data was copied, seeded, reset or written to Preview. See
 - Exact-main CI: `PASS`.
 - Preview deployment, health and smoke: `PASS`.
 - Owner standing authorization covered final closure after all gates passed.
-- PBI-041: `Done candidate` until this closure PR is integrated.
+- Canonical data-scope closure: PR #58 `cb1dca3`; exact-main CI `35544551782`
+  passed run-1, run-2 and comparison.
+- PBI-041: `Done`; `Released: NO`.
 - Released: `NO`.
