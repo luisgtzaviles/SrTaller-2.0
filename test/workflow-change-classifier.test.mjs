@@ -126,7 +126,7 @@ test('DOCS_ONLY policy consistency follows the current Sprint and PBI pointers',
   assert.deepEqual(result, {
     status: 'PASS',
     sprint: 'SPRINT-03',
-    currentPbi: 'PBI-041',
+    currentPbi: 'NONE',
   });
 });
 
