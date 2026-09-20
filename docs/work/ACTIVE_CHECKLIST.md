@@ -1,15 +1,30 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Independent Formal Re-Verification
+Milestone / Functional Goal: PBI-041 — Preview SPA direct-route remediation
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: PBI-041
-Status: NEW INDEPENDENT FORMAL RE-VERIFICATION PASS. FV2-041-001 is resolved and the new candidate is frozen locally; no remote action has occurred.
+Status: REMEDIATION IN PROGRESS after Preview exposed 404 on direct navigation/reload for two PBI-041 SPA routes. Product, API, data and Production are unchanged.
 WIP: 1/1
-Progress: 8 / 8 FV2-041-001 remediation and Formal Re-Verification blocks complete.
-Current: Candidate frozen locally after evidence reconciliation.
-Next: Resume the master governed delivery at push / PR update only under its separate Owner authority.
-Blocked: NONE for local Formal Re-Verification. Owner data, AviCell and the preexisting .DS_Store remain protected; remote actions were not executed.
+Progress: 3 / 6 Preview remediation blocks complete.
+Current: Promote the frozen corrective candidate through PR, exact-HEAD CI and independent review.
+Next: Integrate after every governed gate passes, then redeploy and prove Preview.
+Blocked: NONE. Owner data, AviCell, Production and the preexisting .DS_Store remain protected.
 Last updated: 2026-09-19 MST
+
+## Current checkpoint — Preview SPA direct-route remediation
+
+- [x] Reproduce and classify the defect: internal navigation works, but direct
+  navigation/reload returns 404 for Bulk Catalog Composer and Catalog Field
+  Policy because both exact paths are absent from the bounded SPA allowlist.
+- [x] Add only the two PBI-041 paths to the static surface contract and protect
+  them in focused, smoke and OCI checks.
+- [x] Pass focused tests, typecheck, build, architecture and diff checks.
+- [~] Freeze a corrective candidate and complete the governed PR, CI and exact
+  HEAD review cycle without reusing stale evidence.
+- [ ] Integrate only with the applicable Owner authority and exact-main CI
+  GREEN.
+- [ ] Redeploy Preview, prove both direct routes/reloads return the SPA, and
+  reconcile PBI-041 closure state without touching Production.
 
 ## Current checkpoint — Formal Re-Verification after REVIEW-041-001
 

@@ -68,11 +68,13 @@ child.stderr.on('data', (chunk) => {
 
 try {
   await waitForReady(baseUrl);
-  const [root, spa, priceList, catalogAdministration, catalog, provenance, live, ready, apiUnknown, routeUnknown] = await Promise.all([
+  const [root, spa, priceList, bulkCatalogComposer, catalogAdministration, catalogFieldPolicy, catalog, provenance, live, ready, apiUnknown, routeUnknown] = await Promise.all([
     fetch(`${baseUrl}/`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/reparaciones`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/listas/precios`, { headers: { Accept: 'text/html' } }),
+    fetch(`${baseUrl}/listas/precios/carga-masiva`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/configuracion/catalogos?module=price-list`, { headers: { Accept: 'text/html' } }),
+    fetch(`${baseUrl}/configuracion/catalogos/lista-de-precios/campos-de-carga`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/__internal/ui-catalog`, { headers: { Accept: 'text/html' } }),
     fetch(`${baseUrl}/runtime-provenance.json`, { cache: 'no-store' }),
     fetch(`${baseUrl}/livez`),
@@ -100,10 +102,18 @@ try {
   assert.equal(priceList.headers.get('cache-control'), 'no-store');
   assert.equal(priceList.headers.get('etag'), root.headers.get('etag'));
   assert.equal(await priceList.text(), rootHtml);
+  assert.equal(bulkCatalogComposer.status, 200);
+  assert.equal(bulkCatalogComposer.headers.get('cache-control'), 'no-store');
+  assert.equal(bulkCatalogComposer.headers.get('etag'), root.headers.get('etag'));
+  assert.equal(await bulkCatalogComposer.text(), rootHtml);
   assert.equal(catalogAdministration.status, 200);
   assert.equal(catalogAdministration.headers.get('cache-control'), 'no-store');
   assert.equal(catalogAdministration.headers.get('etag'), root.headers.get('etag'));
   assert.equal(await catalogAdministration.text(), rootHtml);
+  assert.equal(catalogFieldPolicy.status, 200);
+  assert.equal(catalogFieldPolicy.headers.get('cache-control'), 'no-store');
+  assert.equal(catalogFieldPolicy.headers.get('etag'), root.headers.get('etag'));
+  assert.equal(await catalogFieldPolicy.text(), rootHtml);
   assert.equal(catalog.status, 200);
   assert.equal(catalog.headers.get('cache-control'), 'no-store');
   assert.equal(catalog.headers.get('etag'), root.headers.get('etag'));
@@ -127,8 +137,10 @@ try {
   process.stdout.write(`${JSON.stringify({
     apiUnknown: apiUnknown.status,
     asset: asset.status,
+    bulkCatalogComposer: bulkCatalogComposer.status,
     catalog: catalog.status,
     catalogAdministration: catalogAdministration.status,
+    catalogFieldPolicy: catalogFieldPolicy.status,
     livez: live.status,
     readyz: ready.status,
     root: root.status,

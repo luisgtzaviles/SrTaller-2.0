@@ -300,11 +300,13 @@ try {
   const port = Number(running.NetworkSettings.Ports['3000/tcp'][0].HostPort);
   await waitForReady(port);
 
-  const [root, spa, priceList, catalogAdministration, provenance, live, ready, apiUnknown, unknown] = await Promise.all([
+  const [root, spa, priceList, bulkCatalogComposer, catalogAdministration, catalogFieldPolicy, provenance, live, ready, apiUnknown, unknown] = await Promise.all([
     request(port, '/'),
     request(port, '/reparaciones'),
     request(port, '/listas/precios'),
+    request(port, '/listas/precios/carga-masiva'),
     request(port, '/configuracion/catalogos?module=price-list'),
+    request(port, '/configuracion/catalogos/lista-de-precios/campos-de-carga'),
     request(port, '/runtime-provenance.json'),
     request(port, '/livez'),
     request(port, '/readyz'),
@@ -318,8 +320,12 @@ try {
   assert(spa.body === root.body, '/reparaciones must return the SPA entrypoint');
   assert(priceList.status === 200, '/listas/precios must return HTTP 200');
   assert(priceList.body === root.body, '/listas/precios must return the SPA entrypoint');
+  assert(bulkCatalogComposer.status === 200, '/listas/precios/carga-masiva must return HTTP 200');
+  assert(bulkCatalogComposer.body === root.body, '/listas/precios/carga-masiva must return the SPA entrypoint');
   assert(catalogAdministration.status === 200, '/configuracion/catalogos must return HTTP 200');
   assert(catalogAdministration.body === root.body, '/configuracion/catalogos must return the SPA entrypoint');
+  assert(catalogFieldPolicy.status === 200, '/configuracion/catalogos/lista-de-precios/campos-de-carga must return HTTP 200');
+  assert(catalogFieldPolicy.body === root.body, '/configuracion/catalogos/lista-de-precios/campos-de-carga must return the SPA entrypoint');
   assert(provenance.status === 200, '/runtime-provenance.json must return HTTP 200');
   assert(provenance.headers['cache-control'] === 'no-store', 'Runtime provenance must not be cached');
   assert(provenance.body?.role === 'frontend', 'Frontend provenance role is missing');

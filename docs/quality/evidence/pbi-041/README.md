@@ -1,11 +1,12 @@
 # PBI-041 — Evidence Index
 
-PBI-041 has a new independent Formal Re-Verification **PASS** after the local
-`FV2-041-001` harness remediation. All 29 acceptance criteria and the single
-new `verify:full` campaign passed, including owner-scoped 8/8 and composite
-17/17. The earlier FAIL remains preserved historical evidence. The new
-candidate is frozen locally; remote promotion, integration, deployment and
-release remain separate and were not executed here.
+PBI-041 was integrated by PR #55 as
+`b54a095241891807e8b399e12ef783d72f8982b5`; exact-main CI `35458836014`
+passed. The first Preview deployment preserved that exact provenance and
+completed the governed migrations, but exposed a bounded delivery finding:
+direct navigation/reload returned `404` for two new SPA routes even though
+internal navigation worked. A corrective candidate is in progress; PBI-041
+remains in review and is not `Done` or `Released` while that proof is pending.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Independent Formal Verification](FORMAL_VERIFICATION.md)
@@ -13,6 +14,7 @@ release remain separate and were not executed here.
 - [FV2-041-001 Owner-scoped PostgreSQL Remediation](FV2_041_001_OWNER_SCOPED_POSTGRESQL_REMEDIATION.md)
 - [Independent Formal Re-Verification after FV2-041-001](FORMAL_REVERIFICATION_FV2_041_001.md)
 - [Review Remediation 1](REVIEW_REMEDIATION_1.md)
+- [Preview SPA direct-route remediation](PREVIEW_SPA_ROUTE_REMEDIATION.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)
 - [Test Strategy](TEST_STRATEGY.md)
