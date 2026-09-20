@@ -3,13 +3,13 @@
 Milestone / Functional Goal: PBI-041 — Canonical closure after Preview PASS
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: NONE
-Status: BLOCKED — canonical closure candidate full verification failed only at the PBI-041 10k publish budget. Product integration and Preview remain PASS; Released: NO.
+Status: FOLLOW-UP PATCH PROMOTION REQUIRED — the local performance patch passed its fresh canonical full verification; main and Preview remain at their prior governed revision. Released: NO.
 WIP: 0/1
-Progress: 8 / 10 closure blocks complete.
-Current: Stop remote promotion after the mandatory local gate failure; preserve exact evidence and candidate state.
-Next: Diagnose/remediate the 10k publish over-budget result under a new governed candidate, then execute a fresh authoritative full gate before any push.
-Blocked: Stage 7 PBI-041 PostgreSQL measured 32,498.7 ms against the 30,000 ms publish budget. No rerun was used to overwrite the failure. Owner data, AviCell, Production and the preexisting .DS_Store remain protected.
-Last updated: 2026-09-19 MST
+Progress: 9 / 10 closure blocks complete.
+Current: Preserve the isolated `fix/pbi-041-publish-determinism` local candidate after its single fresh `verify:full` PASS; do not alter main, Preview, Owner data or Production.
+Next: Promote the performance patch through a governed PR, CI, independent review, ordinary merge and Dokploy Preview redeploy; only then reconcile the closure documentation against the integrated code.
+Blocked: No technical gate remains. The required governed patch promotion is pending; the preexisting Owner `.DS_Store` remains untracked and protected.
+Last updated: 2026-09-20 MST
 
 ## Current checkpoint — PBI-041 canonical closure
 
@@ -29,10 +29,13 @@ Last updated: 2026-09-19 MST
   corrective deploy has no migration, data or Owner-state mutation.
 - [x] Reconcile PBI, Sprint, roadmap, backlog, evidence and changelog as a
   documentation-only closure candidate.
-- [!] Pass documentation links, consistency, secret scan and diff checks. The
-  Current PBI contract and base gate pass, but the required full pipeline stops
-  at Stage 7 because 10k publish measured `32,498.7 ms / 30,000 ms`; cleanup and
-  final fingerprint pass.
+- [x] Diagnose the 10k publish over-budget result: aggregate timing isolated
+  sequential bulk write round-trips; a bounded batch-size remediation passed the
+  single fresh `verify:full` Stage 0–13 run, including `2,058.1 ms / 30,000 ms`
+  at Stage 7, cleanup and final fingerprint.
+- [~] Promote the performance patch through its separate governed code path;
+  canonical closure documentation remains intentionally unpublished until the
+  code is integrated and Preview is redeployed.
 - [ ] Promote the governed closure PR and require exact-main CI GREEN.
 
 Closure outcome after integration: PBI-041 `Done`, `Released: NO`; SPRINT-03
