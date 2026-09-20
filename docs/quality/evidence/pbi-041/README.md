@@ -16,6 +16,7 @@ canonical closure documentation; `Released: NO` and Production is unchanged.
 - [Review Remediation 1](REVIEW_REMEDIATION_1.md)
 - [Preview SPA direct-route remediation](PREVIEW_SPA_ROUTE_REMEDIATION.md)
 - [Post-deploy closure evidence](POST_DEPLOY_CLOSURE.md)
+- [Preview activation and provenance remediation](PREVIEW_ACTIVATION_PROVENANCE_REMEDIATION.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)
 - [Test Strategy](TEST_STRATEGY.md)

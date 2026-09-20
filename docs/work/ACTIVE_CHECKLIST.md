@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Canonical closure after Preview PASS
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: NONE
-Status: FOLLOW-UP PATCH PROMOTION REQUIRED — the local performance patch passed its fresh canonical full verification; main and Preview remain at their prior governed revision. Released: NO.
+Status: PREVIEW ACTIVATION REMEDIATED — Preview now serves the exact PR #57 revision with matching frontend/backend provenance, health and schema. Canonical closure verification remains intentionally not started. Released: NO.
 WIP: 0/1
-Progress: 9 / 10 closure blocks complete.
-Current: Preserve the isolated `fix/pbi-041-publish-determinism` local candidate after its single fresh `verify:full` PASS; do not alter main, Preview, Owner data or Production.
-Next: Promote the performance patch through a governed PR, CI, independent review, ordinary merge and Dokploy Preview redeploy; only then reconcile the closure documentation against the integrated code.
-Blocked: No technical gate remains. The required governed patch promotion is pending; the preexisting Owner `.DS_Store` remains untracked and protected.
+Progress: 10 / 11 closure blocks complete.
+Current: PR #57 merged ordinarily as `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; exact-main CI `35539833596` passed classification, run-1, run-2 and comparison. Preview's active healthy container `f801cb60c0e7` reports that exact SHA from `/livez`, `/readyz` and frontend runtime provenance.
+Next: Resume canonical closure verification and documentation reconciliation only under the next governed Owner instruction.
+Blocked: No Preview activation blocker. The former mismatch was stale `SR_BUILD_GIT_SHA` build metadata (`39ece042...`) in Preview configuration; it was reconciled to `9b7a83d...` and proven by health, provenance, schema and direct-route reload checks. The preexisting Owner `.DS_Store` remains untracked and protected.
 Last updated: 2026-09-20 MST
 
 ## Current checkpoint — PBI-041 canonical closure
@@ -33,9 +33,15 @@ Last updated: 2026-09-20 MST
   sequential bulk write round-trips; a bounded batch-size remediation passed the
   single fresh `verify:full` Stage 0–13 run, including `2,058.1 ms / 30,000 ms`
   at Stage 7, cleanup and final fingerprint.
-- [~] Promote the performance patch through its separate governed code path;
-  canonical closure documentation remains intentionally unpublished until the
-  code is integrated and Preview is redeployed.
+- [x] Promote the performance patch through its separate governed code path:
+  PR #57 passed authoritative CI `35538966478`, received independent
+  `empresasgalatech` approval, merged ordinarily as `9b7a83d`, and its
+  exact-main CI `35539833596` passed classification, run-1, run-2 and
+  comparison.
+- [x] Activate and prove the governed Preview revision: stale Preview build
+  metadata was reconciled, controlled redeploy completed, and active
+  frontend/backend provenance now reports exact clean `9b7a83d`; health,
+  75-migration compatibility and direct-route reload pass.
 - [ ] Promote the governed closure PR and require exact-main CI GREEN.
 
 Closure outcome after integration: PBI-041 `Done`, `Released: NO`; SPRINT-03
