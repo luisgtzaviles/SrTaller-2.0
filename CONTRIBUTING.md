@@ -73,18 +73,17 @@ riesgo de forma fail-closed y aplicar la
 vida corta. La política operativa, su relación con Preview y el tratamiento
 fail-closed de `DEC051-C02` se describen en la
 [política de ramas](docs/delivery/BRANCH_POLICY.md). La protección técnica de
-`main` permanece pendiente, por lo que su existencia no debe inferirse. Este
-documento no autoriza por sí solo commit, push, merge, deploy ni release.
+`main` permanece pendiente, por lo que su existencia no debe inferirse. La
+[delegación Owner de delivery](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md#autoridad-de-delivery-y-review)
+debe ser explícita y acotada; este documento por sí solo no crea esa autoridad.
 
 ## Condiciones abiertas
 
 - PBI-024 fue acotado a Trusted Station Runtime Context. La PR draft histórica
   #3 sólo puede usarse como fuente de recuperación selectiva; no conserva
   autorización ni se integra completa.
-- PBI-030 está `Done`; Sprint 01 está `Closed`. SPRINT-02 está `Active` con
-  PBI-025/PBI-034 `Done`, PBI-026 Contextual Authorization `Done candidate` y
-  G4 `PASS candidate`; Current PBI es `NONE`, WIP `0/1`. PBI-028 está
-  seleccionado como siguiente candidato y no ha iniciado.
+- SPRINT-03 está `Closed`; PBI-041 está `Done`, `Released: NO`; Current PBI y
+  Next candidate son `NONE`, WIP `0/1`. PBI-042 no está iniciado.
 - `DEC051-C02`: materializar y demostrar protección de `main`.
 - `DEC063-C02`: materializar clasificación de riesgo.
 - `DEC063-C08`: materializar waivers y excepciones.

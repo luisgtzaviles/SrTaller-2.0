@@ -11,19 +11,19 @@ producto y condiciones pendientes antes de la siguiente iteración.
 
 **Estado:** Sprint 00, Sprint 01 y SPRINT-02 `Closed`; PBI-030, PBI-027,
 PBI-029, PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos.
-SPRINT-03 está `Closed candidate`.
+SPRINT-03 está `Closed`.
 **Fase:** Pricing Catalog; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039/
-PBI-043 están `Done` y G3–G5 `PASS`. PBI-040 es `Done`; PBI-041 es `Done
-candidate`; no existe Current PBI, WIP es `0/1` y Next candidate es `NONE`.
+PBI-043 están `Done` y G3–G5 `PASS`. PBI-040 y PBI-041 están `Done`; no existe
+Current PBI, WIP es `0/1` y Next candidate es `NONE`.
 PBI-042 no está seleccionado ni iniciado.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
 **Baseline integrada con CI registrada:** PBI-041 fue integrado por PR #55,
 remediado por PR #56 y recibió la remediación de determinismo por PR #57.
 `main` `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca` pasó exact-main CI
-`35539833596`; Preview PASS acredita su runtime/seed propio y Owner/local
-acredita AviCell read-only. Es `Done candidate`, no `Released`, hasta integrar
-el cierre documental.
+`35539833596`; PR #58 `cb1dca3` pasó exact-main CI `35544551782`. Preview PASS
+acredita su runtime/seed propio y Owner/local acredita AviCell read-only.
+PBI-041 es `Done`; `Released: NO`.
 Véase [Current Repository State](CURRENT_STATE.md).
 
 ## Revisión dirigida de Sprint 00
@@ -132,6 +132,7 @@ separados.
 ## Entrega
 
 - [Workflow canónico de desarrollo, delivery y operación](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
+- [Reconciliación de workflow posterior a PBI-041](delivery/WORKFLOW_RECONCILIATION_2026-09.md)
 - [Desarrollo local](delivery/LOCAL_DEVELOPMENT.md)
 - [Workflow de desarrollo](delivery/DEVELOPMENT_WORKFLOW.md)
 - [Política de ramas](delivery/BRANCH_POLICY.md)

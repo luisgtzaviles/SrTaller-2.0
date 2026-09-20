@@ -1980,5 +1980,5 @@ product capability rather than failing static delivery.
 
 No new migration, Owner-data mutation, Catalog mutation, SupplierVersion,
 domain/API/security semantic change, rollback or Production deployment
-occurred. See [Post-deploy closure evidence](POST_DEPLOY_CLOSURE.md). PBI-041 is
-`Done candidate` until the canonical closure PR is integrated; `Released: NO`.
+occurred. See [Post-deploy closure evidence](POST_DEPLOY_CLOSURE.md). PR #58
+`cb1dca3` passed exact-main CI `35544551782`; PBI-041 is `Done`; `Released: NO`.

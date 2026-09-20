@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-03.
-- **Estado:** Closed candidate — PBI-040 Done; PBI-041 Done candidate.
+- **Estado:** Closed — PBI-040 Done; PBI-041 Done.
 - **Periodo:** TBD.
 - **PBI actual:** NONE.
 - **WIP:** 0/1.
@@ -28,7 +28,7 @@ sin mezclar inventario, reparaciones o Caja.
 
 1. PBI-040 — core vertical y búsqueda rápida — `Committed / Done / Released: NO`.
 2. PBI-041 — Initial Bulk Catalog Composer + Versioned Supplier Intake —
-   `Committed / Done candidate / Released: NO`.
+   `Committed / Done / Released: NO`.
 
 PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
 

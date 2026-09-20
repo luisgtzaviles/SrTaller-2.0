@@ -1,6 +1,6 @@
 # SPRINT-03 — Review
 
-- **Estado:** Complete candidate; cierre documental pendiente de integración.
+- **Estado:** Complete; PBI-041 canonical closure integrated.
 - **Fecha:** 2026-09-19 para el cierre PBI-041.
 - **Resultado:** PBI-040 Owner Accepted, integrado y validado en Preview;
   cierre PR #52 / `a060494` y exact-main CI `34814070839` PASS; `Done`,
@@ -17,5 +17,5 @@ y exact-main CI. Dokploy Preview desplegó `9b7a83d` con health/provenance PASS;
 Composer, acceso directo y reload quedaron verificados y rutas desconocidas
 siguen fail-closed. La reconciliación posterior preserva AviCell como gate
 read-only Owner/local y Preview como gate de release con seed mínimo. Production
-no cambió. PBI-041 queda `Done candidate`, `Released: NO`; no existe Current
-PBI ni selección de PBI-042.
+no cambió. PR #58 `cb1dca3` y exact-main CI `35544551782` dejan PBI-041 `Done`,
+`Released: NO`; no existe Current PBI ni selección de PBI-042.

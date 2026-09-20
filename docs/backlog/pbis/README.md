@@ -2,10 +2,10 @@
 
 ## Estado del documento
 
-**Estado:** Índice reconciliado con `main` funcional `9b7a83d` y CI exacta
-`35539833596`. SPRINT-02 está `Closed` y PBI-043 `Done`. SPRINT-03 está
-`Closed candidate`: PBI-040 es `Done`, PBI-041 `Done candidate`, no existe
-Current PBI y PBI-042 sigue Planned/Unassigned. WIP `0/1`.
+**Estado:** Índice reconciliado con el cierre PBI-041: PR #58 `cb1dca3` y CI
+exacta `35544551782`. SPRINT-02 y SPRINT-03 están `Closed`; PBI-040 y PBI-041
+están `Done`, no existe Current PBI y PBI-042 sigue Planned/Unassigned. WIP
+`0/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,
 PBI-033, PBI-025, PBI-034, PBI-026 y PBI-028 tienen `Large` mediante T-shirt
 sizing; PBI-041 tiene `XL — agreed` para el outcome inicial; los demás casos
@@ -55,7 +55,7 @@ conservan TBD.
 | [PBI-038](PBI-038.md) | Timezone Foundation Integration and Hardening | Done; Released: NO; PR #40 and exact-main CI GREEN |
 | [PBI-039](PBI-039.md) | Customer Minimum + New Repair Classic 2.0 | Done; PR #45 + exact-main CI `34623060504`; Released: NO |
 | [PBI-040](PBI-040.md) | Catalog & Pricing Core + Fast Price Lookup | Done; Released: NO |
-| [PBI-041](PBI-041.md) | Initial Bulk Catalog Composer + Versioned Supplier Intake | Done candidate; Released: NO |
+| [PBI-041](PBI-041.md) | Initial Bulk Catalog Composer + Versioned Supplier Intake | Done; Released: NO |
 | [PBI-042](PBI-042.md) | Catalog Item Images | Planned / Unassigned |
 | [PBI-043](PBI-043.md) | Concurrent Operational Sessions — Access Foundation Remediation | Done; PR #47/#48, CI y Preview PASS; Released: NO |
 
@@ -63,5 +63,5 @@ La vista de orden y clasificación se mantiene en [PRODUCT_BACKLOG.md](../PRODUC
 
 ## Próxima revisión
 
-PBI-041 espera sólo el merge/CI de su cierre documental. No iniciar PBI-042 u
-otro PBI ni autorizar Production por inferencia.
+PBI-041 está cerrado. No iniciar PBI-042 u otro PBI ni autorizar Production por
+inferencia.

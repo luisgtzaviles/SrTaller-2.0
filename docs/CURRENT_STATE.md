@@ -2,19 +2,19 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-041 es `Done candidate`. PR #55 integró el producto, PR #56
+- **Estado:** PBI-041 es `Done`. PR #55 integró el producto, PR #56
   corrigió las rutas SPA y PR #57 integró el determinismo de publish como
   `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; exact-main CI `35539833596`
   quedó GREEN. Dokploy Preview activo, health, provenance, navegación directa y
-  reload quedan GREEN sobre ese SHA clean. Este cierre documental materializa
-  `Done` al integrarse con CI exacta; `Released: NO`. PBI-040 permanece `Done`,
-  `Released: NO`.
+  reload quedan GREEN sobre ese SHA clean. PR #58 reconcilió el data scope como
+  `cb1dca3`; su CI exact-main `35544551782` quedó GREEN. `Released: NO`.
+  PBI-040 permanece `Done`, `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
   `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
 - **Última CI PBI-041 exact-main registrada:**
   [`35539833596`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/35539833596),
   `SUCCESS` sobre `9b7a83d` con run-1, run-2 y comparison PASS.
-- **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Closed candidate`.
+- **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Closed`.
 - **PBI actual:** `NONE`.
 - **WIP:** `0/1`.
 - **PBI-040:** PR #49/#50/#51 y cierre PR #52 integrados; `Done`.
@@ -33,7 +33,7 @@ desconocidas fail-closed y health pasan con 75 migraciones/0 pending. La
 reconciliación de data scope preserva los dos gates: AviCell se verifica
 read-only en Owner/local y Preview acredita release/runtime con seed mínimo; no
 se copiaron ni mutaron datos. Dominio, API, DB Owner y Production no cambiaron.
-El PBI queda `Done candidate` hasta integrar este avance documental y
+PR #58 ya materializó la reconciliación documental; PBI-041 es `Done` y
 `Released: NO`.
 
 El review remoto de PR #55 encontró `REVIEW-041-001`, una ventana de
@@ -349,11 +349,11 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 | Elemento | Estado vigente |
 |---|---|
-| Sprint | SPRINT-03 — Closed candidate |
+| Sprint | SPRINT-03 — Closed |
 | Current PBI | NONE |
 | WIP | 0/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Done candidate; PR #55/#56/#57, exact-main CI, Owner/local data integrity and Preview release PASS; Released NO |
+| PBI-041 | Done; PR #55/#56/#57/#58, exact-main CI, Owner/local data integrity and Preview release PASS; Released NO |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `9b7a83d` PASS; seed mínimo es autoridad de release, no réplica Owner |
@@ -361,8 +361,7 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 ## Próxima acción
 
-Validar e integrar el cierre documental gobernado de PBI-041. No se inicia un
-nuevo PBI; la decisión de data scope mantiene Owner/local como autoridad
-read-only de AviCell y Preview como autoridad de release. La integración sigue
-requiriendo el workflow de PR, CI y autorización Owner aplicable; Production
-permanece fuera de alcance.
+No existe PBI actual ni siguiente candidato seleccionado. La reconciliación de
+workflow posterior a PBI-041 está autorizada como governance independiente; no
+inicia producto. Owner/local conserva la autoridad read-only de AviCell y
+Preview la de release. Production permanece fuera de alcance.
