@@ -1,17 +1,17 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Preview SPA direct-route remediation
+Milestone / Functional Goal: PBI-041 — Canonical closure after Preview PASS
 Sprint: SPRINT-03 — Price List Foundation
-Current PBI: PBI-041
-Status: REMEDIATION IN PROGRESS after Preview exposed 404 on direct navigation/reload for two PBI-041 SPA routes. Product, API, data and Production are unchanged.
-WIP: 1/1
-Progress: 3 / 6 Preview remediation blocks complete.
-Current: Promote the frozen corrective candidate through PR, exact-HEAD CI and independent review.
-Next: Integrate after every governed gate passes, then redeploy and prove Preview.
-Blocked: NONE. Owner data, AviCell, Production and the preexisting .DS_Store remain protected.
-Last updated: 2026-09-19 MST
+Current PBI: NONE
+Status: CANONICAL CLOSURE CANDIDATE READY FOR PUSH — data-scope authority and documentation validation pass. Released: NO.
+WIP: 0/1
+Progress: 13 / 14 closure blocks complete.
+Current: Governed closure documentation commit `261ea36` is ready locally.
+Next: Push the closure candidate and continue through its PR/CI workflow. Do not start another PBI.
+Blocked: None. The prior Preview/AviCell mismatch is preserved as history and resolved by Owner decision: Preview is minimal seed; Owner/local is the AviCell integrity authority. The preexisting Owner `.DS_Store` remains untracked and protected.
+Last updated: 2026-09-20 MST
 
-## Current checkpoint — Preview SPA direct-route remediation
+## Current checkpoint — PBI-041 canonical closure
 
 - [x] Reproduce and classify the defect: internal navigation works, but direct
   navigation/reload returns 404 for Bulk Catalog Composer and Catalog Field
@@ -19,12 +19,41 @@ Last updated: 2026-09-19 MST
 - [x] Add only the two PBI-041 paths to the static surface contract and protect
   them in focused, smoke and OCI checks.
 - [x] Pass focused tests, typecheck, build, architecture and diff checks.
-- [~] Freeze a corrective candidate and complete the governed PR, CI and exact
-  HEAD review cycle without reusing stale evidence.
-- [ ] Integrate only with the applicable Owner authority and exact-main CI
-  GREEN.
-- [ ] Redeploy Preview, prove both direct routes/reloads return the SPA, and
-  reconcile PBI-041 closure state without touching Production.
+- [x] Freeze corrective candidate `2e165487`, pass candidate CI `35461008759`
+  and obtain genuine independent APPROVE on that exact HEAD.
+- [x] Integrate PR #56 ordinarily as `39ece042`, then pass exact-main CI
+  `35490480554` with run-1, run-2 and comparison GREEN.
+- [x] Redeploy Dokploy Preview at exact clean SHA `39ece042`; health, provenance,
+  direct routes, reload and unknown-route fail-closed proof pass.
+- [x] Preserve 75 migrations/0 pending from the application deployment; the
+  corrective deploy has no migration, data or Owner-state mutation.
+- [x] Reconcile PBI, Sprint, roadmap, backlog, evidence and changelog as a
+  documentation-only closure candidate.
+- [x] Diagnose the 10k publish over-budget result: aggregate timing isolated
+  sequential bulk write round-trips; a bounded batch-size remediation passed the
+  single fresh `verify:full` Stage 0–13 run, including `2,058.1 ms / 30,000 ms`
+  at Stage 7, cleanup and final fingerprint.
+- [x] Promote the performance patch through its separate governed code path:
+  PR #57 passed authoritative CI `35538966478`, received independent
+  `empresasgalatech` approval, merged ordinarily as `9b7a83d`, and its
+  exact-main CI `35539833596` passed classification, run-1, run-2 and
+  comparison.
+- [x] Activate and prove the governed Preview revision: stale Preview build
+  metadata was reconciled, controlled redeploy completed, and active
+  frontend/backend provenance now reports exact clean `9b7a83d`; health,
+  75-migration compatibility and direct-route reload pass.
+- [x] Run the single fresh canonical verification campaign: base `verify`
+  passed 940/0/30 and `verify:full` passed Stages 0–13, PostgreSQL material,
+  cleanup and fingerprint; PBI-041 10k publish measured 2,068.5 ms.
+- [x] Reconcile the final Owner-data integrity snapshot: the active Preview
+  database is a materially smaller seed scope; the Owner rejected copying or
+  seeding it and established Owner/local as the read-only AviCell authority.
+  Both Owner-data integrity and Preview release gates pass.
+- [ ] Promote the governed closure PR and require exact-main CI GREEN.
+
+Closure outcome after integration: PBI-041 `Done`, `Released: NO`; SPRINT-03
+`Closed`; Current PBI `NONE`; WIP `0/1`; Next candidate `NONE`; Production
+unchanged.
 
 ## Current checkpoint — Formal Re-Verification after REVIEW-041-001
 

@@ -9,19 +9,21 @@ producto y condiciones pendientes antes de la siguiente iteración.
 
 ## Estado del documento
 
-**Estado:** Sprint 00 y Sprint 01 `Closed`; PBI-030, PBI-027, PBI-029,
-PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos. SPRINT-02 está
-`Closed` y SPRINT-03 `Active`.
+**Estado:** Sprint 00, Sprint 01 y SPRINT-02 `Closed`; PBI-030, PBI-027,
+PBI-029, PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos.
+SPRINT-03 está `Closed candidate`.
 **Fase:** Pricing Catalog; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039/
-PBI-043 están `Done` y G3–G5 `PASS`. PBI-040 es `Done`; no existe
-Current PBI y WIP es `0/1`. PBI-041 está Ready documentalmente pero no seleccionado/iniciado;
-PBI-042 no está iniciado.
+PBI-043 están `Done` y G3–G5 `PASS`. PBI-040 es `Done`; PBI-041 es `Done
+candidate`; no existe Current PBI, WIP es `0/1` y Next candidate es `NONE`.
+PBI-042 no está seleccionado ni iniciado.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
-**Baseline integrada con CI registrada:** PBI-040 fue integrado/remediado por
-PR #49/#50/#51 en `09e14c89892f5770977c5028a899714b7a30d6d5`; CI exacta
-`34809054770` y Preview PASS. Su cierre PR #52 se integró como `a060494` con
-exact-main CI `34814070839` PASS. Es `Done`, no `Released`.
+**Baseline integrada con CI registrada:** PBI-041 fue integrado por PR #55,
+remediado por PR #56 y recibió la remediación de determinismo por PR #57.
+`main` `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca` pasó exact-main CI
+`35539833596`; Preview PASS acredita su runtime/seed propio y Owner/local
+acredita AviCell read-only. Es `Done candidate`, no `Released`, hasta integrar
+el cierre documental.
 Véase [Current Repository State](CURRENT_STATE.md).
 
 ## Revisión dirigida de Sprint 00

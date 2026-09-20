@@ -4,6 +4,19 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ## [Unreleased]
 
+### PBI-041 — Bulk Catalog Composer
+
+- PBI-041 completó Formal Re-Verification, integración del producto por PR #55,
+  remediación acotada del acceso/reload SPA por PR #56 y determinismo de publish
+  por PR #57 (`9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`, exact-main CI
+  `35539833596`). Los CI cerraron run-1, run-2 y comparison GREEN. Dokploy
+  Preview desplegó el SHA exacto limpio; health, provenance, Composer, acceso
+  directo, reload y rutas desconocidas fail-closed pasaron. La reconciliación
+  de data scope mantiene AviCell read-only en Owner/local y Preview como seed
+  release authority, sin copiar ni mutar datos. El cierre documental deja
+  PBI-041 `Done candidate`, SPRINT-03 `Closed candidate`, Current PBI `NONE`,
+  WIP `0/1`, Next candidate `NONE` y `Released: NO`. Production no cambió.
+
 ### Timezone Foundation
 
 - Integrado PBI-038 — Timezone Foundation Integration and Hardening — mediante

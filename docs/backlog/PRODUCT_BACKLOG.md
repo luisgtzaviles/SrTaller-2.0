@@ -2,18 +2,18 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado con `main` `a060494` y CI exacta `34814070839`.
-PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está `Active`; PBI-040 es
-`Done`, `Released: NO`. No existe PBI actual y WIP es `0/1`.
-PBI-041 alcanzó `Ready — implementation not authorized` como Candidate; PBI-042
-permanece `Planned/Unassigned`.
+**Estado:** Reconciliado con `main` `9b7a83d` y CI exacta `35539833596`.
+PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está `Closed candidate`;
+PBI-040 es `Done` y PBI-041 `Done candidate`, ambos `Released: NO`. No existe
+PBI actual, WIP es `0/1`, Next candidate es `NONE` y PBI-042 permanece
+`Planned/Unassigned`.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
 y PBI-026 `Large` mediante T-shirt sizing; PBI-028 también es `Large`; las
 demás permanecen TBD salvo PBI-041 `XL — agreed` para su outcome inicial.
 **Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 y
-SPRINT-02 están cerrados; SPRINT-03 está activo sin PBI seleccionado.
+SPRINT-02 están cerrados; SPRINT-03 queda cerrado al integrar este avance.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
 |---:|---|---|---|---|---|---|
@@ -57,7 +57,7 @@ SPRINT-02 están cerrados; SPRINT-03 está activo sin PBI seleccionado.
 | 38 | [PBI-038](pbis/PBI-038.md) Timezone Foundation Integration and Hardening | Product / Technical foundation / Quality | EPIC-001 | Done; Released: NO | Alta | SPRINT-02 completed; Small / Medium; PR #40 + exact-main CI GREEN |
 | 39 | [PBI-039](pbis/PBI-039.md) Customer Minimum + New Repair Classic 2.0 | Product / Persistence / Authorization | EPIC-002 | Done; Released: NO | Alta | SPRINT-02 completed; PR #45 + exact-main CI `34623060504` |
 | 40 | [PBI-040](pbis/PBI-040.md) Catalog & Pricing Core + Fast Price Lookup | Product / Persistence / Authorization / UI | EPIC-015 | Done; Released: NO | Alta | SPRINT-03 completed item; closure PR #52 / exact-main `34814070839` PASS |
-| 41 | [PBI-041](pbis/PBI-041.md) Initial Bulk Catalog Composer + Versioned Supplier Intake | Product / Persistence / Data / Jobs / Authorization / UI | EPIC-015 | Ready — implementation not authorized | Alta | SPRINT-03 Candidate/Ready; not selected |
+| 41 | [PBI-041](pbis/PBI-041.md) Initial Bulk Catalog Composer + Versioned Supplier Intake | Product / Persistence / Data / Jobs / Authorization / UI | EPIC-015 | Done candidate; Released: NO | Alta | SPRINT-03 committed item; closure integration pending |
 | 42 | [PBI-042](pbis/PBI-042.md) Catalog Item Images | Product / Files / Security / UI | EPIC-015 | Planned / Deferred | Media | Unassigned Candidate |
 | 43 | [PBI-043](pbis/PBI-043.md) Concurrent Operational Sessions — Access Foundation Remediation | Identity / Security / Persistence / Quality | EPIC-003 | Done; Released: NO | Crítica | SPRINT-02 completed; PR #47/#48, CI/Preview PASS |
 
@@ -123,9 +123,9 @@ SPRINT-02 están cerrados; SPRINT-03 está activo sin PBI seleccionado.
   `40684d7554cdf02551f941e5e3f0beabbe563125` y CI exacta de `main`
   `34623060504` GREEN.
 - PBI-040/PBI-041/PBI-042 conservan IDs únicos y documentos propios; no pueden
-  reutilizarse. No existe PBI activo. PBI-041 permanece Ready, no seleccionado
-  ni iniciado. Advanced Supplier Reconciliation es un outcome diferido sin ID,
-  selección ni readiness.
+  reutilizarse. No existe PBI activo. PBI-041 queda `Done candidate`; PBI-042 no
+  está seleccionado. Advanced Supplier Reconciliation es un outcome diferido
+  sin ID, selección ni readiness.
 - PBI-043 materializa ADR-014 como remediation independiente y está `Done`
   efectivo por PR #47/#48 y CI exacta `34732201476`; `Released: NO`.
 - Un ítem bloqueado conserva visible la condición de desbloqueo.
@@ -133,6 +133,5 @@ SPRINT-02 están cerrados; SPRINT-03 está activo sin PBI seleccionado.
 
 ## Próxima revisión
 
-Materializar el `Done` de PBI-040 mediante el merge autorizado del cierre
-documental y su CI exacta de `main`. Después no iniciar PBI-041/PBI-042,
-liberar o desplegar por inferencia.
+Integrar el cierre documental de PBI-041 y su CI exacta de `main`. Después no
+iniciar PBI-042 ni otro PBI, liberar o desplegar por inferencia.

@@ -2,9 +2,9 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 activo con
-  PBI-040 `Done` y PBI-041 integrado pero aún en revisión por una remediación
-  acotada de rutas SPA en Preview.
+- **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 `Closed
+  candidate` con PBI-040 `Done` y PBI-041 `Done candidate` después de
+  integración, exact-main CI, Preview PASS y reconciliación de data scope.
 - **Baseline Git observada:** Workflow Phase 1 integrado en `main` por
   `859825025cf1f9fa94a8b0ced5b91b95760e36a8`; CI exacta de `main`
   `34893081175`, `SUCCESS`.
@@ -13,13 +13,14 @@
 - **Fase:** Pricing Catalog.
 - **Checkpoint alcanzado:** PBI-040 Owner Accepted, integrado, Preview PASS y
   cierre documental exact-main PASS; `Done`, `Released: NO`.
-- **Sprint activo:** SPRINT-03 — Price List Foundation.
+- **Sprint activo:** SPRINT-03 — Price List Foundation queda `Closed candidate`
+  hasta integrar este cierre; no existe otro Sprint activo.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
-- **PBI actual:** `PBI-041`.
+- **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** integrar y probar en Preview la remediación de acceso y
-  reload directo de PBI-041; Production no autorizada.
-- **WIP operacional:** `1/1`.
+- **Blocking gate:** integrar el cierre documental gobernado; Production no
+  autorizada.
+- **WIP operacional:** `0/1`.
 - **Autoridad:** decisiones Owner de roadmap e Identity Foundation y el
   Identity Master Goal vigente.
 
@@ -99,12 +100,12 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Stage | MVP |
 | Phase | Pricing Catalog |
 | Sprint | SPRINT-03 |
-| Sprint status | Active — PBI-041 Preview remediation; WIP=1/1 |
-| Current PBI | PBI-041 |
+| Sprint status | Closed candidate — PBI-040 Done; PBI-041 Done candidate; WIP=0/1 |
+| Current PBI | NONE |
 | Next PBI candidate | NONE; PBI-042 remains out of scope |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
 | PBI-040 status | Done — closure PR #52 / `a060494`; exact-main CI `34814070839` GREEN; Released NO |
-| Blocking gate | PBI-041 direct-route remediation, exact-main CI and corrected Preview proof |
+| Blocking gate | Canonical closure documentation integration; data-scope gates pass under their respective authorities |
 
 ## Fases aprobadas
 
@@ -238,9 +239,10 @@ PBI-039 está `Done`: PR #45 mergeó el cierre como `40684d7` y CI exacta
 integrado por PR #49, remediado por PR #50/#51 y validado en Preview sobre
 `09e14c8`; CI exacta `34809054770` quedó GREEN. El cierre PR #52 se integró
 como `a060494` y exact-main `34814070839` quedó GREEN: PBI-040 está `Done` y
-`Released: NO`. SPRINT-03 permanece `Active`, WIP `1/1`, con PBI-041 como
-Current PBI. Su candidato local `6936ab2` está listo para Owner Review;
-Acceptance e integración siguen pendientes.
+`Released: NO`. PBI-041 pasó Formal Re-Verification, PR #55/#56/#57, revisión
+independiente, CI exactas y Preview sobre `9b7a83d`; queda `Done candidate`,
+`Released: NO`. SPRINT-03 queda `Closed candidate`, Current PBI `NONE`, WIP
+`0/1` y Next candidate `NONE` hasta integrar el cierre documental.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,
 prueba visual y exact-main CI verdes. PBI-037 permanece un slice trazable y no
 crea un segundo PBI actual.
@@ -273,7 +275,7 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** decisión Owner sobre el checkpoint local de PBI-041.
-- **Estado conservado:** PBI-040 `Done`, `Released: NO`; PBI-041 sin Acceptance
-  ni autoridad de integración; Production no autorizada.
+- **Disparador:** selección Owner explícita de un siguiente candidato.
+- **Estado conservado:** PBI-040 `Done`, `Released: NO`; PBI-041 `Done
+  candidate`, `Released: NO`; Production no autorizada.
 - **Después:** no iniciar otro PBI automáticamente.

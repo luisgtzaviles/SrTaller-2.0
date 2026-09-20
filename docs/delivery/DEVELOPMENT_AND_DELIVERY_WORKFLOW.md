@@ -25,8 +25,9 @@ Repair Workstream PBI-039, Concurrent Operational Sessions PBI-043 y el
 Catalog/Pricing core PBI-040. Owner Acceptance, PR #49/#50/#51 y Preview PASS
 quedaron seguidos por el cierre documental PR #52, integrado como `a060494`
 con exact-main CI `34814070839` PASS. PBI-040 es `Done`, `Released: NO`.
-SPRINT-03 está activo sin Current PBI y WIP `0/1`; PBI-041 está Ready pero no
-seleccionado ni autorizado. La
+PBI-041 está `Done candidate` tras PR #55/#56/#57, exact-main CI y Preview
+PASS; su cierre documental gobernado permanece pendiente. SPRINT-03 está
+`Closed candidate`, Current PBI `NONE` y WIP `0/1`. La
 [optimización conservadora aprobada](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md)
 se materializa como un cambio separado de governance; no selecciona PBI-041.
 
@@ -119,11 +120,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 |---|---|
 | Repository baseline | `main` |
 | Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI for current integrated baseline | Green: exact-main run `34814070839` on `a0604941a5707c87f2601c467e89743fc2883e90` |
+| Authoritative CI for current integrated PBI-041 baseline | Green: exact-main run `35539833596` on `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca` |
 | Program / phase | MVP Operating Roadmap / Pricing Catalog |
-| Sprint | SPRINT-03 `Active`; WIP `0/1` |
-| Current / next PBI | Current: NONE; PBI-041 Ready, not selected or authorized |
-| Current blocking gate | None for PBI-040; PBI-041 not selected or authorized; Production unauthorized |
+| Sprint | SPRINT-03 `Closed candidate`; WIP `0/1` |
+| Current / next PBI | Current: NONE; next candidate: NONE |
+| Current blocking gate | Canonical closure documentation integration; Production unauthorized |
 | GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
 | Preview | Materialized |
 | Preview URL | `https://preview.srtaller.dev` |
@@ -308,6 +309,13 @@ Production (PLANNED)
 Preview existe para iteración rápida, integración, pruebas funcionales y
 observación del Owner. Puede reconstruirse y sólo contiene datos sintéticos,
 de desarrollo o desechables. Nunca usa datos reales de Production.
+
+Los datos de Preview son locales al ambiente y pueden limitarse a un seed mínimo
+o de QA. Los datos de negocio Owner/Production no se replican implícitamente a
+Preview. La verificación de deployment prueba la integridad de runtime, schema,
+provenance y rutas del ambiente desplegado; no puede exigir identidad de datos
+de negocio entre ambientes salvo que una replicación esté autorizada y forme
+parte explícita de su contrato.
 
 Inventario operativo:
 

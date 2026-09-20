@@ -1,12 +1,12 @@
 # PBI-041 — Evidence Index
 
-PBI-041 was integrated by PR #55 as
-`b54a095241891807e8b399e12ef783d72f8982b5`; exact-main CI `35458836014`
-passed. The first Preview deployment preserved that exact provenance and
-completed the governed migrations, but exposed a bounded delivery finding:
-direct navigation/reload returned `404` for two new SPA routes even though
-internal navigation worked. A corrective candidate is in progress; PBI-041
-remains in review and is not `Done` or `Released` while that proof is pending.
+PBI-041 product and Preview-route remediations were integrated by PR #55/#56.
+PR #57 then integrated the publish-determinism remediation as
+`9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; exact-main CI `35539833596`
+passed. Active Preview reports that exact clean revision and passes health,
+provenance, direct navigation and reload. PBI-041 is a `Done candidate` pending
+integration of the canonical closure documentation; `Released: NO` and
+Production is unchanged.
 
 - [Implementation Evidence](IMPLEMENTATION_EVIDENCE.md)
 - [Independent Formal Verification](FORMAL_VERIFICATION.md)
@@ -15,6 +15,9 @@ remains in review and is not `Done` or `Released` while that proof is pending.
 - [Independent Formal Re-Verification after FV2-041-001](FORMAL_REVERIFICATION_FV2_041_001.md)
 - [Review Remediation 1](REVIEW_REMEDIATION_1.md)
 - [Preview SPA direct-route remediation](PREVIEW_SPA_ROUTE_REMEDIATION.md)
+- [Post-deploy closure evidence](POST_DEPLOY_CLOSURE.md)
+- [Preview activation and provenance remediation](PREVIEW_ACTIVATION_PROVENANCE_REMEDIATION.md)
+- [Canonical closure data-scope reconciliation](CANONICAL_CLOSURE_DATA_SCOPE_RECONCILIATION.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)
 - [Test Strategy](TEST_STRATEGY.md)
@@ -39,7 +42,8 @@ remains in review and is not `Done` or `Released` while that proof is pending.
 - [Verification Gate Remediation](FV_GATE_REMEDIATION.md)
 - [UX-002A.1 Duplicate Input Resolution Audit](../../../domain/PRICE_LIST_UX_002A1_DUPLICATE_INPUT_RESOLUTION_AUDIT.md)
 
-PBI-040 is `Done`, `Released: NO`. PBI-041 is the single WIP. The following is
+PBI-040 is `Done`, `Released: NO`. PBI-041 has completed its governed product
+and Preview cycle and is in canonical closure with WIP `0/1`. The following is
 the preserved remediation chronology: the final readiness audit found two
 required verification-gate blockers; their first
 authorized remediation resolved both, and FV-GATE-REMEDIATION-2 resolved the

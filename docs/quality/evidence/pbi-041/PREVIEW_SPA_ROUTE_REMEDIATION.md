@@ -39,14 +39,22 @@ configuration and failed before runtime readiness. Re-running through the
 repository's governed disposable PostgreSQL harness passed; no product defect
 was hidden and no Owner data was used or changed.
 
-## Pending governed evidence
+## Governed integration and Preview proof
 
 - full integration verification: PASS on execution HEAD
   `d04264f9626eb134354540c72e5ebb75ecc77db3`; Stages `0..13`, PostgreSQL
   composite `17/17`, PBI-041 `10/10`, 75 migrations, second run `0 pending`,
   compiled UI smoke and cleanup/fingerprint all PASS;
-- authoritative candidate CI and independent review on the exact HEAD;
-- authorized merge and exact-main CI;
-- corrected Preview deployment and direct navigation/reload proof.
+- PR #56 candidate `2e1654875fc68e24138ee84b4a09b494b28275e1` passed
+  authoritative CI `35461008759` and independent review `APPROVED` on the exact
+  HEAD;
+- PR #56 merged ordinarily as
+  `39ece042f5a3bf0800bb69d4d6e21a7d86e316ad`; exact-main CI `35490480554`
+  passed run-1, run-2 and comparison;
+- Dokploy Preview deployed that exact clean SHA. Both routes return the bounded
+  SPA entrypoint on direct navigation and reload, while unknown UI/API paths
+  remain `404`; health and provenance pass.
+
+See [Post-deploy closure evidence](POST_DEPLOY_CLOSURE.md).
 
 Production is not authorized and remains unchanged.

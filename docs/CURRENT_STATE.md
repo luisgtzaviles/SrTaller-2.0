@@ -2,37 +2,39 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-041 fue integrado por PR #55 como
-  `b54a095241891807e8b399e12ef783d72f8982b5` y su exact-main CI
-  `35458836014` quedó GREEN. El deployment inicial de Preview preservó esa
-  provenance y el estado de migraciones, pero un `404` de acceso/reload directo
-  en dos rutas SPA mantiene el PBI en revisión mientras se integra la
-  remediación acotada.
-  PBI-040 permanece `Done`, `Released: NO`.
+- **Estado:** PBI-041 es `Done candidate`. PR #55 integró el producto, PR #56
+  corrigió las rutas SPA y PR #57 integró el determinismo de publish como
+  `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; exact-main CI `35539833596`
+  quedó GREEN. Dokploy Preview activo, health, provenance, navegación directa y
+  reload quedan GREEN sobre ese SHA clean. Este cierre documental materializa
+  `Done` al integrarse con CI exacta; `Released: NO`. PBI-040 permanece `Done`,
+  `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
   `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
-- **Última CI ejecutable exact-main registrada:**
-  [`34893081175`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34893081175),
-  `SUCCESS` sobre `8598250` con run-1, run-2 y comparison PASS.
-- **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
-- **PBI actual:** `PBI-041`.
-- **WIP:** `1/1`; Bulk Catalog Composer y versioned supplier intake.
+- **Última CI PBI-041 exact-main registrada:**
+  [`35539833596`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/35539833596),
+  `SUCCESS` sobre `9b7a83d` con run-1, run-2 y comparison PASS.
+- **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Closed candidate`.
+- **PBI actual:** `NONE`.
+- **WIP:** `0/1`.
 - **PBI-040:** PR #49/#50/#51 y cierre PR #52 integrados; `Done`.
-- **Preview:** `b54a095` desplegado, clean y healthy; PBI-041 smoke parcial
-  PASS con remediación de dos rutas directas en progreso.
+- **Preview:** `9b7a83d` desplegado, clean y healthy; PBI-041 smoke PASS,
+  incluidas las rutas directas, reload y unknown API fail-closed.
 - **Production:** no desplegada ni autorizada.
 
 ## Resumen ejecutivo
 
-El candidato PBI-041 pasó Formal Re-Verification, CI candidata y revisión
-independiente sobre el HEAD exacto. PR #55 se integró como `b54a095` y la CI
-exact-main `35458836014` pasó. Preview aplicó 13 migraciones pendientes y la
-segunda corrida dejó `0 pending`; frontend/backend reportan provenance exacta y
-health `200`. La navegación interna del Composer y la configuración de campos
-funciona, pero el servidor no tenía sus dos rutas exactas en el allowlist SPA,
-por lo que acceso directo/reload devuelve `404`. La remediación mantiene
-dominio, API, DB, datos Owner y Production sin cambios. PBI-041 no se declara
-`Done` ni `Released` hasta completar su ciclo gobernado y el proof corregido.
+PBI-041 pasó Formal Re-Verification, CI candidata y revisión independiente sobre
+los HEAD exactos. PR #55 se integró como `b54a095`, PR #56 corrigió el allowlist
+SPA como `39ece042` y PR #57 integró la remediación de determinismo como
+`9b7a83d`; las CI exact-main correspondientes pasaron, incluida `35539833596`.
+Preview reporta ese último SHA exacto y clean; acceso directo/reload, rutas
+desconocidas fail-closed y health pasan con 75 migraciones/0 pending. La
+reconciliación de data scope preserva los dos gates: AviCell se verifica
+read-only en Owner/local y Preview acredita release/runtime con seed mínimo; no
+se copiaron ni mutaron datos. Dominio, API, DB Owner y Production no cambiaron.
+El PBI queda `Done candidate` hasta integrar este avance documental y
+`Released: NO`.
 
 El review remoto de PR #55 encontró `REVIEW-041-001`, una ventana de
 concurrencia entre el snapshot usado para autorizar efectos y el Batch
@@ -347,21 +349,20 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 | Elemento | Estado vigente |
 |---|---|
-| Sprint | SPRINT-03 — Active |
-| Current PBI | PBI-041 — REVIEW-REMEDIATION-1 PASS local; nueva FV requerida |
-| WIP | 1/1 |
+| Sprint | SPRINT-03 — Closed candidate |
+| Current PBI | NONE |
+| WIP | 0/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Security blocker remediado; verificación local PASS; FV anterior stale; Acceptance pending |
+| PBI-041 | Done candidate; PR #55/#56/#57, exact-main CI, Owner/local data integrity and Preview release PASS; Released NO |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
-| Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |
+| Preview | `9b7a83d` PASS; seed mínimo es autoridad de release, no réplica Owner |
 | Production / release | NO / NO |
 
 ## Próxima acción
 
-Completar la verificación local autoritativa de REVIEW-REMEDIATION-1 y entregar
-el nuevo candidato para Formal Verification independiente. Después, el Owner
-revisa Historical/Virgin, retiro global, retiro CREATED por batch y el
-Composer local. Esperar decisión; no iniciar PBI-042 ni gates de integración,
-publicación,
-fusión o deploy sin autoridad explícita.
+Validar e integrar el cierre documental gobernado de PBI-041. No se inicia un
+nuevo PBI; la decisión de data scope mantiene Owner/local como autoridad
+read-only de AviCell y Preview como autoridad de release. La integración sigue
+requiriendo el workflow de PR, CI y autorización Owner aplicable; Production
+permanece fuera de alcance.
