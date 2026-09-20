@@ -5,9 +5,9 @@ Sprint: none active; SPRINT-03 — Price List Foundation is Closed
 Current PBI: NONE
 Status: GOVERNANCE RECONCILIATION IN PROGRESS — PBI-041 Done; Released: NO.
 WIP: 0/1
-Progress: 6 / 8 governance blocks complete.
-Current: Freeze the documentation candidate on `ops/workflow-reconciliation-2026-09`.
-Next: Push and open the governance PR, then follow its proportional PR/CI workflow. Do not start another PBI.
+Progress: 7 / 9 governance blocks complete.
+Current: Push governance candidate `1360b3a` and open its PR.
+Next: Complete the required full CI and process-based independent review, then merge only under the standing Owner delivery authority. Do not start another PBI.
 Blocked: None. PBI-041 is Done after PR #58 `cb1dca3` and exact-main CI `35544551782`; Preview remains minimal-seed release authority and Owner/local AviCell integrity authority. The preexisting Owner `.DS_Store` remains untracked and protected.
 Last updated: 2026-09-20 MST
 
@@ -24,7 +24,9 @@ Last updated: 2026-09-20 MST
 - [x] Reconcile delivery workflow, branch policy, environment identity follow-up
   and canonical status sources.
 - [x] Run documentation links, consistency, secret scan and diff checks.
-- [ ] Commit, push and open the governance PR.
+- [x] Freeze governance candidate `1360b3a`; classifier is fail-closed `FULL`
+  because it changes delivery contracts, not product runtime.
+- [ ] Push and open the governance PR.
 - [ ] Complete authoritative CI/review/merge for this independent governance change.
 
 ## Completed checkpoint — PBI-041 canonical closure
