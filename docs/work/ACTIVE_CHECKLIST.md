@@ -1,17 +1,17 @@
 # Active Development Checklist
 
-Milestone / Functional Goal: PBI-041 — Preview SPA direct-route remediation
+Milestone / Functional Goal: PBI-041 — Canonical closure after Preview PASS
 Sprint: SPRINT-03 — Price List Foundation
-Current PBI: PBI-041
-Status: REMEDIATION IN PROGRESS after Preview exposed 404 on direct navigation/reload for two PBI-041 SPA routes. Product, API, data and Production are unchanged.
-WIP: 1/1
-Progress: 3 / 6 Preview remediation blocks complete.
-Current: Promote the frozen corrective candidate through PR, exact-HEAD CI and independent review.
-Next: Integrate after every governed gate passes, then redeploy and prove Preview.
+Current PBI: NONE
+Status: CANONICAL CLOSURE CANDIDATE after PBI-041 product, remediation, exact-main CI and Preview proof passed. Released: NO.
+WIP: 0/1
+Progress: 8 / 10 closure blocks complete.
+Current: Validate and promote the documentation-only closure candidate.
+Next: Integrate the closure PR after governed review/CI, then verify exact-main CI.
 Blocked: NONE. Owner data, AviCell, Production and the preexisting .DS_Store remain protected.
 Last updated: 2026-09-19 MST
 
-## Current checkpoint — Preview SPA direct-route remediation
+## Current checkpoint — PBI-041 canonical closure
 
 - [x] Reproduce and classify the defect: internal navigation works, but direct
   navigation/reload returns 404 for Bulk Catalog Composer and Catalog Field
@@ -19,12 +19,22 @@ Last updated: 2026-09-19 MST
 - [x] Add only the two PBI-041 paths to the static surface contract and protect
   them in focused, smoke and OCI checks.
 - [x] Pass focused tests, typecheck, build, architecture and diff checks.
-- [~] Freeze a corrective candidate and complete the governed PR, CI and exact
-  HEAD review cycle without reusing stale evidence.
-- [ ] Integrate only with the applicable Owner authority and exact-main CI
-  GREEN.
-- [ ] Redeploy Preview, prove both direct routes/reloads return the SPA, and
-  reconcile PBI-041 closure state without touching Production.
+- [x] Freeze corrective candidate `2e165487`, pass candidate CI `35461008759`
+  and obtain genuine independent APPROVE on that exact HEAD.
+- [x] Integrate PR #56 ordinarily as `39ece042`, then pass exact-main CI
+  `35490480554` with run-1, run-2 and comparison GREEN.
+- [x] Redeploy Dokploy Preview at exact clean SHA `39ece042`; health, provenance,
+  direct routes, reload and unknown-route fail-closed proof pass.
+- [x] Preserve 75 migrations/0 pending from the application deployment; the
+  corrective deploy has no migration, data or Owner-state mutation.
+- [x] Reconcile PBI, Sprint, roadmap, backlog, evidence and changelog as a
+  documentation-only closure candidate.
+- [~] Pass documentation links, consistency, secret scan and diff checks.
+- [ ] Promote the governed closure PR and require exact-main CI GREEN.
+
+Closure outcome after integration: PBI-041 `Done`, `Released: NO`; SPRINT-03
+`Closed`; Current PBI `NONE`; WIP `0/1`; Next candidate `NONE`; Production
+unchanged.
 
 ## Current checkpoint — Formal Re-Verification after REVIEW-041-001
 

@@ -3,18 +3,19 @@
 ## Estado del documento
 
 - **Sprint:** SPRINT-03.
-- **Estado:** Active — PBI-040 Done; PBI-041 listo para Owner Review.
+- **Estado:** Closed candidate — PBI-040 Done; PBI-041 Done candidate.
 - **Periodo:** TBD.
-- **PBI actual:** PBI-041.
-- **WIP:** 1/1.
+- **PBI actual:** NONE.
+- **WIP:** 0/1.
 - **Autoridad:** este Master Goal autoriza architecture/readiness y la apertura
   documental del Sprint. Owner autorizó implementar PBI-040 el 2026-09-11;
   el Master Goal de reanudación del 2026-09-12 autoriza reconciliar con el
   nuevo `main` y volver a Owner Review. El Master Goal de cierre de 2026-09-13
   registra Owner Acceptance y autoriza los gates técnicos, merge y Preview;
   Production permanece fuera de alcance. El Master Goal PBI-041 del
-  2026-09-14 selecciona el único WIP y autoriza implementación exclusivamente
-  hasta Owner Review local.
+  2026-09-14 seleccionó el único WIP. La autorización maestra de promoción
+  posterior cubrió verificación, integración, Preview y cierre gobernado;
+  Production permanece fuera de alcance.
 
 ## Objetivo
 
@@ -27,7 +28,7 @@ sin mezclar inventario, reparaciones o Caja.
 
 1. PBI-040 — core vertical y búsqueda rápida — `Committed / Done / Released: NO`.
 2. PBI-041 — Initial Bulk Catalog Composer + Versioned Supplier Intake —
-   `Committed / Owner Review ready / Acceptance pending`.
+   `Committed / Done candidate / Released: NO`.
 
 PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
 
@@ -44,8 +45,11 @@ PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
   unresolved/conflict/stale.
 - [x] Ningún ownership de Inventory, Procurement, Repair, Caja, Pedidos o
   Solicitudes se materializa.
+- [x] PBI-041 pasa Formal Re-Verification, PR #55/#56, revisión independiente,
+  exact-main CI y Preview health/provenance/smoke.
+- [x] Current PBI queda `NONE`, WIP `0/1` y no se selecciona siguiente PBI.
 
 ## Próxima revisión
 
-Cuando el Owner emita su decisión sobre el checkpoint PBI-041. No seleccionar
-otro PBI automáticamente.
+Cuando el Owner seleccione explícitamente un nuevo candidato. No iniciar otro
+PBI automáticamente.

@@ -4,14 +4,15 @@ Los sprints hacen visible una selección de resultados, sus dependencias, revisi
 
 ## Estado del documento
 
-**Estado:** SPRINT-00, SPRINT-01 y SPRINT-02 `Closed`.
+**Estado:** SPRINT-00, SPRINT-01 y SPRINT-02 `Closed`; SPRINT-03 `Closed
+candidate`.
 **Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed`,
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
 [SPRINT-02](sprint-02/SPRINT_GOAL.md) `Closed` y
-[SPRINT-03](sprint-03/SPRINT_GOAL.md) `Active`.
-**Sprint activo:** SPRINT-03 — Price List Foundation. PBI-040 es `Done
-candidate`; no existe Current PBI. PBI-041 está Candidate/Ready sin selección
-ni autorización; WIP `0/1`.
+[SPRINT-03](sprint-03/SPRINT_GOAL.md) `Closed candidate`.
+**Sprint activo:** SPRINT-03 — Price List Foundation permanece como puntero
+documental hasta integrar su cierre. PBI-040 es `Done`, PBI-041 `Done
+candidate`; no existe Current PBI ni Next candidate; WIP `0/1`.
 
 ## Reglas propuestas
 
@@ -66,10 +67,9 @@ está `Done` y el Sprint `Closed`. Production sigue sin autorización.
 
 ## SPRINT-03
 
-SPRINT-03 ejecuta Price List Foundation. PBI-040 es `Done candidate` después de
-Owner Acceptance, integración y Preview PASS; no existe Current PBI. PBI-041
-permanece Candidate/Ready sin seleccionar ni iniciar. PBI-042 no pertenece al
-compromiso inicial.
+SPRINT-03 ejecutó Price List Foundation. PBI-040 es `Done` y PBI-041 queda
+`Done candidate` después de verificación, integración y Preview PASS. No existe
+Current PBI ni Next candidate. PBI-042 no perteneció al compromiso.
 
 - [Objetivo](sprint-03/SPRINT_GOAL.md)
 - [Backlog](sprint-03/SPRINT_BACKLOG.md)

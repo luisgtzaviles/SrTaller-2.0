@@ -1942,3 +1942,26 @@ benchmark publish 10k de `28,690.3 ms`. Véase
 queda stale y no se infiere nuevo PASS, Acceptance ni integración. El gate
 base posterior pasó 935/0/30 y la única ejecución autorizada de `verify:full`
 pasó Stages 0..13; su benchmark PBI-041 publicó 10k en `2,201.8 ms`.
+
+## Governed integration and post-deploy closure
+
+PR #55 integrated the application as
+`b54a095241891807e8b399e12ef783d72f8982b5`; exact-main CI `35458836014`
+passed. Its Preview deployment applied the governed chain to 75 migrations and
+the second migration execution reported 0 pending. The post-deploy finding was
+limited to two missing exact SPA fallback routes.
+
+PR #56 remediated only that bounded delivery contract. Candidate
+`2e1654875fc68e24138ee84b4a09b494b28275e1` passed CI `35461008759` and a
+genuine independent APPROVE. Ordinary merge
+`39ece042f5a3bf0800bb69d4d6e21a7d86e316ad` passed exact-main CI
+`35490480554`. Dokploy Preview deployed the exact clean merge SHA; root,
+`/livez`, `/readyz`, Bulk Composer direct access/reload and Field Policy direct
+access/reload all reached the application, while unknown UI/API paths remained
+404. The Field Policy route then correctly enforced the current session's
+product capability rather than failing static delivery.
+
+No new migration, Owner-data mutation, Catalog mutation, SupplierVersion,
+domain/API/security semantic change, rollback or Production deployment
+occurred. See [Post-deploy closure evidence](POST_DEPLOY_CLOSURE.md). PBI-041 is
+`Done candidate` until the canonical closure PR is integrated; `Released: NO`.

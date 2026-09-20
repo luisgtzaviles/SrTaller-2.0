@@ -4,6 +4,18 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ## [Unreleased]
 
+### PBI-041 — Bulk Catalog Composer
+
+- PBI-041 completó Formal Re-Verification, integración del producto por PR #55
+  (`b54a095241891807e8b399e12ef783d72f8982b5`, exact-main CI `35458836014`)
+  y remediación acotada del acceso/reload SPA por PR #56
+  (`39ece042f5a3bf0800bb69d4d6e21a7d86e316ad`, exact-main CI `35490480554`).
+  Ambos CI cerraron run-1, run-2 y comparison GREEN. Dokploy Preview desplegó
+  el SHA exacto limpio; health, provenance, Composer, acceso directo, reload y
+  rutas desconocidas fail-closed pasaron. El cierre documental deja PBI-041
+  `Done candidate`, SPRINT-03 `Closed candidate`, Current PBI `NONE`, WIP
+  `0/1`, Next candidate `NONE` y `Released: NO`. Production no cambió.
+
 ### Timezone Foundation
 
 - Integrado PBI-038 — Timezone Foundation Integration and Hardening — mediante

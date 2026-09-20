@@ -2,37 +2,39 @@
 
 ## Estado del documento
 
-- **Estado:** PBI-041 fue integrado por PR #55 como
-  `b54a095241891807e8b399e12ef783d72f8982b5` y su exact-main CI
-  `35458836014` quedó GREEN. El deployment inicial de Preview preservó esa
-  provenance y el estado de migraciones, pero un `404` de acceso/reload directo
-  en dos rutas SPA mantiene el PBI en revisión mientras se integra la
-  remediación acotada.
-  PBI-040 permanece `Done`, `Released: NO`.
+- **Estado:** PBI-041 es `Done candidate`. PR #55 integró el producto como
+  `b54a095241891807e8b399e12ef783d72f8982b5` y exact-main CI `35458836014`
+  quedó GREEN. PR #56 integró la remediación SPA como
+  `39ece042f5a3bf0800bb69d4d6e21a7d86e316ad`; exact-main CI `35490480554`,
+  Dokploy Preview, health, provenance, navegación directa y reload quedaron
+  GREEN. Este cierre documental materializa `Done` al integrarse con CI exacta;
+  `Released: NO`. PBI-040 permanece `Done`, `Released: NO`.
 - **Baseline Git verificada:** `main == origin/main` en
   `100eb9abc8b8b3b01da5dcc312777b59bf01a615` al iniciar PBI-041.
 - **Última CI ejecutable exact-main registrada:**
   [`34893081175`](https://github.com/luisgtzaviles/SrTaller-2.0/actions/runs/34893081175),
   `SUCCESS` sobre `8598250` con run-1, run-2 y comparison PASS.
-- **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Active`.
-- **PBI actual:** `PBI-041`.
-- **WIP:** `1/1`; Bulk Catalog Composer y versioned supplier intake.
+- **Sprint:** SPRINT-02 `Closed`; SPRINT-03 `Closed candidate`.
+- **PBI actual:** `NONE`.
+- **WIP:** `0/1`.
 - **PBI-040:** PR #49/#50/#51 y cierre PR #52 integrados; `Done`.
-- **Preview:** `b54a095` desplegado, clean y healthy; PBI-041 smoke parcial
-  PASS con remediación de dos rutas directas en progreso.
+- **Preview:** `39ece042` desplegado, clean y healthy; PBI-041 smoke PASS,
+  incluidas las dos rutas directas y reload.
 - **Production:** no desplegada ni autorizada.
 
 ## Resumen ejecutivo
 
-El candidato PBI-041 pasó Formal Re-Verification, CI candidata y revisión
-independiente sobre el HEAD exacto. PR #55 se integró como `b54a095` y la CI
-exact-main `35458836014` pasó. Preview aplicó 13 migraciones pendientes y la
-segunda corrida dejó `0 pending`; frontend/backend reportan provenance exacta y
-health `200`. La navegación interna del Composer y la configuración de campos
-funciona, pero el servidor no tenía sus dos rutas exactas en el allowlist SPA,
-por lo que acceso directo/reload devuelve `404`. La remediación mantiene
-dominio, API, DB, datos Owner y Production sin cambios. PBI-041 no se declara
-`Done` ni `Released` hasta completar su ciclo gobernado y el proof corregido.
+PBI-041 pasó Formal Re-Verification, CI candidata y revisión independiente sobre
+los HEAD exactos. PR #55 se integró como `b54a095` y la CI exact-main
+`35458836014` pasó. Preview aplicó 13 migraciones pendientes y la segunda
+corrida dejó `0 pending`; frontend/backend reportaron provenance exacta y
+health `200`. PR #56 corrigió el único finding post-deploy —el allowlist de dos
+rutas SPA—, fue aprobado independientemente, se integró como `39ece042` y pasó
+exact-main CI `35490480554`. El redeploy Preview conserva esa provenance;
+acceso directo/reload, rutas desconocidas fail-closed y health pasan. Dominio,
+API, DB, datos Owner y Production no cambiaron. La autorización Owner maestra
+cubre el cierre después de estos gates; el PBI queda `Done candidate` hasta
+integrar este avance documental y `Released: NO`.
 
 El review remoto de PR #55 encontró `REVIEW-041-001`, una ventana de
 concurrencia entre el snapshot usado para autorizar efectos y el Batch
@@ -347,11 +349,11 @@ el mismo combobox. Esto no constituye Owner Acceptance.
 
 | Elemento | Estado vigente |
 |---|---|
-| Sprint | SPRINT-03 — Active |
-| Current PBI | PBI-041 — REVIEW-REMEDIATION-1 PASS local; nueva FV requerida |
-| WIP | 1/1 |
+| Sprint | SPRINT-03 — Closed candidate |
+| Current PBI | NONE |
+| WIP | 0/1 |
 | PBI-040 | Done; Owner Accepted, integrado, exact-main CI y Preview PASS; Released NO |
-| PBI-041 | Security blocker remediado; verificación local PASS; FV anterior stale; Acceptance pending |
+| PBI-041 | Done candidate; PR #55/#56, exact-main CI y Preview PASS; Released NO |
 | G3 Authentication | PASS; policy delta PBI-043 integrada y validada |
 | Workflow Phase 1 | Done; PR #53 y exact-main full CI PASS |
 | Preview | `09e14c8` PASS; sin cambio por Workflow Phase 1 |
