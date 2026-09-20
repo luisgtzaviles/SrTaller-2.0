@@ -12,9 +12,10 @@ canónico. PR #49/#50/#51, CI exacta `34809054770` y Preview exacto `09e14c8`
 quedaron PASS. El cierre documental PR #52 y su exact-main también pasaron.
 Production no cambió.
 
-PBI-041 completó Formal Re-Verification, PR #55/#56, revisión independiente y
-exact-main CI. Dokploy Preview desplegó `39ece042` con health/provenance PASS;
+PBI-041 completó Formal Re-Verification, PR #55/#56/#57, revisión independiente
+y exact-main CI. Dokploy Preview desplegó `9b7a83d` con health/provenance PASS;
 Composer, acceso directo y reload quedaron verificados y rutas desconocidas
-siguen fail-closed. Owner data permaneció protegida durante el smoke y
-Production no cambió. PBI-041 queda `Done candidate`, `Released: NO`; no existe
-Current PBI ni selección de PBI-042.
+siguen fail-closed. La reconciliación posterior preserva AviCell como gate
+read-only Owner/local y Preview como gate de release con seed mínimo. Production
+no cambió. PBI-041 queda `Done candidate`, `Released: NO`; no existe Current
+PBI ni selección de PBI-042.

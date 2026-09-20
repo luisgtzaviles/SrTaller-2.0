@@ -2,8 +2,8 @@
 
 ## Estado del documento
 
-**Estado:** Índice reconciliado con `main` funcional `39ece042` y CI exacta
-`35490480554`. SPRINT-02 está `Closed` y PBI-043 `Done`. SPRINT-03 está
+**Estado:** Índice reconciliado con `main` funcional `9b7a83d` y CI exacta
+`35539833596`. SPRINT-02 está `Closed` y PBI-043 `Done`. SPRINT-03 está
 `Closed candidate`: PBI-040 es `Done`, PBI-041 `Done candidate`, no existe
 Current PBI y PBI-042 sigue Planned/Unassigned. WIP `0/1`.
 **Estimación:** PBI-023 tiene `13 SP`; PBI-030 tiene `XL — agreed`, PBI-032,

@@ -1,5 +1,22 @@
 # PBI-041 — Implementation Evidence
 
+## Canonical closure data-scope reconciliation — 2026-09-20
+
+The closure blocker was a scope mismatch, not missing Owner data: active
+Preview is a governed minimal seed and is not required to mirror AviCell. The
+Owner rejected Preview copying/seeding/resetting. Read-only Owner/local
+evidence remains authoritative for AviCell v3 `COMPLETE / FULL / APPLIED`, 744
+physical observations, 742 effective outcomes, zero AviCell pending Brands,
+row 411 `INACTIVE`, immutable Supplier history and unchanged non-AviCell
+`Aple` `PENDING`. Preview remains authoritative for its exact clean
+`9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca` runtime, routes, health,
+provenance, database reachability and 75 migrations / 0 pending.
+
+The short recheck preserves the existing single canonical campaigns: `verify`
+940/0/30, `verify:full` stages 0–13 with PostgreSQL, cleanup and fingerprint
+PASS, and 10k publish `2,068.5 ms / 30,000 ms`. No data, runtime or deployment
+was changed. See [canonical closure data-scope reconciliation](CANONICAL_CLOSURE_DATA_SCOPE_RECONCILIATION.md).
+
 ## Independent Formal Re-Verification after FV2-041-001 — PASS
 
 El candidato local remediado pasó una nueva verificación formal independiente:

@@ -18,10 +18,12 @@ candidate`; no existe Current PBI, WIP es `0/1` y Next candidate es `NONE`.
 PBI-042 no está seleccionado ni iniciado.
 **Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
 18.4; Staging y Production no están materializados.
-**Baseline integrada con CI registrada:** PBI-041 fue integrado por PR #55 y
-remediado por PR #56. `main` `39ece042f5a3bf0800bb69d4d6e21a7d86e316ad`
-pasó exact-main CI `35490480554` y Preview PASS. Es `Done candidate`, no
-`Released`, hasta integrar el cierre documental.
+**Baseline integrada con CI registrada:** PBI-041 fue integrado por PR #55,
+remediado por PR #56 y recibió la remediación de determinismo por PR #57.
+`main` `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca` pasó exact-main CI
+`35539833596`; Preview PASS acredita su runtime/seed propio y Owner/local
+acredita AviCell read-only. Es `Done candidate`, no `Released`, hasta integrar
+el cierre documental.
 Véase [Current Repository State](CURRENT_STATE.md).
 
 ## Revisión dirigida de Sprint 00

@@ -51,6 +51,13 @@ Preview admite datos sintéticos, de desarrollo o desechables. Nunca usa datos
 reales de Production. Su tolerancia a reconstrucción no autoriza borrar datos
 persistentes sin confirmar alcance y autoridad.
 
+Los datos de Preview pertenecen a Preview y pueden ser un seed mínimo o de QA.
+Los datos de negocio Owner/Production no se copian ni se esperan implícitamente
+en ese ambiente. La verificación de release acredita runtime, schema,
+provenance y rutas de Preview; una comparación de identidad de datos entre
+ambientes sólo procede cuando una replicación fue autorizada y documentada como
+parte del contrato del ambiente.
+
 ## Local development — CURRENT
 
 Local está materializado para el ciclo diario en macOS mediante Docker CLI y

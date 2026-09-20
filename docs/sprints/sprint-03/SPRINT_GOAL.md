@@ -45,8 +45,9 @@ PBI-042 Images no pertenece al compromiso inicial y permanece Unassigned.
   unresolved/conflict/stale.
 - [x] Ningún ownership de Inventory, Procurement, Repair, Caja, Pedidos o
   Solicitudes se materializa.
-- [x] PBI-041 pasa Formal Re-Verification, PR #55/#56, revisión independiente,
-  exact-main CI y Preview health/provenance/smoke.
+- [x] PBI-041 pasa Formal Re-Verification, PR #55/#56/#57, revisión
+  independiente, exact-main CI y Preview health/provenance/smoke; Owner/local
+  conserva el gate read-only de AviCell y Preview el gate de release.
 - [x] Current PBI queda `NONE`, WIP `0/1` y no se selecciona siguiente PBI.
 
 ## Próxima revisión

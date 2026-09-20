@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Canonical closure after Preview PASS
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: NONE
-Status: CANONICAL CLOSURE BLOCKED — canonical verification passed, but the Preview PostgreSQL data scope does not contain the required Owner/AviCell integrity snapshot. Released: NO.
+Status: CANONICAL CLOSURE CANDIDATE READY FOR PUSH — data-scope authority and documentation validation pass. Released: NO.
 WIP: 0/1
-Progress: 11 / 13 closure blocks complete.
-Current: The one canonical `verify` and one canonical `verify:full` campaign passed against final merged code baseline `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; Preview provenance, health, routes and 75-migration schema pass.
-Next: Owner decision required: either identify the authoritative Preview environment that contains the AviCell Owner-data snapshot, or explicitly change the final integrity gate's required data scope. Do not copy, seed, reset or mutate Preview data by inference.
-Blocked: Final Owner-data integrity snapshot mismatch. Read-only Preview PostgreSQL has 75 distinct migrations but only 1 CatalogItem, 0 SupplierCatalogVersions, 0 AviCell sources and no AviCell v3 / row-411 record, rather than the required AviCell v3 applied evidence. No write or data-loss conclusion was made; the preexisting Owner `.DS_Store` remains untracked and protected.
+Progress: 13 / 14 closure blocks complete.
+Current: Governed closure documentation commit `261ea36` is ready locally.
+Next: Push the closure candidate and continue through its PR/CI workflow. Do not start another PBI.
+Blocked: None. The prior Preview/AviCell mismatch is preserved as history and resolved by Owner decision: Preview is minimal seed; Owner/local is the AviCell integrity authority. The preexisting Owner `.DS_Store` remains untracked and protected.
 Last updated: 2026-09-20 MST
 
 ## Current checkpoint — PBI-041 canonical closure
@@ -45,9 +45,10 @@ Last updated: 2026-09-20 MST
 - [x] Run the single fresh canonical verification campaign: base `verify`
   passed 940/0/30 and `verify:full` passed Stages 0–13, PostgreSQL material,
   cleanup and fingerprint; PBI-041 10k publish measured 2,068.5 ms.
-- [!] Reconcile the final Owner-data integrity snapshot: the active Preview
-  database is a materially smaller seed scope, not the expected AviCell v3
-  Owner-data snapshot. Closure publication is stopped pending an Owner decision.
+- [x] Reconcile the final Owner-data integrity snapshot: the active Preview
+  database is a materially smaller seed scope; the Owner rejected copying or
+  seeding it and established Owner/local as the read-only AviCell authority.
+  Both Owner-data integrity and Preview release gates pass.
 - [ ] Promote the governed closure PR and require exact-main CI GREEN.
 
 Closure outcome after integration: PBI-041 `Done`, `Released: NO`; SPRINT-03

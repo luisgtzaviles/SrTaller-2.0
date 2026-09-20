@@ -4,7 +4,7 @@
 
 - **Estado:** Reconciliado con el roadmap Owner aprobado.
 - **Baseline Git local:** `main`/`origin/main` funcional observados en
-  `39ece042f5a3bf0800bb69d4d6e21a7d86e316ad`; CI exacta `35490480554`
+  `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca`; CI exacta `35539833596`
   GREEN verificada.
 - **Regla de ejecución:** WIP=1; el grafo expresa dependencia, no autorización
   ni paralelismo de implementación.

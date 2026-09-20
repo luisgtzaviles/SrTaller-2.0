@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado con `main` `39ece042` y CI exacta `35490480554`.
+**Estado:** Reconciliado con `main` `9b7a83d` y CI exacta `35539833596`.
 PBI-043 y SPRINT-02 están `Done`/`Closed`. SPRINT-03 está `Closed candidate`;
 PBI-040 es `Done` y PBI-041 `Done candidate`, ambos `Released: NO`. No existe
 PBI actual, WIP es `0/1`, Next candidate es `NONE` y PBI-042 permanece

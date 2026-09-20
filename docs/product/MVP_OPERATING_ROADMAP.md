@@ -4,7 +4,7 @@
 
 - **Estado:** Roadmap aprobado; SPRINT-02 cerrado y SPRINT-03 `Closed
   candidate` con PBI-040 `Done` y PBI-041 `Done candidate` después de
-  integración, exact-main CI y Preview PASS.
+  integración, exact-main CI, Preview PASS y reconciliación de data scope.
 - **Baseline Git observada:** Workflow Phase 1 integrado en `main` por
   `859825025cf1f9fa94a8b0ced5b91b95760e36a8`; CI exacta de `main`
   `34893081175`, `SUCCESS`.
@@ -105,7 +105,7 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Next PBI candidate | NONE; PBI-042 remains out of scope |
 | PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
 | PBI-040 status | Done — closure PR #52 / `a060494`; exact-main CI `34814070839` GREEN; Released NO |
-| Blocking gate | Canonical closure documentation integration |
+| Blocking gate | Canonical closure documentation integration; data-scope gates pass under their respective authorities |
 
 ## Fases aprobadas
 
@@ -239,8 +239,8 @@ PBI-039 está `Done`: PR #45 mergeó el cierre como `40684d7` y CI exacta
 integrado por PR #49, remediado por PR #50/#51 y validado en Preview sobre
 `09e14c8`; CI exacta `34809054770` quedó GREEN. El cierre PR #52 se integró
 como `a060494` y exact-main `34814070839` quedó GREEN: PBI-040 está `Done` y
-`Released: NO`. PBI-041 pasó Formal Re-Verification, PR #55/#56, revisión
-independiente, CI exactas y Preview sobre `39ece042`; queda `Done candidate`,
+`Released: NO`. PBI-041 pasó Formal Re-Verification, PR #55/#56/#57, revisión
+independiente, CI exactas y Preview sobre `9b7a83d`; queda `Done candidate`,
 `Released: NO`. SPRINT-03 queda `Closed candidate`, Current PBI `NONE`, WIP
 `0/1` y Next candidate `NONE` hasta integrar el cierre documental.
 PBI-028/PBI-037 tienen evidencia integrada, full verify, PostgreSQL 18.4, OCI,

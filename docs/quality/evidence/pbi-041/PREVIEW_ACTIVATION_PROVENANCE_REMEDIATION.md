@@ -96,6 +96,10 @@ preserved only as stopped container history and was not reactivated.
 
 ## Closure boundary
 
-Preview activation is no longer a blocker. Canonical PBI-041 closure
-verification and its documentation/PR workflow were deliberately not started
-by this Preview-only remediation. `Released: NO` remains unchanged.
+Preview activation is no longer a blocker. The subsequent canonical closure
+recheck distinguishes Preview release authority from Owner-data authority:
+Preview's minimal seed is not required to contain AviCell. The authoritative
+Owner/local datastore is read-only evidence for AviCell integrity, while this
+document remains release/runtime proof. See
+[data-scope reconciliation](CANONICAL_CLOSURE_DATA_SCOPE_RECONCILIATION.md).
+`Released: NO` remains unchanged.

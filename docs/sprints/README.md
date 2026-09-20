@@ -68,7 +68,8 @@ está `Done` y el Sprint `Closed`. Production sigue sin autorización.
 ## SPRINT-03
 
 SPRINT-03 ejecutó Price List Foundation. PBI-040 es `Done` y PBI-041 queda
-`Done candidate` después de verificación, integración y Preview PASS. No existe
+`Done candidate` después de verificación, integración, Preview PASS y la
+reconciliación de data scope Owner/local versus Preview. No existe
 Current PBI ni Next candidate. PBI-042 no perteneció al compromiso.
 
 - [Objetivo](sprint-03/SPRINT_GOAL.md)
