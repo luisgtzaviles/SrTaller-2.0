@@ -3,12 +3,12 @@
 Milestone / Functional Goal: PBI-041 — Canonical closure after Preview PASS
 Sprint: SPRINT-03 — Price List Foundation
 Current PBI: NONE
-Status: CANONICAL CLOSURE CANDIDATE after PBI-041 product, remediation, exact-main CI and Preview proof passed. Released: NO.
+Status: BLOCKED — canonical closure candidate full verification failed only at the PBI-041 10k publish budget. Product integration and Preview remain PASS; Released: NO.
 WIP: 0/1
 Progress: 8 / 10 closure blocks complete.
-Current: Validate and promote the documentation-only closure candidate.
-Next: Integrate the closure PR after governed review/CI, then verify exact-main CI.
-Blocked: NONE. Owner data, AviCell, Production and the preexisting .DS_Store remain protected.
+Current: Stop remote promotion after the mandatory local gate failure; preserve exact evidence and candidate state.
+Next: Diagnose/remediate the 10k publish over-budget result under a new governed candidate, then execute a fresh authoritative full gate before any push.
+Blocked: Stage 7 PBI-041 PostgreSQL measured 32,498.7 ms against the 30,000 ms publish budget. No rerun was used to overwrite the failure. Owner data, AviCell, Production and the preexisting .DS_Store remain protected.
 Last updated: 2026-09-19 MST
 
 ## Current checkpoint — PBI-041 canonical closure
@@ -29,7 +29,10 @@ Last updated: 2026-09-19 MST
   corrective deploy has no migration, data or Owner-state mutation.
 - [x] Reconcile PBI, Sprint, roadmap, backlog, evidence and changelog as a
   documentation-only closure candidate.
-- [~] Pass documentation links, consistency, secret scan and diff checks.
+- [!] Pass documentation links, consistency, secret scan and diff checks. The
+  Current PBI contract and base gate pass, but the required full pipeline stops
+  at Stage 7 because 10k publish measured `32,498.7 ms / 30,000 ms`; cleanup and
+  final fingerprint pass.
 - [ ] Promote the governed closure PR and require exact-main CI GREEN.
 
 Closure outcome after integration: PBI-041 `Done`, `Released: NO`; SPRINT-03
