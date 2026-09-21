@@ -2,7 +2,7 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-02 — Administrative Identity + Session Foundation
-iteration: 2 - Readiness Audit
+iteration: 3 - Implementation
 type: PRODUCT
 risk: SENSITIVE
 shadow_risk: SENSITIVE
@@ -21,11 +21,11 @@ last_updated: 2026-09-20
 - **Current PBI:** `NONE`; Tenant Lifecycle is proceeding through governed
   Work Units.
 Current PBI: NONE
-- **Status:** `ACTIVE` at the planning/readiness checkpoint.
-- **Progress:** `5 / 10` Work Unit blocks complete.
-- **Current work:** readiness plan complete; no product code implemented.
-- **Next block:** Owner authorization to begin TL-02 implementation.
-- **Blockers:** none technical; the planning checkpoint is intentional.
+- **Status:** `ACTIVE` in authorized implementation.
+- **Progress:** `7 / 14` Work Unit blocks complete.
+- **Current work:** administrative identity/session domain contracts complete.
+- **Next block:** administrative password cryptography and external configuration.
+- **Blockers:** none.
 - **Last updated:** 2026-09-20, America/Hermosillo.
 
 ## Objective
@@ -82,25 +82,26 @@ Station + PIN boundary.
 - [x] Define reuse/new boundaries, owner modules and proposed data model.
 - [x] Complete threat model selections and migration/test plan.
 - [x] Identify remaining Owner decisions and readiness status.
-- [ ] Obtain Owner authorization to cross the planning checkpoint.
-- [ ] Implement domain/config/cryptography and focused tests.
+- [x] Obtain Owner authorization to cross the planning checkpoint.
+- [x] Implement administrative identity/session/recovery domain contracts.
+- [~] Implement password cryptography/configuration and focused tests.
 - [ ] Implement migration/repositories and material PostgreSQL tests.
 - [ ] Implement use cases, HTTP boundary and authorization executor.
 - [ ] Complete local proof, hardening, documentation and promotion gates.
 
 ## Current
 
-Planning/readiness audit complete. Product implementation has not started.
+Administrative email/password and session/recovery temporal contracts are
+implemented with focused domain tests.
 
 ## Next
 
-Owner reviews the readiness plan and explicitly authorizes implementation of
-TL-02. Do not begin TL-03.
+Implement the separate administrative Argon2id purpose, pepper configuration,
+dummy verification and bounded work. Do not begin TL-03.
 
 ## Blockers
 
-None technical. Implementation intentionally waits at the requested planning
-checkpoint.
+None.
 
 ## Important Discoveries
 
@@ -126,6 +127,7 @@ checkpoint.
 - [x] Docs-only gate — correctly rejected as not applicable because the
   security/readiness contract classifies `FULL`.
 - [ ] Focused TL-02 domain/application/HTTP/PostgreSQL tests during implementation.
+- [x] TL-02 domain tests — 3 PASS.
 - [ ] Typecheck, build and architecture checks during implementation.
 - [ ] Current risk pipeline plus `verify:full` before promotion.
 
