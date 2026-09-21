@@ -401,10 +401,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260917190000_catalog_create_field_policies.ts',
     'src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts',
     'src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts',
+    'src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -493,6 +494,15 @@ test('registered module presentation and Health are the explicitly governed HTTP
           file: 'src/modules/access/access.module.ts',
           className: 'AccessModule',
           importSpecifier: './presentation/access-session.controller.js',
+        },
+      },
+      'src/modules/access/presentation/admin-session.controller.ts': {
+        owner: 'access',
+        className: 'AdminSessionController',
+        composition: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: './presentation/admin-session.controller.js',
         },
       },
       'src/modules/access/presentation/user-preferences.controller.ts': {

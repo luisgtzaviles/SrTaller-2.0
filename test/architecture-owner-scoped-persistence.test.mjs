@@ -32,6 +32,8 @@ const operationalSessionPortPath =
   'src/modules/access/application/ports/operational-session-repository.port.ts';
 const operationalSessionAdapterPath =
   'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts';
+const adminAuthAdapterPath =
+  'src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts';
 
 test('owner-scoped ports and adapters retain exact ownership registration', async () => {
   const policy = JSON.parse(
@@ -165,6 +167,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
       'src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts',
       'src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts',
       operationalSessionAdapterPath,
+      adminAuthAdapterPath,
       'src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts',
     ],
     status: 'materialized-owner-internal-capability',
@@ -185,7 +188,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   );
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_commands' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_eligibility_tenant_guards' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits' \| 'access_operational_session_station_guards' \| 'access_operational_sessions'>/u,
+    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_commands' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_eligibility_tenant_guards' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits' \| 'access_operational_session_station_guards' \| 'access_operational_sessions' \| 'access_admin_identities' \| 'access_admin_password_credentials' \| 'access_admin_sessions' \| 'access_admin_auth_attempt_limits' \| 'access_admin_recovery_challenges' \| 'access_admin_security_events'>/u,
   );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),

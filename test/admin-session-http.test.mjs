@@ -81,7 +81,7 @@ function harness() {
     'sec-fetch-site': 'same-origin', 'content-type': 'application/json',
     'x-sr-admin-csrf-token': active.csrf, cookie,
   };
-  return { active, calls, controller, cookie, current, mutationHeaders };
+  return { active, calls, controller, cookie, current, mutationHeaders, runtime };
 }
 
 test('administrative cookies are separate, strict, opaque and operationally unusable', () => {
@@ -138,5 +138,20 @@ test('admin self-session mutations require the separate CSRF audience', async ()
   await assert.rejects(
     controller.reauthenticate({ password: 'valid synthetic password' }, { ...mutationHeaders, 'x-sr-admin-csrf-token': 'invalid' }, responseStub()),
     UnauthorizedException,
+  );
+});
+
+test('admin session revocation preserves unexpected infrastructure failures', async () => {
+  const { controller, mutationHeaders, runtime } = harness();
+  const infrastructureFailure = new Error('synthetic repository failure');
+  runtime.admin.sessions.revokeOne = async () => { throw infrastructureFailure; };
+  await assert.rejects(
+    controller.revokeOne('a0000000-0000-4000-8000-000000000099', mutationHeaders, responseStub()),
+    (error) => error === infrastructureFailure,
+  );
+  runtime.admin.sessions.revokeAll = async () => { throw infrastructureFailure; };
+  await assert.rejects(
+    controller.revokeAll(mutationHeaders, responseStub()),
+    (error) => error === infrastructureFailure,
   );
 });

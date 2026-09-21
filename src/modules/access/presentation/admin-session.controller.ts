@@ -206,7 +206,14 @@ export class AdminSessionController {
   async revokeOne(@Param('sessionId') sessionId: string, @Headers() headers: HeadersValue, @Res({ passthrough: true }) response: Response): Promise<void> {
     response.setHeader('Cache-Control', 'no-store');
     validateMutationTransport(headers);
-    await this.runtime.admin.sessions.revokeOne(await this.resolveOrDeny(headers, true), sessionId, randomUUID()).catch(() => { throw new UnauthorizedException({ code: 'ADMIN_SESSION_DENIED' }); });
+    try {
+      await this.runtime.admin.sessions.revokeOne(await this.resolveOrDeny(headers, true), sessionId, randomUUID());
+    } catch (error: unknown) {
+      if (error instanceof UnauthorizedException || error instanceof AdminAuthenticationError || error instanceof AdminSessionCookieError) {
+        throw new UnauthorizedException({ code: 'ADMIN_SESSION_DENIED' });
+      }
+      throw error;
+    }
   }
 
   @Delete('sessions')
@@ -214,7 +221,14 @@ export class AdminSessionController {
   async revokeAll(@Headers() headers: HeadersValue, @Res({ passthrough: true }) response: Response): Promise<void> {
     response.setHeader('Cache-Control', 'no-store');
     validateMutationTransport(headers);
-    await this.runtime.admin.sessions.revokeAll(await this.resolveOrDeny(headers, true), randomUUID()).catch(() => { throw new UnauthorizedException({ code: 'ADMIN_SESSION_DENIED' }); });
+    try {
+      await this.runtime.admin.sessions.revokeAll(await this.resolveOrDeny(headers, true), randomUUID());
+    } catch (error: unknown) {
+      if (error instanceof UnauthorizedException || error instanceof AdminAuthenticationError || error instanceof AdminSessionCookieError) {
+        throw new UnauthorizedException({ code: 'ADMIN_SESSION_DENIED' });
+      }
+      throw error;
+    }
     response.setHeader('Set-Cookie', expireAdminSessionCookies(this.secureCookie(headers)));
   }
 

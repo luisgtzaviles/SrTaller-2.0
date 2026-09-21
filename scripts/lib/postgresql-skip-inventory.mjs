@@ -38,6 +38,8 @@ export const expectedPostgresqlSkipInventory = Object.freeze([
   materialTest('test/bulk-catalog-postgresql.test.mjs', 'UX-005.6 rejects zero effective base prices at Analyze and independently at Apply', 'pbi041-postgresql'),
   materialTest('test/catalog-authorization-postgresql.test.mjs', 'granular catalog capability migration preserves compatibility and materializes the role matrix', 'pbi041-postgresql'),
   materialTest('test/catalog-postgresql.test.mjs', 'UX-005.6 promotes one exact pending Brand group atomically without fuzzy matching or duplicate canonicals', 'pbi041-postgresql', 'pbi041Enabled'),
+  materialTest('test/tl02-admin-auth-postgresql.test.mjs', 'TL-02 persistence enforces tenant identity, secret shape and append-only audit', 'tl02-postgresql'),
+  materialTest('test/tl02-admin-auth-postgresql.test.mjs', 'TL-02 PostgreSQL executes concurrent sessions, rate limit, reauth, revocation and recovery without Operational Session crossover', 'tl02-postgresql'),
 ]);
 
 function inspectGuardedTests(source, file) {
@@ -111,6 +113,7 @@ export async function inspectPostgresqlSkipInventory(root = process.cwd()) {
       pbi039Postgresql: materialCount('pbi039-postgresql'),
       pbi040Postgresql: materialCount('pbi040-postgresql'),
       pbi041Postgresql: materialCount('pbi041-postgresql'),
+      tl02Postgresql: materialCount('tl02-postgresql'),
     }),
   });
 }

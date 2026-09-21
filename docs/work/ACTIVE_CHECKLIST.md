@@ -110,7 +110,8 @@ None.
 - Existing PIN/Operational Session code provides patterns, not shared
   credentials, cookies, guards or audience.
 - No capability registry change is necessary for self-session foundation.
-- Current schema has 75 migrations; TL-02 can be additive without backfill.
+- Current schema has 76 migrations after the additive TL-02 foundation; no
+  backfill was required.
 - Recovery transport/provider remains TL-04 and does not block the internal
   recovery contract.
 
@@ -132,7 +133,8 @@ None.
 - [x] TL-02 domain tests — 3 PASS; password/token tests — 2 PASS.
 - [x] TL-02 application use-case tests — 4 PASS.
 - [x] TL-02 PostgreSQL persistence — PASS; 76 migrations, second run 0 pending.
-- [x] TL-02 HTTP/session audience tests — 3 PASS.
+- [x] TL-02 HTTP/session audience tests — 4 PASS, including infrastructure
+  failure preservation during revocation.
 - [x] TL-02 administrative authorization tests — 3 PASS.
 - [x] Local provisioner guard/input tests — 2 PASS.
 - [x] Material TL-02 PostgreSQL proof — 2 PASS; concurrent sessions, abuse,
