@@ -2,10 +2,11 @@
 
 ## Resultado
 
-Los ocho bloques autorizados están materializados y el candidato local queda
-`READY_FOR_PROMOTION`, sujeto a autorización Owner separada para toda acción
-remota. No se implementó registro público, Tenant bootstrap, transporte de
-email, Branch/Station management, shell administrativo ni TL-03.
+Los ocho bloques autorizados están materializados. El candidato local queda
+`BLOCKED` para promoción porque la campaña `verify:full` no cerró en verde;
+no existe autorización remota. No se implementó registro público, Tenant
+bootstrap, transporte de email, Branch/Station management, shell
+administrativo ni TL-03.
 
 ## Implementación
 
@@ -67,7 +68,12 @@ dependencia arquitectónica sin consumidor sólo para exponerlo.
   completa vigente;
 - typecheck, build, architecture, Work Unit, links, secret scan y
   `git diff --check`: PASS;
-- `verify` y `verify:full`: PASS sobre el candidato local exacto.
+- `verify`: PASS, con 975 pruebas en verde, 32 skips PostgreSQL gobernados y
+  cero fallos;
+- `verify:full`: FAIL exclusivamente en Stage 7 porque el benchmark histórico
+  PBI-041 publicó 10k filas en 35.4 segundos después del composite, sobre su
+  presupuesto de 30 segundos. La misma suite aislada fue 10/10 PASS y publicó
+  en 2.18 segundos. El umbral no se relajó y el stage no se omitió ni reordenó.
 
 Los resultados locales no sustituyen CI remota, review independiente, merge o
 exact-main CI.

@@ -8,7 +8,7 @@ risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: feature/tl-02-admin-identity-session
 base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
-status: READY_FOR_PROMOTION
+status: BLOCKED
 closure_mode: DERIVED
 last_updated: 2026-09-20
 -->
@@ -21,11 +21,16 @@ last_updated: 2026-09-20
 - **Current PBI:** `NONE`; Tenant Lifecycle is proceeding through governed
   Work Units.
 Current PBI: NONE
-- **Status:** `READY_FOR_PROMOTION`; implementation and local gates complete.
-- **Progress:** `14 / 14` Work Unit blocks complete.
-- **Current work:** local candidate frozen; no remote action authorized.
-- **Next block:** Owner decision on remote promotion. Do not begin TL-03.
-- **Blockers:** none.
+- **Status:** `BLOCKED`; implementation is complete but the exact full local
+  promotion campaign has not passed.
+- **Progress:** `13 / 14` Work Unit blocks complete.
+- **Current work:** candidate preserved after focused and base gates passed.
+- **Next block:** repeat `verify:full` on a stable governed host; do not begin
+  TL-03 or promote remotely until it passes on the exact candidate.
+- **Blockers:** PBI-041's pre-existing 10k publish performance gate exceeds its
+  30-second budget only after the long PostgreSQL composite (35.4 seconds in
+  the latest full campaign); the same exact test passes isolated at 2.18
+  seconds.
 - **Last updated:** 2026-09-20, America/Hermosillo.
 
 ## Objective
@@ -91,17 +96,22 @@ Station + PIN boundary.
 
 ## Current
 
-The eight authorized implementation blocks and the local promotion gates are
-complete. The candidate remains local and frozen pending an Owner decision on
-remote promotion.
+The eight authorized implementation blocks are complete. Focused and base
+gates pass, but the exact full campaign remains blocked by the host-sensitive
+PBI-041 performance gate described below. No remote promotion is allowed yet.
 
 ## Next
 
-Await explicit Owner authorization before push/PR. Do not begin TL-03.
+Rerun the exact full campaign on a stable governed host. After it passes,
+reconcile this Work Unit to `READY_FOR_PROMOTION` and await explicit Owner
+authorization before push/PR. Do not begin TL-03.
 
 ## Blockers
 
-None.
+The exact `verify:full` campaign reaches Stage 7 and fails because PBI-041's
+10k publish measures 35.4 seconds after the long material PostgreSQL composite,
+above its 30-second budget. The same test passes in isolation at 2.18 seconds.
+The gate was not weakened, skipped or reordered.
 
 ## Important Discoveries
 
@@ -142,14 +152,18 @@ None.
 - [x] Local runtime — `/livez` 200 and unauthenticated `/api/admin/session`
   returns a distinct login-CSRF challenge with `no-store` and no Station.
 - [x] Typecheck and architecture checks — PASS through implementation block 4.
-- [x] Current risk pipeline plus `verify:full` — PASS on the exact local
-  candidate.
+- [x] Current base `verify` — PASS: 975 pass, 32 governed material skips, zero
+  failures.
+- [!] Exact `verify:full` — FAIL at Stage 7 only: PBI-041 10k publish 35.4s /
+  30s budget after the PostgreSQL composite. The isolated Stage 7 suite is
+  otherwise 10/10 PASS with publish 2.18s.
 
 ## Promotion Gates
 
 - Planning checkpoint reviewed and implementation authorized by Owner.
 - Material PostgreSQL, security, isolation and abuse tests pass.
-- Full promotion pipeline/review required by the final classified diff passes.
+- Full promotion pipeline/review required by the final classified diff remains
+  pending; remote promotion is blocked until an exact campaign passes.
 - No remote action, merge or deploy is implied.
 
 ## Remote Actions / Authorization
