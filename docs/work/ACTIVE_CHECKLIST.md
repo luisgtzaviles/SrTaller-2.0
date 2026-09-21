@@ -1,14 +1,14 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: QUALITY — Stabilize PBI-041 Governed Performance Gate
-iteration: 2 - Native Performance Gate Remediation
+work_unit: QUALITY — Validate PBI-041 Transaction Performance Budget
+iteration: 1 - Contract Investigation
 type: QUALITY
 risk: HIGH
 shadow_risk: SENSITIVE
-branch: fix/pbi-041-performance-gate
-base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
-status: READY_FOR_PROMOTION
+branch: chore/pbi-041-transaction-budget-review
+base_sha: 4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -16,140 +16,135 @@ last_updated: 2026-09-21
 ## Identity
 
 - **Milestone:** Tenant Lifecycle MVP promotion dependency.
-- **Work Unit:** QUALITY — Stabilize PBI-041 Governed Performance Gate.
+- **Work Unit:** QUALITY — Validate PBI-041 Transaction Performance Budget.
 - **Sprint:** none.
-- **Current PBI:** `NONE`; this is a quality remediation dependency.
+- **Current PBI:** `NONE`; this is a Quality investigation dependency.
 Current PBI: NONE
-- **Status:** `READY_FOR_PROMOTION`.
-- **Progress:** `9 / 9` diagnostic/remediation blocks complete.
-- **Current work:** local Quality remediation complete and stopped before
-  remote promotion.
-- **Next block:** push and Draft PR only with separate Owner authorization.
-- **Blockers:** none for diagnosis; TL-02 promotion remains externally blocked.
+- **Status:** `ACTIVE`.
+- **Progress:** `1 / 7` investigation blocks complete.
+- **Current work:** trace the origin, authority and evidence behind the
+  15-second PostgreSQL transaction gate.
+- **Next block:** compare historical requirements, measurement boundaries and
+  prior observations before deciding whether a bounded diagnostic is needed.
+- **Blockers:** none for the investigation; TL-02 remains paused and preserved.
 - **Last updated:** 2026-09-21, America/Hermosillo.
 
 ## Objective
 
-Make PBI-041's governed performance gate meaningful, reproducible and
-deterministic without assuming the threshold or product implementation is
-wrong.
+Determine whether the PBI-041 PostgreSQL transaction duration of at most 15
+seconds is justified, correctly measured and independently valuable as a hard
+promotion gate.
 
 ## Why
 
-The same 10k publish path has measured from roughly two seconds to more than
-35 seconds. TL-02 is complete but cannot be promoted while FULL contains this
-unexplained blocking variance.
+The reconciled TL-02 candidate passes its own focused and material checks, but
+PBI-041 published within 30 seconds while its nearly identical transaction
+measurement exceeded the newly introduced 15-second budget. Authority and
+evidence for that stricter boundary must be established before remediation.
 
 ## In Scope
 
-- Audit the origin and meaning of the 30-second PBI-041 threshold.
-- Instrument the real benchmark without distorting the product operation.
-- Run a bounded, controlled diagnostic campaign.
-- Attribute variance and check for a genuine product/database regression.
-- Define and implement only the smallest evidence-supported quality fix.
-- Protect the measurement boundary with regression tests.
+- Trace the commit, documents and code that introduced the 15-second limit.
+- Reconstruct the accepted historical PBI-041 performance requirement.
+- Inspect publish and transaction measurement boundaries.
+- Review the evidence and sampling behind the prior Quality remediation.
+- Run only a small bounded diagnostic campaign if repository evidence is
+  insufficient to answer the contract question.
+- Classify the independent value of the transaction gate and recommend the
+  smallest correct governed contract.
 
 ## Out of Scope
 
-- Arbitrarily raising, removing, skipping or retrying the performance gate.
-- Speculative SQL/PostgreSQL/product optimization.
-- TL-02 product changes, TL-03, remote writes, PR, merge or deploy.
-- CI or infrastructure changes made merely to obtain GREEN.
+- Product, SQL or index optimization.
+- Changing, removing or relaxing either performance threshold.
+- Repeated execution until a green observation appears.
+- TL-02 changes, TL-03, push, PR, merge, deploy or infrastructure changes.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`BRANCH_POLICY.md`](../delivery/BRANCH_POLICY.md)
-- [`QUALITY_STRATEGY.md`](../quality/QUALITY_STRATEGY.md)
+- [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](../delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
+- [`PRICE_LIST_ARCHITECTURE.md`](../architecture/PRICE_LIST_ARCHITECTURE.md)
 - [`PBI-041`](../backlog/pbis/PBI-041.md)
-- [`PBI-041 evidence index`](../quality/evidence/pbi-041/README.md)
+- [`PBI-041 Performance Gate Stabilization`](../quality/evidence/pbi-041/PERFORMANCE_GATE_STABILIZATION.md)
 
 ## Risks
 
-- Conflating infrastructure latency with product execution time.
-- Replacing a meaningful regression gate with a host-dependent benchmark.
-- Selecting the fastest run instead of explaining the distribution.
-- Changing product or thresholds before proving the cause.
-- Losing TL-02 traceability while resolving its promotion dependency.
+- Treating current code as authority could legitimize an unsupported limit.
+- Selecting only fast samples could hide ordinary environmental variance.
+- Retrying until green would turn diagnosis into misleading promotion proof.
+- Changing policy during the audit would bypass Owner authority.
+- Touching TL-02 would break preservation of the functionally green candidate.
 
 ## Plan
 
-- [x] Freeze TL-02 on its preserved branch without rewriting history.
-- [x] Audit historical PBI-041 performance intent and evidence.
-- [x] Instrument the current benchmark phases.
-- [x] Execute bounded controlled reproduction.
-- [x] Attribute variance with measured evidence.
-- [x] Assess product/database regression.
-- [x] Define the authoritative performance contract.
-- [x] Implement and regression-test the minimum quality remediation.
-- [x] Validate and prepare the Quality Work Unit for Owner review.
+- [x] Pause and preserve TL-02 on its reconciled branch.
+- [~] Trace the 15-second requirement and classify its authority.
+- [ ] Reconstruct the historical PBI-041 performance contract.
+- [ ] Compare publish and transaction measurement boundaries.
+- [ ] Assess prior evidence quality and current variance.
+- [ ] Run one bounded diagnostic campaign only if needed.
+- [ ] Record classification, recommendation and required Owner decision.
 
 ## Current
 
-The performance runner now selects a pinned native PostgreSQL 18.4 image,
-separates harness phases from product timing and enforces both the existing
-15-second DB transaction and 30-second service ceilings.
+TL-02 is frozen on its own branch after a material PBI-041 transaction result
+of 20.534 seconds against 15 seconds; its publish duration remained inside the
+historical 30-second budget. This Quality branch starts from current `main` and
+contains no TL-02 implementation.
 
 ## Next
 
-Await explicit Owner authorization for remote promotion of this Quality Work
-Unit. TL-02 remains frozen until the remediation is integrated.
+Use Git history, accepted contracts, test code and existing evidence to
+determine when and why the transaction limit appeared and whether it protects a
+distinct performance failure mode.
 
 ## Blockers
 
-None for the authorized diagnostic work. TL-02 cannot resume promotion until
-this predecessor is integrated and its branch is reconciled from new `main`.
+None for read-only investigation. Any policy change or product remediation
+requires a new explicit Owner decision after the evidence is reported.
 
 ## Important Discoveries
 
-- Branch policy explicitly permits freezing an unintegrated branch while a
-  preceding remediation is completed, then reconciling it from new `main`.
-- TL-02 is preserved at `bda3a70d63dcc7c37e15ec2c8c419941c9731790`.
-- The PBI-041 publish measurement has varied materially both inside FULL and
-  in isolation; retrying until green is not evidence.
-- The historical contract defines a 30-second HTTP budget and a 15-second DB
-  transaction budget; the current material test calls the service directly and
-  previously enforced only 30 seconds.
-- Controlled samples on the same Apple `arm64` host measured emulated `amd64`
-  PostgreSQL publish at 2.0, 28.7 and 13.2 seconds; slow time accumulated in DB
-  query awaits, not provisioning or application work.
-- A native PostgreSQL 18.4 control measured 1.8 seconds and the remediated
-  governed runner measured 1.6 seconds with a 1.6-second transaction.
-- No Catalog product/SQL regression was identified; the integrated publish
-  implementation is unchanged from the known batching remediation.
+- TL-02 is preserved at `6ea9d15874acce1c006c204ee70933f15cb5dec1`.
+- The Quality Work Unit starts from integrated `main`
+  `4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5`.
+- The observed failing publish and transaction measurements were effectively
+  identical; the cause and contract value remain under investigation.
 
 ## Focused Verification
 
-- [x] Historical contract audit complete.
-- [x] Instrumentation regression tests PASS — 4/4.
-- [x] Controlled campaign complete with environment and phase timings.
-- [x] Product regression assessment complete.
-- [x] Focused quality checks PASS — typecheck, 36 focused contracts,
-  architecture, Work Unit, Markdown links and secret scan.
-- [x] Remediated PBI-041 PostgreSQL material suite PASS — 10/10, 75
-  migrations, second run 0 pending, cleanup PASS.
-- [x] `git diff --check` PASS.
+- [x] Branch, baseline, tracked tree and unrelated `.DS_Store` checked.
+- [x] TL-02 branch frozen before starting the Quality Work Unit.
+- [ ] Git history and accepted-contract trace.
+- [ ] Measurement-boundary inspection.
+- [ ] Evidence/sample-quality review.
+- [ ] Bounded diagnostic, if justified.
+- [ ] Work Unit checker, documentation links and `git diff --check`.
 
 ## Promotion Gates
 
-- No promotion gate may be weakened.
-- A product change requires a proven product regression and renewed scope.
-- Remote promotion requires separate Owner authorization after local review.
+- This investigation does not change the current 15-second or 30-second gates.
+- A recommended policy change requires explicit Owner authority before
+  implementation.
+- Remote promotion is not authorized in this Work Unit.
 
 ## Remote Actions / Authorization
 
+- Read-only fetch already completed while pausing TL-02.
 - No push, PR, merge, deploy or remote/infrastructure mutation is authorized.
 
 ## Handoff Notes
 
-- Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
-- Do not modify or push the frozen TL-02 branch.
-- Do not start TL-03.
+- Preserve `apps/dev-preview-web/src/.DS_Store` as an unrelated Owner artifact.
+- Do not modify or rebase `feature/tl-02-admin-identity-session`.
+- Record all diagnostic observations, not only passing ones.
 
 ## Closure Predicate
 
-This Quality Work Unit closes only after its exact candidate is merged by an
-authorized PR and required exact-main CI is GREEN. No deployment is required
-for this harness-only change. Reconciliation and revalidation of frozen TL-02
-remain a separate, later authorized step.
+This investigation reaches its checkpoint when repository authority,
+measurement boundaries and available observations support one explicit gate
+classification and an actionable recommendation without changing policy or
+product behavior. TL-02 remains paused until the resulting Owner decision is
+implemented and independently verified where required.
