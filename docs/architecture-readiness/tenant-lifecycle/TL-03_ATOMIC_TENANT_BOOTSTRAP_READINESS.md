@@ -4,12 +4,11 @@
 
 - **Work Unit:** TL-03 — Atomic Tenant Bootstrap + Starter Authority.
 - **Tipo / riesgo:** `DISCOVERY` / `ARCHITECTURAL`.
-- **Resultado:** `OWNER DECISIONS REQUIRED`.
-- **Implementación de producto:** no iniciada.
+- **Resultado:** `IMPLEMENTATION AUTHORIZED`.
+- **Implementación de producto:** autorizada en la Work Unit TL-03 vigente.
 - **Dependencia satisfecha:** TL-02 está integrada y cerrada; su identidad,
   password credential y Admin Session son reutilizables.
-- **Dependencias abiertas:** bundle exacto de autoridad inicial, moneda inicial
-  y tratamiento del nombre visible de Tenants ya existentes.
+- **Dependencias abiertas:** ninguna decisión Owner de readiness.
 
 Este documento define el candidato de implementación. No crea endpoints,
 migraciones, datos, sesiones, Tenants ni autoridad.
@@ -351,11 +350,11 @@ promoción. No implica autorización de implementación.
 - todos los inserts existentes de Tenant y fixtures quedan compatibles;
 - arquitectura DEC-005/DEC-049 y ownership registry pasan.
 
-## 14. Decisiones Owner requeridas
+## 14. Decisiones Owner aprobadas
 
 ### TL3D-001 — Bundle exacto del starter Role
 
-**Recomendación:** autorizar policy v1 con:
+**Aprobado:** policy v1 con:
 
 - `tenant.profile.read`, `tenant.profile.manage`;
 - `branches.read`, `branches.manage`, `branches.deactivate`;
@@ -373,20 +372,23 @@ capability sustitutiva.
 ### TL3D-002 — Moneda inicial
 
 `operating_currency` es obligatorio pero no forma parte del registro público
-aprobado. **Recomendación:** bootstrap server-owned en `MXN` para MVP; no aceptar
+aprobado. **Aprobado:** bootstrap server-owned en `MXN` para MVP; no aceptar
 currency del cliente y diferir selección/cambio a un Work Unit autorizado.
 
 ### TL3D-003 — Nombre de Tenants existentes
 
-El schema actual no tiene workshop/display name. **Recomendación:** para datos
+El schema actual no tiene workshop/display name. **Aprobado:** para datos
 sintéticos/local/Preview usar mapping explícito de seed; para cualquier Tenant
 no sintético exigir un backfill administrado antes del `NOT NULL`. No inventar
 un nombre genérico ni derivarlo de Branch/email. Los Tenants existentes se
-marcan `ACTIVE`; los nuevos de TL-03 nacen `ONBOARDING`.
+se clasifican con las invariantes aceptadas: sólo quedan `ACTIVE` si la
+autoridad administrativa efectiva y una Branch activa ya existen; en otro caso
+quedan `ONBOARDING`. Una inconsistencia sin mapping/estado confiable falla
+cerrada. Los nuevos de TL-03 nacen `ONBOARDING`.
 
 ### TL3D-004 — Unicidad del nombre visible
 
-**Recomendación:** permitir nombres de taller duplicados. `tenant_id` es
+**Aprobado:** permitir nombres de taller duplicados. `tenant_id` es
 identidad y `normalized_email` conserva la restricción V1; el nombre visible no
 autoriza ni deduplica.
 
@@ -397,7 +399,6 @@ contextos/lifecycle y DEC-049 permite la coordinación cross-module mediante
 puertos owner-specific en una transacción dirigida por aplicación.
 
 La forma de implementación, transacción, idempotencia, integración TL-02,
-threat model y plan de pruebas quedan definidos. El Work Unit permanece
-`BLOCKED` y fail-closed hasta que el Owner resuelva `TL3D-001–004`. Después de
-esas decisiones puede pasar directamente a autorización de implementación; no
-requiere rehacer discovery ni iniciar TL-04.
+threat model y plan de pruebas quedan definidos. `TL3D-001–004` fueron
+aprobadas y la implementación de los ocho bloques está autorizada en esta Work
+Unit. No se inicia TL-04.

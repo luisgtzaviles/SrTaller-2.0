@@ -2,13 +2,13 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-03 — Atomic Tenant Bootstrap + Starter Authority
-iteration: 1 - Discovery and Readiness
-type: DISCOVERY
+iteration: 2 - Authorized Implementation
+type: IMPLEMENTATION
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-03-atomic-tenant-bootstrap
 base_sha: cca47e9204bfe0ad8c1cb78c08a506888b7b1535
-status: BLOCKED
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -16,11 +16,11 @@ last_updated: 2026-09-21
 Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
-General State: Discovery / Owner decisions required
-Progress: 7 / 9 readiness blocks complete
-Current Work: Resolve TL3D-001–004
-Next Block: Implementation authorization, if Owner decisions are approved
-Blocking: Starter bundle, initial currency and legacy Tenant naming policy
+General State: Authorized implementation / Functional foundation
+Progress: 0 / 8 implementation blocks complete
+Current Work: Tenant schema and bootstrap journal
+Next Block: Protected starter authority policy
+Blocking: NONE
 Last Updated: 2026-09-21
 
 ## Objective
@@ -40,7 +40,6 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Out of Scope
 
-- Product implementation, migrations and database writes.
 - Public registration/email delivery (TL-04).
 - Branch lifecycle/activation (TL-05), Users UI (TL-06) and Station enrollment.
 - Admin UI, push, PR, merge or deploy.
@@ -70,24 +69,28 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Define schema/migration requirements.
 - [x] Define threat model and failure semantics.
 - [x] Define incremental implementation blocks and test plan.
-- [~] Resolve Owner decisions TL3D-001–004.
-- [ ] Receive separate implementation authorization.
+- [x] Resolve Owner decisions TL3D-001–004.
+- [x] Receive separate implementation authorization.
+- [~] Block 1 — Tenant schema, trustworthy backfill and bootstrap journal.
+- [ ] Block 2 — Protected/versioned starter Role and capability policy.
+- [ ] Block 3 — Transaction-aware owner persistence ports.
+- [ ] Block 4 — Internal bootstrap domain/application contract.
+- [ ] Block 5 — Atomic orchestration and sanitized audit.
+- [ ] Block 6 — Idempotency, concurrency and failure injection.
+- [ ] Block 7 — TL-02 login, isolation and operational-auth regression.
+- [ ] Block 8 — Evidence, full verification and promotion handoff.
 
 ## Current
 
-Readiness audit complete; waiting on four bounded Owner decisions.
+Implementing Block 1: additive Tenant lifecycle schema and durable journal.
 
 ## Next
 
-Owner resolves TL3D-001–004; then implementation may be authorized without
-restarting discovery.
+Complete Block 1 with migration and PostgreSQL regression coverage.
 
 ## Blockers
 
-- [!] Exact starter Tenant Admin capability bundle is not yet approved.
-- [!] Initial currency and legacy Tenant display-name migration policy are not
-  yet approved.
-- [!] Workshop display-name uniqueness is not yet explicit.
+None.
 
 ## Important Discoveries
 

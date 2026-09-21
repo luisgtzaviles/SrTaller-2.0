@@ -6,7 +6,7 @@
   gates de producto; Git/GitHub/CI/runtime gobiernan la materialización.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
-- **Fase:** Tenant Lifecycle MVP — Atomic Tenant Bootstrap readiness.
+- **Fase:** Tenant Lifecycle MVP — Atomic Tenant Bootstrap implementation.
 - **Checkpoint alcanzado:** Pricing Catalog cerrado conforme a los PBI y
   autoridades técnicas enlazadas; TL-01 y TL-02 están cerrados por integración
   gobernada y exact-main CI. `Released` permanece separado.
@@ -15,12 +15,11 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** TL-03 está en discovery/readiness y requiere decisiones
-  Owner sobre el bundle inicial, moneda y compatibilidad de datos Tenant antes
-  de autorizar implementación. Production no está autorizada.
+- **Blocking gate:** completar los ocho bloques TL-03 y su verificación local
+  autoritativa antes de cualquier promoción. Production no está autorizada.
 - **WIP operacional:** `1/1 Work Unit`; `0/1 PBI`.
 - **Autoridad:** decisiones Owner TL-001–016/TLD-001–009, TL-01/TL-02 cerrados
-  e inicio explícito de TL-03 sólo para discovery/readiness.
+  e implementación explícita de TL-03 con TL3D-001–004 aprobadas.
 
 ## Objetivo
 
@@ -85,14 +84,14 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
-| Phase | Tenant Lifecycle MVP — Atomic Tenant Bootstrap readiness |
+| Phase | Tenant Lifecycle MVP — Atomic Tenant Bootstrap implementation |
 | Sprint | NONE; SPRINT-03 remains Closed |
 | Sprint status | No active Sprint |
 | Current PBI | NONE |
-| Active Work Unit | TL-03 — Atomic Tenant Bootstrap + Starter Authority (`BLOCKED`, Owner decisions required) |
+| Active Work Unit | TL-03 — Atomic Tenant Bootstrap + Starter Authority (`ACTIVE`, implementation authorized) |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | Owner decisions TL3D-001–004 before TL-03 implementation authorization |
+| Blocking gate | Complete TL-03 implementation, material PostgreSQL proof and authoritative local verification |
 
 ## Fases aprobadas
 
@@ -264,8 +263,8 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** decisiones Owner TL3D-001–004 y autorización separada para
-  implementar TL-03.
+- **Disparador:** completar TL-03 localmente y detenerse en
+  `READY_FOR_PROMOTION`; push/PR continúan sin autorización.
 - **Estado conservado:** PBI-040 y PBI-041 `Done`, `Released: NO`; Current PBI
   `NONE`; Production no autorizada.
 - **Después:** no iniciar TL-04 ni otro PBI/Work Unit automáticamente.
