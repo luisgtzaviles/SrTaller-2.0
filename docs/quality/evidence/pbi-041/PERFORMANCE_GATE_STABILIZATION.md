@@ -6,8 +6,10 @@ This Quality Work Unit investigated the unstable PBI-041 10k publish gate
 without changing Catalog product behavior, SQL, chunk sizes, PostgreSQL tuning
 or thresholds. TL-02 remained frozen as a dependent candidate. The remediation
 selects a pinned PostgreSQL 18.4 image native to the Docker server, separates
-harness phases from product timing, applies both existing publish budgets and
-emits sanitized query-family diagnostics on demand.
+harness phases from product timing, measures both existing publish budgets and
+emits sanitized query-family diagnostics on demand. A later Owner decision,
+recorded in the transaction-budget review, corrected the recurring enforcement
+of the 15-second p95 target without changing this native-runner remediation.
 
 ## Historical contract audit
 
@@ -35,9 +37,9 @@ The recurring material test creates and analyzes an exact 10k synthetic list,
 then measures:
 
 1. `BulkCatalogService.publish` wall-clock, including currency lookup and the
-   complete repository call: ≤30,000 ms;
-2. the serializable transaction from `START TRANSACTION` through `COMMIT`:
-   ≤15,000 ms;
+   complete repository call: ≤30,000 ms blocking;
+2. the serializable transaction from `START TRANSACTION` through `COMMIT`,
+   compared visibly with the historical p95 target ≤15,000 ms;
 3. 70 client-observed query calls grouped only by operation/table for optional
    diagnostics.
 
@@ -99,15 +101,19 @@ as a proven primary cause.
 
 ## Governed contract after remediation
 
-- **Boundary:** service publish wall-clock ≤30 s and its DB transaction ≤15 s.
+- **Boundary:** service publish wall-clock ≤30 s blocks; DB transaction timing
+  is mandatory and retains the historical p95 target ≤15 s.
 - **Dataset:** exact deterministic 10k FULL synthetic fixture in a fresh DB.
 - **Environment:** Node/pnpm pins plus pinned native PostgreSQL 18.4 digest for
   supported Docker server architectures (`amd64`, `arm64`); unknown fails.
 - **Cold/warm:** disposable container/base for the recurring gate; image pull,
   readiness and migrations reported separately. Capacity p95 remains a
   separate multi-iteration protocol.
-- **Failure:** the first run blocks; no retry, averaging, threshold increase or
-  skipped assertion.
+- **Failure:** the first publish observation >30 s blocks. A transaction
+  observation >15 s emits `TRANSACTION_CAPACITY_TARGET_EXCEEDED` and does not
+  independently block until a controlled p95 campaign establishes the
+  distribution. No retry, averaging, threshold increase or skipped
+  measurement is allowed.
 - **Diagnostics:** phase timings always identify harness costs; optional
   query-family aggregation records counts/times without SQL or values.
 - **Authority:** local FULL retains the blocking recurring sentinel on a native

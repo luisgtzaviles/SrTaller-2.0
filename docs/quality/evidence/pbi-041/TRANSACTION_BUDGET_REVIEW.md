@@ -16,8 +16,11 @@ promotion gate on this local reference environment.
 
 **Classification:** `JUSTIFIED_BUT_THRESHOLD_UNSUPPORTED`.
 
-No current gate changes in this Work Unit. The recommended contract change
-requires an explicit Owner decision.
+The Owner subsequently accepted the recommendation below: 30 seconds remains
+the blocking single-run publish limit, transaction timing remains mandatory,
+and 15 seconds remains the historical p95 capacity target rather than an
+every-run maximum. The authorized remediation emits an explicit capacity
+diagnostic for an individual miss and does not treat that sample as p95.
 
 ## Origin and authority
 
@@ -150,7 +153,7 @@ PBI-041 runner reconciliation changes the expected migration count from 75 to
 
 ## Recommended governed contract
 
-Recommended Owner decision:
+Accepted Owner decision:
 
 1. keep the existing 30-second service publish sentinel as the blocking
    recurring promotion gate;
@@ -165,7 +168,7 @@ Recommended Owner decision:
 5. preserve fail-closed native architecture selection and never use retries or
    averaging to turn a failed promotion sample green.
 
-This would require a separately authorized harness-contract change to:
+The separately authorized harness-contract remediation must:
 
 - update Price List Architecture and PBI-041 Test Strategy to distinguish the
   p95 capacity target from the recurring one-sample sentinel;
@@ -175,5 +178,16 @@ This would require a separately authorized harness-contract change to:
 - run focused diagnostics and the required promotion verification on the new
   exact candidate.
 
-Until the Owner decides, the current 15-second hard assertion remains unchanged
-and TL-02 remains paused.
+TL-02 remains paused until this remediation is integrated into `main`; only
+then may its branch reconcile current `main` and repeat focused and full
+verification under separate authority.
+
+## Authorized remediation proof
+
+The corrected recurring harness retained the unchanged deterministic 10k
+publish path and produced a material observation of 21,424.3 ms publish and
+21,423.9 ms transaction. Publish remained below its 30-second hard limit; the
+transaction exceeded the historical 15-second p95 target and emitted
+`TRANSACTION_CAPACITY_TARGET_EXCEEDED` with only sanitized target, observation
+and enforcement fields. PBI-041 Stage 7 and the complete full verification
+passed without retries, averaging, product changes or threshold changes.
