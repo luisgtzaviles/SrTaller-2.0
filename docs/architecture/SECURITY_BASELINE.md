@@ -96,7 +96,9 @@ Un threat model por recorrido crítico debe refinar esta lista antes de implemen
 - Una estación mantiene cero o más Sessions operativas independientes conforme
   a ADR-014; una Session inválida no acepta acciones nuevas.
 - El PIN nunca se almacena en texto plano ni de forma reversible.
-- Tokens o cookies se almacenan y transportan con controles apropiados al cliente; formato pendiente.
+- TL-02 usa bearer/CSRF administrativos opacos e independientes, persiste sólo
+  digests y separa cookies, rutas y audience de la sesión operacional; otros
+  tipos futuros conservan selección propia.
 - Recovery administrativo usa email verificado, no modifica autoridad, no
   revive Users inactivos/revocados y no puede ser más débil que el acceso que
   protege; toda mutación que deje cero Tenant Admins efectivos se bloquea.

@@ -8,7 +8,7 @@ risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: feature/tl-02-admin-identity-session
 base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-20
 -->
@@ -21,10 +21,10 @@ last_updated: 2026-09-20
 - **Current PBI:** `NONE`; Tenant Lifecycle is proceeding through governed
   Work Units.
 Current PBI: NONE
-- **Status:** `ACTIVE` in authorized implementation.
-- **Progress:** `13 / 14` Work Unit blocks complete.
-- **Current work:** safe local provisioner and material local proof are complete.
-- **Next block:** hardening, canonical evidence and full promotion verification.
+- **Status:** `READY_FOR_PROMOTION`; implementation and local gates complete.
+- **Progress:** `14 / 14` Work Unit blocks complete.
+- **Current work:** local candidate frozen; no remote action authorized.
+- **Next block:** Owner decision on remote promotion. Do not begin TL-03.
 - **Blockers:** none.
 - **Last updated:** 2026-09-20, America/Hermosillo.
 
@@ -86,20 +86,18 @@ Station + PIN boundary.
 - [x] Implement administrative identity/session/recovery domain contracts.
 - [x] Implement password cryptography/configuration and focused tests.
 - [x] Implement migration/repositories and material PostgreSQL tests.
-- [~] Implement use cases, HTTP boundary and authorization executor.
-- [ ] Complete local proof, hardening, documentation and promotion gates.
+- [x] Implement use cases, HTTP boundary and authorization executor.
+- [x] Complete local proof, hardening, documentation and promotion gates.
 
 ## Current
 
-The local-only provisioner requires localhost development configuration and
-hidden confirmed TTY input. Material PostgreSQL proves concurrent Admin
-Sessions, logout, reauth, individual/global revocation, recovery, rate-limit
-concurrency, secret-free audit and no Operational Session crossover.
+The eight authorized implementation blocks and the local promotion gates are
+complete. The candidate remains local and frozen pending an Owner decision on
+remote promotion.
 
 ## Next
 
-Complete security hardening, canonical implementation evidence and the current
-full promotion pipeline. Do not begin TL-03.
+Await explicit Owner authorization before push/PR. Do not begin TL-03.
 
 ## Blockers
 
@@ -128,10 +126,11 @@ None.
   `SENSITIVE` / `FULL_PLUS_OWNER_AND_DOMAIN_SECURITY_REVIEW`, no gates reduced.
 - [x] Docs-only gate — correctly rejected as not applicable because the
   security/readiness contract classifies `FULL`.
-- [~] Focused TL-02 domain/application/HTTP/PostgreSQL tests during implementation.
-- [x] TL-02 domain tests — 3 PASS.
-- [x] TL-02 password/token/configuration tests — 14 PASS.
-- [x] TL-02 application use-case tests — 3 PASS.
+- [x] Focused TL-02 domain/application/HTTP/PostgreSQL tests — PASS.
+- [x] TL-02 focused domain/security/application/HTTP/authorization/provisioner
+  package — 17 PASS.
+- [x] TL-02 domain tests — 3 PASS; password/token tests — 2 PASS.
+- [x] TL-02 application use-case tests — 4 PASS.
 - [x] TL-02 PostgreSQL persistence — PASS; 76 migrations, second run 0 pending.
 - [x] TL-02 HTTP/session audience tests — 3 PASS.
 - [x] TL-02 administrative authorization tests — 3 PASS.
@@ -141,7 +140,8 @@ None.
 - [x] Local runtime — `/livez` 200 and unauthenticated `/api/admin/session`
   returns a distinct login-CSRF challenge with `no-store` and no Station.
 - [x] Typecheck and architecture checks — PASS through implementation block 4.
-- [ ] Current risk pipeline plus `verify:full` before promotion.
+- [x] Current risk pipeline plus `verify:full` — PASS on the exact local
+  candidate.
 
 ## Promotion Gates
 

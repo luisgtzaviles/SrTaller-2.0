@@ -3,11 +3,12 @@
 ## Estado
 
 - **Work Unit:** TL-02 — Administrative Identity + Session Foundation.
-- **Fase:** audit y planificación previa a implementación.
+- **Fase:** implementación local completa; candidato pendiente de promoción.
 - **Riesgo:** `SENSITIVE`; identidad, credenciales, sesiones, multitenancy y
   persistencia.
-- **Resultado del audit:** `READY FOR IMPLEMENTATION AUTHORIZATION`.
-- **Implementación de producto:** no iniciada por este documento.
+- **Resultado del audit:** `IMPLEMENTED — READY FOR PROMOTION`.
+- **Implementación de producto:** materializada localmente conforme a este plan;
+  no integrada, desplegada ni cerrada.
 - **Autoridad:** ADR-015 `Accepted`, contrato Tenant Lifecycle MVP y decisiones
   Owner `TLD-001–003`, `TLD-006`, `TLD-008`.
 
@@ -351,9 +352,26 @@ multi-Tenant, proveedor/email público dentro de TL-02, remember-me, otro
 timeout, recuperación que reactive Users, Station/PIN para administración,
 MFA/SSO/passkeys o autoridad administrativa sin Roles/capabilities.
 
-## Criterio de readiness
+## 14. Resultado de implementación
 
-TL-02 está listo para autorización de implementación cuando este plan y el
-checklist sean revisados por Owner. La autorización de inicio de la Work Unit
-no autoriza por sí sola saltar este checkpoint de planning, push, PR, merge,
-deploy ni TL-03.
+Los ocho bloques fueron materializados dentro de TL-02:
+
+- contratos de identidad administrativa, password, Admin Session y recovery;
+- Argon2id administrativo con pepper y purpose separados del PIN;
+- seis tablas Access aditivas y repositorio PostgreSQL tenant-safe;
+- login/resolve/logout/revocación/reauth/recovery internos;
+- rutas y cookies `/api/admin` con audiencia, CSRF y `no-store` propios;
+- autorización tenant-wide server-side y commit guard;
+- provisioner exclusivamente local/dev sin secreto en argv o logs;
+- hardening, pruebas materiales y evidencia de implementación.
+
+La evidencia detallada y los límites del candidato están en
+[TL-02 Implementation Evidence](../../quality/evidence/tl-02/IMPLEMENTATION_EVIDENCE.md).
+El resultado no crea Tenant bootstrap, registro público, UI administrativa ni
+autoridad para TL-03.
+
+## Criterio de readiness histórico
+
+El checkpoint fue aprobado por el Owner y la implementación local autorizada
+fue completada. La promoción remota, review, merge, deploy y TL-03 conservan
+sus autorizaciones y gates independientes.

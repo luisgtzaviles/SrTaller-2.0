@@ -15,12 +15,12 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** ADR-015 y `TLD-001–009` están resueltos; TL-02 fue
-  seleccionado e iniciado para audit/readiness. Su implementación requiere el
-  checkpoint Owner del plan técnico; Production no autorizada.
+- **Blocking gate:** TL-02 completó su implementación y verificación local;
+  permanece `READY_FOR_PROMOTION` hasta autorización Owner para push/PR.
+  Production no está autorizada.
 - **WIP operacional:** `1/1 Work Unit`; `0/1 PBI`.
 - **Autoridad:** decisiones Owner TL-001–016/TLD-001–009 y autorización
-  explícita de TL-02 para audit/readiness.
+  explícita para planificar e implementar TL-02 localmente.
 
 ## Objetivo
 
@@ -89,10 +89,10 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Sprint | NONE; SPRINT-03 remains Closed |
 | Sprint status | No active Sprint |
 | Current PBI | NONE |
-| Active Work Unit | TL-02 — Administrative Identity + Session Foundation (`ACTIVE`, planning checkpoint) |
+| Active Work Unit | TL-02 — Administrative Identity + Session Foundation (`READY_FOR_PROMOTION`, local only) |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | Owner review of TL-02 readiness before product implementation |
+| Blocking gate | Owner authorization for TL-02 remote promotion; TL-03 remains unstarted |
 
 ## Fases aprobadas
 
@@ -264,9 +264,8 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** revisión Owner del audit/readiness técnico de TL-02 y, si lo
-  acepta, autorización explícita para cruzar el checkpoint de planificación e
-  iniciar implementación dentro de la misma Work Unit.
+- **Disparador:** autorización Owner para promover a revisión remota el
+  candidato local TL-02 ya implementado y verificado.
 - **Estado conservado:** PBI-040 y PBI-041 `Done`, `Released: NO`; Current PBI
   `NONE`; Production no autorizada.
 - **Después:** no iniciar TL-03 ni otro PBI/Work Unit automáticamente.

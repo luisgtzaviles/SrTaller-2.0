@@ -182,8 +182,8 @@ retrocede silenciosamente el Tenant a `ONBOARDING`.
 
 - Sólo se acepta por transporte protegido.
 - Nunca se persiste, devuelve, registra, audita, analiza o replica en plaintext.
-- Se conserva mediante un verifier resistente y parámetros versionados; la
-  selección concreta se realiza en TL-02 después del threat model.
+- Se conserva mediante un verifier Argon2id resistente, con salt, profile y
+  pepper administrativo versionados conforme a la selección material de TL-02.
 - Comparación, cambio y recovery son server-side y anti-enumeración.
 - No existe password default, recuperable o compartido.
 - Cambio/recovery invalida las Admin Sessions afectadas antes de otra operación
@@ -245,8 +245,9 @@ Station issue/revoke/relink y Branch deactivation son acciones Level 2: exigen
 Admin Session válida más password reauthentication de no más de 10 minutos.
 Otras acciones sensibles deben publicar su nivel, factor, ventana y evidencia;
 mientras falte esa política permanecen denegadas (nivel 4). El threat model de
-TL-02 debe seleccionar mecanismos concretos y demostrar los controles
-anteriores antes de habilitar endpoints públicos o administrativos.
+TL-02 seleccionó y demostró los mecanismos concretos para su frontera de
+Session administrativa. Registro, verification/recovery públicos y sus
+proveedores continúan fuera de alcance hasta sus Work Units propias.
 
 ## 5. Starter Tenant Admin authority
 
@@ -446,10 +447,10 @@ material pendiente para aceptar ADR-015 o promover TL-01.
 | TLD-008 | Evidencia de aceptación conserva documento/versión, timestamp, Registration Attempt y User eventual cuando aplica; no IP/user-agent por defecto. |
 | TLD-009 | La primera Branch se crea `ACTIVE` cuando el comando autorizado satisface sus invariantes. |
 
-TL-02 debe cerrar como decisiones técnicas del threat model —sin convertirlas
-en nueva política Owner— algoritmo/parámetros de password, TTL de
-verification/recovery, rate limits, transporte de email, cookies/CSRF,
-rotación, revocación, redacción y retención de intentos incompletos.
+TL-02 cerró las decisiones técnicas que pertenecen a su frontera —sin
+convertirlas en nueva política Owner—: password, recovery interno, rate limit,
+cookies/CSRF, rotación, revocación y redacción. Verification pública,
+transporte de email y retención de Registration Attempts permanecen en TL-04.
 
 ## 12. Conflictos y compatibilidad arquitectónica
 

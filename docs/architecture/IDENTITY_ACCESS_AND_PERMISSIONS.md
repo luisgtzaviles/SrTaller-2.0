@@ -159,6 +159,12 @@ sola identidad Tenant User, pero separa sus credenciales y sesiones:
 Esta sección y ADR-015 no autorizan implementación por sí mismas. Cada Work
 Unit de Tenant Lifecycle requiere autorización y gates propios.
 
+TL-02 materializa la foundation de esta audiencia administrativa: identidad
+email verificada-ready, credencial Argon2id separada, Admin Sessions stateful,
+revocación, reauth, recovery interno y autorización tenant-wide server-side.
+No materializa registro/bootstrap ni convierte una Admin Session en contexto
+operativo.
+
 ## Dispositivo y sesiones
 
 - Vincular una estación establece confianza limitada en una sucursal y deriva su tenant.
