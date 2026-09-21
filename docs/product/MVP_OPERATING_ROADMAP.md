@@ -6,20 +6,21 @@
   gates de producto; Git/GitHub/CI/runtime gobiernan la materialización.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
-- **Fase:** Tenant Lifecycle MVP — Architecture and Planning.
+- **Fase:** Tenant Lifecycle MVP — Administrative Identity Foundation.
 - **Checkpoint alcanzado:** Pricing Catalog cerrado conforme a los PBI y
-  autoridades técnicas enlazadas; TL-01 está `READY_FOR_PROMOTION` sin
-  implementación de producto. `Released` permanece separado.
+  autoridades técnicas enlazadas; TL-01 está cerrado por integración
+  gobernada y exact-main CI. `Released` permanece separado.
 - **Sprint activo:** SPRINT-03 — Price List Foundation está `Closed`; no existe
   otro Sprint activo ni trabajo de Sprint en curso.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** ADR-015 y `TLD-001–009` están resueltos; TL-01 debe superar
-  promoción e integración gobernadas. TL-02 requiere selección/autorización
-  independiente y su threat model técnico; Production no autorizada.
+- **Blocking gate:** ADR-015 y `TLD-001–009` están resueltos; TL-02 fue
+  seleccionado e iniciado para audit/readiness. Su implementación requiere el
+  checkpoint Owner del plan técnico; Production no autorizada.
 - **WIP operacional:** `1/1 Work Unit`; `0/1 PBI`.
-- **Autoridad:** decisiones Owner TL-001–016 y autorización explícita de TL-01.
+- **Autoridad:** decisiones Owner TL-001–016/TLD-001–009 y autorización
+  explícita de TL-02 para audit/readiness.
 
 ## Objetivo
 
@@ -84,14 +85,14 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
-| Phase | Tenant Lifecycle MVP — Architecture and Planning |
+| Phase | Tenant Lifecycle MVP — Administrative Identity Foundation |
 | Sprint | NONE; SPRINT-03 remains Closed |
 | Sprint status | No active Sprint |
 | Current PBI | NONE |
-| Active Work Unit | TL-01 — Owner Decisions + Lifecycle Contract (`READY_FOR_PROMOTION`) |
+| Active Work Unit | TL-02 — Administrative Identity + Session Foundation (`ACTIVE`, planning checkpoint) |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | TL-01 remote promotion/integration authorization; TL-02 remains unselected and unauthorized |
+| Blocking gate | Owner review of TL-02 readiness before product implementation |
 
 ## Fases aprobadas
 
@@ -263,8 +264,9 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** autorización Owner para promoción remota de TL-01; ADR-015 y
-  `TLD-001–009` están resueltas y los gates locales pasaron.
+- **Disparador:** revisión Owner del audit/readiness técnico de TL-02 y, si lo
+  acepta, autorización explícita para cruzar el checkpoint de planificación e
+  iniciar implementación dentro de la misma Work Unit.
 - **Estado conservado:** PBI-040 y PBI-041 `Done`, `Released: NO`; Current PBI
   `NONE`; Production no autorizada.
-- **Después:** no iniciar TL-02 ni otro PBI automáticamente.
+- **Después:** no iniciar TL-03 ni otro PBI/Work Unit automáticamente.
