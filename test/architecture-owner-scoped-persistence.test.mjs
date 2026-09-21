@@ -177,7 +177,10 @@ test('persistence capability is internal and has only exact adapter consumers', 
   assert.match(source, /Owner extends 'access'/u);
   assert.match(source, /Owner extends 'catalog'/u);
   assert.match(source, /kysely_migration: DatabaseMigrationJournalTable/u);
-  assert.match(source, /Pick<DatabaseSchema, 'tenants'>/u);
+  assert.match(
+    source,
+    /Pick<DatabaseSchema, 'tenants' \| 'tenant_bootstrap_commands'>/u,
+  );
   assert.match(
     source,
     /Pick<DatabaseSchema, 'branches' \| 'stations' \| 'station_bindings' \| 'station_credentials'>/u,

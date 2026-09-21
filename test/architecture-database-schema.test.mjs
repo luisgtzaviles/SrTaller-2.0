@@ -92,6 +92,7 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     repair_locations: { owner: 'repairs', kind: 'table' },
     repair_location_movements: { owner: 'repairs', kind: 'table' },
     tenants: { owner: 'tenancy', kind: 'table' },
+    tenant_bootstrap_commands: { owner: 'tenancy', kind: 'table' },
     users: { owner: 'users', kind: 'table' },
     user_preferences: { owner: 'users', kind: 'table' },
     user_provisioning_bootstraps: { owner: 'users', kind: 'table' },
@@ -236,6 +237,7 @@ test('productive migration root remains exact and governed', async () => {
       '20260917190100_access_add_catalog_configuration_capabilities.ts',
       '20260917190200_access_add_granular_catalog_capabilities.ts',
       '20260920180000_access_create_admin_identity_sessions.ts',
+      '20260921120000_tenancy_create_bootstrap_foundation.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

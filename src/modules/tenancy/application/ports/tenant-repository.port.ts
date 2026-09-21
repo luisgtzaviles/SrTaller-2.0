@@ -10,12 +10,18 @@ export interface TenantPersistenceScope {
 
 export interface TenantRecord {
   readonly tenantId: TenantId;
+  readonly displayName: string;
+  readonly lifecycleStatus: 'ONBOARDING' | 'ACTIVE';
   readonly operatingCurrency: string;
+  readonly version: number;
   readonly createdAt: string;
+  readonly updatedAt: string;
 }
 
 export interface CreateTenantRecord {
   readonly tenantId: TenantId;
+  readonly displayName: string;
+  readonly lifecycleStatus: 'ONBOARDING' | 'ACTIVE';
   readonly operatingCurrency: string;
   readonly createdAt: string;
 }

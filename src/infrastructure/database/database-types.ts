@@ -7,8 +7,26 @@ type DefaultedMutableColumn<T> = ColumnType<T, T | undefined, T>;
 
 export interface TenantTable {
   readonly tenant_id: ImmutableColumn<string>;
+  readonly display_name: MutableColumn<string>;
+  readonly lifecycle_status: MutableColumn<'ONBOARDING' | 'ACTIVE'>;
   readonly operating_currency: MutableColumn<string>;
+  readonly version: DefaultedMutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface TenantBootstrapCommandTable {
+  readonly verified_registration_id: ImmutableColumn<string>;
+  readonly registration_revision: ImmutableColumn<number>;
+  readonly approved_input_digest: ImmutableColumn<Uint8Array>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly first_user_id: ImmutableColumn<string>;
+  readonly admin_identity_id: ImmutableColumn<string>;
+  readonly starter_role_id: ImmutableColumn<string>;
+  readonly starter_policy_version: ImmutableColumn<number>;
+  readonly starter_assignment_id: ImmutableColumn<string>;
+  readonly result_tenant_status: ImmutableColumn<'ONBOARDING'>;
+  readonly completed_at: ImmutableColumn<Date>;
 }
 
 export interface BranchTable {
@@ -1535,6 +1553,7 @@ export interface RepairLocationMovementTable {
 
 export interface DatabaseSchema {
   readonly tenants: TenantTable;
+  readonly tenant_bootstrap_commands: TenantBootstrapCommandTable;
   readonly branches: BranchTable;
   readonly stations: StationTable;
   readonly station_bindings: StationBindingTable;
@@ -1639,6 +1658,8 @@ export interface DatabaseSchema {
 export type TenantRow = Selectable<TenantTable>;
 export type NewTenant = Insertable<TenantTable>;
 export type TenantUpdate = Updateable<TenantTable>;
+export type TenantBootstrapCommandRow = Selectable<TenantBootstrapCommandTable>;
+export type NewTenantBootstrapCommand = Insertable<TenantBootstrapCommandTable>;
 
 export type BranchRow = Selectable<BranchTable>;
 export type NewBranch = Insertable<BranchTable>;

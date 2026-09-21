@@ -17,15 +17,15 @@ Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
 General State: Authorized implementation / Functional foundation
-Progress: 0 / 8 implementation blocks complete
-Current Work: Tenant schema and bootstrap journal
-Next Block: Protected starter authority policy
+Progress: 1 / 8 implementation blocks complete
+Current Work: Protected starter authority policy
+Next Block: Transaction-aware owner persistence ports
 Blocking: NONE
 Last Updated: 2026-09-21
 
 ## Objective
 
-Audit and define the atomic, idempotent server-side bootstrap contract that establishes a newly verified Tenant and its first trusted administrative authority without implementing product functionality.
+Implement the atomic, idempotent server-side bootstrap foundation that establishes a newly verified Tenant and its first trusted administrative authority without exposing a public registration surface.
 
 ## Why
 
@@ -71,8 +71,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Define incremental implementation blocks and test plan.
 - [x] Resolve Owner decisions TL3D-001–004.
 - [x] Receive separate implementation authorization.
-- [~] Block 1 — Tenant schema, trustworthy backfill and bootstrap journal.
-- [ ] Block 2 — Protected/versioned starter Role and capability policy.
+- [x] Block 1 — Tenant schema, trustworthy backfill and bootstrap journal.
+- [~] Block 2 — Protected/versioned starter Role and capability policy.
 - [ ] Block 3 — Transaction-aware owner persistence ports.
 - [ ] Block 4 — Internal bootstrap domain/application contract.
 - [ ] Block 5 — Atomic orchestration and sanitized audit.
@@ -82,11 +82,11 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-Implementing Block 1: additive Tenant lifecycle schema and durable journal.
+Implementing Block 2: protected starter Role metadata and exact administrative capability bundle.
 
 ## Next
 
-Complete Block 1 with migration and PostgreSQL regression coverage.
+Complete Block 2 with ordinary-mutation protection and focused regressions.
 
 ## Blockers
 
@@ -102,6 +102,8 @@ None.
 - Current Tenant schema has no display name, lifecycle, version or updated time.
 - Existing workshop names have no authoritative source suitable for blind
   migration backfill.
+- Block 1 materializes the only approved legacy mapping (`SR Taller`) and fails
+  closed for every unexpected preexisting Tenant instead of fabricating a name.
 
 ## Focused Verification
 
@@ -110,6 +112,9 @@ None.
   consistency, focused secret scan and `git diff --check` PASS.
 - [x] Change classifier preserves `FULL` for a future promotion because the
   readiness contract is cross-module/high-risk; no gate was waived.
+- [x] Block 1 typecheck/build and focused schema/ownership tests PASS.
+- [x] PostgreSQL 18.4 applied the additive Tenant foundation migration; second
+  execution reported `0 pending`.
 - [ ] Implementation authorization will require unit/contracts, PostgreSQL
   18.4 migration/atomicity/concurrency/failure injection, TL-02 regressions,
   architecture, full promotion verification and security review.

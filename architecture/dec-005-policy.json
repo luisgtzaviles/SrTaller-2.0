@@ -1460,6 +1460,7 @@
         "owner": "database",
         "publicExports": [
           "TenantTable",
+          "TenantBootstrapCommandTable",
           "BranchTable",
           "StationTable",
           "StationBindingTable",
@@ -1539,6 +1540,8 @@
           "TenantRow",
           "NewTenant",
           "TenantUpdate",
+          "TenantBootstrapCommandRow",
+          "NewTenantBootstrapCommand",
           "BranchRow",
           "NewBranch",
           "BranchUpdate",
@@ -1745,6 +1748,7 @@
           "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts",
           "src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts",
           "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts",
+          "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -2322,6 +2326,10 @@
         "kind": "table"
       },
       "tenants": {
+        "owner": "tenancy",
+        "kind": "table"
+      },
+      "tenant_bootstrap_commands": {
         "owner": "tenancy",
         "kind": "table"
       },
