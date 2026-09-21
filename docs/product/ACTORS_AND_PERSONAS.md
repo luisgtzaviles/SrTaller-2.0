@@ -7,7 +7,7 @@
 - **Aprobación:** El contexto operativo se rige por ADR-010/011/014,
   autorización ordinaria por ADR-012 y refuerzo por ADR-013. Tenant Lifecycle
   aprueba que la persona inicial sea el primer Tenant User con starter Tenant
-  Admin Role; el control plane permanece propuesto en ADR-015.
+  Admin Role; el control plane está aceptado en ADR-015.
 - **Datos personales ficticios:** No se utilizan nombres, biografías ni características no confirmadas.
 
 ## Distinciones necesarias
@@ -30,9 +30,10 @@ por la etiqueta “propietario”.
 - **Objetivos — hipótesis:** comprender desempeño, controlar riesgos y mantener continuidad entre sucursales.
 - **Alcance de acceso — pendiente:** podría requerir visibilidad de todo el tenant, pero no se asume acceso irrestricto ni cotidiano a todos los datos.
 - **Posibles restricciones:** acciones sensibles con autenticación reforzada; separación entre propiedad comercial y administración técnica; privacidad del personal y clientes.
-- **Preguntas pendientes:** la delegación a Administradores adicionales y las
-  acciones sensibles siguen `TLD-003`, `TLD-005`, `TLD-007`,
-  [QUESTION-004](./OPEN_QUESTIONS.md#question-004) y
+- **Dirección MVP:** el starter Role es protegido/system-managed; nunca se
+  retira el último Admin efectivo; Admins adicionales requieren invitación de
+  email verificado, aceptación y Role assignment autorizado. Las capacidades
+  concretas siguen [QUESTION-004](./OPEN_QUESTIONS.md#question-004) y
   [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
 
 ## Administrador del tenant
@@ -48,8 +49,9 @@ por la etiqueta “propietario”.
 - **Posibles restricciones:** no administrar la plataforma global; no elevar sus propios privilegios sin control; acciones críticas auditadas.
 - **Decisión vigente:** el bootstrap crea al primer Tenant User y starter
   Tenant Admin Role sin selección de privilegios desde cliente.
-- **Preguntas pendientes:** guard del último Admin, protección del Role starter,
-  invitación/delegación y scopes por Branch (`TLD-003`, `TLD-005`, `TLD-007`).
+- **Decisión vigente:** starter Role system-managed/protegido/versionado,
+  guard transaccional de último Admin e invitación verificada con aceptación y
+  Role assignment explícito. Scopes concretos por Branch se definen por slice.
 
 ## Gerente de sucursal
 
@@ -144,8 +146,10 @@ participan en el registro público ni en el bootstrap autoservicio.
 - **Dirección MVP:** un Admin con capability explícita emite un challenge de
   alta entropía, un uso y TTL de 10 minutos para una Branch concreta; el equipo
   lo canjea sin elegir Tenant/Branch.
-- **Preguntas pendientes:** nivel ADR-013/reauth y lifecycle detallado de
-  Station (`TLD-006`, [QUESTION-008](./OPEN_QUESTIONS.md#question-008)).
+- **Control sensible:** issue/revoke/relink son Level 2 con password reauth
+  vigente 10 minutos; el canje revalida autoridad/estado/revisions sin pedir
+  password al equipo. Lifecycle técnico detallado sigue
+  [QUESTION-008](./OPEN_QUESTIONS.md#question-008).
 
 ## Contextos que deben validarse en investigación
 

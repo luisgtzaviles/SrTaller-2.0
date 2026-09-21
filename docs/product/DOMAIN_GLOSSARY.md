@@ -6,7 +6,7 @@
 - **Naturaleza:** Lenguaje común preliminar; no define tablas, clases, contratos de API ni reglas finales.
 - **Aprobación:** ADR-004/010/011/012/013/014 y las decisiones PLD/OD-BI son
   autoritativos para los términos marcados; TL-001–016 gobiernan los términos
-  de Tenant Lifecycle indicados y ADR-015 permanece `Proposed`.
+  de Tenant Lifecycle indicados y ADR-015 está `Accepted`.
 - **Convención:** “Pendiente de validación” indica que la definición o sus límites podrían cambiar.
 
 ## Reglas de uso
@@ -38,8 +38,8 @@
 | **Estación operativa** | Equipo cliente reconocido y vinculado a una única sucursal activa para aportar origen físico y contexto. | **Aceptado en ADR-010:** vinculación y alcance; pendientes tipos, identidad técnica, credencial y evidencia concreta. |
 | **Sesión de estación** | Evidencia técnica temporal de que una estación conserva una vinculación válida con sucursal/tenant derivados. | **Pendiente de mecanismo:** duración, renovación, revocación, credenciales y comportamiento sin conexión. No sustituye al usuario. |
 | **Operational Session** | Periodo durante el cual un Tenant User autenticado por PIN es el actor de requests que presentan esa Session dentro del contexto Station/Branch ya derivado. | **Aceptado en ADR-011/014:** una Station puede mantener cero o más Sessions independientes; no equivale a Admin Session ni actor global de Station. |
-| **Admin Session** | Sesión revocable para Tenant Administration, autenticada por email verificado + password y con Tenant/User derivados server-side. | **Dirección TL-002/011; ADR-015 Proposed.** No crea Station, Branch ambiental ni permiso operativo; política de duración/concurrencia pendiente. |
-| **Starter Tenant Admin Role** | Role inicial creado server-side durante bootstrap para otorgar autoridad administrativa mínima al primer Tenant User. | **Dirección TL-003/010.** Bundle, protección y guard de último Admin pendientes en `TLD-003/005`; nunca lo selecciona el cliente. |
+| **Admin Session** | Sesión stateful y revocable para Tenant Administration, autenticada por email verificado + password y con Tenant/User derivados server-side. | **ADR-015 Accepted.** Concurrente, revocable individual/globalmente, sin remember-me, idle 30 minutos y absoluto 12 horas; no crea Station, Branch ambiental ni permiso operativo. |
+| **Starter Tenant Admin Role** | Role inicial server-owned creado durante bootstrap para otorgar autoridad administrativa mínima al primer Tenant User. | **ADR-015 Accepted.** System-managed, protegido y versionado; Tenant Users no lo editan/eliminan y sus assignments respetan el guard de último Admin. |
 | **Contexto operativo** | Tenant, sucursal, estación y usuario efectivos para una operación ordinaria. | **Aceptado en ADR-010:** composición, fuente y cambio de turno; su representación técnica queda pendiente. |
 | **PIN** | Credencial operativa usada para identificar al usuario únicamente dentro del tenant de una estación vinculada. | **Aceptado en ADR-011:** no es identidad, contexto ni permiso y nunca se almacena en texto plano o de forma reversible; longitud, protección técnica, rotación, recuperación, bloqueo y acciones permitidas quedan pendientes. |
 | **Cliente** | Persona u organización con `customerId` interno opaco dentro de una sucursal de un tenant. Nombre y apellido se conservan separados; el apellido es opcional hasta existir política explícita. El teléfono es contacto o criterio de búsqueda, nunca identidad natural ni deduplicación automática; una Repair conserva su propio snapshot de contacto. | **Aceptado por ADR-004 y Customer Minimum V1:** identidad branch-scoped y selección humana ante candidatos. Pendientes: lifecycle, consentimiento, contactos avanzados, resolución de duplicados y relación entre varios equipos. No confundir con cliente técnico de la API. |

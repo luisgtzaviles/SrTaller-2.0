@@ -15,9 +15,9 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** ADR-015 y decisiones `TLD-001–009` aplicables deben
-  resolverse antes del Work Unit de implementación correspondiente; Production
-  no autorizada.
+- **Blocking gate:** ADR-015 y `TLD-001–009` están resueltos; TL-01 debe superar
+  promoción e integración gobernadas. TL-02 requiere selección/autorización
+  independiente y su threat model técnico; Production no autorizada.
 - **WIP operacional:** `1/1 Work Unit`; `0/1 PBI`.
 - **Autoridad:** decisiones Owner TL-001–016 y autorización explícita de TL-01.
 
@@ -91,7 +91,7 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Active Work Unit | TL-01 — Owner Decisions + Lifecycle Contract |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | ADR-015 Owner Review plus residual decisions by dependent Work Unit |
+| Blocking gate | TL-01 local promotion gates; TL-02 remains unselected and unauthorized |
 
 ## Fases aprobadas
 
@@ -263,8 +263,8 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** Owner Review de TL-01 y resolución/deferral explícito de
-  `TLD-001–009`.
+- **Disparador:** promoción gobernada de TL-01 después de ADR-015 Accepted y
+  `TLD-001–009` resueltas.
 - **Estado conservado:** PBI-040 y PBI-041 `Done`, `Released: NO`; Current PBI
   `NONE`; Production no autorizada.
 - **Después:** no iniciar TL-02 ni otro PBI automáticamente.

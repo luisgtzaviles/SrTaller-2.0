@@ -162,8 +162,8 @@ mecanismos de confianza por los contratos de 2.0.
 
 ## 6. Decisiones Owner aprobadas
 
-El Owner aprobó TL-001 a TL-016 el 2026-09-20. La versión normativa, sus
-invariantes y decisiones residuales están en el
+El Owner aprobó TL-001 a TL-016 y `TLD-001–009` el 2026-09-20. La versión
+normativa y sus invariantes finales están en el
 [contrato Tenant Lifecycle MVP](../architecture/TENANT_LIFECYCLE_MVP.md). Este
 discovery conserva la pregunta y recomendación originales como trazabilidad;
 ya no deben leerse como autoridad pendiente.
@@ -188,8 +188,8 @@ ya no deben leerse como autoridad pendiente.
 | TL-016 | Billing, Super Admin y suspensión comercial fuera del MVP. |
 
 [QUESTION-005](OPEN_QUESTIONS.md#question-005) queda reconciliada para el
-alcance MVP. Las decisiones técnicas/producto todavía abiertas están
-enumeradas como `TLD-001` a `TLD-009` en el contrato, no en este discovery.
+alcance MVP. `TLD-001` a `TLD-009` fueron resueltas por el Owner y viven en el
+contrato aceptado, no en este discovery.
 
 ## 7. Riesgos de seguridad y multitenancy
 
@@ -351,6 +351,6 @@ TL-01 reconcilia:
 
 ## 12. Estado posterior al discovery
 
-TL-01 fue autorizado. No se inicia registro público, PBI-031 ni otro Work Unit
-de implementación hasta revisar el contrato, resolver sus decisiones
-residuales aplicables y aceptar ADR-015.
+TL-01 fue autorizado y ADR-015/`TLD-001–009` fueron aceptadas. No se inicia
+registro público, PBI-031 ni otro Work Unit de implementación hasta promover e
+integrar TL-01 y obtener autorización independiente para el siguiente alcance.

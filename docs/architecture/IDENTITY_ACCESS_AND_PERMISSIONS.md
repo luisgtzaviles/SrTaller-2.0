@@ -4,11 +4,11 @@
 
 - **Estado:** Identidad operativa, sesiones concurrentes, autorización ordinaria
   y autorización reforzada conceptuales aceptadas. La identidad/sesión
-  administrativa de Tenant Lifecycle está propuesta en ADR-015.
+  administrativa de Tenant Lifecycle está aceptada en ADR-015.
 - **Naturaleza:** ADR-004/010/011/012/013/014 son autoritativos para contexto,
   identidad, sesión, capacidades, alcance, sensibilidad, reautenticación y
   segundo aprobador; ADR-014 sustituye sólo la exclusividad station-wide de
-  ADR-011. ADR-015 propone una audiencia administrativa separada sin sustituir
+  ADR-011. ADR-015 acepta una audiencia administrativa separada sin sustituir
   esos contratos operativos.
 - **Alcance:** Usuario de tenant, identidad de plataforma/correlación futura, roles, permisos, estaciones y sesiones.
 - **Fuera de alcance:** Seleccionar proveedor, algoritmos criptográficos, formatos de token o políticas numéricas definitivas.
@@ -64,11 +64,10 @@ ADR-004, ADR-010 y ADR-011 establecen:
 - las identidades de plataforma permanecen separadas del usuario ordinario.
 - la identidad no depende del PIN, de la sesión, de la estación ni de la sucursal efectiva.
 
-La dirección MVP de recovery administrativo mediante email verificado está
-aprobada, pero su política detallada y la cardinalidad de email entre tenants
-siguen pendientes en `TLD-001–003`. Esa correlación futura no puede convertir
-al usuario ordinario en una membresía multi-tenant ni permitir cambio de tenant
-dentro de una sesión operativa o administrativa.
+Recovery administrativo usa email verificado. Para MVP, un email/identidad
+administrativa pertenece a un solo Tenant; una identidad multi-Tenant futura
+requiere una decisión posterior. Recovery sólo restaura credenciales de un
+User válido activo, nunca lo reactiva ni cambia Tenant, Roles o capabilities.
 
 ## Capacidades y alcance
 
@@ -131,28 +130,34 @@ flowchart TD
 ```
 
 Los flujos ordinarios se rigen por el contexto completo de ADR-010/011. Tenant
-Administration sin Station pertenece al contexto separado propuesto por
+Administration sin Station pertenece al contexto separado aceptado por
 [ADR-015](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md);
 no se infiere por ausencia de datos ni vuelve opcionales las invariantes
 operativas.
 
-## Tenant Administration propuesta
+## Tenant Administration
 
 El contrato de [Tenant Lifecycle MVP](TENANT_LIFECYCLE_MVP.md) mantiene una
 sola identidad Tenant User, pero separa sus credenciales y sesiones:
 
 - email verificado + password crean exclusivamente una Admin Session;
+- Admin Sessions son stateful, concurrentes, revocables individual/globalmente,
+  sin remember-me, con idle 30 minutos y lifetime absoluto 12 horas;
 - PIN crea exclusivamente una Operational Session dentro de una Station;
 - ambos planos recalculan Roles/capabilities vigentes server-side;
 - una Admin Session deriva Tenant desde la relación persistida con el User y
   nunca acepta `tenantId`, Role o capabilities como autoridad del cliente;
 - administrar Branch, Users, Roles o Stations requiere capacidades explícitas,
   no `isAdmin`;
+- el starter Tenant Admin Role es system-managed, protegido y versionado;
+- nunca puede retirarse el último Tenant Admin efectivo activo;
+- Admins adicionales requieren invitación a email verificado, aceptación
+  explícita y Role assignment autorizado;
 - operar Repairs, Catalog u otra actividad de Branch sigue requiriendo el
   contexto completo ADR-010/011/014.
 
-Esta sección no autoriza implementación mientras ADR-015 permanezca
-`Proposed` y las decisiones residuales aplicables no se resuelvan.
+Esta sección y ADR-015 no autorizan implementación por sí mismas. Cada Work
+Unit de Tenant Lifecycle requiere autorización y gates propios.
 
 ## Dispositivo y sesiones
 

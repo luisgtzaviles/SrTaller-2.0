@@ -5,9 +5,8 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 ## Estado del documento
 
 **Estado:** Workflow en uso, pendiente de completar autoridades por clase de decisión.
-**Decisiones aceptadas:** doce. ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento; ADR-005 fue aceptado con condiciones el 2026-07-22 por Arquitectura + Ingeniería tras las revisiones de Seguridad, Operaciones y Calidad; ADR-007 fue aceptado el 2026-08-18 y ADR-014 fue aceptado el 2026-09-12 por el Product Owner mediante ASC-001 a ASC-008.
-**Decisiones propuestas:** tres. ADR-006, ADR-008 y ADR-015 conservan estado
-`Proposed`.
+**Decisiones aceptadas:** trece. ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento; ADR-005 fue aceptado con condiciones el 2026-07-22 por Arquitectura + Ingeniería tras las revisiones de Seguridad, Operaciones y Calidad; ADR-007 fue aceptado el 2026-08-18, ADR-014 el 2026-09-12 y ADR-015 el 2026-09-20 por el Product Owner.
+**Decisiones propuestas:** dos. ADR-006 y ADR-008 conservan estado `Proposed`.
 
 ## Estados permitidos
 
@@ -42,6 +41,7 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 | [ADR-012](proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) | Roles de tenant, capacidades y autorización contextual | Accepted — 2026-07-21 |
 | [ADR-013](proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) | Acciones sensibles y autorización reforzada | Accepted — 2026-07-21 |
 | [ADR-014](proposed/ADR-014-concurrent-operational-sessions.md) | Sesiones operativas concurrentes por estación confiable | Accepted — 2026-09-12; supersedes partially ADR-011 |
+| [ADR-015](proposed/ADR-015-tenant-administrative-control-plane.md) | Tenant Administrative Control Plane and Lifecycle | Accepted — 2026-09-20 |
 
 Las rutas históricas bajo `proposed/` se conservan para mantener una convención estable; el estado dentro de cada documento es autoritativo.
 
@@ -72,7 +72,6 @@ Estas decisiones no alteran el conteo de ADRs:
 |---|---|---|
 | [ADR-006](proposed/ADR-006-nextjs-web-clients.md) | Next.js para clientes web | Proposed |
 | [ADR-008](proposed/ADR-008-wildcard-subdomain-routing.md) | Resolución por subdominios wildcard | Proposed |
-| [ADR-015](proposed/ADR-015-tenant-administrative-control-plane.md) | Tenant Administrative Control Plane and Lifecycle | Proposed — TL-01 Owner Review |
 
 ## Reglas
 

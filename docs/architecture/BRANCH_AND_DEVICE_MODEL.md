@@ -3,13 +3,13 @@
 ## Estado del documento
 
 - **Estado:** Base operacional aceptada por ADR-010/011/014; el enrollment
-  administrativo del Tenant Lifecycle está propuesto por ADR-015.
+  administrativo del Tenant Lifecycle está aceptado por ADR-015.
 - **Naturaleza:** Las invariantes de contexto, vinculación y sesión solicitante son autoritativas; estados detallados de estación, protocolo e interfaz siguen como propuesta.
 - **Alcance:** Pertenencia, vinculación, activación, uso, transferencia, revocación y pérdida de dispositivos.
 
 ## Objetivo
 
-Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) gobierna usuario, PIN y sesión en lo no sustituido; [ADR-014](../decisions/proposed/ADR-014-concurrent-operational-sessions.md) permite Sessions concurrentes; [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) gobierna la autorización ordinaria por capacidad y alcance. [ADR-015](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md), todavía `Proposed`, define la autoridad previa a Station que puede emitir el enrollment.
+Definir cómo un equipo físico adquiere un contexto operativo limitado sin confundirse con la identidad del empleado. Conforme a [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), la vinculación establece tenant y sucursal efectivos; [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) gobierna usuario, PIN y sesión en lo no sustituido; [ADR-014](../decisions/proposed/ADR-014-concurrent-operational-sessions.md) permite Sessions concurrentes; [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) gobierna la autorización ordinaria por capacidad y alcance. [ADR-015](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md), `Accepted`, define la autoridad previa a Station que puede emitir el enrollment.
 
 ## Modelo conceptual
 
@@ -83,7 +83,9 @@ sequenceDiagram
 
 ### Restricciones aceptadas y mecanismo pendiente
 
-1. La inicia o autoriza un usuario con capacidad administrativa explícita y el nivel de ADR-013 que defina la política concreta.
+1. La inicia o autoriza un usuario con capacidad administrativa explícita;
+   issue/revoke/relink son Level 2 y exigen password reauthentication vigente
+   durante 10 minutos.
 2. El actor administrativo autoriza una sucursal concreta; el tenant deriva de ella y no se elige independientemente desde el equipo.
 3. El desafío es de alta entropía, temporal, de uso único, expira a los 10
    minutos medidos server-side y no equivale a una credencial permanente.
@@ -93,10 +95,11 @@ sequenceDiagram
 7. Identificadores de hardware pueden ser señales, no la única prueba de posesión o autorización.
 
 La capacidad administrativa se rige por ADR-012 dentro del Admin Context de
-ADR-015 y su clasificación sensible por ADR-013. Quedan pendientes el nivel
-exacto de emisión/revocación/relink, la reautenticación y el efecto de revocar
-la Admin Session emisora (`TLD-006`); el medio de entrega puede ser QR, código
-o enlace sólo si conserva el mismo challenge y sus invariantes.
+ADR-015 y su clasificación sensible por ADR-013. El canje no pide el password
+al equipo nuevo y revalida atómicamente challenge, expiración, single-use,
+Tenant/Branch activos, autoridad del issuer y revisiones de autorización
+relevantes. El medio de entrega puede ser QR, código o enlace sólo si conserva
+el mismo challenge y sus invariantes.
 
 ## Sesión de dispositivo y último acceso
 

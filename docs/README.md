@@ -128,7 +128,7 @@ autoriza un cambio de producto.
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual (Accepted)](decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
 - [ADR-013 — Acciones sensibles y autorización reforzada (Accepted)](decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md)
 - [ADR-014 — Sesiones operativas concurrentes (Accepted)](decisions/proposed/ADR-014-concurrent-operational-sessions.md)
-- [ADR-015 — Tenant Administrative Control Plane (Proposed)](decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
+- [ADR-015 — Tenant Administrative Control Plane (Accepted)](decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
 
 ## Entrega
 

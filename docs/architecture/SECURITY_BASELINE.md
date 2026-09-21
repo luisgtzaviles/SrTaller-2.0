@@ -5,7 +5,7 @@
 - **Estado:** Borrador conceptual de controles mínimos.
 - **Naturaleza:** Propuesta y conjunto de hitos; ADR-003/004/010–014 son
   autoritativos para motor, aislamiento, contexto, identidad/sesión y
-  autorización ordinaria/reforzada conceptuales. ADR-015 propone el control
+  autorización ordinaria/reforzada conceptuales. ADR-015 acepta el control
   plane administrativo y exige threat model antes de implementación; ninguno
   constituye certificación ni diseño criptográfico final.
 - **Alcance:** Producto, aplicaciones, datos, dependencias, entrega y operación.
@@ -87,8 +87,9 @@ Un threat model por recorrido crítico debe refinar esta lista antes de implemen
 ## Identidad y autenticación
 
 - El usuario ordinario pertenece a un tenant y se autentica cotidianamente por PIN conforme a ADR-011; el mecanismo técnico, la identidad de plataforma y la correlación de persona permanecen separados.
-- Tenant Administration V1 usa email verificado + password y una Admin Session
-  revocable conforme al contrato propuesto de Tenant Lifecycle; password,
+- Tenant Administration V1 usa email verificado + password y Admin Sessions
+  stateful concurrentes, revocables individual/globalmente, sin remember-me,
+  idle 30 minutos y absoluto 12 horas; password,
   Admin Session, PIN y Operational Session tienen audiencias y guards
   separados.
 - Tenant/sucursal/estación efectivos se comprueban conforme a ADR-010 antes de autenticar al usuario dentro del tenant.
@@ -96,12 +97,14 @@ Un threat model por recorrido crítico debe refinar esta lista antes de implemen
   a ADR-014; una Session inválida no acepta acciones nuevas.
 - El PIN nunca se almacena en texto plano ni de forma reversible.
 - Tokens o cookies se almacenan y transportan con controles apropiados al cliente; formato pendiente.
-- Recovery administrativo usa email verificado, no modifica autoridad y no
-  puede ser más débil que el acceso que protege; la política exacta del último
-  Tenant Admin debe resolverse antes de implementación.
+- Recovery administrativo usa email verificado, no modifica autoridad, no
+  revive Users inactivos/revocados y no puede ser más débil que el acceso que
+  protege; toda mutación que deje cero Tenant Admins efectivos se bloquea.
 - Cambios de factores y recuperaciones producen notificación y auditoría según riesgo.
 - Protección ante enumeración, credential stuffing y automatización se diseña sin bloquear indebidamente tenants completos.
 - ADR-013 exige que una acción sensible use nivel 2, 3 o 4 según una política explícita; una candidata sin política no se habilita.
+- Station issue/revoke/relink y Branch deactivation son Level 2: requieren
+  Admin Session válida y password reauthentication vigente por 10 minutos.
 
 Véase [Identidad, acceso y permisos](IDENTITY_ACCESS_AND_PERMISSIONS.md).
 

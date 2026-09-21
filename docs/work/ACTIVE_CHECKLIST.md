@@ -2,7 +2,7 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-01 — Owner Decisions + Lifecycle Contract
-iteration: 1 - Owner Decisions Accepted
+iteration: 2 - Final Contract Reconciliation
 type: ARCHITECTURE
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
@@ -21,14 +21,12 @@ last_updated: 2026-09-20
 - **Current PBI:** `NONE`; TL-01 es arquitectura/planificación y no implementa
   producto.
 Current PBI: NONE
-- **Estado general:** `ACTIVE — OWNER REVIEW`.
-- **Progreso:** `8 / 8` bloques completados para el checkpoint TL-01.
-- **Trabajo actual:** Owner Review del contrato, ADR-015 y decisiones
-  residuales.
-- **Siguiente bloque:** Owner decide ADR-015 y `TLD-001–009`; TL-02 permanece
-  sin iniciar hasta autorización independiente.
-- **Bloqueos:** ninguno para entregar TL-01 a Owner Review. ADR-015 y las
-  decisiones residuales aplicables bloquean implementación futura.
+- **Estado general:** `ACTIVE — FINAL CONTRACT RECONCILIATION`.
+- **Progreso:** `10 / 11` bloques completados para promoción local de TL-01.
+- **Trabajo actual:** validación local de promoción del Work Unit.
+- **Siguiente bloque:** cerrar evidencia local exacta; TL-02
+  permanece sin iniciar hasta autorización independiente.
+- **Bloqueos:** ninguno conocido.
 - **Última actualización:** 2026-09-20, America/Hermosillo.
 
 ## Objective
@@ -91,26 +89,28 @@ debilitar las invariantes operativas existentes.
 - [x] Registrar autorización y decisiones Owner TL-001–016.
 - [x] Auditar compatibilidad y conflictos con ADRs/contratos aceptados.
 - [x] Materializar ADR del control plane y lifecycle.
-- [x] Definir threat model administrativo y decisiones residuales.
+- [x] Definir threat model administrativo y decisiones para Owner.
 - [x] Definir Branch V1, starter authority y activación de Tenant.
 - [x] Definir enrollment challenge y auditoría/invariantes.
 - [x] Refinar TL-02 en adelante con dependencias y gates.
 - [x] Reconciliar documentos e índices y ejecutar validación proporcional.
+- [x] Registrar las decisiones finales `TLD-001–009` y aceptar ADR-015.
+- [x] Reconciliar QUESTION-005 y las fronteras TL-02–TL-09.
+- [~] Ejecutar el pipeline local de promoción exigido por la clasificación.
 
 ## Current
 
-TL-01 listo para Owner Review; no existe implementación iniciada.
+Contrato TL-01 reconciliado; validación local de promoción en curso. No existe
+implementación de producto iniciada.
 
 ## Next
 
-Resolver o diferir explícitamente ADR-015 y `TLD-001–009`; después seleccionar
-un Work Unit futuro sólo mediante nueva autorización.
+Completar el gate local y, si pasa, marcar `READY_FOR_PROMOTION`.
 
 ## Blockers
 
-None known for TL-01. `TLD-001–009` están documentadas como
-`OWNER DECISION REQUIRED` y bloquean sólo el Work Unit de implementación que
-depende de cada una. ADR-015 debe permanecer `Proposed` hasta Owner Acceptance.
+None known for TL-01. El Owner aprobó ADR-015 y resolvió `TLD-001–009`; faltan
+su materialización canónica y los gates locales antes de promoción.
 
 ## Important Discoveries
 
@@ -140,9 +140,9 @@ depende de cada una. ADR-015 debe permanecer `Proposed` hasta Owner Acceptance.
 
 ## Promotion Gates
 
-- No se autoriza promoción en este turno.
-- Cualquier candidato futuro debe resolver el gate de riesgo arquitectónico y
-  el benchmark PBI-041 si el pipeline completo vuelve a seleccionarlo.
+- La promoción remota no está autorizada en este turno.
+- La preparación local debe satisfacer el pipeline `FULL` exigido por la
+  clasificación arquitectónica antes de marcar `READY_FOR_PROMOTION`.
 
 ## Remote Actions / Authorization
 

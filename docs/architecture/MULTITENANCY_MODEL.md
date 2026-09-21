@@ -2,14 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Dirección multitenant, motor y contexto operativo aceptados; el
-  control plane administrativo de Tenant Lifecycle está propuesto en ADR-015.
+- **Estado:** Dirección multitenant, motor y contextos operativo/administrativo
+  aceptados; el control plane de Tenant Lifecycle se rige por ADR-015.
 - **Naturaleza:** ADR-003/004/010/011/012 son autoritativos para motor,
   propiedad, contexto, identidad/sesión y autorización ordinaria. ADR-015
-  delimita, todavía como propuesta, el contexto administrativo previo o ajeno a
-  una Station; RLS y mecanismos concretos siguen sujetos a evaluación.
+  delimita el contexto administrativo previo o ajeno a una Station; RLS y
+  mecanismos concretos siguen sujetos a evaluación.
 - **Dirección aceptada:** PostgreSQL 18.x, base y esquema compartidos con aislamiento lógico; Row-Level Security (RLS) pendiente de spike y opcional.
-- **ADRs relacionados:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) y [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md), `Accepted`; [ADR-015](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md), `Proposed`.
+- **ADRs relacionados:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) y [ADR-015](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md), `Accepted`.
 
 ## Objetivo de seguridad
 
@@ -22,7 +22,7 @@ Una operación de un tenant no debe leer, modificar, inferir, publicar, cachear 
   la estación y contrastado con el usuario de la Operational Session.
 - **Tenant efectivo administrativo:** tenant derivado exclusivamente de la
   relación autoritativa entre Admin Session y Tenant User, nunca de un valor
-  aportado por cliente. Este contexto sólo aplica si ADR-015 se acepta.
+  aportado por cliente. Este contexto aplica exclusivamente conforme a ADR-015.
 - **Contexto de tenant:** valor inmutable que acompaña una operación una vez autorizada.
 - **Contexto de sucursal:** restricción operativa adicional dentro de un tenant; no reemplaza `tenant_id`.
 - **Contexto de plataforma:** operación administrativa global excepcional, separada del flujo de tenant y auditada.
@@ -30,7 +30,7 @@ Una operación de un tenant no debe leer, modificar, inferir, publicar, cachear 
 ## Resolución del tenant
 
 El siguiente flujo es la resolución **operacional** aceptada. La resolución
-administrativa propuesta se define por separado en
+administrativa aceptada se define por separado en
 [Tenant Lifecycle MVP](TENANT_LIFECYCLE_MVP.md) y ADR-015; no convierte campos
 opcionales de este contexto en un bypass.
 

@@ -1,14 +1,16 @@
 # ADR-015 — Tenant Administrative Control Plane and Lifecycle
 
-**Status: Proposed**
+**Status: Accepted**
 **Fecha:** 2026-09-20
+**Aceptado por:** Product Owner mediante TL-001–016, `TLD-001–009` y la
+dirección final de lifecycle/ADR-012 registrada el 2026-09-20.
 
 ## Estado del documento
 
-Propuesta arquitectónica de TL-01 basada en las decisiones Owner TL-001 a
-TL-016 ya aprobadas. Este ADR no autoriza implementación. Requiere Owner Review
-y resolución de las decisiones residuales identificadas en el
-[contrato Tenant Lifecycle MVP](../../architecture/TENANT_LIFECYCLE_MVP.md).
+Decisión arquitectónica aceptada de TL-01 basada en las decisiones Owner
+TL-001 a TL-016 y `TLD-001–009`. Este ADR no autoriza implementación ni inicia
+TL-02. El contrato detallado vive en
+[Tenant Lifecycle MVP](../../architecture/TENANT_LIFECYCLE_MVP.md).
 
 ## Contexto
 
@@ -60,11 +62,11 @@ capacidad global expresamente fuera de alcance.
 
 ### Opción D — Control plane tenant-scoped separado del contexto operativo
 
-Propuesta. Una Admin Session autenticada por email/password deriva Tenant y
+Aceptada. Una Admin Session autenticada por email/password deriva Tenant y
 User server-side, evalúa capabilities tenant-wide y sólo puede ejecutar casos
 administrativos. La operación diaria conserva Station + PIN.
 
-## Decisión propuesta
+## Decisión
 
 Adoptar la opción D con tres contextos explícitos:
 
@@ -77,7 +79,7 @@ Adoptar la opción D con tres contextos explícitos:
 
 ### Relación con ADR-012
 
-Cuando este ADR sea `Accepted`, calificará parcialmente a ADR-012:
+Este ADR califica parcialmente a ADR-012:
 
 - su modelo de Roles, unión de capabilities, scope tenant, deny-by-default,
   autoridad server-side y revocación continúa vigente;
@@ -101,22 +103,48 @@ Cuando este ADR sea `Accepted`, calificará parcialmente a ADR-012:
 ### Identidad y sesiones
 
 - La persona inicial usa el mismo Tenant User como identidad estable.
+- En MVP, un email/identidad administrativa pertenece a un solo Tenant; es una
+  restricción V1 y no descarta una decisión multi-Tenant futura.
 - Password y PIN son credenciales separadas.
 - Admin Session y Operational Session son audiencias separadas y no se
   intercambian.
-- Recovery administrativo usa email verificado y no cambia roles, scope ni
-  lifecycle del User.
+- Admin Sessions son stateful, concurrentes y revocables individual o
+  globalmente; no hay remember-me, su idle timeout es 30 minutos y su lifetime
+  absoluto 12 horas.
+- Recovery administrativo usa email verificado, no cambia roles/scope/lifecycle
+  y sólo restaura credenciales de un User válido activo; nunca revive un User
+  inactivo o revocado.
+- Ninguna mutación puede dejar al Tenant sin un Tenant Admin efectivo activo.
 
 ### Branch y Station
 
 - Branch V1 pertenece al Tenant y tiene nombre, timezone IANA, estado,
   versión y timestamps.
+- La primera Branch nace `ACTIVE` si el comando autorizado satisface sus
+  invariantes. Un Tenant `ACTIVE` siempre conserva una Branch `ACTIVE`; se
+  bloquea desactivar la última y no hay retorno silencioso a `ONBOARDING`.
 - Branch/Station administration exige capabilities explícitas, nunca
   `isAdmin`.
 - Enrollment usa challenge de alta entropía, un uso y TTL 10 minutos, con
   scope exacto Tenant/Branch y consume atómico.
+- Station issue/revoke/relink y Branch deactivation son Level 2: Admin Session
+  válida y password reauthentication vigente durante 10 minutos.
+- El canje revalida atómicamente challenge, expiración, single-use, estados de
+  Tenant/Branch, autoridad del issuer y revisiones de autorización relevantes.
 - El equipo nuevo nunca elige Tenant/Branch ni convierte el challenge en
-  credencial permanente.
+  credencial permanente, y no vuelve a solicitar el password administrativo.
+
+### Starter authority, invitaciones y aceptación legal
+
+- El starter Tenant Admin Role es system-managed, protegido y versionado; no
+  puede ser editado ni eliminado por Tenant Users.
+- Sus assignments pueden cambiar sólo respetando el invariant de último Admin.
+- Administradores adicionales entran por invitación a email verificado,
+  aceptación explícita y Role assignment server-authorized; el cliente nunca
+  selecciona elevación.
+- La evidencia de términos/privacidad conserva documento/versión, timestamp,
+  Registration Attempt y asociación al User eventual cuando aplica. No retiene
+  IP ni user-agent por defecto.
 
 ### Auditoría
 
@@ -151,7 +179,8 @@ se registran.
 ## Consecuencias negativas
 
 - Añade otro tipo de credencial, Session, guard y superficie de ataque.
-- Exige definir email cardinality, recovery, session policy y last-admin guard.
+- Exige implementar y probar email uniqueness V1, recovery, session policy y
+  guards transaccionales de último Admin/Branch.
 - La UI compartida debe impedir confundir navegación administrativa y
   operacional.
 - Auditoría y revocación deben distinguir dos tipos de sesión.
@@ -165,7 +194,7 @@ se registran.
 | Admin Session reutilizada contra API operacional | audiencias/guards/cookies separados y pruebas negativas |
 | Email resuelve Tenant incorrecto o enumera cuentas | regla de cardinalidad explícita, lookup server-side y respuestas uniformes |
 | Autoelevación en bootstrap | bundle starter server-owned/versionado y transacción atómica |
-| Último Admin perdido | invariant en commit y recovery aprobado antes de revocar |
+| Último Admin perdido | bloquear la mutación que dejaría cero Admins efectivos; recovery no revive Users inactivos/revocados |
 | Challenge filtrado o replay | verifier, TTL 10 minutos, single-use y consume atómico |
 | Branch/Station de otro Tenant | repositorios scoped, constraints y pruebas con dos Tenants |
 | Auditoría filtra credenciales | allowlists y pruebas de redacción |
@@ -179,11 +208,14 @@ se registran.
 - Billing/suspensión comercial modifica el Tenant lifecycle.
 - Se aprueba operación offline o administración móvil con otro threat model.
 
-## Preguntas abiertas
+## Decisiones técnicas delegadas
 
-Las decisiones `TLD-001` a `TLD-009` del contrato relacionado permanecen
-abiertas. ADR-015 no puede pasar a `Accepted` ni autorizar TL-02 mientras sean
-materiales para su alcance.
+No queda una contradicción arquitectónica ni decisión Owner material abierta
+para este ADR. TL-02 y Work Units posteriores todavía deben seleccionar y
+validar mecanismos técnicos dentro de estas reglas: algoritmo/parámetros de
+password, verificación/recovery TTL, rate limits, proveedor/transporte de
+email, cookies/CSRF, rotación, revocación, retención y errores tipados. Esas
+selecciones no reabren el ADR salvo que contradigan sus invariantes.
 
 ## Referencias
 
@@ -199,6 +231,6 @@ materiales para su alcance.
 
 ## Próxima revisión
 
-Owner Review de TL-01, después de decidir `TLD-001` a `TLD-009` o aceptar
-explícitamente cuáles pueden resolverse dentro del Work Unit de implementación
-correspondiente.
+Antes de cualquier cambio material a la cardinalidad multi-Tenant de identidad,
+audiencias administrativas, lifecycle, modelo de autoridad inicial, acción
+sensible o frontera con Operational Context.

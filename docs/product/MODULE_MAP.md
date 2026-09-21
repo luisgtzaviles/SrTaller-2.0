@@ -15,7 +15,7 @@
 - **Eventos posibles** son ejemplos para descubrir colaboración entre módulos; no son contratos aceptados ni garantizan mensajería distribuida.
 - **Dependencias permitidas** indica colaboración deseada mediante contratos explícitos; no autoriza acceso directo a persistencia ajena.
 - Los módulos operativos reciben contexto ADR-010/011/014. Los casos de
-  Tenant Administration usan el contexto separado propuesto por ADR-015.
+  Tenant Administration usan el contexto separado aceptado por ADR-015.
   Ambos exigen capacidades/alcance ADR-012 y clasifican acciones sensibles
   conforme a ADR-013; no se modelan como un contexto parcialmente vacío.
 - Identity, Access Control, Audit, Files, Notifications e Integrations pueden ser capacidades transversales sin convertirse en dependencias indiscriminadas del dominio.
@@ -105,7 +105,7 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
   Admin efectivo activan el Tenant. Véase el
   [contrato Tenant Lifecycle MVP](../architecture/TENANT_LIFECYCLE_MVP.md).
 - **Preguntas abiertas:** semántica post-MVP de suspensión/cierre/exportación/
-  eliminación y decisiones `TLD-001–009`; QUESTION-005 está cerrada para MVP.
+  eliminación; `TLD-001–009` y QUESTION-005 están cerradas para MVP.
 
 ## Subscription and Billing
 
@@ -125,6 +125,9 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
   vinculación de estación.
 - **Eventos posibles:** sucursal creada, actualizada, activada, desactivada o cerrada.
 - **Dependencias permitidas:** Tenant Management como límite padre; Configuration para valores de sucursal; Audit. Los módulos operativos pueden referenciar sucursales válidas por identificador, no modificar sus datos.
+- **Decisión lifecycle V1:** la primera Branch nace `ACTIVE` si el comando
+  autorizado satisface invariantes; se bloquea desactivar la última Branch
+  `ACTIVE` de un Tenant `ACTIVE` y no existe retorno silencioso a `ONBOARDING`.
 - **Preguntas abiertas:** transferencias de negocio, cierre con operación pendiente y capacidades administrativas sobre varias sucursales. Véanse [QUESTION-006](./OPEN_QUESTIONS.md#question-006) y [QUESTION-007](./OPEN_QUESTIONS.md#question-007).
 
 ## Identity
@@ -141,9 +144,12 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
   la correlación de una persona entre tenants.
 - **Eventos posibles:** identidad registrada, identificador verificado, autenticación completada/fallida, identidad bloqueada, recuperada o revocada.
 - **Dependencias permitidas:** servicios técnicos de autenticación y Audit para eventos sensibles. Publica una intención de recuperación para que Notifications la consuma; Identity no depende de Notifications ni de módulos operativos.
-- **Preguntas abiertas:** cardinalidad del email entre tenants, política de
-  Admin Session, último Admin, recovery detallado y correlación de persona.
-  Véanse `TLD-001–003` y [QUESTION-009](./OPEN_QUESTIONS.md#question-009).
+- **Decisión MVP:** una identidad/email administrativa pertenece a un Tenant;
+  Admin Sessions stateful concurrentes tienen idle 30 minutos, absoluto 12
+  horas, revocación individual/global y no remember-me. Se bloquea perder el
+  último Admin; recovery no revive Users. Multi-Tenant identity, mecanismos de
+  recovery y correlación futura quedan fuera. Véase
+  [QUESTION-009](./OPEN_QUESTIONS.md#question-009).
 
 ## Access Control
 
@@ -157,15 +163,17 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 
 - **Responsabilidad principal — propuesta:** inventariar, vincular, activar,
   reconocer, desvincular y revocar estaciones y sus sesiones técnicas conforme
-  a ADR-010, usando autoridad administrativa ADR-015 cuando se acepte.
+  a ADR-010, usando autoridad administrativa ADR-015.
 - **Datos propios — propuesta:** identidad de estación, sucursal vinculada, tenant derivado, estado, evidencia de activación, última actividad y sesiones técnicas. El PIN se asocia al usuario del tenant; su ownership criptográfico/político permanece pendiente y no pertenece a la estación. Device Management sólo aporta su contexto validado.
 - **Eventos posibles:** vinculación solicitada/completada, estación activada/desvinculada/revocada/perdida, nueva vinculación y sesión cerrada remotamente.
 - **Dependencias permitidas:** Tenant Management, Branch Management, Identity y Access Control; Audit y Notifications para acciones sensibles sin confundir decisión con evidencia.
 - **Dirección MVP de enrollment:** challenge Admin-authorized de alta entropía,
   un uso y TTL de 10 minutos, scoped a Tenant/Branch y consumido atómicamente.
-- **Preguntas abiertas:** clasificación ADR-013 y reauth, efecto de revocar la
-  Admin Session emisora, credencial técnica, pérdida y modo offline. Véanse
-  `TLD-006`, [QUESTION-008](./OPEN_QUESTIONS.md#question-008),
+- **Decisión sensible:** issue/revoke/relink son Level 2 con password reauth
+  vigente 10 minutos; redemption revalida Session/issuer authority, estados y
+  authorization revisions sin pedir password al equipo.
+- **Preguntas abiertas:** credencial técnica, estados detallados, pérdida y
+  modo offline. Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008),
   [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y
   [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
 
