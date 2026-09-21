@@ -8,8 +8,8 @@
 - **Stage:** MVP.
 - **Fase:** Tenant Lifecycle MVP — Architecture and Planning.
 - **Checkpoint alcanzado:** Pricing Catalog cerrado conforme a los PBI y
-  autoridades técnicas enlazadas; TL-01 está activo sin implementación de
-  producto. `Released` permanece separado.
+  autoridades técnicas enlazadas; TL-01 está `READY_FOR_PROMOTION` sin
+  implementación de producto. `Released` permanece separado.
 - **Sprint activo:** SPRINT-03 — Price List Foundation está `Closed`; no existe
   otro Sprint activo ni trabajo de Sprint en curso.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
@@ -88,10 +88,10 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Sprint | NONE; SPRINT-03 remains Closed |
 | Sprint status | No active Sprint |
 | Current PBI | NONE |
-| Active Work Unit | TL-01 — Owner Decisions + Lifecycle Contract |
+| Active Work Unit | TL-01 — Owner Decisions + Lifecycle Contract (`READY_FOR_PROMOTION`) |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | TL-01 local promotion gates; TL-02 remains unselected and unauthorized |
+| Blocking gate | TL-01 remote promotion/integration authorization; TL-02 remains unselected and unauthorized |
 
 ## Fases aprobadas
 
@@ -263,8 +263,8 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** promoción gobernada de TL-01 después de ADR-015 Accepted y
-  `TLD-001–009` resueltas.
+- **Disparador:** autorización Owner para promoción remota de TL-01; ADR-015 y
+  `TLD-001–009` están resueltas y los gates locales pasaron.
 - **Estado conservado:** PBI-040 y PBI-041 `Done`, `Released: NO`; Current PBI
   `NONE`; Production no autorizada.
 - **Después:** no iniciar TL-02 ni otro PBI automáticamente.
