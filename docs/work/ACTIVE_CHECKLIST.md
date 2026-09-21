@@ -19,11 +19,13 @@ last_updated: 2026-09-21
 - **Sprint:** ninguno; no se inició Sprint de producto.
 - **Current PBI:** `NONE`; este Work Unit no selecciona un PBI.
 Current PBI: NONE
-- **Estado general:** `ACTIVE — DISCOVERY`.
-- **Progreso:** `6 / 7` bloques; validación final pendiente.
-- **Trabajo actual:** revisión y checks del artefacto de discovery.
-- **Siguiente bloque:** entregar roadmap y decisiones para Owner Review.
-- **Bloqueos:** ninguno.
+- **Estado general:** `ACTIVE — OWNER REVIEW`; discovery completo.
+- **Progreso:** `7 / 7` bloques de discovery completados.
+- **Trabajo actual:** artefacto y propuesta listos para revisión del Owner.
+- **Siguiente bloque:** decisiones Owner `TL-001` a `TL-016`; no se inició
+  ningún Work Unit de implementación.
+- **Bloqueos:** ninguno para discovery; implementación deliberadamente en
+  espera de decisiones Owner.
 - **Última actualización:** 2026-09-21, America/Hermosillo.
 
 ## Objective
@@ -81,19 +83,21 @@ taller hasta su operación diaria, usando lo que 2.0 ya ofrece y tomando 1.0
 - [x] Documentar decisiones Owner pendientes y riesgos de seguridad.
 - [x] Proponer el MVP mínimo y su secuencia de Work Units futuras.
 - [x] Definir escenario de aceptación E2E multitenant.
-- [ ] Validar documentación, links, consistencia y Work Unit contract.
+- [x] Validar documentación, links, consistencia y Work Unit contract.
 
 ## Current
 
-Consolidación de hallazgos, decisiones y roadmap propuesto en curso.
+Discovery y validación completos; el Work Unit se encuentra en Owner Review.
 
 ## Next
 
-Definir Work Units futuras y el escenario E2E multitenant.
+Resolver las decisiones `TL-001` a `TL-016`. Sólo después podrá autorizarse el
+primer Work Unit de implementación propuesto; ninguno quedó seleccionado.
 
 ## Blockers
 
-None known.
+Ninguno para este discovery. La implementación está intencionalmente detenida
+hasta recibir decisiones Owner explícitas.
 
 ## Important Discoveries
 
@@ -117,10 +121,15 @@ None known.
 ## Focused Verification
 
 - [x] `work-unit:start` y `work-unit:check` iniciales.
-- [ ] Links Markdown locales.
-- [ ] Consistency/source-of-truth scan.
-- [ ] `git diff --check`.
-- [ ] `work-unit:check` final.
+- [x] Links Markdown locales: `PASS` (`165` referencias comprobadas en los
+  archivos modificados).
+- [x] Consistency/source-of-truth y secret-pattern scan: `PASS`.
+- [x] Clasificación de cambio: `FULL` por tocar el mapa de producto; la ruta
+  `docs-only` falló cerrada como exige el contrato.
+- [x] `verify:full`: `PASS` en etapas `0–13`; PostgreSQL `18.4`, `75`
+  migraciones y cleanup `PASS`. Warning de bundle ya aceptado.
+- [x] `git diff --check`: `PASS`.
+- [x] `work-unit:check` final: `PASS`.
 
 ## Promotion Gates
 
@@ -129,10 +138,12 @@ None known.
 ## Remote Actions / Authorization
 
 - No remote action is implied by checklist initialization.
+- No se ejecutó push, PR, merge ni deploy.
 
 ## Handoff Notes
 
 - Branch creation/switching is explicit and occurred before this command.
+- Commit de discovery: `4505c38948904ab3a95ad5cf99a2c01900598da9`.
 - Preservar sin agregar ni borrar
   `apps/dev-preview-web/src/.DS_Store` (artefacto Owner preexistente).
 
