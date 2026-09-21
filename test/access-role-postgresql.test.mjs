@@ -259,8 +259,9 @@ async function rejectsWithCode(promise, code) {
 
 async function seedAuthorities(admin) {
   await admin.query(
-    `insert into tenants (tenant_id, operating_currency, created_at)
-     values ($1, 'MXN', now()), ($2, 'MXN', now())`,
+    `insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at)
+     values ($1, 'Role Tenant A', 'ACTIVE', 'MXN', 0, now(), now()),
+            ($2, 'Role Tenant B', 'ACTIVE', 'MXN', 0, now(), now())`,
     [tenantA, tenantB],
   );
   await admin.query(
@@ -424,8 +425,19 @@ test(
         [
           { capabilityCode: 'access_matrix.manage', createdAt: '2026-09-07T23:00:00.000Z' },
           { capabilityCode: 'access_matrix.read', createdAt: '2026-09-06T18:00:00.000Z' },
+          { capabilityCode: 'branches.deactivate', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'branches.manage', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'branches.read', createdAt: '2026-09-21T12:10:00.000Z' },
           { capabilityCode: 'repairs.add_note', createdAt: '2026-09-06T18:00:00.000Z' },
           { capabilityCode: 'repairs.read', createdAt: '2026-09-06T18:00:00.000Z' },
+          { capabilityCode: 'stations.enrollment.cancel', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'stations.enrollment.issue', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'stations.manage', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'stations.read', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'stations.relink', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'stations.revoke', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'tenant.profile.manage', createdAt: '2026-09-21T12:10:00.000Z' },
+          { capabilityCode: 'tenant.profile.read', createdAt: '2026-09-21T12:10:00.000Z' },
           { capabilityCode: 'users.manage', createdAt: '2026-09-07T23:00:00.000Z' },
           { capabilityCode: 'users.read', createdAt: '2026-09-06T18:00:00.000Z' },
         ],
@@ -1258,6 +1270,13 @@ test(
       );
       await runner.migrateDown(authorization(latest));
       await assertAccessTables(admin, []);
+
+      // These tenant-scoped rows are synthetic Role fixtures, not approved
+      // legacy Tenant backfill data. Clear them before the full-chain reapply
+      // so the TL-03 migration keeps its fail-closed production contract.
+      await admin.query('delete from users');
+      await admin.query('delete from branches');
+      await admin.query('delete from tenants');
 
       const reapplied = await runner.migrateToLatest();
       assert.ok(

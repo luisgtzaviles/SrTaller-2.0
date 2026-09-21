@@ -131,8 +131,9 @@ if (!pbi041Enabled) test('PostgreSQL enforces PBI-040 tenant identity, branch pr
   });
   try {
     await admin.query(
-      `insert into tenants (tenant_id, operating_currency, created_at)
-       values ($1, 'MXN', now()), ($2, 'USD', now())`,
+      `insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at)
+       values ($1, 'Catalog Tenant A', 'ACTIVE', 'MXN', 0, now(), now()),
+              ($2, 'Catalog Tenant B', 'ACTIVE', 'USD', 0, now(), now())`,
       [tenantA, tenantB],
     );
     await admin.query(
@@ -695,7 +696,7 @@ if (!pbi040Enabled) test('UX-005.6 promotes one exact pending Brand group atomic
   const tenantId = 'a1200000-0000-4000-8000-000000000056'; const branchId = 'a2200000-0000-4000-8000-000000000056'; const ctx = context(tenantId, branchId);
   const service = new CatalogService(new KyselyCatalogRepository(connection), async () => 'MXN');
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Catalog Promotion Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
     const productCategory = await category(service, ctx, 'Fundas UX-005.6', 'PRODUCT');
     const samsungOne = await item(service, ctx, { kind: 'PRODUCT', title: 'Funda Samsung A', categoryId: productCategory.categoryId, brandCapturedValue: 'SAMSUNG', basePriceAmountMinor: 120_00 });

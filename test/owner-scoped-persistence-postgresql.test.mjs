@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { copyFile, mkdtemp, rm } from 'node:fs/promises';
+import { copyFile, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -65,6 +65,8 @@ const branchTimezoneMigrationName =
   '20260904120000_stations_add_branch_timezone';
 const tenantCurrencyMigrationName =
   '20260912190000_tenancy_add_operating_currency';
+const tenantLifecycleFixtureMigrationName =
+  '20260921120500_tenancy_owner_scoped_lifecycle_fixture';
 const createdAt = '2026-07-25T20:00:00.000Z';
 const timeZone = 'America/Hermosillo';
 
@@ -211,9 +213,31 @@ test(
           ),
         ]),
       );
+      await writeFile(
+        join(tenantMigrationRoot, `${tenantLifecycleFixtureMigrationName}.js`),
+        [
+          'export async function up(database) {',
+          "  await database.schema.alterTable('tenants')",
+          "    .addColumn('display_name', 'varchar(160)', (column) => column.notNull())",
+          "    .addColumn('lifecycle_status', 'varchar(16)', (column) => column.notNull())",
+          "    .addColumn('version', 'integer', (column) => column.notNull().defaultTo(0))",
+          "    .addColumn('updated_at', 'timestamptz', (column) => column.notNull())",
+          '    .execute();',
+          '}',
+          'export async function down(database) {',
+          "  await database.schema.alterTable('tenants')",
+          "    .dropColumn('updated_at')",
+          "    .dropColumn('version')",
+          "    .dropColumn('lifecycle_status')",
+          "    .dropColumn('display_name')",
+          '    .execute();',
+          '}',
+          '',
+        ].join('\n'),
+      );
       const tenantMigrationSource = source(tenantMigrationRoot);
       const inspection = await inspectMigrationSource(tenantMigrationSource);
-      assert.equal(inspection.manifest.migrations.length, 3);
+      assert.equal(inspection.manifest.migrations.length, 4);
       assert.equal(
         inspection.manifest.migrations[0].migrationName,
         migrationName,
@@ -221,6 +245,10 @@ test(
       assert.equal(
         inspection.manifest.migrations[2].migrationName,
         tenantCurrencyMigrationName,
+      );
+      assert.equal(
+        inspection.manifest.migrations[3].migrationName,
+        tenantLifecycleFixtureMigrationName,
       );
       runner = createMigrationRunner(connection, {
         expectedManifestHash: inspection.manifest.aggregateSha256,
@@ -265,11 +293,11 @@ test(
 
       const tenantARecord = await tenantRepository.createTenant(
         { tenantId: tenantA },
-        { tenantId: tenantA, operatingCurrency: 'MXN', createdAt },
+        { tenantId: tenantA, displayName: 'Tenant A', lifecycleStatus: 'ONBOARDING', operatingCurrency: 'MXN', createdAt },
       );
       await tenantRepository.createTenant(
         { tenantId: tenantB },
-        { tenantId: tenantB, operatingCurrency: 'MXN', createdAt },
+        { tenantId: tenantB, displayName: 'Tenant B', lifecycleStatus: 'ONBOARDING', operatingCurrency: 'MXN', createdAt },
       );
       assert.ok(Object.isFrozen(tenantARecord));
       assert.deepEqual(
@@ -283,7 +311,7 @@ test(
       await assert.rejects(
         tenantRepository.createTenant(
           { tenantId: tenantA },
-          { tenantId: tenantA, operatingCurrency: 'MXN', createdAt },
+          { tenantId: tenantA, displayName: 'Tenant A', lifecycleStatus: 'ONBOARDING', operatingCurrency: 'MXN', createdAt },
         ),
         expectsTenantCode('TENANT_PERSISTENCE_CONFLICT'),
       );
@@ -293,7 +321,7 @@ test(
           createTransactionalKyselyTenantRepository(context);
         await repository.createTenant(
           { tenantId: tenantCommitted },
-          { tenantId: tenantCommitted, operatingCurrency: 'MXN', createdAt },
+          { tenantId: tenantCommitted, displayName: 'Tenant Committed', lifecycleStatus: 'ONBOARDING', operatingCurrency: 'MXN', createdAt },
         );
       });
       assert.equal(
@@ -307,7 +335,7 @@ test(
             createTransactionalKyselyTenantRepository(context);
           await repository.createTenant(
             { tenantId: tenantRolledBack },
-            { tenantId: tenantRolledBack, operatingCurrency: 'MXN', createdAt },
+            { tenantId: tenantRolledBack, displayName: 'Tenant Rolled Back', lifecycleStatus: 'ONBOARDING', operatingCurrency: 'MXN', createdAt },
           );
           throw new Error('synthetic rollback');
         }),

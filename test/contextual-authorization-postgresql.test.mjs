@@ -221,8 +221,9 @@ async function assertNoObjects(admin) {
 
 async function seedMaterialContext(admin) {
   await admin.query(
-    `insert into tenants (tenant_id, operating_currency, created_at)
-     values ($1, 'MXN', now()), ($2, 'MXN', now())`,
+    `insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at)
+     values ($1, 'Authorization Tenant A', 'ACTIVE', 'MXN', 0, now(), now()),
+            ($2, 'Authorization Tenant B', 'ACTIVE', 'MXN', 0, now(), now())`,
     [tenantA, tenantB],
   );
   await admin.query(
