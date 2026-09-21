@@ -110,13 +110,27 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     .addColumn('occurred_at', 'timestamptz', (column) => column.notNull())
     .addCheckConstraint('registration_security_events_result_ck', sql`result in ('SUCCEEDED','DENIED','FAILED')`)
     .execute();
+
+  await sql`create function registration_guard_acceptance_evidence_mutation() returns trigger language plpgsql as $function$ begin
+    if tg_op = 'DELETE' or old.acceptance_evidence_id <> new.acceptance_evidence_id or old.document_key <> new.document_key or old.document_version <> new.document_version or old.registration_attempt_id is distinct from new.registration_attempt_id or old.accepted_at <> new.accepted_at or old.tenant_id is not null or old.user_id is not null or new.tenant_id is null or new.user_id is null then
+      raise exception 'Registration acceptance evidence is immutable after its one-time authority association.' using errcode = '23514';
+    end if;
+    return new;
+  end; $function$`.execute(database);
+  await sql`create trigger registration_acceptance_documents_guard_update before update on registration_acceptance_documents for each row execute function registration_guard_acceptance_evidence_mutation()`.execute(database);
+  await sql`create trigger registration_acceptance_documents_reject_delete before delete on registration_acceptance_documents for each row execute function registration_guard_acceptance_evidence_mutation()`.execute(database);
+  await sql`create function registration_reject_security_event_mutation() returns trigger language plpgsql as $function$ begin raise exception 'Registration security events are append-only.' using errcode = '23514'; end; $function$`.execute(database);
+  await sql`create trigger registration_security_events_reject_update before update on registration_security_events for each row execute function registration_reject_security_event_mutation()`.execute(database);
+  await sql`create trigger registration_security_events_reject_delete before delete on registration_security_events for each row execute function registration_reject_security_event_mutation()`.execute(database);
 }
 
 export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
   await database.schema.dropTable('registration_security_events').execute();
+  await sql`drop function registration_reject_security_event_mutation()`.execute(database);
   await database.schema.dropTable('registration_public_action_limits').execute();
   await database.schema.dropTable('registration_email_dispatches').execute();
   await database.schema.dropTable('registration_acceptance_documents').execute();
+  await sql`drop function registration_guard_acceptance_evidence_mutation()`.execute(database);
   await database.schema.dropTable('registration_verification_challenges').execute();
   await database.schema.dropTable('registration_attempts').execute();
 }

@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { json } from 'express';
 
 import { AppModule } from './app.module.js';
 import { HealthReadiness } from './health/health-readiness.service.js';
@@ -61,6 +62,9 @@ async function bootstrap(): Promise<void> {
       abortOnError: false,
       logger: ['error', 'warn'],
     });
+    // Anonymous registration accepts only a narrowly bounded JSON body. This
+    // parser is installed before the broader authenticated Catalog parser.
+    application.use('/api/public', json({ limit: '16kb', strict: true }));
     // PBI-041 accepts bounded, server-validated spreadsheet payloads. The
     // parser limit remains finite and the domain rejects more than 50k rows.
     application.useBodyParser('json', { limit: '20mb' });

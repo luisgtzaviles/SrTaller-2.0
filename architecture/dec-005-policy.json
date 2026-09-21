@@ -496,10 +496,12 @@
         "ACCESS_PIN_HASHER_FACTORY",
         "APPLICATION_DATABASE_CONNECTION",
         "LOCAL_RUNTIME_CONFIGURATION",
+        "REGISTRATION_RUNTIME_CONFIGURATION",
         "SESSION_TRANSPORT_POLICY",
         "AccessPinHasherFactory",
         "ApplicationDatabaseConnection",
         "LocalRuntimeConfiguration",
+        "RegistrationRuntimeConfiguration",
         "SessionTransportPolicy"
       ]
     },
@@ -529,6 +531,7 @@
           "src/modules/stations/stations.module.ts",
           "src/modules/users/users.module.ts",
           "src/modules/tenancy/tenancy.module.ts"
+          ,"src/modules/registration/registration.module.ts"
         ]
       },
       {
@@ -545,6 +548,16 @@
         "implementation": "RuntimeEnvironmentReader",
         "consumers": [
           "src/modules/stations/stations.module.ts"
+        ]
+      },
+      {
+        "token": "REGISTRATION_RUNTIME_CONFIGURATION",
+        "contract": "RegistrationRuntimeConfiguration",
+        "strategy": "useFactory",
+        "implementation": "RuntimeEnvironmentReader",
+        "consumers": [
+          "src/modules/registration/application/use-cases/public-registration.use-cases.ts",
+          "src/modules/registration/registration.module.ts"
         ]
       },
       {
@@ -575,6 +588,12 @@
         "owner": "access",
         "file": "src/modules/access/access.module.ts",
         "className": "AccessModule",
+        "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
+      },
+      {
+        "owner": "registration",
+        "file": "src/modules/registration/registration.module.ts",
+        "className": "RegistrationModule",
         "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
       },
       {
@@ -658,6 +677,27 @@
         "contract": "SessionTransportPolicy",
         "importSpecifier": "../../../infrastructure/runtime/index.js",
         "kind": "constructor-inject"
+      },
+      {
+        "file": "src/modules/registration/registration.module.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/registration/registration.module.ts",
+        "token": "REGISTRATION_RUNTIME_CONFIGURATION",
+        "contract": "RegistrationRuntimeConfiguration",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/registration/application/use-cases/public-registration.use-cases.ts",
+        "token": "REGISTRATION_RUNTIME_CONFIGURATION",
+        "contract": "RegistrationRuntimeConfiguration",
+        "importSpecifier": "../../../../infrastructure/runtime/index.js",
+        "kind": "contract-only"
       },
       {
         "file": "src/modules/customers/customers.module.ts",
@@ -776,6 +816,15 @@
           "file": "src/modules/stations/stations.module.ts",
           "className": "StationsModule",
           "importSpecifier": "./presentation/local-station-bootstrap.controller.js"
+        }
+      },
+      "src/modules/registration/presentation/public-registration.controller.ts": {
+        "owner": "registration",
+        "className": "PublicRegistrationController",
+        "composition": {
+          "file": "src/modules/registration/registration.module.ts",
+          "className": "RegistrationModule",
+          "importSpecifier": "./presentation/public-registration.controller.js"
         }
       }
     }
@@ -2870,7 +2919,12 @@
     "src/modules/registration/registration.module.ts",
     "src/modules/registration/domain/registration-attempt.ts",
     "src/modules/registration/application/ports/registration-repository.port.ts",
+    "src/modules/registration/application/ports/registration-email-delivery.port.ts",
+    "src/modules/registration/application/use-cases/public-registration.use-cases.ts",
+    "src/modules/registration/infrastructure/delivery/local-registration-email.delivery.ts",
+    "src/modules/registration/infrastructure/delivery/resend-registration-email.delivery.ts",
     "src/modules/registration/infrastructure/persistence/kysely-registration.repository.ts",
+    "src/modules/registration/presentation/public-registration.controller.ts",
     "src/modules/customers/index.ts",
     "src/modules/customers/customers.module.ts",
     "src/modules/customers/application/ports/customer-intake-runtime.port.ts",

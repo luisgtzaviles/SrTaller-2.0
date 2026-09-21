@@ -31,6 +31,24 @@ export const SESSION_TRANSPORT_POLICY = Symbol(
   'srtaller.runtime.session-transport-policy',
 );
 
+export const REGISTRATION_RUNTIME_CONFIGURATION = Symbol(
+  'srtaller.runtime.registration-configuration',
+);
+
+export interface RegistrationRuntimeConfiguration {
+  readonly enabled: boolean;
+  readonly mode: 'local' | 'resend';
+  readonly sender: 'SR Taller <no-reply@srtaller.com>';
+  readonly publicBaseUrl: string;
+  readonly legalDocuments: readonly Readonly<{
+    key: 'terms' | 'privacy';
+    version: string;
+    url: string;
+  }>[];
+  principalDigest(value: string): Uint8Array;
+  createResendAdapter<Adapter>(constructor: new (apiKey: string, sender: string) => Adapter): Adapter;
+}
+
 /**
  * One lifecycle-owned application database capability. Product modules receive
  * this interface; pool creation, initialization and shutdown stay technical.

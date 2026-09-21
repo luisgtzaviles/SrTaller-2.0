@@ -1,6 +1,6 @@
 import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
-import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
+import { DatabaseTransactionError, runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import type { RegistrationAttemptRow } from '../../../../infrastructure/database/database-types.js';
 import type { RegistrationAttemptRecord, RegistrationRepositoryPort } from '../../application/ports/registration-repository.port.js';
 
@@ -39,6 +39,16 @@ function mapAttempt(row: RegistrationAttemptRow): RegistrationAttemptRecord {
   });
 }
 
+async function retrySerializable<Result>(operation: () => Promise<Result>): Promise<Result> {
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try { return await operation(); }
+    catch (error) {
+      if (!(error instanceof DatabaseTransactionError) || error.retryable !== 'conditional' || attempt === 3) throw error;
+    }
+  }
+  throw new Error('Unreachable registration transaction retry state.');
+}
+
 export class KyselyRegistrationRepository implements RegistrationRepositoryPort {
   constructor(private readonly connection: DatabaseConnection) {}
 
@@ -62,8 +72,18 @@ export class KyselyRegistrationRepository implements RegistrationRepositoryPort 
 
   async create(input: Parameters<RegistrationRepositoryPort['create']>[0]): Promise<'CREATED' | 'ACTIVE_EMAIL_EXISTS' | 'ADMIN_IDENTITY_EXISTS'> {
     try {
-      return await runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
+      return await retrySerializable(() => runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
         useTransactionalDatabasePersistenceExecutor(context, 'registration', async (database) => {
+          await database.updateTable('registration_attempts').set({
+            status: 'EXPIRED', updated_at: new Date(input.occurredAt),
+            password_algorithm: null, password_profile_version: null,
+            password_pepper_version: null, password_memory_kib: null,
+            password_passes: null, password_parallelism: null,
+            password_salt: null, password_verifier: null,
+            version: (eb) => eb('version', '+', 1),
+          }).where('normalized_email', '=', input.attempt.normalizedEmail)
+            .where('status', 'in', ['PENDING_VERIFICATION', 'VERIFIED'])
+            .where('expires_at', '<=', new Date(input.occurredAt)).execute();
           const existing = await database.selectFrom('registration_attempts').select('registration_attempt_id')
             .where('normalized_email', '=', input.attempt.normalizedEmail)
             .where('status', 'in', ['PENDING_VERIFICATION', 'VERIFIED']).forUpdate().executeTakeFirst();
@@ -125,7 +145,7 @@ export class KyselyRegistrationRepository implements RegistrationRepositoryPort 
             created_at: new Date(input.occurredAt), updated_at: new Date(input.occurredAt),
           }).execute();
           return 'CREATED' as const;
-        }));
+        })));
     } catch (error: unknown) {
       const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
       if (code === '23505') return 'ACTIVE_EMAIL_EXISTS';
@@ -134,7 +154,7 @@ export class KyselyRegistrationRepository implements RegistrationRepositoryPort 
   }
 
   async rotateChallenge(input: Parameters<RegistrationRepositoryPort['rotateChallenge']>[0]): Promise<RegistrationAttemptRecord | null> {
-    return runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
+    return retrySerializable(() => runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
       useTransactionalDatabasePersistenceExecutor(context, 'registration', async (database) => {
         const attempt = await database.selectFrom('registration_attempts').selectAll()
           .where('normalized_email', '=', input.normalizedEmail).where('status', '=', 'PENDING_VERIFICATION')
@@ -157,11 +177,11 @@ export class KyselyRegistrationRepository implements RegistrationRepositoryPort 
           last_attempt_at: null, created_at: new Date(input.occurredAt), updated_at: new Date(input.occurredAt),
         }).execute();
         return mapAttempt(attempt);
-      }));
+      })));
   }
 
   async consumeChallenge(input: Parameters<RegistrationRepositoryPort['consumeChallenge']>[0]) {
-    return runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
+    return retrySerializable(() => runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
       useTransactionalDatabasePersistenceExecutor(context, 'registration', async (database) => {
         const challenge = await database.selectFrom('registration_verification_challenges').selectAll()
           .where('token_digest', '=', input.tokenDigest).forUpdate().executeTakeFirst();
@@ -174,16 +194,27 @@ export class KyselyRegistrationRepository implements RegistrationRepositoryPort 
         const now = new Date(input.occurredAt);
         if (challenge.status !== 'ACTIVE' || challenge.expires_at <= now || attempt.expires_at <= now || attempt.status !== 'PENDING_VERIFICATION') {
           if (challenge.status === 'ACTIVE') await database.updateTable('registration_verification_challenges').set({ status: 'EXPIRED', updated_at: now, version: (eb) => eb('version', '+', 1) }).where('challenge_id', '=', challenge.challenge_id).execute();
+          if (attempt.expires_at <= now && attempt.status !== 'CONSUMED') {
+            await database.updateTable('registration_attempts').set({
+              status: 'EXPIRED', updated_at: now,
+              password_algorithm: null, password_profile_version: null,
+              password_pepper_version: null, password_memory_kib: null,
+              password_passes: null, password_parallelism: null,
+              password_salt: null, password_verifier: null,
+              version: (eb) => eb('version', '+', 1),
+            }).where('registration_attempt_id', '=', attempt.registration_attempt_id)
+              .where('status', 'in', ['PENDING_VERIFICATION', 'VERIFIED']).execute();
+          }
           return Object.freeze({ outcome: 'INVALID_OR_EXPIRED' as const, attempt: null });
         }
         await database.updateTable('registration_verification_challenges').set({ status: 'CONSUMED', consumed_at: now, updated_at: now, version: (eb) => eb('version', '+', 1) }).where('challenge_id', '=', challenge.challenge_id).where('status', '=', 'ACTIVE').executeTakeFirstOrThrow();
         const updated = await database.updateTable('registration_attempts').set({ status: 'VERIFIED', verified_at: now, updated_at: now, version: (eb) => eb('version', '+', 1) }).where('registration_attempt_id', '=', attempt.registration_attempt_id).where('status', '=', 'PENDING_VERIFICATION').returningAll().executeTakeFirstOrThrow();
         return Object.freeze({ outcome: 'VERIFIED' as const, attempt: mapAttempt(updated) });
-      }));
+      })));
   }
 
   async markConsumed(input: Parameters<RegistrationRepositoryPort['markConsumed']>[0]): Promise<RegistrationAttemptRecord | null> {
-    return runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
+    return retrySerializable(() => runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
       useTransactionalDatabasePersistenceExecutor(context, 'registration', async (database) => {
         const updated = await database.updateTable('registration_attempts').set({
           status: 'CONSUMED', consumed_at: new Date(input.occurredAt), updated_at: new Date(input.occurredAt),
@@ -198,7 +229,7 @@ export class KyselyRegistrationRepository implements RegistrationRepositoryPort 
           tenant_id: input.tenantId, user_id: input.userId,
         }).where('acceptance_evidence_id', '=', updated.acceptance_evidence_id).execute();
         return mapAttempt(updated);
-      }));
+      })));
   }
 
   async recordDispatch(input: Parameters<RegistrationRepositoryPort['recordDispatch']>[0]): Promise<void> {
@@ -212,7 +243,7 @@ export class KyselyRegistrationRepository implements RegistrationRepositoryPort 
   }
 
   async consumeActionLimit(input: Parameters<RegistrationRepositoryPort['consumeActionLimit']>[0]): Promise<boolean> {
-    return runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
+    return retrySerializable(() => runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
       useTransactionalDatabasePersistenceExecutor(context, 'registration', async (database) => {
         const now = new Date(input.occurredAt);
         const existing = await database.selectFrom('registration_public_action_limits').selectAll()
@@ -232,7 +263,7 @@ export class KyselyRegistrationRepository implements RegistrationRepositoryPort 
           action_count: existing.action_count + 1, last_action_at: now,
         }).where('principal_digest', '=', input.principalDigest).where('action', '=', input.action).execute();
         return true;
-      }));
+      })));
   }
 
   async recordSecurityEvent(input: Parameters<RegistrationRepositoryPort['recordSecurityEvent']>[0]): Promise<void> {

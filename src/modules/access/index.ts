@@ -5,6 +5,17 @@ import type { UsersModuleContract } from '../users/index.js';
 
 import type { CapabilityCode } from './domain/capability.js';
 
+export type AdminPasswordVerifier = Readonly<{
+  algorithm: string;
+  profileVersion: number;
+  pepperVersion: number;
+  memoryKiB: number;
+  passes: number;
+  parallelism: number;
+  salt: Uint8Array;
+  verifier: Uint8Array;
+}>;
+
 export type ProtectedOperationKind = 'read' | 'state-change';
 
 /**

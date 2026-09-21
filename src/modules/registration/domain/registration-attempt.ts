@@ -4,6 +4,19 @@ export const REGISTRATION_CHALLENGE_TTL_MS = 60 * 60 * 1_000;
 export const REGISTRATION_ATTEMPT_TTL_MS = 24 * 60 * 60 * 1_000;
 export const REGISTRATION_RESEND_COOLDOWN_MS = 60 * 1_000;
 export const REGISTRATION_RESEND_LIMIT_PER_HOUR = 5;
+
+export function normalizeRegistrationEmail(value: unknown): Readonly<{
+  normalized: string;
+  display: string;
+}> {
+  if (typeof value !== 'string') throw new Error('Invalid registration email.');
+  const display = value.trim();
+  const normalized = display.toLocaleLowerCase('en-US');
+  if (display.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(display)) {
+    throw new Error('Invalid registration email.');
+  }
+  return Object.freeze({ normalized, display });
+}
 export const REGISTRATION_VERIFICATION_FAILURE_LIMIT = 10;
 
 export type RegistrationAttemptStatus =
@@ -81,4 +94,3 @@ export function isRegistrationAttemptExpired(expiresAt: string, now: Date): bool
   const timestamp = Date.parse(expiresAt);
   return !Number.isFinite(timestamp) || timestamp <= now.getTime();
 }
-
