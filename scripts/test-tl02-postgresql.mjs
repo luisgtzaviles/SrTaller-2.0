@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto';
 import { promisify } from 'node:util';
 
 import { postgresqlImage } from './lib/postgresql-ci-evidence.mjs';
+import { waitForPostgresqlEndpoint } from './lib/postgresql-endpoint-readiness.mjs';
 import { assertPostgresqlTestSummary } from './lib/postgresql-test-output.mjs';
 
 const execute = promisify(execFile); const suffix = randomBytes(6).toString('hex');
@@ -16,6 +17,8 @@ try {
   await docker(['run','--detach','--name',container,'--label','com.srtaller.tl02=postgresql','--publish','127.0.0.1::5432','--tmpfs','/var/lib/postgresql:rw,noexec,nosuid,size=384m','--env',`POSTGRES_DB=${database}`,'--env',`POSTGRES_PASSWORD=${password}`,'--env',`POSTGRES_USER=${user}`,'--health-cmd',`pg_isready --username=${user} --dbname=${database}`,'--health-interval','1s','--health-timeout','2s','--health-retries','30',postgresqlImage]); started = true;
   const deadline = Date.now() + 60_000; while (true) { const state = (await docker(['inspect','--format','{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}',container])).stdout.trim(); if (state === 'healthy') break; if (Date.now() >= deadline) throw new Error('TL-02 PostgreSQL health timeout'); await new Promise((resolve) => setTimeout(resolve, 300)); }
   const port = (await docker(['inspect','--format','{{(index (index .NetworkSettings.Ports "5432/tcp") 0).HostPort}}',container])).stdout.trim();
+  if (!/^\d{1,5}$/u.test(port)) throw new Error('TL-02 PostgreSQL loopback port is unavailable');
+  await waitForPostgresqlEndpoint({ host:'127.0.0.1', port:Number(port), database, user, password });
   const env = { ...process.env, SR_DB_ENVIRONMENT:'development',SR_DB_HOST:'127.0.0.1',SR_DB_PORT:port,SR_DB_NAME:database,SR_DB_USER:user,SR_DB_PASSWORD:password,SR_DB_SSL_MODE:'disable',SR_DB_POOL_MIN:'0',SR_DB_POOL_MAX:'4',SR_DB_IDLE_TIMEOUT_MS:'1000',SR_DB_CONNECTION_TIMEOUT_MS:'2000',SR_DB_STATEMENT_TIMEOUT_MS:'30000',SR_DB_QUERY_TIMEOUT_MS:'30000',SR_DB_APPLICATION_NAME:'srtaller-tl02-migrator',SR_DB_ROLE:'migration',SR_DB_ACCESS_MODE:'read-write',SR_DB_MIGRATIONS_ENABLED:'true' };
   const first = JSON.parse((await execute(process.execPath,['--enable-source-maps','dist/db-migrate.js'],{encoding:'utf8',env,timeout:90_000})).stdout.trim()); assert.equal(first.applied, 76); assert.equal(first.pending, 0);
   const second = JSON.parse((await execute(process.execPath,['--enable-source-maps','dist/db-migrate.js'],{encoding:'utf8',env,timeout:90_000})).stdout.trim()); assert.equal(second.applied, 0); assert.equal(second.pending, 0);

@@ -8,9 +8,9 @@ risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: feature/tl-02-admin-identity-session
 base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
-status: BLOCKED
+status: ACTIVE
 closure_mode: DERIVED
-last_updated: 2026-09-20
+last_updated: 2026-09-21
 -->
 
 ## Identity
@@ -21,17 +21,16 @@ last_updated: 2026-09-20
 - **Current PBI:** `NONE`; Tenant Lifecycle is proceeding through governed
   Work Units.
 Current PBI: NONE
-- **Status:** `BLOCKED`; implementation is complete but the exact full local
-  promotion campaign has not passed.
+- **Status:** `ACTIVE`; implementation is complete and the authorized Stage 8
+  PostgreSQL readiness remediation is in progress.
 - **Progress:** `13 / 14` Work Unit blocks complete.
-- **Current work:** candidate preserved after focused and base gates passed.
-- **Next block:** repeat `verify:full` on a stable governed host; do not begin
-  TL-03 or promote remotely until it passes on the exact candidate.
-- **Blockers:** PBI-041's pre-existing 10k publish performance gate exceeds its
-  30-second budget only after the long PostgreSQL composite (35.4 seconds in
-  the latest full campaign); the same exact test passes isolated at 2.18
-  seconds.
-- **Last updated:** 2026-09-20, America/Hermosillo.
+- **Current work:** make Stage 8 prove the published PostgreSQL endpoint is
+  reachable before migrations begin.
+- **Next block:** focused regression and material TL-02 verification, one
+  logical commit, then exact-candidate `verify:full`.
+- **Blockers:** none while the narrowly authorized harness remediation is in
+  progress; remote promotion remains unavailable until FULL passes.
+- **Last updated:** 2026-09-21, America/Hermosillo.
 
 ## Objective
 
@@ -96,22 +95,26 @@ Station + PIN boundary.
 
 ## Current
 
-The eight authorized implementation blocks are complete. Focused and base
-gates pass, but the exact full campaign remains blocked by the host-sensitive
-PBI-041 performance gate described below. No remote promotion is allowed yet.
+The eight authorized product blocks are complete. PBI-041 now passes inside
+FULL. Stage 8 exposed a separate harness race: Docker can report PostgreSQL
+healthy inside the container before its published loopback endpoint accepts
+the connection used by the migrator. The bounded endpoint probe and focused
+regressions now pass; the coherent remediation is ready to commit before the
+required exact-candidate FULL campaign. No remote promotion is allowed yet.
 
 ## Next
 
-Rerun the exact full campaign on a stable governed host. After it passes,
-reconcile this Work Unit to `READY_FOR_PROMOTION` and await explicit Owner
-authorization before push/PR. Do not begin TL-03.
+Add deterministic, bounded readiness for the exact Stage 8 loopback endpoint,
+prove it with focused tests and the TL-02 PostgreSQL suite, commit the coherent
+remediation, then rerun the exact full campaign. Do not begin TL-03.
 
 ## Blockers
 
-The exact `verify:full` campaign reaches Stage 7 and fails because PBI-041's
-10k publish measures 35.4 seconds after the long material PostgreSQL composite,
-above its 30-second budget. The same test passes in isolation at 2.18 seconds.
-The gate was not weakened, skipped or reordered.
+No active implementation blocker. The superseding failure occurred at Stage 8:
+container-internal health passed, but the migrator raced Docker's published
+loopback endpoint and failed with `DATABASE_MIGRATION_INVALID_STATE`. An
+immediate isolated TL-02 run passed 2/2 with 76 migrations and 0 pending on the
+second run. The readiness fix must not weaken, skip or retry the migration.
 
 ## Important Discoveries
 
@@ -154,9 +157,16 @@ The gate was not weakened, skipped or reordered.
 - [x] Typecheck and architecture checks — PASS through implementation block 4.
 - [x] Current base `verify` — PASS: 975 pass, 32 governed material skips, zero
   failures.
-- [!] Exact `verify:full` — FAIL at Stage 7 only: PBI-041 10k publish 35.4s /
-  30s budget after the PostgreSQL composite. The isolated Stage 7 suite is
-  otherwise 10/10 PASS with publish 2.18s.
+- [x] PBI-041 inside the latest FULL campaigns — PASS twice; publish 1.98s and
+  2.07s, below the governed 30s budget.
+- [x] Published PostgreSQL endpoint readiness regression — 4 PASS; delayed
+  availability, bounded failure, migration failure propagation and cleanup.
+- [x] Affected orchestration plus readiness tests — 12 PASS.
+- [x] Remediated TL-02 material PostgreSQL — 2 PASS; 76 migrations, second run
+  0 pending.
+- [x] Focused typecheck, architecture and Work Unit checks — PASS.
+- [~] Exact `verify:full` — Stage 8 readiness remediation and revalidation in
+  progress; the prior candidate reached Stage 8 with all earlier stages PASS.
 
 ## Promotion Gates
 
