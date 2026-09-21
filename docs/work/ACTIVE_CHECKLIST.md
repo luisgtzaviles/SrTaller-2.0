@@ -1,13 +1,13 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: QUALITY — Stabilize PBI-041 Governed Performance Gate
-iteration: 2 - Native Performance Gate Remediation
+work_unit: QUALITY — Correct PBI-041 Transaction Budget Enforcement
+iteration: 2 - Harness Contract Remediation
 type: QUALITY
 risk: HIGH
 shadow_risk: SENSITIVE
-branch: fix/pbi-041-performance-gate
-base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
+branch: chore/pbi-041-transaction-budget-review
+base_sha: 4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5
 status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-21
@@ -16,126 +16,122 @@ last_updated: 2026-09-21
 ## Identity
 
 - **Milestone:** Tenant Lifecycle MVP promotion dependency.
-- **Work Unit:** QUALITY — Stabilize PBI-041 Governed Performance Gate.
+- **Work Unit:** QUALITY — Correct PBI-041 Transaction Budget Enforcement.
 - **Sprint:** none.
-- **Current PBI:** `NONE`; this is a quality remediation dependency.
+- **Current PBI:** `NONE`; this is an authorized Quality remediation.
 Current PBI: NONE
 - **Status:** `READY_FOR_PROMOTION`.
-- **Progress:** `9 / 9` diagnostic/remediation blocks complete.
-- **Current work:** local Quality remediation complete and stopped before
-  remote promotion.
-- **Next block:** push and Draft PR only with separate Owner authorization.
-- **Blockers:** none for diagnosis; TL-02 promotion remains externally blocked.
+- **Progress:** `6 / 6` remediation blocks complete.
+- **Current work:** remediation and required local verification are complete.
+- **Next block:** remote promotion only after separate Owner authorization.
+- **Blockers:** none. TL-02 remains paused and preserved.
 - **Last updated:** 2026-09-21, America/Hermosillo.
 
 ## Objective
 
-Make PBI-041's governed performance gate meaningful, reproducible and
-deterministic without assuming the threshold or product implementation is
-wrong.
+Correct the PBI-041 harness so a single transaction observation above the
+historical 15-second p95 target emits an explicit diagnostic without failing
+promotion, while publish above 30 seconds remains a hard failure.
 
 ## Why
 
-The same 10k publish path has measured from roughly two seconds to more than
-35 seconds. TL-02 is complete but cannot be promoted while FULL contains this
-unexplained blocking variance.
+The accepted historical contract defines transaction duration as a p95
+capacity target. The current recurring test incorrectly treats it as an
+every-run maximum. Owner accepted the transaction-budget review recommendation
+and authorized the minimum harness-contract correction.
 
 ## In Scope
 
-- Audit the origin and meaning of the 30-second PBI-041 threshold.
-- Instrument the real benchmark without distorting the product operation.
-- Run a bounded, controlled diagnostic campaign.
-- Attribute variance and check for a genuine product/database regression.
-- Define and implement only the smallest evidence-supported quality fix.
-- Protect the measurement boundary with regression tests.
+- Preserve mandatory 10,000-row publish and transaction measurement.
+- Keep publish duration above 30 seconds as a blocking failure.
+- Emit `TRANSACTION_CAPACITY_TARGET_EXCEEDED` for a single transaction
+  observation above 15 seconds without failing promotion on that fact alone.
+- Preserve 15 seconds as the documented historical p95 target.
+- Add focused regression coverage for the corrected enforcement.
+- Define the future controlled calibration campaign of at least ten runs.
+- Run focused checks and one authoritative `verify:full` on the final candidate.
 
 ## Out of Scope
 
-- Arbitrarily raising, removing, skipping or retrying the performance gate.
-- Speculative SQL/PostgreSQL/product optimization.
-- TL-02 product changes, TL-03, remote writes, PR, merge or deploy.
-- CI or infrastructure changes made merely to obtain GREEN.
+- Product behavior, SQL, indexes or deterministic fixture changes.
+- Any replacement threshold, retries, averaging or retry-to-green behavior.
+- TL-02 changes or resumption, TL-03, push, PR, merge or deploy.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`BRANCH_POLICY.md`](../delivery/BRANCH_POLICY.md)
-- [`QUALITY_STRATEGY.md`](../quality/QUALITY_STRATEGY.md)
+- [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](../delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
+- [`PRICE_LIST_ARCHITECTURE.md`](../architecture/PRICE_LIST_ARCHITECTURE.md)
 - [`PBI-041`](../backlog/pbis/PBI-041.md)
-- [`PBI-041 evidence index`](../quality/evidence/pbi-041/README.md)
+- [`PBI-041 Test Strategy`](../quality/evidence/pbi-041/TEST_STRATEGY.md)
+- [`Transaction Budget Review`](../quality/evidence/pbi-041/TRANSACTION_BUDGET_REVIEW.md)
 
 ## Risks
 
-- Conflating infrastructure latency with product execution time.
-- Replacing a meaningful regression gate with a host-dependent benchmark.
-- Selecting the fastest run instead of explaining the distribution.
-- Changing product or thresholds before proving the cause.
-- Losing TL-02 traceability while resolving its promotion dependency.
+- Accidentally weakening the 30-second publish hard gate.
+- Hiding transaction duration instead of preserving it as mandatory evidence.
+- Encoding retries or averaging into ordinary promotion.
+- Changing product execution while correcting only harness semantics.
+- Touching the preserved TL-02 candidate before this dependency is integrated.
 
 ## Plan
 
-- [x] Freeze TL-02 on its preserved branch without rewriting history.
-- [x] Audit historical PBI-041 performance intent and evidence.
-- [x] Instrument the current benchmark phases.
-- [x] Execute bounded controlled reproduction.
-- [x] Attribute variance with measured evidence.
-- [x] Assess product/database regression.
-- [x] Define the authoritative performance contract.
-- [x] Implement and regression-test the minimum quality remediation.
-- [x] Validate and prepare the Quality Work Unit for Owner review.
+- [x] Revalidate branch, baseline, Owner decision and TL-02 preservation.
+- [x] Implement corrected enforcement and sanitized diagnostic output.
+- [x] Add regression tests for publish blocking and transaction p95 semantics.
+- [x] Reconcile architecture, PBI, test strategy and Quality evidence.
+- [x] Run focused validation and inspect scope.
+- [x] Run authoritative `verify:full`, commit and mark promotion readiness.
 
 ## Current
 
-The performance runner now selects a pinned native PostgreSQL 18.4 image,
-separates harness phases from product timing and enforces both the existing
-15-second DB transaction and 30-second service ceilings.
+The corrected harness is locally verified. It preserves the 30-second blocking
+publish gate and always reports the 15-second historical p95 target plus the
+current transaction observation. A single target miss produces the required
+explicit diagnostic without changing the product execution path.
 
 ## Next
 
-Await explicit Owner authorization for remote promotion of this Quality Work
-Unit. TL-02 remains frozen until the remediation is integrated.
+Await explicit Owner authority to push this exact candidate and open one remote
+review. Do not resume TL-02 before integration and exact-main verification.
 
 ## Blockers
 
-None for the authorized diagnostic work. TL-02 cannot resume promotion until
-this predecessor is integrated and its branch is reconciled from new `main`.
+None for the authorized remediation. Remote promotion remains unauthorized.
 
 ## Important Discoveries
 
-- Branch policy explicitly permits freezing an unintegrated branch while a
-  preceding remediation is completed, then reconciling it from new `main`.
-- TL-02 is preserved at `bda3a70d63dcc7c37e15ec2c8c419941c9731790`.
-- The PBI-041 publish measurement has varied materially both inside FULL and
-  in isolation; retrying until green is not evidence.
-- The historical contract defines a 30-second HTTP budget and a 15-second DB
-  transaction budget; the current material test calls the service directly and
-  previously enforced only 30 seconds.
-- Controlled samples on the same Apple `arm64` host measured emulated `amd64`
-  PostgreSQL publish at 2.0, 28.7 and 13.2 seconds; slow time accumulated in DB
-  query awaits, not provisioning or application work.
-- A native PostgreSQL 18.4 control measured 1.8 seconds and the remediated
-  governed runner measured 1.6 seconds with a 1.6-second transaction.
-- No Catalog product/SQL regression was identified; the integrated publish
-  implementation is unchanged from the known batching remediation.
+- TL-02 remains preserved at `6ea9d15874acce1c006c204ee70933f15cb5dec1`;
+  its product candidate was not modified by this Quality branch.
+- The preceding investigation classified the existing gate as
+  `JUSTIFIED_BUT_THRESHOLD_UNSUPPORTED` for single-run enforcement.
+- The Owner explicitly preserved 15 seconds as a p95 target and 30 seconds as
+  the recurring blocking publish limit.
+- Focused PostgreSQL executed the unchanged deterministic 10k path once:
+  publish 1,494.0 ms and transaction 1,493.5 ms; all 10 material tests passed.
+- Full verification exercised the target-miss path without a retry: publish
+  21,424.3 ms remained below 30 seconds, transaction 21,423.9 ms emitted
+  `TRANSACTION_CAPACITY_TARGET_EXCEEDED`, and Stage 7 remained PASS.
+- The delta contains only Quality harness logic, contract tests and canonical
+  documentation; no `src/`, application UI, migration, SQL or fixture changed.
 
 ## Focused Verification
 
-- [x] Historical contract audit complete.
-- [x] Instrumentation regression tests PASS — 4/4.
-- [x] Controlled campaign complete with environment and phase timings.
-- [x] Product regression assessment complete.
-- [x] Focused quality checks PASS — typecheck, 36 focused contracts,
-  architecture, Work Unit, Markdown links and secret scan.
-- [x] Remediated PBI-041 PostgreSQL material suite PASS — 10/10, 75
-  migrations, second run 0 pending, cleanup PASS.
-- [x] `git diff --check` PASS.
+- [x] Branch, baseline, tracked tree and unrelated `.DS_Store` checked.
+- [x] PBI-041 performance contract tests: 6/6 PASS.
+- [x] PBI-041 material PostgreSQL suite: 10/10 PASS.
+- [x] Relevant bulk contract and architecture/harness tests: PASS.
+- [x] Work Unit checker and `git diff --check`: PASS.
+- [x] Authoritative `verify:full`: stages 0–13 and cleanup PASS.
 
 ## Promotion Gates
 
-- No promotion gate may be weakened.
-- A product change requires a proven product regression and renewed scope.
-- Remote promotion requires separate Owner authorization after local review.
+- Publish above 30 seconds must continue to fail.
+- Transaction timing must remain present and sanitized.
+- A single transaction observation above 15 seconds must emit the required
+  capacity diagnostic and must not independently fail promotion.
+- The final exact candidate must pass authoritative `verify:full`.
 
 ## Remote Actions / Authorization
 
@@ -143,13 +139,13 @@ this predecessor is integrated and its branch is reconciled from new `main`.
 
 ## Handoff Notes
 
-- Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
-- Do not modify or push the frozen TL-02 branch.
-- Do not start TL-03.
+- Preserve `apps/dev-preview-web/src/.DS_Store` as an unrelated Owner artifact.
+- Do not modify or rebase `feature/tl-02-admin-identity-session`.
+- Do not run a calibration campaign or retry ordinary verification into green.
 
 ## Closure Predicate
 
-This Quality Work Unit closes only after its exact candidate is merged by an
-authorized PR and required exact-main CI is GREEN. No deployment is required
-for this harness-only change. Reconciliation and revalidation of frozen TL-02
-remain a separate, later authorized step.
+The Work Unit reaches `READY_FOR_PROMOTION` when the corrected harness and
+canonical documentation are committed, focused tests pass, the exact candidate
+passes one authoritative `verify:full`, tracked state is clean and TL-02
+remains unchanged. Integration and TL-02 resumption require separate authority.

@@ -1,5 +1,43 @@
 import { performance } from 'node:perf_hooks';
 
+export const PBI041_PUBLISH_HARD_LIMIT_MS = 30_000;
+export const PBI041_TRANSACTION_P95_TARGET_MS = 15_000;
+export const PBI041_TRANSACTION_CAPACITY_TARGET_EXCEEDED =
+  'TRANSACTION_CAPACITY_TARGET_EXCEEDED';
+
+function finiteDuration(name, value) {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new TypeError(`${name} must be a finite non-negative duration`);
+  }
+  return value;
+}
+
+export function assessPbi041PublishPerformance({ publishMs, transactionMs }) {
+  const currentPublishObservationMs = finiteDuration('publishMs', publishMs);
+  const currentTransactionObservationMs = finiteDuration('transactionMs', transactionMs);
+  const transactionCapacityTargetExceeded =
+    currentTransactionObservationMs > PBI041_TRANSACTION_P95_TARGET_MS;
+
+  return Object.freeze({
+    publishWithinHardLimit: currentPublishObservationMs <= PBI041_PUBLISH_HARD_LIMIT_MS,
+    currentPublishObservationMs: Number(currentPublishObservationMs.toFixed(1)),
+    transactionCapacityTargetExceeded,
+    transactionDiagnostic: Object.freeze({
+      ...(transactionCapacityTargetExceeded
+        ? { code: PBI041_TRANSACTION_CAPACITY_TARGET_EXCEEDED }
+        : {}),
+      historicalTarget: 'transaction p95 <=15s',
+      currentSingleObservationMs: Number(currentTransactionObservationMs.toFixed(1)),
+      enforcement: 'diagnostic pending calibrated p95 contract',
+    }),
+  });
+}
+
+export function formatPbi041TransactionCapacityDiagnostic(diagnostic) {
+  const code = diagnostic.code ? `${diagnostic.code}; ` : '';
+  return `${code}Historical target: ${diagnostic.historicalTarget}; Current single observation: ${diagnostic.currentSingleObservationMs} ms; Enforcement: ${diagnostic.enforcement}`;
+}
+
 function queryText(value) {
   if (typeof value === 'string') return value;
   if (value && typeof value === 'object' && typeof value.text === 'string') return value.text;

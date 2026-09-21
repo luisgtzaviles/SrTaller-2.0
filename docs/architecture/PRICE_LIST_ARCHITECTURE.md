@@ -742,13 +742,16 @@ UI/API inicial rechaza >10,000 completa y explícitamente, sin truncar ni
 persistir parcialmente. Si se requiere particionar apply, cambia el producto y
 necesita arquitectura posterior.
 
-El gate PostgreSQL recurrente de 10,000 filas distingue dos límites ya
-existentes: el tiempo wall-clock de `BulkCatalogService.publish` debe permanecer
-en ≤30 s y la transacción desde `BEGIN` hasta `COMMIT` en ≤15 s. La llamada
-directa al servicio es un regression sentinel necesario del presupuesto HTTP,
-no una medición HTTP ni un sustituto de su campaña p95. Provisioning del
-contenedor, readiness, migraciones, arranque del proceso y cleanup se miden y
-reportan por separado; nunca se cargan al tiempo de producto.
+El gate PostgreSQL recurrente de 10,000 filas conserva dos mediciones ya
+existentes. El tiempo wall-clock de `BulkCatalogService.publish` debe permanecer
+en ≤30 s y bloquea la promoción. La transacción desde `BEGIN` hasta `COMMIT` se
+mide obligatoriamente contra el target histórico `p95 ≤15 s`; una observación
+individual superior emite `TRANSACTION_CAPACITY_TARGET_EXCEEDED`, pero no se
+interpreta como un p95 ni bloquea por sí sola hasta que exista una campaña
+calibrada. La llamada directa al servicio es un regression sentinel necesario
+del presupuesto HTTP, no una medición HTTP ni un sustituto de su campaña p95.
+Provisioning del contenedor, readiness, migraciones, arranque del proceso y
+cleanup se miden y reportan por separado; nunca se cargan al tiempo de producto.
 
 PostgreSQL `18.4` se ejecuta desde un digest fijado que coincide con la
 arquitectura del Docker server. Una imagen `amd64` emulada sobre un host `arm64`
@@ -757,7 +760,11 @@ desconocida falla cerrado. El gate recurrente usa una base fresca, fixture
 sintético determinista, una sola ejecución sin retry-to-green y diagnóstico
 agregado por familia de query; no registra SQL, valores ni credenciales. La
 campaña de capacidad/p95 conserva el protocolo de múltiples iteraciones de la
-estrategia de prueba y se reporta separadamente del sentinel de promoción.
+estrategia de prueba y se reporta separadamente del sentinel de promoción. La
+calibración transaccional requiere al menos 10 ejecuciones comparables sobre
+PostgreSQL 18.4 nativo, el mismo digest, dataset determinista, frontera
+transaccional y ambiente controlado; conserva todas las muestras y calcula p95
+explícitamente, sin escoger sólo las más rápidas.
 
 ## 11. Concurrencia, idempotencia, auditoría y seguridad
 

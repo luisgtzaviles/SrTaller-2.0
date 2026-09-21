@@ -173,8 +173,21 @@ hash, indexes/EXPLAIN, candidate SHA and raw timings.
 Budgets are those in Price List Architecture: paste ≤1/3 s, analysis ≤5/30 s,
 first preview ≤1.5/2 s, publish HTTP ≤8/30 s, DB transaction ≤5/15 s,
 additional heap ≤100/250 MiB and cleanup ≤10/60 s for 1k/10k. Main-thread task
-maximum is 200 ms. Any 10k miss means support is not announced and the PBI does
-not pass its promised target without Owner-reviewed scope/budget change.
+maximum is 200 ms. These are p95 capacity targets. In the ordinary recurring
+10k sentinel, publish service wall-clock >30 s blocks promotion. Transaction
+duration remains mandatory and visible; an individual observation >15 s emits
+`TRANSACTION_CAPACITY_TARGET_EXCEEDED` without independently blocking because
+one sample cannot establish p95. No retry or averaging occurs during ordinary
+promotion.
+
+The future transaction calibration campaign uses at least 10 comparable,
+isolated runs on PostgreSQL 18.4 matching the Docker server architecture, with
+one fixed image digest, the same deterministic 10k dataset, the same
+`BEGIN`-through-`COMMIT` boundary and a controlled host/environment. Every raw
+sample is retained and p95 is calculated explicitly without cherry-picking.
+That governed campaign determines whether p95 ≤15 s is validated, product
+performance remediation is required, or an Owner-approved contract change is
+needed. It is separate from ordinary promotion verification.
 
 50k runs outside the product cap in a controlled characterization harness and
 records resources/bottleneck; the production-like HTTP path must reject it

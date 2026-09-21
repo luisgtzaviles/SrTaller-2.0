@@ -19,6 +19,7 @@ unchanged.
 - [Preview activation and provenance remediation](PREVIEW_ACTIVATION_PROVENANCE_REMEDIATION.md)
 - [Canonical closure data-scope reconciliation](CANONICAL_CLOSURE_DATA_SCOPE_RECONCILIATION.md)
 - [Governed performance gate stabilization](PERFORMANCE_GATE_STABILIZATION.md)
+- [Transaction performance budget review](TRANSACTION_BUDGET_REVIEW.md)
 - [Workflow reconciliation after PBI-041](../../../delivery/WORKFLOW_RECONCILIATION_2026-09.md)
 - [Definition of Ready](DEFINITION_OF_READY.md)
 - [Threat Model](THREAT_MODEL.md)
