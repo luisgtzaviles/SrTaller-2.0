@@ -7,7 +7,8 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 
 ## Estado actual
 
-- **Baseline integrada:** `main`.
+- **Baseline integrada:** `main`; Git y la CI del SHA exacto son autoridad sobre
+  cualquier snapshot documental.
 - **Runtime:** Node.js `24.18.0`, pnpm `11.15.1` y TypeScript `6.0.3`.
 - **Frontend:** React `19.2.8` + Vite `8.2.0`; Design System y Application
   Shell V1 integrados en `main`.
@@ -20,31 +21,27 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
   Repairs y Session.
 - **Preview:** <https://preview.srtaller.dev>, desplegado manualmente desde
   `main` mediante el `Dockerfile` en Dokploy.
-- **Producto funcional:** Worklist, Repair Detail, notas operativas, asignación
-  de técnico, inicio de diagnóstico, movimiento interno y login/logout/switch
-  están integrados en contexto local; todavía no existe un flujo productivo E2E.
-- **CI:** la baseline auditada
-  `4db5d9384d13c200eb2031dceb32dd89efcca64d` pasó el run autoritativo
-  `34158203438` con run-1, run-2 y comparison verdes.
-- **PBI-030:** `Done`; implementación integrada, Owner Acceptance
-  aprobada y riesgo AT/cross-browser residual LOW aceptado. `Released: NO`.
-- **Roadmap:** Sprint 01 está `Closed`; PBI-033 Roles, Assignments and
-  Capability Catalog está `Done` y G2 `PASS`. SPRINT-02 está `Active` con
-  PBI-025/PBI-034 `Done`, G3 `PASS`, PBI-026 `Done candidate` y G4
-  `PASS candidate`; no hay PBI actual, WIP es `0/1` y PBI-028 está seleccionado sin
-  iniciar.
+- **Producto funcional:** Identity/Access, Repairs, Customer/Intake,
+  Branch timezone y Catalog/Pricing con Bulk Catalog Composer están integrados;
+  PBI-040 y PBI-041 están `Done`, `Released: NO`.
+- **Roadmap:** SPRINT-02 y SPRINT-03 están `Closed`; no existe PBI actual ni
+  siguiente candidato y el WIP de producto es `0/1`.
+- **Trabajo operacional:** una Work Unit autorizada se descubre en
+  [ACTIVE_CHECKLIST.md](docs/work/ACTIVE_CHECKLIST.md); no se infiere del chat.
 
 La fotografía verificable completa, sus límites y el punto de partida están en
 [Current Repository State](docs/CURRENT_STATE.md).
 
 ## Cómo empezar
 
-1. Leer [CONTRIBUTING.md](CONTRIBUTING.md).
-2. Leer el [estado actual auditado](docs/CURRENT_STATE.md).
-3. Seguir el
+1. Leer [AGENTS.md](AGENTS.md).
+2. Verificar Git y leer la
+   [Work Unit activa](docs/work/ACTIVE_CHECKLIST.md).
+3. Leer [CONTRIBUTING.md](CONTRIBUTING.md) y seguir el
    [workflow canónico de desarrollo y delivery](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
-4. Consultar el [MVP Operating Roadmap](docs/product/MVP_OPERATING_ROADMAP.md).
-5. Confirmar Git real, el estado de CI y el PBI/tarea autorizado antes de
+4. Consultar el [Work Unit Lifecycle](docs/delivery/WORK_UNIT_LIFECYCLE.md) y el
+   [MVP Operating Roadmap](docs/product/MVP_OPERATING_ROADMAP.md) aplicable.
+5. Confirmar CI, ambiente, datos y autoridad antes de
    modificar código.
 6. Crear una rama temporal desde `main`; los ambientes no son ramas.
 
@@ -76,8 +73,8 @@ conversaciones no sustituyen a `main`.
 
 ## Estado del documento
 
-**Estado:** Entrada operativa reconciliada con la baseline funcional PBI-026
-auditada documentalmente el 2026-09-07.
+**Estado:** Entrada operativa estable. El estado volátil se deriva de Git,
+GitHub, runtime, roadmap y `ACTIVE_CHECKLIST`; no se fija aquí como snapshot.
 
 **Próxima revisión:** cuando cambie la baseline integrada, el gate de CI, la
 superficie funcional o el punto de entrada del backlog.

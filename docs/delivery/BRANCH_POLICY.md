@@ -14,7 +14,8 @@
 1. `main` es la única baseline integrada y la fuente del ambiente Preview.
 2. El trabajo ordinario usa ramas de vida corta creadas desde `main` y vuelve a
    `main` mediante un cambio revisado y verificable.
-   Los prefijos normales son `feature/*`, `fix/*` y `ops/*`.
+   Los prefijos normales son `feature/*`, `fix/*`, `ops/*` y `chore/*`;
+   `chore/*` se reserva para mantenimiento o governance sin cambio de producto.
 3. No se mantienen ramas permanentes por ambiente o por etapa. Una rama de
    recuperación, operación, PBI o experimento no constituye una segunda
    baseline.
@@ -28,6 +29,11 @@
    autoriza, el mecanismo sea claro y observable y no amplíe a otros ambientes.
 7. Staging y Production requieren su propia autorización y no se infieren de un
    despliegue exitoso en Preview.
+
+Cada objetivo se organiza como una Work Unit conforme a
+[`WORK_UNIT_LIFECYCLE.md`](./WORK_UNIT_LIFECYCLE.md). La Work Unit añade memoria
+operacional y handoff; no sustituye la selección/autorización de PBI ni reduce
+los gates vigentes.
 
 ## Una meta activa, una rama
 

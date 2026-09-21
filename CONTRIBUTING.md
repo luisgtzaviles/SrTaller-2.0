@@ -11,14 +11,17 @@ expresamente autorizados.
 
 Antes de modificar código, documentación, infraestructura o deployment:
 
-1. Leer la [fotografía auditada del estado actual](docs/CURRENT_STATE.md).
+1. Leer [`AGENTS.md`](AGENTS.md), verificar Git y reconciliar la
+   [Work Unit activa](docs/work/ACTIVE_CHECKLIST.md).
 2. Leer el
    [workflow canónico de desarrollo y delivery](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
-3. Leer el [MVP Operating Roadmap](docs/product/MVP_OPERATING_ROADMAP.md).
-4. Leer la [política de ramas](docs/delivery/BRANCH_POLICY.md).
-5. Leer la [estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md).
-6. Leer [ambientes](docs/delivery/ENVIRONMENTS.md).
-7. Inspeccionar Git real y confirmar ambiente, sensibilidad de datos, alcance y
+3. Leer el [Work Unit Lifecycle](docs/delivery/WORK_UNIT_LIFECYCLE.md).
+4. Leer el [MVP Operating Roadmap](docs/product/MVP_OPERATING_ROADMAP.md) cuando
+   el cambio tenga alcance de producto.
+5. Leer la [política de ramas](docs/delivery/BRANCH_POLICY.md), la
+   [estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md) y
+   [ambientes](docs/delivery/ENVIRONMENTS.md) según el alcance.
+6. Confirmar ambiente, sensibilidad de datos, alcance y
    autoridad antes de ejecutar.
 
 Para cualquier cambio de interfaz, también es lectura obligatoria
@@ -37,9 +40,11 @@ rol `application`; nunca reutiliza Preview.
 
 1. Completar el `MANDATORY FIRST READ` y verificar el
    [backlog](docs/backlog/PRODUCT_BACKLOG.md) aplicable.
-2. No iniciar trabajo de implementación sin un PBI `Ready`, seleccionado como
-   PBI actual de un Sprint `Active` y con autorización Owner explícita.
-   Selección, prioridad o cierre del PBI anterior no conceden esa autorización.
+2. No iniciar una feature de producto sin un PBI `Ready`, seleccionado y con
+   autorización Owner explícita. Una Work Unit de bug, recovery, auditoría o
+   governance puede no ser un PBI, pero también exige objetivo, alcance y
+   autorización explícitos; véase su
+   [lifecycle](docs/delivery/WORK_UNIT_LIFECYCLE.md).
 3. No iniciar una nueva funcionalidad de R0 sin tarea/PBI y autoridad
    explícitos; la existencia de Preview no amplía el alcance autorizado.
 4. Leer la [Definition of Ready](docs/delivery/DEFINITION_OF_READY.md), la

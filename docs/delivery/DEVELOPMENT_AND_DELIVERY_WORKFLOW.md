@@ -40,6 +40,7 @@ es governance independiente y no selecciona un PBI de producto.
 | [Workflow Efficiency Decisions](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md) | WF-001–WF-010: Fase 1, DOCS_ONLY, preflights, shadow classifier y attestation. |
 | [MVP Operating Roadmap](../product/MVP_OPERATING_ROADMAP.md) | Fases aprobadas, Sprint/PBI actual, secuencia y gates del MVP. |
 | [BRANCH_POLICY.md](./BRANCH_POLICY.md) | Contrato de `main`, ramas temporales e integración. |
+| [WORK_UNIT_LIFECYCLE.md](./WORK_UNIT_LIFECYCLE.md) | Memoria operacional de un objetivo/rama y lifecycle de promoción. |
 | [DEPLOYMENT_STRATEGY.md](../architecture/DEPLOYMENT_STRATEGY.md) | Arquitectura OCI, runtime, routing y promoción. |
 | [ENVIRONMENTS.md](./ENVIRONMENTS.md) | Semántica y aislamiento de ambientes. |
 | [Migration Policy](../operations/MIGRATION_POLICY.md) | Diseño, ejecución y verificación de migraciones. |
@@ -93,8 +94,10 @@ y HTTP.
 3. Confirmar con Git la rama, `HEAD`, `origin/main`, divergencia y working tree.
 4. Identificar la tarea/PBI, el resultado esperado, exclusiones y autoridad.
 5. Identificar el ambiente objetivo y si existen datos reales involucrados.
-6. Crear desde `main` actualizado una rama temporal `feature/*`, `fix/*` u
-   `ops/*`: una meta activa usa una rama y una rama integrada nunca se reutiliza.
+6. Crear desde `main` actualizado una rama temporal `feature/*`, `fix/*`,
+   `ops/*` o `chore/*`: una meta activa usa una rama y una rama integrada nunca
+   se reutiliza. Inicializar su Work Unit y `ACTIVE_CHECKLIST` conforme al
+   [lifecycle](./WORK_UNIT_LIFECYCLE.md).
 7. Implementar el cambio mínimo y actualizar sus contratos/documentación.
 8. Ejecutar verificaciones proporcionales y conservar evidencia útil.
 9. Crear un commit lógico; demostrar ancestry/baseline y provenance del runtime,
@@ -185,7 +188,7 @@ Discovery / decisiones Owner si aplican
         ↓
 autorización Owner de implementación
         ↓
-temporary branch
+Work Unit / temporary branch / ACTIVE_CHECKLIST
         ↓
 implementation
         ↓
@@ -217,6 +220,9 @@ el paso siguiente.
 ### WIP y documentación canónica
 
 - Existe como máximo un PBI operativo en ejecución o cierre.
+- Existe como máximo una Work Unit operativa activa, salvo autorización
+  explícita contraria. Ésta puede corresponder a un PBI o a un bug, recovery o
+  cambio de governance autorizado; no altera el lifecycle del PBI.
 - El PBI siguiente puede estar ordenado o preparado, pero no se inicia por
   efecto del cierre anterior.
 - El merge funcional conserva el PBI `In review` hasta que el CI del nuevo
@@ -271,6 +277,7 @@ cambio terminado no está en `main`, aún no forma parte de la baseline.
 - `feature/*`: funcionalidad o capacidad acotada.
 - `fix/*`: corrección o remediación acotada.
 - `ops/*`: documentación operativa, delivery o cambio operacional acotado.
+- `chore/*`: mantenimiento o governance acotado sin cambio de producto.
 
 Son ramas temporales. No se crean ramas permanentes `preview`, `staging` o
 `production`. Las ramas históricas que ya existen no constituyen otra baseline

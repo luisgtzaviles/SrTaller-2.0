@@ -113,11 +113,13 @@ conjunto:
 
 Un entorno no disponible no se convierte en `PASS`. Sólo puede quedar `N/A` o
 riesgo residual mediante la justificación, owner y revisión que exige DEC-063.
-El cierre produce después un PR documental de avance; ese PR selecciona el
-siguiente PBI, pero no lo inicia ni lo autoriza. Como se redacta antes de su
-propio merge, puede expresar `Done candidate`. El PBI queda `Done` efectivo
-cuando ese PR recibe merge autorizado y CI autoritativo GREEN sobre su SHA de
-merge; no se requiere un PR adicional sólo para cambiar ese wording preventivo.
+Por defecto, implementación, evidencia y documentación canónica viajan en el
+mismo candidato. Un PR documental posterior es excepcional para governance
+independiente, ADR/DEC, corrección histórica o una inconsistencia descubierta
+después; no se crea sólo para cambiar wording preventivo. La integración y sus
+hechos posteriores se interpretan conforme al
+[Work Unit Lifecycle](./WORK_UNIT_LIFECYCLE.md), sin anticipar `Done` ni iniciar
+el siguiente PBI.
 
 ### Selección de gates durante el piloto WF-001–WF-010
 

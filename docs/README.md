@@ -1,7 +1,8 @@
 # Documentación de SR Taller 2.0
 
-Este índice organiza la documentación actual e histórica. La entrada operativa
-obligatoria es [CONTRIBUTING.md](../CONTRIBUTING.md) y el manual end-to-end es el
+Este índice organiza la documentación actual e histórica. La constitución
+operativa obligatoria es [AGENTS.md](../AGENTS.md), complementada por
+[CONTRIBUTING.md](../CONTRIBUTING.md); el manual end-to-end es el
 [workflow canónico de desarrollo y delivery](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
 Los documentos `Proposed` o históricos no sustituyen la baseline materializada.
 La [fotografía auditada del estado actual](CURRENT_STATE.md) separa foundation,
@@ -132,6 +133,7 @@ separados.
 ## Entrega
 
 - [Workflow canónico de desarrollo, delivery y operación](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
+- [Work Unit Lifecycle](delivery/WORK_UNIT_LIFECYCLE.md)
 - [Reconciliación de workflow posterior a PBI-041](delivery/WORKFLOW_RECONCILIATION_2026-09.md)
 - [Desarrollo local](delivery/LOCAL_DEVELOPMENT.md)
 - [Workflow de desarrollo](delivery/DEVELOPMENT_WORKFLOW.md)
