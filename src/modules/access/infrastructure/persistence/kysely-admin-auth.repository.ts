@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { Kysely, Transaction } from 'kysely';
 
 import { databasePersistenceCapability } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import { databaseTransactionCapability } from '../../../../infrastructure/database/database-transaction-capability.js';
 import type { DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
 import type { ApplicationDatabaseConnection } from '../../../../infrastructure/runtime/index.js';
@@ -69,6 +70,69 @@ const credentialSelection = [
 
 export class KyselyAdminAuthRepository implements AdminAuthRepositoryPort {
   constructor(private readonly connection: ApplicationDatabaseConnection) {}
+
+  async confirmCurrent(
+    expected: AdminSessionRecord,
+    occurredAt: string,
+    requireRecentReauthentication: boolean,
+    transactionContext: object,
+  ): Promise<boolean> {
+    const now = new Date(occurredAt);
+    const current = await useTransactionalDatabasePersistenceExecutor(
+      transactionContext,
+      'access',
+      async (db) => await db.selectFrom('access_admin_sessions as s')
+        .innerJoin('access_admin_identities as i', (join) => join
+          .onRef('i.tenant_id', '=', 's.tenant_id')
+          .onRef('i.admin_identity_id', '=', 's.admin_identity_id'))
+        .innerJoin('access_admin_password_credentials as c', (join) => join
+          .onRef('c.tenant_id', '=', 's.tenant_id')
+          .onRef('c.admin_identity_id', '=', 's.admin_identity_id'))
+        .select([
+          's.status', 's.version', 's.user_admission_revision', 's.identity_version',
+          's.credential_version', 's.session_revision', 's.last_activity_at',
+          's.expires_at', 's.reauthenticated_at', 'i.status as identity_status',
+          'i.identity_version as current_identity_version',
+          'c.status as credential_status',
+          'c.credential_version as current_credential_version',
+          'c.session_revision as current_session_revision',
+        ])
+        .where('s.tenant_id', '=', expected.tenantId)
+        .where('s.session_id', '=', expected.sessionId)
+        .where('s.user_id', '=', expected.userId)
+        .where('s.admin_identity_id', '=', expected.adminIdentityId)
+        .forShare(['s', 'i', 'c'])
+        .executeTakeFirst(),
+    );
+    if (!current || current.status !== 'active' || current.version !== expected.version ||
+      current.identity_status !== 'active' || current.credential_status !== 'active' ||
+      current.user_admission_revision !== expected.userAdmissionRevision ||
+      current.identity_version !== expected.identityVersion ||
+      current.current_identity_version !== expected.identityVersion ||
+      current.credential_version !== expected.credentialVersion ||
+      current.current_credential_version !== expected.credentialVersion ||
+      current.session_revision !== expected.sessionRevision ||
+      current.current_session_revision !== expected.sessionRevision ||
+      now >= current.expires_at || now.getTime() - current.last_activity_at.getTime() >= 30 * 60_000 ||
+      (requireRecentReauthentication && (
+        current.reauthenticated_at === null ||
+        now.getTime() - current.reauthenticated_at.getTime() < 0 ||
+        now.getTime() - current.reauthenticated_at.getTime() >= 10 * 60_000
+      ))) return false;
+    const user = await useTransactionalDatabasePersistenceExecutor(
+      transactionContext,
+      'users',
+      async (db) => await db.selectFrom('users')
+        .select('user_id')
+        .where('tenant_id', '=', expected.tenantId)
+        .where('user_id', '=', expected.userId)
+        .where('status', '=', 'active')
+        .where('admission_revision', '=', expected.userAdmissionRevision)
+        .forShare()
+        .executeTakeFirst(),
+    );
+    return user !== undefined;
+  }
 
   async #readCredential(where: Readonly<{ normalizedEmail?: string; tenantId?: string; identityId?: string }>): Promise<AdminCredentialRecord | null> {
     return this.connection[databasePersistenceCapability]('access', async (db) => {
@@ -153,6 +217,19 @@ export class KyselyAdminAuthRepository implements AdminAuthRepositoryPort {
   async revokeAll(input: Parameters<AdminAuthRepositoryPort['revokeAll']>[0]): Promise<number> {
     return this.connection[databaseTransactionCapability]({ isolationLevel: 'serializable', accessMode: 'read write' }, async (raw) => {
       const db = raw as unknown as AccessDatabase;
+      const now = new Date(input.occurredAt);
+      const authorizingSession = await db.selectFrom('access_admin_sessions')
+        .select(['status', 'version', 'reauthenticated_at'])
+        .where('tenant_id', '=', input.tenantId)
+        .where('session_id', '=', input.currentSessionId)
+        .where('admin_identity_id', '=', input.adminIdentityId)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!authorizingSession || authorizingSession.status !== 'active' ||
+        authorizingSession.version !== input.expectedSessionVersion ||
+        authorizingSession.reauthenticated_at === null ||
+        now.getTime() - authorizingSession.reauthenticated_at.getTime() < 0 ||
+        now.getTime() - authorizingSession.reauthenticated_at.getTime() >= 10 * 60_000) return 0;
       const credentialRow = await db.updateTable('access_admin_password_credentials').set({ session_revision: input.expectedSessionRevision + 1, updated_at: new Date(input.occurredAt) }).where('tenant_id', '=', input.tenantId).where('admin_identity_id', '=', input.adminIdentityId).where('session_revision', '=', input.expectedSessionRevision).returning('user_id').executeTakeFirst();
       if (!credentialRow) return 0;
       const ended = await db.updateTable('access_admin_sessions').set({ status: 'revoked', ended_at: new Date(input.occurredAt), reauthenticated_at: null }).where('tenant_id', '=', input.tenantId).where('admin_identity_id', '=', input.adminIdentityId).where('status', '=', 'active').executeTakeFirst();
@@ -164,6 +241,21 @@ export class KyselyAdminAuthRepository implements AdminAuthRepositoryPort {
   async markReauthenticated(input: Parameters<AdminAuthRepositoryPort['markReauthenticated']>[0]): Promise<AdminSessionRecord | null> {
     return this.connection[databaseTransactionCapability]({ isolationLevel: 'serializable', accessMode: 'read write' }, async (raw) => {
       const db = raw as unknown as AccessDatabase;
+      const current = await db.selectFrom('access_admin_sessions as s')
+        .innerJoin('access_admin_identities as i', (join) => join.onRef('i.tenant_id', '=', 's.tenant_id').onRef('i.admin_identity_id', '=', 's.admin_identity_id'))
+        .innerJoin('access_admin_password_credentials as c', (join) => join.onRef('c.tenant_id', '=', 's.tenant_id').onRef('c.admin_identity_id', '=', 's.admin_identity_id'))
+        .innerJoin('users as u', (join) => join.onRef('u.tenant_id', '=', 's.tenant_id').onRef('u.user_id', '=', 's.user_id'))
+        .select(['s.status', 's.version', 's.expires_at', 's.last_activity_at', 's.user_admission_revision', 's.identity_version', 's.credential_version', 's.session_revision', 'i.status as identity_status', 'i.identity_version as current_identity_version', 'c.status as credential_status', 'c.credential_version as current_credential_version', 'c.session_revision as current_session_revision', 'u.status as user_status', 'u.admission_revision as current_admission_revision'])
+        .where('s.tenant_id', '=', input.tenantId)
+        .where('s.session_id', '=', input.sessionId)
+        .forUpdate(['s', 'i', 'c', 'u'])
+        .executeTakeFirst();
+      const now = new Date(input.occurredAt);
+      if (!current || current.status !== 'active' || current.version !== input.expectedVersion ||
+        current.identity_status !== 'active' || current.credential_status !== 'active' || current.user_status !== 'active' ||
+        current.identity_version !== current.current_identity_version || current.credential_version !== current.current_credential_version ||
+        current.session_revision !== current.current_session_revision || current.user_admission_revision !== current.current_admission_revision ||
+        now >= current.expires_at || now.getTime() - current.last_activity_at.getTime() >= 30 * 60_000) return null;
       const row = await db.updateTable('access_admin_sessions').set({ reauthenticated_at: new Date(input.occurredAt), version: input.expectedVersion + 1 }).where('tenant_id', '=', input.tenantId).where('session_id', '=', input.sessionId).where('status', '=', 'active').where('version', '=', input.expectedVersion).returningAll().executeTakeFirst();
       if (row) await this.#event(db, { tenantId: input.tenantId, userId: row.user_id, identityId: row.admin_identity_id, sessionId: input.sessionId, type: 'ADMIN_REAUTHENTICATED', result: 'SUCCEEDED', reason: 'PASSWORD_REAUTHENTICATED', correlationId: input.correlationId, at: new Date(input.occurredAt) });
       return row ? session(row) : null;

@@ -27,6 +27,12 @@ export type AdminSecurityEventType =
   | 'ADMIN_RECOVERY_COMPLETED';
 
 export interface AdminAuthRepositoryPort {
+  confirmCurrent(
+    session: AdminSessionRecord,
+    occurredAt: string,
+    requireRecentReauthentication: boolean,
+    transactionContext: object,
+  ): Promise<boolean>;
   findCredentialByEmail(normalizedEmail: string): Promise<AdminCredentialRecord | null>;
   findCredential(tenantId: string, adminIdentityId: string): Promise<AdminCredentialRecord | null>;
   provisionVerifiedIdentity(input: Readonly<{
@@ -74,6 +80,8 @@ export interface AdminAuthRepositoryPort {
   revokeAll(input: Readonly<{
     tenantId: string;
     adminIdentityId: string;
+    currentSessionId: string;
+    expectedSessionVersion: number;
     expectedSessionRevision: number;
     occurredAt: string;
     correlationId: string;

@@ -13,7 +13,12 @@
   },
   "publicSurfaces": {
     "access": [
+      "ADMIN_AUTHORIZATION_EXECUTOR",
       "AccessModuleContract",
+      "AdminAuthorizationCommitGuard",
+      "AdminAuthorizationExecutor",
+      "AdminAuthorizationRequirement",
+      "AuthorizedAdminContext",
       "AuthorizedOperationCommitGuard",
       "AuthorizedOperationalContext",
       "CONTEXTUAL_AUTHORIZATION_EXECUTOR",
@@ -2706,6 +2711,7 @@
     "src/modules/access/presentation/branch-settings-administration.controller.ts",
     "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/access/presentation/admin-session.controller.ts",
+    "src/modules/access/presentation/admin-authorization.executor.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/access/presentation/tenant-wide-authorization.executor.ts",
     "src/modules/access/presentation/sensitive-action-level2.executor.ts",

@@ -30,7 +30,8 @@ class FakeTokens {
 }
 
 class FakeRepository {
-  constructor(credential) { this.credential = credential; this.sessions = []; this.failed = 0; this.recovery = null; }
+  constructor(credential) { this.credential = credential; this.sessions = []; this.failed = 0; this.recovery = null; this.events = []; }
+  async confirmCurrent(session, _occurredAt, requireRecent) { return this.sessions.some((row) => row.sessionId === session.sessionId && row.version === session.version && row.status === 'active' && (!requireRecent || row.reauthenticatedAt !== null)); }
   async findCredentialByEmail(email) { return email === this.credential.normalizedEmail ? this.credential : null; }
   async findCredential(tenant, identity) { return tenant === this.credential.tenantId && identity === this.credential.adminIdentityId ? this.credential : null; }
   async provisionVerifiedIdentity() { throw new Error('not used'); }

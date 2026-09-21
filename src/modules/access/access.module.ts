@@ -34,7 +34,8 @@ import type {
   UserProductRuntime,
 } from '../users/index.js';
 
-import { CONTEXTUAL_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
+import { ADMIN_AUTHORIZATION_EXECUTOR, CONTEXTUAL_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
+import type { AdminAuthorizationExecutor } from './index.js';
 import type { ContextualAuthorizationExecutor } from './index.js';
 import type { TenantWideAuthorizationExecutor } from './index.js';
 import type { SensitiveActionLevel2Executor } from './index.js';
@@ -96,6 +97,7 @@ import { ContextualAuthorizationExecutorService } from './presentation/contextua
 import { TenantWideAuthorizationExecutorService } from './presentation/tenant-wide-authorization.executor.js';
 import { SensitiveActionLevel2ExecutorService } from './presentation/sensitive-action-level2.executor.js';
 import { AuthenticatedSelfExecutorService } from './presentation/authenticated-self.executor.js';
+import { AdminAuthorizationExecutorService } from './presentation/admin-authorization.executor.js';
 import { AccessAdministrationOperations } from './application/access-administration-operations.js';
 import { AccessSelfPreferencesOperations } from './application/access-self-preferences.operations.js';
 import { UserPreferencesController } from './presentation/user-preferences.controller.js';
@@ -248,6 +250,15 @@ type RegisteredAccessUseCases =
         runtime: AccessSessionRuntime,
       ): ContextualAuthorizationExecutor =>
         new ContextualAuthorizationExecutorService(runtime),
+    },
+    {
+      provide: ADMIN_AUTHORIZATION_EXECUTOR,
+      inject: [ACCESS_SESSION_RUNTIME],
+      useFactory: (runtime: AccessSessionRuntime): AdminAuthorizationExecutor =>
+        new AdminAuthorizationExecutorService(
+          runtime,
+          new KyselyAdministrationAuthorizationCommitGuard(),
+        ),
     },
     {
       provide: TENANT_WIDE_AUTHORIZATION_EXECUTOR,

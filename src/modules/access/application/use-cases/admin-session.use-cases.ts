@@ -70,6 +70,9 @@ export class LoginAdminUseCase {
 
 export class ResolveAdminSessionUseCase {
   constructor(private readonly repository: AdminAuthRepositoryPort, private readonly users: AuthenticationUserReader, private readonly tokens: AdminSessionTokenPort, private readonly now: () => Date = () => new Date()) {}
+  confirmCurrentAtCommit(session: AdminSessionContext, requireRecentReauthentication: boolean, transactionContext: object): Promise<boolean> {
+    return this.repository.confirmCurrent(session, this.now().toISOString(), requireRecentReauthentication, transactionContext);
+  }
   async execute(input: Readonly<{ bearer: string; csrfCookie: string; csrfHeader?: string; requireCsrf?: boolean; touch?: boolean }>): Promise<AdminSessionContext> {
     let bearer: Uint8Array; let csrf: Uint8Array;
     try { bearer = this.tokens.digestBearer(input.bearer); csrf = this.tokens.digestCsrf(input.csrfCookie); } catch { deny(); }
@@ -97,7 +100,7 @@ export class AdminSessionManagementUseCase {
   async logout(context: AdminSessionContext, correlationId: string) { if (!await this.repository.endSession({ tenantId: context.tenantId, sessionId: context.sessionId, expectedVersion: context.version, status: 'logged_out', occurredAt: this.now().toISOString(), correlationId, eventType: 'ADMIN_LOGOUT' })) deny(); }
   async revokeOne(context: AdminSessionContext, sessionId: string, correlationId: string) { const target = (await this.repository.listSessions(context.tenantId, context.userId)).find((row) => row.sessionId === sessionId); if (!target || !await this.repository.endSession({ tenantId: context.tenantId, sessionId, expectedVersion: target.version, status: 'revoked', occurredAt: this.now().toISOString(), correlationId, eventType: 'ADMIN_SESSION_REVOKED' })) deny(); }
   async reauthenticate(context: AdminSessionContext, passwordValue: unknown, correlationId: string) { const password = parseAdminPassword(passwordValue); const credential = await this.repository.findCredential(context.tenantId, context.adminIdentityId); if (!credential || !await this.hasher.verify({ tenantId: context.tenantId, adminIdentityId: context.adminIdentityId, password, stored: credential.password })) deny(); const row = await this.repository.markReauthenticated({ tenantId: context.tenantId, sessionId: context.sessionId, expectedVersion: context.version, occurredAt: this.now().toISOString(), correlationId }); if (!row) deny(); return row; }
-  async revokeAll(context: AdminSessionContext, correlationId: string) { const credential = await this.repository.findCredential(context.tenantId, context.adminIdentityId); if (!credential || !adminSessionHasRecentReauthentication(context, this.now().toISOString())) deny(); return this.repository.revokeAll({ tenantId: context.tenantId, adminIdentityId: context.adminIdentityId, expectedSessionRevision: credential.sessionRevision, occurredAt: this.now().toISOString(), correlationId }); }
+  async revokeAll(context: AdminSessionContext, correlationId: string) { const occurredAt = this.now().toISOString(); const credential = await this.repository.findCredential(context.tenantId, context.adminIdentityId); if (!credential || !adminSessionHasRecentReauthentication(context, occurredAt)) deny(); const revoked = await this.repository.revokeAll({ tenantId: context.tenantId, adminIdentityId: context.adminIdentityId, currentSessionId: context.sessionId, expectedSessionVersion: context.version, expectedSessionRevision: credential.sessionRevision, occurredAt, correlationId }); if (revoked <= 0) deny(); return revoked; }
 }
 
 export class AdminRecoveryFoundationUseCase {
