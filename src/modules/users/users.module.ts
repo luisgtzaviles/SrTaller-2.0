@@ -30,6 +30,7 @@ import type { KyselyUserRepositoryFactory } from './infrastructure/persistence/k
 import type { UserMutationCommitGuard } from './application/ports/user-repository.port.js';
 import { KyselyAuthenticationUserReader } from './infrastructure/persistence/kysely-authentication-user.reader.js';
 import { KyselyUserPreferencesRepository } from './infrastructure/persistence/kysely-user-preferences.repository.js';
+import type { KyselyTenantBootstrapUserWriter } from './infrastructure/persistence/kysely-tenant-bootstrap-user.writer.js';
 import {
   GetUserPreferencesUseCase,
   UpdateUserPreferencesUseCase,
@@ -38,7 +39,8 @@ import {
 type RegisteredUsersPersistenceAdapter =
   | KyselyUserRepositoryFactory
   | KyselyAuthenticationUserReader
-  | KyselyUserPreferencesRepository;
+  | KyselyUserPreferencesRepository
+  | KyselyTenantBootstrapUserWriter;
 type RegisteredUsersUseCases =
   | GetUserUseCase
   | ListUsersUseCase

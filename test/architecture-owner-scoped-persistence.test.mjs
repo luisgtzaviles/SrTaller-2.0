@@ -179,7 +179,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   assert.match(source, /kysely_migration: DatabaseMigrationJournalTable/u);
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'tenants' \| 'tenant_bootstrap_commands'>/u,
+    /Pick<DatabaseSchema, 'tenants' \| 'tenant_bootstrap_commands' \| 'tenant_bootstrap_guards'>/u,
   );
   assert.match(
     source,

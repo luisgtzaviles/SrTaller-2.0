@@ -1453,12 +1453,15 @@ function persistenceBoundaryDiagnostics({
       return { dynamic: false, text: template.text };
     }
     if (ts.isTemplateExpression(template)) {
+      const literals = [
+        template.head.text,
+        ...template.templateSpans.map((span) => span.literal.text),
+      ];
+      const objectPosition = /\b(?:alter\s+table|create\s+table|drop\s+table(?:\s+if\s+exists)?|truncate(?:\s+table)?|insert\s+into|delete\s+from|join|from|update|create\s+(?:or\s+replace\s+)?function|drop\s+function(?:\s+if\s+exists)?|create\s+trigger|drop\s+trigger(?:\s+if\s+exists)?|on)\s*$/iu;
       return {
-        dynamic: true,
-        text: [
-          template.head.text,
-          ...template.templateSpans.map((span) => span.literal.text),
-        ].join(' __dynamic_sql_expression__ '),
+        dynamic: literals.slice(0, -1).some((literal) =>
+          objectPosition.test(literal)),
+        text: literals.join(' __dynamic_sql_expression__ '),
       };
     }
     return { dynamic: true, text: '' };
@@ -1489,10 +1492,19 @@ function persistenceBoundaryDiagnostics({
       }
     }
 
-    function addSqlMatches(text, expression, target, capture = 1) {
+    function addSqlMatches(
+      text,
+      expression,
+      target,
+      capture = 1,
+      skipCalls = false,
+    ) {
       for (const match of text.matchAll(expression)) {
         const name = normalizeSqlIdentifier(match[capture]);
-        if (name) {
+        const suffix = match.index === undefined
+          ? ''
+          : text.slice(match.index + match[0].length);
+        if (name && (!skipCalls || !/^\s*\(/u.test(suffix))) {
           target.add(name);
         }
       }
@@ -1555,7 +1567,7 @@ function persistenceBoundaryDiagnostics({
           ),
         ];
         for (const expression of tableExpressions) {
-          addSqlMatches(sqlText.text, expression, tables);
+          addSqlMatches(sqlText.text, expression, tables, 1, true);
         }
         addSqlMatches(
           sqlText.text,

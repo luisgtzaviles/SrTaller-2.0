@@ -29,6 +29,11 @@ export interface TenantBootstrapCommandTable {
   readonly completed_at: ImmutableColumn<Date>;
 }
 
+export interface TenantBootstrapGuardTable {
+  readonly verified_registration_id: ImmutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
 export interface BranchTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly branch_id: ImmutableColumn<string>;
@@ -1567,6 +1572,7 @@ export interface RepairLocationMovementTable {
 export interface DatabaseSchema {
   readonly tenants: TenantTable;
   readonly tenant_bootstrap_commands: TenantBootstrapCommandTable;
+  readonly tenant_bootstrap_guards: TenantBootstrapGuardTable;
   readonly branches: BranchTable;
   readonly stations: StationTable;
   readonly station_bindings: StationBindingTable;
@@ -1673,6 +1679,8 @@ export type NewTenant = Insertable<TenantTable>;
 export type TenantUpdate = Updateable<TenantTable>;
 export type TenantBootstrapCommandRow = Selectable<TenantBootstrapCommandTable>;
 export type NewTenantBootstrapCommand = Insertable<TenantBootstrapCommandTable>;
+export type TenantBootstrapGuardRow = Selectable<TenantBootstrapGuardTable>;
+export type NewTenantBootstrapGuard = Insertable<TenantBootstrapGuardTable>;
 
 export type BranchRow = Selectable<BranchTable>;
 export type NewBranch = Insertable<BranchTable>;

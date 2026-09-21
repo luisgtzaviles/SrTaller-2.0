@@ -799,7 +799,10 @@
       "src/infrastructure/database/migrations/20260917190000_catalog_create_field_policies.ts",
       "src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts",
       "src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts",
-      "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts"
+      "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts",
+      "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts",
+      "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts",
+      "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1437,6 +1440,27 @@
             "access_admin_security_events_reject_delete",
             "access_admin_security_events_reject_update"
           ]
+        },
+        "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts": {
+          "owner": "tenancy",
+          "tables": ["tenant_bootstrap_commands", "tenants"],
+          "references": ["access_admin_identities", "access_role_assignments", "access_roles", "users"],
+          "functions": ["tenancy_reject_bootstrap_command_mutation"],
+          "triggers": ["tenant_bootstrap_commands_reject_delete", "tenant_bootstrap_commands_reject_update"]
+        },
+        "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts": {
+          "owner": "access",
+          "tables": ["access_capabilities", "access_role_assignments", "access_role_capabilities", "access_roles"],
+          "references": ["access_admin_identities", "access_admin_password_credentials", "branches", "tenants", "users"],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts": {
+          "owner": "tenancy",
+          "tables": ["tenant_bootstrap_guards"],
+          "references": [],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1461,6 +1485,7 @@
         "publicExports": [
           "TenantTable",
           "TenantBootstrapCommandTable",
+          "TenantBootstrapGuardTable",
           "BranchTable",
           "StationTable",
           "StationBindingTable",
@@ -1542,6 +1567,8 @@
           "TenantUpdate",
           "TenantBootstrapCommandRow",
           "NewTenantBootstrapCommand",
+          "TenantBootstrapGuardRow",
+          "NewTenantBootstrapGuard",
           "BranchRow",
           "NewBranch",
           "BranchUpdate",
@@ -1750,6 +1777,7 @@
           "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts",
           "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts",
           "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts",
+          "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1757,7 +1785,9 @@
           "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
           "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
           "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
+          "src/modules/tenancy/infrastructure/persistence/kysely-tenant-bootstrap.writer.ts",
           "src/modules/users/infrastructure/persistence/kysely-user.repository.ts",
+          "src/modules/users/infrastructure/persistence/kysely-tenant-bootstrap-user.writer.ts",
           "src/modules/users/infrastructure/persistence/kysely-user-preferences.repository.ts",
           "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
           "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
@@ -1765,6 +1795,7 @@
           "src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
           ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
+          ,"src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts"
           ,"src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts"
           ,"src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts"
         ],
@@ -1971,11 +2002,23 @@
         "contract": "TenantRepositoryPort",
         "allowedScopes": ["TenantPersistenceScope"],
         "status": "materialized-owner-port"
+      },
+      "src/modules/tenancy/application/ports/tenant-bootstrap-writer.port.ts": {
+        "owner": "tenancy",
+        "contract": "TenantBootstrapWriterPort",
+        "allowedScopes": ["TenantBootstrapScope"],
+        "status": "materialized-owner-port"
       }
       ,"src/modules/users/application/ports/user-repository.port.ts": {
         "owner": "users",
         "contract": "UserRepositoryPort",
         "allowedScopes": ["UserScope"],
+        "status": "materialized-owner-port"
+      },
+      "src/modules/users/application/ports/tenant-bootstrap-user-writer.port.ts": {
+        "owner": "users",
+        "contract": "TenantBootstrapUserWriterPort",
+        "allowedScopes": ["TenantBootstrapScope"],
         "status": "materialized-owner-port"
       },
       "src/modules/users/application/ports/user-preferences-repository.port.ts": {
@@ -1988,6 +2031,12 @@
         "owner": "access",
         "contract": "AccessRepositoryPort",
         "allowedScopes": ["AccessTenantScope", "AccessBranchScope", "AccessPrincipalScope"],
+        "status": "materialized-owner-port"
+      },
+      "src/modules/access/application/ports/tenant-bootstrap-access-writer.port.ts": {
+        "owner": "access",
+        "contract": "TenantBootstrapAccessWriterPort",
+        "allowedScopes": ["TenantBootstrapScope"],
         "status": "materialized-owner-port"
       },
       "src/modules/access/application/ports/pin-credential-repository.port.ts": {
@@ -2038,6 +2087,7 @@
       "AuthenticationUserPersistenceScope": ["tenantId"],
       "OperationalSessionPersistenceScope": ["tenantId", "branchId", "stationId", "stationCredentialId"],
       "OperationalSessionTenantScope": ["tenantId"]
+      ,"TenantBootstrapScope": ["tenantId"]
     },
     "adapters": {
       "src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts": {
@@ -2082,9 +2132,21 @@
         "composition": "src/modules/tenancy/tenancy.module.ts",
         "status": "materialized-owner-adapter"
       },
+      "src/modules/tenancy/infrastructure/persistence/kysely-tenant-bootstrap.writer.ts": {
+        "owner": "tenancy",
+        "port": "src/modules/tenancy/application/ports/tenant-bootstrap-writer.port.ts",
+        "composition": "src/modules/tenancy/tenancy.module.ts",
+        "status": "materialized-owner-adapter"
+      },
       "src/modules/users/infrastructure/persistence/kysely-user.repository.ts": {
         "owner": "users",
         "port": "src/modules/users/application/ports/user-repository.port.ts",
+        "composition": "src/modules/users/users.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/users/infrastructure/persistence/kysely-tenant-bootstrap-user.writer.ts": {
+        "owner": "users",
+        "port": "src/modules/users/application/ports/tenant-bootstrap-user-writer.port.ts",
         "composition": "src/modules/users/users.module.ts",
         "status": "materialized-owner-adapter"
       },
@@ -2097,6 +2159,12 @@
       "src/modules/access/infrastructure/persistence/kysely-access.repository.ts": {
         "owner": "access",
         "port": "src/modules/access/application/ports/access-repository.port.ts",
+        "composition": "src/modules/access/access.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts": {
+        "owner": "access",
+        "port": "src/modules/access/application/ports/tenant-bootstrap-access-writer.port.ts",
         "composition": "src/modules/access/access.module.ts",
         "status": "materialized-owner-adapter"
       },
@@ -2334,6 +2402,10 @@
         "owner": "tenancy",
         "kind": "table"
       },
+      "tenant_bootstrap_guards": {
+        "owner": "tenancy",
+        "kind": "table"
+      },
       "users": {
         "owner": "users",
         "kind": "table"
@@ -2481,6 +2553,7 @@
         "src/infrastructure/runtime/index.ts",
         "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
         ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
+        ,"src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts"
       ],
       "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
       "forbiddenManualMethods": [
@@ -2675,6 +2748,7 @@
     "src/modules/access/application/ports/admin-auth-repository.port.ts",
     "src/modules/access/application/ports/admin-password-hasher.port.ts",
     "src/modules/access/application/ports/admin-session-token.port.ts",
+    "src/modules/access/application/ports/tenant-bootstrap-access-writer.port.ts",
     "src/modules/access/application/ports/administration-authorization-commit-guard.port.ts",
     "src/modules/access/application/ports/operational-authorization-commit-guard.port.ts",
     "src/modules/access/application/ports/operational-session-repository.port.ts",
@@ -2683,6 +2757,7 @@
     "src/modules/access/application/ports/session-token.port.ts",
     "src/modules/access/application/use-cases/authenticate-pin.use-case.ts",
     "src/modules/access/application/use-cases/admin-session.use-cases.ts",
+    "src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts",
     "src/modules/access/application/use-cases/authenticate-pin-only.use-case.ts",
     "src/modules/access/application/use-cases/assign-role.use-case.ts",
     "src/modules/access/application/use-cases/create-access-role.use-case.ts",
@@ -2704,6 +2779,7 @@
     "src/modules/access/domain/pin-credential.ts",
     "src/modules/access/domain/role-assignment.ts",
     "src/modules/access/domain/role.ts",
+    "src/modules/access/domain/tenant-admin-policy.ts",
     "src/modules/access/infrastructure/persistence/kysely-access.repository.ts",
     "src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts",
     "src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts",
@@ -2798,11 +2874,14 @@
     "src/modules/catalog/presentation/catalog.controller.ts",
     "src/modules/tenancy/index.ts",
     "src/modules/tenancy/application/ports/tenant-repository.port.ts",
+    "src/modules/tenancy/application/ports/tenant-bootstrap-writer.port.ts",
     "src/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.ts",
+    "src/modules/tenancy/infrastructure/persistence/kysely-tenant-bootstrap.writer.ts",
     "src/modules/tenancy/tenancy.module.ts"
     ,"src/modules/users/index.ts"
     ,"src/modules/users/application/ports/authentication-user-reader.port.ts"
     ,"src/modules/users/application/ports/user-repository.port.ts"
+    ,"src/modules/users/application/ports/tenant-bootstrap-user-writer.port.ts"
     ,"src/modules/users/application/ports/user-preferences-repository.port.ts"
     ,"src/modules/users/application/user-input.ts"
     ,"src/modules/users/application/use-cases/get-user.use-case.ts"
@@ -2815,6 +2894,7 @@
     ,"src/modules/users/domain/user.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
+    ,"src/modules/users/infrastructure/persistence/kysely-tenant-bootstrap-user.writer.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-user-preferences.repository.ts"
     ,"src/modules/users/users.module.ts"
   ],

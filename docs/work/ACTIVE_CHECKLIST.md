@@ -17,9 +17,9 @@ Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
 General State: Authorized implementation / Functional foundation
-Progress: 2 / 8 implementation blocks complete
-Current Work: Transaction-aware owner persistence ports
-Next Block: Internal bootstrap domain/application contract
+Progress: 3 / 8 implementation blocks complete
+Current Work: Internal bootstrap domain/application contract
+Next Block: Atomic orchestration and sanitized audit
 Blocking: NONE
 Last Updated: 2026-09-21
 
@@ -73,8 +73,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Receive separate implementation authorization.
 - [x] Block 1 — Tenant schema, trustworthy backfill and bootstrap journal.
 - [x] Block 2 — Protected/versioned starter Role and capability policy.
-- [~] Block 3 — Transaction-aware owner persistence ports.
-- [ ] Block 4 — Internal bootstrap domain/application contract.
+- [x] Block 3 — Transaction-aware owner persistence ports.
+- [~] Block 4 — Internal bootstrap domain/application contract.
 - [ ] Block 5 — Atomic orchestration and sanitized audit.
 - [ ] Block 6 — Idempotency, concurrency and failure injection.
 - [ ] Block 7 — TL-02 login, isolation and operational-auth regression.
@@ -82,11 +82,11 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-Implementing Block 3: owner-specific transactional writers over one shared context.
+Implementing Block 4: trusted grant, stable result/errors and redacted contracts.
 
 ## Next
 
-Complete Block 3 without nested transactions or cross-owner direct writes.
+Complete the internal grant/result contract without exposing registration publicly.
 
 ## Blockers
 
@@ -107,6 +107,9 @@ None.
 - Block 2 adds only the approved administrative capabilities, a protected
   `SYSTEM_MANAGED` policy v1 Role and ordinary-mutation guards; no operational
   capability is part of the starter bundle.
+- Block 3 adds owner-scoped transactional writers over one SERIALIZABLE-capable
+  context. A dedicated PostgreSQL guard serializes duplicate Registration IDs
+  without raw SQL or application-only check-then-insert.
 
 ## Focused Verification
 
@@ -121,6 +124,8 @@ None.
 - [x] Block 2 typecheck/build, capability catalog, Role contract and starter
   policy regressions PASS; PostgreSQL 18.4 applied the policy migration and a
   second execution reported `0 pending`.
+- [x] Block 3 typecheck/build, ownership/schema/architecture regressions PASS;
+  PostgreSQL 18.4 applied the guard migration and rerun reported `0 pending`.
 - [ ] Implementation authorization will require unit/contracts, PostgreSQL
   18.4 migration/atomicity/concurrency/failure injection, TL-02 regressions,
   architecture, full promotion verification and security review.
