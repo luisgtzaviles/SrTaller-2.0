@@ -28,7 +28,7 @@ const { stdout } = await execute(
     'view',
     runId,
     '--json',
-    'databaseId,status,conclusion,headSha,event,url,workflowName,jobs',
+    'databaseId,status,conclusion,headBranch,headSha,event,url,workflowName,jobs',
   ],
   { cwd: process.cwd(), encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
 );

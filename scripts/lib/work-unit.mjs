@@ -71,6 +71,20 @@ async function gitFile(projectRoot, revision, path) {
   }
 }
 
+async function remoteBranchHead(projectRoot, remote, branch) {
+  const result = await git(projectRoot, [
+    'ls-remote',
+    '--heads',
+    remote,
+    `refs/heads/${branch}`,
+  ]);
+  const [head = '', ref = ''] = result.split(/\s+/u);
+  if (!/^[0-9a-f]{40}$/u.test(head) || ref !== `refs/heads/${branch}`) {
+    throw new Error(`cannot resolve ${remote}/${branch} from the authoritative remote`);
+  }
+  return head;
+}
+
 function finding(code, message) {
   return Object.freeze({ code, message });
 }
@@ -460,6 +474,9 @@ function assertAuthoritativeRun(authoritativeRun, head) {
   if (authoritativeRun.event !== 'push') {
     throw new Error('authoritative run must be a push event on exact main');
   }
+  if (authoritativeRun.headBranch !== 'main') {
+    throw new Error('authoritative run must be bound to the main branch');
+  }
   if (authoritativeRun.status !== 'completed' || normalizedConclusion(authoritativeRun.conclusion) !== 'success') {
     throw new Error('authoritative exact-main run is not successfully completed');
   }
@@ -485,15 +502,19 @@ export async function closeWorkUnit({
   if (!push) {
     throw new Error('local-only closure refs are forbidden; closure must be shared');
   }
-  const [branch, head, originMain, trackedStatus, source] = await Promise.all([
+  const [branch, head, originMain, liveRemoteMain, trackedStatus, source] = await Promise.all([
     git(projectRoot, ['branch', '--show-current']),
     git(projectRoot, ['rev-parse', 'HEAD']),
     git(projectRoot, ['rev-parse', `${remote}/main`]),
+    remoteBranchHead(projectRoot, remote, 'main'),
     git(projectRoot, ['status', '--porcelain=v1', '--untracked-files=no']),
     readFile(resolve(projectRoot, checklistPath), 'utf8'),
   ]);
   if (branch !== 'main') throw new Error('Work Unit closure must run on main');
   if (head !== originMain) throw new Error(`main ${head} must equal ${remote}/main ${originMain}`);
+  if (head !== liveRemoteMain) {
+    throw new Error(`main ${head} must equal live ${remote}/main ${liveRemoteMain}`);
+  }
   if (trackedStatus !== '') throw new Error('tracked working tree must be clean before closure');
 
   const parsed = parseWorkUnitDocument(source);

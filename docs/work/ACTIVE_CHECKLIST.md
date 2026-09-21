@@ -23,8 +23,10 @@ Current PBI: NONE
 - **Status:** `READY_FOR_PROMOTION`; the local candidate is frozen for its
   exact-HEAD promotion verification.
 - **Progress:** `7 / 7` local Work Unit blocks complete.
-- **Current work:** final exact-candidate promotion gate.
-- **Next block:** request separate Owner authorization for push and Draft PR.
+- **Current work:** exact-candidate revalidation after the deliberate remote
+  promotion review strengthened exact-main binding.
+- **Next block:** update the existing Draft PR and require fresh authoritative
+  CI on the remediated HEAD.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21, America/Hermosillo.
 
@@ -84,13 +86,15 @@ initialization of the next authorized Work Unit.
 ## Current
 
 The deterministic closure-ref design, fail-closed PR/main validation, shared
-publication command, contracts and regressions are complete. The tree is frozen
-for the single exact-candidate full promotion run.
+publication command, contracts and regressions are complete. Deliberate review
+also bound closure to the live remote `main` ref and to an authoritative run
+whose `headBranch` is exactly `main`; the remediated tree now requires its
+single exact-candidate full promotion run.
 
 ## Next
 
-Run the exact-candidate full promotion verification. If green, stop and request
-Owner authorization for remote promotion; if it fails, return to `BLOCKED`.
+Run the exact-candidate full promotion verification, update the existing Draft
+PR normally and require fresh authoritative CI. Stop before merge.
 
 ## Blockers
 
@@ -108,12 +112,17 @@ invalid landed snapshot and correct the lifecycle contract.
   while recording closure only after the ordinary merge and exact-main CI.
 - PR CI must reject `ACTIVE`; otherwise an unclosable snapshot can land before
   the post-merge predicate is eligible.
+- Exact SHA matching alone does not prove an exact-`main` run because the same
+  commit can be the head of another CI-enabled branch; closure now requires
+  `headBranch: main` explicitly.
+- A stale local `origin/main` cache cannot prove synchronization with the
+  authoritative remote; closure now also reads live `refs/heads/main`.
 
 ## Focused Verification
 
 - [x] PR #64 merge and exact-main authoritative CI revalidated.
 - [x] `work-unit:check --mode MAIN` reproduced `INVALID_MAIN_SNAPSHOT`.
-- [x] Work Unit lifecycle regression suite: 13/13 PASS.
+- [x] Work Unit lifecycle regression suite: 14/14 PASS.
 - [x] Governance/source-of-truth regressions: 4/4 PASS.
 - [x] Explicit main-mode and next-start precondition proofs.
 - [x] Typecheck, architecture, docs links/consistency/secret scan and
@@ -126,7 +135,8 @@ invalid landed snapshot and correct the lifecycle contract.
 - Risk is `ARCHITECTURAL`; current full promotion verification and deliberate
   architectural review remain mandatory.
 - The selected design must fail closed for unmerged or failed exact-main work.
-- No remote action is authorized in this local Work Unit phase.
+- Owner authorized ordinary branch push and one Draft PR for this Work Unit.
+- Merge and deploy remain unauthorized.
 
 ## Remote Actions / Authorization
 

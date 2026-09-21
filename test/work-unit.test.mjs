@@ -66,7 +66,7 @@ async function repository() {
   await git('commit', '--quiet', '-m', 'baseline');
   const baseSha = (await git('rev-parse', 'HEAD')).stdout.trim();
   await git('push', '--quiet', '--set-upstream', 'origin', 'main');
-  return { container, root, git, baseSha };
+  return { container, root, origin, git, baseSha };
 }
 
 async function onFeature(repo) {
@@ -86,6 +86,7 @@ function authoritativeRun(head, { conclusion = 'success', gateConclusion = 'succ
     status: 'completed',
     conclusion,
     headSha: head,
+    headBranch: 'main',
     event: 'push',
     jobs: [{ name: 'Authoritative promotion gate', conclusion: gateConclusion }],
   };
@@ -268,6 +269,14 @@ test('failed exact-main evidence cannot publish closure or produce false IDLE', 
       },
       confirmPredicate: true,
     }), /must come from Authoritative Linux CI/u);
+    await assert.rejects(closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: {
+        ...authoritativeRun(mergeCommit),
+        headBranch: 'ci/not-main',
+      },
+      confirmPredicate: true,
+    }), /must be bound to the main branch/u);
     const result = await inspectWorkUnit({ projectRoot: repo.root, mode: 'MAIN' });
     assert.equal(result.status, 'FAIL');
     assert.equal(result.effectiveStatus, 'PROMOTION');
@@ -278,6 +287,27 @@ test('failed exact-main evidence cannot publish closure or produce false IDLE', 
     await assert.rejects(
       repo.git('rev-parse', '--verify', `refs/tags/${workUnitClosureTag(metadata)}^{commit}`),
     );
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('closure rejects a stale origin/main cache when the live remote has advanced', async () => {
+  const repo = await repository();
+  try {
+    const { mergeCommit } = await promoteAndMerge(repo);
+    await execute('git', [
+      '--git-dir',
+      repo.origin,
+      'update-ref',
+      'refs/heads/main',
+      repo.baseSha,
+    ]);
+    await assert.rejects(closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(mergeCommit),
+      confirmPredicate: true,
+    }), /must equal live origin\/main/u);
   } finally {
     await rm(repo.container, { recursive: true, force: true });
   }

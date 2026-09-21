@@ -163,9 +163,11 @@ anotado cuyo nombre se deriva del nombre, rama y base de la Work Unit y que
 apunta al merge ordinario exacto. El comando falla cerrado salvo que:
 
 - se ejecute en `main` limpio y sincronizado con `origin/main`;
+- el `HEAD`, el remote-tracking ref y `refs/heads/main` consultado directamente
+  en `origin` coincidan, para no aceptar un cache local obsoleto;
 - el merge sea ordinario y contenga el snapshot de la rama candidata;
 - la evidencia consultada sea un run `push` exitoso de
-  `Authoritative Linux CI` sobre ese `HEAD` exacto;
+  `Authoritative Linux CI` para la rama `main` sobre ese `HEAD` exacto;
 - `Authoritative promotion gate` sea exitoso; y
 - el operador confirme que también evaluó el predicado completo, incluido el
   ambiente cuando aplique.
