@@ -58,6 +58,8 @@ import type {
   ResolveAdminSessionUseCase,
 } from '../application/use-cases/admin-session.use-cases.js';
 import type { AdminSessionTokenPort } from '../application/ports/admin-session-token.port.js';
+import type { AdminPasswordHasherPort } from '../application/ports/admin-password-hasher.port.js';
+import type { TenantBootstrapTransactionPort } from '../application/ports/tenant-bootstrap-access-writer.port.js';
 import {
   OPERATIONAL_SESSION_IDLE_MS,
   assertSessionId,
@@ -96,6 +98,8 @@ export interface AccessSessionRuntime {
   readonly replacePin: ReplacePinCredentialUseCase;
   readonly listConfiguredPinUserIds: (scope: unknown) => Promise<readonly string[]>;
   readonly tokens: SessionTokenPort;
+  readonly registrationPasswordHasher: AdminPasswordHasherPort;
+  readonly tenantBootstrapTransaction: TenantBootstrapTransactionPort;
   readonly admin: Readonly<{
     provision: ProvisionAdminIdentityUseCase;
     login: LoginAdminUseCase;

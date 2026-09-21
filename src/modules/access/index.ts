@@ -144,6 +144,43 @@ export const ADMIN_AUTHORIZATION_EXECUTOR: unique symbol = Symbol(
   'srtaller.access.admin-authorization-executor',
 );
 
+/** Registration receives only this narrow server-owned bootstrap boundary. */
+export interface TenantBootstrapExecutor {
+  execute(input: Readonly<{
+    verifiedRegistrationId: string;
+    correlationId: string;
+    loadVerifiedGrant(verifiedRegistrationId: string): Promise<unknown | null>;
+  }>): Promise<Readonly<{
+    tenantStatus: 'ONBOARDING';
+    completedAt: string;
+  }>>;
+}
+
+export const TENANT_BOOTSTRAP_EXECUTOR: unique symbol = Symbol(
+  'srtaller.access.tenant-bootstrap-executor',
+);
+
+export interface RegistrationPasswordProtector {
+  protect(input: Readonly<{
+    tenantId: string;
+    adminIdentityId: string;
+    password: unknown;
+  }>): Promise<Readonly<{
+    algorithm: string;
+    profileVersion: number;
+    pepperVersion: number;
+    memoryKiB: number;
+    passes: number;
+    parallelism: number;
+    salt: Uint8Array;
+    verifier: Uint8Array;
+  }>>;
+}
+
+export const REGISTRATION_PASSWORD_PROTECTOR: unique symbol = Symbol(
+  'srtaller.access.registration-password-protector',
+);
+
 /** Compile-time marker for the public access module boundary. */
 export interface AccessModuleContract {
   readonly module: 'access';

@@ -2,13 +2,13 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-04 — Public Registration + Email Verification
-iteration: 1 - Discovery and Readiness
-type: DISCOVERY
+iteration: 2 - End-to-End Implementation
+type: IMPLEMENTATION
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-04-public-registration
 base_sha: 07a954ea7c07304ea490f9d79edecaffa69576c5
-status: BLOCKED
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -19,22 +19,22 @@ Sprint: NONE
 
 Current PBI: NONE
 
-Overall state: Discovery complete / Owner Decisions Required
+Overall state: Implementation authorized / Active
 
-Progress: 7 / 9
+Progress: 9 / 16
 
-Current work: TL-04 readiness validated; no product implementation started
+Current work: Block 2 — additive persistence and owner-scoped repositories
 
-Next block: Owner decides `TL4D-001–007` and separately authorizes implementation
+Next block: Block 3 — TL-02 password handoff and TL-03 grant source
 
-Blockers: provider, retention/TTL, abuse signal, public host and legal documents
+Blockers: none; `TL4D-001–007` approved by Owner
 
 Last updated: 2026-09-21
 
 ## Objective
 
-Design the public self-service registration and email-verification authority
-that safely feeds TL-03, without implementing product functionality.
+Implement the public self-service registration and email-verification authority
+that safely feeds TL-03 and hands off to normal TL-02 administrative login.
 
 ## Why
 
@@ -43,15 +43,15 @@ grant without gaining a path to choose Tenant, identity, Role or capabilities.
 
 ## In Scope
 
-- Audit public HTTP/UI, TL-02, TL-03, email and persistence foundations.
-- Design Registration Attempt, password handoff, challenge and bootstrap flow.
-- Define abuse, terms/privacy, schema, UI, tests and implementation blocks.
-- Identify only the remaining material Owner decisions.
+- Registration Attempt, challenge, legal evidence and bounded abuse controls.
+- Provider-independent delivery with local/test and Resend adapters.
+- Public HTTP and minimal accessible public UI outside Operational Session.
+- Authoritative handoff to TL-03 and subsequent TL-02 login.
 
 ## Out of Scope
 
-- Product code, migrations or database writes.
-- TL-05, Branch, Station, PIN, billing, plans, Super Admin or Landing content.
+- TL-05, Branch, Tenant ACTIVE transition, Station, PIN, billing, plans,
+  Super Admin or Landing content.
 - Push, PR, merge or deploy.
 
 ## Applicable Contracts
@@ -79,30 +79,35 @@ grant without gaining a path to choose Tenant, identity, Role or capabilities.
 - [x] Design email delivery, HTTP boundary and abuse controls.
 - [x] Design bootstrap handoff, schema, UI boundary and tests.
 - [x] Publish repository-native readiness plan.
-- [!] Obtain Owner decisions `TL4D-001–007`.
-- [ ] Receive separate implementation authorization.
+- [x] Record Owner decisions `TL4D-001–007` and implementation authority.
+- [x] Block 1: contract/module and narrow Access bootstrap executor.
+- [~] Block 2: additive persistence, lifecycle/CAS, cleanup and audit.
+- [ ] Block 3: TL-02 password handoff and TL-03 grant source.
+- [ ] Block 4: challenge lifecycle, resend and abuse controls.
+- [ ] Block 5: delivery port, local/test and Resend adapters.
+- [ ] Block 6: public HTTP boundary and sanitized errors.
+- [ ] Block 7: public registration/verification UI and accessibility.
+- [ ] Block 8: PostgreSQL/E2E/isolation, docs and promotion verification.
 
 ## Current
 
-Readiness is complete. The Work Unit is blocked before implementation on the
-explicit Owner/provider/legal decisions listed in the readiness document.
+Owner decisions and implementation authority are recorded. Block 2 is active;
+no later block is credited before its focused acceptance evidence is green.
 
 ## Next
 
-Owner decides `TL4D-001–007`; then authorize or reject the implementation
-iteration. TL-05 remains unstarted.
+Complete additive schema and owner-scoped repository with PostgreSQL evidence.
+TL-05 remains unstarted.
 
 ## Blockers
 
-- Transactional email provider and sender/domain are not approved.
-- Verification/attempt TTL and retention/purge are not approved.
-- Public rate-limit network signal/privacy treatment is not approved.
-- Public host and legal document versions/content are not approved.
-- Backend + minimal UI candidate boundary needs Owner confirmation.
+- None currently. Production remains fail-closed until approved legal content,
+  Resend secret and verified sender/domain are configured operationally.
 
 ## Important Discoveries
 
-- There is no outbound email port/provider/configuration in the repository.
+- Resend is approved only as an infrastructure adapter behind Registration's
+  replaceable delivery port; secrets remain external.
 - Current React routes are all behind the Station/PIN operational gate.
 - TL-03 is implemented/tested internally but intentionally has no runtime
   composition or HTTP endpoint; TL-04 needs a narrow Access-owned factory.
@@ -121,23 +126,22 @@ iteration. TL-05 remains unstarted.
 
 ## Promotion Gates
 
-- Not eligible for implementation or promotion while Owner decisions remain.
-- A future implementation candidate is `ARCHITECTURAL` and requires the full
+- The implementation candidate is `ARCHITECTURAL` and requires the full
   governed verification and deliberate review applicable at promotion time.
 
 ## Remote Actions / Authorization
 
-- None authorized or performed.
+- Local implementation, focused tests and logical commits are authorized.
+- Push, PR, merge and deploy are not authorized.
 
 ## Handoff Notes
 
 - Preserve `apps/dev-preview-web/src/.DS_Store` as unrelated untracked Owner
   artifact.
-- No product source, schema, runtime data or external system changed.
+- No remote runtime, data or external system may be changed in this Work Unit.
 
 ## Closure Predicate
 
-This discovery iteration is complete when the audit/readiness artifact is
-consistent and locally validated. The TL-04 implementation Work Unit remains
-blocked until the Owner decisions and a separate implementation authorization
-exist.
+TL-04 reaches `READY_FOR_PROMOTION` only after all eight blocks, material
+PostgreSQL/concurrency/provider/E2E/UI evidence and exact-candidate
+`verify:full` pass with a clean tracked tree.

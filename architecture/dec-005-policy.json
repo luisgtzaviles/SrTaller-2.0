@@ -1,11 +1,12 @@
 {
   "policyVersion": 9,
-  "allowedModules": ["access", "catalog", "customers", "repairs", "stations", "tenancy", "users"],
+  "allowedModules": ["access", "catalog", "customers", "registration", "repairs", "stations", "tenancy", "users"],
   "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy", "users"],
     "catalog": ["access", "tenancy"],
     "customers": ["tenancy"],
+    "registration": ["access"],
     "repairs": ["access", "customers", "stations", "tenancy"],
     "stations": ["tenancy"],
     "tenancy": [],
@@ -25,6 +26,8 @@
       "ContextualAuthorizationError",
       "ContextualAuthorizationErrorCode",
       "ContextualAuthorizationExecutor",
+      "REGISTRATION_PASSWORD_PROTECTOR",
+      "RegistrationPasswordProtector",
       "ProtectedOperationKind",
       "ProtectedOperationRequirement",
       "ProtectedRequestEvidence",
@@ -34,6 +37,8 @@
       "SensitiveActionLevel2Executor",
       "SensitiveActionReauthenticationError",
       "TENANT_WIDE_AUTHORIZATION_EXECUTOR",
+      "TENANT_BOOTSTRAP_EXECUTOR",
+      "TenantBootstrapExecutor",
       "TenantWideAuthorizationExecutor"
     ],
     "catalog": [
@@ -53,6 +58,7 @@
       "CustomersModuleContract"
     ],
     "repairs": ["RepairsModuleContract"],
+    "registration": ["RegistrationModuleContract"],
     "stations": [
       "BRANCH_SETTINGS_RUNTIME",
       "BranchSettingsRuntime",
@@ -76,8 +82,11 @@
     ],
     "tenancy": [
       "OperatingCurrency",
+      "TENANT_BOOTSTRAP_PERSISTENCE",
       "TENANT_SETTINGS_RUNTIME",
       "TenantId",
+      "TenantBootstrapPersistence",
+      "TenantBootstrapWriter",
       "TenantSettingsRuntime",
       "TenancyModuleContract",
       "parseOperatingCurrency",
@@ -86,11 +95,13 @@
     "users": [
       "AUTHENTICATION_USER_ADMISSION_VALIDATOR",
       "AUTHENTICATION_USER_READER",
+      "TENANT_BOOTSTRAP_USER_WRITER",
       "AuthenticationUserAdmissionSnapshot",
       "AuthenticationUserAdmissionValidator",
       "AuthenticationUserReader",
       "AuthenticationUserRecord",
       "AuthenticationUserScope",
+      "TenantBootstrapUserWriter",
       "USER_PRODUCT_RUNTIME",
       "USER_PREFERENCES_RUNTIME",
       "NewRepairFormMode",
@@ -100,10 +111,11 @@
     ]
   },
   "consumers": {
-    "access": ["AppModule", "catalog", "repairs"],
+    "access": ["AppModule", "catalog", "registration", "repairs"],
     "catalog": ["AppModule"],
     "customers": ["AppModule", "repairs"],
     "repairs": ["AppModule"],
+    "registration": ["AppModule"],
     "stations": ["access", "repairs"],
     "tenancy": ["access", "catalog", "customers", "stations", "users"],
     "users": ["access", "AppModule"]
@@ -158,6 +170,17 @@
       "decorator": "Module",
       "rule": "D5-R003"
     },
+    "src/modules/registration/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "RegistrationModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/registration/registration.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "RegistrationModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
+    },
     "src/modules/access/index.ts": {
       "declarationKind": "interface",
       "declarationName": "AccessModuleContract",
@@ -206,6 +229,7 @@
       "CatalogModule": "./modules/catalog/catalog.module.js",
       "CustomersModule": "./modules/customers/customers.module.js",
       "RepairsModule": "./modules/repairs/repairs.module.js",
+      "RegistrationModule": "./modules/registration/registration.module.js",
       "StationsModule": "./modules/stations/stations.module.js",
       "TenancyModule": "./modules/tenancy/tenancy.module.js",
       "UsersModule": "./modules/users/users.module.js"
@@ -303,6 +327,27 @@
       },
       {
         "consumer": "access",
+        "producer": "tenancy",
+        "consumerModule": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule"
+        },
+        "producerModule": {
+          "file": "src/modules/tenancy/tenancy.module.ts",
+          "className": "TenancyModule",
+          "importSpecifier": "../tenancy/tenancy.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "TENANT_BOOTSTRAP_PERSISTENCE",
+            "contract": "TenantBootstrapPersistence",
+            "consumerImportSpecifier": "../tenancy/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
+      },
+      {
+        "consumer": "access",
         "producer": "users",
         "consumerModule": {
           "file": "src/modules/access/access.module.ts",
@@ -335,6 +380,12 @@
           {
             "token": "USER_PREFERENCES_RUNTIME",
             "contract": "UserPreferencesRuntime",
+            "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "TENANT_BOOTSTRAP_USER_WRITER",
+            "contract": "TenantBootstrapUserWriter",
             "consumerImportSpecifier": "../users/index.js",
             "producerImportSpecifier": "./index.js"
           }
@@ -398,6 +449,33 @@
           {
             "token": "CONTEXTUAL_AUTHORIZATION_EXECUTOR",
             "contract": "ContextualAuthorizationExecutor",
+            "consumerImportSpecifier": "../access/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
+      },
+      {
+        "consumer": "registration",
+        "producer": "access",
+        "consumerModule": {
+          "file": "src/modules/registration/registration.module.ts",
+          "className": "RegistrationModule"
+        },
+        "producerModule": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "../access/access.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "REGISTRATION_PASSWORD_PROTECTOR",
+            "contract": "RegistrationPasswordProtector",
+            "consumerImportSpecifier": "../access/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "TENANT_BOOTSTRAP_EXECUTOR",
+            "contract": "TenantBootstrapExecutor",
             "consumerImportSpecifier": "../access/index.js",
             "producerImportSpecifier": "./index.js"
           }
@@ -2733,6 +2811,9 @@
     "D5-R034"
   ],
   "productModuleFiles": [
+    "src/modules/registration/index.ts",
+    "src/modules/registration/registration.module.ts",
+    "src/modules/registration/domain/registration-attempt.ts",
     "src/modules/customers/index.ts",
     "src/modules/customers/customers.module.ts",
     "src/modules/customers/application/ports/customer-intake-runtime.port.ts",

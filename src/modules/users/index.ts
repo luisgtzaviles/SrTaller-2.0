@@ -79,3 +79,9 @@ export interface UserProductRuntime {
   update(scope: unknown, userId: unknown, input: unknown, guard?: import('./application/ports/user-repository.port.js').UserMutationCommitGuard): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
   transition(scope: unknown, input: unknown, guard?: import('./application/ports/user-repository.port.js').UserMutationCommitGuard): Promise<import('./application/ports/user-repository.port.js').UserRecord>;
 }
+
+export type TenantBootstrapUserWriter =
+  import('./application/ports/tenant-bootstrap-user-writer.port.js').TenantBootstrapUserWriterPort;
+export const TENANT_BOOTSTRAP_USER_WRITER: unique symbol = Symbol(
+  'srtaller.users.tenant-bootstrap-user-writer',
+);
