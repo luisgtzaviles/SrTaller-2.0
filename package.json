@@ -50,6 +50,7 @@
     "test:pbi039:postgresql": "pnpm run verify:toolchain && node ./scripts/test-pbi039-postgresql.mjs",
     "test:pbi040:postgresql": "pnpm run verify:toolchain && node ./scripts/test-pbi040-postgresql.mjs",
     "test:pbi041:postgresql": "pnpm run verify:toolchain && node ./scripts/test-pbi041-postgresql.mjs",
+    "test:tl02:postgresql": "pnpm run verify:toolchain && node ./scripts/test-tl02-postgresql.mjs",
     "start": "pnpm run verify:toolchain && node --enable-source-maps dist/main.js",
     "smoke:start": "pnpm run verify:toolchain && node ./scripts/smoke-start.mjs",
     "smoke:ui": "pnpm run verify:toolchain && node ./scripts/smoke-ui.mjs",

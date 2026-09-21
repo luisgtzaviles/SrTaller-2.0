@@ -53,6 +53,7 @@ import { AssignRoleUseCase } from './application/use-cases/assign-role.use-case.
 import { RevokeRoleAssignmentUseCase } from './application/use-cases/revoke-role-assignment.use-case.js';
 import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';
 import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';
+import { KyselyAdminAuthRepository } from './infrastructure/persistence/kysely-admin-auth.repository.js';
 import { ProvisionPinCredentialUseCase } from './application/use-cases/provision-pin-credential.use-case.js';
 import { ReplacePinCredentialUseCase } from './application/use-cases/replace-pin-credential.use-case.js';
 import { AuthenticatePinUseCase } from './application/use-cases/authenticate-pin.use-case.js';
@@ -71,6 +72,15 @@ import { KyselyOperationalSessionRepository } from './infrastructure/persistence
 import { KyselyAdministrationAuthorizationCommitGuard } from './infrastructure/persistence/kysely-administration-authorization-commit.guard.js';
 import { NodeArgon2PinHasher } from './infrastructure/security/node-argon2-pin-hasher.js';
 import { NodeSessionToken } from './infrastructure/security/node-session-token.js';
+import { NodeArgon2AdminPasswordHasher } from './infrastructure/security/node-argon2-admin-password-hasher.js';
+import { NodeAdminSessionToken } from './infrastructure/security/node-admin-session-token.js';
+import {
+  AdminRecoveryFoundationUseCase,
+  AdminSessionManagementUseCase,
+  LoginAdminUseCase,
+  ProvisionAdminIdentityUseCase,
+  ResolveAdminSessionUseCase,
+} from './application/use-cases/admin-session.use-cases.js';
 import {
   ACCESS_SESSION_RUNTIME,
   AccessSessionController,
@@ -90,7 +100,8 @@ import { UserPreferencesController } from './presentation/user-preferences.contr
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
-  | KyselyPinCredentialRepositoryFactory;
+  | KyselyPinCredentialRepositoryFactory
+  | KyselyAdminAuthRepository;
 type RegisteredAccessSecurityAdapter = NodeArgon2PinHasher;
 type RegisteredAccessUseCases =
   | AuthenticatePinUseCase
@@ -134,10 +145,15 @@ type RegisteredAccessUseCases =
       ): AccessSessionRuntime => {
         const accessRepository = createKyselyAccessRepository(database);
         const pinRepository = createKyselyPinCredentialRepository(database);
+        const adminRepository = new KyselyAdminAuthRepository(database);
         // Active credential configuration is a readiness predicate. Construct
         // the hasher while the module is composed so a malformed pepper cannot
         // leave the process listening with every login guaranteed to fail.
         const pinHasher = pinHashers.create(NodeArgon2PinHasher);
+        const adminPasswordHasher = pinHashers.createAdminPasswordHasher(
+          NodeArgon2AdminPasswordHasher,
+        );
+        const adminTokens = new NodeAdminSessionToken();
         const sessionRepository = new KyselyOperationalSessionRepository(
           database,
           stationAdmission,
@@ -203,6 +219,13 @@ type RegisteredAccessUseCases =
           replacePin: new ReplacePinCredentialUseCase(pinRepository, pinHasher),
           listConfiguredPinUserIds: (scope: unknown) => pinRepository.listConfiguredUserIds(scope as never),
           tokens,
+          admin: Object.freeze({
+            provision: new ProvisionAdminIdentityUseCase(adminRepository, adminPasswordHasher),
+            login: new LoginAdminUseCase(adminRepository, users, adminPasswordHasher, adminTokens),
+            resolve: new ResolveAdminSessionUseCase(adminRepository, users, adminTokens),
+            sessions: new AdminSessionManagementUseCase(adminRepository, adminPasswordHasher),
+            recovery: new AdminRecoveryFoundationUseCase(adminRepository, users, adminPasswordHasher, adminTokens),
+          }),
         });
       },
     },

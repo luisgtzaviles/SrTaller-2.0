@@ -22,9 +22,9 @@ last_updated: 2026-09-20
   Work Units.
 Current PBI: NONE
 - **Status:** `ACTIVE` in authorized implementation.
-- **Progress:** `8 / 14` Work Unit blocks complete.
-- **Current work:** separate administrative Argon2id, pepper and token primitives complete.
-- **Next block:** additive persistence model, migration and repositories.
+- **Progress:** `10 / 14` Work Unit blocks complete.
+- **Current work:** persistence and administrative identity/session use cases complete.
+- **Next block:** isolated administrative HTTP boundary and authorization executor.
 - **Blockers:** none.
 - **Last updated:** 2026-09-20, America/Hermosillo.
 
@@ -85,19 +85,21 @@ Station + PIN boundary.
 - [x] Obtain Owner authorization to cross the planning checkpoint.
 - [x] Implement administrative identity/session/recovery domain contracts.
 - [x] Implement password cryptography/configuration and focused tests.
-- [~] Implement migration/repositories and material PostgreSQL tests.
-- [ ] Implement use cases, HTTP boundary and authorization executor.
+- [x] Implement migration/repositories and material PostgreSQL tests.
+- [~] Implement use cases, HTTP boundary and authorization executor.
 - [ ] Complete local proof, hardening, documentation and promotion gates.
 
 ## Current
 
-Administrative email/password and session/recovery temporal contracts are
-implemented with focused domain tests.
+The six-table additive persistence model and the administrative login,
+session, revocation, reauthentication and internal recovery use cases are
+implemented. Material PostgreSQL proves 76 migrations and zero pending on the
+second run.
 
 ## Next
 
-Implement the six Access-owned tables, schema types and repository transaction
-boundary. Do not begin TL-03.
+Implement the separate `/api/admin` cookie/HTTP audience and the public
+administrative authorization executor. Do not begin TL-03.
 
 ## Blockers
 
@@ -126,10 +128,12 @@ None.
   `SENSITIVE` / `FULL_PLUS_OWNER_AND_DOMAIN_SECURITY_REVIEW`, no gates reduced.
 - [x] Docs-only gate — correctly rejected as not applicable because the
   security/readiness contract classifies `FULL`.
-- [ ] Focused TL-02 domain/application/HTTP/PostgreSQL tests during implementation.
+- [~] Focused TL-02 domain/application/HTTP/PostgreSQL tests during implementation.
 - [x] TL-02 domain tests — 3 PASS.
 - [x] TL-02 password/token/configuration tests — 14 PASS.
-- [ ] Typecheck, build and architecture checks during implementation.
+- [x] TL-02 application use-case tests — 3 PASS.
+- [x] TL-02 PostgreSQL persistence — PASS; 76 migrations, second run 0 pending.
+- [x] Typecheck and architecture checks — PASS through implementation block 4.
 - [ ] Current risk pipeline plus `verify:full` before promotion.
 
 ## Promotion Gates

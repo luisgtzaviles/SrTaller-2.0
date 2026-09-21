@@ -50,6 +50,13 @@ import type { RevokeRoleAssignmentUseCase } from '../application/use-cases/revok
 import type { ProvisionPinCredentialUseCase } from '../application/use-cases/provision-pin-credential.use-case.js';
 import type { ReplacePinCredentialUseCase } from '../application/use-cases/replace-pin-credential.use-case.js';
 import type { SessionTokenPort } from '../application/ports/session-token.port.js';
+import type {
+  AdminRecoveryFoundationUseCase,
+  AdminSessionManagementUseCase,
+  LoginAdminUseCase,
+  ProvisionAdminIdentityUseCase,
+  ResolveAdminSessionUseCase,
+} from '../application/use-cases/admin-session.use-cases.js';
 import {
   OPERATIONAL_SESSION_IDLE_MS,
   assertSessionId,
@@ -88,6 +95,13 @@ export interface AccessSessionRuntime {
   readonly replacePin: ReplacePinCredentialUseCase;
   readonly listConfiguredPinUserIds: (scope: unknown) => Promise<readonly string[]>;
   readonly tokens: SessionTokenPort;
+  readonly admin: Readonly<{
+    provision: ProvisionAdminIdentityUseCase;
+    login: LoginAdminUseCase;
+    resolve: ResolveAdminSessionUseCase;
+    sessions: AdminSessionManagementUseCase;
+    recovery: AdminRecoveryFoundationUseCase;
+  }>;
 }
 
 type HeadersValue = Readonly<Record<string, string | string[] | undefined>>;
