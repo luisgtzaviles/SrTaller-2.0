@@ -814,6 +814,95 @@ export interface AccessOperationalSessionTable {
   readonly ended_at: MutableColumn<Date | null>;
 }
 
+export interface AccessAdminIdentityTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly admin_identity_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly normalized_email: ImmutableColumn<string>;
+  readonly email_display: MutableColumn<string>;
+  readonly verified_at: MutableColumn<Date | null>;
+  readonly status: MutableColumn<'active' | 'revoked'>;
+  readonly identity_version: MutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface AccessAdminPasswordCredentialTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly admin_identity_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly status: MutableColumn<'active' | 'revoked'>;
+  readonly algorithm: MutableColumn<'argon2id'>;
+  readonly profile_version: MutableColumn<number>;
+  readonly pepper_version: MutableColumn<number>;
+  readonly memory_kib: MutableColumn<number>;
+  readonly passes: MutableColumn<number>;
+  readonly parallelism: MutableColumn<number>;
+  readonly salt: MutableColumn<Uint8Array>;
+  readonly verifier: MutableColumn<Uint8Array>;
+  readonly credential_version: MutableColumn<number>;
+  readonly session_revision: MutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+  readonly revoked_at: MutableColumn<Date | null>;
+}
+
+export interface AccessAdminSessionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly session_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly admin_identity_id: ImmutableColumn<string>;
+  readonly user_admission_revision: ImmutableColumn<number>;
+  readonly identity_version: ImmutableColumn<number>;
+  readonly credential_version: ImmutableColumn<number>;
+  readonly session_revision: ImmutableColumn<number>;
+  readonly token_verifier: ImmutableColumn<Uint8Array>;
+  readonly csrf_verifier: ImmutableColumn<Uint8Array>;
+  readonly status: MutableColumn<'active' | 'expired' | 'logged_out' | 'revoked'>;
+  readonly version: MutableColumn<number>;
+  readonly issued_at: ImmutableColumn<Date>;
+  readonly last_activity_at: MutableColumn<Date>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly reauthenticated_at: MutableColumn<Date | null>;
+  readonly ended_at: MutableColumn<Date | null>;
+}
+
+export interface AccessAdminAuthAttemptLimitTable {
+  readonly principal_digest: ImmutableColumn<Uint8Array>;
+  readonly attempt_count: MutableColumn<number>;
+  readonly window_started_at: MutableColumn<Date>;
+  readonly blocked_until: MutableColumn<Date | null>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface AccessAdminRecoveryChallengeTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly challenge_id: ImmutableColumn<string>;
+  readonly admin_identity_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string>;
+  readonly token_verifier: ImmutableColumn<Uint8Array>;
+  readonly identity_version: ImmutableColumn<number>;
+  readonly credential_version: ImmutableColumn<number>;
+  readonly status: MutableColumn<'active' | 'consumed' | 'expired' | 'cancelled'>;
+  readonly version: MutableColumn<number>;
+  readonly issued_at: ImmutableColumn<Date>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly consumed_at: MutableColumn<Date | null>;
+}
+
+export interface AccessAdminSecurityEventTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly event_id: ImmutableColumn<string>;
+  readonly user_id: ImmutableColumn<string | null>;
+  readonly admin_identity_id: ImmutableColumn<string | null>;
+  readonly session_id: ImmutableColumn<string | null>;
+  readonly event_type: ImmutableColumn<string>;
+  readonly result: ImmutableColumn<'SUCCEEDED' | 'DENIED'>;
+  readonly reason_code: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
 export interface RepairTable {
   readonly repair_id: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
@@ -1503,6 +1592,12 @@ export interface DatabaseSchema {
   readonly access_pin_attempt_limits: AccessPinAttemptLimitTable;
   readonly access_operational_session_station_guards: AccessOperationalSessionStationGuardTable;
   readonly access_operational_sessions: AccessOperationalSessionTable;
+  readonly access_admin_identities: AccessAdminIdentityTable;
+  readonly access_admin_password_credentials: AccessAdminPasswordCredentialTable;
+  readonly access_admin_sessions: AccessAdminSessionTable;
+  readonly access_admin_auth_attempt_limits: AccessAdminAuthAttemptLimitTable;
+  readonly access_admin_recovery_challenges: AccessAdminRecoveryChallengeTable;
+  readonly access_admin_security_events: AccessAdminSecurityEventTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_device_types: RepairDeviceTypeTable;
@@ -1619,6 +1714,18 @@ export type NewAccessOperationalSession = Insertable<AccessOperationalSessionTab
 export type AccessOperationalSessionUpdate = Updateable<AccessOperationalSessionTable>;
 export type AccessOperationalSessionStationGuardRow =
   Selectable<AccessOperationalSessionStationGuardTable>;
+export type AccessAdminIdentityRow = Selectable<AccessAdminIdentityTable>;
+export type NewAccessAdminIdentity = Insertable<AccessAdminIdentityTable>;
+export type AccessAdminIdentityUpdate = Updateable<AccessAdminIdentityTable>;
+export type AccessAdminPasswordCredentialRow = Selectable<AccessAdminPasswordCredentialTable>;
+export type NewAccessAdminPasswordCredential = Insertable<AccessAdminPasswordCredentialTable>;
+export type AccessAdminPasswordCredentialUpdate = Updateable<AccessAdminPasswordCredentialTable>;
+export type AccessAdminSessionRow = Selectable<AccessAdminSessionTable>;
+export type NewAccessAdminSession = Insertable<AccessAdminSessionTable>;
+export type AccessAdminSessionUpdate = Updateable<AccessAdminSessionTable>;
+export type AccessAdminAuthAttemptLimitRow = Selectable<AccessAdminAuthAttemptLimitTable>;
+export type AccessAdminRecoveryChallengeRow = Selectable<AccessAdminRecoveryChallengeTable>;
+export type AccessAdminSecurityEventRow = Selectable<AccessAdminSecurityEventTable>;
 export type NewAccessOperationalSessionStationGuard =
   Insertable<AccessOperationalSessionStationGuardTable>;
 

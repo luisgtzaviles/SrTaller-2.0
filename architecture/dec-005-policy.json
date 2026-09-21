@@ -13,7 +13,12 @@
   },
   "publicSurfaces": {
     "access": [
+      "ADMIN_AUTHORIZATION_EXECUTOR",
       "AccessModuleContract",
+      "AdminAuthorizationCommitGuard",
+      "AdminAuthorizationExecutor",
+      "AdminAuthorizationRequirement",
+      "AuthorizedAdminContext",
       "AuthorizedOperationCommitGuard",
       "AuthorizedOperationalContext",
       "CONTEXTUAL_AUTHORIZATION_EXECUTOR",
@@ -439,6 +444,7 @@
           "src/modules/access/access.module.ts",
           "src/modules/catalog/catalog.module.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts",
           "src/modules/customers/customers.module.ts",
           "src/modules/repairs/repairs.module.ts",
           "src/modules/stations/stations.module.ts",
@@ -468,7 +474,8 @@
         "strategy": "useFactory",
         "implementation": "RuntimeEnvironmentReader",
         "consumers": [
-          "src/modules/access/presentation/access-session.controller.ts"
+          "src/modules/access/presentation/access-session.controller.ts",
+          "src/modules/access/presentation/admin-session.controller.ts"
         ]
       }
     ],
@@ -546,6 +553,13 @@
         "kind": "contract-only"
       },
       {
+        "file": "src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../../../infrastructure/runtime/index.js",
+        "kind": "contract-only"
+      },
+      {
         "file": "src/modules/access/access.module.ts",
         "token": "ACCESS_PIN_HASHER_FACTORY",
         "contract": "AccessPinHasherFactory",
@@ -554,6 +568,13 @@
       },
       {
         "file": "src/modules/access/presentation/access-session.controller.ts",
+        "token": "SESSION_TRANSPORT_POLICY",
+        "contract": "SessionTransportPolicy",
+        "importSpecifier": "../../../infrastructure/runtime/index.js",
+        "kind": "constructor-inject"
+      },
+      {
+        "file": "src/modules/access/presentation/admin-session.controller.ts",
         "token": "SESSION_TRANSPORT_POLICY",
         "contract": "SessionTransportPolicy",
         "importSpecifier": "../../../infrastructure/runtime/index.js",
@@ -631,6 +652,15 @@
           "file": "src/modules/access/access.module.ts",
           "className": "AccessModule",
           "importSpecifier": "./presentation/access-session.controller.js"
+        }
+      },
+      "src/modules/access/presentation/admin-session.controller.ts": {
+        "owner": "access",
+        "className": "AdminSessionController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/admin-session.controller.js"
         }
       },
       "src/modules/access/presentation/user-preferences.controller.ts": {
@@ -768,7 +798,8 @@
       "src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts",
       "src/infrastructure/database/migrations/20260917190000_catalog_create_field_policies.ts",
       "src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts",
-      "src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts"
+      "src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts",
+      "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1389,6 +1420,23 @@
           "references": [],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts": {
+          "owner": "access",
+          "tables": [
+            "access_admin_auth_attempt_limits",
+            "access_admin_identities",
+            "access_admin_password_credentials",
+            "access_admin_recovery_challenges",
+            "access_admin_security_events",
+            "access_admin_sessions"
+          ],
+          "references": ["users"],
+          "functions": ["access_reject_admin_security_event_mutation"],
+          "triggers": [
+            "access_admin_security_events_reject_delete",
+            "access_admin_security_events_reject_update"
+          ]
         }
       }
     },
@@ -1474,6 +1522,12 @@
           "AccessOperationalSessionStatus",
           "AccessOperationalSessionStationGuardTable",
           "AccessOperationalSessionTable",
+          "AccessAdminIdentityTable",
+          "AccessAdminPasswordCredentialTable",
+          "AccessAdminSessionTable",
+          "AccessAdminAuthAttemptLimitTable",
+          "AccessAdminRecoveryChallengeTable",
+          "AccessAdminSecurityEventTable",
           "CustomerTable",
           "CustomerRow",
           "NewCustomer",
@@ -1598,6 +1652,18 @@
           "RepairOperationalNoteRequestGuardTable",
           "RepairOperationalNoteRequestGuardRow",
           "NewRepairOperationalNoteRequestGuard"
+          ,"AccessAdminIdentityRow"
+          ,"NewAccessAdminIdentity"
+          ,"AccessAdminIdentityUpdate"
+          ,"AccessAdminPasswordCredentialRow"
+          ,"NewAccessAdminPasswordCredential"
+          ,"AccessAdminPasswordCredentialUpdate"
+          ,"AccessAdminSessionRow"
+          ,"NewAccessAdminSession"
+          ,"AccessAdminSessionUpdate"
+          ,"AccessAdminAuthAttemptLimitRow"
+          ,"AccessAdminRecoveryChallengeRow"
+          ,"AccessAdminSecurityEventRow"
           ,"RepairCreateCommandTable"
           ,"RepairCreateCommandRow"
           ,"NewRepairCreateCommand"
@@ -1678,6 +1744,7 @@
           "src/infrastructure/database/migrations/20260915120000_catalog_add_bounded_candidate_matching.ts",
           "src/infrastructure/database/migrations/20260915130000_catalog_add_supplier_observed_title_history.ts",
           "src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts",
+          "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1692,6 +1759,7 @@
           "src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
+          ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
           ,"src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts"
           ,"src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts"
         ],
@@ -1783,6 +1851,7 @@
           "src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
+          ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
           ,"src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts"
         ],
         "status": "materialized-owner-internal-capability"
@@ -1808,6 +1877,7 @@
           "src/infrastructure/runtime/application-database-runtime.provider.ts",
           "src/infrastructure/runtime/index.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
+          ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
         ],
         "status": "materialized-owner-internal-capability"
       },
@@ -2040,6 +2110,12 @@
       "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts": {
         "owner": "access",
         "port": "src/modules/access/application/ports/operational-session-repository.port.ts",
+        "composition": "src/modules/access/access.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts": {
+        "owner": "access",
+        "port": "src/modules/access/application/ports/admin-auth-repository.port.ts",
         "composition": "src/modules/access/access.module.ts",
         "status": "materialized-owner-adapter"
       }
@@ -2324,6 +2400,30 @@
       "access_operational_sessions": {
         "owner": "access",
         "kind": "table"
+      },
+      "access_admin_auth_attempt_limits": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_identities": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_password_credentials": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_recovery_challenges": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_security_events": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_sessions": {
+        "owner": "access",
+        "kind": "table"
       }
     },
     "databaseExecutorTypes": {
@@ -2371,6 +2471,7 @@
         "src/infrastructure/runtime/application-database-runtime.provider.ts",
         "src/infrastructure/runtime/index.ts",
         "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
+        ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
       ],
       "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
       "forbiddenManualMethods": [
@@ -2562,6 +2663,9 @@
     "src/modules/access/application/authenticated-self-executor.ts",
     "src/modules/access/application/pin-input.ts",
     "src/modules/access/application/ports/access-repository.port.ts",
+    "src/modules/access/application/ports/admin-auth-repository.port.ts",
+    "src/modules/access/application/ports/admin-password-hasher.port.ts",
+    "src/modules/access/application/ports/admin-session-token.port.ts",
     "src/modules/access/application/ports/administration-authorization-commit-guard.port.ts",
     "src/modules/access/application/ports/operational-authorization-commit-guard.port.ts",
     "src/modules/access/application/ports/operational-session-repository.port.ts",
@@ -2569,6 +2673,7 @@
     "src/modules/access/application/ports/pin-secret-hasher.port.ts",
     "src/modules/access/application/ports/session-token.port.ts",
     "src/modules/access/application/use-cases/authenticate-pin.use-case.ts",
+    "src/modules/access/application/use-cases/admin-session.use-cases.ts",
     "src/modules/access/application/use-cases/authenticate-pin-only.use-case.ts",
     "src/modules/access/application/use-cases/assign-role.use-case.ts",
     "src/modules/access/application/use-cases/create-access-role.use-case.ts",
@@ -2582,6 +2687,10 @@
     "src/modules/access/application/use-cases/resolve-effective-capabilities.use-case.ts",
     "src/modules/access/application/use-cases/revoke-role-assignment.use-case.ts",
     "src/modules/access/domain/capability.ts",
+    "src/modules/access/domain/admin-identity.ts",
+    "src/modules/access/domain/admin-password.ts",
+    "src/modules/access/domain/admin-recovery.ts",
+    "src/modules/access/domain/admin-session.ts",
     "src/modules/access/domain/operational-session.ts",
     "src/modules/access/domain/pin-credential.ts",
     "src/modules/access/domain/role-assignment.ts",
@@ -2590,13 +2699,19 @@
     "src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts",
     "src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts",
     "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
+    "src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts",
     "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
     "src/modules/access/infrastructure/security/node-argon2-pin-hasher.ts",
+    "src/modules/access/infrastructure/security/node-argon2-admin-password-hasher.ts",
+    "src/modules/access/infrastructure/security/node-admin-session-token.ts",
     "src/modules/access/infrastructure/security/node-session-token.ts",
     "src/modules/access/presentation/access-session-cookie.ts",
+    "src/modules/access/presentation/admin-session-cookie.ts",
     "src/modules/access/presentation/access-administration.controller.ts",
     "src/modules/access/presentation/branch-settings-administration.controller.ts",
     "src/modules/access/presentation/access-session.controller.ts",
+    "src/modules/access/presentation/admin-session.controller.ts",
+    "src/modules/access/presentation/admin-authorization.executor.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/access/presentation/tenant-wide-authorization.executor.ts",
     "src/modules/access/presentation/sensitive-action-level2.executor.ts",

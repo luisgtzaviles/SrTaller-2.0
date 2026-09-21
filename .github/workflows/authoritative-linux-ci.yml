@@ -285,6 +285,15 @@ jobs:
               --output "${postgresql_dir}/PBI039_POSTGRESQL_MANIFEST.json" \
               --head-sha "${{ needs.classify-change.outputs.candidate_sha }}"
 
+      - name: Run TL-02 PostgreSQL 18.4 contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-workflow-stage.mjs \
+            --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" \
+            --stage tl02-postgresql \
+            -- node scripts/test-tl02-postgresql.mjs
+
       - name: Cleanup PostgreSQL persistence suites
         if: always()
         env:
@@ -320,6 +329,7 @@ jobs:
           SR_DB_ACCESS_MODE: read-write
           SR_DB_MIGRATIONS_ENABLED: "false"
           SR_PIN_PEPPER: NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ
+          SR_ADMIN_PASSWORD_PEPPER: RUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUU
 
       - name: Run compiled UI route smoke
         run: >-
@@ -346,6 +356,7 @@ jobs:
           SR_DB_ACCESS_MODE: read-write
           SR_DB_MIGRATIONS_ENABLED: "false"
           SR_PIN_PEPPER: NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ
+          SR_ADMIN_PASSWORD_PEPPER: RUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUU
 
       - name: Check whitespace and repository immutability
         shell: bash

@@ -46,6 +46,7 @@ test('catalog distinguishes active non-secret configuration from server-only sec
       { name: 'SR_DB_PASSWORD', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_TEST_DB_PASSWORD', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_PIN_PEPPER', classification: 'secret', clientExposure: 'forbidden' },
+      { name: 'SR_ADMIN_PASSWORD_PEPPER', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_SESSION_SIGNING_KEY', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_STATION_BOOTSTRAP_SECRET', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_USER_BOOTSTRAP_SECRET', classification: 'secret', clientExposure: 'forbidden' },
@@ -141,7 +142,7 @@ test('application startup requires the active database secret before opening the
   const source = await (await import('node:fs/promises')).readFile('src/main.ts', 'utf8');
   assert.match(
     source,
-    /const environment = process\.env;[\s\S]*loadRequiredServerSecrets\(environment, \['SR_DB_PASSWORD', 'SR_PIN_PEPPER'\]\)/u,
+    /const environment = process\.env;[\s\S]*'SR_DB_PASSWORD',[\s\S]*'SR_PIN_PEPPER',[\s\S]*'SR_ADMIN_PASSWORD_PEPPER'/u,
   );
   assert.ok(source.indexOf('await application.init();') < source.indexOf('await database.verify();'));
   assert.ok(source.indexOf('await database.verify();') < source.indexOf('await application.listen('));
@@ -156,12 +157,14 @@ test('executable startup fails closed before listening when the database role co
   }
   const databaseSecret = 'synthetic-database-secret-for-startup-regression';
   const pinSecret = Buffer.alloc(32, 0x42).toString('base64url');
+  const adminPasswordSecret = Buffer.alloc(32, 0x43).toString('base64url');
   Object.assign(environment, {
     HOST: '127.0.0.1',
     NODE_ENV: 'test',
     PORT: '65534',
     SR_DB_PASSWORD: databaseSecret,
     SR_PIN_PEPPER: pinSecret,
+    SR_ADMIN_PASSWORD_PEPPER: adminPasswordSecret,
   });
 
   await assert.rejects(
@@ -189,12 +192,14 @@ test('executable startup rejects malformed active PIN configuration before liste
   }
   const databaseSecret = 'synthetic-database-secret-for-pin-startup-regression';
   const malformedPinSecret = 'synthetic-malformed-pin-pepper';
+  const adminPasswordSecret = Buffer.alloc(32, 0x43).toString('base64url');
   Object.assign(environment, {
     HOST: '127.0.0.1',
     NODE_ENV: 'test',
     PORT: '65534',
     SR_DB_PASSWORD: databaseSecret,
     SR_PIN_PEPPER: malformedPinSecret,
+    SR_ADMIN_PASSWORD_PEPPER: adminPasswordSecret,
   });
 
   await assert.rejects(

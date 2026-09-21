@@ -57,6 +57,7 @@ export interface ApplicationDatabaseConnection
 /** Creates an Access-owned adapter without exporting the configured pepper. */
 export interface AccessPinHasherFactory {
   create<Hasher>(adapter: new (pepper: string) => Hasher): Hasher;
+  createAdminPasswordHasher<Hasher>(adapter: new (pepper: string) => Hasher): Hasher;
 }
 
 /**

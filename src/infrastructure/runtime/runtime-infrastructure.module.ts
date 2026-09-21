@@ -30,6 +30,8 @@ import { RuntimeEnvironmentReader } from './runtime-environment.reader.js';
       ): AccessPinHasherFactory => Object.freeze({
         create: <Hasher>(adapter: new (pepper: string) => Hasher): Hasher =>
           environment.createAccessPinHasher(adapter),
+        createAdminPasswordHasher: <Hasher>(adapter: new (pepper: string) => Hasher): Hasher =>
+          environment.createAccessAdminPasswordHasher(adapter),
       }),
     },
     {

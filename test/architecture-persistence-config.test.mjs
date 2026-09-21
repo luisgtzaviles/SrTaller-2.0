@@ -79,7 +79,7 @@ test('only executable entrypoints read process.env and configuration is not read
   );
   assert.match(
     await readFile('src/main.ts', 'utf8'),
-    /loadRequiredServerSecrets\(environment, \['SR_DB_PASSWORD', 'SR_PIN_PEPPER'\]\)/u,
+    /loadRequiredServerSecrets\(environment, \[[\s\S]*'SR_DB_PASSWORD',[\s\S]*'SR_PIN_PEPPER',[\s\S]*'SR_ADMIN_PASSWORD_PEPPER'/u,
   );
   assert.match(
     await readFile('src/db-migrate.ts', 'utf8'),

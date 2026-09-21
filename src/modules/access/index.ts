@@ -112,6 +112,38 @@ export const SENSITIVE_ACTION_LEVEL2_EXECUTOR: unique symbol = Symbol(
   'srtaller.access.sensitive-action-level2-executor',
 );
 
+export interface AdminAuthorizationRequirement {
+  readonly capability: CapabilityCode;
+  readonly kind: ProtectedOperationKind;
+  readonly requiresRecentReauthentication?: boolean;
+}
+
+export interface AdminAuthorizationCommitGuard {
+  confirmCurrent(transactionContext: object): Promise<boolean>;
+}
+
+export interface AuthorizedAdminContext {
+  readonly tenantId: TenantId;
+  readonly sessionId: string;
+  readonly userId: string;
+  readonly userDisplayName: string;
+  readonly capability: CapabilityCode;
+  readonly reauthenticatedAt: string | null;
+  readonly commitGuard: AdminAuthorizationCommitGuard;
+}
+
+export interface AdminAuthorizationExecutor {
+  execute<Result>(
+    evidence: ProtectedRequestEvidence,
+    requirement: AdminAuthorizationRequirement,
+    operation: (context: AuthorizedAdminContext) => Promise<Result>,
+  ): Promise<Result>;
+}
+
+export const ADMIN_AUTHORIZATION_EXECUTOR: unique symbol = Symbol(
+  'srtaller.access.admin-authorization-executor',
+);
+
 /** Compile-time marker for the public access module boundary. */
 export interface AccessModuleContract {
   readonly module: 'access';

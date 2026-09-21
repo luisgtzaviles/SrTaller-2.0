@@ -117,6 +117,12 @@ test('initial schema registry has exact owners, keys and physical scope', async 
       kind: 'table',
     },
     access_operational_sessions: { owner: 'access', kind: 'table' },
+    access_admin_auth_attempt_limits: { owner: 'access', kind: 'table' },
+    access_admin_identities: { owner: 'access', kind: 'table' },
+    access_admin_password_credentials: { owner: 'access', kind: 'table' },
+    access_admin_recovery_challenges: { owner: 'access', kind: 'table' },
+    access_admin_security_events: { owner: 'access', kind: 'table' },
+    access_admin_sessions: { owner: 'access', kind: 'table' },
   });
   assert.deepEqual(policy.persistence.initialSchema, {
     migration: migrationPath,
@@ -229,6 +235,7 @@ test('productive migration root remains exact and governed', async () => {
       '20260917190000_catalog_create_field_policies.ts',
       '20260917190100_access_add_catalog_configuration_capabilities.ts',
       '20260917190200_access_add_granular_catalog_capabilities.ts',
+      '20260920180000_access_create_admin_identity_sessions.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

@@ -1,151 +1,191 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: QUALITY — Correct PBI-041 Transaction Budget Enforcement
-iteration: 2 - Harness Contract Remediation
-type: QUALITY
-risk: HIGH
+work_unit: TL-02 — Administrative Identity + Session Foundation
+iteration: 5 - Final Main Reconciliation
+type: PRODUCT
+risk: SENSITIVE
 shadow_risk: SENSITIVE
-branch: chore/pbi-041-transaction-budget-review
-base_sha: 4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5
-status: READY_FOR_PROMOTION
+branch: feature/tl-02-admin-identity-session
+base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
 
 ## Identity
 
-- **Milestone:** Tenant Lifecycle MVP promotion dependency.
-- **Work Unit:** QUALITY — Correct PBI-041 Transaction Budget Enforcement.
-- **Sprint:** none.
-- **Current PBI:** `NONE`; this is an authorized Quality remediation.
+- **Milestone:** Tenant Lifecycle MVP.
+- **Work Unit:** TL-02 — Administrative Identity + Session Foundation.
+- **Sprint:** none; no product Sprint was started.
+- **Current PBI:** `NONE`; Tenant Lifecycle is proceeding through governed
+  Work Units.
 Current PBI: NONE
-- **Status:** `READY_FOR_PROMOTION`.
-- **Progress:** `6 / 6` remediation blocks complete.
-- **Current work:** remediation and required local verification are complete.
-- **Next block:** remote promotion only after separate Owner authorization.
-- **Blockers:** none. TL-02 remains paused and preserved.
+- **Status:** `ACTIVE`; the preserved TL-02 branch is reconciled with current
+  `main` and all focused gates are green.
+- **Progress:** `13 / 14` Work Unit blocks complete.
+- **Current work:** run the single authoritative `verify:full` on the exact
+  reconciled candidate.
+- **Next block:** derive `READY_FOR_PROMOTION` only if that exact-candidate
+  FULL gate is green, then stop before every remote action.
+- **Blockers:** none. Both external PBI-041 Quality dependencies are closed.
 - **Last updated:** 2026-09-21, America/Hermosillo.
 
 ## Objective
 
-Correct the PBI-041 harness so a single transaction observation above the
-historical 15-second p95 target emits an explicit diagnostic without failing
-promotion, while publish above 30 seconds remains a hard failure.
+Implement the minimum secure administrative identity and stateful Admin
+Session foundation required by ADR-015, preserving strict separation from
+Station/PIN/Operational Sessions.
 
 ## Why
 
-The accepted historical contract defines transaction duration as a p95
-capacity target. The current recurring test incorrectly treats it as an
-every-run maximum. Owner accepted the transaction-budget review recommendation
-and authorized the minimum harness-contract correction.
+Tenant Lifecycle needs a secure control-plane identity before public
+registration/bootstrap can be implemented, without weakening the operational
+Station + PIN boundary. Reconciliation must also retain the integrated Quality
+gate that makes the shared FULL campaign deterministic on this host.
 
 ## In Scope
 
-- Preserve mandatory 10,000-row publish and transaction measurement.
-- Keep publish duration above 30 seconds as a blocking failure.
-- Emit `TRANSACTION_CAPACITY_TARGET_EXCEEDED` for a single transaction
-  observation above 15 seconds without failing promotion on that fact alone.
-- Preserve 15 seconds as the documented historical p95 target.
-- Add focused regression coverage for the corrected enforcement.
-- Define the future controlled calibration campaign of at least ten runs.
-- Run focused checks and one authoritative `verify:full` on the final candidate.
+- Verified administrative email identity bound to one Tenant User/Tenant.
+- Non-reversible password credential and secure verification.
+- Stateful concurrent Admin Sessions: idle 30m, absolute 12h, no remember-me.
+- Login/logout, individual/global revocation and recent password reauth 10m.
+- Internal recovery foundation, abuse controls and secret-free audit.
+- Two-tenant negative tests and strict separation from operational auth.
+- Reconciliation with the integrated PBI-041 governed performance harness.
 
 ## Out of Scope
 
-- Product behavior, SQL, indexes or deterministic fixture changes.
-- Any replacement threshold, retries, averaging or retry-to-green behavior.
-- TL-02 changes or resumption, TL-03, push, PR, merge or deploy.
+- Public registration/email delivery, Tenant bootstrap and starter authority.
+- Branch/Station management or enrollment, admin product shell and TL-03.
+- PIN/Operational Session redesign, Super Admin, billing, MFA/SSO/passkeys.
+- Push, PR, remote merge, deploy, infrastructure or GitHub configuration.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](../delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
-- [`PRICE_LIST_ARCHITECTURE.md`](../architecture/PRICE_LIST_ARCHITECTURE.md)
-- [`PBI-041`](../backlog/pbis/PBI-041.md)
-- [`PBI-041 Test Strategy`](../quality/evidence/pbi-041/TEST_STRATEGY.md)
-- [`Transaction Budget Review`](../quality/evidence/pbi-041/TRANSACTION_BUDGET_REVIEW.md)
+- [`TL-02 Readiness`](../architecture-readiness/tenant-lifecycle/TL-02_ADMIN_IDENTITY_SESSION_READINESS.md)
+- [`TENANT_LIFECYCLE_MVP.md`](../architecture/TENANT_LIFECYCLE_MVP.md)
+- [`ADR-015`](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
+- [`IDENTITY_ACCESS_AND_PERMISSIONS.md`](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md)
+- [`SECURITY_BASELINE.md`](../architecture/SECURITY_BASELINE.md)
+- [`MULTITENANT_ISOLATION_TESTING.md`](../quality/MULTITENANT_ISOLATION_TESTING.md)
 
 ## Risks
 
-- Accidentally weakening the 30-second publish hard gate.
-- Hiding transaction duration instead of preserving it as mandatory evidence.
-- Encoding retries or averaging into ordinary promotion.
-- Changing product execution while correcting only harness semantics.
-- Touching the preserved TL-02 candidate before this dependency is integrated.
+- Credential/session confusion could bypass Station/PIN boundaries.
+- Global email lookup could disclose or cross Tenant scope.
+- KDF/rate-limit choices can create enumeration, stuffing or availability risk.
+- Revocation/recovery races could leave stale authority.
+- Secret-bearing values could leak through HTTP, logs, fixtures or audit.
+- Harness reconciliation could accidentally weaken either Stage 8 readiness or
+  the governed PBI-041 performance measurement.
 
 ## Plan
 
-- [x] Revalidate branch, baseline, Owner decision and TL-02 preservation.
-- [x] Implement corrected enforcement and sanitized diagnostic output.
-- [x] Add regression tests for publish blocking and transaction p95 semantics.
-- [x] Reconcile architecture, PBI, test strategy and Quality evidence.
-- [x] Run focused validation and inspect scope.
-- [x] Run authoritative `verify:full`, commit and mark promotion readiness.
+- [x] Revalidate TL-01 closure, main baseline and initialize TL-02 branch.
+- [x] Audit identity, User/Tenant, PIN, Sessions, authorization, HTTP and DB.
+- [x] Define reuse/new boundaries, owner modules and proposed data model.
+- [x] Complete threat model selections and migration/test plan.
+- [x] Obtain Owner authorization to cross the planning checkpoint.
+- [x] Implement administrative identity/session/recovery domain contracts.
+- [x] Implement password cryptography/configuration and focused tests.
+- [x] Implement migration/repositories and material PostgreSQL tests.
+- [x] Implement use cases, HTTP boundary and authorization executor.
+- [x] Complete local proof, hardening and documentation.
+- [x] Preserve TL-02 while the separate Quality dependency was remediated.
+- [x] Reconcile current `main` and validate the combined TL-02 mechanics.
+- [ ] Establish exact-candidate FULL PASS and promotion readiness.
+- [ ] Remote promotion requires separate Owner authorization.
 
 ## Current
 
-The corrected harness is locally verified. It preserves the 30-second blocking
-publish gate and always reports the 15-second historical p95 target plus the
-current transaction observation. A single target miss produces the required
-explicit diagnostic without changing the product execution path.
+The completed TL-02 product candidate is resumed after both external Quality
+dependencies closed on `main`. The authorized ordinary merge brought in native
+PostgreSQL architecture selection and the corrected PBI-041 transaction
+capacity diagnostic while preserving the TL-02 Stage 8 loopback-readiness
+remediation. The combined harness audit and all focused gates are green.
 
 ## Next
 
-Await explicit Owner authority to push this exact candidate and open one remote
-review. Do not resume TL-02 before integration and exact-main verification.
+Run exactly one authoritative `verify:full` on the exact reconciled candidate.
+If green, derive `READY_FOR_PROMOTION` without creating a commit merely to copy
+verification output, and stop before push, PR, merge, deploy or TL-03.
 
 ## Blockers
 
-None for the authorized remediation. Remote promotion remains unauthorized.
+None. The former native-image and transaction-budget blockers are resolved by
+the two integrated PBI-041 Quality Work Units. Any new material failure must be
+classified from the exact reconciled candidate without blind retry.
 
 ## Important Discoveries
 
-- TL-02 remains preserved at `6ea9d15874acce1c006c204ee70933f15cb5dec1`;
-  its product candidate was not modified by this Quality branch.
-- The preceding investigation classified the existing gate as
-  `JUSTIFIED_BUT_THRESHOLD_UNSUPPORTED` for single-run enforcement.
-- The Owner explicitly preserved 15 seconds as a p95 target and 30 seconds as
-  the recurring blocking publish limit.
-- Focused PostgreSQL executed the unchanged deterministic 10k path once:
-  publish 1,494.0 ms and transaction 1,493.5 ms; all 10 material tests passed.
-- Full verification exercised the target-miss path without a retry: publish
-  21,424.3 ms remained below 30 seconds, transaction 21,423.9 ms emitted
-  `TRANSACTION_CAPACITY_TARGET_EXCEEDED`, and Stage 7 remained PASS.
-- The delta contains only Quality harness logic, contract tests and canonical
-  documentation; no `src/`, application UI, migration, SQL or fixture changed.
+- Existing User lifecycle and role composition are reusable; email/password
+  identity is absent from the legacy model and belongs to Access.
+- Existing PIN/Operational Session code provides patterns, not shared
+  credentials, cookies, guards or audience.
+- No capability registry change is necessary for self-session foundation.
+- Current schema has 76 migrations after the additive TL-02 foundation; no
+  backfill was required.
+- Recovery transport/provider remains TL-04 and does not block the internal
+  recovery contract.
+- The first Quality Work Unit integrated native host-architecture PostgreSQL
+  selection without changing product behavior or performance thresholds.
+- The second Quality Work Unit preserved publish above 30 seconds as a hard
+  failure, retained mandatory transaction timing and correctly treats one
+  observation above 15 seconds as
+  `TRANSACTION_CAPACITY_TARGET_EXCEEDED`, pending future calibrated p95 work.
 
 ## Focused Verification
 
-- [x] Branch, baseline, tracked tree and unrelated `.DS_Store` checked.
-- [x] PBI-041 performance contract tests: 6/6 PASS.
-- [x] PBI-041 material PostgreSQL suite: 10/10 PASS.
-- [x] Relevant bulk contract and architecture/harness tests: PASS.
-- [x] Work Unit checker and `git diff --check`: PASS.
-- [x] Authoritative `verify:full`: stages 0–13 and cleanup PASS.
+- [x] Preserved TL-02 checkpoint
+  `6ea9d15874acce1c006c204ee70933f15cb5dec1` confirmed before reconciliation.
+- [x] Quality dependency merges `4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5`
+  and `aaccbf61f54b3b7cb3560ae422bc0906019a40ea` confirmed integrated with
+  exact-main CI GREEN.
+- [x] Tracked worktree clean before the merge; unrelated `.DS_Store` preserved.
+- [x] Ordinary merge and checklist conflict reconciliation.
+- [x] Combined verification-harness audit; no competing readiness abstraction,
+  image/platform conflict, stale single-run 15-second assertion or weakened
+  gate found.
+- [x] TL-02 focused identity/session/security/isolation package: 72/72 PASS.
+- [x] TL-02 material PostgreSQL: 2/2 PASS, 76 migrations and second run 0
+  pending.
+- [x] Stage 8 deterministic endpoint-readiness and orchestration regressions:
+  combined harness package 38/38 PASS.
+- [x] PBI-041 corrected performance contract and material PostgreSQL suite:
+  10/10 PASS; publish 1325.0 ms, transaction 1324.6 ms, no capacity-target
+  diagnostic emitted.
+- [x] Typecheck, build, architecture, Work Unit and diff checks.
+- [ ] Exact reconciled `verify:full`; one canonical run only.
 
 ## Promotion Gates
 
-- Publish above 30 seconds must continue to fail.
-- Transaction timing must remain present and sanitized.
-- A single transaction observation above 15 seconds must emit the required
-  capacity diagnostic and must not independently fail promotion.
-- The final exact candidate must pass authoritative `verify:full`.
+- Planning checkpoint reviewed and implementation authorized by Owner.
+- TL-02 material PostgreSQL, security, isolation and abuse tests must pass
+  after the final current-main reconciliation.
+- PBI-041 publish above 30 seconds remains blocking; transaction timing remains
+  mandatory and a single observation above 15 seconds is diagnostic rather
+  than an independently blocking p95 verdict.
+- Full promotion pipeline/review remains required by the final classified diff.
+- No remote action, merge to `main` or deploy is implied by local readiness.
 
 ## Remote Actions / Authorization
 
-- No push, PR, merge, deploy or remote/infrastructure mutation is authorized.
+- The ordinary local merge of current `origin/main` is authorized.
+- No push, PR, merge to `main`, deploy or remote/infrastructure change is
+  authorized.
 
 ## Handoff Notes
 
-- Preserve `apps/dev-preview-web/src/.DS_Store` as an unrelated Owner artifact.
-- Do not modify or rebase `feature/tl-02-admin-identity-session`.
-- Do not run a calibration campaign or retry ordinary verification into green.
+- Preserve `apps/dev-preview-web/src/.DS_Store` as unrelated Owner artifact.
+- Preserve both parents of the reconciliation merge; do not rebase or rewrite.
+- TL-03 remains unstarted.
 
 ## Closure Predicate
 
-The Work Unit reaches `READY_FOR_PROMOTION` when the corrected harness and
-canonical documentation are committed, focused tests pass, the exact candidate
-passes one authoritative `verify:full`, tracked state is clean and TL-02
-remains unchanged. Integration and TL-02 resumption require separate authority.
+TL-02 closes only after its implementation/evidence is promoted through one
+authorized PR, merged by the approved method, exact-main CI is GREEN and any
+environment proof required by the final scope passes. Closure does not start
+TL-03 automatically.

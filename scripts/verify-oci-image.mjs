@@ -163,7 +163,10 @@ function databaseEnvironment(role) {
     SR_DB_ROLE: role,
     SR_DB_ACCESS_MODE: 'read-write',
     SR_DB_MIGRATIONS_ENABLED: role === 'migration' ? 'true' : 'false',
-    ...(role === 'application' ? { SR_PIN_PEPPER: pinPepper } : {}),
+    ...(role === 'application' ? {
+      SR_PIN_PEPPER: pinPepper,
+      SR_ADMIN_PASSWORD_PEPPER: Buffer.alloc(32, 0x4a).toString('base64url'),
+    } : {}),
   };
 }
 

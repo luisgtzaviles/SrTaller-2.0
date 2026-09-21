@@ -34,7 +34,8 @@ import type {
   UserProductRuntime,
 } from '../users/index.js';
 
-import { CONTEXTUAL_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
+import { ADMIN_AUTHORIZATION_EXECUTOR, CONTEXTUAL_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
+import type { AdminAuthorizationExecutor } from './index.js';
 import type { ContextualAuthorizationExecutor } from './index.js';
 import type { TenantWideAuthorizationExecutor } from './index.js';
 import type { SensitiveActionLevel2Executor } from './index.js';
@@ -53,6 +54,7 @@ import { AssignRoleUseCase } from './application/use-cases/assign-role.use-case.
 import { RevokeRoleAssignmentUseCase } from './application/use-cases/revoke-role-assignment.use-case.js';
 import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';
 import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';
+import { KyselyAdminAuthRepository } from './infrastructure/persistence/kysely-admin-auth.repository.js';
 import { ProvisionPinCredentialUseCase } from './application/use-cases/provision-pin-credential.use-case.js';
 import { ReplacePinCredentialUseCase } from './application/use-cases/replace-pin-credential.use-case.js';
 import { AuthenticatePinUseCase } from './application/use-cases/authenticate-pin.use-case.js';
@@ -71,6 +73,16 @@ import { KyselyOperationalSessionRepository } from './infrastructure/persistence
 import { KyselyAdministrationAuthorizationCommitGuard } from './infrastructure/persistence/kysely-administration-authorization-commit.guard.js';
 import { NodeArgon2PinHasher } from './infrastructure/security/node-argon2-pin-hasher.js';
 import { NodeSessionToken } from './infrastructure/security/node-session-token.js';
+import { NodeArgon2AdminPasswordHasher } from './infrastructure/security/node-argon2-admin-password-hasher.js';
+import { NodeAdminSessionToken } from './infrastructure/security/node-admin-session-token.js';
+import {
+  AdminRecoveryFoundationUseCase,
+  AdminSessionManagementUseCase,
+  LoginAdminUseCase,
+  ProvisionAdminIdentityUseCase,
+  ResolveAdminSessionUseCase,
+} from './application/use-cases/admin-session.use-cases.js';
+import { composeEffectiveCapabilities } from './domain/capability.js';
 import {
   ACCESS_SESSION_RUNTIME,
   AccessSessionController,
@@ -79,18 +91,21 @@ import type { AccessSessionRuntime } from './presentation/access-session.control
 import {
   AccessAdministrationController,
 } from './presentation/access-administration.controller.js';
+import { AdminSessionController } from './presentation/admin-session.controller.js';
 import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
 import { TenantWideAuthorizationExecutorService } from './presentation/tenant-wide-authorization.executor.js';
 import { SensitiveActionLevel2ExecutorService } from './presentation/sensitive-action-level2.executor.js';
 import { AuthenticatedSelfExecutorService } from './presentation/authenticated-self.executor.js';
+import { AdminAuthorizationExecutorService } from './presentation/admin-authorization.executor.js';
 import { AccessAdministrationOperations } from './application/access-administration-operations.js';
 import { AccessSelfPreferencesOperations } from './application/access-self-preferences.operations.js';
 import { UserPreferencesController } from './presentation/user-preferences.controller.js';
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
-  | KyselyPinCredentialRepositoryFactory;
+  | KyselyPinCredentialRepositoryFactory
+  | KyselyAdminAuthRepository;
 type RegisteredAccessSecurityAdapter = NodeArgon2PinHasher;
 type RegisteredAccessUseCases =
   | AuthenticatePinUseCase
@@ -107,6 +122,7 @@ type RegisteredAccessUseCases =
   imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],
   controllers: [
     AccessSessionController,
+    AdminSessionController,
     AccessAdministrationController,
     BranchSettingsAdministrationController,
     UserPreferencesController,
@@ -134,10 +150,15 @@ type RegisteredAccessUseCases =
       ): AccessSessionRuntime => {
         const accessRepository = createKyselyAccessRepository(database);
         const pinRepository = createKyselyPinCredentialRepository(database);
+        const adminRepository = new KyselyAdminAuthRepository(database);
         // Active credential configuration is a readiness predicate. Construct
         // the hasher while the module is composed so a malformed pepper cannot
         // leave the process listening with every login guaranteed to fail.
         const pinHasher = pinHashers.create(NodeArgon2PinHasher);
+        const adminPasswordHasher = pinHashers.createAdminPasswordHasher(
+          NodeArgon2AdminPasswordHasher,
+        );
+        const adminTokens = new NodeAdminSessionToken();
         const sessionRepository = new KyselyOperationalSessionRepository(
           database,
           stationAdmission,
@@ -203,6 +224,22 @@ type RegisteredAccessUseCases =
           replacePin: new ReplacePinCredentialUseCase(pinRepository, pinHasher),
           listConfiguredPinUserIds: (scope: unknown) => pinRepository.listConfiguredUserIds(scope as never),
           tokens,
+          admin: Object.freeze({
+            provision: new ProvisionAdminIdentityUseCase(adminRepository, users, adminPasswordHasher),
+            login: new LoginAdminUseCase(adminRepository, users, adminPasswordHasher, adminTokens),
+            resolve: new ResolveAdminSessionUseCase(adminRepository, users, adminTokens),
+            sessions: new AdminSessionManagementUseCase(adminRepository, adminPasswordHasher),
+            recovery: new AdminRecoveryFoundationUseCase(adminRepository, users, adminPasswordHasher, adminTokens),
+            tokens: adminTokens,
+            capabilities: async (tenantId: string, userId: string) => {
+              const matrix = await new ListAccessMatrixUseCase(accessRepository).execute({ tenantId });
+              const activeRoles = new Map(matrix.roles.filter((role) => role.status === 'active').map((role) => [role.roleId, role.capabilityCodes]));
+              const capabilities = matrix.assignments
+                .filter((assignment) => assignment.userId === userId && assignment.status === 'active' && assignment.assignmentScope === 'TENANT_WIDE' && assignment.branchId === null)
+                .flatMap((assignment) => activeRoles.get(assignment.roleId) ?? []);
+              return composeEffectiveCapabilities(capabilities);
+            },
+          }),
         });
       },
     },
@@ -213,6 +250,15 @@ type RegisteredAccessUseCases =
         runtime: AccessSessionRuntime,
       ): ContextualAuthorizationExecutor =>
         new ContextualAuthorizationExecutorService(runtime),
+    },
+    {
+      provide: ADMIN_AUTHORIZATION_EXECUTOR,
+      inject: [ACCESS_SESSION_RUNTIME],
+      useFactory: (runtime: AccessSessionRuntime): AdminAuthorizationExecutor =>
+        new AdminAuthorizationExecutorService(
+          runtime,
+          new KyselyAdministrationAuthorizationCommitGuard(),
+        ),
     },
     {
       provide: TENANT_WIDE_AUTHORIZATION_EXECUTOR,

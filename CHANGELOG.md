@@ -4,6 +4,16 @@ Todos los cambios relevantes del proyecto se registrarán aquí. El formato y la
 
 ## [Unreleased]
 
+### TL-02 — Administrative Identity + Session Foundation
+
+- Materializada localmente la identidad administrativa verified-email-ready,
+  password Argon2id con secreto separado del PIN, Admin Sessions stateful
+  concurrentes, revocación individual/global, reauth de 10 minutos, recovery
+  interno, rate limiting, auditoría sin secretos y autorización tenant-wide
+  server-side. La migración aditiva lleva el manifest a 76 migraciones. El
+  candidato permanece local y `READY_FOR_PROMOTION`; no inicia TL-03 ni afirma
+  PR, merge, deploy o cierre.
+
 ### PBI-041 — Bulk Catalog Composer
 
 - PBI-041 completó Formal Re-Verification, integración del producto por PR #55,

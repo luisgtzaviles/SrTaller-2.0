@@ -791,7 +791,9 @@ test('DELETE is no-store, rejects cross-origin and missing CSRF, preserves newer
 
 test('real AppModule/Nest routing fails closed without a trusted Station and never enables local bootstrap by default', async () => {
   const previousPinPepper = process.env.SR_PIN_PEPPER;
+  const previousAdminPasswordPepper = process.env.SR_ADMIN_PASSWORD_PEPPER;
   process.env.SR_PIN_PEPPER = Buffer.alloc(32, 0x34).toString('base64url');
+  process.env.SR_ADMIN_PASSWORD_PEPPER = Buffer.alloc(32, 0x35).toString('base64url');
   let application;
   try {
     application = await NestFactory.create(AppModule, { logger: false });
@@ -820,5 +822,7 @@ test('real AppModule/Nest routing fails closed without a trusted Station and nev
     await application?.close();
     if (previousPinPepper === undefined) delete process.env.SR_PIN_PEPPER;
     else process.env.SR_PIN_PEPPER = previousPinPepper;
+    if (previousAdminPasswordPepper === undefined) delete process.env.SR_ADMIN_PASSWORD_PEPPER;
+    else process.env.SR_ADMIN_PASSWORD_PEPPER = previousAdminPasswordPepper;
   }
 });

@@ -136,20 +136,28 @@ test(
 
     try {
       const current = await runner.getMigrationStatus();
-      const target = current.migrations.find(({ name }) => name === migrationName);
+      const targetIndex = current.migrations.findIndex(({ name }) => name === migrationName);
+      const target = current.migrations[targetIndex];
       assert.ok(target);
       assert.equal(target.state, 'applied');
 
-      const reverted = await runner.migrateDown({
-        migrationName: target.name,
-        expectedHash: target.hash,
-        reason: 'prove capability-based catalog authorization backfill',
-        environment: 'development',
-        confirmation: 'REVERT_ONE_MIGRATION',
-      });
+      const rollbackSequence = current.migrations
+        .slice(targetIndex)
+        .filter(({ state }) => state === 'applied')
+        .reverse();
+      const reverted = [];
+      for (const migration of rollbackSequence) {
+        reverted.push(await runner.migrateDown({
+          migrationName: migration.name,
+          expectedHash: migration.hash,
+          reason: 'prove capability-based catalog authorization backfill',
+          environment: 'development',
+          confirmation: 'REVERT_ONE_MIGRATION',
+        }));
+      }
       assert.deepEqual(
-        reverted.results.map(({ name, direction, status }) => ({ name, direction, status })),
-        [{ name: migrationName, direction: 'Down', status: 'Success' }],
+        reverted.flatMap(({ results }) => results).map(({ name, direction, status }) => ({ name, direction, status })),
+        rollbackSequence.map(({ name }) => ({ name, direction: 'Down', status: 'Success' })),
       );
 
       await admin.query(
@@ -181,7 +189,7 @@ test(
       const reapplied = await runner.migrateToLatest();
       assert.deepEqual(
         reapplied.results.map(({ name, direction, status }) => ({ name, direction, status })),
-        [{ name: migrationName, direction: 'Up', status: 'Success' }],
+        [...rollbackSequence].reverse().map(({ name }) => ({ name, direction: 'Up', status: 'Success' })),
       );
       assert.deepEqual(await roleCapabilities(admin, roleIds.legacyCatalog), [
         'catalog.items.create',

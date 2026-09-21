@@ -8,7 +8,9 @@ import { HealthReadiness } from '../dist/health/health-readiness.service.js';
 
 test('health endpoints expose bounded liveness and bootstrap readiness', async () => {
   const previousPinPepper = process.env.SR_PIN_PEPPER;
+  const previousAdminPasswordPepper = process.env.SR_ADMIN_PASSWORD_PEPPER;
   process.env.SR_PIN_PEPPER = Buffer.alloc(32, 0x34).toString('base64url');
+  process.env.SR_ADMIN_PASSWORD_PEPPER = Buffer.alloc(32, 0x35).toString('base64url');
   let application;
   try {
     application = await NestFactory.create(AppModule, { logger: false });
@@ -47,5 +49,7 @@ test('health endpoints expose bounded liveness and bootstrap readiness', async (
     await application?.close();
     if (previousPinPepper === undefined) delete process.env.SR_PIN_PEPPER;
     else process.env.SR_PIN_PEPPER = previousPinPepper;
+    if (previousAdminPasswordPepper === undefined) delete process.env.SR_ADMIN_PASSWORD_PEPPER;
+    else process.env.SR_ADMIN_PASSWORD_PEPPER = previousAdminPasswordPepper;
   }
 });

@@ -66,6 +66,10 @@ test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', (
   assert.match(workflow, /--pbi039-postgresql-input/u);
   assert.match(
     workflow,
+    /name: Run TL-02 PostgreSQL 18\.4 contracts[\s\S]*--stage tl02-postgresql[\s\S]*node scripts\/test-tl02-postgresql\.mjs/u,
+  );
+  assert.match(
+    workflow,
     /cp[\s\S]*PBI039_POSTGRESQL_MANIFEST\.json[\s\S]*evidence_dir/u,
   );
   assert.match(workflow, /- r0\/\*\*/u);

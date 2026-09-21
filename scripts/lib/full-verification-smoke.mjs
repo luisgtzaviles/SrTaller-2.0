@@ -18,6 +18,7 @@ const inheritedEnvironmentDenylist = new Set([
   'SR_DB_URL',
   'SR_LOCAL_RUNTIME',
   'SR_PIN_PEPPER',
+  'SR_ADMIN_PASSWORD_PEPPER',
   'SR_SESSION_SIGNING_KEY',
   'SR_STATION_BOOTSTRAP_SECRET',
   'SR_TEST_DATABASE_URL',
@@ -172,6 +173,7 @@ export function createFullVerificationSmokeHarness({
           PORT: '1',
           ...databaseEnvironment({ database, password, port, role: 'migration', user }),
           SR_PIN_PEPPER: Buffer.alloc(32, 0x46).toString('base64url'),
+          SR_ADMIN_PASSWORD_PEPPER: Buffer.alloc(32, 0x47).toString('base64url'),
         },
         timeoutMs: 90_000,
       },
@@ -201,6 +203,7 @@ export function createFullVerificationSmokeHarness({
       NODE_ENV: 'production',
       ...databaseEnvironment({ database, password, port, role: 'application', user }),
       SR_PIN_PEPPER: Buffer.alloc(32, 0x46).toString('base64url'),
+      SR_ADMIN_PASSWORD_PEPPER: Buffer.alloc(32, 0x47).toString('base64url'),
     };
   }
 

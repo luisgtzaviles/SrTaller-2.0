@@ -152,6 +152,7 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260917190000_catalog_create_field_policies.ts',
       '20260917190100_access_add_catalog_configuration_capabilities.ts',
       '20260917190200_access_add_granular_catalog_capabilities.ts',
+      '20260920180000_access_create_admin_identity_sessions.ts',
     ],
   );
 

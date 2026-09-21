@@ -48,7 +48,11 @@ async function bootstrap(): Promise<void> {
   // The persistence runtime remains the owner of connection parsing. This
   // foundation establishes that its active credential is external and required
   // before startup can proceed, without exposing it to diagnostics or clients.
-  void loadRequiredServerSecrets(environment, ['SR_DB_PASSWORD', 'SR_PIN_PEPPER']);
+  void loadRequiredServerSecrets(environment, [
+    'SR_DB_PASSWORD',
+    'SR_PIN_PEPPER',
+    'SR_ADMIN_PASSWORD_PEPPER',
+  ]);
   const config = loadStartupConfig(environment);
   let application: NestExpressApplication | null = null;
 

@@ -56,6 +56,7 @@ function validLocalValues() {
     SR_STATION_BOOTSTRAP_SECRET: 'synthetic-local-station-bootstrap-secret',
     SR_USER_BOOTSTRAP_SECRET: 'synthetic-local-user-bootstrap-secret',
     SR_PIN_PEPPER: Buffer.alloc(32, 0x25).toString('base64url'),
+    SR_ADMIN_PASSWORD_PEPPER: Buffer.alloc(32, 0x26).toString('base64url'),
     SR_LOCAL_PIN_JORGE: '0601',
     SR_LOCAL_PIN_MARIA: '0602',
     SR_LOCAL_PIN_CARLOS: '0603',

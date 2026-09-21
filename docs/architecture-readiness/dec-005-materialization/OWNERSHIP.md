@@ -19,6 +19,13 @@ individuales.
 | `repairs` | Worklist, detalle, alta mínima, política versionada Branch de Nueva Reparación y catálogos Platform/Tenant de Riesgos, Marcas y Modelos; módulo Nest propietario | Arquitectura | Autoridad de dominio de Reparaciones, incluidos riesgos de intervención y referencias canónicas Brand/Model con snapshots históricos; persona pendiente de asignación | Ingeniería; persona pendiente | `RepairsModuleContract`; controller HTTP exacto registrado en `presentation` y compuesto por `RepairsModule`; registro de campos, policy y operaciones de catálogos permanecen internos al módulo | `AppModule` para composición; frontend local vía HTTP | `access` por autorización contextual y capabilities dedicadas, `customers` por selección/alta explícita, `stations` por la zona IANA de Branch ya autorizada y `tenancy` por superficie pública | `GenericCatalogModule` como owner transversal, internals de productores, DB/adapters desde presentation, pagos y todo módulo no aprobado |
 | `users` | Directorio tenant-scoped, lifecycle de identidad y preferencias personales; sin roles, PIN ni sesión | Arquitectura | Identity Foundation; persona pendiente de asignación | Ingeniería; persona pendiente | `UsersModuleContract`, `AuthenticationUserReader`, `AUTHENTICATION_USER_READER`, `AuthenticationUserRecord`, `AuthenticationUserScope`, `AuthenticationUserAdmissionSnapshot`, `AuthenticationUserAdmissionValidator`, `AUTHENTICATION_USER_ADMISSION_VALIDATOR`, `UserProductRuntime`, `USER_PRODUCT_RUNTIME`, `NewRepairFormMode`, `UserPreferencesRuntime`, `USER_PREFERENCES_RUNTIME` — lectura, lifecycle y preferencias owner-scoped dentro de composición | `access` para elegibilidad, administración product-local y preferencia self-service autenticada; `AppModule` para composición | `tenancy` por superficie pública permitida | Roles, PIN, sesión, autorización e internals de tenancy |
 
+TL-02 amplía la superficie pública de `access` con
+`AdminAuthorizationCommitGuard`, `AdminAuthorizationExecutor`,
+`AdminAuthorizationRequirement`, `AuthorizedAdminContext` y
+`ADMIN_AUTHORIZATION_EXECUTOR`. Esos contratos mantienen la autorización
+administrativa tenant-wide separada del contexto operacional; no exponen
+repositorios, credenciales ni selección de Tenant desde cliente.
+
 ## Superficies Nest separadas
 
 `TenancyModule`, `StationsModule`, `UsersModule`, `AccessModule`,
