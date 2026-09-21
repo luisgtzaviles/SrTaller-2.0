@@ -95,6 +95,8 @@ autoriza un cambio de producto.
 - [Preparación arquitectónica del MVP de Reparaciones](architecture-readiness/repair-mvp/README.md)
 - [TL-02 — Administrative Identity + Session Foundation Readiness](architecture-readiness/tenant-lifecycle/TL-02_ADMIN_IDENTITY_SESSION_READINESS.md)
 - [TL-02 — Administrative Identity + Session Foundation Evidence](quality/evidence/tl-02/README.md)
+- [TL-03 — Atomic Tenant Bootstrap + Starter Authority Readiness](architecture-readiness/tenant-lifecycle/TL-03_ATOMIC_TENANT_BOOTSTRAP_READINESS.md)
+- [TL-03 — Atomic Tenant Bootstrap + Starter Authority Evidence](quality/evidence/tl-03/README.md)
 - [Cierre y priorización de bloqueantes arquitectónicos](architecture-readiness/blocker-closure/README.md)
 - [Baseline técnica de DEC-004](architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md)
 - [Contexto del sistema](architecture/SYSTEM_CONTEXT.md)

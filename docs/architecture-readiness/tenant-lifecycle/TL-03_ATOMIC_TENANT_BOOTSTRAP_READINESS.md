@@ -3,15 +3,17 @@
 ## Estado
 
 - **Work Unit:** TL-03 — Atomic Tenant Bootstrap + Starter Authority.
-- **Tipo / riesgo:** `DISCOVERY` / `ARCHITECTURAL`.
-- **Resultado:** `IMPLEMENTATION AUTHORIZED`.
-- **Implementación de producto:** autorizada en la Work Unit TL-03 vigente.
+- **Tipo / riesgo:** `IMPLEMENTATION` / `ARCHITECTURAL`.
+- **Resultado:** `IMPLEMENTED — READY_FOR_PROMOTION`.
+- **Implementación de producto:** ocho bloques completos en la Work Unit TL-03
+  vigente; promoción remota no autorizada todavía.
 - **Dependencia satisfecha:** TL-02 está integrada y cerrada; su identidad,
   password credential y Admin Session son reutilizables.
 - **Dependencias abiertas:** ninguna decisión Owner de readiness.
 
-Este documento define el candidato de implementación. No crea endpoints,
-migraciones, datos, sesiones, Tenants ni autoridad.
+Este documento define el contrato que materializa el candidato. TL-03 no crea
+endpoint público, Session administrativa, Branch, Station, PIN ni autoridad
+operativa.
 
 ## 1. Contrato de salida
 
@@ -46,8 +48,9 @@ no crea Admin Session, Branch, Station, PIN ni autoridad operativa.
 | Idempotency | Journals por comando tenant-scoped y resultados reproducibles | Patrón reutilizable; falta una llave pre-tenant ligada al Registration Attempt verificado. |
 | Audit | `access_admin_security_events` append-only y sanitizado | Extender allowlist para bootstrap exitoso. Los intentos pre-tenant/denegados pertenecen al audit de Registration en TL-04. |
 
-Baseline físico auditado: 76 migraciones registradas. TL-03 requerirá una
-migración aditiva; no se creó ni ejecutó durante esta Work Unit.
+Baseline físico materializado: 79 migraciones registradas. Las tres migraciones
+aditivas de TL-03 fueron verificadas sobre PostgreSQL 18.4 y su segunda
+ejecución dejó `0 pending`.
 
 ## 3. Ownership y orquestación propuestos
 
@@ -280,7 +283,7 @@ no ocurrió.
 
 ## 11. Migración y compatibilidad
 
-La implementación requiere una migración forward-only y actualización de:
+La implementación materializó migraciones forward-only y actualizó:
 
 - `DatabaseSchema` y ownership registry;
 - repositorios/ports de Tenancy, Users y Access con factories transaccionales;
@@ -289,12 +292,13 @@ La implementación requiere una migración forward-only y actualización de:
 - Admin Security Event allowlist;
 - fixtures y SQL de tests que hoy insertan `tenants` con tres columnas.
 
-La migración debe ser expand/backfill/constrain. Tenants operativos existentes
-se recomiendan `ACTIVE`, `version = 0` y `updated_at = created_at`; el nombre
-visible necesita decisión Owner porque no existe una fuente autoritativa común
-en el schema actual. No se ejecutará migración hasta resolverla.
+El backfill usa exclusivamente el mapping canónico aprobado de `SR Taller` y
+falla cerrado ante cualquier Tenant legado inesperado. El lifecycle no se
+asigna `ACTIVE` a ciegas: sólo una estructura con Branch activa y autoridad
+Tenant Admin efectiva satisface la transición; el resto permanece
+`ONBOARDING`.
 
-## 12. Bloques futuros de implementación
+## 12. Bloques de implementación
 
 1. **Schema de Tenant y journal:** migración, tipos, compatibilidad y tests de
    primera/segunda ejecución.
@@ -313,8 +317,8 @@ en el schema actual. No se ejecutará migración hasta resolverla.
 8. **Evidence and promotion:** PostgreSQL 18.4 material, verification completa,
    revisión arquitectónica/security y handoff; sin iniciar TL-04.
 
-Cada bloque conserva el mismo Work Unit y requiere checklist/evidencia antes de
-promoción. No implica autorización de implementación.
+Los ocho bloques se completaron dentro del mismo Work Unit. La promoción
+remota sigue requiriendo autorización Owner separada.
 
 ## 13. Plan de pruebas
 
@@ -399,6 +403,6 @@ contextos/lifecycle y DEC-049 permite la coordinación cross-module mediante
 puertos owner-specific en una transacción dirigida por aplicación.
 
 La forma de implementación, transacción, idempotencia, integración TL-02,
-threat model y plan de pruebas quedan definidos. `TL3D-001–004` fueron
-aprobadas y la implementación de los ocho bloques está autorizada en esta Work
-Unit. No se inicia TL-04.
+threat model y plan de pruebas están materializados. `TL3D-001–004` fueron
+aprobadas, los ocho bloques y la verificación local autoritativa están
+completos, y TL-03 queda `READY_FOR_PROMOTION`. No se inicia TL-04.

@@ -8,7 +8,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-03-atomic-tenant-bootstrap
 base_sha: cca47e9204bfe0ad8c1cb78c08a506888b7b1535
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -16,10 +16,10 @@ last_updated: 2026-09-21
 Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
-General State: Authorized implementation / Functional foundation
-Progress: 7 / 8 implementation blocks complete
-Current Work: Evidence, full verification and promotion handoff
-Next Block: Owner-authorized remote promotion only after local gates pass
+General State: Local implementation and authoritative verification complete
+Progress: 8 / 8 implementation blocks complete
+Current Work: Local candidate ready; awaiting separate Owner promotion authorization
+Next Block: Revalidate exact HEAD, then push and open one Draft PR only if authorized
 Blocking: NONE
 Last Updated: 2026-09-21
 
@@ -36,7 +36,7 @@ To execute one authorized objective with a transferable repository-native handof
 - Audit current Tenant/User/Access/TL-02 persistence and transactions.
 - Define the atomic/idempotent internal bootstrap contract.
 - Define starter authority, schema delta, threat model and test plan.
-- Identify Owner decisions before implementation.
+- Preserve the approved Owner decisions throughout implementation.
 
 ## Out of Scope
 
@@ -78,15 +78,16 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 5 — Atomic orchestration and sanitized audit.
 - [x] Block 6 — Idempotency, concurrency and failure injection.
 - [x] Block 7 — TL-02 login, isolation and operational-auth regression.
-- [~] Block 8 — Evidence, full verification and promotion handoff.
+- [x] Block 8 — Evidence, full verification and promotion handoff.
 
 ## Current
 
-Implementing Block 8: canonical evidence, full verification and clean handoff.
+All eight authorized implementation blocks and local promotion gates are
+complete on the current branch.
 
 ## Next
 
-Reconcile evidence and run all promotion gates on the exact local candidate.
+Await separate Owner authorization for remote promotion. Do not start TL-04.
 
 ## Blockers
 
@@ -140,9 +141,10 @@ None.
   79 migrations, rerun `0 pending`, and all 3 material TL-03 suites PASS.
 - [x] Block 7 TL-02 PostgreSQL 2/2 PASS and focused operational authorization,
   Role, PIN, Session and admin-session regressions 60/60 PASS.
-- [ ] Implementation authorization will require unit/contracts, PostgreSQL
-  18.4 migration/atomicity/concurrency/failure injection, TL-02 regressions,
-  architecture, full promotion verification and security review.
+- [x] Final candidate verification covers unit/contracts, PostgreSQL 18.4
+  migration/atomicity/concurrency/failure injection, TL-02 regressions,
+  architecture/security gates and `verify:full` stages 0–15; 79 migrations
+  applied and rerun reported `0 pending`.
 
 ## Promotion Gates
 
@@ -150,7 +152,8 @@ None.
 
 ## Remote Actions / Authorization
 
-- No remote action is implied by checklist initialization.
+- No push, PR, merge or deploy has been performed or authorized for this
+  candidate.
 
 ## Handoff Notes
 
