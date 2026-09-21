@@ -131,59 +131,35 @@ function requiredMatch(content, pattern, label) {
 export async function verifyDocumentationPolicyConsistency(
   projectRoot = process.cwd(),
 ) {
-  const currentState = await readFile(
-    resolve(projectRoot, 'docs/CURRENT_STATE.md'),
-    'utf8',
-  );
-  const roadmap = await readFile(
-    resolve(projectRoot, 'docs/product/MVP_OPERATING_ROADMAP.md'),
-    'utf8',
-  );
-  const checklist = await readFile(
-    resolve(projectRoot, 'docs/work/ACTIVE_CHECKLIST.md'),
-    'utf8',
-  );
-  const sprint = requiredMatch(
-    roadmap,
-    /\*\*Sprint activo:\*\* (?<value>SPRINT-\d+)/u,
-    'roadmap sprint',
-  );
-  const sprintDirectory = sprint.toLowerCase();
-  const [sprintGoal, sprintBacklog] = await Promise.all([
-    readFile(resolve(projectRoot, `docs/sprints/${sprintDirectory}/SPRINT_GOAL.md`), 'utf8'),
-    readFile(resolve(projectRoot, `docs/sprints/${sprintDirectory}/SPRINT_BACKLOG.md`), 'utf8'),
+  const [currentState, sourceOfTruth, checklist] = await Promise.all([
+    readFile(resolve(projectRoot, 'docs/CURRENT_STATE.md'), 'utf8'),
+    readFile(resolve(projectRoot, 'docs/delivery/SOURCE_OF_TRUTH.md'), 'utf8'),
+    readFile(resolve(projectRoot, 'docs/work/ACTIVE_CHECKLIST.md'), 'utf8'),
   ]);
-  const pointers = Object.freeze({
-    currentState: requiredMatch(
-      currentState,
-      /\*\*PBI actual:\*\* `(?<value>[^`]+)`/u,
-      'current state PBI',
-    ),
-    roadmap: requiredMatch(
-      roadmap,
-      /\*\*PBI actual:\*\* `(?<value>[^`]+)`/u,
-      'roadmap PBI',
-    ),
-    checklist: requiredMatch(
-      checklist,
-      /^Current PBI: (?<value>\S+)/mu,
-      'active checklist PBI',
-    ),
-    sprintGoal: requiredMatch(
-      sprintGoal,
-      /\*\*PBI actual:\*\* (?<value>[^.\n]+)/u,
-      'sprint goal PBI',
-    ),
-    sprintBacklog: requiredMatch(
-      sprintBacklog,
-      /\*\*PBI actual:\*\* (?<value>[^.\n]+)/u,
-      'sprint backlog PBI',
-    ),
-  });
-  if (new Set(Object.values(pointers)).size !== 1) {
-    throw new Error(`DOCS_ONLY inconsistent Current PBI pointers: ${JSON.stringify(pointers)}`);
+  if (!currentState.includes('DEPRECATED / NOT AUTHORITATIVE')) {
+    throw new Error('DOCS_ONLY CURRENT_STATE must remain a deprecated pointer');
   }
-  return Object.freeze({ status: 'PASS', sprint, currentPbi: pointers.currentState });
+  for (const marker of [
+    '| Prioridades de producto |',
+    '| Work Unit actual |',
+    '| Estado de CI |',
+    '| Salud del ambiente |',
+  ]) {
+    if (!sourceOfTruth.includes(marker)) {
+      throw new Error(`DOCS_ONLY source-of-truth marker missing: ${marker}`);
+    }
+  }
+  const currentPbi = requiredMatch(
+    checklist,
+    /^Current PBI: (?<value>\S+)/mu,
+    'active checklist PBI',
+  );
+  return Object.freeze({
+    status: 'PASS',
+    currentState: 'DEPRECATED',
+    sourceMatrix: 'PASS',
+    currentPbi,
+  });
 }
 
 export async function verifyDocsOnlyChange({

@@ -9,17 +9,14 @@ Sprint 00 y tienen resultado reconciliado. [PBI-021](pbis/PBI-021.md) y
 rama/PR draft histórica es sólo fuente de recuperación selectiva. PBI-025–029
 y PBI-031–036 materializan la partición aprobada de Identity & Context.
 [PBI-030](pbis/PBI-030.md) materializa UI Foundation y Application
-Shell V1, está integrado en `main` y su cierre es `Done` con Owner
-Acceptance y disposición LOW del riesgo AT aprobadas. No está desplegado ni
-`Released`; CI de implementación e independent review pasan.
+Shell V1. Su documento conserva la historia específica; este índice no replica
+CI, review, aceptación ni release.
 
 ## Estado del documento
 
-**Estado:** Reconciliado con el MVP Operating Roadmap aprobado.
-**Orden operativo:** Sprint 01 y SPRINT-02 están `Closed`; PBI-043 está `Done`
-por PR #47/#48, CI exacta y Preview PASS. SPRINT-03 está `Closed`; PBI-040 y
-PBI-041 están `Done`, Current PBI `NONE`, WIP `0/1` y Next candidate `NONE`.
-PBI-042 sigue `Planned/Unassigned`.
+**Estado:** índice vigente de requisitos e historia de producto. La prioridad y
+selección se consultan en el roadmap; ejecución actual en `ACTIVE_CHECKLIST`;
+PR/CI/merge en GitHub. Este archivo no replica esos estados temporales.
 
 ## Estructura
 
@@ -65,10 +62,9 @@ para revisión de autorización; `Ready` no autoriza inicio.
 3. Las tareas técnicas se crean sólo al preparar trabajo aprobado; no se usa el backlog para esconder decisiones.
 4. Un cambio de alcance actualiza PBI, dependencias y sprint, manteniendo trazabilidad.
 5. Estimaciones permanecen `TBD` hasta que el equipo acuerde método y contexto.
-6. Sólo un PBI puede estar en ejecución o cierre; el siguiente se selecciona
-   mediante avance documental y no comienza automáticamente.
+6. El WIP de producto se define en roadmap. El siguiente PBI requiere selección
+   y autorización explícitas; no comienza por cerrar una Work Unit.
 
 ## Próxima revisión
 
-El gate vigente es integrar el cierre documental gobernado de PBI-041. No
-iniciar PBI-042 u otro PBI, liberar o desplegar Production por inferencia.
+Cuando cambien las convenciones del backlog o se seleccione trabajo de producto.

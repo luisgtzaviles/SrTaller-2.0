@@ -27,18 +27,20 @@ iteraciones y commits lógicos, pero conserva:
 No tiene que equivaler a un commit, una sesión, una conversación ni un PBI
 pequeño.
 
-## Relación transitoria con PBI, Sprint y roadmap
+## Relación con PBI, Sprint y roadmap
 
 La Work Unit organiza **cómo se ejecuta** el trabajo; no decide **qué producto
 se construye** ni cuándo está `Done`.
 
-- Una feature de producto gobernada por roadmap sigue necesitando PBI `Ready`,
-  selección y autorización Owner vigentes.
+- El trabajo de producto gobernado por roadmap normalmente usa PBI con alcance,
+  criterios y autorización vigentes.
 - Un PBI puede materializarse mediante una Work Unit o, si su alcance coherente
   lo exige, mediante varias Work Units autorizadas y trazables.
 - Un bug, recovery, auditoría o cambio de governance puede ser una Work Unit sin
   crear un PBI nuevo cuando exista autorización explícita.
-- Sprint, roadmap, PBI, DoD y ADR/DEC conservan su autoridad actual.
+- El roadmap ordena prioridades y el PBI conserva requisito/historia. Sprint es
+  un timebox/capacity construct opcional, no un gate universal de ingeniería.
+- DoD y ADR/DEC conservan su autoridad temática.
 - La Work Unit no reduce los gates aceptados en DEC-051, DEC-063 ni
   `DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md`.
 - Si aparece una contradicción material que esas fuentes no resuelven, se
@@ -52,7 +54,7 @@ se construye** ni cuándo está `Done`.
 | `ACTIVE` | Rama creada, alcance vigente y desarrollo/auditoría en curso. |
 | `BLOCKED` | Existe un impedimento material explícito; conserva owner y condición de desbloqueo. |
 | `READY_FOR_PROMOTION` | Implementación y evidencia local requeridas están completas; promoción todavía no ha terminado. |
-| `PROMOTION` | PR, CI, review, merge o validación aplicable están en curso. |
+| `PROMOTION` | Algún hecho observable `PR_OPEN`, CI, review, merge o validación aplicable está en curso. GitHub/runtime son su autoridad. |
 | `CLOSED` | El predicado de cierre fue satisfecho por hechos verificables. No requiere un commit posterior de wording. |
 
 `Done`, `Released`, `Accepted`, `Materialized` y `Formally Verified` conservan
@@ -116,8 +118,8 @@ Git. El historial Git preserva la evolución del checklist.
 - Usar pruebas focalizadas durante iteración y commits lógicos tantas veces
   como sea útil.
 - No duplicar en el checklist SHAs, resultados o inventarios disponibles de
-  forma confiable en Git/GitHub, salvo que sean necesarios para un handoff o
-  para fijar el predicado de cierre.
+  forma confiable en Git/GitHub/runtime. Puede enlazar la autoridad o fijar el
+  predicado sin transcribirla.
 - Promover descubrimientos duraderos a su fuente autoritativa antes del
   candidato final.
 
@@ -132,10 +134,10 @@ Antes del PR:
 5. registrar el **predicado de cierre** exacto;
 6. declarar cualquier gate pendiente sin anticipar su resultado.
 
-Al abrir el PR, cambiar el estado a `PROMOTION` cuando una actualización de la
-rama sea necesaria por otros motivos. El PR y GitHub pasan a ser autoridad para
-review, checks y merge; el checklist conserva contexto de handoff, no copia
-cada evento remoto.
+Al abrir el PR, GitHub pasa a ser autoridad de `PR_OPEN`, review, checks y
+`MERGED`; el checklist conserva contexto de handoff, no copia cada evento
+remoto. El estado puede representarse como `PROMOTION` cuando una actualización
+de la rama ya sea necesaria por otros motivos, pero esa copia no es requisito.
 
 ## Cierre sin closure-of-closure
 
@@ -145,7 +147,7 @@ registra un predicado verificable, por ejemplo:
 ```text
 PR autorizado merged
 AND exact-main CI GREEN
-AND deployment/validation requerido por el alcance PASS o N/A justificado
+AND deployment/VALIDATED requerido por el alcance PASS o N/A justificado
 AND rama absorbida sin commits exclusivos
 ```
 
@@ -166,8 +168,8 @@ Este cierre derivado evita:
 Antes de promoción, las decisiones o descubrimientos únicos que deban vivir a
 largo plazo se mueven a la fuente permanente apropiada. No se archiva el
 checklist completo por defecto. Se crea un resumen bajo `docs/work/history/`
-sólo cuando contiene contexto operacional no representado por PBI, PR, Git,
-CI, ADR/DEC o documentación canónica.
+sólo cuando contiene contexto no derivable y no representado por PBI, PR, Git,
+CI, runtime, ADR/DEC o documentación canónica.
 
 ## Ambientes
 

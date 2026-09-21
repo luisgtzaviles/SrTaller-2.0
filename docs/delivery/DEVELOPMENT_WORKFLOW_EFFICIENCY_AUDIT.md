@@ -1,5 +1,11 @@
 # Development Workflow Efficiency Audit
 
+> **HISTORICAL:** este análisis conserva observaciones y opciones de su fecha.
+> No es política operacional vigente. Las decisiones materializadas están en
+> `DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md`; el workflow actual y su
+> autoridad se definen en `DEVELOPMENT_AND_DELIVERY_WORKFLOW.md` y
+> `SOURCE_OF_TRUTH.md`.
+
 **Estado:** Audit complete — Owner decisions recorded
 
 **Fecha de corte:** 2026-09-14

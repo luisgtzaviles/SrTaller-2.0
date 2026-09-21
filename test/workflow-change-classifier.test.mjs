@@ -121,11 +121,12 @@ test('DOCS_ONLY rejects symlinks and executable Markdown', () => {
   );
 });
 
-test('DOCS_ONLY policy consistency follows the current Sprint and PBI pointers', async () => {
+test('DOCS_ONLY policy consistency follows the source matrix and active Work Unit', async () => {
   const result = await verifyDocumentationPolicyConsistency();
   assert.deepEqual(result, {
     status: 'PASS',
-    sprint: 'SPRINT-03',
+    currentState: 'DEPRECATED',
+    sourceMatrix: 'PASS',
     currentPbi: 'NONE',
   });
 });
@@ -142,7 +143,18 @@ test('DOCS_ONLY verifies an exact allowed Git delta end to end', async () => {
     await git('init', '--quiet');
     await git('config', 'user.name', 'SR Taller Test');
     await git('config', 'user.email', 'test@srtaller.invalid');
-    await write('docs/CURRENT_STATE.md', '- **PBI actual:** `NONE`.\n');
+    await write('docs/CURRENT_STATE.md', '# State\n\n## DEPRECATED / NOT AUTHORITATIVE\n');
+    await write('docs/delivery/SOURCE_OF_TRUTH.md', [
+      '# Sources',
+      '',
+      '| Hecho | Autoridad |',
+      '|---|---|',
+      '| Prioridades de producto | Roadmap |',
+      '| Work Unit actual | Checklist |',
+      '| Estado de CI | GitHub Actions |',
+      '| Salud del ambiente | Runtime |',
+      '',
+    ].join('\n'));
     await write('docs/product/MVP_OPERATING_ROADMAP.md', [
       '- **Sprint activo:** SPRINT-03 — Test.',
       '- **PBI actual:** `NONE`.',

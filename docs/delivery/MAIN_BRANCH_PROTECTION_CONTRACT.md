@@ -21,7 +21,7 @@ authority.
 
 | Shadow risk | Review expectation |
 |---|---|
-| `NORMAL` | A separate agent/context may perform technical review; no artificial `empresasgalatech` approval requirement; Owner still controls merge. |
+| `NORMAL` | A competent agent/context may perform technical review; no artificial approval by a named GitHub identity; Owner still controls merge. |
 | `SENSITIVE` | Explicit Owner approval plus deeper technical, domain, or security review. |
 | `ARCHITECTURAL` | Explicit Owner approval, applicable architecture-decision process, and a second deliberate review pass. |
 
@@ -37,4 +37,4 @@ authority.
   strand recovery or exact-main verification.
 
 Applying this design requires separate authorization. Iteration 2 performs no
-GitHub settings, ruleset, permission, remote, or `empresasgalatech` change.
+GitHub settings, ruleset, permission, remote, or reviewer-account change.

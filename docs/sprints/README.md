@@ -1,20 +1,21 @@
 # Gestión de sprints
 
-Los sprints hacen visible una selección de resultados, sus dependencias, revisión y aprendizaje. La existencia de una carpeta no implica aprobación de alcance, fecha ni capacidad.
+Los sprints son una herramienta opcional de planificación por timebox/capacidad.
+Hacen visible una selección de resultados, dependencias, review y aprendizaje;
+no son un gate universal de ingeniería. La ejecución técnica ocurre mediante
+una Work Unit, exista o no Sprint.
 
 ## Estado del documento
 
-**Estado:** SPRINT-00, SPRINT-01 y SPRINT-02 `Closed`; SPRINT-03 `Closed
-candidate`.
+**Estado:** índice histórico de SPRINT-00 a SPRINT-03, todos `Closed`.
 **Sprints documentados:** [SPRINT-00](sprint-00/SPRINT_GOAL.md) `Closed`,
 [SPRINT-01](sprint-01/SPRINT_GOAL.md) `Closed` y
 [SPRINT-02](sprint-02/SPRINT_GOAL.md) `Closed` y
 [SPRINT-03](sprint-03/SPRINT_GOAL.md) `Closed`.
-**Sprint activo:** SPRINT-03 — Price List Foundation permanece como puntero
-documental hasta integrar su cierre. PBI-040 es `Done`, PBI-041 `Done
-candidate`; no existe Current PBI ni Next candidate; WIP `0/1`.
+**Sprint activo:** no se declara aquí. Si producto usa un Sprint activo, el
+roadmap lo selecciona; la Work Unit actual vive en `ACTIVE_CHECKLIST.md`.
 
-## Reglas propuestas
+## Reglas vigentes
 
 1. Un PBI debe cumplir la [Definition of Ready](../delivery/DEFINITION_OF_READY.md) aplicable antes de aprobar un compromiso de ejecución.
 2. Objetivo, capacidad, fechas y responsables deben acordarse; si faltan, usar `TBD`.
@@ -22,9 +23,10 @@ candidate`; no existe Current PBI ni Next candidate; WIP `0/1`.
 4. Cambiar clasificación exige registrar motivo e impacto en el objetivo.
 5. Review evalúa resultados/evidencia; retrospectiva mejora el proceso sin reemplazar decisiones de producto.
 6. Cerrar un sprint no cambia automáticamente ADRs ni autoriza un release.
-7. El MVP Operativo usa WIP=1: máximo un PBI actual en ejecución o cierre.
-8. El PR documental de cierre selecciona el PBI siguiente, pero no autoriza su
-   implementación.
+7. Cuando producto use Sprint, el WIP aplicable se define en roadmap; una Work
+   Unit no necesita crear un Sprint artificial.
+8. Cerrar una Work Unit o Sprint no selecciona ni inicia automáticamente el
+   siguiente PBI.
 
 ## SPRINT-00
 
@@ -80,4 +82,4 @@ Current PBI ni Next candidate. PBI-042 no perteneció al compromiso.
 
 ## Próxima revisión
 
-Al resolver Owner Review de PBI-040 o cambiar su alcance/autoridad.
+Cuando producto vuelva a usar un timebox Sprint o cambie su propósito.

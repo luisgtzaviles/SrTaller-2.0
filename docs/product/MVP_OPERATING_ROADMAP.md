@@ -2,17 +2,13 @@
 
 ## Estado del documento
 
-- **Estado:** Roadmap aprobado; SPRINT-02 y SPRINT-03 `Closed`, con PBI-040 y
-  PBI-041 `Done` después de integración, exact-main CI, Preview PASS y
-  reconciliación de data scope.
-- **Baseline Git observada:** Workflow Phase 1 integrado en `main` por
-  `859825025cf1f9fa94a8b0ced5b91b95760e36a8`; CI exacta de `main`
-  `34893081175`, `SUCCESS`.
+- **Estado:** Roadmap aprobado. Este documento gobierna orden, selección y
+  gates de producto; Git/GitHub/CI/runtime gobiernan la materialización.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
 - **Fase:** Pricing Catalog.
-- **Checkpoint alcanzado:** PBI-040 Owner Accepted, integrado, Preview PASS y
-  cierre documental exact-main PASS; `Done`, `Released: NO`.
+- **Checkpoint alcanzado:** Pricing Catalog cerrado conforme a los PBI y
+  autoridades técnicas enlazadas; `Released` permanece separado.
 - **Sprint activo:** SPRINT-03 — Price List Foundation está `Closed`; no existe
   otro Sprint activo ni trabajo de Sprint en curso.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
@@ -36,29 +32,19 @@ cobro no declara terminado el ciclo de una reparación.
 ## Workflow canónico del roadmap
 
 ```text
-Roadmap
+Roadmap / backlog / PBI
   ↓
-Sprint activo
+Autorización explícita del objetivo y alcance
   ↓
-PBI actual
+Work Unit
   ↓
-Discovery / decisiones Owner si aplican
+Implementación y verificación
   ↓
-Autorización Owner de implementación
+Review / merge / CI autoritativa cuando aplican
   ↓
-Implementación
+Aceptación de producto o ambiente cuando el alcance la requiere
   ↓
-Review
-  ↓
-Merge autorizado
-  ↓
-CI autoritativo de main GREEN
-  ↓
-Owner Acceptance
-  ↓
-Definition of Done y evidencia completas
-  ↓
-PBI Done
+DoD aplicable / PBI Done
   ↓
 Siguiente PBI sólo si Owner lo selecciona, no iniciado
 ```
@@ -70,16 +56,17 @@ revisión, autoridad aplicable y CI exacta.
 
 ## Invariantes
 
-1. Existe como máximo un Sprint `Active`.
-2. Existe como máximo un PBI actual. Puede ser `NONE` durante el avance
-   documental entre el cierre candidato y el inicio autorizado del siguiente.
+1. Sprint es un construct opcional de planificación; si se usa, existe como
+   máximo uno `Active`.
+2. Existe como máximo un PBI actual. Puede ser `NONE` entre el cierre de uno y
+   el inicio autorizado del siguiente.
 3. Existe como máximo un PBI en ejecución o cierre (`In progress` o
    `In review`) dentro del workflow operativo vigente.
 4. `Selected/current` es un marcador de planificación, no un estado adicional
    del lifecycle del PBI.
 5. El siguiente PBI no pasa a `In progress` por cerrar el anterior.
-6. `Done` exige merge, CI de `main` sobre el SHA exacto, evidencia, DoD y Owner
-   Acceptance aplicables.
+6. `Done` exige merge, CI de `main`, DoD, aceptación y evidencia no derivable
+   cuando sean aplicables al alcance/riesgo.
 7. `Done` no significa `Released`; deploy y release requieren alcance y
    autoridad propios.
 8. Si falta prioridad, readiness o autoridad, el avance falla cerrado y no
@@ -100,8 +87,6 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 | Sprint status | Closed — PBI-040 Done; PBI-041 Done; WIP=0/1 |
 | Current PBI | NONE |
 | Next PBI candidate | NONE; PBI-042 remains out of scope |
-| PBI-039 status | Done — PR #45 / `40684d7`; exact-main CI `34623060504` GREEN |
-| PBI-040 status | Done — closure PR #52 / `a060494`; exact-main CI `34814070839` GREEN; Released NO |
 | Blocking gate | Ninguno de PBI; data-scope gates pass bajo sus respectivas autoridades |
 
 ## Fases aprobadas

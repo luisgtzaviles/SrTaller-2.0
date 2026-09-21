@@ -26,7 +26,9 @@ Antes de modificar código, documentación, infraestructura o deployment:
 
 Para cualquier cambio de interfaz, también es lectura obligatoria
 [Design System & Application Shell V1](docs/design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md).
-Su dirección está aprobada, pero el documento no autoriza implementación.
+El sistema integrado se reutiliza conforme al
+[catálogo de componentes](docs/design-system/COMPONENT_CATALOG.md); ninguno de
+estos documentos concede por sí solo autoridad para ampliar producto.
 
 El repositorio, Git y la evidencia actual del runtime tienen precedencia sobre
 el contexto de chat, memoria humana o supuestos de un agente.
@@ -47,10 +49,9 @@ rol `application`; nunca reutiliza Preview.
    [lifecycle](docs/delivery/WORK_UNIT_LIFECYCLE.md).
 3. No iniciar una nueva funcionalidad de R0 sin tarea/PBI y autoridad
    explícitos; la existencia de Preview no amplía el alcance autorizado.
-4. Leer la [Definition of Ready](docs/delivery/DEFINITION_OF_READY.md), la
-   [Definition of Done](docs/delivery/DEFINITION_OF_DONE.md) y el
-   [lifecycle especializado](docs/delivery/DEVELOPMENT_WORKFLOW.md) cuando
-   correspondan al tipo de trabajo.
+4. Leer la [Definition of Ready](docs/delivery/DEFINITION_OF_READY.md) para
+   producto y la [Definition of Done](docs/delivery/DEFINITION_OF_DONE.md)
+   aplicable al tipo/riesgo de la Work Unit.
 5. Hacer visibles supuestos, preguntas y dependencias; usar `TBD` cuando falte una respuesta.
 
 ## Cambios documentales
@@ -84,14 +85,9 @@ debe ser explícita y acotada; este documento por sí solo no crea esa autoridad
 
 ## Condiciones abiertas
 
-- PBI-024 fue acotado a Trusted Station Runtime Context. La PR draft histórica
-  #3 sólo puede usarse como fuente de recuperación selectiva; no conserva
-  autorización ni se integra completa.
-- SPRINT-03 está `Closed`; PBI-041 está `Done`, `Released: NO`; Current PBI y
-  Next candidate son `NONE`, WIP `0/1`. PBI-042 no está iniciado.
-- `DEC051-C02`: materializar y demostrar protección de `main`.
-- `DEC063-C02`: materializar clasificación de riesgo.
-- `DEC063-C08`: materializar waivers y excepciones.
+Las condiciones vigentes se consultan en su contrato o decisión dueña; no se
+copian aquí. La [matriz de fuentes de verdad](docs/delivery/SOURCE_OF_TRUTH.md)
+indica dónde verificar planificación, Git, CI, ambientes y riesgos.
 
 ## Próxima revisión
 

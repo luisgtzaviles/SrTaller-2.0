@@ -2,18 +2,16 @@
 
 ## Estado del documento
 
-**Estado:** Reconciliado con PBI-041 `Done`: PR #58 `cb1dca3` y CI exacta
-`35544551782` GREEN. PBI-043 y SPRINT-02 están `Done`/`Closed`; SPRINT-03 está
-`Closed`; PBI-040 y PBI-041 están `Done`, ambos `Released: NO`. No existe
-PBI actual, WIP es `0/1`, Next candidate es `NONE` y PBI-042 permanece
-`Planned/Unassigned`.
+**Estado:** catálogo vigente de requisitos e historia de producto. La tabla
+conserva el estado del PBI; GitHub/CI conservan los hechos técnicos y el roadmap
+selecciona prioridad/current/next sin duplicarlos aquí.
 **Prioridad:** propuesta, no aprobación final.
 **Estimaciones:** PBI-023 tiene `13 SP`; PBI-024 tiene `Large`; PBI-030 tiene
 `XL — agreed`, PBI-032 `Large — Owner autorizado`, PBI-033, PBI-025, PBI-034
 y PBI-026 `Large` mediante T-shirt sizing; PBI-028 también es `Large`; las
 demás permanecen TBD salvo PBI-041 `XL — agreed` para su outcome inicial.
-**Sprint en los PBIs:** el campo de cada fila es la autoridad; Sprint 01 y
-SPRINT-02 están cerrados; SPRINT-03 queda cerrado al integrar este avance.
+**Sprint en los PBIs:** el campo conserva la asignación histórica. Sprint es
+opcional para planificación futura y no es un gate universal de ingeniería.
 
 | Orden propuesto | PBI | Tipo | Epic | Estado | Prioridad propuesta | Clasificación / Sprint |
 |---:|---|---|---|---|---|---|
@@ -133,5 +131,5 @@ SPRINT-02 están cerrados; SPRINT-03 queda cerrado al integrar este avance.
 
 ## Próxima revisión
 
-Integrar el cierre documental de PBI-041 y su CI exacta de `main`. Después no
-iniciar PBI-042 ni otro PBI, liberar o desplegar por inferencia.
+Cuando se cree, divida, repriorice o seleccione trabajo de producto. La tabla no
+inicia una Work Unit, release o deploy por inferencia.

@@ -2,7 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** accepted and materialized in this documentation candidate.
+- **Estado:** `HISTORICAL`; registra la reconciliación de septiembre de 2026.
+- **Autoridad actual:** no es política operacional vigente; remite a
+  [Development and Delivery Workflow](DEVELOPMENT_AND_DELIVERY_WORKFLOW.md),
+  [Work Unit Lifecycle](WORK_UNIT_LIFECYCLE.md) y
+  [Source-of-Truth Contract](SOURCE_OF_TRUTH.md).
 - **Alcance:** reconciliar el flujo de entrega posterior a PBI-041; no cambia
   producto, API, esquema, datos, runtime ni infraestructura.
 - **Autoridad:** decisión Owner posterior al cierre material de PBI-041.

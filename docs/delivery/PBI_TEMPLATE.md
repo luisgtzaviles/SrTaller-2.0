@@ -144,7 +144,8 @@ Cada `No` relevante debe justificarse; `Por determinar` puede impedir Ready si a
 - **Aprobación:** TBD.
 - **Merge funcional:** PR/SHA TBD / No aplica justificado.
 - **CI autoritativo de `main`:** run/SHA/resultado TBD / No aplica justificado.
-- **Owner Acceptance:** Pendiente / Aceptada con evidencia / No aplica justificado.
+- **Aceptación de producto:** evento de review o validación de ambiente cuando
+  aplique; narrativa durable sólo si agrega contexto no derivable.
 - **Avance de roadmap:** PR documental TBD; siguiente PBI seleccionado pero no iniciado.
 - **Fecha de cierre:** TBD.
 

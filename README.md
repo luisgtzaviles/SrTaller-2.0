@@ -7,30 +7,14 @@ PostgreSQL, controles arquitectónicos, CI y despliegue OCI en Dokploy.
 
 ## Estado actual
 
-- **Baseline integrada:** `main`; Git y la CI del SHA exacto son autoridad sobre
-  cualquier snapshot documental.
-- **Runtime:** Node.js `24.18.0`, pnpm `11.15.1` y TypeScript `6.0.3`.
-- **Frontend:** React `19.2.8` + Vite `8.2.0`; Design System y Application
-  Shell V1 integrados en `main`.
-- **Backend:** NestJS `11.1.28` sobre Express; health y Repair Workstream local
-  integrado con límites tenant/branch, Operational Session y Contextual
-  Authorization HTTP server-side.
-- **Persistencia:** PostgreSQL `18.4` local; Kysely + `pg`; tenants, sucursales,
-  Trusted Station Context, User Directory, Roles/Capabilities/Assignments,
-  credencial PIN y persistencia append-only de los slices integrados de
-  Repairs y Session.
-- **Preview:** <https://preview.srtaller.dev>, desplegado manualmente desde
-  `main` mediante el `Dockerfile` en Dokploy.
-- **Producto funcional:** Identity/Access, Repairs, Customer/Intake,
-  Branch timezone y Catalog/Pricing con Bulk Catalog Composer están integrados;
-  PBI-040 y PBI-041 están `Done`, `Released: NO`.
-- **Roadmap:** SPRINT-02 y SPRINT-03 están `Closed`; no existe PBI actual ni
-  siguiente candidato y el WIP de producto es `0/1`.
-- **Trabajo operacional:** una Work Unit autorizada se descubre en
-  [ACTIVE_CHECKLIST.md](docs/work/ACTIVE_CHECKLIST.md); no se infiere del chat.
+El estado no se mantiene como snapshot manual. Consultar la
+[matriz de fuentes de verdad](docs/delivery/SOURCE_OF_TRUTH.md): Git para la
+rama y el SHA, GitHub para PR/CI/merge, el runtime para deployment/health, el
+roadmap/backlog para planificación y
+[ACTIVE_CHECKLIST.md](docs/work/ACTIVE_CHECKLIST.md) para la Work Unit actual.
 
-La fotografía verificable completa, sus límites y el punto de partida están en
-[Current Repository State](docs/CURRENT_STATE.md).
+La baseline usa el toolchain gobernado de Node.js `24.18.0` y pnpm `11.15.1`.
+Los contratos de arquitectura, producto y ambientes están enlazados abajo.
 
 ## Cómo empezar
 
@@ -63,6 +47,7 @@ Para el ciclo local completo, seguir el [contrato de desarrollo local](docs/deli
 - [Estrategia de calidad](docs/quality/QUALITY_STRATEGY.md)
 - [Estrategia de despliegue](docs/architecture/DEPLOYMENT_STRATEGY.md)
 - [Desarrollo local](docs/delivery/LOCAL_DEVELOPMENT.md)
+- [Fuentes de verdad](docs/delivery/SOURCE_OF_TRUTH.md)
 
 ## Regla de autoridad
 

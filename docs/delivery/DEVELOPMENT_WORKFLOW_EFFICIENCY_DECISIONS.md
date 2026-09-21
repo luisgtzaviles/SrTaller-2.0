@@ -107,7 +107,9 @@ Son objetivos, no SLA, waiver ni autoridad para omitir gates.
    ejecuta el pipeline completo.
 2. Caches de dependencias no sustituyen resultados independientes.
 3. Comparison permanece exacta.
-4. Independent review conserva su autoridad.
+4. Review proporcional al riesgo conserva su autoridad. `NORMAL` no exige una
+   identidad GitHub ni independencia organizacional artificial; `SENSITIVE` y
+   `ARCHITECTURAL` exigen una segunda revisión deliberada conforme a DoD.
 5. El clasificador general y la tree attestation no reducen exact-main durante
    el piloto; sólo `DOCS_ONLY` puede usar su gate especializado independiente.
 6. Preview sigue siendo autoridad de su runtime y journal reales.

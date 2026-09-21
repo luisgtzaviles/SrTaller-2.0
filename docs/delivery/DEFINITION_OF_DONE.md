@@ -2,169 +2,128 @@
 
 ## Estado del documento
 
-- **Estado:** Resumen operativo de
-  [DEC-063 aceptada](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
-- **Propósito:** Evitar que un resultado se declare terminado sólo porque existe o funciona en un caso feliz.
-- **Alcance:** Guía de consulta; el contrato autoritativo es DEC-063.
-- **Condiciones satisfechas:** DEC063-C01, C03 y C04.
-- **Condiciones pendientes:** DEC063-C02, C05, C06, C07 y C08.
+- **Estado:** contrato operativo vigente, basado en
+  [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md).
+- **Propósito:** definir predicados materiales de terminación sin exigir copias
+  manuales de evidencia derivable.
+- **Alcance:** Work Units y PBIs; los contratos de riesgo, release y ambiente
+  añaden sus gates especializados cuando aplican.
 
 ## Principio
 
-`Done` exige un resultado verificable, evidencia conservada y riesgos
-residuales visibles. Todo trabajo cumple una base común, un checklist por tipo
-y controles proporcionales a riesgo bajo, medio o alto. La ambigüedad falla
-cerrado. Los puntos no aplicables requieren justificación, owner y revisión.
+`Done` significa que el alcance previsto está integrado y verificable, sus
+riesgos requeridos están resueltos y la evidencia única necesaria se conserva.
+No significa `Released`. `Accepted`, `Materialized`, `Formally Verified`,
+`Done`, `Released` y el estado operacional `CLOSED` son conceptos distintos.
 
-`Accepted`, `Materialized`, `Formally Verified`, `Done`, `Released` y `Closed`
-son estados diferentes. En particular, un PBI puede estar `Done` sin haberse
-liberado; `Released` exige autorización, promoción del artefacto identificado,
-smoke y validación operativa conforme a
-[DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md#28-done-y-released).
+La aplicación es proporcional al tipo y riesgo del cambio. `N/A` exige una
+razón objetiva; no convierte un ambiente ausente o un test omitido en `PASS`.
 
-## DoD de documentación para Sprint 00
+## Predicado base de una Work Unit
 
-Un documento o PBI documental sólo está terminado cuando:
+Una Work Unit puede quedar técnicamente `CLOSED` cuando la autoridad aplicable
+demuestra todos los puntos pertinentes:
 
-- [ ] Cumple todos sus criterios de aceptación.
-- [ ] El archivo esperado existe en la ubicación acordada y usa Markdown legible.
-- [ ] Distingue hechos conocidos, hipótesis, propuestas, decisiones pendientes y decisiones aceptadas.
-- [ ] No presenta una dirección técnica preliminar como irrevocable.
-- [ ] Incluye `Estado del documento` y `Próxima revisión`.
-- [ ] Incluye `Preguntas abiertas` cuando quedan incertidumbres.
-- [ ] Usa `TBD` para fechas, responsables, métricas o estimaciones no acordadas.
-- [ ] Los enlaces relativos internos resuelven a archivos existentes o comprometidos en el mismo cambio.
-- [ ] Los IDs son únicos y siguen las convenciones establecidas.
-- [ ] Epics, PBIs, sprint, ADRs y preguntas relacionados son consistentes.
-- [ ] Los ADRs creados durante esta etapa permanecen en `Proposed`.
-- [ ] No incorpora reglas de negocio supuestas ni decisiones ocultas.
-- [ ] Recibió revisión de contenido; revisor y evidencia quedan registrados.
-- [ ] Tiene evidencia documental suficiente: checklist, revisión, validación de enlaces y, cuando aplique, render correcto de Mermaid.
-- [ ] No se creó código funcional, scaffolding, migraciones, esquemas ejecutables ni infraestructura como parte del PBI.
-- [ ] Las observaciones pendientes se convirtieron en preguntas, riesgos o trabajo futuro trazable.
-- [ ] El Product Owner aprobó el resultado cuando el criterio de salida de Sprint 00 así lo requiere.
+1. alcance y criterios cumplidos sin expansión material;
+2. verificación focalizada y de promoción requerida aprobada;
+3. review técnico proporcional sin hallazgos bloqueantes;
+4. PR, merge y CI exact-main satisfechos cuando hubo integración remota;
+5. riesgos o excepciones requeridos resueltos o aceptados por la autoridad
+   correcta;
+6. validación de ambiente completada cuando el alcance incluyó deployment;
+7. contratos permanentes afectados actualizados;
+8. evidencia no derivable preservada cuando existe.
 
-## DoD para una funcionalidad futura
+El cierre se deriva de esas autoridades conforme al
+[Work Unit Lifecycle](./WORK_UNIT_LIFECYCLE.md). No requiere un estado `Done
+Candidate`, un segundo PR, ni un commit posterior dedicado a copiar SHAs,
+runs, merge o wording de estado.
 
-La lista se aplica según el tipo de cambio, pero ninguna exclusión es implícita.
+## Perfil por tipo de cambio
 
 ### Producto y comportamiento
 
-- [ ] Criterios de aceptación cumplidos, incluidos casos de error y límites.
-- [ ] Alcance implementado sin incorporar trabajo fuera del PBI.
-- [ ] Aprobación del Product Owner registrada.
-- [ ] Estados de carga, vacío, error y permisos insuficientes verificados cuando existe interfaz.
+- criterios de aceptación, errores, límites y permisos relevantes verificados;
+- estados de carga, vacío y error evaluados cuando existe UI;
+- aceptación de producto en el evento donde el comportamiento puede evaluarse:
+  review o validación de Preview/Staging según el alcance;
+- un registro Markdown adicional sólo si la aceptación contiene contexto no
+  derivable o una decisión/riesgo duradero.
 
 ### Ingeniería
 
-- [ ] Revisión de código completada.
-- [ ] Lint y type checking sin fallos.
-- [ ] Pruebas unitarias relevantes aprobadas.
-- [ ] Pruebas de integración relevantes aprobadas.
-- [ ] Pruebas end-to-end relevantes aprobadas.
-- [ ] Manejo de errores, timeouts, reintentos e idempotencia cubiertos cuando aplican.
-- [ ] No se introducen dependencias entre módulos que contradigan los límites documentados.
+- typecheck, build, unitarias, integración y E2E según el cambio y sus gates;
+- errores, timeouts, retries e idempotencia cubiertos cuando aplican;
+- límites de módulos y contratos arquitectónicos respetados;
+- review normal puede hacerlo otra persona, agente o contexto competente. No
+  se presenta como independencia organizacional inexistente.
 
-### Tenant, acceso y auditoría
+### Seguridad, autorización y datos
 
-- [ ] Aislamiento multitenant probado con al menos dos tenants y casos negativos.
-- [ ] Alcance por sucursal probado cuando aplica.
-- [ ] Autorización probada por rol, permiso y contexto; la denegación es segura.
-- [ ] Jobs, caché, realtime y archivos propagan y validan contexto de tenant cuando aplican.
-- [ ] Acciones sensibles generan auditoría suficiente y no exponen secretos.
+- aislamiento tenant y branch probado con casos negativos cuando aplica;
+- autorización backend y auditoría verificadas para acciones sensibles;
+- secretos y datos personales fuera de logs/evidencia;
+- migraciones y compatibilidad material verificadas;
+- cambios `SENSITIVE` reciben una segunda revisión deliberada técnica o de
+  seguridad y aprobación Owner cuando el riesgo lo exige.
 
-### Experiencia y calidad
+### Arquitectura
 
-- [ ] Accesibilidad verificada según la [estrategia](../quality/ACCESSIBILITY_STRATEGY.md).
-- [ ] Comportamiento responsive y navegadores/dispositivos acordados verificados.
-- [ ] Consistencia con el design system validada; excepciones documentadas.
-- [ ] QA completado y evidencia conservada mediante la [plantilla](../quality/QA_EVIDENCE_TEMPLATE.md).
-- [ ] Riesgos de regresión relevantes cubiertos.
-- [ ] Pruebas de carga o rendimiento completadas cuando el riesgo lo exige.
+- impacto y alternativas resueltos mediante ADR/DEC cuando corresponda;
+- segunda revisión deliberada;
+- aprobación Owner de la decisión material;
+- enforcement y documentación permanente consistentes.
 
-### Datos, operación y liberación
+### Experiencia, operación y release
 
-- [ ] Migración de datos revisada, probada y compatible hacia adelante cuando aplica.
-- [ ] Plan de backup o recuperación considerado para cambios de alto riesgo.
-- [ ] Observabilidad incorporada: logs con contexto, métricas y alertas según corresponda.
-- [ ] Documentación de producto, arquitectura, API, soporte y runbooks actualizada.
-- [ ] Artefacto versionado y reproducible disponible.
-- [ ] Estrategia de rollout y rollback probada o validada.
-- [ ] Verificación en staging completada con credenciales y datos separados de producción.
-- [ ] Evidencia vinculada al PBI, PR, pruebas y release.
+- accesibilidad, responsive, navegadores y design system según el riesgo;
+- rendimiento, observabilidad y recuperación cuando corresponden;
+- artefacto y rollout/rollback cuando el cambio alcanza release;
+- Staging, Production, backup/restore y smoke sólo son gates si el alcance o el
+  release los requiere expresamente.
 
-Los puntos de staging y release aplican al **release**, o a un PBI cuyo alcance
-incluya expresamente desplegar. No son una condición implícita de todo PBI.
-Un candidato de release sólo puede incluir trabajo que ya satisfaga su DoD
-aplicable; su promoción y validación determinan `Released`, no reescriben
-retroactivamente `Done`.
+## Evidencia
 
-## Gate de cierre e integración para PBIs del MVP
+La política completa está en
+[`SOURCE_OF_TRUTH.md`](./SOURCE_OF_TRUTH.md). Git, GitHub, CI y runtime son la
+evidencia de rama, SHA, PR, review, merge, resultados automatizados,
+deployment/provenance y health. No se exige transcribir esos hechos en otro
+archivo.
 
-Un PBI funcional o con impacto de producto no pasa a `Done` hasta cumplir en
-conjunto:
+Se crea evidencia narrativa únicamente para información no derivable, por
+ejemplo QA manual, aceptación de riesgo, excepción de seguridad, rationale
+arquitectónico, incidente o resultado externo sin historial durable. Evidencia
+histórica existente se conserva y no se vuelve requisito universal.
 
-1. criterios y checklist aplicable;
-2. revisión requerida sin hallazgos bloqueantes;
-3. merge autorizado en `main`;
-4. CI autoritativo verde sobre el SHA exacto del nuevo `main`;
-5. evidencia y riesgos residuales reconciliados;
-6. Owner Acceptance explícita.
+## Producto, PBI y Sprint
 
-Un entorno no disponible no se convierte en `PASS`. Sólo puede quedar `N/A` o
-riesgo residual mediante la justificación, owner y revisión que exige DEC-063.
-Por defecto, implementación, evidencia y documentación canónica viajan en el
-mismo candidato. Un PR documental posterior es excepcional para governance
-independiente, ADR/DEC, corrección histórica o una inconsistencia descubierta
-después; no se crea sólo para cambiar wording preventivo. La integración y sus
-hechos posteriores se interpretan conforme al
-[Work Unit Lifecycle](./WORK_UNIT_LIFECYCLE.md), sin anticipar `Done` ni iniciar
-el siguiente PBI.
+- El trabajo de producto normalmente enlaza roadmap/backlog/PBI.
+- Bugs, recovery, mantenimiento o governance pueden cerrar como Work Unit
+  explícitamente autorizada sin inventar un PBI.
+- Un Sprint es un timebox/capacity construct opcional; no es un gate universal
+  de ingeniería.
+- La aceptación Owner se exige cuando aporta juicio de producto, ambiente,
+  riesgo o arquitectura, no como frase Markdown duplicada.
+- El siguiente PBI nunca comienza automáticamente por cerrar el anterior.
 
-### Selección de gates durante el piloto WF-001–WF-010
+## Cierre e integración
 
-Las pruebas focalizadas aportan feedback durante Owner iteration; el candidato
-ejecutable congelado conserva un full local autoritativo. `DOCS_ONLY` puede usar
-su gate especializado únicamente cuando el clasificador fail-closed demuestra
-que todo el delta es documentación inequívocamente no ejecutable. Ante un path
-desconocido, delta mixto, symlink, modo ejecutable o cambio de test, workflow,
-policy, script, configuración, asset/runtime o evidencia ejecutable, se exige
-el pipeline completo.
+Un PR de cierre separado sólo existe si hay un cambio real de repositorio:
+governance independiente, ADR/DEC, corrección documental descubierta después o
+reconciliación histórica. No es el mecanismo normal para cambiar wording o
+copiar evidencia ya disponible.
 
-El clasificador general y la verified-tree attestation sólo generan evidencia
-shadow durante el piloto. No pueden reducir exact-main; únicamente `DOCS_ONLY`
-usa su gate reducido autorizado por separado. Un hotfix de migración conserva
-full exact-main incluso con tree equivalente. Los objetivos de menos
-de 45 minutos para cierre normal y menos de 10 para DOCS_ONLY son métricas, no
-waivers ni criterios de aceptación.
-
-## Evidencia de cierre
-
-| Campo | Valor |
-|---|---|
-| Elemento | `PBI-###`, `BUG-###` o `TASK-###` |
-| Criterios | Enlace TBD |
-| Cambios/PR | Enlace TBD |
-| Pruebas | Enlace TBD |
-| Evidencia QA | Enlace TBD |
-| Riesgos residuales | `RISK-###` / Ninguno identificado |
-| Release | Versión/enlace TBD o `No aplica` justificado |
-| Aprobaciones | TBD |
+`Done` y `Released` permanecen separados. Un release exige su propia autoridad,
+artefacto, ambiente y validación. Los gates técnicos actuales, incluido el
+pipeline completo cuando corresponde, no se reducen por esta simplificación.
 
 ## Trabajo diferido
 
-Un pendiente descubierto durante el cierre debe registrarse con ID, impacto y prioridad propuesta. Que exista un nuevo PBI no convierte automáticamente en aceptable un incumplimiento del PBI actual; debe confirmarse que el criterio original sigue satisfecho.
-
-## Aplicación pendiente
-
-DEC-063 resolvió el modelo base, los perfiles por tipo, la clasificación de
-riesgo y la autoridad de excepciones. VC-024 satisfizo DEC063-C01/C03/C04.
-DEC063-C02/C05/C06/C07/C08 permanecen `Pending`. Accesibilidad, rendimiento,
-retención y herramientas conservan las autoridades de sus contratos
-específicos.
+Un pendiente descubierto durante el cierre conserva ID, impacto, owner y
+prioridad propuesta cuando necesita seguimiento. Crear trabajo futuro no
+convierte automáticamente en aceptable un incumplimiento actual.
 
 ## Próxima revisión
 
-- **Fecha:** antes de materializar una condición pendiente o cuando cambie DEC-063.
-- **Disparador:** riesgo/checklist/waiver o cambio del contrato.
-- **Documentos relacionados:** [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md), [Definition of Ready](./DEFINITION_OF_READY.md), [Quality Strategy](../quality/QUALITY_STRATEGY.md), [Release Process](./RELEASE_PROCESS.md), [Traceability Model](./TRACEABILITY_MODEL.md).
+Cuando cambien DEC-063, la clasificación de riesgo, los gates técnicos, los
+ambientes materializados o la política de release.

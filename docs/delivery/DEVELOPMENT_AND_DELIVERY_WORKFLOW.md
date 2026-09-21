@@ -6,8 +6,10 @@
 - **Alcance:** Desarrollo, integración, despliegue y operación de SR Taller 2.0.
 - **Autoridad:** Define el flujo end-to-end. Los contratos especializados
   enlazados mandan sobre su materia y no pueden ampliar autoridad por sí solos.
-- **Fuente de verdad:** repositorio, Git y evidencia actual del runtime. El chat,
-  la memoria humana y el contexto de un agente no son autoridad.
+- **Fuente de verdad:** la
+  [matriz de autoridad](SOURCE_OF_TRUTH.md) asigna cada hecho a su sistema de
+  registro. El chat, la memoria humana y el contexto de un agente no son
+  autoridad.
 - **Próxima revisión:** cuando cambie `main`, la plataforma de despliegue, un
   ambiente, la estrategia de promoción o un gate de datos/seguridad.
 
@@ -19,17 +21,11 @@ capacidades operativas sin copiar el acoplamiento del sistema anterior. La
 dirección de producto se conserva en la [visión](../product/PRODUCT_VISION.md)
 y el [alcance](../product/PRODUCT_SCOPE.md).
 
-La baseline actual contiene Trusted Station Context, Users, roles/capabilities,
-PIN, Operational Session, autorización contextual, atribución de negocio,
-Repair Workstream PBI-039, Concurrent Operational Sessions PBI-043 y el
-Catalog/Pricing core PBI-040. Owner Acceptance, PR #49/#50/#51 y Preview PASS
-quedaron seguidos por el cierre documental PR #52, integrado como `a060494`
-con exact-main CI `34814070839` PASS. PBI-040 es `Done`, `Released: NO`.
-PBI-041 está `Done`: PR #58 `cb1dca3` pasó CI exact-main `35544551782` tras
-PR #55/#56/#57, exact-main CI y Preview PASS. SPRINT-03 está `Closed`, Current
-PBI `NONE` y WIP `0/1`. La
+El estado funcional, el PBI vigente y los hechos de integración no se copian
+en este manual. Se consultan en roadmap/backlog, Git/GitHub/CI, runtime y
+`ACTIVE_CHECKLIST` conforme a la matriz. La
 [reconciliación de workflow de 2026-09](WORKFLOW_RECONCILIATION_2026-09.md)
-es governance independiente y no selecciona un PBI de producto.
+es historia de la transición, no política operacional vigente.
 
 ## Jerarquía de autoridad documental
 
@@ -37,6 +33,7 @@ es governance independiente y no selecciona un PBI de producto.
 |---|---|
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | Entrada obligatoria y lecturas mínimas antes de cambiar el proyecto. |
 | Este documento | Workflow end-to-end y clasificación `CURRENT` / `PLANNED` / `REQUIRED BEFORE PRODUCTION`. |
+| [Source-of-Truth Contract](SOURCE_OF_TRUTH.md) | Autoridad única para cada hecho operativo y política de evidencia derivable. |
 | [Workflow Efficiency Decisions](DEVELOPMENT_WORKFLOW_EFFICIENCY_DECISIONS.md) | WF-001–WF-010: Fase 1, DOCS_ONLY, preflights, shadow classifier y attestation. |
 | [MVP Operating Roadmap](../product/MVP_OPERATING_ROADMAP.md) | Fases aprobadas, Sprint/PBI actual, secuencia y gates del MVP. |
 | [BRANCH_POLICY.md](./BRANCH_POLICY.md) | Contrato de `main`, ramas temporales e integración. |
@@ -46,39 +43,36 @@ es governance independiente y no selecciona un PBI de producto.
 | [Migration Policy](../operations/MIGRATION_POLICY.md) | Diseño, ejecución y verificación de migraciones. |
 | [Backup and Recovery](../operations/BACKUP_AND_RECOVERY.md) | Protección y restauración de datos. |
 | ADRs aceptados | Decisiones arquitectónicas dentro de su alcance exacto. |
-| PBI, manifests y evidencia | Historia y prueba de una implementación concreta; no sustituyen el estado actual. |
+| PBI y evidencia no derivable | Requisito/historia de producto y observaciones o decisiones que los sistemas técnicos no conservan. |
 
 Si dos documentos parecen contradecirse, primero se distingue si uno es
 evidencia histórica o propuesta. Para el estado operativo manda la evidencia
 actual; para arquitectura manda el ADR aceptado aplicable; para una decisión de
 producto o una mutación sensible manda la autorización Owner correspondiente.
 
-## Source of truth rule
+## Source-of-truth rule
 
-El orden de evidencia es:
-
-1. runtime e infraestructura reales para el estado operativo actual;
-2. Git actual para código, baseline e historia;
-3. documentación canónica aceptada para contratos y proceso;
-4. ADRs, PBI y evidencia para decisiones específicas e historia;
-5. chat, memoria humana o contexto de IA sólo como ayuda no autoritativa.
-
-Si una persona o IA recuerda algo distinto, debe verificar y reconciliar contra
-estas fuentes antes de actuar.
+Cada pregunta se verifica en la autoridad que le corresponde según
+[`SOURCE_OF_TRUTH.md`](SOURCE_OF_TRUTH.md); no existe un snapshot documental
+universal. Si una persona o IA recuerda algo distinto, debe verificarlo antes
+de actuar. La información derivable no necesita una copia Markdown para ser
+válida.
 
 ## Autoridad de delivery y review
 
-La autorización Owner de un PBI puede incluir una delegación explícita y
-acotada de delivery: rama temporal, implementación, pruebas, commits, push
-ordinario, PR, CI, remediación legítima, merge ordinario, sincronización de
-`main`, Preview dentro del alcance, evidencia y limpieza de ramas absorbidas.
-No incluye iniciar otro PBI, ampliar negocio/arquitectura, Production, cambios
-destructivos de datos Owner, force push/rewrite, rollback inseguro ni aceptar
-riesgos materiales por silencio.
+Iniciar una Work Unit exige autorización explícita de objetivo y alcance. Una
+vez autorizada, el agente puede realizar la implementación local ordinaria,
+pruebas focalizadas y commits lógicos dentro de ese límite sin pedir permiso
+por cada paso. La autorización debe ampliarse ante cambio material de alcance,
+acción destructiva/irreversible, decisión sensible de datos o seguridad,
+decisión arquitectónica, escritura remota no incluida en el workflow de
+promoción autorizado, merge o deploy/ambiente cuando su política los reserve.
 
-La revisión independiente es una prueba de proceso basada en alcance, HEAD
-exacto, criterios, findings y evidencia. Una cuenta GitHub concreta puede
-participar pero no es un requisito permanente del modelo.
+El review es proporcional al riesgo y se basa en alcance, HEAD exacto,
+criterios y findings. En cambios `NORMAL` puede realizarlo otra persona, agente
+o contexto competente sin fingir independencia organizacional. Cambios
+`SENSITIVE` o `ARCHITECTURAL` exigen una segunda revisión deliberada conforme a
+DoD. Ninguna cuenta GitHub concreta es requisito permanente.
 
 **SR Taller 2.0 must not depend operationally on a specific AI model or
 agent.** Codex, otra IA, un desarrollador humano o un operador autorizado deben
@@ -129,42 +123,6 @@ journal local y disponibilidad de fixtures. No inicia ni detiene procesos y no
 migra, siembra o resetea la base. Un reset sigue necesitando autorización
 explícita.
 
-## Current state snapshot
-
-Actualizar esta sección cuando cambie cualquiera de estos hechos.
-
-| Fact | Current state |
-|---|---|
-| Repository baseline | `main` |
-| Audited repository state | [`docs/CURRENT_STATE.md`](../CURRENT_STATE.md) |
-| Authoritative CI for PBI-041 canonical closure | Green: exact-main run `35544551782` on `cb1dca3edc945776face00ea3b2d6213fa0c7b37` |
-| Program / phase | MVP Operating Roadmap / Pricing Catalog |
-| Sprint | SPRINT-03 `Closed`; WIP `0/1` |
-| Current / next PBI | Current: NONE; next candidate: NONE |
-| Current blocking gate | No active PBI; Production unauthorized |
-| GitHub repository visibility | Public; changed externally to remove the Actions billing blocker |
-| Preview | Materialized |
-| Preview URL | `https://preview.srtaller.dev` |
-| Preview deployment platform | Dokploy |
-| Dokploy project / environment | `SR Taller` / `Preview` |
-| Preview application | `srtaller-app` |
-| Preview server | `srtaller-app-01` |
-| Preview server IP | `204.168.203.127` |
-| Preview source / build | `main` / `Dockerfile` |
-| Application internal port | `3000` |
-| Preview database | `srtaller-postgres` |
-| PostgreSQL | `18.4` |
-| PostgreSQL exposure | Internal Dokploy network; no public port |
-| Autodeploy | Disabled; deployments are manual |
-| Staging | Not materialized |
-| Production | Not materialized |
-| Redis | Not materialized |
-| Workers | Not materialized |
-| WAHA | Not materialized |
-| R2 application storage | Not materialized |
-| Production customer data | Not present |
-| Product API | Repair endpoints, Trusted Station Context, User Directory, Roles/Capabilities/Assignments, PIN, Session, contextual authorization, PBI-028 business audit/real actor and PBI-038 Branch timezone foundation are integrated |
-
 ## Current, planned and required before Production
 
 | Classification | Meaning | Items |
@@ -178,17 +136,11 @@ Actualizar esta sección cuando cambie cualquiera de estos hechos.
 Este es el flujo normal. Un agente no inventa otro sin una decisión explícita.
 
 ```text
-Roadmap
+roadmap/backlog/PBI cuando sea trabajo de producto
         ↓
-Sprint activo
+autorización explícita de objetivo y alcance
         ↓
-PBI actual
-        ↓
-Discovery / decisiones Owner si aplican
-        ↓
-autorización Owner de implementación
-        ↓
-Work Unit / temporary branch / ACTIVE_CHECKLIST
+Work Unit / rama temporal / ACTIVE_CHECKLIST
         ↓
 implementation
         ↓
@@ -204,11 +156,9 @@ push origin/main
         ↓
 CI autoritativo de main GREEN
         ↓
-Owner Acceptance
+validación de ambiente o aceptación de producto cuando el alcance la requiere
         ↓
-Definition of Done y evidencia completas
-        ↓
-PBI Done
+Definition of Done aplicable / cierre derivado
         ↓
 siguiente PBI sólo si Owner lo selecciona, no iniciado
 ```
@@ -219,23 +169,23 @@ el paso siguiente.
 
 ### WIP y documentación canónica
 
-- Existe como máximo un PBI operativo en ejecución o cierre.
+- Existe como máximo un PBI de producto operativo en ejecución o cierre.
 - Existe como máximo una Work Unit operativa activa, salvo autorización
   explícita contraria. Ésta puede corresponder a un PBI o a un bug, recovery o
   cambio de governance autorizado; no altera el lifecycle del PBI.
 - El PBI siguiente puede estar ordenado o preparado, pero no se inicia por
   efecto del cierre anterior.
-- El merge funcional conserva el PBI `In review` hasta que el CI del nuevo
-  `main`, la Owner Acceptance y la DoD aplicable pasen.
-- Por defecto la evidencia y documentación canónica afectada viajan dentro del
-  mismo candidato de integración que la funcionalidad. Un PR documental
-  posterior sólo procede para governance independiente, ADR/DEC, corrección
-  histórica o inconsistencia descubierta después.
+- El cierre de producto exige los criterios y aceptación aplicables; la
+  aceptación ocurre en review o validación del ambiente cuando allí puede
+  evaluarse el comportamiento. No requiere repetirla en Markdown.
+- La documentación canónica afectada viaja con el cambio. Evidencia narrativa
+  separada se conserva sólo si aporta observación, decisión o riesgo no
+  derivable.
 - Si falta evidencia, aceptación o siguiente prioridad, el flujo falla cerrado
   y no salta silenciosamente a otro PBI.
-- Merge ordinario autorizado y CI exact-main GREEN materializan `Done` cuando
-  también se cumplen aceptación, DoD y evidencia. No se crea otro PR sólo para
-  reescribir el wording preventivo.
+- Merge ordinario autorizado y CI exact-main GREEN satisfacen sus predicados;
+  el cierre se deriva cuando también se cumplen DoD y validaciones aplicables.
+  No se crea otro PR sólo para reescribir estado derivable.
 
 `Done` y `Released` permanecen separados. Un deploy sólo aparece dentro del
 golden path de un PBI cuando su alcance o un release posterior lo autoriza.
@@ -602,7 +552,7 @@ backups, Staging, Production o promoción de artefactos debe evaluar si este
 workflow también necesita actualización. No se modifica mecánicamente cuando
 el contrato no cambió.
 
-Cuando cambie un hecho del `CURRENT STATE SNAPSHOT`, el mismo cambio actualiza
-esta sección y los contratos especializados afectados. Las propuestas e
-historias no se reescriben para fingir que siempre describieron la realidad
-actual; se marcan como históricas o se enlaza su sucesor canónico.
+Cuando cambie una regla permanente, se actualiza su contrato dueño. Los hechos
+derivables se consultan en Git/GitHub/CI/runtime y no se copian aquí. Las
+propuestas e historias no se reescriben para fingir que siempre describieron
+la realidad actual; se marcan como históricas o se enlaza su sucesor canónico.

@@ -74,7 +74,7 @@ Leer sólo las fuentes necesarias para el cambio, sin confundir documentos
 | Accesibilidad | [`ACCESSIBILITY_STRATEGY.md`](docs/quality/ACCESSIBILITY_STRATEGY.md) |
 | Testing y gates | [`QUALITY_STRATEGY.md`](docs/quality/QUALITY_STRATEGY.md), [DEC-051](docs/decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md), [`DEFINITION_OF_DONE.md`](docs/delivery/DEFINITION_OF_DONE.md) |
 | Delivery, ramas y ambientes | [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md), [`BRANCH_POLICY.md`](docs/delivery/BRANCH_POLICY.md), [`ENVIRONMENTS.md`](docs/delivery/ENVIRONMENTS.md) |
-| Snapshot integrado/runtime | [`CURRENT_STATE.md`](docs/CURRENT_STATE.md), siempre revalidado contra Git y runtime |
+| Autoridad de estado | [`SOURCE_OF_TRUTH.md`](docs/delivery/SOURCE_OF_TRUTH.md): Git/GitHub/CI/runtime para hechos derivables; contratos para reglas |
 | Trabajo actual | [`ACTIVE_CHECKLIST.md`](docs/work/ACTIVE_CHECKLIST.md) |
 
 Antes de crear UI, buscar primero componentes, patrones y tokens compartidos.
@@ -113,7 +113,7 @@ del browser, servidor o proceso no sustituye `Branch.timeZone`.
   [`BRANCH_POLICY.md`](docs/delivery/BRANCH_POLICY.md).
 - No descartar cambios existentes, reescribir historia, hacer force push,
   merge, deploy, tocar datos remotos o cambiar infraestructura sin autoridad.
-- Checks verdes no conceden Owner Acceptance, merge, release ni deploy.
+- Checks verdes no conceden merge, aceptación de producto, release ni deploy.
 - Preview es el único ambiente remoto materializado. Staging y Production
   siguen planeados; no afirmar que existen ni promover hacia ellos.
 - Commits, PR, CI, merge, deploy, validación y cierre son estados distintos.
