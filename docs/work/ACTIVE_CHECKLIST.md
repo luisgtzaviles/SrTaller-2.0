@@ -8,7 +8,7 @@ risk: HIGH
 shadow_risk: SENSITIVE
 branch: chore/pbi-041-transaction-budget-review
 base_sha: 4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5
-status: ACTIVE
+status: BLOCKED
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -20,13 +20,15 @@ last_updated: 2026-09-21
 - **Sprint:** none.
 - **Current PBI:** `NONE`; this is a Quality investigation dependency.
 Current PBI: NONE
-- **Status:** `ACTIVE`.
-- **Progress:** `1 / 7` investigation blocks complete.
-- **Current work:** trace the origin, authority and evidence behind the
-  15-second PostgreSQL transaction gate.
-- **Next block:** compare historical requirements, measurement boundaries and
-  prior observations before deciding whether a bounded diagnostic is needed.
-- **Blockers:** none for the investigation; TL-02 remains paused and preserved.
+- **Status:** `BLOCKED` pending an Owner contract decision.
+- **Progress:** `7 / 7` investigation blocks complete.
+- **Current work:** investigation complete; the existing promotion policy is
+  unchanged and TL-02 remains paused.
+- **Next block:** Owner decision on whether the 15-second historical target
+  remains a one-sample hard gate or becomes a calibrated capacity target with
+  mandatory diagnostics.
+- **Blockers:** an explicit Owner decision is required before changing the
+  governed performance contract or resuming TL-02.
 - **Last updated:** 2026-09-21, America/Hermosillo.
 
 ## Objective
@@ -80,30 +82,30 @@ evidence for that stricter boundary must be established before remediation.
 ## Plan
 
 - [x] Pause and preserve TL-02 on its reconciled branch.
-- [~] Trace the 15-second requirement and classify its authority.
-- [ ] Reconstruct the historical PBI-041 performance contract.
-- [ ] Compare publish and transaction measurement boundaries.
-- [ ] Assess prior evidence quality and current variance.
-- [ ] Run one bounded diagnostic campaign only if needed.
-- [ ] Record classification, recommendation and required Owner decision.
+- [x] Trace the 15-second requirement and classify its authority.
+- [x] Reconstruct the historical PBI-041 performance contract.
+- [x] Compare publish and transaction measurement boundaries.
+- [x] Assess prior evidence quality and current variance.
+- [x] Run one bounded diagnostic campaign only if needed.
+- [x] Record classification, recommendation and required Owner decision.
 
 ## Current
 
-TL-02 is frozen on its own branch after a material PBI-041 transaction result
-of 20.534 seconds against 15 seconds; its publish duration remained inside the
-historical 30-second budget. This Quality branch starts from current `main` and
-contains no TL-02 implementation.
+The Quality investigation is complete. The transaction interval is measured
+correctly and has conceptual value, but current evidence does not justify the
+historical 15-second target as a blocking one-sample promotion threshold. No
+product, threshold or gate was changed.
 
 ## Next
 
-Use Git history, accepted contracts, test code and existing evidence to
-determine when and why the transaction limit appeared and whether it protects a
-distinct performance failure mode.
+Obtain an explicit Owner decision on the recommended harness contract, then
+open a separate remediation Work Unit if authorized. TL-02 remains frozen on
+its preserved branch until the dependency is resolved.
 
 ## Blockers
 
-None for read-only investigation. Any policy change or product remediation
-requires a new explicit Owner decision after the evidence is reported.
+`OWNER_DECISION_REQUIRED`: changing the hard-gate semantics is outside this
+investigation's authority. The existing 15-second assertion remains in force.
 
 ## Important Discoveries
 
@@ -111,17 +113,30 @@ requires a new explicit Owner decision after the evidence is reported.
 - The Quality Work Unit starts from integrated `main`
   `4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5`.
 - The observed failing publish and transaction measurements were effectively
-  identical; the cause and contract value remain under investigation.
+  identical because nearly all benchmarked service work occurs inside the
+  transaction.
+- The 15-second value entered accepted readiness documents in `0051c846`; the
+  repository does not contain its empirical derivation or an explicit Owner
+  selection of that exact number.
+- The blocking one-sample assertion was introduced later by `6f72c569` as a
+  Quality implementation choice.
+- Three bounded native runs produced transaction durations of 1,475.1 ms,
+  18,403.9 ms and 1,456.4 ms with no product, schema, fixture or configuration
+  change. The middle run passed the 30-second publish gate but failed the
+  15-second transaction gate.
+- Classification: `JUSTIFIED_BUT_THRESHOLD_UNSUPPORTED`; no product regression
+  was demonstrated.
 
 ## Focused Verification
 
 - [x] Branch, baseline, tracked tree and unrelated `.DS_Store` checked.
 - [x] TL-02 branch frozen before starting the Quality Work Unit.
-- [ ] Git history and accepted-contract trace.
-- [ ] Measurement-boundary inspection.
-- [ ] Evidence/sample-quality review.
-- [ ] Bounded diagnostic, if justified.
-- [ ] Work Unit checker, documentation links and `git diff --check`.
+- [x] Git history and accepted-contract trace.
+- [x] Measurement-boundary inspection.
+- [x] Evidence/sample-quality review.
+- [x] Bounded diagnostic: three sequential fresh-database observations retained.
+- [x] Work Unit checker, documentation links, secret scan and
+  `git diff --check`.
 
 ## Promotion Gates
 
