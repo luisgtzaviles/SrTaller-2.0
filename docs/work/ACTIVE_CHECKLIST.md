@@ -21,12 +21,12 @@ last_updated: 2026-09-20
 - **Current PBI:** `NONE`; TL-01 es arquitectura/planificación y no implementa
   producto.
 Current PBI: NONE
-- **Estado general:** `ACTIVE — ARCHITECTURE`.
-- **Progreso:** `7 / 8` bloques completados.
-- **Trabajo actual:** ejecutar validación documental proporcional y preparar
-  Owner Review.
+- **Estado general:** `ACTIVE — OWNER REVIEW`.
+- **Progreso:** `8 / 8` bloques completados para el checkpoint TL-01.
+- **Trabajo actual:** Owner Review del contrato, ADR-015 y decisiones
+  residuales.
 - **Siguiente bloque:** Owner decide ADR-015 y `TLD-001–009`; TL-02 permanece
-  sin iniciar.
+  sin iniciar hasta autorización independiente.
 - **Bloqueos:** ninguno para entregar TL-01 a Owner Review. ADR-015 y las
   decisiones residuales aplicables bloquean implementación futura.
 - **Última actualización:** 2026-09-20, America/Hermosillo.
@@ -95,15 +95,16 @@ debilitar las invariantes operativas existentes.
 - [x] Definir Branch V1, starter authority y activación de Tenant.
 - [x] Definir enrollment challenge y auditoría/invariantes.
 - [x] Refinar TL-02 en adelante con dependencias y gates.
-- [~] Reconciliar documentos e índices y ejecutar validación proporcional.
+- [x] Reconciliar documentos e índices y ejecutar validación proporcional.
 
 ## Current
 
-Validación de links, consistencia, secretos, diff y clasificación de riesgo.
+TL-01 listo para Owner Review; no existe implementación iniciada.
 
 ## Next
 
-Cerrar el handoff de TL-01 en Owner Review sin iniciar implementación.
+Resolver o diferir explícitamente ADR-015 y `TLD-001–009`; después seleccionar
+un Work Unit futuro sólo mediante nueva autorización.
 
 ## Blockers
 
@@ -122,14 +123,20 @@ depende de cada una. ADR-015 debe permanecer `Proposed` hasta Owner Acceptance.
   elegido por el usuario y prohíbe usar slug/host como autoridad.
 - PBI-031 ya reserva administración sensible de Stations, pero no define el
   challenge de 10 minutos ni el contexto administrativo que lo emite.
+- El clasificador vigente trata el cambio de contratos arquitectónicos como
+  `CROSS_MODULE_HIGH_RISK` y reserva pipeline `FULL` para promoción. TL-01 se
+  detiene en Owner Review; no se declara `READY_FOR_PROMOTION`.
 
 ## Focused Verification
 
-- [ ] `work-unit:check`.
-- [ ] Markdown links y consistencia documental.
-- [ ] Secret-pattern scan.
-- [ ] `git diff --check`.
-- [ ] Gate proporcional exigido por el clasificador.
+- [x] `work-unit:check` — PASS.
+- [x] Markdown links y consistencia documental — PASS.
+- [x] Secret-pattern scan — PASS.
+- [x] `git diff --check` — PASS.
+- [x] `verify:architecture` — PASS.
+- [x] Clasificación vigente registrada: `CROSS_MODULE_HIGH_RISK` / pipeline
+  `FULL`; ejecución del pipeline completo queda para promoción, no para este
+  checkpoint de Owner Review.
 
 ## Promotion Gates
 
@@ -155,4 +162,5 @@ QUESTION-005 y contratos afectados están reconciliados; el ADR de control
 plane delimita explícitamente su relación con ADR-010/011/012/013/014; lifecycle,
 threat models, starter authority, Branch y enrollment tienen invariantes y
 pruebas propuestas; TL-02 en adelante poseen alcance, dependencias, decisiones
-residuales y gates; y no existe cambio de producto.
+residuales y gates; las validaciones focalizadas pasan, la clasificación de
+promoción queda registrada y no existe cambio de producto.
