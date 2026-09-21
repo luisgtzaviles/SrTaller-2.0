@@ -1,163 +1,158 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: Tenant Lifecycle MVP — Discovery & Planning
-iteration: 1 - Authorized Start
-type: DISCOVERY
-risk: SENSITIVE
-shadow_risk: SENSITIVE
-branch: chore/tenant-lifecycle-mvp-discovery
+work_unit: TL-01 — Owner Decisions + Lifecycle Contract
+iteration: 1 - Owner Decisions Accepted
+type: ARCHITECTURE
+risk: ARCHITECTURAL
+shadow_risk: ARCHITECTURAL
+branch: chore/tl-01-lifecycle-contract
 base_sha: b2a38088b5d1673417ad7dd8dcfee34ec2349119
 status: ACTIVE
 closure_mode: DERIVED
-last_updated: 2026-09-21
+last_updated: 2026-09-20
 -->
 
 ## Identity
 
-- **Milestone:** Tenant Lifecycle MVP — Discovery & Planning.
+- **Milestone:** Tenant Lifecycle MVP.
+- **Work Unit:** TL-01 — Owner Decisions + Lifecycle Contract.
 - **Sprint:** ninguno; no se inició Sprint de producto.
-- **Current PBI:** `NONE`; este Work Unit no selecciona un PBI.
+- **Current PBI:** `NONE`; TL-01 es arquitectura/planificación y no implementa
+  producto.
 Current PBI: NONE
-- **Estado general:** `ACTIVE — OWNER REVIEW`; discovery completo.
-- **Progreso:** `7 / 7` bloques de discovery completados.
-- **Trabajo actual:** artefacto y propuesta listos para revisión del Owner.
-- **Siguiente bloque:** decisiones Owner `TL-001` a `TL-016`; no se inició
-  ningún Work Unit de implementación.
-- **Bloqueos:** ninguno para discovery/Owner Review; promoción remota no está
-  autorizada y el último `verify:full` quedó bloqueado por el benchmark 10k
-  heredado de PBI-041 (`33,305 ms / 30,000 ms`).
-- **Última actualización:** 2026-09-21, America/Hermosillo.
+- **Estado general:** `ACTIVE — ARCHITECTURE`.
+- **Progreso:** `7 / 8` bloques completados.
+- **Trabajo actual:** ejecutar validación documental proporcional y preparar
+  Owner Review.
+- **Siguiente bloque:** Owner decide ADR-015 y `TLD-001–009`; TL-02 permanece
+  sin iniciar.
+- **Bloqueos:** ninguno para entregar TL-01 a Owner Review. ADR-015 y las
+  decisiones residuales aplicables bloquean implementación futura.
+- **Última actualización:** 2026-09-20, America/Hermosillo.
 
 ## Objective
 
-Auditar SR Taller 2.0 y la referencia conductual 1.0 para proponer el Tenant Lifecycle MVP, sus decisiones Owner, riesgos, Work Units futuras y escenario E2E, sin implementar producto.
+Materializar las decisiones Owner TL-001–016 como contrato arquitectónico del
+Tenant Lifecycle MVP, resolver su relación con ADRs aceptados y dejar TL-02 en
+adelante listos para planificación de implementación, sin implementar producto.
 
 ## Why
 
-Definir un camino mínimo, coherente y seguro desde el registro público de un
-taller hasta su operación diaria, usando lo que 2.0 ya ofrece y tomando 1.0
-únicamente como referencia de comportamiento.
+El sistema operativo actual parte de una Station confiable. El Tenant
+Lifecycle necesita un control plane administrativo previo y separado que pueda
+crear de forma segura el primer Tenant, su autoridad y su primera Branch sin
+debilitar las invariantes operativas existentes.
 
 ## In Scope
 
-- Auditar implementación, contratos y pruebas existentes de SR Taller 2.0.
-- Auditar los flujos equivalentes disponibles en SR Taller 1.0 sin modificarlo.
-- Mapear capacidades existentes, parciales y faltantes del lifecycle Tenant.
-- Identificar decisiones Owner pendientes y riesgos de seguridad/multitenancy.
-- Proponer el Tenant Lifecycle MVP mínimo y Work Units futuras acotadas.
-- Definir un escenario E2E con dos tenants, múltiples sucursales, usuarios y
-  estaciones.
+- Registrar la dirección Owner aprobada TL-001–016.
+- Reconciliar QUESTION-005 y contratos de tenancy, identidad, autorización,
+  Branch y Station.
+- Crear la decisión arquitectónica necesaria para separar control plane y
+  contexto operativo.
+- Definir registration attempt, verificación, bootstrap, ONBOARDING y ACTIVE.
+- Definir threat models de identidad/sesión/recovery/reauth administrativa y
+  enrollment de Station.
+- Definir starter Tenant Admin authority sin elevación aportada por cliente.
+- Definir Branch V1 y auditoría/invariantes de seguridad.
+- Refinar TL-02 en adelante como Work Units implementation-ready.
 
 ## Out of Scope
 
-- Implementación de funcionalidad de producto, migraciones o cambios runtime.
-- SaaS Super Admin, billing, planes, suscripciones y operación comercial SaaS.
-- Copiar la arquitectura, persistencia o modelo de seguridad de SR Taller 1.0.
-- Seleccionar o iniciar un PBI de implementación.
-- Push, PR, merge, deploy o cambios de infraestructura/remotos.
+- Código de producto, endpoints, UI, migraciones, schemas o datos runtime.
+- Seleccionar o iniciar TL-02 o un PBI de implementación.
+- Billing, planes, Super Admin, soporte privilegiado o suspensión comercial.
+- Copiar arquitectura, credenciales o seguridad de SR Taller 1.0.
+- Push, PR, merge, deploy o cambios remotos/de infraestructura.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`CURRENT_STATE.md`](../CURRENT_STATE.md)
-- [`MVP_OPERATING_ROADMAP.md`](../product/MVP_OPERATING_ROADMAP.md)
-- Contratos vigentes de tenancy, identidad/acceso, sucursales/estaciones,
-  seguridad, diseño y pruebas.
+- [`TENANT_LIFECYCLE_MVP_DISCOVERY.md`](../product/TENANT_LIFECYCLE_MVP_DISCOVERY.md)
+- [`MULTITENANCY_MODEL.md`](../architecture/MULTITENANCY_MODEL.md)
+- [`IDENTITY_ACCESS_AND_PERMISSIONS.md`](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md)
+- [`BRANCH_AND_DEVICE_MODEL.md`](../architecture/BRANCH_AND_DEVICE_MODEL.md)
+- ADR-004 y ADR-010 a ADR-014.
 
 ## Risks
 
-- Confundir disponibilidad de piezas aisladas con un lifecycle E2E completo.
-- Reutilizar conductas inseguras de 1.0 junto con su referencia funcional.
-- Dejar autoridad tenant/branch/station controlada por datos del cliente.
-- Crear tenants parcialmente provisionados si el bootstrap no es atómico.
-- Diseñar inscripción de estaciones sin credenciales rotables, auditables y
-  acotadas al tenant/sucursal.
-- Inventar decisiones de producto sobre registro, propietario o recuperación.
+- Crear una excepción administrativa implícita al requisito operativo de
+  Station en ADR-010/012.
+- Confundir email/password administrativo con PIN/Operational Session.
+- Permitir tenant, roles, capabilities o Branch authority desde el payload.
+- Dejar un Tenant parcialmente provisionado o un último Admin revocable.
+- Exponer/reutilizar verification, recovery o enrollment secrets.
+- Declarar implementation-ready decisiones de seguridad que el Owner no tomó.
 
 ## Plan
 
-- [x] Auditar contratos y estado actual de SR Taller 2.0.
-- [x] Auditar el comportamiento equivalente disponible en SR Taller 1.0.
-- [x] Consolidar matriz existente / parcial / faltante del lifecycle.
-- [x] Documentar decisiones Owner pendientes y riesgos de seguridad.
-- [x] Proponer el MVP mínimo y su secuencia de Work Units futuras.
-- [x] Definir escenario de aceptación E2E multitenant.
-- [x] Validar documentación, links, consistencia y Work Unit contract.
+- [x] Registrar autorización y decisiones Owner TL-001–016.
+- [x] Auditar compatibilidad y conflictos con ADRs/contratos aceptados.
+- [x] Materializar ADR del control plane y lifecycle.
+- [x] Definir threat model administrativo y decisiones residuales.
+- [x] Definir Branch V1, starter authority y activación de Tenant.
+- [x] Definir enrollment challenge y auditoría/invariantes.
+- [x] Refinar TL-02 en adelante con dependencias y gates.
+- [~] Reconciliar documentos e índices y ejecutar validación proporcional.
 
 ## Current
 
-Discovery y validación completos; el Work Unit se encuentra en Owner Review.
+Validación de links, consistencia, secretos, diff y clasificación de riesgo.
 
 ## Next
 
-Resolver las decisiones `TL-001` a `TL-016`. Sólo después podrá autorizarse el
-primer Work Unit de implementación propuesto; ninguno quedó seleccionado.
+Cerrar el handoff de TL-01 en Owner Review sin iniciar implementación.
 
 ## Blockers
 
-Ninguno para completar este discovery. La implementación está
-intencionalmente detenida hasta recibir decisiones Owner explícitas. Una
-promoción futura requiere resolver o reproducir de forma autoritativa el fallo
-no determinista del benchmark 10k heredado de PBI-041: el primer gate pasó en
-`2,034.5 ms`, pero el rerun sobre el HEAD final tardó `33,305 ms` y excedió el
-presupuesto de `30,000 ms`; no se remedia dentro de este alcance.
+None known for TL-01. `TLD-001–009` están documentadas como
+`OWNER DECISION REQUIRED` y bloquean sólo el Work Unit de implementación que
+depende de cada una. ADR-015 debe permanecer `Proposed` hasta Owner Acceptance.
 
 ## Important Discoveries
 
-- 2.0 ya separa Tenant, Branch, Station, User, Role y Operational Session, pero
-  la existencia de esas piezas no prueba todavía un onboarding público E2E.
-- 1.0 contiene flujos de alta de taller, sucursal, dispositivo, selección de
-  sucursal y login por PIN; su arquitectura y seguridad no son reutilizables.
-- 2.0 sólo expone el bootstrap de Station para desarrollo; la administración
-  productiva de create/link/relink/unlink/revoke permanece en PBI-031.
-- El primer User puede provisionarse una sola vez mediante un use case
-  server-only, pero no existe una transacción pública que cree Tenant, Branch,
-  Owner/Admin, rol y credenciales como una sola unidad recuperable.
-- La administración actual de Users/Roles y la Session PIN dependen primero de
-  una Station confiable; no resuelven por sí mismas el acceso administrativo
-  previo a la primera Station.
-- 1.0 demuestra el orden comprensible para el Owner, pero también conserva PIN
-  inicial conocido/plaintext, alta no atómica y auto-vinculación de equipo;
-  esos mecanismos se rechazan explícitamente como diseño para 2.0.
-- El SaaS Super Admin y billing quedan expresamente fuera del initiative.
+- El discovery previo permanece en la misma línea de commits y no fue
+  promovido por separado; TL-01 continúa el mismo objetivo en una única rama.
+- ADR-010 contempla contextos administrativos separados, pero ADR-012 formula
+  Station + Operational Session como requisito universal de toda operación
+  protegida. La administración previa a Station requiere un ADR delimitador.
+- ADR-008 continúa `Proposed`; TL-006 elimina la necesidad de un subdominio
+  elegido por el usuario y prohíbe usar slug/host como autoridad.
+- PBI-031 ya reserva administración sensible de Stations, pero no define el
+  challenge de 10 minutos ni el contexto administrativo que lo emite.
 
 ## Focused Verification
 
-- [x] `work-unit:start` y `work-unit:check` iniciales.
-- [x] Links Markdown locales: `PASS` (`165` referencias comprobadas en los
-  archivos modificados).
-- [x] Consistency/source-of-truth y secret-pattern scan: `PASS`.
-- [x] Clasificación de cambio: `FULL` por tocar el mapa de producto; la ruta
-  `docs-only` falló cerrada como exige el contrato.
-- [!] `verify:full` exacto del HEAD final: `FAIL` sólo en Stage 7 porque el
-  benchmark 10k de PBI-041 tardó `33,305 ms / 30,000 ms`; preflight, integridad,
-  base verify, PostgreSQL composite/PBI-039/PBI-040 y cleanup pasaron. Un gate
-  inmediatamente anterior había pasado completo con publish `2,034.5 ms`.
-  Se conserva como bloqueo de promoción fuera del scope de discovery.
-- [x] `git diff --check`: `PASS`.
-- [x] `work-unit:check` final: `PASS`.
+- [ ] `work-unit:check`.
+- [ ] Markdown links y consistencia documental.
+- [ ] Secret-pattern scan.
+- [ ] `git diff --check`.
+- [ ] Gate proporcional exigido por el clasificador.
 
 ## Promotion Gates
 
-- Existing authoritative promotion policy remains unchanged.
+- No se autoriza promoción en este turno.
+- Cualquier candidato futuro debe resolver el gate de riesgo arquitectónico y
+  el benchmark PBI-041 si el pipeline completo vuelve a seleccionarlo.
 
 ## Remote Actions / Authorization
 
-- No remote action is implied by checklist initialization.
-- No se ejecutó push, PR, merge ni deploy.
+- No push, PR, merge, deploy ni cambios remotos autorizados.
 
 ## Handoff Notes
 
-- Branch creation/switching is explicit and occurred before this command.
-- Commit de discovery: `4505c38948904ab3a95ad5cf99a2c01900598da9`.
+- La rama local no publicada de discovery fue renombrada sin reescribir ni
+  perder sus tres commits; conserva base `origin/main`.
 - Preservar sin agregar ni borrar
   `apps/dev-preview-web/src/.DS_Store` (artefacto Owner preexistente).
 
 ## Closure Predicate
 
-Existe un artefacto repository-native que: documenta el estado 2.0; describe
-la referencia funcional 1.0 y sus límites; clasifica cada etapa del lifecycle;
-expone decisiones Owner y riesgos; propone un MVP mínimo y Work Units futuras;
-y define un escenario E2E multitenant verificable, sin cambios de producto.
+TL-01 llega a Owner Review cuando: TL-001–016 están en fuentes permanentes;
+QUESTION-005 y contratos afectados están reconciliados; el ADR de control
+plane delimita explícitamente su relación con ADR-010/011/012/013/014; lifecycle,
+threat models, starter authority, Branch y enrollment tienen invariantes y
+pruebas propuestas; TL-02 en adelante poseen alcance, dependencias, decisiones
+residuales y gates; y no existe cambio de producto.

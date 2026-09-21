@@ -5,8 +5,9 @@ Los Architecture Decision Records (ADRs) conservan el contexto, alternativas y c
 ## Estado del documento
 
 **Estado:** Workflow en uso, pendiente de completar autoridades por clase de decisión.
-**Decisiones aceptadas:** once. ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento; ADR-005 fue aceptado con condiciones el 2026-07-22 por Arquitectura + Ingeniería tras las revisiones de Seguridad, Operaciones y Calidad; ADR-014 fue aceptado el 2026-09-12 por el Product Owner mediante ASC-001 a ASC-008.
-**Decisiones propuestas:** tres. ADR-006 a ADR-008 conservan estado `Proposed`.
+**Decisiones aceptadas:** doce. ADR-001, ADR-003 y ADR-009 fueron aceptados el 2026-07-21 por Arquitectura + Ingeniería; ADR-002, ADR-004 y ADR-010 a ADR-013 fueron aceptados el mismo día por la autoridad registrada en cada documento; ADR-005 fue aceptado con condiciones el 2026-07-22 por Arquitectura + Ingeniería tras las revisiones de Seguridad, Operaciones y Calidad; ADR-007 fue aceptado el 2026-08-18 y ADR-014 fue aceptado el 2026-09-12 por el Product Owner mediante ASC-001 a ASC-008.
+**Decisiones propuestas:** tres. ADR-006, ADR-008 y ADR-015 conservan estado
+`Proposed`.
 
 ## Estados permitidos
 
@@ -71,6 +72,7 @@ Estas decisiones no alteran el conteo de ADRs:
 |---|---|---|
 | [ADR-006](proposed/ADR-006-nextjs-web-clients.md) | Next.js para clientes web | Proposed |
 | [ADR-008](proposed/ADR-008-wildcard-subdomain-routing.md) | Resolución por subdominios wildcard | Proposed |
+| [ADR-015](proposed/ADR-015-tenant-administrative-control-plane.md) | Tenant Administrative Control Plane and Lifecycle | Proposed — TL-01 Owner Review |
 
 ## Reglas
 

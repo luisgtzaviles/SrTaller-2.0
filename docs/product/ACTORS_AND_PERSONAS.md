@@ -4,7 +4,10 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Hipótesis de actores y contextos de uso; no define roles, permisos ni estructura laboral definitiva.
-- **Aprobación:** El contexto se rige por ADR-010, identidad/sesión por ADR-011, autorización ordinaria por ADR-012 y refuerzo por ADR-013; actores, composición/clasificación por rebanada y responsabilidades de negocio permanecen pendientes.
+- **Aprobación:** El contexto operativo se rige por ADR-010/011/014,
+  autorización ordinaria por ADR-012 y refuerzo por ADR-013. Tenant Lifecycle
+  aprueba que la persona inicial sea el primer Tenant User con starter Tenant
+  Admin Role; el control plane permanece propuesto en ADR-015.
 - **Datos personales ficticios:** No se utilizan nombres, biografías ni características no confirmadas.
 
 ## Distinciones necesarias
@@ -18,19 +21,35 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 
 ## Propietario del taller
 
+No existe un agregado comercial `Owner` separado en Tenant Lifecycle MVP. Este
+actor describe una relación de negocio posible; la persona inicial se
+materializa como Tenant User con autoridad Tenant Admin y no recibe privilegio
+por la etiqueta “propietario”.
+
 - **Responsabilidades — hipótesis:** supervisar el negocio, definir políticas operativas y revisar resultados del tenant.
 - **Objetivos — hipótesis:** comprender desempeño, controlar riesgos y mantener continuidad entre sucursales.
 - **Alcance de acceso — pendiente:** podría requerir visibilidad de todo el tenant, pero no se asume acceso irrestricto ni cotidiano a todos los datos.
 - **Posibles restricciones:** acciones sensibles con autenticación reforzada; separación entre propiedad comercial y administración técnica; privacidad del personal y clientes.
-- **Preguntas pendientes:** ¿propietario y administrador del tenant pueden ser personas distintas? ¿qué acciones sólo puede aprobar el propietario? Véanse [QUESTION-004](./OPEN_QUESTIONS.md#question-004) y [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
+- **Preguntas pendientes:** la delegación a Administradores adicionales y las
+  acciones sensibles siguen `TLD-003`, `TLD-005`, `TLD-007`,
+  [QUESTION-004](./OPEN_QUESTIONS.md#question-004) y
+  [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
 
 ## Administrador del tenant
 
-- **Responsabilidades — hipótesis:** administrar configuración, usuarios, acceso, sucursales y estaciones dentro del tenant.
-- **Objetivos — hipótesis:** mantener la operación habilitada y los accesos alineados con las responsabilidades reales.
-- **Alcance de acceso — pendiente:** tenant completo para funciones administrativas específicas; no implica permiso sobre toda información operativa o financiera.
+- **Responsabilidades — dirección MVP:** administrar mediante capacidades
+  explícitas configuración, usuarios, roles, sucursales y estaciones del
+  Tenant dentro del control plane.
+- **Objetivos — dirección MVP:** completar onboarding, mantener la operación
+  habilitada y los accesos alineados con responsabilidades reales.
+- **Alcance de acceso:** Tenant derivado server-side y capacidades
+  administrativas efectivas; no implica permiso sobre información operativa o
+  financiera ni crea una Operational Session.
 - **Posibles restricciones:** no administrar la plataforma global; no elevar sus propios privilegios sin control; acciones críticas auditadas.
-- **Preguntas pendientes:** ¿quién crea al primer administrador? ¿puede delegar administración por sucursal? Véanse [QUESTION-005](./OPEN_QUESTIONS.md#question-005) y [QUESTION-010](./OPEN_QUESTIONS.md#question-010).
+- **Decisión vigente:** el bootstrap crea al primer Tenant User y starter
+  Tenant Admin Role sin selección de privilegios desde cliente.
+- **Preguntas pendientes:** guard del último Admin, protección del Role starter,
+  invitación/delegación y scopes por Branch (`TLD-003`, `TLD-005`, `TLD-007`).
 
 ## Gerente de sucursal
 
@@ -90,6 +109,9 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 
 ## Administrador de la plataforma
 
+Este actor y cualquier Super Admin están fuera del Tenant Lifecycle MVP. No
+participan en el registro público ni en el bootstrap autoservicio.
+
 - **Responsabilidades — hipótesis:** operar configuración global, ciclo de vida de tenants, planes y controles de plataforma.
 - **Objetivos — hipótesis:** mantener la plataforma disponible, segura y gobernable.
 - **Alcance de acceso — pendiente:** funciones globales explícitas; no implica acceso rutinario al contenido operativo de tenants.
@@ -119,7 +141,11 @@ Las capacidades permitidas se definirán en [Identity, Access and Permissions](.
 - **Objetivos — decisión aceptada:** habilitar una sesión operativa activa de usuario sin convertirse por sí sola en prueba suficiente para acciones sensibles.
 - **Alcance de acceso:** sin operación ordinaria si no existe vinculación vigente; con ella, limitado además por sesión válida, usuario activo, capacidad y alcance conforme a ADR-012.
 - **Posibles restricciones:** activación, expiración, revocación, pérdida, cambio de sucursal, cierre remoto y eventual capacidad offline no confirmada.
-- **Preguntas pendientes:** ¿qué equipos pueden vincularse y mediante qué flujo? ¿qué puede hacer un dispositivo sin usuario activo? Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
+- **Dirección MVP:** un Admin con capability explícita emite un challenge de
+  alta entropía, un uso y TTL de 10 minutos para una Branch concreta; el equipo
+  lo canjea sin elegir Tenant/Branch.
+- **Preguntas pendientes:** nivel ADR-013/reauth y lifecycle detallado de
+  Station (`TLD-006`, [QUESTION-008](./OPEN_QUESTIONS.md#question-008)).
 
 ## Contextos que deben validarse en investigación
 

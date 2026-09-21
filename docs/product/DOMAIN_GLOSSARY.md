@@ -4,9 +4,9 @@
 
 - **Estado:** Borrador inicial.
 - **Naturaleza:** Lenguaje común preliminar; no define tablas, clases, contratos de API ni reglas finales.
-- **Aprobación:** ADR-004/010/011/012/013 y las decisiones PLD/OD-BI son
-  autoritativos para los términos marcados; el resto está pendiente del
-  propietario del producto y especialistas del dominio.
+- **Aprobación:** ADR-004/010/011/012/013/014 y las decisiones PLD/OD-BI son
+  autoritativos para los términos marcados; TL-001–016 gobiernan los términos
+  de Tenant Lifecycle indicados y ADR-015 permanece `Proposed`.
 - **Convención:** “Pendiente de validación” indica que la definición o sus límites podrían cambiar.
 
 ## Reglas de uso
@@ -21,9 +21,10 @@
 | Término | Definición inicial | Estado y ambigüedad pendiente |
 |---|---|---|
 | **Plataforma** | Conjunto de aplicaciones, servicios y capacidades administradas que componen SR Taller 2.0 y sirven a los tenants. | **Hecho conocido** en sentido general. Límites operativos, SLAs y componentes definitivos: **pendientes de validación**. |
-| **Tenant** | Organización cliente y frontera de aislamiento de datos, usuarios y operación dentro de la plataforma SaaS. | **Aceptado en ADR-004.** Ciclo de vida, identidad legal y relación con una marca o empresa: pendientes. |
-| **Sucursal** | Unidad operativa perteneciente exactamente a un tenant que delimita estaciones y datos locales. | **Aceptado en ADR-004/010:** la estación vinculada determina la sucursal efectiva; no existe sucursal elegida por el usuario. |
-| **Usuario** | Identidad operativa ordinaria que pertenece exactamente a un tenant y puede rotar entre sus estaciones autorizadas sin duplicarse por sucursal. | **Aceptado en ADR-004/010/011:** pertenencia, independencia de estación/sucursal/PIN/sesión y autenticación contextual; pendientes atributos, recuperación y relación con personal. No equivale a rol, sesión ni estación. |
+| **Tenant** | Organización cliente y frontera de aislamiento de datos, usuarios y operación dentro de la plataforma SaaS. | **Aceptado en ADR-004.** Tenant Lifecycle MVP aprueba estados `ONBOARDING`/`ACTIVE`; suspensión comercial, cierre y eliminación quedan fuera. |
+| **Registration Attempt** | Intento pre-tenant y sin autoridad que conserva lo mínimo para verificar email y ejecutar un bootstrap idempotente. | **Aprobado por TL-001/004/013.** No es Tenant, User, Session ni concesión; retención y TTL concretos pendientes. |
+| **Sucursal** | Unidad operativa perteneciente exactamente a un tenant que delimita estaciones y datos locales. | **Aceptado en ADR-004/010.** Branch V1 agrega nombre, timezone IANA, `ACTIVE`/`INACTIVE`, versión y timestamps. En operación la Station determina la Branch; en administración es un recurso tenant-scoped. |
+| **Tenant User** | Identidad humana estable que pertenece exactamente a un tenant y puede tener credenciales/sesiones administrativas y operativas separadas. | **Aceptado en ADR-004/010/011 y TL-003/011.** No equivale a Role, Session, Station ni Owner comercial. |
 | **Identidad global** | Posible correlación futura de una misma persona entre tenants o con identidades de plataforma; no es el usuario ordinario ni concede operación multi-tenant. | **Pendiente de decisión especializada:** necesidad, privacidad, identificadores y recuperación. |
 | **Membresía** | Término histórico ambiguo. No representa al usuario ordinario multi-tenant; la membresía comercial del SaaS y el usuario del tenant son conceptos separados. | **No usar para inferir tenant/sucursal.** Cualquier uso futuro requiere definición explícita. |
 | **Rol** | Agrupación nombrada y administrable de capacidades perteneciente a un tenant. | **Aceptado en ADR-012:** un usuario puede tener varios; no equivale a actor, puesto, sesión o sucursal. Composición concreta por rebanada pendiente. |
@@ -36,7 +37,9 @@
 | **Autorización reforzada** | Control adicional, delimitado y previo a una acción sensible. | **Aceptado en ADR-013:** nivel 2 reautentica; nivel 3 exige aprobador; auditoría técnica y mecanismos pendientes. |
 | **Estación operativa** | Equipo cliente reconocido y vinculado a una única sucursal activa para aportar origen físico y contexto. | **Aceptado en ADR-010:** vinculación y alcance; pendientes tipos, identidad técnica, credencial y evidencia concreta. |
 | **Sesión de estación** | Evidencia técnica temporal de que una estación conserva una vinculación válida con sucursal/tenant derivados. | **Pendiente de mecanismo:** duración, renovación, revocación, credenciales y comportamiento sin conexión. No sustituye al usuario. |
-| **Sesión de usuario** | Periodo durante el cual un usuario autenticado es el actor activo dentro del contexto ya derivado de la estación. | **Aceptado en ADR-011:** una activa por estación, cambio de turno, cierre e inactividad; pendientes mecanismo, duración concreta, concurrencia entre estaciones, cierre remoto y autenticación reforzada. |
+| **Operational Session** | Periodo durante el cual un Tenant User autenticado por PIN es el actor de requests que presentan esa Session dentro del contexto Station/Branch ya derivado. | **Aceptado en ADR-011/014:** una Station puede mantener cero o más Sessions independientes; no equivale a Admin Session ni actor global de Station. |
+| **Admin Session** | Sesión revocable para Tenant Administration, autenticada por email verificado + password y con Tenant/User derivados server-side. | **Dirección TL-002/011; ADR-015 Proposed.** No crea Station, Branch ambiental ni permiso operativo; política de duración/concurrencia pendiente. |
+| **Starter Tenant Admin Role** | Role inicial creado server-side durante bootstrap para otorgar autoridad administrativa mínima al primer Tenant User. | **Dirección TL-003/010.** Bundle, protección y guard de último Admin pendientes en `TLD-003/005`; nunca lo selecciona el cliente. |
 | **Contexto operativo** | Tenant, sucursal, estación y usuario efectivos para una operación ordinaria. | **Aceptado en ADR-010:** composición, fuente y cambio de turno; su representación técnica queda pendiente. |
 | **PIN** | Credencial operativa usada para identificar al usuario únicamente dentro del tenant de una estación vinculada. | **Aceptado en ADR-011:** no es identidad, contexto ni permiso y nunca se almacena en texto plano o de forma reversible; longitud, protección técnica, rotación, recuperación, bloqueo y acciones permitidas quedan pendientes. |
 | **Cliente** | Persona u organización con `customerId` interno opaco dentro de una sucursal de un tenant. Nombre y apellido se conservan separados; el apellido es opcional hasta existir política explícita. El teléfono es contacto o criterio de búsqueda, nunca identidad natural ni deduplicación automática; una Repair conserva su propio snapshot de contacto. | **Aceptado por ADR-004 y Customer Minimum V1:** identidad branch-scoped y selección humana ante candidatos. Pendientes: lifecycle, consentimiento, contactos avanzados, resolución de duplicados y relación entre varios equipos. No confundir con cliente técnico de la API. |

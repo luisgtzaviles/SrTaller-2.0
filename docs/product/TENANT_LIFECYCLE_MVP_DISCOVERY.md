@@ -2,9 +2,11 @@
 
 ## Estado del documento
 
-- **Estado:** Discovery listo para revisión Owner; no autoriza implementación.
+- **Estado:** Discovery revisado; TL-001–016 aceptadas por el Owner y promovidas
+  al [contrato Tenant Lifecycle MVP](../architecture/TENANT_LIFECYCLE_MVP.md).
+  No autoriza implementación.
 - **Work Unit:** `Tenant Lifecycle MVP — Discovery & Planning`.
-- **Fecha de corte:** 2026-09-21.
+- **Fecha de corte:** 2026-09-20.
 - **Autoridad:** los contratos y ADR aceptados enlazados prevalecen sobre las
   propuestas de este documento.
 - **Referencia legacy:** SR Taller 1.0 se usa sólo para observar comportamiento;
@@ -158,32 +160,36 @@ revocación, auditoría y pruebas de aislamiento cubren el flujo productivo.
 Conclusión: conservar el **orden mental** de onboarding de 1.0 y reemplazar sus
 mecanismos de confianza por los contratos de 2.0.
 
-## 6. Decisiones Owner requeridas
+## 6. Decisiones Owner aprobadas
 
-Estas decisiones no se dan por aprobadas. Las recomendaciones sólo proponen el
-camino mínimo.
+El Owner aprobó TL-001 a TL-016 el 2026-09-20. La versión normativa, sus
+invariantes y decisiones residuales están en el
+[contrato Tenant Lifecycle MVP](../architecture/TENANT_LIFECYCLE_MVP.md). Este
+discovery conserva la pregunta y recomendación originales como trazabilidad;
+ya no deben leerse como autoridad pendiente.
 
-| ID | Decisión requerida | Recomendación para el MVP | Impacto si queda abierta |
-|---|---|---|---|
-| TL-001 | ¿El alta es autoservicio público inmediato o requiere invitación/aprobación? | Autoservicio público con verificación de contacto; activación comercial/billing queda fuera. | Bloquea registro, estados y protección antiabuso. |
-| TL-002 | ¿Qué autentica al Tenant Admin fuera de una Station? | Identidad administrativa por email verificado y credencial recuperable; el PIN sigue siendo exclusivamente operacional. El mecanismo concreto (password/passkey/magic link) requiere decisión de seguridad/producto. | Bloquea todo onboarding anterior a la primera Station. |
-| TL-003 | ¿Owner comercial y Tenant Admin son el mismo concepto? | En MVP, registrar una persona inicial como User del Tenant y asignarle un Role `Tenant Admin`; no crear todavía un agregado comercial Owner. Permitir delegar luego. | Cambia datos, recuperación y autoridad. |
-| TL-004 | ¿Cuándo nace el Tenant: submit, verificación o primer setup? | Reservar el intento al submit y crear/activar el Tenant sólo tras verificación, mediante comando idempotente. | Define huérfanos, retries y unicidad. |
-| TL-005 | Estados mínimos del Tenant | `onboarding` y `active`; reservar suspensión/cierre para una iniciativa posterior, salvo que seguridad exija `suspended` desde el inicio. | Afecta todos los guards y revocación. |
-| TL-006 | ¿Se necesita handle/subdominio en MVP? | Usar un handle estable sólo si resuelve el acceso administrativo; nunca como autoridad única. No prometer custom domains. | Afecta routing, unicidad y enumeración. |
-| TL-007 | Primera Branch: ¿obligatoria y cuándo? | Capturar nombre y timezone durante onboarding y crearla antes de emitir enrollment de Station. No asumir dirección/teléfono. | Bloquea Station y contexto temporal. |
-| TL-008 | Campos/lifecycle de Branch | Mínimo: nombre, IANA timezone, `active/inactive`, timestamps/version. Desactivar debe fallar si dejaría contexto inseguro; reglas de cierre quedan fuera. | Bloquea modelo y administración de Branches. |
-| TL-009 | Enrollment de dispositivo | Admin elige Branch y genera desafío/código de un uso con expiración; el nuevo equipo lo canjea y recibe credencial opaca. Reautenticación y duración exactas por decidir. | Bloquea PBI-031 y threat model. |
-| TL-010 | ¿Quién puede administrar Stations y Branches? | Capabilities separadas (`branches.*`, `stations.*`) incluidas explícitamente en el starter Role; no inferir por `access_matrix.manage`. | Bloquea catálogo y compatibilidad de roles. |
-| TL-011 | ¿El Tenant Admin también opera con PIN? | Sólo si se le configura PIN y Roles operativos; login administrativo no crea silenciosamente Operational Session. | Evita mezclar control plane y operación. |
-| TL-012 | Recuperación del único Admin | Exigir canal verificado y recovery auditable; definir qué ocurre si es el único Admin antes de permitir revocarlo. | Riesgo de pérdida total o bypass de soporte. |
-| TL-013 | Contacto y aceptación pública | Definir email obligatorio, nombre de persona/taller, consentimiento/Términos y política de retención de registros incompletos. Teléfono no debe ser identidad automática. | Bloquea formulario y privacidad. |
-| TL-014 | Auditoría mínima del lifecycle | Registrar registration, verificación, bootstrap, Branch create/status, User/Role changes, Station enrollment/revoke y resultados denegados relevantes; nunca secretos. | Bloquea trazabilidad/DoD. |
-| TL-015 | ¿Administración usa app separada o shell actual? | Mantener frontera lógica separada aunque V1 comparta despliegue/componentes. La navegación puede converger después del login. | Afecta rutas, session model y diseño. |
-| TL-016 | ¿Tenant suspendido forma parte de este MVP? | No, salvo suspensión de seguridad mínima. Diseñarla después sin acoplarla a billing. | Evita introducir billing por accidente. |
+| ID | Dirección aprobada resumida |
+|---|---|
+| TL-001 | Registro público autoservicio con email verificado. |
+| TL-002 | Autenticación administrativa V1 con email verificado + password y threat model previo. |
+| TL-003 | Persona inicial = primer Tenant User con starter Tenant Admin Role; sin Owner comercial separado. |
+| TL-004 | Attempt antes de verificar; Tenant sólo después mediante bootstrap atómico/idempotente. |
+| TL-005 | Tenant V1: `ONBOARDING` y `ACTIVE`. |
+| TL-006 | Sin subdominio elegido por usuario; slug/host nunca es autoridad. |
+| TL-007 | Primera Branch obligatoria durante onboarding. |
+| TL-008 | Branch: nombre, timezone IANA, `ACTIVE`/`INACTIVE`, versión y timestamps. |
+| TL-009 | Challenge de Station de alta entropía, un uso y TTL 10 minutos. |
+| TL-010 | Capabilities explícitas para Branch/Station; sin `isAdmin`. |
+| TL-011 | Admin Session y Operational Session PIN separadas. |
+| TL-012 | Recovery por email verificado y protección del último Admin efectivo. |
+| TL-013 | Nombre de persona/taller, email, password y aceptación versionada; teléfono opcional/no identidad. |
+| TL-014 | Auditoría durable proporcional y sin secretos. |
+| TL-015 | Control plane lógico en `admin.srtaller.com`, con despliegue/componentes compartibles. |
+| TL-016 | Billing, Super Admin y suspensión comercial fuera del MVP. |
 
-La decisión canónica abierta [QUESTION-005](OPEN_QUESTIONS.md#question-005)
-debe reconciliarse cuando el Owner resuelva TL-001, TL-004, TL-005 y TL-016.
+[QUESTION-005](OPEN_QUESTIONS.md#question-005) queda reconciliada para el
+alcance MVP. Las decisiones técnicas/producto todavía abiertas están
+enumeradas como `TLD-001` a `TLD-009` en el contrato, no en este discovery.
 
 ## 7. Riesgos de seguridad y multitenancy
 
@@ -246,21 +252,18 @@ Registro público
 - cierre/eliminación legal del Tenant o migración desde 1.0;
 - rediseño de los módulos operativos ya integrados.
 
-## 9. Roadmap propuesto de Work Units futuras
+## 9. Roadmap refinado por TL-01
 
-Ninguna de estas Work Units queda iniciada ni seleccionada por este documento.
-Cada una requiere autorización, readiness, riesgo y gates propios.
+El roadmap preliminar de discovery fue refinado después de las decisiones
+TL-001–016. La secuencia normativa, alcances, dependencias y gates están en la
+sección [Work Units futuras refinadas](../architecture/TENANT_LIFECYCLE_MVP.md#10-work-units-futuras-refinadas)
+del contrato arquitectónico.
 
-| Orden | Work Unit propuesta | Resultado observable | Dependencias |
-|---:|---|---|---|
-| 1 | **TL-01 — Owner Decisions + Lifecycle Contract** | TL-001–016 resueltas; ADR/contrato de control plane, estados, bootstrap y threat model aceptados. | Este discovery. |
-| 2 | **TL-02 — Administrative Identity + Public Registration** | Registro, verificación, login/recovery administrativo y protección antiabuso sin crear autoridad operacional implícita. | TL-01. |
-| 3 | **TL-03 — Atomic Tenant Bootstrap + Starter Authority** | Tenant, primer User, starter Tenant Admin Role/assignment y journal se crean idempotente/atómicamente; retries no duplican. | TL-01–02; Users/Access existentes. |
-| 4 | **TL-04 — Branch Management V1** | Tenant Admin lista, crea, edita y activa/desactiva Branches con nombre/timezone, scope y auditoría. | TL-03; PBI-027 foundation. |
-| 5 | **TL-05 — Tenant Administration Integration** | Users/Roles/PIN actuales son accesibles desde el control plane con autoridad equivalente, sin Station bootstrap ni permisos directos. | TL-03–04; PBI-032/033/025/026. |
-| 6 | **TL-06 — Station Administration + Enrollment Challenge** | Inventario de Stations y create/link/revoke/relink; challenge single-use scoped a Branch. Materializa PBI-031 sin copiar el bootstrap local. | TL-04–05; ADR-010/013. |
-| 7 | **TL-07 — New Device Activation + Operational Handoff** | Equipo nuevo canjea challenge, obtiene credencial opaca, muestra Branch/Station y entra al login PIN existente. | TL-06; PBI-024/034/043. |
-| 8 | **TL-08 — Tenant Lifecycle E2E Isolation + Owner Acceptance** | Escenario de dos Tenants pasa en PostgreSQL/browser/API; revocaciones y ataques cross-tenant fallan cerrados; evidence y docs canónicas completas. | TL-02–07. |
+TL-01 separó Administrative Identity, Public Registration, Branch Activation,
+Tenant Administration Integration, Station Enrollment y Device Redemption en
+TL-02 a TL-09 para evitar mezclar fronteras de seguridad. Ninguna de esas Work
+Units queda iniciada o seleccionada por este discovery; cada una requiere su
+propia autorización, readiness, riesgo y gates.
 
 ### Por qué no es una sola Work Unit
 
@@ -332,10 +335,9 @@ El escenario pasa sólo si UI y API coinciden, PostgreSQL confirma aislamiento,
 los efectos autorizados son atribuibles y todas las pruebas negativas carecen
 de side effects. Ocultar una opción en frontend no cuenta como autorización.
 
-## 11. Correcciones documentales futuras al aprobar decisiones
+## 11. Reconciliación documental de TL-01
 
-Al resolver las decisiones Owner, el candidato correspondiente deberá
-reconciliar al menos:
+TL-01 reconcilia:
 
 - [OPEN_QUESTIONS](OPEN_QUESTIONS.md), especialmente QUESTION-005;
 - [ACTORS_AND_PERSONAS](ACTORS_AND_PERSONAS.md);
@@ -347,10 +349,8 @@ reconciliar al menos:
 - [SECURITY_BASELINE](../architecture/SECURITY_BASELINE.md);
 - roadmap/backlog/PBI que el Owner seleccione.
 
-## 12. Recomendación al Owner
+## 12. Estado posterior al discovery
 
-Revisar primero TL-001 a TL-016 y autorizar, si corresponde, **TL-01 — Owner
-Decisions + Lifecycle Contract**. No iniciar registro público ni PBI-031 antes
-de resolver la autenticación administrativa previa a Station y la atomicidad
-del bootstrap. Son las dos fronteras que determinan la seguridad y el orden de
-todo el lifecycle.
+TL-01 fue autorizado. No se inicia registro público, PBI-031 ni otro Work Unit
+de implementación hasta revisar el contrato, resolver sus decisiones
+residuales aplicables y aceptar ADR-015.

@@ -3,7 +3,11 @@
 ## Estado del documento
 
 - **Estado:** Borrador conceptual de controles mínimos.
-- **Naturaleza:** Propuesta y conjunto de hitos; ADR-003/004/010/011/012/013 son autoritativos para motor, aislamiento, contexto, identidad/sesión y autorización ordinaria/reforzada conceptuales y no constituyen certificación ni diseño criptográfico final.
+- **Naturaleza:** Propuesta y conjunto de hitos; ADR-003/004/010–014 son
+  autoritativos para motor, aislamiento, contexto, identidad/sesión y
+  autorización ordinaria/reforzada conceptuales. ADR-015 propone el control
+  plane administrativo y exige threat model antes de implementación; ninguno
+  constituye certificación ni diseño criptográfico final.
 - **Alcance:** Producto, aplicaciones, datos, dependencias, entrega y operación.
 - **Referencia de verificación:** [Estrategia de pruebas de seguridad](../quality/SECURITY_TESTING.md).
 
@@ -83,11 +87,18 @@ Un threat model por recorrido crítico debe refinar esta lista antes de implemen
 ## Identidad y autenticación
 
 - El usuario ordinario pertenece a un tenant y se autentica cotidianamente por PIN conforme a ADR-011; el mecanismo técnico, la identidad de plataforma y la correlación de persona permanecen separados.
+- Tenant Administration V1 usa email verificado + password y una Admin Session
+  revocable conforme al contrato propuesto de Tenant Lifecycle; password,
+  Admin Session, PIN y Operational Session tienen audiencias y guards
+  separados.
 - Tenant/sucursal/estación efectivos se comprueban conforme a ADR-010 antes de autenticar al usuario dentro del tenant.
-- Una estación mantiene como máximo una sesión operativa activa; una sesión inválida no acepta acciones nuevas.
+- Una estación mantiene cero o más Sessions operativas independientes conforme
+  a ADR-014; una Session inválida no acepta acciones nuevas.
 - El PIN nunca se almacena en texto plano ni de forma reversible.
 - Tokens o cookies se almacenan y transportan con controles apropiados al cliente; formato pendiente.
-- Recuperación de cuenta no puede ser más débil que el acceso que protege.
+- Recovery administrativo usa email verificado, no modifica autoridad y no
+  puede ser más débil que el acceso que protege; la política exacta del último
+  Tenant Admin debe resolverse antes de implementación.
 - Cambios de factores y recuperaciones producen notificación y auditoría según riesgo.
 - Protección ante enumeración, credential stuffing y automatización se diseña sin bloquear indebidamente tenants completos.
 - ADR-013 exige que una acción sensible use nivel 2, 3 o 4 según una política explícita; una candidata sin política no se habilita.
@@ -140,7 +151,8 @@ Véase [Modelo de multitenancy](MULTITENANCY_MODEL.md).
 
 ## Sesiones de dispositivo y PIN
 
-- Vinculación mediante desafío temporal y aprobación autorizada.
+- Vinculación mediante challenge de alta entropía, un solo uso, TTL de 10
+  minutos y aprobación administrativa explícita.
 - Sesión de dispositivo revocable e independiente de la sesión humana.
 - PIN limitado al tenant y contexto autorizado; nunca recuperable ni observable.
 - Protección de intentos, cierre por inactividad y cambio de turno.
