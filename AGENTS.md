@@ -101,6 +101,10 @@ del browser, servidor o proceso no sustituye `Branch.timeZone`.
 - Antes de promoción ejecutar los gates vigentes del riesgo y tipo de cambio.
   El clasificador general continúa `SHADOW`; sólo `DOCS_ONLY` puede reducir el
   pipeline cuando su allowlist fail-closed lo demuestra.
+- Un candidato remoto debe tener estado `READY_FOR_PROMOTION` o `PROMOTION` y
+  pasar `work-unit:check --mode PROMOTION`. Tras merge y exact-main GREEN, el
+  cierre gobernado publica el ref Git descrito por Work Unit Lifecycle; nunca
+  crear o mover ese ref manualmente.
 - Persistencia, migraciones, tenancy, autenticación, autorización, secretos,
   infraestructura y datos exigen sus pruebas materiales y negativas.
 - Registrar en el checklist qué se ejecutó y qué queda pendiente; no declarar
@@ -133,8 +137,8 @@ datos de CI.
   de que ocurran.
 - Antes de promoción mover toda decisión duradera a su fuente permanente.
 - No ponerlo en `IDLE` mientras el cambio siga sin integrar. El cierre se
-  resuelve mediante el predicado verificable definido en el Work Unit
-  Lifecycle, sin crear un PR post-merge sólo para cambiar wording.
+  resuelve mediante el predicado verificable y el ref Git definidos en Work
+  Unit Lifecycle, sin crear un PR post-merge sólo para cambiar wording.
 
 Las decisiones duraderas siempre se materializan en la fuente canónica
 correspondiente. El checklist nunca puede otorgar autoridad ni modificar por sí

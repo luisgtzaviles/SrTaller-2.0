@@ -8,6 +8,8 @@ function argument(name) {
 const result = await inspectWorkUnit({
   projectRoot: process.cwd(),
   mode: argument('--mode') ?? 'AUTO',
+  actualBranch: argument('--branch'),
+  head: argument('--head'),
 });
 
 process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);

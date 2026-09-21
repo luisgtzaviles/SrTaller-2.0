@@ -196,21 +196,26 @@ Cuando el Owner solicita conceptualmente «promueve esta Work Unit», el agente:
 
 1. valida metadata, alcance, predicado de cierre y estado de la Work Unit;
 2. verifica rama, base, divergencia y archivos Owner no relacionados;
-3. ejecuta la verificación de promoción completa exigida por la clasificación
-   vigente, sin sustituirla por el shadow model;
-4. reconcilia documentación afectada y exige un árbol tracked limpio;
-5. con autorización explícita, publica la rama sin reescribir historia;
-6. abre un PR contra `main` y registra el riesgo aplicable;
-7. espera `Authoritative promotion gate` y sus gates subyacentes;
-8. ejecuta el review proporcional: NORMAL técnico; SENSITIVE o ARCHITECTURAL
+3. selecciona la verificación de promoción exigida por la clasificación vigente
+   y completa los checks focalizados del delta, sin sustituir gates con el
+   shadow model;
+4. reconcilia documentación afectada, fija `READY_FOR_PROMOTION`, crea el commit
+   lógico final y exige un árbol tracked limpio;
+5. ejecuta `work-unit:check --mode PROMOTION` y la verificación completa exigida
+   sobre ese candidato exacto;
+6. con autorización explícita, publica la rama sin reescribir historia;
+7. abre un PR contra `main` y registra el riesgo aplicable;
+8. espera `Authoritative promotion gate` y sus gates subyacentes;
+9. ejecuta el review proporcional: NORMAL técnico; SENSITIVE o ARCHITECTURAL
    con la aprobación Owner y segunda revisión deliberada aplicables;
-9. entrega un resultado breve con HEAD exacto, CI, hallazgos y pendientes;
-10. sólo después de autorización Owner explícita, hace merge ordinario;
-11. actualiza `main` local y verifica igualdad/divergencia/limpieza;
-12. espera la verificación autoritativa exact-main;
-13. despliega o valida un ambiente sólo bajo autorización separada; y
-14. deriva el cierre desde Git, GitHub, runtime y el predicado registrado, sin
-    crear un PR adicional para cambiar wording derivable.
+10. entrega un resultado breve con HEAD exacto, CI, hallazgos y pendientes;
+11. sólo después de autorización Owner explícita, hace merge ordinario;
+12. actualiza `main` local y verifica igualdad/divergencia/limpieza;
+13. espera la verificación autoritativa exact-main;
+14. despliega o valida un ambiente sólo bajo autorización separada;
+15. cuando el predicado completo esté satisfecho, ejecuta el cierre gobernado
+    para publicar el ref Git determinista; y
+16. deriva `CLOSED`/`IDLE` sin crear un PR adicional para cambiar wording.
 
 El Owner no necesita traducir esta secuencia a términos internos: la orden de
 promover autoriza únicamente los pasos que indique expresamente y cada frontera
@@ -229,7 +234,9 @@ deploy manual a Preview sólo si fue autorizado
         ↓
 health, rutas, migraciones/provenance y walkthrough aplicables
         ↓
-cierre derivado cuando el predicado completo se cumple
+ref Git de cierre publicado cuando el predicado completo se cumple
+        ↓
+cierre derivado e IDLE efectivo
 ```
 
 Preview no es Staging, no replica necesariamente datos Owner/locales y no se

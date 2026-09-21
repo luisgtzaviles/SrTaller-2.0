@@ -15,6 +15,7 @@
 |---|---|---|---|---|
 | Prioridades de producto | Roadmap, backlog, Sprint, `CURRENT_STATE` | Roadmap para orden/estrategia; backlog/PBI para requisito e historia | Índices, checklist, snapshots | Enlazar; no copiar el puntero en documentos operativos. |
 | Work Unit actual | `ACTIVE_CHECKLIST`, chat, `CURRENT_STATE` | `docs/work/ACTIVE_CHECKLIST.md`, reconciliado contra Git | Chat, handoffs antiguos | Mantener sólo objetivo, alcance y ejecución vigente. |
+| Cierre efectivo de Work Unit | Wording del checklist, chat, commit posterior | Merge ordinario + exact-main CI/ambiente aplicable + ref Git determinista de cierre | Estado copiado manualmente | Derivar `CLOSED`/`IDLE`; no crear closure PR ni copiar SHA/CI a Markdown. |
 | Rama actual | Checklist, handoff, documentación | Git (`git branch --show-current`) | Texto copiado | Consultar Git; el checklist sólo declara la rama esperada para validar continuidad. |
 | SHA actual | Checklist, PR, evidencia Markdown | Git (`git rev-parse HEAD`) | Snapshots y reportes copiados | Consultar Git. |
 | Estado de PR/review/merge | PR, checklist, evidencia | GitHub | Markdown de cierre | Consultar GitHub; conservar narrativa sólo si añade una decisión no derivable. |
@@ -36,7 +37,8 @@
 - **Sprint:** timebox/capacidad opcional de planificación. No es un gate
   universal de ingeniería.
 - **ACTIVE_CHECKLIST:** ejecución actual y handoff de una Work Unit. No es
-  archivo histórico ni fuente de estados remotos.
+  archivo histórico ni fuente de estados remotos. En `main`, su snapshot de
+  promoción se combina con el ref Git de cierre para derivar el estado efectivo.
 - **Git/GitHub/CI:** implementación, SHA, PR, review, merge y resultados
   técnicos derivables.
 - **Runtime/plataforma:** deployment efectivo, provenance y salud.

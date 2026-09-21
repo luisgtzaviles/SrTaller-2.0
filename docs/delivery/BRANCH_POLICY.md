@@ -54,9 +54,10 @@ Work Unit reduce los gates vigentes.
 5. Un branch de trabajo congelado no se trata como baseline. Si otra
    remediación debe precederlo, se conserva sin modificar y sólo se reconcilia
    desde el nuevo `main` cuando esa remediación cierre.
-6. Después de merge autorizado y validación aplicable, se eliminan las ramas
-   local y remota ya absorbidas y se ejecuta `fetch --prune`, siempre después
-   de confirmar que no contienen trabajo exclusivo.
+6. Después de merge autorizado, validación aplicable y publicación del ref de
+   cierre gobernado, se eliminan las ramas local y remota ya absorbidas y se
+   ejecuta `fetch --prune`, siempre después de confirmar que no contienen
+   trabajo exclusivo.
 
 La rama `feature/pbi-040-catalog-pricing-core` fue una excepción histórica de transición:
 su WIP Price List permaneció congelado durante PBI-043. Después del cierre de
