@@ -44,6 +44,7 @@ auditoría inicial, la remediación y el dictamen final:
 - [Mapa de módulos](product/MODULE_MAP.md)
 - [Preguntas abiertas](product/OPEN_QUESTIONS.md)
 - [Lecciones de SR Taller anterior](product/LEGACY_SR_TALLER_LESSONS.md)
+- [Tenant Lifecycle MVP — Discovery & Planning](product/TENANT_LIFECYCLE_MVP_DISCOVERY.md)
 
 ## Diseño de producto
 

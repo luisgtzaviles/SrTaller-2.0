@@ -1,164 +1,144 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: SR Taller Development Harness 2.0 Migration
-iteration: 5 - Promotion Readiness and GitHub Enforcement Preparation
-type: GOVERNANCE
-risk: MEDIUM
-shadow_risk: ARCHITECTURAL
-branch: chore/development-harness-2
-base_sha: 65df515ce3bd9ce9989421e3ade00fc8c1fa383a
-status: READY_FOR_PROMOTION
+work_unit: Tenant Lifecycle MVP — Discovery & Planning
+iteration: 1 - Authorized Start
+type: DISCOVERY
+risk: SENSITIVE
+shadow_risk: SENSITIVE
+branch: chore/tenant-lifecycle-mvp-discovery
+base_sha: b2a38088b5d1673417ad7dd8dcfee34ec2349119
+status: ACTIVE
 closure_mode: DERIVED
-last_updated: 2026-09-20
+last_updated: 2026-09-21
 -->
 
 ## Identity
 
-- **Work Unit:** SR Taller Development Harness 2.0 Migration.
-- **Iteration:** 5 — Promotion Readiness and GitHub Enforcement Preparation.
-- **Prior checkpoints:** Iterations 1–4 complete on this branch.
-- **Type / risk:** Governance; current `MEDIUM`, shadow `ARCHITECTURAL`.
-- **Branch / base:** `chore/development-harness-2` from `65df515ce3bd9ce9989421e3ade00fc8c1fa383a`.
-- **Status:** `READY_FOR_PROMOTION`; no push or PR has occurred.
-- **Current PBI:** `NONE`; this is an authorized governance Work Unit.
+- **Milestone:** Tenant Lifecycle MVP — Discovery & Planning.
+- **Sprint:** ninguno; no se inició Sprint de producto.
+- **Current PBI:** `NONE`; este Work Unit no selecciona un PBI.
 Current PBI: NONE
-- **Sprint:** not required; no product Sprint is started.
-- **WIP:** `1/1` Work Unit.
-- **Progress:** Iteration 5 `7 / 7` blocks complete.
-- **Last updated:** 2026-09-20, America/Hermosillo.
+- **Estado general:** `ACTIVE — DISCOVERY`.
+- **Progreso:** `6 / 7` bloques; validación final pendiente.
+- **Trabajo actual:** revisión y checks del artefacto de discovery.
+- **Siguiente bloque:** entregar roadmap y decisiones para Owner Review.
+- **Bloqueos:** ninguno.
+- **Última actualización:** 2026-09-21, America/Hermosillo.
 
 ## Objective
 
-Prove the complete Harness 2.0 candidate is internally coherent and ready for
-its first governed PR, while defining a safe GitHub protection configuration
-without changing remote settings.
+Auditar SR Taller 2.0 y la referencia conductual 1.0 para proponer el Tenant Lifecycle MVP, sus decisiones Owner, riesgos, Work Units futuras y escenario E2E, sin implementar producto.
 
 ## Why
 
-The branch now changes operational contracts and executable governance. Before
-promotion it needs the current full gate, fresh-agent acceptance and one
-always-resolving authoritative GitHub check suitable for future protection.
+Definir un camino mínimo, coherente y seguro desde el registro público de un
+taller hasta su operación diaria, usando lo que 2.0 ya ofrece y tomando 1.0
+únicamente como referencia de comportamiento.
 
 ## In Scope
 
-- audit the complete `origin/main...HEAD` delta;
-- reconcile final active-governance contradictions;
-- normal and sensitive fresh-agent dry runs;
-- current FULL local promotion verification;
-- an always-resolving, non-reductive aggregate CI check if required;
-- read-only GitHub capability, checks, collaborators and settings inspection;
-- exact main-protection design and concise promotion procedure;
-- one final local readiness commit if repository changes are needed.
+- Auditar implementación, contratos y pruebas existentes de SR Taller 2.0.
+- Auditar los flujos equivalentes disponibles en SR Taller 1.0 sin modificarlo.
+- Mapear capacidades existentes, parciales y faltantes del lifecycle Tenant.
+- Identificar decisiones Owner pendientes y riesgos de seguridad/multitenancy.
+- Proponer el Tenant Lifecycle MVP mínimo y Work Units futuras acotadas.
+- Definir un escenario E2E con dos tenants, múltiples sucursales, usuarios y
+  estaciones.
 
 ## Out of Scope
 
-- product, application architecture, database, tenancy/auth/security behavior;
-- reducing CI or replacing the current classifier with the shadow model;
-- push, PR, merge, deploy, branch deletion or GitHub settings mutation;
-- collaborator permission changes;
-- Dokploy, Staging, Production or infrastructure mutation.
+- Implementación de funcionalidad de producto, migraciones o cambios runtime.
+- SaaS Super Admin, billing, planes, suscripciones y operación comercial SaaS.
+- Copiar la arquitectura, persistencia o modelo de seguridad de SR Taller 1.0.
+- Seleccionar o iniciar un PBI de implementación.
+- Push, PR, merge, deploy o cambios de infraestructura/remotos.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
-- [`SOURCE_OF_TRUTH.md`](../delivery/SOURCE_OF_TRUTH.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](../delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
-- [`DEFINITION_OF_DONE.md`](../delivery/DEFINITION_OF_DONE.md)
-- [`BRANCH_POLICY.md`](../delivery/BRANCH_POLICY.md)
-- [`RISK_CLASSIFICATION.md`](../delivery/RISK_CLASSIFICATION.md)
-- [`MAIN_BRANCH_PROTECTION_CONTRACT.md`](../delivery/MAIN_BRANCH_PROTECTION_CONTRACT.md)
-- [DEC-051](../decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md)
-- [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
+- [`CURRENT_STATE.md`](../CURRENT_STATE.md)
+- [`MVP_OPERATING_ROADMAP.md`](../product/MVP_OPERATING_ROADMAP.md)
+- Contratos vigentes de tenancy, identidad/acceso, sucursales/estaciones,
+  seguridad, diseño y pruebas.
 
 ## Risks
 
-- requiring a conditional/skipped job and blocking legitimate PR classes;
-- reducing gates while adding an aggregate result;
-- treating GitHub capability design as already configured;
-- hiding a current-policy contradiction inside historical documents;
-- changing remote settings or the Owner's collaborator permissions;
-- losing the unrelated `.DS_Store`.
+- Confundir disponibilidad de piezas aisladas con un lifecycle E2E completo.
+- Reutilizar conductas inseguras de 1.0 junto con su referencia funcional.
+- Dejar autoridad tenant/branch/station controlada por datos del cliente.
+- Crear tenants parcialmente provisionados si el bootstrap no es atómico.
+- Diseñar inscripción de estaciones sin credenciales rotables, auditables y
+  acotadas al tenant/sucursal.
+- Inventar decisiones de producto sobre registro, propietario o recuperación.
 
 ## Plan
 
-- [x] Verify branch, expected HEAD, origin/main, Work Unit and tracked tree.
-- [x] Audit the complete branch delta and current governance consistency.
-- [x] Materialize/test the aggregate check and exact protection/procedure.
-- [x] Run both fresh-agent acceptance dry runs.
-- [x] Run the authoritative FULL local promotion verification.
-- [x] Reconcile checklist and review final candidate.
-- [x] Create one local readiness commit if changes exist.
+- [x] Auditar contratos y estado actual de SR Taller 2.0.
+- [x] Auditar el comportamiento equivalente disponible en SR Taller 1.0.
+- [x] Consolidar matriz existente / parcial / faltante del lifecycle.
+- [x] Documentar decisiones Owner pendientes y riesgos de seguridad.
+- [x] Proponer el MVP mínimo y su secuencia de Work Units futuras.
+- [x] Definir escenario de aceptación E2E multitenant.
+- [ ] Validar documentación, links, consistencia y Work Unit contract.
 
 ## Current
 
-The complete local candidate is coherent and promotion-ready. The aggregate
-check, exact proposed ruleset and promotion/Preview boundary are materialized;
-both fresh-agent dry runs and the authoritative FULL campaign pass.
+Consolidación de hallazgos, decisiones y roadmap propuesto en curso.
 
 ## Next
 
-Stop for the Owner's explicit decision whether to push the branch and open its
-first governed PR. Ruleset activation remains a later, separate decision.
+Definir Work Units futuras y el escenario E2E multitenant.
 
 ## Blockers
 
-None. Remote promotion and protection activation remain intentionally pending
-Owner authorization.
+None known.
 
 ## Important Discoveries
 
-- Complete branch delta: 4 commits, 39 files, 2,530 insertions and 1,893
-  deletions; no product/runtime/database file changed.
-- Current checks are `Governed change classification`, `DOCS_ONLY fail-closed`,
-  `VC-024 run-1`, `VC-024 run-2` and `VC-024 comparison`.
-- Full and DOCS_ONLY jobs are mutually conditional; no existing check both
-  represents the selected authoritative path and always resolves.
-- GitHub reports a public user-owned repository, `main` unprotected, zero
-  rulesets, Owner `ADMIN`, and `empresasgalatech` `write`.
-- Repository merge settings currently allow merge commit, squash and rebase;
-  automatic branch deletion is disabled; merge queue is unavailable.
+- 2.0 ya separa Tenant, Branch, Station, User, Role y Operational Session, pero
+  la existencia de esas piezas no prueba todavía un onboarding público E2E.
+- 1.0 contiene flujos de alta de taller, sucursal, dispositivo, selección de
+  sucursal y login por PIN; su arquitectura y seguridad no son reutilizables.
+- 2.0 sólo expone el bootstrap de Station para desarrollo; la administración
+  productiva de create/link/relink/unlink/revoke permanece en PBI-031.
+- El primer User puede provisionarse una sola vez mediante un use case
+  server-only, pero no existe una transacción pública que cree Tenant, Branch,
+  Owner/Admin, rol y credenciales como una sola unidad recuperable.
+- La administración actual de Users/Roles y la Session PIN dependen primero de
+  una Station confiable; no resuelven por sí mismas el acceso administrativo
+  previo a la primera Station.
+- 1.0 demuestra el orden comprensible para el Owner, pero también conserva PIN
+  inicial conocido/plaintext, alta no atómica y auto-vinculación de equipo;
+  esos mecanismos se rechazan explícitamente como diseño para 2.0.
+- El SaaS Super Admin y billing quedan expresamente fuera del initiative.
 
 ## Focused Verification
 
-- [x] Aggregate workflow regression: `PASS`.
-- [x] Work Unit, governance and engineering-discovery regressions: `30/30 PASS`.
-- [x] Documentation links/consistency and secret scan: `PASS` (`682` Markdown
-  files and `4,197` relative links checked).
-- [x] Typecheck, architecture, UI and build: `PASS` through the canonical full
-  campaign.
-- [x] Current authoritative `verify:full`: all 14 stages `PASS`; PostgreSQL
-  composite `17/17`, PBI-039 `2/2`, PBI-040 `1/1`, PBI-041 `10/10`, 75
-  migrations and second run `0 pending`; cleanup `PASS`.
-- [x] `git diff --check`: `PASS`; final tracked tree is committed and clean.
+- [x] `work-unit:start` y `work-unit:check` iniciales.
+- [ ] Links Markdown locales.
+- [ ] Consistency/source-of-truth scan.
+- [ ] `git diff --check`.
+- [ ] `work-unit:check` final.
 
 ## Promotion Gates
 
-- The active classifier still requires `FULL`; shadow risk is
-  `ARCHITECTURAL` and reduces no gate.
-- No PR exists. `PROMOTION`, remote CI, review, merge and exact-main remain
-  pending.
-- Proposed required check must pass both selected paths and cannot mask a
-  failed/skipped prerequisite.
+- Existing authoritative promotion policy remains unchanged.
 
 ## Remote Actions / Authorization
 
-- Read-only GitHub inspection is authorized and complete for current settings.
-- Local fixes, tests and one readiness commit are authorized.
-- Push, PR, merge, deploy, ruleset/protection and permission changes are not
-  authorized in this iteration.
+- No remote action is implied by checklist initialization.
 
 ## Handoff Notes
 
-- Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
-- `empresasgalatech` may participate but is not an active workflow dependency.
-- Preview deployment is manual and only occurs under separate authorization.
+- Branch creation/switching is explicit and occurred before this command.
+- Preservar sin agregar ni borrar
+  `apps/dev-preview-web/src/.DS_Store` (artefacto Owner preexistente).
 
 ## Closure Predicate
 
-Iteration 5 reaches `READY_FOR_PROMOTION` only after the complete branch passes
-the current FULL local gate; both fresh-agent tests pass; the aggregate CI
-contract is regression-protected; GitHub capabilities and proposed protection
-are explicit; the final tracked tree is clean; and any Iteration 5 changes are
-committed locally. Push/PR are a later Owner decision and do not occur here.
+Existe un artefacto repository-native que: documenta el estado 2.0; describe
+la referencia funcional 1.0 y sus límites; clasifica cada etapa del lifecycle;
+expone decisiones Owner y riesgos; propone un MVP mínimo y Work Units futuras;
+y define un escenario E2E multitenant verificable, sin cambios de producto.
