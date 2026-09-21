@@ -190,6 +190,52 @@ el paso siguiente.
 `Done` y `Released` permanecen separados. Un deploy sólo aparece dentro del
 golden path de un PBI cuando su alcance o un release posterior lo autoriza.
 
+### Procedimiento mínimo de promoción de una Work Unit
+
+Cuando el Owner solicita conceptualmente «promueve esta Work Unit», el agente:
+
+1. valida metadata, alcance, predicado de cierre y estado de la Work Unit;
+2. verifica rama, base, divergencia y archivos Owner no relacionados;
+3. ejecuta la verificación de promoción completa exigida por la clasificación
+   vigente, sin sustituirla por el shadow model;
+4. reconcilia documentación afectada y exige un árbol tracked limpio;
+5. con autorización explícita, publica la rama sin reescribir historia;
+6. abre un PR contra `main` y registra el riesgo aplicable;
+7. espera `Authoritative promotion gate` y sus gates subyacentes;
+8. ejecuta el review proporcional: NORMAL técnico; SENSITIVE o ARCHITECTURAL
+   con la aprobación Owner y segunda revisión deliberada aplicables;
+9. entrega un resultado breve con HEAD exacto, CI, hallazgos y pendientes;
+10. sólo después de autorización Owner explícita, hace merge ordinario;
+11. actualiza `main` local y verifica igualdad/divergencia/limpieza;
+12. espera la verificación autoritativa exact-main;
+13. despliega o valida un ambiente sólo bajo autorización separada; y
+14. deriva el cierre desde Git, GitHub, runtime y el predicado registrado, sin
+    crear un PR adicional para cambiar wording derivable.
+
+El Owner no necesita traducir esta secuencia a términos internos: la orden de
+promover autoriza únicamente los pasos que indique expresamente y cada frontera
+irreversible conserva su gate.
+
+### Frontera actual post-merge y Preview
+
+La realidad vigente es:
+
+```text
+merge autorizado a main
+        ↓
+CI autoritativo sobre el SHA exacto de main
+        ↓
+deploy manual a Preview sólo si fue autorizado
+        ↓
+health, rutas, migraciones/provenance y walkthrough aplicables
+        ↓
+cierre derivado cuando el predicado completo se cumple
+```
+
+Preview no es Staging, no replica necesariamente datos Owner/locales y no se
+despliega automáticamente por el simple hecho de hacer merge. Staging,
+Production y promoción por artefacto inmutable permanecen futuros.
+
 ## Phase 1 verification selection — CURRENT
 
 Durante una iteración se usan el preflight y las pruebas focalizadas del delta.

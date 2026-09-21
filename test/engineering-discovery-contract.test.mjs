@@ -54,3 +54,37 @@ test('component catalog names every public shared UI export', async () => {
     assert.ok(catalog.includes(`\`${name}\``), `component catalog must list ${name}`);
   }
 });
+
+test('fresh NORMAL UI work discovers reuse and focused verification without inventing an ADR', async () => {
+  const agents = await readFile('AGENTS.md', 'utf8');
+  const lifecycle = await readFile('docs/delivery/WORK_UNIT_LIFECYCLE.md', 'utf8');
+  const risk = await readFile('docs/delivery/RISK_CLASSIFICATION.md', 'utf8');
+  const catalog = await readFile('docs/design-system/COMPONENT_CATALOG.md', 'utf8');
+  const guide = await readFile('docs/engineering/MODULE_CREATION.md', 'utf8');
+
+  assert.match(agents, /ACTIVE_CHECKLIST\.md/u);
+  assert.match(lifecycle, /focused verification/u);
+  assert.match(risk, /NORMAL/u);
+  assert.match(catalog, /Cómo buscar antes de crear/u);
+  assert.match(catalog, /API compartida/u);
+  assert.match(guide, /COMPONENT_CATALOG/u);
+  assert.match(risk, /`NORMAL` \| UI within accepted architecture/u);
+  assert.match(risk, /`ARCHITECTURAL` \| accepted ADR\/DEC/u);
+});
+
+test('fresh tenant-scoped persistence work discovers SENSITIVE cross-cutting gates', async () => {
+  const agents = await readFile('AGENTS.md', 'utf8');
+  const guide = await readFile('docs/engineering/MODULE_CREATION.md', 'utf8');
+  const risk = await readFile('docs/delivery/RISK_CLASSIFICATION.md', 'utf8');
+  const data = await readFile('docs/architecture/DATA_ARCHITECTURE.md', 'utf8');
+  const tenancy = await readFile('docs/architecture/MULTITENANCY_MODEL.md', 'utf8');
+
+  assert.match(agents, /DATA_ARCHITECTURE\.md/u);
+  assert.match(guide, /dec-049-persistence-ownership/u);
+  assert.match(guide, /migraci/u);
+  assert.match(guide, /PostgreSQL/u);
+  assert.match(guide, /autorizaci/u);
+  assert.match(risk, /SENSITIVE/u);
+  assert.match(data, /UTC/u);
+  assert.match(tenancy, /tenant_id/u);
+});

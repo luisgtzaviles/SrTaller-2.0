@@ -458,3 +458,38 @@ jobs:
           path: ${{ runner.temp }}/vc024-comparison/
           if-no-files-found: error
           retention-days: 30
+
+  promotion-gate:
+    name: Authoritative promotion gate
+    needs:
+      - classify-change
+      - docs-only-gate
+      - authoritative-gate
+      - compare-authoritative-gates
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Require the selected authoritative path
+        env:
+          CLASSIFICATION_RESULT: ${{ needs.classify-change.result }}
+          DOCS_ONLY: ${{ needs.classify-change.outputs.docs_only }}
+          DOCS_ONLY_RESULT: ${{ needs.docs-only-gate.result }}
+          FULL_RESULT: ${{ needs.authoritative-gate.result }}
+          COMPARISON_RESULT: ${{ needs.compare-authoritative-gates.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test "${CLASSIFICATION_RESULT}" = "success"
+
+          if [[ "${DOCS_ONLY}" == "true" ]]; then
+            test "${DOCS_ONLY_RESULT}" = "success"
+            test "${FULL_RESULT}" = "skipped"
+            test "${COMPARISON_RESULT}" = "skipped"
+          else
+            test "${DOCS_ONLY_RESULT}" = "skipped"
+            test "${FULL_RESULT}" = "success"
+            test "${COMPARISON_RESULT}" = "success"
+          fi
