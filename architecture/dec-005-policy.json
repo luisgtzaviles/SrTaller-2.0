@@ -469,7 +469,8 @@
         "strategy": "useFactory",
         "implementation": "RuntimeEnvironmentReader",
         "consumers": [
-          "src/modules/access/presentation/access-session.controller.ts"
+          "src/modules/access/presentation/access-session.controller.ts",
+          "src/modules/access/presentation/admin-session.controller.ts"
         ]
       }
     ],
@@ -568,6 +569,13 @@
         "kind": "constructor-inject"
       },
       {
+        "file": "src/modules/access/presentation/admin-session.controller.ts",
+        "token": "SESSION_TRANSPORT_POLICY",
+        "contract": "SessionTransportPolicy",
+        "importSpecifier": "../../../infrastructure/runtime/index.js",
+        "kind": "constructor-inject"
+      },
+      {
         "file": "src/modules/customers/customers.module.ts",
         "token": "APPLICATION_DATABASE_CONNECTION",
         "contract": "ApplicationDatabaseConnection",
@@ -639,6 +647,15 @@
           "file": "src/modules/access/access.module.ts",
           "className": "AccessModule",
           "importSpecifier": "./presentation/access-session.controller.js"
+        }
+      },
+      "src/modules/access/presentation/admin-session.controller.ts": {
+        "owner": "access",
+        "className": "AdminSessionController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/admin-session.controller.js"
         }
       },
       "src/modules/access/presentation/user-preferences.controller.ts": {
@@ -2684,9 +2701,11 @@
     "src/modules/access/infrastructure/security/node-admin-session-token.ts",
     "src/modules/access/infrastructure/security/node-session-token.ts",
     "src/modules/access/presentation/access-session-cookie.ts",
+    "src/modules/access/presentation/admin-session-cookie.ts",
     "src/modules/access/presentation/access-administration.controller.ts",
     "src/modules/access/presentation/branch-settings-administration.controller.ts",
     "src/modules/access/presentation/access-session.controller.ts",
+    "src/modules/access/presentation/admin-session.controller.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/access/presentation/tenant-wide-authorization.executor.ts",
     "src/modules/access/presentation/sensitive-action-level2.executor.ts",

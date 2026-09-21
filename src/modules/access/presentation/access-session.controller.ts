@@ -57,6 +57,7 @@ import type {
   ProvisionAdminIdentityUseCase,
   ResolveAdminSessionUseCase,
 } from '../application/use-cases/admin-session.use-cases.js';
+import type { AdminSessionTokenPort } from '../application/ports/admin-session-token.port.js';
 import {
   OPERATIONAL_SESSION_IDLE_MS,
   assertSessionId,
@@ -101,6 +102,8 @@ export interface AccessSessionRuntime {
     resolve: ResolveAdminSessionUseCase;
     sessions: AdminSessionManagementUseCase;
     recovery: AdminRecoveryFoundationUseCase;
+    tokens: AdminSessionTokenPort;
+    capabilities: (tenantId: string, userId: string) => Promise<readonly CapabilityCode[]>;
   }>;
 }
 

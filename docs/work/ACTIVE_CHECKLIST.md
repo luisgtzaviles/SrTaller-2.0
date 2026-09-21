@@ -22,9 +22,9 @@ last_updated: 2026-09-20
   Work Units.
 Current PBI: NONE
 - **Status:** `ACTIVE` in authorized implementation.
-- **Progress:** `10 / 14` Work Unit blocks complete.
-- **Current work:** persistence and administrative identity/session use cases complete.
-- **Next block:** isolated administrative HTTP boundary and authorization executor.
+- **Progress:** `11 / 14` Work Unit blocks complete.
+- **Current work:** the isolated `/api/admin` session HTTP audience is complete.
+- **Next block:** administrative authorization executor and commit guard.
 - **Blockers:** none.
 - **Last updated:** 2026-09-20, America/Hermosillo.
 
@@ -91,15 +91,15 @@ Station + PIN boundary.
 
 ## Current
 
-The six-table additive persistence model and the administrative login,
-session, revocation, reauthentication and internal recovery use cases are
-implemented. Material PostgreSQL proves 76 migrations and zero pending on the
-second run.
+The administrative HTTP audience now has distinct cookies, routes, CSRF,
+same-origin, JSON-only and no-store controls. Login does not require a Station
+or accept client Tenant authority, and the public response excludes credential
+material.
 
 ## Next
 
-Implement the separate `/api/admin` cookie/HTTP audience and the public
-administrative authorization executor. Do not begin TL-03.
+Implement the public administrative authorization executor with tenant-wide
+capability recalculation and commit-time revalidation. Do not begin TL-03.
 
 ## Blockers
 
@@ -133,6 +133,7 @@ None.
 - [x] TL-02 password/token/configuration tests — 14 PASS.
 - [x] TL-02 application use-case tests — 3 PASS.
 - [x] TL-02 PostgreSQL persistence — PASS; 76 migrations, second run 0 pending.
+- [x] TL-02 HTTP/session audience tests — 3 PASS.
 - [x] Typecheck and architecture checks — PASS through implementation block 4.
 - [ ] Current risk pipeline plus `verify:full` before promotion.
 

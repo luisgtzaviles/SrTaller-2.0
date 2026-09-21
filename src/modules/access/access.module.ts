@@ -81,6 +81,7 @@ import {
   ProvisionAdminIdentityUseCase,
   ResolveAdminSessionUseCase,
 } from './application/use-cases/admin-session.use-cases.js';
+import { composeEffectiveCapabilities } from './domain/capability.js';
 import {
   ACCESS_SESSION_RUNTIME,
   AccessSessionController,
@@ -89,6 +90,7 @@ import type { AccessSessionRuntime } from './presentation/access-session.control
 import {
   AccessAdministrationController,
 } from './presentation/access-administration.controller.js';
+import { AdminSessionController } from './presentation/admin-session.controller.js';
 import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
 import { TenantWideAuthorizationExecutorService } from './presentation/tenant-wide-authorization.executor.js';
@@ -118,6 +120,7 @@ type RegisteredAccessUseCases =
   imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],
   controllers: [
     AccessSessionController,
+    AdminSessionController,
     AccessAdministrationController,
     BranchSettingsAdministrationController,
     UserPreferencesController,
@@ -225,6 +228,15 @@ type RegisteredAccessUseCases =
             resolve: new ResolveAdminSessionUseCase(adminRepository, users, adminTokens),
             sessions: new AdminSessionManagementUseCase(adminRepository, adminPasswordHasher),
             recovery: new AdminRecoveryFoundationUseCase(adminRepository, users, adminPasswordHasher, adminTokens),
+            tokens: adminTokens,
+            capabilities: async (tenantId: string, userId: string) => {
+              const matrix = await new ListAccessMatrixUseCase(accessRepository).execute({ tenantId });
+              const activeRoles = new Map(matrix.roles.filter((role) => role.status === 'active').map((role) => [role.roleId, role.capabilityCodes]));
+              const capabilities = matrix.assignments
+                .filter((assignment) => assignment.userId === userId && assignment.status === 'active' && assignment.assignmentScope === 'TENANT_WIDE' && assignment.branchId === null)
+                .flatMap((assignment) => activeRoles.get(assignment.roleId) ?? []);
+              return composeEffectiveCapabilities(capabilities);
+            },
           }),
         });
       },
