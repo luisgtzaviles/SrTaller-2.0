@@ -17,9 +17,9 @@ Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
 General State: Authorized implementation / Functional foundation
-Progress: 6 / 8 implementation blocks complete
-Current Work: TL-02 login, isolation and operational-auth regression
-Next Block: Evidence, full verification and promotion handoff
+Progress: 7 / 8 implementation blocks complete
+Current Work: Evidence, full verification and promotion handoff
+Next Block: Owner-authorized remote promotion only after local gates pass
 Blocking: NONE
 Last Updated: 2026-09-21
 
@@ -77,16 +77,16 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 4 — Internal bootstrap domain/application contract.
 - [x] Block 5 — Atomic orchestration and sanitized audit.
 - [x] Block 6 — Idempotency, concurrency and failure injection.
-- [~] Block 7 — TL-02 login, isolation and operational-auth regression.
-- [ ] Block 8 — Evidence, full verification and promotion handoff.
+- [x] Block 7 — TL-02 login, isolation and operational-auth regression.
+- [~] Block 8 — Evidence, full verification and promotion handoff.
 
 ## Current
 
-Implementing Block 7: integrated identity login and preexisting auth regressions.
+Implementing Block 8: canonical evidence, full verification and clean handoff.
 
 ## Next
 
-Run TL-02 and operational authentication regression suites against the new schema.
+Reconcile evidence and run all promotion gates on the exact local candidate.
 
 ## Blockers
 
@@ -118,6 +118,8 @@ None.
 - Block 6 proves PostgreSQL rollback at all nine material boundaries, concurrent
   duplicate serialization, stable replay, ambiguous-timeout recovery, conflict
   rejection, duplicate names, normalized-email conflict and tenant isolation.
+- Block 7 proves TL-02 login with the bootstrapped identity, no implicit
+  Operational Session, and 60 focused Role/PIN/Session/authorization regressions.
 
 ## Focused Verification
 
@@ -136,6 +138,8 @@ None.
   PostgreSQL 18.4 applied the guard migration and rerun reported `0 pending`.
 - [x] Block 6 focused contract/use-case tests PASS; fresh PostgreSQL 18.4 ran
   79 migrations, rerun `0 pending`, and all 3 material TL-03 suites PASS.
+- [x] Block 7 TL-02 PostgreSQL 2/2 PASS and focused operational authorization,
+  Role, PIN, Session and admin-session regressions 60/60 PASS.
 - [ ] Implementation authorization will require unit/contracts, PostgreSQL
   18.4 migration/atomicity/concurrency/failure injection, TL-02 regressions,
   architecture, full promotion verification and security review.

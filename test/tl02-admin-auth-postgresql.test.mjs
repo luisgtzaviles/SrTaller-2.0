@@ -34,7 +34,7 @@ test('TL-02 persistence enforces tenant identity, secret shape and append-only a
   const tenantA = randomUUID(); const tenantB = randomUUID(); const userA = randomUUID();
   const identity = randomUUID(); const now = new Date('2026-09-20T18:00:00.000Z');
   try {
-    await pool.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', $3), ($2, 'MXN', $3)`, [tenantA, tenantB, now]);
+    await pool.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Tenant A', 'ACTIVE', 'MXN', 0, $3, $3), ($2, 'Tenant B', 'ACTIVE', 'MXN', 0, $3, $3)`, [tenantA, tenantB, now]);
     await pool.query(`insert into users (tenant_id, user_id, display_name, status, version, admission_revision, created_at, updated_at) values ($1, $2, 'Owner A', 'active', 0, 0, $3, $3)`, [tenantA, userA, now]);
     await pool.query(`insert into access_admin_identities (tenant_id, admin_identity_id, user_id, normalized_email, email_display, verified_at, status, identity_version, created_at, updated_at) values ($1,$2,$3,'owner@example.com','Owner@Example.com',$4,'active',0,$4,$4)`, [tenantA, identity, userA, now]);
     await assert.rejects(pool.query(`insert into access_admin_identities (tenant_id, admin_identity_id, user_id, normalized_email, email_display, verified_at, status, identity_version, created_at, updated_at) values ($1,$2,$3,'other@example.com','other@example.com',$4,'active',0,$4,$4)`, [tenantB, randomUUID(), userA, now]), (error) => error?.code === '23503');
@@ -58,7 +58,7 @@ test('TL-02 PostgreSQL executes concurrent sessions, rate limit, reauth, revocat
   const hasher = new NodeArgon2AdminPasswordHasher(randomBytes(32).toString('base64url'));
   const tokens = new NodeAdminSessionToken();
   try {
-    await pool.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', $3), ($2, 'MXN', $3)`, [tenantA, tenantB, now]);
+    await pool.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Tenant A', 'ACTIVE', 'MXN', 0, $3, $3), ($2, 'Tenant B', 'ACTIVE', 'MXN', 0, $3, $3)`, [tenantA, tenantB, now]);
     await pool.query(`insert into users (tenant_id, user_id, display_name, status, version, admission_revision, created_at, updated_at) values ($1,$2,'Owner A','active',0,0,$5,$5),($3,$4,'Owner B','active',0,0,$5,$5)`, [tenantA, userA, tenantB, userB, now]);
     await connection.verify();
     const repository = new KyselyAdminAuthRepository(connection); const users = new KyselyAuthenticationUserReader(connection);
