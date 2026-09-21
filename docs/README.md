@@ -44,6 +44,7 @@ auditoría inicial, la remediación y el dictamen final:
 - [Mapa de módulos](product/MODULE_MAP.md)
 - [Preguntas abiertas](product/OPEN_QUESTIONS.md)
 - [Lecciones de SR Taller anterior](product/LEGACY_SR_TALLER_LESSONS.md)
+- [Tenant Lifecycle MVP — Discovery & Planning](product/TENANT_LIFECYCLE_MVP_DISCOVERY.md)
 
 ## Diseño de producto
 
@@ -98,6 +99,7 @@ autoriza un cambio de producto.
 - [Arquitectura objetivo](architecture/TARGET_ARCHITECTURE.md)
 - [Arquitectura de aplicaciones](architecture/APPLICATION_ARCHITECTURE.md)
 - [Modelo multitenant](architecture/MULTITENANCY_MODEL.md)
+- [Tenant Lifecycle MVP](architecture/TENANT_LIFECYCLE_MVP.md)
 - [Identidad, acceso y permisos](architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md)
 - [Sucursales y dispositivos](architecture/BRANCH_AND_DEVICE_MODEL.md)
 - [Sesiones operativas concurrentes](architecture/CONCURRENT_OPERATIONAL_SESSIONS.md)
@@ -125,6 +127,8 @@ autoriza un cambio de producto.
 - [ADR-011 — Identidad, autenticación por PIN y sesión operativa (Accepted)](decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md)
 - [ADR-012 — Roles de tenant, capacidades y autorización contextual (Accepted)](decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
 - [ADR-013 — Acciones sensibles y autorización reforzada (Accepted)](decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md)
+- [ADR-014 — Sesiones operativas concurrentes (Accepted)](decisions/proposed/ADR-014-concurrent-operational-sessions.md)
+- [ADR-015 — Tenant Administrative Control Plane (Accepted)](decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
 
 ## Entrega
 

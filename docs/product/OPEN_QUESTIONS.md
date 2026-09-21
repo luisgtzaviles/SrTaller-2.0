@@ -95,11 +95,26 @@ release.
 <a id="question-005"></a>
 ### QUESTION-005 — Ciclo de vida del tenant
 
-- **Contexto:** El tenant es el límite organizacional, pero alta, activación, suspensión, recuperación, cierre y eliminación no están definidos.
-- **Impacto:** Afecta acceso, suscripción, retención, soporte, automatización y obligaciones sobre datos.
-- **Opciones conocidas:** alta asistida; autoservicio; alta por plataforma; suspensión reversible; cierre con exportación y periodo de retención; combinaciones por plan.
-- **Estado:** Abierta.
-- **Decisión relacionada:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), `Accepted`; no resuelve el ciclo de vida del tenant.
+- **Contexto:** El Tenant Lifecycle MVP necesita alta, bootstrap, onboarding y
+  activación sin depender de billing, Super Admin o una Station previa.
+- **Impacto:** Define registro, autoridad inicial, Branch obligatoria,
+  administración y handoff al sistema operacional.
+- **Decisión:** registro público autoservicio con email verificado; Registration
+  Attempt previo; bootstrap atómico/idempotente posterior a verificación;
+  primer Tenant User con starter Tenant Admin Role; estados `ONBOARDING` y
+  `ACTIVE`; primera Branch obligatoria; Tenant activo con Admin efectivo +
+  Branch `ACTIVE`, sin requerir Station. La primera Branch nace `ACTIVE` si el
+  comando satisface invariantes; se bloquean la pérdida del último Admin
+  efectivo y la desactivación de la última Branch activa. Billing, planes,
+  Super Admin, suspensión comercial, cierre y eliminación quedan fuera del MVP.
+- **Estado:** Cerrada con decisión para Tenant Lifecycle MVP.
+- **Alcance del cierre:** no decide lifecycle comercial/post-MVP, retención o
+  eliminación legal. Tampoco autoriza implementación; los mecanismos técnicos
+  de threat model viven en el
+  [contrato Tenant Lifecycle MVP](../architecture/TENANT_LIFECYCLE_MVP.md).
+- **Decisiones relacionadas:** [ADR-004 — multitenancy con esquema compartido](../decisions/proposed/ADR-004-shared-schema-multitenancy.md),
+  `Accepted`, y [ADR-015 — Tenant Administrative Control Plane](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md),
+  `Accepted`.
 
 <a id="question-006"></a>
 ### QUESTION-006 — Datos tenant-wide frente a datos de sucursal
@@ -138,11 +153,18 @@ release.
 <a id="question-009"></a>
 ### QUESTION-009 — Identidad global y pertenencia a varios tenants
 
-- **Contexto:** ADR-004/010/011 fijan que un usuario ordinario pertenece exactamente a un tenant y que su identidad no depende de PIN, sesión, estación o sucursal. La correlación de una misma persona entre tenants y la recuperación permanecen abiertas.
+- **Contexto:** ADR-004/010/011 fijan que un usuario ordinario pertenece
+  exactamente a un tenant y que su identidad no depende de credencial, sesión,
+  estación o sucursal. Tenant Lifecycle aprueba email verificado + password y
+  recovery por email para la administración. Para MVP, una identidad/email
+  administrativa pertenece a un solo Tenant.
 - **Impacto:** Afecta autenticación, recuperación, privacidad, cambio de contexto y duplicados.
 - **Opciones conocidas:** identidad global con varias membresías; identidad separada por tenant; identidad global con alias o proveedores vinculados; federación futura.
-- **Estado:** En investigación.
-- **Alcance resuelto:** Pertenencia, identidad ordinaria y autenticación contextual aceptadas; recuperación y correlación global pendientes.
+- **Estado:** Cerrada con decisión para Tenant Lifecycle MVP.
+- **Alcance resuelto:** Pertenencia e identidad Tenant User, separación
+  password/PIN, recovery administrativo por email y cardinalidad V1 de un
+  Tenant por identidad administrativa. Una identidad multi-Tenant futura,
+  federación y correlación global requieren una decisión posterior.
 - **Decisión relacionada:** [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), `Accepted`.
 
 <a id="question-010"></a>
@@ -160,12 +182,23 @@ release.
 <a id="question-011"></a>
 ### QUESTION-011 — Vinculación y confianza de dispositivos
 
-- **Contexto:** ADR-010 exige vinculación previa, única y mantenida del lado del servidor a una sucursal; quedan abiertos tipos de equipo, autoridad detallada y prueba técnica.
+- **Contexto:** ADR-010 exige vinculación previa, única y mantenida del lado del
+  servidor a una sucursal. TL-009 aprueba un challenge Admin-authorized de alta
+  entropía, un uso y TTL de 10 minutos.
 - **Impacto:** Afecta seguridad, onboarding, soporte, pérdida, revocación y experiencia en sucursal.
-- **Opciones conocidas:** código temporal aprobado por administrador; enrolamiento iniciado en consola; invitación o enlace de activación; gestión externa de dispositivos en una etapa futura.
-- **Estado:** En investigación.
-- **Alcance resuelto:** Invariantes aceptadas; mecanismo y controles pendientes.
-- **Decisión relacionada:** [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), `Accepted`; mecanismo sujeto a ADR posterior.
+- **Decisión:** un Admin con capability explícita autoriza Tenant/Branch; el
+  servidor emite el challenge y su canje atómico establece Station/binding/
+  credential sin aceptar scope del equipo. Issue/revoke/relink son Level 2 con
+  Admin Session y password reauth vigente 10 minutos. El canje no vuelve a
+  pedir password y revalida atómicamente challenge, expiración, single-use,
+  Tenant/Branch, issuer authority y authorization revisions.
+- **Estado:** Cerrada con decisión para Tenant Lifecycle MVP.
+- **Alcance resuelto:** naturaleza, TTL, single-use, scope, sensibilidad,
+  reauth y revalidación del challenge. Estados técnicos detallados y transporte
+  se diseñan en TL-07/TL-08 sin reabrir esta decisión.
+- **Decisiones relacionadas:** [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md),
+  `Accepted`, y [ADR-015](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md),
+  `Accepted`.
 
 <a id="question-012"></a>
 ### QUESTION-012 — Alcance del PIN y autenticación reforzada

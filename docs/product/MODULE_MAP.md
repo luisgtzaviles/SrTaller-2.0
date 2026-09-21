@@ -14,7 +14,10 @@
 - **Datos propios** significa fuente autoritativa conceptual. No define almacenamiento físico ni impide proyecciones de lectura.
 - **Eventos posibles** son ejemplos para descubrir colaboración entre módulos; no son contratos aceptados ni garantizan mensajería distribuida.
 - **Dependencias permitidas** indica colaboración deseada mediante contratos explícitos; no autoriza acceso directo a persistencia ajena.
-- Todos los módulos deben recibir contexto ADR-010/011, exigir capacidades/alcance ADR-012 y clasificar/reforzar acciones sensibles conforme a ADR-013.
+- Los módulos operativos reciben contexto ADR-010/011/014. Los casos de
+  Tenant Administration usan el contexto separado aceptado por ADR-015.
+  Ambos exigen capacidades/alcance ADR-012 y clasifican acciones sensibles
+  conforme a ADR-013; no se modelan como un contexto parcialmente vacío.
 - Identity, Access Control, Audit, Files, Notifications e Integrations pueden ser capacidades transversales sin convertirse en dependencias indiscriminadas del dominio.
 
 ## Límites generales propuestos
@@ -90,13 +93,19 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 ## Tenant Management
 
 - **Responsabilidad principal — propuesta:** administrar identidad, estado y ciclo de vida del tenant como límite organizacional de la plataforma.
-- **Datos propios — propuesta:** tenant, nombre o identificadores de negocio
-  necesarios, estado de ciclo de vida, moneda operativa Tenant aceptada para
-  Price List y metadatos de alta/suspensión/cierre. No es propietario de
-  identidades globales ni de la operación del taller.
-- **Eventos posibles:** tenant creado, activado, suspendido, reactivado o cerrado.
+- **Datos propios — dirección MVP:** tenant, nombre del taller, estado
+  `ONBOARDING`/`ACTIVE`, moneda operativa Tenant aceptada para Price List y
+  metadatos de bootstrap/activación. Suspensión comercial, cierre y eliminación
+  están fuera del MVP. El Registration Attempt pre-tenant pertenece al borde
+  público de onboarding, no al Tenant ya creado.
+- **Eventos posibles MVP:** tenant bootstrap completed, tenant activado.
 - **Dependencias permitidas:** Configuration para valores del tenant y Audit para trazabilidad. Publica su ciclo de vida para Subscription and Billing; no lo consulta directamente para decidir elegibilidad comercial. Identity y Access Control participan en el alta inicial mediante contratos, sin fusionar ownership.
-- **Preguntas abiertas:** alta, suspensión, exportación, eliminación y primer administrador. Véase [QUESTION-005](./OPEN_QUESTIONS.md#question-005).
+- **Decisión vigente:** bootstrap atómico crea Tenant `ONBOARDING`, primer
+  Tenant User y starter Tenant Admin authority; una primera Branch válida y
+  Admin efectivo activan el Tenant. Véase el
+  [contrato Tenant Lifecycle MVP](../architecture/TENANT_LIFECYCLE_MVP.md).
+- **Preguntas abiertas:** semántica post-MVP de suspensión/cierre/exportación/
+  eliminación; `TLD-001–009` y QUESTION-005 están cerradas para MVP.
 
 ## Subscription and Billing
 
@@ -109,22 +118,38 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 ## Branch Management
 
 - **Responsabilidad principal — propuesta:** administrar sucursales de un tenant y su ciclo de vida operativo.
-- **Datos propios — propuesta:** sucursal, estado, datos de ubicación necesarios y relaciones jerárquicas si se aprueban. El usuario no pertenece permanentemente a una sucursal; Device Management gobierna la vinculación de estación.
+- **Datos propios — dirección Branch V1:** sucursal tenant-scoped, nombre,
+  timezone IANA, estado `ACTIVE`/`INACTIVE`, versión y timestamps. Dirección,
+  teléfono, horarios, geocoding y jerarquías permanecen fuera de V1. El usuario
+  no pertenece permanentemente a una sucursal; Device Management gobierna la
+  vinculación de estación.
 - **Eventos posibles:** sucursal creada, actualizada, activada, desactivada o cerrada.
 - **Dependencias permitidas:** Tenant Management como límite padre; Configuration para valores de sucursal; Audit. Los módulos operativos pueden referenciar sucursales válidas por identificador, no modificar sus datos.
+- **Decisión lifecycle V1:** la primera Branch nace `ACTIVE` si el comando
+  autorizado satisface invariantes; se bloquea desactivar la última Branch
+  `ACTIVE` de un Tenant `ACTIVE` y no existe retorno silencioso a `ONBOARDING`.
 - **Preguntas abiertas:** transferencias de negocio, cierre con operación pendiente y capacidades administrativas sobre varias sucursales. Véanse [QUESTION-006](./OPEN_QUESTIONS.md#question-006) y [QUESTION-007](./OPEN_QUESTIONS.md#question-007).
 
 ## Identity
 
-- **Responsabilidad principal — propuesta de titularidad:** representar usuarios ordinarios de tenant e identidades separadas de plataforma, y administrar autenticación/sesión conforme a ADR-011.
+- **Responsabilidad principal — propuesta de titularidad:** representar Tenant
+  Users e identidades separadas de plataforma, y administrar credenciales/
+  sesiones separadas para Tenant Administration y operación.
 - **Datos propios — propuesta:** usuario con tenant único, preferencias
   personales (incluida presentación de costo, sin conceder capability),
-  credencial PIN, estados de bloqueo/desactivación/revocación, sesión operativa
-  y metadatos de autenticación o recuperación. No se decide aquí el algoritmo
-  de protección, diseño físico ni la correlación de una persona entre tenants.
+  credencial PIN, credencial administrativa no reversible, estados de
+  bloqueo/desactivación/revocación, Admin Session, Operational Session y
+  metadatos de autenticación/recovery. Password/PIN y sus sesiones no se
+  intercambian. No se decide aquí el algoritmo de protección, diseño físico ni
+  la correlación de una persona entre tenants.
 - **Eventos posibles:** identidad registrada, identificador verificado, autenticación completada/fallida, identidad bloqueada, recuperada o revocada.
 - **Dependencias permitidas:** servicios técnicos de autenticación y Audit para eventos sensibles. Publica una intención de recuperación para que Notifications la consuma; Identity no depende de Notifications ni de módulos operativos.
-- **Preguntas abiertas:** identificadores, recuperación, correlación de persona entre tenants y separación entre personal/usuario de tenant. Véase [QUESTION-009](./OPEN_QUESTIONS.md#question-009).
+- **Decisión MVP:** una identidad/email administrativa pertenece a un Tenant;
+  Admin Sessions stateful concurrentes tienen idle 30 minutos, absoluto 12
+  horas, revocación individual/global y no remember-me. Se bloquea perder el
+  último Admin; recovery no revive Users. Multi-Tenant identity, mecanismos de
+  recovery y correlación futura quedan fuera. Véase
+  [QUESTION-009](./OPEN_QUESTIONS.md#question-009).
 
 ## Access Control
 
@@ -136,11 +161,21 @@ El diagrama muestra relaciones candidatas, no direcciones finales de dependencia
 
 ## Device Management
 
-- **Responsabilidad principal — propuesta:** vincular, activar, reconocer, desvincular y revocar estaciones y sus sesiones técnicas conforme a ADR-010.
+- **Responsabilidad principal — propuesta:** inventariar, vincular, activar,
+  reconocer, desvincular y revocar estaciones y sus sesiones técnicas conforme
+  a ADR-010, usando autoridad administrativa ADR-015.
 - **Datos propios — propuesta:** identidad de estación, sucursal vinculada, tenant derivado, estado, evidencia de activación, última actividad y sesiones técnicas. El PIN se asocia al usuario del tenant; su ownership criptográfico/político permanece pendiente y no pertenece a la estación. Device Management sólo aporta su contexto validado.
 - **Eventos posibles:** vinculación solicitada/completada, estación activada/desvinculada/revocada/perdida, nueva vinculación y sesión cerrada remotamente.
 - **Dependencias permitidas:** Tenant Management, Branch Management, Identity y Access Control; Audit y Notifications para acciones sensibles sin confundir decisión con evidencia.
-- **Preguntas abiertas:** mecanismo de vinculación, credencial/confianza técnica, pérdida, protección técnica del PIN, recuperación y modo sin conexión. La semántica de reubicación se rige por ADR-010 y la de PIN/sesión/turno por ADR-011. Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008), [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
+- **Dirección MVP de enrollment:** challenge Admin-authorized de alta entropía,
+  un uso y TTL de 10 minutos, scoped a Tenant/Branch y consumido atómicamente.
+- **Decisión sensible:** issue/revoke/relink son Level 2 con password reauth
+  vigente 10 minutos; redemption revalida Session/issuer authority, estados y
+  authorization revisions sin pedir password al equipo.
+- **Preguntas abiertas:** credencial técnica, estados detallados, pérdida y
+  modo offline. Véanse [QUESTION-008](./OPEN_QUESTIONS.md#question-008),
+  [QUESTION-011](./OPEN_QUESTIONS.md#question-011) y
+  [QUESTION-012](./OPEN_QUESTIONS.md#question-012).
 
 ## Customers
 

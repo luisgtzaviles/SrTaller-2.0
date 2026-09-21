@@ -2,10 +2,14 @@
 
 ## Estado del documento
 
-- **Estado:** Dirección multitenant, motor y contexto operativo aceptados; diseño físico, mecanismos y pruebas pendientes.
-- **Naturaleza:** ADR-003/004/010/011/012 son autoritativos para motor, propiedad, contexto, identidad/sesión y autorización ordinaria; RLS y mecanismos concretos siguen sujetos a evaluación.
+- **Estado:** Dirección multitenant, motor y contextos operativo/administrativo
+  aceptados; el control plane de Tenant Lifecycle se rige por ADR-015.
+- **Naturaleza:** ADR-003/004/010/011/012 son autoritativos para motor,
+  propiedad, contexto, identidad/sesión y autorización ordinaria. ADR-015
+  delimita el contexto administrativo previo o ajeno a una Station; RLS y
+  mecanismos concretos siguen sujetos a evaluación.
 - **Dirección aceptada:** PostgreSQL 18.x, base y esquema compartidos con aislamiento lógico; Row-Level Security (RLS) pendiente de spike y opcional.
-- **ADRs relacionados:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md) y [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), todos `Accepted`.
+- **ADRs relacionados:** [ADR-003](../decisions/proposed/ADR-003-postgresql-primary-database.md), [ADR-004](../decisions/proposed/ADR-004-shared-schema-multitenancy.md), [ADR-010](../decisions/proposed/ADR-010-station-bound-operational-context.md), [ADR-011](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md), [ADR-012](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) y [ADR-015](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md), `Accepted`.
 
 ## Objetivo de seguridad
 
@@ -14,12 +18,21 @@ Una operación de un tenant no debe leer, modificar, inferir, publicar, cachear 
 ## Separación de conceptos
 
 - **Tenant candidato:** resultado de resolver el hostname; todavía no concede acceso.
-- **Tenant efectivo:** tenant derivado de la sucursal vinculada a la estación y contrastado con el usuario activo.
+- **Tenant efectivo operacional:** tenant derivado de la sucursal vinculada a
+  la estación y contrastado con el usuario de la Operational Session.
+- **Tenant efectivo administrativo:** tenant derivado exclusivamente de la
+  relación autoritativa entre Admin Session y Tenant User, nunca de un valor
+  aportado por cliente. Este contexto aplica exclusivamente conforme a ADR-015.
 - **Contexto de tenant:** valor inmutable que acompaña una operación una vez autorizada.
 - **Contexto de sucursal:** restricción operativa adicional dentro de un tenant; no reemplaza `tenant_id`.
 - **Contexto de plataforma:** operación administrativa global excepcional, separada del flujo de tenant y auditada.
 
 ## Resolución del tenant
+
+El siguiente flujo es la resolución **operacional** aceptada. La resolución
+administrativa aceptada se define por separado en
+[Tenant Lifecycle MVP](TENANT_LIFECYCLE_MVP.md) y ADR-015; no convierte campos
+opcionales de este contexto en un bypass.
 
 ```mermaid
 sequenceDiagram
@@ -49,13 +62,15 @@ sequenceDiagram
 2. El usuario se identifica dentro de ese tenant y debe pertenecer exactamente a él.
 3. `tenant_id`, `sucursal_id`, estación o actor recibidos desde el cliente no prevalecen sobre el contexto resuelto.
 4. Estación desvinculada/revocada, sucursal inactiva, usuario ausente o conflicto fallan de forma cerrada.
-5. El nombre de host puede aportar un candidato adicional si ADR-008 se acepta, pero nunca reemplaza la estación.
+5. El nombre de host puede aportar un candidato adicional si ADR-008 se acepta,
+   pero nunca reemplaza la autoridad del contexto aplicable.
 6. Reubicar una estación exige desvinculación y nueva vinculación; no se muta silenciosamente el contexto.
-7. Plataforma, soporte y recursos públicos requieren contextos separados; no caen en un tenant por defecto.
+7. Tenant Administration, plataforma, soporte y recursos públicos requieren
+   contextos separados; no caen en un tenant por defecto.
 
 ## Propagación del contexto
 
-Un contexto mínimo conceptual contiene:
+Un contexto operativo mínimo conceptual contiene:
 
 - `tenant_id` efectivo;
 - `sucursal_id` efectivo;
@@ -65,7 +80,11 @@ Un contexto mínimo conceptual contiene:
 - identificador de correlación;
 - tipo de contexto: tenant o plataforma.
 
-Debe construirse una vez en un borde confiable y pasarse explícitamente. No se propone una variable global mutable ni se admite que un repositorio lo deduzca del payload.
+Debe construirse una vez en un borde confiable y pasarse explícitamente. Un
+contexto administrativo tiene su propio tipo y omite Branch/Station sólo bajo
+ADR-015; no reutiliza este tipo operacional con valores nulos. No se propone
+una variable global mutable ni se admite que un repositorio deduzca autoridad
+del payload, host o estado del navegador.
 
 ## Persistencia compartida
 

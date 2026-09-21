@@ -1,13 +1,13 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: SR Taller Development Harness 2.0 Migration
-iteration: 5 - Promotion Readiness and GitHub Enforcement Preparation
-type: GOVERNANCE
-risk: MEDIUM
+work_unit: TL-01 — Owner Decisions + Lifecycle Contract
+iteration: 2 - Final Contract Reconciliation
+type: ARCHITECTURE
+risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: chore/development-harness-2
-base_sha: 65df515ce3bd9ce9989421e3ade00fc8c1fa383a
+branch: chore/tl-01-lifecycle-contract
+base_sha: b2a38088b5d1673417ad7dd8dcfee34ec2349119
 status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-20
@@ -15,150 +15,162 @@ last_updated: 2026-09-20
 
 ## Identity
 
-- **Work Unit:** SR Taller Development Harness 2.0 Migration.
-- **Iteration:** 5 — Promotion Readiness and GitHub Enforcement Preparation.
-- **Prior checkpoints:** Iterations 1–4 complete on this branch.
-- **Type / risk:** Governance; current `MEDIUM`, shadow `ARCHITECTURAL`.
-- **Branch / base:** `chore/development-harness-2` from `65df515ce3bd9ce9989421e3ade00fc8c1fa383a`.
-- **Status:** `READY_FOR_PROMOTION`; no push or PR has occurred.
-- **Current PBI:** `NONE`; this is an authorized governance Work Unit.
+- **Milestone:** Tenant Lifecycle MVP.
+- **Work Unit:** TL-01 — Owner Decisions + Lifecycle Contract.
+- **Sprint:** ninguno; no se inició Sprint de producto.
+- **Current PBI:** `NONE`; TL-01 es arquitectura/planificación y no implementa
+  producto.
 Current PBI: NONE
-- **Sprint:** not required; no product Sprint is started.
-- **WIP:** `1/1` Work Unit.
-- **Progress:** Iteration 5 `7 / 7` blocks complete.
-- **Last updated:** 2026-09-20, America/Hermosillo.
+- **Estado general:** `READY_FOR_PROMOTION`.
+- **Progreso:** `11 / 11` bloques completados para promoción local de TL-01.
+- **Trabajo actual:** checkpoint de promoción local; sin acciones remotas.
+- **Siguiente bloque:** Owner autoriza push/PR de TL-01 si desea promoverlo;
+  TL-02 permanece sin seleccionar e iniciar.
+- **Bloqueos:** ninguno conocido.
+- **Última actualización:** 2026-09-20, America/Hermosillo.
 
 ## Objective
 
-Prove the complete Harness 2.0 candidate is internally coherent and ready for
-its first governed PR, while defining a safe GitHub protection configuration
-without changing remote settings.
+Materializar las decisiones Owner TL-001–016 como contrato arquitectónico del
+Tenant Lifecycle MVP, resolver su relación con ADRs aceptados y dejar TL-02 en
+adelante listos para planificación de implementación, sin implementar producto.
 
 ## Why
 
-The branch now changes operational contracts and executable governance. Before
-promotion it needs the current full gate, fresh-agent acceptance and one
-always-resolving authoritative GitHub check suitable for future protection.
+El sistema operativo actual parte de una Station confiable. El Tenant
+Lifecycle necesita un control plane administrativo previo y separado que pueda
+crear de forma segura el primer Tenant, su autoridad y su primera Branch sin
+debilitar las invariantes operativas existentes.
 
 ## In Scope
 
-- audit the complete `origin/main...HEAD` delta;
-- reconcile final active-governance contradictions;
-- normal and sensitive fresh-agent dry runs;
-- current FULL local promotion verification;
-- an always-resolving, non-reductive aggregate CI check if required;
-- read-only GitHub capability, checks, collaborators and settings inspection;
-- exact main-protection design and concise promotion procedure;
-- one final local readiness commit if repository changes are needed.
+- Registrar la dirección Owner aprobada TL-001–016.
+- Reconciliar QUESTION-005 y contratos de tenancy, identidad, autorización,
+  Branch y Station.
+- Crear la decisión arquitectónica necesaria para separar control plane y
+  contexto operativo.
+- Definir registration attempt, verificación, bootstrap, ONBOARDING y ACTIVE.
+- Definir threat models de identidad/sesión/recovery/reauth administrativa y
+  enrollment de Station.
+- Definir starter Tenant Admin authority sin elevación aportada por cliente.
+- Definir Branch V1 y auditoría/invariantes de seguridad.
+- Refinar TL-02 en adelante como Work Units implementation-ready.
 
 ## Out of Scope
 
-- product, application architecture, database, tenancy/auth/security behavior;
-- reducing CI or replacing the current classifier with the shadow model;
-- push, PR, merge, deploy, branch deletion or GitHub settings mutation;
-- collaborator permission changes;
-- Dokploy, Staging, Production or infrastructure mutation.
+- Código de producto, endpoints, UI, migraciones, schemas o datos runtime.
+- Seleccionar o iniciar TL-02 o un PBI de implementación.
+- Billing, planes, Super Admin, soporte privilegiado o suspensión comercial.
+- Copiar arquitectura, credenciales o seguridad de SR Taller 1.0.
+- Push, PR, merge, deploy o cambios remotos/de infraestructura.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
-- [`SOURCE_OF_TRUTH.md`](../delivery/SOURCE_OF_TRUTH.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](../delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
-- [`DEFINITION_OF_DONE.md`](../delivery/DEFINITION_OF_DONE.md)
-- [`BRANCH_POLICY.md`](../delivery/BRANCH_POLICY.md)
-- [`RISK_CLASSIFICATION.md`](../delivery/RISK_CLASSIFICATION.md)
-- [`MAIN_BRANCH_PROTECTION_CONTRACT.md`](../delivery/MAIN_BRANCH_PROTECTION_CONTRACT.md)
-- [DEC-051](../decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md)
-- [DEC-063](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
+- [`TENANT_LIFECYCLE_MVP_DISCOVERY.md`](../product/TENANT_LIFECYCLE_MVP_DISCOVERY.md)
+- [`MULTITENANCY_MODEL.md`](../architecture/MULTITENANCY_MODEL.md)
+- [`IDENTITY_ACCESS_AND_PERMISSIONS.md`](../architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md)
+- [`BRANCH_AND_DEVICE_MODEL.md`](../architecture/BRANCH_AND_DEVICE_MODEL.md)
+- ADR-004 y ADR-010 a ADR-014.
 
 ## Risks
 
-- requiring a conditional/skipped job and blocking legitimate PR classes;
-- reducing gates while adding an aggregate result;
-- treating GitHub capability design as already configured;
-- hiding a current-policy contradiction inside historical documents;
-- changing remote settings or the Owner's collaborator permissions;
-- losing the unrelated `.DS_Store`.
+- Crear una excepción administrativa implícita al requisito operativo de
+  Station en ADR-010/012.
+- Confundir email/password administrativo con PIN/Operational Session.
+- Permitir tenant, roles, capabilities o Branch authority desde el payload.
+- Dejar un Tenant parcialmente provisionado o un último Admin revocable.
+- Exponer/reutilizar verification, recovery o enrollment secrets.
+- Declarar implementation-ready decisiones de seguridad que el Owner no tomó.
 
 ## Plan
 
-- [x] Verify branch, expected HEAD, origin/main, Work Unit and tracked tree.
-- [x] Audit the complete branch delta and current governance consistency.
-- [x] Materialize/test the aggregate check and exact protection/procedure.
-- [x] Run both fresh-agent acceptance dry runs.
-- [x] Run the authoritative FULL local promotion verification.
-- [x] Reconcile checklist and review final candidate.
-- [x] Create one local readiness commit if changes exist.
+- [x] Registrar autorización y decisiones Owner TL-001–016.
+- [x] Auditar compatibilidad y conflictos con ADRs/contratos aceptados.
+- [x] Materializar ADR del control plane y lifecycle.
+- [x] Definir threat model administrativo y decisiones para Owner.
+- [x] Definir Branch V1, starter authority y activación de Tenant.
+- [x] Definir enrollment challenge y auditoría/invariantes.
+- [x] Refinar TL-02 en adelante con dependencias y gates.
+- [x] Reconciliar documentos e índices y ejecutar validación proporcional.
+- [x] Registrar las decisiones finales `TLD-001–009` y aceptar ADR-015.
+- [x] Reconciliar QUESTION-005 y las fronteras TL-02–TL-09.
+- [x] Ejecutar el pipeline local de promoción exigido por la clasificación.
 
 ## Current
 
-The complete local candidate is coherent and promotion-ready. The aggregate
-check, exact proposed ruleset and promotion/Preview boundary are materialized;
-both fresh-agent dry runs and the authoritative FULL campaign pass.
+Contrato TL-01 reconciliado y validado; ADR-015 está `Accepted` y el Work Unit
+está `READY_FOR_PROMOTION`. No existe implementación de producto iniciada.
 
 ## Next
 
-Stop for the Owner's explicit decision whether to push the branch and open its
-first governed PR. Ruleset activation remains a later, separate decision.
+Owner autoriza, en un turno posterior, la promoción remota de TL-01. No iniciar
+TL-02 automáticamente.
 
 ## Blockers
 
-None. Remote promotion and protection activation remain intentionally pending
-Owner authorization.
+None known for TL-01. Las selecciones técnicas delegadas corresponden a sus
+Work Units futuros y no bloquean la promoción de este contrato.
 
 ## Important Discoveries
 
-- Complete branch delta: 4 commits, 39 files, 2,530 insertions and 1,893
-  deletions; no product/runtime/database file changed.
-- Current checks are `Governed change classification`, `DOCS_ONLY fail-closed`,
-  `VC-024 run-1`, `VC-024 run-2` and `VC-024 comparison`.
-- Full and DOCS_ONLY jobs are mutually conditional; no existing check both
-  represents the selected authoritative path and always resolves.
-- GitHub reports a public user-owned repository, `main` unprotected, zero
-  rulesets, Owner `ADMIN`, and `empresasgalatech` `write`.
-- Repository merge settings currently allow merge commit, squash and rebase;
-  automatic branch deletion is disabled; merge queue is unavailable.
+- El discovery previo permanece en la misma línea de commits y no fue
+  promovido por separado; TL-01 continúa el mismo objetivo en una única rama.
+- ADR-010 contempla contextos administrativos separados, pero ADR-012 formula
+  Station + Operational Session como requisito universal de toda operación
+  protegida. La administración previa a Station requiere un ADR delimitador.
+- ADR-008 continúa `Proposed`; TL-006 elimina la necesidad de un subdominio
+  elegido por el usuario y prohíbe usar slug/host como autoridad.
+- PBI-031 ya reserva administración sensible de Stations, pero no define el
+  challenge de 10 minutos ni el contexto administrativo que lo emite.
+- El clasificador vigente trata el cambio de contratos arquitectónicos como
+  `CROSS_MODULE_HIGH_RISK`; el clasificador shadow lo trata como
+  `ARCHITECTURAL`. Ambos conservan pipeline `FULL` y no reducen gates.
+- El primer intento de `verify:full` falló cerrado en Stage 0 por el archivo
+  temporal local `.tmp/tl01-risk.json` generado durante la clasificación. Se
+  retiró únicamente ese artefacto; la repetición completa pasó.
 
 ## Focused Verification
 
-- [x] Aggregate workflow regression: `PASS`.
-- [x] Work Unit, governance and engineering-discovery regressions: `30/30 PASS`.
-- [x] Documentation links/consistency and secret scan: `PASS` (`682` Markdown
-  files and `4,197` relative links checked).
-- [x] Typecheck, architecture, UI and build: `PASS` through the canonical full
-  campaign.
-- [x] Current authoritative `verify:full`: all 14 stages `PASS`; PostgreSQL
-  composite `17/17`, PBI-039 `2/2`, PBI-040 `1/1`, PBI-041 `10/10`, 75
-  migrations and second run `0 pending`; cleanup `PASS`.
-- [x] `git diff --check`: `PASS`; final tracked tree is committed and clean.
+- [x] `work-unit:check` — PASS.
+- [x] Markdown links y consistencia documental — PASS.
+- [x] Secret-pattern scan — PASS.
+- [x] `git diff --check` — PASS.
+- [x] `verify:architecture` — PASS.
+- [x] `test:architecture` — PASS, 307/307.
+- [x] Markdown local links — PASS, 463 referencias en 18 archivos.
+- [x] Secret-pattern scan — PASS, 6 patrones gobernados.
+- [x] Clasificación vigente: `CROSS_MODULE_HIGH_RISK` / `FULL`; shadow:
+  `ARCHITECTURAL`, sin reducción de gates.
+- [x] `verify:full` — PASS, stages 0–13; base verify 987 tests (957 PASS,
+  30 SKIP), PostgreSQL composite 17/17, PBI-039 2/2, PBI-040 1/1, PBI-041
+  10/10, Preview-like runtime, backend/UI smoke y cleanup PASS. Warning de
+  chunk Vite aceptado por el gate.
 
 ## Promotion Gates
 
-- The active classifier still requires `FULL`; shadow risk is
-  `ARCHITECTURAL` and reduces no gate.
-- No PR exists. `PROMOTION`, remote CI, review, merge and exact-main remain
-  pending.
-- Proposed required check must pass both selected paths and cannot mask a
-  failed/skipped prerequisite.
+- [x] Contrato/ADR/QUESTION y fronteras TL-02–TL-09 reconciliadas.
+- [x] Owner architectural decision presente para riesgo `ARCHITECTURAL`.
+- [x] Pipeline local `FULL` satisfecho.
+- [ ] Push / PR / revisión remota / CI — no autorizados en este turno.
+- [ ] Merge / exact-main CI / cierre derivado — no ocurridos.
 
 ## Remote Actions / Authorization
 
-- Read-only GitHub inspection is authorized and complete for current settings.
-- Local fixes, tests and one readiness commit are authorized.
-- Push, PR, merge, deploy, ruleset/protection and permission changes are not
-  authorized in this iteration.
+- No push, PR, merge, deploy ni cambios remotos autorizados.
 
 ## Handoff Notes
 
-- Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
-- `empresasgalatech` may participate but is not an active workflow dependency.
-- Preview deployment is manual and only occurs under separate authorization.
+- La rama local no publicada de discovery fue renombrada sin reescribir ni
+  perder sus tres commits; conserva base `origin/main`.
+- Preservar sin agregar ni borrar
+  `apps/dev-preview-web/src/.DS_Store` (artefacto Owner preexistente).
 
 ## Closure Predicate
 
-Iteration 5 reaches `READY_FOR_PROMOTION` only after the complete branch passes
-the current FULL local gate; both fresh-agent tests pass; the aggregate CI
-contract is regression-protected; GitHub capabilities and proposed protection
-are explicit; the final tracked tree is clean; and any Iteration 5 changes are
-committed locally. Push/PR are a later Owner decision and do not occur here.
+TL-01 queda cerrado por derivación sólo cuando su candidato sea promovido por
+PR autorizado, integrado a `main` mediante el método vigente y la verificación
+exact-main requerida quede GREEN. Hasta entonces permanece
+`READY_FOR_PROMOTION`; no existe closure PR adicional ni inicio automático de
+TL-02.

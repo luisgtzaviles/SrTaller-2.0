@@ -8,6 +8,14 @@
 
 Decisión arquitectónica aceptada como base de R0 para determinar si un usuario autenticado puede ejecutar una operación protegida dentro de su contexto operativo efectivo. La ruta bajo `proposed/` conserva la convención histórica del repositorio; el estado dentro de este ADR y el [registro de decisiones](../README.md) son autoritativos.
 
+[ADR-015](ADR-015-tenant-administrative-control-plane.md), `Accepted` el
+2026-09-20, califica parcialmente la precondición de contexto: Registration
+Context y Tenant Admin Context son contextos protegidos separados que no
+requieren Station ni Operational Session. Este ADR conserva para ellos Roles,
+unión de capabilities, tenant scope, deny-by-default, autoridad server-side y
+revocación. Las referencias siguientes a contexto/sesión operativos aplican a
+Operational Context; frontend `tenantId`/`branchId` nunca se vuelve autoridad.
+
 Este ADR define el modelo conceptual, las responsabilidades, las reglas de precedencia y las invariantes de autorización ordinaria. No autoriza implementación ni diseña tablas, SQL, migraciones, endpoints, middleware, guards, políticas de framework, decoradores, atributos de código, interfaces, menús, navegación, tokens o formatos de datos.
 
 ## Contexto
@@ -454,4 +462,9 @@ Se requiere un ADR que reemplace o modifique esta decisión si:
 
 ## Resultado
 
-ADR-012 queda `Accepted` como autoridad conceptual sobre roles de tenant, capacidades, asignaciones, alcance y autorización ordinaria. ADR-004 conserva la frontera de datos, ADR-010 el contexto operativo y ADR-011 el usuario autenticado y la sesión. Acciones sensibles, autorización reforzada, auditoría técnica y detalles de implementación permanecen explícitamente diferidos.
+ADR-012 queda `Accepted` como autoridad conceptual sobre roles de tenant,
+capacidades, asignaciones, alcance y autorización ordinaria. ADR-004 conserva
+la frontera de datos, ADR-010/011 el contexto y sesión operativos, y ADR-015
+califica el Registration/Tenant Admin Context sin convertir payloads del
+frontend en autoridad. Acciones sensibles, autorización reforzada, auditoría
+técnica y detalles de implementación permanecen explícitamente diferidos.

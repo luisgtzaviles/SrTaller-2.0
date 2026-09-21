@@ -18,7 +18,7 @@ Evitar que presentación, HTTP, reglas de negocio y acceso a datos vuelvan a mez
 |---|---|---|
 | Visual Slice 0 | Preview técnico visible de la experiencia inicial | Materializada en React/Vite y servida por la aplicación actual |
 | Web de operación del taller | Personal que atiende clientes, reparaciones, inventario, ventas, pagos y caja | Capacidad conocida; alcance de primera versión pendiente |
-| Web de administración del tenant | Propietarios y administradores configuran organización, sucursales, usuarios y dispositivos | Hipótesis de aplicación separada |
+| Web de administración del tenant | Tenant Admins completan onboarding y configuran Tenant, sucursales, usuarios, roles y estaciones | Superficie lógica aprobada en `admin.srtaller.com`; puede compartir despliegue/componentes en V1; ADR-015 Accepted |
 | Web de administración de plataforma | Personal autorizado administra tenants, planes, soporte y operación SaaS | Capacidad conocida; límites pendientes |
 | API central | Contrato autoritativo para clientes propios e integraciones controladas | Responsabilidad de la aplicación backend inicial |
 | Procesamiento diferible | Trabajos, reintentos, archivos, notificaciones e integraciones | Responsabilidad lógica dentro de la aplicación inicial |
@@ -67,7 +67,10 @@ Las flechas representan conocimiento permitido, no el flujo completo de datos. L
 
 - Traducen HTTP, WebSocket, webhook o job a una solicitud de aplicación.
 - Validan forma, tamaño y versión del contrato.
-- Establecen correlación y entregan el contexto tenant/sucursal/estación/usuario/sesión resuelto en el borde confiable conforme a ADR-010/011, sin inventarlo.
+- Establecen correlación y entregan uno de los contextos tipados resuelto en el
+  borde confiable: Operational Context conforme a ADR-010/011/014 o Tenant
+  Admin Context conforme a ADR-015. No mezclan campos
+  opcionales para simular ambos ni inventan autoridad desde el request.
 - Mapean errores internos a respuestas externas estables.
 
 ### Aplicación
@@ -139,6 +142,9 @@ Las agrupaciones sólo facilitan lectura. No sustituyen el análisis de dependen
 - Los errores deben distinguir autenticación, autorización, conflicto, validación, límite y dependencia externa sin filtrar internals.
 - Las mutaciones sensibles o reintentables deberían aceptar mecanismos de idempotencia cuando el caso lo requiera.
 - Toda operación ordinaria recibe tenant, sucursal, estación, usuario y sesión desde fuentes confiables y rechaza ausencia o discrepancias.
+- Toda operación administrativa deriva Tenant/User de la Admin Session, carga
+  el recurso objetivo dentro de ese Tenant y rechaza Station/Operational
+  Session como sustitutos de autenticación administrativa.
 - La documentación del contrato debe generarse o verificarse desde una fuente única cuando se implemente.
 
 Los endpoints técnicos y de Preview actuales no comprometen todavía los
@@ -194,12 +200,22 @@ La estrategia completa está en [Testing Strategy](../quality/TESTING_STRATEGY.m
 - [ADR-010: contexto operativo derivado de una estación vinculada](../decisions/proposed/ADR-010-station-bound-operational-context.md) — `Accepted`
 - [ADR-011: identidad, autenticación por PIN y sesión operativa](../decisions/proposed/ADR-011-tenant-user-pin-authentication-and-operational-session.md) — `Accepted`
 - [ADR-012: roles de tenant, capacidades y autorización contextual](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md) — `Accepted`
+- [ADR-015: Tenant Administrative Control Plane](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md) — `Accepted`
 - [ADR-013: acciones sensibles y autorización reforzada](../decisions/proposed/ADR-013-sensitive-actions-and-reinforced-authorization.md) — `Accepted`
 - [ADR-005: NestJS como shell técnico del backend](../decisions/proposed/ADR-005-nestjs-backend.md) — `Accepted with conditions`
 - [ADR-006: Next.js para clientes web](../decisions/proposed/ADR-006-nextjs-web-clients.md)
 - [ADR-009: repositorio único evolutivo y workspaces bajo demanda](../decisions/proposed/ADR-009-monorepo-strategy.md) — `Accepted`
 
-ADR-001 a ADR-005 y ADR-009 a ADR-013 están `Accepted`; ADR-006 permanece `Proposed`. ADR-005 acepta NestJS como shell condicionado, Express y REST/HTTP JSON mínima, pero no acepta tooling auxiliar ni permite framework en dominio/aplicación. ADR-009 no acepta package manager, workspaces obligatorios, orquestador, packages ni estructura física; ADR-001 no acepta frameworks ni tooling; ADR-003 no acepta ORM, migrador, driver, pooler ni repository implementation. ADR-004 preserva propiedad, ADR-010 contexto, ADR-011 identidad/sesión, ADR-012 capacidad/alcance y ADR-013 clasificación/refuerzo sin definir middleware ni diseño físico.
+ADR-001 a ADR-005, ADR-007 y ADR-009 a ADR-015 están `Accepted`; ADR-006 y
+ADR-008 permanecen `Proposed`. ADR-005 acepta NestJS como shell
+condicionado, Express y REST/HTTP JSON mínima, pero no acepta tooling auxiliar
+ni permite framework en dominio/aplicación. ADR-009 no acepta package manager,
+workspaces obligatorios, orquestador, packages ni estructura física; ADR-001
+no acepta frameworks ni tooling; ADR-003 no acepta ORM, migrador, driver,
+pooler ni repository implementation. ADR-004 preserva propiedad, ADR-010
+contexto, ADR-011/014 sesiones operativas, ADR-012 capacidad/alcance y ADR-013
+clasificación/refuerzo sin definir middleware ni diseño físico. ADR-015
+autoriza la dirección arquitectónica, no inicia por sí mismo implementación.
 
 ## Riesgos
 
@@ -214,7 +230,8 @@ ADR-001 a ADR-005 y ADR-009 a ADR-013 están `Accepted`; ADR-006 permanece `Prop
 
 - ¿Cuáles módulos necesitan interacción síncrona y cuáles aceptan consistencia eventual?
 - ¿Qué contratos deben compartirse entre web, móvil futuro y API sin acoplarlos al framework?
-- ¿Conviene separar desde el inicio las webs de operación, tenant y plataforma?
+- ¿Qué route/package boundary materializa mejor la separación lógica entre web
+  operativa y `admin.srtaller.com` sin exigir otro despliegue V1?
 - ¿Qué mecanismo concreto de `DEC-005` verificará los límites modulares dentro del repositorio único?
 - ¿Qué patrón garantizará publicación confiable de eventos después de una transacción?
 - ¿Qué política de compatibilidad de API necesitarán los clientes móviles cuando existan?
