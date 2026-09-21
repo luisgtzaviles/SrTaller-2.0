@@ -40,5 +40,13 @@ test('current governance has one source matrix and no duplicate closure state', 
   assert.doesNotMatch(currentContracts, /empresasgalatech/iu);
   assert.doesNotMatch(currentContracts, /closure PR.*(?:obligatori|required|default)/iu);
   assert.match(lifecycle, /ACTIVE_CHECKLIST/u);
+  assert.match(lifecycle, /work-unit:close/u);
+  assert.match(lifecycle, /ref Git de cierre/u);
   assert.match(done, /evidencia no derivable/u);
+});
+
+test('authoritative pull-request workflow rejects a non-promotion Work Unit snapshot', async () => {
+  const workflow = await read('.github/workflows/authoritative-linux-ci.yml');
+  assert.match(workflow, /check-work-unit\.mjs[\s\\]*\n[\s\\]*--mode PROMOTION/u);
+  assert.match(workflow, /--branch "\$\{\{ github\.head_ref \}\}"/u);
 });

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -8,10 +8,12 @@ import { promisify } from 'node:util';
 
 import { compareHarnessRisk } from '../scripts/lib/harness-risk-classifier.mjs';
 import {
+  closeWorkUnit,
   initializeWorkUnit,
   inspectWorkUnit,
   parseWorkUnitDocument,
   REQUIRED_WORK_UNIT_SECTIONS,
+  workUnitClosureTag,
 } from '../scripts/lib/work-unit.mjs';
 
 const execute = promisify(execFile);
@@ -48,18 +50,23 @@ ${sections}
 }
 
 async function repository() {
-  const root = await mkdtemp(join(tmpdir(), 'srtaller-work-unit-'));
+  const container = await mkdtemp(join(tmpdir(), 'srtaller-work-unit-'));
+  const root = join(container, 'work');
+  const origin = join(container, 'origin.git');
+  await execute('git', ['init', '--quiet', '--bare', origin]);
+  await mkdir(root);
   const git = (...argumentsList) => execute('git', argumentsList, { cwd: root });
   await git('init', '--quiet', '--initial-branch=main');
   await git('config', 'user.name', 'SR Taller Test');
   await git('config', 'user.email', 'test@srtaller.invalid');
+  await git('remote', 'add', 'origin', origin);
   await mkdir(join(root, 'docs/work'), { recursive: true });
   await writeFile(join(root, 'README.md'), '# Test\n');
   await git('add', '.');
   await git('commit', '--quiet', '-m', 'baseline');
   const baseSha = (await git('rev-parse', 'HEAD')).stdout.trim();
-  await git('update-ref', 'refs/remotes/origin/main', baseSha);
-  return { root, git, baseSha };
+  await git('push', '--quiet', '--set-upstream', 'origin', 'main');
+  return { container, root, origin, git, baseSha };
 }
 
 async function onFeature(repo) {
@@ -73,6 +80,34 @@ async function onFeature(repo) {
   return (await repo.git('rev-parse', 'HEAD')).stdout.trim();
 }
 
+function authoritativeRun(head, { conclusion = 'success', gateConclusion = 'success' } = {}) {
+  return {
+    workflowName: 'Authoritative Linux CI',
+    status: 'completed',
+    conclusion,
+    headSha: head,
+    headBranch: 'main',
+    event: 'push',
+    jobs: [{ name: 'Authoritative promotion gate', conclusion: gateConclusion }],
+  };
+}
+
+async function promoteAndMerge(repo, { status = 'READY_FOR_PROMOTION' } = {}) {
+  await repo.git('switch', '--quiet', '-c', 'feature/work-unit');
+  await writeFile(
+    join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
+    checklist({ baseSha: repo.baseSha, status }),
+  );
+  await repo.git('add', '.');
+  await repo.git('commit', '--quiet', '-m', 'ready work unit');
+  const candidate = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+  await repo.git('switch', '--quiet', 'main');
+  await repo.git('merge', '--quiet', '--no-ff', 'feature/work-unit', '-m', 'merge work unit');
+  const mergeCommit = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+  await repo.git('push', '--quiet', 'origin', 'main');
+  return { candidate, mergeCommit };
+}
+
 test('valid active Work Unit passes deterministic Git and structure checks', async () => {
   const repo = await repository();
   try {
@@ -82,7 +117,7 @@ test('valid active Work Unit passes deterministic Git and structure checks', asy
     assert.equal(result.mode, 'ACTIVE');
     assert.equal(result.metadata.branch, 'feature/work-unit');
   } finally {
-    await rm(repo.root, { recursive: true, force: true });
+    await rm(repo.container, { recursive: true, force: true });
   }
 });
 
@@ -105,7 +140,7 @@ test('checker reports wrong branch and missing required section', async () => {
       new Set(['MISSING_REQUIRED_SECTION', 'BRANCH_MISMATCH']),
     );
   } finally {
-    await rm(repo.root, { recursive: true, force: true });
+    await rm(repo.container, { recursive: true, force: true });
   }
 });
 
@@ -141,11 +176,11 @@ test('checker rejects a valid base object that is not an ancestor of HEAD', asyn
     assert.equal(result.status, 'FAIL');
     assert.ok(result.findings.some(({ code }) => code === 'BASE_NOT_ANCESTOR'));
   } finally {
-    await rm(repo.root, { recursive: true, force: true });
+    await rm(repo.container, { recursive: true, force: true });
   }
 });
 
-test('explicit MAIN mode accepts IDLE main and a derived landing snapshot', async () => {
+test('explicit MAIN mode accepts IDLE main and requires a closure ref for a derived landing', async () => {
   const repo = await repository();
   try {
     await writeFile(
@@ -153,17 +188,204 @@ test('explicit MAIN mode accepts IDLE main and a derived landing snapshot', asyn
       checklist({ branch: 'main', baseSha: repo.baseSha, status: 'IDLE' }),
     );
     assert.equal((await inspectWorkUnit({ projectRoot: repo.root, mode: 'MAIN' })).status, 'PASS');
+    await repo.git('add', '.');
+    await repo.git('commit', '--quiet', '-m', 'idle work unit snapshot');
+    repo.baseSha = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+    await repo.git('push', '--quiet', 'origin', 'main');
+    const { mergeCommit } = await promoteAndMerge(repo, { status: 'PROMOTION' });
+    const pending = await inspectWorkUnit({ projectRoot: repo.root, mode: 'MAIN' });
+    assert.equal(pending.status, 'FAIL');
+    assert.equal(pending.effectiveStatus, 'PROMOTION');
+    assert.ok(pending.findings.some(({ code }) => code === 'DERIVED_CLOSURE_UNPROVEN'));
+
+    await closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(mergeCommit),
+      confirmPredicate: true,
+    });
+    const closed = await inspectWorkUnit({ projectRoot: repo.root, mode: 'MAIN' });
+    assert.equal(closed.status, 'PASS');
+    assert.equal(closed.effectiveStatus, 'IDLE');
+    assert.equal(closed.closure.proven, true);
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('promotion mode accepts ready/promotion states and rejects ACTIVE before PR', async () => {
+  const repo = await repository();
+  try {
+    await repo.git('switch', '--quiet', '-c', 'feature/work-unit');
+    for (const status of ['READY_FOR_PROMOTION', 'PROMOTION']) {
+      await writeFile(
+        join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
+        checklist({ baseSha: repo.baseSha, status }),
+      );
+      const result = await inspectWorkUnit({
+        projectRoot: repo.root,
+        mode: 'PROMOTION',
+      });
+      assert.equal(result.status, 'PASS');
+    }
     await writeFile(
       join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
-      checklist({
-        branch: 'feature/landed',
-        baseSha: repo.baseSha,
-        status: 'PROMOTION',
-      }),
+      checklist({ baseSha: repo.baseSha, status: 'ACTIVE' }),
     );
-    assert.equal((await inspectWorkUnit({ projectRoot: repo.root, mode: 'MAIN' })).status, 'PASS');
+    const active = await inspectWorkUnit({ projectRoot: repo.root, mode: 'PROMOTION' });
+    assert.equal(active.status, 'FAIL');
+    assert.ok(active.findings.some(({ code }) => code === 'INVALID_PROMOTION_STATUS'));
   } finally {
-    await rm(repo.root, { recursive: true, force: true });
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('an ACTIVE feature snapshot merged into main remains invalid', async () => {
+  const repo = await repository();
+  try {
+    const { mergeCommit } = await promoteAndMerge(repo, { status: 'ACTIVE' });
+    const result = await inspectWorkUnit({ projectRoot: repo.root, mode: 'MAIN' });
+    assert.equal(result.status, 'FAIL');
+    assert.equal(result.head, mergeCommit);
+    assert.ok(result.findings.some(({ code }) => code === 'INVALID_MAIN_SNAPSHOT'));
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('failed exact-main evidence cannot publish closure or produce false IDLE', async () => {
+  const repo = await repository();
+  try {
+    const { mergeCommit } = await promoteAndMerge(repo);
+    await assert.rejects(closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(mergeCommit, { conclusion: 'failure' }),
+      confirmPredicate: true,
+    }), /not successfully completed/u);
+    await assert.rejects(closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: {
+        ...authoritativeRun(mergeCommit),
+        workflowName: 'Unrelated CI',
+      },
+      confirmPredicate: true,
+    }), /must come from Authoritative Linux CI/u);
+    await assert.rejects(closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: {
+        ...authoritativeRun(mergeCommit),
+        headBranch: 'ci/not-main',
+      },
+      confirmPredicate: true,
+    }), /must be bound to the main branch/u);
+    const result = await inspectWorkUnit({ projectRoot: repo.root, mode: 'MAIN' });
+    assert.equal(result.status, 'FAIL');
+    assert.equal(result.effectiveStatus, 'PROMOTION');
+    const metadata = parseWorkUnitDocument(await readFile(
+      join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
+      'utf8',
+    )).metadata;
+    await assert.rejects(
+      repo.git('rev-parse', '--verify', `refs/tags/${workUnitClosureTag(metadata)}^{commit}`),
+    );
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('closure rejects a stale origin/main cache when the live remote has advanced', async () => {
+  const repo = await repository();
+  try {
+    const { mergeCommit } = await promoteAndMerge(repo);
+    await execute('git', [
+      '--git-dir',
+      repo.origin,
+      'update-ref',
+      'refs/heads/main',
+      repo.baseSha,
+    ]);
+    await assert.rejects(closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(mergeCommit),
+      confirmPredicate: true,
+    }), /must equal live origin\/main/u);
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('a non-merged feature branch cannot publish false closure', async () => {
+  const repo = await repository();
+  try {
+    const candidate = await onFeature(repo);
+    await writeFile(
+      join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
+      checklist({ baseSha: repo.baseSha, status: 'READY_FOR_PROMOTION' }),
+    );
+    await repo.git('add', '.');
+    await repo.git('commit', '--quiet', '-m', 'ready for promotion');
+    await assert.rejects(closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(candidate),
+      confirmPredicate: true,
+    }), /must run on main/u);
+    const metadata = parseWorkUnitDocument(await readFile(
+      join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
+      'utf8',
+    )).metadata;
+    await assert.rejects(
+      repo.git('rev-parse', '--verify', `refs/tags/${workUnitClosureTag(metadata)}^{commit}`),
+    );
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('closure ref changes no commit, enables effective IDLE and permits the next authorized Work Unit', async () => {
+  const repo = await repository();
+  try {
+    const { mergeCommit } = await promoteAndMerge(repo);
+    const commitCountBefore = (await repo.git('rev-list', '--count', 'HEAD')).stdout.trim();
+    const closure = await closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(mergeCommit),
+      confirmPredicate: true,
+    });
+    assert.equal(closure.status, 'CLOSED');
+    assert.equal(closure.effectiveStatus, 'IDLE');
+    assert.equal((await repo.git('rev-list', '--count', 'HEAD')).stdout.trim(), commitCountBefore);
+    assert.equal((await repo.git('status', '--porcelain=v1')).stdout.trim(), '');
+    const repeated = await closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(mergeCommit),
+      confirmPredicate: true,
+    });
+    assert.equal(repeated.status, 'ALREADY_CLOSED');
+    assert.equal(
+      (await repo.git('ls-remote', '--tags', 'origin', closure.ref)).stdout
+        .trim()
+        .split(/\s+/u)[0],
+      await repo.git('rev-parse', closure.ref).then(({ stdout }) => stdout.trim()),
+    );
+
+    const main = await inspectWorkUnit({ projectRoot: repo.root, mode: 'MAIN' });
+    assert.equal(main.status, 'PASS');
+    assert.equal(main.effectiveStatus, 'IDLE');
+
+    await repo.git('switch', '--quiet', '-c', 'feature/next-unit');
+    const next = await initializeWorkUnit({
+      projectRoot: repo.root,
+      name: 'Next Unit',
+      branch: 'feature/next-unit',
+      objective: 'Prove the next Work Unit can start after derived closure.',
+      risk: 'NORMAL',
+      shadowRisk: 'NORMAL',
+      lastUpdated: '2026-09-21',
+      confirmPreviousClosed: true,
+    });
+    assert.equal(next.status, 'PASS');
+    assert.equal(next.metadata.status, 'ACTIVE');
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
   }
 });
 
@@ -175,9 +397,9 @@ test('safe initializer writes a valid checklist but never creates or switches br
       checklist({ branch: 'main', baseSha: repo.baseSha, status: 'IDLE' }),
     );
     await repo.git('add', '.');
-    await repo.git('commit', '--quiet', '--amend', '--no-edit');
+    await repo.git('commit', '--quiet', '-m', 'idle work unit snapshot');
     repo.baseSha = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
-    await repo.git('update-ref', 'refs/remotes/origin/main', repo.baseSha);
+    await repo.git('push', '--quiet', 'origin', 'main');
     await repo.git('switch', '--quiet', '-c', 'feature/new-unit');
     const result = await initializeWorkUnit({
       projectRoot: repo.root,
@@ -192,7 +414,7 @@ test('safe initializer writes a valid checklist but never creates or switches br
     assert.equal(result.actualBranch, 'feature/new-unit');
     assert.equal(result.metadata.base_sha, repo.baseSha);
   } finally {
-    await rm(repo.root, { recursive: true, force: true });
+    await rm(repo.container, { recursive: true, force: true });
   }
 });
 
@@ -233,7 +455,7 @@ test('safe initializer refuses active Work Units, dirty tracked work, wrong bran
       baseSha: repo.baseSha,
     }), /base SHA must match current origin\/main/u);
   } finally {
-    await rm(repo.root, { recursive: true, force: true });
+    await rm(repo.container, { recursive: true, force: true });
   }
 });
 

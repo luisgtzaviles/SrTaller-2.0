@@ -81,6 +81,12 @@ jobs:
           node scripts/classify-workflow-change.mjs "${args[@]}"
           echo "base_sha=${base}" >> "${GITHUB_OUTPUT}"
           echo "candidate_sha=${head}" >> "${GITHUB_OUTPUT}"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            node scripts/check-work-unit.mjs \
+              --mode PROMOTION \
+              --branch "${{ github.head_ref }}" \
+              --head "${head}"
+          fi
           node scripts/verify-preview-migration-state.mjs \
             --phase pre-merge \
             --output "${RUNNER_TEMP}/PREVIEW_MIGRATION_PREFLIGHT.json"

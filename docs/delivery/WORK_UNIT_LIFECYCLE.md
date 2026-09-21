@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - **Estado:** Contrato operacional de transición, materializado en Harness 2.0
-  Iteration 1.
+  Iteration 3.
 - **Autoridad:** autorización Owner de SR Taller Development Harness 2.0.
 - **Alcance:** organizar un objetivo coherente desde su rama local hasta su
   cierre sin sustituir PBI, Sprint, DoD, ADR/DEC, review, CI o autoridad Owner.
@@ -50,7 +50,7 @@ se construye** ni cuándo está `Done`.
 
 | Estado | Significado |
 |---|---|
-| `IDLE` | No existe objetivo autorizado en ejecución. En `main`, se deriva cuando no hay una Work Unit abierta o el predicado del último registro ya se cumplió. |
+| `IDLE` | No existe objetivo autorizado en ejecución. En `main`, puede estar persistido explícitamente o derivarse de un ref Git de cierre válido para el último snapshot integrado. |
 | `ACTIVE` | Rama creada, alcance vigente y desarrollo/auditoría en curso. |
 | `BLOCKED` | Existe un impedimento material explícito; conserva owner y condición de desbloqueo. |
 | `READY_FOR_PROMOTION` | Implementación y evidencia local requeridas están completas; promoción todavía no ha terminado. |
@@ -86,6 +86,8 @@ PR → authoritative CI → risk-appropriate review
 authorized merge to main
   ↓
 exact-main verification and environment validation when applicable
+  ↓
+publish deterministic closure ref
   ↓
 CLOSED by its recorded predicate
   ↓
@@ -134,6 +136,10 @@ Antes del PR:
 5. registrar el **predicado de cierre** exacto;
 6. declarar cualquier gate pendiente sin anticipar su resultado.
 
+El pipeline de PR ejecuta el checker en modo `PROMOTION`. Sólo permite
+`READY_FOR_PROMOTION` o `PROMOTION` sobre la rama declarada; un snapshot
+`ACTIVE` no puede convertirse en candidato integrable.
+
 Al abrir el PR, GitHub pasa a ser autoridad de `PR_OPEN`, review, checks y
 `MERGED`; el checklist conserva contexto de handoff, no copia cada evento
 remoto. El estado puede representarse como `PROMOTION` cuando una actualización
@@ -151,12 +157,27 @@ AND deployment/VALIDATED requerido por el alcance PASS o N/A justificado
 AND rama absorbida sin commits exclusivos
 ```
 
-Cuando Git, GitHub y el ambiente aplicable demuestran ese predicado, la Work
-Unit está `CLOSED` aunque el snapshot que aterrizó en `main` conserve
-`READY_FOR_PROMOTION` o `PROMOTION`. Sobre `main`, un agente debe evaluar el
-predicado antes de tratar el archivo como trabajo activo. Si ya se cumplió, el
-estado operacional es `IDLE` y la siguiente Work Unit autorizada reemplaza el
-checklist al crear su rama.
+Cuando Git, GitHub y el ambiente aplicable demuestran ese predicado, el comando
+gobernado de cierre publica un **ref Git de cierre** determinista. Es un tag
+anotado cuyo nombre se deriva del nombre, rama y base de la Work Unit y que
+apunta al merge ordinario exacto. El comando falla cerrado salvo que:
+
+- se ejecute en `main` limpio y sincronizado con `origin/main`;
+- el `HEAD`, el remote-tracking ref y `refs/heads/main` consultado directamente
+  en `origin` coincidan, para no aceptar un cache local obsoleto;
+- el merge sea ordinario y contenga el snapshot de la rama candidata;
+- la evidencia consultada sea un run `push` exitoso de
+  `Authoritative Linux CI` para la rama `main` sobre ese `HEAD` exacto;
+- `Authoritative promotion gate` sea exitoso; y
+- el operador confirme que también evaluó el predicado completo, incluido el
+  ambiente cuando aplique.
+
+Sólo entonces `work-unit:check --mode MAIN` deriva estado efectivo `IDLE` del
+snapshot `READY_FOR_PROMOTION` o `PROMOTION` aterrizado. El archivo conserva su
+handoff veraz y Git conserva la transición; no se reescribe `main`. Si falta el
+ref, el CI falla o la rama no fue integrada, el estado efectivo permanece
+`PROMOTION` y el checker falla. La siguiente Work Unit sólo puede reemplazar el
+checklist después de observar el mismo ref compartido.
 
 Este cierre derivado evita:
 
@@ -164,6 +185,26 @@ Este cierre derivado evita:
 - un commit directo posterior al merge;
 - un PR sólo para cambiar wording;
 - automatización que reescriba `main` sin revisión.
+
+No se crean, mueven ni borran manualmente estos tags. El único flujo ordinario
+es `work-unit:close` después del exact-main requerido; su publicación es parte
+del cierre autorizado, no un release ni un deploy.
+
+## Decisión de diseño de cierre
+
+Se evaluaron las alternativas exigidas por la remediación del lifecycle:
+
+| Opción | Resultado |
+|---|---|
+| A. Mantener en `main` una plantilla `IDLE` separada | Rechazada: el merge ordinario aterriza el archivo versionado de la rama; mantener dos contenidos exige magia de merge o una mutación posterior oculta. |
+| B. Reescribir determinísticamente el archivo después del merge | Rechazada como flujo normal: crea un commit directo o un segundo PR de estado y altera historia después de review. |
+| C. Separar snapshot persistido de estado efectivo | Seleccionada: la rama conserva un snapshot veraz de promoción y `main` deriva `IDLE` desde el merge, CI exacto y un ref Git compartido. |
+| D. Inferir cierre sólo por ancestry o por texto | Rechazada: no prueba exact-main CI ni distingue un merge incompleto o fallido. |
+
+La opción C es portable entre clones y agentes, compatible con Git/PR, no usa
+estado oculto o sin commit y falla cerrado. Un merge fallido no crea el ref; un
+CI fallido tampoco. El historial anterior permanece en Git/PR sin convertir
+`ACTIVE_CHECKLIST` en ledger permanente.
 
 Antes de promoción, las decisiones o descubrimientos únicos que deban vivir a
 largo plazo se mueven a la fuente permanente apropiada. No se archiva el
@@ -236,20 +277,25 @@ obligatorios. El checker además exige todas las secciones del contrato mínimo,
 comprueba que `base_sha` exista y sea ancestro de `HEAD`, y que la rama
 registrada coincida con la rama activa.
 
-En `main`, el modo explícito `MAIN` admite dos representaciones:
+En `main`, el modo explícito `MAIN` admite dos representaciones persistidas:
 
 - `IDLE` con `branch: main`;
 - el snapshot aterrizado de una rama con `closure_mode: DERIVED` y estado
   `READY_FOR_PROMOTION`, `PROMOTION` o `CLOSED`.
 
-El segundo caso sólo reconoce una representación válida. No afirma que el
-predicado remoto de cierre se cumplió: el agente todavía debe comprobar merge,
-CI exacto y ambiente aplicable antes de derivar `CLOSED`/`IDLE`.
+La primera pasa directamente. La segunda sólo pasa cuando el ref Git de cierre
+correspondiente existe, apunta a un merge ordinario ancestro del `HEAD`, el
+snapshot aterrizado coincide y uno de los padres integrados contiene ese mismo
+snapshot. Sin esa prueba, `MAIN` devuelve `DERIVED_CLOSURE_UNPROVEN`.
 
 Comandos locales:
 
-- `pnpm work-unit:check` valida sin red ni mutaciones;
-- `pnpm work-unit:start -- --name ... --branch ... --objective ...` escribe una
+- `./scripts/pnpm-governed run work-unit:check` valida sin red ni mutaciones;
+- `./scripts/pnpm-governed run work-unit:check -- --mode PROMOTION` valida el
+  estado integrable de una rama;
+- `./scripts/pnpm-governed run work-unit:close -- --run-id <id> --confirm-predicate --push`
+  consulta el exact-main CI y publica el ref compartido; y
+- `./scripts/pnpm-governed run work-unit:start -- --name ... --branch ... --objective ...` escribe una
   estructura determinista sólo después de que una persona/agente haya creado y
   seleccionado explícitamente la rama correcta.
 
@@ -257,10 +303,10 @@ El inicializador nunca crea, cambia, elimina ni publica ramas. Rechaza `main`,
 un árbol tracked sucio, un `HEAD` distinto de `origin/main`, una rama distinta
 de la declarada y el reemplazo de una Work Unit `ACTIVE`/`BLOCKED`. Un snapshot
 `READY_FOR_PROMOTION`/`PROMOTION` requiere la confirmación explícita
-`--confirm-previous-closed`, que sólo expresa que el operador verificó el
-predicado derivado fuera del script.
+`--confirm-previous-closed` y un ref de cierre válido. La confirmación humana no
+puede sustituir la prueba mecánica.
 
-## Verificación focalizada en Iteration 2
+## Verificación focalizada en Iteration 3
 
 No se crea todavía `verify:focused`. El repositorio no puede inferir de forma
 segura la cobertura suficiente desde rutas modificadas, y un selector aparente
