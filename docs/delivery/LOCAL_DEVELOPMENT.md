@@ -39,7 +39,8 @@ Linux; el launcher es la entrada determinista para desarrollo y Codex local.
 ## Gates de verificación local
 
 Antes de iterar, el preflight unificado inspecciona sin mutar branch/SHA,
-toolchain, procesos/puertos, provenance, manifest y journal local y fixtures:
+Work Unit/`ACTIVE_CHECKLIST`, toolchain, procesos/puertos, provenance, manifest,
+journal local y fixtures:
 
 ```sh
 ./scripts/pnpm-governed run preflight:development
@@ -48,6 +49,12 @@ toolchain, procesos/puertos, provenance, manifest y journal local y fixtures:
 El resultado distingue un runtime ausente de uno stale. No inicia ni termina
 procesos, no aplica migraciones, no ejecuta seed y no resetea la base. Un reset
 continúa requiriendo autoridad explícita.
+
+El Work Unit también puede validarse de forma aislada, sin red ni runtime:
+
+```sh
+./scripts/pnpm-governed run work-unit:check
+```
 
 `verify` permanece como gate base canónico y rápido. Durante Owner iterations
 se combina con contratos y suites focalizadas. `verify:full` se reserva para el

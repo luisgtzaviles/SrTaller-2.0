@@ -24,6 +24,7 @@ import { LOCAL_EVIDENCE_FIXTURES } from './local-evidence-fixtures.mjs';
 import { createCandidateFingerprint, assertCandidateFingerprintStable } from './candidate-fingerprint.mjs';
 import { inspectSourceMigrationManifest } from './migration-state-snapshot.mjs';
 import { inspectLiveRuntimeProvenance, inspectWorkingTreeProvenance } from './runtime-provenance.mjs';
+import { inspectWorkUnit } from './work-unit.mjs';
 
 const execute = promisify(execFile);
 
@@ -177,6 +178,14 @@ export async function runDevelopmentPreflight({
   if (requireClean && git.sourceState !== 'clean') findings.push('WORKTREE_NOT_CLEAN');
   if (!config) findings.push('LOCAL_CONFIGURATION_UNAVAILABLE');
 
+  const workUnit = await inspectWorkUnit({
+    projectRoot,
+    actualBranch: git.branch,
+    head: git.head,
+    mode: 'AUTO',
+  });
+  if (workUnit.status !== 'PASS') findings.push('WORK_UNIT_INVALID');
+
   const portEvidence = [];
   for (const item of ports) {
     portEvidence.push(Object.freeze({
@@ -240,6 +249,7 @@ export async function runDevelopmentPreflight({
     finding === 'MAIN_ORIGIN_DIVERGED' ||
     finding === 'DETACHED_HEAD' ||
     finding === 'CURRENT_BRANCH_NOT_BASED_ON_MAIN' ||
+    finding === 'WORK_UNIT_INVALID' ||
     finding === 'LOCAL_CONFIGURATION_UNAVAILABLE' ||
     (requireClean && finding === 'WORKTREE_NOT_CLEAN') ||
     (requireRuntime && finding.startsWith('LOCAL_')),
@@ -249,6 +259,7 @@ export async function runDevelopmentPreflight({
     contract: 'WF-003/DEVELOPMENT-PREFLIGHT',
     destructiveOperations: false,
     git,
+    workUnit,
     toolchain: Object.freeze({ node: process.versions.node, pnpm: pnpmVersion }),
     ports: Object.freeze(portEvidence),
     runtime,

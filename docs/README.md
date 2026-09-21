@@ -134,6 +134,8 @@ separados.
 
 - [Workflow canónico de desarrollo, delivery y operación](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
 - [Work Unit Lifecycle](delivery/WORK_UNIT_LIFECYCLE.md)
+- [Clasificación de riesgo Harness 2.0 (shadow)](delivery/RISK_CLASSIFICATION.md)
+- [Contrato futuro de protección de main (diseño)](delivery/MAIN_BRANCH_PROTECTION_CONTRACT.md)
 - [Reconciliación de workflow posterior a PBI-041](delivery/WORKFLOW_RECONCILIATION_2026-09.md)
 - [Desarrollo local](delivery/LOCAL_DEVELOPMENT.md)
 - [Workflow de desarrollo](delivery/DEVELOPMENT_WORKFLOW.md)

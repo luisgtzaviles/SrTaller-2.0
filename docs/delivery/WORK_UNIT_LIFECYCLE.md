@@ -207,3 +207,62 @@ El checklist debe incluir:
 
 Su información debe ser suficiente para transferir la rama entre Codex,
 Claude, GPT o una persona sin usar el chat como memoria.
+
+## Contrato mecánico mínimo
+
+Iteration 2 añade un bloque estable al inicio del checklist. La automatización
+lee exclusivamente estas claves y los encabezados `##`; no intenta interpretar
+la prosa operacional:
+
+```text
+<!-- WORK_UNIT_METADATA
+work_unit: Nombre o identificador no vacío
+iteration: Texto informativo de la iteración
+type: Tipo informativo
+risk: LOW | MEDIUM | HIGH | TRANSITIONAL | NORMAL | SENSITIVE | ARCHITECTURAL
+shadow_risk: NORMAL | SENSITIVE | ARCHITECTURAL
+branch: refs/heads compatible sin prefijo
+base_sha: SHA Git completo de 40 caracteres
+status: IDLE | ACTIVE | BLOCKED | READY_FOR_PROMOTION | PROMOTION | CLOSED
+closure_mode: DERIVED
+last_updated: YYYY-MM-DD
+-->
+```
+
+`work_unit`, `branch`, `base_sha`, `status`, `risk` y `last_updated` son
+obligatorios. El checker además exige todas las secciones del contrato mínimo,
+comprueba que `base_sha` exista y sea ancestro de `HEAD`, y que la rama
+registrada coincida con la rama activa.
+
+En `main`, el modo explícito `MAIN` admite dos representaciones:
+
+- `IDLE` con `branch: main`;
+- el snapshot aterrizado de una rama con `closure_mode: DERIVED` y estado
+  `READY_FOR_PROMOTION`, `PROMOTION` o `CLOSED`.
+
+El segundo caso sólo reconoce una representación válida. No afirma que el
+predicado remoto de cierre se cumplió: el agente todavía debe comprobar merge,
+CI exacto y ambiente aplicable antes de derivar `CLOSED`/`IDLE`.
+
+Comandos locales:
+
+- `pnpm work-unit:check` valida sin red ni mutaciones;
+- `pnpm work-unit:start -- --name ... --branch ... --objective ...` escribe una
+  estructura determinista sólo después de que una persona/agente haya creado y
+  seleccionado explícitamente la rama correcta.
+
+El inicializador nunca crea, cambia, elimina ni publica ramas. Rechaza `main`,
+un árbol tracked sucio, un `HEAD` distinto de `origin/main`, una rama distinta
+de la declarada y el reemplazo de una Work Unit `ACTIVE`/`BLOCKED`. Un snapshot
+`READY_FOR_PROMOTION`/`PROMOTION` requiere la confirmación explícita
+`--confirm-previous-closed`, que sólo expresa que el operador verificó el
+predicado derivado fuera del script.
+
+## Verificación focalizada en Iteration 2
+
+No se crea todavía `verify:focused`. El repositorio no puede inferir de forma
+segura la cobertura suficiente desde rutas modificadas, y un selector aparente
+podría normalizar la omisión de pruebas. Durante desarrollo se ejecutan el
+checker y pruebas focalizadas elegidas explícitamente. Promoción continúa bajo
+los gates actuales completos; el futuro selector requiere datos de uso y una
+decisión Owner separada.
