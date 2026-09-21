@@ -3,11 +3,13 @@ import {
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import { runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
+import { DatabaseTransactionError } from '../../../../infrastructure/database/transaction-runner.js';
 import type {
   TenantBootstrapAccessWriterPort,
   TenantBootstrapScope,
   TenantBootstrapTransactionPort,
 } from '../../application/ports/tenant-bootstrap-access-writer.port.js';
+import { TenantBootstrapTransactionError } from '../../application/ports/tenant-bootstrap-access-writer.port.js';
 import { STARTER_TENANT_ADMIN_POLICY } from '../../domain/tenant-admin-policy.js';
 
 export class KyselyTenantBootstrapAccessWriter implements TenantBootstrapAccessWriterPort {
@@ -149,6 +151,11 @@ export class KyselyTenantBootstrapTransaction implements TenantBootstrapTransact
       this.connection,
       { isolationLevel: 'serializable' },
       operation,
-    );
+    ).catch((error: unknown) => {
+      if (error instanceof DatabaseTransactionError) {
+        throw new TenantBootstrapTransactionError(error.retryable === 'conditional');
+      }
+      throw error;
+    });
   }
 }

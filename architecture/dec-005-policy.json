@@ -2758,6 +2758,7 @@
     "src/modules/access/application/ports/session-token.port.ts",
     "src/modules/access/application/use-cases/authenticate-pin.use-case.ts",
     "src/modules/access/application/use-cases/admin-session.use-cases.ts",
+    "src/modules/access/application/use-cases/bootstrap-tenant.use-case.ts",
     "src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts",
     "src/modules/access/application/use-cases/authenticate-pin-only.use-case.ts",
     "src/modules/access/application/use-cases/assign-role.use-case.ts",

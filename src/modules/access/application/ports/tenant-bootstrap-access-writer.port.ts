@@ -55,3 +55,10 @@ export interface TenantBootstrapTransactionPort {
     operation: (transactionContext: object) => Promise<Result>,
   ): Promise<Result>;
 }
+
+export class TenantBootstrapTransactionError extends Error {
+  constructor(readonly retryable: boolean) {
+    super('Tenant bootstrap transaction failed.');
+    this.name = 'TenantBootstrapTransactionError';
+  }
+}

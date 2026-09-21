@@ -17,9 +17,9 @@ Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
 General State: Authorized implementation / Functional foundation
-Progress: 4 / 8 implementation blocks complete
-Current Work: Atomic orchestration and sanitized audit
-Next Block: Idempotency, concurrency and failure injection
+Progress: 5 / 8 implementation blocks complete
+Current Work: Idempotency, concurrency and failure injection
+Next Block: TL-02 login, isolation and operational-auth regression
 Blocking: NONE
 Last Updated: 2026-09-21
 
@@ -75,18 +75,18 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 2 — Protected/versioned starter Role and capability policy.
 - [x] Block 3 — Transaction-aware owner persistence ports.
 - [x] Block 4 — Internal bootstrap domain/application contract.
-- [~] Block 5 — Atomic orchestration and sanitized audit.
-- [ ] Block 6 — Idempotency, concurrency and failure injection.
+- [x] Block 5 — Atomic orchestration and sanitized audit.
+- [~] Block 6 — Idempotency, concurrency and failure injection.
 - [ ] Block 7 — TL-02 login, isolation and operational-auth regression.
 - [ ] Block 8 — Evidence, full verification and promotion handoff.
 
 ## Current
 
-Implementing Block 5: one SERIALIZABLE orchestration over all owner writers.
+Implementing Block 6: material rollback, replay and concurrent duplicate proof.
 
 ## Next
 
-Complete atomic orchestration, journal replay and sanitized success audit.
+Prove rollback at each write boundary and exactly-once concurrent behavior.
 
 ## Blockers
 
@@ -112,6 +112,9 @@ None.
   without raw SQL or application-only check-then-insert.
 - Block 4 accepts only opaque Registration/correlation IDs at the command edge;
   validates the trusted immutable grant and exposes a stable, secret-free result.
+- Block 5 composes Tenant, User, TL-02 identity/credential, protected Role,
+  capability bundle, assignment, sanitized event and journal in one transaction;
+  it never creates an Admin or Operational Session.
 
 ## Focused Verification
 
