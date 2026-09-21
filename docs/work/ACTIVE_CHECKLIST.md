@@ -102,8 +102,11 @@ restarting discovery.
 
 ## Focused Verification
 
-- [x] Documentation/readiness: links, architecture consistency, secret scan and
-  `git diff --check` selected.
+- [x] Work Unit lifecycle check PASS in effective `BLOCKED` state.
+- [x] Architecture policy, Markdown structure/relative links, documentation
+  consistency, focused secret scan and `git diff --check` PASS.
+- [x] Change classifier preserves `FULL` for a future promotion because the
+  readiness contract is cross-module/high-risk; no gate was waived.
 - [ ] Implementation authorization will require unit/contracts, PostgreSQL
   18.4 migration/atomicity/concurrency/failure injection, TL-02 regressions,
   architecture, full promotion verification and security review.
