@@ -63,6 +63,16 @@ export class RuntimeEnvironmentReader {
     return new adapter(secrets.get('SR_PIN_PEPPER'));
   }
 
+  createAccessAdminPasswordHasher<Hasher>(
+    adapter: new (pepper: string) => Hasher,
+  ): Hasher {
+    const secrets = loadRequiredServerSecrets(
+      this.#environment,
+      ['SR_ADMIN_PASSWORD_PEPPER'],
+    );
+    return new adapter(secrets.get('SR_ADMIN_PASSWORD_PEPPER'));
+  }
+
   localRuntimePolicy(): LocalRuntimePolicy {
     return Object.freeze({
       enabled:

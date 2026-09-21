@@ -3,12 +3,14 @@ import { Module } from '@nestjs/common';
 import { ApplicationDatabaseRuntimeProvider } from './application-database-runtime.provider.js';
 import {
   ACCESS_PIN_HASHER_FACTORY,
+  ACCESS_ADMIN_PASSWORD_HASHER_FACTORY,
   APPLICATION_DATABASE_CONNECTION,
   LOCAL_RUNTIME_CONFIGURATION,
   SESSION_TRANSPORT_POLICY,
 } from './index.js';
 import type {
   AccessPinHasherFactory,
+  AccessAdminPasswordHasherFactory,
   LocalRuntimeConfiguration,
   SessionTransportPolicy,
 } from './index.js';
@@ -18,6 +20,16 @@ import { RuntimeEnvironmentReader } from './runtime-environment.reader.js';
   providers: [
     RuntimeEnvironmentReader,
     ApplicationDatabaseRuntimeProvider,
+    {
+      provide: ACCESS_ADMIN_PASSWORD_HASHER_FACTORY,
+      inject: [RuntimeEnvironmentReader],
+      useFactory: (
+        environment: RuntimeEnvironmentReader,
+      ): AccessAdminPasswordHasherFactory => Object.freeze({
+        create: <Hasher>(adapter: new (pepper: string) => Hasher): Hasher =>
+          environment.createAccessAdminPasswordHasher(adapter),
+      }),
+    },
     {
       provide: APPLICATION_DATABASE_CONNECTION,
       useExisting: ApplicationDatabaseRuntimeProvider,
@@ -86,6 +98,7 @@ import { RuntimeEnvironmentReader } from './runtime-environment.reader.js';
   exports: [
     APPLICATION_DATABASE_CONNECTION,
     ACCESS_PIN_HASHER_FACTORY,
+    ACCESS_ADMIN_PASSWORD_HASHER_FACTORY,
     LOCAL_RUNTIME_CONFIGURATION,
     SESSION_TRANSPORT_POLICY,
   ],

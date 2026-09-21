@@ -22,9 +22,9 @@ last_updated: 2026-09-20
   Work Units.
 Current PBI: NONE
 - **Status:** `ACTIVE` in authorized implementation.
-- **Progress:** `7 / 14` Work Unit blocks complete.
-- **Current work:** administrative identity/session domain contracts complete.
-- **Next block:** administrative password cryptography and external configuration.
+- **Progress:** `8 / 14` Work Unit blocks complete.
+- **Current work:** separate administrative Argon2id, pepper and token primitives complete.
+- **Next block:** additive persistence model, migration and repositories.
 - **Blockers:** none.
 - **Last updated:** 2026-09-20, America/Hermosillo.
 
@@ -84,8 +84,8 @@ Station + PIN boundary.
 - [x] Identify remaining Owner decisions and readiness status.
 - [x] Obtain Owner authorization to cross the planning checkpoint.
 - [x] Implement administrative identity/session/recovery domain contracts.
-- [~] Implement password cryptography/configuration and focused tests.
-- [ ] Implement migration/repositories and material PostgreSQL tests.
+- [x] Implement password cryptography/configuration and focused tests.
+- [~] Implement migration/repositories and material PostgreSQL tests.
 - [ ] Implement use cases, HTTP boundary and authorization executor.
 - [ ] Complete local proof, hardening, documentation and promotion gates.
 
@@ -96,8 +96,8 @@ implemented with focused domain tests.
 
 ## Next
 
-Implement the separate administrative Argon2id purpose, pepper configuration,
-dummy verification and bounded work. Do not begin TL-03.
+Implement the six Access-owned tables, schema types and repository transaction
+boundary. Do not begin TL-03.
 
 ## Blockers
 
@@ -128,6 +128,7 @@ None.
   security/readiness contract classifies `FULL`.
 - [ ] Focused TL-02 domain/application/HTTP/PostgreSQL tests during implementation.
 - [x] TL-02 domain tests — 3 PASS.
+- [x] TL-02 password/token/configuration tests — 14 PASS.
 - [ ] Typecheck, build and architecture checks during implementation.
 - [ ] Current risk pipeline plus `verify:full` before promotion.
 

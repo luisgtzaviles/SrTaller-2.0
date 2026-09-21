@@ -23,6 +23,10 @@ export const ACCESS_PIN_HASHER_FACTORY = Symbol(
   'srtaller.runtime.access-pin-hasher-factory',
 );
 
+export const ACCESS_ADMIN_PASSWORD_HASHER_FACTORY = Symbol(
+  'srtaller.runtime.access-admin-password-hasher-factory',
+);
+
 export const LOCAL_RUNTIME_CONFIGURATION = Symbol(
   'srtaller.runtime.local-configuration',
 );
@@ -56,6 +60,11 @@ export interface ApplicationDatabaseConnection
 
 /** Creates an Access-owned adapter without exporting the configured pepper. */
 export interface AccessPinHasherFactory {
+  create<Hasher>(adapter: new (pepper: string) => Hasher): Hasher;
+}
+
+/** Creates an Access-owned administrative password adapter without exporting its pepper. */
+export interface AccessAdminPasswordHasherFactory {
   create<Hasher>(adapter: new (pepper: string) => Hasher): Hasher;
 }
 

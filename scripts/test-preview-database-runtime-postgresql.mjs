@@ -181,6 +181,7 @@ try {
     NODE_ENV: 'production',
     PORT: String(applicationPort),
     SR_PIN_PEPPER: Buffer.alloc(32, 0x39).toString('base64url'),
+    SR_ADMIN_PASSWORD_PEPPER: Buffer.alloc(32, 0x3a).toString('base64url'),
   };
   const applicationEnvironment = {
     ...technicalEnvironment,

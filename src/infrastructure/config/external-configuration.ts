@@ -4,6 +4,7 @@ export type SecretConfigurationName =
   | 'SR_DB_PASSWORD'
   | 'SR_TEST_DB_PASSWORD'
   | 'SR_PIN_PEPPER'
+  | 'SR_ADMIN_PASSWORD_PEPPER'
   | 'SR_SESSION_SIGNING_KEY'
   | 'SR_STATION_BOOTSTRAP_SECRET'
   | 'SR_USER_BOOTSTRAP_SECRET';
@@ -112,6 +113,14 @@ export const externalConfigurationCatalog = Object.freeze([
   }),
   Object.freeze({
     name: 'SR_PIN_PEPPER',
+    classification: 'secret' as const,
+    consumer: 'access' as const,
+    status: 'active' as const,
+    source: 'process-environment' as const,
+    clientExposure: 'forbidden' as const,
+  }),
+  Object.freeze({
+    name: 'SR_ADMIN_PASSWORD_PEPPER',
     classification: 'secret' as const,
     consumer: 'access' as const,
     status: 'active' as const,
