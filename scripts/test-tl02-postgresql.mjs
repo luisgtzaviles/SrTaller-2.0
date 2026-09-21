@@ -20,6 +20,6 @@ try {
   const first = JSON.parse((await execute(process.execPath,['--enable-source-maps','dist/db-migrate.js'],{encoding:'utf8',env,timeout:90_000})).stdout.trim()); assert.equal(first.applied, 76); assert.equal(first.pending, 0);
   const second = JSON.parse((await execute(process.execPath,['--enable-source-maps','dist/db-migrate.js'],{encoding:'utf8',env,timeout:90_000})).stdout.trim()); assert.equal(second.applied, 0); assert.equal(second.pending, 0);
   const testResult = await execute(process.execPath,['--test','test/tl02-admin-auth-postgresql.test.mjs'],{encoding:'utf8',env:{...process.env,SR_TL02_PG_TEST:'1',SR_TL02_PG_HOST:'127.0.0.1',SR_TL02_PG_PORT:port,SR_TL02_PG_NAME:database,SR_TL02_PG_USER:user,SR_TL02_PG_PASSWORD:password},timeout:90_000});
-  const summary = assertPostgresqlTestSummary(testResult.stdout); assert.equal(summary.pass, 1); output = `${testResult.stdout}TL-02 PostgreSQL PASS: 76 migrations, second run 0 pending\n`;
+  const summary = assertPostgresqlTestSummary(testResult.stdout); assert.equal(summary.pass, 2); output = `${testResult.stdout}TL-02 PostgreSQL PASS: 76 migrations, second run 0 pending\n`;
 } finally { await cleanup(); }
 process.stdout.write(output);

@@ -256,6 +256,19 @@ export function assertLocalUserBootstrapAuthority(values, presentedSecret) {
   return values;
 }
 
+export function assertLocalAdminProvisioningContext(values, runtime) {
+  assertLocalTarget(values);
+  if (
+    runtime?.NODE_ENV !== 'development' ||
+    runtime?.SR_LOCAL_RUNTIME !== 'true' ||
+    runtime?.SR_DB_ENVIRONMENT !== 'development' ||
+    runtime?.HOST !== LOCAL_BACKEND_HOST
+  ) {
+    throw new Error('Local administrative identity provisioning rejected.');
+  }
+  return values;
+}
+
 export function localStationBootstrapCredential(values) {
   assertLocalTarget(values);
   const secret = values.SR_STATION_BOOTSTRAP_SECRET;

@@ -22,9 +22,9 @@ last_updated: 2026-09-20
   Work Units.
 Current PBI: NONE
 - **Status:** `ACTIVE` in authorized implementation.
-- **Progress:** `12 / 14` Work Unit blocks complete.
-- **Current work:** administrative authorization and commit-time revalidation are complete.
-- **Next block:** safe local provisioner and end-to-end local proof.
+- **Progress:** `13 / 14` Work Unit blocks complete.
+- **Current work:** safe local provisioner and material local proof are complete.
+- **Next block:** hardening, canonical evidence and full promotion verification.
 - **Blockers:** none.
 - **Last updated:** 2026-09-20, America/Hermosillo.
 
@@ -91,15 +91,15 @@ Station + PIN boundary.
 
 ## Current
 
-The `AdminAuthorizationExecutor` derives Tenant/User only from the Admin
-Session, recalculates tenant-wide capabilities, supports recent-password Level
-2 requirements and composes session plus capability revalidation inside the
-consumer transaction.
+The local-only provisioner requires localhost development configuration and
+hidden confirmed TTY input. Material PostgreSQL proves concurrent Admin
+Sessions, logout, reauth, individual/global revocation, recovery, rate-limit
+concurrency, secret-free audit and no Operational Session crossover.
 
 ## Next
 
-Implement the development-only hidden-input provisioner and perform the local
-two-session/revocation/reauth/isolation proof. Do not begin TL-03.
+Complete security hardening, canonical implementation evidence and the current
+full promotion pipeline. Do not begin TL-03.
 
 ## Blockers
 
@@ -135,6 +135,11 @@ None.
 - [x] TL-02 PostgreSQL persistence — PASS; 76 migrations, second run 0 pending.
 - [x] TL-02 HTTP/session audience tests — 3 PASS.
 - [x] TL-02 administrative authorization tests — 3 PASS.
+- [x] Local provisioner guard/input tests — 2 PASS.
+- [x] Material TL-02 PostgreSQL proof — 2 PASS; concurrent sessions, abuse,
+  recovery and audit covered.
+- [x] Local runtime — `/livez` 200 and unauthenticated `/api/admin/session`
+  returns a distinct login-CSRF challenge with `no-store` and no Station.
 - [x] Typecheck and architecture checks — PASS through implementation block 4.
 - [ ] Current risk pipeline plus `verify:full` before promotion.
 

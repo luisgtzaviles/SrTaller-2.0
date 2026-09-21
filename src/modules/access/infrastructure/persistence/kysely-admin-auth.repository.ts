@@ -192,8 +192,8 @@ export class KyselyAdminAuthRepository implements AdminAuthRepositoryPort {
 
   async isAttemptBlocked(principalDigest: Uint8Array, occurredAt: string): Promise<boolean> {
     return this.connection[databasePersistenceCapability]('access', async (db) => {
-      const row = await db.selectFrom('access_admin_auth_attempt_limits').select('blocked_until').where('principal_digest', '=', principalDigest).executeTakeFirst();
-      return row?.blocked_until !== null && row?.blocked_until !== undefined && row.blocked_until > new Date(occurredAt);
+      const row = await db.selectFrom('access_admin_auth_attempt_limits').select(['attempt_count', 'blocked_until']).where('principal_digest', '=', principalDigest).executeTakeFirst();
+      return row?.attempt_count === 5 && row.blocked_until !== null && row.blocked_until > new Date(occurredAt);
     });
   }
 
@@ -281,20 +281,15 @@ export class KyselyAdminAuthRepository implements AdminAuthRepositoryPort {
             .else(now)
             .end()
             .$castTo<Date>(),
-          blocked_until: eb.case()
-            .when(eb.and([
-              eb('access_admin_auth_attempt_limits.window_started_at', '>=', windowStart),
-              eb('access_admin_auth_attempt_limits.attempt_count', '>=', 4),
-            ]))
-            .then(new Date(now.getTime() + 15 * 60_000))
-            .else(null)
-            .end()
-            .$castTo<Date | null>(),
+          // `attempt_count = 5` is the authoritative blocked predicate. Keeping
+          // the candidate deadline current avoids a dialect-specific CASE cast
+          // while the atomic upsert still prevents concurrent under-counting.
+          blocked_until: new Date(now.getTime() + 15 * 60_000),
           updated_at: now,
         })))
         .returning(['attempt_count', 'blocked_until'])
         .executeTakeFirstOrThrow();
-      if (row.blocked_until && input.knownPrincipal) {
+      if (row.attempt_count === 5 && row.blocked_until && input.knownPrincipal) {
         await this.#event(db, {
           tenantId: input.knownPrincipal.tenantId,
           userId: input.knownPrincipal.userId,
@@ -307,7 +302,7 @@ export class KyselyAdminAuthRepository implements AdminAuthRepositoryPort {
           at: now,
         });
       }
-      return Object.freeze({ blocked: row.blocked_until !== null, blockedUntil: iso(row.blocked_until) });
+      return Object.freeze({ blocked: row.attempt_count === 5, blockedUntil: row.attempt_count === 5 ? iso(row.blocked_until) : null });
     });
   }
 

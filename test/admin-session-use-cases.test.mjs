@@ -6,6 +6,7 @@ import {
   AdminRecoveryFoundationUseCase,
   AdminSessionManagementUseCase,
   LoginAdminUseCase,
+  ProvisionAdminIdentityUseCase,
   ResolveAdminSessionUseCase,
 } from '../dist/modules/access/application/use-cases/admin-session.use-cases.js';
 
@@ -66,6 +67,17 @@ test('administrative login works without Station, creates concurrent stateful se
   assert.equal(first.session.tenantId,tenantId); assert.equal(first.session.displayName,'Owner'); assert.notEqual(first.session.sessionId,second.session.sessionId); assert.equal(repository.sessions.length,2); assert.equal('stationId' in first.session,false);
   await assert.rejects(login.execute({email:'owner@example.com',password:'wrong password value',correlationId}),/not accepted/u);
   assert.equal(repository.sessions.length,2);
+});
+
+test('administrative identity provisioning requires an existing active Tenant User', async () => {
+  const active = await fixture();
+  active.repository.provisionVerifiedIdentity = async (input) => ({ ...active.repository.credential, ...input });
+  const provision = new ProvisionAdminIdentityUseCase(active.repository, active.users, active.hasher, () => new Date('2026-09-20T00:00:00.000Z'), () => identityId);
+  const created = await provision.execute({ tenantId, userId, email: 'Owner@Example.com', password });
+  assert.equal(created.normalizedEmail, 'owner@example.com');
+  const inactive = await fixture('inactive');
+  const denied = new ProvisionAdminIdentityUseCase(inactive.repository, inactive.users, inactive.hasher);
+  await assert.rejects(denied.execute({ tenantId, userId, email: 'owner@example.com', password }), /not accepted/u);
 });
 
 test('Admin Session enforces idle, CSRF, individual logout, reauth and global revocation', async () => {

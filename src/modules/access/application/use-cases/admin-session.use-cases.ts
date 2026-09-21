@@ -30,9 +30,11 @@ async function activeUser(users: AuthenticationUserReader, credential: AdminCred
 }
 
 export class ProvisionAdminIdentityUseCase {
-  constructor(private readonly repository: AdminAuthRepositoryPort, private readonly hasher: AdminPasswordHasherPort, private readonly now: () => Date = () => new Date(), private readonly createId: () => string = randomUUID) {}
+  constructor(private readonly repository: AdminAuthRepositoryPort, private readonly users: AuthenticationUserReader, private readonly hasher: AdminPasswordHasherPort, private readonly now: () => Date = () => new Date(), private readonly createId: () => string = randomUUID) {}
   async execute(input: Readonly<{ tenantId: string; userId: string; email: unknown; password: unknown }>) {
     const email = normalizeAdminEmail(input.email); const password = parseAdminPassword(input.password); const identityId = this.createId();
+    const user = await this.users.findAuthenticationUser({ tenantId: input.tenantId as never }, input.userId);
+    if (!user || user.status !== 'active') deny();
     const protectedPassword = await this.hasher.hash({ tenantId: input.tenantId, adminIdentityId: identityId, password });
     return this.repository.provisionVerifiedIdentity({ tenantId: input.tenantId, adminIdentityId: identityId, userId: input.userId, normalizedEmail: email.normalized, emailDisplay: email.display, password: protectedPassword, occurredAt: this.now().toISOString() });
   }

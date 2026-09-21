@@ -41,6 +41,7 @@
     "local:db:migrate": "pnpm run verify:toolchain && node ./scripts/local-db-migrate.mjs",
     "local:db:seed": "pnpm run verify:toolchain && node ./scripts/local-db-seed.mjs",
     "local:cleanup:synthetic-supplier": "pnpm run verify:toolchain && node ./scripts/cleanup-local-synthetic-supplier.mjs",
+    "local:admin:provision": "pnpm run build && node ./scripts/provision-local-admin.mjs",
     "users:provision-first": "pnpm run build && node ./scripts/provision-first-user.mjs",
     "local:db:reset": "pnpm run verify:toolchain && node ./scripts/local-reset.mjs",
     "local:backend": "pnpm run verify:toolchain && node ./scripts/local-backend.mjs",

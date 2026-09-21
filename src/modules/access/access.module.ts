@@ -225,7 +225,7 @@ type RegisteredAccessUseCases =
           listConfiguredPinUserIds: (scope: unknown) => pinRepository.listConfiguredUserIds(scope as never),
           tokens,
           admin: Object.freeze({
-            provision: new ProvisionAdminIdentityUseCase(adminRepository, adminPasswordHasher),
+            provision: new ProvisionAdminIdentityUseCase(adminRepository, users, adminPasswordHasher),
             login: new LoginAdminUseCase(adminRepository, users, adminPasswordHasher, adminTokens),
             resolve: new ResolveAdminSessionUseCase(adminRepository, users, adminTokens),
             sessions: new AdminSessionManagementUseCase(adminRepository, adminPasswordHasher),
