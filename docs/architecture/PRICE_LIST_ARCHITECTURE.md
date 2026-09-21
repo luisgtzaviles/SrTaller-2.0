@@ -742,6 +742,23 @@ UI/API inicial rechaza >10,000 completa y explícitamente, sin truncar ni
 persistir parcialmente. Si se requiere particionar apply, cambia el producto y
 necesita arquitectura posterior.
 
+El gate PostgreSQL recurrente de 10,000 filas distingue dos límites ya
+existentes: el tiempo wall-clock de `BulkCatalogService.publish` debe permanecer
+en ≤30 s y la transacción desde `BEGIN` hasta `COMMIT` en ≤15 s. La llamada
+directa al servicio es un regression sentinel necesario del presupuesto HTTP,
+no una medición HTTP ni un sustituto de su campaña p95. Provisioning del
+contenedor, readiness, migraciones, arranque del proceso y cleanup se miden y
+reportan por separado; nunca se cargan al tiempo de producto.
+
+PostgreSQL `18.4` se ejecuta desde un digest fijado que coincide con la
+arquitectura del Docker server. Una imagen `amd64` emulada sobre un host `arm64`
+no es un perfil comparable y no puede ser autoridad de wall-clock. Arquitectura
+desconocida falla cerrado. El gate recurrente usa una base fresca, fixture
+sintético determinista, una sola ejecución sin retry-to-green y diagnóstico
+agregado por familia de query; no registra SQL, valores ni credenciales. La
+campaña de capacidad/p95 conserva el protocolo de múltiples iteraciones de la
+estrategia de prueba y se reporta separadamente del sentinel de promoción.
+
 ## 11. Concurrencia, idempotencia, auditoría y seguridad
 
 - Todo write mutable usa `expectedVersion`; stale produce `409` y obliga a
