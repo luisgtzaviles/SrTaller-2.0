@@ -38,6 +38,13 @@ Implement the minimum secure administrative identity and stateful Admin
 Session foundation required by ADR-015, preserving strict separation from
 Station/PIN/Operational Sessions.
 
+## Why
+
+Tenant Lifecycle needs a secure control-plane identity before public
+registration/bootstrap can be implemented, without weakening the operational
+Station + PIN boundary. Reconciliation must also retain the integrated Quality
+gate that makes the shared FULL campaign deterministic on this host.
+
 ## In Scope
 
 - Verified administrative email identity bound to one Tenant User/Tenant.
