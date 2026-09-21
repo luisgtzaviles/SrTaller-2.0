@@ -4,6 +4,7 @@ const withAccessPersistenceComposition = (content) =>
     "import type { KyselyOperationalSessionRepository } from './infrastructure/persistence/kysely-operational-session.repository.js';",
     "import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';",
     "import type { KyselyAdminAuthRepository } from './infrastructure/persistence/kysely-admin-auth.repository.js';",
+    "import type { KyselyTenantBootstrapAccessWriter } from './infrastructure/persistence/kysely-tenant-bootstrap-access.writer.js';",
     content,
   ].join('\n');
 

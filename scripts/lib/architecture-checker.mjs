@@ -2912,11 +2912,19 @@ export async function checkArchitecture({
           (owner === 'access' && value.includes('Access')) ||
           (owner === 'catalog' && value.includes('Catalog')) ||
           (owner === 'repairs' && value.includes('Repair')) ||
-          (owner === 'users' && value.includes('User')),
+          (owner === 'users' && value.includes('User')) ||
+          (baselineFixture && (
+            value.includes('TenantBootstrap') ||
+            value.includes('tenant-bootstrap') ||
+            value.includes('tenant_bootstrap') ||
+            value.includes('_tenancy_create_bootstrap_')
+          )),
       );
     persistence.databaseObjects = Object.fromEntries(
       Object.entries(persistence.databaseObjects).filter(
-        ([, registration]) => !omittedFixtureOwners.has(registration.owner),
+        ([name, registration]) =>
+          !omittedFixtureOwners.has(registration.owner) &&
+          !belongsToOmittedFixtureOwner(name),
       ),
     );
     persistence.infrastructureFiles = Object.fromEntries(
@@ -2944,6 +2952,15 @@ export async function checkArchitecture({
     );
     persistence.allowedMigrations = persistence.allowedMigrations.filter(
       (path) => !belongsToOmittedFixtureOwner(path),
+    );
+    persistence.allowedMigrations = persistence.allowedMigrations.filter(
+      (path) => {
+        const registration =
+          persistence.migrationOwnership?.registrations?.[path];
+        return !registration?.references?.some(
+          (table) => !Object.hasOwn(persistence.databaseObjects, table),
+        );
+      },
     );
     if (baselineFixture) {
       // The persistence fixtures intentionally model the original two-table
