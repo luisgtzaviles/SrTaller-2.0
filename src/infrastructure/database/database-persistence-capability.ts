@@ -9,6 +9,7 @@ export type InternalDatabasePersistenceOwner =
   | 'customers'
   | 'database'
   | 'repairs'
+  | 'registration'
   | 'stations'
   | 'tenancy'
   | 'users';
@@ -53,6 +54,12 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     repair_workflow_transitions: DatabaseSchema['repair_workflow_transitions'];
     repair_locations: DatabaseSchema['repair_locations'];
     repair_location_movements: DatabaseSchema['repair_location_movements'];
+    registration_attempts: DatabaseSchema['registration_attempts'];
+    registration_verification_challenges: DatabaseSchema['registration_verification_challenges'];
+    registration_acceptance_documents: DatabaseSchema['registration_acceptance_documents'];
+    registration_email_dispatches: DatabaseSchema['registration_email_dispatches'];
+    registration_public_action_limits: DatabaseSchema['registration_public_action_limits'];
+    registration_security_events: DatabaseSchema['registration_security_events'];
     customers: DatabaseSchema['customers'];
     customer_contact_phones: DatabaseSchema['customer_contact_phones'];
     repair_create_commands: DatabaseSchema['repair_create_commands'];
@@ -130,6 +137,8 @@ type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
     ? DatabaseTechnicalSchema
     : Owner extends 'repairs'
     ? Pick<DatabaseSchema, 'repair_catalog_reference_deletion_events' | 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_equipment_corrections' | 'repair_device_types' | 'repair_device_type_pending_values' | 'repair_device_type_catalog_events' | 'repair_brands' | 'repair_brand_pending_values' | 'repair_brand_catalog_events' | 'repair_models' | 'repair_model_pending_values' | 'repair_model_catalog_events' | 'repair_risks' | 'repair_intervention_risks' | 'repair_risk_catalog_events' | 'repair_problem_categories' | 'repair_problem_pending_values' | 'repair_problem_category_catalog_events' | 'repair_problem_category_deletion_events' | 'repair_problem_classifications' | 'repair_problem_classification_events' | 'repair_operational_note_request_guards' | 'repair_create_commands' | 'repair_folio_sequences' | 'repair_new_repair_policy_heads' | 'repair_new_repair_policy_versions' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements'>
+    : Owner extends 'registration'
+    ? Pick<DatabaseSchema, 'registration_attempts' | 'registration_verification_challenges' | 'registration_acceptance_documents' | 'registration_email_dispatches' | 'registration_public_action_limits' | 'registration_security_events'>
     : Owner extends 'tenancy'
     ? Pick<DatabaseSchema, 'tenants' | 'tenant_bootstrap_commands' | 'tenant_bootstrap_guards'>
     : Owner extends 'users'

@@ -19,6 +19,7 @@ type MigrationOwner =
   | 'catalog'
   | 'database'
   | 'repairs'
+  | 'registration'
   | 'stations'
   | 'tenancy'
   | 'users';
@@ -90,7 +91,7 @@ export class InternalMigrationProviderError extends Error {
 }
 
 const migrationPattern =
-  /^(?<timestamp>\d{14})_(?<owner>access|catalog|customers|database|repairs|stations|tenancy|users)_(?<action>[a-z][a-z0-9]*(?:_[a-z0-9]+)+)\.(?<extension>ts|js)$/u;
+  /^(?<timestamp>\d{14})_(?<owner>access|catalog|customers|database|repairs|registration|stations|tenancy|users)_(?<action>[a-z][a-z0-9]*(?:_[a-z0-9]+)+)\.(?<extension>ts|js)$/u;
 
 function isContained(parent: string, candidate: string): boolean {
   const difference = relative(parent, candidate);

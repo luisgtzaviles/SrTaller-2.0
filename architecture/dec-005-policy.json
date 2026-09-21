@@ -19,6 +19,7 @@
       "AdminAuthorizationCommitGuard",
       "AdminAuthorizationExecutor",
       "AdminAuthorizationRequirement",
+      "AdminPasswordVerifier",
       "AuthorizedAdminContext",
       "AuthorizedOperationCommitGuard",
       "AuthorizedOperationalContext",
@@ -795,13 +796,14 @@
       "src/modules/catalog/infrastructure/persistence/",
       "src/modules/customers/infrastructure/persistence/",
       "src/modules/repairs/infrastructure/persistence/",
+      "src/modules/registration/infrastructure/persistence/",
       "src/modules/stations/infrastructure/persistence/",
       "src/modules/tenancy/infrastructure/persistence/",
       "src/modules/users/infrastructure/persistence/"
     ],
     "databaseRoot": "src/infrastructure/database/",
     "migrationRoot": "src/infrastructure/database/migrations/",
-    "migrationFilePattern": "^\\d{14}_(access|catalog|customers|database|repairs|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "migrationFilePattern": "^\\d{14}_(access|catalog|customers|database|repairs|registration|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
     "allowedMigrations": [
       "src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts",
       "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
@@ -880,7 +882,8 @@
       "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts",
       "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts",
       "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts",
-      "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts"
+      "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
+      "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1539,6 +1542,20 @@
           "references": [],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts": {
+          "owner": "registration",
+          "tables": [
+            "registration_acceptance_documents",
+            "registration_attempts",
+            "registration_email_dispatches",
+            "registration_public_action_limits",
+            "registration_security_events",
+            "registration_verification_challenges"
+          ],
+          "references": [],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1564,6 +1581,12 @@
           "TenantTable",
           "TenantBootstrapCommandTable",
           "TenantBootstrapGuardTable",
+          "RegistrationAttemptTable",
+          "RegistrationVerificationChallengeTable",
+          "RegistrationAcceptanceDocumentTable",
+          "RegistrationEmailDispatchTable",
+          "RegistrationPublicActionLimitTable",
+          "RegistrationSecurityEventTable",
           "BranchTable",
           "StationTable",
           "StationBindingTable",
@@ -1778,6 +1801,12 @@
           ,"RepairFolioSequenceTable"
           ,"RepairFolioSequenceRow"
           ,"NewRepairFolioSequence"
+          ,"RegistrationAttemptRow"
+          ,"RegistrationVerificationChallengeRow"
+          ,"RegistrationAcceptanceDocumentRow"
+          ,"RegistrationEmailDispatchRow"
+          ,"RegistrationPublicActionLimitRow"
+          ,"RegistrationSecurityEventRow"
         ],
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
@@ -1856,6 +1885,7 @@
           "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts",
           "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts",
           "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
+          "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1874,6 +1904,7 @@
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
           ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
           ,"src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts"
+          ,"src/modules/registration/infrastructure/persistence/kysely-registration.repository.ts"
           ,"src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts"
           ,"src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts"
         ],
@@ -2484,6 +2515,30 @@
         "owner": "tenancy",
         "kind": "table"
       },
+      "registration_attempts": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_verification_challenges": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_acceptance_documents": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_email_dispatches": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_public_action_limits": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_security_events": {
+        "owner": "registration",
+        "kind": "table"
+      },
       "users": {
         "owner": "users",
         "kind": "table"
@@ -2814,6 +2869,8 @@
     "src/modules/registration/index.ts",
     "src/modules/registration/registration.module.ts",
     "src/modules/registration/domain/registration-attempt.ts",
+    "src/modules/registration/application/ports/registration-repository.port.ts",
+    "src/modules/registration/infrastructure/persistence/kysely-registration.repository.ts",
     "src/modules/customers/index.ts",
     "src/modules/customers/customers.module.ts",
     "src/modules/customers/application/ports/customer-intake-runtime.port.ts",

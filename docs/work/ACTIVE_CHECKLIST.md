@@ -21,11 +21,11 @@ Current PBI: NONE
 
 Overall state: Implementation authorized / Active
 
-Progress: 9 / 16
+Progress: 10 / 16
 
-Current work: Block 2 — additive persistence and owner-scoped repositories
+Current work: Block 3 — TL-02 password handoff and TL-03 grant source
 
-Next block: Block 3 — TL-02 password handoff and TL-03 grant source
+Next block: Block 4 — challenge lifecycle, resend and abuse controls
 
 Blockers: none; `TL4D-001–007` approved by Owner
 
@@ -81,8 +81,8 @@ grant without gaining a path to choose Tenant, identity, Role or capabilities.
 - [x] Publish repository-native readiness plan.
 - [x] Record Owner decisions `TL4D-001–007` and implementation authority.
 - [x] Block 1: contract/module and narrow Access bootstrap executor.
-- [~] Block 2: additive persistence, lifecycle/CAS, cleanup and audit.
-- [ ] Block 3: TL-02 password handoff and TL-03 grant source.
+- [x] Block 2: additive persistence, lifecycle/CAS, cleanup and audit.
+- [~] Block 3: TL-02 password handoff and TL-03 grant source.
 - [ ] Block 4: challenge lifecycle, resend and abuse controls.
 - [ ] Block 5: delivery port, local/test and Resend adapters.
 - [ ] Block 6: public HTTP boundary and sanitized errors.
@@ -91,12 +91,12 @@ grant without gaining a path to choose Tenant, identity, Role or capabilities.
 
 ## Current
 
-Owner decisions and implementation authority are recorded. Block 2 is active;
+Owner decisions and implementation authority are recorded. Block 3 is active;
 no later block is credited before its focused acceptance evidence is green.
 
 ## Next
 
-Complete additive schema and owner-scoped repository with PostgreSQL evidence.
+Complete password protection, immutable grant construction and bootstrap handoff.
 TL-05 remains unstarted.
 
 ## Blockers

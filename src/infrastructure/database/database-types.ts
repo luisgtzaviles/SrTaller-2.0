@@ -34,6 +34,93 @@ export interface TenantBootstrapGuardTable {
   readonly created_at: ImmutableColumn<Date>;
 }
 
+export interface RegistrationAttemptTable {
+  readonly registration_attempt_id: ImmutableColumn<string>;
+  readonly status: MutableColumn<'PENDING_VERIFICATION' | 'VERIFIED' | 'CONSUMED' | 'EXPIRED'>;
+  readonly person_display_name: ImmutableColumn<string>;
+  readonly workshop_display_name: ImmutableColumn<string>;
+  readonly normalized_email: ImmutableColumn<string>;
+  readonly email_display: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly first_user_id: ImmutableColumn<string>;
+  readonly admin_identity_id: ImmutableColumn<string>;
+  readonly acceptance_evidence_id: ImmutableColumn<string>;
+  readonly approved_input_digest: ImmutableColumn<Uint8Array>;
+  readonly registration_revision: ImmutableColumn<number>;
+  readonly password_algorithm: MutableColumn<string | null>;
+  readonly password_profile_version: MutableColumn<number | null>;
+  readonly password_pepper_version: MutableColumn<number | null>;
+  readonly password_memory_kib: MutableColumn<number | null>;
+  readonly password_passes: MutableColumn<number | null>;
+  readonly password_parallelism: MutableColumn<number | null>;
+  readonly password_salt: MutableColumn<Uint8Array | null>;
+  readonly password_verifier: MutableColumn<Uint8Array | null>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly verified_at: MutableColumn<Date | null>;
+  readonly consumed_at: MutableColumn<Date | null>;
+  readonly version: DefaultedMutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface RegistrationVerificationChallengeTable {
+  readonly challenge_id: ImmutableColumn<string>;
+  readonly registration_attempt_id: ImmutableColumn<string>;
+  readonly token_digest: ImmutableColumn<Uint8Array>;
+  readonly status: MutableColumn<'ACTIVE' | 'CONSUMED' | 'SUPERSEDED' | 'EXPIRED'>;
+  readonly failure_count: DefaultedMutableColumn<number>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly consumed_at: MutableColumn<Date | null>;
+  readonly superseded_at: MutableColumn<Date | null>;
+  readonly version: DefaultedMutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface RegistrationAcceptanceDocumentTable {
+  readonly acceptance_evidence_id: ImmutableColumn<string>;
+  readonly document_key: ImmutableColumn<'terms' | 'privacy'>;
+  readonly document_version: ImmutableColumn<string>;
+  readonly registration_attempt_id: MutableColumn<string | null>;
+  readonly tenant_id: MutableColumn<string | null>;
+  readonly user_id: MutableColumn<string | null>;
+  readonly accepted_at: ImmutableColumn<Date>;
+}
+
+export interface RegistrationEmailDispatchTable {
+  readonly delivery_id: ImmutableColumn<string>;
+  readonly registration_attempt_id: ImmutableColumn<string>;
+  readonly challenge_id: ImmutableColumn<string>;
+  readonly template_key: ImmutableColumn<string>;
+  readonly template_version: ImmutableColumn<number>;
+  readonly status: MutableColumn<'PENDING' | 'DELIVERED' | 'FAILED'>;
+  readonly attempt_count: DefaultedMutableColumn<number>;
+  readonly provider_reference: MutableColumn<string | null>;
+  readonly provider_reason_code: MutableColumn<string | null>;
+  readonly last_attempt_at: MutableColumn<Date | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface RegistrationPublicActionLimitTable {
+  readonly principal_digest: ImmutableColumn<Uint8Array>;
+  readonly action: ImmutableColumn<'REGISTER' | 'RESEND' | 'VERIFY'>;
+  readonly window_started_at: MutableColumn<Date>;
+  readonly action_count: MutableColumn<number>;
+  readonly last_action_at: MutableColumn<Date>;
+  readonly expires_at: MutableColumn<Date>;
+}
+
+export interface RegistrationSecurityEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly registration_attempt_id: ImmutableColumn<string | null>;
+  readonly event_type: ImmutableColumn<string>;
+  readonly result: ImmutableColumn<'SUCCEEDED' | 'DENIED' | 'FAILED'>;
+  readonly reason_code: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
 export interface BranchTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly branch_id: ImmutableColumn<string>;
@@ -1573,6 +1660,12 @@ export interface DatabaseSchema {
   readonly tenants: TenantTable;
   readonly tenant_bootstrap_commands: TenantBootstrapCommandTable;
   readonly tenant_bootstrap_guards: TenantBootstrapGuardTable;
+  readonly registration_attempts: RegistrationAttemptTable;
+  readonly registration_verification_challenges: RegistrationVerificationChallengeTable;
+  readonly registration_acceptance_documents: RegistrationAcceptanceDocumentTable;
+  readonly registration_email_dispatches: RegistrationEmailDispatchTable;
+  readonly registration_public_action_limits: RegistrationPublicActionLimitTable;
+  readonly registration_security_events: RegistrationSecurityEventTable;
   readonly branches: BranchTable;
   readonly stations: StationTable;
   readonly station_bindings: StationBindingTable;
@@ -1681,6 +1774,12 @@ export type TenantBootstrapCommandRow = Selectable<TenantBootstrapCommandTable>;
 export type NewTenantBootstrapCommand = Insertable<TenantBootstrapCommandTable>;
 export type TenantBootstrapGuardRow = Selectable<TenantBootstrapGuardTable>;
 export type NewTenantBootstrapGuard = Insertable<TenantBootstrapGuardTable>;
+export type RegistrationAttemptRow = Selectable<RegistrationAttemptTable>;
+export type RegistrationVerificationChallengeRow = Selectable<RegistrationVerificationChallengeTable>;
+export type RegistrationAcceptanceDocumentRow = Selectable<RegistrationAcceptanceDocumentTable>;
+export type RegistrationEmailDispatchRow = Selectable<RegistrationEmailDispatchTable>;
+export type RegistrationPublicActionLimitRow = Selectable<RegistrationPublicActionLimitTable>;
+export type RegistrationSecurityEventRow = Selectable<RegistrationSecurityEventTable>;
 
 export type BranchRow = Selectable<BranchTable>;
 export type NewBranch = Insertable<BranchTable>;
