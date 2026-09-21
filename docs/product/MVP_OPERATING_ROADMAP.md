@@ -6,20 +6,21 @@
   gates de producto; Git/GitHub/CI/runtime gobiernan la materialización.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
-- **Fase:** Tenant Lifecycle MVP — Atomic Tenant Bootstrap implementation.
+- **Fase:** Tenant Lifecycle MVP — Public Registration readiness.
 - **Checkpoint alcanzado:** Pricing Catalog cerrado conforme a los PBI y
-  autoridades técnicas enlazadas; TL-01 y TL-02 están cerrados por integración
-  gobernada y exact-main CI. `Released` permanece separado.
+  autoridades técnicas enlazadas; TL-01, TL-02 y TL-03 están cerrados por
+  integración gobernada, exact-main CI y closure refs. `Released` permanece
+  separado.
 - **Sprint activo:** SPRINT-03 — Price List Foundation está `Closed`; no existe
   otro Sprint activo ni trabajo de Sprint en curso.
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** completar los ocho bloques TL-03 y su verificación local
-  autoritativa antes de cualquier promoción. Production no está autorizada.
+- **Blocking gate:** resolver `TL4D-001–007` y recibir autorización explícita
+  antes de implementar TL-04. Production no está autorizada.
 - **WIP operacional:** `1/1 Work Unit`; `0/1 PBI`.
-- **Autoridad:** decisiones Owner TL-001–016/TLD-001–009, TL-01/TL-02 cerrados
-  e implementación explícita de TL-03 con TL3D-001–004 aprobadas.
+- **Autoridad:** decisiones Owner TL-001–016/TLD-001–009 y TL-01/TL-02/TL-03
+  cerrados; TL-04 está autorizado sólo para discovery/readiness.
 
 ## Objetivo
 
@@ -84,14 +85,14 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
-| Phase | Tenant Lifecycle MVP — Atomic Tenant Bootstrap implementation |
+| Phase | Tenant Lifecycle MVP — Public Registration readiness |
 | Sprint | NONE; SPRINT-03 remains Closed |
 | Sprint status | No active Sprint |
 | Current PBI | NONE |
-| Active Work Unit | TL-03 — Atomic Tenant Bootstrap + Starter Authority (`ACTIVE`, implementation authorized) |
+| Active Work Unit | TL-04 — Public Registration + Email Verification (`ACTIVE`, discovery/readiness only) |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | Complete TL-03 implementation, material PostgreSQL proof and authoritative local verification |
+| Blocking gate | Owner decisions for provider, TTL/retention, public abuse signals, host and legal documents; then explicit TL-04 implementation authorization |
 
 ## Fases aprobadas
 
@@ -263,8 +264,8 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** completar TL-03 localmente y detenerse en
-  `READY_FOR_PROMOTION`; push/PR continúan sin autorización.
+- **Disparador:** decisión Owner sobre `TL4D-001–007` y autorización separada
+  para implementar TL-04.
 - **Estado conservado:** PBI-040 y PBI-041 `Done`, `Released: NO`; Current PBI
   `NONE`; Production no autorizada.
-- **Después:** no iniciar TL-04 ni otro PBI/Work Unit automáticamente.
+- **Después:** no implementar TL-04 ni iniciar TL-05 automáticamente.
